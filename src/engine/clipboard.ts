@@ -55,10 +55,17 @@ let cachedSchema: CompiledSchema | null = null
 let cachedSchemaDeflated: Uint8Array | null = null
 
 export function prefetchFigmaSchema(): void {
-  getFigmaSchema()
+  getFigmaSchemaAsync()
 }
 
-async function getFigmaSchema(): Promise<{ compiled: CompiledSchema; deflated: Uint8Array }> {
+function getFigmaSchemaSync(): { compiled: CompiledSchema; deflated: Uint8Array } | null {
+  if (cachedSchema && cachedSchemaDeflated) {
+    return { compiled: cachedSchema, deflated: cachedSchemaDeflated }
+  }
+  return null
+}
+
+async function getFigmaSchemaAsync(): Promise<{ compiled: CompiledSchema; deflated: Uint8Array }> {
   if (cachedSchema && cachedSchemaDeflated) {
     return { compiled: cachedSchema, deflated: cachedSchemaDeflated }
   }
@@ -474,11 +481,13 @@ function sceneNodeToKiwi(
   return result
 }
 
-export async function buildFigmaClipboardHTML(
+export function buildFigmaClipboardHTML(
   nodes: SceneNode[],
   graph: SceneGraph
-): Promise<string> {
-  const { compiled, deflated: schemaDeflated } = await getFigmaSchema()
+): string | null {
+  const schema = getFigmaSchemaSync()
+  if (!schema) return null
+  const { compiled, deflated: schemaDeflated } = schema
 
   const docGuid = { sessionID: 0, localID: 0 }
   const canvasGuid = { sessionID: 0, localID: 1 }

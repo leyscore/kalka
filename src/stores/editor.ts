@@ -239,19 +239,11 @@ export function createEditorStore() {
 
     const names = nodes.map((n) => n.name).join('\n')
     const internalHtml = buildOpenPencilClipboardHTML(nodes, graph)
+    const figmaHtml = buildFigmaClipboardHTML(nodes, graph)
 
+    const html = figmaHtml ? figmaHtml + internalHtml : internalHtml
+    clipboardData.setData('text/html', html)
     clipboardData.setData('text/plain', names)
-    clipboardData.setData('text/html', internalHtml)
-
-    buildFigmaClipboardHTML(nodes, graph).then((figmaHtml) => {
-      const combined = figmaHtml + internalHtml
-      navigator.clipboard.write([
-        new ClipboardItem({
-          'text/html': new Blob([combined], { type: 'text/html' }),
-          'text/plain': new Blob([names], { type: 'text/plain' })
-        })
-      ])
-    })
   }
 
   function pasteFromHTML(html: string) {
