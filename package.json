@@ -16,18 +16,17 @@
   "dependencies": {
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-opener": "^2",
+    "@vueuse/core": "^14.2.1",
     "canvaskit-wasm": "^0.40.0",
     "kiwi-schema": "^0.5.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
+    "reka-ui": "^2.8.2",
+    "vue": "^3.5.29",
     "yoga-layout": "^3.2.1"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
     "@typescript/native-preview": "^7.0.0-dev.20260227.1",
-    "@vitejs/plugin-react": "^4.6.0",
+    "@vitejs/plugin-vue": "^6.0.4",
     "oxfmt": "^0.35.0",
     "oxlint": "^1.50.0",
     "typescript": "~5.8.3",

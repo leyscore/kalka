@@ -1,0 +1,271 @@
+import { reactive, shallowRef, computed } from 'vue'
+
+import { SceneGraph } from '../engine/scene-graph'
+import { UndoManager } from '../engine/undo'
+
+import type { SceneNode, NodeType, Fill } from '../engine/scene-graph'
+
+export type Tool = 'SELECT' | 'FRAME' | 'RECTANGLE' | 'ELLIPSE' | 'LINE' | 'TEXT' | 'PEN' | 'HAND'
+
+export interface ToolDef {
+  key: Tool
+  label: string
+  icon: string
+  shortcut: string
+  flyout?: Tool[]
+}
+
+export const TOOLS: ToolDef[] = [
+  { key: 'SELECT', label: 'Move', icon: '↖', shortcut: 'V' },
+  { key: 'FRAME', label: 'Frame', icon: '#', shortcut: 'F' },
+  {
+    key: 'RECTANGLE',
+    label: 'Rectangle',
+    icon: '□',
+    shortcut: 'R',
+    flyout: ['RECTANGLE', 'ELLIPSE', 'LINE']
+  },
+  { key: 'PEN', label: 'Pen', icon: '✒', shortcut: 'P' },
+  { key: 'TEXT', label: 'Text', icon: 'T', shortcut: 'T' },
+  { key: 'HAND', label: 'Hand', icon: '✋', shortcut: 'H' }
+]
+
+export const TOOL_SHORTCUTS: Record<string, Tool> = {
+  v: 'SELECT',
+  f: 'FRAME',
+  r: 'RECTANGLE',
+  o: 'ELLIPSE',
+  l: 'LINE',
+  t: 'TEXT',
+  p: 'PEN',
+  h: 'HAND'
+}
+
+const DEFAULT_FILLS: Record<string, Fill> = {
+  FRAME: { type: 'SOLID', color: { r: 1, g: 1, b: 1, a: 1 }, opacity: 1, visible: true },
+  RECTANGLE: {
+    type: 'SOLID',
+    color: { r: 0.83, g: 0.83, b: 0.83, a: 1 },
+    opacity: 1,
+    visible: true
+  },
+  ELLIPSE: {
+    type: 'SOLID',
+    color: { r: 0.83, g: 0.83, b: 0.83, a: 1 },
+    opacity: 1,
+    visible: true
+  },
+  LINE: { type: 'SOLID', color: { r: 0, g: 0, b: 0, a: 1 }, opacity: 1, visible: true }
+}
+
+export function createEditorStore() {
+  const graph = new SceneGraph()
+  const undo = new UndoManager()
+
+  const state = reactive({
+    activeTool: 'SELECT' as Tool,
+    selectedIds: new Set<string>(),
+    panX: 0,
+    panY: 0,
+    zoom: 1,
+    renderVersion: 0
+  })
+
+  const selectedNodes = computed(() => {
+    const nodes: SceneNode[] = []
+    for (const id of state.selectedIds) {
+      const n = graph.getNode(id)
+      if (n) nodes.push(n)
+    }
+    return nodes
+  })
+
+  const selectedNode = computed(() =>
+    selectedNodes.value.length === 1 ? selectedNodes.value[0] : undefined
+  )
+
+  const layerNodes = computed(() => {
+    void state.renderVersion
+    return graph.getChildren(graph.rootId)
+  })
+
+  function requestRender() {
+    state.renderVersion++
+  }
+
+  function setTool(tool: Tool) {
+    state.activeTool = tool
+  }
+
+  function select(ids: string[], additive = false) {
+    if (additive) {
+      const next = new Set(state.selectedIds)
+      for (const id of ids) {
+        if (next.has(id)) next.delete(id)
+        else next.add(id)
+      }
+      state.selectedIds = next
+    } else {
+      state.selectedIds = new Set(ids)
+    }
+  }
+
+  function clearSelection() {
+    state.selectedIds = new Set()
+  }
+
+  function updateNode(id: string, changes: Partial<SceneNode>) {
+    graph.updateNode(id, changes)
+    requestRender()
+  }
+
+  function createShape(type: NodeType, x: number, y: number, w: number, h: number): string {
+    const fill = DEFAULT_FILLS[type] ?? DEFAULT_FILLS.RECTANGLE
+    const node = graph.createNode(type, graph.rootId, {
+      x,
+      y,
+      width: w,
+      height: h,
+      fills: [{ ...fill }]
+    })
+    requestRender()
+    return node.id
+  }
+
+  function deleteSelected() {
+    undo.beginBatch('Delete')
+    for (const id of state.selectedIds) {
+      const node = graph.getNode(id)
+      if (!node) continue
+      const snapshot = { ...node }
+      const parentId = node.parentId ?? graph.rootId
+      undo.apply({
+        label: 'Delete',
+        forward: () => graph.deleteNode(id),
+        inverse: () => {
+          graph.createNode(snapshot.type, parentId, snapshot)
+        }
+      })
+    }
+    undo.commitBatch()
+    clearSelection()
+    requestRender()
+  }
+
+  function commitMove(originals: Map<string, { x: number; y: number }>) {
+    const finals = new Map<string, { x: number; y: number }>()
+    for (const [id] of originals) {
+      const n = graph.getNode(id)
+      if (n) finals.set(id, { x: n.x, y: n.y })
+    }
+    undo.apply({
+      label: 'Move',
+      forward: () => {
+        for (const [id, pos] of finals) graph.updateNode(id, pos)
+      },
+      inverse: () => {
+        for (const [id, pos] of originals) graph.updateNode(id, pos)
+      }
+    })
+  }
+
+  function undoAction() {
+    undo.undo()
+    requestRender()
+  }
+
+  function redoAction() {
+    undo.redo()
+    requestRender()
+  }
+
+  function screenToCanvas(sx: number, sy: number) {
+    return {
+      x: (sx - state.panX) / state.zoom,
+      y: (sy - state.panY) / state.zoom
+    }
+  }
+
+  function applyZoom(delta: number, centerX: number, centerY: number) {
+    const factor = delta < 0 ? 1.1 : 0.9
+    const newZoom = Math.max(0.02, Math.min(256, state.zoom * factor))
+    state.panX = centerX - (centerX - state.panX) * (newZoom / state.zoom)
+    state.panY = centerY - (centerY - state.panY) * (newZoom / state.zoom)
+    state.zoom = newZoom
+    requestRender()
+  }
+
+  function pan(dx: number, dy: number) {
+    state.panX += dx
+    state.panY += dy
+    requestRender()
+  }
+
+  function zoomToFit() {
+    const nodes = graph.getChildren(graph.rootId)
+    if (nodes.length === 0) return
+
+    let minX = Infinity
+    let minY = Infinity
+    let maxX = -Infinity
+    let maxY = -Infinity
+    for (const n of nodes) {
+      minX = Math.min(minX, n.x)
+      minY = Math.min(minY, n.y)
+      maxX = Math.max(maxX, n.x + n.width)
+      maxY = Math.max(maxY, n.y + n.height)
+    }
+
+    const padding = 80
+    const w = maxX - minX + padding * 2
+    const h = maxY - minY + padding * 2
+
+    // Will be set by canvas composable
+    const viewW = 800
+    const viewH = 600
+    const zoom = Math.min(viewW / w, viewH / h, 1)
+
+    state.zoom = zoom
+    state.panX = (viewW - w * zoom) / 2 - minX * zoom + padding * zoom
+    state.panY = (viewH - h * zoom) / 2 - minY * zoom + padding * zoom
+    requestRender()
+  }
+
+  return {
+    graph,
+    undo,
+    state,
+    selectedNodes,
+    selectedNode,
+    layerNodes,
+    requestRender,
+    setTool,
+    select,
+    clearSelection,
+    updateNode,
+    createShape,
+    deleteSelected,
+    commitMove,
+    undoAction,
+    redoAction,
+    screenToCanvas,
+    applyZoom,
+    pan,
+    zoomToFit
+  }
+}
+
+export type EditorStore = ReturnType<typeof createEditorStore>
+
+const storeRef = shallowRef<EditorStore>()
+
+export function provideEditorStore(): EditorStore {
+  const store = createEditorStore()
+  storeRef.value = store
+  return store
+}
+
+export function useEditorStore(): EditorStore {
+  if (!storeRef.value) throw new Error('Editor store not provided')
+  return storeRef.value
+}

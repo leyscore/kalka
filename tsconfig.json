@@ -5,21 +5,17 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
-
-    /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx",
-
-    /* Linting */
+    "jsx": "preserve",
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"],
+  "include": ["src/**/*.ts", "src/**/*.vue"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
