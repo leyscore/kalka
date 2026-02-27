@@ -103,7 +103,7 @@ export function createEditorStore() {
     const nodes: SceneNode[] = []
     for (const id of state.selectedIds) {
       const n = graph.getNode(id)
-      if (n) nodes.push(n)
+      if (n) nodes.push({ ...n })
     }
     return nodes
   })
