@@ -71,6 +71,15 @@ export function useKeyboard(store: EditorStore) {
       }
     }
 
+    if (e.shiftKey && e.key === 'A') {
+      e.preventDefault()
+      const node = store.selectedNode.value
+      if (node && node.type === 'FRAME') {
+        store.setLayoutMode(node.id, node.layoutMode === 'NONE' ? 'VERTICAL' : 'NONE')
+      }
+      return
+    }
+
     if (e.key === 'Backspace' || e.key === 'Delete') {
       store.deleteSelected()
     }
