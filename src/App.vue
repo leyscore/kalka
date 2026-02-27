@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useEventListener } from '@vueuse/core'
+
 import { useKeyboard } from './composables/use-keyboard'
 import { provideEditorStore } from './stores/editor'
 
@@ -9,6 +11,10 @@ import Toolbar from './components/Toolbar.vue'
 
 const store = provideEditorStore()
 useKeyboard(store)
+
+useEventListener(document, 'wheel', (e: WheelEvent) => {
+  if (e.ctrlKey || e.metaKey) e.preventDefault()
+}, { passive: false })
 
 // Demo shapes
 store.createShape('FRAME', 100, 80, 800, 500)
