@@ -125,6 +125,25 @@ function getHandlePositions(
   } as Record<HandlePosition, { x: number; y: number }>
 }
 
+function unrotate(
+  sx: number,
+  sy: number,
+  centerX: number,
+  centerY: number,
+  rotation: number
+): { sx: number; sy: number } {
+  if (rotation === 0) return { sx, sy }
+  const rad = (-rotation * Math.PI) / 180
+  const cos = Math.cos(rad)
+  const sin = Math.sin(rad)
+  const dx = sx - centerX
+  const dy = sy - centerY
+  return {
+    sx: centerX + dx * cos - dy * sin,
+    sy: centerY + dx * sin + dy * cos
+  }
+}
+
 function hitTestHandle(
   sx: number,
   sy: number,
@@ -134,11 +153,17 @@ function hitTestHandle(
   h: number,
   zoom: number,
   panX: number,
-  panY: number
+  panY: number,
+  rotation = 0
 ): HandlePosition | null {
+  const { x1, y1, x2, y2 } = getScreenRect(absX, absY, w, h, zoom, panX, panY)
+  const cx = (x1 + x2) / 2
+  const cy = (y1 + y2) / 2
+  const ur = unrotate(sx, sy, cx, cy, rotation)
+
   const handles = getHandlePositions(absX, absY, w, h, zoom, panX, panY)
   for (const [pos, pt] of Object.entries(handles)) {
-    if (Math.abs(sx - pt.x) < HANDLE_HIT_RADIUS && Math.abs(sy - pt.y) < HANDLE_HIT_RADIUS) {
+    if (Math.abs(ur.sx - pt.x) < HANDLE_HIT_RADIUS && Math.abs(ur.sy - pt.y) < HANDLE_HIT_RADIUS) {
       return pos as HandlePosition
     }
   }
@@ -154,12 +179,17 @@ function hitTestRotationHandle(
   h: number,
   zoom: number,
   panX: number,
-  panY: number
+  panY: number,
+  rotation = 0
 ): boolean {
-  const { x1, x2, y1 } = getScreenRect(absX, absY, w, h, zoom, panX, panY)
+  const { x1, x2, y1, y2 } = getScreenRect(absX, absY, w, h, zoom, panX, panY)
+  const cx = (x1 + x2) / 2
+  const cy = (y1 + y2) / 2
+  const ur = unrotate(sx, sy, cx, cy, rotation)
+
   const mx = (x1 + x2) / 2
   const rotY = y1 - 24
-  return Math.abs(sx - mx) < ROTATION_HIT_RADIUS && Math.abs(sy - rotY) < ROTATION_HIT_RADIUS
+  return Math.abs(ur.sx - mx) < ROTATION_HIT_RADIUS && Math.abs(ur.sy - rotY) < ROTATION_HIT_RADIUS
 }
 
 export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: EditorStore) {
@@ -219,7 +249,8 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
               node.height,
               store.state.zoom,
               store.state.panX,
-              store.state.panY
+              store.state.panY,
+              node.rotation
             )
           ) {
             const screenCx = (abs.x + node.width / 2) * store.state.zoom + store.state.panX
@@ -252,7 +283,8 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
           node.height,
           store.state.zoom,
           store.state.panX,
-          store.state.panY
+          store.state.panY,
+          node.rotation
         )
         if (handle) {
           drag.value = {
@@ -381,7 +413,8 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
               node.height,
               store.state.zoom,
               store.state.panX,
-              store.state.panY
+              store.state.panY,
+              node.rotation
             )
           ) {
             cursor = 'grab'
@@ -403,7 +436,8 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
             node.height,
             store.state.zoom,
             store.state.panX,
-            store.state.panY
+            store.state.panY,
+            node.rotation
           )
           if (handle) {
             cursor = HANDLE_CURSORS[handle]
