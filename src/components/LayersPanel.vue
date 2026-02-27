@@ -1,10 +1,18 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useEventListener } from '@vueuse/core'
+import { TreeRoot, TreeItem } from 'reka-ui'
 
 import { useEditorStore } from '../stores/editor'
 
 const store = useEditorStore()
+
+interface LayerNode {
+  id: string
+  name: string
+  type: string
+  children?: LayerNode[]
+}
 
 function nodeIcon(type: string) {
   switch (type) {
@@ -23,9 +31,47 @@ function nodeIcon(type: string) {
   }
 }
 
-function hasChildren(nodeId: string) {
-  const node = store.graph.getNode(nodeId)
-  return node ? node.childIds.length > 0 : false
+function buildTree(parentId: string): LayerNode[] {
+  const parent = store.graph.getNode(parentId)
+  if (!parent) return []
+  const result: LayerNode[] = []
+  for (const cid of parent.childIds) {
+    const node = store.graph.getNode(cid)
+    if (!node) continue
+    result.push({
+      id: node.id,
+      name: node.name,
+      type: node.type,
+      children: node.childIds.length > 0 ? buildTree(node.id) : undefined,
+    })
+  }
+  return result
+}
+
+const items = computed(() => {
+  void store.state.renderVersion
+  return buildTree(store.graph.rootId)
+})
+
+const expanded = ref<string[]>([])
+
+function onSelect(ev: CustomEvent) {
+  ev.preventDefault()
+  const node = ev.detail.value as LayerNode
+  if (ev.detail.originalEvent?.shiftKey) {
+    store.select([node.id], true)
+  } else {
+    store.select([node.id])
+  }
+}
+
+function toggleExpand(id: string) {
+  const idx = expanded.value.indexOf(id)
+  if (idx >= 0) {
+    expanded.value = expanded.value.filter(e => e !== id)
+  } else {
+    expanded.value = [...expanded.value, id]
+  }
 }
 
 const listRef = ref<HTMLElement | null>(null)
@@ -35,8 +81,6 @@ const indicatorY = ref(-1)
 const indicatorDepth = ref(0)
 const dropTarget = ref<{ parentId: string; index: number } | null>(null)
 const dropIntoId = ref<string | null>(null)
-
-const tree = computed(() => store.layerTree.value)
 
 let stopMove: (() => void) | undefined
 let stopUp: (() => void) | undefined
@@ -58,8 +102,7 @@ function onPointerDown(e: PointerEvent, nodeId: string) {
   stopUp = useEventListener(document, 'pointerup', () => {
     if (didMove && dropTarget.value && dragNodeId.value) {
       const { parentId, index } = dropTarget.value
-      const node = store.graph.getNode(dragNodeId.value)
-      if (node && parentId !== dragNodeId.value && !store.graph.isDescendant(parentId, dragNodeId.value)) {
+      if (parentId !== dragNodeId.value && !store.graph.isDescendant(parentId, dragNodeId.value)) {
         store.graph.reorderChild(dragNodeId.value, parentId, index)
         store.requestRender()
       }
@@ -104,33 +147,30 @@ function updateDropTarget(ev: PointerEvent) {
     const rowNode = store.graph.getNode(rowId)
     if (!rowNode) continue
 
-    // Drop into a container (frame/group) — middle zone
     if (mouseY > topZone && mouseY < bottomZone && store.graph.isContainer(rowId)) {
       bestInto = { nodeId: rowId }
       bestInsertBefore = null
       break
     }
 
-    // Drop above this row
     if (mouseY <= rowMid) {
       const parentId = rowNode.parentId ?? store.graph.rootId
       const parent = store.graph.getNode(parentId)
       if (parent) {
         const idx = parent.childIds.indexOf(rowId)
-        const treeItem = tree.value.find(t => t.node.id === rowId)
-        bestInsertBefore = { parentId, index: Math.max(0, idx), y: rect.top - listRect.top + list.scrollTop, depth: treeItem?.depth ?? 0 }
+        const level = parseInt(row.dataset.level ?? '0')
+        bestInsertBefore = { parentId, index: Math.max(0, idx), y: rect.top - listRect.top + list.scrollTop, depth: level }
       }
       break
     }
 
-    // If last row and mouse is below mid
     if (i === rows.length - 1 && mouseY > rowMid) {
       const parentId = rowNode.parentId ?? store.graph.rootId
       const parent = store.graph.getNode(parentId)
       if (parent) {
         const idx = parent.childIds.indexOf(rowId)
-        const treeItem = tree.value.find(t => t.node.id === rowId)
-        bestInsertBefore = { parentId, index: idx + 1, y: rect.bottom - listRect.top + list.scrollTop, depth: treeItem?.depth ?? 0 }
+        const level = parseInt(row.dataset.level ?? '0')
+        bestInsertBefore = { parentId, index: idx + 1, y: rect.bottom - listRect.top + list.scrollTop, depth: level }
       }
     }
   }
@@ -157,25 +197,50 @@ function updateDropTarget(ev: PointerEvent) {
   <aside class="flex w-60 flex-col overflow-y-auto border-r border-border bg-panel">
     <header class="shrink-0 px-3 py-2 text-[11px] uppercase tracking-wider text-muted">Layers</header>
     <div ref="listRef" class="relative flex-1 overflow-y-auto px-1">
-      <button
-        v-for="{ node, depth } in tree"
-        :key="node.id"
-        :data-node-id="node.id"
-        class="flex w-full cursor-pointer items-center gap-1 rounded border-none py-1 text-left text-xs"
-        :class="[
-          store.state.selectedIds.has(node.id)
-            ? 'bg-accent text-white'
-            : 'bg-transparent text-surface hover:bg-hover',
-          dragging && dragNodeId === node.id ? 'opacity-30' : '',
-          dropIntoId === node.id ? 'ring-2 ring-accent ring-inset' : ''
-        ]"
-        :style="{ paddingLeft: `${8 + depth * 16}px` }"
-        @pointerdown.prevent="onPointerDown($event, node.id)"
+      <TreeRoot
+        v-slot="{ flattenItems }"
+        :items="items"
+        :get-key="(v: LayerNode) => v.id"
+        :get-children="(v: LayerNode) => v.children"
+        v-model:expanded="expanded"
       >
-        <span v-if="hasChildren(node.id)" class="w-3 shrink-0 text-center text-[10px] opacity-50">▾</span>
-        <span class="w-3.5 shrink-0 text-center text-[11px] opacity-70">{{ nodeIcon(node.type) }}</span>
-        <span class="truncate">{{ node.name }}</span>
-      </button>
+        <div
+          v-for="item in flattenItems"
+          :key="item._id"
+          :data-node-id="item.value.id"
+          :data-level="item.level"
+        >
+          <TreeItem
+            v-slot="{ isExpanded }"
+            v-bind="item.bind"
+            as-child
+            @select="onSelect"
+          >
+            <button
+              class="flex w-full cursor-pointer items-center gap-1 rounded border-none py-1 text-left text-xs"
+              :class="[
+                store.state.selectedIds.has(item.value.id)
+                  ? 'bg-accent text-white'
+                  : 'bg-transparent text-surface hover:bg-hover',
+                dragging && dragNodeId === item.value.id ? 'opacity-30' : '',
+                dropIntoId === item.value.id ? 'ring-2 ring-accent ring-inset' : ''
+              ]"
+              :style="{ paddingLeft: `${8 + (item.level - 1) * 16}px` }"
+              @pointerdown.prevent="onPointerDown($event, item.value.id)"
+            >
+              <span
+                v-if="item.hasChildren"
+                class="flex w-4 shrink-0 cursor-pointer items-center justify-center text-xs text-muted transition-transform hover:text-surface"
+                :class="isExpanded ? '' : '-rotate-90'"
+                @click.stop="toggleExpand(item.value.id)"
+              >▾</span>
+              <span v-else class="w-4 shrink-0" />
+              <span class="w-3.5 shrink-0 text-center text-[11px] opacity-70">{{ nodeIcon(item.value.type) }}</span>
+              <span class="truncate">{{ item.value.name }}</span>
+            </button>
+          </TreeItem>
+        </div>
+      </TreeRoot>
 
       <!-- Drop indicator line -->
       <div
