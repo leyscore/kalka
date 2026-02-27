@@ -1,15 +1,119 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import { onClickOutside } from '@vueuse/core'
 
 import ColorPicker from './ColorPicker.vue'
 import { useEditorStore } from '../stores/editor'
 
-import type { Color, Fill, Stroke } from '../engine/scene-graph'
+import type { Color, Fill, Stroke, LayoutSizing, LayoutAlign, LayoutCounterAlign } from '../engine/scene-graph'
 
 const store = useEditorStore()
 
 const node = computed(() => store.selectedNode.value)
 const multiCount = computed(() => store.selectedNodes.value.length)
+const showIndividualPadding = ref(false)
+const widthSizingOpen = ref(false)
+const heightSizingOpen = ref(false)
+const widthDimRef = ref<HTMLElement | null>(null)
+const heightDimRef = ref<HTMLElement | null>(null)
+
+onClickOutside(widthDimRef, () => { widthSizingOpen.value = false })
+onClickOutside(heightDimRef, () => { heightSizingOpen.value = false })
+
+const isInAutoLayout = computed(() => {
+  const n = node.value
+  if (!n?.parentId) return false
+  const parent = store.graph.getNode(n.parentId)
+  return parent ? parent.layoutMode !== 'NONE' : false
+})
+
+const widthSizing = computed(() => {
+  const n = node.value
+  if (!n) return 'FIXED'
+  if (n.layoutMode !== 'NONE') {
+    return n.layoutMode === 'HORIZONTAL' ? n.primaryAxisSizing : n.counterAxisSizing
+  }
+  if (isInAutoLayout.value && n.layoutGrow > 0) return 'FILL'
+  return 'FIXED'
+})
+
+const heightSizing = computed(() => {
+  const n = node.value
+  if (!n) return 'FIXED'
+  if (n.layoutMode !== 'NONE') {
+    return n.layoutMode === 'VERTICAL' ? n.primaryAxisSizing : n.counterAxisSizing
+  }
+  if (isInAutoLayout.value && n.layoutAlignSelf === 'STRETCH') return 'FILL'
+  return 'FIXED'
+})
+
+function setWidthSizing(sizing: LayoutSizing) {
+  const n = node.value
+  if (!n) return
+  if (n.layoutMode !== 'NONE') {
+    if (n.layoutMode === 'HORIZONTAL') updateProp('primaryAxisSizing', sizing)
+    else updateProp('counterAxisSizing', sizing)
+  } else if (isInAutoLayout.value) {
+    updateProp('layoutGrow', sizing === 'FILL' ? 1 : 0)
+  }
+  widthSizingOpen.value = false
+}
+
+function setHeightSizing(sizing: LayoutSizing) {
+  const n = node.value
+  if (!n) return
+  if (n.layoutMode !== 'NONE') {
+    if (n.layoutMode === 'VERTICAL') updateProp('primaryAxisSizing', sizing)
+    else updateProp('counterAxisSizing', sizing)
+  } else if (isInAutoLayout.value) {
+    updateProp('layoutAlignSelf', sizing === 'FILL' ? 'STRETCH' : 'AUTO')
+  }
+  heightSizingOpen.value = false
+}
+
+function sizingLabel(s: string) {
+  if (s === 'HUG') return 'Hug'
+  if (s === 'FILL') return 'Fill'
+  return 'Fixed'
+}
+
+function hasUniformPadding() {
+  const n = node.value
+  if (!n) return true
+  return n.paddingTop === n.paddingRight &&
+    n.paddingRight === n.paddingBottom &&
+    n.paddingBottom === n.paddingLeft
+}
+
+function setUniformPadding(v: number) {
+  if (!node.value) return
+  store.updateNode(node.value.id, {
+    paddingTop: v,
+    paddingRight: v,
+    paddingBottom: v,
+    paddingLeft: v
+  })
+}
+
+const ALIGN_GRID: Array<{ primary: LayoutAlign; counter: LayoutCounterAlign }> = [
+  { primary: 'MIN', counter: 'MIN' },
+  { primary: 'CENTER', counter: 'MIN' },
+  { primary: 'MAX', counter: 'MIN' },
+  { primary: 'MIN', counter: 'CENTER' },
+  { primary: 'CENTER', counter: 'CENTER' },
+  { primary: 'MAX', counter: 'CENTER' },
+  { primary: 'MIN', counter: 'MAX' },
+  { primary: 'CENTER', counter: 'MAX' },
+  { primary: 'MAX', counter: 'MAX' }
+]
+
+function setAlignment(primary: LayoutAlign, counter: LayoutCounterAlign) {
+  if (!node.value) return
+  store.updateNode(node.value.id, {
+    primaryAxisAlign: primary,
+    counterAxisAlign: counter
+  })
+}
 
 function updateProp(key: string, value: number | string) {
   if (multiCount.value > 1) {
@@ -173,22 +277,86 @@ function colorHex(c: Color) {
       <div class="section">
         <label class="section-label">Layout</label>
         <div class="input-row">
-          <label class="prop-input">
+          <div ref="widthDimRef" class="dim-input">
             <span class="prop-label">W</span>
             <input
               type="number"
               :value="Math.round(node.width)"
               @change="updateProp('width', +($event.target as HTMLInputElement).value)"
             />
-          </label>
-          <label class="prop-input">
+            <button
+              v-if="node.layoutMode !== 'NONE' || isInAutoLayout"
+              class="sizing-badge"
+              @click="widthSizingOpen = !widthSizingOpen"
+            >
+              {{ sizingLabel(widthSizing) }}
+            </button>
+            <div v-if="widthSizingOpen" class="sizing-dropdown">
+              <button
+                :class="{ selected: widthSizing === 'FIXED' }"
+                @click="setWidthSizing('FIXED')"
+              >
+                <span class="sizing-icon">↔</span>
+                Fixed width ({{ Math.round(node.width) }})
+              </button>
+              <button
+                v-if="node.layoutMode !== 'NONE'"
+                :class="{ selected: widthSizing === 'HUG' }"
+                @click="setWidthSizing('HUG')"
+              >
+                <span class="sizing-icon">↤↦</span>
+                Hug contents
+              </button>
+              <button
+                v-if="isInAutoLayout"
+                :class="{ selected: widthSizing === 'FILL' }"
+                @click="setWidthSizing('FILL')"
+              >
+                <span class="sizing-icon">⟷</span>
+                Fill container
+              </button>
+            </div>
+          </div>
+          <div ref="heightDimRef" class="dim-input">
             <span class="prop-label">H</span>
             <input
               type="number"
               :value="Math.round(node.height)"
               @change="updateProp('height', +($event.target as HTMLInputElement).value)"
             />
-          </label>
+            <button
+              v-if="node.layoutMode !== 'NONE' || isInAutoLayout"
+              class="sizing-badge"
+              @click="heightSizingOpen = !heightSizingOpen"
+            >
+              {{ sizingLabel(heightSizing) }}
+            </button>
+            <div v-if="heightSizingOpen" class="sizing-dropdown">
+              <button
+                :class="{ selected: heightSizing === 'FIXED' }"
+                @click="setHeightSizing('FIXED')"
+              >
+                <span class="sizing-icon">↕</span>
+                Fixed height ({{ Math.round(node.height) }})
+              </button>
+              <button
+                v-if="node.layoutMode !== 'NONE'"
+                :class="{ selected: heightSizing === 'HUG' }"
+                @click="setHeightSizing('HUG')"
+              >
+                <span class="sizing-icon">↤↦</span>
+                Hug contents
+              </button>
+              <button
+                v-if="isInAutoLayout"
+                :class="{ selected: heightSizing === 'FILL' }"
+                @click="setHeightSizing('FILL')"
+              >
+                <span class="sizing-icon">⟷</span>
+                Fill container
+              </button>
+            </div>
+          </div>
         </div>
         <div class="input-row">
           <label class="prop-input">
@@ -206,116 +374,162 @@ function colorHex(c: Color) {
       <div v-if="node.type === 'FRAME'" class="section">
         <div class="section-header">
           <label class="section-label">Auto layout</label>
-          <div class="layout-toggles">
-            <button
-              class="layout-btn"
-              :class="{ active: node.layoutMode === 'NONE' }"
-              title="No auto layout"
-              @click="store.setLayoutMode(node.id, 'NONE')"
-            >
-              ✕
-            </button>
-            <button
-              class="layout-btn"
-              :class="{ active: node.layoutMode === 'VERTICAL' }"
-              title="Vertical"
-              @click="store.setLayoutMode(node.id, 'VERTICAL')"
-            >
-              ↕
-            </button>
-            <button
-              class="layout-btn"
-              :class="{ active: node.layoutMode === 'HORIZONTAL' }"
-              title="Horizontal"
-              @click="store.setLayoutMode(node.id, 'HORIZONTAL')"
-            >
-              ↔
-            </button>
-          </div>
+          <button
+            v-if="node.layoutMode === 'NONE'"
+            class="section-add"
+            title="Add auto layout (Shift+A)"
+            @click="store.setLayoutMode(node.id, 'VERTICAL')"
+          >
+            +
+          </button>
+          <button
+            v-else
+            class="section-add"
+            title="Remove auto layout"
+            @click="store.setLayoutMode(node.id, 'NONE')"
+          >
+            −
+          </button>
         </div>
 
         <template v-if="node.layoutMode !== 'NONE'">
-          <div class="input-row" style="margin-top: 6px">
-            <label class="prop-input">
-              <span class="prop-label" title="Gap">⇥</span>
+          <!-- Direction -->
+          <div class="layout-direction-row">
+            <button
+              class="dir-btn"
+              :class="{ active: node.layoutMode === 'VERTICAL' }"
+              title="Vertical layout"
+              @click="store.setLayoutMode(node.id, 'VERTICAL')"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <rect x="3" y="2" width="10" height="3" rx="0.5" fill="currentColor" />
+                <rect x="3" y="6.5" width="10" height="3" rx="0.5" fill="currentColor" />
+                <rect x="3" y="11" width="10" height="3" rx="0.5" fill="currentColor" />
+              </svg>
+            </button>
+            <button
+              class="dir-btn"
+              :class="{ active: node.layoutMode === 'HORIZONTAL' }"
+              title="Horizontal layout"
+              @click="store.setLayoutMode(node.id, 'HORIZONTAL')"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <rect x="2" y="3" width="3" height="10" rx="0.5" fill="currentColor" />
+                <rect x="6.5" y="3" width="3" height="10" rx="0.5" fill="currentColor" />
+                <rect x="11" y="3" width="3" height="10" rx="0.5" fill="currentColor" />
+              </svg>
+            </button>
+            <button
+              class="dir-btn"
+              :class="{ active: node.layoutWrap === 'WRAP' }"
+              title="Wrap"
+              @click="updateProp('layoutWrap', node.layoutWrap === 'WRAP' ? 'NO_WRAP' : 'WRAP')"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <rect x="2" y="2" width="5" height="5" rx="0.5" fill="currentColor" />
+                <rect x="9" y="2" width="5" height="5" rx="0.5" fill="currentColor" />
+                <rect x="2" y="9" width="5" height="5" rx="0.5" fill="currentColor" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Alignment grid + Gap -->
+          <div class="layout-align-gap-row">
+            <div class="align-grid">
+              <button
+                v-for="(a, i) in ALIGN_GRID"
+                :key="i"
+                class="align-dot"
+                :class="{
+                  active:
+                    node.primaryAxisAlign === a.primary &&
+                    node.counterAxisAlign === a.counter
+                }"
+                @click="setAlignment(a.primary, a.counter)"
+              >
+                <span class="dot" />
+              </button>
+            </div>
+            <div class="gap-input">
+              <svg class="gap-icon" width="14" height="14" viewBox="0 0 14 14">
+                <rect x="0" y="1" width="4" height="12" rx="0.5" fill="currentColor" opacity="0.4" />
+                <rect x="5" y="5" width="4" height="4" rx="0.5" fill="currentColor" />
+                <rect x="10" y="1" width="4" height="12" rx="0.5" fill="currentColor" opacity="0.4" />
+              </svg>
               <input
                 type="number"
                 :value="node.itemSpacing"
                 min="0"
                 @change="updateProp('itemSpacing', +($event.target as HTMLInputElement).value)"
               />
-            </label>
+            </div>
           </div>
 
-          <div class="input-row" style="margin-top: 4px">
-            <label class="prop-input">
-              <span class="prop-label" title="Padding top">↑</span>
-              <input
-                type="number"
-                :value="node.paddingTop"
-                min="0"
-                @change="updateProp('paddingTop', +($event.target as HTMLInputElement).value)"
-              />
-            </label>
-            <label class="prop-input">
-              <span class="prop-label" title="Padding right">→</span>
-              <input
-                type="number"
-                :value="node.paddingRight"
-                min="0"
-                @change="updateProp('paddingRight', +($event.target as HTMLInputElement).value)"
-              />
-            </label>
-          </div>
-          <div class="input-row">
-            <label class="prop-input">
-              <span class="prop-label" title="Padding bottom">↓</span>
-              <input
-                type="number"
-                :value="node.paddingBottom"
-                min="0"
-                @change="updateProp('paddingBottom', +($event.target as HTMLInputElement).value)"
-              />
-            </label>
-            <label class="prop-input">
-              <span class="prop-label" title="Padding left">←</span>
-              <input
-                type="number"
-                :value="node.paddingLeft"
-                min="0"
-                @change="updateProp('paddingLeft', +($event.target as HTMLInputElement).value)"
-              />
-            </label>
-          </div>
-
-          <div class="input-row" style="margin-top: 4px">
-            <label class="prop-input">
-              <span class="prop-label" title="Align">⊞</span>
-              <select
-                :value="node.primaryAxisAlign"
-                @change="updateProp('primaryAxisAlign', ($event.target as HTMLSelectElement).value)"
-              >
-                <option value="MIN">Start</option>
-                <option value="CENTER">Center</option>
-                <option value="MAX">End</option>
-                <option value="SPACE_BETWEEN">Space between</option>
-              </select>
-            </label>
-          </div>
-          <div class="input-row">
-            <label class="prop-input">
-              <span class="prop-label" title="Cross align">⊟</span>
-              <select
-                :value="node.counterAxisAlign"
-                @change="updateProp('counterAxisAlign', ($event.target as HTMLSelectElement).value)"
-              >
-                <option value="MIN">Start</option>
-                <option value="CENTER">Center</option>
-                <option value="MAX">End</option>
-                <option value="STRETCH">Stretch</option>
-                <option value="BASELINE">Baseline</option>
-              </select>
-            </label>
+          <!-- Padding -->
+          <div class="layout-padding-row">
+            <template v-if="showIndividualPadding || !hasUniformPadding()">
+              <div class="padding-grid">
+                <div class="pad-cell pad-top">
+                  <input
+                    type="number"
+                    :value="node.paddingTop"
+                    min="0"
+                    @change="updateProp('paddingTop', +($event.target as HTMLInputElement).value)"
+                  />
+                </div>
+                <div class="pad-cell pad-right">
+                  <input
+                    type="number"
+                    :value="node.paddingRight"
+                    min="0"
+                    @change="updateProp('paddingRight', +($event.target as HTMLInputElement).value)"
+                  />
+                </div>
+                <div class="pad-cell pad-bottom">
+                  <input
+                    type="number"
+                    :value="node.paddingBottom"
+                    min="0"
+                    @change="updateProp('paddingBottom', +($event.target as HTMLInputElement).value)"
+                  />
+                </div>
+                <div class="pad-cell pad-left">
+                  <input
+                    type="number"
+                    :value="node.paddingLeft"
+                    min="0"
+                    @change="updateProp('paddingLeft', +($event.target as HTMLInputElement).value)"
+                  />
+                </div>
+              </div>
+            </template>
+            <template v-else>
+              <div class="padding-uniform">
+                <svg class="pad-icon" width="14" height="14" viewBox="0 0 14 14">
+                  <rect x="0" y="0" width="14" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1" />
+                  <rect x="3" y="3" width="8" height="8" rx="1" fill="currentColor" opacity="0.3" />
+                </svg>
+                <input
+                  type="number"
+                  :value="node.paddingTop"
+                  min="0"
+                  @change="setUniformPadding(+($event.target as HTMLInputElement).value)"
+                />
+              </div>
+            </template>
+            <button
+              class="pad-toggle"
+              :class="{ active: showIndividualPadding || !hasUniformPadding() }"
+              title="Individual padding"
+              @click="showIndividualPadding = !showIndividualPadding"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14">
+                <rect x="0" y="0" width="14" height="4" rx="1" fill="currentColor" opacity="0.6" />
+                <rect x="10" y="0" width="4" height="14" rx="1" fill="currentColor" opacity="0.6" />
+                <rect x="0" y="10" width="14" height="4" rx="1" fill="currentColor" opacity="0.6" />
+                <rect x="0" y="0" width="4" height="14" rx="1" fill="currentColor" opacity="0.6" />
+              </svg>
+            </button>
           </div>
         </template>
       </div>
@@ -599,31 +813,266 @@ function colorHex(c: Color) {
   color: var(--text);
 }
 
-.layout-toggles {
+.dim-input {
   display: flex;
-  gap: 2px;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  position: relative;
 }
 
-.layout-btn {
-  background: transparent;
+.dim-input input[type='number'] {
+  flex: 1;
+  min-width: 0;
+  background: var(--input-bg);
   border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  padding: 3px 6px;
+  font: inherit;
+  font-size: 12px;
+}
+
+.sizing-badge {
+  background: transparent;
+  border: none;
   color: var(--text-muted);
+  font-size: 10px;
+  cursor: pointer;
+  padding: 1px 4px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.sizing-badge:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.sizing-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: var(--panel-bg, #2c2c2c);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  min-width: 160px;
+}
+
+.sizing-dropdown button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
   font-size: 12px;
   cursor: pointer;
-  padding: 2px 6px;
   border-radius: 4px;
-  line-height: 1;
+  text-align: left;
 }
 
-.layout-btn.active {
+.sizing-dropdown button:hover {
+  background: var(--hover);
+}
+
+.sizing-dropdown button.selected {
+  color: var(--accent, #3b82f6);
+}
+
+.sizing-icon {
+  width: 16px;
+  text-align: center;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.layout-direction-row {
+  display: flex;
+  gap: 2px;
+  margin-top: 6px;
+}
+
+.dir-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.dir-btn.active {
   background: var(--accent, #3b82f6);
   color: white;
   border-color: var(--accent, #3b82f6);
 }
 
-.layout-btn:hover:not(.active) {
+.dir-btn:hover:not(.active) {
   background: var(--hover);
   color: var(--text);
+}
+
+.layout-align-gap-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.align-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  padding: 4px;
+  background: var(--input-bg);
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+.align-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 2px;
+}
+
+.align-dot:hover {
+  background: var(--hover);
+}
+
+.align-dot .dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  opacity: 0.4;
+}
+
+.align-dot.active .dot {
+  background: var(--accent, #3b82f6);
+  opacity: 1;
+  width: 6px;
+  height: 6px;
+}
+
+.gap-input {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.gap-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.gap-input input[type='number'] {
+  flex: 1;
+  min-width: 0;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  padding: 3px 6px;
+  font: inherit;
+  font-size: 12px;
+}
+
+.layout-padding-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.padding-uniform {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.pad-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.padding-uniform input[type='number'] {
+  flex: 1;
+  min-width: 0;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  padding: 3px 6px;
+  font: inherit;
+  font-size: 12px;
+}
+
+.padding-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  flex: 1;
+}
+
+.pad-cell input[type='number'] {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  padding: 3px 4px;
+  font: inherit;
+  font-size: 11px;
+  text-align: center;
+}
+
+.pad-cell input::-webkit-inner-spin-button {
+  display: none;
+}
+
+.pad-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.pad-toggle:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.pad-toggle.active {
+  background: var(--accent, #3b82f6);
+  color: white;
+  border-color: var(--accent, #3b82f6);
 }
 
 .prop-input select {
