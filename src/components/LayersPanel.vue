@@ -230,10 +230,12 @@ function updateDropTarget(ev: PointerEvent) {
             >
               <span
                 v-if="item.hasChildren"
-                class="flex w-4 shrink-0 cursor-pointer items-center justify-center text-xs text-muted transition-transform hover:text-surface"
-                :class="isExpanded ? '' : '-rotate-90'"
+                class="flex w-4 shrink-0 cursor-pointer items-center justify-center text-muted transition-transform hover:text-surface"
+                :class="isExpanded ? 'rotate-0' : '-rotate-90'"
                 @click.stop="toggleExpand(item.value.id)"
-              >▾</span>
+              >
+                <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 2.5L4 5.5L6.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
               <span v-else class="w-4 shrink-0" />
               <span class="w-3.5 shrink-0 text-center text-[11px] opacity-70">{{ nodeIcon(item.value.type) }}</span>
               <span class="truncate">{{ item.value.name }}</span>
