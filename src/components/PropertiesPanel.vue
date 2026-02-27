@@ -756,6 +756,28 @@ function colorHex(c: Color) {
 .prop-input input[type='range'] {
   flex: 1;
   min-width: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.prop-input input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text);
+  border: none;
+  cursor: pointer;
+}
+
+.prop-input input[type='range']::-webkit-slider-thumb:hover {
+  background: var(--accent, #3b82f6);
 }
 
 .prop-value {
