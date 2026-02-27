@@ -9,7 +9,7 @@ const store = useEditorStore()
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 
 useCanvas(canvasRef, store)
-const { onMouseDown, onMouseMove, onMouseUp, cursorOverride } = useCanvasInput(canvasRef, store)
+const { cursorOverride } = useCanvasInput(canvasRef, store)
 
 const cursor = computed(() => {
   if (cursorOverride.value) return cursorOverride.value
@@ -21,15 +21,7 @@ const cursor = computed(() => {
 </script>
 
 <template>
-  <canvas
-    ref="canvasRef"
-    :style="{ cursor }"
-    class="editor-canvas"
-    @mousedown="onMouseDown"
-    @mousemove="onMouseMove"
-    @mouseup="onMouseUp"
-    @mouseleave="onMouseUp"
-  />
+  <canvas ref="canvasRef" :style="{ cursor }" class="editor-canvas" />
 </template>
 
 <style scoped>

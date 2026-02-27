@@ -1,11 +1,11 @@
-import { onMounted, onUnmounted } from 'vue'
+import { useEventListener } from '@vueuse/core'
 
 import { TOOL_SHORTCUTS } from '../stores/editor'
 
 import type { EditorStore } from '../stores/editor'
 
 export function useKeyboard(store: EditorStore) {
-  function onKeyDown(e: KeyboardEvent) {
+  useEventListener(window, 'keydown', (e: KeyboardEvent) => {
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
 
     const tool = TOOL_SHORTCUTS[e.key.toLowerCase()]
@@ -41,8 +41,5 @@ export function useKeyboard(store: EditorStore) {
       store.clearSelection()
       store.setTool('SELECT')
     }
-  }
-
-  onMounted(() => window.addEventListener('keydown', onKeyDown))
-  onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
+  })
 }

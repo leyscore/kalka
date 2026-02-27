@@ -435,13 +435,14 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
     }
   }
 
+  useEventListener(canvasRef, 'mousedown', onMouseDown)
+  useEventListener(canvasRef, 'mousemove', onMouseMove)
+  useEventListener(canvasRef, 'mouseup', onMouseUp)
+  useEventListener(canvasRef, 'mouseleave', onMouseUp)
   useEventListener(canvasRef, 'wheel', onWheel, { passive: false })
 
   return {
     drag,
-    cursorOverride,
-    onMouseDown,
-    onMouseMove,
-    onMouseUp
+    cursorOverride
   }
 }
