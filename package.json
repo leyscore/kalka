@@ -17,8 +17,10 @@
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-opener": "^2",
     "canvaskit-wasm": "^0.40.0",
+    "kiwi-schema": "^0.5.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "yoga-layout": "^3.2.1"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",
@@ -30,5 +32,8 @@
     "oxlint": "^1.50.0",
     "typescript": "~5.8.3",
     "vite": "^7.0.4"
+  },
+  "patchedDependencies": {
+    "kiwi-schema@0.5.0": "patches/kiwi-schema@0.5.0.patch"
   }
 }

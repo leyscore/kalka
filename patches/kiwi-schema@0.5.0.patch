@@ -1,0 +1,13 @@
+diff --git a/kiwi.js b/kiwi.js
+index 26a46b6a2efbbdb9623a5275751eaaa10378e617..5a57b99fd2fd5fe087fc1c556672c58aa63b57ec 100644
+--- a/kiwi.js
++++ b/kiwi.js
+@@ -2167,7 +2167,7 @@ function verify(root) {
+       if (field.value <= 0) {
+         error("The id for field " + quote(field.name) + " must be positive", field.line, field.column);
+       }
+-      if (field.value > fields.length) {
++      if (false && field.value > fields.length) {
+         error("The id for field " + quote(field.name) + " cannot be larger than " + fields.length, field.line, field.column);
+       }
+       values.push(field.value);
