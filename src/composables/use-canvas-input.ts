@@ -534,8 +534,27 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
 
       const bounds = computeSelectionBounds(selectedNodes)
       if (bounds) {
-        const allNodes = store.graph.getChildren(store.graph.rootId)
-        const snap = computeSnap(store.state.selectedIds, bounds, allNodes)
+        // Snap against siblings in absolute coordinates
+        const firstId = [...d.originals.keys()][0]
+        const firstNode = store.graph.getNode(firstId)
+        const parentId = firstNode?.parentId ?? store.graph.rootId
+        const siblings = store.graph.getChildren(parentId)
+        const parentAbs = parentId !== store.graph.rootId
+          ? store.graph.getAbsolutePosition(parentId)
+          : { x: 0, y: 0 }
+        const absTargets = siblings.map((n) => ({
+          ...n,
+          x: n.x + parentAbs.x,
+          y: n.y + parentAbs.y
+        }))
+        // Convert moving bounds to absolute coords too
+        const absBounds = {
+          x: bounds.x + parentAbs.x,
+          y: bounds.y + parentAbs.y,
+          width: bounds.width,
+          height: bounds.height
+        }
+        const snap = computeSnap(store.state.selectedIds, absBounds, absTargets)
         dx += snap.dx
         dy += snap.dy
         store.setSnapGuides(snap.guides)
