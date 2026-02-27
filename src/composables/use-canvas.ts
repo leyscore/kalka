@@ -42,6 +42,7 @@ export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, store: Edito
     }
 
     renderer = new SkiaRenderer(ck, surface)
+    renderer.loadFonts().then(() => render())
     render()
   }
 

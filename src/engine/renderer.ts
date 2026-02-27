@@ -1,6 +1,14 @@
 import type { SceneNode, SceneGraph, Fill } from './scene-graph'
 import type { SnapGuide } from './snap'
-import type { CanvasKit, Surface, Canvas, Paint, Font } from 'canvaskit-wasm'
+import type {
+  CanvasKit,
+  Surface,
+  Canvas,
+  Paint,
+  Font,
+  FontMgr,
+  TypefaceFontProvider
+} from 'canvaskit-wasm'
 
 export interface RenderOverlays {
   marquee?: { x: number; y: number; width: number; height: number } | null
@@ -17,6 +25,9 @@ export class SkiaRenderer {
   private selectionPaint: Paint
   private snapPaint: Paint
   private textFont: Font | null = null
+  private fontMgr: FontMgr | null = null
+  private fontProvider: TypefaceFontProvider | null = null
+  private fontsLoaded = false
 
   panX = 0
   panY = 0
@@ -48,6 +59,23 @@ export class SkiaRenderer {
     this.snapPaint.setAntiAlias(true)
 
     this.textFont = new ck.Font(null, 14)
+  }
+
+  async loadFonts(): Promise<void> {
+    const response = await fetch('/Inter-Regular.ttf')
+    const fontData = await response.arrayBuffer()
+
+    this.fontProvider = this.ck.TypefaceFontProvider.Make()
+    this.fontProvider.registerFont(fontData, 'Inter')
+
+    const typeface = this.ck.Typeface.MakeFreeTypeFaceFromData(fontData)
+    if (typeface) {
+      this.textFont?.delete()
+      this.textFont = new this.ck.Font(typeface, 14)
+    }
+
+    this.fontMgr = this.ck.FontMgr.FromData(fontData) ?? null
+    this.fontsLoaded = true
   }
 
   render(graph: SceneGraph, selectedIds: Set<string>, overlays: RenderOverlays = {}): void {
@@ -466,11 +494,43 @@ export class SkiaRenderer {
   }
 
   private renderText(canvas: Canvas, node: SceneNode): void {
-    if (!this.textFont || !('text' in node)) return
-    const text = (node as SceneNode & { text?: string }).text ?? ''
+    const text = node.text
     if (!text) return
 
-    canvas.drawText(text, 0, 14, this.fillPaint, this.textFont)
+    if (this.fontsLoaded && this.fontProvider) {
+      const paraStyle = new this.ck.ParagraphStyle({
+        textAlign: this.getTextAlign(node.textAlignHorizontal),
+        textStyle: {
+          color: this.fillPaint.getColor(),
+          fontFamilies: [node.fontFamily || 'Inter'],
+          fontSize: node.fontSize || 14,
+          letterSpacing: node.letterSpacing || 0,
+          heightMultiplier: node.lineHeight ? node.lineHeight / (node.fontSize || 14) : undefined
+        }
+      })
+      const builder = this.ck.ParagraphBuilder.MakeFromFontProvider(paraStyle, this.fontProvider)
+      builder.addText(text)
+      const paragraph = builder.build()
+      paragraph.layout(node.width || 1e6)
+      canvas.drawParagraph(paragraph, 0, 0)
+      paragraph.delete()
+      builder.delete()
+    } else if (this.textFont) {
+      canvas.drawText(text, 0, node.fontSize || 14, this.fillPaint, this.textFont)
+    }
+  }
+
+  private getTextAlign(align: string) {
+    switch (align) {
+      case 'CENTER':
+        return this.ck.TextAlign.Center
+      case 'RIGHT':
+        return this.ck.TextAlign.Right
+      case 'JUSTIFIED':
+        return this.ck.TextAlign.Justify
+      default:
+        return this.ck.TextAlign.Left
+    }
   }
 
   private applyFill(fill: Fill): void {
@@ -494,6 +554,8 @@ export class SkiaRenderer {
     this.selectionPaint.delete()
     this.snapPaint.delete()
     this.textFont?.delete()
+    this.fontMgr?.delete()
+    this.fontProvider?.delete()
     this.surface.delete()
   }
 }

@@ -624,6 +624,16 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
     }
   }
 
+  function onDblClick(e: MouseEvent) {
+    const { cx, cy } = getCoords(e)
+    const hit = store.graph.hitTest(cx, cy)
+    if (hit && hit.type === 'TEXT') {
+      store.select([hit.id])
+      store.startTextEditing(hit.id)
+    }
+  }
+
+  useEventListener(canvasRef, 'dblclick', onDblClick)
   useEventListener(canvasRef, 'mousedown', onMouseDown)
   useEventListener(canvasRef, 'mousemove', onMouseMove)
   useEventListener(canvasRef, 'mouseup', onMouseUp)

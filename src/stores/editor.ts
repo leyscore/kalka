@@ -71,6 +71,7 @@ export function createEditorStore() {
     snapGuides: [] as SnapGuide[],
     rotationPreview: null as { nodeId: string; angle: number } | null,
     dropTargetId: null as string | null,
+    editingTextId: null as string | null,
     panX: 0,
     panY: 0,
     zoom: 1,
@@ -144,6 +145,16 @@ export function createEditorStore() {
     for (const id of nodeIds) {
       graph.reparentNode(id, newParentId)
     }
+    requestRender()
+  }
+
+  function startTextEditing(nodeId: string) {
+    state.editingTextId = nodeId
+  }
+
+  function commitTextEdit(nodeId: string, text: string) {
+    graph.updateNode(nodeId, { text })
+    state.editingTextId = null
     requestRender()
   }
 
@@ -312,6 +323,8 @@ export function createEditorStore() {
     setRotationPreview,
     setDropTarget,
     reparentNodes,
+    startTextEditing,
+    commitTextEdit,
     updateNode,
     createShape,
     duplicateSelected,
