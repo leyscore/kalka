@@ -278,7 +278,7 @@ export function createEditorStore() {
   }
 
   function applyZoom(delta: number, centerX: number, centerY: number) {
-    const factor = delta < 0 ? 1.1 : 0.9
+    const factor = Math.pow(0.99, delta)
     const newZoom = Math.max(0.02, Math.min(256, state.zoom * factor))
     state.panX = centerX - (centerX - state.panX) * (newZoom / state.zoom)
     state.panY = centerY - (centerY - state.panY) * (newZoom / state.zoom)
