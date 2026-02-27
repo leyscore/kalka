@@ -9,10 +9,11 @@ import {
   prefetchFigmaSchema
 } from '../engine/clipboard'
 import { readFigFile } from '../engine/fig-file'
+import { computeLayout, computeAllLayouts } from '../engine/layout'
 import { SceneGraph } from '../engine/scene-graph'
 import { UndoManager } from '../engine/undo'
 
-import type { SceneNode, NodeType, Fill } from '../engine/scene-graph'
+import type { SceneNode, NodeType, Fill, LayoutMode } from '../engine/scene-graph'
 import type { SnapGuide } from '../engine/snap'
 
 export type Tool = 'SELECT' | 'FRAME' | 'RECTANGLE' | 'ELLIPSE' | 'LINE' | 'TEXT' | 'PEN' | 'HAND'
@@ -173,6 +174,7 @@ export function createEditorStore() {
     try {
       const imported = await readFigFile(file)
       graph = imported
+      computeAllLayouts(graph)
       undo.clear()
       state.selectedIds = new Set()
       state.panX = 0
@@ -184,8 +186,49 @@ export function createEditorStore() {
     }
   }
 
+  function runLayoutForNode(id: string) {
+    const node = graph.getNode(id)
+    if (!node) return
+
+    if (node.layoutMode !== 'NONE') {
+      computeLayout(graph, id)
+    }
+
+    let parent = node.parentId ? graph.getNode(node.parentId) : undefined
+    while (parent) {
+      if (parent.layoutMode !== 'NONE') {
+        computeLayout(graph, parent.id)
+      }
+      parent = parent.parentId ? graph.getNode(parent.parentId) : undefined
+    }
+  }
+
   function updateNode(id: string, changes: Partial<SceneNode>) {
     graph.updateNode(id, changes)
+    runLayoutForNode(id)
+    requestRender()
+  }
+
+  function setLayoutMode(id: string, mode: LayoutMode) {
+    const node = graph.getNode(id)
+    if (!node) return
+
+    const updates: Partial<SceneNode> = { layoutMode: mode }
+    if (mode !== 'NONE' && node.layoutMode === 'NONE') {
+      updates.itemSpacing = 0
+      updates.paddingTop = 0
+      updates.paddingRight = 0
+      updates.paddingBottom = 0
+      updates.paddingLeft = 0
+      updates.primaryAxisSizing = 'HUG'
+      updates.counterAxisSizing = 'HUG'
+      updates.primaryAxisAlign = 'MIN'
+      updates.counterAxisAlign = 'MIN'
+    }
+
+    graph.updateNode(id, updates)
+    if (mode !== 'NONE') computeLayout(graph, id)
+    runLayoutForNode(id)
     requestRender()
   }
 
@@ -416,6 +459,7 @@ export function createEditorStore() {
     commitTextEdit,
     openFigFile,
     updateNode,
+    setLayoutMode,
     createShape,
     duplicateSelected,
     writeCopyData,

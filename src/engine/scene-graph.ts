@@ -46,6 +46,12 @@ export interface Effect {
   visible: boolean
 }
 
+export type LayoutMode = 'NONE' | 'HORIZONTAL' | 'VERTICAL'
+export type LayoutSizing = 'FIXED' | 'HUG' | 'FILL'
+export type LayoutAlign = 'MIN' | 'CENTER' | 'MAX' | 'SPACE_BETWEEN'
+export type LayoutCounterAlign = 'MIN' | 'CENTER' | 'MAX' | 'STRETCH' | 'BASELINE'
+export type LayoutWrap = 'NO_WRAP' | 'WRAP'
+
 export interface SceneNode {
   id: string
   type: NodeType
@@ -82,6 +88,23 @@ export interface SceneNode {
   textAlignHorizontal: 'LEFT' | 'CENTER' | 'RIGHT' | 'JUSTIFIED'
   lineHeight: number | null
   letterSpacing: number
+
+  layoutMode: LayoutMode
+  layoutWrap: LayoutWrap
+  primaryAxisAlign: LayoutAlign
+  counterAxisAlign: LayoutCounterAlign
+  primaryAxisSizing: LayoutSizing
+  counterAxisSizing: LayoutSizing
+  itemSpacing: number
+  counterAxisSpacing: number
+  paddingTop: number
+  paddingRight: number
+  paddingBottom: number
+  paddingLeft: number
+
+  layoutPositioning: 'AUTO' | 'ABSOLUTE'
+  layoutGrow: number
+  layoutAlignSelf: 'AUTO' | 'STRETCH'
 }
 
 let nextLocalID = 1
@@ -122,6 +145,21 @@ function createDefaultNode(type: NodeType, overrides: Partial<SceneNode> = {}): 
     textAlignHorizontal: 'LEFT',
     lineHeight: null,
     letterSpacing: 0,
+    layoutMode: 'NONE',
+    layoutWrap: 'NO_WRAP',
+    primaryAxisAlign: 'MIN',
+    counterAxisAlign: 'MIN',
+    primaryAxisSizing: 'FIXED',
+    counterAxisSizing: 'FIXED',
+    itemSpacing: 0,
+    counterAxisSpacing: 0,
+    paddingTop: 0,
+    paddingRight: 0,
+    paddingBottom: 0,
+    paddingLeft: 0,
+    layoutPositioning: 'AUTO',
+    layoutGrow: 0,
+    layoutAlignSelf: 'AUTO',
     ...overrides
   }
 }

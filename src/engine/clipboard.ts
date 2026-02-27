@@ -1,7 +1,7 @@
 import { decodeBinarySchema, compileSchema, ByteBuffer } from 'kiwi-schema'
 import { inflateSync, deflateSync } from 'fflate'
 
-import type { SceneGraph, SceneNode, Fill, Stroke, Color } from './scene-graph'
+import type { SceneGraph, SceneNode, Fill, Stroke, Color, LayoutMode, LayoutSizing, LayoutAlign, LayoutCounterAlign } from './scene-graph'
 
 interface FigmaClipboardMeta {
   fileKey: string
@@ -288,7 +288,21 @@ export function importClipboardNodes(
       fontSize: nc.fontSize ?? 14,
       fontFamily: nc.fontName?.family ?? 'Inter',
       textAlignHorizontal:
-        (nc.textAlignHorizontal as 'LEFT' | 'CENTER' | 'RIGHT' | 'JUSTIFIED') ?? 'LEFT'
+        (nc.textAlignHorizontal as 'LEFT' | 'CENTER' | 'RIGHT' | 'JUSTIFIED') ?? 'LEFT',
+      layoutMode: mapLayoutMode(nc.stackMode as string),
+      itemSpacing: (nc.stackSpacing as number) ?? 0,
+      paddingTop: (nc.stackVerticalPadding as number) ?? (nc.stackPadding as number) ?? 0,
+      paddingBottom: (nc.stackPaddingBottom as number) ?? (nc.stackVerticalPadding as number) ?? (nc.stackPadding as number) ?? 0,
+      paddingLeft: (nc.stackHorizontalPadding as number) ?? (nc.stackPadding as number) ?? 0,
+      paddingRight: (nc.stackPaddingRight as number) ?? (nc.stackHorizontalPadding as number) ?? (nc.stackPadding as number) ?? 0,
+      primaryAxisSizing: mapSizing(nc.stackPrimarySizing as string),
+      counterAxisSizing: mapSizing(nc.stackCounterSizing as string),
+      primaryAxisAlign: mapPrimaryAlign(nc.stackPrimaryAlignItems as string ?? nc.stackJustify as string),
+      counterAxisAlign: mapCounterAlign(nc.stackCounterAlignItems as string ?? nc.stackCounterAlign as string),
+      layoutWrap: (nc.stackWrap as string) === 'WRAP' ? 'WRAP' as const : 'NO_WRAP' as const,
+      counterAxisSpacing: (nc.stackCounterSpacing as number) ?? 0,
+      layoutPositioning: (nc.stackPositioning as string) === 'ABSOLUTE' ? 'ABSOLUTE' as const : 'AUTO' as const,
+      layoutGrow: (nc.stackChildPrimaryGrow as number) ?? 0
     })
 
     created.set(figmaId, node.id)
@@ -315,6 +329,33 @@ export function importClipboardNodes(
   }
 
   return createdIds
+}
+
+function mapLayoutMode(mode?: string): LayoutMode {
+  if (mode === 'HORIZONTAL') return 'HORIZONTAL'
+  if (mode === 'VERTICAL') return 'VERTICAL'
+  return 'NONE'
+}
+
+function mapSizing(sizing?: string): LayoutSizing {
+  if (sizing === 'RESIZE_TO_FIT' || sizing === 'RESIZE_TO_FIT_WITH_IMPLICIT_SIZE') return 'HUG'
+  if (sizing === 'FILL') return 'FILL'
+  return 'FIXED'
+}
+
+function mapPrimaryAlign(align?: string): LayoutAlign {
+  if (align === 'CENTER') return 'CENTER'
+  if (align === 'MAX') return 'MAX'
+  if (align === 'SPACE_BETWEEN' || align === 'SPACE_EVENLY') return 'SPACE_BETWEEN'
+  return 'MIN'
+}
+
+function mapCounterAlign(align?: string): LayoutCounterAlign {
+  if (align === 'CENTER') return 'CENTER'
+  if (align === 'MAX') return 'MAX'
+  if (align === 'STRETCH') return 'STRETCH'
+  if (align === 'BASELINE') return 'BASELINE'
+  return 'MIN'
 }
 
 function mapNodeType(type?: string): SceneNode['type'] {
@@ -470,6 +511,24 @@ function sceneNodeToKiwi(
 
   if (node.type === 'FRAME' || node.type === 'GROUP') {
     nc.frameMaskDisabled = node.type === 'GROUP'
+  }
+
+  if (node.layoutMode !== 'NONE') {
+    nc.stackMode = node.layoutMode
+    nc.stackSpacing = node.itemSpacing
+    nc.stackVerticalPadding = node.paddingTop
+    nc.stackHorizontalPadding = node.paddingLeft
+    nc.stackPaddingBottom = node.paddingBottom
+    nc.stackPaddingRight = node.paddingRight
+    nc.stackPrimarySizing = node.primaryAxisSizing === 'HUG' ? 'RESIZE_TO_FIT' : 'FIXED'
+    nc.stackCounterSizing = node.counterAxisSizing === 'HUG' ? 'RESIZE_TO_FIT_WITH_IMPLICIT_SIZE' : undefined
+  }
+
+  if (node.layoutPositioning === 'ABSOLUTE') {
+    nc.stackPositioning = 'ABSOLUTE'
+  }
+  if (node.layoutGrow > 0) {
+    nc.stackChildPrimaryGrow = node.layoutGrow
   }
 
   const result: KiwiNodeChange[] = [nc]

@@ -202,6 +202,124 @@ function colorHex(c: Color) {
         </div>
       </div>
 
+      <!-- Auto Layout -->
+      <div v-if="node.type === 'FRAME'" class="section">
+        <div class="section-header">
+          <label class="section-label">Auto layout</label>
+          <div class="layout-toggles">
+            <button
+              class="layout-btn"
+              :class="{ active: node.layoutMode === 'NONE' }"
+              title="No auto layout"
+              @click="store.setLayoutMode(node.id, 'NONE')"
+            >
+              ✕
+            </button>
+            <button
+              class="layout-btn"
+              :class="{ active: node.layoutMode === 'VERTICAL' }"
+              title="Vertical"
+              @click="store.setLayoutMode(node.id, 'VERTICAL')"
+            >
+              ↕
+            </button>
+            <button
+              class="layout-btn"
+              :class="{ active: node.layoutMode === 'HORIZONTAL' }"
+              title="Horizontal"
+              @click="store.setLayoutMode(node.id, 'HORIZONTAL')"
+            >
+              ↔
+            </button>
+          </div>
+        </div>
+
+        <template v-if="node.layoutMode !== 'NONE'">
+          <div class="input-row" style="margin-top: 6px">
+            <label class="prop-input">
+              <span class="prop-label" title="Gap">⇥</span>
+              <input
+                type="number"
+                :value="node.itemSpacing"
+                min="0"
+                @change="updateProp('itemSpacing', +($event.target as HTMLInputElement).value)"
+              />
+            </label>
+          </div>
+
+          <div class="input-row" style="margin-top: 4px">
+            <label class="prop-input">
+              <span class="prop-label" title="Padding top">↑</span>
+              <input
+                type="number"
+                :value="node.paddingTop"
+                min="0"
+                @change="updateProp('paddingTop', +($event.target as HTMLInputElement).value)"
+              />
+            </label>
+            <label class="prop-input">
+              <span class="prop-label" title="Padding right">→</span>
+              <input
+                type="number"
+                :value="node.paddingRight"
+                min="0"
+                @change="updateProp('paddingRight', +($event.target as HTMLInputElement).value)"
+              />
+            </label>
+          </div>
+          <div class="input-row">
+            <label class="prop-input">
+              <span class="prop-label" title="Padding bottom">↓</span>
+              <input
+                type="number"
+                :value="node.paddingBottom"
+                min="0"
+                @change="updateProp('paddingBottom', +($event.target as HTMLInputElement).value)"
+              />
+            </label>
+            <label class="prop-input">
+              <span class="prop-label" title="Padding left">←</span>
+              <input
+                type="number"
+                :value="node.paddingLeft"
+                min="0"
+                @change="updateProp('paddingLeft', +($event.target as HTMLInputElement).value)"
+              />
+            </label>
+          </div>
+
+          <div class="input-row" style="margin-top: 4px">
+            <label class="prop-input">
+              <span class="prop-label" title="Align">⊞</span>
+              <select
+                :value="node.primaryAxisAlign"
+                @change="updateProp('primaryAxisAlign', ($event.target as HTMLSelectElement).value)"
+              >
+                <option value="MIN">Start</option>
+                <option value="CENTER">Center</option>
+                <option value="MAX">End</option>
+                <option value="SPACE_BETWEEN">Space between</option>
+              </select>
+            </label>
+          </div>
+          <div class="input-row">
+            <label class="prop-input">
+              <span class="prop-label" title="Cross align">⊟</span>
+              <select
+                :value="node.counterAxisAlign"
+                @change="updateProp('counterAxisAlign', ($event.target as HTMLSelectElement).value)"
+              >
+                <option value="MIN">Start</option>
+                <option value="CENTER">Center</option>
+                <option value="MAX">End</option>
+                <option value="STRETCH">Stretch</option>
+                <option value="BASELINE">Baseline</option>
+              </select>
+            </label>
+          </div>
+        </template>
+      </div>
+
       <!-- Appearance -->
       <div class="section">
         <label class="section-label">Appearance</label>
@@ -479,6 +597,45 @@ function colorHex(c: Color) {
 
 .remove-btn:hover {
   color: var(--text);
+}
+
+.layout-toggles {
+  display: flex;
+  gap: 2px;
+}
+
+.layout-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.layout-btn.active {
+  background: var(--accent, #3b82f6);
+  color: white;
+  border-color: var(--accent, #3b82f6);
+}
+
+.layout-btn:hover:not(.active) {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.prop-input select {
+  flex: 1;
+  min-width: 0;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  padding: 3px 4px;
+  font: inherit;
+  font-size: 11px;
 }
 
 .stroke-weight {

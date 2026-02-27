@@ -1,7 +1,11 @@
 import { SceneGraph } from './scene-graph'
 
 import type { NodeChange, Paint, Effect as KiwiEffect, GUID } from '../kiwi/codec'
-import type { NodeType, Fill, Stroke, Effect, Color } from './scene-graph'
+import type { NodeType, Fill, Stroke, Effect, Color, LayoutMode, LayoutSizing, LayoutAlign, LayoutCounterAlign } from './scene-graph'
+
+function ext(nc: NodeChange): Record<string, unknown> {
+  return nc as unknown as Record<string, unknown>
+}
 
 function guidToString(guid: GUID): string {
   return `${guid.sessionID}:${guid.localID}`
@@ -83,6 +87,46 @@ function mapNodeType(type?: string): NodeType {
   }
 }
 
+function mapStackMode(mode?: string): LayoutMode {
+  switch (mode) {
+    case 'HORIZONTAL': return 'HORIZONTAL'
+    case 'VERTICAL': return 'VERTICAL'
+    default: return 'NONE'
+  }
+}
+
+function mapStackSizing(sizing?: string): LayoutSizing {
+  switch (sizing) {
+    case 'RESIZE_TO_FIT':
+    case 'RESIZE_TO_FIT_WITH_IMPLICIT_SIZE':
+      return 'HUG'
+    case 'FILL':
+      return 'FILL'
+    default:
+      return 'FIXED'
+  }
+}
+
+function mapStackJustify(justify?: string): LayoutAlign {
+  switch (justify) {
+    case 'CENTER': return 'CENTER'
+    case 'MAX': return 'MAX'
+    case 'SPACE_BETWEEN':
+    case 'SPACE_EVENLY': return 'SPACE_BETWEEN'
+    default: return 'MIN'
+  }
+}
+
+function mapStackCounterAlign(align?: string): LayoutCounterAlign {
+  switch (align) {
+    case 'CENTER': return 'CENTER'
+    case 'MAX': return 'MAX'
+    case 'STRETCH': return 'STRETCH'
+    case 'BASELINE': return 'BASELINE'
+    default: return 'MIN'
+  }
+}
+
 export function importNodeChanges(nodeChanges: NodeChange[]): SceneGraph {
   const graph = new SceneGraph()
 
@@ -159,7 +203,21 @@ export function importNodeChanges(nodeChanges: NodeChange[]): SceneGraph {
       textAlignHorizontal:
         (nc.textAlignHorizontal as 'LEFT' | 'CENTER' | 'RIGHT' | 'JUSTIFIED') ?? 'LEFT',
       lineHeight: nc.lineHeight?.value ?? null,
-      letterSpacing: nc.letterSpacing?.value ?? 0
+      letterSpacing: nc.letterSpacing?.value ?? 0,
+      layoutMode: mapStackMode(nc.stackMode),
+      itemSpacing: nc.stackSpacing ?? 0,
+      paddingTop: nc.stackVerticalPadding ?? nc.stackPadding ?? 0,
+      paddingBottom: nc.stackPaddingBottom ?? nc.stackVerticalPadding ?? nc.stackPadding ?? 0,
+      paddingLeft: nc.stackHorizontalPadding ?? nc.stackPadding ?? 0,
+      paddingRight: nc.stackPaddingRight ?? nc.stackHorizontalPadding ?? nc.stackPadding ?? 0,
+      primaryAxisSizing: mapStackSizing(nc.stackPrimarySizing),
+      counterAxisSizing: mapStackSizing(nc.stackCounterSizing),
+      primaryAxisAlign: mapStackJustify(nc.stackPrimaryAlignItems ?? nc.stackJustify),
+      counterAxisAlign: mapStackCounterAlign(nc.stackCounterAlignItems ?? nc.stackCounterAlign),
+      layoutWrap: ext(nc).stackWrap === 'WRAP' ? 'WRAP' : 'NO_WRAP',
+      counterAxisSpacing: (ext(nc).stackCounterSpacing as number) ?? 0,
+      layoutPositioning: ext(nc).stackPositioning === 'ABSOLUTE' ? 'ABSOLUTE' : 'AUTO',
+      layoutGrow: (ext(nc).stackChildPrimaryGrow as number) ?? 0
     })
 
     // Create children (find all nodes whose parent is this node)
