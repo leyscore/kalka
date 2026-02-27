@@ -60,6 +60,12 @@ export class UndoManager {
     this.redoStack = []
   }
 
+  clear(): void {
+    this.undoStack = []
+    this.redoStack = []
+    this.batchEntries = null
+  }
+
   get canUndo(): boolean {
     return this.undoStack.length > 0
   }

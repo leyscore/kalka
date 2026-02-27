@@ -4,6 +4,17 @@ import { TOOL_SHORTCUTS } from '../stores/editor'
 
 import type { EditorStore } from '../stores/editor'
 
+function openFileDialog(store: EditorStore) {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.fig'
+  input.addEventListener('change', () => {
+    const file = input.files?.[0]
+    if (file) store.openFigFile(file)
+  })
+  input.click()
+}
+
 export function useKeyboard(store: EditorStore) {
   useEventListener(window, 'keydown', (e: KeyboardEvent) => {
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
@@ -30,6 +41,9 @@ export function useKeyboard(store: EditorStore) {
       } else if (e.key === 'a') {
         e.preventDefault()
         store.selectAll()
+      } else if (e.key === 'o') {
+        e.preventDefault()
+        openFileDialog(store)
       }
     }
 

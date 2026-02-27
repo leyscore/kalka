@@ -3,9 +3,10 @@
  *
  * Uses:
  * - kiwi-schema: Binary serialization (by Evan Wallace, Figma co-founder)
- * - Bun.zstd*: Native Zstd compression (built into Bun)
+ * - fzstd: Browser-compatible Zstd decompression
  */
 
+import { decompress as zstdDecompress } from 'fzstd'
 import { compileSchema, type Schema } from 'kiwi-schema'
 
 import { isZstdCompressed, getKiwiMessageType } from './protocol.ts'
@@ -50,7 +51,7 @@ export function isCodecReady(): boolean {
  * Compress data using Zstd (Bun native)
  */
 export function compress(data: Uint8Array): Uint8Array {
-  return Bun.zstdCompressSync(data)
+  return data
 }
 
 /**
@@ -58,7 +59,7 @@ export function compress(data: Uint8Array): Uint8Array {
  */
 export function decompress(data: Uint8Array): Uint8Array {
   if (!isZstdCompressed(data)) return data
-  return Bun.zstdDecompressSync(data)
+  return zstdDecompress(data)
 }
 
 /**

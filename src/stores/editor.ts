@@ -1,5 +1,6 @@
 import { reactive, shallowRef, computed } from 'vue'
 
+import { readFigFile } from '../engine/fig-file'
 import { SceneGraph } from '../engine/scene-graph'
 import { UndoManager } from '../engine/undo'
 
@@ -61,7 +62,7 @@ const DEFAULT_FILLS: Record<string, Fill> = {
 }
 
 export function createEditorStore() {
-  const graph = new SceneGraph()
+  let graph = new SceneGraph()
   const undo = new UndoManager()
 
   const state = reactive({
@@ -156,6 +157,21 @@ export function createEditorStore() {
     graph.updateNode(nodeId, { text })
     state.editingTextId = null
     requestRender()
+  }
+
+  async function openFigFile(file: File) {
+    try {
+      const imported = await readFigFile(file)
+      graph = imported
+      undo.clear()
+      state.selectedIds = new Set()
+      state.panX = 0
+      state.panY = 0
+      state.zoom = 1
+      requestRender()
+    } catch (e) {
+      console.error('Failed to open .fig file:', e)
+    }
   }
 
   function updateNode(id: string, changes: Partial<SceneNode>) {
@@ -307,7 +323,9 @@ export function createEditorStore() {
   }
 
   return {
-    graph,
+    get graph() {
+      return graph
+    },
     undo,
     state,
     selectedNodes,
@@ -325,6 +343,7 @@ export function createEditorStore() {
     reparentNodes,
     startTextEditing,
     commitTextEdit,
+    openFigFile,
     updateNode,
     createShape,
     duplicateSelected,
