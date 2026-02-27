@@ -65,13 +65,11 @@ function onTextKeyDown(e: KeyboardEvent) {
 </script>
 
 <template>
-  <div class="canvas-container">
-    <canvas ref="canvasRef" :style="{ cursor }" class="editor-canvas" />
-
-    <!-- Inline text editor overlay -->
+  <div class="relative flex-1 min-w-0 min-h-0 overflow-hidden">
+    <canvas ref="canvasRef" :style="{ cursor }" class="block size-full" />
     <textarea
       v-if="editingNode"
-      class="text-overlay"
+      class="absolute z-10 resize-none overflow-hidden border border-accent bg-transparent p-0 font-normal text-black outline-none"
       :style="textOverlayStyle!"
       :value="editingNode.text"
       @input="onTextInput"
@@ -81,33 +79,3 @@ function onTextKeyDown(e: KeyboardEvent) {
     />
   </div>
 </template>
-
-<style scoped>
-.canvas-container {
-  flex: 1;
-  position: relative;
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.editor-canvas {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.text-overlay {
-  position: absolute;
-  background: transparent;
-  border: 1px solid var(--accent, #3b82f6);
-  color: black;
-  padding: 0;
-  margin: 0;
-  outline: none;
-  resize: none;
-  overflow: hidden;
-  z-index: 10;
-  font-weight: 400;
-}
-</style>

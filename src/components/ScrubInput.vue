@@ -82,18 +82,21 @@ function onKeydown(e: KeyboardEvent) {
 </script>
 
 <template>
-  <div class="scrub-input" :class="{ scrubbing }">
-    <span class="scrub-label" @pointerdown="startScrub">
+  <div class="flex min-w-0 flex-1 items-center overflow-hidden rounded border border-border bg-input h-[26px] focus-within:border-accent">
+    <span
+      class="flex shrink-0 cursor-ew-resize select-none items-center justify-center self-stretch px-[5px] text-muted [&>*]:pointer-events-none"
+      @pointerdown="startScrub"
+    >
       <slot name="icon">
-        <span v-if="icon" class="scrub-icon-text">{{ icon }}</span>
+        <span v-if="icon" class="text-[11px] leading-none">{{ icon }}</span>
       </slot>
-      <span v-if="label" class="scrub-label-text">{{ label }}</span>
+      <span v-if="label" class="text-[11px] leading-none">{{ label }}</span>
     </span>
     <input
       v-if="editing"
       ref="inputRef"
       type="number"
-      class="scrub-value-input"
+      class="min-w-0 flex-1 border-none bg-transparent pr-1.5 font-[inherit] text-xs text-surface outline-none [&::-webkit-inner-spin-button]:hidden"
       :value="displayValue"
       :min="min === -Infinity ? undefined : min"
       :max="max === Infinity ? undefined : max"
@@ -103,82 +106,8 @@ function onKeydown(e: KeyboardEvent) {
     />
     <span
       v-else
-      class="scrub-value"
+      class="min-w-0 flex-1 cursor-text truncate pr-1.5 text-xs text-surface"
       @click="startEdit"
     >{{ displayValue }}{{ suffix ?? '' }}</span>
   </div>
 </template>
-
-<style scoped>
-.scrub-input {
-  display: flex;
-  align-items: center;
-  flex: 1;
-  min-width: 0;
-  height: 26px;
-  background: var(--input-bg);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.scrub-input:focus-within {
-  border-color: var(--accent, #3b82f6);
-}
-
-.scrub-label {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 5px;
-  align-self: stretch;
-  cursor: ew-resize;
-  flex-shrink: 0;
-  user-select: none;
-  color: var(--text-muted);
-}
-
-.scrub-icon-text {
-  font-size: 11px;
-  line-height: 1;
-  pointer-events: none;
-}
-
-.scrub-label-text {
-  font-size: 11px;
-  line-height: 1;
-  pointer-events: none;
-}
-
-.scrub-label :deep(svg) {
-  pointer-events: none;
-}
-
-.scrub-value {
-  flex: 1;
-  min-width: 0;
-  padding: 0 6px 0 0;
-  font-size: 12px;
-  color: var(--text);
-  cursor: text;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.scrub-value-input {
-  flex: 1;
-  min-width: 0;
-  border: none;
-  background: transparent;
-  color: var(--text);
-  padding: 0 6px 0 0;
-  font: inherit;
-  font-size: 12px;
-  outline: none;
-}
-
-.scrub-value-input::-webkit-inner-spin-button {
-  display: none;
-}
-</style>

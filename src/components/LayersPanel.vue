@@ -27,98 +27,24 @@ function hasChildren(nodeId: string) {
 </script>
 
 <template>
-  <aside class="layers-panel">
-    <header class="panel-section-label">Layers</header>
-    <div class="layers-list">
+  <aside class="flex w-60 flex-col overflow-y-auto border-r border-border bg-panel">
+    <header class="shrink-0 px-3 py-2 text-[11px] uppercase tracking-wider text-muted">Layers</header>
+    <div class="flex-1 overflow-y-auto px-1">
       <button
         v-for="{ node, depth } in store.layerTree.value"
         :key="node.id"
-        class="layer-row"
-        :class="{
-          selected: store.state.selectedIds.has(node.id),
-          container: hasChildren(node.id)
-        }"
+        class="flex w-full cursor-pointer items-center gap-1 rounded border-none py-1 text-left font-[inherit] text-xs"
+        :class="store.state.selectedIds.has(node.id)
+          ? 'bg-accent text-white'
+          : 'bg-transparent text-surface hover:bg-hover'"
         :style="{ paddingLeft: `${8 + depth * 16}px` }"
         @click="store.select([node.id])"
         @click.shift.exact="store.select([node.id], true)"
       >
-        <span v-if="hasChildren(node.id)" class="expand-arrow">▾</span>
-        <span class="layer-icon">{{ nodeIcon(node.type) }}</span>
-        <span class="layer-name">{{ node.name }}</span>
+        <span v-if="hasChildren(node.id)" class="w-3 shrink-0 text-center text-[10px] opacity-50">▾</span>
+        <span class="w-3.5 shrink-0 text-center text-[11px] opacity-70">{{ nodeIcon(node.type) }}</span>
+        <span class="truncate">{{ node.name }}</span>
       </button>
     </div>
   </aside>
 </template>
-
-<style scoped>
-.layers-panel {
-  width: 240px;
-  background: var(--panel-bg);
-  border-right: 1px solid var(--border);
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-.panel-section-label {
-  padding: 6px 12px;
-  font-size: 11px;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  flex-shrink: 0;
-}
-
-.layers-list {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0 4px;
-}
-
-.layer-row {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  width: 100%;
-  padding: 4px 8px;
-  border: none;
-  background: transparent;
-  color: var(--text);
-  font: inherit;
-  font-size: 12px;
-  cursor: pointer;
-  border-radius: 4px;
-  text-align: left;
-}
-
-.layer-row:hover {
-  background: var(--hover);
-}
-
-.layer-row.selected {
-  background: var(--accent);
-  color: white;
-}
-
-.expand-arrow {
-  width: 12px;
-  font-size: 10px;
-  text-align: center;
-  flex-shrink: 0;
-  opacity: 0.5;
-}
-
-.layer-icon {
-  width: 14px;
-  text-align: center;
-  flex-shrink: 0;
-  opacity: 0.7;
-  font-size: 11px;
-}
-
-.layer-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-</style>

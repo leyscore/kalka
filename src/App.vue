@@ -85,10 +85,10 @@ for (const d of demo) {
 </script>
 
 <template>
-  <div class="editor">
-    <div class="editor-main">
+  <div class="flex h-screen w-screen flex-col">
+    <div class="flex flex-1 overflow-hidden">
       <LayersPanel />
-      <div class="canvas-area">
+      <div class="relative flex min-w-0 flex-1">
         <EditorCanvas />
         <Toolbar />
       </div>
@@ -96,65 +96,3 @@ for (const d of demo) {
     </div>
   </div>
 </template>
-
-<style>
-:root {
-  --panel-bg: #2a2a2a;
-  --canvas-bg: #1e1e1e;
-  --border: #3a3a3a;
-  --hover: #353535;
-  --accent: #3b82f6;
-  --text: #e0e0e0;
-  --text-muted: #888;
-  --input-bg: #1e1e1e;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html,
-body,
-#app {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-body {
-  font-family:
-    Inter,
-    system-ui,
-    -apple-system,
-    sans-serif;
-  font-size: 13px;
-  color: var(--text);
-  background: var(--canvas-bg);
-  user-select: none;
-  -webkit-user-select: none;
-}
-</style>
-
-<style scoped>
-.editor {
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.editor-main {
-  flex: 1;
-  display: flex;
-  overflow: hidden;
-}
-
-.canvas-area {
-  flex: 1;
-  position: relative;
-  display: flex;
-  min-width: 0;
-}
-</style>

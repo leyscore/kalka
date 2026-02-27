@@ -199,23 +199,26 @@ function colorHex(c: Color) {
 </script>
 
 <template>
-  <aside class="properties-panel">
-    <div class="panel-tabs">
-      <button class="tab active">Design</button>
-      <button class="tab">Prototype</button>
-      <span class="zoom-display">{{ Math.round(store.state.zoom * 100) }}%</span>
+  <aside class="flex w-[241px] flex-col overflow-hidden border-l border-border bg-panel">
+    <!-- Tabs -->
+    <div class="flex h-10 shrink-0 items-center gap-1 border-b border-border px-2">
+      <button class="rounded px-2.5 py-1 text-xs font-semibold text-surface">Design</button>
+      <button class="rounded px-2.5 py-1 text-xs text-muted">Prototype</button>
+      <span class="ml-auto cursor-pointer rounded px-1.5 py-0.5 text-[11px] text-muted hover:bg-hover">
+        {{ Math.round(store.state.zoom * 100) }}%
+      </span>
     </div>
 
     <!-- Multi-select summary -->
-    <div v-if="multiCount > 1" class="panel-scroll">
-      <div class="section node-header">
-        <span class="node-type">Mixed</span>
-        <span class="node-name">{{ multiCount }} layers</span>
+    <div v-if="multiCount > 1" class="flex-1 overflow-y-auto pb-4">
+      <div class="flex items-center gap-1.5 border-b border-border px-3 py-2">
+        <span class="text-[11px] text-muted">Mixed</span>
+        <span class="text-xs font-semibold">{{ multiCount }} layers</span>
       </div>
 
-      <div class="section">
-        <label class="section-label">Appearance</label>
-        <div class="input-row">
+      <div class="border-b border-border px-3 py-2">
+        <label class="mb-1.5 block text-[11px] text-muted">Appearance</label>
+        <div class="flex gap-1.5">
           <ScrubInput
             icon="⊘"
             suffix="%"
@@ -229,780 +232,266 @@ function colorHex(c: Color) {
     </div>
 
     <!-- Single selection -->
-    <div v-else-if="node" class="panel-scroll">
-      <div class="section node-header">
-        <span class="node-type">{{ node.type }}</span>
-        <span class="node-name">{{ node.name }}</span>
+    <div v-else-if="node" class="flex-1 overflow-y-auto pb-4">
+      <!-- Node header -->
+      <div class="flex items-center gap-1.5 border-b border-border px-3 py-2">
+        <span class="text-[11px] text-muted">{{ node.type }}</span>
+        <span class="text-xs font-semibold">{{ node.name }}</span>
       </div>
 
       <!-- Position -->
-      <div class="section">
-        <label class="section-label">Position</label>
-        <div class="input-row">
-          <ScrubInput
-            icon="X"
-            :model-value="Math.round(node.x)"
-            @update:model-value="updateProp('x', $event)"
-          />
-          <ScrubInput
-            icon="Y"
-            :model-value="Math.round(node.y)"
-            @update:model-value="updateProp('y', $event)"
-          />
+      <div class="border-b border-border px-3 py-2">
+        <label class="mb-1.5 block text-[11px] text-muted">Position</label>
+        <div class="flex gap-1.5">
+          <ScrubInput icon="X" :model-value="Math.round(node.x)" @update:model-value="updateProp('x', $event)" />
+          <ScrubInput icon="Y" :model-value="Math.round(node.y)" @update:model-value="updateProp('y', $event)" />
         </div>
       </div>
 
       <!-- Rotation -->
-      <div class="section">
-        <div class="input-row">
-          <ScrubInput
-            icon="R"
-            suffix="°"
-            :model-value="Math.round(node.rotation)"
-            :min="-360"
-            :max="360"
-            @update:model-value="updateProp('rotation', $event)"
-          />
+      <div class="border-b border-border px-3 py-2">
+        <div class="flex gap-1.5">
+          <ScrubInput icon="R" suffix="°" :model-value="Math.round(node.rotation)" :min="-360" :max="360" @update:model-value="updateProp('rotation', $event)" />
         </div>
       </div>
 
-      <!-- Dimensions -->
-      <div class="section">
-        <label class="section-label">Layout</label>
-        <div class="input-row">
-          <div ref="widthDimRef" class="dim-input">
-            <ScrubInput
-              icon="W"
-              :model-value="Math.round(node.width)"
-              :min="0"
-              @update:model-value="updateProp('width', $event)"
-            />
+      <!-- Layout / Dimensions -->
+      <div class="border-b border-border px-3 py-2">
+        <label class="mb-1.5 block text-[11px] text-muted">Layout</label>
+        <div class="flex gap-1.5">
+          <!-- Width -->
+          <div ref="widthDimRef" class="relative flex min-w-0 flex-1 items-center gap-1">
+            <ScrubInput icon="W" :model-value="Math.round(node.width)" :min="0" @update:model-value="updateProp('width', $event)" />
             <button
               v-if="node.layoutMode !== 'NONE' || isInAutoLayout"
-              class="sizing-badge"
+              class="cursor-pointer whitespace-nowrap rounded border-none bg-transparent px-1 py-px text-[10px] text-muted hover:bg-hover hover:text-surface"
               @click="widthSizingOpen = !widthSizingOpen"
-            >
-              {{ sizingLabel(widthSizing) }}
-            </button>
-            <div v-if="widthSizingOpen" class="sizing-dropdown">
+            >{{ sizingLabel(widthSizing) }}</button>
+            <div v-if="widthSizingOpen" class="absolute top-full left-0 right-0 z-10 min-w-40 rounded-md border border-border bg-panel p-1 shadow-lg">
               <button
-                :class="{ selected: widthSizing === 'FIXED' }"
+                class="flex w-full cursor-pointer items-center gap-2 rounded border-none bg-transparent px-2 py-1.5 text-left text-xs hover:bg-hover"
+                :class="widthSizing === 'FIXED' ? 'text-accent' : 'text-surface'"
                 @click="setWidthSizing('FIXED')"
-              >
-                <span class="sizing-icon">↔</span>
-                Fixed width ({{ Math.round(node.width) }})
-              </button>
+              ><span class="w-4 text-center text-[11px] opacity-70">↔</span>Fixed width ({{ Math.round(node.width) }})</button>
               <button
                 v-if="node.layoutMode !== 'NONE'"
-                :class="{ selected: widthSizing === 'HUG' }"
+                class="flex w-full cursor-pointer items-center gap-2 rounded border-none bg-transparent px-2 py-1.5 text-left text-xs hover:bg-hover"
+                :class="widthSizing === 'HUG' ? 'text-accent' : 'text-surface'"
                 @click="setWidthSizing('HUG')"
-              >
-                <span class="sizing-icon">↤↦</span>
-                Hug contents
-              </button>
+              ><span class="w-4 text-center text-[11px] opacity-70">↤↦</span>Hug contents</button>
               <button
                 v-if="isInAutoLayout"
-                :class="{ selected: widthSizing === 'FILL' }"
+                class="flex w-full cursor-pointer items-center gap-2 rounded border-none bg-transparent px-2 py-1.5 text-left text-xs hover:bg-hover"
+                :class="widthSizing === 'FILL' ? 'text-accent' : 'text-surface'"
                 @click="setWidthSizing('FILL')"
-              >
-                <span class="sizing-icon">⟷</span>
-                Fill container
-              </button>
+              ><span class="w-4 text-center text-[11px] opacity-70">⟷</span>Fill container</button>
             </div>
           </div>
-          <div ref="heightDimRef" class="dim-input">
-            <ScrubInput
-              icon="H"
-              :model-value="Math.round(node.height)"
-              :min="0"
-              @update:model-value="updateProp('height', $event)"
-            />
+          <!-- Height -->
+          <div ref="heightDimRef" class="relative flex min-w-0 flex-1 items-center gap-1">
+            <ScrubInput icon="H" :model-value="Math.round(node.height)" :min="0" @update:model-value="updateProp('height', $event)" />
             <button
               v-if="node.layoutMode !== 'NONE' || isInAutoLayout"
-              class="sizing-badge"
+              class="cursor-pointer whitespace-nowrap rounded border-none bg-transparent px-1 py-px text-[10px] text-muted hover:bg-hover hover:text-surface"
               @click="heightSizingOpen = !heightSizingOpen"
-            >
-              {{ sizingLabel(heightSizing) }}
-            </button>
-            <div v-if="heightSizingOpen" class="sizing-dropdown">
+            >{{ sizingLabel(heightSizing) }}</button>
+            <div v-if="heightSizingOpen" class="absolute top-full left-0 right-0 z-10 min-w-40 rounded-md border border-border bg-panel p-1 shadow-lg">
               <button
-                :class="{ selected: heightSizing === 'FIXED' }"
+                class="flex w-full cursor-pointer items-center gap-2 rounded border-none bg-transparent px-2 py-1.5 text-left text-xs hover:bg-hover"
+                :class="heightSizing === 'FIXED' ? 'text-accent' : 'text-surface'"
                 @click="setHeightSizing('FIXED')"
-              >
-                <span class="sizing-icon">↕</span>
-                Fixed height ({{ Math.round(node.height) }})
-              </button>
+              ><span class="w-4 text-center text-[11px] opacity-70">↕</span>Fixed height ({{ Math.round(node.height) }})</button>
               <button
                 v-if="node.layoutMode !== 'NONE'"
-                :class="{ selected: heightSizing === 'HUG' }"
+                class="flex w-full cursor-pointer items-center gap-2 rounded border-none bg-transparent px-2 py-1.5 text-left text-xs hover:bg-hover"
+                :class="heightSizing === 'HUG' ? 'text-accent' : 'text-surface'"
                 @click="setHeightSizing('HUG')"
-              >
-                <span class="sizing-icon">↤↦</span>
-                Hug contents
-              </button>
+              ><span class="w-4 text-center text-[11px] opacity-70">↤↦</span>Hug contents</button>
               <button
                 v-if="isInAutoLayout"
-                :class="{ selected: heightSizing === 'FILL' }"
+                class="flex w-full cursor-pointer items-center gap-2 rounded border-none bg-transparent px-2 py-1.5 text-left text-xs hover:bg-hover"
+                :class="heightSizing === 'FILL' ? 'text-accent' : 'text-surface'"
                 @click="setHeightSizing('FILL')"
-              >
-                <span class="sizing-icon">⟷</span>
-                Fill container
-              </button>
+              ><span class="w-4 text-center text-[11px] opacity-70">⟷</span>Fill container</button>
             </div>
           </div>
         </div>
-        <div class="input-row">
-          <ScrubInput
-            icon="↻"
-            :model-value="node.cornerRadius"
-            :min="0"
-            @update:model-value="updateProp('cornerRadius', $event)"
-          />
+        <!-- Corner radius -->
+        <div class="mt-1.5 flex gap-1.5">
+          <ScrubInput icon="↻" :model-value="node.cornerRadius" :min="0" @update:model-value="updateProp('cornerRadius', $event)" />
         </div>
       </div>
 
       <!-- Auto Layout -->
-      <div v-if="node.type === 'FRAME'" class="section">
-        <div class="section-header">
-          <label class="section-label">Auto layout</label>
+      <div v-if="node.type === 'FRAME'" class="border-b border-border px-3 py-2">
+        <div class="flex items-center justify-between">
+          <label class="mb-1.5 block text-[11px] text-muted">Auto layout</label>
           <button
             v-if="node.layoutMode === 'NONE'"
-            class="section-add"
+            class="cursor-pointer rounded border-none bg-transparent px-1 text-base leading-none text-muted hover:bg-hover hover:text-surface"
             title="Add auto layout (Shift+A)"
             @click="store.setLayoutMode(node.id, 'VERTICAL')"
-          >
-            +
-          </button>
+          >+</button>
           <button
             v-else
-            class="section-add"
+            class="cursor-pointer rounded border-none bg-transparent px-1 text-base leading-none text-muted hover:bg-hover hover:text-surface"
             title="Remove auto layout"
             @click="store.setLayoutMode(node.id, 'NONE')"
-          >
-            −
-          </button>
+          >−</button>
         </div>
 
         <template v-if="node.layoutMode !== 'NONE'">
           <!-- Direction -->
-          <div class="layout-direction-row">
+          <div class="mt-1.5 flex gap-0.5">
             <button
-              class="dir-btn"
-              :class="{ active: node.layoutMode === 'VERTICAL' }"
+              class="flex cursor-pointer items-center justify-center rounded border px-2 py-1"
+              :class="node.layoutMode === 'VERTICAL'
+                ? 'border-accent bg-accent text-white'
+                : 'border-border bg-input text-muted hover:bg-hover hover:text-surface'"
               title="Vertical layout"
               @click="store.setLayoutMode(node.id, 'VERTICAL')"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16">
-                <rect x="3" y="2" width="10" height="3" rx="0.5" fill="currentColor" />
-                <rect x="3" y="6.5" width="10" height="3" rx="0.5" fill="currentColor" />
-                <rect x="3" y="11" width="10" height="3" rx="0.5" fill="currentColor" />
-              </svg>
+              <svg width="16" height="16" viewBox="0 0 16 16"><rect x="3" y="2" width="10" height="3" rx="0.5" fill="currentColor" /><rect x="3" y="6.5" width="10" height="3" rx="0.5" fill="currentColor" /><rect x="3" y="11" width="10" height="3" rx="0.5" fill="currentColor" /></svg>
             </button>
             <button
-              class="dir-btn"
-              :class="{ active: node.layoutMode === 'HORIZONTAL' }"
+              class="flex cursor-pointer items-center justify-center rounded border px-2 py-1"
+              :class="node.layoutMode === 'HORIZONTAL'
+                ? 'border-accent bg-accent text-white'
+                : 'border-border bg-input text-muted hover:bg-hover hover:text-surface'"
               title="Horizontal layout"
               @click="store.setLayoutMode(node.id, 'HORIZONTAL')"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16">
-                <rect x="2" y="3" width="3" height="10" rx="0.5" fill="currentColor" />
-                <rect x="6.5" y="3" width="3" height="10" rx="0.5" fill="currentColor" />
-                <rect x="11" y="3" width="3" height="10" rx="0.5" fill="currentColor" />
-              </svg>
+              <svg width="16" height="16" viewBox="0 0 16 16"><rect x="2" y="3" width="3" height="10" rx="0.5" fill="currentColor" /><rect x="6.5" y="3" width="3" height="10" rx="0.5" fill="currentColor" /><rect x="11" y="3" width="3" height="10" rx="0.5" fill="currentColor" /></svg>
             </button>
             <button
-              class="dir-btn"
-              :class="{ active: node.layoutWrap === 'WRAP' }"
+              class="flex cursor-pointer items-center justify-center rounded border px-2 py-1"
+              :class="node.layoutWrap === 'WRAP'
+                ? 'border-accent bg-accent text-white'
+                : 'border-border bg-input text-muted hover:bg-hover hover:text-surface'"
               title="Wrap"
               @click="updateProp('layoutWrap', node.layoutWrap === 'WRAP' ? 'NO_WRAP' : 'WRAP')"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16">
-                <rect x="2" y="2" width="5" height="5" rx="0.5" fill="currentColor" />
-                <rect x="9" y="2" width="5" height="5" rx="0.5" fill="currentColor" />
-                <rect x="2" y="9" width="5" height="5" rx="0.5" fill="currentColor" />
-              </svg>
+              <svg width="16" height="16" viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="0.5" fill="currentColor" /><rect x="9" y="2" width="5" height="5" rx="0.5" fill="currentColor" /><rect x="2" y="9" width="5" height="5" rx="0.5" fill="currentColor" /></svg>
             </button>
           </div>
 
           <!-- Alignment grid + Gap -->
-          <div class="layout-align-gap-row">
-            <div class="align-grid">
+          <div class="mt-1.5 flex items-center gap-2">
+            <div class="grid grid-cols-3 gap-0.5 rounded border border-border bg-input p-1">
               <button
                 v-for="(a, i) in ALIGN_GRID"
                 :key="i"
-                class="align-dot"
-                :class="{
-                  active:
-                    node.primaryAxisAlign === a.primary &&
-                    node.counterAxisAlign === a.counter
-                }"
+                class="flex size-3.5 cursor-pointer items-center justify-center rounded-sm border-none bg-transparent p-0 hover:bg-hover"
                 @click="setAlignment(a.primary, a.counter)"
               >
-                <span class="dot" />
+                <span
+                  class="rounded-full"
+                  :class="node.primaryAxisAlign === a.primary && node.counterAxisAlign === a.counter
+                    ? 'size-1.5 bg-accent'
+                    : 'size-1 bg-muted opacity-40'"
+                />
               </button>
             </div>
-            <ScrubInput
-              :model-value="node.itemSpacing"
-              :min="0"
-              @update:model-value="updateProp('itemSpacing', $event)"
-            >
+            <ScrubInput :model-value="node.itemSpacing" :min="0" @update:model-value="updateProp('itemSpacing', $event)">
               <template #icon>
-                <svg width="14" height="14" viewBox="0 0 14 14">
-                  <rect x="0" y="1" width="4" height="12" rx="0.5" fill="currentColor" opacity="0.4" />
-                  <rect x="5" y="5" width="4" height="4" rx="0.5" fill="currentColor" />
-                  <rect x="10" y="1" width="4" height="12" rx="0.5" fill="currentColor" opacity="0.4" />
-                </svg>
+                <svg width="14" height="14" viewBox="0 0 14 14"><rect x="0" y="1" width="4" height="12" rx="0.5" fill="currentColor" opacity="0.4" /><rect x="5" y="5" width="4" height="4" rx="0.5" fill="currentColor" /><rect x="10" y="1" width="4" height="12" rx="0.5" fill="currentColor" opacity="0.4" /></svg>
               </template>
             </ScrubInput>
           </div>
 
           <!-- Padding -->
-          <div class="layout-padding-row">
+          <div class="mt-1.5 flex items-start gap-1">
             <template v-if="showIndividualPadding || !hasUniformPadding()">
-              <div class="padding-grid">
-                <div class="pad-cell pad-top">
+              <div class="grid flex-1 grid-cols-2 gap-0.5">
+                <div v-for="side in ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'] as const" :key="side">
                   <input
                     type="number"
-                    :value="node.paddingTop"
+                    class="w-full rounded border border-border bg-input px-1 py-0.5 text-center text-[11px] text-surface [&::-webkit-inner-spin-button]:hidden"
+                    :value="node[side]"
                     min="0"
-                    @change="updateProp('paddingTop', +($event.target as HTMLInputElement).value)"
-                  />
-                </div>
-                <div class="pad-cell pad-right">
-                  <input
-                    type="number"
-                    :value="node.paddingRight"
-                    min="0"
-                    @change="updateProp('paddingRight', +($event.target as HTMLInputElement).value)"
-                  />
-                </div>
-                <div class="pad-cell pad-bottom">
-                  <input
-                    type="number"
-                    :value="node.paddingBottom"
-                    min="0"
-                    @change="updateProp('paddingBottom', +($event.target as HTMLInputElement).value)"
-                  />
-                </div>
-                <div class="pad-cell pad-left">
-                  <input
-                    type="number"
-                    :value="node.paddingLeft"
-                    min="0"
-                    @change="updateProp('paddingLeft', +($event.target as HTMLInputElement).value)"
+                    @change="updateProp(side, +($event.target as HTMLInputElement).value)"
                   />
                 </div>
               </div>
             </template>
             <template v-else>
-              <ScrubInput
-                :model-value="node.paddingTop"
-                :min="0"
-                @update:model-value="setUniformPadding($event)"
-              >
+              <ScrubInput :model-value="node.paddingTop" :min="0" @update:model-value="setUniformPadding($event)">
                 <template #icon>
-                  <svg width="14" height="14" viewBox="0 0 14 14">
-                    <rect x="0" y="0" width="14" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1" />
-                    <rect x="3" y="3" width="8" height="8" rx="1" fill="currentColor" opacity="0.3" />
-                  </svg>
+                  <svg width="14" height="14" viewBox="0 0 14 14"><rect x="0" y="0" width="14" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1" /><rect x="3" y="3" width="8" height="8" rx="1" fill="currentColor" opacity="0.3" /></svg>
                 </template>
               </ScrubInput>
             </template>
             <button
-              class="pad-toggle"
-              :class="{ active: showIndividualPadding || !hasUniformPadding() }"
+              class="flex shrink-0 cursor-pointer items-center justify-center rounded border p-1"
+              :class="showIndividualPadding || !hasUniformPadding()
+                ? 'border-accent bg-accent text-white'
+                : 'border-border text-muted hover:bg-hover hover:text-surface'"
               title="Individual padding"
               @click="showIndividualPadding = !showIndividualPadding"
             >
-              <svg width="14" height="14" viewBox="0 0 14 14">
-                <rect x="0" y="0" width="14" height="4" rx="1" fill="currentColor" opacity="0.6" />
-                <rect x="10" y="0" width="4" height="14" rx="1" fill="currentColor" opacity="0.6" />
-                <rect x="0" y="10" width="14" height="4" rx="1" fill="currentColor" opacity="0.6" />
-                <rect x="0" y="0" width="4" height="14" rx="1" fill="currentColor" opacity="0.6" />
-              </svg>
+              <svg width="14" height="14" viewBox="0 0 14 14"><rect x="0" y="0" width="14" height="4" rx="1" fill="currentColor" opacity="0.6" /><rect x="10" y="0" width="4" height="14" rx="1" fill="currentColor" opacity="0.6" /><rect x="0" y="10" width="14" height="4" rx="1" fill="currentColor" opacity="0.6" /><rect x="0" y="0" width="4" height="14" rx="1" fill="currentColor" opacity="0.6" /></svg>
             </button>
           </div>
         </template>
       </div>
 
       <!-- Appearance -->
-      <div class="section">
-        <label class="section-label">Appearance</label>
-        <div class="input-row">
-          <ScrubInput
-            icon="⊘"
-            suffix="%"
-            :model-value="Math.round(node.opacity * 100)"
-            :min="0"
-            :max="100"
-            @update:model-value="updateProp('opacity', $event / 100)"
-          />
+      <div class="border-b border-border px-3 py-2">
+        <label class="mb-1.5 block text-[11px] text-muted">Appearance</label>
+        <div class="flex gap-1.5">
+          <ScrubInput icon="⊘" suffix="%" :model-value="Math.round(node.opacity * 100)" :min="0" :max="100" @update:model-value="updateProp('opacity', $event / 100)" />
         </div>
       </div>
 
       <!-- Fill -->
-      <div class="section">
-        <div class="section-header">
-          <label class="section-label">Fill</label>
-          <button class="section-add" @click="addFill">+</button>
+      <div class="border-b border-border px-3 py-2">
+        <div class="flex items-center justify-between">
+          <label class="mb-1.5 block text-[11px] text-muted">Fill</label>
+          <button class="cursor-pointer rounded border-none bg-transparent px-1 text-base leading-none text-muted hover:bg-hover hover:text-surface" @click="addFill">+</button>
         </div>
-        <div v-for="(fill, i) in node.fills" :key="i" class="fill-row">
+        <div v-for="(fill, i) in node.fills" :key="i" class="group flex items-center gap-1.5 py-0.5">
           <button
-            class="visibility-toggle"
-            :class="{ hidden: !fill.visible }"
+            class="w-4 cursor-pointer border-none bg-transparent p-0 text-center text-xs text-muted"
+            :class="{ 'opacity-40': !fill.visible }"
             @click="toggleFillVisibility(i)"
-          >
-            {{ fill.visible ? '◉' : '○' }}
-          </button>
+          >{{ fill.visible ? '◉' : '○' }}</button>
           <ColorPicker :color="fill.color" @update="updateFillColor(i, $event)" />
-          <span class="color-hex">{{ colorHex(fill.color) }}</span>
-          <button class="remove-btn" @click="removeFill(i)">×</button>
+          <span class="flex-1 font-mono text-xs">{{ colorHex(fill.color) }}</span>
+          <button class="cursor-pointer border-none bg-transparent px-0.5 text-sm leading-none text-muted opacity-0 transition-opacity group-hover:opacity-100 hover:text-surface" @click="removeFill(i)">×</button>
         </div>
       </div>
 
       <!-- Stroke -->
-      <div class="section">
-        <div class="section-header">
-          <label class="section-label">Stroke</label>
-          <button class="section-add" @click="addStroke">+</button>
+      <div class="border-b border-border px-3 py-2">
+        <div class="flex items-center justify-between">
+          <label class="mb-1.5 block text-[11px] text-muted">Stroke</label>
+          <button class="cursor-pointer rounded border-none bg-transparent px-1 text-base leading-none text-muted hover:bg-hover hover:text-surface" @click="addStroke">+</button>
         </div>
-        <div v-for="(stroke, i) in node.strokes" :key="i" class="fill-row">
+        <div v-for="(stroke, i) in node.strokes" :key="i" class="group flex items-center gap-1.5 py-0.5">
           <ColorPicker :color="stroke.color" @update="updateStrokeColor(i, $event)" />
-          <span class="color-hex">{{ colorHex(stroke.color) }}</span>
+          <span class="flex-1 font-mono text-xs">{{ colorHex(stroke.color) }}</span>
           <input
             type="number"
-            class="stroke-weight"
+            class="w-9 rounded border border-border bg-input px-1 py-0.5 text-center text-[11px] text-surface [&::-webkit-inner-spin-button]:hidden"
             :value="stroke.weight"
             min="0"
             @change="updateStrokeWeight(i, +($event.target as HTMLInputElement).value)"
           />
-          <button class="remove-btn" @click="removeStroke(i)">×</button>
+          <button class="cursor-pointer border-none bg-transparent px-0.5 text-sm leading-none text-muted opacity-0 transition-opacity group-hover:opacity-100 hover:text-surface" @click="removeStroke(i)">×</button>
         </div>
       </div>
 
       <!-- Effects -->
-      <div class="section">
-        <label class="section-label">Effects</label>
+      <div class="border-b border-border px-3 py-2">
+        <label class="mb-1.5 block text-[11px] text-muted">Effects</label>
       </div>
 
       <!-- Export -->
-      <div class="section">
-        <label class="section-label">Export</label>
+      <div class="border-b border-border px-3 py-2">
+        <label class="mb-1.5 block text-[11px] text-muted">Export</label>
       </div>
     </div>
 
-    <div v-else class="panel-empty">No selection</div>
+    <div v-else class="px-3 py-4 text-xs text-muted">No selection</div>
   </aside>
 </template>
-
-<style scoped>
-.properties-panel {
-  width: 241px;
-  background: var(--panel-bg);
-  border-left: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.panel-tabs {
-  display: flex;
-  align-items: center;
-  height: 40px;
-  padding: 0 8px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-
-.tab {
-  padding: 4px 10px;
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  font: inherit;
-  font-size: 12px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.tab.active {
-  color: var(--text);
-  font-weight: 600;
-}
-
-.zoom-display {
-  margin-left: auto;
-  font-size: 11px;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.zoom-display:hover {
-  background: var(--hover);
-}
-
-.panel-scroll {
-  flex: 1;
-  overflow-y: auto;
-  padding-bottom: 16px;
-}
-
-.panel-empty {
-  padding: 16px 12px;
-  color: var(--text-muted);
-  font-size: 12px;
-}
-
-.section {
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--border);
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.section-label {
-  display: block;
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-bottom: 6px;
-}
-
-.section-add {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  font-size: 16px;
-  cursor: pointer;
-  padding: 0 4px;
-  line-height: 1;
-  border-radius: 4px;
-}
-
-.section-add:hover {
-  background: var(--hover);
-  color: var(--text);
-}
-
-.node-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.node-type {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.node-name {
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.input-row {
-  display: flex;
-  gap: 6px;
-}
-
-
-
-.fill-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 0;
-}
-
-.visibility-toggle {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 12px;
-  padding: 0;
-  width: 16px;
-  text-align: center;
-}
-
-.visibility-toggle.hidden {
-  opacity: 0.4;
-}
-
-.color-hex {
-  font-size: 12px;
-  font-family: monospace;
-  flex: 1;
-}
-
-.remove-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 14px;
-  padding: 0 2px;
-  line-height: 1;
-  opacity: 0;
-  transition: opacity 0.1s;
-}
-
-.fill-row:hover .remove-btn {
-  opacity: 1;
-}
-
-.remove-btn:hover {
-  color: var(--text);
-}
-
-.dim-input {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex: 1;
-  min-width: 0;
-  position: relative;
-}
-
-.dim-input input[type='number'] {
-  flex: 1;
-  min-width: 0;
-  background: var(--input-bg);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--text);
-  padding: 3px 6px;
-  font: inherit;
-  font-size: 12px;
-}
-
-.sizing-badge {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  font-size: 10px;
-  cursor: pointer;
-  padding: 1px 4px;
-  border-radius: 3px;
-  white-space: nowrap;
-}
-
-.sizing-badge:hover {
-  background: var(--hover);
-  color: var(--text);
-}
-
-.sizing-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  z-index: 10;
-  background: var(--panel-bg, #2c2c2c);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  min-width: 160px;
-}
-
-.sizing-dropdown button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 6px 8px;
-  border: none;
-  background: transparent;
-  color: var(--text);
-  font: inherit;
-  font-size: 12px;
-  cursor: pointer;
-  border-radius: 4px;
-  text-align: left;
-}
-
-.sizing-dropdown button:hover {
-  background: var(--hover);
-}
-
-.sizing-dropdown button.selected {
-  color: var(--accent, #3b82f6);
-}
-
-.sizing-icon {
-  width: 16px;
-  text-align: center;
-  font-size: 11px;
-  opacity: 0.7;
-}
-
-.layout-direction-row {
-  display: flex;
-  gap: 2px;
-  margin-top: 6px;
-}
-
-.dir-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--input-bg);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-}
-
-.dir-btn.active {
-  background: var(--accent, #3b82f6);
-  color: white;
-  border-color: var(--accent, #3b82f6);
-}
-
-.dir-btn:hover:not(.active) {
-  background: var(--hover);
-  color: var(--text);
-}
-
-.layout-align-gap-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 6px;
-}
-
-.align-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2px;
-  padding: 4px;
-  background: var(--input-bg);
-  border-radius: 4px;
-  border: 1px solid var(--border);
-}
-
-.align-dot {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 14px;
-  height: 14px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  padding: 0;
-  border-radius: 2px;
-}
-
-.align-dot:hover {
-  background: var(--hover);
-}
-
-.align-dot .dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--text-muted);
-  opacity: 0.4;
-}
-
-.align-dot.active .dot {
-  background: var(--accent, #3b82f6);
-  opacity: 1;
-  width: 6px;
-  height: 6px;
-}
-
-
-
-.layout-padding-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 4px;
-  margin-top: 6px;
-}
-
-
-
-.padding-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3px;
-  flex: 1;
-}
-
-.pad-cell input[type='number'] {
-  width: 100%;
-  background: var(--input-bg);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--text);
-  padding: 3px 4px;
-  font: inherit;
-  font-size: 11px;
-  text-align: center;
-}
-
-.pad-cell input::-webkit-inner-spin-button {
-  display: none;
-}
-
-.pad-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  flex-shrink: 0;
-}
-
-.pad-toggle:hover {
-  background: var(--hover);
-  color: var(--text);
-}
-
-.pad-toggle.active {
-  background: var(--accent, #3b82f6);
-  color: white;
-  border-color: var(--accent, #3b82f6);
-}
-
-.prop-input select {
-  flex: 1;
-  min-width: 0;
-  background: var(--input-bg);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--text);
-  padding: 3px 4px;
-  font: inherit;
-  font-size: 11px;
-}
-
-.stroke-weight {
-  width: 36px;
-  background: var(--input-bg);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--text);
-  padding: 2px 4px;
-  font: inherit;
-  font-size: 11px;
-  text-align: center;
-}
-
-.stroke-weight::-webkit-inner-spin-button {
-  display: none;
-}
-</style>

@@ -142,73 +142,56 @@ const swatchColor = computed(() => {
 <template>
   <PopoverRoot>
     <PopoverTrigger as-child>
-      <button class="color-trigger" :style="{ background: swatchColor }" />
+      <button class="size-5 shrink-0 cursor-pointer rounded border border-border p-0" :style="{ background: swatchColor }" />
     </PopoverTrigger>
 
     <PopoverPortal>
-      <PopoverContent class="color-popover" :side-offset="4" side="left">
+      <PopoverContent class="z-[100] w-56 rounded-lg border border-border bg-panel p-2 shadow-xl" :side-offset="4" side="left">
         <!-- SV area -->
         <div
           ref="svAreaRef"
-          class="sv-area"
+          class="relative h-[140px] w-full cursor-crosshair overflow-hidden rounded"
           :style="{ background: hueColor }"
           @pointerdown="onSvPointerDown"
           @pointermove="onSvPointerMove"
         >
-          <div class="sv-white" />
-          <div class="sv-black" />
+          <div class="absolute inset-0 bg-gradient-to-r from-white to-transparent" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent" />
           <div
-            class="sv-cursor"
-            :style="{
-              left: `${saturation}%`,
-              top: `${100 - brightness}%`
-            }"
+            class="pointer-events-none absolute size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-sm"
+            :style="{ left: `${saturation}%`, top: `${100 - brightness}%` }"
           />
         </div>
 
         <!-- Hue slider -->
-        <div class="slider-row">
-          <input
-            type="range"
-            class="hue-slider"
-            :value="hue"
-            min="0"
-            max="360"
-            @input="onHueInput"
-          />
+        <div class="mt-2">
+          <input type="range" class="hue-slider" :value="hue" min="0" max="360" @input="onHueInput" />
         </div>
 
         <!-- Alpha slider -->
-        <div class="slider-row">
-          <input
-            type="range"
-            class="alpha-slider"
-            :value="alpha * 100"
-            min="0"
-            max="100"
-            @input="onAlphaSliderInput"
-          />
+        <div class="mt-2">
+          <input type="range" class="alpha-slider" :value="alpha * 100" min="0" max="100" @input="onAlphaSliderInput" />
         </div>
 
         <!-- Hex input -->
-        <div class="hex-row">
-          <span class="hash">#</span>
+        <div class="mt-2 flex items-center gap-1">
+          <span class="text-[11px] text-muted">#</span>
           <input
             type="text"
-            class="hex-input"
+            class="min-w-0 flex-1 rounded border border-border bg-input px-1.5 py-0.5 font-mono text-xs text-surface"
             :value="hexValue"
             maxlength="6"
             @change="onHexInput"
           />
           <input
             type="number"
-            class="alpha-input"
+            class="w-10 rounded border border-border bg-input px-1 py-0.5 text-right text-xs text-surface [&::-webkit-inner-spin-button]:hidden"
             :value="Math.round(alpha * 100)"
             min="0"
             max="100"
             @change="onAlphaNumberInput"
           />
-          <span class="percent">%</span>
+          <span class="text-[11px] text-muted">%</span>
         </div>
       </PopoverContent>
     </PopoverPortal>
@@ -216,102 +199,25 @@ const swatchColor = computed(() => {
 </template>
 
 <style scoped>
-.color-trigger {
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-  border: 1px solid var(--border);
-  cursor: pointer;
-  padding: 0;
-  flex-shrink: 0;
-}
-
-.color-popover {
-  width: 224px;
-  background: var(--panel-bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-  z-index: 100;
-}
-
-.sv-area {
-  position: relative;
-  width: 100%;
-  height: 140px;
-  border-radius: 4px;
-  cursor: crosshair;
-  overflow: hidden;
-}
-
-.sv-white {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to right, white, transparent);
-}
-
-.sv-black {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, black, transparent);
-}
-
-.sv-cursor {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  border: 2px solid white;
-  box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-}
-
-.slider-row {
-  margin-top: 8px;
-}
-
-.hue-slider {
-  width: 100%;
-  height: 12px;
-  -webkit-appearance: none;
-  appearance: none;
-  border-radius: 6px;
-  background: linear-gradient(
-    to right,
-    #f00 0%,
-    #ff0 17%,
-    #0f0 33%,
-    #0ff 50%,
-    #00f 67%,
-    #f0f 83%,
-    #f00 100%
-  );
-  outline: none;
-}
-
-.hue-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: white;
-  border: 2px solid white;
-  box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
-  cursor: pointer;
-}
-
+.hue-slider,
 .alpha-slider {
   width: 100%;
   height: 12px;
   -webkit-appearance: none;
   appearance: none;
   border-radius: 6px;
-  background: linear-gradient(to right, transparent, v-bind(hueColor));
   outline: none;
 }
 
+.hue-slider {
+  background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
+}
+
+.alpha-slider {
+  background: linear-gradient(to right, transparent, v-bind(hueColor));
+}
+
+.hue-slider::-webkit-slider-thumb,
 .alpha-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 14px;
@@ -321,51 +227,5 @@ const swatchColor = computed(() => {
   border: 2px solid white;
   box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
   cursor: pointer;
-}
-
-.hex-row {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 8px;
-}
-
-.hash {
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-.hex-input {
-  flex: 1;
-  min-width: 0;
-  background: var(--input-bg);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--text);
-  padding: 3px 6px;
-  font: inherit;
-  font-size: 12px;
-  font-family: monospace;
-}
-
-.alpha-input {
-  width: 40px;
-  background: var(--input-bg);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--text);
-  padding: 3px 4px;
-  font: inherit;
-  font-size: 12px;
-  text-align: right;
-}
-
-.alpha-input::-webkit-inner-spin-button {
-  display: none;
-}
-
-.percent {
-  font-size: 11px;
-  color: var(--text-muted);
 }
 </style>
