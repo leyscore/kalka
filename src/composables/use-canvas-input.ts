@@ -21,7 +21,11 @@ interface DragMove {
   startY: number
   originals: Map<string, { x: number; y: number }>
   duplicated?: boolean
+  autoLayoutParentId?: string
+  brokeFromAutoLayout?: boolean
 }
+
+const AUTO_LAYOUT_BREAK_THRESHOLD = 8
 
 interface DragPan {
   type: 'pan'
@@ -310,7 +314,24 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
           return
         }
 
-        drag.value = { type: 'move', startX: cx, startY: cy, originals }
+        // Detect if we're inside an auto-layout frame
+        let autoLayoutParentId: string | undefined
+        if (store.state.selectedIds.size === 1) {
+          const selectedId = [...store.state.selectedIds][0]
+          const selectedNode = store.graph.getNode(selectedId)
+          if (selectedNode?.parentId) {
+            const parent = store.graph.getNode(selectedNode.parentId)
+            if (
+              parent &&
+              parent.layoutMode !== 'NONE' &&
+              selectedNode.layoutPositioning !== 'ABSOLUTE'
+            ) {
+              autoLayoutParentId = parent.id
+            }
+          }
+        }
+
+        drag.value = { type: 'move', startX: cx, startY: cy, originals, autoLayoutParentId }
       } else {
         store.clearSelection()
         drag.value = { type: 'marquee', startX: cx, startY: cy }
@@ -428,6 +449,39 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
       let dx = cx - d.startX
       let dy = cy - d.startY
 
+      // Auto-layout: dead zone before breaking out
+      if (d.autoLayoutParentId && !d.brokeFromAutoLayout) {
+        const dist = Math.sqrt(dx * dx + dy * dy)
+        if (dist < AUTO_LAYOUT_BREAK_THRESHOLD) {
+          // Still in dead zone — compute insertion indicator within parent
+          computeAutoLayoutIndicator(d, cx, cy)
+          return
+        }
+        d.brokeFromAutoLayout = true
+        store.setLayoutInsertIndicator(null)
+      }
+
+      // Check if we're hovering over an auto-layout frame
+      const dropTarget = store.graph.hitTestFrame(cx, cy, store.state.selectedIds)
+      const dropParent = dropTarget ? store.graph.getNode(dropTarget.id) : null
+
+      if (dropParent && dropParent.layoutMode !== 'NONE') {
+        computeAutoLayoutIndicatorForFrame(dropParent, cx, cy)
+        store.setDropTarget(dropParent.id)
+
+        // Still move the nodes freely so the user sees them floating
+        for (const [id, orig] of d.originals) {
+          store.graph.updateNode(id, {
+            x: Math.round(orig.x + dx),
+            y: Math.round(orig.y + dy)
+          })
+        }
+        store.requestRender()
+        return
+      }
+
+      store.setLayoutInsertIndicator(null)
+
       // Compute snap using absolute positions
       const selectedNodes: SceneNode[] = []
       for (const [id, orig] of d.originals) {
@@ -458,10 +512,7 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
         store.updateNode(id, { x: Math.round(orig.x + dx), y: Math.round(orig.y + dy) })
       }
 
-      // Detect frame drop target
-      const dropTarget = store.graph.hitTestFrame(cx, cy, store.state.selectedIds)
       store.setDropTarget(dropTarget?.id ?? null)
-
       return
     }
 
@@ -574,14 +625,25 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
     const d = drag.value
 
     if (d.type === 'move') {
-      store.commitMove(d.originals)
+      const indicator = store.state.layoutInsertIndicator
+      store.setLayoutInsertIndicator(null)
       store.setSnapGuides([])
 
-      // Reparent into frame if dropped on one
-      const dropId = store.state.dropTargetId
-      if (dropId) {
-        store.reparentNodes([...store.state.selectedIds], dropId)
+      if (indicator) {
+        // Drop into auto-layout at the indicated position
+        for (const id of store.state.selectedIds) {
+          store.reorderInAutoLayout(id, indicator.parentId, indicator.index)
+        }
         store.setDropTarget(null)
+      } else {
+        store.commitMove(d.originals)
+
+        // Reparent into frame if dropped on one
+        const dropId = store.state.dropTargetId
+        if (dropId) {
+          store.reparentNodes([...store.state.selectedIds], dropId)
+          store.setDropTarget(null)
+        }
       }
     }
 
@@ -631,6 +693,97 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
       store.select([hit.id])
       store.startTextEditing(hit.id)
     }
+  }
+
+  function computeAutoLayoutIndicator(d: DragMove, cx: number, cy: number) {
+    if (!d.autoLayoutParentId) return
+    const parent = store.graph.getNode(d.autoLayoutParentId)
+    if (!parent || parent.layoutMode === 'NONE') return
+    computeAutoLayoutIndicatorForFrame(parent, cx, cy)
+  }
+
+  function computeAutoLayoutIndicatorForFrame(parent: SceneNode, cx: number, cy: number) {
+    const children = store.graph.getChildren(parent.id).filter(
+      (c) => c.layoutPositioning !== 'ABSOLUTE' && !store.state.selectedIds.has(c.id)
+    )
+
+    const parentAbs = store.graph.getAbsolutePosition(parent.id)
+    const isRow = parent.layoutMode === 'HORIZONTAL'
+
+    let insertIndex = children.length
+
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i]
+      const childAbs = store.graph.getAbsolutePosition(child.id)
+      const mid = isRow
+        ? childAbs.x + child.width / 2
+        : childAbs.y + child.height / 2
+      const cursor = isRow ? cx : cy
+
+      if (cursor < mid) {
+        insertIndex = i
+        break
+      }
+    }
+
+    // Compute indicator position
+    let indicatorPos: number
+    const crossStart = isRow ? parentAbs.y + parent.paddingTop : parentAbs.x + parent.paddingLeft
+    const crossLength = isRow
+      ? parent.height - parent.paddingTop - parent.paddingBottom
+      : parent.width - parent.paddingLeft - parent.paddingRight
+
+    if (children.length === 0) {
+      indicatorPos = isRow
+        ? parentAbs.x + parent.paddingLeft
+        : parentAbs.y + parent.paddingTop
+    } else if (insertIndex === 0) {
+      const first = children[0]
+      const firstAbs = store.graph.getAbsolutePosition(first.id)
+      indicatorPos = isRow
+        ? firstAbs.x - parent.itemSpacing / 2
+        : firstAbs.y - parent.itemSpacing / 2
+    } else if (insertIndex >= children.length) {
+      const last = children[children.length - 1]
+      const lastAbs = store.graph.getAbsolutePosition(last.id)
+      indicatorPos = isRow
+        ? lastAbs.x + last.width + parent.itemSpacing / 2
+        : lastAbs.y + last.height + parent.itemSpacing / 2
+    } else {
+      const prev = children[insertIndex - 1]
+      const next = children[insertIndex]
+      const prevAbs = store.graph.getAbsolutePosition(prev.id)
+      const nextAbs = store.graph.getAbsolutePosition(next.id)
+      indicatorPos = isRow
+        ? (prevAbs.x + prev.width + nextAbs.x) / 2
+        : (prevAbs.y + prev.height + nextAbs.y) / 2
+    }
+
+    // Account for the dragged node being in the children list
+    // (we filtered it out, so insertIndex is relative to the filtered list)
+    // Convert to actual childIds index
+    const allChildren = store.graph.getChildren(parent.id)
+    let realIndex = 0
+    let filteredCount = 0
+    for (let i = 0; i < allChildren.length; i++) {
+      if (store.state.selectedIds.has(allChildren[i].id)) continue
+      if (allChildren[i].layoutPositioning === 'ABSOLUTE') {
+        realIndex++
+        continue
+      }
+      if (filteredCount === insertIndex) break
+      filteredCount++
+      realIndex++
+    }
+
+    store.setLayoutInsertIndicator({
+      parentId: parent.id,
+      index: realIndex,
+      x: isRow ? indicatorPos : crossStart,
+      y: isRow ? crossStart : indicatorPos,
+      length: crossLength,
+      direction: isRow ? 'VERTICAL' : 'HORIZONTAL'
+    })
   }
 
   useEventListener(canvasRef, 'dblclick', onDblClick)

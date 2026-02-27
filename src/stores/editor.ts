@@ -83,6 +83,14 @@ export function createEditorStore() {
     snapGuides: [] as SnapGuide[],
     rotationPreview: null as { nodeId: string; angle: number } | null,
     dropTargetId: null as string | null,
+    layoutInsertIndicator: null as {
+      parentId: string
+      index: number
+      x: number
+      y: number
+      length: number
+      direction: 'HORIZONTAL' | 'VERTICAL'
+    } | null,
     editingTextId: null as string | null,
     panX: 0,
     panY: 0,
@@ -150,6 +158,33 @@ export function createEditorStore() {
 
   function setDropTarget(id: string | null) {
     state.dropTargetId = id
+    requestRender()
+  }
+
+  function setLayoutInsertIndicator(
+    indicator: typeof state.layoutInsertIndicator
+  ) {
+    state.layoutInsertIndicator = indicator
+    requestRender()
+  }
+
+  function reorderInAutoLayout(nodeId: string, parentId: string, insertIndex: number) {
+    const parent = graph.getNode(parentId)
+    if (!parent || parent.layoutMode === 'NONE') return
+
+    const node = graph.getNode(nodeId)
+    if (!node) return
+
+    // Convert position if coming from different parent
+    if (node.parentId !== parentId) {
+      const absPos = graph.getAbsolutePosition(nodeId)
+      const parentAbs = graph.getAbsolutePosition(parentId)
+      graph.updateNode(nodeId, { x: absPos.x - parentAbs.x, y: absPos.y - parentAbs.y })
+    }
+
+    graph.reorderChild(nodeId, parentId, insertIndex)
+    computeLayout(graph, parentId)
+    runLayoutForNode(parentId)
     requestRender()
   }
 
@@ -505,6 +540,8 @@ export function createEditorStore() {
     setSnapGuides,
     setRotationPreview,
     setDropTarget,
+    setLayoutInsertIndicator,
+    reorderInAutoLayout,
     reparentNodes,
     startTextEditing,
     commitTextEdit,

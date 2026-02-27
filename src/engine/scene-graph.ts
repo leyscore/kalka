@@ -277,6 +277,30 @@ export class SceneGraph {
     node.y = absPos.y - newParentAbs.y
   }
 
+  reorderChild(nodeId: string, parentId: string, insertIndex: number): void {
+    const node = this.nodes.get(nodeId)
+    if (!node) return
+
+    const oldParent = node.parentId ? this.nodes.get(node.parentId) : undefined
+    const newParent = this.nodes.get(parentId)
+    if (!newParent) return
+
+    // Remove from old parent
+    if (oldParent) {
+      oldParent.childIds = oldParent.childIds.filter((cid) => cid !== nodeId)
+    }
+
+    // If same parent, adjust index since we removed the item
+    let idx = insertIndex
+    if (oldParent === newParent && idx > (oldParent.childIds.indexOf(nodeId) === -1 ? idx : oldParent.childIds.length)) {
+      // Already removed above, no adjustment needed
+    }
+
+    node.parentId = parentId
+    idx = Math.min(idx, newParent.childIds.length)
+    newParent.childIds.splice(idx, 0, nodeId)
+  }
+
   deleteNode(id: string): void {
     const node = this.nodes.get(id)
     if (!node || id === this.rootId) return

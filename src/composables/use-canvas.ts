@@ -56,7 +56,8 @@ export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, store: Edito
       marquee: store.state.marquee,
       snapGuides: store.state.snapGuides,
       rotationPreview: store.state.rotationPreview,
-      dropTargetId: store.state.dropTargetId
+      dropTargetId: store.state.dropTargetId,
+      layoutInsertIndicator: store.state.layoutInsertIndicator
     })
   }
 

@@ -15,6 +15,12 @@ export interface RenderOverlays {
   snapGuides?: SnapGuide[]
   rotationPreview?: { nodeId: string; angle: number } | null
   dropTargetId?: string | null
+  layoutInsertIndicator?: {
+    x: number
+    y: number
+    length: number
+    direction: 'HORIZONTAL' | 'VERTICAL'
+  } | null
 }
 
 export class SkiaRenderer {
@@ -104,6 +110,7 @@ export class SkiaRenderer {
     this.drawSelection(canvas, graph, selectedIds, overlays)
     this.drawSnapGuides(canvas, overlays.snapGuides)
     this.drawMarquee(canvas, overlays.marquee)
+    this.drawLayoutInsertIndicator(canvas, overlays.layoutInsertIndicator)
 
     canvas.restore()
     this.surface.flush()
@@ -347,6 +354,35 @@ export class SkiaRenderer {
     canvas.drawRect(rect, fill)
     canvas.drawRect(rect, this.selectionPaint)
     fill.delete()
+  }
+
+  // --- Layout insert indicator ---
+
+  private drawLayoutInsertIndicator(
+    canvas: Canvas,
+    indicator?: RenderOverlays['layoutInsertIndicator']
+  ): void {
+    if (!indicator) return
+
+    const paint = new this.ck.Paint()
+    paint.setStyle(this.ck.PaintStyle.Stroke)
+    paint.setStrokeWidth(2)
+    paint.setColor(this.ck.Color4f(0.23, 0.51, 0.96, 1.0))
+    paint.setAntiAlias(true)
+
+    if (indicator.direction === 'HORIZONTAL') {
+      const y = indicator.y * this.zoom + this.panY
+      const x1 = indicator.x * this.zoom + this.panX
+      const x2 = (indicator.x + indicator.length) * this.zoom + this.panX
+      canvas.drawLine(x1, y, x2, y, paint)
+    } else {
+      const x = indicator.x * this.zoom + this.panX
+      const y1 = indicator.y * this.zoom + this.panY
+      const y2 = (indicator.y + indicator.length) * this.zoom + this.panY
+      canvas.drawLine(x, y1, x, y2, paint)
+    }
+
+    paint.delete()
   }
 
   // --- Scene rendering ---
