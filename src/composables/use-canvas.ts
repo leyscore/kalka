@@ -42,6 +42,7 @@ export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, store: Edito
 
   function render() {
     if (!renderer) return
+    renderer.dpr = window.devicePixelRatio || 1
     renderer.panX = store.state.panX
     renderer.panY = store.state.panY
     renderer.zoom = store.state.zoom

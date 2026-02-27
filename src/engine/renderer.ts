@@ -8,10 +8,11 @@ export class SkiaRenderer {
   private strokePaint: Paint
   private selectionPaint: Paint
 
-  // Viewport
+  // Viewport (in CSS pixels — renderer multiplies by dpr)
   panX = 0
   panY = 0
   zoom = 1
+  dpr = 1
 
   constructor(ck: CanvasKit, surface: Surface) {
     this.ck = ck
@@ -27,7 +28,7 @@ export class SkiaRenderer {
 
     this.selectionPaint = new ck.Paint()
     this.selectionPaint.setStyle(ck.PaintStyle.Stroke)
-    this.selectionPaint.setStrokeWidth(2)
+    this.selectionPaint.setStrokeWidth(1)
     this.selectionPaint.setColor(ck.Color4f(0.23, 0.51, 0.96, 1.0))
     this.selectionPaint.setAntiAlias(true)
   }
@@ -37,6 +38,7 @@ export class SkiaRenderer {
     canvas.clear(this.ck.Color4f(0.96, 0.96, 0.96, 1.0))
 
     canvas.save()
+    canvas.scale(this.dpr, this.dpr)
     canvas.translate(this.panX, this.panY)
     canvas.scale(this.zoom, this.zoom)
 
@@ -48,27 +50,35 @@ export class SkiaRenderer {
       }
     }
 
-    // Selection outlines (drawn on top)
+    canvas.restore()
+
+    // Selection outlines in screen space (after dpr, before zoom — constant 1px CSS)
+    canvas.save()
+    canvas.scale(this.dpr, this.dpr)
+
+    this.selectionPaint.setStrokeWidth(1)
     for (const id of selectedIds) {
       const node = graph.getNode(id)
       if (!node) continue
-      const rect = this.ck.LTRBRect(
-        node.x - 0.5,
-        node.y - 0.5,
-        node.x + node.width + 0.5,
-        node.y + node.height + 0.5
-      )
+
+      const x1 = node.x * this.zoom + this.panX
+      const y1 = node.y * this.zoom + this.panY
+      const x2 = (node.x + node.width) * this.zoom + this.panX
+      const y2 = (node.y + node.height) * this.zoom + this.panY
+
+      const rect = this.ck.LTRBRect(x1, y1, x2, y2)
       canvas.drawRect(rect, this.selectionPaint)
 
-      // Resize handles
-      this.drawHandle(canvas, node.x, node.y)
-      this.drawHandle(canvas, node.x + node.width, node.y)
-      this.drawHandle(canvas, node.x, node.y + node.height)
-      this.drawHandle(canvas, node.x + node.width, node.y + node.height)
-      this.drawHandle(canvas, node.x + node.width / 2, node.y)
-      this.drawHandle(canvas, node.x + node.width / 2, node.y + node.height)
-      this.drawHandle(canvas, node.x, node.y + node.height / 2)
-      this.drawHandle(canvas, node.x + node.width, node.y + node.height / 2)
+      const mx = (x1 + x2) / 2
+      const my = (y1 + y2) / 2
+      this.drawHandle(canvas, x1, y1)
+      this.drawHandle(canvas, x2, y1)
+      this.drawHandle(canvas, x1, y2)
+      this.drawHandle(canvas, x2, y2)
+      this.drawHandle(canvas, mx, y1)
+      this.drawHandle(canvas, mx, y2)
+      this.drawHandle(canvas, x1, my)
+      this.drawHandle(canvas, x2, my)
     }
 
     canvas.restore()
@@ -76,17 +86,12 @@ export class SkiaRenderer {
   }
 
   private drawHandle(canvas: Canvas, x: number, y: number): void {
-    const HANDLE_SIZE = 4
+    const S = 3
     const handleFill = new this.ck.Paint()
     handleFill.setStyle(this.ck.PaintStyle.Fill)
     handleFill.setColor(this.ck.WHITE)
 
-    const rect = this.ck.LTRBRect(
-      x - HANDLE_SIZE,
-      y - HANDLE_SIZE,
-      x + HANDLE_SIZE,
-      y + HANDLE_SIZE
-    )
+    const rect = this.ck.LTRBRect(x - S, y - S, x + S, y + S)
     canvas.drawRect(rect, handleFill)
     canvas.drawRect(rect, this.selectionPaint)
     handleFill.delete()
