@@ -1,5 +1,5 @@
-import type { CanvasKit, Surface, Canvas, Paint } from 'canvaskit-wasm'
 import type { SceneNode, SceneGraph, Fill } from './scene-graph'
+import type { CanvasKit, Surface, Canvas, Paint } from 'canvaskit-wasm'
 
 export class SkiaRenderer {
   private ck: CanvasKit
@@ -106,11 +106,7 @@ export class SkiaRenderer {
     }
 
     if (node.rotation !== 0) {
-      canvas.rotate(
-        node.rotation,
-        node.x + node.width / 2,
-        node.y + node.height / 2
-      )
+      canvas.rotate(node.rotation, node.x + node.width / 2, node.y + node.height / 2)
     }
 
     this.renderShape(canvas, node)
@@ -127,12 +123,7 @@ export class SkiaRenderer {
   }
 
   private renderShape(canvas: Canvas, node: SceneNode): void {
-    const rect = this.ck.LTRBRect(
-      node.x,
-      node.y,
-      node.x + node.width,
-      node.y + node.height
-    )
+    const rect = this.ck.LTRBRect(node.x, node.y, node.x + node.width, node.y + node.height)
 
     const hasRadius =
       node.cornerRadius > 0 ||
@@ -161,15 +152,21 @@ export class SkiaRenderer {
               const rrect = this.ck.RRectXY(rect, node.cornerRadius, node.cornerRadius)
               // For independent corners, build a proper RRect
               const radii = [
-                node.topLeftRadius, node.topLeftRadius,
-                node.topRightRadius, node.topRightRadius,
-                node.bottomRightRadius, node.bottomRightRadius,
-                node.bottomLeftRadius, node.bottomLeftRadius,
+                node.topLeftRadius,
+                node.topLeftRadius,
+                node.topRightRadius,
+                node.topRightRadius,
+                node.bottomRightRadius,
+                node.bottomRightRadius,
+                node.bottomLeftRadius,
+                node.bottomLeftRadius
               ]
               const rrectIndep = new Float32Array([
-                node.x, node.y,
-                node.x + node.width, node.y + node.height,
-                ...radii,
+                node.x,
+                node.y,
+                node.x + node.width,
+                node.y + node.height,
+                ...radii
               ])
               canvas.drawRRect(rrectIndep, this.fillPaint)
               void rrect
@@ -182,13 +179,7 @@ export class SkiaRenderer {
           }
           break
         case 'LINE':
-          canvas.drawLine(
-            node.x,
-            node.y,
-            node.x + node.width,
-            node.y + node.height,
-            this.fillPaint
-          )
+          canvas.drawLine(node.x, node.y, node.x + node.width, node.y + node.height, this.fillPaint)
           break
         default:
           canvas.drawRect(rect, this.fillPaint)
@@ -233,7 +224,7 @@ export class SkiaRenderer {
   screenToCanvas(sx: number, sy: number): { x: number; y: number } {
     return {
       x: (sx - this.panX) / this.zoom,
-      y: (sy - this.panY) / this.zoom,
+      y: (sy - this.panY) / this.zoom
     }
   }
 

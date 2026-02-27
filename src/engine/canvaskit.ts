@@ -5,7 +5,7 @@ let instance: CanvasKit | null = null
 export async function getCanvasKit(): Promise<CanvasKit> {
   if (instance) return instance
   instance = await CanvasKitInit({
-    locateFile: () => '/canvaskit.wasm',
+    locateFile: () => '/canvaskit.wasm'
   })
   return instance
 }

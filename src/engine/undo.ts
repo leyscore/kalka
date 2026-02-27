@@ -55,7 +55,7 @@ export class UndoManager {
     this.undoStack.push({
       label,
       forward: () => entries.forEach((e) => e.forward()),
-      inverse: () => [...entries].reverse().forEach((e) => e.inverse()),
+      inverse: () => [...entries].reverse().forEach((e) => e.inverse())
     })
     this.redoStack = []
   }
@@ -90,6 +90,6 @@ export function createPropertyChange(
   return {
     label,
     forward: () => Object.assign(node, changes),
-    inverse: () => Object.assign(node, previous),
+    inverse: () => Object.assign(node, previous)
   }
 }

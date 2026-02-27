@@ -82,10 +82,7 @@ function generateId(): string {
   return `0:${nextLocalID++}`
 }
 
-function createDefaultNode(
-  type: NodeType,
-  overrides: Partial<SceneNode> = {}
-): SceneNode {
+function createDefaultNode(type: NodeType, overrides: Partial<SceneNode> = {}): SceneNode {
   return {
     id: generateId(),
     type,
@@ -110,7 +107,7 @@ function createDefaultNode(
     cornerSmoothing: 0,
     visible: true,
     locked: false,
-    ...overrides,
+    ...overrides
   }
 }
 
@@ -122,7 +119,7 @@ export class SceneGraph {
     const root = createDefaultNode('FRAME', {
       name: 'Document',
       width: 0,
-      height: 0,
+      height: 0
     })
     this.rootId = root.id
     this.nodes.set(root.id, root)
@@ -140,11 +137,7 @@ export class SceneGraph {
       .filter((n): n is SceneNode => n !== undefined)
   }
 
-  createNode(
-    type: NodeType,
-    parentId: string,
-    overrides: Partial<SceneNode> = {}
-  ): SceneNode {
+  createNode(type: NodeType, parentId: string, overrides: Partial<SceneNode> = {}): SceneNode {
     const node = createDefaultNode(type, overrides)
     node.parentId = parentId
     this.nodes.set(node.id, node)
@@ -176,7 +169,7 @@ export class SceneGraph {
     }
 
     // Delete children recursively
-    for (const childId of [...node.childIds]) {
+    for (const childId of Array.from(node.childIds)) {
       this.deleteNode(childId)
     }
 
@@ -185,9 +178,7 @@ export class SceneGraph {
 
   hitTest(px: number, py: number): SceneNode | null {
     // Reverse order = topmost first
-    const allNodes = [...this.nodes.values()].filter(
-      (n) => n.id !== this.rootId && n.visible
-    )
+    const allNodes = [...this.nodes.values()].filter((n) => n.id !== this.rootId && n.visible)
 
     for (let i = allNodes.length - 1; i >= 0; i--) {
       const n = allNodes[i]
