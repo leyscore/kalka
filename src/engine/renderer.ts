@@ -32,6 +32,8 @@ export class SkiaRenderer {
   private parentOutlinePaint: Paint
   private snapPaint: Paint
   private textFont: Font | null = null
+  private labelFont: Font | null = null
+  private sizeFont: Font | null = null
   private fontMgr: FontMgr | null = null
   private fontProvider: TypefaceFontProvider | null = null
   private fontsLoaded = false
@@ -85,7 +87,11 @@ export class SkiaRenderer {
     const typeface = this.ck.Typeface.MakeFreeTypeFaceFromData(fontData)
     if (typeface) {
       this.textFont?.delete()
+      this.labelFont?.delete()
+      this.sizeFont?.delete()
       this.textFont = new this.ck.Font(typeface, 14)
+      this.labelFont = new this.ck.Font(typeface, 11)
+      this.sizeFont = new this.ck.Font(typeface, 10)
     }
 
     this.fontMgr = this.ck.FontMgr.FromData(fontData) ?? null
@@ -146,6 +152,7 @@ export class SkiaRenderer {
       const rotation =
         overlays.rotationPreview?.nodeId === id ? overlays.rotationPreview.angle : node.rotation
       this.drawNodeSelection(canvas, node, rotation, graph)
+      this.drawSelectionLabels(canvas, graph, selectedIds)
       return
     }
 
@@ -161,6 +168,8 @@ export class SkiaRenderer {
       .map((id) => graph.getNode(id))
       .filter((n): n is SceneNode => n !== undefined)
     this.drawGroupBounds(canvas, nodes, graph)
+
+    this.drawSelectionLabels(canvas, graph, selectedIds)
   }
 
   private drawNodeSelection(
@@ -220,6 +229,83 @@ export class SkiaRenderer {
     rotFill.delete()
 
     canvas.restore()
+  }
+
+  private drawSelectionLabels(
+    canvas: Canvas,
+    graph: SceneGraph,
+    selectedIds: Set<string>
+  ): void {
+    if (!this.labelFont || !this.sizeFont) return
+
+    // Compute bounding box of all selected nodes
+    let minX = Infinity
+    let minY = Infinity
+    let maxX = -Infinity
+    let maxY = -Infinity
+    const nodes: SceneNode[] = []
+
+    for (const id of selectedIds) {
+      const node = graph.getNode(id)
+      if (!node) continue
+      nodes.push(node)
+      const abs = graph.getAbsolutePosition(id)
+      minX = Math.min(minX, abs.x)
+      minY = Math.min(minY, abs.y)
+      maxX = Math.max(maxX, abs.x + node.width)
+      maxY = Math.max(maxY, abs.y + node.height)
+    }
+
+    if (nodes.length === 0) return
+
+    const sx1 = minX * this.zoom + this.panX
+    const sy1 = minY * this.zoom + this.panY
+    const sx2 = maxX * this.zoom + this.panX
+    const sy2 = maxY * this.zoom + this.panY
+    const smx = (sx1 + sx2) / 2
+
+    // Frame name label — only for top-level frames (direct children of root)
+    if (nodes.length === 1) {
+      const node = nodes[0]
+      if (node.type === 'FRAME' && node.parentId === graph.rootId) {
+        const labelPaint = new this.ck.Paint()
+        labelPaint.setStyle(this.ck.PaintStyle.Fill)
+        labelPaint.setColor(this.ck.Color4f(0.23, 0.51, 0.96, 1.0))
+        labelPaint.setAntiAlias(true)
+        canvas.drawText(node.name, sx1, sy1 - 8, labelPaint, this.labelFont)
+        labelPaint.delete()
+      }
+    }
+
+    // Size widget — blue pill below selection
+    const w = Math.round(maxX - minX)
+    const h = Math.round(maxY - minY)
+    const sizeText = `${w} × ${h}`
+    const glyphIds = this.sizeFont.getGlyphIDs(sizeText)
+    const widths = this.sizeFont.getGlyphWidths(glyphIds)
+    let textWidth = 0
+    for (let i = 0; i < widths.length; i++) textWidth += widths[i]
+    const pillW = textWidth + 12
+    const pillH = 18
+    const pillX = smx - pillW / 2
+    const pillY = sy2 + 6
+
+    const pillPaint = new this.ck.Paint()
+    pillPaint.setStyle(this.ck.PaintStyle.Fill)
+    pillPaint.setColor(this.ck.Color4f(0.23, 0.51, 0.96, 1.0))
+    pillPaint.setAntiAlias(true)
+
+    const rrect = this.ck.RRectXY(this.ck.LTRBRect(pillX, pillY, pillX + pillW, pillY + pillH), 4, 4)
+    canvas.drawRRect(rrect, pillPaint)
+
+    const textPaint = new this.ck.Paint()
+    textPaint.setStyle(this.ck.PaintStyle.Fill)
+    textPaint.setColor(this.ck.WHITE)
+    textPaint.setAntiAlias(true)
+    canvas.drawText(sizeText, pillX + 6, pillY + 13, textPaint, this.sizeFont)
+
+    pillPaint.delete()
+    textPaint.delete()
   }
 
   private drawParentFrameOutlines(
@@ -634,6 +720,8 @@ export class SkiaRenderer {
     this.selectionPaint.delete()
     this.snapPaint.delete()
     this.textFont?.delete()
+    this.labelFont?.delete()
+    this.sizeFont?.delete()
     this.fontMgr?.delete()
     this.fontProvider?.delete()
     this.surface.delete()
