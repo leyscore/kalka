@@ -33,7 +33,11 @@ export class SkiaRenderer {
     this.selectionPaint.setAntiAlias(true)
   }
 
-  render(graph: SceneGraph, selectedIds: Set<string>): void {
+  render(
+    graph: SceneGraph,
+    selectedIds: Set<string>,
+    marquee?: { x: number; y: number; width: number; height: number } | null
+  ): void {
     const canvas = this.surface.getCanvas()
     canvas.clear(this.ck.Color4f(0.96, 0.96, 0.96, 1.0))
 
@@ -79,6 +83,22 @@ export class SkiaRenderer {
       this.drawHandle(canvas, mx, y2)
       this.drawHandle(canvas, x1, my)
       this.drawHandle(canvas, x2, my)
+    }
+
+    // Marquee selection rectangle
+    if (marquee && marquee.width > 0 && marquee.height > 0) {
+      const mx1 = marquee.x * this.zoom + this.panX
+      const my1 = marquee.y * this.zoom + this.panY
+      const mx2 = (marquee.x + marquee.width) * this.zoom + this.panX
+      const my2 = (marquee.y + marquee.height) * this.zoom + this.panY
+      const mRect = this.ck.LTRBRect(mx1, my1, mx2, my2)
+
+      const marqueeFill = new this.ck.Paint()
+      marqueeFill.setStyle(this.ck.PaintStyle.Fill)
+      marqueeFill.setColor(this.ck.Color4f(0.23, 0.51, 0.96, 0.08))
+      canvas.drawRect(mRect, marqueeFill)
+      canvas.drawRect(mRect, this.selectionPaint)
+      marqueeFill.delete()
     }
 
     canvas.restore()

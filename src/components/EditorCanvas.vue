@@ -9,9 +9,10 @@ const store = useEditorStore()
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 
 useCanvas(canvasRef, store)
-const { onMouseDown, onMouseMove, onMouseUp } = useCanvasInput(canvasRef, store)
+const { onMouseDown, onMouseMove, onMouseUp, cursorOverride } = useCanvasInput(canvasRef, store)
 
 const cursor = computed(() => {
+  if (cursorOverride.value) return cursorOverride.value
   const tool = store.state.activeTool
   if (tool === 'HAND') return 'grab'
   if (tool === 'SELECT') return 'default'

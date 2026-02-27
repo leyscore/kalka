@@ -65,6 +65,7 @@ export function createEditorStore() {
   const state = reactive({
     activeTool: 'SELECT' as Tool,
     selectedIds: new Set<string>(),
+    marquee: null as { x: number; y: number; width: number; height: number } | null,
     panX: 0,
     panY: 0,
     zoom: 1,
@@ -114,6 +115,11 @@ export function createEditorStore() {
     state.selectedIds = new Set()
   }
 
+  function setMarquee(rect: { x: number; y: number; width: number; height: number } | null) {
+    state.marquee = rect
+    requestRender()
+  }
+
   function updateNode(id: string, changes: Partial<SceneNode>) {
     graph.updateNode(id, changes)
     requestRender()
@@ -130,6 +136,30 @@ export function createEditorStore() {
     })
     requestRender()
     return node.id
+  }
+
+  function selectAll() {
+    const children = graph.getChildren(graph.rootId)
+    state.selectedIds = new Set(children.map((n) => n.id))
+  }
+
+  function duplicateSelected() {
+    const newIds: string[] = []
+    for (const id of state.selectedIds) {
+      const src = graph.getNode(id)
+      if (!src) continue
+      const node = graph.createNode(src.type, graph.rootId, {
+        ...src,
+        name: src.name + ' copy',
+        x: src.x + 20,
+        y: src.y + 20
+      })
+      newIds.push(node.id)
+    }
+    if (newIds.length > 0) {
+      state.selectedIds = new Set(newIds)
+      requestRender()
+    }
   }
 
   function deleteSelected() {
@@ -242,8 +272,11 @@ export function createEditorStore() {
     setTool,
     select,
     clearSelection,
+    selectAll,
+    setMarquee,
     updateNode,
     createShape,
+    duplicateSelected,
     deleteSelected,
     commitMove,
     undoAction,

@@ -24,6 +24,12 @@ export function useKeyboard(store: EditorStore) {
       } else if (e.key === '0') {
         e.preventDefault()
         store.zoomToFit()
+      } else if (e.key === 'd') {
+        e.preventDefault()
+        store.duplicateSelected()
+      } else if (e.key === 'a') {
+        e.preventDefault()
+        store.selectAll()
       }
     }
 
