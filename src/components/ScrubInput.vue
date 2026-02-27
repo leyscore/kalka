@@ -131,6 +131,7 @@ function onKeydown(e: KeyboardEvent) {
   align-items: center;
   justify-content: center;
   padding: 0 5px;
+  align-self: stretch;
   cursor: ew-resize;
   flex-shrink: 0;
   user-select: none;
@@ -140,11 +141,17 @@ function onKeydown(e: KeyboardEvent) {
 .scrub-icon-text {
   font-size: 11px;
   line-height: 1;
+  pointer-events: none;
 }
 
 .scrub-label-text {
   font-size: 11px;
   line-height: 1;
+  pointer-events: none;
+}
+
+.scrub-label :deep(svg) {
+  pointer-events: none;
 }
 
 .scrub-value {
