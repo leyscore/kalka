@@ -75,7 +75,6 @@ export interface SceneNode {
   visible: boolean
   locked: boolean
 
-  // Text-specific
   text: string
   fontSize: number
   fontFamily: string
@@ -127,6 +126,8 @@ function createDefaultNode(type: NodeType, overrides: Partial<SceneNode> = {}): 
   }
 }
 
+const CONTAINER_TYPES = new Set<NodeType>(['FRAME', 'GROUP', 'SECTION'])
+
 export class SceneGraph {
   nodes = new Map<string, SceneNode>()
   rootId: string
@@ -153,6 +154,43 @@ export class SceneGraph {
       .filter((n): n is SceneNode => n !== undefined)
   }
 
+  isContainer(id: string): boolean {
+    const node = this.nodes.get(id)
+    return node ? CONTAINER_TYPES.has(node.type) : false
+  }
+
+  isDescendant(childId: string, ancestorId: string): boolean {
+    let current = this.nodes.get(childId)
+    while (current) {
+      if (current.id === ancestorId) return true
+      current = current.parentId ? this.nodes.get(current.parentId) : undefined
+    }
+    return false
+  }
+
+  getAbsolutePosition(id: string): { x: number; y: number } {
+    let ax = 0
+    let ay = 0
+    let current = this.nodes.get(id)
+    while (current && current.id !== this.rootId) {
+      ax += current.x
+      ay += current.y
+      current = current.parentId ? this.nodes.get(current.parentId) : undefined
+    }
+    return { x: ax, y: ay }
+  }
+
+  getAbsoluteBounds(id: string): { x: number; y: number; width: number; height: number } {
+    const pos = this.getAbsolutePosition(id)
+    const node = this.nodes.get(id)
+    return {
+      x: pos.x,
+      y: pos.y,
+      width: node?.width ?? 0,
+      height: node?.height ?? 0
+    }
+  }
+
   createNode(type: NodeType, parentId: string, overrides: Partial<SceneNode> = {}): SceneNode {
     const node = createDefaultNode(type, overrides)
     node.parentId = parentId
@@ -172,11 +210,39 @@ export class SceneGraph {
     Object.assign(node, changes)
   }
 
+  reparentNode(nodeId: string, newParentId: string): void {
+    const node = this.nodes.get(nodeId)
+    if (!node || nodeId === this.rootId) return
+    if (this.isDescendant(newParentId, nodeId)) return
+
+    const oldParent = node.parentId ? this.nodes.get(node.parentId) : undefined
+    const newParent = this.nodes.get(newParentId)
+    if (!newParent) return
+    if (node.parentId === newParentId) return
+
+    // Convert absolute position
+    const absPos = this.getAbsolutePosition(nodeId)
+    const newParentAbs =
+      newParentId === this.rootId ? { x: 0, y: 0 } : this.getAbsolutePosition(newParentId)
+
+    // Remove from old parent
+    if (oldParent) {
+      oldParent.childIds = oldParent.childIds.filter((cid) => cid !== nodeId)
+    }
+
+    // Add to new parent
+    node.parentId = newParentId
+    newParent.childIds.push(nodeId)
+
+    // Adjust position so node stays in same visual place
+    node.x = absPos.x - newParentAbs.x
+    node.y = absPos.y - newParentAbs.y
+  }
+
   deleteNode(id: string): void {
     const node = this.nodes.get(id)
     if (!node || id === this.rootId) return
 
-    // Remove from parent
     if (node.parentId) {
       const parent = this.nodes.get(node.parentId)
       if (parent) {
@@ -184,7 +250,6 @@ export class SceneGraph {
       }
     }
 
-    // Delete children recursively
     for (const childId of Array.from(node.childIds)) {
       this.deleteNode(childId)
     }
@@ -192,16 +257,95 @@ export class SceneGraph {
     this.nodes.delete(id)
   }
 
-  hitTest(px: number, py: number): SceneNode | null {
-    // Reverse order = topmost first
-    const allNodes = [...this.nodes.values()].filter((n) => n.id !== this.rootId && n.visible)
+  hitTest(px: number, py: number, scopeId?: string): SceneNode | null {
+    const scope = scopeId ?? this.rootId
+    return this.hitTestChildren(px, py, scope, 0, 0)
+  }
 
-    for (let i = allNodes.length - 1; i >= 0; i--) {
-      const n = allNodes[i]
-      if (px >= n.x && px <= n.x + n.width && py >= n.y && py <= n.y + n.height) {
-        return n
+  private hitTestChildren(
+    px: number,
+    py: number,
+    parentId: string,
+    offsetX: number,
+    offsetY: number
+  ): SceneNode | null {
+    const parent = this.nodes.get(parentId)
+    if (!parent) return null
+
+    // Reverse order = topmost first
+    for (let i = parent.childIds.length - 1; i >= 0; i--) {
+      const childId = parent.childIds[i]
+      const child = this.nodes.get(childId)
+      if (!child || !child.visible) continue
+
+      const ax = offsetX + child.x
+      const ay = offsetY + child.y
+
+      // Check children first (deeper hit)
+      if (CONTAINER_TYPES.has(child.type)) {
+        const deepHit = this.hitTestChildren(px, py, childId, ax, ay)
+        if (deepHit) return deepHit
+      }
+
+      if (px >= ax && px <= ax + child.width && py >= ay && py <= ay + child.height) {
+        return child
       }
     }
     return null
+  }
+
+  hitTestFrame(px: number, py: number, excludeIds: Set<string>): SceneNode | null {
+    return this.hitTestFrameChildren(px, py, this.rootId, 0, 0, excludeIds)
+  }
+
+  private hitTestFrameChildren(
+    px: number,
+    py: number,
+    parentId: string,
+    offsetX: number,
+    offsetY: number,
+    excludeIds: Set<string>
+  ): SceneNode | null {
+    const parent = this.nodes.get(parentId)
+    if (!parent) return null
+
+    // Deepest matching frame wins
+    let best: SceneNode | null = null
+
+    for (const childId of parent.childIds) {
+      if (excludeIds.has(childId)) continue
+      const child = this.nodes.get(childId)
+      if (!child || !child.visible) continue
+
+      const ax = offsetX + child.x
+      const ay = offsetY + child.y
+
+      if (!CONTAINER_TYPES.has(child.type)) continue
+      if (px < ax || px > ax + child.width || py < ay || py > ay + child.height) continue
+
+      best = child
+
+      const deeper = this.hitTestFrameChildren(px, py, childId, ax, ay, excludeIds)
+      if (deeper) best = deeper
+    }
+
+    return best
+  }
+
+  flattenTree(parentId?: string, depth = 0): Array<{ node: SceneNode; depth: number }> {
+    const id = parentId ?? this.rootId
+    const parent = this.nodes.get(id)
+    if (!parent) return []
+
+    const result: Array<{ node: SceneNode; depth: number }> = []
+    for (const childId of parent.childIds) {
+      const child = this.nodes.get(childId)
+      if (!child) continue
+      result.push({ node: child, depth })
+      if (child.childIds.length > 0) {
+        result.push(...this.flattenTree(childId, depth + 1))
+      }
+    }
+    return result
   }
 }

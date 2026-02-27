@@ -9,6 +9,8 @@ function nodeIcon(type: string) {
       return '○'
     case 'FRAME':
       return '⊞'
+    case 'GROUP':
+      return '⊟'
     case 'LINE':
       return '╱'
     case 'TEXT':
@@ -17,6 +19,11 @@ function nodeIcon(type: string) {
       return '□'
   }
 }
+
+function hasChildren(nodeId: string) {
+  const node = store.graph.getNode(nodeId)
+  return node ? node.childIds.length > 0 : false
+}
 </script>
 
 <template>
@@ -24,12 +31,18 @@ function nodeIcon(type: string) {
     <header class="panel-section-label">Layers</header>
     <div class="layers-list">
       <button
-        v-for="node in store.layerNodes.value"
+        v-for="{ node, depth } in store.layerTree.value"
         :key="node.id"
         class="layer-row"
-        :class="{ selected: store.state.selectedIds.has(node.id) }"
+        :class="{
+          selected: store.state.selectedIds.has(node.id),
+          container: hasChildren(node.id)
+        }"
+        :style="{ paddingLeft: `${8 + depth * 16}px` }"
         @click="store.select([node.id])"
+        @click.shift.exact="store.select([node.id], true)"
       >
+        <span v-if="hasChildren(node.id)" class="expand-arrow">▾</span>
         <span class="layer-icon">{{ nodeIcon(node.type) }}</span>
         <span class="layer-name">{{ node.name }}</span>
       </button>
@@ -65,7 +78,7 @@ function nodeIcon(type: string) {
 .layer-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   width: 100%;
   padding: 4px 8px;
   border: none;
@@ -87,11 +100,20 @@ function nodeIcon(type: string) {
   color: white;
 }
 
+.expand-arrow {
+  width: 12px;
+  font-size: 10px;
+  text-align: center;
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+
 .layer-icon {
-  width: 16px;
+  width: 14px;
   text-align: center;
   flex-shrink: 0;
   opacity: 0.7;
+  font-size: 11px;
 }
 
 .layer-name {

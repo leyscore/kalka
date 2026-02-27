@@ -54,7 +54,8 @@ export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, store: Edito
     renderer.render(store.graph, store.state.selectedIds, {
       marquee: store.state.marquee,
       snapGuides: store.state.snapGuides,
-      rotationPreview: store.state.rotationPreview
+      rotationPreview: store.state.rotationPreview,
+      dropTargetId: store.state.dropTargetId
     })
   }
 

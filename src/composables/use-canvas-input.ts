@@ -79,17 +79,33 @@ const HANDLE_CURSORS: Record<HandlePosition, string> = {
   w: 'ew-resize'
 }
 
-function getScreenRect(node: SceneNode, zoom: number, panX: number, panY: number) {
+function getScreenRect(
+  absX: number,
+  absY: number,
+  w: number,
+  h: number,
+  zoom: number,
+  panX: number,
+  panY: number
+) {
   return {
-    x1: node.x * zoom + panX,
-    y1: node.y * zoom + panY,
-    x2: (node.x + node.width) * zoom + panX,
-    y2: (node.y + node.height) * zoom + panY
+    x1: absX * zoom + panX,
+    y1: absY * zoom + panY,
+    x2: (absX + w) * zoom + panX,
+    y2: (absY + h) * zoom + panY
   }
 }
 
-function getHandlePositions(node: SceneNode, zoom: number, panX: number, panY: number) {
-  const { x1, y1, x2, y2 } = getScreenRect(node, zoom, panX, panY)
+function getHandlePositions(
+  absX: number,
+  absY: number,
+  w: number,
+  h: number,
+  zoom: number,
+  panX: number,
+  panY: number
+) {
+  const { x1, y1, x2, y2 } = getScreenRect(absX, absY, w, h, zoom, panX, panY)
   const mx = (x1 + x2) / 2
   const my = (y1 + y2) / 2
 
@@ -108,12 +124,15 @@ function getHandlePositions(node: SceneNode, zoom: number, panX: number, panY: n
 function hitTestHandle(
   sx: number,
   sy: number,
-  node: SceneNode,
+  absX: number,
+  absY: number,
+  w: number,
+  h: number,
   zoom: number,
   panX: number,
   panY: number
 ): HandlePosition | null {
-  const handles = getHandlePositions(node, zoom, panX, panY)
+  const handles = getHandlePositions(absX, absY, w, h, zoom, panX, panY)
   for (const [pos, pt] of Object.entries(handles)) {
     if (Math.abs(sx - pt.x) < HANDLE_HIT_RADIUS && Math.abs(sy - pt.y) < HANDLE_HIT_RADIUS) {
       return pos as HandlePosition
@@ -125,12 +144,15 @@ function hitTestHandle(
 function hitTestRotationHandle(
   sx: number,
   sy: number,
-  node: SceneNode,
+  absX: number,
+  absY: number,
+  w: number,
+  h: number,
   zoom: number,
   panX: number,
   panY: number
 ): boolean {
-  const { x1, x2, y1 } = getScreenRect(node, zoom, panX, panY)
+  const { x1, x2, y1 } = getScreenRect(absX, absY, w, h, zoom, panX, panY)
   const mx = (x1 + x2) / 2
   const rotY = y1 - 24
   return Math.abs(sx - mx) < ROTATION_HIT_RADIUS && Math.abs(sy - rotY) < ROTATION_HIT_RADIUS
@@ -181,22 +203,34 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
       if (store.state.selectedIds.size === 1) {
         const id = [...store.state.selectedIds][0]
         const node = store.graph.getNode(id)
-        if (
-          node &&
-          hitTestRotationHandle(sx, sy, node, store.state.zoom, store.state.panX, store.state.panY)
-        ) {
-          const screenCx = (node.x + node.width / 2) * store.state.zoom + store.state.panX
-          const screenCy = (node.y + node.height / 2) * store.state.zoom + store.state.panY
-          const startAngle = Math.atan2(sy - screenCy, sx - screenCx) * (180 / Math.PI)
-          drag.value = {
-            type: 'rotate',
-            nodeId: id,
-            centerX: screenCx,
-            centerY: screenCy,
-            startAngle,
-            origRotation: node.rotation
+        if (node) {
+          const abs = store.graph.getAbsolutePosition(id)
+          if (
+            hitTestRotationHandle(
+              sx,
+              sy,
+              abs.x,
+              abs.y,
+              node.width,
+              node.height,
+              store.state.zoom,
+              store.state.panX,
+              store.state.panY
+            )
+          ) {
+            const screenCx = (abs.x + node.width / 2) * store.state.zoom + store.state.panX
+            const screenCy = (abs.y + node.height / 2) * store.state.zoom + store.state.panY
+            const startAngle = Math.atan2(sy - screenCy, sx - screenCx) * (180 / Math.PI)
+            drag.value = {
+              type: 'rotate',
+              nodeId: id,
+              centerX: screenCx,
+              centerY: screenCy,
+              startAngle,
+              origRotation: node.rotation
+            }
+            return
           }
-          return
         }
       }
 
@@ -204,10 +238,14 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
       for (const id of store.state.selectedIds) {
         const node = store.graph.getNode(id)
         if (!node) continue
+        const abs = store.graph.getAbsolutePosition(id)
         const handle = hitTestHandle(
           sx,
           sy,
-          node,
+          abs.x,
+          abs.y,
+          node.width,
+          node.height,
           store.state.zoom,
           store.state.panX,
           store.state.panY
@@ -310,12 +348,24 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
       if (store.state.selectedIds.size === 1) {
         const id = [...store.state.selectedIds][0]
         const node = store.graph.getNode(id)
-        if (
-          node &&
-          hitTestRotationHandle(sx, sy, node, store.state.zoom, store.state.panX, store.state.panY)
-        ) {
-          cursor =
-            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'%3E%3Cpath d='M21 2v6h-6'/%3E%3Cpath d='M21 13a9 9 0 1 1-3-7.7L21 8'/%3E%3C/svg%3E\") 12 12, pointer"
+        if (node) {
+          const abs = store.graph.getAbsolutePosition(id)
+          if (
+            hitTestRotationHandle(
+              sx,
+              sy,
+              abs.x,
+              abs.y,
+              node.width,
+              node.height,
+              store.state.zoom,
+              store.state.panX,
+              store.state.panY
+            )
+          ) {
+            cursor =
+              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'%3E%3Cpath d='M21 2v6h-6'/%3E%3Cpath d='M21 13a9 9 0 1 1-3-7.7L21 8'/%3E%3C/svg%3E\") 12 12, pointer"
+          }
         }
       }
 
@@ -323,10 +373,14 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
         for (const id of store.state.selectedIds) {
           const node = store.graph.getNode(id)
           if (!node) continue
+          const abs = store.graph.getAbsolutePosition(id)
           const handle = hitTestHandle(
             sx,
             sy,
-            node,
+            abs.x,
+            abs.y,
+            node.width,
+            node.height,
             store.state.zoom,
             store.state.panX,
             store.state.panY
@@ -374,15 +428,19 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
       let dx = cx - d.startX
       let dy = cy - d.startY
 
-      // Compute snap
+      // Compute snap using absolute positions
       const selectedNodes: SceneNode[] = []
       for (const [id, orig] of d.originals) {
         const n = store.graph.getNode(id)
         if (n) {
+          const abs = store.graph.getAbsolutePosition(id)
+          const parentAbs = n.parentId
+            ? store.graph.getAbsolutePosition(n.parentId)
+            : { x: 0, y: 0 }
           selectedNodes.push({
             ...n,
-            x: orig.x + dx,
-            y: orig.y + dy
+            x: abs.x - parentAbs.x - n.x + orig.x + dx,
+            y: abs.y - parentAbs.y - n.y + orig.y + dy
           })
         }
       }
@@ -399,6 +457,11 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
       for (const [id, orig] of d.originals) {
         store.updateNode(id, { x: Math.round(orig.x + dx), y: Math.round(orig.y + dy) })
       }
+
+      // Detect frame drop target
+      const dropTarget = store.graph.hitTestFrame(cx, cy, store.state.selectedIds)
+      store.setDropTarget(dropTarget?.id ?? null)
+
       return
     }
 
@@ -513,6 +576,13 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
     if (d.type === 'move') {
       store.commitMove(d.originals)
       store.setSnapGuides([])
+
+      // Reparent into frame if dropped on one
+      const dropId = store.state.dropTargetId
+      if (dropId) {
+        store.reparentNodes([...store.state.selectedIds], dropId)
+        store.setDropTarget(null)
+      }
     }
 
     if (d.type === 'rotate') {

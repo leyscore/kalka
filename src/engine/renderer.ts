@@ -6,6 +6,7 @@ export interface RenderOverlays {
   marquee?: { x: number; y: number; width: number; height: number } | null
   snapGuides?: SnapGuide[]
   rotationPreview?: { nodeId: string; angle: number } | null
+  dropTargetId?: string | null
 }
 
 export class SkiaRenderer {
@@ -62,7 +63,7 @@ export class SkiaRenderer {
     const root = graph.getNode(graph.rootId)
     if (root) {
       for (const childId of root.childIds) {
-        this.renderNode(canvas, graph, childId, overlays.rotationPreview)
+        this.renderNode(canvas, graph, childId, overlays)
       }
     }
 
@@ -72,7 +73,7 @@ export class SkiaRenderer {
     canvas.save()
     canvas.scale(this.dpr, this.dpr)
 
-    this.drawSelection(canvas, graph, selectedIds, overlays.rotationPreview)
+    this.drawSelection(canvas, graph, selectedIds, overlays)
     this.drawSnapGuides(canvas, overlays.snapGuides)
     this.drawMarquee(canvas, overlays.marquee)
 
@@ -86,7 +87,7 @@ export class SkiaRenderer {
     canvas: Canvas,
     graph: SceneGraph,
     selectedIds: Set<string>,
-    rotationPreview?: { nodeId: string; angle: number } | null
+    overlays: RenderOverlays
   ): void {
     if (selectedIds.size === 0) return
 
@@ -97,29 +98,35 @@ export class SkiaRenderer {
       const node = graph.getNode(id)
       if (!node) return
 
-      const rotation = rotationPreview?.nodeId === id ? rotationPreview.angle : node.rotation
-      this.drawNodeSelection(canvas, node, rotation)
+      const rotation =
+        overlays.rotationPreview?.nodeId === id ? overlays.rotationPreview.angle : node.rotation
+      this.drawNodeSelection(canvas, node, rotation, graph)
       return
     }
 
-    // Multi-select: individual outlines + unified bounding box
     for (const id of selectedIds) {
       const node = graph.getNode(id)
       if (!node) continue
-      const rotation = rotationPreview?.nodeId === id ? rotationPreview.angle : node.rotation
-      this.drawNodeOutline(canvas, node, rotation)
+      const rotation =
+        overlays.rotationPreview?.nodeId === id ? overlays.rotationPreview.angle : node.rotation
+      this.drawNodeOutline(canvas, node, rotation, graph)
     }
 
-    // Unified bounding box
     const nodes = [...selectedIds]
       .map((id) => graph.getNode(id))
       .filter((n): n is SceneNode => n !== undefined)
-    this.drawGroupBounds(canvas, nodes)
+    this.drawGroupBounds(canvas, nodes, graph)
   }
 
-  private drawNodeSelection(canvas: Canvas, node: SceneNode, rotation: number): void {
-    const cx = (node.x + node.width / 2) * this.zoom + this.panX
-    const cy = (node.y + node.height / 2) * this.zoom + this.panY
+  private drawNodeSelection(
+    canvas: Canvas,
+    node: SceneNode,
+    rotation: number,
+    graph: SceneGraph
+  ): void {
+    const abs = graph.getAbsolutePosition(node.id)
+    const cx = (abs.x + node.width / 2) * this.zoom + this.panX
+    const cy = (abs.y + node.height / 2) * this.zoom + this.panY
     const hw = (node.width / 2) * this.zoom
     const hh = (node.height / 2) * this.zoom
 
@@ -170,9 +177,15 @@ export class SkiaRenderer {
     canvas.restore()
   }
 
-  private drawNodeOutline(canvas: Canvas, node: SceneNode, rotation: number): void {
-    const cx = (node.x + node.width / 2) * this.zoom + this.panX
-    const cy = (node.y + node.height / 2) * this.zoom + this.panY
+  private drawNodeOutline(
+    canvas: Canvas,
+    node: SceneNode,
+    rotation: number,
+    graph: SceneGraph
+  ): void {
+    const abs = graph.getAbsolutePosition(node.id)
+    const cx = (abs.x + node.width / 2) * this.zoom + this.panX
+    const cy = (abs.y + node.height / 2) * this.zoom + this.panY
     const hw = (node.width / 2) * this.zoom
     const hh = (node.height / 2) * this.zoom
 
@@ -185,16 +198,16 @@ export class SkiaRenderer {
     canvas.restore()
   }
 
-  private drawGroupBounds(canvas: Canvas, nodes: SceneNode[]): void {
+  private drawGroupBounds(canvas: Canvas, nodes: SceneNode[], graph: SceneGraph): void {
     let minX = Infinity
     let minY = Infinity
     let maxX = -Infinity
     let maxY = -Infinity
 
     for (const n of nodes) {
-      // For rotated nodes, use AABB of the rotated corners
+      const abs = graph.getAbsolutePosition(n.id)
       if (n.rotation !== 0) {
-        const corners = this.getRotatedCorners(n)
+        const corners = this.getRotatedCorners(n, abs)
         for (const c of corners) {
           minX = Math.min(minX, c.x)
           minY = Math.min(minY, c.y)
@@ -202,10 +215,10 @@ export class SkiaRenderer {
           maxY = Math.max(maxY, c.y)
         }
       } else {
-        const x1 = n.x * this.zoom + this.panX
-        const y1 = n.y * this.zoom + this.panY
-        const x2 = (n.x + n.width) * this.zoom + this.panX
-        const y2 = (n.y + n.height) * this.zoom + this.panY
+        const x1 = abs.x * this.zoom + this.panX
+        const y1 = abs.y * this.zoom + this.panY
+        const x2 = (abs.x + n.width) * this.zoom + this.panX
+        const y2 = (abs.y + n.height) * this.zoom + this.panY
         minX = Math.min(minX, x1)
         minY = Math.min(minY, y1)
         maxX = Math.max(maxX, x2)
@@ -237,9 +250,9 @@ export class SkiaRenderer {
     dashPaint.delete()
   }
 
-  private getRotatedCorners(n: SceneNode) {
-    const cx = (n.x + n.width / 2) * this.zoom + this.panX
-    const cy = (n.y + n.height / 2) * this.zoom + this.panY
+  private getRotatedCorners(n: SceneNode, abs: { x: number; y: number }) {
+    const cx = (abs.x + n.width / 2) * this.zoom + this.panX
+    const cy = (abs.y + n.height / 2) * this.zoom + this.panY
     const hw = (n.width / 2) * this.zoom
     const hh = (n.height / 2) * this.zoom
     const rad = (n.rotation * Math.PI) / 180
@@ -314,12 +327,13 @@ export class SkiaRenderer {
     canvas: Canvas,
     graph: SceneGraph,
     nodeId: string,
-    rotationPreview?: { nodeId: string; angle: number } | null
+    overlays: RenderOverlays
   ): void {
     const node = graph.getNode(nodeId)
     if (!node || !node.visible) return
 
     canvas.save()
+    canvas.translate(node.x, node.y)
 
     if (node.opacity < 1) {
       const layerPaint = new this.ck.Paint()
@@ -328,26 +342,41 @@ export class SkiaRenderer {
       layerPaint.delete()
     }
 
-    const rotation = rotationPreview?.nodeId === nodeId ? rotationPreview.angle : node.rotation
+    const rotation =
+      overlays.rotationPreview?.nodeId === nodeId ? overlays.rotationPreview.angle : node.rotation
 
     if (rotation !== 0) {
-      canvas.rotate(rotation, node.x + node.width / 2, node.y + node.height / 2)
+      canvas.rotate(rotation, node.width / 2, node.height / 2)
     }
 
-    // Clip children for frames
-    if (node.type === 'FRAME') {
-      const clipRect = this.ck.LTRBRect(node.x, node.y, node.x + node.width, node.y + node.height)
-      this.renderShape(canvas, node)
+    this.renderShape(canvas, node)
+
+    // Drop target highlight
+    if (overlays.dropTargetId === nodeId) {
+      const highlight = new this.ck.Paint()
+      highlight.setStyle(this.ck.PaintStyle.Stroke)
+      highlight.setStrokeWidth(2 / this.zoom)
+      highlight.setColor(this.ck.Color4f(0.23, 0.51, 0.96, 0.8))
+      highlight.setAntiAlias(true)
+      canvas.drawRect(this.ck.LTRBRect(0, 0, node.width, node.height), highlight)
+      highlight.delete()
+    }
+
+    // Clip + render children for containers
+    if (node.type === 'FRAME' && node.childIds.length > 0) {
       canvas.save()
-      canvas.clipRect(clipRect, this.ck.ClipOp.Intersect, true)
+      canvas.clipRect(
+        this.ck.LTRBRect(0, 0, node.width, node.height),
+        this.ck.ClipOp.Intersect,
+        true
+      )
       for (const childId of node.childIds) {
-        this.renderNode(canvas, graph, childId, rotationPreview)
+        this.renderNode(canvas, graph, childId, overlays)
       }
       canvas.restore()
     } else {
-      this.renderShape(canvas, node)
       for (const childId of node.childIds) {
-        this.renderNode(canvas, graph, childId, rotationPreview)
+        this.renderNode(canvas, graph, childId, overlays)
       }
     }
 
@@ -358,7 +387,7 @@ export class SkiaRenderer {
   }
 
   private renderShape(canvas: Canvas, node: SceneNode): void {
-    const rect = this.ck.LTRBRect(node.x, node.y, node.x + node.width, node.y + node.height)
+    const rect = this.ck.LTRBRect(0, 0, node.width, node.height)
 
     const hasRadius =
       node.cornerRadius > 0 ||
@@ -382,16 +411,16 @@ export class SkiaRenderer {
           this.renderText(canvas, node)
           break
         case 'LINE':
-          canvas.drawLine(node.x, node.y, node.x + node.width, node.y + node.height, this.fillPaint)
+          canvas.drawLine(0, 0, node.width, node.height, this.fillPaint)
           break
         default:
           if (hasRadius) {
             if (node.independentCorners) {
               const rrect = new Float32Array([
-                node.x,
-                node.y,
-                node.x + node.width,
-                node.y + node.height,
+                0,
+                0,
+                node.width,
+                node.height,
                 node.topLeftRadius,
                 node.topLeftRadius,
                 node.topRightRadius,
@@ -441,7 +470,7 @@ export class SkiaRenderer {
     const text = (node as SceneNode & { text?: string }).text ?? ''
     if (!text) return
 
-    canvas.drawText(text, node.x, node.y + 14, this.fillPaint, this.textFont)
+    canvas.drawText(text, 0, 14, this.fillPaint, this.textFont)
   }
 
   private applyFill(fill: Fill): void {

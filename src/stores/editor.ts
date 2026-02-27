@@ -70,6 +70,7 @@ export function createEditorStore() {
     marquee: null as { x: number; y: number; width: number; height: number } | null,
     snapGuides: [] as SnapGuide[],
     rotationPreview: null as { nodeId: string; angle: number } | null,
+    dropTargetId: null as string | null,
     panX: 0,
     panY: 0,
     zoom: 1,
@@ -89,9 +90,9 @@ export function createEditorStore() {
     selectedNodes.value.length === 1 ? selectedNodes.value[0] : undefined
   )
 
-  const layerNodes = computed(() => {
+  const layerTree = computed(() => {
     void state.renderVersion
-    return graph.getChildren(graph.rootId)
+    return graph.flattenTree()
   })
 
   function requestRender() {
@@ -134,14 +135,33 @@ export function createEditorStore() {
     requestRender()
   }
 
+  function setDropTarget(id: string | null) {
+    state.dropTargetId = id
+    requestRender()
+  }
+
+  function reparentNodes(nodeIds: string[], newParentId: string) {
+    for (const id of nodeIds) {
+      graph.reparentNode(id, newParentId)
+    }
+    requestRender()
+  }
+
   function updateNode(id: string, changes: Partial<SceneNode>) {
     graph.updateNode(id, changes)
     requestRender()
   }
 
-  function createShape(type: NodeType, x: number, y: number, w: number, h: number): string {
+  function createShape(
+    type: NodeType,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    parentId?: string
+  ): string {
     const fill = DEFAULT_FILLS[type] ?? DEFAULT_FILLS.RECTANGLE
-    const node = graph.createNode(type, graph.rootId, {
+    const node = graph.createNode(type, parentId ?? graph.rootId, {
       x,
       y,
       width: w,
@@ -281,7 +301,7 @@ export function createEditorStore() {
     state,
     selectedNodes,
     selectedNode,
-    layerNodes,
+    layerTree,
     requestRender,
     setTool,
     select,
@@ -290,6 +310,8 @@ export function createEditorStore() {
     setMarquee,
     setSnapGuides,
     setRotationPreview,
+    setDropTarget,
+    reparentNodes,
     updateNode,
     createShape,
     duplicateSelected,
