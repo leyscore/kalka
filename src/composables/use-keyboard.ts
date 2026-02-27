@@ -74,8 +74,10 @@ export function useKeyboard(store: EditorStore) {
     if (e.shiftKey && e.key === 'A') {
       e.preventDefault()
       const node = store.selectedNode.value
-      if (node && node.type === 'FRAME') {
+      if (node && node.type === 'FRAME' && store.selectedNodes.value.length === 1) {
         store.setLayoutMode(node.id, node.layoutMode === 'NONE' ? 'VERTICAL' : 'NONE')
+      } else if (store.selectedNodes.value.length > 0) {
+        store.wrapInAutoLayout()
       }
       return
     }

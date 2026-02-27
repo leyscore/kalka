@@ -232,6 +232,57 @@ export function createEditorStore() {
     requestRender()
   }
 
+  function wrapInAutoLayout() {
+    const nodes = selectedNodes.value
+    if (nodes.length === 0) return
+
+    // Find common parent
+    const parentId = nodes[0].parentId ?? graph.rootId
+    const sameParent = nodes.every((n) => (n.parentId ?? graph.rootId) === parentId)
+    if (!sameParent) return
+
+    // Compute bounding box in absolute coords
+    let minX = Infinity
+    let minY = Infinity
+    let maxX = -Infinity
+    let maxY = -Infinity
+    for (const n of nodes) {
+      const abs = graph.getAbsolutePosition(n.id)
+      minX = Math.min(minX, abs.x)
+      minY = Math.min(minY, abs.y)
+      maxX = Math.max(maxX, abs.x + n.width)
+      maxY = Math.max(maxY, abs.y + n.height)
+    }
+
+    // Position relative to parent
+    const parentAbs =
+      parentId === graph.rootId ? { x: 0, y: 0 } : graph.getAbsolutePosition(parentId)
+
+    const frame = graph.createNode('FRAME', parentId, {
+      name: 'Frame',
+      x: minX - parentAbs.x,
+      y: minY - parentAbs.y,
+      width: maxX - minX,
+      height: maxY - minY,
+      layoutMode: 'VERTICAL',
+      primaryAxisSizing: 'HUG',
+      counterAxisSizing: 'HUG',
+      primaryAxisAlign: 'MIN',
+      counterAxisAlign: 'MIN',
+      fills: [{ type: 'SOLID', color: { r: 1, g: 1, b: 1, a: 1 }, opacity: 1, visible: true }]
+    })
+
+    // Reparent nodes into the new frame
+    for (const n of nodes) {
+      graph.reparentNode(n.id, frame.id)
+    }
+
+    computeLayout(graph, frame.id)
+    runLayoutForNode(frame.id)
+    state.selectedIds = new Set([frame.id])
+    requestRender()
+  }
+
   function createShape(
     type: NodeType,
     x: number,
@@ -460,6 +511,7 @@ export function createEditorStore() {
     openFigFile,
     updateNode,
     setLayoutMode,
+    wrapInAutoLayout,
     createShape,
     duplicateSelected,
     writeCopyData,
