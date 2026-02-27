@@ -1,3 +1,32 @@
+diff --git a/node_modules/kiwi-schema/.bun-tag-962afbd98e4e08f9 b/.bun-tag-962afbd98e4e08f9
+new file mode 100644
+index 0000000000000000000000000000000000000000..e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
+diff --git a/cli.js b/cli.js
+index a729eb694b4dfd87302228d6e0fd3ff1cb75266e..67f33fb533e0dfd5176057d26288b7c324d441fb 100755
+--- a/cli.js
++++ b/cli.js
+@@ -2078,7 +2078,7 @@ function verify(root) {
+       if (field.value <= 0) {
+         error("The id for field " + quote(field.name) + " must be positive", field.line, field.column);
+       }
+-      if (field.value > fields.length) {
++      if (false && field.value > fields.length) {
+         error("The id for field " + quote(field.name) + " cannot be larger than " + fields.length, field.line, field.column);
+       }
+       values.push(field.value);
+diff --git a/kiwi-esm.js b/kiwi-esm.js
+index f0f3f8b950abd8150e360511efcfdb10ea019bb9..b57c433a77444a38072364ab24c4e967734645f1 100644
+--- a/kiwi-esm.js
++++ b/kiwi-esm.js
+@@ -2130,7 +2130,7 @@ function verify(root) {
+       if (field.value <= 0) {
+         error("The id for field " + quote(field.name) + " must be positive", field.line, field.column);
+       }
+-      if (field.value > fields.length) {
++      if (false && field.value > fields.length) {
+         error("The id for field " + quote(field.name) + " cannot be larger than " + fields.length, field.line, field.column);
+       }
+       values.push(field.value);
 diff --git a/kiwi.js b/kiwi.js
 index 26a46b6a2efbbdb9623a5275751eaaa10378e617..5a57b99fd2fd5fe087fc1c556672c58aa63b57ec 100644
 --- a/kiwi.js
