@@ -2,8 +2,6 @@
 import { computed, ref } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 
-import { SliderRange, SliderRoot, SliderThumb, SliderTrack } from 'reka-ui'
-
 import ColorPicker from './ColorPicker.vue'
 import { useEditorStore } from '../stores/editor'
 
@@ -216,21 +214,18 @@ function colorHex(c: Color) {
 
       <div class="section">
         <label class="section-label">Appearance</label>
-        <div class="opacity-row">
-          <span class="prop-label">Opacity</span>
-          <SliderRoot
-            class="slider-root"
-            :model-value="[Math.round((store.selectedNodes.value[0]?.opacity ?? 1) * 100)]"
-            :max="100"
-            :step="1"
-            @update:model-value="(v) => updateProp('opacity', (v?.[0] ?? 100) / 100)"
-          >
-            <SliderTrack class="slider-track">
-              <SliderRange class="slider-range" />
-            </SliderTrack>
-            <SliderThumb class="slider-thumb" />
-          </SliderRoot>
-          <span class="prop-value">{{ Math.round((store.selectedNodes.value[0]?.opacity ?? 1) * 100) }}%</span>
+        <div class="input-row">
+          <label class="prop-input">
+            <span class="prop-label">⊘</span>
+            <input
+              type="number"
+              min="0"
+              max="100"
+              :value="Math.round((store.selectedNodes.value[0]?.opacity ?? 1) * 100)"
+              @change="updateProp('opacity', +($event.target as HTMLInputElement).value / 100)"
+            />
+            <span class="input-suffix">%</span>
+          </label>
         </div>
       </div>
     </div>
@@ -543,21 +538,18 @@ function colorHex(c: Color) {
       <!-- Appearance -->
       <div class="section">
         <label class="section-label">Appearance</label>
-        <div class="opacity-row">
-          <span class="prop-label">Opacity</span>
-          <SliderRoot
-            class="slider-root"
-            :model-value="[Math.round(node.opacity * 100)]"
-            :max="100"
-            :step="1"
-            @update:model-value="(v) => updateProp('opacity', (v?.[0] ?? 100) / 100)"
-          >
-            <SliderTrack class="slider-track">
-              <SliderRange class="slider-range" />
-            </SliderTrack>
-            <SliderThumb class="slider-thumb" />
-          </SliderRoot>
-          <span class="prop-value">{{ Math.round(node.opacity * 100) }}%</span>
+        <div class="input-row">
+          <label class="prop-input">
+            <span class="prop-label">⊘</span>
+            <input
+              type="number"
+              min="0"
+              max="100"
+              :value="Math.round(node.opacity * 100)"
+              @change="updateProp('opacity', +($event.target as HTMLInputElement).value / 100)"
+            />
+            <span class="input-suffix">%</span>
+          </label>
         </div>
       </div>
 
@@ -762,56 +754,10 @@ function colorHex(c: Color) {
   font-size: 12px;
 }
 
-.opacity-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.slider-root {
-  position: relative;
-  display: flex;
-  align-items: center;
-  flex: 1;
-  height: 16px;
-  cursor: pointer;
-  user-select: none;
-  touch-action: none;
-}
-
-.slider-track {
-  position: relative;
-  flex-grow: 1;
-  height: 3px;
-  background: var(--border);
-  border-radius: 2px;
-}
-
-.slider-range {
-  position: absolute;
-  height: 100%;
-  background: var(--accent, #3b82f6);
-  border-radius: 2px;
-}
-
-.slider-thumb {
-  display: block;
-  width: 10px;
-  height: 10px;
-  background: white;
-  border-radius: 50%;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
-  outline: none;
-  cursor: pointer;
-  transition: box-shadow 0.1s;
-}
-
-.slider-thumb:hover {
-  box-shadow: 0 0 0 2px var(--accent, #3b82f6);
-}
-
-.slider-thumb:focus-visible {
-  box-shadow: 0 0 0 2px var(--accent, #3b82f6);
+.input-suffix {
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-shrink: 0;
 }
 
 .prop-value {
