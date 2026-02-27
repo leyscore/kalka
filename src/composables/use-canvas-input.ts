@@ -1,4 +1,5 @@
-import { ref, onMounted, onUnmounted, type Ref } from 'vue'
+import { useEventListener } from '@vueuse/core'
+import { ref, type Ref } from 'vue'
 
 import type { NodeType, SceneNode } from '../engine/scene-graph'
 import type { EditorStore, Tool } from '../stores/editor'
@@ -434,17 +435,7 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
     }
   }
 
-  onMounted(() => {
-    const canvas = canvasRef.value
-    if (!canvas) return
-    canvas.addEventListener('wheel', onWheel, { passive: false })
-  })
-
-  onUnmounted(() => {
-    const canvas = canvasRef.value
-    if (!canvas) return
-    canvas.removeEventListener('wheel', onWheel)
-  })
+  useEventListener(canvasRef, 'wheel', onWheel, { passive: false })
 
   return {
     drag,
