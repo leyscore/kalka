@@ -99,6 +99,7 @@ export function createEditorStore() {
   })
 
   const selectedNodes = computed(() => {
+    void state.renderVersion
     const nodes: SceneNode[] = []
     for (const id of state.selectedIds) {
       const n = graph.getNode(id)
