@@ -1,41 +1,135 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+
+import ColorPicker from './ColorPicker.vue'
 import { useEditorStore } from '../stores/editor'
+
+import type { Color, Fill, Stroke } from '../engine/scene-graph'
 
 const store = useEditorStore()
 
-function updateProp(key: string, value: number) {
-  const node = store.selectedNode.value
-  if (!node) return
-  store.updateNode(node.id, { [key]: value })
+const node = computed(() => store.selectedNode.value)
+const multiCount = computed(() => store.selectedNodes.value.length)
+
+function updateProp(key: string, value: number | string) {
+  if (multiCount.value > 1) {
+    for (const n of store.selectedNodes.value) {
+      store.updateNode(n.id, { [key]: value })
+    }
+  } else if (node.value) {
+    store.updateNode(node.value.id, { [key]: value })
+  }
 }
 
-function colorHex(c: { r: number; g: number; b: number }) {
+function updateFillColor(index: number, color: Color) {
+  if (!node.value) return
+  const fills = [...node.value.fills]
+  fills[index] = { ...fills[index], color }
+  store.updateNode(node.value.id, { fills })
+}
+
+function addFill() {
+  if (!node.value) return
+  const fill: Fill = {
+    type: 'SOLID',
+    color: { r: 0.83, g: 0.83, b: 0.83, a: 1 },
+    opacity: 1,
+    visible: true
+  }
+  store.updateNode(node.value.id, { fills: [...node.value.fills, fill] })
+}
+
+function removeFill(index: number) {
+  if (!node.value) return
+  const fills = node.value.fills.filter((_, i) => i !== index)
+  store.updateNode(node.value.id, { fills })
+}
+
+function toggleFillVisibility(index: number) {
+  if (!node.value) return
+  const fills = [...node.value.fills]
+  fills[index] = { ...fills[index], visible: !fills[index].visible }
+  store.updateNode(node.value.id, { fills })
+}
+
+function addStroke() {
+  if (!node.value) return
+  const stroke: Stroke = {
+    color: { r: 0, g: 0, b: 0, a: 1 },
+    weight: 1,
+    opacity: 1,
+    visible: true,
+    align: 'CENTER'
+  }
+  store.updateNode(node.value.id, { strokes: [...node.value.strokes, stroke] })
+}
+
+function updateStrokeColor(index: number, color: Color) {
+  if (!node.value) return
+  const strokes = [...node.value.strokes]
+  strokes[index] = { ...strokes[index], color }
+  store.updateNode(node.value.id, { strokes })
+}
+
+function updateStrokeWeight(index: number, weight: number) {
+  if (!node.value) return
+  const strokes = [...node.value.strokes]
+  strokes[index] = { ...strokes[index], weight }
+  store.updateNode(node.value.id, { strokes })
+}
+
+function removeStroke(index: number) {
+  if (!node.value) return
+  const strokes = node.value.strokes.filter((_, i) => i !== index)
+  store.updateNode(node.value.id, { strokes })
+}
+
+function colorHex(c: Color) {
   const hex = (v: number) =>
     Math.round(v * 255)
       .toString(16)
       .padStart(2, '0')
   return `#${hex(c.r)}${hex(c.g)}${hex(c.b)}`
 }
-
-function colorRgba(c: { r: number; g: number; b: number; a: number }) {
-  return `rgba(${Math.round(c.r * 255)}, ${Math.round(c.g * 255)}, ${Math.round(c.b * 255)}, ${c.a})`
-}
 </script>
 
 <template>
   <aside class="properties-panel">
-    <!-- Tabs -->
     <div class="panel-tabs">
       <button class="tab active">Design</button>
       <button class="tab">Prototype</button>
       <span class="zoom-display">{{ Math.round(store.state.zoom * 100) }}%</span>
     </div>
 
-    <div v-if="store.selectedNode.value" class="panel-scroll">
-      <!-- Node header -->
+    <!-- Multi-select summary -->
+    <div v-if="multiCount > 1" class="panel-scroll">
       <div class="section node-header">
-        <span class="node-type">{{ store.selectedNode.value.type }}</span>
-        <span class="node-name">{{ store.selectedNode.value.name }}</span>
+        <span class="node-type">Mixed</span>
+        <span class="node-name">{{ multiCount }} layers</span>
+      </div>
+
+      <div class="section">
+        <label class="section-label">Appearance</label>
+        <div class="input-row">
+          <label class="prop-input full">
+            <span class="prop-label">Opacity</span>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              :value="store.selectedNodes.value[0]?.opacity * 100"
+              @input="updateProp('opacity', +($event.target as HTMLInputElement).value / 100)"
+            />
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Single selection -->
+    <div v-else-if="node" class="panel-scroll">
+      <div class="section node-header">
+        <span class="node-type">{{ node.type }}</span>
+        <span class="node-name">{{ node.name }}</span>
       </div>
 
       <!-- Position -->
@@ -46,7 +140,7 @@ function colorRgba(c: { r: number; g: number; b: number; a: number }) {
             <span class="prop-label">X</span>
             <input
               type="number"
-              :value="Math.round(store.selectedNode.value.x)"
+              :value="Math.round(node.x)"
               @change="updateProp('x', +($event.target as HTMLInputElement).value)"
             />
           </label>
@@ -54,7 +148,7 @@ function colorRgba(c: { r: number; g: number; b: number; a: number }) {
             <span class="prop-label">Y</span>
             <input
               type="number"
-              :value="Math.round(store.selectedNode.value.y)"
+              :value="Math.round(node.y)"
               @change="updateProp('y', +($event.target as HTMLInputElement).value)"
             />
           </label>
@@ -68,7 +162,7 @@ function colorRgba(c: { r: number; g: number; b: number; a: number }) {
             <span class="prop-label">R</span>
             <input
               type="number"
-              :value="Math.round(store.selectedNode.value.rotation)"
+              :value="Math.round(node.rotation)"
               @change="updateProp('rotation', +($event.target as HTMLInputElement).value)"
             />
           </label>
@@ -83,7 +177,7 @@ function colorRgba(c: { r: number; g: number; b: number; a: number }) {
             <span class="prop-label">W</span>
             <input
               type="number"
-              :value="Math.round(store.selectedNode.value.width)"
+              :value="Math.round(node.width)"
               @change="updateProp('width', +($event.target as HTMLInputElement).value)"
             />
           </label>
@@ -91,7 +185,7 @@ function colorRgba(c: { r: number; g: number; b: number; a: number }) {
             <span class="prop-label">H</span>
             <input
               type="number"
-              :value="Math.round(store.selectedNode.value.height)"
+              :value="Math.round(node.height)"
               @change="updateProp('height', +($event.target as HTMLInputElement).value)"
             />
           </label>
@@ -101,7 +195,7 @@ function colorRgba(c: { r: number; g: number; b: number; a: number }) {
             <span class="prop-label">↻</span>
             <input
               type="number"
-              :value="store.selectedNode.value.cornerRadius"
+              :value="node.cornerRadius"
               @change="updateProp('cornerRadius', +($event.target as HTMLInputElement).value)"
             />
           </label>
@@ -118,28 +212,52 @@ function colorRgba(c: { r: number; g: number; b: number; a: number }) {
               type="range"
               min="0"
               max="100"
-              :value="store.selectedNode.value.opacity * 100"
+              :value="node.opacity * 100"
               @input="updateProp('opacity', +($event.target as HTMLInputElement).value / 100)"
             />
-            <span class="prop-value"
-              >{{ Math.round(store.selectedNode.value.opacity * 100) }}%</span
-            >
+            <span class="prop-value">{{ Math.round(node.opacity * 100) }}%</span>
           </label>
         </div>
       </div>
 
       <!-- Fill -->
       <div class="section">
-        <label class="section-label">Fill</label>
-        <div v-for="(fill, i) in store.selectedNode.value.fills" :key="i" class="fill-row">
-          <div class="color-swatch" :style="{ background: colorRgba(fill.color) }" />
+        <div class="section-header">
+          <label class="section-label">Fill</label>
+          <button class="section-add" @click="addFill">+</button>
+        </div>
+        <div v-for="(fill, i) in node.fills" :key="i" class="fill-row">
+          <button
+            class="visibility-toggle"
+            :class="{ hidden: !fill.visible }"
+            @click="toggleFillVisibility(i)"
+          >
+            {{ fill.visible ? '◉' : '○' }}
+          </button>
+          <ColorPicker :color="fill.color" @update="updateFillColor(i, $event)" />
           <span class="color-hex">{{ colorHex(fill.color) }}</span>
+          <button class="remove-btn" @click="removeFill(i)">×</button>
         </div>
       </div>
 
       <!-- Stroke -->
       <div class="section">
-        <label class="section-label">Stroke</label>
+        <div class="section-header">
+          <label class="section-label">Stroke</label>
+          <button class="section-add" @click="addStroke">+</button>
+        </div>
+        <div v-for="(stroke, i) in node.strokes" :key="i" class="fill-row">
+          <ColorPicker :color="stroke.color" @update="updateStrokeColor(i, $event)" />
+          <span class="color-hex">{{ colorHex(stroke.color) }}</span>
+          <input
+            type="number"
+            class="stroke-weight"
+            :value="stroke.weight"
+            min="0"
+            @change="updateStrokeWeight(i, +($event.target as HTMLInputElement).value)"
+          />
+          <button class="remove-btn" @click="removeStroke(i)">×</button>
+        </div>
       </div>
 
       <!-- Effects -->
@@ -222,11 +340,33 @@ function colorRgba(c: { r: number; g: number; b: number; a: number }) {
   border-bottom: 1px solid var(--border);
 }
 
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .section-label {
   display: block;
   font-size: 11px;
   color: var(--text-muted);
   margin-bottom: 6px;
+}
+
+.section-add {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  border-radius: 4px;
+}
+
+.section-add:hover {
+  background: var(--hover);
+  color: var(--text);
 }
 
 .node-header {
@@ -296,20 +436,64 @@ function colorRgba(c: { r: number; g: number; b: number; a: number }) {
 .fill-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 2px 0;
+  gap: 6px;
+  padding: 3px 0;
 }
 
-.color-swatch {
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-  border: 1px solid var(--border);
-  flex-shrink: 0;
+.visibility-toggle {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+  width: 16px;
+  text-align: center;
+}
+
+.visibility-toggle.hidden {
+  opacity: 0.4;
 }
 
 .color-hex {
   font-size: 12px;
   font-family: monospace;
+  flex: 1;
+}
+
+.remove-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 2px;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+.fill-row:hover .remove-btn {
+  opacity: 1;
+}
+
+.remove-btn:hover {
+  color: var(--text);
+}
+
+.stroke-weight {
+  width: 36px;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  padding: 2px 4px;
+  font: inherit;
+  font-size: 11px;
+  text-align: center;
+}
+
+.stroke-weight::-webkit-inner-spin-button {
+  display: none;
 }
 </style>

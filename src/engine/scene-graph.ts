@@ -74,6 +74,15 @@ export interface SceneNode {
 
   visible: boolean
   locked: boolean
+
+  // Text-specific
+  text: string
+  fontSize: number
+  fontFamily: string
+  fontWeight: number
+  textAlignHorizontal: 'LEFT' | 'CENTER' | 'RIGHT' | 'JUSTIFIED'
+  lineHeight: number | null
+  letterSpacing: number
 }
 
 let nextLocalID = 1
@@ -107,6 +116,13 @@ function createDefaultNode(type: NodeType, overrides: Partial<SceneNode> = {}): 
     cornerSmoothing: 0,
     visible: true,
     locked: false,
+    text: '',
+    fontSize: 14,
+    fontFamily: 'Inter',
+    fontWeight: 400,
+    textAlignHorizontal: 'LEFT',
+    lineHeight: null,
+    letterSpacing: 0,
     ...overrides
   }
 }

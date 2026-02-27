@@ -4,6 +4,7 @@ import { SceneGraph } from '../engine/scene-graph'
 import { UndoManager } from '../engine/undo'
 
 import type { SceneNode, NodeType, Fill } from '../engine/scene-graph'
+import type { SnapGuide } from '../engine/snap'
 
 export type Tool = 'SELECT' | 'FRAME' | 'RECTANGLE' | 'ELLIPSE' | 'LINE' | 'TEXT' | 'PEN' | 'HAND'
 
@@ -55,7 +56,8 @@ const DEFAULT_FILLS: Record<string, Fill> = {
     opacity: 1,
     visible: true
   },
-  LINE: { type: 'SOLID', color: { r: 0, g: 0, b: 0, a: 1 }, opacity: 1, visible: true }
+  LINE: { type: 'SOLID', color: { r: 0, g: 0, b: 0, a: 1 }, opacity: 1, visible: true },
+  TEXT: { type: 'SOLID', color: { r: 0, g: 0, b: 0, a: 1 }, opacity: 1, visible: true }
 }
 
 export function createEditorStore() {
@@ -66,6 +68,8 @@ export function createEditorStore() {
     activeTool: 'SELECT' as Tool,
     selectedIds: new Set<string>(),
     marquee: null as { x: number; y: number; width: number; height: number } | null,
+    snapGuides: [] as SnapGuide[],
+    rotationPreview: null as { nodeId: string; angle: number } | null,
     panX: 0,
     panY: 0,
     zoom: 1,
@@ -117,6 +121,16 @@ export function createEditorStore() {
 
   function setMarquee(rect: { x: number; y: number; width: number; height: number } | null) {
     state.marquee = rect
+    requestRender()
+  }
+
+  function setSnapGuides(guides: SnapGuide[]) {
+    state.snapGuides = guides
+    requestRender()
+  }
+
+  function setRotationPreview(preview: { nodeId: string; angle: number } | null) {
+    state.rotationPreview = preview
     requestRender()
   }
 
@@ -274,6 +288,8 @@ export function createEditorStore() {
     clearSelection,
     selectAll,
     setMarquee,
+    setSnapGuides,
+    setRotationPreview,
     updateNode,
     createShape,
     duplicateSelected,

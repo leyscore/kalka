@@ -1,6 +1,8 @@
 import { useEventListener } from '@vueuse/core'
 import { ref, type Ref } from 'vue'
 
+import { computeSelectionBounds, computeSnap } from '../engine/snap'
+
 import type { NodeType, SceneNode } from '../engine/scene-graph'
 import type { EditorStore, Tool } from '../stores/editor'
 
@@ -44,16 +46,27 @@ interface DragMarquee {
   startY: number
 }
 
-type DragState = DragDraw | DragMove | DragPan | DragResize | DragMarquee
+interface DragRotate {
+  type: 'rotate'
+  nodeId: string
+  centerX: number
+  centerY: number
+  startAngle: number
+  origRotation: number
+}
+
+type DragState = DragDraw | DragMove | DragPan | DragResize | DragMarquee | DragRotate
 
 const TOOL_TO_NODE: Partial<Record<Tool, NodeType>> = {
   FRAME: 'FRAME',
   RECTANGLE: 'RECTANGLE',
   ELLIPSE: 'ELLIPSE',
-  LINE: 'LINE'
+  LINE: 'LINE',
+  TEXT: 'TEXT'
 }
 
 const HANDLE_HIT_RADIUS = 6
+const ROTATION_HIT_RADIUS = 8
 
 const HANDLE_CURSORS: Record<HandlePosition, string> = {
   nw: 'nwse-resize',
@@ -66,11 +79,17 @@ const HANDLE_CURSORS: Record<HandlePosition, string> = {
   w: 'ew-resize'
 }
 
+function getScreenRect(node: SceneNode, zoom: number, panX: number, panY: number) {
+  return {
+    x1: node.x * zoom + panX,
+    y1: node.y * zoom + panY,
+    x2: (node.x + node.width) * zoom + panX,
+    y2: (node.y + node.height) * zoom + panY
+  }
+}
+
 function getHandlePositions(node: SceneNode, zoom: number, panX: number, panY: number) {
-  const x1 = node.x * zoom + panX
-  const y1 = node.y * zoom + panY
-  const x2 = (node.x + node.width) * zoom + panX
-  const y2 = (node.y + node.height) * zoom + panY
+  const { x1, y1, x2, y2 } = getScreenRect(node, zoom, panX, panY)
   const mx = (x1 + x2) / 2
   const my = (y1 + y2) / 2
 
@@ -103,6 +122,20 @@ function hitTestHandle(
   return null
 }
 
+function hitTestRotationHandle(
+  sx: number,
+  sy: number,
+  node: SceneNode,
+  zoom: number,
+  panX: number,
+  panY: number
+): boolean {
+  const { x1, x2, y1 } = getScreenRect(node, zoom, panX, panY)
+  const mx = (x1 + x2) / 2
+  const rotY = y1 - 24
+  return Math.abs(sx - mx) < ROTATION_HIT_RADIUS && Math.abs(sy - rotY) < ROTATION_HIT_RADIUS
+}
+
 export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: EditorStore) {
   const drag = ref<DragState | null>(null)
   const cursorOverride = ref<string | null>(null)
@@ -121,7 +154,6 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
     const { sx, sy, cx, cy } = getCoords(e)
     const tool = store.state.activeTool
 
-    // Middle mouse or Hand tool → pan
     if (e.button === 1 || tool === 'HAND') {
       drag.value = {
         type: 'pan',
@@ -133,7 +165,6 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
       return
     }
 
-    // Alt+click with SELECT → pan
     if (tool === 'SELECT' && e.altKey && !store.state.selectedIds.size) {
       drag.value = {
         type: 'pan',
@@ -146,7 +177,30 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
     }
 
     if (tool === 'SELECT') {
-      // Check resize handles first
+      // Check rotation handle (single selection only)
+      if (store.state.selectedIds.size === 1) {
+        const id = [...store.state.selectedIds][0]
+        const node = store.graph.getNode(id)
+        if (
+          node &&
+          hitTestRotationHandle(sx, sy, node, store.state.zoom, store.state.panX, store.state.panY)
+        ) {
+          const screenCx = (node.x + node.width / 2) * store.state.zoom + store.state.panX
+          const screenCy = (node.y + node.height / 2) * store.state.zoom + store.state.panY
+          const startAngle = Math.atan2(sy - screenCy, sx - screenCx) * (180 / Math.PI)
+          drag.value = {
+            type: 'rotate',
+            nodeId: id,
+            centerX: screenCx,
+            centerY: screenCy,
+            startAngle,
+            origRotation: node.rotation
+          }
+          return
+        }
+      }
+
+      // Check resize handles
       for (const id of store.state.selectedIds) {
         const node = store.graph.getNode(id)
         if (!node) continue
@@ -186,7 +240,7 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
           if (n) originals.set(id, { x: n.x, y: n.y })
         }
 
-        // Alt+drag selected → duplicate
+        // Alt+drag → duplicate
         if (e.altKey && store.state.selectedIds.size > 0) {
           const newIds: string[] = []
           const newOriginals = new Map<string, { x: number; y: number }>()
@@ -220,10 +274,19 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
 
         drag.value = { type: 'move', startX: cx, startY: cy, originals }
       } else {
-        // Marquee selection
         store.clearSelection()
         drag.value = { type: 'marquee', startX: cx, startY: cy }
       }
+      return
+    }
+
+    // Text tool: click to create text node
+    if (tool === 'TEXT') {
+      const nodeId = store.createShape('TEXT', cx, cy, 200, 24)
+      store.graph.updateNode(nodeId, { text: 'Text' })
+      store.select([nodeId])
+      store.setTool('SELECT')
+      store.requestRender()
       return
     }
 
@@ -238,24 +301,40 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
   }
 
   function onMouseMove(e: MouseEvent) {
-    // Cursor changes on hover (when not dragging)
+    // Cursor on hover
     if (!drag.value && store.state.activeTool === 'SELECT') {
       const { sx, sy } = getCoords(e)
       let cursor: string | null = null
-      for (const id of store.state.selectedIds) {
+
+      // Rotation handle cursor
+      if (store.state.selectedIds.size === 1) {
+        const id = [...store.state.selectedIds][0]
         const node = store.graph.getNode(id)
-        if (!node) continue
-        const handle = hitTestHandle(
-          sx,
-          sy,
-          node,
-          store.state.zoom,
-          store.state.panX,
-          store.state.panY
-        )
-        if (handle) {
-          cursor = HANDLE_CURSORS[handle]
-          break
+        if (
+          node &&
+          hitTestRotationHandle(sx, sy, node, store.state.zoom, store.state.panX, store.state.panY)
+        ) {
+          cursor =
+            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'%3E%3Cpath d='M21 2v6h-6'/%3E%3Cpath d='M21 13a9 9 0 1 1-3-7.7L21 8'/%3E%3C/svg%3E\") 12 12, pointer"
+        }
+      }
+
+      if (!cursor) {
+        for (const id of store.state.selectedIds) {
+          const node = store.graph.getNode(id)
+          if (!node) continue
+          const handle = hitTestHandle(
+            sx,
+            sy,
+            node,
+            store.state.zoom,
+            store.state.panX,
+            store.state.panY
+          )
+          if (handle) {
+            cursor = HANDLE_CURSORS[handle]
+            break
+          }
         }
       }
       cursorOverride.value = cursor
@@ -273,11 +352,50 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
       return
     }
 
-    const { cx, cy } = getCoords(e)
+    const { cx, cy, sx, sy } = getCoords(e)
+
+    if (d.type === 'rotate') {
+      const currentAngle = Math.atan2(sy - d.centerY, sx - d.centerX) * (180 / Math.PI)
+      let rotation = d.origRotation + (currentAngle - d.startAngle)
+
+      // Shift → snap to 15° increments
+      if (e.shiftKey) {
+        rotation = Math.round(rotation / 15) * 15
+      }
+
+      // Normalize to -180..180
+      rotation = ((((rotation + 180) % 360) + 360) % 360) - 180
+
+      store.setRotationPreview({ nodeId: d.nodeId, angle: rotation })
+      return
+    }
 
     if (d.type === 'move') {
-      const dx = cx - d.startX
-      const dy = cy - d.startY
+      let dx = cx - d.startX
+      let dy = cy - d.startY
+
+      // Compute snap
+      const selectedNodes: SceneNode[] = []
+      for (const [id, orig] of d.originals) {
+        const n = store.graph.getNode(id)
+        if (n) {
+          selectedNodes.push({
+            ...n,
+            x: orig.x + dx,
+            y: orig.y + dy
+          })
+        }
+      }
+
+      const bounds = computeSelectionBounds(selectedNodes)
+      if (bounds) {
+        const allNodes = store.graph.getChildren(store.graph.rootId)
+        const snap = computeSnap(store.state.selectedIds, bounds, allNodes)
+        dx += snap.dx
+        dy += snap.dy
+        store.setSnapGuides(snap.guides)
+      }
+
       for (const [id, orig] of d.originals) {
         store.updateNode(id, { x: Math.round(orig.x + dx), y: Math.round(orig.y + dy) })
       }
@@ -293,7 +411,6 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
       let w = cx - d.startX
       let h = cy - d.startY
 
-      // Shift → constrain to square
       if (e.shiftKey) {
         const size = Math.max(Math.abs(w), Math.abs(h))
         w = Math.sign(w) * size
@@ -337,7 +454,6 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
     const dx = cx - d.startX
     const dy = cy - d.startY
 
-    // Which edges move
     const moveLeft = handle.includes('w')
     const moveRight = handle.includes('e')
     const moveTop = handle === 'nw' || handle === 'n' || handle === 'ne'
@@ -354,7 +470,6 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
       height = origRect.height - dy
     }
 
-    // Shift → maintain aspect ratio
     if (constrain && origRect.width > 0 && origRect.height > 0) {
       const aspect = origRect.width / origRect.height
       if (handle === 'n' || handle === 's') {
@@ -374,7 +489,6 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
       }
     }
 
-    // Prevent negative sizes — flip
     if (width < 0) {
       x = x + width
       width = -width
@@ -398,10 +512,15 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
 
     if (d.type === 'move') {
       store.commitMove(d.originals)
+      store.setSnapGuides([])
     }
 
-    if (d.type === 'resize') {
-      // TODO: commit resize to undo stack
+    if (d.type === 'rotate') {
+      const preview = store.state.rotationPreview
+      if (preview) {
+        store.updateNode(d.nodeId, { rotation: preview.angle })
+      }
+      store.setRotationPreview(null)
     }
 
     if (d.type === 'draw') {
