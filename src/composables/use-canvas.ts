@@ -5,20 +5,35 @@ import { getCanvasKit } from '../engine/canvaskit'
 import { SkiaRenderer } from '../engine/renderer'
 
 import type { EditorStore } from '../stores/editor'
+import type { CanvasKit } from 'canvaskit-wasm'
 
 export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, store: EditorStore) {
   let renderer: SkiaRenderer | null = null
+  let ck: CanvasKit | null = null
   let destroyed = false
 
   async function init() {
     const canvas = canvasRef.value
     if (!canvas || destroyed) return
 
-    const ck = await getCanvasKit()
+    ck = await getCanvasKit()
     if (destroyed) return
 
     await new Promise((r) => requestAnimationFrame(r))
-    resizeCanvas(canvas)
+    createSurface(canvas)
+  }
+
+  function createSurface(canvas: HTMLCanvasElement) {
+    if (!ck) return
+
+    renderer?.destroy()
+    renderer = null
+
+    const dpr = window.devicePixelRatio || 1
+    const w = canvas.clientWidth
+    const h = canvas.clientHeight
+    canvas.width = w * dpr
+    canvas.height = h * dpr
 
     const surface = ck.MakeWebGLCanvasSurface(canvas)
     if (!surface) {
@@ -28,16 +43,6 @@ export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, store: Edito
 
     renderer = new SkiaRenderer(ck, surface)
     render()
-  }
-
-  function resizeCanvas(canvas: HTMLCanvasElement) {
-    const dpr = window.devicePixelRatio || 1
-    const w = canvas.clientWidth
-    const h = canvas.clientHeight
-    canvas.width = w * dpr
-    canvas.height = h * dpr
-    canvas.style.width = `${w}px`
-    canvas.style.height = `${h}px`
   }
 
   function render() {
@@ -60,9 +65,8 @@ export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, store: Edito
 
   useResizeObserver(canvasRef, () => {
     const canvas = canvasRef.value
-    if (!canvas || !renderer) return
-    resizeCanvas(canvas)
-    render()
+    if (!canvas || !ck) return
+    createSurface(canvas)
   })
 
   watch(
