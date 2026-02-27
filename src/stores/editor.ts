@@ -229,53 +229,33 @@ export function createEditorStore() {
     }
   }
 
-  async function copySelected() {
+  function writeCopyData(clipboardData: DataTransfer) {
     const nodes = selectedNodes.value
     if (nodes.length === 0) return
 
     const html = buildFigmaClipboardHTML(nodes, graph)
     const names = nodes.map((n) => n.name).join('\n')
 
-    const clipboardItem = new ClipboardItem({
-      'text/html': new Blob([html], { type: 'text/html' }),
-      'text/plain': new Blob([names], { type: 'text/plain' })
-    })
-    await navigator.clipboard.write([clipboardItem])
+    clipboardData.setData('text/html', html)
+    clipboardData.setData('text/plain', names)
   }
 
-  async function cutSelected() {
-    await copySelected()
-    deleteSelected()
-  }
-
-  async function pasteFromClipboard() {
-    const items = await navigator.clipboard.read()
-    let html = ''
-    for (const item of items) {
-      if (item.types.includes('text/html')) {
-        const blob = await item.getType('text/html')
-        html = await blob.text()
-        break
-      }
-    }
-    if (!html) return
-
-    // Try our own format first
+  function pasteFromHTML(html: string) {
     const ownNodes = parseOpenPencilClipboard(html)
     if (ownNodes) {
       pasteOpenPencilNodes(ownNodes)
       return
     }
 
-    // Try Figma format
-    const figma = await parseFigmaClipboard(html)
-    if (figma) {
-      const created = importClipboardNodes(figma.nodes, graph, graph.rootId, 20, 20)
-      if (created.length > 0) {
-        state.selectedIds = new Set(created)
-        requestRender()
+    parseFigmaClipboard(html).then((figma) => {
+      if (figma) {
+        const created = importClipboardNodes(figma.nodes, graph, graph.rootId, 20, 20)
+        if (created.length > 0) {
+          state.selectedIds = new Set(created)
+          requestRender()
+        }
       }
-    }
+    })
   }
 
   function pasteOpenPencilNodes(
@@ -432,9 +412,8 @@ export function createEditorStore() {
     updateNode,
     createShape,
     duplicateSelected,
-    copySelected,
-    cutSelected,
-    pasteFromClipboard,
+    writeCopyData,
+    pasteFromHTML,
     deleteSelected,
     commitMove,
     undoAction,

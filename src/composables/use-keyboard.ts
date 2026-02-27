@@ -15,9 +15,33 @@ function openFileDialog(store: EditorStore) {
   input.click()
 }
 
+function isEditing(e: Event) {
+  return e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement
+}
+
 export function useKeyboard(store: EditorStore) {
+  useEventListener(window, 'copy', (e: ClipboardEvent) => {
+    if (isEditing(e)) return
+    e.preventDefault()
+    store.writeCopyData(e.clipboardData!)
+  })
+
+  useEventListener(window, 'cut', (e: ClipboardEvent) => {
+    if (isEditing(e)) return
+    e.preventDefault()
+    store.writeCopyData(e.clipboardData!)
+    store.deleteSelected()
+  })
+
+  useEventListener(window, 'paste', (e: ClipboardEvent) => {
+    if (isEditing(e)) return
+    e.preventDefault()
+    const html = e.clipboardData?.getData('text/html') ?? ''
+    if (html) store.pasteFromHTML(html)
+  })
+
   useEventListener(window, 'keydown', (e: KeyboardEvent) => {
-    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+    if (isEditing(e)) return
 
     const tool = TOOL_SHORTCUTS[e.key.toLowerCase()]
     if (tool) {
@@ -44,15 +68,6 @@ export function useKeyboard(store: EditorStore) {
       } else if (e.key === 'o') {
         e.preventDefault()
         openFileDialog(store)
-      } else if (e.key === 'c') {
-        e.preventDefault()
-        store.copySelected()
-      } else if (e.key === 'x') {
-        e.preventDefault()
-        store.cutSelected()
-      } else if (e.key === 'v') {
-        e.preventDefault()
-        store.pasteFromClipboard()
       }
     }
 
