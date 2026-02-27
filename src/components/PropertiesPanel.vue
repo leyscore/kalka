@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 
 import ColorPicker from './ColorPicker.vue'
+import ScrubInput from './ScrubInput.vue'
 import { useEditorStore } from '../stores/editor'
 
 import type { Color, Fill, Stroke, LayoutSizing, LayoutAlign, LayoutCounterAlign } from '../engine/scene-graph'
@@ -215,17 +216,14 @@ function colorHex(c: Color) {
       <div class="section">
         <label class="section-label">Appearance</label>
         <div class="input-row">
-          <label class="prop-input">
-            <span class="prop-label">⊘</span>
-            <input
-              type="number"
-              min="0"
-              max="100"
-              :value="Math.round((store.selectedNodes.value[0]?.opacity ?? 1) * 100)"
-              @change="updateProp('opacity', +($event.target as HTMLInputElement).value / 100)"
-            />
-            <span class="input-suffix">%</span>
-          </label>
+          <ScrubInput
+            icon="⊘"
+            suffix="%"
+            :model-value="Math.round((store.selectedNodes.value[0]?.opacity ?? 1) * 100)"
+            :min="0"
+            :max="100"
+            @update:model-value="updateProp('opacity', $event / 100)"
+          />
         </div>
       </div>
     </div>
@@ -241,36 +239,30 @@ function colorHex(c: Color) {
       <div class="section">
         <label class="section-label">Position</label>
         <div class="input-row">
-          <label class="prop-input">
-            <span class="prop-label">X</span>
-            <input
-              type="number"
-              :value="Math.round(node.x)"
-              @change="updateProp('x', +($event.target as HTMLInputElement).value)"
-            />
-          </label>
-          <label class="prop-input">
-            <span class="prop-label">Y</span>
-            <input
-              type="number"
-              :value="Math.round(node.y)"
-              @change="updateProp('y', +($event.target as HTMLInputElement).value)"
-            />
-          </label>
+          <ScrubInput
+            icon="X"
+            :model-value="Math.round(node.x)"
+            @update:model-value="updateProp('x', $event)"
+          />
+          <ScrubInput
+            icon="Y"
+            :model-value="Math.round(node.y)"
+            @update:model-value="updateProp('y', $event)"
+          />
         </div>
       </div>
 
       <!-- Rotation -->
       <div class="section">
         <div class="input-row">
-          <label class="prop-input">
-            <span class="prop-label">R</span>
-            <input
-              type="number"
-              :value="Math.round(node.rotation)"
-              @change="updateProp('rotation', +($event.target as HTMLInputElement).value)"
-            />
-          </label>
+          <ScrubInput
+            icon="R"
+            suffix="°"
+            :model-value="Math.round(node.rotation)"
+            :min="-360"
+            :max="360"
+            @update:model-value="updateProp('rotation', $event)"
+          />
         </div>
       </div>
 
@@ -279,11 +271,11 @@ function colorHex(c: Color) {
         <label class="section-label">Layout</label>
         <div class="input-row">
           <div ref="widthDimRef" class="dim-input">
-            <span class="prop-label">W</span>
-            <input
-              type="number"
-              :value="Math.round(node.width)"
-              @change="updateProp('width', +($event.target as HTMLInputElement).value)"
+            <ScrubInput
+              icon="W"
+              :model-value="Math.round(node.width)"
+              :min="0"
+              @update:model-value="updateProp('width', $event)"
             />
             <button
               v-if="node.layoutMode !== 'NONE' || isInAutoLayout"
@@ -319,11 +311,11 @@ function colorHex(c: Color) {
             </div>
           </div>
           <div ref="heightDimRef" class="dim-input">
-            <span class="prop-label">H</span>
-            <input
-              type="number"
-              :value="Math.round(node.height)"
-              @change="updateProp('height', +($event.target as HTMLInputElement).value)"
+            <ScrubInput
+              icon="H"
+              :model-value="Math.round(node.height)"
+              :min="0"
+              @update:model-value="updateProp('height', $event)"
             />
             <button
               v-if="node.layoutMode !== 'NONE' || isInAutoLayout"
@@ -360,14 +352,12 @@ function colorHex(c: Color) {
           </div>
         </div>
         <div class="input-row">
-          <label class="prop-input">
-            <span class="prop-label">↻</span>
-            <input
-              type="number"
-              :value="node.cornerRadius"
-              @change="updateProp('cornerRadius', +($event.target as HTMLInputElement).value)"
-            />
-          </label>
+          <ScrubInput
+            icon="↻"
+            :model-value="node.cornerRadius"
+            :min="0"
+            @update:model-value="updateProp('cornerRadius', $event)"
+          />
         </div>
       </div>
 
@@ -451,19 +441,19 @@ function colorHex(c: Color) {
                 <span class="dot" />
               </button>
             </div>
-            <div class="gap-input">
-              <svg class="gap-icon" width="14" height="14" viewBox="0 0 14 14">
-                <rect x="0" y="1" width="4" height="12" rx="0.5" fill="currentColor" opacity="0.4" />
-                <rect x="5" y="5" width="4" height="4" rx="0.5" fill="currentColor" />
-                <rect x="10" y="1" width="4" height="12" rx="0.5" fill="currentColor" opacity="0.4" />
-              </svg>
-              <input
-                type="number"
-                :value="node.itemSpacing"
-                min="0"
-                @change="updateProp('itemSpacing', +($event.target as HTMLInputElement).value)"
-              />
-            </div>
+            <ScrubInput
+              :model-value="node.itemSpacing"
+              :min="0"
+              @update:model-value="updateProp('itemSpacing', $event)"
+            >
+              <template #icon>
+                <svg width="14" height="14" viewBox="0 0 14 14">
+                  <rect x="0" y="1" width="4" height="12" rx="0.5" fill="currentColor" opacity="0.4" />
+                  <rect x="5" y="5" width="4" height="4" rx="0.5" fill="currentColor" />
+                  <rect x="10" y="1" width="4" height="12" rx="0.5" fill="currentColor" opacity="0.4" />
+                </svg>
+              </template>
+            </ScrubInput>
           </div>
 
           <!-- Padding -->
@@ -505,18 +495,18 @@ function colorHex(c: Color) {
               </div>
             </template>
             <template v-else>
-              <div class="padding-uniform">
-                <svg class="pad-icon" width="14" height="14" viewBox="0 0 14 14">
-                  <rect x="0" y="0" width="14" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1" />
-                  <rect x="3" y="3" width="8" height="8" rx="1" fill="currentColor" opacity="0.3" />
-                </svg>
-                <input
-                  type="number"
-                  :value="node.paddingTop"
-                  min="0"
-                  @change="setUniformPadding(+($event.target as HTMLInputElement).value)"
-                />
-              </div>
+              <ScrubInput
+                :model-value="node.paddingTop"
+                :min="0"
+                @update:model-value="setUniformPadding($event)"
+              >
+                <template #icon>
+                  <svg width="14" height="14" viewBox="0 0 14 14">
+                    <rect x="0" y="0" width="14" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1" />
+                    <rect x="3" y="3" width="8" height="8" rx="1" fill="currentColor" opacity="0.3" />
+                  </svg>
+                </template>
+              </ScrubInput>
             </template>
             <button
               class="pad-toggle"
@@ -539,17 +529,14 @@ function colorHex(c: Color) {
       <div class="section">
         <label class="section-label">Appearance</label>
         <div class="input-row">
-          <label class="prop-input">
-            <span class="prop-label">⊘</span>
-            <input
-              type="number"
-              min="0"
-              max="100"
-              :value="Math.round(node.opacity * 100)"
-              @change="updateProp('opacity', +($event.target as HTMLInputElement).value / 100)"
-            />
-            <span class="input-suffix">%</span>
-          </label>
+          <ScrubInput
+            icon="⊘"
+            suffix="%"
+            :model-value="Math.round(node.opacity * 100)"
+            :min="0"
+            :max="100"
+            @update:model-value="updateProp('opacity', $event / 100)"
+          />
         </div>
       </div>
 
@@ -723,49 +710,7 @@ function colorHex(c: Color) {
   gap: 6px;
 }
 
-.prop-input {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex: 1;
-  min-width: 0;
-}
 
-.prop-input.full {
-  flex-basis: 100%;
-}
-
-.prop-label {
-  font-size: 11px;
-  color: var(--text-muted);
-  width: 14px;
-  flex-shrink: 0;
-}
-
-.prop-input input[type='number'] {
-  flex: 1;
-  min-width: 0;
-  background: var(--input-bg);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--text);
-  padding: 3px 6px;
-  font: inherit;
-  font-size: 12px;
-}
-
-.input-suffix {
-  font-size: 11px;
-  color: var(--text-muted);
-  flex-shrink: 0;
-}
-
-.prop-value {
-  font-size: 11px;
-  color: var(--text-muted);
-  width: 32px;
-  text-align: right;
-}
 
 .fill-row {
   display: flex;
@@ -975,29 +920,7 @@ function colorHex(c: Color) {
   height: 6px;
 }
 
-.gap-input {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex: 1;
-}
 
-.gap-icon {
-  color: var(--text-muted);
-  flex-shrink: 0;
-}
-
-.gap-input input[type='number'] {
-  flex: 1;
-  min-width: 0;
-  background: var(--input-bg);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--text);
-  padding: 3px 6px;
-  font: inherit;
-  font-size: 12px;
-}
 
 .layout-padding-row {
   display: flex;
@@ -1006,29 +929,7 @@ function colorHex(c: Color) {
   margin-top: 6px;
 }
 
-.padding-uniform {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex: 1;
-}
 
-.pad-icon {
-  color: var(--text-muted);
-  flex-shrink: 0;
-}
-
-.padding-uniform input[type='number'] {
-  flex: 1;
-  min-width: 0;
-  background: var(--input-bg);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--text);
-  padding: 3px 6px;
-  font: inherit;
-  font-size: 12px;
-}
 
 .padding-grid {
   display: grid;
