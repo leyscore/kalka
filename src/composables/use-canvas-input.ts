@@ -384,8 +384,7 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
               store.state.panY
             )
           ) {
-            cursor =
-              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'%3E%3Cpath d='M21 2v6h-6'/%3E%3Cpath d='M21 13a9 9 0 1 1-3-7.7L21 8'/%3E%3C/svg%3E\") 12 12, pointer"
+            cursor = 'grab'
           }
         }
       }
