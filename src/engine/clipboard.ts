@@ -1,5 +1,5 @@
 import { decodeBinarySchema, compileSchema, ByteBuffer } from 'kiwi-schema'
-import { inflateSync } from 'fflate'
+import { inflateSync, deflateSync } from 'fflate'
 
 import type { SceneGraph, SceneNode, Fill, Stroke, Color } from './scene-graph'
 
@@ -18,9 +18,22 @@ interface KiwiNodeChange {
   opacity?: number
   size?: { x: number; y: number }
   transform?: { m00: number; m01: number; m02: number; m10: number; m11: number; m12: number }
-  fillPaints?: Array<{ type: string; color?: Color; opacity?: number; visible?: boolean }>
-  strokePaints?: Array<{ type: string; color?: Color; opacity?: number; visible?: boolean }>
+  fillPaints?: Array<{
+    type: string
+    color?: Color
+    opacity?: number
+    visible?: boolean
+    blendMode?: string
+  }>
+  strokePaints?: Array<{
+    type: string
+    color?: Color
+    opacity?: number
+    visible?: boolean
+    blendMode?: string
+  }>
   strokeWeight?: number
+  strokeAlign?: string
   cornerRadius?: number
   rectangleCornerRadiiIndependent?: boolean
   rectangleTopLeftCornerRadius?: number
@@ -28,10 +41,136 @@ interface KiwiNodeChange {
   rectangleBottomLeftCornerRadius?: number
   rectangleBottomRightCornerRadius?: number
   fontSize?: number
-  fontName?: { family: string; style: string }
-  textData?: { characters: string }
+  fontName?: { family: string; style: string; postscript?: string }
+  textData?: { characters: string; lines?: unknown[] }
   textAlignHorizontal?: string
+  textAutoResize?: string
+  phase?: string
   [key: string]: unknown
+}
+
+type CompiledSchema = ReturnType<typeof compileSchema>
+
+let cachedSchema: CompiledSchema | null = null
+let cachedSchemaDeflated: Uint8Array | null = null
+
+export function prefetchFigmaSchema(): void {
+  getFigmaSchema()
+}
+
+async function getFigmaSchema(): Promise<{ compiled: CompiledSchema; deflated: Uint8Array }> {
+  if (cachedSchema && cachedSchemaDeflated) {
+    return { compiled: cachedSchema, deflated: cachedSchemaDeflated }
+  }
+
+  const resp = await fetch('/figma-schema.bin')
+  const deflated = new Uint8Array(await resp.arrayBuffer())
+  const schemaBytes = inflateSync(deflated)
+  const schema = decodeBinarySchema(new ByteBuffer(schemaBytes))
+  const compiled = compileSchema(schema)
+
+  cachedSchema = compiled
+  cachedSchemaDeflated = deflated
+  return { compiled, deflated }
+}
+
+function parseFigKiwi(binary: Uint8Array): { schemaDeflated: Uint8Array; dataRaw: Uint8Array } | null {
+  const header = new TextDecoder().decode(binary.slice(0, 8))
+  if (header !== 'fig-kiwi') return null
+
+  const view = new DataView(binary.buffer, binary.byteOffset, binary.byteLength)
+  let offset = 12
+
+  const chunks: Uint8Array[] = []
+  while (offset < binary.length) {
+    const chunkLen = view.getUint32(offset, true)
+    offset += 4
+    chunks.push(binary.slice(offset, offset + chunkLen))
+    offset += chunkLen
+  }
+  if (chunks.length < 2) return null
+
+  const schemaDeflated = chunks[0]
+  let dataRaw: Uint8Array
+  try {
+    dataRaw = inflateSync(chunks[1])
+  } catch {
+    // Zstd fallback (lazy import)
+    return null
+  }
+
+  return { schemaDeflated, dataRaw }
+}
+
+async function parseFigKiwiWithZstd(
+  binary: Uint8Array
+): Promise<{ schemaDeflated: Uint8Array; dataRaw: Uint8Array } | null> {
+  const header = new TextDecoder().decode(binary.slice(0, 8))
+  if (header !== 'fig-kiwi') return null
+
+  const view = new DataView(binary.buffer, binary.byteOffset, binary.byteLength)
+  let offset = 12
+
+  const chunks: Uint8Array[] = []
+  while (offset < binary.length) {
+    const chunkLen = view.getUint32(offset, true)
+    offset += 4
+    chunks.push(binary.slice(offset, offset + chunkLen))
+    offset += chunkLen
+  }
+  if (chunks.length < 2) return null
+
+  let dataRaw: Uint8Array
+  try {
+    dataRaw = inflateSync(chunks[1])
+  } catch {
+    const fzstd = await import('fzstd')
+    dataRaw = fzstd.decompress(chunks[1])
+  }
+
+  return { schemaDeflated: chunks[0], dataRaw }
+}
+
+function buildFigKiwi(schemaDeflated: Uint8Array, dataRaw: Uint8Array): Uint8Array {
+  const dataDeflated = deflateSync(dataRaw)
+  const FIG_KIWI_VERSION = 106
+
+  const total = 8 + 4 + 4 + schemaDeflated.length + 4 + dataDeflated.length
+  const out = new Uint8Array(total)
+  const view = new DataView(out.buffer)
+
+  const magic = new TextEncoder().encode('fig-kiwi')
+  out.set(magic, 0)
+  view.setUint32(8, FIG_KIWI_VERSION, true)
+
+  let offset = 12
+  view.setUint32(offset, schemaDeflated.length, true)
+  offset += 4
+  out.set(schemaDeflated, offset)
+  offset += schemaDeflated.length
+
+  view.setUint32(offset, dataDeflated.length, true)
+  offset += 4
+  out.set(dataDeflated, offset)
+
+  return out
+}
+
+function binaryToBase64(bytes: Uint8Array): string {
+  let binary = ''
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i])
+  }
+  return btoa(binary)
+}
+
+function base64ToBinary(b64: string): Uint8Array {
+  const raw = atob(b64)
+  const bytes = new Uint8Array(raw.length)
+  for (let i = 0; i < raw.length; i++) {
+    bytes[i] = raw.charCodeAt(i)
+  }
+  return bytes
 }
 
 // --- Paste from Figma ---
@@ -44,36 +183,15 @@ export async function parseFigmaClipboard(
   if (!metaMatch || !bufMatch) return null
 
   const meta: FigmaClipboardMeta = JSON.parse(atob(metaMatch[1]))
-  const binary = Uint8Array.from(atob(bufMatch[1]), (c) => c.charCodeAt(0))
+  const binary = base64ToBinary(bufMatch[1])
 
-  const header = new TextDecoder().decode(binary.slice(0, 8))
-  if (header !== 'fig-kiwi') return null
+  const parsed = parseFigKiwi(binary) ?? (await parseFigKiwiWithZstd(binary))
+  if (!parsed) return null
 
-  const view = new DataView(binary.buffer, binary.byteOffset, binary.byteLength)
-  let offset = 12 // skip magic(8) + version(4)
-
-  const chunks: Uint8Array[] = []
-  while (offset < binary.length) {
-    const chunkLen = view.getUint32(offset, true)
-    offset += 4
-    chunks.push(binary.slice(offset, offset + chunkLen))
-    offset += chunkLen
-  }
-
-  if (chunks.length < 2) return null
-
-  const schemaBytes = inflateSync(chunks[0])
-  let dataBytes: Uint8Array
-  try {
-    dataBytes = inflateSync(chunks[1])
-  } catch {
-    const fzstd = await import('fzstd')
-    dataBytes = fzstd.decompress(chunks[1])
-  }
-
+  const schemaBytes = inflateSync(parsed.schemaDeflated)
   const schema = decodeBinarySchema(new ByteBuffer(schemaBytes))
   const compiled = compileSchema(schema)
-  const msg = compiled.decodeMessage(dataBytes) as { nodeChanges?: KiwiNodeChange[] }
+  const msg = compiled.decodeMessage(parsed.dataRaw) as { nodeChanges?: KiwiNodeChange[] }
 
   return { nodes: msg.nodeChanges ?? [], meta }
 }
@@ -85,7 +203,6 @@ export function importClipboardNodes(
   offsetX = 0,
   offsetY = 0
 ): string[] {
-  // Build parent map
   const guidMap = new Map<string, KiwiNodeChange>()
   const parentMap = new Map<string, string>()
   for (const nc of nodeChanges) {
@@ -97,7 +214,6 @@ export function importClipboardNodes(
     }
   }
 
-  // Find top-level nodes (skip DOCUMENT and CANVAS, find their children)
   const skipTypes = new Set(['DOCUMENT', 'CANVAS'])
   const topLevel: string[] = []
   for (const [id, nc] of guidMap) {
@@ -108,7 +224,7 @@ export function importClipboardNodes(
     }
   }
 
-  const created = new Map<string, string>() // figma guid → our node id
+  const created = new Map<string, string>()
   const createdIds: string[] = []
 
   function createNode(figmaId: string, ourParentId: string) {
@@ -143,7 +259,7 @@ export function importClipboardNodes(
         align: 'CENTER' as const
       }))
 
-    const nodeType = mapType(nc.type)
+    const nodeType = mapNodeType(nc.type)
     const node = graph.createNode(nodeType, ourParentId, {
       name: nc.name ?? nodeType,
       x,
@@ -171,7 +287,6 @@ export function importClipboardNodes(
     created.set(figmaId, node.id)
     if (ourParentId === targetParentId) createdIds.push(node.id)
 
-    // Create children
     const children: string[] = []
     for (const [childId, pid] of parentMap) {
       if (pid === figmaId && !skipTypes.has(guidMap.get(childId)?.type ?? '')) {
@@ -195,7 +310,7 @@ export function importClipboardNodes(
   return createdIds
 }
 
-function mapType(type?: string): SceneNode['type'] {
+function mapNodeType(type?: string): SceneNode['type'] {
   switch (type) {
     case 'FRAME':
     case 'COMPONENT':
@@ -227,32 +342,226 @@ function mapType(type?: string): SceneNode['type'] {
   }
 }
 
-// --- Copy to Figma-compatible clipboard ---
+// --- Copy to Figma-compatible fig-kiwi ---
 
-export function buildFigmaClipboardHTML(
-  nodes: SceneNode[],
+function mapToFigmaType(type: SceneNode['type']): string {
+  switch (type) {
+    case 'FRAME':
+      return 'FRAME'
+    case 'RECTANGLE':
+      return 'RECTANGLE'
+    case 'ELLIPSE':
+      return 'ELLIPSE'
+    case 'TEXT':
+      return 'TEXT'
+    case 'LINE':
+      return 'LINE'
+    case 'STAR':
+      return 'STAR'
+    case 'POLYGON':
+      return 'REGULAR_POLYGON'
+    case 'VECTOR':
+      return 'VECTOR'
+    case 'GROUP':
+      return 'FRAME'
+    case 'SECTION':
+      return 'SECTION'
+    default:
+      return 'RECTANGLE'
+  }
+}
+
+function fractionalPosition(index: number): string {
+  const base = '!'
+  return String.fromCharCode(base.charCodeAt(0) + index)
+}
+
+function sceneNodeToKiwi(
+  node: SceneNode,
+  parentGuid: { sessionID: number; localID: number },
+  childIndex: number,
+  localIdCounter: { value: number },
   graph: SceneGraph
-): string {
-  const meta: FigmaClipboardMeta = {
-    fileKey: 'openpencil',
-    pasteID: Math.floor(Math.random() * 2147483647),
-    dataType: 'scene'
+): KiwiNodeChange[] {
+  const localID = localIdCounter.value++
+  const guid = { sessionID: 1, localID }
+  const cos = Math.cos((node.rotation * Math.PI) / 180)
+  const sin = Math.sin((node.rotation * Math.PI) / 180)
+
+  const fillPaints = node.fills
+    .filter((f) => f.type === 'SOLID')
+    .map((f) => ({
+      type: 'SOLID' as const,
+      color: f.color,
+      opacity: f.opacity,
+      visible: f.visible,
+      blendMode: 'NORMAL' as const
+    }))
+
+  const strokePaints = node.strokes
+    .filter((s) => s.visible)
+    .map((s) => ({
+      type: 'SOLID' as const,
+      color: s.color,
+      opacity: s.opacity,
+      visible: true,
+      blendMode: 'NORMAL' as const
+    }))
+
+  const nc: KiwiNodeChange = {
+    guid,
+    parentIndex: { guid: parentGuid, position: fractionalPosition(childIndex) },
+    type: mapToFigmaType(node.type),
+    name: node.name,
+    visible: node.visible,
+    opacity: node.opacity,
+    phase: 'CREATED',
+    size: { x: node.width, y: node.height },
+    transform: { m00: cos, m01: -sin, m02: node.x, m10: sin, m11: cos, m12: node.y },
+    strokeWeight: node.strokes.length > 0 ? node.strokes[0].weight : 1,
+    strokeAlign: 'INSIDE'
   }
 
-  const metaB64 = btoa(JSON.stringify(meta) + '\n')
+  if (fillPaints.length > 0) nc.fillPaints = fillPaints
+  if (strokePaints.length > 0) nc.strokePaints = strokePaints
 
-  const internalData = {
+  if (node.cornerRadius > 0) {
+    nc.cornerRadius = node.cornerRadius
+    nc.rectangleTopLeftCornerRadius = node.independentCorners
+      ? node.topLeftRadius
+      : node.cornerRadius
+    nc.rectangleTopRightCornerRadius = node.independentCorners
+      ? node.topRightRadius
+      : node.cornerRadius
+    nc.rectangleBottomLeftCornerRadius = node.independentCorners
+      ? node.bottomLeftRadius
+      : node.cornerRadius
+    nc.rectangleBottomRightCornerRadius = node.independentCorners
+      ? node.bottomRightRadius
+      : node.cornerRadius
+  }
+
+  if (node.type === 'TEXT') {
+    nc.fontSize = node.fontSize
+    nc.fontName = { family: node.fontFamily, style: 'Regular', postscript: '' }
+    nc.textData = {
+      characters: node.text,
+      lines: [
+        {
+          lineType: 'PLAIN',
+          styleId: 0,
+          indentationLevel: 0,
+          sourceDirectionality: 'AUTO',
+          listStartOffset: 0,
+          isFirstLineOfList: false
+        }
+      ]
+    }
+    nc.textAutoResize = 'WIDTH_AND_HEIGHT'
+    nc.textAlignHorizontal = node.textAlignHorizontal
+  }
+
+  if (node.type === 'FRAME' || node.type === 'GROUP') {
+    nc.frameMaskDisabled = node.type === 'GROUP'
+  }
+
+  const result: KiwiNodeChange[] = [nc]
+  const children = graph.getChildren(node.id)
+  for (let i = 0; i < children.length; i++) {
+    result.push(...sceneNodeToKiwi(children[i], guid, i, localIdCounter, graph))
+  }
+
+  return result
+}
+
+export async function buildFigmaClipboardHTML(
+  nodes: SceneNode[],
+  graph: SceneGraph
+): Promise<string> {
+  const { compiled, deflated: schemaDeflated } = await getFigmaSchema()
+
+  const docGuid = { sessionID: 0, localID: 0 }
+  const canvasGuid = { sessionID: 0, localID: 1 }
+  const localIdCounter = { value: 100 }
+
+  const nodeChanges: KiwiNodeChange[] = [
+    {
+      guid: docGuid,
+      type: 'DOCUMENT',
+      name: 'Document',
+      visible: true,
+      opacity: 1,
+      phase: 'CREATED',
+      transform: { m00: 1, m01: 0, m02: 0, m10: 0, m11: 1, m12: 0 }
+    },
+    {
+      guid: canvasGuid,
+      parentIndex: { guid: docGuid, position: '!' },
+      type: 'CANVAS',
+      name: 'Page 1',
+      visible: true,
+      opacity: 1,
+      phase: 'CREATED',
+      transform: { m00: 1, m01: 0, m02: 0, m10: 0, m11: 1, m12: 0 }
+    }
+  ]
+
+  for (let i = 0; i < nodes.length; i++) {
+    nodeChanges.push(...sceneNodeToKiwi(nodes[i], canvasGuid, i, localIdCounter, graph))
+  }
+
+  const msg = {
+    type: 'NODE_CHANGES',
+    sessionID: 0,
+    ackID: 0,
+    pasteID: Math.floor(Math.random() * 2147483647),
+    pasteFileKey: 'openpencil',
+    nodeChanges
+  }
+
+  const dataRaw = compiled.encodeMessage(msg)
+  const figKiwiBinary = buildFigKiwi(schemaDeflated, dataRaw)
+  const bufferB64 = binaryToBase64(figKiwiBinary)
+
+  const meta: FigmaClipboardMeta = {
+    fileKey: 'openpencil',
+    pasteID: msg.pasteID,
+    dataType: 'scene'
+  }
+  const metaB64 = btoa(JSON.stringify(meta))
+
+  return (
+    `<meta charset='utf-8'>` +
+    `<span data-metadata="<!--(figmeta)${metaB64}(/figmeta)-->"></span>` +
+    `<span data-buffer="<!--(figma)${bufferB64}(/figma)-->"></span>`
+  )
+}
+
+// --- Internal copy/paste (OpenPencil ↔ OpenPencil) ---
+
+export function parseOpenPencilClipboard(
+  html: string
+): Array<SceneNode & { children?: SceneNode[] }> | null {
+  const match = html.match(/<!--\(openpencil\)(.*?)\(\/openpencil\)-->/s)
+  if (!match) return null
+
+  try {
+    const decoded = JSON.parse(atob(match[1]))
+    if (decoded.format === 'openpencil/v1' && Array.isArray(decoded.nodes)) {
+      return decoded.nodes
+    }
+  } catch {
+    // Not our format
+  }
+  return null
+}
+
+export function buildOpenPencilClipboardHTML(nodes: SceneNode[], graph: SceneGraph): string {
+  const data = {
     format: 'openpencil/v1',
     nodes: collectNodeTree(nodes, graph)
   }
-  const dataB64 = btoa(JSON.stringify(internalData))
-
-  const html =
-    `<meta charset='utf-8'>` +
-    `<span data-metadata="<!--(figmeta)${metaB64}(/figmeta)-->"></span>` +
-    `<span data-buffer="<!--(figma)${dataB64}(/figma)-->"></span>`
-
-  return html
+  return `<!--(openpencil)${btoa(JSON.stringify(data))}(/openpencil)-->`
 }
 
 function collectNodeTree(
@@ -266,23 +575,4 @@ function collectNodeTree(
       children: children.length > 0 ? collectNodeTree(children, graph) : undefined
     }
   })
-}
-
-// --- Parse our own format back ---
-
-export function parseOpenPencilClipboard(
-  html: string
-): Array<SceneNode & { children?: SceneNode[] }> | null {
-  const bufMatch = html.match(/\(figma\)(.*?)\(\/figma\)/s)
-  if (!bufMatch) return null
-
-  try {
-    const decoded = JSON.parse(atob(bufMatch[1]))
-    if (decoded.format === 'openpencil/v1' && Array.isArray(decoded.nodes)) {
-      return decoded.nodes
-    }
-  } catch {
-    // Not our format
-  }
-  return null
 }

@@ -4,7 +4,9 @@ import {
   parseFigmaClipboard,
   importClipboardNodes,
   parseOpenPencilClipboard,
-  buildFigmaClipboardHTML
+  buildFigmaClipboardHTML,
+  buildOpenPencilClipboardHTML,
+  prefetchFigmaSchema
 } from '../engine/clipboard'
 import { readFigFile } from '../engine/fig-file'
 import { SceneGraph } from '../engine/scene-graph'
@@ -70,6 +72,8 @@ const DEFAULT_FILLS: Record<string, Fill> = {
 export function createEditorStore() {
   let graph = new SceneGraph()
   const undo = new UndoManager()
+
+  prefetchFigmaSchema()
 
   const state = reactive({
     activeTool: 'SELECT' as Tool,
@@ -233,11 +237,21 @@ export function createEditorStore() {
     const nodes = selectedNodes.value
     if (nodes.length === 0) return
 
-    const html = buildFigmaClipboardHTML(nodes, graph)
     const names = nodes.map((n) => n.name).join('\n')
+    const internalHtml = buildOpenPencilClipboardHTML(nodes, graph)
 
-    clipboardData.setData('text/html', html)
     clipboardData.setData('text/plain', names)
+    clipboardData.setData('text/html', internalHtml)
+
+    buildFigmaClipboardHTML(nodes, graph).then((figmaHtml) => {
+      const combined = figmaHtml + internalHtml
+      navigator.clipboard.write([
+        new ClipboardItem({
+          'text/html': new Blob([combined], { type: 'text/html' }),
+          'text/plain': new Blob([names], { type: 'text/plain' })
+        })
+      ])
+    })
   }
 
   function pasteFromHTML(html: string) {
