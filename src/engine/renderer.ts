@@ -235,6 +235,10 @@ export class SkiaRenderer {
 
       const parent = graph.getNode(node.parentId)
       if (!parent) continue
+
+      // Skip dashed outline for top-level frames (direct children of root)
+      if (parent.parentId === graph.rootId) continue
+
       drawn.add(node.parentId)
 
       const abs = graph.getAbsolutePosition(parent.id)
