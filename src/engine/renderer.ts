@@ -917,7 +917,9 @@ export class SkiaRenderer {
     const step = this.rulerStep()
     const minorStep = step / 5
 
-    // Horizontal ruler
+    // Horizontal ruler (clipped)
+    canvas.save()
+    canvas.clipRect(this.ck.LTRBRect(R, 0, vw, R), this.ck.ClipOp.Intersect, false)
     const worldLeft = -this.panX / this.zoom
     const worldRight = (vw - this.panX) / this.zoom
     const startX = Math.floor(worldLeft / step) * step
@@ -934,8 +936,11 @@ export class SkiaRenderer {
         canvas.drawText(label, sx + 2, R - tickLen - 2, textPaint, font)
       }
     }
+    canvas.restore()
 
-    // Vertical ruler
+    // Vertical ruler (clipped)
+    canvas.save()
+    canvas.clipRect(this.ck.LTRBRect(0, R, R, vh), this.ck.ClipOp.Intersect, false)
     const worldTop = -this.panY / this.zoom
     const worldBottom = (vh - this.panY) / this.zoom
     const startY = Math.floor(worldTop / step) * step
@@ -950,11 +955,13 @@ export class SkiaRenderer {
       if (isMajor) {
         const label = this.rulerLabel(wy)
         canvas.save()
-        canvas.rotate(-90, R - tickLen - 2, sy)
-        canvas.drawText(label, R - tickLen - 2, sy - 2, textPaint, font)
+        canvas.translate(R * 0.5, sy - 3)
+        canvas.rotate(-90, 0, 0)
+        canvas.drawText(label, 0, 3, textPaint, font)
         canvas.restore()
       }
     }
+    canvas.restore()
 
     // Selection highlight on rulers
     if (selectedIds.size > 0) {
