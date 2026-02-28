@@ -1,9 +1,15 @@
-use tauri::menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem, SubmenuBuilder};
+use tauri::{
+    menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem, SubmenuBuilder},
+    Emitter,
+};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .on_menu_event(|app, event| {
+            let _ = app.emit("menu-event", event.id().0.as_str());
+        })
         .setup(|app| {
             let app_menu = SubmenuBuilder::new(app, "OpenPencil")
                 .item(&PredefinedMenuItem::about(app, Some("About OpenPencil"), None)?)

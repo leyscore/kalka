@@ -1,19 +1,9 @@
 import { useEventListener } from '@vueuse/core'
 
 import { TOOL_SHORTCUTS } from '../stores/editor'
+import { openFileDialog } from './use-menu'
 
 import type { EditorStore } from '../stores/editor'
-
-function openFileDialog(store: EditorStore) {
-  const input = document.createElement('input')
-  input.type = 'file'
-  input.accept = '.fig'
-  input.addEventListener('change', () => {
-    const file = input.files?.[0]
-    if (file) store.openFigFile(file)
-  })
-  input.click()
-}
 
 function isEditing(e: Event) {
   return e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement

@@ -2,6 +2,7 @@
 import { useEventListener, useUrlSearchParams } from '@vueuse/core'
 
 import { useKeyboard } from './composables/use-keyboard'
+import { useMenu } from './composables/use-menu'
 import { createDemoShapes } from './demo'
 import { provideEditorStore } from './stores/editor'
 
@@ -12,6 +13,7 @@ import Toolbar from './components/Toolbar.vue'
 
 const store = provideEditorStore()
 useKeyboard(store)
+useMenu(store)
 
 useEventListener(document, 'wheel', (e: WheelEvent) => {
   if (e.ctrlKey || e.metaKey) e.preventDefault()
