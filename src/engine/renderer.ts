@@ -160,6 +160,12 @@ export class SkiaRenderer {
 
     canvas.restore()
 
+    // Section titles (screen coordinates, zoom-independent)
+    canvas.save()
+    canvas.scale(this.dpr, this.dpr)
+    this.drawSectionTitles(canvas, graph)
+    canvas.restore()
+
     // UI overlay layer (screen coordinates, zoom-independent)
     canvas.save()
     canvas.scale(this.dpr, this.dpr)
@@ -711,20 +717,70 @@ export class SkiaRenderer {
       canvas.drawRRect(rrect, this.strokePaint)
     }
 
-    // Title pill above the section
-    if (this.sectionTitleFont) {
-      const name = node.name
-      const glyphIds = this.sectionTitleFont.getGlyphIDs(name)
-      const widths = this.sectionTitleFont.getGlyphWidths(glyphIds)
-      let textWidth = 0
-      for (const w of widths) textWidth += w
+  }
 
-      const pillW = textWidth + SECTION_TITLE_PADDING_X * 2
+  private drawSectionTitles(canvas: Canvas, graph: SceneGraph): void {
+    if (!this.sectionTitleFont) return
+
+    const pageNode = graph.getNode(this.pageId ?? graph.rootId)
+    if (!pageNode) return
+
+    const sections: { node: SceneNode; absX: number; absY: number }[] = []
+    const collectSections = (parentId: string, ox: number, oy: number) => {
+      const parent = graph.getNode(parentId)
+      if (!parent) return
+      for (const childId of parent.childIds) {
+        const child = graph.getNode(childId)
+        if (!child || !child.visible) continue
+        const ax = ox + child.x
+        const ay = oy + child.y
+        if (child.type === 'SECTION') sections.push({ node: child, absX: ax, absY: ay })
+        if (child.childIds.length > 0) collectSections(childId, ax, ay)
+      }
+    }
+    collectSections(pageNode.id, 0, 0)
+
+    const font = this.sectionTitleFont
+    const ellipsis = '…'
+    const ellipsisGlyphs = font.getGlyphIDs(ellipsis)
+    const ellipsisWidth = font.getGlyphWidths(ellipsisGlyphs)[0]
+
+    for (const { node, absX, absY } of sections) {
+      const screenX = (absX * this.zoom + this.panX)
+      const screenY = (absY * this.zoom + this.panY)
+      const screenW = node.width * this.zoom
+      const maxPillW = Math.max(screenW, 0)
+
+      const glyphIds = font.getGlyphIDs(node.name)
+      const widths = font.getGlyphWidths(glyphIds)
+
+      let fullTextWidth = 0
+      for (const w of widths) fullTextWidth += w
+
+      const maxTextW = maxPillW - SECTION_TITLE_PADDING_X * 2
+      let displayText = node.name
+      let textWidth = fullTextWidth
+
+      if (textWidth > maxTextW && maxTextW > ellipsisWidth) {
+        let truncW = 0
+        let truncIdx = 0
+        for (let i = 0; i < widths.length; i++) {
+          if (truncW + widths[i] + ellipsisWidth > maxTextW) break
+          truncW += widths[i]
+          truncIdx = i + 1
+        }
+        displayText = node.name.slice(0, truncIdx) + ellipsis
+        textWidth = truncW + ellipsisWidth
+      } else if (maxTextW <= ellipsisWidth) {
+        displayText = ellipsis
+        textWidth = ellipsisWidth
+      }
+
+      const pillW = Math.min(textWidth + SECTION_TITLE_PADDING_X * 2, maxPillW)
       const pillH = SECTION_TITLE_HEIGHT
-      const pillX = 0
-      const pillY = -pillH - SECTION_TITLE_GAP
+      const pillX = screenX
+      const pillY = screenY - pillH - SECTION_TITLE_GAP
 
-      // Pill background — same as first fill or muted
       const pillPaint = new this.ck.Paint()
       pillPaint.setStyle(this.ck.PaintStyle.Fill)
       if (node.fills.length > 0 && node.fills[0].visible) {
@@ -735,16 +791,18 @@ export class SkiaRenderer {
       }
       pillPaint.setAntiAlias(true)
       const pillRect = this.ck.LTRBRect(pillX, pillY, pillX + pillW, pillY + pillH)
-      canvas.drawRRect(this.ck.RRectXY(pillRect, SECTION_TITLE_RADIUS, SECTION_TITLE_RADIUS), pillPaint)
+      canvas.drawRRect(
+        this.ck.RRectXY(pillRect, SECTION_TITLE_RADIUS, SECTION_TITLE_RADIUS),
+        pillPaint
+      )
       pillPaint.delete()
 
-      // Title text
       const textPaint = new this.ck.Paint()
       textPaint.setStyle(this.ck.PaintStyle.Fill)
       textPaint.setColor(this.ck.WHITE)
       textPaint.setAntiAlias(true)
       const textY = pillY + pillH * 0.7
-      canvas.drawText(name, pillX + SECTION_TITLE_PADDING_X, textY, textPaint, this.sectionTitleFont)
+      canvas.drawText(displayText, pillX + SECTION_TITLE_PADDING_X, textY, textPaint, font)
       textPaint.delete()
     }
   }
