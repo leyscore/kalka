@@ -5,7 +5,13 @@ use tauri::{
 
 #[tauri::command]
 fn zstd_compress(data: Vec<u8>) -> Result<Vec<u8>, String> {
-    zstd::encode_all(data.as_slice(), 3).map_err(|e| e.to_string())
+    use std::io::Write;
+    let mut encoder = zstd::Encoder::new(Vec::new(), 3).map_err(|e| e.to_string())?;
+    encoder
+        .include_contentsize(true)
+        .map_err(|e| e.to_string())?;
+    encoder.write_all(&data).map_err(|e| e.to_string())?;
+    encoder.finish().map_err(|e| e.to_string())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
