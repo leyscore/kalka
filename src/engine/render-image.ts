@@ -87,8 +87,12 @@ export function renderNodesToImage(
     surface.flush()
     const image = surface.makeImageSnapshot()
     const quality = options.quality ?? defaultQuality(options.format)
-    const encoded = image.encodeToBytes(ckImageFormat(ck, options.format), quality)
+    const fmt = ckImageFormat(ck, options.format)
+    const encoded = image.encodeToBytes(fmt, quality)
     image.delete()
+    if (!encoded) {
+      console.error(`encodeToBytes returned null for format=${options.format} quality=${quality}`)
+    }
     return encoded ? new Uint8Array(encoded) : null
   } finally {
     surface.delete()

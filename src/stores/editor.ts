@@ -620,7 +620,10 @@ export function createEditorStore() {
   async function exportSelection(scale: number, format: ExportFormat) {
     const ids = [...state.selectedIds]
     const data = renderExportImage(ids, scale, format)
-    if (!data) return
+    if (!data) {
+      console.error(`Export failed: renderExportImage returned null for format=${format} scale=${scale}`)
+      return
+    }
 
     const node = ids.length === 1 ? graph.getNode(ids[0]) : undefined
     const baseName = node?.name ?? 'Export'
