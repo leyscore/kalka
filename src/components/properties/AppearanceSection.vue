@@ -11,7 +11,7 @@ function toggleVisibility() {
 </script>
 
 <template>
-  <div class="border-b border-border px-3 py-2">
+  <div v-if="node" class="border-b border-border px-3 py-2">
     <div class="mb-1.5 flex items-center justify-between">
       <label class="text-[11px] text-muted">Appearance</label>
       <button

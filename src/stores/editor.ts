@@ -502,8 +502,13 @@ export function createEditorStore() {
     })
     const frameId = frame.id
 
-    for (const n of nodes) {
-      graph.reparentNode(n.id, frameId)
+    const sortedIds = nodes
+      .map((n) => ({ id: n.id, pos: graph.getAbsolutePosition(n.id) }))
+      .sort((a, b) => a.pos.y - b.pos.y || a.pos.x - b.pos.x)
+      .map((n) => n.id)
+
+    for (const id of sortedIds) {
+      graph.reparentNode(id, frameId)
     }
 
     computeLayout(graph, frameId)

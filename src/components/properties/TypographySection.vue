@@ -77,7 +77,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="border-b border-border px-3 py-2">
+  <div v-if="node" class="border-b border-border px-3 py-2">
     <label class="mb-1.5 block text-[11px] text-muted">Typography</label>
 
     <!-- Font family picker -->

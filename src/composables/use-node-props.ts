@@ -6,7 +6,7 @@ import type { SceneNode } from '../engine/scene-graph'
 
 export function useNodeProps() {
   const store = useEditorStore()
-  const node = computed(() => store.selectedNode.value!)
+  const node = computed(() => store.selectedNode.value ?? null)
   const nodes = computed(() => store.selectedNodes.value)
 
   function updateProp(key: string, value: number | string) {

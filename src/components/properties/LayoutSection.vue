@@ -100,7 +100,7 @@ function setAlignment(primary: LayoutAlign, counter: LayoutCounterAlign) {
 </script>
 
 <template>
-  <div class="border-b border-border px-3 py-2">
+  <div v-if="node" class="border-b border-border px-3 py-2">
     <label class="mb-1.5 block text-[11px] text-muted">Layout</label>
     <div class="flex gap-1.5">
       <!-- Width -->
