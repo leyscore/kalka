@@ -58,6 +58,12 @@ export function useKeyboard(store: EditorStore) {
       } else if (e.key === 'o') {
         e.preventDefault()
         openFileDialog(store)
+      } else if (e.key === 'g' && !e.shiftKey) {
+        e.preventDefault()
+        store.groupSelected()
+      } else if (e.key === 'g' && e.shiftKey) {
+        e.preventDefault()
+        store.ungroupSelected()
       }
     }
 

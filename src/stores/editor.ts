@@ -535,6 +535,138 @@ export function createEditorStore() {
     requestRender()
   }
 
+  function groupSelected() {
+    const nodes = selectedNodes.value
+    if (nodes.length === 0) return
+
+    const parentId = nodes[0].parentId ?? graph.rootId
+    const sameParent = nodes.every((n) => (n.parentId ?? graph.rootId) === parentId)
+    if (!sameParent) return
+
+    const parent = graph.getNode(parentId)
+    if (!parent) return
+
+    const prevSelection = new Set(state.selectedIds)
+    const nodeIds = nodes.map((n) => n.id)
+    const origPositions = nodes.map((n) => ({ id: n.id, x: n.x, y: n.y }))
+
+    // Bounding box from absolute positions
+    let minX = Infinity
+    let minY = Infinity
+    let maxX = -Infinity
+    let maxY = -Infinity
+    for (const n of nodes) {
+      const abs = graph.getAbsolutePosition(n.id)
+      minX = Math.min(minX, abs.x)
+      minY = Math.min(minY, abs.y)
+      maxX = Math.max(maxX, abs.x + n.width)
+      maxY = Math.max(maxY, abs.y + n.height)
+    }
+
+    const parentAbs =
+      parentId === graph.rootId ? { x: 0, y: 0 } : graph.getAbsolutePosition(parentId)
+
+    // Insert group at the position of the topmost selected node
+    const firstIndex = Math.min(...nodeIds.map((id) => parent.childIds.indexOf(id)))
+
+    const group = graph.createNode('GROUP', parentId, {
+      name: 'Group',
+      x: minX - parentAbs.x,
+      y: minY - parentAbs.y,
+      width: maxX - minX,
+      height: maxY - minY,
+      fills: [],
+    })
+    const groupId = group.id
+
+    // Move group to the correct z-order position
+    parent.childIds = parent.childIds.filter((id) => id !== groupId)
+    parent.childIds.splice(firstIndex, 0, groupId)
+
+    for (const n of nodes) {
+      graph.reparentNode(n.id, groupId)
+    }
+
+    state.selectedIds = new Set([groupId])
+
+    undo.push({
+      label: 'Group',
+      forward: () => {
+        const g = graph.createNode('GROUP', parentId, { ...group })
+        parent.childIds = parent.childIds.filter((id) => id !== g.id)
+        parent.childIds.splice(firstIndex, 0, g.id)
+        for (const n of origPositions) graph.reparentNode(n.id, g.id)
+        state.selectedIds = new Set([g.id])
+        requestRender()
+      },
+      inverse: () => {
+        for (const orig of origPositions) {
+          graph.reparentNode(orig.id, parentId)
+          graph.updateNode(orig.id, { x: orig.x, y: orig.y })
+        }
+        graph.deleteNode(groupId)
+        state.selectedIds = prevSelection
+        requestRender()
+      }
+    })
+    requestRender()
+  }
+
+  function ungroupSelected() {
+    const node = selectedNode.value
+    if (!node || node.type !== 'GROUP') return
+
+    const parentId = node.parentId ?? graph.rootId
+    const parent = graph.getNode(parentId)
+    if (!parent) return
+
+    const groupIndex = parent.childIds.indexOf(node.id)
+    const childIds = [...node.childIds]
+    const prevSelection = new Set(state.selectedIds)
+    const origPositions = childIds.map((id) => {
+      const child = graph.getNode(id)!
+      return { id, x: child.x, y: child.y }
+    })
+    const groupSnapshot = { ...node, childIds: [...node.childIds] }
+
+    // Reparent children to the group's parent, preserving visual position
+    for (let i = 0; i < childIds.length; i++) {
+      graph.reparentNode(childIds[i], parentId)
+      // Move to correct z-order (where the group was)
+      parent.childIds = parent.childIds.filter((id) => id !== childIds[i])
+      parent.childIds.splice(groupIndex + i, 0, childIds[i])
+    }
+
+    graph.deleteNode(node.id)
+    state.selectedIds = new Set(childIds)
+
+    undo.push({
+      label: 'Ungroup',
+      forward: () => {
+        for (let i = 0; i < childIds.length; i++) {
+          graph.reparentNode(childIds[i], parentId)
+          parent.childIds = parent.childIds.filter((id) => id !== childIds[i])
+          parent.childIds.splice(groupIndex + i, 0, childIds[i])
+        }
+        graph.deleteNode(node.id)
+        state.selectedIds = new Set(childIds)
+        requestRender()
+      },
+      inverse: () => {
+        const g = graph.createNode('GROUP', parentId, { ...groupSnapshot, childIds: [] })
+        parent.childIds = parent.childIds.filter((id) => id !== g.id)
+        parent.childIds.splice(groupIndex, 0, g.id)
+        for (const orig of origPositions) {
+          graph.reparentNode(orig.id, g.id)
+          graph.updateNode(orig.id, { x: orig.x, y: orig.y })
+        }
+        state.selectedIds = prevSelection
+        requestRender()
+      }
+    })
+    requestRender()
+  }
+
   function createShape(
     type: NodeType,
     x: number,
@@ -913,6 +1045,8 @@ export function createEditorStore() {
     updateNode,
     setLayoutMode,
     wrapInAutoLayout,
+    groupSelected,
+    ungroupSelected,
     createShape,
     duplicateSelected,
     writeCopyData,

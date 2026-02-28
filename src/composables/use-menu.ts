@@ -17,6 +17,8 @@ const MENU_ACTIONS: Record<string, (store: EditorStore) => void> = {
   open: (store) => openFileDialog(store),
   duplicate: (store) => store.duplicateSelected(),
   delete: (store) => store.deleteSelected(),
+  group: (store) => store.groupSelected(),
+  ungroup: (store) => store.ungroupSelected(),
   'zoom-fit': (store) => store.zoomToFit(),
 }
 
