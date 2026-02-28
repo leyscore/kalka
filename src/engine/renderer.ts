@@ -966,11 +966,7 @@ export class SkiaRenderer {
     // Selection highlight on rulers
     if (selectedIds.size > 0) {
       const hlPaint = new this.ck.Paint()
-      hlPaint.setColor(this.selColor())
-
-      const labelPaint = new this.ck.Paint()
-      labelPaint.setColor(this.ck.Color4f(1, 1, 1, 1))
-      labelPaint.setAntiAlias(true)
+      hlPaint.setColor(this.selColor(0.3))
 
       const nodes = [...selectedIds]
         .map((id) => graph.getNode(id))
@@ -991,21 +987,11 @@ export class SkiaRenderer {
         const sy1 = minY * this.zoom + this.panY
         const sy2 = maxY * this.zoom + this.panY
 
-        // Horizontal highlight
         canvas.drawRect(this.ck.LTRBRect(Math.max(R, sx1), 0, sx2, R), hlPaint)
-        // Vertical highlight
         canvas.drawRect(this.ck.LTRBRect(0, Math.max(R, sy1), R, sy2), hlPaint)
-
-        // Coordinate labels on highlights
-        const x1Label = Math.round(minX).toString()
-        const y1Label = Math.round(minY).toString()
-
-        canvas.drawText(x1Label, Math.max(R + 1, sx1 + 2), R - 4, labelPaint, font)
-        canvas.drawText(y1Label, 2, Math.max(R + 10, sy1 + 10), labelPaint, font)
       }
 
       hlPaint.delete()
-      labelPaint.delete()
     }
 
     bgPaint.delete()
@@ -1027,10 +1013,7 @@ export class SkiaRenderer {
   }
 
   private rulerLabel(value: number): string {
-    const abs = Math.abs(value)
-    if (abs >= 1000) return Math.round(value).toString()
-    if (abs >= 1) return Math.round(value).toString()
-    return value.toFixed(1)
+    return Math.round(value).toString()
   }
 
   destroy(): void {
