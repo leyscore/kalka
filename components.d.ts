@@ -16,6 +16,7 @@ declare module 'vue' {
     ColorPicker: typeof import('./src/components/ColorPicker.vue')['default']
     EditorCanvas: typeof import('./src/components/EditorCanvas.vue')['default']
     EffectsSection: typeof import('./src/components/properties/EffectsSection.vue')['default']
+    ExportSection: typeof import('./src/components/properties/ExportSection.vue')['default']
     FillPicker: typeof import('./src/components/FillPicker.vue')['default']
     FillSection: typeof import('./src/components/properties/FillSection.vue')['default']
     IconLucideALargeSmall: typeof import('~icons/lucide/a-large-small')['default']
