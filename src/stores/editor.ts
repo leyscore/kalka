@@ -269,7 +269,11 @@ export function createEditorStore() {
   }
 
   function reparentNodes(nodeIds: string[], newParentId: string) {
+    const parent = graph.getNode(newParentId)
     for (const id of nodeIds) {
+      const node = graph.getNode(id)
+      // Sections can only live in pages (CANVAS) or other sections
+      if (node?.type === 'SECTION' && parent && parent.type !== 'CANVAS' && parent.type !== 'SECTION') continue
       graph.reparentNode(id, newParentId)
     }
     requestRender()

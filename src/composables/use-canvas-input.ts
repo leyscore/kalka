@@ -535,7 +535,12 @@ export function useCanvasInput(
       }
 
       // Check if we're hovering over an auto-layout frame
-      const dropTarget = store.graph.hitTestFrame(cx, cy, store.state.selectedIds, store.state.currentPageId)
+      let dropTarget = store.graph.hitTestFrame(cx, cy, store.state.selectedIds, store.state.currentPageId)
+      // Sections can't be dropped into frames or groups
+      const movingSection = [...store.state.selectedIds].some(id => store.graph.getNode(id)?.type === 'SECTION')
+      if (movingSection && dropTarget && dropTarget.type !== 'SECTION' && dropTarget.type !== 'CANVAS') {
+        dropTarget = null
+      }
       const dropParent = dropTarget ? store.graph.getNode(dropTarget.id) : null
 
       if (dropParent && dropParent.layoutMode !== 'NONE') {
