@@ -163,7 +163,7 @@ function createDefaultNode(type: NodeType, overrides: Partial<SceneNode> = {}): 
     cornerSmoothing: 0,
     visible: true,
     locked: false,
-    clipsContent: true,
+    clipsContent: false,
     text: '',
     fontSize: 14,
     fontFamily: 'Inter',
