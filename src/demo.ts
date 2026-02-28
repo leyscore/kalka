@@ -1,5 +1,6 @@
 import type { EditorStore } from './stores/editor'
 import type { Color, Fill, GradientStop } from './engine/scene-graph'
+import { computeAllLayouts } from './engine/layout'
 
 const WHITE: Color = { r: 1, g: 1, b: 1, a: 1 }
 const BLACK: Color = { r: 0, g: 0, b: 0, a: 1 }
@@ -503,5 +504,6 @@ export function createDemoShapes(store: EditorStore) {
     })
   }
 
+  computeAllLayouts(store.graph)
   store.clearSelection()
 }
