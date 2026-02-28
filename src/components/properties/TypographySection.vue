@@ -41,11 +41,7 @@ const currentWeightLabel = computed(() =>
   WEIGHTS.find((w) => w.value === node.fontWeight)?.label ?? 'Regular'
 )
 
-const ALIGN_OPTIONS = [
-  { value: 'LEFT' as const, icon: 'icon-lucide-align-left' },
-  { value: 'CENTER' as const, icon: 'icon-lucide-align-center' },
-  { value: 'RIGHT' as const, icon: 'icon-lucide-align-right' }
-]
+type TextAlign = 'LEFT' | 'CENTER' | 'RIGHT'
 
 async function openFontPicker() {
   fontPickerOpen.value = true
@@ -181,15 +177,17 @@ onMounted(async () => {
     <!-- Text alignment -->
     <div class="flex gap-0.5">
       <button
-        v-for="opt in ALIGN_OPTIONS"
-        :key="opt.value"
+        v-for="align in (['LEFT', 'CENTER', 'RIGHT'] as TextAlign[])"
+        :key="align"
         class="flex cursor-pointer items-center justify-center rounded border px-2 py-1"
-        :class="node.textAlignHorizontal === opt.value
+        :class="node.textAlignHorizontal === align
           ? 'border-accent bg-accent text-white'
           : 'border-border bg-input text-muted hover:bg-hover hover:text-surface'"
-        @click="setAlign(opt.value)"
+        @click="setAlign(align)"
       >
-        <component :is="opt.icon" class="size-3.5" />
+        <icon-lucide-align-left v-if="align === 'LEFT'" class="size-3.5" />
+        <icon-lucide-align-center v-else-if="align === 'CENTER'" class="size-3.5" />
+        <icon-lucide-align-right v-else class="size-3.5" />
       </button>
     </div>
   </div>
