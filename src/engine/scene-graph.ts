@@ -1,3 +1,5 @@
+import { SECTION_TITLE_HEIGHT, SECTION_TITLE_GAP } from '../constants'
+
 export type { GUID, Color } from '../types'
 
 export type HandleMirroring = 'NONE' | 'ANGLE' | 'ANGLE_AND_LENGTH'
@@ -360,9 +362,9 @@ export class SceneGraph {
     this.nodes.delete(id)
   }
 
-  hitTest(px: number, py: number, scopeId?: string): SceneNode | null {
+  hitTest(px: number, py: number, scopeId?: string, zoom = 1): SceneNode | null {
     const scope = scopeId ?? this.rootId
-    return this.hitTestChildren(px, py, scope, 0, 0)
+    return this.hitTestChildren(px, py, scope, 0, 0, zoom, false)
   }
 
   private hitTestChildren(
@@ -370,7 +372,9 @@ export class SceneGraph {
     py: number,
     parentId: string,
     offsetX: number,
-    offsetY: number
+    offsetY: number,
+    zoom: number,
+    insideSection: boolean
   ): SceneNode | null {
     const parent = this.nodes.get(parentId)
     if (!parent) return null
@@ -386,8 +390,24 @@ export class SceneGraph {
 
       // Check children first (deeper hit)
       if (CONTAINER_TYPES.has(child.type)) {
-        const deepHit = this.hitTestChildren(px, py, childId, ax, ay)
+        const nested = insideSection || child.type === 'SECTION'
+        const deepHit = this.hitTestChildren(px, py, childId, ax, ay, zoom, nested)
         if (deepHit) return deepHit
+      }
+
+      // Section title pill extends above (top-level) or inside (nested)
+      if (child.type === 'SECTION') {
+        const titleH = (SECTION_TITLE_HEIGHT + SECTION_TITLE_GAP) / zoom
+        let titleTop: number
+        if (insideSection) {
+          titleTop = ay + SECTION_TITLE_GAP / zoom
+        } else {
+          titleTop = ay - titleH
+        }
+        const titleBottom = insideSection ? titleTop + SECTION_TITLE_HEIGHT / zoom : ay
+        if (px >= ax && px <= ax + child.width && py >= titleTop && py <= titleBottom) {
+          return child
+        }
       }
 
       if (px >= ax && px <= ax + child.width && py >= ay && py <= ay + child.height) {

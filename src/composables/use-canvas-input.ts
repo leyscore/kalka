@@ -310,7 +310,7 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
       }
 
       // Hit test nodes
-      const hit = store.graph.hitTest(cx, cy, store.state.currentPageId)
+      const hit = store.graph.hitTest(cx, cy, store.state.currentPageId, store.state.zoom)
       if (hit) {
         if (!store.state.selectedIds.has(hit.id) && !e.shiftKey) {
           store.select([hit.id])
@@ -480,7 +480,7 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
       }
       cursorOverride.value = cursor
 
-      const hit = store.graph.hitTest(cx, cy)
+      const hit = store.graph.hitTest(cx, cy, undefined, store.state.zoom)
       store.setHoveredNode(hit && !store.state.selectedIds.has(hit.id) ? hit.id : null)
     }
 
@@ -820,7 +820,7 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
 
   function onDblClick(e: MouseEvent) {
     const { cx, cy } = getCoords(e)
-    const hit = store.graph.hitTest(cx, cy, store.state.currentPageId)
+    const hit = store.graph.hitTest(cx, cy, store.state.currentPageId, store.state.zoom)
     if (hit && hit.type === 'TEXT') {
       store.select([hit.id])
       store.startTextEditing(hit.id)
