@@ -163,10 +163,12 @@ function formatScale(scale: number): string {
           image-rendering: auto;
           background: repeating-conic-gradient(#808080 0% 25%, transparent 0% 50%) 50% / 16px 16px;
         "
-
       />
     </div>
-    <div v-else-if="showPreview" class="mt-1 rounded border border-border px-3 py-2 text-[11px] text-muted">
+    <div
+      v-else-if="showPreview"
+      class="mt-1 rounded border border-border px-3 py-2 text-[11px] text-muted"
+    >
       Rendering preview…
     </div>
   </div>

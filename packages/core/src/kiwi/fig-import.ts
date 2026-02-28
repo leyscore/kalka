@@ -137,10 +137,12 @@ function convertEffects(effects?: KiwiEffect[]): Effect[] {
   }))
 }
 
-function mapNodeType(type?: string): NodeType | 'DOCUMENT' {
+function mapNodeType(type?: string): NodeType | 'DOCUMENT' | 'VARIABLE' {
   switch (type) {
     case 'DOCUMENT':
       return 'DOCUMENT'
+    case 'VARIABLE':
+      return 'VARIABLE'
     case 'CANVAS':
       return 'CANVAS'
     case 'FRAME':
@@ -357,7 +359,7 @@ export function importNodeChanges(
     if (!nc) return
 
     const nodeType = mapNodeType(nc.type)
-    if (nodeType === 'DOCUMENT') return
+    if (nodeType === 'DOCUMENT' || nodeType === 'VARIABLE') return
 
     const x = nc.transform?.m02 ?? 0
     const y = nc.transform?.m12 ?? 0
@@ -437,11 +439,76 @@ export function importNodeChanges(
       borderRightWeight: (ext(nc).borderRightWeight as number) ?? 0,
       borderBottomWeight: (ext(nc).borderBottomWeight as number) ?? 0,
       borderLeftWeight: (ext(nc).borderLeftWeight as number) ?? 0,
-      independentStrokeWeights: (ext(nc).borderStrokeWeightsIndependent as boolean) ?? false
+      independentStrokeWeights: (ext(nc).borderStrokeWeightsIndependent as boolean) ?? false,
+      boundVariables: extractBoundVariables(nc)
     })
 
     for (const childId of getChildren(ncId)) {
       createSceneNode(childId, node.id)
+    }
+  }
+
+  function extractBoundVariables(nc: NodeChange): Record<string, string> {
+    const bindings: Record<string, string> = {}
+    nc.fillPaints?.forEach((paint, i) => {
+      if (paint.colorVariableBinding) {
+        bindings[`fills/${i}/color`] = guidToString(paint.colorVariableBinding.variableID)
+      }
+    })
+    nc.strokePaints?.forEach((paint, i) => {
+      if (paint.colorVariableBinding) {
+        bindings[`strokes/${i}/color`] = guidToString(paint.colorVariableBinding.variableID)
+      }
+    })
+    return bindings
+  }
+
+  function importVariables() {
+    for (const [id, nc] of changeMap) {
+      if (nc.type !== 'VARIABLE') continue
+      const varData = (ext(nc) as { variableData?: { value?: { boolValue?: boolean; textValue?: string; floatValue?: number }; dataType?: string } }).variableData
+      if (!varData) continue
+
+      const parentId = parentMap.get(id) ?? ''
+      const parentNc = changeMap.get(parentId)
+      const collectionName = parentNc?.name ?? 'Variables'
+      const collectionId = parentId
+
+      if (!graph.variableCollections.has(collectionId)) {
+        graph.addCollection({
+          id: collectionId,
+          name: collectionName,
+          modes: [{ modeId: 'default', name: 'Default' }],
+          defaultModeId: 'default',
+          variableIds: []
+        })
+      }
+
+      let type: import('../scene-graph').VariableType = 'FLOAT'
+      let value: import('../scene-graph').VariableValue = 0
+      const dt = varData.dataType
+      const v = varData.value
+
+      if (dt === 'BOOLEAN' || dt === '0') {
+        type = 'BOOLEAN'
+        value = v?.boolValue ?? false
+      } else if (dt === 'STRING' || dt === '2') {
+        type = 'STRING'
+        value = v?.textValue ?? ''
+      } else {
+        type = 'FLOAT'
+        value = v?.floatValue ?? 0
+      }
+
+      graph.addVariable({
+        id,
+        name: nc.name ?? 'Variable',
+        type,
+        collectionId,
+        valuesByMode: { default: value },
+        description: '',
+        hiddenFromPublishing: false
+      })
     }
   }
 
@@ -481,6 +548,8 @@ export function importNodeChanges(
       createSceneNode(rootId, page.id)
     }
   }
+
+  importVariables()
 
   // Ensure at least one page exists
   if (graph.getPages().length === 0) {

@@ -224,6 +224,34 @@ export interface SceneNode {
 
   componentId: string | null
   overrides: Record<string, unknown>
+
+  boundVariables: Record<string, string>
+}
+
+export type VariableType = 'COLOR' | 'FLOAT' | 'STRING' | 'BOOLEAN'
+export type VariableValue = Color | number | string | boolean | { aliasId: string }
+
+export interface Variable {
+  id: string
+  name: string
+  type: VariableType
+  collectionId: string
+  valuesByMode: Record<string, VariableValue>
+  description: string
+  hiddenFromPublishing: boolean
+}
+
+export interface VariableCollectionMode {
+  modeId: string
+  name: string
+}
+
+export interface VariableCollection {
+  id: string
+  name: string
+  modes: VariableCollectionMode[]
+  defaultModeId: string
+  variableIds: string[]
 }
 
 let nextLocalID = 1
@@ -302,6 +330,7 @@ function createDefaultNode(type: NodeType, overrides: Partial<SceneNode> = {}): 
     starInnerRadius: 0.38,
     componentId: null,
     overrides: {},
+    boundVariables: {},
     ...overrides
   }
 }
@@ -319,6 +348,9 @@ const CONTAINER_TYPES = new Set<NodeType>([
 export class SceneGraph {
   nodes = new Map<string, SceneNode>()
   images = new Map<string, Uint8Array>()
+  variables = new Map<string, Variable>()
+  variableCollections = new Map<string, VariableCollection>()
+  activeMode = new Map<string, string>()
   rootId: string
 
   constructor() {
@@ -347,6 +379,108 @@ export class SceneGraph {
 
   getNode(id: string): SceneNode | undefined {
     return this.nodes.get(id)
+  }
+
+  // --- Variables ---
+
+  addVariable(variable: Variable): void {
+    this.variables.set(variable.id, variable)
+    const collection = this.variableCollections.get(variable.collectionId)
+    if (collection && !collection.variableIds.includes(variable.id)) {
+      collection.variableIds.push(variable.id)
+    }
+  }
+
+  removeVariable(id: string): void {
+    const variable = this.variables.get(id)
+    if (!variable) return
+    this.variables.delete(id)
+    const collection = this.variableCollections.get(variable.collectionId)
+    if (collection) {
+      collection.variableIds = collection.variableIds.filter((vid) => vid !== id)
+    }
+    for (const node of this.nodes.values()) {
+      for (const [field, varId] of Object.entries(node.boundVariables)) {
+        if (varId === id) delete node.boundVariables[field]
+      }
+    }
+  }
+
+  addCollection(collection: VariableCollection): void {
+    this.variableCollections.set(collection.id, collection)
+    if (!this.activeMode.has(collection.id)) {
+      this.activeMode.set(collection.id, collection.defaultModeId)
+    }
+  }
+
+  removeCollection(id: string): void {
+    const collection = this.variableCollections.get(id)
+    if (collection) {
+      for (const varId of [...collection.variableIds]) {
+        this.removeVariable(varId)
+      }
+    }
+    this.variableCollections.delete(id)
+    this.activeMode.delete(id)
+  }
+
+  getActiveModeId(collectionId: string): string {
+    const mode = this.activeMode.get(collectionId)
+    if (mode) return mode
+    const collection = this.variableCollections.get(collectionId)
+    return collection?.defaultModeId ?? ''
+  }
+
+  setActiveMode(collectionId: string, modeId: string): void {
+    this.activeMode.set(collectionId, modeId)
+  }
+
+  resolveVariable(variableId: string, modeId?: string, visited?: Set<string>): VariableValue | undefined {
+    if (visited?.has(variableId)) return undefined
+    const variable = this.variables.get(variableId)
+    if (!variable) return undefined
+    const resolvedModeId = modeId ?? this.getActiveModeId(variable.collectionId)
+    const value = variable.valuesByMode[resolvedModeId]
+    if (value === undefined) return undefined
+    if (typeof value === 'object' && value !== null && 'aliasId' in value) {
+      const seen = visited ?? new Set<string>()
+      seen.add(variableId)
+      return this.resolveVariable(value.aliasId, undefined, seen)
+    }
+    return value
+  }
+
+  resolveColorVariable(variableId: string): Color | undefined {
+    const value = this.resolveVariable(variableId)
+    if (value && typeof value === 'object' && 'r' in value) return value as Color
+    return undefined
+  }
+
+  resolveNumberVariable(variableId: string): number | undefined {
+    const value = this.resolveVariable(variableId)
+    return typeof value === 'number' ? value : undefined
+  }
+
+  getVariablesForCollection(collectionId: string): Variable[] {
+    const collection = this.variableCollections.get(collectionId)
+    if (!collection) return []
+    return collection.variableIds
+      .map((id) => this.variables.get(id))
+      .filter((v): v is Variable => v !== undefined)
+  }
+
+  getVariablesByType(type: VariableType): Variable[] {
+    return [...this.variables.values()].filter((v) => v.type === type)
+  }
+
+  bindVariable(nodeId: string, field: string, variableId: string): void {
+    const node = this.nodes.get(nodeId)
+    if (node) node.boundVariables[field] = variableId
+  }
+
+  unbindVariable(nodeId: string, field: string): void {
+    const node = this.nodes.get(nodeId)
+    if (node) delete node.boundVariables[field]
   }
 
   getChildren(id: string): SceneNode[] {

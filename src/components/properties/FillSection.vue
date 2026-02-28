@@ -1,13 +1,49 @@
 <script setup lang="ts">
+import { computed, ref } from 'vue'
+import {
+  PopoverRoot,
+  PopoverTrigger,
+  PopoverPortal,
+  PopoverContent,
+  ComboboxRoot,
+  ComboboxInput,
+  ComboboxContent,
+  ComboboxItem,
+  ComboboxEmpty,
+  useFilter
+} from 'reka-ui'
+
 import FillPicker from '@/components/FillPicker.vue'
 import ScrubInput from '@/components/ScrubInput.vue'
 import { useNodeProps } from '@/composables/use-node-props'
 import { DEFAULT_SHAPE_FILL } from '@/constants'
 import { colorToHexRaw } from '@/engine/color'
-
-import type { Fill } from '@/engine/scene-graph'
+import type { Fill, Variable, Color } from '@/engine/scene-graph'
 
 const { store, node } = useNodeProps()
+
+const colorVariables = computed(() => store.graph.getVariablesByType('COLOR'))
+
+function getBoundVariable(index: number): Variable | undefined {
+  const varId = node.value.boundVariables[`fills/${index}/color`]
+  return varId ? store.graph.variables.get(varId) : undefined
+}
+
+function bindVariable(index: number, variableId: string) {
+  store.graph.bindVariable(node.value.id, `fills/${index}/color`, variableId)
+  store.requestRender()
+}
+
+function unbindVariable(index: number) {
+  store.graph.unbindVariable(node.value.id, `fills/${index}/color`)
+  store.requestRender()
+}
+
+function resolvedSwatchStyle(variable: Variable): string {
+  const color = store.graph.resolveColorVariable(variable.id)
+  if (!color) return 'background: #000'
+  return `background: rgb(${Math.round(color.r * 255)}, ${Math.round(color.g * 255)}, ${Math.round(color.b * 255)})`
+}
 
 function updateFill(index: number, fill: Fill) {
   const fills = [...node.value.fills]
@@ -42,6 +78,13 @@ function remove(index: number) {
     'Remove fill'
   )
 }
+
+const searchTerm = ref('')
+const { contains } = useFilter({ sensitivity: 'base' })
+const filteredVariables = computed(() => {
+  if (!searchTerm.value) return colorVariables.value
+  return colorVariables.value.filter((v) => contains(v.name, searchTerm.value))
+})
 </script>
 
 <template>
@@ -57,13 +100,32 @@ function remove(index: number) {
     </div>
     <div v-for="(fill, i) in node.fills" :key="i" class="group flex items-center gap-1.5 py-0.5">
       <FillPicker :fill="fill" @update="updateFill(i, $event)" />
-      <span class="min-w-0 flex-1 font-mono text-xs text-surface">
-        <template v-if="fill.type === 'SOLID'">{{ colorToHexRaw(fill.color) }}</template>
-        <template v-else-if="fill.type.startsWith('GRADIENT')">{{
-          fill.type.replace('GRADIENT_', '')
-        }}</template>
-        <template v-else>{{ fill.type }}</template>
-      </span>
+
+      <!-- Bound variable indicator or hex value -->
+      <template v-if="getBoundVariable(i)">
+        <span
+          class="min-w-0 flex-1 truncate rounded bg-violet-500/10 px-1 font-mono text-xs text-violet-400"
+        >
+          {{ getBoundVariable(i)!.name }}
+        </span>
+        <button
+          class="cursor-pointer border-none bg-transparent p-0 text-violet-400 hover:text-surface"
+          title="Detach variable"
+          @click="unbindVariable(i)"
+        >
+          <icon-lucide-unlink class="size-3" />
+        </button>
+      </template>
+      <template v-else>
+        <span class="min-w-0 flex-1 font-mono text-xs text-surface">
+          <template v-if="fill.type === 'SOLID'">{{ colorToHexRaw(fill.color) }}</template>
+          <template v-else-if="fill.type.startsWith('GRADIENT')">{{
+            fill.type.replace('GRADIENT_', '')
+          }}</template>
+          <template v-else>{{ fill.type }}</template>
+        </span>
+      </template>
+
       <ScrubInput
         class="w-12"
         suffix="%"
@@ -72,6 +134,51 @@ function remove(index: number) {
         :max="100"
         @update:model-value="updateOpacity(i, $event)"
       />
+
+      <!-- Variable picker -->
+      <PopoverRoot
+        v-if="colorVariables.length > 0 && fill.type === 'SOLID' && !getBoundVariable(i)"
+      >
+        <PopoverTrigger
+          class="cursor-pointer border-none bg-transparent p-0 text-muted opacity-0 transition-opacity group-hover:opacity-100 hover:text-surface"
+          title="Apply variable"
+        >
+          <icon-lucide-link class="size-3.5" />
+        </PopoverTrigger>
+        <PopoverPortal>
+          <PopoverContent
+            side="left"
+            :side-offset="8"
+            class="z-50 w-56 rounded-lg border border-border bg-panel shadow-lg"
+          >
+            <ComboboxRoot @update:model-value="bindVariable(i, ($event as Variable).id)">
+              <ComboboxInput
+                v-model="searchTerm"
+                placeholder="Search variables…"
+                class="w-full border-b border-border bg-transparent px-2 py-1.5 text-[11px] text-surface outline-none placeholder:text-muted"
+              />
+              <ComboboxContent class="max-h-48 overflow-y-auto p-1">
+                <ComboboxEmpty class="px-2 py-3 text-center text-[11px] text-muted">
+                  No variables found
+                </ComboboxEmpty>
+                <ComboboxItem
+                  v-for="v in filteredVariables"
+                  :key="v.id"
+                  :value="v"
+                  class="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-[11px] text-surface data-[highlighted]:bg-hover"
+                >
+                  <div
+                    class="size-3 shrink-0 rounded-sm border border-border"
+                    :style="resolvedSwatchStyle(v)"
+                  />
+                  <span class="min-w-0 flex-1 truncate">{{ v.name }}</span>
+                </ComboboxItem>
+              </ComboboxContent>
+            </ComboboxRoot>
+          </PopoverContent>
+        </PopoverPortal>
+      </PopoverRoot>
+
       <button
         class="cursor-pointer border-none bg-transparent p-0 text-muted opacity-0 transition-opacity group-hover:opacity-100 hover:text-surface"
         @click="toggleVisibility(i)"

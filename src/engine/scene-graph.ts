@@ -30,5 +30,10 @@ export type {
   VectorSegment,
   VectorRegion,
   HandleMirroring,
-  WindingRule
+  WindingRule,
+  VariableType,
+  VariableValue,
+  Variable,
+  VariableCollection,
+  VariableCollectionMode
 } from '@open-pencil/core'

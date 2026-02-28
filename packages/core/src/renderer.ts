@@ -57,7 +57,8 @@ import {
 
 import { vectorNetworkToPath } from './vector'
 
-import type { SceneNode, SceneGraph, Fill } from './scene-graph'
+import type { SceneNode, SceneGraph, Fill, Stroke } from './scene-graph'
+import type { Color } from './types'
 import type { SnapGuide } from './snap'
 import type { Rect } from './types'
 import type { EmbindEnumEntity, Image as CKImage, Path } from 'canvaskit-wasm'
@@ -945,20 +946,21 @@ export class SkiaRenderer {
     const rrect = this.ck.RRectXY(rect, SECTION_CORNER_RADIUS, SECTION_CORNER_RADIUS)
 
     // Fill
-    for (const fill of node.fills) {
+    for (let fi = 0; fi < node.fills.length; fi++) {
+      const fill = node.fills[fi]!
       if (!fill.visible) continue
-      this.applyFill(fill, node, graph)
+      this.applyFill(fill, node, graph, fi)
       this.fillPaint.setAlphaf(fill.opacity)
       canvas.drawRRect(rrect, this.fillPaint)
       this.fillPaint.setShader(null)
     }
 
     // Stroke
-    for (const stroke of node.strokes) {
+    for (let si = 0; si < node.strokes.length; si++) {
+      const stroke = node.strokes[si]!
       if (!stroke.visible) continue
-      this.strokePaint.setColor(
-        this.ck.Color4f(stroke.color.r, stroke.color.g, stroke.color.b, stroke.color.a)
-      )
+      const sc = this.resolveStrokeColor(stroke, si, node, graph)
+      this.strokePaint.setColor(this.ck.Color4f(sc.r, sc.g, sc.b, sc.a))
       this.strokePaint.setStrokeWidth(stroke.weight)
       this.strokePaint.setAlphaf(stroke.opacity)
       canvas.drawRRect(rrect, this.strokePaint)
@@ -1171,9 +1173,10 @@ export class SkiaRenderer {
     const rect = this.ck.LTRBRect(0, 0, node.width, node.height)
     const rrect = this.ck.RRectXY(rect, 5, 5)
 
-    for (const fill of node.fills) {
+    for (let fi = 0; fi < node.fills.length; fi++) {
+      const fill = node.fills[fi]!
       if (!fill.visible) continue
-      this.applyFill(fill, node, graph)
+      this.applyFill(fill, node, graph, fi)
       this.fillPaint.setAlphaf(fill.opacity)
       canvas.drawRRect(rrect, this.fillPaint)
       this.fillPaint.setShader(null)
@@ -1203,9 +1206,10 @@ export class SkiaRenderer {
           node.bottomLeftRadius > 0))
 
     // Fills
-    for (const fill of node.fills) {
+    for (let fi = 0; fi < node.fills.length; fi++) {
+      const fill = node.fills[fi]!
       if (!fill.visible) continue
-      this.applyFill(fill, node, graph)
+      this.applyFill(fill, node, graph, fi)
       this.fillPaint.setAlphaf(fill.opacity)
 
       this.drawNodeFill(canvas, node, rect, hasRadius)
@@ -1216,11 +1220,11 @@ export class SkiaRenderer {
     this.renderEffects(canvas, node, rect, hasRadius, 'behind')
 
     // Strokes
-    for (const stroke of node.strokes) {
+    for (let si = 0; si < node.strokes.length; si++) {
+      const stroke = node.strokes[si]!
       if (!stroke.visible) continue
-      this.strokePaint.setColor(
-        this.ck.Color4f(stroke.color.r, stroke.color.g, stroke.color.b, stroke.color.a)
-      )
+      const sc = this.resolveStrokeColor(stroke, si, node, graph)
+      this.strokePaint.setColor(this.ck.Color4f(sc.r, sc.g, sc.b, sc.a))
       this.strokePaint.setStrokeWidth(stroke.weight)
       this.strokePaint.setAlphaf(stroke.opacity)
 
@@ -1563,13 +1567,30 @@ export class SkiaRenderer {
     }
   }
 
-  private applyFill(fill: Fill, node: SceneNode, graph: SceneGraph): void {
+  resolveFillColor(fill: Fill, fillIndex: number, node: SceneNode, graph: SceneGraph): Color {
+    const varId = node.boundVariables[`fills/${fillIndex}/color`]
+    if (varId) {
+      const resolved = graph.resolveColorVariable(varId)
+      if (resolved) return resolved
+    }
+    return fill.color
+  }
+
+  resolveStrokeColor(stroke: Stroke, strokeIndex: number, node: SceneNode, graph: SceneGraph): Color {
+    const varId = node.boundVariables[`strokes/${strokeIndex}/color`]
+    if (varId) {
+      const resolved = graph.resolveColorVariable(varId)
+      if (resolved) return resolved
+    }
+    return stroke.color
+  }
+
+  private applyFill(fill: Fill, node: SceneNode, graph: SceneGraph, fillIndex = 0): void {
     this.fillPaint.setShader(null)
 
     if (fill.type === 'SOLID') {
-      this.fillPaint.setColor(
-        this.ck.Color4f(fill.color.r, fill.color.g, fill.color.b, fill.color.a)
-      )
+      const c = this.resolveFillColor(fill, fillIndex, node, graph)
+      this.fillPaint.setColor(this.ck.Color4f(c.r, c.g, c.b, c.a))
       return
     }
 

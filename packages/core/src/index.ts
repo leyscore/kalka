@@ -38,7 +38,12 @@ export {
   type VectorSegment,
   type VectorRegion,
   type HandleMirroring,
-  type WindingRule
+  type WindingRule,
+  type VariableType,
+  type VariableValue,
+  type Variable,
+  type VariableCollection,
+  type VariableCollectionMode
 } from './scene-graph'
 
 export { SkiaRenderer, type RenderOverlays } from './renderer'
