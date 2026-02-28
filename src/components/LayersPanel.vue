@@ -1,7 +1,16 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, type Component } from 'vue'
 import { useEventListener } from '@vueuse/core'
 import { TreeRoot, TreeItem } from 'reka-ui'
+
+import IconSquare from '~icons/lucide/square'
+import IconCircle from '~icons/lucide/circle'
+import IconFrame from '~icons/lucide/frame'
+import IconGroup from '~icons/lucide/group'
+import IconMinus from '~icons/lucide/minus'
+import IconType from '~icons/lucide/type'
+import IconPenTool from '~icons/lucide/pen-tool'
+import IconChevronRight from '~icons/lucide/chevron-right'
 
 import { useEditorStore } from '../stores/editor'
 
@@ -14,21 +23,18 @@ interface LayerNode {
   children?: LayerNode[]
 }
 
-function nodeIcon(type: string) {
-  switch (type) {
-    case 'ELLIPSE':
-      return '○'
-    case 'FRAME':
-      return '⊞'
-    case 'GROUP':
-      return '⊟'
-    case 'LINE':
-      return '╱'
-    case 'TEXT':
-      return 'T'
-    default:
-      return '□'
-  }
+const NODE_ICONS: Record<string, Component> = {
+  ELLIPSE: IconCircle,
+  FRAME: IconFrame,
+  GROUP: IconGroup,
+  LINE: IconMinus,
+  TEXT: IconType,
+  VECTOR: IconPenTool,
+  RECTANGLE: IconSquare
+}
+
+function nodeIcon(type: string): Component {
+  return NODE_ICONS[type] ?? IconSquare
 }
 
 function buildTree(parentId: string): LayerNode[] {
@@ -231,13 +237,13 @@ function updateDropTarget(ev: PointerEvent) {
               <span
                 v-if="item.hasChildren"
                 class="flex w-4 shrink-0 cursor-pointer items-center justify-center text-muted transition-transform hover:text-surface"
-                :class="isExpanded ? 'rotate-0' : '-rotate-90'"
+                :class="isExpanded ? 'rotate-90' : 'rotate-0'"
                 @click.stop="toggleExpand(item.value.id)"
               >
-                <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 2.5L4 5.5L6.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <IconChevronRight class="size-3 rotate-90" />
               </span>
               <span v-else class="w-4 shrink-0" />
-              <span class="w-3.5 shrink-0 text-center text-[11px] opacity-70">{{ nodeIcon(item.value.type) }}</span>
+              <component :is="nodeIcon(item.value.type)" class="size-3 shrink-0 opacity-70" />
               <span class="truncate">{{ item.value.name }}</span>
             </button>
           </TreeItem>

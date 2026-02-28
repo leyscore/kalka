@@ -23,24 +23,17 @@ export type Tool = 'SELECT' | 'FRAME' | 'RECTANGLE' | 'ELLIPSE' | 'LINE' | 'TEXT
 export interface ToolDef {
   key: Tool
   label: string
-  icon: string
   shortcut: string
   flyout?: Tool[]
 }
 
 export const TOOLS: ToolDef[] = [
-  { key: 'SELECT', label: 'Move', icon: '↖', shortcut: 'V' },
-  { key: 'FRAME', label: 'Frame', icon: '#', shortcut: 'F' },
-  {
-    key: 'RECTANGLE',
-    label: 'Rectangle',
-    icon: '□',
-    shortcut: 'R',
-    flyout: ['RECTANGLE', 'ELLIPSE', 'LINE']
-  },
-  { key: 'PEN', label: 'Pen', icon: '✒', shortcut: 'P' },
-  { key: 'TEXT', label: 'Text', icon: 'T', shortcut: 'T' },
-  { key: 'HAND', label: 'Hand', icon: '✋', shortcut: 'H' }
+  { key: 'SELECT', label: 'Move', shortcut: 'V' },
+  { key: 'FRAME', label: 'Frame', shortcut: 'F' },
+  { key: 'RECTANGLE', label: 'Rectangle', shortcut: 'R', flyout: ['RECTANGLE', 'ELLIPSE', 'LINE'] },
+  { key: 'PEN', label: 'Pen', shortcut: 'P' },
+  { key: 'TEXT', label: 'Text', shortcut: 'T' },
+  { key: 'HAND', label: 'Hand', shortcut: 'H' }
 ]
 
 export const TOOL_SHORTCUTS: Record<string, Tool> = {

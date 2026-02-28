@@ -33,6 +33,7 @@
     "yoga-layout": "^3.2.1"
   },
   "devDependencies": {
+    "@iconify-json/lucide": "^1.2.94",
     "@playwright/test": "^1.58.2",
     "@tauri-apps/cli": "^2",
     "@typescript/native-preview": "^7.0.0-dev.20260227.1",
@@ -40,6 +41,7 @@
     "oxfmt": "^0.35.0",
     "oxlint": "^1.50.0",
     "typescript": "~5.8.3",
+    "unplugin-icons": "^23.0.1",
     "vite": "^7.0.4"
   }
 }
