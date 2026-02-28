@@ -195,6 +195,15 @@ export class SkiaRenderer {
     return result
   }
 
+  renderSceneToCanvas(canvas: Canvas, graph: SceneGraph, pageId: string): void {
+    const pageNode = graph.getNode(pageId)
+    if (pageNode) {
+      for (const childId of pageNode.childIds) {
+        this.renderNode(canvas, graph, childId, {})
+      }
+    }
+  }
+
   render(graph: SceneGraph, selectedIds: Set<string>, overlays: RenderOverlays = {}): void {
     const canvas = this.surface.getCanvas()
     canvas.clear(this.ck.Color4f(this.pageColor.r, this.pageColor.g, this.pageColor.b, 1))

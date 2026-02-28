@@ -3,7 +3,9 @@ import { encodeVectorNetworkBlob } from './vector'
 import { IS_TAURI } from '../constants'
 import { initCodec, getCompiledSchema, getSchemaBytes } from '../kiwi/codec'
 
+import type { CanvasKit } from 'canvaskit-wasm'
 import type { SceneGraph, SceneNode, Color } from './scene-graph'
+import type { SkiaRenderer } from './renderer'
 
 interface KiwiNodeChange {
   guid: { sessionID: number; localID: number }
@@ -225,7 +227,65 @@ async function buildFigKiwi(schemaDeflated: Uint8Array, dataRaw: Uint8Array): Pr
   return out
 }
 
-export async function exportFigFile(graph: SceneGraph): Promise<Uint8Array> {
+const THUMBNAIL_WIDTH = 400
+const THUMBNAIL_HEIGHT = 225
+
+function generateThumbnail(
+  ck: CanvasKit,
+  renderer: SkiaRenderer,
+  graph: SceneGraph,
+  pageId: string
+): Uint8Array | null {
+  const page = graph.getNode(pageId)
+  if (!page || page.childIds.length === 0) return null
+
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+  for (const childId of page.childIds) {
+    const node = graph.getNode(childId)
+    if (!node || !node.visible) continue
+    const abs = graph.getAbsolutePosition(childId)
+    minX = Math.min(minX, abs.x)
+    minY = Math.min(minY, abs.y)
+    maxX = Math.max(maxX, abs.x + node.width)
+    maxY = Math.max(maxY, abs.y + node.height)
+  }
+  if (!isFinite(minX)) return null
+
+  const contentW = maxX - minX
+  const contentH = maxY - minY
+  if (contentW <= 0 || contentH <= 0) return null
+
+  const scale = Math.min(THUMBNAIL_WIDTH / contentW, THUMBNAIL_HEIGHT / contentH, 2)
+  const surface = ck.MakeSurface(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT)
+  if (!surface) return null
+
+  try {
+    const canvas = surface.getCanvas()
+    canvas.clear(ck.Color4f(renderer.pageColor.r, renderer.pageColor.g, renderer.pageColor.b, 1))
+
+    const offsetX = (THUMBNAIL_WIDTH - contentW * scale) / 2 - minX * scale
+    const offsetY = (THUMBNAIL_HEIGHT - contentH * scale) / 2 - minY * scale
+    canvas.translate(offsetX, offsetY)
+    canvas.scale(scale, scale)
+
+    renderer.renderSceneToCanvas(canvas, graph, pageId)
+
+    surface.flush()
+    const image = surface.makeImageSnapshot()
+    const encoded = image.encodeToBytes(ck.ImageFormat.PNG, 90)
+    image.delete()
+    return encoded ? new Uint8Array(encoded) : null
+  } finally {
+    surface.delete()
+  }
+}
+
+export async function exportFigFile(
+  graph: SceneGraph,
+  ck?: CanvasKit,
+  renderer?: SkiaRenderer,
+  pageId?: string
+): Promise<Uint8Array> {
   await initCodec()
   const compiled = getCompiledSchema()
   const schemaDeflated = deflateSync(getSchemaBytes())
@@ -294,19 +354,24 @@ export async function exportFigFile(graph: SceneGraph): Promise<Uint8Array> {
   const dataRaw = compiled.encodeMessage(msg)
   const canvasData = await buildFigKiwi(schemaDeflated, dataRaw)
 
+  const currentPageId = pageId ?? pages[0]?.id
+  const thumbnail = ck && renderer && currentPageId
+    ? generateThumbnail(ck, renderer, graph, currentPageId)
+    : null
+
+  const THUMBNAIL_1X1 = Uint8Array.from(atob(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=='
+  ), (c) => c.charCodeAt(0))
+
   const meta = JSON.stringify({
     version: 1,
     app: 'OpenPencil',
     createdAt: new Date().toISOString()
   })
 
-  const THUMBNAIL_1X1 = Uint8Array.from(atob(
-    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=='
-  ), (c) => c.charCodeAt(0))
-
   return zipSync({
     'canvas.fig': [canvasData, { level: 0 }],
-    'thumbnail.png': [THUMBNAIL_1X1, { level: 0 }],
+    'thumbnail.png': [thumbnail ?? THUMBNAIL_1X1, { level: 0 }],
     'meta.json': new TextEncoder().encode(meta)
   })
 }

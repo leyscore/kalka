@@ -74,6 +74,8 @@ export function createEditorStore() {
   const pageViewports = new Map<string, PageViewport>()
   let fileHandle: FileSystemFileHandle | null = null
   let filePath: string | null = null
+  let _ck: import('canvaskit-wasm').CanvasKit | null = null
+  let _renderer: import('../engine/renderer').SkiaRenderer | null = null
 
   prefetchFigmaSchema()
 
@@ -451,16 +453,25 @@ export function createEditorStore() {
     }
   }
 
+  function setCanvasKit(ck: import('canvaskit-wasm').CanvasKit, renderer: import('../engine/renderer').SkiaRenderer) {
+    _ck = ck
+    _renderer = renderer
+  }
+
+  function buildFigFile() {
+    return exportFigFile(graph, _ck ?? undefined, _renderer ?? undefined, state.currentPageId)
+  }
+
   async function saveFigFile() {
     if (filePath || fileHandle) {
-      await writeFile(await exportFigFile(graph))
+      await writeFile(await buildFigFile())
     } else {
       await saveFigFileAs()
     }
   }
 
   async function saveFigFileAs() {
-    const data = await exportFigFile(graph)
+    const data = await buildFigFile()
 
     if (IS_TAURI) {
       const { save } = await import('@tauri-apps/plugin-dialog')
@@ -1272,6 +1283,7 @@ export function createEditorStore() {
     commitTextEdit,
     openFigFile,
     saveFigFile,
+    setCanvasKit,
     saveFigFileAs,
     updateNode,
     setLayoutMode,
