@@ -4,17 +4,21 @@ Open-source, AI-native design editor. Figma alternative built from scratch with 
 
 > **Status:** Active development. Not ready for production use.
 
+![OpenPencil](screenshot.png)
+
 ## Features
 
 - **Figma .fig file import** — open native Figma files directly
 - **Figma clipboard** — copy/paste between OpenPencil and Figma
 - **Vector networks** — complex boolean shapes and open paths, like Figma
 - **Auto-layout** — constraint-based layout matching Figma behavior
+- **Components & instances** — with live sync, overrides, component sets
 - **Pen tool** — bezier curves with tangent handles
-- **Inline text editing** — multi-line text with Inter font
+- **Inline text editing** — multi-line text with system fonts
 - **Undo/redo** — all operations are undoable
 - **Snap guides** — edge and center snapping
-- **Color picker** — HSV, hue/alpha sliders, hex input
+- **Color picker** — HSV, hue/alpha sliders, hex input, gradients
+- **~5 MB install, works fully offline** — no account, no server, no internet required
 
 ## Tech Stack
 
