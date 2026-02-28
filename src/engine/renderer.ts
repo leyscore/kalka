@@ -28,6 +28,7 @@ import type {
 } from 'canvaskit-wasm'
 
 export interface RenderOverlays {
+  hoveredNodeId?: string | null
   editingTextId?: string | null
   marquee?: { x: number; y: number; width: number; height: number } | null
   snapGuides?: SnapGuide[]
@@ -157,6 +158,7 @@ export class SkiaRenderer {
     canvas.save()
     canvas.scale(this.dpr, this.dpr)
 
+    this.drawHoverHighlight(canvas, graph, overlays.hoveredNodeId)
     this.drawSelection(canvas, graph, selectedIds, overlays)
     this.drawSnapGuides(canvas, overlays.snapGuides)
     this.drawMarquee(canvas, overlays.marquee)
@@ -166,6 +168,31 @@ export class SkiaRenderer {
 
     canvas.restore()
     this.surface.flush()
+  }
+
+  // --- Hover highlight ---
+
+  private drawHoverHighlight(
+    canvas: Canvas,
+    graph: SceneGraph,
+    hoveredNodeId?: string | null
+  ): void {
+    if (!hoveredNodeId) return
+    const node = graph.getNode(hoveredNodeId)
+    if (!node) return
+
+    const abs = graph.getAbsolutePosition(hoveredNodeId)
+    const cx = (abs.x + node.width / 2) * this.zoom + this.panX
+    const cy = (abs.y + node.height / 2) * this.zoom + this.panY
+    const hw = (node.width / 2) * this.zoom
+    const hh = (node.height / 2) * this.zoom
+
+    canvas.save()
+    if (node.rotation !== 0) {
+      canvas.rotate(node.rotation, cx, cy)
+    }
+    canvas.drawRect(this.ck.LTRBRect(cx - hw, cy - hh, cx + hw, cy + hh), this.selectionPaint)
+    canvas.restore()
   }
 
   // --- Selection UI ---

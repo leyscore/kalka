@@ -58,6 +58,7 @@ export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, store: Edito
     renderer.showRulers = !new URLSearchParams(window.location.search).has('no-rulers')
     renderer.pageColor = store.state.pageColor
     renderer.render(store.graph, store.state.selectedIds, {
+      hoveredNodeId: store.state.hoveredNodeId,
       editingTextId: store.state.editingTextId,
       marquee: store.state.marquee,
       snapGuides: store.state.snapGuides,
