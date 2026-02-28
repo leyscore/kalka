@@ -5,6 +5,7 @@
     "": {
       "name": "open-pencil-app",
       "dependencies": {
+        "@open-pencil/cli": "workspace:*",
         "@open-pencil/core": "workspace:*",
         "@tailwindcss/vite": "^4.2.1",
         "@tauri-apps/api": "^2",
