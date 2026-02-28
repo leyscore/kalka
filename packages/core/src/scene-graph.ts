@@ -341,6 +341,10 @@ export class SceneGraph {
     return this.getChildren(this.rootId).filter((n) => n.type === 'CANVAS')
   }
 
+  getAllNodes(): Iterable<SceneNode> {
+    return this.nodes.values()
+  }
+
   getNode(id: string): SceneNode | undefined {
     return this.nodes.get(id)
   }

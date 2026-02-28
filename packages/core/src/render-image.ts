@@ -33,6 +33,17 @@ function computeContentBounds(
   return { minX, minY, maxX, maxY }
 }
 
+function ckImageFormat(ck: CanvasKit, format: ExportFormat) {
+  switch (format) {
+    case 'JPG':
+      return ck.ImageFormat.JPEG
+    case 'WEBP':
+      return ck.ImageFormat.WEBP
+    default:
+      return ck.ImageFormat.PNG
+  }
+}
+
 function renderToSurface(
   ck: CanvasKit,
   renderer: SkiaRenderer,
@@ -40,6 +51,8 @@ function renderToSurface(
   pageId: string,
   width: number,
   height: number,
+  format: ExportFormat,
+  quality: number,
   setup: (canvas: import('canvaskit-wasm').Canvas) => void
 ): Uint8Array | null {
   const surface = ck.MakeSurface(width, height)
@@ -51,7 +64,7 @@ function renderToSurface(
     renderer.renderSceneToCanvas(canvas, graph, pageId)
     surface.flush()
     const image = surface.makeImageSnapshot()
-    const encoded = image.encodeToBytes(ck.ImageFormat.PNG, 100)
+    const encoded = image.encodeToBytes(ckImageFormat(ck, format), quality)
     image.delete()
     return encoded ? new Uint8Array(encoded) : null
   } finally {
@@ -59,53 +72,14 @@ function renderToSurface(
   }
 }
 
-function mimeForFormat(format: ExportFormat): string {
-  switch (format) {
-    case 'JPG':
-      return 'image/jpeg'
-    case 'WEBP':
-      return 'image/webp'
-    default:
-      return 'image/png'
-  }
-}
-
-async function reencodeImage(
-  pngBytes: Uint8Array,
-  format: ExportFormat,
-  quality: number
-): Promise<Uint8Array> {
-  if (format === 'PNG') return pngBytes
-
-  const blob = new Blob([new Uint8Array(pngBytes)], { type: 'image/png' })
-  const bitmap = await createImageBitmap(blob)
-  const canvas = new OffscreenCanvas(bitmap.width, bitmap.height)
-  const ctx = canvas.getContext('2d')
-  if (!ctx) return pngBytes
-
-  if (format === 'JPG') {
-    ctx.fillStyle = '#ffffff'
-    ctx.fillRect(0, 0, bitmap.width, bitmap.height)
-  }
-
-  ctx.drawImage(bitmap, 0, 0)
-  bitmap.close()
-
-  const outBlob = await canvas.convertToBlob({
-    type: mimeForFormat(format),
-    quality: quality / 100
-  })
-  return new Uint8Array(await outBlob.arrayBuffer())
-}
-
-export async function renderNodesToImage(
+export function renderNodesToImage(
   ck: CanvasKit,
   renderer: SkiaRenderer,
   graph: SceneGraph,
   pageId: string,
   nodeIds: string[],
   options: RenderOptions
-): Promise<Uint8Array | null> {
+): Uint8Array | null {
   const bounds = computeContentBounds(graph, nodeIds)
   if (!bounds) return null
 
@@ -117,15 +91,12 @@ export async function renderNodesToImage(
   const pixelH = Math.ceil(contentH * options.scale)
   if (pixelW <= 0 || pixelH <= 0) return null
 
-  const png = renderToSurface(ck, renderer, graph, pageId, pixelW, pixelH, (canvas) => {
+  const quality = options.quality ?? (options.format === 'PNG' ? 100 : 90)
+  return renderToSurface(ck, renderer, graph, pageId, pixelW, pixelH, options.format, quality, (canvas) => {
     canvas.clear(ck.TRANSPARENT)
     canvas.scale(options.scale, options.scale)
     canvas.translate(-bounds.minX, -bounds.minY)
   })
-  if (!png) return null
-
-  const quality = options.quality ?? (options.format === 'PNG' ? 100 : 90)
-  return reencodeImage(png, options.format, quality)
 }
 
 export function renderThumbnail(
@@ -148,7 +119,7 @@ export function renderThumbnail(
 
   const scale = Math.min(width / contentW, height / contentH, 2)
 
-  return renderToSurface(ck, renderer, graph, pageId, width, height, (canvas) => {
+  return renderToSurface(ck, renderer, graph, pageId, width, height, 'PNG', 100, (canvas) => {
     canvas.clear(ck.Color4f(renderer.pageColor.r, renderer.pageColor.g, renderer.pageColor.b, 1))
     const offsetX = (width - contentW * scale) / 2 - bounds.minX * scale
     const offsetY = (height - contentH * scale) / 2 - bounds.minY * scale

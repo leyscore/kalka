@@ -19,7 +19,7 @@ export function getFontProvider(): TypefaceFontProvider | null {
 }
 
 export async function queryFonts(): Promise<FontInfo[]> {
-  if (!window.queryLocalFonts) return []
+  if (typeof window === 'undefined' || !window.queryLocalFonts) return []
   try {
     const fonts = await window.queryLocalFonts()
     const seen = new Set<string>()
@@ -59,8 +59,8 @@ export async function loadFont(family: string, style = 'Regular'): Promise<Array
     return cached
   }
 
-  // Try local font access API first
-  if (window.queryLocalFonts) {
+  // Try local font access API first (browser only)
+  if (typeof window !== 'undefined' && window.queryLocalFonts) {
     try {
       const fonts = await window.queryLocalFonts()
       const match =
@@ -105,6 +105,7 @@ function registerFontInCanvasKit(family: string, data: ArrayBuffer) {
 }
 
 function registerFontInBrowser(family: string, style: string, data: ArrayBuffer) {
+  if (typeof document === 'undefined') return
   const weight = styleToWeight(style)
   const italic = style.toLowerCase().includes('italic') ? 'italic' : 'normal'
   const face = new FontFace(family, data, {

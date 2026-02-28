@@ -60,7 +60,7 @@ export {
   prefetchFigmaSchema
 } from './clipboard'
 
-export { readFigFile } from './kiwi/fig-file'
+export { readFigFile, parseFigFile } from './kiwi/fig-file'
 export { importNodeChanges } from './kiwi/fig-import'
 export {
   initCodec,

@@ -11,8 +11,8 @@ import { decompress as zstdDecompress } from 'fzstd'
 import { parseColor } from '../color'
 
 import { compileSchema, encodeBinarySchema } from './kiwi-schema'
-import { isZstdCompressed, getKiwiMessageType } from './protocol.ts'
-import figmaSchema from './schema.ts'
+import { isZstdCompressed, getKiwiMessageType } from './protocol'
+import figmaSchema from './schema'
 
 import type { Schema } from './kiwi-schema'
 

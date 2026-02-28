@@ -1,0 +1,17 @@
+{
+  "name": "@open-pencil/cli",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "open-pencil": "./src/index.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.9"
+  },
+  "dependencies": {
+    "@open-pencil/core": "workspace:*",
+    "agentfmt": "^0.1.3",
+    "canvaskit-wasm": "^0.40.0",
+    "citty": "^0.1.6"
+  }
+}
