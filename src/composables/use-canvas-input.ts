@@ -59,7 +59,13 @@ interface DragRotate {
   origRotation: number
 }
 
-type DragState = DragDraw | DragMove | DragPan | DragResize | DragMarquee | DragRotate
+interface DragPen {
+  type: 'pen-drag'
+  startX: number
+  startY: number
+}
+
+type DragState = DragDraw | DragMove | DragPan | DragResize | DragMarquee | DragRotate | DragPen
 
 const TOOL_TO_NODE: Partial<Record<Tool, NodeType>> = {
   FRAME: 'FRAME',
@@ -371,6 +377,13 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
       return
     }
 
+    // Pen tool: click to add vertices
+    if (tool === 'PEN') {
+      store.penAddVertex(cx, cy)
+      drag.value = { type: 'pen-drag', startX: cx, startY: cy } as DragState
+      return
+    }
+
     // Text tool: click to create text node
     if (tool === 'TEXT') {
       const nodeId = store.createShape('TEXT', cx, cy, 200, 24)
@@ -392,6 +405,21 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
   }
 
   function onMouseMove(e: MouseEvent) {
+    // Pen tool: track cursor for preview line
+    if (store.state.activeTool === 'PEN' && store.state.penState && !drag.value) {
+      const { cx, cy } = getCoords(e)
+      store.state.penCursorX = cx
+      store.state.penCursorY = cy
+
+      // Check proximity to first vertex for closing
+      const first = store.state.penState.vertices[0]
+      if (store.state.penState.vertices.length > 2 && first) {
+        const dist = Math.hypot(cx - first.x, cy - first.y)
+        store.penSetClosingToFirst(dist < 8)
+      }
+      store.requestRender()
+    }
+
     // Cursor on hover
     if (!drag.value && store.state.activeTool === 'SELECT') {
       const { sx, sy } = getCoords(e)
@@ -573,6 +601,15 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
       return
     }
 
+    if (d.type === 'pen-drag') {
+      const tx = cx - d.startX
+      const ty = cy - d.startY
+      if (Math.hypot(tx, ty) > 2) {
+        store.penSetDragTangent(tx, ty)
+      }
+      return
+    }
+
     if (d.type === 'draw') {
       let w = cx - d.startX
       let h = cy - d.startY
@@ -701,6 +738,11 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
 
     if (d.type === 'resize') {
       store.commitResize(d.nodeId, d.origRect)
+    }
+
+    if (d.type === 'pen-drag') {
+      drag.value = null
+      return
     }
 
     if (d.type === 'rotate') {

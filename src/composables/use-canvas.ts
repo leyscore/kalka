@@ -57,7 +57,12 @@ export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, store: Edito
       snapGuides: store.state.snapGuides,
       rotationPreview: store.state.rotationPreview,
       dropTargetId: store.state.dropTargetId,
-      layoutInsertIndicator: store.state.layoutInsertIndicator
+      layoutInsertIndicator: store.state.layoutInsertIndicator,
+      penState: store.state.penState ? {
+        ...store.state.penState,
+        cursorX: store.state.penCursorX,
+        cursorY: store.state.penCursorY
+      } : null
     })
   }
 

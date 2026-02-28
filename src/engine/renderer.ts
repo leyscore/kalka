@@ -1,5 +1,6 @@
 import type { SceneNode, SceneGraph, Fill } from './scene-graph'
 import type { SnapGuide } from './snap'
+import { vectorNetworkToPath } from './vector'
 import type {
   CanvasKit,
   Surface,
@@ -20,6 +21,14 @@ export interface RenderOverlays {
     y: number
     length: number
     direction: 'HORIZONTAL' | 'VERTICAL'
+  } | null
+  penState?: {
+    vertices: Array<{ x: number; y: number }>
+    segments: Array<{ start: number; end: number; tangentStart: { x: number; y: number }; tangentEnd: { x: number; y: number } }>
+    dragTangent: { x: number; y: number } | null
+    closingToFirst: boolean
+    cursorX?: number
+    cursorY?: number
   } | null
 }
 
@@ -125,6 +134,7 @@ export class SkiaRenderer {
     this.drawSnapGuides(canvas, overlays.snapGuides)
     this.drawMarquee(canvas, overlays.marquee)
     this.drawLayoutInsertIndicator(canvas, overlays.layoutInsertIndicator)
+    this.drawPenOverlay(canvas, overlays.penState)
 
     canvas.restore()
     this.surface.flush()
@@ -598,6 +608,13 @@ export class SkiaRenderer {
       this.fillPaint.setAlphaf(fill.opacity)
 
       switch (node.type) {
+        case 'VECTOR':
+          if (node.vectorNetwork) {
+            const vp = vectorNetworkToPath(this.ck, node.vectorNetwork)
+            canvas.drawPath(vp, this.fillPaint)
+            vp.delete()
+          }
+          break
         case 'ELLIPSE':
           canvas.drawOval(rect, this.fillPaint)
           break
@@ -645,6 +662,13 @@ export class SkiaRenderer {
       this.strokePaint.setAlphaf(stroke.opacity)
 
       switch (node.type) {
+        case 'VECTOR':
+          if (node.vectorNetwork) {
+            const vp = vectorNetworkToPath(this.ck, node.vectorNetwork)
+            canvas.drawPath(vp, this.strokePaint)
+            vp.delete()
+          }
+          break
         case 'ELLIPSE':
           canvas.drawOval(rect, this.strokePaint)
           break
@@ -712,6 +736,130 @@ export class SkiaRenderer {
       x: (sx - this.panX) / this.zoom,
       y: (sy - this.panY) / this.zoom
     }
+  }
+
+  private drawPenOverlay(canvas: Canvas, penState: RenderOverlays['penState']): void {
+    if (!penState || penState.vertices.length === 0) return
+
+    const { vertices, segments, dragTangent, cursorX, cursorY } = penState
+    const VERTEX_RADIUS = 4
+
+    const pathPaint = new this.ck.Paint()
+    pathPaint.setStyle(this.ck.PaintStyle.Stroke)
+    pathPaint.setStrokeWidth(2)
+    pathPaint.setColor(this.ck.Color4f(0.23, 0.51, 0.96, 1.0))
+    pathPaint.setAntiAlias(true)
+
+    const handlePaint = new this.ck.Paint()
+    handlePaint.setStyle(this.ck.PaintStyle.Stroke)
+    handlePaint.setStrokeWidth(1)
+    handlePaint.setColor(this.ck.Color4f(0.23, 0.51, 0.96, 0.5))
+    handlePaint.setAntiAlias(true)
+
+    const vertexFill = new this.ck.Paint()
+    vertexFill.setStyle(this.ck.PaintStyle.Fill)
+    vertexFill.setColor(this.ck.WHITE)
+    vertexFill.setAntiAlias(true)
+
+    const vertexStroke = new this.ck.Paint()
+    vertexStroke.setStyle(this.ck.PaintStyle.Stroke)
+    vertexStroke.setStrokeWidth(2)
+    vertexStroke.setColor(this.ck.Color4f(0.23, 0.51, 0.96, 1.0))
+    vertexStroke.setAntiAlias(true)
+
+    const toScreen = (x: number, y: number) => ({
+      x: x * this.zoom + this.panX,
+      y: y * this.zoom + this.panY
+    })
+
+    // Draw existing segments
+    const path = new this.ck.Path()
+    for (const seg of segments) {
+      const s = toScreen(vertices[seg.start].x, vertices[seg.start].y)
+      const e = toScreen(vertices[seg.end].x, vertices[seg.end].y)
+      path.moveTo(s.x, s.y)
+
+      const isLine =
+        seg.tangentStart.x === 0 && seg.tangentStart.y === 0 &&
+        seg.tangentEnd.x === 0 && seg.tangentEnd.y === 0
+      if (isLine) {
+        path.lineTo(e.x, e.y)
+      } else {
+        const cp1 = toScreen(
+          vertices[seg.start].x + seg.tangentStart.x,
+          vertices[seg.start].y + seg.tangentStart.y
+        )
+        const cp2 = toScreen(
+          vertices[seg.end].x + seg.tangentEnd.x,
+          vertices[seg.end].y + seg.tangentEnd.y
+        )
+        path.cubicTo(cp1.x, cp1.y, cp2.x, cp2.y, e.x, e.y)
+      }
+    }
+
+    // Preview line from last vertex to cursor
+    if (vertices.length > 0 && cursorX !== undefined && cursorY !== undefined) {
+      const last = toScreen(vertices[vertices.length - 1].x, vertices[vertices.length - 1].y)
+      const cursor = toScreen(cursorX, cursorY)
+      path.moveTo(last.x, last.y)
+      if (dragTangent) {
+        const cp1 = toScreen(
+          vertices[vertices.length - 1].x + dragTangent.x,
+          vertices[vertices.length - 1].y + dragTangent.y
+        )
+        path.cubicTo(cp1.x, cp1.y, cursor.x, cursor.y, cursor.x, cursor.y)
+      } else {
+        path.lineTo(cursor.x, cursor.y)
+      }
+    }
+
+    canvas.drawPath(path, pathPaint)
+    path.delete()
+
+    // Draw tangent handle lines
+    for (const seg of segments) {
+      const ts = seg.tangentStart
+      const te = seg.tangentEnd
+      if (ts.x !== 0 || ts.y !== 0) {
+        const s = toScreen(vertices[seg.start].x, vertices[seg.start].y)
+        const cp = toScreen(vertices[seg.start].x + ts.x, vertices[seg.start].y + ts.y)
+        canvas.drawLine(s.x, s.y, cp.x, cp.y, handlePaint)
+        canvas.drawCircle(cp.x, cp.y, 3, vertexFill)
+        canvas.drawCircle(cp.x, cp.y, 3, handlePaint)
+      }
+      if (te.x !== 0 || te.y !== 0) {
+        const e = toScreen(vertices[seg.end].x, vertices[seg.end].y)
+        const cp = toScreen(vertices[seg.end].x + te.x, vertices[seg.end].y + te.y)
+        canvas.drawLine(e.x, e.y, cp.x, cp.y, handlePaint)
+        canvas.drawCircle(cp.x, cp.y, 3, vertexFill)
+        canvas.drawCircle(cp.x, cp.y, 3, handlePaint)
+      }
+    }
+
+    // Draw current drag tangent handles
+    if (dragTangent && vertices.length > 0) {
+      const last = vertices[vertices.length - 1]
+      const cp1 = toScreen(last.x + dragTangent.x, last.y + dragTangent.y)
+      const cp2 = toScreen(last.x - dragTangent.x, last.y - dragTangent.y)
+      canvas.drawLine(cp2.x, cp2.y, cp1.x, cp1.y, handlePaint)
+      canvas.drawCircle(cp1.x, cp1.y, 3, vertexFill)
+      canvas.drawCircle(cp1.x, cp1.y, 3, handlePaint)
+      canvas.drawCircle(cp2.x, cp2.y, 3, vertexFill)
+      canvas.drawCircle(cp2.x, cp2.y, 3, handlePaint)
+    }
+
+    // Draw vertices
+    for (let i = 0; i < vertices.length; i++) {
+      const v = toScreen(vertices[i].x, vertices[i].y)
+      const radius = i === 0 && penState.closingToFirst ? VERTEX_RADIUS + 2 : VERTEX_RADIUS
+      canvas.drawCircle(v.x, v.y, radius, vertexFill)
+      canvas.drawCircle(v.x, v.y, radius, vertexStroke)
+    }
+
+    pathPaint.delete()
+    handlePaint.delete()
+    vertexFill.delete()
+    vertexStroke.delete()
   }
 
   destroy(): void {

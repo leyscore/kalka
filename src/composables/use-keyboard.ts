@@ -86,7 +86,17 @@ export function useKeyboard(store: EditorStore) {
       store.deleteSelected()
     }
 
+    if (e.key === 'Enter' && store.state.penState) {
+      e.preventDefault()
+      store.penCommit(false)
+      return
+    }
+
     if (e.key === 'Escape') {
+      if (store.state.penState) {
+        store.penCancel()
+        return
+      }
       store.clearSelection()
       store.setTool('SELECT')
     }

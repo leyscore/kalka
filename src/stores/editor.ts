@@ -12,8 +12,9 @@ import { readFigFile } from '../engine/fig-file'
 import { computeLayout, computeAllLayouts } from '../engine/layout'
 import { SceneGraph } from '../engine/scene-graph'
 import { UndoManager } from '../engine/undo'
+import { computeVectorBounds } from '../engine/vector'
 
-import type { SceneNode, NodeType, Fill, LayoutMode } from '../engine/scene-graph'
+import type { SceneNode, NodeType, Fill, LayoutMode, VectorVertex, VectorSegment, VectorRegion, VectorNetwork } from '../engine/scene-graph'
 import type { SnapGuide } from '../engine/snap'
 
 export type Tool = 'SELECT' | 'FRAME' | 'RECTANGLE' | 'ELLIPSE' | 'LINE' | 'TEXT' | 'PEN' | 'HAND'
@@ -92,6 +93,14 @@ export function createEditorStore() {
       direction: 'HORIZONTAL' | 'VERTICAL'
     } | null,
     editingTextId: null as string | null,
+    penState: null as {
+      vertices: VectorVertex[]
+      segments: VectorSegment[]
+      dragTangent: { x: number; y: number } | null
+      closingToFirst: boolean
+    } | null,
+    penCursorX: 0,
+    penCursorY: 0,
     panX: 0,
     panY: 0,
     zoom: 1,
@@ -193,6 +202,122 @@ export function createEditorStore() {
     for (const id of nodeIds) {
       graph.reparentNode(id, newParentId)
     }
+    requestRender()
+  }
+
+  function penAddVertex(x: number, y: number) {
+    if (!state.penState) {
+      state.penState = {
+        vertices: [{ x, y }],
+        segments: [],
+        dragTangent: null,
+        closingToFirst: false
+      }
+      requestRender()
+      return
+    }
+
+    const ps = state.penState
+    const prevIdx = ps.vertices.length - 1
+
+    // Check if clicking near first vertex to close
+    const first = ps.vertices[0]
+    const dist = Math.hypot(x - first.x, y - first.y)
+    if (ps.vertices.length > 2 && dist < 8) {
+      // Close the path
+      ps.segments.push({
+        start: prevIdx,
+        end: 0,
+        tangentStart: ps.dragTangent ?? { x: 0, y: 0 },
+        tangentEnd: { x: 0, y: 0 }
+      })
+      penCommit(true)
+      return
+    }
+
+    // Add new vertex and segment from previous
+    ps.vertices.push({ x, y })
+    const newIdx = ps.vertices.length - 1
+    ps.segments.push({
+      start: prevIdx,
+      end: newIdx,
+      tangentStart: ps.dragTangent ?? { x: 0, y: 0 },
+      tangentEnd: { x: 0, y: 0 }
+    })
+    ps.dragTangent = null
+    requestRender()
+  }
+
+  function penSetDragTangent(tx: number, ty: number) {
+    if (!state.penState) return
+    state.penState.dragTangent = { x: tx, y: ty }
+
+    // Also set the tangentStart on the last segment (the one being dragged)
+    const ps = state.penState
+    if (ps.segments.length > 0) {
+      const lastSeg = ps.segments[ps.segments.length - 1]
+      lastSeg.tangentEnd = { x: -tx, y: -ty }
+    }
+    requestRender()
+  }
+
+  function penSetClosingToFirst(closing: boolean) {
+    if (!state.penState) return
+    state.penState.closingToFirst = closing
+    requestRender()
+  }
+
+  function penCommit(closed: boolean) {
+    const ps = state.penState
+    if (!ps || ps.vertices.length < 2) {
+      state.penState = null
+      return
+    }
+
+    const regions: VectorRegion[] = closed
+      ? [{ windingRule: 'NONZERO', loops: [ps.segments.map((_, i) => i)] }]
+      : []
+
+    const network: VectorNetwork = {
+      vertices: ps.vertices,
+      segments: ps.segments,
+      regions
+    }
+
+    const bounds = computeVectorBounds(network)
+
+    // Normalize vertices relative to bounds origin
+    const normalizedVertices = network.vertices.map((v) => ({
+      ...v,
+      x: v.x - bounds.x,
+      y: v.y - bounds.y
+    }))
+
+    const normalizedNetwork: VectorNetwork = {
+      vertices: normalizedVertices,
+      segments: network.segments,
+      regions: network.regions
+    }
+
+    const nodeId = createShape('VECTOR', bounds.x, bounds.y, bounds.width, bounds.height)
+    updateNode(nodeId, {
+      vectorNetwork: normalizedNetwork,
+      name: 'Vector',
+      fills: closed ? undefined : [],
+      strokes: closed
+        ? []
+        : [{ color: { r: 0, g: 0, b: 0, a: 1 }, weight: 2, opacity: 1, visible: true, align: 'CENTER' as const }]
+    })
+    select([nodeId])
+
+    state.penState = null
+    state.activeTool = 'SELECT'
+    requestRender()
+  }
+
+  function penCancel() {
+    state.penState = null
+    state.activeTool = 'SELECT'
     requestRender()
   }
 
@@ -781,6 +906,11 @@ export function createEditorStore() {
     setLayoutInsertIndicator,
     reorderInAutoLayout,
     reparentNodes,
+    penAddVertex,
+    penSetDragTangent,
+    penSetClosingToFirst,
+    penCommit,
+    penCancel,
     startTextEditing,
     commitTextEdit,
     openFigFile,

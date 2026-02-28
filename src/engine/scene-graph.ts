@@ -1,3 +1,33 @@
+export type HandleMirroring = 'NONE' | 'ANGLE' | 'ANGLE_AND_LENGTH'
+export type WindingRule = 'NONZERO' | 'EVENODD'
+
+export interface VectorVertex {
+  x: number
+  y: number
+  strokeCap?: string
+  strokeJoin?: string
+  cornerRadius?: number
+  handleMirroring?: HandleMirroring
+}
+
+export interface VectorSegment {
+  start: number
+  end: number
+  tangentStart: { x: number; y: number }
+  tangentEnd: { x: number; y: number }
+}
+
+export interface VectorRegion {
+  windingRule: WindingRule
+  loops: number[][]
+}
+
+export interface VectorNetwork {
+  vertices: VectorVertex[]
+  segments: VectorSegment[]
+  regions: VectorRegion[]
+}
+
 export type NodeType =
   | 'FRAME'
   | 'RECTANGLE'
@@ -105,6 +135,8 @@ export interface SceneNode {
   layoutPositioning: 'AUTO' | 'ABSOLUTE'
   layoutGrow: number
   layoutAlignSelf: 'AUTO' | 'STRETCH'
+
+  vectorNetwork: VectorNetwork | null
 }
 
 let nextLocalID = 1
@@ -160,6 +192,7 @@ function createDefaultNode(type: NodeType, overrides: Partial<SceneNode> = {}): 
     layoutPositioning: 'AUTO',
     layoutGrow: 0,
     layoutAlignSelf: 'AUTO',
+    vectorNetwork: null,
     ...overrides
   }
 }
