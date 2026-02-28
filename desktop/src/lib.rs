@@ -22,6 +22,7 @@ pub fn run() {
             let _ = app.emit("menu-event", event.id().0.as_str());
         })
         .setup(|app| {
+            #[cfg(target_os = "macos")]
             let app_menu = SubmenuBuilder::new(app, "OpenPencil")
                 .item(&PredefinedMenuItem::about(app, Some("About OpenPencil"), None)?)
                 .separator()
@@ -223,9 +224,13 @@ pub fn run() {
                 )
                 .build()?;
 
-            let menu = MenuBuilder::new(app)
+            let mut builder = MenuBuilder::new(app);
+            #[cfg(target_os = "macos")]
+            {
+                builder = builder.item(&app_menu);
+            }
+            let menu = builder
                 .items(&[
-                    &app_menu,
                     &file_menu,
                     &edit_menu,
                     &view_menu,
