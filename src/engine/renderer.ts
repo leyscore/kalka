@@ -374,7 +374,7 @@ export class SkiaRenderer {
     if (nodes.length === 1) {
       const node = nodes[0]
       const parentNode = node.parentId ? graph.getNode(node.parentId) : null
-      if (node.type === 'FRAME' && (!parentNode || parentNode.type === 'CANVAS')) {
+      if (node.type === 'FRAME' && (!parentNode || parentNode.type === 'CANVAS' || parentNode.type === 'SECTION')) {
         const labelPaint = new this.ck.Paint()
         labelPaint.setStyle(this.ck.PaintStyle.Fill)
         labelPaint.setColor(this.selColor())
