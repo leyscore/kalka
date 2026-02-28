@@ -1,6 +1,6 @@
 import type { SkiaRenderer } from './renderer'
 import type { SceneGraph } from './scene-graph'
-import type { CanvasKit, EncodedImageFormat } from 'canvaskit-wasm'
+import type { CanvasKit } from 'canvaskit-wasm'
 
 export type ExportFormat = 'PNG' | 'JPG' | 'WEBP'
 
@@ -33,29 +33,79 @@ function computeContentBounds(
   return { minX, minY, maxX, maxY }
 }
 
-function ckImageFormat(ck: CanvasKit, format: ExportFormat): EncodedImageFormat {
-  switch (format) {
-    case 'JPG':
-      return ck.ImageFormat.JPEG
-    case 'WEBP':
-      return ck.ImageFormat.WEBP
-    default:
-      return ck.ImageFormat.PNG
+function renderToSurface(
+  ck: CanvasKit,
+  renderer: SkiaRenderer,
+  graph: SceneGraph,
+  pageId: string,
+  width: number,
+  height: number,
+  setup: (canvas: import('canvaskit-wasm').Canvas) => void
+): Uint8Array | null {
+  const surface = ck.MakeSurface(width, height)
+  if (!surface) return null
+
+  try {
+    const canvas = surface.getCanvas()
+    setup(canvas)
+    renderer.renderSceneToCanvas(canvas, graph, pageId)
+    surface.flush()
+    const image = surface.makeImageSnapshot()
+    const encoded = image.encodeToBytes(ck.ImageFormat.PNG, 100)
+    image.delete()
+    return encoded ? new Uint8Array(encoded) : null
+  } finally {
+    surface.delete()
   }
 }
 
-function defaultQuality(format: ExportFormat): number {
-  return format === 'PNG' ? 100 : 90
+function mimeForFormat(format: ExportFormat): string {
+  switch (format) {
+    case 'JPG':
+      return 'image/jpeg'
+    case 'WEBP':
+      return 'image/webp'
+    default:
+      return 'image/png'
+  }
 }
 
-export function renderNodesToImage(
+async function reencodeImage(
+  pngBytes: Uint8Array,
+  format: ExportFormat,
+  quality: number
+): Promise<Uint8Array> {
+  if (format === 'PNG') return pngBytes
+
+  const blob = new Blob([new Uint8Array(pngBytes)], { type: 'image/png' })
+  const bitmap = await createImageBitmap(blob)
+  const canvas = new OffscreenCanvas(bitmap.width, bitmap.height)
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return pngBytes
+
+  if (format === 'JPG') {
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, bitmap.width, bitmap.height)
+  }
+
+  ctx.drawImage(bitmap, 0, 0)
+  bitmap.close()
+
+  const outBlob = await canvas.convertToBlob({
+    type: mimeForFormat(format),
+    quality: quality / 100
+  })
+  return new Uint8Array(await outBlob.arrayBuffer())
+}
+
+export async function renderNodesToImage(
   ck: CanvasKit,
   renderer: SkiaRenderer,
   graph: SceneGraph,
   pageId: string,
   nodeIds: string[],
   options: RenderOptions
-): Uint8Array | null {
+): Promise<Uint8Array | null> {
   const bounds = computeContentBounds(graph, nodeIds)
   if (!bounds) return null
 
@@ -67,36 +117,15 @@ export function renderNodesToImage(
   const pixelH = Math.ceil(contentH * options.scale)
   if (pixelW <= 0 || pixelH <= 0) return null
 
-  const surface = ck.MakeSurface(pixelW, pixelH)
-  if (!surface) return null
-
-  try {
-    const canvas = surface.getCanvas()
-
-    if (options.format === 'JPG') {
-      canvas.clear(ck.WHITE)
-    } else {
-      canvas.clear(ck.TRANSPARENT)
-    }
-
+  const png = renderToSurface(ck, renderer, graph, pageId, pixelW, pixelH, (canvas) => {
+    canvas.clear(ck.TRANSPARENT)
     canvas.scale(options.scale, options.scale)
     canvas.translate(-bounds.minX, -bounds.minY)
+  })
+  if (!png) return null
 
-    renderer.renderSceneToCanvas(canvas, graph, pageId)
-
-    surface.flush()
-    const image = surface.makeImageSnapshot()
-    const quality = options.quality ?? defaultQuality(options.format)
-    const fmt = ckImageFormat(ck, options.format)
-    const encoded = image.encodeToBytes(fmt, quality)
-    image.delete()
-    if (!encoded) {
-      console.error(`encodeToBytes returned null for format=${options.format} quality=${quality}`)
-    }
-    return encoded ? new Uint8Array(encoded) : null
-  } finally {
-    surface.delete()
-  }
+  const quality = options.quality ?? (options.format === 'PNG' ? 100 : 90)
+  return reencodeImage(png, options.format, quality)
 }
 
 export function renderThumbnail(
@@ -118,26 +147,12 @@ export function renderThumbnail(
   if (contentW <= 0 || contentH <= 0) return null
 
   const scale = Math.min(width / contentW, height / contentH, 2)
-  const surface = ck.MakeSurface(width, height)
-  if (!surface) return null
 
-  try {
-    const canvas = surface.getCanvas()
+  return renderToSurface(ck, renderer, graph, pageId, width, height, (canvas) => {
     canvas.clear(ck.Color4f(renderer.pageColor.r, renderer.pageColor.g, renderer.pageColor.b, 1))
-
     const offsetX = (width - contentW * scale) / 2 - bounds.minX * scale
     const offsetY = (height - contentH * scale) / 2 - bounds.minY * scale
     canvas.translate(offsetX, offsetY)
     canvas.scale(scale, scale)
-
-    renderer.renderSceneToCanvas(canvas, graph, pageId)
-
-    surface.flush()
-    const image = surface.makeImageSnapshot()
-    const encoded = image.encodeToBytes(ck.ImageFormat.PNG, 90)
-    image.delete()
-    return encoded ? new Uint8Array(encoded) : null
-  } finally {
-    surface.delete()
-  }
+  })
 }

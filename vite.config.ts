@@ -21,7 +21,7 @@ export default defineConfig(async () => ({
     {
       name: 'copy-canvaskit-wasm',
       buildStart() {
-        const src = 'node_modules/canvaskit-wasm/bin/full/canvaskit.wasm'
+        const src = 'node_modules/canvaskit-wasm/bin/canvaskit.wasm'
         const dest = 'public/canvaskit.wasm'
         if (existsSync(src) && !existsSync(dest)) {
           copyFileSync(src, dest)

@@ -52,7 +52,7 @@ async function doExport() {
 
 const PREVIEW_WIDTH = 480
 
-function updatePreview() {
+async function updatePreview() {
   if (!showPreview.value) return
   if (previewUrl.value) {
     URL.revokeObjectURL(previewUrl.value)
@@ -68,7 +68,7 @@ function updatePreview() {
   }
   const scale = maxW > 0 ? Math.min(PREVIEW_WIDTH / maxW, 2) : 1
 
-  const data = store.renderExportImage(ids, scale, 'PNG')
+  const data = await store.renderExportImage(ids, scale, 'PNG')
   if (data) {
     previewUrl.value = URL.createObjectURL(new Blob([data], { type: 'image/png' }))
   }

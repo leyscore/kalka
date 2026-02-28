@@ -583,11 +583,11 @@ export function createEditorStore() {
     }
   }
 
-  function renderExportImage(
+  async function renderExportImage(
     nodeIds: string[],
     scale: number,
     format: ExportFormat
-  ): Uint8Array | null {
+  ): Promise<Uint8Array | null> {
     if (!_ck || !_renderer) return null
     const ids =
       nodeIds.length > 0 ? nodeIds : graph.getChildren(state.currentPageId).map((n) => n.id)
@@ -619,9 +619,11 @@ export function createEditorStore() {
 
   async function exportSelection(scale: number, format: ExportFormat) {
     const ids = [...state.selectedIds]
-    const data = renderExportImage(ids, scale, format)
+    const data = await renderExportImage(ids, scale, format)
     if (!data) {
-      console.error(`Export failed: renderExportImage returned null for format=${format} scale=${scale}`)
+      console.error(
+        `Export failed: renderExportImage returned null for format=${format} scale=${scale}`
+      )
       return
     }
 
