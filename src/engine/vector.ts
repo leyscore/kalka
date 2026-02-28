@@ -1,6 +1,12 @@
+import type {
+  HandleMirroring,
+  VectorNetwork,
+  VectorRegion,
+  VectorSegment,
+  VectorVertex,
+  WindingRule
+} from './scene-graph'
 import type { CanvasKit, Path } from 'canvaskit-wasm'
-
-import type { HandleMirroring, VectorNetwork, VectorRegion, VectorSegment, VectorVertex, WindingRule } from './scene-graph'
 
 // --- vectorNetworkBlob binary format ---
 // Header:  [numVertices:u32, numSegments:u32, numRegions:u32]  (12 bytes)
@@ -20,9 +26,12 @@ export function decodeVectorNetworkBlob(
   const view = new DataView(data.buffer, data.byteOffset, data.byteLength)
   let o = 0
 
-  const nV = view.getUint32(o, true); o += 4
-  const nS = view.getUint32(o, true); o += 4
-  const nR = view.getUint32(o, true); o += 4
+  const nV = view.getUint32(o, true)
+  o += 4
+  const nS = view.getUint32(o, true)
+  o += 4
+  const nR = view.getUint32(o, true)
+  o += 4
 
   const styleMap = new Map<number, StyleOverride>()
   if (styleOverrideTable) {
@@ -33,9 +42,12 @@ export function decodeVectorNetworkBlob(
 
   const vertices: VectorVertex[] = []
   for (let i = 0; i < nV; i++) {
-    const styleIdx = view.getUint32(o, true); o += 4
-    const x = view.getFloat32(o, true); o += 4
-    const y = view.getFloat32(o, true); o += 4
+    const styleIdx = view.getUint32(o, true)
+    o += 4
+    const x = view.getFloat32(o, true)
+    o += 4
+    const y = view.getFloat32(o, true)
+    o += 4
 
     const override = styleMap.get(styleIdx)
     vertices.push({
@@ -48,12 +60,18 @@ export function decodeVectorNetworkBlob(
   const segments: VectorSegment[] = []
   for (let i = 0; i < nS; i++) {
     o += 4 // styleOverrideIdx (unused for segments currently)
-    const start = view.getUint32(o, true); o += 4
-    const tsX = view.getFloat32(o, true); o += 4
-    const tsY = view.getFloat32(o, true); o += 4
-    const end = view.getUint32(o, true); o += 4
-    const teX = view.getFloat32(o, true); o += 4
-    const teY = view.getFloat32(o, true); o += 4
+    const start = view.getUint32(o, true)
+    o += 4
+    const tsX = view.getFloat32(o, true)
+    o += 4
+    const tsY = view.getFloat32(o, true)
+    o += 4
+    const end = view.getUint32(o, true)
+    o += 4
+    const teX = view.getFloat32(o, true)
+    o += 4
+    const teY = view.getFloat32(o, true)
+    o += 4
 
     segments.push({
       start,
@@ -65,15 +83,19 @@ export function decodeVectorNetworkBlob(
 
   const regions: VectorRegion[] = []
   for (let i = 0; i < nR; i++) {
-    const windingRuleU32 = view.getUint32(o, true); o += 4
+    const windingRuleU32 = view.getUint32(o, true)
+    o += 4
     const windingRule: WindingRule = windingRuleU32 === 0 ? 'EVENODD' : 'NONZERO'
-    const numLoops = view.getUint32(o, true); o += 4
+    const numLoops = view.getUint32(o, true)
+    o += 4
     const loops: number[][] = []
     for (let j = 0; j < numLoops; j++) {
-      const numSegs = view.getUint32(o, true); o += 4
+      const numSegs = view.getUint32(o, true)
+      o += 4
       const loop: number[] = []
       for (let k = 0; k < numSegs; k++) {
-        loop.push(view.getUint32(o, true)); o += 4
+        loop.push(view.getUint32(o, true))
+        o += 4
       }
       loops.push(loop)
     }
@@ -99,33 +121,50 @@ export function encodeVectorNetworkBlob(network: VectorNetwork): Uint8Array {
   const view = new DataView(buf)
   let o = 0
 
-  view.setUint32(o, vertices.length, true); o += 4
-  view.setUint32(o, segments.length, true); o += 4
-  view.setUint32(o, regions.length, true); o += 4
+  view.setUint32(o, vertices.length, true)
+  o += 4
+  view.setUint32(o, segments.length, true)
+  o += 4
+  view.setUint32(o, regions.length, true)
+  o += 4
 
   for (const v of vertices) {
-    view.setUint32(o, 0, true); o += 4 // styleOverrideIdx (TODO: encode handleMirroring)
-    view.setFloat32(o, v.x, true); o += 4
-    view.setFloat32(o, v.y, true); o += 4
+    view.setUint32(o, 0, true)
+    o += 4 // styleOverrideIdx (TODO: encode handleMirroring)
+    view.setFloat32(o, v.x, true)
+    o += 4
+    view.setFloat32(o, v.y, true)
+    o += 4
   }
 
   for (const seg of segments) {
-    view.setUint32(o, 0, true); o += 4 // styleOverrideIdx
-    view.setUint32(o, seg.start, true); o += 4
-    view.setFloat32(o, seg.tangentStart.x, true); o += 4
-    view.setFloat32(o, seg.tangentStart.y, true); o += 4
-    view.setUint32(o, seg.end, true); o += 4
-    view.setFloat32(o, seg.tangentEnd.x, true); o += 4
-    view.setFloat32(o, seg.tangentEnd.y, true); o += 4
+    view.setUint32(o, 0, true)
+    o += 4 // styleOverrideIdx
+    view.setUint32(o, seg.start, true)
+    o += 4
+    view.setFloat32(o, seg.tangentStart.x, true)
+    o += 4
+    view.setFloat32(o, seg.tangentStart.y, true)
+    o += 4
+    view.setUint32(o, seg.end, true)
+    o += 4
+    view.setFloat32(o, seg.tangentEnd.x, true)
+    o += 4
+    view.setFloat32(o, seg.tangentEnd.y, true)
+    o += 4
   }
 
   for (const region of regions) {
-    view.setUint32(o, region.windingRule === 'EVENODD' ? 0 : 1, true); o += 4
-    view.setUint32(o, region.loops.length, true); o += 4
+    view.setUint32(o, region.windingRule === 'EVENODD' ? 0 : 1, true)
+    o += 4
+    view.setUint32(o, region.loops.length, true)
+    o += 4
     for (const loop of region.loops) {
-      view.setUint32(o, loop.length, true); o += 4
+      view.setUint32(o, loop.length, true)
+      o += 4
       for (const segIdx of loop) {
-        view.setUint32(o, segIdx, true); o += 4
+        view.setUint32(o, segIdx, true)
+        o += 4
       }
     }
   }
@@ -142,9 +181,7 @@ export function vectorNetworkToPath(ck: CanvasKit, network: VectorNetwork): Path
       for (const loop of region.loops) {
         addLoopToPath(path, loop, segments, vertices)
       }
-      path.setFillType(
-        region.windingRule === 'EVENODD' ? ck.FillType.EvenOdd : ck.FillType.Winding
-      )
+      path.setFillType(region.windingRule === 'EVENODD' ? ck.FillType.EvenOdd : ck.FillType.Winding)
     }
   } else {
     // No regions — draw all segments as open paths
@@ -195,11 +232,7 @@ function addLoopToPath(
   }
 }
 
-function addSegmentToPath(
-  path: Path,
-  seg: VectorSegment,
-  vertices: VectorVertex[]
-): void {
+function addSegmentToPath(path: Path, seg: VectorSegment, vertices: VectorVertex[]): void {
   const start = vertices[seg.start]
   const end = vertices[seg.end]
   const ts = seg.tangentStart
@@ -210,14 +243,7 @@ function addSegmentToPath(
     path.lineTo(end.x, end.y)
   } else {
     // Cubic bezier: control points are tangent offsets from start/end
-    path.cubicTo(
-      start.x + ts.x,
-      start.y + ts.y,
-      end.x + te.x,
-      end.y + te.y,
-      end.x,
-      end.y
-    )
+    path.cubicTo(start.x + ts.x, start.y + ts.y, end.x + te.x, end.y + te.y, end.x, end.y)
   }
 }
 
@@ -238,13 +264,9 @@ function buildChains(segments: VectorSegment[], _vertexCount: number): number[][
   const chains: number[][] = []
 
   // Start from degree-1 vertices (endpoints) or any unvisited
-  const degree1 = [...adj.entries()]
-    .filter(([, segs]) => segs.length === 1)
-    .map(([v]) => v)
+  const degree1 = [...adj.entries()].filter(([, segs]) => segs.length === 1).map(([v]) => v)
 
-  const startVertices = degree1.length > 0
-    ? degree1
-    : [segments[0].start]
+  const startVertices = degree1.length > 0 ? degree1 : [segments[0].start]
 
   for (const startVertex of startVertices) {
     let current = startVertex
@@ -270,9 +292,12 @@ function buildChains(segments: VectorSegment[], _vertexCount: number): number[][
   return chains
 }
 
-export function computeVectorBounds(
-  network: VectorNetwork
-): { x: number; y: number; width: number; height: number } {
+export function computeVectorBounds(network: VectorNetwork): {
+  x: number
+  y: number
+  width: number
+  height: number
+} {
   if (network.vertices.length === 0) {
     return { x: 0, y: 0, width: 0, height: 0 }
   }

@@ -1,8 +1,8 @@
 import { unzipSync, inflateSync } from 'fflate'
 import { decompress as zstdDecompress } from 'fzstd'
 
-import { decodeBinarySchema, compileSchema, ByteBuffer } from './kiwi-schema'
 import { importNodeChanges } from './fig-import'
+import { decodeBinarySchema, compileSchema, ByteBuffer } from './kiwi-schema'
 import { isZstdCompressed } from './protocol'
 
 import type { SceneGraph } from '../engine/scene-graph'
@@ -34,7 +34,11 @@ function parseFigKiwiContainer(data: Uint8Array): FigKiwiPayload | null {
   if (isZstdCompressed(compressed)) {
     dataRaw = zstdDecompress(compressed)
   } else {
-    try { dataRaw = inflateSync(compressed) } catch { dataRaw = compressed }
+    try {
+      dataRaw = inflateSync(compressed)
+    } catch {
+      dataRaw = compressed
+    }
   }
 
   return { schemaDeflated: chunks[0], dataRaw }
@@ -80,8 +84,11 @@ export async function parseFigFile(buffer: ArrayBuffer): Promise<SceneGraph> {
     throw new Error('No nodes found in .fig file')
   }
 
-  const blobs: Uint8Array[] = ((message as unknown as Record<string, unknown>).blobs as Array<{ bytes: Uint8Array }> ?? [])
-    .map((b) => b.bytes instanceof Uint8Array ? b.bytes : new Uint8Array(Object.values(b.bytes) as number[]))
+  const blobs: Uint8Array[] = (
+    ((message as unknown as Record<string, unknown>).blobs as Array<{ bytes: Uint8Array }>) ?? []
+  ).map((b) =>
+    b.bytes instanceof Uint8Array ? b.bytes : new Uint8Array(Object.values(b.bytes) as number[])
+  )
 
   const images = new Map<string, Uint8Array>()
   for (const name of entries) {

@@ -1,6 +1,7 @@
-import type { EditorStore } from './stores/editor'
-import type { Color, Fill, GradientStop } from './engine/scene-graph'
 import { computeAllLayouts } from './engine/layout'
+
+import type { Color, Fill, GradientStop } from './engine/scene-graph'
+import type { EditorStore } from './stores/editor'
 
 const WHITE: Color = { r: 1, g: 1, b: 1, a: 1 }
 const BLACK: Color = { r: 0, g: 0, b: 0, a: 1 }
@@ -59,7 +60,10 @@ export function createDemoShapes(store: EditorStore) {
     counterAxisSizing: 'HUG',
     primaryAxisAlign: 'CENTER',
     counterAxisAlign: 'CENTER',
-    paddingTop: 10, paddingBottom: 10, paddingLeft: 20, paddingRight: 20
+    paddingTop: 10,
+    paddingBottom: 10,
+    paddingLeft: 20,
+    paddingRight: 20
   })
   const btnTextId = store.createShape('TEXT', 0, 0, 80, 20, btnId)
   graph.updateNode(btnTextId, {
@@ -83,7 +87,10 @@ export function createDemoShapes(store: EditorStore) {
     counterAxisSizing: 'HUG',
     primaryAxisAlign: 'CENTER',
     counterAxisAlign: 'CENTER',
-    paddingTop: 10, paddingBottom: 10, paddingLeft: 20, paddingRight: 20
+    paddingTop: 10,
+    paddingBottom: 10,
+    paddingLeft: 20,
+    paddingRight: 20
   })
   const btn2TextId = store.createShape('TEXT', 0, 0, 60, 20, btn2Id)
   graph.updateNode(btn2TextId, {
@@ -106,7 +113,10 @@ export function createDemoShapes(store: EditorStore) {
     counterAxisSizing: 'HUG',
     primaryAxisAlign: 'CENTER',
     counterAxisAlign: 'CENTER',
-    paddingTop: 4, paddingBottom: 4, paddingLeft: 12, paddingRight: 12
+    paddingTop: 4,
+    paddingBottom: 4,
+    paddingLeft: 12,
+    paddingRight: 12
   })
   const chipTextId = store.createShape('TEXT', 0, 0, 56, 16, chipId)
   graph.updateNode(chipTextId, {
@@ -122,10 +132,12 @@ export function createDemoShapes(store: EditorStore) {
   const avatarId = store.createShape('ELLIPSE', 416, 48, 40, 40, compSectionId)
   graph.updateNode(avatarId, {
     name: 'Avatar',
-    fills: [gradient([
-      { color: PURPLE, position: 0 },
-      { color: BLUE, position: 1 }
-    ])]
+    fills: [
+      gradient([
+        { color: PURPLE, position: 0 },
+        { color: BLUE, position: 1 }
+      ])
+    ]
   })
   makeComponent(store, [avatarId])
 
@@ -140,7 +152,10 @@ export function createDemoShapes(store: EditorStore) {
     primaryAxisSizing: 'FIXED',
     counterAxisSizing: 'FIXED',
     itemSpacing: 8,
-    paddingTop: 20, paddingBottom: 20, paddingLeft: 20, paddingRight: 20
+    paddingTop: 20,
+    paddingBottom: 20,
+    paddingLeft: 20,
+    paddingRight: 20
   })
   const cardTitleId = store.createShape('TEXT', 0, 0, 240, 22, cardId)
   graph.updateNode(cardTitleId, {
@@ -168,10 +183,12 @@ export function createDemoShapes(store: EditorStore) {
   graph.updateNode(cardBar, {
     name: 'Progress',
     cornerRadius: 4,
-    fills: [gradient([
-      { color: BLUE, position: 0 },
-      { color: TEAL, position: 1 }
-    ])]
+    fills: [
+      gradient([
+        { color: BLUE, position: 0 },
+        { color: TEAL, position: 1 }
+      ])
+    ]
   })
   const cardCompId = makeComponent(store, [cardId])
 
@@ -187,7 +204,10 @@ export function createDemoShapes(store: EditorStore) {
     counterAxisSizing: 'HUG',
     primaryAxisAlign: 'MIN',
     counterAxisAlign: 'CENTER',
-    paddingTop: 10, paddingBottom: 10, paddingLeft: 12, paddingRight: 12
+    paddingTop: 10,
+    paddingBottom: 10,
+    paddingLeft: 12,
+    paddingRight: 12
   })
   const inputPlaceholder = store.createShape('TEXT', 0, 0, 200, 18, inputId)
   graph.updateNode(inputPlaceholder, {
@@ -210,7 +230,10 @@ export function createDemoShapes(store: EditorStore) {
     counterAxisSizing: 'HUG',
     primaryAxisAlign: 'CENTER',
     counterAxisAlign: 'CENTER',
-    paddingTop: 4, paddingBottom: 4, paddingLeft: 8, paddingRight: 8
+    paddingTop: 4,
+    paddingBottom: 4,
+    paddingLeft: 8,
+    paddingRight: 8
   })
   const badgeDot = store.createShape('ELLIPSE', 0, 0, 6, 6, badgeId)
   graph.updateNode(badgeDot, {
@@ -316,7 +339,10 @@ export function createDemoShapes(store: EditorStore) {
       primaryAxisSizing: 'FIXED',
       counterAxisSizing: 'FIXED',
       itemSpacing: 4,
-      paddingTop: 14, paddingBottom: 14, paddingLeft: 16, paddingRight: 16
+      paddingTop: 14,
+      paddingBottom: 14,
+      paddingLeft: 16,
+      paddingRight: 16
     })
     const labelId = store.createShape('TEXT', 0, 0, 108, 14, cId)
     graph.updateNode(labelId, {
@@ -376,10 +402,12 @@ export function createDemoShapes(store: EditorStore) {
     graph.updateNode(barId, {
       name: `Bar ${i + 1}`,
       cornerRadius: 4,
-      fills: [gradient([
-        { color: BLUE, position: 0 },
-        { color: INDIGO, position: 1 }
-      ])]
+      fills: [
+        gradient([
+          { color: BLUE, position: 0 },
+          { color: INDIGO, position: 1 }
+        ])
+      ]
     })
   }
 
@@ -394,7 +422,10 @@ export function createDemoShapes(store: EditorStore) {
     counterAxisSizing: 'HUG',
     primaryAxisAlign: 'SPACE_BETWEEN',
     counterAxisAlign: 'CENTER',
-    paddingTop: 10, paddingBottom: 10, paddingLeft: 16, paddingRight: 16,
+    paddingTop: 10,
+    paddingBottom: 10,
+    paddingLeft: 16,
+    paddingRight: 16,
     itemSpacing: 16
   })
   const cols = ['Name', 'Status', 'Amount', 'Date']
@@ -415,11 +446,13 @@ export function createDemoShapes(store: EditorStore) {
   graph.updateNode(grad1, {
     name: 'Gradient Card',
     cornerRadius: 16,
-    fills: [gradient([
-      { color: { r: 0.99, g: 0.37, b: 0.33, a: 1 }, position: 0 },
-      { color: { r: 0.93, g: 0.18, b: 0.65, a: 1 }, position: 0.5 },
-      { color: { r: 0.55, g: 0.28, b: 0.96, a: 1 }, position: 1 }
-    ])]
+    fills: [
+      gradient([
+        { color: { r: 0.99, g: 0.37, b: 0.33, a: 1 }, position: 0 },
+        { color: { r: 0.93, g: 0.18, b: 0.65, a: 1 }, position: 0.5 },
+        { color: { r: 0.55, g: 0.28, b: 0.96, a: 1 }, position: 1 }
+      ])
+    ]
   })
   const gradText = store.createShape('TEXT', 20, 80, 140, 20, grad1)
   graph.updateNode(gradText, {
@@ -434,10 +467,12 @@ export function createDemoShapes(store: EditorStore) {
   graph.updateNode(grad2, {
     name: 'Ocean',
     cornerRadius: 16,
-    fills: [gradient([
-      { color: { r: 0.04, g: 0.82, b: 0.67, a: 1 }, position: 0 },
-      { color: { r: 0.13, g: 0.45, b: 0.96, a: 1 }, position: 1 }
-    ])]
+    fills: [
+      gradient([
+        { color: { r: 0.04, g: 0.82, b: 0.67, a: 1 }, position: 0 },
+        { color: { r: 0.13, g: 0.45, b: 0.96, a: 1 }, position: 1 }
+      ])
+    ]
   })
   const grad2Text = store.createShape('TEXT', 20, 80, 140, 20, grad2)
   graph.updateNode(grad2Text, {
@@ -452,10 +487,12 @@ export function createDemoShapes(store: EditorStore) {
   graph.updateNode(grad3, {
     name: 'Sunset',
     cornerRadius: 16,
-    fills: [gradient([
-      { color: { r: 1, g: 0.6, b: 0.2, a: 1 }, position: 0 },
-      { color: { r: 0.96, g: 0.26, b: 0.21, a: 1 }, position: 1 }
-    ])]
+    fills: [
+      gradient([
+        { color: { r: 1, g: 0.6, b: 0.2, a: 1 }, position: 0 },
+        { color: { r: 0.96, g: 0.26, b: 0.21, a: 1 }, position: 1 }
+      ])
+    ]
   })
   const grad3Text = store.createShape('TEXT', 20, 80, 140, 20, grad3)
   graph.updateNode(grad3Text, {
@@ -477,7 +514,10 @@ export function createDemoShapes(store: EditorStore) {
     primaryAxisSizing: 'FIXED',
     counterAxisSizing: 'FIXED',
     itemSpacing: 6,
-    paddingTop: 16, paddingBottom: 16, paddingLeft: 20, paddingRight: 20
+    paddingTop: 16,
+    paddingBottom: 16,
+    paddingLeft: 20,
+    paddingRight: 20
   })
   const typoItems = [
     { text: 'Heading', size: 24, weight: 700 },
@@ -498,9 +538,30 @@ export function createDemoShapes(store: EditorStore) {
 
   // Mixed shapes row
   const shapes = [
-    { type: 'ELLIPSE' as const, x: 1060, fill: gradient([{ color: PURPLE, position: 0 }, { color: BLUE, position: 1 }]) },
-    { type: 'RECTANGLE' as const, x: 1160, fill: gradient([{ color: GREEN, position: 0 }, { color: TEAL, position: 1 }]) },
-    { type: 'ELLIPSE' as const, x: 1260, fill: gradient([{ color: ORANGE, position: 0 }, { color: RED, position: 1 }]) }
+    {
+      type: 'ELLIPSE' as const,
+      x: 1060,
+      fill: gradient([
+        { color: PURPLE, position: 0 },
+        { color: BLUE, position: 1 }
+      ])
+    },
+    {
+      type: 'RECTANGLE' as const,
+      x: 1160,
+      fill: gradient([
+        { color: GREEN, position: 0 },
+        { color: TEAL, position: 1 }
+      ])
+    },
+    {
+      type: 'ELLIPSE' as const,
+      x: 1260,
+      fill: gradient([
+        { color: ORANGE, position: 0 },
+        { color: RED, position: 1 }
+      ])
+    }
   ]
   for (const s of shapes) {
     const id = store.createShape(s.type, s.x, 680, 80, 80)

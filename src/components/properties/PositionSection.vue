@@ -11,7 +11,8 @@ function alignHorizontal(align: HAlign) {
   const selected = nodes.value
   if (selected.length < 2) return
 
-  let minX = Infinity, maxX = -Infinity
+  let minX = Infinity,
+    maxX = -Infinity
   for (const n of selected) {
     const abs = store.graph.getAbsolutePosition(n.id)
     minX = Math.min(minX, abs.x)
@@ -35,7 +36,8 @@ function alignVertical(align: VAlign) {
   const selected = nodes.value
   if (selected.length < 2) return
 
-  let minY = Infinity, maxY = -Infinity
+  let minY = Infinity,
+    maxY = -Infinity
   for (const n of selected) {
     const abs = store.graph.getAbsolutePosition(n.id)
     minY = Math.min(minY, abs.y)
@@ -130,13 +132,31 @@ function rotate90() {
 
     <!-- X / Y -->
     <div class="flex gap-1.5">
-      <ScrubInput icon="X" :model-value="Math.round(node.x)" @update:model-value="updateProp('x', $event)" @commit="(v: number, p: number) => commitProp('x', v, p)" />
-      <ScrubInput icon="Y" :model-value="Math.round(node.y)" @update:model-value="updateProp('y', $event)" @commit="(v: number, p: number) => commitProp('y', v, p)" />
+      <ScrubInput
+        icon="X"
+        :model-value="Math.round(node.x)"
+        @update:model-value="updateProp('x', $event)"
+        @commit="(v: number, p: number) => commitProp('x', v, p)"
+      />
+      <ScrubInput
+        icon="Y"
+        :model-value="Math.round(node.y)"
+        @update:model-value="updateProp('y', $event)"
+        @commit="(v: number, p: number) => commitProp('y', v, p)"
+      />
     </div>
 
     <!-- Rotation + flip -->
     <div class="mt-1.5 flex items-center gap-1.5">
-      <ScrubInput class="flex-1" suffix="°" :model-value="Math.round(node.rotation)" :min="-360" :max="360" @update:model-value="updateProp('rotation', $event)" @commit="(v: number, p: number) => commitProp('rotation', v, p)">
+      <ScrubInput
+        class="flex-1"
+        suffix="°"
+        :model-value="Math.round(node.rotation)"
+        :min="-360"
+        :max="360"
+        @update:model-value="updateProp('rotation', $event)"
+        @commit="(v: number, p: number) => commitProp('rotation', v, p)"
+      >
         <template #icon>
           <icon-lucide-rotate-ccw class="size-3" />
         </template>

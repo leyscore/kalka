@@ -1,5 +1,4 @@
-@import "tailwindcss";
-
+@import 'tailwindcss';
 
 @theme {
   --color-panel: #2a2a2a;
@@ -21,7 +20,11 @@ body,
 }
 
 body {
-  font-family: Inter, system-ui, -apple-system, sans-serif;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    sans-serif;
   font-size: 13px;
   color: var(--color-surface);
   background: var(--color-canvas);
@@ -29,12 +32,12 @@ body {
   -webkit-user-select: none;
 }
 
-input[type="number"] {
+input[type='number'] {
   appearance: textfield;
   -moz-appearance: textfield;
 }
 
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
   display: none;
 }

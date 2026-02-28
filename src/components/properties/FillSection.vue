@@ -28,11 +28,19 @@ function toggleVisibility(index: number) {
 }
 
 function add() {
-  store.updateNodeWithUndo(node.value.id, { fills: [...node.value.fills, { ...DEFAULT_SHAPE_FILL }] }, 'Add fill')
+  store.updateNodeWithUndo(
+    node.value.id,
+    { fills: [...node.value.fills, { ...DEFAULT_SHAPE_FILL }] },
+    'Add fill'
+  )
 }
 
 function remove(index: number) {
-  store.updateNodeWithUndo(node.value.id, { fills: node.value.fills.filter((_, i) => i !== index) }, 'Remove fill')
+  store.updateNodeWithUndo(
+    node.value.id,
+    { fills: node.value.fills.filter((_, i) => i !== index) },
+    'Remove fill'
+  )
 }
 </script>
 
@@ -40,13 +48,20 @@ function remove(index: number) {
   <div v-if="node" class="border-b border-border px-3 py-2">
     <div class="flex items-center justify-between">
       <label class="mb-1 block text-[11px] text-muted">Fill</label>
-      <button class="flex size-5 cursor-pointer items-center justify-center rounded border-none bg-transparent text-sm leading-none text-muted hover:bg-hover hover:text-surface" @click="add">+</button>
+      <button
+        class="flex size-5 cursor-pointer items-center justify-center rounded border-none bg-transparent text-sm leading-none text-muted hover:bg-hover hover:text-surface"
+        @click="add"
+      >
+        +
+      </button>
     </div>
     <div v-for="(fill, i) in node.fills" :key="i" class="group flex items-center gap-1.5 py-0.5">
       <FillPicker :fill="fill" @update="updateFill(i, $event)" />
       <span class="min-w-0 flex-1 font-mono text-xs text-surface">
         <template v-if="fill.type === 'SOLID'">{{ colorToHexRaw(fill.color) }}</template>
-        <template v-else-if="fill.type.startsWith('GRADIENT')">{{ fill.type.replace('GRADIENT_', '') }}</template>
+        <template v-else-if="fill.type.startsWith('GRADIENT')">{{
+          fill.type.replace('GRADIENT_', '')
+        }}</template>
         <template v-else>{{ fill.type }}</template>
       </span>
       <ScrubInput
@@ -64,7 +79,12 @@ function remove(index: number) {
         <icon-lucide-eye v-if="fill.visible" class="size-3.5" />
         <icon-lucide-eye-off v-else class="size-3.5" />
       </button>
-      <button class="flex size-5 cursor-pointer items-center justify-center rounded border-none bg-transparent text-sm leading-none text-muted hover:bg-hover hover:text-surface" @click="remove(i)">−</button>
+      <button
+        class="flex size-5 cursor-pointer items-center justify-center rounded border-none bg-transparent text-sm leading-none text-muted hover:bg-hover hover:text-surface"
+        @click="remove(i)"
+      >
+        −
+      </button>
     </div>
   </div>
 </template>

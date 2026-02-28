@@ -2,25 +2,28 @@
 import { ref, computed } from 'vue'
 import { useEventListener } from '@vueuse/core'
 
-const props = withDefaults(defineProps<{
-  modelValue: number
-  min?: number
-  max?: number
-  step?: number
-  icon?: string
-  label?: string
-  suffix?: string
-  sensitivity?: number
-}>(), {
-  min: -Infinity,
-  max: Infinity,
-  step: 1,
-  sensitivity: 1,
-})
+const props = withDefaults(
+  defineProps<{
+    modelValue: number
+    min?: number
+    max?: number
+    step?: number
+    icon?: string
+    label?: string
+    suffix?: string
+    sensitivity?: number
+  }>(),
+  {
+    min: -Infinity,
+    max: Infinity,
+    step: 1,
+    sensitivity: 1
+  }
+)
 
 const emit = defineEmits<{
   'update:modelValue': [value: number]
-  'commit': [value: number, previous: number]
+  commit: [value: number, previous: number]
 }>()
 
 const editing = ref(false)

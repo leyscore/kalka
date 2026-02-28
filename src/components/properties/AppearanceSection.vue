@@ -8,7 +8,13 @@ import type { SceneNode } from '../../engine/scene-graph'
 
 const { store, node, updateProp, commitProp } = useNodeProps()
 
-const CORNER_RADIUS_TYPES = new Set(['RECTANGLE', 'ROUNDED_RECTANGLE', 'FRAME', 'COMPONENT', 'INSTANCE'])
+const CORNER_RADIUS_TYPES = new Set([
+  'RECTANGLE',
+  'ROUNDED_RECTANGLE',
+  'FRAME',
+  'COMPONENT',
+  'INSTANCE'
+])
 
 const hasCornerRadius = computed(() => node.value && CORNER_RADIUS_TYPES.has(node.value.type))
 
@@ -31,9 +37,9 @@ function toggleIndependentCorners() {
         topLeftRadius: uniform,
         topRightRadius: uniform,
         bottomRightRadius: uniform,
-        bottomLeftRadius: uniform,
+        bottomLeftRadius: uniform
       } as Partial<SceneNode>,
-      'Uniform corner radius',
+      'Uniform corner radius'
     )
   } else {
     store.updateNodeWithUndo(
@@ -43,9 +49,9 @@ function toggleIndependentCorners() {
         topLeftRadius: n.cornerRadius,
         topRightRadius: n.cornerRadius,
         bottomRightRadius: n.cornerRadius,
-        bottomLeftRadius: n.cornerRadius,
+        bottomLeftRadius: n.cornerRadius
       } as Partial<SceneNode>,
-      'Independent corner radii',
+      'Independent corner radii'
     )
   }
 }
@@ -104,7 +110,13 @@ function commitCornerProp(key: string, value: number, previous: number) {
           title="Independent corner radii"
           @click="toggleIndependentCorners"
         >
-          <svg class="size-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
+          <svg
+            class="size-3"
+            viewBox="0 0 12 12"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
             <path d="M1 4V2.5A1.5 1.5 0 0 1 2.5 1H4" />
             <path d="M8 1h1.5A2.5 2.5 0 0 1 11 3.5V5" />
             <path d="M11 8v1a2 2 0 0 1-2 2H8" />
@@ -122,7 +134,13 @@ function commitCornerProp(key: string, value: number, previous: number) {
         @commit="(v: number, p: number) => commitCornerProp('topLeftRadius', v, p)"
       >
         <template #icon>
-          <svg class="size-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
+          <svg
+            class="size-3"
+            viewBox="0 0 12 12"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
             <path d="M1 11V4a3 3 0 0 1 3-3h7" />
           </svg>
         </template>
@@ -134,7 +152,13 @@ function commitCornerProp(key: string, value: number, previous: number) {
         @commit="(v: number, p: number) => commitCornerProp('topRightRadius', v, p)"
       >
         <template #icon>
-          <svg class="size-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
+          <svg
+            class="size-3"
+            viewBox="0 0 12 12"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
             <path d="M11 11V4a3 3 0 0 0-3-3H1" />
           </svg>
         </template>
@@ -146,7 +170,13 @@ function commitCornerProp(key: string, value: number, previous: number) {
         @commit="(v: number, p: number) => commitCornerProp('bottomLeftRadius', v, p)"
       >
         <template #icon>
-          <svg class="size-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
+          <svg
+            class="size-3"
+            viewBox="0 0 12 12"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
             <path d="M1 1v7a3 3 0 0 0 3 3h7" />
           </svg>
         </template>
@@ -158,7 +188,13 @@ function commitCornerProp(key: string, value: number, previous: number) {
         @commit="(v: number, p: number) => commitCornerProp('bottomRightRadius', v, p)"
       >
         <template #icon>
-          <svg class="size-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
+          <svg
+            class="size-3"
+            viewBox="0 0 12 12"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
             <path d="M11 1v7a3 3 0 0 1-3 3H1" />
           </svg>
         </template>

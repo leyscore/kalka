@@ -39,12 +39,26 @@ function toggleVisibility(index: number) {
 }
 
 function add() {
-  const stroke: Stroke = { color: { r: 0, g: 0, b: 0, a: 1 }, weight: 1, opacity: 1, visible: true, align: 'CENTER' }
-  store.updateNodeWithUndo(node.value.id, { strokes: [...node.value.strokes, stroke] }, 'Add stroke')
+  const stroke: Stroke = {
+    color: { r: 0, g: 0, b: 0, a: 1 },
+    weight: 1,
+    opacity: 1,
+    visible: true,
+    align: 'CENTER'
+  }
+  store.updateNodeWithUndo(
+    node.value.id,
+    { strokes: [...node.value.strokes, stroke] },
+    'Add stroke'
+  )
 }
 
 function remove(index: number) {
-  store.updateNodeWithUndo(node.value.id, { strokes: node.value.strokes.filter((_, i) => i !== index) }, 'Remove stroke')
+  store.updateNodeWithUndo(
+    node.value.id,
+    { strokes: node.value.strokes.filter((_, i) => i !== index) },
+    'Remove stroke'
+  )
 }
 </script>
 
@@ -52,9 +66,18 @@ function remove(index: number) {
   <div v-if="node" class="border-b border-border px-3 py-2">
     <div class="flex items-center justify-between">
       <label class="mb-1 block text-[11px] text-muted">Stroke</label>
-      <button class="flex size-5 cursor-pointer items-center justify-center rounded border-none bg-transparent text-sm leading-none text-muted hover:bg-hover hover:text-surface" @click="add">+</button>
+      <button
+        class="flex size-5 cursor-pointer items-center justify-center rounded border-none bg-transparent text-sm leading-none text-muted hover:bg-hover hover:text-surface"
+        @click="add"
+      >
+        +
+      </button>
     </div>
-    <div v-for="(stroke, i) in node.strokes" :key="i" class="group flex items-center gap-1.5 py-0.5">
+    <div
+      v-for="(stroke, i) in node.strokes"
+      :key="i"
+      class="group flex items-center gap-1.5 py-0.5"
+    >
       <ColorPicker :color="stroke.color" @update="updateColor(i, $event)" />
       <input
         class="min-w-0 flex-1 border-none bg-transparent font-mono text-xs text-surface outline-none"
@@ -76,7 +99,12 @@ function remove(index: number) {
         <icon-lucide-eye v-if="stroke.visible" class="size-3.5" />
         <icon-lucide-eye-off v-else class="size-3.5" />
       </button>
-      <button class="flex size-5 cursor-pointer items-center justify-center rounded border-none bg-transparent text-sm leading-none text-muted hover:bg-hover hover:text-surface" @click="remove(i)">−</button>
+      <button
+        class="flex size-5 cursor-pointer items-center justify-center rounded border-none bg-transparent text-sm leading-none text-muted hover:bg-hover hover:text-surface"
+        @click="remove(i)"
+      >
+        −
+      </button>
     </div>
     <div v-if="node.strokes.length > 0" class="mt-1 flex items-center gap-1.5">
       <ScrubInput

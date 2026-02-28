@@ -10,7 +10,12 @@ const store = useEditorStore()
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 
 const { hitTestSectionTitle, hitTestComponentLabel } = useCanvas(canvasRef, store)
-const { cursorOverride } = useCanvasInput(canvasRef, store, hitTestSectionTitle, hitTestComponentLabel)
+const { cursorOverride } = useCanvasInput(
+  canvasRef,
+  store,
+  hitTestSectionTitle,
+  hitTestComponentLabel
+)
 
 const cursor = computed(() => {
   if (cursorOverride.value) return cursorOverride.value

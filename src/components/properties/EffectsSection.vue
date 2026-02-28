@@ -18,7 +18,7 @@ const EFFECT_LABELS: Record<string, string> = {
   INNER_SHADOW: 'Inner shadow',
   LAYER_BLUR: 'Layer blur',
   BACKGROUND_BLUR: 'Background blur',
-  FOREGROUND_BLUR: 'Foreground blur',
+  FOREGROUND_BLUR: 'Foreground blur'
 }
 
 const EFFECT_TYPES = Object.keys(EFFECT_LABELS) as EffectType[]
@@ -34,7 +34,7 @@ function defaultEffect(): Effect {
     offset: { x: 0, y: 4 },
     radius: 4,
     spread: 0,
-    visible: true,
+    visible: true
   }
 }
 
@@ -85,7 +85,7 @@ function remove(index: number) {
   store.updateNodeWithUndo(
     node.value!.id,
     { effects: node.value!.effects.filter((_, i) => i !== index) },
-    'Remove effect',
+    'Remove effect'
   )
   if (expandedIndex.value === index) expandedIndex.value = null
   else if (expandedIndex.value !== null && expandedIndex.value > index) expandedIndex.value--
@@ -103,7 +103,9 @@ function toggleExpand(index: number) {
       <button
         class="flex size-5 cursor-pointer items-center justify-center rounded border-none bg-transparent text-sm leading-none text-muted hover:bg-hover hover:text-surface"
         @click="add"
-      >+</button>
+      >
+        +
+      </button>
     </div>
 
     <div v-for="(effect, i) in node.effects" :key="i">
@@ -112,7 +114,9 @@ function toggleExpand(index: number) {
         <button
           v-if="isShadow(effect.type)"
           class="size-5 shrink-0 cursor-pointer rounded border border-border"
-          :style="{ background: `rgba(${Math.round(effect.color.r * 255)}, ${Math.round(effect.color.g * 255)}, ${Math.round(effect.color.b * 255)}, ${effect.color.a})` }"
+          :style="{
+            background: `rgba(${Math.round(effect.color.r * 255)}, ${Math.round(effect.color.g * 255)}, ${Math.round(effect.color.b * 255)}, ${effect.color.a})`
+          }"
           @click="toggleExpand(i)"
         />
         <button
@@ -128,7 +132,9 @@ function toggleExpand(index: number) {
           :value="effect.type"
           @change="updateType(i, ($event.target as HTMLSelectElement).value as EffectType)"
         >
-          <option v-for="t in EFFECT_TYPES" :key="t" :value="t" class="bg-panel text-surface">{{ EFFECT_LABELS[t] }}</option>
+          <option v-for="t in EFFECT_TYPES" :key="t" :value="t" class="bg-panel text-surface">
+            {{ EFFECT_LABELS[t] }}
+          </option>
         </select>
 
         <button
@@ -141,7 +147,9 @@ function toggleExpand(index: number) {
         <button
           class="flex size-5 cursor-pointer items-center justify-center rounded border-none bg-transparent text-sm leading-none text-muted hover:bg-hover hover:text-surface"
           @click="remove(i)"
-        >−</button>
+        >
+          −
+        </button>
       </div>
 
       <!-- Expanded controls inline -->

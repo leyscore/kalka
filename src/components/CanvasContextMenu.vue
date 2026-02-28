@@ -82,9 +82,12 @@ function onRightClick(e: MouseEvent) {
   }
 }
 
-const itemClass = 'flex w-full cursor-pointer select-none items-center justify-between gap-6 rounded px-2 py-1.5 text-xs text-surface outline-none data-[highlighted]:bg-hover data-[disabled]:cursor-default data-[disabled]:text-muted'
-const componentItemClass = 'flex w-full cursor-pointer select-none items-center justify-between gap-6 rounded px-2 py-1.5 text-xs text-[#9747ff] outline-none data-[highlighted]:bg-[#9747ff]/12 data-[disabled]:cursor-default data-[disabled]:text-[#9747ff]/40'
-const menuClass = 'z-50 min-w-56 rounded-lg border border-border bg-panel p-1 shadow-[0_8px_30px_rgb(0_0_0/0.4)] animate-in fade-in zoom-in-95'
+const itemClass =
+  'flex w-full cursor-pointer select-none items-center justify-between gap-6 rounded px-2 py-1.5 text-xs text-surface outline-none data-[highlighted]:bg-hover data-[disabled]:cursor-default data-[disabled]:text-muted'
+const componentItemClass =
+  'flex w-full cursor-pointer select-none items-center justify-between gap-6 rounded px-2 py-1.5 text-xs text-[#9747ff] outline-none data-[highlighted]:bg-[#9747ff]/12 data-[disabled]:cursor-default data-[disabled]:text-[#9747ff]/40'
+const menuClass =
+  'z-50 min-w-56 rounded-lg border border-border bg-panel p-1 shadow-[0_8px_30px_rgb(0_0_0/0.4)] animate-in fade-in zoom-in-95'
 </script>
 
 <template>
@@ -96,11 +99,19 @@ const menuClass = 'z-50 min-w-56 rounded-lg border border-border bg-panel p-1 sh
     <ContextMenuPortal>
       <ContextMenuContent :class="menuClass" :side-offset="2" align="start">
         <!-- Clipboard -->
-        <ContextMenuItem :class="itemClass" :disabled="!hasSelection" @select="document.execCommand('copy')">
+        <ContextMenuItem
+          :class="itemClass"
+          :disabled="!hasSelection"
+          @select="document.execCommand('copy')"
+        >
           <span>Copy</span>
           <span class="text-[11px] text-muted">⌘C</span>
         </ContextMenuItem>
-        <ContextMenuItem :class="itemClass" :disabled="!hasSelection" @select="document.execCommand('cut')">
+        <ContextMenuItem
+          :class="itemClass"
+          :disabled="!hasSelection"
+          @select="document.execCommand('cut')"
+        >
           <span>Cut</span>
           <span class="text-[11px] text-muted">⌘X</span>
         </ContextMenuItem>
@@ -108,11 +119,19 @@ const menuClass = 'z-50 min-w-56 rounded-lg border border-border bg-panel p-1 sh
           <span>Paste here</span>
           <span class="text-[11px] text-muted">⌘V</span>
         </ContextMenuItem>
-        <ContextMenuItem :class="itemClass" :disabled="!hasSelection" @select="store.duplicateSelected()">
+        <ContextMenuItem
+          :class="itemClass"
+          :disabled="!hasSelection"
+          @select="store.duplicateSelected()"
+        >
           <span>Duplicate</span>
           <span class="text-[11px] text-muted">⌘D</span>
         </ContextMenuItem>
-        <ContextMenuItem :class="itemClass" :disabled="!hasSelection" @select="store.deleteSelected()">
+        <ContextMenuItem
+          :class="itemClass"
+          :disabled="!hasSelection"
+          @select="store.deleteSelected()"
+        >
           <span>Delete</span>
           <span class="text-[11px] text-muted">⌫</span>
         </ContextMenuItem>
@@ -140,7 +159,11 @@ const menuClass = 'z-50 min-w-56 rounded-lg border border-border bg-panel p-1 sh
         </ContextMenuSub>
 
         <!-- Z-order -->
-        <ContextMenuItem :class="itemClass" :disabled="!hasSelection" @select="store.bringToFront()">
+        <ContextMenuItem
+          :class="itemClass"
+          :disabled="!hasSelection"
+          @select="store.bringToFront()"
+        >
           <span>Bring to front</span>
           <span class="text-[11px] text-muted">]</span>
         </ContextMenuItem>
@@ -152,7 +175,11 @@ const menuClass = 'z-50 min-w-56 rounded-lg border border-border bg-panel p-1 sh
         <ContextMenuSeparator class="my-1 h-px bg-border" />
 
         <!-- Grouping -->
-        <ContextMenuItem :class="itemClass" :disabled="multiCount < 2" @select="store.groupSelected()">
+        <ContextMenuItem
+          :class="itemClass"
+          :disabled="multiCount < 2"
+          @select="store.groupSelected()"
+        >
           <span>Group</span>
           <span class="text-[11px] text-muted">⌘G</span>
         </ContextMenuItem>
@@ -168,18 +195,34 @@ const menuClass = 'z-50 min-w-56 rounded-lg border border-border bg-panel p-1 sh
         <ContextMenuSeparator class="my-1 h-px bg-border" />
 
         <!-- Components -->
-        <ContextMenuItem :class="componentItemClass" :disabled="!hasSelection" @select="store.createComponentFromSelection()">
+        <ContextMenuItem
+          :class="componentItemClass"
+          :disabled="!hasSelection"
+          @select="store.createComponentFromSelection()"
+        >
           <span>Create component</span>
           <span class="text-[11px] text-[#9747ff]/60">⌥⌘K</span>
         </ContextMenuItem>
-        <ContextMenuItem v-if="canCreateComponentSet" :class="componentItemClass" @select="store.createComponentSetFromComponents()">
+        <ContextMenuItem
+          v-if="canCreateComponentSet"
+          :class="componentItemClass"
+          @select="store.createComponentSetFromComponents()"
+        >
           <span>Create component set</span>
           <span class="text-[11px] text-[#9747ff]/60">⇧⌘K</span>
         </ContextMenuItem>
-        <ContextMenuItem v-if="isComponent" :class="componentItemClass" @select="store.createInstanceFromComponent(singleNode!.id)">
+        <ContextMenuItem
+          v-if="isComponent"
+          :class="componentItemClass"
+          @select="store.createInstanceFromComponent(singleNode!.id)"
+        >
           <span>Create instance</span>
         </ContextMenuItem>
-        <ContextMenuItem v-if="isInstance" :class="componentItemClass" @select="store.goToMainComponent()">
+        <ContextMenuItem
+          v-if="isInstance"
+          :class="componentItemClass"
+          @select="store.goToMainComponent()"
+        >
           <span>Go to main component</span>
         </ContextMenuItem>
         <ContextMenuItem v-if="isInstance" :class="itemClass" @select="store.detachInstance()">

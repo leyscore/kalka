@@ -15,12 +15,16 @@ import Toolbar from './components/Toolbar.vue'
 const store = provideEditorStore()
 useKeyboard(store)
 useMenu(store)
-
 ;(window as any).__OPEN_PENCIL_STORE__ = store
 
-useEventListener(document, 'wheel', (e: WheelEvent) => {
-  if (e.ctrlKey || e.metaKey) e.preventDefault()
-}, { passive: false })
+useEventListener(
+  document,
+  'wheel',
+  (e: WheelEvent) => {
+    if (e.ctrlKey || e.metaKey) e.preventDefault()
+  },
+  { passive: false }
+)
 
 const params = useUrlSearchParams('history')
 const showChrome = !('no-chrome' in params)
@@ -31,7 +35,12 @@ if (!('test' in params)) {
 
 <template>
   <div class="flex h-screen w-screen flex-col">
-    <SplitterGroup v-if="showChrome" direction="horizontal" class="flex-1 overflow-hidden" auto-save-id="editor-layout">
+    <SplitterGroup
+      v-if="showChrome"
+      direction="horizontal"
+      class="flex-1 overflow-hidden"
+      auto-save-id="editor-layout"
+    >
       <SplitterPanel :default-size="15" :min-size="10" :max-size="30" class="flex">
         <LayersPanel />
       </SplitterPanel>

@@ -14,7 +14,9 @@ const fontFamilies = ref<string[]>([])
 const fontPickerRef = ref<HTMLElement | null>(null)
 const searchInputRef = ref<HTMLInputElement | null>(null)
 
-onClickOutside(fontPickerRef, () => { fontPickerOpen.value = false })
+onClickOutside(fontPickerRef, () => {
+  fontPickerOpen.value = false
+})
 
 const filteredFamilies = computed(() => {
   const q = fontSearch.value.toLowerCase()
@@ -34,8 +36,8 @@ const WEIGHTS = [
   { value: 900, label: 'Black' }
 ]
 
-const currentWeightLabel = computed(() =>
-  WEIGHTS.find((w) => w.value === node.value.fontWeight)?.label ?? 'Regular'
+const currentWeightLabel = computed(
+  () => WEIGHTS.find((w) => w.value === node.value.fontWeight)?.label ?? 'Regular'
 )
 
 type TextAlign = 'LEFT' | 'CENTER' | 'RIGHT'
@@ -119,7 +121,10 @@ onMounted(async () => {
             <span v-else class="size-3 shrink-0" />
             <span class="truncate">{{ family }}</span>
           </button>
-          <div v-if="filteredFamilies.length === 0" class="px-2 py-3 text-center text-xs text-muted">
+          <div
+            v-if="filteredFamilies.length === 0"
+            class="px-2 py-3 text-center text-xs text-muted"
+          >
             No fonts found
           </div>
         </div>
@@ -174,12 +179,14 @@ onMounted(async () => {
     <!-- Text alignment -->
     <div class="flex gap-0.5">
       <button
-        v-for="align in (['LEFT', 'CENTER', 'RIGHT'] as TextAlign[])"
+        v-for="align in ['LEFT', 'CENTER', 'RIGHT'] as TextAlign[]"
         :key="align"
         class="flex cursor-pointer items-center justify-center rounded border px-2 py-1"
-        :class="node.textAlignHorizontal === align
-          ? 'border-accent bg-accent text-white'
-          : 'border-border bg-input text-muted hover:bg-hover hover:text-surface'"
+        :class="
+          node.textAlignHorizontal === align
+            ? 'border-accent bg-accent text-white'
+            : 'border-border bg-input text-muted hover:bg-hover hover:text-surface'
+        "
         @click="setAlign(align)"
       >
         <icon-lucide-align-left v-if="align === 'LEFT'" class="size-3.5" />

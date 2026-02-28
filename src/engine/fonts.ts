@@ -62,11 +62,9 @@ export async function loadFont(family: string, style = 'Regular'): Promise<Array
   if ('queryLocalFonts' in window) {
     try {
       const fonts = await (window as any).queryLocalFonts()
-      const match = fonts.find(
-        (f: FontInfo) => f.family === family && f.style === style
-      ) ?? fonts.find(
-        (f: FontInfo) => f.family === family
-      )
+      const match =
+        fonts.find((f: FontInfo) => f.family === family && f.style === style) ??
+        fonts.find((f: FontInfo) => f.family === family)
       if (match) {
         const blob: Blob = await match.blob()
         const buffer = await blob.arrayBuffer()
@@ -76,7 +74,9 @@ export async function loadFont(family: string, style = 'Regular'): Promise<Array
         registerFontInBrowser(family, style, buffer)
         return buffer
       }
-    } catch { /* fall through to bundled */ }
+    } catch {
+      /* fall through to bundled */
+    }
   }
 
   // Fall back to bundled font
@@ -90,7 +90,9 @@ export async function loadFont(family: string, style = 'Regular'): Promise<Array
       registerFontInCanvasKit(family, buffer)
       registerFontInBrowser(family, style, buffer)
       return buffer
-    } catch { /* no bundled font available */ }
+    } catch {
+      /* no bundled font available */
+    }
   }
 
   return null

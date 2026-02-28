@@ -1,5 +1,5 @@
-import type { Color } from './types'
 import type { Fill, Stroke } from './engine/scene-graph'
+import type { Color } from './types'
 
 export const IS_TAURI = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
 

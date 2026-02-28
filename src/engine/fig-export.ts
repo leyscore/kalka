@@ -1,15 +1,19 @@
 import { zipSync, deflateSync } from 'fflate'
-import { encodeVectorNetworkBlob } from './vector'
+
 import { IS_TAURI } from '../constants'
 import { initCodec, getCompiledSchema, getSchemaBytes } from '../kiwi/codec'
+import { encodeVectorNetworkBlob } from './vector'
 
-import type { CanvasKit } from 'canvaskit-wasm'
-import type { SceneGraph, SceneNode, Color } from './scene-graph'
 import type { SkiaRenderer } from './renderer'
+import type { SceneGraph, SceneNode, Color } from './scene-graph'
+import type { CanvasKit } from 'canvaskit-wasm'
 
-const THUMBNAIL_1X1 = Uint8Array.from(atob(
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=='
-), (c) => c.charCodeAt(0))
+const THUMBNAIL_1X1 = Uint8Array.from(
+  atob(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=='
+  ),
+  (c) => c.charCodeAt(0)
+)
 
 interface KiwiNodeChange {
   guid: { sessionID: number; localID: number }
@@ -51,27 +55,42 @@ interface KiwiNodeChange {
   [key: string]: unknown
 }
 
-
-
 function mapToFigmaType(type: SceneNode['type']): string {
   switch (type) {
-    case 'FRAME': return 'FRAME'
-    case 'RECTANGLE': return 'RECTANGLE'
-    case 'ROUNDED_RECTANGLE': return 'ROUNDED_RECTANGLE'
-    case 'ELLIPSE': return 'ELLIPSE'
-    case 'TEXT': return 'TEXT'
-    case 'LINE': return 'LINE'
-    case 'STAR': return 'STAR'
-    case 'POLYGON': return 'REGULAR_POLYGON'
-    case 'VECTOR': return 'VECTOR'
-    case 'GROUP': return 'FRAME'
-    case 'SECTION': return 'SECTION'
-    case 'COMPONENT': return 'COMPONENT'
-    case 'COMPONENT_SET': return 'COMPONENT_SET'
-    case 'INSTANCE': return 'INSTANCE'
-    case 'CONNECTOR': return 'CONNECTOR'
-    case 'SHAPE_WITH_TEXT': return 'SHAPE_WITH_TEXT'
-    default: return 'RECTANGLE'
+    case 'FRAME':
+      return 'FRAME'
+    case 'RECTANGLE':
+      return 'RECTANGLE'
+    case 'ROUNDED_RECTANGLE':
+      return 'ROUNDED_RECTANGLE'
+    case 'ELLIPSE':
+      return 'ELLIPSE'
+    case 'TEXT':
+      return 'TEXT'
+    case 'LINE':
+      return 'LINE'
+    case 'STAR':
+      return 'STAR'
+    case 'POLYGON':
+      return 'REGULAR_POLYGON'
+    case 'VECTOR':
+      return 'VECTOR'
+    case 'GROUP':
+      return 'FRAME'
+    case 'SECTION':
+      return 'SECTION'
+    case 'COMPONENT':
+      return 'COMPONENT'
+    case 'COMPONENT_SET':
+      return 'COMPONENT_SET'
+    case 'INSTANCE':
+      return 'INSTANCE'
+    case 'CONNECTOR':
+      return 'CONNECTOR'
+    case 'SHAPE_WITH_TEXT':
+      return 'SHAPE_WITH_TEXT'
+    default:
+      return 'RECTANGLE'
   }
 }
 
@@ -138,10 +157,18 @@ function sceneNodeToKiwi(
   if (node.cornerRadius > 0 || node.independentCorners) {
     nc.cornerRadius = node.cornerRadius
     nc.rectangleCornerRadiiIndependent = node.independentCorners
-    nc.rectangleTopLeftCornerRadius = node.independentCorners ? node.topLeftRadius : node.cornerRadius
-    nc.rectangleTopRightCornerRadius = node.independentCorners ? node.topRightRadius : node.cornerRadius
-    nc.rectangleBottomLeftCornerRadius = node.independentCorners ? node.bottomLeftRadius : node.cornerRadius
-    nc.rectangleBottomRightCornerRadius = node.independentCorners ? node.bottomRightRadius : node.cornerRadius
+    nc.rectangleTopLeftCornerRadius = node.independentCorners
+      ? node.topLeftRadius
+      : node.cornerRadius
+    nc.rectangleTopRightCornerRadius = node.independentCorners
+      ? node.topRightRadius
+      : node.cornerRadius
+    nc.rectangleBottomLeftCornerRadius = node.independentCorners
+      ? node.bottomLeftRadius
+      : node.cornerRadius
+    nc.rectangleBottomRightCornerRadius = node.independentCorners
+      ? node.bottomRightRadius
+      : node.cornerRadius
   }
 
   if (node.cornerSmoothing > 0) {
@@ -161,7 +188,11 @@ function sceneNodeToKiwi(
 
   if (node.type === 'TEXT') {
     nc.fontSize = node.fontSize
-    nc.fontName = { family: node.fontFamily, style: node.fontWeight >= 700 ? 'Bold' : 'Regular', postscript: '' }
+    nc.fontName = {
+      family: node.fontFamily,
+      style: node.fontWeight >= 700 ? 'Bold' : 'Regular',
+      postscript: ''
+    }
     nc.textData = { characters: node.text }
     nc.textAutoResize = 'WIDTH_AND_HEIGHT'
     nc.textAlignHorizontal = node.textAlignHorizontal
@@ -244,7 +275,10 @@ function generateThumbnail(
   const page = graph.getNode(pageId)
   if (!page || page.childIds.length === 0) return null
 
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+  let minX = Infinity,
+    minY = Infinity,
+    maxX = -Infinity,
+    maxY = -Infinity
   for (const childId of page.childIds) {
     const node = graph.getNode(childId)
     if (!node || !node.visible) continue
@@ -359,9 +393,10 @@ export async function exportFigFile(
   const kiwiData = compiled.encodeMessage(msg)
 
   const currentPageId = pageId ?? pages[0]?.id
-  const thumbnailPng = (ck && renderer && currentPageId
-    ? generateThumbnail(ck, renderer, graph, currentPageId)
-    : null) ?? THUMBNAIL_1X1
+  const thumbnailPng =
+    (ck && renderer && currentPageId
+      ? generateThumbnail(ck, renderer, graph, currentPageId)
+      : null) ?? THUMBNAIL_1X1
 
   const metaJson = JSON.stringify({
     version: 1,
@@ -371,12 +406,14 @@ export async function exportFigFile(
 
   if (IS_TAURI) {
     const { invoke } = await import('@tauri-apps/api/core')
-    return new Uint8Array(await invoke<number[]>('build_fig_file', {
-      schemaDeflated: Array.from(schemaDeflated),
-      kiwiData: Array.from(kiwiData),
-      thumbnailPng: Array.from(thumbnailPng),
-      metaJson
-    }))
+    return new Uint8Array(
+      await invoke<number[]>('build_fig_file', {
+        schemaDeflated: Array.from(schemaDeflated),
+        kiwiData: Array.from(kiwiData),
+        thumbnailPng: Array.from(thumbnailPng),
+        metaJson
+      })
+    )
   }
 
   const canvasData = buildFigKiwi(schemaDeflated, deflateSync(kiwiData))

@@ -1,8 +1,19 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import {
-  PopoverRoot, PopoverTrigger, PopoverPortal, PopoverContent,
-  SelectRoot, SelectTrigger, SelectValue, SelectPortal, SelectContent, SelectItem, SelectItemText, SelectItemIndicator, SelectViewport,
+  PopoverRoot,
+  PopoverTrigger,
+  PopoverPortal,
+  PopoverContent,
+  SelectRoot,
+  SelectTrigger,
+  SelectValue,
+  SelectPortal,
+  SelectContent,
+  SelectItem,
+  SelectItemText,
+  SelectItemIndicator,
+  SelectViewport
 } from 'reka-ui'
 
 import ScrubInput from './ScrubInput.vue'
@@ -12,20 +23,24 @@ import type { Color } from '../types'
 import type { Fill, FillType, GradientStop, GradientTransform } from '../engine/scene-graph'
 
 type FillCategory = 'SOLID' | 'GRADIENT' | 'IMAGE'
-type GradientSubtype = 'GRADIENT_LINEAR' | 'GRADIENT_RADIAL' | 'GRADIENT_ANGULAR' | 'GRADIENT_DIAMOND'
+type GradientSubtype =
+  | 'GRADIENT_LINEAR'
+  | 'GRADIENT_RADIAL'
+  | 'GRADIENT_ANGULAR'
+  | 'GRADIENT_DIAMOND'
 
 const GRADIENT_SUBTYPES: { type: GradientSubtype; label: string }[] = [
   { type: 'GRADIENT_LINEAR', label: 'Linear' },
   { type: 'GRADIENT_RADIAL', label: 'Radial' },
   { type: 'GRADIENT_ANGULAR', label: 'Angular' },
-  { type: 'GRADIENT_DIAMOND', label: 'Diamond' },
+  { type: 'GRADIENT_DIAMOND', label: 'Diamond' }
 ]
 
 const DEFAULT_GRADIENT_TRANSFORMS: Record<GradientSubtype, GradientTransform> = {
-  GRADIENT_LINEAR:  { m00: 1,   m01: 0, m02: 0,   m10: 0,   m11: 0,   m12: 0.5 },
-  GRADIENT_RADIAL:  { m00: 0.5, m01: 0, m02: 0.5, m10: 0,   m11: 0.5, m12: 0.5 },
-  GRADIENT_ANGULAR: { m00: 0.5, m01: 0, m02: 0.5, m10: 0,   m11: 0.5, m12: 0.5 },
-  GRADIENT_DIAMOND: { m00: 0.5, m01: 0, m02: 0.5, m10: 0,   m11: 0.5, m12: 0.5 },
+  GRADIENT_LINEAR: { m00: 1, m01: 0, m02: 0, m10: 0, m11: 0, m12: 0.5 },
+  GRADIENT_RADIAL: { m00: 0.5, m01: 0, m02: 0.5, m10: 0, m11: 0.5, m12: 0.5 },
+  GRADIENT_ANGULAR: { m00: 0.5, m01: 0, m02: 0.5, m10: 0, m11: 0.5, m12: 0.5 },
+  GRADIENT_DIAMOND: { m00: 0.5, m01: 0, m02: 0.5, m10: 0, m11: 0.5, m12: 0.5 }
 }
 
 const props = defineProps<{
@@ -47,7 +62,7 @@ const fillCategory = computed<FillCategory>(() => {
 const isGradient = computed(() => fillCategory.value === 'GRADIENT')
 
 const gradientSubtype = computed(() =>
-  isGradient.value ? props.fill.type as GradientSubtype : 'GRADIENT_LINEAR'
+  isGradient.value ? (props.fill.type as GradientSubtype) : 'GRADIENT_LINEAR'
 )
 
 const activeColor = computed(() => {
@@ -140,13 +155,13 @@ function setCategory(cat: FillCategory) {
       ? props.fill.gradientStops
       : [
           { color: { ...props.fill.color }, position: 0 },
-          { color: { r: 1, g: 1, b: 1, a: 1 }, position: 1 },
+          { color: { r: 1, g: 1, b: 1, a: 1 }, position: 1 }
         ]
     emit('update', {
       ...props.fill,
       type,
       gradientStops: stops,
-      gradientTransform: DEFAULT_GRADIENT_TRANSFORMS[type],
+      gradientTransform: DEFAULT_GRADIENT_TRANSFORMS[type]
     })
     activeStopIndex.value = 0
   } else {
@@ -160,7 +175,7 @@ function setGradientSubtype(type: string) {
   emit('update', {
     ...props.fill,
     type: subtype,
-    gradientTransform: DEFAULT_GRADIENT_TRANSFORMS[subtype],
+    gradientTransform: DEFAULT_GRADIENT_TRANSFORMS[subtype]
   })
 }
 
@@ -174,13 +189,14 @@ function selectStop(index: number) {
 function addStop() {
   if (!props.fill.gradientStops) return
   const stops = [...props.fill.gradientStops]
-  const newPos = stops.length >= 2
-    ? (stops[stops.length - 2].position + stops[stops.length - 1].position) / 2
-    : 0.5
+  const newPos =
+    stops.length >= 2
+      ? (stops[stops.length - 2].position + stops[stops.length - 1].position) / 2
+      : 0.5
   const color = currentRgb()
   stops.push({ color, position: newPos })
   stops.sort((a, b) => a.position - b.position)
-  const newIndex = stops.findIndex(s => s.position === newPos)
+  const newIndex = stops.findIndex((s) => s.position === newPos)
   activeStopIndex.value = newIndex
   emit('update', { ...props.fill, gradientStops: stops })
 }
@@ -283,7 +299,7 @@ const hueColor = computed(() => {
 const swatchBackground = computed(() => {
   if (isGradient.value && props.fill.gradientStops?.length) {
     const stops = props.fill.gradientStops
-      .map(s => {
+      .map((s) => {
         const rgba = colorToRgba255(s.color)
         return `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${s.color.a}) ${s.position * 100}%`
       })
@@ -297,7 +313,7 @@ const swatchBackground = computed(() => {
 const gradientBarBackground = computed(() => {
   if (!props.fill.gradientStops?.length) return ''
   const stops = props.fill.gradientStops
-    .map(s => {
+    .map((s) => {
       const rgba = colorToRgba255(s.color)
       return `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${s.color.a}) ${s.position * 100}%`
     })
@@ -358,7 +374,9 @@ function stopSwatchColor(stop: GradientStop) {
             title="Solid"
             @click="setCategory('SOLID')"
           >
-            <svg class="size-3.5" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="2" fill="currentColor" /></svg>
+            <svg class="size-3.5" viewBox="0 0 16 16">
+              <rect x="2" y="2" width="12" height="12" rx="2" fill="currentColor" />
+            </svg>
           </button>
           <button
             class="flex size-6 cursor-pointer items-center justify-center rounded border-none p-0 text-muted transition-colors hover:bg-hover hover:text-surface"
@@ -366,7 +384,15 @@ function stopSwatchColor(stop: GradientStop) {
             title="Gradient"
             @click="setCategory('GRADIENT')"
           >
-            <svg class="size-3.5" viewBox="0 0 16 16"><defs><linearGradient id="gl"><stop offset="0" stop-color="currentColor" /><stop offset="1" stop-color="currentColor" stop-opacity="0" /></linearGradient></defs><rect x="2" y="2" width="12" height="12" rx="2" fill="url(#gl)" /></svg>
+            <svg class="size-3.5" viewBox="0 0 16 16">
+              <defs>
+                <linearGradient id="gl">
+                  <stop offset="0" stop-color="currentColor" />
+                  <stop offset="1" stop-color="currentColor" stop-opacity="0" />
+                </linearGradient>
+              </defs>
+              <rect x="2" y="2" width="12" height="12" rx="2" fill="url(#gl)" />
+            </svg>
           </button>
           <button
             class="flex size-6 cursor-pointer items-center justify-center rounded border-none p-0 text-muted transition-colors hover:bg-hover hover:text-surface"
@@ -381,12 +407,20 @@ function stopSwatchColor(stop: GradientStop) {
         <!-- Gradient subtype dropdown -->
         <div v-if="isGradient" class="mb-2">
           <SelectRoot :model-value="gradientSubtype" @update:model-value="setGradientSubtype">
-            <SelectTrigger class="flex h-7 w-28 cursor-pointer items-center justify-between rounded border border-border bg-input px-2 text-xs text-surface">
+            <SelectTrigger
+              class="flex h-7 w-28 cursor-pointer items-center justify-between rounded border border-border bg-input px-2 text-xs text-surface"
+            >
               <SelectValue />
               <icon-lucide-chevron-down class="size-3 text-muted" />
             </SelectTrigger>
             <SelectPortal>
-              <SelectContent class="z-[200] min-w-[112px] rounded-md border border-border bg-panel py-1 shadow-xl" position="popper" side="bottom" :side-offset="4" :align="'start'">
+              <SelectContent
+                class="z-[200] min-w-[112px] rounded-md border border-border bg-panel py-1 shadow-xl"
+                position="popper"
+                side="bottom"
+                :side-offset="4"
+                :align="'start'"
+              >
                 <SelectViewport>
                   <SelectItem
                     v-for="sub in GRADIENT_SUBTYPES"
@@ -421,7 +455,7 @@ function stopSwatchColor(stop: GradientStop) {
             :class="idx === activeStopIndex ? 'border-white' : 'border-white/60'"
             :style="{
               left: `${stop.position * 100}%`,
-              background: stopSwatchColor(stop),
+              background: stopSwatchColor(stop)
             }"
             @pointerdown.stop="onStopPointerDown(idx, $event)"
           />
@@ -480,7 +514,9 @@ function stopSwatchColor(stop: GradientStop) {
               v-if="(fill.gradientStops?.length ?? 0) > 2"
               class="flex size-4 cursor-pointer items-center justify-center rounded border-none bg-transparent p-0 text-muted hover:text-surface"
               @click.stop="removeStop(idx)"
-            >−</button>
+            >
+              −
+            </button>
           </div>
         </div>
 
@@ -511,13 +547,30 @@ function stopSwatchColor(stop: GradientStop) {
 
           <!-- Hue slider -->
           <div class="mt-2">
-            <input type="range" class="hue-slider" :value="hue" min="0" max="360" @input="onHueInput" />
+            <input
+              type="range"
+              class="hue-slider"
+              :value="hue"
+              min="0"
+              max="360"
+              @input="onHueInput"
+            />
           </div>
 
           <!-- Alpha slider -->
           <div class="alpha-wrap mt-2">
-            <div class="alpha-gradient" :style="{ background: `linear-gradient(to right, transparent, ${hueColor})` }" />
-            <input type="range" class="alpha-slider" :value="alpha * 100" min="0" max="100" @input="onAlphaSliderInput" />
+            <div
+              class="alpha-gradient"
+              :style="{ background: `linear-gradient(to right, transparent, ${hueColor})` }"
+            />
+            <input
+              type="range"
+              class="alpha-slider"
+              :value="alpha * 100"
+              min="0"
+              max="100"
+              @input="onAlphaSliderInput"
+            />
           </div>
 
           <!-- Hex input -->
@@ -558,7 +611,16 @@ function stopSwatchColor(stop: GradientStop) {
 }
 
 .hue-slider {
-  background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
+  background: linear-gradient(
+    to right,
+    #f00 0%,
+    #ff0 17%,
+    #0f0 33%,
+    #0ff 50%,
+    #00f 67%,
+    #f0f 83%,
+    #f00 100%
+  );
 }
 
 .alpha-wrap {
@@ -571,7 +633,11 @@ function stopSwatchColor(stop: GradientStop) {
     linear-gradient(45deg, transparent 75%, #444 75%),
     linear-gradient(-45deg, transparent 75%, #444 75%);
   background-size: 8px 8px;
-  background-position: 0 0, 0 4px, 4px -4px, -4px 0;
+  background-position:
+    0 0,
+    0 4px,
+    4px -4px,
+    -4px 0;
   background-color: #333;
 }
 

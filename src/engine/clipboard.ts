@@ -1,9 +1,21 @@
 import { inflateSync, deflateSync } from 'fflate'
-import { decodeBinarySchema, compileSchema, ByteBuffer } from '../kiwi/kiwi-schema'
-import { initCodec, getCompiledSchema, getSchemaBytes } from '../kiwi/codec'
 
-import type { SceneGraph, SceneNode, Fill, Stroke, Color, LayoutMode, LayoutSizing, LayoutAlign, LayoutCounterAlign, VectorNetwork } from './scene-graph'
+import { initCodec, getCompiledSchema, getSchemaBytes } from '../kiwi/codec'
+import { decodeBinarySchema, compileSchema, ByteBuffer } from '../kiwi/kiwi-schema'
 import { decodeVectorNetworkBlob, encodeVectorNetworkBlob } from './vector'
+
+import type {
+  SceneGraph,
+  SceneNode,
+  Fill,
+  Stroke,
+  Color,
+  LayoutMode,
+  LayoutSizing,
+  LayoutAlign,
+  LayoutCounterAlign,
+  VectorNetwork
+} from './scene-graph'
 
 interface FigmaClipboardMeta {
   fileKey: string
@@ -55,7 +67,9 @@ export async function prefetchFigmaSchema(): Promise<void> {
   await initCodec()
 }
 
-function parseFigKiwi(binary: Uint8Array): { schemaDeflated: Uint8Array; dataRaw: Uint8Array } | null {
+function parseFigKiwi(
+  binary: Uint8Array
+): { schemaDeflated: Uint8Array; dataRaw: Uint8Array } | null {
   const header = new TextDecoder().decode(binary.slice(0, 8))
   if (header !== 'fig-kiwi') return null
 
@@ -178,20 +192,20 @@ export async function parseFigmaClipboard(
   }
 
   const blobs: Uint8Array[] = (msg.blobs ?? []).map((b) =>
-    b.bytes instanceof Uint8Array
-      ? b.bytes
-      : new Uint8Array(Object.values(b.bytes) as number[])
+    b.bytes instanceof Uint8Array ? b.bytes : new Uint8Array(Object.values(b.bytes) as number[])
   )
 
   return { nodes: msg.nodeChanges ?? [], meta, blobs }
 }
 
 function decodeVectorData(nc: KiwiNodeChange, blobs: Uint8Array[]): VectorNetwork | null {
-  const vectorData = nc.vectorData as {
-    vectorNetworkBlob?: number
-    normalizedSize?: { x: number; y: number }
-    styleOverrideTable?: Array<{ styleID: number; handleMirroring?: string }>
-  } | undefined
+  const vectorData = nc.vectorData as
+    | {
+        vectorNetworkBlob?: number
+        normalizedSize?: { x: number; y: number }
+        styleOverrideTable?: Array<{ styleID: number; handleMirroring?: string }>
+      }
+    | undefined
 
   if (!vectorData || vectorData.vectorNetworkBlob === undefined) return null
 
@@ -295,16 +309,29 @@ export function importClipboardNodes(
       layoutMode: mapLayoutMode(nc.stackMode as string),
       itemSpacing: (nc.stackSpacing as number) ?? 0,
       paddingTop: (nc.stackVerticalPadding as number) ?? (nc.stackPadding as number) ?? 0,
-      paddingBottom: (nc.stackPaddingBottom as number) ?? (nc.stackVerticalPadding as number) ?? (nc.stackPadding as number) ?? 0,
+      paddingBottom:
+        (nc.stackPaddingBottom as number) ??
+        (nc.stackVerticalPadding as number) ??
+        (nc.stackPadding as number) ??
+        0,
       paddingLeft: (nc.stackHorizontalPadding as number) ?? (nc.stackPadding as number) ?? 0,
-      paddingRight: (nc.stackPaddingRight as number) ?? (nc.stackHorizontalPadding as number) ?? (nc.stackPadding as number) ?? 0,
+      paddingRight:
+        (nc.stackPaddingRight as number) ??
+        (nc.stackHorizontalPadding as number) ??
+        (nc.stackPadding as number) ??
+        0,
       primaryAxisSizing: mapSizing(nc.stackPrimarySizing as string),
       counterAxisSizing: mapSizing(nc.stackCounterSizing as string),
-      primaryAxisAlign: mapPrimaryAlign(nc.stackPrimaryAlignItems as string ?? nc.stackJustify as string),
-      counterAxisAlign: mapCounterAlign(nc.stackCounterAlignItems as string ?? nc.stackCounterAlign as string),
-      layoutWrap: (nc.stackWrap as string) === 'WRAP' ? 'WRAP' as const : 'NO_WRAP' as const,
+      primaryAxisAlign: mapPrimaryAlign(
+        (nc.stackPrimaryAlignItems as string) ?? (nc.stackJustify as string)
+      ),
+      counterAxisAlign: mapCounterAlign(
+        (nc.stackCounterAlignItems as string) ?? (nc.stackCounterAlign as string)
+      ),
+      layoutWrap: (nc.stackWrap as string) === 'WRAP' ? ('WRAP' as const) : ('NO_WRAP' as const),
       counterAxisSpacing: (nc.stackCounterSpacing as number) ?? 0,
-      layoutPositioning: (nc.stackPositioning as string) === 'ABSOLUTE' ? 'ABSOLUTE' as const : 'AUTO' as const,
+      layoutPositioning:
+        (nc.stackPositioning as string) === 'ABSOLUTE' ? ('ABSOLUTE' as const) : ('AUTO' as const),
       layoutGrow: (nc.stackChildPrimaryGrow as number) ?? 0,
       vectorNetwork: decodeVectorData(nc, blobs)
     })
@@ -529,7 +556,8 @@ function sceneNodeToKiwi(
     nc.stackPaddingBottom = node.paddingBottom
     nc.stackPaddingRight = node.paddingRight
     nc.stackPrimarySizing = node.primaryAxisSizing === 'HUG' ? 'RESIZE_TO_FIT' : 'FIXED'
-    nc.stackCounterSizing = node.counterAxisSizing === 'HUG' ? 'RESIZE_TO_FIT_WITH_IMPLICIT_SIZE' : undefined
+    nc.stackCounterSizing =
+      node.counterAxisSizing === 'HUG' ? 'RESIZE_TO_FIT_WITH_IMPLICIT_SIZE' : undefined
   }
 
   if (node.layoutPositioning === 'ABSOLUTE') {
@@ -557,10 +585,7 @@ function sceneNodeToKiwi(
   return result
 }
 
-export function buildFigmaClipboardHTML(
-  nodes: SceneNode[],
-  graph: SceneGraph
-): string | null {
+export function buildFigmaClipboardHTML(nodes: SceneNode[], graph: SceneGraph): string | null {
   const compiled = getCompiledSchema()
   const schemaDeflated = deflateSync(getSchemaBytes())
 

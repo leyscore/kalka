@@ -55,20 +55,17 @@ function buildTree(parentId: string): LayerNode[] {
       name: node.name,
       type: node.type,
       visible: node.visible,
-      children: node.childIds.length > 0 ? buildTree(node.id) : undefined,
+      children: node.childIds.length > 0 ? buildTree(node.id) : undefined
     }))
 }
 
 const items = ref(buildTree(store.state.currentPageId))
 const treeKey = ref(0)
 
-watch(
-  [() => store.state.renderVersion, () => store.state.currentPageId],
-  () => {
-    items.value = buildTree(store.state.currentPageId)
-    treeKey.value++
-  }
-)
+watch([() => store.state.renderVersion, () => store.state.currentPageId], () => {
+  items.value = buildTree(store.state.currentPageId)
+  treeKey.value++
+})
 
 const expanded = ref<string[]>([])
 
@@ -85,7 +82,7 @@ function onSelect(ev: CustomEvent) {
 function toggleExpand(id: string) {
   const idx = expanded.value.indexOf(id)
   if (idx >= 0) {
-    expanded.value = expanded.value.filter(e => e !== id)
+    expanded.value = expanded.value.filter((e) => e !== id)
   } else {
     expanded.value = [...expanded.value, id]
   }
@@ -176,7 +173,12 @@ function updateDropTarget(ev: PointerEvent) {
       if (parent) {
         const idx = parent.childIds.indexOf(rowId)
         const level = parseInt(row.dataset.level ?? '0')
-        bestInsertBefore = { parentId, index: Math.max(0, idx), y: rect.top - listRect.top + list.scrollTop, depth: level }
+        bestInsertBefore = {
+          parentId,
+          index: Math.max(0, idx),
+          y: rect.top - listRect.top + list.scrollTop,
+          depth: level
+        }
       }
       break
     }
@@ -187,7 +189,12 @@ function updateDropTarget(ev: PointerEvent) {
       if (parent) {
         const idx = parent.childIds.indexOf(rowId)
         const level = parseInt(row.dataset.level ?? '0')
-        bestInsertBefore = { parentId, index: idx + 1, y: rect.bottom - listRect.top + list.scrollTop, depth: level }
+        bestInsertBefore = {
+          parentId,
+          index: idx + 1,
+          y: rect.bottom - listRect.top + list.scrollTop,
+          depth: level
+        }
       }
     }
   }
@@ -196,7 +203,9 @@ function updateDropTarget(ev: PointerEvent) {
     dropIntoId.value = bestInto.nodeId
     indicatorY.value = -1
     const container = store.graph.getNode(bestInto.nodeId)
-    dropTarget.value = container ? { parentId: bestInto.nodeId, index: container.childIds.length } : null
+    dropTarget.value = container
+      ? { parentId: bestInto.nodeId, index: container.childIds.length }
+      : null
   } else if (bestInsertBefore) {
     dropIntoId.value = null
     indicatorY.value = bestInsertBefore.y
@@ -213,7 +222,9 @@ function updateDropTarget(ev: PointerEvent) {
 <template>
   <aside class="flex min-w-0 flex-1 flex-col overflow-y-auto border-r border-border bg-panel">
     <PagesPanel />
-    <header class="shrink-0 px-3 py-2 text-[11px] uppercase tracking-wider text-muted">Layers</header>
+    <header class="shrink-0 px-3 py-2 text-[11px] uppercase tracking-wider text-muted">
+      Layers
+    </header>
     <div ref="listRef" class="relative flex-1 overflow-y-auto px-1">
       <TreeRoot
         :key="treeKey"
@@ -229,12 +240,7 @@ function updateDropTarget(ev: PointerEvent) {
           :data-node-id="item.value.id"
           :data-level="item.level"
         >
-          <TreeItem
-            v-slot="{ isExpanded }"
-            v-bind="item.bind"
-            as-child
-            @select="onSelect"
-          >
+          <TreeItem v-slot="{ isExpanded }" v-bind="item.bind" as-child @select="onSelect">
             <button
               class="group/row flex w-full cursor-pointer items-center gap-1 rounded border-none py-1 text-left text-xs"
               :class="[
@@ -260,9 +266,9 @@ function updateDropTarget(ev: PointerEvent) {
               <component
                 :is="nodeIcons[item.value.type] ?? IconSquare"
                 class="size-3 shrink-0"
-                :class="COMPONENT_TYPES.has(item.value.type)
-                  ? 'text-[#9747ff] opacity-100'
-                  : 'opacity-70'"
+                :class="
+                  COMPONENT_TYPES.has(item.value.type) ? 'text-[#9747ff] opacity-100' : 'opacity-70'
+                "
               />
               <span class="min-w-0 flex-1 truncate">{{ item.value.name }}</span>
               <icon-lucide-eye-off

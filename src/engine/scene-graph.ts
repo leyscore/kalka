@@ -51,8 +51,31 @@ export type NodeType =
 
 import type { Color } from '../types'
 
-export type FillType = 'SOLID' | 'GRADIENT_LINEAR' | 'GRADIENT_RADIAL' | 'GRADIENT_ANGULAR' | 'GRADIENT_DIAMOND' | 'IMAGE'
-export type BlendMode = 'NORMAL' | 'DARKEN' | 'MULTIPLY' | 'COLOR_BURN' | 'LIGHTEN' | 'SCREEN' | 'COLOR_DODGE' | 'OVERLAY' | 'SOFT_LIGHT' | 'HARD_LIGHT' | 'DIFFERENCE' | 'EXCLUSION' | 'HUE' | 'SATURATION' | 'COLOR' | 'LUMINOSITY' | 'PASS_THROUGH'
+export type FillType =
+  | 'SOLID'
+  | 'GRADIENT_LINEAR'
+  | 'GRADIENT_RADIAL'
+  | 'GRADIENT_ANGULAR'
+  | 'GRADIENT_DIAMOND'
+  | 'IMAGE'
+export type BlendMode =
+  | 'NORMAL'
+  | 'DARKEN'
+  | 'MULTIPLY'
+  | 'COLOR_BURN'
+  | 'LIGHTEN'
+  | 'SCREEN'
+  | 'COLOR_DODGE'
+  | 'OVERLAY'
+  | 'SOFT_LIGHT'
+  | 'HARD_LIGHT'
+  | 'DIFFERENCE'
+  | 'EXCLUSION'
+  | 'HUE'
+  | 'SATURATION'
+  | 'COLOR'
+  | 'LUMINOSITY'
+  | 'PASS_THROUGH'
 export type ImageScaleMode = 'FILL' | 'FIT' | 'CROP' | 'TILE'
 
 export interface GradientStop {
@@ -290,7 +313,15 @@ function createDefaultNode(type: NodeType, overrides: Partial<SceneNode> = {}): 
   }
 }
 
-const CONTAINER_TYPES = new Set<NodeType>(['CANVAS', 'FRAME', 'GROUP', 'SECTION', 'COMPONENT', 'COMPONENT_SET', 'INSTANCE'])
+const CONTAINER_TYPES = new Set<NodeType>([
+  'CANVAS',
+  'FRAME',
+  'GROUP',
+  'SECTION',
+  'COMPONENT',
+  'COMPONENT_SET',
+  'INSTANCE'
+])
 
 export class SceneGraph {
   nodes = new Map<string, SceneNode>()
@@ -432,7 +463,10 @@ export class SceneGraph {
 
     // If same parent, adjust index since we removed the item
     let idx = insertIndex
-    if (oldParent === newParent && idx > (oldParent.childIds.indexOf(nodeId) === -1 ? idx : oldParent.childIds.length)) {
+    if (
+      oldParent === newParent &&
+      idx > (oldParent.childIds.indexOf(nodeId) === -1 ? idx : oldParent.childIds.length)
+    ) {
       // Already removed above, no adjustment needed
     }
 
@@ -512,7 +546,12 @@ export class SceneGraph {
     return null
   }
 
-  hitTestFrame(px: number, py: number, excludeIds: Set<string>, scopeId?: string): SceneNode | null {
+  hitTestFrame(
+    px: number,
+    py: number,
+    excludeIds: Set<string>,
+    scopeId?: string
+  ): SceneNode | null {
     return this.hitTestFrameChildren(px, py, scopeId ?? this.rootId, 0, 0, excludeIds)
   }
 
@@ -550,7 +589,11 @@ export class SceneGraph {
     return best
   }
 
-  cloneTree(sourceId: string, parentId: string, overrides: Partial<SceneNode> = {}): SceneNode | null {
+  cloneTree(
+    sourceId: string,
+    parentId: string,
+    overrides: Partial<SceneNode> = {}
+  ): SceneNode | null {
     const src = this.nodes.get(sourceId)
     if (!src) return null
 
@@ -565,14 +608,38 @@ export class SceneGraph {
   }
 
   private static readonly INSTANCE_SYNC_PROPS: (keyof SceneNode)[] = [
-    'width', 'height', 'fills', 'strokes', 'effects', 'opacity',
-    'cornerRadius', 'topLeftRadius', 'topRightRadius', 'bottomRightRadius', 'bottomLeftRadius',
-    'independentCorners', 'layoutMode', 'layoutWrap', 'primaryAxisAlign', 'counterAxisAlign',
-    'primaryAxisSizing', 'counterAxisSizing', 'itemSpacing', 'counterAxisSpacing',
-    'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'clipsContent'
+    'width',
+    'height',
+    'fills',
+    'strokes',
+    'effects',
+    'opacity',
+    'cornerRadius',
+    'topLeftRadius',
+    'topRightRadius',
+    'bottomRightRadius',
+    'bottomLeftRadius',
+    'independentCorners',
+    'layoutMode',
+    'layoutWrap',
+    'primaryAxisAlign',
+    'counterAxisAlign',
+    'primaryAxisSizing',
+    'counterAxisSizing',
+    'itemSpacing',
+    'counterAxisSpacing',
+    'paddingTop',
+    'paddingRight',
+    'paddingBottom',
+    'paddingLeft',
+    'clipsContent'
   ]
 
-  createInstance(componentId: string, parentId: string, overrides: Partial<SceneNode> = {}): SceneNode | null {
+  createInstance(
+    componentId: string,
+    parentId: string,
+    overrides: Partial<SceneNode> = {}
+  ): SceneNode | null {
     const component = this.nodes.get(componentId)
     if (!component || component.type !== 'COMPONENT') return null
 

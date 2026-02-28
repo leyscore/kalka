@@ -36,13 +36,16 @@ function getEdges(node: SceneNode) {
   const hh = node.height / 2
 
   const corners = [
-    { x: cx + (-hw) * cos - (-hh) * sin, y: cy + (-hw) * sin + (-hh) * cos },
-    { x: cx + hw * cos - (-hh) * sin, y: cy + hw * sin + (-hh) * cos },
+    { x: cx + -hw * cos - -hh * sin, y: cy + -hw * sin + -hh * cos },
+    { x: cx + hw * cos - -hh * sin, y: cy + hw * sin + -hh * cos },
     { x: cx + hw * cos - hh * sin, y: cy + hw * sin + hh * cos },
-    { x: cx + (-hw) * cos - hh * sin, y: cy + (-hw) * sin + hh * cos },
+    { x: cx + -hw * cos - hh * sin, y: cy + -hw * sin + hh * cos }
   ]
 
-  let left = Infinity, right = -Infinity, top = Infinity, bottom = -Infinity
+  let left = Infinity,
+    right = -Infinity,
+    top = Infinity,
+    bottom = -Infinity
   for (const c of corners) {
     left = Math.min(left, c.x)
     right = Math.max(right, c.x)

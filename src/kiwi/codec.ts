@@ -7,13 +7,13 @@
  */
 
 import { decompress as zstdDecompress } from 'fzstd'
-import { compileSchema, encodeBinarySchema } from './kiwi-schema'
-
-import type { Schema } from './kiwi-schema'
 
 import { parseColor } from '../engine/color'
+import { compileSchema, encodeBinarySchema } from './kiwi-schema'
 import { isZstdCompressed, getKiwiMessageType } from './protocol.ts'
 import figmaSchema from './schema.ts'
+
+import type { Schema } from './kiwi-schema'
 
 interface CompiledSchema {
   encodeMessage(message: unknown): Uint8Array

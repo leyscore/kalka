@@ -45,7 +45,9 @@ function onKeydown(e: KeyboardEvent, pageId: string) {
         class="cursor-pointer rounded border-none bg-transparent px-1 text-base leading-none text-muted hover:bg-hover hover:text-surface"
         title="Add page"
         @click="store.addPage()"
-      >+</button>
+      >
+        +
+      </button>
     </div>
     <div class="px-1 pb-1">
       <div v-for="pg in pages" :key="pg.id">
@@ -60,7 +62,11 @@ function onKeydown(e: KeyboardEvent, pageId: string) {
         <button
           v-else
           class="flex w-full cursor-pointer items-center gap-1.5 rounded border-none px-2 py-1 text-left text-xs"
-          :class="pg.id === store.state.currentPageId ? 'bg-hover text-surface' : 'bg-transparent text-muted hover:bg-hover hover:text-surface'"
+          :class="
+            pg.id === store.state.currentPageId
+              ? 'bg-hover text-surface'
+              : 'bg-transparent text-muted hover:bg-hover hover:text-surface'
+          "
           @click="store.switchPage(pg.id)"
           @dblclick="startRename(pg.id)"
         >
