@@ -2,7 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { PopoverRoot, PopoverTrigger, PopoverPortal, PopoverContent } from 'reka-ui'
 
-import { colorToHex, parseColor } from '../engine/color'
+import { colorToHexRaw, parseColor } from '../engine/color'
 
 import type { Color } from '../types'
 
@@ -74,7 +74,7 @@ function emitColor() {
 }
 
 const hexValue = computed(() => {
-  return colorToHex(props.color).slice(1)
+  return colorToHexRaw(props.color)
 })
 
 function onHexInput(e: Event) {

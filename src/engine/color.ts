@@ -20,6 +20,10 @@ export function colorToHex(color: Color): string {
   return (formatHex({ mode: 'rgb', r: color.r, g: color.g, b: color.b }) ?? '#000000').toUpperCase()
 }
 
+export function colorToHexRaw(color: Color): string {
+  return colorToHex(color).slice(1)
+}
+
 export function colorToFill(color: string | Color) {
   const rgba = typeof color === 'string' ? parseColor(color) : color
   return {

@@ -2,16 +2,12 @@
 import ColorPicker from '../ColorPicker.vue'
 import { useEditorStore } from '../../stores/editor'
 import { DEFAULT_SHAPE_FILL } from '../../constants'
-import { colorToHex, parseColor } from '../../engine/color'
+import { colorToHexRaw, parseColor } from '../../engine/color'
 
 import type { Color, Fill } from '../../engine/scene-graph'
 
 const props = defineProps<{ nodeId: string; fills: Fill[] }>()
 const store = useEditorStore()
-
-function hexString(c: Color) {
-  return colorToHex(c).slice(1).toUpperCase()
-}
 
 function updateColor(index: number, color: Color) {
   const fills = [...props.fills]
@@ -56,7 +52,7 @@ function remove(index: number) {
       <ColorPicker :color="fill.color" @update="updateColor(i, $event)" />
       <input
         class="min-w-0 flex-1 border-none bg-transparent font-mono text-xs text-surface outline-none"
-        :value="hexString(fill.color)"
+        :value="colorToHexRaw(fill.color)"
         @change="updateHex(i, ($event.target as HTMLInputElement).value)"
       />
       <input
