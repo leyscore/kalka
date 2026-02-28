@@ -188,7 +188,11 @@ function addLoopToPath(
   for (const segIdx of loop) {
     addSegmentToPath(path, segments[segIdx], vertices)
   }
-  path.close()
+
+  const lastSeg = segments[loop[loop.length - 1]]
+  if (lastSeg.end === firstSeg.start) {
+    path.close()
+  }
 }
 
 function addSegmentToPath(
