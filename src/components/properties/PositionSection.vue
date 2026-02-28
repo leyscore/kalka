@@ -2,10 +2,7 @@
 import ScrubInput from '../ScrubInput.vue'
 import { useNodeProps } from '../../composables/use-node-props'
 
-import type { SceneNode } from '../../engine/scene-graph'
-
-const { node } = defineProps<{ node: SceneNode }>()
-const { updateProp, commitProp } = useNodeProps()
+const { node, updateProp, commitProp } = useNodeProps()
 </script>
 
 <template>

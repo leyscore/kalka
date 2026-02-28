@@ -1,9 +1,13 @@
+import { computed } from 'vue'
+
 import { useEditorStore } from '../stores/editor'
 
 import type { SceneNode } from '../engine/scene-graph'
 
 export function useNodeProps() {
   const store = useEditorStore()
+  const node = computed(() => store.selectedNode.value!)
+  const nodes = computed(() => store.selectedNodes.value)
 
   function updateProp(key: string, value: number | string) {
     if (store.selectedNodes.value.length > 1) {
@@ -29,5 +33,5 @@ export function useNodeProps() {
     }
   }
 
-  return { store, updateProp, commitProp }
+  return { store, node, nodes, updateProp, commitProp }
 }

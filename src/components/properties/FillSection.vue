@@ -1,19 +1,18 @@
 <script setup lang="ts">
 import ColorPicker from '../ColorPicker.vue'
 import ScrubInput from '../ScrubInput.vue'
-import { useEditorStore } from '../../stores/editor'
+import { useNodeProps } from '../../composables/use-node-props'
 import { DEFAULT_SHAPE_FILL } from '../../constants'
 import { colorToHexRaw, parseColor } from '../../engine/color'
 
-import type { Color, Fill } from '../../engine/scene-graph'
+import type { Color } from '../../engine/scene-graph'
 
-const props = defineProps<{ nodeId: string; fills: Fill[] }>()
-const store = useEditorStore()
+const { store, node } = useNodeProps()
 
 function updateColor(index: number, color: Color) {
-  const fills = [...props.fills]
+  const fills = [...node.value.fills]
   fills[index] = { ...fills[index], color }
-  store.updateNodeWithUndo(props.nodeId, { fills }, 'Change fill')
+  store.updateNodeWithUndo(node.value.id, { fills }, 'Change fill')
 }
 
 function updateHex(index: number, hex: string) {
@@ -23,23 +22,23 @@ function updateHex(index: number, hex: string) {
 }
 
 function updateOpacity(index: number, opacity: number) {
-  const fills = [...props.fills]
+  const fills = [...node.value.fills]
   fills[index] = { ...fills[index], opacity: Math.max(0, Math.min(1, opacity / 100)) }
-  store.updateNodeWithUndo(props.nodeId, { fills }, 'Change fill')
+  store.updateNodeWithUndo(node.value.id, { fills }, 'Change fill')
 }
 
 function toggleVisibility(index: number) {
-  const fills = [...props.fills]
+  const fills = [...node.value.fills]
   fills[index] = { ...fills[index], visible: !fills[index].visible }
-  store.updateNodeWithUndo(props.nodeId, { fills }, 'Change fill')
+  store.updateNodeWithUndo(node.value.id, { fills }, 'Change fill')
 }
 
 function add() {
-  store.updateNodeWithUndo(props.nodeId, { fills: [...props.fills, { ...DEFAULT_SHAPE_FILL }] }, 'Add fill')
+  store.updateNodeWithUndo(node.value.id, { fills: [...node.value.fills, { ...DEFAULT_SHAPE_FILL }] }, 'Add fill')
 }
 
 function remove(index: number) {
-  store.updateNodeWithUndo(props.nodeId, { fills: props.fills.filter((_, i) => i !== index) }, 'Remove fill')
+  store.updateNodeWithUndo(node.value.id, { fills: node.value.fills.filter((_, i) => i !== index) }, 'Remove fill')
 }
 </script>
 
@@ -49,7 +48,7 @@ function remove(index: number) {
       <label class="mb-1 block text-[11px] text-muted">Fill</label>
       <button class="cursor-pointer rounded border-none bg-transparent px-1 text-base leading-none text-muted hover:bg-hover hover:text-surface" @click="add">+</button>
     </div>
-    <div v-for="(fill, i) in fills" :key="i" class="group flex items-center gap-1.5 py-0.5">
+    <div v-for="(fill, i) in node.fills" :key="i" class="group flex items-center gap-1.5 py-0.5">
       <ColorPicker :color="fill.color" @update="updateColor(i, $event)" />
       <input
         class="min-w-0 flex-1 border-none bg-transparent font-mono text-xs text-surface outline-none"

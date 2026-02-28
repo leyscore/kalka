@@ -6,10 +6,7 @@ import ScrubInput from '../ScrubInput.vue'
 import { useNodeProps } from '../../composables/use-node-props'
 import { listFamilies, loadFont } from '../../engine/fonts'
 
-import type { SceneNode } from '../../engine/scene-graph'
-
-const { node } = defineProps<{ node: SceneNode }>()
-const { store, updateProp, commitProp } = useNodeProps()
+const { store, node, updateProp, commitProp } = useNodeProps()
 
 const fontPickerOpen = ref(false)
 const fontSearch = ref('')
@@ -38,14 +35,14 @@ const WEIGHTS = [
 ]
 
 const currentWeightLabel = computed(() =>
-  WEIGHTS.find((w) => w.value === node.fontWeight)?.label ?? 'Regular'
+  WEIGHTS.find((w) => w.value === node.value.fontWeight)?.label ?? 'Regular'
 )
 
 type TextAlign = 'LEFT' | 'CENTER' | 'RIGHT'
 
 async function openFontPicker() {
   fontPickerOpen.value = true
-  fontSearch.value = node.fontFamily
+  fontSearch.value = node.value.fontFamily
   if (fontFamilies.value.length === 0) {
     fontFamilies.value = await listFamilies()
   }
@@ -57,25 +54,25 @@ async function openFontPicker() {
 
 async function selectFamily(family: string) {
   await loadFont(family, currentWeightLabel.value)
-  store.updateNodeWithUndo(node.id, { fontFamily: family }, 'Change font')
+  store.updateNodeWithUndo(node.value.id, { fontFamily: family }, 'Change font')
   store.requestRender()
   fontPickerOpen.value = false
 }
 
 async function selectWeight(weight: number) {
   const label = WEIGHTS.find((w) => w.value === weight)?.label ?? 'Regular'
-  await loadFont(node.fontFamily, label)
-  store.updateNodeWithUndo(node.id, { fontWeight: weight }, 'Change font weight')
+  await loadFont(node.value.fontFamily, label)
+  store.updateNodeWithUndo(node.value.id, { fontWeight: weight }, 'Change font weight')
   store.requestRender()
 }
 
 function setAlign(align: 'LEFT' | 'CENTER' | 'RIGHT') {
-  store.updateNodeWithUndo(node.id, { textAlignHorizontal: align }, 'Change text alignment')
+  store.updateNodeWithUndo(node.value.id, { textAlignHorizontal: align }, 'Change text alignment')
   store.requestRender()
 }
 
 onMounted(async () => {
-  await loadFont(node.fontFamily, currentWeightLabel.value)
+  await loadFont(node.value.fontFamily, currentWeightLabel.value)
 })
 </script>
 

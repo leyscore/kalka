@@ -2,13 +2,10 @@
 import ScrubInput from '../ScrubInput.vue'
 import { useNodeProps } from '../../composables/use-node-props'
 
-import type { SceneNode } from '../../engine/scene-graph'
-
-const { node } = defineProps<{ node: SceneNode }>()
-const { store, updateProp, commitProp } = useNodeProps()
+const { store, node, updateProp, commitProp } = useNodeProps()
 
 function toggleVisibility() {
-  store.updateNodeWithUndo(node.id, { visible: !node.visible }, 'Toggle visibility')
+  store.updateNodeWithUndo(node.value.id, { visible: !node.value.visible }, 'Toggle visibility')
   store.requestRender()
 }
 </script>

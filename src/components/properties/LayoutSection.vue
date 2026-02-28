@@ -7,8 +7,7 @@ import { useNodeProps } from '../../composables/use-node-props'
 
 import type { SceneNode, LayoutSizing, LayoutAlign, LayoutCounterAlign } from '../../engine/scene-graph'
 
-const { node } = defineProps<{ node: SceneNode }>()
-const { store, updateProp, commitProp } = useNodeProps()
+const { store, node, updateProp, commitProp } = useNodeProps()
 
 const showIndividualPadding = ref(false)
 const widthSizingOpen = ref(false)
@@ -20,30 +19,30 @@ onClickOutside(widthDimRef, () => { widthSizingOpen.value = false })
 onClickOutside(heightDimRef, () => { heightSizingOpen.value = false })
 
 const isInAutoLayout = computed(() => {
-  if (!node.parentId) return false
-  const parent = store.graph.getNode(node.parentId)
+  if (!node.value.parentId) return false
+  const parent = store.graph.getNode(node.value.parentId)
   return parent ? parent.layoutMode !== 'NONE' : false
 })
 
 const widthSizing = computed(() => {
-  if (node.layoutMode !== 'NONE') {
-    return node.layoutMode === 'HORIZONTAL' ? node.primaryAxisSizing : node.counterAxisSizing
+  if (node.value.layoutMode !== 'NONE') {
+    return node.value.layoutMode === 'HORIZONTAL' ? node.value.primaryAxisSizing : node.value.counterAxisSizing
   }
-  if (isInAutoLayout.value && node.layoutGrow > 0) return 'FILL'
+  if (isInAutoLayout.value && node.value.layoutGrow > 0) return 'FILL'
   return 'FIXED'
 })
 
 const heightSizing = computed(() => {
-  if (node.layoutMode !== 'NONE') {
-    return node.layoutMode === 'VERTICAL' ? node.primaryAxisSizing : node.counterAxisSizing
+  if (node.value.layoutMode !== 'NONE') {
+    return node.value.layoutMode === 'VERTICAL' ? node.value.primaryAxisSizing : node.value.counterAxisSizing
   }
-  if (isInAutoLayout.value && node.layoutAlignSelf === 'STRETCH') return 'FILL'
+  if (isInAutoLayout.value && node.value.layoutAlignSelf === 'STRETCH') return 'FILL'
   return 'FIXED'
 })
 
 function setWidthSizing(sizing: LayoutSizing) {
-  if (node.layoutMode !== 'NONE') {
-    if (node.layoutMode === 'HORIZONTAL') updateProp('primaryAxisSizing', sizing)
+  if (node.value.layoutMode !== 'NONE') {
+    if (node.value.layoutMode === 'HORIZONTAL') updateProp('primaryAxisSizing', sizing)
     else updateProp('counterAxisSizing', sizing)
   } else if (isInAutoLayout.value) {
     updateProp('layoutGrow', sizing === 'FILL' ? 1 : 0)
@@ -52,8 +51,8 @@ function setWidthSizing(sizing: LayoutSizing) {
 }
 
 function setHeightSizing(sizing: LayoutSizing) {
-  if (node.layoutMode !== 'NONE') {
-    if (node.layoutMode === 'VERTICAL') updateProp('primaryAxisSizing', sizing)
+  if (node.value.layoutMode !== 'NONE') {
+    if (node.value.layoutMode === 'VERTICAL') updateProp('primaryAxisSizing', sizing)
     else updateProp('counterAxisSizing', sizing)
   } else if (isInAutoLayout.value) {
     updateProp('layoutAlignSelf', sizing === 'FILL' ? 'STRETCH' : 'AUTO')
@@ -68,17 +67,17 @@ function sizingLabel(s: string) {
 }
 
 function hasUniformPadding() {
-  return node.paddingTop === node.paddingRight &&
-    node.paddingRight === node.paddingBottom &&
-    node.paddingBottom === node.paddingLeft
+  return node.value.paddingTop === node.value.paddingRight &&
+    node.value.paddingRight === node.value.paddingBottom &&
+    node.value.paddingBottom === node.value.paddingLeft
 }
 
 function setUniformPadding(v: number) {
-  store.updateNode(node.id, { paddingTop: v, paddingRight: v, paddingBottom: v, paddingLeft: v })
+  store.updateNode(node.value.id, { paddingTop: v, paddingRight: v, paddingBottom: v, paddingLeft: v })
 }
 
 function commitUniformPadding(_value: number, previous: number) {
-  store.commitNodeUpdate(node.id, {
+  store.commitNodeUpdate(node.value.id, {
     paddingTop: previous, paddingRight: previous, paddingBottom: previous, paddingLeft: previous
   } as unknown as Partial<SceneNode>, 'Change padding')
 }
@@ -96,7 +95,7 @@ const ALIGN_GRID: Array<{ primary: LayoutAlign; counter: LayoutCounterAlign }> =
 ]
 
 function setAlignment(primary: LayoutAlign, counter: LayoutCounterAlign) {
-  store.updateNodeWithUndo(node.id, { primaryAxisAlign: primary, counterAxisAlign: counter }, 'Change alignment')
+  store.updateNodeWithUndo(node.value.id, { primaryAxisAlign: primary, counterAxisAlign: counter }, 'Change alignment')
 }
 </script>
 
