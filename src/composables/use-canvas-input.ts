@@ -308,7 +308,7 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
       }
 
       // Hit test nodes
-      const hit = store.graph.hitTest(cx, cy)
+      const hit = store.graph.hitTest(cx, cy, store.state.currentPageId)
       if (hit) {
         if (!store.state.selectedIds.has(hit.id) && !e.shiftKey) {
           store.select([hit.id])
@@ -526,7 +526,7 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
       }
 
       // Check if we're hovering over an auto-layout frame
-      const dropTarget = store.graph.hitTestFrame(cx, cy, store.state.selectedIds)
+      const dropTarget = store.graph.hitTestFrame(cx, cy, store.state.selectedIds, store.state.currentPageId)
       const dropParent = dropTarget ? store.graph.getNode(dropTarget.id) : null
 
       if (dropParent && dropParent.layoutMode !== 'NONE') {
@@ -568,9 +568,9 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
         // Snap against siblings in absolute coordinates
         const firstId = [...d.originals.keys()][0]
         const firstNode = store.graph.getNode(firstId)
-        const parentId = firstNode?.parentId ?? store.graph.rootId
+        const parentId = firstNode?.parentId ?? store.state.currentPageId
         const siblings = store.graph.getChildren(parentId)
-        const parentAbs = parentId !== store.graph.rootId
+        const parentAbs = !store.isTopLevel(parentId)
           ? store.graph.getAbsolutePosition(parentId)
           : { x: 0, y: 0 }
         const absTargets = siblings.map((n) => ({
@@ -639,7 +639,7 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
       const maxY = Math.max(d.startY, cy)
 
       const hits: string[] = []
-      for (const node of store.graph.getChildren(store.graph.rootId)) {
+      for (const node of store.graph.getChildren(store.state.currentPageId)) {
         if (
           node.x + node.width > minX &&
           node.x < maxX &&
@@ -745,13 +745,13 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
             // Reparent to grandparent if dragged outside parent bounds
             for (const id of store.state.selectedIds) {
               const node = store.graph.getNode(id)
-              if (!node?.parentId || node.parentId === store.graph.rootId) continue
+              if (!node?.parentId || store.isTopLevel(node.parentId)) continue
               const parent = store.graph.getNode(node.parentId)
               if (!parent || parent.type !== 'FRAME') continue
               const outsideX = node.x + node.width < 0 || node.x > parent.width
               const outsideY = node.y + node.height < 0 || node.y > parent.height
               if (outsideX || outsideY) {
-                const grandparentId = parent.parentId ?? store.graph.rootId
+                const grandparentId = parent.parentId ?? store.state.currentPageId
                 store.graph.reparentNode(id, grandparentId)
               }
             }
@@ -812,7 +812,7 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
 
   function onDblClick(e: MouseEvent) {
     const { cx, cy } = getCoords(e)
-    const hit = store.graph.hitTest(cx, cy)
+    const hit = store.graph.hitTest(cx, cy, store.state.currentPageId)
     if (hit && hit.type === 'TEXT') {
       store.select([hit.id])
       store.startTextEditing(hit.id)

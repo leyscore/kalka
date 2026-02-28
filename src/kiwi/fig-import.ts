@@ -57,8 +57,12 @@ function convertEffects(effects?: KiwiEffect[]): Effect[] {
   }))
 }
 
-function mapNodeType(type?: string): NodeType {
+function mapNodeType(type?: string): NodeType | 'DOCUMENT' {
   switch (type) {
+    case 'DOCUMENT':
+      return 'DOCUMENT'
+    case 'CANVAS':
+      return 'CANVAS'
     case 'FRAME':
       return 'FRAME'
     case 'RECTANGLE':
@@ -148,7 +152,11 @@ function resolveVectorNetwork(nc: NodeChange, blobs: Uint8Array[]): VectorNetwor
 export function importNodeChanges(nodeChanges: NodeChange[], blobs: Uint8Array[] = []): SceneGraph {
   const graph = new SceneGraph()
 
-  // Build guid→nodeChange map and parent relationships
+  // Remove the default page created by constructor — we'll create pages from the file
+  for (const page of graph.getPages()) {
+    graph.deleteNode(page.id)
+  }
+
   const changeMap = new Map<string, NodeChange>()
   const parentMap = new Map<string, string>()
 
@@ -163,19 +171,22 @@ export function importNodeChanges(nodeChanges: NodeChange[], blobs: Uint8Array[]
     }
   }
 
-  // Find root nodes (those whose parent is 0:0 or not in the set)
-  const roots: string[] = []
-  for (const [id] of changeMap) {
-    const parentId = parentMap.get(id)
-    if (!parentId || parentId === '0:0' || !changeMap.has(parentId)) {
-      roots.push(id)
+  function getChildren(ncId: string): string[] {
+    const children: string[] = []
+    for (const [childId, pid] of parentMap) {
+      if (pid === ncId) children.push(childId)
     }
+    children.sort((a, b) => {
+      const aPos = changeMap.get(a)?.parentIndex?.position ?? ''
+      const bPos = changeMap.get(b)?.parentIndex?.position ?? ''
+      return aPos.localeCompare(bPos)
+    })
+    return children
   }
 
-  // Recursively create nodes
   const created = new Set<string>()
 
-  function createNode(ncId: string, graphParentId: string) {
+  function createSceneNode(ncId: string, graphParentId: string) {
     if (created.has(ncId)) return
     created.add(ncId)
 
@@ -183,12 +194,13 @@ export function importNodeChanges(nodeChanges: NodeChange[], blobs: Uint8Array[]
     if (!nc) return
 
     const nodeType = mapNodeType(nc.type)
+    if (nodeType === 'DOCUMENT') return
+
     const x = nc.transform?.m02 ?? 0
     const y = nc.transform?.m12 ?? 0
     const width = nc.size?.x ?? 100
     const height = nc.size?.y ?? 100
 
-    // Extract rotation from transform matrix
     let rotation = 0
     if (nc.transform) {
       rotation = Math.atan2(nc.transform.m10, nc.transform.m00) * (180 / Math.PI)
@@ -239,26 +251,51 @@ export function importNodeChanges(nodeChanges: NodeChange[], blobs: Uint8Array[]
       vectorNetwork: resolveVectorNetwork(nc, blobs)
     })
 
-    // Create children (find all nodes whose parent is this node)
-    const children: string[] = []
-    for (const [childId, pid] of parentMap) {
-      if (pid === ncId) children.push(childId)
-    }
-
-    // Sort children by parentIndex position if available
-    children.sort((a, b) => {
-      const aPos = changeMap.get(a)?.parentIndex?.position ?? ''
-      const bPos = changeMap.get(b)?.parentIndex?.position ?? ''
-      return aPos.localeCompare(bPos)
-    })
-
-    for (const childId of children) {
-      createNode(childId, node.id)
+    for (const childId of getChildren(ncId)) {
+      createSceneNode(childId, node.id)
     }
   }
 
-  for (const rootId of roots) {
-    createNode(rootId, graph.rootId)
+  // Find the document node (type=DOCUMENT or guid 0:0)
+  let docId: string | null = null
+  for (const [id, nc] of changeMap) {
+    if (nc.type === 'DOCUMENT' || id === '0:0') {
+      docId = id
+      break
+    }
+  }
+
+  if (docId) {
+    // Import pages (CANVAS nodes) and their children
+    for (const canvasId of getChildren(docId)) {
+      const canvasNc = changeMap.get(canvasId)
+      if (!canvasNc) continue
+      if (canvasNc.type === 'CANVAS') {
+        const page = graph.addPage(canvasNc.name ?? 'Page')
+        created.add(canvasId)
+        for (const childId of getChildren(canvasId)) {
+          createSceneNode(childId, page.id)
+        }
+      } else {
+        createSceneNode(canvasId, graph.getPages()[0]?.id ?? graph.rootId)
+      }
+    }
+  } else {
+    // No document structure — treat all roots as children of the first page
+    const roots: string[] = []
+    for (const [id] of changeMap) {
+      const pid = parentMap.get(id)
+      if (!pid || !changeMap.has(pid)) roots.push(id)
+    }
+    const page = graph.getPages()[0] ?? graph.addPage('Page 1')
+    for (const rootId of roots) {
+      createSceneNode(rootId, page.id)
+    }
+  }
+
+  // Ensure at least one page exists
+  if (graph.getPages().length === 0) {
+    graph.addPage('Page 1')
   }
 
   return graph

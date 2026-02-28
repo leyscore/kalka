@@ -72,6 +72,7 @@ export class SkiaRenderer {
   viewportHeight = 0
   showRulers = true
   pageColor = CANVAS_BG_COLOR
+  pageId: string | null = null
 
   private selColor(alpha = 1) {
     return this.ck.Color4f(SELECTION_COLOR.r, SELECTION_COLOR.g, SELECTION_COLOR.b, alpha)
@@ -144,9 +145,9 @@ export class SkiaRenderer {
     canvas.translate(this.panX, this.panY)
     canvas.scale(this.zoom, this.zoom)
 
-    const root = graph.getNode(graph.rootId)
-    if (root) {
-      for (const childId of root.childIds) {
+    const pageNode = graph.getNode(this.pageId ?? graph.rootId)
+    if (pageNode) {
+      for (const childId of pageNode.childIds) {
         this.renderNode(canvas, graph, childId, overlays)
       }
     }
@@ -306,7 +307,8 @@ export class SkiaRenderer {
     // Frame name label — only for top-level frames (direct children of root)
     if (nodes.length === 1) {
       const node = nodes[0]
-      if (node.type === 'FRAME' && node.parentId === graph.rootId) {
+      const parentNode = node.parentId ? graph.getNode(node.parentId) : null
+      if (node.type === 'FRAME' && (!parentNode || parentNode.type === 'CANVAS')) {
         const labelPaint = new this.ck.Paint()
         labelPaint.setStyle(this.ck.PaintStyle.Fill)
         labelPaint.setColor(this.selColor())
@@ -355,14 +357,16 @@ export class SkiaRenderer {
     const drawn = new Set<string>()
     for (const id of selectedIds) {
       const node = graph.getNode(id)
-      if (!node?.parentId || node.parentId === graph.rootId) continue
+      if (!node?.parentId) continue
+      const nodeParent = graph.getNode(node.parentId)
+      if (!nodeParent || nodeParent.type === 'CANVAS') continue
       if (drawn.has(node.parentId) || selectedIds.has(node.parentId)) continue
 
-      const parent = graph.getNode(node.parentId)
-      if (!parent) continue
+      const parent = nodeParent
 
-      // Skip dashed outline for top-level frames (direct children of root)
-      if (parent.parentId === graph.rootId) continue
+      // Skip dashed outline for top-level frames (direct children of page)
+      const grandparent = parent.parentId ? graph.getNode(parent.parentId) : null
+      if (!grandparent || grandparent.type === 'CANVAS') continue
 
       drawn.add(node.parentId)
 

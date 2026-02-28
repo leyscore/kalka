@@ -58,14 +58,23 @@ const DEFAULT_FILLS: Record<string, Fill> = {
   TEXT: BLACK_FILL
 }
 
+interface PageViewport {
+  panX: number
+  panY: number
+  zoom: number
+  pageColor: Color
+}
+
 export function createEditorStore() {
   let graph = new SceneGraph()
   const undo = new UndoManager()
+  const pageViewports = new Map<string, PageViewport>()
 
   prefetchFigmaSchema()
 
   const state = reactive({
     activeTool: 'SELECT' as Tool,
+    currentPageId: graph.getPages()[0].id,
     selectedIds: new Set<string>(),
     marquee: null as { x: number; y: number; width: number; height: number } | null,
     snapGuides: [] as SnapGuide[],
@@ -111,11 +120,75 @@ export function createEditorStore() {
 
   const layerTree = computed(() => {
     void state.renderVersion
-    return graph.flattenTree()
+    return graph.flattenTree(state.currentPageId)
   })
 
   function requestRender() {
     state.renderVersion++
+  }
+
+  function isTopLevel(parentId: string | null): boolean {
+    return !parentId || parentId === graph.rootId || parentId === state.currentPageId
+  }
+
+  function switchPage(pageId: string) {
+    const page = graph.getNode(pageId)
+    if (!page || page.type !== 'CANVAS') return
+
+    // Save current viewport
+    pageViewports.set(state.currentPageId, {
+      panX: state.panX,
+      panY: state.panY,
+      zoom: state.zoom,
+      pageColor: { ...state.pageColor }
+    })
+
+    // Switch
+    state.currentPageId = pageId
+    clearSelection()
+
+    // Restore viewport
+    const vp = pageViewports.get(pageId)
+    if (vp) {
+      state.panX = vp.panX
+      state.panY = vp.panY
+      state.zoom = vp.zoom
+      state.pageColor = { ...vp.pageColor }
+    } else {
+      state.panX = 0
+      state.panY = 0
+      state.zoom = 1
+      state.pageColor = { ...CANVAS_BG_COLOR }
+    }
+
+    requestRender()
+  }
+
+  function addPage(name?: string) {
+    const pages = graph.getPages()
+    const pageName = name ?? `Page ${pages.length + 1}`
+    const page = graph.addPage(pageName)
+    switchPage(page.id)
+    return page.id
+  }
+
+  function deletePage(pageId: string) {
+    const pages = graph.getPages()
+    if (pages.length <= 1) return
+    const idx = pages.findIndex((p) => p.id === pageId)
+    graph.deleteNode(pageId)
+    pageViewports.delete(pageId)
+    if (state.currentPageId === pageId) {
+      const newIdx = Math.min(idx, pages.length - 2)
+      const remaining = graph.getPages()
+      switchPage(remaining[newIdx].id)
+    }
+    requestRender()
+  }
+
+  function renamePage(pageId: string, name: string) {
+    graph.updateNode(pageId, { name })
+    requestRender()
   }
 
   function setTool(tool: Tool) {
@@ -346,10 +419,14 @@ export function createEditorStore() {
       graph = imported
       computeAllLayouts(graph)
       undo.clear()
+      pageViewports.clear()
       state.selectedIds = new Set()
+      const firstPage = graph.getPages()[0]
+      state.currentPageId = firstPage?.id ?? graph.rootId
       state.panX = 0
       state.panY = 0
       state.zoom = 1
+      state.pageColor = { ...CANVAS_BG_COLOR }
       requestRender()
     } catch (e) {
       console.error('Failed to open .fig file:', e)
@@ -467,8 +544,8 @@ export function createEditorStore() {
     const nodes = selectedNodes.value
     if (nodes.length === 0) return
 
-    const parentId = nodes[0].parentId ?? graph.rootId
-    const sameParent = nodes.every((n) => (n.parentId ?? graph.rootId) === parentId)
+    const parentId = nodes[0].parentId ?? state.currentPageId
+    const sameParent = nodes.every((n) => (n.parentId ?? state.currentPageId) === parentId)
     if (!sameParent) return
 
     const prevSelection = new Set(state.selectedIds)
@@ -487,7 +564,7 @@ export function createEditorStore() {
     }
 
     const parentAbs =
-      parentId === graph.rootId ? { x: 0, y: 0 } : graph.getAbsolutePosition(parentId)
+      isTopLevel(parentId) ? { x: 0, y: 0 } : graph.getAbsolutePosition(parentId)
 
     const frame = graph.createNode('FRAME', parentId, {
       name: 'Frame',
@@ -546,8 +623,8 @@ export function createEditorStore() {
     const nodes = selectedNodes.value
     if (nodes.length === 0) return
 
-    const parentId = nodes[0].parentId ?? graph.rootId
-    const sameParent = nodes.every((n) => (n.parentId ?? graph.rootId) === parentId)
+    const parentId = nodes[0].parentId ?? state.currentPageId
+    const sameParent = nodes.every((n) => (n.parentId ?? state.currentPageId) === parentId)
     if (!sameParent) return
 
     const parent = graph.getNode(parentId)
@@ -571,7 +648,7 @@ export function createEditorStore() {
     }
 
     const parentAbs =
-      parentId === graph.rootId ? { x: 0, y: 0 } : graph.getAbsolutePosition(parentId)
+      isTopLevel(parentId) ? { x: 0, y: 0 } : graph.getAbsolutePosition(parentId)
 
     // Insert group at the position of the topmost selected node
     const firstIndex = Math.min(...nodeIds.map((id) => parent.childIds.indexOf(id)))
@@ -623,7 +700,7 @@ export function createEditorStore() {
     const node = selectedNode.value
     if (!node || node.type !== 'GROUP') return
 
-    const parentId = node.parentId ?? graph.rootId
+    const parentId = node.parentId ?? state.currentPageId
     const parent = graph.getNode(parentId)
     if (!parent) return
 
@@ -683,7 +760,7 @@ export function createEditorStore() {
     parentId?: string
   ): string {
     const fill = DEFAULT_FILLS[type] ?? DEFAULT_FILLS.RECTANGLE
-    const pid = parentId ?? graph.rootId
+    const pid = parentId ?? state.currentPageId
     const node = graph.createNode(type, pid, {
       x,
       y,
@@ -710,7 +787,7 @@ export function createEditorStore() {
   }
 
   function selectAll() {
-    const children = graph.getChildren(graph.rootId)
+    const children = graph.getChildren(state.currentPageId)
     state.selectedIds = new Set(children.map((n) => n.id))
   }
 
@@ -722,7 +799,7 @@ export function createEditorStore() {
     for (const id of state.selectedIds) {
       const src = graph.getNode(id)
       if (!src) continue
-      const parentId = src.parentId ?? graph.rootId
+      const parentId = src.parentId ?? state.currentPageId
       const { id: _srcId, parentId: _srcParent, childIds: _srcChildren, ...srcRest } = src
       const node = graph.createNode(src.type, parentId, {
         ...srcRest,
@@ -777,7 +854,7 @@ export function createEditorStore() {
 
     parseFigmaClipboard(html).then((figma) => {
       if (figma) {
-        const created = importClipboardNodes(figma.nodes, graph, graph.rootId, 20, 20, figma.blobs)
+        const created = importClipboardNodes(figma.nodes, graph, state.currentPageId, 20, 20, figma.blobs)
         if (created.length > 0) {
           state.selectedIds = new Set(created)
           requestRender()
@@ -790,7 +867,7 @@ export function createEditorStore() {
     nodes: Array<SceneNode & { children?: SceneNode[] }>,
     parentId?: string
   ) {
-    const target = parentId ?? graph.rootId
+    const target = parentId ?? state.currentPageId
     const prevSelection = new Set(state.selectedIds)
     const newIds: string[] = []
     const created: Array<{ id: string; parentId: string; snapshot: SceneNode }> = []
@@ -840,7 +917,7 @@ export function createEditorStore() {
     for (const id of state.selectedIds) {
       const node = graph.getNode(id)
       if (!node) continue
-      const parentId = node.parentId ?? graph.rootId
+      const parentId = node.parentId ?? state.currentPageId
       const parent = graph.getNode(parentId)
       const index = parent?.childIds.indexOf(id) ?? -1
       entries.push({ id, parentId, snapshot: { ...node }, index })
@@ -991,7 +1068,7 @@ export function createEditorStore() {
   }
 
   function zoomToFit() {
-    const nodes = graph.getChildren(graph.rootId)
+    const nodes = graph.getChildren(state.currentPageId)
     if (nodes.length === 0) return
 
     let minX = Infinity
@@ -1069,7 +1146,12 @@ export function createEditorStore() {
     screenToCanvas,
     applyZoom,
     pan,
-    zoomToFit
+    zoomToFit,
+    isTopLevel,
+    switchPage,
+    addPage,
+    deletePage,
+    renamePage
   }
 }
 

@@ -31,6 +31,7 @@ export interface VectorNetwork {
 }
 
 export type NodeType =
+  | 'CANVAS'
   | 'FRAME'
   | 'RECTANGLE'
   | 'ELLIPSE'
@@ -191,7 +192,7 @@ function createDefaultNode(type: NodeType, overrides: Partial<SceneNode> = {}): 
   }
 }
 
-const CONTAINER_TYPES = new Set<NodeType>(['FRAME', 'GROUP', 'SECTION'])
+const CONTAINER_TYPES = new Set<NodeType>(['CANVAS', 'FRAME', 'GROUP', 'SECTION'])
 
 export class SceneGraph {
   nodes = new Map<string, SceneNode>()
@@ -205,6 +206,16 @@ export class SceneGraph {
     })
     this.rootId = root.id
     this.nodes.set(root.id, root)
+
+    this.addPage('Page 1')
+  }
+
+  addPage(name: string): SceneNode {
+    return this.createNode('CANVAS', this.rootId, { name, width: 0, height: 0 })
+  }
+
+  getPages(): SceneNode[] {
+    return this.getChildren(this.rootId).filter((n) => n.type === 'CANVAS')
   }
 
   getNode(id: string): SceneNode | undefined {
@@ -237,7 +248,7 @@ export class SceneGraph {
     let ax = 0
     let ay = 0
     let current = this.nodes.get(id)
-    while (current && current.id !== this.rootId) {
+    while (current && current.id !== this.rootId && current.type !== 'CANVAS') {
       ax += current.x
       ay += current.y
       current = current.parentId ? this.nodes.get(current.parentId) : undefined
@@ -287,8 +298,11 @@ export class SceneGraph {
 
     // Convert absolute position
     const absPos = this.getAbsolutePosition(nodeId)
+    const newParentNode = this.nodes.get(newParentId)
     const newParentAbs =
-      newParentId === this.rootId ? { x: 0, y: 0 } : this.getAbsolutePosition(newParentId)
+      newParentId === this.rootId || newParentNode?.type === 'CANVAS'
+        ? { x: 0, y: 0 }
+        : this.getAbsolutePosition(newParentId)
 
     // Remove from old parent
     if (oldParent) {
@@ -383,8 +397,8 @@ export class SceneGraph {
     return null
   }
 
-  hitTestFrame(px: number, py: number, excludeIds: Set<string>): SceneNode | null {
-    return this.hitTestFrameChildren(px, py, this.rootId, 0, 0, excludeIds)
+  hitTestFrame(px: number, py: number, excludeIds: Set<string>, scopeId?: string): SceneNode | null {
+    return this.hitTestFrameChildren(px, py, scopeId ?? this.rootId, 0, 0, excludeIds)
   }
 
   private hitTestFrameChildren(

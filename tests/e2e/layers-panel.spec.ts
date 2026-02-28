@@ -48,7 +48,7 @@ async function getSceneTree() {
         children: node.childIds.map((cid: string) => nodeTree(cid)).filter(Boolean),
       }
     }
-    return nodeTree(graph.rootId)
+    return nodeTree(store.state.currentPageId)
   })
 }
 

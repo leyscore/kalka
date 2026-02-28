@@ -2,7 +2,7 @@ import type { EditorStore } from './stores/editor'
 
 export function createDemoShapes(store: EditorStore) {
   store.createShape('FRAME', 100, 80, 800, 500)
-  store.graph.updateNode(store.graph.getChildren(store.graph.rootId)[0].id, {
+  store.graph.updateNode(store.graph.getChildren(store.state.currentPageId)[0].id, {
     name: 'Desktop',
     fills: [{ type: 'SOLID', color: { r: 1, g: 1, b: 1, a: 1 }, opacity: 1, visible: true }],
     strokes: [

@@ -26,3 +26,5 @@ public/canvaskit.wasm
 *.sln
 *.sw?
 test-results/
+# Git worktrees for parallel agent work
+.worktrees/

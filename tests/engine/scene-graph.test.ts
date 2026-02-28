@@ -2,8 +2,12 @@ import { describe, test, expect } from 'bun:test'
 
 import { SceneGraph } from '../../src/engine/scene-graph'
 
+function pageId(graph: SceneGraph) {
+  return graph.getPages()[0].id
+}
+
 function rect(graph: SceneGraph, name: string, x = 0, y = 0, w = 50, h = 50) {
-  return graph.createNode('RECTANGLE', graph.rootId, { name, x, y, width: w, height: h }).id
+  return graph.createNode('RECTANGLE', pageId(graph), { name, x, y, width: w, height: h }).id
 }
 
 describe('SceneGraph', () => {
@@ -26,7 +30,7 @@ describe('SceneGraph', () => {
 
   test('reparent into frame', () => {
     const graph = new SceneGraph()
-    const frame = graph.createNode('FRAME', graph.rootId, { name: 'F', x: 50, y: 50, width: 400, height: 400 }).id
+    const frame = graph.createNode('FRAME', pageId(graph), { name: 'F', x: 50, y: 50, width: 400, height: 400 }).id
     const r = rect(graph, 'R', 100, 100)
     graph.reparentNode(r, frame)
     const children = graph.getChildren(frame)
@@ -38,8 +42,20 @@ describe('SceneGraph', () => {
     rect(graph, 'A')
     rect(graph, 'B')
     rect(graph, 'C')
-    const names = graph.getChildren(graph.rootId).map(n => n.name)
+    const names = graph.getChildren(pageId(graph)).map(n => n.name)
     expect(names).toEqual(['A', 'B', 'C'])
+  })
+
+  test('pages', () => {
+    const graph = new SceneGraph()
+    expect(graph.getPages()).toHaveLength(1)
+    expect(graph.getPages()[0].name).toBe('Page 1')
+    const page2 = graph.addPage('Page 2')
+    expect(graph.getPages()).toHaveLength(2)
+    expect(page2.name).toBe('Page 2')
+    rect(graph, 'Shape', 0, 0, 50, 50)
+    expect(graph.getChildren(pageId(graph))).toHaveLength(1)
+    expect(graph.getChildren(page2.id)).toHaveLength(0)
   })
 
   test('update node', () => {
