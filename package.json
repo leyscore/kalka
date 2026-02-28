@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "workspaces": ["packages/*"],
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -24,6 +25,7 @@
     "@tauri-apps/plugin-dialog": "^2.6.0",
     "@tauri-apps/plugin-fs": "^2.4.5",
     "@tauri-apps/plugin-opener": "^2",
+    "@open-pencil/core": "workspace:*",
     "@vueuse/core": "^14.2.1",
     "canvaskit-wasm": "^0.40.0",
     "culori": "^4.0.2",

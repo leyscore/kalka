@@ -5,6 +5,7 @@
     "": {
       "name": "open-pencil-app",
       "dependencies": {
+        "@open-pencil/core": "workspace:*",
         "@tailwindcss/vite": "^4.2.1",
         "@tauri-apps/api": "^2",
         "@tauri-apps/plugin-dialog": "^2.6.0",
@@ -34,6 +35,20 @@
         "unplugin-icons": "^23.0.1",
         "unplugin-vue-components": "^31.0.0",
         "vite": "^7.0.4",
+      },
+    },
+    "packages/core": {
+      "name": "@open-pencil/core",
+      "version": "0.1.0",
+      "dependencies": {
+        "canvaskit-wasm": "^0.40.0",
+        "culori": "^4.0.2",
+        "fflate": "^0.8.2",
+        "fzstd": "^0.1.1",
+        "yoga-layout": "^3.2.1",
+      },
+      "devDependencies": {
+        "@types/culori": "^4.0.1",
       },
     },
   },
@@ -127,6 +142,8 @@
     "@jridgewell/sourcemap-codec": ["@jridgewell/sourcemap-codec@1.5.5", "", {}, "sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og=="],
 
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
+
+    "@open-pencil/core": ["@open-pencil/core@workspace:packages/core"],
 
     "@oxfmt/binding-android-arm-eabi": ["@oxfmt/binding-android-arm-eabi@0.35.0", "", { "os": "android", "cpu": "arm" }, "sha512-BaRKlM3DyG81y/xWTsE6gZiv89F/3pHe2BqX2H4JbiB8HNVlWWtplzgATAE5IDSdwChdeuWLDTQzJ92Lglw3ZA=="],
 
