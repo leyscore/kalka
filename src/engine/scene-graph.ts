@@ -202,6 +202,9 @@ export interface SceneNode {
   borderBottomWeight: number
   borderLeftWeight: number
   independentStrokeWeights: boolean
+
+  componentId: string | null
+  overrides: Record<string, unknown>
 }
 
 let nextLocalID = 1
@@ -276,6 +279,8 @@ function createDefaultNode(type: NodeType, overrides: Partial<SceneNode> = {}): 
     borderBottomWeight: 0,
     borderLeftWeight: 0,
     independentStrokeWeights: false,
+    componentId: null,
+    overrides: {},
     ...overrides
   }
 }
@@ -522,6 +527,86 @@ export class SceneGraph {
     }
 
     return best
+  }
+
+  cloneTree(sourceId: string, parentId: string, overrides: Partial<SceneNode> = {}): SceneNode | null {
+    const src = this.nodes.get(sourceId)
+    if (!src) return null
+
+    const { id: _srcId, parentId: _srcParent, childIds: _srcChildren, ...rest } = src
+    const clone = this.createNode(src.type, parentId, { ...rest, ...overrides })
+
+    for (const childId of src.childIds) {
+      this.cloneTree(childId, clone.id)
+    }
+
+    return clone
+  }
+
+  createInstance(componentId: string, parentId: string, overrides: Partial<SceneNode> = {}): SceneNode | null {
+    const component = this.nodes.get(componentId)
+    if (!component || component.type !== 'COMPONENT') return null
+
+    const instance = this.createNode('INSTANCE', parentId, {
+      name: component.name,
+      width: component.width,
+      height: component.height,
+      fills: component.fills.map((f) => ({ ...f })),
+      strokes: component.strokes.map((s) => ({ ...s })),
+      effects: component.effects.map((e) => ({ ...e })),
+      opacity: component.opacity,
+      cornerRadius: component.cornerRadius,
+      topLeftRadius: component.topLeftRadius,
+      topRightRadius: component.topRightRadius,
+      bottomRightRadius: component.bottomRightRadius,
+      bottomLeftRadius: component.bottomLeftRadius,
+      independentCorners: component.independentCorners,
+      layoutMode: component.layoutMode,
+      layoutWrap: component.layoutWrap,
+      primaryAxisAlign: component.primaryAxisAlign,
+      counterAxisAlign: component.counterAxisAlign,
+      primaryAxisSizing: component.primaryAxisSizing,
+      counterAxisSizing: component.counterAxisSizing,
+      itemSpacing: component.itemSpacing,
+      counterAxisSpacing: component.counterAxisSpacing,
+      paddingTop: component.paddingTop,
+      paddingRight: component.paddingRight,
+      paddingBottom: component.paddingBottom,
+      paddingLeft: component.paddingLeft,
+      clipsContent: component.clipsContent,
+      componentId,
+      ...overrides
+    })
+
+    for (const childId of component.childIds) {
+      this.cloneTree(childId, instance.id)
+    }
+
+    return instance
+  }
+
+  detachInstance(instanceId: string): void {
+    const node = this.nodes.get(instanceId)
+    if (!node || node.type !== 'INSTANCE') return
+    node.type = 'FRAME'
+    node.componentId = null
+    node.overrides = {}
+  }
+
+  getMainComponent(instanceId: string): SceneNode | undefined {
+    const node = this.nodes.get(instanceId)
+    if (!node?.componentId) return undefined
+    return this.nodes.get(node.componentId)
+  }
+
+  getInstances(componentId: string): SceneNode[] {
+    const instances: SceneNode[] = []
+    for (const node of this.nodes.values()) {
+      if (node.type === 'INSTANCE' && node.componentId === componentId) {
+        instances.push(node)
+      }
+    }
+    return instances
   }
 
   flattenTree(parentId?: string, depth = 0): Array<{ node: SceneNode; depth: number }> {

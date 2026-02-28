@@ -39,6 +39,27 @@ export function useKeyboard(store: EditorStore) {
       return
     }
 
+    if ((e.metaKey || e.ctrlKey) && e.altKey) {
+      if (e.key === 'k' || e.key === 'K') {
+        e.preventDefault()
+        store.createComponentFromSelection()
+        return
+      }
+      if (e.key === 'b' || e.key === 'B') {
+        e.preventDefault()
+        store.detachInstance()
+        return
+      }
+    }
+
+    if ((e.metaKey || e.ctrlKey) && e.shiftKey) {
+      if (e.key === 'K' || e.key === 'k') {
+        e.preventDefault()
+        store.createComponentSetFromComponents()
+        return
+      }
+    }
+
     if (e.metaKey || e.ctrlKey) {
       if (e.key === 'z' && !e.shiftKey) {
         e.preventDefault()

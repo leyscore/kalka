@@ -4,8 +4,11 @@ import { useEventListener } from '@vueuse/core'
 import { TreeRoot, TreeItem } from 'reka-ui'
 
 import IconCircle from '~icons/lucide/circle'
+import IconComponent from '~icons/lucide/diamond'
+import IconComponentSet from '~icons/lucide/diamonds'
 import IconFrame from '~icons/lucide/frame'
 import IconGroup from '~icons/lucide/group'
+import IconInstance from '~icons/lucide/diamond'
 import IconMinus from '~icons/lucide/minus'
 import IconPenTool from '~icons/lucide/pen-tool'
 import IconSection from '~icons/lucide/layout-grid'
@@ -30,11 +33,16 @@ const nodeIcons: Record<string, typeof IconSquare> = {
   ELLIPSE: IconCircle,
   FRAME: IconFrame,
   GROUP: IconGroup,
+  COMPONENT: IconComponent,
+  COMPONENT_SET: IconComponentSet,
+  INSTANCE: IconInstance,
   LINE: IconMinus,
   TEXT: IconType,
   VECTOR: IconPenTool,
   RECTANGLE: IconSquare
 }
+
+const COMPONENT_TYPES = new Set(['COMPONENT', 'COMPONENT_SET', 'INSTANCE'])
 
 function buildTree(parentId: string): LayerNode[] {
   const parent = store.graph.getNode(parentId)
@@ -249,7 +257,13 @@ function updateDropTarget(ev: PointerEvent) {
                 <icon-lucide-chevron-right class="size-3" />
               </span>
               <span v-else class="w-4 shrink-0" />
-              <component :is="nodeIcons[item.value.type] ?? IconSquare" class="size-3 shrink-0 opacity-70" />
+              <component
+                :is="nodeIcons[item.value.type] ?? IconSquare"
+                class="size-3 shrink-0"
+                :class="COMPONENT_TYPES.has(item.value.type)
+                  ? 'text-[#9747ff] opacity-100'
+                  : 'opacity-70'"
+              />
               <span class="min-w-0 flex-1 truncate">{{ item.value.name }}</span>
               <icon-lucide-eye-off
                 v-if="!item.value.visible"

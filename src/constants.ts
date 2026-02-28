@@ -4,6 +4,7 @@ import type { Fill, Stroke } from './engine/scene-graph'
 export const IS_TAURI = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
 
 export const SELECTION_COLOR = { r: 0.23, g: 0.51, b: 0.96, a: 1 } satisfies Color
+export const COMPONENT_COLOR = { r: 0.592, g: 0.278, b: 1, a: 1 } satisfies Color
 export const SNAP_COLOR = { r: 1.0, g: 0.0, b: 0.56, a: 1 } satisfies Color
 export const CANVAS_BG_COLOR = { r: 0.96, g: 0.96, b: 0.96, a: 1 } satisfies Color
 
@@ -98,6 +99,10 @@ export const SECTION_DEFAULT_STROKE: Stroke = {
   visible: true,
   align: 'INSIDE'
 }
+
+export const COMPONENT_SET_DASH = 6
+export const COMPONENT_SET_DASH_GAP = 4
+export const COMPONENT_SET_BORDER_WIDTH = 1.5
 
 export const RULER_TARGET_PIXEL_SPACING = 100
 export const RULER_MAJOR_TOLERANCE = 0.01
