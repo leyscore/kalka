@@ -917,6 +917,28 @@ export class SkiaRenderer {
     const step = this.rulerStep()
     const minorStep = step / 5
 
+    // Compute selection bounds for badge exclusion zones
+    let sx1 = -Infinity, sx2 = -Infinity, sy1 = -Infinity, sy2 = -Infinity
+    const selNodes = [...selectedIds]
+      .map((id) => graph.getNode(id))
+      .filter((n): n is SceneNode => n !== undefined)
+    if (selNodes.length > 0) {
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+      for (const n of selNodes) {
+        const abs = graph.getAbsolutePosition(n.id)
+        minX = Math.min(minX, abs.x)
+        minY = Math.min(minY, abs.y)
+        maxX = Math.max(maxX, abs.x + n.width)
+        maxY = Math.max(maxY, abs.y + n.height)
+      }
+      sx1 = minX * this.zoom + this.panX
+      sx2 = maxX * this.zoom + this.panX
+      sy1 = minY * this.zoom + this.panY
+      sy2 = maxY * this.zoom + this.panY
+    }
+
+    const badgeW = 30
+
     // Horizontal ruler (clipped)
     canvas.save()
     canvas.clipRect(this.ck.LTRBRect(R, 0, vw, R), this.ck.ClipOp.Intersect, false)
@@ -931,9 +953,13 @@ export class SkiaRenderer {
       const tickLen = isMajor ? R * 0.5 : R * 0.25
       canvas.drawLine(sx, R - tickLen, sx, R, tickPaint)
 
-      if (isMajor) {
-        const label = this.rulerLabel(wx)
-        canvas.drawText(label, sx + 2, R - tickLen - 2, textPaint, font)
+      if (isMajor && selNodes.length > 0) {
+        const tooClose = Math.abs(sx - sx1) < badgeW || Math.abs(sx - sx2) < badgeW
+        if (!tooClose) {
+          canvas.drawText(this.rulerLabel(wx), sx + 2, R * 0.65, textPaint, font)
+        }
+      } else if (isMajor) {
+        canvas.drawText(this.rulerLabel(wx), sx + 2, R * 0.65, textPaint, font)
       }
     }
     canvas.restore()
@@ -952,49 +978,37 @@ export class SkiaRenderer {
       const tickLen = isMajor ? R * 0.5 : R * 0.25
       canvas.drawLine(R - tickLen, sy, R, sy, tickPaint)
 
-      if (isMajor) {
-        const label = this.rulerLabel(wy)
+      if (isMajor && selNodes.length > 0) {
+        const tooClose = Math.abs(sy - sy1) < badgeW || Math.abs(sy - sy2) < badgeW
+        if (!tooClose) {
+          canvas.save()
+          canvas.translate(R * 0.65, sy - 2)
+          canvas.rotate(-90, 0, 0)
+          canvas.drawText(this.rulerLabel(wy), 0, 3, textPaint, font)
+          canvas.restore()
+        }
+      } else if (isMajor) {
         canvas.save()
-        canvas.translate(R * 0.5, sy - 3)
+        canvas.translate(R * 0.65, sy - 2)
         canvas.rotate(-90, 0, 0)
-        canvas.drawText(label, 0, 3, textPaint, font)
+        canvas.drawText(this.rulerLabel(wy), 0, 3, textPaint, font)
         canvas.restore()
       }
     }
     canvas.restore()
 
-    // Selection highlight on rulers
-    if (selectedIds.size > 0) {
+    // Selection highlight + badges
+    if (selNodes.length > 0) {
       const hlPaint = new this.ck.Paint()
       hlPaint.setColor(this.selColor(0.3))
 
-      const nodes = [...selectedIds]
-        .map((id) => graph.getNode(id))
-        .filter((n): n is SceneNode => n !== undefined)
+      canvas.drawRect(this.ck.LTRBRect(Math.max(R, sx1), 0, sx2, R), hlPaint)
+      canvas.drawRect(this.ck.LTRBRect(0, Math.max(R, sy1), R, sy2), hlPaint)
 
-      if (nodes.length > 0) {
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
-        for (const n of nodes) {
-          const abs = graph.getAbsolutePosition(n.id)
-          minX = Math.min(minX, abs.x)
-          minY = Math.min(minY, abs.y)
-          maxX = Math.max(maxX, abs.x + n.width)
-          maxY = Math.max(maxY, abs.y + n.height)
-        }
-
-        const sx1 = minX * this.zoom + this.panX
-        const sx2 = maxX * this.zoom + this.panX
-        const sy1 = minY * this.zoom + this.panY
-        const sy2 = maxY * this.zoom + this.panY
-
-        canvas.drawRect(this.ck.LTRBRect(Math.max(R, sx1), 0, sx2, R), hlPaint)
-        canvas.drawRect(this.ck.LTRBRect(0, Math.max(R, sy1), R, sy2), hlPaint)
-
-        this.drawRulerBadge(canvas, font, Math.round(minX).toString(), Math.max(R, sx1), 0, 'horizontal')
-        this.drawRulerBadge(canvas, font, Math.round(maxX).toString(), sx2, 0, 'horizontal')
-        this.drawRulerBadge(canvas, font, Math.round(minY).toString(), 0, Math.max(R, sy1), 'vertical')
-        this.drawRulerBadge(canvas, font, Math.round(maxY).toString(), 0, sy2, 'vertical')
-      }
+      this.drawRulerBadge(canvas, font, Math.round((sx1 - this.panX) / this.zoom).toString(), Math.max(R, sx1), 0, 'horizontal')
+      this.drawRulerBadge(canvas, font, Math.round((sx2 - this.panX) / this.zoom).toString(), sx2, 0, 'horizontal')
+      this.drawRulerBadge(canvas, font, Math.round((sy1 - this.panY) / this.zoom).toString(), 0, Math.max(R, sy1), 'vertical')
+      this.drawRulerBadge(canvas, font, Math.round((sy2 - this.panY) / this.zoom).toString(), 0, sy2, 'vertical')
 
       hlPaint.delete()
     }
@@ -1022,7 +1036,7 @@ export class SkiaRenderer {
       const bx = x - (textW + pad * 2) / 2
       const by = (R - h) / 2
       canvas.drawRRect(this.ck.RRectXY(this.ck.LTRBRect(bx, by, bx + textW + pad * 2, by + h), 2, 2), badgePaint)
-      canvas.drawText(label, bx + pad, by + h - 3, labelPaint, font)
+      canvas.drawText(label, bx + pad, R * 0.65, labelPaint, font)
     } else {
       const bw = textW + pad * 2
       const bx = (R - h) / 2
