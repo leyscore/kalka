@@ -8,6 +8,7 @@ import IconFrame from '~icons/lucide/frame'
 import IconGroup from '~icons/lucide/group'
 import IconMinus from '~icons/lucide/minus'
 import IconPenTool from '~icons/lucide/pen-tool'
+import IconSection from '~icons/lucide/layout-grid'
 import IconSquare from '~icons/lucide/square'
 import IconType from '~icons/lucide/type'
 
@@ -25,6 +26,7 @@ interface LayerNode {
 }
 
 const nodeIcons: Record<string, typeof IconSquare> = {
+  SECTION: IconSection,
   ELLIPSE: IconCircle,
   FRAME: IconFrame,
   GROUP: IconGroup,

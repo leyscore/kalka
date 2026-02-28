@@ -11,6 +11,8 @@ import {
   SIZE_PILL_RADIUS, SIZE_PILL_TEXT_OFFSET_Y,
   MARQUEE_FILL_ALPHA, SELECTION_DASH_ALPHA, DROP_HIGHLIGHT_ALPHA, DROP_HIGHLIGHT_STROKE,
   LAYOUT_INDICATOR_STROKE,
+  SECTION_CORNER_RADIUS, SECTION_TITLE_HEIGHT, SECTION_TITLE_PADDING_X,
+  SECTION_TITLE_RADIUS, SECTION_TITLE_FONT_SIZE, SECTION_TITLE_GAP,
   RULER_TARGET_PIXEL_SPACING, RULER_MAJOR_TOLERANCE
 } from '../constants'
 import type { SceneNode, SceneGraph, Fill } from './scene-graph'
@@ -61,6 +63,7 @@ export class SkiaRenderer {
   private textFont: Font | null = null
   private labelFont: Font | null = null
   private sizeFont: Font | null = null
+  private sectionTitleFont: Font | null = null
   private fontMgr: FontMgr | null = null
   private fontProvider: TypefaceFontProvider | null = null
   private fontsLoaded = false
@@ -126,9 +129,11 @@ export class SkiaRenderer {
         this.textFont?.delete()
         this.labelFont?.delete()
         this.sizeFont?.delete()
+        this.sectionTitleFont?.delete()
         this.textFont = new this.ck.Font(typeface, DEFAULT_FONT_SIZE)
         this.labelFont = new this.ck.Font(typeface, LABEL_FONT_SIZE)
         this.sizeFont = new this.ck.Font(typeface, SIZE_FONT_SIZE)
+        this.sectionTitleFont = new this.ck.Font(typeface, SECTION_TITLE_FONT_SIZE)
       }
       this.fontMgr = this.ck.FontMgr.FromData(fontData) ?? null
     }
@@ -586,7 +591,9 @@ export class SkiaRenderer {
       canvas.rotate(rotation, node.width / 2, node.height / 2)
     }
 
-    if (overlays.editingTextId !== nodeId) {
+    if (node.type === 'SECTION') {
+      this.renderSection(canvas, node)
+    } else if (overlays.editingTextId !== nodeId) {
       this.renderShape(canvas, node)
     }
 
@@ -678,6 +685,67 @@ export class SkiaRenderer {
       }
     } else {
       canvas.drawRect(rect, paint)
+    }
+  }
+
+  private renderSection(canvas: Canvas, node: SceneNode): void {
+    const rect = this.ck.LTRBRect(0, 0, node.width, node.height)
+    const rrect = this.ck.RRectXY(rect, SECTION_CORNER_RADIUS, SECTION_CORNER_RADIUS)
+
+    // Fill
+    for (const fill of node.fills) {
+      if (!fill.visible) continue
+      this.applyFill(fill)
+      this.fillPaint.setAlphaf(fill.opacity)
+      canvas.drawRRect(rrect, this.fillPaint)
+    }
+
+    // Stroke
+    for (const stroke of node.strokes) {
+      if (!stroke.visible) continue
+      this.strokePaint.setColor(
+        this.ck.Color4f(stroke.color.r, stroke.color.g, stroke.color.b, stroke.color.a)
+      )
+      this.strokePaint.setStrokeWidth(stroke.weight)
+      this.strokePaint.setAlphaf(stroke.opacity)
+      canvas.drawRRect(rrect, this.strokePaint)
+    }
+
+    // Title pill above the section
+    if (this.sectionTitleFont) {
+      const name = node.name
+      const glyphIds = this.sectionTitleFont.getGlyphIDs(name)
+      const widths = this.sectionTitleFont.getGlyphWidths(glyphIds)
+      let textWidth = 0
+      for (const w of widths) textWidth += w
+
+      const pillW = textWidth + SECTION_TITLE_PADDING_X * 2
+      const pillH = SECTION_TITLE_HEIGHT
+      const pillX = 0
+      const pillY = -pillH - SECTION_TITLE_GAP
+
+      // Pill background — same as first fill or muted
+      const pillPaint = new this.ck.Paint()
+      pillPaint.setStyle(this.ck.PaintStyle.Fill)
+      if (node.fills.length > 0 && node.fills[0].visible) {
+        const c = node.fills[0].color
+        pillPaint.setColor(this.ck.Color4f(c.r, c.g, c.b, node.fills[0].opacity))
+      } else {
+        pillPaint.setColor(this.ck.Color4f(0.37, 0.37, 0.37, 1))
+      }
+      pillPaint.setAntiAlias(true)
+      const pillRect = this.ck.LTRBRect(pillX, pillY, pillX + pillW, pillY + pillH)
+      canvas.drawRRect(this.ck.RRectXY(pillRect, SECTION_TITLE_RADIUS, SECTION_TITLE_RADIUS), pillPaint)
+      pillPaint.delete()
+
+      // Title text
+      const textPaint = new this.ck.Paint()
+      textPaint.setStyle(this.ck.PaintStyle.Fill)
+      textPaint.setColor(this.ck.WHITE)
+      textPaint.setAntiAlias(true)
+      const textY = pillY + pillH * 0.7
+      canvas.drawText(name, pillX + SECTION_TITLE_PADDING_X, textY, textPaint, this.sectionTitleFont)
+      textPaint.delete()
     }
   }
 

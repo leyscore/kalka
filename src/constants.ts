@@ -1,5 +1,5 @@
 import type { Color } from './types'
-import type { Fill } from './engine/scene-graph'
+import type { Fill, Stroke } from './engine/scene-graph'
 
 export const SELECTION_COLOR = { r: 0.23, g: 0.51, b: 0.96, a: 1 } satisfies Color
 export const SNAP_COLOR = { r: 1.0, g: 0.0, b: 0.56, a: 1 } satisfies Color
@@ -76,6 +76,26 @@ export const HANDLE_HIT_RADIUS = 6
 export const ROTATION_HIT_RADIUS = 8
 
 export const ZOOM_SENSITIVITY = 0.99
+
+export const SECTION_CORNER_RADIUS = 5
+export const SECTION_TITLE_HEIGHT = 24
+export const SECTION_TITLE_PADDING_X = 8
+export const SECTION_TITLE_RADIUS = 5
+export const SECTION_TITLE_FONT_SIZE = 12
+export const SECTION_TITLE_GAP = 6
+export const SECTION_DEFAULT_FILL: Fill = {
+  type: 'SOLID',
+  color: { r: 0.37, g: 0.37, b: 0.37, a: 1 },
+  opacity: 1,
+  visible: true
+}
+export const SECTION_DEFAULT_STROKE: Stroke = {
+  color: { r: 0.55, g: 0.55, b: 0.55, a: 1 },
+  weight: 1,
+  opacity: 1,
+  visible: true,
+  align: 'INSIDE'
+}
 
 export const RULER_TARGET_PIXEL_SPACING = 100
 export const RULER_MAJOR_TOLERANCE = 0.01

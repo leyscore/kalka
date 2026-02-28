@@ -1,6 +1,6 @@
 import { reactive, shallowRef, computed } from 'vue'
 
-import { DEFAULT_SHAPE_FILL, DEFAULT_FRAME_FILL, CANVAS_BG_COLOR, ZOOM_SENSITIVITY } from '../constants'
+import { DEFAULT_SHAPE_FILL, DEFAULT_FRAME_FILL, SECTION_DEFAULT_FILL, SECTION_DEFAULT_STROKE, CANVAS_BG_COLOR, ZOOM_SENSITIVITY } from '../constants'
 import type { Color } from '../types'
 import {
   parseFigmaClipboard,
@@ -19,7 +19,7 @@ import { computeVectorBounds } from '../engine/vector'
 import type { SceneNode, NodeType, Fill, LayoutMode, VectorVertex, VectorSegment, VectorRegion, VectorNetwork } from '../engine/scene-graph'
 import type { SnapGuide } from '../engine/snap'
 
-export type Tool = 'SELECT' | 'FRAME' | 'RECTANGLE' | 'ELLIPSE' | 'LINE' | 'TEXT' | 'PEN' | 'HAND'
+export type Tool = 'SELECT' | 'FRAME' | 'SECTION' | 'RECTANGLE' | 'ELLIPSE' | 'LINE' | 'TEXT' | 'PEN' | 'HAND'
 
 export interface ToolDef {
   key: Tool
@@ -30,7 +30,7 @@ export interface ToolDef {
 
 export const TOOLS: ToolDef[] = [
   { key: 'SELECT', label: 'Move', shortcut: 'V' },
-  { key: 'FRAME', label: 'Frame', shortcut: 'F' },
+  { key: 'FRAME', label: 'Frame', shortcut: 'F', flyout: ['FRAME', 'SECTION'] },
   { key: 'RECTANGLE', label: 'Rectangle', shortcut: 'R', flyout: ['RECTANGLE', 'ELLIPSE', 'LINE'] },
   { key: 'PEN', label: 'Pen', shortcut: 'P' },
   { key: 'TEXT', label: 'Text', shortcut: 'T' },
@@ -40,6 +40,7 @@ export const TOOLS: ToolDef[] = [
 export const TOOL_SHORTCUTS: Record<string, Tool> = {
   v: 'SELECT',
   f: 'FRAME',
+  s: 'SECTION',
   r: 'RECTANGLE',
   o: 'ELLIPSE',
   l: 'LINE',
@@ -52,6 +53,7 @@ const BLACK_FILL: Fill = { type: 'SOLID', color: { r: 0, g: 0, b: 0, a: 1 }, opa
 
 const DEFAULT_FILLS: Record<string, Fill> = {
   FRAME: DEFAULT_FRAME_FILL,
+  SECTION: SECTION_DEFAULT_FILL,
   RECTANGLE: DEFAULT_SHAPE_FILL,
   ELLIPSE: DEFAULT_SHAPE_FILL,
   LINE: BLACK_FILL,
@@ -768,13 +770,18 @@ export function createEditorStore() {
   ): string {
     const fill = DEFAULT_FILLS[type] ?? DEFAULT_FILLS.RECTANGLE
     const pid = parentId ?? state.currentPageId
-    const node = graph.createNode(type, pid, {
+    const overrides: Partial<SceneNode> = {
       x,
       y,
       width: w,
       height: h,
       fills: [{ ...fill }]
-    })
+    }
+    if (type === 'SECTION') {
+      overrides.strokes = [{ ...SECTION_DEFAULT_STROKE }]
+      overrides.cornerRadius = 5
+    }
+    const node = graph.createNode(type, pid, overrides)
     const id = node.id
     const snapshot = { ...node }
     undo.push({

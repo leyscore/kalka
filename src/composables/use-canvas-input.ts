@@ -72,6 +72,7 @@ type DragState = DragDraw | DragMove | DragPan | DragResize | DragMarquee | Drag
 
 const TOOL_TO_NODE: Partial<Record<Tool, NodeType>> = {
   FRAME: 'FRAME',
+  SECTION: 'SECTION',
   RECTANGLE: 'RECTANGLE',
   ELLIPSE: 'ELLIPSE',
   LINE: 'LINE',
@@ -751,7 +752,7 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
               const node = store.graph.getNode(id)
               if (!node?.parentId || store.isTopLevel(node.parentId)) continue
               const parent = store.graph.getNode(node.parentId)
-              if (!parent || parent.type !== 'FRAME') continue
+              if (!parent || (parent.type !== 'FRAME' && parent.type !== 'SECTION')) continue
               const outsideX = node.x + node.width < 0 || node.x > parent.width
               const outsideY = node.y + node.height < 0 || node.y > parent.height
               if (outsideX || outsideY) {
