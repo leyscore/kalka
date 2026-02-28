@@ -49,12 +49,14 @@ bun run dev
 | `bun run test:unit` | Unit tests |
 | `bun run tauri dev` | Desktop app (requires Rust) |
 
-## Desktop Builds
+## Desktop App
 
-Requires [Rust](https://rustup.rs/) and platform-specific prerequisites ([Tauri v2 guide](https://v2.tauri.app/start/prerequisites/)).
+Requires [Rust](https://rustup.rs/), the Tauri CLI, and platform-specific prerequisites ([Tauri v2 guide](https://v2.tauri.app/start/prerequisites/)).
 
 ```sh
-bun run tauri build                    # Current platform
+cargo install tauri-cli --version "^2"
+bun run tauri dev                      # Dev mode with hot reload
+bun run tauri build                    # Production build
 bun run tauri build --target universal-apple-darwin  # macOS universal
 ```
 
