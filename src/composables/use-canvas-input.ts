@@ -699,10 +699,15 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
       }
     }
 
+    if (d.type === 'resize') {
+      store.commitResize(d.nodeId, d.origRect)
+    }
+
     if (d.type === 'rotate') {
       const preview = store.state.rotationPreview
       if (preview) {
         store.updateNode(d.nodeId, { rotation: preview.angle })
+        store.commitRotation(d.nodeId, d.origRotation)
       }
       store.setRotationPreview(null)
     }

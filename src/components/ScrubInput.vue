@@ -20,6 +20,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   'update:modelValue': [value: number]
+  'commit': [value: number, previous: number]
 }>()
 
 const editing = ref(false)
@@ -36,6 +37,7 @@ function startScrub(e: PointerEvent) {
   scrubbing.value = true
   let startX = e.clientX
   let accumulated = props.modelValue
+  const valueBeforeScrub = props.modelValue
   document.body.style.cursor = 'ew-resize'
 
   stopMove = useEventListener(document, 'pointermove', (ev: PointerEvent) => {
@@ -53,6 +55,9 @@ function startScrub(e: PointerEvent) {
     document.body.style.cursor = ''
     stopMove?.()
     stopUp?.()
+    if (props.modelValue !== valueBeforeScrub) {
+      emit('commit', props.modelValue, valueBeforeScrub)
+    }
   })
 }
 
@@ -65,9 +70,13 @@ function startEdit() {
 
 function commitEdit(e: Event) {
   const val = +(e.target as HTMLInputElement).value
+  const previous = props.modelValue
   if (!Number.isNaN(val)) {
     const clamped = Math.min(props.max, Math.max(props.min, val))
     emit('update:modelValue', clamped)
+    if (clamped !== previous) {
+      emit('commit', clamped, previous)
+    }
   }
   editing.value = false
 }

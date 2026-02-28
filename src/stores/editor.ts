@@ -201,8 +201,21 @@ export function createEditorStore() {
   }
 
   function commitTextEdit(nodeId: string, text: string) {
+    const node = graph.getNode(nodeId)
+    const prevText = node?.text ?? ''
     graph.updateNode(nodeId, { text })
     state.editingTextId = null
+    undo.push({
+      label: 'Edit text',
+      forward: () => {
+        graph.updateNode(nodeId, { text })
+        requestRender()
+      },
+      inverse: () => {
+        graph.updateNode(nodeId, { text: prevText })
+        requestRender()
+      }
+    })
     requestRender()
   }
 
@@ -245,9 +258,49 @@ export function createEditorStore() {
     requestRender()
   }
 
+  function updateNodeWithUndo(id: string, changes: Partial<SceneNode>, label = 'Update') {
+    const node = graph.getNode(id)
+    if (!node) return
+    const previous: Partial<SceneNode> = {}
+    for (const key of Object.keys(changes) as (keyof SceneNode)[]) {
+      ;(previous as Record<string, unknown>)[key] = node[key]
+    }
+    graph.updateNode(id, changes)
+    runLayoutForNode(id)
+    undo.push({
+      label,
+      forward: () => {
+        graph.updateNode(id, changes)
+        runLayoutForNode(id)
+        requestRender()
+      },
+      inverse: () => {
+        graph.updateNode(id, previous)
+        runLayoutForNode(id)
+        requestRender()
+      }
+    })
+    requestRender()
+  }
+
   function setLayoutMode(id: string, mode: LayoutMode) {
     const node = graph.getNode(id)
     if (!node) return
+
+    const previous: Partial<SceneNode> = {
+      layoutMode: node.layoutMode,
+      itemSpacing: node.itemSpacing,
+      paddingTop: node.paddingTop,
+      paddingRight: node.paddingRight,
+      paddingBottom: node.paddingBottom,
+      paddingLeft: node.paddingLeft,
+      primaryAxisSizing: node.primaryAxisSizing,
+      counterAxisSizing: node.counterAxisSizing,
+      primaryAxisAlign: node.primaryAxisAlign,
+      counterAxisAlign: node.counterAxisAlign,
+      width: node.width,
+      height: node.height
+    }
 
     const updates: Partial<SceneNode> = { layoutMode: mode }
     if (mode !== 'NONE' && node.layoutMode === 'NONE') {
@@ -265,6 +318,27 @@ export function createEditorStore() {
     graph.updateNode(id, updates)
     if (mode !== 'NONE') computeLayout(graph, id)
     runLayoutForNode(id)
+
+    const finalState: Partial<SceneNode> = {}
+    const updated = graph.getNode(id)!
+    for (const key of Object.keys(previous) as (keyof SceneNode)[]) {
+      ;(finalState as Record<string, unknown>)[key] = updated[key]
+    }
+
+    undo.push({
+      label: mode === 'NONE' ? 'Remove auto layout' : 'Add auto layout',
+      forward: () => {
+        graph.updateNode(id, finalState)
+        if (mode !== 'NONE') computeLayout(graph, id)
+        runLayoutForNode(id)
+        requestRender()
+      },
+      inverse: () => {
+        graph.updateNode(id, previous)
+        runLayoutForNode(id)
+        requestRender()
+      }
+    })
     requestRender()
   }
 
@@ -272,12 +346,13 @@ export function createEditorStore() {
     const nodes = selectedNodes.value
     if (nodes.length === 0) return
 
-    // Find common parent
     const parentId = nodes[0].parentId ?? graph.rootId
     const sameParent = nodes.every((n) => (n.parentId ?? graph.rootId) === parentId)
     if (!sameParent) return
 
-    // Compute bounding box in absolute coords
+    const prevSelection = new Set(state.selectedIds)
+    const origPositions = nodes.map((n) => ({ id: n.id, x: n.x, y: n.y, parentId }))
+
     let minX = Infinity
     let minY = Infinity
     let maxX = -Infinity
@@ -290,7 +365,6 @@ export function createEditorStore() {
       maxY = Math.max(maxY, abs.y + n.height)
     }
 
-    // Position relative to parent
     const parentAbs =
       parentId === graph.rootId ? { x: 0, y: 0 } : graph.getAbsolutePosition(parentId)
 
@@ -307,15 +381,38 @@ export function createEditorStore() {
       counterAxisAlign: 'MIN',
       fills: [{ type: 'SOLID', color: { r: 1, g: 1, b: 1, a: 1 }, opacity: 1, visible: true }]
     })
+    const frameId = frame.id
 
-    // Reparent nodes into the new frame
     for (const n of nodes) {
-      graph.reparentNode(n.id, frame.id)
+      graph.reparentNode(n.id, frameId)
     }
 
-    computeLayout(graph, frame.id)
-    runLayoutForNode(frame.id)
-    state.selectedIds = new Set([frame.id])
+    computeLayout(graph, frameId)
+    runLayoutForNode(frameId)
+    state.selectedIds = new Set([frameId])
+
+    undo.push({
+      label: 'Wrap in auto layout',
+      forward: () => {
+        // Re-create frame and reparent
+        const f = graph.createNode('FRAME', parentId, { ...frame })
+        for (const n of origPositions) graph.reparentNode(n.id, f.id)
+        computeLayout(graph, f.id)
+        runLayoutForNode(f.id)
+        state.selectedIds = new Set([f.id])
+        requestRender()
+      },
+      inverse: () => {
+        // Move children back to original parent and delete frame
+        for (const orig of origPositions) {
+          graph.reparentNode(orig.id, orig.parentId)
+          graph.updateNode(orig.id, { x: orig.x, y: orig.y })
+        }
+        graph.deleteNode(frameId)
+        state.selectedIds = prevSelection
+        requestRender()
+      }
+    })
     requestRender()
   }
 
@@ -328,15 +425,30 @@ export function createEditorStore() {
     parentId?: string
   ): string {
     const fill = DEFAULT_FILLS[type] ?? DEFAULT_FILLS.RECTANGLE
-    const node = graph.createNode(type, parentId ?? graph.rootId, {
+    const pid = parentId ?? graph.rootId
+    const node = graph.createNode(type, pid, {
       x,
       y,
       width: w,
       height: h,
       fills: [{ ...fill }]
     })
+    const id = node.id
+    const snapshot = { ...node }
+    undo.push({
+      label: `Create ${type.toLowerCase()}`,
+      forward: () => {
+        graph.createNode(snapshot.type, pid, snapshot)
+        requestRender()
+      },
+      inverse: () => {
+        graph.deleteNode(id)
+        state.selectedIds.delete(id)
+        requestRender()
+      }
+    })
     requestRender()
-    return node.id
+    return id
   }
 
   function selectAll() {
@@ -345,20 +457,41 @@ export function createEditorStore() {
   }
 
   function duplicateSelected() {
+    const prevSelection = new Set(state.selectedIds)
     const newIds: string[] = []
+    const snapshots: Array<{ id: string; parentId: string; snapshot: SceneNode }> = []
+
     for (const id of state.selectedIds) {
       const src = graph.getNode(id)
       if (!src) continue
-      const node = graph.createNode(src.type, graph.rootId, {
+      const parentId = src.parentId ?? graph.rootId
+      const node = graph.createNode(src.type, parentId, {
         ...src,
         name: src.name + ' copy',
         x: src.x + 20,
         y: src.y + 20
       })
       newIds.push(node.id)
+      snapshots.push({ id: node.id, parentId, snapshot: { ...node } })
     }
+
     if (newIds.length > 0) {
       state.selectedIds = new Set(newIds)
+      undo.push({
+        label: 'Duplicate',
+        forward: () => {
+          for (const { snapshot, parentId } of snapshots) {
+            graph.createNode(snapshot.type, parentId, snapshot)
+          }
+          state.selectedIds = new Set(newIds)
+          requestRender()
+        },
+        inverse: () => {
+          for (const { id } of snapshots) graph.deleteNode(id)
+          state.selectedIds = prevSelection
+          requestRender()
+        }
+      })
       requestRender()
     }
   }
@@ -399,7 +532,9 @@ export function createEditorStore() {
     parentId?: string
   ) {
     const target = parentId ?? graph.rootId
+    const prevSelection = new Set(state.selectedIds)
     const newIds: string[] = []
+    const created: Array<{ id: string; parentId: string; snapshot: SceneNode }> = []
 
     function createTree(src: SceneNode & { children?: SceneNode[] }, pid: string, isTop: boolean) {
       const node = graph.createNode(src.type, pid, {
@@ -407,6 +542,7 @@ export function createEditorStore() {
         x: src.x + (isTop ? 20 : 0),
         y: src.y + (isTop ? 20 : 0)
       })
+      created.push({ id: node.id, parentId: pid, snapshot: { ...node } })
       if (isTop) newIds.push(node.id)
       if (src.children) {
         for (const child of src.children) {
@@ -420,26 +556,58 @@ export function createEditorStore() {
     }
     if (newIds.length > 0) {
       state.selectedIds = new Set(newIds)
+      undo.push({
+        label: 'Paste',
+        forward: () => {
+          for (const { snapshot, parentId: pid } of created) {
+            graph.createNode(snapshot.type, pid, snapshot)
+          }
+          state.selectedIds = new Set(newIds)
+          requestRender()
+        },
+        inverse: () => {
+          for (const { id } of [...created].reverse()) graph.deleteNode(id)
+          state.selectedIds = prevSelection
+          requestRender()
+        }
+      })
       requestRender()
     }
   }
 
   function deleteSelected() {
-    undo.beginBatch('Delete')
+    const entries: Array<{ id: string; parentId: string; snapshot: SceneNode; index: number }> = []
     for (const id of state.selectedIds) {
       const node = graph.getNode(id)
       if (!node) continue
-      const snapshot = { ...node }
       const parentId = node.parentId ?? graph.rootId
-      undo.apply({
-        label: 'Delete',
-        forward: () => graph.deleteNode(id),
-        inverse: () => {
-          graph.createNode(snapshot.type, parentId, snapshot)
-        }
-      })
+      const parent = graph.getNode(parentId)
+      const index = parent?.childIds.indexOf(id) ?? -1
+      entries.push({ id, parentId, snapshot: { ...node }, index })
     }
-    undo.commitBatch()
+    if (entries.length === 0) return
+
+    const prevSelection = new Set(state.selectedIds)
+    for (const { id } of entries) graph.deleteNode(id)
+
+    undo.push({
+      label: 'Delete',
+      forward: () => {
+        for (const { id } of entries) graph.deleteNode(id)
+        clearSelection()
+        requestRender()
+      },
+      inverse: () => {
+        for (const { snapshot, parentId, index } of [...entries].reverse()) {
+          graph.createNode(snapshot.type, parentId, snapshot)
+          if (index >= 0) {
+            graph.reorderChild(snapshot.id, parentId, index)
+          }
+        }
+        state.selectedIds = prevSelection
+        requestRender()
+      }
+    })
     clearSelection()
     requestRender()
   }
@@ -450,13 +618,82 @@ export function createEditorStore() {
       const n = graph.getNode(id)
       if (n) finals.set(id, { x: n.x, y: n.y })
     }
-    undo.apply({
+    undo.push({
       label: 'Move',
       forward: () => {
-        for (const [id, pos] of finals) graph.updateNode(id, pos)
+        for (const [id, pos] of finals) {
+          graph.updateNode(id, pos)
+          runLayoutForNode(id)
+        }
+        requestRender()
       },
       inverse: () => {
-        for (const [id, pos] of originals) graph.updateNode(id, pos)
+        for (const [id, pos] of originals) {
+          graph.updateNode(id, pos)
+          runLayoutForNode(id)
+        }
+        requestRender()
+      }
+    })
+  }
+
+  function commitResize(
+    nodeId: string,
+    origRect: { x: number; y: number; width: number; height: number }
+  ) {
+    const node = graph.getNode(nodeId)
+    if (!node) return
+    const finalRect = { x: node.x, y: node.y, width: node.width, height: node.height }
+    undo.push({
+      label: 'Resize',
+      forward: () => {
+        graph.updateNode(nodeId, finalRect)
+        runLayoutForNode(nodeId)
+        requestRender()
+      },
+      inverse: () => {
+        graph.updateNode(nodeId, origRect)
+        runLayoutForNode(nodeId)
+        requestRender()
+      }
+    })
+  }
+
+  function commitRotation(nodeId: string, origRotation: number) {
+    const node = graph.getNode(nodeId)
+    if (!node) return
+    const finalRotation = node.rotation
+    undo.push({
+      label: 'Rotate',
+      forward: () => {
+        graph.updateNode(nodeId, { rotation: finalRotation })
+        requestRender()
+      },
+      inverse: () => {
+        graph.updateNode(nodeId, { rotation: origRotation })
+        requestRender()
+      }
+    })
+  }
+
+  function commitNodeUpdate(nodeId: string, previous: Partial<SceneNode>, label = 'Update') {
+    const node = graph.getNode(nodeId)
+    if (!node) return
+    const current: Partial<SceneNode> = {}
+    for (const key of Object.keys(previous) as (keyof SceneNode)[]) {
+      ;(current as Record<string, unknown>)[key] = node[key]
+    }
+    undo.push({
+      label,
+      forward: () => {
+        graph.updateNode(nodeId, current)
+        runLayoutForNode(nodeId)
+        requestRender()
+      },
+      inverse: () => {
+        graph.updateNode(nodeId, previous)
+        runLayoutForNode(nodeId)
+        requestRender()
       }
     })
   }
@@ -556,6 +793,10 @@ export function createEditorStore() {
     pasteFromHTML,
     deleteSelected,
     commitMove,
+    commitResize,
+    commitRotation,
+    commitNodeUpdate,
+    updateNodeWithUndo,
     undoAction,
     redoAction,
     screenToCanvas,

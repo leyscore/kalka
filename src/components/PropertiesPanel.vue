@@ -6,7 +6,7 @@ import ColorPicker from './ColorPicker.vue'
 import ScrubInput from './ScrubInput.vue'
 import { useEditorStore } from '../stores/editor'
 
-import type { Color, Fill, Stroke, LayoutSizing, LayoutAlign, LayoutCounterAlign } from '../engine/scene-graph'
+import type { Color, Fill, Stroke, LayoutSizing, LayoutAlign, LayoutCounterAlign, SceneNode } from '../engine/scene-graph'
 
 const store = useEditorStore()
 
@@ -96,6 +96,16 @@ function setUniformPadding(v: number) {
   })
 }
 
+function commitUniformPadding(_value: number, previous: number) {
+  if (!node.value) return
+  store.commitNodeUpdate(node.value.id, {
+    paddingTop: previous,
+    paddingRight: previous,
+    paddingBottom: previous,
+    paddingLeft: previous
+  } as unknown as Partial<SceneNode>, 'Change padding')
+}
+
 const ALIGN_GRID: Array<{ primary: LayoutAlign; counter: LayoutCounterAlign }> = [
   { primary: 'MIN', counter: 'MIN' },
   { primary: 'CENTER', counter: 'MIN' },
@@ -110,10 +120,10 @@ const ALIGN_GRID: Array<{ primary: LayoutAlign; counter: LayoutCounterAlign }> =
 
 function setAlignment(primary: LayoutAlign, counter: LayoutCounterAlign) {
   if (!node.value) return
-  store.updateNode(node.value.id, {
+  store.updateNodeWithUndo(node.value.id, {
     primaryAxisAlign: primary,
     counterAxisAlign: counter
-  })
+  }, 'Change alignment')
 }
 
 function updateProp(key: string, value: number | string) {
@@ -126,11 +136,21 @@ function updateProp(key: string, value: number | string) {
   }
 }
 
+function commitProp(key: string, _value: number | string, previous: number | string) {
+  if (multiCount.value > 1) {
+    for (const n of store.selectedNodes.value) {
+      store.commitNodeUpdate(n.id, { [key]: previous } as Partial<SceneNode>, `Change ${key}`)
+    }
+  } else if (node.value) {
+    store.commitNodeUpdate(node.value.id, { [key]: previous } as Partial<SceneNode>, `Change ${key}`)
+  }
+}
+
 function updateFillColor(index: number, color: Color) {
   if (!node.value) return
   const fills = [...node.value.fills]
   fills[index] = { ...fills[index], color }
-  store.updateNode(node.value.id, { fills })
+  store.updateNodeWithUndo(node.value.id, { fills }, "Change fill")
 }
 
 function addFill() {
@@ -141,20 +161,20 @@ function addFill() {
     opacity: 1,
     visible: true
   }
-  store.updateNode(node.value.id, { fills: [...node.value.fills, fill] })
+  store.updateNodeWithUndo(node.value.id, { fills: [...node.value.fills, fill] }, "Add fill")
 }
 
 function removeFill(index: number) {
   if (!node.value) return
   const fills = node.value.fills.filter((_, i) => i !== index)
-  store.updateNode(node.value.id, { fills })
+  store.updateNodeWithUndo(node.value.id, { fills }, "Change fill")
 }
 
 function toggleFillVisibility(index: number) {
   if (!node.value) return
   const fills = [...node.value.fills]
   fills[index] = { ...fills[index], visible: !fills[index].visible }
-  store.updateNode(node.value.id, { fills })
+  store.updateNodeWithUndo(node.value.id, { fills }, "Change fill")
 }
 
 function addStroke() {
@@ -166,27 +186,27 @@ function addStroke() {
     visible: true,
     align: 'CENTER'
   }
-  store.updateNode(node.value.id, { strokes: [...node.value.strokes, stroke] })
+  store.updateNodeWithUndo(node.value.id, { strokes: [...node.value.strokes, stroke] }, "Add stroke")
 }
 
 function updateStrokeColor(index: number, color: Color) {
   if (!node.value) return
   const strokes = [...node.value.strokes]
   strokes[index] = { ...strokes[index], color }
-  store.updateNode(node.value.id, { strokes })
+  store.updateNodeWithUndo(node.value.id, { strokes }, "Change stroke")
 }
 
 function updateStrokeWeight(index: number, weight: number) {
   if (!node.value) return
   const strokes = [...node.value.strokes]
   strokes[index] = { ...strokes[index], weight }
-  store.updateNode(node.value.id, { strokes })
+  store.updateNodeWithUndo(node.value.id, { strokes }, "Change stroke")
 }
 
 function removeStroke(index: number) {
   if (!node.value) return
   const strokes = node.value.strokes.filter((_, i) => i !== index)
-  store.updateNode(node.value.id, { strokes })
+  store.updateNodeWithUndo(node.value.id, { strokes }, "Change stroke")
 }
 
 function colorHex(c: Color) {
@@ -243,15 +263,15 @@ function colorHex(c: Color) {
       <div class="border-b border-border px-3 py-2">
         <label class="mb-1.5 block text-[11px] text-muted">Position</label>
         <div class="flex gap-1.5">
-          <ScrubInput icon="X" :model-value="Math.round(node.x)" @update:model-value="updateProp('x', $event)" />
-          <ScrubInput icon="Y" :model-value="Math.round(node.y)" @update:model-value="updateProp('y', $event)" />
+          <ScrubInput icon="X" :model-value="Math.round(node.x)" @update:model-value="updateProp('x', $event)" @commit="(v: number, p: number) => commitProp('x', v, p)" />
+          <ScrubInput icon="Y" :model-value="Math.round(node.y)" @update:model-value="updateProp('y', $event)" @commit="(v: number, p: number) => commitProp('y', v, p)" />
         </div>
       </div>
 
       <!-- Rotation -->
       <div class="border-b border-border px-3 py-2">
         <div class="flex gap-1.5">
-          <ScrubInput icon="R" suffix="°" :model-value="Math.round(node.rotation)" :min="-360" :max="360" @update:model-value="updateProp('rotation', $event)" />
+          <ScrubInput icon="R" suffix="°" :model-value="Math.round(node.rotation)" :min="-360" :max="360" @update:model-value="updateProp('rotation', $event)" @commit="(v: number, p: number) => commitProp('rotation', v, p)" />
         </div>
       </div>
 
@@ -261,7 +281,7 @@ function colorHex(c: Color) {
         <div class="flex gap-1.5">
           <!-- Width -->
           <div ref="widthDimRef" class="relative flex min-w-0 flex-1 items-center gap-1">
-            <ScrubInput icon="W" :model-value="Math.round(node.width)" :min="0" @update:model-value="updateProp('width', $event)" />
+            <ScrubInput icon="W" :model-value="Math.round(node.width)" :min="0" @update:model-value="updateProp('width', $event)" @commit="(v: number, p: number) => commitProp('width', v, p)" />
             <button
               v-if="node.layoutMode !== 'NONE' || isInAutoLayout"
               class="cursor-pointer whitespace-nowrap rounded border-none bg-transparent px-1 py-px text-[10px] text-muted hover:bg-hover hover:text-surface"
@@ -289,7 +309,7 @@ function colorHex(c: Color) {
           </div>
           <!-- Height -->
           <div ref="heightDimRef" class="relative flex min-w-0 flex-1 items-center gap-1">
-            <ScrubInput icon="H" :model-value="Math.round(node.height)" :min="0" @update:model-value="updateProp('height', $event)" />
+            <ScrubInput icon="H" :model-value="Math.round(node.height)" :min="0" @update:model-value="updateProp('height', $event)" @commit="(v: number, p: number) => commitProp('height', v, p)" />
             <button
               v-if="node.layoutMode !== 'NONE' || isInAutoLayout"
               class="cursor-pointer whitespace-nowrap rounded border-none bg-transparent px-1 py-px text-[10px] text-muted hover:bg-hover hover:text-surface"
@@ -318,7 +338,7 @@ function colorHex(c: Color) {
         </div>
         <!-- Corner radius -->
         <div class="mt-1.5 flex gap-1.5">
-          <ScrubInput icon="↻" :model-value="node.cornerRadius" :min="0" @update:model-value="updateProp('cornerRadius', $event)" />
+          <ScrubInput icon="↻" :model-value="node.cornerRadius" :min="0" @update:model-value="updateProp('cornerRadius', $event)" @commit="(v: number, p: number) => commitProp('cornerRadius', v, p)" />
         </div>
       </div>
 
@@ -392,7 +412,7 @@ function colorHex(c: Color) {
                 />
               </button>
             </div>
-            <ScrubInput :model-value="node.itemSpacing" :min="0" @update:model-value="updateProp('itemSpacing', $event)">
+            <ScrubInput :model-value="node.itemSpacing" :min="0" @update:model-value="updateProp('itemSpacing', $event)" @commit="(v: number, p: number) => commitProp('itemSpacing', v, p)">
               <template #icon>
                 <svg width="14" height="14" viewBox="0 0 14 14"><rect x="0" y="1" width="4" height="12" rx="0.5" fill="currentColor" opacity="0.4" /><rect x="5" y="5" width="4" height="4" rx="0.5" fill="currentColor" /><rect x="10" y="1" width="4" height="12" rx="0.5" fill="currentColor" opacity="0.4" /></svg>
               </template>
@@ -415,7 +435,7 @@ function colorHex(c: Color) {
               </div>
             </template>
             <template v-else>
-              <ScrubInput :model-value="node.paddingTop" :min="0" @update:model-value="setUniformPadding($event)">
+              <ScrubInput :model-value="node.paddingTop" :min="0" @update:model-value="setUniformPadding($event)" @commit="commitUniformPadding">
                 <template #icon>
                   <svg width="14" height="14" viewBox="0 0 14 14"><rect x="0" y="0" width="14" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1" /><rect x="3" y="3" width="8" height="8" rx="1" fill="currentColor" opacity="0.3" /></svg>
                 </template>
@@ -439,7 +459,7 @@ function colorHex(c: Color) {
       <div class="border-b border-border px-3 py-2">
         <label class="mb-1.5 block text-[11px] text-muted">Appearance</label>
         <div class="flex gap-1.5">
-          <ScrubInput icon="⊘" suffix="%" :model-value="Math.round(node.opacity * 100)" :min="0" :max="100" @update:model-value="updateProp('opacity', $event / 100)" />
+          <ScrubInput icon="⊘" suffix="%" :model-value="Math.round(node.opacity * 100)" :min="0" :max="100" @update:model-value="updateProp('opacity', $event / 100)" @commit="(v: number, p: number) => commitProp('opacity', v / 100, p / 100)" />
         </div>
       </div>
 

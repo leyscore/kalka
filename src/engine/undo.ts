@@ -22,6 +22,15 @@ export class UndoManager {
     }
   }
 
+  push(entry: UndoEntry): void {
+    if (this.batchEntries) {
+      this.batchEntries.push(entry)
+    } else {
+      this.undoStack.push(entry)
+      this.redoStack = []
+    }
+  }
+
   undo(): string | null {
     const entry = this.undoStack.pop()
     if (!entry) return null
