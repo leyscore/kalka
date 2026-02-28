@@ -76,6 +76,8 @@ const TOOL_TO_NODE: Partial<Record<Tool, NodeType>> = {
   RECTANGLE: 'RECTANGLE',
   ELLIPSE: 'ELLIPSE',
   LINE: 'LINE',
+  POLYGON: 'POLYGON',
+  STAR: 'STAR',
   TEXT: 'TEXT'
 }
 
