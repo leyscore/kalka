@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { useEventListener } from '@vueuse/core'
 import { TreeRoot, TreeItem } from 'reka-ui'
 
@@ -11,6 +11,7 @@ import IconPenTool from '~icons/lucide/pen-tool'
 import IconSquare from '~icons/lucide/square'
 import IconType from '~icons/lucide/type'
 
+import PagesPanel from './PagesPanel.vue'
 import { useEditorStore } from '../stores/editor'
 
 const store = useEditorStore()
@@ -59,11 +60,6 @@ watch(
   }
 )
 
-const pages = computed(() => {
-  void store.state.renderVersion
-  return store.graph.getPages()
-})
-
 const expanded = ref<string[]>([])
 
 function onSelect(ev: CustomEvent) {
@@ -73,13 +69,6 @@ function onSelect(ev: CustomEvent) {
     store.select([node.id], true)
   } else {
     store.select([node.id])
-  }
-}
-
-function renamePage(pageId: string, currentName: string) {
-  const name = prompt('Rename page', currentName)
-  if (name && name !== currentName) {
-    store.renamePage(pageId, name)
   }
 }
 
@@ -172,7 +161,7 @@ function updateDropTarget(ev: PointerEvent) {
     }
 
     if (mouseY <= rowMid) {
-      const parentId = rowNode.parentId ?? store.graph.rootId
+      const parentId = rowNode.parentId ?? store.state.currentPageId
       const parent = store.graph.getNode(parentId)
       if (parent) {
         const idx = parent.childIds.indexOf(rowId)
@@ -183,7 +172,7 @@ function updateDropTarget(ev: PointerEvent) {
     }
 
     if (i === rows.length - 1 && mouseY > rowMid) {
-      const parentId = rowNode.parentId ?? store.graph.rootId
+      const parentId = rowNode.parentId ?? store.state.currentPageId
       const parent = store.graph.getNode(parentId)
       if (parent) {
         const idx = parent.childIds.indexOf(rowId)
@@ -213,30 +202,7 @@ function updateDropTarget(ev: PointerEvent) {
 
 <template>
   <aside class="flex w-60 flex-col overflow-y-auto border-r border-border bg-panel">
-    <!-- Pages -->
-    <div class="shrink-0 border-b border-border">
-      <div class="flex items-center justify-between px-3 py-1.5">
-        <span class="text-[11px] uppercase tracking-wider text-muted">Pages</span>
-        <button
-          class="cursor-pointer rounded border-none bg-transparent px-1 text-base leading-none text-muted hover:bg-hover hover:text-surface"
-          title="Add page"
-          @click="store.addPage()"
-        >+</button>
-      </div>
-      <div class="px-1 pb-1">
-        <button
-          v-for="page in pages"
-          :key="page.id"
-          class="flex w-full cursor-pointer items-center gap-1.5 rounded border-none px-2 py-1 text-left text-xs"
-          :class="page.id === store.state.currentPageId ? 'bg-hover text-surface' : 'bg-transparent text-muted hover:bg-hover hover:text-surface'"
-          @click="store.switchPage(page.id)"
-          @dblclick="renamePage(page.id, page.name)"
-        >
-          <icon-lucide-file class="size-3 shrink-0" />
-          {{ page.name }}
-        </button>
-      </div>
-    </div>
+    <PagesPanel />
     <header class="shrink-0 px-3 py-2 text-[11px] uppercase tracking-wider text-muted">Layers</header>
     <div ref="listRef" class="relative flex-1 overflow-y-auto px-1">
       <TreeRoot

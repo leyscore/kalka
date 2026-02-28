@@ -42,6 +42,7 @@ declare module 'vue' {
     LayersPanel: typeof import('./src/components/LayersPanel.vue')['default']
     LayoutSection: typeof import('./src/components/properties/LayoutSection.vue')['default']
     PageSection: typeof import('./src/components/properties/PageSection.vue')['default']
+    PagesPanel: typeof import('./src/components/PagesPanel.vue')['default']
     PositionSection: typeof import('./src/components/properties/PositionSection.vue')['default']
     PropertiesPanel: typeof import('./src/components/PropertiesPanel.vue')['default']
     ScrubInput: typeof import('./src/components/ScrubInput.vue')['default']
