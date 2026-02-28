@@ -44,13 +44,14 @@ type TextAlign = 'LEFT' | 'CENTER' | 'RIGHT'
 
 async function openFontPicker() {
   fontPickerOpen.value = true
-  fontSearch.value = node.value.fontFamily
+  fontSearch.value = ''
   if (fontFamilies.value.length === 0) {
     fontFamilies.value = await listFamilies()
   }
   requestAnimationFrame(() => {
     searchInputRef.value?.focus()
-    searchInputRef.value?.select()
+    const active = document.querySelector('[data-active-font]')
+    active?.scrollIntoView({ block: 'center' })
   })
 }
 
@@ -114,6 +115,7 @@ onMounted(async () => {
             :key="family"
             class="flex w-full cursor-pointer items-center gap-2 border-none bg-transparent px-2 py-1.5 text-left text-xs hover:bg-hover"
             :class="family === node.fontFamily ? 'text-accent' : 'text-surface'"
+            :data-active-font="family === node.fontFamily ? '' : undefined"
             :style="{ fontFamily: family }"
             @click="selectFamily(family)"
           >
