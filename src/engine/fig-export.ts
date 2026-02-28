@@ -241,7 +241,11 @@ export async function exportFigFile(graph: SceneGraph): Promise<Uint8Array> {
       visible: true,
       opacity: 1,
       phase: 'CREATED',
-      transform: { m00: 1, m01: 0, m02: 0, m10: 0, m11: 1, m12: 0 }
+      transform: { m00: 1, m01: 0, m02: 0, m10: 0, m11: 1, m12: 0 },
+      strokeWeight: 1,
+      strokeAlign: 'CENTER',
+      strokeJoin: 'MITER',
+      documentColorProfile: 'SRGB'
     }
   ]
 
@@ -261,7 +265,13 @@ export async function exportFigFile(graph: SceneGraph): Promise<Uint8Array> {
       visible: true,
       opacity: 1,
       phase: 'CREATED',
-      transform: { m00: 1, m01: 0, m02: 0, m10: 0, m11: 1, m12: 0 }
+      transform: { m00: 1, m01: 0, m02: 0, m10: 0, m11: 1, m12: 0 },
+      strokeWeight: 1,
+      strokeAlign: 'CENTER',
+      strokeJoin: 'MITER',
+      backgroundOpacity: 1,
+      backgroundColor: { r: 0.96, g: 0.96, b: 0.96, a: 1 },
+      backgroundEnabled: true
     })
 
     const children = graph.getChildren(page.id)
@@ -290,8 +300,13 @@ export async function exportFigFile(graph: SceneGraph): Promise<Uint8Array> {
     createdAt: new Date().toISOString()
   })
 
+  const THUMBNAIL_1X1 = Uint8Array.from(atob(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=='
+  ), (c) => c.charCodeAt(0))
+
   return zipSync({
-    'canvas.fig': canvasData,
+    'canvas.fig': [canvasData, { level: 0 }],
+    'thumbnail.png': [THUMBNAIL_1X1, { level: 0 }],
     'meta.json': new TextEncoder().encode(meta)
   })
 }
