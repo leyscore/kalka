@@ -217,7 +217,7 @@ export class SkiaRenderer {
     // Section titles (screen coordinates, zoom-independent)
     canvas.save()
     canvas.scale(this.dpr, this.dpr)
-    this.drawSectionTitles(canvas, graph)
+    this.drawSectionTitles(canvas, graph, selectedIds)
     canvas.restore()
 
     // UI overlay layer (screen coordinates, zoom-independent)
@@ -773,7 +773,7 @@ export class SkiaRenderer {
 
   }
 
-  private drawSectionTitles(canvas: Canvas, graph: SceneGraph): void {
+  private drawSectionTitles(canvas: Canvas, graph: SceneGraph, selectedIds: Set<string>): void {
     if (!this.sectionTitleFont) return
 
     const pageNode = graph.getNode(this.pageId ?? graph.rootId)

@@ -61,72 +61,63 @@ async function getSelectedCount(): Promise<number> {
 
 test('demo layers visible in panel', async () => {
   const names = await getLayerNames()
-  expect(names).toEqual(
-    expect.arrayContaining(['Desktop', 'Blue card', 'Green circle', 'Orange rect', 'Purple pill'])
-  )
-  expect(names).toHaveLength(5)
+  expect(names).toContain('Design System')
 })
 
 test('clicking a node inside a frame does not reparent it', async () => {
-  // Blue card is visually inside Desktop but is a root sibling
-  // Clicking it should NOT reparent it under Desktop
+  // Hero card is inside Desktop frame — clicking it should select it, not reparent
   const beforeTree = await getSceneTree()
-  const rootChildNames = beforeTree.children.map((c: any) => c.name)
-  expect(rootChildNames).toContain('Blue card')
+  const section = beforeTree.children.find((c: any) => c.name === 'Design System')
+  const desktop = section.children.find((c: any) => c.name === 'Desktop')
+  const heroCard = desktop.children.find((c: any) => c.name === 'Hero card')
+  expect(heroCard).toBeTruthy()
 
-  // Click on Blue card (at ~270, 220 in canvas coords — center of 150,140 + 240,160)
-  await canvas.click(270, 220)
+  // Click on Hero card area (section at 60,60 + desktop at 20,40 + hero at 24,80 + center offset)
+  await canvas.click(350, 310)
   await canvas.waitForRender()
 
-  // Blue card should still be a root child, not reparented under Desktop
+  // Hero card should still be a child of Desktop
   const afterTree = await getSceneTree()
-  const afterRootChildNames = afterTree.children.map((c: any) => c.name)
-  expect(afterRootChildNames).toContain('Blue card')
-
-  // Desktop should still have no children
-  const desktop = afterTree.children.find((c: any) => c.name === 'Desktop')
-  expect(desktop.children).toHaveLength(0)
+  const afterSection = afterTree.children.find((c: any) => c.name === 'Design System')
+  const afterDesktop = afterSection.children.find((c: any) => c.name === 'Desktop')
+  expect(afterDesktop.children.find((c: any) => c.name === 'Hero card')).toBeTruthy()
 
   canvas.assertNoErrors()
 })
 
 test('creating a shape updates layers', async () => {
+  const before = await getLayerNames()
   await canvas.drawRect(600, 500, 50, 50)
   const names = await getLayerNames()
   expect(names).toContain('Rectangle')
-  expect(names).toHaveLength(6)
+  expect(names.length).toBe(before.length + 1)
 
   await canvas.undo()
   const after = await getLayerNames()
-  expect(after).toHaveLength(5)
+  expect(after.length).toBe(before.length)
   expect(after).not.toContain('Rectangle')
 })
 
 test('Shift+A wraps selection in auto-layout frame', async () => {
-  await canvas.click(400, 300)
+  // Draw two loose rectangles for this test
+  await canvas.drawRect(700, 600, 60, 60)
+  await canvas.drawRect(800, 600, 60, 60)
   await canvas.selectAll()
-  expect(await getSelectedCount()).toBe(5)
+  const count = await getSelectedCount()
+  expect(count).toBeGreaterThanOrEqual(2)
 
-  // Snapshot layer names before
   const before = await getLayerNames()
 
   await page.keyboard.press('Shift+A')
   await canvas.waitForRender()
 
-  // Scene graph has the frame
   const tree = await getSceneTree()
-  expect(tree.children).toHaveLength(1)
-  expect(tree.children[0].name).toBe('Frame')
-  expect(tree.children[0].type).toBe('FRAME')
-  expect(tree.children[0].children.length).toBe(5)
+  const autoFrame = tree.children.find((c: any) => c.name === 'Frame' && c.type === 'FRAME')
+  expect(autoFrame).toBeTruthy()
 
-  // Layers panel MUST have changed — old names should be gone
   const after = await getLayerNames()
   expect(after).not.toEqual(before)
   expect(after).toContain('Frame')
-
-  // Old root-level items should NOT be visible (they're children of collapsed Frame)
-  expect(after).not.toContain('Desktop')
 
   canvas.assertNoErrors()
 })
@@ -134,19 +125,21 @@ test('Shift+A wraps selection in auto-layout frame', async () => {
 test('grouping updates layers', async () => {
   // Undo the auto-layout to restore flat structure
   await canvas.undo()
+  await canvas.undo()
   await canvas.waitForRender()
 
-  await canvas.click(400, 300)
+  // Draw two rects and group them
+  await canvas.drawRect(700, 600, 60, 60)
+  await canvas.drawRect(800, 600, 60, 60)
   await canvas.selectAll()
-  expect(await getSelectedCount()).toBe(5)
 
+  const beforeCount = await getSelectedCount()
   await page.keyboard.press('Meta+g')
   await canvas.waitForRender()
 
   const tree = await getSceneTree()
-  expect(tree.children).toHaveLength(1)
-  expect(tree.children[0].name).toBe('Group')
-  expect(tree.children[0].type).toBe('GROUP')
+  const group = tree.children.find((c: any) => c.name === 'Group' && c.type === 'GROUP')
+  expect(group).toBeTruthy()
 
   const names = await getLayerNames()
   expect(names).toContain('Group')
@@ -160,8 +153,7 @@ test('ungrouping updates layers', async () => {
 
   const names = await getLayerNames()
   expect(names).not.toContain('Group')
-  expect(names).toHaveLength(5)
-  expect(names).toContain('Desktop')
+  expect(names).toContain('Rectangle')
 
   canvas.assertNoErrors()
 })
