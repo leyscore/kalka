@@ -43,12 +43,14 @@ export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, store: Edito
 
     renderer = new SkiaRenderer(ck, surface)
     store.setCanvasKit(ck, renderer)
-    renderer.loadFonts().then(() => render())
-    render()
+    renderer.loadFonts().then(() => renderNow())
+    renderNow()
     canvas.dataset.ready = '1'
   }
 
-  function render() {
+  let rafId = 0
+
+  function renderNow() {
     if (!renderer) return
     renderer.dpr = window.devicePixelRatio || 1
     renderer.panX = store.state.panX
@@ -75,12 +77,21 @@ export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, store: Edito
     })
   }
 
+  function render() {
+    if (rafId) return
+    rafId = requestAnimationFrame(() => {
+      rafId = 0
+      renderNow()
+    })
+  }
+
   onMounted(() => {
     init()
   })
 
   onUnmounted(() => {
     destroyed = true
+    cancelAnimationFrame(rafId)
     renderer?.destroy()
   })
 
