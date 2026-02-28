@@ -14,7 +14,7 @@ Full Figma-compatible shortcut map. ✅ = implemented.
 | <kbd>K</kbd> | Scale | |
 | <kbd>H</kbd> | Hand | ✅ |
 | <kbd>F</kbd> | Frame | ✅ |
-| <kbd>S</kbd> | Section / Slice | |
+| <kbd>S</kbd> | Section | ✅ |
 | <kbd>R</kbd> | Rectangle | ✅ |
 | <kbd>O</kbd> | Ellipse | ✅ |
 | <kbd>L</kbd> | Line | ✅ |
@@ -32,7 +32,8 @@ Full Figma-compatible shortcut map. ✅ = implemented.
 | <kbd>⌘</kbd><kbd>N</kbd> | New Window | |
 | <kbd>⌘</kbd><kbd>O</kbd> | Open File | ✅ |
 | <kbd>⌘</kbd><kbd>W</kbd> | Close Tab | |
-| <kbd>⌘</kbd><kbd>S</kbd> | Save | |
+| <kbd>⌘</kbd><kbd>S</kbd> | Save | ✅ |
+| <kbd>⇧</kbd><kbd>⌘</kbd><kbd>S</kbd> | Save As | ✅ |
 | <kbd>⇧</kbd><kbd>⌘</kbd><kbd>E</kbd> | Export… | |
 
 ## Edit

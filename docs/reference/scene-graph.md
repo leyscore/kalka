@@ -12,11 +12,15 @@ interface SceneGraph {
   getNode(id: string): Node
   getChildren(id: string): Node[]
   getParent(id: string): Node | null
+  getPages(): Node[]
 
   createNode(type: NodeType, parent: string, props: Partial<NodeChange>): Node
   updateNode(id: string, changes: Partial<NodeChange>): void
   deleteNode(id: string): void
   moveNode(id: string, newParent: string, position: string): void
+  addPage(name: string): Node
+  deletePage(id: string): void
+  renamePage(id: string, name: string): void
 
   findByType(type: NodeType): Node[]
   findByName(pattern: string): Node[]
@@ -24,6 +28,18 @@ interface SceneGraph {
   getNodesInRect(rect: Rect, canvas: string): Node[]
 }
 ```
+
+## Pages
+
+Documents support multiple pages (CANVAS nodes as direct children of the DOCUMENT root). Each page has its own child tree and independent viewport state (panX, panY, zoom, pageColor). The editor tracks `currentPageId` and renders only the active page's children.
+
+## Sections
+
+SECTION nodes are top-level organizational containers (direct children of CANVAS only). They cannot nest inside frames or groups. Creating a section auto-adopts overlapping siblings. Sections display a title pill with luminance-adaptive text color.
+
+## Hover State
+
+The editor state tracks `hoveredNodeId` — the node currently under the cursor. The renderer draws a shape-aware hover outline (following actual geometry for ellipses, rounded rects, vectors) for visual feedback before selection.
 
 ## Undo/Redo
 
@@ -67,6 +83,14 @@ Given a point in canvas coordinates, the scene graph returns the topmost visible
 4. Return the first match
 
 For marquee selection, `getNodesInRect` returns all nodes whose bounds intersect the given rectangle.
+
+## Extended Fill Types
+
+Fills support six types: SOLID, GRADIENT_LINEAR, GRADIENT_RADIAL, GRADIENT_ANGULAR, GRADIENT_DIAMOND, and IMAGE. Gradient fills carry `gradientStops` (color + position pairs) and a `gradientTransform` (2×3 matrix). Image fills reference blob data via `imageHash` with scale modes (FILL, FIT, CROP, TILE).
+
+## Extended Stroke Properties
+
+Strokes support `cap` (NONE, ROUND, SQUARE, ARROW_LINES, ARROW_EQUILATERAL), `join` (MITER, BEVEL, ROUND), and `dashPattern` (array of dash/gap lengths) in addition to the base color, weight, opacity, visible, and align properties.
 
 ## Coordinate System
 

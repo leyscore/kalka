@@ -1,8 +1,8 @@
 # Features
 
-## Figma .fig File Import
+## Figma .fig File Import & Export
 
-Open native Figma files directly. The Kiwi binary codec decodes the full 194-definition schema including NodeChange messages with ~390 fields. The pipeline: parse header → decompress Zstd → decode Kiwi schema → extract NodeChange[] → build scene graph.
+Open and save native Figma files directly. Import decodes the full 194-definition Kiwi schema including NodeChange messages with ~390 fields. Export encodes the scene graph back to Kiwi binary with Zstd compression and thumbnail generation. Save (<kbd>⌘</kbd><kbd>S</kbd>) and Save As (<kbd>⇧</kbd><kbd>⌘</kbd><kbd>S</kbd>) use native OS dialogs on the desktop app. The import/export pipeline supports round-trip fidelity.
 
 ## Figma Clipboard
 
@@ -41,9 +41,9 @@ Edge and center snapping with red guide lines when nodes align. Rotation-aware �
 
 Rulers at the top and left edges show coordinate scales. When you select a node, rulers highlight its position with a translucent band and show coordinate badges at the start/end points.
 
-## Color Picker
+## Color Picker & Fill Types
 
-HSV color selection with hue slider, alpha slider, hex input, and opacity control. Connected to fill and stroke sections in the properties panel.
+HSV color selection with hue slider, alpha slider, hex input, and opacity control. The fill type picker supports solid colors, gradients (linear, radial, angular, diamond) with editable gradient stops, and image fills. Gradient transforms position the gradient within the shape. Connected to fill and stroke sections in the properties panel.
 
 ## Layers Panel
 
@@ -54,19 +54,42 @@ Tree view of the document hierarchy using Reka UI Tree component. Expand/collaps
 Context-sensitive panel with sections:
 
 - **Appearance** — size, position, rotation, opacity, corner radius, visibility
-- **Fill** — color with hex input, opacity, visibility toggle
-- **Stroke** — color, weight, opacity
+- **Fill** — solid/gradient/image type picker, gradient stop editor, hex input, opacity
+- **Stroke** — color, weight, opacity, cap, join, dash pattern
 - **Typography** — font family, weight, size, alignment
 - **Layout** — auto-layout controls when enabled
 - **Position** — alignment buttons, rotation, flip
+- **Page** — canvas background color (shown when no nodes selected)
 
 ## Group/Ungroup
 
 ⌘G groups selected nodes. ⇧⌘G ungroups. Nodes are sorted by visual position when grouping to preserve reading order.
 
+## Sections
+
+Sections (<kbd>S</kbd>) are top-level organizational containers on the canvas. Each section displays a title pill with the section name. Title text color automatically inverts based on the pill's background luminance for readability. Creating a section auto-adopts overlapping sibling nodes. Frame name labels are shown for direct children of sections.
+
+## Multi-Page Documents
+
+Documents support multiple pages like Figma. The pages panel lets you add, delete, and rename pages. Each page maintains independent viewport state (pan, zoom, background color). Double-click a page name to rename inline.
+
+## Hover Highlight
+
+Nodes highlight on hover with a shape-aware outline that follows the actual geometry — ellipses get elliptical outlines, rounded rectangles get rounded outlines, vectors get path outlines. This provides visual feedback before clicking to select.
+
+## Advanced Rendering
+
+The CanvasKit renderer supports full tier 1 visual features:
+
+- **Gradient fills** — linear, radial, angular, diamond with gradient stops and transforms
+- **Image fills** — decoded from blob data with scale modes (fill, fit, crop, tile)
+- **Effects** — drop shadow, inner shadow, layer blur, background blur, foreground blur
+- **Stroke properties** — cap (none, round, square, arrow), join (miter, bevel, round), dash patterns
+- **Arc data** — partial ellipses with start/end angle and inner radius (donuts)
+
 ## Desktop App
 
-Tauri v2 shell (~5MB vs Electron's ~100MB). Native macOS menu bar with File/Edit/View/Window menus. Menu events are wired to the Vue frontend. Developer Tools accessible via ⌘⌥I.
+Tauri v2 shell (~5MB vs Electron's ~100MB). Native menu bar with File/Edit/View/Object/Window/Help menus on all platforms. macOS gets an app-level submenu. Native Save/Open dialogs via Tauri plugin-dialog. Zstd compression offloaded to Rust for .fig export performance. Developer Tools accessible via <kbd>⌘</kbd><kbd>⌥</kbd><kbd>I</kbd>.
 
 ## ScrubInput
 

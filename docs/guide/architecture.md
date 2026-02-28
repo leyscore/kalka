@@ -25,7 +25,7 @@
 │  │                                                            │  │
 │  │  ┌──────────────────────────────────────────────────────┐ │  │
 │  │  │              File Format Layer                        │ │  │
-│  │  │  .openpencil (Kiwi) ── .fig import ── .svg export    │ │  │
+│  │  │  .fig import/export ── Kiwi codec ── .svg (planned)  │ │  │
 │  │  └──────────────────────────────────────────────────────┘ │  │
 │  └────────────────────────────────────────────────────────────┘  │
 │                                                                  │
@@ -37,10 +37,10 @@
 
 The UI follows Figma's UI3 layout — toolbar at the bottom, navigation on the left, properties on the right:
 
-- **Navigation panel (left)** — Layers tree, asset library (planned), page tabs (planned)
+- **Navigation panel (left)** — Layers tree, pages panel, asset library (planned)
 - **Canvas (center)** — Infinite canvas with CanvasKit rendering, zoom/pan
 - **Properties panel (right)** — Context-sensitive sections: Appearance, Fill, Stroke, Typography, Layout, Position
-- **Toolbar (bottom)** — Tool selection: Select, Frame, Rectangle, Ellipse, Line, Text, Pen, Hand
+- **Toolbar (bottom)** — Tool selection: Select, Frame, Section, Rectangle, Ellipse, Line, Text, Pen, Hand
 
 ## Components
 
@@ -75,7 +75,7 @@ Meta's Yoga provides CSS flexbox layout computation. A thin adapter maps Figma p
 
 ### File Format (Kiwi Binary)
 
-Reuses Figma's proven Kiwi binary codec with 194 message/enum/struct definitions. The `.fig` import pipeline: parse header → Zstd decompress → Kiwi decode → NodeChange[] → scene graph.
+Reuses Figma's proven Kiwi binary codec with 194 message/enum/struct definitions. The `.fig` import pipeline: parse header → Zstd decompress → Kiwi decode → NodeChange[] → scene graph. The export pipeline reverses the process: scene graph → NodeChange[] → Kiwi encode → Zstd compress → ZIP with thumbnail.
 
 See [File Format Reference](/reference/file-format) for details.
 

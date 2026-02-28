@@ -49,10 +49,9 @@ bun run test:unit
 ```
 
 Tests cover:
-- Scene graph CRUD operations
-- Parent-child relationships
-- Z-ordering
-- Hit testing
+- Scene graph CRUD operations, parent-child relationships, z-ordering, hit testing
+- **Fig-import pipeline** — node type mapping, transforms, fills/strokes/effects, gradients, images, arcs, nested hierarchies (`tests/engine/fig-import.test.ts`, 356 lines)
+- **Layout computation** — Yoga auto-layout: direction, gap, padding, justify, align, child sizing (fixed/fill/hug), cross-axis sizing, wrap, nested layouts (`tests/engine/layout.test.ts`, 888 lines)
 
 ### Writing Unit Tests
 
@@ -68,6 +67,13 @@ describe('SceneGraph', () => {
   })
 })
 ```
+
+## E2E Test Coverage
+
+| Test file | Scope |
+|-----------|-------|
+| `tests/e2e/layers-panel.spec.ts` | Layers panel tree structure, visibility toggles, selection sync |
+| `tests/e2e/visual.spec.ts` | Visual regression screenshots for shapes and rendering |
 
 ## Test Helpers
 
