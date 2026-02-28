@@ -142,6 +142,7 @@ function addCollection() {
     variableIds: []
   })
   activeTab.value = id
+  store.requestRender()
 }
 
 function removeVariable(id: string) {
