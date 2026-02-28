@@ -35,14 +35,18 @@ if (!('test' in params)) {
       <SplitterPanel :default-size="15" :min-size="10" :max-size="30" class="flex">
         <LayersPanel />
       </SplitterPanel>
-      <SplitterResizeHandle class="w-0 cursor-col-resize after:absolute after:inset-y-0 after:-left-0.5 after:w-1 after:hover:bg-accent after:hover:opacity-50" />
+      <SplitterResizeHandle class="group relative z-10 -mx-1 w-2 cursor-col-resize">
+        <div class="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 group-hover:bg-accent group-data-[state=drag]:bg-accent" />
+      </SplitterResizeHandle>
       <SplitterPanel :default-size="70" :min-size="30" class="flex">
         <div class="relative flex min-w-0 flex-1">
           <EditorCanvas />
           <Toolbar />
         </div>
       </SplitterPanel>
-      <SplitterResizeHandle class="w-0 cursor-col-resize after:absolute after:inset-y-0 after:-left-0.5 after:w-1 after:hover:bg-accent after:hover:opacity-50" />
+      <SplitterResizeHandle class="group relative z-10 -mx-1 w-2 cursor-col-resize">
+        <div class="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 group-hover:bg-accent group-data-[state=drag]:bg-accent" />
+      </SplitterResizeHandle>
       <SplitterPanel :default-size="15" :min-size="10" :max-size="30" class="flex">
         <PropertiesPanel />
       </SplitterPanel>
