@@ -1,6 +1,7 @@
 import { reactive, shallowRef, computed } from 'vue'
 
-import { DEFAULT_SHAPE_FILL, DEFAULT_FRAME_FILL } from '../constants'
+import { DEFAULT_SHAPE_FILL, DEFAULT_FRAME_FILL, CANVAS_BG_COLOR } from '../constants'
+import type { Color } from '../types'
 import {
   parseFigmaClipboard,
   importClipboardNodes,
@@ -88,6 +89,7 @@ export function createEditorStore() {
     penCursorX: null as number | null,
     penCursorY: null as number | null,
     panX: 0,
+    pageColor: { ...CANVAS_BG_COLOR } as Color,
     panY: 0,
     zoom: 1,
     renderVersion: 0

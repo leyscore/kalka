@@ -63,6 +63,7 @@ export class SkiaRenderer {
   viewportWidth = 0
   viewportHeight = 0
   showRulers = true
+  pageColor = CANVAS_BG_COLOR
 
   private selColor(alpha = 1) {
     return this.ck.Color4f(SELECTION_COLOR.r, SELECTION_COLOR.g, SELECTION_COLOR.b, alpha)
@@ -127,7 +128,7 @@ export class SkiaRenderer {
 
   render(graph: SceneGraph, selectedIds: Set<string>, overlays: RenderOverlays = {}): void {
     const canvas = this.surface.getCanvas()
-    canvas.clear(this.ck.Color4f(CANVAS_BG_COLOR.r, CANVAS_BG_COLOR.g, CANVAS_BG_COLOR.b, 1))
+    canvas.clear(this.ck.Color4f(this.pageColor.r, this.pageColor.g, this.pageColor.b, 1))
 
     // Scene layer (world coordinates)
     canvas.save()

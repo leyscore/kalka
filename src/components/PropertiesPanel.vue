@@ -6,6 +6,7 @@ import { useEditorStore } from '../stores/editor'
 import AppearanceSection from './properties/AppearanceSection.vue'
 import FillSection from './properties/FillSection.vue'
 import LayoutSection from './properties/LayoutSection.vue'
+import PageSection from './properties/PageSection.vue'
 import PositionSection from './properties/PositionSection.vue'
 import StrokeSection from './properties/StrokeSection.vue'
 import TypographySection from './properties/TypographySection.vue'
@@ -62,6 +63,8 @@ const multiCount = computed(() => store.selectedNodes.value.length)
       </div>
     </div>
 
-    <div v-else class="px-3 py-4 text-xs text-muted">No selection</div>
+    <div v-else class="flex-1 overflow-y-auto pb-4">
+      <PageSection />
+    </div>
   </aside>
 </template>
