@@ -55,6 +55,7 @@ export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, store: Edito
     renderer.zoom = store.state.zoom
     renderer.viewportWidth = canvasRef.value?.clientWidth ?? 0
     renderer.viewportHeight = canvasRef.value?.clientHeight ?? 0
+    renderer.showRulers = !new URLSearchParams(window.location.search).has('no-rulers')
     renderer.render(store.graph, store.state.selectedIds, {
       editingTextId: store.state.editingTextId,
       marquee: store.state.marquee,

@@ -55,6 +55,7 @@ export class SkiaRenderer {
   dpr = 1
   viewportWidth = 0
   viewportHeight = 0
+  showRulers = true
 
   private selColor(alpha = 1) {
     return this.ck.Color4f(SELECTION_COLOR.r, SELECTION_COLOR.g, SELECTION_COLOR.b, alpha)
@@ -145,7 +146,7 @@ export class SkiaRenderer {
     this.drawMarquee(canvas, overlays.marquee)
     this.drawLayoutInsertIndicator(canvas, overlays.layoutInsertIndicator)
     this.drawPenOverlay(canvas, overlays.penState)
-    this.drawRulers(canvas, graph, selectedIds)
+    if (this.showRulers) this.drawRulers(canvas, graph, selectedIds)
 
     canvas.restore()
     this.surface.flush()
