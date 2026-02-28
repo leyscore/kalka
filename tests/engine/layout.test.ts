@@ -1,0 +1,888 @@
+import { describe, test, expect } from 'bun:test'
+
+import { SceneGraph, type SceneNode } from '../../src/engine/scene-graph'
+import { computeLayout, computeAllLayouts } from '../../src/engine/layout'
+
+function pageId(graph: SceneGraph) {
+  return graph.getPages()[0].id
+}
+
+function autoFrame(
+  graph: SceneGraph,
+  parentId: string,
+  overrides: Partial<SceneNode> = {}
+): SceneNode {
+  return graph.createNode('FRAME', parentId, {
+    layoutMode: 'HORIZONTAL',
+    primaryAxisSizing: 'FIXED',
+    counterAxisSizing: 'FIXED',
+    width: 400,
+    height: 200,
+    ...overrides,
+  })
+}
+
+function rect(
+  graph: SceneGraph,
+  parentId: string,
+  w = 50,
+  h = 50,
+  overrides: Partial<SceneNode> = {}
+): SceneNode {
+  return graph.createNode('RECTANGLE', parentId, {
+    name: 'Rect',
+    width: w,
+    height: h,
+    ...overrides,
+  })
+}
+
+describe('Auto Layout', () => {
+  describe('horizontal basic', () => {
+    test('positions children left-to-right', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph))
+      rect(graph, frame.id, 80, 40)
+      rect(graph, frame.id, 60, 40)
+      rect(graph, frame.id, 100, 40)
+
+      computeLayout(graph, frame.id)
+
+      const children = graph.getChildren(frame.id)
+      expect(children[0].x).toBe(0)
+      expect(children[1].x).toBe(80)
+      expect(children[2].x).toBe(140)
+    })
+
+    test('applies item spacing', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), { itemSpacing: 10 })
+      rect(graph, frame.id, 50, 50)
+      rect(graph, frame.id, 50, 50)
+      rect(graph, frame.id, 50, 50)
+
+      computeLayout(graph, frame.id)
+
+      const children = graph.getChildren(frame.id)
+      expect(children[0].x).toBe(0)
+      expect(children[1].x).toBe(60)
+      expect(children[2].x).toBe(120)
+    })
+
+    test('applies padding', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        paddingTop: 10,
+        paddingRight: 20,
+        paddingBottom: 30,
+        paddingLeft: 40,
+      })
+      rect(graph, frame.id, 50, 50)
+
+      computeLayout(graph, frame.id)
+
+      const child = graph.getChildren(frame.id)[0]
+      expect(child.x).toBe(40)
+      expect(child.y).toBe(10)
+    })
+
+    test('applies padding and spacing together', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        paddingLeft: 20,
+        paddingTop: 15,
+        itemSpacing: 10,
+      })
+      rect(graph, frame.id, 50, 30)
+      rect(graph, frame.id, 50, 30)
+
+      computeLayout(graph, frame.id)
+
+      const children = graph.getChildren(frame.id)
+      expect(children[0].x).toBe(20)
+      expect(children[0].y).toBe(15)
+      expect(children[1].x).toBe(80)
+      expect(children[1].y).toBe(15)
+    })
+  })
+
+  describe('vertical basic', () => {
+    test('positions children top-to-bottom', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        layoutMode: 'VERTICAL',
+        width: 200,
+        height: 400,
+      })
+      rect(graph, frame.id, 50, 80)
+      rect(graph, frame.id, 50, 60)
+      rect(graph, frame.id, 50, 100)
+
+      computeLayout(graph, frame.id)
+
+      const children = graph.getChildren(frame.id)
+      expect(children[0].y).toBe(0)
+      expect(children[1].y).toBe(80)
+      expect(children[2].y).toBe(140)
+    })
+
+    test('applies item spacing vertically', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        layoutMode: 'VERTICAL',
+        width: 200,
+        height: 400,
+        itemSpacing: 16,
+      })
+      rect(graph, frame.id, 50, 40)
+      rect(graph, frame.id, 50, 40)
+      rect(graph, frame.id, 50, 40)
+
+      computeLayout(graph, frame.id)
+
+      const children = graph.getChildren(frame.id)
+      expect(children[0].y).toBe(0)
+      expect(children[1].y).toBe(56)
+      expect(children[2].y).toBe(112)
+    })
+  })
+
+  describe('alignment - primary axis', () => {
+    test('center alignment (horizontal)', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        width: 400,
+        height: 100,
+        primaryAxisAlign: 'CENTER',
+      })
+      rect(graph, frame.id, 100, 50)
+
+      computeLayout(graph, frame.id)
+
+      const child = graph.getChildren(frame.id)[0]
+      expect(child.x).toBe(150)
+    })
+
+    test('max alignment (horizontal)', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        width: 400,
+        height: 100,
+        primaryAxisAlign: 'MAX',
+      })
+      rect(graph, frame.id, 100, 50)
+
+      computeLayout(graph, frame.id)
+
+      const child = graph.getChildren(frame.id)[0]
+      expect(child.x).toBe(300)
+    })
+
+    test('space-between alignment (horizontal)', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        width: 400,
+        height: 100,
+        primaryAxisAlign: 'SPACE_BETWEEN',
+      })
+      rect(graph, frame.id, 50, 50)
+      rect(graph, frame.id, 50, 50)
+      rect(graph, frame.id, 50, 50)
+
+      computeLayout(graph, frame.id)
+
+      const children = graph.getChildren(frame.id)
+      expect(children[0].x).toBe(0)
+      expect(children[2].x).toBe(350)
+      expect(children[1].x).toBeCloseTo(175, 0)
+    })
+
+    test('center alignment (vertical)', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        layoutMode: 'VERTICAL',
+        width: 200,
+        height: 400,
+        primaryAxisAlign: 'CENTER',
+      })
+      rect(graph, frame.id, 50, 100)
+
+      computeLayout(graph, frame.id)
+
+      const child = graph.getChildren(frame.id)[0]
+      expect(child.y).toBe(150)
+    })
+
+    test('max alignment (vertical)', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        layoutMode: 'VERTICAL',
+        width: 200,
+        height: 400,
+        primaryAxisAlign: 'MAX',
+      })
+      rect(graph, frame.id, 50, 100)
+
+      computeLayout(graph, frame.id)
+
+      const child = graph.getChildren(frame.id)[0]
+      expect(child.y).toBe(300)
+    })
+  })
+
+  describe('alignment - counter axis', () => {
+    test('center cross-axis alignment (horizontal)', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        width: 400,
+        height: 200,
+        counterAxisAlign: 'CENTER',
+      })
+      rect(graph, frame.id, 50, 50)
+
+      computeLayout(graph, frame.id)
+
+      const child = graph.getChildren(frame.id)[0]
+      expect(child.y).toBe(75)
+    })
+
+    test('max cross-axis alignment (horizontal)', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        width: 400,
+        height: 200,
+        counterAxisAlign: 'MAX',
+      })
+      rect(graph, frame.id, 50, 50)
+
+      computeLayout(graph, frame.id)
+
+      const child = graph.getChildren(frame.id)[0]
+      expect(child.y).toBe(150)
+    })
+
+    test('center cross-axis alignment (vertical)', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        layoutMode: 'VERTICAL',
+        width: 200,
+        height: 400,
+        counterAxisAlign: 'CENTER',
+      })
+      rect(graph, frame.id, 50, 50)
+
+      computeLayout(graph, frame.id)
+
+      const child = graph.getChildren(frame.id)[0]
+      expect(child.x).toBe(75)
+    })
+
+    test('stretch cross-axis alignment (horizontal)', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        width: 400,
+        height: 200,
+        counterAxisAlign: 'STRETCH',
+      })
+      rect(graph, frame.id, 50, 50)
+
+      computeLayout(graph, frame.id)
+
+      const child = graph.getChildren(frame.id)[0]
+      expect(child.height).toBe(200)
+    })
+
+    test('stretch cross-axis alignment (vertical)', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        layoutMode: 'VERTICAL',
+        width: 200,
+        height: 400,
+        counterAxisAlign: 'STRETCH',
+      })
+      rect(graph, frame.id, 50, 50)
+
+      computeLayout(graph, frame.id)
+
+      const child = graph.getChildren(frame.id)[0]
+      expect(child.width).toBe(200)
+    })
+  })
+
+  describe('sizing modes', () => {
+    test('hug contents horizontally', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        primaryAxisSizing: 'HUG',
+        counterAxisSizing: 'FIXED',
+        width: 999,
+        height: 100,
+        itemSpacing: 10,
+      })
+      rect(graph, frame.id, 50, 50)
+      rect(graph, frame.id, 70, 50)
+
+      computeLayout(graph, frame.id)
+
+      const f = graph.getNode(frame.id)!
+      expect(f.width).toBe(130)
+    })
+
+    test('hug contents vertically', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        layoutMode: 'VERTICAL',
+        primaryAxisSizing: 'HUG',
+        counterAxisSizing: 'FIXED',
+        width: 200,
+        height: 999,
+        itemSpacing: 10,
+      })
+      rect(graph, frame.id, 50, 40)
+      rect(graph, frame.id, 50, 60)
+
+      computeLayout(graph, frame.id)
+
+      const f = graph.getNode(frame.id)!
+      expect(f.height).toBe(110)
+    })
+
+    test('hug includes padding', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        primaryAxisSizing: 'HUG',
+        counterAxisSizing: 'HUG',
+        width: 999,
+        height: 999,
+        paddingTop: 10,
+        paddingRight: 20,
+        paddingBottom: 30,
+        paddingLeft: 40,
+      })
+      rect(graph, frame.id, 100, 50)
+
+      computeLayout(graph, frame.id)
+
+      const f = graph.getNode(frame.id)!
+      expect(f.width).toBe(160)
+      expect(f.height).toBe(90)
+    })
+
+    test('child fill in horizontal layout', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        width: 400,
+        height: 100,
+      })
+      rect(graph, frame.id, 100, 50)
+      rect(graph, frame.id, 50, 50, { layoutGrow: 1 })
+
+      computeLayout(graph, frame.id)
+
+      const children = graph.getChildren(frame.id)
+      expect(children[0].width).toBe(100)
+      expect(children[1].width).toBe(300)
+    })
+
+    test('child fill in vertical layout', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        layoutMode: 'VERTICAL',
+        width: 200,
+        height: 400,
+      })
+      rect(graph, frame.id, 50, 100)
+      rect(graph, frame.id, 50, 50, { layoutGrow: 1 })
+
+      computeLayout(graph, frame.id)
+
+      const children = graph.getChildren(frame.id)
+      expect(children[0].height).toBe(100)
+      expect(children[1].height).toBe(300)
+    })
+
+    test('multiple fill children share space equally', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        width: 300,
+        height: 100,
+      })
+      rect(graph, frame.id, 50, 50, { layoutGrow: 1 })
+      rect(graph, frame.id, 50, 50, { layoutGrow: 1 })
+      rect(graph, frame.id, 50, 50, { layoutGrow: 1 })
+
+      computeLayout(graph, frame.id)
+
+      const children = graph.getChildren(frame.id)
+      expect(children[0].width).toBe(100)
+      expect(children[1].width).toBe(100)
+      expect(children[2].width).toBe(100)
+    })
+
+    test('fill with spacing and padding', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        width: 400,
+        height: 100,
+        paddingLeft: 20,
+        paddingRight: 20,
+        itemSpacing: 10,
+      })
+      rect(graph, frame.id, 100, 50)
+      rect(graph, frame.id, 50, 50, { layoutGrow: 1 })
+
+      computeLayout(graph, frame.id)
+
+      const children = graph.getChildren(frame.id)
+      expect(children[0].width).toBe(100)
+      // 400 - 20 - 20 (padding) - 100 (fixed child) - 10 (spacing) = 250
+      expect(children[1].width).toBe(250)
+    })
+  })
+
+  describe('absolute positioning', () => {
+    test('absolute children are skipped in layout', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        width: 400,
+        height: 200,
+        itemSpacing: 10,
+      })
+      rect(graph, frame.id, 50, 50)
+      rect(graph, frame.id, 50, 50, {
+        layoutPositioning: 'ABSOLUTE',
+        x: 200,
+        y: 100,
+      })
+      rect(graph, frame.id, 50, 50)
+
+      computeLayout(graph, frame.id)
+
+      const children = graph.getChildren(frame.id)
+      // First auto child at 0
+      expect(children[0].x).toBe(0)
+      // Absolute child should keep its position
+      expect(children[1].x).toBe(200)
+      expect(children[1].y).toBe(100)
+      // Third child should be right after first (no gap for absolute)
+      expect(children[2].x).toBe(60)
+    })
+  })
+
+  describe('self-alignment', () => {
+    test('layoutAlignSelf STRETCH overrides counter axis', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        width: 400,
+        height: 200,
+        counterAxisAlign: 'MIN',
+      })
+      rect(graph, frame.id, 50, 50, { layoutAlignSelf: 'STRETCH' })
+      rect(graph, frame.id, 50, 50)
+
+      computeLayout(graph, frame.id)
+
+      const children = graph.getChildren(frame.id)
+      expect(children[0].height).toBe(200)
+      expect(children[1].height).toBe(50)
+    })
+  })
+
+  describe('nested auto layout', () => {
+    test('nested horizontal frames', () => {
+      const graph = new SceneGraph()
+      const outer = autoFrame(graph, pageId(graph), {
+        width: 500,
+        height: 200,
+        itemSpacing: 10,
+      })
+      const inner = autoFrame(graph, outer.id, {
+        primaryAxisSizing: 'HUG',
+        counterAxisSizing: 'FIXED',
+        width: 999,
+        height: 100,
+        itemSpacing: 5,
+      })
+      rect(graph, inner.id, 40, 40)
+      rect(graph, inner.id, 60, 40)
+      rect(graph, outer.id, 80, 80)
+
+      computeLayout(graph, outer.id)
+
+      const innerNode = graph.getNode(inner.id)!
+      expect(innerNode.width).toBe(105)
+      expect(innerNode.x).toBe(0)
+
+      const outerChildren = graph.getChildren(outer.id)
+      expect(outerChildren[1].x).toBe(115)
+    })
+
+    test('nested vertical inside horizontal', () => {
+      const graph = new SceneGraph()
+      const outer = autoFrame(graph, pageId(graph), {
+        width: 500,
+        height: 300,
+        itemSpacing: 20,
+      })
+      const inner = autoFrame(graph, outer.id, {
+        layoutMode: 'VERTICAL',
+        primaryAxisSizing: 'HUG',
+        counterAxisSizing: 'FIXED',
+        width: 100,
+        height: 999,
+        itemSpacing: 10,
+      })
+      rect(graph, inner.id, 80, 50)
+      rect(graph, inner.id, 80, 70)
+      rect(graph, outer.id, 60, 60)
+
+      computeLayout(graph, outer.id)
+
+      const innerNode = graph.getNode(inner.id)!
+      expect(innerNode.height).toBe(130)
+
+      const outerChildren = graph.getChildren(outer.id)
+      expect(outerChildren[0].x).toBe(0)
+      expect(outerChildren[1].x).toBe(120)
+    })
+
+    test('computeAllLayouts handles deeply nested frames', () => {
+      const graph = new SceneGraph()
+      const page = pageId(graph)
+      const outer = autoFrame(graph, page, {
+        layoutMode: 'VERTICAL',
+        width: 300,
+        height: 500,
+        itemSpacing: 10,
+      })
+      const middle = autoFrame(graph, outer.id, {
+        layoutMode: 'HORIZONTAL',
+        primaryAxisSizing: 'HUG',
+        counterAxisSizing: 'HUG',
+        width: 999,
+        height: 999,
+        itemSpacing: 5,
+      })
+      rect(graph, middle.id, 40, 30)
+      rect(graph, middle.id, 60, 30)
+      rect(graph, outer.id, 100, 50)
+
+      computeAllLayouts(graph)
+
+      const middleNode = graph.getNode(middle.id)!
+      expect(middleNode.width).toBe(105)
+      expect(middleNode.height).toBe(30)
+
+      const outerChildren = graph.getChildren(outer.id)
+      expect(outerChildren[0].y).toBe(0)
+      expect(outerChildren[1].y).toBe(40)
+    })
+  })
+
+  describe('wrap layout', () => {
+    test('wraps children in horizontal layout', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        width: 200,
+        height: 300,
+        layoutWrap: 'WRAP',
+      })
+      rect(graph, frame.id, 80, 40)
+      rect(graph, frame.id, 80, 40)
+      rect(graph, frame.id, 80, 40)
+
+      computeLayout(graph, frame.id)
+
+      const children = graph.getChildren(frame.id)
+      // First two fit on first row (80 + 80 = 160 <= 200)
+      expect(children[0].x).toBe(0)
+      expect(children[0].y).toBe(0)
+      expect(children[1].x).toBe(80)
+      expect(children[1].y).toBe(0)
+      // Third wraps to second row
+      expect(children[2].x).toBe(0)
+      expect(children[2].y).toBe(40)
+    })
+
+    test('counterAxisSpacing adds gap between wrapped rows', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        width: 200,
+        height: 300,
+        layoutWrap: 'WRAP',
+        counterAxisSpacing: 10,
+      })
+      rect(graph, frame.id, 120, 40)
+      rect(graph, frame.id, 120, 40)
+
+      computeLayout(graph, frame.id)
+
+      const children = graph.getChildren(frame.id)
+      expect(children[0].y).toBe(0)
+      expect(children[1].y).toBe(50)
+    })
+
+    test('itemSpacing with wrap', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        width: 200,
+        height: 300,
+        layoutWrap: 'WRAP',
+        itemSpacing: 10,
+      })
+      // 90 + 10 + 90 = 190, fits in 200
+      rect(graph, frame.id, 90, 40)
+      rect(graph, frame.id, 90, 40)
+      // 90 wraps to next row
+      rect(graph, frame.id, 90, 40)
+
+      computeLayout(graph, frame.id)
+
+      const children = graph.getChildren(frame.id)
+      expect(children[0].x).toBe(0)
+      expect(children[1].x).toBe(100)
+      expect(children[2].x).toBe(0)
+      expect(children[2].y).toBe(40)
+    })
+  })
+
+  describe('counter axis spacing (no wrap)', () => {
+    test('counterAxisSpacing is ignored without wrap in horizontal', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        width: 300,
+        height: 100,
+        counterAxisSpacing: 50,
+        layoutWrap: 'NO_WRAP',
+      })
+      rect(graph, frame.id, 50, 50)
+      rect(graph, frame.id, 50, 50)
+
+      computeLayout(graph, frame.id)
+
+      const children = graph.getChildren(frame.id)
+      // Without wrap, counterAxisSpacing has no effect
+      expect(children[0].x).toBe(0)
+      expect(children[1].x).toBe(50)
+    })
+  })
+
+  describe('layout mode NONE', () => {
+    test('computeLayout does nothing for NONE layout', () => {
+      const graph = new SceneGraph()
+      const frame = graph.createNode('FRAME', pageId(graph), {
+        name: 'Plain',
+        layoutMode: 'NONE',
+        width: 400,
+        height: 200,
+      })
+      const child = rect(graph, frame.id, 50, 50, { x: 100, y: 100 })
+
+      computeLayout(graph, frame.id)
+
+      const c = graph.getNode(child.id)!
+      expect(c.x).toBe(100)
+      expect(c.y).toBe(100)
+    })
+  })
+
+  describe('edge cases', () => {
+    test('empty auto layout frame', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        primaryAxisSizing: 'HUG',
+        counterAxisSizing: 'HUG',
+        paddingTop: 10,
+        paddingRight: 20,
+        paddingBottom: 30,
+        paddingLeft: 40,
+      })
+
+      computeLayout(graph, frame.id)
+
+      const f = graph.getNode(frame.id)!
+      expect(f.width).toBe(60)
+      expect(f.height).toBe(40)
+    })
+
+    test('single child', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        width: 200,
+        height: 100,
+      })
+      rect(graph, frame.id, 50, 50)
+
+      computeLayout(graph, frame.id)
+
+      const child = graph.getChildren(frame.id)[0]
+      expect(child.x).toBe(0)
+      expect(child.y).toBe(0)
+      expect(child.width).toBe(50)
+      expect(child.height).toBe(50)
+    })
+
+    test('all children absolute → frame hugs to padding only', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        primaryAxisSizing: 'HUG',
+        counterAxisSizing: 'HUG',
+        paddingTop: 5,
+        paddingRight: 5,
+        paddingBottom: 5,
+        paddingLeft: 5,
+      })
+      rect(graph, frame.id, 100, 100, { layoutPositioning: 'ABSOLUTE' })
+
+      computeLayout(graph, frame.id)
+
+      const f = graph.getNode(frame.id)!
+      expect(f.width).toBe(10)
+      expect(f.height).toBe(10)
+    })
+
+    test('zero-size children', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        primaryAxisSizing: 'HUG',
+        counterAxisSizing: 'HUG',
+      })
+      rect(graph, frame.id, 0, 0)
+      rect(graph, frame.id, 50, 50)
+
+      computeLayout(graph, frame.id)
+
+      const f = graph.getNode(frame.id)!
+      expect(f.width).toBe(50)
+
+      const children = graph.getChildren(frame.id)
+      expect(children[0].x).toBe(0)
+      expect(children[1].x).toBe(0)
+    })
+  })
+
+  describe('mixed sizing', () => {
+    test('fixed primary, hug counter (horizontal)', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        width: 400,
+        height: 999,
+        primaryAxisSizing: 'FIXED',
+        counterAxisSizing: 'HUG',
+      })
+      rect(graph, frame.id, 50, 80)
+      rect(graph, frame.id, 50, 120)
+
+      computeLayout(graph, frame.id)
+
+      const f = graph.getNode(frame.id)!
+      expect(f.width).toBe(400)
+      expect(f.height).toBe(120)
+    })
+
+    test('hug primary, fixed counter (vertical)', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        layoutMode: 'VERTICAL',
+        width: 200,
+        height: 999,
+        primaryAxisSizing: 'HUG',
+        counterAxisSizing: 'FIXED',
+        itemSpacing: 10,
+      })
+      rect(graph, frame.id, 50, 40)
+      rect(graph, frame.id, 80, 60)
+
+      computeLayout(graph, frame.id)
+
+      const f = graph.getNode(frame.id)!
+      expect(f.height).toBe(110)
+      expect(f.width).toBe(200)
+    })
+  })
+
+  describe('nested auto layout with fill children', () => {
+    test('child frame with FILL sizing expands in parent', () => {
+      const graph = new SceneGraph()
+      const outer = autoFrame(graph, pageId(graph), {
+        width: 400,
+        height: 200,
+        itemSpacing: 10,
+      })
+      rect(graph, outer.id, 100, 50)
+      const inner = autoFrame(graph, outer.id, {
+        primaryAxisSizing: 'FIXED',
+        counterAxisSizing: 'FIXED',
+        width: 50,
+        height: 50,
+        layoutGrow: 1,
+      })
+      rect(graph, inner.id, 30, 30)
+
+      computeLayout(graph, outer.id)
+
+      const innerNode = graph.getNode(inner.id)!
+      // 400 - 100 - 10 = 290
+      expect(innerNode.width).toBe(290)
+    })
+  })
+
+  describe('gap mapping correctness', () => {
+    test('horizontal: itemSpacing is column gap, counterAxisSpacing is row gap', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        width: 200,
+        height: 300,
+        layoutWrap: 'WRAP',
+        itemSpacing: 10,
+        counterAxisSpacing: 20,
+      })
+      // Each row: 90 + 10 + 90 = 190 <= 200
+      rect(graph, frame.id, 90, 40)
+      rect(graph, frame.id, 90, 40)
+      // These wrap
+      rect(graph, frame.id, 90, 40)
+      rect(graph, frame.id, 90, 40)
+
+      computeLayout(graph, frame.id)
+
+      const children = graph.getChildren(frame.id)
+      // Row 1
+      expect(children[0].x).toBe(0)
+      expect(children[1].x).toBe(100)
+      // Row 2: y = 40 (row height) + 20 (counterAxisSpacing) = 60
+      expect(children[2].y).toBe(60)
+      expect(children[3].x).toBe(100)
+    })
+
+    test('vertical: itemSpacing is row gap, counterAxisSpacing is column gap', () => {
+      const graph = new SceneGraph()
+      const frame = autoFrame(graph, pageId(graph), {
+        layoutMode: 'VERTICAL',
+        width: 300,
+        height: 200,
+        layoutWrap: 'WRAP',
+        itemSpacing: 10,
+        counterAxisSpacing: 20,
+      })
+      // Each column: 80 + 10 + 80 = 170 <= 200
+      rect(graph, frame.id, 40, 80)
+      rect(graph, frame.id, 40, 80)
+      // These wrap to second column
+      rect(graph, frame.id, 40, 80)
+      rect(graph, frame.id, 40, 80)
+
+      computeLayout(graph, frame.id)
+
+      const children = graph.getChildren(frame.id)
+      // Column 1
+      expect(children[0].y).toBe(0)
+      expect(children[1].y).toBe(90)
+      // Column 2: x = 40 (col width) + 20 (counterAxisSpacing) = 60
+      expect(children[2].x).toBe(60)
+      expect(children[2].y).toBe(0)
+      expect(children[3].x).toBe(60)
+      expect(children[3].y).toBe(90)
+    })
+  })
+})

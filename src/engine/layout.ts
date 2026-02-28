@@ -93,17 +93,18 @@ function configureChildAsAutoLayout(
   parent: SceneNode,
   graph: SceneGraph
 ): void {
-  const isRow = parent.layoutMode === 'HORIZONTAL'
+  const isParentRow = parent.layoutMode === 'HORIZONTAL'
+  const isChildRow = child.layoutMode === 'HORIZONTAL'
 
-  const primarySizing = child.primaryAxisSizing
-  const counterSizing = child.counterAxisSizing
+  const widthSizing = isChildRow ? child.primaryAxisSizing : child.counterAxisSizing
+  const heightSizing = isChildRow ? child.counterAxisSizing : child.primaryAxisSizing
 
-  if (isRow) {
-    setSizing(yogaChild, 'width', primarySizing, child.width, child.layoutGrow)
-    setSizing(yogaChild, 'height', counterSizing, child.height, 0)
+  if (isParentRow) {
+    setSizing(yogaChild, 'width', widthSizing, child.width, child.layoutGrow)
+    setSizing(yogaChild, 'height', heightSizing, child.height, 0)
   } else {
-    setSizing(yogaChild, 'width', counterSizing, child.width, 0)
-    setSizing(yogaChild, 'height', primarySizing, child.height, child.layoutGrow)
+    setSizing(yogaChild, 'width', widthSizing, child.width, 0)
+    setSizing(yogaChild, 'height', heightSizing, child.height, child.layoutGrow)
   }
 
   if (child.layoutAlignSelf === 'STRETCH') {
@@ -144,20 +145,27 @@ function configureChildAsLeaf(
   parent: SceneNode
 ): void {
   const isRow = parent.layoutMode === 'HORIZONTAL'
+  const stretchCross =
+    child.layoutAlignSelf === 'STRETCH' || parent.counterAxisAlign === 'STRETCH'
 
   if (child.layoutGrow > 0) {
     yogaChild.setFlexGrow(child.layoutGrow)
-    if (isRow) yogaChild.setHeight(child.height)
-    else yogaChild.setWidth(child.width)
+    if (!stretchCross) {
+      if (isRow) yogaChild.setHeight(child.height)
+      else yogaChild.setWidth(child.width)
+    }
   } else {
-    yogaChild.setWidth(child.width)
-    yogaChild.setHeight(child.height)
+    if (isRow) {
+      yogaChild.setWidth(child.width)
+      if (!stretchCross) yogaChild.setHeight(child.height)
+    } else {
+      yogaChild.setHeight(child.height)
+      if (!stretchCross) yogaChild.setWidth(child.width)
+    }
   }
 
   if (child.layoutAlignSelf === 'STRETCH') {
     yogaChild.setAlignSelf(Align.Stretch)
-    if (isRow) yogaChild.setHeight('auto' as unknown as number)
-    else yogaChild.setWidth('auto' as unknown as number)
   }
 }
 
@@ -168,16 +176,21 @@ function setSizing(
   fixedValue: number,
   grow: number
 ): void {
+  if (grow > 0) {
+    yogaNode.setFlexGrow(grow)
+    yogaNode.setFlexShrink(1)
+    return
+  }
+
   switch (sizing) {
     case 'FIXED':
       if (axis === 'width') yogaNode.setWidth(fixedValue)
       else yogaNode.setHeight(fixedValue)
       break
     case 'HUG':
-      // auto-size
       break
     case 'FILL':
-      yogaNode.setFlexGrow(grow > 0 ? grow : 1)
+      yogaNode.setFlexGrow(1)
       yogaNode.setFlexShrink(1)
       break
   }
