@@ -14,6 +14,7 @@ import {
   SECTION_CORNER_RADIUS, SECTION_TITLE_HEIGHT, SECTION_TITLE_PADDING_X,
   SECTION_TITLE_RADIUS, SECTION_TITLE_FONT_SIZE, SECTION_TITLE_GAP,
   COMPONENT_SET_DASH, COMPONENT_SET_DASH_GAP, COMPONENT_SET_BORDER_WIDTH,
+  COMPONENT_LABEL_FONT_SIZE, COMPONENT_LABEL_GAP, COMPONENT_LABEL_ICON_SIZE, COMPONENT_LABEL_ICON_GAP,
   RULER_TARGET_PIXEL_SPACING, RULER_MAJOR_TOLERANCE
 } from '../constants'
 import type { SceneNode, SceneGraph, Fill, GradientStop, GradientTransform, ArcData } from './scene-graph'
@@ -66,6 +67,7 @@ export class SkiaRenderer {
   private labelFont: Font | null = null
   private sizeFont: Font | null = null
   private sectionTitleFont: Font | null = null
+  private componentLabelFont: Font | null = null
   private fontMgr: FontMgr | null = null
   private fontProvider: TypefaceFontProvider | null = null
   private fontsLoaded = false
@@ -141,10 +143,12 @@ export class SkiaRenderer {
         this.labelFont?.delete()
         this.sizeFont?.delete()
         this.sectionTitleFont?.delete()
+        this.componentLabelFont?.delete()
         this.textFont = new this.ck.Font(typeface, DEFAULT_FONT_SIZE)
         this.labelFont = new this.ck.Font(typeface, LABEL_FONT_SIZE)
         this.sizeFont = new this.ck.Font(typeface, SIZE_FONT_SIZE)
         this.sectionTitleFont = new this.ck.Font(typeface, SECTION_TITLE_FONT_SIZE)
+        this.componentLabelFont = new this.ck.Font(typeface, COMPONENT_LABEL_FONT_SIZE)
       }
       this.fontMgr = this.ck.FontMgr.FromData(fontData) ?? null
     }
@@ -234,10 +238,11 @@ export class SkiaRenderer {
 
     canvas.restore()
 
-    // Section titles (screen coordinates, zoom-independent)
+    // Section titles + component labels (screen coordinates, zoom-independent)
     canvas.save()
     canvas.scale(this.dpr, this.dpr)
     this.drawSectionTitles(canvas, graph, selectedIds)
+    this.drawComponentLabels(canvas, graph)
     canvas.restore()
 
     // UI overlay layer (screen coordinates, zoom-independent)
@@ -405,11 +410,10 @@ export class SkiaRenderer {
       const node = nodes[0]
       const parentNode = node.parentId ? graph.getNode(node.parentId) : null
       const isTopLevel = !parentNode || parentNode.type === 'CANVAS' || parentNode.type === 'SECTION'
-      const showLabel = (node.type === 'FRAME' && isTopLevel) || this.isComponentType(node.type)
-      if (showLabel) {
+      if (node.type === 'FRAME' && isTopLevel) {
         const labelPaint = new this.ck.Paint()
         labelPaint.setStyle(this.ck.PaintStyle.Fill)
-        labelPaint.setColor(this.isComponentType(node.type) ? this.compColor() : this.selColor())
+        labelPaint.setColor(this.selColor())
         labelPaint.setAntiAlias(true)
         canvas.drawText(node.name, sx1, sy1 - LABEL_OFFSET_Y, labelPaint, this.labelFont)
         labelPaint.delete()
@@ -906,6 +910,110 @@ export class SkiaRenderer {
       textPaint.setAntiAlias(true)
       const textY = pillY + pillH * 0.7
       canvas.drawText(displayText, pillX + SECTION_TITLE_PADDING_X, textY, textPaint, font)
+      textPaint.delete()
+    }
+  }
+
+  private drawComponentLabels(canvas: Canvas, graph: SceneGraph): void {
+    if (!this.componentLabelFont) return
+
+    const pageNode = graph.getNode(this.pageId ?? graph.rootId)
+    if (!pageNode) return
+
+    const font = this.componentLabelFont
+    const LABEL_TYPES = new Set(['COMPONENT', 'COMPONENT_SET', 'INSTANCE'])
+
+    const nodes: { node: SceneNode; absX: number; absY: number; inside: boolean }[] = []
+    const collect = (parentId: string, ox: number, oy: number) => {
+      const parent = graph.getNode(parentId)
+      if (!parent) return
+      for (const childId of parent.childIds) {
+        const child = graph.getNode(childId)
+        if (!child || !child.visible) continue
+        const ax = ox + child.x
+        const ay = oy + child.y
+        if (LABEL_TYPES.has(child.type)) {
+          const isInsideSet = parent.type === 'COMPONENT_SET'
+          nodes.push({ node: child, absX: ax, absY: ay, inside: isInsideSet })
+        }
+        if (child.childIds.length > 0) {
+          collect(childId, ax, ay)
+        }
+      }
+    }
+    collect(pageNode.id, 0, 0)
+
+    const compColor = this.compColor()
+
+    // Diamond icon path points (scaled to COMPONENT_LABEL_ICON_SIZE)
+    const iconS = COMPONENT_LABEL_ICON_SIZE
+
+    for (const { node, absX, absY, inside } of nodes) {
+      const screenX = absX * this.zoom + this.panX
+      const screenY = absY * this.zoom + this.panY
+
+      // Measure text
+      const glyphIds = font.getGlyphIDs(node.name)
+      const widths = font.getGlyphWidths(glyphIds)
+      let textWidth = 0
+      for (const w of widths) textWidth += w
+
+      // Position: inside top-left for variants in a set, above top-left otherwise
+      const labelX = screenX
+      let labelY: number
+      if (inside) {
+        labelY = screenY + COMPONENT_LABEL_GAP + COMPONENT_LABEL_FONT_SIZE
+      } else {
+        labelY = screenY - COMPONENT_LABEL_GAP
+      }
+
+      // Draw diamond icon
+      const iconX = labelX
+      const iconY = labelY - COMPONENT_LABEL_FONT_SIZE * 0.75
+      const iconCx = iconX + iconS / 2
+      const iconCy = iconY + iconS / 2
+      const iconR = iconS / 2
+
+      const iconPaint = new this.ck.Paint()
+      iconPaint.setStyle(this.ck.PaintStyle.Fill)
+      iconPaint.setColor(compColor)
+      iconPaint.setAntiAlias(true)
+
+      if (node.type === 'COMPONENT_SET') {
+        // 4-diamond grid
+        const s = iconR * 0.45
+        const gap = iconR * 0.2
+        for (const [dx, dy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+          const cx = iconCx + dx * (s + gap)
+          const cy = iconCy + dy * (s + gap)
+          const path = new this.ck.Path()
+          path.moveTo(cx, cy - s)
+          path.lineTo(cx + s, cy)
+          path.lineTo(cx, cy + s)
+          path.lineTo(cx - s, cy)
+          path.close()
+          canvas.drawPath(path, iconPaint)
+          path.delete()
+        }
+      } else {
+        // Single diamond
+        const path = new this.ck.Path()
+        path.moveTo(iconCx, iconCy - iconR)
+        path.lineTo(iconCx + iconR, iconCy)
+        path.lineTo(iconCx, iconCy + iconR)
+        path.lineTo(iconCx - iconR, iconCy)
+        path.close()
+        canvas.drawPath(path, iconPaint)
+        path.delete()
+      }
+      iconPaint.delete()
+
+      // Draw name text
+      const textPaint = new this.ck.Paint()
+      textPaint.setStyle(this.ck.PaintStyle.Fill)
+      textPaint.setColor(compColor)
+      textPaint.setAntiAlias(true)
+      canvas.drawText(node.name, labelX + iconS + COMPONENT_LABEL_ICON_GAP, labelY, textPaint, font)
       textPaint.delete()
     }
   }

@@ -103,6 +103,10 @@ export const SECTION_DEFAULT_STROKE: Stroke = {
 export const COMPONENT_SET_DASH = 6
 export const COMPONENT_SET_DASH_GAP = 4
 export const COMPONENT_SET_BORDER_WIDTH = 1.5
+export const COMPONENT_LABEL_FONT_SIZE = 11
+export const COMPONENT_LABEL_GAP = 6
+export const COMPONENT_LABEL_ICON_SIZE = 10
+export const COMPONENT_LABEL_ICON_GAP = 4
 
 export const RULER_TARGET_PIXEL_SPACING = 100
 export const RULER_MAJOR_TOLERANCE = 0.01
