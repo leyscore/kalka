@@ -222,7 +222,7 @@ function setAlignment(primary: LayoutAlign, counter: LayoutCounterAlign) {
             <div v-for="side in ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'] as const" :key="side">
               <input
                 type="number"
-                class="w-full rounded border border-border bg-input px-1 py-0.5 text-center text-[11px] text-surface [&::-webkit-inner-spin-button]:hidden"
+                class="w-full rounded border border-border bg-input px-1 py-0.5 text-center text-[11px] text-surface [appearance:textfield] [[&::-webkit-inner-spin-button]:hidden::-webkit-inner-spin-button]:hidden"
                 :value="node[side]"
                 min="0"
                 @change="updateProp(side, +($event.target as HTMLInputElement).value)"

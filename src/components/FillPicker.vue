@@ -532,7 +532,7 @@ function stopSwatchColor(stop: GradientStop) {
             />
             <input
               type="number"
-              class="w-10 rounded border border-border bg-input px-1 py-0.5 text-right text-xs text-surface [&::-webkit-inner-spin-button]:hidden"
+              class="w-10 rounded border border-border bg-input px-1 py-0.5 text-right text-xs text-surface [appearance:textfield] [[&::-webkit-inner-spin-button]:hidden::-webkit-inner-spin-button]:hidden"
               :value="Math.round(alpha * 100)"
               min="0"
               max="100"

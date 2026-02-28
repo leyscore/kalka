@@ -119,7 +119,7 @@ function onKeydown(e: KeyboardEvent) {
       v-if="editing"
       ref="inputRef"
       type="number"
-      class="min-w-0 flex-1 cursor-text border-none bg-transparent pr-1.5 font-[inherit] text-xs text-surface outline-none [&::-webkit-inner-spin-button]:hidden"
+      class="min-w-0 flex-1 cursor-text border-none bg-transparent pr-1.5 font-[inherit] text-xs text-surface outline-none [appearance:textfield] [[&::-webkit-inner-spin-button]:hidden::-webkit-inner-spin-button]:hidden"
       :value="displayValue"
       :min="min === -Infinity ? undefined : min"
       :max="max === Infinity ? undefined : max"
