@@ -19,6 +19,7 @@ interface LayerNode {
   id: string
   name: string
   type: string
+  visible: boolean
   children?: LayerNode[]
 }
 
@@ -43,6 +44,7 @@ function buildTree(parentId: string): LayerNode[] {
       id: node.id,
       name: node.name,
       type: node.type,
+      visible: node.visible,
       children: node.childIds.length > 0 ? buildTree(node.id) : undefined,
     })
   }
