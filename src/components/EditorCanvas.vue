@@ -9,8 +9,8 @@ import CanvasContextMenu from './CanvasContextMenu.vue'
 const store = useEditorStore()
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 
-const { hitTestSectionTitle } = useCanvas(canvasRef, store)
-const { cursorOverride } = useCanvasInput(canvasRef, store, hitTestSectionTitle)
+const { hitTestSectionTitle, hitTestComponentLabel } = useCanvas(canvasRef, store)
+const { cursorOverride } = useCanvasInput(canvasRef, store, hitTestSectionTitle, hitTestComponentLabel)
 
 const cursor = computed(() => {
   if (cursorOverride.value) return cursorOverride.value

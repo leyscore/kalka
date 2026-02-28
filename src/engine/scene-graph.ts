@@ -456,15 +456,23 @@ export class SceneGraph {
 
   hitTest(px: number, py: number, scopeId?: string): SceneNode | null {
     const scope = scopeId ?? this.rootId
-    return this.hitTestChildren(px, py, scope, 0, 0)
+    return this.hitTestChildren(px, py, scope, 0, 0, false)
   }
+
+  hitTestDeep(px: number, py: number, scopeId?: string): SceneNode | null {
+    const scope = scopeId ?? this.rootId
+    return this.hitTestChildren(px, py, scope, 0, 0, true)
+  }
+
+  private static readonly OPAQUE_CONTAINER_TYPES = new Set<NodeType>(['COMPONENT', 'INSTANCE'])
 
   private hitTestChildren(
     px: number,
     py: number,
     parentId: string,
     offsetX: number,
-    offsetY: number
+    offsetY: number,
+    deep = false
   ): SceneNode | null {
     const parent = this.nodes.get(parentId)
     if (!parent) return null
@@ -478,9 +486,17 @@ export class SceneGraph {
       const ax = offsetX + child.x
       const ay = offsetY + child.y
 
+      // Components/instances: don't recurse unless in deep mode (double-click)
+      if (SceneGraph.OPAQUE_CONTAINER_TYPES.has(child.type) && !deep) {
+        if (px >= ax && px <= ax + child.width && py >= ay && py <= ay + child.height) {
+          return child
+        }
+        continue
+      }
+
       // Check children first (deeper hit)
       if (CONTAINER_TYPES.has(child.type)) {
-        const deepHit = this.hitTestChildren(px, py, childId, ax, ay)
+        const deepHit = this.hitTestChildren(px, py, childId, ax, ay, deep)
         if (deepHit) return deepHit
       }
 

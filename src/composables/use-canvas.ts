@@ -104,5 +104,9 @@ export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, store: Edito
     return renderer?.hitTestSectionTitle(store.graph, canvasX, canvasY) ?? null
   }
 
-  return { render, hitTestSectionTitle }
+  function hitTestComponentLabel(canvasX: number, canvasY: number) {
+    return renderer?.hitTestComponentLabel(store.graph, canvasX, canvasY) ?? null
+  }
+
+  return { render, hitTestSectionTitle, hitTestComponentLabel }
 }

@@ -210,6 +210,60 @@ export class SkiaRenderer {
     return result
   }
 
+  hitTestComponentLabel(graph: SceneGraph, canvasX: number, canvasY: number): SceneNode | null {
+    if (!this.componentLabelFont) return null
+
+    const pageNode = graph.getNode(this.pageId ?? graph.rootId)
+    if (!pageNode) return null
+
+    const font = this.componentLabelFont
+    const LABEL_TYPES = new Set(['COMPONENT', 'COMPONENT_SET', 'INSTANCE'])
+    let result: SceneNode | null = null
+
+    const check = (parentId: string, ox: number, oy: number) => {
+      const parent = graph.getNode(parentId)
+      if (!parent) return
+      for (let i = parent.childIds.length - 1; i >= 0; i--) {
+        if (result) return
+        const childId = parent.childIds[i]
+        const child = graph.getNode(childId)
+        if (!child || !child.visible) continue
+        const ax = ox + child.x
+        const ay = oy + child.y
+        if (LABEL_TYPES.has(child.type)) {
+          const glyphIds = font.getGlyphIDs(child.name)
+          const widths = font.getGlyphWidths(glyphIds)
+          let textW = 0
+          for (const w of widths) textW += w
+          const labelW = (COMPONENT_LABEL_ICON_SIZE + COMPONENT_LABEL_ICON_GAP + textW) / this.zoom
+          const labelH = COMPONENT_LABEL_FONT_SIZE / this.zoom
+          const gap = COMPONENT_LABEL_GAP / this.zoom
+
+          const isInsideSet = parent.type === 'COMPONENT_SET'
+          const labelX = ax
+          let labelY: number
+          if (isInsideSet) {
+            labelY = ay + gap
+          } else {
+            labelY = ay - labelH - gap
+          }
+
+          if (canvasX >= labelX && canvasX <= labelX + labelW &&
+              canvasY >= labelY && canvasY <= labelY + labelH) {
+            result = child
+            return
+          }
+        }
+        if (child.childIds.length > 0) {
+          check(childId, ax, ay)
+        }
+      }
+    }
+
+    check(pageNode.id, 0, 0)
+    return result
+  }
+
   renderSceneToCanvas(canvas: Canvas, graph: SceneGraph, pageId: string): void {
     const pageNode = graph.getNode(pageId)
     if (pageNode) {

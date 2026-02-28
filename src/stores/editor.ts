@@ -853,7 +853,7 @@ export function createEditorStore() {
       y: minY - parentAbs.y,
       width: maxX - minX,
       height: maxY - minY,
-      fills: [{ type: 'SOLID', color: { r: 1, g: 1, b: 1, a: 1 }, opacity: 1, visible: true }]
+      fills: []
     })
     const componentId = component.id
 
