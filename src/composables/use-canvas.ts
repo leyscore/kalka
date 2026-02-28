@@ -99,5 +99,9 @@ export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, store: Edito
     () => render()
   )
 
-  return { render }
+  function hitTestSectionTitle(canvasX: number, canvasY: number) {
+    return renderer?.hitTestSectionTitle(store.graph, canvasX, canvasY) ?? null
+  }
+
+  return { render, hitTestSectionTitle }
 }

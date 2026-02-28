@@ -141,6 +141,60 @@ export class SkiaRenderer {
     this.fontsLoaded = true
   }
 
+  hitTestSectionTitle(graph: SceneGraph, canvasX: number, canvasY: number): SceneNode | null {
+    if (!this.sectionTitleFont) return null
+
+    const pageNode = graph.getNode(this.pageId ?? graph.rootId)
+    if (!pageNode) return null
+
+    const font = this.sectionTitleFont
+    let result: SceneNode | null = null
+
+    const check = (parentId: string, ox: number, oy: number, insideSection: boolean) => {
+      const parent = graph.getNode(parentId)
+      if (!parent) return
+      for (let i = parent.childIds.length - 1; i >= 0; i--) {
+        if (result) return
+        const childId = parent.childIds[i]
+        const child = graph.getNode(childId)
+        if (!child || !child.visible) continue
+        const ax = ox + child.x
+        const ay = oy + child.y
+        if (child.type === 'SECTION') {
+          // Compute pill width from font metrics
+          const glyphIds = font.getGlyphIDs(child.name)
+          const widths = font.getGlyphWidths(glyphIds)
+          let textW = 0
+          for (const w of widths) textW += w
+          const pillW = Math.min(textW + SECTION_TITLE_PADDING_X * 2, child.width * this.zoom) / this.zoom
+          const pillH = SECTION_TITLE_HEIGHT / this.zoom
+          const gap = SECTION_TITLE_GAP / this.zoom
+
+          let pillX = ax
+          let pillY: number
+          if (insideSection) {
+            pillY = ay + gap
+          } else {
+            pillY = ay - pillH - gap
+          }
+
+          if (canvasX >= pillX && canvasX <= pillX + pillW &&
+              canvasY >= pillY && canvasY <= pillY + pillH) {
+            result = child
+            return
+          }
+
+          check(childId, ax, ay, true)
+        } else if (child.childIds.length > 0) {
+          check(childId, ax, ay, insideSection)
+        }
+      }
+    }
+
+    check(pageNode.id, 0, 0, false)
+    return result
+  }
+
   render(graph: SceneGraph, selectedIds: Set<string>, overlays: RenderOverlays = {}): void {
     const canvas = this.surface.getCanvas()
     canvas.clear(this.ck.Color4f(this.pageColor.r, this.pageColor.g, this.pageColor.b, 1))

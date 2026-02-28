@@ -201,7 +201,11 @@ function hitTestRotationHandle(
   return Math.abs(ur.sx - mx) < ROTATION_HIT_RADIUS && Math.abs(ur.sy - rotY) < ROTATION_HIT_RADIUS
 }
 
-export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: EditorStore) {
+export function useCanvasInput(
+  canvasRef: Ref<HTMLCanvasElement | null>,
+  store: EditorStore,
+  hitTestSectionTitle: (cx: number, cy: number) => import('../engine/scene-graph').SceneNode | null
+) {
   const drag = ref<DragState | null>(null)
   const cursorOverride = ref<string | null>(null)
 
@@ -309,8 +313,8 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
         }
       }
 
-      // Hit test nodes
-      const hit = store.graph.hitTest(cx, cy, store.state.currentPageId, store.state.zoom)
+      // Hit test nodes (section title pill first, then body)
+      const hit = hitTestSectionTitle(cx, cy) ?? store.graph.hitTest(cx, cy, store.state.currentPageId)
       if (hit) {
         if (!store.state.selectedIds.has(hit.id) && !e.shiftKey) {
           store.select([hit.id])
@@ -480,7 +484,7 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
       }
       cursorOverride.value = cursor
 
-      const hit = store.graph.hitTest(cx, cy, undefined, store.state.zoom)
+      const hit = hitTestSectionTitle(cx, cy) ?? store.graph.hitTest(cx, cy)
       store.setHoveredNode(hit && !store.state.selectedIds.has(hit.id) ? hit.id : null)
     }
 
@@ -820,7 +824,7 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
 
   function onDblClick(e: MouseEvent) {
     const { cx, cy } = getCoords(e)
-    const hit = store.graph.hitTest(cx, cy, store.state.currentPageId, store.state.zoom)
+    const hit = hitTestSectionTitle(cx, cy) ?? store.graph.hitTest(cx, cy, store.state.currentPageId)
     if (hit && hit.type === 'TEXT') {
       store.select([hit.id])
       store.startTextEditing(hit.id)

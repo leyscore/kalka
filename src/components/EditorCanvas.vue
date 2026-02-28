@@ -8,8 +8,8 @@ import { useEditorStore } from '../stores/editor'
 const store = useEditorStore()
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 
-useCanvas(canvasRef, store)
-const { cursorOverride } = useCanvasInput(canvasRef, store)
+const { hitTestSectionTitle } = useCanvas(canvasRef, store)
+const { cursorOverride } = useCanvasInput(canvasRef, store, hitTestSectionTitle)
 
 const cursor = computed(() => {
   if (cursorOverride.value) return cursorOverride.value
