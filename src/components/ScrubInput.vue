@@ -102,10 +102,13 @@ function onKeydown(e: KeyboardEvent) {
 </script>
 
 <template>
-  <div class="flex min-w-0 flex-1 items-center overflow-hidden rounded border border-border bg-input h-[26px] focus-within:border-accent">
+  <div
+    class="flex min-w-0 flex-1 items-center rounded border border-border bg-input h-[26px] focus-within:border-accent"
+    :style="{ cursor: editing ? 'auto' : 'ew-resize' }"
+    @pointerdown="!editing && startScrub($event)"
+  >
     <span
-      class="flex shrink-0 cursor-ew-resize select-none items-center justify-center self-stretch px-[5px] text-muted [&>*]:pointer-events-none"
-      @pointerdown="startScrub"
+      class="flex shrink-0 select-none items-center justify-center self-stretch px-[5px] text-muted [&>*]:pointer-events-none"
     >
       <slot name="icon">
         <span v-if="icon" class="text-[11px] leading-none">{{ icon }}</span>
@@ -116,7 +119,7 @@ function onKeydown(e: KeyboardEvent) {
       v-if="editing"
       ref="inputRef"
       type="number"
-      class="min-w-0 flex-1 border-none bg-transparent pr-1.5 font-[inherit] text-xs text-surface outline-none [&::-webkit-inner-spin-button]:hidden"
+      class="min-w-0 flex-1 cursor-text border-none bg-transparent pr-1.5 font-[inherit] text-xs text-surface outline-none [&::-webkit-inner-spin-button]:hidden"
       :value="displayValue"
       :min="min === -Infinity ? undefined : min"
       :max="max === Infinity ? undefined : max"
@@ -126,8 +129,7 @@ function onKeydown(e: KeyboardEvent) {
     />
     <span
       v-else
-      class="flex min-w-0 flex-1 cursor-ew-resize select-none items-center truncate pr-1.5 text-xs"
-      @pointerdown="startScrub"
+      class="flex flex-1 select-none items-center truncate pr-1.5 text-xs overflow-hidden"
     >
       <span class="flex-1 text-surface">{{ displayValue }}</span>
       <span v-if="suffix" class="shrink-0 text-muted">{{ suffix }}</span>

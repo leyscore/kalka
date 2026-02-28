@@ -36,7 +36,7 @@ if (!('test' in params)) {
         <LayersPanel />
       </SplitterPanel>
       <SplitterResizeHandle class="group relative z-10 -mx-1 w-2 cursor-col-resize">
-        <div class="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 group-hover:bg-accent group-data-[state=drag]:bg-accent" />
+        <div class="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2" />
       </SplitterResizeHandle>
       <SplitterPanel :default-size="70" :min-size="30" class="flex">
         <div class="relative flex min-w-0 flex-1">
@@ -45,7 +45,7 @@ if (!('test' in params)) {
         </div>
       </SplitterPanel>
       <SplitterResizeHandle class="group relative z-10 -mx-1 w-2 cursor-col-resize">
-        <div class="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 group-hover:bg-accent group-data-[state=drag]:bg-accent" />
+        <div class="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2" />
       </SplitterResizeHandle>
       <SplitterPanel :default-size="15" :min-size="10" :max-size="30" class="flex">
         <PropertiesPanel />
