@@ -13,6 +13,7 @@ import type {
 } from 'canvaskit-wasm'
 
 export interface RenderOverlays {
+  editingTextId?: string | null
   marquee?: { x: number; y: number; width: number; height: number } | null
   snapGuides?: SnapGuide[]
   rotationPreview?: { nodeId: string; angle: number } | null
@@ -161,6 +162,7 @@ export class SkiaRenderer {
 
     if (selectedIds.size === 1) {
       const id = [...selectedIds][0]
+      if (overlays.editingTextId === id) return
       const node = graph.getNode(id)
       if (!node) return
 
@@ -558,7 +560,9 @@ export class SkiaRenderer {
       canvas.rotate(rotation, node.width / 2, node.height / 2)
     }
 
-    this.renderShape(canvas, node)
+    if (overlays.editingTextId !== nodeId) {
+      this.renderShape(canvas, node)
+    }
 
     // Drop target highlight
     if (overlays.dropTargetId === nodeId) {

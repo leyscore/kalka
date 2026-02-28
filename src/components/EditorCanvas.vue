@@ -69,7 +69,7 @@ function onTextKeyDown(e: KeyboardEvent) {
     <canvas ref="canvasRef" :style="{ cursor }" class="block size-full" />
     <textarea
       v-if="editingNode"
-      class="absolute z-10 resize-none overflow-hidden border border-accent bg-transparent p-0 font-normal text-black outline-none"
+      class="absolute z-10 resize-none overflow-hidden border-none bg-transparent p-0 font-normal text-black outline-none"
       :style="textOverlayStyle!"
       :value="editingNode.text"
       @input="onTextInput"

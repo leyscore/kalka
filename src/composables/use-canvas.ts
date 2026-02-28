@@ -54,6 +54,7 @@ export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, store: Edito
     renderer.panY = store.state.panY
     renderer.zoom = store.state.zoom
     renderer.render(store.graph, store.state.selectedIds, {
+      editingTextId: store.state.editingTextId,
       marquee: store.state.marquee,
       snapGuides: store.state.snapGuides,
       rotationPreview: store.state.rotationPreview,
