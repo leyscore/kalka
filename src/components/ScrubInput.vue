@@ -34,19 +34,26 @@ const displayValue = computed(() => Math.round(props.modelValue))
 
 function startScrub(e: PointerEvent) {
   e.preventDefault()
-  scrubbing.value = true
-  let startX = e.clientX
+  const startX = e.clientX
+  let lastX = startX
   let accumulated = props.modelValue
   const valueBeforeScrub = props.modelValue
-  document.body.style.cursor = 'ew-resize'
+  let hasMoved = false
 
   stopMove = useEventListener(document, 'pointermove', (ev: PointerEvent) => {
-    const dx = ev.clientX - startX
-    startX = ev.clientX
-    accumulated += dx * props.step * props.sensitivity
-    const clamped = Math.round(Math.min(props.max, Math.max(props.min, accumulated)))
-    if (clamped !== props.modelValue) {
-      emit('update:modelValue', clamped)
+    const dx = ev.clientX - lastX
+    lastX = ev.clientX
+    if (!hasMoved && Math.abs(ev.clientX - startX) > 2) {
+      hasMoved = true
+      scrubbing.value = true
+      document.body.style.cursor = 'ew-resize'
+    }
+    if (hasMoved) {
+      accumulated += dx * props.step * props.sensitivity
+      const clamped = Math.round(Math.min(props.max, Math.max(props.min, accumulated)))
+      if (clamped !== props.modelValue) {
+        emit('update:modelValue', clamped)
+      }
     }
   })
 
@@ -55,8 +62,12 @@ function startScrub(e: PointerEvent) {
     document.body.style.cursor = ''
     stopMove?.()
     stopUp?.()
-    if (props.modelValue !== valueBeforeScrub) {
-      emit('commit', props.modelValue, valueBeforeScrub)
+    if (hasMoved) {
+      if (props.modelValue !== valueBeforeScrub) {
+        emit('commit', props.modelValue, valueBeforeScrub)
+      }
+    } else {
+      startEdit()
     }
   })
 }
@@ -115,8 +126,11 @@ function onKeydown(e: KeyboardEvent) {
     />
     <span
       v-else
-      class="min-w-0 flex-1 cursor-text truncate pr-1.5 text-xs text-surface"
-      @click="startEdit"
-    >{{ displayValue }}{{ suffix ?? '' }}</span>
+      class="flex min-w-0 flex-1 cursor-ew-resize select-none items-center truncate pr-1.5 text-xs"
+      @pointerdown="startScrub"
+    >
+      <span class="flex-1 text-surface">{{ displayValue }}</span>
+      <span v-if="suffix" class="shrink-0 text-muted">{{ suffix }}</span>
+    </span>
   </div>
 </template>
