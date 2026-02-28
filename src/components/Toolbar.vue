@@ -7,6 +7,8 @@ import IconLayoutGrid from '~icons/lucide/layout-grid'
 import IconSquare from '~icons/lucide/square'
 import IconCircle from '~icons/lucide/circle'
 import IconMinus from '~icons/lucide/minus'
+import IconTriangle from '~icons/lucide/triangle'
+import IconStar from '~icons/lucide/star'
 import IconPenTool from '~icons/lucide/pen-tool'
 import IconType from '~icons/lucide/type'
 import IconHand from '~icons/lucide/hand'
@@ -25,6 +27,8 @@ const toolIcons: Record<Tool, typeof IconSquare> = {
   RECTANGLE: IconSquare,
   ELLIPSE: IconCircle,
   LINE: IconMinus,
+  POLYGON: IconTriangle,
+  STAR: IconStar,
   PEN: IconPenTool,
   TEXT: IconType,
   HAND: IconHand
@@ -37,9 +41,25 @@ const toolLabels: Record<Tool, string> = {
   RECTANGLE: 'Rectangle',
   ELLIPSE: 'Ellipse',
   LINE: 'Line',
+  POLYGON: 'Polygon',
+  STAR: 'Star',
   PEN: 'Pen',
   TEXT: 'Text',
   HAND: 'Hand'
+}
+
+const toolShortcuts: Record<Tool, string> = {
+  SELECT: 'V',
+  FRAME: 'F',
+  SECTION: 'S',
+  RECTANGLE: 'R',
+  ELLIPSE: 'O',
+  LINE: 'L',
+  POLYGON: '',
+  STAR: '',
+  PEN: 'P',
+  TEXT: 'T',
+  HAND: 'H'
 }
 
 function isActive(tool: typeof TOOLS[number]): boolean {
@@ -99,7 +119,8 @@ function activeKeyForTool(tool: typeof TOOLS[number]): Tool {
                   @select="store.setTool(sub)"
                 >
                   <component :is="toolIcons[sub]" class="size-3.5" />
-                  {{ toolLabels[sub] }}
+                  <span class="flex-1">{{ toolLabels[sub] }}</span>
+                  <span v-if="toolShortcuts[sub]" class="text-[11px] text-muted">{{ toolShortcuts[sub] }}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenuPortal>

@@ -835,6 +835,13 @@ export class SkiaRenderer {
       case 'LINE':
         canvas.drawLine(0, 0, node.width, node.height, paint)
         return
+      case 'POLYGON':
+      case 'STAR': {
+        const path = this.makePolygonPath(node)
+        canvas.drawPath(path, paint)
+        path.delete()
+        return
+      }
     }
 
     const hasRadius =
@@ -1181,6 +1188,13 @@ export class SkiaRenderer {
       case 'LINE':
         canvas.drawLine(0, 0, node.width, node.height, this.fillPaint)
         break
+      case 'POLYGON':
+      case 'STAR': {
+        const path = this.makePolygonPath(node)
+        canvas.drawPath(path, this.fillPaint)
+        path.delete()
+        break
+      }
       default:
         if (hasRadius) {
           canvas.drawRRect(this.makeRRect(node), this.fillPaint)
@@ -1206,6 +1220,13 @@ export class SkiaRenderer {
           canvas.drawOval(rect, this.strokePaint)
         }
         break
+      case 'POLYGON':
+      case 'STAR': {
+        const path = this.makePolygonPath(node)
+        canvas.drawPath(path, this.strokePaint)
+        path.delete()
+        break
+      }
       default:
         if (hasRadius) {
           canvas.drawRRect(this.makeRRect(node), this.strokePaint)
@@ -1213,6 +1234,31 @@ export class SkiaRenderer {
           canvas.drawRect(rect, this.strokePaint)
         }
     }
+  }
+
+  private makePolygonPath(node: SceneNode): Path {
+    const path = new this.ck.Path()
+    const cx = node.width / 2
+    const cy = node.height / 2
+    const rx = node.width / 2
+    const ry = node.height / 2
+    const n = Math.max(3, node.pointCount)
+    const isStar = node.type === 'STAR'
+    const innerRatio = isStar ? node.starInnerRadius : 1
+    const totalPoints = isStar ? n * 2 : n
+    const angleOffset = -Math.PI / 2
+
+    for (let i = 0; i < totalPoints; i++) {
+      const angle = angleOffset + (2 * Math.PI * i) / totalPoints
+      const isInner = isStar && i % 2 === 1
+      const r = isInner ? innerRatio : 1
+      const px = cx + rx * r * Math.cos(angle)
+      const py = cy + ry * r * Math.sin(angle)
+      if (i === 0) path.moveTo(px, py)
+      else path.lineTo(px, py)
+    }
+    path.close()
+    return path
   }
 
   private makeRRect(node: SceneNode): Float32Array {

@@ -20,7 +20,7 @@ import { computeVectorBounds } from '../engine/vector'
 import type { SceneNode, NodeType, Fill, LayoutMode, VectorVertex, VectorSegment, VectorRegion, VectorNetwork } from '../engine/scene-graph'
 import type { SnapGuide } from '../engine/snap'
 
-export type Tool = 'SELECT' | 'FRAME' | 'SECTION' | 'RECTANGLE' | 'ELLIPSE' | 'LINE' | 'TEXT' | 'PEN' | 'HAND'
+export type Tool = 'SELECT' | 'FRAME' | 'SECTION' | 'RECTANGLE' | 'ELLIPSE' | 'LINE' | 'POLYGON' | 'STAR' | 'TEXT' | 'PEN' | 'HAND'
 
 export interface ToolDef {
   key: Tool
@@ -32,7 +32,7 @@ export interface ToolDef {
 export const TOOLS: ToolDef[] = [
   { key: 'SELECT', label: 'Move', shortcut: 'V' },
   { key: 'FRAME', label: 'Frame', shortcut: 'F', flyout: ['FRAME', 'SECTION'] },
-  { key: 'RECTANGLE', label: 'Rectangle', shortcut: 'R', flyout: ['RECTANGLE', 'ELLIPSE', 'LINE'] },
+  { key: 'RECTANGLE', label: 'Rectangle', shortcut: 'R', flyout: ['RECTANGLE', 'LINE', 'ELLIPSE', 'POLYGON', 'STAR'] },
   { key: 'PEN', label: 'Pen', shortcut: 'P' },
   { key: 'TEXT', label: 'Text', shortcut: 'T' },
   { key: 'HAND', label: 'Hand', shortcut: 'H' }
@@ -57,6 +57,8 @@ const DEFAULT_FILLS: Record<string, Fill> = {
   SECTION: SECTION_DEFAULT_FILL,
   RECTANGLE: DEFAULT_SHAPE_FILL,
   ELLIPSE: DEFAULT_SHAPE_FILL,
+  POLYGON: DEFAULT_SHAPE_FILL,
+  STAR: DEFAULT_SHAPE_FILL,
   LINE: BLACK_FILL,
   TEXT: BLACK_FILL
 }
@@ -1194,6 +1196,13 @@ export function createEditorStore() {
     if (type === 'SECTION') {
       overrides.strokes = [{ ...SECTION_DEFAULT_STROKE }]
       overrides.cornerRadius = 5
+    }
+    if (type === 'POLYGON') {
+      overrides.pointCount = 3
+    }
+    if (type === 'STAR') {
+      overrides.pointCount = 5
+      overrides.starInnerRadius = 0.38
     }
     const node = graph.createNode(type, pid, overrides)
     const id = node.id

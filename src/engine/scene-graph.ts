@@ -203,6 +203,9 @@ export interface SceneNode {
   borderLeftWeight: number
   independentStrokeWeights: boolean
 
+  pointCount: number
+  starInnerRadius: number
+
   componentId: string | null
   overrides: Record<string, unknown>
 }
@@ -279,6 +282,8 @@ function createDefaultNode(type: NodeType, overrides: Partial<SceneNode> = {}): 
     borderBottomWeight: 0,
     borderLeftWeight: 0,
     independentStrokeWeights: false,
+    pointCount: 5,
+    starInnerRadius: 0.38,
     componentId: null,
     overrides: {},
     ...overrides
