@@ -34,6 +34,7 @@ export default defineConfig({
           { text: 'Architecture', link: '/guide/architecture' },
           { text: 'Tech Stack', link: '/guide/tech-stack' },
           { text: 'Comparison', link: '/guide/comparison' },
+          { text: 'Figma Feature Matrix', link: '/guide/figma-comparison' },
         ],
       },
       {
