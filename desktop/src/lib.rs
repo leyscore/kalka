@@ -1,6 +1,6 @@
 use tauri::{
     menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem, SubmenuBuilder},
-    Emitter,
+    Emitter, Manager,
 };
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -8,6 +8,16 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .on_menu_event(|app, event| {
+            if event.id().0.as_str() == "dev-tools" {
+                if let Some(window) = app.get_webview_window("main") {
+                    if window.is_devtools_open() {
+                        window.close_devtools();
+                    } else {
+                        window.open_devtools();
+                    }
+                }
+                return;
+            }
             let _ = app.emit("menu-event", event.id().0.as_str());
         })
         .setup(|app| {
@@ -140,6 +150,13 @@ pub fn run() {
                         .build(app)?,
                 )
                 .item(&PredefinedMenuItem::fullscreen(app, None)?)
+                .separator()
+                .item(
+                    &MenuItemBuilder::new("Developer Tools")
+                        .id("dev-tools")
+                        .accelerator("CmdOrCtrl+Alt+I")
+                        .build(app)?,
+                )
                 .build()?;
 
             let object_menu = SubmenuBuilder::new(app, "Object")
