@@ -546,7 +546,19 @@ export function createEditorStore() {
   function updateNode(id: string, changes: Partial<SceneNode>) {
     graph.updateNode(id, changes)
     runLayoutForNode(id)
+    syncIfInsideComponent(id)
     requestRender()
+  }
+
+  function syncIfInsideComponent(nodeId: string) {
+    let current = graph.getNode(nodeId)
+    while (current) {
+      if (current.type === 'COMPONENT') {
+        graph.syncInstances(current.id)
+        return
+      }
+      current = current.parentId ? graph.getNode(current.parentId) : undefined
+    }
   }
 
   function updateNodeWithUndo(id: string, changes: Partial<SceneNode>, label = 'Update') {
@@ -558,16 +570,19 @@ export function createEditorStore() {
     }
     graph.updateNode(id, changes)
     runLayoutForNode(id)
+    syncIfInsideComponent(id)
     undo.push({
       label,
       forward: () => {
         graph.updateNode(id, changes)
         runLayoutForNode(id)
+        syncIfInsideComponent(id)
         requestRender()
       },
       inverse: () => {
         graph.updateNode(id, previous)
         runLayoutForNode(id)
+        syncIfInsideComponent(id)
         requestRender()
       }
     })
@@ -1425,6 +1440,7 @@ export function createEditorStore() {
       const n = graph.getNode(id)
       if (n) finals.set(id, { x: n.x, y: n.y })
     }
+    for (const [id] of finals) syncIfInsideComponent(id)
     undo.push({
       label: 'Move',
       forward: () => {
@@ -1432,6 +1448,7 @@ export function createEditorStore() {
           graph.updateNode(id, pos)
           runLayoutForNode(id)
         }
+        for (const [id] of finals) syncIfInsideComponent(id)
         requestRender()
       },
       inverse: () => {
@@ -1439,6 +1456,7 @@ export function createEditorStore() {
           graph.updateNode(id, pos)
           runLayoutForNode(id)
         }
+        for (const [id] of originals) syncIfInsideComponent(id)
         requestRender()
       }
     })
@@ -1451,16 +1469,19 @@ export function createEditorStore() {
     const node = graph.getNode(nodeId)
     if (!node) return
     const finalRect = { x: node.x, y: node.y, width: node.width, height: node.height }
+    syncIfInsideComponent(nodeId)
     undo.push({
       label: 'Resize',
       forward: () => {
         graph.updateNode(nodeId, finalRect)
         runLayoutForNode(nodeId)
+        syncIfInsideComponent(nodeId)
         requestRender()
       },
       inverse: () => {
         graph.updateNode(nodeId, origRect)
         runLayoutForNode(nodeId)
+        syncIfInsideComponent(nodeId)
         requestRender()
       }
     })

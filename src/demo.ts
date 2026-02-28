@@ -35,6 +35,12 @@ function thinStroke(color: Color) {
   return [{ color, weight: 1, opacity: 1, visible: true, align: 'INSIDE' as const }]
 }
 
+function makeComponent(store: EditorStore, ids: string[]): string {
+  store.select(ids)
+  store.createComponentFromSelection()
+  return [...store.state.selectedIds][0]
+}
+
 export function createDemoShapes(store: EditorStore) {
   const { graph } = store
 
@@ -63,8 +69,7 @@ export function createDemoShapes(store: EditorStore) {
     fontWeight: 600,
     fills: [solid(WHITE)]
   })
-  store.select([btnId])
-  store.createComponentFromSelection()
+  const btnCompId = makeComponent(store, [btnId])
 
   // Secondary button
   const btn2Id = store.createShape('FRAME', 176, 48, 100, 40, compSectionId)
@@ -88,8 +93,7 @@ export function createDemoShapes(store: EditorStore) {
     fontWeight: 500,
     fills: [solid(BLACK)]
   })
-  store.select([btn2Id])
-  store.createComponentFromSelection()
+  makeComponent(store, [btn2Id])
 
   // Chip / Tag component
   const chipId = store.createShape('FRAME', 304, 52, 80, 28, compSectionId)
@@ -112,8 +116,7 @@ export function createDemoShapes(store: EditorStore) {
     fontWeight: 500,
     fills: [solid(INDIGO)]
   })
-  store.select([chipId])
-  store.createComponentFromSelection()
+  makeComponent(store, [chipId])
 
   // Avatar component
   const avatarId = store.createShape('ELLIPSE', 416, 48, 40, 40, compSectionId)
@@ -124,8 +127,7 @@ export function createDemoShapes(store: EditorStore) {
       { color: BLUE, position: 1 }
     ])]
   })
-  store.select([avatarId])
-  store.createComponentFromSelection()
+  makeComponent(store, [avatarId])
 
   // Card component (auto layout)
   const cardId = store.createShape('FRAME', 32, 128, 280, 160, compSectionId)
@@ -171,8 +173,7 @@ export function createDemoShapes(store: EditorStore) {
       { color: TEAL, position: 1 }
     ])]
   })
-  store.select([cardId])
-  store.createComponentFromSelection()
+  const cardCompId = makeComponent(store, [cardId])
 
   // Input component
   const inputId = store.createShape('FRAME', 344, 128, 240, 40, compSectionId)
@@ -196,8 +197,7 @@ export function createDemoShapes(store: EditorStore) {
     fontWeight: 400,
     fills: [solid(GRAY_500)]
   })
-  store.select([inputId])
-  store.createComponentFromSelection()
+  makeComponent(store, [inputId])
 
   // Badge component
   const badgeId = store.createShape('FRAME', 344, 196, 48, 24, compSectionId)
@@ -225,8 +225,7 @@ export function createDemoShapes(store: EditorStore) {
     fontWeight: 600,
     fills: [solid(GREEN)]
   })
-  store.select([badgeId])
-  store.createComponentFromSelection()
+  const badgeCompId = makeComponent(store, [badgeId])
 
   // Color swatches row
   const swatches = [
@@ -288,6 +287,14 @@ export function createDemoShapes(store: EditorStore) {
     fontWeight: 600,
     fills: [solid(BLACK)]
   })
+
+  // Button instance in the header
+  const headerBtn = graph.createInstance(btnCompId, frameId, { x: 400, y: 8 })
+  if (headerBtn) graph.updateNode(headerBtn.id, { x: 400, y: 8 })
+
+  // Badge instance next to title
+  const headerBadge = graph.createInstance(badgeCompId, frameId, { x: 200, y: 18 })
+  if (headerBadge) graph.updateNode(headerBadge.id, { x: 200, y: 18 })
 
   // Stat cards row (instances from Card component, simulated as frames)
   const stats = [

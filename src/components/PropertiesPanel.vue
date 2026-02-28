@@ -9,6 +9,7 @@ import LayoutSection from './properties/LayoutSection.vue'
 import PageSection from './properties/PageSection.vue'
 import PositionSection from './properties/PositionSection.vue'
 import StrokeSection from './properties/StrokeSection.vue'
+import EffectsSection from './properties/EffectsSection.vue'
 import TypographySection from './properties/TypographySection.vue'
 
 const store = useEditorStore()
@@ -68,26 +69,13 @@ const isComponentType = computed(() => {
         </button>
       </div>
 
-      <div v-if="node.type === 'COMPONENT'" class="flex flex-col gap-1 border-b border-border px-3 py-2">
-        <button
-          class="rounded bg-[#9747ff]/10 px-2 py-1 text-left text-[11px] text-[#9747ff] hover:bg-[#9747ff]/20"
-          @click="store.createInstanceFromComponent(node.id)"
-        >
-          Create Instance
-        </button>
-      </div>
-
       <PositionSection />
       <LayoutSection />
       <AppearanceSection />
       <TypographySection v-if="node.type === 'TEXT'" />
       <FillSection />
       <StrokeSection />
-
-      <!-- Effects -->
-      <div class="border-b border-border px-3 py-2">
-        <label class="mb-1.5 block text-[11px] text-muted">Effects</label>
-      </div>
+      <EffectsSection />
 
       <!-- Export -->
       <div class="border-b border-border px-3 py-2">

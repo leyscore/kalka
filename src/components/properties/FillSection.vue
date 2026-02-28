@@ -40,7 +40,7 @@ function remove(index: number) {
   <div v-if="node" class="border-b border-border px-3 py-2">
     <div class="flex items-center justify-between">
       <label class="mb-1 block text-[11px] text-muted">Fill</label>
-      <button class="cursor-pointer rounded border-none bg-transparent px-1 text-base leading-none text-muted hover:bg-hover hover:text-surface" @click="add">+</button>
+      <button class="flex size-5 cursor-pointer items-center justify-center rounded border-none bg-transparent text-sm leading-none text-muted hover:bg-hover hover:text-surface" @click="add">+</button>
     </div>
     <div v-for="(fill, i) in node.fills" :key="i" class="group flex items-center gap-1.5 py-0.5">
       <FillPicker :fill="fill" @update="updateFill(i, $event)" />
@@ -64,7 +64,7 @@ function remove(index: number) {
         <icon-lucide-eye v-if="fill.visible" class="size-3.5" />
         <icon-lucide-eye-off v-else class="size-3.5" />
       </button>
-      <button class="cursor-pointer border-none bg-transparent p-0 text-sm leading-none text-muted hover:text-surface" @click="remove(i)">−</button>
+      <button class="flex size-5 cursor-pointer items-center justify-center rounded border-none bg-transparent text-sm leading-none text-muted hover:bg-hover hover:text-surface" @click="remove(i)">−</button>
     </div>
   </div>
 </template>
