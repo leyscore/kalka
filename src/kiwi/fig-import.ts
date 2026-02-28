@@ -162,13 +162,13 @@ function mapStackCounterAlign(align?: string): LayoutCounterAlign {
 
 function mapFontWeight(style?: string): number {
   if (!style) return 400
-  const s = style.toLowerCase()
+  const s = style.toLowerCase().replace(/\s+/g, '')
   if (s.includes('thin') || s.includes('hairline')) return 100
-  if (s.includes('extralight') || s.includes('ultra light')) return 200
+  if (s.includes('extralight') || s.includes('ultralight')) return 200
   if (s.includes('light')) return 300
   if (s.includes('medium')) return 500
-  if (s.includes('semibold') || s.includes('demi bold')) return 600
-  if (s.includes('extrabold') || s.includes('ultra bold')) return 800
+  if (s.includes('semibold') || s.includes('demibold')) return 600
+  if (s.includes('extrabold') || s.includes('ultrabold')) return 800
   if (s.includes('black') || s.includes('heavy')) return 900
   if (s.includes('bold')) return 700
   return 400
