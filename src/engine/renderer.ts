@@ -1,5 +1,5 @@
 import {
-  SELECTION_COLOR, SNAP_COLOR, CANVAS_BG_COLOR, HANDLE_SIZE, ROTATION_HANDLE_OFFSET,
+  SELECTION_COLOR, SNAP_COLOR, CANVAS_BG_COLOR, ROTATION_HANDLE_OFFSET,
   RULER_SIZE, RULER_BG_COLOR, RULER_TICK_COLOR, RULER_TEXT_COLOR,
   RULER_BADGE_HEIGHT, RULER_BADGE_PADDING, RULER_BADGE_RADIUS, RULER_BADGE_EXCLUSION,
   RULER_TEXT_BASELINE, RULER_MAJOR_TICK, RULER_MINOR_TICK, RULER_HIGHLIGHT_ALPHA,
@@ -15,6 +15,7 @@ import type {
   Paint,
   Font,
   FontMgr,
+  FontWeight,
   TypefaceFontProvider
 } from 'canvaskit-wasm'
 
@@ -715,7 +716,7 @@ export class SkiaRenderer {
           color: this.fillPaint.getColor(),
           fontFamilies: [node.fontFamily || 'Inter'],
           fontSize: node.fontSize || 14,
-          fontStyle: { weight: node.fontWeight || 400 },
+          fontStyle: { weight: { value: node.fontWeight || 400 } as FontWeight },
           letterSpacing: node.letterSpacing || 0,
           heightMultiplier: node.lineHeight ? node.lineHeight / (node.fontSize || 14) : undefined
         }

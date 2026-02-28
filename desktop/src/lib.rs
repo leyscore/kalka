@@ -8,6 +8,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .on_menu_event(|app, event| {
+            #[cfg(debug_assertions)]
             if event.id().0.as_str() == "dev-tools" {
                 if let Some(window) = app.get_webview_window("main") {
                     if window.is_devtools_open() {

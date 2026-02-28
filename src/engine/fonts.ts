@@ -9,10 +9,8 @@ export interface FontInfo {
 
 const loadedFamilies = new Map<string, ArrayBuffer>()
 let fontProvider: TypefaceFontProvider | null = null
-let ck: CanvasKit | null = null
 
-export function initFontService(canvasKit: CanvasKit, provider: TypefaceFontProvider) {
-  ck = canvasKit
+export function initFontService(_canvasKit: CanvasKit, provider: TypefaceFontProvider) {
   fontProvider = provider
 }
 

@@ -17,5 +17,6 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": ["src/**/*.ts", "src/**/*.vue"],
+  "exclude": ["src/kiwi/index.ts", "src/kiwi/client.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
