@@ -5,8 +5,8 @@ import { importNodeChanges } from './fig-import'
 import { decodeBinarySchema, compileSchema, ByteBuffer } from './kiwi-schema'
 import { isZstdCompressed } from './protocol'
 
-import type { SceneGraph } from '../engine/scene-graph'
 import type { FigmaMessage } from './codec'
+import type { SceneGraph } from '@/engine/scene-graph'
 
 interface FigKiwiPayload {
   schemaDeflated: Uint8Array

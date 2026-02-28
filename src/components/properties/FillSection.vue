@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import FillPicker from '../FillPicker.vue'
-import ScrubInput from '../ScrubInput.vue'
-import { useNodeProps } from '../../composables/use-node-props'
-import { DEFAULT_SHAPE_FILL } from '../../constants'
-import { colorToHexRaw } from '../../engine/color'
+import FillPicker from '@/components/FillPicker.vue'
+import ScrubInput from '@/components/ScrubInput.vue'
+import { useNodeProps } from '@/composables/use-node-props'
+import { DEFAULT_SHAPE_FILL } from '@/constants'
+import { colorToHexRaw } from '@/engine/color'
 
-import type { Fill } from '../../engine/scene-graph'
+import type { Fill } from '@/engine/scene-graph'
 
 const { store, node } = useNodeProps()
 

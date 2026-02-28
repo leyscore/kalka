@@ -1,6 +1,6 @@
 import { parse, formatHex, converter } from 'culori'
 
-import type { Color } from '../types'
+import type { Color } from '@/types'
 
 const toRgb = converter('rgb')
 

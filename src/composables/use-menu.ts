@@ -1,8 +1,8 @@
 import { onUnmounted } from 'vue'
 
-import { IS_TAURI } from '../constants'
+import { IS_TAURI } from '@/constants'
 
-import type { EditorStore } from '../stores/editor'
+import type { EditorStore } from '@/stores/editor'
 
 export async function openFileDialog(store: EditorStore) {
   if (IS_TAURI) {

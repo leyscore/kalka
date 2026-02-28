@@ -1,10 +1,10 @@
 import { inflateSync, deflateSync } from 'fflate'
 
-import { initCodec, getCompiledSchema, getSchemaBytes } from '../kiwi/codec'
-import { decodeBinarySchema, compileSchema, ByteBuffer } from '../kiwi/kiwi-schema'
+import { initCodec, getCompiledSchema, getSchemaBytes } from '@/kiwi/codec'
+import { decodeBinarySchema, compileSchema, ByteBuffer } from '@/kiwi/kiwi-schema'
+
 import { decodeVectorNetworkBlob, encodeVectorNetworkBlob } from './vector'
 
-import type { NodeChange as KiwiNodeChange } from '../kiwi/codec'
 import type {
   SceneGraph,
   SceneNode,
@@ -16,6 +16,7 @@ import type {
   LayoutCounterAlign,
   VectorNetwork
 } from './scene-graph'
+import type { NodeChange as KiwiNodeChange } from '@/kiwi/codec'
 
 interface FigmaClipboardMeta {
   fileKey: string

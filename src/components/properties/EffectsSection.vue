@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import ColorPicker from '../ColorPicker.vue'
-import ScrubInput from '../ScrubInput.vue'
-import { useNodeProps } from '../../composables/use-node-props'
-import { colorToHexRaw, parseColor } from '../../engine/color'
+import ColorPicker from '@/components/ColorPicker.vue'
+import ScrubInput from '@/components/ScrubInput.vue'
+import { useNodeProps } from '@/composables/use-node-props'
+import { colorToHexRaw, parseColor } from '@/engine/color'
 
-import type { Color, Effect } from '../../engine/scene-graph'
+import type { Color, Effect } from '@/engine/scene-graph'
 
 const { store, node } = useNodeProps()
 

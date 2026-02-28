@@ -10,12 +10,12 @@ import {
   ROTATION_HIT_OFFSET,
   DEFAULT_TEXT_WIDTH,
   DEFAULT_TEXT_HEIGHT
-} from '../constants'
-import { computeSelectionBounds, computeSnap } from '../engine/snap'
+} from '@/constants'
+import { computeSelectionBounds, computeSnap } from '@/engine/snap'
 
-import type { NodeType, SceneNode } from '../engine/scene-graph'
-import type { EditorStore, Tool } from '../stores/editor'
-import type { Rect } from '../types'
+import type { NodeType, SceneNode } from '@/engine/scene-graph'
+import type { EditorStore, Tool } from '@/stores/editor'
+import type { Rect } from '@/types'
 
 type HandlePosition = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w'
 
@@ -210,11 +210,8 @@ function hitTestRotationHandle(
 export function useCanvasInput(
   canvasRef: Ref<HTMLCanvasElement | null>,
   store: EditorStore,
-  hitTestSectionTitle: (cx: number, cy: number) => import('../engine/scene-graph').SceneNode | null,
-  hitTestComponentLabel: (
-    cx: number,
-    cy: number
-  ) => import('../engine/scene-graph').SceneNode | null
+  hitTestSectionTitle: (cx: number, cy: number) => import('@/engine/scene-graph').SceneNode | null,
+  hitTestComponentLabel: (cx: number, cy: number) => import('@/engine/scene-graph').SceneNode | null
 ) {
   const drag = ref<DragState | null>(null)
   const cursorOverride = ref<string | null>(null)

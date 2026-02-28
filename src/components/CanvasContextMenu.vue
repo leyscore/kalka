@@ -12,7 +12,7 @@ import {
   ContextMenuPortal
 } from 'reka-ui'
 
-import { useEditorStore } from '../stores/editor'
+import { useEditorStore } from '@/stores/editor'
 
 const store = useEditorStore()
 

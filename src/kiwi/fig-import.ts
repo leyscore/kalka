@@ -1,6 +1,7 @@
-import { SceneGraph } from '../engine/scene-graph'
-import { decodeVectorNetworkBlob } from '../engine/vector'
+import { SceneGraph } from '@/engine/scene-graph'
+import { decodeVectorNetworkBlob } from '@/engine/vector'
 
+import type { NodeChange, Paint, Effect as KiwiEffect, GUID } from './codec'
 import type {
   NodeType,
   Fill,
@@ -24,8 +25,7 @@ import type {
   TextDecoration,
   ArcData,
   VectorNetwork
-} from '../engine/scene-graph'
-import type { NodeChange, Paint, Effect as KiwiEffect, GUID } from './codec'
+} from '@/engine/scene-graph'
 
 function ext(nc: NodeChange): Record<string, unknown> {
   return nc as unknown as Record<string, unknown>

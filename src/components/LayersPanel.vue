@@ -16,7 +16,7 @@ import IconSquare from '~icons/lucide/square'
 import IconType from '~icons/lucide/type'
 
 import PagesPanel from './PagesPanel.vue'
-import { useEditorStore } from '../stores/editor'
+import { useEditorStore } from '@/stores/editor'
 
 const store = useEditorStore()
 

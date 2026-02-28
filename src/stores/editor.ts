@@ -8,7 +8,7 @@ import {
   SECTION_DEFAULT_STROKE,
   CANVAS_BG_COLOR,
   ZOOM_SENSITIVITY
-} from '../constants'
+} from '@/constants'
 import {
   parseFigmaClipboard,
   importClipboardNodes,
@@ -16,13 +16,13 @@ import {
   buildFigmaClipboardHTML,
   buildOpenPencilClipboardHTML,
   prefetchFigmaSchema
-} from '../engine/clipboard'
-import { exportFigFile } from '../engine/fig-export'
-import { computeLayout, computeAllLayouts } from '../engine/layout'
-import { SceneGraph } from '../engine/scene-graph'
-import { UndoManager } from '../engine/undo'
-import { computeVectorBounds } from '../engine/vector'
-import { readFigFile } from '../kiwi/fig-file'
+} from '@/engine/clipboard'
+import { exportFigFile } from '@/engine/fig-export'
+import { computeLayout, computeAllLayouts } from '@/engine/layout'
+import { SceneGraph } from '@/engine/scene-graph'
+import { UndoManager } from '@/engine/undo'
+import { computeVectorBounds } from '@/engine/vector'
+import { readFigFile } from '@/kiwi/fig-file'
 
 import type {
   SceneNode,
@@ -33,9 +33,9 @@ import type {
   VectorSegment,
   VectorRegion,
   VectorNetwork
-} from '../engine/scene-graph'
-import type { SnapGuide } from '../engine/snap'
-import type { Color, Rect } from '../types'
+} from '@/engine/scene-graph'
+import type { SnapGuide } from '@/engine/snap'
+import type { Color, Rect } from '@/types'
 
 export type Tool =
   | 'SELECT'
@@ -115,7 +115,7 @@ export function createEditorStore() {
   let fileHandle: FileSystemFileHandle | null = null
   let filePath: string | null = null
   let _ck: import('canvaskit-wasm').CanvasKit | null = null
-  let _renderer: import('../engine/renderer').SkiaRenderer | null = null
+  let _renderer: import('@/engine/renderer').SkiaRenderer | null = null
 
   prefetchFigmaSchema()
 
@@ -505,7 +505,7 @@ export function createEditorStore() {
 
   function setCanvasKit(
     ck: import('canvaskit-wasm').CanvasKit,
-    renderer: import('../engine/renderer').SkiaRenderer
+    renderer: import('@/engine/renderer').SkiaRenderer
   ) {
     _ck = ck
     _renderer = renderer

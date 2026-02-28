@@ -17,10 +17,10 @@ import {
 } from 'reka-ui'
 
 import ScrubInput from './ScrubInput.vue'
-import { colorToHexRaw, colorToRgba255, parseColor } from '../engine/color'
+import { colorToHexRaw, colorToRgba255, parseColor } from '@/engine/color'
 
-import type { Color } from '../types'
-import type { Fill, FillType, GradientStop, GradientTransform } from '../engine/scene-graph'
+import type { Color } from '@/types'
+import type { Fill, FillType, GradientStop, GradientTransform } from '@/engine/scene-graph'
 
 type FillCategory = 'SOLID' | 'GRADIENT' | 'IMAGE'
 type GradientSubtype =

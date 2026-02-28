@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import ScrubInput from '../ScrubInput.vue'
-import { useNodeProps } from '../../composables/use-node-props'
+import ScrubInput from '@/components/ScrubInput.vue'
+import { useNodeProps } from '@/composables/use-node-props'
 
 const { store, node, nodes, updateProp, commitProp } = useNodeProps()
 

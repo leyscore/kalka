@@ -1,12 +1,13 @@
 import { zipSync, deflateSync } from 'fflate'
 
-import { IS_TAURI } from '../constants'
-import { initCodec, getCompiledSchema, getSchemaBytes } from '../kiwi/codec'
+import { IS_TAURI } from '@/constants'
+import { initCodec, getCompiledSchema, getSchemaBytes } from '@/kiwi/codec'
+
 import { encodeVectorNetworkBlob } from './vector'
 
-import type { NodeChange, Paint } from '../kiwi/codec'
 import type { SkiaRenderer } from './renderer'
 import type { SceneGraph, SceneNode } from './scene-graph'
+import type { NodeChange, Paint } from '@/kiwi/codec'
 import type { CanvasKit } from 'canvaskit-wasm'
 
 const THUMBNAIL_1X1 = Uint8Array.from(

@@ -20,9 +20,9 @@ import IconType from '~icons/lucide/type'
 import IconHand from '~icons/lucide/hand'
 import IconChevronDown from '~icons/lucide/chevron-down'
 
-import { TOOLS, useEditorStore } from '../stores/editor'
+import { TOOLS, useEditorStore } from '@/stores/editor'
 
-import type { Tool } from '../stores/editor'
+import type { Tool } from '@/stores/editor'
 
 const store = useEditorStore()
 

@@ -53,12 +53,13 @@ import {
   COMPONENT_LABEL_ICON_GAP,
   RULER_TARGET_PIXEL_SPACING,
   RULER_MAJOR_TOLERANCE
-} from '../constants'
+} from '@/constants'
+
 import { vectorNetworkToPath } from './vector'
 
-import type { Rect } from '../types'
 import type { SceneNode, SceneGraph, Fill } from './scene-graph'
 import type { SnapGuide } from './snap'
+import type { Rect } from '@/types'
 import type { EmbindEnumEntity, Image as CKImage, Path } from 'canvaskit-wasm'
 import type {
   CanvasKit,

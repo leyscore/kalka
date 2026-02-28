@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, nextTick } from 'vue'
 
-import { useEditorStore } from '../stores/editor'
+import { useEditorStore } from '@/stores/editor'
 
 const store = useEditorStore()
 

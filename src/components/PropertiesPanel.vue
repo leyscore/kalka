@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { useEditorStore } from '../stores/editor'
+import { useEditorStore } from '@/stores/editor'
 
 import AppearanceSection from './properties/AppearanceSection.vue'
 import FillSection from './properties/FillSection.vue'

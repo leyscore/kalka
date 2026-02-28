@@ -1,5 +1,5 @@
-import type { Rect } from '../types'
 import type { SceneNode } from './scene-graph'
+import type { Rect } from '@/types'
 
 const SNAP_THRESHOLD = 5
 

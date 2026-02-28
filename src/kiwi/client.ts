@@ -26,7 +26,7 @@ import {
   getKiwiMessageType
 } from './protocol.ts'
 
-import type { ChromeDevToolsTarget } from '../types.ts'
+import type { ChromeDevToolsTarget } from '@/types.ts'
 
 export interface SessionInfo {
   sessionID: number

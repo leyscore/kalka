@@ -1,10 +1,10 @@
 import { useResizeObserver } from '@vueuse/core'
 import { onMounted, onUnmounted, watch, type Ref } from 'vue'
 
-import { getCanvasKit } from '../engine/canvaskit'
-import { SkiaRenderer } from '../engine/renderer'
+import { getCanvasKit } from '@/engine/canvaskit'
+import { SkiaRenderer } from '@/engine/renderer'
 
-import type { EditorStore } from '../stores/editor'
+import type { EditorStore } from '@/stores/editor'
 import type { CanvasKit } from 'canvaskit-wasm'
 
 export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, store: EditorStore) {

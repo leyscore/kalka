@@ -2,9 +2,9 @@
 import { ref, computed, watch } from 'vue'
 import { PopoverRoot, PopoverTrigger, PopoverPortal, PopoverContent } from 'reka-ui'
 
-import { colorToHexRaw, parseColor } from '../engine/color'
+import { colorToHexRaw, parseColor } from '@/engine/color'
 
-import type { Color } from '../types'
+import type { Color } from '@/types'
 
 const props = defineProps<{
   color: Color

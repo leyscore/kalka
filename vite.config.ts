@@ -1,3 +1,5 @@
+import { resolve } from 'path'
+
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
@@ -10,6 +12,11 @@ import { copyFileSync, existsSync } from 'fs'
 const host = process.env.TAURI_DEV_HOST
 
 export default defineConfig(async () => ({
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src')
+    }
+  },
   plugins: [
     {
       name: 'copy-canvaskit-wasm',

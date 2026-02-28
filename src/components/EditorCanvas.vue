@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
-import { useCanvas } from '../composables/use-canvas'
-import { useCanvasInput } from '../composables/use-canvas-input'
-import { useEditorStore } from '../stores/editor'
+import { useCanvas } from '@/composables/use-canvas'
+import { useCanvasInput } from '@/composables/use-canvas-input'
+import { useEditorStore } from '@/stores/editor'
 import CanvasContextMenu from './CanvasContextMenu.vue'
 
 const store = useEditorStore()

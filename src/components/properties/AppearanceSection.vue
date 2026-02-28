@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import ScrubInput from '../ScrubInput.vue'
-import { useNodeProps } from '../../composables/use-node-props'
+import ScrubInput from '@/components/ScrubInput.vue'
+import { useNodeProps } from '@/composables/use-node-props'
 
-import type { SceneNode } from '../../engine/scene-graph'
+import type { SceneNode } from '@/engine/scene-graph'
 
 const { store, node, updateProp, commitProp } = useNodeProps()
 

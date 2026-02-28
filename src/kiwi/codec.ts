@@ -8,7 +8,8 @@
 
 import { decompress as zstdDecompress } from 'fzstd'
 
-import { parseColor } from '../engine/color'
+import { parseColor } from '@/engine/color'
+
 import { compileSchema, encodeBinarySchema } from './kiwi-schema'
 import { isZstdCompressed, getKiwiMessageType } from './protocol.ts'
 import figmaSchema from './schema.ts'
@@ -165,9 +166,9 @@ export function peekMessageType(data: Uint8Array): number | null {
 
 // Type definitions
 
-export type { GUID, Color } from '../types'
+export type { GUID, Color } from '@/types'
 
-import type { Color, GUID, Matrix, Vector } from '../types'
+import type { Color, GUID, Matrix, Vector } from '@/types'
 
 export type { Matrix, Vector }
 

@@ -2,9 +2,9 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 
-import ScrubInput from '../ScrubInput.vue'
-import { useNodeProps } from '../../composables/use-node-props'
-import { listFamilies, loadFont } from '../../engine/fonts'
+import ScrubInput from '@/components/ScrubInput.vue'
+import { useNodeProps } from '@/composables/use-node-props'
+import { listFamilies, loadFont } from '@/engine/fonts'
 
 const { store, node, updateProp, commitProp } = useNodeProps()
 

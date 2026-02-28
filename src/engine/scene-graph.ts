@@ -1,4 +1,4 @@
-export type { GUID, Color } from '../types'
+export type { GUID, Color } from '@/types'
 
 export type HandleMirroring = 'NONE' | 'ANGLE' | 'ANGLE_AND_LENGTH'
 export type WindingRule = 'NONZERO' | 'EVENODD'
@@ -49,7 +49,7 @@ export type NodeType =
   | 'CONNECTOR'
   | 'SHAPE_WITH_TEXT'
 
-import type { Color, Matrix, Rect } from '../types'
+import type { Color, Matrix, Rect } from '@/types'
 
 export type FillType =
   | 'SOLID'
