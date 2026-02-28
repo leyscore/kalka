@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import {
   DialogRoot,
   DialogPortal,
@@ -33,6 +33,28 @@ const activeTab = ref(collections.value[0]?.id ?? '')
 watch(collections, (cols) => {
   if (!activeTab.value && cols[0]) activeTab.value = cols[0].id
 })
+
+const editingCollectionId = ref<string | null>(null)
+
+function startRenameCollection(id: string) {
+  editingCollectionId.value = id
+  nextTick(() => {
+    const input = document.querySelector<HTMLInputElement>('[data-collection-edit]')
+    input?.focus()
+    input?.select()
+  })
+}
+
+function commitRenameCollection(id: string, input: HTMLInputElement) {
+  if (editingCollectionId.value !== id) return
+  const value = input.value.trim()
+  const collection = store.graph.variableCollections.get(id)
+  if (collection && value && value !== collection.name) {
+    store.graph.variableCollections.set(id, { ...collection, name: value })
+    store.requestRender()
+  }
+  editingCollectionId.value = null
+}
 
 const variables = computed(() => {
   if (!activeTab.value) return []
@@ -195,15 +217,26 @@ function removeVariable(id: string) {
             <TabsList
               class="flex shrink-0 gap-0.5 overflow-x-auto border-b border-border px-3 py-1"
             >
-              <TabsTrigger
-                v-for="col in collections"
-                :key="col.id"
-                :value="col.id"
-                class="cursor-pointer whitespace-nowrap rounded border-none px-2.5 py-1 text-xs text-muted data-[state=active]:bg-hover data-[state=active]:text-surface"
-              >
-                {{ col.name }}
-                <span class="ml-1 text-[10px] opacity-50">{{ col.variableIds.length }}</span>
-              </TabsTrigger>
+              <template v-for="col in collections" :key="col.id">
+                <input
+                  v-if="editingCollectionId === col.id"
+                  data-collection-edit
+                  class="w-24 rounded border border-accent bg-input px-2 py-0.5 text-xs text-surface outline-none"
+                  :value="col.name"
+                  @blur="commitRenameCollection(col.id, $event.target as HTMLInputElement)"
+                  @keydown.enter="($event.target as HTMLInputElement).blur()"
+                  @keydown.escape="editingCollectionId = null"
+                />
+                <TabsTrigger
+                  v-else
+                  :value="col.id"
+                  class="cursor-pointer whitespace-nowrap rounded border-none px-2.5 py-1 text-xs text-muted data-[state=active]:bg-hover data-[state=active]:text-surface"
+                  @dblclick="startRenameCollection(col.id)"
+                >
+                  {{ col.name }}
+                  <span class="ml-1 text-[10px] opacity-50">{{ col.variableIds.length }}</span>
+                </TabsTrigger>
+              </template>
             </TabsList>
 
             <!-- Table header -->
