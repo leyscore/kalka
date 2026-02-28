@@ -13,15 +13,24 @@ function isTauri(): boolean {
   return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
 }
 
+let tauriFontsPromise: Promise<TauriFontFamily[]> | null = null
+
 async function getTauriFonts(): Promise<TauriFontFamily[]> {
   if (tauriFontsCache) return tauriFontsCache
-  try {
-    const { invoke } = await import('@tauri-apps/api/core')
-    tauriFontsCache = await invoke<TauriFontFamily[]>('list_system_fonts')
-    return tauriFontsCache
-  } catch {
-    return []
+  if (!tauriFontsPromise) {
+    tauriFontsPromise = import('@tauri-apps/api/core')
+      .then(({ invoke }) => invoke<TauriFontFamily[]>('list_system_fonts'))
+      .then((fonts) => {
+        tauriFontsCache = fonts
+        return fonts
+      })
+      .catch(() => [])
   }
+  return tauriFontsPromise
+}
+
+export function preloadFonts(): void {
+  if (isTauri()) getTauriFonts()
 }
 
 export async function listFamilies(): Promise<string[]> {

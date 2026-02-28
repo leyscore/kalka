@@ -5,6 +5,7 @@ use tauri::{
 
 use font_kit::source::SystemSource;
 use serde::Serialize;
+use std::sync::OnceLock;
 
 #[derive(Serialize, Clone)]
 struct FontFamily {
@@ -12,8 +13,9 @@ struct FontFamily {
     styles: Vec<String>,
 }
 
-#[tauri::command]
-fn list_system_fonts() -> Vec<FontFamily> {
+static FONT_CACHE: OnceLock<Vec<FontFamily>> = OnceLock::new();
+
+fn enumerate_system_fonts() -> Vec<FontFamily> {
     let source = SystemSource::new();
     let mut families: Vec<FontFamily> = Vec::new();
 
@@ -58,6 +60,11 @@ fn list_system_fonts() -> Vec<FontFamily> {
 
     families.sort_by(|a, b| a.family.cmp(&b.family));
     families
+}
+
+#[tauri::command]
+fn list_system_fonts() -> Vec<FontFamily> {
+    FONT_CACHE.get_or_init(enumerate_system_fonts).clone()
 }
 
 #[tauri::command]
