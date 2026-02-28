@@ -69,6 +69,13 @@ export function useKeyboard(store: EditorStore) {
         store.toggleLock()
         return
       }
+      if (e.code === 'KeyE') {
+        e.preventDefault()
+        if (store.state.selectedIds.size > 0) {
+          store.exportSelection(1, 'PNG')
+        }
+        return
+      }
     }
 
     if (e.metaKey || e.ctrlKey) {

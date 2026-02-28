@@ -241,6 +241,13 @@ const menuClass =
             <span>{{ isLocked ? 'Unlock' : 'Lock' }}</span>
             <span class="text-[11px] text-muted">⇧⌘L</span>
           </ContextMenuItem>
+
+          <ContextMenuSeparator class="my-1 h-px bg-border" />
+
+          <ContextMenuItem :class="itemClass" @select="store.exportSelection(1, 'PNG')">
+            <span>Export as PNG</span>
+            <span class="text-[11px] text-muted">⇧⌘E</span>
+          </ContextMenuItem>
         </template>
       </ContextMenuContent>
     </ContextMenuPortal>

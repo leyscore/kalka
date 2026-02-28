@@ -58,7 +58,10 @@ const MENU_ACTIONS: Record<string, (store: EditorStore) => void> = {
   'create-component': (store) => store.createComponentFromSelection(),
   'create-component-set': (store) => store.createComponentSetFromComponents(),
   'detach-instance': (store) => store.detachInstance(),
-  'zoom-fit': (store) => store.zoomToFit()
+  'zoom-fit': (store) => store.zoomToFit(),
+  export: (store) => {
+    if (store.state.selectedIds.size > 0) store.exportSelection(1, 'PNG')
+  }
 }
 
 export function useMenu(store: EditorStore) {
