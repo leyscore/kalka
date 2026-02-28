@@ -39,6 +39,37 @@ export function useKeyboard(store: EditorStore) {
       return
     }
 
+    if ((e.metaKey || e.ctrlKey) && e.altKey) {
+      if (e.key === 'k' || e.key === 'K') {
+        e.preventDefault()
+        store.createComponentFromSelection()
+        return
+      }
+      if (e.key === 'b' || e.key === 'B') {
+        e.preventDefault()
+        store.detachInstance()
+        return
+      }
+    }
+
+    if ((e.metaKey || e.ctrlKey) && e.shiftKey) {
+      if (e.key === 'K' || e.key === 'k') {
+        e.preventDefault()
+        store.createComponentSetFromComponents()
+        return
+      }
+      if (e.key === 'H' || e.key === 'h') {
+        e.preventDefault()
+        store.toggleVisibility()
+        return
+      }
+      if (e.key === 'L' || e.key === 'l') {
+        e.preventDefault()
+        store.toggleLock()
+        return
+      }
+    }
+
     if (e.metaKey || e.ctrlKey) {
       if (e.key === 'z' && !e.shiftKey) {
         e.preventDefault()
@@ -81,6 +112,17 @@ export function useKeyboard(store: EditorStore) {
       } else if (store.selectedNodes.value.length > 0) {
         store.wrapInAutoLayout()
       }
+      return
+    }
+
+    if (e.key === ']') {
+      e.preventDefault()
+      store.bringToFront()
+      return
+    }
+    if (e.key === '[') {
+      e.preventDefault()
+      store.sendToBack()
       return
     }
 

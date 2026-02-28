@@ -1,88 +1,509 @@
 import type { EditorStore } from './stores/editor'
+import type { Color, Fill, GradientStop } from './engine/scene-graph'
+import { computeAllLayouts } from './engine/layout'
+
+const WHITE: Color = { r: 1, g: 1, b: 1, a: 1 }
+const BLACK: Color = { r: 0, g: 0, b: 0, a: 1 }
+const GRAY_50: Color = { r: 0.98, g: 0.98, b: 0.98, a: 1 }
+const GRAY_100: Color = { r: 0.96, g: 0.96, b: 0.97, a: 1 }
+const GRAY_200: Color = { r: 0.9, g: 0.9, b: 0.92, a: 1 }
+const GRAY_500: Color = { r: 0.55, g: 0.55, b: 0.58, a: 1 }
+const BLUE: Color = { r: 0.23, g: 0.51, b: 0.96, a: 1 }
+const INDIGO: Color = { r: 0.38, g: 0.35, b: 0.95, a: 1 }
+const PURPLE: Color = { r: 0.59, g: 0.28, b: 0.96, a: 1 }
+const GREEN: Color = { r: 0.13, g: 0.77, b: 0.42, a: 1 }
+const ORANGE: Color = { r: 0.96, g: 0.52, b: 0.13, a: 1 }
+const RED: Color = { r: 0.91, g: 0.22, b: 0.22, a: 1 }
+const TEAL: Color = { r: 0.08, g: 0.73, b: 0.73, a: 1 }
+
+function solid(color: Color, opacity = 1): Fill {
+  return { type: 'SOLID', color, opacity, visible: true }
+}
+
+function gradient(stops: GradientStop[]): Fill {
+  return {
+    type: 'GRADIENT_LINEAR',
+    color: stops[0].color,
+    opacity: 1,
+    visible: true,
+    gradientStops: stops,
+    gradientTransform: { m00: 1, m01: 0, m02: 0, m10: 0, m11: 1, m12: 0 }
+  }
+}
+
+function thinStroke(color: Color) {
+  return [{ color, weight: 1, opacity: 1, visible: true, align: 'INSIDE' as const }]
+}
 
 export function createDemoShapes(store: EditorStore) {
-  // Section wrapping everything
-  const sectionId = store.createShape('SECTION', 60, 60, 1060, 700)
-  store.graph.updateNode(sectionId, { name: 'Design System' })
+  const { graph } = store
 
-  // Desktop frame inside section
-  const desktopId = store.createShape('FRAME', 20, 40, 480, 360, sectionId)
-  store.graph.updateNode(desktopId, {
-    name: 'Desktop',
-    fills: [{ type: 'SOLID', color: { r: 1, g: 1, b: 1, a: 1 }, opacity: 1, visible: true }],
-    strokes: [{ color: { r: 0.87, g: 0.87, b: 0.87, a: 1 }, weight: 1, opacity: 1, visible: true, align: 'INSIDE' }]
+  // ─── Section: Components ──────────────────────────────────────
+  const compSectionId = store.createShape('SECTION', 60, 60, 920, 540)
+  graph.updateNode(compSectionId, { name: 'Components' })
+
+  // Button component
+  const btnId = store.createShape('FRAME', 32, 48, 120, 40, compSectionId)
+  graph.updateNode(btnId, {
+    name: 'Button/Primary',
+    cornerRadius: 8,
+    fills: [solid(BLUE)],
+    layoutMode: 'HORIZONTAL',
+    primaryAxisSizing: 'HUG',
+    counterAxisSizing: 'HUG',
+    primaryAxisAlign: 'CENTER',
+    counterAxisAlign: 'CENTER',
+    paddingTop: 10, paddingBottom: 10, paddingLeft: 20, paddingRight: 20
   })
-
-  // Mobile frame inside section
-  const mobileId = store.createShape('FRAME', 560, 40, 280, 500, sectionId)
-  store.graph.updateNode(mobileId, {
-    name: 'Mobile',
-    fills: [{ type: 'SOLID', color: { r: 1, g: 1, b: 1, a: 1 }, opacity: 1, visible: true }],
-    strokes: [{ color: { r: 0.87, g: 0.87, b: 0.87, a: 1 }, weight: 1, opacity: 1, visible: true, align: 'INSIDE' }]
+  const btnTextId = store.createShape('TEXT', 0, 0, 80, 20, btnId)
+  graph.updateNode(btnTextId, {
+    name: 'Label',
+    text: 'Get Started',
+    fontSize: 14,
+    fontWeight: 600,
+    fills: [solid(WHITE)]
   })
+  store.select([btnId])
+  store.createComponentFromSelection()
 
-  // Desktop contents
-  const desktopShapes = [
-    { type: 'RECTANGLE' as const, name: 'Header', x: 0, y: 0, w: 480, h: 56,
-      color: { r: 0.12, g: 0.14, b: 0.17, a: 1 }, radius: 0 },
-    { type: 'RECTANGLE' as const, name: 'Hero card', x: 24, y: 80, w: 432, h: 140,
-      color: { r: 0.23, g: 0.51, b: 0.96, a: 1 }, radius: 12 },
-    { type: 'ELLIPSE' as const, name: 'Avatar', x: 40, y: 100, w: 48, h: 48,
-      color: { r: 1, g: 1, b: 1, a: 0.3 } },
-    { type: 'RECTANGLE' as const, name: 'Card 1', x: 24, y: 244, w: 204, h: 96,
-      color: { r: 0.96, g: 0.96, b: 0.97, a: 1 }, radius: 8 },
-    { type: 'RECTANGLE' as const, name: 'Card 2', x: 252, y: 244, w: 204, h: 96,
-      color: { r: 0.96, g: 0.96, b: 0.97, a: 1 }, radius: 8 }
-  ]
+  // Secondary button
+  const btn2Id = store.createShape('FRAME', 176, 48, 100, 40, compSectionId)
+  graph.updateNode(btn2Id, {
+    name: 'Button/Secondary',
+    cornerRadius: 8,
+    fills: [solid(WHITE)],
+    strokes: thinStroke(GRAY_200),
+    layoutMode: 'HORIZONTAL',
+    primaryAxisSizing: 'HUG',
+    counterAxisSizing: 'HUG',
+    primaryAxisAlign: 'CENTER',
+    counterAxisAlign: 'CENTER',
+    paddingTop: 10, paddingBottom: 10, paddingLeft: 20, paddingRight: 20
+  })
+  const btn2TextId = store.createShape('TEXT', 0, 0, 60, 20, btn2Id)
+  graph.updateNode(btn2TextId, {
+    name: 'Label',
+    text: 'Cancel',
+    fontSize: 14,
+    fontWeight: 500,
+    fills: [solid(BLACK)]
+  })
+  store.select([btn2Id])
+  store.createComponentFromSelection()
 
-  for (const d of desktopShapes) {
-    const id = store.createShape(d.type, d.x, d.y, d.w, d.h, desktopId)
-    store.graph.updateNode(id, {
-      name: d.name,
-      cornerRadius: d.radius ?? 0,
-      fills: [{ type: 'SOLID', color: d.color, opacity: 1, visible: true }]
-    })
-  }
+  // Chip / Tag component
+  const chipId = store.createShape('FRAME', 304, 52, 80, 28, compSectionId)
+  graph.updateNode(chipId, {
+    name: 'Tag',
+    cornerRadius: 14,
+    fills: [solid({ r: 0.93, g: 0.94, b: 1, a: 1 })],
+    layoutMode: 'HORIZONTAL',
+    primaryAxisSizing: 'HUG',
+    counterAxisSizing: 'HUG',
+    primaryAxisAlign: 'CENTER',
+    counterAxisAlign: 'CENTER',
+    paddingTop: 4, paddingBottom: 4, paddingLeft: 12, paddingRight: 12
+  })
+  const chipTextId = store.createShape('TEXT', 0, 0, 56, 16, chipId)
+  graph.updateNode(chipTextId, {
+    name: 'Label',
+    text: 'Design',
+    fontSize: 12,
+    fontWeight: 500,
+    fills: [solid(INDIGO)]
+  })
+  store.select([chipId])
+  store.createComponentFromSelection()
 
-  // Mobile contents
-  const mobileShapes = [
-    { type: 'RECTANGLE' as const, name: 'Status bar', x: 0, y: 0, w: 280, h: 44,
-      color: { r: 0.12, g: 0.14, b: 0.17, a: 1 }, radius: 0 },
-    { type: 'RECTANGLE' as const, name: 'Banner', x: 16, y: 60, w: 248, h: 120,
-      color: { r: 0.13, g: 0.77, b: 0.42, a: 1 }, radius: 12 },
-    { type: 'RECTANGLE' as const, name: 'List item 1', x: 16, y: 200, w: 248, h: 56,
-      color: { r: 0.96, g: 0.96, b: 0.97, a: 1 }, radius: 8 },
-    { type: 'RECTANGLE' as const, name: 'List item 2', x: 16, y: 268, w: 248, h: 56,
-      color: { r: 0.96, g: 0.96, b: 0.97, a: 1 }, radius: 8 },
-    { type: 'RECTANGLE' as const, name: 'FAB', x: 212, y: 432, w: 52, h: 52,
-      color: { r: 0.96, g: 0.52, b: 0.13, a: 1 }, radius: 26 }
-  ]
+  // Avatar component
+  const avatarId = store.createShape('ELLIPSE', 416, 48, 40, 40, compSectionId)
+  graph.updateNode(avatarId, {
+    name: 'Avatar',
+    fills: [gradient([
+      { color: PURPLE, position: 0 },
+      { color: BLUE, position: 1 }
+    ])]
+  })
+  store.select([avatarId])
+  store.createComponentFromSelection()
 
-  for (const d of mobileShapes) {
-    const id = store.createShape(d.type, d.x, d.y, d.w, d.h, mobileId)
-    store.graph.updateNode(id, {
-      name: d.name,
-      cornerRadius: d.radius ?? 0,
-      fills: [{ type: 'SOLID', color: d.color, opacity: 1, visible: true }]
-    })
-  }
+  // Card component (auto layout)
+  const cardId = store.createShape('FRAME', 32, 128, 280, 160, compSectionId)
+  graph.updateNode(cardId, {
+    name: 'Card',
+    cornerRadius: 12,
+    fills: [solid(WHITE)],
+    strokes: thinStroke(GRAY_200),
+    layoutMode: 'VERTICAL',
+    primaryAxisSizing: 'FIXED',
+    counterAxisSizing: 'FIXED',
+    itemSpacing: 8,
+    paddingTop: 20, paddingBottom: 20, paddingLeft: 20, paddingRight: 20
+  })
+  const cardTitleId = store.createShape('TEXT', 0, 0, 240, 22, cardId)
+  graph.updateNode(cardTitleId, {
+    name: 'Title',
+    text: 'Analytics Overview',
+    fontSize: 16,
+    fontWeight: 600,
+    fills: [solid(BLACK)]
+  })
+  const cardDescId = store.createShape('TEXT', 0, 0, 240, 36, cardId)
+  graph.updateNode(cardDescId, {
+    name: 'Description',
+    text: 'Track your key metrics and performance indicators in real time.',
+    fontSize: 13,
+    fontWeight: 400,
+    fills: [solid(GRAY_500)]
+  })
+  const cardBarBg = store.createShape('RECTANGLE', 0, 0, 240, 8, cardId)
+  graph.updateNode(cardBarBg, {
+    name: 'Progress BG',
+    cornerRadius: 4,
+    fills: [solid(GRAY_100)]
+  })
+  const cardBar = store.createShape('RECTANGLE', 0, 0, 168, 8, cardId)
+  graph.updateNode(cardBar, {
+    name: 'Progress',
+    cornerRadius: 4,
+    fills: [gradient([
+      { color: BLUE, position: 0 },
+      { color: TEAL, position: 1 }
+    ])]
+  })
+  store.select([cardId])
+  store.createComponentFromSelection()
 
-  // Color swatches inside section
+  // Input component
+  const inputId = store.createShape('FRAME', 344, 128, 240, 40, compSectionId)
+  graph.updateNode(inputId, {
+    name: 'Input',
+    cornerRadius: 8,
+    fills: [solid(WHITE)],
+    strokes: thinStroke(GRAY_200),
+    layoutMode: 'HORIZONTAL',
+    primaryAxisSizing: 'FIXED',
+    counterAxisSizing: 'HUG',
+    primaryAxisAlign: 'MIN',
+    counterAxisAlign: 'CENTER',
+    paddingTop: 10, paddingBottom: 10, paddingLeft: 12, paddingRight: 12
+  })
+  const inputPlaceholder = store.createShape('TEXT', 0, 0, 200, 18, inputId)
+  graph.updateNode(inputPlaceholder, {
+    name: 'Placeholder',
+    text: 'Search...',
+    fontSize: 14,
+    fontWeight: 400,
+    fills: [solid(GRAY_500)]
+  })
+  store.select([inputId])
+  store.createComponentFromSelection()
+
+  // Badge component
+  const badgeId = store.createShape('FRAME', 344, 196, 48, 24, compSectionId)
+  graph.updateNode(badgeId, {
+    name: 'Badge',
+    cornerRadius: 12,
+    fills: [solid({ r: 0.93, g: 1, b: 0.95, a: 1 })],
+    layoutMode: 'HORIZONTAL',
+    primaryAxisSizing: 'HUG',
+    counterAxisSizing: 'HUG',
+    primaryAxisAlign: 'CENTER',
+    counterAxisAlign: 'CENTER',
+    paddingTop: 4, paddingBottom: 4, paddingLeft: 8, paddingRight: 8
+  })
+  const badgeDot = store.createShape('ELLIPSE', 0, 0, 6, 6, badgeId)
+  graph.updateNode(badgeDot, {
+    name: 'Dot',
+    fills: [solid(GREEN)]
+  })
+  const badgeText = store.createShape('TEXT', 0, 0, 28, 14, badgeId)
+  graph.updateNode(badgeText, {
+    name: 'Label',
+    text: 'Live',
+    fontSize: 11,
+    fontWeight: 600,
+    fills: [solid(GREEN)]
+  })
+  store.select([badgeId])
+  store.createComponentFromSelection()
+
+  // Color swatches row
   const swatches = [
-    { name: 'Primary', x: 20, y: 480, color: { r: 0.23, g: 0.51, b: 0.96, a: 1 } },
-    { name: 'Success', x: 100, y: 480, color: { r: 0.13, g: 0.77, b: 0.42, a: 1 } },
-    { name: 'Warning', x: 180, y: 480, color: { r: 0.96, g: 0.52, b: 0.13, a: 1 } },
-    { name: 'Danger', x: 260, y: 480, color: { r: 0.91, g: 0.22, b: 0.22, a: 1 } },
-    { name: 'Purple', x: 340, y: 480, color: { r: 0.55, g: 0.36, b: 0.96, a: 1 } }
+    { name: 'Blue', color: BLUE, x: 32 },
+    { name: 'Indigo', color: INDIGO, x: 88 },
+    { name: 'Purple', color: PURPLE, x: 144 },
+    { name: 'Green', color: GREEN, x: 200 },
+    { name: 'Teal', color: TEAL, x: 256 },
+    { name: 'Orange', color: ORANGE, x: 312 },
+    { name: 'Red', color: RED, x: 368 }
   ]
-
   for (const s of swatches) {
-    const id = store.createShape('ELLIPSE', s.x, s.y, 56, 56, sectionId)
-    store.graph.updateNode(id, {
-      name: s.name,
-      fills: [{ type: 'SOLID', color: s.color, opacity: 1, visible: true }]
+    const id = store.createShape('ELLIPSE', s.x, 460, 44, 44, compSectionId)
+    graph.updateNode(id, { name: s.name, fills: [solid(s.color)] })
+  }
+
+  // ─── Section: App Preview ─────────────────────────────────────
+  const appSectionId = store.createShape('SECTION', 1040, 60, 560, 540)
+  graph.updateNode(appSectionId, { name: 'App Preview' })
+
+  // Desktop frame
+  const frameId = store.createShape('FRAME', 20, 48, 520, 460, appSectionId)
+  graph.updateNode(frameId, {
+    name: 'Dashboard',
+    fills: [solid(GRAY_50)],
+    strokes: thinStroke(GRAY_200),
+    clipsContent: true
+  })
+
+  // Sidebar
+  const sidebarId = store.createShape('RECTANGLE', 0, 0, 56, 460, frameId)
+  graph.updateNode(sidebarId, {
+    name: 'Sidebar',
+    fills: [solid(WHITE)],
+    strokes: thinStroke(GRAY_200)
+  })
+
+  // Sidebar dots
+  for (let i = 0; i < 5; i++) {
+    const dotId = store.createShape('ELLIPSE', 18, 20 + i * 40, 20, 20, frameId)
+    graph.updateNode(dotId, {
+      name: `Nav ${i + 1}`,
+      fills: [solid(i === 0 ? BLUE : GRAY_200)]
     })
   }
 
-  store.select([])
+  // Header bar
+  const headerId = store.createShape('RECTANGLE', 56, 0, 464, 52, frameId)
+  graph.updateNode(headerId, {
+    name: 'Header',
+    fills: [solid(WHITE)],
+    strokes: thinStroke(GRAY_200)
+  })
+  const headerTitle = store.createShape('TEXT', 76, 16, 120, 20, frameId)
+  graph.updateNode(headerTitle, {
+    name: 'Page Title',
+    text: 'Dashboard',
+    fontSize: 16,
+    fontWeight: 600,
+    fills: [solid(BLACK)]
+  })
+
+  // Stat cards row (instances from Card component, simulated as frames)
+  const stats = [
+    { title: 'Revenue', value: '$12,480', badge: '+14%', color: GREEN },
+    { title: 'Users', value: '3,842', badge: '+8%', color: BLUE },
+    { title: 'Orders', value: '1,249', badge: '-3%', color: RED }
+  ]
+
+  for (let i = 0; i < stats.length; i++) {
+    const s = stats[i]
+    const cx = 76 + i * 152
+    const cId = store.createShape('FRAME', cx, 72, 140, 88, frameId)
+    graph.updateNode(cId, {
+      name: s.title,
+      cornerRadius: 10,
+      fills: [solid(WHITE)],
+      strokes: thinStroke(GRAY_200),
+      layoutMode: 'VERTICAL',
+      primaryAxisSizing: 'FIXED',
+      counterAxisSizing: 'FIXED',
+      itemSpacing: 4,
+      paddingTop: 14, paddingBottom: 14, paddingLeft: 16, paddingRight: 16
+    })
+    const labelId = store.createShape('TEXT', 0, 0, 108, 14, cId)
+    graph.updateNode(labelId, {
+      name: 'Label',
+      text: s.title,
+      fontSize: 11,
+      fontWeight: 500,
+      fills: [solid(GRAY_500)]
+    })
+    const valId = store.createShape('TEXT', 0, 0, 108, 24, cId)
+    graph.updateNode(valId, {
+      name: 'Value',
+      text: s.value,
+      fontSize: 22,
+      fontWeight: 700,
+      fills: [solid(BLACK)]
+    })
+    const bId = store.createShape('TEXT', 0, 0, 108, 14, cId)
+    graph.updateNode(bId, {
+      name: 'Badge',
+      text: s.badge,
+      fontSize: 11,
+      fontWeight: 600,
+      fills: [solid(s.color)]
+    })
+  }
+
+  // Chart area
+  const chartBg = store.createShape('FRAME', 76, 180, 424, 200, frameId)
+  graph.updateNode(chartBg, {
+    name: 'Chart',
+    cornerRadius: 10,
+    fills: [solid(WHITE)],
+    strokes: thinStroke(GRAY_200)
+  })
+  const chartTitle = store.createShape('TEXT', 16, 16, 120, 18, chartBg)
+  graph.updateNode(chartTitle, {
+    name: 'Chart Title',
+    text: 'Revenue over time',
+    fontSize: 13,
+    fontWeight: 600,
+    fills: [solid(BLACK)]
+  })
+
+  // Chart bars
+  const barHeights = [60, 90, 72, 110, 95, 130, 100, 80, 120, 140, 115, 88]
+  const barW = 24
+  const barGap = 10
+  const barStartX = 16
+  const barBaseY = 180
+
+  for (let i = 0; i < barHeights.length; i++) {
+    const h = barHeights[i]
+    const bx = barStartX + i * (barW + barGap)
+    const by = barBaseY - h
+    const barId = store.createShape('RECTANGLE', bx, by, barW, h, chartBg)
+    graph.updateNode(barId, {
+      name: `Bar ${i + 1}`,
+      cornerRadius: 4,
+      fills: [gradient([
+        { color: BLUE, position: 0 },
+        { color: INDIGO, position: 1 }
+      ])]
+    })
+  }
+
+  // Table section
+  const tableId = store.createShape('FRAME', 76, 400, 424, 40, frameId)
+  graph.updateNode(tableId, {
+    name: 'Table Header',
+    fills: [solid(WHITE)],
+    strokes: thinStroke(GRAY_200),
+    layoutMode: 'HORIZONTAL',
+    primaryAxisSizing: 'FIXED',
+    counterAxisSizing: 'HUG',
+    primaryAxisAlign: 'SPACE_BETWEEN',
+    counterAxisAlign: 'CENTER',
+    paddingTop: 10, paddingBottom: 10, paddingLeft: 16, paddingRight: 16,
+    itemSpacing: 16
+  })
+  const cols = ['Name', 'Status', 'Amount', 'Date']
+  for (const col of cols) {
+    const colId = store.createShape('TEXT', 0, 0, 80, 16, tableId)
+    graph.updateNode(colId, {
+      name: col,
+      text: col,
+      fontSize: 12,
+      fontWeight: 600,
+      fills: [solid(GRAY_500)]
+    })
+  }
+
+  // ─── Standalone shapes (bottom) ───────────────────────────────
+  // Gradient showcase
+  const grad1 = store.createShape('RECTANGLE', 60, 660, 180, 120)
+  graph.updateNode(grad1, {
+    name: 'Gradient Card',
+    cornerRadius: 16,
+    fills: [gradient([
+      { color: { r: 0.99, g: 0.37, b: 0.33, a: 1 }, position: 0 },
+      { color: { r: 0.93, g: 0.18, b: 0.65, a: 1 }, position: 0.5 },
+      { color: { r: 0.55, g: 0.28, b: 0.96, a: 1 }, position: 1 }
+    ])]
+  })
+  const gradText = store.createShape('TEXT', 20, 80, 140, 20, grad1)
+  graph.updateNode(gradText, {
+    name: 'Label',
+    text: 'Linear Gradient',
+    fontSize: 14,
+    fontWeight: 600,
+    fills: [solid(WHITE)]
+  })
+
+  const grad2 = store.createShape('RECTANGLE', 260, 660, 180, 120)
+  graph.updateNode(grad2, {
+    name: 'Ocean',
+    cornerRadius: 16,
+    fills: [gradient([
+      { color: { r: 0.04, g: 0.82, b: 0.67, a: 1 }, position: 0 },
+      { color: { r: 0.13, g: 0.45, b: 0.96, a: 1 }, position: 1 }
+    ])]
+  })
+  const grad2Text = store.createShape('TEXT', 20, 80, 140, 20, grad2)
+  graph.updateNode(grad2Text, {
+    name: 'Label',
+    text: 'Ocean Breeze',
+    fontSize: 14,
+    fontWeight: 600,
+    fills: [solid(WHITE)]
+  })
+
+  const grad3 = store.createShape('RECTANGLE', 460, 660, 180, 120)
+  graph.updateNode(grad3, {
+    name: 'Sunset',
+    cornerRadius: 16,
+    fills: [gradient([
+      { color: { r: 1, g: 0.6, b: 0.2, a: 1 }, position: 0 },
+      { color: { r: 0.96, g: 0.26, b: 0.21, a: 1 }, position: 1 }
+    ])]
+  })
+  const grad3Text = store.createShape('TEXT', 20, 80, 140, 20, grad3)
+  graph.updateNode(grad3Text, {
+    name: 'Label',
+    text: 'Warm Sunset',
+    fontSize: 14,
+    fontWeight: 600,
+    fills: [solid(WHITE)]
+  })
+
+  // Typography showcase
+  const typoFrame = store.createShape('FRAME', 700, 660, 300, 120)
+  graph.updateNode(typoFrame, {
+    name: 'Typography',
+    cornerRadius: 12,
+    fills: [solid(WHITE)],
+    strokes: thinStroke(GRAY_200),
+    layoutMode: 'VERTICAL',
+    primaryAxisSizing: 'FIXED',
+    counterAxisSizing: 'FIXED',
+    itemSpacing: 6,
+    paddingTop: 16, paddingBottom: 16, paddingLeft: 20, paddingRight: 20
+  })
+  const typoItems = [
+    { text: 'Heading', size: 24, weight: 700 },
+    { text: 'Subheading', size: 16, weight: 600 },
+    { text: 'Body text — The quick brown fox jumps.', size: 13, weight: 400 },
+    { text: 'CAPTION · OVERLINE', size: 10, weight: 500 }
+  ]
+  for (const t of typoItems) {
+    const tid = store.createShape('TEXT', 0, 0, 260, t.size + 4, typoFrame)
+    graph.updateNode(tid, {
+      name: t.text.split(' ')[0],
+      text: t.text,
+      fontSize: t.size,
+      fontWeight: t.weight,
+      fills: [solid(BLACK)]
+    })
+  }
+
+  // Mixed shapes row
+  const shapes = [
+    { type: 'ELLIPSE' as const, x: 1060, fill: gradient([{ color: PURPLE, position: 0 }, { color: BLUE, position: 1 }]) },
+    { type: 'RECTANGLE' as const, x: 1160, fill: gradient([{ color: GREEN, position: 0 }, { color: TEAL, position: 1 }]) },
+    { type: 'ELLIPSE' as const, x: 1260, fill: gradient([{ color: ORANGE, position: 0 }, { color: RED, position: 1 }]) }
+  ]
+  for (const s of shapes) {
+    const id = store.createShape(s.type, s.x, 680, 80, 80)
+    graph.updateNode(id, {
+      name: s.type === 'ELLIPSE' ? 'Circle' : 'Square',
+      cornerRadius: s.type === 'RECTANGLE' ? 16 : 0,
+      fills: [s.fill]
+    })
+  }
+
+  computeAllLayouts(store.graph)
+  store.clearSelection()
 }

@@ -365,10 +365,13 @@ function mapCounterAlign(align?: string): LayoutCounterAlign {
 function mapNodeType(type?: string): SceneNode['type'] {
   switch (type) {
     case 'FRAME':
-    case 'COMPONENT':
-    case 'COMPONENT_SET':
-    case 'INSTANCE':
       return 'FRAME'
+    case 'COMPONENT':
+      return 'COMPONENT'
+    case 'COMPONENT_SET':
+      return 'COMPONENT_SET'
+    case 'INSTANCE':
+      return 'INSTANCE'
     case 'RECTANGLE':
     case 'ROUNDED_RECTANGLE':
       return 'RECTANGLE'

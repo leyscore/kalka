@@ -204,7 +204,8 @@ function hitTestRotationHandle(
 export function useCanvasInput(
   canvasRef: Ref<HTMLCanvasElement | null>,
   store: EditorStore,
-  hitTestSectionTitle: (cx: number, cy: number) => import('../engine/scene-graph').SceneNode | null
+  hitTestSectionTitle: (cx: number, cy: number) => import('../engine/scene-graph').SceneNode | null,
+  hitTestComponentLabel: (cx: number, cy: number) => import('../engine/scene-graph').SceneNode | null
 ) {
   const drag = ref<DragState | null>(null)
   const cursorOverride = ref<string | null>(null)
@@ -313,8 +314,8 @@ export function useCanvasInput(
         }
       }
 
-      // Hit test nodes (section title pill first, then body)
-      const hit = hitTestSectionTitle(cx, cy) ?? store.graph.hitTest(cx, cy, store.state.currentPageId)
+      // Hit test nodes (labels first, then body)
+      const hit = hitTestSectionTitle(cx, cy) ?? hitTestComponentLabel(cx, cy) ?? store.graph.hitTest(cx, cy, store.state.currentPageId)
       if (hit) {
         if (!store.state.selectedIds.has(hit.id) && !e.shiftKey) {
           store.select([hit.id])
@@ -484,7 +485,7 @@ export function useCanvasInput(
       }
       cursorOverride.value = cursor
 
-      const hit = hitTestSectionTitle(cx, cy) ?? store.graph.hitTest(cx, cy)
+      const hit = hitTestSectionTitle(cx, cy) ?? hitTestComponentLabel(cx, cy) ?? store.graph.hitTest(cx, cy)
       store.setHoveredNode(hit && !store.state.selectedIds.has(hit.id) ? hit.id : null)
     }
 
@@ -829,11 +830,17 @@ export function useCanvasInput(
 
   function onDblClick(e: MouseEvent) {
     const { cx, cy } = getCoords(e)
-    const hit = hitTestSectionTitle(cx, cy) ?? store.graph.hitTest(cx, cy, store.state.currentPageId)
-    if (hit && hit.type === 'TEXT') {
+    const hit = hitTestSectionTitle(cx, cy) ?? hitTestComponentLabel(cx, cy) ?? store.graph.hitTestDeep(cx, cy, store.state.currentPageId)
+    if (!hit) return
+
+    if (hit.type === 'TEXT') {
       store.select([hit.id])
       store.startTextEditing(hit.id)
+      return
     }
+
+    // Double-click enters components/instances — select the child inside
+    store.select([hit.id])
   }
 
   function computeAutoLayoutIndicator(d: DragMove, cx: number, cy: number) {

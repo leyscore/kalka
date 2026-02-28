@@ -1,5 +1,5 @@
 import {
-  SELECTION_COLOR, SNAP_COLOR, CANVAS_BG_COLOR, ROTATION_HANDLE_OFFSET,
+  SELECTION_COLOR, COMPONENT_COLOR, SNAP_COLOR, CANVAS_BG_COLOR, ROTATION_HANDLE_OFFSET,
   RULER_SIZE, RULER_BG_COLOR, RULER_TICK_COLOR, RULER_TEXT_COLOR,
   RULER_BADGE_HEIGHT, RULER_BADGE_PADDING, RULER_BADGE_RADIUS, RULER_BADGE_EXCLUSION,
   RULER_TEXT_BASELINE, RULER_MAJOR_TICK, RULER_MINOR_TICK, RULER_HIGHLIGHT_ALPHA,
@@ -13,6 +13,8 @@ import {
   LAYOUT_INDICATOR_STROKE,
   SECTION_CORNER_RADIUS, SECTION_TITLE_HEIGHT, SECTION_TITLE_PADDING_X,
   SECTION_TITLE_RADIUS, SECTION_TITLE_FONT_SIZE, SECTION_TITLE_GAP,
+  COMPONENT_SET_DASH, COMPONENT_SET_DASH_GAP, COMPONENT_SET_BORDER_WIDTH,
+  COMPONENT_LABEL_FONT_SIZE, COMPONENT_LABEL_GAP, COMPONENT_LABEL_ICON_SIZE, COMPONENT_LABEL_ICON_GAP,
   RULER_TARGET_PIXEL_SPACING, RULER_MAJOR_TOLERANCE
 } from '../constants'
 import type { SceneNode, SceneGraph, Fill, GradientStop, GradientTransform, ArcData } from './scene-graph'
@@ -61,10 +63,14 @@ export class SkiaRenderer {
   private selectionPaint: Paint
   private parentOutlinePaint: Paint
   private snapPaint: Paint
+  private auxFill: Paint
+  private auxStroke: Paint
+  private opacityPaint: Paint
   private textFont: Font | null = null
   private labelFont: Font | null = null
   private sizeFont: Font | null = null
   private sectionTitleFont: Font | null = null
+  private componentLabelFont: Font | null = null
   private fontMgr: FontMgr | null = null
   private fontProvider: TypefaceFontProvider | null = null
   private fontsLoaded = false
@@ -80,8 +86,18 @@ export class SkiaRenderer {
   pageColor = CANVAS_BG_COLOR
   pageId: string | null = null
 
+  private worldViewport = { x: 0, y: 0, w: 0, h: 0 }
+
   private selColor(alpha = 1) {
     return this.ck.Color4f(SELECTION_COLOR.r, SELECTION_COLOR.g, SELECTION_COLOR.b, alpha)
+  }
+
+  private compColor(alpha = 1) {
+    return this.ck.Color4f(COMPONENT_COLOR.r, COMPONENT_COLOR.g, COMPONENT_COLOR.b, alpha)
+  }
+
+  private isComponentType(type: string): boolean {
+    return type === 'COMPONENT' || type === 'COMPONENT_SET' || type === 'INSTANCE'
   }
 
   constructor(ck: CanvasKit, surface: Surface) {
@@ -115,6 +131,16 @@ export class SkiaRenderer {
     this.snapPaint.setColor(this.ck.Color4f(SNAP_COLOR.r, SNAP_COLOR.g, SNAP_COLOR.b, 1))
     this.snapPaint.setAntiAlias(true)
 
+    this.auxFill = new ck.Paint()
+    this.auxFill.setStyle(ck.PaintStyle.Fill)
+    this.auxFill.setAntiAlias(true)
+
+    this.auxStroke = new ck.Paint()
+    this.auxStroke.setStyle(ck.PaintStyle.Stroke)
+    this.auxStroke.setAntiAlias(true)
+
+    this.opacityPaint = new ck.Paint()
+
     this.textFont = new ck.Font(null, DEFAULT_FONT_SIZE)
   }
 
@@ -132,10 +158,12 @@ export class SkiaRenderer {
         this.labelFont?.delete()
         this.sizeFont?.delete()
         this.sectionTitleFont?.delete()
+        this.componentLabelFont?.delete()
         this.textFont = new this.ck.Font(typeface, DEFAULT_FONT_SIZE)
         this.labelFont = new this.ck.Font(typeface, LABEL_FONT_SIZE)
         this.sizeFont = new this.ck.Font(typeface, SIZE_FONT_SIZE)
         this.sectionTitleFont = new this.ck.Font(typeface, SECTION_TITLE_FONT_SIZE)
+        this.componentLabelFont = new this.ck.Font(typeface, COMPONENT_LABEL_FONT_SIZE)
       }
       this.fontMgr = this.ck.FontMgr.FromData(fontData) ?? null
     }
@@ -197,18 +225,84 @@ export class SkiaRenderer {
     return result
   }
 
+  hitTestComponentLabel(graph: SceneGraph, canvasX: number, canvasY: number): SceneNode | null {
+    if (!this.componentLabelFont) return null
+
+    const pageNode = graph.getNode(this.pageId ?? graph.rootId)
+    if (!pageNode) return null
+
+    const font = this.componentLabelFont
+    const LABEL_TYPES = new Set(['COMPONENT', 'COMPONENT_SET', 'INSTANCE'])
+    let result: SceneNode | null = null
+
+    const check = (parentId: string, ox: number, oy: number) => {
+      const parent = graph.getNode(parentId)
+      if (!parent) return
+      for (let i = parent.childIds.length - 1; i >= 0; i--) {
+        if (result) return
+        const childId = parent.childIds[i]
+        const child = graph.getNode(childId)
+        if (!child || !child.visible) continue
+        const ax = ox + child.x
+        const ay = oy + child.y
+        if (LABEL_TYPES.has(child.type)) {
+          const glyphIds = font.getGlyphIDs(child.name)
+          const widths = font.getGlyphWidths(glyphIds)
+          let textW = 0
+          for (const w of widths) textW += w
+          const labelW = (COMPONENT_LABEL_ICON_SIZE + COMPONENT_LABEL_ICON_GAP + textW) / this.zoom
+          const labelH = COMPONENT_LABEL_FONT_SIZE / this.zoom
+          const gap = COMPONENT_LABEL_GAP / this.zoom
+
+          const isInsideSet = parent.type === 'COMPONENT_SET'
+          const labelX = ax
+          let labelY: number
+          if (isInsideSet) {
+            labelY = ay + gap
+          } else {
+            labelY = ay - labelH - gap
+          }
+
+          if (canvasX >= labelX && canvasX <= labelX + labelW &&
+              canvasY >= labelY && canvasY <= labelY + labelH) {
+            result = child
+            return
+          }
+        }
+        if (child.childIds.length > 0) {
+          check(childId, ax, ay)
+        }
+      }
+    }
+
+    check(pageNode.id, 0, 0)
+    return result
+  }
+
   renderSceneToCanvas(canvas: Canvas, graph: SceneGraph, pageId: string): void {
+    // Disable culling for export — render everything
+    const prevViewport = this.worldViewport
+    this.worldViewport = { x: -1e9, y: -1e9, w: 2e9, h: 2e9 }
     const pageNode = graph.getNode(pageId)
     if (pageNode) {
       for (const childId of pageNode.childIds) {
         this.renderNode(canvas, graph, childId, {})
       }
     }
+    this.worldViewport = prevViewport
   }
 
   render(graph: SceneGraph, selectedIds: Set<string>, overlays: RenderOverlays = {}): void {
     const canvas = this.surface.getCanvas()
     canvas.clear(this.ck.Color4f(this.pageColor.r, this.pageColor.g, this.pageColor.b, 1))
+
+    // Compute world-space viewport for culling
+    this.worldViewport = {
+      x: -this.panX / this.zoom,
+      y: -this.panY / this.zoom,
+      w: this.viewportWidth / this.zoom,
+      h: this.viewportHeight / this.zoom
+    }
 
     // Scene layer (world coordinates)
     canvas.save()
@@ -219,16 +313,17 @@ export class SkiaRenderer {
     const pageNode = graph.getNode(this.pageId ?? graph.rootId)
     if (pageNode) {
       for (const childId of pageNode.childIds) {
-        this.renderNode(canvas, graph, childId, overlays)
+        this.renderNode(canvas, graph, childId, overlays, 0, 0)
       }
     }
 
     canvas.restore()
 
-    // Section titles (screen coordinates, zoom-independent)
+    // Section titles + component labels (screen coordinates, zoom-independent)
     canvas.save()
     canvas.scale(this.dpr, this.dpr)
     this.drawSectionTitles(canvas, graph, selectedIds)
+    this.drawComponentLabels(canvas, graph)
     canvas.restore()
 
     // UI overlay layer (screen coordinates, zoom-independent)
@@ -256,8 +351,6 @@ export class SkiaRenderer {
   ): void {
     if (selectedIds.size === 0) return
 
-    this.selectionPaint.setStrokeWidth(1)
-
     this.drawParentFrameOutlines(canvas, graph, selectedIds)
 
     if (selectedIds.size === 1) {
@@ -266,20 +359,33 @@ export class SkiaRenderer {
       const node = graph.getNode(id)
       if (!node) return
 
+      const useComponentColor = this.isComponentType(node.type)
+      this.selectionPaint.setColor(useComponentColor ? this.compColor() : this.selColor())
+      this.selectionPaint.setStrokeWidth(1)
+
       const rotation =
         overlays.rotationPreview?.nodeId === id ? overlays.rotationPreview.angle : node.rotation
       this.drawNodeSelection(canvas, node, rotation, graph)
       this.drawSelectionLabels(canvas, graph, selectedIds)
+
+      this.selectionPaint.setColor(this.selColor())
       return
     }
 
     for (const id of selectedIds) {
       const node = graph.getNode(id)
       if (!node) continue
+
+      const useComponentColor = this.isComponentType(node.type)
+      this.selectionPaint.setColor(useComponentColor ? this.compColor() : this.selColor())
+      this.selectionPaint.setStrokeWidth(1)
+
       const rotation =
         overlays.rotationPreview?.nodeId === id ? overlays.rotationPreview.angle : node.rotation
       this.drawNodeOutline(canvas, node, rotation, graph)
     }
+
+    this.selectionPaint.setColor(this.selColor())
 
     const nodes = [...selectedIds]
       .map((id) => graph.getNode(id))
@@ -329,21 +435,14 @@ export class SkiaRenderer {
 
     // Rotation handle (line extending above + circle)
     const rotHandleY = y1 - ROTATION_HANDLE_OFFSET - ROTATION_HANDLE_RADIUS
-    const rotLinePaint = new this.ck.Paint()
-    rotLinePaint.setStyle(this.ck.PaintStyle.Stroke)
-    rotLinePaint.setStrokeWidth(1)
-    rotLinePaint.setColor(this.selColor())
-    rotLinePaint.setAntiAlias(true)
-    canvas.drawLine(mx, y1, mx, rotHandleY, rotLinePaint)
+    this.auxStroke.setStrokeWidth(1)
+    this.auxStroke.setColor(this.selColor())
+    this.auxStroke.setPathEffect(null)
+    canvas.drawLine(mx, y1, mx, rotHandleY, this.auxStroke)
 
-    const rotFill = new this.ck.Paint()
-    rotFill.setStyle(this.ck.PaintStyle.Fill)
-    rotFill.setColor(this.ck.WHITE)
-    rotFill.setAntiAlias(true)
-    canvas.drawCircle(mx, rotHandleY, ROTATION_HANDLE_RADIUS, rotFill)
-    canvas.drawCircle(mx, rotHandleY, ROTATION_HANDLE_RADIUS, rotLinePaint)
-    rotLinePaint.delete()
-    rotFill.delete()
+    this.auxFill.setColor(this.ck.WHITE)
+    canvas.drawCircle(mx, rotHandleY, ROTATION_HANDLE_RADIUS, this.auxFill)
+    canvas.drawCircle(mx, rotHandleY, ROTATION_HANDLE_RADIUS, this.auxStroke)
 
     canvas.restore()
   }
@@ -381,17 +480,13 @@ export class SkiaRenderer {
     const sy2 = maxY * this.zoom + this.panY
     const smx = (sx1 + sx2) / 2
 
-    // Frame name label — only for top-level frames (direct children of root)
     if (nodes.length === 1) {
       const node = nodes[0]
       const parentNode = node.parentId ? graph.getNode(node.parentId) : null
-      if (node.type === 'FRAME' && (!parentNode || parentNode.type === 'CANVAS' || parentNode.type === 'SECTION')) {
-        const labelPaint = new this.ck.Paint()
-        labelPaint.setStyle(this.ck.PaintStyle.Fill)
-        labelPaint.setColor(this.selColor())
-        labelPaint.setAntiAlias(true)
-        canvas.drawText(node.name, sx1, sy1 - LABEL_OFFSET_Y, labelPaint, this.labelFont)
-        labelPaint.delete()
+      const isTopLevel = !parentNode || parentNode.type === 'CANVAS' || parentNode.type === 'SECTION'
+      if (node.type === 'FRAME' && isTopLevel) {
+        this.auxFill.setColor(this.selColor())
+        canvas.drawText(node.name, sx1, sy1 - LABEL_OFFSET_Y, this.auxFill, this.labelFont)
       }
     }
 
@@ -408,22 +503,15 @@ export class SkiaRenderer {
     const pillX = smx - pillW / 2
     const pillY = sy2 + SIZE_PILL_PADDING_Y
 
-    const pillPaint = new this.ck.Paint()
-    pillPaint.setStyle(this.ck.PaintStyle.Fill)
-    pillPaint.setColor(this.selColor())
-    pillPaint.setAntiAlias(true)
+    const allComponents = nodes.length > 0 && nodes.every((n) => this.isComponentType(n.type))
+    const pillColor = allComponents ? this.compColor() : this.selColor()
 
+    this.auxFill.setColor(pillColor)
     const rrect = this.ck.RRectXY(this.ck.LTRBRect(pillX, pillY, pillX + pillW, pillY + pillH), SIZE_PILL_RADIUS, SIZE_PILL_RADIUS)
-    canvas.drawRRect(rrect, pillPaint)
+    canvas.drawRRect(rrect, this.auxFill)
 
-    const textPaint = new this.ck.Paint()
-    textPaint.setStyle(this.ck.PaintStyle.Fill)
-    textPaint.setColor(this.ck.WHITE)
-    textPaint.setAntiAlias(true)
-    canvas.drawText(sizeText, pillX + SIZE_PILL_PADDING_X, pillY + SIZE_PILL_TEXT_OFFSET_Y, textPaint, this.sizeFont)
-
-    pillPaint.delete()
-    textPaint.delete()
+    this.auxFill.setColor(this.ck.WHITE)
+    canvas.drawText(sizeText, pillX + SIZE_PILL_PADDING_X, pillY + SIZE_PILL_TEXT_OFFSET_Y, this.auxFill, this.sizeFont)
   }
 
   private drawParentFrameOutlines(
@@ -512,13 +600,11 @@ export class SkiaRenderer {
     }
 
     // Dashed bounding box
-    const dashPaint = new this.ck.Paint()
-    dashPaint.setStyle(this.ck.PaintStyle.Stroke)
-    dashPaint.setStrokeWidth(1)
-    dashPaint.setColor(this.selColor(SELECTION_DASH_ALPHA))
-    dashPaint.setAntiAlias(true)
+    this.auxStroke.setStrokeWidth(1)
+    this.auxStroke.setColor(this.selColor(SELECTION_DASH_ALPHA))
+    this.auxStroke.setPathEffect(null)
 
-    canvas.drawRect(this.ck.LTRBRect(minX, minY, maxX, maxY), dashPaint)
+    canvas.drawRect(this.ck.LTRBRect(minX, minY, maxX, maxY), this.auxStroke)
 
     // Group resize handles
     this.drawHandle(canvas, minX, minY)
@@ -531,8 +617,6 @@ export class SkiaRenderer {
     this.drawHandle(canvas, gmx, maxY)
     this.drawHandle(canvas, minX, gmy)
     this.drawHandle(canvas, maxX, gmy)
-
-    dashPaint.delete()
   }
 
   private getRotatedCorners(n: SceneNode, abs: { x: number; y: number }) {
@@ -553,14 +637,10 @@ export class SkiaRenderer {
   }
 
   private drawHandle(canvas: Canvas, x: number, y: number): void {
-    const handleFill = new this.ck.Paint()
-    handleFill.setStyle(this.ck.PaintStyle.Fill)
-    handleFill.setColor(this.ck.WHITE)
-
+    this.auxFill.setColor(this.ck.WHITE)
     const rect = this.ck.LTRBRect(x - HANDLE_HALF_SIZE, y - HANDLE_HALF_SIZE, x + HANDLE_HALF_SIZE, y + HANDLE_HALF_SIZE)
-    canvas.drawRect(rect, handleFill)
+    canvas.drawRect(rect, this.auxFill)
     canvas.drawRect(rect, this.selectionPaint)
-    handleFill.delete()
   }
 
   // --- Snap guides ---
@@ -597,12 +677,9 @@ export class SkiaRenderer {
     const y2 = (marquee.y + marquee.height) * this.zoom + this.panY
     const rect = this.ck.LTRBRect(x1, y1, x2, y2)
 
-    const fill = new this.ck.Paint()
-    fill.setStyle(this.ck.PaintStyle.Fill)
-    fill.setColor(this.selColor(MARQUEE_FILL_ALPHA))
-    canvas.drawRect(rect, fill)
+    this.auxFill.setColor(this.selColor(MARQUEE_FILL_ALPHA))
+    canvas.drawRect(rect, this.auxFill)
     canvas.drawRect(rect, this.selectionPaint)
-    fill.delete()
   }
 
   // --- Layout insert indicator ---
@@ -613,25 +690,21 @@ export class SkiaRenderer {
   ): void {
     if (!indicator) return
 
-    const paint = new this.ck.Paint()
-    paint.setStyle(this.ck.PaintStyle.Stroke)
-    paint.setStrokeWidth(LAYOUT_INDICATOR_STROKE)
-    paint.setColor(this.selColor())
-    paint.setAntiAlias(true)
+    this.auxStroke.setStrokeWidth(LAYOUT_INDICATOR_STROKE)
+    this.auxStroke.setColor(this.selColor())
+    this.auxStroke.setPathEffect(null)
 
     if (indicator.direction === 'HORIZONTAL') {
       const y = indicator.y * this.zoom + this.panY
       const x1 = indicator.x * this.zoom + this.panX
       const x2 = (indicator.x + indicator.length) * this.zoom + this.panX
-      canvas.drawLine(x1, y, x2, y, paint)
+      canvas.drawLine(x1, y, x2, y, this.auxStroke)
     } else {
       const x = indicator.x * this.zoom + this.panX
       const y1 = indicator.y * this.zoom + this.panY
       const y2 = (indicator.y + indicator.length) * this.zoom + this.panY
-      canvas.drawLine(x, y1, x, y2, paint)
+      canvas.drawLine(x, y1, x, y2, this.auxStroke)
     }
-
-    paint.delete()
   }
 
   // --- Scene rendering ---
@@ -640,19 +713,54 @@ export class SkiaRenderer {
     canvas: Canvas,
     graph: SceneGraph,
     nodeId: string,
-    overlays: RenderOverlays
+    overlays: RenderOverlays,
+    parentAbsX = 0,
+    parentAbsY = 0
   ): void {
     const node = graph.getNode(nodeId)
     if (!node || !node.visible) return
+
+    const absX = parentAbsX + node.x
+    const absY = parentAbsY + node.y
+
+    // Viewport culling: skip nodes entirely outside the visible area.
+    // Only cull leaf nodes and clipped containers — unclipped containers
+    // may have children that extend beyond the parent's bounds.
+    const canCull = node.childIds.length === 0 ||
+      ((node.type === 'FRAME' || node.type === 'COMPONENT' || node.type === 'INSTANCE') && node.clipsContent)
+    if (canCull) {
+      const vp = this.worldViewport
+      // Expand bounds for rotation (diagonal is the max extent)
+      let bw = node.width
+      let bh = node.height
+      if (node.rotation !== 0) {
+        const diag = Math.sqrt(bw * bw + bh * bh)
+        const cx = absX + bw / 2
+        const cy = absY + bh / 2
+        if (
+          cx - diag / 2 > vp.x + vp.w ||
+          cy - diag / 2 > vp.y + vp.h ||
+          cx + diag / 2 < vp.x ||
+          cy + diag / 2 < vp.y
+        ) {
+          return
+        }
+      } else if (
+        absX > vp.x + vp.w ||
+        absY > vp.y + vp.h ||
+        absX + bw < vp.x ||
+        absY + bh < vp.y
+      ) {
+        return
+      }
+    }
 
     canvas.save()
     canvas.translate(node.x, node.y)
 
     if (node.opacity < 1) {
-      const layerPaint = new this.ck.Paint()
-      layerPaint.setAlphaf(node.opacity)
-      canvas.saveLayer(layerPaint)
-      layerPaint.delete()
+      this.opacityPaint.setAlphaf(node.opacity)
+      canvas.saveLayer(this.opacityPaint)
     }
 
     const rotation =
@@ -664,34 +772,30 @@ export class SkiaRenderer {
 
     if (node.type === 'SECTION') {
       this.renderSection(canvas, node, graph)
+    } else if (node.type === 'COMPONENT_SET') {
+      this.renderComponentSet(canvas, node, graph)
     } else if (overlays.editingTextId !== nodeId) {
       this.renderShape(canvas, node, graph)
     }
 
     // Drop target highlight
     if (overlays.dropTargetId === nodeId) {
-      const highlight = new this.ck.Paint()
-      highlight.setStyle(this.ck.PaintStyle.Stroke)
-      highlight.setStrokeWidth(DROP_HIGHLIGHT_STROKE / this.zoom)
-      highlight.setColor(this.selColor(DROP_HIGHLIGHT_ALPHA))
-      highlight.setAntiAlias(true)
-      canvas.drawRect(this.ck.LTRBRect(0, 0, node.width, node.height), highlight)
-      highlight.delete()
+      this.auxStroke.setStrokeWidth(DROP_HIGHLIGHT_STROKE / this.zoom)
+      this.auxStroke.setColor(this.selColor(DROP_HIGHLIGHT_ALPHA))
+      canvas.drawRect(this.ck.LTRBRect(0, 0, node.width, node.height), this.auxStroke)
     }
 
     // Hover highlight — shape-aware outline
     if (overlays.hoveredNodeId === nodeId) {
-      const hoverPaint = new this.ck.Paint()
-      hoverPaint.setStyle(this.ck.PaintStyle.Stroke)
-      hoverPaint.setStrokeWidth(1 / this.zoom)
-      hoverPaint.setColor(this.selColor())
-      hoverPaint.setAntiAlias(true)
-      this.strokeNodeShape(canvas, node, hoverPaint)
-      hoverPaint.delete()
+      this.auxStroke.setStrokeWidth(1 / this.zoom)
+      this.auxStroke.setColor(this.isComponentType(node.type) ? this.compColor() : this.selColor())
+      this.auxStroke.setPathEffect(null)
+      this.strokeNodeShape(canvas, node, this.auxStroke)
     }
 
     // Clip + render children for containers
-    if (node.type === 'FRAME' && node.clipsContent && node.childIds.length > 0) {
+    const isClippableContainer = node.type === 'FRAME' || node.type === 'COMPONENT' || node.type === 'INSTANCE'
+    if (isClippableContainer && node.clipsContent && node.childIds.length > 0) {
       canvas.save()
       canvas.clipRect(
         this.ck.LTRBRect(0, 0, node.width, node.height),
@@ -699,12 +803,12 @@ export class SkiaRenderer {
         true
       )
       for (const childId of node.childIds) {
-        this.renderNode(canvas, graph, childId, overlays)
+        this.renderNode(canvas, graph, childId, overlays, absX, absY)
       }
       canvas.restore()
     } else {
       for (const childId of node.childIds) {
-        this.renderNode(canvas, graph, childId, overlays)
+        this.renderNode(canvas, graph, childId, overlays, absX, absY)
       }
     }
 
@@ -801,7 +905,10 @@ export class SkiaRenderer {
         const ax = ox + child.x
         const ay = oy + child.y
         if (child.type === 'SECTION') {
-          sections.push({ node: child, absX: ax, absY: ay, nested: insideSection })
+          const vp = this.worldViewport
+          if (ax + child.width >= vp.x && ay + child.height >= vp.y && ax <= vp.x + vp.w && ay <= vp.y + vp.h) {
+            sections.push({ node: child, absX: ax, absY: ay, nested: insideSection })
+          }
           collectSections(childId, ax, ay, true)
         } else if (child.childIds.length > 0) {
           collectSections(childId, ax, ay, insideSection)
@@ -853,34 +960,145 @@ export class SkiaRenderer {
         ? screenY + SECTION_TITLE_GAP
         : screenY - pillH - SECTION_TITLE_GAP
 
-      const pillPaint = new this.ck.Paint()
-      pillPaint.setStyle(this.ck.PaintStyle.Fill)
       if (node.fills.length > 0 && node.fills[0].visible) {
         const c = node.fills[0].color
-        pillPaint.setColor(this.ck.Color4f(c.r, c.g, c.b, node.fills[0].opacity))
+        this.auxFill.setColor(this.ck.Color4f(c.r, c.g, c.b, node.fills[0].opacity))
       } else {
-        pillPaint.setColor(this.ck.Color4f(0.37, 0.37, 0.37, 1))
+        this.auxFill.setColor(this.ck.Color4f(0.37, 0.37, 0.37, 1))
       }
-      pillPaint.setAntiAlias(true)
       const pillRect = this.ck.LTRBRect(pillX, pillY, pillX + pillW, pillY + pillH)
       canvas.drawRRect(
         this.ck.RRectXY(pillRect, SECTION_TITLE_RADIUS, SECTION_TITLE_RADIUS),
-        pillPaint
+        this.auxFill
       )
-      pillPaint.delete()
 
-      const textPaint = new this.ck.Paint()
-      textPaint.setStyle(this.ck.PaintStyle.Fill)
       const pillColor = node.fills.length > 0 && node.fills[0].visible
         ? node.fills[0].color
         : { r: 0.37, g: 0.37, b: 0.37 }
       const lum = 0.299 * pillColor.r + 0.587 * pillColor.g + 0.114 * pillColor.b
-      textPaint.setColor(lum > 0.5 ? this.ck.BLACK : this.ck.WHITE)
-      textPaint.setAntiAlias(true)
+      this.auxFill.setColor(lum > 0.5 ? this.ck.BLACK : this.ck.WHITE)
       const textY = pillY + pillH * 0.7
-      canvas.drawText(displayText, pillX + SECTION_TITLE_PADDING_X, textY, textPaint, font)
-      textPaint.delete()
+      canvas.drawText(displayText, pillX + SECTION_TITLE_PADDING_X, textY, this.auxFill, font)
     }
+  }
+
+  private drawComponentLabels(canvas: Canvas, graph: SceneGraph): void {
+    if (!this.componentLabelFont) return
+
+    const pageNode = graph.getNode(this.pageId ?? graph.rootId)
+    if (!pageNode) return
+
+    const font = this.componentLabelFont
+    const LABEL_TYPES = new Set(['COMPONENT', 'COMPONENT_SET', 'INSTANCE'])
+
+    const nodes: { node: SceneNode; absX: number; absY: number; inside: boolean }[] = []
+    const collect = (parentId: string, ox: number, oy: number) => {
+      const parent = graph.getNode(parentId)
+      if (!parent) return
+      for (const childId of parent.childIds) {
+        const child = graph.getNode(childId)
+        if (!child || !child.visible) continue
+        const ax = ox + child.x
+        const ay = oy + child.y
+        if (LABEL_TYPES.has(child.type)) {
+          const vp = this.worldViewport
+          if (ax + child.width >= vp.x && ay + child.height >= vp.y && ax <= vp.x + vp.w && ay <= vp.y + vp.h) {
+            const isInsideSet = parent.type === 'COMPONENT_SET'
+            nodes.push({ node: child, absX: ax, absY: ay, inside: isInsideSet })
+          }
+        }
+        if (child.childIds.length > 0) {
+          collect(childId, ax, ay)
+        }
+      }
+    }
+    collect(pageNode.id, 0, 0)
+
+    const compColor = this.compColor()
+
+    // Diamond icon path points (scaled to COMPONENT_LABEL_ICON_SIZE)
+    const iconS = COMPONENT_LABEL_ICON_SIZE
+
+    for (const { node, absX, absY, inside } of nodes) {
+      const screenX = absX * this.zoom + this.panX
+      const screenY = absY * this.zoom + this.panY
+
+      // Measure text
+      const glyphIds = font.getGlyphIDs(node.name)
+      const widths = font.getGlyphWidths(glyphIds)
+      let textWidth = 0
+      for (const w of widths) textWidth += w
+
+      // Position: inside top-left for variants in a set, above top-left otherwise
+      const labelX = screenX
+      let labelY: number
+      if (inside) {
+        labelY = screenY + COMPONENT_LABEL_GAP + COMPONENT_LABEL_FONT_SIZE
+      } else {
+        labelY = screenY - COMPONENT_LABEL_GAP
+      }
+
+      // Draw diamond icon
+      const iconX = labelX
+      const iconY = labelY - COMPONENT_LABEL_FONT_SIZE * 0.75
+      const iconCx = iconX + iconS / 2
+      const iconCy = iconY + iconS / 2
+      const iconR = iconS / 2
+
+      this.auxFill.setColor(compColor)
+
+      if (node.type === 'COMPONENT_SET') {
+        const s = iconR * 0.45
+        const gap = iconR * 0.2
+        const path = new this.ck.Path()
+        for (const [dx, dy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+          const cx = iconCx + dx * (s + gap)
+          const cy = iconCy + dy * (s + gap)
+          path.moveTo(cx, cy - s)
+          path.lineTo(cx + s, cy)
+          path.lineTo(cx, cy + s)
+          path.lineTo(cx - s, cy)
+          path.close()
+        }
+        canvas.drawPath(path, this.auxFill)
+        path.delete()
+      } else {
+        const path = new this.ck.Path()
+        path.moveTo(iconCx, iconCy - iconR)
+        path.lineTo(iconCx + iconR, iconCy)
+        path.lineTo(iconCx, iconCy + iconR)
+        path.lineTo(iconCx - iconR, iconCy)
+        path.close()
+        canvas.drawPath(path, this.auxFill)
+        path.delete()
+      }
+
+      canvas.drawText(node.name, labelX + iconS + COMPONENT_LABEL_ICON_GAP, labelY, this.auxFill, font)
+    }
+  }
+
+  private renderComponentSet(canvas: Canvas, node: SceneNode, graph: SceneGraph): void {
+    const rect = this.ck.LTRBRect(0, 0, node.width, node.height)
+    const rrect = this.ck.RRectXY(rect, 5, 5)
+
+    for (const fill of node.fills) {
+      if (!fill.visible) continue
+      this.applyFill(fill, node, graph)
+      this.fillPaint.setAlphaf(fill.opacity)
+      canvas.drawRRect(rrect, this.fillPaint)
+      this.fillPaint.setShader(null)
+    }
+
+    this.auxStroke.setStrokeWidth(COMPONENT_SET_BORDER_WIDTH / this.zoom)
+    this.auxStroke.setColor(this.compColor())
+    this.auxStroke.setPathEffect(
+      this.ck.PathEffect.MakeDash(
+        [COMPONENT_SET_DASH / this.zoom, COMPONENT_SET_DASH_GAP / this.zoom],
+        0
+      )
+    )
+    canvas.drawRRect(rrect, this.auxStroke)
+    this.auxStroke.setPathEffect(null)
   }
 
   private renderShape(canvas: Canvas, node: SceneNode, graph: SceneGraph): void {
@@ -1063,27 +1281,24 @@ export class SkiaRenderer {
       if (!effect.visible) continue
 
       if (pass === 'behind' && effect.type === 'DROP_SHADOW') {
-        const shadowPaint = new this.ck.Paint()
-        shadowPaint.setStyle(this.ck.PaintStyle.Fill)
-        shadowPaint.setColor(this.ck.Color4f(
+        this.auxFill.setColor(this.ck.Color4f(
           effect.color.r, effect.color.g, effect.color.b, effect.color.a
         ))
-        shadowPaint.setImageFilter(
+        this.auxFill.setImageFilter(
           this.ck.ImageFilter.MakeBlur(effect.radius, effect.radius, this.ck.TileMode.Decal, null)
         )
-        shadowPaint.setAntiAlias(true)
 
         canvas.save()
         canvas.translate(effect.offset.x, effect.offset.y)
         if (node.type === 'ELLIPSE') {
-          canvas.drawOval(rect, shadowPaint)
+          canvas.drawOval(rect, this.auxFill)
         } else if (hasRadius) {
-          canvas.drawRRect(this.makeRRect(node), shadowPaint)
+          canvas.drawRRect(this.makeRRect(node), this.auxFill)
         } else {
-          canvas.drawRect(rect, shadowPaint)
+          canvas.drawRect(rect, this.auxFill)
         }
         canvas.restore()
-        shadowPaint.delete()
+        this.auxFill.setImageFilter(null)
       }
 
       if (pass === 'front' && effect.type === 'LAYER_BLUR') {
@@ -1092,11 +1307,10 @@ export class SkiaRenderer {
 
       if (pass === 'front' && effect.type === 'INNER_SHADOW') {
         // Inner shadow: draw a shadow clipped to the node shape
-        const isp = new this.ck.Paint()
-        isp.setColor(this.ck.Color4f(
+        this.auxFill.setColor(this.ck.Color4f(
           effect.color.r, effect.color.g, effect.color.b, effect.color.a
         ))
-        isp.setImageFilter(
+        this.auxFill.setImageFilter(
           this.ck.ImageFilter.MakeBlur(effect.radius, effect.radius, this.ck.TileMode.Decal, null)
         )
 
@@ -1139,10 +1353,10 @@ export class SkiaRenderer {
           bigPath.op(innerPath, this.ck.PathOp.Difference)
           innerPath.delete()
         }
-        canvas.drawPath(bigPath, isp)
+        canvas.drawPath(bigPath, this.auxFill)
         bigPath.delete()
         canvas.restore()
-        isp.delete()
+        this.auxFill.setImageFilter(null)
       }
     }
   }
@@ -1636,6 +1850,9 @@ export class SkiaRenderer {
     this.strokePaint.delete()
     this.selectionPaint.delete()
     this.snapPaint.delete()
+    this.auxFill.delete()
+    this.auxStroke.delete()
+    this.opacityPaint.delete()
     this.textFont?.delete()
     this.labelFont?.delete()
     this.sizeFont?.delete()

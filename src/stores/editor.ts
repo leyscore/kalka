@@ -789,6 +789,259 @@ export function createEditorStore() {
     requestRender()
   }
 
+  function createComponentFromSelection() {
+    const nodes = selectedNodes.value
+    if (nodes.length === 0) return
+
+    const prevSelection = new Set(state.selectedIds)
+
+    if (nodes.length === 1) {
+      const node = nodes[0]
+      const prevType = node.type
+
+      if (node.type === 'COMPONENT') return
+
+      if (node.type === 'FRAME' || node.type === 'GROUP') {
+        graph.updateNode(node.id, { type: 'COMPONENT' })
+        state.selectedIds = new Set([node.id])
+        undo.push({
+          label: 'Create component',
+          forward: () => {
+            graph.updateNode(node.id, { type: 'COMPONENT' })
+            state.selectedIds = new Set([node.id])
+            requestRender()
+          },
+          inverse: () => {
+            graph.updateNode(node.id, { type: prevType })
+            state.selectedIds = prevSelection
+            requestRender()
+          }
+        })
+        requestRender()
+        return
+      }
+    }
+
+    const parentId = nodes[0].parentId ?? state.currentPageId
+    const sameParent = nodes.every((n) => (n.parentId ?? state.currentPageId) === parentId)
+    if (!sameParent) return
+
+    const parent = graph.getNode(parentId)
+    if (!parent) return
+
+    const nodeIds = nodes.map((n) => n.id)
+    const origPositions = nodes.map((n) => ({ id: n.id, x: n.x, y: n.y }))
+
+    let minX = Infinity
+    let minY = Infinity
+    let maxX = -Infinity
+    let maxY = -Infinity
+    for (const n of nodes) {
+      const abs = graph.getAbsolutePosition(n.id)
+      minX = Math.min(minX, abs.x)
+      minY = Math.min(minY, abs.y)
+      maxX = Math.max(maxX, abs.x + n.width)
+      maxY = Math.max(maxY, abs.y + n.height)
+    }
+
+    const parentAbs = isTopLevel(parentId) ? { x: 0, y: 0 } : graph.getAbsolutePosition(parentId)
+    const firstIndex = Math.min(...nodeIds.map((id) => parent.childIds.indexOf(id)))
+
+    const component = graph.createNode('COMPONENT', parentId, {
+      name: 'Component',
+      x: minX - parentAbs.x,
+      y: minY - parentAbs.y,
+      width: maxX - minX,
+      height: maxY - minY,
+      fills: []
+    })
+    const componentId = component.id
+
+    parent.childIds = parent.childIds.filter((id) => id !== componentId)
+    parent.childIds.splice(firstIndex, 0, componentId)
+
+    for (const n of nodes) {
+      graph.reparentNode(n.id, componentId)
+    }
+
+    state.selectedIds = new Set([componentId])
+
+    undo.push({
+      label: 'Create component',
+      forward: () => {
+        const c = graph.createNode('COMPONENT', parentId, { ...component })
+        parent.childIds = parent.childIds.filter((id) => id !== c.id)
+        parent.childIds.splice(firstIndex, 0, c.id)
+        for (const n of origPositions) graph.reparentNode(n.id, c.id)
+        state.selectedIds = new Set([c.id])
+        requestRender()
+      },
+      inverse: () => {
+        for (const orig of origPositions) {
+          graph.reparentNode(orig.id, parentId)
+          graph.updateNode(orig.id, { x: orig.x, y: orig.y })
+        }
+        graph.deleteNode(componentId)
+        state.selectedIds = prevSelection
+        requestRender()
+      }
+    })
+    requestRender()
+  }
+
+  function createComponentSetFromComponents() {
+    const nodes = selectedNodes.value
+    if (nodes.length < 2) return
+    if (!nodes.every((n) => n.type === 'COMPONENT')) return
+
+    const parentId = nodes[0].parentId ?? state.currentPageId
+    const sameParent = nodes.every((n) => (n.parentId ?? state.currentPageId) === parentId)
+    if (!sameParent) return
+
+    const parent = graph.getNode(parentId)
+    if (!parent) return
+
+    const prevSelection = new Set(state.selectedIds)
+    const nodeIds = nodes.map((n) => n.id)
+    const origPositions = nodes.map((n) => ({ id: n.id, x: n.x, y: n.y }))
+
+    let minX = Infinity
+    let minY = Infinity
+    let maxX = -Infinity
+    let maxY = -Infinity
+    for (const n of nodes) {
+      const abs = graph.getAbsolutePosition(n.id)
+      minX = Math.min(minX, abs.x)
+      minY = Math.min(minY, abs.y)
+      maxX = Math.max(maxX, abs.x + n.width)
+      maxY = Math.max(maxY, abs.y + n.height)
+    }
+
+    const padding = 40
+    const parentAbs = isTopLevel(parentId) ? { x: 0, y: 0 } : graph.getAbsolutePosition(parentId)
+    const firstIndex = Math.min(...nodeIds.map((id) => parent.childIds.indexOf(id)))
+
+    const componentSet = graph.createNode('COMPONENT_SET', parentId, {
+      name: nodes[0].name.split('/')[0]?.trim() || 'Component Set',
+      x: minX - parentAbs.x - padding,
+      y: minY - parentAbs.y - padding,
+      width: maxX - minX + padding * 2,
+      height: maxY - minY + padding * 2,
+      fills: [{ type: 'SOLID', color: { r: 0.96, g: 0.96, b: 0.96, a: 1 }, opacity: 1, visible: true }]
+    })
+    const setId = componentSet.id
+
+    parent.childIds = parent.childIds.filter((id) => id !== setId)
+    parent.childIds.splice(firstIndex, 0, setId)
+
+    for (const n of nodes) {
+      graph.reparentNode(n.id, setId)
+    }
+
+    state.selectedIds = new Set([setId])
+
+    undo.push({
+      label: 'Create component set',
+      forward: () => {
+        const cs = graph.createNode('COMPONENT_SET', parentId, { ...componentSet })
+        parent.childIds = parent.childIds.filter((id) => id !== cs.id)
+        parent.childIds.splice(firstIndex, 0, cs.id)
+        for (const n of origPositions) graph.reparentNode(n.id, cs.id)
+        state.selectedIds = new Set([cs.id])
+        requestRender()
+      },
+      inverse: () => {
+        for (const orig of origPositions) {
+          graph.reparentNode(orig.id, parentId)
+          graph.updateNode(orig.id, { x: orig.x, y: orig.y })
+        }
+        graph.deleteNode(setId)
+        state.selectedIds = prevSelection
+        requestRender()
+      }
+    })
+    requestRender()
+  }
+
+  function createInstanceFromComponent(componentId: string, x?: number, y?: number) {
+    const component = graph.getNode(componentId)
+    if (!component || component.type !== 'COMPONENT') return null
+
+    const parentId = component.parentId ?? state.currentPageId
+    const instance = graph.createInstance(componentId, parentId, {
+      x: x ?? component.x + component.width + 40,
+      y: y ?? component.y
+    })
+    if (!instance) return null
+
+    const instanceId = instance.id
+    state.selectedIds = new Set([instanceId])
+
+    undo.push({
+      label: 'Create instance',
+      forward: () => {
+        graph.createInstance(componentId, parentId, { ...instance })
+        state.selectedIds = new Set([instanceId])
+        requestRender()
+      },
+      inverse: () => {
+        graph.deleteNode(instanceId)
+        state.selectedIds = new Set([componentId])
+        requestRender()
+      }
+    })
+    requestRender()
+    return instanceId
+  }
+
+  function detachInstance() {
+    const node = selectedNode.value
+    if (!node || node.type !== 'INSTANCE') return
+
+    const prevComponentId = node.componentId
+
+    graph.detachInstance(node.id)
+    state.selectedIds = new Set([node.id])
+
+    undo.push({
+      label: 'Detach instance',
+      forward: () => {
+        graph.detachInstance(node.id)
+        requestRender()
+      },
+      inverse: () => {
+        graph.updateNode(node.id, { type: 'INSTANCE', componentId: prevComponentId, overrides: {} })
+        requestRender()
+      }
+    })
+    requestRender()
+  }
+
+  function goToMainComponent() {
+    const node = selectedNode.value
+    if (!node?.componentId) return
+    const main = graph.getMainComponent(node.id)
+    if (!main) return
+
+    // Find which page the main component is on
+    let current: SceneNode | undefined = main
+    while (current && current.type !== 'CANVAS') {
+      current = current.parentId ? graph.getNode(current.parentId) : undefined
+    }
+    if (current && current.id !== state.currentPageId) {
+      switchPage(current.id)
+    }
+
+    state.selectedIds = new Set([main.id])
+
+    const abs = graph.getAbsolutePosition(main.id)
+    const viewW = 800
+    const viewH = 600
+    state.panX = viewW / 2 - (abs.x + main.width / 2) * state.zoom
+    state.panY = viewH / 2 - (abs.y + main.height / 2) * state.zoom
+    requestRender()
+  }
+
   function ungroupSelected() {
     const node = selectedNode.value
     if (!node || node.type !== 'GROUP') return
@@ -841,6 +1094,68 @@ export function createEditorStore() {
         requestRender()
       }
     })
+    requestRender()
+  }
+
+  function bringToFront() {
+    for (const id of state.selectedIds) {
+      const node = graph.getNode(id)
+      if (!node?.parentId) continue
+      const parent = graph.getNode(node.parentId)
+      if (!parent) continue
+      const idx = parent.childIds.indexOf(id)
+      if (idx === parent.childIds.length - 1) continue
+      parent.childIds = parent.childIds.filter((cid) => cid !== id)
+      parent.childIds.push(id)
+    }
+    requestRender()
+  }
+
+  function sendToBack() {
+    for (const id of state.selectedIds) {
+      const node = graph.getNode(id)
+      if (!node?.parentId) continue
+      const parent = graph.getNode(node.parentId)
+      if (!parent) continue
+      const idx = parent.childIds.indexOf(id)
+      if (idx === 0) continue
+      parent.childIds = parent.childIds.filter((cid) => cid !== id)
+      parent.childIds.unshift(id)
+    }
+    requestRender()
+  }
+
+  function toggleVisibility() {
+    for (const id of state.selectedIds) {
+      const node = graph.getNode(id)
+      if (!node) continue
+      graph.updateNode(id, { visible: !node.visible })
+    }
+    requestRender()
+  }
+
+  function toggleLock() {
+    for (const id of state.selectedIds) {
+      const node = graph.getNode(id)
+      if (!node) continue
+      graph.updateNode(id, { locked: !node.locked })
+    }
+    requestRender()
+  }
+
+  function moveToPage(pageId: string) {
+    const targetPage = graph.getNode(pageId)
+    if (!targetPage || targetPage.type !== 'CANVAS') return
+    const ids = [...state.selectedIds]
+    for (const id of ids) {
+      graph.reparentNode(id, pageId)
+    }
+    clearSelection()
+    requestRender()
+  }
+
+  function renameNode(id: string, name: string) {
+    graph.updateNode(id, { name })
     requestRender()
   }
 
@@ -1290,6 +1605,17 @@ export function createEditorStore() {
     wrapInAutoLayout,
     groupSelected,
     ungroupSelected,
+    createComponentFromSelection,
+    createComponentSetFromComponents,
+    createInstanceFromComponent,
+    detachInstance,
+    goToMainComponent,
+    bringToFront,
+    sendToBack,
+    toggleVisibility,
+    toggleLock,
+    moveToPage,
+    renameNode,
     createShape,
     adoptNodesIntoSection,
     duplicateSelected,

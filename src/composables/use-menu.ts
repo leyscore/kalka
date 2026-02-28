@@ -52,6 +52,9 @@ const MENU_ACTIONS: Record<string, (store: EditorStore) => void> = {
   delete: (store) => store.deleteSelected(),
   group: (store) => store.groupSelected(),
   ungroup: (store) => store.ungroupSelected(),
+  'create-component': (store) => store.createComponentFromSelection(),
+  'create-component-set': (store) => store.createComponentSetFromComponents(),
+  'detach-instance': (store) => store.detachInstance(),
   'zoom-fit': (store) => store.zoomToFit(),
 }
 
