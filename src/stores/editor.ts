@@ -1,5 +1,6 @@
 import { reactive, shallowRef, computed } from 'vue'
 
+import { DEFAULT_SHAPE_FILL, DEFAULT_FRAME_FILL } from '../constants'
 import {
   parseFigmaClipboard,
   importClipboardNodes,
@@ -8,7 +9,7 @@ import {
   buildOpenPencilClipboardHTML,
   prefetchFigmaSchema
 } from '../engine/clipboard'
-import { readFigFile } from '../engine/fig-file'
+import { readFigFile } from '../kiwi/fig-file'
 import { computeLayout, computeAllLayouts } from '../engine/layout'
 import { SceneGraph } from '../engine/scene-graph'
 import { UndoManager } from '../engine/undo'
@@ -53,22 +54,14 @@ export const TOOL_SHORTCUTS: Record<string, Tool> = {
   h: 'HAND'
 }
 
+const BLACK_FILL: Fill = { type: 'SOLID', color: { r: 0, g: 0, b: 0, a: 1 }, opacity: 1, visible: true }
+
 const DEFAULT_FILLS: Record<string, Fill> = {
-  FRAME: { type: 'SOLID', color: { r: 1, g: 1, b: 1, a: 1 }, opacity: 1, visible: true },
-  RECTANGLE: {
-    type: 'SOLID',
-    color: { r: 0.83, g: 0.83, b: 0.83, a: 1 },
-    opacity: 1,
-    visible: true
-  },
-  ELLIPSE: {
-    type: 'SOLID',
-    color: { r: 0.83, g: 0.83, b: 0.83, a: 1 },
-    opacity: 1,
-    visible: true
-  },
-  LINE: { type: 'SOLID', color: { r: 0, g: 0, b: 0, a: 1 }, opacity: 1, visible: true },
-  TEXT: { type: 'SOLID', color: { r: 0, g: 0, b: 0, a: 1 }, opacity: 1, visible: true }
+  FRAME: DEFAULT_FRAME_FILL,
+  RECTANGLE: DEFAULT_SHAPE_FILL,
+  ELLIPSE: DEFAULT_SHAPE_FILL,
+  LINE: BLACK_FILL,
+  TEXT: BLACK_FILL
 }
 
 export function createEditorStore() {
@@ -306,7 +299,7 @@ export function createEditorStore() {
       vectorNetwork: normalizedNetwork,
       name: 'Vector',
       fills: closed
-        ? [{ type: 'SOLID' as const, color: { r: 0.83, g: 0.83, b: 0.83, a: 1 }, opacity: 1, visible: true }]
+        ? [{ ...DEFAULT_SHAPE_FILL }]
         : [],
       strokes: closed
         ? []

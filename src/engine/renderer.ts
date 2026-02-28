@@ -1,3 +1,4 @@
+import { SELECTION_COLOR, SNAP_COLOR, CANVAS_BG_COLOR, HANDLE_SIZE, ROTATION_HANDLE_OFFSET } from '../constants'
 import type { SceneNode, SceneGraph, Fill } from './scene-graph'
 import type { SnapGuide } from './snap'
 import { vectorNetworkToPath } from './vector'
@@ -52,6 +53,10 @@ export class SkiaRenderer {
   zoom = 1
   dpr = 1
 
+  private selColor(alpha = 1) {
+    return this.ck.Color4f(SELECTION_COLOR.r, SELECTION_COLOR.g, SELECTION_COLOR.b, alpha)
+  }
+
   constructor(ck: CanvasKit, surface: Surface) {
     this.ck = ck
     this.surface = surface
@@ -67,20 +72,20 @@ export class SkiaRenderer {
     this.selectionPaint = new ck.Paint()
     this.selectionPaint.setStyle(ck.PaintStyle.Stroke)
     this.selectionPaint.setStrokeWidth(1)
-    this.selectionPaint.setColor(ck.Color4f(0.23, 0.51, 0.96, 1.0))
+    this.selectionPaint.setColor(this.selColor())
     this.selectionPaint.setAntiAlias(true)
 
     this.parentOutlinePaint = new ck.Paint()
     this.parentOutlinePaint.setStyle(ck.PaintStyle.Stroke)
     this.parentOutlinePaint.setStrokeWidth(1)
-    this.parentOutlinePaint.setColor(ck.Color4f(0.23, 0.51, 0.96, 0.5))
+    this.parentOutlinePaint.setColor(this.selColor(0.5))
     this.parentOutlinePaint.setAntiAlias(true)
     this.parentOutlinePaint.setPathEffect(ck.PathEffect.MakeDash([4, 4], 0))
 
     this.snapPaint = new ck.Paint()
     this.snapPaint.setStyle(ck.PaintStyle.Stroke)
     this.snapPaint.setStrokeWidth(1)
-    this.snapPaint.setColor(ck.Color4f(1.0, 0.0, 0.56, 1.0))
+    this.snapPaint.setColor(this.ck.Color4f(SNAP_COLOR.r, SNAP_COLOR.g, SNAP_COLOR.b, 1))
     this.snapPaint.setAntiAlias(true)
 
     this.textFont = new ck.Font(null, 14)
@@ -109,7 +114,7 @@ export class SkiaRenderer {
 
   render(graph: SceneGraph, selectedIds: Set<string>, overlays: RenderOverlays = {}): void {
     const canvas = this.surface.getCanvas()
-    canvas.clear(this.ck.Color4f(0.96, 0.96, 0.96, 1.0))
+    canvas.clear(this.ck.Color4f(CANVAS_BG_COLOR.r, CANVAS_BG_COLOR.g, CANVAS_BG_COLOR.b, 1))
 
     // Scene layer (world coordinates)
     canvas.save()
@@ -225,7 +230,7 @@ export class SkiaRenderer {
     const rotLinePaint = new this.ck.Paint()
     rotLinePaint.setStyle(this.ck.PaintStyle.Stroke)
     rotLinePaint.setStrokeWidth(1)
-    rotLinePaint.setColor(this.ck.Color4f(0.23, 0.51, 0.96, 1.0))
+    rotLinePaint.setColor(this.this.selColor())
     rotLinePaint.setAntiAlias(true)
     canvas.drawLine(mx, y1, mx, rotHandleY, rotLinePaint)
 
@@ -280,7 +285,7 @@ export class SkiaRenderer {
       if (node.type === 'FRAME' && node.parentId === graph.rootId) {
         const labelPaint = new this.ck.Paint()
         labelPaint.setStyle(this.ck.PaintStyle.Fill)
-        labelPaint.setColor(this.ck.Color4f(0.23, 0.51, 0.96, 1.0))
+        labelPaint.setColor(this.this.selColor())
         labelPaint.setAntiAlias(true)
         canvas.drawText(node.name, sx1, sy1 - 8, labelPaint, this.labelFont)
         labelPaint.delete()
@@ -302,7 +307,7 @@ export class SkiaRenderer {
 
     const pillPaint = new this.ck.Paint()
     pillPaint.setStyle(this.ck.PaintStyle.Fill)
-    pillPaint.setColor(this.ck.Color4f(0.23, 0.51, 0.96, 1.0))
+    pillPaint.setColor(this.this.selColor())
     pillPaint.setAntiAlias(true)
 
     const rrect = this.ck.RRectXY(this.ck.LTRBRect(pillX, pillY, pillX + pillW, pillY + pillH), 4, 4)
@@ -405,7 +410,7 @@ export class SkiaRenderer {
     const dashPaint = new this.ck.Paint()
     dashPaint.setStyle(this.ck.PaintStyle.Stroke)
     dashPaint.setStrokeWidth(1)
-    dashPaint.setColor(this.ck.Color4f(0.23, 0.51, 0.96, 0.6))
+    dashPaint.setColor(this.selColor(0.6))
     dashPaint.setAntiAlias(true)
 
     canvas.drawRect(this.ck.LTRBRect(minX, minY, maxX, maxY), dashPaint)
@@ -490,7 +495,7 @@ export class SkiaRenderer {
 
     const fill = new this.ck.Paint()
     fill.setStyle(this.ck.PaintStyle.Fill)
-    fill.setColor(this.ck.Color4f(0.23, 0.51, 0.96, 0.08))
+    fill.setColor(this.selColor(0.08))
     canvas.drawRect(rect, fill)
     canvas.drawRect(rect, this.selectionPaint)
     fill.delete()
@@ -507,7 +512,7 @@ export class SkiaRenderer {
     const paint = new this.ck.Paint()
     paint.setStyle(this.ck.PaintStyle.Stroke)
     paint.setStrokeWidth(2)
-    paint.setColor(this.ck.Color4f(0.23, 0.51, 0.96, 1.0))
+    paint.setColor(this.this.selColor())
     paint.setAntiAlias(true)
 
     if (indicator.direction === 'HORIZONTAL') {
@@ -560,7 +565,7 @@ export class SkiaRenderer {
       const highlight = new this.ck.Paint()
       highlight.setStyle(this.ck.PaintStyle.Stroke)
       highlight.setStrokeWidth(2 / this.zoom)
-      highlight.setColor(this.ck.Color4f(0.23, 0.51, 0.96, 0.8))
+      highlight.setColor(this.selColor(0.8))
       highlight.setAntiAlias(true)
       canvas.drawRect(this.ck.LTRBRect(0, 0, node.width, node.height), highlight)
       highlight.delete()
@@ -747,13 +752,13 @@ export class SkiaRenderer {
     const pathPaint = new this.ck.Paint()
     pathPaint.setStyle(this.ck.PaintStyle.Stroke)
     pathPaint.setStrokeWidth(2)
-    pathPaint.setColor(this.ck.Color4f(0.23, 0.51, 0.96, 1.0))
+    pathPaint.setColor(this.this.selColor())
     pathPaint.setAntiAlias(true)
 
     const handlePaint = new this.ck.Paint()
     handlePaint.setStyle(this.ck.PaintStyle.Stroke)
     handlePaint.setStrokeWidth(1)
-    handlePaint.setColor(this.ck.Color4f(0.23, 0.51, 0.96, 0.5))
+    handlePaint.setColor(this.selColor(0.5))
     handlePaint.setAntiAlias(true)
 
     const vertexFill = new this.ck.Paint()
@@ -764,7 +769,7 @@ export class SkiaRenderer {
     const vertexStroke = new this.ck.Paint()
     vertexStroke.setStyle(this.ck.PaintStyle.Stroke)
     vertexStroke.setStrokeWidth(2)
-    vertexStroke.setColor(this.ck.Color4f(0.23, 0.51, 0.96, 1.0))
+    vertexStroke.setColor(this.this.selColor())
     vertexStroke.setAntiAlias(true)
 
     const toScreen = (x: number, y: number) => ({

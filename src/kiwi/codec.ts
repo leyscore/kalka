@@ -7,23 +7,13 @@
  */
 
 import { decompress as zstdDecompress } from 'fzstd'
-import { compileSchema, type Schema } from 'kiwi-schema'
+import { compileSchema } from './kiwi-schema'
 
+import type { Schema } from './kiwi-schema'
+
+import { parseColor } from '../engine/color'
 import { isZstdCompressed, getKiwiMessageType } from './protocol.ts'
 import figmaSchema from './schema.ts'
-
-function parseColor(color: string): Color {
-  if (color.startsWith('#')) {
-    const hex = color.slice(1)
-    return {
-      r: parseInt(hex.slice(0, 2), 16) / 255,
-      g: parseInt(hex.slice(2, 4), 16) / 255,
-      b: parseInt(hex.slice(4, 6), 16) / 255,
-      a: hex.length > 6 ? parseInt(hex.slice(6, 8), 16) / 255 : 1
-    }
-  }
-  return { r: 0, g: 0, b: 0, a: 1 }
-}
 
 interface CompiledSchema {
   encodeMessage(message: unknown): Uint8Array
@@ -164,17 +154,9 @@ export function peekMessageType(data: Uint8Array): number | null {
 
 // Type definitions
 
-export interface GUID {
-  sessionID: number
-  localID: number
-}
+export type { GUID, Color } from '../types'
 
-export interface Color {
-  r: number
-  g: number
-  b: number
-  a: number
-}
+import type { GUID, Color } from '../types'
 
 export interface Vector {
   x: number

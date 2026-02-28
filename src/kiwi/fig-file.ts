@@ -1,9 +1,9 @@
 import { unzipSync } from 'fflate'
 
-import { initCodec, decodeMessage } from '../kiwi/codec'
+import { initCodec, decodeMessage } from './codec'
 import { importNodeChanges } from './fig-import'
 
-import type { SceneGraph } from './scene-graph'
+import type { SceneGraph } from '../engine/scene-graph'
 
 /**
  * Parse a .fig file into a SceneGraph.

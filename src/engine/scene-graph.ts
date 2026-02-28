@@ -1,3 +1,5 @@
+export type { GUID, Color } from '../types'
+
 export type HandleMirroring = 'NONE' | 'ANGLE' | 'ANGLE_AND_LENGTH'
 export type WindingRule = 'NONZERO' | 'EVENODD'
 
@@ -40,17 +42,7 @@ export type NodeType =
   | 'GROUP'
   | 'SECTION'
 
-export interface GUID {
-  sessionID: number
-  localID: number
-}
-
-export interface Color {
-  r: number
-  g: number
-  b: number
-  a: number
-}
+import type { Color } from '../types'
 
 export interface Fill {
   type: 'SOLID'

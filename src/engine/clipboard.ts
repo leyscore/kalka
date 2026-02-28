@@ -1,4 +1,4 @@
-import { decodeBinarySchema, compileSchema, ByteBuffer } from 'kiwi-schema'
+import { decodeBinarySchema, compileSchema, ByteBuffer } from '../kiwi/kiwi-schema'
 import { inflateSync, deflateSync } from 'fflate'
 
 import type { SceneGraph, SceneNode, Fill, Stroke, Color, LayoutMode, LayoutSizing, LayoutAlign, LayoutCounterAlign, VectorNetwork } from './scene-graph'

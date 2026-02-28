@@ -2,7 +2,9 @@
 import { ref, computed, watch } from 'vue'
 import { PopoverRoot, PopoverTrigger, PopoverPortal, PopoverContent } from 'reka-ui'
 
-import type { Color } from '../engine/scene-graph'
+import { colorToHex, parseColor } from '../engine/color'
+
+import type { Color } from '../types'
 
 const props = defineProps<{
   color: Color
@@ -72,21 +74,14 @@ function emitColor() {
 }
 
 const hexValue = computed(() => {
-  const hex = (v: number) =>
-    Math.round(v * 255)
-      .toString(16)
-      .padStart(2, '0')
-  return `${hex(props.color.r)}${hex(props.color.g)}${hex(props.color.b)}`
+  return colorToHex(props.color).slice(1)
 })
 
 function onHexInput(e: Event) {
   const input = (e.target as HTMLInputElement).value.replace('#', '')
   if (input.length !== 6) return
-  const r = parseInt(input.slice(0, 2), 16) / 255
-  const g = parseInt(input.slice(2, 4), 16) / 255
-  const b = parseInt(input.slice(4, 6), 16) / 255
-  if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) return
-  emit('update', { r, g, b, a: alpha.value })
+  const parsed = parseColor(`#${input}`)
+  emit('update', { ...parsed, a: alpha.value })
 }
 
 const svAreaRef = ref<HTMLDivElement | null>(null)

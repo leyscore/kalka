@@ -6,6 +6,8 @@ import ColorPicker from './ColorPicker.vue'
 import ScrubInput from './ScrubInput.vue'
 import { useEditorStore } from '../stores/editor'
 
+import { DEFAULT_SHAPE_FILL } from '../constants'
+
 import type { Color, Fill, Stroke, LayoutSizing, LayoutAlign, LayoutCounterAlign, SceneNode } from '../engine/scene-graph'
 
 const store = useEditorStore()
@@ -155,13 +157,7 @@ function updateFillColor(index: number, color: Color) {
 
 function addFill() {
   if (!node.value) return
-  const fill: Fill = {
-    type: 'SOLID',
-    color: { r: 0.83, g: 0.83, b: 0.83, a: 1 },
-    opacity: 1,
-    visible: true
-  }
-  store.updateNodeWithUndo(node.value.id, { fills: [...node.value.fills, fill] }, "Add fill")
+  store.updateNodeWithUndo(node.value.id, { fills: [...node.value.fills, { ...DEFAULT_SHAPE_FILL }] }, "Add fill")
 }
 
 function removeFill(index: number) {

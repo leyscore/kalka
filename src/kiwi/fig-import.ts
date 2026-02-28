@@ -1,8 +1,8 @@
-import { SceneGraph } from './scene-graph'
-import { decodeVectorNetworkBlob } from './vector'
+import { SceneGraph } from '../engine/scene-graph'
+import { decodeVectorNetworkBlob } from '../engine/vector'
 
-import type { NodeChange, Paint, Effect as KiwiEffect, GUID } from '../kiwi/codec'
-import type { NodeType, Fill, Stroke, Effect, Color, LayoutMode, LayoutSizing, LayoutAlign, LayoutCounterAlign, VectorNetwork } from './scene-graph'
+import type { NodeChange, Paint, Effect as KiwiEffect, GUID } from './codec'
+import type { NodeType, Fill, Stroke, Effect, Color, LayoutMode, LayoutSizing, LayoutAlign, LayoutCounterAlign, VectorNetwork } from '../engine/scene-graph'
 
 function ext(nc: NodeChange): Record<string, unknown> {
   return nc as unknown as Record<string, unknown>
