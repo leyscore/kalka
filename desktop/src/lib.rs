@@ -84,7 +84,11 @@ pub fn run() {
         .setup(|app| {
             #[cfg(target_os = "macos")]
             let app_menu = SubmenuBuilder::new(app, "OpenPencil")
-                .item(&PredefinedMenuItem::about(app, Some("About OpenPencil"), None)?)
+                .item(&PredefinedMenuItem::about(
+                    app,
+                    Some("About OpenPencil"),
+                    None,
+                )?)
                 .separator()
                 .item(&PredefinedMenuItem::services(app, None)?)
                 .separator()
@@ -283,18 +287,21 @@ pub fn run() {
                 .build()?;
 
             #[allow(unused_mut)]
-            let mut help_menu_builder = SubmenuBuilder::new(app, "Help")
-                .item(
-                    &MenuItemBuilder::new("Keyboard Shortcuts")
-                        .id("shortcuts")
-                        .accelerator("CmdOrCtrl+/")
-                        .build(app)?,
-                );
+            let mut help_menu_builder = SubmenuBuilder::new(app, "Help").item(
+                &MenuItemBuilder::new("Keyboard Shortcuts")
+                    .id("shortcuts")
+                    .accelerator("CmdOrCtrl+/")
+                    .build(app)?,
+            );
             #[cfg(not(target_os = "macos"))]
             {
                 help_menu_builder = help_menu_builder
                     .separator()
-                    .item(&PredefinedMenuItem::about(app, Some("About OpenPencil"), None)?);
+                    .item(&PredefinedMenuItem::about(
+                        app,
+                        Some("About OpenPencil"),
+                        None,
+                    )?);
             }
             let help_menu = help_menu_builder.build()?;
 
