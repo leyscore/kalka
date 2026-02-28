@@ -7,6 +7,10 @@ export default defineConfig({
     toHaveScreenshot: {
       maxDiffPixelRatio: 0.01,
       threshold: 0.3
+    },
+    toMatchSnapshot: {
+      maxDiffPixelRatio: 0.01,
+      threshold: 0.3
     }
   },
   use: {

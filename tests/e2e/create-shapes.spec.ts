@@ -22,18 +22,23 @@ test.beforeEach(async () => {
   await canvas.clearCanvas()
 })
 
+async function expectCanvas(name: string) {
+  const buffer = await canvas.canvas.screenshot()
+  expect(buffer).toMatchSnapshot(`${name}.png`)
+}
+
 test('empty canvas', async () => {
-  await expect(canvas.canvas).toHaveScreenshot({ timeout: 3000 })
+  await expectCanvas('empty-canvas')
 })
 
 test('draw rectangle', async () => {
   await canvas.drawRect(100, 100, 200, 150)
-  await expect(canvas.canvas).toHaveScreenshot({ timeout: 3000 })
+  await expectCanvas('draw-rectangle')
 })
 
 test('draw ellipse', async () => {
   await canvas.drawEllipse(100, 100, 200, 150)
-  await expect(canvas.canvas).toHaveScreenshot({ timeout: 3000 })
+  await expectCanvas('draw-ellipse')
 })
 
 test('draw rectangle then move it', async () => {
@@ -41,17 +46,17 @@ test('draw rectangle then move it', async () => {
   await canvas.selectTool('select')
   await canvas.drag(200, 175, 400, 300)
   await canvas.waitForRender()
-  await expect(canvas.canvas).toHaveScreenshot({ timeout: 3000 })
+  await expectCanvas('draw-rectangle-then-move-it')
 })
 
 test('draw and delete', async () => {
   await canvas.drawRect(100, 100, 200, 150)
   await canvas.deleteSelection()
-  await expect(canvas.canvas).toHaveScreenshot({ timeout: 3000 })
+  await expectCanvas('draw-and-delete')
 })
 
 test('draw and undo', async () => {
   await canvas.drawRect(100, 100, 200, 150)
   await canvas.undo()
-  await expect(canvas.canvas).toHaveScreenshot({ timeout: 3000 })
+  await expectCanvas('draw-and-undo')
 })
