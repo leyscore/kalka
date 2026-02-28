@@ -11,25 +11,29 @@ const pages = computed(() => {
 })
 
 const editingPageId = ref<string | null>(null)
-const editInput = ref<HTMLInputElement | null>(null)
 
 function startRename(pageId: string) {
   editingPageId.value = pageId
   nextTick(() => {
-    editInput.value?.select()
+    const input = document.querySelector<HTMLInputElement>('[data-page-edit]')
+    input?.focus()
+    input?.select()
   })
 }
 
-function commitRename(pageId: string) {
-  const value = editInput.value?.value.trim()
+function commitRename(pageId: string, input: HTMLInputElement) {
+  if (editingPageId.value !== pageId) return
+  const value = input.value.trim()
   if (value && value !== store.graph.getNode(pageId)?.name) {
     store.renamePage(pageId, value)
   }
   editingPageId.value = null
 }
 
-function cancelRename() {
-  editingPageId.value = null
+function onKeydown(e: KeyboardEvent, pageId: string) {
+  if (e.key === 'Enter' || e.key === 'Escape') {
+    ;(e.target as HTMLInputElement).blur()
+  }
 }
 </script>
 
@@ -47,12 +51,11 @@ function cancelRename() {
       <div v-for="pg in pages" :key="pg.id">
         <input
           v-if="editingPageId === pg.id"
-          ref="editInput"
+          data-page-edit
           class="w-full rounded border border-accent bg-input px-2 py-1 text-xs text-surface outline-none"
           :value="pg.name"
-          @blur="commitRename(pg.id)"
-          @keydown.enter="commitRename(pg.id)"
-          @keydown.escape="cancelRename()"
+          @blur="commitRename(pg.id, $event.target as HTMLInputElement)"
+          @keydown="onKeydown($event, pg.id)"
         />
         <button
           v-else
