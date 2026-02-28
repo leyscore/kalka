@@ -1,7 +1,7 @@
 import type { Color } from './types'
 import type { Fill, Stroke } from './engine/scene-graph'
 
-export const IS_TAURI = '__TAURI_INTERNALS__' in window
+export const IS_TAURI = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
 
 export const SELECTION_COLOR = { r: 0.23, g: 0.51, b: 0.96, a: 1 } satisfies Color
 export const SNAP_COLOR = { r: 1.0, g: 0.0, b: 0.56, a: 1 } satisfies Color

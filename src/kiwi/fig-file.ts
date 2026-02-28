@@ -1,39 +1,56 @@
-import { unzipSync } from 'fflate'
+import { unzipSync, inflateSync } from 'fflate'
+import { decompress as zstdDecompress } from 'fzstd'
 
-import { initCodec, decodeMessage } from './codec'
+import { decodeBinarySchema, compileSchema, ByteBuffer } from './kiwi-schema'
 import { importNodeChanges } from './fig-import'
+import { isZstdCompressed } from './protocol'
 
 import type { SceneGraph } from '../engine/scene-graph'
+import type { FigmaMessage } from './codec'
 
-/**
- * Parse a .fig file into a SceneGraph.
- *
- * A .fig file is a ZIP archive containing:
- * - `canvas.fig` or similar blob: Kiwi-encoded document state
- * - `thumbnail.png`: preview image
- * - `meta.json`: file metadata
- *
- * The Kiwi payload is a serialized Message with nodeChanges.
- */
+interface FigKiwiPayload {
+  schemaDeflated: Uint8Array
+  dataRaw: Uint8Array
+}
+
+function parseFigKiwiContainer(data: Uint8Array): FigKiwiPayload | null {
+  const header = new TextDecoder().decode(data.slice(0, 8))
+  if (header !== 'fig-kiwi') return null
+
+  const view = new DataView(data.buffer, data.byteOffset, data.byteLength)
+  let offset = 12
+
+  const chunks: Uint8Array[] = []
+  while (offset < data.length) {
+    const len = view.getUint32(offset, true)
+    offset += 4
+    chunks.push(data.slice(offset, offset + len))
+    offset += len
+  }
+  if (chunks.length < 2) return null
+
+  const compressed = chunks[1]
+  let dataRaw: Uint8Array
+  if (isZstdCompressed(compressed)) {
+    dataRaw = zstdDecompress(compressed)
+  } else {
+    try { dataRaw = inflateSync(compressed) } catch { dataRaw = compressed }
+  }
+
+  return { schemaDeflated: chunks[0], dataRaw }
+}
+
 export async function parseFigFile(buffer: ArrayBuffer): Promise<SceneGraph> {
-  await initCodec()
-
   const zip = unzipSync(new Uint8Array(buffer))
   const entries = Object.keys(zip)
 
-  // Find the Kiwi-encoded canvas data
-  // .fig files may have various structures; the binary blob is typically the largest non-image file
   let canvasData: Uint8Array | null = null
-
-  // Try known names first
   for (const name of entries) {
     if (name === 'canvas.fig' || name === 'canvas') {
       canvasData = zip[name]
       break
     }
   }
-
-  // Fallback: find the largest binary file that's not an image/json
   if (!canvasData) {
     let maxSize = 0
     for (const name of entries) {
@@ -50,8 +67,14 @@ export async function parseFigFile(buffer: ArrayBuffer): Promise<SceneGraph> {
     throw new Error(`No canvas data found in .fig file. Entries: ${entries.join(', ')}`)
   }
 
-  // Decode the Kiwi message
-  const message = decodeMessage(canvasData)
+  const payload = parseFigKiwiContainer(canvasData)
+  if (!payload) throw new Error('Invalid fig-kiwi container')
+
+  const schemaBytes = inflateSync(payload.schemaDeflated)
+  const schema = decodeBinarySchema(new ByteBuffer(schemaBytes))
+  const compiled = compileSchema(schema) as { decodeMessage(data: Uint8Array): unknown }
+  const message = compiled.decodeMessage(payload.dataRaw) as FigmaMessage
+
   const nodeChanges = message.nodeChanges
   if (!nodeChanges || nodeChanges.length === 0) {
     throw new Error('No nodes found in .fig file')

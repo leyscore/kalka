@@ -1,8 +1,7 @@
 import { zipSync, deflateSync } from 'fflate'
-import { decodeBinarySchema, compileSchema, ByteBuffer } from '../kiwi/kiwi-schema'
-import { inflateSync } from 'fflate'
 import { encodeVectorNetworkBlob } from './vector'
 import { IS_TAURI } from '../constants'
+import { initCodec, getCompiledSchema, getSchemaBytes } from '../kiwi/codec'
 
 import type { SceneGraph, SceneNode, Color } from './scene-graph'
 
@@ -46,23 +45,7 @@ interface KiwiNodeChange {
   [key: string]: unknown
 }
 
-type CompiledSchema = ReturnType<typeof compileSchema>
 
-let cachedSchema: CompiledSchema | null = null
-let cachedSchemaDeflated: Uint8Array | null = null
-
-async function getSchema(): Promise<{ compiled: CompiledSchema; deflated: Uint8Array }> {
-  if (cachedSchema && cachedSchemaDeflated) {
-    return { compiled: cachedSchema, deflated: cachedSchemaDeflated }
-  }
-  const resp = await fetch('/figma-schema.bin')
-  const deflated = new Uint8Array(await resp.arrayBuffer())
-  const schemaBytes = inflateSync(deflated)
-  const schema = decodeBinarySchema(new ByteBuffer(schemaBytes))
-  cachedSchema = compileSchema(schema)
-  cachedSchemaDeflated = deflated
-  return { compiled: cachedSchema, deflated }
-}
 
 function mapToFigmaType(type: SceneNode['type']): string {
   switch (type) {
@@ -243,7 +226,9 @@ async function buildFigKiwi(schemaDeflated: Uint8Array, dataRaw: Uint8Array): Pr
 }
 
 export async function exportFigFile(graph: SceneGraph): Promise<Uint8Array> {
-  const { compiled, deflated: schemaDeflated } = await getSchema()
+  await initCodec()
+  const compiled = getCompiledSchema()
+  const schemaDeflated = deflateSync(getSchemaBytes())
 
   const docGuid = { sessionID: 0, localID: 0 }
   const localIdCounter = { value: 2 }

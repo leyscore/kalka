@@ -7,7 +7,7 @@
  */
 
 import { decompress as zstdDecompress } from 'fzstd'
-import { compileSchema } from './kiwi-schema'
+import { compileSchema, encodeBinarySchema } from './kiwi-schema'
 
 import type { Schema } from './kiwi-schema'
 
@@ -28,6 +28,15 @@ let compiledSchema: CompiledSchema | null = null
 export async function initCodec(): Promise<void> {
   if (compiledSchema) return
   compiledSchema = compileSchema(figmaSchema as Schema) as CompiledSchema
+}
+
+export function getCompiledSchema() {
+  if (!compiledSchema) throw new Error('Codec not initialized')
+  return compiledSchema
+}
+
+export function getSchemaBytes(): Uint8Array {
+  return encodeBinarySchema(figmaSchema as Schema)
 }
 
 /**

@@ -1,5 +1,6 @@
-import { decodeBinarySchema, compileSchema, ByteBuffer } from '../kiwi/kiwi-schema'
 import { inflateSync, deflateSync } from 'fflate'
+import { decodeBinarySchema, compileSchema, ByteBuffer } from '../kiwi/kiwi-schema'
+import { initCodec, getCompiledSchema, getSchemaBytes } from '../kiwi/codec'
 
 import type { SceneGraph, SceneNode, Fill, Stroke, Color, LayoutMode, LayoutSizing, LayoutAlign, LayoutCounterAlign, VectorNetwork } from './scene-graph'
 import { decodeVectorNetworkBlob, encodeVectorNetworkBlob } from './vector'
@@ -50,36 +51,8 @@ interface KiwiNodeChange {
   [key: string]: unknown
 }
 
-type CompiledSchema = ReturnType<typeof compileSchema>
-
-let cachedSchema: CompiledSchema | null = null
-let cachedSchemaDeflated: Uint8Array | null = null
-
-export function prefetchFigmaSchema(): void {
-  getFigmaSchemaAsync()
-}
-
-function getFigmaSchemaSync(): { compiled: CompiledSchema; deflated: Uint8Array } | null {
-  if (cachedSchema && cachedSchemaDeflated) {
-    return { compiled: cachedSchema, deflated: cachedSchemaDeflated }
-  }
-  return null
-}
-
-async function getFigmaSchemaAsync(): Promise<{ compiled: CompiledSchema; deflated: Uint8Array }> {
-  if (cachedSchema && cachedSchemaDeflated) {
-    return { compiled: cachedSchema, deflated: cachedSchemaDeflated }
-  }
-
-  const resp = await fetch('/figma-schema.bin')
-  const deflated = new Uint8Array(await resp.arrayBuffer())
-  const schemaBytes = inflateSync(deflated)
-  const schema = decodeBinarySchema(new ByteBuffer(schemaBytes))
-  const compiled = compileSchema(schema)
-
-  cachedSchema = compiled
-  cachedSchemaDeflated = deflated
-  return { compiled, deflated }
+export async function prefetchFigmaSchema(): Promise<void> {
+  await initCodec()
 }
 
 function parseFigKiwi(binary: Uint8Array): { schemaDeflated: Uint8Array; dataRaw: Uint8Array } | null {
@@ -585,9 +558,8 @@ export function buildFigmaClipboardHTML(
   nodes: SceneNode[],
   graph: SceneGraph
 ): string | null {
-  const schema = getFigmaSchemaSync()
-  if (!schema) return null
-  const { compiled, deflated: schemaDeflated } = schema
+  const compiled = getCompiledSchema()
+  const schemaDeflated = deflateSync(getSchemaBytes())
 
   const docGuid = { sessionID: 0, localID: 0 }
   const canvasGuid = { sessionID: 0, localID: 1 }
