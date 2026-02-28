@@ -726,14 +726,22 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
         }
         store.setDropTarget(null)
       } else {
-        store.commitMove(d.originals)
+        // Check if the user actually dragged
+        const moved = [...d.originals].some(([id, orig]) => {
+          const node = store.graph.getNode(id)
+          return node && (node.x !== orig.x || node.y !== orig.y)
+        })
 
-        // Reparent into frame if dropped on one
-        const dropId = store.state.dropTargetId
-        if (dropId) {
-          store.reparentNodes([...store.state.selectedIds], dropId)
-          store.setDropTarget(null)
+        if (moved) {
+          store.commitMove(d.originals)
+
+          // Reparent into frame if dropped on one
+          const dropId = store.state.dropTargetId
+          if (dropId) {
+            store.reparentNodes([...store.state.selectedIds], dropId)
+          }
         }
+        store.setDropTarget(null)
       }
     }
 

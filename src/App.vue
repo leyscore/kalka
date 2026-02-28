@@ -15,6 +15,8 @@ const store = provideEditorStore()
 useKeyboard(store)
 useMenu(store)
 
+;(window as any).__OPEN_PENCIL_STORE__ = store
+
 useEventListener(document, 'wheel', (e: WheelEvent) => {
   if (e.ctrlKey || e.metaKey) e.preventDefault()
 }, { passive: false })

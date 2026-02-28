@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useEventListener } from '@vueuse/core'
 import { TreeRoot, TreeItem } from 'reka-ui'
 
@@ -36,25 +36,28 @@ const nodeIcons: Record<string, typeof IconSquare> = {
 function buildTree(parentId: string): LayerNode[] {
   const parent = store.graph.getNode(parentId)
   if (!parent) return []
-  const result: LayerNode[] = []
-  for (const cid of parent.childIds) {
-    const node = store.graph.getNode(cid)
-    if (!node) continue
-    result.push({
+  return parent.childIds
+    .map((cid) => store.graph.getNode(cid))
+    .filter((n): n is NonNullable<typeof n> => !!n)
+    .map((node) => ({
       id: node.id,
       name: node.name,
       type: node.type,
       visible: node.visible,
       children: node.childIds.length > 0 ? buildTree(node.id) : undefined,
-    })
-  }
-  return result
+    }))
 }
 
-const items = computed(() => {
-  void store.state.renderVersion
-  return buildTree(store.graph.rootId)
-})
+const items = ref(buildTree(store.graph.rootId))
+const treeKey = ref(0)
+
+watch(
+  () => store.state.renderVersion,
+  () => {
+    items.value = buildTree(store.graph.rootId)
+    treeKey.value++
+  }
+)
 
 const expanded = ref<string[]>([])
 
@@ -201,6 +204,7 @@ function updateDropTarget(ev: PointerEvent) {
     <header class="shrink-0 px-3 py-2 text-[11px] uppercase tracking-wider text-muted">Layers</header>
     <div ref="listRef" class="relative flex-1 overflow-y-auto px-1">
       <TreeRoot
+        :key="treeKey"
         v-slot="{ flattenItems }"
         :items="items"
         :get-key="(v: LayerNode) => v.id"
