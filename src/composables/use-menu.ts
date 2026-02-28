@@ -2,7 +2,37 @@ import { onUnmounted } from 'vue'
 
 import type { EditorStore } from '../stores/editor'
 
-export function openFileDialog(store: EditorStore) {
+export async function openFileDialog(store: EditorStore) {
+  if ('__TAURI_INTERNALS__' in window) {
+    const { open } = await import('@tauri-apps/plugin-dialog')
+    const { readFile } = await import('@tauri-apps/plugin-fs')
+    const path = await open({
+      filters: [{ name: 'Figma file', extensions: ['fig'] }],
+      multiple: false
+    })
+    if (!path) return
+    const bytes = await readFile(path as string)
+    const file = new File([bytes], (path as string).split('/').pop()!)
+    await store.openFigFile(file, undefined, path as string)
+    return
+  }
+
+  if ('showOpenFilePicker' in window) {
+    try {
+      const [handle] = await (window as any).showOpenFilePicker({
+        types: [{
+          description: 'Figma file',
+          accept: { 'application/octet-stream': ['.fig'] }
+        }]
+      })
+      const file = await handle.getFile()
+      await store.openFigFile(file, handle)
+      return
+    } catch (e) {
+      if ((e as Error).name === 'AbortError') return
+    }
+  }
+
   const input = document.createElement('input')
   input.type = 'file'
   input.accept = '.fig'
@@ -15,6 +45,8 @@ export function openFileDialog(store: EditorStore) {
 
 const MENU_ACTIONS: Record<string, (store: EditorStore) => void> = {
   open: (store) => openFileDialog(store),
+  save: (store) => store.saveFigFile(),
+  'save-as': (store) => store.saveFigFileAs(),
   duplicate: (store) => store.duplicateSelected(),
   delete: (store) => store.deleteSelected(),
   group: (store) => store.groupSelected(),

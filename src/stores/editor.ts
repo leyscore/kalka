@@ -11,6 +11,7 @@ import {
   prefetchFigmaSchema
 } from '../engine/clipboard'
 import { readFigFile } from '../kiwi/fig-file'
+import { exportFigFile } from '../engine/fig-export'
 import { computeLayout, computeAllLayouts } from '../engine/layout'
 import { SceneGraph } from '../engine/scene-graph'
 import { UndoManager } from '../engine/undo'
@@ -71,6 +72,8 @@ export function createEditorStore() {
   let graph = new SceneGraph()
   const undo = new UndoManager()
   const pageViewports = new Map<string, PageViewport>()
+  let fileHandle: FileSystemFileHandle | null = null
+  let filePath: string | null = null
 
   prefetchFigmaSchema()
 
@@ -426,13 +429,15 @@ export function createEditorStore() {
     requestRender()
   }
 
-  async function openFigFile(file: File) {
+  async function openFigFile(file: File, handle?: FileSystemFileHandle, path?: string) {
     try {
       const imported = await readFigFile(file)
       graph = imported
       computeAllLayouts(graph)
       undo.clear()
       pageViewports.clear()
+      fileHandle = handle ?? null
+      filePath = path ?? null
       state.selectedIds = new Set()
       const firstPage = graph.getPages()[0]
       state.currentPageId = firstPage?.id ?? graph.rootId
@@ -443,6 +448,70 @@ export function createEditorStore() {
       requestRender()
     } catch (e) {
       console.error('Failed to open .fig file:', e)
+    }
+  }
+
+  async function saveFigFile() {
+    if (filePath || fileHandle) {
+      await writeFile(await exportFigFile(graph))
+    } else {
+      await saveFigFileAs()
+    }
+  }
+
+  async function saveFigFileAs() {
+    const data = await exportFigFile(graph)
+
+    if ('__TAURI_INTERNALS__' in window) {
+      const { save } = await import('@tauri-apps/plugin-dialog')
+      const path = await save({
+        defaultPath: 'Untitled.fig',
+        filters: [{ name: 'Figma file', extensions: ['fig'] }]
+      })
+      if (!path) return
+      filePath = path
+      fileHandle = null
+      await writeFile(data)
+      return
+    }
+
+    if ('showSaveFilePicker' in window) {
+      try {
+        const handle = await (window as any).showSaveFilePicker({
+          suggestedName: 'Untitled.fig',
+          types: [{
+            description: 'Figma file',
+            accept: { 'application/octet-stream': ['.fig'] }
+          }]
+        })
+        fileHandle = handle
+        filePath = null
+        await writeFile(data)
+        return
+      } catch (e) {
+        if ((e as Error).name === 'AbortError') return
+      }
+    }
+
+    const blob = new Blob([data], { type: 'application/octet-stream' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'Untitled.fig'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  async function writeFile(data: Uint8Array) {
+    if (filePath && '__TAURI_INTERNALS__' in window) {
+      const { writeFile: tauriWrite } = await import('@tauri-apps/plugin-fs')
+      await tauriWrite(filePath, data)
+      return
+    }
+    if (fileHandle) {
+      const writable = await fileHandle.createWritable()
+      await writable.write(data)
+      await writable.close()
     }
   }
 
@@ -1202,6 +1271,8 @@ export function createEditorStore() {
     startTextEditing,
     commitTextEdit,
     openFigFile,
+    saveFigFile,
+    saveFigFileAs,
     updateNode,
     setLayoutMode,
     wrapInAutoLayout,

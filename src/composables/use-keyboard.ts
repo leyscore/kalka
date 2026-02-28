@@ -55,6 +55,12 @@ export function useKeyboard(store: EditorStore) {
       } else if (e.key === 'a') {
         e.preventDefault()
         store.selectAll()
+      } else if (e.key === 's' && e.shiftKey) {
+        e.preventDefault()
+        store.saveFigFileAs()
+      } else if (e.key === 's') {
+        e.preventDefault()
+        store.saveFigFile()
       } else if (e.key === 'o') {
         e.preventDefault()
         openFileDialog(store)
