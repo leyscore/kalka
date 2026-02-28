@@ -49,7 +49,7 @@ export {
 export { SkiaRenderer, type RenderOverlays } from './renderer'
 export { computeLayout, computeAllLayouts } from './layout'
 export { getCanvasKit, type CanvasKitOptions } from './canvaskit'
-export { loadFont, listFamilies } from './fonts'
+export { loadFont, listFamilies, initFontService, getFontProvider, ensureNodeFont } from './fonts'
 export { parseColor, colorToHex, colorToHexRaw, colorToRgba255 } from './color'
 export { vectorNetworkToPath, decodeVectorNetworkBlob, encodeVectorNetworkBlob, computeVectorBounds } from './vector'
 export { computeSelectionBounds, computeSnap, type SnapGuide } from './snap'
