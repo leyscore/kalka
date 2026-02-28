@@ -725,8 +725,8 @@ export class SkiaRenderer {
     const pageNode = graph.getNode(this.pageId ?? graph.rootId)
     if (!pageNode) return
 
-    const sections: { node: SceneNode; absX: number; absY: number }[] = []
-    const collectSections = (parentId: string, ox: number, oy: number) => {
+    const sections: { node: SceneNode; absX: number; absY: number; nested: boolean }[] = []
+    const collectSections = (parentId: string, ox: number, oy: number, insideSection: boolean) => {
       const parent = graph.getNode(parentId)
       if (!parent) return
       for (const childId of parent.childIds) {
@@ -734,18 +734,22 @@ export class SkiaRenderer {
         if (!child || !child.visible) continue
         const ax = ox + child.x
         const ay = oy + child.y
-        if (child.type === 'SECTION') sections.push({ node: child, absX: ax, absY: ay })
-        if (child.childIds.length > 0) collectSections(childId, ax, ay)
+        if (child.type === 'SECTION') {
+          sections.push({ node: child, absX: ax, absY: ay, nested: insideSection })
+          collectSections(childId, ax, ay, true)
+        } else if (child.childIds.length > 0) {
+          collectSections(childId, ax, ay, insideSection)
+        }
       }
     }
-    collectSections(pageNode.id, 0, 0)
+    collectSections(pageNode.id, 0, 0, false)
 
     const font = this.sectionTitleFont
     const ellipsis = '…'
     const ellipsisGlyphs = font.getGlyphIDs(ellipsis)
     const ellipsisWidth = font.getGlyphWidths(ellipsisGlyphs)[0]
 
-    for (const { node, absX, absY } of sections) {
+    for (const { node, absX, absY, nested } of sections) {
       const screenX = (absX * this.zoom + this.panX)
       const screenY = (absY * this.zoom + this.panY)
       const screenW = node.width * this.zoom
@@ -779,7 +783,9 @@ export class SkiaRenderer {
       const pillW = Math.min(textWidth + SECTION_TITLE_PADDING_X * 2, maxPillW)
       const pillH = SECTION_TITLE_HEIGHT
       const pillX = screenX
-      const pillY = screenY - pillH - SECTION_TITLE_GAP
+      const pillY = nested
+        ? screenY + SECTION_TITLE_GAP
+        : screenY - pillH - SECTION_TITLE_GAP
 
       const pillPaint = new this.ck.Paint()
       pillPaint.setStyle(this.ck.PaintStyle.Fill)

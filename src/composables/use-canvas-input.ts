@@ -789,6 +789,9 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
       if (node && node.width < 2 && node.height < 2) {
         store.updateNode(d.nodeId, { width: 100, height: 100 })
       }
+      if (node?.type === 'SECTION') {
+        store.adoptNodesIntoSection(node.id)
+      }
       store.setTool('SELECT')
     }
 
