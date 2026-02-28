@@ -52,12 +52,25 @@ Properties panel, layers panel, toolbar, Yoga layout integration, text editing.
 - Canvas background color per page
 - Fig-import unit tests, layout unit tests, layers-panel E2E tests
 
-### Phase 4: Components + Variables 🔲
+### Phase 4: Components + Variables 🟡
 
 Components, instances, overrides, variants, variables, collections, modes/themes.
 
+**Delivered:**
+- Component creation from frame/group or multi-selection (⌥⌘K)
+- Component sets from multiple components (⇧⌘K) with dashed purple border
+- Instance creation from components with child cloning
+- Detach instance back to frame (⌥⌘B)
+- Go to main component (cross-page navigation)
+- Always-visible purple component/instance labels with diamond icon
+- Opaque container hit testing (click selects component, double-click enters)
+- Right-click context menu with clipboard, z-order, grouping, component, visibility, lock, move-to-page actions
+- Z-order manipulation (] bring to front, [ send to back)
+- Toggle visibility (⇧⌘H) and lock (⇧⌘L)
+- Move nodes between pages via context menu
+- Viewport culling, Paint reuse, RAF render coalescing
+
 **Planned:**
-- Component creation and instantiation
 - Override propagation
 - Variant switching
 - Variable collections with modes (light/dark)
@@ -93,6 +106,6 @@ Prototyping, comments, desktop distribution, documentation, public launch.
 | Phase 1: Core Engine | 3 months | ✅ Complete |
 | Phase 2: Editor UI + Layout | 3 months | ✅ Complete |
 | Phase 3: File I/O + Visual Features | 2 months | ✅ Complete |
-| Phase 4: Components + Variables | 2 months | 🔲 Planned |
+| Phase 4: Components + Variables | 2 months | 🟡 In Progress |
 | Phase 5: AI Integration | 2 months | 🔲 Planned |
 | Phase 6: Polish + Distribution | 2 months | 🔲 Planned |

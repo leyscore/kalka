@@ -25,11 +25,15 @@ Each feature row SHALL use one of three status indicators: ✅ (supported — fe
 - **THEN** its status column contains exactly one of ✅, 🟡, or 🔲
 
 ### Requirement: Feature rows include notes
-Each table row SHALL contain columns: Feature, Status, Notes. The Notes column provides brief context such as what works, what's missing, or relevant Open Pencil implementation details.
+Each table row SHALL contain columns: Feature, Status, Notes. The Notes column provides brief context such as what works, what's missing, or relevant Open Pencil implementation details. Statuses SHALL be updated when features are implemented.
 
 #### Scenario: Notes explain partial status
 - **WHEN** a feature has 🟡 partial status
 - **THEN** the Notes column explains what is supported and what is missing
+
+#### Scenario: Component status updated
+- **WHEN** user views the Components & Design Systems table
+- **THEN** component creation, instances, and detach show current implementation status
 
 ### Requirement: Last-updated timestamp
 The page SHALL display a last-updated date at the top so readers know the freshness of the comparison data.

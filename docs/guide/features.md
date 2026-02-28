@@ -86,6 +86,32 @@ The CanvasKit renderer supports full Tier 1 visual features for Figma rendering 
 - **Effects** — drop shadow, inner shadow, layer blur, background blur, foreground blur
 - **Stroke properties** — cap (none, round, square, arrow), join (miter, bevel, round), dash patterns
 - **Arc data** — partial ellipses with start/end angle and inner radius (donuts)
+- **Viewport culling** — off-screen nodes are skipped during rendering
+- **Paint reuse** — Skia Paint objects are recycled across frames instead of reallocated
+- **RAF coalescing** — multiple render requests within one frame are batched into a single `requestAnimationFrame` call
+
+## Components & Instances
+
+Create reusable components from frames or selections (<kbd>⌥</kbd><kbd>⌘</kbd><kbd>K</kbd>). A single frame converts in-place to a COMPONENT; multiple nodes wrap in a new component. Combine multiple components into a COMPONENT_SET (<kbd>⇧</kbd><kbd>⌘</kbd><kbd>K</kbd>) with a dashed purple border. Create instances from components via context menu — instances copy the component's visual properties and children. Detach an instance back to a frame with <kbd>⌥</kbd><kbd>⌘</kbd><kbd>B</kbd>. "Go to main component" navigates to and selects the source component, switching pages if needed.
+
+Components and instances display always-visible purple labels with a diamond icon showing the node name. They act as opaque containers for selection — clicking selects the component itself, double-clicking enters it to select children.
+
+## Context Menu
+
+Right-click on the canvas opens a Figma-style context menu. Actions adapt to the current selection:
+
+- **Clipboard** — Copy, Cut, Paste here, Duplicate, Delete
+- **Z-order** — Bring to front, Send to back
+- **Grouping** — Group, Ungroup, Add auto layout
+- **Components** — Create component, Create component set, Create instance, Go to main component, Detach instance (purple-styled items)
+- **Visibility** — Hide/Show, Lock/Unlock
+- **Move to page** — submenu with all other pages
+
+Right-clicking a node selects it first. Right-clicking empty canvas clears selection.
+
+## Z-Order, Visibility & Lock
+
+<kbd>]</kbd> brings selected nodes to front, <kbd>[</kbd> sends to back within their parent. <kbd>⇧</kbd><kbd>⌘</kbd><kbd>H</kbd> toggles visibility — hidden nodes stay in the layers panel but don't render. <kbd>⇧</kbd><kbd>⌘</kbd><kbd>L</kbd> toggles lock — locked nodes can't be selected or moved from the canvas. Move nodes between pages via the context menu's "Move to page" submenu.
 
 ## Desktop App
 

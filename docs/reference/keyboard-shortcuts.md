@@ -75,14 +75,19 @@ Full Figma-compatible shortcut map. ✅ = implemented.
 | <kbd>⌘</kbd><kbd>G</kbd> | Group Selection | ✅ |
 | <kbd>⇧</kbd><kbd>⌘</kbd><kbd>G</kbd> | Ungroup | ✅ |
 | <kbd>⇧</kbd><kbd>A</kbd> | Add Auto Layout | ✅ |
-| <kbd>⌥</kbd><kbd>⌘</kbd><kbd>K</kbd> | Create Component | |
-| <kbd>⌥</kbd><kbd>⌘</kbd><kbd>B</kbd> | Detach Instance | |
+| <kbd>⌥</kbd><kbd>⌘</kbd><kbd>K</kbd> | Create Component | ✅ |
+| <kbd>⇧</kbd><kbd>⌘</kbd><kbd>K</kbd> | Create Component Set | ✅ |
+| <kbd>⌥</kbd><kbd>⌘</kbd><kbd>B</kbd> | Detach Instance | ✅ |
 | <kbd>⌘</kbd><kbd>]</kbd> | Bring Forward | |
 | <kbd>⌥</kbd><kbd>⌘</kbd><kbd>]</kbd> | Bring to Front | |
+| <kbd>]</kbd> | Bring to Front | ✅ |
 | <kbd>⌘</kbd><kbd>[</kbd> | Send Backward | |
 | <kbd>⌥</kbd><kbd>⌘</kbd><kbd>[</kbd> | Send to Back | |
+| <kbd>[</kbd> | Send to Back | ✅ |
 | <kbd>⇧</kbd><kbd>H</kbd> | Flip Horizontal | |
 | <kbd>⇧</kbd><kbd>V</kbd> | Flip Vertical | |
+| <kbd>⇧</kbd><kbd>⌘</kbd><kbd>H</kbd> | Toggle Visibility | ✅ |
+| <kbd>⇧</kbd><kbd>⌘</kbd><kbd>L</kbd> | Toggle Lock | ✅ |
 | <kbd>⌘</kbd><kbd>E</kbd> | Flatten | |
 
 ## Text

@@ -22,7 +22,7 @@ The docs site SHALL have an index.md landing page with project name, tagline, an
 - **THEN** a landing page with "OpenPencil" title and feature highlights is displayed
 
 ### Requirement: Guide section
-The docs site SHALL include a guide section with pages: Getting Started, Features, Architecture, Tech Stack.
+The docs site SHALL include a guide section with pages: Getting Started, Features, Architecture, Tech Stack. The Features page SHALL document components (create, instance, detach, component sets), context menu, z-order, visibility/lock toggle, move-to-page, and rendering optimizations (viewport culling, RAF coalescing).
 
 #### Scenario: Getting started page
 - **WHEN** user navigates to the Getting Started guide
@@ -31,6 +31,10 @@ The docs site SHALL include a guide section with pages: Getting Started, Feature
 #### Scenario: Architecture page
 - **WHEN** user navigates to the Architecture guide
 - **THEN** the system architecture diagram and component descriptions from PLAN.md are displayed
+
+#### Scenario: Features page documents components
+- **WHEN** user reads the features page
+- **THEN** component creation, instances, detach, component sets, and context menu are described
 
 ### Requirement: Reference section
 The docs site SHALL include a reference section with pages: Keyboard Shortcuts, Node Types, MCP Tools, Scene Graph, File Format.
@@ -104,11 +108,11 @@ The features page SHALL document tier 1 rendering: gradients, image fills, effec
 - **THEN** gradient fills, image fills, effects, and stroke properties are described
 
 ### Requirement: Docs reflect updated keyboard shortcuts
-The keyboard shortcuts page SHALL mark Section tool (S) as implemented (✅) and add Save (⌘S) and Save As (⇧⌘S) as implemented.
+The keyboard shortcuts page SHALL mark Section tool (S), Save (⌘S), Save As (⇧⌘S), Create Component (⌥⌘K), Detach Instance (⌥⌘B), Create Component Set (⇧⌘K), Bring to Front (]), Send to Back ([), Toggle Visibility (⇧⌘H), and Toggle Lock (⇧⌘L) as implemented (✅).
 
 #### Scenario: New shortcuts marked
 - **WHEN** user reads the keyboard shortcuts page
-- **THEN** S (Section), ⌘S (Save), ⇧⌘S (Save As) show ✅ status
+- **THEN** ⌥⌘K, ⌥⌘B, ⇧⌘K, ], [, ⇧⌘H, ⇧⌘L show ✅ status
 
 ### Requirement: Docs reflect updated node types
 The node-types reference SHALL list the current 17 types in the NodeType union used by the scene graph.
@@ -118,11 +122,11 @@ The node-types reference SHALL list the current 17 types in the NodeType union u
 - **THEN** CANVAS, ROUNDED_RECTANGLE, COMPONENT, COMPONENT_SET, INSTANCE, CONNECTOR, SHAPE_WITH_TEXT are all listed
 
 ### Requirement: Roadmap reflects current progress
-The roadmap page SHALL reflect that .fig export, sections, pages, hover highlight, and advanced rendering are now delivered.
+The roadmap page SHALL reflect that .fig export, sections, pages, hover highlight, and advanced rendering are delivered (Phase 3). Phase 4 SHALL show as 🟡 In Progress with component creation, instances, component sets, and detach delivered.
 
 #### Scenario: Roadmap is current
 - **WHEN** user reads the roadmap page
-- **THEN** Phase 3 lists .fig export and sections and pages as delivered
+- **THEN** Phase 3 shows delivered items and Phase 4 shows partial progress with component features
 
 ### Requirement: Comparison page
 The docs site SHALL include a comparison page at `/guide/comparison` documenting architecture, rendering, data model, layout, file format, state management, developer experience, and performance differences between OpenPencil and Penpot.

@@ -6,7 +6,7 @@ Feature-by-feature comparison of Figma Design capabilities with Open Pencil's cu
 ✅ Supported — feature works end-to-end · 🟡 Partial — core behavior exists, some sub-features missing · 🔲 Not yet implemented
 :::
 
-**Coverage:** ~43 of ~90 Figma Design feature areas addressed (48%). Last updated: 2026-02-28.
+**Coverage:** ~50 of ~90 Figma Design feature areas addressed (56%). Last updated: 2026-02-28.
 
 ## Interface & Navigation
 
@@ -21,7 +21,8 @@ Feature-by-feature comparison of Figma Design capabilities with Open Pencil's cu
 | Canvas background color | ✅ | Per-page background via properties panel |
 | Canvas guides | 🔲 | Figma supports draggable guides from rulers |
 | Actions menu / command palette | 🔲 | Figma's quick actions search |
-| Keyboard shortcuts | 🟡 | Core shortcuts implemented; Scale, Arrow, Pencil, z-order, flip, text formatting not yet wired |
+| Context menu | ✅ | Right-click with clipboard, z-order, grouping, component, visibility, lock, move-to-page actions |
+| Keyboard shortcuts | 🟡 | Core shortcuts + components + z-order + visibility/lock implemented; Scale, Arrow, Pencil, flip, text formatting not yet wired |
 | Find and replace | 🔲 | Text search/replace across document |
 | Layer outlines view | 🔲 | Wireframe view of all layers |
 | Custom file thumbnails | 🔲 | Thumbnail generated on export, but no custom thumbnail picker |
@@ -44,9 +45,11 @@ Feature-by-feature comparison of Figma Design capabilities with Open Pencil's cu
 | Alignment & position | ✅ | Position, rotation, dimensions in properties panel |
 | Copy & paste objects | ✅ | Standard clipboard + Figma fig-kiwi binary format |
 | Scale layers proportionally | 🟡 | Shift-resize constrains proportions; no dedicated Scale tool (K) |
-| Lock & unlock layers | 🔲 | Lock to prevent selection/editing |
-| Toggle layer visibility | ✅ | Eye icon in layers panel |
-| Rename layers | 🔲 | Layers use default names; no inline rename in layers panel |
+| Lock & unlock layers | ✅ | ⇧⌘L toggles lock; locked nodes can't be selected/moved from canvas |
+| Toggle layer visibility | ✅ | Eye icon in layers panel + ⇧⌘H keyboard shortcut |
+| Rename layers | 🟡 | Programmatic rename via store; no inline rename UI in layers panel yet |
+| Bring to front / Send to back | ✅ | ] and [ keyboard shortcuts; also in context menu |
+| Move to page | ✅ | Move selected nodes between pages via context menu |
 | Constraints (responsive resize) | 🔲 | Pin edges/center for parent resize behavior |
 | Smart selection (distribute/align) | 🔲 | Evenly space and align multi-selection |
 | Layout guides (columns, rows, grid) | 🔲 | Column/row/grid overlay guides on frames |
@@ -150,16 +153,18 @@ Feature-by-feature comparison of Figma Design capabilities with Open Pencil's cu
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Create components | 🔲 | Planned for Phase 4 |
-| Component instances | 🔲 | Planned for Phase 4 |
-| Variants | 🔲 | Planned for Phase 4 |
+| Create components | 🟡 | ⌥⌘K creates from frame/group or wraps selection; no component properties UI yet |
+| Component sets | 🟡 | ⇧⌘K combines components; dashed purple border; no variant property editing |
+| Component instances | 🟡 | Create instance from context menu with child cloning; no override editing UI |
+| Variants | 🔲 | Variant switching and property-based selection |
 | Component properties | 🔲 | Boolean, text, instance swap properties |
-| Override propagation | 🔲 | Planned for Phase 4 |
+| Override propagation | 🔲 | Changes to main component do not propagate to instances yet |
 | Variables (color, number, string, boolean) | 🔲 | Planned for Phase 4 |
 | Variable collections & modes | 🔲 | Light/dark themes via variable modes |
 | Styles (color, text, effect, layout) | 🔲 | Reusable named style presets |
 | Libraries (publish, share, update) | 🔲 | Shared component/style libraries |
-| Detach instance | 🔲 | Convert instance back to frame |
+| Detach instance | ✅ | ⌥⌘B converts instance back to frame |
+| Go to main component | ✅ | Navigate to source component, cross-page |
 
 ## Prototyping
 
