@@ -49,12 +49,21 @@ function remove(index: number) {
       <button class="cursor-pointer rounded border-none bg-transparent px-1 text-base leading-none text-muted hover:bg-hover hover:text-surface" @click="add">+</button>
     </div>
     <div v-for="(fill, i) in node.fills" :key="i" class="group flex items-center gap-1.5 py-0.5">
-      <ColorPicker :color="fill.color" @update="updateColor(i, $event)" />
-      <input
-        class="min-w-0 flex-1 border-none bg-transparent font-mono text-xs text-surface outline-none"
-        :value="colorToHexRaw(fill.color)"
-        @change="updateHex(i, ($event.target as HTMLInputElement).value)"
-      />
+      <template v-if="fill.type === 'SOLID'">
+        <ColorPicker :color="fill.color" @update="updateColor(i, $event)" />
+        <input
+          class="min-w-0 flex-1 border-none bg-transparent font-mono text-xs text-surface outline-none"
+          :value="colorToHexRaw(fill.color)"
+          @change="updateHex(i, ($event.target as HTMLInputElement).value)"
+        />
+      </template>
+      <template v-else>
+        <div class="flex h-5 w-5 items-center justify-center rounded border border-border">
+          <icon-lucide-blend v-if="fill.type.startsWith('GRADIENT')" class="size-3 text-muted" />
+          <icon-lucide-image v-else-if="fill.type === 'IMAGE'" class="size-3 text-muted" />
+        </div>
+        <span class="min-w-0 flex-1 text-xs text-muted">{{ fill.type.replace('GRADIENT_', '').replace('_', ' ') }}</span>
+      </template>
       <ScrubInput
         class="w-12"
         suffix="%"

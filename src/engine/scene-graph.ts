@@ -34,6 +34,7 @@ export type NodeType =
   | 'CANVAS'
   | 'FRAME'
   | 'RECTANGLE'
+  | 'ROUNDED_RECTANGLE'
   | 'ELLIPSE'
   | 'TEXT'
   | 'LINE'
@@ -42,15 +43,47 @@ export type NodeType =
   | 'VECTOR'
   | 'GROUP'
   | 'SECTION'
+  | 'COMPONENT'
+  | 'COMPONENT_SET'
+  | 'INSTANCE'
+  | 'CONNECTOR'
+  | 'SHAPE_WITH_TEXT'
 
 import type { Color } from '../types'
 
+export type FillType = 'SOLID' | 'GRADIENT_LINEAR' | 'GRADIENT_RADIAL' | 'GRADIENT_ANGULAR' | 'GRADIENT_DIAMOND' | 'IMAGE'
+export type BlendMode = 'NORMAL' | 'DARKEN' | 'MULTIPLY' | 'COLOR_BURN' | 'LIGHTEN' | 'SCREEN' | 'COLOR_DODGE' | 'OVERLAY' | 'SOFT_LIGHT' | 'HARD_LIGHT' | 'DIFFERENCE' | 'EXCLUSION' | 'HUE' | 'SATURATION' | 'COLOR' | 'LUMINOSITY' | 'PASS_THROUGH'
+export type ImageScaleMode = 'FILL' | 'FIT' | 'CROP' | 'TILE'
+
+export interface GradientStop {
+  color: Color
+  position: number
+}
+
+export interface GradientTransform {
+  m00: number
+  m01: number
+  m02: number
+  m10: number
+  m11: number
+  m12: number
+}
+
 export interface Fill {
-  type: 'SOLID'
+  type: FillType
   color: Color
   opacity: number
   visible: boolean
+  blendMode?: BlendMode
+  gradientStops?: GradientStop[]
+  gradientTransform?: GradientTransform
+  imageHash?: string
+  imageScaleMode?: ImageScaleMode
+  imageTransform?: GradientTransform
 }
+
+export type StrokeCap = 'NONE' | 'ROUND' | 'SQUARE' | 'ARROW_LINES' | 'ARROW_EQUILATERAL'
+export type StrokeJoin = 'MITER' | 'BEVEL' | 'ROUND'
 
 export interface Stroke {
   color: Color
@@ -58,15 +91,31 @@ export interface Stroke {
   opacity: number
   visible: boolean
   align: 'INSIDE' | 'CENTER' | 'OUTSIDE'
+  cap?: StrokeCap
+  join?: StrokeJoin
+  dashPattern?: number[]
 }
 
 export interface Effect {
-  type: 'DROP_SHADOW' | 'INNER_SHADOW' | 'LAYER_BLUR' | 'BACKGROUND_BLUR'
+  type: 'DROP_SHADOW' | 'INNER_SHADOW' | 'LAYER_BLUR' | 'BACKGROUND_BLUR' | 'FOREGROUND_BLUR'
   color: Color
   offset: { x: number; y: number }
   radius: number
   spread: number
   visible: boolean
+  blendMode?: BlendMode
+}
+
+export type ConstraintType = 'MIN' | 'CENTER' | 'MAX' | 'STRETCH' | 'SCALE'
+export type TextAutoResize = 'NONE' | 'HEIGHT' | 'WIDTH_AND_HEIGHT' | 'TRUNCATE'
+export type TextAlignVertical = 'TOP' | 'CENTER' | 'BOTTOM'
+export type TextCase = 'ORIGINAL' | 'UPPER' | 'LOWER' | 'TITLE'
+export type TextDecoration = 'NONE' | 'UNDERLINE' | 'STRIKETHROUGH'
+
+export interface ArcData {
+  startingAngle: number
+  endingAngle: number
+  innerRadius: number
 }
 
 export type LayoutMode = 'NONE' | 'HORIZONTAL' | 'VERTICAL'
@@ -105,13 +154,23 @@ export interface SceneNode {
   locked: boolean
   clipsContent: boolean
 
+  blendMode: BlendMode
+
   text: string
   fontSize: number
   fontFamily: string
   fontWeight: number
   textAlignHorizontal: 'LEFT' | 'CENTER' | 'RIGHT' | 'JUSTIFIED'
+  textAlignVertical: TextAlignVertical
+  textAutoResize: TextAutoResize
+  textCase: TextCase
+  textDecoration: TextDecoration
   lineHeight: number | null
   letterSpacing: number
+  maxLines: number | null
+
+  horizontalConstraint: ConstraintType
+  verticalConstraint: ConstraintType
 
   layoutMode: LayoutMode
   layoutWrap: LayoutWrap
@@ -131,6 +190,18 @@ export interface SceneNode {
   layoutAlignSelf: 'AUTO' | 'STRETCH'
 
   vectorNetwork: VectorNetwork | null
+
+  arcData: ArcData | null
+
+  strokeCap: StrokeCap
+  strokeJoin: StrokeJoin
+  dashPattern: number[]
+
+  borderTopWeight: number
+  borderRightWeight: number
+  borderBottomWeight: number
+  borderLeftWeight: number
+  independentStrokeWeights: boolean
 }
 
 let nextLocalID = 1
@@ -184,18 +255,36 @@ function createDefaultNode(type: NodeType, overrides: Partial<SceneNode> = {}): 
     paddingRight: 0,
     paddingBottom: 0,
     paddingLeft: 0,
+    blendMode: 'PASS_THROUGH',
     layoutPositioning: 'AUTO',
     layoutGrow: 0,
     layoutAlignSelf: 'AUTO',
     vectorNetwork: null,
+    arcData: null,
+    textAlignVertical: 'TOP',
+    textAutoResize: 'NONE',
+    textCase: 'ORIGINAL',
+    textDecoration: 'NONE',
+    maxLines: null,
+    horizontalConstraint: 'MIN',
+    verticalConstraint: 'MIN',
+    strokeCap: 'NONE',
+    strokeJoin: 'MITER',
+    dashPattern: [],
+    borderTopWeight: 0,
+    borderRightWeight: 0,
+    borderBottomWeight: 0,
+    borderLeftWeight: 0,
+    independentStrokeWeights: false,
     ...overrides
   }
 }
 
-const CONTAINER_TYPES = new Set<NodeType>(['CANVAS', 'FRAME', 'GROUP', 'SECTION'])
+const CONTAINER_TYPES = new Set<NodeType>(['CANVAS', 'FRAME', 'GROUP', 'SECTION', 'COMPONENT', 'COMPONENT_SET', 'INSTANCE'])
 
 export class SceneGraph {
   nodes = new Map<string, SceneNode>()
+  images = new Map<string, Uint8Array>()
   rootId: string
 
   constructor() {

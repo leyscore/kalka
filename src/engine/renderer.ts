@@ -15,7 +15,8 @@ import {
   SECTION_TITLE_RADIUS, SECTION_TITLE_FONT_SIZE, SECTION_TITLE_GAP,
   RULER_TARGET_PIXEL_SPACING, RULER_MAJOR_TOLERANCE
 } from '../constants'
-import type { SceneNode, SceneGraph, Fill } from './scene-graph'
+import type { SceneNode, SceneGraph, Fill, GradientStop, GradientTransform, ArcData } from './scene-graph'
+import type { Image as CKImage } from 'canvaskit-wasm'
 import type { SnapGuide } from './snap'
 import { vectorNetworkToPath } from './vector'
 import type {
@@ -67,6 +68,7 @@ export class SkiaRenderer {
   private fontMgr: FontMgr | null = null
   private fontProvider: TypefaceFontProvider | null = null
   private fontsLoaded = false
+  private imageCache = new Map<string, CKImage>()
 
   panX = 0
   panY = 0
@@ -661,9 +663,9 @@ export class SkiaRenderer {
     }
 
     if (node.type === 'SECTION') {
-      this.renderSection(canvas, node)
+      this.renderSection(canvas, node, graph)
     } else if (overlays.editingTextId !== nodeId) {
-      this.renderShape(canvas, node)
+      this.renderShape(canvas, node, graph)
     }
 
     // Drop target highlight
@@ -757,16 +759,17 @@ export class SkiaRenderer {
     }
   }
 
-  private renderSection(canvas: Canvas, node: SceneNode): void {
+  private renderSection(canvas: Canvas, node: SceneNode, graph: SceneGraph): void {
     const rect = this.ck.LTRBRect(0, 0, node.width, node.height)
     const rrect = this.ck.RRectXY(rect, SECTION_CORNER_RADIUS, SECTION_CORNER_RADIUS)
 
     // Fill
     for (const fill of node.fills) {
       if (!fill.visible) continue
-      this.applyFill(fill)
+      this.applyFill(fill, node, graph)
       this.fillPaint.setAlphaf(fill.opacity)
       canvas.drawRRect(rrect, this.fillPaint)
+      this.fillPaint.setShader(null)
     }
 
     // Stroke
@@ -880,7 +883,7 @@ export class SkiaRenderer {
     }
   }
 
-  private renderShape(canvas: Canvas, node: SceneNode): void {
+  private renderShape(canvas: Canvas, node: SceneNode, graph: SceneGraph): void {
     const rect = this.ck.LTRBRect(0, 0, node.width, node.height)
 
     const hasRadius =
@@ -894,53 +897,15 @@ export class SkiaRenderer {
     // Fills
     for (const fill of node.fills) {
       if (!fill.visible) continue
-      this.applyFill(fill)
+      this.applyFill(fill, node, graph)
       this.fillPaint.setAlphaf(fill.opacity)
 
-      switch (node.type) {
-        case 'VECTOR':
-          if (node.vectorNetwork) {
-            const vp = vectorNetworkToPath(this.ck, node.vectorNetwork)
-            canvas.drawPath(vp, this.fillPaint)
-            vp.delete()
-          }
-          break
-        case 'ELLIPSE':
-          canvas.drawOval(rect, this.fillPaint)
-          break
-        case 'TEXT':
-          this.renderText(canvas, node)
-          break
-        case 'LINE':
-          canvas.drawLine(0, 0, node.width, node.height, this.fillPaint)
-          break
-        default:
-          if (hasRadius) {
-            if (node.independentCorners) {
-              const rrect = new Float32Array([
-                0,
-                0,
-                node.width,
-                node.height,
-                node.topLeftRadius,
-                node.topLeftRadius,
-                node.topRightRadius,
-                node.topRightRadius,
-                node.bottomRightRadius,
-                node.bottomRightRadius,
-                node.bottomLeftRadius,
-                node.bottomLeftRadius
-              ])
-              canvas.drawRRect(rrect, this.fillPaint)
-            } else {
-              const rrect = this.ck.RRectXY(rect, node.cornerRadius, node.cornerRadius)
-              canvas.drawRRect(rrect, this.fillPaint)
-            }
-          } else {
-            canvas.drawRect(rect, this.fillPaint)
-          }
-      }
+      this.drawNodeFill(canvas, node, rect, hasRadius)
+      this.fillPaint.setShader(null)
     }
+
+    // Effects (behind: drop shadow)
+    this.renderEffects(canvas, node, rect, hasRadius, 'behind')
 
     // Strokes
     for (const stroke of node.strokes) {
@@ -951,24 +916,233 @@ export class SkiaRenderer {
       this.strokePaint.setStrokeWidth(stroke.weight)
       this.strokePaint.setAlphaf(stroke.opacity)
 
-      switch (node.type) {
-        case 'VECTOR':
-          if (node.vectorNetwork) {
-            const vp = vectorNetworkToPath(this.ck, node.vectorNetwork)
-            canvas.drawPath(vp, this.strokePaint)
-            vp.delete()
-          }
-          break
-        case 'ELLIPSE':
+      if (stroke.cap) {
+        const capMap: Record<string, number> = {
+          NONE: 0, ROUND: 1, SQUARE: 2
+        }
+        this.strokePaint.setStrokeCap(capMap[stroke.cap] ?? 0)
+      }
+      if (stroke.join) {
+        const joinMap: Record<string, number> = {
+          MITER: 0, ROUND: 1, BEVEL: 2
+        }
+        this.strokePaint.setStrokeJoin(joinMap[stroke.join] ?? 0)
+      }
+      if (stroke.dashPattern && stroke.dashPattern.length > 0) {
+        this.strokePaint.setPathEffect(this.ck.PathEffect.MakeDash(stroke.dashPattern, 0))
+      } else {
+        this.strokePaint.setPathEffect(null)
+      }
+
+      this.drawNodeStroke(canvas, node, rect, hasRadius)
+    }
+
+    // Effects (front: inner shadow, blur)
+    this.renderEffects(canvas, node, rect, hasRadius, 'front')
+  }
+
+  private drawNodeFill(canvas: Canvas, node: SceneNode, rect: Float32Array, hasRadius: boolean): void {
+    switch (node.type) {
+      case 'VECTOR':
+        if (node.vectorNetwork) {
+          const vp = vectorNetworkToPath(this.ck, node.vectorNetwork)
+          canvas.drawPath(vp, this.fillPaint)
+          vp.delete()
+        }
+        break
+      case 'ELLIPSE':
+        if (node.arcData) {
+          this.drawArc(canvas, node, this.fillPaint)
+        } else {
+          canvas.drawOval(rect, this.fillPaint)
+        }
+        break
+      case 'TEXT':
+        this.renderText(canvas, node)
+        break
+      case 'LINE':
+        canvas.drawLine(0, 0, node.width, node.height, this.fillPaint)
+        break
+      default:
+        if (hasRadius) {
+          canvas.drawRRect(this.makeRRect(node), this.fillPaint)
+        } else {
+          canvas.drawRect(rect, this.fillPaint)
+        }
+    }
+  }
+
+  private drawNodeStroke(canvas: Canvas, node: SceneNode, rect: Float32Array, hasRadius: boolean): void {
+    switch (node.type) {
+      case 'VECTOR':
+        if (node.vectorNetwork) {
+          const vp = vectorNetworkToPath(this.ck, node.vectorNetwork)
+          canvas.drawPath(vp, this.strokePaint)
+          vp.delete()
+        }
+        break
+      case 'ELLIPSE':
+        if (node.arcData) {
+          this.drawArc(canvas, node, this.strokePaint)
+        } else {
           canvas.drawOval(rect, this.strokePaint)
-          break
-        default:
-          if (hasRadius && !node.independentCorners) {
-            const rrect = this.ck.RRectXY(rect, node.cornerRadius, node.cornerRadius)
-            canvas.drawRRect(rrect, this.strokePaint)
-          } else {
-            canvas.drawRect(rect, this.strokePaint)
-          }
+        }
+        break
+      default:
+        if (hasRadius) {
+          canvas.drawRRect(this.makeRRect(node), this.strokePaint)
+        } else {
+          canvas.drawRect(rect, this.strokePaint)
+        }
+    }
+  }
+
+  private makeRRect(node: SceneNode): Float32Array {
+    if (node.independentCorners) {
+      return new Float32Array([
+        0, 0, node.width, node.height,
+        node.topLeftRadius, node.topLeftRadius,
+        node.topRightRadius, node.topRightRadius,
+        node.bottomRightRadius, node.bottomRightRadius,
+        node.bottomLeftRadius, node.bottomLeftRadius,
+      ])
+    }
+    return this.ck.RRectXY(
+      this.ck.LTRBRect(0, 0, node.width, node.height),
+      node.cornerRadius, node.cornerRadius
+    )
+  }
+
+  private drawArc(canvas: Canvas, node: SceneNode, paint: Paint): void {
+    const arc = node.arcData!
+    const cx = node.width / 2
+    const cy = node.height / 2
+    const rx = node.width / 2
+    const ry = node.height / 2
+    const innerRx = rx * arc.innerRadius
+    const innerRy = ry * arc.innerRadius
+
+    const startDeg = arc.startingAngle * (180 / Math.PI)
+    const endDeg = arc.endingAngle * (180 / Math.PI)
+    const sweepDeg = endDeg - startDeg
+
+    const path = new this.ck.Path()
+    const oval = this.ck.LTRBRect(0, 0, node.width, node.height)
+
+    if (arc.innerRadius > 0) {
+      // Donut shape
+      path.addArc(oval, startDeg, sweepDeg)
+      const innerOval = this.ck.LTRBRect(
+        cx - innerRx, cy - innerRy, cx + innerRx, cy + innerRy
+      )
+      const innerPath = new this.ck.Path()
+      innerPath.addArc(innerOval, startDeg + sweepDeg, -sweepDeg)
+      path.addPath(innerPath)
+      path.close()
+      innerPath.delete()
+    } else {
+      const isFullCircle = Math.abs(sweepDeg) >= 359.99
+      if (isFullCircle) {
+        path.addOval(oval)
+      } else {
+        path.moveTo(cx, cy)
+        path.addArc(oval, startDeg, sweepDeg)
+        path.close()
+      }
+    }
+
+    canvas.drawPath(path, paint)
+    path.delete()
+  }
+
+  private renderEffects(
+    canvas: Canvas, node: SceneNode, rect: Float32Array,
+    hasRadius: boolean, pass: 'behind' | 'front'
+  ): void {
+    for (const effect of node.effects) {
+      if (!effect.visible) continue
+
+      if (pass === 'behind' && effect.type === 'DROP_SHADOW') {
+        const shadowPaint = new this.ck.Paint()
+        shadowPaint.setStyle(this.ck.PaintStyle.Fill)
+        shadowPaint.setColor(this.ck.Color4f(
+          effect.color.r, effect.color.g, effect.color.b, effect.color.a
+        ))
+        shadowPaint.setImageFilter(
+          this.ck.ImageFilter.MakeBlur(effect.radius, effect.radius, this.ck.TileMode.Decal, null)
+        )
+        shadowPaint.setAntiAlias(true)
+
+        canvas.save()
+        canvas.translate(effect.offset.x, effect.offset.y)
+        if (node.type === 'ELLIPSE') {
+          canvas.drawOval(rect, shadowPaint)
+        } else if (hasRadius) {
+          canvas.drawRRect(this.makeRRect(node), shadowPaint)
+        } else {
+          canvas.drawRect(rect, shadowPaint)
+        }
+        canvas.restore()
+        shadowPaint.delete()
+      }
+
+      if (pass === 'front' && effect.type === 'LAYER_BLUR') {
+        // Layer blur applied as save layer with blur filter — already applied via opacity layer
+      }
+
+      if (pass === 'front' && effect.type === 'INNER_SHADOW') {
+        // Inner shadow: draw a shadow clipped to the node shape
+        const isp = new this.ck.Paint()
+        isp.setColor(this.ck.Color4f(
+          effect.color.r, effect.color.g, effect.color.b, effect.color.a
+        ))
+        isp.setImageFilter(
+          this.ck.ImageFilter.MakeBlur(effect.radius, effect.radius, this.ck.TileMode.Decal, null)
+        )
+
+        canvas.save()
+        if (node.type === 'ELLIPSE') {
+          const path = new this.ck.Path()
+          path.addOval(rect)
+          canvas.clipPath(path, this.ck.ClipOp.Intersect, true)
+          path.delete()
+        } else if (hasRadius) {
+          canvas.clipRRect(this.makeRRect(node), this.ck.ClipOp.Intersect, true)
+        } else {
+          canvas.clipRect(rect, this.ck.ClipOp.Intersect, true)
+        }
+
+        // Draw inverted shape offset by shadow offset
+        const big = this.ck.LTRBRect(
+          -effect.radius * 2 + effect.offset.x,
+          -effect.radius * 2 + effect.offset.y,
+          node.width + effect.radius * 2 + effect.offset.x,
+          node.height + effect.radius * 2 + effect.offset.y
+        )
+        const bigPath = new this.ck.Path()
+        bigPath.addRect(big)
+        if (node.type === 'ELLIPSE') {
+          const innerPath = new this.ck.Path()
+          const offsetRect = this.ck.LTRBRect(
+            effect.offset.x, effect.offset.y,
+            node.width + effect.offset.x, node.height + effect.offset.y
+          )
+          innerPath.addOval(offsetRect)
+          bigPath.op(innerPath, this.ck.PathOp.Difference)
+          innerPath.delete()
+        } else {
+          const innerPath = new this.ck.Path()
+          innerPath.addRect(this.ck.LTRBRect(
+            effect.offset.x, effect.offset.y,
+            node.width + effect.offset.x, node.height + effect.offset.y
+          ))
+          bigPath.op(innerPath, this.ck.PathOp.Difference)
+          innerPath.delete()
+        }
+        canvas.drawPath(bigPath, isp)
+        bigPath.delete()
+        canvas.restore()
+        isp.delete()
       }
     }
   }
@@ -1014,12 +1188,128 @@ export class SkiaRenderer {
     }
   }
 
-  private applyFill(fill: Fill): void {
+  private applyFill(fill: Fill, node: SceneNode, graph: SceneGraph): void {
+    this.fillPaint.setShader(null)
+
     if (fill.type === 'SOLID') {
       this.fillPaint.setColor(
         this.ck.Color4f(fill.color.r, fill.color.g, fill.color.b, fill.color.a)
       )
+      return
     }
+
+    if (fill.type.startsWith('GRADIENT') && fill.gradientStops && fill.gradientTransform) {
+      this.applyGradientFill(fill, node)
+      return
+    }
+
+    if (fill.type === 'IMAGE' && fill.imageHash) {
+      this.applyImageFill(fill, node, graph)
+      return
+    }
+  }
+
+  private applyGradientFill(fill: Fill, node: SceneNode): void {
+    const stops = fill.gradientStops!
+    const t = fill.gradientTransform!
+    const colors = stops.map((s) =>
+      this.ck.Color4f(s.color.r, s.color.g, s.color.b, s.color.a)
+    )
+    const positions = stops.map((s) => s.position)
+
+    // Figma gradient transform maps unit square to node bounds
+    // Convert transform to canvas coordinates
+    const w = node.width
+    const h = node.height
+
+    if (fill.type === 'GRADIENT_LINEAR') {
+      // Start and end points derived from transform
+      const startX = t.m02 * w
+      const startY = t.m12 * h
+      const endX = (t.m00 + t.m02) * w
+      const endY = (t.m10 + t.m12) * h
+      const shader = this.ck.Shader.MakeLinearGradient(
+        [startX, startY], [endX, endY],
+        colors, positions,
+        this.ck.TileMode.Clamp
+      )
+      this.fillPaint.setShader(shader)
+    } else if (fill.type === 'GRADIENT_RADIAL') {
+      const cx = t.m02 * w
+      const cy = t.m12 * h
+      const radius = Math.sqrt(t.m00 * t.m00 + t.m10 * t.m10) * Math.max(w, h)
+      const shader = this.ck.Shader.MakeRadialGradient(
+        [cx, cy], radius,
+        colors, positions,
+        this.ck.TileMode.Clamp
+      )
+      this.fillPaint.setShader(shader)
+    } else if (fill.type === 'GRADIENT_ANGULAR') {
+      const cx = t.m02 * w
+      const cy = t.m12 * h
+      const shader = this.ck.Shader.MakeSweepGradient(
+        cx, cy,
+        colors, positions,
+        this.ck.TileMode.Clamp,
+        // Figma angular gradients start from right (0°), CanvasKit sweep from right too
+        undefined
+      )
+      this.fillPaint.setShader(shader)
+    } else if (fill.type === 'GRADIENT_DIAMOND') {
+      // Diamond gradient approximated as radial
+      const cx = t.m02 * w
+      const cy = t.m12 * h
+      const radius = Math.sqrt(t.m00 * t.m00 + t.m10 * t.m10) * Math.max(w, h)
+      const shader = this.ck.Shader.MakeRadialGradient(
+        [cx, cy], radius,
+        colors, positions,
+        this.ck.TileMode.Clamp
+      )
+      this.fillPaint.setShader(shader)
+    }
+  }
+
+  private applyImageFill(fill: Fill, node: SceneNode, graph: SceneGraph): void {
+    let img = this.imageCache.get(fill.imageHash!)
+    if (!img) {
+      const data = graph.images.get(fill.imageHash!)
+      if (!data) return
+      img = this.ck.MakeImageFromEncoded(data) ?? undefined
+      if (img) this.imageCache.set(fill.imageHash!, img)
+      else return
+    }
+
+    const imgW = img.width()
+    const imgH = img.height()
+    const scaleMode = fill.imageScaleMode ?? 'FILL'
+
+    let sx: number, sy: number, sw: number, sh: number
+    if (scaleMode === 'FILL') {
+      const scale = Math.max(node.width / imgW, node.height / imgH)
+      sw = node.width / scale
+      sh = node.height / scale
+      sx = (imgW - sw) / 2
+      sy = (imgH - sh) / 2
+    } else if (scaleMode === 'FIT') {
+      const scale = Math.min(node.width / imgW, node.height / imgH)
+      sw = imgW
+      sh = imgH
+      sx = 0
+      sy = 0
+      // FIT: image centered within bounds — handled by shader matrix
+    } else {
+      sx = 0; sy = 0; sw = imgW; sh = imgH
+    }
+
+    const shader = img.makeShaderCubic(
+      this.ck.TileMode.Clamp, this.ck.TileMode.Clamp,
+      1 / 3, 1 / 3,
+      this.ck.Matrix.multiply(
+        this.ck.Matrix.scaled(node.width / sw, node.height / sh),
+        this.ck.Matrix.translated(-sx, -sy)
+      )
+    )
+    this.fillPaint.setShader(shader)
   }
 
   screenToCanvas(sx: number, sy: number): { x: number; y: number } {
@@ -1340,6 +1630,8 @@ export class SkiaRenderer {
   }
 
   destroy(): void {
+    for (const img of this.imageCache.values()) img.delete()
+    this.imageCache.clear()
     this.fillPaint.delete()
     this.strokePaint.delete()
     this.selectionPaint.delete()

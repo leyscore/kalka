@@ -57,6 +57,7 @@ function mapToFigmaType(type: SceneNode['type']): string {
   switch (type) {
     case 'FRAME': return 'FRAME'
     case 'RECTANGLE': return 'RECTANGLE'
+    case 'ROUNDED_RECTANGLE': return 'ROUNDED_RECTANGLE'
     case 'ELLIPSE': return 'ELLIPSE'
     case 'TEXT': return 'TEXT'
     case 'LINE': return 'LINE'
@@ -65,6 +66,11 @@ function mapToFigmaType(type: SceneNode['type']): string {
     case 'VECTOR': return 'VECTOR'
     case 'GROUP': return 'FRAME'
     case 'SECTION': return 'SECTION'
+    case 'COMPONENT': return 'FRAME'
+    case 'COMPONENT_SET': return 'FRAME'
+    case 'INSTANCE': return 'FRAME'
+    case 'CONNECTOR': return 'CONNECTOR'
+    case 'SHAPE_WITH_TEXT': return 'SHAPE_WITH_TEXT'
     default: return 'RECTANGLE'
   }
 }
@@ -86,25 +92,31 @@ function sceneNodeToKiwi(
   const cos = Math.cos((node.rotation * Math.PI) / 180)
   const sin = Math.sin((node.rotation * Math.PI) / 180)
 
-  const fillPaints = node.fills
-    .filter((f) => f.type === 'SOLID')
-    .map((f) => ({
-      type: 'SOLID' as const,
+  const fillPaints = node.fills.map((f) => {
+    const paint: Record<string, unknown> = {
+      type: f.type,
       color: f.color,
       opacity: f.opacity,
       visible: f.visible,
-      blendMode: 'NORMAL' as const
-    }))
+      blendMode: f.blendMode ?? 'NORMAL'
+    }
+    if (f.gradientStops) {
+      paint.stops = f.gradientStops.map((s) => ({ color: s.color, position: s.position }))
+    }
+    if (f.gradientTransform) paint.transform = f.gradientTransform
+    if (f.imageHash) paint.image = { hash: f.imageHash }
+    if (f.imageScaleMode) paint.imageScaleMode = f.imageScaleMode
+    if (f.imageTransform) paint.transform = f.imageTransform
+    return paint
+  })
 
-  const strokePaints = node.strokes
-    .filter((s) => s.visible)
-    .map((s) => ({
-      type: 'SOLID' as const,
-      color: s.color,
-      opacity: s.opacity,
-      visible: true,
-      blendMode: 'NORMAL' as const
-    }))
+  const strokePaints = node.strokes.map((s) => ({
+    type: 'SOLID' as const,
+    color: s.color,
+    opacity: s.opacity,
+    visible: s.visible,
+    blendMode: 'NORMAL' as const
+  }))
 
   const nc: KiwiNodeChange = {
     guid,

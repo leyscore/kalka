@@ -2,7 +2,13 @@ import { SceneGraph } from '../engine/scene-graph'
 import { decodeVectorNetworkBlob } from '../engine/vector'
 
 import type { NodeChange, Paint, Effect as KiwiEffect, GUID } from './codec'
-import type { NodeType, Fill, Stroke, Effect, Color, LayoutMode, LayoutSizing, LayoutAlign, LayoutCounterAlign, VectorNetwork } from '../engine/scene-graph'
+import type {
+  NodeType, Fill, FillType, Stroke, Effect, Color, BlendMode, ImageScaleMode,
+  GradientStop, GradientTransform, StrokeCap, StrokeJoin,
+  LayoutMode, LayoutSizing, LayoutAlign, LayoutCounterAlign,
+  ConstraintType, TextAutoResize, TextAlignVertical, TextCase, TextDecoration,
+  ArcData, VectorNetwork
+} from '../engine/scene-graph'
 
 function ext(nc: NodeChange): Record<string, unknown> {
   return nc as unknown as Record<string, unknown>
@@ -17,32 +23,63 @@ function convertColor(color?: { r: number; g: number; b: number; a: number }): C
   return { r: color.r, g: color.g, b: color.b, a: color.a }
 }
 
-function convertFills(paints?: Paint[]): Fill[] {
-  if (!paints) return []
-  return paints
-    .filter((p) => p.type === 'SOLID')
-    .map((p) => ({
-      type: 'SOLID' as const,
-      color: convertColor(p.color),
-      opacity: p.opacity ?? 1,
-      visible: p.visible ?? true
-    }))
+function imageHashToString(hash: Record<string, number>): string {
+  const bytes = Object.keys(hash).sort((a, b) => Number(a) - Number(b)).map((k) => hash[Number(k)])
+  return bytes.map((b) => b.toString(16).padStart(2, '0')).join('')
 }
 
-function convertStrokes(paints?: Paint[], weight?: number, align?: string): Stroke[] {
+function convertGradientTransform(t?: Record<string, number>): GradientTransform | undefined {
+  if (!t) return undefined
+  return { m00: t.m00, m01: t.m01, m02: t.m02, m10: t.m10, m11: t.m11, m12: t.m12 }
+}
+
+function convertFills(paints?: Paint[]): Fill[] {
   if (!paints) return []
-  return paints
-    .filter((p) => p.type === 'SOLID')
-    .map((p) => ({
+  return paints.map((p) => {
+    const base: Fill = {
+      type: (p.type ?? 'SOLID') as FillType,
       color: convertColor(p.color),
-      weight: weight ?? 1,
       opacity: p.opacity ?? 1,
       visible: p.visible ?? true,
-      align: (align === 'INSIDE' ? 'INSIDE' : align === 'OUTSIDE' ? 'OUTSIDE' : 'CENTER') as
-        | 'INSIDE'
-        | 'CENTER'
-        | 'OUTSIDE'
-    }))
+      blendMode: (p.blendMode ?? 'NORMAL') as BlendMode,
+    }
+
+    if (p.type?.startsWith('GRADIENT') && p.stops) {
+      base.gradientStops = p.stops.map((s: { color: Record<string, number>; position: number }) => ({
+        color: convertColor(s.color as Color),
+        position: s.position
+      }))
+      base.gradientTransform = convertGradientTransform(p.transform as Record<string, number>)
+    }
+
+    if (p.type === 'IMAGE') {
+      const pAny = p as Record<string, unknown>
+      if (pAny.image && typeof pAny.image === 'object') {
+        const img = pAny.image as Record<string, unknown>
+        if (img.hash && typeof img.hash === 'object') {
+          base.imageHash = imageHashToString(img.hash as Record<string, number>)
+        }
+      }
+      base.imageScaleMode = (pAny.imageScaleMode as ImageScaleMode) ?? 'FILL'
+      base.imageTransform = convertGradientTransform(p.transform as Record<string, number>)
+    }
+
+    return base
+  })
+}
+
+function convertStrokes(paints?: Paint[], weight?: number, align?: string, cap?: string, join?: string, dashPattern?: number[]): Stroke[] {
+  if (!paints) return []
+  return paints.map((p) => ({
+    color: convertColor(p.color),
+    weight: weight ?? 1,
+    opacity: p.opacity ?? 1,
+    visible: p.visible ?? true,
+    align: (align === 'INSIDE' ? 'INSIDE' : align === 'OUTSIDE' ? 'OUTSIDE' : 'CENTER') as Stroke['align'],
+    cap: (cap ?? 'NONE') as StrokeCap,
+    join: (join ?? 'MITER') as StrokeJoin,
+    dashPattern: dashPattern ?? []
+  }))
 }
 
 function convertEffects(effects?: KiwiEffect[]): Effect[] {
@@ -53,42 +90,33 @@ function convertEffects(effects?: KiwiEffect[]): Effect[] {
     offset: e.offset ?? { x: 0, y: 0 },
     radius: e.radius ?? 0,
     spread: e.spread ?? 0,
-    visible: e.visible ?? true
+    visible: e.visible ?? true,
+    blendMode: ((e as Record<string, unknown>).blendMode as BlendMode) ?? 'NORMAL'
   }))
 }
 
 function mapNodeType(type?: string): NodeType | 'DOCUMENT' {
   switch (type) {
-    case 'DOCUMENT':
-      return 'DOCUMENT'
-    case 'CANVAS':
-      return 'CANVAS'
-    case 'FRAME':
-      return 'FRAME'
-    case 'RECTANGLE':
-      return 'RECTANGLE'
-    case 'ELLIPSE':
-      return 'ELLIPSE'
-    case 'TEXT':
-      return 'TEXT'
-    case 'LINE':
-      return 'LINE'
-    case 'STAR':
-      return 'STAR'
-    case 'REGULAR_POLYGON':
-      return 'POLYGON'
-    case 'VECTOR':
-      return 'VECTOR'
-    case 'GROUP':
-      return 'GROUP'
-    case 'SECTION':
-      return 'SECTION'
-    case 'COMPONENT':
-    case 'COMPONENT_SET':
-    case 'INSTANCE':
-      return 'FRAME'
-    default:
-      return 'RECTANGLE'
+    case 'DOCUMENT': return 'DOCUMENT'
+    case 'CANVAS': return 'CANVAS'
+    case 'FRAME': return 'FRAME'
+    case 'RECTANGLE': return 'RECTANGLE'
+    case 'ROUNDED_RECTANGLE': return 'ROUNDED_RECTANGLE'
+    case 'ELLIPSE': return 'ELLIPSE'
+    case 'TEXT': return 'TEXT'
+    case 'LINE': return 'LINE'
+    case 'STAR': return 'STAR'
+    case 'REGULAR_POLYGON': return 'POLYGON'
+    case 'VECTOR': return 'VECTOR'
+    case 'GROUP': return 'GROUP'
+    case 'SECTION': return 'SECTION'
+    case 'COMPONENT': return 'COMPONENT'
+    case 'COMPONENT_SET': return 'COMPONENT_SET'
+    case 'INSTANCE': return 'INSTANCE'
+    case 'SYMBOL': return 'COMPONENT'
+    case 'CONNECTOR': return 'CONNECTOR'
+    case 'SHAPE_WITH_TEXT': return 'SHAPE_WITH_TEXT'
+    default: return 'RECTANGLE'
   }
 }
 
@@ -132,6 +160,47 @@ function mapStackCounterAlign(align?: string): LayoutCounterAlign {
   }
 }
 
+function mapFontWeight(style?: string): number {
+  if (!style) return 400
+  const s = style.toLowerCase()
+  if (s.includes('thin') || s.includes('hairline')) return 100
+  if (s.includes('extralight') || s.includes('ultra light')) return 200
+  if (s.includes('light')) return 300
+  if (s.includes('medium')) return 500
+  if (s.includes('semibold') || s.includes('demi bold')) return 600
+  if (s.includes('extrabold') || s.includes('ultra bold')) return 800
+  if (s.includes('black') || s.includes('heavy')) return 900
+  if (s.includes('bold')) return 700
+  return 400
+}
+
+function mapConstraint(c?: string): ConstraintType {
+  switch (c) {
+    case 'CENTER': return 'CENTER'
+    case 'MAX': return 'MAX'
+    case 'STRETCH': return 'STRETCH'
+    case 'SCALE': return 'SCALE'
+    default: return 'MIN'
+  }
+}
+
+function mapTextDecoration(d?: string): TextDecoration {
+  switch (d) {
+    case 'UNDERLINE': return 'UNDERLINE'
+    case 'STRIKETHROUGH': return 'STRIKETHROUGH'
+    default: return 'NONE'
+  }
+}
+
+function mapArcData(data?: Record<string, number>): ArcData | null {
+  if (!data) return null
+  return {
+    startingAngle: data.startingAngle ?? 0,
+    endingAngle: data.endingAngle ?? 2 * Math.PI,
+    innerRadius: data.innerRadius ?? 0
+  }
+}
+
 function resolveVectorNetwork(nc: NodeChange, blobs: Uint8Array[]): VectorNetwork | null {
   const vectorData = (nc as unknown as Record<string, unknown>).vectorData as {
     vectorNetworkBlob?: number
@@ -149,8 +218,18 @@ function resolveVectorNetwork(nc: NodeChange, blobs: Uint8Array[]): VectorNetwor
   }
 }
 
-export function importNodeChanges(nodeChanges: NodeChange[], blobs: Uint8Array[] = []): SceneGraph {
+export function importNodeChanges(
+  nodeChanges: NodeChange[],
+  blobs: Uint8Array[] = [],
+  images?: Map<string, Uint8Array>
+): SceneGraph {
   const graph = new SceneGraph()
+
+  if (images) {
+    for (const [hash, data] of images) {
+      graph.images.set(hash, data)
+    }
+  }
 
   // Remove the default page created by constructor — we'll create pages from the file
   for (const page of graph.getPages()) {
@@ -206,6 +285,8 @@ export function importNodeChanges(nodeChanges: NodeChange[], blobs: Uint8Array[]
       rotation = Math.atan2(nc.transform.m10, nc.transform.m00) * (180 / Math.PI)
     }
 
+    const dashPattern = (ext(nc).dashPattern as number[]) ?? []
+
     const node = graph.createNode(nodeType, graphParentId, {
       name: nc.name ?? nodeType,
       x,
@@ -216,8 +297,9 @@ export function importNodeChanges(nodeChanges: NodeChange[], blobs: Uint8Array[]
       opacity: nc.opacity ?? 1,
       visible: nc.visible ?? true,
       locked: nc.locked ?? false,
+      blendMode: (ext(nc).blendMode as Fill['blendMode']) ?? 'PASS_THROUGH',
       fills: convertFills(nc.fillPaints),
-      strokes: convertStrokes(nc.strokePaints, nc.strokeWeight, nc.strokeAlign),
+      strokes: convertStrokes(nc.strokePaints, nc.strokeWeight, nc.strokeAlign, nc.strokeCap, nc.strokeJoin, dashPattern),
       effects: convertEffects(nc.effects),
       cornerRadius: nc.cornerRadius ?? 0,
       topLeftRadius: nc.rectangleTopLeftCornerRadius ?? nc.cornerRadius ?? 0,
@@ -229,11 +311,18 @@ export function importNodeChanges(nodeChanges: NodeChange[], blobs: Uint8Array[]
       text: nc.textData?.characters ?? '',
       fontSize: nc.fontSize ?? 14,
       fontFamily: nc.fontName?.family ?? 'Inter',
-      fontWeight: nc.fontName?.style?.includes('Bold') ? 700 : 400,
+      fontWeight: mapFontWeight(nc.fontName?.style),
       textAlignHorizontal:
         (nc.textAlignHorizontal as 'LEFT' | 'CENTER' | 'RIGHT' | 'JUSTIFIED') ?? 'LEFT',
+      textAlignVertical: (ext(nc).textAlignVertical as TextAlignVertical) ?? 'TOP',
+      textAutoResize: (ext(nc).textAutoResize as TextAutoResize) ?? 'NONE',
+      textCase: (ext(nc).textCase as TextCase) ?? 'ORIGINAL',
+      textDecoration: mapTextDecoration(ext(nc).textDecoration as string),
       lineHeight: nc.lineHeight?.value ?? null,
       letterSpacing: nc.letterSpacing?.value ?? 0,
+      maxLines: (ext(nc).maxLines as number) ?? null,
+      horizontalConstraint: mapConstraint(ext(nc).horizontalConstraint as string),
+      verticalConstraint: mapConstraint(ext(nc).verticalConstraint as string),
       layoutMode: mapStackMode(nc.stackMode),
       itemSpacing: nc.stackSpacing ?? 0,
       paddingTop: nc.stackVerticalPadding ?? nc.stackPadding ?? 0,
@@ -248,7 +337,16 @@ export function importNodeChanges(nodeChanges: NodeChange[], blobs: Uint8Array[]
       counterAxisSpacing: (ext(nc).stackCounterSpacing as number) ?? 0,
       layoutPositioning: ext(nc).stackPositioning === 'ABSOLUTE' ? 'ABSOLUTE' : 'AUTO',
       layoutGrow: (ext(nc).stackChildPrimaryGrow as number) ?? 0,
-      vectorNetwork: resolveVectorNetwork(nc, blobs)
+      vectorNetwork: resolveVectorNetwork(nc, blobs),
+      arcData: mapArcData(ext(nc).arcData as Record<string, number> | undefined),
+      strokeCap: (nc.strokeCap ?? 'NONE') as StrokeCap,
+      strokeJoin: (nc.strokeJoin ?? 'MITER') as StrokeJoin,
+      dashPattern,
+      borderTopWeight: (ext(nc).borderTopWeight as number) ?? 0,
+      borderRightWeight: (ext(nc).borderRightWeight as number) ?? 0,
+      borderBottomWeight: (ext(nc).borderBottomWeight as number) ?? 0,
+      borderLeftWeight: (ext(nc).borderLeftWeight as number) ?? 0,
+      independentStrokeWeights: (ext(nc).borderStrokeWeightsIndependent as boolean) ?? false,
     })
 
     for (const childId of getChildren(ncId)) {
