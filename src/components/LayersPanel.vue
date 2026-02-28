@@ -1,16 +1,15 @@
 <script setup lang="ts">
-import { ref, computed, type Component } from 'vue'
+import { ref, computed } from 'vue'
 import { useEventListener } from '@vueuse/core'
 import { TreeRoot, TreeItem } from 'reka-ui'
 
-import IconSquare from '~icons/lucide/square'
 import IconCircle from '~icons/lucide/circle'
 import IconFrame from '~icons/lucide/frame'
 import IconGroup from '~icons/lucide/group'
 import IconMinus from '~icons/lucide/minus'
-import IconType from '~icons/lucide/type'
 import IconPenTool from '~icons/lucide/pen-tool'
-import IconChevronRight from '~icons/lucide/chevron-right'
+import IconSquare from '~icons/lucide/square'
+import IconType from '~icons/lucide/type'
 
 import { useEditorStore } from '../stores/editor'
 
@@ -23,7 +22,7 @@ interface LayerNode {
   children?: LayerNode[]
 }
 
-const NODE_ICONS: Record<string, Component> = {
+const nodeIcons: Record<string, typeof IconSquare> = {
   ELLIPSE: IconCircle,
   FRAME: IconFrame,
   GROUP: IconGroup,
@@ -31,10 +30,6 @@ const NODE_ICONS: Record<string, Component> = {
   TEXT: IconType,
   VECTOR: IconPenTool,
   RECTANGLE: IconSquare
-}
-
-function nodeIcon(type: string): Component {
-  return NODE_ICONS[type] ?? IconSquare
 }
 
 function buildTree(parentId: string): LayerNode[] {
@@ -240,10 +235,10 @@ function updateDropTarget(ev: PointerEvent) {
                 :class="isExpanded ? 'rotate-90' : 'rotate-0'"
                 @click.stop="toggleExpand(item.value.id)"
               >
-                <IconChevronRight class="size-3 rotate-90" />
+                <icon-lucide-chevron-right class="size-3 rotate-90" />
               </span>
               <span v-else class="w-4 shrink-0" />
-              <component :is="nodeIcon(item.value.type)" class="size-3 shrink-0 opacity-70" />
+              <component :is="nodeIcons[item.value.type] ?? IconSquare" class="size-3 shrink-0 opacity-70" />
               <span class="truncate">{{ item.value.name }}</span>
             </button>
           </TreeItem>

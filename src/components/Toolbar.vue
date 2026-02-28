@@ -1,11 +1,7 @@
 <script setup lang="ts">
-import { type Component } from 'vue'
-
 import IconMousePointer from '~icons/lucide/mouse-pointer'
 import IconFrame from '~icons/lucide/frame'
 import IconSquare from '~icons/lucide/square'
-import IconCircle from '~icons/lucide/circle'
-import IconMinus from '~icons/lucide/minus'
 import IconPenTool from '~icons/lucide/pen-tool'
 import IconType from '~icons/lucide/type'
 import IconHand from '~icons/lucide/hand'
@@ -16,12 +12,12 @@ import type { Tool } from '../stores/editor'
 
 const store = useEditorStore()
 
-const TOOL_ICONS: Record<Tool, Component> = {
+const toolIcons: Record<Tool, typeof IconSquare> = {
   SELECT: IconMousePointer,
   FRAME: IconFrame,
   RECTANGLE: IconSquare,
-  ELLIPSE: IconCircle,
-  LINE: IconMinus,
+  ELLIPSE: IconSquare,
+  LINE: IconSquare,
   PEN: IconPenTool,
   TEXT: IconType,
   HAND: IconHand
@@ -41,7 +37,7 @@ const TOOL_ICONS: Record<Tool, Component> = {
         :title="`${tool.label} (${tool.shortcut})`"
         @click="store.setTool(tool.key)"
       >
-        <component :is="TOOL_ICONS[tool.key]" class="size-4" />
+        <component :is="toolIcons[tool.key]" class="size-4" />
       </button>
     </div>
   </div>
