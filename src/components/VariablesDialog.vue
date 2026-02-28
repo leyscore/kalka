@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, h } from 'vue'
 import {
   DialogRoot,
   DialogPortal,
@@ -16,10 +16,11 @@ import {
   EditableInput,
   EditablePreview
 } from 'reka-ui'
+import { useVueTable, getCoreRowModel, FlexRender, type ColumnDef } from '@tanstack/vue-table'
 
-import { colorToHexRaw } from '@/engine/color'
+import { colorToHexRaw, parseColor } from '@/engine/color'
 import { useEditorStore } from '@/stores/editor'
-import type { Variable, Color, VariableCollectionMode } from '@/engine/scene-graph'
+import type { Variable, Color } from '@/engine/scene-graph'
 
 const open = defineModel<boolean>('open', { default: false })
 const store = useEditorStore()
@@ -70,18 +71,6 @@ const variables = computed(() => {
   return all.filter((v) => v.name.toLowerCase().includes(q))
 })
 
-const groupedVariables = computed(() => {
-  const groups = new Map<string, Variable[]>()
-  for (const v of variables.value) {
-    const parts = v.name.split('/')
-    const group = parts.length > 1 ? parts.slice(0, -1).join('/') : ''
-    const arr = groups.get(group) ?? []
-    if (!groups.has(group)) groups.set(group, arr)
-    arr.push(v)
-  }
-  return groups
-})
-
 function formatModeValue(variable: Variable, modeId: string): string {
   const value = variable.valuesByMode[modeId]
   if (value === undefined) return '—'
@@ -124,13 +113,8 @@ function commitNameEdit(variable: Variable, newName: string) {
 
 function commitValueEdit(variable: Variable, modeId: string, newValue: string) {
   if (variable.type === 'COLOR') {
-    const hex = newValue.replace('#', '')
-    if (/^[0-9a-fA-F]{6}$/.test(hex)) {
-      const r = parseInt(hex.slice(0, 2), 16) / 255
-      const g = parseInt(hex.slice(2, 4), 16) / 255
-      const b = parseInt(hex.slice(4, 6), 16) / 255
-      variable.valuesByMode[modeId] = { r, g, b, a: 1 }
-    }
+    const color = parseColor(newValue.startsWith('#') ? newValue : `#${newValue}`)
+    variable.valuesByMode[modeId] = color
   } else if (variable.type === 'FLOAT') {
     const num = parseFloat(newValue)
     if (!isNaN(num)) variable.valuesByMode[modeId] = num
@@ -182,10 +166,131 @@ function removeVariable(id: string) {
   store.requestRender()
 }
 
-function modeColumnWidth(modes: VariableCollectionMode[]): string {
-  if (modes.length <= 1) return 'flex-1'
-  return `w-[${Math.floor(100 / modes.length)}%]`
-}
+const columns = computed<ColumnDef<Variable>[]>(() => {
+  const nameCol: ColumnDef<Variable> = {
+    id: 'name',
+    header: 'Name',
+    size: 200,
+    minSize: 120,
+    maxSize: 400,
+    cell: ({ row }) => {
+      const v = row.original
+      const iconClass = 'size-3.5 shrink-0 text-muted'
+      const icon =
+        v.type === 'COLOR'
+          ? h('span', { class: `${iconClass} icon-[lucide--circle-dot]` })
+          : v.type === 'FLOAT'
+            ? h('span', { class: `${iconClass} icon-[lucide--hash]` })
+            : v.type === 'STRING'
+              ? h('span', { class: `${iconClass} icon-[lucide--type]` })
+              : h('span', { class: `${iconClass} icon-[lucide--toggle-left]` })
+
+      return h('div', { class: 'flex items-center gap-2' }, [
+        icon,
+        h(
+          EditableRoot,
+          {
+            defaultValue: shortName(v),
+            class: 'min-w-0 flex-1',
+            onSubmit: (val: string) => commitNameEdit(v, val)
+          },
+          () =>
+            h(EditableArea, { class: 'flex' }, () => [
+              h(EditablePreview, {
+                class: 'min-w-0 flex-1 cursor-text truncate text-xs text-surface'
+              }),
+              h(EditableInput, {
+                class:
+                  'min-w-0 flex-1 rounded border border-border bg-surface/10 px-1 py-0.5 text-xs text-surface outline-none'
+              })
+            ])
+        )
+      ])
+    }
+  }
+
+  const modeCols: ColumnDef<Variable>[] = activeModes.value.map((mode) => ({
+    id: `mode-${mode.modeId}`,
+    header: mode.name,
+    size: 200,
+    minSize: 120,
+    maxSize: 500,
+    cell: ({ row }) => {
+      const v = row.original
+      const swatch = getModeSwatchColor(v, mode.modeId)
+      const children = []
+
+      if (swatch) {
+        children.push(
+          h('div', {
+            class: 'size-5 shrink-0 rounded border border-border',
+            style: { background: swatch }
+          })
+        )
+      }
+
+      children.push(
+        h(
+          EditableRoot,
+          {
+            defaultValue: formatModeValue(v, mode.modeId),
+            class: 'min-w-0 flex-1',
+            onSubmit: (val: string) => commitValueEdit(v, mode.modeId, val)
+          },
+          () =>
+            h(EditableArea, { class: 'flex' }, () => [
+              h(EditablePreview, {
+                class: 'min-w-0 flex-1 cursor-text truncate font-mono text-xs text-muted'
+              }),
+              h(EditableInput, {
+                class:
+                  'min-w-0 flex-1 rounded border border-border bg-surface/10 px-1 py-0.5 font-mono text-xs text-surface outline-none'
+              })
+            ])
+        )
+      )
+
+      return h('div', { class: 'flex items-center gap-2' }, children)
+    }
+  }))
+
+  const deleteCol: ColumnDef<Variable> = {
+    id: 'actions',
+    header: '',
+    size: 36,
+    minSize: 36,
+    maxSize: 36,
+    enableResizing: false,
+    cell: ({ row }) =>
+      h(
+        'button',
+        {
+          class:
+            'flex size-5 cursor-pointer items-center justify-center rounded border-none bg-transparent text-muted opacity-0 transition-opacity group-hover:opacity-100 hover:text-surface',
+          onClick: () => removeVariable(row.original.id)
+        },
+        h('span', { class: 'icon-[lucide--x] size-3' })
+      )
+  }
+
+  return [nameCol, ...modeCols, deleteCol]
+})
+
+const table = useVueTable({
+  get data() {
+    return variables.value
+  },
+  get columns() {
+    return columns.value
+  },
+  columnResizeMode: 'onChange',
+  getCoreRowModel: getCoreRowModel(),
+  defaultColumn: {
+    minSize: 60,
+    maxSize: 800
+  },
+  getRowId: (row) => row.id
+})
 </script>
 
 <template>
@@ -196,7 +301,6 @@ function modeColumnWidth(modes: VariableCollectionMode[]): string {
         class="fixed left-1/2 top-1/2 z-50 flex h-[75vh] w-[800px] max-w-[90vw] -translate-x-1/2 -translate-y-1/2 flex-col rounded-xl border border-border bg-panel shadow-2xl outline-none"
       >
         <div v-if="collections.length === 0" class="flex flex-1 flex-col">
-          <!-- Header for empty state -->
           <div class="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
             <DialogTitle class="text-sm font-semibold text-surface">Local variables</DialogTitle>
             <DialogClose
@@ -220,7 +324,7 @@ function modeColumnWidth(modes: VariableCollectionMode[]): string {
 
         <template v-else>
           <TabsRoot v-model="activeTab" class="flex flex-1 flex-col overflow-hidden">
-            <!-- Top bar: collection tabs + search + actions -->
+            <!-- Top bar -->
             <div class="flex shrink-0 items-center border-b border-border">
               <TabsList class="flex flex-1 gap-0.5 overflow-x-auto px-3 py-1">
                 <template v-for="col in collections" :key="col.id">
@@ -275,106 +379,67 @@ function modeColumnWidth(modes: VariableCollectionMode[]): string {
               :value="col.id"
               class="flex flex-1 flex-col overflow-hidden outline-none"
             >
-              <!-- Column headers -->
-              <div class="flex shrink-0 border-b border-border text-[11px] font-medium text-muted">
-                <div class="w-[200px] shrink-0 px-4 py-2">Name</div>
-                <div
-                  v-for="mode in activeModes"
-                  :key="mode.modeId"
-                  class="flex-1 border-l border-border px-4 py-2"
+              <div class="flex-1 overflow-auto">
+                <table
+                  class="w-full border-collapse"
+                  :style="{ width: `${table.getCenterTotalSize()}px` }"
                 >
-                  {{ mode.name }}
-                </div>
-                <!-- Spacer for delete button column -->
-                <div class="w-8 shrink-0" />
-              </div>
-
-              <!-- Rows -->
-              <div class="flex-1 overflow-y-auto">
-                <template v-for="[group, vars] in groupedVariables" :key="group">
-                  <div
-                    v-if="group"
-                    class="border-b border-border/50 px-4 py-1.5 text-[10px] font-medium uppercase tracking-wider text-muted"
-                  >
-                    {{ group }}
-                  </div>
-                  <div
-                    v-for="v in vars"
-                    :key="v.id"
-                    class="group flex items-center border-b border-border/30 hover:bg-hover/50"
-                  >
-                    <!-- Name column -->
-                    <div class="flex w-[200px] shrink-0 items-center gap-2 px-4 py-2">
-                      <icon-lucide-circle-dot
-                        v-if="v.type === 'COLOR'"
-                        class="size-3.5 shrink-0 text-muted"
-                      />
-                      <icon-lucide-hash
-                        v-else-if="v.type === 'FLOAT'"
-                        class="size-3.5 shrink-0 text-muted"
-                      />
-                      <icon-lucide-type
-                        v-else-if="v.type === 'STRING'"
-                        class="size-3.5 shrink-0 text-muted"
-                      />
-                      <icon-lucide-toggle-left v-else class="size-3.5 shrink-0 text-muted" />
-                      <EditableRoot
-                        :default-value="shortName(v)"
-                        class="min-w-0 flex-1"
-                        @submit="commitNameEdit(v, $event)"
-                      >
-                        <EditableArea class="flex">
-                          <EditablePreview
-                            class="min-w-0 flex-1 cursor-text truncate text-xs text-surface"
-                          />
-                          <EditableInput
-                            class="min-w-0 flex-1 rounded border border-border bg-surface/10 px-1 py-0.5 text-xs text-surface outline-none"
-                          />
-                        </EditableArea>
-                      </EditableRoot>
-                    </div>
-
-                    <!-- Value columns (one per mode) -->
-                    <div
-                      v-for="mode in activeModes"
-                      :key="mode.modeId"
-                      class="flex flex-1 items-center gap-2 border-l border-border/30 px-4 py-2"
+                  <thead class="sticky top-0 z-10 bg-panel">
+                    <tr
+                      v-for="headerGroup in table.getHeaderGroups()"
+                      :key="headerGroup.id"
+                      class="border-b border-border"
                     >
-                      <div
-                        v-if="v.type === 'COLOR'"
-                        class="size-5 shrink-0 rounded border border-border"
-                        :style="{ background: getModeSwatchColor(v, mode.modeId) ?? '#000' }"
-                      />
-                      <EditableRoot
-                        :default-value="formatModeValue(v, mode.modeId)"
-                        class="min-w-0 flex-1"
-                        @submit="commitValueEdit(v, mode.modeId, $event)"
+                      <th
+                        v-for="header in headerGroup.headers"
+                        :key="header.id"
+                        class="relative px-4 py-2 text-left text-[11px] font-medium text-muted"
+                        :style="{ width: `${header.getSize()}px` }"
                       >
-                        <EditableArea class="flex">
-                          <EditablePreview
-                            class="min-w-0 flex-1 cursor-text truncate font-mono text-xs text-muted"
-                          />
-                          <EditableInput
-                            class="min-w-0 flex-1 rounded border border-border bg-surface/10 px-1 py-0.5 font-mono text-xs text-surface outline-none"
-                          />
-                        </EditableArea>
-                      </EditableRoot>
-                    </div>
-
-                    <!-- Delete -->
-                    <div class="flex w-8 shrink-0 items-center justify-center">
-                      <button
-                        class="flex size-5 cursor-pointer items-center justify-center rounded border-none bg-transparent text-muted opacity-0 transition-opacity group-hover:opacity-100 hover:text-surface"
-                        @click="removeVariable(v.id)"
+                        <FlexRender
+                          v-if="!header.isPlaceholder"
+                          :render="header.column.columnDef.header"
+                          :props="header.getContext()"
+                        />
+                        <!-- Resize handle -->
+                        <div
+                          v-if="header.column.getCanResize()"
+                          class="absolute top-0 right-0 h-full w-1 cursor-col-resize select-none touch-none"
+                          :class="
+                            header.column.getIsResizing()
+                              ? 'bg-accent'
+                              : 'bg-transparent hover:bg-border'
+                          "
+                          @mousedown="header.getResizeHandler()?.($event)"
+                          @touchstart="header.getResizeHandler()?.($event)"
+                          @dblclick="header.column.resetSize()"
+                        />
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="row in table.getRowModel().rows"
+                      :key="row.id"
+                      class="group border-b border-border/30 hover:bg-hover/50"
+                    >
+                      <td
+                        v-for="cell in row.getVisibleCells()"
+                        :key="cell.id"
+                        class="px-4 py-1.5"
+                        :style="{ width: `${cell.column.getSize()}px` }"
                       >
-                        <icon-lucide-x class="size-3" />
-                      </button>
-                    </div>
-                  </div>
-                </template>
+                        <FlexRender
+                          :render="cell.column.columnDef.cell"
+                          :props="cell.getContext()"
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
 
-              <!-- Footer: create variable -->
+              <!-- Footer -->
               <button
                 class="flex w-full shrink-0 cursor-pointer items-center gap-1.5 border-t border-border bg-transparent px-4 py-2 text-xs text-muted hover:bg-hover hover:text-surface"
                 @click="addVariable"
