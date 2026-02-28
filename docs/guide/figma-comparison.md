@@ -6,7 +6,7 @@ Feature-by-feature comparison of Figma Design capabilities with Open Pencil's cu
 ✅ Supported — feature works end-to-end · 🟡 Partial — core behavior exists, some sub-features missing · 🔲 Not yet implemented
 :::
 
-**Coverage:** ~50 of ~90 Figma Design feature areas addressed (56%). Last updated: 2026-02-28.
+**Coverage:** ~51 of ~90 Figma Design feature areas addressed (57%). Last updated: 2026-02-28.
 
 ## Interface & Navigation
 
@@ -128,7 +128,7 @@ Feature-by-feature comparison of Figma Design capabilities with Open Pencil's cu
 | Stroke cap (round, square, arrow) | ✅ | NONE, ROUND, SQUARE, ARROW_LINES, ARROW_EQUILATERAL |
 | Stroke join (miter, bevel, round) | ✅ | All three join types |
 | Dash patterns | ✅ | Dash-on/dash-off stroke pattern |
-| Corner radius | ✅ | Uniform and per-corner radius |
+| Corner radius | ✅ | Uniform and per-corner radius with independent toggle in properties panel |
 | Corner smoothing (iOS-style) | 🔲 | Figma's continuous corner rounding |
 | Multiple fills/strokes per layer | 🔲 | Figma allows stacking fills and strokes |
 
@@ -155,10 +155,10 @@ Feature-by-feature comparison of Figma Design capabilities with Open Pencil's cu
 |---------|--------|-------|
 | Create components | 🟡 | ⌥⌘K creates from frame/group or wraps selection; no component properties UI yet |
 | Component sets | 🟡 | ⇧⌘K combines components; dashed purple border; no variant property editing |
-| Component instances | 🟡 | Create instance from context menu with child cloning; no override editing UI |
+| Component instances | 🟡 | Create instance from context menu with child cloning and componentId mapping; live sync from component; no override editing UI |
 | Variants | 🔲 | Variant switching and property-based selection |
 | Component properties | 🔲 | Boolean, text, instance swap properties |
-| Override propagation | 🔲 | Changes to main component do not propagate to instances yet |
+| Override propagation | ✅ | Changes to main component propagate to all instances; overrides preserved |
 | Variables (color, number, string, boolean) | 🔲 | Planned for Phase 4 |
 | Variable collections & modes | 🔲 | Light/dark themes via variable modes |
 | Styles (color, text, effect, layout) | 🔲 | Reusable named style presets |

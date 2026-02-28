@@ -90,3 +90,18 @@ The Tauri backend SHALL expose a Rust command for Zstd compression/decompression
 - **WHEN** the frontend requests Zstd compression of a buffer
 - **THEN** the Rust backend compresses it and returns the result via Tauri IPC
 
+### Requirement: GitHub Actions CI/CD build workflow
+The project SHALL include a GitHub Actions workflow (`.github/workflows/build.yml`) that builds Tauri desktop apps for Windows (x64, arm64) and macOS (x64, arm64). The workflow triggers on version tags (`v*`) and `workflow_dispatch`. Build artifacts are uploaded as draft GitHub releases via `tauri-apps/tauri-action`.
+
+#### Scenario: Tag-triggered build
+- **WHEN** a tag matching `v*` is pushed
+- **THEN** GitHub Actions builds Windows and macOS binaries and creates a draft release
+
+#### Scenario: Manual build trigger
+- **WHEN** a maintainer triggers `workflow_dispatch`
+- **THEN** the build runs for all platform/architecture combinations
+
+#### Scenario: Build matrix
+- **WHEN** the workflow runs
+- **THEN** it builds for: windows-x64 (x86_64-pc-windows-msvc), windows-arm64 (aarch64-pc-windows-msvc), macos-arm64 (aarch64-apple-darwin), macos-x64 (x86_64-apple-darwin)
+

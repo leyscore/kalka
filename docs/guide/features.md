@@ -53,9 +53,10 @@ Tree view of the document hierarchy using Reka UI Tree component. Expand/collaps
 
 Context-sensitive panel with sections:
 
-- **Appearance** — size, position, rotation, opacity, corner radius, visibility
+- **Appearance** — opacity, corner radius (uniform or per-corner with independent toggle), visibility
 - **Fill** — solid/gradient/image type picker, gradient stop editor, hex input, opacity
 - **Stroke** — color, weight, opacity, cap, join, dash pattern
+- **Effects** — add/remove effects, type picker (drop shadow, inner shadow, layer blur, background blur, foreground blur), inline expanded controls (offset, blur, spread, color for shadows; blur radius for blurs), per-effect visibility toggle
 - **Typography** — font family, weight, size, alignment
 - **Layout** — auto-layout controls when enabled
 - **Position** — alignment buttons, rotation, flip
@@ -92,7 +93,11 @@ The CanvasKit renderer supports full Tier 1 visual features for Figma rendering 
 
 ## Components & Instances
 
-Create reusable components from frames or selections (<kbd>⌥</kbd><kbd>⌘</kbd><kbd>K</kbd>). A single frame converts in-place to a COMPONENT; multiple nodes wrap in a new component. Combine multiple components into a COMPONENT_SET (<kbd>⇧</kbd><kbd>⌘</kbd><kbd>K</kbd>) with a dashed purple border. Create instances from components via context menu — instances copy the component's visual properties and children. Detach an instance back to a frame with <kbd>⌥</kbd><kbd>⌘</kbd><kbd>B</kbd>. "Go to main component" navigates to and selects the source component, switching pages if needed.
+Create reusable components from frames or selections (<kbd>⌥</kbd><kbd>⌘</kbd><kbd>K</kbd>). A single frame converts in-place to a COMPONENT; multiple nodes wrap in a new component. Combine multiple components into a COMPONENT_SET (<kbd>⇧</kbd><kbd>⌘</kbd><kbd>K</kbd>) with a dashed purple border. Create instances from components via context menu — instances copy the component's visual properties and deep-clone children with `componentId` mapping. Detach an instance back to a frame with <kbd>⌥</kbd><kbd>⌘</kbd><kbd>B</kbd>. "Go to main component" navigates to and selects the source component, switching pages if needed.
+
+**Live sync:** Editing a main component propagates changes to all its instances automatically. The store triggers sync after property updates, moves, and resizes. Synced properties include size, fills, strokes, effects, opacity, corner radii, layout, and clipsContent. Instance children are matched to component children via `componentId`.
+
+**Override support:** Instances maintain an overrides record. Properties marked as overridden are preserved during sync — if you customize an instance child's text, it won't be overwritten when the component changes. New children added to a component appear in all existing instances.
 
 Components and instances display always-visible purple labels with a diamond icon showing the node name. They act as opaque containers for selection — clicking selects the component itself, double-clicking enters it to select children.
 
@@ -120,3 +125,7 @@ Tauri v2 shell (~5MB vs Electron's ~100MB). Native menu bar with File/Edit/View/
 ## ScrubInput
 
 All numeric inputs in the properties panel use a drag-to-scrub interaction — drag horizontally to adjust the value, or click to type directly. Supports suffix display (°, px, %).
+
+## CI/CD Builds
+
+GitHub Actions workflow builds native Tauri desktop apps on version tags. The build matrix covers Windows (x64, arm64) and macOS (x64, arm64). Builds use `tauri-apps/tauri-action` and produce draft GitHub releases with platform-specific binaries.

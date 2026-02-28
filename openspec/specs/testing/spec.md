@@ -66,3 +66,26 @@ E2E tests SHALL verify the layers panel: node visibility in tree, expand/collaps
 - **WHEN** the layers panel E2E tests run
 - **THEN** all tests pass verifying tree structure, visibility toggles, and selection sync
 
+### Requirement: Component-instance sync unit tests
+Unit tests SHALL cover the component-instance sync lifecycle: instance creation with `componentId` mapping on children, sync propagation of property changes, override preservation during sync, new child addition to instances, and detach breaking the link.
+
+#### Scenario: Instance child mapping test
+- **WHEN** `bun test ./tests/engine/scene-graph.test.ts` runs
+- **THEN** the test verifies instance children have `componentId` pointing to component children
+
+#### Scenario: Sync propagation test
+- **WHEN** a component's text child changes and sync is triggered
+- **THEN** the test verifies instance children receive the updated text and fontSize
+
+#### Scenario: Override preservation test
+- **WHEN** an instance child has an overridden text value
+- **THEN** the test verifies the override is preserved while non-overridden properties sync
+
+#### Scenario: New child addition test
+- **WHEN** a new child is added to a component and sync runs
+- **THEN** the test verifies existing instances gain the new child
+
+#### Scenario: Detach test
+- **WHEN** an instance is detached
+- **THEN** the test verifies type becomes FRAME, componentId is null, and the component's instance list no longer includes it
+

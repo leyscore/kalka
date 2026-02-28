@@ -37,7 +37,7 @@ The layers panel SHALL display a tree view of the document hierarchy using Reka 
 - **THEN** the node is hidden/shown on canvas
 
 ### Requirement: Properties panel with sections
-The properties panel SHALL be split into sections: Appearance (size, position, rotation, opacity, corner radius, visibility), Fill, Stroke, Typography, Layout, Position.
+The properties panel SHALL be split into sections: Appearance (opacity, corner radius with independent mode, visibility toggle), Fill, Stroke, Effects, Typography, Layout, Position.
 
 #### Scenario: Properties panel shows fill section
 - **WHEN** user selects a rectangle with a blue fill
@@ -136,3 +136,37 @@ The editor SHALL support ⇧⌘H (toggle visibility) and ⇧⌘L (toggle lock) k
 #### Scenario: Toggle visibility shortcut
 - **WHEN** user selects a node and presses ⇧⌘H
 - **THEN** the node's visibility toggles
+
+### Requirement: Effects section in properties panel
+The properties panel SHALL include an Effects section showing all effects on the selected node. Each effect displays as a collapsible row with: color swatch (shadows) or blur icon (blurs), type dropdown (DROP_SHADOW, INNER_SHADOW, LAYER_BLUR, BACKGROUND_BLUR, FOREGROUND_BLUR), visibility toggle, and remove button. Clicking a row expands inline controls.
+
+#### Scenario: Add drop shadow effect
+- **WHEN** user clicks the + button in the Effects section
+- **THEN** a DROP_SHADOW effect is added with default values (offset 0,4; radius 4; spread 0; color rgba(0,0,0,0.25))
+
+#### Scenario: Switch effect type
+- **WHEN** user changes the type dropdown from DROP_SHADOW to LAYER_BLUR
+- **THEN** the effect type updates and offset/spread fields are hidden (only blur radius shown)
+
+#### Scenario: Inline shadow controls
+- **WHEN** user expands a shadow effect row
+- **THEN** X/Y offset, blur radius, spread, color picker, hex input, and opacity controls appear inline
+
+#### Scenario: Toggle effect visibility
+- **WHEN** user clicks the eye icon on an effect row
+- **THEN** the effect's `visible` property toggles and the canvas re-renders
+
+#### Scenario: Remove effect
+- **WHEN** user clicks the − button on an effect row
+- **THEN** the effect is removed from the node
+
+### Requirement: Independent corner radius toggle in Appearance section
+The Appearance section SHALL show a corner radius toggle button for RECTANGLE, ROUNDED_RECTANGLE, FRAME, COMPONENT, and INSTANCE nodes. When toggled to independent mode, a 2×2 grid of per-corner radius inputs (top-left, top-right, bottom-left, bottom-right) replaces the single radius input. Each corner has a distinct icon. Toggling back to uniform sets all corners to the top-left value.
+
+#### Scenario: Toggle to independent corners
+- **WHEN** user clicks the independent corners button
+- **THEN** four separate corner radius inputs appear in a grid layout
+
+#### Scenario: Toggle back to uniform
+- **WHEN** user clicks the independent corners button while in independent mode
+- **THEN** a single corner radius input appears, set to the top-left value

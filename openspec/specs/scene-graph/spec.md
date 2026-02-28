@@ -157,3 +157,31 @@ The scene graph SHALL support `hitTestDeep(px, py)` that traverses into COMPONEN
 #### Scenario: Deep hit test enters component
 - **WHEN** `hitTestDeep` is called at a position inside a component's child
 - **THEN** the child is returned, not the component
+
+### Requirement: Instance sync method
+The SceneGraph SHALL expose a method to synchronize all INSTANCE nodes linked to a given COMPONENT, copying synced properties (width, height, fills, strokes, effects, opacity, cornerRadius, topLeftRadius, topRightRadius, bottomRightRadius, bottomLeftRadius, independentCorners, layoutMode, layoutWrap, primaryAxisAlign, counterAxisAlign, primaryAxisSizing, counterAxisSizing, itemSpacing, counterAxisSpacing, paddingTop, paddingRight, paddingBottom, paddingLeft, clipsContent). Array properties are shallow-copied. Override-marked properties are skipped.
+
+#### Scenario: Sync propagates fills
+- **WHEN** a component's fill is changed and sync is triggered
+- **THEN** all instances of that component receive the new fill (unless overridden)
+
+### Requirement: Clone children with mapping
+The SceneGraph SHALL support recursively cloning children from a source parent to a destination parent, setting each clone's `componentId` to the source child's ID. This enables sync matching between component and instance children.
+
+#### Scenario: Clone with mapping
+- **WHEN** a component with nested frames is cloned to an instance
+- **THEN** each cloned child (recursively) has `componentId` pointing to the original
+
+### Requirement: Child sync
+The SceneGraph SHALL support syncing instance children to component children by matching via `componentId`. Synced child properties include the standard synced property list plus name, text, fontSize, fontWeight, fontFamily. New children from the component are cloned into the instance. Instance children are reordered to match component child order.
+
+#### Scenario: Sync matches children by componentId
+- **WHEN** a component has children [A, B] and an instance has cloned children with `componentId` pointing to A and B
+- **THEN** sync updates each instance child's non-overridden properties from the corresponding component child
+
+### Requirement: Independent corner radius fields
+SceneNode SHALL include `independentCorners` (boolean), `topLeftRadius`, `topRightRadius`, `bottomRightRadius`, `bottomLeftRadius` (numbers). When `independentCorners` is true, each corner radius is controlled independently.
+
+#### Scenario: Independent corners
+- **WHEN** a rectangle has `independentCorners: true` with topLeftRadius=8 and topRightRadius=0
+- **THEN** the rectangle renders with rounded top-left and sharp top-right

@@ -23,11 +23,15 @@ The editor SHALL combine multiple selected COMPONENT nodes into a COMPONENT_SET 
 - **THEN** a COMPONENT_SET wraps them with dashed purple border
 
 ### Requirement: Create instance from component
-The editor SHALL create an INSTANCE node from a COMPONENT, copying its visual properties and children. The instance is placed 40px to the right of the source component.
+The editor SHALL create an INSTANCE node from a COMPONENT via context menu, copying its visual properties and deep-cloning children with `componentId` mapping. The instance is placed 40px to the right of the source component. Instance creation is available only through the context menu (no button in properties panel).
 
 #### Scenario: Create instance via context menu
 - **WHEN** user right-clicks a component and selects "Create instance"
 - **THEN** an INSTANCE appears to the right, visually identical to the component
+
+#### Scenario: Instance children have componentId mapping
+- **WHEN** an instance is created from a component with children [A, B]
+- **THEN** instance children have `componentId` pointing to A and B respectively
 
 ### Requirement: Detach instance
 The editor SHALL convert an INSTANCE back to a regular FRAME, clearing its componentId and overrides (⌥⌘B).
@@ -67,3 +71,35 @@ COMPONENT and INSTANCE nodes SHALL behave as opaque containers for hit testing �
 #### Scenario: Double-click into component
 - **WHEN** user double-clicks a child inside a component
 - **THEN** the child is selected (deep selection)
+
+### Requirement: Live component-instance sync
+The scene graph SHALL propagate property changes from a COMPONENT to all its INSTANCE nodes. Synced properties include: width, height, fills, strokes, effects, opacity, corner radii, layout properties, and clipsContent. The store SHALL auto-trigger sync after `updateNode`, `commitMove`, and `commitResize` when the edited node is inside a COMPONENT.
+
+#### Scenario: Edit component updates instances
+- **WHEN** user changes the fill color of a main component
+- **THEN** all instances of that component update to the new fill color
+
+#### Scenario: Resize component syncs to instances
+- **WHEN** user resizes a main component
+- **THEN** all instances resize to match
+
+### Requirement: Override preservation during sync
+Instances SHALL maintain an `overrides` record. When syncing, properties marked in overrides are skipped. Child-level overrides use `${childId}:${propertyKey}` keys. Overridable child properties include name, text, fontSize, fontWeight, fontFamily, plus all synced visual/layout properties.
+
+#### Scenario: Override preserved during sync
+- **WHEN** an instance child has text overridden to "Custom" and the component child text changes to "New Default"
+- **THEN** the instance child's text remains "Custom" while non-overridden properties sync
+
+### Requirement: New children propagate to instances
+When a new child is added to a COMPONENT, sync SHALL clone the new child into all existing instances.
+
+#### Scenario: Add child to component
+- **WHEN** user adds a new rectangle inside a component that has two instances
+- **THEN** both instances gain a cloned copy of the new rectangle
+
+### Requirement: Instance child order matches component
+After sync, instance children SHALL be reordered to match the component's child order.
+
+#### Scenario: Reorder component children
+- **WHEN** component children are reordered from [A, B] to [B, A]
+- **THEN** after sync, instance children reflect the new order

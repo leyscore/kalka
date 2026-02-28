@@ -59,7 +59,8 @@ Components, instances, overrides, variants, variables, collections, modes/themes
 **Delivered:**
 - Component creation from frame/group or multi-selection (⌥⌘K)
 - Component sets from multiple components (⇧⌘K) with dashed purple border
-- Instance creation from components with child cloning
+- Instance creation from components with child cloning and componentId mapping
+- Live component-instance sync with override preservation
 - Detach instance back to frame (⌥⌘B)
 - Go to main component (cross-page navigation)
 - Always-visible purple component/instance labels with diamond icon
@@ -69,9 +70,11 @@ Components, instances, overrides, variants, variables, collections, modes/themes
 - Toggle visibility (⇧⌘H) and lock (⇧⌘L)
 - Move nodes between pages via context menu
 - Viewport culling, Paint reuse, RAF render coalescing
+- Effects panel UI (drop shadow, inner shadow, layer/background/foreground blur)
+- Independent corner radius controls (per-corner toggle in Appearance section)
+- GitHub Actions CI/CD for Windows (x64, arm64) and macOS (x64, arm64) builds
 
 **Planned:**
-- Override propagation
 - Variant switching
 - Variable collections with modes (light/dark)
 - Variable binding to node properties
@@ -93,7 +96,7 @@ Prototyping, comments, desktop distribution, documentation, public launch.
 **Planned:**
 - Prototyping (frame connections, transitions)
 - Comments (pin, threads, resolve)
-- Cross-platform Tauri builds (macOS, Windows, Linux)
+- Linux Tauri builds (macOS and Windows already covered by CI)
 - PWA support
 - Documentation site (VitePress) ← this is being built now
 - Performance optimization (Lighthouse > 90)
