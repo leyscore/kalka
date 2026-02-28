@@ -2,6 +2,15 @@
 
 Vue 3 + CanvasKit (Skia WASM) + Yoga WASM design editor. Tauri v2 desktop, also runs in browser.
 
+## Monorepo
+
+Bun workspace with two packages:
+
+- `packages/core` — `@open-pencil/core`: scene graph, renderer, layout, codec, kiwi, clipboard, vector, snap, undo. Zero DOM deps, runs headless in Bun.
+- `packages/cli` — `@open-pencil/cli`: headless CLI for .fig inspection, export, linting. Uses `citty` + `agentfmt`.
+
+The root app (`src/`) is the Tauri/Vite desktop editor. Its `src/engine/` files are thin re-export shims from `@open-pencil/core`.
+
 ## Commands
 
 - `bun run check` — lint + typecheck (run before committing)
@@ -9,24 +18,30 @@ Vue 3 + CanvasKit (Skia WASM) + Yoga WASM design editor. Tauri v2 desktop, also 
 - `bun test ./tests/engine` — unit tests
 - `bun run test` — Playwright visual regression
 - `bun run tauri dev` — desktop app with hot reload
+- `bun open-pencil info <file>` — document stats
+- `bun open-pencil tree <file>` — node tree
+- `bun open-pencil find <file>` — search nodes
+- `bun open-pencil export <file>` — headless render to PNG/JPG/WEBP
 
 ## Code conventions
 
-- `@/` import alias for cross-directory imports, `./` for same directory
+- `@/` import alias for app cross-directory imports, relative imports within core
 - No `any` — use proper types, generics, declaration merging
 - No `!` non-null assertions — use guards, `?.`, `??`
-- Shared types (GUID, Color, Vector, Matrix, Rect) live in `src/types.ts`
-- Window API extensions (showOpenFilePicker, queryLocalFonts) live in `src/global.d.ts`
+- Shared types (GUID, Color, Vector, Matrix, Rect) live in `packages/core/src/types.ts`
+- Window API extensions (showOpenFilePicker, queryLocalFonts) live in `src/global.d.ts` and `packages/core/src/global.d.ts`
 - Use `culori` for color conversions — don't reimplement parseColor/colorToRgba
 - Use `@vueuse/core` hooks (useEventListener, etc.) — don't do manual addEventListener/removeEventListener
-- `src/kiwi/kiwi-schema/` is vendored — don't modify
+- `packages/core/src/kiwi/kiwi-schema/` is vendored — don't modify
+- Core code must guard browser APIs: `typeof window !== 'undefined'`, `typeof document === 'undefined'`
 
 ## Rendering
 
 - Canvas is CanvasKit (Skia WASM) on a WebGL surface, not DOM
-- Rendering is coalesced via rAF — call `scheduleRender()`, not `renderNow()`
+- `renderVersion` vs `sceneVersion`: `renderVersion` = canvas repaint (pan/zoom/hover); `sceneVersion` = scene graph mutations. UI panels watch `sceneVersion` only.
+- `requestRender()` bumps both counters; `requestRepaint()` bumps only `renderVersion`
 - `renderNow()` is only for surface recreation and font loading (need immediate draw)
-- Resize observer uses rAF throttle, not debounce — debounce causes canvas skew (old WebGL surface stretched into resized element)
+- Resize observer uses rAF throttle, not debounce — debounce causes canvas skew
 - Viewport culling skips off-screen nodes; unclipped parents are NOT culled (children may extend beyond bounds)
 - Selection border width must be constant regardless of zoom — divide by scale
 - Section/frame title text never scales — render at fixed font size, ellipsize to fit
@@ -65,14 +80,15 @@ Vue 3 + CanvasKit (Skia WASM) + Yoga WASM design editor. Tauri v2 desktop, also 
 - ScrubInput (drag-to-change number) — cursor and pointerdown on outer container, not inner spans
 - Icons: use unplugin-icons with Iconify/Lucide (`<icon-lucide-*>`) — don't use raw SVG or Unicode symbols
 - Sections are draggable by title pill, not by the area to the right of the title
+- CSS `contain: paint layout style` on side panels to isolate repaints from WebGL canvas
 
 ## File format
 
-- .fig files use Kiwi binary codec — schema in `src/kiwi/codec.ts`
+- .fig files use Kiwi binary codec — schema in `packages/core/src/kiwi/codec.ts`
 - `NodeChange` is the central type for Kiwi encode/decode
-- Vector data uses reverse-engineered `vectorNetworkBlob` binary format — encoder/decoder in `src/engine/vector.ts`
+- Vector data uses reverse-engineered `vectorNetworkBlob` binary format — encoder/decoder in `packages/core/src/vector.ts`
 - showOpenFilePicker/showSaveFilePicker are File System Access API (Chrome/Edge), not Tauri-only — code has fallbacks
-- Tauri detection: `IS_TAURI` constant from `src/constants.ts` — don't use `'__TAURI_INTERNALS__' in window` inline
+- Tauri detection: `IS_TAURI` constant from `packages/core/src/constants.ts` — don't use `'__TAURI_INTERNALS__' in window` inline
 - .fig export: compression with fflate (browser) or Tauri Rust commands
 - Test .fig round-trip by exporting and reimporting in Figma
 
@@ -81,6 +97,12 @@ Vue 3 + CanvasKit (Skia WASM) + Yoga WASM design editor. Tauri v2 desktop, also 
 - Tauri v2 with plugin-dialog, plugin-fs, plugin-opener
 - File system permissions must be configured in `desktop/tauri.conf.json` — "Internal error" on save means missing permissions
 - Dev tools: add a menu item to toggle, don't rely on keyboard shortcut
+
+## Publishing
+
+- `bun publish` from package dirs — resolves `workspace:*` → actual versions
+- Core: `prepublishOnly` runs `tsc` to build `dist/` for Node.js consumers
+- CLI requires Bun runtime (`#!/usr/bin/env bun`)
 
 ## Reference
 

@@ -15,6 +15,8 @@ Open-source, AI-native design editor. Figma alternative built from scratch with 
 - **Components & instances** — with live sync, overrides, component sets
 - **Pen tool** — bezier curves with tangent handles
 - **Inline text editing** — multi-line text with system fonts
+- **Image export** — PNG, JPG, WEBP at any scale
+- **Headless CLI** — inspect, search, and render .fig files without a GUI
 - **Undo/redo** — all operations are undoable
 - **Snap guides** — edge and center snapping
 - **Color picker** — HSV, hue/alpha sliders, hex input, gradients
@@ -31,6 +33,7 @@ Open-source, AI-native design editor. Figma alternative built from scratch with 
 | File format | Kiwi binary (vendored) + Zstd + ZIP |
 | Color | culori |
 | Desktop | Tauri v2 |
+| CLI | citty, agentfmt |
 | Testing | Playwright (visual regression), bun:test (unit) |
 | Tooling | Vite 7, oxlint, oxfmt, typescript-go |
 
@@ -40,6 +43,20 @@ Open-source, AI-native design editor. Figma alternative built from scratch with 
 bun install
 bun run dev
 ```
+
+## CLI
+
+Headless .fig file operations — no GUI needed:
+
+```sh
+bun open-pencil info design.fig         # Document stats, node types, fonts
+bun open-pencil tree design.fig         # Visual node tree
+bun open-pencil find design.fig --type TEXT  # Search by name or type
+bun open-pencil export design.fig       # Render to PNG
+bun open-pencil export design.fig -f jpg -s 2 -q 90  # JPG at 2x
+```
+
+All commands support `--json` for machine-readable output.
 
 ## Scripts
 
@@ -69,15 +86,17 @@ Cross-compilation to other platforms requires their respective toolchains or CI 
 ## Project Structure
 
 ```
+packages/
+  core/           @open-pencil/core — engine (scene graph, renderer, layout, codec)
+  cli/            @open-pencil/cli — headless CLI (info, tree, find, export)
 src/
   components/     Vue SFCs (canvas, panels, toolbar, color picker)
   composables/    Canvas input, keyboard shortcuts, rendering
   stores/         Editor state (Vue reactivity)
-  engine/         Scene graph, renderer, layout, clipboard, undo, vector, snap
-  kiwi/           Figma file format (Kiwi codec, .fig import)
-    kiwi-schema/  Vendored from evanw/kiwi
+  engine/         Re-export shims from @open-pencil/core
+  kiwi/           Re-export shims from @open-pencil/core
   types.ts        Shared types
-  constants.ts    UI colors, defaults, thresholds
+  constants.ts    App-specific constants + re-exports from core
 desktop/          Tauri v2 (Rust + config)
 tests/
   e2e/            Playwright visual regression
