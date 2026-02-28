@@ -66,4 +66,81 @@ describe('SceneGraph', () => {
     expect(node.x).toBe(200)
     expect(node.name).toBe('Updated')
   })
+
+  test('create instance clones children with componentId mapping', () => {
+    const graph = new SceneGraph()
+    const comp = graph.createNode('COMPONENT', pageId(graph), { name: 'Btn', width: 100, height: 40 })
+    const child = graph.createNode('RECTANGLE', comp.id, { name: 'BG', width: 100, height: 40 })
+    const instance = graph.createInstance(comp.id, pageId(graph))!
+    expect(instance.type).toBe('INSTANCE')
+    expect(instance.componentId).toBe(comp.id)
+    const instChildren = graph.getChildren(instance.id)
+    expect(instChildren).toHaveLength(1)
+    expect(instChildren[0].componentId).toBe(child.id)
+    expect(instChildren[0].name).toBe('BG')
+  })
+
+  test('syncInstances propagates changes from component to instance', () => {
+    const graph = new SceneGraph()
+    const comp = graph.createNode('COMPONENT', pageId(graph), { name: 'Card', width: 200, height: 100 })
+    const label = graph.createNode('TEXT', comp.id, { name: 'Title', text: 'Hello', fontSize: 14 })
+    const instance = graph.createInstance(comp.id, pageId(graph))!
+    const instLabel = graph.getChildren(instance.id)[0]
+    expect(instLabel.text).toBe('Hello')
+
+    graph.updateNode(label.id, { text: 'Updated', fontSize: 18 })
+    graph.syncInstances(comp.id)
+
+    expect(instLabel.text).toBe('Updated')
+    expect(instLabel.fontSize).toBe(18)
+  })
+
+  test('syncInstances preserves overrides', () => {
+    const graph = new SceneGraph()
+    const comp = graph.createNode('COMPONENT', pageId(graph), { name: 'Card', width: 200, height: 100 })
+    graph.createNode('TEXT', comp.id, { name: 'Title', text: 'Default', fontSize: 14 })
+    const instance = graph.createInstance(comp.id, pageId(graph))!
+    const instLabel = graph.getChildren(instance.id)[0]
+
+    // Override the text on the instance child
+    graph.updateNode(instLabel.id, { text: 'Custom' })
+    instance.overrides[`${instLabel.id}:text`] = 'Custom'
+
+    // Change component
+    graph.updateNode(graph.getChildren(comp.id)[0].id, { text: 'New Default', fontSize: 20 })
+    graph.syncInstances(comp.id)
+
+    // Text preserved (overridden), fontSize synced (not overridden)
+    expect(instLabel.text).toBe('Custom')
+    expect(instLabel.fontSize).toBe(20)
+  })
+
+  test('syncInstances adds new children from component', () => {
+    const graph = new SceneGraph()
+    const comp = graph.createNode('COMPONENT', pageId(graph), { name: 'Card', width: 200, height: 100 })
+    graph.createNode('RECTANGLE', comp.id, { name: 'BG' })
+    const instance = graph.createInstance(comp.id, pageId(graph))!
+    expect(graph.getChildren(instance.id)).toHaveLength(1)
+
+    graph.createNode('TEXT', comp.id, { name: 'Label', text: 'New' })
+    graph.syncInstances(comp.id)
+
+    const instChildren = graph.getChildren(instance.id)
+    expect(instChildren).toHaveLength(2)
+    expect(instChildren[1].name).toBe('Label')
+    expect(instChildren[1].text).toBe('New')
+  })
+
+  test('detachInstance breaks link', () => {
+    const graph = new SceneGraph()
+    const comp = graph.createNode('COMPONENT', pageId(graph), { name: 'Btn', width: 100, height: 40 })
+    graph.createNode('RECTANGLE', comp.id, { name: 'BG' })
+    const instance = graph.createInstance(comp.id, pageId(graph))!
+    expect(instance.type).toBe('INSTANCE')
+
+    graph.detachInstance(instance.id)
+    expect(instance.type).toBe('FRAME')
+    expect(instance.componentId).toBeNull()
+    expect(graph.getInstances(comp.id)).toHaveLength(0)
+  })
 })

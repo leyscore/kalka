@@ -559,46 +559,141 @@ export class SceneGraph {
     return clone
   }
 
+  private static readonly INSTANCE_SYNC_PROPS: (keyof SceneNode)[] = [
+    'width', 'height', 'fills', 'strokes', 'effects', 'opacity',
+    'cornerRadius', 'topLeftRadius', 'topRightRadius', 'bottomRightRadius', 'bottomLeftRadius',
+    'independentCorners', 'layoutMode', 'layoutWrap', 'primaryAxisAlign', 'counterAxisAlign',
+    'primaryAxisSizing', 'counterAxisSizing', 'itemSpacing', 'counterAxisSpacing',
+    'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'clipsContent'
+  ]
+
   createInstance(componentId: string, parentId: string, overrides: Partial<SceneNode> = {}): SceneNode | null {
     const component = this.nodes.get(componentId)
     if (!component || component.type !== 'COMPONENT') return null
 
-    const instance = this.createNode('INSTANCE', parentId, {
-      name: component.name,
-      width: component.width,
-      height: component.height,
-      fills: component.fills.map((f) => ({ ...f })),
-      strokes: component.strokes.map((s) => ({ ...s })),
-      effects: component.effects.map((e) => ({ ...e })),
-      opacity: component.opacity,
-      cornerRadius: component.cornerRadius,
-      topLeftRadius: component.topLeftRadius,
-      topRightRadius: component.topRightRadius,
-      bottomRightRadius: component.bottomRightRadius,
-      bottomLeftRadius: component.bottomLeftRadius,
-      independentCorners: component.independentCorners,
-      layoutMode: component.layoutMode,
-      layoutWrap: component.layoutWrap,
-      primaryAxisAlign: component.primaryAxisAlign,
-      counterAxisAlign: component.counterAxisAlign,
-      primaryAxisSizing: component.primaryAxisSizing,
-      counterAxisSizing: component.counterAxisSizing,
-      itemSpacing: component.itemSpacing,
-      counterAxisSpacing: component.counterAxisSpacing,
-      paddingTop: component.paddingTop,
-      paddingRight: component.paddingRight,
-      paddingBottom: component.paddingBottom,
-      paddingLeft: component.paddingLeft,
-      clipsContent: component.clipsContent,
-      componentId,
-      ...overrides
-    })
-
-    for (const childId of component.childIds) {
-      this.cloneTree(childId, instance.id)
+    const props: Partial<SceneNode> = { name: component.name, componentId }
+    for (const key of SceneGraph.INSTANCE_SYNC_PROPS) {
+      const val = component[key]
+      ;(props as Record<string, unknown>)[key] = Array.isArray(val)
+        ? val.map((v: Record<string, unknown>) => ({ ...v }))
+        : val
     }
 
+    const instance = this.createNode('INSTANCE', parentId, { ...props, ...overrides })
+
+    this.cloneChildrenWithMapping(component.id, instance.id)
+
     return instance
+  }
+
+  private cloneChildrenWithMapping(sourceParentId: string, destParentId: string): void {
+    const sourceParent = this.nodes.get(sourceParentId)
+    if (!sourceParent) return
+
+    for (const childId of sourceParent.childIds) {
+      const src = this.nodes.get(childId)
+      if (!src) continue
+
+      const { id: _, parentId: _p, childIds: _c, ...rest } = src
+      const clone = this.createNode(src.type, destParentId, {
+        ...rest,
+        componentId: childId
+      })
+
+      if (src.childIds.length > 0) {
+        this.cloneChildrenWithMapping(childId, clone.id)
+      }
+    }
+  }
+
+  syncInstances(componentId: string): void {
+    const component = this.nodes.get(componentId)
+    if (!component || component.type !== 'COMPONENT') return
+
+    for (const instance of this.getInstances(componentId)) {
+      // Sync instance-level props (unless overridden)
+      for (const key of SceneGraph.INSTANCE_SYNC_PROPS) {
+        const overrideKey = `${key}`
+        if (overrideKey in instance.overrides) continue
+        const val = component[key]
+        ;(instance as Record<string, unknown>)[key] = Array.isArray(val)
+          ? val.map((v: Record<string, unknown>) => ({ ...v }))
+          : val
+      }
+
+      // Sync children: match by componentId
+      this.syncChildren(component.id, instance.id, instance.overrides)
+    }
+  }
+
+  private syncChildren(
+    compParentId: string,
+    instParentId: string,
+    overrides: Record<string, unknown>
+  ): void {
+    const compParent = this.nodes.get(compParentId)
+    const instParent = this.nodes.get(instParentId)
+    if (!compParent || !instParent) return
+
+    const instChildMap = new Map<string, SceneNode>()
+    for (const childId of instParent.childIds) {
+      const child = this.nodes.get(childId)
+      if (child?.componentId) instChildMap.set(child.componentId, child)
+    }
+
+    // Add new children from component that don't exist in instance
+    for (const compChildId of compParent.childIds) {
+      if (!instChildMap.has(compChildId)) {
+        const src = this.nodes.get(compChildId)
+        if (!src) continue
+        const { id: _, parentId: _p, childIds: _c, ...rest } = src
+        const clone = this.createNode(src.type, instParentId, {
+          ...rest,
+          componentId: compChildId
+        })
+        if (src.childIds.length > 0) {
+          this.cloneChildrenWithMapping(compChildId, clone.id)
+        }
+        instChildMap.set(compChildId, clone)
+      }
+    }
+
+    // Sync existing children
+    for (const compChildId of compParent.childIds) {
+      const compChild = this.nodes.get(compChildId)
+      const instChild = instChildMap.get(compChildId)
+      if (!compChild || !instChild) continue
+
+      for (const key of SceneGraph.INSTANCE_SYNC_PROPS) {
+        const overrideKey = `${instChild.id}:${key}`
+        if (overrideKey in overrides) continue
+        const val = compChild[key]
+        ;(instChild as Record<string, unknown>)[key] = Array.isArray(val)
+          ? val.map((v: Record<string, unknown>) => ({ ...v }))
+          : val
+      }
+
+      // Sync name and text unless overridden
+      for (const key of ['name', 'text', 'fontSize', 'fontWeight', 'fontFamily'] as const) {
+        const overrideKey = `${instChild.id}:${key}`
+        if (overrideKey in overrides) continue
+        ;(instChild as Record<string, unknown>)[key] = compChild[key]
+      }
+
+      if (compChild.childIds.length > 0) {
+        this.syncChildren(compChildId, instChild.id, overrides)
+      }
+    }
+
+    // Reorder instance children to match component order
+    const compChildOrder = compParent.childIds
+    instParent.childIds.sort((a, b) => {
+      const nodeA = this.nodes.get(a)
+      const nodeB = this.nodes.get(b)
+      const idxA = nodeA?.componentId ? compChildOrder.indexOf(nodeA.componentId) : -1
+      const idxB = nodeB?.componentId ? compChildOrder.indexOf(nodeB.componentId) : -1
+      return idxA - idxB
+    })
   }
 
   detachInstance(instanceId: string): void {
