@@ -23,6 +23,8 @@ declare module 'vue' {
     IconLucideCheck: typeof import('~icons/lucide/check')['default']
     IconLucideChevronDown: typeof import('~icons/lucide/chevron-down')['default']
     IconLucideChevronRight: typeof import('~icons/lucide/chevron-right')['default']
+    IconLucideEye: typeof import('~icons/lucide/eye')['default']
+    IconLucideEyeOff: typeof import('~icons/lucide/eye-off')['default']
     IconLucideSearch: typeof import('~icons/lucide/search')['default']
     LayersPanel: typeof import('./src/components/LayersPanel.vue')['default']
     LayoutSection: typeof import('./src/components/properties/LayoutSection.vue')['default']
