@@ -303,7 +303,9 @@ export function createEditorStore() {
     updateNode(nodeId, {
       vectorNetwork: normalizedNetwork,
       name: 'Vector',
-      fills: closed ? undefined : [],
+      fills: closed
+        ? [{ type: 'SOLID' as const, color: { r: 0.83, g: 0.83, b: 0.83, a: 1 }, opacity: 1, visible: true }]
+        : [],
       strokes: closed
         ? []
         : [{ color: { r: 0, g: 0, b: 0, a: 1 }, weight: 2, opacity: 1, visible: true, align: 'CENTER' as const }]
