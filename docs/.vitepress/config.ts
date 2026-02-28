@@ -33,6 +33,7 @@ export default defineConfig({
           { text: 'Features', link: '/guide/features' },
           { text: 'Architecture', link: '/guide/architecture' },
           { text: 'Tech Stack', link: '/guide/tech-stack' },
+          { text: 'Comparison', link: '/guide/comparison' },
         ],
       },
       {
