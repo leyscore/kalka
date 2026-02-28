@@ -14,14 +14,14 @@ export async function openFileDialog(store: EditorStore) {
     })
     if (!path) return
     const bytes = await readFile(path as string)
-    const file = new File([bytes], (path as string).split('/').pop()!)
+    const file = new File([bytes], (path as string).split('/').pop() ?? 'file.fig')
     await store.openFigFile(file, undefined, path as string)
     return
   }
 
-  if ('showOpenFilePicker' in window) {
+  if (window.showOpenFilePicker) {
     try {
-      const [handle] = await (window as any).showOpenFilePicker({
+      const [handle] = await window.showOpenFilePicker({
         types: [
           {
             description: 'Figma file',

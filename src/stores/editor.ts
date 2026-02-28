@@ -539,9 +539,9 @@ export function createEditorStore() {
       return
     }
 
-    if ('showSaveFilePicker' in window) {
+    if (window.showSaveFilePicker) {
       try {
-        const handle = await (window as any).showSaveFilePicker({
+        const handle = await window.showSaveFilePicker({
           suggestedName: 'Untitled.fig',
           types: [
             {
@@ -559,7 +559,7 @@ export function createEditorStore() {
       }
     }
 
-    const blob = new Blob([data], { type: 'application/octet-stream' })
+    const blob = new Blob([new Uint8Array(data)], { type: 'application/octet-stream' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -576,7 +576,7 @@ export function createEditorStore() {
     }
     if (fileHandle) {
       const writable = await fileHandle.createWritable()
-      await writable.write(data)
+      await writable.write(new Uint8Array(data))
       await writable.close()
     }
   }
@@ -681,7 +681,8 @@ export function createEditorStore() {
     runLayoutForNode(id)
 
     const finalState: Partial<SceneNode> = {}
-    const updated = graph.getNode(id)!
+    const updated = graph.getNode(id)
+    if (!updated) return
     for (const key of Object.keys(previous) as (keyof SceneNode)[]) {
       ;(finalState as Record<string, unknown>)[key] = updated[key]
     }
@@ -1124,7 +1125,8 @@ export function createEditorStore() {
     const childIds = [...node.childIds]
     const prevSelection = new Set(state.selectedIds)
     const origPositions = childIds.map((id) => {
-      const child = graph.getNode(id)!
+      const child = graph.getNode(id)
+      if (!child) return { id, x: 0, y: 0 }
       return { id, x: child.x, y: child.y }
     })
     const groupSnapshot = { ...node, childIds: [...node.childIds] }

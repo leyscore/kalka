@@ -190,7 +190,7 @@ export function createDemoShapes(store: EditorStore) {
       ])
     ]
   })
-  const cardCompId = makeComponent(store, [cardId])
+  makeComponent(store, [cardId])
 
   // Input component
   const inputId = store.createShape('FRAME', 344, 128, 240, 40, compSectionId)

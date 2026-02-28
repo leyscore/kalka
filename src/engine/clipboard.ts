@@ -268,7 +268,7 @@ export function importClipboardNodes(
       .filter((p) => p.type === 'SOLID' && p.color)
       .map((p) => ({
         type: 'SOLID' as const,
-        color: p.color!,
+        color: p.color ?? { r: 0, g: 0, b: 0, a: 1 },
         opacity: p.opacity ?? 1,
         visible: p.visible ?? true
       }))
@@ -276,7 +276,7 @@ export function importClipboardNodes(
     const strokes: Stroke[] = (nc.strokePaints ?? [])
       .filter((p) => p.type === 'SOLID' && p.color)
       .map((p) => ({
-        color: p.color!,
+        color: p.color ?? { r: 0, g: 0, b: 0, a: 1 },
         weight: nc.strokeWeight ?? 1,
         opacity: p.opacity ?? 1,
         visible: p.visible ?? true,

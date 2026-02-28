@@ -15,7 +15,7 @@ import Toolbar from './components/Toolbar.vue'
 const store = provideEditorStore()
 useKeyboard(store)
 useMenu(store)
-;(window as any).__OPEN_PENCIL_STORE__ = store
+;(window as Window & { __OPEN_PENCIL_STORE__?: typeof store }).__OPEN_PENCIL_STORE__ = store
 
 useEventListener(
   document,

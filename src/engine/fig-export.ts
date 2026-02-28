@@ -5,7 +5,7 @@ import { initCodec, getCompiledSchema, getSchemaBytes } from '../kiwi/codec'
 import { encodeVectorNetworkBlob } from './vector'
 
 import type { SkiaRenderer } from './renderer'
-import type { SceneGraph, SceneNode, Color } from './scene-graph'
+import type { Color, GradientTransform, SceneGraph, SceneNode } from './scene-graph'
 import type { CanvasKit } from 'canvaskit-wasm'
 
 const THUMBNAIL_1X1 = Uint8Array.from(
@@ -112,12 +112,16 @@ function sceneNodeToKiwi(
   const sin = Math.sin((node.rotation * Math.PI) / 180)
 
   const fillPaints = node.fills.map((f) => {
-    const paint: Record<string, unknown> = {
-      type: f.type,
+    const paint = {
+      type: f.type as string,
       color: f.color,
       opacity: f.opacity,
       visible: f.visible,
-      blendMode: f.blendMode ?? 'NORMAL'
+      blendMode: (f.blendMode ?? 'NORMAL') as string,
+      stops: undefined as { color: Color; position: number }[] | undefined,
+      transform: undefined as GradientTransform | undefined,
+      image: undefined as { hash: string } | undefined,
+      imageScaleMode: undefined as string | undefined
     }
     if (f.gradientStops) {
       paint.stops = f.gradientStops.map((s) => ({ color: s.color, position: s.position }))

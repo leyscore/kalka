@@ -1,5 +1,19 @@
 import type { CanvasKit, TypefaceFontProvider } from 'canvaskit-wasm'
 
+declare global {
+  interface Window {
+    queryLocalFonts?(): Promise<
+      {
+        family: string
+        fullName: string
+        style: string
+        postscriptName: string
+        blob(): Promise<Blob>
+      }[]
+    >
+  }
+}
+
 export interface FontInfo {
   family: string
   fullName: string
@@ -19,9 +33,9 @@ export function getFontProvider(): TypefaceFontProvider | null {
 }
 
 export async function queryFonts(): Promise<FontInfo[]> {
-  if (!('queryLocalFonts' in window)) return []
+  if (!window.queryLocalFonts) return []
   try {
-    const fonts = await (window as any).queryLocalFonts()
+    const fonts = await window.queryLocalFonts()
     const seen = new Set<string>()
     const result: FontInfo[] = []
     for (const f of fonts) {
@@ -53,15 +67,16 @@ const BUNDLED_FONTS: Record<string, string> = {
 export async function loadFont(family: string, style = 'Regular'): Promise<ArrayBuffer | null> {
   const cacheKey = `${family}|${style}`
   if (loadedFamilies.has(cacheKey)) {
-    const cached = loadedFamilies.get(cacheKey)!
+    const cached = loadedFamilies.get(cacheKey)
+    if (!cached) return null
     registerFontInCanvasKit(family, cached)
     return cached
   }
 
   // Try local font access API first
-  if ('queryLocalFonts' in window) {
+  if (window.queryLocalFonts) {
     try {
-      const fonts = await (window as any).queryLocalFonts()
+      const fonts = await window.queryLocalFonts()
       const match =
         fonts.find((f: FontInfo) => f.family === family && f.style === style) ??
         fonts.find((f: FontInfo) => f.family === family)

@@ -256,8 +256,8 @@ function buildChains(segments: VectorSegment[], _vertexCount: number): number[][
     const s = segments[i]
     if (!adj.has(s.start)) adj.set(s.start, [])
     if (!adj.has(s.end)) adj.set(s.end, [])
-    adj.get(s.start)!.push(i)
-    adj.get(s.end)!.push(i)
+    adj.get(s.start)?.push(i)
+    adj.get(s.end)?.push(i)
   }
 
   const visited = new Set<number>()

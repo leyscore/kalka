@@ -10,7 +10,6 @@ import type {
   Color,
   BlendMode,
   ImageScaleMode,
-  GradientStop,
   GradientTransform,
   StrokeCap,
   StrokeJoin,
@@ -48,7 +47,14 @@ function imageHashToString(hash: Record<string, number>): string {
   return bytes.map((b) => b.toString(16).padStart(2, '0')).join('')
 }
 
-function convertGradientTransform(t?: Record<string, number>): GradientTransform | undefined {
+function convertGradientTransform(t?: {
+  m00: number
+  m01: number
+  m02: number
+  m10: number
+  m11: number
+  m12: number
+}): GradientTransform | undefined {
   if (!t) return undefined
   return { m00: t.m00, m01: t.m01, m02: t.m02, m10: t.m10, m11: t.m11, m12: t.m12 }
 }
@@ -65,25 +71,28 @@ function convertFills(paints?: Paint[]): Fill[] {
     }
 
     if (p.type?.startsWith('GRADIENT') && p.stops) {
-      base.gradientStops = p.stops.map(
-        (s: { color: Record<string, number>; position: number }) => ({
-          color: convertColor(s.color as Color),
-          position: s.position
-        })
-      )
-      base.gradientTransform = convertGradientTransform(p.transform as Record<string, number>)
+      base.gradientStops = p.stops.map((s) => ({
+        color: convertColor(s.color),
+        position: s.position
+      }))
+      if (p.transform) {
+        base.gradientTransform = convertGradientTransform(p.transform)
+      }
     }
 
     if (p.type === 'IMAGE') {
-      const pAny = p as Record<string, unknown>
-      if (pAny.image && typeof pAny.image === 'object') {
-        const img = pAny.image as Record<string, unknown>
-        if (img.hash && typeof img.hash === 'object') {
-          base.imageHash = imageHashToString(img.hash as Record<string, number>)
+      if (p.image && typeof p.image === 'object') {
+        const img = p.image as { hash: string | Record<string, number> }
+        if (typeof img.hash === 'object') {
+          base.imageHash = imageHashToString(img.hash)
+        } else if (typeof img.hash === 'string') {
+          base.imageHash = img.hash
         }
       }
-      base.imageScaleMode = (pAny.imageScaleMode as ImageScaleMode) ?? 'FILL'
-      base.imageTransform = convertGradientTransform(p.transform as Record<string, number>)
+      base.imageScaleMode = (p.imageScaleMode as ImageScaleMode) ?? 'FILL'
+      if (p.transform) {
+        base.imageTransform = convertGradientTransform(p.transform)
+      }
     }
 
     return base
@@ -124,7 +133,7 @@ function convertEffects(effects?: KiwiEffect[]): Effect[] {
     radius: e.radius ?? 0,
     spread: e.spread ?? 0,
     visible: e.visible ?? true,
-    blendMode: ((e as Record<string, unknown>).blendMode as BlendMode) ?? 'NORMAL'
+    blendMode: (e.blendMode as BlendMode) ?? 'NORMAL'
   }))
 }
 

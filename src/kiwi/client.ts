@@ -108,7 +108,8 @@ export class FigmaMultiplayerClient {
           // Skip non-Kiwi message data (e.g., schema definitions)
           if (!isKiwiMessage(decompressed)) return
 
-          const msgType = getKiwiMessageType(decompressed)!
+          const msgType = getKiwiMessageType(decompressed)
+          if (!msgType) return
 
           // JOIN_END: sync complete
           if (msgType === MESSAGE_TYPES.JOIN_END) {
@@ -222,7 +223,7 @@ export class FigmaMultiplayerClient {
         } catch {}
       }
 
-      this.ws!.addEventListener('message', handler)
+      this.ws?.addEventListener('message', handler)
       this.sendNodeChanges(nodeChanges)
     })
   }

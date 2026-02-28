@@ -150,7 +150,8 @@ function updateDropTarget(ev: PointerEvent) {
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i]
-    const rowId = row.dataset.nodeId!
+    const rowId = row.dataset.nodeId
+    if (!rowId) continue
     if (rowId === dragNodeId.value) continue
 
     const rect = row.getBoundingClientRect()

@@ -56,16 +56,9 @@ import {
 } from '../constants'
 import { vectorNetworkToPath } from './vector'
 
-import type {
-  SceneNode,
-  SceneGraph,
-  Fill,
-  GradientStop,
-  GradientTransform,
-  ArcData
-} from './scene-graph'
+import type { SceneNode, SceneGraph, Fill } from './scene-graph'
 import type { SnapGuide } from './snap'
-import type { Image as CKImage } from 'canvaskit-wasm'
+import type { EmbindEnumEntity, Image as CKImage, Path } from 'canvaskit-wasm'
 import type {
   CanvasKit,
   Surface,
@@ -383,7 +376,7 @@ export class SkiaRenderer {
     // Section titles + component labels (screen coordinates, zoom-independent)
     canvas.save()
     canvas.scale(this.dpr, this.dpr)
-    this.drawSectionTitles(canvas, graph, selectedIds)
+    this.drawSectionTitles(canvas, graph)
     this.drawComponentLabels(canvas, graph)
     canvas.restore()
 
@@ -973,7 +966,7 @@ export class SkiaRenderer {
     }
   }
 
-  private drawSectionTitles(canvas: Canvas, graph: SceneGraph, selectedIds: Set<string>): void {
+  private drawSectionTitles(canvas: Canvas, graph: SceneGraph): void {
     if (!this.sectionTitleFont) return
 
     const pageNode = graph.getNode(this.pageId ?? graph.rootId)
@@ -1116,12 +1109,6 @@ export class SkiaRenderer {
       const screenX = absX * this.zoom + this.panX
       const screenY = absY * this.zoom + this.panY
 
-      // Measure text
-      const glyphIds = font.getGlyphIDs(node.name)
-      const widths = font.getGlyphWidths(glyphIds)
-      let textWidth = 0
-      for (const w of widths) textWidth += w
-
       // Position: inside top-left for variants in a set, above top-left otherwise
       const labelX = screenX
       let labelY: number
@@ -1239,20 +1226,20 @@ export class SkiaRenderer {
       this.strokePaint.setAlphaf(stroke.opacity)
 
       if (stroke.cap) {
-        const capMap: Record<string, number> = {
-          NONE: 0,
-          ROUND: 1,
-          SQUARE: 2
+        const capMap: Record<string, EmbindEnumEntity> = {
+          NONE: this.ck.StrokeCap.Butt,
+          ROUND: this.ck.StrokeCap.Round,
+          SQUARE: this.ck.StrokeCap.Square
         }
-        this.strokePaint.setStrokeCap(capMap[stroke.cap] ?? 0)
+        this.strokePaint.setStrokeCap(capMap[stroke.cap] ?? this.ck.StrokeCap.Butt)
       }
       if (stroke.join) {
-        const joinMap: Record<string, number> = {
-          MITER: 0,
-          ROUND: 1,
-          BEVEL: 2
+        const joinMap: Record<string, EmbindEnumEntity> = {
+          MITER: this.ck.StrokeJoin.Miter,
+          ROUND: this.ck.StrokeJoin.Round,
+          BEVEL: this.ck.StrokeJoin.Bevel
         }
-        this.strokePaint.setStrokeJoin(joinMap[stroke.join] ?? 0)
+        this.strokePaint.setStrokeJoin(joinMap[stroke.join] ?? this.ck.StrokeJoin.Miter)
       }
       if (stroke.dashPattern && stroke.dashPattern.length > 0) {
         this.strokePaint.setPathEffect(this.ck.PathEffect.MakeDash(stroke.dashPattern, 0))
@@ -1397,7 +1384,8 @@ export class SkiaRenderer {
   }
 
   private drawArc(canvas: Canvas, node: SceneNode, paint: Paint): void {
-    const arc = node.arcData!
+    const arc = node.arcData
+    if (!arc) return
     const cx = node.width / 2
     const cy = node.height / 2
     const rx = node.width / 2
@@ -1598,8 +1586,9 @@ export class SkiaRenderer {
   }
 
   private applyGradientFill(fill: Fill, node: SceneNode): void {
-    const stops = fill.gradientStops!
-    const t = fill.gradientTransform!
+    const stops = fill.gradientStops
+    const t = fill.gradientTransform
+    if (!stops || !t) return
     const colors = stops.map((s) => this.ck.Color4f(s.color.r, s.color.g, s.color.b, s.color.a))
     const positions = stops.map((s) => s.position)
 
@@ -1664,12 +1653,14 @@ export class SkiaRenderer {
   }
 
   private applyImageFill(fill: Fill, node: SceneNode, graph: SceneGraph): void {
-    let img = this.imageCache.get(fill.imageHash!)
+    const hash = fill.imageHash
+    if (!hash) return
+    let img = this.imageCache.get(hash)
     if (!img) {
-      const data = graph.images.get(fill.imageHash!)
+      const data = graph.images.get(hash)
       if (!data) return
       img = this.ck.MakeImageFromEncoded(data) ?? undefined
-      if (img) this.imageCache.set(fill.imageHash!, img)
+      if (img) this.imageCache.set(hash, img)
       else return
     }
 
@@ -1685,7 +1676,6 @@ export class SkiaRenderer {
       sx = (imgW - sw) / 2
       sy = (imgH - sh) / 2
     } else if (scaleMode === 'FIT') {
-      const scale = Math.min(node.width / imgW, node.height / imgH)
       sw = imgW
       sh = imgH
       sx = 0

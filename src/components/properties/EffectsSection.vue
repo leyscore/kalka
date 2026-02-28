@@ -39,9 +39,11 @@ function defaultEffect(): Effect {
 }
 
 function updateEffect(index: number, changes: Partial<Effect>) {
-  const effects = [...node.value!.effects]
+  const n = node.value
+  if (!n) return
+  const effects = [...n.effects]
   effects[index] = { ...effects[index], ...changes }
-  store.updateNodeWithUndo(node.value!.id, { effects }, 'Change effect')
+  store.updateNodeWithUndo(n.id, { effects }, 'Change effect')
 }
 
 function updateColor(index: number, color: Color) {
@@ -49,27 +51,35 @@ function updateColor(index: number, color: Color) {
 }
 
 function updateHex(index: number, hex: string) {
+  const n = node.value
+  if (!n) return
   const color = parseColor(hex.startsWith('#') ? hex : `#${hex}`)
   if (!color) return
-  const existing = node.value!.effects[index]
+  const existing = n.effects[index]
   updateColor(index, { ...color, a: existing.color.a })
 }
 
 function updateColorOpacity(index: number, opacity: number) {
-  const existing = node.value!.effects[index]
+  const n = node.value
+  if (!n) return
+  const existing = n.effects[index]
   updateColor(index, { ...existing.color, a: Math.max(0, Math.min(1, opacity / 100)) })
 }
 
 function toggleVisibility(index: number) {
-  updateEffect(index, { visible: !node.value!.effects[index].visible })
+  const n = node.value
+  if (!n) return
+  updateEffect(index, { visible: !n.effects[index].visible })
 }
 
 function updateType(index: number, type: EffectType) {
+  const n = node.value
+  if (!n) return
   const changes: Partial<Effect> = { type }
   if (!isShadow(type)) {
     changes.offset = { x: 0, y: 0 }
     changes.spread = 0
-  } else if (!isShadow(node.value!.effects[index].type)) {
+  } else if (!isShadow(n.effects[index].type)) {
     changes.offset = { x: 0, y: 4 }
     changes.spread = 0
   }
@@ -77,14 +87,18 @@ function updateType(index: number, type: EffectType) {
 }
 
 function add() {
-  const effects = [...node.value!.effects, defaultEffect()]
-  store.updateNodeWithUndo(node.value!.id, { effects }, 'Add effect')
+  const n = node.value
+  if (!n) return
+  const effects = [...n.effects, defaultEffect()]
+  store.updateNodeWithUndo(n.id, { effects }, 'Add effect')
 }
 
 function remove(index: number) {
+  const n = node.value
+  if (!n) return
   store.updateNodeWithUndo(
-    node.value!.id,
-    { effects: node.value!.effects.filter((_, i) => i !== index) },
+    n.id,
+    { effects: n.effects.filter((_, i) => i !== index) },
     'Remove effect'
   )
   if (expandedIndex.value === index) expandedIndex.value = null

@@ -635,6 +635,15 @@ export class SceneGraph {
     'clipsContent'
   ]
 
+  private static copyProp<K extends keyof SceneNode>(
+    target: Partial<SceneNode> | SceneNode,
+    source: SceneNode,
+    key: K
+  ): void {
+    const val = source[key]
+    target[key] = (Array.isArray(val) ? structuredClone(val) : val) as SceneNode[K]
+  }
+
   createInstance(
     componentId: string,
     parentId: string,
@@ -645,10 +654,7 @@ export class SceneGraph {
 
     const props: Partial<SceneNode> = { name: component.name, componentId }
     for (const key of SceneGraph.INSTANCE_SYNC_PROPS) {
-      const val = component[key]
-      ;(props as Record<string, unknown>)[key] = Array.isArray(val)
-        ? val.map((v: Record<string, unknown>) => ({ ...v }))
-        : val
+      SceneGraph.copyProp(props, component, key)
     }
 
     const instance = this.createNode('INSTANCE', parentId, { ...props, ...overrides })
@@ -685,12 +691,8 @@ export class SceneGraph {
     for (const instance of this.getInstances(componentId)) {
       // Sync instance-level props (unless overridden)
       for (const key of SceneGraph.INSTANCE_SYNC_PROPS) {
-        const overrideKey = `${key}`
-        if (overrideKey in instance.overrides) continue
-        const val = component[key]
-        ;(instance as Record<string, unknown>)[key] = Array.isArray(val)
-          ? val.map((v: Record<string, unknown>) => ({ ...v }))
-          : val
+        if (key in instance.overrides) continue
+        SceneGraph.copyProp(instance, component, key)
       }
 
       // Sync children: match by componentId
@@ -739,17 +741,13 @@ export class SceneGraph {
       for (const key of SceneGraph.INSTANCE_SYNC_PROPS) {
         const overrideKey = `${instChild.id}:${key}`
         if (overrideKey in overrides) continue
-        const val = compChild[key]
-        ;(instChild as Record<string, unknown>)[key] = Array.isArray(val)
-          ? val.map((v: Record<string, unknown>) => ({ ...v }))
-          : val
+        SceneGraph.copyProp(instChild, compChild, key)
       }
 
-      // Sync name and text unless overridden
       for (const key of ['name', 'text', 'fontSize', 'fontWeight', 'fontFamily'] as const) {
         const overrideKey = `${instChild.id}:${key}`
         if (overrideKey in overrides) continue
-        ;(instChild as Record<string, unknown>)[key] = compChild[key]
+        SceneGraph.copyProp(instChild, compChild, key)
       }
 
       if (compChild.childIds.length > 0) {

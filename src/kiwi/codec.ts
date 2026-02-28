@@ -18,6 +18,8 @@ import type { Schema } from './kiwi-schema'
 interface CompiledSchema {
   encodeMessage(message: unknown): Uint8Array
   decodeMessage(data: Uint8Array): unknown
+  encodePaint(paint: unknown): Uint8Array
+  encodeNodeChange(nodeChange: unknown): Uint8Array
 }
 
 let compiledSchema: CompiledSchema | null = null
@@ -133,7 +135,7 @@ export function encodeMessage(message: FigmaMessage): Uint8Array {
   const ncHex = Buffer.from(ncBytes).toString('hex')
   const finalHex = beforeArray + ncHex + afterArray
 
-  const finalBytes = new Uint8Array(finalHex.match(/.{2}/g)!.map((b) => parseInt(b, 16)))
+  const finalBytes = new Uint8Array(finalHex.match(/.{2}/g)?.map((b) => parseInt(b, 16)) ?? [])
   return compress(finalBytes)
 }
 
@@ -196,7 +198,11 @@ export interface Paint {
   opacity?: number
   visible?: boolean
   blendMode?: string
-  colorVariableBinding?: VariableBinding // Binds color to a Figma variable
+  stops?: { color: Color; position: number }[]
+  transform?: { m00: number; m01: number; m02: number; m10: number; m11: number; m12: number }
+  image?: { hash: string }
+  imageScaleMode?: string
+  colorVariableBinding?: VariableBinding
 }
 
 export interface Effect {
@@ -206,6 +212,7 @@ export interface Effect {
   radius?: number
   visible?: boolean
   spread?: number
+  blendMode?: string
 }
 
 export interface NodeChange {
@@ -225,6 +232,9 @@ export interface NodeChange {
   strokePaints?: Paint[]
   strokeWeight?: number
   strokeAlign?: string
+  strokeCap?: string
+  strokeJoin?: string
+  dashPattern?: number[]
   effects?: Effect[]
   // Layout
   stackMode?: 'NONE' | 'HORIZONTAL' | 'VERTICAL'
@@ -403,11 +413,9 @@ export function encodePaintWithVariableBinding(
     throw new Error('Codec not initialized. Call initCodec() first.')
   }
 
-  // Encode base paint without variable binding
-  const basePaint = { ...paint }
-  delete (basePaint as any).colorVariableBinding
+  const { colorVariableBinding: _, ...basePaint } = paint
 
-  const baseBytes = (compiledSchema as any).encodePaint(basePaint)
+  const baseBytes = compiledSchema.encodePaint(basePaint)
   const baseArray = Array.from(baseBytes) as number[]
 
   // Remove trailing 00
@@ -439,8 +447,8 @@ export function parseVariableId(variableId: string): { sessionID: number; localI
   const match = variableId.match(/VariableID:(\d+):(\d+)/)
   if (!match) return null
   return {
-    sessionID: parseInt(match[1]!, 10),
-    localID: parseInt(match[2]!, 10)
+    sessionID: parseInt(match[1] ?? '0', 10),
+    localID: parseInt(match[2] ?? '0', 10)
   }
 }
 
@@ -457,28 +465,24 @@ export function encodeNodeChangeWithVariables(nodeChange: NodeChange): Uint8Arra
   const hasStrokeBinding = nodeChange.strokePaints?.some((p) => p.colorVariableBinding)
 
   if (!hasFillBinding && !hasStrokeBinding) {
-    return (compiledSchema as any).encodeNodeChange(nodeChange)
+    return compiledSchema.encodeNodeChange(nodeChange)
   }
 
   // Create a copy without variable bindings for base encoding
   const cleanNodeChange = { ...nodeChange }
   if (cleanNodeChange.fillPaints) {
-    cleanNodeChange.fillPaints = cleanNodeChange.fillPaints.map((p) => {
-      const clean = { ...p }
-      delete (clean as any).colorVariableBinding
-      return clean
-    })
+    cleanNodeChange.fillPaints = cleanNodeChange.fillPaints.map(
+      ({ colorVariableBinding: _, ...rest }) => rest
+    )
   }
   if (cleanNodeChange.strokePaints) {
-    cleanNodeChange.strokePaints = cleanNodeChange.strokePaints.map((p) => {
-      const clean = { ...p }
-      delete (clean as any).colorVariableBinding
-      return clean
-    })
+    cleanNodeChange.strokePaints = cleanNodeChange.strokePaints.map(
+      ({ colorVariableBinding: _, ...rest }) => rest
+    )
   }
 
   // Encode clean version
-  const baseBytes = (compiledSchema as any).encodeNodeChange(cleanNodeChange)
+  const baseBytes = compiledSchema.encodeNodeChange(cleanNodeChange)
   let hex = Buffer.from(baseBytes).toString('hex')
 
   // Inject fill variable binding (field 38 = 0x26)
@@ -493,7 +497,7 @@ export function encodeNodeChangeWithVariables(nodeChange: NodeChange): Uint8Arra
     hex = injectVariableBinding(hex, '2701', strokeBinding)
   }
 
-  return new Uint8Array(hex.match(/.{2}/g)!.map((b) => parseInt(b, 16)))
+  return new Uint8Array(hex.match(/.{2}/g)?.map((b) => parseInt(b, 16)) ?? [])
 }
 
 /**
