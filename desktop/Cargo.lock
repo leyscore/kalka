@@ -2356,7 +2356,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "open-pencil-app"
+name = "open_pencil"
 version = "0.1.0"
 dependencies = [
  "serde",
