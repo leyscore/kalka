@@ -798,7 +798,7 @@ export class SkiaRenderer {
     }
 
     // Preview line from last vertex to cursor
-    if (vertices.length > 0 && cursorX !== undefined && cursorY !== undefined) {
+    if (vertices.length > 0 && cursorX != null && cursorY != null) {
       const last = toScreen(vertices[vertices.length - 1].x, vertices[vertices.length - 1].y)
       const cursor = toScreen(cursorX, cursorY)
       path.moveTo(last.x, last.y)

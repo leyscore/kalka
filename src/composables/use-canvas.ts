@@ -60,8 +60,8 @@ export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, store: Edito
       layoutInsertIndicator: store.state.layoutInsertIndicator,
       penState: store.state.penState ? {
         ...store.state.penState,
-        cursorX: store.state.penCursorX,
-        cursorY: store.state.penCursorY
+        cursorX: store.state.penCursorX ?? undefined,
+        cursorY: store.state.penCursorY ?? undefined
       } : null
     })
   }

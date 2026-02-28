@@ -99,8 +99,8 @@ export function createEditorStore() {
       dragTangent: { x: number; y: number } | null
       closingToFirst: boolean
     } | null,
-    penCursorX: 0,
-    penCursorY: 0,
+    penCursorX: null as number | null,
+    penCursorY: null as number | null,
     panX: 0,
     panY: 0,
     zoom: 1,
@@ -271,6 +271,8 @@ export function createEditorStore() {
     const ps = state.penState
     if (!ps || ps.vertices.length < 2) {
       state.penState = null
+      state.penCursorX = null
+      state.penCursorY = null
       return
     }
 
@@ -313,12 +315,16 @@ export function createEditorStore() {
     select([nodeId])
 
     state.penState = null
+    state.penCursorX = null
+    state.penCursorY = null
     state.activeTool = 'SELECT'
     requestRender()
   }
 
   function penCancel() {
     state.penState = null
+    state.penCursorX = null
+    state.penCursorY = null
     state.activeTool = 'SELECT'
     requestRender()
   }
