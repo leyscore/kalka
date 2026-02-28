@@ -35,6 +35,7 @@ declare module 'vue' {
     IconLucideFlipHorizontal: typeof import('~icons/lucide/flip-horizontal')['default']
     IconLucideFlipVertical: typeof import('~icons/lucide/flip-vertical')['default']
     IconLucideRadius: typeof import('~icons/lucide/radius')['default']
+    IconLucideRotateCcw: typeof import('~icons/lucide/rotate-ccw')['default']
     IconLucideRotateCw: typeof import('~icons/lucide/rotate-cw')['default']
     IconLucideSearch: typeof import('~icons/lucide/search')['default']
     LayersPanel: typeof import('./src/components/LayersPanel.vue')['default']

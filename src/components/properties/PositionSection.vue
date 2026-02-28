@@ -66,6 +66,12 @@ function flipVertical() {
   store.updateNodeWithUndo(n.id, { rotation: (180 - n.rotation) % 360 }, 'Flip vertical')
   store.requestRender()
 }
+
+function rotate90() {
+  const n = node.value
+  store.updateNodeWithUndo(n.id, { rotation: (n.rotation + 90) % 360 }, 'Rotate 90°')
+  store.requestRender()
+}
 </script>
 
 <template>
@@ -132,7 +138,7 @@ function flipVertical() {
     <div class="mt-1.5 flex items-center gap-1.5">
       <ScrubInput class="flex-1" suffix="°" :model-value="Math.round(node.rotation)" :min="-360" :max="360" @update:model-value="updateProp('rotation', $event)" @commit="(v: number, p: number) => commitProp('rotation', v, p)">
         <template #icon>
-          <icon-lucide-rotate-cw class="size-3" />
+          <icon-lucide-rotate-ccw class="size-3" />
         </template>
       </ScrubInput>
       <button
@@ -148,6 +154,13 @@ function flipVertical() {
         @click="flipVertical"
       >
         <icon-lucide-flip-vertical class="size-3.5" />
+      </button>
+      <button
+        class="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded border border-border bg-input text-muted hover:bg-hover hover:text-surface"
+        title="Rotate 90°"
+        @click="rotate90"
+      >
+        <icon-lucide-rotate-cw class="size-3.5" />
       </button>
     </div>
   </div>
