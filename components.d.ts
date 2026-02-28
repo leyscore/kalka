@@ -13,6 +13,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     AppearanceSection: typeof import('./src/components/properties/AppearanceSection.vue')['default']
     CanvasContextMenu: typeof import('./src/components/CanvasContextMenu.vue')['default']
+    ColorInput: typeof import('./src/components/ColorInput.vue')['default']
     ColorPicker: typeof import('./src/components/ColorPicker.vue')['default']
     EditorCanvas: typeof import('./src/components/EditorCanvas.vue')['default']
     EffectsSection: typeof import('./src/components/properties/EffectsSection.vue')['default']

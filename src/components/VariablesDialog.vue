@@ -18,6 +18,7 @@ import {
 } from 'reka-ui'
 import { useVueTable, getCoreRowModel, FlexRender, type ColumnDef } from '@tanstack/vue-table'
 
+import ColorInput from './ColorInput.vue'
 import { colorToHexRaw, parseColor } from '@/engine/color'
 import { useEditorStore } from '@/stores/editor'
 import type { Variable, Color } from '@/engine/scene-graph'
@@ -82,23 +83,6 @@ function formatModeValue(variable: Variable, modeId: string): string {
   return String(value)
 }
 
-function getModeSwatchColor(variable: Variable, modeId: string): string | null {
-  if (variable.type !== 'COLOR') return null
-  const value = variable.valuesByMode[modeId]
-  if (!value) return null
-
-  if (typeof value === 'object' && 'aliasId' in value) {
-    const resolved = store.graph.resolveColorVariable(variable.id)
-    if (!resolved) return null
-    return `rgb(${Math.round(resolved.r * 255)}, ${Math.round(resolved.g * 255)}, ${Math.round(resolved.b * 255)})`
-  }
-  if (typeof value === 'object' && 'r' in value) {
-    const c = value as Color
-    return `rgb(${Math.round(c.r * 255)}, ${Math.round(c.g * 255)}, ${Math.round(c.b * 255)})`
-  }
-  return null
-}
-
 function shortName(variable: Variable): string {
   const parts = variable.name.split('/')
   return parts[parts.length - 1] ?? variable.name
@@ -109,6 +93,11 @@ function commitNameEdit(variable: Variable, newName: string) {
     store.graph.variables.set(variable.id, { ...variable, name: newName })
     store.requestRender()
   }
+}
+
+function updateColorValue(variable: Variable, modeId: string, color: Color) {
+  variable.valuesByMode[modeId] = color
+  store.requestRender()
 }
 
 function commitValueEdit(variable: Variable, modeId: string, newValue: string) {
@@ -217,40 +206,33 @@ const columns = computed<ColumnDef<Variable>[]>(() => {
     maxSize: 500,
     cell: ({ row }) => {
       const v = row.original
-      const swatch = getModeSwatchColor(v, mode.modeId)
-      const children = []
+      const value = v.valuesByMode[mode.modeId]
 
-      if (swatch) {
-        children.push(
-          h('div', {
-            class: 'size-5 shrink-0 rounded border border-border',
-            style: { background: swatch }
-          })
-        )
+      if (v.type === 'COLOR' && value && typeof value === 'object' && 'r' in value) {
+        return h(ColorInput, {
+          color: value as Color,
+          onUpdate: (c: Color) => updateColorValue(v, mode.modeId, c)
+        })
       }
 
-      children.push(
-        h(
-          EditableRoot,
-          {
-            defaultValue: formatModeValue(v, mode.modeId),
-            class: 'min-w-0 flex-1',
-            onSubmit: (val: string) => commitValueEdit(v, mode.modeId, val)
-          },
-          () =>
-            h(EditableArea, { class: 'flex' }, () => [
-              h(EditablePreview, {
-                class: 'min-w-0 flex-1 cursor-text truncate font-mono text-xs text-muted'
-              }),
-              h(EditableInput, {
-                class:
-                  'min-w-0 flex-1 rounded border border-border bg-surface/10 px-1 py-0.5 font-mono text-xs text-surface outline-none'
-              })
-            ])
-        )
+      return h(
+        EditableRoot,
+        {
+          defaultValue: formatModeValue(v, mode.modeId),
+          class: 'min-w-0 flex-1',
+          onSubmit: (val: string) => commitValueEdit(v, mode.modeId, val)
+        },
+        () =>
+          h(EditableArea, { class: 'flex' }, () => [
+            h(EditablePreview, {
+              class: 'min-w-0 flex-1 cursor-text truncate font-mono text-xs text-muted'
+            }),
+            h(EditableInput, {
+              class:
+                'min-w-0 flex-1 rounded border border-border bg-surface/10 px-1 py-0.5 font-mono text-xs text-surface outline-none'
+            })
+          ])
       )
-
-      return h('div', { class: 'flex items-center gap-2' }, children)
     }
   }))
 
