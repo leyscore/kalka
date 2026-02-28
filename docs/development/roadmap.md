@@ -29,7 +29,7 @@ Properties panel, layers panel, toolbar, Yoga layout integration, text editing.
 - System font loading via Local Font Access API
 - Canvas rulers with selection highlight
 
-### Phase 3: File Format + Import/Export ✅
+### Phase 3: File I/O + Visual Features ✅
 
 .fig import/export, Kiwi codec, clipboard, sections, pages, advanced rendering.
 
@@ -92,7 +92,7 @@ Prototyping, comments, desktop distribution, documentation, public launch.
 |-------|-------------------|--------|
 | Phase 1: Core Engine | 3 months | ✅ Complete |
 | Phase 2: Editor UI + Layout | 3 months | ✅ Complete |
-| Phase 3: File Format + Import/Export | 2 months | ✅ Complete |
+| Phase 3: File I/O + Visual Features | 2 months | ✅ Complete |
 | Phase 4: Components + Variables | 2 months | 🔲 Planned |
 | Phase 5: AI Integration | 2 months | 🔲 Planned |
 | Phase 6: Polish + Distribution | 2 months | 🔲 Planned |

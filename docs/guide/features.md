@@ -43,7 +43,7 @@ Rulers at the top and left edges show coordinate scales. When you select a node,
 
 ## Color Picker & Fill Types
 
-HSV color selection with hue slider, alpha slider, hex input, and opacity control. The fill type picker supports solid colors, gradients (linear, radial, angular, diamond) with editable gradient stops, and image fills. Gradient transforms position the gradient within the shape. Connected to fill and stroke sections in the properties panel.
+HSV color selection with hue slider, alpha slider, hex input, and opacity control. The fill type picker provides tabs for Solid, Gradient (Linear, Radial, Angular, Diamond), and Image. Switching to a gradient type shows an editable gradient stop bar. Gradient transforms position the gradient within the shape. Connected to fill and stroke sections in the properties panel.
 
 ## Layers Panel
 
@@ -77,9 +77,9 @@ Documents support multiple pages like Figma. The pages panel lets you add, delet
 
 Nodes highlight on hover with a shape-aware outline that follows the actual geometry — ellipses get elliptical outlines, rounded rectangles get rounded outlines, vectors get path outlines. This provides visual feedback before clicking to select.
 
-## Advanced Rendering
+## Advanced Rendering (Tier 1)
 
-The CanvasKit renderer supports full tier 1 visual features:
+The CanvasKit renderer supports full Tier 1 visual features for Figma rendering parity:
 
 - **Gradient fills** — linear, radial, angular, diamond with gradient stops and transforms
 - **Image fills** — decoded from blob data with scale modes (fill, fit, crop, tile)

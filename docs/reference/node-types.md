@@ -4,7 +4,7 @@ The scene graph supports 28 node types from Figma's Kiwi schema. Each node is id
 
 ## Type Table
 
-All 28 Figma schema types. Types marked ✅ are in the engine's `NodeType` union and actively handled (16 mapped from Kiwi + `COMPONENT_SET` as a synthetic type = 17 total).
+28 Figma schema types + 1 synthetic engine type. Types marked ✅ are in the engine's `NodeType` union (17 total).
 
 | Type | ID | Description | Engine |
 |------|----|-------------|--------|
@@ -36,6 +36,7 @@ All 28 Figma schema types. Types marked ✅ are in the engine's `NodeType` union
 | SECTION_OVERLAY | 26 | Section overlay | |
 | WASHI_TAPE | 27 | FigJam washi tape | |
 | VARIABLE | 28 | Variable definition node | |
+| COMPONENT_SET | — | Variant group container (synthetic, mapped from SYMBOL) | ✅ |
 
 ### Engine NodeType Union (17 types)
 

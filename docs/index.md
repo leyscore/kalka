@@ -6,6 +6,9 @@ hero:
   name: OpenPencil
   text: AI-Native Design Editor
   tagline: Open-source Figma alternative. Self-host it, extend it, talk to it.
+  image:
+    src: /favicon.svg
+    alt: OpenPencil
   actions:
     - theme: brand
       text: Get Started

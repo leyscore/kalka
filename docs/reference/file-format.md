@@ -58,6 +58,8 @@ Figma's schema uses non-contiguous field IDs (e.g., 1, 2, 5, 10 with gaps). The 
 | .png | Planned | Planned |
 | .pdf | — | Planned |
 
+See [Roadmap](/development/roadmap) for planned format support timeline.
+
 ## Clipboard Format
 
 Copy/paste uses the same fig-kiwi binary encoding:
