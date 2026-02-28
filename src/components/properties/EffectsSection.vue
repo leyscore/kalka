@@ -101,7 +101,7 @@ function toggleExpand(index: number) {
     <div class="flex items-center justify-between">
       <label class="mb-1 block text-[11px] text-muted">Effects</label>
       <button
-        class="cursor-pointer rounded border-none bg-transparent px-1 text-base leading-none text-muted hover:bg-hover hover:text-surface"
+        class="flex size-5 cursor-pointer items-center justify-center rounded border-none bg-transparent text-sm leading-none text-muted hover:bg-hover hover:text-surface"
         @click="add"
       >+</button>
     </div>
@@ -139,7 +139,7 @@ function toggleExpand(index: number) {
           <icon-lucide-eye-off v-else class="size-3.5" />
         </button>
         <button
-          class="cursor-pointer border-none bg-transparent p-0 text-sm leading-none text-muted hover:text-surface"
+          class="flex size-5 cursor-pointer items-center justify-center rounded border-none bg-transparent text-sm leading-none text-muted hover:bg-hover hover:text-surface"
           @click="remove(i)"
         >−</button>
       </div>
