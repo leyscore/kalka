@@ -83,6 +83,8 @@ export class SkiaRenderer {
   pageColor = CANVAS_BG_COLOR
   pageId: string | null = null
 
+  private worldViewport = { x: 0, y: 0, w: 0, h: 0 }
+
   private selColor(alpha = 1) {
     return this.ck.Color4f(SELECTION_COLOR.r, SELECTION_COLOR.g, SELECTION_COLOR.b, alpha)
   }
@@ -265,17 +267,29 @@ export class SkiaRenderer {
   }
 
   renderSceneToCanvas(canvas: Canvas, graph: SceneGraph, pageId: string): void {
+    // Disable culling for export — render everything
+    const prevViewport = this.worldViewport
+    this.worldViewport = { x: -1e9, y: -1e9, w: 2e9, h: 2e9 }
     const pageNode = graph.getNode(pageId)
     if (pageNode) {
       for (const childId of pageNode.childIds) {
         this.renderNode(canvas, graph, childId, {})
       }
     }
+    this.worldViewport = prevViewport
   }
 
   render(graph: SceneGraph, selectedIds: Set<string>, overlays: RenderOverlays = {}): void {
     const canvas = this.surface.getCanvas()
     canvas.clear(this.ck.Color4f(this.pageColor.r, this.pageColor.g, this.pageColor.b, 1))
+
+    // Compute world-space viewport for culling
+    this.worldViewport = {
+      x: -this.panX / this.zoom,
+      y: -this.panY / this.zoom,
+      w: this.viewportWidth / this.zoom,
+      h: this.viewportHeight / this.zoom
+    }
 
     // Scene layer (world coordinates)
     canvas.save()
@@ -286,7 +300,7 @@ export class SkiaRenderer {
     const pageNode = graph.getNode(this.pageId ?? graph.rootId)
     if (pageNode) {
       for (const childId of pageNode.childIds) {
-        this.renderNode(canvas, graph, childId, overlays)
+        this.renderNode(canvas, graph, childId, overlays, 0, 0)
       }
     }
 
@@ -722,10 +736,47 @@ export class SkiaRenderer {
     canvas: Canvas,
     graph: SceneGraph,
     nodeId: string,
-    overlays: RenderOverlays
+    overlays: RenderOverlays,
+    parentAbsX = 0,
+    parentAbsY = 0
   ): void {
     const node = graph.getNode(nodeId)
     if (!node || !node.visible) return
+
+    const absX = parentAbsX + node.x
+    const absY = parentAbsY + node.y
+
+    // Viewport culling: skip nodes entirely outside the visible area.
+    // Only cull leaf nodes and clipped containers — unclipped containers
+    // may have children that extend beyond the parent's bounds.
+    const canCull = node.childIds.length === 0 ||
+      ((node.type === 'FRAME' || node.type === 'COMPONENT' || node.type === 'INSTANCE') && node.clipsContent)
+    if (canCull) {
+      const vp = this.worldViewport
+      // Expand bounds for rotation (diagonal is the max extent)
+      let bw = node.width
+      let bh = node.height
+      if (node.rotation !== 0) {
+        const diag = Math.sqrt(bw * bw + bh * bh)
+        const cx = absX + bw / 2
+        const cy = absY + bh / 2
+        if (
+          cx - diag / 2 > vp.x + vp.w ||
+          cy - diag / 2 > vp.y + vp.h ||
+          cx + diag / 2 < vp.x ||
+          cy + diag / 2 < vp.y
+        ) {
+          return
+        }
+      } else if (
+        absX > vp.x + vp.w ||
+        absY > vp.y + vp.h ||
+        absX + bw < vp.x ||
+        absY + bh < vp.y
+      ) {
+        return
+      }
+    }
 
     canvas.save()
     canvas.translate(node.x, node.y)
@@ -784,12 +835,12 @@ export class SkiaRenderer {
         true
       )
       for (const childId of node.childIds) {
-        this.renderNode(canvas, graph, childId, overlays)
+        this.renderNode(canvas, graph, childId, overlays, absX, absY)
       }
       canvas.restore()
     } else {
       for (const childId of node.childIds) {
-        this.renderNode(canvas, graph, childId, overlays)
+        this.renderNode(canvas, graph, childId, overlays, absX, absY)
       }
     }
 
@@ -886,7 +937,10 @@ export class SkiaRenderer {
         const ax = ox + child.x
         const ay = oy + child.y
         if (child.type === 'SECTION') {
-          sections.push({ node: child, absX: ax, absY: ay, nested: insideSection })
+          const vp = this.worldViewport
+          if (ax + child.width >= vp.x && ay + child.height >= vp.y && ax <= vp.x + vp.w && ay <= vp.y + vp.h) {
+            sections.push({ node: child, absX: ax, absY: ay, nested: insideSection })
+          }
           collectSections(childId, ax, ay, true)
         } else if (child.childIds.length > 0) {
           collectSections(childId, ax, ay, insideSection)
@@ -987,8 +1041,11 @@ export class SkiaRenderer {
         const ax = ox + child.x
         const ay = oy + child.y
         if (LABEL_TYPES.has(child.type)) {
-          const isInsideSet = parent.type === 'COMPONENT_SET'
-          nodes.push({ node: child, absX: ax, absY: ay, inside: isInsideSet })
+          const vp = this.worldViewport
+          if (ax + child.width >= vp.x && ay + child.height >= vp.y && ax <= vp.x + vp.w && ay <= vp.y + vp.h) {
+            const isInsideSet = parent.type === 'COMPONENT_SET'
+            nodes.push({ node: child, absX: ax, absY: ay, inside: isInsideSet })
+          }
         }
         if (child.childIds.length > 0) {
           collect(childId, ax, ay)
