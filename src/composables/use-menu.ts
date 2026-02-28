@@ -3,6 +3,20 @@ import { onUnmounted } from 'vue'
 import type { EditorStore } from '../stores/editor'
 
 export async function openFileDialog(store: EditorStore) {
+  if ('__TAURI_INTERNALS__' in window) {
+    const { open } = await import('@tauri-apps/plugin-dialog')
+    const { readFile } = await import('@tauri-apps/plugin-fs')
+    const path = await open({
+      filters: [{ name: 'Figma file', extensions: ['fig'] }],
+      multiple: false
+    })
+    if (!path) return
+    const bytes = await readFile(path as string)
+    const file = new File([bytes], (path as string).split('/').pop()!)
+    await store.openFigFile(file, undefined, path as string)
+    return
+  }
+
   if ('showOpenFilePicker' in window) {
     try {
       const [handle] = await (window as any).showOpenFilePicker({

@@ -71,6 +71,7 @@ export function createEditorStore() {
   const undo = new UndoManager()
   const pageViewports = new Map<string, PageViewport>()
   let fileHandle: FileSystemFileHandle | null = null
+  let filePath: string | null = null
 
   prefetchFigmaSchema()
 
@@ -422,7 +423,7 @@ export function createEditorStore() {
     requestRender()
   }
 
-  async function openFigFile(file: File, handle?: FileSystemFileHandle) {
+  async function openFigFile(file: File, handle?: FileSystemFileHandle, path?: string) {
     try {
       const imported = await readFigFile(file)
       graph = imported
@@ -430,6 +431,7 @@ export function createEditorStore() {
       undo.clear()
       pageViewports.clear()
       fileHandle = handle ?? null
+      filePath = path ?? null
       state.selectedIds = new Set()
       const firstPage = graph.getPages()[0]
       state.currentPageId = firstPage?.id ?? graph.rootId
@@ -444,11 +446,8 @@ export function createEditorStore() {
   }
 
   async function saveFigFile() {
-    if (fileHandle) {
-      const data = await exportFigFile(graph)
-      const writable = await fileHandle.createWritable()
-      await writable.write(data)
-      await writable.close()
+    if (filePath || fileHandle) {
+      await writeFile(await exportFigFile(graph))
     } else {
       await saveFigFileAs()
     }
@@ -456,6 +455,19 @@ export function createEditorStore() {
 
   async function saveFigFileAs() {
     const data = await exportFigFile(graph)
+
+    if ('__TAURI_INTERNALS__' in window) {
+      const { save } = await import('@tauri-apps/plugin-dialog')
+      const path = await save({
+        defaultPath: 'Untitled.fig',
+        filters: [{ name: 'Figma file', extensions: ['fig'] }]
+      })
+      if (!path) return
+      filePath = path
+      fileHandle = null
+      await writeFile(data)
+      return
+    }
 
     if ('showSaveFilePicker' in window) {
       try {
@@ -467,9 +479,8 @@ export function createEditorStore() {
           }]
         })
         fileHandle = handle
-        const writable = await handle.createWritable()
-        await writable.write(data)
-        await writable.close()
+        filePath = null
+        await writeFile(data)
         return
       } catch (e) {
         if ((e as Error).name === 'AbortError') return
@@ -483,6 +494,19 @@ export function createEditorStore() {
     a.download = 'Untitled.fig'
     a.click()
     URL.revokeObjectURL(url)
+  }
+
+  async function writeFile(data: Uint8Array) {
+    if (filePath && '__TAURI_INTERNALS__' in window) {
+      const { writeFile: tauriWrite } = await import('@tauri-apps/plugin-fs')
+      await tauriWrite(filePath, data)
+      return
+    }
+    if (fileHandle) {
+      const writable = await fileHandle.createWritable()
+      await writable.write(data)
+      await writable.close()
+    }
   }
 
   function runLayoutForNode(id: string) {
