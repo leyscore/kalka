@@ -68,15 +68,6 @@ const isComponentType = computed(() => {
         </button>
       </div>
 
-      <div v-if="node.type === 'COMPONENT'" class="flex flex-col gap-1 border-b border-border px-3 py-2">
-        <button
-          class="rounded bg-[#9747ff]/10 px-2 py-1 text-left text-[11px] text-[#9747ff] hover:bg-[#9747ff]/20"
-          @click="store.createInstanceFromComponent(node.id)"
-        >
-          Create Instance
-        </button>
-      </div>
-
       <PositionSection />
       <LayoutSection />
       <AppearanceSection />
