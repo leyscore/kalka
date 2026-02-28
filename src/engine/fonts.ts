@@ -52,7 +52,11 @@ const BUNDLED_FONTS: Record<string, string> = {
 
 export async function loadFont(family: string, style = 'Regular'): Promise<ArrayBuffer | null> {
   const cacheKey = `${family}|${style}`
-  if (loadedFamilies.has(cacheKey)) return loadedFamilies.get(cacheKey)!
+  if (loadedFamilies.has(cacheKey)) {
+    const cached = loadedFamilies.get(cacheKey)!
+    registerFontInCanvasKit(family, cached)
+    return cached
+  }
 
   // Try local font access API first
   if ('queryLocalFonts' in window) {
