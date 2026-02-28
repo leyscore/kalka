@@ -18,6 +18,8 @@ Full Figma-compatible shortcut map. ✅ = implemented.
 | <kbd>R</kbd> | Rectangle | ✅ |
 | <kbd>O</kbd> | Ellipse | ✅ |
 | <kbd>L</kbd> | Line | ✅ |
+| — | Polygon | ✅ (flyout only) |
+| — | Star | ✅ (flyout only) |
 | <kbd>⇧</kbd><kbd>L</kbd> | Arrow | |
 | <kbd>P</kbd> | Pen | ✅ |
 | <kbd>⇧</kbd><kbd>P</kbd> | Pencil | |

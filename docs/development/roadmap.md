@@ -73,6 +73,10 @@ Components, instances, overrides, variants, variables, collections, modes/themes
 - Effects panel UI (drop shadow, inner shadow, layer/background/foreground blur)
 - Independent corner radius controls (per-corner toggle in Appearance section)
 - GitHub Actions CI/CD for Windows (x64, arm64) and macOS (x64, arm64) builds
+- Polygon and Star drawing tools with pointCount and starInnerRadius
+- Resizable left/right panels via reka-ui Splitter (persistent layout)
+- @/ import alias, shared types module (src/types.ts, src/global.d.ts)
+- Codebase lint-clean: 0 oxlint warnings, 0 tsgo type errors
 
 **Planned:**
 - Variant switching

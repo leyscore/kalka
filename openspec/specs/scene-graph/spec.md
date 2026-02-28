@@ -185,3 +185,17 @@ SceneNode SHALL include `independentCorners` (boolean), `topLeftRadius`, `topRig
 #### Scenario: Independent corners
 - **WHEN** a rectangle has `independentCorners: true` with topLeftRadius=8 and topRightRadius=0
 - **THEN** the rectangle renders with rounded top-left and sharp top-right
+
+### Requirement: Polygon and Star node properties
+SceneNode SHALL include `pointCount: number` (field default 5) and `starInnerRadius: number` (default 0.38). POLYGON nodes use `pointCount` as the number of sides (minimum 3); the Polygon tool overrides pointCount to 3 at creation. STAR nodes use `pointCount` as the number of outer points (default 5) and `starInnerRadius` as the ratio of inner to outer radius.
+
+#### Scenario: Create polygon node
+- **WHEN** a POLYGON node is created with pointCount=6
+- **THEN** the node stores pointCount=6 and renders as a regular hexagon
+
+#### Scenario: Create star node
+- **WHEN** a STAR node is created with pointCount=5 and starInnerRadius=0.38
+- **THEN** the node stores both properties and renders as a 5-pointed star
+
+### Requirement: Tool type includes Polygon and Star
+The Tool type union SHALL include POLYGON and STAR. The TOOLS array SHALL include POLYGON and STAR in the Rectangle shapes flyout. No dedicated keyboard shortcuts are assigned to Polygon or Star.

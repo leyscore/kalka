@@ -13,9 +13,9 @@ Feature-by-feature comparison of Figma Design capabilities with Open Pencil's cu
 | Feature | Status | Notes |
 |---------|--------|-------|
 | Toolbar with design tools | ✅ | Bottom toolbar (UI3 style): Select, Frame, Section, Rectangle, Ellipse, Line, Text, Hand, Pen |
-| Layers panel (left sidebar) | ✅ | Tree view with expand/collapse, drag reorder, visibility toggle |
+| Layers panel (left sidebar) | ✅ | Tree view with expand/collapse, drag reorder, visibility toggle; resizable width |
 | Pages panel | ✅ | Add, delete, rename pages; per-page viewport state |
-| Properties panel (right sidebar) | ✅ | Sections: Appearance, Fill, Stroke, Typography, Layout, Position |
+| Properties panel (right sidebar) | ✅ | Sections: Appearance, Fill, Stroke, Effects, Typography, Layout, Position; resizable width |
 | Zoom & pan | ✅ | Ctrl+scroll, pinch, ⌘+/⌘−/⌘0, space+drag, middle mouse, hand tool (H) |
 | Canvas rulers | ✅ | Top/left rulers with selection highlight bands and coordinate badges |
 | Canvas background color | ✅ | Per-page background via properties panel |
@@ -33,7 +33,7 @@ Feature-by-feature comparison of Figma Design capabilities with Open Pencil's cu
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Shape tools (Rectangle, Ellipse, Line, Polygon, Star) | ✅ | All basic shape types supported |
+| Shape tools (Rectangle, Ellipse, Line, Polygon, Star) | ✅ | All basic shape types; polygon side count and star inner radius configurable |
 | Frames | ✅ | Clip content, independent coordinate system |
 | Groups | ✅ | ⌘G to group, ⇧⌘G to ungroup |
 | Sections | ✅ | Title pills, auto-adopt overlapping nodes, luminance-adaptive text |

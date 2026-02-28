@@ -12,6 +12,10 @@ Copy/paste between OpenPencil and Figma. When you copy in Figma, OpenPencil deco
 
 The pen tool uses Figma's vector network model — not simple paths. Click to place corner points, click+drag for bezier curves with tangent handles. Supports open and closed paths. Vector data uses the same `vectorNetworkBlob` binary format as Figma.
 
+## Shape Tools
+
+The toolbar provides all basic Figma shape tools: Rectangle (<kbd>R</kbd>), Ellipse (<kbd>O</kbd>), Line (<kbd>L</kbd>), Polygon, and Star. Polygon and Star are in the shapes flyout — click and hold the Rectangle tool to access them. Polygon draws regular polygons (default 3 sides) using a `pointCount` property. Star draws pointed stars (default 5 points) with a configurable `starInnerRadius` (default 0.38). All shapes support fill, stroke, hover highlight, and selection outline.
+
 ## Auto-Layout
 
 Yoga WASM provides CSS flexbox layout. Frames support:
@@ -48,6 +52,8 @@ HSV color selection with hue slider, alpha slider, hex input, and opacity contro
 ## Layers Panel
 
 Tree view of the document hierarchy using Reka UI Tree component. Expand/collapse frames, drag to reorder (changes z-order), toggle visibility per node.
+
+Both the layers panel and properties panel are resizable — drag the edge between panels and canvas to adjust width (default 15%, range 10–30%). Layout persists across reloads.
 
 ## Properties Panel
 

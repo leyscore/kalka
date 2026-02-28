@@ -11,7 +11,7 @@ The editor UI SHALL be built with Vue 3, VueUse composables, and Reka UI headles
 - **THEN** the Vue 3 application renders with canvas, toolbar, layers panel, and properties panel
 
 ### Requirement: Bottom toolbar
-The toolbar SHALL be positioned at the bottom of the screen (Figma UI3 style) with tool selection: Select (V), Frame (F), Section (S, in Frame flyout), Rectangle (R), Ellipse (O), Line (L), Text (T), Hand (H), Pen (P).
+The toolbar SHALL be positioned at the bottom of the screen (Figma UI3 style) with tool selection: Select (V), Frame (F), Section (S, in Frame flyout), Rectangle (R), Ellipse (O), Line (L), Polygon (flyout), Star (flyout), Text (T), Hand (H), Pen (P). The shapes flyout (Rectangle, Line, Ellipse, Polygon, Star) SHALL display keyboard shortcuts right-aligned for tools that have them.
 
 #### Scenario: Tool selection via keyboard
 - **WHEN** user presses R
@@ -20,6 +20,18 @@ The toolbar SHALL be positioned at the bottom of the screen (Figma UI3 style) wi
 #### Scenario: Frame flyout includes Section
 - **WHEN** user opens the Frame tool flyout
 - **THEN** both Frame and Section tools are available
+
+#### Scenario: Shapes flyout includes Polygon and Star
+- **WHEN** user opens the shapes flyout
+- **THEN** Polygon (triangle icon) and Star (star icon) are listed alongside Rectangle, Line, and Ellipse
+
+#### Scenario: Draw polygon on canvas
+- **WHEN** user selects Polygon tool and drags on canvas
+- **THEN** a POLYGON node is created with default 3 sides
+
+#### Scenario: Draw star on canvas
+- **WHEN** user selects Star tool and drags on canvas
+- **THEN** a STAR node is created with 5 points and 0.38 inner radius
 
 ### Requirement: Layers panel with tree view
 The layers panel SHALL display a tree view of the document hierarchy using Reka UI Tree with expand/collapse and drag reordering.
@@ -170,3 +182,21 @@ The Appearance section SHALL show a corner radius toggle button for RECTANGLE, R
 #### Scenario: Toggle back to uniform
 - **WHEN** user clicks the independent corners button while in independent mode
 - **THEN** a single corner radius input appears, set to the top-left value
+
+### Requirement: Resizable panels
+The left (layers) and right (properties) panels SHALL be resizable via reka-ui Splitter components (SplitterGroup, SplitterPanel, SplitterResizeHandle). Default width SHALL be 15%, minimum 10%, maximum 30%. Panel layout SHALL persist across reloads via auto-save-id. The resize handle SHALL be 8px wide with negative margins and a centered 1px visible line that highlights blue on hover/drag.
+
+#### Scenario: Resize layers panel
+- **WHEN** user drags the resize handle between layers panel and canvas
+- **THEN** the layers panel width changes and the canvas resizes accordingly
+
+#### Scenario: Panel size persists
+- **WHEN** user resizes panels and reloads the page
+- **THEN** panel widths are restored to the previous sizes
+
+### Requirement: Throttled WebGL surface recreation during resize
+The CanvasKit surface SHALL be recreated at most once per animation frame during panel resize, coalesced via requestAnimationFrame in the ResizeObserver callback.
+
+#### Scenario: Panel resize performance
+- **WHEN** user drags a panel resize handle continuously
+- **THEN** the WebGL surface is recreated at most once per frame
