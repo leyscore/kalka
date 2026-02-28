@@ -27,5 +27,5 @@
       }
     }
   ],
-  "ignorePatterns": ["node_modules", "dist", "src-tauri", "*.config.*"]
+  "ignorePatterns": ["node_modules", "dist", "desktop", "*.config.*"]
 }
