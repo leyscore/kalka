@@ -859,7 +859,11 @@ export class SkiaRenderer {
 
       const textPaint = new this.ck.Paint()
       textPaint.setStyle(this.ck.PaintStyle.Fill)
-      textPaint.setColor(this.ck.WHITE)
+      const pillColor = node.fills.length > 0 && node.fills[0].visible
+        ? node.fills[0].color
+        : { r: 0.37, g: 0.37, b: 0.37 }
+      const lum = 0.299 * pillColor.r + 0.587 * pillColor.g + 0.114 * pillColor.b
+      textPaint.setColor(lum > 0.5 ? this.ck.BLACK : this.ck.WHITE)
       textPaint.setAntiAlias(true)
       const textY = pillY + pillH * 0.7
       canvas.drawText(displayText, pillX + SECTION_TITLE_PADDING_X, textY, textPaint, font)
