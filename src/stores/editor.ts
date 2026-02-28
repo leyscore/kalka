@@ -88,6 +88,7 @@ export function createEditorStore() {
       length: number
       direction: 'HORIZONTAL' | 'VERTICAL'
     } | null,
+    hoveredNodeId: null as string | null,
     editingTextId: null as string | null,
     penState: null as {
       vertices: VectorVertex[]
@@ -224,6 +225,12 @@ export function createEditorStore() {
 
   function setRotationPreview(preview: { nodeId: string; angle: number } | null) {
     state.rotationPreview = preview
+    requestRender()
+  }
+
+  function setHoveredNode(id: string | null) {
+    if (state.hoveredNodeId === id) return
+    state.hoveredNodeId = id
     requestRender()
   }
 
@@ -1114,6 +1121,7 @@ export function createEditorStore() {
     setMarquee,
     setSnapGuides,
     setRotationPreview,
+    setHoveredNode,
     setDropTarget,
     setLayoutInsertIndicator,
     reorderInAutoLayout,

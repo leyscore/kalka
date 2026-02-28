@@ -215,6 +215,7 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
   }
 
   function onMouseDown(e: MouseEvent) {
+    store.setHoveredNode(null)
     const { sx, sy, cx, cy } = getCoords(e)
     const tool = store.state.activeTool
 
@@ -423,9 +424,9 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
       store.requestRender()
     }
 
-    // Cursor on hover
+    // Cursor + hover highlight
     if (!drag.value && store.state.activeTool === 'SELECT') {
-      const { sx, sy } = getCoords(e)
+      const { sx, sy, cx, cy } = getCoords(e)
       let cursor: string | null = null
 
       // Rotation handle cursor
@@ -477,6 +478,9 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
         }
       }
       cursorOverride.value = cursor
+
+      const hit = store.graph.hitTest(cx, cy)
+      store.setHoveredNode(hit && !store.state.selectedIds.has(hit.id) ? hit.id : null)
     }
 
     if (!drag.value) return
@@ -914,7 +918,10 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
   useEventListener(canvasRef, 'mousedown', onMouseDown)
   useEventListener(canvasRef, 'mousemove', onMouseMove)
   useEventListener(canvasRef, 'mouseup', onMouseUp)
-  useEventListener(canvasRef, 'mouseleave', onMouseUp)
+  useEventListener(canvasRef, 'mouseleave', () => {
+    onMouseUp()
+    store.setHoveredNode(null)
+  })
   useEventListener(canvasRef, 'wheel', onWheel, { passive: false })
 
   return {

@@ -28,6 +28,7 @@ import type {
 } from 'canvaskit-wasm'
 
 export interface RenderOverlays {
+  hoveredNodeId?: string | null
   editingTextId?: string | null
   marquee?: { x: number; y: number; width: number; height: number } | null
   snapGuides?: SnapGuide[]
@@ -600,6 +601,17 @@ export class SkiaRenderer {
       highlight.delete()
     }
 
+    // Hover highlight — shape-aware outline
+    if (overlays.hoveredNodeId === nodeId) {
+      const hoverPaint = new this.ck.Paint()
+      hoverPaint.setStyle(this.ck.PaintStyle.Stroke)
+      hoverPaint.setStrokeWidth(1 / this.zoom)
+      hoverPaint.setColor(this.selColor())
+      hoverPaint.setAntiAlias(true)
+      this.strokeNodeShape(canvas, node, hoverPaint)
+      hoverPaint.delete()
+    }
+
     // Clip + render children for containers
     if (node.type === 'FRAME' && node.clipsContent && node.childIds.length > 0) {
       canvas.save()
@@ -622,6 +634,51 @@ export class SkiaRenderer {
       canvas.restore()
     }
     canvas.restore()
+  }
+
+  private strokeNodeShape(canvas: Canvas, node: SceneNode, paint: Paint): void {
+    const rect = this.ck.LTRBRect(0, 0, node.width, node.height)
+
+    switch (node.type) {
+      case 'ELLIPSE':
+        canvas.drawOval(rect, paint)
+        return
+      case 'VECTOR':
+        if (node.vectorNetwork) {
+          const vp = vectorNetworkToPath(this.ck, node.vectorNetwork)
+          canvas.drawPath(vp, paint)
+          vp.delete()
+        }
+        return
+      case 'LINE':
+        canvas.drawLine(0, 0, node.width, node.height, paint)
+        return
+    }
+
+    const hasRadius =
+      node.cornerRadius > 0 ||
+      (node.independentCorners &&
+        (node.topLeftRadius > 0 ||
+          node.topRightRadius > 0 ||
+          node.bottomRightRadius > 0 ||
+          node.bottomLeftRadius > 0))
+
+    if (hasRadius) {
+      if (node.independentCorners) {
+        const rrect = new Float32Array([
+          0, 0, node.width, node.height,
+          node.topLeftRadius, node.topLeftRadius,
+          node.topRightRadius, node.topRightRadius,
+          node.bottomRightRadius, node.bottomRightRadius,
+          node.bottomLeftRadius, node.bottomLeftRadius
+        ])
+        canvas.drawRRect(rrect, paint)
+      } else {
+        canvas.drawRRect(this.ck.RRectXY(rect, node.cornerRadius, node.cornerRadius), paint)
+      }
+    } else {
+      canvas.drawRect(rect, paint)
+    }
   }
 
   private renderShape(canvas: Canvas, node: SceneNode): void {

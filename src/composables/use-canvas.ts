@@ -59,6 +59,7 @@ export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, store: Edito
     renderer.pageColor = store.state.pageColor
     renderer.pageId = store.state.currentPageId
     renderer.render(store.graph, store.state.selectedIds, {
+      hoveredNodeId: store.state.hoveredNodeId,
       editingTextId: store.state.editingTextId,
       marquee: store.state.marquee,
       snapGuides: store.state.snapGuides,
