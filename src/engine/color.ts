@@ -24,6 +24,19 @@ export function colorToHexRaw(color: Color): string {
   return colorToHex(color).slice(1)
 }
 
+export function colorToRgba255(color: Color) {
+  return {
+    r: Math.round(color.r * 255),
+    g: Math.round(color.g * 255),
+    b: Math.round(color.b * 255),
+    a: color.a
+  }
+}
+
+export function rgba255ToColor(rgba: { r: number; g: number; b: number; a: number }): Color {
+  return { r: rgba.r / 255, g: rgba.g / 255, b: rgba.b / 255, a: rgba.a }
+}
+
 export function colorToFill(color: string | Color) {
   const rgba = typeof color === 'string' ? parseColor(color) : color
   return {

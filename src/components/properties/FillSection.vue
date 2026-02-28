@@ -1,24 +1,18 @@
 <script setup lang="ts">
-import ColorPicker from '../ColorPicker.vue'
+import FillPicker from '../FillPicker.vue'
 import ScrubInput from '../ScrubInput.vue'
 import { useNodeProps } from '../../composables/use-node-props'
 import { DEFAULT_SHAPE_FILL } from '../../constants'
-import { colorToHexRaw, parseColor } from '../../engine/color'
+import { colorToHexRaw } from '../../engine/color'
 
-import type { Color } from '../../engine/scene-graph'
+import type { Fill } from '../../engine/scene-graph'
 
 const { store, node } = useNodeProps()
 
-function updateColor(index: number, color: Color) {
+function updateFill(index: number, fill: Fill) {
   const fills = [...node.value.fills]
-  fills[index] = { ...fills[index], color }
+  fills[index] = fill
   store.updateNodeWithUndo(node.value.id, { fills }, 'Change fill')
-}
-
-function updateHex(index: number, hex: string) {
-  const color = parseColor(hex.startsWith('#') ? hex : `#${hex}`)
-  if (!color) return
-  updateColor(index, color)
 }
 
 function updateOpacity(index: number, opacity: number) {
@@ -49,21 +43,12 @@ function remove(index: number) {
       <button class="cursor-pointer rounded border-none bg-transparent px-1 text-base leading-none text-muted hover:bg-hover hover:text-surface" @click="add">+</button>
     </div>
     <div v-for="(fill, i) in node.fills" :key="i" class="group flex items-center gap-1.5 py-0.5">
-      <template v-if="fill.type === 'SOLID'">
-        <ColorPicker :color="fill.color" @update="updateColor(i, $event)" />
-        <input
-          class="min-w-0 flex-1 border-none bg-transparent font-mono text-xs text-surface outline-none"
-          :value="colorToHexRaw(fill.color)"
-          @change="updateHex(i, ($event.target as HTMLInputElement).value)"
-        />
-      </template>
-      <template v-else>
-        <div class="flex h-5 w-5 items-center justify-center rounded border border-border">
-          <icon-lucide-blend v-if="fill.type.startsWith('GRADIENT')" class="size-3 text-muted" />
-          <icon-lucide-image v-else-if="fill.type === 'IMAGE'" class="size-3 text-muted" />
-        </div>
-        <span class="min-w-0 flex-1 text-xs text-muted">{{ fill.type.replace('GRADIENT_', '').replace('_', ' ') }}</span>
-      </template>
+      <FillPicker :fill="fill" @update="updateFill(i, $event)" />
+      <span class="min-w-0 flex-1 font-mono text-xs text-surface">
+        <template v-if="fill.type === 'SOLID'">{{ colorToHexRaw(fill.color) }}</template>
+        <template v-else-if="fill.type.startsWith('GRADIENT')">{{ fill.type.replace('GRADIENT_', '') }}</template>
+        <template v-else>{{ fill.type }}</template>
+      </span>
       <ScrubInput
         class="w-12"
         suffix="%"
