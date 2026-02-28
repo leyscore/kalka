@@ -66,6 +66,7 @@ Context-sensitive panel with sections:
 - **Typography** — font family, weight, size, alignment
 - **Layout** — auto-layout controls when enabled
 - **Position** — alignment buttons, rotation, flip
+- **Export** — scale, format (PNG/JPG/WEBP), live preview, multi-export
 - **Page** — canvas background color (shown when no nodes selected)
 
 ## Group/Ungroup
@@ -107,6 +108,14 @@ Create reusable components from frames or selections (<kbd>⌥</kbd><kbd>⌘</kb
 
 Components and instances display always-visible purple labels with a diamond icon showing the node name. They act as opaque containers for selection — clicking selects the component itself, double-clicking enters it to select children.
 
+## Variables
+
+Design tokens as variables with collections and modes. Currently supports COLOR type with full UI — create color variables, organize them in collections (e.g., "Brand", "Semantic"), define modes (e.g., Light/Dark), and switch the active mode. Bind variables to fill colors via the variable picker in the Fill section — bound fills display a purple badge with the variable name and a detach button. Variables support alias chains (one variable references another) with cycle detection. Imported from .fig files. FLOAT, STRING, and BOOLEAN types are defined but don't have editing UI yet.
+
+## Image Export
+
+Export selected nodes as PNG, JPG, or WEBP. The Export section in the properties panel provides scale selection (0.5×–4×), format picker, multi-export support (add multiple export settings), and a live preview with checkerboard background. JPG renders with white background, PNG/WEBP with transparency. Also available via context menu "Export…" and <kbd>⇧</kbd><kbd>⌘</kbd><kbd>E</kbd> shortcut. Uses Tauri save dialog, File System Access API, or download fallback depending on platform.
+
 ## Context Menu
 
 Right-click on the canvas opens a Figma-style context menu. Actions adapt to the current selection:
@@ -135,3 +144,16 @@ All numeric inputs in the properties panel use a drag-to-scrub interaction — d
 ## CI/CD Builds
 
 GitHub Actions workflow builds native Tauri desktop apps on version tags. The build matrix covers Windows (x64, arm64) and macOS (x64, arm64). Builds use `tauri-apps/tauri-action` and produce draft GitHub releases with platform-specific binaries.
+
+## @open-pencil/core & CLI
+
+The engine is extracted to `packages/core/` (@open-pencil/core) — scene-graph, renderer, layout, codec, kiwi, types — with zero DOM dependencies. The app re-exports from core via thin shims.
+
+`packages/cli/` (@open-pencil/cli) provides headless .fig file operations using CanvasKit CPU rasterization:
+
+- `open-pencil info <file>` — document stats, node types, fonts
+- `open-pencil tree <file>` — visual node tree
+- `open-pencil find <file>` — search by name/type
+- `open-pencil export <file>` — render to PNG/JPG/WEBP at any scale
+
+All commands support `--json` for machine-readable output. Runnable via `bun open-pencil` in the workspace. See [Project Structure](/development/contributing#project-structure) for the full monorepo layout.

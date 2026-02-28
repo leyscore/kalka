@@ -3,15 +3,19 @@
 ## Project Structure
 
 ```
+packages/
+  core/              @open-pencil/core — engine (zero DOM deps)
+    src/             Scene graph, renderer, layout, codec, kiwi, types
+  cli/               @open-pencil/cli — headless CLI for .fig operations
+    src/commands/    info, tree, find, export
 src/
   components/        Vue SFCs (canvas, panels, toolbar, color picker)
     properties/      Property panel sections (Appearance, Fill, Stroke, etc.)
   composables/       Canvas input, keyboard shortcuts, rendering hooks
   stores/            Editor state (Vue reactivity)
-  engine/            Scene graph, renderer, layout, clipboard, undo, vector, snap
-  kiwi/              Figma file format (Kiwi codec, .fig import)
-    kiwi-schema/     Vendored from evanw/kiwi
-  types.ts           Shared types
+  engine/            Re-export shims from @open-pencil/core
+  kiwi/              Re-export shims from @open-pencil/core
+  types.ts           Shared types (re-exported from core)
   constants.ts       UI colors, defaults, thresholds
 desktop/             Tauri v2 (Rust + config)
 tests/
@@ -57,7 +61,7 @@ bun run check
 
 ### AI Agent Conventions
 
-See [`AGENTS.md`](https://github.com/dannote/open-pencil/blob/master/AGENTS.md) in the repo root for detailed coding conventions tailored to AI agents. Covers rendering, scene graph, components & instances, layout, UI, file format, Tauri, and known issues.
+Developers and AI agents working on the codebase should read `AGENTS.md` in the repo root ([view on GitHub](https://github.com/dannote/open-pencil/blob/master/AGENTS.md)). Covers rendering, scene graph, components & instances, layout, UI, file format, Tauri conventions, and known issues.
 
 ## Making Changes
 
@@ -69,17 +73,22 @@ See [`AGENTS.md`](https://github.com/dannote/open-pencil/blob/master/AGENTS.md) 
 
 ## Key Files
 
+Engine source lives in `packages/core/src/`. The app's `src/engine/` and `src/kiwi/` are re-export shims — edit the core package, not the shims.
+
 | File | Purpose |
 |------|---------|
-| `src/engine/scene-graph.ts` | Core data structure for all design nodes |
-| `src/engine/renderer.ts` | CanvasKit rendering pipeline |
-| `src/engine/layout.ts` | Yoga layout adapter |
-| `src/engine/undo.ts` | Undo/redo manager |
-| `src/engine/clipboard.ts` | Figma-compatible clipboard |
-| `src/engine/vector.ts` | Vector network model |
+| `packages/core/src/scene-graph.ts` | Scene graph: nodes, variables, instances, hit testing |
+| `packages/core/src/renderer.ts` | CanvasKit rendering pipeline |
+| `packages/core/src/layout.ts` | Yoga layout adapter |
+| `packages/core/src/undo.ts` | Undo/redo manager |
+| `packages/core/src/clipboard.ts` | Figma-compatible clipboard |
+| `packages/core/src/vector.ts` | Vector network model |
+| `packages/core/src/render-image.ts` | Offscreen image export (PNG/JPG/WEBP) |
+| `packages/core/src/kiwi/codec.ts` | Kiwi binary encoder/decoder |
+| `packages/core/src/kiwi/fig-import.ts` | .fig file import logic |
+| `packages/cli/src/index.ts` | CLI entry point |
+| `packages/cli/src/commands/` | CLI commands (info, tree, find, export) |
 | `src/stores/editor.ts` | Global editor state |
 | `src/composables/use-canvas.ts` | Canvas rendering composable |
 | `src/composables/use-canvas-input.ts` | Mouse/touch input handling |
 | `src/composables/use-keyboard.ts` | Keyboard shortcut handling |
-| `src/kiwi/codec.ts` | Kiwi binary encoder/decoder |
-| `src/kiwi/fig-import.ts` | .fig file import logic |

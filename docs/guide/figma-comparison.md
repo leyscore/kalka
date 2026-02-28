@@ -6,7 +6,7 @@ Feature-by-feature comparison of Figma Design capabilities with Open Pencil's cu
 ✅ Supported — feature works end-to-end · 🟡 Partial — core behavior exists, some sub-features missing · 🔲 Not yet implemented
 :::
 
-**Coverage:** ~51 of ~90 Figma Design feature areas addressed (57%). Last updated: 2026-02-28.
+**Coverage:** 79 of 150 Figma feature items addressed — 64 ✅ fully supported, 15 🟡 partial, 71 🔲 not yet. Last updated: 2026-03-01.
 
 ## Interface & Navigation
 
@@ -159,8 +159,8 @@ Feature-by-feature comparison of Figma Design capabilities with Open Pencil's cu
 | Variants | 🔲 | Variant switching and property-based selection |
 | Component properties | 🔲 | Boolean, text, instance swap properties |
 | Override propagation | ✅ | Changes to main component propagate to all instances; overrides preserved |
-| Variables (color, number, string, boolean) | 🔲 | Planned for Phase 4 |
-| Variable collections & modes | 🔲 | Light/dark themes via variable modes |
+| Variables (color, number, string, boolean) | 🟡 | COLOR fully implemented with UI, bindings, .fig import; FLOAT/STRING/BOOLEAN types defined but no editing UI |
+| Variable collections & modes | 🟡 | Collections, modes, activeMode switching work; no variable-driven theming UI yet |
 | Styles (color, text, effect, layout) | 🔲 | Reusable named style presets |
 | Libraries (publish, share, update) | 🔲 | Shared component/style libraries |
 | Detach instance | ✅ | ⌥⌘B converts instance back to frame |
@@ -192,7 +192,7 @@ Feature-by-feature comparison of Figma Design capabilities with Open Pencil's cu
 | Figma clipboard (paste) | ✅ | Decode fig-kiwi binary from Figma clipboard |
 | Figma clipboard (copy) | ✅ | Encode fig-kiwi binary that Figma can read |
 | Sketch file import | 🔲 | .sketch file parsing |
-| Image/SVG export | 🔲 | Export layers as PNG, SVG, PDF, JPG |
+| Image/SVG export | 🟡 | PNG/JPG/WEBP with scale selector and live preview; SVG/PDF not yet |
 | Version history | 🔲 | Browse and restore previous versions |
 | Copy assets between tools | 🟡 | Figma clipboard works; no SVG/PDF clipboard |
 
@@ -208,7 +208,8 @@ Feature-by-feature comparison of Figma Design capabilities with Open Pencil's cu
 | Code Connect | 🔲 | Link design components to code |
 | Code snippets | 🔲 | Auto-generated code from layers |
 | Figma for VS Code | 🔲 | Editor plugin integration |
-| MCP server | 🔲 | Planned for Phase 5; 117-tool MCP server from figma-use. CLI & headless mode planned for AI agent and CI integration |
+| MCP server | 🔲 | Planned for Phase 5; 117-tool MCP server from figma-use |
+| CLI tools | 🟡 | Headless CLI: info, tree, find, export commands; MCP server not yet |
 
 ## Figma Draw
 

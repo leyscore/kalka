@@ -78,3 +78,13 @@ The codebase SHALL maintain 0 oxlint warnings and 0 tsgo type errors. `bun run c
 - **WHEN** `bun run check` is executed
 - **THEN** both lint and typecheck pass with zero issues
 
+### Requirement: Bun workspace monorepo
+The project SHALL use Bun workspaces with packages: root (app), packages/core (@open-pencil/core), packages/cli (@open-pencil/cli). The workspace is configured in the root package.json. CLI is runnable via `bun open-pencil` in the workspace.
+
+#### Scenario: Workspace packages resolve
+- **WHEN** the app imports from @open-pencil/core
+- **THEN** Bun resolves it to packages/core/ via workspace linking
+
+### Requirement: npm publishing preparation
+@open-pencil/core and @open-pencil/cli SHALL have proper package.json fields for npm publishing: name, version, description, exports, main, types, files, license, repository.
+

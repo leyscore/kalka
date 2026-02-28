@@ -105,3 +105,10 @@ The project SHALL include a GitHub Actions workflow (`.github/workflows/build.ym
 - **WHEN** the workflow runs
 - **THEN** it builds for: windows-x64 (x86_64-pc-windows-msvc), windows-arm64 (aarch64-pc-windows-msvc), macos-arm64 (aarch64-apple-darwin), macos-x64 (x86_64-apple-darwin)
 
+### Requirement: Monorepo with @open-pencil/core
+The project SHALL use a Bun workspace monorepo. The engine (scene-graph, renderer, layout, codec, kiwi, types) SHALL be extracted to `packages/core/` (@open-pencil/core) with zero DOM dependencies. The app's `src/engine/` files become re-export shims. Core is importable by CLI, tests, and the app.
+
+#### Scenario: Core has no DOM dependencies
+- **WHEN** @open-pencil/core is imported in a Bun/Node environment without browser APIs
+- **THEN** it loads successfully
+

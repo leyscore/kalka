@@ -89,3 +89,10 @@ Unit tests SHALL cover the component-instance sync lifecycle: instance creation 
 - **WHEN** an instance is detached
 - **THEN** the test verifies type becomes FRAME, componentId is null, and the component's instance list no longer includes it
 
+### Requirement: Variable system unit tests
+Unit tests SHALL cover the variables system: add and resolve color/number variables, alias chain resolution, circular alias detection (returns undefined), mode switching, bind/unbind to nodes, and variable removal cleanup. Total: 7 variable tests in a "Variables" describe block.
+
+#### Scenario: Variable tests pass
+- **WHEN** `bun test ./tests/engine` is run
+- **THEN** all variable tests pass (add/resolve color, resolve number, alias chain, circular alias, mode switching, bind/unbind, removal cleanup)
+

@@ -32,3 +32,5 @@ test-results/
 # VitePress
 docs/.vitepress/dist
 docs/.vitepress/cache
+extensions/vscode/*.heapsnapshot
+op-vs-code/

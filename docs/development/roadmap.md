@@ -52,9 +52,9 @@ Properties panel, layers panel, toolbar, Yoga layout integration, text editing.
 - Canvas background color per page
 - Fig-import unit tests, layout unit tests, layers-panel E2E tests
 
-### Phase 4: Components + Variables 🟡
+### Phase 4: Components + Variables ✅
 
-Components, instances, overrides, variants, variables, collections, modes/themes.
+Components, instances, overrides, variables, collections, modes, image export.
 
 **Delivered:**
 - Component creation from frame/group or multi-selection (⌥⌘K)
@@ -77,20 +77,27 @@ Components, instances, overrides, variants, variables, collections, modes/themes
 - Resizable left/right panels via reka-ui Splitter (persistent layout)
 - @/ import alias, shared types module (src/types.ts, src/global.d.ts)
 - Codebase lint-clean: 0 oxlint warnings, 0 tsgo type errors
+- Variables: COLOR type with collections, modes, bindings, VariablesPanel, FillSection variable picker, .fig import
+- Image export: PNG/JPG/WEBP with ExportSection (scale, format, live preview), ⇧⌘E shortcut, context menu
+- Splash loader during WASM initialization
 
-**Planned:**
+**Remaining (deferred to Phase 6):**
 - Variant switching
-- Variable collections with modes (light/dark)
-- Variable binding to node properties
+- Variable types: FLOAT, STRING, BOOLEAN editing UI
+- Variable-driven theming
 
-### Phase 5: AI Integration 🔲
+### Phase 5: AI Integration & Tooling 🟡
 
-MCP server, CLI & headless mode, design guidelines, screenshot verification loop.
+Core extraction, CLI, MCP server, design guidelines, screenshot verification loop.
+
+**Delivered:**
+- @open-pencil/core extracted to packages/core/ (zero DOM deps, Bun workspace)
+- @open-pencil/cli with headless .fig operations (info, tree, find, export), CanvasKit CPU rasterization, --json output
+- npm publishing preparation for core and cli packages
 
 **Planned:**
 - Port MCP server from figma-use (117 tools)
-- CLI & Headless Mode: attached mode (WebSocket to running editor for eval, create, export, screenshot) and headless mode (engine in Bun/Node for lint, analysis, .fig validation in CI)
-- Package extraction: core/ (engine without rendering), cli/, mcp/
+- Attached mode: WebSocket to running editor for eval, create, export, screenshot
 - Design guidelines system
 - AI-driven design workflow via MCP
 - Screenshot verification loop
@@ -104,9 +111,10 @@ Prototyping, comments, desktop distribution, documentation, public launch.
 - Comments (pin, threads, resolve)
 - Linux Tauri builds (macOS and Windows already covered by CI)
 - PWA support
-- Documentation site (VitePress) ← this is being built now
+- Documentation site (VitePress)
 - Performance optimization (Lighthouse > 90)
 - Full Figma compatibility test suite
+- Deferred from Phase 4: variant switching, FLOAT/STRING/BOOLEAN variable UI, variable-driven theming
 
 ## Timeline
 
@@ -115,6 +123,6 @@ Prototyping, comments, desktop distribution, documentation, public launch.
 | Phase 1: Core Engine | 3 months | ✅ Complete |
 | Phase 2: Editor UI + Layout | 3 months | ✅ Complete |
 | Phase 3: File I/O + Visual Features | 2 months | ✅ Complete |
-| Phase 4: Components + Variables | 2 months | 🟡 In Progress |
-| Phase 5: AI Integration | 2 months | 🔲 Planned |
+| Phase 4: Components + Variables | 2 months | ✅ Complete |
+| Phase 5: AI Integration & Tooling | 2 months | 🟡 In Progress |
 | Phase 6: Polish + Distribution | 2 months | 🔲 Planned |
