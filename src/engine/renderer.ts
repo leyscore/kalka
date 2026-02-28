@@ -1,4 +1,10 @@
-import { SELECTION_COLOR, SNAP_COLOR, CANVAS_BG_COLOR, HANDLE_SIZE, ROTATION_HANDLE_OFFSET } from '../constants'
+import {
+  SELECTION_COLOR, SNAP_COLOR, CANVAS_BG_COLOR, HANDLE_SIZE, ROTATION_HANDLE_OFFSET,
+  RULER_SIZE, RULER_BG_COLOR, RULER_TICK_COLOR, RULER_TEXT_COLOR,
+  RULER_BADGE_HEIGHT, RULER_BADGE_PADDING, RULER_BADGE_RADIUS, RULER_BADGE_EXCLUSION,
+  RULER_TEXT_BASELINE, RULER_MAJOR_TICK, RULER_MINOR_TICK, RULER_HIGHLIGHT_ALPHA,
+  PEN_HANDLE_RADIUS, PARENT_OUTLINE_ALPHA, DEFAULT_FONT_SIZE, LABEL_FONT_SIZE, SIZE_FONT_SIZE
+} from '../constants'
 import type { SceneNode, SceneGraph, Fill } from './scene-graph'
 import type { SnapGuide } from './snap'
 import { vectorNetworkToPath } from './vector'
@@ -82,7 +88,7 @@ export class SkiaRenderer {
     this.parentOutlinePaint = new ck.Paint()
     this.parentOutlinePaint.setStyle(ck.PaintStyle.Stroke)
     this.parentOutlinePaint.setStrokeWidth(1)
-    this.parentOutlinePaint.setColor(this.selColor(0.5))
+    this.parentOutlinePaint.setColor(this.selColor(PARENT_OUTLINE_ALPHA))
     this.parentOutlinePaint.setAntiAlias(true)
     this.parentOutlinePaint.setPathEffect(ck.PathEffect.MakeDash([4, 4], 0))
 
@@ -92,7 +98,7 @@ export class SkiaRenderer {
     this.snapPaint.setColor(this.ck.Color4f(SNAP_COLOR.r, SNAP_COLOR.g, SNAP_COLOR.b, 1))
     this.snapPaint.setAntiAlias(true)
 
-    this.textFont = new ck.Font(null, 14)
+    this.textFont = new ck.Font(null, DEFAULT_FONT_SIZE)
   }
 
   async loadFonts(): Promise<void> {
@@ -108,9 +114,9 @@ export class SkiaRenderer {
         this.textFont?.delete()
         this.labelFont?.delete()
         this.sizeFont?.delete()
-        this.textFont = new this.ck.Font(typeface, 14)
-        this.labelFont = new this.ck.Font(typeface, 11)
-        this.sizeFont = new this.ck.Font(typeface, 10)
+        this.textFont = new this.ck.Font(typeface, DEFAULT_FONT_SIZE)
+        this.labelFont = new this.ck.Font(typeface, LABEL_FONT_SIZE)
+        this.sizeFont = new this.ck.Font(typeface, SIZE_FONT_SIZE)
       }
       this.fontMgr = this.ck.FontMgr.FromData(fontData) ?? null
     }
@@ -234,7 +240,7 @@ export class SkiaRenderer {
     this.drawHandle(canvas, x2, my)
 
     // Rotation handle (line extending above + circle)
-    const rotHandleY = y1 - 24
+    const rotHandleY = y1 - ROTATION_HANDLE_OFFSET - 4
     const rotLinePaint = new this.ck.Paint()
     rotLinePaint.setStyle(this.ck.PaintStyle.Stroke)
     rotLinePaint.setStrokeWidth(1)
@@ -769,7 +775,7 @@ export class SkiaRenderer {
     const handlePaint = new this.ck.Paint()
     handlePaint.setStyle(this.ck.PaintStyle.Stroke)
     handlePaint.setStrokeWidth(1)
-    handlePaint.setColor(this.selColor(0.5))
+    handlePaint.setColor(this.selColor(PARENT_OUTLINE_ALPHA))
     handlePaint.setAntiAlias(true)
 
     const vertexFill = new this.ck.Paint()
@@ -840,15 +846,15 @@ export class SkiaRenderer {
         const s = toScreen(vertices[seg.start].x, vertices[seg.start].y)
         const cp = toScreen(vertices[seg.start].x + ts.x, vertices[seg.start].y + ts.y)
         canvas.drawLine(s.x, s.y, cp.x, cp.y, handlePaint)
-        canvas.drawCircle(cp.x, cp.y, 3, vertexFill)
-        canvas.drawCircle(cp.x, cp.y, 3, handlePaint)
+        canvas.drawCircle(cp.x, cp.y, PEN_HANDLE_RADIUS, vertexFill)
+        canvas.drawCircle(cp.x, cp.y, PEN_HANDLE_RADIUS, handlePaint)
       }
       if (te.x !== 0 || te.y !== 0) {
         const e = toScreen(vertices[seg.end].x, vertices[seg.end].y)
         const cp = toScreen(vertices[seg.end].x + te.x, vertices[seg.end].y + te.y)
         canvas.drawLine(e.x, e.y, cp.x, cp.y, handlePaint)
-        canvas.drawCircle(cp.x, cp.y, 3, vertexFill)
-        canvas.drawCircle(cp.x, cp.y, 3, handlePaint)
+        canvas.drawCircle(cp.x, cp.y, PEN_HANDLE_RADIUS, vertexFill)
+        canvas.drawCircle(cp.x, cp.y, PEN_HANDLE_RADIUS, handlePaint)
       }
     }
 
@@ -858,10 +864,10 @@ export class SkiaRenderer {
       const cp1 = toScreen(last.x + dragTangent.x, last.y + dragTangent.y)
       const cp2 = toScreen(last.x - dragTangent.x, last.y - dragTangent.y)
       canvas.drawLine(cp2.x, cp2.y, cp1.x, cp1.y, handlePaint)
-      canvas.drawCircle(cp1.x, cp1.y, 3, vertexFill)
-      canvas.drawCircle(cp1.x, cp1.y, 3, handlePaint)
-      canvas.drawCircle(cp2.x, cp2.y, 3, vertexFill)
-      canvas.drawCircle(cp2.x, cp2.y, 3, handlePaint)
+      canvas.drawCircle(cp1.x, cp1.y, PEN_HANDLE_RADIUS, vertexFill)
+      canvas.drawCircle(cp1.x, cp1.y, PEN_HANDLE_RADIUS, handlePaint)
+      canvas.drawCircle(cp2.x, cp2.y, PEN_HANDLE_RADIUS, vertexFill)
+      canvas.drawCircle(cp2.x, cp2.y, PEN_HANDLE_RADIUS, handlePaint)
     }
 
     // Draw vertices
@@ -880,18 +886,15 @@ export class SkiaRenderer {
 
   // --- Rulers ---
 
-  private static readonly RULER_SIZE = 20
-  private static readonly RULER_BG = { r: 0.14, g: 0.14, b: 0.14 }
-  private static readonly RULER_TICK = { r: 0.4, g: 0.4, b: 0.4 }
-  private static readonly RULER_TEXT = { r: 0.55, g: 0.55, b: 0.55 }
+
 
   private drawRulers(canvas: Canvas, graph: SceneGraph, selectedIds: Set<string>): void {
-    const R = SkiaRenderer.RULER_SIZE
+    const R = RULER_SIZE
     const vw = this.viewportWidth
     const vh = this.viewportHeight
     if (vw === 0 || vh === 0) return
 
-    const bg = SkiaRenderer.RULER_BG
+    const bg = RULER_BG_COLOR
     const bgPaint = new this.ck.Paint()
     bgPaint.setColor(this.ck.Color4f(bg.r, bg.g, bg.b, 1))
 
@@ -902,11 +905,11 @@ export class SkiaRenderer {
     canvas.drawRect(this.ck.LTRBRect(0, 0, R, R), bgPaint)
 
     const tickPaint = new this.ck.Paint()
-    tickPaint.setColor(this.ck.Color4f(SkiaRenderer.RULER_TICK.r, SkiaRenderer.RULER_TICK.g, SkiaRenderer.RULER_TICK.b, 1))
+    tickPaint.setColor(this.ck.Color4f(RULER_TICK_COLOR.r, RULER_TICK_COLOR.g, RULER_TICK_COLOR.b, 1))
     tickPaint.setStrokeWidth(1)
     tickPaint.setAntiAlias(true)
 
-    const textColor = SkiaRenderer.RULER_TEXT
+    const textColor = RULER_TEXT_COLOR
     const textPaint = new this.ck.Paint()
     textPaint.setColor(this.ck.Color4f(textColor.r, textColor.g, textColor.b, 1))
     textPaint.setAntiAlias(true)
@@ -937,7 +940,7 @@ export class SkiaRenderer {
       sy2 = maxY * this.zoom + this.panY
     }
 
-    const badgeW = 30
+    const badgeW = RULER_BADGE_EXCLUSION
 
     // Horizontal ruler (clipped)
     canvas.save()
@@ -950,16 +953,16 @@ export class SkiaRenderer {
       const sx = wx * this.zoom + this.panX
       if (sx < R) continue
       const isMajor = Math.abs(wx % step) < 0.01
-      const tickLen = isMajor ? R * 0.5 : R * 0.25
+      const tickLen = isMajor ? R * RULER_MAJOR_TICK : R * RULER_MINOR_TICK
       canvas.drawLine(sx, R - tickLen, sx, R, tickPaint)
 
       if (isMajor && selNodes.length > 0) {
         const tooClose = Math.abs(sx - sx1) < badgeW || Math.abs(sx - sx2) < badgeW
         if (!tooClose) {
-          canvas.drawText(this.rulerLabel(wx), sx + 2, R * 0.65, textPaint, font)
+          canvas.drawText(this.rulerLabel(wx), sx + 2, R * RULER_TEXT_BASELINE, textPaint, font)
         }
       } else if (isMajor) {
-        canvas.drawText(this.rulerLabel(wx), sx + 2, R * 0.65, textPaint, font)
+        canvas.drawText(this.rulerLabel(wx), sx + 2, R * RULER_TEXT_BASELINE, textPaint, font)
       }
     }
     canvas.restore()
@@ -975,21 +978,21 @@ export class SkiaRenderer {
       const sy = wy * this.zoom + this.panY
       if (sy < R) continue
       const isMajor = Math.abs(wy % step) < 0.01
-      const tickLen = isMajor ? R * 0.5 : R * 0.25
+      const tickLen = isMajor ? R * RULER_MAJOR_TICK : R * RULER_MINOR_TICK
       canvas.drawLine(R - tickLen, sy, R, sy, tickPaint)
 
       if (isMajor && selNodes.length > 0) {
         const tooClose = Math.abs(sy - sy1) < badgeW || Math.abs(sy - sy2) < badgeW
         if (!tooClose) {
           canvas.save()
-          canvas.translate(R * 0.65, sy - 2)
+          canvas.translate(R * RULER_TEXT_BASELINE, sy - 2)
           canvas.rotate(-90, 0, 0)
           canvas.drawText(this.rulerLabel(wy), 0, 3, textPaint, font)
           canvas.restore()
         }
       } else if (isMajor) {
         canvas.save()
-        canvas.translate(R * 0.65, sy - 2)
+        canvas.translate(R * RULER_TEXT_BASELINE, sy - 2)
         canvas.rotate(-90, 0, 0)
         canvas.drawText(this.rulerLabel(wy), 0, 3, textPaint, font)
         canvas.restore()
@@ -1000,7 +1003,7 @@ export class SkiaRenderer {
     // Selection highlight + badges
     if (selNodes.length > 0) {
       const hlPaint = new this.ck.Paint()
-      hlPaint.setColor(this.selColor(0.3))
+      hlPaint.setColor(this.selColor(RULER_HIGHLIGHT_ALPHA))
 
       canvas.drawRect(this.ck.LTRBRect(Math.max(R, sx1), 0, sx2, R), hlPaint)
       canvas.drawRect(this.ck.LTRBRect(0, Math.max(R, sy1), R, sy2), hlPaint)
@@ -1019,12 +1022,12 @@ export class SkiaRenderer {
   }
 
   private drawRulerBadge(canvas: Canvas, font: InstanceType<CanvasKit['Font']>, label: string, x: number, y: number, axis: 'horizontal' | 'vertical'): void {
-    const R = SkiaRenderer.RULER_SIZE
+    const R = RULER_SIZE
     const glyphIds = font.getGlyphIDs(label)
     const widths = font.getGlyphWidths(glyphIds)
     const textW = widths.reduce((s, w) => s + w, 0)
-    const pad = 3
-    const h = 14
+    const pad = RULER_BADGE_PADDING
+    const h = RULER_BADGE_HEIGHT
 
     const badgePaint = new this.ck.Paint()
     badgePaint.setColor(this.selColor())
@@ -1035,8 +1038,8 @@ export class SkiaRenderer {
     if (axis === 'horizontal') {
       const bx = x - (textW + pad * 2) / 2
       const by = (R - h) / 2
-      canvas.drawRRect(this.ck.RRectXY(this.ck.LTRBRect(bx, by, bx + textW + pad * 2, by + h), 2, 2), badgePaint)
-      canvas.drawText(label, bx + pad, R * 0.65, labelPaint, font)
+      canvas.drawRRect(this.ck.RRectXY(this.ck.LTRBRect(bx, by, bx + textW + pad * 2, by + h), RULER_BADGE_RADIUS, RULER_BADGE_RADIUS), badgePaint)
+      canvas.drawText(label, bx + pad, R * RULER_TEXT_BASELINE, labelPaint, font)
     } else {
       const bw = textW + pad * 2
       const bx = (R - h) / 2
@@ -1044,7 +1047,7 @@ export class SkiaRenderer {
       canvas.save()
       canvas.translate(bx + h / 2, by + bw / 2)
       canvas.rotate(-90, 0, 0)
-      canvas.drawRRect(this.ck.RRectXY(this.ck.LTRBRect(-bw / 2, -h / 2, bw / 2, h / 2), 2, 2), badgePaint)
+      canvas.drawRRect(this.ck.RRectXY(this.ck.LTRBRect(-bw / 2, -h / 2, bw / 2, h / 2), RULER_BADGE_RADIUS, RULER_BADGE_RADIUS), badgePaint)
       canvas.drawText(label, -bw / 2 + pad, h / 2 - 3, labelPaint, font)
       canvas.restore()
     }

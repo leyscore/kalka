@@ -23,3 +23,22 @@ export const HANDLE_SIZE = 6
 export const ROTATION_HANDLE_OFFSET = 20
 export const SNAP_THRESHOLD = 5
 export const DRAG_DEAD_ZONE = 4
+
+export const RULER_SIZE = 20
+export const RULER_BG_COLOR = { r: 0.14, g: 0.14, b: 0.14, a: 1 } satisfies Color
+export const RULER_TICK_COLOR = { r: 0.4, g: 0.4, b: 0.4, a: 1 } satisfies Color
+export const RULER_TEXT_COLOR = { r: 0.55, g: 0.55, b: 0.55, a: 1 } satisfies Color
+export const RULER_BADGE_HEIGHT = 14
+export const RULER_BADGE_PADDING = 3
+export const RULER_BADGE_RADIUS = 2
+export const RULER_BADGE_EXCLUSION = 30
+export const RULER_TEXT_BASELINE = 0.65
+export const RULER_MAJOR_TICK = 0.5
+export const RULER_MINOR_TICK = 0.25
+export const RULER_HIGHLIGHT_ALPHA = 0.3
+
+export const PEN_HANDLE_RADIUS = 3
+export const PARENT_OUTLINE_ALPHA = 0.5
+export const DEFAULT_FONT_SIZE = 14
+export const LABEL_FONT_SIZE = 11
+export const SIZE_FONT_SIZE = 10
