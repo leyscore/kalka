@@ -230,7 +230,7 @@ export class SkiaRenderer {
     const rotLinePaint = new this.ck.Paint()
     rotLinePaint.setStyle(this.ck.PaintStyle.Stroke)
     rotLinePaint.setStrokeWidth(1)
-    rotLinePaint.setColor(this.this.selColor())
+    rotLinePaint.setColor(this.selColor())
     rotLinePaint.setAntiAlias(true)
     canvas.drawLine(mx, y1, mx, rotHandleY, rotLinePaint)
 
@@ -285,7 +285,7 @@ export class SkiaRenderer {
       if (node.type === 'FRAME' && node.parentId === graph.rootId) {
         const labelPaint = new this.ck.Paint()
         labelPaint.setStyle(this.ck.PaintStyle.Fill)
-        labelPaint.setColor(this.this.selColor())
+        labelPaint.setColor(this.selColor())
         labelPaint.setAntiAlias(true)
         canvas.drawText(node.name, sx1, sy1 - 8, labelPaint, this.labelFont)
         labelPaint.delete()
@@ -307,7 +307,7 @@ export class SkiaRenderer {
 
     const pillPaint = new this.ck.Paint()
     pillPaint.setStyle(this.ck.PaintStyle.Fill)
-    pillPaint.setColor(this.this.selColor())
+    pillPaint.setColor(this.selColor())
     pillPaint.setAntiAlias(true)
 
     const rrect = this.ck.RRectXY(this.ck.LTRBRect(pillX, pillY, pillX + pillW, pillY + pillH), 4, 4)
@@ -512,7 +512,7 @@ export class SkiaRenderer {
     const paint = new this.ck.Paint()
     paint.setStyle(this.ck.PaintStyle.Stroke)
     paint.setStrokeWidth(2)
-    paint.setColor(this.this.selColor())
+    paint.setColor(this.selColor())
     paint.setAntiAlias(true)
 
     if (indicator.direction === 'HORIZONTAL') {
@@ -752,7 +752,7 @@ export class SkiaRenderer {
     const pathPaint = new this.ck.Paint()
     pathPaint.setStyle(this.ck.PaintStyle.Stroke)
     pathPaint.setStrokeWidth(2)
-    pathPaint.setColor(this.this.selColor())
+    pathPaint.setColor(this.selColor())
     pathPaint.setAntiAlias(true)
 
     const handlePaint = new this.ck.Paint()
@@ -769,7 +769,7 @@ export class SkiaRenderer {
     const vertexStroke = new this.ck.Paint()
     vertexStroke.setStyle(this.ck.PaintStyle.Stroke)
     vertexStroke.setStrokeWidth(2)
-    vertexStroke.setColor(this.this.selColor())
+    vertexStroke.setColor(this.selColor())
     vertexStroke.setAntiAlias(true)
 
     const toScreen = (x: number, y: number) => ({

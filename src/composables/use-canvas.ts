@@ -35,7 +35,7 @@ export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, store: Edito
     canvas.width = w * dpr
     canvas.height = h * dpr
 
-    const surface = ck.MakeWebGLCanvasSurface(canvas)
+    const surface = ck.MakeWebGLCanvasSurface(canvas, undefined, { preserveDrawingBuffer: 1 })
     if (!surface) {
       console.error('Failed to create WebGL surface')
       return

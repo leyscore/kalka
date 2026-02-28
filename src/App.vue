@@ -18,6 +18,7 @@ useEventListener(document, 'wheel', (e: WheelEvent) => {
 }, { passive: false })
 
 const params = useUrlSearchParams('history')
+const showChrome = !('no-chrome' in params)
 if (!('test' in params)) {
   createDemoShapes(store)
 }
@@ -26,12 +27,12 @@ if (!('test' in params)) {
 <template>
   <div class="flex h-screen w-screen flex-col">
     <div class="flex flex-1 overflow-hidden">
-      <LayersPanel />
+      <LayersPanel v-if="showChrome" />
       <div class="relative flex min-w-0 flex-1">
         <EditorCanvas />
-        <Toolbar />
+        <Toolbar v-if="showChrome" />
       </div>
-      <PropertiesPanel />
+      <PropertiesPanel v-if="showChrome" />
     </div>
   </div>
 </template>

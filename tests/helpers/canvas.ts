@@ -3,10 +3,23 @@ import type { Page, Locator } from '@playwright/test'
 export class CanvasHelper {
   readonly page: Page
   readonly canvas: Locator
+  readonly errors: string[] = []
 
   constructor(page: Page) {
     this.page = page
     this.canvas = page.locator('canvas')
+    page.on('pageerror', (err) => this.errors.push(err.message))
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') this.errors.push(msg.text())
+    })
+  }
+
+  assertNoErrors() {
+    if (this.errors.length > 0) {
+      const messages = this.errors.join('\n')
+      this.errors.length = 0
+      throw new Error(`Browser errors:\n${messages}`)
+    }
   }
 
   async waitForRender() {

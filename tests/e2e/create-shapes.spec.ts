@@ -9,7 +9,7 @@ test.describe.configure({ mode: 'serial' })
 
 test.beforeAll(async ({ browser }) => {
   page = await browser.newPage()
-  await page.goto('/?test')
+  await page.goto('/?test&no-chrome')
   canvas = new CanvasHelper(page)
   await canvas.waitForInit()
 })
@@ -23,6 +23,7 @@ test.beforeEach(async () => {
 })
 
 async function expectCanvas(name: string) {
+  canvas.assertNoErrors()
   const buffer = await canvas.canvas.screenshot()
   expect(buffer).toMatchSnapshot(`${name}.png`)
 }
