@@ -70,6 +70,7 @@ const activeModes = computed(() => {
 })
 
 const variables = computed(() => {
+  void store.state.sceneVersion
   if (!activeTab.value) return []
   const all = store.graph.getVariablesForCollection(activeTab.value)
   if (!searchTerm.value) return all
