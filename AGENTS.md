@@ -82,6 +82,17 @@ Vue 3 + CanvasKit (Skia WASM) + Yoga WASM design editor. Tauri v2 desktop, also 
 - File system permissions must be configured in `desktop/tauri.conf.json` — "Internal error" on save means missing permissions
 - Dev tools: add a menu item to toggle, don't rely on keyboard shortcut
 
+## Reference
+
+[figma-use](https://github.com/dannote/figma-use) — our Figma toolkit. Use as reference for:
+- Kiwi binary format, schema, encode/decode (`packages/shared/src/kiwi/`)
+- Figma WebSocket multiplayer protocol (`packages/plugin/src/ws/`)
+- Vector network blob format (`packages/shared/src/vector/`)
+- Node types, paints, effects, layout fields (`packages/shared/src/types/`)
+- MCP tools / design operations (`packages/mcp/`)
+- JSX-to-design renderer (`packages/render/`)
+- Design linter rules (`packages/linter/`)
+
 ## Known issues
 
 - Safari ew-resize/col-resize/ns-resize cursor bug (WebKit #303845) — fixed in Safari 26.3 Beta
