@@ -156,7 +156,7 @@ export function createEditorStore() {
   })
 
   const selectedNodes = computed(() => {
-    void state.renderVersion
+    void state.sceneVersion
     const nodes: SceneNode[] = []
     for (const id of state.selectedIds) {
       const n = graph.getNode(id)
@@ -170,7 +170,7 @@ export function createEditorStore() {
   )
 
   const layerTree = computed(() => {
-    void state.renderVersion
+    void state.sceneVersion
     return graph.flattenTree(state.currentPageId)
   })
 

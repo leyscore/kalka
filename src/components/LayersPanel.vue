@@ -62,7 +62,7 @@ function buildTree(parentId: string): LayerNode[] {
 const items = ref(buildTree(store.state.currentPageId))
 const treeKey = ref(0)
 
-watch([() => store.state.renderVersion, () => store.state.currentPageId], () => {
+watch([() => store.state.sceneVersion, () => store.state.currentPageId], () => {
   items.value = buildTree(store.state.currentPageId)
   treeKey.value++
 })

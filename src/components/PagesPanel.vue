@@ -6,7 +6,7 @@ import { useEditorStore } from '@/stores/editor'
 const store = useEditorStore()
 
 const pages = computed(() => {
-  void store.state.renderVersion
+  void store.state.sceneVersion
   return store.graph.getPages()
 })
 
