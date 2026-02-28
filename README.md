@@ -4,6 +4,8 @@ Open-source, AI-native design editor. Figma alternative built from scratch with 
 
 > **Status:** Active development. Not ready for production use.
 
+![OpenPencil](screenshot.png)
+
 ## Features
 
 - **Figma .fig file import** — open native Figma files directly
