@@ -238,7 +238,7 @@ function updateDropTarget(ev: PointerEvent) {
                 :class="isExpanded ? 'rotate-90' : 'rotate-0'"
                 @click.stop="toggleExpand(item.value.id)"
               >
-                <icon-lucide-chevron-right class="size-3 rotate-90" />
+                <icon-lucide-chevron-right class="size-3" />
               </span>
               <span v-else class="w-4 shrink-0" />
               <component :is="nodeIcons[item.value.type] ?? IconSquare" class="size-3 shrink-0 opacity-70" />
