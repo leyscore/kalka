@@ -9,6 +9,7 @@ import LayoutSection from './properties/LayoutSection.vue'
 import PageSection from './properties/PageSection.vue'
 import PositionSection from './properties/PositionSection.vue'
 import StrokeSection from './properties/StrokeSection.vue'
+import EffectsSection from './properties/EffectsSection.vue'
 import TypographySection from './properties/TypographySection.vue'
 
 const store = useEditorStore()
@@ -74,11 +75,7 @@ const isComponentType = computed(() => {
       <TypographySection v-if="node.type === 'TEXT'" />
       <FillSection />
       <StrokeSection />
-
-      <!-- Effects -->
-      <div class="border-b border-border px-3 py-2">
-        <label class="mb-1.5 block text-[11px] text-muted">Effects</label>
-      </div>
+      <EffectsSection />
 
       <!-- Export -->
       <div class="border-b border-border px-3 py-2">
