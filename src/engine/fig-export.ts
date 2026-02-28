@@ -4,8 +4,9 @@ import { IS_TAURI } from '../constants'
 import { initCodec, getCompiledSchema, getSchemaBytes } from '../kiwi/codec'
 import { encodeVectorNetworkBlob } from './vector'
 
+import type { NodeChange, Paint } from '../kiwi/codec'
 import type { SkiaRenderer } from './renderer'
-import type { Color, GradientTransform, SceneGraph, SceneNode } from './scene-graph'
+import type { SceneGraph, SceneNode } from './scene-graph'
 import type { CanvasKit } from 'canvaskit-wasm'
 
 const THUMBNAIL_1X1 = Uint8Array.from(
@@ -15,45 +16,7 @@ const THUMBNAIL_1X1 = Uint8Array.from(
   (c) => c.charCodeAt(0)
 )
 
-interface KiwiNodeChange {
-  guid: { sessionID: number; localID: number }
-  parentIndex?: { guid: { sessionID: number; localID: number }; position: string }
-  type?: string
-  name?: string
-  visible?: boolean
-  opacity?: number
-  size?: { x: number; y: number }
-  transform?: { m00: number; m01: number; m02: number; m10: number; m11: number; m12: number }
-  fillPaints?: Array<{
-    type: string
-    color?: Color
-    opacity?: number
-    visible?: boolean
-    blendMode?: string
-  }>
-  strokePaints?: Array<{
-    type: string
-    color?: Color
-    opacity?: number
-    visible?: boolean
-    blendMode?: string
-  }>
-  strokeWeight?: number
-  strokeAlign?: string
-  cornerRadius?: number
-  rectangleCornerRadiiIndependent?: boolean
-  rectangleTopLeftCornerRadius?: number
-  rectangleTopRightCornerRadius?: number
-  rectangleBottomLeftCornerRadius?: number
-  rectangleBottomRightCornerRadius?: number
-  fontSize?: number
-  fontName?: { family: string; style: string; postscript?: string }
-  textData?: { characters: string; lines?: unknown[] }
-  textAlignHorizontal?: string
-  textAutoResize?: string
-  phase?: string
-  [key: string]: unknown
-}
+type KiwiNodeChange = NodeChange & Record<string, unknown>
 
 function mapToFigmaType(type: SceneNode['type']): string {
   switch (type) {
@@ -112,16 +75,12 @@ function sceneNodeToKiwi(
   const sin = Math.sin((node.rotation * Math.PI) / 180)
 
   const fillPaints = node.fills.map((f) => {
-    const paint = {
-      type: f.type as string,
+    const paint: Paint = {
+      type: f.type,
       color: f.color,
       opacity: f.opacity,
       visible: f.visible,
-      blendMode: (f.blendMode ?? 'NORMAL') as string,
-      stops: undefined as { color: Color; position: number }[] | undefined,
-      transform: undefined as GradientTransform | undefined,
-      image: undefined as { hash: string } | undefined,
-      imageScaleMode: undefined as string | undefined
+      blendMode: f.blendMode ?? 'NORMAL'
     }
     if (f.gradientStops) {
       paint.stops = f.gradientStops.map((s) => ({ color: s.color, position: s.position }))

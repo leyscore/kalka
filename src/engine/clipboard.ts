@@ -4,12 +4,12 @@ import { initCodec, getCompiledSchema, getSchemaBytes } from '../kiwi/codec'
 import { decodeBinarySchema, compileSchema, ByteBuffer } from '../kiwi/kiwi-schema'
 import { decodeVectorNetworkBlob, encodeVectorNetworkBlob } from './vector'
 
+import type { NodeChange as KiwiNodeChange } from '../kiwi/codec'
 import type {
   SceneGraph,
   SceneNode,
   Fill,
   Stroke,
-  Color,
   LayoutMode,
   LayoutSizing,
   LayoutAlign,
@@ -21,46 +21,6 @@ interface FigmaClipboardMeta {
   fileKey: string
   pasteID: number
   dataType: string
-}
-
-interface KiwiNodeChange {
-  guid: { sessionID: number; localID: number }
-  parentIndex?: { guid: { sessionID: number; localID: number }; position: string }
-  type?: string
-  name?: string
-  visible?: boolean
-  opacity?: number
-  size?: { x: number; y: number }
-  transform?: { m00: number; m01: number; m02: number; m10: number; m11: number; m12: number }
-  fillPaints?: Array<{
-    type: string
-    color?: Color
-    opacity?: number
-    visible?: boolean
-    blendMode?: string
-  }>
-  strokePaints?: Array<{
-    type: string
-    color?: Color
-    opacity?: number
-    visible?: boolean
-    blendMode?: string
-  }>
-  strokeWeight?: number
-  strokeAlign?: string
-  cornerRadius?: number
-  rectangleCornerRadiiIndependent?: boolean
-  rectangleTopLeftCornerRadius?: number
-  rectangleTopRightCornerRadius?: number
-  rectangleBottomLeftCornerRadius?: number
-  rectangleBottomRightCornerRadius?: number
-  fontSize?: number
-  fontName?: { family: string; style: string; postscript?: string }
-  textData?: { characters: string; lines?: unknown[] }
-  textAlignHorizontal?: string
-  textAutoResize?: string
-  phase?: string
-  [key: string]: unknown
 }
 
 export async function prefetchFigmaSchema(): Promise<void> {

@@ -56,6 +56,7 @@ import {
 } from '../constants'
 import { vectorNetworkToPath } from './vector'
 
+import type { Rect } from '../types'
 import type { SceneNode, SceneGraph, Fill } from './scene-graph'
 import type { SnapGuide } from './snap'
 import type { EmbindEnumEntity, Image as CKImage, Path } from 'canvaskit-wasm'
@@ -73,7 +74,7 @@ import type {
 export interface RenderOverlays {
   hoveredNodeId?: string | null
   editingTextId?: string | null
-  marquee?: { x: number; y: number; width: number; height: number } | null
+  marquee?: Rect | null
   snapGuides?: SnapGuide[]
   rotationPreview?: { nodeId: string; angle: number } | null
   dropTargetId?: string | null
@@ -731,10 +732,7 @@ export class SkiaRenderer {
 
   // --- Marquee ---
 
-  private drawMarquee(
-    canvas: Canvas,
-    marquee?: { x: number; y: number; width: number; height: number } | null
-  ): void {
+  private drawMarquee(canvas: Canvas, marquee?: Rect | null): void {
     if (!marquee || marquee.width <= 0 || marquee.height <= 0) return
 
     const x1 = marquee.x * this.zoom + this.panX

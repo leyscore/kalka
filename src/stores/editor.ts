@@ -35,7 +35,7 @@ import type {
   VectorNetwork
 } from '../engine/scene-graph'
 import type { SnapGuide } from '../engine/snap'
-import type { Color } from '../types'
+import type { Color, Rect } from '../types'
 
 export type Tool =
   | 'SELECT'
@@ -123,7 +123,7 @@ export function createEditorStore() {
     activeTool: 'SELECT' as Tool,
     currentPageId: graph.getPages()[0].id,
     selectedIds: new Set<string>(),
-    marquee: null as { x: number; y: number; width: number; height: number } | null,
+    marquee: null as Rect | null,
     snapGuides: [] as SnapGuide[],
     rotationPreview: null as { nodeId: string; angle: number } | null,
     dropTargetId: null as string | null,
@@ -260,7 +260,7 @@ export function createEditorStore() {
     state.selectedIds = new Set()
   }
 
-  function setMarquee(rect: { x: number; y: number; width: number; height: number } | null) {
+  function setMarquee(rect: Rect | null) {
     state.marquee = rect
     requestRender()
   }
@@ -1540,10 +1540,7 @@ export function createEditorStore() {
     })
   }
 
-  function commitResize(
-    nodeId: string,
-    origRect: { x: number; y: number; width: number; height: number }
-  ) {
+  function commitResize(nodeId: string, origRect: Rect) {
     const node = graph.getNode(nodeId)
     if (!node) return
     const finalRect = { x: node.x, y: node.y, width: node.width, height: node.height }

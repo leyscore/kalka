@@ -1,3 +1,4 @@
+import type { Rect } from '../types'
 import type { SceneNode } from './scene-graph'
 
 const SNAP_THRESHOLD = 5
@@ -65,7 +66,7 @@ function getEdges(node: SceneNode) {
 
 export function computeSnap(
   movingIds: Set<string>,
-  movingBounds: { x: number; y: number; width: number; height: number },
+  movingBounds: Rect,
   allNodes: SceneNode[]
 ): SnapResult {
   const targets = allNodes.filter((n) => !movingIds.has(n.id))
@@ -151,9 +152,7 @@ export function computeSnap(
   }
 }
 
-export function computeSelectionBounds(
-  nodes: SceneNode[]
-): { x: number; y: number; width: number; height: number } | null {
+export function computeSelectionBounds(nodes: SceneNode[]): Rect | null {
   if (nodes.length === 0) return null
   let minX = Infinity
   let minY = Infinity

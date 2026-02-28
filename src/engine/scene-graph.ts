@@ -49,7 +49,7 @@ export type NodeType =
   | 'CONNECTOR'
   | 'SHAPE_WITH_TEXT'
 
-import type { Color } from '../types'
+import type { Color, Matrix, Rect } from '../types'
 
 export type FillType =
   | 'SOLID'
@@ -83,14 +83,7 @@ export interface GradientStop {
   position: number
 }
 
-export interface GradientTransform {
-  m00: number
-  m01: number
-  m02: number
-  m10: number
-  m11: number
-  m12: number
-}
+export type GradientTransform = Matrix
 
 export interface Fill {
   type: FillType
@@ -386,7 +379,7 @@ export class SceneGraph {
     return { x: ax, y: ay }
   }
 
-  getAbsoluteBounds(id: string): { x: number; y: number; width: number; height: number } {
+  getAbsoluteBounds(id: string): Rect {
     const pos = this.getAbsolutePosition(id)
     const node = this.nodes.get(id)
     return {

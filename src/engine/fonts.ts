@@ -1,19 +1,5 @@
 import type { CanvasKit, TypefaceFontProvider } from 'canvaskit-wasm'
 
-declare global {
-  interface Window {
-    queryLocalFonts?(): Promise<
-      {
-        family: string
-        fullName: string
-        style: string
-        postscriptName: string
-        blob(): Promise<Blob>
-      }[]
-    >
-  }
-}
-
 export interface FontInfo {
   family: string
   fullName: string

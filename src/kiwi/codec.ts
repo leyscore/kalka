@@ -167,21 +167,9 @@ export function peekMessageType(data: Uint8Array): number | null {
 
 export type { GUID, Color } from '../types'
 
-import type { GUID, Color } from '../types'
+import type { Color, GUID, Matrix, Vector } from '../types'
 
-export interface Vector {
-  x: number
-  y: number
-}
-
-export interface Matrix {
-  m00: number
-  m01: number
-  m02: number
-  m10: number
-  m11: number
-  m12: number
-}
+export type { Matrix, Vector }
 
 export interface ParentIndex {
   guid: GUID
@@ -193,7 +181,13 @@ export interface VariableBinding {
 }
 
 export interface Paint {
-  type: 'SOLID' | 'GRADIENT_LINEAR' | 'GRADIENT_RADIAL' | 'IMAGE'
+  type:
+    | 'SOLID'
+    | 'GRADIENT_LINEAR'
+    | 'GRADIENT_RADIAL'
+    | 'GRADIENT_ANGULAR'
+    | 'GRADIENT_DIAMOND'
+    | 'IMAGE'
   color?: Color
   opacity?: number
   visible?: boolean
@@ -206,7 +200,7 @@ export interface Paint {
 }
 
 export interface Effect {
-  type: 'DROP_SHADOW' | 'INNER_SHADOW' | 'BACKGROUND_BLUR' | 'FOREGROUND_BLUR'
+  type: 'DROP_SHADOW' | 'INNER_SHADOW' | 'LAYER_BLUR' | 'BACKGROUND_BLUR' | 'FOREGROUND_BLUR'
   color?: Color
   offset?: Vector
   radius?: number
@@ -246,23 +240,30 @@ export interface NodeChange {
   stackJustify?: string
   stackCounterAlignItems?: string
   stackPrimaryAlignItems?: string
-  stackPrimarySizing?: 'FIXED' | 'RESIZE_TO_FIT'
-  stackCounterSizing?: 'FIXED' | 'RESIZE_TO_FIT'
+  stackPrimarySizing?: 'FIXED' | 'RESIZE_TO_FIT' | 'RESIZE_TO_FIT_WITH_IMPLICIT_SIZE'
+  stackCounterSizing?: 'FIXED' | 'RESIZE_TO_FIT' | 'RESIZE_TO_FIT_WITH_IMPLICIT_SIZE'
   stackVerticalPadding?: number
   stackHorizontalPadding?: number
+  stackWrap?: string
+  stackPositioning?: string
+  stackChildPrimaryGrow?: number
+  stackCounterSpacing?: number
   // Frame
   clipsContent?: boolean
+  frameMaskDisabled?: boolean
+  // Vector
+  vectorData?: unknown
   // Text
   fontSize?: number
   fontName?: { family: string; style: string; postscript?: string }
   textAlignHorizontal?: string
   textAlignVertical?: string
   textAutoResize?: string
-  textData?: { characters: string }
+  textData?: { characters: string; lines?: unknown[] }
   lineHeight?: { value: number; units: string }
   letterSpacing?: { value: number; units: string }
   // Symbol/Instance
-  symbolData?: { symbolID: { sessionID: number; localID: number } }
+  symbolData?: { symbolID: GUID }
   // ComponentSet
   isStateGroup?: boolean
   stateGroupPropertyValueOrders?: Array<{ property: string; values: string[] }>

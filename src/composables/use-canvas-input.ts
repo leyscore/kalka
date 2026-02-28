@@ -15,6 +15,7 @@ import { computeSelectionBounds, computeSnap } from '../engine/snap'
 
 import type { NodeType, SceneNode } from '../engine/scene-graph'
 import type { EditorStore, Tool } from '../stores/editor'
+import type { Rect } from '../types'
 
 type HandlePosition = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w'
 
@@ -48,7 +49,7 @@ interface DragResize {
   handle: HandlePosition
   startX: number
   startY: number
-  origRect: { x: number; y: number; width: number; height: number }
+  origRect: Rect
   nodeId: string
 }
 
