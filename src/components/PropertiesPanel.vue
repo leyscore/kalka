@@ -4,12 +4,13 @@ import { computed } from 'vue'
 import { useEditorStore } from '@/stores/editor'
 
 import AppearanceSection from './properties/AppearanceSection.vue'
+import EffectsSection from './properties/EffectsSection.vue'
+import ExportSection from './properties/ExportSection.vue'
 import FillSection from './properties/FillSection.vue'
 import LayoutSection from './properties/LayoutSection.vue'
 import PageSection from './properties/PageSection.vue'
 import PositionSection from './properties/PositionSection.vue'
 import StrokeSection from './properties/StrokeSection.vue'
-import EffectsSection from './properties/EffectsSection.vue'
 import TypographySection from './properties/TypographySection.vue'
 
 const store = useEditorStore()
@@ -23,7 +24,10 @@ const isComponentType = computed(() => {
 </script>
 
 <template>
-  <aside class="flex min-w-0 flex-1 flex-col overflow-hidden border-l border-border bg-panel">
+  <aside
+    class="flex min-w-0 flex-1 flex-col overflow-hidden border-l border-border bg-panel"
+    style="contain: paint layout style"
+  >
     <!-- Tabs -->
     <div class="flex h-10 shrink-0 items-center gap-1 border-b border-border px-2">
       <button class="rounded px-2.5 py-1 text-xs font-semibold text-surface">Design</button>
@@ -81,10 +85,7 @@ const isComponentType = computed(() => {
       <StrokeSection />
       <EffectsSection />
 
-      <!-- Export -->
-      <div class="border-b border-border px-3 py-2">
-        <label class="mb-1.5 block text-[11px] text-muted">Export</label>
-      </div>
+      <ExportSection />
     </div>
 
     <div v-else class="flex-1 overflow-y-auto pb-4">

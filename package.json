@@ -3,9 +3,10 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "workspaces": ["packages/*"],
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
     "lint": "oxlint -c oxlint.json src/",
@@ -17,9 +18,7 @@
     "test:figma": "playwright test --project=figma",
     "figma:debug": "open -a Figma --args --remote-debugging-port=9222",
     "test:unit": "bun test ./tests/engine",
-    "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "open-pencil": "bun packages/cli/src/index.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.1",
@@ -27,6 +26,8 @@
     "@tauri-apps/plugin-dialog": "^2.6.0",
     "@tauri-apps/plugin-fs": "^2.4.5",
     "@tauri-apps/plugin-opener": "^2",
+    "@open-pencil/cli": "workspace:*",
+    "@open-pencil/core": "workspace:*",
     "@vueuse/core": "^14.2.1",
     "canvaskit-wasm": "^0.40.0",
     "culori": "^4.0.2",
@@ -50,7 +51,6 @@
     "typescript": "~5.8.3",
     "unplugin-icons": "^23.0.1",
     "unplugin-vue-components": "^31.0.0",
-    "vite": "^7.0.4",
-    "vitepress": "^1.6.4"
+    "vite": "^7.0.4"
   }
 }

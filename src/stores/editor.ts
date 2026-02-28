@@ -19,11 +19,13 @@ import {
 } from '@/engine/clipboard'
 import { exportFigFile } from '@/engine/fig-export'
 import { computeLayout, computeAllLayouts } from '@/engine/layout'
+import { renderNodesToImage } from '@/engine/render-image'
 import { SceneGraph } from '@/engine/scene-graph'
 import { UndoManager } from '@/engine/undo'
 import { computeVectorBounds } from '@/engine/vector'
 import { readFigFile } from '@/kiwi/fig-file'
 
+import type { ExportFormat } from '@/engine/render-image'
 import type {
   SceneNode,
   NodeType,
@@ -149,11 +151,12 @@ export function createEditorStore() {
     pageColor: { ...CANVAS_BG_COLOR } as Color,
     panY: 0,
     zoom: 1,
-    renderVersion: 0
+    renderVersion: 0,
+    sceneVersion: 0
   })
 
   const selectedNodes = computed(() => {
-    void state.renderVersion
+    void state.sceneVersion
     const nodes: SceneNode[] = []
     for (const id of state.selectedIds) {
       const n = graph.getNode(id)
@@ -167,11 +170,16 @@ export function createEditorStore() {
   )
 
   const layerTree = computed(() => {
-    void state.renderVersion
+    void state.sceneVersion
     return graph.flattenTree(state.currentPageId)
   })
 
   function requestRender() {
+    state.renderVersion++
+    state.sceneVersion++
+  }
+
+  function requestRepaint() {
     state.renderVersion++
   }
 
@@ -262,33 +270,33 @@ export function createEditorStore() {
 
   function setMarquee(rect: Rect | null) {
     state.marquee = rect
-    requestRender()
+    requestRepaint()
   }
 
   function setSnapGuides(guides: SnapGuide[]) {
     state.snapGuides = guides
-    requestRender()
+    requestRepaint()
   }
 
   function setRotationPreview(preview: { nodeId: string; angle: number } | null) {
     state.rotationPreview = preview
-    requestRender()
+    requestRepaint()
   }
 
   function setHoveredNode(id: string | null) {
     if (state.hoveredNodeId === id) return
     state.hoveredNodeId = id
-    requestRender()
+    requestRepaint()
   }
 
   function setDropTarget(id: string | null) {
     state.dropTargetId = id
-    requestRender()
+    requestRepaint()
   }
 
   function setLayoutInsertIndicator(indicator: typeof state.layoutInsertIndicator) {
     state.layoutInsertIndicator = indicator
-    requestRender()
+    requestRepaint()
   }
 
   function reorderInAutoLayout(nodeId: string, parentId: string, insertIndex: number) {
@@ -579,6 +587,96 @@ export function createEditorStore() {
       await writable.write(new Uint8Array(data))
       await writable.close()
     }
+  }
+
+  async function renderExportImage(
+    nodeIds: string[],
+    scale: number,
+    format: ExportFormat
+  ): Promise<Uint8Array | null> {
+    if (!_ck || !_renderer) return null
+    const ids =
+      nodeIds.length > 0 ? nodeIds : graph.getChildren(state.currentPageId).map((n) => n.id)
+    if (ids.length === 0) return null
+    return renderNodesToImage(_ck, _renderer, graph, state.currentPageId, ids, { scale, format })
+  }
+
+  function exportImageExtension(format: ExportFormat): string {
+    switch (format) {
+      case 'JPG':
+        return '.jpg'
+      case 'WEBP':
+        return '.webp'
+      default:
+        return '.png'
+    }
+  }
+
+  function exportImageMime(format: ExportFormat): string {
+    switch (format) {
+      case 'JPG':
+        return 'image/jpeg'
+      case 'WEBP':
+        return 'image/webp'
+      default:
+        return 'image/png'
+    }
+  }
+
+  async function exportSelection(scale: number, format: ExportFormat) {
+    const ids = [...state.selectedIds]
+    const data = await renderExportImage(ids, scale, format)
+    if (!data) {
+      console.error(
+        `Export failed: renderExportImage returned null for format=${format} scale=${scale}`
+      )
+      return
+    }
+
+    const node = ids.length === 1 ? graph.getNode(ids[0]) : undefined
+    const baseName = node?.name ?? 'Export'
+    const ext = exportImageExtension(format)
+    const fileName = `${baseName}@${scale}x${ext}`
+
+    if (IS_TAURI) {
+      const { save } = await import('@tauri-apps/plugin-dialog')
+      const path = await save({
+        defaultPath: fileName,
+        filters: [{ name: format, extensions: [ext.slice(1)] }]
+      })
+      if (!path) return
+      const { writeFile: tauriWrite } = await import('@tauri-apps/plugin-fs')
+      await tauriWrite(path, data)
+      return
+    }
+
+    if (window.showSaveFilePicker) {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: fileName,
+          types: [
+            {
+              description: `${format} image`,
+              accept: { [exportImageMime(format)]: [ext] }
+            }
+          ]
+        })
+        const writable = await handle.createWritable()
+        await writable.write(new Uint8Array(data))
+        await writable.close()
+        return
+      } catch (e) {
+        if ((e as Error).name === 'AbortError') return
+      }
+    }
+
+    const blob = new Blob([new Uint8Array(data)], { type: exportImageMime(format) })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = fileName
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   function runLayoutForNode(id: string) {
@@ -1624,13 +1722,13 @@ export function createEditorStore() {
     state.panX = centerX - (centerX - state.panX) * (newZoom / state.zoom)
     state.panY = centerY - (centerY - state.panY) * (newZoom / state.zoom)
     state.zoom = newZoom
-    requestRender()
+    requestRepaint()
   }
 
   function pan(dx: number, dy: number) {
     state.panX += dx
     state.panY += dy
-    requestRender()
+    requestRepaint()
   }
 
   function zoomToFit() {
@@ -1660,7 +1758,7 @@ export function createEditorStore() {
     state.zoom = zoom
     state.panX = (viewW - w * zoom) / 2 - minX * zoom + padding * zoom
     state.panY = (viewH - h * zoom) / 2 - minY * zoom + padding * zoom
-    requestRender()
+    requestRepaint()
   }
 
   return {
@@ -1673,6 +1771,7 @@ export function createEditorStore() {
     selectedNode,
     layerTree,
     requestRender,
+    requestRepaint,
     setTool,
     select,
     clearSelection,
@@ -1696,6 +1795,8 @@ export function createEditorStore() {
     saveFigFile,
     setCanvasKit,
     saveFigFileAs,
+    renderExportImage,
+    exportSelection,
     updateNode,
     setLayoutMode,
     wrapInAutoLayout,

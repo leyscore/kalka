@@ -17,19 +17,19 @@ import { useEditorStore } from '@/stores/editor'
 const store = useEditorStore()
 
 const hasSelection = computed(() => {
-  void store.state.renderVersion
+  void store.state.sceneVersion
   return store.state.selectedIds.size > 0
 })
 
 const singleNode = computed(() => {
-  void store.state.renderVersion
+  void store.state.sceneVersion
   if (store.state.selectedIds.size !== 1) return null
   const id = [...store.state.selectedIds][0]
   return store.graph.getNode(id) ?? null
 })
 
 const multiCount = computed(() => {
-  void store.state.renderVersion
+  void store.state.sceneVersion
   return store.state.selectedIds.size
 })
 
@@ -38,7 +38,7 @@ const isComponent = computed(() => singleNode.value?.type === 'COMPONENT')
 const isGroup = computed(() => singleNode.value?.type === 'GROUP')
 
 const canCreateComponentSet = computed(() => {
-  void store.state.renderVersion
+  void store.state.sceneVersion
   if (store.state.selectedIds.size < 2) return false
   return [...store.state.selectedIds].every((id) => {
     const n = store.graph.getNode(id)
@@ -47,18 +47,18 @@ const canCreateComponentSet = computed(() => {
 })
 
 const otherPages = computed(() => {
-  void store.state.renderVersion
+  void store.state.sceneVersion
   return store.graph.getPages().filter((p) => p.id !== store.state.currentPageId)
 })
 
 const isVisible = computed(() => {
-  void store.state.renderVersion
+  void store.state.sceneVersion
   if (!singleNode.value) return true
   return singleNode.value.visible
 })
 
 const isLocked = computed(() => {
-  void store.state.renderVersion
+  void store.state.sceneVersion
   if (!singleNode.value) return false
   return singleNode.value.locked
 })
@@ -240,6 +240,13 @@ const menuClass =
           <ContextMenuItem :class="itemClass" @select="store.toggleLock()">
             <span>{{ isLocked ? 'Unlock' : 'Lock' }}</span>
             <span class="text-[11px] text-muted">⇧⌘L</span>
+          </ContextMenuItem>
+
+          <ContextMenuSeparator class="my-1 h-px bg-border" />
+
+          <ContextMenuItem :class="itemClass" @select="store.exportSelection(1, 'PNG')">
+            <span>Export as PNG</span>
+            <span class="text-[11px] text-muted">⇧⌘E</span>
           </ContextMenuItem>
         </template>
       </ContextMenuContent>

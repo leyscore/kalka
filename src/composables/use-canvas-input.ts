@@ -436,7 +436,7 @@ export function useCanvasInput(
         const dist = Math.hypot(cx - first.x, cy - first.y)
         store.penSetClosingToFirst(dist < PEN_CLOSE_THRESHOLD)
       }
-      store.requestRender()
+      store.requestRepaint()
     }
 
     // Cursor + hover highlight
@@ -507,7 +507,7 @@ export function useCanvasInput(
       const dy = e.clientY - d.startScreenY
       store.state.panX = d.startPanX + dx
       store.state.panY = d.startPanY + dy
-      store.requestRender()
+      store.requestRepaint()
       return
     }
 

@@ -62,7 +62,7 @@ function buildTree(parentId: string): LayerNode[] {
 const items = ref(buildTree(store.state.currentPageId))
 const treeKey = ref(0)
 
-watch([() => store.state.renderVersion, () => store.state.currentPageId], () => {
+watch([() => store.state.sceneVersion, () => store.state.currentPageId], () => {
   items.value = buildTree(store.state.currentPageId)
   treeKey.value++
 })
@@ -221,7 +221,10 @@ function updateDropTarget(ev: PointerEvent) {
 </script>
 
 <template>
-  <aside class="flex min-w-0 flex-1 flex-col overflow-y-auto border-r border-border bg-panel">
+  <aside
+    class="flex min-w-0 flex-1 flex-col overflow-y-auto border-r border-border bg-panel"
+    style="contain: paint layout style"
+  >
     <PagesPanel />
     <header class="shrink-0 px-3 py-2 text-[11px] uppercase tracking-wider text-muted">
       Layers
