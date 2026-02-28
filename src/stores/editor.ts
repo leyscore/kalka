@@ -598,8 +598,9 @@ export function createEditorStore() {
       const src = graph.getNode(id)
       if (!src) continue
       const parentId = src.parentId ?? graph.rootId
+      const { id: _srcId, parentId: _srcParent, childIds: _srcChildren, ...srcRest } = src
       const node = graph.createNode(src.type, parentId, {
-        ...src,
+        ...srcRest,
         name: src.name + ' copy',
         x: src.x + 20,
         y: src.y + 20
@@ -651,7 +652,7 @@ export function createEditorStore() {
 
     parseFigmaClipboard(html).then((figma) => {
       if (figma) {
-        const created = importClipboardNodes(figma.nodes, graph, graph.rootId, 20, 20)
+        const created = importClipboardNodes(figma.nodes, graph, graph.rootId, 20, 20, figma.blobs)
         if (created.length > 0) {
           state.selectedIds = new Set(created)
           requestRender()
@@ -670,8 +671,9 @@ export function createEditorStore() {
     const created: Array<{ id: string; parentId: string; snapshot: SceneNode }> = []
 
     function createTree(src: SceneNode & { children?: SceneNode[] }, pid: string, isTop: boolean) {
+      const { id: _srcId, parentId: _srcParent, childIds: _srcChildren, ...rest } = src
       const node = graph.createNode(src.type, pid, {
-        ...src,
+        ...rest,
         x: src.x + (isTop ? 20 : 0),
         y: src.y + (isTop ? 20 : 0)
       })

@@ -1,7 +1,8 @@
 import { SceneGraph } from './scene-graph'
+import { decodeVectorNetworkBlob } from './vector'
 
 import type { NodeChange, Paint, Effect as KiwiEffect, GUID } from '../kiwi/codec'
-import type { NodeType, Fill, Stroke, Effect, Color, LayoutMode, LayoutSizing, LayoutAlign, LayoutCounterAlign } from './scene-graph'
+import type { NodeType, Fill, Stroke, Effect, Color, LayoutMode, LayoutSizing, LayoutAlign, LayoutCounterAlign, VectorNetwork } from './scene-graph'
 
 function ext(nc: NodeChange): Record<string, unknown> {
   return nc as unknown as Record<string, unknown>
@@ -127,7 +128,24 @@ function mapStackCounterAlign(align?: string): LayoutCounterAlign {
   }
 }
 
-export function importNodeChanges(nodeChanges: NodeChange[]): SceneGraph {
+function resolveVectorNetwork(nc: NodeChange, blobs: Uint8Array[]): VectorNetwork | null {
+  const vectorData = (nc as unknown as Record<string, unknown>).vectorData as {
+    vectorNetworkBlob?: number
+    styleOverrideTable?: Array<{ styleID: number; handleMirroring?: string }>
+  } | undefined
+
+  if (!vectorData || vectorData.vectorNetworkBlob === undefined) return null
+  const idx = vectorData.vectorNetworkBlob
+  if (idx < 0 || idx >= blobs.length) return null
+
+  try {
+    return decodeVectorNetworkBlob(blobs[idx], vectorData.styleOverrideTable)
+  } catch {
+    return null
+  }
+}
+
+export function importNodeChanges(nodeChanges: NodeChange[], blobs: Uint8Array[] = []): SceneGraph {
   const graph = new SceneGraph()
 
   // Build guid→nodeChange map and parent relationships
@@ -217,7 +235,8 @@ export function importNodeChanges(nodeChanges: NodeChange[]): SceneGraph {
       layoutWrap: ext(nc).stackWrap === 'WRAP' ? 'WRAP' : 'NO_WRAP',
       counterAxisSpacing: (ext(nc).stackCounterSpacing as number) ?? 0,
       layoutPositioning: ext(nc).stackPositioning === 'ABSOLUTE' ? 'ABSOLUTE' : 'AUTO',
-      layoutGrow: (ext(nc).stackChildPrimaryGrow as number) ?? 0
+      layoutGrow: (ext(nc).stackChildPrimaryGrow as number) ?? 0,
+      vectorNetwork: resolveVectorNetwork(nc, blobs)
     })
 
     // Create children (find all nodes whose parent is this node)

@@ -57,7 +57,10 @@ export async function parseFigFile(buffer: ArrayBuffer): Promise<SceneGraph> {
     throw new Error('No nodes found in .fig file')
   }
 
-  return importNodeChanges(nodeChanges)
+  const blobs: Uint8Array[] = ((message as unknown as Record<string, unknown>).blobs as Array<{ bytes: Uint8Array }> ?? [])
+    .map((b) => b.bytes instanceof Uint8Array ? b.bytes : new Uint8Array(Object.values(b.bytes) as number[]))
+
+  return importNodeChanges(nodeChanges, blobs)
 }
 
 /**

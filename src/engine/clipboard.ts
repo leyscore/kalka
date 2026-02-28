@@ -1,7 +1,8 @@
 import { decodeBinarySchema, compileSchema, ByteBuffer } from 'kiwi-schema'
 import { inflateSync, deflateSync } from 'fflate'
 
-import type { SceneGraph, SceneNode, Fill, Stroke, Color, LayoutMode, LayoutSizing, LayoutAlign, LayoutCounterAlign } from './scene-graph'
+import type { SceneGraph, SceneNode, Fill, Stroke, Color, LayoutMode, LayoutSizing, LayoutAlign, LayoutCounterAlign, VectorNetwork } from './scene-graph'
+import { decodeVectorNetworkBlob, encodeVectorNetworkBlob } from './vector'
 
 interface FigmaClipboardMeta {
   fileKey: string
@@ -184,7 +185,7 @@ function base64ToBinary(b64: string): Uint8Array {
 
 export async function parseFigmaClipboard(
   html: string
-): Promise<{ nodes: KiwiNodeChange[]; meta: FigmaClipboardMeta } | null> {
+): Promise<{ nodes: KiwiNodeChange[]; meta: FigmaClipboardMeta; blobs: Uint8Array[] } | null> {
   const metaMatch = html.match(/\(figmeta\)(.*?)\(\/figmeta\)/)
   const bufMatch = html.match(/\(figma\)(.*?)\(\/figma\)/s)
   if (!metaMatch || !bufMatch) return null
@@ -198,9 +199,37 @@ export async function parseFigmaClipboard(
   const schemaBytes = inflateSync(parsed.schemaDeflated)
   const schema = decodeBinarySchema(new ByteBuffer(schemaBytes))
   const compiled = compileSchema(schema)
-  const msg = compiled.decodeMessage(parsed.dataRaw) as { nodeChanges?: KiwiNodeChange[] }
+  const msg = compiled.decodeMessage(parsed.dataRaw) as {
+    nodeChanges?: KiwiNodeChange[]
+    blobs?: Array<{ bytes: Uint8Array | Record<string, number> }>
+  }
 
-  return { nodes: msg.nodeChanges ?? [], meta }
+  const blobs: Uint8Array[] = (msg.blobs ?? []).map((b) =>
+    b.bytes instanceof Uint8Array
+      ? b.bytes
+      : new Uint8Array(Object.values(b.bytes) as number[])
+  )
+
+  return { nodes: msg.nodeChanges ?? [], meta, blobs }
+}
+
+function decodeVectorData(nc: KiwiNodeChange, blobs: Uint8Array[]): VectorNetwork | null {
+  const vectorData = nc.vectorData as {
+    vectorNetworkBlob?: number
+    normalizedSize?: { x: number; y: number }
+    styleOverrideTable?: Array<{ styleID: number; handleMirroring?: string }>
+  } | undefined
+
+  if (!vectorData || vectorData.vectorNetworkBlob === undefined) return null
+
+  const blobIdx = vectorData.vectorNetworkBlob
+  if (blobIdx < 0 || blobIdx >= blobs.length) return null
+
+  try {
+    return decodeVectorNetworkBlob(blobs[blobIdx], vectorData.styleOverrideTable)
+  } catch {
+    return null
+  }
 }
 
 export function importClipboardNodes(
@@ -208,7 +237,8 @@ export function importClipboardNodes(
   graph: SceneGraph,
   targetParentId: string,
   offsetX = 0,
-  offsetY = 0
+  offsetY = 0,
+  blobs: Uint8Array[] = []
 ): string[] {
   const guidMap = new Map<string, KiwiNodeChange>()
   const parentMap = new Map<string, string>()
@@ -302,7 +332,8 @@ export function importClipboardNodes(
       layoutWrap: (nc.stackWrap as string) === 'WRAP' ? 'WRAP' as const : 'NO_WRAP' as const,
       counterAxisSpacing: (nc.stackCounterSpacing as number) ?? 0,
       layoutPositioning: (nc.stackPositioning as string) === 'ABSOLUTE' ? 'ABSOLUTE' as const : 'AUTO' as const,
-      layoutGrow: (nc.stackChildPrimaryGrow as number) ?? 0
+      layoutGrow: (nc.stackChildPrimaryGrow as number) ?? 0,
+      vectorNetwork: decodeVectorData(nc, blobs)
     })
 
     created.set(figmaId, node.id)
@@ -429,7 +460,8 @@ function sceneNodeToKiwi(
   parentGuid: { sessionID: number; localID: number },
   childIndex: number,
   localIdCounter: { value: number },
-  graph: SceneGraph
+  graph: SceneGraph,
+  blobs: Uint8Array[]
 ): KiwiNodeChange[] {
   const localID = localIdCounter.value++
   const guid = { sessionID: 1, localID }
@@ -531,10 +563,19 @@ function sceneNodeToKiwi(
     nc.stackChildPrimaryGrow = node.layoutGrow
   }
 
+  if (node.vectorNetwork && node.type === 'VECTOR') {
+    const blobIdx = blobs.length
+    blobs.push(encodeVectorNetworkBlob(node.vectorNetwork))
+    nc.vectorData = {
+      vectorNetworkBlob: blobIdx,
+      normalizedSize: { x: node.width, y: node.height }
+    }
+  }
+
   const result: KiwiNodeChange[] = [nc]
   const children = graph.getChildren(node.id)
   for (let i = 0; i < children.length; i++) {
-    result.push(...sceneNodeToKiwi(children[i], guid, i, localIdCounter, graph))
+    result.push(...sceneNodeToKiwi(children[i], guid, i, localIdCounter, graph, blobs))
   }
 
   return result
@@ -574,11 +615,12 @@ export function buildFigmaClipboardHTML(
     }
   ]
 
+  const blobs: Uint8Array[] = []
   for (let i = 0; i < nodes.length; i++) {
-    nodeChanges.push(...sceneNodeToKiwi(nodes[i], canvasGuid, i, localIdCounter, graph))
+    nodeChanges.push(...sceneNodeToKiwi(nodes[i], canvasGuid, i, localIdCounter, graph, blobs))
   }
 
-  const msg = {
+  const msg: Record<string, unknown> = {
     type: 'NODE_CHANGES',
     sessionID: 0,
     ackID: 0,
@@ -587,13 +629,17 @@ export function buildFigmaClipboardHTML(
     nodeChanges
   }
 
+  if (blobs.length > 0) {
+    msg.blobs = blobs.map((bytes) => ({ bytes }))
+  }
+
   const dataRaw = compiled.encodeMessage(msg)
   const figKiwiBinary = buildFigKiwi(schemaDeflated, dataRaw)
   const bufferB64 = binaryToBase64(figKiwiBinary)
 
   const meta: FigmaClipboardMeta = {
     fileKey: 'openpencil',
-    pasteID: msg.pasteID,
+    pasteID: msg.pasteID as number,
     dataType: 'scene'
   }
   const metaB64 = btoa(JSON.stringify(meta))
