@@ -10,102 +10,102 @@ Full Figma-compatible shortcut map. ✅ = implemented.
 
 | Key | Tool | Status |
 |-----|------|--------|
-| V | Move/Select | ✅ |
-| K | Scale | |
-| H | Hand | ✅ |
-| F | Frame | ✅ |
-| S | Section / Slice | |
-| R | Rectangle | ✅ |
-| O | Ellipse | ✅ |
-| L | Line | ✅ |
-| ⇧L | Arrow | |
-| P | Pen | ✅ |
-| ⇧P | Pencil | |
-| T | Text | ✅ |
-| C | Comment | |
-| I | Eyedropper | |
+| <kbd>V</kbd> | Move/Select | ✅ |
+| <kbd>K</kbd> | Scale | |
+| <kbd>H</kbd> | Hand | ✅ |
+| <kbd>F</kbd> | Frame | ✅ |
+| <kbd>S</kbd> | Section / Slice | |
+| <kbd>R</kbd> | Rectangle | ✅ |
+| <kbd>O</kbd> | Ellipse | ✅ |
+| <kbd>L</kbd> | Line | ✅ |
+| <kbd>⇧</kbd><kbd>L</kbd> | Arrow | |
+| <kbd>P</kbd> | Pen | ✅ |
+| <kbd>⇧</kbd><kbd>P</kbd> | Pencil | |
+| <kbd>T</kbd> | Text | ✅ |
+| <kbd>C</kbd> | Comment | |
+| <kbd>I</kbd> | Eyedropper | |
 
 ## File
 
 | Shortcut | Action | Status |
 |----------|--------|--------|
-| ⌘N | New Window | |
-| ⌘O | Open File | ✅ |
-| ⌘W | Close Tab | |
-| ⌘S | Save | |
-| ⇧⌘E | Export… | |
+| <kbd>⌘</kbd><kbd>N</kbd> | New Window | |
+| <kbd>⌘</kbd><kbd>O</kbd> | Open File | ✅ |
+| <kbd>⌘</kbd><kbd>W</kbd> | Close Tab | |
+| <kbd>⌘</kbd><kbd>S</kbd> | Save | |
+| <kbd>⇧</kbd><kbd>⌘</kbd><kbd>E</kbd> | Export… | |
 
 ## Edit
 
 | Shortcut | Action | Status |
 |----------|--------|--------|
-| ⌘Z | Undo | ✅ |
-| ⇧⌘Z | Redo | ✅ |
-| ⌘X | Cut | ✅ |
-| ⌘C | Copy | ✅ |
-| ⌘V | Paste | ✅ |
-| ⇧⌘V | Paste Over Selection | |
-| ⌘D | Duplicate | ✅ |
-| ⌫ | Delete | ✅ |
-| ⌘A | Select All | ✅ |
-| ⇧⌘A | Select Inverse | |
-| ⌥⌘C | Copy Properties | |
-| ⌥⌘V | Paste Properties | |
+| <kbd>⌘</kbd><kbd>Z</kbd> | Undo | ✅ |
+| <kbd>⇧</kbd><kbd>⌘</kbd><kbd>Z</kbd> | Redo | ✅ |
+| <kbd>⌘</kbd><kbd>X</kbd> | Cut | ✅ |
+| <kbd>⌘</kbd><kbd>C</kbd> | Copy | ✅ |
+| <kbd>⌘</kbd><kbd>V</kbd> | Paste | ✅ |
+| <kbd>⇧</kbd><kbd>⌘</kbd><kbd>V</kbd> | Paste Over Selection | |
+| <kbd>⌘</kbd><kbd>D</kbd> | Duplicate | ✅ |
+| <kbd>⌫</kbd> | Delete | ✅ |
+| <kbd>⌘</kbd><kbd>A</kbd> | Select All | ✅ |
+| <kbd>⇧</kbd><kbd>⌘</kbd><kbd>A</kbd> | Select Inverse | |
+| <kbd>⌥</kbd><kbd>⌘</kbd><kbd>C</kbd> | Copy Properties | |
+| <kbd>⌥</kbd><kbd>⌘</kbd><kbd>V</kbd> | Paste Properties | |
 
 ## View
 
 | Shortcut | Action | Status |
 |----------|--------|--------|
-| ⌘' | Pixel Grid | |
-| ⌃G | Layout Guides | |
-| ⇧R | Rulers | |
-| ⌘\ | Show/Hide UI | |
-| ⌘= | Zoom In | ✅ |
-| ⌘- | Zoom Out | ✅ |
-| ⌘0 | Zoom to 100% | ✅ |
-| ⌘1 | Zoom to Fit | |
-| ⌘2 | Zoom to Selection | |
+| <kbd>⌘</kbd><kbd>'</kbd> | Pixel Grid | |
+| <kbd>⌃</kbd><kbd>G</kbd> | Layout Guides | |
+| <kbd>⇧</kbd><kbd>R</kbd> | Rulers | |
+| <kbd>⌘</kbd><kbd>\\</kbd> | Show/Hide UI | |
+| <kbd>⌘</kbd><kbd>=</kbd> | Zoom In | ✅ |
+| <kbd>⌘</kbd><kbd>-</kbd> | Zoom Out | ✅ |
+| <kbd>⌘</kbd><kbd>0</kbd> | Zoom to 100% | ✅ |
+| <kbd>⌘</kbd><kbd>1</kbd> | Zoom to Fit | |
+| <kbd>⌘</kbd><kbd>2</kbd> | Zoom to Selection | |
 
 ## Object
 
 | Shortcut | Action | Status |
 |----------|--------|--------|
-| ⌥⌘G | Frame Selection | |
-| ⌘G | Group Selection | ✅ |
-| ⇧⌘G | Ungroup | ✅ |
-| ⇧A | Add Auto Layout | ✅ |
-| ⌥⌘K | Create Component | |
-| ⌥⌘B | Detach Instance | |
-| ⌘] | Bring Forward | |
-| ⌥⌘] | Bring to Front | |
-| ⌘[ | Send Backward | |
-| ⌥⌘[ | Send to Back | |
-| ⇧H | Flip Horizontal | |
-| ⇧V | Flip Vertical | |
-| ⌘E | Flatten | |
+| <kbd>⌥</kbd><kbd>⌘</kbd><kbd>G</kbd> | Frame Selection | |
+| <kbd>⌘</kbd><kbd>G</kbd> | Group Selection | ✅ |
+| <kbd>⇧</kbd><kbd>⌘</kbd><kbd>G</kbd> | Ungroup | ✅ |
+| <kbd>⇧</kbd><kbd>A</kbd> | Add Auto Layout | ✅ |
+| <kbd>⌥</kbd><kbd>⌘</kbd><kbd>K</kbd> | Create Component | |
+| <kbd>⌥</kbd><kbd>⌘</kbd><kbd>B</kbd> | Detach Instance | |
+| <kbd>⌘</kbd><kbd>]</kbd> | Bring Forward | |
+| <kbd>⌥</kbd><kbd>⌘</kbd><kbd>]</kbd> | Bring to Front | |
+| <kbd>⌘</kbd><kbd>[</kbd> | Send Backward | |
+| <kbd>⌥</kbd><kbd>⌘</kbd><kbd>[</kbd> | Send to Back | |
+| <kbd>⇧</kbd><kbd>H</kbd> | Flip Horizontal | |
+| <kbd>⇧</kbd><kbd>V</kbd> | Flip Vertical | |
+| <kbd>⌘</kbd><kbd>E</kbd> | Flatten | |
 
 ## Text
 
 | Shortcut | Action | Status |
 |----------|--------|--------|
-| ⌘B | Bold | |
-| ⌘I | Italic | |
-| ⌘U | Underline | |
-| ⇧⌘X | Strikethrough | |
+| <kbd>⌘</kbd><kbd>B</kbd> | Bold | |
+| <kbd>⌘</kbd><kbd>I</kbd> | Italic | |
+| <kbd>⌘</kbd><kbd>U</kbd> | Underline | |
+| <kbd>⇧</kbd><kbd>⌘</kbd><kbd>X</kbd> | Strikethrough | |
 
 ## Canvas Interaction
 
 | Input | Action | Status |
 |-------|--------|--------|
 | Click | Select node | ✅ |
-| Shift+Click | Add/remove from selection | ✅ |
-| Alt+Drag | Duplicate and move | ✅ |
-| Shift+Drag (draw) | Constrain to square/circle | ✅ |
-| Shift+Drag (resize) | Maintain aspect ratio | ✅ |
-| Shift+Drag (rotate) | Snap to 15° | ✅ |
+| <kbd>Shift</kbd>+Click | Add/remove from selection | ✅ |
+| <kbd>Alt</kbd>+Drag | Duplicate and move | ✅ |
+| <kbd>Shift</kbd>+Drag (draw) | Constrain to square/circle | ✅ |
+| <kbd>Shift</kbd>+Drag (resize) | Maintain aspect ratio | ✅ |
+| <kbd>Shift</kbd>+Drag (rotate) | Snap to 15° | ✅ |
 | Middle mouse drag | Pan | ✅ |
 | Scroll | Pan | ✅ |
-| Ctrl+Scroll / Pinch | Zoom | ✅ |
+| <kbd>Ctrl</kbd>+Scroll / Pinch | Zoom | ✅ |
 | Double-click text | Edit text inline | ✅ |
 | Drag onto frame | Reparent into frame | ✅ |
-| Escape | Deselect / Cancel | ✅ |
+| <kbd>Escape</kbd> | Deselect / Cancel | ✅ |

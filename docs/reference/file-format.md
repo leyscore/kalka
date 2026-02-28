@@ -39,22 +39,11 @@ Figma's schema uses non-contiguous field IDs (e.g., 1, 2, 5, 10 with gaps). The 
 
 .fig files use Zstd compression for both the schema and message payloads. The `fzstd` library handles decompression. For clipboard encoding, `fflate` provides lightweight compression.
 
-## .openpencil Format (Planned)
-
-The native format will use the same Kiwi binary encoding:
-
-- Same NodeChange-based structure (proven at Figma scale)
-- Kiwi binary schema (compact, fast parsing)
-- Zstd compression
-- Superset of .fig — additional fields for OpenPencil features
-- Full roundtrip: save → load → identical state
-
 ## Supported Formats
 
 | Format | Import | Export |
 |--------|--------|--------|
 | .fig (Figma) | ✅ | — |
-| .openpencil | Planned | Planned |
 | .svg | Planned | Planned |
 | .png | Planned | Planned |
 | .pdf | — | Planned |
