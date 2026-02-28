@@ -248,4 +248,17 @@ function setAlignment(primary: LayoutAlign, counter: LayoutCounterAlign) {
       </div>
     </template>
   </div>
+
+  <!-- Clip content (for all frames) -->
+  <div v-if="node.type === 'FRAME'" class="border-b border-border px-3 py-2">
+    <label class="flex cursor-pointer items-center gap-2 text-xs text-surface">
+      <input
+        type="checkbox"
+        class="accent-accent"
+        :checked="node.clipsContent"
+        @change="store.updateNodeWithUndo(node.id, { clipsContent: !node.clipsContent }, 'Toggle clip content')"
+      />
+      Clip content
+    </label>
+  </div>
 </template>

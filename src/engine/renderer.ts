@@ -588,7 +588,7 @@ export class SkiaRenderer {
     }
 
     // Clip + render children for containers
-    if (node.type === 'FRAME' && node.childIds.length > 0) {
+    if (node.type === 'FRAME' && node.clipsContent && node.childIds.length > 0) {
       canvas.save()
       canvas.clipRect(
         this.ck.LTRBRect(0, 0, node.width, node.height),

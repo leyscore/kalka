@@ -739,6 +739,20 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
           const dropId = store.state.dropTargetId
           if (dropId) {
             store.reparentNodes([...store.state.selectedIds], dropId)
+          } else {
+            // Reparent to grandparent if dragged outside parent bounds
+            for (const id of store.state.selectedIds) {
+              const node = store.graph.getNode(id)
+              if (!node?.parentId || node.parentId === store.graph.rootId) continue
+              const parent = store.graph.getNode(node.parentId)
+              if (!parent || parent.type !== 'FRAME') continue
+              const outsideX = node.x + node.width < 0 || node.x > parent.width
+              const outsideY = node.y + node.height < 0 || node.y > parent.height
+              if (outsideX || outsideY) {
+                const grandparentId = parent.parentId ?? store.graph.rootId
+                store.graph.reparentNode(id, grandparentId)
+              }
+            }
           }
         }
         store.setDropTarget(null)

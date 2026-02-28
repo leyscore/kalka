@@ -102,6 +102,7 @@ export interface SceneNode {
 
   visible: boolean
   locked: boolean
+  clipsContent: boolean
 
   text: string
   fontSize: number
@@ -162,6 +163,7 @@ function createDefaultNode(type: NodeType, overrides: Partial<SceneNode> = {}): 
     cornerSmoothing: 0,
     visible: true,
     locked: false,
+    clipsContent: true,
     text: '',
     fontSize: 14,
     fontFamily: 'Inter',
