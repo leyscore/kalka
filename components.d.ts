@@ -11,12 +11,23 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AppearanceSection: typeof import('./src/components/properties/AppearanceSection.vue')['default']
     ColorPicker: typeof import('./src/components/ColorPicker.vue')['default']
     EditorCanvas: typeof import('./src/components/EditorCanvas.vue')['default']
+    FillSection: typeof import('./src/components/properties/FillSection.vue')['default']
+    IconLucideALargeSmall: typeof import('~icons/lucide/a-large-small')['default']
+    IconLucideBaseline: typeof import('~icons/lucide/baseline')['default']
+    IconLucideCheck: typeof import('~icons/lucide/check')['default']
+    IconLucideChevronDown: typeof import('~icons/lucide/chevron-down')['default']
     IconLucideChevronRight: typeof import('~icons/lucide/chevron-right')['default']
+    IconLucideSearch: typeof import('~icons/lucide/search')['default']
     LayersPanel: typeof import('./src/components/LayersPanel.vue')['default']
+    LayoutSection: typeof import('./src/components/properties/LayoutSection.vue')['default']
+    PositionSection: typeof import('./src/components/properties/PositionSection.vue')['default']
     PropertiesPanel: typeof import('./src/components/PropertiesPanel.vue')['default']
     ScrubInput: typeof import('./src/components/ScrubInput.vue')['default']
+    StrokeSection: typeof import('./src/components/properties/StrokeSection.vue')['default']
     Toolbar: typeof import('./src/components/Toolbar.vue')['default']
+    TypographySection: typeof import('./src/components/properties/TypographySection.vue')['default']
   }
 }
