@@ -53,6 +53,8 @@ export class SkiaRenderer {
   panY = 0
   zoom = 1
   dpr = 1
+  viewportWidth = 0
+  viewportHeight = 0
 
   private selColor(alpha = 1) {
     return this.ck.Color4f(SELECTION_COLOR.r, SELECTION_COLOR.g, SELECTION_COLOR.b, alpha)
@@ -143,6 +145,7 @@ export class SkiaRenderer {
     this.drawMarquee(canvas, overlays.marquee)
     this.drawLayoutInsertIndicator(canvas, overlays.layoutInsertIndicator)
     this.drawPenOverlay(canvas, overlays.penState)
+    this.drawRulers(canvas, graph, selectedIds)
 
     canvas.restore()
     this.surface.flush()
@@ -872,6 +875,154 @@ export class SkiaRenderer {
     handlePaint.delete()
     vertexFill.delete()
     vertexStroke.delete()
+  }
+
+  // --- Rulers ---
+
+  private static readonly RULER_SIZE = 20
+  private static readonly RULER_BG = { r: 0.14, g: 0.14, b: 0.14 }
+  private static readonly RULER_TICK = { r: 0.4, g: 0.4, b: 0.4 }
+  private static readonly RULER_TEXT = { r: 0.55, g: 0.55, b: 0.55 }
+
+  private drawRulers(canvas: Canvas, graph: SceneGraph, selectedIds: Set<string>): void {
+    const R = SkiaRenderer.RULER_SIZE
+    const vw = this.viewportWidth
+    const vh = this.viewportHeight
+    if (vw === 0 || vh === 0) return
+
+    const bg = SkiaRenderer.RULER_BG
+    const bgPaint = new this.ck.Paint()
+    bgPaint.setColor(this.ck.Color4f(bg.r, bg.g, bg.b, 1))
+
+    canvas.drawRect(this.ck.LTRBRect(0, 0, vw, R), bgPaint)
+    canvas.drawRect(this.ck.LTRBRect(0, R, R, vh), bgPaint)
+
+    // Corner square
+    canvas.drawRect(this.ck.LTRBRect(0, 0, R, R), bgPaint)
+
+    const tickPaint = new this.ck.Paint()
+    tickPaint.setColor(this.ck.Color4f(SkiaRenderer.RULER_TICK.r, SkiaRenderer.RULER_TICK.g, SkiaRenderer.RULER_TICK.b, 1))
+    tickPaint.setStrokeWidth(1)
+    tickPaint.setAntiAlias(true)
+
+    const textColor = SkiaRenderer.RULER_TEXT
+    const textPaint = new this.ck.Paint()
+    textPaint.setColor(this.ck.Color4f(textColor.r, textColor.g, textColor.b, 1))
+    textPaint.setAntiAlias(true)
+
+    const font = this.sizeFont ?? this.textFont
+    if (!font) { bgPaint.delete(); tickPaint.delete(); textPaint.delete(); return }
+
+    const step = this.rulerStep()
+    const minorStep = step / 5
+
+    // Horizontal ruler
+    const worldLeft = -this.panX / this.zoom
+    const worldRight = (vw - this.panX) / this.zoom
+    const startX = Math.floor(worldLeft / step) * step
+
+    for (let wx = startX; wx <= worldRight; wx += minorStep) {
+      const sx = wx * this.zoom + this.panX
+      if (sx < R) continue
+      const isMajor = Math.abs(wx % step) < 0.01
+      const tickLen = isMajor ? R * 0.5 : R * 0.25
+      canvas.drawLine(sx, R - tickLen, sx, R, tickPaint)
+
+      if (isMajor) {
+        const label = this.rulerLabel(wx)
+        canvas.drawText(label, sx + 2, R - tickLen - 2, textPaint, font)
+      }
+    }
+
+    // Vertical ruler
+    const worldTop = -this.panY / this.zoom
+    const worldBottom = (vh - this.panY) / this.zoom
+    const startY = Math.floor(worldTop / step) * step
+
+    for (let wy = startY; wy <= worldBottom; wy += minorStep) {
+      const sy = wy * this.zoom + this.panY
+      if (sy < R) continue
+      const isMajor = Math.abs(wy % step) < 0.01
+      const tickLen = isMajor ? R * 0.5 : R * 0.25
+      canvas.drawLine(R - tickLen, sy, R, sy, tickPaint)
+
+      if (isMajor) {
+        const label = this.rulerLabel(wy)
+        canvas.save()
+        canvas.rotate(-90, R - tickLen - 2, sy)
+        canvas.drawText(label, R - tickLen - 2, sy - 2, textPaint, font)
+        canvas.restore()
+      }
+    }
+
+    // Selection highlight on rulers
+    if (selectedIds.size > 0) {
+      const hlPaint = new this.ck.Paint()
+      hlPaint.setColor(this.selColor())
+
+      const labelPaint = new this.ck.Paint()
+      labelPaint.setColor(this.ck.Color4f(1, 1, 1, 1))
+      labelPaint.setAntiAlias(true)
+
+      const nodes = [...selectedIds]
+        .map((id) => graph.getNode(id))
+        .filter((n): n is SceneNode => n !== undefined)
+
+      if (nodes.length > 0) {
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+        for (const n of nodes) {
+          const abs = graph.getAbsolutePosition(n.id)
+          minX = Math.min(minX, abs.x)
+          minY = Math.min(minY, abs.y)
+          maxX = Math.max(maxX, abs.x + n.width)
+          maxY = Math.max(maxY, abs.y + n.height)
+        }
+
+        const sx1 = minX * this.zoom + this.panX
+        const sx2 = maxX * this.zoom + this.panX
+        const sy1 = minY * this.zoom + this.panY
+        const sy2 = maxY * this.zoom + this.panY
+
+        // Horizontal highlight
+        canvas.drawRect(this.ck.LTRBRect(Math.max(R, sx1), 0, sx2, R), hlPaint)
+        // Vertical highlight
+        canvas.drawRect(this.ck.LTRBRect(0, Math.max(R, sy1), R, sy2), hlPaint)
+
+        // Coordinate labels on highlights
+        const x1Label = Math.round(minX).toString()
+        const y1Label = Math.round(minY).toString()
+
+        canvas.drawText(x1Label, Math.max(R + 1, sx1 + 2), R - 4, labelPaint, font)
+        canvas.drawText(y1Label, 2, Math.max(R + 10, sy1 + 10), labelPaint, font)
+      }
+
+      hlPaint.delete()
+      labelPaint.delete()
+    }
+
+    bgPaint.delete()
+    tickPaint.delete()
+    textPaint.delete()
+  }
+
+  private rulerStep(): number {
+    const pixelsPerUnit = this.zoom
+    const targetPixelSpacing = 100
+    const rawStep = targetPixelSpacing / pixelsPerUnit
+    const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)))
+    const normalized = rawStep / magnitude
+
+    if (normalized <= 1) return magnitude
+    if (normalized <= 2) return 2 * magnitude
+    if (normalized <= 5) return 5 * magnitude
+    return 10 * magnitude
+  }
+
+  private rulerLabel(value: number): string {
+    const abs = Math.abs(value)
+    if (abs >= 1000) return Math.round(value).toString()
+    if (abs >= 1) return Math.round(value).toString()
+    return value.toFixed(1)
   }
 
   destroy(): void {
