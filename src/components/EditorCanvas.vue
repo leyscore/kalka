@@ -67,8 +67,8 @@ function onTextKeyDown(e: KeyboardEvent) {
 </script>
 
 <template>
-  <CanvasContextMenu>
-  <div class="relative flex-1 min-w-0 min-h-0 overflow-hidden">
+  <CanvasContextMenu v-slot="{ onContextMenu }">
+  <div class="relative flex-1 min-w-0 min-h-0 overflow-hidden" @contextmenu="onContextMenu">
     <canvas ref="canvasRef" :style="{ cursor }" class="block size-full" />
     <textarea
       v-if="editingNode"

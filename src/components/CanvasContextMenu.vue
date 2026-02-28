@@ -114,10 +114,7 @@ watch(open, (val) => {
 </script>
 
 <template>
-  <div @contextmenu="onContextMenu">
-    <slot />
-  </div>
-
+  <slot :onContextMenu="onContextMenu" />
   <Teleport to="body">
     <div
       v-if="open"

@@ -5,7 +5,7 @@ import { TreeRoot, TreeItem } from 'reka-ui'
 
 import IconCircle from '~icons/lucide/circle'
 import IconComponent from '~icons/lucide/diamond'
-import IconComponentSet from '~icons/lucide/diamonds'
+import IconComponentSet from '~icons/lucide/component'
 import IconFrame from '~icons/lucide/frame'
 import IconGroup from '~icons/lucide/group'
 import IconInstance from '~icons/lucide/diamond'
