@@ -93,23 +93,25 @@ export class SkiaRenderer {
   }
 
   async loadFonts(): Promise<void> {
-    const response = await fetch('/Inter-Regular.ttf')
-    const fontData = await response.arrayBuffer()
-
     this.fontProvider = this.ck.TypefaceFontProvider.Make()
-    this.fontProvider.registerFont(fontData, 'Inter')
 
-    const typeface = this.ck.Typeface.MakeFreeTypeFaceFromData(fontData)
-    if (typeface) {
-      this.textFont?.delete()
-      this.labelFont?.delete()
-      this.sizeFont?.delete()
-      this.textFont = new this.ck.Font(typeface, 14)
-      this.labelFont = new this.ck.Font(typeface, 11)
-      this.sizeFont = new this.ck.Font(typeface, 10)
+    const { initFontService, loadFont } = await import('./fonts')
+    initFontService(this.ck, this.fontProvider)
+
+    const fontData = await loadFont('Inter', 'Regular')
+    if (fontData) {
+      const typeface = this.ck.Typeface.MakeFreeTypeFaceFromData(fontData)
+      if (typeface) {
+        this.textFont?.delete()
+        this.labelFont?.delete()
+        this.sizeFont?.delete()
+        this.textFont = new this.ck.Font(typeface, 14)
+        this.labelFont = new this.ck.Font(typeface, 11)
+        this.sizeFont = new this.ck.Font(typeface, 10)
+      }
+      this.fontMgr = this.ck.FontMgr.FromData(fontData) ?? null
     }
 
-    this.fontMgr = this.ck.FontMgr.FromData(fontData) ?? null
     this.fontsLoaded = true
   }
 

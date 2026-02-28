@@ -1,12 +1,5 @@
 @import "tailwindcss";
 
-@font-face {
-  font-family: Inter;
-  src: url("/Inter-Regular.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
 
 @theme {
   --color-panel: #2a2a2a;
