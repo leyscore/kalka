@@ -23,7 +23,7 @@ const isComponentType = computed(() => {
 </script>
 
 <template>
-  <aside class="flex w-[241px] flex-col overflow-hidden border-l border-border bg-panel">
+  <aside class="flex min-w-0 flex-1 flex-col overflow-hidden border-l border-border bg-panel">
     <!-- Tabs -->
     <div class="flex h-10 shrink-0 items-center gap-1 border-b border-border px-2">
       <button class="rounded px-2.5 py-1 text-xs font-semibold text-surface">Design</button>

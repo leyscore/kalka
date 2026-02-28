@@ -211,7 +211,7 @@ function updateDropTarget(ev: PointerEvent) {
 </script>
 
 <template>
-  <aside class="flex w-60 flex-col overflow-y-auto border-r border-border bg-panel">
+  <aside class="flex min-w-0 flex-1 flex-col overflow-y-auto border-r border-border bg-panel">
     <PagesPanel />
     <header class="shrink-0 px-3 py-2 text-[11px] uppercase tracking-wider text-muted">Layers</header>
     <div ref="listRef" class="relative flex-1 overflow-y-auto px-1">
