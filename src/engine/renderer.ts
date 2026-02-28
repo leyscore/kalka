@@ -63,6 +63,9 @@ export class SkiaRenderer {
   private selectionPaint: Paint
   private parentOutlinePaint: Paint
   private snapPaint: Paint
+  private auxFill: Paint
+  private auxStroke: Paint
+  private opacityPaint: Paint
   private textFont: Font | null = null
   private labelFont: Font | null = null
   private sizeFont: Font | null = null
@@ -127,6 +130,16 @@ export class SkiaRenderer {
     this.snapPaint.setStrokeWidth(1)
     this.snapPaint.setColor(this.ck.Color4f(SNAP_COLOR.r, SNAP_COLOR.g, SNAP_COLOR.b, 1))
     this.snapPaint.setAntiAlias(true)
+
+    this.auxFill = new ck.Paint()
+    this.auxFill.setStyle(ck.PaintStyle.Fill)
+    this.auxFill.setAntiAlias(true)
+
+    this.auxStroke = new ck.Paint()
+    this.auxStroke.setStyle(ck.PaintStyle.Stroke)
+    this.auxStroke.setAntiAlias(true)
+
+    this.opacityPaint = new ck.Paint()
 
     this.textFont = new ck.Font(null, DEFAULT_FONT_SIZE)
   }
@@ -422,21 +435,14 @@ export class SkiaRenderer {
 
     // Rotation handle (line extending above + circle)
     const rotHandleY = y1 - ROTATION_HANDLE_OFFSET - ROTATION_HANDLE_RADIUS
-    const rotLinePaint = new this.ck.Paint()
-    rotLinePaint.setStyle(this.ck.PaintStyle.Stroke)
-    rotLinePaint.setStrokeWidth(1)
-    rotLinePaint.setColor(this.selColor())
-    rotLinePaint.setAntiAlias(true)
-    canvas.drawLine(mx, y1, mx, rotHandleY, rotLinePaint)
+    this.auxStroke.setStrokeWidth(1)
+    this.auxStroke.setColor(this.selColor())
+    this.auxStroke.setPathEffect(null)
+    canvas.drawLine(mx, y1, mx, rotHandleY, this.auxStroke)
 
-    const rotFill = new this.ck.Paint()
-    rotFill.setStyle(this.ck.PaintStyle.Fill)
-    rotFill.setColor(this.ck.WHITE)
-    rotFill.setAntiAlias(true)
-    canvas.drawCircle(mx, rotHandleY, ROTATION_HANDLE_RADIUS, rotFill)
-    canvas.drawCircle(mx, rotHandleY, ROTATION_HANDLE_RADIUS, rotLinePaint)
-    rotLinePaint.delete()
-    rotFill.delete()
+    this.auxFill.setColor(this.ck.WHITE)
+    canvas.drawCircle(mx, rotHandleY, ROTATION_HANDLE_RADIUS, this.auxFill)
+    canvas.drawCircle(mx, rotHandleY, ROTATION_HANDLE_RADIUS, this.auxStroke)
 
     canvas.restore()
   }
@@ -479,12 +485,8 @@ export class SkiaRenderer {
       const parentNode = node.parentId ? graph.getNode(node.parentId) : null
       const isTopLevel = !parentNode || parentNode.type === 'CANVAS' || parentNode.type === 'SECTION'
       if (node.type === 'FRAME' && isTopLevel) {
-        const labelPaint = new this.ck.Paint()
-        labelPaint.setStyle(this.ck.PaintStyle.Fill)
-        labelPaint.setColor(this.selColor())
-        labelPaint.setAntiAlias(true)
-        canvas.drawText(node.name, sx1, sy1 - LABEL_OFFSET_Y, labelPaint, this.labelFont)
-        labelPaint.delete()
+        this.auxFill.setColor(this.selColor())
+        canvas.drawText(node.name, sx1, sy1 - LABEL_OFFSET_Y, this.auxFill, this.labelFont)
       }
     }
 
@@ -504,22 +506,12 @@ export class SkiaRenderer {
     const allComponents = nodes.length > 0 && nodes.every((n) => this.isComponentType(n.type))
     const pillColor = allComponents ? this.compColor() : this.selColor()
 
-    const pillPaint = new this.ck.Paint()
-    pillPaint.setStyle(this.ck.PaintStyle.Fill)
-    pillPaint.setColor(pillColor)
-    pillPaint.setAntiAlias(true)
-
+    this.auxFill.setColor(pillColor)
     const rrect = this.ck.RRectXY(this.ck.LTRBRect(pillX, pillY, pillX + pillW, pillY + pillH), SIZE_PILL_RADIUS, SIZE_PILL_RADIUS)
-    canvas.drawRRect(rrect, pillPaint)
+    canvas.drawRRect(rrect, this.auxFill)
 
-    const textPaint = new this.ck.Paint()
-    textPaint.setStyle(this.ck.PaintStyle.Fill)
-    textPaint.setColor(this.ck.WHITE)
-    textPaint.setAntiAlias(true)
-    canvas.drawText(sizeText, pillX + SIZE_PILL_PADDING_X, pillY + SIZE_PILL_TEXT_OFFSET_Y, textPaint, this.sizeFont)
-
-    pillPaint.delete()
-    textPaint.delete()
+    this.auxFill.setColor(this.ck.WHITE)
+    canvas.drawText(sizeText, pillX + SIZE_PILL_PADDING_X, pillY + SIZE_PILL_TEXT_OFFSET_Y, this.auxFill, this.sizeFont)
   }
 
   private drawParentFrameOutlines(
@@ -608,13 +600,11 @@ export class SkiaRenderer {
     }
 
     // Dashed bounding box
-    const dashPaint = new this.ck.Paint()
-    dashPaint.setStyle(this.ck.PaintStyle.Stroke)
-    dashPaint.setStrokeWidth(1)
-    dashPaint.setColor(this.selColor(SELECTION_DASH_ALPHA))
-    dashPaint.setAntiAlias(true)
+    this.auxStroke.setStrokeWidth(1)
+    this.auxStroke.setColor(this.selColor(SELECTION_DASH_ALPHA))
+    this.auxStroke.setPathEffect(null)
 
-    canvas.drawRect(this.ck.LTRBRect(minX, minY, maxX, maxY), dashPaint)
+    canvas.drawRect(this.ck.LTRBRect(minX, minY, maxX, maxY), this.auxStroke)
 
     // Group resize handles
     this.drawHandle(canvas, minX, minY)
@@ -627,8 +617,6 @@ export class SkiaRenderer {
     this.drawHandle(canvas, gmx, maxY)
     this.drawHandle(canvas, minX, gmy)
     this.drawHandle(canvas, maxX, gmy)
-
-    dashPaint.delete()
   }
 
   private getRotatedCorners(n: SceneNode, abs: { x: number; y: number }) {
@@ -649,14 +637,10 @@ export class SkiaRenderer {
   }
 
   private drawHandle(canvas: Canvas, x: number, y: number): void {
-    const handleFill = new this.ck.Paint()
-    handleFill.setStyle(this.ck.PaintStyle.Fill)
-    handleFill.setColor(this.ck.WHITE)
-
+    this.auxFill.setColor(this.ck.WHITE)
     const rect = this.ck.LTRBRect(x - HANDLE_HALF_SIZE, y - HANDLE_HALF_SIZE, x + HANDLE_HALF_SIZE, y + HANDLE_HALF_SIZE)
-    canvas.drawRect(rect, handleFill)
+    canvas.drawRect(rect, this.auxFill)
     canvas.drawRect(rect, this.selectionPaint)
-    handleFill.delete()
   }
 
   // --- Snap guides ---
@@ -693,12 +677,9 @@ export class SkiaRenderer {
     const y2 = (marquee.y + marquee.height) * this.zoom + this.panY
     const rect = this.ck.LTRBRect(x1, y1, x2, y2)
 
-    const fill = new this.ck.Paint()
-    fill.setStyle(this.ck.PaintStyle.Fill)
-    fill.setColor(this.selColor(MARQUEE_FILL_ALPHA))
-    canvas.drawRect(rect, fill)
+    this.auxFill.setColor(this.selColor(MARQUEE_FILL_ALPHA))
+    canvas.drawRect(rect, this.auxFill)
     canvas.drawRect(rect, this.selectionPaint)
-    fill.delete()
   }
 
   // --- Layout insert indicator ---
@@ -709,25 +690,21 @@ export class SkiaRenderer {
   ): void {
     if (!indicator) return
 
-    const paint = new this.ck.Paint()
-    paint.setStyle(this.ck.PaintStyle.Stroke)
-    paint.setStrokeWidth(LAYOUT_INDICATOR_STROKE)
-    paint.setColor(this.selColor())
-    paint.setAntiAlias(true)
+    this.auxStroke.setStrokeWidth(LAYOUT_INDICATOR_STROKE)
+    this.auxStroke.setColor(this.selColor())
+    this.auxStroke.setPathEffect(null)
 
     if (indicator.direction === 'HORIZONTAL') {
       const y = indicator.y * this.zoom + this.panY
       const x1 = indicator.x * this.zoom + this.panX
       const x2 = (indicator.x + indicator.length) * this.zoom + this.panX
-      canvas.drawLine(x1, y, x2, y, paint)
+      canvas.drawLine(x1, y, x2, y, this.auxStroke)
     } else {
       const x = indicator.x * this.zoom + this.panX
       const y1 = indicator.y * this.zoom + this.panY
       const y2 = (indicator.y + indicator.length) * this.zoom + this.panY
-      canvas.drawLine(x, y1, x, y2, paint)
+      canvas.drawLine(x, y1, x, y2, this.auxStroke)
     }
-
-    paint.delete()
   }
 
   // --- Scene rendering ---
@@ -782,10 +759,8 @@ export class SkiaRenderer {
     canvas.translate(node.x, node.y)
 
     if (node.opacity < 1) {
-      const layerPaint = new this.ck.Paint()
-      layerPaint.setAlphaf(node.opacity)
-      canvas.saveLayer(layerPaint)
-      layerPaint.delete()
+      this.opacityPaint.setAlphaf(node.opacity)
+      canvas.saveLayer(this.opacityPaint)
     }
 
     const rotation =
@@ -805,24 +780,17 @@ export class SkiaRenderer {
 
     // Drop target highlight
     if (overlays.dropTargetId === nodeId) {
-      const highlight = new this.ck.Paint()
-      highlight.setStyle(this.ck.PaintStyle.Stroke)
-      highlight.setStrokeWidth(DROP_HIGHLIGHT_STROKE / this.zoom)
-      highlight.setColor(this.selColor(DROP_HIGHLIGHT_ALPHA))
-      highlight.setAntiAlias(true)
-      canvas.drawRect(this.ck.LTRBRect(0, 0, node.width, node.height), highlight)
-      highlight.delete()
+      this.auxStroke.setStrokeWidth(DROP_HIGHLIGHT_STROKE / this.zoom)
+      this.auxStroke.setColor(this.selColor(DROP_HIGHLIGHT_ALPHA))
+      canvas.drawRect(this.ck.LTRBRect(0, 0, node.width, node.height), this.auxStroke)
     }
 
     // Hover highlight — shape-aware outline
     if (overlays.hoveredNodeId === nodeId) {
-      const hoverPaint = new this.ck.Paint()
-      hoverPaint.setStyle(this.ck.PaintStyle.Stroke)
-      hoverPaint.setStrokeWidth(1 / this.zoom)
-      hoverPaint.setColor(this.isComponentType(node.type) ? this.compColor() : this.selColor())
-      hoverPaint.setAntiAlias(true)
-      this.strokeNodeShape(canvas, node, hoverPaint)
-      hoverPaint.delete()
+      this.auxStroke.setStrokeWidth(1 / this.zoom)
+      this.auxStroke.setColor(this.isComponentType(node.type) ? this.compColor() : this.selColor())
+      this.auxStroke.setPathEffect(null)
+      this.strokeNodeShape(canvas, node, this.auxStroke)
     }
 
     // Clip + render children for containers
@@ -992,33 +960,25 @@ export class SkiaRenderer {
         ? screenY + SECTION_TITLE_GAP
         : screenY - pillH - SECTION_TITLE_GAP
 
-      const pillPaint = new this.ck.Paint()
-      pillPaint.setStyle(this.ck.PaintStyle.Fill)
       if (node.fills.length > 0 && node.fills[0].visible) {
         const c = node.fills[0].color
-        pillPaint.setColor(this.ck.Color4f(c.r, c.g, c.b, node.fills[0].opacity))
+        this.auxFill.setColor(this.ck.Color4f(c.r, c.g, c.b, node.fills[0].opacity))
       } else {
-        pillPaint.setColor(this.ck.Color4f(0.37, 0.37, 0.37, 1))
+        this.auxFill.setColor(this.ck.Color4f(0.37, 0.37, 0.37, 1))
       }
-      pillPaint.setAntiAlias(true)
       const pillRect = this.ck.LTRBRect(pillX, pillY, pillX + pillW, pillY + pillH)
       canvas.drawRRect(
         this.ck.RRectXY(pillRect, SECTION_TITLE_RADIUS, SECTION_TITLE_RADIUS),
-        pillPaint
+        this.auxFill
       )
-      pillPaint.delete()
 
-      const textPaint = new this.ck.Paint()
-      textPaint.setStyle(this.ck.PaintStyle.Fill)
       const pillColor = node.fills.length > 0 && node.fills[0].visible
         ? node.fills[0].color
         : { r: 0.37, g: 0.37, b: 0.37 }
       const lum = 0.299 * pillColor.r + 0.587 * pillColor.g + 0.114 * pillColor.b
-      textPaint.setColor(lum > 0.5 ? this.ck.BLACK : this.ck.WHITE)
-      textPaint.setAntiAlias(true)
+      this.auxFill.setColor(lum > 0.5 ? this.ck.BLACK : this.ck.WHITE)
       const textY = pillY + pillH * 0.7
-      canvas.drawText(displayText, pillX + SECTION_TITLE_PADDING_X, textY, textPaint, font)
-      textPaint.delete()
+      canvas.drawText(displayText, pillX + SECTION_TITLE_PADDING_X, textY, this.auxFill, font)
     }
   }
 
@@ -1085,47 +1045,35 @@ export class SkiaRenderer {
       const iconCy = iconY + iconS / 2
       const iconR = iconS / 2
 
-      const iconPaint = new this.ck.Paint()
-      iconPaint.setStyle(this.ck.PaintStyle.Fill)
-      iconPaint.setColor(compColor)
-      iconPaint.setAntiAlias(true)
+      this.auxFill.setColor(compColor)
 
       if (node.type === 'COMPONENT_SET') {
-        // 4-diamond grid
         const s = iconR * 0.45
         const gap = iconR * 0.2
+        const path = new this.ck.Path()
         for (const [dx, dy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
           const cx = iconCx + dx * (s + gap)
           const cy = iconCy + dy * (s + gap)
-          const path = new this.ck.Path()
           path.moveTo(cx, cy - s)
           path.lineTo(cx + s, cy)
           path.lineTo(cx, cy + s)
           path.lineTo(cx - s, cy)
           path.close()
-          canvas.drawPath(path, iconPaint)
-          path.delete()
         }
+        canvas.drawPath(path, this.auxFill)
+        path.delete()
       } else {
-        // Single diamond
         const path = new this.ck.Path()
         path.moveTo(iconCx, iconCy - iconR)
         path.lineTo(iconCx + iconR, iconCy)
         path.lineTo(iconCx, iconCy + iconR)
         path.lineTo(iconCx - iconR, iconCy)
         path.close()
-        canvas.drawPath(path, iconPaint)
+        canvas.drawPath(path, this.auxFill)
         path.delete()
       }
-      iconPaint.delete()
 
-      // Draw name text
-      const textPaint = new this.ck.Paint()
-      textPaint.setStyle(this.ck.PaintStyle.Fill)
-      textPaint.setColor(compColor)
-      textPaint.setAntiAlias(true)
-      canvas.drawText(node.name, labelX + iconS + COMPONENT_LABEL_ICON_GAP, labelY, textPaint, font)
-      textPaint.delete()
+      canvas.drawText(node.name, labelX + iconS + COMPONENT_LABEL_ICON_GAP, labelY, this.auxFill, font)
     }
   }
 
@@ -1141,19 +1089,16 @@ export class SkiaRenderer {
       this.fillPaint.setShader(null)
     }
 
-    const dashPaint = new this.ck.Paint()
-    dashPaint.setStyle(this.ck.PaintStyle.Stroke)
-    dashPaint.setStrokeWidth(COMPONENT_SET_BORDER_WIDTH / this.zoom)
-    dashPaint.setColor(this.compColor())
-    dashPaint.setAntiAlias(true)
-    dashPaint.setPathEffect(
+    this.auxStroke.setStrokeWidth(COMPONENT_SET_BORDER_WIDTH / this.zoom)
+    this.auxStroke.setColor(this.compColor())
+    this.auxStroke.setPathEffect(
       this.ck.PathEffect.MakeDash(
         [COMPONENT_SET_DASH / this.zoom, COMPONENT_SET_DASH_GAP / this.zoom],
         0
       )
     )
-    canvas.drawRRect(rrect, dashPaint)
-    dashPaint.delete()
+    canvas.drawRRect(rrect, this.auxStroke)
+    this.auxStroke.setPathEffect(null)
   }
 
   private renderShape(canvas: Canvas, node: SceneNode, graph: SceneGraph): void {
@@ -1336,27 +1281,24 @@ export class SkiaRenderer {
       if (!effect.visible) continue
 
       if (pass === 'behind' && effect.type === 'DROP_SHADOW') {
-        const shadowPaint = new this.ck.Paint()
-        shadowPaint.setStyle(this.ck.PaintStyle.Fill)
-        shadowPaint.setColor(this.ck.Color4f(
+        this.auxFill.setColor(this.ck.Color4f(
           effect.color.r, effect.color.g, effect.color.b, effect.color.a
         ))
-        shadowPaint.setImageFilter(
+        this.auxFill.setImageFilter(
           this.ck.ImageFilter.MakeBlur(effect.radius, effect.radius, this.ck.TileMode.Decal, null)
         )
-        shadowPaint.setAntiAlias(true)
 
         canvas.save()
         canvas.translate(effect.offset.x, effect.offset.y)
         if (node.type === 'ELLIPSE') {
-          canvas.drawOval(rect, shadowPaint)
+          canvas.drawOval(rect, this.auxFill)
         } else if (hasRadius) {
-          canvas.drawRRect(this.makeRRect(node), shadowPaint)
+          canvas.drawRRect(this.makeRRect(node), this.auxFill)
         } else {
-          canvas.drawRect(rect, shadowPaint)
+          canvas.drawRect(rect, this.auxFill)
         }
         canvas.restore()
-        shadowPaint.delete()
+        this.auxFill.setImageFilter(null)
       }
 
       if (pass === 'front' && effect.type === 'LAYER_BLUR') {
@@ -1365,11 +1307,10 @@ export class SkiaRenderer {
 
       if (pass === 'front' && effect.type === 'INNER_SHADOW') {
         // Inner shadow: draw a shadow clipped to the node shape
-        const isp = new this.ck.Paint()
-        isp.setColor(this.ck.Color4f(
+        this.auxFill.setColor(this.ck.Color4f(
           effect.color.r, effect.color.g, effect.color.b, effect.color.a
         ))
-        isp.setImageFilter(
+        this.auxFill.setImageFilter(
           this.ck.ImageFilter.MakeBlur(effect.radius, effect.radius, this.ck.TileMode.Decal, null)
         )
 
@@ -1412,10 +1353,10 @@ export class SkiaRenderer {
           bigPath.op(innerPath, this.ck.PathOp.Difference)
           innerPath.delete()
         }
-        canvas.drawPath(bigPath, isp)
+        canvas.drawPath(bigPath, this.auxFill)
         bigPath.delete()
         canvas.restore()
-        isp.delete()
+        this.auxFill.setImageFilter(null)
       }
     }
   }
@@ -1909,6 +1850,9 @@ export class SkiaRenderer {
     this.strokePaint.delete()
     this.selectionPaint.delete()
     this.snapPaint.delete()
+    this.auxFill.delete()
+    this.auxStroke.delete()
+    this.opacityPaint.delete()
     this.textFont?.delete()
     this.labelFont?.delete()
     this.sizeFont?.delete()
