@@ -18,6 +18,11 @@ import {
 } from 'reka-ui'
 import { useVueTable, getCoreRowModel, FlexRender, type ColumnDef } from '@tanstack/vue-table'
 
+import IconPalette from '~icons/lucide/palette'
+import IconHash from '~icons/lucide/hash'
+import IconType from '~icons/lucide/type'
+import IconToggleLeft from '~icons/lucide/toggle-left'
+import IconX from '~icons/lucide/x'
 import ColorInput from './ColorInput.vue'
 import { colorToHexRaw, parseColor } from '@/engine/color'
 import { useEditorStore } from '@/stores/editor'
@@ -165,14 +170,15 @@ const columns = computed<ColumnDef<Variable>[]>(() => {
     cell: ({ row }) => {
       const v = row.original
       const iconClass = 'size-3.5 shrink-0 text-muted'
-      const icon =
+      const iconComponent =
         v.type === 'COLOR'
-          ? h('span', { class: `${iconClass} icon-[lucide--circle-dot]` })
+          ? IconPalette
           : v.type === 'FLOAT'
-            ? h('span', { class: `${iconClass} icon-[lucide--hash]` })
+            ? IconHash
             : v.type === 'STRING'
-              ? h('span', { class: `${iconClass} icon-[lucide--type]` })
-              : h('span', { class: `${iconClass} icon-[lucide--toggle-left]` })
+              ? IconType
+              : IconToggleLeft
+      const icon = h(iconComponent, { class: iconClass })
 
       return h('div', { class: 'flex items-center gap-2' }, [
         icon,
@@ -251,7 +257,7 @@ const columns = computed<ColumnDef<Variable>[]>(() => {
             'flex size-5 cursor-pointer items-center justify-center rounded border-none bg-transparent text-muted opacity-0 transition-opacity group-hover:opacity-100 hover:text-surface',
           onClick: () => removeVariable(row.original.id)
         },
-        h('span', { class: 'icon-[lucide--x] size-3' })
+        h(IconX, { class: 'size-3' })
       )
   }
 
