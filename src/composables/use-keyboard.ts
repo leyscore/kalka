@@ -40,12 +40,12 @@ export function useKeyboard(store: EditorStore) {
     }
 
     if ((e.metaKey || e.ctrlKey) && e.altKey) {
-      if (e.key === 'k' || e.key === 'K') {
+      if (e.code === 'KeyK') {
         e.preventDefault()
         store.createComponentFromSelection()
         return
       }
-      if (e.key === 'b' || e.key === 'B') {
+      if (e.code === 'KeyB') {
         e.preventDefault()
         store.detachInstance()
         return
@@ -53,17 +53,17 @@ export function useKeyboard(store: EditorStore) {
     }
 
     if ((e.metaKey || e.ctrlKey) && e.shiftKey) {
-      if (e.key === 'K' || e.key === 'k') {
+      if (e.code === 'KeyK') {
         e.preventDefault()
         store.createComponentSetFromComponents()
         return
       }
-      if (e.key === 'H' || e.key === 'h') {
+      if (e.code === 'KeyH') {
         e.preventDefault()
         store.toggleVisibility()
         return
       }
-      if (e.key === 'L' || e.key === 'l') {
+      if (e.code === 'KeyL') {
         e.preventDefault()
         store.toggleLock()
         return
