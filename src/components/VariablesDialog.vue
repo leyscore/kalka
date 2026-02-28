@@ -58,6 +58,18 @@ function commitRenameCollection(id: string, input: HTMLInputElement) {
   const value = input.value.trim()
   const collection = store.graph.variableCollections.get(id)
   if (collection && value && value !== collection.name) {
+    const oldName = collection.name
+    store.undo.push({
+      label: 'Rename collection',
+      forward: () => {
+        store.graph.variableCollections.set(id, { ...collection, name: value })
+        store.requestRender()
+      },
+      inverse: () => {
+        store.graph.variableCollections.set(id, { ...collection, name: oldName })
+        store.requestRender()
+      }
+    })
     store.graph.variableCollections.set(id, { ...collection, name: value })
     store.requestRender()
   }
@@ -96,28 +108,66 @@ function shortName(variable: Variable): string {
 
 function commitNameEdit(variable: Variable, newName: string) {
   if (newName && newName !== variable.name) {
-    store.graph.variables.set(variable.id, { ...variable, name: newName })
+    const oldName = variable.name
+    store.undo.push({
+      label: 'Rename variable',
+      forward: () => {
+        variable.name = newName
+        store.requestRender()
+      },
+      inverse: () => {
+        variable.name = oldName
+        store.requestRender()
+      }
+    })
+    variable.name = newName
     store.requestRender()
   }
 }
 
 function updateColorValue(variable: Variable, modeId: string, color: Color) {
+  const oldValue = structuredClone(variable.valuesByMode[modeId])
+  store.undo.push({
+    label: 'Change variable value',
+    forward: () => {
+      variable.valuesByMode[modeId] = color
+      store.requestRender()
+    },
+    inverse: () => {
+      variable.valuesByMode[modeId] = oldValue
+      store.requestRender()
+    }
+  })
   variable.valuesByMode[modeId] = color
   store.requestRender()
 }
 
 function commitValueEdit(variable: Variable, modeId: string, newValue: string) {
+  const oldValue = structuredClone(variable.valuesByMode[modeId])
+  let parsed: import('@open-pencil/core').VariableValue
   if (variable.type === 'COLOR') {
-    const color = parseColor(newValue.startsWith('#') ? newValue : `#${newValue}`)
-    variable.valuesByMode[modeId] = color
+    parsed = parseColor(newValue.startsWith('#') ? newValue : `#${newValue}`)
   } else if (variable.type === 'FLOAT') {
     const num = parseFloat(newValue)
-    if (!isNaN(num)) variable.valuesByMode[modeId] = num
+    if (isNaN(num)) return
+    parsed = num
   } else if (variable.type === 'BOOLEAN') {
-    variable.valuesByMode[modeId] = newValue === 'true'
+    parsed = newValue === 'true'
   } else {
-    variable.valuesByMode[modeId] = newValue
+    parsed = newValue
   }
+  store.undo.push({
+    label: 'Change variable value',
+    forward: () => {
+      variable.valuesByMode[modeId] = parsed
+      store.requestRender()
+    },
+    inverse: () => {
+      variable.valuesByMode[modeId] = oldValue
+      store.requestRender()
+    }
+  })
+  variable.valuesByMode[modeId] = parsed
   store.requestRender()
 }
 
@@ -131,7 +181,7 @@ function addVariable() {
     valuesByMode[mode.modeId] = { r: 0, g: 0, b: 0, a: 1 }
   }
 
-  store.graph.addVariable({
+  const variable: Variable = {
     id,
     name: 'New variable',
     type: 'COLOR',
@@ -139,24 +189,65 @@ function addVariable() {
     valuesByMode,
     description: '',
     hiddenFromPublishing: false
+  }
+  store.undo.push({
+    label: 'Create variable',
+    forward: () => {
+      store.graph.addVariable(variable)
+      store.requestRender()
+    },
+    inverse: () => {
+      store.graph.removeVariable(id)
+      store.requestRender()
+    }
   })
+  store.graph.addVariable(variable)
   store.requestRender()
 }
 
 function addCollection() {
   const id = `col:${Date.now()}`
-  store.graph.addCollection({
+  const collection: import('@open-pencil/core').VariableCollection = {
     id,
     name: 'New collection',
     modes: [{ modeId: 'default', name: 'Mode 1' }],
     defaultModeId: 'default',
     variableIds: []
+  }
+  const prevTab = activeTab.value
+  store.undo.push({
+    label: 'Create collection',
+    forward: () => {
+      store.graph.addCollection(collection)
+      activeTab.value = id
+      store.requestRender()
+    },
+    inverse: () => {
+      store.graph.removeCollection(id)
+      activeTab.value = prevTab
+      store.requestRender()
+    }
   })
+  store.graph.addCollection(collection)
   activeTab.value = id
   store.requestRender()
 }
 
 function removeVariable(id: string) {
+  const variable = store.graph.variables.get(id)
+  if (!variable) return
+  const snapshot = structuredClone(variable)
+  store.undo.push({
+    label: 'Delete variable',
+    forward: () => {
+      store.graph.removeVariable(id)
+      store.requestRender()
+    },
+    inverse: () => {
+      store.graph.addVariable(snapshot)
+      store.requestRender()
+    }
+  })
   store.graph.removeVariable(id)
   store.requestRender()
 }
