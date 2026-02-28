@@ -703,6 +703,7 @@ export class SkiaRenderer {
           color: this.fillPaint.getColor(),
           fontFamilies: [node.fontFamily || 'Inter'],
           fontSize: node.fontSize || 14,
+          fontStyle: { weight: node.fontWeight || 400 },
           letterSpacing: node.letterSpacing || 0,
           heightMultiplier: node.lineHeight ? node.lineHeight / (node.fontSize || 14) : undefined
         }

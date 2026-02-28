@@ -36,6 +36,7 @@ const textOverlayStyle = computed(() => {
     minHeight: `${node.height * store.state.zoom}px`,
     fontSize: `${(node.fontSize || 14) * store.state.zoom}px`,
     fontFamily: node.fontFamily || 'Inter',
+    fontWeight: node.fontWeight || 400,
     lineHeight: node.lineHeight ? `${node.lineHeight * store.state.zoom}px` : 'normal',
     letterSpacing: `${(node.letterSpacing || 0) * store.state.zoom}px`,
     textAlign: (node.textAlignHorizontal || 'LEFT').toLowerCase() as 'left' | 'center' | 'right'
@@ -69,7 +70,7 @@ function onTextKeyDown(e: KeyboardEvent) {
     <canvas ref="canvasRef" :style="{ cursor }" class="block size-full" />
     <textarea
       v-if="editingNode"
-      class="absolute z-10 resize-none overflow-hidden border border-accent bg-transparent p-0 font-normal text-black outline-none"
+      class="absolute z-10 resize-none overflow-hidden border border-accent bg-transparent p-0 text-black outline-none"
       :style="textOverlayStyle!"
       :value="editingNode.text"
       @input="onTextInput"
