@@ -10,12 +10,11 @@ export class CanvasHelper {
   }
 
   async waitForRender() {
-    await this.page.waitForTimeout(100)
+    await this.page.evaluate(() => new Promise(requestAnimationFrame))
   }
 
   async waitForInit() {
-    await this.canvas.waitFor({ state: 'visible', timeout: 5000 })
-    await this.page.waitForTimeout(1000)
+    await this.page.locator('canvas[data-ready="1"]').waitFor({ timeout: 5000 })
   }
 
   async clearCanvas() {
