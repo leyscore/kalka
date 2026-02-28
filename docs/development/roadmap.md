@@ -85,10 +85,12 @@ Components, instances, overrides, variants, variables, collections, modes/themes
 
 ### Phase 5: AI Integration 🔲
 
-MCP server, design guidelines, screenshot verification loop.
+MCP server, CLI & headless mode, design guidelines, screenshot verification loop.
 
 **Planned:**
 - Port MCP server from figma-use (117 tools)
+- CLI & Headless Mode: attached mode (WebSocket to running editor for eval, create, export, screenshot) and headless mode (engine in Bun/Node for lint, analysis, .fig validation in CI)
+- Package extraction: core/ (engine without rendering), cli/, mcp/
 - Design guidelines system
 - AI-driven design workflow via MCP
 - Screenshot verification loop

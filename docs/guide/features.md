@@ -126,7 +126,7 @@ Right-clicking a node selects it first. Right-clicking empty canvas clears selec
 
 ## Desktop App
 
-Tauri v2 shell (~5MB vs Electron's ~100MB). Native menu bar with File/Edit/View/Object/Window/Help menus on all platforms. macOS gets an app-level submenu. Native Save/Open dialogs via Tauri plugin-dialog. Zstd compression offloaded to Rust for .fig export performance. Developer Tools accessible via <kbd>⌘</kbd><kbd>⌥</kbd><kbd>I</kbd>.
+Tauri v2 shell (~5MB vs Electron's ~100MB). Works fully offline — no account, no server, no internet required. Native menu bar with File/Edit/View/Object/Window/Help menus on all platforms. macOS gets an app-level submenu. Native Save/Open dialogs via Tauri plugin-dialog. Zstd compression offloaded to Rust for .fig export performance. Developer Tools accessible via <kbd>⌘</kbd><kbd>⌥</kbd><kbd>I</kbd>.
 
 ## ScrubInput
 

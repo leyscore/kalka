@@ -55,6 +55,10 @@ bun run check
 - **Functions/variables** — camelCase
 - **Types/interfaces** — PascalCase
 
+### AI Agent Conventions
+
+See [`AGENTS.md`](https://github.com/dannote/open-pencil/blob/master/AGENTS.md) in the repo root for detailed coding conventions tailored to AI agents. Covers rendering, scene graph, components & instances, layout, UI, file format, Tauri, and known issues.
+
 ## Making Changes
 
 1. Check existing [openspec specs](/development/openspec) for the capability you're modifying

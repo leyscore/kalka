@@ -4,7 +4,7 @@
 Tauri v2 desktop shell. Cross-platform native menu bar with wired events, Developer Tools access, and `desktop/` directory structure for Tauri configuration and Rust source.
 ## Requirements
 ### Requirement: Tauri v2 desktop shell
-The editor SHALL run as a native desktop app via Tauri v2 with the web frontend loaded in a webview.
+The editor SHALL run as a native desktop app via Tauri v2 with the web frontend loaded in a webview. The app identifier SHALL be `net.dannote.open-pencil`.
 
 #### Scenario: Desktop app launch
 - **WHEN** user runs `bun run tauri dev`

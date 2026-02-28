@@ -208,7 +208,7 @@ Feature-by-feature comparison of Figma Design capabilities with Open Pencil's cu
 | Code Connect | 🔲 | Link design components to code |
 | Code snippets | 🔲 | Auto-generated code from layers |
 | Figma for VS Code | 🔲 | Editor plugin integration |
-| MCP server | 🔲 | Planned for Phase 5; 117-tool MCP server from figma-use |
+| MCP server | 🔲 | Planned for Phase 5; 117-tool MCP server from figma-use. CLI & headless mode planned for AI agent and CI integration |
 
 ## Figma Draw
 
