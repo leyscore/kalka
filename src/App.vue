@@ -16,7 +16,10 @@ useEventListener(document, 'wheel', (e: WheelEvent) => {
   if (e.ctrlKey || e.metaKey) e.preventDefault()
 }, { passive: false })
 
+const isTestMode = new URLSearchParams(window.location.search).has('test')
+
 // Demo shapes
+if (!isTestMode) {
 store.createShape('FRAME', 100, 80, 800, 500)
 store.graph.updateNode(store.graph.getChildren(store.graph.rootId)[0].id, {
   name: 'Desktop',
@@ -31,6 +34,7 @@ store.graph.updateNode(store.graph.getChildren(store.graph.rootId)[0].id, {
     }
   ]
 })
+}
 
 const demo = [
   {
@@ -74,7 +78,8 @@ const demo = [
   }
 ]
 
-for (const d of demo) {
+if (!isTestMode)
+  for (const d of demo) {
   const id = store.createShape(d.type, d.x, d.y, d.w, d.h)
   store.graph.updateNode(id, {
     name: d.name,

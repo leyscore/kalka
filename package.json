@@ -11,7 +11,11 @@
     "lint": "oxlint -c oxlint.json src/",
     "format": "oxfmt --write src/",
     "typecheck": "tsgo --noEmit",
-    "check": "bun run lint && bun run typecheck"
+    "check": "bun run lint && bun run typecheck",
+    "test": "playwright test --project=openpencil",
+    "test:update": "playwright test --project=openpencil --update-snapshots",
+    "test:figma": "playwright test --project=figma",
+    "figma:debug": "open -a Figma --args --remote-debugging-port=9222"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.1",
@@ -28,6 +32,7 @@
     "yoga-layout": "^3.2.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@tauri-apps/cli": "^2",
     "@typescript/native-preview": "^7.0.0-dev.20260227.1",
     "@vitejs/plugin-vue": "^6.0.4",
