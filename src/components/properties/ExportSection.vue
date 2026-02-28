@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onUnmounted } from 'vue'
 
 import { useEditorStore } from '@/stores/editor'
 
@@ -21,12 +21,9 @@ const SCALES = [0.5, 0.75, 1, 1.5, 2, 3, 4] as const
 const FORMATS: ExportFormat[] = ['PNG', 'JPG', 'WEBP']
 
 const nodeName = computed(() => {
-  void store.state.renderVersion
-  if (store.state.selectedIds.size === 1) {
-    const id = [...store.state.selectedIds][0]
-    return store.graph.getNode(id)?.name ?? 'Export'
-  }
-  return `${store.state.selectedIds.size} layers`
+  const nodes = store.selectedNodes
+  if (nodes.length === 1) return nodes[0].name ?? 'Export'
+  return `${nodes.length} layers`
 })
 
 function addSetting() {
@@ -74,11 +71,16 @@ async function updatePreview() {
   }
 }
 
-watch(
-  () => [showPreview.value, store.state.renderVersion],
-  () => updatePreview(),
-  { flush: 'post' }
+const previewKey = computed(
+  () => `${store.state.sceneVersion}:${[...store.state.selectedIds].sort().join(',')}`
 )
+
+watch(() => showPreview.value, updatePreview, { flush: 'post' })
+watch(previewKey, updatePreview, { flush: 'post' })
+
+onUnmounted(() => {
+  if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
+})
 
 function formatScale(scale: number): string {
   return scale % 1 === 0 ? `${scale}x` : `${scale}x`

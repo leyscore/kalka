@@ -151,7 +151,8 @@ export function createEditorStore() {
     pageColor: { ...CANVAS_BG_COLOR } as Color,
     panY: 0,
     zoom: 1,
-    renderVersion: 0
+    renderVersion: 0,
+    sceneVersion: 0
   })
 
   const selectedNodes = computed(() => {
@@ -174,6 +175,11 @@ export function createEditorStore() {
   })
 
   function requestRender() {
+    state.renderVersion++
+    state.sceneVersion++
+  }
+
+  function requestRepaint() {
     state.renderVersion++
   }
 
@@ -264,33 +270,33 @@ export function createEditorStore() {
 
   function setMarquee(rect: Rect | null) {
     state.marquee = rect
-    requestRender()
+    requestRepaint()
   }
 
   function setSnapGuides(guides: SnapGuide[]) {
     state.snapGuides = guides
-    requestRender()
+    requestRepaint()
   }
 
   function setRotationPreview(preview: { nodeId: string; angle: number } | null) {
     state.rotationPreview = preview
-    requestRender()
+    requestRepaint()
   }
 
   function setHoveredNode(id: string | null) {
     if (state.hoveredNodeId === id) return
     state.hoveredNodeId = id
-    requestRender()
+    requestRepaint()
   }
 
   function setDropTarget(id: string | null) {
     state.dropTargetId = id
-    requestRender()
+    requestRepaint()
   }
 
   function setLayoutInsertIndicator(indicator: typeof state.layoutInsertIndicator) {
     state.layoutInsertIndicator = indicator
-    requestRender()
+    requestRepaint()
   }
 
   function reorderInAutoLayout(nodeId: string, parentId: string, insertIndex: number) {
@@ -1716,13 +1722,13 @@ export function createEditorStore() {
     state.panX = centerX - (centerX - state.panX) * (newZoom / state.zoom)
     state.panY = centerY - (centerY - state.panY) * (newZoom / state.zoom)
     state.zoom = newZoom
-    requestRender()
+    requestRepaint()
   }
 
   function pan(dx: number, dy: number) {
     state.panX += dx
     state.panY += dy
-    requestRender()
+    requestRepaint()
   }
 
   function zoomToFit() {
@@ -1752,7 +1758,7 @@ export function createEditorStore() {
     state.zoom = zoom
     state.panX = (viewW - w * zoom) / 2 - minX * zoom + padding * zoom
     state.panY = (viewH - h * zoom) / 2 - minY * zoom + padding * zoom
-    requestRender()
+    requestRepaint()
   }
 
   return {
@@ -1765,6 +1771,7 @@ export function createEditorStore() {
     selectedNode,
     layerTree,
     requestRender,
+    requestRepaint,
     setTool,
     select,
     clearSelection,
