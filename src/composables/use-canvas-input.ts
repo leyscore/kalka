@@ -387,8 +387,9 @@ export function useCanvasInput(canvasRef: Ref<HTMLCanvasElement | null>, store: 
     // Text tool: click to create text node
     if (tool === 'TEXT') {
       const nodeId = store.createShape('TEXT', cx, cy, 200, 24)
-      store.graph.updateNode(nodeId, { text: 'Text' })
+      store.graph.updateNode(nodeId, { text: '' })
       store.select([nodeId])
+      store.startTextEditing(nodeId)
       store.setTool('SELECT')
       store.requestRender()
       return
