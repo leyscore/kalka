@@ -1,6 +1,6 @@
 import { reactive, shallowRef, computed } from 'vue'
 
-import { DEFAULT_SHAPE_FILL, DEFAULT_FRAME_FILL, SECTION_DEFAULT_FILL, SECTION_DEFAULT_STROKE, CANVAS_BG_COLOR, ZOOM_SENSITIVITY } from '../constants'
+import { IS_TAURI, DEFAULT_SHAPE_FILL, DEFAULT_FRAME_FILL, SECTION_DEFAULT_FILL, SECTION_DEFAULT_STROKE, CANVAS_BG_COLOR, ZOOM_SENSITIVITY } from '../constants'
 import type { Color } from '../types'
 import {
   parseFigmaClipboard,
@@ -462,7 +462,7 @@ export function createEditorStore() {
   async function saveFigFileAs() {
     const data = await exportFigFile(graph)
 
-    if ('__TAURI_INTERNALS__' in window) {
+    if (IS_TAURI) {
       const { save } = await import('@tauri-apps/plugin-dialog')
       const path = await save({
         defaultPath: 'Untitled.fig',
@@ -503,7 +503,7 @@ export function createEditorStore() {
   }
 
   async function writeFile(data: Uint8Array) {
-    if (filePath && '__TAURI_INTERNALS__' in window) {
+    if (filePath && IS_TAURI) {
       const { writeFile: tauriWrite } = await import('@tauri-apps/plugin-fs')
       await tauriWrite(filePath, data)
       return

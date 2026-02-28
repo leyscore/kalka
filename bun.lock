@@ -19,6 +19,7 @@
         "tailwindcss": "^4.2.1",
         "vue": "^3.5.29",
         "yoga-layout": "^3.2.1",
+        "zstd-wasm": "^0.0.9",
       },
       "devDependencies": {
         "@iconify-json/lucide": "^1.2.94",
@@ -519,6 +520,8 @@
     "webpack-virtual-modules": ["webpack-virtual-modules@0.6.2", "", {}, "sha512-66/V2i5hQanC51vBQKPH4aI8NMAcBW59FVBs+rC7eGHupMyfn34q7rZIE+ETlJ+XTevqfUhVVBgSUNSW2flEUQ=="],
 
     "yoga-layout": ["yoga-layout@3.2.1", "", {}, "sha512-0LPOt3AxKqMdFBZA3HBAt/t/8vIKq7VaQYbuA8WxCgung+p9TVyKRYdpvCb80HcdTN2NkbIKbhNwKUfm3tQywQ=="],
+
+    "zstd-wasm": ["zstd-wasm@0.0.9", "", {}, "sha512-V96PWYhAKv4LfdhH92ntYUlTY1cPtvuxGBoZNDd20UyC9ALwlM9Ae1SKik+KI7NwU9xd62MTXVZAP6fq8SfKVg=="],
 
     "@tailwindcss/oxide-wasm32-wasi/@emnapi/core": ["@emnapi/core@1.8.1", "", { "dependencies": { "@emnapi/wasi-threads": "1.1.0", "tslib": "^2.4.0" }, "bundled": true }, "sha512-AvT9QFpxK0Zd8J0jopedNm+w/2fIzvtPKPjqyw9jwvBaReTTqPBk9Hixaz7KbjimP+QNz605/XnjFcDAL2pqBg=="],
 

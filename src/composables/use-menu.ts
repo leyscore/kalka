@@ -1,9 +1,10 @@
 import { onUnmounted } from 'vue'
 
+import { IS_TAURI } from '../constants'
 import type { EditorStore } from '../stores/editor'
 
 export async function openFileDialog(store: EditorStore) {
-  if ('__TAURI_INTERNALS__' in window) {
+  if (IS_TAURI) {
     const { open } = await import('@tauri-apps/plugin-dialog')
     const { readFile } = await import('@tauri-apps/plugin-fs')
     const path = await open({
@@ -55,7 +56,7 @@ const MENU_ACTIONS: Record<string, (store: EditorStore) => void> = {
 }
 
 export function useMenu(store: EditorStore) {
-  if (!('__TAURI_INTERNALS__' in window)) return
+  if (!IS_TAURI) return
 
   let unlisten: (() => void) | undefined
 

@@ -1,6 +1,6 @@
 import { zipSync } from 'fflate'
 import { decodeBinarySchema, compileSchema, ByteBuffer } from '../kiwi/kiwi-schema'
-import { inflateSync, deflateSync } from 'fflate'
+import { inflateSync } from 'fflate'
 import { encodeVectorNetworkBlob } from './vector'
 
 import type { SceneGraph, SceneNode, Color } from './scene-graph'
@@ -208,11 +208,13 @@ function sceneNodeToKiwi(
   return result
 }
 
-function buildFigKiwi(schemaDeflated: Uint8Array, dataRaw: Uint8Array): Uint8Array {
-  const dataDeflated = deflateSync(dataRaw)
+async function buildFigKiwi(schemaDeflated: Uint8Array, dataRaw: Uint8Array): Promise<Uint8Array> {
+  const { ZstdCodec } = await import('zstd-wasm')
+  const zstd = await ZstdCodec.run()
+  const dataCompressed = zstd.compress(dataRaw)
   const FIG_KIWI_VERSION = 106
 
-  const total = 8 + 4 + 4 + schemaDeflated.length + 4 + dataDeflated.length
+  const total = 8 + 4 + 4 + schemaDeflated.length + 4 + dataCompressed.length
   const out = new Uint8Array(total)
   const view = new DataView(out.buffer)
 
@@ -226,9 +228,9 @@ function buildFigKiwi(schemaDeflated: Uint8Array, dataRaw: Uint8Array): Uint8Arr
   out.set(schemaDeflated, offset)
   offset += schemaDeflated.length
 
-  view.setUint32(offset, dataDeflated.length, true)
+  view.setUint32(offset, dataCompressed.length, true)
   offset += 4
-  out.set(dataDeflated, offset)
+  out.set(dataCompressed, offset)
 
   return out
 }
@@ -288,7 +290,7 @@ export async function exportFigFile(graph: SceneGraph): Promise<Uint8Array> {
   }
 
   const dataRaw = compiled.encodeMessage(msg)
-  const canvasData = buildFigKiwi(schemaDeflated, dataRaw)
+  const canvasData = await buildFigKiwi(schemaDeflated, dataRaw)
 
   const meta = JSON.stringify({
     version: 1,

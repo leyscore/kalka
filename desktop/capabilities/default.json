@@ -9,8 +9,13 @@
     "dialog:default",
     "dialog:allow-save",
     "dialog:allow-open",
-    "fs:default",
-    "fs:allow-read",
-    "fs:allow-write"
+    {
+      "identifier": "fs:allow-read-file",
+      "allow": [{ "path": "**" }]
+    },
+    {
+      "identifier": "fs:allow-write-file",
+      "allow": [{ "path": "**" }]
+    }
   ]
 }
