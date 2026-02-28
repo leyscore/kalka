@@ -35,7 +35,8 @@ pub fn run() {
                 .item(&PredefinedMenuItem::quit(app, None)?)
                 .build()?;
 
-            let file_menu = SubmenuBuilder::new(app, "File")
+            #[allow(unused_mut)]
+            let mut file_menu_builder = SubmenuBuilder::new(app, "File")
                 .item(
                     &MenuItemBuilder::new("New File")
                         .id("new")
@@ -74,8 +75,14 @@ pub fn run() {
                         .id("close")
                         .accelerator("CmdOrCtrl+W")
                         .build(app)?,
-                )
-                .build()?;
+                );
+            #[cfg(not(target_os = "macos"))]
+            {
+                file_menu_builder = file_menu_builder
+                    .separator()
+                    .item(&PredefinedMenuItem::quit(app, None)?);
+            }
+            let file_menu = file_menu_builder.build()?;
 
             let edit_menu = SubmenuBuilder::new(app, "Edit")
                 .item(&PredefinedMenuItem::undo(app, None)?)
@@ -215,14 +222,21 @@ pub fn run() {
                 .item(&PredefinedMenuItem::close_window(app, None)?)
                 .build()?;
 
-            let help_menu = SubmenuBuilder::new(app, "Help")
+            #[allow(unused_mut)]
+            let mut help_menu_builder = SubmenuBuilder::new(app, "Help")
                 .item(
                     &MenuItemBuilder::new("Keyboard Shortcuts")
                         .id("shortcuts")
                         .accelerator("CmdOrCtrl+/")
                         .build(app)?,
-                )
-                .build()?;
+                );
+            #[cfg(not(target_os = "macos"))]
+            {
+                help_menu_builder = help_menu_builder
+                    .separator()
+                    .item(&PredefinedMenuItem::about(app, Some("About OpenPencil"), None)?);
+            }
+            let help_menu = help_menu_builder.build()?;
 
             let mut builder = MenuBuilder::new(app);
             #[cfg(target_os = "macos")]
