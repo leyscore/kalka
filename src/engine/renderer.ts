@@ -989,6 +989,11 @@ export class SkiaRenderer {
 
         canvas.drawRect(this.ck.LTRBRect(Math.max(R, sx1), 0, sx2, R), hlPaint)
         canvas.drawRect(this.ck.LTRBRect(0, Math.max(R, sy1), R, sy2), hlPaint)
+
+        this.drawRulerBadge(canvas, font, Math.round(minX).toString(), Math.max(R, sx1), 0, 'horizontal')
+        this.drawRulerBadge(canvas, font, Math.round(maxX).toString(), sx2, 0, 'horizontal')
+        this.drawRulerBadge(canvas, font, Math.round(minY).toString(), 0, Math.max(R, sy1), 'vertical')
+        this.drawRulerBadge(canvas, font, Math.round(maxY).toString(), 0, sy2, 'vertical')
       }
 
       hlPaint.delete()
@@ -997,6 +1002,41 @@ export class SkiaRenderer {
     bgPaint.delete()
     tickPaint.delete()
     textPaint.delete()
+  }
+
+  private drawRulerBadge(canvas: Canvas, font: InstanceType<CanvasKit['Font']>, label: string, x: number, y: number, axis: 'horizontal' | 'vertical'): void {
+    const R = SkiaRenderer.RULER_SIZE
+    const glyphIds = font.getGlyphIDs(label)
+    const widths = font.getGlyphWidths(glyphIds)
+    const textW = widths.reduce((s, w) => s + w, 0)
+    const pad = 3
+    const h = 14
+
+    const badgePaint = new this.ck.Paint()
+    badgePaint.setColor(this.selColor())
+    const labelPaint = new this.ck.Paint()
+    labelPaint.setColor(this.ck.Color4f(1, 1, 1, 1))
+    labelPaint.setAntiAlias(true)
+
+    if (axis === 'horizontal') {
+      const bx = x - (textW + pad * 2) / 2
+      const by = (R - h) / 2
+      canvas.drawRRect(this.ck.RRectXY(this.ck.LTRBRect(bx, by, bx + textW + pad * 2, by + h), 2, 2), badgePaint)
+      canvas.drawText(label, bx + pad, by + h - 3, labelPaint, font)
+    } else {
+      const bw = textW + pad * 2
+      const bx = (R - h) / 2
+      const by = y - (bw) / 2
+      canvas.save()
+      canvas.translate(bx + h / 2, by + bw / 2)
+      canvas.rotate(-90, 0, 0)
+      canvas.drawRRect(this.ck.RRectXY(this.ck.LTRBRect(-bw / 2, -h / 2, bw / 2, h / 2), 2, 2), badgePaint)
+      canvas.drawText(label, -bw / 2 + pad, h / 2 - 3, labelPaint, font)
+      canvas.restore()
+    }
+
+    badgePaint.delete()
+    labelPaint.delete()
   }
 
   private rulerStep(): number {
