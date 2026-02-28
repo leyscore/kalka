@@ -3,9 +3,15 @@ use tauri::{
     Emitter, Manager,
 };
 
+#[tauri::command]
+fn zstd_compress(data: Vec<u8>) -> Result<Vec<u8>, String> {
+    zstd::encode_all(data.as_slice(), 3).map_err(|e| e.to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .invoke_handler(tauri::generate_handler![zstd_compress])
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())

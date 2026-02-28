@@ -1,7 +1,8 @@
-import { zipSync } from 'fflate'
+import { zipSync, deflateSync } from 'fflate'
 import { decodeBinarySchema, compileSchema, ByteBuffer } from '../kiwi/kiwi-schema'
 import { inflateSync } from 'fflate'
 import { encodeVectorNetworkBlob } from './vector'
+import { IS_TAURI } from '../constants'
 
 import type { SceneGraph, SceneNode, Color } from './scene-graph'
 
@@ -208,10 +209,16 @@ function sceneNodeToKiwi(
   return result
 }
 
+async function compressData(data: Uint8Array): Promise<Uint8Array> {
+  if (IS_TAURI) {
+    const { invoke } = await import('@tauri-apps/api/core')
+    return new Uint8Array(await invoke<number[]>('zstd_compress', { data: Array.from(data) }))
+  }
+  return deflateSync(data)
+}
+
 async function buildFigKiwi(schemaDeflated: Uint8Array, dataRaw: Uint8Array): Promise<Uint8Array> {
-  const { ZstdCodec } = await import('zstd-wasm')
-  const zstd = await ZstdCodec.run()
-  const dataCompressed = zstd.compress(dataRaw)
+  const dataCompressed = await compressData(dataRaw)
   const FIG_KIWI_VERSION = 106
 
   const total = 8 + 4 + 4 + schemaDeflated.length + 4 + dataCompressed.length
