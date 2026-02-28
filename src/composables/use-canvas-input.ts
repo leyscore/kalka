@@ -927,19 +927,6 @@ export function useCanvasInput(
     })
   }
 
-  function onContextMenu(e: MouseEvent) {
-    const { cx, cy } = getCoords(e)
-    const hit = store.graph.hitTest(cx, cy, store.state.currentPageId)
-    if (hit) {
-      if (!store.state.selectedIds.has(hit.id)) {
-        store.select([hit.id])
-      }
-    } else {
-      store.clearSelection()
-    }
-  }
-
-  useEventListener(canvasRef, 'contextmenu', onContextMenu)
   useEventListener(canvasRef, 'dblclick', onDblClick)
   useEventListener(canvasRef, 'mousedown', onMouseDown)
   useEventListener(canvasRef, 'mousemove', onMouseMove)
