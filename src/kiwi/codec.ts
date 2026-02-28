@@ -7,17 +7,20 @@
  */
 
 import { decompress as zstdDecompress } from 'fzstd'
+
+import { parseColor } from '@/engine/color'
+
 import { compileSchema, encodeBinarySchema } from './kiwi-schema'
-
-import type { Schema } from './kiwi-schema'
-
-import { parseColor } from '../engine/color'
 import { isZstdCompressed, getKiwiMessageType } from './protocol.ts'
 import figmaSchema from './schema.ts'
+
+import type { Schema } from './kiwi-schema'
 
 interface CompiledSchema {
   encodeMessage(message: unknown): Uint8Array
   decodeMessage(data: Uint8Array): unknown
+  encodePaint(paint: unknown): Uint8Array
+  encodeNodeChange(nodeChange: unknown): Uint8Array
 }
 
 let compiledSchema: CompiledSchema | null = null
@@ -133,7 +136,7 @@ export function encodeMessage(message: FigmaMessage): Uint8Array {
   const ncHex = Buffer.from(ncBytes).toString('hex')
   const finalHex = beforeArray + ncHex + afterArray
 
-  const finalBytes = new Uint8Array(finalHex.match(/.{2}/g)!.map((b) => parseInt(b, 16)))
+  const finalBytes = new Uint8Array(finalHex.match(/.{2}/g)?.map((b) => parseInt(b, 16)) ?? [])
   return compress(finalBytes)
 }
 
@@ -163,23 +166,11 @@ export function peekMessageType(data: Uint8Array): number | null {
 
 // Type definitions
 
-export type { GUID, Color } from '../types'
+export type { GUID, Color } from '@/types'
 
-import type { GUID, Color } from '../types'
+import type { Color, GUID, Matrix, Vector } from '@/types'
 
-export interface Vector {
-  x: number
-  y: number
-}
-
-export interface Matrix {
-  m00: number
-  m01: number
-  m02: number
-  m10: number
-  m11: number
-  m12: number
-}
+export type { Matrix, Vector }
 
 export interface ParentIndex {
   guid: GUID
@@ -191,21 +182,32 @@ export interface VariableBinding {
 }
 
 export interface Paint {
-  type: 'SOLID' | 'GRADIENT_LINEAR' | 'GRADIENT_RADIAL' | 'IMAGE'
+  type:
+    | 'SOLID'
+    | 'GRADIENT_LINEAR'
+    | 'GRADIENT_RADIAL'
+    | 'GRADIENT_ANGULAR'
+    | 'GRADIENT_DIAMOND'
+    | 'IMAGE'
   color?: Color
   opacity?: number
   visible?: boolean
   blendMode?: string
-  colorVariableBinding?: VariableBinding // Binds color to a Figma variable
+  stops?: { color: Color; position: number }[]
+  transform?: { m00: number; m01: number; m02: number; m10: number; m11: number; m12: number }
+  image?: { hash: string }
+  imageScaleMode?: string
+  colorVariableBinding?: VariableBinding
 }
 
 export interface Effect {
-  type: 'DROP_SHADOW' | 'INNER_SHADOW' | 'BACKGROUND_BLUR' | 'FOREGROUND_BLUR'
+  type: 'DROP_SHADOW' | 'INNER_SHADOW' | 'LAYER_BLUR' | 'BACKGROUND_BLUR' | 'FOREGROUND_BLUR'
   color?: Color
   offset?: Vector
   radius?: number
   visible?: boolean
   spread?: number
+  blendMode?: string
 }
 
 export interface NodeChange {
@@ -225,6 +227,9 @@ export interface NodeChange {
   strokePaints?: Paint[]
   strokeWeight?: number
   strokeAlign?: string
+  strokeCap?: string
+  strokeJoin?: string
+  dashPattern?: number[]
   effects?: Effect[]
   // Layout
   stackMode?: 'NONE' | 'HORIZONTAL' | 'VERTICAL'
@@ -236,23 +241,30 @@ export interface NodeChange {
   stackJustify?: string
   stackCounterAlignItems?: string
   stackPrimaryAlignItems?: string
-  stackPrimarySizing?: 'FIXED' | 'RESIZE_TO_FIT'
-  stackCounterSizing?: 'FIXED' | 'RESIZE_TO_FIT'
+  stackPrimarySizing?: 'FIXED' | 'RESIZE_TO_FIT' | 'RESIZE_TO_FIT_WITH_IMPLICIT_SIZE'
+  stackCounterSizing?: 'FIXED' | 'RESIZE_TO_FIT' | 'RESIZE_TO_FIT_WITH_IMPLICIT_SIZE'
   stackVerticalPadding?: number
   stackHorizontalPadding?: number
+  stackWrap?: string
+  stackPositioning?: string
+  stackChildPrimaryGrow?: number
+  stackCounterSpacing?: number
   // Frame
   clipsContent?: boolean
+  frameMaskDisabled?: boolean
+  // Vector
+  vectorData?: unknown
   // Text
   fontSize?: number
   fontName?: { family: string; style: string; postscript?: string }
   textAlignHorizontal?: string
   textAlignVertical?: string
   textAutoResize?: string
-  textData?: { characters: string }
+  textData?: { characters: string; lines?: unknown[] }
   lineHeight?: { value: number; units: string }
   letterSpacing?: { value: number; units: string }
   // Symbol/Instance
-  symbolData?: { symbolID: { sessionID: number; localID: number } }
+  symbolData?: { symbolID: GUID }
   // ComponentSet
   isStateGroup?: boolean
   stateGroupPropertyValueOrders?: Array<{ property: string; values: string[] }>
@@ -403,11 +415,9 @@ export function encodePaintWithVariableBinding(
     throw new Error('Codec not initialized. Call initCodec() first.')
   }
 
-  // Encode base paint without variable binding
-  const basePaint = { ...paint }
-  delete (basePaint as any).colorVariableBinding
+  const { colorVariableBinding: _, ...basePaint } = paint
 
-  const baseBytes = (compiledSchema as any).encodePaint(basePaint)
+  const baseBytes = compiledSchema.encodePaint(basePaint)
   const baseArray = Array.from(baseBytes) as number[]
 
   // Remove trailing 00
@@ -439,8 +449,8 @@ export function parseVariableId(variableId: string): { sessionID: number; localI
   const match = variableId.match(/VariableID:(\d+):(\d+)/)
   if (!match) return null
   return {
-    sessionID: parseInt(match[1]!, 10),
-    localID: parseInt(match[2]!, 10)
+    sessionID: parseInt(match[1] ?? '0', 10),
+    localID: parseInt(match[2] ?? '0', 10)
   }
 }
 
@@ -457,28 +467,24 @@ export function encodeNodeChangeWithVariables(nodeChange: NodeChange): Uint8Arra
   const hasStrokeBinding = nodeChange.strokePaints?.some((p) => p.colorVariableBinding)
 
   if (!hasFillBinding && !hasStrokeBinding) {
-    return (compiledSchema as any).encodeNodeChange(nodeChange)
+    return compiledSchema.encodeNodeChange(nodeChange)
   }
 
   // Create a copy without variable bindings for base encoding
   const cleanNodeChange = { ...nodeChange }
   if (cleanNodeChange.fillPaints) {
-    cleanNodeChange.fillPaints = cleanNodeChange.fillPaints.map((p) => {
-      const clean = { ...p }
-      delete (clean as any).colorVariableBinding
-      return clean
-    })
+    cleanNodeChange.fillPaints = cleanNodeChange.fillPaints.map(
+      ({ colorVariableBinding: _, ...rest }) => rest
+    )
   }
   if (cleanNodeChange.strokePaints) {
-    cleanNodeChange.strokePaints = cleanNodeChange.strokePaints.map((p) => {
-      const clean = { ...p }
-      delete (clean as any).colorVariableBinding
-      return clean
-    })
+    cleanNodeChange.strokePaints = cleanNodeChange.strokePaints.map(
+      ({ colorVariableBinding: _, ...rest }) => rest
+    )
   }
 
   // Encode clean version
-  const baseBytes = (compiledSchema as any).encodeNodeChange(cleanNodeChange)
+  const baseBytes = compiledSchema.encodeNodeChange(cleanNodeChange)
   let hex = Buffer.from(baseBytes).toString('hex')
 
   // Inject fill variable binding (field 38 = 0x26)
@@ -493,7 +499,7 @@ export function encodeNodeChangeWithVariables(nodeChange: NodeChange): Uint8Arra
     hex = injectVariableBinding(hex, '2701', strokeBinding)
   }
 
-  return new Uint8Array(hex.match(/.{2}/g)!.map((b) => parseInt(b, 16)))
+  return new Uint8Array(hex.match(/.{2}/g)?.map((b) => parseInt(b, 16)) ?? [])
 }
 
 /**

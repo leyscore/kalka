@@ -19,9 +19,9 @@ export function getFontProvider(): TypefaceFontProvider | null {
 }
 
 export async function queryFonts(): Promise<FontInfo[]> {
-  if (!('queryLocalFonts' in window)) return []
+  if (!window.queryLocalFonts) return []
   try {
-    const fonts = await (window as any).queryLocalFonts()
+    const fonts = await window.queryLocalFonts()
     const seen = new Set<string>()
     const result: FontInfo[] = []
     for (const f of fonts) {
@@ -53,20 +53,19 @@ const BUNDLED_FONTS: Record<string, string> = {
 export async function loadFont(family: string, style = 'Regular'): Promise<ArrayBuffer | null> {
   const cacheKey = `${family}|${style}`
   if (loadedFamilies.has(cacheKey)) {
-    const cached = loadedFamilies.get(cacheKey)!
+    const cached = loadedFamilies.get(cacheKey)
+    if (!cached) return null
     registerFontInCanvasKit(family, cached)
     return cached
   }
 
   // Try local font access API first
-  if ('queryLocalFonts' in window) {
+  if (window.queryLocalFonts) {
     try {
-      const fonts = await (window as any).queryLocalFonts()
-      const match = fonts.find(
-        (f: FontInfo) => f.family === family && f.style === style
-      ) ?? fonts.find(
-        (f: FontInfo) => f.family === family
-      )
+      const fonts = await window.queryLocalFonts()
+      const match =
+        fonts.find((f: FontInfo) => f.family === family && f.style === style) ??
+        fonts.find((f: FontInfo) => f.family === family)
       if (match) {
         const blob: Blob = await match.blob()
         const buffer = await blob.arrayBuffer()
@@ -76,7 +75,9 @@ export async function loadFont(family: string, style = 'Regular'): Promise<Array
         registerFontInBrowser(family, style, buffer)
         return buffer
       }
-    } catch { /* fall through to bundled */ }
+    } catch {
+      /* fall through to bundled */
+    }
   }
 
   // Fall back to bundled font
@@ -90,7 +91,9 @@ export async function loadFont(family: string, style = 'Regular'): Promise<Array
       registerFontInCanvasKit(family, buffer)
       registerFontInBrowser(family, style, buffer)
       return buffer
-    } catch { /* no bundled font available */ }
+    } catch {
+      /* no bundled font available */
+    }
   }
 
   return null

@@ -1,10 +1,10 @@
 import { useResizeObserver } from '@vueuse/core'
 import { onMounted, onUnmounted, watch, type Ref } from 'vue'
 
-import { getCanvasKit } from '../engine/canvaskit'
-import { SkiaRenderer } from '../engine/renderer'
+import { getCanvasKit } from '@/engine/canvaskit'
+import { SkiaRenderer } from '@/engine/renderer'
 
-import type { EditorStore } from '../stores/editor'
+import type { EditorStore } from '@/stores/editor'
 import type { CanvasKit } from 'canvaskit-wasm'
 
 export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, store: EditorStore) {
@@ -69,11 +69,13 @@ export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, store: Edito
       rotationPreview: store.state.rotationPreview,
       dropTargetId: store.state.dropTargetId,
       layoutInsertIndicator: store.state.layoutInsertIndicator,
-      penState: store.state.penState ? {
-        ...store.state.penState,
-        cursorX: store.state.penCursorX ?? undefined,
-        cursorY: store.state.penCursorY ?? undefined
-      } : null
+      penState: store.state.penState
+        ? {
+            ...store.state.penState,
+            cursorX: store.state.penCursorX ?? undefined,
+            cursorY: store.state.penCursorY ?? undefined
+          }
+        : null
     })
   }
 
@@ -92,13 +94,18 @@ export function useCanvas(canvasRef: Ref<HTMLCanvasElement | null>, store: Edito
   onUnmounted(() => {
     destroyed = true
     cancelAnimationFrame(rafId)
+    cancelAnimationFrame(resizeRaf)
     renderer?.destroy()
   })
 
+  let resizeRaf = 0
   useResizeObserver(canvasRef, () => {
     const canvas = canvasRef.value
-    if (!canvas || !ck) return
-    createSurface(canvas)
+    if (!canvas || !ck || resizeRaf) return
+    resizeRaf = requestAnimationFrame(() => {
+      resizeRaf = 0
+      createSurface(canvas)
+    })
   })
 
   watch(

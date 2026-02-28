@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { useEditorStore } from '../stores/editor'
+import { useEditorStore } from '@/stores/editor'
 
 import AppearanceSection from './properties/AppearanceSection.vue'
 import FillSection from './properties/FillSection.vue'
@@ -23,12 +23,14 @@ const isComponentType = computed(() => {
 </script>
 
 <template>
-  <aside class="flex w-[241px] flex-col overflow-hidden border-l border-border bg-panel">
+  <aside class="flex min-w-0 flex-1 flex-col overflow-hidden border-l border-border bg-panel">
     <!-- Tabs -->
     <div class="flex h-10 shrink-0 items-center gap-1 border-b border-border px-2">
       <button class="rounded px-2.5 py-1 text-xs font-semibold text-surface">Design</button>
       <button class="rounded px-2.5 py-1 text-xs text-muted">Prototype</button>
-      <span class="ml-auto cursor-pointer rounded px-1.5 py-0.5 text-[11px] text-muted hover:bg-hover">
+      <span
+        class="ml-auto cursor-pointer rounded px-1.5 py-0.5 text-[11px] text-muted hover:bg-hover"
+      >
         {{ Math.round(store.state.zoom * 100) }}%
       </span>
     </div>
@@ -46,15 +48,17 @@ const isComponentType = computed(() => {
     <div v-else-if="node" class="flex-1 overflow-y-auto pb-4">
       <!-- Node header -->
       <div class="flex items-center gap-1.5 border-b border-border px-3 py-2">
-        <span
-          class="text-[11px]"
-          :class="isComponentType ? 'text-[#9747ff]' : 'text-muted'"
-        >{{ node.type }}</span>
+        <span class="text-[11px]" :class="isComponentType ? 'text-[#9747ff]' : 'text-muted'">{{
+          node.type
+        }}</span>
         <span class="text-xs font-semibold">{{ node.name }}</span>
       </div>
 
       <!-- Component actions -->
-      <div v-if="node.type === 'INSTANCE'" class="flex flex-col gap-1 border-b border-border px-3 py-2">
+      <div
+        v-if="node.type === 'INSTANCE'"
+        class="flex flex-col gap-1 border-b border-border px-3 py-2"
+      >
         <button
           class="rounded bg-[#9747ff]/10 px-2 py-1 text-left text-[11px] text-[#9747ff] hover:bg-[#9747ff]/20"
           @click="store.goToMainComponent()"

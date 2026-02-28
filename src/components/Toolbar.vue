@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { DropdownMenuRoot, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal } from 'reka-ui'
+import {
+  DropdownMenuRoot,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuPortal
+} from 'reka-ui'
 
 import IconMousePointer from '~icons/lucide/mouse-pointer'
 import IconFrame from '~icons/lucide/frame'
@@ -7,14 +13,16 @@ import IconLayoutGrid from '~icons/lucide/layout-grid'
 import IconSquare from '~icons/lucide/square'
 import IconCircle from '~icons/lucide/circle'
 import IconMinus from '~icons/lucide/minus'
+import IconTriangle from '~icons/lucide/triangle'
+import IconStar from '~icons/lucide/star'
 import IconPenTool from '~icons/lucide/pen-tool'
 import IconType from '~icons/lucide/type'
 import IconHand from '~icons/lucide/hand'
 import IconChevronDown from '~icons/lucide/chevron-down'
 
-import { TOOLS, useEditorStore } from '../stores/editor'
+import { TOOLS, useEditorStore } from '@/stores/editor'
 
-import type { Tool } from '../stores/editor'
+import type { Tool } from '@/stores/editor'
 
 const store = useEditorStore()
 
@@ -25,6 +33,8 @@ const toolIcons: Record<Tool, typeof IconSquare> = {
   RECTANGLE: IconSquare,
   ELLIPSE: IconCircle,
   LINE: IconMinus,
+  POLYGON: IconTriangle,
+  STAR: IconStar,
   PEN: IconPenTool,
   TEXT: IconType,
   HAND: IconHand
@@ -37,17 +47,33 @@ const toolLabels: Record<Tool, string> = {
   RECTANGLE: 'Rectangle',
   ELLIPSE: 'Ellipse',
   LINE: 'Line',
+  POLYGON: 'Polygon',
+  STAR: 'Star',
   PEN: 'Pen',
   TEXT: 'Text',
   HAND: 'Hand'
 }
 
-function isActive(tool: typeof TOOLS[number]): boolean {
+const toolShortcuts: Record<Tool, string> = {
+  SELECT: 'V',
+  FRAME: 'F',
+  SECTION: 'S',
+  RECTANGLE: 'R',
+  ELLIPSE: 'O',
+  LINE: 'L',
+  POLYGON: '',
+  STAR: '',
+  PEN: 'P',
+  TEXT: 'T',
+  HAND: 'H'
+}
+
+function isActive(tool: (typeof TOOLS)[number]): boolean {
   if (tool.key === store.state.activeTool) return true
   return tool.flyout?.includes(store.state.activeTool) ?? false
 }
 
-function activeKeyForTool(tool: typeof TOOLS[number]): Tool {
+function activeKeyForTool(tool: (typeof TOOLS)[number]): Tool {
   if (tool.flyout?.includes(store.state.activeTool)) return store.state.activeTool
   return tool.key
 }
@@ -61,9 +87,11 @@ function activeKeyForTool(tool: typeof TOOLS[number]): Tool {
         <div v-if="tool.flyout && tool.flyout.length > 1" class="flex items-center">
           <button
             class="flex size-8 cursor-pointer items-center justify-center rounded-lg border-none transition-colors"
-            :class="isActive(tool)
-              ? 'bg-accent text-white'
-              : 'bg-transparent text-muted hover:bg-hover hover:text-surface'"
+            :class="
+              isActive(tool)
+                ? 'bg-accent text-white'
+                : 'bg-transparent text-muted hover:bg-hover hover:text-surface'
+            "
             :title="`${toolLabels[activeKeyForTool(tool)]} (${tool.shortcut})`"
             @click="store.setTool(activeKeyForTool(tool))"
           >
@@ -74,9 +102,11 @@ function activeKeyForTool(tool: typeof TOOLS[number]): Tool {
             <DropdownMenuTrigger as-child>
               <button
                 class="flex h-8 w-3 cursor-pointer items-center justify-center rounded-lg border-none transition-colors"
-                :class="isActive(tool)
-                  ? 'bg-accent text-white'
-                  : 'bg-transparent text-muted hover:bg-hover hover:text-surface'"
+                :class="
+                  isActive(tool)
+                    ? 'bg-accent text-white'
+                    : 'bg-transparent text-muted hover:bg-hover hover:text-surface'
+                "
               >
                 <IconChevronDown class="size-2.5" />
               </button>
@@ -93,13 +123,18 @@ function activeKeyForTool(tool: typeof TOOLS[number]): Tool {
                   v-for="sub in tool.flyout"
                   :key="sub"
                   class="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-xs outline-none transition-colors"
-                  :class="store.state.activeTool === sub
-                    ? 'bg-accent text-white'
-                    : 'text-surface hover:bg-hover'"
+                  :class="
+                    store.state.activeTool === sub
+                      ? 'bg-accent text-white'
+                      : 'text-surface hover:bg-hover'
+                  "
                   @select="store.setTool(sub)"
                 >
                   <component :is="toolIcons[sub]" class="size-3.5" />
-                  {{ toolLabels[sub] }}
+                  <span class="flex-1">{{ toolLabels[sub] }}</span>
+                  <span v-if="toolShortcuts[sub]" class="text-[11px] text-muted">{{
+                    toolShortcuts[sub]
+                  }}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenuPortal>
@@ -110,9 +145,11 @@ function activeKeyForTool(tool: typeof TOOLS[number]): Tool {
         <button
           v-else
           class="flex size-8 cursor-pointer items-center justify-center rounded-lg border-none transition-colors"
-          :class="isActive(tool)
-            ? 'bg-accent text-white'
-            : 'bg-transparent text-muted hover:bg-hover hover:text-surface'"
+          :class="
+            isActive(tool)
+              ? 'bg-accent text-white'
+              : 'bg-transparent text-muted hover:bg-hover hover:text-surface'
+          "
           :title="`${toolLabels[tool.key]} (${tool.shortcut})`"
           @click="store.setTool(tool.key)"
         >

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import ColorPicker from '../ColorPicker.vue'
-import { useEditorStore } from '../../stores/editor'
-import { colorToHexRaw, parseColor } from '../../engine/color'
+import ColorPicker from '@/components/ColorPicker.vue'
+import { useEditorStore } from '@/stores/editor'
+import { colorToHexRaw, parseColor } from '@/engine/color'
 
-import type { Color } from '../../types'
+import type { Color } from '@/types'
 
 const store = useEditorStore()
 

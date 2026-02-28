@@ -1,9 +1,10 @@
 import { useEventListener } from '@vueuse/core'
 
-import { TOOL_SHORTCUTS } from '../stores/editor'
+import { TOOL_SHORTCUTS } from '@/stores/editor'
+
 import { openFileDialog } from './use-menu'
 
-import type { EditorStore } from '../stores/editor'
+import type { EditorStore } from '@/stores/editor'
 
 function isEditing(e: Event) {
   return e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement
@@ -13,13 +14,13 @@ export function useKeyboard(store: EditorStore) {
   useEventListener(window, 'copy', (e: ClipboardEvent) => {
     if (isEditing(e)) return
     e.preventDefault()
-    store.writeCopyData(e.clipboardData!)
+    if (e.clipboardData) store.writeCopyData(e.clipboardData)
   })
 
   useEventListener(window, 'cut', (e: ClipboardEvent) => {
     if (isEditing(e)) return
     e.preventDefault()
-    store.writeCopyData(e.clipboardData!)
+    if (e.clipboardData) store.writeCopyData(e.clipboardData)
     store.deleteSelected()
   })
 

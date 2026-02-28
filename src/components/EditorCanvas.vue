@@ -1,16 +1,21 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
-import { useCanvas } from '../composables/use-canvas'
-import { useCanvasInput } from '../composables/use-canvas-input'
-import { useEditorStore } from '../stores/editor'
+import { useCanvas } from '@/composables/use-canvas'
+import { useCanvasInput } from '@/composables/use-canvas-input'
+import { useEditorStore } from '@/stores/editor'
 import CanvasContextMenu from './CanvasContextMenu.vue'
 
 const store = useEditorStore()
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 
 const { hitTestSectionTitle, hitTestComponentLabel } = useCanvas(canvasRef, store)
-const { cursorOverride } = useCanvasInput(canvasRef, store, hitTestSectionTitle, hitTestComponentLabel)
+const { cursorOverride } = useCanvasInput(
+  canvasRef,
+  store,
+  hitTestSectionTitle,
+  hitTestComponentLabel
+)
 
 const cursor = computed(() => {
   if (cursorOverride.value) return cursorOverride.value

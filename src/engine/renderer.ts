@@ -1,26 +1,66 @@
 import {
-  SELECTION_COLOR, COMPONENT_COLOR, SNAP_COLOR, CANVAS_BG_COLOR, ROTATION_HANDLE_OFFSET,
-  RULER_SIZE, RULER_BG_COLOR, RULER_TICK_COLOR, RULER_TEXT_COLOR,
-  RULER_BADGE_HEIGHT, RULER_BADGE_PADDING, RULER_BADGE_RADIUS, RULER_BADGE_EXCLUSION,
-  RULER_TEXT_BASELINE, RULER_MAJOR_TICK, RULER_MINOR_TICK, RULER_HIGHLIGHT_ALPHA,
-  PEN_HANDLE_RADIUS, PEN_VERTEX_RADIUS, PEN_CLOSE_RADIUS_BOOST, PEN_PATH_STROKE_WIDTH,
-  PARENT_OUTLINE_ALPHA, PARENT_OUTLINE_DASH,
-  DEFAULT_FONT_SIZE, LABEL_FONT_SIZE, SIZE_FONT_SIZE,
-  ROTATION_HANDLE_RADIUS, HANDLE_HALF_SIZE,
-  LABEL_OFFSET_Y, SIZE_PILL_PADDING_X, SIZE_PILL_PADDING_Y, SIZE_PILL_HEIGHT,
-  SIZE_PILL_RADIUS, SIZE_PILL_TEXT_OFFSET_Y,
-  MARQUEE_FILL_ALPHA, SELECTION_DASH_ALPHA, DROP_HIGHLIGHT_ALPHA, DROP_HIGHLIGHT_STROKE,
+  SELECTION_COLOR,
+  COMPONENT_COLOR,
+  SNAP_COLOR,
+  CANVAS_BG_COLOR,
+  ROTATION_HANDLE_OFFSET,
+  RULER_SIZE,
+  RULER_BG_COLOR,
+  RULER_TICK_COLOR,
+  RULER_TEXT_COLOR,
+  RULER_BADGE_HEIGHT,
+  RULER_BADGE_PADDING,
+  RULER_BADGE_RADIUS,
+  RULER_BADGE_EXCLUSION,
+  RULER_TEXT_BASELINE,
+  RULER_MAJOR_TICK,
+  RULER_MINOR_TICK,
+  RULER_HIGHLIGHT_ALPHA,
+  PEN_HANDLE_RADIUS,
+  PEN_VERTEX_RADIUS,
+  PEN_CLOSE_RADIUS_BOOST,
+  PEN_PATH_STROKE_WIDTH,
+  PARENT_OUTLINE_ALPHA,
+  PARENT_OUTLINE_DASH,
+  DEFAULT_FONT_SIZE,
+  LABEL_FONT_SIZE,
+  SIZE_FONT_SIZE,
+  ROTATION_HANDLE_RADIUS,
+  HANDLE_HALF_SIZE,
+  LABEL_OFFSET_Y,
+  SIZE_PILL_PADDING_X,
+  SIZE_PILL_PADDING_Y,
+  SIZE_PILL_HEIGHT,
+  SIZE_PILL_RADIUS,
+  SIZE_PILL_TEXT_OFFSET_Y,
+  MARQUEE_FILL_ALPHA,
+  SELECTION_DASH_ALPHA,
+  DROP_HIGHLIGHT_ALPHA,
+  DROP_HIGHLIGHT_STROKE,
   LAYOUT_INDICATOR_STROKE,
-  SECTION_CORNER_RADIUS, SECTION_TITLE_HEIGHT, SECTION_TITLE_PADDING_X,
-  SECTION_TITLE_RADIUS, SECTION_TITLE_FONT_SIZE, SECTION_TITLE_GAP,
-  COMPONENT_SET_DASH, COMPONENT_SET_DASH_GAP, COMPONENT_SET_BORDER_WIDTH,
-  COMPONENT_LABEL_FONT_SIZE, COMPONENT_LABEL_GAP, COMPONENT_LABEL_ICON_SIZE, COMPONENT_LABEL_ICON_GAP,
-  RULER_TARGET_PIXEL_SPACING, RULER_MAJOR_TOLERANCE
-} from '../constants'
-import type { SceneNode, SceneGraph, Fill, GradientStop, GradientTransform, ArcData } from './scene-graph'
-import type { Image as CKImage } from 'canvaskit-wasm'
-import type { SnapGuide } from './snap'
+  SECTION_CORNER_RADIUS,
+  SECTION_TITLE_HEIGHT,
+  SECTION_TITLE_PADDING_X,
+  SECTION_TITLE_RADIUS,
+  SECTION_TITLE_FONT_SIZE,
+  SECTION_TITLE_GAP,
+  COMPONENT_SET_DASH,
+  COMPONENT_SET_DASH_GAP,
+  COMPONENT_SET_BORDER_WIDTH,
+  COMPONENT_LABEL_FONT_SIZE,
+  COMPONENT_LABEL_GAP,
+  COMPONENT_LABEL_ICON_SIZE,
+  COMPONENT_LABEL_ICON_GAP,
+  RULER_TARGET_PIXEL_SPACING,
+  RULER_MAJOR_TOLERANCE
+} from '@/constants'
+
 import { vectorNetworkToPath } from './vector'
+
+import type { SceneNode, SceneGraph, Fill } from './scene-graph'
+import type { SnapGuide } from './snap'
+import type { Rect } from '@/types'
+import type { EmbindEnumEntity, Image as CKImage, Path } from 'canvaskit-wasm'
 import type {
   CanvasKit,
   Surface,
@@ -35,7 +75,7 @@ import type {
 export interface RenderOverlays {
   hoveredNodeId?: string | null
   editingTextId?: string | null
-  marquee?: { x: number; y: number; width: number; height: number } | null
+  marquee?: Rect | null
   snapGuides?: SnapGuide[]
   rotationPreview?: { nodeId: string; angle: number } | null
   dropTargetId?: string | null
@@ -47,7 +87,12 @@ export interface RenderOverlays {
   } | null
   penState?: {
     vertices: Array<{ x: number; y: number }>
-    segments: Array<{ start: number; end: number; tangentStart: { x: number; y: number }; tangentEnd: { x: number; y: number } }>
+    segments: Array<{
+      start: number
+      end: number
+      tangentStart: { x: number; y: number }
+      tangentEnd: { x: number; y: number }
+    }>
     dragTangent: { x: number; y: number } | null
     closingToFirst: boolean
     cursorX?: number
@@ -123,7 +168,9 @@ export class SkiaRenderer {
     this.parentOutlinePaint.setStrokeWidth(1)
     this.parentOutlinePaint.setColor(this.selColor(PARENT_OUTLINE_ALPHA))
     this.parentOutlinePaint.setAntiAlias(true)
-    this.parentOutlinePaint.setPathEffect(ck.PathEffect.MakeDash([PARENT_OUTLINE_DASH, PARENT_OUTLINE_DASH], 0))
+    this.parentOutlinePaint.setPathEffect(
+      ck.PathEffect.MakeDash([PARENT_OUTLINE_DASH, PARENT_OUTLINE_DASH], 0)
+    )
 
     this.snapPaint = new ck.Paint()
     this.snapPaint.setStyle(ck.PaintStyle.Stroke)
@@ -196,7 +243,8 @@ export class SkiaRenderer {
           const widths = font.getGlyphWidths(glyphIds)
           let textW = 0
           for (const w of widths) textW += w
-          const pillW = Math.min(textW + SECTION_TITLE_PADDING_X * 2, child.width * this.zoom) / this.zoom
+          const pillW =
+            Math.min(textW + SECTION_TITLE_PADDING_X * 2, child.width * this.zoom) / this.zoom
           const pillH = SECTION_TITLE_HEIGHT / this.zoom
           const gap = SECTION_TITLE_GAP / this.zoom
 
@@ -208,8 +256,12 @@ export class SkiaRenderer {
             pillY = ay - pillH - gap
           }
 
-          if (canvasX >= pillX && canvasX <= pillX + pillW &&
-              canvasY >= pillY && canvasY <= pillY + pillH) {
+          if (
+            canvasX >= pillX &&
+            canvasX <= pillX + pillW &&
+            canvasY >= pillY &&
+            canvasY <= pillY + pillH
+          ) {
             result = child
             return
           }
@@ -263,8 +315,12 @@ export class SkiaRenderer {
             labelY = ay - labelH - gap
           }
 
-          if (canvasX >= labelX && canvasX <= labelX + labelW &&
-              canvasY >= labelY && canvasY <= labelY + labelH) {
+          if (
+            canvasX >= labelX &&
+            canvasX <= labelX + labelW &&
+            canvasY >= labelY &&
+            canvasY <= labelY + labelH
+          ) {
             result = child
             return
           }
@@ -322,7 +378,7 @@ export class SkiaRenderer {
     // Section titles + component labels (screen coordinates, zoom-independent)
     canvas.save()
     canvas.scale(this.dpr, this.dpr)
-    this.drawSectionTitles(canvas, graph, selectedIds)
+    this.drawSectionTitles(canvas, graph)
     this.drawComponentLabels(canvas, graph)
     canvas.restore()
 
@@ -447,11 +503,7 @@ export class SkiaRenderer {
     canvas.restore()
   }
 
-  private drawSelectionLabels(
-    canvas: Canvas,
-    graph: SceneGraph,
-    selectedIds: Set<string>
-  ): void {
+  private drawSelectionLabels(canvas: Canvas, graph: SceneGraph, selectedIds: Set<string>): void {
     if (!this.labelFont || !this.sizeFont) return
 
     // Compute bounding box of all selected nodes
@@ -483,7 +535,8 @@ export class SkiaRenderer {
     if (nodes.length === 1) {
       const node = nodes[0]
       const parentNode = node.parentId ? graph.getNode(node.parentId) : null
-      const isTopLevel = !parentNode || parentNode.type === 'CANVAS' || parentNode.type === 'SECTION'
+      const isTopLevel =
+        !parentNode || parentNode.type === 'CANVAS' || parentNode.type === 'SECTION'
       if (node.type === 'FRAME' && isTopLevel) {
         this.auxFill.setColor(this.selColor())
         canvas.drawText(node.name, sx1, sy1 - LABEL_OFFSET_Y, this.auxFill, this.labelFont)
@@ -507,11 +560,21 @@ export class SkiaRenderer {
     const pillColor = allComponents ? this.compColor() : this.selColor()
 
     this.auxFill.setColor(pillColor)
-    const rrect = this.ck.RRectXY(this.ck.LTRBRect(pillX, pillY, pillX + pillW, pillY + pillH), SIZE_PILL_RADIUS, SIZE_PILL_RADIUS)
+    const rrect = this.ck.RRectXY(
+      this.ck.LTRBRect(pillX, pillY, pillX + pillW, pillY + pillH),
+      SIZE_PILL_RADIUS,
+      SIZE_PILL_RADIUS
+    )
     canvas.drawRRect(rrect, this.auxFill)
 
     this.auxFill.setColor(this.ck.WHITE)
-    canvas.drawText(sizeText, pillX + SIZE_PILL_PADDING_X, pillY + SIZE_PILL_TEXT_OFFSET_Y, this.auxFill, this.sizeFont)
+    canvas.drawText(
+      sizeText,
+      pillX + SIZE_PILL_PADDING_X,
+      pillY + SIZE_PILL_TEXT_OFFSET_Y,
+      this.auxFill,
+      this.sizeFont
+    )
   }
 
   private drawParentFrameOutlines(
@@ -638,7 +701,12 @@ export class SkiaRenderer {
 
   private drawHandle(canvas: Canvas, x: number, y: number): void {
     this.auxFill.setColor(this.ck.WHITE)
-    const rect = this.ck.LTRBRect(x - HANDLE_HALF_SIZE, y - HANDLE_HALF_SIZE, x + HANDLE_HALF_SIZE, y + HANDLE_HALF_SIZE)
+    const rect = this.ck.LTRBRect(
+      x - HANDLE_HALF_SIZE,
+      y - HANDLE_HALF_SIZE,
+      x + HANDLE_HALF_SIZE,
+      y + HANDLE_HALF_SIZE
+    )
     canvas.drawRect(rect, this.auxFill)
     canvas.drawRect(rect, this.selectionPaint)
   }
@@ -665,10 +733,7 @@ export class SkiaRenderer {
 
   // --- Marquee ---
 
-  private drawMarquee(
-    canvas: Canvas,
-    marquee?: { x: number; y: number; width: number; height: number } | null
-  ): void {
+  private drawMarquee(canvas: Canvas, marquee?: Rect | null): void {
     if (!marquee || marquee.width <= 0 || marquee.height <= 0) return
 
     const x1 = marquee.x * this.zoom + this.panX
@@ -726,8 +791,10 @@ export class SkiaRenderer {
     // Viewport culling: skip nodes entirely outside the visible area.
     // Only cull leaf nodes and clipped containers — unclipped containers
     // may have children that extend beyond the parent's bounds.
-    const canCull = node.childIds.length === 0 ||
-      ((node.type === 'FRAME' || node.type === 'COMPONENT' || node.type === 'INSTANCE') && node.clipsContent)
+    const canCull =
+      node.childIds.length === 0 ||
+      ((node.type === 'FRAME' || node.type === 'COMPONENT' || node.type === 'INSTANCE') &&
+        node.clipsContent)
     if (canCull) {
       const vp = this.worldViewport
       // Expand bounds for rotation (diagonal is the max extent)
@@ -745,12 +812,7 @@ export class SkiaRenderer {
         ) {
           return
         }
-      } else if (
-        absX > vp.x + vp.w ||
-        absY > vp.y + vp.h ||
-        absX + bw < vp.x ||
-        absY + bh < vp.y
-      ) {
+      } else if (absX > vp.x + vp.w || absY > vp.y + vp.h || absX + bw < vp.x || absY + bh < vp.y) {
         return
       }
     }
@@ -794,7 +856,8 @@ export class SkiaRenderer {
     }
 
     // Clip + render children for containers
-    const isClippableContainer = node.type === 'FRAME' || node.type === 'COMPONENT' || node.type === 'INSTANCE'
+    const isClippableContainer =
+      node.type === 'FRAME' || node.type === 'COMPONENT' || node.type === 'INSTANCE'
     if (isClippableContainer && node.clipsContent && node.childIds.length > 0) {
       canvas.save()
       canvas.clipRect(
@@ -835,6 +898,13 @@ export class SkiaRenderer {
       case 'LINE':
         canvas.drawLine(0, 0, node.width, node.height, paint)
         return
+      case 'POLYGON':
+      case 'STAR': {
+        const path = this.makePolygonPath(node)
+        canvas.drawPath(path, paint)
+        path.delete()
+        return
+      }
     }
 
     const hasRadius =
@@ -848,11 +918,18 @@ export class SkiaRenderer {
     if (hasRadius) {
       if (node.independentCorners) {
         const rrect = new Float32Array([
-          0, 0, node.width, node.height,
-          node.topLeftRadius, node.topLeftRadius,
-          node.topRightRadius, node.topRightRadius,
-          node.bottomRightRadius, node.bottomRightRadius,
-          node.bottomLeftRadius, node.bottomLeftRadius
+          0,
+          0,
+          node.width,
+          node.height,
+          node.topLeftRadius,
+          node.topLeftRadius,
+          node.topRightRadius,
+          node.topRightRadius,
+          node.bottomRightRadius,
+          node.bottomRightRadius,
+          node.bottomLeftRadius,
+          node.bottomLeftRadius
         ])
         canvas.drawRRect(rrect, paint)
       } else {
@@ -886,10 +963,9 @@ export class SkiaRenderer {
       this.strokePaint.setAlphaf(stroke.opacity)
       canvas.drawRRect(rrect, this.strokePaint)
     }
-
   }
 
-  private drawSectionTitles(canvas: Canvas, graph: SceneGraph, selectedIds: Set<string>): void {
+  private drawSectionTitles(canvas: Canvas, graph: SceneGraph): void {
     if (!this.sectionTitleFont) return
 
     const pageNode = graph.getNode(this.pageId ?? graph.rootId)
@@ -906,7 +982,12 @@ export class SkiaRenderer {
         const ay = oy + child.y
         if (child.type === 'SECTION') {
           const vp = this.worldViewport
-          if (ax + child.width >= vp.x && ay + child.height >= vp.y && ax <= vp.x + vp.w && ay <= vp.y + vp.h) {
+          if (
+            ax + child.width >= vp.x &&
+            ay + child.height >= vp.y &&
+            ax <= vp.x + vp.w &&
+            ay <= vp.y + vp.h
+          ) {
             sections.push({ node: child, absX: ax, absY: ay, nested: insideSection })
           }
           collectSections(childId, ax, ay, true)
@@ -923,8 +1004,8 @@ export class SkiaRenderer {
     const ellipsisWidth = font.getGlyphWidths(ellipsisGlyphs)[0]
 
     for (const { node, absX, absY, nested } of sections) {
-      const screenX = (absX * this.zoom + this.panX)
-      const screenY = (absY * this.zoom + this.panY)
+      const screenX = absX * this.zoom + this.panX
+      const screenY = absY * this.zoom + this.panY
       const screenW = node.width * this.zoom
       const maxPillW = Math.max(screenW, 0)
 
@@ -956,9 +1037,7 @@ export class SkiaRenderer {
       const pillW = Math.min(textWidth + SECTION_TITLE_PADDING_X * 2, maxPillW)
       const pillH = SECTION_TITLE_HEIGHT
       const pillX = screenX
-      const pillY = nested
-        ? screenY + SECTION_TITLE_GAP
-        : screenY - pillH - SECTION_TITLE_GAP
+      const pillY = nested ? screenY + SECTION_TITLE_GAP : screenY - pillH - SECTION_TITLE_GAP
 
       if (node.fills.length > 0 && node.fills[0].visible) {
         const c = node.fills[0].color
@@ -972,9 +1051,10 @@ export class SkiaRenderer {
         this.auxFill
       )
 
-      const pillColor = node.fills.length > 0 && node.fills[0].visible
-        ? node.fills[0].color
-        : { r: 0.37, g: 0.37, b: 0.37 }
+      const pillColor =
+        node.fills.length > 0 && node.fills[0].visible
+          ? node.fills[0].color
+          : { r: 0.37, g: 0.37, b: 0.37 }
       const lum = 0.299 * pillColor.r + 0.587 * pillColor.g + 0.114 * pillColor.b
       this.auxFill.setColor(lum > 0.5 ? this.ck.BLACK : this.ck.WHITE)
       const textY = pillY + pillH * 0.7
@@ -1002,7 +1082,12 @@ export class SkiaRenderer {
         const ay = oy + child.y
         if (LABEL_TYPES.has(child.type)) {
           const vp = this.worldViewport
-          if (ax + child.width >= vp.x && ay + child.height >= vp.y && ax <= vp.x + vp.w && ay <= vp.y + vp.h) {
+          if (
+            ax + child.width >= vp.x &&
+            ay + child.height >= vp.y &&
+            ax <= vp.x + vp.w &&
+            ay <= vp.y + vp.h
+          ) {
             const isInsideSet = parent.type === 'COMPONENT_SET'
             nodes.push({ node: child, absX: ax, absY: ay, inside: isInsideSet })
           }
@@ -1022,12 +1107,6 @@ export class SkiaRenderer {
     for (const { node, absX, absY, inside } of nodes) {
       const screenX = absX * this.zoom + this.panX
       const screenY = absY * this.zoom + this.panY
-
-      // Measure text
-      const glyphIds = font.getGlyphIDs(node.name)
-      const widths = font.getGlyphWidths(glyphIds)
-      let textWidth = 0
-      for (const w of widths) textWidth += w
 
       // Position: inside top-left for variants in a set, above top-left otherwise
       const labelX = screenX
@@ -1051,7 +1130,12 @@ export class SkiaRenderer {
         const s = iconR * 0.45
         const gap = iconR * 0.2
         const path = new this.ck.Path()
-        for (const [dx, dy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+        for (const [dx, dy] of [
+          [-1, -1],
+          [1, -1],
+          [-1, 1],
+          [1, 1]
+        ]) {
           const cx = iconCx + dx * (s + gap)
           const cy = iconCy + dy * (s + gap)
           path.moveTo(cx, cy - s)
@@ -1073,7 +1157,13 @@ export class SkiaRenderer {
         path.delete()
       }
 
-      canvas.drawText(node.name, labelX + iconS + COMPONENT_LABEL_ICON_GAP, labelY, this.auxFill, font)
+      canvas.drawText(
+        node.name,
+        labelX + iconS + COMPONENT_LABEL_ICON_GAP,
+        labelY,
+        this.auxFill,
+        font
+      )
     }
   }
 
@@ -1135,16 +1225,20 @@ export class SkiaRenderer {
       this.strokePaint.setAlphaf(stroke.opacity)
 
       if (stroke.cap) {
-        const capMap: Record<string, number> = {
-          NONE: 0, ROUND: 1, SQUARE: 2
+        const capMap: Record<string, EmbindEnumEntity> = {
+          NONE: this.ck.StrokeCap.Butt,
+          ROUND: this.ck.StrokeCap.Round,
+          SQUARE: this.ck.StrokeCap.Square
         }
-        this.strokePaint.setStrokeCap(capMap[stroke.cap] ?? 0)
+        this.strokePaint.setStrokeCap(capMap[stroke.cap] ?? this.ck.StrokeCap.Butt)
       }
       if (stroke.join) {
-        const joinMap: Record<string, number> = {
-          MITER: 0, ROUND: 1, BEVEL: 2
+        const joinMap: Record<string, EmbindEnumEntity> = {
+          MITER: this.ck.StrokeJoin.Miter,
+          ROUND: this.ck.StrokeJoin.Round,
+          BEVEL: this.ck.StrokeJoin.Bevel
         }
-        this.strokePaint.setStrokeJoin(joinMap[stroke.join] ?? 0)
+        this.strokePaint.setStrokeJoin(joinMap[stroke.join] ?? this.ck.StrokeJoin.Miter)
       }
       if (stroke.dashPattern && stroke.dashPattern.length > 0) {
         this.strokePaint.setPathEffect(this.ck.PathEffect.MakeDash(stroke.dashPattern, 0))
@@ -1159,7 +1253,12 @@ export class SkiaRenderer {
     this.renderEffects(canvas, node, rect, hasRadius, 'front')
   }
 
-  private drawNodeFill(canvas: Canvas, node: SceneNode, rect: Float32Array, hasRadius: boolean): void {
+  private drawNodeFill(
+    canvas: Canvas,
+    node: SceneNode,
+    rect: Float32Array,
+    hasRadius: boolean
+  ): void {
     switch (node.type) {
       case 'VECTOR':
         if (node.vectorNetwork) {
@@ -1181,6 +1280,13 @@ export class SkiaRenderer {
       case 'LINE':
         canvas.drawLine(0, 0, node.width, node.height, this.fillPaint)
         break
+      case 'POLYGON':
+      case 'STAR': {
+        const path = this.makePolygonPath(node)
+        canvas.drawPath(path, this.fillPaint)
+        path.delete()
+        break
+      }
       default:
         if (hasRadius) {
           canvas.drawRRect(this.makeRRect(node), this.fillPaint)
@@ -1190,7 +1296,12 @@ export class SkiaRenderer {
     }
   }
 
-  private drawNodeStroke(canvas: Canvas, node: SceneNode, rect: Float32Array, hasRadius: boolean): void {
+  private drawNodeStroke(
+    canvas: Canvas,
+    node: SceneNode,
+    rect: Float32Array,
+    hasRadius: boolean
+  ): void {
     switch (node.type) {
       case 'VECTOR':
         if (node.vectorNetwork) {
@@ -1206,6 +1317,13 @@ export class SkiaRenderer {
           canvas.drawOval(rect, this.strokePaint)
         }
         break
+      case 'POLYGON':
+      case 'STAR': {
+        const path = this.makePolygonPath(node)
+        canvas.drawPath(path, this.strokePaint)
+        path.delete()
+        break
+      }
       default:
         if (hasRadius) {
           canvas.drawRRect(this.makeRRect(node), this.strokePaint)
@@ -1215,24 +1333,58 @@ export class SkiaRenderer {
     }
   }
 
+  private makePolygonPath(node: SceneNode): Path {
+    const path = new this.ck.Path()
+    const cx = node.width / 2
+    const cy = node.height / 2
+    const rx = node.width / 2
+    const ry = node.height / 2
+    const n = Math.max(3, node.pointCount)
+    const isStar = node.type === 'STAR'
+    const innerRatio = isStar ? node.starInnerRadius : 1
+    const totalPoints = isStar ? n * 2 : n
+    const angleOffset = -Math.PI / 2
+
+    for (let i = 0; i < totalPoints; i++) {
+      const angle = angleOffset + (2 * Math.PI * i) / totalPoints
+      const isInner = isStar && i % 2 === 1
+      const r = isInner ? innerRatio : 1
+      const px = cx + rx * r * Math.cos(angle)
+      const py = cy + ry * r * Math.sin(angle)
+      if (i === 0) path.moveTo(px, py)
+      else path.lineTo(px, py)
+    }
+    path.close()
+    return path
+  }
+
   private makeRRect(node: SceneNode): Float32Array {
     if (node.independentCorners) {
       return new Float32Array([
-        0, 0, node.width, node.height,
-        node.topLeftRadius, node.topLeftRadius,
-        node.topRightRadius, node.topRightRadius,
-        node.bottomRightRadius, node.bottomRightRadius,
-        node.bottomLeftRadius, node.bottomLeftRadius,
+        0,
+        0,
+        node.width,
+        node.height,
+        node.topLeftRadius,
+        node.topLeftRadius,
+        node.topRightRadius,
+        node.topRightRadius,
+        node.bottomRightRadius,
+        node.bottomRightRadius,
+        node.bottomLeftRadius,
+        node.bottomLeftRadius
       ])
     }
     return this.ck.RRectXY(
       this.ck.LTRBRect(0, 0, node.width, node.height),
-      node.cornerRadius, node.cornerRadius
+      node.cornerRadius,
+      node.cornerRadius
     )
   }
 
   private drawArc(canvas: Canvas, node: SceneNode, paint: Paint): void {
-    const arc = node.arcData!
+    const arc = node.arcData
+    if (!arc) return
     const cx = node.width / 2
     const cy = node.height / 2
     const rx = node.width / 2
@@ -1250,9 +1402,7 @@ export class SkiaRenderer {
     if (arc.innerRadius > 0) {
       // Donut shape
       path.addArc(oval, startDeg, sweepDeg)
-      const innerOval = this.ck.LTRBRect(
-        cx - innerRx, cy - innerRy, cx + innerRx, cy + innerRy
-      )
+      const innerOval = this.ck.LTRBRect(cx - innerRx, cy - innerRy, cx + innerRx, cy + innerRy)
       const innerPath = new this.ck.Path()
       innerPath.addArc(innerOval, startDeg + sweepDeg, -sweepDeg)
       path.addPath(innerPath)
@@ -1274,16 +1424,19 @@ export class SkiaRenderer {
   }
 
   private renderEffects(
-    canvas: Canvas, node: SceneNode, rect: Float32Array,
-    hasRadius: boolean, pass: 'behind' | 'front'
+    canvas: Canvas,
+    node: SceneNode,
+    rect: Float32Array,
+    hasRadius: boolean,
+    pass: 'behind' | 'front'
   ): void {
     for (const effect of node.effects) {
       if (!effect.visible) continue
 
       if (pass === 'behind' && effect.type === 'DROP_SHADOW') {
-        this.auxFill.setColor(this.ck.Color4f(
-          effect.color.r, effect.color.g, effect.color.b, effect.color.a
-        ))
+        this.auxFill.setColor(
+          this.ck.Color4f(effect.color.r, effect.color.g, effect.color.b, effect.color.a)
+        )
         this.auxFill.setImageFilter(
           this.ck.ImageFilter.MakeBlur(effect.radius, effect.radius, this.ck.TileMode.Decal, null)
         )
@@ -1307,9 +1460,9 @@ export class SkiaRenderer {
 
       if (pass === 'front' && effect.type === 'INNER_SHADOW') {
         // Inner shadow: draw a shadow clipped to the node shape
-        this.auxFill.setColor(this.ck.Color4f(
-          effect.color.r, effect.color.g, effect.color.b, effect.color.a
-        ))
+        this.auxFill.setColor(
+          this.ck.Color4f(effect.color.r, effect.color.g, effect.color.b, effect.color.a)
+        )
         this.auxFill.setImageFilter(
           this.ck.ImageFilter.MakeBlur(effect.radius, effect.radius, this.ck.TileMode.Decal, null)
         )
@@ -1338,18 +1491,24 @@ export class SkiaRenderer {
         if (node.type === 'ELLIPSE') {
           const innerPath = new this.ck.Path()
           const offsetRect = this.ck.LTRBRect(
-            effect.offset.x, effect.offset.y,
-            node.width + effect.offset.x, node.height + effect.offset.y
+            effect.offset.x,
+            effect.offset.y,
+            node.width + effect.offset.x,
+            node.height + effect.offset.y
           )
           innerPath.addOval(offsetRect)
           bigPath.op(innerPath, this.ck.PathOp.Difference)
           innerPath.delete()
         } else {
           const innerPath = new this.ck.Path()
-          innerPath.addRect(this.ck.LTRBRect(
-            effect.offset.x, effect.offset.y,
-            node.width + effect.offset.x, node.height + effect.offset.y
-          ))
+          innerPath.addRect(
+            this.ck.LTRBRect(
+              effect.offset.x,
+              effect.offset.y,
+              node.width + effect.offset.x,
+              node.height + effect.offset.y
+            )
+          )
           bigPath.op(innerPath, this.ck.PathOp.Difference)
           innerPath.delete()
         }
@@ -1374,7 +1533,9 @@ export class SkiaRenderer {
           fontSize: node.fontSize || DEFAULT_FONT_SIZE,
           fontStyle: { weight: { value: node.fontWeight || 400 } as FontWeight },
           letterSpacing: node.letterSpacing || 0,
-          heightMultiplier: node.lineHeight ? node.lineHeight / (node.fontSize || DEFAULT_FONT_SIZE) : undefined
+          heightMultiplier: node.lineHeight
+            ? node.lineHeight / (node.fontSize || DEFAULT_FONT_SIZE)
+            : undefined
         }
       })
       const builder = this.ck.ParagraphBuilder.MakeFromFontProvider(paraStyle, this.fontProvider)
@@ -1424,11 +1585,10 @@ export class SkiaRenderer {
   }
 
   private applyGradientFill(fill: Fill, node: SceneNode): void {
-    const stops = fill.gradientStops!
-    const t = fill.gradientTransform!
-    const colors = stops.map((s) =>
-      this.ck.Color4f(s.color.r, s.color.g, s.color.b, s.color.a)
-    )
+    const stops = fill.gradientStops
+    const t = fill.gradientTransform
+    if (!stops || !t) return
+    const colors = stops.map((s) => this.ck.Color4f(s.color.r, s.color.g, s.color.b, s.color.a))
     const positions = stops.map((s) => s.position)
 
     // Figma gradient transform maps unit square to node bounds
@@ -1443,8 +1603,10 @@ export class SkiaRenderer {
       const endX = (t.m00 + t.m02) * w
       const endY = (t.m10 + t.m12) * h
       const shader = this.ck.Shader.MakeLinearGradient(
-        [startX, startY], [endX, endY],
-        colors, positions,
+        [startX, startY],
+        [endX, endY],
+        colors,
+        positions,
         this.ck.TileMode.Clamp
       )
       this.fillPaint.setShader(shader)
@@ -1453,8 +1615,10 @@ export class SkiaRenderer {
       const cy = t.m12 * h
       const radius = Math.sqrt(t.m00 * t.m00 + t.m10 * t.m10) * Math.max(w, h)
       const shader = this.ck.Shader.MakeRadialGradient(
-        [cx, cy], radius,
-        colors, positions,
+        [cx, cy],
+        radius,
+        colors,
+        positions,
         this.ck.TileMode.Clamp
       )
       this.fillPaint.setShader(shader)
@@ -1462,8 +1626,10 @@ export class SkiaRenderer {
       const cx = t.m02 * w
       const cy = t.m12 * h
       const shader = this.ck.Shader.MakeSweepGradient(
-        cx, cy,
-        colors, positions,
+        cx,
+        cy,
+        colors,
+        positions,
         this.ck.TileMode.Clamp,
         // Figma angular gradients start from right (0°), CanvasKit sweep from right too
         undefined
@@ -1475,8 +1641,10 @@ export class SkiaRenderer {
       const cy = t.m12 * h
       const radius = Math.sqrt(t.m00 * t.m00 + t.m10 * t.m10) * Math.max(w, h)
       const shader = this.ck.Shader.MakeRadialGradient(
-        [cx, cy], radius,
-        colors, positions,
+        [cx, cy],
+        radius,
+        colors,
+        positions,
         this.ck.TileMode.Clamp
       )
       this.fillPaint.setShader(shader)
@@ -1484,12 +1652,14 @@ export class SkiaRenderer {
   }
 
   private applyImageFill(fill: Fill, node: SceneNode, graph: SceneGraph): void {
-    let img = this.imageCache.get(fill.imageHash!)
+    const hash = fill.imageHash
+    if (!hash) return
+    let img = this.imageCache.get(hash)
     if (!img) {
-      const data = graph.images.get(fill.imageHash!)
+      const data = graph.images.get(hash)
       if (!data) return
       img = this.ck.MakeImageFromEncoded(data) ?? undefined
-      if (img) this.imageCache.set(fill.imageHash!, img)
+      if (img) this.imageCache.set(hash, img)
       else return
     }
 
@@ -1505,19 +1675,23 @@ export class SkiaRenderer {
       sx = (imgW - sw) / 2
       sy = (imgH - sh) / 2
     } else if (scaleMode === 'FIT') {
-      const scale = Math.min(node.width / imgW, node.height / imgH)
       sw = imgW
       sh = imgH
       sx = 0
       sy = 0
       // FIT: image centered within bounds — handled by shader matrix
     } else {
-      sx = 0; sy = 0; sw = imgW; sh = imgH
+      sx = 0
+      sy = 0
+      sw = imgW
+      sh = imgH
     }
 
     const shader = img.makeShaderCubic(
-      this.ck.TileMode.Clamp, this.ck.TileMode.Clamp,
-      1 / 3, 1 / 3,
+      this.ck.TileMode.Clamp,
+      this.ck.TileMode.Clamp,
+      1 / 3,
+      1 / 3,
       this.ck.Matrix.multiply(
         this.ck.Matrix.scaled(node.width / sw, node.height / sh),
         this.ck.Matrix.translated(-sx, -sy)
@@ -1573,8 +1747,10 @@ export class SkiaRenderer {
       path.moveTo(s.x, s.y)
 
       const isLine =
-        seg.tangentStart.x === 0 && seg.tangentStart.y === 0 &&
-        seg.tangentEnd.x === 0 && seg.tangentEnd.y === 0
+        seg.tangentStart.x === 0 &&
+        seg.tangentStart.y === 0 &&
+        seg.tangentEnd.x === 0 &&
+        seg.tangentEnd.y === 0
       if (isLine) {
         path.lineTo(e.x, e.y)
       } else {
@@ -1644,7 +1820,10 @@ export class SkiaRenderer {
     // Draw vertices
     for (let i = 0; i < vertices.length; i++) {
       const v = toScreen(vertices[i].x, vertices[i].y)
-      const radius = i === 0 && penState.closingToFirst ? PEN_VERTEX_RADIUS + PEN_CLOSE_RADIUS_BOOST : PEN_VERTEX_RADIUS
+      const radius =
+        i === 0 && penState.closingToFirst
+          ? PEN_VERTEX_RADIUS + PEN_CLOSE_RADIUS_BOOST
+          : PEN_VERTEX_RADIUS
       canvas.drawCircle(v.x, v.y, radius, vertexFill)
       canvas.drawCircle(v.x, v.y, radius, vertexStroke)
     }
@@ -1656,8 +1835,6 @@ export class SkiaRenderer {
   }
 
   // --- Rulers ---
-
-
 
   private drawRulers(canvas: Canvas, graph: SceneGraph, selectedIds: Set<string>): void {
     const R = RULER_SIZE
@@ -1676,7 +1853,9 @@ export class SkiaRenderer {
     canvas.drawRect(this.ck.LTRBRect(0, 0, R, R), bgPaint)
 
     const tickPaint = new this.ck.Paint()
-    tickPaint.setColor(this.ck.Color4f(RULER_TICK_COLOR.r, RULER_TICK_COLOR.g, RULER_TICK_COLOR.b, 1))
+    tickPaint.setColor(
+      this.ck.Color4f(RULER_TICK_COLOR.r, RULER_TICK_COLOR.g, RULER_TICK_COLOR.b, 1)
+    )
     tickPaint.setStrokeWidth(1)
     tickPaint.setAntiAlias(true)
 
@@ -1686,18 +1865,29 @@ export class SkiaRenderer {
     textPaint.setAntiAlias(true)
 
     const font = this.sizeFont ?? this.textFont
-    if (!font) { bgPaint.delete(); tickPaint.delete(); textPaint.delete(); return }
+    if (!font) {
+      bgPaint.delete()
+      tickPaint.delete()
+      textPaint.delete()
+      return
+    }
 
     const step = this.rulerStep()
     const minorStep = step / 5
 
     // Compute selection bounds for badge exclusion zones
-    let sx1 = -Infinity, sx2 = -Infinity, sy1 = -Infinity, sy2 = -Infinity
+    let sx1 = -Infinity,
+      sx2 = -Infinity,
+      sy1 = -Infinity,
+      sy2 = -Infinity
     const selNodes = [...selectedIds]
       .map((id) => graph.getNode(id))
       .filter((n): n is SceneNode => n !== undefined)
     if (selNodes.length > 0) {
-      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+      let minX = Infinity,
+        minY = Infinity,
+        maxX = -Infinity,
+        maxY = -Infinity
       for (const n of selNodes) {
         const abs = graph.getAbsolutePosition(n.id)
         minX = Math.min(minX, abs.x)
@@ -1779,10 +1969,38 @@ export class SkiaRenderer {
       canvas.drawRect(this.ck.LTRBRect(Math.max(R, sx1), 0, sx2, R), hlPaint)
       canvas.drawRect(this.ck.LTRBRect(0, Math.max(R, sy1), R, sy2), hlPaint)
 
-      this.drawRulerBadge(canvas, font, Math.round((sx1 - this.panX) / this.zoom).toString(), Math.max(R, sx1), 0, 'horizontal')
-      this.drawRulerBadge(canvas, font, Math.round((sx2 - this.panX) / this.zoom).toString(), sx2, 0, 'horizontal')
-      this.drawRulerBadge(canvas, font, Math.round((sy1 - this.panY) / this.zoom).toString(), 0, Math.max(R, sy1), 'vertical')
-      this.drawRulerBadge(canvas, font, Math.round((sy2 - this.panY) / this.zoom).toString(), 0, sy2, 'vertical')
+      this.drawRulerBadge(
+        canvas,
+        font,
+        Math.round((sx1 - this.panX) / this.zoom).toString(),
+        Math.max(R, sx1),
+        0,
+        'horizontal'
+      )
+      this.drawRulerBadge(
+        canvas,
+        font,
+        Math.round((sx2 - this.panX) / this.zoom).toString(),
+        sx2,
+        0,
+        'horizontal'
+      )
+      this.drawRulerBadge(
+        canvas,
+        font,
+        Math.round((sy1 - this.panY) / this.zoom).toString(),
+        0,
+        Math.max(R, sy1),
+        'vertical'
+      )
+      this.drawRulerBadge(
+        canvas,
+        font,
+        Math.round((sy2 - this.panY) / this.zoom).toString(),
+        0,
+        sy2,
+        'vertical'
+      )
 
       hlPaint.delete()
     }
@@ -1792,7 +2010,14 @@ export class SkiaRenderer {
     textPaint.delete()
   }
 
-  private drawRulerBadge(canvas: Canvas, font: InstanceType<CanvasKit['Font']>, label: string, x: number, y: number, axis: 'horizontal' | 'vertical'): void {
+  private drawRulerBadge(
+    canvas: Canvas,
+    font: InstanceType<CanvasKit['Font']>,
+    label: string,
+    x: number,
+    y: number,
+    axis: 'horizontal' | 'vertical'
+  ): void {
     const R = RULER_SIZE
     const glyphIds = font.getGlyphIDs(label)
     const widths = font.getGlyphWidths(glyphIds)
@@ -1809,16 +2034,30 @@ export class SkiaRenderer {
     if (axis === 'horizontal') {
       const bx = x - (textW + pad * 2) / 2
       const by = (R - h) / 2
-      canvas.drawRRect(this.ck.RRectXY(this.ck.LTRBRect(bx, by, bx + textW + pad * 2, by + h), RULER_BADGE_RADIUS, RULER_BADGE_RADIUS), badgePaint)
+      canvas.drawRRect(
+        this.ck.RRectXY(
+          this.ck.LTRBRect(bx, by, bx + textW + pad * 2, by + h),
+          RULER_BADGE_RADIUS,
+          RULER_BADGE_RADIUS
+        ),
+        badgePaint
+      )
       canvas.drawText(label, bx + pad, R * RULER_TEXT_BASELINE, labelPaint, font)
     } else {
       const bw = textW + pad * 2
       const bx = (R - h) / 2
-      const by = y - (bw) / 2
+      const by = y - bw / 2
       canvas.save()
       canvas.translate(bx + h / 2, by + bw / 2)
       canvas.rotate(-90, 0, 0)
-      canvas.drawRRect(this.ck.RRectXY(this.ck.LTRBRect(-bw / 2, -h / 2, bw / 2, h / 2), RULER_BADGE_RADIUS, RULER_BADGE_RADIUS), badgePaint)
+      canvas.drawRRect(
+        this.ck.RRectXY(
+          this.ck.LTRBRect(-bw / 2, -h / 2, bw / 2, h / 2),
+          RULER_BADGE_RADIUS,
+          RULER_BADGE_RADIUS
+        ),
+        badgePaint
+      )
       canvas.drawText(label, -bw / 2 + pad, h / 2 - 3, labelPaint, font)
       canvas.restore()
     }

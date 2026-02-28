@@ -1,7 +1,8 @@
 import { onUnmounted } from 'vue'
 
-import { IS_TAURI } from '../constants'
-import type { EditorStore } from '../stores/editor'
+import { IS_TAURI } from '@/constants'
+
+import type { EditorStore } from '@/stores/editor'
 
 export async function openFileDialog(store: EditorStore) {
   if (IS_TAURI) {
@@ -13,18 +14,20 @@ export async function openFileDialog(store: EditorStore) {
     })
     if (!path) return
     const bytes = await readFile(path as string)
-    const file = new File([bytes], (path as string).split('/').pop()!)
+    const file = new File([bytes], (path as string).split('/').pop() ?? 'file.fig')
     await store.openFigFile(file, undefined, path as string)
     return
   }
 
-  if ('showOpenFilePicker' in window) {
+  if (window.showOpenFilePicker) {
     try {
-      const [handle] = await (window as any).showOpenFilePicker({
-        types: [{
-          description: 'Figma file',
-          accept: { 'application/octet-stream': ['.fig'] }
-        }]
+      const [handle] = await window.showOpenFilePicker({
+        types: [
+          {
+            description: 'Figma file',
+            accept: { 'application/octet-stream': ['.fig'] }
+          }
+        ]
       })
       const file = await handle.getFile()
       await store.openFigFile(file, handle)
@@ -55,7 +58,7 @@ const MENU_ACTIONS: Record<string, (store: EditorStore) => void> = {
   'create-component': (store) => store.createComponentFromSelection(),
   'create-component-set': (store) => store.createComponentSetFromComponents(),
   'detach-instance': (store) => store.detachInstance(),
-  'zoom-fit': (store) => store.zoomToFit(),
+  'zoom-fit': (store) => store.zoomToFit()
 }
 
 export function useMenu(store: EditorStore) {

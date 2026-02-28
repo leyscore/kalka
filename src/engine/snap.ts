@@ -1,4 +1,5 @@
 import type { SceneNode } from './scene-graph'
+import type { Rect } from '@/types'
 
 const SNAP_THRESHOLD = 5
 
@@ -36,13 +37,16 @@ function getEdges(node: SceneNode) {
   const hh = node.height / 2
 
   const corners = [
-    { x: cx + (-hw) * cos - (-hh) * sin, y: cy + (-hw) * sin + (-hh) * cos },
-    { x: cx + hw * cos - (-hh) * sin, y: cy + hw * sin + (-hh) * cos },
+    { x: cx + -hw * cos - -hh * sin, y: cy + -hw * sin + -hh * cos },
+    { x: cx + hw * cos - -hh * sin, y: cy + hw * sin + -hh * cos },
     { x: cx + hw * cos - hh * sin, y: cy + hw * sin + hh * cos },
-    { x: cx + (-hw) * cos - hh * sin, y: cy + (-hw) * sin + hh * cos },
+    { x: cx + -hw * cos - hh * sin, y: cy + -hw * sin + hh * cos }
   ]
 
-  let left = Infinity, right = -Infinity, top = Infinity, bottom = -Infinity
+  let left = Infinity,
+    right = -Infinity,
+    top = Infinity,
+    bottom = -Infinity
   for (const c of corners) {
     left = Math.min(left, c.x)
     right = Math.max(right, c.x)
@@ -62,7 +66,7 @@ function getEdges(node: SceneNode) {
 
 export function computeSnap(
   movingIds: Set<string>,
-  movingBounds: { x: number; y: number; width: number; height: number },
+  movingBounds: Rect,
   allNodes: SceneNode[]
 ): SnapResult {
   const targets = allNodes.filter((n) => !movingIds.has(n.id))
@@ -148,9 +152,7 @@ export function computeSnap(
   }
 }
 
-export function computeSelectionBounds(
-  nodes: SceneNode[]
-): { x: number; y: number; width: number; height: number } | null {
+export function computeSelectionBounds(nodes: SceneNode[]): Rect | null {
   if (nodes.length === 0) return null
   let minX = Infinity
   let minY = Infinity

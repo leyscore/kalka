@@ -1,14 +1,31 @@
-import { SceneGraph } from '../engine/scene-graph'
-import { decodeVectorNetworkBlob } from '../engine/vector'
+import { SceneGraph } from '@/engine/scene-graph'
+import { decodeVectorNetworkBlob } from '@/engine/vector'
 
 import type { NodeChange, Paint, Effect as KiwiEffect, GUID } from './codec'
 import type {
-  NodeType, Fill, FillType, Stroke, Effect, Color, BlendMode, ImageScaleMode,
-  GradientStop, GradientTransform, StrokeCap, StrokeJoin,
-  LayoutMode, LayoutSizing, LayoutAlign, LayoutCounterAlign,
-  ConstraintType, TextAutoResize, TextAlignVertical, TextCase, TextDecoration,
-  ArcData, VectorNetwork
-} from '../engine/scene-graph'
+  NodeType,
+  Fill,
+  FillType,
+  Stroke,
+  Effect,
+  Color,
+  BlendMode,
+  ImageScaleMode,
+  GradientTransform,
+  StrokeCap,
+  StrokeJoin,
+  LayoutMode,
+  LayoutSizing,
+  LayoutAlign,
+  LayoutCounterAlign,
+  ConstraintType,
+  TextAutoResize,
+  TextAlignVertical,
+  TextCase,
+  TextDecoration,
+  ArcData,
+  VectorNetwork
+} from '@/engine/scene-graph'
 
 function ext(nc: NodeChange): Record<string, unknown> {
   return nc as unknown as Record<string, unknown>
@@ -24,11 +41,20 @@ function convertColor(color?: { r: number; g: number; b: number; a: number }): C
 }
 
 function imageHashToString(hash: Record<string, number>): string {
-  const bytes = Object.keys(hash).sort((a, b) => Number(a) - Number(b)).map((k) => hash[Number(k)])
+  const bytes = Object.keys(hash)
+    .sort((a, b) => Number(a) - Number(b))
+    .map((k) => hash[Number(k)])
   return bytes.map((b) => b.toString(16).padStart(2, '0')).join('')
 }
 
-function convertGradientTransform(t?: Record<string, number>): GradientTransform | undefined {
+function convertGradientTransform(t?: {
+  m00: number
+  m01: number
+  m02: number
+  m10: number
+  m11: number
+  m12: number
+}): GradientTransform | undefined {
   if (!t) return undefined
   return { m00: t.m00, m01: t.m01, m02: t.m02, m10: t.m10, m11: t.m11, m12: t.m12 }
 }
@@ -41,41 +67,57 @@ function convertFills(paints?: Paint[]): Fill[] {
       color: convertColor(p.color),
       opacity: p.opacity ?? 1,
       visible: p.visible ?? true,
-      blendMode: (p.blendMode ?? 'NORMAL') as BlendMode,
+      blendMode: (p.blendMode ?? 'NORMAL') as BlendMode
     }
 
     if (p.type?.startsWith('GRADIENT') && p.stops) {
-      base.gradientStops = p.stops.map((s: { color: Record<string, number>; position: number }) => ({
-        color: convertColor(s.color as Color),
+      base.gradientStops = p.stops.map((s) => ({
+        color: convertColor(s.color),
         position: s.position
       }))
-      base.gradientTransform = convertGradientTransform(p.transform as Record<string, number>)
+      if (p.transform) {
+        base.gradientTransform = convertGradientTransform(p.transform)
+      }
     }
 
     if (p.type === 'IMAGE') {
-      const pAny = p as Record<string, unknown>
-      if (pAny.image && typeof pAny.image === 'object') {
-        const img = pAny.image as Record<string, unknown>
-        if (img.hash && typeof img.hash === 'object') {
-          base.imageHash = imageHashToString(img.hash as Record<string, number>)
+      if (p.image && typeof p.image === 'object') {
+        const img = p.image as { hash: string | Record<string, number> }
+        if (typeof img.hash === 'object') {
+          base.imageHash = imageHashToString(img.hash)
+        } else if (typeof img.hash === 'string') {
+          base.imageHash = img.hash
         }
       }
-      base.imageScaleMode = (pAny.imageScaleMode as ImageScaleMode) ?? 'FILL'
-      base.imageTransform = convertGradientTransform(p.transform as Record<string, number>)
+      base.imageScaleMode = (p.imageScaleMode as ImageScaleMode) ?? 'FILL'
+      if (p.transform) {
+        base.imageTransform = convertGradientTransform(p.transform)
+      }
     }
 
     return base
   })
 }
 
-function convertStrokes(paints?: Paint[], weight?: number, align?: string, cap?: string, join?: string, dashPattern?: number[]): Stroke[] {
+function convertStrokes(
+  paints?: Paint[],
+  weight?: number,
+  align?: string,
+  cap?: string,
+  join?: string,
+  dashPattern?: number[]
+): Stroke[] {
   if (!paints) return []
   return paints.map((p) => ({
     color: convertColor(p.color),
     weight: weight ?? 1,
     opacity: p.opacity ?? 1,
     visible: p.visible ?? true,
-    align: (align === 'INSIDE' ? 'INSIDE' : align === 'OUTSIDE' ? 'OUTSIDE' : 'CENTER') as Stroke['align'],
+    align: (align === 'INSIDE'
+      ? 'INSIDE'
+      : align === 'OUTSIDE'
+        ? 'OUTSIDE'
+        : 'CENTER') as Stroke['align'],
     cap: (cap ?? 'NONE') as StrokeCap,
     join: (join ?? 'MITER') as StrokeJoin,
     dashPattern: dashPattern ?? []
@@ -91,40 +133,63 @@ function convertEffects(effects?: KiwiEffect[]): Effect[] {
     radius: e.radius ?? 0,
     spread: e.spread ?? 0,
     visible: e.visible ?? true,
-    blendMode: ((e as Record<string, unknown>).blendMode as BlendMode) ?? 'NORMAL'
+    blendMode: (e.blendMode as BlendMode) ?? 'NORMAL'
   }))
 }
 
 function mapNodeType(type?: string): NodeType | 'DOCUMENT' {
   switch (type) {
-    case 'DOCUMENT': return 'DOCUMENT'
-    case 'CANVAS': return 'CANVAS'
-    case 'FRAME': return 'FRAME'
-    case 'RECTANGLE': return 'RECTANGLE'
-    case 'ROUNDED_RECTANGLE': return 'ROUNDED_RECTANGLE'
-    case 'ELLIPSE': return 'ELLIPSE'
-    case 'TEXT': return 'TEXT'
-    case 'LINE': return 'LINE'
-    case 'STAR': return 'STAR'
-    case 'REGULAR_POLYGON': return 'POLYGON'
-    case 'VECTOR': return 'VECTOR'
-    case 'GROUP': return 'GROUP'
-    case 'SECTION': return 'SECTION'
-    case 'COMPONENT': return 'COMPONENT'
-    case 'COMPONENT_SET': return 'COMPONENT_SET'
-    case 'INSTANCE': return 'INSTANCE'
-    case 'SYMBOL': return 'COMPONENT'
-    case 'CONNECTOR': return 'CONNECTOR'
-    case 'SHAPE_WITH_TEXT': return 'SHAPE_WITH_TEXT'
-    default: return 'RECTANGLE'
+    case 'DOCUMENT':
+      return 'DOCUMENT'
+    case 'CANVAS':
+      return 'CANVAS'
+    case 'FRAME':
+      return 'FRAME'
+    case 'RECTANGLE':
+      return 'RECTANGLE'
+    case 'ROUNDED_RECTANGLE':
+      return 'ROUNDED_RECTANGLE'
+    case 'ELLIPSE':
+      return 'ELLIPSE'
+    case 'TEXT':
+      return 'TEXT'
+    case 'LINE':
+      return 'LINE'
+    case 'STAR':
+      return 'STAR'
+    case 'REGULAR_POLYGON':
+      return 'POLYGON'
+    case 'VECTOR':
+      return 'VECTOR'
+    case 'GROUP':
+      return 'GROUP'
+    case 'SECTION':
+      return 'SECTION'
+    case 'COMPONENT':
+      return 'COMPONENT'
+    case 'COMPONENT_SET':
+      return 'COMPONENT_SET'
+    case 'INSTANCE':
+      return 'INSTANCE'
+    case 'SYMBOL':
+      return 'COMPONENT'
+    case 'CONNECTOR':
+      return 'CONNECTOR'
+    case 'SHAPE_WITH_TEXT':
+      return 'SHAPE_WITH_TEXT'
+    default:
+      return 'RECTANGLE'
   }
 }
 
 function mapStackMode(mode?: string): LayoutMode {
   switch (mode) {
-    case 'HORIZONTAL': return 'HORIZONTAL'
-    case 'VERTICAL': return 'VERTICAL'
-    default: return 'NONE'
+    case 'HORIZONTAL':
+      return 'HORIZONTAL'
+    case 'VERTICAL':
+      return 'VERTICAL'
+    default:
+      return 'NONE'
   }
 }
 
@@ -142,21 +207,30 @@ function mapStackSizing(sizing?: string): LayoutSizing {
 
 function mapStackJustify(justify?: string): LayoutAlign {
   switch (justify) {
-    case 'CENTER': return 'CENTER'
-    case 'MAX': return 'MAX'
+    case 'CENTER':
+      return 'CENTER'
+    case 'MAX':
+      return 'MAX'
     case 'SPACE_BETWEEN':
-    case 'SPACE_EVENLY': return 'SPACE_BETWEEN'
-    default: return 'MIN'
+    case 'SPACE_EVENLY':
+      return 'SPACE_BETWEEN'
+    default:
+      return 'MIN'
   }
 }
 
 function mapStackCounterAlign(align?: string): LayoutCounterAlign {
   switch (align) {
-    case 'CENTER': return 'CENTER'
-    case 'MAX': return 'MAX'
-    case 'STRETCH': return 'STRETCH'
-    case 'BASELINE': return 'BASELINE'
-    default: return 'MIN'
+    case 'CENTER':
+      return 'CENTER'
+    case 'MAX':
+      return 'MAX'
+    case 'STRETCH':
+      return 'STRETCH'
+    case 'BASELINE':
+      return 'BASELINE'
+    default:
+      return 'MIN'
   }
 }
 
@@ -176,19 +250,27 @@ function mapFontWeight(style?: string): number {
 
 function mapConstraint(c?: string): ConstraintType {
   switch (c) {
-    case 'CENTER': return 'CENTER'
-    case 'MAX': return 'MAX'
-    case 'STRETCH': return 'STRETCH'
-    case 'SCALE': return 'SCALE'
-    default: return 'MIN'
+    case 'CENTER':
+      return 'CENTER'
+    case 'MAX':
+      return 'MAX'
+    case 'STRETCH':
+      return 'STRETCH'
+    case 'SCALE':
+      return 'SCALE'
+    default:
+      return 'MIN'
   }
 }
 
 function mapTextDecoration(d?: string): TextDecoration {
   switch (d) {
-    case 'UNDERLINE': return 'UNDERLINE'
-    case 'STRIKETHROUGH': return 'STRIKETHROUGH'
-    default: return 'NONE'
+    case 'UNDERLINE':
+      return 'UNDERLINE'
+    case 'STRIKETHROUGH':
+      return 'STRIKETHROUGH'
+    default:
+      return 'NONE'
   }
 }
 
@@ -202,10 +284,12 @@ function mapArcData(data?: Record<string, number>): ArcData | null {
 }
 
 function resolveVectorNetwork(nc: NodeChange, blobs: Uint8Array[]): VectorNetwork | null {
-  const vectorData = (nc as unknown as Record<string, unknown>).vectorData as {
-    vectorNetworkBlob?: number
-    styleOverrideTable?: Array<{ styleID: number; handleMirroring?: string }>
-  } | undefined
+  const vectorData = (nc as unknown as Record<string, unknown>).vectorData as
+    | {
+        vectorNetworkBlob?: number
+        styleOverrideTable?: Array<{ styleID: number; handleMirroring?: string }>
+      }
+    | undefined
 
   if (!vectorData || vectorData.vectorNetworkBlob === undefined) return null
   const idx = vectorData.vectorNetworkBlob
@@ -299,7 +383,14 @@ export function importNodeChanges(
       locked: nc.locked ?? false,
       blendMode: (ext(nc).blendMode as Fill['blendMode']) ?? 'PASS_THROUGH',
       fills: convertFills(nc.fillPaints),
-      strokes: convertStrokes(nc.strokePaints, nc.strokeWeight, nc.strokeAlign, nc.strokeCap, nc.strokeJoin, dashPattern),
+      strokes: convertStrokes(
+        nc.strokePaints,
+        nc.strokeWeight,
+        nc.strokeAlign,
+        nc.strokeCap,
+        nc.strokeJoin,
+        dashPattern
+      ),
       effects: convertEffects(nc.effects),
       cornerRadius: nc.cornerRadius ?? 0,
       topLeftRadius: nc.rectangleTopLeftCornerRadius ?? nc.cornerRadius ?? 0,
@@ -346,7 +437,7 @@ export function importNodeChanges(
       borderRightWeight: (ext(nc).borderRightWeight as number) ?? 0,
       borderBottomWeight: (ext(nc).borderBottomWeight as number) ?? 0,
       borderLeftWeight: (ext(nc).borderLeftWeight as number) ?? 0,
-      independentStrokeWeights: (ext(nc).borderStrokeWeightsIndependent as boolean) ?? false,
+      independentStrokeWeights: (ext(nc).borderStrokeWeightsIndependent as boolean) ?? false
     })
 
     for (const childId of getChildren(ncId)) {

@@ -1,4 +1,4 @@
-export type { GUID, Color } from '../types'
+export type { GUID, Color } from '@/types'
 
 export type HandleMirroring = 'NONE' | 'ANGLE' | 'ANGLE_AND_LENGTH'
 export type WindingRule = 'NONZERO' | 'EVENODD'
@@ -49,10 +49,33 @@ export type NodeType =
   | 'CONNECTOR'
   | 'SHAPE_WITH_TEXT'
 
-import type { Color } from '../types'
+import type { Color, Matrix, Rect } from '@/types'
 
-export type FillType = 'SOLID' | 'GRADIENT_LINEAR' | 'GRADIENT_RADIAL' | 'GRADIENT_ANGULAR' | 'GRADIENT_DIAMOND' | 'IMAGE'
-export type BlendMode = 'NORMAL' | 'DARKEN' | 'MULTIPLY' | 'COLOR_BURN' | 'LIGHTEN' | 'SCREEN' | 'COLOR_DODGE' | 'OVERLAY' | 'SOFT_LIGHT' | 'HARD_LIGHT' | 'DIFFERENCE' | 'EXCLUSION' | 'HUE' | 'SATURATION' | 'COLOR' | 'LUMINOSITY' | 'PASS_THROUGH'
+export type FillType =
+  | 'SOLID'
+  | 'GRADIENT_LINEAR'
+  | 'GRADIENT_RADIAL'
+  | 'GRADIENT_ANGULAR'
+  | 'GRADIENT_DIAMOND'
+  | 'IMAGE'
+export type BlendMode =
+  | 'NORMAL'
+  | 'DARKEN'
+  | 'MULTIPLY'
+  | 'COLOR_BURN'
+  | 'LIGHTEN'
+  | 'SCREEN'
+  | 'COLOR_DODGE'
+  | 'OVERLAY'
+  | 'SOFT_LIGHT'
+  | 'HARD_LIGHT'
+  | 'DIFFERENCE'
+  | 'EXCLUSION'
+  | 'HUE'
+  | 'SATURATION'
+  | 'COLOR'
+  | 'LUMINOSITY'
+  | 'PASS_THROUGH'
 export type ImageScaleMode = 'FILL' | 'FIT' | 'CROP' | 'TILE'
 
 export interface GradientStop {
@@ -60,14 +83,7 @@ export interface GradientStop {
   position: number
 }
 
-export interface GradientTransform {
-  m00: number
-  m01: number
-  m02: number
-  m10: number
-  m11: number
-  m12: number
-}
+export type GradientTransform = Matrix
 
 export interface Fill {
   type: FillType
@@ -203,6 +219,9 @@ export interface SceneNode {
   borderLeftWeight: number
   independentStrokeWeights: boolean
 
+  pointCount: number
+  starInnerRadius: number
+
   componentId: string | null
   overrides: Record<string, unknown>
 }
@@ -279,13 +298,23 @@ function createDefaultNode(type: NodeType, overrides: Partial<SceneNode> = {}): 
     borderBottomWeight: 0,
     borderLeftWeight: 0,
     independentStrokeWeights: false,
+    pointCount: 5,
+    starInnerRadius: 0.38,
     componentId: null,
     overrides: {},
     ...overrides
   }
 }
 
-const CONTAINER_TYPES = new Set<NodeType>(['CANVAS', 'FRAME', 'GROUP', 'SECTION', 'COMPONENT', 'COMPONENT_SET', 'INSTANCE'])
+const CONTAINER_TYPES = new Set<NodeType>([
+  'CANVAS',
+  'FRAME',
+  'GROUP',
+  'SECTION',
+  'COMPONENT',
+  'COMPONENT_SET',
+  'INSTANCE'
+])
 
 export class SceneGraph {
   nodes = new Map<string, SceneNode>()
@@ -350,7 +379,7 @@ export class SceneGraph {
     return { x: ax, y: ay }
   }
 
-  getAbsoluteBounds(id: string): { x: number; y: number; width: number; height: number } {
+  getAbsoluteBounds(id: string): Rect {
     const pos = this.getAbsolutePosition(id)
     const node = this.nodes.get(id)
     return {
@@ -427,7 +456,10 @@ export class SceneGraph {
 
     // If same parent, adjust index since we removed the item
     let idx = insertIndex
-    if (oldParent === newParent && idx > (oldParent.childIds.indexOf(nodeId) === -1 ? idx : oldParent.childIds.length)) {
+    if (
+      oldParent === newParent &&
+      idx > (oldParent.childIds.indexOf(nodeId) === -1 ? idx : oldParent.childIds.length)
+    ) {
       // Already removed above, no adjustment needed
     }
 
@@ -507,7 +539,12 @@ export class SceneGraph {
     return null
   }
 
-  hitTestFrame(px: number, py: number, excludeIds: Set<string>, scopeId?: string): SceneNode | null {
+  hitTestFrame(
+    px: number,
+    py: number,
+    excludeIds: Set<string>,
+    scopeId?: string
+  ): SceneNode | null {
     return this.hitTestFrameChildren(px, py, scopeId ?? this.rootId, 0, 0, excludeIds)
   }
 
@@ -545,7 +582,11 @@ export class SceneGraph {
     return best
   }
 
-  cloneTree(sourceId: string, parentId: string, overrides: Partial<SceneNode> = {}): SceneNode | null {
+  cloneTree(
+    sourceId: string,
+    parentId: string,
+    overrides: Partial<SceneNode> = {}
+  ): SceneNode | null {
     const src = this.nodes.get(sourceId)
     if (!src) return null
 
@@ -560,23 +601,53 @@ export class SceneGraph {
   }
 
   private static readonly INSTANCE_SYNC_PROPS: (keyof SceneNode)[] = [
-    'width', 'height', 'fills', 'strokes', 'effects', 'opacity',
-    'cornerRadius', 'topLeftRadius', 'topRightRadius', 'bottomRightRadius', 'bottomLeftRadius',
-    'independentCorners', 'layoutMode', 'layoutWrap', 'primaryAxisAlign', 'counterAxisAlign',
-    'primaryAxisSizing', 'counterAxisSizing', 'itemSpacing', 'counterAxisSpacing',
-    'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'clipsContent'
+    'width',
+    'height',
+    'fills',
+    'strokes',
+    'effects',
+    'opacity',
+    'cornerRadius',
+    'topLeftRadius',
+    'topRightRadius',
+    'bottomRightRadius',
+    'bottomLeftRadius',
+    'independentCorners',
+    'layoutMode',
+    'layoutWrap',
+    'primaryAxisAlign',
+    'counterAxisAlign',
+    'primaryAxisSizing',
+    'counterAxisSizing',
+    'itemSpacing',
+    'counterAxisSpacing',
+    'paddingTop',
+    'paddingRight',
+    'paddingBottom',
+    'paddingLeft',
+    'clipsContent'
   ]
 
-  createInstance(componentId: string, parentId: string, overrides: Partial<SceneNode> = {}): SceneNode | null {
+  private static copyProp<K extends keyof SceneNode>(
+    target: Partial<SceneNode> | SceneNode,
+    source: SceneNode,
+    key: K
+  ): void {
+    const val = source[key]
+    target[key] = (Array.isArray(val) ? structuredClone(val) : val) as SceneNode[K]
+  }
+
+  createInstance(
+    componentId: string,
+    parentId: string,
+    overrides: Partial<SceneNode> = {}
+  ): SceneNode | null {
     const component = this.nodes.get(componentId)
     if (!component || component.type !== 'COMPONENT') return null
 
     const props: Partial<SceneNode> = { name: component.name, componentId }
     for (const key of SceneGraph.INSTANCE_SYNC_PROPS) {
-      const val = component[key]
-      ;(props as Record<string, unknown>)[key] = Array.isArray(val)
-        ? val.map((v: Record<string, unknown>) => ({ ...v }))
-        : val
+      SceneGraph.copyProp(props, component, key)
     }
 
     const instance = this.createNode('INSTANCE', parentId, { ...props, ...overrides })
@@ -613,12 +684,8 @@ export class SceneGraph {
     for (const instance of this.getInstances(componentId)) {
       // Sync instance-level props (unless overridden)
       for (const key of SceneGraph.INSTANCE_SYNC_PROPS) {
-        const overrideKey = `${key}`
-        if (overrideKey in instance.overrides) continue
-        const val = component[key]
-        ;(instance as Record<string, unknown>)[key] = Array.isArray(val)
-          ? val.map((v: Record<string, unknown>) => ({ ...v }))
-          : val
+        if (key in instance.overrides) continue
+        SceneGraph.copyProp(instance, component, key)
       }
 
       // Sync children: match by componentId
@@ -667,17 +734,13 @@ export class SceneGraph {
       for (const key of SceneGraph.INSTANCE_SYNC_PROPS) {
         const overrideKey = `${instChild.id}:${key}`
         if (overrideKey in overrides) continue
-        const val = compChild[key]
-        ;(instChild as Record<string, unknown>)[key] = Array.isArray(val)
-          ? val.map((v: Record<string, unknown>) => ({ ...v }))
-          : val
+        SceneGraph.copyProp(instChild, compChild, key)
       }
 
-      // Sync name and text unless overridden
       for (const key of ['name', 'text', 'fontSize', 'fontWeight', 'fontFamily'] as const) {
         const overrideKey = `${instChild.id}:${key}`
         if (overrideKey in overrides) continue
-        ;(instChild as Record<string, unknown>)[key] = compChild[key]
+        SceneGraph.copyProp(instChild, compChild, key)
       }
 
       if (compChild.childIds.length > 0) {

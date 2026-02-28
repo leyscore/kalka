@@ -2,9 +2,9 @@
 import { ref, computed, watch } from 'vue'
 import { PopoverRoot, PopoverTrigger, PopoverPortal, PopoverContent } from 'reka-ui'
 
-import { colorToHexRaw, parseColor } from '../engine/color'
+import { colorToHexRaw, parseColor } from '@/engine/color'
 
-import type { Color } from '../types'
+import type { Color } from '@/types'
 
 const props = defineProps<{
   color: Color
@@ -137,11 +137,18 @@ const swatchColor = computed(() => {
 <template>
   <PopoverRoot>
     <PopoverTrigger as-child>
-      <button class="size-5 shrink-0 cursor-pointer rounded border border-border p-0" :style="{ background: swatchColor }" />
+      <button
+        class="size-5 shrink-0 cursor-pointer rounded border border-border p-0"
+        :style="{ background: swatchColor }"
+      />
     </PopoverTrigger>
 
     <PopoverPortal>
-      <PopoverContent class="z-[100] w-56 rounded-lg border border-border bg-panel p-2 shadow-xl" :side-offset="4" side="left">
+      <PopoverContent
+        class="z-[100] w-56 rounded-lg border border-border bg-panel p-2 shadow-xl"
+        :side-offset="4"
+        side="left"
+      >
         <!-- SV area -->
         <div
           ref="svAreaRef"
@@ -160,12 +167,26 @@ const swatchColor = computed(() => {
 
         <!-- Hue slider -->
         <div class="mt-2">
-          <input type="range" class="hue-slider" :value="hue" min="0" max="360" @input="onHueInput" />
+          <input
+            type="range"
+            class="hue-slider"
+            :value="hue"
+            min="0"
+            max="360"
+            @input="onHueInput"
+          />
         </div>
 
         <!-- Alpha slider -->
         <div class="mt-2">
-          <input type="range" class="alpha-slider" :value="alpha * 100" min="0" max="100" @input="onAlphaSliderInput" />
+          <input
+            type="range"
+            class="alpha-slider"
+            :value="alpha * 100"
+            min="0"
+            max="100"
+            @input="onAlphaSliderInput"
+          />
         </div>
 
         <!-- Hex input -->
@@ -180,7 +201,7 @@ const swatchColor = computed(() => {
           />
           <input
             type="number"
-            class="w-10 rounded border border-border bg-input px-1 py-0.5 text-right text-xs text-surface [&::-webkit-inner-spin-button]:hidden"
+            class="w-10 rounded border border-border bg-input px-1 py-0.5 text-right text-xs text-surface"
             :value="Math.round(alpha * 100)"
             min="0"
             max="100"
@@ -205,7 +226,16 @@ const swatchColor = computed(() => {
 }
 
 .hue-slider {
-  background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
+  background: linear-gradient(
+    to right,
+    #f00 0%,
+    #ff0 17%,
+    #0f0 33%,
+    #0ff 50%,
+    #00f 67%,
+    #f0f 83%,
+    #f00 100%
+  );
 }
 
 .alpha-slider {

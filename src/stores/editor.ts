@@ -1,7 +1,14 @@
 import { reactive, shallowRef, computed } from 'vue'
 
-import { IS_TAURI, DEFAULT_SHAPE_FILL, DEFAULT_FRAME_FILL, SECTION_DEFAULT_FILL, SECTION_DEFAULT_STROKE, CANVAS_BG_COLOR, ZOOM_SENSITIVITY } from '../constants'
-import type { Color } from '../types'
+import {
+  IS_TAURI,
+  DEFAULT_SHAPE_FILL,
+  DEFAULT_FRAME_FILL,
+  SECTION_DEFAULT_FILL,
+  SECTION_DEFAULT_STROKE,
+  CANVAS_BG_COLOR,
+  ZOOM_SENSITIVITY
+} from '@/constants'
 import {
   parseFigmaClipboard,
   importClipboardNodes,
@@ -9,18 +16,39 @@ import {
   buildFigmaClipboardHTML,
   buildOpenPencilClipboardHTML,
   prefetchFigmaSchema
-} from '../engine/clipboard'
-import { readFigFile } from '../kiwi/fig-file'
-import { exportFigFile } from '../engine/fig-export'
-import { computeLayout, computeAllLayouts } from '../engine/layout'
-import { SceneGraph } from '../engine/scene-graph'
-import { UndoManager } from '../engine/undo'
-import { computeVectorBounds } from '../engine/vector'
+} from '@/engine/clipboard'
+import { exportFigFile } from '@/engine/fig-export'
+import { computeLayout, computeAllLayouts } from '@/engine/layout'
+import { SceneGraph } from '@/engine/scene-graph'
+import { UndoManager } from '@/engine/undo'
+import { computeVectorBounds } from '@/engine/vector'
+import { readFigFile } from '@/kiwi/fig-file'
 
-import type { SceneNode, NodeType, Fill, LayoutMode, VectorVertex, VectorSegment, VectorRegion, VectorNetwork } from '../engine/scene-graph'
-import type { SnapGuide } from '../engine/snap'
+import type {
+  SceneNode,
+  NodeType,
+  Fill,
+  LayoutMode,
+  VectorVertex,
+  VectorSegment,
+  VectorRegion,
+  VectorNetwork
+} from '@/engine/scene-graph'
+import type { SnapGuide } from '@/engine/snap'
+import type { Color, Rect } from '@/types'
 
-export type Tool = 'SELECT' | 'FRAME' | 'SECTION' | 'RECTANGLE' | 'ELLIPSE' | 'LINE' | 'TEXT' | 'PEN' | 'HAND'
+export type Tool =
+  | 'SELECT'
+  | 'FRAME'
+  | 'SECTION'
+  | 'RECTANGLE'
+  | 'ELLIPSE'
+  | 'LINE'
+  | 'POLYGON'
+  | 'STAR'
+  | 'TEXT'
+  | 'PEN'
+  | 'HAND'
 
 export interface ToolDef {
   key: Tool
@@ -32,7 +60,12 @@ export interface ToolDef {
 export const TOOLS: ToolDef[] = [
   { key: 'SELECT', label: 'Move', shortcut: 'V' },
   { key: 'FRAME', label: 'Frame', shortcut: 'F', flyout: ['FRAME', 'SECTION'] },
-  { key: 'RECTANGLE', label: 'Rectangle', shortcut: 'R', flyout: ['RECTANGLE', 'ELLIPSE', 'LINE'] },
+  {
+    key: 'RECTANGLE',
+    label: 'Rectangle',
+    shortcut: 'R',
+    flyout: ['RECTANGLE', 'LINE', 'ELLIPSE', 'POLYGON', 'STAR']
+  },
   { key: 'PEN', label: 'Pen', shortcut: 'P' },
   { key: 'TEXT', label: 'Text', shortcut: 'T' },
   { key: 'HAND', label: 'Hand', shortcut: 'H' }
@@ -50,13 +83,20 @@ export const TOOL_SHORTCUTS: Record<string, Tool> = {
   h: 'HAND'
 }
 
-const BLACK_FILL: Fill = { type: 'SOLID', color: { r: 0, g: 0, b: 0, a: 1 }, opacity: 1, visible: true }
+const BLACK_FILL: Fill = {
+  type: 'SOLID',
+  color: { r: 0, g: 0, b: 0, a: 1 },
+  opacity: 1,
+  visible: true
+}
 
 const DEFAULT_FILLS: Record<string, Fill> = {
   FRAME: DEFAULT_FRAME_FILL,
   SECTION: SECTION_DEFAULT_FILL,
   RECTANGLE: DEFAULT_SHAPE_FILL,
   ELLIPSE: DEFAULT_SHAPE_FILL,
+  POLYGON: DEFAULT_SHAPE_FILL,
+  STAR: DEFAULT_SHAPE_FILL,
   LINE: BLACK_FILL,
   TEXT: BLACK_FILL
 }
@@ -75,7 +115,7 @@ export function createEditorStore() {
   let fileHandle: FileSystemFileHandle | null = null
   let filePath: string | null = null
   let _ck: import('canvaskit-wasm').CanvasKit | null = null
-  let _renderer: import('../engine/renderer').SkiaRenderer | null = null
+  let _renderer: import('@/engine/renderer').SkiaRenderer | null = null
 
   prefetchFigmaSchema()
 
@@ -83,7 +123,7 @@ export function createEditorStore() {
     activeTool: 'SELECT' as Tool,
     currentPageId: graph.getPages()[0].id,
     selectedIds: new Set<string>(),
-    marquee: null as { x: number; y: number; width: number; height: number } | null,
+    marquee: null as Rect | null,
     snapGuides: [] as SnapGuide[],
     rotationPreview: null as { nodeId: string; angle: number } | null,
     dropTargetId: null as string | null,
@@ -220,7 +260,7 @@ export function createEditorStore() {
     state.selectedIds = new Set()
   }
 
-  function setMarquee(rect: { x: number; y: number; width: number; height: number } | null) {
+  function setMarquee(rect: Rect | null) {
     state.marquee = rect
     requestRender()
   }
@@ -246,9 +286,7 @@ export function createEditorStore() {
     requestRender()
   }
 
-  function setLayoutInsertIndicator(
-    indicator: typeof state.layoutInsertIndicator
-  ) {
+  function setLayoutInsertIndicator(indicator: typeof state.layoutInsertIndicator) {
     state.layoutInsertIndicator = indicator
     requestRender()
   }
@@ -278,7 +316,13 @@ export function createEditorStore() {
     for (const id of nodeIds) {
       const node = graph.getNode(id)
       // Sections can only live in pages (CANVAS) or other sections
-      if (node?.type === 'SECTION' && parent && parent.type !== 'CANVAS' && parent.type !== 'SECTION') continue
+      if (
+        node?.type === 'SECTION' &&
+        parent &&
+        parent.type !== 'CANVAS' &&
+        parent.type !== 'SECTION'
+      )
+        continue
       graph.reparentNode(id, newParentId)
     }
     requestRender()
@@ -384,12 +428,18 @@ export function createEditorStore() {
     updateNode(nodeId, {
       vectorNetwork: normalizedNetwork,
       name: 'Vector',
-      fills: closed
-        ? [{ ...DEFAULT_SHAPE_FILL }]
-        : [],
+      fills: closed ? [{ ...DEFAULT_SHAPE_FILL }] : [],
       strokes: closed
         ? []
-        : [{ color: { r: 0, g: 0, b: 0, a: 1 }, weight: 2, opacity: 1, visible: true, align: 'CENTER' as const }]
+        : [
+            {
+              color: { r: 0, g: 0, b: 0, a: 1 },
+              weight: 2,
+              opacity: 1,
+              visible: true,
+              align: 'CENTER' as const
+            }
+          ]
     })
     select([nodeId])
 
@@ -453,7 +503,10 @@ export function createEditorStore() {
     }
   }
 
-  function setCanvasKit(ck: import('canvaskit-wasm').CanvasKit, renderer: import('../engine/renderer').SkiaRenderer) {
+  function setCanvasKit(
+    ck: import('canvaskit-wasm').CanvasKit,
+    renderer: import('@/engine/renderer').SkiaRenderer
+  ) {
     _ck = ck
     _renderer = renderer
   }
@@ -486,14 +539,16 @@ export function createEditorStore() {
       return
     }
 
-    if ('showSaveFilePicker' in window) {
+    if (window.showSaveFilePicker) {
       try {
-        const handle = await (window as any).showSaveFilePicker({
+        const handle = await window.showSaveFilePicker({
           suggestedName: 'Untitled.fig',
-          types: [{
-            description: 'Figma file',
-            accept: { 'application/octet-stream': ['.fig'] }
-          }]
+          types: [
+            {
+              description: 'Figma file',
+              accept: { 'application/octet-stream': ['.fig'] }
+            }
+          ]
         })
         fileHandle = handle
         filePath = null
@@ -504,7 +559,7 @@ export function createEditorStore() {
       }
     }
 
-    const blob = new Blob([data], { type: 'application/octet-stream' })
+    const blob = new Blob([new Uint8Array(data)], { type: 'application/octet-stream' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -521,7 +576,7 @@ export function createEditorStore() {
     }
     if (fileHandle) {
       const writable = await fileHandle.createWritable()
-      await writable.write(data)
+      await writable.write(new Uint8Array(data))
       await writable.close()
     }
   }
@@ -626,7 +681,8 @@ export function createEditorStore() {
     runLayoutForNode(id)
 
     const finalState: Partial<SceneNode> = {}
-    const updated = graph.getNode(id)!
+    const updated = graph.getNode(id)
+    if (!updated) return
     for (const key of Object.keys(previous) as (keyof SceneNode)[]) {
       ;(finalState as Record<string, unknown>)[key] = updated[key]
     }
@@ -671,8 +727,7 @@ export function createEditorStore() {
       maxY = Math.max(maxY, abs.y + n.height)
     }
 
-    const parentAbs =
-      isTopLevel(parentId) ? { x: 0, y: 0 } : graph.getAbsolutePosition(parentId)
+    const parentAbs = isTopLevel(parentId) ? { x: 0, y: 0 } : graph.getAbsolutePosition(parentId)
 
     const frame = graph.createNode('FRAME', parentId, {
       name: 'Frame',
@@ -755,8 +810,7 @@ export function createEditorStore() {
       maxY = Math.max(maxY, abs.y + n.height)
     }
 
-    const parentAbs =
-      isTopLevel(parentId) ? { x: 0, y: 0 } : graph.getAbsolutePosition(parentId)
+    const parentAbs = isTopLevel(parentId) ? { x: 0, y: 0 } : graph.getAbsolutePosition(parentId)
 
     // Insert group at the position of the topmost selected node
     const firstIndex = Math.min(...nodeIds.map((id) => parent.childIds.indexOf(id)))
@@ -767,7 +821,7 @@ export function createEditorStore() {
       y: minY - parentAbs.y,
       width: maxX - minX,
       height: maxY - minY,
-      fills: [],
+      fills: []
     })
     const groupId = group.id
 
@@ -942,7 +996,9 @@ export function createEditorStore() {
       y: minY - parentAbs.y - padding,
       width: maxX - minX + padding * 2,
       height: maxY - minY + padding * 2,
-      fills: [{ type: 'SOLID', color: { r: 0.96, g: 0.96, b: 0.96, a: 1 }, opacity: 1, visible: true }]
+      fills: [
+        { type: 'SOLID', color: { r: 0.96, g: 0.96, b: 0.96, a: 1 }, opacity: 1, visible: true }
+      ]
     })
     const setId = componentSet.id
 
@@ -1069,7 +1125,8 @@ export function createEditorStore() {
     const childIds = [...node.childIds]
     const prevSelection = new Set(state.selectedIds)
     const origPositions = childIds.map((id) => {
-      const child = graph.getNode(id)!
+      const child = graph.getNode(id)
+      if (!child) return { id, x: 0, y: 0 }
       return { id, x: child.x, y: child.y }
     })
     const groupSnapshot = { ...node, childIds: [...node.childIds] }
@@ -1195,6 +1252,13 @@ export function createEditorStore() {
       overrides.strokes = [{ ...SECTION_DEFAULT_STROKE }]
       overrides.cornerRadius = 5
     }
+    if (type === 'POLYGON') {
+      overrides.pointCount = 3
+    }
+    if (type === 'STAR') {
+      overrides.pointCount = 5
+      overrides.starInnerRadius = 0.38
+    }
     const node = graph.createNode(type, pid, overrides)
     const id = node.id
     const snapshot = { ...node }
@@ -1240,7 +1304,14 @@ export function createEditorStore() {
 
     if (toAdopt.length === 0) return
 
-    const undoOps: Array<{ id: string; oldParent: string; oldX: number; oldY: number; newX: number; newY: number }> = []
+    const undoOps: Array<{
+      id: string
+      oldParent: string
+      oldX: number
+      oldY: number
+      newX: number
+      newY: number
+    }> = []
     for (const id of toAdopt) {
       const node = graph.getNode(id)
       if (!node) continue
@@ -1339,7 +1410,14 @@ export function createEditorStore() {
 
     parseFigmaClipboard(html).then((figma) => {
       if (figma) {
-        const created = importClipboardNodes(figma.nodes, graph, state.currentPageId, 20, 20, figma.blobs)
+        const created = importClipboardNodes(
+          figma.nodes,
+          graph,
+          state.currentPageId,
+          20,
+          20,
+          figma.blobs
+        )
         if (created.length > 0) {
           state.selectedIds = new Set(created)
           requestRender()
@@ -1462,10 +1540,7 @@ export function createEditorStore() {
     })
   }
 
-  function commitResize(
-    nodeId: string,
-    origRect: { x: number; y: number; width: number; height: number }
-  ) {
+  function commitResize(nodeId: string, origRect: Rect) {
     const node = graph.getNode(nodeId)
     if (!node) return
     const finalRect = { x: node.x, y: node.y, width: node.width, height: node.height }

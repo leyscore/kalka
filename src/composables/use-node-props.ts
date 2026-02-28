@@ -1,8 +1,8 @@
 import { computed } from 'vue'
 
-import { useEditorStore } from '../stores/editor'
+import { useEditorStore } from '@/stores/editor'
 
-import type { SceneNode } from '../engine/scene-graph'
+import type { SceneNode } from '@/engine/scene-graph'
 
 export function useNodeProps() {
   const store = useEditorStore()

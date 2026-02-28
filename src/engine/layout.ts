@@ -64,8 +64,14 @@ function buildYogaTree(graph: SceneGraph, frame: SceneNode): YogaNode {
   root.setPadding(Edge.Bottom, frame.paddingBottom)
   root.setPadding(Edge.Left, frame.paddingLeft)
 
-  root.setGap(Gutter.Column, frame.layoutMode === 'HORIZONTAL' ? frame.itemSpacing : frame.counterAxisSpacing)
-  root.setGap(Gutter.Row, frame.layoutMode === 'HORIZONTAL' ? frame.counterAxisSpacing : frame.itemSpacing)
+  root.setGap(
+    Gutter.Column,
+    frame.layoutMode === 'HORIZONTAL' ? frame.itemSpacing : frame.counterAxisSpacing
+  )
+  root.setGap(
+    Gutter.Row,
+    frame.layoutMode === 'HORIZONTAL' ? frame.counterAxisSpacing : frame.itemSpacing
+  )
 
   const children = graph.getChildren(frame.id)
   for (let i = 0; i < children.length; i++) {
@@ -123,8 +129,14 @@ function configureChildAsAutoLayout(
   yogaChild.setPadding(Edge.Bottom, child.paddingBottom)
   yogaChild.setPadding(Edge.Left, child.paddingLeft)
 
-  yogaChild.setGap(Gutter.Column, child.layoutMode === 'HORIZONTAL' ? child.itemSpacing : child.counterAxisSpacing)
-  yogaChild.setGap(Gutter.Row, child.layoutMode === 'HORIZONTAL' ? child.counterAxisSpacing : child.itemSpacing)
+  yogaChild.setGap(
+    Gutter.Column,
+    child.layoutMode === 'HORIZONTAL' ? child.itemSpacing : child.counterAxisSpacing
+  )
+  yogaChild.setGap(
+    Gutter.Row,
+    child.layoutMode === 'HORIZONTAL' ? child.counterAxisSpacing : child.itemSpacing
+  )
 
   const grandchildren = graph.getChildren(child.id)
   for (const gc of grandchildren) {
@@ -139,14 +151,9 @@ function configureChildAsAutoLayout(
   }
 }
 
-function configureChildAsLeaf(
-  yogaChild: YogaNode,
-  child: SceneNode,
-  parent: SceneNode
-): void {
+function configureChildAsLeaf(yogaChild: YogaNode, child: SceneNode, parent: SceneNode): void {
   const isRow = parent.layoutMode === 'HORIZONTAL'
-  const stretchCross =
-    child.layoutAlignSelf === 'STRETCH' || parent.counterAxisAlign === 'STRETCH'
+  const stretchCross = child.layoutAlignSelf === 'STRETCH' || parent.counterAxisAlign === 'STRETCH'
 
   if (child.layoutGrow > 0) {
     yogaChild.setFlexGrow(child.layoutGrow)
@@ -235,11 +242,7 @@ function applyYogaLayout(graph: SceneGraph, frame: SceneNode, yogaRoot: YogaNode
   }
 }
 
-function applyYogaLayoutNested(
-  graph: SceneGraph,
-  frame: SceneNode,
-  yogaNode: YogaNode
-): void {
+function applyYogaLayoutNested(graph: SceneGraph, frame: SceneNode, yogaNode: YogaNode): void {
   if (frame.primaryAxisSizing === 'HUG' || frame.counterAxisSizing === 'HUG') {
     const computedW = yogaNode.getComputedWidth()
     const computedH = yogaNode.getComputedHeight()

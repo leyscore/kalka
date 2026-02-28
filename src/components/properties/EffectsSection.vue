@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import ColorPicker from '../ColorPicker.vue'
-import ScrubInput from '../ScrubInput.vue'
-import { useNodeProps } from '../../composables/use-node-props'
-import { colorToHexRaw, parseColor } from '../../engine/color'
+import ColorPicker from '@/components/ColorPicker.vue'
+import ScrubInput from '@/components/ScrubInput.vue'
+import { useNodeProps } from '@/composables/use-node-props'
+import { colorToHexRaw, parseColor } from '@/engine/color'
 
-import type { Color, Effect } from '../../engine/scene-graph'
+import type { Color, Effect } from '@/engine/scene-graph'
 
 const { store, node } = useNodeProps()
 
@@ -18,7 +18,7 @@ const EFFECT_LABELS: Record<string, string> = {
   INNER_SHADOW: 'Inner shadow',
   LAYER_BLUR: 'Layer blur',
   BACKGROUND_BLUR: 'Background blur',
-  FOREGROUND_BLUR: 'Foreground blur',
+  FOREGROUND_BLUR: 'Foreground blur'
 }
 
 const EFFECT_TYPES = Object.keys(EFFECT_LABELS) as EffectType[]
@@ -34,14 +34,16 @@ function defaultEffect(): Effect {
     offset: { x: 0, y: 4 },
     radius: 4,
     spread: 0,
-    visible: true,
+    visible: true
   }
 }
 
 function updateEffect(index: number, changes: Partial<Effect>) {
-  const effects = [...node.value!.effects]
+  const n = node.value
+  if (!n) return
+  const effects = [...n.effects]
   effects[index] = { ...effects[index], ...changes }
-  store.updateNodeWithUndo(node.value!.id, { effects }, 'Change effect')
+  store.updateNodeWithUndo(n.id, { effects }, 'Change effect')
 }
 
 function updateColor(index: number, color: Color) {
@@ -49,27 +51,35 @@ function updateColor(index: number, color: Color) {
 }
 
 function updateHex(index: number, hex: string) {
+  const n = node.value
+  if (!n) return
   const color = parseColor(hex.startsWith('#') ? hex : `#${hex}`)
   if (!color) return
-  const existing = node.value!.effects[index]
+  const existing = n.effects[index]
   updateColor(index, { ...color, a: existing.color.a })
 }
 
 function updateColorOpacity(index: number, opacity: number) {
-  const existing = node.value!.effects[index]
+  const n = node.value
+  if (!n) return
+  const existing = n.effects[index]
   updateColor(index, { ...existing.color, a: Math.max(0, Math.min(1, opacity / 100)) })
 }
 
 function toggleVisibility(index: number) {
-  updateEffect(index, { visible: !node.value!.effects[index].visible })
+  const n = node.value
+  if (!n) return
+  updateEffect(index, { visible: !n.effects[index].visible })
 }
 
 function updateType(index: number, type: EffectType) {
+  const n = node.value
+  if (!n) return
   const changes: Partial<Effect> = { type }
   if (!isShadow(type)) {
     changes.offset = { x: 0, y: 0 }
     changes.spread = 0
-  } else if (!isShadow(node.value!.effects[index].type)) {
+  } else if (!isShadow(n.effects[index].type)) {
     changes.offset = { x: 0, y: 4 }
     changes.spread = 0
   }
@@ -77,15 +87,19 @@ function updateType(index: number, type: EffectType) {
 }
 
 function add() {
-  const effects = [...node.value!.effects, defaultEffect()]
-  store.updateNodeWithUndo(node.value!.id, { effects }, 'Add effect')
+  const n = node.value
+  if (!n) return
+  const effects = [...n.effects, defaultEffect()]
+  store.updateNodeWithUndo(n.id, { effects }, 'Add effect')
 }
 
 function remove(index: number) {
+  const n = node.value
+  if (!n) return
   store.updateNodeWithUndo(
-    node.value!.id,
-    { effects: node.value!.effects.filter((_, i) => i !== index) },
-    'Remove effect',
+    n.id,
+    { effects: n.effects.filter((_, i) => i !== index) },
+    'Remove effect'
   )
   if (expandedIndex.value === index) expandedIndex.value = null
   else if (expandedIndex.value !== null && expandedIndex.value > index) expandedIndex.value--
@@ -103,7 +117,9 @@ function toggleExpand(index: number) {
       <button
         class="flex size-5 cursor-pointer items-center justify-center rounded border-none bg-transparent text-sm leading-none text-muted hover:bg-hover hover:text-surface"
         @click="add"
-      >+</button>
+      >
+        +
+      </button>
     </div>
 
     <div v-for="(effect, i) in node.effects" :key="i">
@@ -112,7 +128,9 @@ function toggleExpand(index: number) {
         <button
           v-if="isShadow(effect.type)"
           class="size-5 shrink-0 cursor-pointer rounded border border-border"
-          :style="{ background: `rgba(${Math.round(effect.color.r * 255)}, ${Math.round(effect.color.g * 255)}, ${Math.round(effect.color.b * 255)}, ${effect.color.a})` }"
+          :style="{
+            background: `rgba(${Math.round(effect.color.r * 255)}, ${Math.round(effect.color.g * 255)}, ${Math.round(effect.color.b * 255)}, ${effect.color.a})`
+          }"
           @click="toggleExpand(i)"
         />
         <button
@@ -128,7 +146,9 @@ function toggleExpand(index: number) {
           :value="effect.type"
           @change="updateType(i, ($event.target as HTMLSelectElement).value as EffectType)"
         >
-          <option v-for="t in EFFECT_TYPES" :key="t" :value="t" class="bg-panel text-surface">{{ EFFECT_LABELS[t] }}</option>
+          <option v-for="t in EFFECT_TYPES" :key="t" :value="t" class="bg-panel text-surface">
+            {{ EFFECT_LABELS[t] }}
+          </option>
         </select>
 
         <button
@@ -141,7 +161,9 @@ function toggleExpand(index: number) {
         <button
           class="flex size-5 cursor-pointer items-center justify-center rounded border-none bg-transparent text-sm leading-none text-muted hover:bg-hover hover:text-surface"
           @click="remove(i)"
-        >−</button>
+        >
+          −
+        </button>
       </div>
 
       <!-- Expanded controls inline -->

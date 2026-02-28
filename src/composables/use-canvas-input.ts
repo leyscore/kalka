@@ -1,15 +1,21 @@
 import { useEventListener } from '@vueuse/core'
 import { ref, type Ref } from 'vue'
 
-import { computeSelectionBounds, computeSnap } from '../engine/snap'
 import {
-  AUTO_LAYOUT_BREAK_THRESHOLD, HANDLE_HIT_RADIUS, ROTATION_HIT_RADIUS,
-  PEN_CLOSE_THRESHOLD, ROTATION_SNAP_DEGREES, ROTATION_HIT_OFFSET,
-  DEFAULT_TEXT_WIDTH, DEFAULT_TEXT_HEIGHT
-} from '../constants'
+  AUTO_LAYOUT_BREAK_THRESHOLD,
+  HANDLE_HIT_RADIUS,
+  ROTATION_HIT_RADIUS,
+  PEN_CLOSE_THRESHOLD,
+  ROTATION_SNAP_DEGREES,
+  ROTATION_HIT_OFFSET,
+  DEFAULT_TEXT_WIDTH,
+  DEFAULT_TEXT_HEIGHT
+} from '@/constants'
+import { computeSelectionBounds, computeSnap } from '@/engine/snap'
 
-import type { NodeType, SceneNode } from '../engine/scene-graph'
-import type { EditorStore, Tool } from '../stores/editor'
+import type { NodeType, SceneNode } from '@/engine/scene-graph'
+import type { EditorStore, Tool } from '@/stores/editor'
+import type { Rect } from '@/types'
 
 type HandlePosition = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w'
 
@@ -43,7 +49,7 @@ interface DragResize {
   handle: HandlePosition
   startX: number
   startY: number
-  origRect: { x: number; y: number; width: number; height: number }
+  origRect: Rect
   nodeId: string
 }
 
@@ -76,10 +82,10 @@ const TOOL_TO_NODE: Partial<Record<Tool, NodeType>> = {
   RECTANGLE: 'RECTANGLE',
   ELLIPSE: 'ELLIPSE',
   LINE: 'LINE',
+  POLYGON: 'POLYGON',
+  STAR: 'STAR',
   TEXT: 'TEXT'
 }
-
-
 
 const HANDLE_CURSORS: Record<HandlePosition, string> = {
   nw: 'nwse-resize',
@@ -204,8 +210,8 @@ function hitTestRotationHandle(
 export function useCanvasInput(
   canvasRef: Ref<HTMLCanvasElement | null>,
   store: EditorStore,
-  hitTestSectionTitle: (cx: number, cy: number) => import('../engine/scene-graph').SceneNode | null,
-  hitTestComponentLabel: (cx: number, cy: number) => import('../engine/scene-graph').SceneNode | null
+  hitTestSectionTitle: (cx: number, cy: number) => import('@/engine/scene-graph').SceneNode | null,
+  hitTestComponentLabel: (cx: number, cy: number) => import('@/engine/scene-graph').SceneNode | null
 ) {
   const drag = ref<DragState | null>(null)
   const cursorOverride = ref<string | null>(null)
@@ -315,7 +321,10 @@ export function useCanvasInput(
       }
 
       // Hit test nodes (labels first, then body)
-      const hit = hitTestSectionTitle(cx, cy) ?? hitTestComponentLabel(cx, cy) ?? store.graph.hitTest(cx, cy, store.state.currentPageId)
+      const hit =
+        hitTestSectionTitle(cx, cy) ??
+        hitTestComponentLabel(cx, cy) ??
+        store.graph.hitTest(cx, cy, store.state.currentPageId)
       if (hit) {
         if (!store.state.selectedIds.has(hit.id) && !e.shiftKey) {
           store.select([hit.id])
@@ -485,7 +494,8 @@ export function useCanvasInput(
       }
       cursorOverride.value = cursor
 
-      const hit = hitTestSectionTitle(cx, cy) ?? hitTestComponentLabel(cx, cy) ?? store.graph.hitTest(cx, cy)
+      const hit =
+        hitTestSectionTitle(cx, cy) ?? hitTestComponentLabel(cx, cy) ?? store.graph.hitTest(cx, cy)
       store.setHoveredNode(hit && !store.state.selectedIds.has(hit.id) ? hit.id : null)
     }
 
@@ -536,10 +546,22 @@ export function useCanvasInput(
       }
 
       // Check if we're hovering over an auto-layout frame
-      let dropTarget = store.graph.hitTestFrame(cx, cy, store.state.selectedIds, store.state.currentPageId)
+      let dropTarget = store.graph.hitTestFrame(
+        cx,
+        cy,
+        store.state.selectedIds,
+        store.state.currentPageId
+      )
       // Sections can't be dropped into frames or groups
-      const movingSection = [...store.state.selectedIds].some(id => store.graph.getNode(id)?.type === 'SECTION')
-      if (movingSection && dropTarget && dropTarget.type !== 'SECTION' && dropTarget.type !== 'CANVAS') {
+      const movingSection = [...store.state.selectedIds].some(
+        (id) => store.graph.getNode(id)?.type === 'SECTION'
+      )
+      if (
+        movingSection &&
+        dropTarget &&
+        dropTarget.type !== 'SECTION' &&
+        dropTarget.type !== 'CANVAS'
+      ) {
         dropTarget = null
       }
       const dropParent = dropTarget ? store.graph.getNode(dropTarget.id) : null
@@ -830,7 +852,10 @@ export function useCanvasInput(
 
   function onDblClick(e: MouseEvent) {
     const { cx, cy } = getCoords(e)
-    const hit = hitTestSectionTitle(cx, cy) ?? hitTestComponentLabel(cx, cy) ?? store.graph.hitTestDeep(cx, cy, store.state.currentPageId)
+    const hit =
+      hitTestSectionTitle(cx, cy) ??
+      hitTestComponentLabel(cx, cy) ??
+      store.graph.hitTestDeep(cx, cy, store.state.currentPageId)
     if (!hit) return
 
     if (hit.type === 'TEXT') {
@@ -851,9 +876,9 @@ export function useCanvasInput(
   }
 
   function computeAutoLayoutIndicatorForFrame(parent: SceneNode, cx: number, cy: number) {
-    const children = store.graph.getChildren(parent.id).filter(
-      (c) => c.layoutPositioning !== 'ABSOLUTE' && !store.state.selectedIds.has(c.id)
-    )
+    const children = store.graph
+      .getChildren(parent.id)
+      .filter((c) => c.layoutPositioning !== 'ABSOLUTE' && !store.state.selectedIds.has(c.id))
 
     const parentAbs = store.graph.getAbsolutePosition(parent.id)
     const isRow = parent.layoutMode === 'HORIZONTAL'
@@ -863,9 +888,7 @@ export function useCanvasInput(
     for (let i = 0; i < children.length; i++) {
       const child = children[i]
       const childAbs = store.graph.getAbsolutePosition(child.id)
-      const mid = isRow
-        ? childAbs.x + child.width / 2
-        : childAbs.y + child.height / 2
+      const mid = isRow ? childAbs.x + child.width / 2 : childAbs.y + child.height / 2
       const cursor = isRow ? cx : cy
 
       if (cursor < mid) {
@@ -882,9 +905,7 @@ export function useCanvasInput(
       : parent.width - parent.paddingLeft - parent.paddingRight
 
     if (children.length === 0) {
-      indicatorPos = isRow
-        ? parentAbs.x + parent.paddingLeft
-        : parentAbs.y + parent.paddingTop
+      indicatorPos = isRow ? parentAbs.x + parent.paddingLeft : parentAbs.y + parent.paddingTop
     } else if (insertIndex === 0) {
       const first = children[0]
       const firstAbs = store.graph.getAbsolutePosition(first.id)
