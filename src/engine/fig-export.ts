@@ -7,6 +7,10 @@ import type { CanvasKit } from 'canvaskit-wasm'
 import type { SceneGraph, SceneNode, Color } from './scene-graph'
 import type { SkiaRenderer } from './renderer'
 
+const THUMBNAIL_1X1 = Uint8Array.from(atob(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=='
+), (c) => c.charCodeAt(0))
+
 interface KiwiNodeChange {
   guid: { sessionID: number; localID: number }
   parentIndex?: { guid: { sessionID: number; localID: number }; position: string }
@@ -194,24 +198,13 @@ function sceneNodeToKiwi(
   return result
 }
 
-async function compressData(data: Uint8Array): Promise<Uint8Array> {
-  if (IS_TAURI) {
-    const { invoke } = await import('@tauri-apps/api/core')
-    return new Uint8Array(await invoke<number[]>('zstd_compress', { data: Array.from(data) }))
-  }
-  return deflateSync(data)
-}
-
-async function buildFigKiwi(schemaDeflated: Uint8Array, dataRaw: Uint8Array): Promise<Uint8Array> {
-  const dataCompressed = await compressData(dataRaw)
+function buildFigKiwi(schemaDeflated: Uint8Array, dataCompressed: Uint8Array): Uint8Array {
   const FIG_KIWI_VERSION = 106
-
   const total = 8 + 4 + 4 + schemaDeflated.length + 4 + dataCompressed.length
   const out = new Uint8Array(total)
   const view = new DataView(out.buffer)
 
-  const magic = new TextEncoder().encode('fig-kiwi')
-  out.set(magic, 0)
+  out.set(new TextEncoder().encode('fig-kiwi'), 0)
   view.setUint32(8, FIG_KIWI_VERSION, true)
 
   let offset = 12
@@ -351,27 +344,33 @@ export async function exportFigFile(
     msg.blobs = blobs.map((bytes) => ({ bytes }))
   }
 
-  const dataRaw = compiled.encodeMessage(msg)
-  const canvasData = await buildFigKiwi(schemaDeflated, dataRaw)
+  const kiwiData = compiled.encodeMessage(msg)
 
   const currentPageId = pageId ?? pages[0]?.id
-  const thumbnail = ck && renderer && currentPageId
+  const thumbnailPng = (ck && renderer && currentPageId
     ? generateThumbnail(ck, renderer, graph, currentPageId)
-    : null
+    : null) ?? THUMBNAIL_1X1
 
-  const THUMBNAIL_1X1 = Uint8Array.from(atob(
-    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=='
-  ), (c) => c.charCodeAt(0))
-
-  const meta = JSON.stringify({
+  const metaJson = JSON.stringify({
     version: 1,
     app: 'OpenPencil',
     createdAt: new Date().toISOString()
   })
 
+  if (IS_TAURI) {
+    const { invoke } = await import('@tauri-apps/api/core')
+    return new Uint8Array(await invoke<number[]>('build_fig_file', {
+      schemaDeflated: Array.from(schemaDeflated),
+      kiwiData: Array.from(kiwiData),
+      thumbnailPng: Array.from(thumbnailPng),
+      metaJson
+    }))
+  }
+
+  const canvasData = buildFigKiwi(schemaDeflated, deflateSync(kiwiData))
   return zipSync({
     'canvas.fig': [canvasData, { level: 0 }],
-    'thumbnail.png': [thumbnail ?? THUMBNAIL_1X1, { level: 0 }],
-    'meta.json': new TextEncoder().encode(meta)
+    'thumbnail.png': [thumbnailPng, { level: 0 }],
+    'meta.json': new TextEncoder().encode(metaJson)
   })
 }
