@@ -2,18 +2,153 @@
 import ScrubInput from '../ScrubInput.vue'
 import { useNodeProps } from '../../composables/use-node-props'
 
-const { node, updateProp, commitProp } = useNodeProps()
+const { store, node, nodes, updateProp, commitProp } = useNodeProps()
+
+type HAlign = 'left' | 'center' | 'right'
+type VAlign = 'top' | 'center' | 'bottom'
+
+function alignHorizontal(align: HAlign) {
+  const selected = nodes.value
+  if (selected.length < 2) return
+
+  let minX = Infinity, maxX = -Infinity
+  for (const n of selected) {
+    const abs = store.graph.getAbsolutePosition(n.id)
+    minX = Math.min(minX, abs.x)
+    maxX = Math.max(maxX, abs.x + n.width)
+  }
+
+  for (const n of selected) {
+    const abs = store.graph.getAbsolutePosition(n.id)
+    let targetX: number
+    if (align === 'left') targetX = minX
+    else if (align === 'right') targetX = maxX - n.width
+    else targetX = (minX + maxX) / 2 - n.width / 2
+
+    const dx = targetX - abs.x
+    store.updateNode(n.id, { x: n.x + dx })
+  }
+  store.requestRender()
+}
+
+function alignVertical(align: VAlign) {
+  const selected = nodes.value
+  if (selected.length < 2) return
+
+  let minY = Infinity, maxY = -Infinity
+  for (const n of selected) {
+    const abs = store.graph.getAbsolutePosition(n.id)
+    minY = Math.min(minY, abs.y)
+    maxY = Math.max(maxY, abs.y + n.height)
+  }
+
+  for (const n of selected) {
+    const abs = store.graph.getAbsolutePosition(n.id)
+    let targetY: number
+    if (align === 'top') targetY = minY
+    else if (align === 'bottom') targetY = maxY - n.height
+    else targetY = (minY + maxY) / 2 - n.height / 2
+
+    const dy = targetY - abs.y
+    store.updateNode(n.id, { y: n.y + dy })
+  }
+  store.requestRender()
+}
+
+function flipHorizontal() {
+  const n = node.value
+  store.updateNodeWithUndo(n.id, { rotation: -n.rotation || 0 }, 'Flip horizontal')
+  store.requestRender()
+}
+
+function flipVertical() {
+  const n = node.value
+  store.updateNodeWithUndo(n.id, { rotation: (180 - n.rotation) % 360 }, 'Flip vertical')
+  store.requestRender()
+}
 </script>
 
 <template>
   <div class="border-b border-border px-3 py-2">
     <label class="mb-1.5 block text-[11px] text-muted">Position</label>
+
+    <!-- Alignment buttons -->
+    <div class="mb-1.5 flex gap-2">
+      <div class="flex gap-0.5">
+        <button
+          class="flex size-7 cursor-pointer items-center justify-center rounded border border-border bg-input text-muted hover:bg-hover hover:text-surface"
+          title="Align left"
+          @click="alignHorizontal('left')"
+        >
+          <icon-lucide-align-horizontal-justify-start class="size-3.5" />
+        </button>
+        <button
+          class="flex size-7 cursor-pointer items-center justify-center rounded border border-border bg-input text-muted hover:bg-hover hover:text-surface"
+          title="Align center horizontally"
+          @click="alignHorizontal('center')"
+        >
+          <icon-lucide-align-horizontal-justify-center class="size-3.5" />
+        </button>
+        <button
+          class="flex size-7 cursor-pointer items-center justify-center rounded border border-border bg-input text-muted hover:bg-hover hover:text-surface"
+          title="Align right"
+          @click="alignHorizontal('right')"
+        >
+          <icon-lucide-align-horizontal-justify-end class="size-3.5" />
+        </button>
+      </div>
+      <div class="flex gap-0.5">
+        <button
+          class="flex size-7 cursor-pointer items-center justify-center rounded border border-border bg-input text-muted hover:bg-hover hover:text-surface"
+          title="Align top"
+          @click="alignVertical('top')"
+        >
+          <icon-lucide-align-vertical-justify-start class="size-3.5" />
+        </button>
+        <button
+          class="flex size-7 cursor-pointer items-center justify-center rounded border border-border bg-input text-muted hover:bg-hover hover:text-surface"
+          title="Align center vertically"
+          @click="alignVertical('center')"
+        >
+          <icon-lucide-align-vertical-justify-center class="size-3.5" />
+        </button>
+        <button
+          class="flex size-7 cursor-pointer items-center justify-center rounded border border-border bg-input text-muted hover:bg-hover hover:text-surface"
+          title="Align bottom"
+          @click="alignVertical('bottom')"
+        >
+          <icon-lucide-align-vertical-justify-end class="size-3.5" />
+        </button>
+      </div>
+    </div>
+
+    <!-- X / Y -->
     <div class="flex gap-1.5">
       <ScrubInput icon="X" :model-value="Math.round(node.x)" @update:model-value="updateProp('x', $event)" @commit="(v: number, p: number) => commitProp('x', v, p)" />
       <ScrubInput icon="Y" :model-value="Math.round(node.y)" @update:model-value="updateProp('y', $event)" @commit="(v: number, p: number) => commitProp('y', v, p)" />
     </div>
-    <div class="mt-1.5 flex gap-1.5">
-      <ScrubInput icon="R" suffix="°" :model-value="Math.round(node.rotation)" :min="-360" :max="360" @update:model-value="updateProp('rotation', $event)" @commit="(v: number, p: number) => commitProp('rotation', v, p)" />
+
+    <!-- Rotation + flip -->
+    <div class="mt-1.5 flex items-center gap-1.5">
+      <ScrubInput class="flex-1" suffix="°" :model-value="Math.round(node.rotation)" :min="-360" :max="360" @update:model-value="updateProp('rotation', $event)" @commit="(v: number, p: number) => commitProp('rotation', v, p)">
+        <template #icon>
+          <icon-lucide-rotate-cw class="size-3" />
+        </template>
+      </ScrubInput>
+      <button
+        class="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded border border-border bg-input text-muted hover:bg-hover hover:text-surface"
+        title="Flip horizontal"
+        @click="flipHorizontal"
+      >
+        <icon-lucide-flip-horizontal class="size-3.5" />
+      </button>
+      <button
+        class="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded border border-border bg-input text-muted hover:bg-hover hover:text-surface"
+        title="Flip vertical"
+        @click="flipVertical"
+      >
+        <icon-lucide-flip-vertical class="size-3.5" />
+      </button>
     </div>
   </div>
 </template>
