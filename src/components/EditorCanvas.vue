@@ -4,6 +4,7 @@ import { ref, computed } from 'vue'
 import { useCanvas } from '../composables/use-canvas'
 import { useCanvasInput } from '../composables/use-canvas-input'
 import { useEditorStore } from '../stores/editor'
+import CanvasContextMenu from './CanvasContextMenu.vue'
 
 const store = useEditorStore()
 const canvasRef = ref<HTMLCanvasElement | null>(null)
@@ -66,6 +67,7 @@ function onTextKeyDown(e: KeyboardEvent) {
 </script>
 
 <template>
+  <CanvasContextMenu>
   <div class="relative flex-1 min-w-0 min-h-0 overflow-hidden">
     <canvas ref="canvasRef" :style="{ cursor }" class="block size-full" />
     <textarea
@@ -79,4 +81,5 @@ function onTextKeyDown(e: KeyboardEvent) {
       autofocus
     />
   </div>
+  </CanvasContextMenu>
 </template>

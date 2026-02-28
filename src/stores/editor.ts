@@ -1097,6 +1097,68 @@ export function createEditorStore() {
     requestRender()
   }
 
+  function bringToFront() {
+    for (const id of state.selectedIds) {
+      const node = graph.getNode(id)
+      if (!node?.parentId) continue
+      const parent = graph.getNode(node.parentId)
+      if (!parent) continue
+      const idx = parent.childIds.indexOf(id)
+      if (idx === parent.childIds.length - 1) continue
+      parent.childIds = parent.childIds.filter((cid) => cid !== id)
+      parent.childIds.push(id)
+    }
+    requestRender()
+  }
+
+  function sendToBack() {
+    for (const id of state.selectedIds) {
+      const node = graph.getNode(id)
+      if (!node?.parentId) continue
+      const parent = graph.getNode(node.parentId)
+      if (!parent) continue
+      const idx = parent.childIds.indexOf(id)
+      if (idx === 0) continue
+      parent.childIds = parent.childIds.filter((cid) => cid !== id)
+      parent.childIds.unshift(id)
+    }
+    requestRender()
+  }
+
+  function toggleVisibility() {
+    for (const id of state.selectedIds) {
+      const node = graph.getNode(id)
+      if (!node) continue
+      graph.updateNode(id, { visible: !node.visible })
+    }
+    requestRender()
+  }
+
+  function toggleLock() {
+    for (const id of state.selectedIds) {
+      const node = graph.getNode(id)
+      if (!node) continue
+      graph.updateNode(id, { locked: !node.locked })
+    }
+    requestRender()
+  }
+
+  function moveToPage(pageId: string) {
+    const targetPage = graph.getNode(pageId)
+    if (!targetPage || targetPage.type !== 'CANVAS') return
+    const ids = [...state.selectedIds]
+    for (const id of ids) {
+      graph.reparentNode(id, pageId)
+    }
+    clearSelection()
+    requestRender()
+  }
+
+  function renameNode(id: string, name: string) {
+    graph.updateNode(id, { name })
+    requestRender()
+  }
+
   function createShape(
     type: NodeType,
     x: number,
@@ -1548,6 +1610,12 @@ export function createEditorStore() {
     createInstanceFromComponent,
     detachInstance,
     goToMainComponent,
+    bringToFront,
+    sendToBack,
+    toggleVisibility,
+    toggleLock,
+    moveToPage,
+    renameNode,
     createShape,
     adoptNodesIntoSection,
     duplicateSelected,
