@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ColorPicker from '../ColorPicker.vue'
+import ScrubInput from '../ScrubInput.vue'
 import { useEditorStore } from '../../stores/editor'
 import { DEFAULT_SHAPE_FILL } from '../../constants'
 import { colorToHexRaw, parseColor } from '../../engine/color'
@@ -55,15 +56,14 @@ function remove(index: number) {
         :value="colorToHexRaw(fill.color)"
         @change="updateHex(i, ($event.target as HTMLInputElement).value)"
       />
-      <input
-        type="number"
-        class="w-10 rounded border border-border bg-input px-1 py-0.5 text-right text-[11px] text-surface [&::-webkit-inner-spin-button]:hidden"
-        :value="Math.round(fill.opacity * 100)"
-        min="0"
-        max="100"
-        @change="updateOpacity(i, +($event.target as HTMLInputElement).value)"
+      <ScrubInput
+        class="w-12"
+        suffix="%"
+        :model-value="Math.round(fill.opacity * 100)"
+        :min="0"
+        :max="100"
+        @update:model-value="updateOpacity(i, $event)"
       />
-      <span class="text-[11px] text-muted">%</span>
       <button
         class="cursor-pointer border-none bg-transparent p-0 text-muted opacity-0 transition-opacity group-hover:opacity-100 hover:text-surface"
         @click="toggleVisibility(i)"

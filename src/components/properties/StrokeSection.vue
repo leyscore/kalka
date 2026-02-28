@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ColorPicker from '../ColorPicker.vue'
+import ScrubInput from '../ScrubInput.vue'
 import { useEditorStore } from '../../stores/editor'
 import { colorToHexRaw, parseColor } from '../../engine/color'
 
@@ -61,15 +62,14 @@ function remove(index: number) {
         :value="colorToHexRaw(stroke.color)"
         @change="updateHex(i, ($event.target as HTMLInputElement).value)"
       />
-      <input
-        type="number"
-        class="w-10 rounded border border-border bg-input px-1 py-0.5 text-right text-[11px] text-surface [&::-webkit-inner-spin-button]:hidden"
-        :value="Math.round(stroke.opacity * 100)"
-        min="0"
-        max="100"
-        @change="updateOpacity(i, +($event.target as HTMLInputElement).value)"
+      <ScrubInput
+        class="w-12"
+        suffix="%"
+        :model-value="Math.round(stroke.opacity * 100)"
+        :min="0"
+        :max="100"
+        @update:model-value="updateOpacity(i, $event)"
       />
-      <span class="text-[11px] text-muted">%</span>
       <button
         class="cursor-pointer border-none bg-transparent p-0 text-muted opacity-0 transition-opacity group-hover:opacity-100 hover:text-surface"
         @click="toggleVisibility(i)"
@@ -79,15 +79,13 @@ function remove(index: number) {
       </button>
       <button class="cursor-pointer border-none bg-transparent p-0 text-sm leading-none text-muted hover:text-surface" @click="remove(i)">−</button>
     </div>
-    <!-- Stroke weight (shown when any strokes exist) -->
     <div v-if="strokes.length > 0" class="mt-1 flex items-center gap-1.5">
-      <span class="text-[11px] text-muted">Weight</span>
-      <input
-        type="number"
-        class="w-12 rounded border border-border bg-input px-1.5 py-0.5 text-center text-[11px] text-surface [&::-webkit-inner-spin-button]:hidden"
-        :value="strokes[0].weight"
-        min="0"
-        @change="updateWeight(0, +($event.target as HTMLInputElement).value)"
+      <ScrubInput
+        class="w-16"
+        icon="W"
+        :model-value="strokes[0].weight"
+        :min="0"
+        @update:model-value="updateWeight(0, $event)"
       />
     </div>
   </div>
