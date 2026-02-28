@@ -2,7 +2,23 @@ import { onUnmounted } from 'vue'
 
 import type { EditorStore } from '../stores/editor'
 
-export function openFileDialog(store: EditorStore) {
+export async function openFileDialog(store: EditorStore) {
+  if ('showOpenFilePicker' in window) {
+    try {
+      const [handle] = await (window as any).showOpenFilePicker({
+        types: [{
+          description: 'Figma file',
+          accept: { 'application/octet-stream': ['.fig'] }
+        }]
+      })
+      const file = await handle.getFile()
+      await store.openFigFile(file, handle)
+      return
+    } catch (e) {
+      if ((e as Error).name === 'AbortError') return
+    }
+  }
+
   const input = document.createElement('input')
   input.type = 'file'
   input.accept = '.fig'
@@ -15,6 +31,8 @@ export function openFileDialog(store: EditorStore) {
 
 const MENU_ACTIONS: Record<string, (store: EditorStore) => void> = {
   open: (store) => openFileDialog(store),
+  save: (store) => store.saveFigFile(),
+  'save-as': (store) => store.saveFigFileAs(),
   duplicate: (store) => store.duplicateSelected(),
   delete: (store) => store.deleteSelected(),
   group: (store) => store.groupSelected(),

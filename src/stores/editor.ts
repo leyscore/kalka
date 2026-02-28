@@ -11,6 +11,7 @@ import {
   prefetchFigmaSchema
 } from '../engine/clipboard'
 import { readFigFile } from '../kiwi/fig-file'
+import { exportFigFile } from '../engine/fig-export'
 import { computeLayout, computeAllLayouts } from '../engine/layout'
 import { SceneGraph } from '../engine/scene-graph'
 import { UndoManager } from '../engine/undo'
@@ -69,6 +70,7 @@ export function createEditorStore() {
   let graph = new SceneGraph()
   const undo = new UndoManager()
   const pageViewports = new Map<string, PageViewport>()
+  let fileHandle: FileSystemFileHandle | null = null
 
   prefetchFigmaSchema()
 
@@ -420,13 +422,14 @@ export function createEditorStore() {
     requestRender()
   }
 
-  async function openFigFile(file: File) {
+  async function openFigFile(file: File, handle?: FileSystemFileHandle) {
     try {
       const imported = await readFigFile(file)
       graph = imported
       computeAllLayouts(graph)
       undo.clear()
       pageViewports.clear()
+      fileHandle = handle ?? null
       state.selectedIds = new Set()
       const firstPage = graph.getPages()[0]
       state.currentPageId = firstPage?.id ?? graph.rootId
@@ -438,6 +441,48 @@ export function createEditorStore() {
     } catch (e) {
       console.error('Failed to open .fig file:', e)
     }
+  }
+
+  async function saveFigFile() {
+    if (fileHandle) {
+      const data = await exportFigFile(graph)
+      const writable = await fileHandle.createWritable()
+      await writable.write(data)
+      await writable.close()
+    } else {
+      await saveFigFileAs()
+    }
+  }
+
+  async function saveFigFileAs() {
+    const data = await exportFigFile(graph)
+
+    if ('showSaveFilePicker' in window) {
+      try {
+        const handle = await (window as any).showSaveFilePicker({
+          suggestedName: 'Untitled.fig',
+          types: [{
+            description: 'Figma file',
+            accept: { 'application/octet-stream': ['.fig'] }
+          }]
+        })
+        fileHandle = handle
+        const writable = await handle.createWritable()
+        await writable.write(data)
+        await writable.close()
+        return
+      } catch (e) {
+        if ((e as Error).name === 'AbortError') return
+      }
+    }
+
+    const blob = new Blob([data], { type: 'application/octet-stream' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'Untitled.fig'
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   function runLayoutForNode(id: string) {
@@ -1134,6 +1179,8 @@ export function createEditorStore() {
     startTextEditing,
     commitTextEdit,
     openFigFile,
+    saveFigFile,
+    saveFigFileAs,
     updateNode,
     setLayoutMode,
     wrapInAutoLayout,
