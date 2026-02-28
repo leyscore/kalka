@@ -10,12 +10,18 @@ export class CanvasHelper {
   }
 
   async waitForRender() {
-    await this.page.waitForTimeout(500)
+    await this.page.waitForTimeout(100)
   }
 
   async waitForInit() {
     await this.canvas.waitFor({ state: 'visible', timeout: 5000 })
     await this.page.waitForTimeout(1000)
+  }
+
+  async clearCanvas() {
+    await this.selectAll()
+    await this.pressKey('Backspace')
+    await this.waitForRender()
   }
 
   async screenshotCanvas() {
