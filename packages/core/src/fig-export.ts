@@ -7,7 +7,7 @@ import { renderThumbnail } from './render-image'
 import { encodeVectorNetworkBlob } from './vector'
 
 import type { SkiaRenderer } from './renderer'
-import type { SceneGraph, SceneNode } from './scene-graph'
+import type { SceneGraph, SceneNode, CharacterStyleOverride } from './scene-graph'
 import type { NodeChange, Paint } from './kiwi/codec'
 import type { CanvasKit } from 'canvaskit-wasm'
 
@@ -155,14 +155,18 @@ function sceneNodeToKiwi(
     nc.fontSize = node.fontSize
     nc.fontName = {
       family: node.fontFamily,
-      style: node.fontWeight >= 700 ? 'Bold' : 'Regular',
+      style: fontStyleLabel(node.fontWeight, node.italic),
       postscript: ''
     }
-    nc.textData = { characters: node.text }
+    nc.textData = exportTextData(node)
     nc.textAutoResize = 'WIDTH_AND_HEIGHT'
     nc.textAlignHorizontal = node.textAlignHorizontal
     if (node.lineHeight != null) nc.lineHeight = { value: node.lineHeight, units: 'PIXELS' }
     if (node.letterSpacing !== 0) nc.letterSpacing = { value: node.letterSpacing, units: 'PIXELS' }
+    if (node.textDecoration !== 'NONE') {
+      ;(nc as Record<string, unknown>).textDecoration =
+        node.textDecoration === 'UNDERLINE' ? 'UNDERLINE' : 'STRIKETHROUGH'
+    }
   }
 
   if (node.type === 'FRAME' || node.type === 'GROUP') {
@@ -334,4 +338,68 @@ export async function exportFigFile(
     'thumbnail.png': [thumbnailPng, { level: 0 }],
     'meta.json': new TextEncoder().encode(metaJson)
   })
+}
+
+function fontStyleLabel(weight: number, italic: boolean): string {
+  let label = 'Regular'
+  if (weight >= 900) label = 'Black'
+  else if (weight >= 800) label = 'ExtraBold'
+  else if (weight >= 700) label = 'Bold'
+  else if (weight >= 600) label = 'SemiBold'
+  else if (weight >= 500) label = 'Medium'
+  else if (weight >= 300) label = 'Light'
+  else if (weight >= 200) label = 'ExtraLight'
+  else if (weight >= 100) label = 'Thin'
+  if (italic) label += ' Italic'
+  return label
+}
+
+function exportTextData(node: SceneNode): NodeChange['textData'] {
+  const runs = node.styleRuns
+  if (runs.length === 0) {
+    return { characters: node.text }
+  }
+
+  const charIds = new Array<number>(node.text.length).fill(0)
+  const styleMap = new Map<string, { id: number; style: CharacterStyleOverride }>()
+  let nextId = 1
+
+  for (const run of runs) {
+    const key = JSON.stringify(run.style)
+    let entry = styleMap.get(key)
+    if (!entry) {
+      entry = { id: nextId++, style: run.style }
+      styleMap.set(key, entry)
+    }
+    for (let i = run.start; i < run.start + run.length && i < charIds.length; i++) {
+      charIds[i] = entry.id
+    }
+  }
+
+  const overrideTable: NodeChange[] = []
+  for (const { id, style } of styleMap.values()) {
+    const override: Record<string, unknown> = { styleID: id }
+    const weight = style.fontWeight ?? node.fontWeight
+    const italic = style.italic ?? node.italic
+    override.fontName = {
+      family: style.fontFamily ?? node.fontFamily,
+      style: fontStyleLabel(weight, italic),
+      postscript: ''
+    }
+    if (style.fontSize !== undefined) override.fontSize = style.fontSize
+    if (style.letterSpacing !== undefined) {
+      override.letterSpacing = { value: style.letterSpacing, units: 'PIXELS' }
+    }
+    if (style.lineHeight !== undefined && style.lineHeight !== null) {
+      override.lineHeight = { value: style.lineHeight, units: 'PIXELS' }
+    }
+    if (style.textDecoration) override.textDecoration = style.textDecoration
+    overrideTable.push(override as unknown as NodeChange)
+  }
+
+  return {
+    characters: node.text,
+    characterStyleIDs: charIds,
+    styleOverrideTable: overrideTable
+  }
 }

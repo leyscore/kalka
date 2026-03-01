@@ -1,4 +1,5 @@
-import type { CanvasKit, Paragraph, TypefaceFontProvider } from 'canvaskit-wasm'
+import type { CanvasKit, Paragraph } from 'canvaskit-wasm'
+import type { SkiaRenderer } from './renderer'
 import type { SceneNode } from './scene-graph'
 import type { Rect } from './types'
 
@@ -18,7 +19,7 @@ export interface TextEditorState {
 
 export class TextEditor {
   private ck: CanvasKit
-  private fontProvider: TypefaceFontProvider | null = null
+  private renderer: SkiaRenderer | null = null
   private _state: TextEditorState | null = null
   caretVisible = true
 
@@ -38,8 +39,8 @@ export class TextEditor {
     return this._state?.nodeId ?? null
   }
 
-  setFontProvider(provider: TypefaceFontProvider | null): void {
-    this.fontProvider = provider
+  setRenderer(renderer: SkiaRenderer | null): void {
+    this.renderer = renderer
   }
 
   start(node: SceneNode): void {
@@ -63,28 +64,9 @@ export class TextEditor {
 
   rebuildParagraph(node: SceneNode): void {
     const s = this._state
-    if (!s || !this.fontProvider) return
-
+    if (!s || !this.renderer) return
     s.paragraph?.delete()
-
-    const paraStyle = new this.ck.ParagraphStyle({
-      textAlign: this.getTextAlign(node.textAlignHorizontal),
-      textStyle: {
-        color: this.ck.BLACK,
-        fontFamilies: [node.fontFamily || 'Inter'],
-        fontSize: node.fontSize || 14,
-        fontStyle: { weight: { value: node.fontWeight || 400 } },
-        letterSpacing: node.letterSpacing || 0,
-        heightMultiplier: node.lineHeight
-          ? node.lineHeight / (node.fontSize || 14)
-          : undefined
-      }
-    })
-    const builder = this.ck.ParagraphBuilder.MakeFromFontProvider(paraStyle, this.fontProvider)
-    builder.addText(s.text)
-    s.paragraph = builder.build()
-    s.paragraph.layout(node.width || 1e6)
-    builder.delete()
+    s.paragraph = this.renderer.buildParagraph(node)
   }
 
   hasSelection(): boolean {
@@ -353,18 +335,6 @@ export class TextEditor {
     })
   }
 
-  private getTextAlign(align: string) {
-    switch (align) {
-      case 'CENTER':
-        return this.ck.TextAlign.Center
-      case 'RIGHT':
-        return this.ck.TextAlign.Right
-      case 'JUSTIFIED':
-        return this.ck.TextAlign.Justify
-      default:
-        return this.ck.TextAlign.Left
-    }
-  }
 }
 
 function isWordBoundary(ch: string): boolean {

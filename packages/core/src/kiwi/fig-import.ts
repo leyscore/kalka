@@ -24,7 +24,9 @@ import type {
   TextCase,
   TextDecoration,
   ArcData,
-  VectorNetwork
+  VectorNetwork,
+  StyleRun,
+  CharacterStyleOverride
 } from '../scene-graph'
 
 function ext(nc: NodeChange): Record<string, unknown> {
@@ -285,6 +287,54 @@ function mapArcData(data?: Record<string, number>): ArcData | null {
   }
 }
 
+function importStyleRuns(nc: NodeChange): StyleRun[] {
+  const td = nc.textData
+  if (!td?.characterStyleIDs || !td.styleOverrideTable) return []
+
+  const ids = td.characterStyleIDs
+  const table = td.styleOverrideTable
+  if (ids.length === 0 || table.length === 0) return []
+
+  const styleMap = new Map<number, CharacterStyleOverride>()
+  for (const override of table) {
+    const id = (override as unknown as Record<string, unknown>).styleID as number | undefined
+    if (id === undefined) continue
+    const style: CharacterStyleOverride = {}
+    if (override.fontName) {
+      style.fontFamily = override.fontName.family
+      style.fontWeight = mapFontWeight(override.fontName.style)
+      style.italic = override.fontName.style?.toLowerCase().includes('italic') ?? false
+    }
+    if (override.fontSize !== undefined) style.fontSize = override.fontSize
+    if (override.letterSpacing) style.letterSpacing = override.letterSpacing.value
+    if (override.lineHeight) style.lineHeight = override.lineHeight.value
+    const deco = ext(override).textDecoration as string | undefined
+    if (deco) style.textDecoration = mapTextDecoration(deco)
+    if (Object.keys(style).length > 0) styleMap.set(id, style)
+  }
+
+  if (styleMap.size === 0) return []
+
+  const runs: StyleRun[] = []
+  let currentId = ids[0]
+  let start = 0
+
+  for (let i = 1; i <= ids.length; i++) {
+    if (i === ids.length || ids[i] !== currentId) {
+      if (currentId !== 0) {
+        const style = styleMap.get(currentId)
+        if (style) runs.push({ start, length: i - start, style })
+      }
+      if (i < ids.length) {
+        currentId = ids[i]
+        start = i
+      }
+    }
+  }
+
+  return runs
+}
+
 function resolveVectorNetwork(nc: NodeChange, blobs: Uint8Array[]): VectorNetwork | null {
   const vectorData = (nc as unknown as Record<string, unknown>).vectorData as
     | {
@@ -405,6 +455,7 @@ export function importNodeChanges(
       fontSize: nc.fontSize ?? 14,
       fontFamily: nc.fontName?.family ?? 'Inter',
       fontWeight: mapFontWeight(nc.fontName?.style),
+      italic: nc.fontName?.style?.toLowerCase().includes('italic') ?? false,
       textAlignHorizontal:
         (nc.textAlignHorizontal as 'LEFT' | 'CENTER' | 'RIGHT' | 'JUSTIFIED') ?? 'LEFT',
       textAlignVertical: (ext(nc).textAlignVertical as TextAlignVertical) ?? 'TOP',
@@ -414,6 +465,7 @@ export function importNodeChanges(
       lineHeight: nc.lineHeight?.value ?? null,
       letterSpacing: nc.letterSpacing?.value ?? 0,
       maxLines: (ext(nc).maxLines as number) ?? null,
+      styleRuns: importStyleRuns(nc),
       horizontalConstraint: mapConstraint(ext(nc).horizontalConstraint as string),
       verticalConstraint: mapConstraint(ext(nc).verticalConstraint as string),
       layoutMode: mapStackMode(nc.stackMode),

@@ -43,7 +43,9 @@ export {
   type VariableValue,
   type Variable,
   type VariableCollection,
-  type VariableCollectionMode
+  type VariableCollectionMode,
+  type CharacterStyleOverride,
+  type StyleRun
 } from './scene-graph'
 
 export { SkiaRenderer, type RenderOverlays } from './renderer'
@@ -55,6 +57,13 @@ export { vectorNetworkToPath, decodeVectorNetworkBlob, encodeVectorNetworkBlob, 
 export { computeSelectionBounds, computeSnap, type SnapGuide } from './snap'
 export { UndoManager } from './undo'
 export { TextEditor, type TextCaret, type TextEditorState } from './text-editor'
+export {
+  toggleBoldInRange,
+  toggleItalicInRange,
+  toggleDecorationInRange,
+  adjustRunsForInsert,
+  adjustRunsForDelete
+} from './style-runs'
 export { renderNodesToImage, renderThumbnail, type ExportFormat } from './render-image'
 export { exportFigFile } from './fig-export'
 export {
