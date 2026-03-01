@@ -201,16 +201,28 @@ The CanvasKit surface SHALL be recreated at most once per animation frame during
 - **WHEN** user drags a panel resize handle continuously
 - **THEN** the WebGL surface is recreated at most once per frame
 
-### Requirement: Variables panel
-The editor SHALL include a VariablesPanel toggled from the bottom of the layers sidebar. The panel uses reka-ui Tabs for collections and Editable for variable names/values. Users can create, rename, and delete variables and collections, switch modes, and set variable values per mode.
+### Requirement: Variables dialog
+The editor SHALL display a VariablesSection in the page-level properties panel showing variable/collection counts and a settings icon. Clicking the icon opens a VariablesDialog (reka-ui Dialog) with: collection tabs (reka-ui Tabs, double-click to rename), a TanStack Table (@tanstack/vue-table) with resizable columns (Name | Mode 1 | Mode 2 | ...), search bar, and a "+ Create variable" button. Color variables display inline ColorInput with picker. Variable names and values are editable inline (reka-ui Editable).
 
-#### Scenario: Toggle variables panel
-- **WHEN** user clicks the variables toggle in the layers sidebar
-- **THEN** the VariablesPanel appears showing collections as tabs
+#### Scenario: Open variables dialog
+- **WHEN** user clicks the settings icon in the Variables section of page properties
+- **THEN** a dialog opens showing collection tabs and a variables table
+
+#### Scenario: Rename collection
+- **WHEN** user double-clicks a collection tab name
+- **THEN** the tab becomes editable for renaming
+
+#### Scenario: Resize table columns
+- **WHEN** user drags a column border in the variables table header
+- **THEN** the column width adjusts
+
+#### Scenario: Search variables
+- **WHEN** user types in the search bar in the variables dialog
+- **THEN** only variables matching the search term are shown
 
 #### Scenario: Edit variable value
-- **WHEN** user clicks a variable value in the panel
-- **THEN** an editable input allows changing the value for the active mode
+- **WHEN** user clicks a variable value cell in the table
+- **THEN** an editable input allows changing the value for that mode
 
 ### Requirement: Fill section variable picker
 The fill section SHALL include a variable picker (reka-ui Popover + Combobox) to bind a color variable to a fill. Bound fills display a purple variable name badge with a detach button.
@@ -244,3 +256,28 @@ The editor SHALL display a minimalist loading animation (centered logo + progres
 #### Scenario: Initial load
 - **WHEN** user opens the editor
 - **THEN** a splash loader is shown until CanvasKit WASM is loaded, then fades out
+
+### Requirement: ColorInput component
+A reusable ColorInput component SHALL display a color swatch with ColorPicker and an optional hex input. It SHALL replace duplicated color picker + hex input patterns in PageSection, StrokeSection, EffectsSection, and VariablesDialog.
+
+#### Scenario: Color input with editing
+- **WHEN** ColorInput is rendered with editable=true
+- **THEN** a swatch with picker and an editable hex input are shown
+
+#### Scenario: Color input read-only
+- **WHEN** ColorInput is rendered with editable=false (default)
+- **THEN** a swatch with picker and a read-only hex label are shown
+
+### Requirement: ColorPicker alpha slider checkerboard
+The ColorPicker alpha slider SHALL display a checkerboard background behind the transparent-to-color gradient, matching FillPicker's implementation.
+
+#### Scenario: Alpha slider visual
+- **WHEN** user opens a ColorPicker
+- **THEN** the alpha slider shows a checkerboard pattern indicating transparency
+
+### Requirement: Demo variable collections
+The demo document SHALL include three variable collections demonstrating multi-mode and alias features: Primitives (Light/Dark modes, 9 color variables), Semantic (aliases to Primitives), and Spacing (Default/Compact modes, 8 number variables). Variables SHALL be bound to demo nodes.
+
+#### Scenario: Demo loads with variables
+- **WHEN** the demo document is created
+- **THEN** three collections with variables and bindings are present in the scene graph

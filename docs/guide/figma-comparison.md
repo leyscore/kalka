@@ -6,7 +6,7 @@ Feature-by-feature comparison of Figma Design capabilities with Open Pencil's cu
 ✅ Supported — feature works end-to-end · 🟡 Partial — core behavior exists, some sub-features missing · 🔲 Not yet implemented
 :::
 
-**Coverage:** 79 of 150 Figma feature items addressed — 64 ✅ fully supported, 15 🟡 partial, 71 🔲 not yet. Last updated: 2026-03-01.
+**Coverage:** 79 of 150 Figma feature items addressed — 64 ✅ fully supported, 15 🟡 partial, 71 🔲 not yet. Last updated: 2026-03-01 (notes updated for text editing, fonts, variables).
 
 ## Interface & Navigation
 
@@ -78,10 +78,10 @@ Feature-by-feature comparison of Figma Design capabilities with Open Pencil's cu
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Text tool & inline editing | ✅ | T to create, double-click to edit, textarea overlay |
+| Text tool & inline editing | ✅ | T to create, double-click to edit, canvas-native with phantom textarea, cursor/selection/word select, drag to select |
 | Text rendering (Paragraph API) | ✅ | CanvasKit Paragraph for shaping, line-breaking, metrics |
-| Font loading (system fonts) | ✅ | Inter default + Local Font Access API for system fonts |
-| Font family & weight | ✅ | Font picker, weight selection in properties panel |
+| Font loading (system fonts) | ✅ | Inter default, font-kit in Tauri with OnceLock cache + preloading, queryLocalFonts in browser |
+| Font family & weight | ✅ | FontPicker with virtual scroll, search, CSS preview; weight selection in properties panel |
 | Font size & line height | ✅ | Editable in typography section |
 | Text alignment | 🟡 | Basic alignment; Figma has vertical alignment and auto-width/height modes |
 | Text styles | 🔲 | Reusable named text style presets |
@@ -159,7 +159,7 @@ Feature-by-feature comparison of Figma Design capabilities with Open Pencil's cu
 | Variants | 🔲 | Variant switching and property-based selection |
 | Component properties | 🔲 | Boolean, text, instance swap properties |
 | Override propagation | ✅ | Changes to main component propagate to all instances; overrides preserved |
-| Variables (color, number, string, boolean) | 🟡 | COLOR fully implemented with UI, bindings, .fig import; FLOAT/STRING/BOOLEAN types defined but no editing UI |
+| Variables (color, number, string, boolean) | 🟡 | COLOR full UI (dialog, TanStack Table, inline editing, undo/redo, demo collections); FLOAT/STRING/BOOLEAN defined but no editing UI |
 | Variable collections & modes | 🟡 | Collections, modes, activeMode switching work; no variable-driven theming UI yet |
 | Styles (color, text, effect, layout) | 🔲 | Reusable named style presets |
 | Libraries (publish, share, update) | 🔲 | Shared component/style libraries |

@@ -77,8 +77,14 @@ Components, instances, overrides, variables, collections, modes, image export.
 - Resizable left/right panels via reka-ui Splitter (persistent layout)
 - @/ import alias, shared types module (src/types.ts, src/global.d.ts)
 - Codebase lint-clean: 0 oxlint warnings, 0 tsgo type errors
-- Variables: COLOR type with collections, modes, bindings, VariablesPanel, FillSection variable picker, .fig import
+- Variables: COLOR type with collections, modes, bindings, FillSection variable picker, .fig import
+- Variables dialog: TanStack Table with resizable columns, mode columns, collection tabs with rename, search, demo collections (Primitives/Semantic/Spacing), undo/redo for all variable operations
 - Image export: PNG/JPG/WEBP with ExportSection (scale, format, live preview), ⇧⌘E shortcut, context menu
+- Canvas-native text editing: TextEditor class in core, phantom textarea, cursor/selection/word boundaries on canvas, caret blinking, selection highlights
+- System font enumeration via font-kit Rust crate, OnceLock cache, preload on startup
+- Font picker: virtual scroll (reka-ui ListboxVirtualizer), search filter, CSS font preview
+- ColorInput component extraction, ColorPicker alpha slider checkerboard fix
+- App identity: pencil icon, Cargo crate open_pencil, macOS Dock "OpenPencil"
 - Splash loader during WASM initialization
 
 **Remaining (deferred to Phase 6):**

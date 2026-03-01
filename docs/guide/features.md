@@ -31,11 +31,15 @@ Shift+A toggles auto-layout on a frame or wraps selected nodes.
 
 ## Inline Text Editing
 
-Text nodes use CanvasKit's Paragraph API for rendering with proper text shaping and line breaking. Double-click to edit inline with a textarea overlay. Supports font families, weights, sizes, and line height. System fonts are available via the Local Font Access API.
+Canvas-native text editing — no DOM textarea overlay on screen. A `TextEditor` class in `@open-pencil/core` handles cursor positioning, text selection, word boundary detection, and line navigation using the CanvasKit Paragraph API (`getGlyphPositionAtCoordinate`, `getRectsForRange`, `getLineMetrics`). A hidden phantom textarea captures keyboard input, IME composition, and clipboard events.
+
+Double-click a text node to enter edit mode. The canvas renders a blinking caret, translucent blue selection rectangles, and a blue outline around the node. Click and drag to select text, double-click a word to select it. Keyboard navigation with modifier support: <kbd>⌥</kbd><kbd>←</kbd>/<kbd>→</kbd> for word movement, <kbd>⌘</kbd><kbd>←</kbd>/<kbd>→</kbd> for line start/end, <kbd>⌥</kbd><kbd>⌫</kbd> for word delete, <kbd>⌘</kbd><kbd>⌫</kbd> for line delete. Shift extends selection. <kbd>Esc</kbd> or clicking outside commits the edit.
+
+**Font picker** with virtual scroll (reka-ui ListboxVirtualizer), search filter, and CSS font preview — each font name renders in its own typeface. In Tauri, system fonts are enumerated via Rust `font-kit` crate (`list_system_fonts`/`load_system_font` commands) with OnceLock caching for instant picker access. In browser, the Local Font Access API is used when available.
 
 ## Undo/Redo
 
-Every operation is undoable. The system uses an inverse-command pattern — before applying any change, it snapshots affected fields. The snapshot becomes the inverse. ⌘Z undoes, ⇧⌘Z redoes.
+Every operation is undoable — node creation/deletion, moves, resizes, property changes, reparenting, layout changes, and all variable operations (create/delete/rename variables, create/rename collections, color and value changes). The system uses an inverse-command pattern — before applying any change, it snapshots affected fields. The snapshot becomes the inverse. <kbd>⌘</kbd><kbd>Z</kbd> undoes, <kbd>⇧</kbd><kbd>⌘</kbd><kbd>Z</kbd> redoes.
 
 ## Snap Guides
 
@@ -63,7 +67,7 @@ Context-sensitive panel with sections:
 - **Fill** — solid/gradient/image type picker, gradient stop editor, hex input, opacity
 - **Stroke** — color, weight, opacity, cap, join, dash pattern
 - **Effects** — add/remove effects, type picker (drop shadow, inner shadow, layer blur, background blur, foreground blur), inline expanded controls (offset, blur, spread, color for shadows; blur radius for blurs), per-effect visibility toggle
-- **Typography** — font family, weight, size, alignment
+- **Typography** — font family (FontPicker with virtual scroll and search), weight, size, alignment
 - **Layout** — auto-layout controls when enabled
 - **Position** — alignment buttons, rotation, flip
 - **Export** — scale, format (PNG/JPG/WEBP), live preview, multi-export
@@ -110,7 +114,11 @@ Components and instances display always-visible purple labels with a diamond ico
 
 ## Variables
 
-Design tokens as variables with collections and modes. Currently supports COLOR type with full UI — create color variables, organize them in collections (e.g., "Brand", "Semantic"), define modes (e.g., Light/Dark), and switch the active mode. Bind variables to fill colors via the variable picker in the Fill section — bound fills display a purple badge with the variable name and a detach button. Variables support alias chains (one variable references another) with cycle detection. Imported from .fig files. FLOAT, STRING, and BOOLEAN types are defined but don't have editing UI yet.
+Design tokens as variables with collections and modes. Open the variables dialog from the Variables section in page properties (settings icon). The dialog uses TanStack Table (`@tanstack/vue-table`) with resizable columns — Name | Mode 1 | Mode 2 | ... — matching Figma's table layout. Collection tabs with double-click to rename, search bar, and "+ Create variable" button. Color variables show inline ColorInput with picker.
+
+Supports COLOR type with full UI, FLOAT/STRING/BOOLEAN types defined. Organize variables in collections (e.g., "Primitives", "Semantic"), define modes (e.g., Light/Dark), switch active mode. Bind variables to fill colors via the variable picker in Fill — bound fills show a purple badge with the variable name and a detach button. Alias chains (one variable references another) with cycle detection. All variable operations are undoable: create/delete variable, create collection, rename, color change.
+
+The demo document includes three collections: Primitives (9 colors with Light/Dark modes), Semantic (aliases to Primitives), and Spacing (8 number tokens with Default/Compact modes). Variables are bound to demo nodes for live preview.
 
 ## Image Export
 
