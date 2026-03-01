@@ -30,7 +30,17 @@ async function getTauriFonts(): Promise<TauriFontFamily[]> {
 }
 
 export function preloadFonts(): void {
-  if (isTauri()) getTauriFonts()
+  if (isTauri()) {
+    getTauriFonts().then(registerFontFaces)
+  }
+}
+
+function registerFontFaces(fonts: TauriFontFamily[]): void {
+  if (typeof document === 'undefined') return
+  for (const { family } of fonts) {
+    const face = new FontFace(family, `local("${family}")`)
+    document.fonts.add(face)
+  }
 }
 
 export async function listFamilies(): Promise<string[]> {

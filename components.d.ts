@@ -20,6 +20,7 @@ declare module 'vue' {
     ExportSection: typeof import('./src/components/properties/ExportSection.vue')['default']
     FillPicker: typeof import('./src/components/FillPicker.vue')['default']
     FillSection: typeof import('./src/components/properties/FillSection.vue')['default']
+    FontPicker: typeof import('./src/components/FontPicker.vue')['default']
     IconLucideALargeSmall: typeof import('~icons/lucide/a-large-small')['default']
     IconLucideAlignCenter: typeof import('~icons/lucide/align-center')['default']
     IconLucideAlignHorizontalJustifyCenter: typeof import('~icons/lucide/align-horizontal-justify-center')['default']
