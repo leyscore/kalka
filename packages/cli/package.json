@@ -4,7 +4,7 @@
   "license": "MIT",
   "type": "module",
   "bin": {
-    "open-pencil": "./src/index.ts"
+    "openpencil": "./src/index.ts"
   },
   "files": ["src"],
   "repository": {
