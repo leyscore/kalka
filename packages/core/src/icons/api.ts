@@ -1,20 +1,26 @@
+import { ofetch } from 'ofetch'
+
 import type { IconifyResponse, IconSearchResult } from './types'
 
 const ICONIFY_API = 'https://api.iconify.design'
 const FETCH_TIMEOUT_MS = 10_000
 
-function fetchWithTimeout(url: string): Promise<Response> {
-  return fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
-}
+const iconifyApi = ofetch.create({
+  baseURL: ICONIFY_API,
+  retry: 0,
+  timeout: FETCH_TIMEOUT_MS
+})
 
 export async function fetchIconifyCollection(
   prefix: string,
   iconNames: string[]
 ): Promise<IconifyResponse> {
-  const url = `${ICONIFY_API}/${prefix}.json?icons=${iconNames.map(encodeURIComponent).join(',')}`
-  const response = await fetchWithTimeout(url)
+  const response = await iconifyApi.raw<IconifyResponse>(`/${prefix}.json`, {
+    ignoreResponseError: true,
+    query: { icons: iconNames.join(',') }
+  })
   if (!response.ok) throw new Error(`Iconify API error: ${response.status} for prefix "${prefix}"`)
-  return (await response.json()) as IconifyResponse
+  return response._data as IconifyResponse
 }
 
 export async function searchIconify(
@@ -24,18 +30,17 @@ export async function searchIconify(
     prefix?: string
   }
 ): Promise<IconSearchResult> {
-  const params = new URLSearchParams({ query })
-  if (options?.limit) params.set('limit', String(options.limit))
-  if (options?.prefix) params.set('prefix', options.prefix)
-
-  const response = await fetchWithTimeout(`${ICONIFY_API}/search?${params}`)
+  const response = await iconifyApi.raw<IconSearchResult>('/search', {
+    ignoreResponseError: true,
+    query: { query, limit: options?.limit, prefix: options?.prefix }
+  })
   if (!response.ok) throw new Error(`Iconify search error: ${response.status}`)
-  const data = await response.json()
-  const icons: string[] = data.icons ?? []
+
+  const data = response._data
   const limit = options?.limit ?? 5
   return {
-    icons: icons.slice(0, limit),
-    total: data.total ?? 0,
-    collections: data.collections ?? {}
+    icons: data?.icons.slice(0, limit) ?? [],
+    total: data?.total ?? 0,
+    collections: data?.collections ?? {}
   }
 }
