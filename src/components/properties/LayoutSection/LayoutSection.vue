@@ -6,7 +6,7 @@ import ClipContentControl from '@/components/properties/LayoutSection/ClipConten
 import FlexControls from '@/components/properties/LayoutSection/FlexControls.vue'
 import GridControls from '@/components/properties/LayoutSection/GridControls.vue'
 import PaddingControls from '@/components/properties/LayoutSection/PaddingControls.vue'
-import SizeControls from '@/components/properties/LayoutSection/SizeControls.vue'
+import SizeControls from '@/components/properties/LayoutSection/size/SizeControls.vue'
 import PanelSection from '@/components/ui/panel/PanelSection.vue'
 
 const { panels } = useI18n()
@@ -17,7 +17,7 @@ const CONTAINER_TYPES = ['FRAME', 'COMPONENT', 'COMPONENT_SET', 'INSTANCE']
 <template>
   <LayoutControlsRoot v-slot="ctx">
     <template v-if="ctx.node">
-      <PanelSection :label="panels.layout" data-test-id="layout-section">
+      <PanelSection :label="panels.layout">
         <SizeControls />
       </PanelSection>
 

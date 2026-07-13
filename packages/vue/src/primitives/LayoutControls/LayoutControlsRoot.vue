@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { useLayout } from '#vue/controls/layout/use'
-import { provideLayoutControls } from '#vue/primitives/LayoutControls/context'
 import { proxyRefs } from 'vue'
 
+import { useLayout } from '#vue/controls/layout/use'
+import { provideLayoutControls } from '#vue/primitives/LayoutControls/context'
+import type { LayoutControlsRootSlots } from '#vue/primitives/LayoutControls/types'
+
 const ctx = useLayout()
+defineSlots<LayoutControlsRootSlots>()
 const actions = {
   updateProp: ctx.updateProp,
   updateSizeLimit: ctx.updateSizeLimit,
@@ -12,8 +15,9 @@ const actions = {
   addSizeLimit: ctx.addSizeLimit,
   removeSizeLimit: ctx.removeSizeLimit,
   commitProp: ctx.commitProp,
-  setWidthSizing: ctx.setWidthSizing,
-  setHeightSizing: ctx.setHeightSizing,
+  setAxisSizing: ctx.setAxisSizing,
+  updateAxisSize: ctx.updateAxisSize,
+  commitAxisSize: ctx.commitAxisSize,
   setHorizontalPadding: ctx.setHorizontalPadding,
   commitHorizontalPadding: ctx.commitHorizontalPadding,
   setVerticalPadding: ctx.setVerticalPadding,

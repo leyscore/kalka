@@ -73,7 +73,7 @@ export type { TestId } from '#vue/testing/test-id'
 /** Property-panel composables. */
 export { usePosition } from '#vue/controls/position/use'
 export { useLayout } from '#vue/controls/layout/use'
-export type { SizeLimitProp } from '#vue/controls/layout/helpers'
+export type { LayoutAxis, SizeLimitProp } from '#vue/controls/layout/helpers'
 export { useAppearance } from '#vue/controls/appearance/use'
 export { useMask } from '#vue/controls/mask/use'
 export { useTypography } from '#vue/controls/typography/use'
@@ -137,7 +137,11 @@ export {
 export { LayerTreeRoot, LayerTreeItem, useLayerTree } from '#vue/primitives/LayerTree'
 export type { LayerDragInstruction, LayerTreeContext, LayerNode } from '#vue/primitives/LayerTree'
 export { LayoutControlsRoot, useLayoutControlsContext } from '#vue/primitives/LayoutControls'
-export type { LayoutControlsContext } from '#vue/primitives/LayoutControls'
+export type {
+  LayoutControlsContext,
+  LayoutControlsRootSlotProps,
+  LayoutControlsRootSlots
+} from '#vue/primitives/LayoutControls'
 export { AppearanceControlsRoot } from '#vue/primitives/AppearanceControls'
 export type {
   AppearanceControlsActions,

@@ -19,6 +19,7 @@
 - Add headless PropertySection, SegmentedControl, and typed PropertyList anatomy, with controlled list events and an undo-aware OpenPencil adapter.
 - Refine variable-bound number fields with a quiet identity pill, one picker affordance, an accessible variable combobox, and non-destructive focus behavior.
 - Redesign Position and Appearance controls with aligned panel grids, SDK-owned independent-corner state, and compact type-icon selection headers.
+- Rebuild Layout size fields with shared variable binding, inline sizing modes, semantic field anatomy, and one-step Hug/Fill-to-Fixed editing.
 - Upgrade Vue SDK documentation with shared Tailwind demos, source-generated component API tables, and type-aware Twoslash examples in VitePress.
 - Add desktop image drag-and-drop into the Tauri app window.
 - Add open-document discovery for live CLI and MCP automation so agents can target the intended document and page.

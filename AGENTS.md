@@ -258,6 +258,7 @@ Self-review checklist:
 - `computeAllLayouts()` must be called after demo creation and after opening .fig files
 - Yoga WASM handles flexbox; CSS Grid blocked on upstream (facebook/yoga#1893)
 - Auto-layout creation (Shift+A) must recompute layout immediately to update selection bounds
+- Editing a Hug/Fill width or height switches only that axis to Fixed on the first value mutation; focus stays non-destructive, and mode plus value changes belong to one undo transaction
 
 ## UI
 

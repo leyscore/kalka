@@ -180,16 +180,15 @@ test('fill color can create and bind a variable', async () => {
 test('width can create, bind, and detach a number variable', async () => {
   await editor.canvas.clearCanvas()
   await editor.canvas.drawRect(200, 200, 80, 80)
-  await editor.page.getByTestId('layout-height-input').click()
+  const widthField = propertyField(editor.page, 'width')
 
-  await editor.page.getByTestId('layout-width-apply-variable').click()
-  await expect(editor.page.getByText('Create number variable from 80')).toBeVisible()
-  await editor.page.getByTestId('layout-width-apply-variable-create').click()
+  await widthField.getByLabel('Apply variable').click()
+  await editor.page.getByText('Create number variable from 80').click()
   await editor.page.getByPlaceholder('Variable name').fill('Card/width')
-  await editor.page.getByTestId('layout-width-apply-variable-create').click()
+  await editor.page.getByRole('button', { name: 'Create', exact: true }).click()
   await editor.canvas.waitForRender()
 
-  await expect(editor.page.getByTestId('layout-width-unbind-variable')).toBeVisible()
+  await expect(widthField.getByText('Card/width')).toBeVisible()
   const boundVariable = await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
     if (!store) throw new Error('OpenPencil store not initialized')
@@ -201,14 +200,13 @@ test('width can create, bind, and detach a number variable', async () => {
   })
   expect(boundVariable).toBe('Card/width')
 
-  const widthField = editor.page.getByTestId('layout-width-input')
-  await widthField.click()
+  await widthField.focus()
   const widthInput = widthField.getByRole('spinbutton')
   await widthInput.fill('120')
   await widthInput.press('Enter')
   await editor.canvas.waitForRender()
 
-  await expect(editor.page.getByTestId('layout-width-unbind-variable')).toBeHidden()
+  await expect(widthField.getByText('Card/width')).toHaveCount(0)
   const directWidth = await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
     if (!store) throw new Error('OpenPencil store not initialized')

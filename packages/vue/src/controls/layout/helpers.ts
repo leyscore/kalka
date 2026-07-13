@@ -23,6 +23,7 @@ type LayoutPanelStrings = {
   sizingFill: string
 }
 
+export type LayoutAxis = 'width' | 'height'
 export type SizeLimitProp = 'minWidth' | 'maxWidth' | 'minHeight' | 'maxHeight'
 
 type ValueRef<T> = { readonly value: T }
@@ -174,15 +175,42 @@ export function createPaddingActions(editor: Editor, node: ComputedRef<SceneNode
   }
 }
 
+export function axisSizingPatchForNode(
+  node: SceneNode,
+  axis: LayoutAxis,
+  sizing: LayoutSizing,
+  isInAutoLayout: boolean
+): Partial<SceneNode> {
+  const patch: Partial<SceneNode> = {}
+  const isFlex = node.layoutMode === 'HORIZONTAL' || node.layoutMode === 'VERTICAL'
+  if (isFlex) {
+    const primary =
+      (axis === 'width' && node.layoutMode === 'HORIZONTAL') ||
+      (axis === 'height' && node.layoutMode === 'VERTICAL')
+    patch[primary ? 'primaryAxisSizing' : 'counterAxisSizing'] = sizing
+  } else if (sizing === 'HUG' && node.childIds.length > 0) {
+    patch[axis === 'width' ? 'counterAxisSizing' : 'primaryAxisSizing'] = 'HUG'
+    if (isInAutoLayout) {
+      if (axis === 'width') patch.layoutGrow = 0
+      else patch.layoutAlignSelf = 'AUTO'
+    }
+  } else if (axis === 'width') {
+    if (node.counterAxisSizing === 'HUG') patch.counterAxisSizing = 'FIXED'
+    if (isInAutoLayout) patch.layoutGrow = sizing === 'FILL' ? 1 : 0
+  } else {
+    if (node.primaryAxisSizing === 'HUG') patch.primaryAxisSizing = 'FIXED'
+    if (isInAutoLayout) patch.layoutAlignSelf = sizing === 'FILL' ? 'STRETCH' : 'AUTO'
+  }
+  return patch
+}
+
 export function createLayoutActions({
   editor,
   node,
-  isFlex,
   isInAutoLayout
 }: {
   editor: Editor
   node: ComputedRef<SceneNode | null>
-  isFlex: ComputedRef<boolean>
   isInAutoLayout: ComputedRef<boolean>
 }) {
   function updateProp(key: string, value: number | string) {
@@ -228,33 +256,30 @@ export function createLayoutActions({
     }
   }
 
-  function setWidthSizing(sizing: LayoutSizing) {
+  function setAxisSizing(axis: LayoutAxis, sizing: LayoutSizing) {
     const n = node.value
     if (!n) return
-    if (isFlex.value) {
-      const key = n.layoutMode === 'HORIZONTAL' ? 'primaryAxisSizing' : 'counterAxisSizing'
-      updateProp(key, sizing)
-    } else if (sizing === 'HUG' && n.childIds.length > 0) {
-      updateProp('counterAxisSizing', 'HUG')
-    } else {
-      if (n.counterAxisSizing === 'HUG') updateProp('counterAxisSizing', 'FIXED')
-      if (isInAutoLayout.value) updateProp('layoutGrow', sizing === 'FILL' ? 1 : 0)
-    }
+    editor.updateNodeWithUndo(
+      n.id,
+      axisSizingPatchForNode(n, axis, sizing, isInAutoLayout.value),
+      `Set ${axis} sizing`
+    )
   }
 
-  function setHeightSizing(sizing: LayoutSizing) {
+  function updateAxisSize(axis: LayoutAxis, value: number) {
     const n = node.value
     if (!n) return
-    if (isFlex.value) {
-      const key = n.layoutMode === 'VERTICAL' ? 'primaryAxisSizing' : 'counterAxisSizing'
-      updateProp(key, sizing)
-    } else if (sizing === 'HUG' && n.childIds.length > 0) {
-      updateProp('primaryAxisSizing', 'HUG')
-    } else {
-      if (n.primaryAxisSizing === 'HUG') updateProp('primaryAxisSizing', 'FIXED')
-      if (isInAutoLayout.value)
-        updateProp('layoutAlignSelf', sizing === 'FILL' ? 'STRETCH' : 'AUTO')
-    }
+    const sizing =
+      axis === 'width'
+        ? widthSizingForNode(n, isInAutoLayout.value)
+        : heightSizingForNode(n, isInAutoLayout.value)
+    if (sizing !== 'FIXED') setAxisSizing(axis, 'FIXED')
+    editor.updateNode(n.id, { [axis]: value })
+  }
+
+  function commitAxisSize(axis: LayoutAxis, _value: number, previous: number) {
+    const n = node.value
+    if (n) editor.commitNodeUpdate(n.id, { [axis]: previous }, `Change ${axis}`)
   }
 
   function setAlignment(primary: LayoutAlign, counter: LayoutCounterAlign) {
@@ -293,8 +318,9 @@ export function createLayoutActions({
     addSizeLimit,
     removeSizeLimit,
     commitProp,
-    setWidthSizing,
-    setHeightSizing,
+    setAxisSizing,
+    updateAxisSize,
+    commitAxisSize,
     setAlignment,
     setGapAuto,
     setLayoutDirection
