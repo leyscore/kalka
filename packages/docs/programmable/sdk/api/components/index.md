@@ -37,7 +37,10 @@ description: Component reference for headless Vue primitives in @open-pencil/vue
 <SdkCardGroup>
   <SdkCard title="ColorPickerRoot" to="/programmable/sdk/api/components/color-picker-root" description="Popover-based color picker primitive." />
   <SdkCard title="ColorInputRoot" to="/programmable/sdk/api/components/color-input-root" description="Headless color input helper." />
-  <SdkCard title="FillPickerRoot" to="/programmable/sdk/api/components/fill-picker-root" description="Popover-based fill picker primitive." />
+  <SdkCard title="ChannelSlider" to="/programmable/sdk/api/components/channel-slider" description="Accessible scalar slider for OkHCL channels." />
+  <SdkCard title="FillRoot" to="/programmable/sdk/api/components/fill-root" description="Fill category state and conversion actions." />
+  <SdkCard title="FillSwatch" to="/programmable/sdk/api/components/fill-swatch" description="Binding-aware semantic fill preview." />
+  <SdkCard title="FillPickerRoot" to="/programmable/sdk/api/components/fill-picker-root" description="Deprecated popover-based fill picker compatibility primitive." />
   <SdkCard title="FontPickerRoot" to="/programmable/sdk/api/components/font-picker-root" description="Searchable font picker primitive." />
   <SdkCard title="GradientEditorRoot" to="/programmable/sdk/api/components/gradient-editor-root" description="Root primitive for gradient editing." />
   <SdkCard title="GradientEditorBar" to="/programmable/sdk/api/components/gradient-editor-bar" description="Draggable gradient bar primitive." />

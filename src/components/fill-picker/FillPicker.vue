@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { twMerge } from 'tailwind-merge'
+import { PopoverContent, PopoverPortal, PopoverRoot, PopoverTrigger } from 'reka-ui'
 
-import { applySolidFillColor, FillPickerRoot, useI18n } from '@open-pencil/vue'
+import { applySolidFillColor, FillRoot, useI18n } from '@open-pencil/vue'
 
-import GradientEditor from './GradientEditor.vue'
 import ColorPickerPanel from '@/components/color-picker-panel/ColorPickerPanel.vue'
-import ImageFillPicker from './ImageFillPicker.vue'
+import GradientEditor from '@/components/fill-picker/GradientEditor.vue'
+import ImageFillPicker from '@/components/fill-picker/ImageFillPicker.vue'
+import FillSwatch from '@/components/ui/FillSwatch.vue'
 import Tip from '@/components/ui/Tip.vue'
 import { usePopoverUI } from '@/components/ui/popover'
 
@@ -37,70 +39,76 @@ const { panels } = useI18n()
 </script>
 
 <template>
-  <FillPickerRoot
-    :fill="fill"
-    :ui="{
-      content: cls.content,
-      swatch: 'size-5 shrink-0 cursor-pointer rounded border border-border p-0'
-    }"
-    @update="emit('update', $event)"
-  >
-    <template #trigger="{ style }">
-      <button
-        data-test-id="fill-picker-swatch"
-        class="size-5 shrink-0 cursor-pointer rounded border border-border p-0"
-        :style="{ ...style, background: swatchBackground ?? style.background }"
-      />
-    </template>
-    <template #default="{ fill: currentFill, category, toSolid, toGradient, toImage }">
-      <div class="mb-2 flex items-center gap-0.5">
-        <Tip :label="panels.solid">
-          <button
-            :class="tabClass(category === 'SOLID')"
-            data-test-id="fill-picker-tab-solid"
-            @click="toSolid"
-          >
-            <icon-lucide-square class="size-3.5" />
-          </button>
-        </Tip>
-        <Tip :label="panels.linearGradient">
-          <button
-            :class="tabClass(category === 'GRADIENT')"
-            data-test-id="fill-picker-tab-gradient"
-            @click="toGradient"
-          >
-            <icon-lucide-blend class="size-3.5" />
-          </button>
-        </Tip>
-        <Tip :label="panels.image">
-          <button
-            :class="tabClass(category === 'IMAGE')"
-            data-test-id="fill-picker-tab-image"
-            @click="toImage"
-          >
-            <icon-lucide-image class="size-3.5" />
-          </button>
-        </Tip>
-      </div>
+  <FillRoot :fill="fill" @update="emit('update', $event)" v-slot="root">
+    <PopoverRoot>
+      <PopoverTrigger as-child>
+        <button
+          type="button"
+          :aria-label="panels.fill"
+          data-test-id="fill-picker-swatch"
+          class="size-5 shrink-0 cursor-pointer rounded border-0 bg-transparent p-0"
+        >
+          <FillSwatch :fill="fill" class="size-full" v-slot="swatch">
+            <span
+              class="pointer-events-none absolute inset-0"
+              :style="{ background: swatchBackground ?? swatch.background }"
+            />
+          </FillSwatch>
+        </button>
+      </PopoverTrigger>
 
-      <ColorPickerPanel
-        v-if="category === 'SOLID'"
-        :color="currentFill.color"
-        :okhcl="okhcl"
-        @update="emit('update', applySolidFillColor(currentFill, $event))"
-      />
+      <PopoverPortal>
+        <PopoverContent :class="cls.content" :side-offset="4" side="left">
+          <div class="mb-2 flex items-center gap-0.5">
+            <Tip :label="panels.solid">
+              <button
+                :class="tabClass(root.category === 'SOLID')"
+                data-test-id="fill-picker-tab-solid"
+                @click="root.actions.toSolid"
+              >
+                <icon-lucide-square class="size-3.5" />
+              </button>
+            </Tip>
+            <Tip :label="panels.linearGradient">
+              <button
+                :class="tabClass(root.category === 'GRADIENT')"
+                data-test-id="fill-picker-tab-gradient"
+                @click="root.actions.toGradient"
+              >
+                <icon-lucide-blend class="size-3.5" />
+              </button>
+            </Tip>
+            <Tip :label="panels.image">
+              <button
+                :class="tabClass(root.category === 'IMAGE')"
+                data-test-id="fill-picker-tab-image"
+                @click="root.actions.toImage"
+              >
+                <icon-lucide-image class="size-3.5" />
+              </button>
+            </Tip>
+          </div>
 
-      <GradientEditor
-        v-if="category === 'GRADIENT'"
-        :fill="currentFill"
-        @update="emit('update', $event)"
-      />
+          <ColorPickerPanel
+            v-if="root.category === 'SOLID'"
+            :color="root.fill.color"
+            :okhcl="okhcl"
+            @update="emit('update', applySolidFillColor(root.fill, $event))"
+          />
 
-      <ImageFillPicker
-        v-if="category === 'IMAGE'"
-        :fill="currentFill"
-        @update="emit('update', $event)"
-      />
-    </template>
-  </FillPickerRoot>
+          <GradientEditor
+            v-if="root.category === 'GRADIENT'"
+            :fill="root.fill"
+            @update="emit('update', $event)"
+          />
+
+          <ImageFillPicker
+            v-if="root.category === 'IMAGE'"
+            :fill="root.fill"
+            @update="emit('update', $event)"
+          />
+        </PopoverContent>
+      </PopoverPortal>
+    </PopoverRoot>
+  </FillRoot>
 </template>

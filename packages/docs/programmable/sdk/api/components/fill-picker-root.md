@@ -5,7 +5,12 @@ description: Headless popover-based fill picker primitive.
 
 # FillPickerRoot
 
-`FillPickerRoot` is a headless popover-based fill picker for solid, gradient, and image fills.
+::: warning Deprecated
+Compose [FillRoot](./fill-root), [FillSwatch](./fill-swatch), and your application's popover instead.
+`FillPickerRoot` remains temporarily available for migration compatibility.
+:::
+
+`FillPickerRoot` is the legacy popover-based fill picker for solid, gradient, and image fills.
 
 ## Props
 

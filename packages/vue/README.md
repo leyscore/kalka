@@ -104,6 +104,8 @@ expansion heuristics. `PropertyListRoot` is controlled and
 editor-agnostic; OpenPencil panels connect it to selection and undo through
 `useEditorPropertyList()`. `useColorModel()` provides precise scene-color/Reka bridges, reactive
 RGB/HSL/HSB/OkHCL channels, extensible format state, and shared slider presentation data.
+`FillRoot` and `FillSwatch` separate fill behavior and binding-aware previews from popover
+composition; `ChannelSlider` provides accessible scalar OkHCL controls until Reka supports them.
 
 ## Public API tiers
 
@@ -167,6 +169,8 @@ These are the main APIs most SDK consumers should start with.
 - `BindableValueRoot`
 - `BindableValueTrigger`
 - `BindableValuePicker`
+- `FillRoot` / `FillSwatch`
+- `ChannelSliderRoot` / `ChannelSliderTrack` / `ChannelSliderThumb`
 
 ### Advanced API
 
@@ -179,7 +183,8 @@ These exports are intentionally public, but they are lower-level or more special
 - `provideBindingProvider()`
 - `useBindingProvider()`
 - `useNumberBindingProvider()`
-- `useFillPicker()`
+- `useFill()`
+- `useFillPicker()` (deprecated migration wrapper)
 - `useGradientStops()`
 - `useFontPicker()`
 - `useOkHCL()`

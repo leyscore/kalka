@@ -115,6 +115,13 @@ export { useVariablesEditor } from '#vue/variables/editor/use'
 export { useVariablesTable } from '#vue/variables/table/use'
 export { usePageList } from '#vue/primitives/PageList/usePageList'
 export { useFillPicker } from '#vue/primitives/FillPicker/useFillPicker'
+export {
+  fillCategory,
+  fillIsTransparent,
+  fillSwatchBackground,
+  useFill
+} from '#vue/primitives/Fill'
+export type { FillActions, FillCategory } from '#vue/primitives/Fill'
 export { useGradientStops } from '#vue/primitives/GradientEditor/useGradientStops'
 export { useFontPicker } from '#vue/primitives/FontPicker/useFontPicker'
 
@@ -122,6 +129,26 @@ export { useFontPicker } from '#vue/primitives/FontPicker/useFontPicker'
 export { CanvasRoot, CanvasSurface, useCanvasContext } from '#vue/canvas'
 export type { CanvasContext } from '#vue/canvas'
 export { ColorInputRoot, ColorPickerRoot } from '#vue/primitives/ColorPicker'
+export {
+  ChannelSliderRoot,
+  ChannelSliderThumb,
+  ChannelSliderTrack
+} from '#vue/primitives/ChannelSlider'
+export type {
+  ChannelSliderOrientation,
+  ChannelSliderPartProps,
+  ChannelSliderRootProps,
+  ChannelSliderRootSlotProps,
+  ChannelSliderThumbSlotProps
+} from '#vue/primitives/ChannelSlider'
+export { FillRoot, FillSwatch } from '#vue/primitives/Fill'
+export type {
+  FillRootSlotProps,
+  FillRootSlots,
+  FillSwatchProps,
+  FillSwatchSlotProps,
+  FillSwatchSlots
+} from '#vue/primitives/Fill'
 export { FillPickerRoot } from '#vue/primitives/FillPicker'
 export { FontPickerRoot } from '#vue/primitives/FontPicker'
 export type { FontFamilyOption, FontPickerUI } from '#vue/primitives/FontPicker'
@@ -129,6 +156,12 @@ export {
   GradientEditorRoot,
   GradientEditorBar,
   GradientEditorStop
+} from '#vue/primitives/GradientEditor'
+export type {
+  GradientEditorStopActions,
+  GradientEditorStopProps,
+  GradientEditorStopSlotProps,
+  GradientEditorStopSlots
 } from '#vue/primitives/GradientEditor'
 export { LayerTreeRoot, LayerTreeItem, useLayerTree } from '#vue/primitives/LayerTree'
 export type { LayerDragInstruction, LayerTreeContext, LayerNode } from '#vue/primitives/LayerTree'
