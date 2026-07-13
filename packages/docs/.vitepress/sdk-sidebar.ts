@@ -40,6 +40,7 @@ const SDK_COMPOSABLE_PAGES = [
   { text: 'usePosition', slug: 'use-position' },
   { text: 'useLayout', slug: 'use-layout' },
   { text: 'useAppearance', slug: 'use-appearance' },
+  { text: 'useColorModel', slug: 'use-color-model', canonical: true },
   { text: 'useTypography', slug: 'use-typography' },
   { text: 'useExport', slug: 'use-export' },
   { text: 'useFillControls', slug: 'use-fill-controls' },
@@ -101,7 +102,7 @@ export const sdkSidebar = (prefix: string): DefaultTheme.SidebarItem[] => [
               { text: 'Overview', link: `${prefix}/programmable/sdk/api/composables/` },
               ...SDK_COMPOSABLE_PAGES.map((page) => ({
                 text: page.text,
-                link: `${prefix}/programmable/sdk/api/composables/${page.slug}`
+                link: `${'canonical' in page ? '' : prefix}/programmable/sdk/api/composables/${page.slug}`
               }))
             ]
           },

@@ -1,5 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 
+import type { OkHCLPayload } from '@open-pencil/core/color'
+
 import { CanvasHelper } from '#tests/helpers/canvas'
 
 let page: Page
@@ -26,6 +28,22 @@ async function getSelectedFill() {
     if (!id) return null
     const node = store.graph.getNode(id)
     return node?.fills?.[0] ?? null
+  })
+}
+
+async function getSelectedFillOkHCL() {
+  return page.evaluate(() => {
+    const store = window.openPencil?.getStore?.()
+    if (!store) throw new Error('OpenPencil store not initialized')
+    const id = [...store.state.selectedIds][0]
+    if (!id) return null
+    const node = store.graph.getNode(id)
+    const entry = node?.pluginData.find(
+      (value) => value.pluginId === 'open-pencil' && value.key === 'okhcl'
+    )
+    if (!entry) return null
+    const payload = JSON.parse(entry.value) as Partial<OkHCLPayload>
+    return payload.kind === 'fill' && payload.index === 0 ? (payload.color ?? null) : null
   })
 }
 
@@ -137,4 +155,20 @@ test('hsb saturation and brightness sliders both affect fill color', async () =>
       beforeB?.color.g !== afterB?.color.g ||
       beforeB?.color.b !== afterB?.color.b
   ).toBe(true)
+})
+
+test('okhcl channels preserve intent metadata while updating the fill', async () => {
+  await openFillPicker()
+  await chooseFormat('OkHCL')
+
+  await dragSlider('color-slider-okhcl-c', 0.6)
+  const afterChroma = await getSelectedFill()
+  const chromaIntent = await getSelectedFillOkHCL()
+  expect(afterChroma).not.toBeNull()
+  expect(chromaIntent?.c).toBeGreaterThan(0)
+
+  await dragSlider('color-slider-okhcl-l', 0.75)
+  const lightnessIntent = await getSelectedFillOkHCL()
+  expect(lightnessIntent?.l).toBeCloseTo(0.75, 1)
+  expect(lightnessIntent?.c).toBeCloseTo(chromaIntent?.c ?? 0, 3)
 })

@@ -2,48 +2,28 @@ import { computed, inject, provide, proxyRefs } from 'vue'
 import type { InjectionKey, ShallowUnwrapRef } from 'vue'
 
 import type { Color } from '@open-pencil/scene-graph/primitives'
-import {
-  createColorPickerModel,
-  createOkHCLSliderGradientModel,
-  createOkHCLSliderPreviewModel,
-  createSliderGradientModel,
-  createSliderPreviewModel,
-  rekaToAppColor,
-  updateAlpha,
-  updateHSBChannel,
-  updateHSLChannel,
-  updateHue,
-  updateRGBChannel,
-  useI18n
-} from '@open-pencil/vue'
-import type { OkHCLControls } from '@open-pencil/vue'
+import { useColorModel, useI18n } from '@open-pencil/vue'
+import type { ColorFieldFormat, OkHCLControls } from '@open-pencil/vue'
 
-type ColorPanelProps = {
+interface ColorPanelProps {
   color: Color
   okhcl?: OkHCLControls | null
 }
 
 type ColorPanelEmit = (event: 'update', color: Color) => void
 
-type RekaColor = ReturnType<typeof createColorPickerModel>['rekaColor']
-
 function createColorPickerPanelContext(props: ColorPanelProps, emit: ColorPanelEmit) {
   const { panels } = useI18n()
   const color = computed(() => props.color)
   const okhcl = computed(() => props.okhcl ?? null)
-  const pickerModel = computed(() => createColorPickerModel(color.value))
-  const rekaColor = computed(() => pickerModel.value.rekaColor)
-  const hslColor = computed(() => pickerModel.value.hsl)
-  const hsbColor = computed(() => pickerModel.value.hsb)
-  const rgbColor = computed(() => pickerModel.value.rgb)
-  const sliderPreview = computed(() => createSliderPreviewModel(pickerModel.value))
-  const sliderGradient = computed(() => createSliderGradientModel(pickerModel.value))
-  const okhclSliderPreview = computed(() =>
-    okhcl.value?.okhcl ? createOkHCLSliderPreviewModel(okhcl.value.okhcl) : null
-  )
-  const okhclSliderGradient = computed(() =>
-    okhcl.value?.okhcl ? createOkHCLSliderGradientModel(okhcl.value.okhcl) : null
-  )
+  const colorModel = useColorModel({
+    color,
+    okhcl: () => okhcl.value?.okhcl,
+    format: () => okhcl.value?.fieldFormat,
+    onUpdate: (nextColor) => emit('update', nextColor),
+    onUpdateOkHCL: (patch) => okhcl.value?.updateOkHCL(patch),
+    onFormatChange: (format) => okhcl.value?.setFieldFormat(format)
+  })
   const fieldOptions = computed(
     () =>
       okhcl.value?.fieldOptions ?? [
@@ -52,69 +32,35 @@ function createColorPickerPanelContext(props: ColorPanelProps, emit: ColorPanelE
         { value: 'hsb', label: panels.value.colorFormatHsb }
       ]
   )
-  const fieldFormat = computed(() => okhcl.value?.fieldFormat ?? 'rgb')
-  const isOkHCLFormat = computed(() => fieldFormat.value === 'okhcl' && okhcl.value)
-
-  function updateColor(nextColor: Color) {
-    emit('update', nextColor)
-  }
-
-  function onRekaColorUpdate(colorValue: RekaColor) {
-    updateColor(rekaToAppColor(colorValue))
-  }
+  const isOkHCLFormat = computed(() => colorModel.format.value === 'okhcl' && okhcl.value)
 
   function setFieldFormat(value: string) {
-    okhcl.value?.setFieldFormat(value as NonNullable<OkHCLControls>['fieldFormat'])
-  }
-
-  function updateRGBAHue(value: number) {
-    updateColor(updateHue(pickerModel.value, value))
-  }
-
-  function updateRGBAAlpha(value: number) {
-    updateColor(updateAlpha(color.value, value))
-  }
-
-  function updateRGBChannelValue(channel: 'r' | 'g' | 'b', value: number) {
-    updateColor(updateRGBChannel(color.value, channel, value))
-  }
-
-  function updateHSLChannelValue(channel: 'h' | 's' | 'l', value: number) {
-    updateColor(updateHSLChannel(pickerModel.value, channel, value))
-  }
-
-  function updateHSBChannelValue(channel: 'h' | 's' | 'b', value: number) {
-    updateColor(updateHSBChannel(pickerModel.value, channel, value))
-  }
-
-  function updateOkHCLChannel(channel: 'h' | 'c' | 'l' | 'a', value: number) {
-    okhcl.value?.updateOkHCL({ [channel]: value })
+    colorModel.setFormat(value as ColorFieldFormat)
   }
 
   return {
     panels,
     color,
     okhcl,
-    pickerModel,
-    rekaColor,
-    hslColor,
-    hsbColor,
-    rgbColor,
-    sliderPreview,
-    sliderGradient,
-    okhclSliderPreview,
-    okhclSliderGradient,
+    rekaColor: colorModel.rekaColor,
+    hslColor: colorModel.hsl,
+    hsbColor: colorModel.hsb,
+    rgbColor: colorModel.rgb,
+    sliderPreview: colorModel.sliderPreview,
+    sliderGradient: colorModel.sliderGradient,
+    okhclSliderPreview: colorModel.okhclSliderPreview,
+    okhclSliderGradient: colorModel.okhclSliderGradient,
     fieldOptions,
-    fieldFormat,
+    fieldFormat: colorModel.format,
     isOkHCLFormat,
-    onRekaColorUpdate,
+    onRekaColorUpdate: colorModel.updateFromReka,
     setFieldFormat,
-    updateRGBAHue,
-    updateRGBAAlpha,
-    updateRGBChannelValue,
-    updateHSLChannelValue,
-    updateHSBChannelValue,
-    updateOkHCLChannel
+    updateRGBAHue: colorModel.updateHue,
+    updateRGBAAlpha: colorModel.updateAlpha,
+    updateRGBChannelValue: colorModel.updateRGBChannel,
+    updateHSLChannelValue: colorModel.updateHSLChannel,
+    updateHSBChannelValue: colorModel.updateHSBChannel,
+    updateOkHCLChannel: colorModel.updateOkHCLChannel
   }
 }
 

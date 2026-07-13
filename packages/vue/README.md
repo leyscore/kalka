@@ -102,7 +102,8 @@ dimension can switch that axis to Fixed inside the same provider transaction. `A
 exposes selection-derived independent-corner presentation state so consumers do not need parallel
 expansion heuristics. `PropertyListRoot` is controlled and
 editor-agnostic; OpenPencil panels connect it to selection and undo through
-`useEditorPropertyList()`.
+`useEditorPropertyList()`. `useColorModel()` provides precise scene-color/Reka bridges, reactive
+RGB/HSL/HSB/OkHCL channels, extensible format state, and shared slider presentation data.
 
 ## Public API tiers
 
@@ -130,6 +131,7 @@ These are the main APIs most SDK consumers should start with.
 - `usePosition()`
 - `useLayout()`
 - `useAppearance()`
+- `useColorModel()`
 - `useMask()`
 - `useTypography()`
 - `useExport()`

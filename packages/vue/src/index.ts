@@ -91,6 +91,21 @@ export type {
 } from '#vue/controls/variable-binding/use'
 export { useEffectsControls } from '#vue/controls/effects/use'
 export { useStrokeControls } from '#vue/controls/stroke/use'
+export {
+  applySolidFillColor,
+  applySolidStrokeColor,
+  BUILT_IN_COLOR_FORMATS,
+  fromPercent,
+  toPercent,
+  useColorModel
+} from '#vue/controls/color-model'
+export type {
+  BuiltInColorFormat,
+  ColorFieldFormat,
+  ColorFieldOption,
+  OkHCLControls,
+  UseColorModelOptions
+} from '#vue/controls/color-model'
 export { useOkHCL } from '#vue/controls/okhcl/use'
 
 /** Variables, page navigation, and picker helpers. */
@@ -106,26 +121,7 @@ export { useFontPicker } from '#vue/primitives/FontPicker/useFontPicker'
 /** Headless structural primitives and their local contexts. */
 export { CanvasRoot, CanvasSurface, useCanvasContext } from '#vue/canvas'
 export type { CanvasContext } from '#vue/canvas'
-export {
-  ColorInputRoot,
-  ColorPickerRoot,
-  createColorPickerModel,
-  createOkHCLSliderGradientModel,
-  createOkHCLSliderPreviewModel,
-  createSliderGradientModel,
-  createSliderPreviewModel,
-  fromPercent,
-  rekaToAppColor,
-  toPercent,
-  updateAlpha,
-  updateHSBChannel,
-  updateHSLChannel,
-  updateHue,
-  updateRGBChannel,
-  applySolidFillColor,
-  applySolidStrokeColor
-} from '#vue/primitives/ColorPicker'
-export type { ColorFieldFormat, OkHCLControls } from '#vue/primitives/ColorPicker'
+export { ColorInputRoot, ColorPickerRoot } from '#vue/primitives/ColorPicker'
 export { FillPickerRoot } from '#vue/primitives/FillPicker'
 export { FontPickerRoot } from '#vue/primitives/FontPicker'
 export type { FontFamilyOption, FontPickerUI } from '#vue/primitives/FontPicker'
