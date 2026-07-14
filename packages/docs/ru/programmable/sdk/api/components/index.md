@@ -35,7 +35,6 @@ description: Справочник компонентов — headless-прими
 <SdkCardGroup>
   <SdkCard title="ColorPickerRoot" to="/programmable/sdk/api/components/color-picker-root" description="Headless-примитив пикера цвета с поповером." />
   <SdkCard title="ColorInputRoot" to="/programmable/sdk/api/components/color-input-root" description="Headless-хелпер для ввода цвета." />
-  <SdkCard title="FillPickerRoot" to="/programmable/sdk/api/components/fill-picker-root" description="Headless-примитив пикера заливки с поповером." />
   <SdkCard title="FontPickerRoot" to="/programmable/sdk/api/components/font-picker-root" description="Headless-примитив пикера шрифта с поиском." />
   <SdkCard title="GradientEditorRoot" to="/programmable/sdk/api/components/gradient-editor-root" description="Корневой примитив редактора градиента." />
   <SdkCard title="GradientEditorBar" to="/programmable/sdk/api/components/gradient-editor-bar" description="Перетаскиваемый примитив полосы градиента." />

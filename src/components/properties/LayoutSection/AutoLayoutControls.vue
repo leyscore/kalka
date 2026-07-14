@@ -1,27 +1,27 @@
 <script setup lang="ts">
-import IconButton from '@/components/ui/IconButton.vue'
-import PanelRow from '@/components/ui/panel/PanelRow.vue'
+import { computed } from 'vue'
+
 import { useI18n, useLayoutControlsContext } from '@open-pencil/vue'
+
+import IconButton from '@/components/ui/IconButton.vue'
 
 import type { LayoutMode } from '@open-pencil/scene-graph'
 
 const ctx = useLayoutControlsContext()
-
 const { panels } = useI18n()
 
-const layoutModes: { mode: LayoutMode; test: string }[] = [
-  { mode: 'HORIZONTAL', test: 'horizontal' },
-  { mode: 'VERTICAL', test: 'vertical' },
-  { mode: 'GRID', test: 'grid' }
-]
+const layoutModes = computed<Array<{ mode: LayoutMode; label: string }>>(() => [
+  { mode: 'HORIZONTAL', label: panels.value.layoutHorizontal },
+  { mode: 'VERTICAL', label: panels.value.layoutVertical },
+  { mode: 'GRID', label: panels.value.layoutGrid }
+])
 </script>
 
 <template>
-  <PanelRow>
+  <div class="flex items-center gap-panel">
     <IconButton
       v-if="ctx.node.layoutMode === 'NONE'"
       :label="panels.addAutoLayout"
-      data-test-id="layout-add-auto"
       @click="ctx.editor.setLayoutMode(ctx.node.id, 'VERTICAL')"
     >
       <icon-lucide-plus class="size-3.5" />
@@ -29,34 +29,38 @@ const layoutModes: { mode: LayoutMode; test: string }[] = [
     <IconButton
       v-else
       :label="panels.removeAutoLayout"
-      data-test-id="layout-remove-auto"
       @click="ctx.editor.setLayoutMode(ctx.node.id, 'NONE')"
     >
       <icon-lucide-minus class="size-3.5" />
     </IconButton>
-  </PanelRow>
+  </div>
 
-  <PanelRow v-if="ctx.node.layoutMode !== 'NONE'" class="mt-1.5" gap="sm">
+  <div
+    v-if="ctx.node.layoutMode !== 'NONE'"
+    class="mt-1.5 flex items-center gap-1"
+    role="toolbar"
+    :aria-label="panels.flow"
+  >
     <IconButton
-      v-for="dir in layoutModes"
-      :key="dir.mode"
+      v-for="direction in layoutModes"
+      :key="direction.mode"
+      :label="direction.label"
       size="md"
-      :active="dir.mode === 'GRID' ? ctx.isGrid : ctx.node.layoutMode === dir.mode"
-      :data-test-id="`layout-direction-${dir.test}`"
-      @click="ctx.editor.setLayoutMode(ctx.node.id, dir.mode)"
+      :active="direction.mode === 'GRID' ? ctx.isGrid : ctx.node.layoutMode === direction.mode"
+      @click="ctx.editor.setLayoutMode(ctx.node.id, direction.mode)"
     >
-      <icon-lucide-arrow-right v-if="dir.mode === 'HORIZONTAL'" class="size-3.5" />
-      <icon-lucide-arrow-down v-else-if="dir.mode === 'VERTICAL'" class="size-3.5" />
+      <icon-lucide-arrow-right v-if="direction.mode === 'HORIZONTAL'" class="size-3.5" />
+      <icon-lucide-arrow-down v-else-if="direction.mode === 'VERTICAL'" class="size-3.5" />
       <icon-lucide-layout-grid v-else class="size-3.5" />
     </IconButton>
     <IconButton
       v-if="ctx.isFlex"
+      :label="panels.layoutWrap"
       size="md"
       :active="ctx.node.layoutWrap === 'WRAP'"
-      data-test-id="layout-direction-wrap"
       @click="ctx.updateProp('layoutWrap', ctx.node.layoutWrap === 'WRAP' ? 'NO_WRAP' : 'WRAP')"
     >
       <icon-lucide-wrap-text class="size-3.5" />
     </IconButton>
-  </PanelRow>
+  </div>
 </template>

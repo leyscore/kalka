@@ -86,7 +86,6 @@ Main structural primitives include:
 - `SegmentedControlRoot`
 - `ToolbarRoot`
 - `ColorPickerRoot`
-- `FillPickerRoot`
 - `FontPickerRoot`
 - `NumberFieldRoot` / `NumberFieldInput` / `NumberFieldValue`
 - `BindableValueRoot` / `BindableValueTrigger` / `BindableValuePicker`
@@ -185,7 +184,6 @@ These exports are intentionally public, but they are lower-level or more special
 - `useBindingProvider()`
 - `useNumberBindingProvider()`
 - `useFill()`
-- `useFillPicker()` (deprecated migration wrapper)
 - `useGradientStops()`
 - `useFontPicker()`
 - `useOkHCL()`

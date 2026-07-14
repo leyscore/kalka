@@ -35,7 +35,6 @@ description: Komponentenreferenz für headless Vue-Primitive in @open-pencil/vue
 <SdkCardGroup>
   <SdkCard title="ColorPickerRoot" to="/programmable/sdk/api/components/color-picker-root" description="Popover-basiertes Farbauswahl-Primitiv." />
   <SdkCard title="ColorInputRoot" to="/programmable/sdk/api/components/color-input-root" description="Headless Farb-Eingabe-Hilfsmittel." />
-  <SdkCard title="FillPickerRoot" to="/programmable/sdk/api/components/fill-picker-root" description="Popover-basiertes Füllungsauswahl-Primitiv." />
   <SdkCard title="FontPickerRoot" to="/programmable/sdk/api/components/font-picker-root" description="Durchsuchbares Schriftauswahl-Primitiv." />
   <SdkCard title="GradientEditorRoot" to="/programmable/sdk/api/components/gradient-editor-root" description="Wurzel-Primitiv für Verlaufsbearbeitung." />
   <SdkCard title="GradientEditorBar" to="/programmable/sdk/api/components/gradient-editor-bar" description="Ziehbare Verlaufsbalken-Primitiv." />

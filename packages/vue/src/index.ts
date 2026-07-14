@@ -114,7 +114,6 @@ export { useVariablesDialogState } from '#vue/variables/dialog/use'
 export { useVariablesEditor } from '#vue/variables/editor/use'
 export { useVariablesTable } from '#vue/variables/table/use'
 export { usePageList } from '#vue/primitives/PageList/usePageList'
-export { useFillPicker } from '#vue/primitives/FillPicker/useFillPicker'
 export {
   fillCategory,
   fillIsTransparent,
@@ -149,7 +148,6 @@ export type {
   FillSwatchSlotProps,
   FillSwatchSlots
 } from '#vue/primitives/Fill'
-export { FillPickerRoot } from '#vue/primitives/FillPicker'
 export { FontPickerRoot } from '#vue/primitives/FontPicker'
 export type { FontFamilyOption, FontPickerUI } from '#vue/primitives/FontPicker'
 export {

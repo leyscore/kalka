@@ -16,7 +16,6 @@ Diese APIs sind öffentlich, aber spezialisierter als die Haupt-Komponenten- und
 ## Picker, Variablen, Locale und Editor-Interna
 
 - [useColorVariableBinding](./use-color-variable-binding)
-- [useFillPicker](./use-fill-picker)
 - [useGradientStops](./use-gradient-stops)
 - [useFontPicker](./use-font-picker)
 - [useOkHCL](./use-okhcl)

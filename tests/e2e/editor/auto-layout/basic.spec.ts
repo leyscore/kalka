@@ -54,14 +54,27 @@ test('Shift+A wraps selection in auto-layout frame', async () => {
   canvas.assertNoErrors()
 })
 
-test('direction button toggles to VERTICAL', async () => {
+test('direction controls switch between vertical grid and horizontal layout', async () => {
   await selectFrame()
+  const layout = propertySection(page, 'Auto layout')
 
-  await page.getByTestId('layout-direction-vertical').click()
+  await layout.getByRole('button', { name: 'Vertical layout' }).click()
   await canvas.waitForRender()
+  expect(expectDefined(await getNodeById(page, frameId), 'frame').layoutMode).toBe('VERTICAL')
 
-  const frame = await getNodeById(page, frameId)
-  expect(expectDefined(frame, 'frame').layoutMode).toBe('VERTICAL')
+  await layout.getByRole('button', { name: 'Grid layout' }).click()
+  await canvas.waitForRender()
+  expect(expectDefined(await getNodeById(page, frameId), 'frame').layoutMode).toBe('GRID')
+
+  await layout.getByRole('button', { name: 'Horizontal layout' }).click()
+  await canvas.waitForRender()
+  expect(expectDefined(await getNodeById(page, frameId), 'frame').layoutMode).toBe('HORIZONTAL')
+
+  await layout.getByRole('button', { name: 'Vertical layout' }).click()
+  await propertyField(page, 'width').getByRole('combobox', { name: 'Width' }).click()
+  await page.getByRole('option', { name: 'Hug' }).click()
+  await canvas.waitForRender()
+  expect(expectDefined(await getNodeById(page, frameId), 'frame').layoutMode).toBe('VERTICAL')
   canvas.assertNoErrors()
 })
 
@@ -102,7 +115,7 @@ test('gap menu sets auto space-between alignment', async () => {
 test('wrap mode exposes cross-axis gap control', async () => {
   await selectFrame()
 
-  await page.getByTestId('layout-direction-wrap').click()
+  await propertySection(page, 'Auto layout').getByRole('button', { name: 'Wrap layout' }).click()
   await canvas.waitForRender()
 
   const before = await getNodeById(page, frameId)
@@ -253,7 +266,9 @@ test('alignment grid center sets CENTER alignment', async () => {
 test('remove auto-layout sets layoutMode to NONE', async () => {
   await selectFrame()
 
-  await page.getByTestId('layout-remove-auto').click()
+  await propertySection(page, 'Auto layout')
+    .getByRole('button', { name: 'Remove auto layout' })
+    .click()
   await canvas.waitForRender()
 
   const frame = await getNodeById(page, frameId)
