@@ -34,6 +34,7 @@ export function useEditorPropertyList<K extends PropertyListKey>(propKey: K) {
     void editor.state.sceneVersion
     return selectedNodes.value[0] ?? null
   })
+  const selectedNodeIds = computed(() => selectedNodes.value.map((node) => node.id))
   const isMulti = computed(() => selectedNodes.value.length > 1)
   const active = computed(() => selectedNodes.value.length > 0)
   const isMixed = computed(() => isArrayMixed(propKey))
@@ -159,5 +160,14 @@ export function useEditorPropertyList<K extends PropertyListKey>(propKey: K) {
     reorder
   }
 
-  return { items, isMixed, isMulti, active, activeNode, actions }
+  return {
+    items,
+    isMixed,
+    isMulti,
+    active,
+    activeNode,
+    selectedNodeIds,
+    flush: batch.flush,
+    actions
+  }
 }

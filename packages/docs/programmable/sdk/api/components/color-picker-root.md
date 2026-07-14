@@ -1,59 +1,54 @@
 ---
 title: ColorPickerRoot
-description: Headless popover-based color picker primitive.
+description: Headless popover-based color picker with interaction lifecycle events.
 ---
+
+<script setup lang="ts">
+import { data } from './color-picker-root.data'
+</script>
 
 # ColorPickerRoot
 
-`ColorPickerRoot` is a headless popover-based color picker primitive.
+`ColorPickerRoot` composes a color swatch trigger with a popover surface while leaving the editor UI
+to its slots. The trigger slot receives the current swatch style; the default slot receives the
+current scene-graph color.
 
-It provides:
+`openChange` reports the complete picker interaction boundary. `cancel` fires before an Escape
+close, allowing BindableValue consumers to roll back a variable detach and paint update together.
+Opening or focusing the picker does not emit a color update.
 
-- a trigger slot with swatch background styling
-- a default trigger fallback
-- a content slot with `color` and `update()`
+```vue twoslash
+<script setup lang="ts">
+import { ref } from 'vue'
+import type { Color } from '@open-pencil/scene-graph'
+import { ColorPickerRoot } from '@open-pencil/vue'
 
-## Props
+const color = ref<Color>({ r: 0.2, g: 0.5, b: 0.9, a: 1 })
+</script>
 
-<SdkPropsTable
-  :rows="[
-    { name: 'color', type: 'Color', description: 'Current color value.', required: true },
-    { name: 'contentClass', type: 'string | undefined', description: 'Optional class for the popover content.' },
-    { name: 'swatchClass', type: 'string | undefined', description: 'Optional class for the default trigger button.' }
-  ]"
-/>
-
-## Events
-
-<SdkEventsTable
-  :rows="[
-    { name: 'update', payload: 'color: Color', description: 'Emitted when the color changes.' }
-  ]"
-/>
-
-## Slots
-
-<SdkSlotsTable
-  :rows="[
-    { name: 'trigger', props: '{ style: Record<string, string> }', description: 'Custom trigger with swatch background style.' },
-    { name: 'default', props: '{ color: Color, update: (color: Color) => void }', description: 'Main color editor content.' }
-  ]"
-/>
-
-## Example
-
-```vue
-<ColorPickerRoot :color="color" @update="color = $event">
-  <template #trigger="{ style }">
-    <button class="size-6 rounded border" :style="style" />
-  </template>
-
-  <template #default="{ color, update }">
-    <MyColorEditor :color="color" @change="update" />
-  </template>
-</ColorPickerRoot>
+<template>
+  <ColorPickerRoot
+    :color="color"
+    @update="color = $event"
+    @open-change="open => console.log(open)"
+    @cancel="console.log('cancel')"
+  >
+    <template #trigger="{ style }">
+      <button :style="style" aria-label="Edit color" />
+    </template>
+    <template #default="{ color: currentColor }">
+      <output>{{ currentColor.r }}, {{ currentColor.g }}, {{ currentColor.b }}</output>
+    </template>
+  </ColorPickerRoot>
+</template>
 ```
+
+## Generated API reference
+
+<SdkComponentAPI :components="data.components" />
 
 ## Related APIs
 
 - [ColorInputRoot](./color-input-root)
+- [useColorModel](../composables/use-color-model)
+- [BindableValue](./bindable-value)

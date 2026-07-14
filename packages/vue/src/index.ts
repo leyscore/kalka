@@ -257,7 +257,8 @@ export {
   provideBindingProvider,
   useBindingProvider,
   useOpenPencilBindingProvider,
-  useNumberBindingProvider
+  useNumberBindingProvider,
+  useColorBindingProvider
 } from '#vue/controls/binding-provider'
 export type {
   BindingMutationSource,

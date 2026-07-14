@@ -90,9 +90,12 @@ test('color swatch opens color picker', async () => {
   await editor.page.getByTestId('variables-section-open').click()
   await expect(editor.page.getByTestId('variables-dialog')).toBeVisible({ timeout: 3000 })
 
-  const swatch = editor.page.getByTestId('variable-row').first().getByTestId('color-picker-swatch')
+  const swatch = editor.page
+    .getByTestId('variable-row')
+    .first()
+    .getByRole('button', { name: 'Edit color' })
   await expect(swatch).toBeVisible({ timeout: 3000 })
   await swatch.click()
-  await expect(editor.page.getByTestId('color-picker-popover')).toBeVisible({ timeout: 5000 })
+  await expect(editor.page.locator('[data-picker-content]')).toBeVisible({ timeout: 5000 })
   editor.canvas.assertNoErrors()
 })

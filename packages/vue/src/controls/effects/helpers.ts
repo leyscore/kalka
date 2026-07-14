@@ -98,15 +98,19 @@ export function createEffectControlActions(expandedIndex: Ref<number | null>) {
     patch(index, { color })
   }
 
-  function handleRemove(removeFn: (index: number) => void, index: number) {
-    removeFn(index)
+  function adjustExpandedAfterRemove(index: number) {
     if (expandedIndex.value === index) expandedIndex.value = null
     else if (expandedIndex.value !== null && expandedIndex.value > index) expandedIndex.value--
+  }
+
+  function handleRemove(removeFn: (index: number) => void, index: number) {
+    removeFn(index)
+    adjustExpandedAfterRemove(index)
   }
 
   function toggleExpand(index: number) {
     expandedIndex.value = expandedIndex.value === index ? null : index
   }
 
-  return { updateType, updateColor, handleRemove, toggleExpand }
+  return { updateType, updateColor, handleRemove, adjustExpandedAfterRemove, toggleExpand }
 }

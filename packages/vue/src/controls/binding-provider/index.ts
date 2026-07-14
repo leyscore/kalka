@@ -1,4 +1,8 @@
 export {
+  createAndBindColorVariable,
+  useColorBindingProvider
+} from '#vue/controls/binding-provider/color'
+export {
   BINDING_PROVIDER_KEY,
   provideBindingProvider,
   useBindingProvider

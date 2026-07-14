@@ -179,6 +179,7 @@ These exports are intentionally public, but they are lower-level or more special
 - `useNodeProps()`
 - `useEditorPropertyList()`
 - `useSceneComputed()`
+- `useColorBindingProvider()`
 - `useColorVariableBinding()`
 - `provideBindingProvider()`
 - `useBindingProvider()`

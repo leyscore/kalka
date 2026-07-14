@@ -33,14 +33,23 @@ const {
   okhcl?: OkHCLControls | null
   swatchBackground?: string
 }>()
-const emit = defineEmits<{ update: [fill: Fill] }>()
+const emit = defineEmits<{
+  update: [fill: Fill]
+  openChange: [open: boolean]
+  cancel: []
+}>()
 const cls = usePopoverUI({ content: 'w-60 p-2' })
 const { panels } = useI18n()
+
+function cancelFromEscape(event: KeyboardEvent) {
+  event.stopPropagation()
+  emit('cancel')
+}
 </script>
 
 <template>
   <FillRoot :fill="fill" @update="emit('update', $event)" v-slot="root">
-    <PopoverRoot>
+    <PopoverRoot @update:open="emit('openChange', $event)">
       <PopoverTrigger as-child>
         <button
           type="button"
@@ -58,7 +67,13 @@ const { panels } = useI18n()
       </PopoverTrigger>
 
       <PopoverPortal>
-        <PopoverContent :class="cls.content" :side-offset="4" side="left">
+        <PopoverContent
+          :class="cls.content"
+          :side-offset="4"
+          side="left"
+          data-picker-content
+          @escape-key-down="cancelFromEscape"
+        >
           <div class="mb-2 flex items-center gap-0.5">
             <Tip :label="panels.solid">
               <button

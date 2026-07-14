@@ -5,10 +5,12 @@ import { computed, ref, shallowRef, watch } from 'vue'
 import AppSelect from '@/components/ui/AppSelect.vue'
 import ExportScaleInput from '@/components/properties/ExportScaleInput.vue'
 import IconButton from '@/components/ui/IconButton.vue'
+import PanelItemRow from '@/components/ui/panel/PanelItemRow.vue'
 import PanelSection from '@/components/ui/panel/PanelSection.vue'
 import Tip from '@/components/ui/Tip.vue'
 import { useEditorStore } from '@/app/editor/active-store'
 import { useExport, useI18n } from '@open-pencil/vue'
+import { CHECKERBOARD_BACKGROUND } from '@/theme/checkerboard'
 
 import type { ExportFormatId } from '@open-pencil/vue'
 
@@ -106,9 +108,9 @@ watch(previewKey, updatePreview, { flush: 'post' })
 </script>
 
 <template>
-  <PanelSection :label="panels.export" data-test-id="export-section">
+  <PanelSection :label="panels.export">
     <template #actions>
-      <IconButton :label="panels.addExport" data-test-id="export-section-add" @click="addSetting">
+      <IconButton :label="panels.addExport" @click="addSetting">
         <icon-lucide-plus class="size-3.5" />
       </IconButton>
     </template>
@@ -116,33 +118,40 @@ watch(previewKey, updatePreview, { flush: 'post' })
       {{ panels.mixed }}
     </p>
 
-    <div
-      v-for="(setting, i) in activeSettings"
-      :key="`${targetIds.join(',')}:${i}`"
-      data-test-id="export-item"
-      :data-test-index="i"
-      class="flex items-center gap-1.5 py-0.5"
+    <PanelItemRow
+      v-for="(setting, index) in activeSettings"
+      :key="`${targetIds.join(',')}:${index}`"
+      data-property="exportSettings"
+      :data-index="index"
     >
-      <ExportScaleInput
-        v-if="formatSupportsScale(setting.format)"
-        data-test-id="export-scale-input"
-        :model-value="setting.scale"
-        :presets="scales"
-        :clamp="clampExportScale"
-        :label="panels.exportScale"
-        @update:model-value="updateScale(i, $event)"
-      />
+      <div v-if="formatSupportsScale(setting.format)" class="w-24 shrink-0">
+        <ExportScaleInput
+          :model-value="setting.scale"
+          :presets="scales"
+          :clamp="clampExportScale"
+          :label="panels.exportScale"
+          data-property="export-scale"
+          @update:model-value="updateScale(index, $event)"
+        />
+      </div>
       <AppSelect
-        data-test-id="app-select-trigger"
         :model-value="setting.format"
         :options="FORMAT_OPTIONS"
         :label="panels.exportFormat"
-        @update:model-value="updateFormat(i, $event as ExportFormatId)"
+        :ui="{ trigger: 'w-auto flex-1' }"
+        data-property="export-format"
+        @update:model-value="updateFormat(index, $event as ExportFormatId)"
       />
-      <IconButton :label="panels.removeExport" class="shrink-0" @click="removeSetting(i)">
-        <icon-lucide-minus class="size-3.5" />
-      </IconButton>
-    </div>
+      <template #rail="{ removeClass }">
+        <IconButton
+          :label="panels.removeExport"
+          :class="[removeClass, 'shrink-0']"
+          @click="removeSetting(index)"
+        >
+          <icon-lucide-minus class="size-3.5" />
+        </IconButton>
+      </template>
+    </PanelItemRow>
 
     <button
       v-if="activeSettings.length > 0"
@@ -167,15 +176,7 @@ watch(previewKey, updatePreview, { flush: 'post' })
     </Tip>
 
     <div v-if="showPreview && previewUrl" class="mt-1 overflow-hidden rounded border border-border">
-      <img
-        :src="previewUrl"
-        class="block w-full"
-        style="
-          image-rendering: auto;
-          background: repeating-conic-gradient(var(--color-checkerboard) 0% 25%, transparent 0% 50%)
-            50% / 16px 16px;
-        "
-      />
+      <img :src="previewUrl" :class="['block w-full', CHECKERBOARD_BACKGROUND]" />
     </div>
     <div
       v-else-if="showPreview"
