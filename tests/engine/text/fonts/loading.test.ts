@@ -161,7 +161,29 @@ describe('FontManager loaded font cache', () => {
     expect(recording.registrations).toHaveLength(2)
   })
 
-  test('loads downloaded cache before other sources', async () => {
+  test('prefers local font data before downloaded cache', async () => {
+    const manager = new FontManager()
+    const recording = createRecordingProvider()
+    let cacheReads = 0
+
+    manager.attachProvider({} as CanvasKit, recording.provider)
+    manager.setHostFontLoader(async () => new ArrayBuffer(20))
+    manager.setDownloadedFontCache({
+      async read() {
+        cacheReads++
+        return new ArrayBuffer(16)
+      },
+      async write() {
+        return undefined
+      }
+    })
+
+    const data = await manager.loadFont('LocalPriority', 'Regular')
+    expect(data?.byteLength).toBe(20)
+    expect(cacheReads).toBe(0)
+  })
+
+  test('loads downloaded cache when local sources are unavailable', async () => {
     const manager = new FontManager()
     const recording = createRecordingProvider()
     const data = new ArrayBuffer(16)

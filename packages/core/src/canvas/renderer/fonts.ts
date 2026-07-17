@@ -20,6 +20,11 @@ export async function loadFonts(
   onFallbackFontsLoaded?: () => void
 ): Promise<void> {
   if (r.isDestroyed()) return
+  r.onFontResolutionSettled = () => {
+    if (r.isDestroyed()) return
+    r.invalidateAllPictures()
+    onFallbackFontsLoaded?.()
+  }
   r.fontProvider?.delete()
   r.fontProvider = r.ck.TypefaceFontProvider.Make()
 

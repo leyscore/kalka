@@ -5,7 +5,6 @@ import {
   DEFAULT_WEB_FONT_PROVIDER_SETTINGS,
   WEB_FONT_PROVIDER_IDS,
   fontManager,
-  styleToWeight,
   textNeededFallbackScripts,
   type FontFamilyOption,
   type LocalFontAccessState,
@@ -67,7 +66,7 @@ function configureTauriFontCache() {
   tauriFontCacheConfigured = true
   fontManager.setDownloadedFontCache(createTauriDownloadedFontCache())
   fontManager.setWebFontFetch(tauriFetch)
-  fontManager.setHostFallbackFontLoader(loadFont)
+  fontManager.setHostFontLoader(loadSystemFont)
 }
 
 configureTauriFontCache()
@@ -196,31 +195,19 @@ function clearTextPictures(graph: SceneGraph): void {
   }
 }
 
+async function loadSystemFont(family: string, style = 'Regular'): Promise<ArrayBuffer | null> {
+  if (!isTauri()) return null
+  try {
+    const { invoke } = await import('@tauri-apps/api/core')
+    const data = await invoke<number[]>('load_system_font', { family, style })
+    return new Uint8Array(data).buffer
+  } catch {
+    return null
+  }
+}
+
 export async function loadFont(family: string, style = 'Regular'): Promise<ArrayBuffer | null> {
   configureTauriFontCache()
-  if (isTauri()) {
-    const cached = await fontManager.loadCachedFont(family, style)
-    if (cached) return cached
-
-    try {
-      const { invoke } = await import('@tauri-apps/api/core')
-      const data = await invoke<number[]>('load_system_font', { family, style })
-      const buffer = new Uint8Array(data).buffer
-
-      fontManager.markLoaded(family, style, buffer)
-
-      const weight = styleToWeight(style)
-      const italic = style.toLowerCase().includes('italic') ? 'italic' : 'normal'
-      const face = new FontFace(family, buffer, { weight: String(weight), style: italic })
-      await face.load()
-      document.fonts.add(face)
-
-      return buffer
-    } catch {
-      return fontManager.loadFont(family, style)
-    }
-  }
-
   const loaded = await fontManager.loadFont(family, style)
   if (!loaded) showWebFontUnavailableToast()
   return loaded

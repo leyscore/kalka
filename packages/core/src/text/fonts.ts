@@ -139,7 +139,7 @@ export class FontManager {
   private localFontAccessState: LocalFontAccessState = IS_BROWSER ? 'prompt' : 'unsupported'
   private downloadedFontCache: DownloadedFontCache | null = null
   private fallbackUserAgent: string | undefined
-  private hostFallbackFontLoader: HostFontLoader | null = null
+  private hostFontLoader: HostFontLoader | null = null
   private webFonts = new WebFontResolver()
   private registeredRenderFamilies = new Set<string>()
   private cjkFallbackFamilies: string[] = []
@@ -176,8 +176,13 @@ export class FontManager {
     this.fallbackUserAgent = userAgent
   }
 
+  setHostFontLoader(loader: HostFontLoader | null): void {
+    this.hostFontLoader = loader
+  }
+
+  /** @deprecated Use setHostFontLoader. Scheduled for removal in v0.15. */
   setHostFallbackFontLoader(loader: HostFontLoader | null): void {
-    this.hostFallbackFontLoader = loader
+    this.setHostFontLoader(loader)
   }
 
   setOnlineFontProviders(settings: Partial<Record<WebFontProviderId, boolean>>): void {
@@ -277,46 +282,56 @@ export class FontManager {
     return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)
   }
 
-  async loadFont(family: string, style = 'Regular'): Promise<ArrayBuffer | null> {
+  async loadLocalFont(family: string, style = 'Regular'): Promise<ArrayBuffer | null> {
     const cacheKey = `${family}|${style}`
-    if (this.loadedFamilies.has(cacheKey)) {
-      const cached = this.loadedFamilies.get(cacheKey)
-      if (!cached) return null
-      this.registerFontInCanvasKit(family, cached)
-      return cached
+    const loaded = this.loadedFamilies.get(cacheKey)
+    if (loaded) {
+      this.registerFontInCanvasKit(family, loaded)
+      return loaded
     }
 
-    const downloadedBuffer = await this.loadCachedFont(family, style)
-    if (downloadedBuffer) return downloadedBuffer
-
-    const localBuffer = await this.findLocalFont(family, style)
+    const localBuffer =
+      (await this.loadHostFont(family, style)) ?? (await this.findLocalFont(family, style))
     if (localBuffer) return this.registerAndCache(family, style, localBuffer)
 
     const bundledUrl = BUNDLED_FONTS[cacheKey]
-    if (bundledUrl) {
-      try {
-        const buffer = await this.fetchBundledFont(bundledUrl)
-        if (buffer && !isVariableFont(buffer)) return this.registerAndCache(family, style, buffer)
-      } catch (e) {
-        console.warn(`Bundled font load failed for "${family}" ${style}:`, e)
-      }
+    if (!bundledUrl) return null
+    try {
+      const buffer = await this.fetchBundledFont(bundledUrl)
+      return buffer && !isVariableFont(buffer) ? this.registerAndCache(family, style, buffer) : null
+    } catch (e) {
+      console.warn(`Bundled font load failed for "${family}" ${style}:`, e)
+      return null
+    }
+  }
+
+  async loadRemoteFont(family: string, style = 'Regular'): Promise<ArrayBuffer | null> {
+    if (typeof fetch === 'undefined') return null
+    try {
+      const normalized = normalizeFontFamily(family)
+      const families = normalized === family ? [family] : [family, normalized]
+      const buffer = await this.webFonts.fetchFont(families, style)
+      if (!buffer) return null
+      await this.writeDownloadedFont(family, style, buffer)
+      return this.registerAndCache(family, style, buffer)
+    } catch (e) {
+      console.warn(`Web font fetch failed for "${family}" ${style}:`, e)
+      return null
+    }
+  }
+
+  async loadFont(family: string, style = 'Regular'): Promise<ArrayBuffer | null> {
+    const loaded = this.loadedData(family, style)
+    if (loaded) {
+      this.registerFontInCanvasKit(family, loaded)
+      return loaded
     }
 
-    if (typeof fetch !== 'undefined') {
-      try {
-        const normalized = normalizeFontFamily(family)
-        const families = normalized === family ? [family] : [family, normalized]
-        const buffer = await this.webFonts.fetchFont(families, style)
-        if (buffer) {
-          await this.writeDownloadedFont(family, style, buffer)
-          return this.registerAndCache(family, style, buffer)
-        }
-      } catch (e) {
-        console.warn(`Web font fetch failed for "${family}" ${style}:`, e)
-      }
-    }
-
-    return null
+    return (
+      (await this.loadLocalFont(family, style)) ??
+      (await this.loadCachedFont(family, style)) ??
+      (await this.loadRemoteFont(family, style))
+    )
   }
 
   async ensureNodeFont(family: string, weight: number): Promise<void> {
@@ -438,7 +453,7 @@ export class FontManager {
 
     for (const family of manifest.localFamilies) {
       const buffer =
-        (await this.loadHostFallbackFont(family, 'Regular')) ??
+        (await this.loadHostFont(family, 'Regular')) ??
         (await this.findLocalFont(family, undefined, {
           allowVariable: options.allowVariableLocalFonts
         }))
@@ -462,10 +477,10 @@ export class FontManager {
     return targetFamilies
   }
 
-  private async loadHostFallbackFont(family: string, style: string): Promise<ArrayBuffer | null> {
-    if (!this.hostFallbackFontLoader) return null
+  private async loadHostFont(family: string, style: string): Promise<ArrayBuffer | null> {
+    if (!this.hostFontLoader) return null
     try {
-      return await this.hostFallbackFontLoader(family, style)
+      return await this.hostFontLoader(family, style)
     } catch (e) {
       console.warn(`Host fallback font load failed for "${family}" ${style}:`, e)
       return null

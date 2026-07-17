@@ -13,6 +13,7 @@ import type { SkiaRenderer } from '#core/canvas/renderer'
 import { renderText } from '#core/canvas/scene'
 import { buildParagraph, isNodeFontLoaded } from '#core/canvas/text'
 import { fontManager } from '#core/text/fonts'
+import { missingGlyphCharacters } from '#core/text/resolver'
 
 import { expectDefined } from '#tests/helpers/assert'
 import { repoPath } from '#tests/helpers/paths'
@@ -236,6 +237,36 @@ describe('renderText headless visual', () => {
     expect(resolveTextDirection('AUTO', 'مرحبا world')).toBe('RTL')
     expect(resolveTextDirection('AUTO', 'Hello مرحبا')).toBe('LTR')
     expect(resolveTextDirection('RTL', 'Hello')).toBe('RTL')
+  })
+
+  test('observes CanvasKit notdef glyphs for unsupported CJK text', async () => {
+    const ck = await initCanvasKit()
+    const fontProvider = ck.TypefaceFontProvider.Make()
+    fontManager.attachProvider(ck, fontProvider)
+    const interData = await Bun.file('public/Inter-Regular.ttf').arrayBuffer()
+    fontProvider.registerFont(interData, 'Inter')
+    fontManager.markLoaded('Inter', 'Regular', interData)
+    const manager = fontManager as typeof fontManager & { cjkFallbackFamilies: string[] }
+    const originalFallbacks = [...manager.cjkFallbackFamilies]
+    manager.cjkFallbackFamilies = []
+    const surface = expectDefined(ck.MakeSurface(200, 50), 'CanvasKit surface')
+
+    try {
+      const renderer = new SkiaRendererClass(ck, surface)
+      renderer.fontsLoaded = true
+      renderer.fontProvider = fontProvider
+      const paragraph = buildParagraph(
+        renderer,
+        textNode({ text: 'A𠀀B', fontFamily: 'Inter', fontWeight: 400 })
+      )
+      paragraph.layout(200)
+
+      expect(missingGlyphCharacters('A𠀀B', paragraph.getShapedLines())).toEqual(['𠀀'])
+      paragraph.delete()
+    } finally {
+      manager.cjkFallbackFamilies = originalFallbacks
+      surface.delete()
+    }
   })
 
   test('does not require fallback families when the primary font covers CJK glyphs', async () => {

@@ -14,11 +14,25 @@ import type { SceneNode } from '@open-pencil/scene-graph'
 import { getCanvasKit } from '#core/canvaskit'
 import { resolveRGBAForPreview } from '#core/color/management'
 import { DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE } from '#core/constants'
-import { textNeededFallbackScripts } from '#core/text/coverage'
+import { fontFallbackScriptForCharacter } from '#core/text/coverage'
 import { resolveNodeTextDirection } from '#core/text/direction'
+import type { FontFallbackScript } from '#core/text/fallbacks'
 import { fontManager, weightToStyle } from '#core/text/fonts'
+import {
+  fontCoverageDemand,
+  fontFaceDemand,
+  fontResolver,
+  missingGlyphCharacters
+} from '#core/text/resolver'
 
-interface TextRenderer {
+interface FontReadinessRenderer {
+  ck?: CanvasKit
+  fontProvider?: TypefaceFontProvider | null
+  fontsLoaded?: boolean
+  onFontResolutionSettled?: () => void
+}
+
+interface TextRenderer extends FontReadinessRenderer {
   ck: CanvasKit
   fontProvider: TypefaceFontProvider | null
   fontsLoaded: boolean
@@ -45,28 +59,67 @@ export interface ClipboardShapedText {
 const FONT_FAMILY_CACHE_LIMIT = 256
 const fontFamilyCache = new Map<string, string[]>()
 
-function hasRequiredFallbackFonts(node: SceneNode): boolean {
-  for (const script of textNeededFallbackScripts(node)) {
-    if (script === 'arabic' && fontManager.getArabicFallbackFamilies().length === 0) return false
-    if (script !== 'arabic' && fontManager.getCJKFallbackFamilies().length === 0) return false
-  }
-  return true
+function demandFace(r: FontReadinessRenderer, family: string, style: string): boolean {
+  if (fontManager.isStyleLoaded(family, style)) return true
+  void fontResolver.demand(fontFaceDemand(family, style), r.onFontResolutionSettled)
+  return false
 }
 
-export function isNodeFontLoaded(_r: TextRenderer, node: SceneNode): boolean {
+function hasRequiredFaces(r: FontReadinessRenderer, node: SceneNode): boolean {
   const baseFamily = node.fontFamily || DEFAULT_FONT_FAMILY
-  if (!fontManager.isStyleLoaded(baseFamily, weightToStyle(node.fontWeight, node.italic))) {
-    return false
-  }
+  let ready = demandFace(r, baseFamily, weightToStyle(node.fontWeight, node.italic))
 
   for (const run of node.styleRuns) {
     const family = run.style.fontFamily ?? baseFamily
     const weight = run.style.fontWeight ?? node.fontWeight
     const italic = run.style.italic ?? node.italic
-    if (!fontManager.isStyleLoaded(family, weightToStyle(weight, italic))) return false
+    if (!demandFace(r, family, weightToStyle(weight, italic))) ready = false
+  }
+  return ready
+}
+
+function hasObservedGlyphCoverage(r: TextRenderer, node: SceneNode): boolean {
+  const paragraph = buildParagraph(r, node)
+  paragraph.layout(resolveParagraphLayoutWidth(node))
+  const missingCharacters = missingGlyphCharacters(node.text, paragraph.getShapedLines())
+  paragraph.delete()
+  if (missingCharacters.length === 0) return true
+
+  const charactersByScript = new Map<FontFallbackScript, string[]>()
+  for (const character of missingCharacters) {
+    const script = fontFallbackScriptForCharacter(character)
+    if (!script) continue
+    const characters = charactersByScript.get(script) ?? []
+    characters.push(character)
+    charactersByScript.set(script, characters)
   }
 
-  return hasRequiredFallbackFonts(node)
+  let ready = true
+  for (const [script, characters] of charactersByScript) {
+    const demand = fontCoverageDemand(script, characters)
+    const state = fontResolver.state(demand).state
+    if (state === 'loaded') {
+      fontResolver.exhaust(demand)
+      continue
+    }
+    if (state === 'exhausted') continue
+    ready = false
+    if (state === 'idle') {
+      void fontResolver.demand(demand, r.onFontResolutionSettled)
+    }
+  }
+  return ready
+}
+
+function canObserveGlyphCoverage(r: FontReadinessRenderer): r is TextRenderer {
+  return r.ck !== undefined && r.fontProvider != null && r.fontsLoaded !== undefined
+}
+
+export function isNodeFontLoaded(r: FontReadinessRenderer, node: SceneNode): boolean {
+  if (node.type !== 'TEXT') return true
+  if (!hasRequiredFaces(r, node)) return false
+  if (!node.text || !canObserveGlyphCoverage(r)) return true
+  return hasObservedGlyphCoverage(r, node)
 }
 
 export function measureTextNode(
