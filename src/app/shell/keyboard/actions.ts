@@ -1,5 +1,6 @@
 import type { Ref } from 'vue'
 
+import { opacityFromBuffer } from '@open-pencil/core/editor'
 import type { useEditorCommands, useViewportKind } from '@open-pencil/vue'
 
 import type { EditorStore } from '@/app/editor/active-store'
@@ -107,13 +108,7 @@ export function createKeyboardActions({
     if (store.state.selectedIds.size === 0) return
     opacityBuffer += digit
     if (opacityBuffer.length > 3) opacityBuffer = opacityBuffer.slice(-3)
-    const n = Number.parseInt(opacityBuffer, 10)
-    let percent: number
-    if (opacityBuffer === '0') percent = 100
-    else if (opacityBuffer.length === 1) percent = n * 10
-    else percent = n
-    const clamped = Math.min(100, Math.max(0, percent))
-    setOpacityTarget(clamped / 100)
+    setOpacityTarget(opacityFromBuffer(opacityBuffer))
     runCommand('selection.setOpacity')
     clearTimeout(opacityResetTimer)
     opacityResetTimer = setTimeout(() => {

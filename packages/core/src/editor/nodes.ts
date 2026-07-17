@@ -8,6 +8,14 @@ import { textAutoResizeChanges } from './text/auto-resize'
 import type { EditorContext } from './types'
 import { createVariableBindingActions } from './variable-bindings'
 
+export function opacityFromBuffer(buffer: string): number {
+  if (buffer === '0') return 1
+  const n = Number.parseInt(buffer, 10)
+  if (Number.isNaN(n)) return 1
+  const percent = buffer.length === 1 ? n * 10 : n
+  return Math.min(100, Math.max(0, percent)) / 100
+}
+
 export function createNodeActions(ctx: EditorContext) {
   const layoutModeActions = createLayoutModeActions(ctx)
   const nudgeActions = createNudgeActions(ctx)

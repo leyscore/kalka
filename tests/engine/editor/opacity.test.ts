@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test'
 
-import { createEditor } from '@open-pencil/core/editor'
+import { createEditor, opacityFromBuffer } from '@open-pencil/core/editor'
 
 import { getNodeOrThrow } from '#tests/helpers/assert'
 
@@ -96,5 +96,34 @@ describe('editor.setOpacity', () => {
     editor.clearSelection()
     editor.setOpacity(0.5)
     expect(editor.undo.canUndo).toBe(false)
+  })
+})
+
+describe('opacityFromBuffer', () => {
+  test('single 0 returns 100%', () => {
+    expect(opacityFromBuffer('0')).toBe(1)
+  })
+
+  test('single digit returns decena', () => {
+    expect(opacityFromBuffer('5')).toBe(0.5)
+    expect(opacityFromBuffer('2')).toBe(0.2)
+    expect(opacityFromBuffer('9')).toBe(0.9)
+  })
+
+  test('two digits returns literal percent', () => {
+    expect(opacityFromBuffer('28')).toBe(0.28)
+    expect(opacityFromBuffer('35')).toBe(0.35)
+    expect(opacityFromBuffer('00')).toBe(0)
+    expect(opacityFromBuffer('05')).toBe(0.05)
+  })
+
+  test('three digits clamps to 100%', () => {
+    expect(opacityFromBuffer('100')).toBe(1)
+    expect(opacityFromBuffer('150')).toBe(1)
+  })
+
+  test('invalid buffer returns 100%', () => {
+    expect(opacityFromBuffer('')).toBe(1)
+    expect(opacityFromBuffer('abc')).toBe(1)
   })
 })
