@@ -49,6 +49,7 @@ const RAW_FIELD_COVERAGE = {
     'vectorData'
   ],
   uiEditable: [
+    'componentPropAssignments',
     'componentPropDefs',
     'exportSettings',
     'fontSize',
@@ -112,6 +113,7 @@ const RAW_FIELD_COVERAGE = {
     'styleIdForGrid',
     'styleIdForStrokeFill',
     'styleIdForText',
+    'styleType',
     'textExplicitLayoutVersion',
     'textUserLayoutVersion',
     'targetAspectRatio',

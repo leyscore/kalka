@@ -7,6 +7,7 @@ import type {
 } from '@open-pencil/scene-graph'
 import { buildVariantName, parseVariantName } from '@open-pencil/scene-graph/variant-name'
 
+import { reapplyInstanceComponentProperties } from '#core/editor/components/properties'
 import type { EditorContext } from '#core/editor/types'
 import { randomHex } from '#core/random'
 
@@ -243,14 +244,17 @@ export function createVariantActions(ctx: EditorContext) {
 
     const prevComponentId = instance.componentId
     ctx.graph.swapInstanceComponent(instanceId, target.id)
+    reapplyInstanceComponentProperties(ctx, instanceId)
     ctx.undo.push({
       label: 'Switch variant',
       forward: () => {
         ctx.graph.swapInstanceComponent(instanceId, target.id)
+        reapplyInstanceComponentProperties(ctx, instanceId)
         ctx.requestRender()
       },
       inverse: () => {
         ctx.graph.swapInstanceComponent(instanceId, prevComponentId)
+        reapplyInstanceComponentProperties(ctx, instanceId)
         ctx.requestRender()
       }
     })

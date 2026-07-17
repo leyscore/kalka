@@ -43,6 +43,7 @@ const SDK_COMPOSABLE_PAGES = [
   { text: 'usePosition', slug: 'use-position' },
   { text: 'useLayout', slug: 'use-layout' },
   { text: 'useConstraints', slug: 'use-constraints', canonical: true },
+  { text: 'useComponentProperties', slug: 'use-component-properties', canonical: true },
   { text: 'useAppearance', slug: 'use-appearance' },
   { text: 'useSharedStyleBinding', slug: 'use-shared-style-binding', canonical: true },
   { text: 'useColorModel', slug: 'use-color-model', canonical: true },

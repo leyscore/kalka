@@ -135,6 +135,8 @@ export function createDefaultNode(
     componentId: null,
     overrides: {},
     componentPropertyDefinitions: [],
+    componentPropertyReferences: [],
+    componentPropertyAssignments: {},
     componentPropertyValues: {},
     componentKey: null,
     sourceLibraryKey: null,

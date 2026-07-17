@@ -482,6 +482,8 @@ export interface SceneNode {
   componentId: string | null
   overrides: Record<string, unknown>
   componentPropertyDefinitions: ComponentPropertyDefinition[]
+  componentPropertyReferences: ComponentPropertyReference[]
+  componentPropertyAssignments: Record<string, string>
   componentPropertyValues: Record<string, string>
   componentKey: string | null
   sourceLibraryKey: string | null
@@ -512,12 +514,20 @@ export interface SceneNode {
 
 export type ComponentPropertyType = 'VARIANT' | 'TEXT' | 'BOOLEAN' | 'INSTANCE_SWAP'
 
+export type ComponentPropertyReferenceField = 'VISIBLE' | 'TEXT' | 'INSTANCE_SWAP'
+
+export interface ComponentPropertyReference {
+  propertyId: string
+  field: ComponentPropertyReferenceField
+}
+
 export interface ComponentPropertyDefinition {
   id: string
   name: string
   type: ComponentPropertyType
   defaultValue: string
   variantOptions?: string[]
+  preferredValues?: string[]
 }
 
 export type VariableType = 'COLOR' | 'FLOAT' | 'STRING' | 'BOOLEAN'

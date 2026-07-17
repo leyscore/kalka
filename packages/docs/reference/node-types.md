@@ -158,6 +158,10 @@ geometry. Manual property edits detach only the matching reference.
 
 `overriddenSymbolID`, `symbolData.symbolOverrides[]`, `componentPropRefs[]`, `componentPropAssignments[]`
 
+In the SceneGraph, typed definitions live in `componentPropertyDefinitions`, descendant field links
+in `componentPropertyReferences`, and per-instance values in `componentPropertyAssignments`.
+Variant component values remain separate in `componentPropertyValues`.
+
 ## Paint
 
 ```typescript

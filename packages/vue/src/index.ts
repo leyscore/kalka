@@ -205,6 +205,16 @@ export {
   useConstraints
 } from '#vue/controls/constraints'
 export type { ConstraintAxis, ConstraintEdge, ConstraintValue } from '#vue/controls/constraints'
+export {
+  compatibleComponentPropertyDefinitions,
+  instanceSwapOptions,
+  mergedComponentPropertyValue,
+  useComponentProperties
+} from '#vue/controls/component-props'
+export type {
+  ComponentPropertyControl,
+  ComponentPropertyOption
+} from '#vue/controls/component-props'
 export type { CornerGeometryKey, CornerRadiusKey } from '#vue/controls/appearance/types'
 export { PageListRoot } from '#vue/primitives/PageList'
 export { PositionControlsRoot } from '#vue/primitives/PositionControls'
