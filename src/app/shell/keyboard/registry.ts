@@ -36,27 +36,20 @@ function commandShortcuts(...commands: EditorCommandId[]): ShortcutDefinition[] 
   })
 }
 
-const OPACITY_DIGITS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+const OPACITY_CODES = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].flatMap((d) => [
+  `Digit${d}`,
+  `Numpad${d}`
+])
 
 function opacityBindings(): ShortcutDefinition[] {
-  return OPACITY_DIGITS.flatMap((digit) => [
-    {
-      id: `opacity-Digit${digit}`,
-      keys: `Digit${digit}`,
-      run: ({ keyEvent, actions }: KeyboardShortcutRunOptions) => {
-        if (keyEvent.metaKey || keyEvent.ctrlKey || keyEvent.altKey || keyEvent.shiftKey) return
-        actions.opacityDigit(digit)
-      }
-    },
-    {
-      id: `opacity-Numpad${digit}`,
-      keys: `Numpad${digit}`,
-      run: ({ keyEvent, actions }: KeyboardShortcutRunOptions) => {
-        if (keyEvent.metaKey || keyEvent.ctrlKey || keyEvent.altKey || keyEvent.shiftKey) return
-        actions.opacityDigit(digit)
-      }
+  return OPACITY_CODES.map((code) => ({
+    id: `opacity-${code}`,
+    keys: code,
+    run: ({ keyEvent, actions }: KeyboardShortcutRunOptions) => {
+      if (keyEvent.metaKey || keyEvent.ctrlKey || keyEvent.altKey || keyEvent.shiftKey) return
+      actions.opacityDigit(code.slice(-1))
     }
-  ])
+  }))
 }
 
 function shouldIgnoreShortcut(event: KeyboardEvent, options: KeyboardShortcutOptions) {
