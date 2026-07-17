@@ -1,20 +1,16 @@
 import type { SceneNode } from '@open-pencil/scene-graph'
 
-import { buildCloneIndex, instanceAndClones } from '#core/kiwi/fig/instance-overrides/clone-index'
-import { applyComponentPropRef } from '#core/kiwi/fig/instance-overrides/component-props/apply'
-import {
-  fallbackRefsForChild,
-  findPropRefs,
-  valueForRef
-} from '#core/kiwi/fig/instance-overrides/component-props/refs'
-import { assignmentsToValueMap } from '#core/kiwi/fig/instance-overrides/component-props/values'
-import { resolveOverrideTarget } from '#core/kiwi/fig/instance-overrides/resolve'
+import { buildCloneIndex, instanceAndClones } from '../clone-index'
+import { resolveOverrideTarget } from '../resolve'
 import type {
   ComponentPropAssignment,
   ComponentPropRef,
   ComponentPropValue,
   OverrideContext
-} from '#core/kiwi/fig/instance-overrides/types'
+} from '../types'
+import { applyComponentPropRef } from './apply'
+import { fallbackRefsForChild, findPropRefs, valueForRef } from './refs'
+import { assignmentsToValueMap } from './values'
 
 function applyChildPropRefs(
   ctx: OverrideContext,

@@ -1,8 +1,4 @@
-import type {
-  ComponentPropAssignment,
-  ComponentPropRef,
-  OverrideContext
-} from '#core/kiwi/fig/instance-overrides/types'
+import type { ComponentPropAssignment, ComponentPropRef, OverrideContext } from '../types'
 
 export function collectPropRefsMap(ctx: OverrideContext): Map<string, ComponentPropRef[]> {
   const result = new Map<string, ComponentPropRef[]>()

@@ -1,22 +1,22 @@
 import { isNotNil } from 'es-toolkit/predicate'
 
-import { applyStyleRefsToFields } from '@open-pencil/fig/node-change'
-import type { NodeChange, VariableDataValuesEntry, Color, GUID } from '@open-pencil/kiwi/fig/codec'
-import { SceneGraph } from '@open-pencil/scene-graph'
-import type { VariableType, VariableValue } from '@open-pencil/scene-graph'
-
-import { BLACK } from '#core/constants'
-import { populateAndApplyOverrides } from '#core/kiwi/fig/instance-overrides'
-import type { InstanceNodeChange } from '#core/kiwi/fig/instance-overrides'
-import { setLazyFigImportContext } from '#core/kiwi/fig/lazy-import'
+import { populateAndApplyOverrides } from '@open-pencil/fig/instance-overrides'
+import type { InstanceNodeChange } from '@open-pencil/fig/instance-overrides'
 import {
+  applyStyleRefsToFields,
   guidToString,
   nodeChangeToProps,
   shouldImportTextAsAutoSize,
   sortChildren,
   setVariableColorResolver,
   VARIABLE_BINDING_FIELDS_INVERSE
-} from '#core/kiwi/fig/node-change/convert'
+} from '@open-pencil/fig/node-change'
+import type { NodeChange, VariableDataValuesEntry, Color, GUID } from '@open-pencil/kiwi/fig/codec'
+import { SceneGraph } from '@open-pencil/scene-graph'
+import type { VariableType, VariableValue } from '@open-pencil/scene-graph'
+
+import { BLACK } from '#core/constants'
+import { setLazyFigImportContext } from '#core/kiwi/fig/lazy-import'
 
 type AssetRef = { key: string; version?: string }
 type AliasRef = { guid?: GUID; assetRef?: AssetRef }

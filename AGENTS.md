@@ -23,7 +23,7 @@ The root app (`src/`) is the Tauri/Vite desktop editor. App-specific editor, doc
 
 ### Public package exports
 
-Use public package exports across package/app boundaries. Do not import workspace package internals from app code.
+Use public package exports across package/app boundaries. Do not import workspace package internals from app code. Do not create cross-package re-export shim files whose only purpose is forwarding another package's API. Import the owning package directly at call sites; public compatibility barrels may re-export the owner directly when preserving an established package API.
 
 - `@open-pencil/scene-graph` — SceneGraph, node types, primitives, copy/snap/undo, instance helpers, variable helpers, vector-network types.
 - `@open-pencil/core` — broad compatibility barrel for editor/rendering/tooling APIs.

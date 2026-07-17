@@ -1,7 +1,6 @@
 import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
 
-import type { ProtectionMap } from '#core/kiwi/fig/instance-overrides/patches'
-
+import type { ProtectionMap } from '../patches'
 import { syncNodeProps } from './fields'
 
 export function recloneChildren(

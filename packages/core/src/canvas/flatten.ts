@@ -1,7 +1,6 @@
 import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
 import { copyFills } from '@open-pencil/scene-graph/copy'
-
-import { parseSVGPath } from '#core/io/formats/svg/parse-path'
+import { parseSVGPath } from '@open-pencil/scene-graph/parse-path'
 
 import { makeBooleanSourcePath, makeStrokeOutlinePath, nodePathTransform } from './boolean'
 import type { SkiaRenderer } from './renderer'

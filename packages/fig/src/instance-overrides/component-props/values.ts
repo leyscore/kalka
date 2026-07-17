@@ -1,11 +1,7 @@
+import { guidToString } from '@open-pencil/fig/node-change'
 import type { GUID } from '@open-pencil/kiwi/fig/codec'
 
-import type {
-  ComponentPropAssignment,
-  ComponentPropValue,
-  OverrideContext
-} from '#core/kiwi/fig/instance-overrides/types'
-import { guidToString } from '#core/kiwi/fig/node-change/convert'
+import type { ComponentPropAssignment, ComponentPropValue, OverrideContext } from '../types'
 
 export function normalizePropName(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]/g, '')

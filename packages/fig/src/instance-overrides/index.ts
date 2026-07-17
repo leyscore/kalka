@@ -1,3 +1,7 @@
+export { buildDsdLayoutUpdates } from './derived-symbol-data/layout'
+export { propagateDsdChanges } from './derived-symbol-data/propagate'
+export { protectField, type ProtectionMap } from './patches'
+export { syncChildrenDeep, syncNodeProps } from './sync'
 export type {
   InstanceNodeChange,
   OverrideContext,
@@ -10,11 +14,10 @@ export type {
   SymbolOverride
 } from './types'
 
+import { guidToString } from '@open-pencil/fig/node-change'
 import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
 import { copyFills, copyStyleRuns } from '@open-pencil/scene-graph/copy'
 import type { JsonObject } from '@open-pencil/scene-graph/primitives'
-
-import { guidToString } from '#core/kiwi/fig/node-change/convert'
 
 import { applyComponentProperties } from './component-props'
 import { applyConstraintScaling } from './constraints'

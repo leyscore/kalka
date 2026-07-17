@@ -1,8 +1,7 @@
 import type { SceneNode } from '@open-pencil/scene-graph'
 
-import { repopulateInstance } from '#core/kiwi/fig/instance-overrides/resolve'
-import type { OverrideContext } from '#core/kiwi/fig/instance-overrides/types'
-
+import { repopulateInstance } from '../resolve'
+import type { OverrideContext } from '../types'
 import { protectField, protectPatchProps } from './protection'
 import type { OverridePatch } from './types'
 

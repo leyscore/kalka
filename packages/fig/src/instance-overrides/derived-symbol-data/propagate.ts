@@ -1,8 +1,8 @@
 import type { SceneNode } from '@open-pencil/scene-graph'
 import { copyGeometryPaths } from '@open-pencil/scene-graph/copy'
 
-import { buildClonesMap } from '#core/kiwi/fig/instance-overrides/sync'
-import type { OverrideContext } from '#core/kiwi/fig/instance-overrides/types'
+import { buildClonesMap } from '../sync'
+import type { OverrideContext } from '../types'
 
 function buildCloneUpdates(
   ctx: OverrideContext,

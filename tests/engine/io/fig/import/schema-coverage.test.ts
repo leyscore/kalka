@@ -3,9 +3,8 @@ import { readFileSync } from 'node:fs'
 
 import ts from 'typescript'
 
+import { FIGMA_RAW_NODE_FIELD_KEYS } from '@open-pencil/fig/node-change'
 import { parseSchema } from '@open-pencil/kiwi/schema-runtime'
-
-import { FIGMA_RAW_NODE_FIELD_KEYS } from '#core/kiwi/fig/node-change/convert'
 
 interface SchemaField {
   name: string

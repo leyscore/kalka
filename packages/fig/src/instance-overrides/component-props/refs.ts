@@ -1,10 +1,6 @@
-import type {
-  ComponentPropRef,
-  ComponentPropValue,
-  OverrideContext
-} from '#core/kiwi/fig/instance-overrides/types'
-import { guidToString } from '#core/kiwi/fig/node-change/convert'
+import { guidToString } from '@open-pencil/fig/node-change'
 
+import type { ComponentPropRef, ComponentPropValue, OverrideContext } from '../types'
 import { normalizePropName, stringToGuidParts } from './values'
 
 export function findPropRefs(

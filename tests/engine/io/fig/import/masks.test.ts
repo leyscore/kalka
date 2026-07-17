@@ -1,8 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
+import { nodeChangeToProps } from '@open-pencil/fig/node-change'
 import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-
-import { nodeChangeToProps } from '#core/kiwi/fig/node-change/convert'
 
 describe('Figma mask import', () => {
   test('imports schema mask fields', () => {

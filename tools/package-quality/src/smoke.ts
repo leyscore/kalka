@@ -98,6 +98,10 @@ try {
     tempDir
   )
   nodeEval(
+    "const { populateAndApplyOverrides } = await import('@open-pencil/fig/instance-overrides'); if (typeof populateAndApplyOverrides !== 'function') throw new Error('Fig instance override subpath failed')",
+    tempDir
+  )
+  nodeEval(
     "const { SceneGraph } = await import('@open-pencil/scene-graph'); const graph = new SceneGraph(); if (graph.getPages().length !== 1) throw new Error('SceneGraph package smoke failed')",
     tempDir
   )

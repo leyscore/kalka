@@ -100,11 +100,6 @@
       "import": "./dist/io/formats/fig/index.js",
       "default": "./dist/io/formats/fig/index.js"
     },
-    "./io/formats/pen": {
-      "types": "./dist/io/formats/pen/index.d.ts",
-      "import": "./dist/io/formats/pen/index.js",
-      "default": "./dist/io/formats/pen/index.js"
-    },
     "./io/formats/jsx": {
       "types": "./dist/io/formats/jsx/index.d.ts",
       "import": "./dist/io/formats/jsx/index.js",

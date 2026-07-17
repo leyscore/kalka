@@ -1,12 +1,11 @@
-import { convertFigmaDerivedTextGlyphs } from '@open-pencil/fig/node-change'
+import {
+  convertFigmaDerivedTextGlyphs,
+  convertLetterSpacing,
+  convertLineHeight
+} from '@open-pencil/fig/node-change'
 import type { SceneNode } from '@open-pencil/scene-graph'
 
-import type {
-  DerivedSymbolOverride,
-  OverrideContext
-} from '#core/kiwi/fig/instance-overrides/types'
-import { convertLetterSpacing, convertLineHeight } from '#core/kiwi/fig/node-change/convert'
-
+import type { DerivedSymbolOverride, OverrideContext } from '../types'
 import { resolveDsdGeometry } from './geometry'
 
 function getVisibleSiblingCount(

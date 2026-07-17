@@ -16,15 +16,17 @@ export { buildFontDigestMap } from './font/digests'
 import {
   applyFontFeaturesToKiwi,
   BOUND_VARIABLES_PLUGIN_KEY,
+  guidToString,
   LAYOUT_DIRECTION_PLUGIN_KEY,
+  stringToGuid,
   TEXT_DIRECTION_PLUGIN_KEY,
-  upsertPluginData
+  upsertPluginData,
+  VARIABLE_BINDING_FIELDS
 } from '@open-pencil/fig/node-change'
 import type { NodeChange, Paint, VariableConsumptionEntry } from '@open-pencil/kiwi/fig/codec'
 import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
 import type { Color, GUID, JsonObject, Matrix } from '@open-pencil/scene-graph/primitives'
 
-import { guidToString, stringToGuid, VARIABLE_BINDING_FIELDS } from './convert'
 import {
   buildAssetRefToVarGuidMap,
   sceneNodeToKiwiWithContext,

@@ -1,7 +1,6 @@
-import { applyOverridePatch } from '#core/kiwi/fig/instance-overrides/patches'
-import { resolveOverrideTarget } from '#core/kiwi/fig/instance-overrides/resolve'
-import type { OverrideContext } from '#core/kiwi/fig/instance-overrides/types'
-
+import { applyOverridePatch } from '../patches'
+import { resolveOverrideTarget } from '../resolve'
+import type { OverrideContext } from '../types'
 import { patchFromSymbolOverride } from './patches'
 
 function isActiveInstance(ctx: OverrideContext, nodeId: string | undefined): nodeId is string {

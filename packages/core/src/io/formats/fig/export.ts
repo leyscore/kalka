@@ -1,6 +1,8 @@
 import type { CanvasKit } from 'canvaskit-wasm'
 import { deflateSync, inflateSync } from 'fflate'
 
+import { compressFigDataSync } from '@open-pencil/fig'
+import { stringToGuid } from '@open-pencil/fig/node-change'
 import { initCodec, getCompiledSchema, getSchemaBytes } from '@open-pencil/kiwi/fig/codec'
 import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
 import { decodeBinarySchema, compileSchema, ByteBuffer } from '@open-pencil/kiwi/schema-runtime'
@@ -11,7 +13,6 @@ import type { SkiaRenderer } from '#core/canvas'
 import { CANVAS_BG_COLOR, IS_BROWSER, IS_TAURI } from '#core/constants'
 import { renderThumbnail } from '#core/io/formats/raster'
 import { populateAllLazyFigImportRoots } from '#core/kiwi/fig/lazy-import'
-import { stringToGuid } from '#core/kiwi/fig/node-change/convert'
 import {
   sceneNodeToKiwi,
   fractionalPosition,
@@ -20,8 +21,6 @@ import {
   makeDocumentNodeChange,
   makeCanvasNodeChange
 } from '#core/kiwi/fig/node-change/serialize'
-
-import { compressFigDataSync } from './compress'
 
 const THUMBNAIL_1X1 = Uint8Array.from(
   atob(
@@ -521,7 +520,7 @@ export async function exportFigFile(
   return compressFigData(schemaDeflated, kiwiData, thumbnailPng, metaJson, imageEntries, version)
 }
 
-export { compressFigDataSync } from './compress'
+export { compressFigDataSync } from '@open-pencil/fig'
 
 function canUseWorker(): boolean {
   return typeof Worker !== 'undefined' && IS_BROWSER

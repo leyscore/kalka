@@ -14,13 +14,13 @@ Current ownership:
 - `readFigContainer()` / `writeFigContainer()` helpers for raw `fig-kiwi` payloads
 - `.fig` source and archive result types
 - NodeChange-to-SceneGraph property conversion, including styles, plugin metadata, text, paint, vector, and font policy, through `@open-pencil/fig/node-change`
-- Package-local archive, conversion, and dist smoke tests
+- Component-property, symbol-override, derived-symbol-data, and instance synchronization policy through `@open-pencil/fig/instance-overrides`
+- Package-local archive, conversion, instance, and dist smoke tests
 
 Planned ownership:
 
 - Remaining SceneGraph-to-`NodeChange` export conversion and document orchestration
 - Raw Figma metadata precedence and invalidation policy
-- Component and instance interpretation
 - Oracle-backed `.fig` fixtures
 
 Non-goals:

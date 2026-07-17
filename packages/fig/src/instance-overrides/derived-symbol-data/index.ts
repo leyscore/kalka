@@ -1,10 +1,6 @@
-import { applyOverridePatch } from '#core/kiwi/fig/instance-overrides/patches'
-import { resolveOverrideTarget } from '#core/kiwi/fig/instance-overrides/resolve'
-import type {
-  DerivedSymbolOverride,
-  OverrideContext
-} from '#core/kiwi/fig/instance-overrides/types'
-
+import { applyOverridePatch } from '../patches'
+import { resolveOverrideTarget } from '../resolve'
+import type { DerivedSymbolOverride, OverrideContext } from '../types'
 import { buildDsdLayoutUpdates } from './layout'
 import { propagateDsdChanges } from './propagate'
 
