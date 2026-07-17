@@ -42,11 +42,11 @@ describe('dynamic Tailwind state classes', () => {
     expect(diagnostics).toHaveLength(1)
   })
 
-  test('allows only audited locations inside legacy files', () => {
+  test('rejects dynamic utility state in previously audited files', () => {
     const audited = `<template>${'\n'.repeat(36)}<button :class="active ? 'bg-hover' : 'text-muted'" /></template>`
     expect(
       dynamicClassDiagnostics('src/components/CollabPanel/CollabAvatarStack.vue', audited)
-    ).toEqual([])
+    ).toHaveLength(1)
     expect(
       dynamicClassDiagnostics(
         'src/components/LayersPanel.vue',
