@@ -5,14 +5,17 @@ import { parseVariantName } from '@open-pencil/scene-graph/variant-name'
 import { DEFAULT_FONT_FAMILY, DEFAULT_STROKE_MITER_LIMIT } from '#core/constants'
 import { styleToWeight } from '#core/text/fonts'
 
-import { convertEffects, convertFills, convertStrokes } from './paint'
 import { importStyleRuns } from './style-runs'
 export { importStyleRuns } from './style-runs'
 import {
+  convertEffects,
+  convertFigmaDerivedTextGlyphs,
+  convertFills,
   convertFontFeatures,
   convertFontVariations,
   convertLetterSpacing,
   convertLineHeight,
+  convertStrokes,
   extractBoundVariables,
   extractExportSettings,
   extractPluginData,
@@ -24,12 +27,14 @@ import {
   mapTextDecoration
 } from '@open-pencil/fig/node-change'
 
-import { convertFigmaDerivedTextGlyphs } from './derived-text-glyphs'
-export { convertEffects, convertFills, convertStrokes, setVariableColorResolver } from './paint'
 export {
+  convertEffects,
+  convertFills,
   convertLetterSpacing,
   convertLineHeight,
-  mapTextDecoration
+  convertStrokes,
+  mapTextDecoration,
+  setVariableColorResolver
 } from '@open-pencil/fig/node-change'
 import { resolveGeometryPaths, resolveVectorNetwork } from './vector-geometry'
 export { resolveGeometryPaths } from './vector-geometry'

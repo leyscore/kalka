@@ -2,6 +2,8 @@ import { describe, expect, test } from 'bun:test'
 
 import {
   applyStyleRefsToFields,
+  convertEffects,
+  convertFills,
   convertFontFeatures,
   convertLetterSpacing,
   convertLineHeight,
@@ -25,6 +27,19 @@ describe('@open-pencil/fig NodeChange policy', () => {
       { tag: 'DLIG', enabled: true },
       { tag: 'LIGA', enabled: false }
     ])
+  })
+
+  test('normalizes imported paints and effects', () => {
+    expect(convertFills([{ type: 'SOLID' }])[0]).toMatchObject({
+      color: { r: 0, g: 0, b: 0, a: 1 },
+      opacity: 1,
+      visible: true
+    })
+    expect(convertEffects([{ type: 'DROP_SHADOW' }])[0]).toMatchObject({
+      type: 'DROP_SHADOW',
+      radius: 0,
+      visible: true
+    })
   })
 
   test('resolves imported style references before SceneGraph conversion', () => {
