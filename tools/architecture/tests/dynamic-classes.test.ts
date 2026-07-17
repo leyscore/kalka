@@ -43,8 +43,10 @@ describe('dynamic Tailwind state classes', () => {
   })
 
   test('allows only audited locations inside legacy files', () => {
-    const audited = `<template>${'\n'.repeat(19)}<button :class="active ? 'bg-hover' : 'text-muted'" /></template>`
-    expect(dynamicClassDiagnostics('src/components/Toolbar/ToolButton.vue', audited)).toEqual([])
+    const audited = `<template>${'\n'.repeat(36)}<button :class="active ? 'bg-hover' : 'text-muted'" /></template>`
+    expect(
+      dynamicClassDiagnostics('src/components/CollabPanel/CollabAvatarStack.vue', audited)
+    ).toEqual([])
     expect(
       dynamicClassDiagnostics(
         'src/components/LayersPanel.vue',
