@@ -97,6 +97,30 @@ describe('editor.setOpacity', () => {
     editor.setOpacity(0.5)
     expect(editor.undo.canUndo).toBe(false)
   })
+
+  test('rejects NaN', () => {
+    const { editor, rect } = setup()
+
+    editor.setOpacity(Number.NaN)
+    expect(getNodeOrThrow(editor.graph, rect.id).opacity).toBe(1)
+    expect(editor.undo.canUndo).toBe(false)
+  })
+
+  test('rejects Infinity', () => {
+    const { editor, rect } = setup()
+
+    editor.setOpacity(Number.POSITIVE_INFINITY)
+    expect(getNodeOrThrow(editor.graph, rect.id).opacity).toBe(1)
+    expect(editor.undo.canUndo).toBe(false)
+  })
+
+  test('rejects -Infinity', () => {
+    const { editor, rect } = setup()
+
+    editor.setOpacity(Number.NEGATIVE_INFINITY)
+    expect(getNodeOrThrow(editor.graph, rect.id).opacity).toBe(1)
+    expect(editor.undo.canUndo).toBe(false)
+  })
 })
 
 describe('opacityFromBuffer', () => {

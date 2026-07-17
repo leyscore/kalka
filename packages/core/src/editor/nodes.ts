@@ -11,7 +11,7 @@ import { createVariableBindingActions } from './variable-bindings'
 export function opacityFromBuffer(buffer: string): number {
   if (buffer === '0') return 1
   const n = Number.parseInt(buffer, 10)
-  if (Number.isNaN(n)) return 1
+  if (!Number.isFinite(n)) return 1
   const percent = buffer.length === 1 ? n * 10 : n
   return Math.min(100, Math.max(0, percent)) / 100
 }
@@ -60,6 +60,7 @@ export function createNodeActions(ctx: EditorContext) {
   }
 
   function setOpacity(opacity: number) {
+    if (!Number.isFinite(opacity)) return
     const clamped = Math.max(0, Math.min(1, opacity))
     const ids = [...ctx.state.selectedIds]
     if (ids.length === 0) return
