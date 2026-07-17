@@ -351,7 +351,6 @@ const RAW_FIELDS_OVERRIDE_BLOCKLIST = new Set([
   'pageType',
   'derivedSymbolData',
   'derivedSymbolDataLayoutVersion',
-  'componentPropAssignments',
   'sourceLibraryKey',
   // Variable consumption maps: explicit serialization always sets these when
   // bindings exist, and our VARIABLE_BINDING_FIELDS mapping may produce different
@@ -539,6 +538,15 @@ function findComponentPropertyDefinition(graph: SceneGraph, id: string) {
   return undefined
 }
 
+function shouldSerializeRawBackedField(
+  node: SceneNode,
+  rawField: string,
+  hasValue: boolean,
+  alreadySerialized = false
+): boolean {
+  return hasValue && !(rawField in node.source.fig.rawNodeFields) && !alreadySerialized
+}
+
 function applyComponentMetadata(
   context: SceneNodeToKiwiContext,
   node: SceneNode,
@@ -572,7 +580,9 @@ function applyComponentMetadata(
         : null
     })
     .filter((def): def is NonNullable<typeof def> => def !== null)
-  if (componentPropDefs.length > 0) nc.componentPropDefs = componentPropDefs
+  if (shouldSerializeRawBackedField(node, 'componentPropDefs', componentPropDefs.length > 0)) {
+    nc.componentPropDefs = componentPropDefs
+  }
 
   const componentPropRefs = node.componentPropertyReferences
     .map((ref) => {
@@ -581,7 +591,9 @@ function applyComponentMetadata(
       return { defID, componentPropNodeField: componentPropertyNodeField(ref.field) }
     })
     .filter((ref): ref is NonNullable<typeof ref> => ref !== null)
-  if (componentPropRefs.length > 0) nc.componentPropRefs = componentPropRefs
+  if (shouldSerializeRawBackedField(node, 'componentPropRefs', componentPropRefs.length > 0)) {
+    nc.componentPropRefs = componentPropRefs
+  }
 
   const componentPropAssignments = Object.entries(node.componentPropertyAssignments)
     .map(([propertyId, value]) => {
@@ -595,7 +607,14 @@ function applyComponentMetadata(
         : null
     })
     .filter((assignment): assignment is NonNullable<typeof assignment> => assignment !== null)
-  if (componentPropAssignments.length > 0) {
+  if (
+    shouldSerializeRawBackedField(
+      node,
+      'componentPropAssignments',
+      componentPropAssignments.length > 0,
+      Boolean(nc.componentPropAssignments)
+    )
+  ) {
     nc.componentPropAssignments = componentPropAssignments
   }
 
@@ -605,7 +624,9 @@ function applyComponentMetadata(
       return propDefId ? { propDefId, value: spec.value } : null
     })
     .filter((spec): spec is NonNullable<typeof spec> => spec !== null)
-  if (variantPropSpecs.length > 0) nc.variantPropSpecs = variantPropSpecs
+  if (shouldSerializeRawBackedField(node, 'variantPropSpecs', variantPropSpecs.length > 0)) {
+    nc.variantPropSpecs = variantPropSpecs
+  }
 }
 
 function exportNodeSize(node: SceneNode): Vector {
@@ -669,9 +690,7 @@ function applySharedStyleProps(node: SceneNode, nc: KiwiNodeChange): void {
   if (node.textStyleId) nc.styleIdForText = { guid: stringToGuid(node.textStyleId) }
   if (node.effectStyleId) nc.styleIdForEffect = { guid: stringToGuid(node.effectStyleId) }
   if (node.gridStyleId) nc.styleIdForGrid = { guid: stringToGuid(node.gridStyleId) }
-  if (node.layoutGrids.length > 0 || 'layoutGrids' in node.source.fig.rawNodeFields) {
-    nc.layoutGrids = structuredClone(node.layoutGrids)
-  }
+  if (node.layoutGrids.length > 0) nc.layoutGrids = structuredClone(node.layoutGrids)
 }
 
 function applyNodeVisualProps(
