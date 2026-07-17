@@ -1,4 +1,11 @@
-export { parseFigBuffer, type FigParseResult } from './archive'
+export {
+  compressFigDataSync,
+  parseFigBuffer,
+  writeFigArchive,
+  type FigImageEntry,
+  type FigParseResult,
+  type WriteFigArchiveInput
+} from './archive'
 
 import {
   FIG_KIWI_DEFAULT_VERSION,

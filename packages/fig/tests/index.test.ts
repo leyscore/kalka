@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'bun:test'
 
-import { deflateSync, zipSync } from 'fflate'
+import { deflateSync } from 'fflate'
 
 import {
   createNodeChangesMessage,
@@ -14,6 +14,7 @@ import {
   assertFigPackageReady,
   parseFigBuffer,
   readFigContainer,
+  writeFigArchive,
   writeFigContainer
 } from '../src/index'
 
@@ -40,9 +41,9 @@ describe('@open-pencil/fig package API', () => {
   })
 
   it('parses complete .fig archives and image resources', () => {
-    const canvas = writeFigContainer({
+    const bytes = writeFigArchive({
       schemaDeflated: deflateSync(getSchemaBytes()),
-      dataRaw: encodeMessage(
+      kiwiData: encodeMessage(
         createNodeChangesMessage(0, 0, [
           {
             guid: { sessionID: 0, localID: 0 },
@@ -52,11 +53,9 @@ describe('@open-pencil/fig package API', () => {
           }
         ])
       ),
-      source: { fileName: 'fixture.fig' }
-    })
-    const bytes = zipSync({
-      'canvas.fig': canvas,
-      'images/hash': new Uint8Array([9, 8, 7])
+      thumbnailPng: new Uint8Array([1]),
+      metaJson: '{}',
+      images: [{ name: 'images/hash', data: new Uint8Array([9, 8, 7]) }]
     })
     const parsed = parseFigBuffer(bytes.buffer as ArrayBuffer)
 

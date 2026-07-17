@@ -1,7 +1,22 @@
-import { unzipSync } from 'fflate'
+import { unzipSync, zipSync, type Zippable } from 'fflate'
 
 import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
+import { buildFigKiwi } from '@open-pencil/kiwi/fig/container'
 import { decodeFigKiwiCanvas } from '@open-pencil/kiwi/fig/parse'
+
+export interface FigImageEntry {
+  name: string
+  data: Uint8Array
+}
+
+export interface WriteFigArchiveInput {
+  schemaDeflated: Uint8Array
+  kiwiData: Uint8Array
+  thumbnailPng: Uint8Array
+  metaJson: string
+  images?: FigImageEntry[]
+  figKiwiVersion?: number
+}
 
 export interface FigParseResult {
   nodeChanges: NodeChange[]
@@ -50,4 +65,35 @@ export function parseFigBuffer(buffer: ArrayBuffer): FigParseResult {
     .map(([name, data]) => [name.slice('images/'.length), data] as [string, Uint8Array])
 
   return { ...decoded, images }
+}
+
+/** Assemble a complete zipped `.fig` archive from an encoded Kiwi message and resources. */
+export function writeFigArchive(input: WriteFigArchiveInput): Uint8Array {
+  const canvasData = buildFigKiwi(input.schemaDeflated, input.kiwiData, input.figKiwiVersion)
+  const entries: Zippable = {
+    'canvas.fig': [canvasData, { level: 0 }],
+    'thumbnail.png': [input.thumbnailPng, { level: 0 }],
+    'meta.json': new TextEncoder().encode(input.metaJson)
+  }
+  for (const image of input.images ?? []) entries[image.name] = [image.data, { level: 0 }]
+  return zipSync(entries)
+}
+
+/** Compatibility signature used by core while archive assembly migrates to this package. */
+export function compressFigDataSync(
+  schemaDeflated: Uint8Array,
+  kiwiData: Uint8Array,
+  thumbnailPng: Uint8Array,
+  metaJson: string,
+  imageEntries: FigImageEntry[],
+  figKiwiVersion?: number
+): Uint8Array {
+  return writeFigArchive({
+    schemaDeflated,
+    kiwiData,
+    thumbnailPng,
+    metaJson,
+    images: imageEntries,
+    figKiwiVersion
+  })
 }

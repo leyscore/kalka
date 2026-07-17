@@ -9,13 +9,13 @@ SceneGraph conversion policy. Production SceneGraph read/write remains available
 Current ownership:
 
 - Complete `.fig` archive parsing through `parseFigBuffer()`
-- Canvas payload and image resource discovery
+- `.fig` archive assembly through `writeFigArchive()`
+- Canvas payload and image resource handling
 - `readFigContainer()` / `writeFigContainer()` helpers for raw `fig-kiwi` payloads
 - `.fig` source and archive result types
 
 Planned ownership:
 
-- `.fig` archive assembly
 - SceneGraph ⇄ Figma `NodeChange` conversion
 - Raw Figma metadata precedence and invalidation policy
 - Component and instance interpretation
