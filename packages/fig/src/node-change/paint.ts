@@ -11,11 +11,13 @@ import type {
   StrokeCap,
   StrokeJoin
 } from '@open-pencil/scene-graph'
+import { BLACK } from '@open-pencil/scene-graph/constants'
 import type { Color, Matrix } from '@open-pencil/scene-graph/primitives'
 
-import { normalizeColor } from '#core/color'
-
-const convertColor = normalizeColor
+function convertColor(color?: Partial<Color>): Color {
+  if (!color) return { ...BLACK }
+  return { r: color.r ?? 0, g: color.g ?? 0, b: color.b ?? 0, a: color.a ?? 1 }
+}
 
 function imageHashToString(hash: Record<string, number>): string {
   const bytes = Object.keys(hash)

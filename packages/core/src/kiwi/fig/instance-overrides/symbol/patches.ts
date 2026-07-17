@@ -1,3 +1,4 @@
+import { applyStyleRefsToFields } from '@open-pencil/fig/node-change'
 import type { GUID } from '@open-pencil/kiwi/fig/codec'
 
 import type { OverridePatch } from '#core/kiwi/fig/instance-overrides/patches'
@@ -7,7 +8,6 @@ import type {
   SymbolOverrideFields
 } from '#core/kiwi/fig/instance-overrides/types'
 import { guidToString, VARIABLE_BINDING_FIELDS_INVERSE } from '#core/kiwi/fig/node-change/convert'
-import { applyStyleRefsToFields } from '#core/kiwi/fig/node-change/style-refs'
 
 import { convertOverrideToProps } from './props'
 

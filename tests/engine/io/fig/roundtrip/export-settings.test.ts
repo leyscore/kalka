@@ -8,7 +8,7 @@ import {
   SceneGraph,
   type NodeChange
 } from '@open-pencil/core'
-import { parseFigBuffer } from '@open-pencil/kiwi/fig/parse'
+import { parseFigBuffer } from '@open-pencil/fig'
 import { MAX_EXPORT_SCALE } from '@open-pencil/scene-graph'
 
 function decodeExport(bytes: Uint8Array) {

@@ -1,12 +1,15 @@
+import {
+  convertFontFeatures,
+  convertFontVariations,
+  convertFills,
+  convertLetterSpacing,
+  convertLineHeight,
+  mapTextDecoration
+} from '@open-pencil/fig/node-change'
 import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
 import type { CharacterStyleOverride, StyleRun } from '@open-pencil/scene-graph'
 
 import { styleToWeight } from '#core/text/fonts'
-
-import { convertFontFeatures } from './font/features'
-import { convertFontVariations } from './font/variations'
-import { convertFills } from './paint'
-import { convertLetterSpacing, convertLineHeight, mapTextDecoration } from './text-values'
 
 function applyTextDecorationOverride(style: CharacterStyleOverride, override: NodeChange): void {
   const deco = override.textDecoration

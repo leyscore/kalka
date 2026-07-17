@@ -1,28 +1,36 @@
 # @open-pencil/fig
 
-`.fig` document policy package for OpenPencil.
+`.fig` file-format package for OpenPencil.
 
-This package currently exposes low-level `fig-kiwi` container read/write helpers and remains the staging area for the next package-split stage. Use `@open-pencil/core` for production SceneGraph `.fig` read/write APIs until higher-level behavior moves here.
+The package owns the outer `.fig` archive boundary and is the staged home for Figma-specific
+SceneGraph conversion policy. Production SceneGraph read/write remains available through
+`@open-pencil/core/io` while conversion modules move behind this package's public API.
 
 Current ownership:
 
-- `readFigContainer()` / `writeFigContainer()` wrappers over `@open-pencil/kiwi` container helpers
-- `.fig` document source typing
+- Complete `.fig` archive parsing through `parseFigBuffer()`
+- `.fig` archive assembly through `writeFigArchive()`
+- Canvas payload and image resource handling
+- `readFigContainer()` / `writeFigContainer()` helpers for raw `fig-kiwi` payloads
+- `.fig` source and archive result types
+- Dependency-free NodeChange policy helpers for styles, plugin metadata, text values, and font axes/features through `@open-pencil/fig/node-change`
 
 Planned ownership:
 
-- `.fig` read/write orchestration
-- SceneGraph ⇄ Figma NodeChange conversion policy
-- raw Figma metadata preservation and invalidation
-- component/instance interpretation
-- oracle-backed `.fig` fixtures and package-local tests
+- SceneGraph ⇄ Figma `NodeChange` conversion
+- Raw Figma metadata precedence and invalidation policy
+- Component and instance interpretation
+- Oracle-backed `.fig` fixtures and package-local tests
 
 Non-goals:
 
-- low-level Kiwi schema/runtime/codec internals — use `@open-pencil/kiwi`
-- editor actions, renderer behavior, Vue/app UI, CLI formatting, or MCP transport
+- Generic Kiwi schema/runtime internals — use `@open-pencil/kiwi`
+- Format-neutral IO registration, export targeting, CanvasKit thumbnails, or browser workers — use
+  `@open-pencil/core/io`
+- Editor actions, renderer behavior, Vue/app UI, CLI formatting, or MCP transport
 
-See `packages/docs/development/fig-package-plan.md` for the staged migration plan.
+This follows the existing `@open-pencil/pen` pattern: a format package owns its source model/parser
+and SceneGraph policy, while core registers it in the shared IO system.
 
 ## Checks
 

@@ -5,16 +5,17 @@ import { parseVariantName } from '@open-pencil/scene-graph/variant-name'
 import { DEFAULT_FONT_FAMILY, DEFAULT_STROKE_MITER_LIMIT } from '#core/constants'
 import { styleToWeight } from '#core/text/fonts'
 
-import { convertEffects, convertFills, convertStrokes } from './paint'
 import { importStyleRuns } from './style-runs'
 export { importStyleRuns } from './style-runs'
-import { convertFigmaDerivedTextGlyphs } from './derived-text-glyphs'
-import { convertFontFeatures } from './font/features'
-import { convertFontVariations } from './font/variations'
-import { convertLetterSpacing, convertLineHeight, mapTextDecoration } from './text-values'
-export { convertEffects, convertFills, convertStrokes, setVariableColorResolver } from './paint'
-export { convertLetterSpacing, convertLineHeight, mapTextDecoration } from './text-values'
 import {
+  convertEffects,
+  convertFigmaDerivedTextGlyphs,
+  convertFills,
+  convertFontFeatures,
+  convertFontVariations,
+  convertLetterSpacing,
+  convertLineHeight,
+  convertStrokes,
   extractBoundVariables,
   extractExportSettings,
   extractPluginData,
@@ -22,8 +23,19 @@ import {
   getOpenPencilPluginValue,
   LAYOUT_DIRECTION_PLUGIN_KEY,
   NODE_TYPE_PLUGIN_KEY,
-  TEXT_DIRECTION_PLUGIN_KEY
-} from './plugin-data'
+  TEXT_DIRECTION_PLUGIN_KEY,
+  mapTextDecoration
+} from '@open-pencil/fig/node-change'
+
+export {
+  convertEffects,
+  convertFills,
+  convertLetterSpacing,
+  convertLineHeight,
+  convertStrokes,
+  mapTextDecoration,
+  setVariableColorResolver
+} from '@open-pencil/fig/node-change'
 import { resolveGeometryPaths, resolveVectorNetwork } from './vector-geometry'
 export { resolveGeometryPaths } from './vector-geometry'
 

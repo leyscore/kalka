@@ -13,6 +13,13 @@ export {
 } from '@open-pencil/kiwi/fig/container'
 export { buildFontDigestMap } from './font/digests'
 
+import {
+  applyFontFeaturesToKiwi,
+  BOUND_VARIABLES_PLUGIN_KEY,
+  LAYOUT_DIRECTION_PLUGIN_KEY,
+  TEXT_DIRECTION_PLUGIN_KEY,
+  upsertPluginData
+} from '@open-pencil/fig/node-change'
 import type { NodeChange, Paint, VariableConsumptionEntry } from '@open-pencil/kiwi/fig/codec'
 import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
 import type { Color, GUID, JsonObject, Matrix } from '@open-pencil/scene-graph/primitives'
@@ -23,13 +30,6 @@ import {
   sceneNodeToKiwiWithContext,
   type KiwiNodeChange
 } from './export-node'
-import { applyFontFeaturesToKiwi } from './font/features'
-import {
-  BOUND_VARIABLES_PLUGIN_KEY,
-  LAYOUT_DIRECTION_PLUGIN_KEY,
-  TEXT_DIRECTION_PLUGIN_KEY,
-  upsertPluginData
-} from './plugin-data'
 import { exportTextData, fontVariationToKiwi } from './text-data-export'
 
 export function mapToFigmaType(type: SceneNode['type']): string {
