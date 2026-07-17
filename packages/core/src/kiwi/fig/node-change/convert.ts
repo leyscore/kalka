@@ -48,6 +48,7 @@ import type {
   SharedStyleType,
   VectorNetwork,
   ComponentPropertyDefinition,
+  ComponentPropertyReference,
   ComponentPropertyType,
   SymbolLink,
   VariantPropSpec
@@ -635,6 +636,8 @@ export function nodeChangeToProps(
     clipsContent: nc.frameMaskDisabled === false && nc.resizeToFit !== true,
     componentId: extractSymbolId(nc),
     componentPropertyDefinitions: extractComponentPropertyDefs(nc),
+    componentPropertyReferences: extractComponentPropertyRefs(nc),
+    componentPropertyAssignments: extractComponentPropertyAssignments(nc),
     componentPropertyValues: extractComponentPropertyValues(nc),
     ...extractComponentMetadata(nc)
   }
@@ -668,6 +671,35 @@ interface RawComponentPropDef {
   name?: string
   type?: string
   initialValue?: unknown
+  preferredValues?: {
+    stringValues?: string[]
+    instanceSwapValues?: Array<{ key?: string }>
+  }
+}
+
+interface RawComponentPropRef {
+  defID?: GUID
+  componentPropNodeField?: string | number
+  isDeleted?: boolean
+}
+
+interface RawComponentPropValue {
+  boolValue?: boolean
+  textValue?: string | { characters?: string }
+  guidValue?: GUID
+}
+
+interface RawComponentPropAssignment {
+  defID?: GUID
+  value?: RawComponentPropValue
+  varValue?: {
+    value?: {
+      boolValue?: boolean
+      textValue?: string
+      textDataValue?: { characters?: string }
+      symbolIdValue?: { guid?: GUID }
+    }
+  }
 }
 
 interface RawSymbolData {
@@ -687,10 +719,63 @@ function extractComponentPropertyDefs(nc: NodeChange): ComponentPropertyDefiniti
       name: def.name,
       type: propType,
       defaultValue: componentPropValueToString(def.initialValue),
-      variantOptions: propType === 'VARIANT' ? undefined : undefined
+      variantOptions: propType === 'VARIANT' ? def.preferredValues?.stringValues : undefined,
+      preferredValues:
+        propType === 'INSTANCE_SWAP'
+          ? def.preferredValues?.instanceSwapValues
+              ?.map((value) => value.key)
+              .filter((value): value is string => value !== undefined)
+          : undefined
     })
   }
   return result
+}
+
+function extractComponentPropertyRefs(nc: NodeChange): ComponentPropertyReference[] {
+  const refs = nc.componentPropRefs as RawComponentPropRef[] | undefined
+  if (!refs?.length) return []
+  const fieldMap: Record<string, ComponentPropertyReference['field'] | undefined> = {
+    '0': 'VISIBLE',
+    '1': 'TEXT',
+    '2': 'INSTANCE_SWAP',
+    VISIBLE: 'VISIBLE',
+    TEXT_DATA: 'TEXT',
+    OVERRIDDEN_SYMBOL_ID: 'INSTANCE_SWAP'
+  }
+  return refs.flatMap((ref) => {
+    const field = fieldMap[String(ref.componentPropNodeField)]
+    return ref.defID && field && !ref.isDeleted
+      ? [{ propertyId: guidToString(ref.defID), field }]
+      : []
+  })
+}
+
+function componentPropertyAssignmentValue(assignment: RawComponentPropAssignment): string {
+  if (
+    assignment.value &&
+    (assignment.value.boolValue !== undefined ||
+      assignment.value.textValue !== undefined ||
+      assignment.value.guidValue !== undefined)
+  ) {
+    return componentPropValueToString(assignment.value)
+  }
+  const variableValue = assignment.varValue?.value
+  if (variableValue?.symbolIdValue?.guid) return guidToString(variableValue.symbolIdValue.guid)
+  if (variableValue?.boolValue !== undefined) return String(variableValue.boolValue)
+  if (variableValue?.textValue !== undefined) return variableValue.textValue
+  return variableValue?.textDataValue?.characters ?? ''
+}
+
+function extractComponentPropertyAssignments(nc: NodeChange): Record<string, string> {
+  const assignments = nc.componentPropAssignments as RawComponentPropAssignment[] | undefined
+  if (!assignments?.length) return {}
+  return Object.fromEntries(
+    assignments.flatMap((assignment) =>
+      assignment.defID
+        ? [[guidToString(assignment.defID), componentPropertyAssignmentValue(assignment)]]
+        : []
+    )
+  )
 }
 
 function extractVariantPropSpecs(nc: NodeChange): VariantPropSpec[] {
@@ -881,6 +966,7 @@ export const FIGMA_RAW_NODE_FIELD_KEYS = [
   'styleIdForEffect',
   'styleIdForGrid',
   'styleType',
+  'componentPropAssignments',
   'backgroundPaints',
   'layoutGrids',
   'exportSettings',

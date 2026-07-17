@@ -6,12 +6,15 @@ const RAW_SIZE_KEYS = new Set(['width', 'height'])
 
 const RAW_TRANSFORM_KEYS = new Set(['x', 'y', 'rotation', 'flipX', 'flipY'])
 
-const STYLE_RAW_FIELDS: Partial<Record<string, string>> = {
+const EDITED_RAW_FIELDS: Partial<Record<string, string>> = {
   fillStyleId: 'styleIdForFill',
   strokeStyleId: 'styleIdForStrokeFill',
   textStyleId: 'styleIdForText',
   effectStyleId: 'styleIdForEffect',
-  gridStyleId: 'styleIdForGrid'
+  gridStyleId: 'styleIdForGrid',
+  componentPropertyDefinitions: 'componentPropDefs',
+  componentPropertyReferences: 'componentPropRefs',
+  componentPropertyAssignments: 'componentPropAssignments'
 }
 
 const RAW_NODE_FIELD_KEYS = new Set([
@@ -93,11 +96,11 @@ const RAW_NODE_FIELD_KEYS = new Set([
 ])
 
 export function clearEditedSourceMetadata(node: SceneNode, changeKeys: string[]): void {
-  const styleRawFields = changeKeys
-    .map((key) => STYLE_RAW_FIELDS[key])
+  const editedRawFields = changeKeys
+    .map((key) => EDITED_RAW_FIELDS[key])
     .filter((field): field is string => field !== undefined)
-  if (styleRawFields.length > 0) {
-    node.source.fig.rawNodeFields = omit(node.source.fig.rawNodeFields, styleRawFields)
+  if (editedRawFields.length > 0) {
+    node.source.fig.rawNodeFields = omit(node.source.fig.rawNodeFields, editedRawFields)
   }
   if (changeKeys.some((key) => RAW_SIZE_KEYS.has(key))) node.source.fig.rawSize = null
   if (changeKeys.some((key) => RAW_TRANSFORM_KEYS.has(key))) node.source.fig.rawTransform = null

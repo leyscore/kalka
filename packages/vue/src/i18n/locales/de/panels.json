@@ -138,6 +138,7 @@
   "strokeMiterLimit": "Gehrungsgrenze",
   "add": "Hinzufügen",
   "variants": "Varianten",
+  "componentProperties": "Komponenteneigenschaften",
   "gapAuto": "Automatischer Abstand",
   "horizontalGap": "Horizontaler Abstand",
   "verticalGap": "Vertikaler Abstand",

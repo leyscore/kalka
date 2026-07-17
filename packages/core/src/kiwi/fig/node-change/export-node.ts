@@ -1,6 +1,11 @@
 import type { NodeChange, Paint } from '@open-pencil/kiwi/fig/codec'
 import { stringToGuid } from '@open-pencil/kiwi/fig/guid'
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import type {
+  ComponentPropertyDefinition,
+  ComponentPropertyReferenceField,
+  SceneGraph,
+  SceneNode
+} from '@open-pencil/scene-graph'
 import type { Color, GUID, Matrix, Vector } from '@open-pencil/scene-graph/primitives'
 
 /* eslint-disable max-lines */
@@ -122,14 +127,19 @@ function createStrokePaints(context: SceneNodeToKiwiContext, node: SceneNode): P
   )
 }
 
-function componentPropertyValue(value: string) {
-  return { textValue: { characters: value } }
-}
-
 function componentPropertyTypeForKiwi(type: string) {
   if (type === 'BOOLEAN') return 'BOOL'
-  if (type === 'VARIANT') return 'TEXT'
   return type
+}
+
+function componentPropertyValue(type: string, value: string, graph: SceneGraph) {
+  if (type === 'BOOLEAN') return { boolValue: value === 'true' }
+  if (type === 'INSTANCE_SWAP') {
+    const target = graph.getNode(value)
+    const guid = parseGuidOrNull(target?.source.id ?? value)
+    return guid ? { guidValue: guid } : { textValue: { characters: value } }
+  }
+  return { textValue: { characters: value } }
 }
 
 function parseGuidOrNull(value: string) {
@@ -503,7 +513,37 @@ function applyInstancePayload(
   }
 }
 
-function applyComponentMetadata(node: SceneNode, nc: KiwiNodeChange): void {
+function componentPropertyPreferredValues(definition: ComponentPropertyDefinition) {
+  if (definition.type === 'INSTANCE_SWAP' && definition.preferredValues?.length) {
+    return {
+      instanceSwapValues: definition.preferredValues.map((key) => ({ type: 'COMPONENT', key }))
+    }
+  }
+  if (definition.type === 'VARIANT' && definition.variantOptions?.length) {
+    return { stringValues: [...definition.variantOptions] }
+  }
+  return undefined
+}
+
+function componentPropertyNodeField(field: ComponentPropertyReferenceField): string {
+  if (field === 'TEXT') return 'TEXT_DATA'
+  if (field === 'INSTANCE_SWAP') return 'OVERRIDDEN_SYMBOL_ID'
+  return 'VISIBLE'
+}
+
+function findComponentPropertyDefinition(graph: SceneGraph, id: string) {
+  for (const candidate of graph.getAllNodes()) {
+    const definition = candidate.componentPropertyDefinitions.find((item) => item.id === id)
+    if (definition) return definition
+  }
+  return undefined
+}
+
+function applyComponentMetadata(
+  context: SceneNodeToKiwiContext,
+  node: SceneNode,
+  nc: KiwiNodeChange
+): void {
   if (node.componentKey) nc.componentKey = node.componentKey
   if (node.sourceLibraryKey) nc.sourceLibraryKey = node.sourceLibraryKey
   const publishId = node.publishId ? parseGuidOrNull(node.publishId) : null
@@ -526,12 +566,38 @@ function applyComponentMetadata(node: SceneNode, nc: KiwiNodeChange): void {
             id,
             name: def.name,
             type: componentPropertyTypeForKiwi(def.type),
-            initialValue: componentPropertyValue(def.defaultValue)
+            initialValue: componentPropertyValue(def.type, def.defaultValue, context.graph),
+            preferredValues: componentPropertyPreferredValues(def)
           }
         : null
     })
     .filter((def): def is NonNullable<typeof def> => def !== null)
   if (componentPropDefs.length > 0) nc.componentPropDefs = componentPropDefs
+
+  const componentPropRefs = node.componentPropertyReferences
+    .map((ref) => {
+      const defID = parseGuidOrNull(ref.propertyId)
+      if (!defID) return null
+      return { defID, componentPropNodeField: componentPropertyNodeField(ref.field) }
+    })
+    .filter((ref): ref is NonNullable<typeof ref> => ref !== null)
+  if (componentPropRefs.length > 0) nc.componentPropRefs = componentPropRefs
+
+  const componentPropAssignments = Object.entries(node.componentPropertyAssignments)
+    .map(([propertyId, value]) => {
+      const defID = parseGuidOrNull(propertyId)
+      const definition = findComponentPropertyDefinition(context.graph, propertyId)
+      return defID && definition
+        ? {
+            defID,
+            value: componentPropertyValue(definition.type, value, context.graph)
+          }
+        : null
+    })
+    .filter((assignment): assignment is NonNullable<typeof assignment> => assignment !== null)
+  if (componentPropAssignments.length > 0) {
+    nc.componentPropAssignments = componentPropAssignments
+  }
 
   const variantPropSpecs = node.variantPropSpecs
     .map((spec) => {
@@ -726,7 +792,7 @@ export function sceneNodeToKiwiWithContext(
   if (node.locked) nc.locked = true
 
   applyNodeVisualProps(context, node, nc)
-  applyComponentMetadata(node, nc)
+  applyComponentMetadata(context, node, nc)
   applyInstancePayload(context, node, nc, localIdCounter)
   if (node.type === 'COMPONENT_SET') upsertPluginData(node, NODE_TYPE_PLUGIN_KEY, node.type)
   if (nc.type === 'CANVAS') nc.pageType = 'DESIGN'

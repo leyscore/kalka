@@ -18,6 +18,7 @@
 - Add mixed-selection stroke cap, join, and miter-limit controls with CanvasKit rendering and `.fig` roundtrip support.
 - Add a mixed-selection corner-smoothing percentage control with live preview, per-node undo restoration, and `.fig` roundtrip coverage.
 - Model imported fill, stroke, text, effect, and grid styles with reusable SDK/app selectors, automatic detach-on-edit, undo, and `.fig` definition roundtrips.
+- Add variant, text, boolean, and nested instance-swap component property controls with mixed-selection undo and typed `.fig` metadata roundtrips.
 - Standardize Pages, Layers/Assets navigation, and document tab states across light and dark themes.
 - Standardize Vue SDK and app override type names on the `UI` acronym, including `FontPickerUI`.
 - Add a headless Vue SDK NumberField with pointer scrubbing, keyboard stepping, safe arithmetic expressions, and mixed/bound states; remove the superseded ScrubInput API.

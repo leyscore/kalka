@@ -58,6 +58,7 @@ export const panelMessageDefaults = {
   pageBackground: 'Page background',
   variables: 'Variables',
   variants: 'Variants',
+  componentProperties: 'Component properties',
   constraints: 'Constraints',
   horizontalConstraint: 'Horizontal constraint',
   verticalConstraint: 'Vertical constraint',

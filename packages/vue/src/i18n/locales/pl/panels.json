@@ -138,6 +138,7 @@
   "strokeMiterLimit": "Limit łączenia ostrego",
   "add": "Dodaj",
   "variants": "Warianty",
+  "componentProperties": "Właściwości komponentu",
   "gapAuto": "Automatyczny odstep",
   "horizontalGap": "Odstep poziomy",
   "verticalGap": "Odstep pionowy",

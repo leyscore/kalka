@@ -135,6 +135,7 @@ These are the main APIs most SDK consumers should start with.
 - `usePosition()`
 - `useLayout()`
 - `useConstraints()`
+- `useComponentProperties()`
 - `useAppearance()`
 - `useSharedStyleBinding()`
 - `useColorModel()`

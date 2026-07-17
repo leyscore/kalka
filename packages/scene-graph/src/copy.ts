@@ -119,7 +119,8 @@ function copyPropertyDefs(
   return (
     defs?.map((d) => ({
       ...d,
-      variantOptions: d.variantOptions ? [...d.variantOptions] : undefined
+      variantOptions: d.variantOptions ? [...d.variantOptions] : undefined,
+      preferredValues: d.preferredValues ? [...d.preferredValues] : undefined
     })) ?? []
   )
 }
@@ -168,6 +169,8 @@ export function cloneNodeProps(src: SceneNode, componentId: string | null): Part
     gridTemplateColumns: copySpread(src.gridTemplateColumns),
     gridTemplateRows: copySpread(src.gridTemplateRows),
     componentPropertyDefinitions: copyPropertyDefs(src.componentPropertyDefinitions),
+    componentPropertyReferences: copySpread(src.componentPropertyReferences),
+    componentPropertyAssignments: { ...src.componentPropertyAssignments },
     symbolLinks: copySpread(src.symbolLinks),
     variantPropSpecs: copySpread(src.variantPropSpecs),
     pluginData: copySpread(src.pluginData),

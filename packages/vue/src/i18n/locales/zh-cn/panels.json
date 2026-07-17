@@ -138,6 +138,7 @@
   "strokeMiterLimit": "尖角限制",
   "add": "添加",
   "variants": "变体",
+  "componentProperties": "组件属性",
   "gapAuto": "自动间距",
   "horizontalGap": "水平间距",
   "verticalGap": "垂直间距",
