@@ -2,6 +2,7 @@ import path from 'node:path'
 
 import { parse as parseVueSfc } from 'vue/compiler-sfc'
 
+import { noDynamicTailwindStateClasses } from './dynamic-tailwind-classes.ts'
 import {
   collectFolders,
   createFileRule,
@@ -512,6 +513,7 @@ export const openPencilArchitecturePlugin = {
     noAppImportsInSharedUi,
     noPropertyPanelInternalsOutsidePanel,
     noProductionTestIdsInSharedLayers,
+    noDynamicTailwindStateClasses,
     noNativeTitleAttributesInVue,
     noShortcutTextInLabels,
     noHardcodedMacOSShortcutGlyphs,

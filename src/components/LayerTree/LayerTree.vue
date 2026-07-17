@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useAttrs } from 'vue'
+import { tv } from 'tailwind-variants'
 import {
   TreeItem,
   TreeVirtualizer,
@@ -9,15 +10,27 @@ import {
 } from 'reka-ui'
 
 import { LayerTreeRoot, LayerTreeItem, useInlineRename } from '@open-pencil/vue'
-import type { LayerDragInstruction, LayerNode } from '@open-pencil/vue'
+import type {
+  LayerDragInstruction,
+  LayerNode,
+  LayerSelectionMode,
+  LayerTreeVirtualizer
+} from '@open-pencil/vue'
 import { useEditorStore } from '@/app/editor/active-store'
 import CanvasMenu from '../canvas/CanvasMenu.vue'
 import LayerTreeNodeRow from './LayerTreeNodeRow.vue'
 import LayerTreeRenameRow from './LayerTreeRenameRow.vue'
+import { provideLayerTreeUI } from './ui'
+
+import layerTreeTheme from '@/theme/layer-tree'
+
+import type { LayerTreeUI } from './ui'
 
 interface LayerTreeRootActions {
-  select: (id: string, additive: boolean) => void
+  select: (id: string, selection: boolean | LayerSelectionMode) => void
   toggleExpand: (id: string) => void
+  setFocused: (focused: boolean) => void
+  setVirtualizer: (virtualizer: LayerTreeVirtualizer) => void
 }
 
 interface LayerTreeSlotScope {
@@ -25,12 +38,17 @@ interface LayerTreeSlotScope {
   draggingId: string | null
   instruction: LayerDragInstruction | null
   instructionTargetId: string | null
+  focused: boolean
 }
 
 defineOptions({ inheritAttrs: false })
 
+const { ui } = defineProps<{ ui?: LayerTreeUI }>()
+
 const INDENT = 16
 const attrs = useAttrs()
+const styles = tv(layerTreeTheme)()
+provideLayerTreeUI(() => ui)
 const store = useEditorStore()
 const rename = useInlineRename((id, name) => store.renameNode(id, name))
 const renameControls = {
@@ -45,14 +63,21 @@ function onLayerRightClick(e: MouseEvent) {
   if (!store.state.selectedIds.has(row.dataset.nodeId)) store.select([row.dataset.nodeId])
 }
 
-function isAdditiveSelect(e: CustomEvent): boolean {
+function layerSelectionMode(e: CustomEvent): LayerSelectionMode {
   const mouseEvent = e.detail?.originalEvent as MouseEvent | undefined
-  return !!(mouseEvent?.shiftKey || mouseEvent?.metaKey || mouseEvent?.ctrlKey)
+  return {
+    additive: !!(mouseEvent?.metaKey || mouseEvent?.ctrlKey),
+    range: !!mouseEvent?.shiftKey
+  }
 }
 
-function onTreeSelect(e: CustomEvent, id: string, select: (id: string, additive: boolean) => void) {
+function onTreeSelect(
+  e: CustomEvent,
+  id: string,
+  select: (id: string, selection: boolean | LayerSelectionMode) => void
+) {
   e.preventDefault()
-  select(id, isAdditiveSelect(e))
+  select(id, layerSelectionMode(e))
 }
 
 function isLayerNode(value: unknown): value is LayerNode {
@@ -88,62 +113,98 @@ function chrome(scope: Omit<LayerTreeSlotScope, 'actions'>) {
     draggingId: scope.draggingId,
     instruction: scope.instruction,
     instructionTargetId: scope.instructionTargetId,
+    focused: scope.focused,
     indent: INDENT
   }
+}
+
+function registerVirtualizer(
+  actions: LayerTreeRootActions,
+  virtualizer: LayerTreeVirtualizer
+): boolean {
+  actions.setVirtualizer(virtualizer)
+  return true
+}
+
+function onFocusOut(event: FocusEvent, actions: LayerTreeRootActions) {
+  const next = event.relatedTarget
+  if (
+    next instanceof Node &&
+    event.currentTarget instanceof Node &&
+    event.currentTarget.contains(next)
+  ) {
+    return
+  }
+  actions.setFocused(false)
 }
 </script>
 
 <template>
   <LayerTreeRoot v-slot="scope" :indent-per-level="INDENT">
     <ContextMenuRoot :modal="false">
-      <div v-bind="attrs" class="relative min-h-0 flex-1 overflow-hidden">
+      <div
+        v-bind="attrs"
+        class="relative min-h-0 flex-1 overflow-hidden"
+        @focusin="scope.actions.setFocused(true)"
+        @focusout="onFocusOut($event, scope.actions)"
+      >
         <ContextMenuTrigger as-child @contextmenu="onLayerRightClick">
-          <div data-test-id="layers-scroll" class="scrollbar-thin h-full overflow-y-auto px-1">
-            <TreeVirtualizer v-slot="{ item }" :estimate-size="24" :text-content="layerTextContent">
-              <TreeItem
-                v-slot="{ isExpanded }"
-                v-bind="item.bind"
-                as-child
-                @select="
-                  (e: CustomEvent) =>
-                    onTreeSelect(e, toLayerNode(item.value).id, scope.actions.select)
-                "
-                @toggle="
-                  (e: CustomEvent) => {
-                    if (e.detail.originalEvent?.type === 'click') e.preventDefault()
-                  }
-                "
-              >
-                <LayerTreeItem
-                  v-slot="{ node, isSelected, padLeft, actions }"
-                  :node="toLayerNode(item.value)"
-                  :level="item.level"
-                  :has-children="item.hasChildren"
+          <div
+            data-test-id="layers-scroll"
+            data-slot="viewport"
+            :class="styles.viewport({ class: ui?.viewport })"
+          >
+            <TreeVirtualizer
+              v-slot="{ item, virtualizer }"
+              :estimate-size="24"
+              :text-content="layerTextContent"
+            >
+              <template v-if="registerVirtualizer(scope.actions, virtualizer)">
+                <TreeItem
+                  v-slot="{ isExpanded }"
+                  v-bind="item.bind"
+                  as-child
+                  @select="
+                    (e: CustomEvent) =>
+                      onTreeSelect(e, toLayerNode(item.value).id, scope.actions.select)
+                  "
+                  @toggle="
+                    (e: CustomEvent) => {
+                      if (e.detail.originalEvent?.type === 'click') e.preventDefault()
+                    }
+                  "
                 >
-                  <LayerTreeRenameRow
-                    v-if="rename.editingId.value === node.id"
-                    :node="node"
-                    :has-children="item.hasChildren"
-                    :pad-left="padLeft"
-                    :expanded="isExpanded"
-                    :actions="actions"
-                    :rename-controls="renameControls"
-                  />
-
-                  <LayerTreeNodeRow
-                    v-else
-                    :node="node"
+                  <LayerTreeItem
+                    v-slot="{ node, isSelected, padLeft, actions }"
+                    :node="toLayerNode(item.value)"
                     :level="item.level"
                     :has-children="item.hasChildren"
-                    :selected="isSelected"
-                    :pad-left="padLeft"
-                    :expanded="isExpanded"
-                    :actions="actions"
-                    :chrome="chrome(scope)"
-                    @rename-start="rename.start"
-                  />
-                </LayerTreeItem>
-              </TreeItem>
+                  >
+                    <LayerTreeRenameRow
+                      v-if="rename.editingId.value === node.id"
+                      :node="node"
+                      :has-children="item.hasChildren"
+                      :pad-left="padLeft"
+                      :expanded="isExpanded"
+                      :actions="actions"
+                      :rename-controls="renameControls"
+                    />
+
+                    <LayerTreeNodeRow
+                      v-else
+                      :node="node"
+                      :level="item.level"
+                      :has-children="item.hasChildren"
+                      :selected="isSelected"
+                      :pad-left="padLeft"
+                      :expanded="isExpanded"
+                      :actions="actions"
+                      :chrome="chrome(scope)"
+                      @rename-start="rename.start"
+                    />
+                  </LayerTreeItem>
+                </TreeItem>
+              </template>
             </TreeVirtualizer>
           </div>
         </ContextMenuTrigger>

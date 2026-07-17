@@ -16,7 +16,6 @@ Ces API sont publiques, mais elles sont plus spécialisées que la surface princ
 ## Sélecteurs, variables, locale et internals d'éditeur
 
 - [useColorVariableBinding](./use-color-variable-binding)
-- [useFillPicker](./use-fill-picker)
 - [useGradientStops](./use-gradient-stops)
 - [useFontPicker](./use-font-picker)
 - [useOkHCL](./use-okhcl)

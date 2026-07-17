@@ -15,6 +15,7 @@ import FillSection from './properties/FillSection.vue'
 import LayoutSection from './properties/LayoutSection/LayoutSection.vue'
 import MaskSection from './properties/MaskSection.vue'
 import PageSection from './properties/PageSection.vue'
+import ConstraintsSection from './properties/constraints/ConstraintsSection.vue'
 import PositionSection from './properties/PositionSection.vue'
 import SelectionActionsControl from './properties/SelectionActionsControl.vue'
 import StrokeSection from './properties/StrokeSection.vue'
@@ -55,6 +56,7 @@ const { panels } = useI18n()
       </template>
     </PanelHeader>
     <PositionSection />
+    <ConstraintsSection />
     <AppearanceSection />
     <FillSection />
     <StrokeSection />
@@ -88,14 +90,14 @@ const { panels } = useI18n()
       class="flex flex-col gap-1 border-b border-border px-3 py-2"
     >
       <button
-        data-test-id="design-go-to-component"
+        type="button"
         class="rounded bg-component/10 px-2 py-1 text-left text-[11px] text-component hover:bg-component/20"
         @click="goToMainComponent.run()"
       >
         {{ panels.goToMainComponent }}
       </button>
       <button
-        data-test-id="design-detach-instance"
+        type="button"
         class="rounded px-2 py-1 text-left text-[11px] text-muted hover:bg-hover"
         @click="detachInstance.run()"
       >
@@ -106,6 +108,7 @@ const { panels } = useI18n()
     <VariantSection v-if="node.type === 'INSTANCE'" />
 
     <PositionSection />
+    <ConstraintsSection />
     <LayoutSection />
     <AppearanceSection />
     <MaskSection />

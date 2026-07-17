@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test'
 
+import type { FontManager } from '#core/text/fonts'
+
 import { CanvasHelper } from '#tests/helpers/canvas'
 
 test('tool-created CJK text requests fallback through app font loading', async ({ page }) => {
@@ -13,13 +15,20 @@ test('tool-created CJK text requests fallback through app font loading', async (
 
     const { ensureGraphFonts, loadFont } = await import('/src/app/editor/fonts/index.ts')
     await loadFont('Inter', 'Regular')
-    const { fontManager } = await import('/packages/core/src/text/fonts.ts')
+    const fontModuleUrl = performance
+      .getEntriesByType('resource')
+      .map((entry) => entry.name)
+      .find((url) => url.includes('/packages/core/src/text/fonts.ts'))
+    if (!fontModuleUrl) throw new Error('Active font manager module not found')
+    const { fontManager } = (await import(/* @vite-ignore */ fontModuleUrl)) as {
+      fontManager: FontManager
+    }
     const originalEnsureFallbackPack = fontManager.ensureFallbackPack.bind(fontManager)
     let requestedScripts: string[] = []
 
     fontManager.ensureFallbackPack = async (scripts = ['cjk', 'arabic']) => {
       requestedScripts = [...scripts]
-      return { cjk: ['Regression CJK Fallback'], arabic: [] }
+      return { cjk: ['Noto Sans CJK SC'], arabic: [] }
     }
 
     const pageNode = store.graph.getNode(store.state.currentPageId)
@@ -64,44 +73,37 @@ test('CJK text waits for fallback fonts and repaints after they load', async ({ 
 
   const result = await page.evaluate(async () => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store?.renderer) throw new Error('OpenPencil renderer not initialized')
     const renderer = store.renderer
-    if (!renderer) throw new Error('OpenPencil renderer not initialized')
-
-    const { fontManager } = await import('/packages/core/src/text/fonts.ts')
-    const manager = fontManager as typeof fontManager & {
-      cjkFallbackFamilies: string[]
-      cjkFallbackPromise: Promise<string[]> | null
-      arabicFallbackFamilies: string[]
-      arabicFallbackPromise: Promise<string[]> | null
+    const response = await fetch('/tests/fixtures/fonts/NotoSansCJK-Test.otf')
+    const fallbackData = await response.arrayBuffer()
+    const fontModuleUrl = performance
+      .getEntriesByType('resource')
+      .map((entry) => entry.name)
+      .find((url) => url.includes('/packages/core/src/text/fonts.ts'))
+    if (!fontModuleUrl) throw new Error('Active font manager module not found')
+    const { fontManager } = (await import(/* @vite-ignore */ fontModuleUrl)) as {
+      fontManager: FontManager
     }
-    const originalCJKFamilies = [...manager.cjkFallbackFamilies]
-    const originalCJKPromise = manager.cjkFallbackPromise
-    const originalArabicFamilies = [...manager.arabicFallbackFamilies]
-    const originalArabicPromise = manager.arabicFallbackPromise
-    const originalEnsureCJKFallback = fontManager.ensureCJKFallback.bind(fontManager)
-    const originalEnsureArabicFallback = fontManager.ensureArabicFallback.bind(fontManager)
+    const manager = fontManager as typeof fontManager & { cjkFallbackFamilies: string[] }
+    const originalFamilies = [...manager.cjkFallbackFamilies]
+    const originalEnsureFallbackPack = fontManager.ensureFallbackPack.bind(fontManager)
 
-    let releaseCJKFallback: (() => void) | null = null
+    let releaseFallback = () => undefined
     const fallbackGate = new Promise<void>((resolve) => {
-      releaseCJKFallback = resolve
+      releaseFallback = resolve
     })
-
     manager.cjkFallbackFamilies = []
-    manager.cjkFallbackPromise = null
-    manager.arabicFallbackFamilies = []
-    manager.arabicFallbackPromise = null
 
     let fallbackRenderCount = 0
     let renderCount = 0
     const originalRender = renderer.renderFromEditorState.bind(renderer)
-
-    fontManager.ensureCJKFallback = async () => {
+    fontManager.ensureFallbackPack = async (scripts = ['cjk', 'arabic']) => {
       await fallbackGate
-      fontManager.setCJKFallbackFamily('Regression CJK Fallback')
-      return ['Regression CJK Fallback']
+      fontManager.markLoaded('Noto Sans CJK SC', 'Regular', fallbackData)
+      fontManager.setCJKFallbackFamily('Noto Sans CJK SC')
+      return Object.fromEntries(scripts.map((script) => [script, ['Noto Sans CJK SC']]))
     }
-    fontManager.ensureArabicFallback = async () => []
     renderer.renderFromEditorState = (
       ...args: Parameters<typeof renderer.renderFromEditorState>
     ) => {
@@ -109,15 +111,14 @@ test('CJK text waits for fallback fonts and repaints after they load', async ({ 
       return originalRender(...args)
     }
 
-    const pageNode = store.graph.getNode(store.state.currentPageId)
-    if (!pageNode) throw new Error(`Page ${store.state.currentPageId} not found`)
-    const text = store.graph.createNode('TEXT', pageNode.id, {
+    const text = store.graph.createNode('TEXT', store.state.currentPageId, {
       name: 'CJK Regression',
       x: 80,
       y: 80,
       width: 300,
       height: 60,
-      text: '上班打卡App',
+      text: '你好世界App',
+      textLanguage: 'zh-Hans',
       fontSize: 32,
       fontFamily: 'Inter',
       fills: [{ type: 'SOLID', color: { r: 0, g: 0, b: 0, a: 1 }, visible: true, opacity: 1 }]
@@ -136,37 +137,30 @@ test('CJK text waits for fallback fonts and repaints after they load', async ({ 
           'full'
         )
       })
-
       const loadedBeforeFallback = renderer.isNodeFontLoaded(text)
-      const beforeFallbackRenderCount = fallbackRenderCount
-
-      releaseCJKFallback?.()
-      await new Promise((resolve) => {
+      releaseFallback()
+      await fallbackGate
+      await new Promise<void>((resolve) => {
         setTimeout(resolve, 0)
       })
       await new Promise(requestAnimationFrame)
-
       return {
         loadedBeforeFallback,
         loadedAfterFallback: renderer.isNodeFontLoaded(text),
-        beforeFallbackRenderCount,
+        readiness: renderer.nodeFontReadiness(text),
         fallbackRenderCount,
         renderCount
       }
     } finally {
-      manager.cjkFallbackFamilies = originalCJKFamilies
-      manager.cjkFallbackPromise = originalCJKPromise
-      manager.arabicFallbackFamilies = originalArabicFamilies
-      manager.arabicFallbackPromise = originalArabicPromise
-      fontManager.ensureCJKFallback = originalEnsureCJKFallback
-      fontManager.ensureArabicFallback = originalEnsureArabicFallback
+      manager.cjkFallbackFamilies = originalFamilies
+      fontManager.ensureFallbackPack = originalEnsureFallbackPack
       renderer.renderFromEditorState = originalRender
     }
   })
 
   expect(result.loadedBeforeFallback).toBe(false)
+  expect(result.readiness).toBe('ready')
   expect(result.loadedAfterFallback).toBe(true)
-  expect(result.beforeFallbackRenderCount).toBe(0)
   expect(result.fallbackRenderCount).toBe(1)
   expect(result.renderCount).toBeGreaterThan(0)
   canvas.assertNoErrors()

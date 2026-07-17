@@ -445,6 +445,7 @@ export function importNodeChanges(
     if (!nc) return
 
     const { nodeType, ...props } = nodeChangeToProps(nc, blobs)
+    if (props.sharedStyleType) props.internalOnly = true
     if (nodeType === 'DOCUMENT' || nodeType === 'VARIABLE' || nc.type === 'VARIABLE_SET') return
     if (shouldImportTextAsAutoSize(nc, changeMap.get(parentMap.get(ncId) ?? ''))) {
       props.textAutoResize = 'WIDTH_AND_HEIGHT'

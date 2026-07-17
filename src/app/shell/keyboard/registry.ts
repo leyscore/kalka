@@ -38,6 +38,7 @@ function commandShortcuts(...commands: EditorCommandId[]): ShortcutDefinition[] 
 
 function shouldIgnoreShortcut(event: KeyboardEvent, options: KeyboardShortcutOptions) {
   return (
+    (event.target instanceof Element && event.target.closest('[data-picker-content]') !== null) ||
     isEditing(event) ||
     options.inputFocused.value ||
     !!options.store.state.editingTextId ||

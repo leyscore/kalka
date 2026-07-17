@@ -1,4 +1,4 @@
-import type { SceneGraph } from '@open-pencil/scene-graph'
+import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
 
 import type { SkiaRenderer } from '#core/canvas/renderer'
 import {
@@ -10,6 +10,52 @@ import {
   SIZE_FONT_SIZE
 } from '#core/constants'
 import { fontManager } from '#core/text/fonts'
+import { collectGraphFontRequirements } from '#core/text/requirements'
+import { missingGraphFontScripts } from '#core/text/resolved-requirements'
+import type { FontResolutionSnapshot } from '#core/text/resolver'
+
+export function syncFontGeneration(r: SkiaRenderer): void {
+  r.fontGeneration = fontManager.generation()
+}
+
+export function trackFontDemand(r: SkiaRenderer, node: SceneNode, key: string): void {
+  const pending = r.pendingFontNodes.get(node.id) ?? { node, keys: new Set<string>() }
+  pending.node = node
+  pending.keys.add(key)
+  r.pendingFontNodes.set(node.id, pending)
+}
+
+export function isTextPictureCurrent(r: SkiaRenderer, node: SceneNode): boolean {
+  const data = node.textPicture
+  if (!data) {
+    r.textPictureGenerations.delete(node.id)
+    return false
+  }
+  const cached = r.textPictureGenerations.get(node.id)
+  if (!cached || cached.data !== data) {
+    r.textPictureGenerations.set(node.id, { data, generation: r.fontGeneration })
+    return true
+  }
+  return cached.generation === r.fontGeneration
+}
+
+function settleFontDemand(
+  r: SkiaRenderer,
+  snapshot: FontResolutionSnapshot,
+  nodeIds: readonly string[]
+): void {
+  syncFontGeneration(r)
+  for (const nodeId of nodeIds) {
+    const pending = r.pendingFontNodes.get(nodeId)
+    if (pending) {
+      pending.node.textPicture = null
+      pending.keys.delete(snapshot.key)
+      if (pending.keys.size === 0) r.pendingFontNodes.delete(nodeId)
+    }
+    r.textPictureGenerations.delete(nodeId)
+    r.invalidateNodePicture(nodeId)
+  }
+}
 
 export function getFontProvider(r: SkiaRenderer) {
   return r.isDestroyed() || !r.fontProvider ? null : r.fontProvider
@@ -20,15 +66,20 @@ export async function loadFonts(
   onFallbackFontsLoaded?: () => void
 ): Promise<void> {
   if (r.isDestroyed()) return
+  r.onFontResolutionSettled = (snapshot, nodeIds) => {
+    if (r.isDestroyed()) return
+    settleFontDemand(r, snapshot, nodeIds)
+    onFallbackFontsLoaded?.()
+  }
   r.fontProvider?.delete()
   r.fontProvider = r.ck.TypefaceFontProvider.Make()
 
   fontManager.attachProvider(r.ck, r.fontProvider)
+  syncFontGeneration(r)
 
   const fontData = await fontManager.loadFont(DEFAULT_FONT_FAMILY, 'Regular')
   if (r.isDestroyed()) return
   if (fontData) {
-    r.fontProvider.registerFont(fontData, DEFAULT_FONT_FAMILY)
     const typeface = r.ck.Typeface.MakeFreeTypeFaceFromData(fontData)
     if (typeface) {
       r.textFont?.delete()
@@ -47,22 +98,8 @@ export async function loadFonts(
   }
 
   r.fontsLoaded = true
+  syncFontGeneration(r)
   r.invalidateAllPictures()
-
-  void fontManager.ensureCJKFallback().then((families) => {
-    if (!r.isDestroyed() && families.length > 0) {
-      r.invalidateAllPictures()
-      onFallbackFontsLoaded?.()
-    }
-    return undefined
-  })
-  void fontManager.ensureArabicFallback().then((families) => {
-    if (!r.isDestroyed() && families.length > 0) {
-      r.invalidateAllPictures()
-      onFallbackFontsLoaded?.()
-    }
-    return undefined
-  })
 }
 
 export async function prepareForExport(
@@ -77,8 +114,15 @@ export async function prepareForExport(
   setTextMeasurer((node, maxWidth) => r.measureTextNode(node, maxWidth))
 
   const fontKeys = fontManager.collectFontKeys(graph, nodeIds)
-  await Promise.all(fontKeys.map(([family, style]) => fontManager.loadFont(family, style)))
-
+  const requirements = collectGraphFontRequirements(graph, nodeIds)
+  await Promise.all(
+    fontKeys.map(([family, style]) => fontManager.loadFont(family, style, requirements.characters))
+  )
+  await fontManager.ensureFallbackPack(
+    missingGraphFontScripts(requirements),
+    requirements.characters
+  )
+  syncFontGeneration(r)
   computeAllLayouts(graph, pageId)
 
   return () => setTextMeasurer(previousTextMeasurer)

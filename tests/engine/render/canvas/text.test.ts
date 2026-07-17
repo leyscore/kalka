@@ -13,6 +13,7 @@ import type { SkiaRenderer } from '#core/canvas/renderer'
 import { renderText } from '#core/canvas/scene'
 import { buildParagraph, isNodeFontLoaded } from '#core/canvas/text'
 import { fontManager } from '#core/text/fonts'
+import { missingGlyphCharacters } from '#core/text/resolver'
 
 import { expectDefined } from '#tests/helpers/assert'
 import { repoPath } from '#tests/helpers/paths'
@@ -68,6 +69,8 @@ function createMockRenderer(overrides: Partial<Record<string, unknown>> = {}) {
     },
     DEFAULT_FONT_SIZE: 14,
     isNodeFontLoaded: mock(() => true),
+    nodeFontReadiness: mock(() => 'ready'),
+    isTextPictureCurrent: mock(() => true),
     buildParagraph: mock(() => paragraph),
     _paragraph: paragraph,
     ...overrides
@@ -115,7 +118,7 @@ describe('renderText', () => {
   })
 
   test('skips text while the node font is not available', () => {
-    const r = createMockRenderer({ isNodeFontLoaded: mock(() => false) })
+    const r = createMockRenderer({ nodeFontReadiness: mock(() => 'pending') })
     const canvas = createMockCanvas()
 
     renderText(r, canvas as never, textNode())
@@ -169,8 +172,19 @@ describe('renderText', () => {
     expect(canvas.saveLayer).not.toHaveBeenCalled()
   })
 
-  test('prefers textPicture over paragraph', () => {
+  test('prefers resolved fonts over baked text pictures', () => {
     const r = createMockRenderer()
+    const canvas = createMockCanvas()
+    const node = textNode({ textPicture: new Uint8Array([1, 2, 3]) })
+
+    renderText(r, canvas as never, node)
+
+    expect(canvas.drawPicture).not.toHaveBeenCalled()
+    expect(r.buildParagraph).toHaveBeenCalledTimes(1)
+  })
+
+  test('uses baked text pictures after font resolution is exhausted', () => {
+    const r = createMockRenderer({ nodeFontReadiness: mock(() => 'exhausted') })
     const canvas = createMockCanvas()
     const node = textNode({ textPicture: new Uint8Array([1, 2, 3]) })
 
@@ -238,6 +252,36 @@ describe('renderText headless visual', () => {
     expect(resolveTextDirection('RTL', 'Hello')).toBe('RTL')
   })
 
+  test('observes CanvasKit notdef glyphs for unsupported CJK text', async () => {
+    const ck = await initCanvasKit()
+    const fontProvider = ck.TypefaceFontProvider.Make()
+    fontManager.attachProvider(ck, fontProvider)
+    const interData = await Bun.file('public/Inter-Regular.ttf').arrayBuffer()
+    fontProvider.registerFont(interData, 'Inter')
+    fontManager.markLoaded('Inter', 'Regular', interData)
+    const manager = fontManager as typeof fontManager & { cjkFallbackFamilies: string[] }
+    const originalFallbacks = [...manager.cjkFallbackFamilies]
+    manager.cjkFallbackFamilies = []
+    const surface = expectDefined(ck.MakeSurface(200, 50), 'CanvasKit surface')
+
+    try {
+      const renderer = new SkiaRendererClass(ck, surface)
+      renderer.fontsLoaded = true
+      renderer.fontProvider = fontProvider
+      const paragraph = buildParagraph(
+        renderer,
+        textNode({ text: 'A𠀀B', fontFamily: 'Inter', fontWeight: 400 })
+      )
+      paragraph.layout(200)
+
+      expect(missingGlyphCharacters('A𠀀B', paragraph.getShapedLines())).toEqual(['𠀀'])
+      paragraph.delete()
+    } finally {
+      manager.cjkFallbackFamilies = originalFallbacks
+      surface.delete()
+    }
+  })
+
   test('does not require fallback families when the primary font covers CJK glyphs', async () => {
     const notoPath = repoPath('tests/fixtures/fonts/NotoSansSC-Regular.ttf')
     const notoData = await Bun.file(notoPath).arrayBuffer()
@@ -264,13 +308,15 @@ describe('renderText headless visual', () => {
     fontManager.attachProvider(ck, fontProvider)
 
     const interData = await Bun.file('public/Inter-Regular.ttf').arrayBuffer()
-    fontProvider.registerFont(interData, 'Inter')
     fontManager.markLoaded('Inter', 'Regular', interData)
 
     const notoPath = repoPath('tests/fixtures/fonts/NotoSansSC-Regular.ttf')
     const notoData = await Bun.file(notoPath).arrayBuffer()
-    fontProvider.registerFont(notoData, 'Noto Sans SC')
+    fontManager.markLoaded('Noto Sans SC', 'Regular', notoData)
     fontManager.setCJKFallbackFamily('Noto Sans SC')
+    for (let attempt = 0; attempt < 5; attempt++) {
+      fontManager.markLoaded('Noto Sans SC', 'Regular', notoData)
+    }
 
     const graph = new SceneGraph()
     const page = graph.getPages()[0]

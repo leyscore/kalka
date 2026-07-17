@@ -54,6 +54,7 @@ function blendModeOptions(value: BlendMode | typeof MIXED) {
       independentCorners,
       showIndependentCorners,
       cornerRadiusValue,
+      cornerSmoothingPercent,
       opacityPercent,
       blendModeValue,
       visibilityState,
@@ -220,6 +221,28 @@ function blendModeOptions(value: BlendMode | typeof MIXED) {
           @commit="(v: number, p: number) => actions.commitCornerProp('bottomRightRadius', v, p)"
         />
         <PanelRail />
+      </PanelGrid>
+
+      <PanelGrid v-if="hasCornerRadius" columns="fill" class="mt-panel">
+        <PanelFieldGroup :label="panels.cornerSmoothing">
+          <NumberField
+            suffix="%"
+            :model-value="cornerSmoothingPercent"
+            :min="0"
+            :max="100"
+            :aria-label="panels.cornerSmoothing"
+            data-property="corner-smoothing"
+            @update:model-value="actions.updateCornerProp('cornerSmoothing', $event / 100)"
+            @commit="
+              (v: number, p: number) =>
+                actions.commitCornerProp('cornerSmoothing', v / 100, p / 100)
+            "
+          >
+            <template #icon>
+              <icon-lucide-squircle class="size-3" />
+            </template>
+          </NumberField>
+        </PanelFieldGroup>
       </PanelGrid>
     </PanelSection>
   </AppearanceControlsRoot>

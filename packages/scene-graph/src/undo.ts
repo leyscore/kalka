@@ -101,6 +101,10 @@ export class UndoManager {
     this.batches = []
   }
 
+  get isBatching(): boolean {
+    return this.batches.length > 0
+  }
+
   get canUndo(): boolean {
     return this.undoStack.length > 0
   }

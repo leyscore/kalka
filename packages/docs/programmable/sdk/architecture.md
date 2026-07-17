@@ -42,6 +42,7 @@ These contain structural/headless primitives and local helpers.
 - `usePosition`
 - `useLayout`
 - `useAppearance`
+- `useColorModel`
 - `useTypography`
 - `useExport`
 - `useFillControls`

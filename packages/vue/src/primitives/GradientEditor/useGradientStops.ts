@@ -1,8 +1,10 @@
 import { computed, ref, type Ref } from 'vue'
 
-import { colorToCSS, parseColor } from '@open-pencil/core/color'
+import { colorToCSS } from '@open-pencil/core/color'
 import type { Fill, GradientStop, GradientTransform } from '@open-pencil/scene-graph'
 import type { Color } from '@open-pencil/scene-graph/primitives'
+
+import { useColorModel } from '#vue/controls/color-model/use'
 
 type GradientSubtype =
   | 'GRADIENT_LINEAR'
@@ -82,10 +84,8 @@ export function useGradientStops(fill: Ref<Fill>, onUpdate: (fill: Fill) => void
   }
 
   function updateStopColor(index: number, hex: string) {
-    const color = parseColor(hex.startsWith('#') ? hex : `#${hex}`)
-    const s = [...stops.value]
-    s[index] = { ...s[index], color: { ...color, a: s[index].color.a } }
-    emitStops(s)
+    selectStop(index)
+    colorModel.updateHex(hex)
   }
 
   function updateStopOpacity(index: number, opacity: number) {
@@ -103,6 +103,11 @@ export function useGradientStops(fill: Ref<Fill>, onUpdate: (fill: Fill) => void
     s[idx] = { ...s[idx], color }
     emitStops(s)
   }
+
+  const colorModel = useColorModel({
+    color: activeColor,
+    onUpdate: updateActiveColor
+  })
 
   function dragStop(index: number, position: number) {
     const s = [...stops.value]

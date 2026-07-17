@@ -1,14 +1,14 @@
 import type { SceneNode } from '@open-pencil/scene-graph'
 
 import { DEFAULT_FONT_FAMILY } from '#core/constants'
-import type { FontFallbackScript } from '#core/text/fallbacks'
-import { weightToStyle } from '#core/text/fonts'
+import { cjkFallbackScriptForLanguage, type FontFallbackScript } from '#core/text/fallbacks'
+import { weightToStyle } from '#core/text/font-style'
 import { fontGlyphCoverageSync } from '#core/text/opentype'
 
-const CJK_IDEOGRAPH_CHAR_RE = /[\u3400-\u9fff\uf900-\ufaff]/u
+const CJK_IDEOGRAPH_CHAR_RE = /\p{Script=Han}/u
 const CJK_HIRAGANA_KATAKANA_RE = /[\u3040-\u30ff]/u
 const CJK_HANGUL_RE = /[\uac00-\ud7af]/u
-const CJK_CHAR_RE = /[\u3040-\u30ff\u3400-\u9fff\uf900-\ufaff\uac00-\ud7af]/u
+const CJK_CHAR_RE = /[\p{Script=Han}\u3040-\u30ff\uac00-\ud7af]/u
 const ARABIC_CHAR_RE = /[\u0600-\u06ff\u0750-\u077f\u08a0-\u08ff\ufb50-\ufdff\ufe70-\ufeff]/u
 
 // Common Traditional-only characters. This is a heuristic for fallback order, not language ID.
@@ -30,27 +30,39 @@ function scriptCharRegex(script: FontFallbackScript): RegExp {
   }
 }
 
-function fallbackScriptForCJKChar(char: string): FontFallbackScript {
+export function fontFallbackScriptForCharacter(
+  char: string,
+  language?: string | null
+): FontFallbackScript | null {
+  if (ARABIC_CHAR_RE.test(char)) return 'arabic'
   if (CJK_HANGUL_RE.test(char)) return 'cjk-kr'
   if (CJK_HIRAGANA_KATAKANA_RE.test(char)) return 'cjk-jp'
+  const languageScript = cjkFallbackScriptForLanguage(language)
+  if (languageScript && CJK_IDEOGRAPH_CHAR_RE.test(char)) return languageScript
   if (TRADITIONAL_CJK_CHAR_RE.test(char)) return 'cjk-tc'
-  return 'cjk-sc'
+  if (CJK_IDEOGRAPH_CHAR_RE.test(char)) return 'cjk-sc'
+  return null
 }
 
-function styleForCharacter(node: SceneNode, index: number): { family: string; style: string } {
+function styleForCharacter(
+  node: SceneNode,
+  index: number
+): { family: string; style: string; language: string | null } {
   const baseFamily = node.fontFamily || DEFAULT_FONT_FAMILY
   let family = baseFamily
   let weight = node.fontWeight
   let italic = node.italic
+  let language = node.textLanguage
 
   const run = node.styleRuns.find((item) => index >= item.start && index < item.start + item.length)
   if (run) {
     family = run.style.fontFamily ?? family
     weight = run.style.fontWeight ?? weight
     italic = run.style.italic ?? italic
+    language = run.style.textLanguage ?? language
   }
 
-  return { family, style: weightToStyle(weight, italic) }
+  return { family, style: weightToStyle(weight, italic), language }
 }
 
 /**
@@ -61,11 +73,13 @@ export function textNeedsFallbackScript(node: SceneNode, script: FontFallbackScr
   if (node.type !== 'TEXT' || !node.text) return false
   const regex = scriptCharRegex(script)
 
-  for (let index = 0; index < node.text.length; index++) {
-    const char = node.text[index]
-    if (!char || !regex.test(char)) continue
-    const { family, style } = styleForCharacter(node, index)
-    if (fontGlyphCoverageSync(family, style, char) === 'missing') return true
+  let index = 0
+  for (const char of node.text) {
+    if (regex.test(char)) {
+      const { family, style } = styleForCharacter(node, index)
+      if (fontGlyphCoverageSync(family, style, char) === 'missing') return true
+    }
+    index += char.length
   }
 
   return false
@@ -77,18 +91,25 @@ export function textNeededFallbackScripts(node: SceneNode): FontFallbackScript[]
 
   let missingIdeograph = false
   let missingTraditionalIdeograph = false
-  for (let index = 0; index < node.text.length; index++) {
-    const char = node.text[index]
-    if (!char || !CJK_CHAR_RE.test(char)) continue
-    const { family, style } = styleForCharacter(node, index)
-    if (fontGlyphCoverageSync(family, style, char) !== 'missing') continue
-
-    if (CJK_IDEOGRAPH_CHAR_RE.test(char)) {
-      missingIdeograph = true
-      if (TRADITIONAL_CJK_CHAR_RE.test(char)) missingTraditionalIdeograph = true
-    } else {
-      scripts.add(fallbackScriptForCJKChar(char))
+  let index = 0
+  for (const char of node.text) {
+    if (CJK_CHAR_RE.test(char)) {
+      const { family, style, language } = styleForCharacter(node, index)
+      if (fontGlyphCoverageSync(family, style, char) === 'missing') {
+        if (CJK_IDEOGRAPH_CHAR_RE.test(char)) {
+          const languageScript = cjkFallbackScriptForLanguage(language)
+          if (languageScript) scripts.add(languageScript)
+          else {
+            missingIdeograph = true
+            if (TRADITIONAL_CJK_CHAR_RE.test(char)) missingTraditionalIdeograph = true
+          }
+        } else {
+          const script = fontFallbackScriptForCharacter(char, language)
+          if (script) scripts.add(script)
+        }
+      }
     }
+    index += char.length
   }
 
   if (missingIdeograph) scripts.add(missingTraditionalIdeograph ? 'cjk-tc' : 'cjk-sc')

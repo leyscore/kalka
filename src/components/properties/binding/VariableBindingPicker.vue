@@ -48,7 +48,7 @@ const {
   ui
 } = defineProps<VariableBindingPickerProps>()
 
-const binding = useBindableValue<number>()
+const binding = useBindableValue<unknown>()
 const creating = ref(false)
 const createName = ref('')
 const createInput = ref<HTMLInputElement | null>(null)

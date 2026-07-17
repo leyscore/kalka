@@ -2,83 +2,84 @@
 import { colorToCSS } from '@open-pencil/core/color'
 import { fromPercent, toPercent } from '@open-pencil/vue'
 
-import PickerSlider from '@/components/color-picker-panel/PickerSlider.vue'
+import OkhclChannelSlider from '@/components/color-picker-panel/OkhclChannelSlider.vue'
 import { useColorPickerPanelContext } from '@/components/color-picker-panel/context'
 
 const ctx = useColorPickerPanelContext()
+const percentText = (value: number) => `${Math.round(toPercent(value))}%`
 </script>
 
 <template>
   <div v-if="ctx.isOkHCLFormat && ctx.okhcl?.okhcl" class="flex flex-col gap-2">
-    <PickerSlider
-      label="H"
+    <OkhclChannelSlider
+      label="Hue"
       :model-value="ctx.okhcl.okhcl.h"
       :min="0"
       :max="360"
       :step="1"
-      :display="{ value: Math.round(ctx.okhcl.okhcl.h), min: 0, max: 360, step: 1 }"
-      gradient-style="background: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);"
+      :display-value="Math.round(ctx.okhcl.okhcl.h)"
+      :display-min="0"
+      :display-max="360"
       :thumb-fill="colorToCSS(ctx.okhclSliderPreview?.okhclHue ?? ctx.color)"
+      gradient="background: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);"
       data-test-id="color-slider-okhcl-h"
       @update:model-value="ctx.updateOkHCLChannel('h', $event)"
+      @update-display="ctx.updateOkHCLChannel('h', $event)"
     />
 
-    <PickerSlider
-      label="C"
+    <OkhclChannelSlider
+      label="Chroma"
       :model-value="ctx.okhcl.okhcl.c"
       :min="0"
       :max="0.4"
       :step="0.001"
-      :display="{
-        value: toPercent(ctx.okhcl.okhcl.c),
-        min: 0,
-        max: 40,
-        step: 1,
-        parse: fromPercent
-      }"
-      :gradient-style="ctx.okhclSliderGradient?.okhclChroma ?? undefined"
+      :display-value="toPercent(ctx.okhcl.okhcl.c)"
+      :display-min="0"
+      :display-max="40"
+      suffix="%"
+      :gradient="ctx.okhclSliderGradient?.okhclChroma ?? undefined"
       :thumb-fill="colorToCSS(ctx.okhclSliderPreview?.okhclChroma ?? ctx.color)"
+      :format-value-text="percentText"
       data-test-id="color-slider-okhcl-c"
       @update:model-value="ctx.updateOkHCLChannel('c', $event)"
+      @update-display="ctx.updateOkHCLChannel('c', fromPercent($event))"
     />
 
-    <PickerSlider
-      label="L"
+    <OkhclChannelSlider
+      label="Lightness"
       :model-value="ctx.okhcl.okhcl.l"
       :min="0"
       :max="1"
       :step="0.001"
-      :display="{
-        value: toPercent(ctx.okhcl.okhcl.l),
-        min: 0,
-        max: 100,
-        step: 1,
-        parse: fromPercent
-      }"
-      :gradient-style="ctx.okhclSliderGradient?.okhclLightness ?? undefined"
+      :display-value="toPercent(ctx.okhcl.okhcl.l)"
+      :display-min="0"
+      :display-max="100"
+      suffix="%"
+      :gradient="ctx.okhclSliderGradient?.okhclLightness ?? undefined"
       :thumb-fill="colorToCSS(ctx.okhclSliderPreview?.okhclLightness ?? ctx.color)"
+      :format-value-text="percentText"
       data-test-id="color-slider-okhcl-l"
       @update:model-value="ctx.updateOkHCLChannel('l', $event)"
+      @update-display="ctx.updateOkHCLChannel('l', fromPercent($event))"
     />
 
-    <PickerSlider
-      label="A"
+    <OkhclChannelSlider
+      label="Alpha"
       :model-value="ctx.okhcl.okhcl.a ?? 1"
       :min="0"
       :max="1"
       :step="0.001"
-      :display="{
-        value: toPercent(ctx.okhcl.okhcl.a ?? 1),
-        min: 0,
-        max: 100,
-        step: 1,
-        parse: fromPercent
-      }"
+      :display-value="toPercent(ctx.okhcl.okhcl.a ?? 1)"
+      :display-min="0"
+      :display-max="100"
+      suffix="%"
       checkerboard
-      :gradient-style="`background: linear-gradient(to right, transparent, ${colorToCSS(ctx.color)})`"
+      :gradient="`background: linear-gradient(to right, transparent, ${colorToCSS({ ...ctx.color, a: 1 })})`"
       :thumb-fill="colorToCSS(ctx.color)"
+      :format-value-text="percentText"
       data-test-id="color-slider-okhcl-a"
       @update:model-value="ctx.updateOkHCLChannel('a', $event)"
+      @update-display="ctx.updateOkHCLChannel('a', fromPercent($event))"
     />
 
     <div class="flex items-start justify-between gap-2 text-[10px] text-muted">

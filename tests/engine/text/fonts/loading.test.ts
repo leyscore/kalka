@@ -143,7 +143,7 @@ describe('FontManager loaded font cache', () => {
     expect(manager.provider()).toBeNull()
   })
 
-  test('registers loaded faces under exact render families', () => {
+  test('renders loaded faces under their source families', () => {
     const manager = new FontManager()
     const recording = createRecordingProvider()
 
@@ -152,16 +152,35 @@ describe('FontManager loaded font cache', () => {
 
     const renderFamily = manager.renderFamily('Inter', 'SemiBold')
 
-    expect(renderFamily).toBe('__op_font__Inter__SemiBold')
-    expect(recording.registrations).toEqual([
-      { family: 'Inter', byteLength: 12 },
-      { family: '__op_font__Inter__SemiBold', byteLength: 12 }
-    ])
+    expect(renderFamily).toBe('Inter')
+    expect(recording.registrations).toEqual([{ family: 'Inter', byteLength: 12 }])
     expect(manager.renderFamily('Inter', 'SemiBold')).toBe(renderFamily)
-    expect(recording.registrations).toHaveLength(2)
+    expect(recording.registrations).toHaveLength(1)
   })
 
-  test('loads downloaded cache before other sources', async () => {
+  test('prefers local font data before downloaded cache', async () => {
+    const manager = new FontManager()
+    const recording = createRecordingProvider()
+    let cacheReads = 0
+
+    manager.attachProvider({} as CanvasKit, recording.provider)
+    manager.setHostFontLoader(async () => new ArrayBuffer(20))
+    manager.setDownloadedFontCache({
+      async read() {
+        cacheReads++
+        return new ArrayBuffer(16)
+      },
+      async write() {
+        return undefined
+      }
+    })
+
+    const data = await manager.loadFont('LocalPriority', 'Regular')
+    expect(data?.byteLength).toBe(20)
+    expect(cacheReads).toBe(0)
+  })
+
+  test('loads downloaded cache when local sources are unavailable', async () => {
     const manager = new FontManager()
     const recording = createRecordingProvider()
     const data = new ArrayBuffer(16)

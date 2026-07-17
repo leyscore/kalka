@@ -7,7 +7,7 @@ import { SELECTION_COLOR } from '#core/constants'
 
 import type { SkiaRenderer } from './renderer'
 
-interface RawLayoutGrid {
+type RawLayoutGrid = SceneNode['layoutGrids'][number] & {
   visible?: boolean
   color?: Color
   pattern?: string
@@ -32,6 +32,8 @@ interface GridGeometry {
 }
 
 function rawLayoutGrids(node: SceneNode): RawLayoutGrid[] {
+  const modeledGrids = (node as Partial<SceneNode>).layoutGrids ?? []
+  if (modeledGrids.length > 0) return modeledGrids
   const source = (node as Partial<SceneNode>).source
   const grids = source?.fig.rawNodeFields.layoutGrids
   if (!Array.isArray(grids)) return []

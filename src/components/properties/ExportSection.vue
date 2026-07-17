@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { ref, computed, watch, onScopeDispose } from 'vue'
+import { useObjectUrl } from '@vueuse/core'
+import { computed, ref, shallowRef, watch } from 'vue'
 
 import AppSelect from '@/components/ui/AppSelect.vue'
 import ExportScaleInput from '@/components/properties/ExportScaleInput.vue'
 import IconButton from '@/components/ui/IconButton.vue'
+import PanelItemRow from '@/components/ui/panel/PanelItemRow.vue'
 import PanelSection from '@/components/ui/panel/PanelSection.vue'
 import Tip from '@/components/ui/Tip.vue'
 import { useEditorStore } from '@/app/editor/active-store'
 import { useExport, useI18n } from '@open-pencil/vue'
+import { CHECKERBOARD_BACKGROUND } from '@/theme/checkerboard'
 
 import type { ExportFormatId } from '@open-pencil/vue'
 
@@ -36,7 +39,8 @@ const FORMAT_OPTIONS: { value: ExportFormatId; label: string }[] = [
   { value: 'pdf', label: 'PDF' }
 ]
 
-const previewUrl = ref<string | null>(null)
+const previewBlob = shallowRef<Blob | null>(null)
+const previewUrl = useObjectUrl(previewBlob)
 const showPreview = ref(false)
 const exporting = ref(false)
 
@@ -76,8 +80,7 @@ async function updatePreview() {
       : editorStore.graph.getChildren(editorStore.state.currentPageId).map((n) => n.id)
 
   if (ids.length === 0) {
-    if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
-    previewUrl.value = null
+    previewBlob.value = null
     return
   }
 
@@ -88,11 +91,7 @@ async function updatePreview() {
   }
   const scale = maxW > 0 ? Math.min(PREVIEW_WIDTH / maxW, 2) : 1
   const data = await editorStore.renderExportImage(ids, scale, 'PNG')
-  if (data) {
-    const prev = previewUrl.value
-    previewUrl.value = URL.createObjectURL(new Blob([data], { type: 'image/png' }))
-    if (prev) URL.revokeObjectURL(prev)
-  }
+  previewBlob.value = data ? new Blob([data], { type: 'image/png' }) : null
 }
 
 const previewKey = computed(
@@ -106,16 +105,12 @@ const previewKey = computed(
 
 watch(() => showPreview.value, updatePreview, { flush: 'post' })
 watch(previewKey, updatePreview, { flush: 'post' })
-
-onScopeDispose(() => {
-  if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
-})
 </script>
 
 <template>
-  <PanelSection :label="panels.export" data-test-id="export-section">
+  <PanelSection :label="panels.export" :empty="activeSettings.length === 0">
     <template #actions>
-      <IconButton :label="panels.addExport" data-test-id="export-section-add" @click="addSetting">
+      <IconButton :label="panels.addExport" @click="addSetting">
         <icon-lucide-plus class="size-3.5" />
       </IconButton>
     </template>
@@ -123,33 +118,40 @@ onScopeDispose(() => {
       {{ panels.mixed }}
     </p>
 
-    <div
-      v-for="(setting, i) in activeSettings"
-      :key="`${targetIds.join(',')}:${i}`"
-      data-test-id="export-item"
-      :data-test-index="i"
-      class="flex items-center gap-1.5 py-0.5"
+    <PanelItemRow
+      v-for="(setting, index) in activeSettings"
+      :key="`${targetIds.join(',')}:${index}`"
+      data-property="exportSettings"
+      :data-index="index"
     >
-      <ExportScaleInput
-        v-if="formatSupportsScale(setting.format)"
-        data-test-id="export-scale-input"
-        :model-value="setting.scale"
-        :presets="scales"
-        :clamp="clampExportScale"
-        :label="panels.exportScale"
-        @update:model-value="updateScale(i, $event)"
-      />
+      <div v-if="formatSupportsScale(setting.format)" class="w-24 shrink-0">
+        <ExportScaleInput
+          :model-value="setting.scale"
+          :presets="scales"
+          :clamp="clampExportScale"
+          :label="panels.exportScale"
+          data-property="export-scale"
+          @update:model-value="updateScale(index, $event)"
+        />
+      </div>
       <AppSelect
-        data-test-id="app-select-trigger"
         :model-value="setting.format"
         :options="FORMAT_OPTIONS"
         :label="panels.exportFormat"
-        @update:model-value="updateFormat(i, $event as ExportFormatId)"
+        :ui="{ trigger: 'w-auto flex-1' }"
+        data-property="export-format"
+        @update:model-value="updateFormat(index, $event as ExportFormatId)"
       />
-      <IconButton :label="panels.removeExport" class="shrink-0" @click="removeSetting(i)">
-        <icon-lucide-minus class="size-3.5" />
-      </IconButton>
-    </div>
+      <template #rail="{ removeClass }">
+        <IconButton
+          :label="panels.removeExport"
+          :class="[removeClass, 'shrink-0']"
+          @click="removeSetting(index)"
+        >
+          <icon-lucide-minus class="size-3.5" />
+        </IconButton>
+      </template>
+    </PanelItemRow>
 
     <button
       v-if="activeSettings.length > 0"
@@ -174,15 +176,7 @@ onScopeDispose(() => {
     </Tip>
 
     <div v-if="showPreview && previewUrl" class="mt-1 overflow-hidden rounded border border-border">
-      <img
-        :src="previewUrl"
-        class="block w-full"
-        style="
-          image-rendering: auto;
-          background: repeating-conic-gradient(var(--color-checkerboard) 0% 25%, transparent 0% 50%)
-            50% / 16px 16px;
-        "
-      />
+      <img :src="previewUrl" :class="['block w-full', CHECKERBOARD_BACKGROUND]" />
     </div>
     <div
       v-else-if="showPreview"

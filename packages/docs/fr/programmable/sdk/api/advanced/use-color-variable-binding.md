@@ -22,4 +22,4 @@ const strokeBinding = useColorVariableBinding('strokes')
 
 - [useFillControls](../composables/use-fill-controls)
 - [useStrokeControls](../composables/use-stroke-controls)
-- [FillPickerRoot](../components/fill-picker-root)
+- [FillRoot](/programmable/sdk/api/components/fill-root)

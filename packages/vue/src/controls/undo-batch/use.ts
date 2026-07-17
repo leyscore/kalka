@@ -4,6 +4,8 @@ import type { UndoManager } from '@open-pencil/scene-graph'
 
 const BATCH_IDLE_MS = 300
 
+type BatchAwareUndoManager = UndoManager & { readonly isBatching: boolean }
+
 export function useUndoBatch(undo: UndoManager) {
   let batchKey: string | null = null
 
@@ -26,6 +28,7 @@ export function useUndoBatch(undo: UndoManager) {
   }
 
   function ensure(key: string, label: string) {
+    if (batchKey === null && (undo as BatchAwareUndoManager).isBatching) return
     if (batchKey !== key) {
       flush()
       undo.beginBatch(label)

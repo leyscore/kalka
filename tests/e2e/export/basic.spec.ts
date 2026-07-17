@@ -2,6 +2,7 @@ import { test, expect, type Page } from '@playwright/test'
 
 import { expectInViewport } from '#tests/e2e/fixtures'
 import { CanvasHelper } from '#tests/helpers/canvas'
+import { propertyItems, propertySection } from '#tests/helpers/properties'
 
 let page: Page
 let canvas: CanvasHelper
@@ -23,7 +24,7 @@ test.afterAll(async () => {
 })
 
 function exportItems() {
-  return page.getByTestId('export-item')
+  return propertyItems(page, 'exportSettings')
 }
 
 function exportButton() {
@@ -80,7 +81,7 @@ test('new selection starts with empty export settings', async () => {
 test('add export row increases row count', async () => {
   const before = await exportItems().count()
 
-  await page.getByTestId('export-section-add').click()
+  await propertySection(page, 'Export').getByRole('button', { name: 'Add export' }).click()
   await canvas.waitForRender()
 
   const after = await exportItems().count()
@@ -90,11 +91,12 @@ test('add export row increases row count', async () => {
 })
 
 test('remove export row decreases row count', async () => {
-  await page.getByTestId('export-section-add').click()
+  await propertySection(page, 'Export').getByRole('button', { name: 'Add export' }).click()
   await canvas.waitForRender()
 
   const before = await exportItems().count()
-  await exportItems().first().locator('button').last().click()
+  await exportItems().first().hover()
+  await exportItems().first().getByRole('button', { name: 'Remove export' }).click()
   await canvas.waitForRender()
 
   const after = await exportItems().count()
@@ -103,7 +105,7 @@ test('remove export row decreases row count', async () => {
 })
 
 test('format selector changes to JPG', async () => {
-  const formatTrigger = exportItems().first().getByTestId('app-select-trigger').last()
+  const formatTrigger = exportItems().first().getByRole('combobox', { name: 'Export format' })
   await expect(formatTrigger).toHaveAttribute('aria-label', 'Export format')
   await formatTrigger.click()
 
@@ -121,7 +123,7 @@ test('format selector changes to JPG', async () => {
 })
 
 test('format selector does not offer FIG as an export format', async () => {
-  const formatTrigger = exportItems().first().getByTestId('app-select-trigger').last()
+  const formatTrigger = exportItems().first().getByRole('combobox', { name: 'Export format' })
   await formatTrigger.click()
 
   await expect(page.locator('[role="option"]').filter({ hasText: '.fig' })).toHaveCount(0)
@@ -130,13 +132,13 @@ test('format selector does not offer FIG as an export format', async () => {
 })
 
 test('SVG format hides scale selector', async () => {
-  const formatTrigger = exportItems().first().getByTestId('app-select-trigger').last()
+  const formatTrigger = exportItems().first().getByRole('combobox', { name: 'Export format' })
   await formatTrigger.click()
 
   await page.locator('[role="option"]').filter({ hasText: 'SVG' }).click()
   await canvas.waitForRender()
 
-  const selects = exportItems().first().getByTestId('app-select-trigger')
+  const selects = exportItems().first().getByRole('combobox', { name: 'Export format' })
   await expect(selects).toHaveCount(1)
   canvas.assertNoErrors()
 })
@@ -149,12 +151,12 @@ test('format selector works with multiple export rows', async () => {
     ]
   ])
 
-  const firstRowFormat = exportItems().nth(0).getByTestId('app-select-trigger').last()
+  const firstRowFormat = exportItems().nth(0).getByRole('combobox', { name: 'Export format' })
   await firstRowFormat.click()
   await page.locator('[role="option"]').filter({ hasText: 'JPG' }).click()
   await canvas.waitForRender()
 
-  const secondRowFormat = exportItems().nth(1).getByTestId('app-select-trigger').last()
+  const secondRowFormat = exportItems().nth(1).getByRole('combobox', { name: 'Export format' })
   await secondRowFormat.click()
   await page.locator('[role="option"]').filter({ hasText: 'PDF' }).click()
   await canvas.waitForRender()
@@ -217,14 +219,14 @@ test('a single export format downloads the file directly', async () => {
 })
 
 test('preview toggle shows image with blob src', async () => {
-  const formatTrigger = exportItems().first().getByTestId('app-select-trigger').last()
+  const formatTrigger = exportItems().first().getByRole('combobox', { name: 'Export format' })
   await formatTrigger.click()
   await page.locator('[role="option"]').filter({ hasText: 'PNG' }).click()
   await canvas.waitForRender()
 
   await page.getByTestId('export-preview-toggle').click()
 
-  const img = page.getByTestId('export-section').locator('img')
+  const img = propertySection(page, 'Export').locator('img')
   await expect(img).toBeVisible({ timeout: 10000 })
 
   const src = await img.getAttribute('src')
@@ -235,7 +237,7 @@ test('preview toggle shows image with blob src', async () => {
 test('multi-select add and edit applies to all selected layers', async () => {
   await createRectangles(2)
 
-  await page.getByTestId('export-section-add').click()
+  await propertySection(page, 'Export').getByRole('button', { name: 'Add export' }).click()
   await canvas.waitForRender()
 
   await expect(exportButton()).toContainText('Export 2 layers')
@@ -244,7 +246,7 @@ test('multi-select add and edit applies to all selected layers', async () => {
     [{ scale: 1, format: 'png' }]
   ])
 
-  const scaleInput = exportItems().first().getByTestId('export-scale-input')
+  const scaleInput = exportItems().first().getByRole('textbox', { name: 'Export scale' })
   await scaleInput.fill('2.5x')
   await scaleInput.press('Enter')
   await canvas.waitForRender()
@@ -259,14 +261,14 @@ test('multi-select add and edit applies to all selected layers', async () => {
 test('mixed export settings are indicated', async () => {
   await createRectangles(2, [[{ scale: 1, format: 'png' }], [{ scale: 2, format: 'jpg' }]])
 
-  await expect(page.getByTestId('export-section')).toContainText('Mixed')
+  await expect(propertySection(page, 'Export')).toContainText('Mixed')
   canvas.assertNoErrors()
 })
 
 test('undo reverts export setting edits', async () => {
   await createRectangles(2)
 
-  await page.getByTestId('export-section-add').click()
+  await propertySection(page, 'Export').getByRole('button', { name: 'Add export' }).click()
   await canvas.waitForRender()
   expect(await selectedExportSettings()).toEqual([
     [{ scale: 1, format: 'png' }],

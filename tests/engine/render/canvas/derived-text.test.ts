@@ -7,7 +7,7 @@ import {
   derivedUnderlineRect,
   shouldUseHardFigmaDerivedGlyphCoverage,
   snapFigmaDerivedGlyphBaseline
-} from '#core/canvas/text-derived'
+} from '#core/canvas/text/derived'
 
 import { expectDefined } from '#tests/helpers/assert'
 

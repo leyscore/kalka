@@ -39,15 +39,26 @@ export function createDefaultEffect(): Effect {
   }
 }
 
-export function createEffectEditActions(editor: Editor, effectsBeforeScrub: Ref<Effect[] | null>) {
+export interface EffectEditSnapshot {
+  effects: Effect[]
+  effectStyleId: string | null
+}
+
+export function createEffectEditActions(
+  editor: Editor,
+  effectsBeforeScrub: Ref<EffectEditSnapshot | null>
+) {
   function scrubEffect(node: SceneNode | null, index: number, changes: Partial<Effect>) {
     if (!node) return
     if (!effectsBeforeScrub.value) {
-      effectsBeforeScrub.value = node.effects.map((e) => ({
-        ...e,
-        color: { ...e.color },
-        offset: { ...e.offset }
-      }))
+      effectsBeforeScrub.value = {
+        effects: node.effects.map((e) => ({
+          ...e,
+          color: { ...e.color },
+          offset: { ...e.offset }
+        })),
+        effectStyleId: node.effectStyleId
+      }
     }
     const effects = [...node.effects]
     effects[index] = { ...effects[index], ...changes }
@@ -64,7 +75,11 @@ export function createEffectEditActions(editor: Editor, effectsBeforeScrub: Ref<
     editor.updateNode(node.id, { effects })
     editor.requestRender()
     if (previous) {
-      editor.commitNodeUpdate(node.id, { effects: previous }, 'Change effect')
+      editor.commitNodeUpdate(
+        node.id,
+        { effects: previous.effects, effectStyleId: previous.effectStyleId },
+        'Change effect'
+      )
     }
   }
 
@@ -98,15 +113,19 @@ export function createEffectControlActions(expandedIndex: Ref<number | null>) {
     patch(index, { color })
   }
 
-  function handleRemove(removeFn: (index: number) => void, index: number) {
-    removeFn(index)
+  function adjustExpandedAfterRemove(index: number) {
     if (expandedIndex.value === index) expandedIndex.value = null
     else if (expandedIndex.value !== null && expandedIndex.value > index) expandedIndex.value--
+  }
+
+  function handleRemove(removeFn: (index: number) => void, index: number) {
+    removeFn(index)
+    adjustExpandedAfterRemove(index)
   }
 
   function toggleExpand(index: number) {
     expandedIndex.value = expandedIndex.value === index ? null : index
   }
 
-  return { updateType, updateColor, handleRemove, toggleExpand }
+  return { updateType, updateColor, handleRemove, adjustExpandedAfterRemove, toggleExpand }
 }

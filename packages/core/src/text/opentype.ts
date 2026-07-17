@@ -28,8 +28,7 @@ interface OutlineFont {
   descender: number
   tables: { os2?: { sTypoLineGap?: number } }
   charToGlyphIndex(char: string): number
-  stringToGlyphs(text: string): OutlineGlyph[]
-  getAdvanceWidth(text: string, fontSize: number): number
+  charToGlyph(char: string): OutlineGlyph
 }
 
 export interface GlyphOutlineProbe {
@@ -44,21 +43,35 @@ interface OpenTypeModule {
   parse(buffer: ArrayBuffer): OutlineFont
 }
 
-const parsedFontCache = new Map<string, OutlineFont | null>()
+interface ParsedFontCacheEntry {
+  bytes: ArrayBuffer
+  font: OutlineFont | null
+}
+
+const parsedFontCache = new Map<string, ParsedFontCacheEntry>()
 
 function getParsedFont(family: string, style: string): OutlineFont | null {
   const key = `${family}|${style}`
-  if (parsedFontCache.has(key)) return parsedFontCache.get(key) ?? null
   const bytes = fontManager.loadedData(family, style)
   if (!bytes) return null
+  const cached = parsedFontCache.get(key)
+  if (cached?.bytes === bytes) return cached.font
   try {
     const font = (OpenTypeSync as OpenTypeModule).parse(bytes.slice(0))
-    parsedFontCache.set(key, font)
+    parsedFontCache.set(key, { bytes, font })
     return font
   } catch {
-    parsedFontCache.set(key, null)
+    parsedFontCache.set(key, { bytes, font: null })
     return null
   }
+}
+
+function glyphsForCodePoints(font: OutlineFont, text: string): OutlineGlyph[] {
+  return Array.from(text, (character) => font.charToGlyph(character))
+}
+
+function glyphAdvanceWidth(font: OutlineFont, glyph: OutlineGlyph, fontSize: number): number {
+  return ((glyph.advanceWidth ?? 0) * fontSize) / font.unitsPerEm
 }
 
 export function measureTextWithOpenType(
@@ -76,7 +89,10 @@ export function measureTextWithOpenType(
   const lineGap = font.tables.os2?.sTypoLineGap ?? 0
   const lineH = lineHeight ?? Math.ceil((font.ascender - font.descender + lineGap) * scale)
 
-  const singleLineWidth = font.getAdvanceWidth(text, fontSize)
+  const singleLineWidth = glyphsForCodePoints(font, text).reduce(
+    (width, glyph) => width + glyphAdvanceWidth(font, glyph, fontSize),
+    0
+  )
 
   if (maxWidth && maxWidth > 0 && singleLineWidth > maxWidth) {
     const lines = Math.ceil(singleLineWidth / maxWidth)
@@ -118,12 +134,11 @@ export function getGlyphOutlineMetricsSync(
   const font = getParsedFont(family, style)
   if (!font) return null
 
-  const glyphs = font.stringToGlyphs(text)
+  const glyphs = glyphsForCodePoints(font, text)
   let x = 0
-  const scale = fontSize / font.unitsPerEm
   return glyphs.map((glyph) => {
     const commands = glyph.getPath(0, 0, fontSize).commands
-    const advance = (glyph.advanceWidth ?? 0) * scale
+    const advance = glyphAdvanceWidth(font, glyph, fontSize)
     const metrics = { commands, x, advance }
     x += advance
     return metrics
@@ -140,7 +155,7 @@ export async function probeGlyphOutlineCommands(
   if (!bytes) return null
 
   const font = (OpenTypeSync as OpenTypeModule).parse(bytes.slice(0))
-  const glyphs = font.stringToGlyphs(text)
+  const glyphs = glyphsForCodePoints(font, text)
   const firstGlyph = glyphs.find((glyph: OutlineGlyph) => glyph.path.commands.length > 0)
   const firstGlyphCommandSample = (firstGlyph?.getPath(0, 0, fontSize).commands ?? []).slice(0, 12)
 

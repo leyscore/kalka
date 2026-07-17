@@ -16,7 +16,6 @@ Te API są publiczne, ale są bardziej wyspecjalizowane niż główna powierzchn
 ## Selektor, zmienne, język i wewnętrzności edytora
 
 - [useColorVariableBinding](./use-color-variable-binding)
-- [useFillPicker](./use-fill-picker)
 - [useGradientStops](./use-gradient-stops)
 - [useFontPicker](./use-font-picker)
 - [useOkHCL](./use-okhcl)

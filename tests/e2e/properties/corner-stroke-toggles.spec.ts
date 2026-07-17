@@ -100,34 +100,25 @@ test('stroke sides toggle shows per-side weight inputs', async () => {
   await drawFrame(300, 50, 120, 80)
   await canvas.waitForRender()
 
-  const addStroke = page.getByTestId('stroke-section-add')
+  const addStroke = propertySection(page, 'Stroke').getByRole('button', { name: 'Add stroke' })
   await expect(addStroke).toBeVisible()
   await addStroke.click()
   await canvas.waitForRender()
 
-  const toggle = page.getByTestId('stroke-sides-toggle')
+  const toggle = page.locator('[data-property="stroke-sides"]')
   await expect(toggle).toBeVisible({ timeout: 5000 })
 
-  const sectionInputsBefore = await page
-    .getByTestId('stroke-section')
-    .getByRole('spinbutton')
-    .count()
+  const sectionInputsBefore = await propertySection(page, 'Stroke').getByRole('spinbutton').count()
 
   await toggle.click()
   await canvas.waitForRender()
 
-  const sectionInputsAfter = await page
-    .getByTestId('stroke-section')
-    .getByRole('spinbutton')
-    .count()
+  const sectionInputsAfter = await propertySection(page, 'Stroke').getByRole('spinbutton').count()
   expect(sectionInputsAfter).toBeGreaterThan(sectionInputsBefore)
 
   await toggle.click()
   await canvas.waitForRender()
 
-  const sectionInputsFinal = await page
-    .getByTestId('stroke-section')
-    .getByRole('spinbutton')
-    .count()
+  const sectionInputsFinal = await propertySection(page, 'Stroke').getByRole('spinbutton').count()
   expect(sectionInputsFinal).toBe(sectionInputsBefore)
 })

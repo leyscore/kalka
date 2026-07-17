@@ -1,70 +1,53 @@
 ---
 title: GradientEditorStop
-description: Headless slot primitive for a single gradient stop row.
+description: Accessible primitive for a selected or draggable gradient stop.
 ---
+
+<script setup lang="ts">
+import { data } from './gradient-editor-stop.data'
+</script>
 
 # GradientEditorStop
 
-`GradientEditorStop` is a headless primitive for rendering and editing a single gradient stop.
+`GradientEditorStop` renders a polymorphic gradient stop with documented selection and dragging
+state. Interactive stops use the slider role and expose their percentage position through ARIA.
 
-## Props
+Use interactive stops on the gradient bar. Arrow keys nudge by `positionStep`; holding Shift uses a
+10× step. Home and End move to either boundary, while Delete and Backspace emit `remove` when the
+stop is removable. Handled keys stop propagation so editor-level deletion and movement shortcuts
+do not run. Native Tab order cycles between stops.
 
-<SdkPropsTable
-  :rows="[
-    { name: 'stop', type: 'GradientStop', description: 'Current stop value.', required: true },
-    { name: 'index', type: 'number', description: 'Current stop index.', required: true },
-    { name: 'active', type: 'boolean', description: 'Whether this stop is active.', required: true }
-  ]"
-/>
+Set `interactive="false"` when reusing the primitive around a composite stop row. The row still
+exposes slot actions and `data-selected`/`data-dragging`, but does not enter the slider tab order.
 
-## Events
+```vue twoslash
+<script setup lang="ts">
+import type { GradientStop } from '@open-pencil/scene-graph'
+import { GradientEditorStop } from '@open-pencil/vue'
 
-<SdkEventsTable
-  :rows="[
-    { name: 'select', payload: 'index: number', description: 'Emitted when the stop is selected.' },
-    { name: 'updatePosition', payload: 'index: number, position: number', description: 'Emitted when the stop position changes.' },
-    { name: 'updateColor', payload: 'index: number, hex: string', description: 'Emitted when the stop color changes.' },
-    { name: 'updateOpacity', payload: 'index: number, opacity: number', description: 'Emitted when the stop opacity changes.' },
-    { name: 'remove', payload: 'index: number', description: 'Emitted when the stop is removed.' }
-  ]"
-/>
-
-## Slots
-
-<SdkSlotsTable
-  :rows="[
-    { name: 'default', props: 'stop state + update handlers', description: 'Full gradient stop render contract.' }
-  ]"
-/>
-
-### Default slot props
-
-```ts
-{
-  stop: GradientStop
-  index: number
-  active: boolean
-  positionPercent: number
-  opacityPercent: number
-  hex: string
-  css: string
-  select: () => void
-  updatePosition: (position: number) => void
-  updateColor: (hex: string) => void
-  updateOpacity: (opacity: number) => void
-  remove: () => void
+const stop: GradientStop = {
+  color: { r: 0.4, g: 0.2, b: 0.9, a: 1 },
+  position: 0.5
 }
+</script>
+
+<template>
+  <GradientEditorStop
+    :stop="stop"
+    :index="0"
+    active
+    label="Middle gradient stop"
+    @update-position="(_index, position) => console.log(position)"
+  />
+</template>
 ```
 
-## Example
+## Generated API reference
 
-```vue
-<GradientEditorStop :stop="stop" :index="index" :active="active" v-slot="ctx">
-  <MyGradientStopRow v-bind="ctx" />
-</GradientEditorStop>
-```
+<SdkComponentAPI :components="data.components" />
 
 ## Related APIs
 
 - [GradientEditorRoot](./gradient-editor-root)
 - [GradientEditorBar](./gradient-editor-bar)
+- [useColorModel](../composables/use-color-model)

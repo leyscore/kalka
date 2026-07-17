@@ -14,6 +14,8 @@ type StyleRefFields = Record<string, unknown> & {
   styleIdForFill?: { guid?: GUID }
   styleIdForStrokeFill?: { guid?: GUID }
   styleIdForText?: { guid?: GUID }
+  styleIdForEffect?: { guid?: GUID }
+  styleIdForGrid?: { guid?: GUID }
 }
 
 type StyleSource = Pick<
@@ -21,6 +23,8 @@ type StyleSource = Pick<
   | 'type'
   | 'styleType'
   | 'fillPaints'
+  | 'effects'
+  | 'layoutGrids'
   | 'fontSize'
   | 'fontName'
   | 'lineHeight'
@@ -29,33 +33,50 @@ type StyleSource = Pick<
   | 'textCase'
 >
 
+type StyleChangeMap = ReadonlyMap<string, Partial<StyleSource>>
+
+function referencedStyle(
+  changeMap: StyleChangeMap,
+  reference: { guid?: GUID } | undefined
+): Partial<StyleSource> | undefined {
+  return reference?.guid ? changeMap.get(guidToString(reference.guid)) : undefined
+}
+
+function applyPaintStyleRefs(changeMap: StyleChangeMap, fields: StyleRefFields): void {
+  const fillStyle = referencedStyle(changeMap, fields.styleIdForFill)
+  if (fillStyle?.styleType === 'FILL' && fillStyle.fillPaints) {
+    fields.fillPaints = fillStyle.fillPaints
+  }
+  const strokeStyle = referencedStyle(changeMap, fields.styleIdForStrokeFill)
+  if (strokeStyle?.styleType === 'FILL' && strokeStyle.fillPaints) {
+    fields.strokePaints = strokeStyle.fillPaints
+  }
+}
+
+function applyEffectAndGridStyleRefs(changeMap: StyleChangeMap, fields: StyleRefFields): void {
+  const effectStyle = referencedStyle(changeMap, fields.styleIdForEffect)
+  if (effectStyle?.styleType === 'EFFECT' && effectStyle.effects)
+    fields.effects = effectStyle.effects
+  const gridStyle = referencedStyle(changeMap, fields.styleIdForGrid)
+  if (gridStyle?.styleType === 'GRID' && gridStyle.layoutGrids) {
+    fields.layoutGrids = gridStyle.layoutGrids
+  }
+}
+
+function applyTextStyleRef(changeMap: StyleChangeMap, fields: StyleRefFields): void {
+  const style = referencedStyle(changeMap, fields.styleIdForText)
+  if (style?.type !== 'TEXT' || style.styleType !== 'TEXT') return
+  for (const field of TEXT_STYLE_FIELDS) {
+    if (field === 'textDecoration') fields.textDecoration = style.textDecoration
+    else if (style[field] !== undefined) fields[field] = style[field]
+  }
+}
+
 export function applyStyleRefsToFields(
   changeMap: ReadonlyMap<string, Partial<StyleSource>>,
   fields: StyleRefFields
 ): void {
-  const fillStyleGuid = fields.styleIdForFill?.guid
-  if (fillStyleGuid) {
-    const style = changeMap.get(guidToString(fillStyleGuid))
-    if (style?.styleType === 'FILL' && style.fillPaints) fields.fillPaints = style.fillPaints
-  }
-
-  const strokeFillStyleGuid = fields.styleIdForStrokeFill?.guid
-  if (strokeFillStyleGuid) {
-    const style = changeMap.get(guidToString(strokeFillStyleGuid))
-    if (style?.styleType === 'FILL' && style.fillPaints) fields.strokePaints = style.fillPaints
-  }
-
-  const textStyleGuid = fields.styleIdForText?.guid
-  if (!textStyleGuid) return
-
-  const style = changeMap.get(guidToString(textStyleGuid))
-  if (style?.type !== 'TEXT' || style.styleType !== 'TEXT') return
-
-  for (const field of TEXT_STYLE_FIELDS) {
-    if (field === 'textDecoration') {
-      fields.textDecoration = style.textDecoration
-    } else if (style[field] !== undefined) {
-      fields[field] = style[field]
-    }
-  }
+  applyPaintStyleRefs(changeMap, fields)
+  applyEffectAndGridStyleRefs(changeMap, fields)
+  applyTextStyleRef(changeMap, fields)
 }

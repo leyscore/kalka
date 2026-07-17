@@ -5,6 +5,7 @@ import type { Color, GUID, Matrix, Vector } from '@open-pencil/scene-graph/primi
 
 /* eslint-disable max-lines */
 import { bytesToHex } from '#core/bytes/hex'
+import { DEFAULT_STROKE_MITER_LIMIT } from '#core/constants'
 
 import {
   applyExportSettingsPluginData,
@@ -596,6 +597,17 @@ function nodeForGeometryExport(node: SceneNode): SceneNode {
   }
 }
 
+function applySharedStyleProps(node: SceneNode, nc: KiwiNodeChange): void {
+  if (node.fillStyleId) nc.styleIdForFill = { guid: stringToGuid(node.fillStyleId) }
+  if (node.strokeStyleId) nc.styleIdForStrokeFill = { guid: stringToGuid(node.strokeStyleId) }
+  if (node.textStyleId) nc.styleIdForText = { guid: stringToGuid(node.textStyleId) }
+  if (node.effectStyleId) nc.styleIdForEffect = { guid: stringToGuid(node.effectStyleId) }
+  if (node.gridStyleId) nc.styleIdForGrid = { guid: stringToGuid(node.gridStyleId) }
+  if (node.layoutGrids.length > 0 || 'layoutGrids' in node.source.fig.rawNodeFields) {
+    nc.layoutGrids = structuredClone(node.layoutGrids)
+  }
+}
+
 function applyNodeVisualProps(
   context: SceneNodeToKiwiContext,
   node: SceneNode,
@@ -647,11 +659,19 @@ function applyNodeVisualProps(
   }
 
   if (node.type !== 'VECTOR') nc.frameMaskDisabled = !node.clipsContent
+  applySharedStyleProps(node, nc)
   if (node.horizontalConstraint !== 'MIN') nc.horizontalConstraint = node.horizontalConstraint
   if (node.verticalConstraint !== 'MIN') nc.verticalConstraint = node.verticalConstraint
   if (node.strokeCap !== 'NONE') nc.strokeCap = node.strokeCap
-  if (node.strokeJoin !== 'MITER') nc.strokeJoin = node.strokeJoin
-  if (!node.source.id && node.strokeMiterLimit !== 28.96) nc.miterLimit = node.strokeMiterLimit
+  if (node.strokeJoin !== 'MITER' || 'strokeJoin' in node.source.fig.rawNodeFields) {
+    nc.strokeJoin = node.strokeJoin
+  }
+  if (
+    node.strokeMiterLimit !== DEFAULT_STROKE_MITER_LIMIT ||
+    'miterLimit' in node.source.fig.rawNodeFields
+  ) {
+    nc.miterLimit = node.strokeMiterLimit
+  }
   if (node.dashPattern.length > 0) nc.dashPattern = node.dashPattern
   if (node.arcData) {
     nc.arcData = {
@@ -691,6 +711,7 @@ export function sceneNodeToKiwiWithContext(
     size: exportNodeSize(node),
     transform: exportNodeTransform(context, node)
   }
+  if (node.sharedStyleType) nc.styleType = node.sharedStyleType
   if (node.type === 'GROUP') {
     nc.resizeToFit = true
   }

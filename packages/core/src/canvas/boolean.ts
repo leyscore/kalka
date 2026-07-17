@@ -7,7 +7,7 @@ import { getTextOutlineSupport } from '#core/text/outlines'
 import { makeArcPath } from './fills'
 import type { SkiaRenderer } from './renderer'
 import { nodeHasRadius } from './shapes'
-import { textNodeToOutlinePath } from './text-outlines'
+import { textNodeToOutlinePath } from './text/outlines'
 
 const BOOLEAN_PATH_OP: Record<
   NonNullable<SceneNode['booleanOperation']>,

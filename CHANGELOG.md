@@ -14,19 +14,35 @@
 - Add saved per-node export settings for repeat exports.
 - Add Design panel controls for layer blend modes and alpha, vector, and luminance masks.
 - Refine Design panel foundations with 26px controls, consistently aligned action rails, shared Tailwind themes, and Storybook component states.
+- Scale the Layers panel to 5,000-node documents with virtualized rows, indexed updates, scroll-to-selection, range selection, and focus-aware themed states.
+- Add Figma-style horizontal and vertical constraint controls with pin interactions, mixed-selection editing, undo, and responsive frame resizing.
+- Add mixed-selection stroke cap, join, and miter-limit controls with CanvasKit rendering and `.fig` roundtrip support.
+- Add a mixed-selection corner-smoothing percentage control with live preview, per-node undo restoration, and `.fig` roundtrip coverage.
+- Model imported fill, stroke, text, effect, and grid styles with reusable SDK/app selectors, automatic detach-on-edit, undo, and `.fig` definition roundtrips.
 - Standardize Vue SDK and app override type names on the `UI` acronym, including `FontPickerUI`.
 - Add a headless Vue SDK NumberField with pointer scrubbing, keyboard stepping, safe arithmetic expressions, and mixed/bound states; remove the superseded ScrubInput API.
 - Add provider-driven BindableValue primitives for variable and token binding, including detach-on-edit, read-only, edit-variable, mixed-value, and undo-batched interactions.
 - Add headless PropertySection, SegmentedControl, and typed PropertyList anatomy, with controlled list events and an undo-aware OpenPencil adapter.
 - Refine variable-bound number fields with a quiet identity pill, one picker affordance, an accessible variable combobox, and non-destructive focus behavior.
 - Redesign Position and Appearance controls with aligned panel grids, SDK-owned independent-corner state, and compact type-icon selection headers.
+- Rebuild Layout size fields with shared variable binding, inline sizing modes, semantic field anatomy, and one-step Hug/Fill-to-Fixed editing.
+- Replace the fragmented Vue SDK color-picker model helpers with `useColorModel()`, providing precise Reka bridges, extensible formats, and shared RGB, HSL, HSB, and OkHCL channel behavior.
+- Add accessible color-channel sliders, binding-aware fill primitives, and keyboard-operable gradient stops while separating fill state from popover composition.
+- Rebuild Fill, Stroke, Effects, and Export controls with shared compact item rows, semantic actions, binding-aware paint fields, and reversible color-picker edits.
+- Finish the Design panel migration with compact labeled Typography, Variant, Mask, and Page controls plus semantic empty-section states.
+- Remove the deprecated `FillPickerRoot`, `useFillPicker()`, and `PanelRow` compatibility APIs after migrating consumers to the canonical fill and panel primitives.
 - Upgrade Vue SDK documentation with shared Tailwind demos, source-generated component API tables, and type-aware Twoslash examples in VitePress.
 - Add desktop image drag-and-drop into the Tauri app window.
 - Add open-document discovery for live CLI and MCP automation so agents can target the intended document and page.
 - Publish lower-level SceneGraph, Pen, Kiwi, Fig, and DOM/CSS functionality through clearer package boundaries for SDK and automation consumers.
+- Upgrade `opentype.js` to v2 and add BCP-47 text-language hints for language-correct CJK shaping and fallback order.
 
 ### Fixes
 
+- Make canvas text rendering demand missing font faces and verify CJK/Arabic fallback coverage from CanvasKit shaping results instead of coarse script predictions.
+- Resolve fonts before loaded, pasted, imported, and tool-created nodes render; invalidate generation-stale text caches and use baked `.fig` glyphs only after live font resolution is exhausted.
+- Load character-specific remote font subsets without Latin-only assumptions, preserve cumulative subset coverage, and reject unavailable desktop font styles instead of substituting the first family face.
+- Render downloaded CJK and Arabic faces under their source family names so CanvasKit produces visible glyphs, with first-paint and interactive fallback snapshots covering CJK, Arabic, and mixed scripts.
 - Fix live CLI and MCP automation drifting to the wrong open document or page when multiple files are open.
 - Improve Chinese, Japanese, and Korean text rendering with glyph-aware fallback fonts and outline rendering when needed.
 - Preserve imported Figma text sizing more accurately, especially auto-sized text inside auto-layout frames.

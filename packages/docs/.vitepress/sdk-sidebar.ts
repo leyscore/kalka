@@ -12,16 +12,19 @@ const SDK_COMPONENT_PAGES = [
   { text: 'SegmentedControl', slug: 'segmented-control', canonical: true },
   { text: 'PropertyListRoot', slug: 'property-list-root' },
   { text: 'PropertyListItem', slug: 'property-list-item' },
-  { text: 'ColorPickerRoot', slug: 'color-picker-root' },
+  { text: 'ColorPickerRoot', slug: 'color-picker-root', canonical: true },
   { text: 'ColorInputRoot', slug: 'color-input-root' },
-  { text: 'FillPickerRoot', slug: 'fill-picker-root' },
+  { text: 'ChannelSlider', slug: 'channel-slider', canonical: true },
+  { text: 'FillRoot', slug: 'fill-root', canonical: true },
+  { text: 'FillSwatch', slug: 'fill-swatch', canonical: true },
   { text: 'FontPickerRoot', slug: 'font-picker-root' },
   { text: 'GradientEditorRoot', slug: 'gradient-editor-root' },
   { text: 'GradientEditorBar', slug: 'gradient-editor-bar' },
-  { text: 'GradientEditorStop', slug: 'gradient-editor-stop' },
+  { text: 'GradientEditorStop', slug: 'gradient-editor-stop', canonical: true },
   { text: 'NumberField', slug: 'number-field', canonical: true },
   { text: 'BindableValue', slug: 'bindable-value', canonical: true },
   { text: 'LayoutControlsRoot', slug: 'layout-controls-root' },
+  { text: 'ConstraintsControlRoot', slug: 'constraints-control-root', canonical: true },
   { text: 'AppearanceControlsRoot', slug: 'appearance-controls-root' },
   { text: 'PositionControlsRoot', slug: 'position-controls-root' },
   { text: 'TypographyControlsRoot', slug: 'typography-controls-root' }
@@ -39,7 +42,10 @@ const SDK_COMPOSABLE_PAGES = [
   { text: 'useMenuModel', slug: 'use-menu-model' },
   { text: 'usePosition', slug: 'use-position' },
   { text: 'useLayout', slug: 'use-layout' },
+  { text: 'useConstraints', slug: 'use-constraints', canonical: true },
   { text: 'useAppearance', slug: 'use-appearance' },
+  { text: 'useSharedStyleBinding', slug: 'use-shared-style-binding', canonical: true },
+  { text: 'useColorModel', slug: 'use-color-model', canonical: true },
   { text: 'useTypography', slug: 'use-typography' },
   { text: 'useExport', slug: 'use-export' },
   { text: 'useFillControls', slug: 'use-fill-controls' },
@@ -53,7 +59,7 @@ const SDK_ADVANCED_PAGES = [
   { text: 'useNodeProps', slug: 'use-node-props' },
   { text: 'useSceneComputed', slug: 'use-scene-computed' },
   { text: 'useColorVariableBinding', slug: 'use-color-variable-binding' },
-  { text: 'useFillPicker', slug: 'use-fill-picker' },
+  { text: 'useColorBindingProvider', slug: 'use-color-binding-provider', canonical: true },
   { text: 'useGradientStops', slug: 'use-gradient-stops' },
   { text: 'useFontPicker', slug: 'use-font-picker' },
   { text: 'usePropScrub', slug: 'use-prop-scrub' },
@@ -101,7 +107,7 @@ export const sdkSidebar = (prefix: string): DefaultTheme.SidebarItem[] => [
               { text: 'Overview', link: `${prefix}/programmable/sdk/api/composables/` },
               ...SDK_COMPOSABLE_PAGES.map((page) => ({
                 text: page.text,
-                link: `${prefix}/programmable/sdk/api/composables/${page.slug}`
+                link: `${'canonical' in page ? '' : prefix}/programmable/sdk/api/composables/${page.slug}`
               }))
             ]
           },
@@ -111,7 +117,7 @@ export const sdkSidebar = (prefix: string): DefaultTheme.SidebarItem[] => [
               { text: 'Overview', link: `${prefix}/programmable/sdk/api/advanced/` },
               ...SDK_ADVANCED_PAGES.map((page) => ({
                 text: page.text,
-                link: `${prefix}/programmable/sdk/api/advanced/${page.slug}`
+                link: `${'canonical' in page ? '' : prefix}/programmable/sdk/api/advanced/${page.slug}`
               }))
             ]
           }

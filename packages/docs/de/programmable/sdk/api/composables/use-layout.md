@@ -31,8 +31,9 @@ const {
   isFlex,
   widthSizing,
   heightSizing,
-  setWidthSizing,
-  setHeightSizing,
+  setAxisSizing,
+  updateAxisSize,
+  commitAxisSize,
 } = useLayout()
 ```
 

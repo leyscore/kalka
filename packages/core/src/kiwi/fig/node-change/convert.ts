@@ -44,6 +44,8 @@ import type {
   TextAlignVertical,
   TextCase,
   ArcData,
+  LayoutGrid,
+  SharedStyleType,
   VectorNetwork,
   ComponentPropertyDefinition,
   ComponentPropertyType,
@@ -500,6 +502,22 @@ function getVectorStrokeJoin(nc: NodeChange, vectorNetwork: VectorNetwork | null
     'MITER') as StrokeJoin
 }
 
+function styleRefId(value: unknown): string | null {
+  if (!value || typeof value !== 'object' || !('guid' in value)) return null
+  const guid = value.guid
+  if (!guid || typeof guid !== 'object') return null
+  return guidToString(guid as GUID)
+}
+
+function sharedStyleType(value: string | undefined): SharedStyleType | null {
+  if (value === 'FILL' || value === 'TEXT' || value === 'EFFECT' || value === 'GRID') return value
+  return null
+}
+
+function convertLayoutGrids(value: unknown): LayoutGrid[] {
+  return Array.isArray(value) ? structuredClone(value as LayoutGrid[]) : []
+}
+
 function convertVectorAndStrokeProps(nc: NodeChange, blobs: Uint8Array[]) {
   const vectorNetwork = resolveVectorNetwork(nc, blobs)
   const strokeCap = getVectorStrokeCap(nc, vectorNetwork)
@@ -517,7 +535,7 @@ function convertVectorAndStrokeProps(nc: NodeChange, blobs: Uint8Array[]) {
     borderBottomWeight: (nc.borderBottomWeight ?? 0) as number,
     borderLeftWeight: (nc.borderLeftWeight ?? 0) as number,
     independentStrokeWeights: (nc.borderStrokeWeightsIndependent ?? false) as boolean,
-    strokeMiterLimit: DEFAULT_STROKE_MITER_LIMIT
+    strokeMiterLimit: (nc.miterLimit ?? DEFAULT_STROKE_MITER_LIMIT) as number
   }
 }
 
@@ -588,6 +606,13 @@ export function nodeChangeToProps(
       nc.dashPattern ?? []
     ),
     effects: convertEffects(nc.effects),
+    layoutGrids: convertLayoutGrids(nc.layoutGrids),
+    fillStyleId: styleRefId(nc.styleIdForFill),
+    strokeStyleId: styleRefId(nc.styleIdForStrokeFill),
+    textStyleId: styleRefId(nc.styleIdForText),
+    effectStyleId: styleRefId(nc.styleIdForEffect),
+    gridStyleId: styleRefId(nc.styleIdForGrid),
+    sharedStyleType: sharedStyleType(nc.styleType),
     ...convertCornerProps(nc),
     ...convertTextProps(nc, blobs),
     horizontalConstraint: mapConstraint(nc.horizontalConstraint as string),
@@ -855,6 +880,7 @@ export const FIGMA_RAW_NODE_FIELD_KEYS = [
   'styleIdForText',
   'styleIdForEffect',
   'styleIdForGrid',
+  'styleType',
   'backgroundPaints',
   'layoutGrids',
   'exportSettings',

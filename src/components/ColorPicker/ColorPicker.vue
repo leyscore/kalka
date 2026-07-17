@@ -6,9 +6,17 @@ import { usePopoverUI } from '@/components/ui/popover'
 
 import type { Color } from '@open-pencil/scene-graph/primitives'
 import type { OkHCLControls } from '@open-pencil/vue'
+import type { VNode } from 'vue'
 
 const { color, okhcl = null } = defineProps<{ color: Color; okhcl?: OkHCLControls | null }>()
-const emit = defineEmits<{ update: [color: Color] }>()
+defineSlots<{
+  trigger?(props: { style: { background: string } }): VNode[]
+}>()
+const emit = defineEmits<{
+  update: [color: Color]
+  openChange: [open: boolean]
+  cancel: []
+}>()
 const cls = usePopoverUI({ content: 'w-56 p-2' })
 </script>
 
@@ -20,7 +28,12 @@ const cls = usePopoverUI({ content: 'w-56 p-2' })
       swatch: 'size-5 shrink-0 cursor-pointer rounded border border-border p-0'
     }"
     @update="emit('update', $event)"
+    @open-change="emit('openChange', $event)"
+    @cancel="emit('cancel')"
   >
+    <template v-if="$slots.trigger" #trigger="trigger">
+      <slot name="trigger" v-bind="trigger" />
+    </template>
     <template #default="{ color: currentColor }">
       <ColorPickerPanel :color="currentColor" :okhcl="okhcl" @update="emit('update', $event)" />
     </template>

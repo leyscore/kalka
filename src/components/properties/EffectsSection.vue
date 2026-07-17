@@ -1,19 +1,30 @@
 <script setup lang="ts">
-import AppSelect from '@/components/ui/AppSelect.vue'
+import { useEffectsControls, useI18n } from '@open-pencil/vue'
+
 import ColorInput from '@/components/ColorPicker/ColorInput.vue'
 import NumberField from '@/components/inputs/NumberField.vue'
+import PropertyItemRow from '@/components/properties/item-list/PropertyItemRow.vue'
+import PropertyListRoot from '@/components/properties/PropertyListRoot.vue'
+import SharedStyleField from '@/components/properties/shared-style/SharedStyleField.vue'
+import AppSelect from '@/components/ui/AppSelect.vue'
+import FillSwatch from '@/components/ui/FillSwatch.vue'
 import IconButton from '@/components/ui/IconButton.vue'
 import PanelSection from '@/components/ui/panel/PanelSection.vue'
 import Tip from '@/components/ui/Tip.vue'
-import PropertyListRoot from '@/components/properties/PropertyListRoot.vue'
-import { vTestId, useEffectsControls, useI18n } from '@open-pencil/vue'
 
-import { colorToCSS } from '@open-pencil/core/color'
-
-import type { Effect } from '@open-pencil/scene-graph'
+import type { Effect, Fill } from '@open-pencil/scene-graph'
 
 const effectsCtx = useEffectsControls()
 const { panels } = useI18n()
+
+function effectPreview(effect: Effect): Fill {
+  return {
+    type: 'SOLID',
+    color: effect.color,
+    opacity: 1,
+    visible: effect.visible
+  }
+}
 </script>
 
 <template>
@@ -22,93 +33,92 @@ const { panels } = useI18n()
     prop-key="effects"
     :label="panels.effects"
   >
-    <PanelSection :label="panels.effects" data-test-id="effects-section">
+    <PanelSection :label="panels.effects" :empty="!isMixed && items.length === 0">
       <template #actions>
         <IconButton
           :label="panels.addEffect"
-          data-test-id="effects-section-add"
           @click="actions.add(effectsCtx.createDefaultEffect())"
         >
           <icon-lucide-plus class="size-3.5" />
         </IconButton>
       </template>
 
+      <SharedStyleField kind="effect" :label="panels.effectStyle" />
+
       <p v-if="isMixed" class="text-[11px] text-muted">{{ panels.mixedEffectsHelp }}</p>
 
       <div
-        v-for="(effect, i) in items"
-        :key="`${i}:${effect.visible ? 'visible' : 'hidden'}`"
-        data-test-id="effect-item"
-        :data-test-index="i"
+        v-for="(effect, index) in items"
+        :key="`${index}:${effect.visible ? 'visible' : 'hidden'}`"
+        :data-effect-index="index"
+        data-effect-group
       >
-        <div class="group flex items-center gap-1.5 py-0.5">
+        <PropertyItemRow
+          prop-key="effects"
+          :index="index"
+          :visibility-label="panels.toggleVisibility"
+          :remove-label="panels.removeEffect"
+          @remove="effectsCtx.adjustExpandedAfterRemove(index)"
+        >
           <Tip
             :label="
-              effectsCtx.expandedIndex.value === i
+              effectsCtx.expandedIndex.value === index
                 ? panels.collapseEffectSettings
                 : panels.expandEffectSettings
             "
           >
             <button
-              v-if="effectsCtx.isShadow(effect.type)"
-              class="size-5 shrink-0 cursor-pointer rounded border border-border"
-              :style="{ background: colorToCSS(effect.color) }"
-              @click="effectsCtx.toggleExpand(i)"
-            />
-            <button
-              v-else
-              class="flex size-5 shrink-0 cursor-pointer items-center justify-center rounded border border-border bg-input"
-              @click="effectsCtx.toggleExpand(i)"
+              type="button"
+              :aria-expanded="effectsCtx.expandedIndex.value === index"
+              :aria-label="
+                effectsCtx.expandedIndex.value === index
+                  ? panels.collapseEffectSettings
+                  : panels.expandEffectSettings
+              "
+              data-property="effect-expand"
+              class="flex size-5 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded border border-border bg-input p-0"
+              @click="effectsCtx.toggleExpand(index)"
             >
-              <icon-lucide-blend class="size-3 text-muted" />
+              <FillSwatch
+                v-if="effectsCtx.isShadow(effect.type)"
+                :fill="effectPreview(effect)"
+                class="size-full border-0"
+              />
+              <icon-lucide-blend v-else class="size-3 text-muted" />
             </button>
           </Tip>
 
           <AppSelect
+            class="min-w-0 flex-1"
             :model-value="effect.type"
             :options="effectsCtx.effectOptions"
+            :label="panels.effects"
+            data-property="effect-type"
             @update:model-value="
-              effectsCtx.updateType(actions.patch, activeNode, i, $event as Effect['type'])
+              effectsCtx.updateType(actions.patch, activeNode, index, $event as Effect['type'])
             "
           />
+        </PropertyItemRow>
 
-          <Tip :label="panels.toggleVisibility">
-            <button
-              v-test-id="`effect-visibility-${i}`"
-              :data-visible="effect.visible ? 'true' : 'false'"
-              class="cursor-pointer border-none bg-transparent p-0 text-muted hover:text-surface"
-              @click="actions.toggleVisibility(i)"
-            >
-              <icon-lucide-eye
-                v-if="effect.visible"
-                data-test-id="visibility-icon-on"
-                class="size-3.5"
-              />
-              <icon-lucide-eye-off v-else data-test-id="visibility-icon-off" class="size-3.5" />
-            </button>
-          </Tip>
-          <IconButton
-            :label="panels.removeEffect"
-            @click="effectsCtx.handleRemove(actions.remove, i)"
-          >
-            <icon-lucide-minus class="size-3.5" />
-          </IconButton>
-        </div>
-
-        <div class="flex flex-col gap-1.5 py-1.5">
+        <div
+          v-if="effectsCtx.expandedIndex.value === index"
+          class="ml-[26px] flex flex-col gap-1.5 py-1.5"
+          data-slot="effect-settings"
+        >
           <template v-if="effectsCtx.isShadow(effect.type)">
             <div class="flex items-center gap-1.5">
               <Tip :label="panels.xAxis">
                 <NumberField
                   icon="X"
                   :model-value="effect.offset.x"
+                  data-property="effect-offset-x"
                   @update:model-value="
-                    effectsCtx.scrubEffect(activeNode, i, {
+                    effectsCtx.scrubEffect(activeNode, index, {
                       offset: { ...effect.offset, x: $event }
                     })
                   "
                   @commit="
-                    effectsCtx.commitEffect(activeNode, i, {
+                    effectsCtx.commitEffect(activeNode, index, {
                       offset: { ...effect.offset, x: $event }
                     })
                   "
@@ -118,13 +128,14 @@ const { panels } = useI18n()
                 <NumberField
                   icon="Y"
                   :model-value="effect.offset.y"
+                  data-property="effect-offset-y"
                   @update:model-value="
-                    effectsCtx.scrubEffect(activeNode, i, {
+                    effectsCtx.scrubEffect(activeNode, index, {
                       offset: { ...effect.offset, y: $event }
                     })
                   "
                   @commit="
-                    effectsCtx.commitEffect(activeNode, i, {
+                    effectsCtx.commitEffect(activeNode, index, {
                       offset: { ...effect.offset, y: $event }
                     })
                   "
@@ -138,25 +149,32 @@ const { panels } = useI18n()
                   icon="B"
                   :model-value="effect.radius"
                   :min="0"
-                  @update:model-value="effectsCtx.scrubEffect(activeNode, i, { radius: $event })"
-                  @commit="effectsCtx.commitEffect(activeNode, i, { radius: $event })"
+                  data-property="effect-radius"
+                  @update:model-value="
+                    effectsCtx.scrubEffect(activeNode, index, { radius: $event })
+                  "
+                  @commit="effectsCtx.commitEffect(activeNode, index, { radius: $event })"
                 />
               </Tip>
               <Tip :label="panels.spread">
                 <NumberField
                   icon="S"
                   :model-value="effect.spread"
-                  @update:model-value="effectsCtx.scrubEffect(activeNode, i, { spread: $event })"
-                  @commit="effectsCtx.commitEffect(activeNode, i, { spread: $event })"
+                  data-property="effect-spread"
+                  @update:model-value="
+                    effectsCtx.scrubEffect(activeNode, index, { spread: $event })
+                  "
+                  @commit="effectsCtx.commitEffect(activeNode, index, { spread: $event })"
                 />
               </Tip>
             </div>
 
             <div class="flex items-center gap-1.5">
               <ColorInput
+                class="min-w-0 flex-1"
                 :color="effect.color"
                 editable
-                @update="effectsCtx.updateColor(actions.patch, i, $event)"
+                @update="effectsCtx.updateColor(actions.patch, index, $event)"
               />
               <Tip :label="panels.opacity">
                 <NumberField
@@ -165,13 +183,14 @@ const { panels } = useI18n()
                   :model-value="Math.round(effect.color.a * 100)"
                   :min="0"
                   :max="100"
+                  data-property="effect-opacity"
                   @update:model-value="
-                    effectsCtx.scrubEffect(activeNode, i, {
+                    effectsCtx.scrubEffect(activeNode, index, {
                       color: { ...effect.color, a: Math.max(0, Math.min(1, $event / 100)) }
                     })
                   "
                   @commit="
-                    effectsCtx.commitEffect(activeNode, i, {
+                    effectsCtx.commitEffect(activeNode, index, {
                       color: { ...effect.color, a: Math.max(0, Math.min(1, $event / 100)) }
                     })
                   "
@@ -180,16 +199,16 @@ const { panels } = useI18n()
             </div>
           </template>
 
-          <template v-else>
-            <NumberField
-              class="w-24 flex-none"
-              icon="B"
-              :model-value="effect.radius"
-              :min="0"
-              @update:model-value="effectsCtx.scrubEffect(activeNode, i, { radius: $event })"
-              @commit="effectsCtx.commitEffect(activeNode, i, { radius: $event })"
-            />
-          </template>
+          <NumberField
+            v-else
+            class="w-24 flex-none"
+            icon="B"
+            :model-value="effect.radius"
+            :min="0"
+            data-property="effect-radius"
+            @update:model-value="effectsCtx.scrubEffect(activeNode, index, { radius: $event })"
+            @commit="effectsCtx.commitEffect(activeNode, index, { radius: $event })"
+          />
         </div>
       </div>
     </PanelSection>

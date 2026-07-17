@@ -17,5 +17,5 @@ export function useBindableValue<V>(): BindableValueContext<V> {
 }
 
 export function useOptionalBindableValue<V>(): BindableValueContext<V> | undefined {
-  return inject(BINDABLE_VALUE_KEY) as BindableValueContext<V> | undefined
+  return inject(BINDABLE_VALUE_KEY, undefined) as BindableValueContext<V> | undefined
 }

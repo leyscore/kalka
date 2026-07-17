@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { colorToCSS } from '@open-pencil/core/color'
 
-import PickerSlider from '@/components/color-picker-panel/PickerSlider.vue'
+import StandardColorSlider from '@/components/color-picker-panel/StandardColorSlider.vue'
 import { useColorPickerPanelContext } from '@/components/color-picker-panel/context'
 
 const ctx = useColorPickerPanelContext()
@@ -9,31 +9,35 @@ const ctx = useColorPickerPanelContext()
 
 <template>
   <template v-if="ctx.fieldFormat !== 'okhcl'">
-    <PickerSlider
-      label="H"
-      :model-value="ctx.hslColor.h ?? 0"
-      :min="0"
-      :max="360"
-      :step="1"
-      gradient-style="background: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);"
+    <StandardColorSlider
+      label="Hue"
+      :model-value="ctx.rekaColor"
+      channel="hue"
+      color-space="hsl"
+      :number-value="Math.round(ctx.hslColor.h ?? 0)"
+      :number-min="0"
+      :number-max="360"
       :thumb-fill="colorToCSS(ctx.sliderPreview.hue)"
-      :ui="{ root: 'gap-0', label: 'hidden', input: 'hidden' }"
       data-test-id="color-slider-hue"
-      @update:model-value="ctx.updateRGBAHue"
+      @update="ctx.updateRGBAHue($event.space === 'hsl' ? $event.h : 0)"
+      @update-number="ctx.updateRGBAHue"
     />
 
-    <PickerSlider
-      label="A"
-      :model-value="ctx.color.a"
-      :min="0"
-      :max="1"
-      :step="0.001"
+    <StandardColorSlider
+      label="Alpha"
+      :model-value="ctx.rekaColor"
+      channel="alpha"
+      color-space="rgb"
+      :step="0.1"
+      :number-value="Math.round(ctx.color.a * 100)"
+      :number-min="0"
+      :number-max="100"
+      suffix="%"
       checkerboard
-      :gradient-style="`background: linear-gradient(to right, transparent, ${colorToCSS({ ...ctx.color, a: 1 })})`"
       :thumb-fill="colorToCSS(ctx.color)"
-      :ui="{ root: 'gap-0', label: 'hidden', input: 'hidden' }"
       data-test-id="color-slider-alpha"
-      @update:model-value="ctx.updateRGBAAlpha"
+      @update="ctx.updateRGBAAlpha($event.alpha)"
+      @update-number="ctx.updateRGBAAlpha($event / 100)"
     />
   </template>
 </template>

@@ -19,6 +19,7 @@ export interface TextEditorState {
   cursor: number
   selectionAnchor: number | null
   paragraph: Paragraph | null
+  paragraphFontGeneration: number
   textDirection: 'LTR' | 'RTL'
 }
 
@@ -26,6 +27,7 @@ export class TextEditor {
   private ck: CanvasKit
   private renderer: SkiaRenderer | null = null
   private _state: TextEditorState | null = null
+  private paragraphNode: SceneNode | null = null
   caretVisible = true
 
   constructor(ck: CanvasKit) {
@@ -66,7 +68,16 @@ export class TextEditor {
   }
 
   get state(): TextEditorState | null {
-    return this._state
+    const state = this._state
+    if (
+      state &&
+      this.renderer &&
+      this.paragraphNode &&
+      state.paragraphFontGeneration !== this.renderer.fontGeneration
+    ) {
+      this.rebuildParagraph(this.paragraphNode)
+    }
+    return state
   }
 
   get isActive(): boolean {
@@ -88,6 +99,7 @@ export class TextEditor {
       cursor: node.text.length,
       selectionAnchor: null,
       paragraph: null,
+      paragraphFontGeneration: -1,
       textDirection: resolveNodeTextDirection(node)
     }
     this.rebuildParagraph(node)
@@ -98,6 +110,7 @@ export class TextEditor {
     const result = { nodeId: this._state.nodeId, text: this._state.text }
     this._state.paragraph?.delete()
     this._state = null
+    this.paragraphNode = null
     return result
   }
 
@@ -105,8 +118,10 @@ export class TextEditor {
     const s = this._state
     if (!s || !this.renderer) return
     s.paragraph?.delete()
+    this.paragraphNode = node
     s.textDirection = resolveNodeTextDirection(node)
-    s.paragraph = this.renderer.buildParagraph(node)
+    s.paragraph = this.renderer.buildParagraph({ ...node, text: s.text })
+    s.paragraphFontGeneration = this.renderer.fontGeneration
   }
 
   hasSelection(): boolean {

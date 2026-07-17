@@ -1,6 +1,6 @@
 import { expect, test, useEditorSetup } from '#tests/e2e/fixtures'
 import { expectDefined } from '#tests/helpers/assert'
-import { propertySection } from '#tests/helpers/properties'
+import { propertyItems, propertySection } from '#tests/helpers/properties'
 import { getSelectedNode } from '#tests/helpers/store'
 
 const editor = useEditorSetup()
@@ -9,7 +9,9 @@ test('fill visibility supports repeat click and undo redo', async () => {
   await editor.canvas.drawRect(120, 120, 120, 80)
   await editor.canvas.waitForRender()
 
-  const fillButton = editor.page.getByTestId('fill-visibility-0')
+  const fillButton = propertyItems(editor.page, 'fills')
+    .first()
+    .getByRole('button', { name: 'Toggle visibility' })
   await expect(fillButton).toBeVisible()
   expect(expectDefined(await getSelectedNode(editor.page), 'selected node').fills[0]?.visible).toBe(
     true
@@ -38,11 +40,22 @@ test('fill visibility supports repeat click and undo redo', async () => {
   )
 })
 
+test('empty list sections expose semantic empty state', async () => {
+  await expect(propertySection(editor.page, 'Fill')).not.toHaveAttribute('data-empty')
+  await expect(propertySection(editor.page, 'Stroke')).toHaveAttribute('data-empty', '')
+  await expect(propertySection(editor.page, 'Effects')).toHaveAttribute('data-empty', '')
+  await expect(propertySection(editor.page, 'Export')).toHaveAttribute('data-empty', '')
+})
+
 test('stroke visibility supports repeat click and undo redo', async () => {
-  await editor.page.getByTestId('stroke-section-add').click()
+  const strokeSection = propertySection(editor.page, 'Stroke')
+  await strokeSection.getByRole('button', { name: 'Add stroke' }).click()
+  await expect(strokeSection).not.toHaveAttribute('data-empty')
   await editor.canvas.waitForRender()
 
-  const strokeButton = editor.page.getByTestId('stroke-visibility-0')
+  const strokeButton = propertyItems(editor.page, 'strokes')
+    .first()
+    .getByRole('button', { name: 'Toggle visibility' })
   await expect(strokeButton).toBeVisible()
   expect(
     expectDefined(await getSelectedNode(editor.page), 'selected node').strokes[0]?.visible
@@ -84,7 +97,7 @@ test('multi-selection list add is one undo step', async () => {
       return [...store.state.selectedIds].map((id) => store.getNode(id)?.strokes.length ?? -1)
     })
 
-  await editor.page.getByTestId('stroke-section-add').click()
+  await propertySection(editor.page, 'Stroke').getByRole('button', { name: 'Add stroke' }).click()
   await editor.canvas.waitForRender()
   expect(await strokeCounts()).toEqual([1, 1])
 

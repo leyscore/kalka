@@ -44,7 +44,7 @@ export function useLayout() {
     toggleIndividualPadding
   } = createPaddingActions(editor, node)
 
-  const layoutActions = createLayoutActions({ editor, node, isFlex, isInAutoLayout })
+  const layoutActions = createLayoutActions({ editor, node, isInAutoLayout })
 
   const { updateGridTrack, addTrack, removeTrack } = createGridTrackActions(editor, node)
 
@@ -72,8 +72,9 @@ export function useLayout() {
     addSizeLimit: layoutActions.addSizeLimit,
     removeSizeLimit: layoutActions.removeSizeLimit,
     commitProp: layoutActions.commitProp,
-    setWidthSizing: layoutActions.setWidthSizing,
-    setHeightSizing: layoutActions.setHeightSizing,
+    setAxisSizing: layoutActions.setAxisSizing,
+    updateAxisSize: layoutActions.updateAxisSize,
+    commitAxisSize: layoutActions.commitAxisSize,
     setHorizontalPadding,
     commitHorizontalPadding,
     setVerticalPadding,

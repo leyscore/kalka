@@ -42,6 +42,25 @@ describe('text node export', () => {
     expect(textNode.fontSize).toBe(16)
   })
 
+  test('keeps OpenPencil text language hints out of the .fig schema', async () => {
+    await initCodec()
+
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    graph.createNode('TEXT', page.id, {
+      name: 'Localized Han',
+      text: '骨',
+      textLanguage: 'ja-JP',
+      fontFamily: 'Inter'
+    })
+
+    const reimported = await parseFigFile((await exportFigFile(graph)).buffer as ArrayBuffer)
+    const textNode = reimported.getAllNodes().find((node) => node.name === 'Localized Han')
+
+    expect(expectDefined(textNode, 'textNode').text).toBe('骨')
+    expect(textNode?.textLanguage).toBeNull()
+  })
+
   test('text node has lines in textData', async () => {
     await initCodec()
 

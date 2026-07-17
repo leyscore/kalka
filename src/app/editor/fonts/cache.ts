@@ -34,8 +34,8 @@ const FILE_DIR = `${CACHE_DIR}/files`
 const EMPTY_MANIFEST: FontCacheManifest = { version: 1, entries: {} }
 const textEncoder = new TextEncoder()
 
-async function cacheKey(family: string, style: string) {
-  return hashText(`${family}\0${style}`)
+async function cacheKey(family: string, style: string, characters = '') {
+  return hashText(`${family}\0${style}\0${Array.from(new Set(characters)).sort().join('')}`)
 }
 
 async function hashText(value: string) {
@@ -80,9 +80,9 @@ export async function clearDownloadedFontCache(): Promise<void> {
 
 export function createTauriDownloadedFontCache(): DownloadedFontCache {
   return {
-    async read(family, style) {
+    async read(family, style, characters) {
       const manifest = await readManifest()
-      const entry = manifest.entries[await cacheKey(family, style)]
+      const entry = manifest.entries[await cacheKey(family, style, characters)]
       if (!entry) return null
 
       const buffer = await readCacheBytes(`${FILE_DIR}/${entry.file}`)
@@ -92,8 +92,8 @@ export function createTauriDownloadedFontCache(): DownloadedFontCache {
       return buffer
     },
 
-    async write(family, style, data) {
-      const key = await cacheKey(family, style)
+    async write(family, style, data, characters) {
+      const key = await cacheKey(family, style, characters)
       const sha256 = await hashBytes(data)
       const file = `${key}.ttf`
       await writeCacheBytes(`${FILE_DIR}/${file}`, data)

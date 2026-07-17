@@ -73,7 +73,8 @@ function backingMetadataMatches(
     backing &&
     backing.pageId === r.pageId &&
     backing.sceneVersion === sceneVersion &&
-    backing.positionPreviewVersion === positionPreviewVersion
+    backing.positionPreviewVersion === positionPreviewVersion &&
+    backing.fontGeneration === r.fontGeneration
   )
 }
 
@@ -191,7 +192,8 @@ function ensureSubtreePictureCacheScope(
   if (
     r.subtreePictureCachePageId === r.pageId &&
     r.subtreePictureCacheSceneVersion === sceneVersion &&
-    r.subtreePictureCachePositionPreviewVersion === graph.positionPreviewVersion
+    r.subtreePictureCachePositionPreviewVersion === graph.positionPreviewVersion &&
+    r.subtreePictureCacheFontGeneration === r.fontGeneration
   ) {
     return
   }
@@ -199,6 +201,7 @@ function ensureSubtreePictureCacheScope(
   r.subtreePictureCachePageId = r.pageId
   r.subtreePictureCacheSceneVersion = sceneVersion
   r.subtreePictureCachePositionPreviewVersion = graph.positionPreviewVersion
+  r.subtreePictureCacheFontGeneration = r.fontGeneration
 }
 
 function cachedSubtreePicture(
@@ -213,7 +216,8 @@ function cachedSubtreePicture(
     cached &&
     cached.pageId === r.pageId &&
     cached.sceneVersion === sceneVersion &&
-    cached.positionPreviewVersion === graph.positionPreviewVersion
+    cached.positionPreviewVersion === graph.positionPreviewVersion &&
+    cached.fontGeneration === r.fontGeneration
   ) {
     return cached.picture
   }
@@ -245,7 +249,8 @@ function cachedSubtreePicture(
     picture,
     pageId: r.pageId,
     sceneVersion,
-    positionPreviewVersion: graph.positionPreviewVersion
+    positionPreviewVersion: graph.positionPreviewVersion,
+    fontGeneration: r.fontGeneration
   })
   return picture
 }
@@ -305,6 +310,7 @@ function installSceneBackingImage(
     pageId: r.pageId,
     sceneVersion,
     positionPreviewVersion,
+    fontGeneration: r.fontGeneration,
     ...sceneBackingMetrics(backing)
   }
   r.scenePictureVersion = sceneVersion
@@ -326,6 +332,7 @@ function sceneBackingBuildMatches(r: SkiaRenderer, sceneVersion: number): boolea
     build.pageId === r.pageId &&
     build.sceneVersion === sceneVersion &&
     build.positionPreviewVersion === build.graph.positionPreviewVersion &&
+    build.fontGeneration === r.fontGeneration &&
     build.panX === backing.panX &&
     build.panY === backing.panY &&
     build.zoom === backing.zoom &&
@@ -349,6 +356,7 @@ function startSceneBackingBuild(r: SkiaRenderer, graph: SceneGraph, sceneVersion
     pageId: r.pageId,
     sceneVersion,
     positionPreviewVersion: graph.positionPreviewVersion,
+    fontGeneration: r.fontGeneration,
     ...sceneBackingMetrics(backing)
   }
 }

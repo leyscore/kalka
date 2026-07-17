@@ -110,6 +110,13 @@ Every node carries these fields (subset of `NodeChange`):
 - `opacity` — 0–1
 - `blendMode` — `NORMAL`, `MULTIPLY`, `SCREEN`, etc.
 
+### Shared styles
+
+Scene nodes model `fillStyleId`, `strokeStyleId`, `textStyleId`, `effectStyleId`, and
+`gridStyleId` as nullable Figma GUID strings. Imported local definitions are internal nodes with a
+`sharedStyleType` of `FILL`, `TEXT`, `EFFECT`, or `GRID`; `layoutGrids[]` contains promoted grid
+geometry. Manual property edits detach only the matching reference.
+
 ### Stroke
 
 - `strokeWeight` — stroke thickness

@@ -1,5 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 
+import type { OkHCLPayload } from '@open-pencil/core/color'
+
 import { CanvasHelper } from '#tests/helpers/canvas'
 
 let page: Page
@@ -29,6 +31,22 @@ async function getSelectedFill() {
   })
 }
 
+async function getSelectedFillOkHCL() {
+  return page.evaluate(() => {
+    const store = window.openPencil?.getStore?.()
+    if (!store) throw new Error('OpenPencil store not initialized')
+    const id = [...store.state.selectedIds][0]
+    if (!id) return null
+    const node = store.graph.getNode(id)
+    const entry = node?.pluginData.find(
+      (value) => value.pluginId === 'open-pencil' && value.key === 'okhcl'
+    )
+    if (!entry) return null
+    const payload = JSON.parse(entry.value) as Partial<OkHCLPayload>
+    return payload.kind === 'fill' && payload.index === 0 ? (payload.color ?? null) : null
+  })
+}
+
 async function openFillPicker() {
   const solidTab = page.getByTestId('fill-picker-tab-solid')
   if (await solidTab.isVisible().catch(() => false)) return
@@ -43,16 +61,15 @@ async function chooseFormat(label: 'RGB' | 'HSL' | 'HSB' | 'OkHCL') {
 }
 
 async function dragSlider(testId: string, ratio: number) {
-  const slider = page.getByTestId(testId).locator('input[type="range"]')
+  const slider = page.getByTestId(testId).locator(':scope > [data-orientation="horizontal"]')
   const box = await slider.boundingBox()
   if (!box) throw new Error(`Missing slider: ${testId}`)
-  const y = box.y + box.height / 2
-  await page.mouse.move(box.x + 2, y)
-  await page.mouse.down()
-  await page.mouse.move(box.x + Math.max(2, Math.min(box.width - 2, box.width * ratio)), y, {
-    steps: 20
+  await slider.click({
+    position: {
+      x: Math.max(2, Math.min(box.width - 2, box.width * ratio)),
+      y: box.height / 2
+    }
   })
-  await page.mouse.up()
   await canvas.waitForRender()
 }
 
@@ -119,7 +136,7 @@ test('hsb saturation and brightness sliders both affect fill color', async () =>
   await chooseFormat('HSB')
 
   const beforeS = await getSelectedFill()
-  await dragSlider('color-slider-hsb-s', 0.15)
+  await dragSlider('color-slider-hsb-s', 0.75)
   const afterS = await getSelectedFill()
   expect(afterS).not.toBeNull()
   expect(
@@ -137,4 +154,37 @@ test('hsb saturation and brightness sliders both affect fill color', async () =>
       beforeB?.color.g !== afterB?.color.g ||
       beforeB?.color.b !== afterB?.color.b
   ).toBe(true)
+})
+
+test('gradient stops support keyboard nudging and removal', async () => {
+  await openFillPicker()
+  await page.getByTestId('fill-picker-tab-gradient').click()
+  await page.getByTestId('fill-picker-add-stop').click()
+
+  const stops = page.getByTestId('fill-picker-gradient-bar').getByRole('slider')
+  await expect(stops).toHaveCount(3)
+  const first = stops.first()
+  await first.focus()
+  const before = Number(await first.getAttribute('aria-valuenow'))
+  await first.press('ArrowRight')
+  await expect(first).toHaveAttribute('aria-valuenow', String(Math.min(100, before + 1)))
+  await first.press('Delete')
+  await expect(stops).toHaveCount(2)
+})
+
+test('okhcl channels preserve intent metadata while updating the fill', async () => {
+  await openFillPicker()
+  await page.getByTestId('fill-picker-tab-solid').click()
+  await chooseFormat('OkHCL')
+
+  await dragSlider('color-slider-okhcl-c', 0.6)
+  const afterChroma = await getSelectedFill()
+  const chromaIntent = await getSelectedFillOkHCL()
+  expect(afterChroma).not.toBeNull()
+  expect(chromaIntent?.c).toBeGreaterThan(0)
+
+  await dragSlider('color-slider-okhcl-l', 0.75)
+  const lightnessIntent = await getSelectedFillOkHCL()
+  expect(lightnessIntent?.l).toBeCloseTo(0.75, 1)
+  expect(lightnessIntent?.c).toBeCloseTo(chromaIntent?.c ?? 0, 3)
 })

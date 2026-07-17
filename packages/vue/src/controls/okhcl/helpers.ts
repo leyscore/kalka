@@ -13,7 +13,7 @@ import { BLACK } from '@open-pencil/core/constants'
 import type { Editor } from '@open-pencil/core/editor'
 import type { SceneNode } from '@open-pencil/scene-graph'
 
-import type { ColorFieldFormat } from '#vue/primitives/ColorPicker/types'
+import type { ColorFieldFormat } from '#vue/controls/color-model/types'
 
 type ColorKind = 'fill' | 'stroke'
 

@@ -17,6 +17,8 @@ defineSlots<{
     props: PropertyListRootSlotProps<K> & {
       isMulti: boolean
       activeNode: SceneNode | null
+      selectedNodeIds: string[]
+      flush: () => void
     }
   ): VNode[]
 }>()
@@ -43,6 +45,8 @@ const context = useEditorPropertyList(propKey)
       v-bind="slotProps"
       :is-multi="context.isMulti.value"
       :active-node="context.activeNode.value"
+      :selected-node-ids="context.selectedNodeIds.value"
+      :flush="context.flush"
     />
   </HeadlessPropertyListRoot>
 </template>

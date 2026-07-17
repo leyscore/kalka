@@ -129,10 +129,11 @@ function snapshotBindings() {
 
 function beginMutation(source: BindingMutationSource): boolean {
   if (interactionActive) return true
-  if (state.value === 'unbound') return true
+  const startedUnbound = state.value === 'unbound'
   const startedMixed = state.value === 'mixed'
-  if (!startedMixed && policy.value === 'readonly-when-bound') return false
+  if (!startedUnbound && !startedMixed && policy.value === 'readonly-when-bound') return false
   if (
+    !startedUnbound &&
     !startedMixed &&
     policy.value === 'edit-variable' &&
     (!variable.value || !provider.setValue)
@@ -142,11 +143,11 @@ function beginMutation(source: BindingMutationSource): boolean {
 
   interactionActive = true
   void source
-  snapshotBindings()
+  if (!startedUnbound) snapshotBindings()
   resolvedSnapshot = resolvedValue.value
   if (supportsInteractionBatch) beginProviderBatch(batchLabel)
 
-  if (startedMixed || policy.value === 'detach-on-edit') {
+  if (startedMixed || (!startedUnbound && policy.value === 'detach-on-edit')) {
     detachedForInteraction = true
     for (const target of targets.value) provider.unbind(target)
   }

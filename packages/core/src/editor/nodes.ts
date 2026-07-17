@@ -1,6 +1,6 @@
 import { pick } from 'es-toolkit/object'
 
-import type { SceneNode } from '@open-pencil/scene-graph'
+import { styleDetachmentChanges, type SceneNode } from '@open-pencil/scene-graph'
 
 import { createLayoutModeActions } from './layout-mode'
 import { createNudgeActions } from './nudge'
@@ -15,7 +15,11 @@ export function createNodeActions(ctx: EditorContext) {
 
   function updateNode(id: string, changes: Partial<SceneNode>) {
     const node = ctx.graph.getNode(id)
-    const nextChanges = { ...changes, ...textAutoResizeChanges(node, changes) }
+    if (!node) return
+    const nextChanges = styleDetachmentChanges(node, {
+      ...changes,
+      ...textAutoResizeChanges(node, changes)
+    })
     ctx.graph.updateNode(id, nextChanges)
     ctx.runLayoutForNode(id)
   }
@@ -23,7 +27,10 @@ export function createNodeActions(ctx: EditorContext) {
   function updateNodeWithUndo(id: string, changes: Partial<SceneNode>, label = 'Update') {
     const node = ctx.graph.getNode(id)
     if (!node) return
-    const nextChanges = { ...changes, ...textAutoResizeChanges(node, changes) }
+    const nextChanges = styleDetachmentChanges(node, {
+      ...changes,
+      ...textAutoResizeChanges(node, changes)
+    })
     const previous = pick(
       node,
       Object.keys(nextChanges) as (keyof SceneNode)[]

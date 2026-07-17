@@ -2,7 +2,7 @@
 import { inputNumberValue } from '@open-pencil/vue'
 import { colorToCSS } from '@open-pencil/core/color'
 
-import PickerSlider from '@/components/color-picker-panel/PickerSlider.vue'
+import StandardColorSlider from '@/components/color-picker-panel/StandardColorSlider.vue'
 import { useColorPickerPanelContext } from '@/components/color-picker-panel/context'
 
 const ctx = useColorPickerPanelContext()
@@ -38,30 +38,36 @@ const ctx = useColorPickerPanelContext()
     />
   </div>
 
-  <PickerSlider
-    label="S"
-    :model-value="ctx.hslColor.s ?? 0"
-    :min="0"
-    :max="100"
+  <StandardColorSlider
+    label="Saturation"
+    :model-value="ctx.rekaColor"
+    channel="saturation"
+    color-space="hsl"
     :step="0.1"
-    :display="{ value: Math.round(ctx.hslColor.s ?? 0), min: 0, max: 100, step: 1 }"
-    :gradient-style="ctx.sliderGradient.hslSaturation"
+    :number-value="Math.round(ctx.hslColor.s ?? 0)"
+    :number-min="0"
+    :number-max="100"
+    suffix="%"
     :thumb-fill="colorToCSS(ctx.sliderPreview.hslSaturation)"
     data-test-id="color-slider-hsl-s"
-    @update:model-value="ctx.updateHSLChannelValue('s', $event)"
+    @update="ctx.onRekaColorUpdate"
+    @update-number="ctx.updateHSLChannelValue('s', $event)"
   />
 
-  <PickerSlider
-    label="L"
-    :model-value="ctx.hslColor.l ?? 0"
-    :min="0"
-    :max="100"
+  <StandardColorSlider
+    label="Lightness"
+    :model-value="ctx.rekaColor"
+    channel="lightness"
+    color-space="hsl"
     :step="0.1"
-    :display="{ value: Math.round(ctx.hslColor.l ?? 0), min: 0, max: 100, step: 1 }"
-    :gradient-style="ctx.sliderGradient.hslLightness"
+    :number-value="Math.round(ctx.hslColor.l ?? 0)"
+    :number-min="0"
+    :number-max="100"
+    suffix="%"
     :thumb-fill="colorToCSS(ctx.sliderPreview.hslLightness)"
     data-test-id="color-slider-hsl-l"
-    @update:model-value="ctx.updateHSLChannelValue('l', $event)"
+    @update="ctx.onRekaColorUpdate"
+    @update-number="ctx.updateHSLChannelValue('l', $event)"
   />
 
   <p class="text-[10px] leading-4 text-muted">{{ ctx.panels.colorHintHsl }}</p>

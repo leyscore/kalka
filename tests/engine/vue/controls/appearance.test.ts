@@ -2,10 +2,11 @@ import { describe, expect, test } from 'bun:test'
 
 import { computed, ref } from 'vue'
 
+import { createEditor } from '@open-pencil/core/editor'
 import type { SceneNode } from '@open-pencil/scene-graph'
-import type { MixedValue } from '@open-pencil/vue'
+import { MIXED, type MixedValue } from '@open-pencil/vue'
 
-import { createAppearanceState } from '#vue/controls/appearance/helpers'
+import { createAppearanceActions, createAppearanceState } from '#vue/controls/appearance/helpers'
 
 import { createRect, firstPageId, makeSceneGraph } from '#tests/helpers/scene'
 
@@ -60,5 +61,63 @@ describe('appearance control state', () => {
     node.independentCorners = true
     const state = appearanceState(node, true)
     expect(state.showIndependentCorners.value).toBe(false)
+  })
+
+  test('presents normalized corner smoothing as a percentage', () => {
+    const node = rectangle()
+    node.cornerSmoothing = 0.735
+    const state = appearanceState(node)
+    expect(state.cornerSmoothingPercent.value).toBe(74)
+  })
+
+  test('keeps independent corner preview and undo behavior', () => {
+    const graph = makeSceneGraph()
+    const pageId = firstPageId(graph)
+    const rect = graph.createNode('RECTANGLE', pageId, {
+      independentCorners: true,
+      topLeftRadius: 8
+    })
+    const editor = createEditor({ graph })
+    const actions = createAppearanceActions({
+      editor,
+      node: computed(() => graph.getNode(rect.id) ?? null),
+      nodes: computed(() => []),
+      isMulti: computed(() => false),
+      merged: (key) => graph.getNode(rect.id)?.[key] ?? MIXED
+    })
+
+    actions.updateCornerProp('topLeftRadius', 20)
+    actions.commitCornerProp('topLeftRadius', 20, 8)
+    expect(graph.getNode(rect.id)?.topLeftRadius).toBe(20)
+    editor.undo.undo()
+    expect(graph.getNode(rect.id)?.topLeftRadius).toBe(8)
+  })
+
+  test('restores each mixed smoothing value in one undo step', () => {
+    const graph = makeSceneGraph()
+    const pageId = firstPageId(graph)
+    const first = graph.createNode('RECTANGLE', pageId, { cornerSmoothing: 0.2 })
+    const second = graph.createNode('RECTANGLE', pageId, { cornerSmoothing: 0.8 })
+    const editor = createEditor({ graph })
+    const nodes = computed(() => {
+      const selected = [graph.getNode(first.id), graph.getNode(second.id)]
+      return selected.filter((value): value is SceneNode => value !== undefined)
+    })
+    const actions = createAppearanceActions({
+      editor,
+      node: computed(() => null),
+      nodes,
+      isMulti: computed(() => true),
+      merged: () => MIXED
+    })
+
+    actions.updateCornerProp('cornerSmoothing', 1.4)
+    expect(graph.getNode(first.id)?.cornerSmoothing).toBe(1)
+    expect(graph.getNode(second.id)?.cornerSmoothing).toBe(1)
+    actions.commitCornerProp('cornerSmoothing', 1, 0)
+
+    editor.undo.undo()
+    expect(graph.getNode(first.id)?.cornerSmoothing).toBe(0.2)
+    expect(graph.getNode(second.id)?.cornerSmoothing).toBe(0.8)
   })
 })
