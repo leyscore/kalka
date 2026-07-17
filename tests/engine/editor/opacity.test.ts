@@ -4,7 +4,7 @@ import { createEditor } from '@open-pencil/core/editor'
 
 import { getNodeOrThrow } from '#tests/helpers/assert'
 
-describe('opacity via updateNodeWithUndo + runBatch', () => {
+describe('editor.setOpacity', () => {
   function setup() {
     const editor = createEditor()
     const pageId = editor.graph.getPages()[0].id
@@ -19,36 +19,39 @@ describe('opacity via updateNodeWithUndo + runBatch', () => {
     return { editor, rect }
   }
 
-  function setOpacity(editor: ReturnType<typeof createEditor>, opacity: number) {
-    const targets = editor.getSelectedNodes()
-    if (targets.length === 0) return
-    editor.undo.runBatch('Set opacity', () => {
-      for (const target of targets) {
-        if (target.opacity === opacity) continue
-        editor.updateNodeWithUndo(target.id, { opacity }, 'Set opacity')
-      }
-    })
-  }
-
   test('sets opacity to 50%', () => {
     const { editor, rect } = setup()
 
-    setOpacity(editor, 0.5)
+    editor.setOpacity(0.5)
     expect(getNodeOrThrow(editor.graph, rect.id).opacity).toBe(0.5)
   })
 
-  test('0 digit sets opacity to 100%', () => {
+  test('sets opacity to 100% (digit 0)', () => {
     const { editor, rect } = setup()
 
-    setOpacity(editor, 0.5)
-    setOpacity(editor, 1)
+    editor.setOpacity(0.5)
+    editor.setOpacity(1)
     expect(getNodeOrThrow(editor.graph, rect.id).opacity).toBe(1)
+  })
+
+  test('clamps opacity above 100%', () => {
+    const { editor, rect } = setup()
+
+    editor.setOpacity(1.5)
+    expect(getNodeOrThrow(editor.graph, rect.id).opacity).toBe(1)
+  })
+
+  test('clamps opacity below 0%', () => {
+    const { editor, rect } = setup()
+
+    editor.setOpacity(-0.3)
+    expect(getNodeOrThrow(editor.graph, rect.id).opacity).toBe(0)
   })
 
   test('opacity change is undoable as a single batch entry', () => {
     const { editor, rect } = setup()
 
-    setOpacity(editor, 0.3)
+    editor.setOpacity(0.3)
     expect(editor.undo.canUndo).toBe(true)
 
     editor.undo.undo()
@@ -70,7 +73,7 @@ describe('opacity via updateNodeWithUndo + runBatch', () => {
     })
     editor.select([rect.id, rect2.id])
 
-    setOpacity(editor, 0.7)
+    editor.setOpacity(0.7)
     expect(getNodeOrThrow(editor.graph, rect.id).opacity).toBe(0.7)
     expect(getNodeOrThrow(editor.graph, rect2.id).opacity).toBe(0.7)
 
@@ -82,8 +85,16 @@ describe('opacity via updateNodeWithUndo + runBatch', () => {
   test('no-op when opacity already matches', () => {
     const { editor, rect } = setup()
 
-    setOpacity(editor, 1)
+    editor.setOpacity(1)
     expect(getNodeOrThrow(editor.graph, rect.id).opacity).toBe(1)
+    expect(editor.undo.canUndo).toBe(false)
+  })
+
+  test('no-op with no selection', () => {
+    const { editor } = setup()
+
+    editor.clearSelection()
+    editor.setOpacity(0.5)
     expect(editor.undo.canUndo).toBe(false)
   })
 })

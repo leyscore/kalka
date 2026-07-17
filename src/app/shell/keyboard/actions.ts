@@ -9,13 +9,15 @@ type KeyboardActionsOptions = {
   activeTab: Ref<'design' | 'code' | 'ai'>
   isMobile: ReturnType<typeof useViewportKind>['isMobile']
   runCommand: ReturnType<typeof useEditorCommands>['runCommand']
+  setOpacityTarget: ReturnType<typeof useEditorCommands>['setOpacityTarget']
 }
 
 export function createKeyboardActions({
   store,
   activeTab,
   isMobile,
-  runCommand
+  runCommand,
+  setOpacityTarget
 }: KeyboardActionsOptions) {
   function hasNodeEditSelection() {
     return (
@@ -98,6 +100,31 @@ export function createKeyboardActions({
     if (store.state.selectedIds.size > 0) void store.exportSelection(1, 'png')
   }
 
+  let opacityBuffer = ''
+  let opacityTimer: ReturnType<typeof setTimeout> | undefined
+
+  function applyOpacityBuffer() {
+    clearTimeout(opacityTimer)
+    if (!opacityBuffer) return
+    const n = Number.parseInt(opacityBuffer, 10)
+    const percent = opacityBuffer.length === 1 ? n * 10 : n
+    const clamped = Math.min(100, Math.max(0, percent))
+    opacityBuffer = ''
+    setOpacityTarget(clamped / 100)
+    runCommand('selection.setOpacity')
+  }
+
+  function opacityDigit(digit: string) {
+    if (store.state.selectedIds.size === 0) return
+    opacityBuffer += digit
+    clearTimeout(opacityTimer)
+    if (opacityBuffer.length >= 3) {
+      applyOpacityBuffer()
+    } else {
+      opacityTimer = setTimeout(applyOpacityBuffer, 400)
+    }
+  }
+
   return {
     smartDelete,
     confirmOrEnterText,
@@ -105,6 +132,7 @@ export function createKeyboardActions({
     toggleAutoLayout,
     toggleUI,
     toggleAI,
-    exportSelectionPng
+    exportSelectionPng,
+    opacityDigit
   }
 }

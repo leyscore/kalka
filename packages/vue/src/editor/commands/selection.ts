@@ -269,17 +269,7 @@ export function createSelectionCommands({
         return t.value.setOpacity
       },
       enabled: capabilities.canSetOpacity,
-      run: () => {
-        const opacity = getOpacityTarget()
-        const targets = editor.getSelectedNodes()
-        if (targets.length === 0) return
-        editor.undo.runBatch('Set opacity', () => {
-          for (const target of targets) {
-            if (target.opacity === opacity) continue
-            editor.updateNodeWithUndo(target.id, { opacity }, 'Set opacity')
-          }
-        })
-      }
+      run: () => editor.setOpacity(getOpacityTarget())
     }
   }
 }

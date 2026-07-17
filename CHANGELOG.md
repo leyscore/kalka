@@ -4,7 +4,7 @@
 
 ### Changed
 
-- Add Figma-style opacity keyboard shortcuts (`1`-`9` for 10%-90%, `0` for 100%) on the selected layers, with undo-batched multi-selection support.
+- Add Figma-style opacity keyboard shortcuts (`1`-`9` for 10%-90%, `0` for 100%) with multi-digit buffer support (`28` → 28%, `00` → 0%, `100` → 100%), undo-batched multi-selection, and both top-row and numpad digit support.
 - Add Figma-style page management in the Pages panel, including rename/delete actions and drag-and-drop page reordering.
 - Add DOM/CSS import and authoring support so HTML, CSS, Tailwind, and JSX can be converted into editable OpenPencil documents from the app, CLI, and SDK.
 - Add Tailwind class serialization for DOM/CSS HTML export in the SDK and CLI.

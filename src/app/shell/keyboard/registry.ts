@@ -36,6 +36,29 @@ function commandShortcuts(...commands: EditorCommandId[]): ShortcutDefinition[] 
   })
 }
 
+const OPACITY_DIGITS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+
+function opacityBindings(): ShortcutDefinition[] {
+  return OPACITY_DIGITS.flatMap((digit) => [
+    {
+      id: `opacity-Digit${digit}`,
+      keys: `Digit${digit}`,
+      run: ({ keyEvent, actions }: KeyboardShortcutRunOptions) => {
+        if (keyEvent.metaKey || keyEvent.ctrlKey || keyEvent.altKey || keyEvent.shiftKey) return
+        actions.opacityDigit(digit)
+      }
+    },
+    {
+      id: `opacity-Numpad${digit}`,
+      keys: `Numpad${digit}`,
+      run: ({ keyEvent, actions }: KeyboardShortcutRunOptions) => {
+        if (keyEvent.metaKey || keyEvent.ctrlKey || keyEvent.altKey || keyEvent.shiftKey) return
+        actions.opacityDigit(digit)
+      }
+    }
+  ])
+}
+
 function shouldIgnoreShortcut(event: KeyboardEvent, options: KeyboardShortcutOptions) {
   return (
     (event.target instanceof Element && event.target.closest('[data-picker-content]') !== null) ||
@@ -136,7 +159,8 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
     { id: 'delete', keys: 'Delete', run: ({ actions }) => actions.smartDelete(false) },
     { id: 'delete-alt', keys: 'Alt+Delete', run: ({ actions }) => actions.smartDelete(true) },
     { id: 'enter', keys: 'Enter', run: ({ actions }) => actions.confirmOrEnterText() },
-    { id: 'escape', keys: 'Escape', run: ({ actions }) => actions.escapeOrDeselect() }
+    { id: 'escape', keys: 'Escape', run: ({ actions }) => actions.escapeOrDeselect() },
+    ...opacityBindings()
   ]
 
   const bindings: KeyBindingMap = {}
