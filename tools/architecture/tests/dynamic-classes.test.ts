@@ -1,10 +1,29 @@
 import { describe, expect, test } from 'bun:test'
 
-import { dynamicClassDiagnostics } from '../src/steiger-rules/dynamic-tailwind-classes'
+import {
+  dynamicClassDiagnostics,
+  vueTemplateGuardrailDiagnostics
+} from '../src/steiger-rules/dynamic-tailwind-classes'
 
 function component(classBinding: string) {
   return `<template><button :class="${classBinding}" /></template>`
 }
+
+describe('Vue template UI guardrails', () => {
+  test('reports use*UI calls inside bindings', () => {
+    const source = `<template><button :class="useButtonUI({ tone: 'accent' }).base" /></template>`
+    expect(vueTemplateGuardrailDiagnostics('src/components/Test.vue', source)).toHaveLength(1)
+  })
+
+  test('reports raw SVG elements and permits icon components', () => {
+    expect(
+      vueTemplateGuardrailDiagnostics(
+        'src/components/Test.vue',
+        '<template><div><svg /><icon-lucide-check /></div></template>'
+      )
+    ).toHaveLength(1)
+  })
+})
 
 describe('dynamic Tailwind state classes', () => {
   test('reports conditional utility strings', () => {
