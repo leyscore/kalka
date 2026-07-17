@@ -6,6 +6,7 @@ import { computeDescendantVisualBounds } from '@open-pencil/scene-graph/geometry
 import type { Color } from '@open-pencil/scene-graph/primitives'
 
 import { DROP_HIGHLIGHT_ALPHA, DROP_HIGHLIGHT_STROKE, SECTION_CORNER_RADIUS } from '#core/constants'
+import { transformTextCase } from '#core/text/case'
 import { fontManager } from '#core/text/fonts'
 import { vectorNetworkToCenterlinePath } from '#core/vector'
 
@@ -605,24 +606,39 @@ function shouldRenderTextAsOutline(fill?: Fill): boolean {
   return fill !== undefined && fill.type !== 'SOLID'
 }
 
-function drawOutlinedText(r: SkiaRenderer, canvas: Canvas, node: SceneNode): boolean {
-  const path = textNodeToOutlinePath(r, node)
-  if (!path) return false
-  canvas.drawPath(path, r.fillPaint)
-  path.delete()
-  return true
+export function textVerticalOffset(node: SceneNode, contentHeight: number): number {
+  const available = Math.max(0, node.height - contentHeight)
+  if (node.textAlignVertical === 'CENTER') return available / 2
+  if (node.textAlignVertical === 'BOTTOM') return available
+  return 0
 }
 
-function drawGradientText(
+function drawOutlinedText(
   r: SkiaRenderer,
   canvas: Canvas,
   node: SceneNode,
   paragraphY: number
 ): boolean {
+  const outlineNode =
+    node.textCase === 'ORIGINAL'
+      ? node
+      : { ...node, text: transformTextCase(node.text, node.textCase), styleRuns: [] }
+  const path = textNodeToOutlinePath(r, outlineNode)
+  if (!path) return false
+  canvas.save()
+  canvas.translate(0, paragraphY)
+  canvas.drawPath(path, r.fillPaint)
+  canvas.restore()
+  path.delete()
+  return true
+}
+
+function drawGradientText(r: SkiaRenderer, canvas: Canvas, node: SceneNode): boolean {
   if (!r.fontsLoaded || !r.fontProvider) return false
 
   const paragraph = r.buildParagraph(node, r.ck.Color4f(0, 0, 0, 1))
   try {
+    const paragraphY = textVerticalOffset(node, paragraph.getHeight())
     r.effectLayerPaint.setImageFilter(null)
     r.effectLayerPaint.setColorFilter(null)
     r.effectLayerPaint.setBlendMode(r.ck.BlendMode.SrcOver)
@@ -654,7 +670,6 @@ export function renderText(r: SkiaRenderer, canvas: Canvas, node: SceneNode, fil
     canvas.clipRect(r.ck.LTRBRect(0, 0, node.width, node.height), r.ck.ClipOp.Intersect, false)
   }
 
-  const paragraphY = 0
   const fontReadiness = r.nodeFontReadiness(node)
   if (fontReadiness !== 'ready') {
     if (fontReadiness === 'exhausted') {
@@ -675,20 +690,37 @@ export function renderText(r: SkiaRenderer, canvas: Canvas, node: SceneNode, fil
     canvas.restore()
     return
   }
-  if (shouldRenderTextAsOutline(fill) && drawOutlinedText(r, canvas, node)) {
-    canvas.restore()
-    return
+  if (shouldRenderTextAsOutline(fill)) {
+    let paragraphY = 0
+    if (node.textAlignVertical !== 'TOP') {
+      const paragraph = r.buildParagraph(node, r.ck.Color4f(0, 0, 0, 1))
+      paragraphY = textVerticalOffset(node, paragraph.getHeight())
+      paragraph.delete()
+    }
+    if (drawOutlinedText(r, canvas, node, paragraphY)) {
+      canvas.restore()
+      return
+    }
   }
-  if (isGradientFill(fill) && drawGradientText(r, canvas, node, paragraphY)) {
+  if (isGradientFill(fill) && drawGradientText(r, canvas, node)) {
     canvas.restore()
     return
   }
   if (r.fontsLoaded && r.fontProvider) {
     const paragraph = r.buildParagraph(node, r.fillPaint.getColor())
+    const paragraphY = textVerticalOffset(node, paragraph.getHeight())
     canvas.drawParagraph(paragraph, 0, paragraphY)
     paragraph.delete()
   } else if (r.textFont) {
-    canvas.drawText(text, 0, node.fontSize || r.DEFAULT_FONT_SIZE, r.fillPaint, r.textFont)
+    const fontSize = node.fontSize || r.DEFAULT_FONT_SIZE
+    const paragraphY = textVerticalOffset(node, fontSize)
+    canvas.drawText(
+      transformTextCase(text, node.textCase),
+      0,
+      paragraphY + fontSize,
+      r.fillPaint,
+      r.textFont
+    )
   }
 
   canvas.restore()

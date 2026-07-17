@@ -24,7 +24,8 @@ const TEXT_STYLE_KEYS = new Set<keyof SceneNode>([
   'lineHeight',
   'letterSpacing',
   'textDecoration',
-  'textCase'
+  'textCase',
+  'fontFeatures'
 ])
 
 export function sharedStyleRefKey(kind: SharedStyleKind): (typeof STYLE_REF_KEYS)[SharedStyleKind] {

@@ -21,6 +21,7 @@
 - Model imported fill, stroke, text, effect, and grid styles with reusable SDK/app selectors, automatic detach-on-edit, undo, and `.fig` definition roundtrips.
 - Add variant, text, boolean, and nested instance-swap component property controls with mixed-selection undo and typed `.fig` metadata roundtrips.
 - Add fill and effect blend-mode controls with shared-style detachment and mixed-selection undo.
+- Add text case, justification, vertical alignment, truncation/max-lines, and common OpenType controls with CanvasKit rendering and undo.
 - Standardize Pages, Layers/Assets navigation, and document tab states across light and dark themes.
 - Standardize Vue SDK and app override type names on the `UI` acronym, including `FontPickerUI`.
 - Add a headless Vue SDK NumberField with pointer scrubbing, keyboard stepping, safe arithmetic expressions, and mixed/bound states; remove the superseded ScrubInput API.
