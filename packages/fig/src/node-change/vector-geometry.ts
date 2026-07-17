@@ -2,7 +2,7 @@ import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
 import type { GeometryPath, VectorNetwork, WindingRule } from '@open-pencil/scene-graph'
 import type { Vector } from '@open-pencil/scene-graph/primitives'
 
-import { decodeVectorNetworkBlob } from '#core/vector'
+import { decodeVectorNetworkBlob } from './vector-network'
 
 export function resolveVectorNetwork(nc: NodeChange, blobs: Uint8Array[]): VectorNetwork | null {
   const vectorData = nc.vectorData as

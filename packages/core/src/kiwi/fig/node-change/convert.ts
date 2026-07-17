@@ -23,6 +23,8 @@ import {
   getOpenPencilPluginValue,
   LAYOUT_DIRECTION_PLUGIN_KEY,
   NODE_TYPE_PLUGIN_KEY,
+  resolveGeometryPaths,
+  resolveVectorNetwork,
   TEXT_DIRECTION_PLUGIN_KEY,
   mapTextDecoration
 } from '@open-pencil/fig/node-change'
@@ -36,8 +38,7 @@ export {
   mapTextDecoration,
   setVariableColorResolver
 } from '@open-pencil/fig/node-change'
-import { resolveGeometryPaths, resolveVectorNetwork } from './vector-geometry'
-export { resolveGeometryPaths } from './vector-geometry'
+export { resolveGeometryPaths } from '@open-pencil/fig/node-change'
 
 import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
 import type {

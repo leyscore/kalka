@@ -2,11 +2,14 @@ import { describe, expect, test } from 'bun:test'
 
 import {
   applyStyleRefsToFields,
+  buildStyleOverrideTable,
   convertEffects,
   convertFills,
   convertFontFeatures,
   convertLetterSpacing,
   convertLineHeight,
+  decodeVectorNetworkBlob,
+  encodeVectorNetworkBlob,
   mapTextDecoration
 } from '../src/node-change'
 
@@ -40,6 +43,28 @@ describe('@open-pencil/fig NodeChange policy', () => {
       radius: 0,
       visible: true
     })
+  })
+
+  test('round-trips vector network blobs with handle mirroring', () => {
+    const network = {
+      vertices: [
+        { x: 0, y: 0, handleMirroring: 'ANGLE' as const },
+        { x: 10, y: 0, handleMirroring: 'NONE' as const }
+      ],
+      segments: [
+        {
+          start: 0,
+          end: 1,
+          tangentStart: { x: 0, y: 0 },
+          tangentEnd: { x: 0, y: 0 }
+        }
+      ],
+      regions: []
+    }
+    const { table, mirroringToId } = buildStyleOverrideTable(network)
+    expect(decodeVectorNetworkBlob(encodeVectorNetworkBlob(network, mirroringToId), table)).toEqual(
+      network
+    )
   })
 
   test('resolves imported style references before SceneGraph conversion', () => {
