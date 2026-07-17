@@ -22,12 +22,14 @@ describe('fig-import: stroke options', () => {
         strokeWeight: 3,
         strokeAlign: 'CENTER',
         strokeCap: 'ROUND',
-        strokeJoin: 'BEVEL'
+        strokeJoin: 'BEVEL',
+        miterLimit: 9
       } as Partial<NodeChange>)
     ])
     const n = graph.getChildren(graph.getPages()[0].id)[0]
     expect(n.strokes[0].cap).toBe('ROUND')
     expect(n.strokes[0].join).toBe('BEVEL')
+    expect(n.strokeMiterLimit).toBe(9)
   })
 
   test('dash pattern', () => {

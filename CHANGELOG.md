@@ -15,6 +15,7 @@
 - Refine Design panel foundations with 26px controls, consistently aligned action rails, shared Tailwind themes, and Storybook component states.
 - Scale the Layers panel to 5,000-node documents with virtualized rows, indexed updates, scroll-to-selection, range selection, and focus-aware themed states.
 - Add Figma-style horizontal and vertical constraint controls with pin interactions, mixed-selection editing, undo, and responsive frame resizing.
+- Add mixed-selection stroke cap, join, and miter-limit controls with CanvasKit rendering and `.fig` roundtrip support.
 - Standardize Vue SDK and app override type names on the `UI` acronym, including `FontPickerUI`.
 - Add a headless Vue SDK NumberField with pointer scrubbing, keyboard stepping, safe arithmetic expressions, and mixed/bound states; remove the superseded ScrubInput API.
 - Add provider-driven BindableValue primitives for variable and token binding, including detach-on-edit, read-only, edit-variable, mixed-value, and undo-batched interactions.

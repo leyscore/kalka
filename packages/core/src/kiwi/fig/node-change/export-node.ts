@@ -5,6 +5,7 @@ import type { Color, GUID, Matrix, Vector } from '@open-pencil/scene-graph/primi
 
 /* eslint-disable max-lines */
 import { bytesToHex } from '#core/bytes/hex'
+import { DEFAULT_STROKE_MITER_LIMIT } from '#core/constants'
 
 import {
   applyExportSettingsPluginData,
@@ -650,8 +651,15 @@ function applyNodeVisualProps(
   if (node.horizontalConstraint !== 'MIN') nc.horizontalConstraint = node.horizontalConstraint
   if (node.verticalConstraint !== 'MIN') nc.verticalConstraint = node.verticalConstraint
   if (node.strokeCap !== 'NONE') nc.strokeCap = node.strokeCap
-  if (node.strokeJoin !== 'MITER') nc.strokeJoin = node.strokeJoin
-  if (!node.source.id && node.strokeMiterLimit !== 28.96) nc.miterLimit = node.strokeMiterLimit
+  if (node.strokeJoin !== 'MITER' || 'strokeJoin' in node.source.fig.rawNodeFields) {
+    nc.strokeJoin = node.strokeJoin
+  }
+  if (
+    node.strokeMiterLimit !== DEFAULT_STROKE_MITER_LIMIT ||
+    'miterLimit' in node.source.fig.rawNodeFields
+  ) {
+    nc.miterLimit = node.strokeMiterLimit
+  }
   if (node.dashPattern.length > 0) nc.dashPattern = node.dashPattern
   if (node.arcData) {
     nc.arcData = {

@@ -16,6 +16,7 @@ import { renderMaskedChildIds } from './masks'
 import type { SkiaRenderer, RenderOverlays } from './renderer'
 import { makeSmoothRRectPath, nodeHasRadius, nodeHasSmoothCorners } from './shapes'
 import {
+  configureStrokePaint,
   drawDashedRRectWithSolidCorners,
   drawStyledRRectStroke,
   getStrokeCapEntity,
@@ -301,9 +302,7 @@ export function renderSection(
   drawVisibleFills(r, node, graph, () => canvas.drawRRect(rrect, r.fillPaint))
 
   forVisibleStrokes(r, node, graph, (stroke, color) => {
-    r.strokePaint.setColor(r.ck.Color4f(color.r, color.g, color.b, color.a))
-    r.strokePaint.setStrokeWidth(stroke.weight)
-    r.strokePaint.setAlphaf(stroke.opacity)
+    configureStrokePaint(r, node, stroke, color)
 
     if (node.independentStrokeWeights) r.drawIndividualSideStrokes(canvas, node, stroke.align)
     else r.drawRRectStrokeWithAlign(canvas, rrect, node, stroke)
@@ -441,6 +440,7 @@ function drawVectorPathStrokes(
   vectorPaths: Path[],
   stroke: SceneNode['strokes'][0],
   sc: Color,
+  miterLimit: number,
   outlineCacheKey?: string
 ): void {
   const dash = stroke.dashPattern
@@ -450,6 +450,7 @@ function drawVectorPathStrokes(
     r.strokePaint.setStrokeWidth(stroke.weight)
     r.strokePaint.setStrokeCap(getStrokeCapEntity(r, stroke.cap ?? 'NONE'))
     r.strokePaint.setStrokeJoin(getStrokeJoinEntity(r, stroke.join ?? 'MITER'))
+    r.strokePaint.setStrokeMiter(miterLimit)
     r.strokePaint.setShader(null)
     const effect = r.ck.PathEffect.MakeDash(dash, 0)
     r.strokePaint.setPathEffect(effect)
@@ -460,7 +461,7 @@ function drawVectorPathStrokes(
   }
   const strokeOpts = {
     width: stroke.weight,
-    miter_limit: 4,
+    miter_limit: miterLimit,
     cap: getStrokeCapEntity(r, stroke.cap ?? 'NONE'),
     join: getStrokeJoinEntity(r, stroke.join ?? 'MITER')
   }
@@ -489,16 +490,7 @@ function drawRegularStroke(
   stroke: SceneNode['strokes'][0],
   sc: Color
 ): void {
-  r.strokePaint.setColor(r.ck.Color4f(sc.r, sc.g, sc.b, sc.a))
-  r.strokePaint.setStrokeWidth(stroke.weight)
-  r.strokePaint.setAlphaf(stroke.opacity)
-
-  if (stroke.cap) {
-    r.strokePaint.setStrokeCap(getStrokeCapEntity(r, stroke.cap))
-  }
-  if (stroke.join) {
-    r.strokePaint.setStrokeJoin(getStrokeJoinEntity(r, stroke.join))
-  }
+  configureStrokePaint(r, node, stroke, sc)
   if (stroke.dashPattern && stroke.dashPattern.length > 0) {
     r.strokePaint.setPathEffect(r.ck.PathEffect.MakeDash(stroke.dashPattern, 0))
   } else {
@@ -531,13 +523,14 @@ function drawNodeStroke(
     node.type === 'VECTOR' &&
     !node.fills.some((fill) => fill.visible)
   if (shouldStrokeVectorCenterline) {
-    const outlineKey = `${node.id}|${stroke.weight}|${stroke.cap ?? 'NONE'}|${stroke.join ?? 'MITER'}`
-    drawVectorPathStrokes(r, canvas, vectorStroke, stroke, sc, outlineKey)
+    const outlineKey = `${node.id}|${stroke.weight}|${stroke.cap ?? node.strokeCap}|${stroke.join ?? node.strokeJoin}|${node.strokeMiterLimit}`
+    drawVectorPathStrokes(r, canvas, vectorStroke, stroke, sc, node.strokeMiterLimit, outlineKey)
     return
   }
   if (!sg) {
-    if (vectorPaths) drawVectorPathStrokes(r, canvas, vectorPaths, stroke, sc)
-    else drawRegularStroke(r, canvas, node, rect, hasRadius, stroke, sc)
+    if (vectorPaths) {
+      drawVectorPathStrokes(r, canvas, vectorPaths, stroke, sc, node.strokeMiterLimit)
+    } else drawRegularStroke(r, canvas, node, rect, hasRadius, stroke, sc)
     return
   }
   if (stroke.align !== 'INSIDE') {
@@ -587,7 +580,7 @@ export function renderShapeUncached(
       node.vectorNetwork
     ) {
       const centerline = vectorNetworkToCenterlinePath(r.ck, node.vectorNetwork)
-      drawVectorPathStrokes(r, canvas, [centerline], stroke, color)
+      drawVectorPathStrokes(r, canvas, [centerline], stroke, color, node.strokeMiterLimit)
       centerline.delete()
       return
     }

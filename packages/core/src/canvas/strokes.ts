@@ -55,7 +55,8 @@ export function drawDashedRRectWithSolidCorners(
   r.strokePaint.setStrokeWidth(stroke.weight)
   r.strokePaint.setAlphaf(stroke.opacity)
   r.strokePaint.setStrokeCap(r.ck.StrokeCap.Butt)
-  r.strokePaint.setStrokeJoin(getStrokeJoinEntity(r, stroke.join))
+  r.strokePaint.setStrokeJoin(getStrokeJoinEntity(r, stroke.join ?? node.strokeJoin))
+  r.strokePaint.setStrokeMiter(node.strokeMiterLimit)
   r.strokePaint.setPathEffect(null)
 
   canvas.drawArc(
@@ -95,6 +96,20 @@ export function drawDashedRRectWithSolidCorners(
   r.strokePaint.setPathEffect(null)
 }
 
+export function configureStrokePaint(
+  r: SkiaRenderer,
+  node: SceneNode,
+  stroke: Stroke,
+  color: Color
+): void {
+  r.strokePaint.setColor(r.ck.Color4f(color.r, color.g, color.b, color.a))
+  r.strokePaint.setStrokeWidth(stroke.weight)
+  r.strokePaint.setAlphaf(stroke.opacity)
+  r.strokePaint.setStrokeCap(getStrokeCapEntity(r, stroke.cap ?? node.strokeCap))
+  r.strokePaint.setStrokeJoin(getStrokeJoinEntity(r, stroke.join ?? node.strokeJoin))
+  r.strokePaint.setStrokeMiter(node.strokeMiterLimit)
+}
+
 export function drawStyledRRectStroke(
   r: SkiaRenderer,
   canvas: Canvas,
@@ -105,11 +120,7 @@ export function drawStyledRRectStroke(
   dashPhase = 0
 ): void {
   const dash = stroke.dashPattern ?? []
-  r.strokePaint.setColor(r.ck.Color4f(color.r, color.g, color.b, color.a))
-  r.strokePaint.setStrokeWidth(stroke.weight)
-  r.strokePaint.setAlphaf(stroke.opacity)
-  r.strokePaint.setStrokeCap(getStrokeCapEntity(r, stroke.cap))
-  r.strokePaint.setStrokeJoin(getStrokeJoinEntity(r, stroke.join))
+  configureStrokePaint(r, node, stroke, color)
   r.strokePaint.setPathEffect(dash.length > 0 ? r.ck.PathEffect.MakeDash(dash, dashPhase) : null)
   r.drawRRectStrokeWithAlign(canvas, rrect, node, stroke)
   r.strokePaint.setPathEffect(null)

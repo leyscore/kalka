@@ -4,6 +4,7 @@ import { ref } from 'vue'
 import {
   applySolidStrokeColor,
   BindableValueRoot,
+  MIXED,
   useColorBindingProvider,
   useI18n,
   useOkHCL,
@@ -27,7 +28,10 @@ import VariableBindingPicker from '@/components/properties/binding/VariableBindi
 import AppSelect from '@/components/ui/AppSelect.vue'
 import FillSwatch from '@/components/ui/FillSwatch.vue'
 import IconButton from '@/components/ui/IconButton.vue'
+import PanelFieldGroup from '@/components/ui/panel/PanelFieldGroup.vue'
+import PanelGrid from '@/components/ui/panel/PanelGrid.vue'
 import PanelSection from '@/components/ui/panel/PanelSection.vue'
+import SegmentedControl from '@/components/ui/SegmentedControl.vue'
 import Tip from '@/components/ui/Tip.vue'
 
 import { colorToHexRaw } from '@open-pencil/core/color'
@@ -35,6 +39,7 @@ import type { Color, Fill, SceneNode, Stroke } from '@open-pencil/scene-graph'
 import type { BindableValueActions } from '@open-pencil/vue'
 
 const strokeCtx = useStrokeControls()
+const { advancedActive, cap, join, miterLimit } = strokeCtx
 const colorProvider = useColorBindingProvider()
 const okhcl = useOkHCL()
 const { panels, dialogs } = useI18n()
@@ -58,6 +63,18 @@ function updateStrokeColor(
 ) {
   if (!applyPaintMutation(binding, flush, () => patch(applySolidStrokeColor(color)))) return
   if (commit) commitPaintMutation(binding)
+}
+
+function setCap(value: string) {
+  if (value === 'NONE' || value === 'ROUND' || value === 'SQUARE') {
+    strokeCtx.setCap(value)
+  }
+}
+
+function setJoin(value: string) {
+  if (value === 'MITER' || value === 'BEVEL' || value === 'ROUND') {
+    strokeCtx.setJoin(value)
+  }
 }
 
 function onToggleSides(activeNode: SceneNode | null) {
@@ -245,6 +262,59 @@ function onToggleSides(activeNode: SceneNode | null) {
           />
         </template>
       </div>
+
+      <PanelGrid v-if="advancedActive" columns="three" class="mt-panel">
+        <PanelFieldGroup :label="panels.strokeCap">
+          <SegmentedControl
+            :model-value="cap === MIXED ? 'MIXED' : cap"
+            :options="strokeCtx.capOptions"
+            :label="panels.strokeCap"
+            data-property="stroke-cap"
+            @update:model-value="setCap"
+          >
+            <template #option="{ option }">
+              <Tip :label="option.label">
+                <icon-lucide-minus v-if="option.value === 'NONE'" class="size-3" />
+                <icon-lucide-circle v-else-if="option.value === 'ROUND'" class="size-2.5" />
+                <icon-lucide-square v-else class="size-2.5" />
+              </Tip>
+            </template>
+          </SegmentedControl>
+        </PanelFieldGroup>
+
+        <PanelFieldGroup :label="panels.strokeJoin">
+          <SegmentedControl
+            :model-value="join === MIXED ? 'MIXED' : join"
+            :options="strokeCtx.joinOptions"
+            :label="panels.strokeJoin"
+            data-property="stroke-join"
+            @update:model-value="setJoin"
+          >
+            <template #option="{ option }">
+              <Tip :label="option.label">
+                <icon-lucide-corner-up-right v-if="option.value === 'MITER'" class="size-3" />
+                <icon-lucide-triangle v-else-if="option.value === 'BEVEL'" class="size-2.5" />
+                <icon-lucide-circle v-else class="size-2.5" />
+              </Tip>
+            </template>
+          </SegmentedControl>
+        </PanelFieldGroup>
+
+        <PanelFieldGroup :label="panels.strokeMiterLimit">
+          <NumberField
+            :model-value="miterLimit"
+            :min="1"
+            data-property="stroke-miter-limit"
+            :aria-label="panels.strokeMiterLimit"
+            @update:model-value="strokeCtx.updateMiterLimit"
+            @commit="strokeCtx.commitMiterLimit"
+          >
+            <template #icon>
+              <icon-lucide-triangle-right class="size-3" />
+            </template>
+          </NumberField>
+        </PanelFieldGroup>
+      </PanelGrid>
 
       <div
         v-if="!isMixed && items.length > 0 && expandedSides"

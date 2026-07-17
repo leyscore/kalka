@@ -517,7 +517,7 @@ function convertVectorAndStrokeProps(nc: NodeChange, blobs: Uint8Array[]) {
     borderBottomWeight: (nc.borderBottomWeight ?? 0) as number,
     borderLeftWeight: (nc.borderLeftWeight ?? 0) as number,
     independentStrokeWeights: (nc.borderStrokeWeightsIndependent ?? false) as boolean,
-    strokeMiterLimit: DEFAULT_STROKE_MITER_LIMIT
+    strokeMiterLimit: (nc.miterLimit ?? DEFAULT_STROKE_MITER_LIMIT) as number
   }
 }
 
