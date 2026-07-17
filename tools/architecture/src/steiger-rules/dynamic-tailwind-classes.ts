@@ -26,6 +26,7 @@ type ExpressionNode = UnknownRecord & { type: string }
 type VueTemplateNode = {
   type?: number
   name?: string
+  tag?: string
   arg?: { content?: string }
   exp?: { ast?: unknown }
   props?: VueTemplateNode[]
@@ -128,6 +129,55 @@ export function dynamicClassDiagnostics(sourceRel: string, content: string) {
   })
   return diagnostics
 }
+
+function containsUiHookCall(node: unknown, visited = new Set<ExpressionNode>()): boolean {
+  if (!isExpressionNode(node) || visited.has(node)) return false
+  visited.add(node)
+  if (
+    node.type === 'CallExpression' &&
+    isExpressionNode(node.callee) &&
+    node.callee.type === 'Identifier' &&
+    typeof node.callee.name === 'string' &&
+    /^use[A-Z][A-Za-z0-9]*UI$/.test(node.callee.name)
+  ) {
+    return true
+  }
+  return Object.entries(node).some(([key, value]) => {
+    if (key === 'loc' || key === 'start' || key === 'end') return false
+    return Array.isArray(value)
+      ? value.some((child) => containsUiHookCall(child, visited))
+      : containsUiHookCall(value, visited)
+  })
+}
+
+export function vueTemplateGuardrailDiagnostics(sourceRel: string, content: string) {
+  if (!sourceRel.startsWith('src/components/') || !sourceRel.endsWith('.vue')) return []
+  const template = parseVueSfc(content, { filename: sourceRel }).descriptor.template?.ast
+  if (!template) return []
+  const diagnostics: Array<{ message: string; line?: number; column?: number }> = []
+  walkVueTemplateAst(template as VueTemplateNode, (node) => {
+    if (node.type === 1 && node.tag === 'svg') {
+      diagnostics.push({
+        message: 'Use an Iconify/Lucide component instead of raw SVG in app components.',
+        line: node.loc?.start?.line,
+        column: node.loc?.start?.column
+      })
+    }
+    if (node.type === VUE_DIRECTIVE_NODE && containsUiHookCall(node.exp?.ast)) {
+      diagnostics.push({
+        message: 'Resolve use*UI() hooks once in script setup, not inside template expressions.',
+        line: node.loc?.start?.line,
+        column: node.loc?.start?.column
+      })
+    }
+  })
+  return diagnostics
+}
+
+export const noVueTemplateUiHooksOrSvg = createTextRule(
+  'open-pencil/no-vue-template-ui-hooks-or-svg',
+  vueTemplateGuardrailDiagnostics
+)
 
 export const noDynamicTailwindStateClasses = createTextRule(
   'open-pencil/no-dynamic-tailwind-state-classes',
