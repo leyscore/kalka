@@ -234,12 +234,13 @@ describe('fig roundtrip source metadata', () => {
     expect(exported?.transitionInfo?.type).toBe('DISSOLVE')
   })
 
-  test('clears imported raw metadata when visual fields are edited', () => {
+  test('preserves unrelated raw metadata when visual fields are edited', () => {
     const graph = new SceneGraph()
     const page = graph.getPages()[0]
     const frame = graph.createNode('FRAME', page.id, { name: 'Edited metadata frame' })
     frame.source.format = 'fig'
     frame.source.id = '4:506'
+    frame.source.fig.rawNodeFields.fillPaints = [{ type: 'SOLID' }]
     frame.source.fig.rawNodeFields.layoutGrids = [{ type: 'MIN', axis: 'X', visible: true }]
     frame.source.fig.rawNodeFields.exportSettings = [{ suffix: '@2x' }]
     frame.source.fig.rawNodeFields.prototypeInteractions = [{ trigger: 'ON_CLICK' }]
@@ -255,7 +256,11 @@ describe('fig roundtrip source metadata', () => {
       ]
     })
 
-    expect(frame.source.fig.rawNodeFields).toEqual({})
+    expect(frame.source.fig.rawNodeFields).toEqual({
+      layoutGrids: [{ type: 'MIN', axis: 'X', visible: true }],
+      exportSettings: [{ suffix: '@2x' }],
+      prototypeInteractions: [{ trigger: 'ON_CLICK' }]
+    })
   })
 
   test('preserves imported unsupported effect payloads for round-trip', async () => {
@@ -354,7 +359,9 @@ describe('fig roundtrip source metadata', () => {
       borderLeftWeight: 8
     })
 
-    expect(rect.source.fig.rawNodeFields).toEqual({})
+    expect(rect.source.fig.rawNodeFields).toEqual({
+      fillGeometry: [{ windingRule: 'NONZERO', commands: [] }]
+    })
   })
 
   test('clears raw font variation payloads when normalized axes are edited', async () => {
