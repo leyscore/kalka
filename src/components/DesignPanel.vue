@@ -15,6 +15,7 @@ import FillSection from './properties/FillSection.vue'
 import LayoutSection from './properties/LayoutSection/LayoutSection.vue'
 import MaskSection from './properties/MaskSection.vue'
 import PageSection from './properties/PageSection.vue'
+import ConstraintsSection from './properties/constraints/ConstraintsSection.vue'
 import PositionSection from './properties/PositionSection.vue'
 import SelectionActionsControl from './properties/SelectionActionsControl.vue'
 import StrokeSection from './properties/StrokeSection.vue'
@@ -55,6 +56,7 @@ const { panels } = useI18n()
       </template>
     </PanelHeader>
     <PositionSection />
+    <ConstraintsSection />
     <AppearanceSection />
     <FillSection />
     <StrokeSection />
@@ -106,6 +108,7 @@ const { panels } = useI18n()
     <VariantSection v-if="node.type === 'INSTANCE'" />
 
     <PositionSection />
+    <ConstraintsSection />
     <LayoutSection />
     <AppearanceSection />
     <MaskSection />

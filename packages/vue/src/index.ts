@@ -191,6 +191,19 @@ export type {
   AppearanceControlsRootSlotProps,
   AppearanceControlsRootSlots
 } from '#vue/primitives/AppearanceControls'
+export { ConstraintsControlRoot } from '#vue/primitives/ConstraintsControl'
+export type {
+  ConstraintsControlActions,
+  ConstraintsControlRootSlotProps,
+  ConstraintsControlRootSlots
+} from '#vue/primitives/ConstraintsControl'
+export {
+  constraintPins,
+  isConstraintEligible,
+  toggleConstraintPin,
+  useConstraints
+} from '#vue/controls/constraints'
+export type { ConstraintAxis, ConstraintEdge, ConstraintValue } from '#vue/controls/constraints'
 export type { CornerRadiusKey } from '#vue/controls/appearance/types'
 export { PageListRoot } from '#vue/primitives/PageList'
 export { PositionControlsRoot } from '#vue/primitives/PositionControls'
