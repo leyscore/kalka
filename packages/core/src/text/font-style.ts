@@ -1,4 +1,5 @@
 import { normalizeFontFamily } from '@open-pencil/scene-graph'
+import type { FontFamilyStyle } from '@open-pencil/scene-graph'
 
 export {
   FONT_WEIGHT_NAMES,
@@ -10,12 +11,7 @@ export {
 
 import { parseFontStyle } from '#core/text/face'
 
-interface LocalFontMatch {
-  family: string
-  style: string
-}
-
-export function chooseLocalFontMatch<T extends LocalFontMatch>(
+export function chooseLocalFontMatch<T extends FontFamilyStyle>(
   fonts: T[],
   family: string,
   style?: string

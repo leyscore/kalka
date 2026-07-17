@@ -1,3 +1,8 @@
+export interface FontFamilyStyle {
+  family: string
+  style: string
+}
+
 export interface ParsedFontStyle {
   weight: number
   italic: boolean
