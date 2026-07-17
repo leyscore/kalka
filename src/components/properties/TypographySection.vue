@@ -5,9 +5,11 @@ import { TypographyControlsRoot, useI18n } from '@open-pencil/vue'
 
 import FontPicker from '@/components/font-picker/FontPicker.vue'
 import FontSettingsPopover from '@/components/FontSettings/FontSettingsPopover.vue'
+import NumberField from '@/components/inputs/NumberField.vue'
 import SharedStyleField from '@/components/properties/shared-style/SharedStyleField.vue'
 import VariableNumberField from '@/components/properties/VariableNumberField.vue'
 import AppSelect from '@/components/ui/AppSelect.vue'
+import AppSwitch from '@/components/ui/AppSwitch.vue'
 import IconButton from '@/components/ui/IconButton.vue'
 import PanelFieldGroup from '@/components/ui/panel/PanelFieldGroup.vue'
 import PanelGrid from '@/components/ui/panel/PanelGrid.vue'
@@ -22,8 +24,33 @@ const fontLoader = { load: loadFont }
 const alignmentOptions = computed(() => [
   { value: 'LEFT', label: panels.value.alignLeft },
   { value: 'CENTER', label: panels.value.alignCenterHorizontally },
-  { value: 'RIGHT', label: panels.value.alignRight }
+  { value: 'RIGHT', label: panels.value.alignRight },
+  { value: 'JUSTIFIED', label: panels.value.textAlignment }
 ])
+const verticalAlignmentOptions = computed(() => [
+  { value: 'TOP', label: panels.value.alignTop },
+  { value: 'CENTER', label: panels.value.alignCenterVertically },
+  { value: 'BOTTOM', label: panels.value.alignBottom }
+])
+const textCaseOptions = computed(() => [
+  { value: 'ORIGINAL', label: panels.value.textCaseOriginal },
+  { value: 'UPPER', label: panels.value.textCaseUpper },
+  { value: 'LOWER', label: panels.value.textCaseLower },
+  { value: 'TITLE', label: panels.value.textCaseTitle }
+])
+const truncationOptions = computed(() => [
+  { value: 'DISABLED', label: panels.value.truncationDisabled },
+  { value: 'ENDING', label: panels.value.truncationEnding }
+])
+const commonFeatures = computed(() => [
+  { tag: 'LIGA', label: panels.value.standardLigatures },
+  { tag: 'CALT', label: panels.value.contextualAlternates },
+  { tag: 'KERN', label: panels.value.kerning }
+])
+
+function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag: string) {
+  return features.find((feature) => feature.tag === tag)?.enabled ?? true
+}
 </script>
 
 <template>
@@ -137,14 +164,93 @@ const alignmentOptions = computed(() => [
           :model-value="ctx.node.value.textAlignHorizontal"
           :options="alignmentOptions"
           :label="panels.textAlignment"
-          @change="ctx.actions.align($event as 'LEFT' | 'CENTER' | 'RIGHT')"
+          @change="ctx.actions.align($event as 'LEFT' | 'CENTER' | 'RIGHT' | 'JUSTIFIED')"
         >
           <template #option="{ option }">
             <icon-lucide-align-left v-if="option.value === 'LEFT'" class="size-3.5" />
             <icon-lucide-align-center v-else-if="option.value === 'CENTER'" class="size-3.5" />
-            <icon-lucide-align-right v-else class="size-3.5" />
+            <icon-lucide-align-right v-else-if="option.value === 'RIGHT'" class="size-3.5" />
+            <icon-lucide-align-justify v-else class="size-3.5" />
           </template>
         </SegmentedControl>
+      </PanelFieldGroup>
+
+      <PanelFieldGroup :label="panels.verticalTextAlignment" class="mb-panel">
+        <SegmentedControl
+          :model-value="ctx.node.value.textAlignVertical"
+          :options="verticalAlignmentOptions"
+          :label="panels.verticalTextAlignment"
+          @change="ctx.actions.setVerticalAlign($event as 'TOP' | 'CENTER' | 'BOTTOM')"
+        >
+          <template #option="{ option }">
+            <icon-lucide-align-vertical-justify-start
+              v-if="option.value === 'TOP'"
+              class="size-3.5"
+            />
+            <icon-lucide-align-vertical-justify-center
+              v-else-if="option.value === 'CENTER'"
+              class="size-3.5"
+            />
+            <icon-lucide-align-vertical-justify-end v-else class="size-3.5" />
+          </template>
+        </SegmentedControl>
+      </PanelFieldGroup>
+
+      <PanelGrid columns="two" class="mb-panel">
+        <PanelFieldGroup :label="panels.textCase">
+          <AppSelect
+            :label="panels.textCase"
+            :model-value="ctx.node.value.textCase"
+            :options="textCaseOptions"
+            @update:model-value="
+              ctx.actions.setTextCase($event as 'ORIGINAL' | 'UPPER' | 'LOWER' | 'TITLE')
+            "
+          />
+        </PanelFieldGroup>
+        <PanelFieldGroup :label="panels.truncation">
+          <AppSelect
+            :label="panels.truncation"
+            :model-value="ctx.node.value.textTruncation"
+            :options="truncationOptions"
+            @update:model-value="ctx.actions.setTruncation($event as 'DISABLED' | 'ENDING')"
+          />
+        </PanelFieldGroup>
+      </PanelGrid>
+
+      <PanelFieldGroup
+        v-if="ctx.node.value.textTruncation === 'ENDING'"
+        :label="panels.maxLines"
+        class="mb-panel"
+      >
+        <NumberField
+          :model-value="ctx.node.value.maxLines ?? 1"
+          :aria-label="panels.maxLines"
+          :min="1"
+          :step="1"
+          data-property="max-lines"
+          @update:model-value="ctx.actions.updateProp('maxLines', Math.max(1, Math.round($event)))"
+          @commit="
+            (value: number, previous: number) => ctx.actions.commitProp('maxLines', value, previous)
+          "
+        />
+      </PanelFieldGroup>
+
+      <PanelFieldGroup :label="panels.openTypeFeatures" class="mb-panel">
+        <div class="grid gap-1.5">
+          <label
+            v-for="feature in commonFeatures"
+            :key="feature.tag"
+            class="flex items-center justify-between gap-panel text-[11px] text-muted"
+          >
+            <span>{{ feature.label }}</span>
+            <AppSwitch
+              :model-value="featureEnabled(ctx.node.value.fontFeatures, feature.tag)"
+              :label="feature.label"
+              :data-property="`font-feature-${feature.tag.toLowerCase()}`"
+              @update:model-value="ctx.actions.setFontFeature(feature.tag, $event)"
+            />
+          </label>
+        </div>
       </PanelFieldGroup>
 
       <PanelFieldGroup :label="panels.textFormatting" :ui="{ container: 'flex-row gap-panel' }">

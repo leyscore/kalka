@@ -309,6 +309,8 @@ function serializeTextProps(
   nc.fontVersion = ''
   nc.emojiImageSet = 'APPLE'
   if (node.textCase !== 'ORIGINAL') nc.textCase = node.textCase
+  if (node.textTruncation === 'ENDING') nc.textTruncation = 'ENDING'
+  if (node.maxLines != null) nc.maxLines = node.maxLines
   if (fontDigestMap) {
     nc.derivedTextData = buildDerivedTextData(node, fontDigestMap, blobs, glyphBlobMap ?? new Map())
   }
