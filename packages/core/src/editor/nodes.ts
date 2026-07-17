@@ -10,6 +10,7 @@ import { createVariableBindingActions } from './variable-bindings'
 
 export function opacityFromBuffer(buffer: string): number {
   if (buffer === '0') return 1
+  if (!/^\d+$/.test(buffer)) return 1
   const n = Number.parseInt(buffer, 10)
   if (!Number.isFinite(n)) return 1
   const percent = buffer.length === 1 ? n * 10 : n

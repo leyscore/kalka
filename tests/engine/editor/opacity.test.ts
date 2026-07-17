@@ -150,4 +150,13 @@ describe('opacityFromBuffer', () => {
     expect(opacityFromBuffer('')).toBe(1)
     expect(opacityFromBuffer('abc')).toBe(1)
   })
+
+  test('rejects partially numeric buffers', () => {
+    expect(opacityFromBuffer('12x')).toBe(1)
+    expect(opacityFromBuffer('5abc')).toBe(1)
+    expect(opacityFromBuffer('3.5')).toBe(1)
+    expect(opacityFromBuffer('1e2')).toBe(1)
+    expect(opacityFromBuffer('-5')).toBe(1)
+    expect(opacityFromBuffer(' 5')).toBe(1)
+  })
 })
