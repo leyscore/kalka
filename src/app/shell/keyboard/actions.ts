@@ -108,7 +108,10 @@ export function createKeyboardActions({
     opacityBuffer += digit
     if (opacityBuffer.length > 3) opacityBuffer = opacityBuffer.slice(-3)
     const n = Number.parseInt(opacityBuffer, 10)
-    const percent = opacityBuffer.length === 1 ? n * 10 : n
+    let percent: number
+    if (opacityBuffer === '0') percent = 100
+    else if (opacityBuffer.length === 1) percent = n * 10
+    else percent = n
     const clamped = Math.min(100, Math.max(0, percent))
     setOpacityTarget(clamped / 100)
     runCommand('selection.setOpacity')
