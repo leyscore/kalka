@@ -161,7 +161,30 @@ export interface Fill {
 
 export type StrokeCap = 'NONE' | 'ROUND' | 'SQUARE' | 'ARROW_LINES' | 'ARROW_EQUILATERAL'
 export type StrokeJoin = 'MITER' | 'BEVEL' | 'ROUND'
+export type SharedStyleType = 'FILL' | 'TEXT' | 'EFFECT' | 'GRID'
+export type SharedStyleKind = 'fill' | 'stroke' | 'text' | 'effect' | 'grid'
 export type MaskType = 'ALPHA' | 'VECTOR' | 'LUMINANCE'
+
+export interface LayoutGrid {
+  visible?: boolean
+  color?: Color
+  pattern?: 'COLUMNS' | 'ROWS' | 'GRID'
+  axis?: 'X' | 'Y'
+  type?: 'MIN' | 'CENTER' | 'MAX' | 'STRETCH'
+  alignment?: 'MIN' | 'CENTER' | 'MAX' | 'STRETCH'
+  numSections?: number
+  count?: number
+  offset?: number
+  sectionSize?: number
+  gutterSize?: number
+}
+
+export interface SharedStyle {
+  id: string
+  nodeId: string
+  name: string
+  type: SharedStyleType
+}
 
 export interface Stroke {
   color: Color
@@ -341,6 +364,13 @@ export interface SceneNode {
   fills: Fill[]
   strokes: Stroke[]
   effects: Effect[]
+  layoutGrids: LayoutGrid[]
+  fillStyleId: string | null
+  strokeStyleId: string | null
+  textStyleId: string | null
+  effectStyleId: string | null
+  gridStyleId: string | null
+  sharedStyleType: SharedStyleType | null
   opacity: number
 
   cornerRadius: number

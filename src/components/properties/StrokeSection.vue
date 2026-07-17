@@ -24,6 +24,7 @@ import {
 } from '@/components/properties/paint/binding'
 import { createStrokeOkhclAdapter } from '@/components/properties/paint/okhcl'
 import PropertyListRoot from '@/components/properties/PropertyListRoot.vue'
+import SharedStyleField from '@/components/properties/shared-style/SharedStyleField.vue'
 import VariableBindingPicker from '@/components/properties/binding/VariableBindingPicker.vue'
 import AppSelect from '@/components/ui/AppSelect.vue'
 import FillSwatch from '@/components/ui/FillSwatch.vue'
@@ -108,6 +109,8 @@ function onToggleSides(activeNode: SceneNode | null) {
           <icon-lucide-plus class="size-3.5" />
         </IconButton>
       </template>
+
+      <SharedStyleField kind="stroke" :label="panels.strokeStyle" />
 
       <p v-if="isMixed" class="text-[11px] text-muted">{{ panels.mixedStrokesHelp }}</p>
 

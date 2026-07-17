@@ -5,6 +5,7 @@ import { TypographyControlsRoot, useI18n } from '@open-pencil/vue'
 
 import FontPicker from '@/components/font-picker/FontPicker.vue'
 import FontSettingsPopover from '@/components/FontSettings/FontSettingsPopover.vue'
+import SharedStyleField from '@/components/properties/shared-style/SharedStyleField.vue'
 import VariableNumberField from '@/components/properties/VariableNumberField.vue'
 import AppSelect from '@/components/ui/AppSelect.vue'
 import IconButton from '@/components/ui/IconButton.vue'
@@ -28,6 +29,8 @@ const alignmentOptions = computed(() => [
 <template>
   <TypographyControlsRoot v-slot="ctx" :font-loader="fontLoader">
     <PanelSection v-if="ctx.node.value" :label="panels.typography">
+      <SharedStyleField kind="text" :label="panels.textStyle" />
+
       <div class="mb-panel flex min-w-0 items-center gap-panel">
         <FontPicker
           class="min-w-0 flex-1"

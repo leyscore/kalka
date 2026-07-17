@@ -198,7 +198,15 @@ export function renderNode(
   parentAbsY = 0
 ): void {
   const node = graph.getNode(nodeId)
-  if (!node || !node.visible || node.isMask || fontManager.isNodeBlocked(nodeId)) return
+  if (
+    !node ||
+    node.internalOnly ||
+    !node.visible ||
+    node.isMask ||
+    fontManager.isNodeBlocked(nodeId)
+  ) {
+    return
+  }
 
   // Hide the node being edited in node-edit mode (overlay draws it live)
   if (overlays.nodeEditState?.nodeId === nodeId) return

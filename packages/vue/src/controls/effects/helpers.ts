@@ -39,15 +39,26 @@ export function createDefaultEffect(): Effect {
   }
 }
 
-export function createEffectEditActions(editor: Editor, effectsBeforeScrub: Ref<Effect[] | null>) {
+export interface EffectEditSnapshot {
+  effects: Effect[]
+  effectStyleId: string | null
+}
+
+export function createEffectEditActions(
+  editor: Editor,
+  effectsBeforeScrub: Ref<EffectEditSnapshot | null>
+) {
   function scrubEffect(node: SceneNode | null, index: number, changes: Partial<Effect>) {
     if (!node) return
     if (!effectsBeforeScrub.value) {
-      effectsBeforeScrub.value = node.effects.map((e) => ({
-        ...e,
-        color: { ...e.color },
-        offset: { ...e.offset }
-      }))
+      effectsBeforeScrub.value = {
+        effects: node.effects.map((e) => ({
+          ...e,
+          color: { ...e.color },
+          offset: { ...e.offset }
+        })),
+        effectStyleId: node.effectStyleId
+      }
     }
     const effects = [...node.effects]
     effects[index] = { ...effects[index], ...changes }
@@ -64,7 +75,11 @@ export function createEffectEditActions(editor: Editor, effectsBeforeScrub: Ref<
     editor.updateNode(node.id, { effects })
     editor.requestRender()
     if (previous) {
-      editor.commitNodeUpdate(node.id, { effects: previous }, 'Change effect')
+      editor.commitNodeUpdate(
+        node.id,
+        { effects: previous.effects, effectStyleId: previous.effectStyleId },
+        'Change effect'
+      )
     }
   }
 

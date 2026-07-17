@@ -16,12 +16,17 @@ describe('layer tree model', () => {
     const frame = graph.createNode('FRAME', pageId, { name: 'Frame' })
     const child = createRect(graph, frame.id, { name: 'Child' })
     const sibling = createRect(graph, pageId, { name: 'Sibling' })
+    const internal = graph.createNode('RECTANGLE', pageId, {
+      name: 'Internal style',
+      internalOnly: true
+    })
 
     const model = buildLayerTreeModel(graph, pageId)
 
     expect(model.items.map((node) => node.id)).toEqual([frame.id, sibling.id])
     expect(model.items[0]?.children?.map((node) => node.id)).toEqual([child.id])
     expect(model.byId.get(child.id)?.name).toBe('Child')
+    expect(model.byId.has(internal.id)).toBe(false)
   })
 
   test('derives only rows made visible by expansion', () => {

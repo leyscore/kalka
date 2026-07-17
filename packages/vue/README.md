@@ -136,6 +136,7 @@ These are the main APIs most SDK consumers should start with.
 - `useLayout()`
 - `useConstraints()`
 - `useAppearance()`
+- `useSharedStyleBinding()`
 - `useColorModel()`
 - `useMask()`
 - `useTypography()`

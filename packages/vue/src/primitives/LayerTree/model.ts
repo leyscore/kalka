@@ -27,7 +27,7 @@ export function buildLayerTreeModel(graph: SceneGraph, parentId: string): LayerT
     const children: LayerNode[] = []
     for (const childId of parent.childIds) {
       const sceneNode = graph.getNode(childId)
-      if (!sceneNode) continue
+      if (!sceneNode || sceneNode.internalOnly) continue
       const node = nodeToLayerNode(sceneNode)
       byId.set(node.id, node)
       if (sceneNode.childIds.length > 0) node.children = buildChildren(node.id)

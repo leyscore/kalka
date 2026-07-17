@@ -597,6 +597,17 @@ function nodeForGeometryExport(node: SceneNode): SceneNode {
   }
 }
 
+function applySharedStyleProps(node: SceneNode, nc: KiwiNodeChange): void {
+  if (node.fillStyleId) nc.styleIdForFill = { guid: stringToGuid(node.fillStyleId) }
+  if (node.strokeStyleId) nc.styleIdForStrokeFill = { guid: stringToGuid(node.strokeStyleId) }
+  if (node.textStyleId) nc.styleIdForText = { guid: stringToGuid(node.textStyleId) }
+  if (node.effectStyleId) nc.styleIdForEffect = { guid: stringToGuid(node.effectStyleId) }
+  if (node.gridStyleId) nc.styleIdForGrid = { guid: stringToGuid(node.gridStyleId) }
+  if (node.layoutGrids.length > 0 || 'layoutGrids' in node.source.fig.rawNodeFields) {
+    nc.layoutGrids = structuredClone(node.layoutGrids)
+  }
+}
+
 function applyNodeVisualProps(
   context: SceneNodeToKiwiContext,
   node: SceneNode,
@@ -648,6 +659,7 @@ function applyNodeVisualProps(
   }
 
   if (node.type !== 'VECTOR') nc.frameMaskDisabled = !node.clipsContent
+  applySharedStyleProps(node, nc)
   if (node.horizontalConstraint !== 'MIN') nc.horizontalConstraint = node.horizontalConstraint
   if (node.verticalConstraint !== 'MIN') nc.verticalConstraint = node.verticalConstraint
   if (node.strokeCap !== 'NONE') nc.strokeCap = node.strokeCap
@@ -699,6 +711,7 @@ export function sceneNodeToKiwiWithContext(
     size: exportNodeSize(node),
     transform: exportNodeTransform(context, node)
   }
+  if (node.sharedStyleType) nc.styleType = node.sharedStyleType
   if (node.type === 'GROUP') {
     nc.resizeToFit = true
   }

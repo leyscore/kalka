@@ -90,6 +90,7 @@ export type {
   UseVariableBindingOptions
 } from '#vue/controls/variable-binding/use'
 export { useEffectsControls } from '#vue/controls/effects/use'
+export { useSharedStyleBinding } from '#vue/controls/shared-style/use'
 export { useStrokeControls } from '#vue/controls/stroke/use'
 export {
   applySolidFillColor,

@@ -16,6 +16,7 @@ import type {
   Fill,
   GeometryPath,
   GradientStop,
+  LayoutGrid,
   SceneNode,
   Stroke,
   StyleRun
@@ -79,6 +80,10 @@ export function copyStrokes(strokes: Stroke[]): Stroke[] {
 
 export function copyEffects(effects: Effect[]): Effect[] {
   return effects.map(copyEffect)
+}
+
+export function copyLayoutGrids(grids: LayoutGrid[]): LayoutGrid[] {
+  return grids.map((grid) => ({ ...grid, color: grid.color ? { ...grid.color } : undefined }))
 }
 
 export function copyStyleRuns(runs: StyleRun[]): StyleRun[] {
@@ -149,6 +154,7 @@ export function cloneNodeProps(src: SceneNode, componentId: string | null): Part
     fills: copyOpt(src.fills, copyFills),
     strokes: copyOpt(src.strokes, copyStrokes),
     effects: copyOpt(src.effects, copyEffects),
+    layoutGrids: copyOpt(src.layoutGrids, copyLayoutGrids),
     styleRuns: copyOpt(src.styleRuns, copyStyleRuns),
     // Source metadata preserves opaque raw Figma payloads; use structuredClone instead of
     // hand-copying partial known shapes and accidentally sharing nested raw Figma data.

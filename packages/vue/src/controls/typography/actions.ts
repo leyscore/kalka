@@ -64,6 +64,8 @@ export function createTypographyActions({
   activeFormatting,
   options
 }: TypographyActionOptions) {
+  let textStyleBeforePreview: string | null | undefined
+
   async function doLoadFont(family: string, style: string) {
     await options.fontLoader?.load(family, style)
   }
@@ -130,17 +132,22 @@ export function createTypographyActions({
   }
 
   function updateProp(key: string, value: number | string) {
-    if (node.value) editor.updateNode(node.value.id, { [key]: value })
+    if (!node.value) return
+    if (textStyleBeforePreview === undefined) textStyleBeforePreview = node.value.textStyleId
+    editor.updateNode(node.value.id, { [key]: value, textStyleId: null })
   }
 
   function commitProp(key: string, _value: number | string, previous: number | string) {
-    if (node.value) {
-      editor.commitNodeUpdate(
-        node.value.id,
-        { [key]: previous } as Partial<SceneNode>,
-        `Change ${key}`
-      )
-    }
+    if (!node.value) return
+    editor.commitNodeUpdate(
+      node.value.id,
+      {
+        [key]: previous,
+        ...(textStyleBeforePreview !== undefined ? { textStyleId: textStyleBeforePreview } : {})
+      } as Partial<SceneNode>,
+      `Change ${key}`
+    )
+    textStyleBeforePreview = undefined
   }
 
   return {

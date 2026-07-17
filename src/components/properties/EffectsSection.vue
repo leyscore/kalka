@@ -5,6 +5,7 @@ import ColorInput from '@/components/ColorPicker/ColorInput.vue'
 import NumberField from '@/components/inputs/NumberField.vue'
 import PropertyItemRow from '@/components/properties/item-list/PropertyItemRow.vue'
 import PropertyListRoot from '@/components/properties/PropertyListRoot.vue'
+import SharedStyleField from '@/components/properties/shared-style/SharedStyleField.vue'
 import AppSelect from '@/components/ui/AppSelect.vue'
 import FillSwatch from '@/components/ui/FillSwatch.vue'
 import IconButton from '@/components/ui/IconButton.vue'
@@ -41,6 +42,8 @@ function effectPreview(effect: Effect): Fill {
           <icon-lucide-plus class="size-3.5" />
         </IconButton>
       </template>
+
+      <SharedStyleField kind="effect" :label="panels.effectStyle" />
 
       <p v-if="isMixed" class="text-[11px] text-muted">{{ panels.mixedEffectsHelp }}</p>
 
