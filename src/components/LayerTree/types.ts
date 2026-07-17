@@ -12,6 +12,7 @@ export interface LayerTreeChrome {
   draggingId: string | null
   instruction: LayerDragInstruction | null
   instructionTargetId: string | null
+  focused: boolean
   indent: number
 }
 

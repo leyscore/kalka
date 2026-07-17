@@ -161,8 +161,24 @@ export type {
   GradientEditorStopSlotProps,
   GradientEditorStopSlots
 } from '#vue/primitives/GradientEditor'
-export { LayerTreeRoot, LayerTreeItem, useLayerTree } from '#vue/primitives/LayerTree'
-export type { LayerDragInstruction, LayerTreeContext, LayerNode } from '#vue/primitives/LayerTree'
+export {
+  buildLayerTreeModel,
+  indexLayerNodes,
+  layerSelectionForTarget,
+  LayerTreeItem,
+  LayerTreeRoot,
+  patchLayerNode,
+  useLayerTree,
+  visibleLayerRows
+} from '#vue/primitives/LayerTree'
+export type {
+  LayerDragInstruction,
+  LayerNode,
+  LayerRow,
+  LayerSelectionMode,
+  LayerTreeContext,
+  LayerTreeVirtualizer
+} from '#vue/primitives/LayerTree'
 export { LayoutControlsRoot, useLayoutControlsContext } from '#vue/primitives/LayoutControls'
 export type {
   LayoutControlsContext,
