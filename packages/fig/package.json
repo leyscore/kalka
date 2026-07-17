@@ -38,6 +38,9 @@
   "peerDependencies": {
     "@open-pencil/kiwi": "workspace:*"
   },
+  "dependencies": {
+    "fflate": "^0.8.2"
+  },
   "devDependencies": {
     "@types/bun": "^1.3.14",
     "tsdown": "^0.22.3",

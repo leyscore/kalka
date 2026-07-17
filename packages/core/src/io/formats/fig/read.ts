@@ -1,4 +1,4 @@
-import { parseFigBuffer } from '@open-pencil/kiwi/fig/parse'
+import { parseFigBuffer } from '@open-pencil/fig'
 import type { SceneGraph } from '@open-pencil/scene-graph'
 
 import { IS_BROWSER } from '#core/constants'
