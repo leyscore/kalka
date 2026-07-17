@@ -132,10 +132,16 @@ describe('FontManager loaded font cache', () => {
 
     manager.attachProvider(canvasKit, first.provider)
     manager.markLoaded('ProviderLifecycle', 'Regular', new ArrayBuffer(12))
-    expect(first.registrations).toEqual([{ family: 'ProviderLifecycle', byteLength: 12 }])
+    expect(first.registrations).toEqual([
+      { family: 'ProviderLifecycle', byteLength: 12 },
+      { family: '__op_font__ProviderLifecycle__Regular', byteLength: 12 }
+    ])
 
     manager.attachProvider(canvasKit, second.provider)
-    expect(second.registrations).toEqual([{ family: 'ProviderLifecycle', byteLength: 12 }])
+    expect(second.registrations).toEqual([
+      { family: 'ProviderLifecycle', byteLength: 12 },
+      { family: '__op_font__ProviderLifecycle__Regular', byteLength: 12 }
+    ])
     manager.detachProvider(first.provider)
     expect(manager.provider()).toBe(second.provider)
 
@@ -200,7 +206,10 @@ describe('FontManager loaded font cache', () => {
     })
 
     await expect(manager.loadFont('DownloadedCache', 'Regular')).resolves.toBe(data)
-    expect(recording.registrations).toEqual([{ family: 'DownloadedCache', byteLength: 16 }])
+    expect(recording.registrations).toEqual([
+      { family: 'DownloadedCache', byteLength: 16 },
+      { family: '__op_font__DownloadedCache__Regular', byteLength: 16 }
+    ])
     expect(writes).toBe(0)
   })
 
@@ -217,7 +226,10 @@ describe('FontManager loaded font cache', () => {
       const data = await manager.loadFont('Inter', 'ExtraBold')
 
       expect(data?.byteLength).toBeGreaterThan(0)
-      expect(recording.registrations).toEqual([{ family: 'Inter', byteLength: data?.byteLength }])
+      expect(recording.registrations).toEqual([
+        { family: 'Inter', byteLength: data?.byteLength },
+        { family: '__op_font__Inter__ExtraBold', byteLength: data?.byteLength }
+      ])
     } finally {
       globalThis.fetch = originalFetch
     }

@@ -99,7 +99,7 @@ export function createAITools(store: EditorStore) {
         if (def.mutates) {
           const pageId = store.state.currentPageId
           const pageNode = store.graph.getNode(pageId)
-          if (pageNode) await ensureGraphFonts(store.graph, pageNode.childIds)
+          if (pageNode) await ensureGraphFonts(store.graph, pageNode.childIds, store.renderer)
           computeAllLayouts(store.graph, pageId)
           store.requestRender()
           if (beforeSnapshot) {

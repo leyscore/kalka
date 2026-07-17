@@ -29,10 +29,13 @@
 - Add desktop image drag-and-drop into the Tauri app window.
 - Add open-document discovery for live CLI and MCP automation so agents can target the intended document and page.
 - Publish lower-level SceneGraph, Pen, Kiwi, Fig, and DOM/CSS functionality through clearer package boundaries for SDK and automation consumers.
+- Upgrade `opentype.js` to v2 and add BCP-47 text-language hints for language-correct CJK shaping and fallback order.
 
 ### Fixes
 
 - Make canvas text rendering demand missing font faces and verify CJK/Arabic fallback coverage from CanvasKit shaping results instead of coarse script predictions.
+- Resolve fonts before loaded, pasted, imported, and tool-created nodes render; invalidate generation-stale text caches and use baked `.fig` glyphs only after live font resolution is exhausted.
+- Load character-specific remote font subsets without Latin-only assumptions, preserve cumulative subset coverage, and reject unavailable desktop font styles instead of substituting the first family face.
 - Fix live CLI and MCP automation drifting to the wrong open document or page when multiple files are open.
 - Improve Chinese, Japanese, and Korean text rendering with glyph-aware fallback fonts and outline rendering when needed.
 - Preserve imported Figma text sizing more accurately, especially auto-sized text inside auto-layout frames.

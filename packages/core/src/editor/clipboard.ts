@@ -87,7 +87,8 @@ export function createClipboardActions(ctx: EditorContext) {
   async function pasteFromHTML(html: string, cursorPos?: Vector, options: PasteOptions = {}) {
     const openPencil = parseOpenPencilClipboard(html)
     if (openPencil) {
-      pasteOpenPencilNodes(openPencil.nodes, openPencil.images, cursorPos, options)
+      const created = pasteOpenPencilNodes(openPencil.nodes, openPencil.images, cursorPos, options)
+      await fontActions.loadFontsForNodes(created)
       return
     }
 
@@ -106,7 +107,7 @@ export function createClipboardActions(ctx: EditorContext) {
             replacementTargets,
             prevSelection
           )
-          void fontActions.loadFontsForNodes(created)
+          await fontActions.loadFontsForNodes(created)
           warnMissingImages(created)
           ctx.requestRender()
           return
@@ -119,7 +120,7 @@ export function createClipboardActions(ctx: EditorContext) {
         ctx.setSelectedIds(new Set(created))
 
         pushPasteUndo(created, prevSelection)
-        void fontActions.loadFontsForNodes(created)
+        await fontActions.loadFontsForNodes(created)
         warnMissingImages(created)
         ctx.requestRender()
       }
@@ -151,7 +152,7 @@ export function createClipboardActions(ctx: EditorContext) {
 
     const pasteTarget = replacementTargets[0]?.parentId ?? resolvePasteTarget(ctx)
     for (const node of nodes) created.push(createNodeTree(node, pasteTarget))
-    if (created.length === 0) return
+    if (created.length === 0) return created
 
     if (replacementTargets.length > 0) {
       replaceTargetsWithCreated(
@@ -161,7 +162,7 @@ export function createClipboardActions(ctx: EditorContext) {
         replacementTargets,
         prevSelection
       )
-      return
+      return created
     }
 
     if (cursorPos) placementActions.centerNodesAt(created, cursorPos.x, cursorPos.y)
@@ -169,6 +170,7 @@ export function createClipboardActions(ctx: EditorContext) {
     ctx.setSelectedIds(new Set(created))
 
     pushPasteUndo(created, prevSelection)
+    return created
   }
 
   function warnMissingImages(nodeIds: string[]) {

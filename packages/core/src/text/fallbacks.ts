@@ -7,6 +7,22 @@ import {
 
 export type FontFallbackScript = 'cjk' | 'cjk-sc' | 'cjk-tc' | 'cjk-jp' | 'cjk-kr' | 'arabic'
 
+export function cjkFallbackScriptForLanguage(
+  language: string | null | undefined
+): Extract<FontFallbackScript, 'cjk-sc' | 'cjk-tc' | 'cjk-jp' | 'cjk-kr'> | null {
+  if (!language) return null
+  const normalized = language.toLowerCase().replaceAll('_', '-')
+  const [primary] = normalized.split('-')
+  if (primary === 'ja') return 'cjk-jp'
+  if (primary === 'ko') return 'cjk-kr'
+  if (primary !== 'zh') return null
+  const subtags = new Set(normalized.split('-').slice(1))
+  if (subtags.has('hant') || subtags.has('tw') || subtags.has('hk') || subtags.has('mo')) {
+    return 'cjk-tc'
+  }
+  return 'cjk-sc'
+}
+
 export interface FontFallbackManifestEntry {
   script: FontFallbackScript
   localFamilies: string[]

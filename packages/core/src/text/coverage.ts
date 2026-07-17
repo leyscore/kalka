@@ -1,8 +1,8 @@
 import type { SceneNode } from '@open-pencil/scene-graph'
 
 import { DEFAULT_FONT_FAMILY } from '#core/constants'
-import type { FontFallbackScript } from '#core/text/fallbacks'
-import { weightToStyle } from '#core/text/fonts'
+import { cjkFallbackScriptForLanguage, type FontFallbackScript } from '#core/text/fallbacks'
+import { weightToStyle } from '#core/text/font-style'
 import { fontGlyphCoverageSync } from '#core/text/opentype'
 
 const CJK_IDEOGRAPH_CHAR_RE = /\p{Script=Han}/u
@@ -30,29 +30,39 @@ function scriptCharRegex(script: FontFallbackScript): RegExp {
   }
 }
 
-export function fontFallbackScriptForCharacter(char: string): FontFallbackScript | null {
+export function fontFallbackScriptForCharacter(
+  char: string,
+  language?: string | null
+): FontFallbackScript | null {
   if (ARABIC_CHAR_RE.test(char)) return 'arabic'
   if (CJK_HANGUL_RE.test(char)) return 'cjk-kr'
   if (CJK_HIRAGANA_KATAKANA_RE.test(char)) return 'cjk-jp'
+  const languageScript = cjkFallbackScriptForLanguage(language)
+  if (languageScript && CJK_IDEOGRAPH_CHAR_RE.test(char)) return languageScript
   if (TRADITIONAL_CJK_CHAR_RE.test(char)) return 'cjk-tc'
   if (CJK_IDEOGRAPH_CHAR_RE.test(char)) return 'cjk-sc'
   return null
 }
 
-function styleForCharacter(node: SceneNode, index: number): { family: string; style: string } {
+function styleForCharacter(
+  node: SceneNode,
+  index: number
+): { family: string; style: string; language: string | null } {
   const baseFamily = node.fontFamily || DEFAULT_FONT_FAMILY
   let family = baseFamily
   let weight = node.fontWeight
   let italic = node.italic
+  let language = node.textLanguage
 
   const run = node.styleRuns.find((item) => index >= item.start && index < item.start + item.length)
   if (run) {
     family = run.style.fontFamily ?? family
     weight = run.style.fontWeight ?? weight
     italic = run.style.italic ?? italic
+    language = run.style.textLanguage ?? language
   }
 
-  return { family, style: weightToStyle(weight, italic) }
+  return { family, style: weightToStyle(weight, italic), language }
 }
 
 /**
@@ -84,13 +94,17 @@ export function textNeededFallbackScripts(node: SceneNode): FontFallbackScript[]
   let index = 0
   for (const char of node.text) {
     if (CJK_CHAR_RE.test(char)) {
-      const { family, style } = styleForCharacter(node, index)
+      const { family, style, language } = styleForCharacter(node, index)
       if (fontGlyphCoverageSync(family, style, char) === 'missing') {
         if (CJK_IDEOGRAPH_CHAR_RE.test(char)) {
-          missingIdeograph = true
-          if (TRADITIONAL_CJK_CHAR_RE.test(char)) missingTraditionalIdeograph = true
+          const languageScript = cjkFallbackScriptForLanguage(language)
+          if (languageScript) scripts.add(languageScript)
+          else {
+            missingIdeograph = true
+            if (TRADITIONAL_CJK_CHAR_RE.test(char)) missingTraditionalIdeograph = true
+          }
         } else {
-          const script = fontFallbackScriptForCharacter(char)
+          const script = fontFallbackScriptForCharacter(char, language)
           if (script) scripts.add(script)
         }
       }

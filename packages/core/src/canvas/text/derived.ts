@@ -2,9 +2,8 @@ import type { Canvas, Paint } from 'canvaskit-wasm'
 
 import type { Fill, SceneNode, StyleRun, TextDecorationStyle } from '@open-pencil/scene-graph'
 
+import type { SkiaRenderer } from '#core/canvas/renderer'
 import { geometryBlobToPath } from '#core/vector'
-
-import type { SkiaRenderer } from './renderer'
 
 interface DecorationRange {
   x1: number

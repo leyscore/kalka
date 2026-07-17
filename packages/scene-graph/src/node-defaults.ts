@@ -56,6 +56,7 @@ export function createDefaultNode(
     italic: false,
     textAlignHorizontal: 'LEFT',
     textDirection: 'AUTO',
+    textLanguage: null,
     leadingTrim: 'NONE',
     lineHeight: null,
     letterSpacing: 0,

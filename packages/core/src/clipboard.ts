@@ -5,7 +5,7 @@ import type { NodeChange as KiwiNodeChange } from '@open-pencil/kiwi/fig/codec'
 import { decodeBinarySchema, compileSchema, ByteBuffer } from '@open-pencil/kiwi/schema-runtime'
 import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
 
-import { shapeTextForClipboard } from './canvas/text'
+import { shapeTextForClipboard } from './canvas/text/clipboard'
 import { populateAndApplyOverrides } from './kiwi/fig/instance-overrides'
 import type { InstanceNodeChange } from './kiwi/fig/instance-overrides'
 import {

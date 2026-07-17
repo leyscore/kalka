@@ -67,7 +67,7 @@ function getParsedFont(family: string, style: string): OutlineFont | null {
 }
 
 function glyphsForCodePoints(font: OutlineFont, text: string): OutlineGlyph[] {
-  return [...text].map((character) => font.charToGlyph(character))
+  return Array.from(text, (character) => font.charToGlyph(character))
 }
 
 function glyphAdvanceWidth(font: OutlineFont, glyph: OutlineGlyph, fontSize: number): number {

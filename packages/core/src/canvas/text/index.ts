@@ -8,10 +8,8 @@ import type {
 } from 'canvaskit-wasm'
 import { uniq } from 'es-toolkit/array'
 
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
 import type { SceneNode } from '@open-pencil/scene-graph'
 
-import { getCanvasKit } from '#core/canvaskit'
 import { resolveRGBAForPreview } from '#core/color/management'
 import { DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE } from '#core/constants'
 import { fontFallbackScriptForCharacter } from '#core/text/coverage'
@@ -21,15 +19,18 @@ import { fontManager, weightToStyle } from '#core/text/fonts'
 import {
   fontCoverageDemand,
   fontFaceDemand,
+  fontRemoteCoverageDemand,
   fontResolver,
-  missingGlyphCharacters
+  missingGlyphCharacters,
+  type FontResolutionSettled
 } from '#core/text/resolver'
 
 interface FontReadinessRenderer {
   ck?: CanvasKit
   fontProvider?: TypefaceFontProvider | null
   fontsLoaded?: boolean
-  onFontResolutionSettled?: () => void
+  onFontResolutionSettled?: FontResolutionSettled
+  trackFontDemand?: (node: SceneNode, key: string) => void
 }
 
 interface TextRenderer extends FontReadinessRenderer {
@@ -38,88 +39,134 @@ interface TextRenderer extends FontReadinessRenderer {
   fontsLoaded: boolean
 }
 
-export interface ClipboardShapedGlyph {
-  glyphIndex: number
-  firstCharacter: number
-  x: number
-  y: number
-  advance: number
-}
-
-export interface ClipboardShapedText {
-  lineHeight: number
-  lineAscent: number
-  lineWidth: number
-  baseline: number
-  baselines?: NonNullable<NodeChange['derivedTextData']>['baselines']
-  glyphs: ClipboardShapedGlyph[]
-  logicalIndexToCharacterOffsetMap: number[]
-}
-
 const FONT_FAMILY_CACHE_LIMIT = 256
 const fontFamilyCache = new Map<string, string[]>()
 
-function demandFace(r: FontReadinessRenderer, family: string, style: string): boolean {
+function demandFace(
+  r: FontReadinessRenderer,
+  node: SceneNode,
+  family: string,
+  style: string
+): boolean {
   if (fontManager.isStyleLoaded(family, style)) return true
-  void fontResolver.demand(fontFaceDemand(family, style), r.onFontResolutionSettled)
+  const demand = fontFaceDemand(family, style, node.text)
+  r.trackFontDemand?.(node, demand.key)
+  void fontResolver.demandForNode(demand, node.id, r.onFontResolutionSettled)
   return false
 }
 
-function hasRequiredFaces(r: FontReadinessRenderer, node: SceneNode): boolean {
+function requiredNodeFaces(node: SceneNode): Array<{ family: string; style: string }> {
   const baseFamily = node.fontFamily || DEFAULT_FONT_FAMILY
-  let ready = demandFace(r, baseFamily, weightToStyle(node.fontWeight, node.italic))
-
+  const faces = new Map<string, { family: string; style: string }>()
+  const add = (family: string, style: string) => faces.set(`${family}\0${style}`, { family, style })
+  add(baseFamily, weightToStyle(node.fontWeight, node.italic))
   for (const run of node.styleRuns) {
     const family = run.style.fontFamily ?? baseFamily
     const weight = run.style.fontWeight ?? node.fontWeight
     const italic = run.style.italic ?? node.italic
-    if (!demandFace(r, family, weightToStyle(weight, italic))) ready = false
+    add(family, weightToStyle(weight, italic))
   }
-  return ready
+  return Array.from(faces.values())
 }
 
-function hasObservedGlyphCoverage(r: TextRenderer, node: SceneNode): boolean {
+function languageForCharacter(node: SceneNode, character: string): string | null {
+  const index = node.text.indexOf(character)
+  const run = node.styleRuns.find((item) => index >= item.start && index < item.start + item.length)
+  return run?.style.textLanguage ?? node.textLanguage
+}
+
+export type NodeFontReadiness = 'ready' | 'pending' | 'exhausted'
+
+function requiredFacesReadiness(r: FontReadinessRenderer, node: SceneNode): NodeFontReadiness {
+  let pending = false
+  let exhausted = false
+  for (const { family, style } of requiredNodeFaces(node)) {
+    if (fontManager.isStyleLoaded(family, style)) continue
+    const demand = fontFaceDemand(family, style, node.text)
+    const state = fontResolver.state(demand).state
+    demandFace(r, node, family, style)
+    if (state === 'failed' || state === 'exhausted') exhausted = true
+    else pending = true
+  }
+  if (pending) return 'pending'
+  return exhausted ? 'exhausted' : 'ready'
+}
+
+function demandRemoteCoverage(r: TextRenderer, node: SceneNode, characters: string[]): boolean {
+  for (const { family, style } of requiredNodeFaces(node)) {
+    if (!fontManager.remoteStyleNeedsCoverage(family, style, characters)) continue
+    const demand = fontRemoteCoverageDemand(family, style, characters)
+    const state = fontResolver.state(demand).state
+    if (state === 'idle') {
+      r.trackFontDemand?.(node, demand.key)
+      void fontResolver.demandForNode(demand, node.id, r.onFontResolutionSettled)
+      return true
+    }
+    if (state === 'loading') return true
+    if (state === 'loaded') fontResolver.exhaust(demand)
+  }
+  return false
+}
+
+function observedGlyphReadiness(r: TextRenderer, node: SceneNode): NodeFontReadiness {
   const paragraph = buildParagraph(r, node)
   paragraph.layout(resolveParagraphLayoutWidth(node))
   const missingCharacters = missingGlyphCharacters(node.text, paragraph.getShapedLines())
   paragraph.delete()
-  if (missingCharacters.length === 0) return true
+  if (missingCharacters.length === 0) return 'ready'
 
   const charactersByScript = new Map<FontFallbackScript, string[]>()
   for (const character of missingCharacters) {
-    const script = fontFallbackScriptForCharacter(character)
+    const script = fontFallbackScriptForCharacter(character, languageForCharacter(node, character))
     if (!script) continue
     const characters = charactersByScript.get(script) ?? []
     characters.push(character)
     charactersByScript.set(script, characters)
   }
 
-  let ready = true
+  let pending = false
+  let exhausted = charactersByScript.size === 0
   for (const [script, characters] of charactersByScript) {
+    if (demandRemoteCoverage(r, node, characters)) {
+      pending = true
+      continue
+    }
+
     const demand = fontCoverageDemand(script, characters)
     const state = fontResolver.state(demand).state
     if (state === 'loaded') {
       fontResolver.exhaust(demand)
+      exhausted = true
       continue
     }
-    if (state === 'exhausted') continue
-    ready = false
+    if (state === 'exhausted' || state === 'failed') {
+      exhausted = true
+      continue
+    }
+    pending = true
     if (state === 'idle') {
-      void fontResolver.demand(demand, r.onFontResolutionSettled)
+      r.trackFontDemand?.(node, demand.key)
+      void fontResolver.demandForNode(demand, node.id, r.onFontResolutionSettled)
     }
   }
-  return ready
+  if (pending) return 'pending'
+  return exhausted ? 'exhausted' : 'ready'
 }
 
 function canObserveGlyphCoverage(r: FontReadinessRenderer): r is TextRenderer {
   return r.ck !== undefined && r.fontProvider != null && r.fontsLoaded !== undefined
 }
 
+export function nodeFontReadiness(r: FontReadinessRenderer, node: SceneNode): NodeFontReadiness {
+  if (node.type !== 'TEXT') return 'ready'
+  const faces = requiredFacesReadiness(r, node)
+  if (faces !== 'ready') return faces
+  if (!node.text || !canObserveGlyphCoverage(r)) return 'ready'
+  return observedGlyphReadiness(r, node)
+}
+
 export function isNodeFontLoaded(r: FontReadinessRenderer, node: SceneNode): boolean {
-  if (node.type !== 'TEXT') return true
-  if (!hasRequiredFaces(r, node)) return false
-  if (!node.text || !canObserveGlyphCoverage(r)) return true
-  return hasObservedGlyphCoverage(r, node)
+  return nodeFontReadiness(r, node) === 'ready'
 }
 
 export function measureTextNode(
@@ -188,13 +235,19 @@ function resolveParagraphFontFamilies(
   cjkFallbacks: readonly string[]
 ): string[] {
   const renderPrimary = fontManager.renderFamily(primary, style)
-  const key = `${renderPrimary}\0${arabicFallbacks.join('\0')}\0${cjkFallbacks.join('\0')}`
+  const renderArabicFallbacks = arabicFallbacks.map((family) =>
+    fontManager.renderFamily(family, 'Regular')
+  )
+  const renderCJKFallbacks = cjkFallbacks.map((family) =>
+    fontManager.renderFamily(family, 'Regular')
+  )
+  const key = `${renderPrimary}\0${renderArabicFallbacks.join('\0')}\0${renderCJKFallbacks.join('\0')}`
   const cached = fontFamilyCache.get(key)
   if (cached) return cached
 
   const families = [renderPrimary]
   if (primary !== DEFAULT_FONT_FAMILY) families.push(DEFAULT_FONT_FAMILY)
-  families.push(...arabicFallbacks, ...cjkFallbacks)
+  families.push(...renderArabicFallbacks, ...renderCJKFallbacks)
 
   const resolved = uniq(families)
   fontFamilyCache.set(key, resolved)
@@ -293,6 +346,13 @@ function styleRunColor(
   return ck.Color4f(color.r, color.g, color.b, color.a * visibleFill.opacity)
 }
 
+function styleRunLanguage(
+  style: SceneNode['styleRuns'][number]['style'],
+  node: SceneNode
+): string | undefined {
+  return style.textLanguage ?? node.textLanguage ?? undefined
+}
+
 function pushStyleRun(
   r: TextRenderer,
   builder: ReturnType<CanvasKit['ParagraphBuilder']['MakeFromFontProvider']>,
@@ -317,6 +377,7 @@ function pushStyleRun(
         style.italic ?? node.italic
       ),
       fontSize: runFontSize,
+      locale: styleRunLanguage(style, node),
       fontStyle: {
         weight: { value: style.fontWeight ?? node.fontWeight } as FontWeight,
         slant: (style.italic ?? node.italic) ? ck.FontSlant.Italic : ck.FontSlant.Upright
@@ -401,6 +462,7 @@ export function buildParagraph(
         node.italic
       ),
       fontSize: baseFontSize,
+      locale: node.textLanguage ?? undefined,
       fontStyle: {
         weight: { value: node.fontWeight } as FontWeight,
         slant: node.italic ? ck.FontSlant.Italic : ck.FontSlant.Upright
@@ -435,101 +497,4 @@ export function buildParagraph(
   }
   builder.delete()
   return paragraph
-}
-
-function addShapedRunGlyphs(
-  run: ReturnType<Paragraph['getShapedLines']>[number]['runs'][number],
-  glyphs: ClipboardShapedGlyph[],
-  logicalIndexToCharacterOffsetMap: number[],
-  fallbackLineY: number,
-  fallbackLineWidth: number
-): void {
-  const positions = run.positions
-  for (let i = 0; i < run.glyphs.length; i++) {
-    const x = positions[i * 2] ?? 0
-    const y = positions[i * 2 + 1] ?? fallbackLineY
-    const nextX = positions[(i + 1) * 2] ?? x
-    const glyphCharacter = run.offsets[i] ?? i
-    glyphs.push({
-      glyphIndex: i,
-      firstCharacter: glyphCharacter,
-      x,
-      y,
-      advance: nextX - x
-    })
-    if (glyphCharacter >= 0 && glyphCharacter < logicalIndexToCharacterOffsetMap.length) {
-      logicalIndexToCharacterOffsetMap[glyphCharacter] = x
-    }
-  }
-
-  const finalOffset = run.offsets[run.offsets.length - 1]
-  const finalX = positions[positions.length - 2] ?? fallbackLineWidth
-  if (finalOffset >= 0 && finalOffset < logicalIndexToCharacterOffsetMap.length) {
-    logicalIndexToCharacterOffsetMap[finalOffset] = finalX
-  }
-}
-
-function addLineBaseline(
-  metrics: ReturnType<Paragraph['getLineMetrics']>[number],
-  textLength: number,
-  baselines: NonNullable<ClipboardShapedText['baselines']>
-): void {
-  if (metrics.startIndex >= textLength) return
-  baselines.push({
-    firstCharacter: metrics.startIndex,
-    endCharacter: metrics.endIndex,
-    position: { x: 0, y: metrics.baseline },
-    width: metrics.width,
-    lineY: metrics.startIndex === 0 ? 0 : metrics.baseline - Math.abs(metrics.ascent),
-    lineHeight: metrics.height,
-    lineAscent: Math.abs(metrics.ascent)
-  })
-}
-
-export async function shapeTextForClipboard(node: SceneNode): Promise<ClipboardShapedText | null> {
-  const ck = await getCanvasKit()
-  const fontProvider = fontManager.provider()
-  if (!fontProvider) return null
-
-  const paragraph = buildParagraph({ ck, fontProvider, fontsLoaded: true }, node)
-  paragraph.layout(node.textAutoResize === 'WIDTH_AND_HEIGHT' ? 1e6 : node.width)
-  const shapedLines = paragraph.getShapedLines()
-  const lineMetrics = paragraph.getLineMetrics()
-  if (shapedLines.length === 0 || lineMetrics.length === 0) {
-    paragraph.delete()
-    return null
-  }
-  const firstMetrics = lineMetrics[0]
-
-  const glyphs: ClipboardShapedGlyph[] = []
-  const baselines: NonNullable<ClipboardShapedText['baselines']> = []
-  const logicalIndexToCharacterOffsetMap = Array.from({ length: node.text.length + 1 }, () => 0)
-
-  for (let lineIdx = 0; lineIdx < shapedLines.length; lineIdx++) {
-    const line = shapedLines[lineIdx]
-    const metrics = lineMetrics[lineIdx] ?? firstMetrics
-    const lineY = metrics.baseline
-    for (const run of line.runs) {
-      addShapedRunGlyphs(run, glyphs, logicalIndexToCharacterOffsetMap, lineY, metrics.width)
-    }
-    addLineBaseline(metrics, node.text.length, baselines)
-  }
-
-  for (let i = 1; i < logicalIndexToCharacterOffsetMap.length; i++) {
-    if (logicalIndexToCharacterOffsetMap[i] === 0) {
-      logicalIndexToCharacterOffsetMap[i] = logicalIndexToCharacterOffsetMap[i - 1]
-    }
-  }
-
-  paragraph.delete()
-
-  return {
-    lineHeight: firstMetrics.height,
-    lineAscent: Math.abs(firstMetrics.ascent),
-    lineWidth: firstMetrics.width,
-    baseline: firstMetrics.baseline,
-    baselines,
-    glyphs,
-    logicalIndexToCharacterOffsetMap
-  }
 }

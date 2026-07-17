@@ -9,7 +9,8 @@ interface FontResolutionEntry {
   demand: FontResolutionDemand
   snapshot: FontResolutionSnapshot
   promise: Promise<FontResolutionSnapshot>
-  callbacks: Set<FontResolutionSettled>
+  callbacks: Map<FontResolutionSettled, Set<string>>
+  nodeIds: Set<string>
 }
 
 function idleSnapshot(key: string): FontResolutionSnapshot {
@@ -26,29 +27,25 @@ export class FontResolver {
     return this.entries.get(key)?.snapshot ?? idleSnapshot(key)
   }
 
+  pendingNodeIds(demand: FontResolutionDemand | string): string[] {
+    const key = typeof demand === 'string' ? demand : demand.key
+    const entry = this.entries.get(key)
+    return entry?.snapshot.state === 'loading' ? [...entry.nodeIds] : []
+  }
+
   demand(
     demand: FontResolutionDemand,
     onSettled?: FontResolutionSettled
   ): Promise<FontResolutionSnapshot> {
-    const current = this.entries.get(demand.key)
-    if (current) {
-      if (current.snapshot.state === 'loading' && onSettled) current.callbacks.add(onSettled)
-      return current.promise
-    }
+    return this.request(demand, onSettled)
+  }
 
-    const callbacks = new Set<FontResolutionSettled>()
-    if (onSettled) callbacks.add(onSettled)
-
-    const snapshot: FontResolutionSnapshot = { key: demand.key, state: 'loading' }
-    const entry: FontResolutionEntry = {
-      demand,
-      snapshot,
-      callbacks,
-      promise: Promise.resolve(snapshot)
-    }
-    this.entries.set(demand.key, entry)
-    entry.promise = this.resolve(entry)
-    return entry.promise
+  demandForNode(
+    demand: FontResolutionDemand,
+    nodeId: string,
+    onSettled?: FontResolutionSettled
+  ): Promise<FontResolutionSnapshot> {
+    return this.request(demand, onSettled, nodeId)
   }
 
   retry(
@@ -67,13 +64,16 @@ export class FontResolver {
     if (current) {
       current.snapshot = snapshot
       current.promise = Promise.resolve(snapshot)
+      current.callbacks.clear()
+      current.nodeIds.clear()
       return snapshot
     }
     const entry: FontResolutionEntry = {
       demand,
       snapshot,
       promise: Promise.resolve(snapshot),
-      callbacks: new Set()
+      callbacks: new Map(),
+      nodeIds: new Set()
     }
     this.entries.set(demand.key, entry)
     return snapshot
@@ -85,6 +85,43 @@ export class FontResolver {
       return
     }
     this.entries.delete(typeof demand === 'string' ? demand : demand.key)
+  }
+
+  private request(
+    demand: FontResolutionDemand,
+    onSettled?: FontResolutionSettled,
+    nodeId?: string
+  ): Promise<FontResolutionSnapshot> {
+    const current = this.entries.get(demand.key)
+    if (current) {
+      if (current.snapshot.state === 'loading') this.addConsumer(current, onSettled, nodeId)
+      return current.promise
+    }
+
+    const snapshot: FontResolutionSnapshot = { key: demand.key, state: 'loading' }
+    const entry: FontResolutionEntry = {
+      demand,
+      snapshot,
+      callbacks: new Map(),
+      nodeIds: new Set(),
+      promise: Promise.resolve(snapshot)
+    }
+    this.addConsumer(entry, onSettled, nodeId)
+    this.entries.set(demand.key, entry)
+    entry.promise = this.resolve(entry)
+    return entry.promise
+  }
+
+  private addConsumer(
+    entry: FontResolutionEntry,
+    onSettled?: FontResolutionSettled,
+    nodeId?: string
+  ): void {
+    if (nodeId) entry.nodeIds.add(nodeId)
+    if (!onSettled) return
+    const callbackNodes = entry.callbacks.get(onSettled) ?? new Set<string>()
+    if (nodeId) callbackNodes.add(nodeId)
+    entry.callbacks.set(onSettled, callbackNodes)
   }
 
   private async resolve(entry: FontResolutionEntry): Promise<FontResolutionSnapshot> {
@@ -120,14 +157,15 @@ export class FontResolver {
   ): FontResolutionSnapshot {
     if (this.entries.get(entry.demand.key) !== entry) return idleSnapshot(entry.demand.key)
     entry.snapshot = snapshot
-    for (const callback of entry.callbacks) {
+    for (const [callback, nodeIds] of entry.callbacks) {
       try {
-        callback(snapshot)
+        callback(snapshot, [...nodeIds])
       } catch (error) {
         console.error('Font resolution callback failed:', error)
       }
     }
     entry.callbacks.clear()
+    entry.nodeIds.clear()
     return snapshot
   }
 }

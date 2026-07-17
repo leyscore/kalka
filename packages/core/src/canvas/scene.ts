@@ -6,6 +6,7 @@ import { computeDescendantVisualBounds } from '@open-pencil/scene-graph/geometry
 import type { Color } from '@open-pencil/scene-graph/primitives'
 
 import { DROP_HIGHLIGHT_ALPHA, DROP_HIGHLIGHT_STROKE, SECTION_CORNER_RADIUS } from '#core/constants'
+import { fontManager } from '#core/text/fonts'
 import { vectorNetworkToCenterlinePath } from '#core/vector'
 
 import { figmaBlendModeToSkia, needsIsolatedBlendLayer } from './blend'
@@ -20,8 +21,8 @@ import {
   getStrokeCapEntity,
   getStrokeJoinEntity
 } from './strokes'
-import { drawFigmaDerivedText } from './text-derived'
-import { textNodeToOutlinePath } from './text-outlines'
+import { drawFigmaDerivedText } from './text/derived'
+import { textNodeToOutlinePath } from './text/outlines'
 
 function drawVisibleFills(
   r: SkiaRenderer,
@@ -196,7 +197,7 @@ export function renderNode(
   parentAbsY = 0
 ): void {
   const node = graph.getNode(nodeId)
-  if (!node || !node.visible || node.isMask) return
+  if (!node || !node.visible || node.isMask || fontManager.isNodeBlocked(nodeId)) return
 
   // Hide the node being edited in node-edit mode (overlay draws it live)
   if (overlays.nodeEditState?.nodeId === nodeId) return
@@ -351,10 +352,14 @@ export function renderShape(
 
   if (hasEffects) {
     const cached = r.nodePictureCache.get(node.id)
-    if (cached) {
+    const cachedGeneration = r.nodePictureCacheGenerations.get(node.id)
+    if (cached && cachedGeneration === r.fontGeneration) {
       canvas.drawPicture(cached)
       return
     }
+    if (cached) cached.delete()
+    r.nodePictureCache.delete(node.id)
+    r.nodePictureCacheGenerations.delete(node.id)
 
     const margin = r.effectOverflow(node)
     const bounds = r.ck.LTRBRect(-margin, -margin, node.width + margin, node.height + margin)
@@ -364,6 +369,7 @@ export function renderShape(
     const picture = recorder.finishRecordingAsPicture()
     recorder.delete()
     r.nodePictureCache.set(node.id, picture)
+    r.nodePictureCacheGenerations.set(node.id, r.fontGeneration)
     canvas.drawPicture(picture)
   } else {
     r.renderShapeUncached(canvas, node, graph)
@@ -606,12 +612,6 @@ function drawOutlinedText(r: SkiaRenderer, canvas: Canvas, node: SceneNode): boo
   return true
 }
 
-const CJK_TEXT_PATTERN = /[\u3040-\u30ff\u3400-\u9fff\uf900-\ufaff\uac00-\ud7af]/u
-
-function shouldRenderCJKAsOutline(node: SceneNode): boolean {
-  return CJK_TEXT_PATTERN.test(node.text)
-}
-
 function drawGradientText(
   r: SkiaRenderer,
   canvas: Canvas,
@@ -654,28 +654,27 @@ export function renderText(r: SkiaRenderer, canvas: Canvas, node: SceneNode, fil
   }
 
   const paragraphY = 0
-  if (node.textPicture) {
-    const pic = r.ck.MakePicture(node.textPicture)
-    if (pic) {
-      canvas.drawPicture(pic)
-      pic.delete()
-      canvas.restore()
-      return
+  const fontReadiness = r.nodeFontReadiness(node)
+  if (fontReadiness !== 'ready') {
+    if (fontReadiness === 'exhausted') {
+      if (node.textPicture && r.isTextPictureCurrent(node)) {
+        const pic = r.ck.MakePicture(node.textPicture)
+        if (pic) {
+          canvas.drawPicture(pic)
+          pic.delete()
+          canvas.restore()
+          return
+        }
+      }
+      if (drawFigmaDerivedText(r, canvas, node)) {
+        canvas.restore()
+        return
+      }
     }
-  }
-  if (drawFigmaDerivedText(r, canvas, node)) {
     canvas.restore()
     return
   }
-
-  if (!r.isNodeFontLoaded(node)) {
-    canvas.restore()
-    return
-  }
-  if (
-    (shouldRenderTextAsOutline(fill) || shouldRenderCJKAsOutline(node)) &&
-    drawOutlinedText(r, canvas, node)
-  ) {
+  if (shouldRenderTextAsOutline(fill) && drawOutlinedText(r, canvas, node)) {
     canvas.restore()
     return
   }

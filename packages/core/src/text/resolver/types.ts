@@ -12,6 +12,7 @@ export interface FontResolutionCandidate {
 export interface FontResolutionDemand {
   key: string
   candidates: readonly FontResolutionCandidate[]
+  characters?: string
 }
 
 export interface FontResolutionSnapshot {
@@ -27,4 +28,7 @@ export type FontResolutionLoader = (
   demand: FontResolutionDemand
 ) => Promise<boolean>
 
-export type FontResolutionSettled = (snapshot: FontResolutionSnapshot) => void
+export type FontResolutionSettled = (
+  snapshot: FontResolutionSnapshot,
+  nodeIds: readonly string[]
+) => void

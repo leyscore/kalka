@@ -74,6 +74,30 @@ describe('FontResolver', () => {
     expect(settled).toEqual(['first', 'second'])
   })
 
+  test('settles only nodes that depend on the resolved key', async () => {
+    let release: ((loaded: boolean) => void) | undefined
+    const resolver = new FontResolver(
+      () =>
+        new Promise<boolean>((resolve) => {
+          release = resolve
+        })
+    )
+    const demand = { key: 'node-aware', candidates: [candidate('remote')] }
+    const settled: string[][] = []
+
+    const onSettled = (_snapshot: unknown, nodeIds: readonly string[]) => {
+      settled.push([...nodeIds])
+    }
+    const first = resolver.demandForNode(demand, 'first', onSettled)
+    const second = resolver.demandForNode(demand, 'second', onSettled)
+    expect(resolver.pendingNodeIds(demand)).toEqual(['first', 'second'])
+
+    release?.(true)
+    await Promise.all([first, second])
+    expect(settled).toEqual([['first', 'second']])
+    expect(resolver.pendingNodeIds(demand)).toEqual([])
+  })
+
   test('exhausts after every candidate is unavailable', async () => {
     const resolver = new FontResolver(async () => false)
     const demand = faceDemand()

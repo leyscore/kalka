@@ -101,6 +101,7 @@ function scenePictureMissReason(
   if (graph.positionPreviewVersion !== r.scenePicturePositionPreviewVersion)
     return 'position-preview-version'
   if (sceneVersion !== r.scenePictureVersion) return 'scene-version'
+  if (r.fontGeneration !== r.scenePictureFontGeneration) return 'font-generation'
   if (r.pageId !== r.scenePicturePageId) return 'page'
   return 'unknown'
 }
@@ -116,6 +117,7 @@ function canUseScenePicture(
     !!r.scenePicture &&
     graph.positionPreviewVersion === r.scenePicturePositionPreviewVersion &&
     sceneVersion === r.scenePictureVersion &&
+    r.fontGeneration === r.scenePictureFontGeneration &&
     r.pageId === r.scenePicturePageId
   )
 }
@@ -136,6 +138,7 @@ export function render(
   sceneVersion = -1,
   layer: RenderLayer = 'full'
 ): void {
+  r.syncFontGeneration()
   const p = r.profiler
   p.beginFrame()
   p.setScenePictureDrawTime(0)
@@ -348,6 +351,7 @@ function recordScenePicture(
   recorder.delete()
   r.worldViewport = prevViewport
   r.scenePictureVersion = sceneVersion
+  r.scenePictureFontGeneration = r.fontGeneration
   r.scenePicturePositionPreviewVersion = graph.positionPreviewVersion
   r.scenePicturePageId = r.pageId
   canvas.drawPicture(r.scenePicture)

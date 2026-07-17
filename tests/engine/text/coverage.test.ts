@@ -22,6 +22,28 @@ describe('font fallback coverage indexing', () => {
     expect(textNeededFallbackScripts(node)).toContain('cjk-sc')
   })
 
+  test('uses BCP-47 language hints for Han fallback selection', async () => {
+    const family = `LanguageHint_${Date.now()}`
+    const data = await Bun.file('public/Inter-Regular.ttf').arrayBuffer()
+    fontManager.markLoaded(family, 'Regular', data)
+    const graph = new SceneGraph()
+    const node = graph.createNode('TEXT', pageId(graph), {
+      text: '骨骨',
+      textLanguage: 'ja-JP',
+      fontFamily: family,
+      fontWeight: 400,
+      styleRuns: [
+        {
+          start: 1,
+          length: 1,
+          style: { textLanguage: 'zh-Hant-TW' }
+        }
+      ]
+    })
+
+    expect(textNeededFallbackScripts(node)).toEqual(['cjk-jp', 'cjk-tc'])
+  })
+
   test('uses UTF-16 style-run indices after a surrogate pair', async () => {
     const cjkData = await Bun.file('tests/fixtures/fonts/NotoSansSC-Regular.ttf').arrayBuffer()
     const latinData = await Bun.file('public/Inter-Regular.ttf').arrayBuffer()

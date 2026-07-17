@@ -1,6 +1,7 @@
 import {
   createUnifont,
   providers,
+  type GoogleFamilyOptions,
   type RemoteFontSource,
   type ResolveFontOptions,
   type Unifont
@@ -15,8 +16,8 @@ export type WebFontProvider =
   | ReturnType<typeof providers.fontshare>
 export type WebUnifont = Unifont<[WebFontProvider]>
 export type WebFontResolveOptions = Pick<
-  ResolveFontOptions,
-  'weights' | 'styles' | 'formats' | 'subsets'
+  ResolveFontOptions<{ google?: GoogleFamilyOptions }>,
+  'weights' | 'styles' | 'formats' | 'subsets' | 'options'
 >
 
 export const providerFactories = {

@@ -221,6 +221,7 @@ export interface CharacterStyleOverride {
   fills?: Fill[]
   fontVariations?: FontVariation[]
   fontFeatures?: FontFeature[]
+  textLanguage?: string | null
 }
 
 export interface StyleRun {
@@ -363,6 +364,7 @@ export interface SceneNode {
   italic: boolean
   textAlignHorizontal: 'LEFT' | 'CENTER' | 'RIGHT' | 'JUSTIFIED'
   textDirection: TextDirection
+  textLanguage: string | null
   textAlignVertical: TextAlignVertical
   textAutoResize: TextAutoResize
   textCase: TextCase

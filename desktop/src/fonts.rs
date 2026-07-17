@@ -108,15 +108,7 @@ fn load_system_font_blocking(family: String, style: String) -> Result<Vec<u8>, S
         }
     }
 
-    if let Some(handle) = family_handle.fonts().first() {
-        if let Ok(font) = handle.load() {
-            if let Some(data) = font.copy_font_data() {
-                return Ok((*data).clone());
-            }
-        }
-    }
-
-    Err(format!("Could not load font {family} {style}"))
+    Err(format!("Font face not found: {family} {style}"))
 }
 
 #[tauri::command]

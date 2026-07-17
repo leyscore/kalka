@@ -3,6 +3,8 @@ import type { Color } from '@open-pencil/scene-graph/primitives'
 import { populateLazyFigImportRoots } from '#core/kiwi/fig/lazy-import'
 import { computeAllLayouts } from '#core/layout'
 import { fontManager } from '#core/text/fonts'
+import { collectGraphFontRequirements } from '#core/text/requirements'
+import { missingGraphFontScripts } from '#core/text/resolved-requirements'
 
 import { createPageViewportStore } from './page-viewports'
 import type { EditorContext } from './types'
@@ -26,12 +28,29 @@ export function createPageActions(ctx: EditorContext) {
 
     const populated = populateLazyFigImportRoots(ctx.graph, [pageId])
 
-    const toLoad = fontManager.collectFontKeys(
-      ctx.graph,
-      ctx.graph.getChildren(pageId).map((n) => n.id)
-    )
-    if (toLoad.length > 0) {
-      await Promise.all(toLoad.map(([family, style]) => ctx.loadFont(family, style)))
+    const childIds = ctx.graph.getChildren(pageId).map((node) => node.id)
+    const toLoad = fontManager.collectFontKeys(ctx.graph, childIds)
+    const requirements = collectGraphFontRequirements(ctx.graph, childIds)
+    fontManager.blockNodesUntilFontsResolve(childIds)
+    try {
+      const results = await Promise.all(
+        toLoad.map(([family, style]) => ctx.loadFont(family, style, requirements.characters))
+      )
+      const requiredFallbacks = missingGraphFontScripts(requirements)
+      const fallbacks = await fontManager.ensureFallbackPack(
+        requiredFallbacks,
+        requirements.characters
+      )
+      const facesReady = results.every((result) => result !== null)
+      const fallbacksReady = requiredFallbacks.every(
+        (script) => (fallbacks[script]?.length ?? 0) > 0
+      )
+      if (facesReady && fallbacksReady) {
+        for (const node of requirements.nodes) if (node.type === 'TEXT') node.textPicture = null
+      }
+    } finally {
+      fontManager.unblockNodes(childIds)
+      ctx.getRenderer()?.invalidateAllPictures()
     }
     if (ctx.getRenderer() || populated) {
       computeAllLayouts(ctx.graph, pageId)

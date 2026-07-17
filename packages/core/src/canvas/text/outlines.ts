@@ -2,10 +2,9 @@ import type { Path } from 'canvaskit-wasm'
 
 import type { SceneNode } from '@open-pencil/scene-graph'
 
+import type { SkiaRenderer } from '#core/canvas/renderer'
 import type { OutlineCommand } from '#core/text/opentype'
 import { textNodeToOutlineLayout } from '#core/text/outlines'
-
-import type { SkiaRenderer } from './renderer'
 
 function appendOutlineCommand(
   path: Path,
