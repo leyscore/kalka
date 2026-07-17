@@ -1,3 +1,8 @@
-export { convertFontFeatures, applyFontFeaturesToKiwi } from './features'
-export { figmaAxisTagToString, stringToFigmaAxisTag, convertFontVariations } from './variations'
+export {
+  applyFontFeaturesToKiwi,
+  convertFontFeatures,
+  convertFontVariations,
+  figmaAxisTagToString,
+  stringToFigmaAxisTag
+} from '@open-pencil/fig/node-change'
 export { buildFontDigestMap } from './digests'

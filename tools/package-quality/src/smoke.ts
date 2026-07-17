@@ -94,6 +94,10 @@ try {
     tempDir
   )
   nodeEval(
+    "const { convertLineHeight } = await import('@open-pencil/fig/node-change'); if (convertLineHeight({ value: 120, units: 'PERCENT' }, 20) !== 24) throw new Error('Fig NodeChange subpath failed')",
+    tempDir
+  )
+  nodeEval(
     "const { SceneGraph } = await import('@open-pencil/scene-graph'); const graph = new SceneGraph(); if (graph.getPages().length !== 1) throw new Error('SceneGraph package smoke failed')",
     tempDir
   )

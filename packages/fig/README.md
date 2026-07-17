@@ -13,6 +13,7 @@ Current ownership:
 - Canvas payload and image resource handling
 - `readFigContainer()` / `writeFigContainer()` helpers for raw `fig-kiwi` payloads
 - `.fig` source and archive result types
+- Dependency-free NodeChange policy helpers for styles, plugin metadata, text values, and font axes/features through `@open-pencil/fig/node-change`
 
 Planned ownership:
 

@@ -9,6 +9,12 @@
       "bun": "./src/index.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./node-change": {
+      "types": "./dist/node-change.d.ts",
+      "bun": "./src/node-change/index.ts",
+      "import": "./dist/node-change.js",
+      "default": "./dist/node-change.js"
     }
   },
   "main": "./dist/index.js",
@@ -36,7 +42,8 @@
     "provenance": true
   },
   "peerDependencies": {
-    "@open-pencil/kiwi": "workspace:*"
+    "@open-pencil/kiwi": "workspace:*",
+    "@open-pencil/scene-graph": "workspace:*"
   },
   "dependencies": {
     "fflate": "^0.8.2"

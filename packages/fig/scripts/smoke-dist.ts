@@ -1,11 +1,13 @@
 export {}
 
 const mod = await import('../dist/index.js')
+const nodeChange = await import('../dist/node-change.js')
 
 if (
   mod.FIG_PACKAGE_STATUS !== 'archive-api' ||
   typeof mod.parseFigBuffer !== 'function' ||
-  typeof mod.writeFigArchive !== 'function'
+  typeof mod.writeFigArchive !== 'function' ||
+  typeof nodeChange.convertLineHeight !== 'function'
 ) {
   throw new Error('Expected @open-pencil/fig archive API exports')
 }

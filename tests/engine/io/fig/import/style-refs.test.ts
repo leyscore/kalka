@@ -1,8 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
+import { applyStyleRefsToFields } from '@open-pencil/fig/node-change'
 import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-
-import { applyStyleRefsToFields } from '#core/kiwi/fig/node-change/style-refs'
 
 describe('fig import style refs', () => {
   test('effect and grid styles replace stale direct payloads', () => {

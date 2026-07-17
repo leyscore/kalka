@@ -216,6 +216,7 @@
       },
       "peerDependencies": {
         "@open-pencil/kiwi": "workspace:*",
+        "@open-pencil/scene-graph": "workspace:*",
       },
     },
     "packages/kiwi": {
