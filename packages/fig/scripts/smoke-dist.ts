@@ -10,7 +10,8 @@ if (
   typeof mod.parseFigBuffer !== 'function' ||
   typeof mod.writeFigArchive !== 'function' ||
   typeof instanceOverrides.populateAndApplyOverrides !== 'function' ||
-  typeof nodeChange.convertLineHeight !== 'function'
+  typeof nodeChange.convertLineHeight !== 'function' ||
+  typeof nodeChange.sceneNodeToKiwi !== 'function'
 ) {
   throw new Error('Expected @open-pencil/fig archive API exports')
 }

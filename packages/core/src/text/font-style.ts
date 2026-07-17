@@ -1,8 +1,14 @@
-import { styleToWeight } from '@open-pencil/scene-graph'
+import { normalizeFontFamily } from '@open-pencil/scene-graph'
+
+export {
+  FONT_WEIGHT_NAMES,
+  normalizeFontFamily,
+  styleToVariant,
+  styleToWeight,
+  weightToStyle
+} from '@open-pencil/scene-graph'
 
 import { parseFontStyle } from '#core/text/face'
-
-export { styleToWeight }
 
 interface LocalFontMatch {
   family: string
@@ -43,30 +49,6 @@ export function chooseLocalFontMatch<T extends LocalFontMatch>(
   return undefined
 }
 
-export const FONT_WEIGHT_NAMES: Record<number, string> = {
-  100: 'Thin',
-  200: 'Extra Light',
-  300: 'Light',
-  400: 'Regular',
-  500: 'Medium',
-  600: 'Semi Bold',
-  700: 'Bold',
-  800: 'Extra Bold',
-  900: 'Black'
-}
-
-export function normalizeFontFamily(family: string): string {
-  return family.replace(/\s+(Variable|\d+(?:pt|px|em))$/i, '')
-}
-
-export function styleToVariant(style: string): string {
-  const weight = styleToWeight(style)
-  const italic = style.toLowerCase().includes('italic')
-  if (weight === 400 && !italic) return 'regular'
-  if (weight === 400 && italic) return 'italic'
-  return italic ? `${weight}italic` : `${weight}`
-}
-
 export function isVariableFont(data: ArrayBuffer): boolean {
   if (data.byteLength < 12) return false
   const view = new DataView(data)
@@ -83,14 +65,4 @@ export function isVariableFont(data: ArrayBuffer): boolean {
   return false
 }
 
-export function weightToStyle(weight: number, italic = false): string {
-  const rounded = Math.round(weight / 100) * 100
-  const label = (FONT_WEIGHT_NAMES[rounded] ?? 'Regular').replace(/ /g, '')
-  return italic ? `${label} Italic` : label
-}
-
-export function weightToFigmaStyle(weight: number, italic = false): string {
-  const rounded = Math.round(weight / 100) * 100
-  const label = FONT_WEIGHT_NAMES[rounded] ?? 'Regular'
-  return italic ? `${label} Italic` : label
-}
+export { weightToFigmaStyle } from '@open-pencil/fig/node-change'

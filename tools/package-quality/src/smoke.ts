@@ -94,7 +94,7 @@ try {
     tempDir
   )
   nodeEval(
-    "const { convertLineHeight } = await import('@open-pencil/fig/node-change'); if (convertLineHeight({ value: 120, units: 'PERCENT' }, 20) !== 24) throw new Error('Fig NodeChange subpath failed')",
+    "const { convertLineHeight, sceneNodeToKiwi } = await import('@open-pencil/fig/node-change'); if (convertLineHeight({ value: 120, units: 'PERCENT' }, 20) !== 24 || typeof sceneNodeToKiwi !== 'function') throw new Error('Fig NodeChange subpath failed')",
     tempDir
   )
   nodeEval(

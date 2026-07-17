@@ -1,13 +1,6 @@
-import { effectiveFigmaRawNodeFields, effectiveFigmaSourcePayload } from '@open-pencil/fig'
-import {
-  applyExportSettingsPluginData,
-  mergePluginData,
-  NODE_TYPE_PLUGIN_KEY,
-  serializePluginRelaunchData,
-  upsertPluginData
-} from '@open-pencil/fig/node-change'
 import type { NodeChange, Paint } from '@open-pencil/kiwi/fig/codec'
 import { stringToGuid } from '@open-pencil/kiwi/fig/guid'
+import { DEFAULT_STROKE_MITER_LIMIT } from '@open-pencil/scene-graph'
 import type {
   ComponentPropertyDefinition,
   ComponentPropertyReferenceField,
@@ -16,9 +9,16 @@ import type {
 } from '@open-pencil/scene-graph'
 import type { Color, GUID, Matrix, Vector } from '@open-pencil/scene-graph/primitives'
 
+import { effectiveFigmaRawNodeFields, effectiveFigmaSourcePayload } from '../source-metadata'
 /* eslint-disable max-lines */
-import { bytesToHex } from '#core/bytes/hex'
-import { DEFAULT_STROKE_MITER_LIMIT } from '#core/constants'
+import { bytesToHex } from './bytes'
+import {
+  applyExportSettingsPluginData,
+  mergePluginData,
+  NODE_TYPE_PLUGIN_KEY,
+  serializePluginRelaunchData,
+  upsertPluginData
+} from './plugin-data'
 
 export type KiwiNodeChange = NodeChange & Record<string, unknown>
 

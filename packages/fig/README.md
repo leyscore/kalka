@@ -16,12 +16,11 @@ Current ownership:
 - NodeChange-to-SceneGraph property conversion, including styles, plugin metadata, text, paint, vector, and font policy, through `@open-pencil/fig/node-change`
 - Component-property, symbol-override, derived-symbol-data, and instance synchronization policy through `@open-pencil/fig/instance-overrides`
 - Effective raw-metadata precedence and invalidation over SceneGraph's format-neutral edited-field tracking
-- Package-local archive, conversion, instance, and dist smoke tests
+- SceneGraph-to-`NodeChange` export conversion with an explicit glyph-outline runtime service
+- Package-local archive, conversion, instance, export, and dist smoke tests
 
 Planned ownership:
 
-- Remaining SceneGraph-to-`NodeChange` export conversion and document orchestration
-- Raw Figma metadata precedence and invalidation policy
 - Oracle-backed `.fig` fixtures
 
 Non-goals:

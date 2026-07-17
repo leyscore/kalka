@@ -1,4 +1,12 @@
-import type { OutlineCommand } from '#core/text/opentype'
+export interface OutlineCommand {
+  type: string
+  x?: number
+  y?: number
+  x1?: number
+  y1?: number
+  x2?: number
+  y2?: number
+}
 
 const CMD_CLOSE = 0
 const CMD_MOVE_TO = 1
