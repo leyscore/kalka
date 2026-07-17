@@ -1,4 +1,8 @@
+import { styleToWeight } from '@open-pencil/scene-graph'
+
 import { parseFontStyle } from '#core/text/face'
+
+export { styleToWeight }
 
 interface LocalFontMatch {
   family: string
@@ -77,10 +81,6 @@ export function isVariableFont(data: ArrayBuffer): boolean {
     if (tag === 'fvar') return true
   }
   return false
-}
-
-export function styleToWeight(style: string): number {
-  return parseFontStyle(style).weight
 }
 
 export function weightToStyle(weight: number, italic = false): string {

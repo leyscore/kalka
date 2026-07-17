@@ -4,7 +4,7 @@
 
 ### Changed
 
-- Move complete `.fig` archive parsing into `@open-pencil/fig`, keeping `@open-pencil/kiwi` focused on Kiwi schema, message, and raw container mechanics.
+- Move complete `.fig` archive parsing and NodeChange-to-SceneGraph conversion policy into `@open-pencil/fig`, keeping `@open-pencil/kiwi` focused on Kiwi schema, message, and raw container mechanics.
 - Add Figma-style page management in the Pages panel, including rename/delete actions and drag-and-drop page reordering.
 - Add DOM/CSS import and authoring support so HTML, CSS, Tailwind, and JSX can be converted into editable OpenPencil documents from the app, CLI, and SDK.
 - Add Tailwind class serialization for DOM/CSS HTML export in the SDK and CLI.
