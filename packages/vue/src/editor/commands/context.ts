@@ -16,4 +16,5 @@ export type EditorCommandMapOptions = {
   messages: CommandMessagesStore
   otherPages: ComputedRef<Array<{ id: string }>>
   moveSelectionToPage: (pageId: string) => void
+  getOpacityTarget: () => number
 }

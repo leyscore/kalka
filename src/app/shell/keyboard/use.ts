@@ -9,6 +9,7 @@ import { createKeyboardActions } from '@/app/shell/keyboard/actions'
 import { bindEditorClipboard } from '@/app/shell/keyboard/clipboard'
 import { isInputElement } from '@/app/shell/keyboard/focus'
 import { bindNudgeKeys } from '@/app/shell/keyboard/nudging'
+import { bindOpacityKeys } from '@/app/shell/keyboard/opacity'
 import { registerKeyboardShortcuts } from '@/app/shell/keyboard/registry'
 import { openFileDialog } from '@/app/shell/menu/use'
 import { closeTab, createTab, activeTab as activeTabRef } from '@/app/tabs'
@@ -17,7 +18,7 @@ export function useKeyboard() {
   const { activeTab } = useAIChat()
   const store = useEditorStore()
   const { isMobile } = useViewportKind()
-  const { runCommand } = useEditorCommands()
+  const { runCommand, setOpacityTarget } = useEditorCommands()
   const activeElement = useActiveElement()
   const inputFocused = computed(() => isInputElement(activeElement.value))
 
@@ -25,6 +26,7 @@ export function useKeyboard() {
 
   bindEditorClipboard(store)
   bindNudgeKeys(store)
+  bindOpacityKeys({ store, setOpacityTarget, runCommand })
 
   registerKeyboardShortcuts({
     inputFocused,
