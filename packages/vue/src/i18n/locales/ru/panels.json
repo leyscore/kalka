@@ -178,6 +178,7 @@
   "height": "Высота",
   "opacity": "Непрозрачность",
   "radius": "Радиус",
+  "cornerSmoothing": "Сглаживание углов",
   "spread": "Размах",
   "foregroundBlur": "Размытие переднего плана",
   "strokeType": "Тип обводки",

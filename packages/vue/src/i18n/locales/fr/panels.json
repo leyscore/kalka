@@ -178,6 +178,7 @@
   "height": "Hauteur",
   "opacity": "Opacité",
   "radius": "Rayon",
+  "cornerSmoothing": "Lissage des coins",
   "spread": "Diffusion",
   "foregroundBlur": "Flou de premier plan",
   "strokeType": "Type de contour",

@@ -178,6 +178,7 @@
   "height": "Altezza",
   "opacity": "Opacità",
   "radius": "Raggio",
+  "cornerSmoothing": "Smussatura degli angoli",
   "spread": "Diffusione",
   "foregroundBlur": "Sfocatura primo piano",
   "strokeType": "Tipo tratto",

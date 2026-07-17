@@ -178,6 +178,7 @@
   "height": "Höhe",
   "opacity": "Deckkraft",
   "radius": "Radius",
+  "cornerSmoothing": "Eckenglättung",
   "spread": "Ausbreitung",
   "foregroundBlur": "Vordergrund-Weichzeichnung",
   "strokeType": "Linientyp",

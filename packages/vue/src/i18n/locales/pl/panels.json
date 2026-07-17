@@ -178,6 +178,7 @@
   "height": "Wysokość",
   "opacity": "Krycie",
   "radius": "Promień",
+  "cornerSmoothing": "Wygładzanie narożników",
   "spread": "Rozproszenie",
   "foregroundBlur": "Rozmycie pierwszego planu",
   "strokeType": "Typ obrysu",

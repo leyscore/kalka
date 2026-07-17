@@ -20,6 +20,7 @@
   "height": "Altura",
   "opacity": "Opacidad",
   "radius": "Redondeado",
+  "cornerSmoothing": "Suavizado de esquinas",
   "spread": "Esparcimiento",
   "fill": "Relleno",
   "stroke": "Trazo",

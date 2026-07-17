@@ -178,6 +178,7 @@
   "height": "高度",
   "opacity": "不透明度",
   "radius": "圆角",
+  "cornerSmoothing": "圆角平滑度",
   "spread": "扩展",
   "foregroundBlur": "前景模糊",
   "strokeType": "描边类型",

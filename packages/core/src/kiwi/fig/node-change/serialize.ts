@@ -254,7 +254,7 @@ function serializeCornerRadii(node: SceneNode, nc: KiwiNodeChange): void {
     nc.rectangleBottomLeftCornerRadius = node.bottomLeftRadius
     nc.rectangleBottomRightCornerRadius = node.bottomRightRadius
   }
-  if (node.cornerSmoothing > 0) {
+  if (node.cornerSmoothing > 0 || 'cornerSmoothing' in node.source.fig.rawNodeFields) {
     nc.cornerSmoothing = node.cornerSmoothing
   }
 }

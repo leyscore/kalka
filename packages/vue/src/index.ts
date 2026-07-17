@@ -204,7 +204,7 @@ export {
   useConstraints
 } from '#vue/controls/constraints'
 export type { ConstraintAxis, ConstraintEdge, ConstraintValue } from '#vue/controls/constraints'
-export type { CornerRadiusKey } from '#vue/controls/appearance/types'
+export type { CornerGeometryKey, CornerRadiusKey } from '#vue/controls/appearance/types'
 export { PageListRoot } from '#vue/primitives/PageList'
 export { PositionControlsRoot } from '#vue/primitives/PositionControls'
 export { useEditorPropertyList } from '#vue/controls/property-list'

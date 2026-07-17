@@ -33,6 +33,7 @@ export const panelMessageDefaults = {
   opacity: 'Opacity',
   blendMode: 'Blend mode',
   radius: 'Radius',
+  cornerSmoothing: 'Corner smoothing',
   spread: 'Spread',
 
   page: 'Page',
