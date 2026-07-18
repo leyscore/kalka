@@ -18,7 +18,7 @@
 - Add saved per-node export settings for repeat exports.
 - Add Design panel controls for layer blend modes and alpha, vector, and luminance masks.
 - Refine Design panel foundations with 26px controls, consistently aligned action rails, shared Tailwind themes, and Storybook component states.
-- Fix variable binding action visibility, picker anchoring, hover treatment, and Design panel number-field heights.
+- Fix variable binding action visibility, picker anchoring, hover treatment, and Design panel number-field sizing, including embedded paint rows.
 - Scale the Layers panel to 5,000-node documents with virtualized rows, indexed updates, scroll-to-selection, range selection, and focus-aware themed states.
 - Add Figma-style horizontal and vertical constraint controls with pin interactions, mixed-selection editing, undo, and responsive frame resizing.
 - Add mixed-selection stroke cap, join, and miter-limit controls with CanvasKit rendering and `.fig` roundtrip support.

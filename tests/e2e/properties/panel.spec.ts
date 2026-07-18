@@ -55,6 +55,20 @@ test('appearance fields share control height and show variable actions', async (
     Math.abs(pickerBox.y + pickerBox.height / 2 - (triggerBox.y + triggerBox.height / 2))
   ).toBeLessThan(4)
   await search.press('Escape')
+
+  const fillItem = propertyItems(editor.page, 'fills').first()
+  const paintField = fillItem.locator('[data-slot="paint-field"]')
+  await expect(paintField).toHaveCSS('height', '26px')
+  const colorBox = expectDefined(
+    await fillItem.getByRole('textbox', { name: 'Fill' }).boundingBox(),
+    'fill color bounds'
+  )
+  const opacityBox = expectDefined(
+    await fillItem.getByRole('spinbutton', { name: 'Opacity' }).boundingBox(),
+    'fill opacity bounds'
+  )
+  expect(colorBox.width).toBeGreaterThanOrEqual(42)
+  expect(opacityBox.width).toBeGreaterThanOrEqual(40)
 })
 
 test('NumberField drag changes X position', async () => {
