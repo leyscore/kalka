@@ -52,6 +52,7 @@
     "@open-pencil/scene-graph": "workspace:*"
   },
   "dependencies": {
+    "es-toolkit": "^1.46.1",
     "fflate": "^0.8.2"
   },
   "devDependencies": {

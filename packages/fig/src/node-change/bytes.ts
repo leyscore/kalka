@@ -12,10 +12,12 @@ export function hexToBytes(hex: string): Uint8Array {
   return bytes
 }
 
+const HEX_BYTES = Array.from({ length: 256 }, (_, byte) => byte.toString(16).padStart(2, '0'))
+
 export function bytesToHex(bytes: Uint8Array): string {
-  let hex = ''
-  for (const byte of bytes) {
-    hex += byte.toString(16).padStart(2, '0')
-  }
-  return hex
+  if (typeof bytes.toHex === 'function') return bytes.toHex()
+
+  const chunks = Array.from({ length: bytes.length }, () => '')
+  for (let index = 0; index < bytes.length; index++) chunks[index] = HEX_BYTES[bytes[index]]
+  return chunks.join('')
 }

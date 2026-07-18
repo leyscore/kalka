@@ -63,6 +63,7 @@ interface SceneNodeToKiwiContext {
   /** Maps "key@version" or "key" (from variable.key/version) → variable GUID.
    * Used to convert colorVar.assetRef references in raw paints to guid references. */
   assetRefToVarGuid?: Map<string, GUID>
+  componentPropertyDefinitionsById: ReadonlyMap<string, ComponentPropertyDefinition>
   fractionalPosition: (index: number) => string
   mapToFigmaType: (type: SceneNode['type']) => string
   fillToKiwiPaint: (fill: SceneNode['fills'][number]) => Paint
@@ -530,12 +531,16 @@ function componentPropertyNodeField(field: ComponentPropertyReferenceField): str
   return 'VISIBLE'
 }
 
-function findComponentPropertyDefinition(graph: SceneGraph, id: string) {
+export function buildComponentPropIndex(
+  graph: SceneGraph
+): ReadonlyMap<string, ComponentPropertyDefinition> {
+  const definitions = new Map<string, ComponentPropertyDefinition>()
   for (const candidate of graph.getAllNodes()) {
-    const definition = candidate.componentPropertyDefinitions.find((item) => item.id === id)
-    if (definition) return definition
+    for (const definition of candidate.componentPropertyDefinitions) {
+      if (!definitions.has(definition.id)) definitions.set(definition.id, definition)
+    }
   }
-  return undefined
+  return definitions
 }
 
 function shouldSerializeRawBackedField(
@@ -598,7 +603,7 @@ function applyComponentMetadata(
   const componentPropAssignments = Object.entries(node.componentPropertyAssignments)
     .map(([propertyId, value]) => {
       const defID = parseGuidOrNull(propertyId)
-      const definition = findComponentPropertyDefinition(context.graph, propertyId)
+      const definition = context.componentPropertyDefinitionsById.get(propertyId)
       return defID && definition
         ? {
             defID,

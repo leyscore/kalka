@@ -14,6 +14,8 @@ export type {
   SymbolOverride
 } from './types'
 
+import { isEqual } from 'es-toolkit/predicate'
+
 import { guidToString } from '@open-pencil/fig/node-change'
 import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
 import { copyFills, copyStyleRuns } from '@open-pencil/scene-graph/copy'
@@ -85,7 +87,7 @@ function propagateResolvedFills(
       if (activeNodeIds && !activeNodeIds.has(node.id)) continue
       if (!node.componentId) continue
       const source = graph.getNode(node.componentId)
-      if (!source || source.fills === node.fills) continue
+      if (!source || isEqual(source.fills, node.fills)) continue
       if (protectedNodes.has(node.id) && !protectedNodes.has(source.id)) continue
       graph.updateNode(node.id, { fills: copyFills(source.fills) })
       changed = true
@@ -132,6 +134,15 @@ function propagateResolvedTextClones(graph: SceneGraph): void {
       if (node.type !== 'TEXT' || !node.componentId) continue
       const source = graph.getNode(node.componentId)
       if (source?.type !== 'TEXT' || source.text !== node.text) continue
+      if (
+        source.width === node.width &&
+        source.height === node.height &&
+        isEqual(source.fills, node.fills) &&
+        isEqual(source.styleRuns, node.styleRuns) &&
+        isEqual(source.figmaDerivedTextGlyphs, node.figmaDerivedTextGlyphs)
+      ) {
+        continue
+      }
       graph.updateNode(node.id, {
         width: source.width,
         height: source.height,
@@ -155,8 +166,12 @@ function buildOverrideContext(
   activeNodeIds?: Set<string>
 ): OverrideContext {
   const overrideKeyToGuid = new Map<string, string>()
+  const assetRefToGuid = new Map<string, string>()
   for (const [id, nc] of changeMap) {
     if (nc.overrideKey) overrideKeyToGuid.set(guidToString(nc.overrideKey), id)
+    if (typeof nc.key !== 'string') continue
+    assetRefToGuid.set(nc.key, id)
+    if (typeof nc.version === 'string') assetRefToGuid.set(`${nc.key}@${nc.version}`, id)
   }
 
   const propDefaults = new Map<string, ComponentPropValue>()
@@ -185,6 +200,7 @@ function buildOverrideContext(
     guidToNodeId,
     blobs,
     overrideKeyToGuid,
+    assetRefToGuid,
     nodeIdToGuid,
     propDefaults,
     propNames,

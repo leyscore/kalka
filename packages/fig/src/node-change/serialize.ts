@@ -30,6 +30,7 @@ import type { Color, GUID, JsonObject, Matrix } from '@open-pencil/scene-graph/p
 
 import {
   buildAssetRefToVarGuidMap,
+  buildComponentPropIndex,
   sceneNodeToKiwiWithContext,
   type KiwiNodeChange
 } from './export-node'
@@ -470,7 +471,8 @@ export function sceneNodeToKiwi(
   glyphBlobMap = new Map<string, number>(),
   blobIndexByHex?: Map<string, number>,
   assignedGuidValues?: Set<string>,
-  runtime: FigNodeChangeExportRuntime = EMPTY_EXPORT_RUNTIME
+  runtime: FigNodeChangeExportRuntime = EMPTY_EXPORT_RUNTIME,
+  componentPropertyDefinitionsById = buildComponentPropIndex(graph)
 ): KiwiNodeChange[] {
   // Build assetRef to guid mapping for converting colorVar references in raw paints
   const assetRefToVarGuid = varIdToGuid ? buildAssetRefToVarGuidMap(graph, varIdToGuid) : undefined
@@ -484,6 +486,7 @@ export function sceneNodeToKiwi(
     glyphBlobMap,
     varIdToGuid,
     assetRefToVarGuid,
+    componentPropertyDefinitionsById,
     fractionalPosition,
     mapToFigmaType,
     fillToKiwiPaint,

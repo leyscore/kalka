@@ -2,7 +2,7 @@ import {
   sceneNodeToKiwi as sceneNodeToKiwiWithRuntime,
   type KiwiNodeChange
 } from '@open-pencil/fig/node-change'
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import type { ComponentPropertyDefinition, SceneGraph, SceneNode } from '@open-pencil/scene-graph'
 import type { GUID } from '@open-pencil/scene-graph/primitives'
 
 import { getGlyphOutlineMetricsSync } from '#core/text/opentype'
@@ -36,7 +36,8 @@ export function sceneNodeToKiwi(
   varIdToGuid?: Map<string, GUID>,
   glyphBlobMap = new Map<string, number>(),
   blobIndexByHex?: Map<string, number>,
-  assignedGuidValues?: Set<string>
+  assignedGuidValues?: Set<string>,
+  componentPropertyDefinitionsById?: ReadonlyMap<string, ComponentPropertyDefinition>
 ): KiwiNodeChange[] {
   return sceneNodeToKiwiWithRuntime(
     node,
@@ -51,6 +52,7 @@ export function sceneNodeToKiwi(
     glyphBlobMap,
     blobIndexByHex,
     assignedGuidValues,
-    coreFigExportRuntime
+    coreFigExportRuntime,
+    componentPropertyDefinitionsById
   )
 }

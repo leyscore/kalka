@@ -27,6 +27,31 @@ describe('@open-pencil/fig instance interpretation', () => {
     expect(graph.getNode(populated?.childIds[0] ?? '')?.text).toBe('Label')
   })
 
+  test('resolves text clone chains to their source values', () => {
+    const graph = new SceneGraph()
+    const pageId = graph.getPages()[0].id
+    const source = graph.createNode('TEXT', pageId, {
+      text: 'Label',
+      width: 80,
+      fills: [{ type: 'SOLID', color: { r: 1, g: 0, b: 0, a: 1 }, opacity: 1, visible: true }]
+    })
+    const middle = graph.createNode('TEXT', pageId, {
+      componentId: source.id,
+      text: 'Label',
+      width: 120
+    })
+    const leaf = graph.createNode('TEXT', pageId, {
+      componentId: middle.id,
+      text: 'Label',
+      width: 160
+    })
+
+    populateAndApplyOverrides(graph, new Map(), new Map())
+
+    expect(graph.getNode(middle.id)?.width).toBe(80)
+    expect(graph.getNode(leaf.id)).toMatchObject({ width: 80, fills: source.fills })
+  })
+
   test('preserves protected text while synchronizing other fields', () => {
     const graph = new SceneGraph()
     const pageId = graph.getPages()[0].id

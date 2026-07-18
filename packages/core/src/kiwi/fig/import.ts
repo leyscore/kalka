@@ -390,7 +390,7 @@ function applyStyleRefs(changeMap: Map<string, NodeChange>): void {
 }
 
 export interface FigImportOptions {
-  populate?: 'all' | 'first-page'
+  populate?: 'all' | 'first-page' | 'none'
 }
 
 function rememberLazyFigImportContext(
@@ -406,6 +406,19 @@ function rememberLazyFigImportContext(
     blobs,
     populatedRootIds: new Set(populatedRootIds)
   })
+}
+
+function componentPageIdsForLazyPopulation(graph: SceneGraph): Set<string> {
+  const pageIds = new Set<string>()
+  for (const node of graph.getAllNodes()) {
+    if (node.type !== 'COMPONENT' && node.type !== 'COMPONENT_SET') continue
+    let current = node.parentId ? graph.getNode(node.parentId) : undefined
+    while (current?.parentId && current.type !== 'CANVAS') {
+      current = graph.getNode(current.parentId)
+    }
+    if (current?.type === 'CANVAS') pageIds.add(current.id)
+  }
+  return pageIds
 }
 
 export function importNodeChanges(
@@ -469,27 +482,24 @@ export function importNodeChanges(
   applyVariantPropSpecs(graph)
 
   const firstPageId = graph.getPages()[0]?.id
-  const componentPageIds = new Set<string>()
-  for (const node of graph.getAllNodes()) {
-    if (node.type !== 'COMPONENT' && node.type !== 'COMPONENT_SET') continue
-    let current = node.parentId ? graph.getNode(node.parentId) : undefined
-    while (current?.parentId && current.type !== 'CANVAS') current = graph.getNode(current.parentId)
-    if (current?.type === 'CANVAS') componentPageIds.add(current.id)
-  }
+  const componentPageIds =
+    options.populate === 'first-page' ? componentPageIdsForLazyPopulation(graph) : new Set<string>()
   const activeRootIds =
     options.populate === 'first-page'
       ? [firstPageId, ...componentPageIds].filter(isNotNil)
       : undefined
 
-  graph.preserveSourceMetadataDuring(() => {
-    populateAndApplyOverrides(
-      graph,
-      changeMap as Map<string, InstanceNodeChange>,
-      guidToNodeId,
-      blobs,
-      activeRootIds
-    )
-  })
+  if (options.populate !== 'none') {
+    graph.preserveSourceMetadataDuring(() => {
+      populateAndApplyOverrides(
+        graph,
+        changeMap as Map<string, InstanceNodeChange>,
+        guidToNodeId,
+        blobs,
+        activeRootIds
+      )
+    })
+  }
 
   if (activeRootIds)
     rememberLazyFigImportContext(graph, changeMap, guidToNodeId, blobs, activeRootIds)

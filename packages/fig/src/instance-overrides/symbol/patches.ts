@@ -25,18 +25,6 @@ function assetRefKey(assetRef: { key: string; version?: string }): string {
   return assetRef.version ? `${assetRef.key}@${assetRef.version}` : assetRef.key
 }
 
-function buildAssetRefMap(ctx: OverrideContext): Map<string, string> {
-  const refs = new Map<string, string>()
-  for (const [id, nc] of ctx.changeMap) {
-    const key = typeof nc.key === 'string' ? nc.key : undefined
-    if (!key) continue
-    refs.set(key, id)
-    const version = typeof nc.version === 'string' ? nc.version : undefined
-    if (version) refs.set(assetRefKey({ key, version }), id)
-  }
-  return refs
-}
-
 function resolveAliasId(alias: AliasRef, assetRefs: Map<string, string>): string | undefined {
   if (alias.guid) return guidToString(alias.guid)
   const assetRef = alias.assetRef
@@ -69,7 +57,7 @@ function applyVariableRadiusOverrides(
 ): void {
   const entries = fields.variableConsumptionMap?.entries
   if (!entries?.length) return
-  const assetRefs = buildAssetRefMap(ctx)
+  const assetRefs = ctx.assetRefToGuid
   for (const entry of entries) {
     const variableField = entry.variableField
     if (!variableField || !VARIABLE_RADIUS_FIELDS.has(variableField)) continue

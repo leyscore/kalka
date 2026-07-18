@@ -3,6 +3,7 @@ import { describe, expect, test } from 'bun:test'
 import { SceneGraph } from '@open-pencil/scene-graph'
 
 import {
+  buildComponentPropIndex,
   fractionalPosition,
   mapToFigmaType,
   sceneNodeToKiwi,
@@ -13,6 +14,41 @@ describe('@open-pencil/fig SceneGraph export policy', () => {
   test('maps node types and sibling positions deterministically', () => {
     expect(mapToFigmaType('COMPONENT')).toBe('SYMBOL')
     expect([0, 93, 94, 188].map(fractionalPosition)).toEqual(['!', '~', '~!', '~~!'])
+  })
+
+  test('reuses an export-scoped component property definition index', () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    const component = graph.createNode('COMPONENT', page.id, {
+      componentPropertyDefinitions: [
+        { id: '1:100', name: 'Label', type: 'TEXT', defaultValue: 'Default' }
+      ]
+    })
+    const instance = graph.createNode('INSTANCE', page.id, {
+      componentId: component.id,
+      componentPropertyAssignments: { '1:100': 'Override' }
+    })
+    const serialize = (definitions?: ReturnType<typeof buildComponentPropIndex>) =>
+      sceneNodeToKiwi(
+        instance,
+        { sessionID: 1, localID: 1 },
+        0,
+        { value: 2 },
+        graph,
+        [],
+        new Map(),
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        new Set(),
+        undefined,
+        definitions
+      )[0].componentPropAssignments
+
+    const definitions = buildComponentPropIndex(graph)
+    expect(definitions.get('1:100')).toBe(component.componentPropertyDefinitions[0])
+    expect(serialize(definitions)).toEqual(serialize())
   })
 
   test('injects runtime glyph outlines into derived text data', () => {

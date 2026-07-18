@@ -106,6 +106,7 @@ export interface OverrideContext {
   blobs: Uint8Array[]
 
   overrideKeyToGuid: Map<string, string>
+  assetRefToGuid: Map<string, string>
   nodeIdToGuid: Map<string, string>
   propDefaults: Map<string, ComponentPropValue>
   propNames: Map<string, string>
