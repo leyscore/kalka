@@ -80,6 +80,7 @@ const subMenuCls = useMenuUI({ content: 'min-w-44' })
       <Tip :label="`${t.toggleUI} (${appMenuShortcutLabel('toggle-ui')})`">
         <button
           data-test-id="app-toggle-ui"
+          :aria-label="t.toggleUI"
           class="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded text-muted transition-colors hover:bg-hover hover:text-surface"
           @click="store.state.showUI = !store.state.showUI"
         >
