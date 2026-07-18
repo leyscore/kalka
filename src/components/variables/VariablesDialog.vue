@@ -46,6 +46,7 @@ import type { VariableType } from '@open-pencil/scene-graph'
 const open = defineModel<boolean>('open', { default: false })
 const cls = useDialogUI({ content: 'flex h-[75vh] w-[800px] max-w-[90vw] flex-col' })
 const menuCls = useMenuUI({ content: 'w-40' })
+const addVariableMenuCls = useMenuUI({ content: 'w-48' })
 const variableTable = tv(variableTableTheme)
 const tableStyles = variableTable()
 
@@ -128,10 +129,11 @@ function resizeHandleClass(resizing: boolean) {
         :class="cls.content"
       >
         <DialogTitle class="sr-only">{{ dialogs.localVariables }}</DialogTitle>
-        <div v-if="!ctx.hasCollections" class="flex flex-1 flex-col">
+        <div v-if="!ctx.hasCollections.value" class="flex flex-1 flex-col">
           <div class="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
             <h2 class="text-sm font-semibold text-surface">{{ dialogs.localVariables }}</h2>
             <DialogClose
+              :aria-label="dialogs.close"
               class="flex size-6 cursor-pointer items-center justify-center rounded border-none bg-transparent text-muted hover:bg-hover hover:text-surface"
             >
               <icon-lucide-x class="size-4" />
@@ -235,6 +237,7 @@ function resizeHandleClass(resizing: boolean) {
                   </button>
                 </Tip>
                 <DialogClose
+                  :aria-label="dialogs.close"
                   class="flex size-6 cursor-pointer items-center justify-center rounded border-none bg-transparent text-muted hover:bg-hover hover:text-surface"
                 >
                   <icon-lucide-x class="size-4" />
@@ -250,7 +253,7 @@ function resizeHandleClass(resizing: boolean) {
             >
               <div class="flex-1 overflow-auto">
                 <table
-                  class="w-full border-collapse"
+                  class="w-full min-w-full border-collapse"
                   :style="{ width: `${ctx.table.getCenterTotalSize()}px` }"
                 >
                   <thead class="sticky top-0 z-10 bg-panel">
@@ -395,7 +398,7 @@ function resizeHandleClass(resizing: boolean) {
                       side="top"
                       :side-offset="8"
                       align="end"
-                      :class="menuCls.content"
+                      :class="addVariableMenuCls.content"
                     >
                       <DropdownMenuItem
                         v-for="item in variableTypes"

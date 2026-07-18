@@ -52,7 +52,10 @@ function opacityBindings(): ShortcutDefinition[] {
 
 function shouldIgnoreShortcut(event: KeyboardEvent, options: KeyboardShortcutOptions) {
   return (
-    (event.target instanceof Element && event.target.closest('[data-picker-content]') !== null) ||
+    (event.target instanceof Element &&
+      event.target.closest(
+        '[data-picker-content], [role="dialog"], [role="listbox"], [role="menu"]'
+      ) !== null) ||
     isEditing(event) ||
     options.inputFocused.value ||
     !!options.store.state.editingTextId ||

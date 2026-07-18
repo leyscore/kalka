@@ -1,4 +1,5 @@
 import { expect, test, useEditorSetup } from '#tests/e2e/fixtures'
+import { expectDefined } from '#tests/helpers/assert'
 import { variablesAddTestId } from '#tests/helpers/test-ids'
 
 const editor = useEditorSetup()
@@ -25,12 +26,31 @@ function openVariables() {
     .getByRole('button', { name: 'Open variables' })
 }
 
+test('empty variables dialog offers to create a collection', async () => {
+  await openVariables().click()
+
+  const dialog = editor.page.getByTestId('variables-dialog')
+  await expect(dialog).toBeVisible()
+  await expect(dialog.getByText('No variable collections')).toBeVisible()
+  await expect(dialog.getByRole('button', { name: 'Create collection' })).toBeVisible()
+  await editor.page.keyboard.press('Escape')
+  await expect(dialog).toBeHidden()
+})
+
 test('variables dialog opens', async () => {
   await createColorVariable('primary-color')
 
   await openVariables().click()
-  await expect(editor.page.getByTestId('variables-dialog')).toBeVisible()
+  const dialog = editor.page.getByTestId('variables-dialog')
+  await expect(dialog).toBeVisible()
   await expect(editor.page.locator('[data-default="true"]')).toHaveCount(1)
+  const table = dialog.locator('table')
+  const tableBox = expectDefined(await table.boundingBox(), 'variables table bounds')
+  const scrollerBox = expectDefined(
+    await table.locator('..').boundingBox(),
+    'table scroller bounds'
+  )
+  expect(tableBox.width).toBeGreaterThanOrEqual(scrollerBox.width)
   editor.canvas.assertNoErrors()
 })
 
@@ -54,6 +74,17 @@ test('search filters variable rows', async () => {
 test('add variable menu creates non-color variable types', async () => {
   await editor.page.getByTestId('variables-search-input').fill('')
   await editor.canvas.waitForRender()
+
+  await editor.page.getByTestId('variables-add-variable').click()
+  const numberOption = editor.page.getByTestId(variablesAddTestId('FLOAT'))
+  const numberHint = numberOption.getByText('Sizes, spacing, opacity')
+  await expect(numberHint).toBeVisible()
+  expect(await numberHint.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(
+    true
+  )
+  await editor.page.keyboard.press('Escape')
+  await expect(numberOption).toBeHidden()
+  await expect(editor.page.getByTestId('variables-dialog')).toBeVisible()
 
   await editor.page.getByTestId('variables-add-variable').click()
   await editor.page.getByTestId(variablesAddTestId('FLOAT')).click()

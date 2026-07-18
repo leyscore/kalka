@@ -48,6 +48,7 @@
 
 ### Fixes
 
+- Restore the Variables dialog empty state, full-width table layout, unclipped type menu, and expected Escape handling in dialogs and popup menus.
 - Pin the patched `websocket-driver` release used through Trystero/Firebase collaboration to resolve a critical protocol-length advisory.
 - Preserve unrelated Figma prototype, library, export, and raw metadata when editing modeled `.fig` fields, while still overriding stale field-specific payloads.
 - Make canvas text rendering demand missing font faces and verify CJK/Arabic fallback coverage from CanvasKit shaping results instead of coarse script predictions.
