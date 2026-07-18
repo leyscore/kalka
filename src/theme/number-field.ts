@@ -4,7 +4,7 @@ const numberFieldTheme = {
   slots: {
     root: [
       panelFieldBase,
-      'group flex flex-auto cursor-ew-resize items-center tabular-nums data-[disabled]:cursor-auto data-[editing]:cursor-auto'
+      'group flex min-h-control flex-1 cursor-ew-resize items-center tabular-nums data-[disabled]:cursor-auto data-[editing]:cursor-auto'
     ],
     leading:
       'flex shrink-0 items-center justify-center self-stretch px-[5px] text-muted select-none [&>*]:pointer-events-none',
