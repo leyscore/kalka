@@ -3,8 +3,12 @@
 ## Unreleased
 
 ### Changed
-- Add Figma-style opacity keyboard shortcuts (`1`-`9` for 10%-90%, `0` for 100%) with multi-digit buffer support (`28` → 28%, `00` → 0%, `100` → 100%), undo-batched multi-selection, and both top-row and numpad digit support.
-- Move complete `.fig` archive parsing into `@open-pencil/fig`, keeping `@open-pencil/kiwi` focused on Kiwi schema, message, and raw container mechanics.
+
+- Move complete `.fig` archive parsing, bidirectional SceneGraph/NodeChange conversion, and component/instance interpretation into `@open-pencil/fig`, keeping runtime font access and format-neutral IO orchestration in core and Kiwi schema/container mechanics in `@open-pencil/kiwi`.
+- Remove internal cross-package forwarding modules; import `@open-pencil/fig`, `@open-pencil/pen`, and `@open-pencil/scene-graph` from their owning public exports.
+- Track normalized source edits in SceneGraph while preserving original `.fig` provenance and filtering stale raw fields through Fig-owned metadata policy.
+- Eliminate quadratic component-property scans and redundant instance propagation during large `.fig` round trips, reducing the Material 3 fixture regression from minutes to seconds.
+- Reject corrupted fig-Kiwi data chunks instead of silently treating failed compressed payloads as raw bytes.
 - Add Figma-style page management in the Pages panel, including rename/delete actions and drag-and-drop page reordering.
 - Add DOM/CSS import and authoring support so HTML, CSS, Tailwind, and JSX can be converted into editable OpenPencil documents from the app, CLI, and SDK.
 - Add Tailwind class serialization for DOM/CSS HTML export in the SDK and CLI.
@@ -43,6 +47,7 @@
 
 ### Fixes
 
+- Pin the patched `websocket-driver` release used through Trystero/Firebase collaboration to resolve a critical protocol-length advisory.
 - Preserve unrelated Figma prototype, library, export, and raw metadata when editing modeled `.fig` fields, while still overriding stale field-specific payloads.
 - Make canvas text rendering demand missing font faces and verify CJK/Arabic fallback coverage from CanvasKit shaping results instead of coarse script predictions.
 - Resolve fonts before loaded, pasted, imported, and tool-created nodes render; invalidate generation-stale text caches and use baked `.fig` glyphs only after live font resolution is exhausted.

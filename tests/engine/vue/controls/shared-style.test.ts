@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
 import { createEditor } from '@open-pencil/core/editor'
+import { effectiveFigmaRawNodeFields } from '@open-pencil/fig'
 import { getSharedStyles, type Effect, type Fill, type SceneNode } from '@open-pencil/scene-graph'
 
 import { sharedStyleDetachPatch, sharedStylePatch } from '#vue/controls/shared-style/model'
@@ -89,7 +90,7 @@ describe('shared style model', () => {
     })
   })
 
-  test('detaching a reference removes only its raw Figma fallback', () => {
+  test('detaching a reference invalidates only its effective Figma fallback', () => {
     const graph = makeSceneGraph()
     const target = graph.createNode('RECTANGLE', firstPageId(graph), {
       fillStyleId: '1:20',
@@ -103,7 +104,8 @@ describe('shared style model', () => {
 
     graph.updateNode(target.id, { fillStyleId: null })
 
-    expect(target.source.fig.rawNodeFields).toEqual({
+    expect(target.source.fig.rawNodeFields).toHaveProperty('styleIdForFill')
+    expect(effectiveFigmaRawNodeFields(target)).toEqual({
       styleIdForEffect: { guid: { sessionID: 1, localID: 22 } },
       description: 'Preserve me'
     })

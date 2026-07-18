@@ -1,6 +1,8 @@
+import type { FontFamilyStyle } from '@open-pencil/scene-graph'
+
 import { FONT_WEIGHT_NAMES } from '#core/text/fonts'
 
-export type FigmaFontName = { family: string; style: string }
+export type FigmaFontName = FontFamilyStyle
 export type FigmaFont = { fontName: FigmaFontName }
 
 export function weightToStyleName(weight: number, italic: boolean): string {

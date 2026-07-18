@@ -164,7 +164,7 @@ describe('derived instance layout regressions', () => {
       b: 0.9215686321258545,
       a: 1
     })
-    expect(linkText?.figmaDerivedTextGlyphs?.length).toBeGreaterThan(0)
+    expect(linkText?.figmaDerivedTextGlyphs).toBeNull()
 
     const input = previewChild(graph, nodes, 'Input')
     const inputRoot = childNamed(graph, input, '_input')

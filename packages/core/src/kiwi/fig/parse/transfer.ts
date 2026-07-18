@@ -1,3 +1,4 @@
+import type { InstanceNodeChange } from '@open-pencil/fig/instance-overrides'
 import { SceneGraph } from '@open-pencil/scene-graph'
 import type {
   SceneNode,
@@ -6,7 +7,6 @@ import type {
   DocumentColorSpace
 } from '@open-pencil/scene-graph'
 
-import type { InstanceNodeChange } from '#core/kiwi/fig/instance-overrides'
 import { getLazyFigImportContext, setLazyFigImportContext } from '#core/kiwi/fig/lazy-import'
 
 export interface SerializedLazyFigImportContext {

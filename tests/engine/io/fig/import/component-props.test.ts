@@ -97,6 +97,12 @@ describe('Figma component property import', () => {
       (node) => node.name === 'Menu item instance'
     )
     expect(instance?.componentPropertyAssignments).toEqual({ '3:1': 'Profile Item' })
+
+    const unpopulated = importNodeChanges(nodeChanges, [], undefined, { populate: 'none' })
+    const unpopulatedInstance = Array.from(unpopulated.getAllNodes()).find(
+      (node) => node.name === 'Menu item instance'
+    )
+    expect(unpopulatedInstance?.childIds).toEqual([])
   })
 
   test('propagates nested instance swaps through clone chains', () => {

@@ -224,16 +224,17 @@ These are parsed or visible in Figma docs and most likely to cause visible diffe
 | Concern                      | Files                                                                                                          |
 | ---------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | Scene graph fields           | `packages/scene-graph/src/types.ts`                                                                            |
-| Source metadata invalidation | `packages/scene-graph/src/source-metadata.ts`                                                                  |
-| Kiwi import mapping          | `packages/core/src/kiwi/fig/node-change/convert.ts`                                                            |
-| Kiwi export mapping          | `packages/core/src/kiwi/fig/node-change/export-node.ts`, `packages/core/src/kiwi/fig/node-change/serialize.ts` |
+| Source edit tracking         | `packages/scene-graph/src/source-metadata.ts`                                                                  |
+| `.fig` metadata policy       | `packages/fig/src/source-metadata.ts`                                                                           |
+| Kiwi import mapping          | `packages/fig/src/node-change/convert.ts`                                                                       |
+| Kiwi export mapping          | `packages/fig/src/node-change/export-node.ts`, `packages/fig/src/node-change/serialize.ts`                    |
 | Kiwi schema                  | `packages/kiwi/src/fig/schema/fig.kiwi`, `tests/engine/io/fig/import/schema-coverage.test.ts`                   |
 | Renderer dispatch            | `packages/core/src/canvas/scene.ts`                                                                            |
 | Fills / images / gradients   | `packages/core/src/canvas/fills.ts`                                                                            |
 | Strokes                      | `packages/core/src/canvas/strokes.ts`                                                                          |
 | Effects / shadows            | `packages/core/src/canvas/shadows.ts`                                                                          |
 | Text rendering               | `packages/core/src/canvas/text.ts`, `packages/core/src/canvas/text-derived.ts`                                 |
-| Layout engine                | `packages/core/src/layout.ts`, `packages/core/src/layout/**`                                                   |
+| Layout engine                | `packages/core/src/layout/**`                                                   |
 | Property panels              | `src/components/properties/**`, `packages/vue/src/controls/**`                                                 |
 | CLI                          | `packages/cli/src/index.ts`, `packages/cli/src/commands/**`                                                    |
 | MCP/tools                    | `packages/core/src/tools/**`, `packages/mcp/src/tool/registration.ts`                                          |
