@@ -27,7 +27,10 @@ function abortReason(signal: AbortSignal): Error {
 }
 
 export function withAbortSignal<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> {
-  if (signal.aborted) return Promise.reject(abortReason(signal))
+  if (signal.aborted) {
+    void promise.catch(() => undefined)
+    return Promise.reject(abortReason(signal))
+  }
 
   return new Promise<T>((resolve, reject) => {
     const cleanup = () => signal.removeEventListener('abort', onAbort)
@@ -53,20 +56,6 @@ export function withAbortSignal<T>(promise: Promise<T>, signal: AbortSignal): Pr
   })
 }
 
-async function bodyToBytes(body: BodyInit | null | undefined): Promise<number[] | undefined> {
-  if (body == null) return undefined
-  if (typeof body === 'string') return [...new TextEncoder().encode(body)]
-  if (body instanceof ArrayBuffer) return [...new Uint8Array(body)]
-  if (ArrayBuffer.isView(body))
-    return [...new Uint8Array(body.buffer, body.byteOffset, body.byteLength)]
-  if (body instanceof Blob) return [...new Uint8Array(await body.arrayBuffer())]
-  if (body instanceof URLSearchParams) return [...new TextEncoder().encode(body.toString())]
-  if (body instanceof FormData) {
-    return [...new Uint8Array(await new Response(body).arrayBuffer())]
-  }
-  throw new TypeError('Streaming request bodies are not supported by the desktop HTTP bridge yet')
-}
-
 export async function tauriFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const request = new Request(input, init)
   request.signal.throwIfAborted()
@@ -75,7 +64,7 @@ export async function tauriFetch(input: RequestInfo | URL, init?: RequestInit): 
     url: request.url,
     method: request.method,
     headers: headersToProxyHeaders(request.headers),
-    body: await bodyToBytes(init?.body)
+    body: request.body == null ? undefined : [...new Uint8Array(await request.arrayBuffer())]
   }
   request.signal.throwIfAborted()
   const response = await withAbortSignal(

@@ -14,9 +14,12 @@ describe('withAbortSignal', () => {
     const reason = new Error('cancelled')
     controller.abort(reason)
 
-    await expect(
-      withAbortSignal(Promise.withResolvers<string>().promise, controller.signal)
-    ).rejects.toBe(reason)
+    const pending = Promise.withResolvers<string>()
+    const result = withAbortSignal(pending.promise, controller.signal)
+
+    await expect(result).rejects.toBe(reason)
+    pending.reject(new Error('late request failure'))
+    await Promise.resolve()
   })
 
   test('rejects a pending promise when the signal aborts', async () => {
