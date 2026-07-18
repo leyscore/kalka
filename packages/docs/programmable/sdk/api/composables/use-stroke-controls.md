@@ -1,6 +1,6 @@
 ---
 title: useStrokeControls
-description: Stroke-panel helpers for alignment, side selection, and per-side stroke weights.
+description: Stroke-panel state and actions for alignment, sides, caps, joins, and miter limits.
 ---
 
 # useStrokeControls
@@ -13,6 +13,9 @@ It provides:
 - side presets like all, top, bottom, left, right, custom
 - default stroke data
 - helpers for per-side border weights
+- mixed-selection cap, join, and miter-limit state
+- undo-batched cap and join updates
+- preview and commit actions for miter-limit fields
 
 ## Usage
 
@@ -41,6 +44,19 @@ strokes.updateAlign('INSIDE', activeNode)
 ```ts
 strokes.selectSide('TOP', activeNode)
 ```
+
+### Edit stroke geometry
+
+```ts
+strokes.setCap('ROUND')
+strokes.setJoin('BEVEL')
+
+strokes.updateMiterLimit(8)
+strokes.commitMiterLimit(8)
+```
+
+`advancedActive` is true only when every selected node has at least one stroke. `cap`, `join`, and
+`miterLimit` return the shared value or `MIXED` for a mixed selection.
 
 ## Related APIs
 

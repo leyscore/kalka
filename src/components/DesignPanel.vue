@@ -15,12 +15,13 @@ import FillSection from './properties/FillSection.vue'
 import LayoutSection from './properties/LayoutSection/LayoutSection.vue'
 import MaskSection from './properties/MaskSection.vue'
 import PageSection from './properties/PageSection.vue'
+import ConstraintsSection from './properties/constraints/ConstraintsSection.vue'
 import PositionSection from './properties/PositionSection.vue'
 import SelectionActionsControl from './properties/SelectionActionsControl.vue'
 import StrokeSection from './properties/StrokeSection.vue'
 import TypographySection from './properties/TypographySection.vue'
 import VariablesSection from './properties/VariablesSection.vue'
-import VariantSection from './properties/VariantSection.vue'
+import ComponentPropertiesSection from './properties/component-properties/ComponentPropertiesSection.vue'
 
 const variablesOpen = ref(false)
 const { selectedNode: node, selectedCount: multiCount } = useSelectionState()
@@ -54,7 +55,9 @@ const { panels } = useI18n()
         <SelectionActionsControl :show-boolean-operations="showBooleanOperations" />
       </template>
     </PanelHeader>
+    <ComponentPropertiesSection />
     <PositionSection />
+    <ConstraintsSection />
     <AppearanceSection />
     <FillSection />
     <StrokeSection />
@@ -103,9 +106,10 @@ const { panels } = useI18n()
       </button>
     </div>
 
-    <VariantSection v-if="node.type === 'INSTANCE'" />
+    <ComponentPropertiesSection v-if="node.type === 'INSTANCE'" />
 
     <PositionSection />
+    <ConstraintsSection />
     <LayoutSection />
     <AppearanceSection />
     <MaskSection />

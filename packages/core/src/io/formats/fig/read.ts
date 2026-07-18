@@ -1,4 +1,4 @@
-import { parseFigBuffer } from '@open-pencil/kiwi/fig/parse'
+import { parseFigBuffer } from '@open-pencil/fig'
 import type { SceneGraph } from '@open-pencil/scene-graph'
 
 import { IS_BROWSER } from '#core/constants'
@@ -7,7 +7,7 @@ import { deserializeSceneGraph } from '#core/kiwi/fig/parse/transfer'
 import type { SerializedSceneGraph } from '#core/kiwi/fig/parse/transfer'
 
 export interface ParseFigFileOptions {
-  populate?: 'all' | 'first-page'
+  populate?: 'all' | 'first-page' | 'none'
 }
 
 function parseFigFileSync(buffer: ArrayBuffer, options: ParseFigFileOptions = {}): SceneGraph {

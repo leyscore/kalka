@@ -1,6 +1,8 @@
 import type { CanvasKit } from 'canvaskit-wasm'
 import { deflateSync, inflateSync } from 'fflate'
 
+import { compressFigDataSync } from '@open-pencil/fig'
+import { buildComponentPropIndex, stringToGuid } from '@open-pencil/fig/node-change'
 import { initCodec, getCompiledSchema, getSchemaBytes } from '@open-pencil/kiwi/fig/codec'
 import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
 import { decodeBinarySchema, compileSchema, ByteBuffer } from '@open-pencil/kiwi/schema-runtime'
@@ -11,7 +13,6 @@ import type { SkiaRenderer } from '#core/canvas'
 import { CANVAS_BG_COLOR, IS_BROWSER, IS_TAURI } from '#core/constants'
 import { renderThumbnail } from '#core/io/formats/raster'
 import { populateAllLazyFigImportRoots } from '#core/kiwi/fig/lazy-import'
-import { stringToGuid } from '#core/kiwi/fig/node-change/convert'
 import {
   sceneNodeToKiwi,
   fractionalPosition,
@@ -20,8 +21,6 @@ import {
   makeDocumentNodeChange,
   makeCanvasNodeChange
 } from '#core/kiwi/fig/node-change/serialize'
-
-import { compressFigDataSync } from './compress'
 
 const THUMBNAIL_1X1 = Uint8Array.from(
   atob(
@@ -280,7 +279,8 @@ function buildCanvasEntries(
     canvasEntries.push({ page, canvasGuid, canvasNc })
   }
 
-  if (graph.variableCollections.size > 0 && internalCanvasGuid === null) {
+  const hasSharedStyles = [...graph.nodes.values()].some((node) => node.sharedStyleType !== null)
+  if ((graph.variableCollections.size > 0 || hasSharedStyles) && internalCanvasGuid === null) {
     internalCanvasGuid = { sessionID: 0, localID: localIdCounter.value++ }
     assignedGuidValues.add(`${internalCanvasGuid.sessionID}:${internalCanvasGuid.localID}`)
     canvasEntries.push({
@@ -297,6 +297,56 @@ function buildCanvasEntries(
   }
 
   return { canvasEntries, internalCanvasGuid }
+}
+
+interface InternalResourceContext {
+  graph: SceneGraph
+  nodeChanges: KiwiNodeChange[]
+  internalCanvasGuid: GUID | null
+  localIdCounter: { value: number }
+  blobs: Uint8Array[]
+  nodeIdToGuid: Map<string, GUID>
+  fontDigestMap: Map<string, Uint8Array>
+  varIdToGuid: Map<string, GUID>
+  modeIdToGuid: Map<string, GUID>
+  glyphBlobMap: Map<string, number>
+  blobIndexByHex: Map<string, number>
+  assignedGuidValues: Set<string>
+  componentPropertyDefinitionsById: ReturnType<typeof buildComponentPropIndex>
+}
+
+function appendInternalResources(context: InternalResourceContext): void {
+  const { graph, internalCanvasGuid, nodeChanges } = context
+  if (!internalCanvasGuid) return
+  const sharedStyleNodes = [...graph.nodes.values()].filter((node) => node.sharedStyleType !== null)
+  for (let index = 0; index < sharedStyleNodes.length; index++) {
+    nodeChanges.push(
+      ...sceneNodeToKiwi(
+        sharedStyleNodes[index],
+        internalCanvasGuid,
+        index,
+        context.localIdCounter,
+        graph,
+        context.blobs,
+        context.nodeIdToGuid,
+        context.fontDigestMap,
+        context.varIdToGuid,
+        context.glyphBlobMap,
+        context.blobIndexByHex,
+        context.assignedGuidValues,
+        context.componentPropertyDefinitionsById
+      )
+    )
+  }
+  if (graph.variableCollections.size > 0) {
+    appendVariableNodeChanges(
+      graph,
+      nodeChanges,
+      internalCanvasGuid,
+      context.varIdToGuid,
+      context.modeIdToGuid
+    )
+  }
 }
 
 export async function exportFigFile(
@@ -347,6 +397,7 @@ export async function exportFigFile(
   const fontDigestMap = await buildFontDigestMap(graph)
   const glyphBlobMap = new Map<string, number>()
   const blobIndexByHex = new Map<string, number>()
+  const componentPropertyDefinitionsById = buildComponentPropIndex(graph)
 
   // Scan ALL imported source.ids BEFORE any new GUID assignment to find
   // max sessionID:0 and sessionID:1 localID values. This guarantees the
@@ -402,15 +453,28 @@ export async function exportFigFile(
           varIdToGuid,
           glyphBlobMap,
           blobIndexByHex,
-          assignedGuidValues
+          assignedGuidValues,
+          componentPropertyDefinitionsById
         )
       )
     }
   }
 
-  if (graph.variableCollections.size > 0 && internalCanvasGuid) {
-    appendVariableNodeChanges(graph, nodeChanges, internalCanvasGuid, varIdToGuid, modeIdToGuid)
-  }
+  appendInternalResources({
+    graph,
+    nodeChanges,
+    internalCanvasGuid,
+    localIdCounter,
+    blobs,
+    nodeIdToGuid,
+    fontDigestMap,
+    varIdToGuid,
+    modeIdToGuid,
+    glyphBlobMap,
+    blobIndexByHex,
+    assignedGuidValues,
+    componentPropertyDefinitionsById
+  })
 
   const msg: Record<string, unknown> = {
     type: 'NODE_CHANGES',
@@ -461,7 +525,7 @@ export async function exportFigFile(
   return compressFigData(schemaDeflated, kiwiData, thumbnailPng, metaJson, imageEntries, version)
 }
 
-export { compressFigDataSync } from './compress'
+export { compressFigDataSync } from '@open-pencil/fig'
 
 function canUseWorker(): boolean {
   return typeof Worker !== 'undefined' && IS_BROWSER

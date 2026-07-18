@@ -1,22 +1,22 @@
 import { isNotNil } from 'es-toolkit/predicate'
 
-import type { NodeChange, VariableDataValuesEntry, Color, GUID } from '@open-pencil/kiwi/fig/codec'
-import { SceneGraph } from '@open-pencil/scene-graph'
-import type { VariableType, VariableValue } from '@open-pencil/scene-graph'
-
-import { BLACK } from '#core/constants'
-import { populateAndApplyOverrides } from '#core/kiwi/fig/instance-overrides'
-import type { InstanceNodeChange } from '#core/kiwi/fig/instance-overrides'
-import { setLazyFigImportContext } from '#core/kiwi/fig/lazy-import'
+import { populateAndApplyOverrides } from '@open-pencil/fig/instance-overrides'
+import type { InstanceNodeChange } from '@open-pencil/fig/instance-overrides'
 import {
+  applyStyleRefsToFields,
   guidToString,
   nodeChangeToProps,
   shouldImportTextAsAutoSize,
   sortChildren,
   setVariableColorResolver,
   VARIABLE_BINDING_FIELDS_INVERSE
-} from '#core/kiwi/fig/node-change/convert'
-import { applyStyleRefsToFields } from '#core/kiwi/fig/node-change/style-refs'
+} from '@open-pencil/fig/node-change'
+import type { NodeChange, VariableDataValuesEntry, Color, GUID } from '@open-pencil/kiwi/fig/codec'
+import { SceneGraph } from '@open-pencil/scene-graph'
+import type { VariableType, VariableValue } from '@open-pencil/scene-graph'
+
+import { BLACK } from '#core/constants'
+import { setLazyFigImportContext } from '#core/kiwi/fig/lazy-import'
 
 type AssetRef = { key: string; version?: string }
 type AliasRef = { guid?: GUID; assetRef?: AssetRef }
@@ -390,7 +390,7 @@ function applyStyleRefs(changeMap: Map<string, NodeChange>): void {
 }
 
 export interface FigImportOptions {
-  populate?: 'all' | 'first-page'
+  populate?: 'all' | 'first-page' | 'none'
 }
 
 function rememberLazyFigImportContext(
@@ -406,6 +406,19 @@ function rememberLazyFigImportContext(
     blobs,
     populatedRootIds: new Set(populatedRootIds)
   })
+}
+
+function componentPageIdsForLazyPopulation(graph: SceneGraph): Set<string> {
+  const pageIds = new Set<string>()
+  for (const node of graph.getAllNodes()) {
+    if (node.type !== 'COMPONENT' && node.type !== 'COMPONENT_SET') continue
+    let current = node.parentId ? graph.getNode(node.parentId) : undefined
+    while (current?.parentId && current.type !== 'CANVAS') {
+      current = graph.getNode(current.parentId)
+    }
+    if (current?.type === 'CANVAS') pageIds.add(current.id)
+  }
+  return pageIds
 }
 
 export function importNodeChanges(
@@ -445,6 +458,7 @@ export function importNodeChanges(
     if (!nc) return
 
     const { nodeType, ...props } = nodeChangeToProps(nc, blobs)
+    if (props.sharedStyleType) props.internalOnly = true
     if (nodeType === 'DOCUMENT' || nodeType === 'VARIABLE' || nc.type === 'VARIABLE_SET') return
     if (shouldImportTextAsAutoSize(nc, changeMap.get(parentMap.get(ncId) ?? ''))) {
       props.textAutoResize = 'WIDTH_AND_HEIGHT'
@@ -468,27 +482,24 @@ export function importNodeChanges(
   applyVariantPropSpecs(graph)
 
   const firstPageId = graph.getPages()[0]?.id
-  const componentPageIds = new Set<string>()
-  for (const node of graph.getAllNodes()) {
-    if (node.type !== 'COMPONENT' && node.type !== 'COMPONENT_SET') continue
-    let current = node.parentId ? graph.getNode(node.parentId) : undefined
-    while (current?.parentId && current.type !== 'CANVAS') current = graph.getNode(current.parentId)
-    if (current?.type === 'CANVAS') componentPageIds.add(current.id)
-  }
+  const componentPageIds =
+    options.populate === 'first-page' ? componentPageIdsForLazyPopulation(graph) : new Set<string>()
   const activeRootIds =
     options.populate === 'first-page'
       ? [firstPageId, ...componentPageIds].filter(isNotNil)
       : undefined
 
-  graph.preserveSourceMetadataDuring(() => {
-    populateAndApplyOverrides(
-      graph,
-      changeMap as Map<string, InstanceNodeChange>,
-      guidToNodeId,
-      blobs,
-      activeRootIds
-    )
-  })
+  if (options.populate !== 'none') {
+    graph.preserveSourceMetadataDuring(() => {
+      populateAndApplyOverrides(
+        graph,
+        changeMap as Map<string, InstanceNodeChange>,
+        guidToNodeId,
+        blobs,
+        activeRootIds
+      )
+    })
+  }
 
   if (activeRootIds)
     rememberLazyFigImportContext(graph, changeMap, guidToNodeId, blobs, activeRootIds)

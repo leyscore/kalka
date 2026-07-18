@@ -90,6 +90,7 @@ export type {
   UseVariableBindingOptions
 } from '#vue/controls/variable-binding/use'
 export { useEffectsControls } from '#vue/controls/effects/use'
+export { useSharedStyleBinding } from '#vue/controls/shared-style/use'
 export { useStrokeControls } from '#vue/controls/stroke/use'
 export {
   applySolidFillColor,
@@ -161,8 +162,24 @@ export type {
   GradientEditorStopSlotProps,
   GradientEditorStopSlots
 } from '#vue/primitives/GradientEditor'
-export { LayerTreeRoot, LayerTreeItem, useLayerTree } from '#vue/primitives/LayerTree'
-export type { LayerDragInstruction, LayerTreeContext, LayerNode } from '#vue/primitives/LayerTree'
+export {
+  buildLayerTreeModel,
+  indexLayerNodes,
+  layerSelectionForTarget,
+  LayerTreeItem,
+  LayerTreeRoot,
+  patchLayerNode,
+  useLayerTree,
+  visibleLayerRows
+} from '#vue/primitives/LayerTree'
+export type {
+  LayerDragInstruction,
+  LayerNode,
+  LayerRow,
+  LayerSelectionMode,
+  LayerTreeContext,
+  LayerTreeVirtualizer
+} from '#vue/primitives/LayerTree'
 export { LayoutControlsRoot, useLayoutControlsContext } from '#vue/primitives/LayoutControls'
 export type {
   LayoutControlsContext,
@@ -175,7 +192,30 @@ export type {
   AppearanceControlsRootSlotProps,
   AppearanceControlsRootSlots
 } from '#vue/primitives/AppearanceControls'
-export type { CornerRadiusKey } from '#vue/controls/appearance/types'
+export { ConstraintsControlRoot } from '#vue/primitives/ConstraintsControl'
+export type {
+  ConstraintsControlActions,
+  ConstraintsControlRootSlotProps,
+  ConstraintsControlRootSlots
+} from '#vue/primitives/ConstraintsControl'
+export {
+  constraintPins,
+  isConstraintEligible,
+  toggleConstraintPin,
+  useConstraints
+} from '#vue/controls/constraints'
+export type { ConstraintAxis, ConstraintEdge, ConstraintValue } from '#vue/controls/constraints'
+export {
+  compatibleComponentPropertyDefinitions,
+  instanceSwapOptions,
+  mergedComponentPropertyValue,
+  useComponentProperties
+} from '#vue/controls/component-props'
+export type {
+  ComponentPropertyControl,
+  ComponentPropertyOption
+} from '#vue/controls/component-props'
+export type { CornerGeometryKey, CornerRadiusKey } from '#vue/controls/appearance/types'
 export { PageListRoot } from '#vue/primitives/PageList'
 export { PositionControlsRoot } from '#vue/primitives/PositionControls'
 export { useEditorPropertyList } from '#vue/controls/property-list'

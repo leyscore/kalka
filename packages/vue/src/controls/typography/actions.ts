@@ -9,8 +9,11 @@ import type { UseTypographyOptions } from '#vue/controls/typography/use'
 import { useSceneComputed } from '#vue/internal/scene-computed/use'
 import { useNodeFontStatus } from '#vue/shared/font-status/use'
 
-type TextAlign = 'LEFT' | 'CENTER' | 'RIGHT'
+type TextAlign = SceneNode['textAlignHorizontal']
 type TextDirection = SceneNode['textDirection']
+type TextVerticalAlign = SceneNode['textAlignVertical']
+type TextCase = SceneNode['textCase']
+type TextTruncation = SceneNode['textTruncation']
 
 export const TYPOGRAPHY_WEIGHTS = Object.entries(FONT_WEIGHT_NAMES).map(([value, label]) => ({
   value: Number(value),
@@ -64,6 +67,10 @@ export function createTypographyActions({
   activeFormatting,
   options
 }: TypographyActionOptions) {
+  let propBeforePreview:
+    | { key: keyof SceneNode; value: SceneNode[keyof SceneNode]; textStyleId: string | null }
+    | undefined
+
   async function doLoadFont(family: string, style: string) {
     await options.fontLoader?.load(family, style)
   }
@@ -94,6 +101,32 @@ export function createTypographyActions({
   function setDirection(direction: TextDirection) {
     if (!node.value) return
     editor.updateNodeWithUndo(node.value.id, { textDirection: direction }, 'Change text direction')
+  }
+
+  function setVerticalAlign(align: TextVerticalAlign) {
+    if (!node.value) return
+    editor.updateNodeWithUndo(
+      node.value.id,
+      { textAlignVertical: align },
+      'Change vertical text alignment'
+    )
+  }
+
+  function setTextCase(textCase: TextCase) {
+    if (!node.value) return
+    editor.updateNodeWithUndo(node.value.id, { textCase }, 'Change text case')
+  }
+
+  function setTruncation(textTruncation: TextTruncation) {
+    if (!node.value) return
+    editor.updateNodeWithUndo(node.value.id, { textTruncation }, 'Change text truncation')
+  }
+
+  function setFontFeature(tag: string, enabled: boolean) {
+    if (!node.value) return
+    const fontFeatures = node.value.fontFeatures.filter((feature) => feature.tag !== tag)
+    fontFeatures.push({ tag, enabled })
+    editor.updateNodeWithUndo(node.value.id, { fontFeatures }, `Change ${tag} feature`)
   }
 
   function toggleBold() {
@@ -129,18 +162,34 @@ export function createTypographyActions({
     }
   }
 
-  function updateProp(key: string, value: number | string) {
-    if (node.value) editor.updateNode(node.value.id, { [key]: value })
+  function updateProp(key: keyof SceneNode, value: number | string | null) {
+    if (!node.value) return
+    if (!propBeforePreview || propBeforePreview.key !== key) {
+      propBeforePreview = {
+        key,
+        value: node.value[key],
+        textStyleId: node.value.textStyleId
+      }
+    }
+    editor.updateNode(node.value.id, { [key]: value } as Partial<SceneNode>)
   }
 
-  function commitProp(key: string, _value: number | string, previous: number | string) {
-    if (node.value) {
-      editor.commitNodeUpdate(
-        node.value.id,
-        { [key]: previous } as Partial<SceneNode>,
-        `Change ${key}`
-      )
-    }
+  function commitProp(
+    key: keyof SceneNode,
+    _value: number | string | null,
+    previous: number | string | null
+  ) {
+    if (!node.value) return
+    const snapshot = propBeforePreview?.key === key ? propBeforePreview : undefined
+    editor.commitNodeUpdate(
+      node.value.id,
+      {
+        [key]: snapshot ? snapshot.value : previous,
+        ...(snapshot ? { textStyleId: snapshot.textStyleId } : {})
+      } as Partial<SceneNode>,
+      `Change ${String(key)}`
+    )
+    propBeforePreview = undefined
   }
 
   return {
@@ -148,6 +197,10 @@ export function createTypographyActions({
     setWeight,
     setAlign,
     setDirection,
+    setVerticalAlign,
+    setTextCase,
+    setTruncation,
+    setFontFeature,
     toggleBold,
     toggleItalic,
     toggleDecoration,

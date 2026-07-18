@@ -16,6 +16,7 @@ import type {
   Fill,
   GeometryPath,
   GradientStop,
+  LayoutGrid,
   SceneNode,
   Stroke,
   StyleRun
@@ -81,6 +82,10 @@ export function copyEffects(effects: Effect[]): Effect[] {
   return effects.map(copyEffect)
 }
 
+export function copyLayoutGrids(grids: LayoutGrid[]): LayoutGrid[] {
+  return grids.map((grid) => ({ ...grid, color: grid.color ? { ...grid.color } : undefined }))
+}
+
 export function copyStyleRuns(runs: StyleRun[]): StyleRun[] {
   return runs.map(copyStyleRun)
 }
@@ -114,7 +119,8 @@ function copyPropertyDefs(
   return (
     defs?.map((d) => ({
       ...d,
-      variantOptions: d.variantOptions ? [...d.variantOptions] : undefined
+      variantOptions: d.variantOptions ? [...d.variantOptions] : undefined,
+      preferredValues: d.preferredValues ? [...d.preferredValues] : undefined
     })) ?? []
   )
 }
@@ -149,6 +155,7 @@ export function cloneNodeProps(src: SceneNode, componentId: string | null): Part
     fills: copyOpt(src.fills, copyFills),
     strokes: copyOpt(src.strokes, copyStrokes),
     effects: copyOpt(src.effects, copyEffects),
+    layoutGrids: copyOpt(src.layoutGrids, copyLayoutGrids),
     styleRuns: copyOpt(src.styleRuns, copyStyleRuns),
     // Source metadata preserves opaque raw Figma payloads; use structuredClone instead of
     // hand-copying partial known shapes and accidentally sharing nested raw Figma data.
@@ -162,6 +169,8 @@ export function cloneNodeProps(src: SceneNode, componentId: string | null): Part
     gridTemplateColumns: copySpread(src.gridTemplateColumns),
     gridTemplateRows: copySpread(src.gridTemplateRows),
     componentPropertyDefinitions: copyPropertyDefs(src.componentPropertyDefinitions),
+    componentPropertyReferences: copySpread(src.componentPropertyReferences),
+    componentPropertyAssignments: { ...src.componentPropertyAssignments },
     symbolLinks: copySpread(src.symbolLinks),
     variantPropSpecs: copySpread(src.variantPropSpecs),
     pluginData: copySpread(src.pluginData),

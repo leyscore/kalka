@@ -24,6 +24,7 @@ const actions = {
     :independent-corners="ctx.independentCorners.value"
     :show-independent-corners="ctx.showIndependentCorners.value"
     :corner-radius-value="ctx.cornerRadiusValue.value"
+    :corner-smoothing-percent="ctx.cornerSmoothingPercent.value"
     :opacity-percent="ctx.opacityPercent.value"
     :blend-mode-value="ctx.blendModeValue.value"
     :visibility-state="ctx.visibilityState.value"

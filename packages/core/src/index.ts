@@ -274,7 +274,7 @@ export {
   type SVGExportOptions
 } from './io/formats/svg/export'
 export { svg, renderSVGNode, type SVGNode } from './io/formats/svg/node'
-export { parseSVGPath } from './io/formats/svg/parse-path'
+export { parseSVGPath } from '@open-pencil/scene-graph/parse-path'
 export {
   fetchIcon,
   fetchIcons,
@@ -373,7 +373,7 @@ export {
 } from './clipboard'
 export { probeGlyphOutlineCommands, type GlyphOutlineProbe } from './text/opentype'
 
-export { readPenFile, parsePenFile } from './io/formats/pen'
+export { readPenFile, parsePenFile } from '@open-pencil/pen'
 
 export {
   readFigFile,

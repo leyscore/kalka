@@ -35,6 +35,18 @@ const acpAgentName = computed(() => {
 const isCustomProvider = computed(
   () => providerID.value === 'openai-compatible' || providerID.value === 'anthropic-compatible'
 )
+const stopButton = useButtonUI({
+  tone: 'ghost',
+  shape: 'rounded',
+  size: 'sm',
+  ui: { base: 'shrink-0 border border-border px-2 py-1.5' }
+})
+const sendButton = useButtonUI({
+  tone: 'accent',
+  shape: 'rounded',
+  size: 'sm',
+  ui: { base: 'shrink-0 px-2.5 py-1.5 font-medium' }
+})
 const customModelName = computed(() => customModelID.value.trim())
 const usesCustomModel = computed(
   () => !!providerDef.value.supportsCustomModel && !!customModelName.value
@@ -100,14 +112,7 @@ function handleSubmit(e: Event) {
           <button
             type="button"
             data-test-id="chat-stop-button"
-            :class="
-              useButtonUI({
-                tone: 'ghost',
-                shape: 'rounded',
-                size: 'sm',
-                ui: { base: 'shrink-0 border border-border px-2 py-1.5' }
-              }).base
-            "
+            :class="stopButton.base"
             @click="emit('stop')"
           >
             <icon-lucide-square class="size-3" />
@@ -117,14 +122,7 @@ function handleSubmit(e: Event) {
           <button
             type="submit"
             data-test-id="chat-send-button"
-            :class="
-              useButtonUI({
-                tone: 'accent',
-                shape: 'rounded',
-                size: 'sm',
-                ui: { base: 'shrink-0 px-2.5 py-1.5 font-medium' }
-              }).base
-            "
+            :class="sendButton.base"
             :disabled="!input.trim()"
           >
             <icon-lucide-send class="size-3" />

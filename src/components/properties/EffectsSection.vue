@@ -5,9 +5,15 @@ import ColorInput from '@/components/ColorPicker/ColorInput.vue'
 import NumberField from '@/components/inputs/NumberField.vue'
 import PropertyItemRow from '@/components/properties/item-list/PropertyItemRow.vue'
 import PropertyListRoot from '@/components/properties/PropertyListRoot.vue'
+import {
+  commitDiscretePropertyListChange,
+  useBlendModeOptions
+} from '@/components/properties/blend-mode/use'
+import SharedStyleField from '@/components/properties/shared-style/SharedStyleField.vue'
 import AppSelect from '@/components/ui/AppSelect.vue'
 import FillSwatch from '@/components/ui/FillSwatch.vue'
 import IconButton from '@/components/ui/IconButton.vue'
+import PanelFieldGroup from '@/components/ui/panel/PanelFieldGroup.vue'
 import PanelSection from '@/components/ui/panel/PanelSection.vue'
 import Tip from '@/components/ui/Tip.vue'
 
@@ -15,6 +21,7 @@ import type { Effect, Fill } from '@open-pencil/scene-graph'
 
 const effectsCtx = useEffectsControls()
 const { panels } = useI18n()
+const blendModeOptions = useBlendModeOptions()
 
 function effectPreview(effect: Effect): Fill {
   return {
@@ -28,7 +35,7 @@ function effectPreview(effect: Effect): Fill {
 
 <template>
   <PropertyListRoot
-    v-slot="{ items, isMixed, activeNode, actions }"
+    v-slot="{ items, isMixed, activeNode, flush, actions }"
     prop-key="effects"
     :label="panels.effects"
   >
@@ -41,6 +48,8 @@ function effectPreview(effect: Effect): Fill {
           <icon-lucide-plus class="size-3.5" />
         </IconButton>
       </template>
+
+      <SharedStyleField kind="effect" :label="panels.effectStyle" />
 
       <p v-if="isMixed" class="text-[11px] text-muted">{{ panels.mixedEffectsHelp }}</p>
 
@@ -102,6 +111,19 @@ function effectPreview(effect: Effect): Fill {
           class="ml-[26px] flex flex-col gap-1.5 py-1.5"
           data-slot="effect-settings"
         >
+          <PanelFieldGroup :label="panels.blendMode">
+            <AppSelect
+              :model-value="effect.blendMode ?? 'NORMAL'"
+              :options="blendModeOptions"
+              :label="panels.blendMode"
+              data-property="effect-blend-mode"
+              @update:model-value="
+                commitDiscretePropertyListChange(flush, () =>
+                  actions.patch(index, { blendMode: $event as Effect['blendMode'] })
+                )
+              "
+            />
+          </PanelFieldGroup>
           <template v-if="effectsCtx.isShadow(effect.type)">
             <div class="flex items-center gap-1.5">
               <Tip :label="panels.xAxis">

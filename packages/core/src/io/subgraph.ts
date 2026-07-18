@@ -8,6 +8,28 @@ export interface ExtractedGraph {
   nodeIds: string[]
 }
 
+function includeReferencedStyles(source: SceneGraph, ids: Set<string>): void {
+  const referencedStyleIds = new Set<string>()
+  for (const id of ids) {
+    const node = source.getNode(id)
+    if (!node) continue
+    for (const styleId of [
+      node.fillStyleId,
+      node.strokeStyleId,
+      node.textStyleId,
+      node.effectStyleId,
+      node.gridStyleId
+    ]) {
+      if (styleId) referencedStyleIds.add(styleId)
+    }
+  }
+  for (const node of source.getAllNodes()) {
+    if (node.sharedStyleType && node.source.id && referencedStyleIds.has(node.source.id)) {
+      ids.add(node.id)
+    }
+  }
+}
+
 function cloneIntoGraph(source: SceneGraph, ids: Set<string>): SceneGraph {
   const graph = new SceneGraph()
   graph.rootId = source.rootId
@@ -19,6 +41,8 @@ function cloneIntoGraph(source: SceneGraph, ids: Set<string>): SceneGraph {
   graph.figKiwiVersion = source.figKiwiVersion
   graph.figSchemaDeflated = source.figSchemaDeflated
   graph.documentColorSpace = source.documentColorSpace
+
+  includeReferencedStyles(source, ids)
 
   const sortedIds = [...ids].sort((a, b) => {
     if (a === source.rootId) return -1

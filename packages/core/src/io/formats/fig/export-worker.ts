@@ -1,4 +1,4 @@
-import { compressFigDataSync } from './compress'
+import { compressFigDataSync } from '@open-pencil/fig'
 
 interface CompressMessage {
   schemaDeflated: Uint8Array

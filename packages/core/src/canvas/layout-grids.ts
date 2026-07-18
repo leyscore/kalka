@@ -1,5 +1,6 @@
 import type { Canvas } from 'canvaskit-wasm'
 
+import { readEffectiveFigmaRawField } from '@open-pencil/fig'
 import type { SceneNode } from '@open-pencil/scene-graph'
 import type { Color } from '@open-pencil/scene-graph/primitives'
 
@@ -7,7 +8,7 @@ import { SELECTION_COLOR } from '#core/constants'
 
 import type { SkiaRenderer } from './renderer'
 
-interface RawLayoutGrid {
+type RawLayoutGrid = SceneNode['layoutGrids'][number] & {
   visible?: boolean
   color?: Color
   pattern?: string
@@ -32,8 +33,10 @@ interface GridGeometry {
 }
 
 function rawLayoutGrids(node: SceneNode): RawLayoutGrid[] {
+  const modeledGrids = (node as Partial<SceneNode>).layoutGrids ?? []
+  if (modeledGrids.length > 0) return modeledGrids
   const source = (node as Partial<SceneNode>).source
-  const grids = source?.fig.rawNodeFields.layoutGrids
+  const grids = source ? readEffectiveFigmaRawField(node, 'layoutGrids') : undefined
   if (!Array.isArray(grids)) return []
   return grids.filter((grid): grid is RawLayoutGrid => grid !== null && typeof grid === 'object')
 }

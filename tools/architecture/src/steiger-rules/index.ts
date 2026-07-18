@@ -2,6 +2,11 @@ import path from 'node:path'
 
 import { parse as parseVueSfc } from 'vue/compiler-sfc'
 
+import { noCrossPackageReexportShims } from './cross-package-reexport-shims.ts'
+import {
+  noDynamicTailwindStateClasses,
+  noVueTemplateUiHooksOrSvg
+} from './dynamic-tailwind-classes.ts'
 import {
   collectFolders,
   createFileRule,
@@ -492,6 +497,7 @@ export const openPencilArchitecturePlugin = {
   meta: { name: 'open-pencil-architecture', version: '0.0.0' },
   ruleDefinitions: [
     preferDomainFoldersOverFilenamePrefixes,
+    noCrossPackageReexportShims,
     scriptsAreEntrypointShims,
     strictToolsLayout,
     strictTestFilePlacement,
@@ -512,6 +518,8 @@ export const openPencilArchitecturePlugin = {
     noAppImportsInSharedUi,
     noPropertyPanelInternalsOutsidePanel,
     noProductionTestIdsInSharedLayers,
+    noDynamicTailwindStateClasses,
+    noVueTemplateUiHooksOrSvg,
     noNativeTitleAttributesInVue,
     noShortcutTextInLabels,
     noHardcodedMacOSShortcutGlyphs,

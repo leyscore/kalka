@@ -100,11 +100,6 @@
       "import": "./dist/io/formats/fig/index.js",
       "default": "./dist/io/formats/fig/index.js"
     },
-    "./io/formats/pen": {
-      "types": "./dist/io/formats/pen/index.d.ts",
-      "import": "./dist/io/formats/pen/index.js",
-      "default": "./dist/io/formats/pen/index.js"
-    },
     "./io/formats/jsx": {
       "types": "./dist/io/formats/jsx/index.d.ts",
       "import": "./dist/io/formats/jsx/index.js",
@@ -167,6 +162,7 @@
   "dependencies": {
     "@chenglou/pretext": "^0.0.7",
     "@iconify/utils": "^3.1.0",
+    "@open-pencil/fig": "workspace:*",
     "@open-pencil/kiwi": "workspace:*",
     "@open-pencil/pen": "workspace:*",
     "@open-pencil/scene-graph": "workspace:*",

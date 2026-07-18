@@ -1,22 +1,27 @@
 export * from './images'
+export * from './copy'
 export * from './snap'
 export * from './export-scale'
 export * from './coordinate'
+export * from './constants'
 export * from './geometry'
+export * from './font-style'
+export * from './shared-styles'
 export { default as TransformMatrix } from './matrix'
 export type { Mat3 } from './matrix'
 export { UndoManager, type UndoEntry, type UndoManagerOptions } from './undo'
 
-import { omit } from 'es-toolkit/object'
 import { createNanoEvents } from 'nanoevents'
 
+import { removeStaleBindings } from './bindings'
 import { cloneNodeProps } from './copy'
 import { bindNodeEvents } from './events'
 import * as HitTest from './hit-test'
 import * as Instances from './instances'
 import { CONTAINER_TYPES, createDefaultNode } from './node-defaults'
 import { updateNodePreview } from './preview'
-import { clearEditedSourceMetadata } from './source-metadata'
+import { styleDetachmentChanges } from './shared-styles'
+import { markSourceFieldsEdited } from './source-metadata'
 import { TEXT_PICTURE_KEYS } from './text-picture'
 import * as Variables from './variables'
 import { normalizeVectorNetwork } from './vector-network'
@@ -43,23 +48,6 @@ import type {
 
 export { cloneVectorNetwork, normalizeVectorNetwork, validateVectorNetwork } from './vector-network'
 
-function removeStaleBindings(
-  node: SceneNode,
-  field: 'fills' | 'strokes',
-  changes: Partial<SceneNode>
-): void {
-  const len = node[field].length
-  const stale = Object.keys(node.boundVariables).filter((k) => {
-    if (k === field) return true
-    if (!k.startsWith(`${field}/`)) return false
-    const i = Number.parseInt(k.split('/')[1] ?? '', 10)
-    return Number.isNaN(i) || i < 0 || i >= len
-  })
-  if (stale.length > 0) {
-    node.boundVariables = omit(node.boundVariables, stale)
-    changes.boundVariables = { ...node.boundVariables }
-  }
-}
 let nextLocalID = 1
 
 export function generateId(): string {
@@ -371,6 +359,7 @@ export class SceneGraph {
 
     const node = this.nodes.get(id)
     if (!node) return
+    changes = styleDetachmentChanges(node, changes)
 
     // Only clear absPosCache when layout-affecting properties change.
     // Fills, strokes, effects, plugin data changes do NOT affect absolute position.
@@ -401,7 +390,7 @@ export class SceneGraph {
       entries.filter(([, value]) => value !== undefined)
     ) as Partial<SceneNode>
     if (this.sourceMetadataPreservationDepth === 0) {
-      clearEditedSourceMetadata(node, Object.keys(changes))
+      markSourceFieldsEdited(node, Object.keys(changes))
     }
     if (changes.vectorNetwork) {
       changes = { ...changes, vectorNetwork: normalizeVectorNetwork(changes.vectorNetwork) }

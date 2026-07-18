@@ -1,13 +1,12 @@
 import { ref } from 'vue'
 
-import type { Effect } from '@open-pencil/scene-graph'
-
 import {
   EFFECT_OPTIONS,
   createDefaultEffect,
   createEffectControlActions,
   createEffectEditActions,
-  isShadow
+  isShadow,
+  type EffectEditSnapshot
 } from '#vue/controls/effects/helpers'
 import { useEditor } from '#vue/editor/context'
 
@@ -21,7 +20,7 @@ export function useEffectsControls() {
   const editor = useEditor()
 
   const expandedIndex = ref<number | null>(null)
-  const effectsBeforeScrub = ref<Effect[] | null>(null)
+  const effectsBeforeScrub = ref<EffectEditSnapshot | null>(null)
   const editActions = createEffectEditActions(editor, effectsBeforeScrub)
   const controlActions = createEffectControlActions(expandedIndex)
 

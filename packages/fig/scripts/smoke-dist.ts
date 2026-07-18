@@ -1,9 +1,19 @@
 export {}
 
 const mod = await import('../dist/index.js')
+const instanceOverrides = await import('../dist/instance-overrides.js')
+const nodeChange = await import('../dist/node-change.js')
 
-if (mod.FIG_PACKAGE_STATUS !== 'container-api') {
-  throw new Error('Expected @open-pencil/fig container API export')
+if (
+  mod.FIG_PACKAGE_STATUS !== 'archive-api' ||
+  typeof mod.effectiveFigmaRawNodeFields !== 'function' ||
+  typeof mod.parseFigBuffer !== 'function' ||
+  typeof mod.writeFigArchive !== 'function' ||
+  typeof instanceOverrides.populateAndApplyOverrides !== 'function' ||
+  typeof nodeChange.convertLineHeight !== 'function' ||
+  typeof nodeChange.sceneNodeToKiwi !== 'function'
+) {
+  throw new Error('Expected @open-pencil/fig archive API exports')
 }
 
 const bytes = mod.writeFigContainer({

@@ -1,5 +1,15 @@
 import { colorToCSS } from '@open-pencil/core/color'
-import type { DesignDocument } from '@open-pencil/dom-css'
+import type { DesignDocument, DesignElement, DesignNode } from '@open-pencil/dom-css'
+
+export function findTextElement(nodes: DesignNode[]): DesignElement | undefined {
+  for (const node of nodes) {
+    if (node.type !== 'element') continue
+    if (node.children.some((child) => child.type === 'text')) return node
+    const child = findTextElement(node.children)
+    if (child) return child
+  }
+  return undefined
+}
 
 export const DOM_CSS_COLORS = {
   white: colorToCSS({ r: 1, g: 1, b: 1, a: 1 }),

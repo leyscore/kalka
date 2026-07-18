@@ -4,7 +4,7 @@ import type { ComputedRef } from 'vue'
 import type { Editor } from '@open-pencil/core/editor'
 import type { BlendMode, SceneNode } from '@open-pencil/scene-graph'
 
-import type { CornerRadiusKey } from '#vue/controls/appearance/types'
+import type { CornerGeometryKey } from '#vue/controls/appearance/types'
 import { MIXED, type MixedValue } from '#vue/controls/node-props/use'
 
 const CORNER_RADIUS_TYPES = new Set([
@@ -56,6 +56,11 @@ export function createAppearanceState({ node, nodes, isMulti, merged }: Appearan
     return node.value?.cornerRadius ?? 0
   })
 
+  const cornerSmoothingPercent = computed(() => {
+    const value = merged('cornerSmoothing')
+    return value === MIXED ? MIXED : Math.round(Math.max(0, Math.min(value, 1)) * 100)
+  })
+
   const opacityPercent = computed(() => {
     const v = merged('opacity')
     return v === MIXED ? MIXED : Math.round(v * 100)
@@ -77,6 +82,7 @@ export function createAppearanceState({ node, nodes, isMulti, merged }: Appearan
     independentCorners,
     showIndependentCorners,
     cornerRadiusValue,
+    cornerSmoothingPercent,
     opacityPercent,
     blendModeValue,
     visibilityState
@@ -84,6 +90,8 @@ export function createAppearanceState({ node, nodes, isMulti, merged }: Appearan
 }
 
 export function createAppearanceActions({ editor, node, nodes, isMulti }: AppearanceActionOptions) {
+  const previousCornerValues = new Map<CornerGeometryKey, Map<string, number>>()
+
   function setBlendMode(value: BlendMode) {
     const selected = node.value
     const targets = isMulti.value ? nodes.value : []
@@ -166,28 +174,40 @@ export function createAppearanceActions({ editor, node, nodes, isMulti }: Appear
     )
   }
 
-  function updateCornerProp(key: CornerRadiusKey, value: number) {
-    if (isMulti.value) {
-      for (const n of nodes.value) editor.updateNode(n.id, { [key]: value })
-    } else {
-      const n = node.value
-      if (n) editor.updateNode(n.id, { [key]: value })
+  function cornerTargets() {
+    if (isMulti.value) return nodes.value
+    const selected = node.value
+    return selected ? [selected] : []
+  }
+
+  function updateCornerProp(key: CornerGeometryKey, value: number) {
+    let snapshots = previousCornerValues.get(key)
+    if (!snapshots) {
+      snapshots = new Map()
+      previousCornerValues.set(key, snapshots)
+    }
+    const normalized = key === 'cornerSmoothing' ? Math.max(0, Math.min(value, 1)) : value
+    for (const target of cornerTargets()) {
+      if (!snapshots.has(target.id)) snapshots.set(target.id, target[key])
+      editor.updateNode(target.id, { [key]: normalized })
     }
   }
 
-  function commitCornerProp(key: CornerRadiusKey, _value: number, previous: number) {
-    if (isMulti.value) {
-      editor.undo.runBatch(`Change ${key}`, () => {
-        for (const n of nodes.value) {
-          editor.commitNodeUpdate(n.id, { [key]: previous } as Partial<SceneNode>, `Change ${key}`)
-        }
-      })
-    } else {
-      const n = node.value
-      if (n) {
-        editor.commitNodeUpdate(n.id, { [key]: previous } as Partial<SceneNode>, `Change ${key}`)
+  function commitCornerProp(key: CornerGeometryKey, _value: number, previous: number) {
+    const targets = cornerTargets()
+    const snapshots = previousCornerValues.get(key)
+    const commit = () => {
+      for (const target of targets) {
+        editor.commitNodeUpdate(
+          target.id,
+          { [key]: snapshots?.get(target.id) ?? previous } as Partial<SceneNode>,
+          `Change ${key}`
+        )
       }
     }
+    if (targets.length > 1) editor.undo.runBatch(`Change ${key}`, commit)
+    else commit()
+    previousCornerValues.delete(key)
   }
 
   return {

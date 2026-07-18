@@ -2,7 +2,9 @@ import { defineConfig } from 'tsdown'
 
 export default defineConfig({
   entry: {
-    index: './src/index.ts'
+    index: './src/index.ts',
+    'instance-overrides': './src/instance-overrides/index.ts',
+    'node-change': './src/node-change/index.ts'
   },
   platform: 'neutral',
   format: ['esm'],

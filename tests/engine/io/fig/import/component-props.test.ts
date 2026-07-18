@@ -56,7 +56,12 @@ describe('Figma component property import', () => {
         size: { x: 100, y: 20 },
         transform: { m00: 1, m01: 0, m02: 0, m10: 0, m11: 1, m12: 0 },
         componentPropDefs: [
-          { id: textPropGuid, name: 'label', initialValue: { textValue: 'Menu Item' } }
+          {
+            id: textPropGuid,
+            name: 'label',
+            type: 'TEXT',
+            initialValue: { textValue: 'Menu Item' }
+          }
         ]
       },
       baseTextChange(),
@@ -82,6 +87,22 @@ describe('Figma component property import', () => {
     const graph = importNodeChanges(nodeChanges, [], undefined, { populate: 'all' })
     const labels = Array.from(graph.getAllNodes()).filter((node) => node.type === 'TEXT')
     expect(labels.map((node) => node.text).sort()).toEqual(['Menu Item', 'Profile Item'])
+    const component = Array.from(graph.getAllNodes()).find((node) => node.name === 'Menu item')
+    expect(component?.componentPropertyDefinitions).toEqual([
+      { id: '3:1', name: 'label', type: 'TEXT', defaultValue: 'Menu Item' }
+    ])
+    const sourceLabel = labels.find((node) => node.text === 'Menu Item')
+    expect(sourceLabel?.componentPropertyReferences).toEqual([{ propertyId: '3:1', field: 'TEXT' }])
+    const instance = Array.from(graph.getAllNodes()).find(
+      (node) => node.name === 'Menu item instance'
+    )
+    expect(instance?.componentPropertyAssignments).toEqual({ '3:1': 'Profile Item' })
+
+    const unpopulated = importNodeChanges(nodeChanges, [], undefined, { populate: 'none' })
+    const unpopulatedInstance = Array.from(unpopulated.getAllNodes()).find(
+      (node) => node.name === 'Menu item instance'
+    )
+    expect(unpopulatedInstance?.childIds).toEqual([])
   })
 
   test('propagates nested instance swaps through clone chains', () => {
@@ -178,7 +199,15 @@ describe('Figma component property import', () => {
         size: { x: 100, y: 20 },
         transform: { m00: 1, m01: 0, m02: 80, m10: 0, m11: 1, m12: 0 },
         componentPropDefs: [
-          { id: iconPropGuid, name: 'icon', initialValue: { guidValue: mailIconGuid } }
+          {
+            id: iconPropGuid,
+            name: 'icon',
+            type: 'INSTANCE_SWAP',
+            initialValue: { guidValue: mailIconGuid },
+            preferredValues: {
+              instanceSwapValues: [{ type: 'COMPONENT', key: 'icon/user-key' }]
+            }
+          }
         ]
       },
       {
@@ -230,6 +259,20 @@ describe('Figma component property import', () => {
     ]
 
     const graph = importNodeChanges(nodeChanges, [], undefined, { populate: 'all' })
+    const component = Array.from(graph.getAllNodes()).find((node) => node.name === 'Menu item')
+    expect(component?.componentPropertyDefinitions).toEqual([
+      {
+        id: '3:2',
+        name: 'icon',
+        type: 'INSTANCE_SWAP',
+        defaultValue: '4:1',
+        preferredValues: ['icon/user-key']
+      }
+    ])
+    const sourceInstance = Array.from(graph.getAllNodes()).find(
+      (node) => node.name === 'Menu item source'
+    )
+    expect(sourceInstance?.componentPropertyAssignments).toEqual({ '3:2': '4:3' })
     const clone = Array.from(graph.getAllNodes()).find((node) => node.name === 'Menu item clone')
     const icon = clone?.childIds
       .map((id) => graph.getNode(id))

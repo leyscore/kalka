@@ -1,6 +1,7 @@
 import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
 
 import { DEFAULT_FONT_FAMILY } from '#core/constants'
+import { transformTextCase } from '#core/text/case'
 import { cjkFallbackScriptForLanguage, type FontFallbackScript } from '#core/text/fallbacks'
 import { weightToStyle } from '#core/text/font-style'
 
@@ -63,7 +64,7 @@ export function collectGraphFontRequirements(
     nodes.push(node)
     if (node.type === 'TEXT') {
       let index = 0
-      for (const character of node.text) {
+      for (const character of transformTextCase(node.text, node.textCase)) {
         characters.add(character)
         const script = fallbackScriptForCharacter(character, textLanguageAt(node, index))
         if (script) scripts.add(script)

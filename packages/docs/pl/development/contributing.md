@@ -76,15 +76,15 @@ Kod źródłowy silnika core znajduje się w `packages/core/src/`. Kod aplikacyj
 
 | Plik | Cel |
 |------|-----|
-| `packages/core/src/scene-graph/` | Graf sceny: węzły, zmienne, instancje, hit testing |
+| `packages/scene-graph/src/` | Graf sceny: węzły, zmienne, instancje, hit testing i cofanie |
 | `packages/core/src/canvas/renderer.ts` | Pipeline renderowania CanvasKit |
-| `packages/core/src/layout.ts` | Adapter layoutu Yoga |
-| `packages/core/src/scene-graph/undo.ts` | Menedżer cofnij/ponów |
+| `packages/core/src/layout/` | Adapter layoutu Yoga |
 | `packages/core/src/clipboard.ts` | Schowek kompatybilny z Figmą |
 | `packages/core/src/vector/` | Model sieci wektorowej |
 | `packages/core/src/io/formats/raster/render.ts` | Eksport obrazu offscreen (PNG/JPG/WEBP) |
-| `packages/core/src/kiwi/binary/codec.ts` | Koder/dekoder binarny Kiwi |
-| `packages/core/src/kiwi/fig-import.ts` | Logika importu plików .fig |
+| `packages/kiwi/src/schema-runtime/` | Runtime schematu i kodek binarny Kiwi |
+| `packages/fig/src/node-change/` | Konwersja między SceneGraph i Figma NodeChange |
+| `packages/core/src/io/formats/fig/` | Orkiestracja odczytu/zapisu .fig dla aplikacji |
 | `packages/cli/src/index.ts` | Punkt wejścia CLI |
 | `packages/core/src/tools/` | Ujednolicone definicje narzędzi (AI, MCP, CLI) |
 | `packages/core/src/figma-api/` | Implementacja Figma Plugin API |

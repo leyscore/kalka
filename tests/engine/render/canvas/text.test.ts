@@ -10,8 +10,9 @@ import type { SceneNode } from '@open-pencil/scene-graph'
 
 import { initCanvasKit } from '#cli/headless'
 import type { SkiaRenderer } from '#core/canvas/renderer'
-import { renderText } from '#core/canvas/scene'
+import { renderText, textVerticalOffset } from '#core/canvas/scene'
 import { buildParagraph, isNodeFontLoaded } from '#core/canvas/text'
+import { transformTextCase } from '#core/text/case'
 import { fontManager } from '#core/text/fonts'
 import { missingGlyphCharacters } from '#core/text/resolver'
 
@@ -28,12 +29,13 @@ function createMockCanvas() {
     save: mock(() => undefined),
     saveLayer: mock(() => undefined),
     restore: mock(() => undefined),
-    clipRect: mock(() => undefined)
+    clipRect: mock(() => undefined),
+    translate: mock(() => undefined)
   }
 }
 
 function createMockParagraph() {
-  return { delete: mock(() => undefined) }
+  return { delete: mock(() => undefined), getHeight: mock(() => 20) }
 }
 
 function createMockPicture() {
@@ -103,6 +105,22 @@ async function createTextRenderer() {
   const renderer = new SkiaRendererClass(ck, surface)
   return { renderer, surface }
 }
+
+describe('text case and vertical alignment', () => {
+  test('transforms display text without changing the source', () => {
+    expect(transformTextCase('hello WORLD', 'ORIGINAL')).toBe('hello WORLD')
+    expect(transformTextCase('hello World', 'UPPER')).toBe('HELLO WORLD')
+    expect(transformTextCase('Hello WORLD', 'LOWER')).toBe('hello world')
+    expect(transformTextCase('hello WORLD 42nd', 'TITLE')).toBe('Hello World 42nd')
+  })
+
+  test('computes top, center, and bottom paragraph offsets', () => {
+    expect(textVerticalOffset(textNode({ height: 100, textAlignVertical: 'TOP' }), 20)).toBe(0)
+    expect(textVerticalOffset(textNode({ height: 100, textAlignVertical: 'CENTER' }), 20)).toBe(40)
+    expect(textVerticalOffset(textNode({ height: 100, textAlignVertical: 'BOTTOM' }), 20)).toBe(80)
+    expect(textVerticalOffset(textNode({ height: 10, textAlignVertical: 'BOTTOM' }), 20)).toBe(0)
+  })
+})
 
 describe('renderText', () => {
   test('uses buildParagraph when fonts are loaded and node font is available', () => {
