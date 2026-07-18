@@ -69,6 +69,46 @@ describe('resolveFigmaClipboardImages', () => {
     warn.mockRestore()
   })
 
+  test('times out stalled batch requests', async () => {
+    await expect(
+      resolveFigmaClipboardImages(
+        'file-key',
+        ['hash'],
+        () => Promise.withResolvers<Response>().promise,
+        5
+      )
+    ).rejects.toThrow('timed out')
+  })
+
+  test('drops images whose signed URL request times out', async () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => undefined)
+    const images = await resolveFigmaClipboardImages(
+      'file-key',
+      ['1111111111111111111111111111111111111111'],
+      (input) => {
+        if (String(input).includes('/image/batch')) {
+          return Promise.resolve(
+            Response.json({
+              error: false,
+              status: 200,
+              meta: {
+                s3_urls: {
+                  '1111111111111111111111111111111111111111': 'https://s3-alpha-sig.figma.com/image'
+                }
+              }
+            })
+          )
+        }
+        return Promise.withResolvers<Response>().promise
+      },
+      5
+    )
+
+    expect(images.size).toBe(0)
+    expect(warn).toHaveBeenCalledTimes(1)
+    warn.mockRestore()
+  })
+
   test('rejects failed and malformed batch responses', async () => {
     await expect(
       resolveFigmaClipboardImages('file-key', ['hash'], async () =>

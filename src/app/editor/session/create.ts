@@ -18,7 +18,7 @@ import {
   defineEditorStoreAccessors
 } from '@/app/editor/session/modules'
 import { createInitialAppEditorState, type AppEditorState } from '@/app/editor/session/types'
-import { isTauri } from '@/app/tauri/env'
+import { IS_TAURI } from '@/constants'
 
 export { EDITOR_TOOLS as TOOLS, TOOL_SHORTCUTS } from '@open-pencil/core/editor'
 export type { EditorToolDef as ToolDef, Tool } from '@open-pencil/core/editor'
@@ -33,7 +33,7 @@ export function createEditorStore(initialGraph?: SceneGraph) {
     graph,
     state,
     loadFont,
-    resolveFigmaClipboardImages: isTauri() ? resolveFigmaClipboardImages : undefined,
+    resolveFigmaClipboardImages: IS_TAURI ? resolveFigmaClipboardImages : undefined,
     skipInitialGraphSetup: !!initialGraph,
     getViewportSize: () =>
       viewportSize.width > 0 && viewportSize.height > 0

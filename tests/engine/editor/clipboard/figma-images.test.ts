@@ -43,6 +43,34 @@ describe('Figma clipboard images', () => {
     await initCodec()
   })
 
+  test('finalizes structural paste before image resolution completes', async () => {
+    const html = await imageClipboardHtml([IMAGE_HASH_A])
+    let startResolution: (() => void) | undefined
+    const resolutionStarted = new Promise<void>((resolve) => {
+      startResolution = resolve
+    })
+    let finishResolution: ((images: ReadonlyMap<string, Uint8Array>) => void) | undefined
+    const pendingResolution = new Promise<ReadonlyMap<string, Uint8Array>>((resolve) => {
+      finishResolution = resolve
+    })
+    const editor = createEditor({
+      resolveFigmaClipboardImages: () => {
+        startResolution?.()
+        return pendingResolution
+      }
+    })
+
+    const paste = editor.pasteFromHTML(html)
+    await resolutionStarted
+
+    expect(editor.graph.getChildren(editor.state.currentPageId)).toHaveLength(1)
+    expect(editor.state.selectedIds.size).toBe(1)
+    expect(editor.undo.undoLabel).toBe('Paste')
+
+    finishResolution?.(new Map([[IMAGE_HASH_A, new Uint8Array([1, 2, 3])]]))
+    await paste
+  })
+
   test('resolves and stores missing images before completing paste', async () => {
     const html = await imageClipboardHtml([IMAGE_HASH_A, IMAGE_HASH_A])
     const imageBytes = new Uint8Array([1, 2, 3])

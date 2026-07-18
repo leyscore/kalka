@@ -5,6 +5,7 @@ type ClipboardImageFetch = (input: RequestInfo | URL, init?: RequestInit) => Pro
 type FigmaImageURLs = Record<string, string>
 
 const IMAGE_FETCH_CONCURRENCY = 6
+const IMAGE_FETCH_TIMEOUT_MS = 15_000
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -34,21 +35,49 @@ async function sha1Hex(bytes: Uint8Array): Promise<string> {
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('')
 }
 
+async function fetchWithTimeout(
+  fetcher: ClipboardImageFetch,
+  input: RequestInfo | URL,
+  init: RequestInit | undefined,
+  timeoutMs: number
+) {
+  const controller = new AbortController()
+  let timeout: ReturnType<typeof setTimeout> | undefined
+  const timeoutPromise = new Promise<never>((_resolve, reject) => {
+    timeout = setTimeout(() => {
+      controller.abort()
+      reject(new Error('Figma image request timed out'))
+    }, timeoutMs)
+  })
+
+  try {
+    return await Promise.race([
+      fetcher(input, { ...init, signal: controller.signal }),
+      timeoutPromise
+    ])
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
 export async function resolveFigmaClipboardImages(
   fileKey: string,
   hashes: string[],
-  fetcher: ClipboardImageFetch = tauriFetch
+  fetcher: ClipboardImageFetch = tauriFetch,
+  timeoutMs = IMAGE_FETCH_TIMEOUT_MS
 ): Promise<ReadonlyMap<string, Uint8Array>> {
   const uniqueHashes = [...new Set(hashes)]
   if (uniqueHashes.length === 0) return new Map()
 
-  const batchResponse = await fetcher(
+  const batchResponse = await fetchWithTimeout(
+    fetcher,
     `https://www.figma.com/file/${encodeURIComponent(fileKey)}/image/batch`,
     {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ sha1s: uniqueHashes, needs_compressed_textures: false })
-    }
+    },
+    timeoutMs
   )
   if (!batchResponse.ok) {
     throw new Error(`Figma image request failed with status ${batchResponse.status}`)
@@ -65,7 +94,7 @@ export async function resolveFigmaClipboardImages(
         const url = urls[hash]
         if (!url) return
         try {
-          const response = await fetcher(url)
+          const response = await fetchWithTimeout(fetcher, url, undefined, timeoutMs)
           if (!response.ok) throw new Error(`status ${response.status}`)
           const bytes = new Uint8Array(await response.arrayBuffer())
           if ((await sha1Hex(bytes)) !== hash.toLowerCase()) {
