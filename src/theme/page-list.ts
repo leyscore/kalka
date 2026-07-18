@@ -11,10 +11,10 @@ const pageListTheme = {
     renameRow: 'flex w-full items-center gap-1.5 rounded px-2 py-1.5',
     icon: 'size-3 shrink-0 opacity-70',
     renameInput:
-      'min-w-0 flex-1 rounded-panel border border-accent bg-input px-1 py-0 text-[11px] text-surface outline-none',
+      'min-w-0 flex-1 rounded border border-accent bg-input px-1 py-0 text-[11px] text-surface outline-none',
     divider: 'my-1 flex cursor-pointer items-center px-2',
     dividerLine: 'h-px flex-1 bg-border',
-    item: 'flex w-full cursor-pointer items-center gap-1.5 rounded-panel border-none px-2 py-1.5 text-left text-[11px] outline-none focus-visible:ring-1 focus-visible:ring-panel-focus',
+    item: 'flex w-full cursor-pointer items-center gap-1.5 rounded border-none px-2 py-1.5 text-left text-[11px] outline-none focus-visible:ring-1 focus-visible:ring-panel-focus',
     label: 'truncate'
   },
   variants: {

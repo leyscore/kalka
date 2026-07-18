@@ -29,14 +29,6 @@
 }
 
 @theme {
-  --spacing-control: 24px;
-  --spacing-panel-x: 12px;
-  --spacing-panel-y: 8px;
-  --spacing-panel: 6px;
-  --spacing-panel-rail: 26px;
-  --spacing-panel-icon: 14px;
-  --radius-panel: 5px;
-
   --color-panel: #2a2a2a;
   --color-panel-secondary: #242424;
   --color-panel-field: transparent;
