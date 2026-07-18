@@ -51,6 +51,16 @@ export const dialogMessageDefaults = {
   downloadMissingWebFonts: 'Download missing web fonts through enabled providers.',
   webFontProvidersRequireDesktopApp:
     'Online font provider catalogs are unavailable in the web app. Download the desktop app to browse and load provider fonts.',
+  clipboardImageUnavailableWeb:
+    'Pasted design includes 1 image that cannot be loaded in the web app. Use the desktop app to include it.',
+  clipboardImagesUnavailableWeb: params(
+    'Pasted design includes {count} images that cannot be loaded in the web app. Use the desktop app to include them.'
+  ),
+  clipboardImageFetchFailed:
+    'Failed to fetch 1 image from Figma. Check that the source file is accessible and try again.',
+  clipboardImagesFetchFailed: params(
+    'Failed to fetch {count} images from Figma. Check that the source file is accessible and try again.'
+  ),
   enable: 'Enable',
   disable: 'Disable',
   fallbackPacks: 'Fallback packs',

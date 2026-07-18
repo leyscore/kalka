@@ -98,32 +98,31 @@ export function createClipboardActions(ctx: EditorContext) {
       const replacementTargets = options.replaceSelection ? selectedReplacementTargets(ctx) : []
       const pasteTarget = replacementTargets[0]?.parentId ?? resolvePasteTarget(ctx)
       const created = importClipboardNodes(figma.nodes, ctx.graph, pasteTarget, 0, 0, figma.blobs)
-      if (created.length > 0) {
-        if (replacementTargets.length > 0) {
-          replaceTargetsWithCreated(
-            ctx,
-            placementActions.centerNodesAt,
-            created,
-            replacementTargets,
-            prevSelection
-          )
-          await fontActions.loadFontsForNodes(created)
-          warnMissingImages(created)
-          ctx.requestRender()
-          return
-        }
+      if (created.length === 0) return
+
+      if (replacementTargets.length > 0) {
+        replaceTargetsWithCreated(
+          ctx,
+          placementActions.centerNodesAt,
+          created,
+          replacementTargets,
+          prevSelection
+        )
+      } else {
         const { width: viewW, height: viewH } = ctx.getViewportSize()
         const cx = cursorPos?.x ?? (-ctx.state.panX + viewW / 2) / ctx.state.zoom
         const cy = cursorPos?.y ?? (-ctx.state.panY + viewH / 2) / ctx.state.zoom
         placementActions.centerNodesAt(created, cx, cy)
         computeAllLayouts(ctx.graph, ctx.state.currentPageId)
         ctx.setSelectedIds(new Set(created))
-
         pushPasteUndo(created, prevSelection)
-        await fontActions.loadFontsForNodes(created)
-        warnMissingImages(created)
-        ctx.requestRender()
       }
+
+      await Promise.all([
+        hydrateFigmaClipboardImages(figma.meta.fileKey, created),
+        fontActions.loadFontsForNodes(created)
+      ])
+      ctx.requestRender()
     }
   }
 
@@ -173,11 +172,47 @@ export function createClipboardActions(ctx: EditorContext) {
     return created
   }
 
+  function missingImageHashes(nodeIds: string[]) {
+    const hashes = new Set<string>()
+    for (const node of collectSubtrees(ctx.graph, nodeIds)) {
+      for (const fill of node.fills) {
+        if (fill.type === 'IMAGE' && fill.imageHash && !ctx.graph.images.has(fill.imageHash)) {
+          hashes.add(fill.imageHash)
+        }
+      }
+    }
+    return [...hashes]
+  }
+
+  async function hydrateFigmaClipboardImages(fileKey: string, nodeIds: string[]) {
+    const hashes = missingImageHashes(nodeIds)
+    if (hashes.length === 0) return
+
+    const resolver = ctx.resolveFigmaClipboardImages
+    if (resolver) {
+      try {
+        const images = await resolver(fileKey, hashes)
+        for (const hash of hashes) {
+          const bytes = images.get(hash)
+          if (bytes) ctx.graph.images.set(hash, bytes)
+        }
+      } catch (error) {
+        console.warn('Failed to fetch Figma clipboard images', error)
+      }
+    }
+
+    const missing = missingImageHashes(nodeIds).length
+    if (missing > 0) {
+      ctx.emitEditorEvent('clipboard:images-missing', {
+        total: hashes.length,
+        missing,
+        fetchAttempted: resolver !== null
+      })
+    }
+  }
+
   function warnMissingImages(nodeIds: string[]) {
-    const allNodes = collectSubtrees(ctx.graph, nodeIds)
-    return allNodes.some((n) =>
-      n.fills.some((f) => f.type === 'IMAGE' && f.imageHash && !ctx.graph.images.has(f.imageHash))
-    )
+    return missingImageHashes(nodeIds).length > 0
   }
 
   function deleteSelected() {
