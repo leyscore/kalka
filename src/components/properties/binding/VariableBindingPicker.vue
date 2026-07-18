@@ -99,7 +99,7 @@ defineOptions({ inheritAttrs: false })
 
 <template>
   <BindableValuePicker v-slot="picker">
-    <ComboboxAnchor class="contents" data-slot="anchor">
+    <ComboboxAnchor class="inline-flex shrink-0 items-center" data-slot="anchor">
       <Tip :label="triggerLabel">
         <ComboboxTrigger as-child>
           <BindingTrigger
