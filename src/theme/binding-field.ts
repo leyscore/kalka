@@ -1,14 +1,10 @@
-import { panelIconButtonBase } from './panel/field'
-
 const bindingFieldTheme = {
   slots: {
-    root: 'group/binding min-w-0',
+    root: 'min-w-0',
     pill: 'flex min-w-0 flex-1 items-center overflow-hidden rounded-sm px-1 text-component outline-none',
     pillLabel: 'min-w-0 flex-1 truncate text-[11px] font-medium',
-    trigger: [
-      panelIconButtonBase,
-      'size-5 rounded-sm transition-opacity data-[state=unbound]:opacity-0 data-[state=mixed]:opacity-0 group-hover/binding:opacity-100 group-focus-within/binding:opacity-100 data-[open]:bg-hover data-[open]:text-component disabled:opacity-0 data-[disabled]:opacity-0'
-    ],
+    trigger:
+      'flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-sm border border-transparent bg-transparent text-muted outline-none transition-colors hover:text-surface focus-visible:border-panel-focus data-[open]:bg-hover data-[open]:text-component disabled:opacity-0 data-[disabled]:opacity-0',
     pickerContent:
       'z-[100] w-56 overflow-hidden rounded-lg border border-border bg-panel text-surface shadow-xl',
     pickerSearch:
