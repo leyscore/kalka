@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 
-import type { DesignElement, DesignNode } from '@open-pencil/dom-css'
+import type { DesignElement } from '@open-pencil/dom-css'
 import {
   compileTailwindCSS,
   createHeadlessCSSRuntime,
@@ -20,6 +20,7 @@ import {
   cssCardHTML,
   fixtureMatrixCSS,
   fixtureMatrixHTML,
+  findTextElement,
   tailwindBadgeClasses,
   tailwindCardClasses,
   tailwindInputClasses,
@@ -30,16 +31,6 @@ function expectFrame(node: SceneNode | undefined) {
   expect(node?.type).toBe('FRAME')
   if (node?.type !== 'FRAME') throw new Error('Expected frame node')
   return node
-}
-
-function findTextElement(nodes: DesignNode[]): DesignElement | undefined {
-  for (const node of nodes) {
-    if (node.type !== 'element') continue
-    if (node.children.some((child) => child.type === 'text')) return node
-    const child = findTextElement(node.children)
-    if (child) return child
-  }
-  return undefined
 }
 
 function createStyleRoundTripGraph() {

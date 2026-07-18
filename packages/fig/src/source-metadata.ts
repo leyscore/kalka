@@ -1,5 +1,10 @@
 import type { FigmaSourcePayload, SceneNode } from '@open-pencil/scene-graph'
 
+interface FigmaSourceCarrier {
+  source: Omit<SceneNode['source'], 'editedFields'> &
+    Partial<Pick<SceneNode['source'], 'editedFields'>>
+}
+
 const RAW_SIZE_KEYS = new Set(['width', 'height'])
 const RAW_TRANSFORM_KEYS = new Set(['x', 'y', 'rotation', 'flipX', 'flipY'])
 
@@ -85,22 +90,20 @@ const EDITED_RAW_FIELDS: Partial<Record<string, readonly string[]>> = {
   variantPropSpecs: ['variantPropSpecs']
 }
 
-export function staleFigmaRawFields(editedFields: readonly string[]): ReadonlySet<string> {
+export function staleFigmaRawFields(editedFields: readonly string[] = []): ReadonlySet<string> {
   return new Set(editedFields.flatMap((key) => EDITED_RAW_FIELDS[key] ?? []))
 }
 
-export function effectiveFigmaRawNodeFields(
-  node: Pick<SceneNode, 'source'>
-): Record<string, unknown> {
-  const staleFields = staleFigmaRawFields(node.source.editedFields)
+export function effectiveFigmaRawNodeFields(node: FigmaSourceCarrier): Record<string, unknown> {
+  const staleFields = staleFigmaRawFields(node.source.editedFields ?? [])
   if (staleFields.size === 0) return node.source.fig.rawNodeFields
   return Object.fromEntries(
     Object.entries(node.source.fig.rawNodeFields).filter(([key]) => !staleFields.has(key))
   )
 }
 
-export function effectiveFigmaSourcePayload(node: Pick<SceneNode, 'source'>): FigmaSourcePayload {
-  const sourceEditedFields = node.source.editedFields
+export function effectiveFigmaSourcePayload(node: FigmaSourceCarrier): FigmaSourcePayload {
+  const sourceEditedFields = node.source.editedFields ?? []
   return {
     ...node.source.fig,
     rawNodeFields: effectiveFigmaRawNodeFields(node),
@@ -113,10 +116,7 @@ export function effectiveFigmaSourcePayload(node: Pick<SceneNode, 'source'>): Fi
   }
 }
 
-export function readEffectiveFigmaRawField(
-  node: Pick<SceneNode, 'source'>,
-  field: string
-): unknown {
-  if (staleFigmaRawFields(node.source.editedFields).has(field)) return undefined
+export function readEffectiveFigmaRawField(node: FigmaSourceCarrier, field: string): unknown {
+  if (staleFigmaRawFields(node.source.editedFields ?? []).has(field)) return undefined
   return node.source.fig.rawNodeFields[field]
 }

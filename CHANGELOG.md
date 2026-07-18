@@ -8,6 +8,7 @@
 - Remove internal cross-package forwarding modules; import `@open-pencil/fig`, `@open-pencil/pen`, and `@open-pencil/scene-graph` from their owning public exports.
 - Track normalized source edits in SceneGraph while preserving original `.fig` provenance and filtering stale raw fields through Fig-owned metadata policy.
 - Eliminate quadratic component-property scans and redundant instance propagation during large `.fig` round trips, reducing the Material 3 fixture regression from minutes to seconds.
+- Reject corrupted fig-Kiwi data chunks instead of silently treating failed compressed payloads as raw bytes.
 - Add Figma-style page management in the Pages panel, including rename/delete actions and drag-and-drop page reordering.
 - Add DOM/CSS import and authoring support so HTML, CSS, Tailwind, and JSX can be converted into editable OpenPencil documents from the app, CLI, and SDK.
 - Add Tailwind class serialization for DOM/CSS HTML export in the SDK and CLI.

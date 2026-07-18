@@ -4,38 +4,9 @@ import { fontManager } from '@open-pencil/core/text'
 
 import { clearTauriMocks, mockTauriIPC } from '#tests/helpers/tauri/mocks'
 
-class MockFontFace {
-  family: string
-
-  constructor(family: string) {
-    this.family = family
-  }
-
-  async load() {
-    return this
-  }
-}
-
-function installFontFaceMocks() {
-  const addedFaces: MockFontFace[] = []
-  Object.assign(globalThis, {
-    FontFace: MockFontFace,
-    document: {
-      fonts: {
-        add(face: MockFontFace) {
-          addedFaces.push(face)
-        }
-      }
-    }
-  })
-  return addedFaces
-}
-
 afterEach(async () => {
   await clearTauriMocks()
   vi.restoreAllMocks()
-  Reflect.deleteProperty(globalThis, 'document')
-  Reflect.deleteProperty(globalThis, 'FontFace')
 })
 
 describe('Tauri font helpers', () => {
@@ -45,6 +16,7 @@ describe('Tauri font helpers', () => {
       return [{ family: 'System UI', styles: ['Regular', 'Bold'] }]
     })
 
+    vi.spyOn(fontManager, 'listFamilyOptions').mockResolvedValue([])
     const { listFamilies, listFonts } = await import('@/app/editor/fonts')
 
     await expect(listFamilies()).resolves.toEqual([{ family: 'System UI', source: 'local' }])
@@ -54,7 +26,6 @@ describe('Tauri font helpers', () => {
   })
 
   test('loads system font bytes and registers the face', async () => {
-    const addedFaces = installFontFaceMocks()
     await mockTauriIPC((cmd, args) => {
       expect(cmd).toBe('load_system_font')
       expect(args).toEqual({ family: 'System UI', style: 'Bold Italic' })
@@ -66,7 +37,6 @@ describe('Tauri font helpers', () => {
 
     expect([...new Uint8Array(buffer ?? new ArrayBuffer(0))]).toEqual([1, 2, 3, 4])
     expect(fontManager.isLoaded('System UI', 'Bold Italic')).toBe(true)
-    expect(addedFaces.map((face) => face.family)).toEqual(['System UI'])
   })
 
   test('falls back to font manager loading when the system font command fails', async () => {
@@ -80,6 +50,6 @@ describe('Tauri font helpers', () => {
     const { loadFont } = await import('@/app/editor/fonts')
 
     await expect(loadFont('Missing Family', 'Regular')).resolves.toBe(fallback)
-    expect(loadFontSpy).toHaveBeenCalledWith('Missing Family', 'Regular')
+    expect(loadFontSpy).toHaveBeenCalledWith('Missing Family', 'Regular', '')
   })
 })

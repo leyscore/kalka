@@ -17,6 +17,10 @@ beforeAll(async () => {
   ck = await initCanvasKit()
 })
 
+function useDerivedGlyphFallback(renderer: SkiaRenderer): void {
+  renderer.nodeFontReadiness = () => 'exhausted'
+}
+
 function squareCommandsBlob(): Uint8Array {
   const blob = new Uint8Array(1 + 4 * 9 + 1)
   const view = new DataView(blob.buffer)
@@ -87,6 +91,7 @@ describe('derived text rendering', () => {
 
     const surface = expectDefined(ck.MakeSurface(1, 1), 'surface')
     const renderer = new SkiaRenderer(ck, surface)
+    useDerivedGlyphFallback(renderer)
 
     try {
       const png = expectDefined(
@@ -144,6 +149,7 @@ describe('derived text rendering', () => {
 
     const surface = expectDefined(ck.MakeSurface(1, 1), 'surface')
     const renderer = new SkiaRenderer(ck, surface)
+    useDerivedGlyphFallback(renderer)
 
     try {
       const png = expectDefined(
@@ -209,6 +215,7 @@ describe('derived text rendering', () => {
 
     const surface = expectDefined(ck.MakeSurface(1, 1), 'surface')
     const renderer = new SkiaRenderer(ck, surface)
+    useDerivedGlyphFallback(renderer)
 
     try {
       const png = expectDefined(
@@ -303,6 +310,7 @@ describe('derived text rendering', () => {
 
     const surface = expectDefined(ck.MakeSurface(1, 1), 'surface')
     const renderer = new SkiaRenderer(ck, surface)
+    useDerivedGlyphFallback(renderer)
 
     try {
       const png = expectDefined(
