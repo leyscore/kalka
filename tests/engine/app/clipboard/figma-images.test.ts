@@ -9,6 +9,17 @@ async function sha1Hex(bytes: Uint8Array) {
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('')
 }
 
+function pendingResponseUntilAbort(_input: RequestInfo | URL, init?: RequestInit) {
+  return new Promise<Response>((_resolve, reject) => {
+    const signal = init?.signal
+    if (!signal) {
+      reject(new Error('Expected request signal'))
+      return
+    }
+    signal.addEventListener('abort', () => reject(signal.reason), { once: true })
+  })
+}
+
 describe('resolveFigmaClipboardImages', () => {
   test('resolves signed URLs, verifies bytes, and deduplicates hashes', async () => {
     const bytes = new Uint8Array([1, 2, 3])
@@ -71,13 +82,8 @@ describe('resolveFigmaClipboardImages', () => {
 
   test('times out stalled batch requests', async () => {
     await expect(
-      resolveFigmaClipboardImages(
-        'file-key',
-        ['hash'],
-        () => Promise.withResolvers<Response>().promise,
-        5
-      )
-    ).rejects.toThrow('timed out')
+      resolveFigmaClipboardImages('file-key', ['hash'], pendingResponseUntilAbort, 5)
+    ).rejects.toMatchObject({ name: 'TimeoutError' })
   })
 
   test('drops images whose signed URL request times out', async () => {
@@ -85,7 +91,7 @@ describe('resolveFigmaClipboardImages', () => {
     const images = await resolveFigmaClipboardImages(
       'file-key',
       ['1111111111111111111111111111111111111111'],
-      (input) => {
+      (input, init) => {
         if (String(input).includes('/image/batch')) {
           return Promise.resolve(
             Response.json({
@@ -99,7 +105,7 @@ describe('resolveFigmaClipboardImages', () => {
             })
           )
         }
-        return Promise.withResolvers<Response>().promise
+        return pendingResponseUntilAbort(input, init)
       },
       5
     )
