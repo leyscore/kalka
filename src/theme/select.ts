@@ -2,10 +2,10 @@ import { panelFieldBase } from './panel/field'
 
 export default {
   slots: {
-    trigger: [panelFieldBase, 'flex items-center justify-between'],
+    trigger: [panelFieldBase, 'flex items-center justify-between text-[11px]'],
     value: 'min-w-0 flex-1 truncate text-left',
     content:
-      'z-[110] min-w-[var(--reka-select-trigger-width)] overflow-hidden border border-border bg-panel',
+      'z-[110] min-w-[var(--reka-select-trigger-width)] overflow-hidden border border-border bg-panel text-[11px]',
     viewport: '',
     item: 'relative flex cursor-pointer items-center text-surface outline-none select-none data-[disabled]:pointer-events-none data-[highlighted]:bg-hover data-[disabled]:opacity-50'
   },
