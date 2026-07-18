@@ -55,7 +55,7 @@ function blendModeOptions(value: BlendMode | typeof MIXED) {
         </IconButton>
       </template>
 
-      <PanelGrid columns="two">
+      <PanelGrid columns="appearance">
         <PanelFieldGroup :label="panels.blendMode">
           <AppSelect
             :model-value="blendModeValue === MIXED ? 'MIXED' : blendModeValue"
