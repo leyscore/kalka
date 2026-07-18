@@ -60,7 +60,7 @@ export function createNodeActions(ctx: EditorContext) {
     ctx.requestRender()
   }
 
-  function setOpacity(opacity: number) {
+  function setOpacity(opacity: number, coalesceKey?: string) {
     if (!Number.isFinite(opacity)) return
     const clamped = Math.max(0, Math.min(1, opacity))
     const ids = [...ctx.state.selectedIds]
@@ -68,11 +68,15 @@ export function createNodeActions(ctx: EditorContext) {
     const targets = ids.map((id) => ctx.graph.getNode(id)).filter((n): n is SceneNode => n != null)
     const changed = targets.filter((t) => t.opacity !== clamped)
     if (changed.length === 0) return
-    ctx.undo.runBatch('Set opacity', () => {
-      for (const target of changed) {
-        updateNodeWithUndo(target.id, { opacity: clamped }, 'Set opacity')
-      }
-    })
+    ctx.undo.runBatch(
+      'Set opacity',
+      () => {
+        for (const target of changed) {
+          updateNodeWithUndo(target.id, { opacity: clamped }, 'Set opacity')
+        }
+      },
+      coalesceKey
+    )
   }
 
   return {

@@ -269,7 +269,10 @@ export function createSelectionCommands({
         return t.value.setOpacity
       },
       enabled: capabilities.canSetOpacity,
-      run: () => editor.setOpacity(getOpacityTarget())
+      run: () => {
+        const target = getOpacityTarget()
+        editor.setOpacity(target.value, target.coalesceKey)
+      }
     }
   }
 }

@@ -41,9 +41,9 @@ export function useEditorCommands() {
     editor.moveToPage(pageId)
   }
 
-  let opacityTarget = 1
-  function setOpacityTarget(value: number) {
-    opacityTarget = value
+  let opacityTarget: { value: number; coalesceKey?: string } = { value: 1 }
+  function setOpacityTarget(value: number, coalesceKey?: string) {
+    opacityTarget = coalesceKey ? { value, coalesceKey } : { value }
   }
 
   const commands = createEditorCommandMap({

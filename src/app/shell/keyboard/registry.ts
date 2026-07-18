@@ -20,6 +20,7 @@ type ShortcutDefinition = {
   id: string
   keys: string | string[]
   run: ShortcutAction
+  shouldPreventDefault?: (event: KeyboardEvent) => boolean
 }
 
 function commandShortcut(
@@ -36,19 +37,16 @@ function commandShortcuts(...commands: EditorCommandId[]): ShortcutDefinition[] 
   })
 }
 
-const OPACITY_CODES = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].flatMap((d) => [
-  `Digit${d}`,
-  `Numpad${d}`
-])
-
 function opacityBindings(): ShortcutDefinition[] {
-  return OPACITY_CODES.map((code) => ({
-    id: `opacity-${code}`,
-    keys: code,
-    run: ({ keyEvent, actions }: KeyboardShortcutRunOptions) => {
+  return ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => ({
+    id: `selection-opacity-${digit}`,
+    keys: digit,
+    run: ({ keyEvent, actions }) => {
       if (keyEvent.metaKey || keyEvent.ctrlKey || keyEvent.altKey || keyEvent.shiftKey) return
-      actions.opacityDigit(code.slice(-1))
-    }
+      actions.opacityDigit(digit)
+    },
+    shouldPreventDefault: (event) =>
+      !event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey
   }))
 }
 
@@ -161,8 +159,8 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
 
   for (const shortcut of shortcuts) {
     bindShortcut(bindings, shortcut.keys, (event) => {
-      event.preventDefault()
       shortcut.run(runOptions(event))
+      if (shortcut.shouldPreventDefault?.(event) ?? true) event.preventDefault()
     })
   }
 

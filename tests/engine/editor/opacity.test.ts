@@ -61,6 +61,31 @@ describe('editor.setOpacity', () => {
     expect(getNodeOrThrow(editor.graph, rect.id).opacity).toBe(0.3)
   })
 
+  test('coalesces buffered shortcut updates into one undo entry', () => {
+    const { editor, rect } = setup()
+
+    editor.setOpacity(0.2, 'shortcut-session')
+    editor.setOpacity(0.28, 'shortcut-session')
+
+    editor.undo.undo()
+    expect(getNodeOrThrow(editor.graph, rect.id).opacity).toBe(1)
+
+    editor.undo.redo()
+    expect(getNodeOrThrow(editor.graph, rect.id).opacity).toBe(0.28)
+  })
+
+  test('keeps separate shortcut sessions as separate undo entries', () => {
+    const { editor, rect } = setup()
+
+    editor.setOpacity(0.2, 'shortcut-session-1')
+    editor.setOpacity(0.8, 'shortcut-session-2')
+
+    editor.undo.undo()
+    expect(getNodeOrThrow(editor.graph, rect.id).opacity).toBe(0.2)
+    editor.undo.undo()
+    expect(getNodeOrThrow(editor.graph, rect.id).opacity).toBe(1)
+  })
+
   test('opacity batch for multiple selections collapses to one undo entry', () => {
     const { editor, rect } = setup()
     const pageId = editor.graph.getPages()[0].id

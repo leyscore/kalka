@@ -102,18 +102,31 @@ export function createKeyboardActions({
   }
 
   let opacityBuffer = ''
+  let opacitySelectionKey = ''
+  let opacityCoalesceKey = ''
   let opacityResetTimer: ReturnType<typeof setTimeout> | undefined
+
+  function resetOpacityBuffer() {
+    opacityBuffer = ''
+    opacitySelectionKey = ''
+    opacityCoalesceKey = ''
+    clearTimeout(opacityResetTimer)
+  }
 
   function opacityDigit(digit: string) {
     if (store.state.selectedIds.size === 0) return
+    const selectionKey = [...store.state.selectedIds].sort().join('\0')
+    if (selectionKey !== opacitySelectionKey) resetOpacityBuffer()
+    if (!opacityBuffer) {
+      opacitySelectionKey = selectionKey
+      opacityCoalesceKey = crypto.randomUUID()
+    }
     opacityBuffer += digit
     if (opacityBuffer.length > 3) opacityBuffer = opacityBuffer.slice(-3)
-    setOpacityTarget(opacityFromBuffer(opacityBuffer))
+    setOpacityTarget(opacityFromBuffer(opacityBuffer), opacityCoalesceKey)
     runCommand('selection.setOpacity')
     clearTimeout(opacityResetTimer)
-    opacityResetTimer = setTimeout(() => {
-      opacityBuffer = ''
-    }, 800)
+    opacityResetTimer = setTimeout(resetOpacityBuffer, 800)
   }
 
   return {
