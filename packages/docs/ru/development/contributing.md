@@ -76,15 +76,15 @@ bun run check
 
 | Файл | Назначение |
 |------|------------|
-| `packages/core/src/scene-graph/` | Граф сцены: узлы, переменные, экземпляры, проверка попадания |
+| `packages/scene-graph/src/` | Граф сцены: узлы, переменные, экземпляры, проверка попадания и отмена |
 | `packages/core/src/canvas/renderer.ts` | Конвейер отрисовки CanvasKit |
-| `packages/core/src/layout.ts` | Адаптер компоновки Yoga |
-| `packages/core/src/scene-graph/undo.ts` | Менеджер отмены/повтора |
+| `packages/core/src/layout/` | Адаптер компоновки Yoga |
 | `packages/core/src/clipboard.ts` | Figma-совместимый буфер обмена |
 | `packages/core/src/vector/` | Модель векторных сетей |
 | `packages/core/src/io/formats/raster/render.ts` | Внеэкранный экспорт изображений (PNG/JPG/WEBP) |
-| `packages/core/src/kiwi/binary/codec.ts` | Бинарный кодировщик/декодировщик Kiwi |
-| `packages/core/src/kiwi/fig-import.ts` | Логика импорта .fig файлов |
+| `packages/kiwi/src/schema-runtime/` | Среда схемы и бинарный кодек Kiwi |
+| `packages/fig/src/node-change/` | Преобразование SceneGraph и Figma NodeChange |
+| `packages/core/src/io/formats/fig/` | Оркестрация чтения и записи .fig для приложения |
 | `packages/cli/src/index.ts` | Точка входа CLI |
 | `packages/core/src/tools/` | Унифицированные определения инструментов по доменам (read, create, modify, structure, variables, vector, analyze) |
 | `packages/core/src/figma-api/` | Реализация Figma Plugin API |
