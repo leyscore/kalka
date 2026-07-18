@@ -62,6 +62,7 @@ test('draw shape and right-click selects it', async () => {
 
   expect(await getSelectedCount()).toBe(1)
   await expect(contextMenu()).toBeVisible()
+  await editor.page.keyboard.press('Escape')
 })
 
 test('context menu shows expected items', async () => {
@@ -228,7 +229,7 @@ test('outline stroke is disabled for fill-only shapes', async () => {
 })
 
 test('Copy/Paste as submenu exists', async () => {
-  await rightClickShape(130, 130)
+  await rightClickShape(250, 230)
 
   const submenuTrigger = contextItem('context-copy-paste-as')
   await expect(submenuTrigger).toBeVisible()
