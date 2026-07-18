@@ -20,6 +20,43 @@ test('property sections collapse and reopen from their title', async () => {
   await expect(blendMode).toBeVisible()
 })
 
+test('appearance fields share control height and show variable actions', async () => {
+  await editor.canvas.clearCanvas()
+  await editor.canvas.drawRect(200, 200, 80, 80)
+
+  const section = propertySection(editor.page, 'Appearance')
+  const controls = [
+    section.getByRole('combobox', { name: 'Blend mode' }),
+    section.getByRole('spinbutton', { name: 'Opacity' }),
+    section.getByRole('spinbutton', { name: 'Radius' }),
+    section.getByRole('spinbutton', { name: 'Corner smoothing' })
+  ]
+  for (const control of controls) {
+    await expect(control).toHaveCSS('height', '26px')
+  }
+
+  const applyVariable = section.getByRole('button', { name: 'Apply variable' }).first()
+  await expect(applyVariable).toBeVisible()
+  await expect(applyVariable).toHaveCSS('opacity', '1')
+  await expect(applyVariable).toHaveCSS('width', '20px')
+  await expect(applyVariable).toHaveCSS('height', '20px')
+
+  await applyVariable.hover()
+  await expect(applyVariable).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+
+  await applyVariable.click()
+  const search = editor.page.getByPlaceholder('Search')
+  const picker = editor.page.locator('[data-slot=content]').filter({ has: search })
+  await expect(picker).toBeVisible()
+  const triggerBox = expectDefined(await applyVariable.boundingBox(), 'variable trigger bounds')
+  const pickerBox = expectDefined(await picker.boundingBox(), 'variable picker bounds')
+  expect(pickerBox.x + pickerBox.width).toBeLessThan(triggerBox.x)
+  expect(
+    Math.abs(pickerBox.y + pickerBox.height / 2 - (triggerBox.y + triggerBox.height / 2))
+  ).toBeLessThan(4)
+  await search.press('Escape')
+})
+
 test('NumberField drag changes X position', async () => {
   await editor.canvas.clearCanvas()
   await editor.canvas.drawRect(100, 100, 80, 80)
