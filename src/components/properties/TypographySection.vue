@@ -276,27 +276,21 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
         />
       </PanelFieldGroup>
 
-      <PanelFieldGroup
-        :label="panels.openTypeFeatures"
-        class="mb-3"
-        :ui="{ label: 'font-semibold text-surface' }"
-      >
-        <div class="grid gap-2.5">
-          <label
-            v-for="feature in commonFeatures"
-            :key="feature.tag"
-            class="flex items-center justify-between gap-1.5 text-[11px] text-muted/70"
-          >
-            <span>{{ feature.label }}</span>
-            <AppSwitch
-              :model-value="featureEnabled(ctx.node.value.fontFeatures, feature.tag)"
-              :label="feature.label"
-              :data-property="`font-feature-${feature.tag.toLowerCase()}`"
-              @update:model-value="ctx.actions.setFontFeature(feature.tag, $event)"
-            />
-          </label>
-        </div>
-      </PanelFieldGroup>
+      <div class="mb-3 grid gap-2.5">
+        <label
+          v-for="feature in commonFeatures"
+          :key="feature.tag"
+          class="flex items-center justify-between gap-1.5 text-[11px] text-muted/70"
+        >
+          <span>{{ feature.label }}</span>
+          <AppSwitch
+            :model-value="featureEnabled(ctx.node.value.fontFeatures, feature.tag)"
+            :label="feature.label"
+            :data-property="`font-feature-${feature.tag.toLowerCase()}`"
+            @update:model-value="ctx.actions.setFontFeature(feature.tag, $event)"
+          />
+        </label>
+      </div>
     </PanelSection>
   </TypographyControlsRoot>
 </template>
