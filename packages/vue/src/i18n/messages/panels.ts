@@ -246,6 +246,20 @@ export const panelMessageDefaults = {
   setToCurrentHeight: 'Set to current height',
   sizingFillFr: 'Fill (fr)',
   sizingFixedPx: 'Fixed (px)',
+  resizing: 'Resizing',
+  resizeAutoWidth: 'Auto width',
+  resizeAutoHeight: 'Auto height',
+  resizeFixed: 'Fixed size',
+  layoutGrids: 'Layout grid',
+  addLayoutGrid: 'Add layout grid',
+  removeLayoutGrid: 'Remove layout grid',
+  gridColumns: 'Columns',
+  gridRows: 'Rows',
+  gridGrid: 'Grid',
+  gridCount: 'Count',
+  gridGutter: 'Gutter',
+  gridMargin: 'Margin',
+  gridSectionSize: 'Section size',
   searchFonts: 'Search fonts...'
 } as const
 
