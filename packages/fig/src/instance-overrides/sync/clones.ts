@@ -16,7 +16,9 @@ export function recloneChildren(
   for (const childId of Array.from(tgtNode.childIds)) graph.deleteNode(childId)
   graph.updateNode(tgtNode.id, { name: srcChild.name, componentId: srcChild.componentId })
   syncNodeProps(graph, srcChild, tgtNode, protections)
-  if (srcChild.childIds.length > 0) graph.populateInstanceChildren(tgtNode.id, srcChildId)
+  if (srcChild.childIds.length > 0) {
+    graph.populateInstanceChildren(tgtNode.id, srcChildId, 'fig-import')
+  }
   swappedInstances.add(tgtNode.id)
 }
 

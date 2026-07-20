@@ -377,7 +377,7 @@ export function repopulateInstance(ctx: OverrideContext, nodeId: string, compId:
   }
   ctx.graph.preserveSourceMetadataDuring(() => ctx.graph.updateNode(nodeId, updates))
   if (comp && comp.childIds.length > 0) {
-    ctx.graph.populateInstanceChildren(nodeId, compId)
+    ctx.graph.populateInstanceChildren(nodeId, compId, 'fig-import')
     applyStrokeDescendants(ctx, nodeId, previousStrokes)
   }
   ctx.swappedInstances.add(nodeId)

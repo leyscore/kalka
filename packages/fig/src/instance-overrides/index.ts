@@ -18,7 +18,12 @@ import { isEqual } from 'es-toolkit/predicate'
 
 import { guidToString } from '@open-pencil/fig/node-change'
 import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
-import { copyFills, copyStyleRuns } from '@open-pencil/scene-graph/copy'
+import {
+  copyFills,
+  copyStyleRuns,
+  hasSameCopySource,
+  markCopySource
+} from '@open-pencil/scene-graph/copy'
 import type { JsonObject } from '@open-pencil/scene-graph/primitives'
 
 import { applyComponentProperties } from './component-props'
@@ -127,34 +132,57 @@ function propagateResolvedChildPlacementClones(graph: SceneGraph): void {
   }
 }
 
+function sameDerivedGlyphSource(
+  source: SceneNode['figmaDerivedTextGlyphs'],
+  target: SceneNode['figmaDerivedTextGlyphs']
+): boolean {
+  if (source === target) return true
+  if (!source || !target) return false
+  return hasSameCopySource(source, target)
+}
+
 function propagateResolvedTextClones(graph: SceneGraph): void {
-  for (let pass = 0; pass < 10; pass++) {
-    let changed = false
-    for (const node of graph.getAllNodes()) {
-      if (node.type !== 'TEXT' || !node.componentId) continue
-      const source = graph.getNode(node.componentId)
-      if (source?.type !== 'TEXT' || source.text !== node.text) continue
-      if (
-        source.width === node.width &&
-        source.height === node.height &&
-        isEqual(source.fills, node.fills) &&
-        isEqual(source.styleRuns, node.styleRuns) &&
-        isEqual(source.figmaDerivedTextGlyphs, node.figmaDerivedTextGlyphs)
-      ) {
-        continue
-      }
-      graph.updateNode(node.id, {
-        width: source.width,
-        height: source.height,
-        fills: copyFills(source.fills),
-        styleRuns: copyStyleRuns(source.styleRuns),
-        figmaDerivedTextGlyphs: source.figmaDerivedTextGlyphs
-          ? structuredClone(source.figmaDerivedTextGlyphs)
-          : undefined
-      })
-      changed = true
+  const ordered: SceneNode[] = []
+  const visited = new Set<string>()
+  const visiting = new Set<string>()
+  const visit = (node: SceneNode) => {
+    if (visited.has(node.id) || visiting.has(node.id)) return
+    visiting.add(node.id)
+    const source = node.componentId ? graph.getNode(node.componentId) : undefined
+    if (source?.type === 'TEXT') visit(source)
+    visiting.delete(node.id)
+    visited.add(node.id)
+    if (node.type === 'TEXT' && node.componentId) ordered.push(node)
+  }
+  for (const nodeId of graph.nodes.keys()) {
+    const node = graph.getNode(nodeId)
+    if (node?.type === 'TEXT' && node.componentId) visit(node)
+  }
+
+  for (const node of ordered) {
+    const source = node.componentId ? graph.getNode(node.componentId) : undefined
+    if (source?.type !== 'TEXT' || source.text !== node.text) continue
+    if (
+      source.width === node.width &&
+      source.height === node.height &&
+      isEqual(source.fills, node.fills) &&
+      isEqual(source.styleRuns, node.styleRuns) &&
+      sameDerivedGlyphSource(source.figmaDerivedTextGlyphs, node.figmaDerivedTextGlyphs)
+    ) {
+      continue
     }
-    if (!changed) return
+    graph.updateNode(node.id, {
+      width: source.width,
+      height: source.height,
+      fills: copyFills(source.fills),
+      styleRuns: copyStyleRuns(source.styleRuns),
+      figmaDerivedTextGlyphs: source.figmaDerivedTextGlyphs
+        ? markCopySource(
+            source.figmaDerivedTextGlyphs,
+            structuredClone(source.figmaDerivedTextGlyphs)
+          )
+        : undefined
+    })
   }
 }
 

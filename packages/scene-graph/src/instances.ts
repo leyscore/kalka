@@ -1,5 +1,8 @@
 import type { SceneGraph, SceneNode } from './'
 import { cloneNodeProps, copyEffects, copyFills, copyStrokes, copyStyleRuns } from './copy'
+import type { NodeCloneMode } from './copy'
+
+export type { NodeCloneMode } from './copy'
 
 const INSTANCE_SYNC_PROPS: (keyof SceneNode)[] = [
   'width',
@@ -77,7 +80,8 @@ function copyProp(
 function cloneChildrenWithMapping(
   graph: SceneGraph,
   sourceParentId: string,
-  destParentId: string
+  destParentId: string,
+  mode: NodeCloneMode = 'deep'
 ): void {
   const sourceParent = graph.nodes.get(sourceParentId)
   if (!sourceParent) return
@@ -86,10 +90,10 @@ function cloneChildrenWithMapping(
     const src = graph.nodes.get(childId)
     if (!src) continue
 
-    const clone = graph.createNode(src.type, destParentId, cloneNodeProps(src, childId))
+    const clone = graph.createNode(src.type, destParentId, cloneNodeProps(src, childId, mode))
 
     if (src.childIds.length > 0) {
-      cloneChildrenWithMapping(graph, childId, clone.id)
+      cloneChildrenWithMapping(graph, childId, clone.id, mode)
     }
   }
 }
@@ -193,12 +197,13 @@ export function createInstance(
 export function populateInstanceChildren(
   graph: SceneGraph,
   instanceId: string,
-  componentId: string
+  componentId: string,
+  mode: NodeCloneMode = 'deep'
 ): void {
   const instance = graph.nodes.get(instanceId)
   const component = graph.nodes.get(componentId)
   if (!instance || !component || instance.type !== 'INSTANCE') return
-  cloneChildrenWithMapping(graph, componentId, instanceId)
+  cloneChildrenWithMapping(graph, componentId, instanceId, mode)
 }
 
 export function swapInstanceComponent(

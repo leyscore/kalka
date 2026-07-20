@@ -1,5 +1,12 @@
 import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
-import { copyFills, copyStrokes, copyEffects, copyStyleRuns } from '@open-pencil/scene-graph/copy'
+import {
+  copyEffects,
+  copyFills,
+  copyStrokes,
+  copyStyleRuns,
+  hasSameCopySource,
+  markCopySource
+} from '@open-pencil/scene-graph/copy'
 
 import { isFieldProtected } from '../patches'
 import type { ProtectedField, ProtectionMap } from '../patches'
@@ -73,23 +80,23 @@ function assignCopiedUpdate(
 ): void {
   switch (key) {
     case 'fills':
-      updates.fills = copyFills(source.fills)
+      updates.fills = markCopySource(source.fills, copyFills(source.fills))
       break
     case 'strokes':
-      updates.strokes = copyStrokes(source.strokes)
+      updates.strokes = markCopySource(source.strokes, copyStrokes(source.strokes))
       break
     case 'effects':
-      updates.effects = copyEffects(source.effects)
+      updates.effects = markCopySource(source.effects, copyEffects(source.effects))
       break
     case 'styleRuns':
-      updates.styleRuns = copyStyleRuns(source.styleRuns)
+      updates.styleRuns = markCopySource(source.styleRuns, copyStyleRuns(source.styleRuns))
       break
   }
 }
 
 function copiedSync(key: CopiedSyncKey, field: ProtectedField): SyncFn {
   return (source, target, updates, protections) => {
-    if (source[key] !== target[key] && canSync(protections, target.id, field)) {
+    if (!hasSameCopySource(source[key], target[key]) && canSync(protections, target.id, field)) {
       assignCopiedUpdate(key, source, updates)
     }
   }

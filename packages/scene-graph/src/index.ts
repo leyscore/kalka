@@ -547,8 +547,12 @@ export class SceneGraph {
     return Instances.createInstance(this, componentId, parentId, overrides)
   }
 
-  populateInstanceChildren(instanceId: string, componentId: string): void {
-    Instances.populateInstanceChildren(this, instanceId, componentId)
+  populateInstanceChildren(
+    instanceId: string,
+    componentId: string,
+    mode: Instances.NodeCloneMode = 'deep'
+  ): void {
+    Instances.populateInstanceChildren(this, instanceId, componentId, mode)
   }
 
   swapInstanceComponent(instanceId: string, componentId: string): void {
