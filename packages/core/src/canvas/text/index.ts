@@ -86,8 +86,14 @@ function requiredFacesReadiness(r: FontReadinessRenderer, node: SceneNode): Node
     const demand = fontFaceDemand(family, style, node.text)
     const state = fontResolver.state(demand).state
     demandFace(r, node, family, style)
-    if (state === 'failed' || state === 'exhausted') exhausted = true
-    else pending = true
+    if (state === 'failed' || state === 'exhausted') {
+      // CanvasKit can synthesize a missing slant or weight from another loaded face in the same
+      // family. Keep the text visible when an exact face (for example, Italic) is unavailable.
+      if (fontManager.isLoaded(family)) continue
+      exhausted = true
+    } else {
+      pending = true
+    }
   }
   if (pending) return 'pending'
   return exhausted ? 'exhausted' : 'ready'

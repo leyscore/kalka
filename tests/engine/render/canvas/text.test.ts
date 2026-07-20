@@ -14,7 +14,7 @@ import { renderText, textVerticalOffset } from '#core/canvas/scene'
 import { buildParagraph, isNodeFontLoaded } from '#core/canvas/text'
 import { transformTextCase } from '#core/text/case'
 import { fontManager } from '#core/text/fonts'
-import { missingGlyphCharacters } from '#core/text/resolver'
+import { fontFaceDemand, fontResolver, missingGlyphCharacters } from '#core/text/resolver'
 
 import { expectDefined } from '#tests/helpers/assert'
 import { repoPath } from '#tests/helpers/paths'
@@ -258,6 +258,32 @@ describe('paragraph font weights', () => {
     expect(boldParagraph.getLongestLine()).toBeGreaterThan(regularParagraph.getLongestLine())
     regularParagraph.delete()
     boldParagraph.delete()
+    surface.delete()
+  })
+
+  test('shapes italic text when only the regular family face is available', async () => {
+    const { renderer, surface } = await createTextRenderer()
+    await renderer.loadFonts()
+    const regular = await Bun.file(repoPath('public/Inter-Regular.ttf')).arrayBuffer()
+    fontManager.markLoaded('Inter', 'Regular', regular)
+    const demand = fontFaceDemand('Inter', 'Regular Italic', 'Synthetic italic')
+    fontResolver.reset(demand)
+    fontResolver.exhaust(demand)
+    const node = textNode({
+      text: 'Synthetic italic',
+      fontFamily: 'Inter',
+      italic: true,
+      width: 300,
+      height: 40
+    })
+
+    expect(isNodeFontLoaded(renderer, node)).toBe(true)
+    const paragraph = buildParagraph(renderer, node)
+    paragraph.layout(300)
+    expect(paragraph.getLongestLine()).toBeGreaterThan(0)
+
+    paragraph.delete()
+    fontResolver.reset(demand)
     surface.delete()
   })
 })

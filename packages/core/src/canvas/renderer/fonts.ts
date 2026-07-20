@@ -25,7 +25,12 @@ export function trackFontDemand(r: SkiaRenderer, node: SceneNode, key: string): 
   r.pendingFontNodes.set(node.id, pending)
 }
 
-export function isTextPictureCurrent(r: SkiaRenderer, node: SceneNode): boolean {
+interface TextPictureGenerationState {
+  fontGeneration: number
+  textPictureGenerations: Map<string, { data: Uint8Array; generation: number }>
+}
+
+export function isTextPictureCurrent(r: TextPictureGenerationState, node: SceneNode): boolean {
   const data = node.textPicture
   if (!data) {
     r.textPictureGenerations.delete(node.id)
