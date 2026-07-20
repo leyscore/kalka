@@ -71,7 +71,9 @@ export function connectAutomation(getStore: () => EditorStore, authToken: string
     ws.onclose = (event) => {
       ws = null
       if (intentionalDisconnect) return
-      console.error('[Automation] WebSocket closed:', `code=${event.code} reason=${event.reason}`)
+      const details = `code=${event.code} reason=${event.reason}`
+      if (event.code === 1000) console.debug('[Automation] WebSocket closed:', details)
+      else console.error('[Automation] WebSocket closed:', details)
       scheduleReconnect()
     }
 
