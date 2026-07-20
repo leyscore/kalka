@@ -11,6 +11,7 @@
 - Find overlapping layers and overflowing children from the CLI, AI tools, and MCP.
 - Use Figma-style number-key opacity shortcuts: `1`–`9` set 10%–90%, `0` sets 100%, and two-digit sequences set exact values.
 - Drag image files directly into the desktop app and paste Figma layers with their remote image fills.
+- Drag with the Text tool to create a fixed-size text box, or click to create auto-width text.
 - Target a specific open document and page from live CLI and MCP automation, including sessions with multiple documents.
 - Test OpenAI-compatible provider connections from AI settings with clearer setup errors.
 - Build custom property panels with new Vue SDK number fields, bindable values, property sections, segmented controls, property lists, color models, fill controls, and gradient primitives.
@@ -25,7 +26,7 @@
 
 ### Fixed
 
-- Refresh canvas text after local fonts load and keep text visible when a requested italic face is unavailable (#395).
+- Keep desktop text visible across the scene and overlay canvases, refresh it after local fonts load, and preserve rendering when a requested italic face is unavailable (#395).
 - Improve `.fig` import and rendering fidelity for groups, booleans, instances, rotated vectors, complex text fills, auto-sized text, layout grids, page guides, patterns, noise effects, masks, and canvas backgrounds.
 - Preserve pages, components, prototype and library metadata, export settings, unsupported effects, and other unrelated Figma data when editing and resaving `.fig` files.
 - Prevent duplicate generated IDs from corrupting `.fig` round trips.
