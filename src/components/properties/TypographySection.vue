@@ -244,7 +244,7 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
           <label
             v-for="feature in commonFeatures"
             :key="feature.tag"
-            class="flex items-center justify-between gap-1.5 text-[11px] text-muted"
+            class="flex items-center justify-between gap-1.5 text-[11px] text-muted/70"
           >
             <span>{{ feature.label }}</span>
             <AppSwitch
