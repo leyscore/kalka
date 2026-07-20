@@ -60,6 +60,7 @@ interface SceneNodeToKiwiContext {
   fontDigestMap?: Map<string, Uint8Array>
   glyphBlobMap?: Map<string, number>
   varIdToGuid?: Map<string, GUID>
+  modeIdToGuid?: Map<string, GUID>
   /** Maps "key@version" or "key" (from variable.key/version) → variable GUID.
    * Used to convert colorVar.assetRef references in raw paints to guid references. */
   assetRefToVarGuid?: Map<string, GUID>
@@ -145,6 +146,20 @@ function componentPropertyValue(type: string, value: string, graph: SceneGraph) 
 
 function parseGuidOrNull(value: string) {
   return /^\d+:\d+$/.test(value) ? stringToGuid(value) : null
+}
+
+function serializeVariableModes(
+  node: SceneNode,
+  variableIdToGuid?: Map<string, GUID>,
+  modeIdToGuid?: Map<string, GUID>
+): NonNullable<KiwiNodeChange['variableModeBySetMap']> | undefined {
+  const entries = Object.entries(node.variableModes).flatMap(([collectionId, modeId]) => {
+    const collectionGuid = variableIdToGuid?.get(collectionId) ?? parseGuidOrNull(collectionId)
+    const modeGuid = modeIdToGuid?.get(modeId) ?? parseGuidOrNull(modeId)
+    if (!collectionGuid || !modeGuid) return []
+    return [{ variableSetID: { guid: collectionGuid }, variableModeID: modeGuid }]
+  })
+  return entries.length > 0 ? { entries } : undefined
 }
 
 const FIGMA_PAYLOAD_VARIABLE_MAP_FIELDS = new Set([
@@ -822,6 +837,12 @@ export function sceneNodeToKiwiWithContext(
   context.serializeGeometry(nodeForGeometryExport(node), nc, context.blobs)
   context.serializeVariableBindings(node, nc, context.graph, context.varIdToGuid)
   applyRawFigmaNodeFields(context, node, nc)
+  const variableModeBySetMap = serializeVariableModes(
+    node,
+    context.varIdToGuid,
+    context.modeIdToGuid
+  )
+  if (variableModeBySetMap) nc.variableModeBySetMap = variableModeBySetMap
 
   applyExportSettingsPluginData(node)
   const pluginData = mergePluginData(node.pluginData)

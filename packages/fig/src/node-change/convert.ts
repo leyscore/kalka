@@ -54,7 +54,8 @@ import type {
   ComponentPropertyReference,
   ComponentPropertyType,
   SymbolLink,
-  VariantPropSpec
+  VariantPropSpec,
+  VariableModeMap
 } from '@open-pencil/scene-graph'
 import type { GUID } from '@open-pencil/scene-graph/primitives'
 
@@ -107,6 +108,25 @@ export const VARIABLE_BINDING_FIELDS: Record<string, string> = {
 export const VARIABLE_BINDING_FIELDS_INVERSE: Record<string, string> = Object.fromEntries(
   Object.entries(VARIABLE_BINDING_FIELDS).map(([k, v]) => [v, k])
 )
+
+interface FigVariableModeMap {
+  entries?: Array<{
+    variableSetID?: { guid?: GUID }
+    variableModeID?: GUID
+  }>
+}
+
+function extractVariableModes(nc: NodeChange): VariableModeMap {
+  const result: VariableModeMap = {}
+  const modeMap = nc.variableModeBySetMap as FigVariableModeMap | undefined
+  for (const entry of modeMap?.entries ?? []) {
+    const collectionGuid = entry.variableSetID?.guid
+    const modeGuid = entry.variableModeID
+    if (!collectionGuid || !modeGuid) continue
+    result[guidToString(collectionGuid)] = guidToString(modeGuid)
+  }
+  return result
+}
 
 const NODE_TYPE_MAP: Record<string, NodeType | 'DOCUMENT' | 'VARIABLE'> = {
   DOCUMENT: 'DOCUMENT',
@@ -633,6 +653,7 @@ export function nodeChangeToProps(
     expanded: true,
     autoRename: (nc.autoRename ?? true) as boolean,
     boundVariables: extractBoundVariables(nc),
+    variableModes: extractVariableModes(nc),
     exportSettings: extractExportSettings(nc),
     pluginData: extractPluginData(nc),
     pluginRelaunchData: extractPluginRelaunchData(nc),

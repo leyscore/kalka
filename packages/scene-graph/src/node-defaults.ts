@@ -155,6 +155,7 @@ export function createDefaultNode(
     symbolLinks: [],
     variantPropSpecs: [],
     boundVariables: {},
+    variableModes: {},
     exportSettings: [],
     pluginData: [],
     pluginRelaunchData: [],

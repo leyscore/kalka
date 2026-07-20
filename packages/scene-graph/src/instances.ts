@@ -41,7 +41,8 @@ const INSTANCE_SYNC_PROPS: (keyof SceneNode)[] = [
   'borderRightWeight',
   'borderBottomWeight',
   'borderLeftWeight',
-  'boundVariables'
+  'boundVariables',
+  'variableModes'
 ]
 
 function setSceneProp<K extends keyof SceneNode>(
@@ -68,6 +69,8 @@ function copyProp(
   } else if (key === 'boundVariables') {
     // Shallow copy the binding map — values are variable IDs (strings), not objects
     setSceneProp(target, key, { ...source.boundVariables })
+  } else if (key === 'variableModes') {
+    setSceneProp(target, key, { ...source.variableModes })
   } else if (key === 'gridPosition') {
     // Shallow copy the grid position object — all fields are primitives
     setSceneProp(target, key, source.gridPosition ? { ...source.gridPosition } : null)

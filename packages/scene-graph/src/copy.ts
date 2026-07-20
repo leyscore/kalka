@@ -174,6 +174,7 @@ export function cloneNodeProps(
       ...(componentId !== null ? { componentId } : {}),
       source: createDefaultSourceMetadata(),
       boundVariables: { ...src.boundVariables },
+      variableModes: { ...src.variableModes },
       overrides: Object.keys(src.overrides).length > 0 ? structuredClone(src.overrides) : {},
       componentPropertyAssignments: { ...src.componentPropertyAssignments },
       componentPropertyValues: { ...src.componentPropertyValues }
@@ -183,6 +184,7 @@ export function cloneNodeProps(
     ...rest,
     ...(componentId !== null ? { componentId } : {}),
     boundVariables: { ...src.boundVariables },
+    variableModes: { ...src.variableModes },
     overrides: Object.keys(src.overrides).length > 0 ? structuredClone(src.overrides) : {},
     fills: copyOpt(src.fills, (value) => markCopySource(value, copyFills(value))),
     strokes: copyOpt(src.strokes, (value) => markCopySource(value, copyStrokes(value))),

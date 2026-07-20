@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- FIG export orchestration keeps shared GUID state in one pipeline */
 import type { CanvasKit } from 'canvaskit-wasm'
 import { deflateSync, inflateSync } from 'fflate'
 
@@ -334,7 +335,8 @@ function appendInternalResources(context: InternalResourceContext): void {
         context.glyphBlobMap,
         context.blobIndexByHex,
         context.assignedGuidValues,
-        context.componentPropertyDefinitionsById
+        context.componentPropertyDefinitionsById,
+        context.modeIdToGuid
       )
     )
   }
@@ -454,7 +456,8 @@ export async function exportFigFile(
           glyphBlobMap,
           blobIndexByHex,
           assignedGuidValues,
-          componentPropertyDefinitionsById
+          componentPropertyDefinitionsById,
+          modeIdToGuid
         )
       )
     }

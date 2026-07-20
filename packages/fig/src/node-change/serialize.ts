@@ -472,7 +472,8 @@ export function sceneNodeToKiwi(
   blobIndexByHex?: Map<string, number>,
   assignedGuidValues?: Set<string>,
   runtime: FigNodeChangeExportRuntime = EMPTY_EXPORT_RUNTIME,
-  componentPropertyDefinitionsById = buildComponentPropIndex(graph)
+  componentPropertyDefinitionsById = buildComponentPropIndex(graph),
+  modeIdToGuid?: Map<string, GUID>
 ): KiwiNodeChange[] {
   // Build assetRef to guid mapping for converting colorVar references in raw paints
   const assetRefToVarGuid = varIdToGuid ? buildAssetRefToVarGuidMap(graph, varIdToGuid) : undefined
@@ -485,6 +486,7 @@ export function sceneNodeToKiwi(
     fontDigestMap,
     glyphBlobMap,
     varIdToGuid,
+    modeIdToGuid,
     assetRefToVarGuid,
     componentPropertyDefinitionsById,
     fractionalPosition,
