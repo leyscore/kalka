@@ -173,6 +173,9 @@ describe('variable roundtrip', () => {
       importedCollection.modes.find((mode) => mode.name === 'Dark'),
       'dark mode'
     )
+    expect(importedCollection.id).toBe('4:55')
+    expect(importedBackground.id).toBe('5:1')
+    expect(importedDarkMode.modeId).toBe('4:2')
     expect(importedFrame.variableModes).toEqual({
       [importedCollection.id]: importedDarkMode.modeId
     })

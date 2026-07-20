@@ -475,7 +475,8 @@ export function sceneNodeToKiwi(
   componentPropertyDefinitionsById = buildComponentPropIndex(graph),
   modeIdToGuid?: Map<string, GUID>
 ): KiwiNodeChange[] {
-  // Build assetRef to guid mapping for converting colorVar references in raw paints
+  // Raw paints retain library asset refs; effects use this map because their
+  // Kiwi schema accepts only GUID-backed aliases.
   const assetRefToVarGuid = varIdToGuid ? buildAssetRefToVarGuidMap(graph, varIdToGuid) : undefined
   return sceneNodeToKiwiWithContext(node, parentGuid, childIndex, localIdCounter, {
     graph,

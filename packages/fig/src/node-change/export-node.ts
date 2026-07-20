@@ -28,11 +28,7 @@ function toKiwiBooleanOperation(operation: SceneNode['booleanOperation']): KiwiB
   return operation === 'EXCLUDE' ? 'XOR' : (operation ?? 'UNION')
 }
 
-/**
- * Build a mapping from assetRef key strings ("key@version" or "key") to
- * variable GUIDs. This is used to convert colorVar.assetRef references in raw
- * paint data to guid references that resolveAliasId can resolve on reimport.
- */
+/** Resolve effect variable asset refs when the Kiwi effect schema requires GUID aliases. */
 export function buildAssetRefToVarGuidMap(
   graph: SceneGraph,
   varIdToGuid: Map<string, GUID>
@@ -42,9 +38,7 @@ export function buildAssetRefToVarGuidMap(
     if (!variable.key) continue
     const guid = varIdToGuid.get(varId) ?? stringToGuid(varId)
     map.set(variable.key, guid)
-    if (variable.version) {
-      map.set(`${variable.key}@${variable.version}`, guid)
-    }
+    if (variable.version) map.set(`${variable.key}@${variable.version}`, guid)
   }
   return map
 }
@@ -61,8 +55,7 @@ interface SceneNodeToKiwiContext {
   glyphBlobMap?: Map<string, number>
   varIdToGuid?: Map<string, GUID>
   modeIdToGuid?: Map<string, GUID>
-  /** Maps "key@version" or "key" (from variable.key/version) → variable GUID.
-   * Used to convert colorVar.assetRef references in raw paints to guid references. */
+  /** Variable GUIDs used only where raw effect aliases cannot retain asset refs. */
   assetRefToVarGuid?: Map<string, GUID>
   componentPropertyDefinitionsById: ReadonlyMap<string, ComponentPropertyDefinition>
   fractionalPosition: (index: number) => string
@@ -392,29 +385,16 @@ function applyRawFigmaNodeFields(
     // The scene model may lose this distinction for instance children whose
     // strokes are resolved from component overrides. Prefer the raw data.
     if ((key === 'fillPaints' || key === 'strokePaints') && node.source.id) {
-      let paints = materialized[key]
-      // Convert colorVar.assetRef references to guid references so that
-      // resolveAliasId can resolve them on reimport. Raw paints from the
-      // original .fig file use assetRef (library key/version) to refer to
-      // variables, but on reimport buildAssetRefMap won't find the key unless
-      // our VARIABLE NodeChanges also have key/version set. Even with that,
-      // converting to guid is more robust — it works even for local variables
-      // that don't have library keys.
-      if (context.assetRefToVarGuid && context.assetRefToVarGuid.size > 0) {
-        paints = convertColorVarAssetRefs(paints, context.assetRefToVarGuid)
-      }
-      nc[key] = paints
+      nc[key] = materialized[key]
       continue
     }
-    // Also convert colorVar.assetRef in raw effects (e.g. shadow color variables)
     if (
       key === 'effects' &&
       node.source.id &&
       context.assetRefToVarGuid &&
       context.assetRefToVarGuid.size > 0
     ) {
-      const converted = convertColorVarAssetRefs(materialized[key], context.assetRefToVarGuid)
-      nc[key] = converted
+      nc[key] = convertColorVarAssetRefs(materialized[key], context.assetRefToVarGuid)
       continue
     }
     if (key === 'derivedTextData' && node.source.id) {
@@ -431,44 +411,26 @@ function applyRawFigmaNodeFields(
   }
 }
 
-/**
- * Convert colorVar.assetRef references in paints to guid references.
- * Raw paint data from imported .fig files uses assetRef (library key) for
- * variable references. On reimport, buildAssetRefMap needs nc.key on VARIABLE
- * NodeChanges to resolve assetRefs. Converting from assetRef to guid makes the
- * reference resolvable regardless of whether key/version is present on the
- * VARIABLE NodeChange.
- */
-function convertColorVarAssetRefs<T>(paints: T, assetRefToVarGuid: Map<string, GUID>): T {
-  if (!Array.isArray(paints)) return paints
-  const result = paints.map((paint: ColorVarCarrier) => {
-    const colorVar = paint.colorVar
-    const value = colorVar?.value
-    const alias = value?.alias
-    if (!colorVar || !value || !alias) return paint
-    if (alias.guid) return paint
+/** Convert asset refs only for payloads whose Kiwi schema rejects asset-ref aliases. */
+function convertColorVarAssetRefs<T>(values: T, assetRefToVarGuid: Map<string, GUID>): T {
+  if (!Array.isArray(values)) return values
+  const converted = values.map((value: ColorVarCarrier) => {
+    const colorVar = value.colorVar
+    const alias = colorVar?.value?.alias
+    if (!colorVar || !alias || alias.guid || !alias.assetRef?.key) return value
     const assetRef = alias.assetRef
-    if (!assetRef?.key) return paint
-    // Look up by key@version first, then by key alone
     const lookupKey = assetRef.version ? `${assetRef.key}@${assetRef.version}` : assetRef.key
     const guid = assetRefToVarGuid.get(lookupKey) ?? assetRefToVarGuid.get(assetRef.key)
-    if (!guid) return paint
+    if (!guid) return value
     return {
-      ...paint,
+      ...value,
       colorVar: {
         ...colorVar,
-        value: {
-          ...value,
-          alias: { guid }
-        }
+        value: { ...colorVar.value, alias: { guid } }
       }
     }
   })
-  // Check if any paint was actually changed (skip expensive JSON comparison)
-  for (let i = 0; i < paints.length; i++) {
-    if (result[i] !== paints[i]) return result as T
-  }
-  return paints
+  return converted.some((value, index) => value !== values[index]) ? (converted as T) : values
 }
 
 function applyInstancePayload(
