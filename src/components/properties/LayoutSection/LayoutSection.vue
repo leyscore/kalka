@@ -5,6 +5,7 @@ import AutoLayoutControls from '@/components/properties/LayoutSection/AutoLayout
 import ClipContentControl from '@/components/properties/LayoutSection/ClipContentControl.vue'
 import FlexControls from '@/components/properties/LayoutSection/FlexControls.vue'
 import GridControls from '@/components/properties/LayoutSection/GridControls.vue'
+import LayoutGridSection from '@/components/properties/LayoutSection/LayoutGridSection.vue'
 import PaddingControls from '@/components/properties/LayoutSection/PaddingControls.vue'
 import SizeControls from '@/components/properties/LayoutSection/size/SizeControls.vue'
 import TextResizingControl from '@/components/properties/LayoutSection/TextResizingControl.vue'
@@ -38,6 +39,8 @@ const CONTAINER_TYPES = ['FRAME', 'COMPONENT', 'COMPONENT_SET', 'INSTANCE']
             </template>
           </template>
         </PanelSection>
+
+        <LayoutGridSection />
       </template>
     </template>
   </LayoutControlsRoot>
