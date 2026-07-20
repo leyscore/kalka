@@ -236,7 +236,7 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
       </PanelFieldGroup>
 
       <PanelFieldGroup :label="panels.openTypeFeatures" class="mb-3">
-        <div class="grid gap-1.5">
+        <div class="grid gap-2.5">
           <label
             v-for="feature in commonFeatures"
             :key="feature.tag"
