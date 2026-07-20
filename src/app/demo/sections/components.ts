@@ -11,7 +11,7 @@ import type { EditorStore } from '@/app/editor/session'
 export function createComponentsSection(store: EditorStore) {
   const { graph } = store
 
-  const sectionId = store.createShape('SECTION', 60, 60, 660, 420)
+  const sectionId = store.createShape('SECTION', 60, 60, 660, 300)
   graph.updateNode(sectionId, {
     name: 'Component Library',
     fills: [solid(DEMO_COLORS.surface)]
@@ -20,15 +20,34 @@ export function createComponentsSection(store: EditorStore) {
   const title = store.createShape('TEXT', 24, 20, 300, 20, sectionId)
   graph.updateNode(title, {
     name: 'Title',
-    text: 'Components',
+    text: 'Components — the app below is built from these',
     fontSize: 12,
     fontWeight: 600,
     fills: [solid(DEMO_COLORS.textTertiary)],
     textAutoResize: 'WIDTH_AND_HEIGHT'
   })
 
+  function caption(text: string, x: number, y: number) {
+    const c = store.createShape('TEXT', x, y, 140, 14, sectionId)
+    graph.updateNode(c, {
+      name: 'Caption',
+      text,
+      fontSize: 10,
+      fontWeight: 500,
+      textAutoResize: 'WIDTH_AND_HEIGHT',
+      fills: [solid(DEMO_COLORS.textTertiary)]
+    })
+  }
+
+  caption('Button / Primary', 24, 52)
+  caption('Button / Secondary', 156, 52)
+  caption('Badge', 296, 52)
+  caption('Avatar', 388, 52)
+  caption('Nav item', 24, 148)
+  caption('Toggle', 196, 148)
+
   // ── Button / Primary ──────────────────────────────────────────────
-  const btnPrimary = store.createShape('FRAME', 24, 56, 116, 36, sectionId)
+  const btnPrimary = store.createShape('FRAME', 24, 72, 116, 36, sectionId)
   graph.updateNode(btnPrimary, {
     name: 'Button / Primary',
     cornerRadius: 8,
@@ -55,7 +74,7 @@ export function createComponentsSection(store: EditorStore) {
   const btnPrimaryComp = makeComponent(store, [btnPrimary])
 
   // ── Button / Secondary ────────────────────────────────────────────
-  const btnSecondary = store.createShape('FRAME', 156, 56, 104, 36, sectionId)
+  const btnSecondary = store.createShape('FRAME', 156, 72, 104, 36, sectionId)
   graph.updateNode(btnSecondary, {
     name: 'Button / Secondary',
     cornerRadius: 8,
@@ -82,7 +101,7 @@ export function createComponentsSection(store: EditorStore) {
   const btnSecondaryComp = makeComponent(store, [btnSecondary])
 
   // ── Badge / Success ───────────────────────────────────────────────
-  const badge = store.createShape('FRAME', 276, 56, 72, 24, sectionId)
+  const badge = store.createShape('FRAME', 296, 72, 72, 24, sectionId)
   graph.updateNode(badge, {
     name: 'Badge / Success',
     cornerRadius: 12,
@@ -109,7 +128,7 @@ export function createComponentsSection(store: EditorStore) {
   const badgeComp = makeComponent(store, [badge])
 
   // ── Avatar ────────────────────────────────────────────────────────
-  const avatar = store.createShape('ELLIPSE', 364, 56, 32, 32, sectionId)
+  const avatar = store.createShape('ELLIPSE', 388, 72, 32, 32, sectionId)
   graph.updateNode(avatar, {
     name: 'Avatar',
     fills: [solid(DEMO_COLORS.accentSoft)]
@@ -117,7 +136,7 @@ export function createComponentsSection(store: EditorStore) {
   const avatarComp = makeComponent(store, [avatar])
 
   // ── Nav item ──────────────────────────────────────────────────────
-  const navItem = store.createShape('FRAME', 24, 108, 148, 32, sectionId)
+  const navItem = store.createShape('FRAME', 24, 168, 148, 32, sectionId)
   graph.updateNode(navItem, {
     name: 'Nav Item',
     cornerRadius: 6,
@@ -147,7 +166,7 @@ export function createComponentsSection(store: EditorStore) {
   const navItemComp = makeComponent(store, [navItem])
 
   // ── Toggle ────────────────────────────────────────────────────────
-  const toggle = store.createShape('FRAME', 196, 112, 36, 20, sectionId)
+  const toggle = store.createShape('FRAME', 196, 172, 36, 20, sectionId)
   graph.updateNode(toggle, {
     name: 'Toggle',
     cornerRadius: 10,
