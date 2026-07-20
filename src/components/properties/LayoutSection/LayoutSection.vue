@@ -7,6 +7,7 @@ import FlexControls from '@/components/properties/LayoutSection/FlexControls.vue
 import GridControls from '@/components/properties/LayoutSection/GridControls.vue'
 import PaddingControls from '@/components/properties/LayoutSection/PaddingControls.vue'
 import SizeControls from '@/components/properties/LayoutSection/size/SizeControls.vue'
+import TextResizingControl from '@/components/properties/LayoutSection/TextResizingControl.vue'
 import SharedStyleField from '@/components/properties/shared-style/SharedStyleField.vue'
 import PanelSection from '@/components/ui/panel/PanelSection.vue'
 
@@ -20,6 +21,7 @@ const CONTAINER_TYPES = ['FRAME', 'COMPONENT', 'COMPONENT_SET', 'INSTANCE']
     <template v-if="ctx.node">
       <PanelSection :label="panels.layout">
         <SharedStyleField kind="grid" :label="panels.gridStyle" />
+        <TextResizingControl v-if="ctx.node.type === 'TEXT'" />
         <SizeControls />
       </PanelSection>
 
