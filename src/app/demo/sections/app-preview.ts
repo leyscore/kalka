@@ -154,6 +154,7 @@ export function createAppPreviewSection(store: EditorStore, comps: DemoComponent
     { title: 'Churn', value: '1.9%', trend: '-3%', tone: 'danger' as const }
   ]
 
+  const statBadges: StatBadge[] = []
   stats.forEach((s) => {
     const card = store.createShape('FRAME', 0, 0, 148, 96, statRow)
     graph.updateNode(card, {
@@ -192,13 +193,6 @@ export function createAppPreviewSection(store: EditorStore, comps: DemoComponent
     })
     const badge = graph.createInstance(comps.badgeComp, card)
     if (badge) {
-      const bLabel = badge.childIds.map((cid) => graph.getNode(cid)).find((n) => n?.type === 'TEXT')
-      if (bLabel) {
-        graph.updateNode(bLabel.id, { text: s.trend })
-        graph.updateNode(badge.id, {
-          overrides: { ...badge.overrides, [`${bLabel.id}:text`]: s.trend }
-        })
-      }
       const tone =
         s.tone === 'success'
           ? DEMO_COLORS.success
@@ -211,8 +205,15 @@ export function createAppPreviewSection(store: EditorStore, comps: DemoComponent
           : s.tone === 'danger'
             ? DEMO_COLORS.dangerSoft
             : DEMO_COLORS.accentSoft
-      graph.updateNode(badge.id, { fills: [solid(toneSoft)] })
-      if (bLabel) graph.updateNode(bLabel.id, { fills: [solid(tone)] })
+      const bLabel = badge.childIds.map((cid) => graph.getNode(cid)).find((n) => n?.type === 'TEXT')
+      if (bLabel) {
+        const overrides: Record<string, unknown> = { ...badge.overrides }
+        graph.updateNode(bLabel.id, { text: s.trend, fills: [solid(tone)] })
+        overrides[`${bLabel.id}:text`] = s.trend
+        overrides[`${bLabel.id}:fills`] = [solid(tone)]
+        graph.updateNode(badge.id, { fills: [solid(toneSoft)], overrides })
+        statBadges.push({ id: badge.id, labelId: bLabel.id, tone: s.tone })
+      }
     }
   })
 
@@ -304,5 +305,11 @@ export function createAppPreviewSection(store: EditorStore, comps: DemoComponent
     fills: [solid(DEMO_COLORS.accentText)]
   })
 
-  return { sectionId, sidebar, main, headerTitle, chartTitle }
+  return { sectionId, sidebar, main, headerTitle, chartTitle, statBadges }
+}
+
+interface StatBadge {
+  id: string
+  labelId: string
+  tone: 'success' | 'accent' | 'danger'
 }
