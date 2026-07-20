@@ -70,7 +70,7 @@ export function connectAutomation(getStore: () => EditorStore, authToken: string
 
     ws.onclose = (event) => {
       ws = null
-      if (intentionalDisconnect || event.code === 1000) return
+      if (intentionalDisconnect) return
       console.error('[Automation] WebSocket closed:', `code=${event.code} reason=${event.reason}`)
       scheduleReconnect()
     }
