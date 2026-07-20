@@ -1,3 +1,5 @@
+import type { Color } from '@open-pencil/scene-graph'
+
 import { DEMO_COLORS, gradient, solid, thinStroke } from '@/app/demo/colors'
 import type { EditorStore } from '@/app/editor/session'
 
@@ -8,6 +10,14 @@ interface DemoComponents {
   avatarComp: string
   navItemComp: string
   toggleComp: string
+}
+
+type StatTone = 'success' | 'accent' | 'danger'
+
+const STAT_TONE_COLORS: Record<StatTone, { foreground: Color; background: Color }> = {
+  success: { foreground: DEMO_COLORS.success, background: DEMO_COLORS.successSoft },
+  accent: { foreground: DEMO_COLORS.accent, background: DEMO_COLORS.accentSoft },
+  danger: { foreground: DEMO_COLORS.danger, background: DEMO_COLORS.dangerSoft }
 }
 
 /**
@@ -193,25 +203,14 @@ export function createAppPreviewSection(store: EditorStore, comps: DemoComponent
     })
     const badge = graph.createInstance(comps.badgeComp, card)
     if (badge) {
-      const tone =
-        s.tone === 'success'
-          ? DEMO_COLORS.success
-          : s.tone === 'danger'
-            ? DEMO_COLORS.danger
-            : DEMO_COLORS.accent
-      const toneSoft =
-        s.tone === 'success'
-          ? DEMO_COLORS.successSoft
-          : s.tone === 'danger'
-            ? DEMO_COLORS.dangerSoft
-            : DEMO_COLORS.accentSoft
+      const tone = STAT_TONE_COLORS[s.tone]
       const bLabel = badge.childIds.map((cid) => graph.getNode(cid)).find((n) => n?.type === 'TEXT')
       if (bLabel) {
         const overrides: Record<string, unknown> = { ...badge.overrides }
-        graph.updateNode(bLabel.id, { text: s.trend, fills: [solid(tone)] })
+        graph.updateNode(bLabel.id, { text: s.trend, fills: [solid(tone.foreground)] })
         overrides[`${bLabel.id}:text`] = s.trend
-        overrides[`${bLabel.id}:fills`] = [solid(tone)]
-        graph.updateNode(badge.id, { fills: [solid(toneSoft)], overrides })
+        overrides[`${bLabel.id}:fills`] = [solid(tone.foreground)]
+        graph.updateNode(badge.id, { fills: [solid(tone.background)], overrides })
         statBadges.push({ id: badge.id, labelId: bLabel.id, tone: s.tone })
       }
     }
@@ -311,5 +310,5 @@ export function createAppPreviewSection(store: EditorStore, comps: DemoComponent
 interface StatBadge {
   id: string
   labelId: string
-  tone: 'success' | 'accent' | 'danger'
+  tone: StatTone
 }
