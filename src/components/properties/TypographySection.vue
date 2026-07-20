@@ -196,6 +196,47 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
         </SegmentedControl>
       </PanelFieldGroup>
 
+      <PanelFieldGroup :label="panels.textFormatting" class="mb-3" :ui="{ container: 'flex-row gap-1.5' }">
+        <div
+          class="inline-flex items-center gap-0.5 rounded bg-panel-field p-0.5 hover:bg-panel-field-hover"
+          role="toolbar"
+          :aria-label="panels.textFormatting"
+        >
+          <IconButton
+            :label="`${menu.bold} (${appMenuShortcutLabel('text.bold')})`"
+            size="md"
+            :active="ctx.activeFormatting.value.includes('bold')"
+            @click="ctx.actions.toggleBold"
+          >
+            <icon-lucide-bold class="size-3.5" />
+          </IconButton>
+          <IconButton
+            :label="`${menu.italic} (${appMenuShortcutLabel('text.italic')})`"
+            size="md"
+            :active="ctx.activeFormatting.value.includes('italic')"
+            @click="ctx.actions.toggleItalic"
+          >
+            <icon-lucide-italic class="size-3.5" />
+          </IconButton>
+          <IconButton
+            :label="`${menu.underline} (${appMenuShortcutLabel('text.underline')})`"
+            size="md"
+            :active="ctx.activeFormatting.value.includes('underline')"
+            @click="ctx.actions.toggleDecoration('UNDERLINE')"
+          >
+            <icon-lucide-underline class="size-3.5" />
+          </IconButton>
+          <IconButton
+            :label="menu.strikethrough"
+            size="md"
+            :active="ctx.activeFormatting.value.includes('strikethrough')"
+            @click="ctx.actions.toggleDecoration('STRIKETHROUGH')"
+          >
+            <icon-lucide-strikethrough class="size-3.5" />
+          </IconButton>
+        </div>
+      </PanelFieldGroup>
+
       <PanelGrid columns="two" class="mb-3">
         <PanelFieldGroup :label="panels.textCase">
           <AppSelect
@@ -254,47 +295,6 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
               @update:model-value="ctx.actions.setFontFeature(feature.tag, $event)"
             />
           </label>
-        </div>
-      </PanelFieldGroup>
-
-      <PanelFieldGroup :label="panels.textFormatting" :ui="{ container: 'flex-row gap-1.5' }">
-        <div
-          class="inline-flex items-center gap-0.5 rounded bg-panel-field p-0.5 hover:bg-panel-field-hover"
-          role="toolbar"
-          :aria-label="panels.textFormatting"
-        >
-          <IconButton
-            :label="`${menu.bold} (${appMenuShortcutLabel('text.bold')})`"
-            size="md"
-            :active="ctx.activeFormatting.value.includes('bold')"
-            @click="ctx.actions.toggleBold"
-          >
-            <icon-lucide-bold class="size-3.5" />
-          </IconButton>
-          <IconButton
-            :label="`${menu.italic} (${appMenuShortcutLabel('text.italic')})`"
-            size="md"
-            :active="ctx.activeFormatting.value.includes('italic')"
-            @click="ctx.actions.toggleItalic"
-          >
-            <icon-lucide-italic class="size-3.5" />
-          </IconButton>
-          <IconButton
-            :label="`${menu.underline} (${appMenuShortcutLabel('text.underline')})`"
-            size="md"
-            :active="ctx.activeFormatting.value.includes('underline')"
-            @click="ctx.actions.toggleDecoration('UNDERLINE')"
-          >
-            <icon-lucide-underline class="size-3.5" />
-          </IconButton>
-          <IconButton
-            :label="menu.strikethrough"
-            size="md"
-            :active="ctx.activeFormatting.value.includes('strikethrough')"
-            @click="ctx.actions.toggleDecoration('STRIKETHROUGH')"
-          >
-            <icon-lucide-strikethrough class="size-3.5" />
-          </IconButton>
         </div>
       </PanelFieldGroup>
     </PanelSection>
