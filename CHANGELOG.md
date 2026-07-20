@@ -2,79 +2,43 @@
 
 ## Unreleased
 
+### Added
+
+- Import HTML, CSS, Tailwind, and JSX as editable documents from the app, CLI, and SDK, and export standalone browser-ready HTML with compiled CSS and optional external assets.
+- Author richer Design JSX with components, instances, variables, gradients, structured fills, shadows, and blur effects.
+- Manage pages with rename, delete, and drag-to-reorder actions in the Pages panel.
+- Inspect and edit constraints, stroke caps and joins, corner smoothing, shared styles, component properties, blend modes, masks, advanced typography, and per-node export settings from the Design panel.
+- Find overlapping layers and overflowing children from the CLI, AI tools, and MCP.
+- Use Figma-style number-key opacity shortcuts: `1`–`9` set 10%–90%, `0` sets 100%, and two-digit sequences set exact values.
+- Drag image files directly into the desktop app and paste Figma layers with their remote image fills.
+- Target a specific open document and page from live CLI and MCP automation, including sessions with multiple documents.
+- Test OpenAI-compatible provider connections from AI settings with clearer setup errors.
+- Build custom property panels with new Vue SDK number fields, bindable values, property sections, segmented controls, property lists, color models, fill controls, and gradient primitives.
+
 ### Changed
 
-- Move complete `.fig` archive parsing, bidirectional SceneGraph/NodeChange conversion, and component/instance interpretation into `@open-pencil/fig`, keeping runtime font access and format-neutral IO orchestration in core and Kiwi schema/container mechanics in `@open-pencil/kiwi`.
-- Remove internal cross-package forwarding modules; import `@open-pencil/fig`, `@open-pencil/pen`, and `@open-pencil/scene-graph` from their owning public exports.
-- Track normalized source edits in SceneGraph while preserving original `.fig` provenance and filtering stale raw fields through Fig-owned metadata policy.
-- Eliminate quadratic component-property scans and redundant instance propagation during large `.fig` round trips, reducing the Material 3 fixture regression from minutes to seconds.
-- Reject corrupted fig-Kiwi data chunks instead of silently treating failed compressed payloads as raw bytes.
-- Add Figma-style page management in the Pages panel, including rename/delete actions and drag-and-drop page reordering.
-- Add DOM/CSS import and authoring support so HTML, CSS, Tailwind, and JSX can be converted into editable OpenPencil documents from the app, CLI, and SDK.
-- Add Tailwind class serialization for DOM/CSS HTML export in the SDK and CLI.
-- Add standalone browser-openable HTML export with compiled CSS and optional external image/font assets.
-- Add richer Design JSX authoring for components, variables, structured fills, gradients, shadows, and blur effects.
-- Add overlap analysis for finding layout collisions and overflowing children from the CLI, AI tools, and MCP.
-- Add saved per-node export settings for repeat exports.
-- Add Design panel controls for layer blend modes and alpha, vector, and luminance masks.
-- Refine Design panel foundations with 26px controls, consistently aligned action rails, shared Tailwind themes, and Storybook component states.
-- Fix variable binding action visibility, picker anchoring, hover treatment, and Design panel number-field sizing, including embedded paint rows.
-- Scale the Layers panel to 5,000-node documents with virtualized rows, indexed updates, scroll-to-selection, range selection, and focus-aware themed states.
-- Add Figma-style horizontal and vertical constraint controls with pin interactions, mixed-selection editing, undo, and responsive frame resizing.
-- Add mixed-selection stroke cap, join, and miter-limit controls with CanvasKit rendering and `.fig` roundtrip support.
-- Add a mixed-selection corner-smoothing percentage control with live preview, per-node undo restoration, and `.fig` roundtrip coverage.
-- Model imported fill, stroke, text, effect, and grid styles with reusable SDK/app selectors, automatic detach-on-edit, undo, and `.fig` definition roundtrips.
-- Add variant, text, boolean, and nested instance-swap component property controls with mixed-selection undo and typed `.fig` metadata roundtrips.
-- Add fill and effect blend-mode controls with shared-style detachment and mixed-selection undo.
-- Add text case, justification, vertical alignment, truncation/max-lines, and common OpenType controls with CanvasKit rendering and undo.
-- Standardize Pages, Layers/Assets navigation, and document tab states across light and dark themes.
-- Standardize Vue SDK and app override type names on the `UI` acronym, including `FontPickerUI`.
-- Add a headless Vue SDK NumberField with pointer scrubbing, keyboard stepping, safe arithmetic expressions, and mixed/bound states; remove the superseded ScrubInput API.
-- Add provider-driven BindableValue primitives for variable and token binding, including detach-on-edit, read-only, edit-variable, mixed-value, and undo-batched interactions.
-- Add headless PropertySection, SegmentedControl, and typed PropertyList anatomy, with controlled list events and an undo-aware OpenPencil adapter.
-- Refine variable-bound number fields with a quiet identity pill, one picker affordance, an accessible variable combobox, and non-destructive focus behavior.
-- Redesign Position and Appearance controls with aligned panel grids, SDK-owned independent-corner state, and compact type-icon selection headers.
-- Rebuild Layout size fields with shared variable binding, inline sizing modes, semantic field anatomy, and one-step Hug/Fill-to-Fixed editing.
-- Replace the fragmented Vue SDK color-picker model helpers with `useColorModel()`, providing precise Reka bridges, extensible formats, and shared RGB, HSL, HSB, and OkHCL channel behavior.
-- Add accessible color-channel sliders, binding-aware fill primitives, and keyboard-operable gradient stops while separating fill state from popover composition.
-- Rebuild Fill, Stroke, Effects, and Export controls with shared compact item rows, semantic actions, binding-aware paint fields, and reversible color-picker edits.
-- Finish the Design panel migration with compact labeled Typography, Variant, Mask, and Page controls plus semantic empty-section states.
-- Remove the deprecated `FillPickerRoot`, `useFillPicker()`, and `PanelRow` compatibility APIs after migrating consumers to the canonical fill and panel primitives.
-- Upgrade Vue SDK documentation with shared Tailwind demos, source-generated component API tables, and type-aware Twoslash examples in VitePress.
-- Add desktop image drag-and-drop into the Tauri app window.
-- Add open-document discovery for live CLI and MCP automation so agents can target the intended document and page.
-- Publish lower-level SceneGraph, Pen, Kiwi, Fig, and DOM/CSS functionality through clearer package boundaries for SDK and automation consumers.
-- Upgrade `opentype.js` to v2 and add BCP-47 text-language hints for language-correct CJK shaping and fallback order.
+- Redesign the editor chrome and Design panel with denser aligned controls, clearer selection and section states, improved menus and overlays, consistent light/dark theming, and better keyboard and screen-reader behavior.
+- Scale the Layers panel to documents with thousands of nodes through virtualized rows, faster incremental updates, stable expansion, range selection, and scroll-to-selection.
+- Resolve fonts before text appears, with language-aware CJK and Arabic fallback, character-specific remote subsets, and more reliable rendering as fonts load.
+- Open and save large `.fig` documents substantially faster while preserving original metadata and user edits; corrupted compressed data now reports an error instead of being opened as valid content.
+- Publish SceneGraph, Pen, Kiwi, Fig, DOM/CSS, and Vue functionality through clearer package APIs, with expanded SDK documentation and examples.
 
-### Fixes
+### Fixed
 
-- Align Fill and Effects sub-controls to their shared property-row content rails, make Layer rows fill the panel with cleaner root indentation, left-align icon menu labels, and improve font-settings accessibility without clearing selection when dismissing overlays.
-- Restore the Variables dialog empty state, full-width table layout, unclipped type menu, and expected Escape handling in dialogs and popup menus.
-- Pin the patched `websocket-driver` release used through Trystero/Firebase collaboration to resolve a critical protocol-length advisory.
-- Preserve unrelated Figma prototype, library, export, and raw metadata when editing modeled `.fig` fields, while still overriding stale field-specific payloads.
-- Make canvas text rendering demand missing font faces and verify CJK/Arabic fallback coverage from CanvasKit shaping results instead of coarse script predictions.
-- Resolve fonts before loaded, pasted, imported, and tool-created nodes render; invalidate generation-stale text caches and use baked `.fig` glyphs only after live font resolution is exhausted.
-- Load character-specific remote font subsets without Latin-only assumptions, preserve cumulative subset coverage, and reject unavailable desktop font styles instead of substituting the first family face.
-- Render downloaded CJK and Arabic faces under their source family names so CanvasKit produces visible glyphs, with first-paint and interactive fallback snapshots covering CJK, Arabic, and mixed scripts.
-- Fix live CLI and MCP automation drifting to the wrong open document or page when multiple files are open.
-- Improve Chinese, Japanese, and Korean text rendering with glyph-aware fallback fonts and outline rendering when needed.
-- Preserve imported Figma text sizing more accurately, especially auto-sized text inside auto-layout frames.
-- Match Figma auto-layout reflow when deleting children, hiding optional instance slots, or syncing component changes.
-- Fix desktop clipboard copy, cut, and paste when browser clipboard events are unavailable.
-- Fetch image fills when pasting from Figma in the desktop app and warn when referenced images remain unavailable.
-- Fix desktop "Share This File" links so they use the public app URL.
-- Fix collaborators joining a room without receiving the current document contents.
-- Fix `.fig` round-trips that could corrupt files because of duplicate generated IDs.
-- Fix resizing groups and boolean operations so child layers scale with the parent.
-- Fix Hangul IME composition while editing text.
-- Improve large layer-tree responsiveness and keep expanded state stable while editing.
-- Improve AI provider setup with a connection test and clearer errors for OpenAI-compatible endpoints.
-- Fix published package type resolution for TypeScript consumers.
-- Fix clone operations sharing mutable data with the original, including fills, strokes, variable bindings, overrides, and vector networks.
-- Fix variable bindings left behind when fills or strokes are removed.
-- Improve Figma group, boolean, instance, rotated vector, complex text fill, layout grid, page guide, pattern/noise, and other imported visual details.
-- Fix file-backed CLI commands under Node by avoiding Bun-only filesystem APIs.
-- Improve overlap analysis accuracy for rotated stroked nodes, nested clipping, empty limits, and trimmed filter values.
+- Improve `.fig` import and rendering fidelity for groups, booleans, instances, rotated vectors, complex text fills, auto-sized text, layout grids, page guides, patterns, noise effects, masks, and canvas backgrounds.
+- Preserve pages, components, prototype and library metadata, export settings, unsupported effects, and other unrelated Figma data when editing and resaving `.fig` files.
+- Prevent duplicate generated IDs from corrupting `.fig` round trips.
+- Match Figma auto-layout reflow after deleting children, hiding optional instance slots, or syncing component changes.
+- Make group and boolean-operation children scale with their parent during resize.
+- Restore desktop copy, cut, and paste when browser clipboard events are unavailable.
+- Keep duplicated layers independent instead of sharing mutable fills, strokes, bindings, overrides, or vector data, and remove stale bindings when paints are deleted.
+- Preserve Hangul IME composition while editing text.
+- Share public app links from the desktop collaboration panel and send the current document to newly joined collaborators.
+- Resolve published package types correctly for TypeScript consumers and keep file-backed CLI commands working under Node.
+
+### Security
+
+- Update the collaboration WebSocket dependency to address a protocol-length advisory.
 
 ## 0.13.2 — 2026-05-30
 
