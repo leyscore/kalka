@@ -33,6 +33,7 @@ import { populateInstances } from './populate'
 import { preComputeRoots } from './resolve'
 import { applySymbolOverrides } from './symbol/overrides'
 import { propagateNodePropsTransitively, propagateOverridesTransitively } from './sync'
+import { indexCloneNodes } from './sync/sources'
 import type { InstanceNodeChange, OverrideContext, ComponentPropValue } from './types'
 
 /**
@@ -302,7 +303,10 @@ export function populateAndApplyOverrides(
 
   if (activeRootIds) {
     const populated = populateInstances(graph, activeRootIds)
-    if (populated) ctx.activeNodeIds = populated
+    if (populated) {
+      ctx.activeNodeIds = populated
+      indexCloneNodes(graph, populated, ctx.preComputedClones)
+    }
     const latePropModified = applyComponentProperties(ctx)
     const lateSeeds = new Set([...overriddenNodes, ...propModified, ...latePropModified])
     if (lateSeeds.size > 0) {

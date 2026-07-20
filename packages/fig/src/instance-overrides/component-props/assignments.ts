@@ -40,9 +40,11 @@ function sourceChildPropRefs(
   for (const sourceChildId of sourceParent.childIds) {
     const sourceChild = ctx.graph.getNode(sourceChildId)
     if (!sourceChild) continue
-    if (sourceChild.componentId && sourceChild.componentId === child.componentId) {
-      const refs = findPropRefs(ctx, sourceChild.id, propRefsMap)
-      if (refs) return refs
+    if (
+      sourceChild.id === child.componentId ||
+      (sourceChild.componentId && sourceChild.componentId === child.componentId)
+    ) {
+      return findPropRefs(ctx, sourceChild.id, propRefsMap) ?? []
     }
     if (!fallbackMatchId && sourceChild.name === child.name && sourceChild.type === child.type) {
       fallbackMatchId = sourceChild.id

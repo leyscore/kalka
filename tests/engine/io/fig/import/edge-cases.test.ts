@@ -394,6 +394,75 @@ describe('edge cases', () => {
     )
   })
 
+  test('component swaps use the component set name for variants', () => {
+    const graph = importNodeChanges([
+      {
+        guid: { sessionID: 0, localID: 0 },
+        type: 'DOCUMENT',
+        name: 'Document',
+        phase: 'CREATED'
+      } as NodeChange,
+      {
+        guid: { sessionID: 0, localID: 1 },
+        parentIndex: { guid: { sessionID: 0, localID: 0 }, position: '!' },
+        type: 'CANVAS',
+        name: 'Page',
+        phase: 'CREATED'
+      } as NodeChange,
+      {
+        guid: { sessionID: 1, localID: 1 },
+        overrideKey: { sessionID: 90, localID: 1 },
+        parentIndex: { guid: { sessionID: 0, localID: 1 }, position: '!' },
+        type: 'SYMBOL',
+        name: 'Search',
+        phase: 'CREATED'
+      } as NodeChange,
+      {
+        guid: { sessionID: 1, localID: 2 },
+        parentIndex: { guid: { sessionID: 0, localID: 1 }, position: '"' },
+        type: 'FRAME',
+        name: 'Avatar',
+        phase: 'CREATED',
+        componentPropDefs: [
+          {
+            id: { sessionID: 2, localID: 1 },
+            name: 'Type',
+            type: 'VARIANT',
+            initialValue: { textValue: 'Picture' }
+          }
+        ]
+      } as NodeChange,
+      {
+        guid: { sessionID: 1, localID: 3 },
+        parentIndex: { guid: { sessionID: 1, localID: 2 }, position: '!' },
+        type: 'SYMBOL',
+        name: 'Type=Picture',
+        phase: 'CREATED'
+      } as NodeChange,
+      {
+        guid: { sessionID: 1, localID: 4 },
+        parentIndex: { guid: { sessionID: 0, localID: 1 }, position: '#' },
+        type: 'INSTANCE',
+        name: 'Search',
+        phase: 'CREATED',
+        symbolData: {
+          symbolID: { sessionID: 1, localID: 1 },
+          symbolOverrides: [
+            {
+              guidPath: { guids: [{ sessionID: 90, localID: 1 }] },
+              overriddenSymbolID: { sessionID: 1, localID: 3 }
+            }
+          ]
+        }
+      } as NodeChange
+    ])
+
+    const instance = graph
+      .getChildren(graph.getPages()[0].id)
+      .find((node) => node.type === 'INSTANCE')
+    expect(instance?.name).toBe('Avatar')
+  })
+
   test('DSD propagates through intermediate clones that are also DSD-targeted', async () => {
     const graph = await parseFixture('gold-preview.fig')
 

@@ -3,6 +3,11 @@ import type { GUID } from '@open-pencil/kiwi/fig/codec'
 import type { SceneNode } from '@open-pencil/scene-graph'
 import { copyStrokes } from '@open-pencil/scene-graph/copy'
 
+import {
+  indexCloneSubtree,
+  remapRepopulatedChildSources,
+  snapshotChildSources
+} from './sync/sources'
 import type { InstanceNodeChange, OverrideContext } from './types'
 
 const MAX_CHAIN_DEPTH = 20
@@ -437,24 +442,35 @@ function applyStrokeDescendants(
   visit(nodeId)
 }
 
+function componentInstanceName(ctx: OverrideContext, component: SceneNode | undefined): string {
+  if (!component) return ''
+  const parent = component.parentId ? ctx.graph.getNode(component.parentId) : undefined
+  return parent?.type === 'COMPONENT_SET' ? parent.name : component.name
+}
+
 export function repopulateInstance(ctx: OverrideContext, nodeId: string, compId: string): void {
   const node = ctx.graph.getNode(nodeId)
   if (node?.type !== 'INSTANCE') return
 
   const previousStrokes = collectStyledStrokeDescendants(ctx, nodeId)
+  const previousSources = snapshotChildSources(ctx.graph, nodeId)
   const rootCompId = node.componentId ? getComponentRoot(ctx, node.componentId) : undefined
   const rootComp = rootCompId ? ctx.graph.getNode(rootCompId) : undefined
   for (const childId of Array.from(node.childIds)) ctx.graph.deleteNode(childId)
   const comp = ctx.graph.getNode(compId)
   const updates: Partial<SceneNode> = { componentId: compId }
-  if (comp?.name && rootComp?.name && node.name === rootComp.name) {
-    updates.name = comp.name
+  const previousName = componentInstanceName(ctx, rootComp)
+  const nextName = componentInstanceName(ctx, comp)
+  if (nextName && previousName && (node.name === previousName || node.name === rootComp?.name)) {
+    updates.name = nextName
   }
   ctx.graph.preserveSourceMetadataDuring(() => ctx.graph.updateNode(nodeId, updates))
   if (comp && comp.childIds.length > 0) {
     ctx.graph.populateInstanceChildren(nodeId, compId, 'fig-import')
+    indexCloneSubtree(ctx.graph, nodeId, ctx.preComputedClones)
     applyStrokeDescendants(ctx, nodeId, previousStrokes)
   }
+  remapRepopulatedChildSources(ctx.graph, nodeId, previousSources, ctx.preComputedClones)
   ctx.swappedInstances.add(nodeId)
   ctx.componentIdRoot.clear()
   candidateCache.delete(ctx)

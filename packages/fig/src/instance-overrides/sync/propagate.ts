@@ -3,6 +3,7 @@ import type { SceneGraph } from '@open-pencil/scene-graph'
 import type { ProtectionMap } from '../patches'
 import { buildClonesMap, syncChildrenDeep } from './clones'
 import { syncNodeProps } from './fields'
+import { indexCloneSubtree, remapRepopulatedChildSources, snapshotChildSources } from './sources'
 
 function expandSeedsToParents(graph: SceneGraph, seeds: Set<string>): Set<string> {
   const expanded = new Set(seeds)
@@ -134,12 +135,15 @@ export function propagateOverridesTransitively(
 
       syncNodeProps(graph, source, node, protections)
       if (source.childIds.length !== node.childIds.length) {
+        const previousSources = snapshotChildSources(graph, node.id)
         for (const childId of Array.from(node.childIds)) graph.deleteNode(childId)
         if (source.childIds.length > 0) {
           graph.populateInstanceChildren(node.id, sourceId, 'fig-import')
+          indexCloneSubtree(graph, node.id, clonesOf)
         }
+        remapRepopulatedChildSources(graph, node.id, previousSources, clonesOf)
       } else if (source.childIds.length > 0 && node.childIds.length > 0) {
-        syncChildrenDeep(graph, sourceId, node.id, swappedInstances, skip, protections)
+        syncChildrenDeep(graph, sourceId, node.id, swappedInstances, skip, protections, clonesOf)
       }
       syncQueue.push(cloneId)
     }
