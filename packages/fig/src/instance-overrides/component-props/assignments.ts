@@ -84,21 +84,17 @@ export function applyInstanceDirectAssignments(
   propRefsMap: Map<string, ComponentPropRef[]>,
   modified: Set<string>
 ): void {
-  for (const node of ctx.graph.getAllNodes()) {
-    if (ctx.activeNodeIds && !ctx.activeNodeIds.has(node.id)) continue
-    if (node.type !== 'INSTANCE') continue
-    const ownFigmaId = ctx.nodeIdToGuid.get(node.id)
-    if (!ownFigmaId) continue
-    const ownAssignments = assignmentSources.get(ownFigmaId)
-    if (ownAssignments) {
-      applyPropAssignments(
-        ctx,
-        node.id,
-        assignmentsToValueMap(ctx, ownAssignments),
-        propRefsMap,
-        modified
-      )
-    }
+  for (const [figmaId, assignments] of assignmentSources) {
+    const nodeId = ctx.guidToNodeId.get(figmaId)
+    if (!nodeId || (ctx.activeNodeIds && !ctx.activeNodeIds.has(nodeId))) continue
+    if (ctx.graph.getNode(nodeId)?.type !== 'INSTANCE') continue
+    applyPropAssignments(
+      ctx,
+      nodeId,
+      assignmentsToValueMap(ctx, assignments),
+      propRefsMap,
+      modified
+    )
   }
 }
 

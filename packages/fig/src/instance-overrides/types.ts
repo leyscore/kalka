@@ -110,6 +110,8 @@ export interface OverrideContext {
   nodeIdToGuid: Map<string, string>
   propDefaults: Map<string, ComponentPropValue>
   propNames: Map<string, string>
+  componentPropRefsMap?: Map<string, ComponentPropRef[]>
+  componentPropAssignmentsMap?: Map<string, ComponentPropAssignment[]>
   preComputedRoot: Map<string, string>
   componentIdRoot: Map<string, string>
   swappedInstances: Set<string>
