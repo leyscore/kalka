@@ -258,7 +258,11 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
       </PanelFieldGroup>
 
       <PanelFieldGroup :label="panels.textFormatting" :ui="{ container: 'flex-row gap-1.5' }">
-        <div class="flex items-center gap-1.5" role="toolbar" :aria-label="panels.textFormatting">
+        <div
+          class="inline-flex items-center gap-0.5 rounded bg-panel-field p-0.5 hover:bg-panel-field-hover"
+          role="toolbar"
+          :aria-label="panels.textFormatting"
+        >
           <IconButton
             :label="`${menu.bold} (${appMenuShortcutLabel('text.bold')})`"
             size="md"
