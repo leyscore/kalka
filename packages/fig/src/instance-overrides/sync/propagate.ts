@@ -36,6 +36,63 @@ function buildNeedsSyncSet(
   return needsSync
 }
 
+interface NodePropPropagationEntry {
+  lineageId: string
+  sourceId: string
+}
+
+function mergeCloneLineage(
+  current: Map<string, string[]>,
+  preComputed?: Map<string, string[]>
+): Map<string, string[]> {
+  if (!preComputed) return current
+  const merged = new Map<string, string[]>()
+  for (const source of [preComputed, current]) {
+    for (const [sourceId, cloneIds] of source) {
+      const existing = merged.get(sourceId)
+      if (existing) {
+        for (const cloneId of cloneIds) {
+          if (!existing.includes(cloneId)) existing.push(cloneId)
+        }
+      } else {
+        merged.set(sourceId, [...cloneIds])
+      }
+    }
+  }
+  return merged
+}
+
+export function propagateNodePropsTransitively(
+  graph: SceneGraph,
+  seeds: Set<string>,
+  activeNodeIds?: Set<string>,
+  protections?: ProtectionMap,
+  preComputedClones?: Map<string, string[]>
+): void {
+  if (seeds.size === 0) return
+
+  const clonesOf = mergeCloneLineage(buildClonesMap(graph, activeNodeIds), preComputedClones)
+  const visited = new Set(seeds)
+  const queue: NodePropPropagationEntry[] = [...seeds].map((id) => ({
+    lineageId: id,
+    sourceId: id
+  }))
+  let index = 0
+  while (index < queue.length) {
+    const { lineageId, sourceId } = queue[index]
+    index++
+    const source = graph.getNode(sourceId)
+    if (!source) continue
+    for (const cloneId of clonesOf.get(lineageId) ?? []) {
+      if (visited.has(cloneId)) continue
+      visited.add(cloneId)
+      const clone = graph.getNode(cloneId)
+      if (clone) syncNodeProps(graph, source, clone, protections)
+      queue.push({ lineageId: cloneId, sourceId: clone?.id ?? sourceId })
+    }
+  }
+}
+
 export function propagateOverridesTransitively(
   graph: SceneGraph,
   seeds: Set<string>,

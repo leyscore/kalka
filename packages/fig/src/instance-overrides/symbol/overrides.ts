@@ -14,7 +14,7 @@ function isActiveInstance(ctx: OverrideContext, nodeId: string | undefined): nod
  * (fills, text, visibility, etc.). Returns the set of directly
  * overridden node IDs (used as seeds for transitive sync).
  */
-export function applySymbolOverrides(ctx: OverrideContext): Set<string> {
+export function applySymbolOverrides(ctx: OverrideContext, propertiesOnly = false): Set<string> {
   const overriddenNodes = new Set<string>()
   ctx.componentIdRoot.clear()
 
@@ -37,6 +37,8 @@ export function applySymbolOverrides(ctx: OverrideContext): Set<string> {
 
       const patch = patchFromSymbolOverride(ctx, targetId, ov)
       if (!patch) continue
+      if (propertiesOnly) patch.swapComponentId = undefined
+      if (!patch.swapComponentId && !patch.props) continue
       overriddenNodes.add(targetId)
       applyOverridePatch(ctx, patch)
     }

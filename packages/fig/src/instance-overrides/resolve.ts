@@ -10,6 +10,8 @@ const siblingIndexCache = new WeakMap<OverrideContext, Map<string, number | null
 const siblingGroupCache = new WeakMap<OverrideContext, Map<string, string[]>>()
 const candidateCache = new WeakMap<OverrideContext, Map<string, string[]>>()
 const componentFindCache = new WeakMap<OverrideContext, Map<string, string | null>>()
+const sourcePathCache = new WeakMap<OverrideContext, Map<string, number[] | null>>()
+const overridePathTargetCache = new WeakMap<OverrideContext, Map<string, string>>()
 
 /**
  * Pre-compute componentId root for every node.
@@ -35,7 +37,11 @@ export function preComputeRoots(ctx: OverrideContext): void {
   }
 
   for (const node of ctx.graph.getAllNodes()) {
-    if (node.componentId) resolve(node.id)
+    if (!node.componentId) continue
+    resolve(node.id)
+    const clones = ctx.preComputedClones.get(node.componentId)
+    if (clones) clones.push(node.id)
+    else ctx.preComputedClones.set(node.componentId, [node.id])
   }
 }
 
@@ -140,6 +146,56 @@ function sourceSiblingIndex(ctx: OverrideContext, sourceId: string): number | nu
   const result = index !== -1 ? index : null
   cache.set(sourceId, result)
   return result
+}
+
+function sourcePathToNode(
+  ctx: OverrideContext,
+  sourceRootId: string,
+  targetId: string
+): number[] | null {
+  let cache = sourcePathCache.get(ctx)
+  if (!cache) {
+    cache = new Map()
+    sourcePathCache.set(ctx, cache)
+  }
+  const cacheKey = `${sourceRootId}\0${targetId}`
+  if (cache.has(cacheKey)) return cache.get(cacheKey) ?? null
+
+  const visit = (nodeId: string, path: number[]): number[] | null => {
+    const node = ctx.graph.getNode(nodeId)
+    if (!node) return null
+    if (nodeId === targetId || node.componentId === targetId) return path
+    for (let index = 0; index < node.childIds.length; index++) {
+      const result = visit(node.childIds[index], [...path, index])
+      if (result) return result
+    }
+    return null
+  }
+
+  const result = visit(sourceRootId, [])
+  cache.set(cacheKey, result)
+  return result
+}
+
+function findNodeBySourcePath(
+  ctx: OverrideContext,
+  currentId: string,
+  targetId: string
+): string | null {
+  const current = ctx.graph.getNode(currentId)
+  if (!current?.componentId) return null
+  const path = sourcePathToNode(ctx, current.componentId, targetId)
+  if (!path) return null
+
+  let target = current
+  for (const index of path) {
+    const childId = target.childIds[index]
+    if (!childId) return null
+    const child = ctx.graph.getNode(childId)
+    if (!child) return null
+    target = child
+  }
+  return target.id
 }
 
 function findNodeByNameAndType(
@@ -281,6 +337,7 @@ function resolveOverrideStep(
   if (current?.componentId === remapped) return currentId
 
   return (
+    findNodeBySourcePath(ctx, currentId, remapped) ??
     findNodeByComponentId(ctx, currentId, remapped) ??
     findNodeBySourceSiblingIndex(ctx, currentId, remapped, sourceId) ??
     findNodeByNameAndType(ctx, currentId, targetNc?.name, targetNc?.type)
@@ -292,9 +349,25 @@ export function resolveOverrideTarget(
   instanceId: string,
   guids: GUID[]
 ): string | null {
+  let pathTargets = overridePathTargetCache.get(ctx)
+  if (!pathTargets) {
+    pathTargets = new Map()
+    overridePathTargetCache.set(ctx, pathTargets)
+  }
+
   let currentId = instanceId
+  const path: string[] = []
   for (let index = 0; index < guids.length; index++) {
     const key = guidToString(guids[index])
+    path.push(key)
+    const pathKey = `${instanceId}\0${path.join('/')}`
+    const cachedTarget = pathTargets.get(pathKey)
+    if (cachedTarget && ctx.graph.getNode(cachedTarget)) {
+      currentId = cachedTarget
+      continue
+    }
+    if (cachedTarget) pathTargets.delete(pathKey)
+
     const sourceId = ctx.overrideKeyToGuid.get(key) ?? key
     const targetNc = ctx.changeMap.get(sourceId)
     const symbolGuid = targetNc?.symbolData?.symbolID
@@ -305,6 +378,7 @@ export function resolveOverrideTarget(
     const resolved = resolveOverrideStep(ctx, currentId, sourceId, remapped, targetNc)
     if (resolved) {
       currentId = resolved
+      pathTargets.set(pathKey, resolved)
       continue
     }
 
@@ -312,6 +386,7 @@ export function resolveOverrideTarget(
     if (parent?.childIds.length === 1) {
       currentId = parent.childIds[0]
       index--
+      path.pop()
       continue
     }
 

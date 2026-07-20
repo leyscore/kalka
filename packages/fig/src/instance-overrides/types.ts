@@ -113,6 +113,7 @@ export interface OverrideContext {
   componentPropRefsMap?: Map<string, ComponentPropRef[]>
   componentPropAssignmentsMap?: Map<string, ComponentPropAssignment[]>
   preComputedRoot: Map<string, string>
+  preComputedClones: Map<string, string[]>
   componentIdRoot: Map<string, string>
   swappedInstances: Set<string>
   protectedFields: ProtectionMap
