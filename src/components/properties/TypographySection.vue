@@ -88,7 +88,7 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
         </Tip>
       </div>
 
-      <PanelGrid columns="two" class="mb-1.5">
+      <PanelGrid columns="two" class="mb-3">
         <PanelFieldGroup :label="panels.fontWeight">
           <AppSelect
             :label="panels.fontWeight"
@@ -111,7 +111,7 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
         </PanelFieldGroup>
       </PanelGrid>
 
-      <PanelGrid columns="two" class="mb-1.5">
+      <PanelGrid columns="two" class="mb-3">
         <PanelFieldGroup :label="panels.lineHeight">
           <VariableNumberField
             :model-value="
@@ -146,7 +146,7 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
         </PanelFieldGroup>
       </PanelGrid>
 
-      <PanelFieldGroup :label="panels.direction" class="mb-1.5">
+      <PanelFieldGroup :label="panels.direction" class="mb-3">
         <AppSelect
           :label="panels.direction"
           :model-value="ctx.node.value.textDirection"
@@ -159,7 +159,7 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
         />
       </PanelFieldGroup>
 
-      <PanelFieldGroup :label="panels.textAlignment" class="mb-1.5">
+      <PanelFieldGroup :label="panels.textAlignment" class="mb-3">
         <SegmentedControl
           :model-value="ctx.node.value.textAlignHorizontal"
           :options="alignmentOptions"
@@ -175,7 +175,7 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
         </SegmentedControl>
       </PanelFieldGroup>
 
-      <PanelFieldGroup :label="panels.verticalTextAlignment" class="mb-1.5">
+      <PanelFieldGroup :label="panels.verticalTextAlignment" class="mb-3">
         <SegmentedControl
           :model-value="ctx.node.value.textAlignVertical"
           :options="verticalAlignmentOptions"
@@ -196,7 +196,7 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
         </SegmentedControl>
       </PanelFieldGroup>
 
-      <PanelGrid columns="two" class="mb-1.5">
+      <PanelGrid columns="two" class="mb-3">
         <PanelFieldGroup :label="panels.textCase">
           <AppSelect
             :label="panels.textCase"
@@ -220,7 +220,7 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
       <PanelFieldGroup
         v-if="ctx.node.value.textTruncation === 'ENDING'"
         :label="panels.maxLines"
-        class="mb-1.5"
+        class="mb-3"
       >
         <NumberField
           :model-value="ctx.node.value.maxLines ?? 1"
@@ -235,7 +235,7 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
         />
       </PanelFieldGroup>
 
-      <PanelFieldGroup :label="panels.openTypeFeatures" class="mb-1.5">
+      <PanelFieldGroup :label="panels.openTypeFeatures" class="mb-3">
         <div class="grid gap-1.5">
           <label
             v-for="feature in commonFeatures"
