@@ -235,7 +235,11 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
         />
       </PanelFieldGroup>
 
-      <PanelFieldGroup :label="panels.openTypeFeatures" class="mb-3">
+      <PanelFieldGroup
+        :label="panels.openTypeFeatures"
+        class="mb-3"
+        :ui="{ label: 'font-semibold text-surface' }"
+      >
         <div class="grid gap-2.5">
           <label
             v-for="feature in commonFeatures"
