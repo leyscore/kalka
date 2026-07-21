@@ -1,17 +1,20 @@
 import { computeAllLayouts } from '@open-pencil/core/layout'
+import { renderJSX } from '@open-pencil/core/design-jsx'
 
 import { DEMO_COLORS, solid } from '@/app/demo/colors'
+import { SHOWCASE_JSX } from '@/app/demo/jsx/showcase'
 import { createAppPreviewSection } from '@/app/demo/sections/app-preview'
 import { createComponentsSection } from '@/app/demo/sections/components'
 import { createDemoVariables } from '@/app/demo/sections/variables'
 import type { EditorStore } from '@/app/editor/session'
 
-export function createDemoShapes(store: EditorStore) {
+export async function createDemoShapes(store: EditorStore) {
   const { graph } = store
 
   const comps = createComponentsSection(store)
   computeAllLayouts(graph)
   const app = createAppPreviewSection(store, comps)
+  await renderJSX(graph, SHOWCASE_JSX)
   createDemoVariables(store)
 
   // Theme the screen through variables so editing one re-themes the demo.
