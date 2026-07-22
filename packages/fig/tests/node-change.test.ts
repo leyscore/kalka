@@ -8,9 +8,11 @@ import {
   convertFontFeatures,
   convertLetterSpacing,
   convertLineHeight,
+  convertStrokes,
   decodeVectorNetworkBlob,
   encodeVectorNetworkBlob,
-  mapTextDecoration
+  mapTextDecoration,
+  setVariableColorResolver
 } from '../src/node-change'
 
 describe('@open-pencil/fig NodeChange policy', () => {
@@ -43,6 +45,27 @@ describe('@open-pencil/fig NodeChange policy', () => {
       radius: 0,
       visible: true
     })
+  })
+
+  test('keeps resolved variable alpha in paint opacity', () => {
+    setVariableColorResolver(() => ({ r: 1, g: 0, b: 0, a: 0.4 }))
+    try {
+      const paint = {
+        type: 'SOLID',
+        color: { r: 0, g: 0, b: 0, a: 1 },
+        colorVar: { value: { alias: { guid: { sessionID: 1, localID: 2 } } } }
+      }
+      expect(convertFills([paint])[0]).toMatchObject({
+        color: { r: 1, g: 0, b: 0, a: 1 },
+        opacity: 0.4
+      })
+      expect(convertStrokes([paint])[0]).toMatchObject({
+        color: { r: 1, g: 0, b: 0, a: 1 },
+        opacity: 0.4
+      })
+    } finally {
+      setVariableColorResolver(null)
+    }
   })
 
   test('round-trips vector network blobs with handle mirroring', () => {

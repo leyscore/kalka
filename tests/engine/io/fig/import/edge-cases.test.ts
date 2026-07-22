@@ -345,6 +345,23 @@ describe('edge cases', () => {
               guidPath: {
                 guids: [
                   { sessionID: 90, localID: 61 },
+                  { sessionID: 90, localID: 31 }
+                ]
+              },
+              fillPaints: [
+                {
+                  type: 'SOLID',
+                  color: { r: 1, g: 1, b: 1, a: 1 },
+                  colorVar: {
+                    value: { alias: { guid: { sessionID: 2, localID: 5 } } }
+                  }
+                }
+              ]
+            },
+            {
+              guidPath: {
+                guids: [
+                  { sessionID: 90, localID: 61 },
                   { sessionID: 1, localID: 33 }
                 ]
               },
@@ -395,6 +412,9 @@ describe('edge cases', () => {
     const iconChildren = graph.getChildren(iconClone.id)
     expect(iconChildren).toHaveLength(3)
     expect(iconChildren.map((c) => c.name).sort()).toEqual(['Icon label', 'PathB1', 'PathB2'])
+    expect(iconChildren.find((child) => child.name === 'PathB1')?.boundVariables).toMatchObject({
+      'fills/0/color': '2:5'
+    })
     expect(iconChildren.find((child) => child.name === 'Icon label')?.text).toBe(
       'Changed after swap'
     )
