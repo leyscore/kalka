@@ -251,7 +251,9 @@ async function renderSvgNode(
   parentId: string
 ): Promise<SceneNode> {
   const props = tree.props
-  const size = (props.size as number | undefined) ?? 24
+  const explicitW = typeof props.w === 'number' ? props.w : 0
+  const explicitH = typeof props.h === 'number' ? props.h : 0
+  const size = explicitW > 0 || explicitH > 0 ? Math.max(explicitW, explicitH) : ((props.size as number | undefined) ?? 24)
   const colorHex = (props.color as string | undefined) ?? '#000000'
   const parsedColor = parseColor(colorHex)
 
