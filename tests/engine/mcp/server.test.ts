@@ -1,4 +1,5 @@
 import { describe, expect, test, beforeEach, afterEach } from 'bun:test'
+import { mkdir, realpath } from 'node:fs/promises'
 import type { AddressInfo } from 'node:net'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
@@ -483,6 +484,7 @@ describe('MCP server with mcpRoot', () => {
     await client.connect(transport)
 
     const savePath = path.join(TEST_MCP_ROOT, 'unicode', 'пример.fig')
+    await mkdir(path.dirname(savePath), { recursive: true })
     const result = await client.callTool({
       name: 'save_file',
       arguments: { path: savePath }
@@ -490,7 +492,8 @@ describe('MCP server with mcpRoot', () => {
 
     expect(result.isError).not.toBe(true)
     const request = browser.requests.find((item) => item.command === 'save_file')
-    expect(request?.args).toEqual({ path: savePath })
+    const canonicalPath = path.join(await realpath(path.dirname(savePath)), path.basename(savePath))
+    expect(request?.args).toEqual({ path: canonicalPath })
 
     await client.close()
     browser.close()

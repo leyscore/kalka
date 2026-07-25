@@ -26,6 +26,7 @@
 
 ### Fixed
 
+- Keep MCP file access inside its configured root even when paths contain symlinks, and harden local authentication token checks.
 - Keep desktop text visible across the scene and overlay canvases, refresh it after local fonts load, and preserve rendering when a requested italic face is unavailable (#395).
 - Honor node-scoped variable modes in `.fig` files so light and dark component examples keep their intended colors.
 - Preserve nested instance text, visibility, paint, geometry, and clipping across repeated children and component swaps in `.fig` files.
