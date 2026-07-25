@@ -206,8 +206,10 @@ For other MCP clients:
 **HTTP** (scripts, CI):
 
 ```sh
-openpencil-mcp-http   # http://localhost:3100/mcp
+openpencil-mcp-http   # Unix socket on macOS/Linux + http://127.0.0.1:7600/mcp
 ```
+
+Local clients discover the private Unix socket automatically and fall back to localhost TCP. Set `PORT=0` to disable TCP on macOS/Linux.
 
 **File access:** Set `OPENPENCIL_MCP_ROOT` to scope file operations (`open_file`, `new_document`, export `path` param) to a directory. Defaults to the current working directory.
 

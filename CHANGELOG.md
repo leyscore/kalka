@@ -15,6 +15,7 @@
 - Target a specific open document and page from live CLI and MCP automation, including sessions with multiple documents.
 - Test OpenAI-compatible provider connections from AI settings with clearer setup errors.
 - Build custom property panels with new Vue SDK number fields, bindable values, property sections, segmented controls, property lists, color models, fill controls, and gradient primitives.
+- Connect local MCP clients through automatically discovered private Unix sockets on macOS and Linux, with localhost TCP fallback.
 
 ### Changed
 
