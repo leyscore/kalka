@@ -136,7 +136,7 @@ describe('BrowserRpcBridge reconnection', () => {
     servers.push(srv)
   }
 
-  test('pending requests from old browser are rejected on reconnect (Fix 1)', async () => {
+  test('rejects pending requests from a disconnected browser on reconnect', async () => {
     const pairA = await setupWsPair()
     track(pairA)
     const pairB = await setupWsPair()
@@ -166,7 +166,7 @@ describe('BrowserRpcBridge reconnection', () => {
     expect(elapsed).toBeLessThan(5_000)
   })
 
-  test('connection waiters survive handleClose and are NOT rejected (Fix 2)', async () => {
+  test('keeps connection waiters pending across browser reconnects', async () => {
     const pair = await setupWsPair()
     track(pair)
 
@@ -179,8 +179,8 @@ describe('BrowserRpcBridge reconnection', () => {
     await registerBrowser(pair.serverWs, pair.clientWs, bridge)
 
     // Close the client side — this should trigger serverWs 'close'
-    // which calls bridge.handleClose(). Fix 2 ensures that connection
-    // waiters are NOT rejected here.
+    // which calls bridge.handleClose(). Connection waiters must remain
+    // pending here.
     pair.clientWs.close()
     await new Promise<void>((resolve) => {
       setTimeout(resolve, 200)

@@ -13,7 +13,7 @@ import { createBrowserRpcBridge } from '#mcp/browser-rpc'
 import { MCP_CORS_HEADERS, MCP_CORS_METHODS, MCP_EXPOSED_HEADERS } from '#mcp/http-options'
 import type { RpcJsonObject } from '#mcp/json'
 import { preprocessRpc } from '#mcp/jsx-preprocess'
-import { createMcpSessionManager } from '#mcp/mcp-sessions'
+import { createMcpSessionManager } from '#mcp/server/sessions'
 import { registerTools } from '#mcp/tool/registration'
 
 import packageJson from '../package.json' with { type: 'json' }
@@ -26,7 +26,7 @@ import {
   teardownListeners,
   tryStartTcp,
   tryWriteDiscovery
-} from './lifecycle'
+} from './server/lifecycle'
 
 export const MCP_VERSION: string = packageJson.version
 

@@ -5,7 +5,7 @@ import { join } from 'node:path'
 
 import { startServer, type ServerHandle } from '#mcp/server'
 
-import { socketRequest, type HealthResponse } from './helpers'
+import { socketRequest, type HealthResponse } from '#tests/helpers/mcp/server'
 
 const isUnix = process.platform !== 'win32'
 const SOCKET_DIR = join(tmpdir(), `openpencil-test-lifecycle-${process.pid}`)

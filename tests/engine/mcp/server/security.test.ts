@@ -11,7 +11,11 @@ import { SceneGraph } from '@open-pencil/scene-graph'
 import { startServer, paramToZod } from '#mcp/server'
 import type { DiscoveryInfo } from '#mcp/transport/discovery'
 
-import { connectMockBrowser, waitForBrowserRegistration, type HealthResponse } from './helpers'
+import {
+  connectMockBrowser,
+  waitForBrowserRegistration,
+  type HealthResponse
+} from '#tests/helpers/mcp/server'
 
 const isUnix = process.platform !== 'win32'
 const SOCKET_DIR = join(tmpdir(), `openpencil-test-server-${process.pid}`)

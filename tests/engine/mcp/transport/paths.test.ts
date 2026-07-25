@@ -124,7 +124,7 @@ describe('transport/paths', () => {
   })
 
   describe('getDiscoveryPath', () => {
-    // The test preload (tests/helpers/mcp-discovery-isolation.ts) sets
+    // The test preload (tests/helpers/mcp/discovery-isolation.ts) sets
     // OPENPENCIL_MCP_DISCOVERY_PATH to a per-process temp path. Each case
     // below saves/clears/restores both env vars so platform-default behavior
     // can be asserted independently of the preload.

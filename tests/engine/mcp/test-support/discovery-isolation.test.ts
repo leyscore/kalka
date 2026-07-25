@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'bun:test'
 
-import { isAliveFromKillError, isProcessAlive } from '#tests/helpers/mcp-discovery-isolation'
+import { isAliveFromKillError, isProcessAlive } from '#tests/helpers/mcp/discovery-isolation'
 
-describe('mcp-discovery-isolation > isProcessAlive', () => {
+describe('MCP test discovery isolation', () => {
   it('returns true for the current (live) process', () => {
     // The stale-dir sweep must never treat the running process as dead.
     expect(isProcessAlive(process.pid)).toBe(true)

@@ -11,8 +11,11 @@ import { SceneGraph } from '@open-pencil/scene-graph'
 import { startServer, type ServerHandle } from '#mcp/server'
 
 import { expectDefined, getNodeOrThrow } from '#tests/helpers/assert'
-
-import { connectMockBrowser, waitForBrowserRegistration, type MockBrowser } from './helpers'
+import {
+  connectMockBrowser,
+  waitForBrowserRegistration,
+  type MockBrowser
+} from '#tests/helpers/mcp/server'
 
 const AUTH_TOKEN = 'test-stdio-token'
 const NO_DOCUMENT_AUTH_TOKEN = 'test-stdio-no-document-token'

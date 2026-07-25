@@ -5,7 +5,7 @@ import { createServer, type Server } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-import { createStdioRpcBridge } from '#mcp/stdio-bridge'
+import { createStdioRpcBridge } from '#mcp/stdio/bridge'
 import { getDiscoveryPath } from '#mcp/transport/paths'
 
 const isUnix = process.platform !== 'win32'

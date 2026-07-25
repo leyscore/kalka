@@ -5,7 +5,7 @@ import { createServer, type Server } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-import { createStdioRpcBridge } from '#mcp/stdio-bridge'
+import { createStdioRpcBridge } from '#mcp/stdio/bridge'
 
 const TEST_DIR = join(tmpdir(), `openpencil-test-stdio-auth-${process.pid}`)
 const TEST_SOCKET = join(TEST_DIR, 'mcp-test.sock')
@@ -130,7 +130,7 @@ async function createBridgeAndWaitForReady(
 
 const isUnix = process.platform !== 'win32'
 
-describe.skipIf(!isUnix)('Fix 4 - Auth token auto-discovery and transparent retry', () => {
+describe.skipIf(!isUnix)('MCP stdio authentication', () => {
   let httpServer: Server | null = null
   let bridges: Array<ReturnType<typeof createStdioRpcBridge>> = []
   const origSocketEnv = process.env.OPENPENCIL_MCP_SOCKET
