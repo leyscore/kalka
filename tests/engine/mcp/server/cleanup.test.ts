@@ -1,9 +1,13 @@
-import { describe, expect, test, beforeAll, afterAll } from 'bun:test'
+import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
+import { existsSync } from 'node:fs'
 import { mkdir, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
+import { WebSocket } from 'ws'
+
 import { startServer, type ServerHandle } from '#mcp/server'
+import { getDiscoveryPath } from '#mcp/transport/paths'
 
 import { socketRequest, type HealthResponse } from '#tests/helpers/mcp/server'
 
@@ -110,9 +114,38 @@ describe('MCP lifecycle failure cleanup', () => {
   }
 })
 
-// ---------------------------------------------------------------------------
-// DELETE session cleanup tests (Review 03)
-// ---------------------------------------------------------------------------
+describe('MCP graceful shutdown', () => {
+  test('removes discovery while closing connected WebSocket clients', async () => {
+    const handle = await startServer({
+      httpPort: 0,
+      withTcp: true,
+      socketPath: testSocketPath(),
+      authToken: TEST_AUTH_TOKEN,
+      enableEval: false,
+      mcpRoot: null
+    })
+    const discoveryPath = await getDiscoveryPath()
+    expect(existsSync(discoveryPath)).toBe(true)
+
+    const client = new WebSocket(`ws://127.0.0.1:${handle.httpPort}`)
+    await new Promise<void>((resolve, reject) => {
+      client.once('open', resolve)
+      client.once('error', reject)
+    })
+
+    const closing = handle.close()
+    const deadline = Date.now() + 1_000
+    while (existsSync(discoveryPath) && Date.now() < deadline) {
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 10)
+      })
+    }
+
+    expect(existsSync(discoveryPath)).toBe(false)
+    await closing
+    expect(client.readyState).toBe(WebSocket.CLOSED)
+  })
+})
 
 describe('MCP DELETE session cleanup', () => {
   let handle: ServerHandle | undefined

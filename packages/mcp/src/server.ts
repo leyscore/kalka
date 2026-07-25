@@ -360,8 +360,22 @@ function buildHandle(
   async function close() {
     if (closePromise) return closePromise
     closePromise = (async () => {
-      await shutdownRuntime(browserRpc, mcpSessions, wss, state)
-      await cleanupDiscovery(authToken, resolvedSocketPath, actualHttpPort, startedAt)
+      const errors: unknown[] = []
+      try {
+        // Stop advertising this process before the slower WebSocket grace
+        // period. This also makes signal-driven shutdown resilient when a
+        // parent process exits before all clients finish closing.
+        await cleanupDiscovery(authToken, resolvedSocketPath, actualHttpPort, startedAt)
+      } catch (error) {
+        errors.push(error)
+      }
+      try {
+        await shutdownRuntime(browserRpc, mcpSessions, wss, state)
+      } catch (error) {
+        errors.push(error)
+      }
+      if (errors.length === 1) throw errors[0]
+      if (errors.length > 1) throw new AggregateError(errors, 'Multiple shutdown errors')
     })()
     return closePromise
   }

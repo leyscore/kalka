@@ -15,7 +15,7 @@
 - Target a specific open document and page from live CLI and MCP automation, including sessions with multiple documents.
 - Test OpenAI-compatible provider connections from AI settings with clearer setup errors.
 - Build custom property panels with new Vue SDK number fields, bindable values, property sections, segmented controls, property lists, color models, fill controls, and gradient primitives.
-- Connect local MCP clients through automatically discovered private Unix sockets on macOS and Linux, with localhost TCP fallback.
+- Connect local MCP clients through automatically discovered private Unix sockets on macOS and Linux, with localhost TCP fallback. (#338)
 
 ### Changed
 
@@ -27,7 +27,7 @@
 
 ### Fixed
 
-- Keep MCP file access inside its configured root even when paths contain symlinks, and harden local authentication token checks.
+- Keep MCP file access inside its configured root even when paths contain symlinks, and harden local authentication token checks. (#338)
 - Keep desktop text visible across the scene and overlay canvases, refresh it after local fonts load, and preserve rendering when a requested italic face is unavailable (#395).
 - Honor node-scoped variable modes in `.fig` files so light and dark component examples keep their intended colors.
 - Preserve nested instance text, visibility, paint, geometry, and clipping across repeated children and component swaps in `.fig` files.

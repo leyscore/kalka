@@ -1,7 +1,7 @@
 import { access, chmod, constants, mkdir, readFile, unlink } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import type { Server as HttpServer } from 'node:http'
-import { connect } from 'node:net'
+import { connect, type Socket } from 'node:net'
 import { dirname } from 'node:path'
 
 import { getRequestListener } from '@hono/node-server'
@@ -20,12 +20,25 @@ import {
   platformHasUnixSockets
 } from '#mcp/transport/paths'
 
+const trackedConnections = Symbol('open-pencil-mcp-connections')
+
+type TrackedHttpServer = HttpServer & {
+  [trackedConnections]?: Set<Socket>
+}
+
 /** Create an HTTP server bound to the Hono app. Each server can listen on one address. */
 export function createAppServer(app: Hono): HttpServer {
   const listener = getRequestListener(app.fetch)
-  return createServer((req, res) => {
+  const server: TrackedHttpServer = createServer((req, res) => {
     void listener(req, res)
   })
+  const connections = new Set<Socket>()
+  server[trackedConnections] = connections
+  server.on('connection', (socket) => {
+    connections.add(socket)
+    socket.once('close', () => connections.delete(socket))
+  })
+  return server
 }
 
 /** Wire the HTTP upgrade handler onto a server. Each server needs its own. */
@@ -170,13 +183,18 @@ export async function writeDiscovery(
 
 export async function closeServer(srv: HttpServer | null): Promise<void> {
   if (!srv) return
-  // Close all idle keep-alive connections first to prevent server.close()
-  // from hanging indefinitely on persistent HTTP connections.
+  // The WebSocket grace period has already elapsed by the time listener
+  // teardown begins. Close HTTP connections and explicitly destroy upgraded
+  // sockets, which Node's closeAllConnections() intentionally does not cover.
   srv.closeIdleConnections()
-  // If any stubborn connections remain after 5 seconds, force-close them
-  // so the server shutdown can complete. Without this, a misbehaving HTTP
-  // client with an active request can block shutdown indefinitely.
+  srv.closeAllConnections()
+  const connections = (srv as TrackedHttpServer)[trackedConnections]
+  for (const socket of connections ?? []) socket.destroy()
+
+  // Keep a final bound in case a platform-specific connection escapes the
+  // tracked set or arrives during shutdown.
   const forceClose = setTimeout(() => {
+    for (const socket of connections ?? []) socket.destroy()
     srv.closeAllConnections()
     srv.close()
   }, 5_000).unref()
@@ -298,6 +316,16 @@ export async function closeWssGracefully(wss: WebSocketServer): Promise<void> {
       settled = true
       resolve()
     }
+    // WebSocketServer.close() stops accepting connections but waits for
+    // existing clients; it does not initiate their closing handshakes.
+    // Ask clients to close first, then terminate only the stragglers.
+    for (const ws of wss.clients) {
+      try {
+        ws.close(1001, 'Server shutting down')
+      } catch (e) {
+        console.warn('[MCP] Failed to close WebSocket client:', e)
+      }
+    }
     const graceTimer = setTimeout(() => {
       // Snapshot clients before iterating — terminate() triggers handleClose
       // which modifies wss.clients mid-iteration via clients.delete(ws).
@@ -309,6 +337,7 @@ export async function closeWssGracefully(wss: WebSocketServer): Promise<void> {
           console.warn('[MCP] Failed to terminate WebSocket client:', e)
         }
       }
+      done()
     }, 2_000).unref()
     wss.close(() => {
       clearTimeout(graceTimer)
