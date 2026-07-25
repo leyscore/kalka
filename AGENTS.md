@@ -129,8 +129,9 @@ Release commits are the exception: keep using `Release v0.x.y`.
 - Registries (`registry*.ts`) assemble tool sets. Add new tools to the appropriate registry so AI chat, MCP, and CLI eval paths can see them.
 - AI adapter (`packages/core/src/tools/ai-adapter.ts`) converts ToolDefs to Vercel AI tools with valibot schemas. `src/app/ai/tools/index.ts` is a thin app wire that creates `FigmaAPI` from the active editor.
 - CLI commands in `packages/cli/src/commands/**` are not generated from ToolDefs; they own CLI UX, pagination, and agentfmt formatting. The `eval` command exposes ToolDef operations through `FigmaAPI`.
-- MCP server code lives in `packages/mcp/src/server.ts`. MCP-only tools such as `open_file`, `new_document`, `save_file`, and `get_codegen_prompt` are registered there because they need server filesystem access or are not scene-graph tools.
-- `open_file` and `new_document` are only registered when `OPENPENCIL_MCP_ROOT` is set. Export tools can write files under that root when given a `path`.
+- MCP server code lives under `packages/mcp/src/`. MCP-only tools such as `open_file`, `new_document`, `save_file`, and `get_codegen_prompt` are registered in `tool/registration.ts` because they need server filesystem access or are not scene-graph tools.
+- Local MCP transport discovery lives under `packages/mcp/src/transport/`: macOS/Linux prefer an owner-only Unix socket, Windows uses localhost TCP, and `mcp.json` advertises the active transport and token. Keep test discovery paths isolated from the user's runtime file.
+- `open_file` and `new_document` are only registered when `OPENPENCIL_MCP_ROOT` is set. Export tools can write files under that root when given a `path`; path checks must resolve symlinks before filesystem access.
 - Core codegen prompts live as markdown under `packages/core/src/tools/prompts/`; app chat/ACP prompts live under `src/app/ai/**` markdown files.
 - `FigmaAPI` (`packages/core/src/figma-api/`) is the execution target for tools and CLI eval. It is Figma Plugin API compatible and uses Symbols for hidden internals.
 
