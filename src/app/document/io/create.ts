@@ -68,6 +68,7 @@ export function createDocumentIOActions(
     setViewportSize,
     fitCurrentPageToViewport,
     getDocumentFilePath: sourceState.getFilePath,
+    getSourceIdentity: sourceState.getSourceIdentity,
     setDocumentSource: sourceActions.setDocumentSource,
     setPlannedFilePath: sourceActions.setPlannedFilePath,
     startWatchingCurrentFile: sourceActions.startWatchingCurrentFile,

@@ -3,6 +3,7 @@ import type { EditorState } from '@open-pencil/core/editor'
 import { downloadBlob } from '@/app/document/io/browser'
 import { documentNameFromFigPath } from '@/app/document/io/names'
 import { chooseBrowserFigSaveHandle, chooseTauriFigSavePath } from '@/app/document/io/save-targets'
+import type { DocumentSourceIdentity } from '@/app/document/io/types'
 import { createDocumentWriter } from '@/app/document/io/write'
 import { IS_TAURI } from '@/constants'
 
@@ -17,6 +18,7 @@ type SaveActionsOptions = {
   setFileHandle: (handle: FileSystemFileHandle | null) => void
   getDownloadName: () => string | null
   setDownloadName: (name: string | null) => void
+  setSourceIdentity: (identity: DocumentSourceIdentity) => void
   setSavedVersion: (version: number) => void
   setLastWriteTime: (time: number) => void
   startWatchingFile: () => void
@@ -31,6 +33,7 @@ export function createSaveActions({
   setFileHandle,
   getDownloadName,
   setDownloadName,
+  setSourceIdentity,
   setSavedVersion,
   setLastWriteTime,
   startWatchingFile
@@ -48,7 +51,8 @@ export function createSaveActions({
     const fileHandle = getFileHandle()
     const downloadName = getDownloadName()
     if (filePath || fileHandle) {
-      await writeFile(await buildFigFile())
+      const wrote = await writeFile(await buildFigFile())
+      if (wrote) setSourceIdentity({ handle: fileHandle, path: filePath })
     } else if (downloadName) {
       downloadBlob(new Uint8Array(await buildFigFile()), downloadName, 'application/octet-stream')
     } else {
@@ -65,7 +69,7 @@ export function createSaveActions({
       setFilePath(path)
       setFileHandle(null)
       state.documentName = documentNameFromFigPath(path)
-      await writeFile(data)
+      if (await writeFile(data)) setSourceIdentity({ handle: null, path })
       startWatchingFile()
       return
     }
@@ -76,7 +80,7 @@ export function createSaveActions({
       setFileHandle(handle)
       setFilePath(null)
       state.documentName = documentNameFromFigPath(handle.name)
-      await writeFile(data)
+      if (await writeFile(data)) setSourceIdentity({ handle, path: null })
       startWatchingFile()
       return
     }

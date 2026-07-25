@@ -27,13 +27,15 @@ export function createDocumentWriter({
       const { writeFile: tauriWrite } = await import('@tauri-apps/plugin-fs')
       await tauriWrite(filePath, data)
       setSavedVersion(state.sceneVersion)
-      return
+      return true
     }
     if (fileHandle) {
       const writable = await fileHandle.createWritable()
       await writable.write(new Uint8Array(data))
       await writable.close()
       setSavedVersion(state.sceneVersion)
+      return true
     }
+    return false
   }
 }

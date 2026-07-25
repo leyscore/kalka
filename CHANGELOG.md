@@ -47,6 +47,7 @@
 - Preserve Hangul IME composition while editing text.
 - Share public app links from the desktop collaboration panel and send the current document to newly joined collaborators.
 - Resolve published package types correctly for TypeScript consumers and keep file-backed CLI commands working under Node.
+- Reuse the existing tab when reopening a file through its desktop path or browser file handle, avoiding duplicate watchers and conflicting saves (#297).
 
 ### Security
 

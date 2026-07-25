@@ -6,9 +6,12 @@ import { computeAllLayouts } from '@open-pencil/core/layout'
 import type { SceneGraph } from '@open-pencil/scene-graph'
 
 import { setOpenPencilStore } from '@/app/browser-bridge'
+import type { DocumentSourceIdentity } from '@/app/document/io/types'
 import { setActiveEditorStore } from '@/app/editor/active-store'
 import { createEditorStore } from '@/app/editor/session'
 import type { EditorStore } from '@/app/editor/session'
+import { createFileOpenCoordinator } from '@/app/tabs/open/coordinator'
+import { findTabByFileIdentity } from '@/app/tabs/open/identity'
 
 export interface Tab {
   id: string
@@ -16,6 +19,7 @@ export interface Tab {
 }
 
 const io = new IORegistry(BUILTIN_IO_FORMATS)
+const fileOpenCoordinator = createFileOpenCoordinator()
 
 let nextTabId = 1
 
@@ -116,22 +120,53 @@ export async function openFileInNewTab(
   handle?: FileSystemFileHandle,
   path?: string
 ): Promise<void> {
-  const current = activeTab.value
-  const isUntouched =
-    current?.store.state.documentName === 'Untitled' && !current.store.undo.canUndo
-  const store = isUntouched ? current.store : createTab().store
-  if (isDOMImportFile(file)) {
-    await store.openDOMFile(file, { handle, path })
+  const identity: DocumentSourceIdentity = {
+    handle: handle ?? null,
+    path: path ?? null
+  }
+  const decision = await fileOpenCoordinator.decide(async () => {
+    const pending = await fileOpenCoordinator.findPending(identity)
+    if (pending) {
+      const tab = getTabForStore(pending.store)
+      if (tab) switchTab(tab.id)
+      return { kind: 'pending' as const, completion: pending.completion }
+    }
+
+    const existing = await findTabByFileIdentity(tabsRef.value, identity)
+    if (existing) {
+      switchTab(existing.id)
+      return { kind: 'existing' as const }
+    }
+
+    const current = activeTab.value
+    const isUntouched =
+      current?.store.state.documentName === 'Untitled' && !current.store.undo.canUndo
+    const store = isUntouched ? current.store : createTab().store
+    store.state.documentName = file.name.replace(/\.[^.]+$/i, '')
+    store.state.loading = true
+
+    const completion = Promise.withResolvers<undefined>()
+    void completion.promise.catch(() => undefined)
+    const pendingOpen = { completion: completion.promise, identity, store }
+    fileOpenCoordinator.add(pendingOpen)
+    return { kind: 'owner' as const, completion, pendingOpen, store }
+  })
+
+  if (decision.kind === 'existing') return
+  if (decision.kind === 'pending') {
+    await decision.completion
     return
   }
 
-  const documentName = file.name.replace(/\.[^.]+$/i, '')
-
-  store.state.documentName = documentName
-  store.state.loading = true
-  await yieldToUI()
-
+  const { completion, pendingOpen, store } = decision
   try {
+    if (isDOMImportFile(file)) {
+      await store.openDOMFile(file, { handle, path })
+      completion.resolve(undefined)
+      return
+    }
+
+    await yieldToUI()
     const isFig = file.name.toLowerCase().endsWith('.fig')
     const { graph: imported, sourceFormat } = isFig
       ? { graph: await readFigFile(file, { populate: 'first-page' }), sourceFormat: 'fig' }
@@ -150,8 +185,13 @@ export async function openFileInNewTab(
     const pageId = store.graph.getPages()[0]?.id ?? store.graph.rootId
     await store.switchPage(pageId)
     await store.fitCurrentPageToViewport()
+    completion.resolve(undefined)
+  } catch (error) {
+    completion.reject(error)
+    throw error
   } finally {
     store.state.loading = false
+    fileOpenCoordinator.remove(pendingOpen)
   }
 }
 
