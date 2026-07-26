@@ -15,6 +15,7 @@ import StockPhotoKeysSection from '@/components/settings/provider/StockPhotoKeys
 import TestConnectionSection from '@/components/settings/provider/TestConnectionSection.vue'
 import { provideProviderSettings } from '@/components/settings/provider/context'
 import ProviderSelectField from '@/components/settings/provider-select/ProviderSelectField.vue'
+import StorageSettingsPanel from '@/components/settings/storage/StorageSettingsPanel.vue'
 import AppSwitch from '@/components/ui/AppSwitch.vue'
 import { AppDialogFooter, AppDialogHeader, AppDialogRoot } from '@/components/ui/dialog'
 
@@ -87,6 +88,16 @@ const navigationClass =
           <icon-lucide-image class="size-3.5" />
           {{ dialogs.settingsMedia }}
         </button>
+        <button
+          type="button"
+          :class="navigationClass"
+          :data-state="settingsDialogSection === 'storage' ? 'active' : 'inactive'"
+          data-test-id="settings-section-storage"
+          @click="settingsDialogSection = 'storage'"
+        >
+          <icon-lucide-cloud class="size-3.5" />
+          {{ dialogs.settingsStorage }}
+        </button>
       </nav>
 
       <div class="min-h-0 flex-1 overflow-y-auto p-4">
@@ -104,10 +115,16 @@ const navigationClass =
           <TestConnectionSection />
         </section>
 
-        <section v-else class="flex flex-col gap-2.5" data-test-id="settings-media-panel">
+        <section
+          v-else-if="settingsDialogSection === 'media'"
+          class="flex flex-col gap-2.5"
+          data-test-id="settings-media-panel"
+        >
           <h3 class="text-xs font-semibold text-surface">{{ dialogs.settingsMedia }}</h3>
           <StockPhotoKeysSection />
         </section>
+
+        <StorageSettingsPanel v-else />
       </div>
     </div>
 

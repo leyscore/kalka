@@ -7,6 +7,7 @@ import {
   type StorageAdapter,
   type StorageProviderRuntime
 } from '@/app/integrations/storage'
+import { appCredentialRefs } from '@/app/settings/credentials/persistence'
 import { credentialKey } from '@/app/settings/credentials/reference'
 import type { CredentialRef, CredentialResolver } from '@/app/settings/credentials/types'
 
@@ -63,6 +64,9 @@ describe('storage provider registry', () => {
       'access-key-id',
       'secret-access-key'
     ])
+    expect(appCredentialRefs().map(credentialKey)).toContain(
+      'v1:s3-compatible:default:secret-access-key'
+    )
   })
 
   test('lists provider schemas without resolving credentials', () => {

@@ -1,4 +1,4 @@
-import type { StorageProviderID } from '@/app/integrations/storage'
+import type { StorageProviderID } from '@/app/integrations/storage/types'
 
 export type LocalSyncStatus = 'synced' | 'pending' | 'error' | 'conflict'
 

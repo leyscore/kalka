@@ -10,17 +10,14 @@ import {
 import type { AIProviderID } from '@open-pencil/core/constants'
 import { setPexelsApiKey, setUnsplashAccessKey } from '@open-pencil/core/tools'
 
-import {
-  appCredentialServices,
-  browserCredentialsRemembered,
-  setBrowserCredentialPersistence
-} from '@/app/settings/credentials/app'
+import { appCredentialServices, browserCredentialsRemembered } from '@/app/settings/credentials/app'
 import {
   initializeCredentialMigration,
   PEXELS_CREDENTIAL,
   providerCredentialRef,
   UNSPLASH_CREDENTIAL
 } from '@/app/settings/credentials/migration'
+import { setAppCredentialPersistence } from '@/app/settings/credentials/persistence'
 import type { CredentialRef, CredentialStatus } from '@/app/settings/credentials/types'
 
 const STORAGE_PREFIX = 'open-pencil:'
@@ -128,14 +125,7 @@ export async function setUnsplashKey(key: string): Promise<void> {
 
 export async function setRememberCredentials(remembered: boolean): Promise<void> {
   await credentialsReady
-  const providerCredentials = AI_PROVIDERS.filter(
-    (provider) => !provider.id.startsWith('acp:')
-  ).map((provider) => providerCredentialRef(provider.id))
-  await setBrowserCredentialPersistence(remembered, [
-    ...providerCredentials,
-    PEXELS_CREDENTIAL,
-    UNSPLASH_CREDENTIAL
-  ])
+  await setAppCredentialPersistence(remembered)
   await Promise.all([refreshProviderStatus(providerID.value), refreshMediaCredentials()])
   credentialRevision.value++
 }
