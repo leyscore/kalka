@@ -32,6 +32,7 @@ import IconToggleLeft from '~icons/lucide/toggle-left'
 import IconType from '~icons/lucide/type'
 import IconX from '~icons/lucide/x'
 import ColorInput from '@/components/ColorPicker/ColorInput.vue'
+import AppPlaceholder from '@/components/ui/AppPlaceholder.vue'
 import Tip from '@/components/ui/Tip.vue'
 import { AppDialogRoot } from '@/components/ui/dialog'
 import { useMenuUI } from '@/components/ui/menu'
@@ -133,18 +134,20 @@ function resizeHandleClass(resizing: boolean) {
           <icon-lucide-x class="size-4" />
         </DialogClose>
       </div>
-      <div class="flex flex-1 items-center justify-center">
-        <div class="text-center">
-          <p class="text-sm text-muted">{{ dialogs.noVariableCollections }}</p>
+      <AppPlaceholder :label="dialogs.noVariableCollections">
+        <template #icon>
+          <icon-lucide-folder class="size-5" />
+        </template>
+        <template #action>
           <button
             data-test-id="variables-create-collection"
-            class="mt-2 cursor-pointer rounded bg-hover px-3 py-1.5 text-xs text-surface hover:bg-border"
+            class="cursor-pointer rounded bg-hover px-3 py-1.5 text-xs text-surface hover:bg-border"
             @click="ctx.addCollection"
           >
             {{ dialogs.createCollection }}
           </button>
-        </div>
-      </div>
+        </template>
+      </AppPlaceholder>
     </div>
 
     <template v-else>

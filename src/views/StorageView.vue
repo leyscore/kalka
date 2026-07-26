@@ -11,10 +11,10 @@ import {
   storageProviderRegistry,
   type StorageDocument
 } from '@/app/integrations/storage'
-import { fadeOutGlobalLoader } from '@/app/editor/canvas/loader-overlay'
 import { openSettingsDialog, settingsDialogOpen } from '@/app/settings/dialog'
 import type { CredentialStatus } from '@/app/settings/credentials/types'
 import { createCanvasId } from '@/app/storage/id'
+import AppPlaceholder from '@/components/ui/AppPlaceholder.vue'
 import { getLocalCanvasStore } from '@/app/storage/local-store'
 import { activeTab, createTab, openStorageDocumentInNewTab } from '@/app/tabs'
 
@@ -117,13 +117,12 @@ watch(settingsDialogOpen, (open, wasOpen) => {
 })
 
 onMounted(() => {
-  fadeOutGlobalLoader()
   void refresh()
 })
 </script>
 
 <template>
-  <main class="min-h-screen bg-app text-surface" data-test-id="storage-workspace">
+  <main class="flex min-h-screen flex-col bg-app text-surface" data-test-id="storage-workspace">
     <header class="flex h-14 items-center border-b border-border px-6">
       <div>
         <h1 class="text-sm font-semibold">{{ dialogs.storageWorkspace }}</h1>
@@ -149,10 +148,9 @@ onMounted(() => {
       </div>
     </header>
 
-    <section class="mx-auto max-w-6xl p-6">
-      <div class="mb-4 flex items-center justify-between">
-        <p v-if="loading" class="text-xs text-muted">{{ dialogs.loadingDocuments }}</p>
-        <p v-else-if="error && configured" class="text-xs text-danger" role="alert">
+    <section class="mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col p-6">
+      <div class="mb-4 flex shrink-0 items-center justify-between">
+        <p v-if="error && configured" class="text-xs text-danger" role="alert">
           {{ error }}
         </p>
         <span v-else />
@@ -188,26 +186,32 @@ onMounted(() => {
         </button>
       </div>
 
-      <div v-else-if="!loading && configured" class="py-24 text-center text-xs text-muted">
-        {{ dialogs.emptyStorageWorkspace }}
-      </div>
+      <AppPlaceholder v-else-if="loading" :label="dialogs.loadingDocuments" size="page">
+        <template #icon>
+          <icon-lucide-loader-circle class="size-5 animate-spin" />
+        </template>
+      </AppPlaceholder>
 
-      <div
-        v-else-if="!loading"
-        class="mx-auto flex max-w-sm flex-col items-center py-24 text-center"
-      >
-        <div class="mb-3 flex size-10 items-center justify-center rounded-full bg-panel-field">
-          <icon-lucide-cloud class="size-5 text-muted" />
-        </div>
-        <p class="text-xs text-surface">{{ dialogs.storageNotConfigured }}</p>
-        <button
-          type="button"
-          class="mt-4 rounded bg-accent px-3 py-1.5 text-xs font-medium text-white hover:bg-accent/90"
-          @click="openSettingsDialog('storage')"
-        >
-          {{ dialogs.settings }}
-        </button>
-      </div>
+      <AppPlaceholder v-else-if="configured" :label="dialogs.emptyStorageWorkspace" size="page">
+        <template #icon>
+          <icon-lucide-files class="size-5" />
+        </template>
+      </AppPlaceholder>
+
+      <AppPlaceholder v-else :label="dialogs.storageNotConfigured" size="page">
+        <template #icon>
+          <icon-lucide-cloud class="size-5" />
+        </template>
+        <template #action>
+          <button
+            type="button"
+            class="rounded bg-accent px-3 py-1.5 text-xs font-medium text-white hover:bg-accent/90"
+            @click="openSettingsDialog('storage')"
+          >
+            {{ dialogs.settings }}
+          </button>
+        </template>
+      </AppPlaceholder>
     </section>
   </main>
 </template>

@@ -20,6 +20,7 @@ import { openExternalLink } from '@/app/shell/ui'
 import AssetThumbnail from '@/components/assets-panel/AssetThumbnail.vue'
 import { findAssetPage } from '@/components/assets-panel/page'
 import AppInput from '@/components/ui/AppInput.vue'
+import AppPlaceholder from '@/components/ui/AppPlaceholder.vue'
 import { useButtonUI } from '@/components/ui/button'
 import { AppDialogRoot, useDialogUI } from '@/components/ui/dialog'
 import { useMenuUI } from '@/components/ui/menu'
@@ -272,7 +273,7 @@ function insertSelectedAsset() {
       </SegmentedControl>
     </div>
 
-    <div class="scrollbar-thin flex-1 overflow-y-auto px-2 pb-2">
+    <div class="scrollbar-thin flex min-h-0 flex-1 flex-col overflow-y-auto px-2 pb-2">
       <section v-for="group in assetGroups" :key="group.pageId" class="mb-3">
         <h2 class="mb-1 px-1 text-[10px] font-medium tracking-wide text-muted uppercase">
           {{ group.pageName }}
@@ -396,13 +397,16 @@ function insertSelectedAsset() {
         </div>
       </section>
 
-      <div
+      <AppPlaceholder
         v-if="filteredAssets.length === 0"
         data-test-id="assets-empty"
-        class="px-3 py-6 text-center text-xs text-muted"
+        :label="panels.noLocalComponents"
+        size="compact"
       >
-        {{ panels.noLocalComponents }}
-      </div>
+        <template #icon>
+          <icon-lucide-component class="size-4" />
+        </template>
+      </AppPlaceholder>
     </div>
 
     <AppDialogRoot
