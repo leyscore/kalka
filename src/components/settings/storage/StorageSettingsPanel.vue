@@ -110,13 +110,15 @@ onMounted(() => void refreshStatuses())
       class="flex flex-col gap-1"
       :data-credential="field.id"
     >
-      <label class="text-[10px] text-muted">
+      <label :for="`storage-${field.id}`" class="text-[10px] text-muted">
         {{ credentialLabel(field.id) }}
       </label>
       <div class="flex gap-2">
         <AppInput
+          :id="`storage-${field.id}`"
           v-model="credentialDrafts[field.id]"
           type="password"
+          :aria-label="credentialLabel(field.id)"
           :placeholder="
             credentialStatuses[field.id] === 'configured'
               ? dialogs.keySavedReplace
