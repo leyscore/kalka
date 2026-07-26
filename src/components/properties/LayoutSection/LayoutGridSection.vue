@@ -100,7 +100,7 @@ function isGrid(grid: LayoutGrid): boolean {
             </Tip>
           </template>
         </SegmentedControl>
-        <PanelGrid columns="two">
+        <PanelGrid :columns="2">
           <PanelFieldGroup :label="panels.gridCount">
             <NumberField
               :model-value="grid.count ?? grid.numSections ?? 1"
