@@ -3,6 +3,7 @@ import { describe, expect, test, vi } from 'bun:test'
 import { createDefaultEditorState } from '@open-pencil/core/editor'
 
 import { createSaveActions } from '@/app/document/io/save'
+import { createDocumentSourceState } from '@/app/document/io/source-state'
 
 function makeWritableHandle(name: string): FileSystemFileHandle {
   return {
@@ -30,6 +31,8 @@ function createSaveHarness(handle: FileSystemFileHandle) {
     setFileHandle: vi.fn(),
     getDownloadName: () => null,
     setDownloadName: vi.fn(),
+    getStorageBinding: () => null,
+    setStorageBinding: vi.fn(),
     setSourceIdentity,
     setSavedVersion: vi.fn(),
     setLastWriteTime: vi.fn(),
@@ -39,6 +42,18 @@ function createSaveHarness(handle: FileSystemFileHandle) {
 }
 
 describe('saved document identity', () => {
+  test('tracks storage binding alongside local source identity', () => {
+    const source = createDocumentSourceState()
+    source.setSourceIdentity({ handle: null, path: '/tmp/local.fig' })
+    source.setStorageBinding({ providerId: 's3-compatible', documentId: 'remote-1' })
+
+    expect(source.getSourceIdentity()).toEqual({ handle: null, path: '/tmp/local.fig' })
+    expect(source.getStorageBinding()).toEqual({
+      providerId: 's3-compatible',
+      documentId: 'remote-1'
+    })
+  })
+
   test('publishes the writable handle after a successful save', async () => {
     const handle = makeWritableHandle('saved.fig')
     const { actions, setSourceIdentity } = createSaveHarness(handle)

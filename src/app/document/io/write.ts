@@ -1,13 +1,16 @@
 import type { EditorState } from '@open-pencil/core/editor'
 
+import type { StorageDocumentBinding } from '@/app/integrations/storage/types'
+import { persistStorageCanvasLocally } from '@/app/storage/sync/persist'
 import { isTauri } from '@/app/tauri/env'
 
-type WriteDocumentState = EditorState
+type WriteDocumentState = EditorState & { documentName: string }
 
 type DocumentWriterOptions = {
   state: WriteDocumentState
   getFilePath: () => string | null
   getFileHandle: () => FileSystemFileHandle | null
+  getStorageBinding: () => StorageDocumentBinding | null
   setSavedVersion: (version: number) => void
   setLastWriteTime: (time: number) => void
 }
@@ -16,11 +19,24 @@ export function createDocumentWriter({
   state,
   getFilePath,
   getFileHandle,
+  getStorageBinding,
   setSavedVersion,
   setLastWriteTime
 }: DocumentWriterOptions) {
-  return async function writeFile(data: Uint8Array) {
+  return async function writeFile(data: Uint8Array): Promise<boolean> {
     setLastWriteTime(Date.now())
+    const storage = getStorageBinding()
+    if (storage) {
+      await persistStorageCanvasLocally({
+        providerId: storage.providerId,
+        canvasId: storage.documentId,
+        name: state.documentName || 'Untitled',
+        figBytes: data
+      })
+      setSavedVersion(state.sceneVersion)
+      return true
+    }
+
     const filePath = getFilePath()
     const fileHandle = getFileHandle()
     if (filePath && isTauri()) {

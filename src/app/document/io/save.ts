@@ -5,6 +5,7 @@ import { documentNameFromFigPath } from '@/app/document/io/names'
 import { chooseBrowserFigSaveHandle, chooseTauriFigSavePath } from '@/app/document/io/save-targets'
 import type { DocumentSourceIdentity } from '@/app/document/io/types'
 import { createDocumentWriter } from '@/app/document/io/write'
+import type { StorageDocumentBinding } from '@/app/integrations/storage/types'
 import { IS_TAURI } from '@/constants'
 
 type SaveDocumentState = EditorState & { documentName: string }
@@ -18,6 +19,8 @@ type SaveActionsOptions = {
   setFileHandle: (handle: FileSystemFileHandle | null) => void
   getDownloadName: () => string | null
   setDownloadName: (name: string | null) => void
+  getStorageBinding: () => StorageDocumentBinding | null
+  setStorageBinding: (binding: StorageDocumentBinding | null) => void
   setSourceIdentity: (identity: DocumentSourceIdentity) => void
   setSavedVersion: (version: number) => void
   setLastWriteTime: (time: number) => void
@@ -33,6 +36,8 @@ export function createSaveActions({
   setFileHandle,
   getDownloadName,
   setDownloadName,
+  getStorageBinding,
+  setStorageBinding,
   setSourceIdentity,
   setSavedVersion,
   setLastWriteTime,
@@ -42,6 +47,7 @@ export function createSaveActions({
     state,
     getFilePath,
     getFileHandle,
+    getStorageBinding,
     setSavedVersion,
     setLastWriteTime
   })
@@ -49,10 +55,11 @@ export function createSaveActions({
   async function saveFigFile() {
     const filePath = getFilePath()
     const fileHandle = getFileHandle()
+    const storageBinding = getStorageBinding()
     const downloadName = getDownloadName()
-    if (filePath || fileHandle) {
+    if (storageBinding || filePath || fileHandle) {
       const wrote = await writeFile(await buildFigFile())
-      if (wrote) setSourceIdentity({ handle: fileHandle, path: filePath })
+      if (wrote && !storageBinding) setSourceIdentity({ handle: fileHandle, path: filePath })
     } else if (downloadName) {
       downloadBlob(new Uint8Array(await buildFigFile()), downloadName, 'application/octet-stream')
     } else {
@@ -66,6 +73,7 @@ export function createSaveActions({
     if (IS_TAURI) {
       const path = await chooseTauriFigSavePath()
       if (!path) return
+      setStorageBinding(null)
       setFilePath(path)
       setFileHandle(null)
       state.documentName = documentNameFromFigPath(path)
@@ -77,6 +85,7 @@ export function createSaveActions({
     if (window.showSaveFilePicker) {
       const handle = await chooseBrowserFigSaveHandle()
       if (!handle) return
+      setStorageBinding(null)
       setFileHandle(handle)
       setFilePath(null)
       state.documentName = documentNameFromFigPath(handle.name)
@@ -87,6 +96,7 @@ export function createSaveActions({
 
     const filename = prompt('Save as:', getDownloadName() ?? 'Untitled.fig')
     if (!filename) return
+    setStorageBinding(null)
     setDownloadName(filename)
     state.documentName = documentNameFromFigPath(filename)
     downloadBlob(new Uint8Array(data), filename, 'application/octet-stream')

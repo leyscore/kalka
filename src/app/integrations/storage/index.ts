@@ -21,6 +21,7 @@ export type {
   StorageConnectionResult,
   StorageCredentialField,
   StorageDocument,
+  StorageDocumentBinding,
   StorageDocumentMetadata,
   StorageFieldID,
   StoragePreferenceField,

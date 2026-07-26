@@ -6,6 +6,12 @@ export {
   kickSyncEngine
 } from './engine'
 export { createMemoryOutbox, getOutbox, resetOutboxForTests } from './outbox'
+export {
+  persistStorageCanvasLocally,
+  seedStorageCanvasFromRemote,
+  type PersistStorageCanvasOptions,
+  type SeedStorageCanvasOptions
+} from './persist'
 export { setUploadProgress, uploadProgressByCanvas } from './progress'
 export {
   pendingSyncCount,

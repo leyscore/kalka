@@ -3,6 +3,11 @@ import type { CredentialResolver } from '@/app/settings/credentials/types'
 export type StorageProviderID = string
 export type StorageFieldID = string
 
+export type StorageDocumentBinding = {
+  providerId: StorageProviderID
+  documentId: string
+}
+
 export type StorageTransferProgress = {
   transferredBytes: number
   totalBytes: number | null
