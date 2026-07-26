@@ -128,6 +128,8 @@
   "multiplayerCursors": "Cursor anderer Teilnehmer",
   "direction": "Richtung",
   "flow": "Fluss",
+  "freeform": "Freiform",
+  "dimensions": "Abmessungen",
   "layoutHorizontal": "Horizontales Layout",
   "layoutVertical": "Vertikales Layout",
   "layoutGrid": "Rasterlayout",

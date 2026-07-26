@@ -128,6 +128,8 @@
   "multiplayerCursors": "协作光标",
   "direction": "方向",
   "flow": "流向",
+  "freeform": "自由布局",
+  "dimensions": "尺寸",
   "layoutHorizontal": "水平布局",
   "layoutVertical": "垂直布局",
   "layoutGrid": "网格布局",

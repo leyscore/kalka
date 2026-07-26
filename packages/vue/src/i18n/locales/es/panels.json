@@ -142,6 +142,8 @@
   "multiplayerCursors": "Cursores de otros participantes",
   "direction": "Dirección",
   "flow": "Flujo",
+  "freeform": "Forma libre",
+  "dimensions": "Dimensiones",
   "layoutHorizontal": "Diseño horizontal",
   "layoutVertical": "Diseño vertical",
   "layoutGrid": "Diseño de cuadrícula",

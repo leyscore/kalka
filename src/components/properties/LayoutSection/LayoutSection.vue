@@ -22,24 +22,28 @@ const CONTAINER_TYPES = ['FRAME', 'COMPONENT', 'COMPONENT_SET', 'INSTANCE']
       <PanelSection :label="ctx.node.layoutMode === 'NONE' ? panels.layout : panels.autoLayout">
         <template v-if="CONTAINER_TYPES.includes(ctx.node.type)" #actions>
           <IconButton
-            v-if="ctx.node.layoutMode === 'NONE'"
-            :label="panels.addAutoLayout"
-            @click="ctx.editor.setLayoutMode(ctx.node.id, 'VERTICAL')"
+            :label="ctx.node.layoutMode === 'NONE' ? panels.addAutoLayout : panels.removeAutoLayout"
+            size="md"
+            :active="ctx.node.layoutMode !== 'NONE'"
+            class="data-[state=on]:bg-accent/15"
+            @click="
+              ctx.editor.setLayoutMode(
+                ctx.node.id,
+                ctx.node.layoutMode === 'NONE' ? 'VERTICAL' : 'NONE'
+              )
+            "
           >
-            <icon-lucide-plus class="size-3.5" />
-          </IconButton>
-          <IconButton
-            v-else
-            :label="panels.removeAutoLayout"
-            @click="ctx.editor.setLayoutMode(ctx.node.id, 'NONE')"
-          >
-            <icon-lucide-minus class="size-3.5" />
+            <icon-lucide-layout-panel-top class="size-3.5" />
           </IconButton>
         </template>
 
         <AutoLayoutControls v-if="CONTAINER_TYPES.includes(ctx.node.type)" />
+        <div class="mt-2 mb-1 text-[11px] text-muted">{{ panels.dimensions }}</div>
         <TextResizingControl v-if="ctx.node.type === 'TEXT'" />
         <SizeControls />
+        <ClipContentControl
+          v-if="CONTAINER_TYPES.includes(ctx.node.type) && ctx.node.layoutMode === 'NONE'"
+        />
 
         <template v-if="CONTAINER_TYPES.includes(ctx.node.type) && ctx.node.layoutMode !== 'NONE'">
           <FlexControls v-if="ctx.isFlex" />

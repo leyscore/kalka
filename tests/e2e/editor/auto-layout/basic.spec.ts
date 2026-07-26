@@ -265,17 +265,36 @@ test('alignment grid center sets CENTER alignment', async () => {
   canvas.assertNoErrors()
 })
 
-test('remove auto-layout sets layoutMode to NONE', async () => {
+test('Freeform disables auto layout and a flow option restores it', async () => {
   await selectFrame()
 
-  await propertySection(page, 'Auto layout')
-    .getByRole('button', { name: 'Remove auto layout' })
-    .click()
+  await propertySection(page, 'Auto layout').getByRole('button', { name: 'Freeform' }).click()
   await canvas.waitForRender()
 
-  const frame = await getNodeById(page, frameId)
+  let frame = await getNodeById(page, frameId)
   expect(expectDefined(frame, 'frame').layoutMode).toBe('NONE')
-  await expect(propertySection(page, 'Layout')).toBeVisible()
+  const layout = propertySection(page, 'Layout')
+  await expect(layout).toBeVisible()
+  await expect(layout.getByRole('button', { name: 'Add auto layout' })).toHaveAttribute(
+    'data-state',
+    'off'
+  )
+  await expect(layout.getByText('Flow', { exact: true })).toBeVisible()
+  await expect(layout.getByRole('checkbox', { name: 'Clip content' })).toBeVisible()
+  await expect(layout.getByRole('button', { name: 'Freeform' })).toHaveAttribute('data-state', 'on')
   await expect(propertySection(page, 'Auto layout')).toHaveCount(0)
+  await expect(layout).toHaveScreenshot('layout-freeform-controls.png')
+
+  await layout.getByRole('button', { name: 'Vertical layout' }).click()
+  await canvas.waitForRender()
+  frame = await getNodeById(page, frameId)
+  expect(expectDefined(frame, 'frame').layoutMode).toBe('VERTICAL')
+  const autoLayout = propertySection(page, 'Auto layout')
+  await expect(autoLayout).toBeVisible()
+  await expect(autoLayout.getByRole('button', { name: 'Remove auto layout' })).toHaveAttribute(
+    'data-state',
+    'on'
+  )
+  await expect(propertySection(page, 'Layout')).toHaveCount(0)
   canvas.assertNoErrors()
 })

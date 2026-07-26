@@ -128,6 +128,8 @@
   "multiplayerCursors": "Курсоры участников",
   "direction": "Направление",
   "flow": "Поток",
+  "freeform": "Свободная",
+  "dimensions": "Размеры",
   "layoutHorizontal": "Горизонтальная раскладка",
   "layoutVertical": "Вертикальная раскладка",
   "layoutGrid": "Сетка",

@@ -231,6 +231,8 @@ export const panelMessageDefaults = {
   multiplayerCursors: 'Multiplayer cursors',
   direction: 'Direction',
   flow: 'Flow',
+  freeform: 'Freeform',
+  dimensions: 'Dimensions',
   layoutHorizontal: 'Horizontal layout',
   layoutVertical: 'Vertical layout',
   layoutGrid: 'Grid layout',
