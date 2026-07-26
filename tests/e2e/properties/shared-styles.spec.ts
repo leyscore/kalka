@@ -114,7 +114,7 @@ test('applies fill, stroke, effect, and grid styles from local definitions', asy
   await chooseStyle('Fill', 'Fill style', 'Brand/Primary')
   await chooseStyle('Stroke', 'Stroke style', 'Brand/Primary')
   await chooseStyle('Effects', 'Effect style', 'Effects/Card')
-  await chooseStyle('Layout', 'Grid style', 'Grid/12 columns')
+  await chooseStyle('Layout guide', 'Grid style', 'Grid/12 columns')
 
   expect(await targetStyles()).toMatchObject({
     fillStyleId: '1:100',

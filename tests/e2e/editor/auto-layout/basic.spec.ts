@@ -50,7 +50,8 @@ test('Shift+A wraps selection in auto-layout frame', async () => {
   expect(expectDefined(node, 'node').childIds.length).toBe(2)
 
   frameId = expectDefined(node, 'node').id
-  await expect(propertySection(page, 'Layout')).toHaveScreenshot('layout-size-controls.png')
+  await expect(propertySection(page, 'Auto layout')).toHaveScreenshot('layout-size-controls.png')
+  await expect(propertySection(page, 'Layout')).toHaveCount(0)
   canvas.assertNoErrors()
 })
 
@@ -158,7 +159,7 @@ test('padding controls set horizontal and vertical padding pairs', async () => {
 test('size dropdown adds and removes min width', async () => {
   await selectFrame()
 
-  const layout = propertySection(page, 'Layout')
+  const layout = propertySection(page, 'Auto layout')
   await propertyField(page, 'width').getByRole('combobox', { name: 'Width' }).click()
   await page.getByRole('option', { name: 'Add min width' }).click()
   await canvas.waitForRender()
@@ -274,5 +275,7 @@ test('remove auto-layout sets layoutMode to NONE', async () => {
 
   const frame = await getNodeById(page, frameId)
   expect(expectDefined(frame, 'frame').layoutMode).toBe('NONE')
+  await expect(propertySection(page, 'Layout')).toBeVisible()
+  await expect(propertySection(page, 'Auto layout')).toHaveCount(0)
   canvas.assertNoErrors()
 })
