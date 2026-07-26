@@ -246,6 +246,14 @@ export type {
   PropertyListRootSlotProps,
   PropertyListRootSlots
 } from '#vue/primitives/PropertyList'
+export { PropertyGridRoot } from '#vue/primitives/PropertyGrid'
+export type {
+  PropertyGridColumns,
+  PropertyGridDistribution,
+  PropertyGridRootProps,
+  PropertyGridRootSlots
+} from '#vue/primitives/PropertyGrid'
+
 export {
   PropertySectionRoot,
   PropertySectionHeader,

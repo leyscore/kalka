@@ -13,6 +13,7 @@ import AppearanceSection from './properties/AppearanceSection.vue'
 import EffectsSection from './properties/EffectsSection.vue'
 import ExportSection from './properties/ExportSection.vue'
 import FillSection from './properties/FillSection.vue'
+import LayoutGridSection from './properties/LayoutSection/LayoutGridSection.vue'
 import LayoutSection from './properties/LayoutSection/LayoutSection.vue'
 import MaskSection from './properties/MaskSection.vue'
 import PageSection from './properties/PageSection.vue'
@@ -39,6 +40,10 @@ const isComponentType = computed(() => {
   return type ? COMPONENT_TYPES.has(type) : false
 })
 const selectedIcon = computed(() => (node.value ? nodeIcon(node.value) : undefined))
+const supportsLayoutGuides = computed(() => {
+  const type = node.value?.type
+  return type === 'FRAME' || type === 'COMPONENT' || type === 'COMPONENT_SET' || type === 'INSTANCE'
+})
 const { panels } = useI18n()
 </script>
 
@@ -131,6 +136,7 @@ const { panels } = useI18n()
     <TypographySection v-if="node.type === 'TEXT'" />
     <FillSection />
     <StrokeSection />
+    <LayoutGridSection v-if="supportsLayoutGuides" />
     <EffectsSection />
 
     <ExportSection />
