@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useI18n } from '@open-pencil/vue'
 
 import {
@@ -7,21 +8,31 @@ import {
   createActiveStorageAdapter,
   readStoragePreferences,
   storageCredentialStatuses,
+  storagePreferencesComplete,
   storageProviderRegistry,
   writeStoragePreference
 } from '@/app/integrations/storage'
 import { appCredentialServices } from '@/app/settings/credentials/app'
+import { settingsDialogOpen } from '@/app/settings/dialog'
 import { credentialRef } from '@/app/settings/credentials/reference'
 import type { CredentialStatus } from '@/app/settings/credentials/types'
 import AppInput from '@/components/ui/AppInput.vue'
 
 const { dialogs } = useI18n()
+const router = useRouter()
 const provider = storageProviderRegistry.get(activeStorageProviderID.value)
 const preferenceDrafts = ref<Record<string, string>>({ ...readStoragePreferences(provider.id) })
 const credentialDrafts = ref<Record<string, string>>({})
 const credentialStatuses = ref<Record<string, CredentialStatus>>({})
 const busy = ref(false)
 const result = ref<{ ok: boolean; message: string } | null>(null)
+const configured = computed(
+  () =>
+    storagePreferencesComplete(provider.id) &&
+    provider.credentialFields.every(
+      (field) => !field.required || credentialStatuses.value[field.id] === 'configured'
+    )
+)
 
 function preferenceLabel(field: string): string {
   if (field === 'endpoint') return dialogs.value.storageEndpoint
@@ -58,6 +69,11 @@ async function clearCredential(field: string): Promise<void> {
   await appCredentialServices.manager.clear(credentialRef(provider.id, field))
   credentialDrafts.value[field] = ''
   await refreshStatuses()
+}
+
+async function openWorkspace(): Promise<void> {
+  settingsDialogOpen.value = false
+  await router.push('/storage')
 }
 
 async function testConnection(): Promise<void> {
@@ -156,6 +172,16 @@ onMounted(() => void refreshStatuses())
       @click="testConnection"
     >
       {{ dialogs.testConnection }}
+    </button>
+
+    <button
+      type="button"
+      class="rounded border border-border px-3 py-1.5 text-[11px] font-medium text-surface hover:bg-hover disabled:text-muted disabled:opacity-50"
+      :disabled="!configured"
+      data-test-id="settings-storage-open-workspace"
+      @click="openWorkspace"
+    >
+      {{ dialogs.openStorageWorkspace }}
     </button>
 
     <p

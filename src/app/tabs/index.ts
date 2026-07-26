@@ -10,6 +10,13 @@ import type { DocumentSourceIdentity } from '@/app/document/io/types'
 import { setActiveEditorStore } from '@/app/editor/active-store'
 import { createEditorStore } from '@/app/editor/session'
 import type { EditorStore } from '@/app/editor/session'
+import {
+  activeStorageProviderID,
+  createActiveStorageAdapter,
+  type StorageDocument
+} from '@/app/integrations/storage'
+import { getLocalCanvasStore } from '@/app/storage/local-store'
+import { seedStorageCanvasFromRemote } from '@/app/storage/sync/persist'
 import { createFileOpenCoordinator } from '@/app/tabs/open/coordinator'
 import { findTabByFileIdentity } from '@/app/tabs/open/identity'
 
@@ -115,6 +122,72 @@ function isDOMImportFile(file: File): boolean {
   return /\.(html?|xhtml)$/i.test(file.name)
 }
 
+function reusableTabStore(): EditorStore {
+  const current = activeTab.value
+  const isUntouched =
+    current?.store.state.documentName === 'Untitled' && !current.store.undo.canUndo
+  return isUntouched ? current.store : createTab().store
+}
+
+function findStorageTab(providerId: string, documentId: string): Tab | undefined {
+  return tabsRef.value.find((tab) => {
+    const binding = tab.store.getStorageBinding()
+    return binding?.providerId === providerId && binding.documentId === documentId
+  })
+}
+
+export async function openStorageDocumentInNewTab(document: StorageDocument): Promise<void> {
+  const providerId = activeStorageProviderID.value
+  const existing = findStorageTab(providerId, document.id)
+  if (existing) {
+    switchTab(existing.id)
+    return
+  }
+
+  const store = reusableTabStore()
+  store.state.documentName = document.name
+  store.state.loading = true
+  try {
+    const local = getLocalCanvasStore()
+    const localMetadata = await local.getMeta(document.id)
+    const localBytes = localMetadata?.hasFig ? await local.readFig(document.id) : null
+    const localIsAuthoritative =
+      localMetadata?.syncStatus !== 'synced' ||
+      !document.metadataAuthoritative ||
+      localMetadata.updatedAt >= document.updatedAt
+    let bytes = localBytes && localIsAuthoritative ? localBytes : null
+
+    if (!bytes) {
+      bytes = await createActiveStorageAdapter(providerId).getDocument(document.id)
+      await seedStorageCanvasFromRemote({
+        providerId,
+        canvasId: document.id,
+        name: document.name,
+        updatedAt: document.updatedAt,
+        figBytes: bytes
+      })
+    }
+
+    const fileBytes = new Uint8Array(bytes.byteLength)
+    fileBytes.set(bytes)
+    const file = new File([fileBytes.buffer], `${document.name}.fig`, {
+      type: 'application/octet-stream'
+    })
+    const imported = await readFigFile(file, { populate: 'first-page' })
+    const firstPageId = imported.getPages()[0]?.id
+    if (firstPageId) computeAllLayouts(imported, firstPageId)
+    store.replaceGraph(imported)
+    store.undo.clear()
+    store.setStorageDocumentSource({ providerId, documentId: document.id }, document.name)
+    store.clearSelection()
+    const pageId = store.graph.getPages()[0]?.id ?? store.graph.rootId
+    await store.switchPage(pageId)
+    await store.fitCurrentPageToViewport()
+  } finally {
+    store.state.loading = false
+  }
+}
+
 export async function openFileInNewTab(
   file: File,
   handle?: FileSystemFileHandle,
@@ -138,10 +211,7 @@ export async function openFileInNewTab(
       return { kind: 'existing' as const }
     }
 
-    const current = activeTab.value
-    const isUntouched =
-      current?.store.state.documentName === 'Untitled' && !current.store.undo.canUndo
-    const store = isUntouched ? current.store : createTab().store
+    const store = reusableTabStore()
     store.state.documentName = file.name.replace(/\.[^.]+$/i, '')
     store.state.loading = true
 
@@ -211,6 +281,7 @@ export function useTabsStore() {
     getTabForStore,
     getTabsSnapshot,
     openFileInNewTab,
+    openStorageDocumentInNewTab,
     getActiveStore,
     tabCount
   }
