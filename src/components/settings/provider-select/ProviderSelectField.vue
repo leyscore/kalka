@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ProviderSelect from '@/components/chat/ProviderSelect/ProviderSelect.vue'
+import ProviderSelect from '@/components/settings/provider-select/ProviderSelect.vue'
 </script>
 
 <template>

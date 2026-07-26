@@ -3,7 +3,9 @@ import { ref } from 'vue'
 import { IS_BROWSER } from '@open-pencil/core/constants'
 
 import {
-  apiKey,
+  apiKeyStatus,
+  browserCredentialsRemembered,
+  credentialsReady,
   customAPIType,
   customBaseURL,
   customModelID,
@@ -11,12 +13,16 @@ import {
   isConfigured,
   maxOutputTokens,
   modelID,
-  pexelsApiKey,
+  pexelsKeyStatus,
   providerDef,
   providerID,
   registerAIChatEffects,
+  resolveAPIKey,
   setAPIKey,
-  unsplashAccessKey
+  setPexelsKey,
+  setRememberCredentials,
+  setUnsplashKey,
+  unsplashKeyStatus
 } from '@/app/ai/chat/storage'
 import { createChatSessionManager } from '@/app/ai/chat/transports'
 import { exposeChatTransportOverride } from '@/app/browser-bridge'
@@ -28,7 +34,8 @@ const chatSession = createChatSessionManager({
   isConfigured,
   isACPProvider,
   providerID,
-  apiKey,
+  credentialsReady,
+  resolveAPIKey,
   modelID,
   customModelID,
   customBaseURL,
@@ -49,15 +56,20 @@ export function useAIChat() {
   return {
     providerID,
     providerDef,
-    apiKey,
+    apiKeyStatus,
+    browserCredentialsRemembered,
     setAPIKey,
+    resolveAPIKey,
     modelID,
     customBaseURL,
     customModelID,
     customAPIType,
     maxOutputTokens,
-    pexelsApiKey,
-    unsplashAccessKey,
+    pexelsKeyStatus,
+    setPexelsKey,
+    setRememberCredentials,
+    unsplashKeyStatus,
+    setUnsplashKey,
     activeTab,
     isConfigured,
     ensureChat: chatSession.ensureChat,

@@ -19,6 +19,7 @@
 - Drag with the Text tool to create a fixed-size text box, or click to create auto-width text.
 - Target a specific open document and page from live CLI and MCP automation, including sessions with multiple documents.
 - Test OpenAI-compatible provider connections from AI settings with clearer setup errors.
+- Manage AI, agent, and media credentials from unified Settings, using the system credential store on desktop and optional encrypted storage in the browser.
 - Build custom property panels with new Vue SDK number fields, bindable values, property sections, responsive property grids, segmented controls, property lists, color models, fill controls, and gradient primitives.
 - Connect local MCP clients through automatically discovered private Unix sockets on macOS and Linux, with localhost TCP fallback. (#338)
 - Create centered frames from current Figma-style device and asset presets, or resize selected frames from the Design panel while preserving their names.

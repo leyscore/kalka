@@ -2,8 +2,8 @@
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from 'reka-ui'
 import { useI18n } from '@open-pencil/vue'
 
-import ProviderSettingsField from '@/components/chat/ProviderSettings/ProviderSettingsField.vue'
-import { useProviderSettingsContext } from '@/components/chat/ProviderSettings/context'
+import ProviderSettingsField from '@/components/settings/provider/ProviderSettingsField.vue'
+import { useProviderSettingsContext } from '@/components/settings/provider/context'
 
 const ctx = useProviderSettingsContext()
 const { dialogs } = useI18n()

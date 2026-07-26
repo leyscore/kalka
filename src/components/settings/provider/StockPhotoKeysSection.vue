@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useI18n } from '@open-pencil/vue'
 
-import ProviderSettingsKeyField from '@/components/chat/ProviderSettings/ProviderSettingsKeyField.vue'
-import { useProviderSettingsContext } from '@/components/chat/ProviderSettings/context'
+import ProviderSettingsKeyField from '@/components/settings/provider/ProviderSettingsKeyField.vue'
+import { useProviderSettingsContext } from '@/components/settings/provider/context'
 
 const ctx = useProviderSettingsContext()
 const { dialogs } = useI18n()
@@ -12,7 +12,7 @@ const { dialogs } = useI18n()
   <ProviderSettingsKeyField
     v-model="ctx.pexelsKeyInput"
     :label="dialogs.pexelsAPIKey"
-    :saved="!!ctx.pexelsApiKey"
+    :saved="ctx.pexelsKeyStatus === 'configured'"
     kind="pexels"
     :placeholder="
       ctx.hasExistingPexelsKey ? dialogs.keySavedReplace : dialogs.stockPhotoToolOptional
@@ -26,7 +26,7 @@ const { dialogs } = useI18n()
   <ProviderSettingsKeyField
     v-model="ctx.unsplashKeyInput"
     :label="dialogs.unsplashAccessKey"
-    :saved="!!ctx.unsplashAccessKey"
+    :saved="ctx.unsplashKeyStatus === 'configured'"
     kind="unsplash"
     :placeholder="
       ctx.hasExistingUnsplashKey ? dialogs.keySavedReplace : dialogs.pexelsAlternativeOptional

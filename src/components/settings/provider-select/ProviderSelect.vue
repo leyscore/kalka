@@ -80,10 +80,12 @@ const groups = computed(() => {
 
   result.push({
     label: acpAgents.value.length ? 'API key' : undefined,
-    items: AI_PROVIDERS.map((provider) => ({
-      value: provider.id,
-      label: provider.name
-    }))
+    items: [...AI_PROVIDERS]
+      .sort((left, right) => left.name.localeCompare(right.name))
+      .map((provider) => ({
+        value: provider.id,
+        label: provider.name
+      }))
   })
 
   return result

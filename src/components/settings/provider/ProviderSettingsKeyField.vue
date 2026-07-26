@@ -3,9 +3,9 @@ import { computed } from 'vue'
 
 import { useI18n } from '@open-pencil/vue'
 
-import ProviderSettingsField from '@/components/chat/ProviderSettings/ProviderSettingsField.vue'
-import ProviderSettingsInput from '@/components/chat/ProviderSettings/ProviderSettingsInput.vue'
-import ProviderSettingsLink from '@/components/chat/ProviderSettings/ProviderSettingsLink.vue'
+import ProviderSettingsField from '@/components/settings/provider/ProviderSettingsField.vue'
+import ProviderSettingsInput from '@/components/settings/provider/ProviderSettingsInput.vue'
+import ProviderSettingsLink from '@/components/settings/provider/ProviderSettingsLink.vue'
 
 const { label, modelValue, saved, kind, placeholder, keyUrl, keyUrlLabel } = defineProps<{
   label: string

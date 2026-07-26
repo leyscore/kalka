@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { useI18n } from '@open-pencil/vue'
 
-import ProviderSettingsField from '@/components/chat/ProviderSettings/ProviderSettingsField.vue'
-import ProviderSettingsInput from '@/components/chat/ProviderSettings/ProviderSettingsInput.vue'
-import { useProviderSettingsContext } from '@/components/chat/ProviderSettings/context'
+import ProviderSettingsField from '@/components/settings/provider/ProviderSettingsField.vue'
+import ProviderSettingsInput from '@/components/settings/provider/ProviderSettingsInput.vue'
+import { useProviderSettingsContext } from '@/components/settings/provider/context'
 
 const ctx = useProviderSettingsContext()
 const { dialogs } = useI18n()

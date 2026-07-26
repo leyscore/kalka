@@ -332,8 +332,9 @@ export const AI_PROVIDERS: AIProviderDef[] = [
   }
 ]
 
-export const DEFAULT_AI_PROVIDER: AIProviderID = 'openrouter'
-export const DEFAULT_AI_MODEL = AI_PROVIDERS[0].defaultModel
+export const DEFAULT_AI_PROVIDER: AIProviderID = 'openai-compatible'
+export const DEFAULT_AI_MODEL =
+  AI_PROVIDERS.find((provider) => provider.id === DEFAULT_AI_PROVIDER)?.defaultModel ?? ''
 
 export const AUTOMATION_HTTP_PORT = 7600
 

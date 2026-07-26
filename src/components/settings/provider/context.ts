@@ -11,15 +11,18 @@ function createProviderSettingsContext() {
   const {
     providerID,
     providerDef,
-    apiKey,
+    apiKeyStatus,
     setAPIKey,
+    resolveAPIKey,
     customBaseURL,
     customModelID,
     modelID,
     customAPIType,
     maxOutputTokens,
-    pexelsApiKey,
-    unsplashAccessKey
+    pexelsKeyStatus,
+    setPexelsKey,
+    unsplashKeyStatus,
+    setUnsplashKey
   } = useAIChat()
 
   const isACP = computed(() => providerID.value.startsWith('acp:'))
@@ -28,16 +31,15 @@ function createProviderSettingsContext() {
   const unsplashKeyInput = ref('')
   const baseURLInput = ref(customBaseURL.value)
   const customModelInput = ref(customModelID.value)
-  const hasExistingKey = ref(!!apiKey.value)
-  const hasExistingPexelsKey = ref(!!pexelsApiKey.value)
-  const hasExistingUnsplashKey = ref(!!unsplashAccessKey.value)
+  const hasExistingKey = ref(apiKeyStatus.value === 'configured')
+  const hasExistingPexelsKey = ref(pexelsKeyStatus.value === 'configured')
+  const hasExistingUnsplashKey = ref(unsplashKeyStatus.value === 'configured')
   const connectionTestStatus = ref<'idle' | 'testing' | 'success' | 'error'>('idle')
   const connectionTestReason = ref<ProviderConnectionTestFailureReason | null>(null)
 
-  const effectiveAPIKey = computed(() => keyInput.value.trim() || apiKey.value)
   const canTestConnection = computed(() => {
     if (isACP.value) return false
-    if (!effectiveAPIKey.value.trim()) return false
+    if (!keyInput.value.trim() && !hasExistingKey.value) return false
     if (providerDef.value.supportsCustomBaseURL && !baseURLInput.value.trim()) return false
     if (providerDef.value.supportsCustomModel && !customModelInput.value.trim()) return false
     return true
@@ -50,27 +52,36 @@ function createProviderSettingsContext() {
 
   watch(providerID, () => {
     keyInput.value = ''
-    hasExistingKey.value = !!apiKey.value
+    hasExistingKey.value = apiKeyStatus.value === 'configured'
     baseURLInput.value = customBaseURL.value
     customModelInput.value = customModelID.value
     resetConnectionTest()
   })
 
   watch([keyInput, baseURLInput, customModelInput, customAPIType], resetConnectionTest)
+  watch(apiKeyStatus, (status) => {
+    hasExistingKey.value = status === 'configured'
+  })
+  watch(pexelsKeyStatus, (status) => {
+    hasExistingPexelsKey.value = status === 'configured'
+  })
+  watch(unsplashKeyStatus, (status) => {
+    hasExistingUnsplashKey.value = status === 'configured'
+  })
 
-  function save() {
+  async function save() {
     if (keyInput.value.trim()) {
-      setAPIKey(keyInput.value.trim())
+      await setAPIKey(keyInput.value.trim())
       hasExistingKey.value = true
       keyInput.value = ''
     }
     if (pexelsKeyInput.value.trim()) {
-      pexelsApiKey.value = pexelsKeyInput.value.trim()
+      await setPexelsKey(pexelsKeyInput.value.trim())
       hasExistingPexelsKey.value = true
       pexelsKeyInput.value = ''
     }
     if (unsplashKeyInput.value.trim()) {
-      unsplashAccessKey.value = unsplashKeyInput.value.trim()
+      await setUnsplashKey(unsplashKeyInput.value.trim())
       hasExistingUnsplashKey.value = true
       unsplashKeyInput.value = ''
     }
@@ -82,27 +93,27 @@ function createProviderSettingsContext() {
     }
   }
 
-  function clearKey() {
-    setAPIKey('')
+  async function clearKey() {
+    await setAPIKey('')
     keyInput.value = ''
     hasExistingKey.value = false
   }
 
-  function clearPexelsKey() {
-    pexelsApiKey.value = ''
+  async function clearPexelsKey() {
+    await setPexelsKey('')
     pexelsKeyInput.value = ''
     hasExistingPexelsKey.value = false
   }
 
-  function clearUnsplashKey() {
-    unsplashAccessKey.value = ''
+  async function clearUnsplashKey() {
+    await setUnsplashKey('')
     unsplashKeyInput.value = ''
     hasExistingUnsplashKey.value = false
   }
 
   function setCustomAPIType(value: string) {
     customAPIType.value = value as 'completions' | 'responses'
-    save()
+    void save()
   }
 
   async function testConnection() {
@@ -112,7 +123,7 @@ function createProviderSettingsContext() {
 
     const result = await testProviderConnection({
       providerID: providerID.value,
-      apiKey: effectiveAPIKey.value,
+      apiKey: keyInput.value.trim() || (await resolveAPIKey()) || '',
       modelID: modelID.value,
       customModelID: providerDef.value.supportsCustomModel
         ? customModelInput.value.trim()
@@ -136,14 +147,14 @@ function createProviderSettingsContext() {
   return {
     providerID,
     providerDef,
-    apiKey,
+    apiKeyStatus,
     modelID,
     customAPIType,
     customBaseURL,
     customModelID,
     maxOutputTokens,
-    pexelsApiKey,
-    unsplashAccessKey,
+    pexelsKeyStatus,
+    unsplashKeyStatus,
     isACP,
     keyInput,
     pexelsKeyInput,

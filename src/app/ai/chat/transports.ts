@@ -17,7 +17,8 @@ type ChatSessionOptions = {
   isConfigured: ComputedRef<boolean>
   isACPProvider: ComputedRef<boolean>
   providerID: Ref<AIProviderID>
-  apiKey: Ref<string>
+  credentialsReady: Promise<void>
+  resolveAPIKey: (providerID: AIProviderID) => Promise<string | null>
   modelID: Ref<string>
   customModelID: Ref<string>
   customBaseURL: Ref<string>
@@ -118,7 +119,8 @@ export function createChatSessionManager({
   isConfigured,
   isACPProvider,
   providerID,
-  apiKey,
+  credentialsReady,
+  resolveAPIKey,
   modelID,
   customModelID,
   customBaseURL,
@@ -146,16 +148,20 @@ export function createChatSessionManager({
     return transport as ChatTransport<UIMessage>
   }
 
-  function createTransport(store: EditorStore) {
+  async function createTransport(store: EditorStore) {
     if (overrideTransport) return overrideTransport()
 
     void acpTransportInstance?.destroy()
     acpTransportInstance = null
 
+    const activeProviderID = providerID.value
+    const apiKey = await resolveAPIKey(activeProviderID)
+    if (!apiKey) throw new Error('AI provider credential is unavailable')
+
     return createToolLoopTransport({
       store,
-      providerID: providerID.value,
-      apiKey: apiKey.value,
+      providerID: activeProviderID,
+      apiKey,
       modelID: modelID.value,
       customModelID: customModelID.value,
       customBaseURL: customBaseURL.value,
@@ -165,6 +171,7 @@ export function createChatSessionManager({
   }
 
   async function ensureChat(): Promise<Chat<UIMessage> | null> {
+    await credentialsReady
     if (!isConfigured.value) return null
 
     const store = getActiveEditorStore()
@@ -176,7 +183,7 @@ export function createChatSessionManager({
       const messages = currentChatMessages.get(store)
       const transport: ChatTransport<UIMessage> = isACPProvider.value
         ? await createActiveACPTransport()
-        : createTransport(store)
+        : await createTransport(store)
       chat = new Chat<UIMessage>({ transport, messages })
       currentChatStore = store
       transportDirty = false

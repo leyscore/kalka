@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ProviderConnectionTestButton from '@/components/chat/ProviderConnectionTestButton.vue'
-import { useProviderSettingsContext } from '@/components/chat/ProviderSettings/context'
+import { useProviderSettingsContext } from '@/components/settings/provider/context'
 
 const ctx = useProviderSettingsContext()
 </script>
