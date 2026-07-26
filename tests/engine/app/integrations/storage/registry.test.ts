@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 
 import {
   defineStorageProvider,
+  storageProviderRegistry,
   StorageProviderRegistry,
   type StorageAdapter,
   type StorageProviderRuntime
@@ -50,6 +51,20 @@ function testProvider() {
 }
 
 describe('storage provider registry', () => {
+  test('registers S3 preferences separately from credential fields', () => {
+    const provider = storageProviderRegistry.get('s3-compatible')
+
+    expect(provider.preferenceFields.map((field) => field.id)).toEqual([
+      'endpoint',
+      'bucket',
+      'region'
+    ])
+    expect(provider.credentialFields.map((field) => field.id)).toEqual([
+      'access-key-id',
+      'secret-access-key'
+    ])
+  })
+
   test('lists provider schemas without resolving credentials', () => {
     let resolutionCount = 0
     const credentials: CredentialResolver = {

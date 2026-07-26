@@ -16,6 +16,7 @@ export type StorageDocumentMetadata = {
 export type StorageDocument = StorageDocumentMetadata & {
   id: string
   thumbnailUrl?: string | null
+  metadataAuthoritative?: boolean
 }
 
 export type StorageUsage = {
@@ -43,6 +44,7 @@ export interface StorageAdapter {
     onProgress?: (progress: StorageTransferProgress) => void
   ): Promise<void>
   deleteDocument(id: string): Promise<void>
+  getDocumentMetadata?(id: string): Promise<StorageDocumentMetadata | null>
   getUsage(): Promise<StorageUsage>
   getThumbnail?(id: string): Promise<Uint8Array | null>
   putThumbnail?(id: string, bytes: Uint8Array): Promise<void>
