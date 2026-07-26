@@ -3,27 +3,15 @@ import type { EditorState } from '@open-pencil/core/editor'
 import { downloadBlob } from '@/app/document/io/browser'
 import { documentNameFromFigPath } from '@/app/document/io/names'
 import { chooseBrowserFigSaveHandle, chooseTauriFigSavePath } from '@/app/document/io/save-targets'
-import type { DocumentSourceIdentity } from '@/app/document/io/types'
+import type { DocumentSourceAccess } from '@/app/document/io/types'
 import { createDocumentWriter } from '@/app/document/io/write'
-import type { StorageDocumentBinding } from '@/app/integrations/storage/types'
 import { IS_TAURI } from '@/constants'
 
 type SaveDocumentState = EditorState & { documentName: string }
 
-type SaveActionsOptions = {
+type SaveActionsOptions = Omit<DocumentSourceAccess, 'getSavedVersion'> & {
   state: SaveDocumentState
   buildFigFile: () => Uint8Array | Promise<Uint8Array>
-  getFilePath: () => string | null
-  setFilePath: (path: string | null) => void
-  getFileHandle: () => FileSystemFileHandle | null
-  setFileHandle: (handle: FileSystemFileHandle | null) => void
-  getDownloadName: () => string | null
-  setDownloadName: (name: string | null) => void
-  getStorageBinding: () => StorageDocumentBinding | null
-  setStorageBinding: (binding: StorageDocumentBinding | null) => void
-  setSourceIdentity: (identity: DocumentSourceIdentity) => void
-  setSavedVersion: (version: number) => void
-  setLastWriteTime: (time: number) => void
   startWatchingFile: () => void
 }
 

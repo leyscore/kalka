@@ -9,7 +9,7 @@ import {
 } from '@/app/document/io/names'
 import { createSaveActions } from '@/app/document/io/save'
 import { createDocumentSourceState } from '@/app/document/io/source-state'
-import type { DocumentSourceIdentity } from '@/app/document/io/types'
+import type { DocumentSourceAccess } from '@/app/document/io/types'
 import type { StorageDocumentBinding } from '@/app/integrations/storage/types'
 
 type DocumentSourceState = EditorState & {
@@ -19,23 +19,11 @@ type DocumentSourceState = EditorState & {
 
 export { createDocumentSourceState }
 
-type DocumentSourceOptions = {
+type DocumentSourceOptions = DocumentSourceAccess & {
   editor: Editor
   state: DocumentSourceState
   stopWatchingFile: () => void
   startWatchingFile: () => Promise<void>
-  getFileHandle: () => FileSystemFileHandle | null
-  setFileHandle: (handle: FileSystemFileHandle | null) => void
-  getFilePath: () => string | null
-  setFilePath: (path: string | null) => void
-  getDownloadName: () => string | null
-  setDownloadName: (name: string | null) => void
-  getStorageBinding: () => StorageDocumentBinding | null
-  setStorageBinding: (binding: StorageDocumentBinding | null) => void
-  setSourceIdentity: (identity: DocumentSourceIdentity) => void
-  getSavedVersion: () => number
-  setSavedVersion: (version: number) => void
-  setLastWriteTime: (time: number) => void
   getRenderer: () => Editor['renderer']
 }
 
