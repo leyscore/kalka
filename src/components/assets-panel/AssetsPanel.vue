@@ -8,10 +8,6 @@ import {
   ContextMenuRoot,
   ContextMenuTrigger,
   DialogClose,
-  DialogContent,
-  DialogOverlay,
-  DialogPortal,
-  DialogRoot,
   DialogTitle
 } from 'reka-ui'
 
@@ -25,7 +21,7 @@ import AssetThumbnail from '@/components/assets-panel/AssetThumbnail.vue'
 import { findAssetPage } from '@/components/assets-panel/page'
 import AppInput from '@/components/ui/AppInput.vue'
 import { useButtonUI } from '@/components/ui/button'
-import { useDialogUI } from '@/components/ui/dialog'
+import { AppDialogRoot, useDialogUI } from '@/components/ui/dialog'
 import { useMenuUI } from '@/components/ui/menu'
 import SegmentedControl from '@/components/ui/SegmentedControl.vue'
 import Tip from '@/components/ui/Tip.vue'
@@ -66,7 +62,7 @@ const previewLoading = ref(false)
 let previewRequestId = 0
 const insertButton = useButtonUI({ tone: 'ghost', size: 'iconSm' })
 const primaryButton = useButtonUI({ tone: 'accent', size: 'md' })
-const dialog = useDialogUI({ content: 'flex w-[720px] max-w-[92vw] flex-col overflow-hidden' })
+const dialog = useDialogUI()
 const contextMenu = useMenuUI({ content: 'min-w-44' })
 const viewOptions = computed(() => [
   { value: 'grid', label: panels.value.gridView },
@@ -409,140 +405,126 @@ function insertSelectedAsset() {
       </div>
     </div>
 
-    <DialogRoot v-model:open="detailsOpen">
-      <DialogPortal>
-        <DialogOverlay :class="dialog.overlay" />
-        <DialogContent
-          v-if="selectedAsset"
-          data-test-id="asset-details-dialog"
-          :class="dialog.content"
+    <AppDialogRoot
+      v-if="selectedAsset"
+      v-model:open="detailsOpen"
+      size="lg"
+      data-test-id="asset-details-dialog"
+    >
+      <div class="flex items-center justify-between border-b border-border px-4 py-3">
+        <div class="flex min-w-0 items-center gap-2">
+          <component :is="nodeIcon(selectedAsset.node)" class="size-4 shrink-0 text-component" />
+          <div class="min-w-0">
+            <DialogTitle :class="dialog.title" class="truncate">{{
+              selectedAsset.name
+            }}</DialogTitle>
+            <p class="mt-0.5 text-[11px] text-muted">
+              {{
+                selectedAsset.node.type === 'COMPONENT_SET' ? panels.componentSet : panels.component
+              }}
+              <span v-if="selectedAsset.variantCount > 0">
+                · {{ selectedAsset.variantCount }} variants</span
+              >
+            </p>
+          </div>
+        </div>
+        <DialogClose
+          data-test-id="asset-details-close"
+          class="flex size-7 cursor-pointer items-center justify-center rounded border-none bg-transparent text-muted hover:bg-hover hover:text-surface"
         >
-          <div class="flex items-center justify-between border-b border-border px-4 py-3">
-            <div class="flex min-w-0 items-center gap-2">
-              <component
-                :is="nodeIcon(selectedAsset.node)"
-                class="size-4 shrink-0 text-component"
+          <icon-lucide-x class="size-4" />
+        </DialogClose>
+      </div>
+
+      <div class="grid min-h-0 grid-cols-[260px_1fr] gap-0">
+        <div class="border-r border-border p-4">
+          <div
+            data-test-id="asset-details-preview"
+            class="flex h-36 items-center justify-center overflow-hidden rounded-lg border border-border bg-canvas/60"
+          >
+            <img
+              v-if="previewUrl"
+              data-test-id="asset-details-preview-image"
+              :src="previewUrl"
+              :alt="`${selectedAsset.name} preview`"
+              class="max-h-[120px] max-w-[210px] object-contain"
+            />
+            <div v-else class="text-center">
+              <icon-lucide-loader-2
+                v-if="previewLoading"
+                class="mx-auto size-5 animate-spin text-muted"
               />
-              <div class="min-w-0">
-                <DialogTitle :class="dialog.title" class="truncate">{{
-                  selectedAsset.name
-                }}</DialogTitle>
-                <p class="mt-0.5 text-[11px] text-muted">
-                  {{
-                    selectedAsset.node.type === 'COMPONENT_SET'
-                      ? panels.componentSet
-                      : panels.component
-                  }}
-                  <span v-if="selectedAsset.variantCount > 0">
-                    · {{ selectedAsset.variantCount }} variants</span
-                  >
-                </p>
-              </div>
+              <component
+                v-else
+                :is="nodeIcon(selectedAsset.node)"
+                class="mx-auto size-8 text-component"
+              />
+              <p class="mt-2 max-w-44 truncate text-xs font-medium text-surface">
+                {{ selectedAsset.name }}
+              </p>
             </div>
-            <DialogClose
-              data-test-id="asset-details-close"
-              class="flex size-7 cursor-pointer items-center justify-center rounded border-none bg-transparent text-muted hover:bg-hover hover:text-surface"
+          </div>
+          <button
+            data-test-id="asset-details-insert"
+            :class="primaryButton.base"
+            class="mt-3 w-full"
+            @click="insertSelectedAsset"
+          >
+            {{ panels.insertInstance }}
+          </button>
+        </div>
+
+        <div class="min-w-0 p-4">
+          <section v-if="selectedAsset.description" class="mb-4">
+            <h3 class="text-[11px] font-medium tracking-wider text-muted uppercase">
+              {{ panels.description }}
+            </h3>
+            <p data-test-id="asset-details-description" class="mt-1 text-xs leading-5 text-surface">
+              {{ selectedAsset.description }}
+            </p>
+          </section>
+
+          <section v-if="selectedAsset.sourceLibraryKey" class="mb-4">
+            <h3 class="text-[11px] font-medium tracking-wider text-muted uppercase">
+              {{ panels.assetLibraryBadge }}
+            </h3>
+            <p data-test-id="asset-details-library" class="mt-1 break-all text-xs text-muted">
+              {{ selectedAsset.sourceLibraryKey }}
+            </p>
+          </section>
+
+          <section v-if="selectedAsset.docsUrl" class="mb-4">
+            <h3 class="text-[11px] font-medium tracking-wider text-muted uppercase">
+              {{ panels.documentation }}
+            </h3>
+            <button
+              data-test-id="asset-details-docs"
+              class="mt-1 inline-flex items-center gap-1 rounded px-1 py-0.5 text-xs text-component hover:bg-component/10"
+              @click="selectedAsset.docsUrl ? openExternalLink(selectedAsset.docsUrl) : undefined"
             >
-              <icon-lucide-x class="size-4" />
-            </DialogClose>
-          </div>
+              <icon-lucide-book-open class="size-3" />
+              {{ panels.openDocs }}
+            </button>
+          </section>
 
-          <div class="grid min-h-0 grid-cols-[260px_1fr] gap-0">
-            <div class="border-r border-border p-4">
+          <section v-if="selectedAsset.variants.length > 0">
+            <h3 class="text-[11px] font-medium tracking-wider text-muted uppercase">
+              {{ panels.properties }}
+            </h3>
+            <div class="mt-2 flex flex-col gap-2">
               <div
-                data-test-id="asset-details-preview"
-                class="flex h-36 items-center justify-center overflow-hidden rounded-lg border border-border bg-canvas/60"
+                v-for="variant in selectedAsset.variants"
+                :key="variant.name"
+                data-test-id="asset-details-property"
+                class="rounded border border-border bg-input/40 px-2 py-1.5"
               >
-                <img
-                  v-if="previewUrl"
-                  data-test-id="asset-details-preview-image"
-                  :src="previewUrl"
-                  :alt="`${selectedAsset.name} preview`"
-                  class="max-h-[120px] max-w-[210px] object-contain"
-                />
-                <div v-else class="text-center">
-                  <icon-lucide-loader-2
-                    v-if="previewLoading"
-                    class="mx-auto size-5 animate-spin text-muted"
-                  />
-                  <component
-                    v-else
-                    :is="nodeIcon(selectedAsset.node)"
-                    class="mx-auto size-8 text-component"
-                  />
-                  <p class="mt-2 max-w-44 truncate text-xs font-medium text-surface">
-                    {{ selectedAsset.name }}
-                  </p>
-                </div>
+                <div class="text-xs font-medium text-surface">{{ variant.name }}</div>
+                <div class="mt-1 text-[11px] text-muted">{{ variant.values.join(', ') }}</div>
               </div>
-              <button
-                data-test-id="asset-details-insert"
-                :class="primaryButton.base"
-                class="mt-3 w-full"
-                @click="insertSelectedAsset"
-              >
-                {{ panels.insertInstance }}
-              </button>
             </div>
-
-            <div class="min-w-0 p-4">
-              <section v-if="selectedAsset.description" class="mb-4">
-                <h3 class="text-[11px] font-medium tracking-wider text-muted uppercase">
-                  {{ panels.description }}
-                </h3>
-                <p
-                  data-test-id="asset-details-description"
-                  class="mt-1 text-xs leading-5 text-surface"
-                >
-                  {{ selectedAsset.description }}
-                </p>
-              </section>
-
-              <section v-if="selectedAsset.sourceLibraryKey" class="mb-4">
-                <h3 class="text-[11px] font-medium tracking-wider text-muted uppercase">
-                  {{ panels.assetLibraryBadge }}
-                </h3>
-                <p data-test-id="asset-details-library" class="mt-1 break-all text-xs text-muted">
-                  {{ selectedAsset.sourceLibraryKey }}
-                </p>
-              </section>
-
-              <section v-if="selectedAsset.docsUrl" class="mb-4">
-                <h3 class="text-[11px] font-medium tracking-wider text-muted uppercase">
-                  {{ panels.documentation }}
-                </h3>
-                <button
-                  data-test-id="asset-details-docs"
-                  class="mt-1 inline-flex items-center gap-1 rounded px-1 py-0.5 text-xs text-component hover:bg-component/10"
-                  @click="
-                    selectedAsset.docsUrl ? openExternalLink(selectedAsset.docsUrl) : undefined
-                  "
-                >
-                  <icon-lucide-book-open class="size-3" />
-                  {{ panels.openDocs }}
-                </button>
-              </section>
-
-              <section v-if="selectedAsset.variants.length > 0">
-                <h3 class="text-[11px] font-medium tracking-wider text-muted uppercase">
-                  {{ panels.properties }}
-                </h3>
-                <div class="mt-2 flex flex-col gap-2">
-                  <div
-                    v-for="variant in selectedAsset.variants"
-                    :key="variant.name"
-                    data-test-id="asset-details-property"
-                    class="rounded border border-border bg-input/40 px-2 py-1.5"
-                  >
-                    <div class="text-xs font-medium text-surface">{{ variant.name }}</div>
-                    <div class="mt-1 text-[11px] text-muted">{{ variant.values.join(', ') }}</div>
-                  </div>
-                </div>
-              </section>
-            </div>
-          </div>
-        </DialogContent>
-      </DialogPortal>
-    </DialogRoot>
+          </section>
+        </div>
+      </div>
+    </AppDialogRoot>
   </section>
 </template>
