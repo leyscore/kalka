@@ -36,11 +36,9 @@ test('configured storage lists and opens a remote document', async ({ page }) =>
     await route.fulfill({ status: 404 })
   })
 
-  await page.goto('/?test')
+  await page.goto('/storage?test')
   const canvas = new CanvasHelper(page)
-  await canvas.waitForInit()
-  await page.getByTestId('app-settings-trigger').click()
-  await page.getByTestId('settings-section-storage').click()
+  await page.getByRole('button', { name: 'Settings' }).last().click()
   await page.getByLabel('Endpoint').fill('https://s3.example.com')
   await page.getByLabel('Bucket').fill('designs')
 
@@ -67,9 +65,9 @@ test('storage workspace directs unconfigured users to Settings', async ({ page }
   await page.goto('/storage?test')
 
   await expect(page.getByTestId('storage-workspace')).toBeVisible()
-  await expect(page.getByRole('alert')).toContainText('Configure storage')
+  await expect(page.getByText('Configure storage before using this workspace.')).toBeVisible()
   await expect(page.getByTestId('storage-new-document')).toBeDisabled()
 
-  await page.getByRole('button', { name: 'Settings' }).click()
+  await page.getByRole('button', { name: 'Settings' }).last().click()
   await expect(page.getByTestId('settings-storage-panel')).toBeVisible()
 })

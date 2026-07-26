@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from '@open-pencil/vue'
 
@@ -12,7 +12,7 @@ import {
   type StorageDocument
 } from '@/app/integrations/storage'
 import { fadeOutGlobalLoader } from '@/app/editor/canvas/loader-overlay'
-import { openSettingsDialog } from '@/app/settings/dialog'
+import { openSettingsDialog, settingsDialogOpen } from '@/app/settings/dialog'
 import type { CredentialStatus } from '@/app/settings/credentials/types'
 import { createCanvasId } from '@/app/storage/id'
 import { getLocalCanvasStore } from '@/app/storage/local-store'
@@ -112,6 +112,10 @@ async function createDocument(): Promise<void> {
   await store.saveFigFile()
 }
 
+watch(settingsDialogOpen, (open, wasOpen) => {
+  if (wasOpen && !open) void refresh()
+})
+
 onMounted(() => {
   fadeOutGlobalLoader()
   void refresh()
@@ -148,9 +152,12 @@ onMounted(() => {
     <section class="mx-auto max-w-6xl p-6">
       <div class="mb-4 flex items-center justify-between">
         <p v-if="loading" class="text-xs text-muted">{{ dialogs.loadingDocuments }}</p>
-        <p v-else-if="error" class="text-xs text-danger" role="alert">{{ error }}</p>
+        <p v-else-if="error && configured" class="text-xs text-danger" role="alert">
+          {{ error }}
+        </p>
         <span v-else />
         <button
+          v-if="configured"
           type="button"
           class="rounded px-2 py-1 text-xs text-muted hover:bg-hover hover:text-surface"
           @click="refresh"
@@ -181,8 +188,25 @@ onMounted(() => {
         </button>
       </div>
 
-      <div v-else-if="!loading" class="py-24 text-center text-xs text-muted">
+      <div v-else-if="!loading && configured" class="py-24 text-center text-xs text-muted">
         {{ dialogs.emptyStorageWorkspace }}
+      </div>
+
+      <div
+        v-else-if="!loading"
+        class="mx-auto flex max-w-sm flex-col items-center py-24 text-center"
+      >
+        <div class="mb-3 flex size-10 items-center justify-center rounded-full bg-panel-field">
+          <icon-lucide-cloud class="size-5 text-muted" />
+        </div>
+        <p class="text-xs text-surface">{{ dialogs.storageNotConfigured }}</p>
+        <button
+          type="button"
+          class="mt-4 rounded bg-accent px-3 py-1.5 text-xs font-medium text-white hover:bg-accent/90"
+          @click="openSettingsDialog('storage')"
+        >
+          {{ dialogs.settings }}
+        </button>
       </div>
     </section>
   </main>
