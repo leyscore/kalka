@@ -17,12 +17,7 @@ import type {
   StorageProviderRuntime
 } from '../types'
 import { S3HttpError, deleteObject, getObject, headObject, listObjects, putObject } from './client'
-import {
-  CloudCorsError,
-  ensureWebCorsOnBucket,
-  formatBrowserCorsHelpMessage,
-  isLikelyCorsOrNetworkError
-} from './cors'
+import { CloudCorsError, formatBrowserCorsHelpMessage, isLikelyCorsOrNetworkError } from './cors'
 import type { S3CompatibleConfig, S3ConnectionResult } from './types'
 
 const ENDPOINT_FIELD = 'endpoint'
@@ -101,9 +96,6 @@ export function createS3StorageAdapter(runtime: StorageProviderRuntime): S3Stora
   return {
     async testConnection() {
       const config = await resolveConfig(runtime)
-      let cors = await ensureWebCorsOnBucket(config)
-      if (!cors.applied) console.warn('[Storage] Automatic PutBucketCors failed:', cors.error)
-
       try {
         await ensureNamespace(config)
         await listObjects(config, STORAGE_DOCUMENTS_PREFIX)
@@ -113,19 +105,16 @@ export function createS3StorageAdapter(runtime: StorageProviderRuntime): S3Stora
         return {
           ok: false,
           message: connectionErrorMessage(error, isCors),
-          corsApplied: cors.applied,
+          corsApplied: false,
           isCorsFailure: isCors,
-          corsError: cors.error
+          corsError: null
         }
       }
 
-      if (!cors.applied) cors = await ensureWebCorsOnBucket(config)
       return {
         ok: true,
-        message: cors.applied
-          ? 'Connected. Bucket CORS was applied automatically for the web app.'
-          : 'Connected. Storage namespace is ready.',
-        corsApplied: cors.applied,
+        message: 'Connected. Storage namespace is ready.',
+        corsApplied: false,
         isCorsFailure: false,
         corsError: null
       }
@@ -141,26 +130,33 @@ export function createS3StorageAdapter(runtime: StorageProviderRuntime): S3Stora
         })
         .filter((entry): entry is { id: string; lastModified: string | null } => entry !== null)
 
-      const documents = await Promise.all(
-        entries.map(async ({ id, lastModified }) => {
-          const fallback = {
-            name: id,
-            updatedAt: lastModified ?? new Date(0).toISOString()
-          }
-          const metadataBytes = await getObject(config, documentMetaKey(id)).catch(
-            (error: unknown) => {
-              console.warn('[Storage] Document metadata fetch failed:', id, error)
-              return null
-            }
-          )
-          const { metadata, authoritative } = parseMetadata(metadataBytes, fallback)
-          return {
-            id,
-            ...metadata,
-            metadataAuthoritative: authoritative
-          } satisfies StorageDocument
-        })
-      )
+      const documents: StorageDocument[] = []
+      // Bound sidecar reads so large buckets do not open hundreds of requests at once.
+      for (let offset = 0; offset < entries.length; offset += 12) {
+        const batch = entries.slice(offset, offset + 12)
+        documents.push(
+          ...(await Promise.all(
+            batch.map(async ({ id, lastModified }) => {
+              const fallback = {
+                name: id,
+                updatedAt: lastModified ?? new Date(0).toISOString()
+              }
+              const metadataBytes = await getObject(config, documentMetaKey(id)).catch(
+                (error: unknown) => {
+                  console.warn('[Storage] Document metadata fetch failed:', id, error)
+                  return null
+                }
+              )
+              const { metadata, authoritative } = parseMetadata(metadataBytes, fallback)
+              return {
+                id,
+                ...metadata,
+                metadataAuthoritative: authoritative
+              } satisfies StorageDocument
+            })
+          ))
+        )
+      }
       return documents.sort((first, second) => second.updatedAt.localeCompare(first.updatedAt))
     },
 

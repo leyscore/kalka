@@ -6,6 +6,11 @@ import type {
   LocalCanvasWriteInput
 } from '@/app/storage/local-store/types'
 
+export type UpdateLocalCanvasMetaOptions = {
+  /** Apply only if the row still has this revision. */
+  expectedRevision?: number
+}
+
 export type LocalCanvasStore = {
   listMetas(includeTombstones?: boolean): Promise<LocalCanvasMeta[]>
   getMeta(id: string): Promise<LocalCanvasMeta | null>
@@ -15,7 +20,11 @@ export type LocalCanvasStore = {
   /** Index-only row for remote canvases not yet downloaded (no fig body). */
   upsertIndexMeta(meta: LocalCanvasIndexInput): Promise<LocalCanvasMeta>
   writeThumb(id: string, thumbBytes: Uint8Array): Promise<LocalCanvasMeta | null>
-  updateMeta(id: string, patch: Partial<LocalCanvasMeta>): Promise<LocalCanvasMeta | null>
+  updateMeta(
+    id: string,
+    patch: Partial<LocalCanvasMeta>,
+    options?: UpdateLocalCanvasMetaOptions
+  ): Promise<LocalCanvasMeta | null>
   tombstone(id: string): Promise<LocalCanvasMeta | null>
   /** Drop only the cached fig blob (eviction) — meta and thumb stay. */
   clearFig(id: string): Promise<LocalCanvasMeta | null>

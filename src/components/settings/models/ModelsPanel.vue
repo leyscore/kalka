@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { useI18n } from '@open-pencil/vue'
 
-import { AI_PROVIDERS } from '@open-pencil/core/constants'
+import { ACP_AGENTS, AI_PROVIDERS } from '@open-pencil/core/constants'
 
 import { aiModelSettings, modelConnection, modelConnectionCredentialStatus } from '@/app/ai/models'
 import type { CredentialStatus } from '@/app/settings/credentials/types'
@@ -13,6 +13,14 @@ const { dialogs } = useI18n()
 const editing = ref(false)
 const editingProfileId = ref<string>()
 const statusByConnection = ref<Record<string, CredentialStatus>>({})
+function providerName(providerID: string): string {
+  if (providerID.startsWith('acp:')) {
+    const agentID = providerID.slice('acp:'.length)
+    return ACP_AGENTS.find((agent) => agent.id === agentID)?.name ?? providerID
+  }
+  return AI_PROVIDERS.find((provider) => provider.id === providerID)?.name ?? providerID
+}
+
 const profiles = computed(() =>
   aiModelSettings.value.models.map((profile) => {
     const connection = modelConnection(profile.connectionId)
@@ -22,7 +30,7 @@ const profiles = computed(() =>
     return {
       ...profile,
       providerID: connection?.providerID ?? '',
-      providerName: provider?.name ?? connection?.providerID ?? '',
+      providerName: providerName(connection?.providerID ?? ''),
       modelName
     }
   })

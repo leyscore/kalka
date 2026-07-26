@@ -3,7 +3,8 @@ export {
   enqueueDeleteCanvas,
   enqueuePutCanvas,
   enqueuePutThumb,
-  kickSyncEngine
+  kickSyncEngine,
+  resumeStorageSync
 } from './engine'
 export { createMemoryOutbox, getOutbox, resetOutboxForTests } from './outbox'
 export {

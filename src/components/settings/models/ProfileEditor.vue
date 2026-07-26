@@ -8,7 +8,7 @@ import {
 } from 'reka-ui'
 import { useI18n } from '@open-pencil/vue'
 
-import { AI_PROVIDERS, type AIProviderID } from '@open-pencil/core/constants'
+import { ACP_AGENTS, AI_PROVIDERS, type AIProviderID } from '@open-pencil/core/constants'
 
 import { refreshAIProviderStatus } from '@/app/ai/chat/storage'
 import {
@@ -53,6 +53,11 @@ const providerDef = computed(
   () => AI_PROVIDERS.find((provider) => provider.id === draft.providerID) ?? AI_PROVIDERS[0]
 )
 const isACP = computed(() => draft.providerID.startsWith('acp:'))
+const providerDisplayName = computed(() => {
+  if (!isACP.value) return providerDef.value.name
+  const agentID = draft.providerID.slice('acp:'.length)
+  return ACP_AGENTS.find((agent) => agent.id === agentID)?.name ?? draft.providerID
+})
 const modelOptions = computed(() =>
   providerDef.value.models.map((model) => ({ value: model.id, label: model.name }))
 )
@@ -108,7 +113,7 @@ function updateProvider(providerID: AIProviderID): void {
   draft.customAPIType = 'completions'
   if (providerID.startsWith('acp:')) {
     draft.capabilities = ['tools']
-    if (!draft.name.trim()) draft.name = provider?.name ?? ''
+    if (!draft.name.trim()) draft.name = providerDisplayName.value
   }
   keyInput.value = ''
   resetConnectionTest()
@@ -124,7 +129,7 @@ function updateModel(modelID: string): void {
 async function save(): Promise<void> {
   saveError.value = null
   try {
-    if (!draft.name.trim()) draft.name = modelDisplayName.value || providerDef.value.name
+    if (!draft.name.trim()) draft.name = modelDisplayName.value || providerDisplayName.value
     const profile = saveModelProfileDraft(draft)
     if (keyInput.value.trim()) {
       await setModelConnectionAPIKey(profile.connectionId, keyInput.value)

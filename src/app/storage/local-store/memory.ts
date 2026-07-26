@@ -67,9 +67,14 @@ export function createMemoryLocalCanvasStore(): LocalCanvasStore {
       return meta
     },
 
-    async updateMeta(id: string, patch: Partial<LocalCanvasMeta>) {
+    async updateMeta(id: string, patch: Partial<LocalCanvasMeta>, options) {
       const existing = metas.get(id)
-      if (!existing) return null
+      if (
+        !existing ||
+        (options?.expectedRevision != null && existing.revision !== options.expectedRevision)
+      ) {
+        return null
+      }
       const next = { ...existing, ...patch, id: existing.id }
       metas.set(id, next)
       return next

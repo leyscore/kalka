@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useClipboard } from '@vueuse/core'
 import { useRouter } from 'vue-router'
 import { useI18n } from '@open-pencil/vue'
 
@@ -12,24 +13,32 @@ import {
   storageProviderRegistry,
   writeStoragePreference
 } from '@/app/integrations/storage'
+import {
+  buildCorsConfigurationJson,
+  collectCloudCorsOrigins
+} from '@/app/integrations/storage/s3/cors'
 import { appCredentialServices } from '@/app/settings/credentials/app'
 import { settingsDialogOpen } from '@/app/settings/dialog'
 import { credentialRef } from '@/app/settings/credentials/reference'
 import type { CredentialStatus } from '@/app/settings/credentials/types'
+import { resumeStorageSync } from '@/app/storage/sync'
 import AppInput from '@/components/ui/AppInput.vue'
 
 const { dialogs } = useI18n()
 const router = useRouter()
-const provider = storageProviderRegistry.get(activeStorageProviderID.value)
-const preferenceDrafts = ref<Record<string, string>>({ ...readStoragePreferences(provider.id) })
+const { copy, copied } = useClipboard()
+const provider = computed(() => storageProviderRegistry.get(activeStorageProviderID.value))
+const preferenceDrafts = ref<Record<string, string>>({
+  ...readStoragePreferences(provider.value.id)
+})
 const credentialDrafts = ref<Record<string, string>>({})
 const credentialStatuses = ref<Record<string, CredentialStatus>>({})
 const busy = ref(false)
 const result = ref<{ ok: boolean; message: string } | null>(null)
 const configured = computed(
   () =>
-    storagePreferencesComplete(provider.id) &&
-    provider.credentialFields.every(
+    storagePreferencesComplete(provider.value.id) &&
+    provider.value.credentialFields.every(
       (field) => !field.required || credentialStatuses.value[field.id] === 'configured'
     )
 )
@@ -48,25 +57,27 @@ function credentialLabel(field: string): string {
 }
 
 async function refreshStatuses(): Promise<void> {
-  credentialStatuses.value = await storageCredentialStatuses(provider.id)
+  credentialStatuses.value = await storageCredentialStatuses(provider.value.id)
 }
 
 function savePreferences(): void {
-  for (const field of provider.preferenceFields) {
-    writeStoragePreference(provider.id, field.id, preferenceDrafts.value[field.id] ?? '')
+  for (const field of provider.value.preferenceFields) {
+    writeStoragePreference(provider.value.id, field.id, preferenceDrafts.value[field.id] ?? '')
   }
+  void resumeStorageSync()
 }
 
 async function saveCredential(field: string): Promise<void> {
   const value = credentialDrafts.value[field]?.trim()
   if (!value) return
-  await appCredentialServices.manager.set(credentialRef(provider.id, field), value)
+  await appCredentialServices.manager.set(credentialRef(provider.value.id, field), value)
   credentialDrafts.value[field] = ''
   await refreshStatuses()
+  await resumeStorageSync()
 }
 
 async function clearCredential(field: string): Promise<void> {
-  await appCredentialServices.manager.clear(credentialRef(provider.id, field))
+  await appCredentialServices.manager.clear(credentialRef(provider.value.id, field))
   credentialDrafts.value[field] = ''
   await refreshStatuses()
 }
@@ -76,15 +87,20 @@ async function openWorkspace(): Promise<void> {
   await router.push('/storage')
 }
 
+function copyCorsConfiguration(): void {
+  void copy(buildCorsConfigurationJson(collectCloudCorsOrigins()))
+}
+
 async function testConnection(): Promise<void> {
   busy.value = true
   result.value = null
   try {
     savePreferences()
-    for (const field of provider.credentialFields) {
+    for (const field of provider.value.credentialFields) {
       await saveCredential(field.id)
     }
-    result.value = await createActiveStorageAdapter(provider.id).testConnection()
+    await resumeStorageSync()
+    result.value = await createActiveStorageAdapter(provider.value.id).testConnection()
   } catch (error) {
     result.value = {
       ok: false,
@@ -94,6 +110,13 @@ async function testConnection(): Promise<void> {
     busy.value = false
   }
 }
+
+watch(activeStorageProviderID, (providerID) => {
+  preferenceDrafts.value = { ...readStoragePreferences(providerID) }
+  credentialDrafts.value = {}
+  result.value = null
+  void refreshStatuses()
+})
 
 onMounted(() => void refreshStatuses())
 </script>
@@ -172,6 +195,15 @@ onMounted(() => void refreshStatuses())
       @click="testConnection"
     >
       {{ dialogs.testConnection }}
+    </button>
+
+    <button
+      v-if="provider.id === 's3-compatible'"
+      type="button"
+      class="rounded px-3 py-1.5 text-[11px] text-muted hover:bg-hover hover:text-surface"
+      @click="copyCorsConfiguration"
+    >
+      {{ copied ? dialogs.copied : dialogs.copyStorageCors }}
     </button>
 
     <button

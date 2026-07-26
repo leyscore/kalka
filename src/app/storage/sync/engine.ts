@@ -3,8 +3,11 @@ import { IS_BROWSER } from '@open-pencil/core/constants'
 import {
   activeStorageProviderID,
   createActiveStorageAdapter,
-  storagePreferencesComplete
+  storageCredentialStatuses,
+  storagePreferencesComplete,
+  storageProviderRegistry
 } from '@/app/integrations/storage'
+import { evictLocalFigCache } from '@/app/storage/cache-eviction'
 import { getLocalCanvasStore } from '@/app/storage/local-store'
 import { getOutbox } from '@/app/storage/sync/outbox'
 import { setUploadProgress } from '@/app/storage/sync/progress'
@@ -14,6 +17,13 @@ import type { OutboxJob } from '@/app/storage/sync/types'
 const MAX_ATTEMPTS = 8
 const BASE_BACKOFF_MS = 1500
 const MAX_BACKOFF_MS = 60_000
+
+class StorageSyncBlockedError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'StorageSyncBlockedError'
+  }
+}
 
 let pumping = false
 let wakeTimer: ReturnType<typeof setTimeout> | null = null
@@ -30,6 +40,12 @@ function backoffMs(attempts: number): number {
   return exp + jitter
 }
 
+export function nextSyncWakeDelay(jobs: OutboxJob[], now = Date.now()): number | null {
+  if (jobs.length === 0) return null
+  const nextAt = Math.min(...jobs.map((job) => job.nextAttemptAt))
+  return nextAt === Number.MAX_SAFE_INTEGER ? null : Math.max(250, nextAt - now)
+}
+
 function isPermanentError(error: unknown): boolean {
   if (!(error instanceof Error)) return false
   const msg = error.message.toLowerCase()
@@ -43,12 +59,21 @@ function isPermanentError(error: unknown): boolean {
 }
 
 async function runJob(job: OutboxJob): Promise<void> {
-  if (!storagePreferencesComplete(activeStorageProviderID.value)) {
-    throw new Error('Storage is not configured')
-  }
-  const adapter = createActiveStorageAdapter()
   const store = getLocalCanvasStore()
   const meta = await store.getMeta(job.canvasId)
+  const providerID = meta?.providerId ?? activeStorageProviderID.value
+  if (!storagePreferencesComplete(providerID)) {
+    throw new StorageSyncBlockedError('Storage is not configured')
+  }
+  const provider = storageProviderRegistry.get(providerID)
+  const statuses = await storageCredentialStatuses(providerID)
+  const missingCredential = provider.credentialFields.some(
+    (field) => field.required && statuses[field.id] !== 'configured'
+  )
+  if (missingCredential) {
+    throw new StorageSyncBlockedError('Storage credentials are unavailable')
+  }
+  const adapter = createActiveStorageAdapter(providerID)
 
   if (job.type === 'deleteCanvas') {
     await adapter.deleteDocument(job.canvasId)
@@ -89,11 +114,16 @@ async function runJob(job: OutboxJob): Promise<void> {
     // Only mark synced if still on this revision and no other pending work for newer rev
     const latest = await store.getMeta(job.canvasId)
     if (latest && latest.revision === job.revision && !latest.tombstoned) {
-      await store.updateMeta(job.canvasId, {
-        syncStatus: 'synced',
-        lastSyncedAt: new Date().toISOString(),
-        lastSyncError: null
-      })
+      await store.updateMeta(
+        job.canvasId,
+        {
+          syncStatus: 'synced',
+          lastSyncedAt: new Date().toISOString(),
+          lastSyncError: null
+        },
+        { expectedRevision: job.revision }
+      )
+      await evictLocalFigCache(new Set([job.canvasId]))
     }
     return
   }
@@ -126,8 +156,8 @@ async function pumpOnce(): Promise<void> {
   // Single-flight globally for simplicity (large figs)
   const job = jobs.find((j) => j.nextAttemptAt <= now)
   if (!job) {
-    const nextAt = Math.min(...jobs.map((j) => j.nextAttemptAt))
-    scheduleWake(Math.max(250, nextAt - now))
+    const delay = nextSyncWakeDelay(jobs, now)
+    if (delay != null) scheduleWake(delay)
     return
   }
 
@@ -139,9 +169,18 @@ async function pumpOnce(): Promise<void> {
     if (remaining.length === 0) setSyncUi('idle')
     else scheduleWake(50)
   } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    if (error instanceof StorageSyncBlockedError) {
+      await outbox.update({
+        ...job,
+        nextAttemptAt: Number.MAX_SAFE_INTEGER
+      })
+      setSyncUi('error', message)
+      return
+    }
+
     const attempts = job.attempts + 1
     const permanent = isPermanentError(error) || attempts >= MAX_ATTEMPTS
-    const message = error instanceof Error ? error.message : String(error)
     console.warn('[Storage sync] job failed:', job.type, job.canvasId, message)
 
     if (permanent) {
@@ -158,11 +197,21 @@ async function pumpOnce(): Promise<void> {
         // thumbnail is at least diagnosable.
         await getLocalCanvasStore().updateMeta(job.canvasId, { lastSyncError: message })
       }
-      await outbox.remove(job.id)
-      const remaining = await outbox.list()
-      setPendingSyncCount(remaining.length)
-      if (remaining.length > 0) scheduleWake(1000)
-      else if (job.type === 'putThumb') setSyncUi('idle')
+      if (job.type === 'putThumb') {
+        await outbox.remove(job.id)
+        const remaining = await outbox.list()
+        setPendingSyncCount(remaining.length)
+        if (remaining.length > 0) scheduleWake(1000)
+        else setSyncUi('idle')
+      } else {
+        // Never discard a document mutation. Keep it durable until the user
+        // repairs credentials/permissions and explicitly wakes synchronization.
+        await outbox.update({
+          ...job,
+          attempts,
+          nextAttemptAt: Number.MAX_SAFE_INTEGER
+        })
+      }
       return
     }
 
@@ -249,6 +298,16 @@ export async function enqueuePutThumb(canvasId: string, revision: number): Promi
 
 export async function enqueueDeleteCanvas(canvasId: string): Promise<void> {
   await getOutbox().enqueue({ canvasId, type: 'deleteCanvas', revision: 0 })
+  void kickSyncEngine()
+}
+
+/** Retry durable work immediately after storage settings or credentials change. */
+export async function resumeStorageSync(): Promise<void> {
+  const outbox = getOutbox()
+  const jobs = await outbox.list()
+  const now = Date.now()
+  await Promise.all(jobs.map((job) => outbox.update({ ...job, nextAttemptAt: now })))
+  if (jobs.length > 0) setSyncUi('syncing')
   void kickSyncEngine()
 }
 

@@ -37,6 +37,10 @@ function bytesToBuffer(bytes: Uint8Array) {
   return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)
 }
 
+async function readMetaRow(store: IDBObjectStore, id: string): Promise<LocalCanvasMeta | null> {
+  return ((await reqToPromise(store.get(id))) as LocalCanvasMeta | undefined) ?? null
+}
+
 /** IndexedDB-backed local canvas store (meta + fig/thumb blobs). */
 export function createIdbLocalCanvasStore(): LocalCanvasStore {
   let dbPromise: Promise<IDBDatabase> | null = null
@@ -83,14 +87,13 @@ export function createIdbLocalCanvasStore(): LocalCanvasStore {
 
     async writeCanvas(input: LocalCanvasWriteInput) {
       const database = await db()
-      const existing = await this.getMeta(input.id)
-
-      let hasThumb = existing?.hasThumb ?? false
       const tx = database.transaction([STORE_META, STORE_FIG, STORE_THUMB], 'readwrite')
       const figStore = tx.objectStore(STORE_FIG)
       const thumbStore = tx.objectStore(STORE_THUMB)
       const metaStore = tx.objectStore(STORE_META)
+      const existing = await readMetaRow(metaStore, input.id)
 
+      let hasThumb = existing?.hasThumb ?? false
       figStore.put(bytesToBuffer(input.figBytes), input.id)
 
       if (input.thumbBytes != null) {
@@ -110,20 +113,25 @@ export function createIdbLocalCanvasStore(): LocalCanvasStore {
     },
 
     async upsertIndexMeta(input) {
-      const existing = await this.getMeta(input.id)
-      const meta = buildIndexMeta(input, existing)
       const database = await db()
       const tx = database.transaction(STORE_META, 'readwrite')
-      tx.objectStore(STORE_META).put(meta)
+      const store = tx.objectStore(STORE_META)
+      const existing = await readMetaRow(store, input.id)
+      const meta = buildIndexMeta(input, existing)
+      store.put(meta)
       await txDone(tx)
       return meta
     },
 
     async writeThumb(id: string, thumbBytes: Uint8Array) {
-      const existing = await this.getMeta(id)
-      if (!existing) return null
       const database = await db()
       const tx = database.transaction([STORE_META, STORE_THUMB], 'readwrite')
+      const metaStore = tx.objectStore(STORE_META)
+      const existing = await readMetaRow(metaStore, id)
+      if (!existing) {
+        await txDone(tx)
+        return null
+      }
       tx.objectStore(STORE_THUMB).put(bytesToBuffer(thumbBytes), id)
       // Thumb freshness is tracked by its own outbox job — never demote the
       // document's syncStatus here (it orphaned rows as 'pending' forever).
@@ -131,18 +139,25 @@ export function createIdbLocalCanvasStore(): LocalCanvasStore {
         ...existing,
         hasThumb: true
       }
-      tx.objectStore(STORE_META).put(meta)
+      metaStore.put(meta)
       await txDone(tx)
       return meta
     },
 
-    async updateMeta(id: string, patch: Partial<LocalCanvasMeta>) {
-      const existing = await this.getMeta(id)
-      if (!existing) return null
-      const next = { ...existing, ...patch, id: existing.id }
+    async updateMeta(id: string, patch: Partial<LocalCanvasMeta>, options) {
       const database = await db()
       const tx = database.transaction(STORE_META, 'readwrite')
-      tx.objectStore(STORE_META).put(next)
+      const store = tx.objectStore(STORE_META)
+      const existing = await readMetaRow(store, id)
+      if (
+        !existing ||
+        (options?.expectedRevision != null && existing.revision !== options.expectedRevision)
+      ) {
+        await txDone(tx)
+        return null
+      }
+      const next = { ...existing, ...patch, id: existing.id }
+      store.put(next)
       await txDone(tx)
       return next
     },
@@ -156,13 +171,17 @@ export function createIdbLocalCanvasStore(): LocalCanvasStore {
     },
 
     async clearFig(id: string) {
-      const existing = await this.getMeta(id)
-      if (!existing) return null
       const database = await db()
       const tx = database.transaction([STORE_META, STORE_FIG], 'readwrite')
+      const metaStore = tx.objectStore(STORE_META)
+      const existing = await readMetaRow(metaStore, id)
+      if (!existing) {
+        await txDone(tx)
+        return null
+      }
       tx.objectStore(STORE_FIG).delete(id)
       const meta: LocalCanvasMeta = { ...existing, hasFig: false, figSize: 0 }
-      tx.objectStore(STORE_META).put(meta)
+      metaStore.put(meta)
       await txDone(tx)
       return meta
     },

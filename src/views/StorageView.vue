@@ -14,19 +14,20 @@ import {
 import { openSettingsDialog, settingsDialogOpen } from '@/app/settings/dialog'
 import type { CredentialStatus } from '@/app/settings/credentials/types'
 import { createCanvasId } from '@/app/storage/id'
+import { reconcileStorageDocuments } from '@/app/storage/reconcile'
 import AppPlaceholder from '@/components/ui/AppPlaceholder.vue'
 import { getLocalCanvasStore } from '@/app/storage/local-store'
 import { activeTab, createTab, openStorageDocumentInNewTab } from '@/app/tabs'
 
 const { dialogs } = useI18n()
 const router = useRouter()
-const provider = storageProviderRegistry.get(activeStorageProviderID.value)
+const provider = computed(() => storageProviderRegistry.get(activeStorageProviderID.value))
 const documents = ref<StorageDocument[]>([])
 const credentialStatuses = ref<Record<string, CredentialStatus>>({})
 const configured = computed(
   () =>
-    storagePreferencesComplete(provider.id) &&
-    provider.credentialFields.every(
+    storagePreferencesComplete(provider.value.id) &&
+    provider.value.credentialFields.every(
       (field) => !field.required || credentialStatuses.value[field.id] === 'configured'
     )
 )
@@ -34,7 +35,9 @@ const loading = ref(false)
 const error = ref<string | null>(null)
 
 async function paintLocalDocuments(): Promise<void> {
-  const local = await getLocalCanvasStore().listMetas()
+  const local = (await getLocalCanvasStore().listMetas()).filter(
+    (metadata) => metadata.providerId === activeStorageProviderID.value
+  )
   documents.value = local.map((metadata) => ({
     id: metadata.id,
     name: metadata.name,
@@ -48,31 +51,22 @@ async function refresh(): Promise<void> {
   error.value = null
   await paintLocalDocuments()
   try {
-    credentialStatuses.value = await storageCredentialStatuses(provider.id)
+    credentialStatuses.value = await storageCredentialStatuses(provider.value.id)
     if (!configured.value) {
       error.value = dialogs.value.storageNotConfigured
       return
     }
     const remote = await createActiveStorageAdapter().listDocuments()
-    const local = await getLocalCanvasStore().listMetas()
-    const localById = new Map(local.map((metadata) => [metadata.id, metadata]))
-    const merged = new Map(remote.map((document) => [document.id, document]))
-    for (const metadata of local) {
-      if (metadata.syncStatus === 'synced' && merged.has(metadata.id)) continue
-      merged.set(metadata.id, {
-        id: metadata.id,
-        name: metadata.name,
-        updatedAt: metadata.updatedAt,
-        metadataAuthoritative: true
-      })
-    }
-    documents.value = [...merged.values()].sort((first, second) =>
-      second.updatedAt.localeCompare(first.updatedAt)
+    const localStore = getLocalCanvasStore()
+    const local = (await localStore.listMetas(true)).filter(
+      (metadata) => metadata.providerId === activeStorageProviderID.value
     )
+    const reconciliation = reconcileStorageDocuments(local, remote)
+    documents.value = reconciliation.documents
 
-    for (const document of remote) {
-      if (localById.has(document.id)) continue
-      await getLocalCanvasStore().upsertIndexMeta({
+    for (const id of reconciliation.localIdsToPurge) await localStore.remove(id)
+    for (const document of reconciliation.remoteDocumentsToSeed) {
+      await localStore.upsertIndexMeta({
         id: document.id,
         providerId: activeStorageProviderID.value,
         name: document.name,
@@ -111,6 +105,8 @@ async function createDocument(): Promise<void> {
   )
   await store.saveFigFile()
 }
+
+watch(activeStorageProviderID, () => void refresh())
 
 watch(settingsDialogOpen, (open, wasOpen) => {
   if (wasOpen && !open) void refresh()

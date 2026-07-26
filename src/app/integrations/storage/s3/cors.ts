@@ -1,11 +1,3 @@
-import {
-  createAwsClient,
-  normalizeEndpointForCors,
-  S3HttpError
-} from '@/app/integrations/storage/s3/client'
-import { storageFetch } from '@/app/integrations/storage/s3/fetch'
-import type { S3CompatibleConfig } from '@/app/integrations/storage/s3/types'
-import { isTauri } from '@/app/tauri/env'
 import { IS_BROWSER, WEB_APP_ORIGIN } from '@/constants'
 
 /** Origins OpenPencil may run from when calling S3 from the browser. */
@@ -113,86 +105,6 @@ export function isLikelyCorsOrNetworkError(error: unknown): boolean {
 export function formatBrowserCorsHelpMessage(): string {
   return (
     'CORS issue: the browser blocked access to your bucket. ' +
-    'OpenPencil tried to set CORS automatically but could not from the web app ' +
-    '(the bucket must already allow this site, or use the desktop app once). ' +
-    'Click “Copy CORS JSON”, paste it into your bucket CORS settings, wait ~1 minute, then try again.'
+    'Click “Copy CORS JSON”, paste it into your bucket CORS settings, wait about a minute, then try again.'
   )
-}
-
-/**
- * Apply recommended CORS via S3 PutBucketCors — same operation as AWS CLI put-bucket-cors.
- * - Desktop: always works (no browser CORS on the request itself).
- * - Web: only works if the bucket already allows this origin for PUT, or CORS was set externally.
- */
-export async function putBucketCors(
-  config: S3CompatibleConfig,
-  origins: string[] = collectCloudCorsOrigins()
-): Promise<void> {
-  const base = normalizeEndpointForCors(config.endpoint)
-  const url = `${base}/${encodeURIComponent(config.bucket)}?cors`
-  const body = buildCorsConfigurationXml(origins)
-  const client = createAwsClient(config)
-  let signed: Request
-  try {
-    signed = await client.sign(url, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/xml'
-      },
-      body,
-      credentials: 'omit'
-    })
-  } catch (error) {
-    throw error instanceof Error ? error : new Error(String(error))
-  }
-
-  let res: Response
-  try {
-    res = await storageFetch(signed)
-  } catch (error) {
-    if (isLikelyCorsOrNetworkError(error)) {
-      throw new CloudCorsError(
-        isTauri()
-          ? 'Network error while applying bucket CORS.'
-          : 'Could not apply CORS from the browser (preflight blocked). Use Copy CORS JSON or the desktop app.'
-      )
-    }
-    throw error instanceof Error ? error : new Error(String(error))
-  }
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => '')
-    if (res.status === 403 || res.status === 401) {
-      throw new S3HttpError(
-        res.status,
-        'Access key cannot update bucket CORS. Grant bucket write / PutBucketCors permission.'
-      )
-    }
-    throw new S3HttpError(
-      res.status,
-      text.trim().slice(0, 200) || `PutBucketCors failed with status ${res.status}`
-    )
-  }
-}
-
-export type EnsureCorsResult = {
-  applied: boolean
-  error: string | null
-}
-
-/**
- * Always attempt PutBucketCors (automatic CORS setup for the web app origins).
- * Returns whether it worked; never throws.
- */
-export async function ensureWebCorsOnBucket(config: S3CompatibleConfig): Promise<EnsureCorsResult> {
-  const origins = collectCloudCorsOrigins()
-  try {
-    await putBucketCors(config, origins)
-    return { applied: true, error: null }
-  } catch (error) {
-    return {
-      applied: false,
-      error: error instanceof Error ? error.message : String(error)
-    }
-  }
 }

@@ -105,6 +105,7 @@
   "emptyStorageWorkspace": "暂无已存储的文档。",
   "loadingDocuments": "正在加载文档…",
   "storageNotConfigured": "请先配置存储，再使用此工作区。",
+  "copyStorageCors": "复制 CORS JSON",
   "storageEndpoint": "端点",
   "storageBucket": "存储桶",
   "storageRegion": "区域",

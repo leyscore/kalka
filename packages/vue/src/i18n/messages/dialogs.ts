@@ -154,6 +154,7 @@ export const dialogMessageDefaults = {
   emptyStorageWorkspace: 'No stored documents yet.',
   loadingDocuments: 'Loading documents…',
   storageNotConfigured: 'Configure storage before using this workspace.',
+  copyStorageCors: 'Copy CORS JSON',
   storageEndpoint: 'Endpoint',
   storageBucket: 'Bucket',
   storageRegion: 'Region',

@@ -29,9 +29,6 @@ export function normalizeEndpoint(endpoint: string): string {
   return `https://${trimmed}`
 }
 
-/** Alias for CORS module import clarity. */
-export const normalizeEndpointForCors = normalizeEndpoint
-
 /** Path-style object URL: {endpoint}/{bucket}/{key} — works with B2, MinIO, R2, AWS. */
 export function objectUrl(config: S3CompatibleConfig, key: string): string {
   const base = normalizeEndpoint(config.endpoint)
@@ -317,6 +314,9 @@ export async function listObjects(
     const parsed = parseListObjectsV2Page(xml)
     all.push(...parsed.objects)
     if (!parsed.isTruncated || !parsed.nextContinuationToken) break
+    if (page === 49) {
+      throw new Error('S3 listing exceeded the 50,000-object safety limit')
+    }
     continuationToken = parsed.nextContinuationToken
   }
 

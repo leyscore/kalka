@@ -105,6 +105,7 @@
   "emptyStorageWorkspace": "保存されたドキュメントはまだありません。",
   "loadingDocuments": "ドキュメントを読み込み中…",
   "storageNotConfigured": "このワークスペースを使用する前にストレージを設定してください。",
+  "copyStorageCors": "CORS JSONをコピー",
   "storageEndpoint": "エンドポイント",
   "storageBucket": "バケット",
   "storageRegion": "リージョン",

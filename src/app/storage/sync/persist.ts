@@ -1,4 +1,5 @@
 import type { StorageProviderID } from '@/app/integrations/storage/types'
+import { evictLocalFigCache } from '@/app/storage/cache-eviction'
 import { getLocalCanvasStore } from '@/app/storage/local-store'
 import type { LocalCanvasStore } from '@/app/storage/local-store/store'
 import { enqueuePutCanvas } from '@/app/storage/sync/engine'
@@ -63,4 +64,5 @@ export async function seedStorageCanvasFromRemote(
     syncStatus: 'synced',
     lastSyncError: null
   })
+  await evictLocalFigCache(new Set([options.canvasId]))
 }

@@ -105,6 +105,7 @@
   "emptyStorageWorkspace": "Сохранённых документов пока нет.",
   "loadingDocuments": "Загрузка документов…",
   "storageNotConfigured": "Настройте хранилище перед использованием этой области.",
+  "copyStorageCors": "Скопировать JSON CORS",
   "storageEndpoint": "Конечная точка",
   "storageBucket": "Бакет",
   "storageRegion": "Регион",

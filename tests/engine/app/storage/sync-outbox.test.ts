@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
+import { nextSyncWakeDelay } from '@/app/storage/sync/engine'
 import { createMemoryOutbox } from '@/app/storage/sync/outbox'
 import { supersedePutCanvasJobs, type OutboxJob } from '@/app/storage/sync/types'
 
@@ -36,6 +37,22 @@ describe('supersedePutCanvasJobs', () => {
     ]
     const next = supersedePutCanvasJobs(jobs, 'c1', 5)
     expect(next.map((j) => j.id).sort()).toEqual(['b', 'c'])
+  })
+})
+
+describe('sync wake scheduling', () => {
+  test('does not poll jobs parked for repaired configuration', () => {
+    const parked: OutboxJob = {
+      id: 'parked',
+      canvasId: 'c1',
+      type: 'putCanvas',
+      revision: 1,
+      createdAt: 1,
+      attempts: 0,
+      nextAttemptAt: Number.MAX_SAFE_INTEGER
+    }
+    expect(nextSyncWakeDelay([parked], 100)).toBeNull()
+    expect(nextSyncWakeDelay([{ ...parked, nextAttemptAt: 500 }], 100)).toBe(400)
   })
 })
 

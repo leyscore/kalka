@@ -111,6 +111,43 @@ describe('AI model profiles and role assignments', () => {
     expect(modelSettingsSnapshot().connections).toHaveLength(2)
   })
 
+  test('keeps ACP agents exclusive to the Design role', () => {
+    const settings = modelSettingsSnapshot()
+    settings.connections.push({
+      id: 'connection-acp',
+      providerID: 'acp:claude-code',
+      customBaseURL: '',
+      customAPIType: 'completions',
+      credentialProfileId: 'connection-acp'
+    })
+    settings.models.push({
+      id: 'model-acp',
+      name: 'Claude Code',
+      connectionId: 'connection-acp',
+      modelID: '',
+      customModelID: '',
+      maxOutputTokens: 16_384,
+      capabilities: ['tools']
+    })
+    replaceAIModelSettings(settings)
+
+    setModelRoleAssignment('review', null)
+    setModelRoleAssignment('review', 'model-acp')
+    expect(resolveAIModelRole('review')).toBeNull()
+
+    setModelRoleAssignment('design', 'model-acp')
+    expect(resolveAIModelRole('design')?.profile.id).toBe('model-acp')
+    setModelRoleAssignment('fast', null)
+    setModelRoleAssignment('fast', 'design')
+    expect(resolveAIModelRole('fast')).toBeNull()
+  })
+
+  test('normalizes invalid output limits before persistence', () => {
+    const draft = createModelProfileDraft('model-fast')
+    draft.maxOutputTokens = Number.NaN
+    expect(saveModelProfileDraft(draft).maxOutputTokens).toBe(16_384)
+  })
+
   test('repairs assignments when removing a model', () => {
     removeModelProfile('model-design')
     const settings = modelSettingsSnapshot()

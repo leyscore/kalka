@@ -34,7 +34,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isProviderID(value: unknown): value is AIProviderID {
-  return typeof value === 'string' && AI_PROVIDERS.some((provider) => provider.id === value)
+  return (
+    typeof value === 'string' &&
+    (value.startsWith('acp:') || AI_PROVIDERS.some((provider) => provider.id === value))
+  )
 }
 
 function isAPIType(value: unknown): value is 'completions' | 'responses' {
@@ -49,8 +52,10 @@ function stringValue(value: unknown, fallback = ''): string {
   return typeof value === 'string' ? value : fallback
 }
 
-function numberValue(value: unknown, fallback: number): number {
-  return typeof value === 'number' && Number.isFinite(value) ? value : fallback
+function normalizedMaxOutputTokens(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value)
+    ? Math.min(128_000, Math.max(1024, Math.round(value)))
+    : DEFAULT_MAX_OUTPUT_TOKENS
 }
 
 function parseConnection(value: unknown): AIModelConnection | null {
@@ -81,7 +86,7 @@ function parseProfile(value: unknown, connectionIds: Set<string>): AIModelProfil
     connectionId,
     modelID: stringValue(value.modelID),
     customModelID: stringValue(value.customModelID),
-    maxOutputTokens: numberValue(value.maxOutputTokens, DEFAULT_MAX_OUTPUT_TOKENS),
+    maxOutputTokens: normalizedMaxOutputTokens(value.maxOutputTokens),
     capabilities: [...new Set(capabilities)]
   }
 }
@@ -107,17 +112,24 @@ function parseSettings(value: unknown): AIModelSettings | null {
   const rawAssignments = isRecord(value.assignments) ? value.assignments : {}
   const rawDesign = stringValue(rawAssignments.design)
   const design = rawDesign.startsWith('model-') ? (rawDesign as AIModelProfileId) : models[0].id
-  return {
-    version: 1,
-    connections,
-    models,
-    assignments: {
-      design: modelIds.has(design) ? design : models[0].id,
-      review: optionalAssignment(rawAssignments.review, modelIds),
-      fast: optionalAssignment(rawAssignments.fast, modelIds),
-      vision: optionalAssignment(rawAssignments.vision, modelIds)
-    }
+  const resolvedDesign = modelIds.has(design) ? design : models[0].id
+  const assignments: AIModelSettings['assignments'] = {
+    design: resolvedDesign,
+    review: optionalAssignment(rawAssignments.review, modelIds),
+    fast: optionalAssignment(rawAssignments.fast, modelIds),
+    vision: optionalAssignment(rawAssignments.vision, modelIds)
   }
+  for (const role of ['review', 'fast', 'vision'] as const) {
+    const assignment = assignments[role]
+    if (assignment === null) continue
+    const profileId = assignment === 'design' ? resolvedDesign : assignment
+    const profile = models.find((candidate) => candidate.id === profileId)
+    const connection = connections.find((candidate) => candidate.id === profile?.connectionId)
+    const invalidACP = connection?.providerID.startsWith('acp:')
+    const invalidVision = role === 'vision' && !profile?.capabilities.includes('vision')
+    if (invalidACP || invalidVision) assignments[role] = null
+  }
+  return { version: 1, connections, models, assignments }
 }
 
 function legacySettings(): AIModelSettings {
@@ -189,6 +201,10 @@ export function modelConnection(connectionId: string): AIModelConnection | null 
   return (
     aiModelSettings.value.connections.find((connection) => connection.id === connectionId) ?? null
   )
+}
+
+export function isACPModelProfile(profile: AIModelProfile | null): boolean {
+  return Boolean(profile && modelConnection(profile.connectionId)?.providerID.startsWith('acp:'))
 }
 
 export function resolveAIModelRole(role: AIModelRole): ResolvedAIModelRole | null {
@@ -302,7 +318,7 @@ export function saveModelProfileDraft(draft: AIModelProfileDraft): AIModelProfil
     connectionId: connection.id,
     modelID: draft.modelID.trim() || provider?.defaultModel || '',
     customModelID: draft.customModelID.trim(),
-    maxOutputTokens: Math.max(1024, Math.round(draft.maxOutputTokens)),
+    maxOutputTokens: normalizedMaxOutputTokens(draft.maxOutputTokens),
     capabilities: [...new Set(draft.capabilities)]
   }
   const index = aiModelSettings.value.models.findIndex((model) => model.id === profile.id)
@@ -366,12 +382,13 @@ export function setModelRoleAssignment(role: AIModelRole, assignment: AIModelRol
     return
   }
   if (assignment !== null && assignment !== 'design' && !modelProfile(assignment)) return
-  if (role === 'vision' && assignment !== null) {
+  if (assignment !== null) {
     const profile =
       assignment === 'design'
         ? modelProfile(aiModelSettings.value.assignments.design)
         : modelProfile(assignment)
-    if (!profile?.capabilities.includes('vision')) return
+    if (isACPModelProfile(profile)) return
+    if (role === 'vision' && !profile?.capabilities.includes('vision')) return
   }
   aiModelSettings.value.assignments[role] = assignment
 }

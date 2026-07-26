@@ -105,6 +105,7 @@
   "emptyStorageWorkspace": "Aún no hay documentos guardados.",
   "loadingDocuments": "Cargando documentos…",
   "storageNotConfigured": "Configura el almacenamiento antes de usar este espacio.",
+  "copyStorageCors": "Copiar JSON de CORS",
   "storageEndpoint": "Punto de conexión",
   "storageBucket": "Bucket",
   "storageRegion": "Región",
