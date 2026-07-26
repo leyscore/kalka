@@ -7,11 +7,9 @@ import {
   ACP_AGENTS,
   AI_PROVIDERS,
   AUTOMATION_HTTP_PORT,
-  IS_TAURI
+  IS_TAURI,
+  type AIProviderID
 } from '@open-pencil/core/constants'
-import { useAIChat } from '@/app/ai/chat/use'
-
-const { providerID, providerDef } = useAIChat()
 
 const mcpAvailable = ref(false)
 
@@ -37,23 +35,8 @@ async function checkMCPHealth(retries = 3, delayMs = 1000) {
   }
 }
 
-if (IS_TAURI) {
-  onMounted(() => {
-    void checkMCPHealth()
-  })
-}
-
-const acpAgents = computed(() => (IS_TAURI && mcpAvailable.value ? ACP_AGENTS : []))
-
-const displayName = computed(() => {
-  if (providerID.value.startsWith('acp:')) {
-    const agentId = providerID.value.replace('acp:', '')
-    return ACP_AGENTS.find((a) => a.id === agentId)?.name ?? providerID.value
-  }
-  return providerDef.value.name
-})
-
 interface ProviderSelectProps {
+  allowAgents?: boolean
   ui?: {
     trigger?: string
     content?: string
@@ -63,7 +46,28 @@ interface ProviderSelectProps {
   }
 }
 
-const { ui } = defineProps<ProviderSelectProps>()
+const { allowAgents = true, ui } = defineProps<ProviderSelectProps>()
+
+if (IS_TAURI) {
+  onMounted(() => {
+    void checkMCPHealth()
+  })
+}
+
+const acpAgents = computed(() => (allowAgents && IS_TAURI && mcpAvailable.value ? ACP_AGENTS : []))
+
+const providerID = defineModel<AIProviderID>({ required: true })
+const providerDef = computed(
+  () => AI_PROVIDERS.find((provider) => provider.id === providerID.value) ?? AI_PROVIDERS[0]
+)
+
+const displayName = computed(() => {
+  if (providerID.value.startsWith('acp:')) {
+    const agentId = providerID.value.replace('acp:', '')
+    return ACP_AGENTS.find((agent) => agent.id === agentId)?.name ?? providerID.value
+  }
+  return providerDef.value.name
+})
 
 const groups = computed(() => {
   const result: Array<{ label?: string; items: Array<{ value: string; label: string }> }> = []

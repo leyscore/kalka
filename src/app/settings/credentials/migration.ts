@@ -10,11 +10,14 @@ const MIGRATION_VERSION_KEY = `${STORAGE_PREFIX}credential-migration`
 const MIGRATION_VERSION = '1'
 const LEGACY_OPENROUTER_KEY = `${STORAGE_PREFIX}openrouter-api-key`
 
-export function providerCredentialRef(providerId: AIProviderID): CredentialRef {
+export function providerCredentialRef(
+  providerId: AIProviderID,
+  profileId = 'default'
+): CredentialRef {
   if (providerId.startsWith('acp:')) {
     throw new Error('ACP agents do not use API-key credentials')
   }
-  return credentialRef(providerId, 'api-key')
+  return credentialRef(providerId, 'api-key', profileId)
 }
 
 export const PEXELS_CREDENTIAL = credentialRef('pexels', 'api-key')

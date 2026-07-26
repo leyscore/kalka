@@ -27,7 +27,7 @@ const cls = computed(() => useDialogUI(ui, { size, height }))
 </script>
 
 <template>
-  <AlertDialogRoot :open="open">
+  <AlertDialogRoot :open="open" @update:open="open = $event">
     <AlertDialogPortal>
       <AlertDialogOverlay
         data-slot="alert-dialog-overlay"

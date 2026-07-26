@@ -149,7 +149,7 @@ Release commits are the exception: keep using `Release v0.x.y`.
 
 Keep this section light; implementation details move often.
 
-- ACP UI/transport lives under `src/app/ai/acp/**`; provider definitions live in `packages/core/src/constants.ts`; app prompts live under `src/app/ai/**`. Public docs: `packages/docs/programmable/ai-chat.md` and `packages/docs/programmable/mcp-server.md`.
+- ACP UI/transport lives under `src/app/ai/acp/**`; provider definitions live in `packages/core/src/constants.ts`; app prompts live under `src/app/ai/**`. Direct model configuration lives under `src/app/ai/models/**`: reusable profiles reference provider connections, roles resolve to profiles, and runtime creation resolves credentials lazily. Keep model profiles, provider connections, and role assignments separate rather than returning to singleton provider/model settings. Public docs: `packages/docs/programmable/ai-chat.md` and `packages/docs/programmable/mcp-server.md`.
 - ACP transport uses Tauri shell permissions, so check `desktop/capabilities/**` when changing agent launch behavior.
 - Collaboration lives under `src/app/collab/**` and is documented in `packages/docs/programmable/collaboration.md`. It uses Trystero + Yjs + awareness; preserve crypto-safe room IDs and peer cleanup semantics when changing it.
 

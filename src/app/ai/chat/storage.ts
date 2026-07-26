@@ -1,48 +1,40 @@
-import { useLocalStorage } from '@vueuse/core'
 import { computed, ref, watch } from 'vue'
 
-import {
-  AI_PROVIDERS,
-  DEFAULT_AI_MODEL,
-  DEFAULT_AI_PROVIDER,
-  IS_TAURI
-} from '@open-pencil/core/constants'
-import type { AIProviderID } from '@open-pencil/core/constants'
+import { IS_TAURI } from '@open-pencil/core/constants'
 import { setPexelsApiKey, setUnsplashAccessKey } from '@open-pencil/core/tools'
 
+import {
+  designCustomAPIType,
+  designCustomBaseURL,
+  designCustomModelID,
+  designMaxOutputTokens,
+  designModelConnection,
+  designModelID,
+  designProviderDefinition,
+  designProviderID,
+  modelConnectionCredentialRef
+} from '@/app/ai/models'
 import { appCredentialServices, browserCredentialsRemembered } from '@/app/settings/credentials/app'
 import {
   initializeCredentialMigration,
   PEXELS_CREDENTIAL,
-  providerCredentialRef,
   UNSPLASH_CREDENTIAL
 } from '@/app/settings/credentials/migration'
 import { setAppCredentialPersistence } from '@/app/settings/credentials/persistence'
 import type { CredentialRef, CredentialStatus } from '@/app/settings/credentials/types'
 
-const STORAGE_PREFIX = 'open-pencil:'
-
-export const providerID = useLocalStorage<AIProviderID>(
-  `${STORAGE_PREFIX}ai-provider`,
-  DEFAULT_AI_PROVIDER
-)
-export const modelID = useLocalStorage(`${STORAGE_PREFIX}ai-model`, DEFAULT_AI_MODEL)
-export const customBaseURL = useLocalStorage(`${STORAGE_PREFIX}ai-base-url`, '')
-export const customModelID = useLocalStorage(`${STORAGE_PREFIX}ai-custom-model`, '')
-export const customAPIType = useLocalStorage<'completions' | 'responses'>(
-  `${STORAGE_PREFIX}ai-api-type`,
-  'completions'
-)
-export const maxOutputTokens = useLocalStorage(`${STORAGE_PREFIX}ai-max-output-tokens`, 16384)
+export const providerID = designProviderID
+export const modelID = designModelID
+export const customBaseURL = designCustomBaseURL
+export const customModelID = designCustomModelID
+export const customAPIType = designCustomAPIType
+export const maxOutputTokens = designMaxOutputTokens
+export const providerDef = designProviderDefinition
 
 export const apiKeyStatus = ref<CredentialStatus>('missing')
 export const pexelsKeyStatus = ref<CredentialStatus>('missing')
 export const unsplashKeyStatus = ref<CredentialStatus>('missing')
 const credentialRevision = ref(0)
-
-export const providerDef = computed(
-  () => AI_PROVIDERS.find((provider) => provider.id === providerID.value) ?? AI_PROVIDERS[0]
-)
 
 export const isACPProvider = computed(() => providerID.value.startsWith('acp:'))
 
@@ -58,13 +50,15 @@ async function refreshStatus(reference: CredentialRef): Promise<CredentialStatus
   return appCredentialServices.manager.status(reference)
 }
 
-async function refreshProviderStatus(provider: AIProviderID): Promise<void> {
-  if (provider.startsWith('acp:')) {
-    apiKeyStatus.value = 'missing'
-    return
-  }
-  const status = await refreshStatus(providerCredentialRef(provider))
-  if (providerID.value === provider) apiKeyStatus.value = status
+function designCredentialReference(): CredentialRef | null {
+  const connection = designModelConnection.value
+  if (!connection || connection.providerID.startsWith('acp:')) return null
+  return modelConnectionCredentialRef(connection)
+}
+
+export async function refreshAIProviderStatus(): Promise<void> {
+  const reference = designCredentialReference()
+  apiKeyStatus.value = reference ? await refreshStatus(reference) : 'missing'
 }
 
 async function refreshMediaCredentials(): Promise<void> {
@@ -87,19 +81,19 @@ async function refreshMediaCredentials(): Promise<void> {
 }
 
 export const credentialsReady = initializeCredentialMigration().then(async () => {
-  await Promise.all([refreshProviderStatus(providerID.value), refreshMediaCredentials()])
+  await Promise.all([refreshAIProviderStatus(), refreshMediaCredentials()])
   return undefined
 })
 
-export async function resolveAPIKey(provider = providerID.value): Promise<string | null> {
+export async function resolveAPIKey(): Promise<string | null> {
   await credentialsReady
-  if (provider.startsWith('acp:')) return null
-  return appCredentialServices.resolver.resolve(providerCredentialRef(provider))
+  const reference = designCredentialReference()
+  return reference ? appCredentialServices.resolver.resolve(reference) : null
 }
 
 export async function setAPIKey(key: string): Promise<void> {
-  if (providerID.value.startsWith('acp:')) return
-  const reference = providerCredentialRef(providerID.value)
+  const reference = designCredentialReference()
+  if (!reference) return
   const value = key.trim()
   if (value) await appCredentialServices.manager.set(reference, value)
   else await appCredentialServices.manager.clear(reference)
@@ -126,23 +120,24 @@ export async function setUnsplashKey(key: string): Promise<void> {
 export async function setRememberCredentials(remembered: boolean): Promise<void> {
   await credentialsReady
   await setAppCredentialPersistence(remembered)
-  await Promise.all([refreshProviderStatus(providerID.value), refreshMediaCredentials()])
+  await Promise.all([refreshAIProviderStatus(), refreshMediaCredentials()])
   credentialRevision.value++
 }
 
 export { browserCredentialsRemembered }
 
 export function registerAIChatEffects(markTransportDirty: () => void) {
-  watch(providerID, (id) => {
-    const definition = AI_PROVIDERS.find((provider) => provider.id === id)
-    if (definition?.defaultModel) modelID.value = definition.defaultModel
-    void refreshProviderStatus(id)
-    markTransportDirty()
-  })
-
+  watch(
+    () => designModelConnection.value?.id,
+    () => {
+      void refreshAIProviderStatus()
+      markTransportDirty()
+    }
+  )
   watch(modelID, markTransportDirty)
   watch(customModelID, markTransportDirty)
   watch(customAPIType, markTransportDirty)
   watch(customBaseURL, markTransportDirty)
+  watch(maxOutputTokens, markTransportDirty)
   watch(credentialRevision, markTransportDirty)
 }

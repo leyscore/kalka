@@ -20,6 +20,7 @@
 - Target a specific open document and page from live CLI and MCP automation, including sessions with multiple documents.
 - Test OpenAI-compatible provider connections from AI settings with clearer setup errors.
 - Manage AI, agent, and media credentials from unified Settings, using the system credential store on desktop and optional encrypted storage in the browser.
+- Assign separate Design, Review, Fast, and Vision models, providers, endpoints, and credentials from AI settings.
 - Connect an S3-compatible storage workspace with local-first saves, background synchronization, and centrally managed credentials.
 - Build custom property panels with new Vue SDK number fields, bindable values, property sections, responsive property grids, segmented controls, property lists, color models, fill controls, and gradient primitives.
 - Connect local MCP clients through automatically discovered private Unix sockets on macOS and Linux, with localhost TCP fallback. (#338)
@@ -29,6 +30,7 @@
 
 - Choose Freeform, vertical, horizontal, or grid flow directly from the contextual Layout section, with sizing grouped alongside it and current Layout guide terminology.
 - Redesign the editor chrome and Design panel with denser aligned controls, clearer selection and section states, improved menus and overlays, consistent light/dark theming, and better keyboard and screen-reader behavior.
+- Center full-area empty and setup states consistently across panels, dialogs, and workspaces.
 - Scale the Layers panel to documents with thousands of nodes through virtualized rows, faster incremental updates, stable expansion, range selection, and scroll-to-selection.
 - Resolve fonts before text appears, with language-aware CJK and Arabic fallback, character-specific remote subsets, and more reliable rendering as fonts load.
 - Open and save large `.fig` documents substantially faster while preserving original metadata and user edits; corrupted compressed data now reports an error instead of being opened as valid content.

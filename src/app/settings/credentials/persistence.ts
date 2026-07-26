@@ -1,23 +1,38 @@
 import { AI_PROVIDERS } from '@open-pencil/core/constants'
 
+import { aiModelSettings, modelConnectionCredentialRef } from '@/app/ai/models'
 import { storageCredentialRefs, storageProviderRegistry } from '@/app/integrations/storage'
 import {
   PEXELS_CREDENTIAL,
   UNSPLASH_CREDENTIAL,
   providerCredentialRef
 } from '@/app/settings/credentials/migration'
+import { credentialKey } from '@/app/settings/credentials/reference'
 
 import { setBrowserCredentialPersistence } from './app'
 import type { CredentialRef } from './types'
 
+function uniqueCredentialRefs(references: CredentialRef[]): CredentialRef[] {
+  return [...new Map(references.map((reference) => [credentialKey(reference), reference])).values()]
+}
+
 export function appCredentialRefs(): CredentialRef[] {
-  const aiCredentials = AI_PROVIDERS.filter((provider) => !provider.id.startsWith('acp:')).map(
+  const legacyAIRefs = AI_PROVIDERS.filter((provider) => !provider.id.startsWith('acp:')).map(
     (provider) => providerCredentialRef(provider.id)
   )
+  const modelConnectionRefs = aiModelSettings.value.connections
+    .filter((connection) => !connection.providerID.startsWith('acp:'))
+    .map(modelConnectionCredentialRef)
   const storageCredentials = storageProviderRegistry
     .list()
     .flatMap((provider) => storageCredentialRefs(provider.id))
-  return [...aiCredentials, PEXELS_CREDENTIAL, UNSPLASH_CREDENTIAL, ...storageCredentials]
+  return uniqueCredentialRefs([
+    ...legacyAIRefs,
+    ...modelConnectionRefs,
+    PEXELS_CREDENTIAL,
+    UNSPLASH_CREDENTIAL,
+    ...storageCredentials
+  ])
 }
 
 export function setAppCredentialPersistence(remembered: boolean): Promise<void> {
