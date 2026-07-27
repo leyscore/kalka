@@ -20,12 +20,12 @@ export function hasLegacyCredentialStorage(): boolean {
 }
 
 export function browserRemembersCredentials(): boolean {
-  return browserCredentialStorage()?.getItem(BROWSER_PERSISTENCE_KEY) === 'remembered'
+  const storage = browserCredentialStorage()
+  return storage ? storage.getItem(BROWSER_PERSISTENCE_KEY) !== 'session' : false
 }
 
 export function setBrowserRemembersCredentials(remembered: boolean): void {
   const storage = browserCredentialStorage()
   if (!storage) return
-  if (remembered) storage.setItem(BROWSER_PERSISTENCE_KEY, 'remembered')
-  else storage.removeItem(BROWSER_PERSISTENCE_KEY)
+  storage.setItem(BROWSER_PERSISTENCE_KEY, remembered ? 'remembered' : 'session')
 }

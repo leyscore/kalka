@@ -80,8 +80,6 @@ test('remembered browser credentials survive reload and clear centrally', async 
   await page.getByTestId('provider-setup-open-settings').click()
 
   const remember = page.getByTestId('settings-remember-credentials')
-  await expect(remember).toHaveAttribute('data-state', 'unchecked')
-  await remember.click()
   await expect(remember).toHaveAttribute('data-state', 'checked')
   await expect(page.getByTestId('settings-credential-backend')).toContainText(
     'encrypted browser storage'

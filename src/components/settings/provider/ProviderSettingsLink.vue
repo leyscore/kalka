@@ -6,7 +6,12 @@ const { href } = defineProps<{ href: string }>()
 </script>
 
 <template>
-  <AppTextButton size="xs" underline @click="openExternalLink(href)">
+  <AppTextButton
+    size="sm"
+    underline
+    :ui="{ base: 'self-start text-left text-[11px]' }"
+    @click="openExternalLink(href)"
+  >
     <slot />
   </AppTextButton>
 </template>

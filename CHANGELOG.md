@@ -19,7 +19,7 @@
 - Drag with the Text tool to create a fixed-size text box, or click to create auto-width text.
 - Target a specific open document and page from live CLI and MCP automation, including sessions with multiple documents.
 - Test OpenAI-compatible provider connections from AI settings with clearer setup errors.
-- Manage AI, agent, and media credentials from unified Settings, using the system credential store on desktop and optional encrypted storage in the browser.
+- Manage AI, agent, and media credentials from unified Settings, using the system credential store on desktop and encrypted browser storage by default with a session-only option.
 - Assign separate Design, Review, Fast, and Vision models, providers, endpoints, and credentials from AI settings.
 - Connect an S3-compatible storage workspace with local-first saves, background synchronization, and centrally managed credentials.
 - Convert image layers into editable vector layers with Recraft or fal.ai from the canvas context menu. (#322)
