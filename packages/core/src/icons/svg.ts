@@ -6,9 +6,8 @@ import { parseSVGPath } from '@open-pencil/scene-graph/parse-path'
 import type { IconData, IconifyIconEntry, IconPathInfo } from './types'
 
 function attrValue(tag: string, attr: string): string | null {
-  const re = new RegExp(`\\b${attr}="([^"]*)"`)
-  const match = tag.match(re)
-  return match ? match[1] : null
+  const match = tag.match(new RegExp(`\\b${attr}\\s*=\\s*(["'])(.*?)\\1`, 'i'))
+  return match?.[2] ?? null
 }
 
 function num(tag: string, attr: string, fallback = 0): number {
@@ -123,7 +122,8 @@ export function extractPaths(svgBody: string): IconPathInfo[] {
       ),
       strokeCap: attrValue(tag, 'stroke-linecap') ?? groupAttrs.strokeCap ?? 'butt',
       strokeJoin: attrValue(tag, 'stroke-linejoin') ?? groupAttrs.strokeJoin ?? 'miter',
-      fillRule: fillRuleAttr === 'evenodd' ? 'EVENODD' : 'NONZERO'
+      fillRule: fillRuleAttr === 'evenodd' ? 'EVENODD' : 'NONZERO',
+      transform: attrValue(tag, 'transform')
     })
   }
   return result
