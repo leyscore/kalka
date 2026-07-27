@@ -3,6 +3,11 @@ import { AwsClient } from 'aws4fetch'
 import { storageFetch } from '@/app/integrations/storage/s3/fetch'
 import { inferS3Region } from '@/app/integrations/storage/s3/region'
 import type { S3CompatibleConfig } from '@/app/integrations/storage/s3/types'
+import {
+  parseListObjectsV2Page,
+  parseS3ErrorXml,
+  type ListedObject
+} from '@/app/integrations/storage/s3/xml'
 
 export function resolveS3Region(config: S3CompatibleConfig): string {
   const explicit = config.region?.trim()
@@ -50,13 +55,7 @@ export function createAwsClient(config: S3CompatibleConfig): AwsClient {
 
 async function readErrorBody(res: Response): Promise<{ message: string; code: string | null }> {
   const text = await res.text().catch(() => '')
-  const codeMatch = text.match(/<Code>([^<]+)<\/Code>/i)
-  const messageMatch = text.match(/<Message>([^<]+)<\/Message>/i)
-  const code = codeMatch?.[1] ?? null
-  const message =
-    messageMatch?.[1] ??
-    (text.trim() ? text.trim().slice(0, 200) : `S3 request failed with status ${res.status}`)
-  return { message, code }
+  return parseS3ErrorXml(text, res.status)
 }
 
 /**
@@ -235,59 +234,6 @@ export async function deleteObject(config: S3CompatibleConfig, key: string): Pro
   if (!res.ok && res.status !== 404) {
     throw new S3HttpError(res.status, `Failed to delete ${key}`)
   }
-}
-
-export type ListedObject = {
-  key: string
-  lastModified: string | null
-  size: number | null
-}
-
-export type ListObjectsPage = {
-  objects: ListedObject[]
-  isTruncated: boolean
-  nextContinuationToken: string | null
-}
-
-/** Parse ListObjectsV2 XML into key entries. Pure for unit tests. */
-export function parseListObjectsV2Xml(xml: string): ListedObject[] {
-  return parseListObjectsV2Page(xml).objects
-}
-
-/** Parse ListObjectsV2 XML including pagination fields. */
-export function parseListObjectsV2Page(xml: string): ListObjectsPage {
-  const contents = [...xml.matchAll(/<Contents>([\s\S]*?)<\/Contents>/gi)]
-  const items: ListedObject[] = []
-  for (const match of contents) {
-    const block = match[1] ?? ''
-    const key = block.match(/<Key>([^<]*)<\/Key>/i)?.[1]
-    if (!key) continue
-    const lastModified = block.match(/<LastModified>([^<]*)<\/LastModified>/i)?.[1] ?? null
-    const sizeRaw = block.match(/<Size>([^<]*)<\/Size>/i)?.[1]
-    const size = sizeRaw != null && sizeRaw !== '' ? Number(sizeRaw) : null
-    items.push({
-      key: decodeXmlEntities(key),
-      lastModified,
-      size: Number.isFinite(size) ? size : null
-    })
-  }
-  const truncatedRaw = xml.match(/<IsTruncated>([^<]*)<\/IsTruncated>/i)?.[1]
-  const isTruncated = truncatedRaw?.trim().toLowerCase() === 'true'
-  const tokenRaw = xml.match(/<NextContinuationToken>([^<]*)<\/NextContinuationToken>/i)?.[1]
-  return {
-    objects: items,
-    isTruncated,
-    nextContinuationToken: tokenRaw ? decodeXmlEntities(tokenRaw) : null
-  }
-}
-
-function decodeXmlEntities(value: string): string {
-  return value
-    .replace(/&quot;/g, '"')
-    .replace(/&apos;/g, "'")
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&amp;/g, '&')
 }
 
 export async function listObjects(

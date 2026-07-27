@@ -35,6 +35,7 @@
         "@tauri-apps/plugin-updater": "^2.10.1",
         "@unhead/vue": "^2.1.10",
         "@vueuse/core": "^14.2.1",
+        "@xmldom/xmldom": "^0.9.10",
         "ai": "^6.0.174",
         "aws4fetch": "^1.0.20",
         "canvaskit-wasm": "^0.40.0",
