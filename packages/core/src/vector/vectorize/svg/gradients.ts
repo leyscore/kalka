@@ -9,13 +9,13 @@
  * normalize into each node's bounding box (objectBoundingBox) space, matching the
  * gradientTransform convention used by the SVG exporter (see io/formats/svg/defs).
  */
-import { DOMParser } from '@xmldom/xmldom'
 import svgpath from 'svgpath'
 
 import type { Fill, GradientStop } from '@open-pencil/scene-graph'
 import type { Color, Matrix, Rect, Size, Vector } from '@open-pencil/scene-graph/primitives'
 
 import { parseColor } from '#core/color'
+import { parseSVGDocument } from '#core/io/formats/svg/document'
 
 interface RawStop {
   offset: number
@@ -78,12 +78,8 @@ function readStops(gradient: SvgElementLike): RawStop[] {
  */
 export function parseSVGGradients(svg: string): Map<string, ParsedGradient> {
   const map = new Map<string, ParsedGradient>()
-  let doc: SvgQueryable
-  try {
-    doc = new DOMParser().parseFromString(svg, 'image/svg+xml')
-  } catch {
-    return map
-  }
+  const doc: SvgQueryable | null = parseSVGDocument(svg)
+  if (!doc) return map
 
   for (const kind of ['linear', 'radial'] as const) {
     const els = Array.from(doc.getElementsByTagName(`${kind}Gradient`))
@@ -115,9 +111,12 @@ export function parseSVGGradients(svg: string): Map<string, ParsedGradient> {
 }
 
 function gradientIdFromFill(fill: string | null): string | null {
-  if (!fill) return null
-  const m = fill.match(/^url\(\s*#([^)\s]+)\s*\)$/)
-  return m ? m[1] : null
+  const value = fill?.trim()
+  if (!value?.startsWith('url(') || !value.endsWith(')')) return null
+  const reference = value.slice(4, -1).trim()
+  if (!reference.startsWith('#')) return null
+  const id = reference.slice(1).trim()
+  return id && !id.includes(' ') ? id : null
 }
 
 /**
@@ -138,10 +137,13 @@ function mapUserPoint(
   if (gradientTransform) sp = sp.transform(gradientTransform)
   if (elementTransform) sp = sp.transform(elementTransform)
   sp = sp.translate(-space.x, -space.y).scale(sx, sy)
-  const out = sp.toString()
-  const m = out.match(/M\s*(-?[\d.eE+-]+)[ ,]+(-?[\d.eE+-]+)/)
-  if (!m) return { x, y }
-  return { x: Number.parseFloat(m[1]), y: Number.parseFloat(m[2]) }
+  const points: Vector[] = []
+  sp.abs().iterate((segment) => {
+    if (points.length === 0 && segment[0] === 'M') {
+      points.push({ x: segment[1], y: segment[2] })
+    }
+  })
+  return points[0] ?? { x, y }
 }
 
 function gradientStops(stops: RawStop[]): GradientStop[] {

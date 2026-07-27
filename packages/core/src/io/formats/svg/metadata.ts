@@ -1,12 +1,14 @@
+import type { Element } from '@xmldom/xmldom'
+
 import type { Rect, Size } from '@open-pencil/scene-graph/primitives'
 
-function attributeValue(svg: string, attribute: string): string | null {
-  const match = svg.match(new RegExp(`\\b${attribute}\\s*=\\s*(["'])(.*?)\\1`, 'i'))
-  return match?.[2] ?? null
+import { parseSVGDocument } from './document'
+
+function rootElement(svg: string): Element | null {
+  return parseSVGDocument(svg)?.documentElement ?? null
 }
 
-export function parseSVGViewBox(svg: string): Rect | null {
-  const value = attributeValue(svg, 'viewBox')
+function parseViewBoxValue(value: string | null): Rect | null {
   if (!value) return null
   const values = value
     .trim()
@@ -18,17 +20,22 @@ export function parseSVGViewBox(svg: string): Rect | null {
   return { x, y, width, height }
 }
 
-function parseSVGDimension(svg: string, attribute: string): number | null {
-  const value = attributeValue(svg, attribute)
+export function parseSVGViewBox(svg: string): Rect | null {
+  return parseViewBoxValue(rootElement(svg)?.getAttribute('viewBox') ?? null)
+}
+
+function parseSVGDimension(root: Element | null, attribute: string): number | null {
+  const value = root?.getAttribute(attribute)
   if (!value) return null
   const parsed = Number.parseFloat(value)
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null
 }
 
 export function parseSVGSize(svg: string, fallback: Size = { width: 24, height: 24 }): Size {
-  const viewBox = parseSVGViewBox(svg)
-  const width = parseSVGDimension(svg, 'width')
-  const height = parseSVGDimension(svg, 'height')
+  const root = rootElement(svg)
+  const viewBox = parseViewBoxValue(root?.getAttribute('viewBox') ?? null)
+  const width = parseSVGDimension(root, 'width')
+  const height = parseSVGDimension(root, 'height')
   if (width && height) return { width, height }
   if (viewBox) return { width: viewBox.width, height: viewBox.height }
   return fallback
