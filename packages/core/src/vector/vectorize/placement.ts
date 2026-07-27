@@ -14,8 +14,12 @@ export interface VectorFramePlacement {
   offsetY: number
 }
 
-function shouldTightenToContent(node: Pick<SceneNode, 'width' | 'height'>, content: Rect): boolean {
+function shouldTightenToContent(
+  node: Pick<SceneNode, 'width' | 'height' | 'rotation'>,
+  content: Rect
+): boolean {
   return (
+    node.rotation === 0 &&
     content.width > 0 &&
     content.height > 0 &&
     (content.x > 0 ||
@@ -26,7 +30,7 @@ function shouldTightenToContent(node: Pick<SceneNode, 'width' | 'height'>, conte
 }
 
 export function resolveVectorFramePlacement(
-  node: Pick<SceneNode, 'x' | 'y' | 'width' | 'height'>,
+  node: Pick<SceneNode, 'x' | 'y' | 'width' | 'height' | 'rotation'>,
   content: Rect
 ): VectorFramePlacement {
   const tighten = shouldTightenToContent(node, content)

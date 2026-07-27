@@ -147,6 +147,10 @@ export const dialogMessageDefaults = {
   noModel: 'None',
   back: 'Back',
   settingsMedia: 'Media',
+  vectorization: 'Image vectorization',
+  vectorizationDescription:
+    'Send image layers to Recraft or fal.ai and return editable vectors. Provider charges may apply.',
+  vectorizeProvider: 'Vectorization service',
   settingsStorage: 'Cloud storage',
   storageWorkspace: 'Storage workspace',
   openStorageWorkspace: 'Open workspace',

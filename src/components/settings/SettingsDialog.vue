@@ -10,6 +10,7 @@ import { settingsDialogOpen, settingsDialogSection } from '@/app/settings/dialog
 import ModelsPanel from '@/components/settings/models/ModelsPanel.vue'
 import StockPhotoKeysSection from '@/components/settings/provider/StockPhotoKeysSection.vue'
 import StorageSettingsPanel from '@/components/settings/storage/StorageSettingsPanel.vue'
+import VectorizeSettingsSection from '@/components/settings/vectorize/VectorizeSettingsSection.vue'
 import AppSwitch from '@/components/ui/AppSwitch.vue'
 import { AppDialogFooter, AppDialogHeader, AppDialogRoot } from '@/components/ui/dialog'
 
@@ -104,6 +105,7 @@ const navigationClass =
         >
           <h3 class="text-xs font-semibold text-surface">{{ dialogs.settingsMedia }}</h3>
           <StockPhotoKeysSection />
+          <VectorizeSettingsSection />
         </section>
 
         <StorageSettingsPanel v-else />

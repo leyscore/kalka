@@ -164,10 +164,19 @@ describe('resolveVectorFramePlacement', () => {
   test('tightens the replacement frame around inset vector content', () => {
     expect(
       resolveVectorFramePlacement(
-        { x: 10, y: 20, width: 200, height: 100 },
+        { x: 10, y: 20, width: 200, height: 100, rotation: 0 },
         { x: 25, y: 10, width: 150, height: 80 }
       )
     ).toEqual({ x: 35, y: 30, width: 150, height: 80, offsetX: 25, offsetY: 10 })
+  })
+
+  test('keeps rotated replacements in the original coordinate box', () => {
+    expect(
+      resolveVectorFramePlacement(
+        { x: 10, y: 20, width: 200, height: 100, rotation: 30 },
+        { x: 25, y: 10, width: 150, height: 80 }
+      )
+    ).toEqual({ x: 10, y: 20, width: 200, height: 100, offsetX: 0, offsetY: 0 })
   })
 })
 

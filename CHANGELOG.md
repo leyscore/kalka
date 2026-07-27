@@ -22,6 +22,7 @@
 - Manage AI, agent, and media credentials from unified Settings, using the system credential store on desktop and optional encrypted storage in the browser.
 - Assign separate Design, Review, Fast, and Vision models, providers, endpoints, and credentials from AI settings.
 - Connect an S3-compatible storage workspace with local-first saves, background synchronization, and centrally managed credentials.
+- Convert image layers into editable vector layers with Recraft or fal.ai from the canvas context menu. (#322)
 - Build custom property panels with new Vue SDK number fields, bindable values, property sections, responsive property grids, segmented controls, property lists, color models, fill controls, and gradient primitives.
 - Connect local MCP clients through automatically discovered private Unix sockets on macOS and Linux, with localhost TCP fallback. (#338)
 - Create centered frames from current Figma-style device and asset presets, or resize selected frames from the Design panel while preserving their names.
