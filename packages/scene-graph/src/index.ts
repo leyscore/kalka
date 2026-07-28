@@ -48,7 +48,13 @@ import type {
   VariableValue
 } from './types'
 
-export { cloneVectorNetwork, normalizeVectorNetwork, validateVectorNetwork } from './vector-network'
+export {
+  cloneVectorNetwork,
+  normalizeVectorNetwork,
+  transformVectorNetwork,
+  validateVectorNetwork,
+  vectorNetworksEqual
+} from './vector-network'
 
 let nextLocalID = 1
 

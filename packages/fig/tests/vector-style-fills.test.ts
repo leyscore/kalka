@@ -3,9 +3,9 @@ import { describe, expect, test } from 'bun:test'
 import type { Paint } from '@open-pencil/kiwi/fig/codec'
 import type { Fill } from '@open-pencil/scene-graph'
 import { SceneGraph } from '@open-pencil/scene-graph'
+import { scaleGeometryPaths } from '@open-pencil/scene-graph/copy'
 
 import { resolveDsdGeometry } from '../src/instance-overrides/derived-symbol-data/geometry'
-import { scaleGeometryPaths } from '../src/instance-overrides/geometry-paths'
 import {
   resolveGeometryPaths,
   resolveStyleOverrideFills,

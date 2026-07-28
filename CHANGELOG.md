@@ -7,6 +7,7 @@
 - Match regional browser languages to supported locales without selecting a secondary language. (#417)
 - Save auto-layout frames that stretch their children to `.fig` without failing. (#427)
 - Preserve multiple colors in imported vector artwork such as multi-color logos. (#386)
+- Edit vectors in opened documents at the correct position, with live fills and undo/redo. (#390)
 - Reduce large `.fig` page-switch work to the active page, reuse fixed-point propagation indexes, and coalesce Layers tree rebuilds. (#420)
 - Center text glyphs within explicit line-height leading in CanvasKit paragraph rendering.
 

@@ -4,8 +4,8 @@ import {
   resolveVectorStyleOverrideFills
 } from '@open-pencil/fig/node-change'
 import type { SceneNode } from '@open-pencil/scene-graph'
+import { scaleGeometryPaths } from '@open-pencil/scene-graph/copy'
 
-import { scaleGeometryPaths } from '../geometry-paths'
 import type { DerivedSymbolOverride } from '../types'
 
 export function resolveDsdGeometry(
