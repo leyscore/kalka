@@ -2,12 +2,13 @@ import { normalizeFontFamily, weightToStyle } from '@open-pencil/scene-graph'
 
 import { effectiveFigmaRawNodeFields } from '../source-metadata'
 import { fractionalPosition, mapToFigmaType } from './basics'
-import { bytesToHex, hexToBytes } from './bytes'
+import { bytesToHex } from './bytes'
 import { VARIABLE_BINDING_FIELDS } from './convert'
 import { buildDerivedTextData as buildSharedDerivedTextData } from './derived-text-data'
 import { EMPTY_EXPORT_RUNTIME, type FigNodeChangeExportRuntime } from './export-runtime'
 import { applyFontFeaturesToKiwi } from './font/features'
 import { weightToFigmaStyle } from './font/style'
+import { fillToKiwiPaint, safeColor } from './paint'
 import { encodePathCommandsBlob } from './path-commands'
 import {
   BOUND_VARIABLES_PLUGIN_KEY,
@@ -15,7 +16,11 @@ import {
   TEXT_DIRECTION_PLUGIN_KEY,
   upsertPluginData
 } from './plugin-data'
-import { buildStyleOverrideTable, encodeVectorNetworkBlob } from './vector-network'
+import {
+  buildStyleOverrideTable,
+  encodeVectorNetworkBlob,
+  type StyleOverride
+} from './vector-network'
 
 export {
   buildFigKiwi,
@@ -23,10 +28,10 @@ export {
   FIG_KIWI_DEFAULT_VERSION,
   parseFigKiwiChunks
 } from '@open-pencil/kiwi/fig/container'
-import type { NodeChange, Paint, VariableConsumptionEntry } from '@open-pencil/kiwi/fig/codec'
+import type { NodeChange, VariableConsumptionEntry } from '@open-pencil/kiwi/fig/codec'
 import { guidToString, stringToGuid } from '@open-pencil/kiwi/fig/guid'
 import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
-import type { Color, GUID, JsonObject, Matrix } from '@open-pencil/scene-graph/primitives'
+import type { GUID, JsonObject, Matrix } from '@open-pencil/scene-graph/primitives'
 
 import {
   buildAssetRefToVarGuidMap,
@@ -140,39 +145,6 @@ function buildDerivedTextData(
     lineAscent: Math.max(lineHeight - node.fontSize * 0.2, 0),
     logicalIndexToCharacterOffsetMap
   })
-}
-
-export function safeColor(c: Color | Omit<Color, 'a'>): Color {
-  return { r: c.r, g: c.g, b: c.b, a: 'a' in c ? c.a : 1 }
-}
-
-function fillToKiwiPaint(f: SceneNode['fills'][number]): Paint {
-  const paint: Paint = {
-    type: f.type,
-    color: safeColor(f.color),
-    opacity: f.opacity,
-    visible: f.visible,
-    blendMode: f.blendMode ?? 'NORMAL'
-  }
-  if (f.gradientStops) {
-    paint.stops = f.gradientStops.map((s) => ({ color: safeColor(s.color), position: s.position }))
-  }
-  if (f.gradientTransform) paint.transform = f.gradientTransform
-  if (f.imageHash) paint.image = { hash: hexToBytes(f.imageHash) }
-  if (f.imageScaleMode) paint.imageScaleMode = f.imageScaleMode
-  if (f.imageTransform) paint.transform = f.imageTransform
-  if (f.sourceNodeId) paint.sourceNodeId = stringToGuid(f.sourceNodeId)
-  if (f.scale) paint.scale = f.scale
-  if (f.spacing) paint.spacing = f.spacing
-  if (f.patternSpacing) paint.patternSpacing = f.patternSpacing
-  if (f.patternTileType) paint.patternTileType = f.patternTileType
-  if (f.verticalAlignment) paint.verticalAlignment = f.verticalAlignment
-  if (f.horizontalAlignment) paint.horizontalAlignment = f.horizontalAlignment
-  if (f.noiseType) paint.noiseType = f.noiseType
-  if (f.density !== undefined) paint.density = f.density
-  if (f.noiseSize) paint.noiseSize = f.noiseSize
-  if (f.customEffectId) paint.customEffectId = { guid: stringToGuid(f.customEffectId) }
-  return paint
 }
 
 function serializeCornerRadii(node: SceneNode, nc: KiwiNodeChange): void {
@@ -410,26 +382,34 @@ function serializeGeometry(node: SceneNode, nc: KiwiNodeChange, blobs: Uint8Arra
     nc.maskType = node.maskType
     if (node.maskIsOutline) nc.maskIsOutline = true
   }
+
+  let styleOverrides: StyleOverride[] = []
+  const vectorData: Record<string, unknown> = {}
   if (node.vectorNetwork && node.type === 'VECTOR') {
     const { table, mirroringToId } = buildStyleOverrideTable(node.vectorNetwork)
+    styleOverrides = table
     const blobIdx = blobs.length
     blobs.push(encodeVectorNetworkBlob(node.vectorNetwork, mirroringToId))
-    const vectorData: Record<string, unknown> = {
-      vectorNetworkBlob: blobIdx,
-      normalizedSize: { x: node.width, y: node.height }
-    }
-    if (table.length > 0) {
-      vectorData.styleOverrideTable = table
-    }
-    nc.vectorData = vectorData
+    vectorData.vectorNetworkBlob = blobIdx
+    vectorData.normalizedSize = { x: node.width, y: node.height }
   }
+
   if (node.fillGeometry.length > 0) {
-    nc.fillGeometry = node.fillGeometry.map((g) => {
+    nc.fillGeometry = node.fillGeometry.map((geometry) => {
       const blobIdx = blobs.length
-      blobs.push(g.commandsBlob)
-      return { windingRule: g.windingRule, commandsBlob: blobIdx }
+      blobs.push(geometry.commandsBlob)
+      if (!geometry.fills || geometry.fills.length === 0) {
+        return { windingRule: geometry.windingRule, commandsBlob: blobIdx }
+      }
+      const styleID = styleOverrides.length + 1
+      styleOverrides.push({ styleID, fillPaints: geometry.fills.map(fillToKiwiPaint) })
+      return { windingRule: geometry.windingRule, commandsBlob: blobIdx, styleID }
     })
   }
+
+  if (styleOverrides.length > 0) vectorData.styleOverrideTable = styleOverrides
+  if (Object.keys(vectorData).length > 0) nc.vectorData = vectorData
+
   if (node.strokeGeometry.length > 0) {
     nc.strokeGeometry = node.strokeGeometry.map((g) => {
       const blobIdx = blobs.length

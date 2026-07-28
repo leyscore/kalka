@@ -108,7 +108,8 @@ export function copyStyleRuns(runs: StyleRun[]): StyleRun[] {
 export function copyGeometryPaths(paths: GeometryPath[]): GeometryPath[] {
   return paths.map((p) => ({
     windingRule: p.windingRule,
-    commandsBlob: p.commandsBlob.slice()
+    commandsBlob: p.commandsBlob.slice(),
+    fills: p.fills ? copyFills(p.fills) : undefined
   }))
 }
 
