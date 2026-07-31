@@ -31,7 +31,8 @@ Whether the **web build** can reach the provider at all. The desktop build bypas
 | Nebius AI Studio     | `https://api.studio.nebius.com/v1`                | ✅      | `ACAO: *`                                                                                                                                            | 2026-07-30 |
 | Nebius Token Factory | `https://api.tokenfactory.<region>.nebius.com/v1` | ✅      | `ACAO: *`; catalog differs per region                                                                                                                | 2026-07-30 |
 | Anthropic            | `https://api.anthropic.com`                       | ⚠️      | Needs `anthropic-dangerous-direct-browser-access: true`, which we don't yet send — see [#436](https://github.com/open-pencil/open-pencil/issues/436) | 2026-07-30 |
-| TensorX              | `https://api.tensorx.ai/v1`                       | ❌      | Sets CORS on the preflight but **not** on the response. Desktop only. Reported to their support                                                      | 2026-07-30 |
+| Scaleway             | `https://api.scaleway.ai/<project-id>/v1`         | ⚠️      | `ACAO: *` on success, **absent on errors** — a bad key reads as a network failure                                                                    | 2026-07-31 |
+| TensorX              | `https://api.tensorx.ai/v1`                       | ⚠️      | `ACAO: *` on success, **absent on errors** (401/403/500). Reported to their support                                                                  | 2026-07-31 |
 
 ### The common failure
 
@@ -39,6 +40,20 @@ A provider that answers the `OPTIONS` preflight correctly but omits `Access-Cont
 on the **actual response** will fail in the browser with a generic `Failed to fetch`. OpenPencil
 surfaces that as _"Could not reach this endpoint from the browser"_ — which is indistinguishable
 from a wrong API key. **Always verify with curl before assuming the app is at fault.**
+
+### Test the success path, not just an error
+
+Several providers (Scaleway, TensorX) send CORS headers on a `200` but **not** on `401`/`403`/`500`
+— errors are rejected at a gateway that never adds the header. So an unauthenticated probe tells
+you nothing: it looks identical to a provider that is genuinely broken.
+
+Always test with a **valid key and a successful response**. The inference only runs one way — if
+error responses carry `Access-Control-Allow-Origin`, the success path will too, but the reverse
+does not hold.
+
+Providers in this state are marked ⚠️ rather than ❌: normal use works, but every failure the user
+hits — expired key, exhausted quota, bad model name — reaches them as an opaque network error
+instead of the real reason.
 
 ---
 
@@ -56,21 +71,29 @@ Cost matters as much as correctness here. The chat panel is an agent loop that r
 `MAX_AGENT_STEPS` (50) and resends the tool schemas on every step, so it is input-token heavy and
 a high per-token price compounds fast.
 
-| Model                       | Provider | $/1M in–out  | Emits calls | `id` correct             | Args valid      | Verdict                                       | Tested     |
-| --------------------------- | -------- | ------------ | ----------- | ------------------------ | --------------- | --------------------------------------------- | ---------- |
-| `openai/gpt-oss-120b`       | Nebius   | 0.15 – 0.60  | 3/3         | ❌ misroutes final chunk | ❌ unterminated | Cheapest by far, but needs a client-side shim | 2026-07-30 |
-| `moonshotai/Kimi-K2.7-Code` | Nebius   | 0.95 – 4.00  | 3/3         | ✅ 0/114 bad             | ✅ 4/4          | **Recommended** — works today, no shim needed | 2026-07-30 |
-| `moonshotai/Kimi-K3`        | Nebius   | 3.00 – 15.00 | 3/3         | ✅ 0 bad                 | ✅ 8/8          | Flawless, but ~25× the cost of `gpt-oss-120b` | 2026-07-30 |
-| `moonshotai/kimi-k3`        | TensorX  | —            | 2/3         | ✅ 0 bad                 | ✅ 7/7          | As above, and desktop-only (CORS)             | 2026-07-30 |
-| `moonshotai/Kimi-K2.6`      | Nebius   | —            | 1/3         | ✅                       | —               | Avoid — calls swallowed by the parser         | 2026-07-30 |
+| Model                       | Provider | /1M in–out     | Emits calls | `id` correct             | Args valid      | Verdict                                                | Tested     |
+| --------------------------- | -------- | -------------- | ----------- | ------------------------ | --------------- | ------------------------------------------------------ | ---------- |
+| `gpt-oss-120b`              | Scaleway | €0.15 – €0.60  | 3/3         | ✅ 0/135 bad             | ✅ 3/3          | **Recommended** — cheapest, clean, no shim             | 2026-07-31 |
+| `gemma-4-26b-a4b-it`        | Scaleway | €0.25 – €0.50  | 3/3         | ✅ 0/46 bad              | ✅ 5/5          | Cheapest output; good fallback                         | 2026-07-31 |
+| `qwen3.5-397b-a17b`         | Scaleway | €0.60 – €3.60  | 3/3         | ✅ 0/114 bad             | ✅ 10/10        | Most calls per turn; streams args incrementally        | 2026-07-31 |
+| `moonshotai/Kimi-K2.7-Code` | Nebius   | $0.95 – $4.00  | 3/3         | ✅ 0/114 bad             | ✅ 4/4          | Clean, no shim, but pricier than the Scaleway set      | 2026-07-30 |
+| `moonshotai/Kimi-K3`        | Nebius   | $3.00 – $15.00 | 3/3         | ✅ 0 bad                 | ✅ 8/8          | Flawless, but ~20× the cost of `gpt-oss-120b`          | 2026-07-30 |
+| `moonshotai/kimi-k3`        | TensorX  | —              | 2/3         | ✅ 0 bad                 | ✅ 7/7          | As above                                               | 2026-07-30 |
+| `qwen3.6-35b-a3b`           | Scaleway | €0.25 – €1.50  | 1/3         | ✅                       | ✅ 3/3          | Avoid — silent on 2/3 prompts                          | 2026-07-31 |
+| `openai/gpt-oss-120b`       | Nebius   | $0.15 – $0.60  | 3/3         | ❌ misroutes final chunk | ❌ unterminated | Broken on Nebius only — same model is fine on Scaleway | 2026-07-30 |
+| `moonshotai/Kimi-K2.6`      | Nebius   | —              | 1/3         | ✅                       | —               | Avoid — calls swallowed by the parser                  | 2026-07-30 |
 
 Prices are provider list prices gathered from public pricing aggregators, not measured — confirm
 against your provider's own page before relying on them.
 
-Kimi-K3 is the most correct model tested and the only one to attempt every prompt, but at
-$3/$15 per 1M it is priced for a different workload. `Kimi-K2.7-Code` is the pragmatic default:
-same clean tool-calling behaviour, roughly a quarter the price. `gpt-oss-120b` is another ~6×
-cheaper again and would be the obvious default if the shim described below existed.
+The same model can behave differently on different providers — `gpt-oss-120b` is broken on Nebius
+and clean on Scaleway. **Record the provider alongside the model; a model row without one is not
+reproducible.**
+
+Note that "emits calls" counts prompts that produced at least one tool call, not how many. Models
+differ in style: `qwen3.5-397b-a17b` issued 3–4 parallel calls per turn where `gpt-oss-120b` issued
+one. In a 50-step agent loop, one-call-then-observe is legitimate rather than weaker, so don't read
+the count as a quality ranking.
 
 ### Known issue: vLLM misroutes the final argument chunk
 
@@ -89,8 +112,11 @@ ignoring the claimed index — synthesizing a missing `id` alone converts a visi
 silent no-op.
 
 Models that emit one complete tool call per chunk (Kimi-K3 on every provider tested) cannot hit
-this bug at all — which is why the correctness ranking and the cost ranking point in opposite
-directions. The cheapest model is the one that needs the workaround.
+this bug at all.
+
+**This is a deployment bug, not a model bug.** `gpt-oss-120b` misroutes on Nebius but streams
+cleanly on Scaleway — 0 violations across 135 deltas. Before writing a client-side workaround,
+check whether another provider serving the same model is unaffected.
 
 ### Known issue: reasoning models and the connection test
 
