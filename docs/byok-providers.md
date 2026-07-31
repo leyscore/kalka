@@ -52,13 +52,25 @@ tool calls that the AI SDK can parse. Two independent things go wrong:
 - **Argument validity** — arguments are streamed in fragments and concatenated. If the fragments
   are misrouted, the result isn't valid JSON and the tool silently never fires.
 
-| Model                       | Provider | Emits calls | `id` correct             | Args valid      | Verdict                                       | Tested     |
-| --------------------------- | -------- | ----------- | ------------------------ | --------------- | --------------------------------------------- | ---------- |
-| `moonshotai/Kimi-K3`        | Nebius   | 3/3         | ✅ 0 bad                 | ✅ 8/8          | **Recommended** — one complete call per chunk | 2026-07-30 |
-| `moonshotai/kimi-k3`        | TensorX  | 2/3         | ✅ 0 bad                 | ✅ 7/7          | Good, but desktop-only (CORS)                 | 2026-07-30 |
-| `moonshotai/Kimi-K2.7-Code` | Nebius   | 3/3         | ✅ 0/114 bad             | ✅ 4/4          | Good                                          | 2026-07-30 |
-| `openai/gpt-oss-120b`       | Nebius   | 3/3         | ❌ misroutes final chunk | ❌ unterminated | Broken — see below                            | 2026-07-30 |
-| `moonshotai/Kimi-K2.6`      | Nebius   | 1/3         | ✅                       | —               | Avoid — calls swallowed by the parser         | 2026-07-30 |
+Cost matters as much as correctness here. The chat panel is an agent loop that runs up to
+`MAX_AGENT_STEPS` (50) and resends the tool schemas on every step, so it is input-token heavy and
+a high per-token price compounds fast.
+
+| Model                       | Provider | $/1M in–out  | Emits calls | `id` correct             | Args valid      | Verdict                                       | Tested     |
+| --------------------------- | -------- | ------------ | ----------- | ------------------------ | --------------- | --------------------------------------------- | ---------- |
+| `openai/gpt-oss-120b`       | Nebius   | 0.15 – 0.60  | 3/3         | ❌ misroutes final chunk | ❌ unterminated | Cheapest by far, but needs a client-side shim | 2026-07-30 |
+| `moonshotai/Kimi-K2.7-Code` | Nebius   | 0.95 – 4.00  | 3/3         | ✅ 0/114 bad             | ✅ 4/4          | **Recommended** — works today, no shim needed | 2026-07-30 |
+| `moonshotai/Kimi-K3`        | Nebius   | 3.00 – 15.00 | 3/3         | ✅ 0 bad                 | ✅ 8/8          | Flawless, but ~25× the cost of `gpt-oss-120b` | 2026-07-30 |
+| `moonshotai/kimi-k3`        | TensorX  | —            | 2/3         | ✅ 0 bad                 | ✅ 7/7          | As above, and desktop-only (CORS)             | 2026-07-30 |
+| `moonshotai/Kimi-K2.6`      | Nebius   | —            | 1/3         | ✅                       | —               | Avoid — calls swallowed by the parser         | 2026-07-30 |
+
+Prices are provider list prices gathered from public pricing aggregators, not measured — confirm
+against your provider's own page before relying on them.
+
+Kimi-K3 is the most correct model tested and the only one to attempt every prompt, but at
+$3/$15 per 1M it is priced for a different workload. `Kimi-K2.7-Code` is the pragmatic default:
+same clean tool-calling behaviour, roughly a quarter the price. `gpt-oss-120b` is another ~6×
+cheaper again and would be the obvious default if the shim described below existed.
 
 ### Known issue: vLLM misroutes the final argument chunk
 
@@ -77,7 +89,8 @@ ignoring the claimed index — synthesizing a missing `id` alone converts a visi
 silent no-op.
 
 Models that emit one complete tool call per chunk (Kimi-K3 on every provider tested) cannot hit
-this bug at all.
+this bug at all — which is why the correctness ranking and the cost ranking point in opposite
+directions. The cheapest model is the one that needs the workaround.
 
 ### Known issue: reasoning models and the connection test
 
@@ -138,6 +151,10 @@ on where the JSON happens to land on a chunk boundary.
 
 Include the date, the exact model ID and base URL, and a one-line verdict. If something is broken,
 say what the failure looks like from the user's side — that's what makes the row actionable.
+
+Include the provider's list price too. A model that streams flawlessly but costs 25× the
+alternative isn't the right default for an agent loop, and a table without prices makes that easy
+to miss.
 
 ### A note on regional catalogs
 
