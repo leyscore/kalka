@@ -71,17 +71,55 @@ Cost matters as much as correctness here. The chat panel is an agent loop that r
 `MAX_AGENT_STEPS` (50) and resends the tool schemas on every step, so it is input-token heavy and
 a high per-token price compounds fast.
 
-| Model                       | Provider | /1M in–out     | Emits calls | `id` correct             | Args valid      | Verdict                                                | Tested     |
-| --------------------------- | -------- | -------------- | ----------- | ------------------------ | --------------- | ------------------------------------------------------ | ---------- |
-| `gpt-oss-120b`              | Scaleway | €0.15 – €0.60  | 3/3         | ✅ 0/135 bad             | ✅ 3/3          | **Recommended** — cheapest, clean, no shim             | 2026-07-31 |
-| `gemma-4-26b-a4b-it`        | Scaleway | €0.25 – €0.50  | 3/3         | ✅ 0/46 bad              | ✅ 5/5          | Cheapest output; good fallback                         | 2026-07-31 |
-| `qwen3.5-397b-a17b`         | Scaleway | €0.60 – €3.60  | 3/3         | ✅ 0/114 bad             | ✅ 10/10        | Most calls per turn; streams args incrementally        | 2026-07-31 |
-| `moonshotai/Kimi-K2.7-Code` | Nebius   | $0.95 – $4.00  | 3/3         | ✅ 0/114 bad             | ✅ 4/4          | Clean, no shim, but pricier than the Scaleway set      | 2026-07-30 |
-| `moonshotai/Kimi-K3`        | Nebius   | $3.00 – $15.00 | 3/3         | ✅ 0 bad                 | ✅ 8/8          | Flawless, but ~20× the cost of `gpt-oss-120b`          | 2026-07-30 |
-| `moonshotai/kimi-k3`        | TensorX  | —              | 2/3         | ✅ 0 bad                 | ✅ 7/7          | As above                                               | 2026-07-30 |
-| `qwen3.6-35b-a3b`           | Scaleway | €0.25 – €1.50  | 1/3         | ✅                       | ✅ 3/3          | Avoid — silent on 2/3 prompts                          | 2026-07-31 |
-| `openai/gpt-oss-120b`       | Nebius   | $0.15 – $0.60  | 3/3         | ❌ misroutes final chunk | ❌ unterminated | Broken on Nebius only — same model is fine on Scaleway | 2026-07-30 |
-| `moonshotai/Kimi-K2.6`      | Nebius   | —              | 1/3         | ✅                       | —               | Avoid — calls swallowed by the parser                  | 2026-07-30 |
+Capability columns are **measured**, not taken from a spec sheet — see
+[Auto-lookup via models.dev](#auto-lookup-via-modelsdev) for why that distinction matters.
+`Tools` counts prompts that produced at least one tool call, over `id`-correctness and
+argument-validity totals. `Vision` is verified by sending a solid-colour image and asking the
+model to name it.
+
+| Model                                 | Provider | /1M in–out     | Ctx  | Tools                    | Vision | Verdict                                                       | Tested     |
+| ------------------------------------- | -------- | -------------- | ---- | ------------------------ | ------ | ------------------------------------------------------------- | ---------- |
+| `gemma-4-26b-a4b-it`                  | Scaleway | €0.25 – €0.50  | 256k | ✅ 3/3, 0/46, 5/5        | ✅     | **Recommended** — only model clean on cost, tools, and vision | 2026-07-31 |
+| `gpt-oss-120b`                        | Scaleway | €0.15 – €0.60  | 128k | ✅ 3/3, 0/135, 3/3       | ❌     | Cheapest input, but text-only                                 | 2026-07-31 |
+| `mistral-small-3.2-24b-instruct-2506` | Scaleway | €0.15 – €0.35  | 128k | ⚠️ 2/3, 0/219, 5/5       | ✅     | Cheapest output and sees, but silent on 1/3 prompts           | 2026-07-31 |
+| `qwen3.5-397b-a17b`                   | Scaleway | €0.60 – €3.60  | 256k | ✅ 3/3, 0/114, 10/10     | ✅     | Most calls per turn; streams args incrementally               | 2026-07-31 |
+| `mistral-medium-3.5-128b`             | Scaleway | €1.50 – €7.50  | 256k | not tested               | ✅     | Vision confirmed; tool calling unverified                     | 2026-07-31 |
+| `moonshotai/Kimi-K2.7-Code`           | Nebius   | $0.95 – $4.00  | 262k | ✅ 3/3, 0/114, 4/4       | ❌     | Clean, but pricier than the Scaleway set                      | 2026-07-30 |
+| `moonshotai/Kimi-K3`                  | Nebius   | $3.00 – $15.00 | 1M   | ✅ 3/3, 0 bad, 8/8       | ❌     | Flawless, but ~20× the cost of `gpt-oss-120b`                 | 2026-07-30 |
+| `moonshotai/kimi-k3`                  | TensorX  | —              | —    | ✅ 2/3, 0 bad, 7/7       | —      | As above                                                      | 2026-07-30 |
+| `glm-5.2`                             | Scaleway | €1.80 – €5.50  | 256k | not tested               | ❌     | API rejects images: "not a multimodal model"                  | 2026-07-31 |
+| `qwen3.6-35b-a3b`                     | Scaleway | €0.25 – €1.50  | 128k | ❌ 1/3, 0 bad, 3/3       | ✅     | Avoid — silent on 2/3 prompts                                 | 2026-07-31 |
+| `openai/gpt-oss-120b`                 | Nebius   | $0.15 – $0.60  | 128k | ❌ misroutes final chunk | ❌     | Broken on Nebius only — same model is fine on Scaleway        | 2026-07-30 |
+| `moonshotai/Kimi-K2.6`                | Nebius   | —              | —    | ❌ 1/3                   | —      | Avoid — calls swallowed by the parser                         | 2026-07-30 |
+
+### Auto-lookup via models.dev
+
+[models.dev](https://models.dev) publishes a machine-readable catalog at
+<https://models.dev/api.json> (~3 MB, 176 providers, including `scaleway`, `nebius`, `groq` and
+`openrouter`). Each model carries `tool_call`, `attachment` (vision), `reasoning`,
+`cost.input`/`cost.output`, `limit.context` and `modalities`.
+
+```bash
+curl -s https://models.dev/api.json \
+  | jq '.scaleway.models["gemma-4-26b-a4b-it"] | {tool_call, attachment, reasoning, cost, limit}'
+```
+
+**Use it to prefill a row, not to fill in the measured columns.** Checked against the models above,
+it was wrong on two of seven:
+
+| Model                              | models.dev   | Measured                                           |
+| ---------------------------------- | ------------ | -------------------------------------------------- |
+| `scaleway/gpt-oss-120b`            | vision true  | Refuses: "I don't have the ability to view images" |
+| `scaleway/mistral-small-3.2-24b-…` | vision false | Correctly names the colour in an image             |
+
+It also lists `nebius/openai/gpt-oss-120b` as vision `false` while marking the Scaleway copy
+`true` — the same model, contradicting itself — and reports `tool_call: true` for every model
+here, including `qwen3.6-35b-a3b` (silent on 2/3 prompts) and Nebius's `gpt-oss-120b` (broken by
+the deployment bug below).
+
+That's the general shape of it: models.dev describes a model's **nominal** capabilities, while
+what breaks in practice is a property of the **deployment**. Price and context window are safe to
+copy from it; tool-calling and vision are not.
 
 Prices are provider list prices gathered from public pricing aggregators, not measured — confirm
 against your provider's own page before relying on them.
