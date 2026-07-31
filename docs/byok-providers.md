@@ -77,20 +77,24 @@ Capability columns are **measured**, not taken from a spec sheet — see
 argument-validity totals. `Vision` is verified by sending a solid-colour image and asking the
 model to name it.
 
-| Model                                 | Provider | /1M in–out     | Ctx  | Tools                    | Vision | Verdict                                                       | Tested     |
-| ------------------------------------- | -------- | -------------- | ---- | ------------------------ | ------ | ------------------------------------------------------------- | ---------- |
-| `gemma-4-26b-a4b-it`                  | Scaleway | €0.25 – €0.50  | 256k | ✅ 3/3, 0/46, 5/5        | ✅     | **Recommended** — only model clean on cost, tools, and vision | 2026-07-31 |
-| `gpt-oss-120b`                        | Scaleway | €0.15 – €0.60  | 128k | ✅ 3/3, 0/135, 3/3       | ❌     | Cheapest input, but text-only                                 | 2026-07-31 |
-| `mistral-small-3.2-24b-instruct-2506` | Scaleway | €0.15 – €0.35  | 128k | ⚠️ 2/3, 0/219, 5/5       | ✅     | Cheapest output and sees, but silent on 1/3 prompts           | 2026-07-31 |
-| `qwen3.5-397b-a17b`                   | Scaleway | €0.60 – €3.60  | 256k | ✅ 3/3, 0/114, 10/10     | ✅     | Most calls per turn; streams args incrementally               | 2026-07-31 |
-| `mistral-medium-3.5-128b`             | Scaleway | €1.50 – €7.50  | 256k | not tested               | ✅     | Vision confirmed; tool calling unverified                     | 2026-07-31 |
-| `moonshotai/Kimi-K2.7-Code`           | Nebius   | $0.95 – $4.00  | 262k | ✅ 3/3, 0/114, 4/4       | ❌     | Clean, but pricier than the Scaleway set                      | 2026-07-30 |
-| `moonshotai/Kimi-K3`                  | Nebius   | $3.00 – $15.00 | 1M   | ✅ 3/3, 0 bad, 8/8       | ❌     | Flawless, but ~20× the cost of `gpt-oss-120b`                 | 2026-07-30 |
-| `moonshotai/kimi-k3`                  | TensorX  | —              | —    | ✅ 2/3, 0 bad, 7/7       | —      | As above                                                      | 2026-07-30 |
-| `glm-5.2`                             | Scaleway | €1.80 – €5.50  | 256k | not tested               | ❌     | API rejects images: "not a multimodal model"                  | 2026-07-31 |
-| `qwen3.6-35b-a3b`                     | Scaleway | €0.25 – €1.50  | 128k | ❌ 1/3, 0 bad, 3/3       | ✅     | Avoid — silent on 2/3 prompts                                 | 2026-07-31 |
-| `openai/gpt-oss-120b`                 | Nebius   | $0.15 – $0.60  | 128k | ❌ misroutes final chunk | ❌     | Broken on Nebius only — same model is fine on Scaleway        | 2026-07-30 |
-| `moonshotai/Kimi-K2.6`                | Nebius   | —              | —    | ❌ 1/3                   | —      | Avoid — calls swallowed by the parser                         | 2026-07-30 |
+**Record the output-token budget with every result** — it changes the outcome. Scaleway rows below
+were measured at `max_tokens: 16384`; Nebius and TensorX rows at 2000, so their "emits calls"
+figures are not directly comparable and any failure there may be starvation rather than incapacity.
+
+| Model                                 | Provider | /1M in–out     | Ctx  | Tools @16k               | Vision | Verdict                                                                                               | Tested     |
+| ------------------------------------- | -------- | -------------- | ---- | ------------------------ | ------ | ----------------------------------------------------------------------------------------------------- | ---------- |
+| `mistral-small-3.2-24b-instruct-2506` | Scaleway | €0.15 – €0.35  | 128k | ✅ 3/3, 0/238, 6/6       | ✅     | **Recommended** — cheapest with vision, fully clean                                                   | 2026-07-31 |
+| `gemma-4-26b-a4b-it`                  | Scaleway | €0.25 – €0.50  | 256k | ✅ 3/3, 0/77, 8/8        | ✅     | Same but 2× the context — pick this for large documents                                               | 2026-07-31 |
+| `gpt-oss-120b`                        | Scaleway | €0.15 – €0.60  | 128k | ✅ 3/3, 0/118, 3/3       | ❌     | Cheap and clean, but text-only                                                                        | 2026-07-31 |
+| `qwen3.6-35b-a3b`                     | Scaleway | €0.25 – €1.50  | 128k | ✅ 3/3, 0/106, 9/9       | ✅     | Clean; heavy reasoner, needs the larger budget                                                        | 2026-07-31 |
+| `qwen3.5-397b-a17b`                   | Scaleway | €0.60 – €3.60  | 256k | ✅ 3/3, 0/92, 10/10      | ✅     | Most calls per turn; strongest but priciest here                                                      | 2026-07-31 |
+| `mistral-medium-3.5-128b`             | Scaleway | €1.50 – €7.50  | 256k | not tested               | ✅     | Vision confirmed; tool calling unverified                                                             | 2026-07-31 |
+| `glm-5.2`                             | Scaleway | €1.80 – €5.50  | 256k | not tested               | ❌     | API rejects images: "not a multimodal model"                                                          | 2026-07-31 |
+| `moonshotai/Kimi-K2.7-Code`           | Nebius   | $0.95 – $4.00  | 262k | ✅ 3/3, 0/114, 4/4 @2k   | ❌     | Clean, but pricier than the Scaleway set                                                              | 2026-07-30 |
+| `moonshotai/Kimi-K3`                  | Nebius   | $3.00 – $15.00 | 1M   | ✅ 3/3, 0 bad, 8/8 @2k   | ❌     | Flawless, but ~20× the cost of `gpt-oss-120b`                                                         | 2026-07-30 |
+| `moonshotai/kimi-k3`                  | TensorX  | —              | —    | ✅ 2/3, 0 bad, 7/7 @2k   | —      | As above                                                                                              | 2026-07-30 |
+| `openai/gpt-oss-120b`                 | Nebius   | $0.15 – $0.60  | 128k | ❌ misroutes final chunk | ❌     | Broken on Nebius only — same model is fine on Scaleway                                                | 2026-07-30 |
+| `moonshotai/Kimi-K2.6`                | Nebius   | —              | —    | ⚠️ 1/3 @2k               | —      | Finished on `stop`, not `length` — likely a real failure, but re-test at 16k before trusting this row | 2026-07-30 |
 
 ### Auto-lookup via models.dev
 
@@ -156,6 +160,37 @@ this bug at all.
 cleanly on Scaleway — 0 violations across 135 deltas. Before writing a client-side workaround,
 check whether another provider serving the same model is unaffected.
 
+### Known issue: reasoning models starve on a small output budget
+
+A reasoning model can spend its **entire** output budget thinking and never emit a tool call. The
+result is `finish_reason: length` with zero tool calls — no error, no partial output. From the
+outside it is indistinguishable from a model that simply can't call tools.
+
+Measured on `qwen3.6-35b-a3b`, same prompts, only `max_tokens` changed:
+
+| `max_tokens` | Result                                          |
+| ------------ | ----------------------------------------------- |
+| 2000         | 1/3 prompts — the rest hit `length` mid-thought |
+| 16384        | 3/3 prompts, 0 bad ids, 9/9 valid args          |
+
+One prompt needed 10,417 characters of reasoning before its first tool call. **This page originally
+scored two models as broken purely because the probe used 2000 tokens.** If a model produces no tool
+calls, check `finish_reason` before concluding anything — `length` means starved, `stop` means it
+genuinely declined.
+
+`reasoning_effort` is the other lever, though supported values are provider-specific:
+
+| Setting                                              | Reasoning | Tool calls |
+| ---------------------------------------------------- | --------- | ---------- |
+| default                                              | 6,583 ch  | ❌ 0       |
+| `"reasoning_effort": "none"`                         | 0 ch      | ✅ 3       |
+| `"reasoning_effort": "low"`                          | 5,088 ch  | ✅ 3       |
+| `"chat_template_kwargs": {"enable_thinking": false}` | 5,133 ch  | ✅ 3       |
+
+Only `"none"` actually eliminated reasoning on Scaleway; `"low"` had no measurable effect.
+OpenPencil cannot send this today — see
+[#454](https://github.com/open-pencil/open-pencil/issues/454).
+
 ### Known issue: reasoning models and the connection test
 
 Some models (e.g. Kimi-K2.6) spend output tokens on `reasoning` before `content`. The connection
@@ -219,6 +254,10 @@ say what the failure looks like from the user's side — that's what makes the r
 Include the provider's list price too. A model that streams flawlessly but costs 25× the
 alternative isn't the right default for an agent loop, and a table without prices makes that easy
 to miss.
+
+**And record the `max_tokens` you used.** A reasoning model starved of output budget produces no
+tool calls and looks broken. Two models on this page were wrongly marked "avoid" for exactly that
+reason. Use at least 16384, and check `finish_reason` before recording a failure.
 
 ### A note on regional catalogs
 
