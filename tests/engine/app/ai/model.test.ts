@@ -31,6 +31,38 @@ describe('resolveLanguageModelID', () => {
 })
 
 describe('model provider registry', () => {
+  test('offers MiniMax-M3 as the default MiniMax model', () => {
+    const provider = AI_PROVIDERS.find(({ id }) => id === 'minimax')
+    expect(provider?.defaultModel).toBe('MiniMax-M3')
+    expect(provider?.models[0]).toMatchObject({ id: 'MiniMax-M3' })
+  })
+
+  test('sends MiniMax-M3 through the OpenAI-compatible chat endpoint', async () => {
+    let requestURL = ''
+    let requestBody = ''
+    const fetchSpy: typeof fetch = async (input, init) => {
+      requestURL = String(input)
+      requestBody = String(init?.body)
+      throw new Error('stop')
+    }
+    const config: ModelConfig = {
+      providerID: 'minimax',
+      apiKey: 'test-key',
+      modelID: 'MiniMax-M3',
+      customModelID: '',
+      customBaseURL: '',
+      customAPIType: 'completions'
+    }
+
+    const model = modelProviderAdapter('minimax').create(config, { fetch: fetchSpy })
+    await model
+      .doGenerate({ prompt: [{ role: 'user', content: [{ type: 'text', text: 'hi' }] }] })
+      .catch(() => undefined)
+
+    expect(requestURL).toBe('https://api.minimax.io/v1/chat/completions')
+    expect(requestBody).toContain('"model":"MiniMax-M3"')
+  })
+
   test('registers every direct provider without handling ACP agents as models', () => {
     for (const provider of AI_PROVIDERS) {
       expect(modelProviderAdapter(provider.id).create).toBeFunction()

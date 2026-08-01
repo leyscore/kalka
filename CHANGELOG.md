@@ -13,6 +13,7 @@
 
 ### Added
 
+- Use MiniMax M3 as the default MiniMax model for AI design workflows. (#431)
 - Export selections, pages and documents as editable PowerPoint (`.pptx`) files from the File menu, CLI and SDK: text, rectangles, ellipses and lines stay native editable elements, while gradients, masks, blends, vectors and icons fall back to embedded images.
 - Figma-style Assets panel browsing with component thumbnails, grid/list views, page grouping, context actions, and drag-to-canvas insertion.
 - Import HTML, CSS, Tailwind, and JSX as editable documents from the app, CLI, and SDK, and export standalone browser-ready HTML with compiled CSS and optional external assets.
