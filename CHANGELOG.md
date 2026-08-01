@@ -24,6 +24,7 @@
 - Use Figma-style number-key opacity shortcuts: `1`–`9` set 10%–90%, `0` sets 100%, and two-digit sequences set exact values.
 - Drag image files directly into the desktop app and paste Figma layers with their remote image fills.
 - Drop SVG files onto the canvas to import them as editable vector layers alongside raster images. (#392)
+- Import compatible SVG fills as a single editable multi-color vector. (#394)
 - Drag with the Text tool to create a fixed-size text box, or click to create auto-width text.
 - Target a specific open document and page from live CLI and MCP automation, including sessions with multiple documents.
 - Test OpenAI-compatible provider connections from AI settings with clearer setup errors.
