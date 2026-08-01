@@ -154,6 +154,10 @@ function combinedTransform(parent: string | null, element: Element): string | nu
   return current ?? parent
 }
 
+function normalizeSVGPaint(value: string | null): string | null {
+  return value?.trim().toLowerCase() === 'none' ? null : value
+}
+
 function appendShapePath(
   tagName: string,
   element: Element,
@@ -167,8 +171,8 @@ function appendShapePath(
   const strokeWidth = Number.parseFloat(presentation.strokeWidth)
   result.push({
     d: pathData,
-    fill: presentation.fill === 'none' ? null : presentation.fill,
-    stroke: presentation.stroke === 'none' ? null : presentation.stroke,
+    fill: normalizeSVGPaint(presentation.fill),
+    stroke: normalizeSVGPaint(presentation.stroke),
     strokeWidth: Number.isFinite(strokeWidth) ? strokeWidth : 1,
     strokeCap: presentation.strokeCap,
     strokeJoin: presentation.strokeJoin,
@@ -285,8 +289,8 @@ export function scalePathInfos(
         : svgpath(path.d).scale(scaleX, scaleY).round(2).toString()
     return {
       vectorNetwork: parseSVGPath(scaledD, path.fillRule),
-      fill: path.fill,
-      stroke: path.stroke,
+      fill: normalizeSVGPaint(path.fill),
+      stroke: normalizeSVGPaint(path.stroke),
       strokeWidth: path.strokeWidth * Math.min(scaleX, scaleY),
       strokeCap: path.strokeCap,
       strokeJoin: path.strokeJoin

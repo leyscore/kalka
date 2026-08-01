@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- Keep `fill="none"` and `stroke="none"` SVG paths transparent when rendering inline artwork. (#446)
 - Match regional browser languages to supported locales without selecting a secondary language. (#417)
 - Save auto-layout frames that stretch their children to `.fig` without failing. (#427)
 - Preserve multiple colors in imported vector artwork such as multi-color logos. (#386)
