@@ -25,6 +25,9 @@ export const menuMessageDefaults = {
   themeAuto: 'Auto',
   profiler: 'Performance profiler',
   language: 'Language',
+  settings: 'Settings…',
+  rulers: 'Rulers',
+  multiplayerCursors: 'Multiplayer cursors',
   checkUpdates: 'Check for updates…',
 
   moveToPage: 'Move to page',
@@ -45,6 +48,7 @@ export const menuMessageDefaults = {
 
   pasteHere: 'Paste here',
   pasteToReplace: 'Paste to replace',
+  renameSelection: 'Rename selection…',
   copyPasteAs: 'Copy/Paste as',
   copyAsText: 'Copy as text',
   copyAsSVG: 'Copy as SVG',

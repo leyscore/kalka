@@ -53,5 +53,9 @@
   "arrangeAlignRight": "Alinear a la derecha",
   "arrangeAlignTop": "Alinear arriba",
   "arrangeAlignMiddle": "Alinear centro verticalmente",
-  "arrangeAlignBottom": "Alinear abajo"
+  "arrangeAlignBottom": "Alinear abajo",
+  "multiplayerCursors": "Cursores multijugador",
+  "renameSelection": "Renombrar selección…",
+  "rulers": "Reglas",
+  "settings": "Ajustes…"
 }
