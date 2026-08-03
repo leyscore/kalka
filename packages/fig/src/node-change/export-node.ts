@@ -362,6 +362,9 @@ const RAW_FIELDS_OVERRIDE_BLOCKLIST = new Set([
   'derivedSymbolData',
   'derivedSymbolDataLayoutVersion',
   'sourceLibraryKey',
+  // Normalized constraints are authoritative, including when an edit clears them.
+  'minSize',
+  'maxSize',
   // Variable consumption maps: explicit serialization always sets these when
   // bindings exist, and our VARIABLE_BINDING_FIELDS mapping may produce different
   // kiwi field names than the original raw data for library variable references.
