@@ -2,77 +2,86 @@
 
 ## Unreleased
 
-### Fixed
+### Breaking changes
 
-- Match Figma Plugin API vector path and network editing, including bounds, winding rules, region fills, validation, and handle mirroring. (#444)
-- Let AI and MCP tools create arbitrary vectors from SVG path data without leaving blank layers after invalid input. (#440)
-- Show stroke colors and weights in AI visual descriptions. (#447)
-- Stop warning AI agents that supported inline SVG attributes were ignored. (#445)
-- Help AI agents discover every shape supported by `create_shape`. (#448)
-- Keep `fill="none"` and `stroke="none"` SVG paths transparent when rendering inline artwork. (#446)
-- Match regional browser languages to supported locales without selecting a secondary language. (#417)
-- Save auto-layout frames that stretch their children to `.fig` without failing. (#427)
-- Preserve multiple colors in imported vector artwork such as multi-color logos. (#386)
-- Edit vectors in opened documents at the correct position, with live fills and undo/redo. (#390)
-- Reduce large `.fig` page-switch work to the active page, reuse fixed-point propagation indexes, and coalesce Layers tree rebuilds. (#420)
-- Center text glyphs within explicit line-height leading in CanvasKit paragraph rendering.
+- **Core SDK:** Import scene graph types, geometry, coordinate, matrix, snapping, undo, and path helpers from `@open-pencil/scene-graph`; import `.pen` parsing from `@open-pencil/pen`; and import synchronous Kiwi decompression from `@open-pencil/kiwi` instead of the `@open-pencil/core` compatibility barrel.
+- **Vue SDK:** Replace the removed color-picker model helpers with `useColorModel()`; replace the deprecated `FillPickerRoot` and `useFillPicker()` APIs with `FillRoot`, `FillSwatch`, `useFill()`, and a consumer-owned popover; rename `FontPickerUi` to `FontPickerUI`; and remove the exported `testId` prop helper types in favor of semantic component anatomy.
 
 ### Added
 
-- Expose Figma-style mask, visibility, lock, flip, component, z-order, distribution, selection, ruler, multiplayer cursor, and Settings actions from the shared browser and desktop menus, with Move to page available in the browser menu.
-- Use MiniMax M3 as the default MiniMax model for AI design workflows. (#431)
-- Export selections, pages and documents as editable PowerPoint (`.pptx`) files from the File menu, CLI and SDK: text, rectangles, ellipses and lines stay native editable elements, while gradients, masks, blends, vectors and icons fall back to embedded images.
-- Figma-style Assets panel browsing with component thumbnails, grid/list views, page grouping, context actions, and drag-to-canvas insertion.
+- Export selections, pages, and documents as editable PowerPoint (`.pptx`) files from the File menu, CLI, and SDK. Text, rectangles, ellipses, and lines remain editable; visually complex layers are embedded as images.
 - Import HTML, CSS, Tailwind, and JSX as editable documents from the app, CLI, and SDK, and export standalone browser-ready HTML with compiled CSS and optional external assets.
-- Author richer Design JSX with components, instances, variables, gradients, structured fills, shadows, and blur effects.
-- Manage pages with rename, delete, and drag-to-reorder actions in the Pages panel.
-- Inspect and edit constraints, stroke caps and joins, corner smoothing, shared styles, component properties, blend modes, masks, advanced typography, and per-node export settings from the Design panel.
-- Find overlapping layers and overflowing children from the CLI, AI tools, and MCP.
+- Drag image files into the desktop app and paste Figma layers with their remote image fills.
+- Import dropped SVG files as editable vector layers, preserving compatible multi-color fills and transparent paints. (#386, #392, #394, #446)
+- Convert image layers into editable vectors with Recraft or fal.ai from the canvas context menu. (#322)
+- Browse document components as thumbnails or a list in the Assets panel, group them by page, and drag instances directly onto the canvas. (#424)
+- Create centered frames from Figma-style device and asset presets, or resize selected frames to a preset while preserving their names. (#418)
+- Manage pages by renaming, deleting, and dragging to reorder them in the Pages panel.
+- Create text by dragging a fixed-size text box or clicking for auto-width text.
+- Create and edit layout grids for frames and components, including columns, rows, counts, gutters, margins, visibility, and grid size.
+- Inspect and edit constraints, stroke caps and joins, corner smoothing, shared styles, component properties, blend modes, masks, advanced typography, text resizing, and per-node export settings from the Design panel.
+- Edit solid fill colors by entering hex values directly in the Design panel.
 - Use Figma-style number-key opacity shortcuts: `1`–`9` set 10%–90%, `0` sets 100%, and two-digit sequences set exact values.
-- Drag image files directly into the desktop app and paste Figma layers with their remote image fills.
-- Drop SVG files onto the canvas to import them as editable vector layers alongside raster images. (#392)
-- Import compatible SVG fills as a single editable multi-color vector. (#394)
-- Drag with the Text tool to create a fixed-size text box, or click to create auto-width text.
+- Access more common design actions from the browser and desktop menus, including visibility, locking, masks, flipping, components, z-order, distribution, selection, rulers, multiplayer cursors, and Settings.
+- Find overlapping layers and overflowing children from the CLI, AI tools, and MCP.
 - Target a specific open document and page from live CLI and MCP automation, including sessions with multiple documents.
-- Test OpenAI-compatible provider connections from AI settings with clearer setup errors.
-- Manage AI, agent, and media credentials from unified Settings, using the system credential store on desktop and encrypted browser storage by default with a session-only option.
-- Assign separate Design, Review, Fast, and Vision models, providers, endpoints, and credentials from AI settings.
-- Connect an S3-compatible storage workspace with local-first saves, background synchronization, and centrally managed credentials.
-- Convert image layers into editable vector layers with Recraft or fal.ai from the canvas context menu. (#322)
-- Build custom property panels with new Vue SDK number fields, bindable values, property sections, responsive property grids, segmented controls, property lists, color models, fill controls, and gradient primitives.
 - Connect local MCP clients through automatically discovered private Unix sockets on macOS and Linux, with localhost TCP fallback. (#338)
-- Create centered frames from current Figma-style device and asset presets, or resize selected frames from the Design panel while preserving their names.
+- Test OpenAI-compatible provider connections from AI settings with clearer setup errors.
+- Configure separate Design, Review, Fast, and Vision models, providers, endpoints, and credentials from AI settings.
+- Manage AI, agent, media, and storage credentials from unified Settings, using the system credential store on desktop and encrypted browser storage by default, with a session-only browser option.
+- Connect an S3-compatible storage workspace with local-first saves and background synchronization.
+- Add Japanese localization and improve menu translations across the existing supported languages. (#367)
+- Author richer Design JSX with components, instances, variables, gradients, structured fills, shadows, blur effects, masks, and inline SVG vectors.
+- Build custom property panels with new Vue SDK number fields, bindable values, property sections, responsive grids, segmented controls, property lists, color models, fill controls, and gradient primitives.
+- Use `useColorModel()` in the Vue SDK for extensible color formats and shared RGB, HSL, HSB, and OkHCL channel behavior.
+- Add dedicated SceneGraph, Pen, Kiwi, Fig, and DOM/CSS packages with documented public entry points for building on OpenPencil.
 
 ### Changed
 
-- Choose Freeform, vertical, horizontal, or grid flow directly from the contextual Layout section, with sizing grouped alongside it and current Layout guide terminology.
-- Redesign the editor chrome and Design panel with denser aligned controls, clearer selection and section states, improved menus and overlays, consistent light/dark theming, and better keyboard and screen-reader behavior.
-- Center full-area empty and setup states consistently across panels, dialogs, and workspaces.
+- Redesign the editor chrome and Design panel with denser, better-aligned controls, clearer selection and section states, improved menus and overlays, consistent light/dark theming, and better keyboard and screen-reader support.
+- Choose Freeform, vertical, horizontal, or grid flow directly from the contextual Layout section, with sizing controls grouped alongside it.
+- Choose Auto width, Auto height, or Fixed size directly from the Layout section for text layers.
 - Scale the Layers panel to documents with thousands of nodes through virtualized rows, faster incremental updates, stable expansion, range selection, and scroll-to-selection.
-- Resolve fonts before text appears, with language-aware CJK and Arabic fallback, character-specific remote subsets, and more reliable rendering as fonts load.
-- Open and save large `.fig` documents substantially faster while preserving original metadata and user edits; corrupted compressed data now reports an error instead of being opened as valid content.
-- Publish SceneGraph, Pen, Kiwi, Fig, DOM/CSS, and Vue functionality through clearer package APIs, with expanded SDK documentation and examples.
+- Open and save large `.fig` documents substantially faster while preserving original metadata and user edits, and switch between large pages with fewer Layers panel stalls. (#420)
+- Resolve fonts before text appears, with language-aware CJK and Arabic fallbacks, character-specific remote subsets, and more reliable rendering as fonts load.
+- Use MiniMax M3 as the default model for MiniMax AI connections. (#431)
+- Center empty and setup states consistently across panels, dialogs, and workspaces.
 
 ### Fixed
 
-- Keep MCP file access inside its configured root even when paths contain symlinks, and harden local authentication token checks. (#338)
-- Keep desktop text visible across the scene and overlay canvases, refresh it after local fonts load, and preserve rendering when a requested italic face is unavailable (#395).
-- Honor node-scoped variable modes in `.fig` files so light and dark component examples keep their intended colors.
-- Preserve nested instance text, visibility, paint, geometry, and clipping across repeated children and component swaps in `.fig` files.
+- Match Figma Plugin API vector path and network editing, including bounds, winding rules, region fills, validation, and handle mirroring. (#444)
+- Let AI and MCP tools create arbitrary vectors from SVG path data, validating input without leaving blank layers behind. (#440)
+- Improve AI design accuracy by exposing every supported shape, including visible stroke colors and weights in visual descriptions, and accepting supported inline SVG attributes without false warnings. (#445, #447, #448)
+- Restore Anthropic AI connections in the web app instead of failing with a browser endpoint error. (#438)
+- Reconnect live CLI and automation sessions automatically after an unexpected bridge disconnection.
+- Keep MCP file access inside its configured root when paths contain symlinks, and strengthen local authentication token checks. (#338)
+- Start globally installed ACP agents correctly on Windows instead of reporting them as unavailable. (#361)
+- Resume pending cloud saves after restarting the app or temporarily losing credentials, without reviving deleted documents or overwriting newer local changes.
+- Handle S3 object listings, pagination, and escaped names more reliably, and explain required CORS setup without modifying bucket rules.
+- Show HTML, CSS, Tailwind, and JSX import errors instead of failing silently.
+- Preserve inline SVG attributes, nested transforms, and explicit icon dimensions when rendering Design JSX artwork.
+- Save auto-layout frames that stretch their children to `.fig` without failing. (#427)
+- Preserve nested instance text, visibility, paint, geometry, clipping, variable modes, and component swaps in `.fig` files.
 - Improve `.fig` import and rendering fidelity for groups, booleans, instances, rotated vectors, complex text fills, auto-sized text, layout grids, page guides, patterns, noise effects, masks, and canvas backgrounds.
 - Preserve pages, components, prototype and library metadata, export settings, unsupported effects, and other unrelated Figma data when editing and resaving `.fig` files.
 - Prevent duplicate generated IDs from corrupting `.fig` round trips.
-- Populate lazy `.fig` pages for file-mode CLI inspection, preserve the whole document when exporting FIG unless a page is explicitly requested, and expose vector paths and variable modes to Plugin API scripts.
+- Preserve the whole document when exporting FIG unless a page is explicitly requested, populate unopened pages for file-mode CLI inspection, and expose vector paths and variable modes to Plugin API scripts.
+- Report corrupted compressed `.fig` data as an error instead of opening it as valid content.
 - Match Figma auto-layout reflow after deleting children, hiding optional instance slots, or syncing component changes.
 - Make group and boolean-operation children scale with their parent during resize.
-- Restore desktop copy, cut, and paste when browser clipboard events are unavailable.
-- Show only the most specific tooltip when property controls contain nested actions.
-- Start globally installed ACP agents correctly on Windows instead of reporting them as unavailable (#361).
+- Edit vectors in opened documents at the correct position, with live fill updates and working undo and redo. (#390)
 - Keep duplicated layers independent instead of sharing mutable fills, strokes, bindings, overrides, or vector data, and remove stale bindings when paints are deleted.
+- Keep desktop text visible across scene and overlay canvases, refresh it after local fonts load, and preserve rendering when an italic face is unavailable. (#395)
+- Vertically center text correctly when an explicit line height adds space above and below its glyphs. (#422)
 - Preserve Hangul IME composition while editing text.
+- Restore desktop copy, cut, and paste when browser clipboard events are unavailable.
+- Finish pasting Figma layers promptly even when remote images are slow or unavailable, and hydrate their image fills when downloads complete.
+- Reuse the existing tab when reopening a file through its desktop path or browser file handle, avoiding duplicate watchers and conflicting saves. (#297)
 - Share public app links from the desktop collaboration panel and send the current document to newly joined collaborators.
+- Show only the most specific tooltip when property controls contain nested actions.
+- Match regional browser languages to supported locales without selecting a lower-priority language. (#417)
+- Improve Simplified Chinese translations and correct localized menu terminology.
 - Resolve published package types correctly for TypeScript consumers and keep file-backed CLI commands working under Node.
-- Reuse the existing tab when reopening a file through its desktop path or browser file handle, avoiding duplicate watchers and conflicting saves (#297).
 
 ### Security
 
