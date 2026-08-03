@@ -2,12 +2,21 @@ import type { SceneGraph, SceneNode, VectorNetwork } from '@open-pencil/scene-gr
 import { copyGeometryPaths, scaleGeometryPaths } from '@open-pencil/scene-graph/copy'
 import { constrainedChildRect } from '@open-pencil/scene-graph/resize'
 
+import { readEffectiveFigmaRawField } from '../source-metadata'
 import { isFieldProtected } from './patches'
 import { buildClonesMap } from './sync'
 import type { OverrideContext } from './types'
 import { overrideCandidates } from './utils'
 
 const MAX_CLONE_CHAIN_DEPTH = 10
+
+interface InstanceScale {
+  basis: SceneNode
+  scaleEntireSubtree: boolean
+  sx: number
+  sy: number
+  useCurrentChildAsSource: boolean
+}
 
 /**
  * Apply SCALE constraint resizing to children of instances whose size
@@ -22,14 +31,13 @@ export function applyConstraintScaling(ctx: OverrideContext): void {
     if (node.type !== 'INSTANCE' || !node.componentId) continue
     const comp = graph.getNode(node.componentId)
     if (!comp || comp.width <= 0 || comp.height <= 0) continue
-    const basis = resolveScaleBasis(graph, node, comp)
-    if (!basis) continue
+    const scale = resolveInstanceScale(graph, node, comp)
+    if (!scale) continue
 
-    positionPinnedAbsoluteChildren(ctx, node, basis)
+    positionPinnedAbsoluteChildren(ctx, node, scale.basis)
     if (node.layoutMode !== 'NONE') continue
 
-    const sx = node.width / basis.width
-    const sy = node.height / basis.height
+    const { sx, sy } = scale
     if (Math.abs(sx - 1) < 0.001 && Math.abs(sy - 1) < 0.001) continue
 
     const figmaId = ctx.nodeIdToGuid.get(node.id)
@@ -42,12 +50,51 @@ export function applyConstraintScaling(ctx: OverrideContext): void {
       sy,
       scaled,
       ctx.geometryOverrideNodes,
-      basis !== comp,
-      strokeScale
+      scale.useCurrentChildAsSource,
+      strokeScale,
+      scale.scaleEntireSubtree
     )
   }
 
   if (scaled.size > 0) propagateScaling(ctx, scaled)
+}
+
+function resolveInstanceScale(
+  graph: SceneGraph,
+  instance: SceneNode,
+  component: SceneNode
+): InstanceScale | null {
+  const targetAspectRatio = resolveTargetAspectRatio(instance)
+  const resolvedBasis = resolveScaleBasis(graph, instance, component)
+  if (!targetAspectRatio && !resolvedBasis) return null
+  const basis = resolvedBasis ?? component
+  const scaleEntireSubtree = targetAspectRatio !== null
+  return {
+    basis,
+    scaleEntireSubtree,
+    sx: instance.width / (targetAspectRatio?.width ?? basis.width),
+    sy: instance.height / (targetAspectRatio?.height ?? basis.height),
+    useCurrentChildAsSource: scaleEntireSubtree || basis !== component
+  }
+}
+
+function resolveTargetAspectRatio(instance: SceneNode): { width: number; height: number } | null {
+  const rawTarget = readEffectiveFigmaRawField(instance, 'targetAspectRatio')
+  if (!rawTarget || typeof rawTarget !== 'object' || !('value' in rawTarget)) return null
+  const value = rawTarget.value
+  if (!value || typeof value !== 'object' || !('x' in value) || !('y' in value)) return null
+  const { x, y } = value
+  if (
+    typeof x !== 'number' ||
+    typeof y !== 'number' ||
+    !Number.isFinite(x) ||
+    !Number.isFinite(y) ||
+    x <= 0 ||
+    y <= 0
+  ) {
+    return null
+  }
+  return { width: x, height: y }
 }
 
 function isCloneOfSource(graph: SceneGraph, child: SceneNode, sourceId: string): boolean {
@@ -230,7 +277,8 @@ function scaleChildren(
   scaled: Set<string>,
   geometryOverrideNodes: Set<string>,
   useCurrentChildAsSource = false,
-  strokeScale?: number
+  strokeScale?: number,
+  scaleEntireSubtree = false
 ): void {
   const len = Math.min(instance.childIds.length, comp.childIds.length)
   for (let i = 0; i < len; i++) {
@@ -238,8 +286,8 @@ function scaleChildren(
     const compChild = graph.getNode(comp.childIds[i])
     if (!child || !compChild) continue
 
-    const hScale = child.horizontalConstraint === 'SCALE'
-    const vScale = child.verticalConstraint === 'SCALE'
+    const hScale = scaleEntireSubtree || child.horizontalConstraint === 'SCALE'
+    const vScale = scaleEntireSubtree || child.verticalConstraint === 'SCALE'
     if (!hScale && !vScale) continue
 
     const updates: Partial<SceneNode> = {}
@@ -272,7 +320,8 @@ function scaleChildren(
         scaled,
         geometryOverrideNodes,
         useCurrentChildAsSource,
-        strokeScale
+        strokeScale,
+        scaleEntireSubtree
       )
     }
   }
