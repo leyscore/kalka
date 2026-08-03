@@ -29,7 +29,7 @@ You can configure multiple reusable models and separately assign models for desi
 | **OpenAI-compatible**    | Any endpoint with OpenAI API format             | Custom base URL + key. Supports Completions and Responses API toggle.                                       |
 | **Anthropic-compatible** | Any endpoint with Anthropic API format          | Custom base URL + key                                                                                       |
 
-No backend, no subscription — your key talks directly to the provider.
+No backend, no subscription — your key talks directly to the provider. Browser requests are subject to each provider's CORS policy, and model deployments vary in how reliably they stream tool calls. See [BYOK provider and model compatibility](./byok-provider-compatibility) for measured results and reproduction steps.
 
 ## What It Can Do
 
