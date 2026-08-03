@@ -50,7 +50,7 @@
 ### Fixed
 
 - Match Figma auto-layout spacing, padding, min/max constraints, scalar variable bindings, CanvasKit-shaped generated text, imported text bounds, and nested instance geometry more closely.
-- Match Figma Plugin API vector path and network editing, including bounds, winding rules, region fills, validation, and handle mirroring. (#444)
+- Match Figma Plugin API vector path and network editing, including bounds, transforms, winding rules, region fills, validation, and handle mirroring. (#444)
 - Let AI and MCP tools create arbitrary vectors from SVG path data, validating input without leaving blank layers behind. (#440)
 - Improve AI design accuracy by exposing every supported shape, including visible stroke colors and weights in visual descriptions, and accepting supported inline SVG attributes without false warnings. (#445, #447, #448)
 - Restore Anthropic AI connections in the web app instead of failing with a browser endpoint error. (#438)

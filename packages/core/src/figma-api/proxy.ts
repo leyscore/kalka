@@ -62,6 +62,7 @@ export class FigmaNodeProxy {
   declare readonly width: number
   declare readonly height: number
   declare rotation: number
+  declare readonly relativeTransform: [[number, number, number], [number, number, number]]
   declare resize: (width: number, height: number) => void
   declare resizeWithoutConstraints: (width: number, height: number) => void
   declare readonly absoluteTransform: [[number, number, number], [number, number, number]]
