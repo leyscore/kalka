@@ -13,6 +13,7 @@ import {
 
 import { applyYogaLayout } from './layout/apply'
 import { usesDetachedDerivedLayout } from './layout/derived'
+import { applyEffectiveGeneratedTextLayout } from './layout/effective-generated-text'
 import { buildGridTree, createGridChildNode } from './layout/grid'
 import { resolveNodeLayoutDirection } from './text/direction'
 export {
@@ -40,19 +41,15 @@ export function computeLayout(graph: SceneGraph, frameId: string): void {
   if (!frame || frame.layoutMode === 'NONE') return
 
   const rootDirection = resolveComputedLayoutDirection(graph, frame)
+  const yogaDirection = rootDirection === 'RTL' ? Direction.RTL : Direction.LTR
   const yogaRoot =
     frame.layoutMode === 'GRID'
       ? buildGridTree(graph, frame, rootDirection)
       : buildYogaTree(graph, frame, rootDirection)
-  yogaRoot.calculateLayout(
-    undefined,
-    undefined,
-    rootDirection === 'RTL' ? Direction.RTL : Direction.LTR
-  )
+  yogaRoot.calculateLayout(undefined, undefined, yogaDirection)
   applyYogaLayout(graph, frame, yogaRoot, computeLayout)
   freeYogaTree(yogaRoot)
 }
-
 function resolveComputedLayoutDirection(
   graph: SceneGraph,
   node: Pick<SceneNode, 'layoutDirection' | 'parentId'>
@@ -63,8 +60,12 @@ function resolveComputedLayoutDirection(
 }
 
 export function computeAllLayouts(graph: SceneGraph, scopeId?: string): void {
+  const rootId = scopeId ?? graph.rootId
   const visited = new Set<string>()
-  computeLayoutsBottomUp(graph, scopeId ?? graph.rootId, visited)
+  computeLayoutsBottomUp(graph, rootId, visited)
+  if (applyEffectiveGeneratedTextLayout(graph, rootId)) {
+    computeLayoutsBottomUp(graph, rootId, new Set())
+  }
 }
 
 function computeLayoutsBottomUp(graph: SceneGraph, nodeId: string, visited: Set<string>): void {

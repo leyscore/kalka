@@ -32,6 +32,7 @@ import { nodeProxyToJSON } from './serialization'
 import { setFirstStrokeAlign, setFirstStrokeWeight, setIndependentStrokeWeight } from './strokes'
 import * as TextProxy from './text'
 import * as Traversal from './traversal'
+import type { FigmaTransform } from './types'
 
 const MIXED = Symbol('mixed')
 
@@ -62,9 +63,10 @@ export class FigmaNodeProxy {
   declare readonly width: number
   declare readonly height: number
   declare rotation: number
+  declare readonly relativeTransform: FigmaTransform
   declare resize: (width: number, height: number) => void
   declare resizeWithoutConstraints: (width: number, height: number) => void
-  declare readonly absoluteTransform: [[number, number, number], [number, number, number]]
+  declare readonly absoluteTransform: FigmaTransform
   declare readonly absoluteBoundingBox: Rect
   declare readonly absoluteRenderBounds: Rect
 
