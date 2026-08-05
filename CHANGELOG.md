@@ -49,6 +49,7 @@
 
 ### Fixed
 
+- Keep the canvas rendering when hiding or showing the UI on wide HiDPI viewports by bounding retained scene backing allocations and falling back to direct rendering when CanvasKit rejects an offscreen surface.
 - Match Figma auto-layout spacing, padding, min/max constraints, scalar variable bindings, CanvasKit-shaped generated text, imported text bounds, and nested instance geometry more closely.
 - Match Figma Plugin API vector path and network editing, including bounds, transforms, winding rules, region fills, validation, and handle mirroring. (#444)
 - Let AI and MCP tools create arbitrary vectors from SVG path data, validating input without leaving blank layers behind. (#440)

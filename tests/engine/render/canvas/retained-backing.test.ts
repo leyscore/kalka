@@ -1,13 +1,13 @@
 import { expect, mock, test } from 'bun:test'
 
-import type { Canvas, Image as CKImage, Surface } from 'canvaskit-wasm'
+import type { Canvas, Image as CKImage, ImageInfo, Surface } from 'canvaskit-wasm'
 
 import type { SceneGraph } from '@open-pencil/scene-graph'
 
 import type { SkiaRenderer } from '#core/canvas/renderer'
 import { renderSceneBacking } from '#core/canvas/renderer/retained-backing'
 
-function createRenderer(surfaceFactory: () => Surface | null) {
+function createRenderer(surfaceFactory: (info: ImageInfo) => Surface | null) {
   const renderer: Partial<SkiaRenderer> = {
     ck: {
       AlphaType: { Premul: 'Premul' },
@@ -86,6 +86,53 @@ test('retained scene backing falls back when CanvasKit cannot create an offscree
   expect(r.surface.makeSurface).toHaveBeenCalled()
   expect(canvas.drawImageRectOptions).not.toHaveBeenCalled()
   expect(r.sceneBacking).toBeNull()
+})
+
+test('retained scene backing bounds wide HiDPI allocations without depending on GPU limits', () => {
+  const requests: ImageInfo[] = []
+  const r = createRenderer((info) => {
+    requests.push(info)
+    return null
+  })
+  r.viewportWidth = 2998
+  r.viewportHeight = 1490
+  r.dpr = 2
+
+  expect(renderSceneBacking(r, createCanvas(), createGraph(), 1)).toBe(false)
+  expect(requests).toHaveLength(1)
+  const request = requests[0]
+  expect(request).toBeDefined()
+  const viewportPixels = Math.ceil(r.viewportWidth * r.dpr) * Math.ceil(r.viewportHeight * r.dpr)
+  expect((request?.width ?? 0) * (request?.height ?? 0)).toBeLessThanOrEqual(
+    Math.max(16_010_000, viewportPixels)
+  )
+  expect(request?.width).toBe(Math.ceil(r.viewportWidth * r.dpr))
+})
+
+test('retained scene backing preserves the full margin when it fits the allocation budget', () => {
+  const requests: ImageInfo[] = []
+  const r = createRenderer((info) => {
+    requests.push(info)
+    return null
+  })
+  r.viewportWidth = 800
+  r.viewportHeight = 600
+  r.dpr = 1
+
+  renderSceneBacking(r, createCanvas(), createGraph(), 1)
+
+  expect(requests[0]).toMatchObject({ width: 2400, height: 1800 })
+})
+
+test('retained scene backing falls back when CanvasKit throws during allocation', () => {
+  const r = createRenderer(() => {
+    throw new TypeError("Cannot set properties of null (setting 'be')")
+  })
+  const canvas = createCanvas()
+
+  expect(() => renderSceneBacking(r, canvas, createGraph(), 1)).not.toThrow()
+  expect(r.sceneBacking).toBeNull()
+  expect(canvas.drawImageRectOptions).not.toHaveBeenCalled()
 })
 
 test('retained scene backing filters cross-zoom previews instead of falling back to live rendering', () => {
