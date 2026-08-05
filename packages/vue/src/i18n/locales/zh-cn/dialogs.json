@@ -90,6 +90,7 @@
   "modelCapabilityVision": "图像输入",
   "modelCapabilityToolsShort": "工具",
   "modelCapabilityVisionShort": "视觉",
+  "selectDesignModel": "选择设计模型",
   "modelNeedsCredential": "需要密钥",
   "modelAgentConnection": "代理",
   "saveModel": "保存模型",

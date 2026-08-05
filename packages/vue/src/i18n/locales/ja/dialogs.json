@@ -90,6 +90,7 @@
   "modelCapabilityVision": "画像入力",
   "modelCapabilityToolsShort": "ツール",
   "modelCapabilityVisionShort": "ビジョン",
+  "selectDesignModel": "デザインモデルを選択",
   "modelNeedsCredential": "キーが必要",
   "modelAgentConnection": "エージェント",
   "saveModel": "モデルを保存",

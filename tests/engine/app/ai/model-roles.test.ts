@@ -1,8 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 
 import {
+  aiModelSettings,
   createAIModelRuntime,
   createModelProfileDraft,
+  designModelProfiles,
   modelSettingsSnapshot,
   removeModelProfile,
   replaceAIModelSettings,
@@ -99,6 +101,33 @@ describe('AI model profiles and role assignments', () => {
     expect(resolveAIModelRole('vision')).toBeNull()
   })
 
+  test('switches the design agent between saved profiles', () => {
+    const switchable = designModelProfiles()
+    expect(switchable.map((profile) => profile.id)).toEqual(['model-design', 'model-fast'])
+
+    setModelRoleAssignment('design', 'model-fast')
+    expect(resolveAIModelRole('design')?.profile.id).toBe('model-fast')
+    expect(resolveAIModelRole('design')?.connection.id).toBe('connection-google')
+
+    setModelRoleAssignment('design', 'model-design')
+    expect(resolveAIModelRole('design')?.profile.id).toBe('model-design')
+  })
+
+  test('refuses to assign a profile that cannot use tools as the design agent', () => {
+    aiModelSettings.value.models.push({
+      id: 'model-textonly',
+      name: 'Text only',
+      connectionId: 'connection-google',
+      modelID: 'text-only',
+      customModelID: '',
+      maxOutputTokens: 4096,
+      capabilities: []
+    })
+
+    setModelRoleAssignment('design', 'model-textonly')
+    expect(resolveAIModelRole('design')?.profile.id).toBe('model-design')
+  })
+
   test('reuses matching provider connections when adding models', () => {
     const draft = createModelProfileDraft()
     draft.name = 'Review model'
@@ -154,6 +183,31 @@ describe('AI model profiles and role assignments', () => {
     expect(settings.assignments.design).toBe('model-fast')
     expect(settings.assignments.vision).toBeNull()
     expect(settings.connections.map((connection) => connection.id)).toEqual(['connection-google'])
+  })
+
+  test('keeps the assigned design profile when no capable fallback exists', () => {
+    const settings = settingsFixture()
+    settings.models = [
+      settings.models[0],
+      {
+        id: 'model-text-only',
+        name: 'Text-only model',
+        connectionId: 'connection-google',
+        modelID: 'text-only',
+        customModelID: '',
+        maxOutputTokens: 4096,
+        capabilities: []
+      }
+    ]
+    replaceAIModelSettings(settings)
+
+    removeModelProfile('model-design')
+
+    expect(modelSettingsSnapshot().models.map((profile) => profile.id)).toEqual([
+      'model-design',
+      'model-text-only'
+    ])
+    expect(resolveAIModelRole('design')?.profile.id).toBe('model-design')
   })
 
   test('includes configured connection credentials in persistence changes', () => {

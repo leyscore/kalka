@@ -90,6 +90,7 @@
   "modelCapabilityVision": "Input immagini",
   "modelCapabilityToolsShort": "Strumenti",
   "modelCapabilityVisionShort": "Visione",
+  "selectDesignModel": "Seleziona modello di progettazione",
   "modelNeedsCredential": "Chiave necessaria",
   "modelAgentConnection": "Agente",
   "saveModel": "Salva modello",
