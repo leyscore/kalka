@@ -73,15 +73,24 @@ function canShapeGeneratedText(graph: SceneGraph, node: SceneNode): boolean {
   )
 }
 
+function stretchesCrossAxis(child: SceneNode, parent: SceneNode): boolean {
+  return (
+    child.layoutAlignSelf === 'STRETCH' ||
+    (child.layoutAlignSelf === 'AUTO' && parent.counterAxisAlign === 'STRETCH')
+  )
+}
+
+function participatesInIntrinsicSize(node: SceneNode): boolean {
+  return node.visible && node.layoutPositioning !== 'ABSOLUTE'
+}
+
 function intrinsicSize(
   graph: SceneGraph,
   node: SceneNode,
   sizes: ReadonlyMap<string, Size>
 ): Size | null {
   if (node.layoutMode !== 'HORIZONTAL' && node.layoutMode !== 'VERTICAL') return null
-  const children = graph
-    .getChildren(node.id)
-    .filter((child) => child.visible && child.layoutPositioning !== 'ABSOLUTE')
+  const children = graph.getChildren(node.id).filter(participatesInIntrinsicSize)
   if (children.length === 0) return null
 
   const childSizes = children.map((child) => sizes.get(child.id) ?? child)
@@ -119,12 +128,10 @@ function intrinsicSizeWithEffectiveStretch(
   if (!intrinsic || node.layoutMode !== 'VERTICAL' || axisSizing(node, 'width') !== 'HUG') {
     return intrinsic
   }
-  const children = graph
-    .getChildren(node.id)
-    .filter((child) => child.visible && child.layoutPositioning !== 'ABSOLUTE')
+  const children = graph.getChildren(node.id).filter(participatesInIntrinsicSize)
   if (!children.some((child) => affected.has(child.id))) return intrinsic
   const widthCandidates = children.filter(
-    (child) => affected.has(child.id) || child.layoutAlignSelf !== 'STRETCH'
+    (child) => affected.has(child.id) || !stretchesCrossAxis(child, node)
   )
   if (widthCandidates.length === 0) return intrinsic
   return {
@@ -147,7 +154,11 @@ function stretchChildrenToEffectiveWidth(
   const oldContentWidth = oldIntrinsicWidth - node.paddingLeft - node.paddingRight
   const nextContentWidth = nextWidth - node.paddingLeft - node.paddingRight
   for (const child of graph.getChildren(node.id)) {
-    if (child.layoutAlignSelf !== 'STRETCH' || Math.abs(child.width - oldContentWidth) >= 0.001) {
+    if (
+      !participatesInIntrinsicSize(child) ||
+      !stretchesCrossAxis(child, node) ||
+      Math.abs(child.width - oldContentWidth) >= 0.001
+    ) {
       continue
     }
     const updates: Partial<SceneNode> = { width: nextContentWidth }
@@ -261,7 +272,7 @@ function propagateIntrinsicSizes(
   }
 }
 
-export function applyEffectiveGeneratedTextLayout(graph: SceneGraph, rootId: string): void {
+export function applyEffectiveGeneratedTextLayout(graph: SceneGraph, rootId: string): boolean {
   const nodes = collectPostorder(graph, rootId)
   const originalSizes = new Map(
     nodes.map((node) => [node.id, { width: node.width, height: node.height }])
@@ -270,6 +281,7 @@ export function applyEffectiveGeneratedTextLayout(graph: SceneGraph, rootId: str
   const affected = new Set<string>()
 
   updateGeneratedTextWidths(graph, nodes, currentSizes, affected)
-  if (affected.size === 0) return
+  if (affected.size === 0) return false
   propagateIntrinsicSizes(graph, nodes, originalSizes, currentSizes, affected)
+  return true
 }

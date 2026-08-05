@@ -63,7 +63,9 @@ export function computeAllLayouts(graph: SceneGraph, scopeId?: string): void {
   const rootId = scopeId ?? graph.rootId
   const visited = new Set<string>()
   computeLayoutsBottomUp(graph, rootId, visited)
-  applyEffectiveGeneratedTextLayout(graph, rootId)
+  if (applyEffectiveGeneratedTextLayout(graph, rootId)) {
+    computeLayoutsBottomUp(graph, rootId, new Set())
+  }
 }
 
 function computeLayoutsBottomUp(graph: SceneGraph, nodeId: string, visited: Set<string>): void {

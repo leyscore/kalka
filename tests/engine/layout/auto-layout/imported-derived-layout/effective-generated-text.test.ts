@@ -68,6 +68,87 @@ describe('effective generated FIG text layout', () => {
     expect(graph.getNode(source.id)).toMatchObject({ width: 342, height: 20 })
   })
 
+  test('repositions centered generated text after effective shaping', () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    const source = importedText(graph, 'Centered label', 100, 20, '1:7')
+    const parent = graph.createNode('FRAME', page.id, {
+      width: 200,
+      height: 40,
+      layoutMode: 'HORIZONTAL',
+      primaryAxisSizing: 'FIXED',
+      counterAxisSizing: 'FIXED',
+      primaryAxisAlign: 'CENTER'
+    })
+    const generatedText = graph.createNode('TEXT', parent.id, {
+      width: 100,
+      height: 20,
+      text: source.text,
+      textAutoResize: 'WIDTH_AND_HEIGHT',
+      componentId: source.id,
+      figmaDerivedLayout: { width: 100, height: 20 }
+    })
+    setTextMeasurer(() => ({ width: 80, height: 20 }))
+
+    computeAllLayouts(graph)
+
+    expect(graph.getNode(generatedText.id)).toMatchObject({ x: 60, width: 80 })
+  })
+
+  test('resizes visible inherited-stretch children but preserves excluded children', () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    const source = importedText(graph, 'Chart heading', 100, 20, '1:8')
+    const parent = graph.createNode('FRAME', page.id, {
+      width: 120,
+      height: 80,
+      layoutMode: 'VERTICAL',
+      primaryAxisSizing: 'FIXED',
+      counterAxisSizing: 'HUG',
+      paddingLeft: 10,
+      paddingRight: 10,
+      counterAxisAlign: 'STRETCH',
+      componentId: 'parent',
+      figmaDerivedLayout: { width: 120, height: 80 }
+    })
+    const generatedText = graph.createNode('TEXT', parent.id, {
+      width: 100,
+      height: 20,
+      text: source.text,
+      textAutoResize: 'WIDTH_AND_HEIGHT',
+      componentId: source.id,
+      figmaDerivedLayout: { width: 100, height: 20 }
+    })
+    const inheritedStretch = graph.createNode('RECTANGLE', parent.id, {
+      width: 100,
+      height: 10,
+      layoutAlignSelf: 'AUTO',
+      figmaDerivedLayout: { width: 100, height: 10 }
+    })
+    const hiddenStretch = graph.createNode('RECTANGLE', parent.id, {
+      width: 100,
+      height: 10,
+      visible: false,
+      layoutAlignSelf: 'AUTO',
+      figmaDerivedLayout: { width: 100, height: 10 }
+    })
+    const absoluteStretch = graph.createNode('RECTANGLE', parent.id, {
+      width: 100,
+      height: 10,
+      layoutPositioning: 'ABSOLUTE',
+      layoutAlignSelf: 'AUTO',
+      figmaDerivedLayout: { width: 100, height: 10 }
+    })
+    setTextMeasurer(() => ({ width: 80, height: 20 }))
+
+    computeAllLayouts(graph)
+
+    expect(graph.getNode(parent.id)).toMatchObject({ width: 100 })
+    expect(graph.getNode(inheritedStretch.id)).toMatchObject({ width: 80 })
+    expect(graph.getNode(hiddenStretch.id)).toMatchObject({ width: 100 })
+    expect(graph.getNode(absoluteStretch.id)).toMatchObject({ width: 100 })
+  })
+
   test('preserves fixed generated ancestors after shaping their text', () => {
     const graph = new SceneGraph()
     const page = graph.getPages()[0]

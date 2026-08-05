@@ -9,8 +9,7 @@ import {
   type ProxyThis
 } from '#core/figma-api/accessor-utils'
 import type { NodeProxyHost } from '#core/figma-api/proxy'
-
-type FigmaTransform = [[number, number, number], [number, number, number]]
+import type { FigmaTransform } from '#core/figma-api/types'
 
 const TRANSFORM_FIELDS = new Set(['x', 'y', 'rotation', 'flipX', 'flipY'])
 
@@ -107,10 +106,14 @@ export function installBasicNodeProxyAccessors(
         const node = raw(this, internals)
         const sourceTransform = node.source.fig.rawTransform
         if (sourceTransform && preservesRawTransform(node)) {
-          return [
-            [sourceTransform.m00, sourceTransform.m01, sourceTransform.m02],
-            [sourceTransform.m10, sourceTransform.m11, sourceTransform.m12]
-          ]
+          return figmaTransform([
+            sourceTransform.m00,
+            sourceTransform.m01,
+            sourceTransform.m02,
+            sourceTransform.m10,
+            sourceTransform.m11,
+            sourceTransform.m12
+          ])
         }
         return figmaTransform(getNodeLocalMatrix(node))
       }
