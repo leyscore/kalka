@@ -187,15 +187,22 @@ function sceneBackingGeometry(r: SkiaRenderer) {
 }
 
 function createSceneBackingSurface(r: SkiaRenderer, width: number, height: number): Surface | null {
+  if (r.sceneBackingAllocationFailed) return null
+  const info = {
+    width: Math.ceil(width * r.dpr),
+    height: Math.ceil(height * r.dpr),
+    colorType: r.ck.ColorType.RGBA_8888,
+    alphaType: r.ck.AlphaType.Premul,
+    colorSpace: r.ck.ColorSpace.SRGB
+  }
   try {
-    return r.surface.makeSurface({
-      width: Math.ceil(width * r.dpr),
-      height: Math.ceil(height * r.dpr),
-      colorType: r.ck.ColorType.RGBA_8888,
-      alphaType: r.ck.AlphaType.Premul,
-      colorSpace: r.ck.ColorSpace.SRGB
-    })
-  } catch {
+    return r.surface.makeSurface(info)
+  } catch (error) {
+    r.sceneBackingAllocationFailed = true
+    console.warn(
+      `Disabling retained scene backing after CanvasKit failed to allocate ${info.width}×${info.height}`,
+      error
+    )
     return null
   }
 }
@@ -452,6 +459,7 @@ export function renderSceneBacking(
   graph: SceneGraph,
   sceneVersion: number
 ): boolean {
+  if (r.sceneBackingAllocationFailed) return false
   const positionPreviewVersion = graph.positionPreviewVersion
   const allowStaleZoom = now() < r.sceneBackingPreviewUntil
   const hasCoverage = backingCoverageContainsLiveViewport(

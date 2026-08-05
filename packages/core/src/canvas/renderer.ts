@@ -122,6 +122,7 @@ export class SkiaRenderer {
   } | null = null
   sceneBackingPreviewUntil = 0
   sceneBackingNeedsCrispRender = false
+  sceneBackingAllocationFailed = false
   sceneBackingBuild: {
     surface: Surface
     graph: SceneGraph
@@ -451,6 +452,7 @@ export class SkiaRenderer {
   replaceSurface(surface: Surface): void {
     this.surface.delete()
     this.surface = surface
+    this.sceneBackingAllocationFailed = false
     this.invalidateScenePicture()
   }
 
