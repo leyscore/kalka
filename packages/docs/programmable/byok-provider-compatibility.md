@@ -85,24 +85,24 @@ The `Tools` cells use `prompts, bad ID deltas, valid arguments`: for example,
 call; ID counts cover inspected streamed tool-call deltas; argument counts cover completed calls
 whose concatenated argument fragments parse as JSON.
 
-| Model                                 | Provider | /1M in–out     | Ctx¹ | Tools                                              | Vision | Verdict                                                                                               | Tested     |
-| ------------------------------------- | -------- | -------------- | ---- | -------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------- | ---------- |
-| `mistral-small-3.2-24b-instruct-2506` | Scaleway | €0.15 – €0.35  | 128k | ✅ 3/3 prompts · 0/238 bad IDs · 6/6 valid args    | ✅     | **Recommended** — cheapest with vision, fully clean                                                   | 2026-07-31 |
-| `gemma-4-26b-a4b-it`                  | Scaleway | €0.25 – €0.50  | 256k | ✅ 3/3 prompts · 0/77 bad IDs · 8/8 valid args     | ✅     | Same but 2× the context — pick this for large documents                                               | 2026-07-31 |
-| `gpt-oss-120b`                        | Scaleway | €0.15 – €0.60  | 128k | ✅ 3/3 prompts · 0/118 bad IDs · 3/3 valid args    | ❌     | Cheap and clean, but text-only                                                                        | 2026-07-31 |
-| `qwen3.6-35b-a3b`                     | Scaleway | €0.25 – €1.50  | 128k | ✅ 3/3 prompts · 0/106 bad IDs · 9/9 valid args    | ✅     | Clean; heavy reasoner, needs the larger budget                                                        | 2026-07-31 |
-| `qwen3.5-397b-a17b`                   | Scaleway | €0.60 – €3.60  | 256k | ✅ 3/3 prompts · 0/92 bad IDs · 10/10 valid args   | ✅     | Most calls per turn; strongest but priciest here                                                      | 2026-07-31 |
-| `mistral-medium-3.5-128b`             | Scaleway | €1.50 – €7.50  | 256k | — not tested                                       | ✅     | Vision confirmed; tool calling unverified                                                             | 2026-07-31 |
-| `glm-5.2`                             | Scaleway | €1.80 – €5.50  | 256k | — not tested                                       | ❌     | API rejects images: "not a multimodal model"                                                          | 2026-07-31 |
-| `moonshotai/Kimi-K2.7-Code`           | Nebius   | $0.95 – $4.00  | 262k | ✅ 3/3 prompts · 0/114 bad IDs · 4/4 valid args²   | ❌     | Clean, but pricier than the Scaleway set                                                              | 2026-07-30 |
-| `moonshotai/Kimi-K3`                  | Nebius   | $3.00 – $15.00 | 1M   | ✅ 3/3 prompts · 0 bad IDs³ · 8/8 valid args²      | ❌     | Flawless, but ~20× the cost of `gpt-oss-120b`                                                         | 2026-07-30 |
-| `moonshotai/kimi-k3`                  | TensorX  | —              | —    | ⚠️ 2/3 prompts · 0 bad IDs³ · 7/7 valid args²      | —      | One prompt did not emit a call                                                                        | 2026-07-30 |
-| `openai/gpt-oss-120b`                 | Nebius   | $0.15 – $0.60  | 128k | ❌ final argument chunk routed to the wrong index² | ❌     | Broken on Nebius only — same model is fine on Scaleway                                                | 2026-07-30 |
-| `moonshotai/Kimi-K2.6`                | Nebius   | —              | —    | ⚠️ 1/3 prompts²                                    | —      | Finished on `stop`, not `length` — likely a real failure, but re-test at 16k before trusting this row | 2026-07-30 |
+| Model                                 | Provider | /1M in–out     | Ctx¹ | Tools                                                       | Vision | Verdict                                                                                               | Tested     |
+| ------------------------------------- | -------- | -------------- | ---- | ----------------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------- | ---------- |
+| `mistral-small-3.2-24b-instruct-2506` | Scaleway | €0.15 – €0.35  | 128k | ✅ 3/3 prompts · 0/238 bad IDs · 6/6 valid args             | ✅     | **Recommended** — cheapest with vision, fully clean                                                   | 2026-07-31 |
+| `gemma-4-26b-a4b-it`                  | Scaleway | €0.25 – €0.50  | 256k | ✅ 3/3 prompts · 0/77 bad IDs · 8/8 valid args              | ✅     | Same but 2× the context — pick this for large documents                                               | 2026-07-31 |
+| `gpt-oss-120b`                        | Scaleway | €0.15 – €0.60  | 128k | ✅ 3/3 prompts · 0/118 bad IDs · 3/3 valid args             | ❌     | Cheap and clean, but text-only                                                                        | 2026-07-31 |
+| `qwen3.6-35b-a3b`                     | Scaleway | €0.25 – €1.50  | 128k | ✅ 3/3 prompts · 0/106 bad IDs · 9/9 valid args             | ✅     | Clean; heavy reasoner, needs the larger budget                                                        | 2026-07-31 |
+| `qwen3.5-397b-a17b`                   | Scaleway | €0.60 – €3.60  | 256k | ✅ 3/3 prompts · 0/92 bad IDs · 10/10 valid args            | ✅     | Most calls per turn; strongest but priciest here                                                      | 2026-07-31 |
+| `mistral-medium-3.5-128b`             | Scaleway | €1.50 – €7.50  | 256k | — not tested                                                | ✅     | Vision confirmed; tool calling unverified                                                             | 2026-07-31 |
+| `glm-5.2`                             | Scaleway | €1.80 – €5.50  | 256k | — not tested                                                | ❌     | API rejects images: "not a multimodal model"                                                          | 2026-07-31 |
+| `moonshotai/Kimi-K2.7-Code`           | Nebius   | $0.95 – $4.00  | 262k | ✅ 3/3 prompts · 0/114 bad IDs · 4/4 valid args²            | ❌     | Clean, but pricier than the Scaleway set                                                              | 2026-07-30 |
+| `moonshotai/Kimi-K3`                  | Nebius   | $3.00 – $15.00 | 1M   | ✅ 3/3 prompts · ID coverage unavailable³ · 8/8 valid args² | ❌     | Flawless, but ~20× the cost of `gpt-oss-120b`                                                         | 2026-07-30 |
+| `moonshotai/kimi-k3`                  | TensorX  | —              | —    | ⚠️ 2/3 prompts · ID coverage unavailable³ · 7/7 valid args² | —      | One prompt did not emit a call                                                                        | 2026-07-30 |
+| `openai/gpt-oss-120b`                 | Nebius   | $0.15 – $0.60  | 128k | ❌ final argument chunk routed to the wrong index²          | ❌     | Broken on Nebius only — same model is fine on Scaleway                                                | 2026-07-30 |
+| `moonshotai/Kimi-K2.6`                | Nebius   | —              | —    | ⚠️ 1/3 prompts²                                             | —      | Finished on `stop`, not `length` — likely a real failure, but re-test at 16k before trusting this row | 2026-07-30 |
 
 ¹ Nominal catalog context limit from models.dev, retrieved 2026-07-31; not measured here.  
 ² Measured with `max_tokens: 2000`; re-test failures at 16384 or the highest supported budget.  
-³ The original notes recorded no malformed IDs but not the total inspected delta count.
+³ The original notes did not preserve the inspected ID-delta count, so ID coverage is unavailable.
 
 ### Auto-lookup via models.dev
 
@@ -126,8 +126,7 @@ it was wrong on two of seven:
 
 It also lists `nebius/openai/gpt-oss-120b` as vision `false` while marking the Scaleway copy
 `true` — the same model, contradicting itself — and reports `tool_call: true` for every model
-here, including `qwen3.6-35b-a3b` (silent on 2/3 prompts) and Nebius's `gpt-oss-120b` (broken by
-the deployment bug below).
+here, including `qwen3.6-35b-a3b` (silent on 2/3 prompts at `max_tokens: 2000`, but 3/3 at 16384) and Nebius's `gpt-oss-120b` (broken by the deployment bug below).
 
 That's the general shape of it: models.dev describes a model's **nominal** capabilities, while
 what breaks in practice is a property of the **deployment**. Catalog prices and context windows
@@ -217,9 +216,15 @@ reasoning models will fail it spuriously.
 
 Add a row, keep it dated, and say how you tested. Negative results are as useful as positive ones.
 
-### 1. Test CORS
+### 1. Test CORS for an OpenAI-compatible endpoint
 
-Run these checks from a shell. Curl is not subject to CORS, so this inspects the headers a browser
+The following recipes use the OpenAI-compatible `/chat/completions` contract, Bearer
+authentication, and request body. Do not use them unchanged for a provider's native API: adapt the
+endpoint, authentication, version headers, and body first. For example, Anthropic's native API uses
+`/v1/messages`, `x-api-key`, `anthropic-version`, and
+`anthropic-dangerous-direct-browser-access: true`.
+
+Run these checks from a Bash-compatible shell. Curl is not subject to CORS, so this inspects the headers a browser
 would enforce. A provider must pass both checks: the preflight must allow the origin, `POST` method,
 and requested headers, and a successful POST must include `Access-Control-Allow-Origin`.
 
@@ -227,30 +232,49 @@ Read the key without placing it in shell history or the curl process arguments. 
 configuration is owner-readable only and is removed on exit.
 
 ```bash
+set -euo pipefail
 BASE="https://api.example.com/v1"
 MODEL="MODEL"
 ORIGIN="https://openpencil.dev"
 read -rsp "API key: " API_KEY; printf '\n'
 CURL_CONFIG="$(mktemp)"
+PREFLIGHT_HEADERS="$(mktemp)"
+POST_HEADERS="$(mktemp)"
 chmod 600 "$CURL_CONFIG"
-trap 'rm -f "$CURL_CONFIG"' EXIT
+trap 'rm -f "$CURL_CONFIG" "$PREFLIGHT_HEADERS" "$POST_HEADERS"' EXIT
 printf 'header = "Authorization: Bearer %s"\n' "$API_KEY" > "$CURL_CONFIG"
 unset API_KEY
 
+origin_allowed() {
+  local file="$1"
+  local value
+  value="$(awk 'BEGIN { IGNORECASE=1 } /^access-control-allow-origin:/ { sub(/^[^:]+:[[:space:]]*/, ""); sub(/\r$/, ""); print; exit }' "$file")"
+  [[ "$value" == "*" || "$value" == "$ORIGIN" ]]
+}
+
 # Browser preflight: verify the origin, POST method, and both requested headers.
-curl -sD - -o /dev/null -X OPTIONS "$BASE/chat/completions" \
+preflight_status="$(curl -sS -D "$PREFLIGHT_HEADERS" -o /dev/null -w '%{http_code}' \
+  -X OPTIONS "$BASE/chat/completions" \
   -H "Origin: $ORIGIN" \
   -H "Access-Control-Request-Method: POST" \
-  -H "Access-Control-Request-Headers: authorization,content-type" \
-  | grep -iE '^HTTP|^access-control-allow-(origin|methods|headers):'
+  -H "Access-Control-Request-Headers: authorization,content-type")"
+[[ "$preflight_status" =~ ^2[0-9][0-9]$ ]]
+origin_allowed "$PREFLIGHT_HEADERS"
+grep -iqE '^access-control-allow-methods:.*(^|[,[:space:]])POST([,[:space:]]|$)' "$PREFLIGHT_HEADERS"
+grep -iqE '^access-control-allow-headers:.*(^|[,[:space:]])authorization([,[:space:]]|$)' "$PREFLIGHT_HEADERS"
+grep -iqE '^access-control-allow-headers:.*(^|[,[:space:]])content-type([,[:space:]]|$)' "$PREFLIGHT_HEADERS"
 
 # Successful response: use a valid key and model, then verify the origin header again.
-curl --config "$CURL_CONFIG" -sD - -o /dev/null -X POST "$BASE/chat/completions" \
+post_status="$(curl --config "$CURL_CONFIG" -sS -D "$POST_HEADERS" -o /dev/null -w '%{http_code}' \
+  -X POST "$BASE/chat/completions" \
   -H "Origin: $ORIGIN" \
   -H "content-type: application/json" \
-  -d "{\"model\":\"$MODEL\",\"max_tokens\":5,\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}]}" \
-  | grep -iE '^HTTP|^access-control-allow-origin:'
+  -d "{\"model\":\"$MODEL\",\"max_tokens\":5,\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}]}")"
+[[ "$post_status" =~ ^2[0-9][0-9]$ ]]
+origin_allowed "$POST_HEADERS"
 ```
+
+These commands exit non-zero unless both responses satisfy the browser contract.
 
 Also repeat the POST with an invalid key and record error-response CORS separately. It does not
 prove whether successful requests work, but it determines whether users see useful authentication
@@ -263,9 +287,10 @@ tokens when supported; if the endpoint accepts less, record its highest supporte
 
 ```bash
 STREAM_FILE="$(mktemp)"
-trap 'rm -f "$CURL_CONFIG" "$STREAM_FILE"' EXIT
+HTTP_STATUS_FILE="$(mktemp)"
+trap 'rm -f "$CURL_CONFIG" "$PREFLIGHT_HEADERS" "$POST_HEADERS" "$STREAM_FILE" "$HTTP_STATUS_FILE"' EXIT
 
-curl --config "$CURL_CONFIG" -sN -X POST "$BASE/chat/completions" \
+curl --config "$CURL_CONFIG" -sS -N -X POST "$BASE/chat/completions" \
   -H "content-type: application/json" \
   -d "{\"model\":\"$MODEL\",\"stream\":true,\"max_tokens\":16384,
        \"messages\":[{\"role\":\"user\",\"content\":\"Draw a frog: green ellipse body, two white eye circles, a mouth line. Use create_node for each.\"}],
@@ -273,7 +298,8 @@ curl --config "$CURL_CONFIG" -sN -X POST "$BASE/chat/completions" \
          \"parameters\":{\"type\":\"object\",\"properties\":{\"type\":{\"type\":\"string\",\"enum\":[\"ELLIPSE\",\"RECTANGLE\",\"LINE\",\"TEXT\"]},
          \"x\":{\"type\":\"number\"},\"y\":{\"type\":\"number\"},\"width\":{\"type\":\"number\"},\"height\":{\"type\":\"number\"},
          \"fill\":{\"type\":\"string\"}},\"required\":[\"type\",\"x\",\"y\"]}}}]}" \
-  > "$STREAM_FILE"
+  -o "$STREAM_FILE" -w '%{http_code}' > "$HTTP_STATUS_FILE"
+[[ "$(cat "$HTTP_STATUS_FILE")" =~ ^2[0-9][0-9]$ ]]
 ```
 
 Parse each SSE event as JSON, group fragments by tool-call index, require an ID on the first delta
@@ -283,6 +309,7 @@ for each index, and validate the concatenated arguments:
 STREAM_FILE="$STREAM_FILE" node <<'JS'
 const fs = require('node:fs')
 const calls = new Map()
+const finishReasons = new Set()
 let malformedFirstDeltas = 0
 
 for (const line of fs.readFileSync(process.env.STREAM_FILE, 'utf8').split(/\r?\n/)) {
@@ -290,7 +317,9 @@ for (const line of fs.readFileSync(process.env.STREAM_FILE, 'utf8').split(/\r?\n
   const data = line.slice(5).trim()
   if (!data || data === '[DONE]') continue
   const event = JSON.parse(data)
-  for (const call of event.choices?.[0]?.delta?.tool_calls ?? []) {
+  const choice = event.choices?.[0]
+  if (choice?.finish_reason) finishReasons.add(choice.finish_reason)
+  for (const call of choice?.delta?.tool_calls ?? []) {
     const current = calls.get(call.index)
     if (!current) {
       if (typeof call.id !== 'string' || !call.id) malformedFirstDeltas++
@@ -310,7 +339,20 @@ for (const [index, call] of calls) {
     console.error(`tool call ${index}: invalid arguments`)
   }
 }
-console.log({ calls: calls.size, malformedFirstDeltas, invalidArguments })
+console.log({
+  calls: calls.size,
+  finishReasons: [...finishReasons],
+  malformedFirstDeltas,
+  invalidArguments
+})
+if (!calls.size) {
+  console.error(
+    finishReasons.has('length')
+      ? 'no tool calls: output budget exhausted; retry with a larger budget'
+      : 'no tool calls: model finished without calling a tool'
+  )
+  process.exitCode = 1
+}
 if (malformedFirstDeltas || invalidArguments) process.exitCode = 1
 JS
 ```
