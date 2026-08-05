@@ -3,6 +3,22 @@ import { copyGeometryPaths } from '@open-pencil/scene-graph/copy'
 
 import { buildClonesMap } from '../sync'
 import type { OverrideContext } from '../types'
+import { overrideCandidates } from '../utils'
+
+function buildSizeOverriddenCloneUpdates(source: SceneNode, clone: SceneNode): Partial<SceneNode> {
+  if (clone.type !== 'INSTANCE' || !source.figmaDerivedLayout) return {}
+  const sourceLayout = source.figmaDerivedLayout
+  return {
+    ...(sourceLayout.x === undefined ? {} : { x: sourceLayout.x }),
+    ...(sourceLayout.y === undefined ? {} : { y: sourceLayout.y }),
+    figmaDerivedLayout: {
+      ...sourceLayout,
+      ...clone.figmaDerivedLayout,
+      x: sourceLayout.x ?? clone.figmaDerivedLayout?.x,
+      y: sourceLayout.y ?? clone.figmaDerivedLayout?.y
+    }
+  }
+}
 
 function buildCloneUpdates(
   ctx: OverrideContext,
@@ -12,7 +28,7 @@ function buildCloneUpdates(
   sizeSet: Set<string>
 ): Partial<SceneNode> {
   const updates: Partial<SceneNode> = {}
-  if (sizeSet.has(cloneId)) return updates
+  if (sizeSet.has(cloneId)) return buildSizeOverriddenCloneUpdates(source, clone)
   if (source.width !== clone.width) updates.width = source.width
   if (source.height !== clone.height) updates.height = source.height
   if (source.x !== clone.x) updates.x = source.x
@@ -30,6 +46,44 @@ function buildCloneUpdates(
     updates.figmaDerivedLayout = { ...source.figmaDerivedLayout }
   }
   return updates
+}
+
+export function applyGeneratedFreeformStretch(ctx: OverrideContext): void {
+  for (const node of overrideCandidates(ctx.graph, ctx.activeNodeIds)) {
+    if (
+      node.source.format === 'fig' ||
+      !node.figmaDerivedLayout ||
+      !node.parentId ||
+      node.layoutPositioning === 'ABSOLUTE'
+    ) {
+      continue
+    }
+    const parent = ctx.graph.getNode(node.parentId)
+    if (
+      !parent ||
+      parent.source.format === 'fig' ||
+      parent.layoutMode !== 'NONE' ||
+      !parent.figmaDerivedLayout
+    ) {
+      continue
+    }
+    const updates: Partial<SceneNode> = {}
+    if (
+      node.horizontalConstraint === 'STRETCH' &&
+      node.figmaDerivedLayout.width !== undefined &&
+      node.figmaDerivedLayout.width === parent.figmaDerivedLayout.width
+    ) {
+      updates.width = node.figmaDerivedLayout.width
+    }
+    if (
+      node.verticalConstraint === 'STRETCH' &&
+      node.figmaDerivedLayout.height !== undefined &&
+      node.figmaDerivedLayout.height === parent.figmaDerivedLayout.height
+    ) {
+      updates.height = node.figmaDerivedLayout.height
+    }
+    if (Object.keys(updates).length > 0) ctx.graph.updateNode(node.id, updates)
+  }
 }
 
 export function propagateDsdChanges(

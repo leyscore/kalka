@@ -8,8 +8,8 @@ import {
   nodeChangeToProps,
   shouldImportTextAsAutoSize,
   sortChildren,
-  setVariableColorResolver,
-  VARIABLE_BINDING_FIELDS_INVERSE
+  resolveVariableConsumptionEntry,
+  setVariableColorResolver
 } from '@open-pencil/fig/node-change'
 import type { NodeChange, VariableDataValuesEntry, Color, GUID } from '@open-pencil/kiwi/fig/codec'
 import { SceneGraph } from '@open-pencil/scene-graph'
@@ -351,10 +351,8 @@ function importVariableBindings(
     const nodeId = guidToNodeId.get(ncId)
     if (!nodeId) continue
     for (const entry of nc.variableConsumptionMap.entries) {
-      const varGuid = entry.variableData?.value?.alias?.guid
-      if (!varGuid) continue
-      const field = VARIABLE_BINDING_FIELDS_INVERSE[entry.variableField ?? '']
-      if (field) graph.bindVariable(nodeId, field, guidToString(varGuid))
+      const binding = resolveVariableConsumptionEntry(entry)
+      if (binding) graph.bindVariable(nodeId, binding.field, binding.variableId)
     }
   }
 }
