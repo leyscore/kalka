@@ -234,7 +234,10 @@ describe('Figma component property import', () => {
         parentIndex: { guid: pageGuid, position: '"' },
         type: 'SYMBOL',
         name: 'icon/user',
-        size: { x: 16, y: 16 },
+        size: { x: 16, y: 24 },
+        minSize: { value: { x: 0, y: 24 } },
+        stackMode: 'HORIZONTAL',
+        stackHorizontalPadding: 3,
         transform: { m00: 1, m01: 0, m02: 40, m10: 0, m11: 1, m12: 0 }
       },
       {
@@ -345,7 +348,13 @@ describe('Figma component property import', () => {
       .map((id) => graph.getNode(id))
       .find((node) => node?.type === 'INSTANCE')
     const iconChild = icon?.childIds.map((id) => graph.getNode(id)).find(Boolean)
-    expect(icon?.name).toBe('icon/user')
+    expect(icon).toMatchObject({
+      name: 'icon/user',
+      layoutMode: 'HORIZONTAL',
+      minHeight: 24,
+      paddingLeft: 3,
+      paddingRight: 0
+    })
     expect(iconChild?.name).toBe('user-path')
     expect(iconChild?.strokes[0]?.color).toEqual({ r: 0.2, g: 0.25, b: 0.33, a: 1 })
   })

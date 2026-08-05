@@ -43,6 +43,15 @@ describe('APP_MENU_SCHEMA', () => {
     expect(commandIds).toContain('selection.moveToPage')
   })
 
+  test('includes storage workspace navigation in the shared File menu', () => {
+    const fileMenu = APP_MENU_SCHEMA.find((group) => group.label === 'File')
+    const entries = fileMenu ? actionItems(fileMenu.items) : []
+
+    expect(entries).toContainEqual(
+      expect.objectContaining({ id: 'open-storage-workspace', label: 'Open Storage Workspace…' })
+    )
+  })
+
   test('keeps move-to-page destination selection in the browser menu', () => {
     const objectMenu = APP_MENU_SCHEMA.find((group) => group.label === 'Object')
     const entries = objectMenu ? actionItems(objectMenu.items) : []

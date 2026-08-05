@@ -329,6 +329,8 @@ export interface NodeChange {
   stackChildPrimaryGrow?: number
   stackChildAlignSelf?: string
   stackCounterSpacing?: number
+  minSize?: { value?: Vector }
+  maxSize?: { value?: Vector }
   // Frame
   clipsContent?: boolean
   frameMaskDisabled?: boolean
