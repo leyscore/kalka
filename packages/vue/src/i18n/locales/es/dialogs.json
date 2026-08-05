@@ -90,6 +90,7 @@
   "modelCapabilityVision": "Entrada de imágenes",
   "modelCapabilityToolsShort": "Herramientas",
   "modelCapabilityVisionShort": "Visión",
+  "selectDesignModel": "Seleccionar modelo de diseño",
   "modelNeedsCredential": "Falta la clave",
   "modelAgentConnection": "Agente",
   "saveModel": "Guardar modelo",

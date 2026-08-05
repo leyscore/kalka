@@ -8,7 +8,7 @@ import AppInput from '@/components/ui/AppInput.vue'
 import Tip from '@/components/ui/Tip.vue'
 import { useButtonUI } from '@/components/ui/button'
 import { useAIChat } from '@/app/ai/chat/use'
-import { aiModelSettings, designModelProfile } from '@/app/ai/models'
+import { designModelProfile, designModelProfiles } from '@/app/ai/models'
 import { openSettingsDialog } from '@/app/settings/dialog'
 import { useI18n } from '@open-pencil/vue'
 
@@ -61,9 +61,7 @@ const selectedModelName = computed(() => {
 })
 
 // Switching between saved profiles only makes sense once more than one can drive the design agent.
-const switchableProfiles = computed(() =>
-  aiModelSettings.value.models.filter((profile) => profile.capabilities.includes('tools'))
-)
+const switchableProfiles = computed(designModelProfiles)
 const canSwitchProfile = computed(() => switchableProfiles.value.length > 1)
 const selectedProfileName = computed(
   () => designModelProfile.value?.name ?? selectedModelName.value
@@ -89,8 +87,10 @@ function handleSubmit(e: Event) {
             {{ acpAgentName }}
           </div>
         </template>
-        <ChatProfileSelect v-else-if="canSwitchProfile">
-          <template #value>{{ selectedProfileName }}</template>
+        <ChatProfileSelect v-else-if="canSwitchProfile && (isCustomProvider || usesCustomModel)">
+          <template #value>
+            <span class="min-w-0 truncate">{{ selectedProfileName }}</span>
+          </template>
         </ChatProfileSelect>
         <template v-else-if="isCustomProvider || usesCustomModel">
           <div

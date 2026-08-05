@@ -90,6 +90,7 @@
   "modelCapabilityVision": "Bildeingabe",
   "modelCapabilityToolsShort": "Werkzeuge",
   "modelCapabilityVisionShort": "Vision",
+  "selectDesignModel": "Designmodell auswählen",
   "modelNeedsCredential": "Schlüssel fehlt",
   "modelAgentConnection": "Agent",
   "saveModel": "Modell speichern",

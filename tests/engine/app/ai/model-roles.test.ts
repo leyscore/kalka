@@ -4,6 +4,7 @@ import {
   aiModelSettings,
   createAIModelRuntime,
   createModelProfileDraft,
+  designModelProfiles,
   modelSettingsSnapshot,
   removeModelProfile,
   replaceAIModelSettings,
@@ -101,10 +102,7 @@ describe('AI model profiles and role assignments', () => {
   })
 
   test('switches the design agent between saved profiles', () => {
-    // Backs the chat model switcher: it lists tools-capable profiles and reassigns the design role.
-    const switchable = aiModelSettings.value.models.filter((profile) =>
-      profile.capabilities.includes('tools')
-    )
+    const switchable = designModelProfiles()
     expect(switchable.map((profile) => profile.id)).toEqual(['model-design', 'model-fast'])
 
     setModelRoleAssignment('design', 'model-fast')

@@ -90,6 +90,7 @@
   "modelCapabilityVision": "Ввод изображений",
   "modelCapabilityToolsShort": "Инструменты",
   "modelCapabilityVisionShort": "Зрение",
+  "selectDesignModel": "Выбрать модель для дизайна",
   "modelNeedsCredential": "Нужен ключ",
   "modelAgentConnection": "Агент",
   "saveModel": "Сохранить модель",

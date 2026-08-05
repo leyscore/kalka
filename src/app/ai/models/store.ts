@@ -203,6 +203,14 @@ export function modelConnection(connectionId: string): AIModelConnection | null 
   )
 }
 
+export function isDesignModelProfile(profile: AIModelProfile): boolean {
+  return profile.capabilities.includes('tools')
+}
+
+export function designModelProfiles(): AIModelProfile[] {
+  return aiModelSettings.value.models.filter(isDesignModelProfile)
+}
+
 export function isACPModelProfile(profile: AIModelProfile | null): boolean {
   return Boolean(profile && modelConnection(profile.connectionId)?.providerID.startsWith('acp:'))
 }
@@ -213,7 +221,7 @@ export function resolveAIModelRole(role: AIModelRole): ResolvedAIModelRole | nul
   const profileId = assignment === 'design' ? aiModelSettings.value.assignments.design : assignment
   const profile = modelProfile(profileId)
   if (!profile) return null
-  if (role === 'design' && !profile.capabilities.includes('tools')) return null
+  if (role === 'design' && !isDesignModelProfile(profile)) return null
   if (role === 'vision' && !profile.capabilities.includes('vision')) return null
   const connection = modelConnection(profile.connectionId)
   return connection ? { requestedRole: role, profile, connection } : null
@@ -344,9 +352,7 @@ export function removeModelProfile(profileId: string): void {
   aiModelSettings.value.models = aiModelSettings.value.models.filter(
     (profile) => profile.id !== profileId
   )
-  const fallback =
-    aiModelSettings.value.models.find((profile) => profile.capabilities.includes('tools')) ??
-    aiModelSettings.value.models[0]
+  const fallback = designModelProfiles()[0] ?? aiModelSettings.value.models[0]
   if (aiModelSettings.value.assignments.design === profileId) {
     aiModelSettings.value.assignments.design = fallback.id
     if (
@@ -377,7 +383,7 @@ export function setModelRoleAssignment(role: AIModelRole, assignment: AIModelRol
   if (role === 'design') {
     if (assignment === null || assignment === 'design') return
     const profile = modelProfile(assignment)
-    if (!profile?.capabilities.includes('tools')) return
+    if (!profile || !isDesignModelProfile(profile)) return
     aiModelSettings.value.assignments.design = assignment
     return
   }

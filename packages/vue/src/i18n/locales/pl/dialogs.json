@@ -90,6 +90,7 @@
   "modelCapabilityVision": "Obrazy wejściowe",
   "modelCapabilityToolsShort": "Narzędzia",
   "modelCapabilityVisionShort": "Wizja",
+  "selectDesignModel": "Wybierz model projektowy",
   "modelNeedsCredential": "Brak klucza",
   "modelAgentConnection": "Agent",
   "saveModel": "Zapisz model",
