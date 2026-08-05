@@ -348,12 +348,17 @@ export function modelConnectionUsageCount(connectionId: string): number {
 
 export function removeModelProfile(profileId: string): void {
   if (aiModelSettings.value.models.length <= 1) return
+  const removesDesignAssignment = aiModelSettings.value.assignments.design === profileId
+  const fallback = aiModelSettings.value.models.find(
+    (profile) => profile.id !== profileId && isDesignModelProfile(profile)
+  )
+  if (removesDesignAssignment && !fallback) return
+
   const removed = modelProfile(profileId)
   aiModelSettings.value.models = aiModelSettings.value.models.filter(
     (profile) => profile.id !== profileId
   )
-  const fallback = designModelProfiles()[0] ?? aiModelSettings.value.models[0]
-  if (aiModelSettings.value.assignments.design === profileId) {
+  if (removesDesignAssignment && fallback) {
     aiModelSettings.value.assignments.design = fallback.id
     if (
       aiModelSettings.value.assignments.vision === 'design' &&

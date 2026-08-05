@@ -185,6 +185,31 @@ describe('AI model profiles and role assignments', () => {
     expect(settings.connections.map((connection) => connection.id)).toEqual(['connection-google'])
   })
 
+  test('keeps the assigned design profile when no capable fallback exists', () => {
+    const settings = settingsFixture()
+    settings.models = [
+      settings.models[0],
+      {
+        id: 'model-text-only',
+        name: 'Text-only model',
+        connectionId: 'connection-google',
+        modelID: 'text-only',
+        customModelID: '',
+        maxOutputTokens: 4096,
+        capabilities: []
+      }
+    ]
+    replaceAIModelSettings(settings)
+
+    removeModelProfile('model-design')
+
+    expect(modelSettingsSnapshot().models.map((profile) => profile.id)).toEqual([
+      'model-design',
+      'model-text-only'
+    ])
+    expect(resolveAIModelRole('design')?.profile.id).toBe('model-design')
+  })
+
   test('includes configured connection credentials in persistence changes', () => {
     const keys = appCredentialRefs().map(credentialKey)
     expect(keys).toContain('v1:anthropic:anthropic-main:api-key')
