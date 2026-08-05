@@ -10,9 +10,14 @@ import { overrideCandidates } from './utils'
 
 const MAX_CLONE_CHAIN_DEPTH = 10
 
+interface ScaleDescendantAxes {
+  horizontal: boolean
+  vertical: boolean
+}
+
 interface InstanceScale {
   basis: SceneNode
-  scaleEntireSubtree: boolean
+  scaleThroughFixedWrappers: boolean
   sx: number
   sy: number
   useCurrentChildAsSource: boolean
@@ -52,7 +57,7 @@ export function applyConstraintScaling(ctx: OverrideContext): void {
       ctx.geometryOverrideNodes,
       scale.useCurrentChildAsSource,
       strokeScale,
-      scale.scaleEntireSubtree
+      scale.scaleThroughFixedWrappers
     )
   }
 
@@ -68,13 +73,13 @@ function resolveInstanceScale(
   const resolvedBasis = resolveScaleBasis(graph, instance, component)
   if (!targetAspectRatio && !resolvedBasis) return null
   const basis = resolvedBasis ?? component
-  const scaleEntireSubtree = targetAspectRatio !== null
+  const scaleThroughFixedWrappers = targetAspectRatio !== null
   return {
     basis,
-    scaleEntireSubtree,
-    sx: instance.width / (targetAspectRatio?.width ?? basis.width),
-    sy: instance.height / (targetAspectRatio?.height ?? basis.height),
-    useCurrentChildAsSource: scaleEntireSubtree || basis !== component
+    scaleThroughFixedWrappers,
+    sx: instance.width / basis.width,
+    sy: instance.height / basis.height,
+    useCurrentChildAsSource: basis !== component
   }
 }
 
@@ -268,6 +273,40 @@ function scaledGeometryUpdates(
   return updates
 }
 
+function scaleDescendantAxes(
+  graph: SceneGraph,
+  node: SceneNode,
+  cache: Map<string, ScaleDescendantAxes>
+): ScaleDescendantAxes {
+  const cached = cache.get(node.id)
+  if (cached) return cached
+  const result: ScaleDescendantAxes = { horizontal: false, vertical: false }
+  for (const child of graph.getChildren(node.id)) {
+    const nested = scaleDescendantAxes(graph, child, cache)
+    result.horizontal ||= child.horizontalConstraint === 'SCALE' || nested.horizontal
+    result.vertical ||= child.verticalConstraint === 'SCALE' || nested.vertical
+    if (result.horizontal && result.vertical) break
+  }
+  cache.set(node.id, result)
+  return result
+}
+
+function childScaleAxes(
+  graph: SceneGraph,
+  child: SceneNode,
+  scaleThroughFixedWrappers: boolean,
+  cache: Map<string, ScaleDescendantAxes>
+): ScaleDescendantAxes {
+  const descendantAxes = scaleDescendantAxes(graph, child, cache)
+  return {
+    horizontal:
+      child.horizontalConstraint === 'SCALE' ||
+      (scaleThroughFixedWrappers && descendantAxes.horizontal),
+    vertical:
+      child.verticalConstraint === 'SCALE' || (scaleThroughFixedWrappers && descendantAxes.vertical)
+  }
+}
+
 function scaleChildren(
   graph: SceneGraph,
   instance: SceneNode,
@@ -278,7 +317,8 @@ function scaleChildren(
   geometryOverrideNodes: Set<string>,
   useCurrentChildAsSource = false,
   strokeScale?: number,
-  scaleEntireSubtree = false
+  scaleThroughFixedWrappers = false,
+  descendantScaleCache = new Map<string, ScaleDescendantAxes>()
 ): void {
   const len = Math.min(instance.childIds.length, comp.childIds.length)
   for (let i = 0; i < len; i++) {
@@ -286,8 +326,9 @@ function scaleChildren(
     const compChild = graph.getNode(comp.childIds[i])
     if (!child || !compChild) continue
 
-    const hScale = scaleEntireSubtree || child.horizontalConstraint === 'SCALE'
-    const vScale = scaleEntireSubtree || child.verticalConstraint === 'SCALE'
+    const scaleAxes = childScaleAxes(graph, child, scaleThroughFixedWrappers, descendantScaleCache)
+    const hScale = scaleAxes.horizontal
+    const vScale = scaleAxes.vertical
     if (!hScale && !vScale) continue
 
     const updates: Partial<SceneNode> = {}
@@ -321,7 +362,8 @@ function scaleChildren(
         geometryOverrideNodes,
         useCurrentChildAsSource,
         strokeScale,
-        scaleEntireSubtree
+        scaleThroughFixedWrappers,
+        descendantScaleCache
       )
     }
   }
