@@ -65,54 +65,7 @@ import type {
 import type { GUID } from '@open-pencil/scene-graph/primitives'
 
 export { guidToString, stringToGuid } from '@open-pencil/kiwi/fig/guid'
-
-export const VARIABLE_BINDING_FIELDS: Record<string, string> = {
-  // Corner radius
-  cornerRadius: 'CORNER_RADIUS',
-  topLeftRadius: 'RECTANGLE_TOP_LEFT_CORNER_RADIUS',
-  topRightRadius: 'RECTANGLE_TOP_RIGHT_CORNER_RADIUS',
-  bottomLeftRadius: 'RECTANGLE_BOTTOM_LEFT_CORNER_RADIUS',
-  bottomRightRadius: 'RECTANGLE_BOTTOM_RIGHT_CORNER_RADIUS',
-  // Stroke
-  strokeWeight: 'STROKE_WEIGHT',
-  borderTopWeight: 'BORDER_TOP_WEIGHT',
-  borderBottomWeight: 'BORDER_BOTTOM_WEIGHT',
-  borderLeftWeight: 'BORDER_LEFT_WEIGHT',
-  borderRightWeight: 'BORDER_RIGHT_WEIGHT',
-  // Auto-layout spacing & padding
-  itemSpacing: 'STACK_SPACING',
-  paddingLeft: 'STACK_PADDING_LEFT',
-  paddingTop: 'STACK_PADDING_TOP',
-  paddingRight: 'STACK_PADDING_RIGHT',
-  paddingBottom: 'STACK_PADDING_BOTTOM',
-  counterAxisSpacing: 'STACK_COUNTER_SPACING',
-  // Grid gaps
-  gridRowGap: 'GRID_ROW_GAP',
-  gridColumnGap: 'GRID_COLUMN_GAP',
-  // Visibility & opacity
-  visible: 'VISIBLE',
-  opacity: 'OPACITY',
-  // Dimensions
-  width: 'WIDTH',
-  height: 'HEIGHT',
-  minWidth: 'MIN_WIDTH',
-  maxWidth: 'MAX_WIDTH',
-  minHeight: 'MIN_HEIGHT',
-  maxHeight: 'MAX_HEIGHT',
-  // Position & rotation
-  x: 'X_POSITION',
-  y: 'Y_POSITION',
-  rotation: 'ROTATION',
-  // Text
-  fontSize: 'FONT_SIZE',
-  letterSpacing: 'LETTER_SPACING',
-  lineHeight: 'LINE_HEIGHT',
-  fontFamily: 'FONT_FAMILY'
-}
-
-export const VARIABLE_BINDING_FIELDS_INVERSE: Record<string, string> = Object.fromEntries(
-  Object.entries(VARIABLE_BINDING_FIELDS).map(([k, v]) => [v, k])
-)
+export { VARIABLE_BINDING_FIELDS, VARIABLE_BINDING_FIELDS_INVERSE } from './variable-bindings'
 
 interface FigVariableModeMap {
   entries?: Array<{
@@ -428,25 +381,15 @@ function convertTextProps(nc: NodeChange, blobs: Uint8Array[]): TextProps {
   }
 }
 
-function consumesVariableField(nc: NodeChange, field: string): boolean {
-  return nc.variableConsumptionMap?.entries?.some((entry) => entry.variableField === field) ?? false
-}
-
 function convertLayoutPadding(
   nc: NodeChange
 ): Pick<SceneNode, 'paddingTop' | 'paddingBottom' | 'paddingLeft' | 'paddingRight'> {
   const basePadding = nc.stackPadding ?? 0
-  const verticalPadding = nc.stackVerticalPadding ?? basePadding
-  const horizontalPadding = nc.stackHorizontalPadding ?? basePadding
   return {
-    paddingTop: verticalPadding,
-    paddingBottom:
-      nc.stackPaddingBottom ??
-      (consumesVariableField(nc, 'STACK_PADDING_TOP') ? basePadding : verticalPadding),
-    paddingLeft: horizontalPadding,
-    paddingRight:
-      nc.stackPaddingRight ??
-      (consumesVariableField(nc, 'STACK_PADDING_LEFT') ? basePadding : horizontalPadding)
+    paddingTop: nc.stackVerticalPadding ?? basePadding,
+    paddingBottom: nc.stackPaddingBottom ?? basePadding,
+    paddingLeft: nc.stackHorizontalPadding ?? basePadding,
+    paddingRight: nc.stackPaddingRight ?? basePadding
   }
 }
 
@@ -468,6 +411,16 @@ function visibleContainerDerivedLayout(
     width: nc.size?.x ?? 100,
     height: nc.size?.y ?? 100
   }
+}
+
+function minimumSizeDimension(size: NodeChange['minSize'], axis: 'x' | 'y'): number | null {
+  const value = size?.value?.[axis]
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null
+}
+
+function maximumSizeDimension(size: NodeChange['maxSize'], axis: 'x' | 'y'): number | null {
+  const value = size?.value?.[axis]
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : null
 }
 
 function convertLayoutProps(
@@ -663,10 +616,10 @@ export function nodeChangeToProps(
     verticalConstraint: mapConstraint(nc.verticalConstraint as string),
     ...convertLayoutProps(nc),
     ...vectorAndStrokeProps,
-    minWidth: (nc.minWidth ?? null) as number | null,
-    maxWidth: (nc.maxWidth ?? null) as number | null,
-    minHeight: (nc.minHeight ?? null) as number | null,
-    maxHeight: (nc.maxHeight ?? null) as number | null,
+    minWidth: minimumSizeDimension(nc.minSize, 'x'),
+    maxWidth: maximumSizeDimension(nc.maxSize, 'x'),
+    minHeight: minimumSizeDimension(nc.minSize, 'y'),
+    maxHeight: maximumSizeDimension(nc.maxSize, 'y'),
     isMask: nc.mask ?? false,
     maskType: (nc.maskType ?? 'ALPHA') as 'ALPHA' | 'VECTOR' | 'LUMINANCE',
     maskIsOutline: nc.maskIsOutline ?? false,

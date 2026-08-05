@@ -1,5 +1,5 @@
 export { buildDsdLayoutUpdates } from './derived-symbol-data/layout'
-export { propagateDsdChanges } from './derived-symbol-data/propagate'
+export { applyGeneratedFreeformStretch, propagateDsdChanges } from './derived-symbol-data/propagate'
 export { protectField, type ProtectionMap } from './patches'
 export { syncChildrenDeep, syncNodeProps } from './sync'
 export type {
@@ -16,7 +16,7 @@ export type {
 
 import { isEqual } from 'es-toolkit/predicate'
 
-import { guidToString } from '@open-pencil/fig/node-change'
+import { guidToString, resolvedNumericBindingUpdate } from '@open-pencil/fig/node-change'
 import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
 import {
   copyFills,
@@ -29,6 +29,7 @@ import type { JsonObject } from '@open-pencil/scene-graph/primitives'
 import { applyComponentProperties } from './component-props'
 import { applyConstraintScaling } from './constraints'
 import { applyDerivedSymbolData } from './derived-symbol-data'
+import { applyGeneratedFreeformStretch } from './derived-symbol-data/propagate'
 import { populateInstances } from './populate'
 import { preComputeRoots } from './resolve'
 import { applySymbolOverrides } from './symbol/overrides'
@@ -265,8 +266,20 @@ function buildOverrideContext(
   }
 }
 
+function applyResolvedNumericBindings(graph: SceneGraph, activeNodeIds?: Set<string>): void {
+  for (const node of overrideCandidates(graph, activeNodeIds)) {
+    const updates: Partial<SceneNode> = {}
+    for (const [field, variableId] of Object.entries(node.boundVariables)) {
+      if (Array.isArray(variableId)) continue
+      const value = graph.resolveNumberVariableForNode(node.id, variableId)
+      if (value === undefined) continue
+      Object.assign(updates, resolvedNumericBindingUpdate(field, value))
+    }
+    if (Object.keys(updates).length > 0) graph.updateNode(node.id, updates)
+  }
+}
+
 /**
- * Populate empty instances from their components and apply symbol overrides.
  *
  * Shared between .fig file import and clipboard paste. Both paths produce
  * a SceneGraph with INSTANCE nodes whose componentId references have been
@@ -361,4 +374,6 @@ export function populateAndApplyOverrides(
     ctx.protectedFields,
     ctx.preComputedClones
   )
+  applyResolvedNumericBindings(graph, ctx.activeNodeIds)
+  applyGeneratedFreeformStretch(ctx)
 }
