@@ -68,6 +68,14 @@ export const programmableSidebar = (
       { text: labels.jsxRenderer, link: `${prefix}/programmable/jsx-renderer` },
       { text: labels.mcpServer, link: `${prefix}/programmable/mcp-server` },
       { text: labels.aiChat, link: `${prefix}/programmable/ai-chat` },
+      ...(!prefix
+        ? [
+            {
+              text: 'BYOK Compatibility',
+              link: '/programmable/byok-provider-compatibility',
+            },
+          ]
+        : []),
       { text: labels.collaboration, link: `${prefix}/programmable/collaboration` },
     ],
   },
