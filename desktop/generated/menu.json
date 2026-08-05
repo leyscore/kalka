@@ -13,6 +13,10 @@
         "accelerator": "CmdOrCtrl+O"
       },
       {
+        "id": "open-storage-workspace",
+        "label": "Open Storage Workspace…"
+      },
+      {
         "type": "separator"
       },
       {

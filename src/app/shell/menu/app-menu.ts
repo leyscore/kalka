@@ -1,4 +1,5 @@
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 
 import type { MenuEntry } from '@open-pencil/vue'
 import { useEditorCommands, useI18n } from '@open-pencil/vue'
@@ -6,6 +7,7 @@ import { useEditorCommands, useI18n } from '@open-pencil/vue'
 import { useEditorStore } from '@/app/editor/active-store'
 import { openSettingsDialog } from '@/app/settings/dialog'
 import { createSharedEditorMenuActions } from '@/app/shell/menu/editor-actions'
+import { openStorageWorkspace } from '@/app/shell/menu/navigation'
 import type { AppMenuActionItem, AppMenuEntry, AppMenuGroupSchema } from '@/app/shell/menu/schema'
 import { APP_MENU_SCHEMA } from '@/app/shell/menu/schema'
 import { createSelectionMenuActions } from '@/app/shell/menu/selection-actions'
@@ -29,6 +31,7 @@ function isSeparator(entry: AppMenuEntry): entry is Extract<AppMenuEntry, { type
 
 export function useAppMenu() {
   const store = useEditorStore()
+  const router = useRouter()
   const {
     commands,
     menuItem: commandMenuItem,
@@ -41,6 +44,7 @@ export function useAppMenu() {
   const translatedMenuItemLabels: Partial<Record<string, keyof typeof menu.value>> = {
     new: 'new',
     open: 'open',
+    'open-storage-workspace': 'openStorageWorkspace',
     save: 'save',
     'save-as': 'saveAs',
     'export-selection': 'exportSelection',
@@ -94,6 +98,7 @@ export function useAppMenu() {
       void import('@/app/tabs').then((m) => m.createTab())
     },
     open: () => void openFileDialog(),
+    'open-storage-workspace': () => openStorageWorkspace(router),
     save: () => void store.saveFigFile(),
     'save-as': () => void store.saveFigFileAs(),
     'export-selection': () => exportSelection('png'),
