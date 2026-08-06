@@ -24,6 +24,20 @@ describe('derived instance layout regressions', () => {
     layoutNodes = collectAllNodes(layoutGraph)
   })
 
+  test('retains imported glyph outlines through non-glyph layout updates', () => {
+    const glyphCount = () =>
+      layoutNodes.filter(
+        (node) => node.type === 'TEXT' && (node.figmaDerivedTextGlyphs?.length ?? 0) > 0
+      ).length
+
+    expect(glyphCount()).toBe(43)
+
+    computeAllLayouts(layoutGraph)
+    layoutNodes = collectAllNodes(layoutGraph)
+
+    expect(glyphCount()).toBe(43)
+  })
+
   test('preserves repeated badge overrides without moving sibling component wrappers', () => {
     const input = previewChild(layoutGraph, layoutNodes, 'Input')
     const inputRoot = childNamed(layoutGraph, input, '_input')
