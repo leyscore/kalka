@@ -94,10 +94,15 @@ function isThinCenteredCrossChild(parent: SceneNode, clone: SceneNode): boolean 
   return false
 }
 
+interface ThinCloneCrossPosition {
+  axis: 'x' | 'y'
+  position: number
+}
+
 function thinCloneCrossPosition(
   graph: OverrideContext['graph'],
   clone: SceneNode
-): { axis: 'x' | 'y'; position: number } | null {
+): ThinCloneCrossPosition | null {
   if (
     clone.source.format !== null ||
     !clone.componentId ||
