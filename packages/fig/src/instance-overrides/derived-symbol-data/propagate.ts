@@ -97,7 +97,7 @@ function isThinCenteredCrossChild(parent: SceneNode, clone: SceneNode): boolean 
 function thinCloneCrossPosition(
   graph: OverrideContext['graph'],
   clone: SceneNode
-): NonNullable<SceneNode['figmaDerivedLayout']> | null {
+): { axis: 'x' | 'y'; position: number } | null {
   if (
     clone.source.format !== null ||
     !clone.componentId ||
@@ -114,18 +114,20 @@ function thinCloneCrossPosition(
   if (!parent || !source || sourceLayout?.x === undefined || sourceLayout.y === undefined)
     return null
   if (clone.width !== source.width || clone.height !== source.height) return null
-  return isThinCenteredCrossChild(parent, clone) ? sourceLayout : null
+  if (!isThinCenteredCrossChild(parent, clone)) return null
+  return parent.layoutMode === 'HORIZONTAL'
+    ? { axis: 'y', position: sourceLayout.y }
+    : { axis: 'x', position: sourceLayout.x }
 }
 
 function restoreThinCloneCrossPositions(ctx: OverrideContext): void {
   for (const clone of overrideCandidates(ctx.graph, ctx.activeNodeIds)) {
-    const sourceLayout = thinCloneCrossPosition(ctx.graph, clone)
-    if (!sourceLayout) continue
+    const crossPosition = thinCloneCrossPosition(ctx.graph, clone)
+    if (!crossPosition) continue
     ctx.graph.updateNode(clone.id, {
       figmaDerivedLayout: {
         ...clone.figmaDerivedLayout,
-        x: sourceLayout.x,
-        y: sourceLayout.y
+        [crossPosition.axis]: crossPosition.position
       }
     })
   }
