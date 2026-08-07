@@ -24,6 +24,7 @@ export const GLYPH_AFFECTING_KEYS: ReadonlySet<string> = new Set([
   'fontFamily',
   'fontWeight',
   'italic',
+  'textDirection',
   'lineHeight',
   'letterSpacing',
   'textCase',

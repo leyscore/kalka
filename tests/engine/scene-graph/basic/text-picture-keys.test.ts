@@ -35,6 +35,7 @@ describe('text rendering invalidation keys', () => {
       'fontFamily',
       'fontWeight',
       'italic',
+      'textDirection',
       'lineHeight',
       'letterSpacing',
       'textCase',
@@ -49,7 +50,6 @@ describe('text rendering invalidation keys', () => {
       'height',
       'fills',
       'textAlignHorizontal',
-      'textDirection',
       'textAlignVertical',
       'textDecoration'
     ]) {

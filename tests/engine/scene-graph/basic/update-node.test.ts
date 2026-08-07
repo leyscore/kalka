@@ -200,7 +200,7 @@ describe('updateNode', () => {
     const textNode = expectDefined(graph.getNode(textId), 'text node')
     textNode.figmaDerivedTextGlyphs = glyphs
 
-    graph.updateNode(textId, { fontFamily: 'Noto Sans SC' })
+    graph.updateNode(textId, { textDirection: 'RTL' })
 
     expect(expectDefined(graph.getNode(textId), 'updated node').figmaDerivedTextGlyphs).toBeNull()
   })
@@ -211,7 +211,6 @@ describe('updateNode', () => {
       { height: 24 },
       { fills: [] },
       { textAlignHorizontal: 'CENTER' as const },
-      { textDirection: 'RTL' as const },
       { textAlignVertical: 'CENTER' as const },
       { textDecoration: 'UNDERLINE' as const }
     ]
