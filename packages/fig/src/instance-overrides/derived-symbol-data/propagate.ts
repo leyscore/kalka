@@ -111,7 +111,8 @@ function thinCloneCrossPosition(
   const parent = graph.getNode(clone.parentId)
   const source = graph.getNode(clone.componentId)
   const sourceLayout = source?.figmaDerivedLayout
-  if (!parent || !source || sourceLayout?.x === undefined || sourceLayout.y === undefined) return null
+  if (!parent || !source || sourceLayout?.x === undefined || sourceLayout.y === undefined)
+    return null
   if (clone.width !== source.width || clone.height !== source.height) return null
   return isThinCenteredCrossChild(parent, clone) ? sourceLayout : null
 }

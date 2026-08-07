@@ -51,9 +51,7 @@ export function updateNodePreview(
   const node = graph.nodes.get(id)
   if (!node) return null
   changes = Object.fromEntries(
-    (Object.entries(changes) as Array<[string, unknown]>).filter(
-      ([, value]) => value !== undefined
-    )
+    (Object.entries(changes) as Array<[string, unknown]>).filter(([, value]) => value !== undefined)
   ) as Partial<SceneNode>
   if ((Object.keys(changes) as (keyof SceneNode)[]).every((key) => node[key] === changes[key])) {
     return null

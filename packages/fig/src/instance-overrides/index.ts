@@ -29,7 +29,10 @@ import type { JsonObject } from '@open-pencil/scene-graph/primitives'
 import { applyComponentProperties } from './component-props'
 import { applyConstraintScaling } from './constraints'
 import { applyDerivedSymbolData } from './derived-symbol-data'
-import { applyGeneratedFreeformStretch, reconcileEffectiveCloneGeometry } from './derived-symbol-data/propagate'
+import {
+  applyGeneratedFreeformStretch,
+  reconcileEffectiveCloneGeometry
+} from './derived-symbol-data/propagate'
 import { populateInstances } from './populate'
 import { preComputeRoots } from './resolve'
 import { applySymbolOverrides } from './symbol/overrides'
