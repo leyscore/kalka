@@ -49,6 +49,7 @@
 
 ### Fixed
 
+- Keep the canvas rendering when hiding or showing the UI on wide HiDPI viewports by bounding retained scene backing allocations and falling back to direct rendering when CanvasKit rejects an offscreen surface.
 - Scale proportion-constrained `.fig` instance geometry through fixed wrapper layers so imported logos and icons retain their intended size.
 - Match Figma auto-layout spacing, padding, min/max constraints, scalar variable bindings, CanvasKit-shaped generated text, imported text bounds, and nested instance geometry more closely.
 - Match Figma Plugin API vector path and network editing, including bounds, transforms, winding rules, region fills, validation, and handle mirroring. (#444)
