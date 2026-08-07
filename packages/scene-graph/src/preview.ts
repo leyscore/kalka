@@ -1,3 +1,4 @@
+import { GLYPH_AFFECTING_KEYS, TEXT_PICTURE_KEYS } from './text-picture'
 import type { SceneNode } from './types'
 import { normalizeVectorNetwork } from './vector-network'
 
@@ -42,25 +43,6 @@ const LAYOUT_AFFECTING_KEYS = new Set<string>([
   'textAutoResize'
 ])
 
-const TEXT_PICTURE_KEYS = new Set<string>([
-  'text',
-  'fontSize',
-  'fontFamily',
-  'fontWeight',
-  'italic',
-  'textAlignHorizontal',
-  'textDirection',
-  'textAlignVertical',
-  'lineHeight',
-  'letterSpacing',
-  'textDecoration',
-  'textCase',
-  'styleRuns',
-  'fills',
-  'width',
-  'height'
-])
-
 export function updateNodePreview(
   graph: PreviewGraph,
   id: string,
@@ -68,6 +50,9 @@ export function updateNodePreview(
 ): Partial<SceneNode> | null {
   const node = graph.nodes.get(id)
   if (!node) return null
+  changes = Object.fromEntries(
+    (Object.entries(changes) as Array<[string, unknown]>).filter(([, value]) => value !== undefined)
+  ) as Partial<SceneNode>
   if ((Object.keys(changes) as (keyof SceneNode)[]).every((key) => node[key] === changes[key])) {
     return null
   }
@@ -76,7 +61,8 @@ export function updateNodePreview(
   if (node.type === 'TEXT') {
     const textChanged = Object.keys(changes).some((key) => TEXT_PICTURE_KEYS.has(key))
     if (node.textPicture && textChanged) node.textPicture = null
-    if (node.figmaDerivedTextGlyphs && textChanged) node.figmaDerivedTextGlyphs = null
+    const glyphChanged = Object.keys(changes).some((key) => GLYPH_AFFECTING_KEYS.has(key))
+    if (node.figmaDerivedTextGlyphs && glyphChanged) node.figmaDerivedTextGlyphs = null
   }
   const normalizedChanges = changes.vectorNetwork
     ? { ...changes, vectorNetwork: normalizeVectorNetwork(changes.vectorNetwork) }
