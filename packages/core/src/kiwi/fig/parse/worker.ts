@@ -31,8 +31,8 @@ function isPopulateRequest(request: WorkerRequest): request is PopulateRequest {
 }
 
 self.onmessage = (event: MessageEvent<WorkerRequest>) => {
+  const request = event.data
   try {
-    const request = event.data
     if (isPopulateRequest(request)) {
       if (!graph) throw new Error('FIG parse worker has no retained graph')
       const journal = installFigMutationJournal(graph)
@@ -70,11 +70,11 @@ self.onmessage = (event: MessageEvent<WorkerRequest>) => {
         : serializedSceneGraphTransferList(serialized)
     postWorkerMessage({ graph: serialized }, transfer)
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
     postWorkerMessage(
-      {
-        type: 'population-error',
-        error: error instanceof Error ? error.message : String(error)
-      },
+      isPopulateRequest(request)
+        ? { type: 'population-error', error: errorMessage }
+        : { error: errorMessage },
       []
     )
   }

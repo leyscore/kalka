@@ -92,6 +92,7 @@ export function createPageActions(ctx: EditorContext) {
   function clearPageViewports() {
     populationWorkerGeneration++
     pageSwitchGeneration++
+    ctx.state.loading = false
     populationWorkerInstance?.terminate()
     populationWorkerInstance = undefined
     pageViewportStore.clearPageViewports()

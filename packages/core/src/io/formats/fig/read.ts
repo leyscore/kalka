@@ -42,13 +42,18 @@ function parseViaWorker(buffer: ArrayBuffer, options: ParseFigFileOptions): Prom
         reject(new Error(e.data.error ?? 'Worker failed to parse .fig file'))
         return
       }
-      const graph = deserializeSceneGraph(e.data.graph)
-      if (options.populate === 'first-page') {
-        worker.onmessage = null
-        worker.onerror = null
-        registerFigPopulationWorker(graph, worker)
-      } else worker.terminate()
-      resolve(graph)
+      try {
+        const graph = deserializeSceneGraph(e.data.graph)
+        if (options.populate === 'first-page') {
+          worker.onmessage = null
+          worker.onerror = null
+          registerFigPopulationWorker(graph, worker)
+        } else worker.terminate()
+        resolve(graph)
+      } catch (error) {
+        worker.terminate()
+        reject(error instanceof Error ? error : new Error(String(error)))
+      }
     }
 
     worker.onerror = (err) => {

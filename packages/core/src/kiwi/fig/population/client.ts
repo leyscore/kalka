@@ -15,7 +15,8 @@ interface PopulationResult {
 type WorkerResult = PopulationResult | { type: 'population-error'; error: string }
 
 const MAX_FIG_POPULATION_WORKER_NODES = 200_000
-const populationWorkers = new WeakMap<SceneGraph, Worker>()
+const FIG_POPULATION_WORKER_TIMEOUT_MS = 30_000
+const populationWorkers = new WeakMap<SceneGraph, FigPopulationWorker>()
 
 export interface FigPopulationWorkerTelemetry {
   event: 'registered' | 'populate' | 'fallback' | 'stale' | 'terminated'
@@ -38,13 +39,18 @@ export function registerFigPopulationWorker(graph: SceneGraph, worker: Worker): 
     worker.terminate()
     return
   }
-  populationWorkers.set(graph, worker)
+  const client = createPopulationWorkerClient(graph, worker)
+  populationWorkers.set(graph, client)
   emitTelemetry({ event: 'registered' })
+}
+
+function isDevelopmentBuild(meta: { env?: { DEV?: boolean } }): boolean {
+  return meta.env?.DEV ?? false
 }
 
 export function canUseFigPopulationWorker(graph: SceneGraph): boolean {
   return (
-    import.meta.env.DEV &&
+    isDevelopmentBuild(import.meta) &&
     populationWorkers.has(graph) &&
     getLazyFigImportContext(graph) !== undefined
   )
@@ -57,11 +63,18 @@ export interface FigPopulationWorker {
 
 export function createFigPopulationWorker(graph: SceneGraph): FigPopulationWorker | null {
   if (!canUseFigPopulationWorker(graph)) return null
-  const worker = populationWorkers.get(graph)
-  if (!worker) return null
+  return populationWorkers.get(graph) ?? null
+}
+
+function createPopulationWorkerClient(graph: SceneGraph, worker: Worker): FigPopulationWorker {
   const pending = new Map<
     string,
-    { resolve: (value: boolean | null) => void; revision: number; startedAt: number }
+    {
+      resolve: (value: boolean | null) => void
+      revision: number
+      startedAt: number
+      timeout: ReturnType<typeof setTimeout>
+    }
   >()
   let revision = 0
   let stale = false
@@ -72,26 +85,36 @@ export function createFigPopulationWorker(graph: SceneGraph): FigPopulationWorke
     stale = true
     emitTelemetry({ event: 'stale', reason: 'graph-mutation' })
   }
-  const unbind = graph.onNodeEvents({
+  let unbind: (() => void) | undefined
+  const releaseSubscription = () => {
+    unbind?.()
+    unbind = undefined
+  }
+  const fail = (emit = true) => {
+    stale = true
+    if (emit) emitTelemetry({ event: 'fallback', reason: 'worker-error' })
+    for (const request of pending.values()) {
+      clearTimeout(request.timeout)
+      request.resolve(null)
+    }
+    pending.clear()
+    releaseSubscription()
+    worker.terminate()
+    populationWorkers.delete(graph)
+  }
+  unbind = graph.onNodeEvents({
     created: invalidate,
     updated: invalidate,
     deleted: invalidate,
     reparented: invalidate,
     reordered: invalidate
   })
-  const fail = (emit = true) => {
-    stale = true
-    if (emit) emitTelemetry({ event: 'fallback', reason: 'worker-error' })
-    for (const request of pending.values()) request.resolve(null)
-    pending.clear()
-    worker.terminate()
-    populationWorkers.delete(graph)
-  }
   worker.onmessage = (event: MessageEvent<WorkerResult>) => {
     const result = event.data
     if (result.type === 'population-error') return fail()
     const request = pending.get(result.requestId)
     if (!request) return
+    clearTimeout(request.timeout)
     pending.delete(result.requestId)
     if (stale || revision !== request.revision || result.baseRevision !== request.revision) {
       emitTelemetry({ event: 'stale', reason: 'graph-mutation' })
@@ -127,13 +150,18 @@ export function createFigPopulationWorker(graph: SceneGraph): FigPopulationWorke
       const requestId = randomHex()
       const baseRevision = revision
       return new Promise((resolve) => {
-        pending.set(requestId, { resolve, revision: baseRevision, startedAt: performance.now() })
+        const timeout = setTimeout(() => fail(), FIG_POPULATION_WORKER_TIMEOUT_MS)
+        pending.set(requestId, {
+          resolve,
+          revision: baseRevision,
+          startedAt: performance.now(),
+          timeout
+        })
         worker.postMessage({ type: 'populate', requestId, baseRevision, pageId }, [])
       })
     },
     terminate() {
       emitTelemetry({ event: 'terminated' })
-      unbind()
       fail(false)
     }
   }
