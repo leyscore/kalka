@@ -60,10 +60,11 @@ self.onmessage = (event: MessageEvent<WorkerRequest>) => {
     const { nodeChanges, blobs, images, figKiwiVersion, figSchemaDeflated } = parseFigBuffer(
       parseRequest.buffer
     )
-    graph = importNodeChanges(nodeChanges, blobs, new Map(images), parseRequest.options)
-    graph.figKiwiVersion = figKiwiVersion
-    graph.figSchemaDeflated = figSchemaDeflated
-    const serialized = serializeSceneGraph(graph)
+    const parsedGraph = importNodeChanges(nodeChanges, blobs, new Map(images), parseRequest.options)
+    parsedGraph.figKiwiVersion = figKiwiVersion
+    parsedGraph.figSchemaDeflated = figSchemaDeflated
+    graph = parseRequest.options?.populate === 'first-page' ? parsedGraph : undefined
+    const serialized = serializeSceneGraph(parsedGraph)
     const transfer =
       parseRequest.options?.populate === 'first-page'
         ? []

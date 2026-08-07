@@ -78,6 +78,7 @@ function createPopulationWorkerClient(graph: SceneGraph, worker: Worker): FigPop
   >()
   let revision = 0
   let stale = false
+  let disposed = false
   let applyingDelta = false
   const invalidate = () => {
     if (applyingDelta || stale) return
@@ -161,6 +162,8 @@ function createPopulationWorkerClient(graph: SceneGraph, worker: Worker): FigPop
       })
     },
     terminate() {
+      if (disposed) return
+      disposed = true
       emitTelemetry({ event: 'terminated' })
       fail(false)
     }

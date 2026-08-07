@@ -23,15 +23,20 @@ test('populates a real lazy FIG page in the retained parse worker', async () => 
   })
   if (!targetPageId) throw new Error('Target page not found')
 
-  const loading = editor.page.getByTestId('canvas-loading')
-  const switchPromise = editor.page.evaluate((pageId) => {
+  await editor.page.evaluate((pageId) => {
     const store = window.openPencil?.getStore?.()
     if (!store) throw new Error('OpenPencil store not initialized')
     return store.switchPage(pageId)
   }, targetPageId)
-  await expect(loading).toBeVisible()
-  await switchPromise
-  await expect(loading).not.toBeVisible()
+  await expect
+    .poll(() =>
+      editor.page.evaluate(() =>
+        (Reflect.get(window, 'figPopulationWorkerEvents') as Array<{ event: string }>).some(
+          ({ event }) => event === 'populate'
+        )
+      )
+    )
+    .toBe(true)
 
   const currentPage = await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
