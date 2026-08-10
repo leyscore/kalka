@@ -164,6 +164,41 @@ export async function headObject(config: S3CompatibleConfig, key: string): Promi
   return true
 }
 
+export async function headObjectSize(
+  config: S3CompatibleConfig,
+  key: string
+): Promise<number | null> {
+  const res = await s3Request(config, objectURL(config, key), { method: 'HEAD' })
+  if (res.status === 404) return null
+  const sizeHeader = res.headers.get('content-length')
+  if (sizeHeader == null) return null
+  const size = Number(sizeHeader)
+  return Number.isSafeInteger(size) && size >= 0 ? size : null
+}
+
+export async function getObjectRange(
+  config: S3CompatibleConfig,
+  key: string,
+  start: number,
+  endExclusive: number
+): Promise<Uint8Array | null> {
+  if (
+    !Number.isSafeInteger(start) ||
+    start < 0 ||
+    !Number.isSafeInteger(endExclusive) ||
+    endExclusive <= start
+  ) {
+    throw new Error('Invalid S3 byte range')
+  }
+  const res = await s3Request(config, objectURL(config, key), {
+    method: 'GET',
+    headers: { Range: `bytes=${start}-${endExclusive - 1}` }
+  })
+  if (res.status === 404) return null
+  if (res.status !== 206) throw new Error('Storage provider did not honor the thumbnail byte range')
+  return new Uint8Array(await res.arrayBuffer())
+}
+
 export async function putObject(
   config: S3CompatibleConfig,
   key: string,

@@ -13,6 +13,7 @@ import { getOutbox } from '@/app/storage/sync/outbox'
 import { setUploadProgress } from '@/app/storage/sync/progress'
 import { setPendingSyncCount, setSyncUI } from '@/app/storage/sync/status'
 import type { OutboxJob } from '@/app/storage/sync/types'
+import { emitStorageWorkspaceEvent } from '@/app/storage/workspace/events'
 
 const MAX_ATTEMPTS = 8
 const BASE_BACKOFF_MS = 1500
@@ -124,6 +125,11 @@ async function runJob(job: OutboxJob): Promise<void> {
         { expectedRevision: job.revision }
       )
       await evictLocalFigCache(new Set([job.canvasId]))
+      emitStorageWorkspaceEvent({
+        providerId: providerID,
+        documentId: job.canvasId,
+        kind: 'synced'
+      })
     }
     return
   }
