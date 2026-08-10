@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-## 0.14.0 - 2026-08-07
+## 0.14.0 - 2026-08-10
 
 ### Breaking changes
 
@@ -40,6 +40,7 @@
 
 ### Changed
 
+- Simplify AI model setup with clearly separated model, connection, and advanced settings, automatic compatibility and output-limit defaults for recognized models, and an explicit custom-model option.
 - Redesign the editor chrome and Design panel with denser, better-aligned controls, clearer selection and section states, improved menus and overlays, consistent light/dark theming, and better keyboard and screen-reader support.
 - Choose Freeform, vertical, horizontal, or grid flow directly from the contextual Layout section, with sizing controls grouped alongside it.
 - Choose Auto width, Auto height, or Fixed size directly from the Layout section for text layers.
