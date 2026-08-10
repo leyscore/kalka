@@ -24,7 +24,10 @@ export function createDocumentPreviews<Item extends DocumentWorkspaceItem>(
   const previewQueue: string[] = []
   const queued = new Set<string>()
   const active = new Set<string>()
-  const concurrency = Math.max(1, Math.floor(options.previewConcurrency ?? 6))
+  const requestedConcurrency = options.previewConcurrency ?? 6
+  const concurrency = Number.isFinite(requestedConcurrency)
+    ? Math.max(1, Math.floor(requestedConcurrency))
+    : 6
   let disposed = false
 
   function removeURL(id: string): void {
@@ -67,7 +70,11 @@ export function createDocumentPreviews<Item extends DocumentWorkspaceItem>(
     } catch (error: unknown) {
       if (!disposed && generation === (previewGenerations.get(id) ?? 0)) {
         previewErrors.value = { ...previewErrors.value, [id]: error }
-        options.onPreviewError?.(id, error)
+        try {
+          options.onPreviewError?.(id, error)
+        } catch (callbackError) {
+          console.error('[Vue] Preview error callback failed:', callbackError)
+        }
       }
     } finally {
       active.delete(id)
@@ -104,10 +111,16 @@ export function createDocumentPreviews<Item extends DocumentWorkspaceItem>(
   function reconcile(previousItems: readonly Item[], items: readonly Item[]): void {
     const previous = new Map(previousItems.map((item) => [item.id, item.updatedAt]))
     const current = new Map(items.map((item) => [item.id, item.updatedAt]))
-    const trackedIds = new Set([...Object.keys(previewUrls.value), ...active, ...queued])
+    const trackedIds = new Set([
+      ...Object.keys(previewUrls.value),
+      ...active,
+      ...queued,
+      ...Object.keys(previewErrors.value)
+    ])
     for (const id of trackedIds) {
       if (previous.get(id) === current.get(id)) continue
       removeURL(id)
+      clearError(id)
       if (!current.has(id)) {
         queued.delete(id)
         continue

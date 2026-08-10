@@ -12,7 +12,7 @@ export type DocumentWorkspaceItem = {
 }
 
 export interface DocumentWorkspaceSource<Item extends DocumentWorkspaceItem> {
-  refresh(): Promise<Item[]>
+  refresh(): Promise<Item[] | null>
   loadPreview(id: string): Promise<Uint8Array | null>
   subscribe?(listener: () => void): () => void
 }
@@ -54,7 +54,7 @@ export function useDocumentWorkspace<Item extends DocumentWorkspaceItem>(
     const nextRefresh = options.source
       .refresh()
       .then((items) => {
-        if (!disposed) {
+        if (!disposed && items) {
           previews.reconcile(documents.value, items)
           documents.value = items
           lastRefreshedAt.value = new Date()

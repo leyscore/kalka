@@ -25,7 +25,7 @@ export function createStorageWorkspaceSource(
       })
     },
 
-    async refresh(): Promise<StorageDocument[]> {
+    async refresh(): Promise<StorageDocument[] | null> {
       const providerID = activeStorageProviderID.value
       const provider = storageProviderRegistry.get(providerID)
       const statuses = await storageCredentialStatuses(providerID)
@@ -47,7 +47,7 @@ export function createStorageWorkspaceSource(
             updatedAt: metadata.updatedAt,
             metadataAuthoritative: true
           }))
-        if (activeStorageProviderID.value !== providerID) return []
+        if (activeStorageProviderID.value !== providerID) return null
         onSnapshot({ documents, configured })
         return documents
       }
@@ -66,7 +66,7 @@ export function createStorageWorkspaceSource(
           lastSyncError: null
         })
       }
-      if (activeStorageProviderID.value !== providerID) return []
+      if (activeStorageProviderID.value !== providerID) return null
       onSnapshot({ documents: reconciliation.documents, configured })
       return reconciliation.documents
     },
