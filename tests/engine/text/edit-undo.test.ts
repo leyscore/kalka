@@ -103,6 +103,40 @@ describe('text edit undo', () => {
     expect(getNodeOrThrow(graph, textNode.id).text).toBe('Hello World')
   })
 
+  test('keeps an empty text override inside an instance through sync and undo', () => {
+    const { graph, undo, textEditor, actions } = setup()
+    const page = graph.getPages()[0]
+    const component = graph.createNode('COMPONENT', page.id, {
+      width: 100,
+      height: 20
+    })
+    graph.createNode('TEXT', component.id, {
+      text: 'Confidential',
+      width: 100,
+      height: 20
+    })
+    const instance = expectDefined(graph.createInstance(component.id, page.id), 'instance')
+    const instanceText = getNodeOrThrow(graph, instance.childIds[0])
+
+    actions.startTextEditing(instanceText.id)
+    textEditor.selectAll()
+    textEditor.backspace(instanceText)
+    actions.commitTextEdit()
+
+    expect(getNodeOrThrow(graph, instanceText.id).text).toBe('')
+    expect(getNodeOrThrow(graph, instance.id).overrides[`${instanceText.id}:text`]).toBe('')
+    graph.syncInstances(component.id)
+    expect(getNodeOrThrow(graph, instanceText.id).text).toBe('')
+
+    undo.undo()
+    expect(getNodeOrThrow(graph, instanceText.id).text).toBe('Confidential')
+    expect(`${instanceText.id}:text` in getNodeOrThrow(graph, instance.id).overrides).toBe(false)
+
+    undo.redo()
+    graph.syncInstances(component.id)
+    expect(getNodeOrThrow(graph, instanceText.id).text).toBe('')
+  })
+
   test('commitTextEdit preserves auto-height text bounds', () => {
     const { graph, undo, textEditor, textNode, actions } = setup()
     graph.updateNode(textNode.id, { textAutoResize: 'HEIGHT', height: 18 })

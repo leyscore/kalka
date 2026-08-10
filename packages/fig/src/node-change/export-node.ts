@@ -24,6 +24,12 @@ export type KiwiNodeChange = NodeChange & Record<string, unknown>
 
 type KiwiBooleanOperation = NonNullable<NodeChange['booleanOperation']>
 
+interface KiwiSymbolOverridePayload {
+  guidPath?: { guids?: GUID[] }
+  textData?: { characters?: string }
+  [key: string]: unknown
+}
+
 function toKiwiBooleanOperation(operation: SceneNode['booleanOperation']): KiwiBooleanOperation {
   return operation === 'EXCLUDE' ? 'XOR' : (operation ?? 'UNION')
 }
@@ -343,6 +349,42 @@ function getOrCreateNodeGuid(
   return guid
 }
 
+function isDescendantOf(context: SceneNodeToKiwiContext, nodeId: string, ancestorId: string) {
+  let current = context.graph.getNode(nodeId)
+  while (current?.parentId) {
+    if (current.parentId === ancestorId) return true
+    current = context.graph.getNode(current.parentId)
+  }
+  return false
+}
+
+function serializeTextOverrides(
+  context: SceneNodeToKiwiContext,
+  instance: SceneNode,
+  localIdCounter: { value: number }
+): KiwiSymbolOverridePayload[] {
+  const result: KiwiSymbolOverridePayload[] = []
+  for (const [key, value] of Object.entries(instance.overrides)) {
+    if (!key.endsWith(':text') || typeof value !== 'string') continue
+    const targetId = key.slice(0, -':text'.length)
+    const target = context.graph.getNode(targetId)
+    if (!target || !isDescendantOf(context, targetId, instance.id)) continue
+
+    const sourceId = target.componentId
+    if (!sourceId) continue
+    const source = context.graph.getNode(sourceId)
+    const overrideGuid = source?.overrideKey ? parseGuidOrNull(source.overrideKey) : null
+    const targetGuid = overrideGuid ?? getOrCreateNodeGuid(context, sourceId, localIdCounter)
+    if (!targetGuid) continue
+
+    result.push({
+      guidPath: { guids: [targetGuid] },
+      textData: { characters: value }
+    })
+  }
+  return result
+}
+
 /**
  * Fields that are ALWAYS set by explicit serialization and must NOT be
  * overwritten by rawNodeFields (which may contain stale Figma defaults).
@@ -451,17 +493,18 @@ function applyInstancePayload(
   )
   if (symbolID) {
     const symbolData: Record<string, unknown> = { symbolID }
+    const symbolOverrides: KiwiSymbolOverridePayload[] = []
     if (node.source.fig.symbolOverrides.length > 0) {
-      symbolData.symbolOverrides = materializeFigmaPayload(
-        node.source.fig.symbolOverrides,
-        context.blobs,
-        {
+      symbolOverrides.push(
+        ...(materializeFigmaPayload(node.source.fig.symbolOverrides, context.blobs, {
           blobIndexByHex: context.blobIndexByHex,
           includePaintVariables: true,
           includeVariableMaps: true
-        }
+        }) as KiwiSymbolOverridePayload[])
       )
     }
+    symbolOverrides.push(...serializeTextOverrides(context, node, localIdCounter))
+    if (symbolOverrides.length > 0) symbolData.symbolOverrides = symbolOverrides
     if (node.source.fig.uniformScaleFactor != null) {
       symbolData.uniformScaleFactor = node.source.fig.uniformScaleFactor
     }
