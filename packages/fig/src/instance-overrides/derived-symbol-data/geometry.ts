@@ -38,9 +38,8 @@ export function resolveDsdGeometry(
 
   if (d.size && target.vectorNetwork?.vertices.length) {
     const network = cloneVectorNetwork(target.vectorNetwork)
-    const vertex = network.vertices[0]
-    const originX = vertex ? Math.min(...network.vertices.map(({ x }) => x)) : 0
-    const originY = vertex ? Math.min(...network.vertices.map(({ y }) => y)) : 0
+    const originX = Math.min(...network.vertices.map(({ x }) => x))
+    const originY = Math.min(...network.vertices.map(({ y }) => y))
     const xs = network.vertices.map(({ x }) => x)
     const ys = network.vertices.map(({ y }) => y)
     const networkWidth = Math.max(...xs) - Math.min(...xs)

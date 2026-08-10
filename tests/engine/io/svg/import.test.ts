@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { FigmaAPI, renderNodesToSVG, SceneGraph } from '@open-pencil/core'
-import { importSvg } from '@open-pencil/core/tools'
+import { importSVG } from '@open-pencil/core/tools'
 
 import { expectDefined, getNodeOrThrow } from '#tests/helpers/assert'
 
@@ -17,7 +17,7 @@ beforeEach(() => {
 
 describe('import_svg', () => {
   test('imports a simple path', async () => {
-    const result = (await importSvg.execute(figma, {
+    const result = (await importSVG.execute(figma, {
       svg: '<svg viewBox="0 0 24 24"><path d="M12 2L2 22h20Z"/></svg>'
     })) as { id: string; name: string; type: string }
 
@@ -38,7 +38,7 @@ describe('import_svg', () => {
   })
 
   test('flattens compatible filled shapes into one vector', async () => {
-    const result = (await importSvg.execute(figma, {
+    const result = (await importSVG.execute(figma, {
       svg: `<svg viewBox="0 0 100 100">
         <rect x="0" y="0" width="50" height="50" fill="#ff0000"/>
         <rect x="50" y="0" width="50" height="50" fill="#00ff00"/>
@@ -69,7 +69,7 @@ describe('import_svg', () => {
       join(process.cwd(), 'tests/fixtures/vectorize/euro_shield.recraft.svg'),
       'utf8'
     )
-    const result = (await importSvg.execute(figma, { svg })) as { id: string }
+    const result = (await importSVG.execute(figma, { svg })) as { id: string }
 
     const vector = expectDefined(graph.getChildren(result.id)[0])
     const network = expectDefined(vector.vectorNetwork)
@@ -79,7 +79,7 @@ describe('import_svg', () => {
   })
 
   test('preserves paint order around stroked paths', async () => {
-    const result = (await importSvg.execute(figma, {
+    const result = (await importSVG.execute(figma, {
       svg: `<svg viewBox="0 0 100 100">
         <rect x="0" y="0" width="20" height="20" fill="#ff0000"/>
         <rect x="20" y="0" width="20" height="20" fill="#ff8800"/>
@@ -97,7 +97,7 @@ describe('import_svg', () => {
   })
 
   test('remaps path gradients into flattened vector bounds', async () => {
-    const result = (await importSvg.execute(figma, {
+    const result = (await importSVG.execute(figma, {
       svg: `<svg viewBox="0 0 100 50"><defs><linearGradient id="g"><stop offset="0" stop-color="#000"/><stop offset="1" stop-color="#fff"/></linearGradient></defs><rect width="50" height="50" fill="url(#g)"/><rect x="50" width="50" height="50" fill="url(#g)"/></svg>`
     })) as { id: string }
 
@@ -116,7 +116,7 @@ describe('import_svg', () => {
   })
 
   test('respects viewBox dimensions', async () => {
-    const result = (await importSvg.execute(figma, {
+    const result = (await importSVG.execute(figma, {
       svg: '<svg viewBox="0 0 200 100"><path d="M0 0 L200 100"/></svg>'
     })) as { id: string }
 
@@ -126,7 +126,7 @@ describe('import_svg', () => {
   })
 
   test('uses width/height attributes when no viewBox', async () => {
-    const result = (await importSvg.execute(figma, {
+    const result = (await importSVG.execute(figma, {
       svg: '<svg width="48" height="48"><path d="M0 0 L48 48"/></svg>'
     })) as { id: string }
 
@@ -136,7 +136,7 @@ describe('import_svg', () => {
   })
 
   test('sets custom name', async () => {
-    const result = (await importSvg.execute(figma, {
+    const result = (await importSVG.execute(figma, {
       svg: '<svg viewBox="0 0 24 24"><path d="M0 0 L24 24"/></svg>',
       name: 'Arrow'
     })) as { id: string; name: string }
@@ -145,7 +145,7 @@ describe('import_svg', () => {
   })
 
   test('applies fill color', async () => {
-    const result = (await importSvg.execute(figma, {
+    const result = (await importSVG.execute(figma, {
       svg: '<svg viewBox="0 0 24 24"><path d="M0 0 L24 24" fill="#FF0000"/></svg>'
     })) as { id: string }
 
@@ -156,7 +156,7 @@ describe('import_svg', () => {
   })
 
   test('applies stroke', async () => {
-    const result = (await importSvg.execute(figma, {
+    const result = (await importSVG.execute(figma, {
       svg: '<svg viewBox="0 0 24 24"><path d="M0 0 L24 24" fill="none" stroke="#00FF00" stroke-width="2"/></svg>'
     })) as { id: string }
 
@@ -168,7 +168,7 @@ describe('import_svg', () => {
   })
 
   test('uses currentColor with custom color arg', async () => {
-    const result = (await importSvg.execute(figma, {
+    const result = (await importSVG.execute(figma, {
       svg: '<svg viewBox="0 0 24 24"><path d="M0 0 L24 24" fill="currentColor"/></svg>',
       color: '#0000FF'
     })) as { id: string }
@@ -179,7 +179,7 @@ describe('import_svg', () => {
   })
 
   test('sets position', async () => {
-    const result = (await importSvg.execute(figma, {
+    const result = (await importSVG.execute(figma, {
       svg: '<svg viewBox="0 0 24 24"><path d="M0 0 L24 24"/></svg>',
       x: 100,
       y: 200
@@ -191,7 +191,7 @@ describe('import_svg', () => {
   })
 
   test('returns error for empty SVG', async () => {
-    const result = (await importSvg.execute(figma, {
+    const result = (await importSVG.execute(figma, {
       svg: '<svg viewBox="0 0 24 24"></svg>'
     })) as { error: string }
 
@@ -199,12 +199,12 @@ describe('import_svg', () => {
   })
 
   test('returns error for missing svg param', async () => {
-    const result = (await importSvg.execute(figma, {})) as { error: string }
+    const result = (await importSVG.execute(figma, {})) as { error: string }
     expect(result.error).toContain('required')
   })
 
   test('handles polygon and polyline', async () => {
-    const result = (await importSvg.execute(figma, {
+    const result = (await importSVG.execute(figma, {
       svg: `<svg viewBox="0 0 100 100">
         <polygon points="50,5 95,97 5,97"/>
         <polyline points="10,10 40,40 70,10"/>
@@ -217,7 +217,7 @@ describe('import_svg', () => {
   })
 
   test('applies nested transforms through the XML tree', async () => {
-    const result = (await importSvg.execute(figma, {
+    const result = (await importSVG.execute(figma, {
       svg: `<svg viewBox="0 0 100 100"><g transform="translate(40 30)"><rect width="10" height="20"/></g></svg>`
     })) as { id: string }
 
@@ -229,7 +229,7 @@ describe('import_svg', () => {
   })
 
   test('honors preserveAspectRatio when mapping the viewBox', async () => {
-    const result = (await importSvg.execute(figma, {
+    const result = (await importSVG.execute(figma, {
       svg: `<svg width="200" height="200" viewBox="0 0 100 50"><rect width="100" height="50"/></svg>`
     })) as { id: string }
 
@@ -241,7 +241,7 @@ describe('import_svg', () => {
   })
 
   test('supports preserveAspectRatio none', async () => {
-    const result = (await importSvg.execute(figma, {
+    const result = (await importSVG.execute(figma, {
       svg: `<svg width="200" height="200" viewBox="0 0 100 50" preserveAspectRatio="none"><rect width="100" height="50"/></svg>`
     })) as { id: string }
 
@@ -253,7 +253,7 @@ describe('import_svg', () => {
   })
 
   test('resolves internal use references and inline presentation styles', async () => {
-    const result = (await importSvg.execute(figma, {
+    const result = (await importSVG.execute(figma, {
       svg: `<svg viewBox="0 0 100 100"><defs><path id="tile" d="M0 0H10V10H0Z"/></defs><use href="#tile" x="20" y="30" style="fill: #0000ff"/></svg>`
     })) as { id: string }
 
@@ -264,7 +264,7 @@ describe('import_svg', () => {
   })
 
   test('imports gradient fills through the shared SVG pipeline', async () => {
-    const result = (await importSvg.execute(figma, {
+    const result = (await importSVG.execute(figma, {
       svg: `<svg viewBox="0 0 10 10"><defs><linearGradient id="g"><stop offset="0" stop-color="#000"/><stop offset="1" stop-color="#fff"/></linearGradient></defs><rect width="10" height="10" fill="url(#g)"/></svg>`
     })) as { id: string }
 

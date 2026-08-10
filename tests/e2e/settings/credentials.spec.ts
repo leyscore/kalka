@@ -11,6 +11,7 @@ test('storage settings keep secrets behind the credential manager', async ({ pag
   await page.getByTestId('settings-section-storage').click()
   await page.getByLabel('Endpoint').fill('https://s3.example.com')
   await page.getByLabel('Bucket').fill('designs')
+  await expect(page.getByRole('button', { name: 'Copy CORS JSON' })).toBeHidden()
 
   const secretField = page.locator('[data-credential="secret-access-key"]')
   await secretField.locator('input').fill('storage-secret')

@@ -9,14 +9,14 @@ import { detect, getUserAgent } from 'package-manager-detector/detect'
 import { WebSocketServer, type WebSocket } from 'ws'
 
 import { bearerToken, isAuthorized, mcpRequestToken } from '#mcp/auth'
-import { createBrowserRpcBridge } from '#mcp/browser-rpc'
+import { createBrowserRPCBridge } from '#mcp/browser-rpc'
 import { MCP_CORS_HEADERS, MCP_CORS_METHODS, MCP_EXPOSED_HEADERS } from '#mcp/http-options'
-import type { RpcJsonObject } from '#mcp/json'
-import { preprocessRpc } from '#mcp/jsx-preprocess'
-import { createMcpSessionManager } from '#mcp/server/sessions'
+import type { RPCJSONObject } from '#mcp/json'
+import { preprocessRPC } from '#mcp/jsx-preprocess'
+import { createMCPSessionManager } from '#mcp/server/sessions'
 import { registerTools } from '#mcp/tool/registration'
 
-import packageJson from '../package.json' with { type: 'json' }
+import packageJSON from '../package.json' with { type: 'json' }
 import {
   type ListenerState,
   cleanupDiscovery,
@@ -28,13 +28,13 @@ import {
   tryWriteDiscovery
 } from './server/lifecycle'
 
-export const MCP_VERSION: string = packageJson.version
+export const MCP_VERSION: string = packageJSON.version
 
 const HEARTBEAT_INTERVAL_MS = 5_000
 
 let installCommandPromise: Promise<string> | null = null
 
-async function resolveMcpInstallCommand(): Promise<string> {
+async function resolveMCPInstallCommand(): Promise<string> {
   const agent =
     getUserAgent() ??
     (
@@ -49,13 +49,13 @@ async function resolveMcpInstallCommand(): Promise<string> {
 }
 
 function mcpInstallCommand(): Promise<string> {
-  installCommandPromise ??= resolveMcpInstallCommand()
+  installCommandPromise ??= resolveMCPInstallCommand()
   return installCommandPromise
 }
 
 export { fail, ok, type MCPContent, type MCPResult } from '#mcp/result'
 
-export { registerTools, type RegisterToolsOptions, type RpcSender } from '#mcp/tool/registration'
+export { registerTools, type RegisterToolsOptions, type RPCSender } from '#mcp/tool/registration'
 export { paramToZod } from '#mcp/tool/schema'
 
 export interface ServerOptions {
@@ -89,11 +89,11 @@ export interface ServerHandle {
 function createHonoApp(options: {
   authToken: string | null
   corsOrigin: string | null
-  browserRpc: ReturnType<typeof createBrowserRpcBridge>
-  mcpSessions: ReturnType<typeof createMcpSessionManager>
-  sendToBrowser: (msg: RpcJsonObject) => Promise<unknown>
+  browserRPC: ReturnType<typeof createBrowserRPCBridge>
+  mcpSessions: ReturnType<typeof createMCPSessionManager>
+  sendToBrowser: (msg: RPCJSONObject) => Promise<unknown>
 }): Hono {
-  const { authToken, corsOrigin, browserRpc, mcpSessions, sendToBrowser } = options
+  const { authToken, corsOrigin, browserRPC, mcpSessions, sendToBrowser } = options
 
   const app = new Hono()
 
@@ -111,7 +111,7 @@ function createHonoApp(options: {
 
   app.get('/health', async (c) =>
     c.json({
-      status: browserRpc.isConnected() ? 'ok' : 'no_app',
+      status: browserRPC.isConnected() ? 'ok' : 'no_app',
       version: MCP_VERSION,
       installCommand: await mcpInstallCommand(),
       authRequired: authToken !== null
@@ -140,8 +140,8 @@ function createHonoApp(options: {
       return c.json({ error: 'Invalid request body' }, 400)
     }
     try {
-      body = preprocessRpc(body as RpcJsonObject)
-      const result = await sendToBrowser(body as RpcJsonObject)
+      body = preprocessRPC(body as RPCJSONObject)
+      const result = await sendToBrowser(body as RPCJSONObject)
       return c.json(result)
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e)
@@ -212,23 +212,23 @@ function createHonoApp(options: {
 /** Set up shared WebSocket connection handling and heartbeat. Call once. */
 function wireConnectionHandling(
   wss: WebSocketServer,
-  browserRpc: ReturnType<typeof createBrowserRpcBridge>
+  browserRPC: ReturnType<typeof createBrowserRPCBridge>
 ) {
   const alive = new WeakMap<WebSocket, boolean>()
 
   wss.on('connection', (ws: WebSocket) => {
     alive.set(ws, true)
-    browserRpc.handleConnection(ws)
+    browserRPC.handleConnection(ws)
 
     ws.on('pong', () => alive.set(ws, true))
     ws.on('message', (raw) => {
       alive.set(ws, true)
       const data = typeof raw === 'string' ? raw : Buffer.from(raw as Buffer).toString('utf-8')
-      browserRpc.handleMessage(data, ws)
+      browserRPC.handleMessage(data, ws)
     })
 
     ws.on('close', () => {
-      browserRpc.handleClose(ws)
+      browserRPC.handleClose(ws)
     })
 
     ws.on('error', () => {
@@ -285,39 +285,39 @@ function buildServerContext(options: ServerOptions) {
     )
   }
 
-  const mcpSessions = createMcpSessionManager({
+  const mcpSessions = createMCPSessionManager({
     serverVersion: MCP_VERSION,
     registerTools: (mcpServer: McpServer) =>
-      registerTools(mcpServer, { enableEval, mcpRoot, sendRpc: sendToBrowser })
+      registerTools(mcpServer, { enableEval, mcpRoot, sendRPC: sendToBrowser })
   })
-  const browserRpc = createBrowserRpcBridge({
+  const browserRPC = createBrowserRPCBridge({
     authToken,
     onConnectionChange: mcpSessions.notifyToolsChanged
   })
-  const sendToBrowser = browserRpc.sendRpc
+  const sendToBrowser = browserRPC.sendRPC
 
-  const app = createHonoApp({ authToken, corsOrigin, browserRpc, mcpSessions, sendToBrowser })
+  const app = createHonoApp({ authToken, corsOrigin, browserRPC, mcpSessions, sendToBrowser })
   const wss = new WebSocketServer({ noServer: true })
 
-  return { httpPort, withTcp, mcpSessions, browserRpc, sendToBrowser, app, wss, authToken }
+  return { httpPort, withTcp, mcpSessions, browserRPC, sendToBrowser, app, wss, authToken }
 }
 
 /**
- * Unified runtime shutdown: closes browserRpc, clears MCP sessions,
+ * Unified runtime shutdown: closes browserRPC, clears MCP sessions,
  * terminates WebSocket clients, closes the WSS, and tears down HTTP
  * listeners. Used by both the startup catch block and ServerHandle.close()
- * to ensure no runtime resources (WebSocket, browserRpc, mcpSessions) are
+ * to ensure no runtime resources (WebSocket, browserRPC, mcpSessions) are
  * left alive.
  */
 async function shutdownRuntime(
-  browserRpc: ReturnType<typeof createBrowserRpcBridge>,
-  mcpSessions: ReturnType<typeof createMcpSessionManager>,
+  browserRPC: ReturnType<typeof createBrowserRPCBridge>,
+  mcpSessions: ReturnType<typeof createMCPSessionManager>,
   wss: WebSocketServer,
   state: ListenerState
 ): Promise<void> {
   const errors: unknown[] = []
   try {
-    browserRpc.close()
+    browserRPC.close()
   } catch (e) {
     errors.push(e)
   }
@@ -343,8 +343,8 @@ async function shutdownRuntime(
 function buildHandle(
   app: Hono,
   wss: WebSocketServer,
-  browserRpc: ReturnType<typeof createBrowserRpcBridge>,
-  mcpSessions: ReturnType<typeof createMcpSessionManager>,
+  browserRPC: ReturnType<typeof createBrowserRPCBridge>,
+  mcpSessions: ReturnType<typeof createMCPSessionManager>,
   state: ListenerState,
   resolvedSocketPath: string | null,
   actualHttpPort: number,
@@ -370,7 +370,7 @@ function buildHandle(
         errors.push(error)
       }
       try {
-        await shutdownRuntime(browserRpc, mcpSessions, wss, state)
+        await shutdownRuntime(browserRPC, mcpSessions, wss, state)
       } catch (error) {
         errors.push(error)
       }
@@ -395,7 +395,7 @@ export async function startServer(options: ServerOptions = {}): Promise<ServerHa
 
   // Wire shared connection handling BEFORE starting listeners so that
   // any client connecting during startup is handled immediately.
-  wireConnectionHandling(ctx.wss, ctx.browserRpc)
+  wireConnectionHandling(ctx.wss, ctx.browserRPC)
 
   const state: ListenerState = { socketResult: null, tcpResult: null }
   let startedAt = ''
@@ -422,7 +422,7 @@ export async function startServer(options: ServerOptions = {}): Promise<ServerHa
   } catch (err) {
     // Tear down any listeners that started before the failure, then close
     // all resources so nothing leaks when startServer rejects.
-    await shutdownRuntime(ctx.browserRpc, ctx.mcpSessions, ctx.wss, state).catch(() => undefined)
+    await shutdownRuntime(ctx.browserRPC, ctx.mcpSessions, ctx.wss, state).catch(() => undefined)
     throw err
   }
 
@@ -432,7 +432,7 @@ export async function startServer(options: ServerOptions = {}): Promise<ServerHa
   return buildHandle(
     ctx.app,
     ctx.wss,
-    ctx.browserRpc,
+    ctx.browserRPC,
     ctx.mcpSessions,
     state,
     resolvedSocketPath,

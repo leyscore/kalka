@@ -1,6 +1,6 @@
 import type { AIProviderID, ModelOption } from '@open-pencil/core/constants'
 
-import { readCacheJson, writeCacheJson } from '@/app/cache'
+import { readCacheJSON, writeCacheJSON } from '@/app/cache'
 
 const MODELS_DEV_URL = 'https://models.dev/api.json'
 const MODELS_DEV_CACHE_KEY = 'models-dev/catalog'
@@ -48,7 +48,7 @@ function normalizeModel(id: string, model: ModelsDevModel): ModelOption {
 }
 
 async function loadCatalog(fetcher: typeof fetch): Promise<ModelsDevCatalog | null> {
-  const cached = await readCacheJson<ModelsDevCatalog>(
+  const cached = await readCacheJSON<ModelsDevCatalog>(
     MODELS_DEV_CACHE_KEY,
     MODELS_DEV_CACHE_TTL_MS
   )
@@ -57,7 +57,7 @@ async function loadCatalog(fetcher: typeof fetch): Promise<ModelsDevCatalog | nu
     const response = await fetcher(MODELS_DEV_URL)
     if (!response.ok) throw new Error(`models.dev catalog request failed: ${response.status}`)
     const catalog = (await response.json()) as ModelsDevCatalog
-    await writeCacheJson(MODELS_DEV_CACHE_KEY, catalog)
+    await writeCacheJSON(MODELS_DEV_CACHE_KEY, catalog)
     return catalog
   } catch {
     return null

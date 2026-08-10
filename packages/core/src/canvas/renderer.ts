@@ -681,11 +681,11 @@ export class SkiaRenderer {
       imageData.data.set(pixels)
       ctx.putImageData(imageData, 0, 0)
       const mime = format === 'JPG' ? 'image/jpeg' : 'image/webp'
-      const dataUrl = canvas.toDataURL(mime, quality / 100)
+      const dataURL = canvas.toDataURL(mime, quality / 100)
       // Browsers silently return a PNG data URL when the requested encoder is
       // unsupported; reject that so we never write PNG bytes under a .jpg/.webp file.
-      if (!dataUrl.startsWith(`data:${mime}`)) return null
-      const base64 = dataUrl.split(',')[1]
+      if (!dataURL.startsWith(`data:${mime}`)) return null
+      const base64 = dataURL.split(',')[1]
       if (!base64) return null
       return decodeBase64(base64)
     } catch (err) {

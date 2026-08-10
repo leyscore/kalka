@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto'
 import type { WebSocket } from 'ws'
 
 import { isAuthorized } from '#mcp/auth'
-import type { RpcJsonObject } from '#mcp/json'
+import type { RPCJSONObject } from '#mcp/json'
 import type { PendingRequest } from '#mcp/rpc-types'
 
 const RPC_TIMEOUT = 20_000
@@ -12,7 +12,7 @@ const APP_WAIT_TIMEOUT = 10_000
 const APP_NOT_CONNECTED_MESSAGE =
   'OpenPencil app is not connected. STOP and tell the user: "The OpenPencil desktop app is not running, no document is open, or the desktop app is connected to a different MCP server. Please start OpenPencil, open a document, and try again." Do NOT attempt to start the app yourself or retry automatically.'
 
-type BrowserRpcBridgeOptions = {
+type BrowserRPCBridgeOptions = {
   authToken: string | null
   onConnectionChange: () => void
 }
@@ -31,14 +31,14 @@ function stripEnvelope(msg: BrowserMessage): Record<string, unknown> {
   return body
 }
 
-function responsePayload(result: unknown): RpcJsonObject {
+function responsePayload(result: unknown): RPCJSONObject {
   if (result && typeof result === 'object' && !Array.isArray(result)) {
-    return result as RpcJsonObject
+    return result as RPCJSONObject
   }
   return { result }
 }
 
-function sendJson(ws: WebSocket, body: Record<string, unknown>) {
+function sendJSON(ws: WebSocket, body: Record<string, unknown>) {
   if (ws.readyState === ws.OPEN) ws.send(JSON.stringify(body))
 }
 
@@ -59,7 +59,7 @@ function createSettler<T>(resolve: (value: T) => void, reject: (error: Error) =>
   }
 }
 
-export function createBrowserRpcBridge({ authToken, onConnectionChange }: BrowserRpcBridgeOptions) {
+export function createBrowserRPCBridge({ authToken, onConnectionChange }: BrowserRPCBridgeOptions) {
   const pending = new Map<string, PendingRequest>()
   const clients = new Set<WebSocket>()
   const connectionWaiters = new Set<PendingRequest>()
@@ -112,7 +112,7 @@ export function createBrowserRpcBridge({ authToken, onConnectionChange }: Browse
         timer
       }
       // Add the waiter BEFORE checking browser state to avoid a lost-wakeup
-      // race: if the browser registers between sendRpc's initial check and
+      // race: if the browser registers between sendRPC's initial check and
       // this point, notifyConnectionWaiters() will have already fired and
       // cleared the set. Without this re-check, the waiter would stall for
       // APP_WAIT_TIMEOUT even though the browser is connected.
@@ -142,14 +142,14 @@ export function createBrowserRpcBridge({ authToken, onConnectionChange }: Browse
     // is set to null to signal that auth is required without revealing
     // the secret. When auth is disabled (authToken === null), null is
     // still correct — it means "no token needed."
-    sendJson(ws, { type: 'register', token: null })
+    sendJSON(ws, { type: 'register', token: null })
   }
 
   function broadcastRegisterPrompt() {
     for (const client of clients) sendRegisterPrompt(client)
   }
 
-  function sendRpc(body: Record<string, unknown>): Promise<unknown> {
+  function sendRPC(body: Record<string, unknown>): Promise<unknown> {
     if (bridgeClosed) return Promise.reject(new Error('Server shutting down'))
     return new Promise((resolve, reject) => {
       const doSend = () => {
@@ -187,10 +187,10 @@ export function createBrowserRpcBridge({ authToken, onConnectionChange }: Browse
   async function handleClientRequest(ws: WebSocket, msg: BrowserMessage) {
     if (!msg.id) return
     try {
-      const result = await sendRpc(stripEnvelope(msg))
-      sendJson(ws, { ...responsePayload(result), type: 'response', id: msg.id, ok: true })
+      const result = await sendRPC(stripEnvelope(msg))
+      sendJSON(ws, { ...responsePayload(result), type: 'response', id: msg.id, ok: true })
     } catch (e) {
-      sendJson(ws, {
+      sendJSON(ws, {
         type: 'response',
         id: msg.id,
         ok: false,
@@ -335,7 +335,7 @@ export function createBrowserRpcBridge({ authToken, onConnectionChange }: Browse
   return {
     close,
     isConnected,
-    sendRpc,
+    sendRPC,
     handleConnection,
     handleMessage,
     handleClose

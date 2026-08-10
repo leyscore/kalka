@@ -7,14 +7,14 @@ import ProviderSettingsField from '@/components/settings/provider/ProviderSettin
 import ProviderSettingsInput from '@/components/settings/provider/ProviderSettingsInput.vue'
 import ProviderSettingsLink from '@/components/settings/provider/ProviderSettingsLink.vue'
 
-const { label, modelValue, saved, kind, placeholder, keyUrl, keyUrlLabel } = defineProps<{
+const { label, modelValue, saved, kind, placeholder, keyURL, keyURLLabel } = defineProps<{
   label: string
   modelValue: string
   saved: boolean
   kind: 'api' | 'pexels' | 'unsplash'
   placeholder: string
-  keyUrl?: string
-  keyUrlLabel?: string
+  keyURL?: string
+  keyURLLabel?: string
 }>()
 
 const emit = defineEmits<{
@@ -54,8 +54,8 @@ const clearDataTestId = computed(() => {
       @change="emit('change')"
     />
     <template #hint>
-      <ProviderSettingsLink v-if="keyUrl && keyUrlLabel" :href="keyUrl">
-        {{ keyUrlLabel }}
+      <ProviderSettingsLink v-if="keyURL && keyURLLabel" :href="keyURL">
+        {{ keyURLLabel }}
       </ProviderSettingsLink>
     </template>
   </ProviderSettingsField>

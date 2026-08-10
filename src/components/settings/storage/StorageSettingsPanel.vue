@@ -14,8 +14,8 @@ import {
   writeStoragePreference
 } from '@/app/integrations/storage'
 import {
-  buildCorsConfigurationJson,
-  collectCloudCorsOrigins
+  buildCORSConfigurationJSON,
+  collectCloudCORSOrigins
 } from '@/app/integrations/storage/s3/cors'
 import { appCredentialServices } from '@/app/settings/credentials/app'
 import { settingsDialogOpen } from '@/app/settings/dialog'
@@ -87,8 +87,8 @@ async function openWorkspace(): Promise<void> {
   await router.push('/storage')
 }
 
-function copyCorsConfiguration(): void {
-  void copy(buildCorsConfigurationJson(collectCloudCorsOrigins()))
+function copyCORSConfiguration(): void {
+  void copy(buildCORSConfigurationJSON(collectCloudCORSOrigins()))
 }
 
 async function testConnection(): Promise<void> {
@@ -201,7 +201,7 @@ onMounted(() => void refreshStatuses())
       v-if="provider.id === 's3-compatible'"
       type="button"
       class="rounded px-3 py-1.5 text-[11px] text-muted hover:bg-hover hover:text-surface"
-      @click="copyCorsConfiguration"
+      @click="copyCORSConfiguration"
     >
       {{ copied ? dialogs.copied : dialogs.copyStorageCors }}
     </button>

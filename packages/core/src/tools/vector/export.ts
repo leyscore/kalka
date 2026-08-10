@@ -2,7 +2,7 @@ import { encodeBase64 } from '#core/bytes'
 import type { RasterExportFormat } from '#core/io/formats/raster'
 import { defineTool } from '#core/tools/schema'
 
-export const exportSvg = defineTool({
+export const exportSVG = defineTool({
   name: 'export_svg',
   description: 'Export nodes as SVG markup. Returns the SVG string.',
   params: {
@@ -26,7 +26,7 @@ export const exportSvg = defineTool({
   }
 })
 
-export const exportPdf = defineTool({
+export const exportPDF = defineTool({
   name: 'export_pdf',
   description:
     'Export nodes as a vector PDF document. Text remains selectable, paths stay sharp at any zoom. Returns base64-encoded PDF data.',

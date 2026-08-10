@@ -3,7 +3,7 @@ import { join } from 'node:path'
 
 import { publicPackageDirs } from '../packages'
 
-interface PackageJson {
+interface PackageJSON {
   name: string
   version: string
   main?: string
@@ -16,11 +16,11 @@ interface PackageJson {
 
 const errors: string[] = []
 
-function readPackageJson(packageDir: string): PackageJson {
+function readPackageJSON(packageDir: string): PackageJSON {
   return JSON.parse(readFileSync(join(packageDir, 'package.json'), 'utf8'))
 }
 
-const rootPackage = readPackageJson('.')
+const rootPackage = readPackageJSON('.')
 const expectedVersion = rootPackage.version
 
 function checkRuntimePath(packageName: string, field: string, value: string): void {
@@ -62,7 +62,7 @@ function walkExports(packageName: string, value: unknown, path: string[] = []): 
 }
 
 for (const packageDir of publicPackageDirs) {
-  const pkg = readPackageJson(packageDir)
+  const pkg = readPackageJSON(packageDir)
 
   if (pkg.version !== expectedVersion) {
     errors.push(`${pkg.name}: version ${pkg.version} must match root version ${expectedVersion}`)

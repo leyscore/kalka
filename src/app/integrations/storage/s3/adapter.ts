@@ -17,7 +17,7 @@ import type {
   StorageProviderRuntime
 } from '../types'
 import { S3HttpError, deleteObject, getObject, headObject, listObjects, putObject } from './client'
-import { CloudCorsError, formatBrowserCorsHelpMessage, isLikelyCorsOrNetworkError } from './cors'
+import { CloudCORSError, formatBrowserCORSHelpMessage, isLikelyCORSOrNetworkError } from './cors'
 import type { S3CompatibleConfig, S3ConnectionResult } from './types'
 
 const ENDPOINT_FIELD = 'endpoint'
@@ -71,8 +71,8 @@ function parseMetadata(
   }
 }
 
-function connectionErrorMessage(error: unknown, isCors: boolean): string {
-  if (isCors) return formatBrowserCorsHelpMessage()
+function connectionErrorMessage(error: unknown, isCORS: boolean): string {
+  if (isCORS) return formatBrowserCORSHelpMessage()
   return error instanceof Error ? error.message : String(error)
 }
 
@@ -100,13 +100,13 @@ export function createS3StorageAdapter(runtime: StorageProviderRuntime): S3Stora
         await ensureNamespace(config)
         await listObjects(config, STORAGE_DOCUMENTS_PREFIX)
       } catch (error) {
-        const isCors =
-          error instanceof CloudCorsError || (!isTauri() && isLikelyCorsOrNetworkError(error))
+        const isCORS =
+          error instanceof CloudCORSError || (!isTauri() && isLikelyCORSOrNetworkError(error))
         return {
           ok: false,
-          message: connectionErrorMessage(error, isCors),
+          message: connectionErrorMessage(error, isCORS),
           corsApplied: false,
-          isCorsFailure: isCors,
+          isCORSFailure: isCORS,
           corsError: null
         }
       }
@@ -115,7 +115,7 @@ export function createS3StorageAdapter(runtime: StorageProviderRuntime): S3Stora
         ok: true,
         message: 'Connected. Storage namespace is ready.',
         corsApplied: false,
-        isCorsFailure: false,
+        isCORSFailure: false,
         corsError: null
       }
     },

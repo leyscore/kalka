@@ -1,7 +1,7 @@
 import { AI_PROVIDERS } from '@open-pencil/core/constants'
 import type { AIProviderID, ModelOption } from '@open-pencil/core/constants'
 
-import { readCacheJson, writeCacheJson } from '@/app/cache'
+import { readCacheJSON, writeCacheJSON } from '@/app/cache'
 
 type OpenRouterModel = {
   id?: unknown
@@ -63,7 +63,7 @@ async function fetchOpenRouterModels(fetcher: typeof fetch): Promise<ModelOption
 
 async function listOpenRouterModels(fetcher: typeof fetch = fetch): Promise<ModelOption[]> {
   modelsPromise ??= (async () => {
-    const cached = await readCacheJson<ModelOption[]>(
+    const cached = await readCacheJSON<ModelOption[]>(
       OPENROUTER_MODELS_CACHE_KEY,
       OPENROUTER_MODELS_CACHE_TTL_MS
     )
@@ -72,7 +72,7 @@ async function listOpenRouterModels(fetcher: typeof fetch = fetch): Promise<Mode
     try {
       const models = await fetchOpenRouterModels(fetcher)
       if (!models.length) return curatedOpenRouterModels
-      await writeCacheJson(OPENROUTER_MODELS_CACHE_KEY, models)
+      await writeCacheJSON(OPENROUTER_MODELS_CACHE_KEY, models)
       return models
     } catch {
       return curatedOpenRouterModels

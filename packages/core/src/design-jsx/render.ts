@@ -130,7 +130,7 @@ const SUPPORTED_PROPS = new Set([
   'of'
 ])
 
-function stripHtmlComments(jsxString: string): string {
+function stripHTMLComments(jsxString: string): string {
   return jsxString.replace(/<!--[\s\S]*?-->/g, '')
 }
 
@@ -159,7 +159,7 @@ function collectUnsupportedPropWarnings(tree: TreeNode, warnings: string[]): voi
 }
 
 export function buildComponent(jsxString: string): React.ComponentType {
-  const trimmed = stripHtmlComments(jsxString).trim()
+  const trimmed = stripHTMLComments(jsxString).trim()
 
   const aliases = `
     const __h = React.createElement

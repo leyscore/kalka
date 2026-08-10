@@ -153,7 +153,7 @@ function parseMajorMinor(version: string): string | null {
   return match ? `${match[1]}.${match[2]}` : null
 }
 
-function assertCompatibleMcpVersion(health: AutomationHealth): void {
+function assertCompatibleMCPVersion(health: AutomationHealth): void {
   const runningMajorMinor = health.version ? parseMajorMinor(health.version) : null
   const oursMajorMinor = parseMajorMinor(APP_VERSION)
   if (!runningMajorMinor || !oursMajorMinor) return // unparseable — don't block
@@ -185,7 +185,7 @@ export async function getAutomationAuthToken(): Promise<string | null> {
       'MCP server is not reachable. Ensure the desktop app is running and the MCP server has started.'
     )
   }
-  assertCompatibleMcpVersion(health)
+  assertCompatibleMCPVersion(health)
   const discoveryPath = await resolveDiscoveryPath(health.discoveryPath)
   const token = await readDiscoveryToken(discoveryPath)
   if (health.authRequired && !token) {
@@ -221,7 +221,7 @@ export async function spawnMCPIfNeeded(): Promise<AutomationServerHandle | null>
 
   const existing = await readHealth()
   if (existing) {
-    assertCompatibleMcpVersion(existing)
+    assertCompatibleMCPVersion(existing)
     const discoveryPath = await resolveDiscoveryPath(existing.discoveryPath)
     const token = await readDiscoveryToken(discoveryPath)
     if (existing.authRequired && !token) {
@@ -275,7 +275,7 @@ export async function spawnMCPIfNeeded(): Promise<AutomationServerHandle | null>
 
   if (health) {
     try {
-      assertCompatibleMcpVersion(health)
+      assertCompatibleMCPVersion(health)
       const discoveryPath = await resolveDiscoveryPath(health.discoveryPath)
       const discovered = await readDiscoveryToken(discoveryPath)
       const token = discovered ?? authToken
