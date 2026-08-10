@@ -5,7 +5,7 @@ import { inferS3Region } from '@/app/integrations/storage/s3/region'
 import type { S3CompatibleConfig } from '@/app/integrations/storage/s3/types'
 import {
   parseListObjectsV2Page,
-  parseS3ErrorXml,
+  parseS3ErrorXML,
   type ListedObject
 } from '@/app/integrations/storage/s3/xml'
 
@@ -35,7 +35,7 @@ export function normalizeEndpoint(endpoint: string): string {
 }
 
 /** Path-style object URL: {endpoint}/{bucket}/{key} — works with B2, MinIO, R2, AWS. */
-export function objectUrl(config: S3CompatibleConfig, key: string): string {
+export function objectURL(config: S3CompatibleConfig, key: string): string {
   const base = normalizeEndpoint(config.endpoint)
   const encodedKey = key
     .split('/')
@@ -55,7 +55,7 @@ export function createAwsClient(config: S3CompatibleConfig): AwsClient {
 
 async function readErrorBody(res: Response): Promise<{ message: string; code: string | null }> {
   const text = await res.text().catch(() => '')
-  return parseS3ErrorXml(text, res.status)
+  return parseS3ErrorXML(text, res.status)
 }
 
 /**
@@ -146,10 +146,10 @@ export async function s3Request(
     }
   } catch (error) {
     // Re-export as a typed error so UI can detect CORS/network blocks.
-    const { CloudCorsError, isLikelyCorsOrNetworkError, formatBrowserCorsHelpMessage } =
+    const { CloudCORSError, isLikelyCORSOrNetworkError, formatBrowserCORSHelpMessage } =
       await import('@/app/integrations/storage/s3/cors')
-    if (isLikelyCorsOrNetworkError(error)) {
-      throw new CloudCorsError(formatBrowserCorsHelpMessage())
+    if (isLikelyCORSOrNetworkError(error)) {
+      throw new CloudCORSError(formatBrowserCORSHelpMessage())
     }
     throw error
   }
@@ -159,7 +159,7 @@ export async function s3Request(
 }
 
 export async function headObject(config: S3CompatibleConfig, key: string): Promise<boolean> {
-  const res = await s3Request(config, objectUrl(config, key), { method: 'HEAD' })
+  const res = await s3Request(config, objectURL(config, key), { method: 'HEAD' })
   if (res.status === 404) return false
   return true
 }
@@ -179,7 +179,7 @@ export async function putObject(
   ) as ArrayBuffer
   const res = await s3Request(
     config,
-    objectUrl(config, key),
+    objectURL(config, key),
     {
       method: 'PUT',
       headers: {
@@ -201,7 +201,7 @@ export async function getObject(
   key: string,
   onProgress?: (progress: DownloadProgress) => void
 ): Promise<Uint8Array | null> {
-  const res = await s3Request(config, objectUrl(config, key), { method: 'GET' })
+  const res = await s3Request(config, objectURL(config, key), { method: 'GET' })
   if (res.status === 404) return null
   if (!onProgress || !res.body) {
     return new Uint8Array(await res.arrayBuffer())
@@ -230,7 +230,7 @@ export async function getObject(
 }
 
 export async function deleteObject(config: S3CompatibleConfig, key: string): Promise<void> {
-  const res = await s3Request(config, objectUrl(config, key), { method: 'DELETE' })
+  const res = await s3Request(config, objectURL(config, key), { method: 'DELETE' })
   if (!res.ok && res.status !== 404) {
     throw new S3HttpError(res.status, `Failed to delete ${key}`)
   }

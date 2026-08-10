@@ -53,8 +53,8 @@ describe('@open-pencil/fig package API', () => {
           }
         ])
       ),
-      thumbnailPng: new Uint8Array([1]),
-      metaJson: '{}',
+      thumbnailPNG: new Uint8Array([1]),
+      metaJSON: '{}',
       images: [{ name: 'images/hash', data: new Uint8Array([9, 8, 7]) }]
     })
     const parsed = parseFigBuffer(bytes.buffer as ArrayBuffer)

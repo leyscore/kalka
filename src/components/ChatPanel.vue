@@ -3,11 +3,11 @@ import { ScrollAreaRoot, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewpor
 import { refAutoReset, useClipboard } from '@vueuse/core'
 import { computed, markRaw, nextTick, ref, watch } from 'vue'
 
-import { getAcpDebugText, clearAcpDebugLog, hasAcpDebugEntries } from '@/app/ai/acp/transport'
+import { getACPDebugText, clearACPDebugLog, hasACPDebugEntries } from '@/app/ai/acp/transport'
 import { copyChatLog } from '@/app/ai/debug'
 import { clearToolLogEntries, didHitStepLimit } from '@/app/ai/tools'
 import { activeTab } from '@/app/tabs'
-import AcpPermissionDialog from '@/components/chat/AcpPermissionDialog.vue'
+import ACPPermissionDialog from '@/components/chat/ACPPermissionDialog.vue'
 import ChatInput from '@/components/chat/ChatInput.vue'
 import ChatMessage from '@/components/chat/ChatMessage.vue'
 import AppPlaceholder from '@/components/ui/AppPlaceholder.vue'
@@ -19,7 +19,7 @@ import { useI18n } from '@open-pencil/vue'
 
 import type { Chat } from '@ai-sdk/vue'
 import type { UIMessage } from 'ai'
-import type { JsonObject } from '@open-pencil/scene-graph/primitives'
+import type { JSONObject } from '@open-pencil/scene-graph/primitives'
 
 const IS_DEV = import.meta.env.DEV
 
@@ -51,7 +51,7 @@ const isThinking = computed(() => {
   if (last.role !== 'assistant') return true
   const parts = last.parts
   if (parts.length === 0) return true
-  const lastPart = parts[parts.length - 1] as JsonObject
+  const lastPart = parts[parts.length - 1] as JSONObject
   if (lastPart.type === 'step-start') return true
   if ('toolCallId' in lastPart && lastPart.state === 'output-available') return true
   if ('toolCallId' in lastPart && lastPart.state === 'output-error') return true
@@ -111,8 +111,8 @@ async function handleCopyDebug() {
   debugCopied.value = true
 }
 
-async function handleCopyAcpLog() {
-  const text = getAcpDebugText()
+async function handleCopyACPLog() {
+  const text = getACPDebugText()
   if (!text) return
   await copy(text)
   acpLogCopied.value = true
@@ -122,7 +122,7 @@ function handleClearChat() {
   chat.value = null
   resetChat()
   clearToolLogEntries()
-  clearAcpDebugLog()
+  clearACPDebugLog()
 }
 </script>
 
@@ -205,9 +205,9 @@ function handleClearChat() {
           {{ debugCopied ? 'Copied' : 'Copy log' }}
         </AppTextButton>
         <AppTextButton
-          v-if="IS_DEV && hasAcpDebugEntries()"
+          v-if="IS_DEV && hasACPDebugEntries()"
           :ui="{ base: 'flex items-center gap-1 rounded px-1.5 py-0.5 hover:bg-hover' }"
-          @click="handleCopyAcpLog"
+          @click="handleCopyACPLog"
         >
           <icon-lucide-bug v-if="!acpLogCopied" class="size-3" />
           <icon-lucide-check v-else class="size-3 text-green-400" />
@@ -224,7 +224,7 @@ function handleClearChat() {
 
       <ChatInput :status="status" @submit="handleSubmit" @stop="handleStop" />
 
-      <AcpPermissionDialog />
+      <ACPPermissionDialog />
     </template>
   </div>
 </template>

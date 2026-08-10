@@ -156,7 +156,7 @@ export function vueTemplateGuardrailDiagnostics(sourceRel: string, content: stri
   return diagnostics
 }
 
-export const noVueTemplateUiHooksOrSvg = createTextRule(
+export const noVueTemplateUiHooksOrSVG = createTextRule(
   'open-pencil/no-vue-template-ui-hooks-or-svg',
   vueTemplateGuardrailDiagnostics
 )

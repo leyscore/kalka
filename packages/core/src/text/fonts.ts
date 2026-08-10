@@ -221,8 +221,8 @@ export class FontManager {
     const { readFile } = await import(/* @vite-ignore */ 'node:fs/promises')
     const { resolve, dirname } = await import(/* @vite-ignore */ 'node:path')
     const { fileURLToPath } = await import(/* @vite-ignore */ 'node:url')
-    const packageJsonUrl = import.meta.resolve('@open-pencil/core/package.json')
-    const packageRoot = dirname(fileURLToPath(packageJsonUrl))
+    const packageJSONURL = import.meta.resolve('@open-pencil/core/package.json')
+    const packageRoot = dirname(fileURLToPath(packageJSONURL))
     const assetPath = resolve(packageRoot, `assets${url}`)
     const buf = await readFile(assetPath)
     return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength)
@@ -240,10 +240,10 @@ export class FontManager {
       (await this.loadHostFont(family, style)) ?? (await this.findLocalFont(family, style))
     if (localBuffer) return this.registerAndCache(family, style, localBuffer)
 
-    const bundledUrl = BUNDLED_FONTS[cacheKey]
-    if (!bundledUrl) return null
+    const bundledURL = BUNDLED_FONTS[cacheKey]
+    if (!bundledURL) return null
     try {
-      const buffer = await this.fetchBundledFont(bundledUrl)
+      const buffer = await this.fetchBundledFont(bundledURL)
       return buffer && !isVariableFont(buffer) ? this.registerAndCache(family, style, buffer) : null
     } catch (e) {
       console.warn(`Bundled font load failed for "${family}" ${style}:`, e)

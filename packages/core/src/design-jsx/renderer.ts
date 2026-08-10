@@ -245,7 +245,7 @@ async function renderIconNode(
  * pipeline as iconify icons: the body may be passed as string children or a
  * `body`/`children` string prop, and is parsed with extractPaths + parseSVGPath.
  */
-async function renderSvgNode(
+async function renderSVGNode(
   graph: SceneGraph,
   tree: TreeNode,
   parentId: string
@@ -490,7 +490,7 @@ function applyInstanceOverrides(
 
 async function renderNode(graph: SceneGraph, tree: TreeNode, parentId: string): Promise<SceneNode> {
   if (tree.type === 'icon') return renderIconNode(graph, tree, parentId)
-  if (tree.type === 'svg') return renderSvgNode(graph, tree, parentId)
+  if (tree.type === 'svg') return renderSVGNode(graph, tree, parentId)
   if (tree.type === 'instance') return renderInstanceNode(graph, tree, parentId)
 
   const nodeType = TYPE_MAP[tree.type]

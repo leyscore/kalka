@@ -2,7 +2,7 @@ import type { UIMessage } from 'ai'
 
 import { buildDebugLog } from '@open-pencil/core/tools'
 import type { ToolDebugLog, ToolLogEntry } from '@open-pencil/core/tools'
-import type { JsonObject } from '@open-pencil/scene-graph/primitives'
+import type { JSONObject } from '@open-pencil/scene-graph/primitives'
 
 import { getStepUsages, getToolLogEntries } from '@/app/ai/tools'
 
@@ -155,7 +155,7 @@ export function formatDiagnostics(log: ToolDebugLog): string {
 }
 
 function formatToolPart(part: Record<string, unknown>): string {
-  const inv = part.toolInvocation as JsonObject | undefined
+  const inv = part.toolInvocation as JSONObject | undefined
   if (inv) {
     const lines = [`  [tool] ${String(inv.toolName)} (${String(inv.state)})`]
     if (inv.args) lines.push(`    args: ${JSON.stringify(inv.args)}`)
@@ -182,7 +182,7 @@ function formatMessageStats(messages: UIMessage[]): string {
     if (msg.role === 'user') userMessages++
     else if (msg.role === 'assistant') assistantMessages++
     for (const part of msg.parts) {
-      const p = part as JsonObject
+      const p = part as JSONObject
       if (p.type === 'text') {
         totalTextLength += typeof p.text === 'string' ? p.text.length : 0
       } else if (
@@ -245,7 +245,7 @@ export function serializeChatLog(messages: UIMessage[]): string {
     const parts: string[] = []
 
     for (const part of msg.parts) {
-      const p = part as JsonObject
+      const p = part as JSONObject
       if (p.type === 'text') {
         parts.push(`  ${p.text as string}`)
       } else if (p.type === 'reasoning') {

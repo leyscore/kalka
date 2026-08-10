@@ -12,8 +12,8 @@ export interface FigImageEntry {
 export interface WriteFigArchiveInput {
   schemaDeflated: Uint8Array
   kiwiData: Uint8Array
-  thumbnailPng: Uint8Array
-  metaJson: string
+  thumbnailPNG: Uint8Array
+  metaJSON: string
   images?: FigImageEntry[]
   figKiwiVersion?: number
 }
@@ -72,8 +72,8 @@ export function writeFigArchive(input: WriteFigArchiveInput): Uint8Array {
   const canvasData = buildFigKiwi(input.schemaDeflated, input.kiwiData, input.figKiwiVersion)
   const entries: Zippable = {
     'canvas.fig': [canvasData, { level: 0 }],
-    'thumbnail.png': [input.thumbnailPng, { level: 0 }],
-    'meta.json': new TextEncoder().encode(input.metaJson)
+    'thumbnail.png': [input.thumbnailPNG, { level: 0 }],
+    'meta.json': new TextEncoder().encode(input.metaJSON)
   }
   for (const image of input.images ?? []) entries[image.name] = [image.data, { level: 0 }]
   return zipSync(entries)
@@ -83,16 +83,16 @@ export function writeFigArchive(input: WriteFigArchiveInput): Uint8Array {
 export function compressFigDataSync(
   schemaDeflated: Uint8Array,
   kiwiData: Uint8Array,
-  thumbnailPng: Uint8Array,
-  metaJson: string,
+  thumbnailPNG: Uint8Array,
+  metaJSON: string,
   imageEntries: FigImageEntry[],
   figKiwiVersion?: number
 ): Uint8Array {
   return writeFigArchive({
     schemaDeflated,
     kiwiData,
-    thumbnailPng,
-    metaJson,
+    thumbnailPNG,
+    metaJSON,
     images: imageEntries,
     figKiwiVersion
   })

@@ -5,7 +5,7 @@ import { parse as parseVueSfc } from 'vue/compiler-sfc'
 import { noCrossPackageReexportShims } from './cross-package-reexport-shims.ts'
 import {
   noDynamicTailwindStateClasses,
-  noVueTemplateUiHooksOrSvg
+  noVueTemplateUiHooksOrSVG
 } from './dynamic-tailwind-classes.ts'
 import {
   collectFolders,
@@ -519,7 +519,7 @@ export const openPencilArchitecturePlugin = {
     noPropertyPanelInternalsOutsidePanel,
     noProductionTestIdsInSharedLayers,
     noDynamicTailwindStateClasses,
-    noVueTemplateUiHooksOrSvg,
+    noVueTemplateUiHooksOrSVG,
     noNativeTitleAttributesInVue,
     noShortcutTextInLabels,
     noHardcodedMacOSShortcutGlyphs,

@@ -40,7 +40,7 @@ type LocalAsset = {
   hasConflicts: boolean
   sourceLibraryKey: string | null
   description: string
-  docsUrl: string | null
+  docsURL: string | null
   pageId: string
   pageName: string
 }
@@ -58,7 +58,7 @@ const assetView = ref<AssetView>('grid')
 const detailsOpen = ref(false)
 const selectedAssetId = ref<string | null>(null)
 const previewBlob = shallowRef<Blob | null>(null)
-const previewUrl = useObjectUrl(previewBlob)
+const previewURL = useObjectUrl(previewBlob)
 const previewLoading = ref(false)
 let previewRequestId = 0
 const insertButton = useButtonUI({ tone: 'ghost', size: 'iconSm' })
@@ -122,7 +122,7 @@ const assets = computed<LocalAsset[]>(() => {
         hasConflicts: conflicts.length > 0,
         sourceLibraryKey: node.sourceLibraryKey,
         description: node.symbolDescription,
-        docsUrl: node.symbolLinks[0]?.uri ?? null,
+        docsURL: node.symbolLinks[0]?.uri ?? null,
         pageId: page?.id ?? editor.state.currentPageId,
         pageName: page?.name ?? panels.value.page
       }
@@ -350,13 +350,13 @@ function insertSelectedAsset() {
                   </span>
                 </span>
                 <div v-if="assetView === 'list'" class="flex shrink-0 items-center">
-                  <Tip v-if="asset.docsUrl" :label="panels.openDocumentation">
+                  <Tip v-if="asset.docsURL" :label="panels.openDocumentation">
                     <button
                       type="button"
                       :class="insertButton.base"
                       data-test-id="asset-docs"
                       @pointerdown.stop
-                      @click.stop="asset.docsUrl ? openExternalLink(asset.docsUrl) : undefined"
+                      @click.stop="asset.docsURL ? openExternalLink(asset.docsURL) : undefined"
                     >
                       <icon-lucide-book-open class="size-3" />
                     </button>
@@ -447,9 +447,9 @@ function insertSelectedAsset() {
             class="flex h-36 items-center justify-center overflow-hidden rounded-lg border border-border bg-canvas/60"
           >
             <img
-              v-if="previewUrl"
+              v-if="previewURL"
               data-test-id="asset-details-preview-image"
-              :src="previewUrl"
+              :src="previewURL"
               :alt="`${selectedAsset.name} preview`"
               class="max-h-[120px] max-w-[210px] object-contain"
             />
@@ -497,14 +497,14 @@ function insertSelectedAsset() {
             </p>
           </section>
 
-          <section v-if="selectedAsset.docsUrl" class="mb-4">
+          <section v-if="selectedAsset.docsURL" class="mb-4">
             <h3 class="text-[11px] font-medium tracking-wider text-muted uppercase">
               {{ panels.documentation }}
             </h3>
             <button
               data-test-id="asset-details-docs"
               class="mt-1 inline-flex items-center gap-1 rounded px-1 py-0.5 text-xs text-component hover:bg-component/10"
-              @click="selectedAsset.docsUrl ? openExternalLink(selectedAsset.docsUrl) : undefined"
+              @click="selectedAsset.docsURL ? openExternalLink(selectedAsset.docsURL) : undefined"
             >
               <icon-lucide-book-open class="size-3" />
               {{ panels.openDocs }}

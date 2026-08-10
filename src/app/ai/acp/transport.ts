@@ -13,9 +13,9 @@ import { AUTOMATION_HTTP_PORT, type ACPAgentDef } from '@open-pencil/core/consta
 import SYSTEM_PROMPT from '@/app/ai/chat/system-prompt.md?raw'
 
 import { mapUpdate } from './map-update'
-import { spawnAcpProcess } from './process'
+import { spawnACPProcess } from './process'
 
-type TauriChild = Awaited<ReturnType<typeof spawnAcpProcess>>['child']
+type TauriChild = Awaited<ReturnType<typeof spawnACPProcess>>['child']
 
 interface ACPDebugEntry {
   ts: number
@@ -43,18 +43,18 @@ function pruneOldEntries() {
   }
 }
 
-export function getAcpDebugText(): string {
+export function getACPDebugText(): string {
   pruneOldEntries()
   return acpDebugLog
     .map((e) => `[${new Date(e.ts).toISOString()}] ${e.type}\n${JSON.stringify(e.data, null, 2)}`)
     .join('\n\n---\n\n')
 }
 
-export function clearAcpDebugLog() {
+export function clearACPDebugLog() {
   acpDebugLog.length = 0
 }
 
-export function hasAcpDebugEntries(): boolean {
+export function hasACPDebugEntries(): boolean {
   pruneOldEntries()
   return acpDebugLog.length > 0
 }
@@ -213,9 +213,9 @@ export class ACPChatTransport implements ChatTransport<UIMessage> {
   }
 
   private async spawnAgent(): Promise<ACPSession> {
-    let process: Awaited<ReturnType<typeof spawnAcpProcess>>
+    let process: Awaited<ReturnType<typeof spawnACPProcess>>
     try {
-      process = await spawnAcpProcess({
+      process = await spawnACPProcess({
         command: this.agentDef.command,
         args: this.agentDef.args,
         logId: this.agentDef.id,
