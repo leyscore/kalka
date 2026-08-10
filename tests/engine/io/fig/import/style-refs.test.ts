@@ -4,6 +4,31 @@ import { applyStyleRefsToFields } from '@open-pencil/fig/node-change'
 import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
 
 describe('fig import style refs', () => {
+  test('resolves library paint styles referenced by asset key and version', () => {
+    const stylePaint = {
+      type: 'SOLID' as const,
+      color: { r: 0.96, g: 0.82, b: 1, a: 1 },
+      opacity: 1,
+      visible: true,
+      blendMode: 'NORMAL' as const
+    }
+    const fields: Record<string, unknown> = {
+      styleIdForFill: { assetRef: { key: 'purple-light', version: '109:20' } },
+      fillPaints: []
+    }
+
+    applyStyleRefsToFields(
+      new Map([['1:708', { styleType: 'FILL', fillPaints: [stylePaint] }]]),
+      fields,
+      new Map([
+        ['purple-light', '1:708'],
+        ['purple-light@109:20', '1:708']
+      ])
+    )
+
+    expect(fields.fillPaints).toEqual([stylePaint])
+  })
+
   test('effect and grid styles replace stale direct payloads', () => {
     const effectGuid = { sessionID: 4, localID: 5000 }
     const gridGuid = { sessionID: 4, localID: 5001 }

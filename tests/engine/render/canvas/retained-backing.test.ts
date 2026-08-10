@@ -2,10 +2,13 @@ import { expect, mock, spyOn, test } from 'bun:test'
 
 import type { Canvas, Image as CKImage, ImageInfo, Surface } from 'canvaskit-wasm'
 
-import type { SceneGraph } from '@open-pencil/scene-graph'
+import { getAbsolutePositionFull, SceneGraph } from '@open-pencil/scene-graph'
 
 import type { SkiaRenderer } from '#core/canvas/renderer'
-import { renderSceneBacking } from '#core/canvas/renderer/retained-backing'
+import {
+  computeRetainedSubtreeBounds,
+  renderSceneBacking
+} from '#core/canvas/renderer/retained-backing'
 
 function createRenderer(surfaceFactory: (info: ImageInfo) => Surface | null) {
   const renderer: Partial<SkiaRenderer> = {
@@ -77,6 +80,34 @@ function createGraph(positionPreviewVersion = 0) {
   }
   return graph as SceneGraph
 }
+
+test('retained subtree bounds include descendants transformed by rotated ancestors', () => {
+  const graph = new SceneGraph()
+  const page = graph.getPages()[0]
+  if (!page) throw new Error('Expected the default page')
+  const parent = graph.createNode('INSTANCE', page.id, {
+    x: 100,
+    y: 100,
+    width: 100,
+    height: 100,
+    rotation: 90
+  })
+  const child = graph.createNode('VECTOR', parent.id, {
+    x: 1000,
+    y: 0,
+    width: 100,
+    height: 10
+  })
+
+  const exact = getAbsolutePositionFull(child, graph)
+  const bounds = computeRetainedSubtreeBounds(graph, parent.id)
+
+  if (!bounds) throw new Error('Expected retained subtree bounds')
+  expect(bounds.minX).toBeLessThanOrEqual(exact.boundX)
+  expect(bounds.minY).toBeLessThanOrEqual(exact.boundY)
+  expect(bounds.maxX).toBeGreaterThanOrEqual(exact.boundX + exact.width)
+  expect(bounds.maxY).toBeGreaterThanOrEqual(exact.boundY + exact.height)
+})
 
 test('retained scene backing falls back when CanvasKit cannot create an offscreen surface', () => {
   const r = createRenderer(() => null)
