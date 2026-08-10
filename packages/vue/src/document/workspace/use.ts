@@ -24,7 +24,7 @@ export type UseDocumentWorkspaceOptions<Item extends DocumentWorkspaceItem> = {
   refreshOnReconnect?: boolean
   previewConcurrency?: number
   previewMimeType?: string
-  onPreviewError?(id: string, error: unknown): void
+  onPreviewError?: (id: string, error: unknown) => void
 }
 
 export function useDocumentWorkspace<Item extends DocumentWorkspaceItem>(
@@ -35,11 +35,13 @@ export function useDocumentWorkspace<Item extends DocumentWorkspaceItem>(
   const error = shallowRef<unknown>(null)
   const lastRefreshedAt = shallowRef<Date | null>(null)
   const previews = createDocumentPreviews({
-    documents: readonly(documents),
+    documents,
     source: options.source,
     previewConcurrency: options.previewConcurrency,
     previewMimeType: options.previewMimeType,
     onPreviewError: options.onPreviewError
+      ? (id, error) => options.onPreviewError?.(id, error)
+      : undefined
   })
   let refreshPromise: Promise<void> | null = null
   let refreshQueued = false
