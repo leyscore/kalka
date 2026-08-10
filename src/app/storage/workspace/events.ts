@@ -11,7 +11,13 @@ type StorageWorkspaceListener = (event: StorageWorkspaceEvent) => void
 const listeners = new Set<StorageWorkspaceListener>()
 
 export function emitStorageWorkspaceEvent(event: StorageWorkspaceEvent): void {
-  for (const listener of listeners) listener(event)
+  for (const listener of listeners) {
+    try {
+      listener(event)
+    } catch (error) {
+      console.error('[Storage] Workspace event listener failed:', error)
+    }
+  }
 }
 
 export function onStorageWorkspaceEvent(listener: StorageWorkspaceListener): () => void {

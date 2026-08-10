@@ -96,7 +96,7 @@ export function useDocumentWorkspace<Item extends DocumentWorkspaceItem>(
         }
       },
       options.refreshInterval,
-      { immediate: false }
+      { immediate: true, immediateCallback: false }
     )
   }
 

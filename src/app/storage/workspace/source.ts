@@ -47,6 +47,7 @@ export function createStorageWorkspaceSource(
             updatedAt: metadata.updatedAt,
             metadataAuthoritative: true
           }))
+        if (activeStorageProviderID.value !== providerID) return []
         onSnapshot({ documents, configured })
         return documents
       }
@@ -65,6 +66,7 @@ export function createStorageWorkspaceSource(
           lastSyncError: null
         })
       }
+      if (activeStorageProviderID.value !== providerID) return []
       onSnapshot({ documents: reconciliation.documents, configured })
       return reconciliation.documents
     },

@@ -102,8 +102,14 @@ async function readEntryPayload(
       : null
   }
   if (entry.method !== 8) return null
-  const output = inflateSync(compressed, { out: new Uint8Array(maxOutput + 1) })
-  return output.byteLength === entry.outputSize && hasPNGSignature(output) ? output : null
+  const output = (() => {
+    try {
+      return inflateSync(compressed, { out: new Uint8Array(maxOutput + 1) })
+    } catch {
+      return null
+    }
+  })()
+  return output?.byteLength === entry.outputSize && hasPNGSignature(output) ? output : null
 }
 
 /**

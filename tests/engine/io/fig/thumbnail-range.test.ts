@@ -41,6 +41,32 @@ describe('fig ranged thumbnail extraction', () => {
     expect(await extractFigThumbnailFromReader(memoryReader(bytes, []))).toBeNull()
   })
 
+  test('returns null when deflated thumbnail data is corrupt', async () => {
+    const png = new Uint8Array([
+      0x89,
+      0x50,
+      0x4e,
+      0x47,
+      0x0d,
+      0x0a,
+      0x1a,
+      0x0a,
+      ...Array.from({ length: 64 }, () => 1)
+    ])
+    const bytes = zipSync({ 'thumbnail.png': png })
+    const name = new TextEncoder().encode('thumbnail.png')
+    const nameOffset = bytes.findIndex((byte, index) =>
+      name.every((nameByte, nameIndex) => bytes[index + nameIndex] === nameByte)
+    )
+    const headerOffset = nameOffset - 30
+    const header = new DataView(bytes.buffer, bytes.byteOffset + headerOffset, 30)
+    expect(header.getUint16(8, true)).toBe(8)
+    const dataOffset = nameOffset + name.byteLength + header.getUint16(28, true)
+    bytes.fill(0xff, dataOffset, dataOffset + header.getUint32(18, true))
+
+    expect(await extractFigThumbnailFromReader(memoryReader(bytes, []))).toBeNull()
+  })
+
   test('rejects thumbnails above configured output limits', async () => {
     const bytes = new Uint8Array(readFileSync('tests/fixtures/gold-preview.fig'))
     const thumbnail = await extractFigThumbnailFromReader(memoryReader(bytes, []), {

@@ -86,7 +86,7 @@ export function createDocumentPreviews<Item extends DocumentWorkspaceItem>(
     while (active.size < concurrency) {
       const id = previewQueue.shift()
       if (!id) break
-      queued.delete(id)
+      if (!queued.delete(id)) continue
       if (active.has(id) || previewUrls.value[id]) continue
       active.add(id)
       void runLoad(id, previewGenerations.get(id) ?? 0)
@@ -108,7 +108,11 @@ export function createDocumentPreviews<Item extends DocumentWorkspaceItem>(
     for (const id of trackedIds) {
       if (previous.get(id) === current.get(id)) continue
       removeURL(id)
-      if (!current.has(id) || active.has(id) || queued.has(id)) continue
+      if (!current.has(id)) {
+        queued.delete(id)
+        continue
+      }
+      if (active.has(id) || queued.has(id)) continue
       queued.add(id)
       previewQueue.push(id)
     }
@@ -125,6 +129,7 @@ export function createDocumentPreviews<Item extends DocumentWorkspaceItem>(
     for (const id of ids) removeURL(id)
     previewQueue.length = 0
     queued.clear()
+    previewErrors.value = {}
   }
 
   function observePreview(element: Element | null, id: string): () => void {
