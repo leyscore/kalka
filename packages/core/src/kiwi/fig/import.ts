@@ -53,7 +53,7 @@ function buildAssetRefMap(changeMap: Map<string, NodeChange>): Map<string, strin
   const refs = new Map<string, string>()
   for (const [id, nc] of changeMap) {
     if (typeof nc.key !== 'string') continue
-    refs.set(nc.key, id)
+    if (typeof nc.version !== 'string' || !refs.has(nc.key)) refs.set(nc.key, id)
     if (typeof nc.version === 'string')
       refs.set(assetRefKey({ key: nc.key, version: nc.version }), id)
     if (typeof nc.userFacingVersion === 'string') {

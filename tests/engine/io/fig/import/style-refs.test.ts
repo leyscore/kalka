@@ -1,32 +1,72 @@
 import { describe, expect, test } from 'bun:test'
 
+import { importNodeChanges } from '@open-pencil/core'
 import { applyStyleRefsToFields } from '@open-pencil/fig/node-change'
 import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
 
 describe('fig import style refs', () => {
   test('resolves library paint styles referenced by asset key and version', () => {
-    const stylePaint = {
+    const fallbackPaint = {
+      type: 'SOLID' as const,
+      color: { r: 0.2, g: 0.4, b: 0.9, a: 1 },
+      opacity: 1,
+      visible: true,
+      blendMode: 'NORMAL' as const
+    }
+    const versionedPaint = {
       type: 'SOLID' as const,
       color: { r: 0.96, g: 0.82, b: 1, a: 1 },
       opacity: 1,
       visible: true,
       blendMode: 'NORMAL' as const
     }
-    const fields: Record<string, unknown> = {
-      styleIdForFill: { assetRef: { key: 'purple-light', version: '109:20' } },
-      fillPaints: []
-    }
+    const parentIndex = { guid: { sessionID: 0, localID: 1 }, position: '!' }
+    const graph = importNodeChanges([
+      { guid: { sessionID: 0, localID: 0 }, type: 'DOCUMENT', phase: 'CREATED' },
+      {
+        guid: { sessionID: 0, localID: 1 },
+        parentIndex: { guid: { sessionID: 0, localID: 0 }, position: '!' },
+        type: 'CANVAS',
+        phase: 'CREATED'
+      },
+      {
+        guid: { sessionID: 1, localID: 700 },
+        parentIndex,
+        type: 'RECTANGLE',
+        name: 'Fallback style',
+        styleType: 'FILL',
+        key: 'purple-light',
+        fillPaints: [fallbackPaint]
+      },
+      {
+        guid: { sessionID: 1, localID: 708 },
+        parentIndex,
+        type: 'RECTANGLE',
+        name: 'Versioned style',
+        styleType: 'FILL',
+        key: 'purple-light',
+        version: '109:20',
+        fillPaints: [versionedPaint]
+      },
+      {
+        guid: { sessionID: 2, localID: 1 },
+        parentIndex,
+        type: 'RECTANGLE',
+        name: 'Versioned target',
+        styleIdForFill: { assetRef: { key: 'purple-light', version: '109:20' } }
+      },
+      {
+        guid: { sessionID: 2, localID: 2 },
+        parentIndex,
+        type: 'RECTANGLE',
+        name: 'Fallback target',
+        styleIdForFill: { assetRef: { key: 'purple-light' } }
+      }
+    ] as NodeChange[])
 
-    applyStyleRefsToFields(
-      new Map([['1:708', { styleType: 'FILL', fillPaints: [stylePaint] }]]),
-      fields,
-      new Map([
-        ['purple-light', '1:708'],
-        ['purple-light@109:20', '1:708']
-      ])
-    )
-
-    expect(fields.fillPaints).toEqual([stylePaint])
+    const nodes = [...graph.getAllNodes()]
+    expect(nodes.find((node) => node.name === 'Versioned target')?.fills).toEqual([versionedPaint])
+    expect(nodes.find((node) => node.name === 'Fallback target')?.fills).toEqual([fallbackPaint])
   })
 
   test('effect and grid styles replace stale direct payloads', () => {

@@ -115,7 +115,9 @@ export function createTextActions(ctx: EditorContext) {
       styleRuns: after.styleRuns,
       ...sizeChanges
     })
-    applyTextInstanceOverride(ctx, containingInstances, result.nodeId, after.text)
+    if (before.text !== after.text) {
+      applyTextInstanceOverride(ctx, containingInstances, result.nodeId, after.text)
+    }
     const instanceOverridesAfter = snapshotInstanceOverrides(ctx, containingInstances)
     ctx.state.editingTextId = null
     activeSession = null

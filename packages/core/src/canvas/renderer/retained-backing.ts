@@ -1,6 +1,6 @@
 import type { Canvas, Image as CKImage, Surface } from 'canvaskit-wasm'
 
-import { getAbsolutePositionFull, type SceneGraph } from '@open-pencil/scene-graph'
+import { getWorldMatrix, TransformMatrix, type SceneGraph } from '@open-pencil/scene-graph'
 import {
   computeDescendantVisualBounds,
   effectOverflow,
@@ -257,14 +257,25 @@ export function computeRetainedSubtreeBounds(
     const node = graph.getNode(nodeId)
     if (!node?.visible) continue
 
-    const absolute = getAbsolutePositionFull(node, graph)
     const stroke = strokeOverflow(node.strokes)
     const effects = effectOverflow(node.effects)
+    const points = TransformMatrix.mapPoints(getWorldMatrix(node, graph), [
+      -stroke - effects.left,
+      -stroke - effects.top,
+      node.width + stroke + effects.right,
+      -stroke - effects.top,
+      node.width + stroke + effects.right,
+      node.height + stroke + effects.bottom,
+      -stroke - effects.left,
+      node.height + stroke + effects.bottom
+    ])
+    const xs = [points[0], points[2], points[4], points[6]]
+    const ys = [points[1], points[3], points[5], points[7]]
     transformedBounds = unionVisualBounds(transformedBounds, {
-      minX: absolute.boundX - stroke - effects.left,
-      minY: absolute.boundY - stroke - effects.top,
-      maxX: absolute.boundX + absolute.width + stroke + effects.right,
-      maxY: absolute.boundY + absolute.height + stroke + effects.bottom
+      minX: Math.min(...xs),
+      minY: Math.min(...ys),
+      maxX: Math.max(...xs),
+      maxY: Math.max(...ys)
     })
     pending.push(...node.childIds)
   }

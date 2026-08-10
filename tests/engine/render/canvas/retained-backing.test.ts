@@ -109,6 +109,35 @@ test('retained subtree bounds include descendants transformed by rotated ancesto
   expect(bounds.maxY).toBeGreaterThanOrEqual(exact.boundY + exact.height)
 })
 
+test('retained subtree bounds rotate directional effect overflow into world space', () => {
+  const graph = new SceneGraph()
+  const page = graph.getPages()[0]
+  if (!page) throw new Error('Expected the default page')
+  const node = graph.createNode('RECTANGLE', page.id, {
+    x: 100,
+    y: 100,
+    width: 100,
+    height: 50,
+    rotation: 90,
+    effects: [
+      {
+        type: 'DROP_SHADOW',
+        color: { r: 0, g: 0, b: 0, a: 1 },
+        offset: { x: 20, y: 0 },
+        radius: 0,
+        spread: 0,
+        visible: true
+      }
+    ]
+  })
+
+  const base = getAbsolutePositionFull(node, graph)
+  const bounds = computeRetainedSubtreeBounds(graph, node.id)
+
+  if (!bounds) throw new Error('Expected retained subtree bounds')
+  expect(bounds.maxY).toBeCloseTo(base.boundY + base.height + 20)
+})
+
 test('retained scene backing falls back when CanvasKit cannot create an offscreen surface', () => {
   const r = createRenderer(() => null)
   const canvas = createCanvas()

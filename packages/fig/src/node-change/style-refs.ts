@@ -1,4 +1,4 @@
-import type { GUID, NodeChange } from '@open-pencil/kiwi/fig/codec'
+import type { NodeChange, StyleReference } from '@open-pencil/kiwi/fig/codec'
 import { guidToString } from '@open-pencil/kiwi/fig/guid'
 
 const TEXT_STYLE_FIELDS = [
@@ -10,16 +10,7 @@ const TEXT_STYLE_FIELDS = [
   'textCase'
 ] as const
 
-type StyleRefFields = Record<string, unknown> & {
-  styleIdForFill?: StyleReference
-  styleIdForStrokeFill?: StyleReference
-  styleIdForText?: StyleReference
-  styleIdForEffect?: StyleReference
-  styleIdForGrid?: StyleReference
-}
-
-type AssetRef = { key: string; version?: string }
-type StyleReference = { guid?: GUID; assetRef?: AssetRef }
+type StyleRefFields = NodeChange
 
 type StyleSource = Pick<
   NodeChange,
@@ -88,7 +79,7 @@ function applyTextStyleRef(
   if (style?.type !== 'TEXT' || style.styleType !== 'TEXT') return
   for (const field of TEXT_STYLE_FIELDS) {
     if (field === 'textDecoration') fields.textDecoration = style.textDecoration
-    else if (style[field] !== undefined) fields[field] = style[field]
+    else if (style[field] !== undefined) Object.assign(fields, { [field]: style[field] })
   }
 }
 
