@@ -1,16 +1,9 @@
 import { useEventListener, useIntervalFn } from '@vueuse/core'
-import {
-  computed,
-  onBeforeUnmount,
-  onMounted,
-  readonly,
-  ref,
-  shallowRef,
-  type Directive,
-  type Ref
-} from 'vue'
+import { computed, onBeforeUnmount, onMounted, readonly, ref, shallowRef, type Ref } from 'vue'
 
 import { IS_BROWSER } from '@open-pencil/core/constants'
+
+import { createDocumentPreviews } from './previews'
 
 export type DocumentWorkspaceItem = {
   id: string
@@ -41,165 +34,16 @@ export function useDocumentWorkspace<Item extends DocumentWorkspaceItem>(
   const loading = ref(false)
   const error = shallowRef<unknown>(null)
   const lastRefreshedAt = shallowRef<Date | null>(null)
-  const previewUrls = ref<Record<string, string>>({})
-  const previewErrors = shallowRef<Record<string, unknown>>({})
-  const previewCleanups = new WeakMap<Element, () => void>()
-  const previewGenerations = new Map<string, number>()
-  const previewQueue: string[] = []
-  const queued = new Set<string>()
-  const activePreviews = new Set<string>()
-  const concurrency = Math.max(1, Math.floor(options.previewConcurrency ?? 6))
+  const previews = createDocumentPreviews({
+    documents: readonly(documents),
+    source: options.source,
+    previewConcurrency: options.previewConcurrency,
+    previewMimeType: options.previewMimeType,
+    onPreviewError: options.onPreviewError
+  })
   let refreshPromise: Promise<void> | null = null
   let refreshQueued = false
   let disposed = false
-
-  function removePreviewURL(id: string): void {
-    previewGenerations.set(id, (previewGenerations.get(id) ?? 0) + 1)
-    const url = previewUrls.value[id]
-    if (!url) return
-    URL.revokeObjectURL(url)
-    previewUrls.value = Object.fromEntries(
-      Object.entries(previewUrls.value).filter(([previewId]) => previewId !== id)
-    )
-  }
-
-  function reconcilePreviewUrls(items: readonly Item[]): void {
-    const previousItems = new Map(documents.value.map((item) => [item.id, item.updatedAt]))
-    const currentItems = new Map(items.map((item) => [item.id, item.updatedAt]))
-    const trackedIds = new Set([...Object.keys(previewUrls.value), ...activePreviews, ...queued])
-    for (const id of trackedIds) {
-      if (previousItems.get(id) === currentItems.get(id)) continue
-      removePreviewURL(id)
-      if (!currentItems.has(id) || activePreviews.has(id)) continue
-      if (!queued.has(id)) {
-        queued.add(id)
-        previewQueue.push(id)
-      }
-    }
-    drainPreviewQueue()
-  }
-
-  function clearPreviews(): void {
-    const ids = new Set([
-      ...Object.keys(previewUrls.value),
-      ...activePreviews,
-      ...queued,
-      ...previewGenerations.keys()
-    ])
-    for (const id of ids) removePreviewURL(id)
-    previewQueue.length = 0
-    queued.clear()
-  }
-
-  function replacePreviewURL(id: string, bytes: Uint8Array): void {
-    if (disposed) return
-    const previous = previewUrls.value[id]
-    if (previous) URL.revokeObjectURL(previous)
-    const blobBytes = Uint8Array.from(bytes)
-    previewUrls.value = {
-      ...previewUrls.value,
-      [id]: URL.createObjectURL(
-        new Blob([blobBytes.buffer], { type: options.previewMimeType ?? 'image/png' })
-      )
-    }
-  }
-
-  function clearPreviewError(id: string): void {
-    if (!(id in previewErrors.value)) return
-    previewErrors.value = Object.fromEntries(
-      Object.entries(previewErrors.value).filter(([previewId]) => previewId !== id)
-    )
-  }
-
-  function recordPreviewError(id: string, error: unknown): void {
-    previewErrors.value = { ...previewErrors.value, [id]: error }
-    options.onPreviewError?.(id, error)
-  }
-
-  function drainPreviewQueue(): void {
-    while (activePreviews.size < concurrency) {
-      const id = previewQueue.shift()
-      if (!id) break
-      queued.delete(id)
-      if (activePreviews.has(id) || previewUrls.value[id]) continue
-      activePreviews.add(id)
-      const generation = previewGenerations.get(id) ?? 0
-      void options.source
-        .loadPreview(id)
-        .then((bytes) => {
-          if (bytes?.byteLength && generation === (previewGenerations.get(id) ?? 0)) {
-            clearPreviewError(id)
-            replacePreviewURL(id, bytes)
-          }
-          return undefined
-        })
-        .catch((error: unknown) => {
-          if (!disposed && generation === (previewGenerations.get(id) ?? 0)) {
-            recordPreviewError(id, error)
-          }
-        })
-        .finally(() => {
-          activePreviews.delete(id)
-          if (
-            !disposed &&
-            generation !== (previewGenerations.get(id) ?? 0) &&
-            documents.value.some((item) => item.id === id)
-          ) {
-            loadPreview(id)
-          }
-          drainPreviewQueue()
-        })
-    }
-  }
-
-  function loadPreview(id: string): void {
-    if (previewUrls.value[id] || activePreviews.has(id) || queued.has(id)) return
-    clearPreviewError(id)
-    queued.add(id)
-    previewQueue.push(id)
-    drainPreviewQueue()
-  }
-
-  function previewURL(id: string): string | null {
-    return previewUrls.value[id] ?? null
-  }
-
-  function observePreview(element: Element | null, id: string): () => void {
-    if (!element || typeof IntersectionObserver === 'undefined') {
-      loadPreview(id)
-      return () => undefined
-    }
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          loadPreview(id)
-          observer.disconnect()
-        }
-      },
-      { rootMargin: '240px' }
-    )
-    observer.observe(element)
-    return () => observer.disconnect()
-  }
-
-  function stopObservingPreview(element: Element): void {
-    previewCleanups.get(element)?.()
-    previewCleanups.delete(element)
-  }
-
-  const previewDirective: Directive<Element, string> = {
-    mounted(element, binding) {
-      previewCleanups.set(element, observePreview(element, binding.value))
-    },
-    updated(element, binding) {
-      if (binding.value === binding.oldValue) return
-      stopObservingPreview(element)
-      previewCleanups.set(element, observePreview(element, binding.value))
-    },
-    unmounted(element) {
-      stopObservingPreview(element)
-    }
-  }
 
   function refresh(): Promise<void> {
     if (refreshPromise) return refreshPromise
@@ -209,7 +53,7 @@ export function useDocumentWorkspace<Item extends DocumentWorkspaceItem>(
       .refresh()
       .then((items) => {
         if (!disposed) {
-          reconcilePreviewUrls(items)
+          previews.reconcile(documents.value, items)
           documents.value = items
           lastRefreshedAt.value = new Date()
         }
@@ -262,7 +106,7 @@ export function useDocumentWorkspace<Item extends DocumentWorkspaceItem>(
   onBeforeUnmount(() => {
     unsubscribeSource?.()
     disposed = true
-    clearPreviews()
+    previews.dispose()
   })
 
   return {
@@ -270,15 +114,14 @@ export function useDocumentWorkspace<Item extends DocumentWorkspaceItem>(
     loading: readonly(loading),
     error: readonly(error),
     lastRefreshedAt: readonly(lastRefreshedAt),
-    previewUrls: readonly(previewUrls),
-    previewErrors: readonly(previewErrors),
+    previewUrls: previews.previewUrls,
+    previewErrors: previews.previewErrors,
     hasDocuments: computed(() => documents.value.length > 0),
     refresh,
     invalidate,
-    clearPreviews,
-    loadPreview,
-    observePreview,
-    previewDirective,
-    previewURL
+    clearPreviews: previews.clearPreviews,
+    loadPreview: previews.loadPreview,
+    previewDirective: previews.previewDirective,
+    previewURL: previews.previewURL
   }
 }

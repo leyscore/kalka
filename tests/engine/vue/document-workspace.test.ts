@@ -196,7 +196,12 @@ describe('useDocumentWorkspace', () => {
     const component = defineComponent({
       setup() {
         holder.current = useDocumentWorkspace({
-          source: { refresh: async () => [], loadPreview: async () => Promise.reject(failure) },
+          source: {
+            refresh: async () => [],
+            loadPreview: async () => {
+              throw failure
+            }
+          },
           refreshOnFocus: false,
           refreshOnReconnect: false,
           onPreviewError
