@@ -170,7 +170,9 @@ export async function headObjectSize(
 ): Promise<number | null> {
   const res = await s3Request(config, objectURL(config, key), { method: 'HEAD' })
   if (res.status === 404) return null
-  const size = Number(res.headers.get('content-length'))
+  const sizeHeader = res.headers.get('content-length')
+  if (sizeHeader == null) return null
+  const size = Number(sizeHeader)
   return Number.isSafeInteger(size) && size >= 0 ? size : null
 }
 
@@ -182,6 +184,7 @@ export async function getObjectRange(
 ): Promise<Uint8Array | null> {
   if (
     !Number.isSafeInteger(start) ||
+    start < 0 ||
     !Number.isSafeInteger(endExclusive) ||
     endExclusive <= start
   ) {

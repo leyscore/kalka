@@ -47,6 +47,10 @@ describe('local-first storage persistence', () => {
       { store, enqueueCanvas }
     )
 
-    expect((await store.readThumb('canvas-preview'))?.byteLength).toBeGreaterThan(0)
+    const thumbnail = await store.readThumb('canvas-preview')
+    expect(thumbnail?.byteLength).toBeGreaterThan(0)
+    expect(thumbnail?.subarray(0, 8)).toEqual(
+      new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
+    )
   })
 })

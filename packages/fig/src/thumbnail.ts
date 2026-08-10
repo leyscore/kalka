@@ -14,6 +14,7 @@ export type FigThumbnailLimits = {
 type ThumbnailEntry = {
   method: number
   compressedSize: number
+  outputSize: number
   localOffset: number
 }
 
@@ -26,6 +27,7 @@ const DEFAULT_MAX_TAIL = 4 * 1024 * 1024
 const DEFAULT_MAX_COMPRESSED = 8 * 1024 * 1024
 const DEFAULT_MAX_OUTPUT = 16 * 1024 * 1024
 const THUMBNAIL_NAME = 'thumbnail.png'
+const PNG_SIGNATURE = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
 
 function view(bytes: Uint8Array): DataView {
   return new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
@@ -41,6 +43,10 @@ function findEOCD(bytes: Uint8Array): number {
 
 function boundedLimit(value: number | undefined, fallback: number): number {
   return Number.isFinite(value) && value && value > 0 ? value : fallback
+}
+
+function hasPNGSignature(bytes: Uint8Array): boolean {
+  return PNG_SIGNATURE.every((byte, index) => bytes[index] === byte)
 }
 
 function findThumbnailEntry(
@@ -66,7 +72,12 @@ function findThumbnailEntry(
     const name = decoder.decode(central.subarray(offset + 46, offset + 46 + nameLength))
     if (name === THUMBNAIL_NAME) {
       if (compressedSize > maxCompressed || outputSize > maxOutput) return null
-      return { method, compressedSize, localOffset: data.getUint32(offset + 42, true) }
+      return {
+        method,
+        compressedSize,
+        outputSize,
+        localOffset: data.getUint32(offset + 42, true)
+      }
     }
     offset = next
   }
@@ -85,10 +96,14 @@ async function readEntryPayload(
     entry.localOffset + 30 + headerView.getUint16(26, true) + headerView.getUint16(28, true)
   if (dataStart + entry.compressedSize > reader.size) return null
   const compressed = await reader.read(dataStart, dataStart + entry.compressedSize)
-  if (entry.method === 0) return compressed.byteLength <= maxOutput ? compressed : null
+  if (entry.method === 0) {
+    return compressed.byteLength === entry.outputSize && hasPNGSignature(compressed)
+      ? compressed
+      : null
+  }
   if (entry.method !== 8) return null
   const output = inflateSync(compressed, { out: new Uint8Array(maxOutput + 1) })
-  return output.byteLength <= maxOutput ? output : null
+  return output.byteLength === entry.outputSize && hasPNGSignature(output) ? output : null
 }
 
 /**

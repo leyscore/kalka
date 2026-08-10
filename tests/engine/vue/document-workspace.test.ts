@@ -158,6 +158,62 @@ describe('useDocumentWorkspace', () => {
     expect(sourceListener).toBeNull()
   })
 
+  test('invalidates an in-flight preview when the document changes', async () => {
+    const previewLoad = deferred<Uint8Array | null>()
+    const freshPreviewLoad = deferred<Uint8Array | null>()
+    const refresh = vi
+      .fn<() => Promise<DocumentWorkspaceItem[]>>()
+      .mockResolvedValueOnce([{ id: 'one', name: 'One', updatedAt: 'first' }])
+      .mockResolvedValueOnce([{ id: 'one', name: 'One', updatedAt: 'second' }])
+    const loadPreview = vi
+      .fn<() => Promise<Uint8Array | null>>()
+      .mockImplementationOnce(() => previewLoad.promise)
+      .mockImplementationOnce(() => freshPreviewLoad.promise)
+    const createObjectURL = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:preview')
+    const mounted = mountWorkspace({ refresh, loadPreview })
+    await flushTasks()
+
+    mounted.workspace.loadPreview('one')
+    expect(loadPreview).toHaveBeenCalledTimes(1)
+    await mounted.workspace.refresh()
+    previewLoad.resolve(new Uint8Array([1]))
+    await previewLoad.promise
+    await flushTasks()
+
+    expect(createObjectURL).not.toHaveBeenCalled()
+    expect(loadPreview).toHaveBeenCalledTimes(2)
+    freshPreviewLoad.resolve(new Uint8Array([2]))
+    await freshPreviewLoad.promise
+    await flushTasks()
+    expect(createObjectURL).toHaveBeenCalledTimes(1)
+    mounted.unmount()
+  })
+
+  test('surfaces preview failures to consumers', async () => {
+    const failure = new Error('preview failed')
+    const onPreviewError = vi.fn()
+    const holder: WorkspaceHolder = { current: null }
+    const component = defineComponent({
+      setup() {
+        holder.current = useDocumentWorkspace({
+          source: { refresh: async () => [], loadPreview: async () => Promise.reject(failure) },
+          refreshOnFocus: false,
+          refreshOnReconnect: false,
+          onPreviewError
+        })
+        return () => h('div')
+      }
+    })
+    const app = renderer.createApp(component)
+    app.mount(hostNode())
+    holder.current?.loadPreview('one')
+    await flushTasks()
+
+    expect(holder.current?.previewErrors.value.one).toBe(failure)
+    expect(onPreviewError).toHaveBeenCalledWith('one', failure)
+    app.unmount()
+  })
+
   test('deduplicates previews, limits concurrency, and revokes URLs on unmount', async () => {
     const loads = new Map<string, Deferred<Uint8Array | null>>()
     const loadPreview = vi.fn((id: string) => {

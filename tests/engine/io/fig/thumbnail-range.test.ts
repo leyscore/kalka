@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 
+import { zipSync } from 'fflate'
+
 import { extractFigThumbnailFromReader } from '@open-pencil/fig'
 
 function memoryReader(bytes: Uint8Array, ranges: Array<[number, number]>) {
@@ -29,6 +31,14 @@ describe('fig ranged thumbnail extraction', () => {
     expect(ranges.reduce((total, [start, end]) => total + end - start, 0)).toBeLessThan(
       bytes.byteLength
     )
+  })
+
+  test('rejects malformed thumbnail payloads', async () => {
+    const bytes = zipSync({
+      'canvas.fig': new Uint8Array([1]),
+      'thumbnail.png': new TextEncoder().encode('not a png')
+    })
+    expect(await extractFigThumbnailFromReader(memoryReader(bytes, []))).toBeNull()
   })
 
   test('rejects thumbnails above configured output limits', async () => {

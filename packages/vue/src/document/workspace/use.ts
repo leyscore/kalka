@@ -31,6 +31,7 @@ export type UseDocumentWorkspaceOptions<Item extends DocumentWorkspaceItem> = {
   refreshOnReconnect?: boolean
   previewConcurrency?: number
   previewMimeType?: string
+  onPreviewError?(id: string, error: unknown): void
 }
 
 export function useDocumentWorkspace<Item extends DocumentWorkspaceItem>(
@@ -41,6 +42,7 @@ export function useDocumentWorkspace<Item extends DocumentWorkspaceItem>(
   const error = shallowRef<unknown>(null)
   const lastRefreshedAt = shallowRef<Date | null>(null)
   const previewUrls = ref<Record<string, string>>({})
+  const previewErrors = shallowRef<Record<string, unknown>>({})
   const previewCleanups = new WeakMap<Element, () => void>()
   const previewGenerations = new Map<string, number>()
   const previewQueue: string[] = []
@@ -64,9 +66,17 @@ export function useDocumentWorkspace<Item extends DocumentWorkspaceItem>(
   function reconcilePreviewUrls(items: readonly Item[]): void {
     const previousItems = new Map(documents.value.map((item) => [item.id, item.updatedAt]))
     const currentItems = new Map(items.map((item) => [item.id, item.updatedAt]))
-    for (const id of Object.keys(previewUrls.value)) {
-      if (previousItems.get(id) !== currentItems.get(id)) removePreviewURL(id)
+    const trackedIds = new Set([...Object.keys(previewUrls.value), ...activePreviews, ...queued])
+    for (const id of trackedIds) {
+      if (previousItems.get(id) === currentItems.get(id)) continue
+      removePreviewURL(id)
+      if (!currentItems.has(id) || activePreviews.has(id)) continue
+      if (!queued.has(id)) {
+        queued.add(id)
+        previewQueue.push(id)
+      }
     }
+    drainPreviewQueue()
   }
 
   function clearPreviews(): void {
@@ -94,6 +104,18 @@ export function useDocumentWorkspace<Item extends DocumentWorkspaceItem>(
     }
   }
 
+  function clearPreviewError(id: string): void {
+    if (!(id in previewErrors.value)) return
+    previewErrors.value = Object.fromEntries(
+      Object.entries(previewErrors.value).filter(([previewId]) => previewId !== id)
+    )
+  }
+
+  function recordPreviewError(id: string, error: unknown): void {
+    previewErrors.value = { ...previewErrors.value, [id]: error }
+    options.onPreviewError?.(id, error)
+  }
+
   function drainPreviewQueue(): void {
     while (activePreviews.size < concurrency) {
       const id = previewQueue.shift()
@@ -106,13 +128,25 @@ export function useDocumentWorkspace<Item extends DocumentWorkspaceItem>(
         .loadPreview(id)
         .then((bytes) => {
           if (bytes?.byteLength && generation === (previewGenerations.get(id) ?? 0)) {
+            clearPreviewError(id)
             replacePreviewURL(id, bytes)
           }
           return undefined
         })
-        .catch(() => null)
+        .catch((error: unknown) => {
+          if (!disposed && generation === (previewGenerations.get(id) ?? 0)) {
+            recordPreviewError(id, error)
+          }
+        })
         .finally(() => {
           activePreviews.delete(id)
+          if (
+            !disposed &&
+            generation !== (previewGenerations.get(id) ?? 0) &&
+            documents.value.some((item) => item.id === id)
+          ) {
+            loadPreview(id)
+          }
           drainPreviewQueue()
         })
     }
@@ -120,6 +154,7 @@ export function useDocumentWorkspace<Item extends DocumentWorkspaceItem>(
 
   function loadPreview(id: string): void {
     if (previewUrls.value[id] || activePreviews.has(id) || queued.has(id)) return
+    clearPreviewError(id)
     queued.add(id)
     previewQueue.push(id)
     drainPreviewQueue()
@@ -236,6 +271,7 @@ export function useDocumentWorkspace<Item extends DocumentWorkspaceItem>(
     error: readonly(error),
     lastRefreshedAt: readonly(lastRefreshedAt),
     previewUrls: readonly(previewUrls),
+    previewErrors: readonly(previewErrors),
     hasDocuments: computed(() => documents.value.length > 0),
     refresh,
     invalidate,

@@ -70,14 +70,15 @@ export function createStorageWorkspaceSource(
     },
 
     async loadPreview(id: string): Promise<Uint8Array | null> {
+      const providerID = activeStorageProviderID.value
       const localStore = getLocalCanvasStore()
       const local = await localStore.readThumb(id)
       if (local?.byteLength) return local
-      const adapter = createActiveStorageAdapter()
+      const adapter = createActiveStorageAdapter(providerID)
       if (!adapter.getThumbnail) return null
       const remote = await adapter.getThumbnail(id)
       if (!remote?.byteLength) return null
-      await localStore.writeThumb(id, remote)
+      if (activeStorageProviderID.value === providerID) await localStore.writeThumb(id, remote)
       return remote
     }
   }

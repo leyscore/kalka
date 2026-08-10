@@ -34,17 +34,26 @@ test('configured storage lists previews through ranges before opening the docume
       return
     }
     if (url.pathname.endsWith('/remote-1.fig') && route.request().headers().range) {
-      rangeGets++
-      const match = route
-        .request()
-        .headers()
-        .range?.match(/^bytes=(\d+)-(\d+)$/)
-      if (!match) {
+      const range = route.request().headers().range
+      const explicit = range?.match(/^bytes=(\d+)-(\d+)$/)
+      const suffix = range?.match(/^bytes=-(\d+)$/)
+      let start: number
+      let end: number
+      if (explicit) {
+        start = Number(explicit[1])
+        end = Math.min(Number(explicit[2]), fixture.byteLength - 1)
+      } else if (suffix) {
+        const length = Math.min(Number(suffix[1]), fixture.byteLength)
+        start = fixture.byteLength - length
+        end = fixture.byteLength - 1
+      } else {
         await route.fulfill({ status: 416 })
         return
       }
-      const start = Number(match[1])
-      const end = Number(match[2])
+      if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start < 0 || end < start) {
+        await route.fulfill({ status: 416 })
+        return
+      }
       await route.fulfill({
         status: 206,
         headers: {
@@ -53,6 +62,7 @@ test('configured storage lists previews through ranges before opening the docume
         contentType: 'application/octet-stream',
         body: fixture.subarray(start, end + 1)
       })
+      rangeGets++
       return
     }
     if (url.pathname.endsWith('/remote-1.fig') && route.request().method() === 'HEAD') {
@@ -91,7 +101,7 @@ test('configured storage lists previews through ranges before opening the docume
   const preview = page.locator('[data-document-id="remote-1"] img')
   await expect(preview).toBeVisible()
   await expect(preview).toHaveAttribute('src', /^blob:/)
-  expect(rangeGets).toBeGreaterThan(0)
+  expect(rangeGets).toBe(3)
   expect(fullDocumentGets).toBe(0)
 
   await page.locator('[data-document-id="remote-1"]').click()
