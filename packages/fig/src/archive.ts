@@ -25,6 +25,8 @@ export interface FigParseResult {
   figKiwiVersion: number
   /** Deflated Kiwi schema bytes from the original file, retained for round-trip fidelity. */
   figSchemaDeflated: Uint8Array
+  thumbnailPNG: Uint8Array | null
+  metaJSON: string | null
 }
 
 function isLikelyAsset(name: string): boolean {
@@ -46,12 +48,7 @@ function findCanvasData(entries: Partial<Record<string, Uint8Array>>): Uint8Arra
 
 /** Parse a complete zipped `.fig` file into its Figma protocol payload and binary resources. */
 export function parseFigBuffer(buffer: ArrayBuffer): FigParseResult {
-  const archive = unzipSync(new Uint8Array(buffer), {
-    filter: (file) =>
-      file.name === 'canvas.fig' ||
-      file.name === 'canvas' ||
-      (file.name.startsWith('images/') && file.name !== 'images/')
-  })
+  const archive = unzipSync(new Uint8Array(buffer))
   const canvasData = findCanvasData(archive)
   if (!canvasData) {
     throw new Error(
@@ -60,11 +57,17 @@ export function parseFigBuffer(buffer: ArrayBuffer): FigParseResult {
   }
 
   const decoded = decodeFigKiwiCanvas(canvasData)
+  const metaBytes = archive['meta.json']
   const images = Object.entries(archive)
     .filter(([name]) => name.startsWith('images/') && name !== 'images/')
     .map(([name, data]) => [name.slice('images/'.length), data] as [string, Uint8Array])
 
-  return { ...decoded, images }
+  return {
+    ...decoded,
+    images,
+    thumbnailPNG: archive['thumbnail.png'] ?? null,
+    metaJSON: Object.hasOwn(archive, 'meta.json') ? new TextDecoder().decode(metaBytes) : null
+  }
 }
 
 /** Assemble a complete zipped `.fig` archive from an encoded Kiwi message and resources. */

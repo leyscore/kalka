@@ -35,10 +35,13 @@ afterEach(() => {
 
 describe('acronym identifier casing', () => {
   test('rejects mixed-case first-party acronym identifiers', () => {
-    const result = lint('export class CloudCorsError {}\nexport function sendRpc() {}')
+    const result = lint(
+      'export class CloudCorsError {}\nexport function sendRpc() {}\nexport type FontPickerUi = {}'
+    )
     expect(result.exitCode).toBe(1)
     expect(result.stdout.toString()).toContain('CloudCorsError')
     expect(result.stdout.toString()).toContain('sendRpc')
+    expect(result.stdout.toString()).toContain('FontPickerUi')
   })
 
   test('accepts canonical first-party acronym identifiers', () => {

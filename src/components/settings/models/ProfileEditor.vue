@@ -376,8 +376,8 @@ void refreshKeyStatus()
           :saved="hasExistingKey"
           kind="api"
           :placeholder="hasExistingKey ? dialogs.keySavedReplace : providerDef.keyPlaceholder"
-          :key-url="providerDef.keyURL"
-          :key-url-label="dialogs.getAPIKeyGeneric"
+          :key-u-r-l="providerDef.keyURL"
+          :key-u-r-l-label="dialogs.getAPIKeyGeneric"
           @clear="clearKey"
         />
 
