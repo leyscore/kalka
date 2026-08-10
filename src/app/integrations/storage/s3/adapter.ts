@@ -1,3 +1,5 @@
+import { extractFigThumbnailFromReader } from '@open-pencil/fig'
+
 import { isTauri } from '@/app/tauri/env'
 
 import {
@@ -16,7 +18,16 @@ import type {
   StorageDocumentMetadata,
   StorageProviderRuntime
 } from '../types'
-import { S3HttpError, deleteObject, getObject, headObject, listObjects, putObject } from './client'
+import {
+  S3HttpError,
+  deleteObject,
+  getObject,
+  getObjectRange,
+  headObject,
+  headObjectSize,
+  listObjects,
+  putObject
+} from './client'
 import { CloudCORSError, formatBrowserCORSHelpMessage, isLikelyCORSOrNetworkError } from './cors'
 import type { S3CompatibleConfig, S3ConnectionResult } from './types'
 
@@ -244,7 +255,15 @@ export function createS3StorageAdapter(runtime: StorageProviderRuntime): S3Stora
 
     async getThumbnail(id) {
       const config = await resolveConfig(runtime)
-      return getObject(config, documentThumbnailKey(id))
+      const figKey = documentFigKey(id)
+      const size = await headObjectSize(config, figKey)
+      if (size == null) return null
+      return extractFigThumbnailFromReader({
+        size,
+        async read(start: number, endExclusive: number) {
+          return (await getObjectRange(config, figKey, start, endExclusive)) ?? new Uint8Array()
+        }
+      })
     }
   }
 }

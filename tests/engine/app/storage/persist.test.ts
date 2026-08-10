@@ -1,4 +1,5 @@
 import { describe, expect, test, vi } from 'bun:test'
+import { readFileSync } from 'node:fs'
 
 import { createMemoryLocalCanvasStore } from '@/app/storage/local-store'
 import { persistStorageCanvasLocally } from '@/app/storage/sync/persist'
@@ -29,5 +30,23 @@ describe('local-first storage persistence', () => {
       syncStatus: 'pending',
       providerId: 's3-compatible'
     })
+  })
+
+  test('stores the embedded preview with the document', async () => {
+    const store = createMemoryLocalCanvasStore()
+    const enqueueCanvas = vi.fn(() => Promise.resolve())
+    const figBytes = new Uint8Array(readFileSync('tests/fixtures/gold-preview.fig'))
+
+    await persistStorageCanvasLocally(
+      {
+        providerId: 's3-compatible',
+        canvasId: 'canvas-preview',
+        name: 'Preview design',
+        figBytes
+      },
+      { store, enqueueCanvas }
+    )
+
+    expect((await store.readThumb('canvas-preview'))?.byteLength).toBeGreaterThan(0)
   })
 })

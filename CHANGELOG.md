@@ -32,10 +32,10 @@
 - Test OpenAI-compatible provider connections from AI settings with clearer setup errors.
 - Configure separate Design, Review, Fast, and Vision models, providers, endpoints, and credentials from AI settings.
 - Manage AI, agent, media, and storage credentials from unified Settings, using the system credential store on desktop and encrypted browser storage by default, with a session-only browser option.
-- Connect an S3-compatible storage workspace with local-first saves and background synchronization.
+- Connect an S3-compatible storage workspace with local-first saves, background synchronization, embedded `.fig` previews loaded without downloading full documents, and automatic refresh while the workspace is active.
 - Add Japanese localization and improve menu translations across the existing supported languages. (#367)
 - Author richer Design JSX with components, instances, variables, gradients, structured fills, shadows, blur effects, masks, and inline SVG vectors.
-- Build custom property panels with new Vue SDK number fields, bindable values, property sections, responsive grids, segmented controls, property lists, color models, fill controls, and gradient primitives.
+- Build custom property panels and document workspaces with new Vue SDK number fields, bindable values, property sections, responsive grids, segmented controls, property lists, color models, fill controls, gradient primitives, and the headless `useDocumentWorkspace()` composable.
 - Use `useColorModel()` in the Vue SDK for extensible color formats and shared RGB, HSL, HSB, and OkHCL channel behavior.
 - Add dedicated SceneGraph, Pen, Kiwi, Fig, and DOM/CSS packages with documented public entry points for building on OpenPencil.
 
