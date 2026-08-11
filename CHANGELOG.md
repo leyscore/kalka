@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- Keep imported Figma instances linked to their remapped source components so later component edits update existing instances. (#385)
+
 ## 0.14.0 - 2026-08-10
 
 ### Breaking changes

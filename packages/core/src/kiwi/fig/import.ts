@@ -358,11 +358,13 @@ function importVariableBindings(
 }
 
 function remapComponentIds(graph: SceneGraph, guidToNodeId: Map<string, string>): void {
-  for (const node of graph.getAllNodes()) {
-    if (node.type !== 'INSTANCE' || !node.componentId) continue
-    const remapped = guidToNodeId.get(node.componentId)
-    if (remapped) node.componentId = remapped
-  }
+  graph.preserveSourceMetadataDuring(() => {
+    for (const node of graph.getAllNodes()) {
+      if (node.type !== 'INSTANCE' || !node.componentId) continue
+      const remapped = guidToNodeId.get(node.componentId)
+      if (remapped) graph.updateNode(node.id, { componentId: remapped })
+    }
+  })
 }
 
 function applyVariantPropSpecs(graph: SceneGraph): void {
