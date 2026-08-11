@@ -50,7 +50,7 @@ watch([importHTML, importCSS], () => {
 
 function errorMessage(error: unknown) {
   if (error instanceof Error && error.message) return error.message
-  return 'Import failed. Check the HTML and CSS, then try again.'
+  return dialogs.value.importFailed
 }
 
 function toggleImporter() {
@@ -114,7 +114,7 @@ function copyReference() {
           @click="toggleImporter"
         >
           <icon-lucide-file-input class="size-3" />
-          Import
+          {{ dialogs.importLabel }}
         </AppTextButton>
         <Tip :label="dialogs.copyJSXReference">
           <AppTextButton
@@ -147,9 +147,9 @@ function copyReference() {
     >
       <div class="mb-2 flex items-center justify-between gap-2">
         <div class="min-w-0">
-          <div class="text-xs font-medium text-surface">Import HTML/CSS</div>
+          <div class="text-xs font-medium text-surface">{{ dialogs.importHTMLCSS }}</div>
           <div class="text-[11px] text-muted">
-            Paste HTML plus optional CSS or compiled Tailwind CSS.
+            {{ dialogs.importHTMLCSSDescription }}
           </div>
         </div>
         <AppTextButton
@@ -157,7 +157,7 @@ function copyReference() {
           :ui="{ base: 'rounded px-1.5 py-0.5 text-[11px] hover:bg-hover' }"
           @click="pasteImportHTML"
         >
-          Paste
+          {{ dialogs.paste }}
         </AppTextButton>
       </div>
       <textarea
@@ -182,7 +182,7 @@ function copyReference() {
         {{ importError }}
       </div>
       <div class="flex items-center justify-between gap-2">
-        <span class="text-[11px] text-muted">Import replaces the current document.</span>
+        <span class="text-[11px] text-muted">{{ dialogs.importReplacesDocument }}</span>
         <AppTextButton
           data-test-id="code-panel-import"
           :ui="{
@@ -195,7 +195,7 @@ function copyReference() {
           }"
           @click="importCode"
         >
-          {{ importing ? 'Importing…' : 'Import to canvas' }}
+          {{ importing ? dialogs.importing : dialogs.importToCanvas }}
         </AppTextButton>
       </div>
     </div>

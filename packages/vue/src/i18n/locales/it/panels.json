@@ -263,5 +263,18 @@
   "blendModeHue": "Tonalità",
   "blendModeSaturation": "Saturazione",
   "blendModeColor": "Colore",
-  "blendModeLuminosity": "Luminosità"
+  "blendModeLuminosity": "Luminosità",
+  "noFontsFound": "Nessun font trovato",
+  "noLocalFontsAvailable": "Nessun font locale disponibile.",
+  "localFontsAccessHint": "Usa l’app desktop o Chrome/Edge per accedere ai font di sistema.",
+  "editColor": "Modifica colore",
+  "red": "Rosso",
+  "green": "Verde",
+  "blue": "Blu",
+  "hue": "Tonalità",
+  "saturation": "Saturazione",
+  "brightness": "Luminosità",
+  "lightness": "Chiarezza",
+  "chroma": "Croma",
+  "alpha": "Alfa"
 }

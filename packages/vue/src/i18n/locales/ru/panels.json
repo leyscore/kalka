@@ -263,5 +263,18 @@
   "blendModeHue": "Тон",
   "blendModeSaturation": "Насыщенность",
   "blendModeColor": "Цвет",
-  "blendModeLuminosity": "Яркость"
+  "blendModeLuminosity": "Яркость",
+  "noFontsFound": "Шрифты не найдены",
+  "noLocalFontsAvailable": "Локальные шрифты недоступны.",
+  "localFontsAccessHint": "Используйте настольное приложение или Chrome/Edge для доступа к системным шрифтам.",
+  "editColor": "Изменить цвет",
+  "red": "Красный",
+  "green": "Зелёный",
+  "blue": "Синий",
+  "hue": "Тон",
+  "saturation": "Насыщенность",
+  "brightness": "Яркость",
+  "lightness": "Светлота",
+  "chroma": "Цветность",
+  "alpha": "Альфа"
 }

@@ -263,5 +263,18 @@
   "blendModeHue": "Teinte",
   "blendModeSaturation": "Saturation",
   "blendModeColor": "Couleur",
-  "blendModeLuminosity": "Luminosité"
+  "blendModeLuminosity": "Luminosité",
+  "noFontsFound": "Aucune police trouvée",
+  "noLocalFontsAvailable": "Aucune police locale disponible.",
+  "localFontsAccessHint": "Utilisez l’application de bureau ou Chrome/Edge pour accéder aux polices système.",
+  "editColor": "Modifier la couleur",
+  "red": "Rouge",
+  "green": "Vert",
+  "blue": "Bleu",
+  "hue": "Teinte",
+  "saturation": "Saturation",
+  "brightness": "Luminosité",
+  "lightness": "Clarté",
+  "chroma": "Chroma",
+  "alpha": "Alpha"
 }

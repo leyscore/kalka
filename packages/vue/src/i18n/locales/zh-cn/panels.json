@@ -263,5 +263,18 @@
   "blendModeHue": "色相",
   "blendModeSaturation": "饱和度",
   "blendModeColor": "颜色",
-  "blendModeLuminosity": "明度"
+  "blendModeLuminosity": "明度",
+  "noFontsFound": "未找到字体",
+  "noLocalFontsAvailable": "没有可用的本地字体。",
+  "localFontsAccessHint": "请使用桌面应用或 Chrome/Edge 访问系统字体。",
+  "editColor": "编辑颜色",
+  "red": "红色",
+  "green": "绿色",
+  "blue": "蓝色",
+  "hue": "色相",
+  "saturation": "饱和度",
+  "brightness": "亮度",
+  "lightness": "明度",
+  "chroma": "色度",
+  "alpha": "透明度"
 }
