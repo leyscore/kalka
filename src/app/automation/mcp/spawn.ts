@@ -28,8 +28,26 @@ const DEV_AUTOMATION_AUTH_TOKEN =
 const APP_VERSION =
   typeof __OPENPENCIL_APP_VERSION__ === 'string' ? __OPENPENCIL_APP_VERSION__ : '0.0.0-test'
 const noop = () => undefined
+const MAX_STARTUP_STDERR_LENGTH = 8_192
+const MCP_EXECUTABLE = 'openpencil-mcp-http'
 
 let runtimeAutomationAuthToken: string | null = DEV_AUTOMATION_AUTH_TOKEN
+let runtimeAutomationStartupError: Error | null = null
+
+function toError(error: unknown): Error {
+  return error instanceof Error ? error : new Error(String(error))
+}
+
+function missingMCPError(): Error {
+  return new Error(
+    `MCP automation is not installed. Install @open-pencil/mcp@${APP_VERSION} globally with your package manager, then restart OpenPencil.`
+  )
+}
+
+function rememberStartupError(error: unknown): null {
+  runtimeAutomationStartupError = toError(error)
+  return null
+}
 
 /**
  * Reads the auth token from the MCP discovery file via Tauri's FS plugin.
@@ -138,8 +156,7 @@ async function readHealth(): Promise<AutomationHealth | null> {
     })
     if (!res.ok) return null
     return (await res.json()) as AutomationHealth
-  } catch (e) {
-    console.error('[MCP] health check failed:', e instanceof Error ? e.message : e)
+  } catch {
     return null
   }
 }
@@ -156,7 +173,7 @@ function parseMajorMinor(version: string): string | null {
 function assertCompatibleMCPVersion(health: AutomationHealth): void {
   const runningMajorMinor = health.version ? parseMajorMinor(health.version) : null
   const oursMajorMinor = parseMajorMinor(APP_VERSION)
-  if (!runningMajorMinor || !oursMajorMinor) return // unparseable — don't block
+  if (!oursMajorMinor) return
   if (runningMajorMinor === oursMajorMinor) return
   const runningVersion = health.version ? `v${health.version}` : 'an older version'
   const updateHint = health.installCommand
@@ -181,6 +198,7 @@ export async function getAutomationAuthToken(): Promise<string | null> {
   if (runtimeAutomationAuthToken) return runtimeAutomationAuthToken
   const health = await readHealth()
   if (!health) {
+    if (runtimeAutomationStartupError) throw runtimeAutomationStartupError
     throw new Error(
       'MCP server is not reachable. Ensure the desktop app is running and the MCP server has started.'
     )
@@ -212,14 +230,17 @@ export async function getAutomationAuthToken(): Promise<string | null> {
   return runtimeAutomationAuthToken
 }
 
-export async function spawnMCPIfNeeded(): Promise<AutomationServerHandle | null> {
+async function startMCPIfNeeded(): Promise<AutomationServerHandle | null> {
+  runtimeAutomationStartupError = null
   if (import.meta.env.DEV || !isTauri()) {
     return DEV_AUTOMATION_AUTH_TOKEN
       ? { disconnect: noop, authToken: DEV_AUTOMATION_AUTH_TOKEN }
       : null
   }
 
-  const existing = await readHealth()
+  const expectedDiscoveryPath = await computeExpectedDiscoveryPath()
+  const hasDiscovery = await discoveryFileExists(expectedDiscoveryPath)
+  const existing = hasDiscovery ? await readHealth() : null
   if (existing) {
     assertCompatibleMCPVersion(existing)
     const discoveryPath = await resolveDiscoveryPath(existing.discoveryPath)
@@ -237,6 +258,10 @@ export async function spawnMCPIfNeeded(): Promise<AutomationServerHandle | null>
     }
   }
 
+  const { invoke } = await import('@tauri-apps/api/core')
+  const executableAvailable = await invoke<boolean>('mcp_executable_available')
+  if (!executableAvailable) return rememberStartupError(missingMCPError())
+
   const authToken = randomHex(32)
   // Cache only after MCP startup is confirmed healthy.
 
@@ -247,7 +272,7 @@ export async function spawnMCPIfNeeded(): Promise<AutomationServerHandle | null>
   // The app bundle directory (Tauri executableDir) is read-only and would
   // cause EACCES errors on every file write.
   const mcpRoot = await resolveTauriHomeDir()
-  const resolved = resolvePlatformCommand('openpencil-mcp-http')
+  const resolved = resolvePlatformCommand(MCP_EXECUTABLE)
   const command = Command.create(resolved.command, resolved.args, {
     env: {
       PORT: String(AUTOMATION_HTTP_PORT),
@@ -258,19 +283,40 @@ export async function spawnMCPIfNeeded(): Promise<AutomationServerHandle | null>
     }
   })
 
+  let startupStderr = ''
   command.stderr.on('data', (raw: Uint8Array | number[] | string) => {
-    console.error('[MCP]', decodeTauriStderr(raw))
+    if (startupStderr.length >= MAX_STARTUP_STDERR_LENGTH) return
+    startupStderr += decodeTauriStderr(raw).slice(
+      0,
+      MAX_STARTUP_STDERR_LENGTH - startupStderr.length
+    )
   })
 
   let spawnedToken: string | null = null
-  command.on('close', (data: { code: number | null }) => {
-    console.error(`[MCP] Server exited (code ${data.code ?? 'null'})`)
-    if (spawnedToken && runtimeAutomationAuthToken === spawnedToken) {
-      runtimeAutomationAuthToken = null
-    }
+  let child: Awaited<ReturnType<typeof command.spawn>>
+  const childClosed = new Promise<{ code: number | null; signal: number | null }>((resolve) => {
+    command.on('close', (event) => {
+      resolve(event)
+      if (spawnedToken && runtimeAutomationAuthToken === spawnedToken) {
+        runtimeAutomationAuthToken = null
+      }
+    })
   })
 
-  const child = await command.spawn()
+  try {
+    child = await command.spawn()
+  } catch (error) {
+    return rememberStartupError(error)
+  }
+  const earlyExit = await Promise.race([childClosed, promiseTimeout(250).then(() => null)])
+  if (earlyExit) {
+    const details = startupStderr.trim()
+    return rememberStartupError(
+      new Error(
+        `MCP server exited before startup completed (code ${earlyExit.code ?? 'null'}, signal ${earlyExit.signal ?? 'null'})${details ? `: ${details}` : '.'}`
+      )
+    )
+  }
   const health = await pollHealth(5, 1000)
 
   if (health) {
@@ -281,6 +327,7 @@ export async function spawnMCPIfNeeded(): Promise<AutomationServerHandle | null>
       const token = discovered ?? authToken
       spawnedToken = token
       runtimeAutomationAuthToken = token
+      runtimeAutomationStartupError = null
       return {
         disconnect: () => {
           void child.kill().catch((e) => {
@@ -304,9 +351,19 @@ export async function spawnMCPIfNeeded(): Promise<AutomationServerHandle | null>
   } finally {
     runtimeAutomationAuthToken = null
   }
-  throw new Error(
-    `Failed to start MCP server. Install @open-pencil/mcp@${APP_VERSION} globally with your package manager, then restart OpenPencil.`
+  return rememberStartupError(
+    new Error(
+      `MCP server did not become healthy within the startup timeout${startupStderr.trim() ? `: ${startupStderr.trim()}` : '.'}`
+    )
   )
+}
+
+export async function spawnMCPIfNeeded(): Promise<AutomationServerHandle | null> {
+  try {
+    return await startMCPIfNeeded()
+  } catch (error) {
+    return rememberStartupError(error)
+  }
 }
 
 /**

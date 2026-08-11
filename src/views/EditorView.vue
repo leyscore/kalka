@@ -87,15 +87,11 @@ async function bindAssociatedFileOpen() {
 }
 
 onMounted(async () => {
-  try {
-    const mcp = await spawnMCPIfNeeded()
-    mcpCleanup.value = mcp?.disconnect ?? null
-    const tauri = isTauri()
-    if (import.meta.env.DEV || tauri) {
-      automationCleanup.value = connectAutomation(getActiveStore, mcp?.authToken ?? null).disconnect
-    }
-  } catch (e) {
-    console.warn('[MCP]', e)
+  const mcp = await spawnMCPIfNeeded()
+  mcpCleanup.value = mcp?.disconnect ?? null
+  const tauri = isTauri()
+  if (import.meta.env.DEV || (tauri && mcp)) {
+    automationCleanup.value = connectAutomation(getActiveStore, mcp?.authToken ?? null).disconnect
   }
 
   try {
