@@ -53,6 +53,8 @@
 
 ### Fixed
 
+- Keep desktop startup clean when optional MCP automation is unavailable, retain startup diagnostics for MCP-dependent features, and load JSX syntax highlighting without browser globals.
+
 - Preserve Figma’s imported glyph outlines through layout and appearance updates so text keeps its intended weight and shape.
 - Keep swapped image avatars and thin stepper dividers at their effective imported size and position.
 - Scale proportion-constrained `.fig` instance geometry through fixed wrapper layers so imported logos and icons retain their intended size.

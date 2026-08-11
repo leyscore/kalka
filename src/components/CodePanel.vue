@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import Prism from 'prismjs'
-import 'prismjs/components/prism-jsx'
 import { ScrollAreaRoot, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport } from 'reka-ui'
 import { useClipboard } from '@vueuse/core'
 import { computed, ref, watch } from 'vue'
@@ -8,6 +6,7 @@ import { computed, ref, watch } from 'vue'
 import { JSX_REFERENCE, selectionToJSX } from '@open-pencil/core/design-jsx'
 import { useI18n, useSceneComputed } from '@open-pencil/vue'
 
+import { highlightJSX } from '@/app/code/highlight'
 import { useEditorStore } from '@/app/editor/active-store'
 import AppPlaceholder from '@/components/ui/AppPlaceholder.vue'
 import AppTextButton from '@/components/ui/AppTextButton.vue'
@@ -38,8 +37,7 @@ const jsxCode = useSceneComputed(() => {
 
 const highlightedLines = computed(() => {
   if (!jsxCode.value) return []
-  const grammar = Prism.languages.jsx ?? Prism.languages.javascript
-  return jsxCode.value.split('\n').map((line) => Prism.highlight(line, grammar, 'jsx'))
+  return jsxCode.value.split('\n').map(highlightJSX)
 })
 
 const { copy: copyRef, copied: copiedRef } = useClipboard({ copiedDuring: 2000 })
