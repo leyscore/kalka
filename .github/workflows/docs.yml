@@ -17,6 +17,9 @@ jobs:
 
       - uses: ./.github/actions/setup-bun
 
+      - name: Build SDK packages for documentation
+        run: bun run build:packages
+
       - run: bun run --filter @open-pencil/docs build
 
       - uses: cloudflare/wrangler-action@v4
