@@ -9,6 +9,8 @@ import {
   type ProxyThis
 } from '#core/figma-api/accessor-utils'
 import type { NodeProxyHost } from '#core/figma-api/proxy'
+import { computeAbsoluteRenderBounds } from '#core/figma-api/render-bounds'
+import { rescaleNodeTree } from '#core/figma-api/rescale'
 import type { FigmaTransform } from '#core/figma-api/types'
 
 const TRANSFORM_FIELDS = new Set(['x', 'y', 'rotation', 'flipX', 'flipY'])
@@ -129,8 +131,8 @@ export function installBasicNodeProxyAccessors(
       }
     },
     absoluteRenderBounds: {
-      get(this: ProxyThis): Rect {
-        return graph(this, internals).getAbsoluteBounds(nodeId(this, internals))
+      get(this: ProxyThis): Rect | null {
+        return computeAbsoluteRenderBounds(graph(this, internals), raw(this, internals))
       }
     }
   })
@@ -141,6 +143,9 @@ export function installBasicNodeProxyAccessors(
     },
     resizeWithoutConstraints(this: ProxyThis, width: number, height: number): void {
       ;(this as { resize(width: number, height: number): void }).resize(width, height)
+    },
+    rescale(this: ProxyThis, scale: number): void {
+      rescaleNodeTree(graph(this, internals), nodeId(this, internals), scale)
     }
   })
 }

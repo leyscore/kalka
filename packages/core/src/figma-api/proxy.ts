@@ -27,6 +27,7 @@ import {
 } from './accessors/vector'
 import { installVisualNodeProxyAccessors } from './accessors/visual'
 import type { FigmaFontName } from './fonts'
+import { getPageBackgrounds, setPageBackgrounds } from './page-backgrounds'
 import * as PluginData from './plugin-data'
 import { nodeProxyToJSON } from './serialization'
 import { setFirstStrokeAlign, setFirstStrokeWeight, setIndependentStrokeWeight } from './strokes'
@@ -66,9 +67,10 @@ export class FigmaNodeProxy {
   declare readonly relativeTransform: FigmaTransform
   declare resize: (width: number, height: number) => void
   declare resizeWithoutConstraints: (width: number, height: number) => void
+  declare rescale: (scale: number) => void
   declare readonly absoluteTransform: FigmaTransform
   declare readonly absoluteBoundingBox: Rect
-  declare readonly absoluteRenderBounds: Rect
+  declare readonly absoluteRenderBounds: Rect | null
 
   declare fills: readonly Fill[]
   declare strokes: readonly Stroke[]
@@ -400,6 +402,14 @@ export class FigmaNodeProxy {
   }
 
   // --- Components ---
+
+  get backgrounds(): readonly Fill[] {
+    return getPageBackgrounds(this._raw())
+  }
+
+  set backgrounds(value: readonly Fill[]) {
+    setPageBackgrounds(this[INTERNAL_GRAPH], this._raw(), value)
+  }
 
   get mainComponent(): FigmaNodeProxy | null {
     const n = this._raw()
