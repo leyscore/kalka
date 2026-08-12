@@ -8,6 +8,7 @@ import {
   syncNodeProps,
   type ProtectionMap
 } from '../src/instance-overrides'
+import { propagateOverridesTransitively } from '../src/instance-overrides/sync/propagate'
 
 describe('@open-pencil/fig instance interpretation', () => {
   test('populates an empty instance from its component tree', () => {
@@ -405,6 +406,33 @@ describe('@open-pencil/fig instance interpretation', () => {
     syncNodeProps(graph, source, target)
 
     expect(graph.getNode(target.id)?.boundVariables).toEqual({ width: 'width-var' })
+  })
+
+  test('inherits effective text on a structurally protected clone', () => {
+    const graph = new SceneGraph()
+    const pageId = graph.getPages()[0].id
+    const component = graph.createNode('COMPONENT', pageId)
+    const source = graph.createNode('TEXT', component.id, {
+      text: 'Effective label'
+    })
+    const instance = graph.createNode('INSTANCE', pageId, { componentId: component.id })
+    graph.populateInstanceChildren(instance.id, component.id, 'fig-import')
+    const clone = graph.getChildren(instance.id)[0]
+    graph.updateNode(clone.id, { text: 'Default label' })
+    const protections: ProtectionMap = new Map()
+    protectField(protections, clone.id, 'width')
+
+    propagateOverridesTransitively(
+      graph,
+      new Set([source.id, clone.id]),
+      new Set(),
+      new Map(),
+      undefined,
+      undefined,
+      protections
+    )
+
+    expect(graph.getNode(clone.id)?.text).toBe('Effective label')
   })
 
   test('preserves protected text while synchronizing other fields', () => {
