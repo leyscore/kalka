@@ -23,7 +23,6 @@ const RESCALABLE_NODE_TYPES = new Set<SceneNode['type']>([
   'LINE',
   'POLYGON',
   'RECTANGLE',
-  'SLICE',
   'STAR',
   'TEXT',
   'VECTOR'

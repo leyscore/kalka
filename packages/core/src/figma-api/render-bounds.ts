@@ -7,7 +7,7 @@ import {
   type VisualBounds
 } from '@open-pencil/scene-graph/geometry'
 import Matrix from '@open-pencil/scene-graph/matrix'
-import type { Rect } from '@open-pencil/scene-graph/primitives'
+import type { Rect, Vector } from '@open-pencil/scene-graph/primitives'
 
 const INTRINSIC_CONTAINER_TYPES = new Set([
   'FRAME',
@@ -63,11 +63,7 @@ function hasRenderableGeometry(node: SceneNode): boolean {
   return node.fillGeometry.length > 0 || node.strokeGeometry.length > 0
 }
 
-function translatedBounds(
-  bounds: VisualBounds,
-  offset: { x: number; y: number },
-  overflow: number
-): VisualBounds {
+function translatedBounds(bounds: VisualBounds, offset: Vector, overflow: number): VisualBounds {
   return {
     minX: bounds.minX + offset.x - overflow,
     minY: bounds.minY + offset.y - overflow,

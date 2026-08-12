@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- Preserve open vector segments when the same vector network also contains filled regions. (#450)
 - Match Figma Plugin API behavior for `rescale()`, page `backgrounds`, and nullable visual `absoluteRenderBounds`. (#442)
 - Keep imported Figma instances linked to their remapped source components so later component edits update existing instances. (#385)
 - Restore native copy, cut, and paste shortcuts in desktop text inputs while preserving design clipboard handling on the canvas.
