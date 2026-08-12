@@ -16,8 +16,8 @@ import { WEB_FONT_PROVIDER_IDS } from '@open-pencil/core/text'
 import type { FontPickerUI } from '@open-pencil/vue'
 
 const { panels } = useI18n()
-const props = defineProps<{ label?: string }>()
-const label = computed(() => props.label ?? panels.value.fontFamily)
+const { label: labelProp } = defineProps<{ label?: string }>()
+const label = computed(() => labelProp ?? panels.value.fontFamily)
 const modelValue = defineModel<string>({ required: true })
 const emit = defineEmits<{ select: [family: string] }>()
 
