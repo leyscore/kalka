@@ -2,14 +2,13 @@ import { describe, expect, test } from 'bun:test'
 
 import { SceneGraph } from '@open-pencil/scene-graph'
 
-import { propagateOverridesTransitively } from '../src/instance-overrides/sync/propagate'
-
 import {
   populateAndApplyOverrides,
   protectField,
   syncNodeProps,
   type ProtectionMap
 } from '../src/instance-overrides'
+import { propagateOverridesTransitively } from '../src/instance-overrides/sync/propagate'
 
 describe('@open-pencil/fig instance interpretation', () => {
   test('populates an empty instance from its component tree', () => {
