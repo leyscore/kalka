@@ -121,7 +121,11 @@ const drawerTransition = {
     @panEnd="onPanEnd"
   >
     <TabsRoot :model-value="getDrawerTab()" class="flex min-h-0 flex-1 flex-col">
-      <nav ref="headerRef" :aria-label="dialogs.mobilePanelNavigation" class="flex shrink-0 flex-col">
+      <nav
+        ref="headerRef"
+        :aria-label="dialogs.mobilePanelNavigation"
+        class="flex shrink-0 flex-col"
+      >
         <div class="flex w-full justify-center pt-2">
           <div class="h-1 w-8 rounded-full bg-muted/40" />
         </div>

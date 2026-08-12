@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- Restore native copy, cut, and paste shortcuts in desktop text inputs while preserving design clipboard handling on the canvas.
 - Complete translated app, accessibility, font, color, collaboration, import, connection-test, and browser fallback text across all supported locales, and keep the document language synchronized with the selected locale.
 
 ## 0.14.0 - 2026-08-10
