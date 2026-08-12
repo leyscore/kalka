@@ -30,6 +30,11 @@ const APP_VERSION =
 const noop = () => undefined
 const MAX_STARTUP_STDERR_LENGTH = 8_192
 const MCP_EXECUTABLE = 'openpencil-mcp-http'
+// While no app is attached, the spawned server waits this long for a register
+// or reconnect before closing itself and removing its discovery file. This
+// prevents a server that outlives a crashed/reloaded app from squatting the
+// port forever while still allowing brief renderer reloads (issue #488).
+const MCP_APP_ATTACH_TIMEOUT_MS = 30_000
 
 let runtimeAutomationAuthToken: string | null = DEV_AUTOMATION_AUTH_TOKEN
 let runtimeAutomationStartupError: Error | null = null
@@ -279,7 +284,8 @@ async function startMCPIfNeeded(): Promise<AutomationServerHandle | null> {
       OPENPENCIL_MCP_AUTH_TOKEN: authToken,
       OPENPENCIL_MCP_CORS_ORIGIN: window.location.origin,
       OPENPENCIL_MCP_TCP: '1',
-      OPENPENCIL_MCP_ROOT: mcpRoot
+      OPENPENCIL_MCP_ROOT: mcpRoot,
+      OPENPENCIL_MCP_APP_TIMEOUT_MS: String(MCP_APP_ATTACH_TIMEOUT_MS)
     }
   })
 
