@@ -6,7 +6,7 @@ import {
   AlertDialogTitle
 } from 'reka-ui'
 import { computed } from 'vue'
-import { acpPermissionOptionTestId, vTestId } from '@open-pencil/vue'
+import { acpPermissionOptionTestId, useI18n, vTestId } from '@open-pencil/vue'
 
 import {
   currentPermission,
@@ -16,6 +16,7 @@ import {
 import { AppAlertDialogRoot } from '@/components/ui/dialog'
 
 const open = computed(() => currentPermission.value !== null)
+const { dialogs } = useI18n()
 interface ToolCallInfo {
   title?: string
   rawInput?: unknown
@@ -25,7 +26,7 @@ const toolCall = computed(
   (): ToolCallInfo => (currentPermission.value?.request.toolCall as ToolCallInfo) ?? {}
 )
 
-const toolName = computed(() => toolCall.value.title ?? 'Unknown tool')
+const toolName = computed(() => toolCall.value.title ?? dialogs.value.unknownTool)
 
 const toolInput = computed(() => {
   const raw = toolCall.value.rawInput
@@ -59,11 +60,11 @@ function handleDismiss() {
     @escape-key-down="handleDismiss"
   >
     <AlertDialogTitle class="text-sm font-semibold text-surface">
-      Permission Request
+      {{ dialogs.permissionRequestTitle }}
     </AlertDialogTitle>
 
     <AlertDialogDescription class="mt-2 text-xs text-muted">
-      <span class="font-medium text-surface">{{ toolName }}</span> is requesting permission.
+      {{ dialogs.permissionRequest({ tool: toolName }) }}
     </AlertDialogDescription>
 
     <pre

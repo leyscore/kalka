@@ -263,5 +263,18 @@
   "blendModeHue": "Farbton",
   "blendModeSaturation": "Sättigung",
   "blendModeColor": "Farbe",
-  "blendModeLuminosity": "Luminanz"
+  "blendModeLuminosity": "Luminanz",
+  "noFontsFound": "Keine Schriften gefunden",
+  "noLocalFontsAvailable": "Keine lokalen Schriften verfügbar.",
+  "localFontsAccessHint": "Verwende die Desktop-App oder Chrome/Edge, um auf Systemschriften zuzugreifen.",
+  "editColor": "Farbe bearbeiten",
+  "red": "Rot",
+  "green": "Grün",
+  "blue": "Blau",
+  "hue": "Farbton",
+  "saturation": "Sättigung",
+  "brightness": "Helligkeit",
+  "lightness": "Helligkeit",
+  "chroma": "Chroma",
+  "alpha": "Alpha"
 }

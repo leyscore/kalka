@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { inputNumberValue } from '@open-pencil/vue'
+import { inputNumberValue, useI18n } from '@open-pencil/vue'
 import { useColorPickerPanelContext } from '@/components/color-picker-panel/context'
 
 const ctx = useColorPickerPanelContext()
+const { panels } = useI18n()
 </script>
 
 <template>
@@ -11,7 +12,7 @@ const ctx = useColorPickerPanelContext()
   >
     <input
       type="number"
-      aria-label="Red"
+      :aria-label="panels.red"
       class="bg-input px-2 py-1 text-xs text-surface outline-none"
       :value="Math.round(ctx.rgbColor.r)"
       min="0"
@@ -20,7 +21,7 @@ const ctx = useColorPickerPanelContext()
     />
     <input
       type="number"
-      aria-label="Green"
+      :aria-label="panels.green"
       class="bg-input px-2 py-1 text-xs text-surface outline-none"
       :value="Math.round(ctx.rgbColor.g)"
       min="0"
@@ -29,7 +30,7 @@ const ctx = useColorPickerPanelContext()
     />
     <input
       type="number"
-      aria-label="Blue"
+      :aria-label="panels.blue"
       class="bg-input px-2 py-1 text-xs text-surface outline-none"
       :value="Math.round(ctx.rgbColor.b)"
       min="0"

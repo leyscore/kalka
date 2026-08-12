@@ -5,6 +5,8 @@
 ### Fixed
 
 - Keep imported Figma instances linked to their remapped source components so later component edits update existing instances. (#385)
+- Restore native copy, cut, and paste shortcuts in desktop text inputs while preserving design clipboard handling on the canvas.
+- Complete translated app, accessibility, font, color, collaboration, import, connection-test, and browser fallback text across all supported locales, and keep the document language synchronized with the selected locale.
 
 ## 0.14.0 - 2026-08-10
 

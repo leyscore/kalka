@@ -2,12 +2,13 @@
 import { isTextUIPart, isToolUIPart, getToolName } from 'ai'
 import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from 'reka-ui'
 import { Markdown } from 'vue-stream-markdown'
-import { vTestId } from '@open-pencil/vue'
+import { useI18n, vTestId } from '@open-pencil/vue'
 import 'vue-stream-markdown/index.css'
 
 import type { UIDataTypes, UIMessage, UIMessagePart, UITools } from 'ai'
 
 const { message } = defineProps<{ message: UIMessage }>()
+const { dialogs } = useI18n()
 
 type ToolPart = Extract<UIMessagePart<UIDataTypes, UITools>, { toolCallId: string }>
 
@@ -74,10 +75,10 @@ function partKey(part: UIMessagePart<UIDataTypes, UITools>, index: number): stri
                 <span class="text-[10px] text-muted">
                   {{
                     toolState(part) === 'pending'
-                      ? 'Running…'
+                      ? dialogs.toolRunning
                       : toolState(part) === 'done'
-                        ? 'Done'
-                        : 'Error'
+                        ? dialogs.toolFinished
+                        : dialogs.toolError
                   }}
                 </span>
                 <icon-lucide-chevron-down

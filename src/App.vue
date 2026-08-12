@@ -12,10 +12,14 @@ import { useAppTheme } from '@/app/shell/theme'
 import { scheduleStartupUpdateCheck } from '@/app/shell/updater'
 import { kickSyncEngine } from '@/app/storage/sync'
 
-useHead({ titleTemplate: (title) => (title ? `${title} — OpenPencil` : 'OpenPencil') })
-
 const store = useEditorStore()
-const { dialogs } = useI18n()
+const { dialogs, locale } = useI18n()
+
+useHead({
+  titleTemplate: (title) => (title ? `${title} — OpenPencil` : 'OpenPencil'),
+  htmlAttrs: { lang: locale }
+})
+
 provideEditor(store)
 useAppTheme()
 
