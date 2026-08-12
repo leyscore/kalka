@@ -189,12 +189,16 @@ test('Tauri clipboard events from editable fields keep native text behavior', as
   await page.evaluate(() => {
     const host = document.createElement('div')
     host.innerHTML =
-      '<input data-clipboard-probe><div contenteditable="true"><span>Text</span></div>'
+      '<input data-clipboard-probe="input"><textarea data-clipboard-probe="textarea"></textarea><div contenteditable="true"><span>Text</span></div>'
     document.body.append(host)
   })
 
-  await dispatchClipboardEvent(page, 'copy', '[data-clipboard-probe]')
+  await dispatchClipboardEvent(page, 'copy', '[data-clipboard-probe="input"]')
+  expect(await testClipboard(page)).toEqual(before)
+  await dispatchClipboardEvent(page, 'copy', '[data-clipboard-probe="textarea"]')
+  expect(await testClipboard(page)).toEqual(before)
   await dispatchClipboardEvent(page, 'cut', '[contenteditable] span')
+  expect(await testClipboard(page)).toEqual(before)
   await dispatchClipboardEvent(page, 'paste', '[contenteditable] span')
 
   expect(await testClipboard(page)).toEqual(before)
