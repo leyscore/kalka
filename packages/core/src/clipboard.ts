@@ -8,7 +8,7 @@ import {
   sortChildren
 } from '@open-pencil/fig/node-change'
 import { initCodec, getCompiledSchema, getSchemaBytes } from '@open-pencil/kiwi/fig/codec'
-import type { NodeChange as KiwiNodeChange } from '@open-pencil/kiwi/fig/codec'
+import type { GUID, NodeChange as KiwiNodeChange } from '@open-pencil/kiwi/fig/codec'
 import { decodeBinarySchema, compileSchema, ByteBuffer } from '@open-pencil/kiwi/schema-runtime'
 import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
 
@@ -283,7 +283,9 @@ export function importClipboardNodes(
 
   remapComponentIds(created, graph)
 
-  populateAndApplyOverrides(graph, guidMap as Map<string, InstanceNodeChange>, created, blobs)
+  graph.preserveSourceMetadataDuring(() => {
+    populateAndApplyOverrides(graph, guidMap as Map<string, InstanceNodeChange>, created, blobs)
+  })
 
   for (const figmaId of internalTopLevel) {
     const ourId = created.get(figmaId)
@@ -321,6 +323,8 @@ export async function buildFigmaClipboardHTML(
     }
   }
 
+  const nodeIdToGuid = new Map<string, GUID>()
+  const assignedGuidValues = new Set<string>()
   const blobs: Uint8Array[] = []
   for (let i = 0; i < nodes.length; i++) {
     collectTextNodes(nodes[i])
@@ -332,8 +336,12 @@ export async function buildFigmaClipboardHTML(
         localIdCounter,
         graph,
         blobs,
+        nodeIdToGuid,
+        fontDigestMap,
         undefined,
-        fontDigestMap
+        undefined,
+        undefined,
+        assignedGuidValues
       )
     )
   }
