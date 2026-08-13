@@ -45,6 +45,11 @@ export const dialogMessageDefaults = {
   importToCanvas: 'Import to canvas',
   newTab: 'New tab',
   closeTab: params('Close {name}'),
+  recoverUnsavedWork: 'Recover unsaved work',
+  recoverUnsavedWorkDescription: 'OpenPencil found documents from a previous session.',
+  restore: 'Restore',
+  discard: 'Discard',
+  recoveryFailed: 'Could not restore this document.',
   showUI: params('Show UI ({shortcut})'),
   fontSettings: 'Font settings',
   fontSettingsDesktopDescription:

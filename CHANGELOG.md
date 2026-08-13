@@ -4,6 +4,7 @@
 
 ### Added
 
+- Add local crash recovery for unsaved and pathless documents, including MCP-created documents. (#487)
 - Allow supported AI model profiles to set a provider-specific reasoning effort. (#454)
 
 ### Fixed

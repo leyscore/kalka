@@ -7,6 +7,7 @@ import type { SceneGraph } from '@open-pencil/scene-graph'
 
 import { setOpenPencilStore } from '@/app/browser-bridge'
 import type { DocumentSourceIdentity } from '@/app/document/io/types'
+import { getRecoveryStore, type RecoverySnapshotMeta } from '@/app/document/recovery'
 import { setActiveEditorStore } from '@/app/editor/active-store'
 import { createEditorStore } from '@/app/editor/session'
 import type { EditorStore } from '@/app/editor/session'
@@ -35,6 +36,7 @@ function generateTabId(): string {
 }
 
 const tabsRef = shallowRef<Tab[]>([])
+const pendingRecoveryDeletions = new Set<Promise<void>>()
 const activeTabId = shallowRef('')
 
 export const activeTab = computed(() => tabsRef.value.find((t) => t.id === activeTabId.value))
@@ -90,17 +92,24 @@ export function switchTab(tabId: string) {
   activateTab(tab)
 }
 
-export function closeTab(tabId: string) {
+export async function closeTab(tabId: string): Promise<void> {
   const idx = tabsRef.value.findIndex((t) => t.id === tabId)
   if (idx === -1) return
 
   const closingTab = tabsRef.value[idx]
   const wasActive = activeTabId.value === tabId
+  const deletion = closingTab.store.discardRecovery()
+  pendingRecoveryDeletions.add(deletion)
+  try {
+    await deletion
+  } finally {
+    pendingRecoveryDeletions.delete(deletion)
+  }
+  closingTab.store.dispose()
   tabsRef.value = tabsRef.value.filter((t) => t.id !== tabId)
 
   if (tabsRef.value.length === 0) {
     createTab()
-    closingTab.store.dispose()
     return
   }
 
@@ -108,8 +117,6 @@ export function closeTab(tabId: string) {
     const newIdx = Math.min(idx, tabsRef.value.length - 1)
     activateTab(tabsRef.value[newIdx])
   }
-
-  closingTab.store.dispose()
 }
 
 function yieldToUI(): Promise<void> {
@@ -265,6 +272,44 @@ export async function openFileInNewTab(
   }
 }
 
+export async function listRecoverySnapshots(): Promise<RecoverySnapshotMeta[]> {
+  return getRecoveryStore().list()
+}
+
+export async function discardRecoverySnapshot(id: string): Promise<void> {
+  await getRecoveryStore().remove(id)
+}
+
+export async function restoreRecoverySnapshot(id: string): Promise<void> {
+  const snapshot = await getRecoveryStore().read(id)
+  if (!snapshot) throw new Error('Recovery snapshot is no longer available')
+
+  const fileBytes = new Uint8Array(snapshot.figBytes)
+  const file = new File([fileBytes.buffer], `${snapshot.documentName}.fig`, {
+    type: 'application/octet-stream'
+  })
+  const imported = await readFigFile(file, { populate: 'first-page' })
+  const firstPageId = imported.getPages()[0]?.id
+  if (firstPageId) computeAllLayouts(imported, firstPageId)
+
+  const store = reusableTabStore()
+  store.replaceGraph(imported)
+  store.undo.clear()
+  store.state.documentName = snapshot.documentName
+  await store.adoptRecoverySnapshot(id, snapshot.sceneVersion)
+  store.clearSelection()
+  const pageId = store.graph.getPages()[0]?.id ?? store.graph.rootId
+  await store.switchPage(pageId)
+  await store.fitCurrentPageToViewport()
+}
+
+export async function prepareForReload(): Promise<void> {
+  await Promise.all([
+    ...pendingRecoveryDeletions,
+    ...tabsRef.value.map((tab) => tab.store.persistRecoveryNow())
+  ])
+}
+
 export function tabCount(): number {
   return tabsRef.value.length
 }
@@ -282,6 +327,10 @@ export function useTabsStore() {
     getTabsSnapshot,
     openFileInNewTab,
     openStorageDocumentInNewTab,
+    listRecoverySnapshots,
+    restoreRecoverySnapshot,
+    discardRecoverySnapshot,
+    prepareForReload,
     getActiveStore,
     tabCount
   }
