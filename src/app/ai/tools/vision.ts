@@ -4,7 +4,7 @@ import * as v from 'valibot'
 
 import { computeContentBounds } from '@open-pencil/core/io'
 
-import { buildReasoningProviderOptions } from '@/app/ai/chat/transports'
+import { buildReasoningProviderOptions } from '@/app/ai/chat/reasoning'
 import { createAIModelRuntime } from '@/app/ai/models'
 import type { EditorStore } from '@/app/editor/active-store'
 

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 
-import { buildReasoningProviderOptions } from '@/app/ai/chat/transports'
+import { buildReasoningProviderOptions } from '@/app/ai/chat/reasoning'
 import {
   aiModelSettings,
   createAIModelRuntime,
