@@ -2,19 +2,22 @@
 
 ## Unreleased
 
+### Added
+
+- Allow supported AI model profiles to set a provider-specific reasoning effort. (#454)
+
 ### Fixed
 
-- Report exhausted provider credit, request failures, and output-token limits through chat toasts and copied diagnostics, and allow provider-specific reasoning effort on model profiles. (#451, #454)
-- Fixed Windows desktop crashes when loading large system fonts for non-Latin text by using Tauri's binary IPC path and resolving native script fallbacks without parsing full font files in JavaScript.
-
-- Preserve open vector segments when the same vector network also contains filled regions. (#450).
-- Match Figma Plugin API behavior for `rescale()`, page `backgrounds`, and nullable visual `absoluteRenderBounds`. (#442).
-- Keep imported Figma instances linked to their remapped source components so later component edits update existing instances. (#385).
+- Report exhausted provider credit, request failures, and output-token limits through localized chat toasts and copied diagnostics. (#451, #454)
+- Prevent Windows desktop crashes when loading large system fonts for non-Latin text.
+- Preserve open vector segments when the same vector network also contains filled regions. (#450)
+- Match Figma Plugin API behavior for `rescale()`, page `backgrounds`, and nullable visual `absoluteRenderBounds`. (#442)
+- Keep imported Figma instances linked to their remapped source components so later component edits update existing instances. (#385)
 - Restore native copy, cut, and paste shortcuts in desktop text inputs while preserving design clipboard handling on the canvas.
 - Remove the permanent CORS configuration action from cloud-storage settings and report connection results through standard toasts with clear browser-specific guidance.
 - Complete translated app, accessibility, font, color, collaboration, import, connection-test, and browser fallback text across all supported locales, and keep the document language synchronized with the selected locale.
-- Preserve effective nested instance text overrides when importing complex Figma component hierarchies. (#102).
-- Preserve circles, ellipses, rectangles, lines, polylines, and polygons supplied as JSX children of inline SVG elements. (#452).
+- Preserve effective nested instance text overrides when importing complex Figma component hierarchies. (#102)
+- Preserve circles, ellipses, rectangles, lines, polylines, and polygons supplied as JSX children of inline SVG elements. (#452)
 
 ## 0.14.0 — 2026-08-10
 
