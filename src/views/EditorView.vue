@@ -20,6 +20,7 @@ import { createTab, activeTab, getActiveStore, tabCount } from '@/app/tabs'
 
 import CollabPanel from '@/components/CollabPanel/CollabPanel.vue'
 import EditorCanvas from '@/components/EditorCanvas.vue'
+import FontStatusBanner from '@/components/font-status/FontStatusBanner.vue'
 import LayersPanel from '@/components/LayersPanel.vue'
 import MobileDrawer from '@/components/MobileDrawer.vue'
 import MobileHud from '@/components/MobileHud/MobileHud.vue'
@@ -111,6 +112,7 @@ onUnmounted(() => {
 <template>
   <div data-test-id="editor-root" class="flex h-screen w-screen flex-col">
     <SafariBanner />
+    <FontStatusBanner />
     <RenameSelectionDialog />
     <TabBar />
 

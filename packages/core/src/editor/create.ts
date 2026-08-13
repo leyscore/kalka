@@ -11,6 +11,7 @@ import { IS_BROWSER } from '#core/constants'
 import { setTextMeasurer } from '#core/layout'
 import { TextEditor } from '#core/text/editor'
 import { fontManager } from '#core/text/fonts'
+import { fontResolver } from '#core/text/resolver'
 
 import { createAlignmentActions } from './alignment'
 import { createClipboardBridge } from './bridges/clipboard'
@@ -61,6 +62,9 @@ export function createEditor(options?: EditorOptions) {
   const _renderers = new Set<SkiaRenderer>()
   let _textEditor: TextEditor | null = null
   const events: Emitter<EditorEvents> = createNanoEvents()
+  const stopFontResolutionEvents = fontResolver.subscribe((event, snapshot) => {
+    events.emit('font:resolution-changed', event, snapshot)
+  })
 
   void prefetchFigmaSchema()
 
@@ -234,6 +238,7 @@ export function createEditor(options?: EditorOptions) {
     removeCanvasRenderer,
     replaceGraph,
     subscribeToGraph,
+    dispose: stopFontResolutionEvents,
 
     // Selection
     ...selection,

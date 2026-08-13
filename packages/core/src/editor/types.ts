@@ -14,6 +14,7 @@ import type { UndoManager } from '@open-pencil/scene-graph/undo'
 import type { RulerTheme, SkiaRenderer } from '#core/canvas/renderer'
 import type { RenderOverlays } from '#core/canvas/renderer/types'
 import type { TextEditor } from '#core/text/editor'
+import type { FontResolutionEvent, FontResolutionSnapshot } from '#core/text/resolver'
 
 export type Tool =
   | 'SELECT'
@@ -106,6 +107,7 @@ export interface EditorEvents extends SceneGraphEvents {
   'tool:changed': (tool: Tool, previousTool: Tool) => void
   'page:changed': (pageId: string, previousPageId: string) => void
   'clipboard:images-missing': (resolution: ClipboardImageResolution) => void
+  'font:resolution-changed': (event: FontResolutionEvent, snapshot: FontResolutionSnapshot) => void
   'viewport:changed': (
     viewport: { panX: number; panY: number; zoom: number },
     previous: { panX: number; panY: number; zoom: number }

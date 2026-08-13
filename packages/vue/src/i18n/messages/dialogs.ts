@@ -52,6 +52,16 @@ export const dialogMessageDefaults = {
   recoveryFailed: 'Could not restore this document.',
   showUI: params('Show UI ({shortcut})'),
   fontSettings: 'Font settings',
+  fontIssueFound: '1 font face is unavailable or substituted',
+  fontIssuesFound: params('{count} font faces are unavailable or substituted'),
+  selectAffectedLayers: 'Select layers',
+  retryFonts: 'Retry fonts',
+  retryingFonts: 'Retrying…',
+  expandFontIssues: 'Show font issues',
+  collapseFontIssues: 'Hide font issues',
+  noFontSubstitute: 'no substitute available',
+  affectedLayer: '1 affected layer',
+  affectedLayerCount: params('{count} affected layers'),
   fontSettingsDesktopDescription:
     'Access system fonts, online providers, fallback packs, and cached downloads.',
   fontSettingsBrowserDescription:

@@ -2,7 +2,7 @@ import type { SceneNode } from '@open-pencil/scene-graph'
 
 import { DEFAULT_FONT_FAMILY } from '#core/constants'
 import { cjkFallbackScriptForLanguage, type FontFallbackScript } from '#core/text/fallbacks'
-import { weightToStyle } from '#core/text/font-style'
+import { weightToStyle } from '#core/text/font/style'
 import { fontGlyphCoverageSync } from '#core/text/opentype'
 
 const CJK_IDEOGRAPH_CHAR_RE = /\p{Script=Han}/u

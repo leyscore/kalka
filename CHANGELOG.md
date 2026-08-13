@@ -6,6 +6,7 @@
 
 - Add local crash recovery for unsaved and pathless documents, including MCP-created documents. (#487)
 - Allow supported AI model profiles to set a provider-specific reasoning effort. (#454)
+- Show unavailable or substituted document fonts with affected-layer selection and retry actions, and expose font fidelity through the Figma API and MCP tooling. (#503)
 
 ### Fixed
 

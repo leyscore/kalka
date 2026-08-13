@@ -170,8 +170,15 @@ export {
   styleToVariant,
   type DownloadedFontCache,
   type FontInfo,
+  type FontLoadedSource,
   type LocalFontAccessState
 } from './text/fonts'
+export {
+  documentFontStatus,
+  type DocumentFontFaceStatus,
+  type DocumentFontStatus,
+  type FontFaceStatus
+} from './text/font/status'
 export {
   fontFaceFromFigmaFontName,
   fontFaceRenderFamily,
