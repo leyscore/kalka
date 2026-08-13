@@ -5,8 +5,19 @@ import { computed, markRaw, nextTick, ref, watch } from 'vue'
 
 import { getACPDebugText, clearACPDebugLog, hasACPDebugEntries } from '@/app/ai/acp/transport'
 import { copyChatLog } from '@/app/ai/debug'
+import {
+  analyzeReferenceImage,
+  designMessageWithReferenceFindings
+} from '@/app/ai/reference-image/analyze'
+import { isReferenceImageMediaType, prepareReferenceImage } from '@/app/ai/reference-image/prepare'
+import {
+  addReferenceImagePresentation,
+  clearReferenceImagePresentations
+} from '@/app/ai/reference-image/presentation'
+import type { ReferenceImageDraft } from '@/app/ai/reference-image/types'
 import { clearToolLogEntries, didHitStepLimit } from '@/app/ai/tools'
 import { activeTab } from '@/app/tabs'
+import { getActiveEditorStore } from '@/app/editor/active-store'
 import ACPPermissionDialog from '@/components/chat/ACPPermissionDialog.vue'
 import ChatInput from '@/components/chat/ChatInput.vue'
 import ChatMessage from '@/components/chat/ChatMessage.vue'
@@ -94,26 +105,66 @@ watch(
 watch(
   () => activeTab.value?.id,
   async () => {
+    clearReferenceImagePresentations()
     const nextChat = await ensureChat()
     chat.value = nextChat ? markRaw(nextChat) : null
   }
 )
 
-async function handleSubmit(text: string) {
-  if (status.value === 'streaming' || status.value === 'submitted') return
+async function handleSubmit(text: string, reference: ReferenceImageDraft | null = null) {
+  if (status.value === 'streaming' || status.value === 'submitted') {
+    if (reference) URL.revokeObjectURL(reference.previewURL)
+    return
+  }
   clearChatFailure()
   try {
     const c = await ensureChat()
     if (c) chat.value = markRaw(c)
+    if (!chat.value) {
+      if (reference) {
+        URL.revokeObjectURL(reference.previewURL)
+        toast.error('Chat is unavailable. The reference image was not sent.')
+      }
+      return
+    }
+
+    if (!reference) {
+      await chat.value.sendMessage({ text })
+      return
+    }
+
+    const prepared = await prepareReferenceImage(reference.file)
+    const findings = await analyzeReferenceImage(getActiveEditorStore(), text, prepared)
+    const previewURL = URL.createObjectURL(prepared.blob)
+    URL.revokeObjectURL(reference.previewURL)
+    const sendPromise = chat.value.sendMessage({
+      text: designMessageWithReferenceFindings(text, reference.file.name, findings)
+    })
+    const messageId = chat.value.lastMessage?.id
+    if (!messageId || chat.value.lastMessage?.role !== 'user') {
+      URL.revokeObjectURL(previewURL)
+      throw new Error('Could not attach the reference preview to the chat message.')
+    }
+    addReferenceImagePresentation({
+      id: crypto.randomUUID(),
+      messageId,
+      name: reference.file.name,
+      mediaType: isReferenceImageMediaType(reference.file.type)
+        ? reference.file.type
+        : prepared.mediaType,
+      originalWidth: prepared.originalWidth,
+      originalHeight: prepared.originalHeight,
+      previewWidth: prepared.width,
+      previewHeight: prepared.height,
+      previewURL,
+      displayText: text
+    })
+    await sendPromise
   } catch (e) {
-    console.error('Failed to initialize chat:', e)
-    toast.error(e instanceof Error ? e.message : String(e))
-    return
-  }
-  chat.value?.sendMessage({ text }).catch((e: unknown) => {
+    if (reference) URL.revokeObjectURL(reference.previewURL)
     console.error('Chat error:', e)
     toast.error(e instanceof Error ? e.message : String(e))
-  })
+  }
 }
 
 function handleStop() {
@@ -134,6 +185,7 @@ async function handleCopyACPLog() {
 
 function handleClearChat() {
   clearChatFailure()
+  clearReferenceImagePresentations()
   chat.value = null
   resetChat()
   clearToolLogEntries()
@@ -237,7 +289,7 @@ function handleClearChat() {
         </AppTextButton>
       </div>
 
-      <ChatInput :status="status" @submit="handleSubmit" @stop="handleStop" />
+      <ChatInput :status="status" @submit="handleSubmit" @stop="handleStop" @error="toast.error" />
 
       <ACPPermissionDialog />
     </template>

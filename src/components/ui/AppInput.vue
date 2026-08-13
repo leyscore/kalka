@@ -43,6 +43,9 @@ const emit = defineEmits<{
   change: []
   enter: [event: KeyboardEvent]
   focus: [event: FocusEvent]
+  paste: [event: ClipboardEvent]
+  copy: [event: ClipboardEvent]
+  cut: [event: ClipboardEvent]
 }>()
 </script>
 
@@ -63,5 +66,8 @@ const emit = defineEmits<{
     @change="emit('change')"
     @keydown.enter="emit('enter', $event)"
     @focus="emit('focus', $event)"
+    @paste="emit('paste', $event)"
+    @copy="emit('copy', $event)"
+    @cut="emit('cut', $event)"
   />
 </template>

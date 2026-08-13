@@ -5,10 +5,17 @@ import { Markdown } from 'vue-stream-markdown'
 import { useI18n, vTestId } from '@open-pencil/vue'
 import 'vue-stream-markdown/index.css'
 
+import {
+  referenceImagesForMessage,
+  visibleUserMessageText
+} from '@/app/ai/reference-image/presentation'
+import ReferenceImageAttachment from '@/components/chat/reference-image/ReferenceImageAttachment.vue'
+
 import type { UIDataTypes, UIMessage, UIMessagePart, UITools } from 'ai'
 
 const { message } = defineProps<{ message: UIMessage }>()
 const { dialogs } = useI18n()
+const referenceImages = referenceImagesForMessage(message.id)
 
 type ToolPart = Extract<UIMessagePart<UIDataTypes, UITools>, { toolCallId: string }>
 
@@ -113,18 +120,29 @@ function partKey(part: UIMessagePart<UIDataTypes, UITools>, index: number): stri
       </template>
 
       <!-- User message -->
-      <div
-        v-else-if="message.role === 'user'"
-        data-test-id="chat-text-bubble"
-        class="rounded-xl rounded-br-md bg-accent px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap text-white"
-      >
-        {{
-          message.parts
-            .filter(isTextUIPart)
-            .map((p) => p.text)
-            .join('')
-        }}
-      </div>
+      <template v-else-if="message.role === 'user'">
+        <div v-if="referenceImages.length" class="flex justify-end gap-2">
+          <ReferenceImageAttachment
+            v-for="attachment in referenceImages"
+            :key="attachment.id"
+            :attachment="attachment"
+          />
+        </div>
+        <div
+          data-test-id="chat-text-bubble"
+          class="rounded-xl rounded-br-md bg-accent px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap text-white"
+        >
+          {{
+            visibleUserMessageText(
+              message.id,
+              message.parts
+                .filter(isTextUIPart)
+                .map((p) => p.text)
+                .join('')
+            )
+          }}
+        </div>
+      </template>
     </div>
   </div>
 </template>
