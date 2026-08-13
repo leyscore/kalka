@@ -13,6 +13,7 @@ import {
   type AIChatFailure
 } from '@/app/ai/chat/failure'
 import { resolveLanguageModelID } from '@/app/ai/chat/model'
+import { buildReasoningProviderOptions, type AIProviderOptions } from '@/app/ai/chat/reasoning'
 import SYSTEM_PROMPT from '@/app/ai/chat/system-prompt.md?raw'
 import { createAIModelRuntime } from '@/app/ai/models'
 import { MAX_AGENT_STEPS, createAITools, recordStepUsage, resetRunSteps } from '@/app/ai/tools'
@@ -47,23 +48,6 @@ function supportsAnthropicCaching(providerID: AIProviderID, modelID: string): bo
     providerID === 'anthropic-compatible' ||
     (providerID === 'openrouter' && modelID.startsWith('anthropic/'))
   )
-}
-
-type JSONValue = null | boolean | number | string | JSONValue[] | { [key: string]: JSONValue }
-type AIProviderOptions = Record<string, { [key: string]: JSONValue }>
-
-export function buildReasoningProviderOptions(
-  providerID: AIProviderID,
-  reasoningEffort: string
-): AIProviderOptions | undefined {
-  if (!reasoningEffort) return undefined
-  if (providerID === 'openrouter') {
-    return { openrouter: { reasoning: { effort: reasoningEffort } } }
-  }
-  if (providerID === 'openai' || providerID === 'openai-compatible') {
-    return { openai: { reasoningEffort } }
-  }
-  return undefined
 }
 
 function mergeProviderOptions(
