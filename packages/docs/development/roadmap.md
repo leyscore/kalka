@@ -50,7 +50,7 @@ v0.14.0 established several foundations that earlier versions of this roadmap tr
 - Surface provider, model-budget, renderer, and automation failures with actionable recovery paths instead of silent stalls.
 - Make desktop automation recover from orphaned processes and renderer crashes without manual cleanup.
 - Prevent non-Latin font discovery and rendering crashes across platforms; add Arabic/Persian shaping and RTL layout, then broaden CJK and mixed-script visual fixtures.
-- Define a portable-font strategy for reproducible documents across machines, including curated redistributable fonts, embedded or linked document fonts, licensing metadata, fallback visibility, and agent-readable font availability.
+- Define a portable-font strategy for reproducible documents across machines, including curated redistributable fonts, embedded or linked document fonts, licensing metadata, fallback visibility, and agent-readable font availability ([#502](https://github.com/open-pencil/open-pencil/issues/502), [#503](https://github.com/open-pencil/open-pencil/issues/503)).
 
 ### Cloud and self-hosting
 
