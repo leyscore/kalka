@@ -4,6 +4,7 @@ import * as v from 'valibot'
 
 import { computeContentBounds } from '@open-pencil/core/io'
 
+import { buildReasoningProviderOptions } from '@/app/ai/chat/transports'
 import { createAIModelRuntime } from '@/app/ai/models'
 import type { EditorStore } from '@/app/editor/active-store'
 
@@ -70,6 +71,10 @@ export async function inspectRenderedDesign(
   const result = await dependencies.inspect({
     model: runtime.model,
     maxOutputTokens: Math.min(runtime.role.profile.maxOutputTokens, MAX_VISION_OUTPUT_TOKENS),
+    providerOptions: buildReasoningProviderOptions(
+      runtime.role.connection.providerID,
+      runtime.role.profile.reasoningEffort ?? ''
+    ),
     messages: [
       {
         role: 'user',
