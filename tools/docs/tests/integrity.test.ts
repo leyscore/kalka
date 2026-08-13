@@ -40,6 +40,52 @@ describe('checkDocsIntegrity', () => {
     expect(result.localeMissingPages.ru).toEqual(['legacy.md', 'page.md'])
   })
 
+  test('rejects pages copied identically into every locale', async () => {
+    const docsRoot = await fixture()
+    await write(join(docsRoot, 'index.md'), '# English')
+    await write(join(docsRoot, 'ru/index.md'), '# Русский')
+    await write(join(docsRoot, 'fr/index.md'), '# Français')
+    await write(join(docsRoot, 'page.md'), '# Canonical page')
+    await write(join(docsRoot, 'ru/page.md'), '# English placeholder')
+    await write(join(docsRoot, 'fr/page.md'), '# English placeholder')
+    await writeFile(join(docsRoot, 'public/_redirects'), '', 'utf8')
+
+    const result = checkDocsIntegrity({
+      docsRoot,
+      localePrefixes: ['ru', 'fr'],
+      redirectsPath: join(docsRoot, 'public/_redirects'),
+      sidebarLinks: []
+    })
+
+    expect(result.localePlaceholderPages).toEqual({ ru: ['page.md'], fr: ['page.md'] })
+    expect(result.errors).toEqual([
+      'fr/page.md is identical across every locale and must use the canonical English page instead.',
+      'ru/page.md is identical across every locale and must use the canonical English page instead.'
+    ])
+  })
+
+  test('rejects substantial localized pages detected as English', async () => {
+    const docsRoot = await fixture()
+    const english = Array.from(
+      { length: 20 },
+      () => 'This localized page contains English documentation that should not be published here.'
+    ).join(' ')
+    await write(join(docsRoot, 'index.md'), '# English')
+    await write(
+      join(docsRoot, 'ru/index.md'),
+      `# Русский\n\n${'Это русская документация. '.repeat(80)}`
+    )
+    await write(join(docsRoot, 'ru/page.md'), english)
+    await writeFile(join(docsRoot, 'public/_redirects'), '', 'utf8')
+
+    const result = check(docsRoot)
+
+    expect(result.localeSuspectPages.ru).toEqual(['page.md'])
+    expect(result.errors).toEqual([
+      'ru/page.md is detected as English and must be translated or use the canonical English page.'
+    ])
+  })
+
   test('uses Markdown syntax instead of treating code parentheses as links', async () => {
     const docsRoot = await fixture()
     const markdown = [

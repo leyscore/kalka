@@ -58,13 +58,13 @@ export const programmableSidebar = (
     text: labels.overview,
     items: [
       { text: labels.overview, link: `${prefix}/programmable/` },
-      { text: labels.cli, link: `${prefix}/reference/cli` },
+      { text: labels.cli, link: '/reference/cli' },
       { text: labels.inspecting, link: `${prefix}/programmable/cli/inspecting` },
       { text: labels.exporting, link: `${prefix}/programmable/cli/exporting` },
       { text: labels.analyzing, link: `${prefix}/programmable/cli/analyzing` },
       { text: labels.scripting, link: `${prefix}/programmable/cli/scripting` },
       { text: labels.jsxRenderer, link: `${prefix}/programmable/jsx-renderer` },
-      { text: labels.mcpServer, link: `${prefix}/programmable/mcp-server` },
+      { text: labels.mcpServer, link: '/programmable/mcp-server' },
       { text: labels.aiChat, link: `${prefix}/programmable/ai-chat` },
       ...(!prefix
         ? [
@@ -87,13 +87,13 @@ export const referenceSidebar = (
   {
     text: label,
     items: [
-      { text: 'Keyboard Shortcuts', link: `${prefix}/reference/keyboard-shortcuts` },
-      { text: 'CLI', link: `${prefix}/reference/cli` },
-      { text: 'Node Types', link: `${prefix}/reference/node-types` },
-      { text: 'Scene Graph', link: `${prefix}/reference/scene-graph` },
+      { text: 'Keyboard Shortcuts', link: '/reference/keyboard-shortcuts' },
+      { text: 'CLI', link: '/reference/cli' },
+      { text: 'Node Types', link: '/reference/node-types' },
+      { text: 'Scene Graph', link: '/reference/scene-graph' },
       { text: labels.figmaMatrix, link: `${prefix}/reference/figma-compatibility` },
       ...(!prefix ? [{ text: 'DOM/CSS Mapping', link: '/reference/dom-css-mapping' }] : []),
-      { text: 'File Format', link: `${prefix}/reference/file-format` },
+      { text: 'File Format', link: '/reference/file-format' },
     ],
   },
 ]

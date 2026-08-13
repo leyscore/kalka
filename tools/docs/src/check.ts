@@ -82,7 +82,7 @@ const result = checkDocsIntegrity({
 const missingCounts = Object.values(result.localeMissingPages).map((pages) => pages.length)
 const translationCounts = missingCounts.map((missing) => result.canonicalPageCount - missing)
 console.log(
-  `Translation coverage: ${Math.min(...translationCounts)}–${Math.max(...translationCounts)} of ${result.canonicalPageCount} canonical pages per locale.`
+  `Localized page presence: ${Math.min(...translationCounts)}–${Math.max(...translationCounts)} of ${result.canonicalPageCount} canonical routes per locale; content quality is audited separately.`
 )
 
 if (result.errors.length > 0) {

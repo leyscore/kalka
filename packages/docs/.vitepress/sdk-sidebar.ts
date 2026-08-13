@@ -79,7 +79,7 @@ const SDK_ADVANCED_PAGES = [
   { text: 'useLayerTree', slug: 'use-layer-tree' },
   { text: 'useToolbar', slug: 'use-toolbar' },
   { text: 'usePropertyList', slug: 'use-property-list' },
-  { text: 'useNumberField', slug: 'use-number-field' },
+  { text: 'useNumberField', slug: 'use-number-field', canonical: true },
   { text: 'useOkHCL', slug: 'use-okhcl' },
   { text: 'useVariables', slug: 'use-variables' },
   { text: 'useVariablesDialogState', slug: 'use-variables-dialog-state' },

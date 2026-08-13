@@ -11,7 +11,7 @@ description: Componenti riutilizzabili, istanze, override e sincronizzazione liv
 <kbd>⇧</kbd><kbd>⌘</kbd><kbd>K</kbd> — combina 2+ componenti in un set con bordo tratteggiato viola.
 
 ## Creare istanze
-Click destro → **Crea istanza**. Appare 40 px a destra.
+Clic destro → **Crea istanza**. Appare 40 px a destra.
 
 ## Separare un'istanza
 <kbd>⌥</kbd><kbd>⌘</kbd><kbd>B</kbd> — diventa un frame senza collegamento.
@@ -22,8 +22,8 @@ Modificare un componente aggiorna tutte le istanze. Proprietà sincronizzate: di
 ## Override
 Le istanze possono sovrascrivere proprietà specifiche senza rompere il collegamento. Proprietà sovrascrivibili: nome, testo, fontSize, fontWeight, fontFamily e proprietà visuali/layout.
 
-## Hit testing
-Click seleziona il componente. **Doppio click** per entrare e selezionare i figli.
+## Selezione
+Un clic seleziona il componente. **Doppio clic** per entrare e selezionare i figli.
 
 | Azione | Mac | Windows / Linux |
 |--------|-----|-----------------|
