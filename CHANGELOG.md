@@ -14,6 +14,11 @@
 
 ### Fixed
 
+- Decode zstd-compressed FIG containers, reject invalid compressed payloads, and preserve exact fixture byte ranges. (#397)
+- Compose caller CSS with Tailwind defaults when importing DOM/CSS documents. (#397)
+- Preserve desktop HTTP timeout, abort, and empty-response semantics. (#397)
+- Escape Vue SDK test selectors when the browser `CSS` global is unavailable. (#397)
+- Report whether missing Figma clipboard images were actually fetched. (#397)
 - Report exhausted provider credit, request failures, and output-token limits through localized chat toasts and copied diagnostics. (#451, #454)
 - Prevent Windows desktop crashes when loading large system fonts for non-Latin text.
 - Preserve open vector segments when the same vector network also contains filled regions. (#450)
