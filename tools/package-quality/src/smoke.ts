@@ -110,9 +110,11 @@ function checkTypeConsumer(cwd: string): void {
   run([tsgoBin, '--noEmit', '-p', 'tsconfig.package-smoke.json'], cwd)
 }
 
-interface PackageJSON { name: string
-types?: string
-exports?: unknown }
+interface PackageJSON {
+  name: string
+  types?: string
+  exports?: unknown
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value)

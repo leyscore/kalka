@@ -3,14 +3,16 @@ import { join } from 'node:path'
 
 import { publicPackageDirs } from '../packages'
 
-interface PackageJSON { name: string
-version: string
-main?: string
-types?: string
-files?: string[]
-bin?: Record<string, string> | string
-exports?: unknown
-publishConfig?: Record<string, unknown> }
+interface PackageJSON {
+  name: string
+  version: string
+  main?: string
+  types?: string
+  files?: string[]
+  bin?: Record<string, string> | string
+  exports?: unknown
+  publishConfig?: Record<string, unknown>
+}
 
 const errors: string[] = []
 
