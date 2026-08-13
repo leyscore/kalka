@@ -4,7 +4,19 @@ import { buildDebugLog } from '@open-pencil/core/tools'
 import type { ToolDebugLog, ToolLogEntry } from '@open-pencil/core/tools'
 import type { JSONObject } from '@open-pencil/scene-graph/primitives'
 
+import type { AIChatFailure } from '@/app/ai/chat/failure'
 import { getStepUsages, getToolLogEntries } from '@/app/ai/tools'
+
+const MAX_FAILURE_DETAIL_LENGTH = 240
+const SENSITIVE_DETAIL_PATTERN =
+  /(api[-_ ]?key|authorization|token|secret|password)(\s*[:=]\s*|\s+)([^\s,;]+)/gi
+
+export function safeFailureDetail(detail: string): string {
+  const redacted = detail.replace(SENSITIVE_DETAIL_PATTERN, '$1$2[redacted]')
+  return redacted.length <= MAX_FAILURE_DETAIL_LENGTH
+    ? redacted
+    : `${redacted.slice(0, MAX_FAILURE_DETAIL_LENGTH)}…`
+}
 
 export function formatTokenUsage(): string {
   const steps = getStepUsages()
@@ -205,7 +217,7 @@ function formatMessageStats(messages: UIMessage[]): string {
   return lines.join('\n')
 }
 
-export function serializeChatLog(messages: UIMessage[]): string {
+export function serializeChatLog(messages: UIMessage[], failure?: AIChatFailure | null): string {
   const sections: string[] = []
 
   const toolLog = getToolLogEntries()
@@ -223,6 +235,15 @@ export function serializeChatLog(messages: UIMessage[]): string {
 
   sections.push('=== DIAGNOSTICS ===')
   sections.push(formatDiagnostics(debugLog))
+  sections.push('')
+
+  sections.push('=== ERRORS ===')
+  if (failure) {
+    const detail = failure.detail ? `: ${safeFailureDetail(failure.detail)}` : ''
+    sections.push(`  ${failure.reason}${detail}`)
+  } else {
+    sections.push('  (none recorded)')
+  }
   sections.push('')
 
   sections.push('=== MESSAGE STATS ===')
@@ -270,7 +291,7 @@ export function serializeChatLog(messages: UIMessage[]): string {
   return sections.join('\n\n')
 }
 
-export function copyChatLog(messages: UIMessage[]): Promise<void> {
-  const text = serializeChatLog(messages)
+export function copyChatLog(messages: UIMessage[], failure?: AIChatFailure | null): Promise<void> {
+  const text = serializeChatLog(messages, failure)
   return navigator.clipboard.writeText(text)
 }

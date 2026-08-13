@@ -63,6 +63,9 @@ const providerDef = computed(
   () => AI_PROVIDERS.find((provider) => provider.id === draft.providerID) ?? AI_PROVIDERS[0]
 )
 const isACP = computed(() => draft.providerID.startsWith('acp:'))
+const supportsReasoningEffort = computed(() =>
+  ['openai', 'openai-compatible', 'openrouter'].includes(draft.providerID)
+)
 const providerDisplayName = computed(() => {
   if (!isACP.value) return providerDef.value.name
   const agentID = draft.providerID.slice('acp:'.length)
@@ -429,6 +432,15 @@ void refreshKeyStatus()
                 <AppSwitch v-else v-model="visionEnabled" :label="dialogs.modelCapabilityVision" />
               </div>
             </div>
+
+            <ProviderSettingsField v-if="supportsReasoningEffort" :label="dialogs.reasoningEffort">
+              <ProviderSettingsInput
+                v-model="draft.reasoningEffort"
+                :aria-label="dialogs.reasoningEffort"
+                :placeholder="dialogs.reasoningEffortPlaceholder"
+              />
+              <p class="mt-1 text-[10px] text-muted">{{ dialogs.reasoningEffortDescription }}</p>
+            </ProviderSettingsField>
 
             <div class="border-t border-border pt-2.5">
               <p class="text-[11px] font-medium text-surface">{{ dialogs.outputLimit }}</p>

@@ -116,6 +116,8 @@ export const dialogMessageDefaults = {
   connectionTestInvalidBaseURL:
     'Base URL is invalid. Use a full URL like https://api.example.com/v1.',
   connectionTestAuthFailed: 'Authentication failed. Check your API key.',
+  connectionTestInsufficientCredit:
+    'The provider account has insufficient credit or quota. Top it up and try again.',
   connectionTestModelNotFound: 'Model not found. Check the model ID.',
   connectionTestAPITypeMismatch:
     'This endpoint does not appear to support the selected API type. Try Completions or Responses.',
@@ -222,9 +224,17 @@ export const dialogMessageDefaults = {
   advancedModelSettings: 'Advanced settings',
   outputLimit: 'Output limit',
   outputLimitAutomatic: 'Automatic recommendation',
+  reasoningEffort: 'Reasoning effort',
+  reasoningEffortPlaceholder: 'e.g. low, high, none',
+  reasoningEffortDescription: 'Optional provider-specific value.',
   supported: 'Supported',
   unsupported: 'Not supported',
   tokens: 'tokens',
+  chatInsufficientCredit:
+    'The provider account has insufficient credit or quota. Top it up and try again.',
+  chatOutputLimit:
+    'The model ran out of output tokens while reasoning. Raise Max output tokens or lower reasoning effort.',
+  chatRequestFailed: 'The model request failed. Check the provider settings and try again.',
   maxOutputTokens: 'Max output tokens',
   clear: 'Clear',
   keySavedReplace: 'Key saved — enter new to replace',
