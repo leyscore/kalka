@@ -153,7 +153,7 @@
   "supported": "Supportato",
   "unsupported": "Non supportato",
   "tokens": "token",
-  "maxOutputTokens": "Max output tokens",
+  "maxOutputTokens": "Token di output massimi",
   "chatInsufficientCredit": "L’account del provider non dispone di credito o quota sufficiente. Ricaricalo e riprova.",
   "chatOutputLimit": "Il modello ha esaurito i token di output durante il ragionamento. Aumenta i token di output massimi o riduci lo sforzo di ragionamento.",
   "chatRequestFailed": "La richiesta al modello non è riuscita. Controlla le impostazioni del provider e riprova.",

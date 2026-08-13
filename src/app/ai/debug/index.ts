@@ -7,6 +7,17 @@ import type { JSONObject } from '@open-pencil/scene-graph/primitives'
 import type { AIChatFailure } from '@/app/ai/chat/failure'
 import { getStepUsages, getToolLogEntries } from '@/app/ai/tools'
 
+const MAX_FAILURE_DETAIL_LENGTH = 240
+const SENSITIVE_DETAIL_PATTERN =
+  /(api[-_ ]?key|authorization|token|secret|password)(\s*[:=]\s*|\s+)([^\s,;]+)/gi
+
+export function safeFailureDetail(detail: string): string {
+  const redacted = detail.replace(SENSITIVE_DETAIL_PATTERN, '$1$2[redacted]')
+  return redacted.length <= MAX_FAILURE_DETAIL_LENGTH
+    ? redacted
+    : `${redacted.slice(0, MAX_FAILURE_DETAIL_LENGTH)}…`
+}
+
 export function formatTokenUsage(): string {
   const steps = getStepUsages()
   if (steps.length === 0) return '  (no usage data — provider may not report it)'
@@ -228,7 +239,8 @@ export function serializeChatLog(messages: UIMessage[], failure?: AIChatFailure 
 
   sections.push('=== ERRORS ===')
   if (failure) {
-    sections.push(`  ${failure.reason}${failure.detail ? `: ${failure.detail}` : ''}`)
+    const detail = failure.detail ? `: ${safeFailureDetail(failure.detail)}` : ''
+    sections.push(`  ${failure.reason}${detail}`)
   } else {
     sections.push('  (none recorded)')
   }

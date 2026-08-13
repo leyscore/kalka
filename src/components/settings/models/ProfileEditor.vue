@@ -63,6 +63,9 @@ const providerDef = computed(
   () => AI_PROVIDERS.find((provider) => provider.id === draft.providerID) ?? AI_PROVIDERS[0]
 )
 const isACP = computed(() => draft.providerID.startsWith('acp:'))
+const supportsReasoningEffort = computed(() =>
+  ['openai', 'openai-compatible', 'openrouter'].includes(draft.providerID)
+)
 const providerDisplayName = computed(() => {
   if (!isACP.value) return providerDef.value.name
   const agentID = draft.providerID.slice('acp:'.length)
@@ -430,7 +433,7 @@ void refreshKeyStatus()
               </div>
             </div>
 
-            <ProviderSettingsField :label="dialogs.reasoningEffort">
+            <ProviderSettingsField v-if="supportsReasoningEffort" :label="dialogs.reasoningEffort">
               <ProviderSettingsInput
                 v-model="draft.reasoningEffort"
                 :aria-label="dialogs.reasoningEffort"

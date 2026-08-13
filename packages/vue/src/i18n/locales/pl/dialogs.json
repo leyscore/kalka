@@ -153,7 +153,7 @@
   "supported": "Obsługiwane",
   "unsupported": "Nieobsługiwane",
   "tokens": "tokenów",
-  "maxOutputTokens": "Max output tokens",
+  "maxOutputTokens": "Maks. tokenów wyjściowych",
   "chatInsufficientCredit": "Konto dostawcy nie ma wystarczających środków lub limitu. Doładuj je i spróbuj ponownie.",
   "chatOutputLimit": "Model wyczerpał limit tokenów wyjściowych podczas rozumowania. Zwiększ maksymalną liczbę tokenów wyjściowych lub zmniejsz poziom rozumowania.",
   "chatRequestFailed": "Żądanie do modelu nie powiodło się. Sprawdź ustawienia dostawcy i spróbuj ponownie.",

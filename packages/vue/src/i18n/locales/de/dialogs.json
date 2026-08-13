@@ -153,7 +153,7 @@
   "supported": "Unterstützt",
   "unsupported": "Nicht unterstützt",
   "tokens": "Token",
-  "maxOutputTokens": "Max output tokens",
+  "maxOutputTokens": "Maximale Ausgabetoken",
   "chatInsufficientCredit": "Das Anbieterkonto hat nicht genügend Guthaben oder Kontingent. Lade es auf und versuche es erneut.",
   "chatOutputLimit": "Das Modell hat beim Schlussfolgern das Ausgabetoken-Limit erreicht. Erhöhe die maximalen Ausgabetoken oder verringere den Schlussfolgerungsaufwand.",
   "chatRequestFailed": "Die Modellanfrage ist fehlgeschlagen. Prüfe die Anbietereinstellungen und versuche es erneut.",

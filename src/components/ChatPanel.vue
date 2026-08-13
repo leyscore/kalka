@@ -84,9 +84,13 @@ function scrollToBottom() {
 }
 
 watch(messages, scrollToBottom, { deep: true })
-watch(failureMessage, (message) => {
-  if (message) toast.error(message)
-})
+watch(
+  () => chatFailure.value?.reason,
+  (reason) => {
+    if (!reason) return
+    toast.error(failureMessage.value ?? dialogs.value.chatRequestFailed)
+  }
+)
 watch(
   () => activeTab.value?.id,
   async () => {
