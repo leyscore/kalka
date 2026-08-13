@@ -8,6 +8,10 @@
 - Allow supported AI model profiles to set a provider-specific reasoning effort. (#454)
 - Show unavailable or substituted document fonts with affected-layer selection and retry actions, and expose font fidelity through the Figma API and MCP tooling. (#503)
 
+### Performance
+
+- Reduce peak memory during `.fig` export by sharing immutable binary resources with the isolated export graph.
+
 ### Fixed
 
 - Report exhausted provider credit, request failures, and output-token limits through localized chat toasts and copied diagnostics. (#451, #454)

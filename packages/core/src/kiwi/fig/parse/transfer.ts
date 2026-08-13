@@ -86,6 +86,40 @@ export function serializedSceneGraphTransferList(data: SerializedSceneGraph): Tr
   return [...buffers]
 }
 
+/**
+ * Clone the graph state that lazy FIG population may mutate while retaining immutable imported
+ * resources by reference. Population replaces node fields and mutates child ID arrays, but only
+ * reads image bytes, variables, source changes, GUID mappings, blobs, and schema bytes.
+ */
+export function cloneSceneGraphForFigExport(graph: SceneGraph): SceneGraph {
+  const cloned = new SceneGraph()
+  cloned.rootId = graph.rootId
+  cloned.nodes = new Map(
+    [...graph.nodes].map(([id, node]) => [id, { ...node, childIds: [...node.childIds] }])
+  )
+  cloned.images = new Map(graph.images)
+  cloned.variables = new Map(graph.variables)
+  cloned.variableCollections = new Map(graph.variableCollections)
+  cloned.activeMode = new Map(graph.activeMode)
+  cloned.instanceIndex = new Map(
+    [...graph.instanceIndex].map(([id, nodeIds]) => [id, new Set(nodeIds)])
+  )
+  cloned.figKiwiVersion = graph.figKiwiVersion
+  cloned.figSchemaDeflated = graph.figSchemaDeflated
+  cloned.documentColorSpace = graph.documentColorSpace
+
+  const lazyFigImport = getLazyFigImportContext(graph)
+  if (lazyFigImport) {
+    setLazyFigImportContext(cloned, {
+      changeMap: lazyFigImport.changeMap,
+      guidToNodeId: lazyFigImport.guidToNodeId,
+      blobs: lazyFigImport.blobs,
+      populatedRootIds: new Set(lazyFigImport.populatedRootIds)
+    })
+  }
+  return cloned
+}
+
 export function deserializeSceneGraph(data: SerializedSceneGraph): SceneGraph {
   const graph = new SceneGraph()
   graph.rootId = data.rootId
