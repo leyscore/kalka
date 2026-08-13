@@ -35,6 +35,7 @@ export function createDocumentRecovery({
 }: DocumentRecoveryOptions): DocumentRecoveryController {
   let id = recoveryId
   let protectedVersion = state.sceneVersion
+  let persistedVersion: number | null = null
   let requestedVersion = protectedVersion
   let lifecycleGeneration = 0
   let writing: Promise<void> | null = null
@@ -52,6 +53,7 @@ export function createDocumentRecovery({
       sceneVersion: version,
       figBytes: bytes
     })
+    persistedVersion = version
     if (generation !== lifecycleGeneration) return
     protectedVersion = version
     if (requestedVersion !== version) await runWrites(generation)
@@ -80,25 +82,35 @@ export function createDocumentRecovery({
     { debounce: 3000, maxWait: 10000 }
   )
 
+  async function invalidateActiveWrite(): Promise<void> {
+    lifecycleGeneration++
+    await writing
+  }
+
   return {
     getRecoveryId: () => id,
     adoptRecoverySnapshot(nextId, sceneVersion) {
       lifecycleGeneration++
       id = nextId
       protectedVersion = sceneVersion
+      persistedVersion = sceneVersion
       requestedVersion = sceneVersion
       disposed = false
     },
     persistNow,
     async markProtectedVersion(version) {
-      lifecycleGeneration++
+      await invalidateActiveWrite()
       protectedVersion = version
-      requestedVersion = version
-      await store.remove(id)
+      requestedVersion = state.sceneVersion
+      if (persistedVersion == null || persistedVersion <= version) {
+        await store.remove(id)
+        persistedVersion = null
+      }
     },
     async discardRecovery() {
-      lifecycleGeneration++
+      await invalidateActiveWrite()
       protectedVersion = state.sceneVersion
+      persistedVersion = null
       requestedVersion = state.sceneVersion
       await store.remove(id)
     },

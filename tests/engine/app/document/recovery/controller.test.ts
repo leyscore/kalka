@@ -6,6 +6,22 @@ import { createDefaultEditorState } from '@open-pencil/core/editor'
 
 import { createDocumentRecovery } from '@/app/document/recovery/controller'
 import { createMemoryRecoveryStore } from '@/app/document/recovery/memory'
+import type { RecoverySnapshotInput, RecoveryStore } from '@/app/document/recovery/types'
+
+function deferredWriteStore() {
+  const memory = createMemoryRecoveryStore()
+  let release: (() => void) | null = null
+  const store: RecoveryStore = {
+    ...memory,
+    async write(input: RecoverySnapshotInput) {
+      await new Promise<void>((resolve) => {
+        release = resolve
+      })
+      return memory.write(input)
+    }
+  }
+  return { store, release: () => release?.() }
+}
 
 function setup(buildFigFile = async () => new Uint8Array([1, 2, 3])) {
   const state = reactive({ ...createDefaultEditorState('page-1'), documentName: 'Agent draft' })
@@ -78,6 +94,59 @@ describe('document recovery controller', () => {
 
     await recovery.markProtectedVersion(1)
     expect(await store.list()).toEqual([])
+    recovery.disposeRecovery()
+  })
+
+  test('save waits for an active write before deleting its snapshot', async () => {
+    const deferred = deferredWriteStore()
+    const state = reactive({ ...createDefaultEditorState('page-1'), documentName: 'Draft' })
+    const recovery = createDocumentRecovery({
+      state,
+      store: deferred.store,
+      recoveryId: 'recovery-1',
+      hasWritableSource: () => false,
+      buildFigFile: () => new Uint8Array([1])
+    })
+    state.sceneVersion = 1
+    const write = recovery.persistNow()
+    await Promise.resolve()
+    const cleanup = recovery.markProtectedVersion(1)
+    deferred.release()
+    await Promise.all([write, cleanup])
+
+    expect(await deferred.store.list()).toEqual([])
+    recovery.disposeRecovery()
+  })
+
+  test('discard waits for an active write before deleting its snapshot', async () => {
+    const deferred = deferredWriteStore()
+    const state = reactive({ ...createDefaultEditorState('page-1'), documentName: 'Draft' })
+    const recovery = createDocumentRecovery({
+      state,
+      store: deferred.store,
+      recoveryId: 'recovery-1',
+      hasWritableSource: () => false,
+      buildFigFile: () => new Uint8Array([1])
+    })
+    state.sceneVersion = 1
+    const write = recovery.persistNow()
+    await Promise.resolve()
+    const discard = recovery.discardRecovery()
+    deferred.release()
+    await Promise.all([write, discard])
+
+    expect(await deferred.store.list()).toEqual([])
+    recovery.disposeRecovery()
+  })
+
+  test('preserves a snapshot newer than the saved version', async () => {
+    const { state, store, recovery } = setup()
+    state.sceneVersion = 2
+    await recovery.persistNow()
+
+    await recovery.markProtectedVersion(1)
+
+    expect((await store.read('recovery-1'))?.sceneVersion).toBe(2)
     recovery.disposeRecovery()
   })
 })

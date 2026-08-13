@@ -27,7 +27,11 @@ export function createDocumentWriter({
 }: DocumentWriterOptions) {
   async function finishWrite(version: number): Promise<true> {
     setSavedVersion(version)
-    await onWriteSuccess?.(version)
+    try {
+      await onWriteSuccess?.(version)
+    } catch (error) {
+      console.warn('[Recovery] Cleanup after document write failed:', error)
+    }
     return true
   }
 

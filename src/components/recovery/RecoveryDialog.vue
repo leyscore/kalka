@@ -28,6 +28,7 @@ async function restore(snapshot: RecoverySnapshotMeta): Promise<void> {
   try {
     await restoreRecoverySnapshot(snapshot.id)
     snapshots.value = snapshots.value.filter((candidate) => candidate.id !== snapshot.id)
+    if (snapshots.value.length === 0) open.value = false
   } catch (error) {
     toast.error(error instanceof Error ? error.message : dialogs.value.recoveryFailed)
   } finally {
@@ -40,6 +41,7 @@ async function discard(snapshot: RecoverySnapshotMeta): Promise<void> {
   try {
     await discardRecoverySnapshot(snapshot.id)
     snapshots.value = snapshots.value.filter((candidate) => candidate.id !== snapshot.id)
+    if (snapshots.value.length === 0) open.value = false
   } finally {
     busyId.value = null
   }

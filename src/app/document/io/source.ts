@@ -87,7 +87,9 @@ export function createDocumentSourceActions({
     getSavedVersion,
     hasWritableSource: () => !!getFileHandle() || !!getFilePath() || !!getStorageBinding(),
     saveCurrentDocument: async () => {
-      await writeFile(await buildFigFile())
+      const version = state.sceneVersion
+      const data = await buildFigFile()
+      await writeFile(data, version)
     }
   })
 

@@ -5,7 +5,7 @@
   "recoverUnsavedWork": "Récupérer le travail non enregistré",
   "recoverUnsavedWorkDescription": "OpenPencil a trouvé des documents d’une session précédente.",
   "restore": "Restaurer",
-  "discard": "Ignorer",
+  "discard": "Supprimer",
   "recoveryFailed": "Impossible de restaurer ce document.",
   "rename": "Renommer",
   "renameLayers": "Renommer {count} calques",

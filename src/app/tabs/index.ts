@@ -36,6 +36,7 @@ function generateTabId(): string {
 }
 
 const tabsRef = shallowRef<Tab[]>([])
+const pendingRecoveryDeletions = new Set<Promise<void>>()
 const activeTabId = shallowRef('')
 
 export const activeTab = computed(() => tabsRef.value.find((t) => t.id === activeTabId.value))
@@ -97,8 +98,11 @@ export function closeTab(tabId: string) {
 
   const closingTab = tabsRef.value[idx]
   const wasActive = activeTabId.value === tabId
+  const deletion = closingTab.store.discardRecovery().finally(() => {
+    pendingRecoveryDeletions.delete(deletion)
+  })
+  pendingRecoveryDeletions.add(deletion)
   closingTab.store.dispose()
-  void closingTab.store.discardRecovery()
   tabsRef.value = tabsRef.value.filter((t) => t.id !== tabId)
 
   if (tabsRef.value.length === 0) {
@@ -292,7 +296,7 @@ export async function restoreRecoverySnapshot(id: string): Promise<void> {
   store.replaceGraph(imported)
   store.undo.clear()
   store.state.documentName = snapshot.documentName
-  store.adoptRecoverySnapshot(id, store.state.sceneVersion)
+  store.adoptRecoverySnapshot(id, snapshot.sceneVersion)
   store.clearSelection()
   const pageId = store.graph.getPages()[0]?.id ?? store.graph.rootId
   await store.switchPage(pageId)
@@ -300,7 +304,10 @@ export async function restoreRecoverySnapshot(id: string): Promise<void> {
 }
 
 export async function prepareForReload(): Promise<void> {
-  await Promise.all(tabsRef.value.map((tab) => tab.store.persistRecoveryNow()))
+  await Promise.all([
+    ...pendingRecoveryDeletions,
+    ...tabsRef.value.map((tab) => tab.store.persistRecoveryNow())
+  ])
 }
 
 export function tabCount(): number {
