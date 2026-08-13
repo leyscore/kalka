@@ -12,7 +12,7 @@ L'interface de l'éditeur et les interfaces d'automatisation utilisent le même 
 
 ## Chat IA
 
-L'assistant intégré a accès à 87 outils qui couvrent l'ensemble des fonctionnalités de l'éditeur. Décrivez ce que vous voulez en langage naturel — « ajouter une ombre portée de 16px à tous les boutons », « créer un composant carte avec une variante mode sombre », « exporter chaque frame de cette page en 2× ».
+L'assistant intégré a accès à plus de 90 outils qui couvrent l'ensemble des fonctionnalités de l'éditeur. Décrivez ce que vous voulez en langage naturel — « ajouter une ombre portée de 16px à tous les boutons », « créer un composant carte avec une variante mode sombre », « exporter chaque frame de cette page en 2× ».
 
 [Chat IA →](./ai-chat)
 

@@ -12,7 +12,7 @@ L'interfaccia dell'editor e le interfacce di automazione utilizzano lo stesso mo
 
 ## Chat IA
 
-L'assistente integrato ha accesso a 87 strumenti che coprono l'intera superficie dell'editor. Descrivi ciò che vuoi in linguaggio naturale — "aggiungi un'ombra esterna di 16px a tutti i pulsanti", "crea un componente card con variante dark mode", "esporta ogni frame di questa pagina a 2×".
+L'assistente integrato ha accesso a oltre 90 strumenti che coprono l'intera superficie dell'editor. Descrivi ciò che vuoi in linguaggio naturale — "aggiungi un'ombra esterna di 16px a tutti i pulsanti", "crea un componente card con variante dark mode", "esporta ogni frame di questa pagina a 2×".
 
 [Chat IA →](./ai-chat)
 

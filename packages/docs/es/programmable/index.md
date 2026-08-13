@@ -12,7 +12,7 @@ La interfaz del editor y las interfaces de automatización usan el mismo motor. 
 
 ## Chat con IA
 
-El asistente integrado tiene acceso a 87 herramientas que cubren toda la superficie del editor. Describe lo que quieres en lenguaje natural — "añade una sombra de 16px a todos los botones", "crea un componente de tarjeta con variante para modo oscuro", "exporta cada frame de esta página a 2×".
+El asistente integrado tiene acceso a más de 90 herramientas que cubren toda la superficie del editor. Describe lo que quieres en lenguaje natural — "añade una sombra de 16px a todos los botones", "crea un componente de tarjeta con variante para modo oscuro", "exporta cada frame de esta página a 2×".
 
 [Chat con IA →](./ai-chat)
 

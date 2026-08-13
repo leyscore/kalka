@@ -12,7 +12,7 @@ Die Editor-Oberfläche und die Automatisierungsschnittstellen verwenden dieselbe
 
 ## KI-Chat
 
-Der integrierte Assistent hat Zugriff auf 87 Werkzeuge, die die gesamte Oberfläche des Editors abdecken. Beschreibe in natürlicher Sprache, was du möchtest — „füge allen Buttons einen 16px Schlagschatten hinzu", „erstelle eine Kartenkomponente mit Dark-Mode-Variante", „exportiere jeden Frame auf dieser Seite in 2×".
+Der integrierte Assistent hat Zugriff auf mehr als 90 Werkzeuge, die die gesamte Oberfläche des Editors abdecken. Beschreibe in natürlicher Sprache, was du möchtest — „füge allen Buttons einen 16px Schlagschatten hinzu", „erstelle eine Kartenkomponente mit Dark-Mode-Variante", „exportiere jeden Frame auf dieser Seite in 2×".
 
 [KI-Chat →](./ai-chat)
 
