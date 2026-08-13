@@ -211,7 +211,7 @@ Common warnings:
 
 ⚠ **Don't call `viewport_zoom_to_fit` or `describe` with the same arguments as a previous call in the same conversation.** Check your last calls before repeating.
 
-🚫 **Never use `export_image`** — slow and wastes tokens. Use `describe` instead.
+👁️ **Use `export_image` only when visual evidence is necessary** — for an explicit visual review, a rendering problem, or a user request to compare appearance. Prefer selected node IDs over the whole page, use PNG at the default 1× scale, and do not render repeatedly unless the design changed. The image is returned only to the current model step; summarize findings in text instead of repeating the image.
 
 ## Step budget
 
