@@ -139,6 +139,28 @@ describe('document recovery controller', () => {
     recovery.disposeRecovery()
   })
 
+  test('adoption waits for an active write and removes the previous recovery id', async () => {
+    const deferred = deferredWriteStore()
+    const state = reactive({ ...createDefaultEditorState('page-1'), documentName: 'Draft' })
+    const recovery = createDocumentRecovery({
+      state,
+      store: deferred.store,
+      recoveryId: 'previous',
+      hasWritableSource: () => false,
+      buildFigFile: () => new Uint8Array([1])
+    })
+    state.sceneVersion = 1
+    const write = recovery.persistNow()
+    await Promise.resolve()
+    const adoption = recovery.adoptRecoverySnapshot('recovered', 7)
+    deferred.release()
+    await Promise.all([write, adoption])
+
+    expect(recovery.getRecoveryId()).toBe('recovered')
+    expect(await deferred.store.read('previous')).toBeNull()
+    recovery.disposeRecovery()
+  })
+
   test('preserves a snapshot newer than the saved version', async () => {
     const { state, store, recovery } = setup()
     state.sceneVersion = 2

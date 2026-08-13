@@ -34,7 +34,7 @@ export function useEditorMenu() {
     new: () => createTab(),
     open: () => void openFileDialog(),
     close: () => {
-      if (activeTab.value) closeTab(activeTab.value.id)
+      if (activeTab.value) void closeTab(activeTab.value.id)
     },
     save: () => void store.saveFigFile(),
     'save-as': () => void store.saveFigFileAs(),

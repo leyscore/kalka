@@ -110,9 +110,11 @@ export function createIdbOutbox(): Outbox {
       const existing = await store.getAll()
       const next = withJobQueued(existing, job)
       for (const queued of existing) {
-        if (!next.some((candidate) => candidate.id === queued.id)) store.delete(queued.id)
+        if (!next.some((candidate) => candidate.id === queued.id)) {
+          await store.delete(queued.id)
+        }
       }
-      store.put(job)
+      await store.put(job)
       await transaction.done
       return job
     },

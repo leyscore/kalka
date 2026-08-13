@@ -104,7 +104,7 @@ export function useAppMenu() {
     'export-selection': () => exportSelection('png'),
     ...createSelectionMenuActions(store),
     close: () => {
-      if (activeTab.value) closeTab(activeTab.value.id)
+      if (activeTab.value) void closeTab(activeTab.value.id)
     },
     settings: openSettingsDialog,
     'export-png': () => exportSelection('png'),

@@ -92,22 +92,24 @@ export function switchTab(tabId: string) {
   activateTab(tab)
 }
 
-export function closeTab(tabId: string) {
+export async function closeTab(tabId: string): Promise<void> {
   const idx = tabsRef.value.findIndex((t) => t.id === tabId)
   if (idx === -1) return
 
   const closingTab = tabsRef.value[idx]
   const wasActive = activeTabId.value === tabId
-  const deletion = closingTab.store.discardRecovery().finally(() => {
-    pendingRecoveryDeletions.delete(deletion)
-  })
+  const deletion = closingTab.store.discardRecovery()
   pendingRecoveryDeletions.add(deletion)
+  try {
+    await deletion
+  } finally {
+    pendingRecoveryDeletions.delete(deletion)
+  }
   closingTab.store.dispose()
   tabsRef.value = tabsRef.value.filter((t) => t.id !== tabId)
 
   if (tabsRef.value.length === 0) {
     createTab()
-    closingTab.store.dispose()
     return
   }
 
@@ -115,8 +117,6 @@ export function closeTab(tabId: string) {
     const newIdx = Math.min(idx, tabsRef.value.length - 1)
     activateTab(tabsRef.value[newIdx])
   }
-
-  closingTab.store.dispose()
 }
 
 function yieldToUI(): Promise<void> {
@@ -296,7 +296,7 @@ export async function restoreRecoverySnapshot(id: string): Promise<void> {
   store.replaceGraph(imported)
   store.undo.clear()
   store.state.documentName = snapshot.documentName
-  store.adoptRecoverySnapshot(id, snapshot.sceneVersion)
+  await store.adoptRecoverySnapshot(id, snapshot.sceneVersion)
   store.clearSelection()
   const pageId = store.graph.getPages()[0]?.id ?? store.graph.rootId
   await store.switchPage(pageId)

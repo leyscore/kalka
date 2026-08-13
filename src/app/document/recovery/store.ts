@@ -18,16 +18,57 @@ function warnMemoryFallback(error?: unknown): void {
 
 function createResilientRecoveryStore(primary: RecoveryStore): RecoveryStore {
   let current = primary
+  let queue = Promise.resolve()
 
-  async function run<T>(operation: (store: RecoveryStore) => Promise<T>): Promise<T> {
+  function serialized<T>(operation: () => Promise<T>): Promise<T> {
+    const result = queue.then(operation, operation)
+    queue = result.then(
+      () => undefined,
+      () => undefined
+    )
+    return result
+  }
+
+  async function switchToMemory(error: unknown): Promise<RecoveryStore> {
+    if (current !== primary) return current
+    warnMemoryFallback(error)
+    const memory = createMemoryRecoveryStore()
     try {
-      return await operation(current)
-    } catch (error) {
-      if (current !== primary) throw error
-      warnMemoryFallback(error)
-      current = createMemoryRecoveryStore()
-      return operation(current)
+      const snapshots = await primary.list()
+      for (const metadata of snapshots) {
+        const snapshot = await primary.read(metadata.id)
+        if (snapshot) await memory.write(snapshot)
+      }
+    } catch (migrationError) {
+      console.warn('[Recovery] Failed to migrate IndexedDB snapshots to memory:', migrationError)
     }
+    current = memory
+    return memory
+  }
+
+  function run<T>(operation: (store: RecoveryStore) => Promise<T>): Promise<T> {
+    return serialized(async () => {
+      try {
+        return await operation(current)
+      } catch (error) {
+        if (current !== primary) throw error
+        return operation(await switchToMemory(error))
+      }
+    })
+  }
+
+  function removeFromAll(id: string): Promise<void> {
+    return serialized(async () => {
+      await primary.remove(id)
+      if (current !== primary) await current.remove(id)
+    })
+  }
+
+  function clearAll(): Promise<void> {
+    return serialized(async () => {
+      await primary.clear()
+      if (current !== primary) await current.clear()
+    })
   }
 
   return {
@@ -35,8 +76,8 @@ function createResilientRecoveryStore(primary: RecoveryStore): RecoveryStore {
     read: (id: string): Promise<RecoverySnapshot | null> => run((store) => store.read(id)),
     write: (input: RecoverySnapshotInput): Promise<RecoverySnapshotMeta> =>
       run((store) => store.write(input)),
-    remove: (id: string): Promise<void> => run((store) => store.remove(id)),
-    clear: (): Promise<void> => run((store) => store.clear())
+    remove: removeFromAll,
+    clear: clearAll
   }
 }
 

@@ -77,20 +77,20 @@ export function createIdbLocalCanvasStore(): LocalCanvasStore {
       const existing = (await metaStore.get(input.id)) ?? null
 
       let hasThumb = existing?.hasThumb ?? false
-      figStore.put(Uint8Array.from(input.figBytes), input.id)
+      await figStore.put(Uint8Array.from(input.figBytes), input.id)
 
       if (input.thumbBytes != null) {
         if (input.thumbBytes.byteLength > 0) {
-          thumbStore.put(Uint8Array.from(input.thumbBytes), input.id)
+          await thumbStore.put(Uint8Array.from(input.thumbBytes), input.id)
           hasThumb = true
         } else {
-          thumbStore.delete(input.id)
+          await thumbStore.delete(input.id)
           hasThumb = false
         }
       }
 
       const meta = buildWriteMeta(input, existing, hasThumb)
-      metaStore.put(meta)
+      await metaStore.put(meta)
       await transaction.done
       return meta
     },
@@ -100,7 +100,7 @@ export function createIdbLocalCanvasStore(): LocalCanvasStore {
       const store = transaction.objectStore('meta')
       const existing = (await store.get(input.id)) ?? null
       const meta = buildIndexMeta(input, existing)
-      store.put(meta)
+      await store.put(meta)
       await transaction.done
       return meta
     },
@@ -113,11 +113,11 @@ export function createIdbLocalCanvasStore(): LocalCanvasStore {
         await transaction.done
         return null
       }
-      transaction.objectStore('thumb').put(Uint8Array.from(thumbBytes), id)
+      await transaction.objectStore('thumb').put(Uint8Array.from(thumbBytes), id)
       // Thumb freshness is tracked by its own outbox job — never demote the
       // document's syncStatus here (it orphaned rows as 'pending' forever).
       const meta: LocalCanvasMeta = { ...existing, hasThumb: true }
-      metaStore.put(meta)
+      await metaStore.put(meta)
       await transaction.done
       return meta
     },
@@ -134,7 +134,7 @@ export function createIdbLocalCanvasStore(): LocalCanvasStore {
         return null
       }
       const next = { ...existing, ...patch, id: existing.id }
-      store.put(next)
+      await store.put(next)
       await transaction.done
       return next
     },
@@ -155,26 +155,30 @@ export function createIdbLocalCanvasStore(): LocalCanvasStore {
         await transaction.done
         return null
       }
-      transaction.objectStore('fig').delete(id)
+      await transaction.objectStore('fig').delete(id)
       const meta: LocalCanvasMeta = { ...existing, hasFig: false, figSize: 0 }
-      metaStore.put(meta)
+      await metaStore.put(meta)
       await transaction.done
       return meta
     },
 
     async remove(id: string) {
       const transaction = (await database).transaction(['meta', 'fig', 'thumb'], 'readwrite')
-      transaction.objectStore('meta').delete(id)
-      transaction.objectStore('fig').delete(id)
-      transaction.objectStore('thumb').delete(id)
+      await Promise.all([
+        transaction.objectStore('meta').delete(id),
+        transaction.objectStore('fig').delete(id),
+        transaction.objectStore('thumb').delete(id)
+      ])
       await transaction.done
     },
 
     async clearAll() {
       const transaction = (await database).transaction(['meta', 'fig', 'thumb'], 'readwrite')
-      transaction.objectStore('meta').clear()
-      transaction.objectStore('fig').clear()
-      transaction.objectStore('thumb').clear()
+      await Promise.all([
+        transaction.objectStore('meta').clear(),
+        transaction.objectStore('fig').clear(),
+        transaction.objectStore('thumb').clear()
+      ])
       await transaction.done
     }
   }
