@@ -110,17 +110,15 @@ function checkTypeConsumer(cwd: string): void {
   run([tsgoBin, '--noEmit', '-p', 'tsconfig.package-smoke.json'], cwd)
 }
 
-interface PackageJson {
-  name: string
-  types?: string
-  exports?: unknown
-}
+interface PackageJSON { name: string
+types?: string
+exports?: unknown }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
 }
 
-function readPackageJson(packageDir: string): PackageJson {
+function readPackageJSON(packageDir: string): PackageJSON {
   return JSON.parse(readFileSync(join(rootDir, packageDir, 'package.json'), 'utf8'))
 }
 
@@ -152,7 +150,7 @@ function exportKeyToSpecifier(packageName: string, exportKey: string): string | 
   return `${packageName}/${exportKey.slice(2)}`
 }
 
-function collectPublicImportSpecifiers(packageJSON: PackageJson): string[] {
+function collectPublicImportSpecifiers(packageJSON: PackageJSON): string[] {
   const { exports } = packageJSON
   if (!exports) return []
   if (typeof exports === 'string') return [packageJSON.name]
@@ -180,7 +178,7 @@ try {
   const tarballs: string[] = []
   const publicImportSpecifiers = new Set<string>()
   for (const packageDir of publicPackageDirs) {
-    const packageJSON = readPackageJson(packageDir)
+    const packageJSON = readPackageJSON(packageDir)
     for (const specifier of collectPublicImportSpecifiers(packageJSON)) {
       publicImportSpecifiers.add(specifier)
     }

@@ -2,18 +2,18 @@ import { afterEach, describe, expect, test } from 'bun:test'
 
 import { testIdSelector } from '@open-pencil/vue'
 
-const originalCssDescriptor = Reflect.getOwnPropertyDescriptor(globalThis, 'CSS')
+const originalCSSDescriptor = Reflect.getOwnPropertyDescriptor(globalThis, 'CSS')
 
-function restoreCssGlobal() {
-  if (originalCssDescriptor) {
-    Object.defineProperty(globalThis, 'CSS', originalCssDescriptor)
+function restoreCSSGlobal() {
+  if (originalCSSDescriptor) {
+    Object.defineProperty(globalThis, 'CSS', originalCSSDescriptor)
   } else {
     Reflect.deleteProperty(globalThis, 'CSS')
   }
 }
 
 afterEach(() => {
-  restoreCssGlobal()
+  restoreCSSGlobal()
 })
 
 describe('testIdSelector', () => {
