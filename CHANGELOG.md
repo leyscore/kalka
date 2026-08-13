@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- Report exhausted provider credit, request failures, and output-token limits through chat toasts and copied diagnostics, and allow provider-specific reasoning effort on model profiles. (#451, #454)
 - Fixed Windows desktop crashes when loading large system fonts for non-Latin text by using Tauri's binary IPC path and resolving native script fallbacks without parsing full font files in JavaScript.
 
 - Preserve open vector segments when the same vector network also contains filled regions. (#450).

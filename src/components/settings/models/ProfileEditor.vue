@@ -430,6 +430,15 @@ void refreshKeyStatus()
               </div>
             </div>
 
+            <ProviderSettingsField :label="dialogs.reasoningEffort">
+              <ProviderSettingsInput
+                v-model="draft.reasoningEffort"
+                :aria-label="dialogs.reasoningEffort"
+                :placeholder="dialogs.reasoningEffortPlaceholder"
+              />
+              <p class="mt-1 text-[10px] text-muted">{{ dialogs.reasoningEffortDescription }}</p>
+            </ProviderSettingsField>
+
             <div class="border-t border-border pt-2.5">
               <p class="text-[11px] font-medium text-surface">{{ dialogs.outputLimit }}</p>
               <p class="mt-0.5 text-[10px] text-muted">

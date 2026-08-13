@@ -23,7 +23,7 @@ import type { JSONObject } from '@open-pencil/scene-graph/primitives'
 
 const IS_DEV = import.meta.env.DEV
 
-const { isConfigured, ensureChat, resetChat } = useAIChat()
+const { isConfigured, ensureChat, resetChat, chatFailure, clearChatFailure } = useAIChat()
 const { copy } = useClipboard()
 const { dialogs } = useI18n()
 
@@ -42,6 +42,18 @@ const debugCopied = refAutoReset(false, 1500)
 const acpLogCopied = refAutoReset(false, 1500)
 
 const messages = computed(() => chat.value?.messages ?? [])
+const failureMessage = computed(() => {
+  switch (chatFailure.value?.reason) {
+    case 'insufficient-credit':
+      return dialogs.value.chatInsufficientCredit
+    case 'output-limit':
+      return dialogs.value.chatOutputLimit
+    case 'request-failed':
+      return dialogs.value.chatRequestFailed
+    default:
+      return null
+  }
+})
 const status = computed(() => chat.value?.status ?? 'ready')
 const isThinking = computed(() => {
   const s = status.value
@@ -72,12 +84,9 @@ function scrollToBottom() {
 }
 
 watch(messages, scrollToBottom, { deep: true })
-watch(
-  () => chat.value?.error,
-  (error) => {
-    if (error) toast.error(error.message)
-  }
-)
+watch(failureMessage, (message) => {
+  if (message) toast.error(message)
+})
 watch(
   () => activeTab.value?.id,
   async () => {
@@ -88,6 +97,7 @@ watch(
 
 async function handleSubmit(text: string) {
   if (status.value === 'streaming' || status.value === 'submitted') return
+  clearChatFailure()
   try {
     const c = await ensureChat()
     if (c) chat.value = markRaw(c)
@@ -107,7 +117,7 @@ function handleStop() {
 }
 
 async function handleCopyDebug() {
-  await copyChatLog(messages.value)
+  await copyChatLog(messages.value, chatFailure.value)
   debugCopied.value = true
 }
 
@@ -119,6 +129,7 @@ async function handleCopyACPLog() {
 }
 
 function handleClearChat() {
+  clearChatFailure()
   chat.value = null
   resetChat()
   clearToolLogEntries()

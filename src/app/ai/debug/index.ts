@@ -4,6 +4,7 @@ import { buildDebugLog } from '@open-pencil/core/tools'
 import type { ToolDebugLog, ToolLogEntry } from '@open-pencil/core/tools'
 import type { JSONObject } from '@open-pencil/scene-graph/primitives'
 
+import type { AIChatFailure } from '@/app/ai/chat/failure'
 import { getStepUsages, getToolLogEntries } from '@/app/ai/tools'
 
 export function formatTokenUsage(): string {
@@ -205,7 +206,7 @@ function formatMessageStats(messages: UIMessage[]): string {
   return lines.join('\n')
 }
 
-export function serializeChatLog(messages: UIMessage[]): string {
+export function serializeChatLog(messages: UIMessage[], failure?: AIChatFailure | null): string {
   const sections: string[] = []
 
   const toolLog = getToolLogEntries()
@@ -223,6 +224,14 @@ export function serializeChatLog(messages: UIMessage[]): string {
 
   sections.push('=== DIAGNOSTICS ===')
   sections.push(formatDiagnostics(debugLog))
+  sections.push('')
+
+  sections.push('=== ERRORS ===')
+  if (failure) {
+    sections.push(`  ${failure.reason}${failure.detail ? `: ${failure.detail}` : ''}`)
+  } else {
+    sections.push('  (none recorded)')
+  }
   sections.push('')
 
   sections.push('=== MESSAGE STATS ===')
@@ -270,7 +279,7 @@ export function serializeChatLog(messages: UIMessage[]): string {
   return sections.join('\n\n')
 }
 
-export function copyChatLog(messages: UIMessage[]): Promise<void> {
-  const text = serializeChatLog(messages)
+export function copyChatLog(messages: UIMessage[], failure?: AIChatFailure | null): Promise<void> {
+  const text = serializeChatLog(messages, failure)
   return navigator.clipboard.writeText(text)
 }
