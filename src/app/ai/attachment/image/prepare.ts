@@ -13,6 +13,19 @@ export function isImageAttachmentMediaType(value: string): value is ImageAttachm
   return IMAGE_ATTACHMENT_MEDIA_TYPES.some((mediaType) => mediaType === value)
 }
 
+export function createImagePreviewURL(blob: Blob): string {
+  if (typeof URL === 'undefined' || typeof URL.createObjectURL !== 'function') {
+    throw new TypeError('Image attachments are unavailable in this environment.')
+  }
+  return URL.createObjectURL(blob)
+}
+
+export function revokeImagePreviewURL(url: string): void {
+  if (typeof URL !== 'undefined' && typeof URL.revokeObjectURL === 'function') {
+    URL.revokeObjectURL(url)
+  }
+}
+
 export function validateImageAttachmentFile(file: File): string | null {
   if (!isImageAttachmentMediaType(file.type)) return 'Choose a PNG, JPEG, or WebP image.'
   if (file.size > MAX_IMAGE_FILE_BYTES) return 'Images must be 20 MB or smaller.'
@@ -52,7 +65,16 @@ export async function prepareImageAttachment(
   const validationError = validateImageAttachmentFile(file)
   if (validationError) throw new Error(validationError)
 
-  const sourceURL = URL.createObjectURL(file)
+  if (
+    typeof URL === 'undefined' ||
+    typeof URL.createObjectURL !== 'function' ||
+    typeof Image === 'undefined' ||
+    typeof document === 'undefined'
+  ) {
+    throw new TypeError('Image attachments are unavailable in this environment.')
+  }
+
+  const sourceURL = createImagePreviewURL(file)
   try {
     const image = await loadImage(sourceURL)
     if (image.naturalWidth * image.naturalHeight > MAX_IMAGE_PIXELS) {
@@ -85,6 +107,6 @@ export async function prepareImageAttachment(
       height
     }
   } finally {
-    URL.revokeObjectURL(sourceURL)
+    revokeImagePreviewURL(sourceURL)
   }
 }

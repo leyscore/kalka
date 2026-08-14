@@ -1,5 +1,6 @@
 import { computed, shallowReactive } from 'vue'
 
+import { revokeImagePreviewURL } from '@/app/ai/attachment/image/prepare'
 import type { ImageAttachmentPresentation } from '@/app/ai/attachment/image/types'
 
 const attachments = shallowReactive(new Map<string, ImageAttachmentPresentation[]>())
@@ -21,8 +22,9 @@ export function setImageAttachmentPresentations(
   if (previous) {
     const retainedURLs = new Set(nextAttachments.map((attachment) => attachment.previewURL))
     for (const staleAttachment of previous) {
-      if (!retainedURLs.has(staleAttachment.previewURL))
-        URL.revokeObjectURL(staleAttachment.previewURL)
+      if (!retainedURLs.has(staleAttachment.previewURL)) {
+        revokeImagePreviewURL(staleAttachment.previewURL)
+      }
     }
   }
   attachments.set(messageId, nextAttachments)
@@ -30,7 +32,9 @@ export function setImageAttachmentPresentations(
 
 export function clearImageAttachmentPresentations(): void {
   for (const messageAttachments of attachments.values()) {
-    for (const attachment of messageAttachments) URL.revokeObjectURL(attachment.previewURL)
+    for (const attachment of messageAttachments) {
+      revokeImagePreviewURL(attachment.previewURL)
+    }
   }
   attachments.clear()
 }

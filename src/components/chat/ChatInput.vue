@@ -9,7 +9,11 @@ import IconButton from '@/components/ui/IconButton.vue'
 import InputGroup from '@/components/ui/InputGroup.vue'
 import { useAIChat } from '@/app/ai/chat/use'
 import { designModelProfile, designModelProfiles } from '@/app/ai/models'
-import { validateImageAttachmentFile } from '@/app/ai/attachment/image/prepare'
+import {
+  createImagePreviewURL,
+  revokeImagePreviewURL,
+  validateImageAttachmentFile
+} from '@/app/ai/attachment/image/prepare'
 import { MAX_IMAGE_ATTACHMENTS, type ImageAttachmentDraft } from '@/app/ai/attachment/image/types'
 import { openSettingsDialog } from '@/app/settings/dialog'
 import { useI18n } from '@open-pencil/vue'
@@ -19,8 +23,9 @@ import { ACP_AGENTS } from '@open-pencil/core/constants'
 const { providerID, providerDef, modelID, customModelID } = useAIChat()
 const { dialogs } = useI18n()
 
-const { status } = defineProps<{
+const { status, disabled = false } = defineProps<{
   status: 'ready' | 'submitted' | 'streaming' | 'error'
+  disabled?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -55,7 +60,7 @@ function addImageFiles(files: File[]) {
       emit('error', validationError)
       continue
     }
-    images.value.push({ file, previewURL: URL.createObjectURL(file) })
+    images.value.push({ file, previewURL: createImagePreviewURL(file) })
   }
   if (files.length > available) {
     emit('error', `You can attach up to ${MAX_IMAGE_ATTACHMENTS} images.`)
@@ -65,12 +70,12 @@ function addImageFiles(files: File[]) {
 
 function removeImage(index: number) {
   const image = images.value[index]
-  if (image) URL.revokeObjectURL(image.previewURL)
+  if (image) revokeImagePreviewURL(image.previewURL)
   images.value.splice(index, 1)
   resetImageDialog()
 }
 
-const isStreaming = computed(() => status === 'streaming' || status === 'submitted')
+const isStreaming = computed(() => disabled || status === 'streaming' || status === 'submitted')
 const isACPProvider = computed(() => providerID.value.startsWith('acp:'))
 const acpAgentName = computed(() => {
   const agentId = providerID.value.replace('acp:', '')
@@ -98,7 +103,7 @@ const selectedProfileName = computed(
 )
 
 function clearImages() {
-  for (const image of images.value) URL.revokeObjectURL(image.previewURL)
+  for (const image of images.value) revokeImagePreviewURL(image.previewURL)
   images.value = []
   resetImageDialog()
 }

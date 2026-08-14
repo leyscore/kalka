@@ -33,7 +33,7 @@ const cls = computed(() => inputGroup({ size, disabled }))
     <div v-if="$slots.attachment" data-slot="input-group-attachment" :class="ui?.attachment">
       <slot name="attachment" />
     </div>
-    <div data-slot="input-group-control" :class="ui?.control">
+    <div data-slot="input-group-control" :class="cls.control({ class: ui?.control })">
       <slot />
     </div>
     <div data-slot="input-group-toolbar" :class="cls.toolbar({ class: ui?.toolbar })">

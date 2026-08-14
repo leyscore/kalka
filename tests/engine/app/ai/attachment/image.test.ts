@@ -9,7 +9,10 @@ import {
   designMessageWithImageFindings,
   type ImageAnalysisDependencies
 } from '@/app/ai/attachment/image/analyze'
-import { validateImageAttachmentFile } from '@/app/ai/attachment/image/prepare'
+import {
+  prepareImageAttachment,
+  validateImageAttachmentFile
+} from '@/app/ai/attachment/image/prepare'
 import type { PreparedImageAttachment } from '@/app/ai/attachment/image/types'
 import type { EditorStore } from '@/app/editor/session/create'
 
@@ -40,6 +43,12 @@ describe('image attachment analysis', () => {
         })
       )
     ).toBe('Images must be 20 MB or smaller.')
+  })
+
+  test('fails with a controlled error without browser image APIs', async () => {
+    await expect(
+      prepareImageAttachment(new File(['png'], 'image.png', { type: 'image/png' }))
+    ).rejects.toThrow('Image attachments are unavailable in this environment.')
   })
 
   test('sends all bounded images only to Vision and returns text findings', async () => {

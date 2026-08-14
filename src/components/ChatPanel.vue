@@ -10,8 +10,10 @@ import {
   designMessageWithImageFindings
 } from '@/app/ai/attachment/image/analyze'
 import {
+  createImagePreviewURL,
   isImageAttachmentMediaType,
-  prepareImageAttachment
+  prepareImageAttachment,
+  revokeImagePreviewURL
 } from '@/app/ai/attachment/image/prepare'
 import {
   clearImageAttachmentPresentations,
@@ -42,6 +44,8 @@ const { copy } = useClipboard()
 const { dialogs } = useI18n()
 
 const chat = ref<Chat<UIMessage> | null>(null)
+const isPreparingImages = ref(false)
+let attachmentOperationVersion = 0
 
 void ensureChat()
   .then((c) => {
@@ -108,6 +112,8 @@ watch(
 watch(
   () => activeTab.value?.id,
   async () => {
+    attachmentOperationVersion += 1
+    isPreparingImages.value = false
     clearImageAttachmentPresentations()
     const nextChat = await ensureChat()
     chat.value = nextChat ? markRaw(nextChat) : null
@@ -115,30 +121,32 @@ watch(
 )
 
 async function handleSubmit(text: string, images: ImageAttachmentDraft[] = []) {
-  if (status.value === 'streaming' || status.value === 'submitted') {
-    for (const image of images) URL.revokeObjectURL(image.previewURL)
+  if (status.value === 'streaming' || status.value === 'submitted' || isPreparingImages.value) {
+    for (const image of images) revokeImagePreviewURL(image.previewURL)
+    if (images.length > 0) toast.error(dialogs.value.chatRequestFailed)
     return
   }
+
+  const operationVersion = ++attachmentOperationVersion
+  if (images.length > 0) isPreparingImages.value = true
   clearChatFailure()
   try {
-    const c = await ensureChat()
-    if (c) chat.value = markRaw(c)
-    if (!chat.value) {
-      for (const image of images) URL.revokeObjectURL(image.previewURL)
-      if (images.length > 0) {
-        toast.error('Chat is unavailable. The images were not sent.')
-      }
+    const currentChat = chat.value ?? (await ensureChat())
+    if (currentChat) chat.value = markRaw(currentChat)
+    if (!currentChat || operationVersion !== attachmentOperationVersion) {
+      for (const image of images) revokeImagePreviewURL(image.previewURL)
+      if (images.length > 0) toast.error(dialogs.value.chatRequestFailed)
       return
     }
 
     if (images.length === 0) {
-      await chat.value.sendMessage({ text })
+      await currentChat.sendMessage({ text })
       return
     }
 
     const messageId = crypto.randomUUID()
-    chat.value.messages = [
-      ...chat.value.messages,
+    currentChat.messages = [
+      ...currentChat.messages,
       { id: messageId, role: 'user', parts: [{ type: 'text', text }] }
     ]
     setImageAttachmentPresentations(
@@ -161,11 +169,13 @@ async function handleSubmit(text: string, images: ImageAttachmentDraft[] = []) {
       images.map((image) => prepareImageAttachment(image.file))
     )
     const findings = await analyzeAttachedImages(getActiveEditorStore(), text, preparedImages)
+    if (operationVersion !== attachmentOperationVersion || chat.value !== currentChat) return
+
     setImageAttachmentPresentations(
       messageId,
       preparedImages.map((prepared, index) => {
         const image = images[index]
-        const previewURL = URL.createObjectURL(prepared.blob)
+        const previewURL = createImagePreviewURL(prepared.blob)
         return {
           id: crypto.randomUUID(),
           messageId,
@@ -180,7 +190,7 @@ async function handleSubmit(text: string, images: ImageAttachmentDraft[] = []) {
         }
       })
     )
-    await chat.value.sendMessage({
+    await currentChat.sendMessage({
       messageId,
       text: designMessageWithImageFindings(
         text,
@@ -190,7 +200,9 @@ async function handleSubmit(text: string, images: ImageAttachmentDraft[] = []) {
     })
   } catch (e) {
     console.error('Chat error:', e)
-    toast.error(e instanceof Error ? e.message : String(e))
+    toast.error(dialogs.value.chatRequestFailed)
+  } finally {
+    if (operationVersion === attachmentOperationVersion) isPreparingImages.value = false
   }
 }
 
@@ -211,6 +223,8 @@ async function handleCopyACPLog() {
 }
 
 function handleClearChat() {
+  attachmentOperationVersion += 1
+  isPreparingImages.value = false
   clearChatFailure()
   clearImageAttachmentPresentations()
   chat.value = null
@@ -316,7 +330,13 @@ function handleClearChat() {
         </AppTextButton>
       </div>
 
-      <ChatInput :status="status" @submit="handleSubmit" @stop="handleStop" @error="toast.error" />
+      <ChatInput
+        :status="status"
+        :disabled="isPreparingImages"
+        @submit="handleSubmit"
+        @stop="handleStop"
+        @error="toast.error"
+      />
 
       <ACPPermissionDialog />
     </template>
