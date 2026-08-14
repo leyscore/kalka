@@ -249,6 +249,22 @@ function createClipMaskChild(
   })
 }
 
+function createClipFrames(
+  graph: SceneGraph,
+  frameId: string,
+  clipNetworks: VectorNetwork[],
+  placement: VectorFramePlacement,
+  index: number
+): string {
+  let targetFrameId = frameId
+  for (const clipNetwork of clipNetworks) {
+    const clipFrame = createClipFrame(graph, targetFrameId, placement, index)
+    createClipMaskChild(graph, clipFrame.id, clipNetwork, placement, index)
+    targetFrameId = clipFrame.id
+  }
+  return targetFrameId
+}
+
 function isFlattenableVectorPath(path: VectorizedPath): boolean {
   return path.fills.length > 0 && path.strokes.length === 0 && path.vectorNetwork.regions.length > 0
 }
@@ -261,15 +277,12 @@ export function createFlattenedVectorFrameChildren(
   placement: VectorFramePlacement
 ): void {
   let run: { path: VectorizedPath; index: number }[] = []
-  let runClipNetwork: VectorNetwork | undefined
+  let runClipNetworks: VectorNetwork[] | undefined
   const flush = () => {
     if (run.length === 0) return
-    const targetFrameId = runClipNetwork
-      ? createClipFrame(graph, frameId, placement, run[0].index).id
+    const targetFrameId = runClipNetworks
+      ? createClipFrames(graph, frameId, runClipNetworks, placement, run[0].index)
       : frameId
-    if (runClipNetwork) {
-      createClipMaskChild(graph, targetFrameId, runClipNetwork, placement, run[0].index)
-    }
     if (run.length > 1) {
       createFlattenedVectorChild(
         graph,
@@ -282,22 +295,21 @@ export function createFlattenedVectorFrameChildren(
       createVectorChild(graph, targetFrameId, run[0].path, placement, run[0].index)
     }
     run = []
-    runClipNetwork = undefined
+    runClipNetworks = undefined
   }
 
   for (const [index, path] of vectorized.paths.entries()) {
-    const clipNetwork = path.clipNetworks?.at(-1)
+    const clipNetworks = path.clipNetworks
     if (isFlattenableVectorPath(path)) {
-      if (run.length > 0 && runClipNetwork !== clipNetwork) flush()
-      runClipNetwork = clipNetwork
+      if (run.length > 0 && runClipNetworks !== clipNetworks) flush()
+      runClipNetworks = clipNetworks
       run.push({ path, index })
       continue
     }
     flush()
-    if (clipNetwork) {
-      const clipFrame = createClipFrame(graph, frameId, placement, index)
-      createClipMaskChild(graph, clipFrame.id, clipNetwork, placement, index)
-      createVectorChild(graph, clipFrame.id, path, placement, index)
+    if (clipNetworks) {
+      const targetFrameId = createClipFrames(graph, frameId, clipNetworks, placement, index)
+      createVectorChild(graph, targetFrameId, path, placement, index)
     } else {
       createVectorChild(graph, frameId, path, placement, index)
     }

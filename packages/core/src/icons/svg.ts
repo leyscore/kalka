@@ -12,7 +12,7 @@ import type { Vector } from '@open-pencil/scene-graph/primitives'
 
 import { parseSVGFragment } from '#core/io/formats/svg/document'
 
-import type { IconData, IconifyIconEntry, IconPathInfo, SVGClipPathInfo } from './types'
+import type { IconData, IconifyIconEntry, IconPathInfo, SVGClipPathRegion } from './types'
 
 interface SVGElementInput {
   type: string
@@ -185,7 +185,7 @@ function appendShapePath(
   element: Element,
   presentation: PresentationAttributes,
   transform: string | null,
-  clipPaths: SVGClipPathInfo[][],
+  clipPaths: SVGClipPathRegion[],
   result: IconPathInfo[]
 ): void {
   if (!SHAPE_NAMES.has(tagName)) return
@@ -211,7 +211,8 @@ function collectUsePaths(
   transform: string | null,
   result: IconPathInfo[],
   elementsById: ReadonlyMap<string, Element>,
-  useStack: ReadonlySet<Element>
+  useStack: ReadonlySet<Element>,
+  clipPaths: SVGClipPathRegion[]
 ): boolean {
   const tagName = element.localName || element.tagName
   if (tagName !== 'use') return false
@@ -229,32 +230,40 @@ function collectUsePaths(
       result,
       elementsById,
       new Set([...useStack, target]),
-      true
+      true,
+      clipPaths
     )
   }
   return true
 }
 
-function collectClipPaths(
+function collectClipPath(
   value: string | null,
   parentTransform: string | null,
   elementsById: ReadonlyMap<string, Element>
-): SVGClipPathInfo[] {
+): SVGClipPathRegion | null {
   const match = value?.trim().match(/^url\(\s*['"]?#([^'")\s]+)['"]?\s*\)$/)
   const target = match ? elementsById.get(match[1]) : null
-  if (!target || (target.localName || target.tagName) !== 'clipPath') return []
+  if (!target || (target.localName || target.tagName) !== 'clipPath') return null
 
+  const units =
+    target.getAttribute('clipPathUnits') === 'objectBoundingBox'
+      ? 'objectBoundingBox'
+      : 'userSpaceOnUse'
   const paths: IconPathInfo[] = []
   collectPaths(
     target,
     { ...DEFAULT_PRESENTATION, fill: '#000000' },
-    parentTransform,
+    units === 'objectBoundingBox' ? null : parentTransform,
     paths,
     elementsById,
     new Set([target]),
     true
   )
-  return paths.map(({ d, fillRule, transform }) => ({ d, fillRule, transform }))
+  return {
+    paths: paths.map(({ d, fillRule, transform }) => ({ d, fillRule, transform })),
+    units
+  }
 }
 
 function collectPaths(
@@ -265,17 +274,17 @@ function collectPaths(
   elementsById: ReadonlyMap<string, Element>,
   useStack: ReadonlySet<Element> = new Set(),
   referenced = false,
-  inheritedClipPaths: SVGClipPathInfo[][] = []
+  inheritedClipPaths: SVGClipPathRegion[] = []
 ): void {
   const tagName = element.localName || element.tagName
   if (NON_RENDERED_CONTAINERS.has(tagName) && !referenced) return
 
   const presentation = presentationFor(element, inherited)
   const transform = combinedTransform(parentTransform, element)
-  const ownClipPaths = collectClipPaths(element.getAttribute('clip-path'), transform, elementsById)
-  const clipPaths =
-    ownClipPaths.length > 0 ? [...inheritedClipPaths, ownClipPaths] : inheritedClipPaths
-  if (collectUsePaths(element, presentation, transform, result, elementsById, useStack)) return
+  const ownClipPath = collectClipPath(element.getAttribute('clip-path'), transform, elementsById)
+  const clipPaths = ownClipPath ? [...inheritedClipPaths, ownClipPath] : inheritedClipPaths
+  if (collectUsePaths(element, presentation, transform, result, elementsById, useStack, clipPaths))
+    return
   appendShapePath(tagName, element, presentation, transform, clipPaths, result)
 
   for (const child of Array.from(element.childNodes)) {

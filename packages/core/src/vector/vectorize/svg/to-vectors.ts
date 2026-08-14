@@ -5,6 +5,8 @@
  * reflect the input pixel size. Scale path data from the SVG coordinate space
  * (viewBox, else width/height) into the target node bounds before parsing.
  */
+import svgpath from 'svgpath'
+
 import type { Fill, Stroke, VectorNetwork, WindingRule } from '@open-pencil/scene-graph'
 import { mergeVectorNetworks } from '@open-pencil/scene-graph'
 import { computeBounds } from '@open-pencil/scene-graph/geometry'
@@ -98,6 +100,7 @@ export function svgToVectorPaths(
     const pathData = applySVGTransformToPath(path.d, transform)
     const scaledD = mapSVGPathToViewport(pathData, viewport)
     const network = parseSVGPath(scaledD, fillRule)
+    const pathBounds = computeAccurateBounds(network)
     const gradientFill =
       gradients.size > 0
         ? resolveGradientFill(
@@ -110,17 +113,27 @@ export function svgToVectorPaths(
         : null
     let clipNetworks: VectorNetwork[] | undefined
     if (path.clipPaths) {
-      clipNetworks = clipCache.get(path.clipPaths)
+      const hasObjectBoundingBoxClip = path.clipPaths.some(
+        ({ units }) => units === 'objectBoundingBox'
+      )
+      clipNetworks = hasObjectBoundingBoxClip ? undefined : clipCache.get(path.clipPaths)
       if (!clipNetworks) {
         clipNetworks = path.clipPaths.map((clipRegion) =>
           mergeVectorNetworks(
-            clipRegion.map((clipPath) => {
-              const clipData = applySVGTransformToPath(clipPath.d, clipPath.transform ?? null)
+            clipRegion.paths.map((clipPath) => {
+              let clipData = applySVGTransformToPath(clipPath.d, clipPath.transform ?? null)
+              if (clipRegion.units === 'objectBoundingBox') {
+                clipData = svgpath(clipData)
+                  .scale(pathBounds.width, pathBounds.height)
+                  .translate(pathBounds.x, pathBounds.y)
+                  .toString()
+                return parseSVGPath(clipData, clipPath.fillRule)
+              }
               return parseSVGPath(mapSVGPathToViewport(clipData, viewport), clipPath.fillRule)
             })
           )
         )
-        clipCache.set(path.clipPaths, clipNetworks)
+        if (!hasObjectBoundingBoxClip) clipCache.set(path.clipPaths, clipNetworks)
       }
     }
     vectorized.push({
