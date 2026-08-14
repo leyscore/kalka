@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { tv } from 'tailwind-variants'
 
+import type { ControlSize } from '@/theme/control'
 import theme from '@/theme/input'
 
 interface AppInputProps {
@@ -16,7 +17,7 @@ interface AppInputProps {
   max?: number
   step?: number
   tone?: 'default' | 'panel'
-  size?: 'sm' | 'md'
+  size?: ControlSize
   state?: 'idle' | 'mixed' | 'bound' | 'invalid'
 }
 

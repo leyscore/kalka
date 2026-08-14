@@ -5,9 +5,8 @@ import { computed, onBeforeUnmount, ref } from 'vue'
 
 import ChatProfileSelect from '@/components/chat/ChatProfileSelect.vue'
 import ProviderModelSelect from '@/components/chat/ProviderModelSelect.vue'
-import AppInput from '@/components/ui/AppInput.vue'
-import Tip from '@/components/ui/Tip.vue'
-import { useButtonUI } from '@/components/ui/button'
+import IconButton from '@/components/ui/IconButton.vue'
+import InputGroup from '@/components/ui/InputGroup.vue'
 import { useAIChat } from '@/app/ai/chat/use'
 import { designModelProfile, designModelProfiles } from '@/app/ai/models'
 import { validateReferenceImageFile } from '@/app/ai/reference-image/prepare'
@@ -62,18 +61,6 @@ const acpAgentName = computed(() => {
 const isCustomProvider = computed(
   () => providerID.value === 'openai-compatible' || providerID.value === 'anthropic-compatible'
 )
-const stopButton = useButtonUI({
-  tone: 'ghost',
-  shape: 'rounded',
-  size: 'sm',
-  ui: { base: 'shrink-0 border border-border px-2 py-1.5' }
-})
-const sendButton = useButtonUI({
-  tone: 'accent',
-  shape: 'rounded',
-  size: 'sm',
-  ui: { base: 'shrink-0 px-2.5 py-1.5 font-medium' }
-})
 const customModelName = computed(() => customModelID.value.trim())
 const usesCustomModel = computed(
   () => !!providerDef.value.supportsCustomModel && !!customModelName.value
@@ -113,6 +100,13 @@ function handlePaste(event: ClipboardEvent) {
 
 onBeforeUnmount(clearReference)
 
+function handleInputKeydown(event: KeyboardEvent) {
+  if (event.code !== 'Enter' || event.shiftKey || event.isComposing) return
+  event.preventDefault()
+  const target = event.currentTarget
+  if (target instanceof HTMLElement) target.closest('form')?.requestSubmit()
+}
+
 function handleSubmit(e: Event) {
   e.preventDefault()
   const text = input.value.trim()
@@ -127,113 +121,114 @@ function handleSubmit(e: Event) {
 
 <template>
   <TooltipProvider>
-    <div class="shrink-0 border-t border-border px-3 py-2">
-      <!-- Model selector & settings -->
-      <div class="mb-1.5 flex items-center gap-1">
-        <template v-if="isACPProvider">
-          <div class="flex items-center gap-1 px-1.5 py-0.5 text-[10px] text-muted">
-            <icon-lucide-bot class="size-3" />
-            {{ acpAgentName }}
-          </div>
-        </template>
-        <ChatProfileSelect v-else-if="canSwitchProfile && (isCustomProvider || usesCustomModel)">
-          <template #value>
-            <span class="min-w-0 truncate">{{ selectedProfileName }}</span>
+    <div class="shrink-0 border-t border-border p-2.5">
+      <form @submit="handleSubmit" @paste.stop="handlePaste">
+        <InputGroup :disabled="isStreaming">
+          <template v-if="reference" #attachment>
+            <div class="flex items-center gap-2 rounded-lg bg-canvas p-1.5">
+              <img
+                :src="reference.previewURL"
+                alt="Reference image"
+                width="40"
+                height="40"
+                class="size-10 rounded object-cover"
+              />
+              <span class="min-w-0 flex-1 truncate text-[10px] text-surface">
+                {{ reference.file.name }}
+              </span>
+              <IconButton label="Remove reference image" size="xs" @click="clearReference">
+                <icon-lucide-x class="size-3" />
+              </IconButton>
+            </div>
           </template>
-        </ChatProfileSelect>
-        <template v-else-if="isCustomProvider || usesCustomModel">
-          <div
-            class="flex items-center gap-1 px-1.5 py-0.5 text-[10px] text-muted"
-            data-test-id="chat-custom-model-label"
-          >
-            <icon-lucide-bot class="size-3" />
-            {{ selectedModelName }}
-          </div>
-        </template>
-        <ProviderModelSelect v-else>
-          <template #value>{{ selectedModelName }}</template>
-        </ProviderModelSelect>
 
-        <div class="ml-auto">
-          <Tip :label="dialogs.providerSettings">
-            <button
-              type="button"
+          <textarea
+            v-model="input"
+            data-test-id="chat-input"
+            :placeholder="dialogs.describeChange"
+            :disabled="isStreaming"
+            rows="2"
+            aria-label="Describe a change"
+            class="block min-h-12 w-full resize-none bg-transparent px-3 pt-2.5 pb-1 text-xs leading-relaxed text-surface outline-none placeholder:text-muted disabled:cursor-not-allowed disabled:opacity-60"
+            @keydown="handleInputKeydown"
+            @copy.stop
+            @cut.stop
+          />
+
+          <template #leading>
+            <IconButton
+              label="Attach reference image"
+              size="sm"
+              :disabled="isStreaming"
+              @click="openReferenceDialog()"
+            >
+              <icon-lucide-image-plus class="size-4" />
+            </IconButton>
+          </template>
+
+          <template #model>
+            <div class="flex min-w-0 items-center">
+              <template v-if="isACPProvider">
+                <div class="flex min-w-0 items-center gap-1 px-1.5 text-[10px] text-muted">
+                  <icon-lucide-bot class="size-3 shrink-0" />
+                  <span class="truncate">{{ acpAgentName }}</span>
+                </div>
+              </template>
+              <ChatProfileSelect
+                v-else-if="canSwitchProfile && (isCustomProvider || usesCustomModel)"
+              >
+                <template #value>
+                  <span class="min-w-0 truncate">{{ selectedProfileName }}</span>
+                </template>
+              </ChatProfileSelect>
+              <div
+                v-else-if="isCustomProvider || usesCustomModel"
+                class="flex min-w-0 items-center gap-1 px-1.5 text-[10px] text-muted"
+                data-test-id="chat-custom-model-label"
+              >
+                <icon-lucide-bot class="size-3 shrink-0" />
+                <span class="truncate">{{ selectedModelName }}</span>
+              </div>
+              <ProviderModelSelect v-else>
+                <template #value>
+                  <span class="min-w-0 truncate">{{ selectedModelName }}</span>
+                </template>
+              </ProviderModelSelect>
+            </div>
+          </template>
+
+          <template #actions>
+            <IconButton
+              :label="dialogs.providerSettings"
+              size="sm"
               data-test-id="provider-settings-trigger"
-              :aria-label="dialogs.providerSettings"
-              class="rounded p-0.5 text-muted hover:bg-hover hover:text-surface"
               @click="openSettingsDialog('ai')"
             >
-              <icon-lucide-settings class="size-3" />
-            </button>
-          </Tip>
-        </div>
-      </div>
-
-      <!-- Input form -->
-      <div
-        v-if="reference"
-        class="mb-2 flex items-center gap-2 rounded-lg border border-border bg-canvas p-1.5"
-      >
-        <img
-          :src="reference.previewURL"
-          alt="Reference image"
-          class="size-10 rounded object-cover"
-        />
-        <span class="min-w-0 flex-1 truncate text-[10px] text-surface">
-          {{ reference.file.name }}
-        </span>
-        <Tip label="Remove reference image">
-          <button
-            type="button"
-            aria-label="Remove reference image"
-            class="rounded p-1 text-muted hover:bg-hover hover:text-surface"
-            @click="clearReference"
-          >
-            <icon-lucide-x class="size-3" />
-          </button>
-        </Tip>
-      </div>
-      <form class="flex gap-1.5" @submit="handleSubmit" @paste.stop="handlePaste">
-        <Tip label="Attach reference image">
-          <button
-            type="button"
-            aria-label="Attach reference image"
-            class="shrink-0 rounded p-1.5 text-muted hover:bg-hover hover:text-surface"
-            :disabled="isStreaming"
-            @click="openReferenceDialog()"
-          >
-            <icon-lucide-image-plus class="size-4" />
-          </button>
-        </Tip>
-        <AppInput
-          v-model="input"
-          data-test-id="chat-input"
-          :placeholder="dialogs.describeChange"
-          class="min-w-0 flex-1 placeholder:text-muted"
-          :disabled="isStreaming"
-          @copy.stop
-          @cut.stop
-        />
-        <Tip v-if="isStreaming" :label="dialogs.stopGenerating">
-          <button
-            type="button"
-            data-test-id="chat-stop-button"
-            :class="stopButton.base"
-            @click="emit('stop')"
-          >
-            <icon-lucide-square class="size-3" />
-          </button>
-        </Tip>
-        <Tip v-else :label="dialogs.sendMessage">
-          <button
-            type="submit"
-            data-test-id="chat-send-button"
-            :class="sendButton.base"
-            :disabled="!input.trim()"
-          >
-            <icon-lucide-send class="size-3" />
-          </button>
-        </Tip>
+              <icon-lucide-settings class="size-3.5" />
+            </IconButton>
+            <IconButton
+              v-if="isStreaming"
+              :label="dialogs.stopGenerating"
+              size="sm"
+              data-test-id="chat-stop-button"
+              class="border border-border"
+              @click="emit('stop')"
+            >
+              <icon-lucide-square class="size-3" />
+            </IconButton>
+            <IconButton
+              v-else
+              :label="dialogs.sendMessage"
+              size="sm"
+              type="submit"
+              data-test-id="chat-send-button"
+              class="bg-accent text-white hover:bg-accent/90 hover:text-white"
+              :disabled="!input.trim()"
+            >
+              <icon-lucide-send class="size-3.5" />
+            </IconButton>
+          </template>
+        </InputGroup>
       </form>
     </div>
   </TooltipProvider>
