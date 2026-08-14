@@ -6,6 +6,7 @@ import { computeContentBounds } from '@open-pencil/core/io'
 
 import { buildReasoningProviderOptions } from '@/app/ai/chat/reasoning'
 import { createAIModelRuntime } from '@/app/ai/models'
+import type { VisionModelDependencies } from '@/app/ai/vision-runtime'
 import type { EditorStore } from '@/app/editor/active-store'
 
 const DEFAULT_VISION_MAX_EDGE = 1280
@@ -24,10 +25,7 @@ export type VisualInspectionResult = {
   image: { width: number; height: number }
 }
 
-export type VisualInspectionDependencies = {
-  createRuntime: typeof createAIModelRuntime
-  inspect: typeof generateText
-}
+export type VisualInspectionDependencies = VisionModelDependencies
 
 export function boundedImageScale(
   width: number,
