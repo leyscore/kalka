@@ -4,6 +4,8 @@
 
 ### Added
 
+- Add explicit shared/view editor-state ownership and canvas render-state hooks as a foundation for independent same-document canvas panes.
+
 - Show Figma-style temporary distance measurements between selected and Option/Alt-hovered layers. (#491)
 - Add reusable remote MCP connections for ACP agents, with Streamable HTTP endpoints and bearer tokens stored in the configured credential backend.
 - Author multidimensional component variants in the Design panel, including property/value renaming, sparse-combination diagnostics, variant duplication, and exact instance transitions. (#239)
