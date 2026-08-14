@@ -6,16 +6,16 @@ import { useI18n, vTestId } from '@open-pencil/vue'
 import 'vue-stream-markdown/index.css'
 
 import {
-  referenceImagesForMessage,
+  imageAttachmentsForMessage,
   visibleUserMessageText
-} from '@/app/ai/reference-image/presentation'
-import ReferenceImageAttachment from '@/components/chat/reference-image/ReferenceImageAttachment.vue'
+} from '@/app/ai/attachment/image/presentation'
+import ImageAttachment from '@/components/chat/attachment/image/ImageAttachment.vue'
 
 import type { UIDataTypes, UIMessage, UIMessagePart, UITools } from 'ai'
 
 const { message } = defineProps<{ message: UIMessage }>()
 const { dialogs } = useI18n()
-const referenceImages = referenceImagesForMessage(message.id)
+const imageAttachments = imageAttachmentsForMessage(message.id)
 
 type ToolPart = Extract<UIMessagePart<UIDataTypes, UITools>, { toolCallId: string }>
 
@@ -52,7 +52,7 @@ function partKey(part: UIMessagePart<UIDataTypes, UITools>, index: number): stri
     v-test-id="`chat-message-${message.role}`"
     :class="message.role === 'user' ? 'flex justify-end' : ''"
   >
-    <div class="min-w-0 space-y-1.5" :class="message.role === 'user' ? 'max-w-[85%]' : ''">
+    <div class="min-w-0 space-y-2" :class="message.role === 'user' ? 'max-w-[85%]' : ''">
       <template v-if="message.role === 'assistant'">
         <template v-for="(part, i) in message.parts" :key="partKey(part, i)">
           <!-- Tool call -->
@@ -121,9 +121,9 @@ function partKey(part: UIMessagePart<UIDataTypes, UITools>, index: number): stri
 
       <!-- User message -->
       <template v-else-if="message.role === 'user'">
-        <div v-if="referenceImages.length" class="flex justify-end gap-2">
-          <ReferenceImageAttachment
-            v-for="attachment in referenceImages"
+        <div v-if="imageAttachments.length" class="flex flex-wrap justify-end gap-1.5">
+          <ImageAttachment
+            v-for="attachment in imageAttachments"
             :key="attachment.id"
             :attachment="attachment"
           />

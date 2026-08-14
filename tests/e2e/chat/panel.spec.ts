@@ -178,17 +178,52 @@ test('typing enables send button', async () => {
   await expect(sendButton).toBeEnabled()
 })
 
-test('reference image appears inside the composer and can be removed', async () => {
+test('multiple images appear inside the composer and can be removed', async () => {
   await chatInput().fill('')
   const chooser = page.waitForEvent('filechooser')
-  await page.getByRole('button', { name: 'Attach reference image' }).click()
-  await (await chooser).setFiles('tests/fixtures/vectorize/pilot_avatar.png')
+  await page.getByRole('button', { name: 'Attach images' }).click()
+  await (
+    await chooser
+  ).setFiles([
+    'tests/fixtures/vectorize/pilot_avatar.png',
+    'tests/fixtures/vectorize/python_logo.png'
+  ])
 
   await expect(page.getByText('pilot_avatar.png', { exact: true })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Remove reference image' })).toBeVisible()
+  await expect(page.getByText('python_logo.png', { exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Remove image pilot_avatar.png' })).toBeVisible()
 
-  await page.getByRole('button', { name: 'Remove reference image' }).click()
+  await page.getByRole('button', { name: 'Remove image pilot_avatar.png' }).click()
   await expect(page.getByText('pilot_avatar.png', { exact: true })).toBeHidden()
+  await expect(page.getByText('python_logo.png', { exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Remove image python_logo.png' }).click()
+})
+
+test('sending images shows the complete user message immediately', async () => {
+  await chatInput().fill('Use these images for the new layout')
+  const chooser = page.waitForEvent('filechooser')
+  await page.getByRole('button', { name: 'Attach images' }).click()
+  await (
+    await chooser
+  ).setFiles([
+    'tests/fixtures/vectorize/pilot_avatar.png',
+    'tests/fixtures/vectorize/python_logo.png'
+  ])
+
+  await page.getByTestId('chat-send-button').click()
+
+  const userMessage = page.getByTestId('chat-message-user').last()
+  await expect(userMessage).toContainText('Use these images for the new layout', { timeout: 500 })
+  await expect(
+    userMessage.getByRole('button', { name: 'View image pilot_avatar.png' })
+  ).toBeVisible({
+    timeout: 500
+  })
+  await expect(userMessage.getByRole('button', { name: 'View image python_logo.png' })).toBeVisible(
+    {
+      timeout: 500
+    }
+  )
 })
 
 test('Shift+Enter inserts a line break without submitting', async () => {

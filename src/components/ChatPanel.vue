@@ -6,15 +6,18 @@ import { computed, markRaw, nextTick, ref, watch } from 'vue'
 import { getACPDebugText, clearACPDebugLog, hasACPDebugEntries } from '@/app/ai/acp/transport'
 import { copyChatLog } from '@/app/ai/debug'
 import {
-  analyzeReferenceImage,
-  designMessageWithReferenceFindings
-} from '@/app/ai/reference-image/analyze'
-import { isReferenceImageMediaType, prepareReferenceImage } from '@/app/ai/reference-image/prepare'
+  analyzeAttachedImages,
+  designMessageWithImageFindings
+} from '@/app/ai/attachment/image/analyze'
 import {
-  addReferenceImagePresentation,
-  clearReferenceImagePresentations
-} from '@/app/ai/reference-image/presentation'
-import type { ReferenceImageDraft } from '@/app/ai/reference-image/types'
+  isImageAttachmentMediaType,
+  prepareImageAttachment
+} from '@/app/ai/attachment/image/prepare'
+import {
+  clearImageAttachmentPresentations,
+  setImageAttachmentPresentations
+} from '@/app/ai/attachment/image/presentation'
+import type { ImageAttachmentDraft } from '@/app/ai/attachment/image/types'
 import { clearToolLogEntries, didHitStepLimit } from '@/app/ai/tools'
 import { activeTab } from '@/app/tabs'
 import { getActiveEditorStore } from '@/app/editor/active-store'
@@ -105,15 +108,15 @@ watch(
 watch(
   () => activeTab.value?.id,
   async () => {
-    clearReferenceImagePresentations()
+    clearImageAttachmentPresentations()
     const nextChat = await ensureChat()
     chat.value = nextChat ? markRaw(nextChat) : null
   }
 )
 
-async function handleSubmit(text: string, reference: ReferenceImageDraft | null = null) {
+async function handleSubmit(text: string, images: ImageAttachmentDraft[] = []) {
   if (status.value === 'streaming' || status.value === 'submitted') {
-    if (reference) URL.revokeObjectURL(reference.previewURL)
+    for (const image of images) URL.revokeObjectURL(image.previewURL)
     return
   }
   clearChatFailure()
@@ -121,47 +124,71 @@ async function handleSubmit(text: string, reference: ReferenceImageDraft | null 
     const c = await ensureChat()
     if (c) chat.value = markRaw(c)
     if (!chat.value) {
-      if (reference) {
-        URL.revokeObjectURL(reference.previewURL)
-        toast.error('Chat is unavailable. The reference image was not sent.')
+      for (const image of images) URL.revokeObjectURL(image.previewURL)
+      if (images.length > 0) {
+        toast.error('Chat is unavailable. The images were not sent.')
       }
       return
     }
 
-    if (!reference) {
+    if (images.length === 0) {
       await chat.value.sendMessage({ text })
       return
     }
 
-    const prepared = await prepareReferenceImage(reference.file)
-    const findings = await analyzeReferenceImage(getActiveEditorStore(), text, prepared)
-    const previewURL = URL.createObjectURL(prepared.blob)
-    URL.revokeObjectURL(reference.previewURL)
-    const sendPromise = chat.value.sendMessage({
-      text: designMessageWithReferenceFindings(text, reference.file.name, findings)
-    })
-    const messageId = chat.value.lastMessage?.id
-    if (!messageId || chat.value.lastMessage?.role !== 'user') {
-      URL.revokeObjectURL(previewURL)
-      throw new Error('Could not attach the reference preview to the chat message.')
-    }
-    addReferenceImagePresentation({
-      id: crypto.randomUUID(),
+    const messageId = crypto.randomUUID()
+    chat.value.messages = [
+      ...chat.value.messages,
+      { id: messageId, role: 'user', parts: [{ type: 'text', text }] }
+    ]
+    setImageAttachmentPresentations(
       messageId,
-      name: reference.file.name,
-      mediaType: isReferenceImageMediaType(reference.file.type)
-        ? reference.file.type
-        : prepared.mediaType,
-      originalWidth: prepared.originalWidth,
-      originalHeight: prepared.originalHeight,
-      previewWidth: prepared.width,
-      previewHeight: prepared.height,
-      previewURL,
-      displayText: text
+      images.map((image) => ({
+        id: crypto.randomUUID(),
+        messageId,
+        name: image.file.name,
+        mediaType: isImageAttachmentMediaType(image.file.type) ? image.file.type : 'image/png',
+        originalWidth: 0,
+        originalHeight: 0,
+        previewWidth: 0,
+        previewHeight: 0,
+        previewURL: image.previewURL,
+        displayText: text
+      }))
+    )
+
+    const preparedImages = await Promise.all(
+      images.map((image) => prepareImageAttachment(image.file))
+    )
+    const findings = await analyzeAttachedImages(getActiveEditorStore(), text, preparedImages)
+    setImageAttachmentPresentations(
+      messageId,
+      preparedImages.map((prepared, index) => {
+        const image = images[index]
+        const previewURL = URL.createObjectURL(prepared.blob)
+        return {
+          id: crypto.randomUUID(),
+          messageId,
+          name: image?.file.name ?? `Image ${index + 1}`,
+          mediaType: prepared.mediaType,
+          originalWidth: prepared.originalWidth,
+          originalHeight: prepared.originalHeight,
+          previewWidth: prepared.width,
+          previewHeight: prepared.height,
+          previewURL,
+          displayText: text
+        }
+      })
+    )
+    await chat.value.sendMessage({
+      messageId,
+      text: designMessageWithImageFindings(
+        text,
+        images.map((image) => image.file.name),
+        findings
+      )
     })
-    await sendPromise
   } catch (e) {
-    if (reference) URL.revokeObjectURL(reference.previewURL)
     console.error('Chat error:', e)
     toast.error(e instanceof Error ? e.message : String(e))
   }
@@ -185,7 +212,7 @@ async function handleCopyACPLog() {
 
 function handleClearChat() {
   clearChatFailure()
-  clearReferenceImagePresentations()
+  clearImageAttachmentPresentations()
   chat.value = null
   resetChat()
   clearToolLogEntries()

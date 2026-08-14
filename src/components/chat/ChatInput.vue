@@ -9,8 +9,8 @@ import IconButton from '@/components/ui/IconButton.vue'
 import InputGroup from '@/components/ui/InputGroup.vue'
 import { useAIChat } from '@/app/ai/chat/use'
 import { designModelProfile, designModelProfiles } from '@/app/ai/models'
-import { validateReferenceImageFile } from '@/app/ai/reference-image/prepare'
-import type { ReferenceImageDraft } from '@/app/ai/reference-image/types'
+import { validateImageAttachmentFile } from '@/app/ai/attachment/image/prepare'
+import { MAX_IMAGE_ATTACHMENTS, type ImageAttachmentDraft } from '@/app/ai/attachment/image/types'
 import { openSettingsDialog } from '@/app/settings/dialog'
 import { useI18n } from '@open-pencil/vue'
 
@@ -24,32 +24,50 @@ const { status } = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  submit: [text: string, reference: ReferenceImageDraft | null]
+  submit: [text: string, images: ImageAttachmentDraft[]]
   stop: []
   error: [message: string]
 }>()
 
 const input = ref('')
-const reference = ref<ReferenceImageDraft | null>(null)
+const images = ref<ImageAttachmentDraft[]>([])
 const {
-  open: openReferenceDialog,
-  reset: resetReferenceDialog,
-  onChange: onReferenceChange
+  open: openImageDialog,
+  reset: resetImageDialog,
+  onChange: onImageChange
 } = useFileDialog({
   accept: 'image/png,image/jpeg,image/webp',
-  multiple: false,
+  multiple: true,
   reset: true
 })
 
-function setReferenceFile(file: File) {
-  const validationError = validateReferenceImageFile(file)
-  if (validationError) {
-    emit('error', validationError)
-    resetReferenceDialog()
+function addImageFiles(files: File[]) {
+  const available = MAX_IMAGE_ATTACHMENTS - images.value.length
+  if (available <= 0) {
+    emit('error', `You can attach up to ${MAX_IMAGE_ATTACHMENTS} images.`)
+    resetImageDialog()
     return
   }
-  clearReference()
-  reference.value = { file, previewURL: URL.createObjectURL(file) }
+
+  for (const file of files.slice(0, available)) {
+    const validationError = validateImageAttachmentFile(file)
+    if (validationError) {
+      emit('error', validationError)
+      continue
+    }
+    images.value.push({ file, previewURL: URL.createObjectURL(file) })
+  }
+  if (files.length > available) {
+    emit('error', `You can attach up to ${MAX_IMAGE_ATTACHMENTS} images.`)
+  }
+  resetImageDialog()
+}
+
+function removeImage(index: number) {
+  const image = images.value[index]
+  if (image) URL.revokeObjectURL(image.previewURL)
+  images.value.splice(index, 1)
+  resetImageDialog()
 }
 
 const isStreaming = computed(() => status === 'streaming' || status === 'submitted')
@@ -79,26 +97,25 @@ const selectedProfileName = computed(
   () => designModelProfile.value?.name ?? selectedModelName.value
 )
 
-function clearReference() {
-  if (reference.value) URL.revokeObjectURL(reference.value.previewURL)
-  reference.value = null
-  resetReferenceDialog()
+function clearImages() {
+  for (const image of images.value) URL.revokeObjectURL(image.previewURL)
+  images.value = []
+  resetImageDialog()
 }
 
-onReferenceChange((selectedFiles) => {
-  const file = selectedFiles?.[0]
-  if (file) setReferenceFile(file)
+onImageChange((selectedFiles) => {
+  if (selectedFiles) addImageFiles([...selectedFiles])
 })
 
 function handlePaste(event: ClipboardEvent) {
   const files = event.clipboardData?.files
-  const image = files ? [...files].find((file) => file.type.startsWith('image/')) : undefined
-  if (!image) return
+  const images = files ? [...files].filter((file) => file.type.startsWith('image/')) : []
+  if (images.length === 0) return
   event.preventDefault()
-  setReferenceFile(image)
+  addImageFiles(images)
 }
 
-onBeforeUnmount(clearReference)
+onBeforeUnmount(clearImages)
 
 function handleInputKeydown(event: KeyboardEvent) {
   if (event.code !== 'Enter' || event.shiftKey || event.isComposing) return
@@ -111,10 +128,10 @@ function handleSubmit(e: Event) {
   e.preventDefault()
   const text = input.value.trim()
   if (!text) return
-  const submittedReference = reference.value
-  reference.value = null
-  resetReferenceDialog()
-  emit('submit', text, submittedReference)
+  const submittedImages = images.value
+  images.value = []
+  resetImageDialog()
+  emit('submit', text, submittedImages)
   input.value = ''
 }
 </script>
@@ -124,21 +141,31 @@ function handleSubmit(e: Event) {
     <div class="shrink-0 border-t border-border p-2.5">
       <form @submit="handleSubmit" @paste.stop="handlePaste">
         <InputGroup :disabled="isStreaming">
-          <template v-if="reference" #attachment>
-            <div class="flex items-center gap-2 rounded-lg bg-canvas p-1.5">
-              <img
-                :src="reference.previewURL"
-                alt="Reference image"
-                width="40"
-                height="40"
-                class="size-10 rounded object-cover"
-              />
-              <span class="min-w-0 flex-1 truncate text-[10px] text-surface">
-                {{ reference.file.name }}
-              </span>
-              <IconButton label="Remove reference image" size="xs" @click="clearReference">
-                <icon-lucide-x class="size-3" />
-              </IconButton>
+          <template v-if="images.length" #attachment>
+            <div class="flex flex-wrap gap-1.5">
+              <div
+                v-for="(image, index) in images"
+                :key="image.previewURL"
+                class="flex min-w-0 max-w-full items-center gap-2 rounded-lg border border-border bg-canvas p-1.5 shadow-xs"
+              >
+                <img
+                  :src="image.previewURL"
+                  :alt="image.file.name"
+                  width="40"
+                  height="40"
+                  class="size-10 shrink-0 rounded-md border border-border object-cover"
+                />
+                <span class="min-w-0 flex-1 truncate text-[10px] text-surface">
+                  {{ image.file.name }}
+                </span>
+                <IconButton
+                  :label="`Remove image ${image.file.name}`"
+                  size="xs"
+                  @click="removeImage(index)"
+                >
+                  <icon-lucide-x class="size-3" />
+                </IconButton>
+              </div>
             </div>
           </template>
 
@@ -157,10 +184,10 @@ function handleSubmit(e: Event) {
 
           <template #leading>
             <IconButton
-              label="Attach reference image"
+              label="Attach images"
               size="sm"
-              :disabled="isStreaming"
-              @click="openReferenceDialog()"
+              :disabled="isStreaming || images.length >= MAX_IMAGE_ATTACHMENTS"
+              @click="openImageDialog()"
             >
               <icon-lucide-image-plus class="size-4" />
             </IconButton>

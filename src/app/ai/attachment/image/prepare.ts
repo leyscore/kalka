@@ -1,21 +1,21 @@
 import type {
-  PreparedReferenceImage,
-  ReferenceImageMediaType
-} from '@/app/ai/reference-image/types'
-import { REFERENCE_IMAGE_MEDIA_TYPES } from '@/app/ai/reference-image/types'
+  ImageAttachmentMediaType,
+  PreparedImageAttachment
+} from '@/app/ai/attachment/image/types'
+import { IMAGE_ATTACHMENT_MEDIA_TYPES } from '@/app/ai/attachment/image/types'
 import { boundedImageScale } from '@/app/ai/tools/vision'
 
-const MAX_REFERENCE_FILE_BYTES = 20 * 1024 * 1024
-const MAX_REFERENCE_PIXELS = 40_000_000
-export const REFERENCE_IMAGE_MAX_EDGE = 1280
+const MAX_IMAGE_FILE_BYTES = 20 * 1024 * 1024
+const MAX_IMAGE_PIXELS = 40_000_000
+export const IMAGE_ATTACHMENT_MAX_EDGE = 1280
 
-export function isReferenceImageMediaType(value: string): value is ReferenceImageMediaType {
-  return REFERENCE_IMAGE_MEDIA_TYPES.some((mediaType) => mediaType === value)
+export function isImageAttachmentMediaType(value: string): value is ImageAttachmentMediaType {
+  return IMAGE_ATTACHMENT_MEDIA_TYPES.some((mediaType) => mediaType === value)
 }
 
-export function validateReferenceImageFile(file: File): string | null {
-  if (!isReferenceImageMediaType(file.type)) return 'Choose a PNG, JPEG, or WebP image.'
-  if (file.size > MAX_REFERENCE_FILE_BYTES) return 'Reference images must be 20 MB or smaller.'
+export function validateImageAttachmentFile(file: File): string | null {
+  if (!isImageAttachmentMediaType(file.type)) return 'Choose a PNG, JPEG, or WebP image.'
+  if (file.size > MAX_IMAGE_FILE_BYTES) return 'Images must be 20 MB or smaller.'
   return null
 }
 
@@ -23,21 +23,21 @@ function loadImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image()
     image.onload = () => resolve(image)
-    image.onerror = () => reject(new Error('Could not decode the reference image.'))
+    image.onerror = () => reject(new Error('Could not decode the image.'))
     image.src = url
   })
 }
 
 function canvasToBlob(
   canvas: HTMLCanvasElement,
-  mediaType: ReferenceImageMediaType,
+  mediaType: ImageAttachmentMediaType,
   quality?: number
 ): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => {
         if (blob) resolve(blob)
-        else reject(new Error('Could not prepare the reference image.'))
+        else reject(new Error('Could not prepare the image.'))
       },
       mediaType,
       quality
@@ -45,21 +45,21 @@ function canvasToBlob(
   })
 }
 
-export async function prepareReferenceImage(
+export async function prepareImageAttachment(
   file: File,
-  maxEdge = REFERENCE_IMAGE_MAX_EDGE
-): Promise<PreparedReferenceImage> {
-  const validationError = validateReferenceImageFile(file)
+  maxEdge = IMAGE_ATTACHMENT_MAX_EDGE
+): Promise<PreparedImageAttachment> {
+  const validationError = validateImageAttachmentFile(file)
   if (validationError) throw new Error(validationError)
 
   const sourceURL = URL.createObjectURL(file)
   try {
     const image = await loadImage(sourceURL)
-    if (image.naturalWidth * image.naturalHeight > MAX_REFERENCE_PIXELS) {
-      throw new Error('Reference image dimensions are too large.')
+    if (image.naturalWidth * image.naturalHeight > MAX_IMAGE_PIXELS) {
+      throw new Error('Image dimensions are too large.')
     }
     const scale = boundedImageScale(image.naturalWidth, image.naturalHeight, maxEdge)
-    if (scale <= 0) throw new Error('Reference image has invalid dimensions.')
+    if (scale <= 0) throw new Error('Image has invalid dimensions.')
 
     const width = Math.max(1, Math.round(image.naturalWidth * scale))
     const height = Math.max(1, Math.round(image.naturalHeight * scale))
@@ -67,9 +67,9 @@ export async function prepareReferenceImage(
     canvas.width = width
     canvas.height = height
     const context = canvas.getContext('2d')
-    if (!context) throw new Error('Could not prepare the reference image.')
+    if (!context) throw new Error('Could not prepare the image.')
     context.drawImage(image, 0, 0, width, height)
-    if (!isReferenceImageMediaType(file.type)) {
+    if (!isImageAttachmentMediaType(file.type)) {
       throw new Error('Choose a PNG, JPEG, or WebP image.')
     }
     const mediaType = file.type
