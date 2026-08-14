@@ -119,7 +119,7 @@ function designTab() {
 }
 
 function chatInput() {
-  return page.locator('input[placeholder="Describe a change…"]')
+  return page.locator('textarea[placeholder="Describe a change…"]')
 }
 
 function apiKeyInput() {
@@ -168,14 +168,36 @@ test('saving API key in unified settings shows chat interface', async () => {
 })
 
 test('empty input has disabled send button', async () => {
-  const sendButton = page.locator('button[type="submit"]')
+  const sendButton = page.getByTestId('chat-send-button')
   await expect(sendButton).toBeDisabled()
 })
 
 test('typing enables send button', async () => {
   await chatInput().fill('Make a red rectangle')
-  const sendButton = page.locator('button[type="submit"]')
+  const sendButton = page.getByTestId('chat-send-button')
   await expect(sendButton).toBeEnabled()
+})
+
+test('reference image appears inside the composer and can be removed', async () => {
+  await chatInput().fill('')
+  const chooser = page.waitForEvent('filechooser')
+  await page.getByRole('button', { name: 'Attach reference image' }).click()
+  await (await chooser).setFiles('tests/fixtures/vectorize/pilot_avatar.png')
+
+  await expect(page.getByText('pilot_avatar.png', { exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Remove reference image' })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Remove reference image' }).click()
+  await expect(page.getByText('pilot_avatar.png', { exact: true })).toBeHidden()
+})
+
+test('Shift+Enter inserts a line break without submitting', async () => {
+  await chatInput().fill('First line')
+  await chatInput().press('Shift+Enter')
+  await chatInput().type('Second line')
+
+  await expect(chatInput()).toHaveValue('First line\nSecond line')
+  await expect(page.getByText('First line', { exact: true })).toBeHidden()
 })
 
 test('Enter submits message and clears input', async () => {
@@ -265,13 +287,13 @@ test('OpenRouter accepts a custom model ID from provider settings', async () => 
   await expect(page.getByTestId('chat-model-selector')).toBeVisible()
 })
 
-test('transport errors show an actionable toast', async () => {
+test('transport errors show a safe localized toast', async () => {
   await chatInput().fill('Trigger missing agent error')
   await chatInput().press('Enter')
 
   await expect(
     page.getByTestId('toast-item').filter({
-      hasText: 'Install it with: npm i -g @agentclientprotocol/claude-agent-acp'
+      hasText: 'The model request failed. Check the provider settings and try again.'
     })
   ).toBeVisible({ timeout: 5000 })
 })
