@@ -4,6 +4,7 @@
 
 ### Added
 
+- Add a reproducible Dev Container for web, package, CLI, and non-browser test development.
 - Add local crash recovery for unsaved and pathless documents, including MCP-created documents. (#487)
 - Add isolated visual inspection that sends bounded selection renders to the configured Vision model and returns text findings without retaining image data in Design chat history. (#232, #471)
 - Allow supported AI model profiles to set a provider-specific reasoning effort. (#454)
@@ -11,10 +12,13 @@
 
 ### Performance
 
+- Index Figma clipboard children once during import instead of rescanning every pasted node, keeping large flat pastes linear. (#500)
 - Reduce peak memory during `.fig` export by sharing immutable binary resources with the isolated export graph.
 
 ### Fixed
 
+- Transfer native `.fig` exports over binary Tauri IPC instead of JSON byte arrays, preventing large desktop saves from being truncated or exhausting WebView memory. (#484)
+- Keep unsaved source-less documents recoverable after their editor tab is closed, matching Figma's retained offline-change behavior.
 - Decode zstd-compressed FIG containers, reject invalid compressed payloads, and preserve exact fixture byte ranges. (#397)
 - Compose caller CSS with Tailwind defaults when importing DOM/CSS documents. (#397)
 - Preserve desktop HTTP timeout, abort, and empty-response semantics. (#397)

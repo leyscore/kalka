@@ -86,6 +86,32 @@ describe('document recovery controller', () => {
     recovery.disposeRecovery()
   })
 
+  test('propagates persistence failures to close and reload callers', async () => {
+    const state = reactive({ ...createDefaultEditorState('page-1'), documentName: 'Draft' })
+    const store = createMemoryRecoveryStore()
+    const memoryWrite = store.write.bind(store)
+    let writeAttempts = 0
+    store.write = async (input) => {
+      writeAttempts++
+      if (writeAttempts === 1) throw new Error('recovery storage unavailable')
+      return memoryWrite(input)
+    }
+    const recovery = createDocumentRecovery({
+      state,
+      store,
+      recoveryId: 'recovery-1',
+      hasWritableSource: () => false,
+      buildFigFile: () => new Uint8Array([1])
+    })
+    state.sceneVersion = 1
+
+    await expect(recovery.persistNow()).rejects.toThrow('recovery storage unavailable')
+    await recovery.persistNow()
+    expect(writeAttempts).toBe(2)
+    expect((await store.read('recovery-1'))?.sceneVersion).toBe(1)
+    recovery.disposeRecovery()
+  })
+
   test('successful save removes recovery data', async () => {
     const { state, store, recovery } = setup()
     state.sceneVersion = 1
