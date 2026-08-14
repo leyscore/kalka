@@ -4,6 +4,7 @@
 
 ### Added
 
+- Add a reproducible Dev Container for web, package, CLI, and non-browser test development.
 - Add local crash recovery for unsaved and pathless documents, including MCP-created documents. (#487)
 - Add isolated visual inspection that sends bounded selection renders to the configured Vision model and returns text findings without retaining image data in Design chat history. (#232, #471)
 - Add image attachments to AI chat with bounded analysis, immediate transcript thumbnails, hover previews, and click-to-view images. (#232)
@@ -12,10 +13,14 @@
 
 ### Performance
 
+- Defer JSX generation and syntax highlighting until the Code panel is active, keeping large canvas selections responsive. (#500)
+- Index Figma clipboard children once during import instead of rescanning every pasted node, keeping large flat pastes linear. (#500)
 - Reduce peak memory during `.fig` export by sharing immutable binary resources with the isolated export graph.
 
 ### Fixed
 
+- Transfer native `.fig` exports over binary Tauri IPC instead of JSON byte arrays, preventing large desktop saves from being truncated or exhausting WebView memory. (#484)
+- Keep unsaved source-less documents recoverable after their editor tab is closed, matching Figma's retained offline-change behavior.
 - Decode zstd-compressed FIG containers, reject invalid compressed payloads, and preserve exact fixture byte ranges. (#397)
 - Compose caller CSS with Tailwind defaults when importing DOM/CSS documents. (#397)
 - Preserve desktop HTTP timeout, abort, and empty-response semantics. (#397)
@@ -30,6 +35,7 @@
 - Remove the permanent CORS configuration action from cloud-storage settings and report connection results through standard toasts with clear browser-specific guidance.
 - Complete translated app, accessibility, font, color, collaboration, import, connection-test, and browser fallback text across all supported locales, and keep the document language synchronized with the selected locale.
 - Preserve effective nested instance text overrides when importing complex Figma component hierarchies. (#102)
+- Preserve SVG clip paths, including clip shapes referenced through `<use>`, when importing editable vectors.
 - Preserve circles, ellipses, rectangles, lines, polylines, and polygons supplied as JSX children of inline SVG elements. (#452)
 
 ## 0.14.0 — 2026-08-10
