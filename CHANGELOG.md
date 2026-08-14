@@ -29,6 +29,7 @@
 - Remove the permanent CORS configuration action from cloud-storage settings and report connection results through standard toasts with clear browser-specific guidance.
 - Complete translated app, accessibility, font, color, collaboration, import, connection-test, and browser fallback text across all supported locales, and keep the document language synchronized with the selected locale.
 - Preserve effective nested instance text overrides when importing complex Figma component hierarchies. (#102)
+- Preserve SVG clip paths, including clip shapes referenced through `<use>`, when importing editable vectors.
 - Preserve circles, ellipses, rectangles, lines, polylines, and polygons supplied as JSX children of inline SVG elements. (#452)
 
 ## 0.14.0 — 2026-08-10

@@ -45,6 +45,10 @@ export interface IconPathInfo {
   strokeCap: string
   strokeJoin: string
   fillRule: WindingRule
+  /** Nested SVG clip regions, ordered from outermost to innermost. */
+  clipPaths?: SVGClipPathInfo[][]
   /** Raw transform attribute from the source SVG element. */
   transform?: string | null
 }
+
+export type SVGClipPathInfo = Pick<IconPathInfo, 'd' | 'fillRule' | 'transform'>

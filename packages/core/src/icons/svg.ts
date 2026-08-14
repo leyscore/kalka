@@ -12,7 +12,7 @@ import type { Vector } from '@open-pencil/scene-graph/primitives'
 
 import { parseSVGFragment } from '#core/io/formats/svg/document'
 
-import type { IconData, IconifyIconEntry, IconPathInfo } from './types'
+import type { IconData, IconifyIconEntry, IconPathInfo, SVGClipPathInfo } from './types'
 
 interface SVGElementInput {
   type: string
@@ -185,6 +185,7 @@ function appendShapePath(
   element: Element,
   presentation: PresentationAttributes,
   transform: string | null,
+  clipPaths: SVGClipPathInfo[][],
   result: IconPathInfo[]
 ): void {
   if (!SHAPE_NAMES.has(tagName)) return
@@ -199,7 +200,8 @@ function appendShapePath(
     strokeCap: presentation.strokeCap,
     strokeJoin: presentation.strokeJoin,
     fillRule: presentation.fillRule === 'evenodd' ? 'EVENODD' : 'NONZERO',
-    transform
+    transform,
+    clipPaths: clipPaths.length > 0 ? clipPaths : undefined
   })
 }
 
@@ -233,6 +235,28 @@ function collectUsePaths(
   return true
 }
 
+function collectClipPaths(
+  value: string | null,
+  parentTransform: string | null,
+  elementsById: ReadonlyMap<string, Element>
+): SVGClipPathInfo[] {
+  const match = value?.trim().match(/^url\(\s*['"]?#([^'")\s]+)['"]?\s*\)$/)
+  const target = match ? elementsById.get(match[1]) : null
+  if (!target || (target.localName || target.tagName) !== 'clipPath') return []
+
+  const paths: IconPathInfo[] = []
+  collectPaths(
+    target,
+    { ...DEFAULT_PRESENTATION, fill: '#000000' },
+    parentTransform,
+    paths,
+    elementsById,
+    new Set([target]),
+    true
+  )
+  return paths.map(({ d, fillRule, transform }) => ({ d, fillRule, transform }))
+}
+
 function collectPaths(
   element: Element,
   inherited: PresentationAttributes,
@@ -240,19 +264,32 @@ function collectPaths(
   result: IconPathInfo[],
   elementsById: ReadonlyMap<string, Element>,
   useStack: ReadonlySet<Element> = new Set(),
-  referenced = false
+  referenced = false,
+  inheritedClipPaths: SVGClipPathInfo[][] = []
 ): void {
   const tagName = element.localName || element.tagName
   if (NON_RENDERED_CONTAINERS.has(tagName) && !referenced) return
 
   const presentation = presentationFor(element, inherited)
   const transform = combinedTransform(parentTransform, element)
+  const ownClipPaths = collectClipPaths(element.getAttribute('clip-path'), transform, elementsById)
+  const clipPaths =
+    ownClipPaths.length > 0 ? [...inheritedClipPaths, ownClipPaths] : inheritedClipPaths
   if (collectUsePaths(element, presentation, transform, result, elementsById, useStack)) return
-  appendShapePath(tagName, element, presentation, transform, result)
+  appendShapePath(tagName, element, presentation, transform, clipPaths, result)
 
   for (const child of Array.from(element.childNodes)) {
     if (isElement(child)) {
-      collectPaths(child, presentation, transform, result, elementsById, useStack, referenced)
+      collectPaths(
+        child,
+        presentation,
+        transform,
+        result,
+        elementsById,
+        useStack,
+        referenced,
+        clipPaths
+      )
     }
   }
 }

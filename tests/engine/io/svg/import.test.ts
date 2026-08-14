@@ -263,6 +263,32 @@ describe('import_svg', () => {
     expect(path.fills[0].color.b).toBeCloseTo(1)
   })
 
+  test('imports clip paths as masks for clipped paint runs', async () => {
+    const result = (await importSVG.execute(figma, {
+      svg: `<svg viewBox="0 0 100 100">
+        <defs><path id="mark" d="M10 10H90V90H10Z"/></defs>
+        <g clip-path="url(#clip)">
+          <defs><clipPath id="clip"><use href="#mark"/></clipPath></defs>
+          <rect width="50" height="100" fill="#ff0000"/>
+          <rect x="50" width="50" height="100" fill="#0000ff"/>
+        </g>
+        <circle cx="50" cy="50" r="10" fill="#ffffff"/>
+      </svg>`
+    })) as { id: string }
+
+    const children = graph.getChildren(result.id)
+    expect(children).toHaveLength(2)
+    const clippedGroup = expectDefined(children[0])
+    expect(clippedGroup.type).toBe('FRAME')
+    const clippedChildren = graph.getChildren(clippedGroup.id)
+    expect(clippedChildren).toHaveLength(2)
+    expect(clippedChildren[0].isMask).toBe(true)
+    expect(clippedChildren[0].maskType).toBe('VECTOR')
+    expect(expectDefined(clippedChildren[0].vectorNetwork).regions).toHaveLength(1)
+    expect(clippedChildren[1].fillGeometry).toHaveLength(2)
+    expect(children[1].isMask).toBe(false)
+  })
+
   test('imports gradient fills through the shared SVG pipeline', async () => {
     const result = (await importSVG.execute(figma, {
       svg: `<svg viewBox="0 0 10 10"><defs><linearGradient id="g"><stop offset="0" stop-color="#000"/><stop offset="1" stop-color="#fff"/></linearGradient></defs><rect width="10" height="10" fill="url(#g)"/></svg>`
