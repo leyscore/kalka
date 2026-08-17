@@ -19,6 +19,10 @@ const modelValue = computed({
   set: (id: string) => switchTab(id)
 })
 
+function openRecentFilesTab() {
+  createTab(undefined, undefined, true)
+}
+
 function onMiddleClick(e: MouseEvent, tabId: string) {
   if (e.button === 1) {
     e.preventDefault()
@@ -34,7 +38,7 @@ function onClose(e: MouseEvent, tabId: string) {
 
 <template>
   <TabsRoot
-    v-if="tabs.length > 1"
+    v-if="tabs.length > 0"
     v-model="modelValue"
     activation-mode="automatic"
     :class="baseStyles.root()"
@@ -49,14 +53,15 @@ function onClose(e: MouseEvent, tabId: string) {
         :data-active="tab.isActive || undefined"
         @mousedown="onMiddleClick($event, tab.id)"
       >
-        <icon-lucide-file :class="baseStyles.icon()" />
-        <span :class="baseStyles.label()">{{ tab.name }}</span>
-        <Tip :label="dialogs.closeTab({ name: tab.name })">
+        <icon-lucide-house v-if="tab.isHome" :class="baseStyles.icon()" />
+        <icon-lucide-file v-else :class="baseStyles.icon()" />
+        <span :class="baseStyles.label()">{{ tab.isHome ? dialogs.recentFiles : tab.name }}</span>
+        <Tip :label="dialogs.closeTab({ name: tab.isHome ? dialogs.recentFiles : tab.name })">
           <button
             data-test-id="tabbar-close"
             :class="tabBarStyles({ active: tab.isActive }).close()"
             :data-active="tab.isActive || undefined"
-            :aria-label="dialogs.closeTab({ name: tab.name })"
+            :aria-label="dialogs.closeTab({ name: tab.isHome ? dialogs.recentFiles : tab.name })"
             tabindex="-1"
             @click="onClose($event, tab.id)"
           >
@@ -70,7 +75,7 @@ function onClose(e: MouseEvent, tabId: string) {
         data-test-id="tabbar-new"
         :class="baseStyles.newAction()"
         :aria-label="dialogs.newTab"
-        @click="createTab()"
+        @click="openRecentFilesTab"
       >
         <icon-lucide-plus :class="baseStyles.newIcon()" />
       </button>

@@ -9,5 +9,17 @@ test('opens to the recent-files home and starts a new document', async ({ page }
   await page.getByTestId('home-new-document').click()
 
   await expect(page.getByTestId('recent-files-home')).toBeHidden()
-  await expect(page.getByRole('group', { name: 'Layers' })).toBeVisible()
+  const tab = page.getByTestId('tabbar-tab')
+  await expect(tab).toBeVisible()
+
+  await page.getByTestId('tabbar-new').click()
+
+  await expect(page.getByTestId('recent-files-home')).toBeVisible()
+  await expect(page.getByTestId('tabbar-tab')).toHaveCount(2)
+  await expect(page.getByTestId('tabbar-tab').last()).toContainText('Recent files')
+
+  await page.getByTestId('tabbar-tab').last().hover()
+  await page.getByTestId('tabbar-tab').last().getByTestId('tabbar-close').click()
+
+  await expect(page.getByTestId('recent-files-home')).toBeHidden()
 })

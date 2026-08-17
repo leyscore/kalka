@@ -45,6 +45,7 @@ export const allTabs = computed(() =>
   tabsRef.value.map((t) => ({
     id: t.id,
     name: t.store.state.documentName,
+    isHome: t.showHome,
     isActive: t.id === activeTabId.value
   }))
 )
@@ -81,8 +82,9 @@ export function createTab(store?: EditorStore, initialGraph?: SceneGraph, showHo
 
 export function leaveHome(tabId: string): void {
   const tabIndex = tabsRef.value.findIndex((candidate) => candidate.id === tabId)
+  if (tabIndex === -1) return
   const tab = tabsRef.value[tabIndex]
-  if (!tab?.showHome) return
+  if (!tab.showHome) return
   tabsRef.value = tabsRef.value.with(tabIndex, { ...tab, showHome: false })
 }
 

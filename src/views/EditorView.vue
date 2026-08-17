@@ -127,7 +127,7 @@ onUnmounted(() => {
     <FontStatusBanner />
     <RenameSelectionDialog />
     <RecentFilesHome v-if="showingHome" @new-document="activeTab && leaveHome(activeTab.id)" />
-    <TabBar v-if="!showingHome" />
+    <TabBar />
 
     <!-- Desktop layout -->
     <SplitterGroup

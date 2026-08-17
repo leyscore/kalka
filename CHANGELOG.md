@@ -46,6 +46,7 @@
 
 ### Changed
 
+- Open new tabs on Recent Files so users can choose a document before creating a blank canvas.
 - Pan horizontally with Shift+wheel while preserving native horizontal trackpad movement.
 - Move MCP connections into their own Settings destination instead of presenting them as part of model configuration.
 
