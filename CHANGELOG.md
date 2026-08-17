@@ -50,6 +50,7 @@
 
 ### Performance
 
+- Show the FIG page list from a lightweight Kiwi scan before materializing the full document, making large files feel responsive sooner.
 - Use cached axis-aligned world positions for hit testing untransformed layer chains and add representative 500/2,000-node interaction profiles. (#527)
 - Coalesce writable-document autosaves that overlap an active `.fig` export while preserving a trailing save for newer edits. (#528)
 - Defer JSX generation and syntax highlighting until the Code panel is active, keeping large canvas selections responsive. (#500)

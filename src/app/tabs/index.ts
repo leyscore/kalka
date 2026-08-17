@@ -1,11 +1,11 @@
 import { shallowRef, computed, triggerRef } from 'vue'
 
 import { BUILTIN_IO_FORMATS, IORegistry } from '@open-pencil/core/io'
-import { readFigFile } from '@open-pencil/core/io/formats/fig'
 import { computeAllLayouts } from '@open-pencil/core/layout'
 import type { SceneGraph } from '@open-pencil/scene-graph'
 
 import { setOpenPencilStore } from '@/app/browser-bridge'
+import { readFigFileProgressively } from '@/app/document/io/fig-page-manifest'
 import type { DocumentSourceIdentity } from '@/app/document/io/types'
 import { getRecoveryStore, type RecoverySnapshotMeta } from '@/app/document/recovery'
 import { setActiveEditorStore } from '@/app/editor/active-store'
@@ -129,6 +129,13 @@ function reusableTabStore(): EditorStore {
   return isUntouched ? current.store : createTab().store
 }
 
+async function readFigForTab(file: File, store: EditorStore): Promise<SceneGraph> {
+  const imported = await readFigFileProgressively(file, store)
+  const firstPageId = imported.getPages()[0]?.id
+  if (firstPageId) computeAllLayouts(imported, firstPageId)
+  return imported
+}
+
 function findStorageTab(providerId: string, documentId: string): Tab | undefined {
   return tabsRef.value.find((tab) => {
     const binding = tab.store.getStorageBinding()
@@ -173,9 +180,7 @@ export async function openStorageDocumentInNewTab(document: StorageDocument): Pr
     const file = new File([fileBytes.buffer], `${document.name}.fig`, {
       type: 'application/octet-stream'
     })
-    const imported = await readFigFile(file, { populate: 'first-page' })
-    const firstPageId = imported.getPages()[0]?.id
-    if (firstPageId) computeAllLayouts(imported, firstPageId)
+    const imported = await readFigForTab(file, store)
     store.replaceGraph(imported)
     store.undo.clear()
     store.setStorageDocumentSource({ providerId, documentId: document.id }, document.name)
@@ -239,7 +244,10 @@ export async function openFileInNewTab(
     await yieldToUI()
     const isFig = file.name.toLowerCase().endsWith('.fig')
     const { graph: imported, sourceFormat } = isFig
-      ? { graph: await readFigFile(file, { populate: 'first-page' }), sourceFormat: 'fig' }
+      ? {
+          graph: await readFigForTab(file, store),
+          sourceFormat: 'fig'
+        }
       : await io.readDocument({
           name: file.name,
           mimeType: file.type || undefined,
@@ -247,7 +255,7 @@ export async function openFileInNewTab(
         })
 
     const firstPageId = imported.getPages()[0]?.id
-    if (firstPageId) computeAllLayouts(imported, firstPageId)
+    if (!isFig && firstPageId) computeAllLayouts(imported, firstPageId)
     store.replaceGraph(imported)
     store.undo.clear()
     store.setDocumentSource(file.name, sourceFormat, handle, path)
@@ -277,15 +285,13 @@ export async function restoreRecoverySnapshot(id: string): Promise<void> {
   const snapshot = await getRecoveryStore().read(id)
   if (!snapshot) throw new Error('Recovery snapshot is no longer available')
 
+  const store = reusableTabStore()
   const fileBytes = new Uint8Array(snapshot.figBytes)
   const file = new File([fileBytes.buffer], `${snapshot.documentName}.fig`, {
     type: 'application/octet-stream'
   })
-  const imported = await readFigFile(file, { populate: 'first-page' })
-  const firstPageId = imported.getPages()[0]?.id
-  if (firstPageId) computeAllLayouts(imported, firstPageId)
+  const imported = await readFigForTab(file, store)
 
-  const store = reusableTabStore()
   store.replaceGraph(imported)
   store.undo.clear()
   store.state.documentName = snapshot.documentName
