@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, provide, ref } from 'vue'
+import { computed, onMounted, onUnmounted, provide, ref } from 'vue'
 import { tv } from 'tailwind-variants'
 import { useEventListener, useUrlSearchParams } from '@vueuse/core'
 import { useRoute } from 'vue-router'
@@ -18,7 +18,7 @@ import { isTauri } from '@/app/tauri/env'
 import { appMenuShortcut } from '@/app/shell/menu/shortcut'
 import { createDemoShapes } from '@/app/demo/document'
 import { useEditorStore } from '@/app/editor/active-store'
-import { createTab, activeTab, getActiveStore, tabCount } from '@/app/tabs'
+import { createTab, activeTab, getActiveStore, leaveHome, tabCount } from '@/app/tabs'
 
 import CollabPanel from '@/components/CollabPanel/CollabPanel.vue'
 import EditorCanvas from '@/components/EditorCanvas.vue'
@@ -28,6 +28,7 @@ import LayersPanel from '@/components/LayersPanel.vue'
 import MobileDrawer from '@/components/MobileDrawer.vue'
 import MobileHud from '@/components/MobileHud/MobileHud.vue'
 import PropertiesPanel from '@/components/PropertiesPanel.vue'
+import RecentFilesHome from '@/components/recent-files/RecentFilesHome.vue'
 import RenameSelectionDialog from '@/components/selection/RenameSelectionDialog.vue'
 import SafariBanner from '@/components/SafariBanner.vue'
 import TabBar from '@/components/TabBar.vue'
@@ -40,7 +41,11 @@ const params = useUrlSearchParams('history')
 const showChrome = !('no-chrome' in params)
 
 const createdInitialTab = tabCount() === 0
-const firstTab = createdInitialTab ? createTab() : (activeTab.value ?? createTab())
+const showInitialHome =
+  route.path === '/' && !('test' in params) && (isTauri() || 'recent-files' in params)
+const firstTab = createdInitialTab
+  ? createTab(undefined, undefined, showInitialHome)
+  : (activeTab.value ?? createTab())
 const store = useEditorStore()
 const { dialogs } = useI18n()
 const { isMobile } = useViewportKind()
@@ -71,6 +76,7 @@ const mcpCleanup = ref<(() => void) | null>(null)
 const fileAssociationCleanup = ref<(() => void) | null>(null)
 const initialEditorLayout = loadEditorLayout()
 const horizontalSplitterStyles = tv(splitterTheme)({ direction: 'horizontal' })
+const showingHome = computed(() => activeTab.value?.showHome === true)
 
 type PendingOpenFile = {
   path: string
@@ -120,11 +126,12 @@ onUnmounted(() => {
     <SafariBanner />
     <FontStatusBanner />
     <RenameSelectionDialog />
-    <TabBar />
+    <RecentFilesHome v-if="showingHome" @new-document="activeTab && leaveHome(activeTab.id)" />
+    <TabBar v-if="!showingHome" />
 
     <!-- Desktop layout -->
     <SplitterGroup
-      v-if="!isMobile && showChrome && store.state.showUI"
+      v-if="!showingHome && !isMobile && showChrome && store.state.showUI"
       :key="activeTab?.id"
       direction="horizontal"
       class="flex-1 overflow-hidden"
@@ -172,7 +179,7 @@ onUnmounted(() => {
 
     <!-- Mobile layout -->
     <div
-      v-else-if="isMobile && showChrome && store.state.showUI"
+      v-else-if="!showingHome && isMobile && showChrome && store.state.showUI"
       :key="'mobile-' + activeTab?.id"
       class="flex flex-1 overflow-hidden"
     >
@@ -186,7 +193,7 @@ onUnmounted(() => {
 
     <!-- Collapsed UI (showUI=false) -->
     <div
-      v-else-if="showChrome"
+      v-else-if="!showingHome && showChrome"
       :key="'collapsed-' + activeTab?.id"
       class="flex flex-1 overflow-hidden"
     >
@@ -218,7 +225,11 @@ onUnmounted(() => {
     </div>
 
     <!-- Bare canvas (no chrome, e.g. ?no-chrome) -->
-    <div v-else :key="'bare-' + activeTab?.id" class="flex flex-1 overflow-hidden">
+    <div
+      v-else-if="!showingHome"
+      :key="'bare-' + activeTab?.id"
+      class="flex flex-1 overflow-hidden"
+    >
       <div class="relative flex min-w-0 flex-1">
         <EditorCanvas />
       </div>

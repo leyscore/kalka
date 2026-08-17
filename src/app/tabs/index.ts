@@ -24,6 +24,7 @@ import { findTabByFileIdentity } from '@/app/tabs/open/identity'
 export interface Tab {
   id: string
   store: EditorStore
+  showHome: boolean
 }
 
 const io = new IORegistry(BUILTIN_IO_FORMATS)
@@ -70,12 +71,19 @@ export function getTabsSnapshot(): Tab[] {
   return [...tabsRef.value]
 }
 
-export function createTab(store?: EditorStore, initialGraph?: SceneGraph): Tab {
+export function createTab(store?: EditorStore, initialGraph?: SceneGraph, showHome = false): Tab {
   const s = store ?? createEditorStore(initialGraph)
-  const tab: Tab = { id: generateTabId(), store: s }
+  const tab: Tab = { id: generateTabId(), store: s, showHome }
   tabsRef.value = [...tabsRef.value, tab]
   activateTab(tab)
   return tab
+}
+
+export function leaveHome(tabId: string): void {
+  const tabIndex = tabsRef.value.findIndex((candidate) => candidate.id === tabId)
+  const tab = tabsRef.value[tabIndex]
+  if (!tab?.showHome) return
+  tabsRef.value = tabsRef.value.with(tabIndex, { ...tab, showHome: false })
 }
 
 function activateTab(tab: Tab) {
@@ -102,7 +110,7 @@ export async function closeTab(tabId: string): Promise<void> {
   tabsRef.value = tabsRef.value.filter((t) => t.id !== tabId)
 
   if (tabsRef.value.length === 0) {
-    createTab()
+    createTab(undefined, undefined, true)
     return
   }
 
@@ -126,7 +134,11 @@ function reusableTabStore(): EditorStore {
   const current = activeTab.value
   const isUntouched =
     current?.store.state.documentName === 'Untitled' && !current.store.undo.canUndo
-  return isUntouched ? current.store : createTab().store
+  if (isUntouched) {
+    leaveHome(current.id)
+    return current.store
+  }
+  return createTab().store
 }
 
 async function readFigForTab(file: File, store: EditorStore): Promise<SceneGraph> {
@@ -315,6 +327,7 @@ export function useTabsStore() {
     tabs: allTabs,
     activeTabId,
     createTab,
+    leaveHome,
     switchTab,
     closeTab,
     getActiveTabId,

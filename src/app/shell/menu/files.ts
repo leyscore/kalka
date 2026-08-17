@@ -2,6 +2,7 @@ import { useFileDialog } from '@vueuse/core'
 
 import { setOpenPencilOpenFileHandler } from '@/app/browser-bridge'
 import { resolveBrowserFileURL } from '@/app/document/io/browser'
+import { rememberRecentFile } from '@/app/shell/menu/recent-files'
 import { openFileInNewTab } from '@/app/tabs'
 import { isTauri } from '@/app/tauri/env'
 import { IS_BROWSER } from '@/constants'
@@ -47,6 +48,7 @@ export async function openFileFromPath(path: string) {
   if (!isTauri()) return
   const file = await readTauriDesignFile(path)
   await openFileInNewTab(file, undefined, path)
+  rememberRecentFile(path)
 }
 
 export async function openFileDialog() {

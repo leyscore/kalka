@@ -4,6 +4,7 @@
 
 ### Added
 
+- Open to a recent-files home screen with embedded `.fig` previews and grid or list layouts.
 - Add deterministic two-browser collaboration coverage for bidirectional edits, awareness, departure cleanup, partitioned-peer convergence, and reconnect synchronization without public network dependencies. (#530)
 - Import, render, edit, resize, select, and export Figma text-on-path layers while preserving their curved glyph layout.
 
