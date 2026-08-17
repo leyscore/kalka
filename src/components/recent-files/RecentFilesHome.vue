@@ -5,6 +5,7 @@ import { useLocalStorage } from '@vueuse/core'
 import { useDocumentWorkspace, useI18n } from '@open-pencil/vue'
 
 import {
+  clearRecentFiles,
   forgetRecentFile,
   loadRecentFileThumbnail,
   recentFiles,
@@ -92,6 +93,15 @@ function formattedDate(updatedAt: string): string {
           <button
             type="button"
             class="flex size-7 items-center justify-center rounded-sm text-muted hover:text-surface"
+            :aria-label="dialogs.clear"
+            data-test-id="recent-files-clear"
+            @click="clearRecentFiles"
+          >
+            <icon-lucide-trash-2 class="size-3.5" />
+          </button>
+          <button
+            type="button"
+            class="flex size-7 items-center justify-center rounded-sm text-muted hover:text-surface"
             :class="{ 'bg-hover text-surface': view === 'grid' }"
             :aria-label="panels.gridView"
             @click="view = 'grid'"
@@ -125,7 +135,7 @@ function formattedDate(updatedAt: string): string {
         >
           <div
             v-workspace-preview="document.path"
-            class="flex aspect-[4/3] items-center justify-center overflow-hidden bg-panel-field"
+            class="flex aspect-video items-center justify-center overflow-hidden bg-panel-field"
           >
             <img
               v-if="previewURL(document.path)"

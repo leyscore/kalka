@@ -73,7 +73,7 @@ export function useEditorMenu() {
 
   useNativeMenuEvents((id) => {
     if (id === 'clear-recent-files') {
-      clearRecentFiles()
+      void clearRecentFiles()
       return
     }
     if (id.startsWith(OPEN_RECENT_EVENT_PREFIX)) {

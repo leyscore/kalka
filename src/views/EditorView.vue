@@ -18,7 +18,7 @@ import { isTauri } from '@/app/tauri/env'
 import { appMenuShortcut } from '@/app/shell/menu/shortcut'
 import { createDemoShapes } from '@/app/demo/document'
 import { useEditorStore } from '@/app/editor/active-store'
-import { createTab, activeTab, getActiveStore, leaveHome, tabCount } from '@/app/tabs'
+import { createTab, activeTab, getActiveStore, tabCount } from '@/app/tabs'
 
 import CollabPanel from '@/components/CollabPanel/CollabPanel.vue'
 import EditorCanvas from '@/components/EditorCanvas.vue'
@@ -126,8 +126,8 @@ onUnmounted(() => {
     <SafariBanner />
     <FontStatusBanner />
     <RenameSelectionDialog />
-    <RecentFilesHome v-if="showingHome" @new-document="activeTab && leaveHome(activeTab.id)" />
     <TabBar />
+    <RecentFilesHome v-if="showingHome" @new-document="createTab" />
 
     <!-- Desktop layout -->
     <SplitterGroup

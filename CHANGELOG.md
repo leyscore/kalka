@@ -61,6 +61,7 @@
 
 ### Fixed
 
+- Generate and cache 512×512 recent-file previews from the conventional `Cover` page after opening a `.fig`, without modifying the source file.
 - Keep text-editing carets, hit testing, and selection highlights aligned with vertically centered or bottom-aligned text. (#539)
 - Match AI chat code-block syntax colors and backgrounds to the active light or dark theme. (#537)
 - Let desktop users select and copy AI chat text without replacing it with the selected canvas layers. (#538)

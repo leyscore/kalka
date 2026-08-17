@@ -3,11 +3,19 @@ import { computed } from 'vue'
 
 import { extractFigThumbnailFromReader } from '@open-pencil/fig'
 
+import {
+  readCacheBytes,
+  removeCacheEntriesWithPrefix,
+  removeCachePrefix,
+  writeCacheBytes
+} from '@/app/cache'
 import { isTauri } from '@/app/tauri/env'
 
 const MAX_RECENT_FILES = 10
 const RECENT_FILES_STORAGE_KEY = 'open-pencil:recent-files'
 const RECENT_FILE_OPENED_AT_STORAGE_KEY = 'open-pencil:recent-file-opened-at'
+const RECENT_FILE_THUMBNAIL_CACHE_DIR = 'recent-file-thumbnails/v2'
+const LEGACY_RECENT_FILE_THUMBNAIL_CACHE_PREFIX = 'recent-file-thumbnail-v2-'
 
 export type RecentFile = {
   id: string
@@ -70,17 +78,51 @@ export function forgetRecentFile(path: string): void {
   updateRecentFiles(normalizedRecentFiles().filter((recent) => recent !== path))
 }
 
-export function clearRecentFiles(): void {
+export async function clearRecentFiles(): Promise<void> {
   recentFileOpenedAt.value = {}
   updateRecentFiles([])
+  await Promise.all([
+    removeCachePrefix(RECENT_FILE_THUMBNAIL_CACHE_DIR),
+    removeCacheEntriesWithPrefix(LEGACY_RECENT_FILE_THUMBNAIL_CACHE_PREFIX)
+  ])
 }
 
 export function recentFileAt(index: number): string | null {
   return normalizedRecentFiles()[index] ?? null
 }
 
+async function recentFileThumbnailCacheKey(path: string): Promise<string> {
+  let fingerprint = path
+  try {
+    const { stat } = await import('@tauri-apps/plugin-fs')
+    const info = await stat(path)
+    fingerprint = `${path}\0${info.size}\0${info.mtime?.getTime() ?? 0}`
+  } catch (error) {
+    // A path-only key still permits a preview when metadata is unavailable.
+    console.warn('[Recent files] Could not stat the file for thumbnail caching', error)
+  }
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(fingerprint))
+  const hash = [...new Uint8Array(digest)]
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('')
+  return `${RECENT_FILE_THUMBNAIL_CACHE_DIR}/${hash}.png`
+}
+
+export async function loadCachedRecentFileThumbnail(path: string): Promise<Uint8Array | null> {
+  if (!isTauri()) return null
+  const bytes = await readCacheBytes(await recentFileThumbnailCacheKey(path))
+  return bytes ? new Uint8Array(bytes) : null
+}
+
+export async function cacheRecentFileThumbnail(path: string, bytes: Uint8Array): Promise<void> {
+  if (!isTauri()) return
+  await writeCacheBytes(await recentFileThumbnailCacheKey(path), Uint8Array.from(bytes).buffer)
+}
+
 export async function loadRecentFileThumbnail(path: string): Promise<Uint8Array | null> {
   if (!isTauri() || !path.toLowerCase().endsWith('.fig')) return null
+  const cached = await loadCachedRecentFileThumbnail(path)
+  if (cached) return cached
   const { readFile } = await import('@tauri-apps/plugin-fs')
   const bytes = await readFile(path)
   return extractFigThumbnailFromReader({

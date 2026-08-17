@@ -1,6 +1,10 @@
+import { promiseTimeout } from '@vueuse/core'
 import { shallowRef, computed, triggerRef } from 'vue'
 
 import { BUILTIN_IO_FORMATS, IORegistry } from '@open-pencil/core/io'
+import { findFigThumbnailPageId } from '@open-pencil/core/io/formats/fig'
+import { renderThumbnail } from '@open-pencil/core/io/formats/raster'
+import { populateLazyFigImportRoots } from '@open-pencil/core/kiwi'
 import { computeAllLayouts } from '@open-pencil/core/layout'
 import type { SceneGraph } from '@open-pencil/scene-graph'
 
@@ -16,6 +20,10 @@ import {
   createActiveStorageAdapter,
   type StorageDocument
 } from '@/app/integrations/storage'
+import {
+  cacheRecentFileThumbnail,
+  loadCachedRecentFileThumbnail
+} from '@/app/shell/menu/recent-files'
 import { getLocalCanvasStore } from '@/app/storage/local-store'
 import { seedStorageCanvasFromRemote } from '@/app/storage/sync/persist'
 import { createFileOpenCoordinator } from '@/app/tabs/open/coordinator'
@@ -29,6 +37,8 @@ export interface Tab {
 
 const io = new IORegistry(BUILTIN_IO_FORMATS)
 const fileOpenCoordinator = createFileOpenCoordinator()
+const RECENT_FILE_THUMBNAIL_SIZE = 512
+const coverThumbnailListeners = new WeakMap<EditorStore, () => void>()
 
 let nextTabId = 1
 
@@ -88,6 +98,15 @@ export function leaveHome(tabId: string): void {
   tabsRef.value = tabsRef.value.with(tabIndex, { ...tab, showHome: false })
 }
 
+export function showRecentFiles(): void {
+  const homeTab = tabsRef.value.find((tab) => tab.showHome)
+  if (homeTab) {
+    switchTab(homeTab.id)
+    return
+  }
+  createTab(undefined, undefined, true)
+}
+
 function activateTab(tab: Tab) {
   activeTabId.value = tab.id
   setActiveEditorStore(tab.store)
@@ -106,7 +125,10 @@ export async function closeTab(tabId: string): Promise<void> {
   if (idx === -1) return
 
   const closingTab = tabsRef.value[idx]
+  if (closingTab.showHome) return
   const wasActive = activeTabId.value === tabId
+  coverThumbnailListeners.get(closingTab.store)?.()
+  coverThumbnailListeners.delete(closingTab.store)
   await closingTab.store.persistRecoveryNow()
   closingTab.store.dispose()
   tabsRef.value = tabsRef.value.filter((t) => t.id !== tabId)
@@ -134,6 +156,7 @@ function isDOMImportFile(file: File): boolean {
 
 function reusableTabStore(): EditorStore {
   const current = activeTab.value
+  if (current?.showHome) return createTab().store
   const isUntouched =
     current?.store.state.documentName === 'Untitled' && !current.store.undo.canUndo
   if (isUntouched) {
@@ -147,7 +170,54 @@ async function readFigForTab(file: File, store: EditorStore): Promise<SceneGraph
   const imported = await readFigFileProgressively(file, store)
   const firstPageId = imported.getPages()[0]?.id
   if (firstPageId) computeAllLayouts(imported, firstPageId)
+  const coverPageId = findFigThumbnailPageId(imported.getPages())
+  if (coverPageId && coverPageId !== firstPageId) {
+    populateLazyFigImportRoots(imported, [coverPageId])
+    computeAllLayouts(imported, coverPageId)
+  }
   return imported
+}
+
+async function cacheOpenedFigCover(path: string, store: EditorStore): Promise<void> {
+  if (await loadCachedRecentFileThumbnail(path)) return
+  const coverPageId = findFigThumbnailPageId(store.graph.getPages())
+  if (!coverPageId) return
+  for (let attempt = 0; attempt < 240 && !store.renderer; attempt++) {
+    await promiseTimeout(250)
+  }
+  const renderer = store.renderer
+  if (!renderer) {
+    console.warn('[Recent files] Cover thumbnail skipped because the renderer was unavailable')
+    return
+  }
+  const bytes = renderThumbnail(
+    renderer.ck,
+    renderer,
+    store.graph,
+    coverPageId,
+    RECENT_FILE_THUMBNAIL_SIZE,
+    RECENT_FILE_THUMBNAIL_SIZE
+  )
+  if (!bytes) {
+    console.warn('[Recent files] Cover thumbnail skipped because the Cover page was empty')
+    return
+  }
+  await cacheRecentFileThumbnail(path, bytes)
+}
+
+function watchOpenedFigCover(path: string, store: EditorStore): void {
+  coverThumbnailListeners.get(store)?.()
+  const coverPageId = findFigThumbnailPageId(store.graph.getPages())
+  if (!coverPageId) return
+  coverThumbnailListeners.set(
+    store,
+    store.onEditorEvent('page:changed', (pageId) => {
+      if (pageId !== coverPageId) return
+      void cacheOpenedFigCover(path, store).catch((error) => {
+        console.warn('[Recent files] Failed to cache the Cover thumbnail', error)
+      })
+    })
+  )
 }
 
 function findStorageTab(providerId: string, documentId: string): Tab | undefined {
@@ -227,6 +297,12 @@ export async function openFileInNewTab(
     const existing = await findTabByFileIdentity(tabsRef.value, identity)
     if (existing) {
       switchTab(existing.id)
+      if (path?.toLowerCase().endsWith('.fig')) {
+        watchOpenedFigCover(path, existing.store)
+        void cacheOpenedFigCover(path, existing.store).catch((error) => {
+          console.warn('[Recent files] Failed to cache the Cover thumbnail', error)
+        })
+      }
       return { kind: 'existing' as const }
     }
 
@@ -273,10 +349,16 @@ export async function openFileInNewTab(
     store.replaceGraph(imported)
     store.undo.clear()
     store.setDocumentSource(file.name, sourceFormat, handle, path)
+    if (isFig && path) watchOpenedFigCover(path, store)
     store.clearSelection()
     const pageId = store.graph.getPages()[0]?.id ?? store.graph.rootId
     await store.switchPage(pageId)
     await store.fitCurrentPageToViewport()
+    if (isFig && path) {
+      void cacheOpenedFigCover(path, store).catch((error) => {
+        console.warn('[Recent files] Failed to cache the Cover thumbnail', error)
+      })
+    }
     completion.resolve(undefined)
   } catch (error) {
     completion.reject(error)
