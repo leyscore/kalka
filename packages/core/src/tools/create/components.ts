@@ -1,3 +1,4 @@
+import type { FigmaNodeProxy } from '#core/figma-api'
 import { defineTool, nodeSummary } from '#core/tools/schema'
 
 export const createComponent = defineTool({
@@ -31,5 +32,32 @@ export const createInstance = defineTool({
     if (args.x !== undefined) instance.x = args.x
     if (args.y !== undefined) instance.y = args.y
     return nodeSummary(instance)
+  }
+})
+
+export const combineAsVariants = defineTool({
+  name: 'combine_as_variants',
+  mutates: true,
+  description:
+    'Combine components sharing a parent into a component set (variant set). Components named ' +
+    '"Category/Value" (e.g. "Button/Primary") derive variant properties from the name segments.',
+  params: {
+    ids: { type: 'string[]', description: 'Component node IDs to combine', required: true }
+  },
+  execute: (figma, { ids }) => {
+    const nodes = ids
+      .map((id) => figma.getNodeById(id))
+      .filter((node): node is FigmaNodeProxy => node !== null)
+    if (nodes.length !== ids.length) return { error: 'One or more node IDs were not found' }
+    if (nodes.length < 2) return { error: 'Need at least 2 components to combine as variants' }
+    if (!nodes.every((node) => node.type === 'COMPONENT')) {
+      return { error: 'combineAsVariants requires COMPONENT nodes' }
+    }
+    try {
+      const componentSet = figma.combineAsVariants(nodes)
+      return nodeSummary(componentSet)
+    } catch (error) {
+      return { error: error instanceof Error ? error.message : String(error) }
+    }
   }
 })
