@@ -9,13 +9,13 @@ import {
 } from './analyze'
 import { designToComponentMap, designToTokens } from './codegen'
 import {
-  combineAsVariants,
   createComponent,
   createInstance,
   createPage,
   createShape,
   createSlice,
   createVector,
+  exposeInstanceSwap,
   fetchIconsTool,
   importSVG,
   insertIcon,
@@ -127,7 +127,7 @@ export const EXTENDED_TOOLS: ToolDef[] = [
   fetchIconsTool,
   createComponent,
   createInstance,
-  combineAsVariants,
+  exposeInstanceSwap,
   createPage,
   createVector,
   createSlice,

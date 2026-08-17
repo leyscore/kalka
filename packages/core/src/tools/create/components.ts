@@ -1,5 +1,5 @@
-import type { FigmaComponentNode } from '#core/figma-api'
-import { defineTool, nodeSummary, requireNodes } from '#core/tools/schema'
+import type { FigmaNodeProxy } from '#core/figma-api'
+import { defineTool, nodeSummary } from '#core/tools/schema'
 
 export const createComponent = defineTool({
   name: 'create_component',
@@ -35,29 +35,36 @@ export const createInstance = defineTool({
   }
 })
 
-export const combineAsVariants = defineTool({
-  name: 'combine_as_variants',
+export const exposeInstanceSwap = defineTool({
+  name: 'expose_instance_swap',
   mutates: true,
   description:
-    'Combine components sharing a parent into a component set (variant set). Components named ' +
-    '"Category/Value" (e.g. "Button/Primary") derive variant properties from the name segments.',
+    'Expose one or more nested instances as an instance-swap slot, so instances of the enclosing ' +
+    'component can pick which component fills it (e.g. an icon slot on a button). All slot instances ' +
+    'must live inside the same component or component set.',
   params: {
-    ids: { type: 'string[]', description: 'Component node IDs to combine', required: true }
+    instance_ids: {
+      type: 'string[]',
+      description: 'Instance node IDs to expose as the swap slot (one per variant that has this slot)',
+      required: true
+    },
+    candidate_ids: {
+      type: 'string[]',
+      description: 'Component node IDs the designer can swap the slot to',
+      required: true
+    },
+    property_name: { type: 'string', description: 'Name for the property (default: "Instance")' }
   },
-  execute: (figma, { ids }) => {
-    const nodes = requireNodes(figma, ids)
-    if (!nodes) return { error: 'One or more node IDs were not found' }
-    if (nodes.length < 2) return { error: 'Need at least 2 components to combine as variants' }
-    if (!nodes.every((node): node is FigmaComponentNode => node.type === 'COMPONENT')) {
-      return { error: 'combineAsVariants requires COMPONENT nodes' }
-    }
-    const parent = nodes[0].parent ?? figma.currentPage
-    if (!nodes.every((node) => node.parent?.id === parent.id)) {
-      return { error: 'combineAsVariants requires components to share a parent' }
-    }
+  execute: (figma, { instance_ids, candidate_ids, property_name }) => {
+    const slots = instance_ids.map((id) => figma.getNodeById(id)).filter((n): n is FigmaNodeProxy => n !== null)
+    if (slots.length !== instance_ids.length) return { error: 'One or more instance IDs were not found' }
+    const candidates = candidate_ids
+      .map((id) => figma.getNodeById(id))
+      .filter((n): n is FigmaNodeProxy => n !== null)
+    if (candidates.length !== candidate_ids.length) return { error: 'One or more candidate IDs were not found' }
     try {
-      const componentSet = figma.combineAsVariants(nodes, parent)
-      return nodeSummary(componentSet)
+      const host = figma.exposeInstanceSwap(slots, candidates, property_name)
+      return nodeSummary(host)
     } catch (error) {
       return { error: error instanceof Error ? error.message : String(error) }
     }
