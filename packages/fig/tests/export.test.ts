@@ -135,4 +135,136 @@ describe('@open-pencil/fig SceneGraph export policy', () => {
     expect(change.derivedTextData?.glyphs).toHaveLength(1)
     expect(blobs).toHaveLength(1)
   })
+
+  test('mints a synthetic GUID for app-created (non-Figma-shaped) component property IDs', () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    const componentSet = graph.createNode('COMPONENT_SET', page.id, {
+      componentPropertyDefinitions: [
+        {
+          id: 'prop:abc12345',
+          name: 'Style',
+          type: 'VARIANT',
+          defaultValue: 'Primary',
+          variantOptions: ['Primary', 'Secondary']
+        }
+      ]
+    })
+
+    const [change] = sceneNodeToKiwi(componentSet, { sessionID: 1, localID: 1 }, 0, { value: 2 }, graph, [])
+
+    expect(change.componentPropDefs).toHaveLength(1)
+    expect(change.componentPropDefs?.[0].id).toEqual(
+      expect.objectContaining({ sessionID: expect.any(Number), localID: expect.any(Number) })
+    )
+    expect(change.componentPropDefs?.[0].name).toBe('Style')
+  })
+
+  test('reuses the same synthetic GUID for a def and the ref that points at it', () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    const component = graph.createNode('COMPONENT', page.id, {
+      componentPropertyDefinitions: [
+        { id: 'prop:icon1234', name: 'Icon', type: 'INSTANCE_SWAP', defaultValue: '' }
+      ]
+    })
+    const slot = graph.createNode('INSTANCE', component.id, {
+      componentPropertyReferences: [{ propertyId: 'prop:icon1234', field: 'INSTANCE_SWAP' }]
+    })
+
+    const nodeIdToGuid = new Map()
+    const propertyIdToGuid = new Map()
+    const localIdCounter = { value: 2 }
+    const [componentChange] = sceneNodeToKiwi(
+      component,
+      { sessionID: 1, localID: 1 },
+      0,
+      localIdCounter,
+      graph,
+      [],
+      nodeIdToGuid,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      propertyIdToGuid
+    )
+    const slotChange = sceneNodeToKiwi(
+      slot,
+      componentChange.guid,
+      0,
+      localIdCounter,
+      graph,
+      [],
+      nodeIdToGuid,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      propertyIdToGuid
+    )[0]
+
+    expect(componentChange.componentPropDefs?.[0].id).toEqual(slotChange.componentPropRefs?.[0].defID)
+  })
+
+  test('points an INSTANCE_SWAP default value at the same GUID the target component is exported with', () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    const icon = graph.createNode('COMPONENT', page.id, { name: 'Icon/Tune' })
+    const button = graph.createNode('COMPONENT', page.id, {
+      componentPropertyDefinitions: [
+        { id: 'prop:iconswap1', name: 'Icon', type: 'INSTANCE_SWAP', defaultValue: icon.id }
+      ]
+    })
+
+    const nodeIdToGuid = new Map()
+    const propertyIdToGuid = new Map()
+    const localIdCounter = { value: 2 }
+    const [iconChange] = sceneNodeToKiwi(
+      icon,
+      { sessionID: 1, localID: 1 },
+      0,
+      localIdCounter,
+      graph,
+      [],
+      nodeIdToGuid,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      propertyIdToGuid
+    )
+    const [buttonChange] = sceneNodeToKiwi(
+      button,
+      { sessionID: 1, localID: 1 },
+      1,
+      localIdCounter,
+      graph,
+      [],
+      nodeIdToGuid,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      propertyIdToGuid
+    )
+
+    expect(buttonChange.componentPropDefs?.[0].initialValue).toEqual({ guidValue: iconChange.guid })
+  })
 })

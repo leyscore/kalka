@@ -1,5 +1,5 @@
 import type { NodeChange, Paint } from '@open-pencil/kiwi/fig/codec'
-import { stringToGuid } from '@open-pencil/kiwi/fig/guid'
+import { guidToString, stringToGuid } from '@open-pencil/kiwi/fig/guid'
 import { DEFAULT_STROKE_MITER_LIMIT } from '@open-pencil/scene-graph'
 import type {
   ComponentPropertyDefinition,
@@ -65,6 +65,10 @@ interface SceneNodeToKiwiContext {
   modeIdToGuid?: Map<string, GUID>
   /** Variable GUIDs used only where raw effect aliases cannot retain asset refs. */
   assetRefToVarGuid?: Map<string, GUID>
+  /** GUIDs minted for component property IDs (e.g. "prop:abc123") that aren't
+   *  already Figma-GUID-shaped, keyed by the original ID so refs/assignments/
+   *  variantPropSpecs pointing at the same property reuse the same GUID. */
+  propertyIdToGuid?: Map<string, GUID>
   componentPropertyDefinitionsById: ReadonlyMap<string, ComponentPropertyDefinition>
   fractionalPosition: (index: number) => string
   mapToFigmaType: (type: SceneNode['type']) => string
@@ -135,11 +139,17 @@ function componentPropertyTypeForKiwi(type: string) {
   return type
 }
 
-function componentPropertyValue(type: string, value: string, graph: SceneGraph) {
+function componentPropertyValue(
+  type: string,
+  value: string,
+  context: SceneNodeToKiwiContext,
+  localIdCounter: { value: number }
+) {
   if (type === 'BOOLEAN') return { boolValue: value === 'true' }
   if (type === 'INSTANCE_SWAP') {
-    const target = graph.getNode(value)
-    const guid = parseGuidOrNull(target?.source.id ?? value)
+    const target = context.graph.getNode(value)
+    if (!target) return { textValue: { characters: value } }
+    const guid = getOrCreateNodeGuid(context, target.id, localIdCounter)
     return guid ? { guidValue: guid } : { textValue: { characters: value } }
   }
   return { textValue: { characters: value } }
@@ -348,6 +358,24 @@ function getOrCreateNodeGuid(
   const guid = importedGuid ?? { sessionID: 1, localID: localIdCounter.value++ }
   context.nodeIdToGuid?.set(nodeId, guid)
   context.assignedGuidValues?.add(`${guid.sessionID}:${guid.localID}`)
+  return guid
+}
+
+/**
+ * Component property IDs ("prop:abc123") never match the Figma GUID shape,
+ * so parseGuidOrNull always rejects them — mint a stable synthetic GUID from
+ * the shared node-id counter instead, memoized so every def/ref/assignment/
+ * variantPropSpec pointing at the same property ID round-trips consistently.
+ */
+function getOrCreatePropertyGuid(
+  context: SceneNodeToKiwiContext,
+  propertyId: string,
+  localIdCounter: { value: number }
+): GUID {
+  const existing = context.propertyIdToGuid?.get(propertyId)
+  if (existing) return existing
+  const guid = parseGuidOrNull(propertyId) ?? { sessionID: 1, localID: localIdCounter.value++ }
+  context.propertyIdToGuid?.set(propertyId, guid)
   return guid
 }
 
@@ -623,10 +651,18 @@ function applyInstancePayload(
   }
 }
 
-function componentPropertyPreferredValues(definition: ComponentPropertyDefinition) {
+function componentPropertyPreferredValues(
+  definition: ComponentPropertyDefinition,
+  context: SceneNodeToKiwiContext,
+  localIdCounter: { value: number }
+) {
   if (definition.type === 'INSTANCE_SWAP' && definition.preferredValues?.length) {
     return {
-      instanceSwapValues: definition.preferredValues.map((key) => ({ type: 'COMPONENT', key }))
+      instanceSwapValues: definition.preferredValues.map((nodeId) => {
+        const target = context.graph.getNode(nodeId)
+        const guid = target ? getOrCreateNodeGuid(context, target.id, localIdCounter) : undefined
+        return { type: 'COMPONENT', key: guid ? guidToString(guid) : nodeId }
+      })
     }
   }
   if (definition.type === 'VARIANT' && definition.variantOptions?.length) {
@@ -665,7 +701,8 @@ function shouldSerializeRawBackedField(
 function applyComponentMetadata(
   context: SceneNodeToKiwiContext,
   node: SceneNode,
-  nc: KiwiNodeChange
+  nc: KiwiNodeChange,
+  localIdCounter: { value: number }
 ): void {
   if (node.componentKey) nc.componentKey = node.componentKey
   if (node.sourceLibraryKey) nc.sourceLibraryKey = node.sourceLibraryKey
@@ -681,45 +718,33 @@ function applyComponentMetadata(
   }
   if (node.symbolDescription) nc.symbolDescription = node.symbolDescription
   if (node.symbolLinks.length > 0) nc.symbolLinks = structuredClone(node.symbolLinks)
-  const componentPropDefs = node.componentPropertyDefinitions
-    .map((def) => {
-      const id = parseGuidOrNull(def.id)
-      return id
-        ? {
-            id,
-            name: def.name,
-            type: componentPropertyTypeForKiwi(def.type),
-            initialValue: componentPropertyValue(def.type, def.defaultValue, context.graph),
-            preferredValues: componentPropertyPreferredValues(def)
-          }
-        : null
-    })
-    .filter((def): def is NonNullable<typeof def> => def !== null)
+  const componentPropDefs = node.componentPropertyDefinitions.map((def) => ({
+    id: getOrCreatePropertyGuid(context, def.id, localIdCounter),
+    name: def.name,
+    type: componentPropertyTypeForKiwi(def.type),
+    initialValue: componentPropertyValue(def.type, def.defaultValue, context, localIdCounter),
+    preferredValues: componentPropertyPreferredValues(def, context, localIdCounter)
+  }))
   if (shouldSerializeRawBackedField(node, 'componentPropDefs', componentPropDefs.length > 0)) {
     nc.componentPropDefs = componentPropDefs
   }
 
-  const componentPropRefs = node.componentPropertyReferences
-    .map((ref) => {
-      const defID = parseGuidOrNull(ref.propertyId)
-      if (!defID) return null
-      return { defID, componentPropNodeField: componentPropertyNodeField(ref.field) }
-    })
-    .filter((ref): ref is NonNullable<typeof ref> => ref !== null)
+  const componentPropRefs = node.componentPropertyReferences.map((ref) => ({
+    defID: getOrCreatePropertyGuid(context, ref.propertyId, localIdCounter),
+    componentPropNodeField: componentPropertyNodeField(ref.field)
+  }))
   if (shouldSerializeRawBackedField(node, 'componentPropRefs', componentPropRefs.length > 0)) {
     nc.componentPropRefs = componentPropRefs
   }
 
   const componentPropAssignments = Object.entries(node.componentPropertyAssignments)
     .map(([propertyId, value]) => {
-      const defID = parseGuidOrNull(propertyId)
       const definition = context.componentPropertyDefinitionsById.get(propertyId)
-      return defID && definition
-        ? {
-            defID,
-            value: componentPropertyValue(definition.type, value, context.graph)
-          }
-        : null
+      if (!definition) return null
+      return {
+        defID: getOrCreatePropertyGuid(context, propertyId, localIdCounter),
+        value: componentPropertyValue(definition.type, value, context, localIdCounter)
+      }
     })
     .filter((assignment): assignment is NonNullable<typeof assignment> => assignment !== null)
   if (
@@ -733,12 +758,10 @@ function applyComponentMetadata(
     nc.componentPropAssignments = componentPropAssignments
   }
 
-  const variantPropSpecs = node.variantPropSpecs
-    .map((spec) => {
-      const propDefId = parseGuidOrNull(spec.propDefId)
-      return propDefId ? { propDefId, value: spec.value } : null
-    })
-    .filter((spec): spec is NonNullable<typeof spec> => spec !== null)
+  const variantPropSpecs = node.variantPropSpecs.map((spec) => ({
+    propDefId: getOrCreatePropertyGuid(context, spec.propDefId, localIdCounter),
+    value: spec.value
+  }))
   if (shouldSerializeRawBackedField(node, 'variantPropSpecs', variantPropSpecs.length > 0)) {
     nc.variantPropSpecs = variantPropSpecs
   }
@@ -941,7 +964,7 @@ export function sceneNodeToKiwiWithContext(
   if (node.locked) nc.locked = true
 
   applyNodeVisualProps(context, node, nc)
-  applyComponentMetadata(context, node, nc)
+  applyComponentMetadata(context, node, nc, localIdCounter)
   applyInstancePayload(context, node, nc, localIdCounter)
   if (node.type === 'COMPONENT_SET') upsertPluginData(node, NODE_TYPE_PLUGIN_KEY, node.type)
   if (nc.type === 'CANVAS') nc.pageType = 'DESIGN'

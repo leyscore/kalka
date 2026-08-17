@@ -343,6 +343,7 @@ interface InternalResourceContext {
   blobIndexByHex: Map<string, number>
   assignedGuidValues: Set<string>
   componentPropertyDefinitionsById: ReturnType<typeof buildComponentPropIndex>
+  propertyIdToGuid: Map<string, GUID>
 }
 
 function appendInternalResources(context: InternalResourceContext): void {
@@ -365,7 +366,8 @@ function appendInternalResources(context: InternalResourceContext): void {
         context.blobIndexByHex,
         context.assignedGuidValues,
         context.componentPropertyDefinitionsById,
-        context.modeIdToGuid
+        context.modeIdToGuid,
+        context.propertyIdToGuid
       )
     )
   }
@@ -429,6 +431,7 @@ export async function exportFigFile(
   assignedGuidValues.add(`${docGuid.sessionID}:${docGuid.localID}`)
   const varIdToGuid = new Map<string, GUID>()
   const modeIdToGuid = new Map<string, GUID>()
+  const propertyIdToGuid = new Map<string, GUID>()
   const fontDigestMap = await buildFontDigestMap(graph)
   const glyphBlobMap = new Map<string, number>()
   const blobIndexByHex = new Map<string, number>()
@@ -499,7 +502,8 @@ export async function exportFigFile(
           blobIndexByHex,
           assignedGuidValues,
           componentPropertyDefinitionsById,
-          modeIdToGuid
+          modeIdToGuid,
+          propertyIdToGuid
         )
       )
     }
@@ -518,7 +522,8 @@ export async function exportFigFile(
     glyphBlobMap,
     blobIndexByHex,
     assignedGuidValues,
-    componentPropertyDefinitionsById
+    componentPropertyDefinitionsById,
+    propertyIdToGuid
   })
 
   const msg: Record<string, unknown> = {
