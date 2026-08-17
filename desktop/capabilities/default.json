@@ -19,7 +19,23 @@
       "allow": [{ "path": "**" }]
     },
     {
+      "identifier": "fs:allow-read-text-file",
+      "allow": [{ "path": "**" }]
+    },
+    {
       "identifier": "fs:allow-write-file",
+      "allow": [{ "path": "**" }]
+    },
+    {
+      "identifier": "fs:allow-exists",
+      "allow": [{ "path": "**" }]
+    },
+    {
+      "identifier": "fs:allow-create",
+      "allow": [{ "path": "**" }]
+    },
+    {
+      "identifier": "fs:allow-open",
       "allow": [{ "path": "**" }]
     },
     {
