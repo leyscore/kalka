@@ -1,53 +1,83 @@
 import type { Editor } from '@open-pencil/core/editor'
-import { computeSelectionBounds, computeSnap } from '@open-pencil/scene-graph'
+import { computeSelectionBounds } from '@open-pencil/scene-graph'
 import type { SceneNode } from '@open-pencil/scene-graph'
+import { getAxisAlignedWorldBounds } from '@open-pencil/scene-graph/coordinate'
+import type { Rect } from '@open-pencil/scene-graph/primitives'
 
+import { explicitSnapTargets } from '#vue/shared/input/explicit-snap-targets'
+import {
+  resolveObjectPixelSnap,
+  worldBoundsNode,
+  worldDeltaToParentLocal
+} from '#vue/shared/input/snap'
 import type { DragMove } from '#vue/shared/input/types'
 
+function movingSelection(drag: DragMove, dx: number, dy: number, editor: Editor): SceneNode[] {
+  const selectedNodes: SceneNode[] = []
+  for (const [id, original] of drag.originals) {
+    const node = editor.graph.getNode(id)
+    if (!node) continue
+    const bounds = getAxisAlignedWorldBounds(
+      { ...node, x: original.x, y: original.y },
+      editor.graph
+    )
+    selectedNodes.push({
+      ...node,
+      x: bounds.x + dx,
+      y: bounds.y + dy,
+      width: bounds.width,
+      height: bounds.height,
+      rotation: 0,
+      flipX: false,
+      flipY: false
+    })
+  }
+  return selectedNodes
+}
+
+function absoluteMoveContext(
+  drag: DragMove,
+  bounds: Rect,
+  editor: Editor
+): { bounds: Rect; targets: SceneNode[] } {
+  const firstId = drag.originals.keys().next().value
+  const firstNode = firstId ? editor.graph.getNode(firstId) : undefined
+  const parentId = firstNode?.parentId ?? editor.state.currentPageId
+  return {
+    bounds,
+    targets: editor.graph.getChildren(parentId).map((node) => worldBoundsNode(node, editor))
+  }
+}
+
 export function applyMoveSnap(
-  d: DragMove,
+  drag: DragMove,
   dx: number,
   dy: number,
-  editor: Editor
+  editor: Editor,
+  disableSnapping = false
 ): { dx: number; dy: number } {
-  const selectedNodes: SceneNode[] = []
-  for (const [id, orig] of d.originals) {
-    const node = editor.graph.getNode(id)
-    if (node) {
-      const abs = editor.graph.getAbsolutePosition(id)
-      const parentAbs = node.parentId
-        ? editor.graph.getAbsolutePosition(node.parentId)
-        : { x: 0, y: 0 }
-      selectedNodes.push({
-        ...node,
-        x: abs.x - parentAbs.x - node.x + orig.x + dx,
-        y: abs.y - parentAbs.y - node.y + orig.y + dy
-      })
-    }
+  const selectionBounds = computeSelectionBounds(movingSelection(drag, dx, dy, editor))
+  if (!selectionBounds || disableSnapping) {
+    editor.setSnapGuides([])
+    return { dx, dy }
   }
 
-  const bounds = computeSelectionBounds(selectedNodes)
-  if (!bounds) return { dx, dy }
-
-  const firstId = [...d.originals.keys()][0]
-  const firstNode = editor.graph.getNode(firstId)
+  const context = absoluteMoveContext(drag, selectionBounds, editor)
+  const firstId = drag.originals.keys().next().value
+  const firstNode = firstId ? editor.graph.getNode(firstId) : undefined
   const parentId = firstNode?.parentId ?? editor.state.currentPageId
-  const siblings = editor.graph.getChildren(parentId)
-  const parentAbs = !editor.isTopLevel(parentId)
-    ? editor.graph.getAbsolutePosition(parentId)
-    : { x: 0, y: 0 }
-  const absTargets = siblings.map((node) => ({
-    ...node,
-    x: node.x + parentAbs.x,
-    y: node.y + parentAbs.y
-  }))
-  const absBounds = {
-    x: bounds.x + parentAbs.x,
-    y: bounds.y + parentAbs.y,
-    width: bounds.width,
-    height: bounds.height
-  }
-  const snap = computeSnap(editor.state.selectedIds, absBounds, absTargets)
+  const snap = resolveObjectPixelSnap(
+    editor.state.selectedIds,
+    context.bounds,
+    context.targets,
+    editor,
+    explicitSnapTargets(parentId, editor)
+  )
   editor.setSnapGuides(snap.guides)
-  return { dx: dx + snap.dx, dy: dy + snap.dy }
+  const localDelta = worldDeltaToParentLocal({ x: dx, y: dy }, parentId, editor)
+  const localCorrection = worldDeltaToParentLocal(snap.correction, parentId, editor)
+  return {
+    dx: localDelta.x + localCorrection.x,
+    dy: localDelta.y + localCorrection.y
+  }
 }

@@ -51,6 +51,71 @@ describe('selection move drag threshold', () => {
     expect(drag.dragStarted).toBe(true)
   })
 
+  test('preserves fractional movement when pixel snapping is disabled', () => {
+    const { editor, drag, nodeId } = setupMoveDrag()
+    editor.state.snappingPreferences = { geometry: true, objects: false, pixelGrid: false }
+
+    handleMoveMove(drag, 16.25, 27.75, 110, 200, editor)
+    handleMoveUp(drag, editor)
+
+    expect(editor.graph.getNode(nodeId)).toMatchObject({ x: 16.25, y: 27.75 })
+  })
+
+  test('snaps movement to whole pixels when pixel snapping is enabled', () => {
+    const { editor, drag, nodeId } = setupMoveDrag()
+    editor.state.snappingPreferences = { geometry: true, objects: false, pixelGrid: true }
+
+    handleMoveMove(drag, 16.25, 27.75, 110, 200, editor)
+    handleMoveUp(drag, editor)
+
+    expect(editor.graph.getNode(nodeId)).toMatchObject({ x: 16, y: 28 })
+  })
+
+  test('Control bypasses object and pixel snapping during movement', () => {
+    const { editor, drag, nodeId } = setupMoveDrag()
+
+    handleMoveMove(drag, 16.25, 27.75, 110, 200, editor, true)
+    handleMoveUp(drag, editor)
+
+    expect(editor.graph.getNode(nodeId)).toMatchObject({ x: 16.25, y: 27.75 })
+    expect(editor.state.snapGuides).toEqual([])
+  })
+
+  test('converts world movement into a rotated parent coordinate space', () => {
+    const editor = createEditor()
+    const pageId = editor.state.currentPageId
+    const frame = editor.graph.createNode('FRAME', pageId, {
+      x: 200,
+      y: 150,
+      width: 300,
+      height: 300,
+      rotation: 30
+    })
+    const moving = editor.graph.createNode('RECTANGLE', frame.id, {
+      x: 20,
+      y: 40,
+      width: 50,
+      height: 50
+    })
+    editor.graph.createNode('RECTANGLE', frame.id, {
+      x: 140,
+      y: 40,
+      width: 60,
+      height: 50,
+      rotation: 20
+    })
+    editor.select([moving.id])
+    editor.state.snappingPreferences = { geometry: true, objects: false, pixelGrid: false }
+    const drag = createSelectionMoveDrag(0, 0, 0, 0, editor, false)
+    if (drag.type !== 'move') throw new Error('Expected move drag')
+
+    handleMoveMove(drag, 74, 43, 100, 100, editor)
+
+    expect(editor.state.snapGuides).toEqual([])
+    expect(drag.appliedDx).toBeCloseTo(85.5859, 3)
+    expect(drag.appliedDy).toBeCloseTo(0.2391, 3)
+  })
+
   test('removes duplicate created for alt-click without movement', () => {
     const editor = createEditor()
     const pageId = editor.state.currentPageId

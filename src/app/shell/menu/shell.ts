@@ -1,6 +1,8 @@
 import { useI18n } from '@open-pencil/vue'
 
 import { openSettingsDialog } from '@/app/settings/dialog'
+import { syncNativeSnappingMenu } from '@/app/settings/preferences/native-menu'
+import { appPreferences } from '@/app/settings/preferences/store'
 import { useNativeMenuEvents } from '@/app/shell/menu/native-events'
 import { openStorageWorkspace } from '@/app/shell/menu/navigation'
 import { APP_MENU_SCHEMA, type AppMenuEntry } from '@/app/shell/menu/schema'
@@ -23,6 +25,8 @@ export const SHELL_MENU_IDS = new Set([
 
 export function useShellMenu() {
   if (!isTauri()) return
+
+  void syncNativeSnappingMenu(appPreferences.value.editing.snapping)
 
   const { setTheme } = useAppTheme()
   const { dialogs } = useI18n()

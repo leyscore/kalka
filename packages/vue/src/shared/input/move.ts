@@ -57,7 +57,8 @@ export function handleMoveMove(
   cy: number,
   sx: number,
   sy: number,
-  editor: Editor
+  editor: Editor,
+  disableSnapping = false
 ) {
   d.currentX = cx
   d.currentY = cy
@@ -94,12 +95,14 @@ export function handleMoveMove(
 
   editor.setLayoutInsertIndicator(null)
 
-  const snapped = applyMoveSnap(d, dx, dy, editor)
+  const snapped = applyMoveSnap(d, dx, dy, editor, disableSnapping)
   dx = snapped.dx
   dy = snapped.dy
+  d.appliedDx = dx
+  d.appliedDy = dy
 
   for (const [id, orig] of d.originals) {
-    editor.graph.updateNodePositionPreview(id, Math.round(orig.x + dx), Math.round(orig.y + dy))
+    editor.graph.updateNodePositionPreview(id, orig.x + dx, orig.y + dy)
   }
 
   editor.setDropTarget(dropTarget?.id ?? null)
@@ -124,10 +127,8 @@ function restoreOriginalPositions(d: DragMove, editor: Editor) {
 }
 
 function applyFinalPositions(d: DragMove, editor: Editor) {
-  const dx = d.currentX - d.startX
-  const dy = d.currentY - d.startY
   for (const [id, orig] of d.originals) {
-    editor.updateNode(id, { x: Math.round(orig.x + dx), y: Math.round(orig.y + dy) })
+    editor.updateNode(id, { x: orig.x + d.appliedDx, y: orig.y + d.appliedDy })
   }
 }
 

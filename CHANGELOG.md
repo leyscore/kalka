@@ -4,6 +4,7 @@
 
 ### Added
 
+- Snap vector points, moved layers, and resized edges to nearby geometry, sibling layer bounds, canvas and frame layout guides, and whole-pixel coordinates with visible alignment guides, fractional-coordinate preservation when pixel snapping is off, and persistent geometry, object, and pixel-grid controls in General settings and the Preferences menu.
 - Import, render, edit, resize, select, and export Figma text-on-path layers while preserving their curved glyph layout.
 
 - Add tested pane-registry and recursive split-tree models for independently viewed same-document canvases, capped at four visible panes.

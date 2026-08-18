@@ -47,6 +47,7 @@ export function handleNodeEditMouseUp(drag: Ref<DragState | null>, editor: Edito
   }
 
   if (d.type === 'edit-node') {
+    editor.setSnapGuides([])
     const es = getCanvasNodeEditState(editor)
     if (es && d.origPositions.size === 1) {
       const [draggedIdx] = d.origPositions.keys()
@@ -70,6 +71,7 @@ export function handleNodeEditMouseUp(drag: Ref<DragState | null>, editor: Edito
   }
 
   if (d.type === 'edit-handle') {
+    editor.setSnapGuides([])
     drag.value = null
     return true
   }
