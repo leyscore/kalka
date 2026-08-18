@@ -41,8 +41,7 @@ const params = useUrlSearchParams('history')
 const showChrome = !('no-chrome' in params)
 
 const createdInitialTab = tabCount() === 0
-const showInitialHome =
-  route.path === '/' && !('test' in params) && (isTauri() || 'recent-files' in params)
+const showInitialHome = route.path === '/' && !('test' in params) && !route.meta.demo
 const firstTab = createdInitialTab
   ? createTab(undefined, undefined, showInitialHome)
   : (activeTab.value ?? createTab())

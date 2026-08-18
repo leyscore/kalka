@@ -154,16 +154,16 @@ function isDOMImportFile(file: File): boolean {
   return /\.(html?|xhtml)$/i.test(file.name)
 }
 
-function reusableTabStore(): EditorStore {
+function reusableTabStore(): { store: EditorStore; created: boolean } {
   const current = activeTab.value
-  if (current?.showHome) return createTab().store
+  if (current?.showHome) return { store: createTab().store, created: true }
   const isUntouched =
     current?.store.state.documentName === 'Untitled' && !current.store.undo.canUndo
   if (isUntouched) {
     leaveHome(current.id)
-    return current.store
+    return { store: current.store, created: false }
   }
-  return createTab().store
+  return { store: createTab().store, created: true }
 }
 
 async function readFigForTab(file: File, store: EditorStore): Promise<SceneGraph> {
@@ -249,7 +249,7 @@ export async function openStorageDocumentInNewTab(document: StorageDocument): Pr
     return
   }
 
-  const store = reusableTabStore()
+  const { store, created } = reusableTabStore()
   store.state.documentName = document.name
   store.state.loading = true
   try {
@@ -282,6 +282,12 @@ export async function openStorageDocumentInNewTab(document: StorageDocument): Pr
     await showImportedGraph(store, imported, () =>
       store.setStorageDocumentSource({ providerId, documentId: document.id }, document.name)
     )
+  } catch (error) {
+    if (created) {
+      const tab = getTabForStore(store)
+      if (tab) await closeTab(tab.id)
+    }
+    throw error
   } finally {
     store.state.loading = false
   }
@@ -316,7 +322,7 @@ export async function openFileInNewTab(
       return { kind: 'existing' as const }
     }
 
-    const store = reusableTabStore()
+    const { store, created } = reusableTabStore()
     store.state.documentName = file.name.replace(/\.[^.]+$/i, '')
     store.state.loading = true
 
@@ -324,7 +330,7 @@ export async function openFileInNewTab(
     void completion.promise.catch(() => undefined)
     const pendingOpen = { completion: completion.promise, identity, store }
     fileOpenCoordinator.add(pendingOpen)
-    return { kind: 'owner' as const, completion, pendingOpen, store }
+    return { kind: 'owner' as const, completion, pendingOpen, store, created }
   })
 
   if (decision.kind === 'existing') return
@@ -333,7 +339,7 @@ export async function openFileInNewTab(
     return
   }
 
-  const { completion, pendingOpen, store } = decision
+  const { completion, pendingOpen, store, created } = decision
   try {
     if (isDOMImportFile(file)) {
       await store.openDOMFile(file, { handle, path })
@@ -368,6 +374,10 @@ export async function openFileInNewTab(
     completion.resolve(undefined)
   } catch (error) {
     completion.reject(error)
+    if (created) {
+      const tab = getTabForStore(store)
+      if (tab) await closeTab(tab.id)
+    }
     throw error
   } finally {
     store.state.loading = false
@@ -387,7 +397,7 @@ export async function restoreRecoverySnapshot(id: string): Promise<void> {
   const snapshot = await getRecoveryStore().read(id)
   if (!snapshot) throw new Error('Recovery snapshot is no longer available')
 
-  const store = reusableTabStore()
+  const { store } = reusableTabStore()
   store.state.loading = true
   try {
     const fileBytes = new Uint8Array(snapshot.figBytes)
