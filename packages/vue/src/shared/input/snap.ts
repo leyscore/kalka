@@ -87,9 +87,33 @@ function winningCorrection(
   return objectMatched ? objectDelta : pixelDelta
 }
 
-// Resolving ranked candidates on two axes is branch-heavy by nature; candidate
-// collection remains split into focused helpers at each interaction call site.
-// eslint-disable-next-line complexity
+interface AxisCandidate<T extends SnapGuide> {
+  delta: number
+  target: T
+}
+
+function nearestPerAxis<T extends SnapGuide>(
+  targets: readonly T[],
+  xAnchors: readonly number[],
+  yAnchors: readonly number[],
+  threshold: number
+): { x: AxisCandidate<T> | null; y: AxisCandidate<T> | null } {
+  let x: AxisCandidate<T> | null = null
+  let y: AxisCandidate<T> | null = null
+  for (const target of targets) {
+    const anchors = target.axis === 'x' ? xAnchors : yAnchors
+    for (const anchor of anchors) {
+      const delta = target.position - anchor
+      if (Math.abs(delta) >= threshold) continue
+      const current = target.axis === 'x' ? x : y
+      if (current && Math.abs(delta) >= Math.abs(current.delta)) continue
+      if (target.axis === 'x') x = { delta, target }
+      else y = { delta, target }
+    }
+  }
+  return { x, y }
+}
+
 export function resolveObjectPixelSnap(
   movingIds: Set<string>,
   movingBounds: Rect,
@@ -109,36 +133,18 @@ export function resolveObjectPixelSnap(
     movingBounds.y + movingBounds.height / 2,
     movingBounds.y + movingBounds.height
   ]
-  let geometryX: { delta: number; target: GeometrySnapTarget } | null = null
-  let geometryY: { delta: number; target: GeometrySnapTarget } | null = null
-  for (const target of geometryTargets) {
-    const anchors = target.axis === 'x' ? xAnchors : yAnchors
-    for (const anchor of anchors) {
-      const delta = target.position - anchor
-      if (Math.abs(delta) >= threshold) continue
-      const current = target.axis === 'x' ? geometryX : geometryY
-      if (!current || Math.abs(delta) < Math.abs(current.delta)) {
-        const winner = { delta, target }
-        if (target.axis === 'x') geometryX = winner
-        else geometryY = winner
-      }
-    }
-  }
-  let explicitX: { delta: number; target: ExplicitSnapTarget } | null = null
-  let explicitY: { delta: number; target: ExplicitSnapTarget } | null = null
-  for (const target of explicitTargets) {
-    const anchors = target.axis === 'x' ? xAnchors : yAnchors
-    for (const anchor of anchors) {
-      const delta = target.position - anchor
-      if (Math.abs(delta) >= threshold) continue
-      const current = target.axis === 'x' ? explicitX : explicitY
-      if (!current || Math.abs(delta) < Math.abs(current.delta)) {
-        const winner = { delta, target }
-        if (target.axis === 'x') explicitX = winner
-        else explicitY = winner
-      }
-    }
-  }
+  const { x: geometryX, y: geometryY } = nearestPerAxis(
+    geometryTargets,
+    xAnchors,
+    yAnchors,
+    threshold
+  )
+  const { x: explicitX, y: explicitY } = nearestPerAxis(
+    explicitTargets,
+    xAnchors,
+    yAnchors,
+    threshold
+  )
   const objectSnap = editor.state.snappingPreferences.objects
     ? computeSnap(movingIds, movingBounds, targets, threshold)
     : { dx: 0, dy: 0, guides: [] }

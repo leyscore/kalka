@@ -81,6 +81,34 @@ describe('selection move drag threshold', () => {
     expect(editor.state.snapGuides).toEqual([])
   })
 
+  test('Control bypasses object and pixel snapping inside a rotated parent', () => {
+    const editor = createEditor()
+    const pageId = editor.state.currentPageId
+    const frame = editor.graph.createNode('FRAME', pageId, {
+      x: 200,
+      y: 150,
+      width: 300,
+      height: 300,
+      rotation: 30
+    })
+    const moving = editor.graph.createNode('RECTANGLE', frame.id, {
+      x: 20,
+      y: 40,
+      width: 50,
+      height: 50
+    })
+    editor.select([moving.id])
+    const drag = createSelectionMoveDrag(0, 0, 0, 0, editor, false)
+    if (drag.type !== 'move') throw new Error('Expected move drag')
+
+    handleMoveMove(drag, 74, 43, 100, 100, editor, true)
+
+    const angle = (-30 * Math.PI) / 180
+    expect(drag.appliedDx).toBeCloseTo(74 * Math.cos(angle) - 43 * Math.sin(angle), 3)
+    expect(drag.appliedDy).toBeCloseTo(74 * Math.sin(angle) + 43 * Math.cos(angle), 3)
+    expect(editor.state.snapGuides).toEqual([])
+  })
+
   test('converts world movement into a rotated parent coordinate space', () => {
     const editor = createEditor()
     const pageId = editor.state.currentPageId
@@ -97,13 +125,6 @@ describe('selection move drag threshold', () => {
       width: 50,
       height: 50
     })
-    editor.graph.createNode('RECTANGLE', frame.id, {
-      x: 140,
-      y: 40,
-      width: 60,
-      height: 50,
-      rotation: 20
-    })
     editor.select([moving.id])
     editor.state.snappingPreferences = { geometry: true, objects: false, pixelGrid: false }
     const drag = createSelectionMoveDrag(0, 0, 0, 0, editor, false)
@@ -112,8 +133,9 @@ describe('selection move drag threshold', () => {
     handleMoveMove(drag, 74, 43, 100, 100, editor)
 
     expect(editor.state.snapGuides).toEqual([])
-    expect(drag.appliedDx).toBeCloseTo(85.5859, 3)
-    expect(drag.appliedDy).toBeCloseTo(0.2391, 3)
+    const angle = (-30 * Math.PI) / 180
+    expect(drag.appliedDx).toBeCloseTo(74 * Math.cos(angle) - 43 * Math.sin(angle), 3)
+    expect(drag.appliedDy).toBeCloseTo(74 * Math.sin(angle) + 43 * Math.cos(angle), 3)
   })
 
   test('removes duplicate created for alt-click without movement', () => {

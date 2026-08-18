@@ -19,10 +19,12 @@ function pageGuideTargets(editor: Editor): ExplicitSnapTarget[] {
   }))
 }
 
+const AXIS_ALIGNMENT_EPSILON = 1e-6
+
 function axisAlignedTarget(start: Vector, end: Vector): ExplicitSnapTarget | null {
   const dx = Math.abs(end.x - start.x)
   const dy = Math.abs(end.y - start.y)
-  if (dx <= Number.EPSILON * Math.max(1, Math.abs(start.x), Math.abs(end.x))) {
+  if (dx <= AXIS_ALIGNMENT_EPSILON) {
     return {
       kind: 'layout-guide',
       axis: 'x',
@@ -31,7 +33,7 @@ function axisAlignedTarget(start: Vector, end: Vector): ExplicitSnapTarget | nul
       to: Math.max(start.y, end.y)
     }
   }
-  if (dy <= Number.EPSILON * Math.max(1, Math.abs(start.y), Math.abs(end.y))) {
+  if (dy <= AXIS_ALIGNMENT_EPSILON) {
     return {
       kind: 'layout-guide',
       axis: 'y',

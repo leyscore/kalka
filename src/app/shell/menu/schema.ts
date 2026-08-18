@@ -140,9 +140,24 @@ export const APP_MENU_SCHEMA = [
         id: 'preferences',
         label: 'Preferences',
         sub: [
-          { id: 'snap-geometry', label: 'Snap to Geometry', checkbox: true },
-          { id: 'snap-objects', label: 'Snap to Objects', checkbox: true },
-          { id: 'snap-pixel-grid', label: 'Snap to Pixel Grid', checkbox: true },
+          {
+            id: 'snap-geometry',
+            label: 'Snap to Geometry',
+            checkbox: true,
+            handler: 'shell'
+          },
+          {
+            id: 'snap-objects',
+            label: 'Snap to Objects',
+            checkbox: true,
+            handler: 'shell'
+          },
+          {
+            id: 'snap-pixel-grid',
+            label: 'Snap to Pixel Grid',
+            checkbox: true,
+            handler: 'shell'
+          },
           { type: 'separator' },
           {
             id: 'settings',

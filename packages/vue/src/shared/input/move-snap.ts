@@ -2,7 +2,6 @@ import type { Editor } from '@open-pencil/core/editor'
 import { computeSelectionBounds } from '@open-pencil/scene-graph'
 import type { SceneNode } from '@open-pencil/scene-graph'
 import { getAxisAlignedWorldBounds } from '@open-pencil/scene-graph/coordinate'
-import type { Rect } from '@open-pencil/scene-graph/primitives'
 
 import { explicitSnapTargets } from '#vue/shared/input/explicit-snap-targets'
 import {
@@ -35,18 +34,17 @@ function movingSelection(drag: DragMove, dx: number, dy: number, editor: Editor)
   return selectedNodes
 }
 
-function absoluteMoveContext(
-  drag: DragMove,
-  bounds: Rect,
-  editor: Editor
-): { bounds: Rect; targets: SceneNode[] } {
+function moveParentId(drag: DragMove, editor: Editor): string {
   const firstId = drag.originals.keys().next().value
   const firstNode = firstId ? editor.graph.getNode(firstId) : undefined
-  const parentId = firstNode?.parentId ?? editor.state.currentPageId
-  return {
-    bounds,
-    targets: editor.graph.getChildren(parentId).map((node) => worldBoundsNode(node, editor))
-  }
+  return firstNode?.parentId ?? editor.state.currentPageId
+}
+
+function parentTargets(parentId: string, editor: Editor): SceneNode[] {
+  return editor.graph
+    .getChildren(parentId)
+    .filter((node) => node.visible)
+    .map((node) => worldBoundsNode(node, editor))
 }
 
 export function applyMoveSnap(
@@ -56,25 +54,22 @@ export function applyMoveSnap(
   editor: Editor,
   disableSnapping = false
 ): { dx: number; dy: number } {
+  const parentId = moveParentId(drag, editor)
+  const localDelta = worldDeltaToParentLocal({ x: dx, y: dy }, parentId, editor)
   const selectionBounds = computeSelectionBounds(movingSelection(drag, dx, dy, editor))
   if (!selectionBounds || disableSnapping) {
     editor.setSnapGuides([])
-    return { dx, dy }
+    return { dx: localDelta.x, dy: localDelta.y }
   }
 
-  const context = absoluteMoveContext(drag, selectionBounds, editor)
-  const firstId = drag.originals.keys().next().value
-  const firstNode = firstId ? editor.graph.getNode(firstId) : undefined
-  const parentId = firstNode?.parentId ?? editor.state.currentPageId
   const snap = resolveObjectPixelSnap(
     editor.state.selectedIds,
-    context.bounds,
-    context.targets,
+    selectionBounds,
+    parentTargets(parentId, editor),
     editor,
     explicitSnapTargets(parentId, editor)
   )
   editor.setSnapGuides(snap.guides)
-  const localDelta = worldDeltaToParentLocal({ x: dx, y: dy }, parentId, editor)
   const localCorrection = worldDeltaToParentLocal(snap.correction, parentId, editor)
   return {
     dx: localDelta.x + localCorrection.x,

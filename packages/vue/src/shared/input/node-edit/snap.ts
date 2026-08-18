@@ -34,7 +34,7 @@ function siblingSnapTargets(editor: Editor, editedNode: SceneNode): SceneNode[] 
   const parentId = editedNode.parentId ?? editor.state.currentPageId
   return editor.graph
     .getChildren(parentId)
-    .filter((node) => node.id !== editedNode.id)
+    .filter((node) => node.id !== editedNode.id && node.visible)
     .map((node) => worldBoundsNode(node, editor))
 }
 

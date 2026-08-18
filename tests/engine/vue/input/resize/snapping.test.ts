@@ -69,11 +69,29 @@ describe('resize snapping preferences', () => {
 
   test('Control bypass preserves fractional resize geometry', () => {
     const { editor, nodeId, drag } = setup()
+    editor.state.snappingPreferences = { geometry: true, objects: true, pixelGrid: true }
 
     applyResize(drag, drag.startX + 6.3, drag.startY + 7.4, false, editor, true)
     commitResizePreview(drag, editor)
 
     expect(editor.graph.getNode(nodeId)).toMatchObject({ width: 106.3, height: 87.4 })
+    expect(editor.state.snapGuides).toEqual([])
+  })
+
+  test('does not apply axis-aligned snapping to rotated resize geometry', () => {
+    const { editor, nodeId, drag } = setup('e')
+    editor.updateNode(nodeId, { rotation: 30 })
+    editor.graph.createNode('RECTANGLE', editor.state.currentPageId, {
+      x: 150,
+      y: 0,
+      width: 50,
+      height: 50
+    })
+
+    applyResize(drag, 148, drag.startY, false, editor)
+    commitResizePreview(drag, editor)
+
+    expect(editor.graph.getNode(nodeId)?.width).toBeCloseTo(137.75)
     expect(editor.state.snapGuides).toEqual([])
   })
 

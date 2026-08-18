@@ -14,5 +14,7 @@ export function setSnappingPreference(
   for (const tab of getTabsSnapshot()) {
     tab.store.state.snappingPreferences = { ...snapping }
   }
-  void syncNativeSnappingMenu(snapping)
+  void syncNativeSnappingMenu(snapping).catch((error: unknown) => {
+    console.error('[Settings] Failed to synchronize native snapping preferences:', error)
+  })
 }

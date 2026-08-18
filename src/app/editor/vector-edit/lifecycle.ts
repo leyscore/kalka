@@ -108,6 +108,7 @@ export function createVectorEditLifecycle(editor: Editor, state: VectorEditState
     const es = getNodeEditState()
     if (!es) return
     state.snapGuides = []
+    editor.requestRender()
 
     const node = editor.graph.getNode(es.nodeId)
     if (node?.type !== 'VECTOR') {
