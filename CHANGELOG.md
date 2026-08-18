@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+
+- Update compatible application, workspace, desktop, build, and test dependencies while preserving browser package boundaries.
+
 ### Added
 
 - Open multiple selected design files in separate tabs.
