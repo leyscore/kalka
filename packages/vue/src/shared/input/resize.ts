@@ -228,7 +228,7 @@ function clearResizedRawGeometry(editor: Editor, nodeId: string): void {
 export function commitResizePreview(dragState: DragResize, editor: Editor) {
   // See applyResize — reactive drag state must not leak into graph writes.
   const d = toRaw(dragState)
-  if (editor.state) editor.state.snapGuides = []
+  editor.state.snapGuides = []
   const node = editor.graph.getNode(d.nodeId)
   if (!node) return
   const finalChanges = snapshotResizeFinal(node)
