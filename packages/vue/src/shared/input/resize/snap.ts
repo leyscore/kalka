@@ -79,8 +79,8 @@ export function applyResizeSnap(
   editor: Editor,
   disableSnapping: boolean
 ): Rect {
-  if (disableSnapping) {
-    editor.state.snapGuides = []
+  if (disableSnapping || !editor.state) {
+    if (editor.state) editor.state.snapGuides = []
     return rect
   }
 
