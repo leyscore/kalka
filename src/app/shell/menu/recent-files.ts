@@ -57,7 +57,12 @@ export async function syncRecentFilesMenu(): Promise<void> {
 }
 
 function updateRecentFiles(paths: string[]): void {
-  recentFilePaths.value = paths.slice(0, MAX_RECENT_FILES)
+  const nextPaths = paths.slice(0, MAX_RECENT_FILES)
+  const retainedPaths = new Set(nextPaths)
+  recentFilePaths.value = nextPaths
+  recentFileOpenedAt.value = Object.fromEntries(
+    Object.entries(recentFileOpenedAt.value).filter(([path]) => retainedPaths.has(path))
+  )
   void syncRecentFilesMenu().catch((error) => {
     console.warn('[Recent files] Failed to update the native menu', error)
   })
@@ -123,12 +128,25 @@ export async function loadRecentFileThumbnail(path: string): Promise<Uint8Array 
   if (!isTauri() || !path.toLowerCase().endsWith('.fig')) return null
   const cached = await loadCachedRecentFileThumbnail(path)
   if (cached) return cached
-  const { readFile } = await import('@tauri-apps/plugin-fs')
-  const bytes = await readFile(path)
-  return extractFigThumbnailFromReader({
-    size: bytes.byteLength,
-    async read(start, endExclusive) {
-      return bytes.subarray(start, endExclusive)
-    }
-  })
+  const { open, SeekMode } = await import('@tauri-apps/plugin-fs')
+  const file = await open(path, { read: true })
+  try {
+    const info = await file.stat()
+    return await extractFigThumbnailFromReader({
+      size: info.size,
+      async read(start, endExclusive) {
+        await file.seek(start, SeekMode.Start)
+        const bytes = new Uint8Array(endExclusive - start)
+        let offset = 0
+        while (offset < bytes.byteLength) {
+          const count = await file.read(bytes.subarray(offset))
+          if (count === null) break
+          offset += count
+        }
+        return offset === bytes.byteLength ? bytes : bytes.subarray(0, offset)
+      }
+    })
+  } finally {
+    await file.close()
+  }
 }
