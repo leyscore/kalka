@@ -383,9 +383,14 @@ export function useCanvasInput(
       editor.setHoveredNode(null)
     }
   })
-  useEventListener(window, 'mouseup', () => {
-    if (drag.value) onMouseUp()
-  })
+  useEventListener(
+    window,
+    'mouseup',
+    () => {
+      if (drag.value) onMouseUp()
+    },
+    { capture: true }
+  )
 
   const stopToolListener = editor.onEditorEvent('tool:changed', () => {
     if (!isEnabled()) return

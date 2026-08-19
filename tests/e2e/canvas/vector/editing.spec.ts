@@ -160,6 +160,17 @@ test('dragging a vector point snaps to sibling bounds and clears guides on relea
       editor.page.evaluate(() => window.openPencil?.getStore?.().state.snapGuides.length ?? -1)
     )
     .toBe(0)
+  const releasedVertex = await editor.page.evaluate(() => {
+    const vertex = window.openPencil?.getStore?.().getNodeEditState()?.vertices[0]
+    return vertex ? { x: vertex.x, y: vertex.y } : null
+  })
+  await editor.page.mouse.move(box.x + 420, box.y + 260, { steps: 5 })
+  expect(
+    await editor.page.evaluate(() => {
+      const vertex = window.openPencil?.getStore?.().getNodeEditState()?.vertices[0]
+      return vertex ? { x: vertex.x, y: vertex.y } : null
+    })
+  ).toEqual(releasedVertex)
 
   await editor.page.mouse.move(box.x + 300, box.y + 100)
   await editor.page.mouse.down()
