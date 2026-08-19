@@ -1,5 +1,4 @@
 import type {
-  ComponentPropertyDefinition,
   SceneGraph,
   SceneNode as CoreSceneNode,
   NodeType,
@@ -9,7 +8,7 @@ import type {
   VariableValue
 } from '@open-pencil/scene-graph'
 import { copyFills, copyStrokes, copyEffects } from '@open-pencil/scene-graph/copy'
-import { computeAbsoluteBounds, computeBounds } from '@open-pencil/scene-graph/geometry'
+import { computeBounds } from '@open-pencil/scene-graph/geometry'
 import { computeImageHash } from '@open-pencil/scene-graph/images'
 import type { Rect, Vector } from '@open-pencil/scene-graph/primitives'
 
@@ -19,12 +18,13 @@ import { canMakeBooleanSourceNode } from '#core/canvas/boolean'
 import { flattenNodesToVectorProps } from '#core/canvas/flatten'
 import { IS_BROWSER } from '#core/constants'
 import type { RasterExportFormat } from '#core/io/formats/raster'
-import { randomHex } from '#core/random'
 import { documentFontStatus, type DocumentFontStatus } from '#core/text/font/status'
 
+import { combineComponentsAsVariants } from './components'
 import type {
   FigmaBooleanOperationNode,
   FigmaComponentNode,
+  FigmaComponentSetNode,
   FigmaEllipseNode,
   FigmaFrameNode,
   FigmaGroupNode,
@@ -51,6 +51,7 @@ export { FigmaNodeProxy } from './proxy'
 export type {
   FigmaBooleanOperationNode,
   FigmaComponentNode,
+  FigmaComponentSetNode,
   FigmaEllipseNode,
   FigmaFrameNode,
   FigmaGroupNode,
@@ -267,105 +268,28 @@ export class FigmaAPI implements NodeProxyHost {
     return this.wrapNode(comp.id)
   }
 
-  private _isTopLevel(parentId: string | null): boolean {
-    return !parentId || parentId === this.graph.rootId || parentId === this._currentPageId
-  }
-
-  private _wrapNodesInComponentSet(rawNodes: CoreSceneNode[]): FigmaNodeProxy | null {
-    const parentId = rawNodes[0].parentId ?? this._currentPageId
-    const sameParent = rawNodes.every((n) => (n.parentId ?? this._currentPageId) === parentId)
-    if (!sameParent) return null
-
-    const parent = this.graph.getNode(parentId)
-    if (!parent) return null
-
-    const nodeIds = rawNodes.map((n) => n.id)
-    const {
-      x: minX,
-      y: minY,
-      width: bw,
-      height: bh
-    } = computeAbsoluteBounds(rawNodes, (id) => this.graph.getAbsolutePosition(id))
-    const maxX = minX + bw
-    const maxY = minY + bh
-
-    const parentAbs = this._isTopLevel(parentId)
-      ? { x: 0, y: 0 }
-      : this.graph.getAbsolutePosition(parentId)
-    const firstIndex = Math.min(...nodeIds.map((id) => parent.childIds.indexOf(id)))
-    const padding = 40
-
-    const containerNode = this.graph.createNode('COMPONENT_SET', parentId, {
-      name: rawNodes[0].name.split('/')[0]?.trim() || 'Component Set',
-      x: minX - parentAbs.x - padding,
-      y: minY - parentAbs.y - padding,
-      width: maxX - minX + padding * 2,
-      height: maxY - minY + padding * 2,
-      fills: [{ type: 'SOLID', color: { r: 0.96, g: 0.96, b: 0.96, a: 1 }, opacity: 1, visible: true }]
-    })
-
-    this.graph.insertChildAt(containerNode.id, parentId, firstIndex)
-    for (const id of nodeIds) {
-      this.graph.reparentNode(id, containerNode.id)
-    }
-
-    return this.wrapNode(containerNode.id)
-  }
-
-  /**
-   * Wraps components sharing a common parent into a COMPONENT_SET, deriving
-   * variant properties from `Category/Value` name segments (mirrors the
-   * editor's createComponentSetFromComponents, minus undo/selection state).
-   */
-  combineAsVariants(nodes: ReadonlyArray<FigmaNodeProxy>): FigmaNodeProxy {
-    if (nodes.length < 2) throw new Error('Need at least 2 components to combine as variants')
-
-    const rawNodes = nodes.map((n) => this.graph.getNode(n[INTERNAL_ID]))
-    if (!rawNodes.every((n): n is CoreSceneNode => n?.type === 'COMPONENT')) {
-      throw new Error('combineAsVariants requires COMPONENT nodes')
-    }
-
-    const container = this._wrapNodesInComponentSet(rawNodes)
-    if (!container) throw new Error('Components must share the same parent')
-
-    const slashCounts = rawNodes.map((n) => (n.name.match(/\//g) ?? []).length)
-    const hasConsistentSlashes = slashCounts.every((c) => c === slashCounts[0]) && slashCounts[0] > 0
-
-    if (hasConsistentSlashes) {
-      const propCount = slashCounts[0]
-      const propDefs: ComponentPropertyDefinition[] = []
-      const propValues = new Map<string, Set<string>>()
-
-      for (let i = 0; i < propCount; i++) {
-        const propId = `prop:${randomHex(8)}`
-        const propName = i === 0 ? 'Variant' : `Property ${i + 1}`
-        propDefs.push({ id: propId, name: propName, type: 'VARIANT', defaultValue: '' })
-        propValues.set(propName, new Set())
-      }
-
-      for (const node of rawNodes) {
-        const parts = node.name.split('/').slice(1)
-        const values: Record<string, string> = {}
-        for (let i = 0; i < propDefs.length; i++) {
-          const value = parts[i]?.trim() ?? ''
-          values[propDefs[i].name] = value
-          propValues.get(propDefs[i].name)?.add(value)
-        }
-        this.graph.updateNode(node.id, {
-          componentPropertyValues: values,
-          name: Object.values(values).join(', ')
-        })
-      }
-
-      for (const def of propDefs) {
-        def.variantOptions = [...(propValues.get(def.name) ?? [])]
-        if (!def.defaultValue && def.variantOptions[0]) def.defaultValue = def.variantOptions[0]
-      }
-
-      this.graph.updateNode(container[INTERNAL_ID], { componentPropertyDefinitions: propDefs })
-    }
-
-    return container
+  combineAsVariants(
+    nodes: ReadonlyArray<FigmaComponentNode>,
+    parent: FigmaNodeProxy,
+    index?: number
+  ): FigmaComponentSetNode
+  combineAsVariants(
+    nodes: ReadonlyArray<ComponentNode>,
+    parent: BaseNode & ChildrenMixin,
+    index?: number
+  ): ComponentSetNode
+  combineAsVariants(
+    nodes: ReadonlyArray<ComponentNode | FigmaComponentNode>,
+    parent: (BaseNode & ChildrenMixin) | FigmaNodeProxy,
+    index?: number
+  ): FigmaComponentSetNode {
+    const componentSet = combineComponentsAsVariants(
+      this.graph,
+      nodes.map((node) => this._nodeId(node)),
+      this._nodeId(parent),
+      index
+    )
+    return this.wrapNode(componentSet.id) as FigmaComponentSetNode
   }
 
   // --- Variables ---

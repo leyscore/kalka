@@ -15,6 +15,7 @@ export default defineConfig({
     undo: './src/undo.ts',
     variables: './src/variables.ts',
     'variant-name': './src/variant-name.ts',
+    'variant-properties': './src/variant-properties.ts',
     'vector-network': './src/vector-network.ts',
     types: './src/types.ts',
     primitives: './src/primitives.ts',

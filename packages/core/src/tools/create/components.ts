@@ -1,5 +1,5 @@
-import type { FigmaNodeProxy } from '#core/figma-api'
-import { defineTool, nodeSummary } from '#core/tools/schema'
+import type { FigmaComponentNode } from '#core/figma-api'
+import { defineTool, nodeSummary, requireNodes } from '#core/tools/schema'
 
 export const createComponent = defineTool({
   name: 'create_component',
@@ -45,16 +45,15 @@ export const combineAsVariants = defineTool({
     ids: { type: 'string[]', description: 'Component node IDs to combine', required: true }
   },
   execute: (figma, { ids }) => {
-    const nodes = ids
-      .map((id) => figma.getNodeById(id))
-      .filter((node): node is FigmaNodeProxy => node !== null)
-    if (nodes.length !== ids.length) return { error: 'One or more node IDs were not found' }
+    const nodes = requireNodes(figma, ids)
+    if (!nodes) return { error: 'One or more node IDs were not found' }
     if (nodes.length < 2) return { error: 'Need at least 2 components to combine as variants' }
-    if (!nodes.every((node) => node.type === 'COMPONENT')) {
+    if (!nodes.every((node): node is FigmaComponentNode => node.type === 'COMPONENT')) {
       return { error: 'combineAsVariants requires COMPONENT nodes' }
     }
+    const parent = nodes[0].parent ?? figma.currentPage
     try {
-      const componentSet = figma.combineAsVariants(nodes)
+      const componentSet = figma.combineAsVariants(nodes, parent)
       return nodeSummary(componentSet)
     } catch (error) {
       return { error: error instanceof Error ? error.message : String(error) }
