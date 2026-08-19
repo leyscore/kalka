@@ -11,6 +11,12 @@ describe('Figma canvas guide conversion', () => {
     ])
   })
 
+  test('rejects malformed Figma guide GUIDs', () => {
+    expect(
+      importCanvasGuides([{ axis: 'X', offset: 10, guid: { sessionID: 'bad', localID: null } }])
+    ).toEqual([{ id: 'guide:0', axis: 'x', position: 10 }])
+  })
+
   test('exports preserved GUID and allocates no format-specific fallback', () => {
     expect(
       exportCanvasGuides([

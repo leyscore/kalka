@@ -1,7 +1,8 @@
 import type { Rect } from '@open-pencil/scene-graph/primitives'
 import type { SnapGuide } from '@open-pencil/scene-graph/snap'
 
-import type { EditorContext, GuidePreview } from '#core/editor/types'
+import type { GuidePreview } from '#core/editor/guide-preview'
+import type { EditorContext } from '#core/editor/types'
 
 export function createSelectionOverlayActions(ctx: EditorContext) {
   function setMarquee(rect: Rect | null) {

@@ -2,6 +2,7 @@ import type { VectorRegion, VectorVertex } from '@open-pencil/scene-graph'
 import type { Color, Rect, Vector } from '@open-pencil/scene-graph/primitives'
 import type { SnapGuide } from '@open-pencil/scene-graph/snap'
 
+import type { GuidePreview } from '#core/editor/guide-preview'
 import type { TextEditor } from '#core/text/editor'
 
 export interface RulerTheme {
@@ -21,7 +22,7 @@ export interface RenderOverlays {
   textEditor?: TextEditor | null
   marquee?: Rect | null
   snapGuides?: SnapGuide[]
-  guidePreview?: { ownerId: string; axis: 'x' | 'y'; position: number } | null
+  guidePreview?: GuidePreview | null
   rotationPreview?: { nodeId: string; angle: number } | null
   dropTargetId?: string | null
   layoutInsertIndicator?: {

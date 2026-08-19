@@ -10,7 +10,10 @@ function owner(ctx: EditorContext, ownerId: string) {
 }
 
 function replaceGuides(ctx: EditorContext, ownerId: string, guides: CanvasGuide[]): void {
+  const node = ctx.graph.getNode(ownerId)
+  if (!node) return
   ctx.graph.updateNode(ownerId, { guides: structuredClone(guides) })
+  node.source.editedFields = [...new Set([...node.source.editedFields, 'guides'])]
   ctx.emitEditorEvent('guides:changed', ownerId, structuredClone(guides))
   ctx.requestRender()
 }

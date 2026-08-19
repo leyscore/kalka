@@ -4,7 +4,13 @@ import type { GUID } from '@open-pencil/scene-graph/primitives'
 interface FigmaCanvasGuide {
   axis?: string
   offset?: number
-  guid?: GUID
+  guid?: unknown
+}
+
+function isGuid(value: unknown): value is GUID {
+  if (!value || typeof value !== 'object') return false
+  const candidate = value as { sessionID?: unknown; localID?: unknown }
+  return Number.isFinite(candidate.sessionID) && Number.isFinite(candidate.localID)
 }
 
 function guideId(guid: GUID | undefined, index: number): string {
@@ -18,19 +24,20 @@ export function importCanvasGuides(value: unknown): CanvasGuide[] {
     if (!raw || typeof raw !== 'object') continue
     const guide = raw as FigmaCanvasGuide
     if (typeof guide.offset !== 'number' || !Number.isFinite(guide.offset)) continue
+    const figGuid = isGuid(guide.guid) ? guide.guid : undefined
     if (guide.axis === 'X') {
       guides.push({
-        id: guideId(guide.guid, index),
+        id: guideId(figGuid, index),
         axis: 'x',
         position: guide.offset,
-        figGuid: guide.guid
+        ...(figGuid ? { figGuid } : {})
       })
     } else if (guide.axis === 'Y') {
       guides.push({
-        id: guideId(guide.guid, index),
+        id: guideId(figGuid, index),
         axis: 'y',
         position: guide.offset,
-        figGuid: guide.guid
+        ...(figGuid ? { figGuid } : {})
       })
     }
   }

@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test'
+import { describe, expect, mock, test } from 'bun:test'
 
 import type { Canvas } from 'canvaskit-wasm'
 
@@ -32,8 +32,8 @@ describe('page guide rendering', () => {
     })
     const canvas = createMockCanvas()
     const graph = graphWithGuides([
-      { axis: 'x', position: 42 },
-      { axis: 'y', position: 84 }
+      { id: 'x', axis: 'x', position: 42 },
+      { id: 'y', axis: 'y', position: 84 }
     ])
 
     drawPageGuides(r, canvas as Canvas, graph)
@@ -43,6 +43,48 @@ describe('page guide rendering', () => {
       [94, 0, 95, 200],
       [0, 188, 300, 189]
     ])
+  })
+
+  test('renders nested frame guides', () => {
+    const r = createMockRenderer({ pageId: 'page', zoom: 1, panX: 0, panY: 0 })
+    const canvas = createMockCanvas()
+    canvas.drawLine = mock(() => undefined)
+    const nested = {
+      id: 'nested',
+      type: 'FRAME',
+      parentId: 'frame',
+      childIds: [],
+      x: 20,
+      y: 30,
+      width: 100,
+      height: 80,
+      rotation: 0,
+      flipX: false,
+      flipY: false,
+      guides: [{ id: 'nested-guide', axis: 'x', position: 10 }]
+    } as SceneNode
+    const frame = {
+      ...nested,
+      id: 'frame',
+      parentId: 'page',
+      childIds: ['nested'],
+      x: 100,
+      y: 100,
+      guides: []
+    } as SceneNode
+    const page = { id: 'page', parentId: null, childIds: ['frame'], guides: [] } as SceneNode
+    const nodes = new Map([
+      ['page', page],
+      ['frame', frame],
+      ['nested', nested]
+    ])
+    const graph = new SceneGraph()
+    graph.rootId = 'root'
+    graph.nodes = nodes
+
+    drawPageGuides(r, canvas as Canvas, graph)
+
+    expect(canvas.drawLine).toHaveBeenCalled()
   })
 
   test('ignores pages without guides', () => {

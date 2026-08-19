@@ -199,10 +199,14 @@ export function useCanvasInput(
   }
 
   function guideOwner(cx: number, cy: number): { id: string; position: number } {
-    const hit = editor.graph.hitTestDeep(cx, cy, editor.state.currentPageId)
-    const owner = hit && ['FRAME', 'COMPONENT'].includes(hit.type) ? hit : null
-    if (!owner) return { id: editor.state.currentPageId, position: 0 }
-    return { id: owner.id, position: 0 }
+    let node = editor.graph.hitTestDeep(cx, cy, editor.state.currentPageId)
+    while (node) {
+      if (node.type === 'FRAME' || node.type === 'COMPONENT') {
+        return { id: node.id, position: 0 }
+      }
+      node = node.parentId ? (editor.graph.getNode(node.parentId) ?? null) : null
+    }
+    return { id: editor.state.currentPageId, position: 0 }
   }
 
   function startGuideDrag(sx: number, sy: number, cx: number, cy: number): boolean {
@@ -237,7 +241,7 @@ export function useCanvasInput(
     if (!editor.state.editingTextId) canvasRef.value?.focus()
     editor.setHoveredNode(null)
     const { sx, sy, cx, cy } = getCoords(e)
-    if (startGuideDrag(sx, sy, cx, cy)) {
+    if (e.button === 0 && startGuideDrag(sx, sy, cx, cy)) {
       e.preventDefault()
       return
     }

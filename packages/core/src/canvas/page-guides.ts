@@ -34,10 +34,12 @@ function drawOwnedGuide(
   canvas.drawLine(sx1, sy1, sx2, sy2, r.auxStroke)
 
   if (!preview || owner.type === 'CANVAS') return
-  r.auxStroke.setPathEffect(r.ck.PathEffect.MakeDash(GUIDE_DASH, 0))
+  const dash = r.ck.PathEffect.MakeDash(GUIDE_DASH, 0)
+  r.auxStroke.setPathEffect(dash)
   if (axis === 'x') canvas.drawLine(sx1, 0, sx1, r.viewportHeight, r.auxStroke)
   else canvas.drawLine(0, sy1, r.viewportWidth, sy1, r.auxStroke)
   r.auxStroke.setPathEffect(null)
+  dash.delete()
 }
 
 export function drawPageGuides(
@@ -62,13 +64,18 @@ export function drawPageGuides(
     }
   }
 
-  for (const childId of page.childIds) {
-    const node = graph.getNode(childId)
-    if (!node) continue
-    if (node.id === page.id || node.guides.length === 0) continue
+  const visit = (node: SceneNode) => {
     for (const guide of node.guides) {
       drawOwnedGuide(r, canvas, node, graph, guide.axis, guide.position, false)
     }
+    for (const childId of node.childIds) {
+      const child = graph.getNode(childId)
+      if (child) visit(child)
+    }
+  }
+  for (const childId of page.childIds) {
+    const node = graph.getNode(childId)
+    if (node) visit(node)
   }
 
   if (preview) {
