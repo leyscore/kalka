@@ -297,5 +297,16 @@
   "codeUpdatedLive": "Updated live",
   "codePreviewFailed": "Preview failed",
   "codeGeneratedReadOnly": "Generated, read only",
-  "codeReset": "Reset"
+  "codeReset": "Reset",
+  "harnessThinkingLevel": "Уровень рассуждений",
+  "harnessThinkingOff": "Выключен",
+  "harnessThinkingMinimal": "Минимальный",
+  "harnessThinkingLow": "Низкий",
+  "harnessThinkingMedium": "Средний",
+  "harnessThinkingHigh": "Высокий",
+  "harnessThinkingExtraHigh": "Очень высокий",
+  "harnessToolPermissions": "Разрешения инструментов",
+  "harnessPermissionReads": "Спрашивать перед изменениями и командами",
+  "harnessPermissionEdits": "Спрашивать перед командами",
+  "harnessPermissionAll": "Разрешить все инструменты"
 }

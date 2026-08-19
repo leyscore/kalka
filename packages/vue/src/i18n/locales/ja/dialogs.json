@@ -297,5 +297,16 @@
   "codeUpdatedLive": "Updated live",
   "codePreviewFailed": "Preview failed",
   "codeGeneratedReadOnly": "Generated, read only",
-  "codeReset": "Reset"
+  "codeReset": "Reset",
+  "harnessThinkingLevel": "思考レベル",
+  "harnessThinkingOff": "オフ",
+  "harnessThinkingMinimal": "最小",
+  "harnessThinkingLow": "低",
+  "harnessThinkingMedium": "中",
+  "harnessThinkingHigh": "高",
+  "harnessThinkingExtraHigh": "最高",
+  "harnessToolPermissions": "ツール権限",
+  "harnessPermissionReads": "編集とコマンドの前に確認",
+  "harnessPermissionEdits": "コマンドの前に確認",
+  "harnessPermissionAll": "すべてのツールを許可"
 }

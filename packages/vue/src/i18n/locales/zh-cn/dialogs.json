@@ -297,5 +297,16 @@
   "codeUpdatedLive": "Updated live",
   "codePreviewFailed": "Preview failed",
   "codeGeneratedReadOnly": "Generated, read only",
-  "codeReset": "Reset"
+  "codeReset": "Reset",
+  "harnessThinkingLevel": "思考级别",
+  "harnessThinkingOff": "关闭",
+  "harnessThinkingMinimal": "最低",
+  "harnessThinkingLow": "低",
+  "harnessThinkingMedium": "中",
+  "harnessThinkingHigh": "高",
+  "harnessThinkingExtraHigh": "极高",
+  "harnessToolPermissions": "工具权限",
+  "harnessPermissionReads": "编辑和执行命令前询问",
+  "harnessPermissionEdits": "执行命令前询问",
+  "harnessPermissionAll": "允许所有工具"
 }
