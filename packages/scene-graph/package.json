@@ -64,6 +64,12 @@
       "import": "./dist/variant-name.js",
       "default": "./dist/variant-name.js"
     },
+    "./variant-properties": {
+      "types": "./dist/variant-properties.d.ts",
+      "bun": "./src/variant-properties.ts",
+      "import": "./dist/variant-properties.js",
+      "default": "./dist/variant-properties.js"
+    },
     "./vector-network": {
       "types": "./dist/vector-network.d.ts",
       "bun": "./src/vector-network.ts",
