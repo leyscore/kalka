@@ -71,6 +71,16 @@ export function requireNode(figma: FigmaAPI, id: string): ReturnType<FigmaAPI['g
   return node
 }
 
+export function requireNodes(figma: FigmaAPI, ids: ReadonlyArray<string>): FigmaNodeProxy[] | null {
+  const nodes: FigmaNodeProxy[] = []
+  for (const id of ids) {
+    const node = figma.getNodeById(id)
+    if (!node) return null
+    nodes.push(node)
+  }
+  return nodes
+}
+
 export function nodeNotFound(id: string): { error: string } {
   return { error: `Node "${id}" not found` }
 }

@@ -206,6 +206,9 @@ export function createEditor(options?: EditorOptions) {
     setSelectedIds(new Set())
     state.hoveredNodeId = null
     state.measurementMode = 'off'
+    state.snapGuides = []
+    state.layoutInsertIndicator = null
+    state.dropTargetId = null
     pages.clearPageViewports()
     emitEditorEvent('graph:replaced', _graph)
     if (previousPageId !== state.currentPageId) {

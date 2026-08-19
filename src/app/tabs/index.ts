@@ -108,6 +108,10 @@ export function showRecentFiles(): void {
 }
 
 function activateTab(tab: Tab) {
+  const previous = tabsRef.value.find((candidate) => candidate.id === activeTabId.value)
+  previous?.store.setSnapGuides([])
+  previous?.store.setLayoutInsertIndicator(null)
+  previous?.store.setDropTarget(null)
   activeTabId.value = tab.id
   setActiveEditorStore(tab.store)
   triggerRef(tabsRef)

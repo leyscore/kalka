@@ -27,6 +27,8 @@ export interface DragMove {
   startY: number
   currentX: number
   currentY: number
+  appliedDx: number
+  appliedDy: number
   startScreenX: number
   startScreenY: number
   dragStarted: boolean
@@ -61,6 +63,7 @@ export interface DragResize {
   origTextPathData: TextPathData | null
   origTextPathBox: Rect | null
   origChildren: Map<string, ResizeSnapshot> | null
+  appliedRect?: Rect
 }
 
 export interface DragMarquee {

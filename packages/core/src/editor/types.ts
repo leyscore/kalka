@@ -13,6 +13,7 @@ import type { UndoManager } from '@open-pencil/scene-graph/undo'
 
 import type { RulerTheme, SkiaRenderer } from '#core/canvas/renderer'
 import type { MeasurementMode, RenderOverlays } from '#core/canvas/renderer/types'
+import type { SnappingPreferences } from '#core/editor/preferences'
 import type { TextEditor } from '#core/text/editor'
 import type { FontResolutionEvent, FontResolutionSnapshot } from '#core/text/resolver'
 
@@ -31,6 +32,7 @@ export type Tool =
 
 export interface EditorSharedState {
   activeTool: Tool
+  snappingPreferences: SnappingPreferences
   remoteCursors: Array<{
     name: string
     color: Color

@@ -4,7 +4,7 @@ import { useI18n } from '@open-pencil/vue'
 
 import {
   aiModelSettings,
-  isACPModelProfile,
+  isAgentModelProfile,
   modelProfile,
   setModelRoleAssignment,
   type AIModelRole,
@@ -49,7 +49,7 @@ function optionsForRole(role: AIModelRole) {
   const profiles = aiModelSettings.value.models
     .filter((profile) => {
       if (role === 'design') return profile.capabilities.includes('tools')
-      if (isACPModelProfile(profile)) return false
+      if (isAgentModelProfile(profile)) return false
       if (role === 'vision') return profile.capabilities.includes('vision')
       return true
     })
@@ -58,7 +58,7 @@ function optionsForRole(role: AIModelRole) {
 
   const design = modelProfile(aiModelSettings.value.assignments.design)
   const canInherit =
-    !isACPModelProfile(design) && (role !== 'vision' || design?.capabilities.includes('vision'))
+    !isAgentModelProfile(design) && (role !== 'vision' || design?.capabilities.includes('vision'))
   return [
     ...(canInherit ? [{ value: SAME_AS_DESIGN, label: dialogs.value.modelRoleUseDesign }] : []),
     { value: NO_MODEL, label: dialogs.value.noModel },

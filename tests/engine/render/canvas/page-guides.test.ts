@@ -8,10 +8,10 @@ import { drawPageGuides } from '#core/canvas/page-guides'
 
 import { createMockCanvas, createMockRenderer, mockCalls } from './effects/helpers'
 
-function graphWithGuides(guides: unknown[]): SceneGraph {
+function graphWithGuides(guides: SceneNode['guides']): SceneGraph {
   const page = {
     id: 'page',
-    source: { fig: { rawNodeFields: { guides } } }
+    guides
   } as SceneNode
   return {
     rootId: 'root',
@@ -31,8 +31,8 @@ describe('page guide rendering', () => {
     })
     const canvas = createMockCanvas()
     const graph = graphWithGuides([
-      { axis: 'X', offset: 42 },
-      { axis: 'Y', offset: 84 }
+      { axis: 'x', position: 42 },
+      { axis: 'y', position: 84 }
     ])
 
     drawPageGuides(r, canvas as Canvas, graph)
@@ -44,10 +44,10 @@ describe('page guide rendering', () => {
     ])
   })
 
-  test('ignores malformed guides', () => {
+  test('ignores pages without guides', () => {
     const r = createMockRenderer({ pageId: 'page' })
     const canvas = createMockCanvas()
-    const graph = graphWithGuides([{ axis: 'X' }, { axis: 'Z', offset: 10 }])
+    const graph = graphWithGuides([])
 
     drawPageGuides(r, canvas as Canvas, graph)
 
