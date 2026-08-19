@@ -59,6 +59,7 @@
 
 ### Fixed
 
+- Preserve app-created component properties and instance-swap targets across `.fig` save and reload cycles. (#548)
 - Reconnect desktop automation to an already-running MCP server by allowing access to its discovery file. (#546)
 - Keep text-editing carets, hit testing, and selection highlights aligned with vertically centered or bottom-aligned text. (#539)
 - Match AI chat code-block syntax colors and backgrounds to the active light or dark theme. (#537)
