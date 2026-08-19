@@ -7,6 +7,7 @@ import { IS_TAURI } from '@open-pencil/core/constants'
 import { useAIChat } from '@/app/ai/chat/use'
 import { appCredentialServices } from '@/app/settings/credentials/app'
 import { settingsDialogOpen, settingsDialogSection } from '@/app/settings/dialog'
+import GeneralSettingsPanel from '@/components/settings/general/GeneralSettingsPanel.vue'
 import MCPConnectionsSection from '@/components/settings/mcp/MCPConnectionsSection.vue'
 import ModelsPanel from '@/components/settings/models/ModelsPanel.vue'
 import StockPhotoKeysSection from '@/components/settings/provider/StockPhotoKeysSection.vue'
@@ -61,6 +62,16 @@ const navigationClass =
         <button
           type="button"
           :class="navigationClass"
+          :data-state="settingsDialogSection === 'general' ? 'active' : 'inactive'"
+          data-test-id="settings-section-general"
+          @click="settingsDialogSection = 'general'"
+        >
+          <icon-lucide-settings class="size-3.5" />
+          {{ dialogs.settingsGeneral }}
+        </button>
+        <button
+          type="button"
+          :class="navigationClass"
           :data-state="settingsDialogSection === 'ai' ? 'active' : 'inactive'"
           data-test-id="settings-section-ai"
           @click="settingsDialogSection = 'ai'"
@@ -101,8 +112,10 @@ const navigationClass =
       </nav>
 
       <div class="min-h-0 flex-1 overflow-y-auto p-4">
+        <GeneralSettingsPanel v-if="settingsDialogSection === 'general'" />
+
         <section
-          v-if="settingsDialogSection === 'ai'"
+          v-else-if="settingsDialogSection === 'ai'"
           class="flex h-full flex-col"
           data-test-id="settings-ai-panel"
         >

@@ -14,7 +14,7 @@ use credentials::{
 use fig_container::build_fig_file;
 use fonts::{list_system_fonts, load_system_font};
 use http::proxy_http_request;
-use menu::install_app_menu;
+use menu::{install_app_menu, native_menu_checked, set_native_menu_checked};
 use menu_events::handle_menu_event;
 use std::{
     path::{Path, PathBuf},
@@ -145,6 +145,8 @@ pub fn run() {
             list_system_fonts,
             load_system_font,
             proxy_http_request,
+            native_menu_checked,
+            set_native_menu_checked,
             take_pending_open
         ])
         .plugin(tauri_plugin_opener::init())
