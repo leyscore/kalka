@@ -16,6 +16,7 @@ import { activeStorageProviderID, type StorageDocument } from '@/app/integration
 import { openSettingsDialog } from '@/app/settings/dialog'
 import { createStorageWorkspaceSource } from '@/app/storage/workspace/source'
 import { openStorageDocumentInNewTab } from '@/app/tabs'
+import Tip from '@/components/ui/Tip.vue'
 
 const emit = defineEmits<{ 'new-document': [] }>()
 const { dialogs, menu, panels, locale } = useI18n()
@@ -68,7 +69,12 @@ async function openRecent(document: RecentFile): Promise<void> {
 }
 
 async function openStorageDocument(document: StorageDocument): Promise<void> {
-  await openStorageDocumentInNewTab(document)
+  openError.value = null
+  try {
+    await openStorageDocumentInNewTab(document)
+  } catch (error) {
+    openError.value = error instanceof Error ? error.message : String(error)
+  }
 }
 
 function formattedDate(updatedAt: string): string {
@@ -86,14 +92,16 @@ function formattedDate(updatedAt: string): string {
         <span class="text-sm font-semibold">OpenPencil</span>
       </div>
       <div class="ml-auto flex items-center gap-2">
-        <button
-          type="button"
-          class="flex size-7 items-center justify-center rounded text-muted hover:bg-hover hover:text-surface"
-          :aria-label="dialogs.refresh"
-          @click="refreshHome"
-        >
-          <icon-lucide-refresh-cw class="size-3.5" />
-        </button>
+        <Tip :label="dialogs.refresh">
+          <button
+            type="button"
+            class="flex size-7 items-center justify-center rounded text-muted hover:bg-hover hover:text-surface"
+            :aria-label="dialogs.refresh"
+            @click="refreshHome"
+          >
+            <icon-lucide-refresh-cw class="size-3.5" />
+          </button>
+        </Tip>
         <button
           type="button"
           class="rounded px-3 py-1.5 text-xs text-muted hover:bg-hover hover:text-surface"
@@ -130,34 +138,39 @@ function formattedDate(updatedAt: string): string {
           <p class="mt-1 text-xs text-muted">{{ dialogs.recentFilesDescription }}</p>
         </div>
         <div class="ml-auto flex rounded border border-border p-0.5">
-          <button
-            v-if="hasRecentFiles"
-            type="button"
-            class="flex size-7 items-center justify-center rounded-sm text-muted hover:text-surface"
-            :aria-label="dialogs.clear"
-            data-test-id="recent-files-clear"
-            @click="clearRecentFiles"
-          >
-            <icon-lucide-trash-2 class="size-3.5" />
-          </button>
-          <button
-            type="button"
-            class="flex size-7 items-center justify-center rounded-sm text-muted hover:text-surface"
-            :class="{ 'bg-hover text-surface': view === 'grid' }"
-            :aria-label="panels.gridView"
-            @click="view = 'grid'"
-          >
-            <icon-lucide-layout-grid class="size-3.5" />
-          </button>
-          <button
-            type="button"
-            class="flex size-7 items-center justify-center rounded-sm text-muted hover:text-surface"
-            :class="{ 'bg-hover text-surface': view === 'list' }"
-            :aria-label="panels.listView"
-            @click="view = 'list'"
-          >
-            <icon-lucide-list class="size-3.5" />
-          </button>
+          <Tip v-if="hasRecentFiles" :label="dialogs.clear">
+            <button
+              type="button"
+              class="flex size-7 items-center justify-center rounded-sm text-muted hover:text-surface"
+              :aria-label="dialogs.clear"
+              data-test-id="recent-files-clear"
+              @click="clearRecentFiles"
+            >
+              <icon-lucide-trash-2 class="size-3.5" />
+            </button>
+          </Tip>
+          <Tip :label="panels.gridView">
+            <button
+              type="button"
+              class="flex size-7 items-center justify-center rounded-sm text-muted hover:text-surface"
+              :class="{ 'bg-hover text-surface': view === 'grid' }"
+              :aria-label="panels.gridView"
+              @click="view = 'grid'"
+            >
+              <icon-lucide-layout-grid class="size-3.5" />
+            </button>
+          </Tip>
+          <Tip :label="panels.listView">
+            <button
+              type="button"
+              class="flex size-7 items-center justify-center rounded-sm text-muted hover:text-surface"
+              :class="{ 'bg-hover text-surface': view === 'list' }"
+              :aria-label="panels.listView"
+              @click="view = 'list'"
+            >
+              <icon-lucide-list class="size-3.5" />
+            </button>
+          </Tip>
         </div>
       </div>
 
