@@ -52,6 +52,9 @@ export const combineAsVariants = defineTool({
       return { error: 'combineAsVariants requires COMPONENT nodes' }
     }
     const parent = nodes[0].parent ?? figma.currentPage
+    if (!nodes.every((node) => node.parent?.id === parent.id)) {
+      return { error: 'combineAsVariants requires components to share a parent' }
+    }
     try {
       const componentSet = figma.combineAsVariants(nodes, parent)
       return nodeSummary(componentSet)
