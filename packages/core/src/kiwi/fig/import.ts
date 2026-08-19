@@ -7,6 +7,7 @@ import {
   ENABLED_LIBRARIES_PLUGIN_KEY,
   getOpenPencilPluginValue,
   guidToString,
+  importCanvasGuides,
   nodeChangeToProps,
   shouldImportTextAsAutoSize,
   sortChildren,
@@ -33,7 +34,10 @@ function applyImportedCanvasMetadata(
     page.source.fig.rawNodeFields.backgroundColor = structuredClone(canvasNc.backgroundColor)
   if (canvasNc.backgroundPaints)
     page.source.fig.rawNodeFields.backgroundPaints = structuredClone(canvasNc.backgroundPaints)
-  if (canvasNc.guides) page.source.fig.rawNodeFields.guides = structuredClone(canvasNc.guides)
+  if (canvasNc.guides) {
+    page.guides = importCanvasGuides(canvasNc.guides)
+    page.source.fig.rawNodeFields.guides = structuredClone(canvasNc.guides)
+  }
   page.source.fig.rawNodeFields.strokeJoin = canvasNc.strokeJoin
   page.source.fig.rawNodeFields.strokeWeight = canvasNc.strokeWeight
   if (canvasNc.pageType) page.source.fig.rawNodeFields.pageType = canvasNc.pageType

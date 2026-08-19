@@ -46,7 +46,7 @@ export function getDefaultCanvasBgColor(): Color {
   return CANVAS_BG_COLOR
 }
 
-export const SNAP_THRESHOLD = 5
+export const SNAP_THRESHOLD_SCREEN_PX = 5
 
 export const RULER_SIZE = 20
 export const RULER_BG_COLOR = { r: 0.14, g: 0.14, b: 0.14, a: 1 } satisfies Color

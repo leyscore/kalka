@@ -22,6 +22,8 @@ export default defineConfig({
     coordinate: './src/coordinate.ts',
     matrix: './src/matrix.ts',
     geometry: './src/geometry.ts',
+    guides: './src/guides.ts',
+    'layout-guides': './src/layout-guides.ts',
     resize: './src/resize.ts',
     'parse-path': './src/parse-path.ts'
   },
@@ -49,7 +51,8 @@ export default defineConfig({
             const cleanId = id.split('?')[0]
             const parts = cleanId.split(/[\\/]/g)
             const srcIndex = parts.lastIndexOf('src')
-            const file = srcIndex >= 0 ? parts.slice(srcIndex + 1).join('/') : parts.at(-1) ?? 'chunk'
+            const file =
+              srcIndex >= 0 ? parts.slice(srcIndex + 1).join('/') : (parts.at(-1) ?? 'chunk')
             return `chunks/${file.replace(/\.(ts|tsx)$/, '')}`
           }
         }
