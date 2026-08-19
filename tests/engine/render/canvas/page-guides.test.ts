@@ -11,6 +11,7 @@ import { createMockCanvas, createMockRenderer, mockCalls } from './effects/helpe
 function graphWithGuides(guides: SceneNode['guides']): SceneGraph {
   const page = {
     id: 'page',
+    childIds: [],
     guides
   } as SceneNode
   return {

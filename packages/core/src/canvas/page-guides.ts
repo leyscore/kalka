@@ -62,7 +62,7 @@ export function drawPageGuides(
     }
   }
 
-  for (const childId of page.childIds ?? []) {
+  for (const childId of page.childIds) {
     const node = graph.getNode(childId)
     if (!node) continue
     if (node.id === page.id || node.guides.length === 0) continue
