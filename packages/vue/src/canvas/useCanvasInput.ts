@@ -208,7 +208,9 @@ export function useCanvasInput(
   function startGuideDrag(sx: number, sy: number, cx: number, cy: number): boolean {
     if (!('showRulers' in editor.state) || editor.state.showRulers !== true) return false
     if (sx < RULER_SIZE && sy < RULER_SIZE) return false
-    const axis = sy < RULER_SIZE ? 'y' : sx < RULER_SIZE ? 'x' : null
+    let axis: 'x' | 'y' | null = null
+    if (sy < RULER_SIZE) axis = 'y'
+    else if (sx < RULER_SIZE) axis = 'x'
     if (!axis) return false
     const target = guideOwner(cx, cy)
     const owner = editor.graph.getNode(target.id)
@@ -258,6 +260,8 @@ export function useCanvasInput(
     })
   }
 
+  // Dispatching the full drag union is intentionally centralized here.
+  // eslint-disable-next-line complexity
   function onMouseMove(e: MouseEvent) {
     if (!isEnabled()) return
     pointerInside.value = true
