@@ -1,5 +1,5 @@
 import type { NodeChange, Paint } from '@open-pencil/kiwi/fig/codec'
-import { guidToString, stringToGuid } from '@open-pencil/kiwi/fig/guid'
+import { stringToGuid } from '@open-pencil/kiwi/fig/guid'
 import { DEFAULT_STROKE_MITER_LIMIT } from '@open-pencil/scene-graph'
 import type {
   ComponentPropertyDefinition,
@@ -68,7 +68,7 @@ interface SceneNodeToKiwiContext {
   /** GUIDs minted for component property IDs (e.g. "prop:abc123") that aren't
    *  already Figma-GUID-shaped, keyed by the original ID so refs/assignments/
    *  variantPropSpecs pointing at the same property reuse the same GUID. */
-  propertyIdToGuid?: Map<string, GUID>
+  propertyIdToGuid: Map<string, GUID>
   componentPropertyDefinitionsById: ReadonlyMap<string, ComponentPropertyDefinition>
   fractionalPosition: (index: number) => string
   mapToFigmaType: (type: SceneNode['type']) => string
@@ -148,8 +148,9 @@ function componentPropertyValue(
   if (type === 'BOOLEAN') return { boolValue: value === 'true' }
   if (type === 'INSTANCE_SWAP') {
     const target = context.graph.getNode(value)
-    if (!target) return { textValue: { characters: value } }
-    const guid = getOrCreateNodeGuid(context, target.id, localIdCounter)
+    const guid = target
+      ? getOrCreateNodeGuid(context, target.id, localIdCounter)
+      : parseGuidOrNull(value)
     return guid ? { guidValue: guid } : { textValue: { characters: value } }
   }
   return { textValue: { characters: value } }
@@ -372,10 +373,13 @@ function getOrCreatePropertyGuid(
   propertyId: string,
   localIdCounter: { value: number }
 ): GUID {
-  const existing = context.propertyIdToGuid?.get(propertyId)
+  const existing = context.propertyIdToGuid.get(propertyId)
   if (existing) return existing
-  const guid = parseGuidOrNull(propertyId) ?? { sessionID: 1, localID: localIdCounter.value++ }
-  context.propertyIdToGuid?.set(propertyId, guid)
+  const parsed = parseGuidOrNull(propertyId)
+  if (parsed) return parsed
+  const guid = { sessionID: 1, localID: localIdCounter.value++ }
+  context.propertyIdToGuid.set(propertyId, guid)
+  context.assignedGuidValues?.add(`${guid.sessionID}:${guid.localID}`)
   return guid
 }
 
@@ -624,7 +628,10 @@ function applyInstancePayload(
     }
     nc.symbolData = symbolData as KiwiNodeChange['symbolData']
   }
-  if (node.source.fig.componentPropAssignments.length > 0) {
+  if (
+    node.source.fig.componentPropAssignments.length > 0 &&
+    !node.source.editedFields.includes('componentPropertyAssignments')
+  ) {
     nc.componentPropAssignments = materializeFigmaPayload(
       node.source.fig.componentPropAssignments,
       context.blobs,
@@ -653,15 +660,14 @@ function applyInstancePayload(
 
 function componentPropertyPreferredValues(
   definition: ComponentPropertyDefinition,
-  context: SceneNodeToKiwiContext,
-  localIdCounter: { value: number }
+  context: SceneNodeToKiwiContext
 ) {
   if (definition.type === 'INSTANCE_SWAP' && definition.preferredValues?.length) {
     return {
-      instanceSwapValues: definition.preferredValues.map((nodeId) => {
-        const target = context.graph.getNode(nodeId)
-        const guid = target ? getOrCreateNodeGuid(context, target.id, localIdCounter) : undefined
-        return { type: 'COMPONENT', key: guid ? guidToString(guid) : nodeId }
+      instanceSwapValues: definition.preferredValues.map((value) => {
+        const target = context.graph.getNode(value)
+        const key = target?.componentKey || target?.sourceLibraryKey || value
+        return { type: 'COMPONENT', key }
       })
     }
   }
@@ -723,7 +729,7 @@ function applyComponentMetadata(
     name: def.name,
     type: componentPropertyTypeForKiwi(def.type),
     initialValue: componentPropertyValue(def.type, def.defaultValue, context, localIdCounter),
-    preferredValues: componentPropertyPreferredValues(def, context, localIdCounter)
+    preferredValues: componentPropertyPreferredValues(def, context)
   }))
   if (shouldSerializeRawBackedField(node, 'componentPropDefs', componentPropDefs.length > 0)) {
     nc.componentPropDefs = componentPropDefs

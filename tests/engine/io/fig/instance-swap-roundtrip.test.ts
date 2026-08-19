@@ -10,8 +10,14 @@ describe('INSTANCE_SWAP component property round trip', () => {
 
     const graph = new SceneGraph()
     const page = graph.getPages()[0]
-    const iconA = graph.createNode('COMPONENT', page.id, { name: 'Icon/A' })
-    const iconB = graph.createNode('COMPONENT', page.id, { name: 'Icon/B' })
+    const iconA = graph.createNode('COMPONENT', page.id, {
+      name: 'Icon/A',
+      componentKey: 'icon-a-key'
+    })
+    const iconB = graph.createNode('COMPONENT', page.id, {
+      name: 'Icon/B',
+      componentKey: 'icon-b-key'
+    })
     const button = graph.createNode('COMPONENT', page.id, {
       name: 'Button',
       componentPropertyDefinitions: [
@@ -27,7 +33,8 @@ describe('INSTANCE_SWAP component property round trip', () => {
     const slot = graph.createInstance(iconA.id, button.id)
     if (!slot) throw new Error('failed to create slot instance')
     graph.updateNode(slot.id, {
-      componentPropertyReferences: [{ propertyId: 'prop:iconswap01', field: 'INSTANCE_SWAP' }]
+      componentPropertyReferences: [{ propertyId: 'prop:iconswap01', field: 'INSTANCE_SWAP' }],
+      componentPropertyAssignments: { 'prop:iconswap01': iconB.id }
     })
 
     const exported = await exportFigFile(graph)
@@ -44,12 +51,18 @@ describe('INSTANCE_SWAP component property round trip', () => {
     const defaultTarget = def?.defaultValue ? reloaded.getNode(def.defaultValue) : undefined
     expect(defaultTarget?.name).toBe('Icon/A')
 
-    const preferredTargets = (def?.preferredValues ?? []).map((id) => reloaded.getNode(id)?.name)
-    expect(preferredTargets.sort()).toEqual(['Icon/A', 'Icon/B'])
+    const preferredValues = new Set(def?.preferredValues)
+    expect(preferredValues).toEqual(new Set(['icon-a-key', 'icon-b-key']))
 
     const reloadedSlot = reloadedButton ? reloaded.getChildren(reloadedButton.id)[0] : undefined
     expect(reloadedSlot?.type).toBe('INSTANCE')
-    const slotComponent = reloadedSlot?.componentId ? reloaded.getNode(reloadedSlot.componentId) : undefined
+    const slotComponent = reloadedSlot?.componentId
+      ? reloaded.getNode(reloadedSlot.componentId)
+      : undefined
     expect(slotComponent?.name).toBe('Icon/A')
+
+    const assignment = reloadedSlot?.componentPropertyAssignments[def?.id ?? '']
+    const assignmentTarget = assignment ? reloaded.getNode(assignment) : undefined
+    expect(assignmentTarget?.name).toBe('Icon/B')
   })
 })

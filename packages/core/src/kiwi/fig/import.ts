@@ -407,7 +407,10 @@ function remapComponentIds(graph: SceneGraph, guidToNodeId: Map<string, string>)
  * how it was exported), not this import's freshly-assigned node ID — remap
  * them the same way remapComponentIds fixes up instance.componentId.
  */
-function remapInstanceSwapPropertyValues(graph: SceneGraph, guidToNodeId: Map<string, string>): void {
+function remapInstanceSwapPropertyValues(
+  graph: SceneGraph,
+  guidToNodeId: Map<string, string>
+): void {
   const defsById = new Map<string, ComponentPropertyDefinition>()
   for (const node of graph.getAllNodes()) {
     for (const def of node.componentPropertyDefinitions) {
@@ -421,13 +424,8 @@ function remapInstanceSwapPropertyValues(graph: SceneGraph, guidToNodeId: Map<st
         const defs = node.componentPropertyDefinitions.map((def) => {
           if (def.type !== 'INSTANCE_SWAP') return def
           const remappedDefault = def.defaultValue ? guidToNodeId.get(def.defaultValue) : undefined
-          const remappedPreferred = def.preferredValues?.map((value) => guidToNodeId.get(value) ?? value)
-          if (!remappedDefault && !remappedPreferred) return def
-          return {
-            ...def,
-            defaultValue: remappedDefault ?? def.defaultValue,
-            preferredValues: remappedPreferred ?? def.preferredValues
-          }
+          if (!remappedDefault) return def
+          return { ...def, defaultValue: remappedDefault }
         })
         const changed = defs.some((def, i) => def !== node.componentPropertyDefinitions[i])
         if (changed) graph.updateNode(node.id, { componentPropertyDefinitions: defs })
