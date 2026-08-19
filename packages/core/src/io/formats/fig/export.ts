@@ -3,7 +3,12 @@ import type { CanvasKit } from 'canvaskit-wasm'
 import { deflateSync, inflateSync } from 'fflate'
 
 import { compressFigDataSync } from '@open-pencil/fig'
-import { buildComponentPropIndex, stringToGuid } from '@open-pencil/fig/node-change'
+import {
+  buildComponentPropIndex,
+  exportCanvasGuides,
+  importCanvasGuides,
+  stringToGuid
+} from '@open-pencil/fig/node-change'
 import { initCodec, getCompiledSchema, getSchemaBytes } from '@open-pencil/kiwi/fig/codec'
 import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
 import { decodeBinarySchema, compileSchema, ByteBuffer } from '@open-pencil/kiwi/schema-runtime'
@@ -253,8 +258,13 @@ function applyImportedCanvasFields(page: FigExportPage, canvasNc: KiwiNodeChange
       page.source.fig.rawNodeFields.backgroundPaints
     ) as NodeChange['backgroundPaints']
   }
-  if ('guides' in page.source.fig.rawNodeFields) {
-    canvasNc.guides = structuredClone(page.source.fig.rawNodeFields.guides)
+  if (page.guides.length > 0) {
+    const normalized = exportCanvasGuides(page.guides)
+    const raw = page.source.fig.rawNodeFields.guides
+    canvasNc.guides =
+      Array.isArray(raw) && JSON.stringify(importCanvasGuides(raw)) === JSON.stringify(page.guides)
+        ? structuredClone(raw)
+        : normalized
   }
   const strokeJoin = page.source.fig.rawNodeFields.strokeJoin
   if (typeof strokeJoin === 'string') canvasNc.strokeJoin = strokeJoin

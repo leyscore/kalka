@@ -19,8 +19,26 @@
       "allow": [{ "path": "**" }]
     },
     {
+      "identifier": "fs:allow-read-text-file",
+      "allow": [
+        { "path": "$HOME/Library/Application Support/OpenPencil/mcp.json" },
+        { "path": "$LOCALDATA/OpenPencil/mcp.json" },
+        { "path": "$RUNTIME/openpencil/mcp.json" },
+        { "path": "$HOME/.openpencil/mcp.json" }
+      ]
+    },
+    {
       "identifier": "fs:allow-write-file",
       "allow": [{ "path": "**" }]
+    },
+    {
+      "identifier": "fs:allow-exists",
+      "allow": [
+        { "path": "$HOME/Library/Application Support/OpenPencil/mcp.json" },
+        { "path": "$LOCALDATA/OpenPencil/mcp.json" },
+        { "path": "$RUNTIME/openpencil/mcp.json" },
+        { "path": "$HOME/.openpencil/mcp.json" }
+      ]
     },
     {
       "identifier": "fs:allow-mkdir",
