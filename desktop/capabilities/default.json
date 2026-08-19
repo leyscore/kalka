@@ -60,6 +60,7 @@
         { "name": "codex-acp", "cmd": "codex-acp", "args": true },
         { "name": "gemini", "cmd": "gemini", "args": true },
         { "name": "openpencil-mcp-http", "cmd": "openpencil-mcp-http", "args": true },
+        { "name": "binaries/openpencil-harness", "sidecar": true, "args": false },
         { "name": "cmd", "cmd": "cmd", "args": true }
       ]
     },

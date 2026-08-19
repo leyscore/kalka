@@ -53,6 +53,10 @@ jobs:
 
       - uses: ./.github/actions/setup-bun
 
+      - name: Build Harness sidecar
+        shell: bash
+        run: bun run build:harness-sidecar -- ${{ matrix.target }}
+
       - name: Extract release notes
         if: startsWith(github.ref, 'refs/tags/v')
         id: changelog

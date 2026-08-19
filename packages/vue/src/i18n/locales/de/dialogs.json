@@ -297,5 +297,16 @@
   "codeUpdatedLive": "Updated live",
   "codePreviewFailed": "Preview failed",
   "codeGeneratedReadOnly": "Generated, read only",
-  "codeReset": "Reset"
+  "codeReset": "Reset",
+  "harnessThinkingLevel": "Denkstufe",
+  "harnessThinkingOff": "Aus",
+  "harnessThinkingMinimal": "Minimal",
+  "harnessThinkingLow": "Niedrig",
+  "harnessThinkingMedium": "Mittel",
+  "harnessThinkingHigh": "Hoch",
+  "harnessThinkingExtraHigh": "Sehr hoch",
+  "harnessToolPermissions": "Tool-Berechtigungen",
+  "harnessPermissionReads": "Vor Änderungen und Befehlen fragen",
+  "harnessPermissionEdits": "Vor Befehlen fragen",
+  "harnessPermissionAll": "Alle Tools zulassen"
 }
