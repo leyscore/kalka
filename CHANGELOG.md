@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+
+- Upgrade CanvasKit to 0.41 and migrate renderer geometry to immutable paths built through `PathBuilder`.
+
 ### Added
 
 - Snap vector points, moved layers, and resized edges to nearby geometry, sibling layer bounds, canvas and frame layout guides, and whole-pixel coordinates with visible alignment guides, fractional-coordinate preservation when pixel snapping is off, and persistent geometry, object, and pixel-grid controls in General settings and the Preferences menu.
