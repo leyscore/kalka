@@ -1,6 +1,7 @@
 import { useEventListener } from '@vueuse/core'
 import { onScopeDispose, ref, type Ref } from 'vue'
 
+import { RULER_SIZE } from '@open-pencil/core/constants'
 import type { Editor } from '@open-pencil/core/editor'
 import type { SceneNode } from '@open-pencil/scene-graph'
 
@@ -197,6 +198,27 @@ export function useCanvasInput(
     autoLayoutPaddingEdit.value = null
   }
 
+  function guideOwner(cx: number, cy: number): { id: string; position: number } {
+    const hit = editor.graph.hitTestDeep(cx, cy, editor.state.currentPageId)
+    const owner = hit && ['FRAME', 'COMPONENT'].includes(hit.type) ? hit : null
+    if (!owner) return { id: editor.state.currentPageId, position: 0 }
+    return { id: owner.id, position: 0 }
+  }
+
+  function startGuideDrag(sx: number, sy: number, cx: number, cy: number): boolean {
+    if (!('showRulers' in editor.state) || editor.state.showRulers !== true) return false
+    if (sx < RULER_SIZE && sy < RULER_SIZE) return false
+    const axis = sy < RULER_SIZE ? 'y' : sx < RULER_SIZE ? 'x' : null
+    if (!axis) return false
+    const target = guideOwner(cx, cy)
+    const owner = editor.graph.getNode(target.id)
+    const local = owner && owner.type !== 'CANVAS' ? canvasToLocal(cx, cy, owner.id) : null
+    const position = axis === 'x' ? (local?.lx ?? cx) : (local?.ly ?? cy)
+    editor.setGuidePreview({ ownerId: target.id, axis, position })
+    setDrag({ type: 'guide', axis, ownerId: target.id, position })
+    return true
+  }
+
   function onDblClick(e: MouseEvent) {
     if (startAutoLayoutPaddingEdit(e)) return
     onTextDblClick(e)
@@ -213,6 +235,10 @@ export function useCanvasInput(
     if (!editor.state.editingTextId) canvasRef.value?.focus()
     editor.setHoveredNode(null)
     const { sx, sy, cx, cy } = getCoords(e)
+    if (startGuideDrag(sx, sy, cx, cy)) {
+      e.preventDefault()
+      return
+    }
 
     const selectedIdsBeforeMouseDown = new Set(editor.state.selectedIds)
     const clickCount = recordClick(sx, sy)
@@ -275,6 +301,16 @@ export function useCanvasInput(
 
     const { sx, sy, cx, cy } = getCoords(e)
 
+    if (d.type === 'guide') {
+      const target = guideOwner(cx, cy)
+      const owner = editor.graph.getNode(target.id)
+      const local = owner && owner.type !== 'CANVAS' ? canvasToLocal(cx, cy, owner.id) : null
+      d.ownerId = target.id
+      d.position = d.axis === 'x' ? (local?.lx ?? cx) : (local?.ly ?? cy)
+      editor.setGuidePreview({ ownerId: d.ownerId, axis: d.axis, position: d.position })
+      return
+    }
+
     if (d.type === 'rotate') {
       handleRotateMove(d, cx, cy, e.shiftKey)
       return
@@ -322,7 +358,10 @@ export function useCanvasInput(
 
     if (handleNodeEditMouseUp(drag, editor)) return
 
-    if (d.type === 'move') handleMoveUp(d, editor)
+    if (d.type === 'guide') {
+      editor.addGuide(d.ownerId, d.axis, d.position)
+      editor.setGuidePreview(null)
+    } else if (d.type === 'move') handleMoveUp(d, editor)
     else if (d.type === 'text-select') {
       drag.value = null
       return
@@ -357,6 +396,7 @@ export function useCanvasInput(
     editor.setSnapGuides([])
     editor.setLayoutInsertIndicator(null)
     editor.setDropTarget(null)
+    editor.setGuidePreview(null)
   }
 
   function cancelPointerInteraction() {

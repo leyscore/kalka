@@ -33,6 +33,7 @@ export function cloneCanvasPaneState(id: string, source: CanvasPaneState): Canva
     editingTextId: null,
     marquee: null,
     snapGuides: [],
+    guidePreview: null,
     rotationPreview: null,
     dropTargetId: null,
     layoutInsertIndicator: null,

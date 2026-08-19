@@ -7,6 +7,7 @@ import type {
   VectorSegment,
   VectorVertex
 } from '@open-pencil/scene-graph'
+import type { CanvasGuide } from '@open-pencil/scene-graph/guides'
 import type { Color, Rect, Vector } from '@open-pencil/scene-graph/primitives'
 import type { SnapGuide } from '@open-pencil/scene-graph/snap'
 import type { UndoManager } from '@open-pencil/scene-graph/undo'
@@ -46,11 +47,18 @@ export interface EditorSharedState {
   loading: boolean
 }
 
+export interface GuidePreview {
+  ownerId: string
+  axis: 'x' | 'y'
+  position: number
+}
+
 export interface EditorViewState {
   currentPageId: string
   selectedIds: Set<string>
   marquee: Rect | null
   snapGuides: SnapGuide[]
+  guidePreview: GuidePreview | null
   rotationPreview: { nodeId: string; angle: number } | null
   dropTargetId: string | null
   layoutInsertIndicator: {
@@ -114,6 +122,7 @@ export interface EditorEvents extends SceneGraphEvents {
   'selection:changed': (selectedIds: string[], previousIds: string[]) => void
   'tool:changed': (tool: Tool, previousTool: Tool) => void
   'page:changed': (pageId: string, previousPageId: string) => void
+  'guides:changed': (ownerId: string, guides: readonly CanvasGuide[]) => void
   'clipboard:images-missing': (resolution: ClipboardImageResolution) => void
   'font:resolution-changed': (event: FontResolutionEvent, snapshot: FontResolutionSnapshot) => void
   'viewport:changed': (

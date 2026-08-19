@@ -12,6 +12,7 @@ import type { Color, GUID, Matrix, Vector } from '@open-pencil/scene-graph/primi
 import { effectiveFigmaRawNodeFields, effectiveFigmaSourcePayload } from '../source-metadata'
 /* eslint-disable max-lines */
 import { bytesToHex } from './bytes'
+import { exportCanvasGuides } from './canvas-guides'
 import {
   applyExportSettingsPluginData,
   applyLibrarySourcePluginData,
@@ -810,6 +811,7 @@ function applySharedStyleProps(node: SceneNode, nc: KiwiNodeChange): void {
   if (node.effectStyleId) nc.styleIdForEffect = { guid: stringToGuid(node.effectStyleId) }
   if (node.gridStyleId) nc.styleIdForGrid = { guid: stringToGuid(node.gridStyleId) }
   if (node.layoutGrids.length > 0) nc.layoutGrids = structuredClone(node.layoutGrids)
+  if (node.guides.length > 0) nc.guides = exportCanvasGuides(node.guides)
 }
 
 function applyNodeVisualProps(

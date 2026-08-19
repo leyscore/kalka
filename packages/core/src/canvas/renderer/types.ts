@@ -21,6 +21,7 @@ export interface RenderOverlays {
   textEditor?: TextEditor | null
   marquee?: Rect | null
   snapGuides?: SnapGuide[]
+  guidePreview?: { ownerId: string; axis: 'x' | 'y'; position: number } | null
   rotationPreview?: { nodeId: string; angle: number } | null
   dropTargetId?: string | null
   layoutInsertIndicator?: {

@@ -61,6 +61,7 @@ export function renderFromEditorState(
       textEditor: textEditor as RenderOverlays['textEditor'],
       marquee: state.marquee,
       snapGuides: state.snapGuides,
+      guidePreview: state.guidePreview,
       rotationPreview: state.rotationPreview,
       dropTargetId: state.dropTargetId,
       layoutInsertIndicator: state.layoutInsertIndicator,
@@ -254,7 +255,7 @@ export function render(
 
     drawInteractiveOverlays(r, canvas, graph, selectedIds, overlays)
     r.drawFlashes(canvas, graph)
-    drawPageGuides(r, canvas, graph)
+    drawPageGuides(r, canvas, graph, overlays.guidePreview)
     r.drawSnapGuides(canvas, overlays.snapGuides)
     r.drawMarquee(canvas, overlays.marquee)
     r.drawLayoutInsertIndicator(canvas, overlays.layoutInsertIndicator)
