@@ -16,6 +16,7 @@ import {
 
 import { calculateResizeRect } from '#vue/shared/input/resize/rect'
 import { applyResizeSnap } from '#vue/shared/input/resize/snap'
+import { optionalEditorState } from '#vue/shared/input/snap'
 import type { DragResize } from '#vue/shared/input/types'
 
 /**
@@ -228,7 +229,7 @@ function clearResizedRawGeometry(editor: Editor, nodeId: string): void {
 export function commitResizePreview(dragState: DragResize, editor: Editor) {
   // See applyResize — reactive drag state must not leak into graph writes.
   const d = toRaw(dragState)
-  editor.state.snapGuides = []
+  optionalEditorState(editor)?.snapGuides.splice(0)
   const node = editor.graph.getNode(d.nodeId)
   if (!node) return
   const finalChanges = snapshotResizeFinal(node)

@@ -197,6 +197,12 @@ export function worldDeltaToParentLocal(
   return { x: endpoint.x - origin.x, y: endpoint.y - origin.y }
 }
 
+type EditorWithOptionalState = Omit<Editor, 'state'> & { state?: Editor['state'] }
+
+export function optionalEditorState(editor: Editor): Editor['state'] | undefined {
+  return (editor as EditorWithOptionalState).state
+}
+
 export function snappingThreshold(editor: Editor): number {
   return SNAP_THRESHOLD_SCREEN_PX / Math.max(editor.state.zoom, Number.EPSILON)
 }

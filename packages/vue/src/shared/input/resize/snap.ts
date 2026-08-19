@@ -5,6 +5,7 @@ import type { Rect } from '@open-pencil/scene-graph/primitives'
 
 import { explicitSnapTargets } from '#vue/shared/input/explicit-snap-targets'
 import {
+  optionalEditorState,
   resolveObjectPixelSnap,
   worldBoundsNode,
   worldDeltaToParentLocal
@@ -79,8 +80,9 @@ export function applyResizeSnap(
   editor: Editor,
   disableSnapping: boolean
 ): Rect {
-  if (disableSnapping || !editor.state) {
-    if (editor.state) editor.state.snapGuides = []
+  const state = optionalEditorState(editor)
+  if (disableSnapping || !state) {
+    if (state) state.snapGuides = []
     return rect
   }
 
@@ -108,6 +110,6 @@ export function applyResizeSnap(
   const dx = horizontal ? localCorrection.x : 0
   const dy = vertical ? localCorrection.y : 0
 
-  editor.state.snapGuides = snap.guides
+  state.snapGuides = snap.guides
   return applyEdgeDelta(drag.handle, rect, dx, dy)
 }
