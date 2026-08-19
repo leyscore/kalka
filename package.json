@@ -25,7 +25,6 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "tauri": "tauri",
-    "build:harness-sidecar": "bun tools/harness-sidecar/src/build.ts",
     "build:native-test": "bun run build:packages && bun tauri build --debug --no-bundle --features native-test --config desktop/tauri.native-test.conf.json",
     "test:native": "bun run build:native-test && wdio run wdio.conf.ts",
     "lint": "bun run lint:structure && oxlint -c oxlint.json --type-aware --type-check src/ packages/scene-graph/src/ packages/core/src/ packages/vue/src/ packages/cli/src/ packages/mcp/src/ packages/harness/src/ packages/dom-css/src/ packages/pen/src/ packages/kiwi/src/ packages/fig/src/",

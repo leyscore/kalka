@@ -1,6 +1,6 @@
 # @open-pencil/harness
 
-Private Node runtime for coding-agent harness sessions. It owns the backend-neutral session lifecycle, opaque resume-state persistence, and the JSONL sidecar protocol used by host applications.
+Optional Node companion runtime for coding-agent harness sessions. It owns the backend-neutral session lifecycle, opaque resume-state persistence, and the JSONL sidecar protocol used by host applications.
 
 The first backend uses AI SDK `HarnessAgent`, Pi, and local `just-bash`. Pi runs in the Node host process; `just-bash` provides an isolated in-memory workspace and shell without requiring cloud infrastructure.
 
@@ -11,7 +11,7 @@ The first backend uses AI SDK `HarnessAgent`, Pi, and local `just-bash`. Pi runs
 - JSONL stdio sidecar transport.
 - Pi + `just-bash` backend.
 
-The package is not wired into the desktop application yet. Credentials are supplied to the sidecar process at runtime and are never written to resume-state storage.
+The package is installed as an optional companion CLI for the desktop application. It is not bundled into every Tauri build; install `@open-pencil/harness` globally to make the `openpencil-harness` command available. Credentials are supplied to the companion process at runtime and are never written to resume-state storage.
 
 ## Local sandbox limitation
 

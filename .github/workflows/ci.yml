@@ -135,9 +135,6 @@ jobs:
 
       - uses: ./.github/actions/setup-bun
 
-      - name: Build Harness sidecar
-        run: bun run build:harness-sidecar -- x86_64-unknown-linux-gnu
-
       - name: Typecheck native interaction tests
         run: bun run check:native-test
 
