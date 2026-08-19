@@ -86,8 +86,16 @@ export function handleMoveMove(
   if (dropParent && dropParent.layoutMode !== 'NONE') {
     computeAutoLayoutIndicatorForFrame(dropParent, cx, cy, editor)
     editor.setDropTarget(dropParent.id)
+    let firstApplied: { dx: number; dy: number } | null = null
     for (const [id, orig] of d.originals) {
-      editor.graph.updateNodePositionPreview(id, Math.round(orig.x + dx), Math.round(orig.y + dy))
+      const previewX = Math.round(orig.x + dx)
+      const previewY = Math.round(orig.y + dy)
+      firstApplied ??= { dx: previewX - orig.x, dy: previewY - orig.y }
+      editor.graph.updateNodePositionPreview(id, previewX, previewY)
+    }
+    if (firstApplied) {
+      d.appliedDx = firstApplied.dx
+      d.appliedDy = firstApplied.dy
     }
     editor.requestRepaint()
     return

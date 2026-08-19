@@ -5,6 +5,14 @@ export interface LayoutGuideLine {
   position: number
 }
 
+const MAX_LAYOUT_GUIDE_LINES = 10_000
+
+function normalizedCount(grid: LayoutGrid): number {
+  const value = grid.count ?? grid.numSections ?? 1
+  if (!Number.isFinite(value)) return 0
+  return Math.min(MAX_LAYOUT_GUIDE_LINES, Math.max(0, Math.floor(value)))
+}
+
 function pattern(grid: LayoutGrid): 'COLUMNS' | 'ROWS' | 'GRID' {
   if (grid.pattern === 'GRID' || grid.pattern === 'ROWS') return grid.pattern
   if (grid.axis === 'Y') return 'ROWS'
@@ -20,14 +28,14 @@ function alignment(grid: LayoutGrid): 'MIN' | 'CENTER' | 'MAX' | 'STRETCH' {
 function sectionSize(nodeSize: number, grid: LayoutGrid): number {
   const fixed = grid.sectionSize ?? 0
   if (alignment(grid) !== 'STRETCH') return fixed
-  const count = grid.count ?? grid.numSections ?? 1
+  const count = normalizedCount(grid)
   const gutter = grid.gutterSize ?? 0
   const offset = grid.offset ?? 0
   return (nodeSize - offset * 2 - Math.max(0, count - 1) * gutter) / count
 }
 
 function start(nodeSize: number, grid: LayoutGrid, size: number): number {
-  const count = grid.count ?? grid.numSections ?? 1
+  const count = normalizedCount(grid)
   const gutter = grid.gutterSize ?? 0
   const offset = grid.offset ?? 0
   const span = count * size + Math.max(0, count - 1) * gutter
@@ -50,8 +58,8 @@ export function layoutGuideSections(
   const axis = pattern(grid) === 'ROWS' ? 'y' : 'x'
   const nodeSize = axis === 'x' ? node.width : node.height
   const size = sectionSize(nodeSize, grid)
-  const count = grid.count ?? grid.numSections ?? 1
-  if (!Number.isFinite(count) || count <= 0 || size <= 0) return []
+  const count = normalizedCount(grid)
+  if (count <= 0 || size <= 0) return []
   const first = start(nodeSize, grid, size)
   const step = size + (grid.gutterSize ?? 0)
   return Array.from({ length: count }, (_, index) => {
@@ -67,10 +75,18 @@ export function layoutGuideLines(node: Pick<SceneNode, 'width' | 'height'>, grid
   if (gridPattern === 'GRID') {
     const size = grid.sectionSize ?? 0
     if (size <= 0) return lines
-    for (let x = grid.offset ?? 0; x <= node.width; x += size) {
+    for (
+      let index = 0, x = grid.offset ?? 0;
+      x <= node.width && index < MAX_LAYOUT_GUIDE_LINES;
+      index++, x += size
+    ) {
       lines.push({ axis: 'x', position: x })
     }
-    for (let y = grid.offset ?? 0; y <= node.height; y += size) {
+    for (
+      let index = 0, y = grid.offset ?? 0;
+      y <= node.height && index < MAX_LAYOUT_GUIDE_LINES;
+      index++, y += size
+    ) {
       lines.push({ axis: 'y', position: y })
     }
     return lines

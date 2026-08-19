@@ -138,6 +138,33 @@ describe('selection move drag threshold', () => {
     expect(drag.appliedDy).toBeCloseTo(74 * Math.sin(angle) + 43 * Math.cos(angle), 3)
   })
 
+  test('stores rounded preview displacement when targeting auto-layout', () => {
+    const editor = createEditor()
+    const pageId = editor.state.currentPageId
+    const moving = editor.graph.createNode('RECTANGLE', pageId, {
+      x: 10.25,
+      y: 20.25,
+      width: 20,
+      height: 20
+    })
+    editor.graph.createNode('FRAME', pageId, {
+      x: 100,
+      y: 100,
+      width: 200,
+      height: 100,
+      layoutMode: 'HORIZONTAL'
+    })
+    editor.select([moving.id])
+    const drag = createSelectionMoveDrag(10.25, 20.25, 0, 0, editor, false)
+    if (drag.type !== 'move') throw new Error('Expected move drag')
+
+    handleMoveMove(drag, 150.6, 130.7, 10, 10, editor)
+
+    expect(drag.appliedDx).toBeCloseTo(140.75)
+    expect(drag.appliedDy).toBeCloseTo(110.75)
+    expect(editor.graph.getNode(moving.id)).toMatchObject({ x: 151, y: 131 })
+  })
+
   test('removes duplicate created for alt-click without movement', () => {
     const editor = createEditor()
     const pageId = editor.state.currentPageId

@@ -115,7 +115,9 @@ export function cloneSceneGraphForFigExport(graph: SceneGraph): SceneGraph {
 export function deserializeSceneGraph(data: SerializedSceneGraph): SceneGraph {
   const graph = new SceneGraph()
   graph.rootId = data.rootId
-  graph.nodes = new Map(data.nodes)
+  graph.nodes = new Map(
+    data.nodes.map(([id, node]) => [id, { ...node, guides: node.guides ?? [] }])
+  )
   graph.images = new Map(data.images)
   graph.variables = new Map(data.variables)
   graph.variableCollections = new Map(data.variableCollections)
