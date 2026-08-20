@@ -3,7 +3,7 @@ import type { Ref } from 'vue'
 import { PEN_CLOSE_THRESHOLD } from '@open-pencil/core/constants'
 import type { Editor } from '@open-pencil/core/editor'
 
-import { createPenDrag, handlePenDragMove } from '#vue/canvas/pen-input/drag'
+import { createPenDrag, handlePenDragMove } from '#vue/canvas/pen/drag'
 import { handlePenNodeEditDown } from '#vue/shared/input/node-edit'
 import type { DragState } from '#vue/shared/input/types'
 

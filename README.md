@@ -253,11 +253,14 @@ See the [roadmap](https://openpencil.dev/development/roadmap) for product direct
 
 ```sh
 bun install
-bun run dev        # Dev server at localhost:1420
-bun run tauri dev  # Desktop app (requires Rust)
+bun run dev:portless  # Web editor at https://open-pencil.localhost
+bun run dev           # Direct Vite server at http://localhost:1420
+bun run tauri dev     # Desktop app (requires Rust)
 ```
 
-Alternatively, open the repository in any [Dev Container](https://containers.dev/)-compatible tool. The container pins Bun, installs the workspace dependencies, and forwards the web editor on port 1420. Start it with `bun run dev` after the container is ready.
+The first Portless run creates and trusts a local HTTPS certificate. Linked Git worktrees automatically receive branch-prefixed URLs such as `https://fix-ui.open-pencil.localhost`, so concurrent development servers do not compete for port 1420. Run `bunx portless doctor` if local routing or certificate trust fails.
+
+Alternatively, open the repository in any [Dev Container](https://containers.dev/)-compatible tool. The container pins Bun, installs the workspace dependencies, and forwards the direct web editor on port 1420. Start it with `bun run dev` after the container is ready.
 
 The Dev Container supports the web editor, packages, CLI, and automated checks. Native Tauri development still requires the host setup described below because desktop windows and platform WebView dependencies are not provided in the container.
 

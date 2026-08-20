@@ -65,6 +65,8 @@ App dialogs compose the Reka-backed components under `src/components/ui/dialog/`
 
 ## Commands
 
+- `bun run dev:portless` — preferred browser development server at `https://open-pencil.localhost`; linked worktrees use `https://<branch>.open-pencil.localhost`
+- `bun run dev` — direct Vite server at `http://localhost:1420`, used by Playwright, Tauri, and Dev Containers
 - `bun run check` — type-aware lint + typecheck via oxlint + tsgo + architecture checks (run before committing)
 - `bun run check:arch` — Steiger architecture lint for project-specific import boundaries
 - `bun run check:vue` — vue-tsc type-check for app and Vue SDK .vue files
@@ -75,6 +77,10 @@ App dialogs compose the Reka-backed components under `src/components/ui/dialog/`
 - `bun run test` — Playwright E2E and visual regression tests
 - `bun run tauri dev` — desktop app with hot reload
 - `bun open-pencil --help` — list CLI commands. Common commands include `info`, `tree`, `find`, `node`, `pages`, `variables`, `export`, `import`, `convert`, `lint`, `query`, `selection`, `formats`, `analyze ...`, and `eval` for Figma Plugin API scripting.
+
+## Git worktrees and development servers
+
+Use `bun run dev:portless` for browser development, especially in worktrees; Portless assigns the main checkout `https://open-pencil.localhost` and each worktree a branch-prefixed URL. Keep `bun run dev` for Playwright, Tauri, and Dev Container flows that require `http://localhost:1420`.
 
 ## Releases & CI
 
