@@ -135,7 +135,7 @@ export function createGuideInput({
       return
     drag.dragStarted = true
     setCursor(cursor(drag.axis))
-    drag.ownerId = ownerAt(cx, cy)
+    drag.ownerId = redlines?.frameId ?? ownerAt(cx, cy)
     drag.position = positionFor(drag.ownerId, drag.axis, cx, cy)
     editor.setGuidePreview({
       ownerId: drag.ownerId,

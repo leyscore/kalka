@@ -83,6 +83,34 @@ describe('guide canvas input', () => {
     ])
   })
 
+  test('keeps a selected top-level frame as owner over nested frame content', () => {
+    const { editor, input, getDrag } = setup()
+    const pageId = editor.state.currentPageId
+    const frame = editor.graph.createNode('FRAME', pageId, {
+      x: 100,
+      y: 100,
+      width: 300,
+      height: 200
+    })
+    const nested = editor.graph.createNode('FRAME', frame.id, {
+      x: 40,
+      y: 30,
+      width: 100,
+      height: 80
+    })
+    editor.graph.hitTestDeep = () => nested
+    input.tryStartFromRuler(100, 5, 100, 5)
+    const drag = getDrag()
+    if (drag?.type !== 'guide') throw new Error('Expected guide drag')
+
+    input.handleMove(drag, 200, 200, 200, 200, { frameId: frame.id, deep: false })
+    expect(drag.ownerId).toBe(frame.id)
+    expect(editor.state.guides.preview?.ownerId).toBe(frame.id)
+    input.finish(drag)
+    expect(editor.graph.getNode(frame.id)?.guides).toHaveLength(1)
+    expect(editor.graph.getNode(nested.id)?.guides).toEqual([])
+  })
+
   test('ruler hover takes precedence over an intersecting existing guide', () => {
     const { editor, input } = setup()
     editor.addGuide(editor.state.currentPageId, 'x', 100)

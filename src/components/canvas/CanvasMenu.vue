@@ -8,6 +8,7 @@ import {
   ContextMenuSubContent,
   ContextMenuPortal
 } from 'reka-ui'
+import IconChevronRight from '~icons/lucide/chevron-right'
 import IconCombine from '~icons/lucide/combine'
 import IconCopyMinus from '~icons/lucide/copy-minus'
 import IconCopyX from '~icons/lucide/copy-x'
@@ -156,8 +157,8 @@ function contextCommandIcon(id: EditorCommandId | undefined): Component | undefi
         <ContextMenuSeparator v-if="item.separator" :class="cls.sep" />
         <ContextMenuSub v-else-if="item.sub">
           <ContextMenuSubTrigger v-test-id="item.testId" :class="cls.item">
-            <span>{{ item.label }}</span
-            ><span class="text-sm text-muted">›</span>
+            <span>{{ item.label }}</span>
+            <IconChevronRight class="size-3.5 text-muted" />
           </ContextMenuSubTrigger>
           <ContextMenuPortal>
             <ContextMenuSubContent :class="cls.submenu">
