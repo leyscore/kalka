@@ -3,11 +3,8 @@ import { describe, expect, test } from 'bun:test'
 import { SceneGraph } from '@open-pencil/scene-graph'
 import type { SceneNode } from '@open-pencil/scene-graph'
 
-import {
-  distanceToGuideSegment,
-  getGuideScreenSegment,
-  hitTestGuides
-} from '#core/canvas/guides/geometry'
+import { distanceToGuideSegment, getGuideScreenSegment } from '#core/canvas/guides/geometry'
+import { hitTestGuides } from '#core/canvas/guides/hit-test'
 
 function pageWithGuide(): { graph: SceneGraph; page: SceneNode } {
   const page = {

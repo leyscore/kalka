@@ -5,9 +5,9 @@ import type { Canvas } from 'canvaskit-wasm'
 import { SceneGraph } from '@open-pencil/scene-graph'
 import type { SceneNode } from '@open-pencil/scene-graph'
 
-import { drawGuides } from '#core/canvas/guides/render'
+import { drawGuides } from '#core/canvas/guides/draw'
 
-import { createMockCanvas, createMockRenderer, mockCalls } from './effects/helpers'
+import { createMockCanvas, createMockRenderer, mockCalls } from '../effects/helpers'
 
 function graphWithGuides(guides: SceneNode['guides']): SceneGraph {
   const page = {

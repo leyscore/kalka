@@ -2,7 +2,7 @@ import type { Canvas } from 'canvaskit-wasm'
 
 import type { SceneGraph } from '@open-pencil/scene-graph'
 
-import { drawGuides } from '#core/canvas/guides/render'
+import { drawGuides } from '#core/canvas/guides/draw'
 import type { RenderOverlays, SkiaRenderer } from '#core/canvas/renderer'
 
 function measurementVisible(overlays: RenderOverlays): boolean {
