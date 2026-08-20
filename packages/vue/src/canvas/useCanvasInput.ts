@@ -289,10 +289,15 @@ export function useCanvasInput(
     return hits.sort((a, b) => a.distance - b.distance)[0] ?? null
   }
 
+  function guideCursor(axis: 'x' | 'y') {
+    return axis === 'x' ? 'ew-resize' : 'ns-resize'
+  }
+
   function startExistingGuideDrag(sx: number, sy: number): boolean {
     const hit = guideHitTest(sx, sy)
     if (!hit) return false
     editor.setSelectedGuide({ ownerId: hit.ownerId, guideId: hit.guideId })
+    cursorOverride.value = guideCursor(hit.axis)
     setDrag({
       type: 'guide',
       axis: hit.axis,
@@ -401,14 +406,11 @@ export function useCanvasInput(
     }
 
     if (!drag.value && editor.state.activeTool === 'SELECT') {
-      const { cx, cy } = coords
-      cursorOverride.value = updateHoverCursor(
-        cx,
-        cy,
-        editor,
-        hitFns,
-        editor.state.measurementMode === 'deep'
-      )
+      const { sx, sy, cx, cy } = coords
+      const guideHit = guideHitTest(sx, sy)
+      cursorOverride.value = guideHit
+        ? guideCursor(guideHit.axis)
+        : updateHoverCursor(cx, cy, editor, hitFns, editor.state.measurementMode === 'deep')
       editor.setAutoLayoutHover(
         editor.state.measurementMode === 'off' ? resolveAutoLayoutHover(cx, cy, editor) : null
       )
@@ -429,6 +431,7 @@ export function useCanvasInput(
       d.currentScreenY = sy
       if (!d.dragStarted && Math.hypot(sx - d.startScreenX, sy - d.startScreenY) < 3) return
       d.dragStarted = true
+      cursorOverride.value = guideCursor(d.axis)
       const target = guideOwner(cx, cy)
       const owner = editor.graph.getNode(target.id)
       const local = owner && owner.type !== 'CANVAS' ? canvasToLocal(cx, cy, owner.id) : null
