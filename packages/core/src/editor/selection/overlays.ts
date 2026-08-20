@@ -27,6 +27,11 @@ export function createSelectionOverlayActions(ctx: EditorContext) {
     ctx.requestRepaint()
   }
 
+  function setGuideRedline(redline: typeof ctx.state.guides.redline) {
+    ctx.state.guides.redline = redline
+    ctx.requestRepaint()
+  }
+
   function setSelectedGuide(selection: typeof ctx.state.guides.selected) {
     ctx.state.guides.selected = selection
     if (selection) ctx.setSelectedIds(new Set())
@@ -81,6 +86,7 @@ export function createSelectionOverlayActions(ctx: EditorContext) {
     setSnapGuides,
     setGuidePreview,
     setHoveredGuide,
+    setGuideRedline,
     setSelectedGuide,
     setRotationPreview,
     setHoveredNode,

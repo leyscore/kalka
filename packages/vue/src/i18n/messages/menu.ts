@@ -73,7 +73,8 @@ export const menuMessageDefaults = {
   zoomOut: 'Zoom out',
   splitRight: 'Split right',
   splitDown: 'Split down',
-  closeView: 'Close view'
+  closeView: 'Close view',
+  removeGuide: 'Remove guide'
 } as const
 
 export const menuMessages = i18n('menu', menuMessageDefaults)

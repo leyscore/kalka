@@ -65,5 +65,6 @@
   "settings": "Ustawienia…",
   "splitRight": "Podziel w prawo",
   "splitDown": "Podziel w dół",
-  "closeView": "Zamknij widok"
+  "closeView": "Zamknij widok",
+  "removeGuide": "Usuń prowadnicę"
 }

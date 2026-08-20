@@ -208,6 +208,13 @@ export function useCanvasInput(
     autoLayoutPaddingEdit.value = null
   }
 
+  function selectedTopLevelFrameId(): string | null {
+    if (editor.state.selectedIds.size !== 1) return null
+    const id = [...editor.state.selectedIds][0]
+    const node = editor.graph.getNode(id)
+    return node?.type === 'FRAME' && node.parentId === editor.state.currentPageId ? node.id : null
+  }
+
   function onDblClick(e: MouseEvent) {
     if (startAutoLayoutPaddingEdit(e)) return
     onTextDblClick(e)
@@ -224,7 +231,7 @@ export function useCanvasInput(
     if (!editor.state.editingTextId) canvasRef.value?.focus()
     editor.setHoveredNode(null)
     const { sx, sy, cx, cy } = getCoords(e)
-    if (e.button === 0 && guideInput.tryStartExisting(sx, sy)) {
+    if (e.button === 0 && guideInput.tryStartExisting(sx, sy, e.altKey)) {
       e.preventDefault()
       return
     }
@@ -295,7 +302,15 @@ export function useCanvasInput(
     const { sx, sy, cx, cy } = getCoords(e)
 
     if (d.type === 'guide') {
-      guideInput.handleMove(d, sx, sy, cx, cy)
+      const frameId = e.altKey && !d.guideId ? selectedTopLevelFrameId() : null
+      guideInput.handleMove(
+        d,
+        sx,
+        sy,
+        cx,
+        cy,
+        frameId ? { frameId, deep: e.metaKey || e.ctrlKey } : undefined
+      )
       return
     }
 

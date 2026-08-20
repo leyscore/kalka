@@ -65,5 +65,6 @@
   "settings": "设置…",
   "splitRight": "向右拆分",
   "splitDown": "向下拆分",
-  "closeView": "关闭视图"
+  "closeView": "关闭视图",
+  "removeGuide": "移除参考线"
 }

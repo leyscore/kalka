@@ -12,7 +12,7 @@ function setup() {
   Object.assign(editor.state, { showRulers: true })
   let drag: DragState | null = null
   const input = createGuideInput({
-    canvasRef: ref<HTMLCanvasElement | null>(null),
+    canvasRef: ref({ clientWidth: 500, clientHeight: 500 } as HTMLCanvasElement),
     editor,
     canvasToLocal: (cx, cy) => ({ lx: cx, ly: cy }),
     setDrag: (next) => {
@@ -48,6 +48,39 @@ describe('guide canvas input', () => {
       axis: 'y',
       position: 40
     })
+  })
+
+  test('Option-drag duplicates an existing guide and preserves the source', () => {
+    const { editor, input, getDrag } = setup()
+    const pageId = editor.state.currentPageId
+    const sourceId = editor.addGuide(pageId, 'x', 40)
+    editor.undo.clear()
+
+    expect(input.tryStartExisting(40, 100, true)).toBe(true)
+    const drag = getDrag()
+    if (drag?.type !== 'guide') throw new Error('Expected guide drag')
+    input.handleMove(drag, 80, 100, 80, 100)
+    expect(editor.state.guides.preview?.source).toBeUndefined()
+    input.finish(drag)
+
+    const guides = editor.graph.getNode(pageId)?.guides ?? []
+    expect(guides).toHaveLength(2)
+    expect(guides).toContainEqual({ id: sourceId, axis: 'x', position: 40 })
+    expect(guides.some((guide) => guide.id !== sourceId && guide.position === 80)).toBe(true)
+  })
+
+  test('discarding an Option-drag on the ruler preserves the source guide', () => {
+    const { editor, input, getDrag } = setup()
+    const pageId = editor.state.currentPageId
+    const sourceId = editor.addGuide(pageId, 'x', 40)
+    input.tryStartExisting(40, 100, true)
+    const drag = getDrag()
+    if (drag?.type !== 'guide') throw new Error('Expected guide drag')
+    input.handleMove(drag, 5, 100, 5, 100)
+    input.finish(drag)
+    expect(editor.graph.getNode(pageId)?.guides).toEqual([
+      { id: sourceId, axis: 'x', position: 40 }
+    ])
   })
 
   test('ruler hover takes precedence over an intersecting existing guide', () => {

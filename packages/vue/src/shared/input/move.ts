@@ -2,6 +2,10 @@ import {
   computeAutoLayoutIndicator,
   computeAutoLayoutIndicatorForFrame
 } from '#vue/shared/input/auto-layout'
+import {
+  isPastPointerDragThreshold,
+  POINTER_DRAG_START_THRESHOLD_PX
+} from '#vue/shared/input/drag-threshold'
 import { findMoveDropTarget, reparentOutsideNodes } from '#vue/shared/input/drop-target'
 export { duplicateAndDrag } from '#vue/shared/input/duplicate-drag'
 import { AUTO_LAYOUT_BREAK_THRESHOLD } from '@open-pencil/core/constants'
@@ -12,7 +16,7 @@ import type { DragMove } from '#vue/shared/input/types'
 
 const AUTO_LAYOUT_REORDER_CLICK_SLOP = 3
 const AUTO_LAYOUT_CROSS_AXIS_DRAG_TOLERANCE = 96
-export const MOVE_DRAG_START_THRESHOLD_PX = 3
+export const MOVE_DRAG_START_THRESHOLD_PX = POINTER_DRAG_START_THRESHOLD_PX
 
 function isInsideAutoLayoutDragBounds(parentId: string, cx: number, cy: number, editor: Editor) {
   const parent = editor.graph.getNode(parentId)
@@ -46,9 +50,7 @@ export function detectAutoLayoutParent(editor: Editor): string | undefined {
 }
 
 function isPastDragStartThreshold(d: DragMove, sx: number, sy: number) {
-  const dx = sx - d.startScreenX
-  const dy = sy - d.startScreenY
-  return dx * dx + dy * dy >= MOVE_DRAG_START_THRESHOLD_PX * MOVE_DRAG_START_THRESHOLD_PX
+  return isPastPointerDragThreshold(d.startScreenX, d.startScreenY, sx, sy)
 }
 
 export function handleMoveMove(

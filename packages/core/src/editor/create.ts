@@ -209,7 +209,7 @@ export function createEditor(options?: EditorOptions) {
     state.hoveredNodeId = null
     state.measurementMode = 'off'
     state.snapGuides = []
-    state.guides = { preview: null, hovered: null, selected: null }
+    state.guides = { preview: null, hovered: null, selected: null, redline: null }
     state.layoutInsertIndicator = null
     state.dropTargetId = null
     pages.clearPageViewports()

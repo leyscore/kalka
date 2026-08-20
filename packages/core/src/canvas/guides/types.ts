@@ -10,12 +10,24 @@ export interface GuidePreview {
   source?: GuideSelection
 }
 
+export interface GuideRedline {
+  segment: {
+    axis: 'x' | 'y'
+    from: number
+    to: number
+    cross: number
+    value: number
+  }
+  targetId: string
+}
+
 export interface GuideOverlayState {
   preview: GuidePreview | null
   hovered: GuideSelection | null
   selected: GuideSelection | null
+  redline: GuideRedline | null
 }
 
 export function createGuideOverlayState(): GuideOverlayState {
-  return { preview: null, hovered: null, selected: null }
+  return { preview: null, hovered: null, selected: null, redline: null }
 }
