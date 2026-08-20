@@ -3,7 +3,8 @@ import { promiseTimeout } from '@vueuse/core'
 import { AUTOMATION_HTTP_PORT } from '@open-pencil/core/constants'
 import { randomHex } from '@open-pencil/core/random'
 import type { DiscoveryInfo } from '@open-pencil/mcp/discovery'
-import type { MCPToolCatalogEntry } from '@open-pencil/mcp/tools'
+import type { ToolDescriptor } from '@open-pencil/mcp/tools'
+import { parseToolDescriptor } from '@open-pencil/mcp/tools'
 
 import { decodeTauriStderr } from '@/app/shell/ui'
 import { resolvePlatformCommand } from '@/app/tauri/command'
@@ -18,7 +19,7 @@ export interface AutomationHealth {
   installCommand?: string
   authRequired?: boolean
   discoveryPath?: string
-  tools?: MCPToolCatalogEntry[]
+  tools?: ToolDescriptor[]
 }
 
 export interface AutomationServerHandle {
@@ -160,13 +161,79 @@ async function resolveDiscoveryPath(healthDiscoveryPath?: string): Promise<strin
   return expected
 }
 
-export async function readAutomationHealth(): Promise<AutomationHealth | null> {
+interface AutomationHealthRecord {
+  status?: unknown
+  version?: unknown
+  installCommand?: unknown
+  authRequired?: unknown
+  discoveryPath?: unknown
+  tools?: unknown
+}
+
+function isAutomationHealthRecord(value: unknown): value is AutomationHealthRecord {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function optionalString(value: unknown): string | null | undefined {
+  if (value === undefined) return undefined
+  return typeof value === 'string' ? value : null
+}
+
+function optionalBoolean(value: unknown): boolean | null | undefined {
+  if (value === undefined) return undefined
+  return typeof value === 'boolean' ? value : null
+}
+
+function parseToolDescriptors(value: unknown): ToolDescriptor[] | null | undefined {
+  if (value === undefined) return undefined
+  if (!Array.isArray(value)) return null
+  const descriptors: ToolDescriptor[] = []
+  for (const candidate of value) {
+    const descriptor = parseToolDescriptor(candidate)
+    if (!descriptor) return null
+    descriptors.push(descriptor)
+  }
+  return descriptors
+}
+
+function parseAutomationHealth(value: unknown): AutomationHealth | null {
+  if (!isAutomationHealthRecord(value)) return null
+  if (value.status !== 'ok' && value.status !== 'no_app') return null
+  const version = optionalString(value.version)
+  const installCommand = optionalString(value.installCommand)
+  const authRequired = optionalBoolean(value.authRequired)
+  const discoveryPath = optionalString(value.discoveryPath)
+  const tools = parseToolDescriptors(value.tools)
+  if (
+    version === null ||
+    installCommand === null ||
+    authRequired === null ||
+    discoveryPath === null ||
+    tools === null
+  ) {
+    return null
+  }
+  return {
+    status: value.status,
+    ...(version !== undefined ? { version } : {}),
+    ...(installCommand !== undefined ? { installCommand } : {}),
+    ...(authRequired !== undefined ? { authRequired } : {}),
+    ...(discoveryPath !== undefined ? { discoveryPath } : {}),
+    ...(tools !== undefined ? { tools } : {})
+  }
+}
+
+export async function readAutomationHealth(
+  authToken: string | null = runtimeAutomationAuthToken
+): Promise<AutomationHealth | null> {
   try {
+    const headers = authToken ? { Authorization: `Bearer ${authToken}` } : undefined
     const res = await fetch(`http://127.0.0.1:${AUTOMATION_HTTP_PORT}/health`, {
+      headers,
       signal: AbortSignal.timeout(1000)
     })
     if (!res.ok) return null
-    return (await res.json()) as AutomationHealth
+    return parseAutomationHealth(await res.json())
   } catch {
     return null
   }
@@ -196,10 +263,14 @@ function assertCompatibleMCPVersion(health: AutomationHealth): void {
   )
 }
 
-async function pollHealth(retries: number, delayMs: number): Promise<AutomationHealth | null> {
-  for (let i = 0; i < retries; i++) {
+async function pollHealth(
+  attempts: number,
+  delayMs: number,
+  authToken: string | null = runtimeAutomationAuthToken
+): Promise<AutomationHealth | null> {
+  for (let attempt = 0; attempt < attempts; attempt++) {
     await promiseTimeout(delayMs)
-    const health = await readAutomationHealth()
+    const health = await readAutomationHealth(authToken)
     if (health) return health
   }
   return null
@@ -278,9 +349,9 @@ async function configureDevMCP(): Promise<AutomationServerHandle> {
   if (!response.ok) {
     throw new Error(`Failed to configure development MCP server (${response.status})`)
   }
-  const health = await pollHealth(10, 250)
-  if (!health) throw new Error('Development MCP server did not become healthy')
   const authToken = configuration.authenticationEnabled ? DEV_AUTOMATION_AUTH_TOKEN : null
+  const health = await pollHealth(10, 250, authToken)
+  if (!health) throw new Error('Development MCP server did not become healthy')
   runtimeAutomationAuthToken = authToken
   return { disconnect: noop, authToken, managed: true }
 }
@@ -354,7 +425,7 @@ async function startMCPIfNeeded(): Promise<AutomationServerHandle | null> {
       )
     )
   }
-  const health = await pollHealth(5, 1000)
+  const health = await pollHealth(5, 1000, authToken)
 
   if (health) {
     try {
