@@ -15,6 +15,13 @@ interface GuideInputOptions {
   setCursor: (cursor: string | null) => void
 }
 
+export function selectedTopLevelGuideFrameId(editor: Editor): string | null {
+  if (editor.state.selectedIds.size !== 1) return null
+  const id = [...editor.state.selectedIds][0]
+  const node = editor.graph.getNode(id)
+  return node?.type === 'FRAME' && node.parentId === editor.state.currentPageId ? node.id : null
+}
+
 export function createGuideInput({
   canvasRef,
   editor,

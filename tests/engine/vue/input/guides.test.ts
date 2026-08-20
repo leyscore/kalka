@@ -4,7 +4,7 @@ import { ref } from 'vue'
 
 import { createEditor } from '@open-pencil/core/editor'
 
-import { createGuideInput } from '#vue/canvas/guides/input'
+import { createGuideInput, selectedTopLevelGuideFrameId } from '#vue/canvas/guides/input'
 import type { DragState } from '#vue/shared/input/types'
 
 function setup() {
@@ -14,7 +14,10 @@ function setup() {
   const input = createGuideInput({
     canvasRef: ref({ clientWidth: 500, clientHeight: 500 } as HTMLCanvasElement),
     editor,
-    canvasToLocal: (cx, cy) => ({ lx: cx, ly: cy }),
+    canvasToLocal: (cx, cy, scopeId) => {
+      const owner = editor.graph.getNode(scopeId)
+      return { lx: cx - (owner?.x ?? 0), ly: cy - (owner?.y ?? 0) }
+    },
     setDrag: (next) => {
       drag = next
     },
@@ -99,12 +102,19 @@ describe('guide canvas input', () => {
       height: 80
     })
     editor.graph.hitTestDeep = () => nested
+    editor.select([frame.id])
     input.tryStartFromRuler(100, 5, 100, 5)
     const drag = getDrag()
     if (drag?.type !== 'guide') throw new Error('Expected guide drag')
+    const selectedFrameId = selectedTopLevelGuideFrameId(editor)
+    expect(selectedFrameId).toBe(frame.id)
 
-    input.handleMove(drag, 200, 200, 200, 200, { frameId: frame.id, deep: false })
+    input.handleMove(drag, 200, 200, 200, 200, {
+      frameId: selectedFrameId ?? '',
+      deep: false
+    })
     expect(drag.ownerId).toBe(frame.id)
+    expect(drag.position).toBe(100)
     expect(editor.state.guides.preview?.ownerId).toBe(frame.id)
     input.finish(drag)
     expect(editor.graph.getNode(frame.id)?.guides).toHaveLength(1)

@@ -4,7 +4,7 @@ import { onScopeDispose, ref, type Ref } from 'vue'
 import type { Editor } from '@open-pencil/core/editor'
 import type { SceneNode } from '@open-pencil/scene-graph'
 
-import { createGuideInput } from '#vue/canvas/guides/input'
+import { createGuideInput, selectedTopLevelGuideFrameId } from '#vue/canvas/guides/input'
 import {
   handleBendHandleMove,
   handleNodeEditMouseUp,
@@ -208,13 +208,6 @@ export function useCanvasInput(
     autoLayoutPaddingEdit.value = null
   }
 
-  function selectedTopLevelFrameId(): string | null {
-    if (editor.state.selectedIds.size !== 1) return null
-    const id = [...editor.state.selectedIds][0]
-    const node = editor.graph.getNode(id)
-    return node?.type === 'FRAME' && node.parentId === editor.state.currentPageId ? node.id : null
-  }
-
   function onDblClick(e: MouseEvent) {
     if (startAutoLayoutPaddingEdit(e)) return
     onTextDblClick(e)
@@ -302,7 +295,7 @@ export function useCanvasInput(
     const { sx, sy, cx, cy } = getCoords(e)
 
     if (d.type === 'guide') {
-      const frameId = e.altKey && !d.guideId ? selectedTopLevelFrameId() : null
+      const frameId = e.altKey && !d.guideId ? selectedTopLevelGuideFrameId(editor) : null
       guideInput.handleMove(
         d,
         sx,
