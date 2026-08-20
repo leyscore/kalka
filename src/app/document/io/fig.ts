@@ -4,7 +4,7 @@ import type { FigPageManifestEntry } from '@open-pencil/kiwi/fig'
 import { SceneGraph } from '@open-pencil/scene-graph'
 
 /** Show lightweight page shells while the FIG worker continues decoding the full document. */
-export function showFigPageManifest(editor: Editor, pages: readonly FigPageManifestEntry[]): void {
+function showFigPageManifest(editor: Editor, pages: readonly FigPageManifestEntry[]): void {
   if (pages.length === 0) return
 
   const graph = new SceneGraph()
@@ -21,7 +21,7 @@ export function showFigPageManifest(editor: Editor, pages: readonly FigPageManif
   editor.state.loading = true
 }
 
-export function readFigFileProgressively(file: File, editor: Editor) {
+export function readFigDocument(file: File, editor: Editor) {
   return readFigFile(file, {
     populate: 'first-page',
     onPages: (pages) => showFigPageManifest(editor, pages)

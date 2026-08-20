@@ -2,16 +2,11 @@ import { useEditorCommands } from '@open-pencil/vue'
 import type { EditorCommandId } from '@open-pencil/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
+import { clearRecentFiles, forgetRecentFile, recentLocalFileAt } from '@/app/recent-files'
 import { createSharedEditorMenuActions } from '@/app/shell/menu/editor-actions'
 import { openFileDialog, openFileFromPath } from '@/app/shell/menu/files'
 import { useNativeMenuEvents } from '@/app/shell/menu/native-events'
-import {
-  clearRecentFiles,
-  forgetRecentFile,
-  OPEN_RECENT_EVENT_PREFIX,
-  recentFileAt,
-  syncRecentFilesMenu
-} from '@/app/shell/menu/recent-files'
+import { OPEN_RECENT_EVENT_PREFIX, watchRecentFilesMenu } from '@/app/shell/menu/recent-files'
 import { APP_MENU_SCHEMA, type AppMenuEntry } from '@/app/shell/menu/schema'
 import { createSelectionMenuActions } from '@/app/shell/menu/selection-actions'
 import { SHELL_MENU_IDS } from '@/app/shell/menu/shell'
@@ -34,9 +29,7 @@ const COMMAND_MENU_IDS = new Set<EditorCommandId>(
 export function useEditorMenu() {
   if (!isTauri()) return
 
-  void syncRecentFilesMenu().catch((error) => {
-    console.warn('[Recent files] Failed to initialize the native menu', error)
-  })
+  watchRecentFilesMenu()
 
   const { setTheme } = useAppTheme()
   const { runCommand } = useEditorCommands()
@@ -78,7 +71,7 @@ export function useEditorMenu() {
     }
     if (id.startsWith(OPEN_RECENT_EVENT_PREFIX)) {
       const index = Number(id.slice(OPEN_RECENT_EVENT_PREFIX.length))
-      const path = Number.isInteger(index) ? recentFileAt(index) : null
+      const path = Number.isInteger(index) ? recentLocalFileAt(index) : null
       if (path) {
         void openFileFromPath(path).catch((error) => {
           forgetRecentFile(path)
