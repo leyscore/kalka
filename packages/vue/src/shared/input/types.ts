@@ -128,6 +128,21 @@ export interface DragBendHandle {
   targetTangentField: 'tangentStart' | 'tangentEnd' | null
 }
 
+export interface DragGuide {
+  type: 'guide'
+  axis: 'x' | 'y'
+  ownerId: string
+  position: number
+  startScreenX: number
+  startScreenY: number
+  currentScreenX: number
+  currentScreenY: number
+  dragStarted: boolean
+  guideId?: string
+  originalOwnerId?: string
+  originalPosition?: number
+}
+
 export type DragState =
   | DragDraw
   | DragMove
@@ -140,6 +155,7 @@ export type DragState =
   | DragEditNode
   | DragEditHandle
   | DragBendHandle
+  | DragGuide
 
 export const TOOL_TO_NODE: Partial<Record<Tool, NodeType>> = {
   FRAME: 'FRAME',

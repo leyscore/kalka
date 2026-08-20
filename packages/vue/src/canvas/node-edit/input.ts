@@ -7,7 +7,7 @@ import {
   handleBendHandleMove,
   resolveBendTargetHandle,
   type CanvasNodeEditMethods
-} from '#vue/canvas/node-edit-input/bend'
+} from '#vue/canvas/node-edit/bend'
 import { hitTestEditHandle, isEndpoint, NODE_HIT_THRESHOLD } from '#vue/shared/input/node-edit'
 import type { DragState } from '#vue/shared/input/types'
 

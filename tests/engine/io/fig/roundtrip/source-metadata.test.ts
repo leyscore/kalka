@@ -44,8 +44,8 @@ describe('fig roundtrip source metadata', () => {
       }
     ]
     page.guides = [
-      { axis: 'x', position: 42 },
-      { axis: 'y', position: 84 }
+      { id: 'x', axis: 'x', position: 42 },
+      { id: 'y', axis: 'y', position: 84 }
     ]
     page.source.fig.rawNodeFields.strokeJoin = 'BEVEL'
     page.source.fig.rawNodeFields.strokeWeight = 0
