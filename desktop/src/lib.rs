@@ -42,6 +42,11 @@ fn take_pending_open(state: tauri::State<PendingOpen>) -> Vec<PendingOpenFile> {
 }
 
 #[tauri::command]
+fn set_recent_files(app: tauri::AppHandle, paths: Vec<String>) -> Result<(), String> {
+    install_app_menu(&app, &paths).map_err(|error| error.to_string())
+}
+
+#[tauri::command]
 fn mcp_executable_available() -> bool {
     which::which("openpencil-mcp-http").is_ok()
 }
@@ -145,6 +150,7 @@ pub fn run() {
             list_system_fonts,
             load_system_font,
             proxy_http_request,
+            set_recent_files,
             native_menu_checked,
             set_native_menu_checked,
             take_pending_open
@@ -161,7 +167,7 @@ pub fn run() {
         })
         .setup(|app| {
             queue_open_paths(app.handle(), startup_open_paths());
-            Ok(install_app_menu(app)?)
+            Ok(install_app_menu(app.handle(), &[])?)
         })
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

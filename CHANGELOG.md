@@ -10,6 +10,7 @@
 
 - Duplicate guides with Option/Alt-drag, show active guide coordinates in rulers, measure ruler-created guides against selected frames and their contents, and remove guides from the context menu.
 - Create, select, move, transfer, and delete canvas and frame guides directly from rulers, with undoable edits and `.fig` round-trip fidelity.
+- Open to a unified home with recent and configured storage documents, including grid or list layouts.
 - Snap vector points, moved layers, and resized edges to nearby geometry, sibling layer bounds, canvas and frame layout guides, and whole-pixel coordinates with visible alignment guides, fractional-coordinate preservation when pixel snapping is off, and persistent geometry, object, and pixel-grid controls in General settings and the Preferences menu.
 - Run Pi through AI SDK HarnessAgent as a configurable desktop provider with multiple saved model profiles, secure credentials, existing MCP design tools, and per-profile thinking and permission settings.
 - Open multiple selected design files in separate tabs.
@@ -53,6 +54,7 @@
 
 ### Performance
 
+- Show the FIG page list from a lightweight Kiwi scan before materializing the full document, making large files feel responsive sooner.
 - Avoid redundant collaboration writes when synchronized node fields have not changed.
 - Release obsolete streamed Markdown parser history after each AI response completes, preventing chat memory from multiplying with every streamed chunk. (#544)
 - Open large documents faster by using cached world positions while finding layers under the pointer. (#527)
@@ -63,6 +65,7 @@
 
 ### Fixed
 
+- Generate and cache recent-file previews from the conventional `Cover` page after opening a `.fig`, without modifying the source file.
 - Preserve app-created component properties and instance-swap targets across `.fig` save and reload cycles. (#548)
 - Reconnect desktop automation to an already-running MCP server by allowing access to its discovery file. (#546)
 - Keep text-editing carets, hit testing, and selection highlights aligned with vertically centered or bottom-aligned text. (#539)
