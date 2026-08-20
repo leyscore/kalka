@@ -30,7 +30,11 @@ import HomeWorkspace from '@/components/home/HomeWorkspace.vue'
 const route = useRoute()
 const params = useUrlSearchParams('history')
 const createdInitialTab = tabCount() === 0
-const shouldCreateHome = route.path === '/' && !('test' in params) && !route.meta.demo
+const shouldCreateHome =
+  route.path === '/' &&
+  !('test' in params) &&
+  !route.meta.demo &&
+  (isTauri() || 'recent-files' in params)
 let firstTab = activeTab.value
 if (!firstTab) firstTab = shouldCreateHome ? createHomeTab() : createTab()
 

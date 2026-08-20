@@ -315,7 +315,7 @@ function formattedDate(updatedAt: string): string {
         </div>
       </section>
 
-      <section v-if="storageConfigured || storageLoading || storageError" class="mt-7">
+      <section class="mt-7">
         <div class="mb-3 flex items-start gap-3">
           <div class="min-w-0">
             <h2 class="text-base font-semibold">{{ dialogs.storageWorkspace }}</h2>
@@ -425,6 +425,20 @@ function formattedDate(updatedAt: string): string {
             <span class="hidden shrink-0 text-[10px] text-muted sm:inline">{{
               formattedDate(document.updatedAt)
             }}</span>
+          </button>
+        </div>
+
+        <div
+          v-else-if="!storageConfigured"
+          class="rounded-lg border border-dashed border-border px-4 py-4 text-center text-xs text-muted sm:py-6"
+        >
+          <p>{{ dialogs.storageNotConfigured }}</p>
+          <button
+            type="button"
+            class="mt-3 rounded border border-border px-3 py-1.5 text-xs text-surface hover:bg-hover"
+            @click="openSettingsDialog('storage')"
+          >
+            {{ dialogs.settings }}
           </button>
         </div>
 
