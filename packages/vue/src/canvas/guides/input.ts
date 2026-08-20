@@ -63,14 +63,18 @@ export function createGuideInput({
   }
 
   function updateHover(sx: number, sy: number): string | null {
+    const axis = rulerAxis(sx, sy)
+    if (axis) {
+      editor.setHoveredGuide(null)
+      return cursor(axis)
+    }
     const hit = hitTest(sx, sy)
     editor.setHoveredGuide(hit ? { ownerId: hit.ownerId, guideId: hit.guideId } : null)
-    if (hit) return cursor(hit.axis)
-    const axis = rulerAxis(sx, sy)
-    return axis ? cursor(axis) : null
+    return hit ? cursor(hit.axis) : null
   }
 
   function tryStartExisting(sx: number, sy: number): boolean {
+    if (rulerAxis(sx, sy)) return false
     const hit = hitTest(sx, sy)
     if (!hit) return false
     editor.setSelectedGuide({ ownerId: hit.ownerId, guideId: hit.guideId })
@@ -134,8 +138,10 @@ export function createGuideInput({
   function finish(drag: DragGuide): void {
     if (drag.dragStarted) {
       if (drag.currentScreenX < RULER_SIZE || drag.currentScreenY < RULER_SIZE) {
-        if (drag.guideId && drag.originalOwnerId)
+        if (drag.guideId && drag.originalOwnerId) {
           editor.removeGuide(drag.originalOwnerId, drag.guideId)
+          editor.setSelectedGuide(null)
+        }
       } else if (drag.guideId && drag.originalOwnerId) {
         if (drag.ownerId === drag.originalOwnerId)
           editor.moveGuide(drag.ownerId, drag.guideId, drag.position)
