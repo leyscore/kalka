@@ -39,13 +39,19 @@ export function createAutomationEnvironment(
   }
 }
 
-async function readConfiguration(request: IncomingMessage): Promise<unknown> {
-  let body = ''
+const MAX_CONFIGURATION_BYTES = 70_000
+const CHILD_EXIT_TIMEOUT_MS = 2_000
+
+export async function readDevMCPConfiguration(request: IncomingMessage): Promise<unknown> {
+  const chunks: Buffer[] = []
+  let byteLength = 0
   for await (const chunk of request) {
-    body += String(chunk)
-    if (body.length > 70_000) throw new Error('Request body is too large')
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)
+    byteLength += buffer.byteLength
+    if (byteLength > MAX_CONFIGURATION_BYTES) throw new Error('Request body is too large')
+    chunks.push(buffer)
   }
-  return JSON.parse(body)
+  return JSON.parse(Buffer.concat(chunks).toString('utf8'))
 }
 
 // TODO: production — bundle MCP server as Tauri sidecar or spawn via shell plugin
@@ -72,11 +78,16 @@ export function automationPlugin(authToken: string | null, corsOrigin: string): 
       running.once('exit', () => resolve())
     })
     running.kill()
-    const timeout = new Promise<void>((resolve) => {
-      setTimeout(resolve, 2_000)
+    let timeout: ReturnType<typeof setTimeout> | undefined
+    const timedOut = new Promise<boolean>((resolve) => {
+      timeout = setTimeout(() => resolve(true), CHILD_EXIT_TIMEOUT_MS)
     })
-    await Promise.race([exited, timeout])
-    if (running.exitCode === null) running.kill('SIGKILL')
+    const exitedGracefully = await Promise.race([exited.then(() => false), timedOut])
+    if (timeout) clearTimeout(timeout)
+    if (!exitedGracefully && running.exitCode === null) {
+      running.kill('SIGKILL')
+      await exited
+    }
   }
 
   async function startChild(): Promise<void> {
@@ -138,7 +149,7 @@ export function automationPlugin(authToken: string | null, corsOrigin: string): 
         }
         void (async () => {
           try {
-            const nextConfiguration = await readConfiguration(request)
+            const nextConfiguration = await readDevMCPConfiguration(request)
             if (!isDevMCPConfiguration(nextConfiguration)) {
               response.statusCode = 400
               response.end('Invalid MCP configuration')

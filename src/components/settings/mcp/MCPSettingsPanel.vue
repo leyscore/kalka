@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { ToolEffect } from '@open-pencil/mcp/tools'
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from '@open-pencil/vue'
 
@@ -11,22 +12,23 @@ import {
   setMCPToolEnabled
 } from '@/app/automation/mcp/preferences'
 import { mcpRuntime, refreshMCPRuntime, restartMCPRuntime } from '@/app/automation/mcp/runtime'
+import { isTauri } from '@/app/tauri/env'
 import AppInput from '@/components/ui/AppInput.vue'
 import AppSwitch from '@/components/ui/AppSwitch.vue'
 
 const { dialogs } = useI18n()
 const toolSearch = ref('')
 const disabledToolNames = computed(() => new Set(disabledMCPTools.value))
-function categoryStatus(documentAccess: 'inspect' | 'modify') {
-  const tools = configurableMCPTools.value.filter((tool) => tool.documentAccess === documentAccess)
+function categoryStatus(effect: ToolEffect) {
+  const tools = configurableMCPTools.value.filter((tool) => tool.effect === effect)
   const enabled = tools.filter((tool) => !disabledToolNames.value.has(tool.name)).length
   return {
     enabled: enabled > 0,
     state: enabled > 0 && enabled < tools.length ? ('mixed' as const) : ('idle' as const)
   }
 }
-const inspectionToolsStatus = computed(() => categoryStatus('inspect'))
-const modificationToolsStatus = computed(() => categoryStatus('modify'))
+const inspectionToolsStatus = computed(() => categoryStatus('read'))
+const modificationToolsStatus = computed(() => categoryStatus('write'))
 const enabledToolCount = computed(
   () => configurableMCPTools.value.filter((tool) => !disabledToolNames.value.has(tool.name)).length
 )
@@ -48,6 +50,7 @@ function restart(): void {
 }
 
 async function chooseRootDirectory(): Promise<void> {
+  if (!isTauri()) return
   const { open } = await import('@tauri-apps/plugin-dialog')
   const directory = await open({ directory: true, multiple: false })
   if (typeof directory === 'string') mcpRootDirectory.value = directory
@@ -129,6 +132,7 @@ function enableAllTools(): void {
               {{ dialogs.mcpUseDefaultRoot }}
             </button>
             <button
+              v-if="isTauri()"
               type="button"
               class="rounded border border-border px-2 py-1 text-[10px] text-surface hover:bg-hover"
               data-test-id="settings-mcp-root-directory"
@@ -187,23 +191,23 @@ function enableAllTools(): void {
 
       <div class="grid grid-cols-2 gap-2 border-b border-border p-2.5">
         <div class="flex items-center justify-between gap-2 rounded bg-input px-2.5 py-2">
-          <span class="text-[10px] text-surface">{{ dialogs.mcpInspectionTools }}</span>
+          <span class="text-[10px] text-surface">{{ dialogs.mcpReadOnlyTools }}</span>
           <AppSwitch
             :model-value="inspectionToolsStatus.enabled"
             :state="inspectionToolsStatus.state"
-            :label="dialogs.mcpInspectionTools"
+            :label="dialogs.mcpReadOnlyTools"
             data-test-id="settings-mcp-inspection-tools"
-            @update:model-value="setMCPToolCategoryEnabled('inspect', $event)"
+            @update:model-value="setMCPToolCategoryEnabled('read', $event)"
           />
         </div>
         <div class="flex items-center justify-between gap-2 rounded bg-input px-2.5 py-2">
-          <span class="text-[10px] text-surface">{{ dialogs.mcpModificationTools }}</span>
+          <span class="text-[10px] text-surface">{{ dialogs.mcpDocumentWritingTools }}</span>
           <AppSwitch
             :model-value="modificationToolsStatus.enabled"
             :state="modificationToolsStatus.state"
-            :label="dialogs.mcpModificationTools"
+            :label="dialogs.mcpDocumentWritingTools"
             data-test-id="settings-mcp-modification-tools"
-            @update:model-value="setMCPToolCategoryEnabled('modify', $event)"
+            @update:model-value="setMCPToolCategoryEnabled('write', $event)"
           />
         </div>
       </div>
