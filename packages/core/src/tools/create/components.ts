@@ -4,6 +4,7 @@ import { defineTool, nodeSummary, requireNodes } from '#core/tools/schema'
 export const createComponent = defineTool({
   name: 'create_component',
   mutates: true,
+  documentAccess: 'modify',
   description: 'Convert a frame/group into a component.',
   params: {
     id: { type: 'string', description: 'Node ID to convert', required: true }
@@ -19,6 +20,7 @@ export const createComponent = defineTool({
 export const createInstance = defineTool({
   name: 'create_instance',
   mutates: true,
+  documentAccess: 'modify',
   description: 'Create an instance of a component.',
   params: {
     component_id: { type: 'string', description: 'Component node ID', required: true },
