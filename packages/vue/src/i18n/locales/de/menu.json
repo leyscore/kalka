@@ -65,5 +65,6 @@
   "settings": "Einstellungen…",
   "splitRight": "Nach rechts teilen",
   "splitDown": "Nach unten teilen",
-  "closeView": "Ansicht schließen"
+  "closeView": "Ansicht schließen",
+  "removeGuide": "Hilfslinie entfernen"
 }

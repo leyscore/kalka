@@ -1,9 +1,10 @@
 import type { Ref } from 'vue'
 
-import { hitTestGuides } from '@open-pencil/core/canvas'
+import { computeGuideRedline, hitTestGuides } from '@open-pencil/core/canvas'
 import { RULER_SIZE } from '@open-pencil/core/constants'
 import type { Editor } from '@open-pencil/core/editor'
 
+import { isPastPointerDragThreshold } from '#vue/shared/input/drag-threshold'
 import type { DragGuide, DragState } from '#vue/shared/input/types'
 
 interface GuideInputOptions {
@@ -12,6 +13,13 @@ interface GuideInputOptions {
   canvasToLocal: (cx: number, cy: number, scopeId: string) => { lx: number; ly: number }
   setDrag: (drag: DragState) => void
   setCursor: (cursor: string | null) => void
+}
+
+export function selectedTopLevelGuideFrameId(editor: Editor): string | null {
+  if (editor.state.selectedIds.size !== 1) return null
+  const id = [...editor.state.selectedIds][0]
+  const node = editor.graph.getNode(id)
+  return node?.type === 'FRAME' && node.parentId === editor.state.currentPageId ? node.id : null
 }
 
 export function createGuideInput({
@@ -73,7 +81,7 @@ export function createGuideInput({
     return hit ? cursor(hit.axis) : null
   }
 
-  function tryStartExisting(sx: number, sy: number): boolean {
+  function tryStartExisting(sx: number, sy: number, duplicate = false): boolean {
     if (rulerAxis(sx, sy)) return false
     const hit = hitTest(sx, sy)
     if (!hit) return false
@@ -92,7 +100,8 @@ export function createGuideInput({
       dragStarted: false,
       guideId: hit.guideId,
       originalOwnerId: hit.ownerId,
-      originalPosition: hit.position
+      originalPosition: hit.position,
+      duplicate
     })
     return true
   }
@@ -116,31 +125,62 @@ export function createGuideInput({
     return true
   }
 
-  function handleMove(drag: DragGuide, sx: number, sy: number, cx: number, cy: number): void {
+  function handleMove(
+    drag: DragGuide,
+    sx: number,
+    sy: number,
+    cx: number,
+    cy: number,
+    redlines?: { frameId: string; deep: boolean }
+  ): void {
     drag.currentScreenX = sx
     drag.currentScreenY = sy
-    if (!drag.dragStarted && Math.hypot(sx - drag.startScreenX, sy - drag.startScreenY) < 3) return
+    if (
+      !drag.dragStarted &&
+      !isPastPointerDragThreshold(drag.startScreenX, drag.startScreenY, sx, sy)
+    )
+      return
     drag.dragStarted = true
     setCursor(cursor(drag.axis))
-    drag.ownerId = ownerAt(cx, cy)
+    drag.ownerId = redlines?.frameId ?? ownerAt(cx, cy)
     drag.position = positionFor(drag.ownerId, drag.axis, cx, cy)
     editor.setGuidePreview({
       ownerId: drag.ownerId,
       axis: drag.axis,
       position: drag.position,
       source:
-        drag.guideId && drag.originalOwnerId
+        !drag.duplicate && drag.guideId && drag.originalOwnerId
           ? { ownerId: drag.originalOwnerId, guideId: drag.guideId }
           : undefined
     })
+    editor.setGuideRedline(
+      redlines
+        ? computeGuideRedline(
+            editor.graph,
+            editor.state.currentPageId,
+            redlines.frameId,
+            drag.axis,
+            drag.position,
+            redlines.deep
+          )
+        : null
+    )
   }
 
   function finish(drag: DragGuide): void {
     if (drag.dragStarted) {
       if (drag.currentScreenX < RULER_SIZE || drag.currentScreenY < RULER_SIZE) {
-        if (drag.guideId && drag.originalOwnerId) {
+        if (!drag.duplicate && drag.guideId && drag.originalOwnerId) {
           editor.removeGuide(drag.originalOwnerId, drag.guideId)
           editor.setSelectedGuide(null)
+        }
+      } else if (drag.duplicate && drag.guideId && drag.originalOwnerId) {
+        const source = editor.graph
+          .getNode(drag.originalOwnerId)
+          ?.guides.find((guide) => guide.id === drag.guideId)
+        if (source) {
+          const guideId = editor.addGuide(drag.ownerId, drag.axis, drag.position)
+          if (guideId) editor.setSelectedGuide({ ownerId: drag.ownerId, guideId })
         }
       } else if (drag.guideId && drag.originalOwnerId) {
         if (drag.ownerId === drag.originalOwnerId)
@@ -167,6 +207,7 @@ export function createGuideInput({
 
   function clearHoverAndPreview(): void {
     editor.setGuidePreview(null)
+    editor.setGuideRedline(null)
     editor.setHoveredGuide(null)
   }
 

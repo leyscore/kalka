@@ -219,7 +219,7 @@ export function render(
     canvas.scale(r.dpr, r.dpr)
 
     drawOverlayPass(r, canvas, graph, selectedIds, overlays)
-    drawChromePass(r, canvas, graph, selectedIds)
+    drawChromePass(r, canvas, graph, selectedIds, overlays)
 
     canvas.restore()
   }

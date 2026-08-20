@@ -138,6 +138,7 @@ export interface DragGuide {
   currentScreenX: number
   currentScreenY: number
   dragStarted: boolean
+  duplicate?: boolean
   guideId?: string
   originalOwnerId?: string
   originalPosition?: number

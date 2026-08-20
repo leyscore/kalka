@@ -4,7 +4,7 @@ import { onScopeDispose, ref, type Ref } from 'vue'
 import type { Editor } from '@open-pencil/core/editor'
 import type { SceneNode } from '@open-pencil/scene-graph'
 
-import { createGuideInput } from '#vue/canvas/guides/input'
+import { createGuideInput, selectedTopLevelGuideFrameId } from '#vue/canvas/guides/input'
 import {
   handleBendHandleMove,
   handleNodeEditMouseUp,
@@ -224,7 +224,7 @@ export function useCanvasInput(
     if (!editor.state.editingTextId) canvasRef.value?.focus()
     editor.setHoveredNode(null)
     const { sx, sy, cx, cy } = getCoords(e)
-    if (e.button === 0 && guideInput.tryStartExisting(sx, sy)) {
+    if (e.button === 0 && guideInput.tryStartExisting(sx, sy, e.altKey)) {
       e.preventDefault()
       return
     }
@@ -295,7 +295,15 @@ export function useCanvasInput(
     const { sx, sy, cx, cy } = getCoords(e)
 
     if (d.type === 'guide') {
-      guideInput.handleMove(d, sx, sy, cx, cy)
+      const frameId = e.altKey && !d.guideId ? selectedTopLevelGuideFrameId(editor) : null
+      guideInput.handleMove(
+        d,
+        sx,
+        sy,
+        cx,
+        cy,
+        frameId ? { frameId, deep: e.metaKey || e.ctrlKey } : undefined
+      )
       return
     }
 

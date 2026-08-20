@@ -3,6 +3,7 @@ import type { Canvas } from 'canvaskit-wasm'
 import type { SceneGraph } from '@open-pencil/scene-graph'
 
 import { drawGuides } from '#core/canvas/guides/draw'
+import { drawMeasurementSegment } from '#core/canvas/overlays/measurement'
 import type { RenderOverlays, SkiaRenderer } from '#core/canvas/renderer'
 
 function measurementVisible(overlays: RenderOverlays): boolean {
@@ -45,6 +46,7 @@ export function drawOverlayPass(
   r.profiler.endPhase('render:selection')
 
   r.drawFlashes(canvas, graph)
+  if (overlays.guides?.redline) drawMeasurementSegment(r, canvas, overlays.guides.redline.segment)
   drawGuides(r, canvas, graph, overlays.guides)
   r.drawSnapGuides(canvas, overlays.snapGuides)
   r.drawMarquee(canvas, overlays.marquee)
@@ -59,10 +61,11 @@ export function drawChromePass(
   r: SkiaRenderer,
   canvas: Canvas,
   graph: SceneGraph,
-  selectedIds: Set<string>
+  selectedIds: Set<string>,
+  overlays: RenderOverlays
 ): void {
   r.profiler.beginPhase('render:rulers')
-  if (r.showRulers) r.drawRulers(canvas, graph, selectedIds)
+  if (r.showRulers) r.drawRulers(canvas, graph, selectedIds, overlays.guides)
   r.profiler.endPhase('render:rulers')
   r.profiler.drawHUD(canvas, r.showRulers)
 }
