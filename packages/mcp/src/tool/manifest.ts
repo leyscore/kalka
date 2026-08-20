@@ -36,7 +36,8 @@ function coreToolDescriptor(def: ToolDef): ToolDescriptor {
     description: def.description,
     effect: coreToolEffect(def),
     availability: coreToolAvailability(def),
-    capabilities: coreToolCapabilities(def)
+    capabilities: coreToolCapabilities(def),
+    enabled: true
   }
 }
 
@@ -49,15 +50,17 @@ export function createToolDescriptors(filesystemEnabled: boolean): ToolDescripto
         'List open OpenPencil documents/tabs with their IDs, file paths, current pages, and pages.',
       effect: 'read',
       availability: 'default',
-      capabilities: ['document:read']
+      capabilities: ['document:read'],
+      enabled: true
     },
     {
       name: 'save_file',
       description:
         'Save the current document to disk. An optional path must stay inside the configured MCP root.',
-      effect: 'read',
+      effect: 'write',
       availability: 'default',
-      capabilities: ['document:read', 'filesystem:write']
+      capabilities: ['document:read', 'filesystem:write'],
+      enabled: true
     },
     ...(filesystemEnabled
       ? [
@@ -66,7 +69,8 @@ export function createToolDescriptors(filesystemEnabled: boolean): ToolDescripto
             description: 'Open a .fig or .pen file from inside the configured MCP root.',
             effect: 'write',
             availability: 'filesystem',
-            capabilities: ['filesystem:read', 'document:write']
+            capabilities: ['filesystem:read', 'document:write'],
+            enabled: true
           } satisfies ToolDescriptor,
           {
             name: 'new_document',
@@ -74,7 +78,8 @@ export function createToolDescriptors(filesystemEnabled: boolean): ToolDescripto
               'Create a new empty document with an optional save path inside the configured MCP root.',
             effect: 'write',
             availability: 'filesystem',
-            capabilities: ['document:write', 'filesystem:write']
+            capabilities: ['document:write', 'filesystem:write'],
+            enabled: true
           } satisfies ToolDescriptor
         ]
       : []),
@@ -84,7 +89,8 @@ export function createToolDescriptors(filesystemEnabled: boolean): ToolDescripto
         'Get design-to-code generation guidelines. Call before generating frontend code.',
       effect: 'read',
       availability: 'default',
-      capabilities: []
+      capabilities: [],
+      enabled: true
     }
   )
   return descriptors

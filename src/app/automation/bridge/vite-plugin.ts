@@ -42,16 +42,51 @@ export function createAutomationEnvironment(
 const MAX_CONFIGURATION_BYTES = 70_000
 const CHILD_EXIT_TIMEOUT_MS = 2_000
 
+type DevMCPConfigurationErrorStatus = 400 | 413
+
+class DevMCPConfigurationRequestError extends Error {
+  constructor(
+    message: string,
+    readonly statusCode: DevMCPConfigurationErrorStatus,
+    options?: ErrorOptions
+  ) {
+    super(message, options)
+    this.name = 'DevMCPConfigurationRequestError'
+  }
+}
+
+export class DevMCPConfigurationTooLargeError extends DevMCPConfigurationRequestError {
+  constructor() {
+    super('Request body is too large', 413)
+    this.name = 'DevMCPConfigurationTooLargeError'
+  }
+}
+
+export class DevMCPConfigurationSyntaxError extends DevMCPConfigurationRequestError {
+  constructor(cause: unknown) {
+    super('Malformed JSON configuration', 400, { cause })
+    this.name = 'DevMCPConfigurationSyntaxError'
+  }
+}
+
+export function devMCPConfigurationErrorStatus(error: unknown): 400 | 413 | 500 {
+  return error instanceof DevMCPConfigurationRequestError ? error.statusCode : 500
+}
+
 export async function readDevMCPConfiguration(request: IncomingMessage): Promise<unknown> {
   const chunks: Buffer[] = []
   let byteLength = 0
   for await (const chunk of request) {
     const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)
     byteLength += buffer.byteLength
-    if (byteLength > MAX_CONFIGURATION_BYTES) throw new Error('Request body is too large')
+    if (byteLength > MAX_CONFIGURATION_BYTES) throw new DevMCPConfigurationTooLargeError()
     chunks.push(buffer)
   }
-  return JSON.parse(Buffer.concat(chunks).toString('utf8'))
+  try {
+    return JSON.parse(Buffer.concat(chunks).toString('utf8'))
+  } catch (error) {
+    throw new DevMCPConfigurationSyntaxError(error)
+  }
 }
 
 // TODO: production — bundle MCP server as Tauri sidecar or spawn via shell plugin
@@ -159,7 +194,7 @@ export function automationPlugin(authToken: string | null, corsOrigin: string): 
             response.statusCode = 204
             response.end()
           } catch (error) {
-            response.statusCode = 500
+            response.statusCode = devMCPConfigurationErrorStatus(error)
             response.end(error instanceof Error ? error.message : String(error))
           }
         })()

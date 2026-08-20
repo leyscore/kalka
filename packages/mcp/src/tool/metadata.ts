@@ -14,6 +14,7 @@ export interface ToolDescriptor {
   effect: ToolEffect
   availability: ToolAvailability
   capabilities: ToolCapability[]
+  enabled: boolean
 }
 
 export interface ToolPolicy {
@@ -42,11 +43,12 @@ const TOOL_CAPABILITIES: ReadonlySet<string> = new Set<ToolCapability>([
 
 export function parseToolDescriptor(value: unknown): ToolDescriptor | null {
   if (!isRecord(value)) return null
-  const { name, description, effect, availability, capabilities } = value
+  const { name, description, effect, availability, capabilities, enabled } = value
   if (typeof name !== 'string' || !name) return null
   if (typeof description !== 'string') return null
   if (typeof effect !== 'string' || !TOOL_EFFECTS.has(effect)) return null
   if (typeof availability !== 'string' || !TOOL_AVAILABILITIES.has(availability)) return null
+  if (typeof enabled !== 'boolean') return null
   if (
     !Array.isArray(capabilities) ||
     capabilities.some(
@@ -60,6 +62,7 @@ export function parseToolDescriptor(value: unknown): ToolDescriptor | null {
     description,
     effect: effect as ToolEffect,
     availability: availability as ToolAvailability,
-    capabilities: capabilities as ToolCapability[]
+    capabilities: capabilities as ToolCapability[],
+    enabled
   }
 }

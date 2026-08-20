@@ -10,7 +10,7 @@
 - Run Pi through AI SDK HarnessAgent as a configurable desktop provider with multiple saved model profiles, secure credentials, existing MCP design tools, and per-profile thinking and permission settings.
 - Open multiple selected design files in separate tabs.
 - Let Figma API scripts and automation combine components into variant sets.
-- Monitor and restart the local MCP server, configure its root directory or authentication, and choose individual, read-only, or document-writing tools it exposes from Settings.
+- Monitor and restart the local MCP server, configure its root directory or authentication, and choose individual, read-only, or side-effecting tools it exposes from Settings.
 - Add deterministic two-browser collaboration coverage for bidirectional edits, awareness, departure cleanup, partitioned-peer convergence, and reconnect synchronization without public network dependencies. (#530)
 - Import, render, edit, resize, select, and export Figma text-on-path layers while preserving their curved glyph layout.
 - Show Figma-style temporary distance measurements between selected and Option/Alt-hovered layers. (#491)

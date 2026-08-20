@@ -1,4 +1,4 @@
-import type { ToolPolicy } from '#mcp/tool/metadata'
+import type { ToolDescriptor, ToolPolicy } from '#mcp/tool/metadata'
 
 export function parseDisabledTools(value: string | undefined): string[] {
   if (!value) return []
@@ -10,6 +10,21 @@ export function parseDisabledTools(value: string | undefined): string[] {
         .filter(Boolean)
     )
   ]
+}
+
+export function isToolEnabled(descriptor: ToolDescriptor, policy: ToolPolicy): boolean {
+  if (policy.disabledTools.includes(descriptor.name)) return false
+  return descriptor.availability !== 'eval' || policy.allowEval
+}
+
+export function applyToolPolicy(
+  descriptors: readonly ToolDescriptor[],
+  policy: ToolPolicy
+): ToolDescriptor[] {
+  return descriptors.map((descriptor) => ({
+    ...descriptor,
+    enabled: isToolEnabled(descriptor, policy)
+  }))
 }
 
 export function readToolPolicyFromEnv(env: NodeJS.ProcessEnv = process.env): ToolPolicy {

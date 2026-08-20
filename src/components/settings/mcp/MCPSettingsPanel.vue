@@ -201,11 +201,11 @@ function enableAllTools(): void {
           />
         </div>
         <div class="flex items-center justify-between gap-2 rounded bg-input px-2.5 py-2">
-          <span class="text-[10px] text-surface">{{ dialogs.mcpDocumentWritingTools }}</span>
+          <span class="text-[10px] text-surface">{{ dialogs.mcpSideEffectTools }}</span>
           <AppSwitch
             :model-value="modificationToolsStatus.enabled"
             :state="modificationToolsStatus.state"
-            :label="dialogs.mcpDocumentWritingTools"
+            :label="dialogs.mcpSideEffectTools"
             data-test-id="settings-mcp-modification-tools"
             @update:model-value="setMCPToolCategoryEnabled('write', $event)"
           />

@@ -10,7 +10,8 @@ function descriptor(name = 'get_page_tree'): ToolDescriptor {
     description: name,
     effect: 'read',
     availability: 'default',
-    capabilities: ['document:read']
+    capabilities: ['document:read'],
+    enabled: true
   }
 }
 
@@ -102,6 +103,29 @@ describe('MCP runtime service', () => {
     expect(service.state.status).toBe('error')
     expect(service.state.version).toBeNull()
     expect(catalogs.at(-1)).toEqual([])
+  })
+
+  test('does not start a replacement when shutdown fails', async () => {
+    let spawnCalls = 0
+    const { service } = setup({
+      spawn: async () => {
+        spawnCalls++
+        return {
+          authToken: 'token',
+          managed: true,
+          disconnect: () => {
+            throw new Error('shutdown failed')
+          }
+        }
+      }
+    })
+    await service.start(getStore)
+
+    const result = await service.restart()
+
+    expect(result.ok).toBe(false)
+    expect(spawnCalls).toBe(1)
+    expect(service.state.status).toBe('error')
   })
 
   test('restarts with the retained editor store inside one lifecycle operation', async () => {

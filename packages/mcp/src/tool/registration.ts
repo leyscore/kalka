@@ -12,6 +12,7 @@ import { MAX_RESULT_BYTES, fail, ok, resultTooLargeMessage } from '#mcp/result'
 import { createToolDescriptors } from '#mcp/tool/manifest'
 import type { ToolDescriptor, ToolEffect, ToolPolicy } from '#mcp/tool/metadata'
 import { resolveSafePath, writeToolOutput } from '#mcp/tool/output'
+import { isToolEnabled } from '#mcp/tool/policy'
 import { paramToZod } from '#mcp/tool/schema'
 
 export type RPCSender = (body: Record<string, unknown>) => Promise<unknown>
@@ -54,7 +55,6 @@ function descriptorByName(descriptors: readonly ToolDescriptor[]): Map<string, T
 
 export function registerTools(mcpServer: McpServer, options: RegisterToolsOptions): void {
   const { policy, sendRPC } = options
-  const disabledTools = new Set(policy.disabledTools)
   const resolvedRoot = options.mcpRoot ? resolve(options.mcpRoot) : null
   const descriptors = descriptorByName(createToolDescriptors(resolvedRoot !== null))
   const register = <InputArgs extends z.ZodObject>(
@@ -64,8 +64,7 @@ export function registerTools(mcpServer: McpServer, options: RegisterToolsOption
   ) => {
     const descriptor = descriptors.get(name)
     if (!descriptor) throw new Error(`Missing MCP tool descriptor for "${name}"`)
-    if (disabledTools.has(name)) return
-    if (descriptor.availability === 'eval' && !policy.allowEval) return
+    if (!isToolEnabled(descriptor, policy)) return
     mcpServer.registerTool(
       name,
       {

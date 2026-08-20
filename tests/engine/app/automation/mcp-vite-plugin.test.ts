@@ -2,7 +2,10 @@ import { describe, expect, test } from 'bun:test'
 import { Readable } from 'node:stream'
 
 import {
+  DevMCPConfigurationSyntaxError,
+  DevMCPConfigurationTooLargeError,
   createAutomationEnvironment,
+  devMCPConfigurationErrorStatus,
   readDevMCPConfiguration
 } from '@/app/automation/bridge/vite-plugin'
 
@@ -43,10 +46,20 @@ describe('MCP Vite development server', () => {
     })
   })
 
-  test('rejects configuration bodies above the byte limit', async () => {
-    const request = Readable.from([Buffer.alloc(70_001)])
-    await expect(readDevMCPConfiguration(request as never)).rejects.toThrow(
-      'Request body is too large'
+  test('classifies malformed and oversized configuration requests', async () => {
+    const malformed = Readable.from(['{'])
+    const malformedError = await readDevMCPConfiguration(malformed as never).catch(
+      (error: unknown) => error
     )
+    expect(malformedError).toBeInstanceOf(DevMCPConfigurationSyntaxError)
+    expect(devMCPConfigurationErrorStatus(malformedError)).toBe(400)
+
+    const oversized = Readable.from([Buffer.alloc(70_001)])
+    const oversizedError = await readDevMCPConfiguration(oversized as never).catch(
+      (error: unknown) => error
+    )
+    expect(oversizedError).toBeInstanceOf(DevMCPConfigurationTooLargeError)
+    expect(devMCPConfigurationErrorStatus(oversizedError)).toBe(413)
+    expect(devMCPConfigurationErrorStatus(new Error('restart failed'))).toBe(500)
   })
 })

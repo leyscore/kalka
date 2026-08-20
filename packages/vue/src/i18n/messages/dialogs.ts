@@ -267,7 +267,7 @@ export const dialogMessageDefaults = {
   mcpEnableAllTools: 'Enable all',
   mcpSearchTools: 'Search MCP tools',
   mcpReadOnlyTools: 'Read-only tools',
-  mcpDocumentWritingTools: 'Document-writing tools',
+  mcpSideEffectTools: 'Tools with side effects',
   mcpToolsRestartNotice:
     'Restart the MCP server, then reconnect stdio clients, to apply tool availability changes.',
   mcpExternalRestartNotice:

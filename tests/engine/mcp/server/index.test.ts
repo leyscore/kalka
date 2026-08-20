@@ -151,6 +151,7 @@ describe('MCP server', () => {
     expect(byName.get('switch_page')?.effect).toBe('read')
     expect(byName.get('viewport_set')?.effect).toBe('read')
     expect(byName.get('export_image')?.effect).toBe('read')
+    expect(byName.get('save_file')?.effect).toBe('write')
     expect(byName.get('update_node')?.effect).toBe('write')
     expect(byName.get('new_document')?.capabilities).toEqual(['document:write', 'filesystem:write'])
     expect(byName.get('eval')?.availability).toBe('eval')
@@ -176,9 +177,10 @@ describe('MCP server', () => {
       headers: { Authorization: `Bearer ${TEST_CLIENT_AUTH_TOKEN}` }
     })
     const health = (await healthResponse.json()) as HealthResponse
-    const catalogNames = (health.tools ?? []).map((tool) => tool.name)
-    expect(catalogNames).toContain('create_shape')
-    expect(catalogNames).toContain('list_documents')
+    const descriptors = health.tools ?? []
+    expect(descriptors.find((tool) => tool.name === 'create_shape')?.enabled).toBe(false)
+    expect(descriptors.find((tool) => tool.name === 'list_documents')?.enabled).toBe(false)
+    expect(descriptors.find((tool) => tool.name === 'get_page_tree')?.enabled).toBe(true)
   })
 
   test('tools expose standard MCP effect annotations', async () => {

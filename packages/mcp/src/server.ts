@@ -16,6 +16,7 @@ import { preprocessRPC } from '#mcp/jsx-preprocess'
 import { createMCPSessionManager } from '#mcp/server/sessions'
 import { createToolDescriptors } from '#mcp/tool/manifest'
 import type { ToolDescriptor, ToolPolicy } from '#mcp/tool/metadata'
+import { applyToolPolicy } from '#mcp/tool/policy'
 import { registerTools } from '#mcp/tool/registration'
 
 import packageJSON from '../package.json' with { type: 'json' }
@@ -317,7 +318,7 @@ function buildServerContext(options: ServerOptions) {
     onConnectionChange: mcpSessions.notifyToolsChanged
   })
   const sendToBrowser = browserRPC.sendRPC
-  const toolDescriptors = createToolDescriptors(mcpRoot !== null)
+  const toolDescriptors = applyToolPolicy(createToolDescriptors(mcpRoot !== null), toolPolicy)
 
   const app = createHonoApp({
     authToken,

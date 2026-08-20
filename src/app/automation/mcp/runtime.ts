@@ -152,7 +152,8 @@ export function createMCPRuntimeService(dependencies: MCPRuntimeDependencies) {
     stop: () => enqueue(() => stopOperation(true)),
     restart: () =>
       enqueue(async () => {
-        await stopOperation(false)
+        const stopResult = await stopOperation(false)
+        if (!stopResult.ok) return stopResult
         if (!activeStore) {
           const error = new Error('Editor is not ready')
           state.status = 'error'
