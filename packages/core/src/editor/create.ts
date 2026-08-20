@@ -210,6 +210,7 @@ export function createEditor(options?: EditorOptions) {
     state.measurementMode = 'off'
     state.snapGuides = []
     state.guidePreview = null
+    state.hoveredGuide = null
     state.selectedGuide = null
     state.layoutInsertIndicator = null
     state.dropTargetId = null

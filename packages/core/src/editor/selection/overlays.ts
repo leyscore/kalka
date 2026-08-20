@@ -20,6 +20,13 @@ export function createSelectionOverlayActions(ctx: EditorContext) {
     ctx.requestRepaint()
   }
 
+  function setHoveredGuide(selection: typeof ctx.state.hoveredGuide) {
+    const current = ctx.state.hoveredGuide
+    if (current?.ownerId === selection?.ownerId && current?.guideId === selection?.guideId) return
+    ctx.state.hoveredGuide = selection
+    ctx.requestRepaint()
+  }
+
   function setSelectedGuide(selection: typeof ctx.state.selectedGuide) {
     ctx.state.selectedGuide = selection
     if (selection) ctx.setSelectedIds(new Set())
@@ -73,6 +80,7 @@ export function createSelectionOverlayActions(ctx: EditorContext) {
     setMarquee,
     setSnapGuides,
     setGuidePreview,
+    setHoveredGuide,
     setSelectedGuide,
     setRotationPreview,
     setHoveredNode,

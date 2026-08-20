@@ -62,6 +62,7 @@ export function renderFromEditorState(
       marquee: state.marquee,
       snapGuides: state.snapGuides,
       guidePreview: state.guidePreview,
+      hoveredGuide: state.hoveredGuide,
       selectedGuide: state.selectedGuide,
       rotationPreview: state.rotationPreview,
       dropTargetId: state.dropTargetId,
@@ -256,7 +257,14 @@ export function render(
 
     drawInteractiveOverlays(r, canvas, graph, selectedIds, overlays)
     r.drawFlashes(canvas, graph)
-    drawPageGuides(r, canvas, graph, overlays.guidePreview, overlays.selectedGuide)
+    drawPageGuides(
+      r,
+      canvas,
+      graph,
+      overlays.guidePreview,
+      overlays.hoveredGuide,
+      overlays.selectedGuide
+    )
     r.drawSnapGuides(canvas, overlays.snapGuides)
     r.drawMarquee(canvas, overlays.marquee)
     r.drawLayoutInsertIndicator(canvas, overlays.layoutInsertIndicator)

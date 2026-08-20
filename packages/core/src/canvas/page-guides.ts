@@ -7,8 +7,21 @@ import Matrix from '@open-pencil/scene-graph/matrix'
 import type { RenderOverlays, SkiaRenderer } from './renderer'
 
 const GUIDE_COLOR = { r: 0.85, g: 0.29, b: 0.2, a: 0.78 }
+const HOVERED_GUIDE_COLOR = { r: 0.96, g: 0.4, b: 0.26, a: 1 }
 const SELECTED_GUIDE_COLOR = { r: 0.1, g: 0.45, b: 0.95, a: 1 }
 const GUIDE_DASH = [3, 4]
+
+function guideColor(state: 'idle' | 'hovered' | 'selected') {
+  if (state === 'selected') return SELECTED_GUIDE_COLOR
+  if (state === 'hovered') return HOVERED_GUIDE_COLOR
+  return GUIDE_COLOR
+}
+
+function guideState(selected: boolean, hovered: boolean): 'idle' | 'hovered' | 'selected' {
+  if (selected) return 'selected'
+  if (hovered) return 'hovered'
+  return 'idle'
+}
 
 function drawOwnedGuide(
   r: SkiaRenderer,
@@ -18,9 +31,9 @@ function drawOwnedGuide(
   axis: 'x' | 'y',
   position: number,
   preview: boolean,
-  selected = false
+  state: 'idle' | 'hovered' | 'selected' = 'idle'
 ): void {
-  const color = selected ? SELECTED_GUIDE_COLOR : GUIDE_COLOR
+  const color = guideColor(state)
   r.auxStroke.setColor(r.ck.Color4f(color.r, color.g, color.b, color.a))
   const matrix = getWorldMatrix(owner, graph)
   const start = Matrix.mapPoint(
@@ -51,6 +64,7 @@ export function drawPageGuides(
   canvas: Canvas,
   graph: SceneGraph,
   preview?: RenderOverlays['guidePreview'],
+  hoveredGuide?: RenderOverlays['hoveredGuide'],
   selectedGuide?: RenderOverlays['selectedGuide']
 ): void {
   const page = graph.getNode(r.pageId ?? graph.rootId)
@@ -60,8 +74,10 @@ export function drawPageGuides(
   r.auxStroke.setColor(r.ck.Color4f(GUIDE_COLOR.r, GUIDE_COLOR.g, GUIDE_COLOR.b, GUIDE_COLOR.a))
 
   for (const guide of page.guides) {
+    if (preview?.source?.ownerId === page.id && preview.source.guideId === guide.id) continue
     const selected = selectedGuide?.ownerId === page.id && selectedGuide.guideId === guide.id
-    const color = selected ? SELECTED_GUIDE_COLOR : GUIDE_COLOR
+    const hovered = hoveredGuide?.ownerId === page.id && hoveredGuide.guideId === guide.id
+    const color = guideColor(guideState(selected, hovered))
     r.auxStroke.setColor(r.ck.Color4f(color.r, color.g, color.b, color.a))
     if (guide.axis === 'x') {
       const x = guide.position * r.zoom + r.panX
@@ -74,6 +90,9 @@ export function drawPageGuides(
 
   const visit = (node: SceneNode) => {
     for (const guide of node.guides) {
+      if (preview?.source?.ownerId === node.id && preview.source.guideId === guide.id) continue
+      const selected = selectedGuide?.ownerId === node.id && selectedGuide.guideId === guide.id
+      const hovered = hoveredGuide?.ownerId === node.id && hoveredGuide.guideId === guide.id
       drawOwnedGuide(
         r,
         canvas,
@@ -82,7 +101,7 @@ export function drawPageGuides(
         guide.axis,
         guide.position,
         false,
-        selectedGuide?.ownerId === node.id && selectedGuide.guideId === guide.id
+        guideState(selected, hovered)
       )
     }
     for (const childId of node.childIds) {
@@ -97,6 +116,7 @@ export function drawPageGuides(
 
   if (preview) {
     const owner = graph.getNode(preview.ownerId)
-    if (owner) drawOwnedGuide(r, canvas, owner, graph, preview.axis, preview.position, true)
+    if (owner)
+      drawOwnedGuide(r, canvas, owner, graph, preview.axis, preview.position, true, 'selected')
   }
 }

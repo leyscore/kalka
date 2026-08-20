@@ -293,10 +293,28 @@ export function useCanvasInput(
     return axis === 'x' ? 'ew-resize' : 'ns-resize'
   }
 
+  function rulerGuideAxis(sx: number, sy: number): 'x' | 'y' | null {
+    if (sy < RULER_SIZE) return 'y'
+    if (sx < RULER_SIZE) return 'x'
+    return null
+  }
+
+  function updateGuideHoverCursor(sx: number, sy: number, cx: number, cy: number) {
+    const guideHit = guideHitTest(sx, sy)
+    editor.setHoveredGuide(
+      guideHit ? { ownerId: guideHit.ownerId, guideId: guideHit.guideId } : null
+    )
+    if (guideHit) return guideCursor(guideHit.axis)
+    const rulerAxis = rulerGuideAxis(sx, sy)
+    if (rulerAxis) return guideCursor(rulerAxis)
+    return updateHoverCursor(cx, cy, editor, hitFns, editor.state.measurementMode === 'deep')
+  }
+
   function startExistingGuideDrag(sx: number, sy: number): boolean {
     const hit = guideHitTest(sx, sy)
     if (!hit) return false
     editor.setSelectedGuide({ ownerId: hit.ownerId, guideId: hit.guideId })
+    editor.setHoveredGuide(null)
     cursorOverride.value = guideCursor(hit.axis)
     setDrag({
       type: 'guide',
@@ -407,10 +425,7 @@ export function useCanvasInput(
 
     if (!drag.value && editor.state.activeTool === 'SELECT') {
       const { sx, sy, cx, cy } = coords
-      const guideHit = guideHitTest(sx, sy)
-      cursorOverride.value = guideHit
-        ? guideCursor(guideHit.axis)
-        : updateHoverCursor(cx, cy, editor, hitFns, editor.state.measurementMode === 'deep')
+      cursorOverride.value = updateGuideHoverCursor(sx, sy, cx, cy)
       editor.setAutoLayoutHover(
         editor.state.measurementMode === 'off' ? resolveAutoLayoutHover(cx, cy, editor) : null
       )
@@ -437,7 +452,15 @@ export function useCanvasInput(
       const local = owner && owner.type !== 'CANVAS' ? canvasToLocal(cx, cy, owner.id) : null
       d.ownerId = target.id
       d.position = d.axis === 'x' ? (local?.lx ?? cx) : (local?.ly ?? cy)
-      editor.setGuidePreview({ ownerId: d.ownerId, axis: d.axis, position: d.position })
+      editor.setGuidePreview({
+        ownerId: d.ownerId,
+        axis: d.axis,
+        position: d.position,
+        source:
+          d.guideId && d.originalOwnerId
+            ? { ownerId: d.originalOwnerId, guideId: d.guideId }
+            : undefined
+      })
       return
     }
 
@@ -495,6 +518,7 @@ export function useCanvasInput(
       }
     }
     editor.setGuidePreview(null)
+    editor.setHoveredGuide(null)
   }
 
   function onMouseUp() {
@@ -542,6 +566,7 @@ export function useCanvasInput(
     editor.setLayoutInsertIndicator(null)
     editor.setDropTarget(null)
     editor.setGuidePreview(null)
+    editor.setHoveredGuide(null)
   }
 
   function cancelPointerInteraction() {
@@ -568,6 +593,7 @@ export function useCanvasInput(
     editor.setMeasurementMode('off')
     if (!drag.value) {
       editor.setHoveredNode(null)
+      editor.setHoveredGuide(null)
     }
   })
   useEventListener(

@@ -54,6 +54,7 @@ export interface EditorViewState {
   marquee: Rect | null
   snapGuides: SnapGuide[]
   guidePreview: GuidePreview | null
+  hoveredGuide: GuideSelection | null
   selectedGuide: GuideSelection | null
   rotationPreview: { nodeId: string; angle: number } | null
   dropTargetId: string | null
