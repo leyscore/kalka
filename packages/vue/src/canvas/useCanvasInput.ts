@@ -1,12 +1,10 @@
 import { useEventListener } from '@vueuse/core'
 import { onScopeDispose, ref, type Ref } from 'vue'
 
-import { RULER_SIZE } from '@open-pencil/core/constants'
 import type { Editor } from '@open-pencil/core/editor'
 import type { SceneNode } from '@open-pencil/scene-graph'
-import { getWorldMatrix } from '@open-pencil/scene-graph/coordinate'
-import Matrix from '@open-pencil/scene-graph/matrix'
 
+import { createGuideInput } from '#vue/canvas/guide-input/use'
 import {
   handleBendHandleMove,
   handleNodeEditMouseUp,
@@ -100,16 +98,6 @@ export function useCanvasInput(
     )
   }
 
-  function deleteSelectedGuide(event: KeyboardEvent): boolean {
-    if (event.code !== 'Delete' && event.code !== 'Backspace') return false
-    const selected = editor.state.selectedGuide
-    if (!selected || editor.state.editingTextId) return false
-    if (!editor.removeGuide(selected.ownerId, selected.guideId)) return false
-    editor.setSelectedGuide(null)
-    event.preventDefault()
-    return true
-  }
-
   function updateModifier(code: string, held: boolean) {
     if (!isEnabled()) return
     if (code === 'AltLeft' || code === 'AltRight') altHeld = held
@@ -131,6 +119,16 @@ export function useCanvasInput(
     editor.setMeasurementMode('off')
     drag.value = d
   }
+
+  const guideInput = createGuideInput({
+    canvasRef,
+    editor,
+    canvasToLocal,
+    setDrag,
+    setCursor: (cursor) => {
+      cursorOverride.value = cursor
+    }
+  })
 
   const { handleTextEditClick, onDblClick: onTextDblClick } = createTextEditInput({
     editor,
@@ -210,154 +208,6 @@ export function useCanvasInput(
     autoLayoutPaddingEdit.value = null
   }
 
-  function guideOwner(cx: number, cy: number): { id: string; position: number } {
-    let node = editor.graph.hitTestDeep(cx, cy, editor.state.currentPageId)
-    while (node) {
-      if (node.type === 'FRAME' || node.type === 'COMPONENT') {
-        return { id: node.id, position: 0 }
-      }
-      node = node.parentId ? (editor.graph.getNode(node.parentId) ?? null) : null
-    }
-    return { id: editor.state.currentPageId, position: 0 }
-  }
-
-  function guideHitTest(sx: number, sy: number) {
-    const tolerance = 5
-    const page = editor.graph.getNode(editor.state.currentPageId)
-    if (!page) return null
-    const hits: Array<{
-      ownerId: string
-      guideId: string
-      axis: 'x' | 'y'
-      position: number
-      distance: number
-    }> = []
-
-    const visit = (owner: SceneNode) => {
-      const matrix = getWorldMatrix(owner, editor.graph)
-      for (const guide of owner.guides) {
-        const start = Matrix.mapPoint(
-          matrix,
-          guide.axis === 'x' ? { x: guide.position, y: 0 } : { x: 0, y: guide.position }
-        )
-        const end = Matrix.mapPoint(
-          matrix,
-          guide.axis === 'x'
-            ? { x: guide.position, y: owner.height }
-            : { x: owner.width, y: guide.position }
-        )
-        const x1 =
-          owner.type === 'CANVAS' && guide.axis === 'y'
-            ? 0
-            : start.x * editor.state.zoom + editor.state.panX
-        const y1 =
-          owner.type === 'CANVAS' && guide.axis === 'x'
-            ? 0
-            : start.y * editor.state.zoom + editor.state.panY
-        const x2 =
-          owner.type === 'CANVAS' && guide.axis === 'y'
-            ? (canvasRef.value?.width ?? sx)
-            : end.x * editor.state.zoom + editor.state.panX
-        const y2 =
-          owner.type === 'CANVAS' && guide.axis === 'x'
-            ? (canvasRef.value?.height ?? sy)
-            : end.y * editor.state.zoom + editor.state.panY
-        const dx = x2 - x1
-        const dy = y2 - y1
-        const lengthSquared = dx * dx + dy * dy
-        const t =
-          lengthSquared === 0
-            ? 0
-            : Math.max(0, Math.min(1, ((sx - x1) * dx + (sy - y1) * dy) / lengthSquared))
-        const distance = Math.hypot(sx - (x1 + t * dx), sy - (y1 + t * dy))
-        if (distance <= tolerance) {
-          hits.push({
-            ownerId: owner.id,
-            guideId: guide.id,
-            axis: guide.axis,
-            position: guide.position,
-            distance
-          })
-        }
-      }
-      for (const childId of owner.childIds) {
-        const child = editor.graph.getNode(childId)
-        if (child) visit(child)
-      }
-    }
-    visit(page)
-    return hits.sort((a, b) => a.distance - b.distance)[0] ?? null
-  }
-
-  function guideCursor(axis: 'x' | 'y') {
-    return axis === 'x' ? 'ew-resize' : 'ns-resize'
-  }
-
-  function rulerGuideAxis(sx: number, sy: number): 'x' | 'y' | null {
-    if (sy < RULER_SIZE) return 'y'
-    if (sx < RULER_SIZE) return 'x'
-    return null
-  }
-
-  function updateGuideHoverCursor(sx: number, sy: number, cx: number, cy: number) {
-    const guideHit = guideHitTest(sx, sy)
-    editor.setHoveredGuide(
-      guideHit ? { ownerId: guideHit.ownerId, guideId: guideHit.guideId } : null
-    )
-    if (guideHit) return guideCursor(guideHit.axis)
-    const rulerAxis = rulerGuideAxis(sx, sy)
-    if (rulerAxis) return guideCursor(rulerAxis)
-    return updateHoverCursor(cx, cy, editor, hitFns, editor.state.measurementMode === 'deep')
-  }
-
-  function startExistingGuideDrag(sx: number, sy: number): boolean {
-    const hit = guideHitTest(sx, sy)
-    if (!hit) return false
-    editor.setSelectedGuide({ ownerId: hit.ownerId, guideId: hit.guideId })
-    editor.setHoveredGuide(null)
-    cursorOverride.value = guideCursor(hit.axis)
-    setDrag({
-      type: 'guide',
-      axis: hit.axis,
-      ownerId: hit.ownerId,
-      position: hit.position,
-      startScreenX: sx,
-      startScreenY: sy,
-      currentScreenX: sx,
-      currentScreenY: sy,
-      dragStarted: false,
-      guideId: hit.guideId,
-      originalOwnerId: hit.ownerId,
-      originalPosition: hit.position
-    })
-    return true
-  }
-
-  function startGuideDrag(sx: number, sy: number, cx: number, cy: number): boolean {
-    if (!('showRulers' in editor.state) || editor.state.showRulers !== true) return false
-    if (sx < RULER_SIZE && sy < RULER_SIZE) return false
-    let axis: 'x' | 'y' | null = null
-    if (sy < RULER_SIZE) axis = 'y'
-    else if (sx < RULER_SIZE) axis = 'x'
-    if (!axis) return false
-    const target = guideOwner(cx, cy)
-    const owner = editor.graph.getNode(target.id)
-    const local = owner && owner.type !== 'CANVAS' ? canvasToLocal(cx, cy, owner.id) : null
-    const position = axis === 'x' ? (local?.lx ?? cx) : (local?.ly ?? cy)
-    setDrag({
-      type: 'guide',
-      axis,
-      ownerId: target.id,
-      position,
-      startScreenX: sx,
-      startScreenY: sy,
-      currentScreenX: sx,
-      currentScreenY: sy,
-      dragStarted: false
-    })
-    return true
-  }
-
   function onDblClick(e: MouseEvent) {
     if (startAutoLayoutPaddingEdit(e)) return
     onTextDblClick(e)
@@ -374,11 +224,11 @@ export function useCanvasInput(
     if (!editor.state.editingTextId) canvasRef.value?.focus()
     editor.setHoveredNode(null)
     const { sx, sy, cx, cy } = getCoords(e)
-    if (e.button === 0 && startExistingGuideDrag(sx, sy)) {
+    if (e.button === 0 && guideInput.tryStartExisting(sx, sy)) {
       e.preventDefault()
       return
     }
-    if (e.button === 0 && startGuideDrag(sx, sy, cx, cy)) {
+    if (e.button === 0 && guideInput.tryStartFromRuler(sx, sy, cx, cy)) {
       e.preventDefault()
       return
     }
@@ -425,7 +275,10 @@ export function useCanvasInput(
 
     if (!drag.value && editor.state.activeTool === 'SELECT') {
       const { sx, sy, cx, cy } = coords
-      cursorOverride.value = updateGuideHoverCursor(sx, sy, cx, cy)
+      const guideCursor = guideInput.updateHover(sx, sy)
+      cursorOverride.value =
+        guideCursor ??
+        updateHoverCursor(cx, cy, editor, hitFns, editor.state.measurementMode === 'deep')
       editor.setAutoLayoutHover(
         editor.state.measurementMode === 'off' ? resolveAutoLayoutHover(cx, cy, editor) : null
       )
@@ -442,25 +295,7 @@ export function useCanvasInput(
     const { sx, sy, cx, cy } = getCoords(e)
 
     if (d.type === 'guide') {
-      d.currentScreenX = sx
-      d.currentScreenY = sy
-      if (!d.dragStarted && Math.hypot(sx - d.startScreenX, sy - d.startScreenY) < 3) return
-      d.dragStarted = true
-      cursorOverride.value = guideCursor(d.axis)
-      const target = guideOwner(cx, cy)
-      const owner = editor.graph.getNode(target.id)
-      const local = owner && owner.type !== 'CANVAS' ? canvasToLocal(cx, cy, owner.id) : null
-      d.ownerId = target.id
-      d.position = d.axis === 'x' ? (local?.lx ?? cx) : (local?.ly ?? cy)
-      editor.setGuidePreview({
-        ownerId: d.ownerId,
-        axis: d.axis,
-        position: d.position,
-        source:
-          d.guideId && d.originalOwnerId
-            ? { ownerId: d.originalOwnerId, guideId: d.guideId }
-            : undefined
-      })
+      guideInput.handleMove(d, sx, sy, cx, cy)
       return
     }
 
@@ -504,23 +339,6 @@ export function useCanvasInput(
     handleMarqueeMove(d, cx, cy)
   }
 
-  function finishGuideDrag(d: Extract<DragState, { type: 'guide' }>) {
-    if (d.dragStarted) {
-      if (d.currentScreenX < RULER_SIZE || d.currentScreenY < RULER_SIZE) {
-        if (d.guideId && d.originalOwnerId) editor.removeGuide(d.originalOwnerId, d.guideId)
-      } else if (d.guideId && d.originalOwnerId) {
-        if (d.ownerId === d.originalOwnerId) editor.moveGuide(d.ownerId, d.guideId, d.position)
-        else editor.transferGuide(d.originalOwnerId, d.ownerId, d.guideId, d.position)
-        editor.setSelectedGuide({ ownerId: d.ownerId, guideId: d.guideId })
-      } else {
-        const guideId = editor.addGuide(d.ownerId, d.axis, d.position)
-        if (guideId) editor.setSelectedGuide({ ownerId: d.ownerId, guideId })
-      }
-    }
-    editor.setGuidePreview(null)
-    editor.setHoveredGuide(null)
-  }
-
   function onMouseUp() {
     if (!isEnabled()) return
     if (!drag.value) return
@@ -529,7 +347,7 @@ export function useCanvasInput(
     if (handleNodeEditMouseUp(drag, editor)) return
 
     if (d.type === 'guide') {
-      finishGuideDrag(d)
+      guideInput.finish(d)
     } else if (d.type === 'move') handleMoveUp(d, editor)
     else if (d.type === 'text-select') {
       drag.value = null
@@ -565,8 +383,7 @@ export function useCanvasInput(
     editor.setSnapGuides([])
     editor.setLayoutInsertIndicator(null)
     editor.setDropTarget(null)
-    editor.setGuidePreview(null)
-    editor.setHoveredGuide(null)
+    guideInput.clearHoverAndPreview()
   }
 
   function cancelPointerInteraction() {
@@ -580,7 +397,7 @@ export function useCanvasInput(
   useEventListener(canvasRef, 'mousemove', onMouseMove)
   useEventListener(canvasRef, 'mouseup', onMouseUp)
   useEventListener(window, 'keydown', (event) => {
-    if (!deleteSelectedGuide(event)) updateModifier(event.code, true)
+    if (!guideInput.deleteSelected(event)) updateModifier(event.code, true)
   })
   useEventListener(window, 'keyup', (event) => updateModifier(event.code, false))
   useEventListener(window, 'blur', () => {

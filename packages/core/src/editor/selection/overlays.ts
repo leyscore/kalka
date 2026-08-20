@@ -1,7 +1,7 @@
 import type { Rect } from '@open-pencil/scene-graph/primitives'
 import type { SnapGuide } from '@open-pencil/scene-graph/snap'
 
-import type { GuidePreview } from '#core/editor/guide-preview'
+import type { GuidePreview } from '#core/canvas/guides/types'
 import type { EditorContext } from '#core/editor/types'
 
 export function createSelectionOverlayActions(ctx: EditorContext) {
@@ -16,19 +16,19 @@ export function createSelectionOverlayActions(ctx: EditorContext) {
   }
 
   function setGuidePreview(preview: GuidePreview | null) {
-    ctx.state.guidePreview = preview
+    ctx.state.guides.preview = preview
     ctx.requestRepaint()
   }
 
-  function setHoveredGuide(selection: typeof ctx.state.hoveredGuide) {
-    const current = ctx.state.hoveredGuide
+  function setHoveredGuide(selection: typeof ctx.state.guides.hovered) {
+    const current = ctx.state.guides.hovered
     if (current?.ownerId === selection?.ownerId && current?.guideId === selection?.guideId) return
-    ctx.state.hoveredGuide = selection
+    ctx.state.guides.hovered = selection
     ctx.requestRepaint()
   }
 
-  function setSelectedGuide(selection: typeof ctx.state.selectedGuide) {
-    ctx.state.selectedGuide = selection
+  function setSelectedGuide(selection: typeof ctx.state.guides.selected) {
+    ctx.state.guides.selected = selection
     if (selection) ctx.setSelectedIds(new Set())
     ctx.requestRepaint()
   }

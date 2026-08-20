@@ -5,13 +5,14 @@ import type { Canvas } from 'canvaskit-wasm'
 import { SceneGraph } from '@open-pencil/scene-graph'
 import type { SceneNode } from '@open-pencil/scene-graph'
 
-import { drawPageGuides } from '#core/canvas/page-guides'
+import { drawGuides } from '#core/canvas/guides/render'
 
 import { createMockCanvas, createMockRenderer, mockCalls } from './effects/helpers'
 
 function graphWithGuides(guides: SceneNode['guides']): SceneGraph {
   const page = {
     id: 'page',
+    type: 'CANVAS',
     childIds: [],
     guides
   } as SceneNode
@@ -37,7 +38,7 @@ describe('page guide rendering', () => {
       { id: 'y', axis: 'y', position: 84 }
     ])
 
-    drawPageGuides(r, canvas as Canvas, graph)
+    drawGuides(r, canvas as Canvas, graph)
 
     expect(mockCalls(canvas.drawRect)).toHaveLength(2)
     expect(mockCalls(r.ck.LTRBRect)).toEqual([
@@ -83,7 +84,7 @@ describe('page guide rendering', () => {
     graph.rootId = 'root'
     graph.nodes = nodes
 
-    drawPageGuides(r, canvas as Canvas, graph)
+    drawGuides(r, canvas as Canvas, graph)
 
     expect(canvas.drawLine).toHaveBeenCalled()
   })
@@ -93,7 +94,7 @@ describe('page guide rendering', () => {
     const canvas = createMockCanvas()
     const graph = graphWithGuides([])
 
-    drawPageGuides(r, canvas as Canvas, graph)
+    drawGuides(r, canvas as Canvas, graph)
 
     expect(canvas.drawRect).not.toHaveBeenCalled()
   })
