@@ -7,6 +7,7 @@ import Matrix from '@open-pencil/scene-graph/matrix'
 import type { RenderOverlays, SkiaRenderer } from './renderer'
 
 const GUIDE_COLOR = { r: 0.85, g: 0.29, b: 0.2, a: 0.78 }
+const SELECTED_GUIDE_COLOR = { r: 0.1, g: 0.45, b: 0.95, a: 1 }
 const GUIDE_DASH = [3, 4]
 
 function drawOwnedGuide(
@@ -16,8 +17,11 @@ function drawOwnedGuide(
   graph: SceneGraph,
   axis: 'x' | 'y',
   position: number,
-  preview: boolean
+  preview: boolean,
+  selected = false
 ): void {
+  const color = selected ? SELECTED_GUIDE_COLOR : GUIDE_COLOR
+  r.auxStroke.setColor(r.ck.Color4f(color.r, color.g, color.b, color.a))
   const matrix = getWorldMatrix(owner, graph)
   const start = Matrix.mapPoint(
     matrix,
@@ -46,7 +50,8 @@ export function drawPageGuides(
   r: SkiaRenderer,
   canvas: Canvas,
   graph: SceneGraph,
-  preview?: RenderOverlays['guidePreview']
+  preview?: RenderOverlays['guidePreview'],
+  selectedGuide?: RenderOverlays['selectedGuide']
 ): void {
   const page = graph.getNode(r.pageId ?? graph.rootId)
   if (!page) return
@@ -55,6 +60,9 @@ export function drawPageGuides(
   r.auxStroke.setColor(r.ck.Color4f(GUIDE_COLOR.r, GUIDE_COLOR.g, GUIDE_COLOR.b, GUIDE_COLOR.a))
 
   for (const guide of page.guides) {
+    const selected = selectedGuide?.ownerId === page.id && selectedGuide.guideId === guide.id
+    const color = selected ? SELECTED_GUIDE_COLOR : GUIDE_COLOR
+    r.auxStroke.setColor(r.ck.Color4f(color.r, color.g, color.b, color.a))
     if (guide.axis === 'x') {
       const x = guide.position * r.zoom + r.panX
       canvas.drawRect(r.ck.LTRBRect(x, 0, x + 1, r.viewportHeight), r.auxStroke)
@@ -66,7 +74,16 @@ export function drawPageGuides(
 
   const visit = (node: SceneNode) => {
     for (const guide of node.guides) {
-      drawOwnedGuide(r, canvas, node, graph, guide.axis, guide.position, false)
+      drawOwnedGuide(
+        r,
+        canvas,
+        node,
+        graph,
+        guide.axis,
+        guide.position,
+        false,
+        selectedGuide?.ownerId === node.id && selectedGuide.guideId === guide.id
+      )
     }
     for (const childId of node.childIds) {
       const child = graph.getNode(childId)

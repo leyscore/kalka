@@ -14,7 +14,7 @@ import type { UndoManager } from '@open-pencil/scene-graph/undo'
 
 import type { RulerTheme, SkiaRenderer } from '#core/canvas/renderer'
 import type { MeasurementMode, RenderOverlays } from '#core/canvas/renderer/types'
-import type { GuidePreview } from '#core/editor/guide-preview'
+import type { GuidePreview, GuideSelection } from '#core/editor/guide-preview'
 import type { SnappingPreferences } from '#core/editor/preferences'
 import type { TextEditor } from '#core/text/editor'
 import type { FontResolutionEvent, FontResolutionSnapshot } from '#core/text/resolver'
@@ -54,6 +54,7 @@ export interface EditorViewState {
   marquee: Rect | null
   snapGuides: SnapGuide[]
   guidePreview: GuidePreview | null
+  selectedGuide: GuideSelection | null
   rotationPreview: { nodeId: string; angle: number } | null
   dropTargetId: string | null
   layoutInsertIndicator: {

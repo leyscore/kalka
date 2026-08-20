@@ -133,6 +133,14 @@ export interface DragGuide {
   axis: 'x' | 'y'
   ownerId: string
   position: number
+  startScreenX: number
+  startScreenY: number
+  currentScreenX: number
+  currentScreenY: number
+  dragStarted: boolean
+  guideId?: string
+  originalOwnerId?: string
+  originalPosition?: number
 }
 
 export type DragState =

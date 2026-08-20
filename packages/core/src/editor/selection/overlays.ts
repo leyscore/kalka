@@ -20,6 +20,12 @@ export function createSelectionOverlayActions(ctx: EditorContext) {
     ctx.requestRepaint()
   }
 
+  function setSelectedGuide(selection: typeof ctx.state.selectedGuide) {
+    ctx.state.selectedGuide = selection
+    if (selection) ctx.setSelectedIds(new Set())
+    ctx.requestRepaint()
+  }
+
   function setRotationPreview(preview: { nodeId: string; angle: number } | null) {
     ctx.state.rotationPreview = preview
     ctx.requestRepaint()
@@ -67,6 +73,7 @@ export function createSelectionOverlayActions(ctx: EditorContext) {
     setMarquee,
     setSnapGuides,
     setGuidePreview,
+    setSelectedGuide,
     setRotationPreview,
     setHoveredNode,
     setMeasurementMode,
