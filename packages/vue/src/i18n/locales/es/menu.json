@@ -65,5 +65,6 @@
   "settings": "Ajustes…",
   "splitRight": "Dividir a la derecha",
   "splitDown": "Dividir hacia abajo",
-  "closeView": "Cerrar vista"
+  "closeView": "Cerrar vista",
+  "removeGuide": "Eliminar guía"
 }

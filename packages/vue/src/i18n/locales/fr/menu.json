@@ -65,5 +65,6 @@
   "settings": "Paramètres…",
   "splitRight": "Diviser à droite",
   "splitDown": "Diviser vers le bas",
-  "closeView": "Fermer la vue"
+  "closeView": "Fermer la vue",
+  "removeGuide": "Supprimer le repère"
 }
