@@ -3,22 +3,32 @@ import { promiseTimeout } from '@vueuse/core'
 import { AUTOMATION_HTTP_PORT } from '@open-pencil/core/constants'
 import { randomHex } from '@open-pencil/core/random'
 import type { DiscoveryInfo } from '@open-pencil/mcp/discovery'
+import {
+  parseToolDescriptor,
+  serializeDisabledTools,
+  type ToolDescriptor
+} from '@open-pencil/mcp/tools'
 
 import { decodeTauriStderr } from '@/app/shell/ui'
 import { resolvePlatformCommand } from '@/app/tauri/command'
 import { isTauri } from '@/app/tauri/env'
 
-interface AutomationHealth {
+import { DEV_MCP_RESTART_PATH, type DevMCPConfiguration } from './dev-control'
+import { disabledMCPTools, mcpAuthenticationEnabled, mcpRootDirectory } from './preferences'
+
+export interface AutomationHealth {
   status: 'ok' | 'no_app'
   version?: string
   installCommand?: string
   authRequired?: boolean
   discoveryPath?: string
+  tools?: ToolDescriptor[]
 }
 
 export interface AutomationServerHandle {
-  disconnect: () => void
+  disconnect: () => void | Promise<void>
   authToken: string | null
+  managed: boolean
 }
 
 const DEV_AUTOMATION_AUTH_TOKEN =
@@ -154,13 +164,79 @@ async function resolveDiscoveryPath(healthDiscoveryPath?: string): Promise<strin
   return expected
 }
 
-async function readHealth(): Promise<AutomationHealth | null> {
+interface AutomationHealthRecord {
+  status?: unknown
+  version?: unknown
+  installCommand?: unknown
+  authRequired?: unknown
+  discoveryPath?: unknown
+  tools?: unknown
+}
+
+function isAutomationHealthRecord(value: unknown): value is AutomationHealthRecord {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function optionalString(value: unknown): string | null | undefined {
+  if (value === undefined) return undefined
+  return typeof value === 'string' ? value : null
+}
+
+function optionalBoolean(value: unknown): boolean | null | undefined {
+  if (value === undefined) return undefined
+  return typeof value === 'boolean' ? value : null
+}
+
+function parseToolDescriptors(value: unknown): ToolDescriptor[] | null | undefined {
+  if (value === undefined) return undefined
+  if (!Array.isArray(value)) return null
+  const descriptors: ToolDescriptor[] = []
+  for (const candidate of value) {
+    const descriptor = parseToolDescriptor(candidate)
+    if (!descriptor) return null
+    descriptors.push(descriptor)
+  }
+  return descriptors
+}
+
+function parseAutomationHealth(value: unknown): AutomationHealth | null {
+  if (!isAutomationHealthRecord(value)) return null
+  if (value.status !== 'ok' && value.status !== 'no_app') return null
+  const version = optionalString(value.version)
+  const installCommand = optionalString(value.installCommand)
+  const authRequired = optionalBoolean(value.authRequired)
+  const discoveryPath = optionalString(value.discoveryPath)
+  const tools = parseToolDescriptors(value.tools)
+  if (
+    version === null ||
+    installCommand === null ||
+    authRequired === null ||
+    discoveryPath === null ||
+    tools === null
+  ) {
+    return null
+  }
+  return {
+    status: value.status,
+    ...(version !== undefined ? { version } : {}),
+    ...(installCommand !== undefined ? { installCommand } : {}),
+    ...(authRequired !== undefined ? { authRequired } : {}),
+    ...(discoveryPath !== undefined ? { discoveryPath } : {}),
+    ...(tools !== undefined ? { tools } : {})
+  }
+}
+
+export async function readAutomationHealth(
+  authToken: string | null = runtimeAutomationAuthToken
+): Promise<AutomationHealth | null> {
   try {
+    const headers = authToken ? { Authorization: `Bearer ${authToken}` } : undefined
     const res = await fetch(`http://127.0.0.1:${AUTOMATION_HTTP_PORT}/health`, {
+      headers,
       signal: AbortSignal.timeout(1000)
     })
     if (!res.ok) return null
-    return (await res.json()) as AutomationHealth
+    return parseAutomationHealth(await res.json())
   } catch {
     return null
   }
@@ -190,10 +266,14 @@ function assertCompatibleMCPVersion(health: AutomationHealth): void {
   )
 }
 
-async function pollHealth(retries: number, delayMs: number): Promise<AutomationHealth | null> {
-  for (let i = 0; i < retries; i++) {
+async function pollHealth(
+  attempts: number,
+  delayMs: number,
+  authToken: string | null = runtimeAutomationAuthToken
+): Promise<AutomationHealth | null> {
+  for (let attempt = 0; attempt < attempts; attempt++) {
     await promiseTimeout(delayMs)
-    const health = await readHealth()
+    const health = await readAutomationHealth(authToken)
     if (health) return health
   }
   return null
@@ -201,7 +281,7 @@ async function pollHealth(retries: number, delayMs: number): Promise<AutomationH
 
 export async function getAutomationAuthToken(): Promise<string | null> {
   if (runtimeAutomationAuthToken) return runtimeAutomationAuthToken
-  const health = await readHealth()
+  const health = await readAutomationHealth()
   if (!health) {
     if (runtimeAutomationStartupError) throw runtimeAutomationStartupError
     throw new Error(
@@ -235,57 +315,82 @@ export async function getAutomationAuthToken(): Promise<string | null> {
   return runtimeAutomationAuthToken
 }
 
+async function readExistingServerHandle(): Promise<AutomationServerHandle | null> {
+  const expectedDiscoveryPath = await computeExpectedDiscoveryPath()
+  if (!(await discoveryFileExists(expectedDiscoveryPath))) return null
+
+  const health = await readAutomationHealth()
+  if (!health) return null
+  assertCompatibleMCPVersion(health)
+  const discoveryPath = await resolveDiscoveryPath(health.discoveryPath)
+  const token = await readDiscoveryToken(discoveryPath)
+  if (health.authRequired && !token) {
+    throw new Error(
+      'MCP server requires authentication but the discovery token could not be read. ' +
+        'Ensure the discovery file is accessible and contains an auth token.'
+    )
+  }
+  runtimeAutomationAuthToken = token
+  return { disconnect: noop, authToken: token, managed: false }
+}
+
+async function configureDevMCP(): Promise<AutomationServerHandle> {
+  if (!DEV_AUTOMATION_AUTH_TOKEN) throw new Error('MCP development control token is unavailable')
+  const configuration: DevMCPConfiguration = {
+    authenticationEnabled: mcpAuthenticationEnabled.value,
+    rootDirectory: mcpRootDirectory.value,
+    disabledTools: [...disabledMCPTools.value]
+  }
+  const response = await fetch(DEV_MCP_RESTART_PATH, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${DEV_AUTOMATION_AUTH_TOKEN}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(configuration)
+  })
+  if (!response.ok) {
+    throw new Error(`Failed to configure development MCP server (${response.status})`)
+  }
+  const authToken = configuration.authenticationEnabled ? DEV_AUTOMATION_AUTH_TOKEN : null
+  const health = await pollHealth(10, 250, authToken)
+  if (!health) throw new Error('Development MCP server did not become healthy')
+  runtimeAutomationAuthToken = authToken
+  return { disconnect: noop, authToken, managed: true }
+}
+
 async function startMCPIfNeeded(): Promise<AutomationServerHandle | null> {
   runtimeAutomationStartupError = null
-  if (import.meta.env.DEV || !isTauri()) {
-    return DEV_AUTOMATION_AUTH_TOKEN
-      ? { disconnect: noop, authToken: DEV_AUTOMATION_AUTH_TOKEN }
-      : null
-  }
+  if (import.meta.env.DEV) return configureDevMCP()
+  if (!isTauri()) return null
 
-  const expectedDiscoveryPath = await computeExpectedDiscoveryPath()
-  const hasDiscovery = await discoveryFileExists(expectedDiscoveryPath)
-  const existing = hasDiscovery ? await readHealth() : null
+  const existing = await readExistingServerHandle()
   if (existing) {
-    assertCompatibleMCPVersion(existing)
-    const discoveryPath = await resolveDiscoveryPath(existing.discoveryPath)
-    const token = await readDiscoveryToken(discoveryPath)
-    if (existing.authRequired && !token) {
-      throw new Error(
-        'MCP server requires authentication but the discovery token could not be read. ' +
-          'Ensure the discovery file is accessible and contains an auth token.'
-      )
-    }
-    runtimeAutomationAuthToken = token
-    return {
-      disconnect: noop,
-      authToken: runtimeAutomationAuthToken
-    }
+    return existing
   }
 
   const { invoke } = await import('@tauri-apps/api/core')
   const executableAvailable = await invoke<boolean>('mcp_executable_available')
   if (!executableAvailable) return rememberStartupError(missingMCPError())
 
-  const authToken = randomHex(32)
+  const authToken = mcpAuthenticationEnabled.value ? randomHex(32) : null
   // Cache only after MCP startup is confirmed healthy.
 
   const { Command } = await import('@tauri-apps/plugin-shell')
-  // Set OPENPENCIL_MCP_ROOT to the user's home directory so file-scoped
-  // tools (open_file, save_file, export_*) operate on paths inside ~,
-  // which is naturally writable and matches user expectations for "my files."
-  // The app bundle directory (Tauri executableDir) is read-only and would
-  // cause EACCES errors on every file write.
-  const mcpRoot = await resolveTauriHomeDir()
+  // Scope file tools to the configured root, defaulting to the user's home.
+  // The app bundle directory (Tauri executableDir) is read-only and cannot be
+  // used as a safe fallback for open_file, save_file, or export tools.
+  const mcpRoot = mcpRootDirectory.value.trim() || (await resolveTauriHomeDir())
   const resolved = resolvePlatformCommand(MCP_EXECUTABLE)
   const command = Command.create(resolved.command, resolved.args, {
     env: {
       PORT: String(AUTOMATION_HTTP_PORT),
-      OPENPENCIL_MCP_AUTH_TOKEN: authToken,
+      OPENPENCIL_MCP_AUTH_TOKEN: authToken ?? '',
       OPENPENCIL_MCP_CORS_ORIGIN: window.location.origin,
       OPENPENCIL_MCP_TCP: '1',
       OPENPENCIL_MCP_ROOT: mcpRoot,
-      OPENPENCIL_MCP_APP_TIMEOUT_MS: String(MCP_APP_ATTACH_TIMEOUT_MS)
+      OPENPENCIL_MCP_APP_TIMEOUT_MS: String(MCP_APP_ATTACH_TIMEOUT_MS),
+      OPENPENCIL_MCP_DISABLED_TOOLS: serializeDisabledTools(disabledMCPTools.value)
     }
   })
 
@@ -323,27 +428,28 @@ async function startMCPIfNeeded(): Promise<AutomationServerHandle | null> {
       )
     )
   }
-  const health = await pollHealth(5, 1000)
+  const health = await pollHealth(5, 1000, authToken)
 
   if (health) {
     try {
       assertCompatibleMCPVersion(health)
       const discoveryPath = await resolveDiscoveryPath(health.discoveryPath)
       const discovered = await readDiscoveryToken(discoveryPath)
-      const token = discovered ?? authToken
+      const token = health.authRequired ? (discovered ?? authToken) : null
       spawnedToken = token
       runtimeAutomationAuthToken = token
       runtimeAutomationStartupError = null
       return {
-        disconnect: () => {
-          void child.kill().catch((e) => {
+        disconnect: async () => {
+          await child.kill().catch((e) => {
             console.error('[MCP] Failed to kill server:', e)
           })
           if (runtimeAutomationAuthToken === token) {
             runtimeAutomationAuthToken = null
           }
         },
-        authToken: token
+        authToken: token,
+        managed: true
       }
     } catch (err) {
       await child.kill().catch(() => undefined)

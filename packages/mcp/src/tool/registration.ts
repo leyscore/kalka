@@ -1,14 +1,18 @@
 import { Buffer } from 'node:buffer'
 import { resolve } from 'node:path'
 
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import type { McpServer, ToolCallback } from '@modelcontextprotocol/sdk/server/mcp.js'
+import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js'
 import { z } from 'zod'
 
 import { ALL_TOOLS, CODEGEN_PROMPT } from '@open-pencil/core/tools'
 
 import type { RPCJSONObject } from '#mcp/json'
 import { MAX_RESULT_BYTES, fail, ok, resultTooLargeMessage } from '#mcp/result'
+import { createToolDescriptors } from '#mcp/tool/manifest'
+import type { ToolDescriptor, ToolEffect, ToolPolicy } from '#mcp/tool/metadata'
 import { resolveSafePath, writeToolOutput } from '#mcp/tool/output'
+import { isToolEnabled } from '#mcp/tool/policy'
 import { paramToZod } from '#mcp/tool/schema'
 
 export type RPCSender = (body: Record<string, unknown>) => Promise<unknown>
@@ -33,18 +37,46 @@ function splitAutomationTarget(args: Record<string, unknown>): {
 }
 
 export interface RegisterToolsOptions {
-  enableEval: boolean
+  policy: ToolPolicy
   mcpRoot?: string | null
   sendRPC: RPCSender
 }
 
-export function registerTools(mcpServer: McpServer, options: RegisterToolsOptions) {
-  const { enableEval, sendRPC } = options
+function toolAnnotations(effect: ToolEffect): ToolAnnotations {
+  return {
+    readOnlyHint: effect === 'read',
+    destructiveHint: effect === 'write'
+  }
+}
+
+function descriptorByName(descriptors: readonly ToolDescriptor[]): Map<string, ToolDescriptor> {
+  return new Map(descriptors.map((descriptor) => [descriptor.name, descriptor]))
+}
+
+export function registerTools(mcpServer: McpServer, options: RegisterToolsOptions): void {
+  const { policy, sendRPC } = options
   const resolvedRoot = options.mcpRoot ? resolve(options.mcpRoot) : null
-  const register = mcpServer.registerTool.bind(mcpServer) as (...a: unknown[]) => void
+  const descriptors = descriptorByName(createToolDescriptors(resolvedRoot !== null))
+  const register = <InputArgs extends z.ZodObject>(
+    name: string,
+    toolOptions: { description: string; inputSchema: InputArgs },
+    handler: ToolCallback<InputArgs>
+  ) => {
+    const descriptor = descriptors.get(name)
+    if (!descriptor) throw new Error(`Missing MCP tool descriptor for "${name}"`)
+    if (!isToolEnabled(descriptor, policy)) return
+    mcpServer.registerTool(
+      name,
+      {
+        ...toolOptions,
+        annotations: toolAnnotations(descriptor.effect),
+        _meta: { 'openpencil/capabilities': descriptor.capabilities }
+      },
+      handler
+    )
+  }
 
   for (const def of ALL_TOOLS) {
-    if (!enableEval && def.name === 'eval') continue
     const shape: Record<string, z.ZodType> = {}
     for (const [key, param] of Object.entries(def.params)) {
       shape[key] = paramToZod(param)
@@ -125,7 +157,7 @@ export function registerTools(mcpServer: McpServer, options: RegisterToolsOption
     'save_file',
     {
       description: resolvedRoot
-        ? `Save the current document to disk. If path is provided, it must be inside ${resolvedRoot}.`
+        ? 'Save the current document to disk. If path is provided, it must be inside the configured MCP root.'
         : 'Save the current document to disk. Uses the existing file path if available, otherwise prompts for a location.',
       inputSchema: resolvedRoot
         ? z.object({
@@ -166,7 +198,7 @@ export function registerTools(mcpServer: McpServer, options: RegisterToolsOption
     register(
       'open_file',
       {
-        description: `Open a .fig or .pen file from disk into a new tab. Path must be inside ${resolvedRoot}.`,
+        description: 'Open a .fig or .pen file from inside the configured MCP root.',
         inputSchema: z.object({
           path: z
             .string()
@@ -195,7 +227,8 @@ export function registerTools(mcpServer: McpServer, options: RegisterToolsOption
     register(
       'new_document',
       {
-        description: `Create a new empty document. Optionally set a save path inside ${resolvedRoot}.`,
+        description:
+          'Create a new empty document with an optional save path inside the configured MCP root.',
         inputSchema: z.object({
           path: z
             .string()

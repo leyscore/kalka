@@ -4,9 +4,8 @@ import { useEventListener, useUrlSearchParams } from '@vueuse/core'
 import { useHead } from '@unhead/vue'
 import { useRoute } from 'vue-router'
 
-import { connectAutomation } from '@/app/automation/bridge/server'
-import { spawnMCPIfNeeded } from '@/app/automation/mcp/spawn'
 import { exposeCollaborationActions } from '@/app/browser-bridge'
+import { startMCPRuntime, stopMCPRuntime } from '@/app/automation/mcp/runtime'
 import { COLLAB_KEY, useCollab } from '@/app/collab/use'
 import { createDemoShapes } from '@/app/demo/document'
 import { useKeyboard } from '@/app/shell/keyboard/use'
@@ -59,8 +58,6 @@ useEventListener(
   { passive: false }
 )
 
-const automationCleanup = ref<(() => void) | null>(null)
-const mcpCleanup = ref<(() => void) | null>(null)
 const fileAssociationCleanup = ref<(() => void) | null>(null)
 
 interface PendingOpenFile {
@@ -83,12 +80,7 @@ async function bindAssociatedFileOpen(): Promise<void> {
 }
 
 onMounted(async () => {
-  const mcp = await spawnMCPIfNeeded()
-  mcpCleanup.value = mcp?.disconnect ?? null
-  const tauri = isTauri()
-  if (import.meta.env.DEV || (tauri && mcp)) {
-    automationCleanup.value = connectAutomation(getActiveStore, mcp?.authToken ?? null).disconnect
-  }
+  await startMCPRuntime(getActiveStore)
 
   try {
     await bindAssociatedFileOpen()
@@ -98,8 +90,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  mcpCleanup.value?.()
-  automationCleanup.value?.()
+  void stopMCPRuntime()
   fileAssociationCleanup.value?.()
 })
 </script>
