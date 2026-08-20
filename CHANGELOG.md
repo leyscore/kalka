@@ -2,17 +2,13 @@
 
 ## Unreleased
 
-### Changed
-
-- Upgrade CanvasKit to 0.41 and migrate renderer geometry to immutable paths built through `PathBuilder`.
-
 ### Added
 
 - Snap vector points, moved layers, and resized edges to nearby geometry, sibling layer bounds, canvas and frame layout guides, and whole-pixel coordinates with visible alignment guides, fractional-coordinate preservation when pixel snapping is off, and persistent geometry, object, and pixel-grid controls in General settings and the Preferences menu.
 - Run Pi through AI SDK HarnessAgent as a configurable desktop provider with multiple saved model profiles, secure credentials, existing MCP design tools, and per-profile thinking and permission settings.
 - Open multiple selected design files in separate tabs.
 - Let Figma API scripts and automation combine components into variant sets.
-- Monitor and restart the local MCP server, configure its root directory or authentication, and choose individual, inspection, or modification tools it exposes from Settings.
+- Monitor and restart the local MCP server, configure its root directory or authentication, and choose individual, read-only, or document-writing tools it exposes from Settings.
 - Add deterministic two-browser collaboration coverage for bidirectional edits, awareness, departure cleanup, partitioned-peer convergence, and reconnect synchronization without public network dependencies. (#530)
 - Import, render, edit, resize, select, and export Figma text-on-path layers while preserving their curved glyph layout.
 - Show Figma-style temporary distance measurements between selected and Option/Alt-hovered layers. (#491)
@@ -45,6 +41,7 @@
 
 ### Changed
 
+- Upgrade CanvasKit to 0.41 and migrate renderer geometry to immutable paths built through `PathBuilder`.
 - Upgrade direct model chat providers and transports to AI SDK 7 while retaining the local ACP execution path.
 - Localize file, clipboard, collaboration, chat, vectorization, storage, recovery, and component-library notifications in every supported language.
 - Move MCP connections into their own Settings destination instead of presenting them as part of model configuration.

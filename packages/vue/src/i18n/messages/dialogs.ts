@@ -263,11 +263,11 @@ export const dialogMessageDefaults = {
   mcpRootDirectoryDescription:
     'File tools are limited to this folder. Restart the MCP server to apply changes.',
   mcpTools: 'Available tools',
-  mcpInspectionTools: 'Inspection tools',
-  mcpModificationTools: 'Modification tools',
   mcpToolsEnabled: params('{enabled} of {total} enabled'),
   mcpEnableAllTools: 'Enable all',
   mcpSearchTools: 'Search MCP tools',
+  mcpReadOnlyTools: 'Read-only tools',
+  mcpDocumentWritingTools: 'Document-writing tools',
   mcpToolsRestartNotice:
     'Restart the MCP server, then reconnect stdio clients, to apply tool availability changes.',
   mcpExternalRestartNotice:
