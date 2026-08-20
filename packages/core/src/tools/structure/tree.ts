@@ -3,7 +3,6 @@ import { defineTool, getRawNodeOrError, nodeNotFound, nodeSummary } from '#core/
 
 export const nodeAncestors = defineTool({
   name: 'node_ancestors',
-  documentAccess: 'inspect',
   description: 'Get the ancestor chain from a node to the page root.',
   params: {
     id: { type: 'string', description: 'Node ID', required: true },
@@ -26,7 +25,6 @@ export const nodeAncestors = defineTool({
 
 export const nodeChildren = defineTool({
   name: 'node_children',
-  documentAccess: 'inspect',
   description: 'Get direct children of a node.',
   params: {
     id: { type: 'string', description: 'Node ID', required: true }
@@ -40,7 +38,6 @@ export const nodeChildren = defineTool({
 
 export const nodeTree = defineTool({
   name: 'node_tree',
-  documentAccess: 'inspect',
   description: 'Get a node tree with types and hierarchy.',
   params: {
     id: { type: 'string', description: 'Node ID', required: true },
@@ -68,7 +65,6 @@ export const nodeTree = defineTool({
 
 export const nodeBindings = defineTool({
   name: 'node_bindings',
-  documentAccess: 'inspect',
   description: 'Get variable bindings for a node.',
   params: {
     id: { type: 'string', description: 'Node ID', required: true }

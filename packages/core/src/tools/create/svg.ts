@@ -4,7 +4,6 @@ import { defineTool } from '#core/tools/schema'
 export const importSVG = defineTool({
   name: 'import_svg',
   mutates: true,
-  documentAccess: 'modify',
   description:
     'Import raw SVG markup onto the canvas as editable vector nodes. Supports common SVG shapes, inherited presentation attributes, transforms, gradients, and internal <use> references.',
   params: {

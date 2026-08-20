@@ -3,7 +3,6 @@ import { defineTool, nodeNotFound } from '#core/tools/schema'
 export const setRotation = defineTool({
   name: 'set_rotation',
   mutates: true,
-  documentAccess: 'modify',
   description: 'Set rotation angle of a node in degrees.',
   params: {
     id: { type: 'string', description: 'Node ID', required: true },
@@ -20,7 +19,6 @@ export const setRotation = defineTool({
 export const setOpacity = defineTool({
   name: 'set_opacity',
   mutates: true,
-  documentAccess: 'modify',
   description: 'Set opacity of a node (0-1).',
   params: {
     id: { type: 'string', description: 'Node ID', required: true },
@@ -37,7 +35,6 @@ export const setOpacity = defineTool({
 export const setRadius = defineTool({
   name: 'set_radius',
   mutates: true,
-  documentAccess: 'modify',
   description: 'Set corner radius. Use individual corners for independent values.',
   params: {
     id: { type: 'string', description: 'Node ID', required: true },
@@ -74,7 +71,6 @@ export const setRadius = defineTool({
 export const setMinMax = defineTool({
   name: 'set_minmax',
   mutates: true,
-  documentAccess: 'modify',
   description: 'Set min/max width and height constraints on a node.',
   params: {
     id: { type: 'string', description: 'Node ID', required: true },

@@ -24,7 +24,6 @@ interface LibraryComponentResult {
 
 export const getComponents = defineTool({
   name: 'get_components',
-  documentAccess: 'inspect',
   description:
     'List reusable components from the document and enabled component libraries, optionally filtered by name.',
   params: {

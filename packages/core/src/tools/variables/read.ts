@@ -2,7 +2,6 @@ import { defineTool } from '#core/tools/schema'
 
 export const listVariables = defineTool({
   name: 'list_variables',
-  documentAccess: 'inspect',
   description: 'List all design variables (colors, numbers, strings, booleans).',
   params: {
     type: {
@@ -19,7 +18,6 @@ export const listVariables = defineTool({
 
 export const getVariable = defineTool({
   name: 'get_variable',
-  documentAccess: 'inspect',
   description: 'Get a variable by ID.',
   params: {
     id: { type: 'string', description: 'Variable ID', required: true }
@@ -33,7 +31,6 @@ export const getVariable = defineTool({
 
 export const findVariables = defineTool({
   name: 'find_variables',
-  documentAccess: 'inspect',
   description: 'Find variables by name pattern.',
   params: {
     query: { type: 'string', description: 'Name substring (case-insensitive)', required: true },

@@ -4,7 +4,6 @@ import { defineTool } from '#core/tools/schema'
 export const arrangeNodes = defineTool({
   name: 'arrange',
   mutates: true,
-  documentAccess: 'modify',
   description:
     'Arrange top-level nodes on the canvas in a grid, row, or column layout. Useful after batch creation to tidy up overlapping frames.',
   params: {

@@ -4,7 +4,6 @@ import { wrapEvalCode } from './wrap'
 
 export const evalCode = defineTool({
   name: 'eval',
-  documentAccess: 'modify',
   description:
     'Execute JavaScript with full Figma Plugin API access. Use for operations not covered by other tools. The `figma` global is available.',
   params: {

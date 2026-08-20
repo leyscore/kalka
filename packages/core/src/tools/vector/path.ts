@@ -16,7 +16,6 @@ function getVectorNode(
 
 export const pathGet = defineTool({
   name: 'path_get',
-  documentAccess: 'inspect',
   description: 'Get vector path data of a node.',
   params: {
     id: { type: 'string', description: 'Node ID', required: true }
@@ -32,7 +31,6 @@ export const pathGet = defineTool({
 export const pathSet = defineTool({
   name: 'path_set',
   mutates: true,
-  documentAccess: 'modify',
   description: 'Set vector path data on a node. Provide a VectorNetwork JSON.',
   params: {
     id: { type: 'string', description: 'Node ID', required: true },
@@ -50,7 +48,6 @@ export const pathSet = defineTool({
 export const pathScale = defineTool({
   name: 'path_scale',
   mutates: true,
-  documentAccess: 'modify',
   description: 'Scale vector path from center.',
   params: {
     id: { type: 'string', description: 'Node ID', required: true },
@@ -81,7 +78,6 @@ export const pathScale = defineTool({
 export const pathFlip = defineTool({
   name: 'path_flip',
   mutates: true,
-  documentAccess: 'modify',
   description: 'Flip vector path horizontally or vertically.',
   params: {
     id: { type: 'string', description: 'Node ID', required: true },
@@ -117,7 +113,6 @@ export const pathFlip = defineTool({
 export const pathMove = defineTool({
   name: 'path_move',
   mutates: true,
-  documentAccess: 'modify',
   description: 'Move all path points by an offset.',
   params: {
     id: { type: 'string', description: 'Node ID', required: true },

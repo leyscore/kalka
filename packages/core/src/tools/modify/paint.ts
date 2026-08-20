@@ -8,7 +8,6 @@ import { defineTool } from '#core/tools/schema'
 export const setFill = defineTool({
   name: 'set_fill',
   mutates: true,
-  documentAccess: 'modify',
   description:
     'Set fill on a node. Solid: color="#ff0000". Linear gradient: gradient="top-bottom" or "left-right" with color (start) and color_end (end).',
   params: {
@@ -63,7 +62,6 @@ export const setFill = defineTool({
 export const setStroke = defineTool({
   name: 'set_stroke',
   mutates: true,
-  documentAccess: 'modify',
   description: 'Set the stroke (border) of a node.',
   params: {
     id: { type: 'string', description: 'Node ID', required: true },
@@ -97,7 +95,6 @@ export const setStroke = defineTool({
 export const setImageFill = defineTool({
   name: 'set_image_fill',
   mutates: true,
-  documentAccess: 'modify',
   description: 'Set an image fill on a node from base64-encoded image data.',
   params: {
     id: { type: 'string', description: 'Node ID', required: true },

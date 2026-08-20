@@ -4,7 +4,6 @@ import { defineTool } from '#core/tools/schema'
 
 export const analyzeTypography = defineTool({
   name: 'analyze_typography',
-  documentAccess: 'inspect',
   description:
     'Analyze typography usage across the current page. Shows font families, sizes, weights, and their frequencies.',
   params: {
