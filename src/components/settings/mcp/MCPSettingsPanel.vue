@@ -224,7 +224,11 @@ function enableAllTools(): void {
       </ul>
 
       <p class="border-t border-border px-3 py-2 text-[10px] text-muted">
-        {{ dialogs.mcpToolsRestartNotice }}
+        {{
+          mcpRuntime.externallyManaged
+            ? dialogs.mcpExternalRestartNotice
+            : dialogs.mcpToolsRestartNotice
+        }}
       </p>
     </div>
 
@@ -232,14 +236,16 @@ function enableAllTools(): void {
       <button
         type="button"
         class="rounded bg-accent px-3 py-1.5 text-[11px] font-medium text-white hover:bg-accent/90 disabled:opacity-50"
-        :disabled="mcpRuntime.status === 'starting'"
+        :disabled="mcpRuntime.status === 'starting' || mcpRuntime.externallyManaged"
         data-test-id="settings-mcp-restart"
         @click="restart"
       >
         {{
           mcpRuntime.status === 'starting' || mcpRuntime.checking
             ? dialogs.mcpStarting
-            : dialogs.mcpRestart
+            : mcpRuntime.externallyManaged
+              ? dialogs.mcpExternallyManaged
+              : dialogs.mcpRestart
         }}
       </button>
     </div>

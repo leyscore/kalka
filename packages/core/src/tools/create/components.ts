@@ -40,6 +40,7 @@ export const createInstance = defineTool({
 export const combineAsVariants = defineTool({
   name: 'combine_as_variants',
   mutates: true,
+  documentAccess: 'modify',
   description:
     'Combine components sharing a parent into a component set (variant set). Components named ' +
     '"Category/Value" (e.g. "Button/Primary") derive variant properties from the name segments.',
