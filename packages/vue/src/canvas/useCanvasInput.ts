@@ -4,17 +4,17 @@ import { onScopeDispose, ref, type Ref } from 'vue'
 import type { Editor } from '@open-pencil/core/editor'
 import type { SceneNode } from '@open-pencil/scene-graph'
 
-import { createGuideInput } from '#vue/canvas/guide-input/use'
+import { createGuideInput } from '#vue/canvas/guides/input'
 import {
   handleBendHandleMove,
   handleNodeEditMouseUp,
   updateNodeEditHover
-} from '#vue/canvas/node-edit-input/use'
-import { handlePenDragMove, updatePenHover } from '#vue/canvas/pen-input/use'
+} from '#vue/canvas/node-edit/input'
+import { handlePenDragMove, updatePenHover } from '#vue/canvas/pen/input'
 import { createCanvasPointer } from '#vue/canvas/pointer/use'
 import { createTextEditInput } from '#vue/canvas/text-edit/input'
-import { handleToolMouseDown } from '#vue/canvas/tool-input/use'
-import { createCanvasTransformInput } from '#vue/canvas/transform-input/use'
+import { handleToolMouseDown } from '#vue/canvas/tools/input'
+import { createCanvasTransformInput } from '#vue/canvas/transform/input'
 import { resolveAutoLayoutHover } from '#vue/shared/input/auto-layout-hover'
 import { createClickCounter } from '#vue/shared/input/click-count'
 import { handleDrawMove, handleDrawUp } from '#vue/shared/input/draw'

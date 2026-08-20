@@ -2,7 +2,7 @@ import type { Ref } from 'vue'
 
 import type { Editor } from '@open-pencil/core/editor'
 
-import { startPenInput } from '#vue/canvas/pen-input/use'
+import { startPenInput } from '#vue/canvas/pen/input'
 import { startShapeDraw, startTextDraw } from '#vue/shared/input/draw'
 import { startPanDrag } from '#vue/shared/input/pan'
 import { handleSelectDown } from '#vue/shared/input/select'
