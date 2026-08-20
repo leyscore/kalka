@@ -36,7 +36,7 @@
     },
     "./tools": {
       "types": "./dist/tools.d.mts",
-      "bun": "./src/tool/metadata.ts",
+      "bun": "./src/tool/index.ts",
       "import": "./dist/tools.mjs",
       "default": "./dist/tools.mjs"
     }

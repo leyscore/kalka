@@ -33,7 +33,3 @@ export function setMCPToolCategoryEnabled(effect: ToolEffect, enabled: boolean):
   }
   disabledMCPTools.value = [...disabled]
 }
-
-export function disabledMCPToolsCSV(): string {
-  return disabledMCPTools.value.join(',')
-}

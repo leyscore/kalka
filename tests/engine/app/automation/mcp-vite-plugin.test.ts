@@ -8,6 +8,7 @@ import {
   devMCPConfigurationErrorStatus,
   readDevMCPConfiguration
 } from '@/app/automation/bridge/vite-plugin'
+import { parseDevMCPConfiguration } from '@/app/automation/mcp/dev-control'
 
 describe('MCP Vite development server', () => {
   test('passes an explicit empty auth token when authentication is disabled', () => {
@@ -17,7 +18,7 @@ describe('MCP Vite development server', () => {
       configuration: {
         authenticationEnabled: false,
         rootDirectory: '/designs',
-        disabledTools: 'eval,delete_node'
+        disabledTools: ['eval', 'delete_node']
       },
       corsOrigin: 'http://localhost:1420',
       socketPath: '/tmp/open-pencil.sock'
@@ -28,12 +29,33 @@ describe('MCP Vite development server', () => {
     expect(env.OPENPENCIL_MCP_DISABLED_TOOLS).toBe('eval,delete_node')
   })
 
+  test('normalizes and validates typed disabled tool configuration', () => {
+    expect(
+      parseDevMCPConfiguration({
+        authenticationEnabled: true,
+        rootDirectory: '/designs',
+        disabledTools: [' eval ', 'delete_node', 'eval']
+      })
+    ).toEqual({
+      authenticationEnabled: true,
+      rootDirectory: '/designs',
+      disabledTools: ['eval', 'delete_node']
+    })
+    expect(
+      parseDevMCPConfiguration({
+        authenticationEnabled: true,
+        rootDirectory: '',
+        disabledTools: ['invalid tool']
+      })
+    ).toBeNull()
+  })
+
   test('decodes UTF-8 configuration split across request chunks', async () => {
     const body = Buffer.from(
       JSON.stringify({
         authenticationEnabled: true,
         rootDirectory: '/设计',
-        disabledTools: ''
+        disabledTools: []
       })
     )
     const split = body.indexOf(Buffer.from('设')) + 1
@@ -42,7 +64,7 @@ describe('MCP Vite development server', () => {
     await expect(readDevMCPConfiguration(request as never)).resolves.toEqual({
       authenticationEnabled: true,
       rootDirectory: '/设计',
-      disabledTools: ''
+      disabledTools: []
     })
   })
 

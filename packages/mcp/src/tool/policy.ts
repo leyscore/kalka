@@ -27,6 +27,10 @@ export function applyToolPolicy(
   }))
 }
 
+export function serializeDisabledTools(names: readonly string[]): string {
+  return names.join(',')
+}
+
 export function readToolPolicyFromEnv(env: NodeJS.ProcessEnv = process.env): ToolPolicy {
   return {
     allowEval: env.OPENPENCIL_MCP_EVAL === '1',

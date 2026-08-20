@@ -3,15 +3,18 @@ import { promiseTimeout } from '@vueuse/core'
 import { AUTOMATION_HTTP_PORT } from '@open-pencil/core/constants'
 import { randomHex } from '@open-pencil/core/random'
 import type { DiscoveryInfo } from '@open-pencil/mcp/discovery'
-import type { ToolDescriptor } from '@open-pencil/mcp/tools'
-import { parseToolDescriptor } from '@open-pencil/mcp/tools'
+import {
+  parseToolDescriptor,
+  serializeDisabledTools,
+  type ToolDescriptor
+} from '@open-pencil/mcp/tools'
 
 import { decodeTauriStderr } from '@/app/shell/ui'
 import { resolvePlatformCommand } from '@/app/tauri/command'
 import { isTauri } from '@/app/tauri/env'
 
 import { DEV_MCP_RESTART_PATH, type DevMCPConfiguration } from './dev-control'
-import { disabledMCPToolsCSV, mcpAuthenticationEnabled, mcpRootDirectory } from './preferences'
+import { disabledMCPTools, mcpAuthenticationEnabled, mcpRootDirectory } from './preferences'
 
 export interface AutomationHealth {
   status: 'ok' | 'no_app'
@@ -336,7 +339,7 @@ async function configureDevMCP(): Promise<AutomationServerHandle> {
   const configuration: DevMCPConfiguration = {
     authenticationEnabled: mcpAuthenticationEnabled.value,
     rootDirectory: mcpRootDirectory.value,
-    disabledTools: disabledMCPToolsCSV()
+    disabledTools: [...disabledMCPTools.value]
   }
   const response = await fetch(DEV_MCP_RESTART_PATH, {
     method: 'POST',
@@ -387,7 +390,7 @@ async function startMCPIfNeeded(): Promise<AutomationServerHandle | null> {
       OPENPENCIL_MCP_TCP: '1',
       OPENPENCIL_MCP_ROOT: mcpRoot,
       OPENPENCIL_MCP_APP_TIMEOUT_MS: String(MCP_APP_ATTACH_TIMEOUT_MS),
-      OPENPENCIL_MCP_DISABLED_TOOLS: disabledMCPToolsCSV()
+      OPENPENCIL_MCP_DISABLED_TOOLS: serializeDisabledTools(disabledMCPTools.value)
     }
   })
 

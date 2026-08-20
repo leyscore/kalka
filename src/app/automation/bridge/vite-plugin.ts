@@ -4,11 +4,12 @@ import type { IncomingMessage } from 'node:http'
 import type { Plugin } from 'vite'
 
 import { AUTOMATION_HTTP_PORT } from '@open-pencil/core/constants'
+import { serializeDisabledTools } from '@open-pencil/mcp/tools'
 import { getSocketPath, platformHasUnixSockets } from '@open-pencil/mcp/transport'
 
 import {
   DEV_MCP_RESTART_PATH,
-  isDevMCPConfiguration,
+  parseDevMCPConfiguration,
   type DevMCPConfiguration
 } from '../mcp/dev-control'
 
@@ -35,7 +36,7 @@ export function createAutomationEnvironment(
     OPENPENCIL_MCP_AUTH_TOKEN: configuration.authenticationEnabled ? (authToken ?? '') : '',
     OPENPENCIL_MCP_CORS_ORIGIN: corsOrigin,
     OPENPENCIL_MCP_ROOT: configuration.rootDirectory.trim() || process.cwd(),
-    OPENPENCIL_MCP_DISABLED_TOOLS: configuration.disabledTools
+    OPENPENCIL_MCP_DISABLED_TOOLS: serializeDisabledTools(configuration.disabledTools)
   }
 }
 
@@ -96,7 +97,7 @@ export function automationPlugin(authToken: string | null, corsOrigin: string): 
   let configuration: DevMCPConfiguration = {
     authenticationEnabled: true,
     rootDirectory: '',
-    disabledTools: ''
+    disabledTools: []
   }
 
   function enqueue(operation: () => Promise<void>): Promise<void> {
@@ -184,8 +185,9 @@ export function automationPlugin(authToken: string | null, corsOrigin: string): 
         }
         void (async () => {
           try {
-            const nextConfiguration = await readDevMCPConfiguration(request)
-            if (!isDevMCPConfiguration(nextConfiguration)) {
+            const rawConfiguration = await readDevMCPConfiguration(request)
+            const nextConfiguration = parseDevMCPConfiguration(rawConfiguration)
+            if (!nextConfiguration) {
               response.statusCode = 400
               response.end('Invalid MCP configuration')
               return
