@@ -258,7 +258,7 @@ bun run dev           # Direct Vite server at http://localhost:1420
 bun run tauri dev     # Desktop app (requires Rust)
 ```
 
-The first Portless run creates and trusts a local HTTPS certificate. Linked Git worktrees automatically receive branch-prefixed URLs such as `https://fix-ui.open-pencil.localhost`, so concurrent development servers do not compete for port 1420. Run `bunx portless doctor` if local routing or certificate trust fails.
+The first Portless run creates and trusts a local HTTPS certificate. Linked Git worktrees automatically receive branch-prefixed URLs such as `https://fix-ui.open-pencil.localhost`, so concurrent development servers do not compete for port 1420. Their development MCP bridges are exposed through matching sibling URLs such as `https://fix-ui.mcp.open-pencil.localhost`, with isolated TCP ports and runtime socket files. Run `bunx portless doctor` if local routing or certificate trust fails.
 
 Alternatively, open the repository in any [Dev Container](https://containers.dev/)-compatible tool. The container pins Bun, installs the workspace dependencies, and forwards the direct web editor on port 1420. Start it with `bun run dev` after the container is ready.
 

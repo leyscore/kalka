@@ -1,11 +1,14 @@
 import { spawn } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { mkdir } from 'node:fs/promises'
 import type { IncomingMessage } from 'node:http'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 import type { Plugin } from 'vite'
 
-import { AUTOMATION_HTTP_PORT } from '@open-pencil/core/constants'
 import { serializeDisabledTools } from '@open-pencil/mcp/tools'
-import { getSocketPath, platformHasUnixSockets } from '@open-pencil/mcp/transport'
+import { platformHasUnixSockets } from '@open-pencil/mcp/transport'
 
 import {
   DEV_MCP_RESTART_PATH,
@@ -18,21 +21,25 @@ interface AutomationEnvironmentOptions {
   baseEnv: NodeJS.ProcessEnv
   configuration: DevMCPConfiguration
   corsOrigin: string
+  discoveryPath: string | null
+  httpPort: number
   socketPath: string | null
 }
 
 export function createAutomationEnvironment(
   options: AutomationEnvironmentOptions
 ): NodeJS.ProcessEnv {
-  const { authToken, baseEnv, configuration, corsOrigin, socketPath } = options
+  const { authToken, baseEnv, configuration, corsOrigin, discoveryPath, httpPort, socketPath } =
+    options
   const childEnv = { ...baseEnv }
   delete childEnv.OPENPENCIL_MCP_SOCKET
   delete childEnv.OPENPENCIL_MCP_AUTH_TOKEN
   return {
     ...childEnv,
-    PORT: String(AUTOMATION_HTTP_PORT),
+    PORT: String(httpPort),
     OPENPENCIL_MCP_TCP: '1',
     ...(socketPath ? { OPENPENCIL_MCP_SOCKET: socketPath } : {}),
+    ...(discoveryPath ? { OPENPENCIL_MCP_DISCOVERY_PATH: discoveryPath } : {}),
     OPENPENCIL_MCP_AUTH_TOKEN: configuration.authenticationEnabled ? (authToken ?? '') : '',
     OPENPENCIL_MCP_CORS_ORIGIN: corsOrigin,
     OPENPENCIL_MCP_ROOT: configuration.rootDirectory.trim() || process.cwd(),
@@ -90,8 +97,23 @@ export async function readDevMCPConfiguration(request: IncomingMessage): Promise
   }
 }
 
+interface AutomationPluginOptions {
+  browserURL: string
+  corsOrigin: string
+  httpPort: number
+  portlessServiceName: string | null
+  runtimeId: string
+}
+
+function safeRuntimeId(value: string): string {
+  return createHash('sha256').update(value).digest('hex').slice(0, 16)
+}
+
 // TODO: production — bundle MCP server as Tauri sidecar or spawn via shell plugin
-export function automationPlugin(authToken: string | null, corsOrigin: string): Plugin {
+export function automationPlugin(
+  authToken: string | null,
+  options: AutomationPluginOptions
+): Plugin {
   let child: ReturnType<typeof spawn> | null = null
   let lifecycle = Promise.resolve()
   let configuration: DevMCPConfiguration = {
@@ -127,14 +149,24 @@ export function automationPlugin(authToken: string | null, corsOrigin: string): 
   }
 
   async function startChild(): Promise<void> {
-    const socketPath = platformHasUnixSockets() ? await getSocketPath() : null
-    const spawned = spawn('bun', ['run', 'packages/mcp/src/index.ts'], {
+    const runtimeDir = join(tmpdir(), 'open-pencil-mcp', safeRuntimeId(options.runtimeId))
+    await mkdir(runtimeDir, { recursive: true, mode: 0o700 })
+    const socketPath = platformHasUnixSockets() ? join(runtimeDir, 'mcp.sock') : null
+    const discoveryPath = join(runtimeDir, 'mcp.json')
+    const command = ['bun', 'run', 'packages/mcp/src/index.ts']
+    const spawnCommand = options.portlessServiceName ? 'portless' : command[0]
+    const spawnArgs = options.portlessServiceName
+      ? ['run', '--name', options.portlessServiceName, ...command]
+      : command.slice(1)
+    const spawned = spawn(spawnCommand, spawnArgs, {
       stdio: ['ignore', 'inherit', 'pipe'],
       env: createAutomationEnvironment({
         authToken,
         baseEnv: process.env,
         configuration,
-        corsOrigin,
+        corsOrigin: options.corsOrigin,
+        discoveryPath,
+        httpPort: options.httpPort,
         socketPath
       })
     })
@@ -149,7 +181,7 @@ export function automationPlugin(authToken: string | null, corsOrigin: string): 
       const text = data.toString()
       if (text.includes('EADDRINUSE')) {
         console.error(
-          `\x1b[31m[MCP] MCP bind failed (port ${AUTOMATION_HTTP_PORT}${socketPath ? ` or socket ${socketPath}` : ''}). Is another OpenPencil instance running?\x1b[0m`
+          `\x1b[31m[MCP] MCP bind failed (${options.browserURL}${socketPath ? ` or socket ${socketPath}` : ''}). Is another OpenPencil instance running?\x1b[0m`
         )
         spawned.kill()
         if (child === spawned) child = null

@@ -63,6 +63,8 @@
 
 ### Fixed
 
+- Isolate browser-development MCP servers behind worktree-aware Portless WebSocket routes and per-runtime socket/discovery paths, preventing concurrent worktrees from competing for port 7600 or the global MCP socket.
+
 - Generate and cache recent-file previews from the conventional `Cover` page after opening a `.fig`, without modifying the source file.
 - Preserve app-created component properties and instance-swap targets across `.fig` save and reload cycles. (#548)
 - Reconnect desktop automation to an already-running MCP server by allowing access to its discovery file. (#546)

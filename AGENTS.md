@@ -80,7 +80,7 @@ App dialogs compose the Reka-backed components under `src/components/ui/dialog/`
 
 ## Git worktrees and development servers
 
-Use `bun run dev:portless` for browser development, especially in worktrees; Portless assigns the main checkout `https://open-pencil.localhost` and each worktree a branch-prefixed URL. Keep `bun run dev` for Playwright, Tauri, and Dev Container flows that require `http://localhost:1420`.
+Use `bun run dev:portless` for browser development, especially in worktrees; Portless assigns the main checkout `https://open-pencil.localhost` and each worktree a branch-prefixed URL. The Vite-owned development MCP server is registered as the matching `mcp.open-pencil` sibling service (for example, `https://fix-ui.mcp.open-pencil.localhost`) and uses isolated runtime socket/discovery paths. Keep `bun run dev` for Playwright, Tauri, and Dev Container flows that require `http://localhost:1420` and the fixed local automation port.
 
 ## Releases & CI
 

@@ -21,12 +21,15 @@ describe('MCP Vite development server', () => {
         disabledTools: ['eval', 'delete_node']
       },
       corsOrigin: 'http://localhost:1420',
+      discoveryPath: '/tmp/mcp.json',
+      httpPort: 7600,
       socketPath: '/tmp/open-pencil.sock'
     })
 
     expect(env.OPENPENCIL_MCP_AUTH_TOKEN).toBe('')
     expect(env.OPENPENCIL_MCP_ROOT).toBe('/designs')
     expect(env.OPENPENCIL_MCP_DISABLED_TOOLS).toBe('eval,delete_node')
+    expect(env.OPENPENCIL_MCP_DISCOVERY_PATH).toBe('/tmp/mcp.json')
   })
 
   test('normalizes and validates typed disabled tool configuration', () => {
