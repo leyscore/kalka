@@ -61,6 +61,11 @@ export const dialogMessageDefaults = {
   restore: 'Restore',
   discard: 'Discard',
   recoveryFailed: 'Could not restore this document.',
+  settingsRecovery: 'Recovery',
+  settingsRecoveryDescription: 'Control local crash-recovery copies for unsaved documents.',
+  preserveUnsavedWork: 'Automatically preserve unsaved work',
+  preserveUnsavedWorkDescription:
+    'Store local recovery copies so documents can be restored after an unexpected shutdown.',
   showUI: params('Show UI ({shortcut})'),
   fontSettings: 'Font settings',
   fontIssueFound: '1 font face is unavailable or substituted',

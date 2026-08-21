@@ -350,5 +350,9 @@
   "mcpStatus_starting": "Starting",
   "mcpStatus_running": "Running",
   "mcpStatus_stopped": "Stopped",
-  "mcpStatus_error": "Error"
+  "mcpStatus_error": "Error",
+  "settingsRecovery": "Восстановление",
+  "settingsRecoveryDescription": "Управляйте локальными резервными копиями несохранённых документов.",
+  "preserveUnsavedWork": "Автоматически сохранять несохранённую работу",
+  "preserveUnsavedWorkDescription": "Храните локальные копии, чтобы восстановить документы после неожиданного завершения работы."
 }

@@ -350,5 +350,9 @@
   "mcpStatus_starting": "Starting",
   "mcpStatus_running": "Running",
   "mcpStatus_stopped": "Stopped",
-  "mcpStatus_error": "Error"
+  "mcpStatus_error": "Error",
+  "settingsRecovery": "Odzyskiwanie",
+  "settingsRecoveryDescription": "Zarządzaj lokalnymi kopiami odzyskiwania niezapisanych dokumentów.",
+  "preserveUnsavedWork": "Automatycznie zachowuj niezapisaną pracę",
+  "preserveUnsavedWorkDescription": "Przechowuj lokalne kopie, aby odtworzyć dokumenty po nieoczekiwanym zamknięciu."
 }

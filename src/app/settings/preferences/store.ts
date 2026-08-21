@@ -4,6 +4,9 @@ import { DEFAULT_SNAPPING_PREFERENCES, type SnappingPreferences } from '@open-pe
 
 export interface AppPreferences {
   version: 1
+  recovery: {
+    enabled: boolean
+  }
   editing: {
     snapping: SnappingPreferences
   }
@@ -11,6 +14,7 @@ export interface AppPreferences {
 
 export const DEFAULT_APP_PREFERENCES: Readonly<AppPreferences> = {
   version: 1,
+  recovery: { enabled: true },
   editing: {
     snapping: { ...DEFAULT_SNAPPING_PREFERENCES }
   }
@@ -28,12 +32,9 @@ interface StoredSnappingPreferences {
   pixelGrid?: unknown
 }
 
-interface StoredEditingPreferences {
-  snapping?: StoredSnappingPreferences
-}
-
 interface StoredAppPreferences {
-  editing?: StoredEditingPreferences
+  recovery?: { enabled?: unknown }
+  editing?: { snapping?: StoredSnappingPreferences }
 }
 
 function isStoredAppPreferences(value: unknown): value is StoredAppPreferences {
@@ -41,10 +42,14 @@ function isStoredAppPreferences(value: unknown): value is StoredAppPreferences {
 }
 
 function normalizePreferences(value: unknown): AppPreferences {
-  const snapping = isStoredAppPreferences(value) ? value.editing?.snapping : undefined
+  const stored = isStoredAppPreferences(value) ? value : undefined
+  const snapping = stored?.editing?.snapping
 
   return {
     version: 1,
+    recovery: {
+      enabled: booleanOrDefault(stored?.recovery?.enabled, DEFAULT_APP_PREFERENCES.recovery.enabled)
+    },
     editing: {
       snapping: {
         geometry: booleanOrDefault(
@@ -69,6 +74,12 @@ export const appPreferences = useLocalStorage<AppPreferences>(
   structuredClone(DEFAULT_APP_PREFERENCES),
   { mergeDefaults: (storageValue) => normalizePreferences(storageValue) }
 )
+
+export function updateRecoveryEnabled(enabled: boolean): void {
+  const preferences = structuredClone(appPreferences.value)
+  preferences.recovery.enabled = enabled
+  appPreferences.value = preferences
+}
 
 export function updateSnappingPreferences(changes: Partial<SnappingPreferences>): void {
   appPreferences.value = {

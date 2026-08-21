@@ -350,5 +350,9 @@
   "mcpStatus_starting": "Starting",
   "mcpStatus_running": "Running",
   "mcpStatus_stopped": "Stopped",
-  "mcpStatus_error": "Error"
+  "mcpStatus_error": "Error",
+  "settingsRecovery": "恢复",
+  "settingsRecoveryDescription": "管理未保存文档的本地恢复副本。",
+  "preserveUnsavedWork": "自动保留未保存的工作",
+  "preserveUnsavedWorkDescription": "存储本地恢复副本，以便在意外关闭后恢复文档。"
 }
