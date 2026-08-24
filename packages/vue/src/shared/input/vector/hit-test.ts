@@ -1,4 +1,5 @@
 import type { Editor } from '@open-pencil/core/editor'
+import { vectorHandleParts } from '@open-pencil/core/vector'
 import type { VectorSegment, VectorVertex } from '@open-pencil/scene-graph'
 
 export type NodeEditState = {
@@ -6,7 +7,7 @@ export type NodeEditState = {
   vertices: VectorVertex[]
   segments: VectorSegment[]
   selectedVertexIndices: Set<number>
-  selectedHandles: Set<string>
+  selectedHandles: Set<number>
   hoveredHandleInfo: {
     segmentIndex: number
     tangentField: 'tangentStart' | 'tangentEnd'
@@ -43,10 +44,11 @@ function getHandleVisibleVertices(editor: Editor): Set<number> {
   const es = getNodeEditState(editor)
   if (!es) return new Set()
   const seed = new Set(es.selectedVertexIndices)
-  for (const key of es.selectedHandles) {
-    const [siStr, tf] = key.split(':')
-    const seg = es.segments[Number(siStr)]
-    seed.add(tf === 'tangentStart' ? seg.start : seg.end)
+  for (const handleId of es.selectedHandles) {
+    const handle = vectorHandleParts(handleId)
+    if (!handle || handle.segmentIndex >= es.segments.length) continue
+    const seg = es.segments[handle.segmentIndex]
+    seed.add(handle.tangentField === 'tangentStart' ? seg.start : seg.end)
   }
   const visible = new Set(seed)
   for (const seg of es.segments) {

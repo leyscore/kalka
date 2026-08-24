@@ -27,7 +27,7 @@ export type NodeEditState = {
     handleType: 'tangentStart' | 'tangentEnd'
     segmentIndex: number
   } | null
-  selectedHandles: Set<string>
+  selectedHandles: Set<number>
   hoveredHandleInfo: {
     segmentIndex: number
     tangentField: 'tangentStart' | 'tangentEnd'

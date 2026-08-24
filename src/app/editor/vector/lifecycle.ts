@@ -22,7 +22,7 @@ export function createVectorEditLifecycle(editor: Editor, state: VectorEditState
     return state.nodeEditState
   }
 
-  function applyNodeEditToNode(es: NonNullable<typeof state.nodeEditState>) {
+  function commitNodeEditChanges(es: NonNullable<typeof state.nodeEditState>) {
     const node = editor.graph.getNode(es.nodeId)
     if (node?.type !== 'VECTOR') return
 
@@ -73,6 +73,20 @@ export function createVectorEditLifecycle(editor: Editor, state: VectorEditState
       },
       'Edit vector'
     )
+    const committed = editor.graph.getNode(es.nodeId)
+    if (committed?.type === 'VECTOR' && committed.vectorNetwork) {
+      const committedWorld = getWorldMatrix(committed, editor.graph)
+      es.origNetwork = cloneVectorNetwork(committed.vectorNetwork)
+      es.origBounds = {
+        x: committed.x,
+        y: committed.y,
+        width: committed.width,
+        height: committed.height
+      }
+      es.origAbsNetwork = cloneVectorNetwork(
+        transformVectorNetwork(committedWorld, committed.vectorNetwork)
+      )
+    }
     editor.requestRender()
   }
 
@@ -118,7 +132,7 @@ export function createVectorEditLifecycle(editor: Editor, state: VectorEditState
     }
 
     if (commit) {
-      applyNodeEditToNode(es)
+      commitNodeEditChanges(es)
     } else {
       editor.graph.updateNode(es.nodeId, {
         x: es.origBounds.x,
@@ -133,5 +147,5 @@ export function createVectorEditLifecycle(editor: Editor, state: VectorEditState
     state.nodeEditState = null
   }
 
-  return { getNodeEditState, applyNodeEditToNode, enterNodeEditMode, exitNodeEditMode }
+  return { getNodeEditState, commitNodeEditChanges, enterNodeEditMode, exitNodeEditMode }
 }

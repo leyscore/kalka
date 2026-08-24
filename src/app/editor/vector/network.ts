@@ -47,7 +47,7 @@ export function createVectorEditNetworkActions(
     pushNodeEditHistory(es)
 
     const removeIndex = a
-    const keepIndex = b
+    const keepIndex = b > a ? b - 1 : b
     const remap = (idx: number): number => {
       if (idx === removeIndex) return keepIndex
       return idx > removeIndex ? idx - 1 : idx
@@ -65,7 +65,7 @@ export function createVectorEditNetworkActions(
       .filter((seg) => seg.start !== seg.end)
 
     setNodeEditNetwork(es, { vertices: nextVertices, segments: nextSegments, regions: [] })
-    es.selectedVertexIndices = new Set([remap(keepIndex)])
+    es.selectedVertexIndices = new Set([keepIndex])
     es.selectedHandles = new Set()
     editor.requestRender()
   }

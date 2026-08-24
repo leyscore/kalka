@@ -1,5 +1,5 @@
 import type { Editor } from '@open-pencil/core/editor'
-import { breakAtVertex, deleteVertex } from '@open-pencil/core/vector'
+import { breakAtVertex, deleteVertex, vectorHandleParts } from '@open-pencil/core/vector'
 
 import { pushNodeEditHistory } from './history'
 import { getLiveNetwork, setNodeEditNetwork } from './network'
@@ -56,11 +56,11 @@ export function createVectorEditSelectionActions(editor: Editor, state: VectorEd
     pushNodeEditHistory(es)
     let live = getLiveNetwork(es)
 
-    for (const key of es.selectedHandles) {
-      const [siStr, tf] = key.split(':')
-      const si = Number(siStr)
-      const seg = live.segments[si]
-      if (tf === 'tangentStart') seg.tangentStart = { x: 0, y: 0 }
+    for (const handleId of es.selectedHandles) {
+      const handle = vectorHandleParts(handleId)
+      if (!handle || handle.segmentIndex >= live.segments.length) continue
+      const seg = live.segments[handle.segmentIndex]
+      if (handle.tangentField === 'tangentStart') seg.tangentStart = { x: 0, y: 0 }
       else seg.tangentEnd = { x: 0, y: 0 }
     }
 

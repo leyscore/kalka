@@ -1,19 +1,20 @@
+import type { DragEditHandle, DragEditNode, DragState } from '#vue/shared/input/types'
 import {
   getNodeEditState,
   hitTestEditHandle,
   hitTestEditVertex,
   isEndpoint
-} from '#vue/shared/input/node-edit/hit-test'
-import { applyNodeEditSnap } from '#vue/shared/input/node-edit/snap'
-import type { DragEditHandle, DragEditNode, DragState } from '#vue/shared/input/types'
+} from '#vue/shared/input/vector/hit-test'
+import { applyNodeEditSnap } from '#vue/shared/input/vector/snap'
 
 export {
   getNodeEditState,
   hitTestEditHandle,
   isEndpoint,
   NODE_HIT_THRESHOLD
-} from '#vue/shared/input/node-edit/hit-test'
+} from '#vue/shared/input/vector/hit-test'
 import type { Editor } from '@open-pencil/core/editor'
+import { vectorHandleId } from '@open-pencil/core/vector'
 import type { Vector } from '@open-pencil/scene-graph/primitives'
 
 type NodeEditEditor = Partial<{
@@ -48,7 +49,8 @@ export function handleNodeEditDown(
 
   const handleHit = hitTestEditHandle(editor, cx, cy)
   if (handleHit) {
-    const key = `${handleHit.segmentIndex}:${handleHit.tangentField}`
+    const key = vectorHandleId(handleHit.segmentIndex, handleHit.tangentField)
+
     if (e.shiftKey) {
       const next = new Set(es.selectedHandles)
       if (next.has(key)) next.delete(key)
