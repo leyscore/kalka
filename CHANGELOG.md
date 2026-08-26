@@ -58,6 +58,7 @@
 
 ### Fixed
 
+- Preserve a frame's auto-layout HUG sizing mode when converting it into a component with `create_component`, so later padding changes still resize the component as expected.
 - Keep text-editing carets, hit testing, and selection highlights aligned with vertically centered or bottom-aligned text. (#539)
 - Match AI chat code-block syntax colors and backgrounds to the active light or dark theme. (#537)
 - Let desktop users select and copy AI chat text without replacing it with the selected canvas layers. (#538)
