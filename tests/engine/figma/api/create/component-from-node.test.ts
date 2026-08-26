@@ -22,4 +22,21 @@ describe('createComponentFromNode', () => {
     expect(comp.children[0].name).toBe('Background')
     expect(api.getNodeById(frameId)).toBeNull()
   })
+
+  test('preserves the frame own variable bindings', () => {
+    const api = createAPI()
+    const collection = api.createVariableCollection('Radii')
+    const variable = api.createVariable('radius/md', 'FLOAT', collection.id, 8)
+
+    const frame = api.createFrame()
+    frame.name = 'Card'
+    frame.resize(200, 50)
+    frame.cornerRadius = 8
+    api.bindVariable(frame.id, 'cornerRadius', variable.id)
+
+    const comp = api.createComponentFromNode(frame)
+
+    const raw = api.graph.getNode(comp.id)
+    expect(raw?.boundVariables.cornerRadius).toBe(variable.id)
+  })
 })
