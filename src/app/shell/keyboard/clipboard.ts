@@ -27,6 +27,13 @@ export async function copyAndDeleteSelection(
   }
 }
 
+function selectionMatches(store: EditorStore, selectedIds: Set<string>): boolean {
+  return (
+    selectedIds.size === store.state.selectedIds.size &&
+    [...selectedIds].every((id) => store.state.selectedIds.has(id))
+  )
+}
+
 export function bindEditorClipboard(store: EditorStore) {
   useEventListener(window, 'copy', (e: ClipboardEvent) => {
     if (isEditing(e) || hasDocumentTextSelection()) return
@@ -42,8 +49,9 @@ export function bindEditorClipboard(store: EditorStore) {
     if (isEditing(e)) return
     e.preventDefault()
     if (isTauri()) {
+      const selectedIds = new Set(store.state.selectedIds)
       void tauriSystemClipboard.copy(store).then((copied) => {
-        if (copied) store.deleteSelected()
+        if (copied && selectionMatches(store, selectedIds)) store.deleteSelected()
         return undefined
       })
       return

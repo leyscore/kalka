@@ -2,7 +2,11 @@ import type { Vector } from '@open-pencil/scene-graph/primitives'
 
 import type { EditorStore } from '@/app/editor/active-store'
 import { isDesignClipboardHTML } from '@/app/editor/clipboard/html'
-import { getInMemoryClipboardHTML, setInMemoryClipboardHTML } from '@/app/editor/clipboard/memory'
+import {
+  clearInMemoryClipboardHTML,
+  getInMemoryClipboardHTML,
+  setInMemoryClipboardHTML
+} from '@/app/editor/clipboard/memory'
 import { createClipboardTransfer } from '@/app/editor/clipboard/system/transfer'
 import type { SystemClipboard } from '@/app/editor/clipboard/system/types'
 import {
@@ -25,6 +29,7 @@ async function copySelection(store: EditorStore): Promise<boolean> {
       setInMemoryClipboardHTML(html, plainText)
     } else {
       await writeTauriClipboardText(plainText)
+      clearInMemoryClipboardHTML()
     }
     return true
   } catch (error) {

@@ -4,7 +4,11 @@ import type { Vector } from '@open-pencil/scene-graph/primitives'
 
 import type { EditorStore } from '@/app/editor/active-store'
 import { isDesignClipboardHTML } from '@/app/editor/clipboard/html'
-import { getInMemoryClipboardHTML, setInMemoryClipboardHTML } from '@/app/editor/clipboard/memory'
+import {
+  clearInMemoryClipboardHTML,
+  getInMemoryClipboardHTML,
+  setInMemoryClipboardHTML
+} from '@/app/editor/clipboard/memory'
 import { createClipboardTransfer } from '@/app/editor/clipboard/system/transfer'
 import type {
   BrowserClipboardIO,
@@ -83,6 +87,7 @@ async function copySelection(store: EditorStore, io: BrowserClipboardIO): Promis
     }
     if (!payload.html && !payload.plainText) return false
     if (payload.html) setInMemoryClipboardHTML(payload.html, payload.plainText)
+    else clearInMemoryClipboardHTML()
 
     return await io.write(payload)
   } catch (error) {

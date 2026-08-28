@@ -10,12 +10,14 @@ async function readClipboardHTML() {
   if (isTauri()) {
     try {
       const text = await readTauriClipboardText()
-      if (text && isDesignClipboardHTML(text)) return text
+      if (isDesignClipboardHTML(text ?? '')) return text
+      const memory = getInMemoryClipboardHTML(text ?? '')
+      return memory && isDesignClipboardHTML(memory) ? memory : null
     } catch (error) {
       console.warn('Tauri clipboard read failed', error)
+      const memory = getInMemoryClipboardHTML()
+      return memory && isDesignClipboardHTML(memory) ? memory : null
     }
-    const memory = getInMemoryClipboardHTML()
-    return memory && isDesignClipboardHTML(memory) ? memory : null
   }
 
   if (
