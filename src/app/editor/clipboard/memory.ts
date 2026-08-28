@@ -1,17 +1,25 @@
-let memoryClipboardHTML = ''
+import type { ClipboardPayload } from '@/app/editor/clipboard/system/types'
 
-export function setInMemoryClipboardHTML(html: string): void {
-  memoryClipboardHTML = html
+let memoryClipboard: ClipboardPayload = { html: '', plainText: '' }
+
+export function setInMemoryClipboardHTML(html: string, plainText = ''): void {
+  memoryClipboard = { html, plainText }
 }
 
-export function getInMemoryClipboardHTML(): string {
-  return memoryClipboardHTML
+export function getInMemoryClipboardHTML(matchingPlainText?: string): string {
+  if (
+    matchingPlainText !== undefined &&
+    (memoryClipboard.plainText === '' || memoryClipboard.plainText !== matchingPlainText)
+  ) {
+    return ''
+  }
+  return memoryClipboard.html
 }
 
 export function hasInMemoryClipboardHTML(): boolean {
-  return Boolean(memoryClipboardHTML)
+  return Boolean(memoryClipboard.html)
 }
 
 export function clearInMemoryClipboardHTML(): void {
-  memoryClipboardHTML = ''
+  memoryClipboard = { html: '', plainText: '' }
 }

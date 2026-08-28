@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
+import { beforeEach, describe, expect, mock, test } from 'bun:test'
 
 import type { Vector } from '@open-pencil/scene-graph/primitives'
 
@@ -9,26 +9,30 @@ import {
   setInMemoryClipboardHTML
 } from '@/app/editor/clipboard/memory'
 import { pasteClipboardToReplace } from '@/app/editor/clipboard/paste-to-replace'
+import { executeClipboardCommand, type SystemClipboard } from '@/app/editor/clipboard/system'
 import {
-  copySelectionToBrowserClipboard,
-  executeClipboardCommand
-} from '@/app/editor/clipboard/system'
+  createBrowserSystemClipboard,
+  type BrowserClipboardIO
+} from '@/app/editor/clipboard/system/browser'
+import type { ClipboardPayload } from '@/app/editor/clipboard/system/types'
 import { createEditorStore } from '@/app/editor/session/create'
 import { toast } from '@/app/shell/ui'
-
-const originalClipboard = navigator.clipboard
 
 beforeEach(() => {
   clearInMemoryClipboardHTML()
   toast.toasts.value = []
-  Object.defineProperty(navigator, 'clipboard', { configurable: true, value: undefined })
 })
 
-afterEach(() => {
-  Object.defineProperty(navigator, 'clipboard', { configurable: true, value: originalClipboard })
-})
+const unavailableClipboard: SystemClipboard = {
+  copy: async () => false,
+  paste: async () => false
+}
 
-const noop = () => undefined
+const memoryIO: BrowserClipboardIO = {
+  write: async () => true,
+  readHTML: async () => ({ available: false })
+}
+const memoryClipboard = createBrowserSystemClipboard(memoryIO)
 
 describe('in-memory clipboard', () => {
   test('stores, retrieves, and clears clipboard HTML', () => {
@@ -38,6 +42,7 @@ describe('in-memory clipboard', () => {
     const sampleHTML = '<!--(openpencil)test-->'
     setInMemoryClipboardHTML(sampleHTML)
 
+    expect(getInMemoryClipboardHTML('unrelated')).toBe('')
     expect(hasInMemoryClipboardHTML()).toBe(true)
     expect(getInMemoryClipboardHTML()).toBe(sampleHTML)
 
@@ -46,7 +51,7 @@ describe('in-memory clipboard', () => {
     expect(getInMemoryClipboardHTML()).toBe('')
   })
 
-  test('copySelectionToBrowserClipboard copies payload via execCommand fallback when modern clipboard is unavailable', async () => {
+  test('browser clipboard delegates the rich payload to its I/O boundary', async () => {
     const store = createEditorStore()
     const pageId = store.state.currentPageId
     const rect = store.graph.createNode('RECTANGLE', pageId, {
@@ -58,49 +63,22 @@ describe('in-memory clipboard', () => {
     })
     store.select([rect.id])
 
-    const capturedData: Record<string, string> = {}
-    let copyEventTriggered = false
+    const write = mock(async (_payload: ClipboardPayload) => true)
+    const clipboard = createBrowserSystemClipboard({
+      write,
+      readHTML: async () => ({ available: false })
+    })
+    const success = await clipboard.copy(store)
 
-    const originalDocument = globalThis.document
-    try {
-      let listener: ((e: unknown) => void) | null = null
-      globalThis.document = {
-        addEventListener: (_type: string, fn: (e: unknown) => void) => {
-          listener = fn
-        },
-        removeEventListener: (_type: string, _fn: (e: unknown) => void) => {
-          listener = null
-        },
-        execCommand: (cmd: string) => {
-          if (cmd === 'copy' && listener) {
-            copyEventTriggered = true
-            const mockEvent = {
-              clipboardData: {
-                setData: (type: string, val: string) => {
-                  capturedData[type] = val
-                }
-              },
-              preventDefault: noop
-            }
-            listener(mockEvent)
-            return true
-          }
-          return false
-        }
-      } as Document
-
-      const success = await copySelectionToBrowserClipboard(store)
-      expect(success).toBe(true)
-      expect(copyEventTriggered).toBe(true)
-      expect(capturedData['text/html']).toBeDefined()
-      expect(capturedData['text/plain']).toBeDefined()
-      expect(hasInMemoryClipboardHTML()).toBe(true)
-    } finally {
-      globalThis.document = originalDocument
-    }
+    expect(success).toBe(true)
+    expect(write).toHaveBeenCalledTimes(1)
+    const payload = write.mock.calls[0]?.[0]
+    expect(payload?.html).toBeDefined()
+    expect(payload?.plainText).toBeDefined()
+    expect(hasInMemoryClipboardHTML()).toBe(true)
   })
 
-  test('copySelectionToBrowserClipboard returns false when execCommand fails or is unavailable', async () => {
+  test('browser clipboard returns false when its writer fails', async () => {
     const store = createEditorStore()
     const pageId = store.state.currentPageId
     const rect = store.graph.createNode('RECTANGLE', pageId, {
@@ -112,19 +90,40 @@ describe('in-memory clipboard', () => {
     })
     store.select([rect.id])
 
-    const originalDocument = globalThis.document
-    try {
-      globalThis.document = {
-        addEventListener: noop,
-        removeEventListener: noop,
-        execCommand: () => false
-      } as Document
+    const clipboard = createBrowserSystemClipboard({
+      write: async () => false,
+      readHTML: async () => ({ available: false })
+    })
+    const success = await clipboard.copy(store)
+    expect(success).toBe(false)
+  })
 
-      const success = await copySelectionToBrowserClipboard(store)
-      expect(success).toBe(false)
-    } finally {
-      globalThis.document = originalDocument
-    }
+  test('browser clipboard does not paste cached design data over unrelated current HTML', async () => {
+    setInMemoryClipboardHTML('<!--(openpencil)cached(/openpencil)-->')
+    const store = createEditorStore()
+    const paste = mock(async () => undefined)
+    store.pasteFromHTML = paste
+    const clipboard = createBrowserSystemClipboard({
+      write: async () => true,
+      readHTML: async () => ({ available: true, html: '<p>ordinary current clipboard</p>' })
+    })
+
+    expect(await clipboard.paste(store)).toBe(false)
+    expect(paste).not.toHaveBeenCalled()
+  })
+
+  test('browser clipboard rejects a successful plain-text-only read over stale memory', async () => {
+    setInMemoryClipboardHTML('<!--(openpencil)cached(/openpencil)-->', 'cached')
+    const store = createEditorStore()
+    const paste = mock(async () => undefined)
+    store.pasteFromHTML = paste
+    const clipboard = createBrowserSystemClipboard({
+      write: async () => true,
+      readHTML: async () => ({ available: true, html: null })
+    })
+
+    expect(await clipboard.paste(store)).toBe(false)
+    expect(paste).not.toHaveBeenCalled()
   })
 
   test('executeClipboardCommand cut does not delete nodes when clipboard copy fails', async () => {
@@ -139,9 +138,30 @@ describe('in-memory clipboard', () => {
     })
     store.select([rect.id])
 
-    const cutOk = await executeClipboardCommand(store, 'cut')
+    const cutOk = await executeClipboardCommand(store, 'cut', undefined, unavailableClipboard)
     expect(cutOk).toBe(false)
     expect(store.graph.getNode(rect.id)).toBeDefined()
+  })
+
+  test('executeClipboardCommand cut preserves a changed selection while copy is pending', async () => {
+    const store = createEditorStore()
+    const pageId = store.state.currentPageId
+    const first = store.graph.createNode('RECTANGLE', pageId, { name: 'First' })
+    const second = store.graph.createNode('RECTANGLE', pageId, { name: 'Second' })
+    store.select([first.id])
+    const copying = Promise.withResolvers<boolean>()
+    const clipboard: SystemClipboard = {
+      copy: () => copying.promise,
+      paste: async () => false
+    }
+
+    const cutting = executeClipboardCommand(store, 'cut', undefined, clipboard)
+    store.select([second.id])
+    copying.resolve(true)
+
+    expect(await cutting).toBe(false)
+    expect(store.graph.getNode(first.id)).toBeDefined()
+    expect(store.graph.getNode(second.id)).toBeDefined()
   })
 
   test('pasteToReplace uses in-memory clipboard when system clipboard is unavailable', async () => {
@@ -157,7 +177,7 @@ describe('in-memory clipboard', () => {
     store.select([target.id])
 
     // Copy target (populates in-memory clipboard)
-    await executeClipboardCommand(store, 'copy')
+    await executeClipboardCommand(store, 'copy', undefined, memoryClipboard)
 
     expect(hasInMemoryClipboardHTML()).toBe(true)
 
@@ -191,34 +211,9 @@ describe('in-memory clipboard', () => {
     })
     store.select([rect.id])
 
-    const originalDocument = globalThis.document
-    try {
-      let listener: ((e: unknown) => void) | null = null
-      globalThis.document = {
-        addEventListener: (_type: string, fn: (e: unknown) => void) => {
-          listener = fn
-        },
-        removeEventListener: (_type: string, _fn: (e: unknown) => void) => {
-          listener = null
-        },
-        execCommand: (cmd: string) => {
-          if (cmd === 'copy' && listener) {
-            listener({
-              clipboardData: { setData: noop },
-              preventDefault: noop
-            })
-            return true
-          }
-          return false
-        }
-      } as Document
-
-      const cutOk = await executeClipboardCommand(store, 'cut')
-      expect(cutOk).toBe(true)
-      expect(store.graph.getNode(rect.id)).toBeUndefined()
-    } finally {
-      globalThis.document = originalDocument
-    }
+    const cutOk = await executeClipboardCommand(store, 'cut', undefined, memoryClipboard)
+    expect(cutOk).toBe(true)
+    expect(store.graph.getNode(rect.id)).toBeUndefined()
   })
 
   test('executeClipboardCommand paste forwards cursorPos to store.pasteFromHTML', async () => {
@@ -232,7 +227,7 @@ describe('in-memory clipboard', () => {
       height: 50
     })
     store.select([rect.id])
-    await executeClipboardCommand(store, 'copy')
+    await executeClipboardCommand(store, 'copy', undefined, memoryClipboard)
 
     let receivedCursorPos: Vector | undefined
     const originalPaste = store.pasteFromHTML.bind(store)
@@ -242,7 +237,7 @@ describe('in-memory clipboard', () => {
     }
 
     const cursorPos: Vector = { x: 150, y: 250 }
-    const pasteOk = await executeClipboardCommand(store, 'paste', cursorPos)
+    const pasteOk = await executeClipboardCommand(store, 'paste', cursorPos, memoryClipboard)
     expect(pasteOk).toBe(true)
     expect(receivedCursorPos).toEqual(cursorPos)
   })
@@ -259,10 +254,10 @@ describe('in-memory clipboard', () => {
     })
     store.select([rect.id])
 
-    await executeClipboardCommand(store, 'copy')
+    await executeClipboardCommand(store, 'copy', undefined, memoryClipboard)
     expect(hasInMemoryClipboardHTML()).toBe(true)
 
-    const pasteOk = await executeClipboardCommand(store, 'paste')
+    const pasteOk = await executeClipboardCommand(store, 'paste', undefined, memoryClipboard)
     expect(pasteOk).toBe(true)
 
     // An additional node should have been pasted
