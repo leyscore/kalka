@@ -1,14 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
-import {
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogDescription,
-  AlertDialogTitle,
-  CollapsibleContent,
-  CollapsibleRoot,
-  CollapsibleTrigger
-} from 'reka-ui'
+import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from 'reka-ui'
 import { useI18n } from '@open-pencil/vue'
 
 import { ACP_AGENTS, AI_PROVIDERS, type AIProviderID } from '@open-pencil/core/constants'
@@ -40,7 +32,7 @@ import ProviderSettingsKeyField from '@/components/settings/provider/ProviderSet
 import AppInput from '@/components/ui/AppInput.vue'
 import AppSelect from '@/components/ui/AppSelect.vue'
 import AppSwitch from '@/components/ui/AppSwitch.vue'
-import { AppAlertDialogRoot, AppDialogBody, AppDialogFooter } from '@/components/ui/dialog'
+import { AppConfirmationDialog } from '@/components/ui/dialog'
 
 const CUSTOM_MODEL_VALUE = '__custom__'
 const DEFAULT_MAX_OUTPUT_TOKENS = 16_384
@@ -56,13 +48,16 @@ const connectionTestStatus = ref<'idle' | 'testing' | 'success' | 'error'>('idle
 const connectionTestReason = ref<ProviderConnectionTestFailureReason | null>(null)
 const deleteOpen = ref(false)
 const advancedOpen = ref(Boolean(draft.customModelID.trim()))
-const customModelSelected = ref(Boolean(draft.customModelID.trim()))
+const customModelSelected = ref(
+  Boolean(draft.customModelID.trim()) || draft.providerID === 'harness:pi'
+)
 const catalogModel = ref<(typeof providerDef.value.models)[number] | null>(null)
 
 const providerDef = computed(
   () => AI_PROVIDERS.find((provider) => provider.id === draft.providerID) ?? AI_PROVIDERS[0]
 )
 const isACP = computed(() => draft.providerID.startsWith('acp:'))
+const isHarness = computed(() => draft.providerID === 'harness:pi')
 const supportsReasoningEffort = computed(() =>
   ['openai', 'openai-compatible', 'openrouter'].includes(draft.providerID)
 )
@@ -81,6 +76,7 @@ const selectedModelValue = computed(() =>
   customModelSelected.value ? CUSTOM_MODEL_VALUE : draft.modelID
 )
 const knownModel = computed(() => {
+  if (isACP.value) return null
   if (draft.customModelID.trim()) return catalogModel.value
   return (
     catalogModel.value ??
@@ -111,7 +107,7 @@ const canSave = computed(
         : Boolean(draft.modelID.trim())))
 )
 const canTest = computed(() => {
-  if (isACP.value) return false
+  if (isACP.value || isHarness.value) return false
   if (!keyInput.value.trim() && !hasExistingKey.value) return false
   if (providerDef.value.supportsCustomBaseURL && !draft.customBaseURL.trim()) return false
   return customModelSelected.value
@@ -146,6 +142,10 @@ function effectiveModelID(): string {
 }
 
 async function refreshCatalogModel(): Promise<void> {
+  if (isACP.value) {
+    catalogModel.value = null
+    return
+  }
   const providerID = draft.providerID
   const modelID = effectiveModelID()
   catalogModel.value = await resolveModelsDevModel(providerID, modelID)
@@ -165,10 +165,10 @@ function updateProvider(providerID: AIProviderID): void {
   const provider = AI_PROVIDERS.find((definition) => definition.id === providerID)
   draft.modelID = provider?.defaultModel ?? ''
   draft.customModelID = ''
+  customModelSelected.value = providerID === 'harness:pi'
   draft.customBaseURL = ''
   draft.customAPIType = 'completions'
-  advancedOpen.value = false
-  customModelSelected.value = false
+  advancedOpen.value = providerID === 'harness:pi'
   if (providerID.startsWith('acp:')) {
     draft.capabilities = ['tools']
     if (!draft.name.trim()) draft.name = providerDisplayName.value
@@ -392,7 +392,11 @@ void refreshKeyStatus()
         />
       </template>
 
-      <CollapsibleRoot v-model:open="advancedOpen" class="rounded border border-border">
+      <CollapsibleRoot
+        v-if="!isACP"
+        v-model:open="advancedOpen"
+        class="rounded border border-border"
+      >
         <CollapsibleTrigger
           class="flex w-full items-center gap-2 px-2.5 py-2 text-left text-[11px] text-muted hover:text-surface"
         >
@@ -432,6 +436,33 @@ void refreshKeyStatus()
                 <AppSwitch v-else v-model="visionEnabled" :label="dialogs.modelCapabilityVision" />
               </div>
             </div>
+
+            <ProviderSettingsField v-if="isHarness" :label="dialogs.harnessThinkingLevel">
+              <AppSelect
+                v-model="draft.harnessThinkingLevel"
+                :label="dialogs.harnessThinkingLevel"
+                :options="[
+                  { value: 'off', label: dialogs.harnessThinkingOff },
+                  { value: 'minimal', label: dialogs.harnessThinkingMinimal },
+                  { value: 'low', label: dialogs.harnessThinkingLow },
+                  { value: 'medium', label: dialogs.harnessThinkingMedium },
+                  { value: 'high', label: dialogs.harnessThinkingHigh },
+                  { value: 'xhigh', label: dialogs.harnessThinkingExtraHigh }
+                ]"
+              />
+            </ProviderSettingsField>
+
+            <ProviderSettingsField v-if="isHarness" :label="dialogs.harnessToolPermissions">
+              <AppSelect
+                v-model="draft.harnessPermissionMode"
+                :label="dialogs.harnessToolPermissions"
+                :options="[
+                  { value: 'allow-reads', label: dialogs.harnessPermissionReads },
+                  { value: 'allow-edits', label: dialogs.harnessPermissionEdits },
+                  { value: 'allow-all', label: dialogs.harnessPermissionAll }
+                ]"
+              />
+            </ProviderSettingsField>
 
             <ProviderSettingsField v-if="supportsReasoningEffort" :label="dialogs.reasoningEffort">
               <ProviderSettingsInput
@@ -484,28 +515,14 @@ void refreshKeyStatus()
     </div>
   </div>
 
-  <AppAlertDialogRoot v-model:open="deleteOpen" data-test-id="delete-model-dialog">
-    <div class="border-b border-border px-4 py-3">
-      <AlertDialogTitle class="text-sm font-semibold text-surface">
-        {{ dialogs.deleteModel }}
-      </AlertDialogTitle>
-    </div>
-    <AppDialogBody>
-      <AlertDialogDescription class="text-xs text-muted">
-        {{ dialogs.deleteModelDescription }}
-      </AlertDialogDescription>
-    </AppDialogBody>
-    <AppDialogFooter>
-      <AlertDialogCancel as-child>
-        <button class="rounded px-3 py-1.5 text-xs text-muted hover:bg-hover">
-          {{ dialogs.cancel }}
-        </button>
-      </AlertDialogCancel>
-      <AlertDialogAction as-child>
-        <button class="rounded bg-danger px-3 py-1.5 text-xs text-white" @click="remove">
-          {{ dialogs.deleteModel }}
-        </button>
-      </AlertDialogAction>
-    </AppDialogFooter>
-  </AppAlertDialogRoot>
+  <AppConfirmationDialog
+    v-model:open="deleteOpen"
+    data-test-id="delete-model-dialog"
+    :heading="dialogs.deleteModel"
+    :description="dialogs.deleteModelDescription"
+    :cancel-label="dialogs.cancel"
+    :confirm-label="dialogs.deleteModel"
+    tone="danger"
+    @confirm="remove"
+  />
 </template>

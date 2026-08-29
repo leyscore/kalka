@@ -9,6 +9,7 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/
 import { SceneGraph } from '@open-pencil/scene-graph'
 
 import { startServer } from '#mcp/server'
+import { createToolDescriptors } from '#mcp/tool/manifest'
 
 import {
   connectMockBrowser,
@@ -21,6 +22,7 @@ const isUnix = process.platform !== 'win32'
 const SOCKET_DIR = join(tmpdir(), `openpencil-test-server-${process.pid}`)
 const TEST_MCP_ROOT = join(tmpdir(), 'open-pencil-mcp-root')
 const TEST_AUTH_TOKEN = 'test-auth-token'
+const TEST_CLIENT_AUTH_TOKEN = 'test-client-token'
 let testCounter = 0
 
 // ---------------------------------------------------------------------------
@@ -32,14 +34,15 @@ function testSocketPath(): string | null {
   return join(SOCKET_DIR, `mcp-test-${process.pid}-${++testCounter}.sock`)
 }
 
-async function createTestClient() {
+async function createTestClient(disabledTools: string[] = []) {
   if (isUnix) await mkdir(SOCKET_DIR, { recursive: true })
-  const authToken = 'test-client-token'
+  const authToken = TEST_CLIENT_AUTH_TOKEN
   const handle = await startServer({
     httpPort: 0,
     withTcp: true,
     socketPath: testSocketPath(),
     authToken,
+    disabledTools,
     enableEval: false,
     mcpRoot: null
   })
@@ -134,13 +137,59 @@ describe('MCP server', () => {
 
   test('lists all registered tools', async () => {
     const { tools } = await client.listTools()
-    const names = tools.map((t) => t.name)
-    expect(names).toContain('create_shape')
-    expect(names).toContain('set_fill')
+    const expectedNames = createToolDescriptors(false)
+      .filter((tool) => tool.availability === 'default')
+      .map((tool) => tool.name)
+      .sort()
+    expect(tools.map((tool) => tool.name).sort()).toEqual(expectedNames)
+  })
+
+  test('describes effects, capabilities, and runtime availability independently', () => {
+    const descriptors = createToolDescriptors(true)
+    const byName = new Map(descriptors.map((tool) => [tool.name, tool] as const))
+    expect(byName.get('get_page_tree')?.effect).toBe('read')
+    expect(byName.get('switch_page')?.effect).toBe('read')
+    expect(byName.get('viewport_set')?.effect).toBe('read')
+    expect(byName.get('export_image')?.effect).toBe('read')
+    expect(byName.get('save_file')?.effect).toBe('write')
+    expect(byName.get('update_node')?.effect).toBe('write')
+    expect(byName.get('new_document')?.capabilities).toEqual(['document:write', 'filesystem:write'])
+    expect(byName.get('eval')?.availability).toBe('eval')
+    expect(byName.get('eval')?.capabilities).toContain('code:execute')
+  })
+
+  test('omits tools disabled in the generic registration filter', async () => {
+    if (cleanup) await cleanup()
+    cleanup = null
+
+    const ctx = await createTestClient(['create_shape', 'list_documents'])
+    client = ctx.client
+    graph = ctx.graph
+    cleanup = ctx.close
+
+    const { tools } = await client.listTools()
+    const names = tools.map((tool) => tool.name)
+    expect(names).not.toContain('create_shape')
+    expect(names).not.toContain('list_documents')
     expect(names).toContain('get_page_tree')
-    expect(names).toContain('render')
-    expect(names).toContain('get_codegen_prompt')
-    expect(tools.length).toBeGreaterThan(30)
+
+    const healthResponse = await fetch(`http://127.0.0.1:${ctx.handle.httpPort}/health`, {
+      headers: { Authorization: `Bearer ${TEST_CLIENT_AUTH_TOKEN}` }
+    })
+    const health = (await healthResponse.json()) as HealthResponse
+    const descriptors = health.tools ?? []
+    expect(descriptors.find((tool) => tool.name === 'create_shape')?.enabled).toBe(false)
+    expect(descriptors.find((tool) => tool.name === 'list_documents')?.enabled).toBe(false)
+    expect(descriptors.find((tool) => tool.name === 'get_page_tree')?.enabled).toBe(true)
+  })
+
+  test('tools expose standard MCP effect annotations', async () => {
+    const { tools } = await client.listTools()
+    const byName = new Map(tools.map((tool) => [tool.name, tool] as const))
+    expect(byName.get('get_page_tree')?.annotations?.readOnlyHint).toBe(true)
+    expect(byName.get('get_page_tree')?.annotations?.destructiveHint).toBe(false)
+    expect(byName.get('update_node')?.annotations?.readOnlyHint).toBe(false)
+    expect(byName.get('update_node')?.annotations?.destructiveHint).toBe(true)
   })
 
   test('tools have descriptions and input schemas', async () => {

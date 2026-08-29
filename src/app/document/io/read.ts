@@ -1,11 +1,13 @@
 import type { Editor, EditorState } from '@open-pencil/core/editor'
-import { readFigFile } from '@open-pencil/core/io/formats/fig'
 import { computeAllLayouts } from '@open-pencil/core/layout'
 
+import { describeDiagnosticError, recordDocumentFailure } from '@/app/diagnostics'
 import { yieldToUI } from '@/app/document/io/browser'
+import { readFigDocument } from '@/app/document/io/fig'
 import { applyImportedDocument } from '@/app/document/io/imported-document'
 import { readReloadSource } from '@/app/document/io/reload-source'
 import { captureReloadState, restoreReloadState } from '@/app/document/io/reload-state'
+import { notificationMessages } from '@/app/i18n/notifications'
 import { toast } from '@/app/shell/ui'
 
 type OpenDocumentState = EditorState & {
@@ -45,7 +47,7 @@ export function createOpenActions({
     try {
       state.loading = true
       await yieldToUI()
-      const imported = await readFigFile(file, { populate: 'first-page' })
+      const imported = await readFigDocument(file, editor)
       await yieldToUI()
       await applyImportedDocument(editor, imported)
       state.documentName = file.name.replace(/\.fig$/i, '')
@@ -53,8 +55,18 @@ export function createOpenActions({
       await fitCurrentPageToViewport()
       editor.requestRender()
     } catch (e) {
-      console.error('Failed to open .fig file:', e)
-      toast.error(`Failed to open file: ${e instanceof Error ? e.message : String(e)}`)
+      recordDocumentFailure({
+        operation: 'open',
+        format: 'fig',
+        ...describeDiagnosticError(e),
+        retryable: describeDiagnosticError(e).retryable
+      })
+      toast.error(
+        notificationMessages.get().openFileFailed({
+          name: file.name,
+          error: e instanceof Error ? e.message : String(e)
+        })
+      )
     } finally {
       state.loading = false
     }

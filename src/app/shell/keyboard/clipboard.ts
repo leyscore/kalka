@@ -3,10 +3,8 @@ import { useEventListener } from '@vueuse/core'
 import { extractImageFilesFromClipboard } from '@open-pencil/vue'
 
 import type { EditorStore } from '@/app/editor/active-store'
-import {
-  copySelectionToTauriClipboard,
-  pasteFromTauriClipboard
-} from '@/app/editor/clipboard/system'
+import { getInMemoryClipboardHTML } from '@/app/editor/clipboard/memory'
+import { tauriSystemClipboard } from '@/app/editor/clipboard/system/tauri'
 import { hasDocumentTextSelection, isEditing } from '@/app/shell/keyboard/focus'
 import { isTauri } from '@/app/tauri/env'
 
@@ -15,12 +13,33 @@ function cursorPosition(store: EditorStore) {
   return ccx != null && ccy != null ? { x: ccx, y: ccy } : undefined
 }
 
+export async function copyAndDeleteSelection(
+  store: EditorStore,
+  clipboardData: DataTransfer
+): Promise<boolean> {
+  try {
+    await store.writeCopyData(clipboardData)
+    store.deleteSelected()
+    return true
+  } catch (error) {
+    console.warn('Browser clipboard cut failed', error)
+    return false
+  }
+}
+
+function selectionMatches(store: EditorStore, selectedIds: Set<string>): boolean {
+  return (
+    selectedIds.size === store.state.selectedIds.size &&
+    [...selectedIds].every((id) => store.state.selectedIds.has(id))
+  )
+}
+
 export function bindEditorClipboard(store: EditorStore) {
   useEventListener(window, 'copy', (e: ClipboardEvent) => {
     if (isEditing(e) || hasDocumentTextSelection()) return
     e.preventDefault()
     if (isTauri()) {
-      void copySelectionToTauriClipboard(store)
+      void tauriSystemClipboard.copy(store)
       return
     }
     if (e.clipboardData) void store.writeCopyData(e.clipboardData)
@@ -30,14 +49,14 @@ export function bindEditorClipboard(store: EditorStore) {
     if (isEditing(e)) return
     e.preventDefault()
     if (isTauri()) {
-      void copySelectionToTauriClipboard(store).then((copied) => {
-        if (copied) store.deleteSelected()
+      const selectedIds = new Set(store.state.selectedIds)
+      void tauriSystemClipboard.copy(store).then((copied) => {
+        if (copied && selectionMatches(store, selectedIds)) store.deleteSelected()
         return undefined
       })
       return
     }
-    if (e.clipboardData) void store.writeCopyData(e.clipboardData)
-    store.deleteSelected()
+    if (e.clipboardData) void copyAndDeleteSelection(store, e.clipboardData)
   })
 
   useEventListener(window, 'paste', (e: ClipboardEvent) => {
@@ -60,6 +79,14 @@ export function bindEditorClipboard(store: EditorStore) {
       return
     }
 
-    if (isTauri()) void pasteFromTauriClipboard(store, cursorPos)
+    if (isTauri()) {
+      void tauriSystemClipboard.paste(store, cursorPos)
+      return
+    }
+
+    const memoryHTML = getInMemoryClipboardHTML()
+    if (memoryHTML) {
+      void store.pasteFromHTML(memoryHTML, cursorPos)
+    }
   })
 }

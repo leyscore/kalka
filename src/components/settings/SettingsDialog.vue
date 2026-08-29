@@ -7,9 +7,13 @@ import { IS_TAURI } from '@open-pencil/core/constants'
 import { useAIChat } from '@/app/ai/chat/use'
 import { appCredentialServices } from '@/app/settings/credentials/app'
 import { settingsDialogOpen, settingsDialogSection } from '@/app/settings/dialog'
+import DiagnosticsSettingsPanel from '@/components/settings/diagnostics/DiagnosticsSettingsPanel.vue'
+import GeneralSettingsPanel from '@/components/settings/general/GeneralSettingsPanel.vue'
 import MCPConnectionsSection from '@/components/settings/mcp/MCPConnectionsSection.vue'
+import MCPSettingsPanel from '@/components/settings/mcp/MCPSettingsPanel.vue'
 import ModelsPanel from '@/components/settings/models/ModelsPanel.vue'
 import StockPhotoKeysSection from '@/components/settings/provider/StockPhotoKeysSection.vue'
+import UsageSettingsPanel from '@/components/settings/usage/UsageSettingsPanel.vue'
 import StorageSettingsPanel from '@/components/settings/storage/StorageSettingsPanel.vue'
 import VectorizeSettingsSection from '@/components/settings/vectorize/VectorizeSettingsSection.vue'
 import AppSwitch from '@/components/ui/AppSwitch.vue'
@@ -61,6 +65,16 @@ const navigationClass =
         <button
           type="button"
           :class="navigationClass"
+          :data-state="settingsDialogSection === 'general' ? 'active' : 'inactive'"
+          data-test-id="settings-section-general"
+          @click="settingsDialogSection = 'general'"
+        >
+          <icon-lucide-settings class="size-3.5" />
+          {{ dialogs.settingsGeneral }}
+        </button>
+        <button
+          type="button"
+          :class="navigationClass"
           :data-state="settingsDialogSection === 'ai' ? 'active' : 'inactive'"
           data-test-id="settings-section-ai"
           @click="settingsDialogSection = 'ai'"
@@ -71,12 +85,33 @@ const navigationClass =
         <button
           type="button"
           :class="navigationClass"
+          :data-state="settingsDialogSection === 'usage' ? 'active' : 'inactive'"
+          data-test-id="settings-section-usage"
+          @click="settingsDialogSection = 'usage'"
+        >
+          <icon-lucide-chart-no-axes-combined class="size-3.5" />
+          {{ dialogs.settingsUsage }}
+        </button>
+        <button
+          type="button"
+          :class="navigationClass"
+          :data-state="settingsDialogSection === 'diagnostics' ? 'active' : 'inactive'"
+          data-test-id="settings-section-diagnostics"
+          @click="settingsDialogSection = 'diagnostics'"
+        >
+          <icon-lucide-activity class="size-3.5" />
+          {{ dialogs.settingsDiagnostics }}
+        </button>
+
+        <button
+          type="button"
+          :class="navigationClass"
           :data-state="settingsDialogSection === 'mcp' ? 'active' : 'inactive'"
           data-test-id="settings-section-mcp"
           @click="settingsDialogSection = 'mcp'"
         >
           <icon-lucide-plug class="size-3.5" />
-          {{ dialogs.mcpConnections }}
+          {{ dialogs.settingsMCP }}
         </button>
         <button
           type="button"
@@ -101,19 +136,26 @@ const navigationClass =
       </nav>
 
       <div class="min-h-0 flex-1 overflow-y-auto p-4">
+        <GeneralSettingsPanel v-if="settingsDialogSection === 'general'" />
+
         <section
-          v-if="settingsDialogSection === 'ai'"
+          v-else-if="settingsDialogSection === 'ai'"
           class="flex h-full flex-col"
           data-test-id="settings-ai-panel"
         >
           <ModelsPanel />
         </section>
 
+        <UsageSettingsPanel v-else-if="settingsDialogSection === 'usage'" />
+
+        <DiagnosticsSettingsPanel v-else-if="settingsDialogSection === 'diagnostics'" />
+
         <section
           v-else-if="settingsDialogSection === 'mcp'"
           class="flex flex-col"
           data-test-id="settings-mcp-panel"
         >
+          <MCPSettingsPanel />
           <MCPConnectionsSection />
         </section>
 

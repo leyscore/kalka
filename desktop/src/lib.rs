@@ -14,7 +14,7 @@ use credentials::{
 use fig_container::build_fig_file;
 use fonts::{list_system_fonts, load_system_font};
 use http::proxy_http_request;
-use menu::install_app_menu;
+use menu::{install_app_menu, native_menu_checked, set_native_menu_checked};
 use menu_events::handle_menu_event;
 use std::{
     path::{Path, PathBuf},
@@ -39,6 +39,11 @@ fn take_pending_open(state: tauri::State<PendingOpen>) -> Vec<PendingOpenFile> {
         .lock()
         .map(|mut pending| pending.drain(..).collect())
         .unwrap_or_default()
+}
+
+#[tauri::command]
+fn set_recent_files(app: tauri::AppHandle, paths: Vec<String>) -> Result<(), String> {
+    install_app_menu(&app, &paths).map_err(|error| error.to_string())
 }
 
 #[tauri::command]
@@ -145,6 +150,9 @@ pub fn run() {
             list_system_fonts,
             load_system_font,
             proxy_http_request,
+            set_recent_files,
+            native_menu_checked,
+            set_native_menu_checked,
             take_pending_open
         ])
         .plugin(tauri_plugin_opener::init())
@@ -159,7 +167,7 @@ pub fn run() {
         })
         .setup(|app| {
             queue_open_paths(app.handle(), startup_open_paths());
-            Ok(install_app_menu(app)?)
+            Ok(install_app_menu(app.handle(), &[])?)
         })
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

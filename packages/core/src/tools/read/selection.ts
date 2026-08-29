@@ -14,6 +14,7 @@ export const getSelection = defineTool({
 export const selectNodes = defineTool({
   name: 'select_nodes',
   mutates: true,
+  changesDocument: false,
   description: 'Select one or more nodes by ID.',
   params: {
     ids: { type: 'string[]', description: 'Node IDs to select', required: true }
