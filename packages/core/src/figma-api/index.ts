@@ -1,5 +1,4 @@
 import type {
-  ComponentPropertyDefinition,
   SceneGraph,
   SceneNode as CoreSceneNode,
   NodeType,
@@ -19,12 +18,13 @@ import { canMakeBooleanSourceNode } from '#core/canvas/boolean'
 import { flattenNodesToVectorProps } from '#core/canvas/flatten'
 import { IS_BROWSER } from '#core/constants'
 import type { RasterExportFormat } from '#core/io/formats/raster'
-import { randomHex } from '#core/random'
 import { documentFontStatus, type DocumentFontStatus } from '#core/text/font/status'
 
+import { combineComponentsAsVariants, exposeInstanceSwap } from './components'
 import type {
   FigmaBooleanOperationNode,
   FigmaComponentNode,
+  FigmaComponentSetNode,
   FigmaEllipseNode,
   FigmaFrameNode,
   FigmaGroupNode,
@@ -51,6 +51,7 @@ export { FigmaNodeProxy } from './proxy'
 export type {
   FigmaBooleanOperationNode,
   FigmaComponentNode,
+  FigmaComponentSetNode,
   FigmaEllipseNode,
   FigmaFrameNode,
   FigmaGroupNode,
@@ -267,73 +268,38 @@ export class FigmaAPI implements NodeProxyHost {
     return this.wrapNode(comp.id)
   }
 
-  private _findPropertyHost(nodeId: string | null): CoreSceneNode | null {
-    let current = nodeId ? this.graph.getNode(nodeId) : null
-    let fallbackComponent: CoreSceneNode | null = null
-    while (current) {
-      if (current.type === 'COMPONENT_SET') return current
-      if (current.type === 'COMPONENT' && !fallbackComponent) fallbackComponent = current
-      current = current.parentId ? this.graph.getNode(current.parentId) : null
-    }
-    return fallbackComponent
+  combineAsVariants(
+    nodes: ReadonlyArray<FigmaComponentNode>,
+    parent: FigmaNodeProxy,
+    index?: number
+  ): FigmaComponentSetNode
+  combineAsVariants(
+    nodes: ReadonlyArray<ComponentNode>,
+    parent: BaseNode & ChildrenMixin,
+    index?: number
+  ): ComponentSetNode
+  combineAsVariants(
+    nodes: ReadonlyArray<ComponentNode | FigmaComponentNode>,
+    parent: (BaseNode & ChildrenMixin) | FigmaNodeProxy,
+    index?: number
+  ): FigmaComponentSetNode {
+    const componentSet = combineComponentsAsVariants(
+      this.graph,
+      nodes.map((node) => this._nodeId(node)),
+      this._nodeId(parent),
+      index
+    )
+    return this.wrapNode(componentSet.id) as FigmaComponentSetNode
   }
 
-  /**
-   * Exposes one or more nested instances as an instance-swap slot: the
-   * enclosing component (or component set) gets an INSTANCE_SWAP property
-   * offering `candidates`, and each slot instance is tagged to respond to it
-   * — mirrors Figma's "Create component property > Instance swap".
-   */
   exposeInstanceSwap(
     slots: ReadonlyArray<FigmaNodeProxy>,
     candidates: ReadonlyArray<FigmaNodeProxy>,
     propertyName = 'Instance'
   ): FigmaNodeProxy {
-    if (slots.length === 0) throw new Error('Provide at least one instance to expose')
-    if (candidates.length === 0) throw new Error('Provide at least one candidate component')
-
-    const slotNodes = slots.map((s) => this.graph.getNode(s[INTERNAL_ID]))
-    if (!slotNodes.every((n): n is CoreSceneNode => n?.type === 'INSTANCE')) {
-      throw new Error('exposeInstanceSwap requires INSTANCE nodes')
-    }
-
-    const candidateNodes = candidates.map((c) => this.graph.getNode(c[INTERNAL_ID]))
-    if (!candidateNodes.every((n): n is CoreSceneNode => n?.type === 'COMPONENT')) {
-      throw new Error('Candidates must be COMPONENT nodes')
-    }
-    const candidateIds = candidateNodes.map((n) => n.id)
-
-    const host = this._findPropertyHost(slotNodes[0].parentId)
-    if (!host) throw new Error('Instance must be nested inside a COMPONENT or COMPONENT_SET')
-    const sameHost = slotNodes.every((n) => this._findPropertyHost(n.parentId)?.id === host.id)
-    if (!sameHost) throw new Error('All instances must belong to the same component or component set')
-
-    const propId = `prop:${randomHex(8)}`
-    const propDef: ComponentPropertyDefinition = {
-      id: propId,
-      name: propertyName,
-      type: 'INSTANCE_SWAP',
-      defaultValue: slotNodes[0].componentId ?? candidateIds[0],
-      preferredValues: candidateIds
-    }
-
-    this.graph.updateNode(host.id, {
-      componentPropertyDefinitions: [...host.componentPropertyDefinitions, propDef]
-    })
-
-    for (const node of slotNodes) {
-      this.graph.updateNode(node.id, {
-        componentPropertyReferences: [
-          ...node.componentPropertyReferences.filter((r) => r.field !== 'INSTANCE_SWAP'),
-          { propertyId: propId, field: 'INSTANCE_SWAP' }
-        ]
-      })
-    }
-
+    const host = exposeInstanceSwap(this.graph, slots, candidates, propertyName)
     return this.wrapNode(host.id)
   }
-
-  // --- Variables ---
 
   getVariableById(id: string): Variable | null {
     return this.graph.variables.get(id) ?? null
