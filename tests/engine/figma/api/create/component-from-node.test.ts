@@ -1,3 +1,5 @@
+import { computeAllLayouts } from '@open-pencil/core'
+
 import { describe, expect, test } from 'bun:test'
 
 import { createAPI } from '../helpers'
@@ -23,6 +25,29 @@ describe('createComponentFromNode', () => {
     expect(api.getNodeById(frameId)).toBeNull()
   })
 
+  test('preserves auto-layout HUG sizing when padding changes after conversion', () => {
+    const api = createAPI()
+    const frame = api.createFrame()
+    frame.layoutMode = 'HORIZONTAL'
+    frame.primaryAxisSizingMode = 'AUTO'
+    frame.counterAxisSizingMode = 'AUTO'
+    const child = api.createRectangle()
+    child.resize(40, 20)
+    frame.appendChild(child)
+    computeAllLayouts(api.graph, frame.id)
+
+    const comp = api.createComponentFromNode(frame)
+    const initialWidth = comp.width
+    const initialHeight = comp.height
+    comp.paddingLeft = 20
+    comp.paddingRight = 20
+    comp.paddingTop = 10
+    comp.paddingBottom = 10
+    computeAllLayouts(api.graph, comp.id)
+
+    expect(comp.width).toBe(initialWidth + 40)
+    expect(comp.height).toBe(initialHeight + 20)
+  })
   test('preserves auto-layout HUG sizing mode', () => {
     const api = createAPI()
     const frame = api.createFrame()
