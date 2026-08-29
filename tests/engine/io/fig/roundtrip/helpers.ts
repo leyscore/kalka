@@ -1,4 +1,5 @@
 import type { SceneGraph, SceneNode } from '@open-pencil/core'
+import type { ComponentPropertyDefinition } from '@open-pencil/scene-graph'
 import type { JSONObject } from '@open-pencil/scene-graph/primitives'
 
 import { verifyComponentPropDefs, verifyDerivedTextData } from './raw-verifiers/helpers'
@@ -33,6 +34,10 @@ export interface VerifierContext {
   bNodes: Map<string, SceneNode>
   aGraph: SceneGraph
   bGraph: SceneGraph
+  aNodePaths: ReadonlyMap<string, string>
+  bNodePaths: ReadonlyMap<string, string>
+  aComponentPropertyDefinitions: ReadonlyMap<string, ComponentPropertyDefinition>
+  bComponentPropertyDefinitions: ReadonlyMap<string, ComponentPropertyDefinition>
   errors: Mismatch[]
   fixture: FixtureSpec
   label: string
@@ -58,6 +63,65 @@ export function isColorObj(v: unknown): v is Record<string, number> {
     typeof c.b === 'number' &&
     typeof c.a === 'number'
   )
+}
+
+export function buildNodePathIndex(nodes: ReadonlyMap<string, SceneNode>): Map<string, string> {
+  return new Map([...nodes].map(([path, node]) => [node.id, path]))
+}
+
+export function buildComponentPropertyDefinitionIndex(
+  graph: SceneGraph
+): Map<string, ComponentPropertyDefinition> {
+  const definitions = new Map<string, ComponentPropertyDefinition>()
+  for (const node of graph.getAllNodes()) {
+    for (const definition of node.componentPropertyDefinitions) {
+      if (!definitions.has(definition.id)) definitions.set(definition.id, definition)
+    }
+  }
+  return definitions
+}
+
+function sameNodeReference(ctx: VerifierContext, a: unknown, b: unknown): boolean {
+  if (typeof a !== 'string' || typeof b !== 'string') return false
+  const aPath = ctx.aNodePaths.get(a)
+  const bPath = ctx.bNodePaths.get(b)
+  return aPath !== undefined && aPath === bPath
+}
+
+function componentPropertyDefinitionAt(
+  ctx: VerifierContext,
+  side: 'a' | 'b'
+): ComponentPropertyDefinition | undefined {
+  const match = /componentPropertyDefinitions\[(\d+)\]\.defaultValue$/.exec(ctx.key)
+  if (!match) return undefined
+  const index = Number.parseInt(match[1], 10)
+  const node = side === 'a' ? ctx.aNodes.get(ctx.path) : ctx.bNodes.get(ctx.path)
+  return node?.componentPropertyDefinitions[index]
+}
+
+function isStringRecord(value: unknown): value is Record<string, string> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false
+  return Object.values(value).every((entry) => typeof entry === 'string')
+}
+
+function verifyComponentPropertyAssignments(ctx: VerifierContext): boolean {
+  if (!isStringRecord(ctx.a) || !isStringRecord(ctx.b)) return false
+
+  const aAssignments = ctx.a
+  const bAssignments = ctx.b
+  const propertyIds = new Set([...Object.keys(aAssignments), ...Object.keys(bAssignments)])
+  for (const propertyId of propertyIds) {
+    const a = aAssignments[propertyId]
+    const b = bAssignments[propertyId]
+    if (a === b) continue
+    const aDefinition = ctx.aComponentPropertyDefinitions.get(propertyId)
+    const bDefinition = ctx.bComponentPropertyDefinitions.get(propertyId)
+    if (aDefinition?.type !== 'INSTANCE_SWAP' || bDefinition?.type !== 'INSTANCE_SWAP') {
+      return false
+    }
+    if (!sameNodeReference(ctx, a, b)) return false
+  }
+  return true
 }
 
 export const SCENE_VERIFIERS = new Map<string, Verifier>([
@@ -93,7 +157,19 @@ export const SCENE_VERIFIERS = new Map<string, Verifier>([
       if (!ctx.key.includes('componentPropertyDefinitions')) return false
       return ctx.a === 'VARIANT' && ctx.b === 'TEXT'
     }
-  ]
+  ],
+  [
+    'defaultValue',
+    (ctx) => {
+      const aDefinition = componentPropertyDefinitionAt(ctx, 'a')
+      const bDefinition = componentPropertyDefinitionAt(ctx, 'b')
+      if (aDefinition?.type !== 'INSTANCE_SWAP' || bDefinition?.type !== 'INSTANCE_SWAP') {
+        return false
+      }
+      return sameNodeReference(ctx, ctx.a, ctx.b)
+    }
+  ],
+  ['componentPropertyAssignments', verifyComponentPropertyAssignments]
 ])
 
 function verifyAEntries(
