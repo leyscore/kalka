@@ -1,10 +1,80 @@
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import type { ComponentPropertyDefinition, SceneGraph, SceneNode } from '@open-pencil/scene-graph'
 import { computeAbsoluteBounds } from '@open-pencil/scene-graph/geometry'
 import { deriveSlashVariantProperties } from '@open-pencil/scene-graph/variant-properties'
 
 import { randomHex } from '#core/random'
 
+import type { FigmaNodeProxy } from './proxy'
+
 const COMPONENT_SET_PADDING = 40
+
+export function exposeInstanceSwap(
+  graph: SceneGraph,
+  slots: ReadonlyArray<FigmaNodeProxy>,
+  candidates: ReadonlyArray<FigmaNodeProxy>,
+  propertyName = 'Instance'
+): SceneNode {
+  if (slots.length === 0) throw new Error('Provide at least one instance to expose')
+  if (candidates.length === 0) throw new Error('Provide at least one candidate component')
+  const name = propertyName.trim()
+  if (!name) throw new Error('Property name must not be empty')
+  const slotNodes = slots.map((slot) => graph.getNode(slot.id))
+  if (new Set(slotNodes.map((node) => node?.id)).size !== slotNodes.length)
+    throw new Error('exposeInstanceSwap requires distinct INSTANCE nodes')
+  if (!slotNodes.every((node): node is SceneNode => node?.type === 'INSTANCE'))
+    throw new Error('exposeInstanceSwap requires INSTANCE nodes')
+  if (
+    slotNodes.some((node) =>
+      node.componentPropertyReferences.some((ref) => ref.field === 'INSTANCE_SWAP')
+    )
+  )
+    throw new Error('Instance already has an INSTANCE_SWAP property')
+  const candidateNodes = candidates.map((candidate) => graph.getNode(candidate.id))
+  if (
+    !candidateNodes.every(
+      (node): node is SceneNode => node?.type === 'COMPONENT' || node?.type === 'COMPONENT_SET'
+    )
+  )
+    throw new Error('Candidates must be COMPONENT or COMPONENT_SET nodes')
+  const candidateIds = [...new Set(candidateNodes.map((node) => node.id))]
+  if (candidateIds.length !== candidateNodes.length) throw new Error('Candidates must be distinct')
+  const host = findPropertyHost(graph, slotNodes[0].parentId)
+  if (!host) throw new Error('Instance must be nested inside a COMPONENT or COMPONENT_SET')
+  if (host.componentPropertyDefinitions.some((definition) => definition.name === name))
+    throw new Error(`A component property named "${name}" already exists`)
+  if (!slotNodes.every((node) => findPropertyHost(graph, node.parentId)?.id === host.id))
+    throw new Error('All instances must belong to the same component or component set')
+  const definition: ComponentPropertyDefinition = {
+    id: `prop:${randomHex(8)}`,
+    name,
+    type: 'INSTANCE_SWAP',
+    defaultValue: slotNodes[0].componentId ?? candidateIds[0],
+    preferredValues: candidateIds
+  }
+  graph.updateNode(host.id, {
+    componentPropertyDefinitions: [...host.componentPropertyDefinitions, definition]
+  })
+  for (const node of slotNodes) {
+    graph.updateNode(node.id, {
+      componentPropertyReferences: [
+        ...node.componentPropertyReferences,
+        { propertyId: definition.id, field: 'INSTANCE_SWAP' }
+      ]
+    })
+  }
+  return host
+}
+
+function findPropertyHost(graph: SceneGraph, nodeId: string | null): SceneNode | null {
+  let current = nodeId ? graph.getNode(nodeId) : null
+  let fallback: SceneNode | null = null
+  while (current) {
+    if (current.type === 'COMPONENT_SET') return current
+    if (current.type === 'COMPONENT' && !fallback) fallback = current
+    current = current.parentId ? graph.getNode(current.parentId) : null
+  }
+  return fallback
+}
 
 function requireDistinctComponents(graph: SceneGraph, nodeIds: ReadonlyArray<string>): SceneNode[] {
   if (nodeIds.length === 0) throw new Error('Need at least 1 component to combine as variants')
