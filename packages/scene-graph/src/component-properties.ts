@@ -1,0 +1,167 @@
+import type { SceneGraph } from './index'
+import type {
+  ComponentPropertyDefinition,
+  ComponentPropertyReferenceField,
+  SceneNode
+} from './types'
+
+export interface ComponentPropertyTarget {
+  node: SceneNode
+  field: ComponentPropertyReferenceField
+  source: SceneNode
+}
+
+export function componentPropertyOwners(graph: SceneGraph, instance: SceneNode): SceneNode[] {
+  if (instance.type !== 'INSTANCE' || !instance.componentId) return []
+  const component = graph.getNode(instance.componentId)
+  if (!component) return []
+  const parent = component.parentId ? graph.getNode(component.parentId) : null
+  return parent?.type === 'COMPONENT_SET' ? [parent, component] : [component]
+}
+
+export function componentPropertyDefinitions(
+  graph: SceneGraph,
+  instance: SceneNode
+): ComponentPropertyDefinition[] {
+  const definitions = new Map<string, ComponentPropertyDefinition>()
+  for (const owner of componentPropertyOwners(graph, instance)) {
+    for (const definition of owner.componentPropertyDefinitions) {
+      if (!definitions.has(definition.id)) definitions.set(definition.id, definition)
+    }
+  }
+  return [...definitions.values()]
+}
+
+export function resolveComponentPropertyValue(graph: SceneGraph, value: string): SceneNode | null {
+  const direct = graph.getNode(value)
+  if (direct?.type === 'COMPONENT') return direct
+  if (direct?.type === 'COMPONENT_SET') {
+    const componentId = direct.childIds.find((id) => graph.getNode(id)?.type === 'COMPONENT')
+    return componentId ? (graph.getNode(componentId) ?? null) : null
+  }
+  return (
+    [...graph.getAllNodes()].find(
+      (node) =>
+        node.type === 'COMPONENT' &&
+        (node.componentKey === value || node.sourceLibraryKey === value || node.source.id === value)
+    ) ?? null
+  )
+}
+
+export function findComponentPropertyTarget(
+  graph: SceneGraph,
+  instance: SceneNode,
+  propertyId: string
+): ComponentPropertyTarget | null {
+  return findComponentPropertyTargets(graph, instance, propertyId)[0] ?? null
+}
+
+export function findComponentPropertyTargets(
+  graph: SceneGraph,
+  instance: SceneNode,
+  propertyId: string
+): ComponentPropertyTarget[] {
+  if (instance.type !== 'INSTANCE' || !instance.componentId) return []
+  const component = graph.getNode(instance.componentId)
+  if (!component) return []
+  const targets: ComponentPropertyTarget[] = []
+  const visit = (sourceParent: SceneNode, instanceParent: SceneNode): void => {
+    for (const [index, childId] of sourceParent.childIds.entries()) {
+      const source = graph.getNode(childId)
+      const targetId = instanceParent.childIds[index]
+      const target = targetId ? graph.getNode(targetId) : undefined
+      if (!source || !target) continue
+      const reference = source.componentPropertyReferences.find(
+        (candidate) => candidate.propertyId === propertyId
+      )
+      if (reference) targets.push({ node: target, field: reference.field, source })
+      visit(source, target)
+    }
+  }
+  visit(component, instance)
+  return targets
+}
+
+export function applyComponentPropertyValue(
+  graph: SceneGraph,
+  instanceId: string,
+  definition: ComponentPropertyDefinition,
+  value: string
+): SceneNode | null {
+  const instance = graph.getNode(instanceId)
+  if (instance?.type !== 'INSTANCE') return null
+  const targets = findComponentPropertyTargets(graph, instance, definition.id)
+  const target =
+    definition.type === 'INSTANCE_SWAP' ? resolveComponentPropertyValue(graph, value) : null
+  if (definition.type === 'INSTANCE_SWAP' && !target) return null
+  const overrides = { ...instance.overrides }
+  if (definition.type === 'TEXT') {
+    for (const item of targets) {
+      if (item.field === 'TEXT' && item.node.type === 'TEXT') {
+        graph.updateNode(item.node.id, { text: value })
+        overrides[`${item.node.id}:text`] = value
+      }
+    }
+  } else if (definition.type === 'BOOLEAN') {
+    for (const item of targets) {
+      if (item.field === 'VISIBLE') {
+        graph.updateNode(item.node.id, { visible: value === 'true' })
+        overrides[`${item.node.id}:visible`] = value === 'true'
+      }
+    }
+  } else if (definition.type === 'INSTANCE_SWAP' && target) {
+    for (const item of targets) {
+      if (item.field !== 'INSTANCE_SWAP' || item.node.type !== 'INSTANCE') continue
+      graph.swapInstanceComponent(item.node.id, target.id)
+      graph.updateNode(item.node.id, {
+        name: target.name,
+        overrides: {
+          ...item.node.overrides,
+          [`${item.node.id}:name`]: target.name
+        }
+      })
+      overrides[`${item.node.id}:componentId`] = target.id
+      overrides[`${item.node.id}:sourceComponentId`] = item.source.id
+      overrides[`${item.node.id}:name`] = target.name
+    }
+  }
+  graph.updateNode(instance.id, {
+    componentPropertyAssignments: {
+      ...instance.componentPropertyAssignments,
+      [definition.id]: definition.type === 'INSTANCE_SWAP' && target ? target.id : value
+    },
+    overrides
+  })
+  return target
+}
+
+export function removeComponentProperty(
+  graph: SceneGraph,
+  ownerId: string,
+  propertyId: string
+): boolean {
+  const owner = graph.getNode(ownerId)
+  if (!owner || (owner.type !== 'COMPONENT' && owner.type !== 'COMPONENT_SET')) return false
+  graph.updateNode(owner.id, {
+    componentPropertyDefinitions: owner.componentPropertyDefinitions.filter(
+      (definition) => definition.id !== propertyId
+    )
+  })
+  for (const node of graph.getAllNodes()) {
+    if (node.componentPropertyReferences.some((reference) => reference.propertyId === propertyId)) {
+      graph.updateNode(node.id, {
+        componentPropertyReferences: node.componentPropertyReferences.filter(
+          (reference) => reference.propertyId !== propertyId
+        )
+      })
+    }
+    if (node.type === 'INSTANCE' && propertyId in node.componentPropertyAssignments) {
+      graph.updateNode(node.id, {
+        componentPropertyAssignments: Object.fromEntries(
+          Object.entries(node.componentPropertyAssignments).filter(([id]) => id !== propertyId)
+        )
+      })
+    }
+  }
+  return true
+}
