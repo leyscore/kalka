@@ -57,7 +57,7 @@ export function canUseFigPopulationWorker(graph: SceneGraph): boolean {
 }
 
 export interface FigPopulationWorker {
-  populate: (pageId: string) => Promise<boolean | null>
+  populate: (pageId: string, signal?: AbortSignal) => Promise<boolean | null>
   terminate: () => void
 }
 
@@ -71,6 +71,7 @@ function createPopulationWorkerClient(graph: SceneGraph, worker: Worker): FigPop
     string,
     {
       resolve: (value: boolean | null) => void
+      abort?: () => void
       revision: number
       startedAt: number
       timeout: ReturnType<typeof setTimeout>
@@ -99,6 +100,7 @@ function createPopulationWorkerClient(graph: SceneGraph, worker: Worker): FigPop
     if (emit) emitTelemetry({ event: 'fallback', reason: 'worker-error' })
     for (const request of pending.values()) {
       clearTimeout(request.timeout)
+      request.abort?.()
       request.resolve(null)
     }
     pending.clear()
@@ -119,6 +121,7 @@ function createPopulationWorkerClient(graph: SceneGraph, worker: Worker): FigPop
     const request = pending.get(result.requestId)
     if (!request) return
     clearTimeout(request.timeout)
+    request.abort?.()
     pending.delete(result.requestId)
     if (stale || revision !== request.revision || result.baseRevision !== request.revision) {
       emitTelemetry({ event: 'stale', reason: 'graph-mutation' })
@@ -149,14 +152,25 @@ function createPopulationWorkerClient(graph: SceneGraph, worker: Worker): FigPop
   }
   worker.onerror = () => fail()
   return {
-    populate(pageId) {
+    populate(pageId, signal) {
+      signal?.throwIfAborted()
       if (stale) return Promise.resolve(null)
       const requestId = randomHex()
       const baseRevision = revision
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
+        const abort = () => {
+          const request = pending.get(requestId)
+          if (!request) return
+          clearTimeout(request.timeout)
+          pending.delete(requestId)
+          fail(false)
+          reject(new DOMException('Aborted', 'AbortError'))
+        }
+        signal?.addEventListener('abort', abort, { once: true })
         const timeout = setTimeout(() => fail(), FIG_POPULATION_WORKER_TIMEOUT_MS)
         pending.set(requestId, {
           resolve,
+          abort: () => signal?.removeEventListener('abort', abort),
           revision: baseRevision,
           startedAt: performance.now(),
           timeout

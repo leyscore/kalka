@@ -79,6 +79,14 @@ export function createCanvasSurfaceManager({
     }
   }
 
+  function acknowledgePresentation() {
+    const renderedState = options?.getRenderState?.() ?? editor.state
+    options?.onPresented?.({
+      renderVersion: renderedState.renderVersion,
+      sceneVersion: renderedState.sceneVersion
+    })
+  }
+
   function renderNow() {
     if (!state.renderer || isDestroyed()) return
     state.renderer.renderFromEditorState(
@@ -91,6 +99,7 @@ export function createCanvasSurfaceManager({
       options?.layer ?? 'full'
     )
     renderLoop.markRendered()
+    acknowledgePresentation()
     clearSceneBackingRenderTimer()
     if (options?.layer === 'scene' && state.renderer.sceneBackingNeedsCrispRender) {
       const delay = Math.max(0, state.renderer.sceneBackingPreviewUntil - performance.now())
@@ -100,7 +109,8 @@ export function createCanvasSurfaceManager({
 
   const renderLoop = createCanvasRenderLoop(editor, renderNow, {
     layer: options?.layer,
-    getRenderState: options?.getRenderState
+    getRenderState: options?.getRenderState,
+    shouldSuspendRender: options?.shouldSuspendRender
   })
 
   function resizeCanvas(canvas: HTMLCanvasElement) {

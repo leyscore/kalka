@@ -12,6 +12,7 @@ import { registerFigPopulationWorker } from '#core/kiwi/fig/population/client'
 export interface ParseFigFileOptions {
   populate?: 'all' | 'first-page' | 'none'
   onPages?: (pages: readonly FigPageManifestEntry[]) => void
+  signal?: AbortSignal
 }
 
 function parseFigFileSync(buffer: ArrayBuffer, options: ParseFigFileOptions = {}): SceneGraph {
@@ -43,7 +44,14 @@ type WorkerParseResult = WorkerGraphResult | WorkerPageManifestResult
 
 function parseViaWorker(buffer: ArrayBuffer, options: ParseFigFileOptions): Promise<SceneGraph> {
   return new Promise((resolve, reject) => {
+    options.signal?.throwIfAborted()
     const worker = createFigParseWorker()
+    const abort = () => {
+      worker.terminate()
+      reject(new DOMException('Aborted', 'AbortError'))
+    }
+    options.signal?.addEventListener('abort', abort, { once: true })
+    const cleanupAbort = () => options.signal?.removeEventListener('abort', abort)
 
     worker.onmessage = (e: MessageEvent<WorkerParseResult>) => {
       if (e.data.type === 'page-manifest') {
@@ -51,6 +59,7 @@ function parseViaWorker(buffer: ArrayBuffer, options: ParseFigFileOptions): Prom
         return
       }
       if (e.data.error || !e.data.graph) {
+        cleanupAbort()
         worker.terminate()
         reject(new Error(e.data.error ?? 'Worker failed to parse .fig file'))
         return
@@ -58,18 +67,24 @@ function parseViaWorker(buffer: ArrayBuffer, options: ParseFigFileOptions): Prom
       try {
         const graph = deserializeSceneGraph(e.data.graph)
         if (options.populate === 'first-page') {
+          cleanupAbort()
           worker.onmessage = null
           worker.onerror = null
           registerFigPopulationWorker(graph, worker)
-        } else worker.terminate()
+        } else {
+          cleanupAbort()
+          worker.terminate()
+        }
         resolve(graph)
       } catch (error) {
+        cleanupAbort()
         worker.terminate()
         reject(error instanceof Error ? error : new Error(String(error)))
       }
     }
 
     worker.onerror = (err) => {
+      cleanupAbort()
       worker.terminate()
       reject(new Error(err.message || 'Worker failed to parse .fig file'))
     }
@@ -82,15 +97,18 @@ export async function parseFigFile(
   buffer: ArrayBuffer,
   options: ParseFigFileOptions = {}
 ): Promise<SceneGraph> {
+  options.signal?.throwIfAborted()
   if (typeof Worker !== 'undefined' && IS_BROWSER) {
     const copy = buffer.slice(0)
     try {
       return await parseViaWorker(buffer, options)
     } catch (error) {
+      if (options.signal?.aborted) throw error
       console.warn('Worker parsing failed, falling back to main thread:', error)
       return parseFigFileSync(copy, options)
     }
   }
+  options.signal?.throwIfAborted()
   return parseFigFileSync(buffer, options)
 }
 
@@ -98,5 +116,8 @@ export async function readFigFile(
   file: File,
   options: ParseFigFileOptions = {}
 ): Promise<SceneGraph> {
-  return parseFigFile(await file.arrayBuffer(), options)
+  options.signal?.throwIfAborted()
+  const buffer = await file.arrayBuffer()
+  options.signal?.throwIfAborted()
+  return parseFigFile(buffer, options)
 }
