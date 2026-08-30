@@ -22,6 +22,7 @@ import type { FontResolutionSnapshot } from '#core/text/resolver'
 
 import { LabelCache } from './labels/cache'
 import * as LabelHitTest from './labels/hit-test'
+import { LabelParagraphCache } from './labels/paragraph-cache'
 import * as RenderColors from './renderer/colors'
 import * as RendererFonts from './renderer/fonts'
 import { destroyRenderer } from './renderer/lifecycle'
@@ -158,6 +159,7 @@ export class SkiaRenderer {
   subtreePictureCachePositionPreviewVersion = -1
   subtreePictureCacheFontGeneration = -1
   readonly labelCache = new LabelCache()
+  readonly labelParagraphCache = new LabelParagraphCache()
   readonly profiler: RenderProfiler
 
   declare rulerBgPaint: Paint
@@ -617,7 +619,7 @@ export class SkiaRenderer {
   }
 
   isNodeFontLoaded(node: SceneNode): boolean {
-    return this.nodeFontReadiness(node) === 'ready'
+    return RenderText.isNodeFontLoaded(this, node)
   }
 
   buildTextPicture(node: SceneNode): Uint8Array | null {

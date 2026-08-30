@@ -132,6 +132,10 @@ export class FontManager {
     this.webFonts.setRemoteFetch(fetcher)
   }
 
+  resetWebFontFailures(family?: string, style?: string): void {
+    this.webFonts.resetFailures(family, style)
+  }
+
   enabledOnlineFontProviders(): WebFontProviderId[] {
     return this.webFonts.enabledProviders()
   }

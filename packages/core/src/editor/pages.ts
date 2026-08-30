@@ -39,7 +39,6 @@ function throwIfAborted(signal?: AbortSignal): void {
 }
 
 const MAX_CONCURRENT_FONT_LOADS = 4
-
 export function createPageActions(ctx: EditorContext) {
   const pageViewportStore = createPageViewportStore(ctx)
   let populationWorkerInstance: ReturnType<typeof createFigPopulationWorker> | undefined

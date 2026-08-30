@@ -76,7 +76,7 @@ function languageForCharacter(node: SceneNode, character: string): string | null
   return run?.style.textLanguage ?? node.textLanguage
 }
 
-export type NodeFontReadiness = 'ready' | 'pending' | 'exhausted'
+export type NodeFontReadiness = 'ready' | 'substituted' | 'pending' | 'exhausted'
 
 function requiredFacesReadiness(r: FontReadinessRenderer, node: SceneNode): NodeFontReadiness {
   let pending = false
@@ -96,6 +96,7 @@ function requiredFacesReadiness(r: FontReadinessRenderer, node: SceneNode): Node
     }
   }
   if (pending) return 'pending'
+  if (exhausted && fontManager.isStyleLoaded(DEFAULT_FONT_FAMILY, 'Regular')) return 'substituted'
   return exhausted ? 'exhausted' : 'ready'
 }
 
@@ -173,7 +174,8 @@ export function nodeFontReadiness(r: FontReadinessRenderer, node: SceneNode): No
 }
 
 export function isNodeFontLoaded(r: FontReadinessRenderer, node: SceneNode): boolean {
-  return nodeFontReadiness(r, node) === 'ready'
+  const readiness = nodeFontReadiness(r, node)
+  return readiness === 'ready' || readiness === 'substituted'
 }
 
 export function measureTextNode(

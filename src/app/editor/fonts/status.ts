@@ -40,6 +40,7 @@ export function useDocumentFontStatus() {
       const issues = status.value.issues
       await Promise.all(
         issues.map(async ({ family, style }) => {
+          fontManager.resetWebFontFailures(family, style)
           fontResolver.reset(
             `face:${family.trim().toLocaleLowerCase()}:${style.toLocaleLowerCase()}`
           )

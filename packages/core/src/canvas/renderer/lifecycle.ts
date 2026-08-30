@@ -72,6 +72,7 @@ export function destroyRenderer(r: SkiaRenderer): void {
   r.maskFilterCache.clear()
   for (const pic of r.nodePictureCache.values()) pic?.delete()
   r.nodePictureCache.clear()
+  r.labelParagraphCache.clear()
   clearSubtreePictureCache(r)
   clearRetainedSceneState(r)
   r._flashPaint?.delete()

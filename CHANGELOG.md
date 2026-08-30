@@ -46,6 +46,7 @@
 
 ### Changed
 
+- Load supported online fonts in the browser before revealing imported pages, preserve substituted text during editing, and shape canvas labels with bundled Inter typography.
 - Upgrade CanvasKit to 0.41 and migrate renderer geometry to immutable paths built through `PathBuilder`.
 - Upgrade direct model chat providers and transports to AI SDK 7 while retaining the local ACP execution path.
 - Localize file, clipboard, collaboration, chat, vectorization, storage, recovery, and component-library notifications in every supported language.
