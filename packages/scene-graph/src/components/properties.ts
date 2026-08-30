@@ -1,9 +1,9 @@
-import type { SceneGraph } from './index'
+import type { SceneGraph } from '../index'
 import type {
   ComponentPropertyDefinition,
   ComponentPropertyReferenceField,
   SceneNode
-} from './types'
+} from '../types'
 
 export interface ComponentPropertyTarget {
   node: SceneNode
@@ -134,7 +134,7 @@ export function applyComponentPropertyValue(
     },
     overrides
   })
-  return target
+  return definition.type === 'INSTANCE_SWAP' ? target : instance
 }
 
 export function removeComponentProperty(

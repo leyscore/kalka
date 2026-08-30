@@ -77,18 +77,26 @@ describe('component properties', () => {
       ]
     })
     graph.updateNode(slot.id, {
-      componentPropertyReferences: [
-        { propertyId: 'prop:swap', field: 'INSTANCE_SWAP' },
-        { propertyId: 'prop:text', field: 'TEXT' },
-        { propertyId: 'prop:visible', field: 'VISIBLE' }
-      ]
+      componentPropertyReferences: [{ propertyId: 'prop:swap', field: 'INSTANCE_SWAP' }]
+    })
+    const text = graph.createNode('TEXT', slot.id)
+    graph.updateNode(text.id, {
+      text: '',
+      componentPropertyReferences: [{ propertyId: 'prop:text', field: 'TEXT' }]
+    })
+    const visibility = graph.createNode('FRAME', slot.id)
+    graph.updateNode(visibility.id, {
+      componentPropertyReferences: [{ propertyId: 'prop:visible', field: 'VISIBLE' }]
     })
     const instance = graph.createInstance(host.id, page.id)
     if (!instance) throw new Error('host instance creation failed')
-    const text = graph.createNode('TEXT', slot.id)
-    graph.updateNode(text.id, {
-      componentPropertyReferences: [{ propertyId: 'prop:text', field: 'TEXT' }]
-    })
+
+    const textDefinition = host.componentPropertyDefinitions[1]
+    applyComponentPropertyValue(graph, instance.id, textDefinition, 'Save')
+    expect(findComponentPropertyTarget(graph, instance, 'prop:text')?.node.text).toBe('Save')
+    const visibleDefinition = host.componentPropertyDefinitions[2]
+    applyComponentPropertyValue(graph, instance.id, visibleDefinition, 'false')
+    expect(findComponentPropertyTarget(graph, instance, 'prop:visible')?.node.visible).toBe(false)
 
     const swapDefinition = host.componentPropertyDefinitions[0]
     const swapped = applyComponentPropertyValue(graph, instance.id, swapDefinition, alternate.id)

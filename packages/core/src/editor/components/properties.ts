@@ -6,18 +6,12 @@ import {
 } from '@open-pencil/scene-graph'
 import type {
   ComponentPropertyDefinition,
-  ComponentPropertyReferenceField,
+  ComponentPropertyTarget,
   SceneNode
 } from '@open-pencil/scene-graph'
 
 import { assertNodeEditable } from '#core/editor/capabilities'
 import type { EditorContext } from '#core/editor/types'
-
-interface PropertyTarget {
-  node: SceneNode
-  field: ComponentPropertyReferenceField
-  source: SceneNode
-}
 
 function definitionsForInstance(
   ctx: Pick<EditorContext, 'graph'>,
@@ -30,16 +24,15 @@ function propertyTarget(
   ctx: Pick<EditorContext, 'graph'>,
   instance: SceneNode,
   propertyId: string
-): PropertyTarget | null {
-  const target = findComponentPropertyTarget(ctx.graph, instance, propertyId)
-  return target
+): ComponentPropertyTarget | null {
+  return findComponentPropertyTarget(ctx.graph, instance, propertyId)
 }
 
 function swapTargetId(ctx: Pick<EditorContext, 'graph'>, value: string): string | null {
   return resolveComponentPropertyValue(ctx.graph, value)?.id ?? null
 }
 
-function targetValue(target: PropertyTarget | null): string {
+function targetValue(target: ComponentPropertyTarget | null): string {
   if (!target) return ''
   if (target.field === 'TEXT') return target.node.text
   if (target.field === 'VISIBLE') return String(target.node.visible)
@@ -50,8 +43,9 @@ function applyPropertyValue(
   instanceId: string,
   definition: ComponentPropertyDefinition,
   value: string
-): void {
-  applyComponentPropertyValue(ctx.graph, instanceId, definition, value)
+): boolean {
+  const result = applyComponentPropertyValue(ctx.graph, instanceId, definition, value)
+  return definition.type !== 'INSTANCE_SWAP' || result !== null
 }
 
 export function reapplyInstanceComponentProperties(
@@ -114,7 +108,7 @@ export function createComponentPropertyActions(
         ? (swapTargetId(ctx, assignedValue) ?? assignedValue)
         : targetValue(target)
 
-    applyPropertyValue(ctx, instanceId, definition, value)
+    if (!applyPropertyValue(ctx, instanceId, definition, value)) return
     ctx.undo.push({
       label: `Change ${definition.name}`,
       forward: () => {
