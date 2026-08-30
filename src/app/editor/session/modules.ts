@@ -87,6 +87,7 @@ export function createEditorStoreModules(
     setPlannedFilePath: documentIO.setPlannedFilePath,
     startWatchingCurrentFile: documentIO.startWatchingCurrentFile,
     dispose: () => {
+      editor.releaseGraphResources()
       editor.dispose()
       editor.clearPageViewports()
       documentIO.disposeDocumentIO()
