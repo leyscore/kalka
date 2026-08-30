@@ -104,5 +104,10 @@ export function createGraphEventSubscription(options: GraphEventOptions) {
     })
   }
 
-  return { subscribeToGraph }
+  function unsubscribeFromGraph() {
+    unbindGraphEvents?.()
+    unbindGraphEvents = null
+  }
+
+  return { subscribeToGraph, unsubscribeFromGraph }
 }

@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { TabsList, TabsRoot, TabsTrigger } from 'reka-ui'
 import { tv } from 'tailwind-variants'
 
+import PreparationIndicator from '@/components/preparation/tab/Indicator.vue'
 import Tip from '@/components/ui/Tip.vue'
 import tabBarTheme from '@/theme/tab-bar'
 import { useTabsStore, createHomeTab } from '@/app/tabs'
@@ -56,6 +57,7 @@ function onClose(e: MouseEvent, tabId: string) {
         @mousedown="onMiddleClick($event, tab.id, tab.isHome)"
       >
         <icon-lucide-house v-if="tab.isHome" :class="baseStyles.icon()" />
+        <PreparationIndicator v-else-if="tab.isPreparing" :progress="tab.preparationProgress" />
         <icon-lucide-file v-else :class="baseStyles.icon()" />
         <span :class="baseStyles.label()">{{ tab.isHome ? dialogs.newTab : tab.name }}</span>
         <Tip
