@@ -111,6 +111,23 @@ describe('component properties', () => {
     expect(target?.componentId).toBe(alternate.id)
   })
 
+  test('rejects variant assignment', () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    const host = component(graph, 'Host', page.id)
+    graph.updateNode(host.id, {
+      componentPropertyDefinitions: [
+        { id: 'prop:variant', name: 'State', type: 'VARIANT', defaultValue: 'Default' }
+      ]
+    })
+    const instance = graph.createInstance(host.id, page.id)
+    if (!instance) throw new Error('instance creation failed')
+
+    expect(
+      applyComponentPropertyValue(graph, instance.id, host.componentPropertyDefinitions[0], 'Hover')
+    ).toBeNull()
+    expect(graph.getNode(instance.id)?.componentPropertyAssignments).toEqual({})
+  })
   test('removes definitions, references, and assignments', () => {
     const graph = new SceneGraph()
     const page = graph.getPages()[0]

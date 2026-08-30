@@ -140,6 +140,7 @@ export function applyComponentPropertyValue(
 ): SceneNode | null {
   const instance = graph.getNode(instanceId)
   if (instance?.type !== 'INSTANCE') return null
+  if (definition.type === 'VARIANT') return null
   const targets = findComponentPropertyTargets(graph, instance, definition.id)
   const target =
     definition.type === 'INSTANCE_SWAP' ? resolveComponentPropertyValue(graph, value) : null
@@ -162,6 +163,43 @@ export function applyComponentPropertyValue(
   return definition.type === 'INSTANCE_SWAP' ? target : instance
 }
 
+function componentSubtree(graph: SceneGraph, componentId: string): SceneNode[] {
+  const component = graph.getNode(componentId)
+  if (!component) return []
+  const nodes = [component]
+  const visit = (node: SceneNode): void => {
+    for (const child of graph.getChildren(node.id)) {
+      nodes.push(child)
+      visit(child)
+    }
+  }
+  visit(component)
+  return nodes
+}
+
+function componentInstances(graph: SceneGraph, componentId: string): SceneNode[] {
+  return [...graph.getAllNodes()].filter(
+    (node) => node.type === 'INSTANCE' && node.componentId === componentId
+  )
+}
+
+function removePropertyFromNode(graph: SceneGraph, node: SceneNode, propertyId: string): void {
+  if (node.componentPropertyReferences.some((reference) => reference.propertyId === propertyId)) {
+    graph.updateNode(node.id, {
+      componentPropertyReferences: node.componentPropertyReferences.filter(
+        (reference) => reference.propertyId !== propertyId
+      )
+    })
+  }
+  if (node.type === 'INSTANCE' && propertyId in node.componentPropertyAssignments) {
+    graph.updateNode(node.id, {
+      componentPropertyAssignments: Object.fromEntries(
+        Object.entries(node.componentPropertyAssignments).filter(([id]) => id !== propertyId)
+      )
+    })
+  }
+}
+
 export function removeComponentProperty(
   graph: SceneGraph,
   ownerId: string,
@@ -174,21 +212,16 @@ export function removeComponentProperty(
       (definition) => definition.id !== propertyId
     )
   })
-  for (const node of graph.getAllNodes()) {
-    if (node.componentPropertyReferences.some((reference) => reference.propertyId === propertyId)) {
-      graph.updateNode(node.id, {
-        componentPropertyReferences: node.componentPropertyReferences.filter(
-          (reference) => reference.propertyId !== propertyId
-        )
-      })
-    }
-    if (node.type === 'INSTANCE' && propertyId in node.componentPropertyAssignments) {
-      graph.updateNode(node.id, {
-        componentPropertyAssignments: Object.fromEntries(
-          Object.entries(node.componentPropertyAssignments).filter(([id]) => id !== propertyId)
-        )
-      })
-    }
-  }
+  const nodes = [
+    ...componentSubtree(graph, owner.id),
+    ...componentInstances(graph, owner.id),
+    ...(owner.type === 'COMPONENT_SET'
+      ? owner.childIds.flatMap((id) => [
+          ...componentSubtree(graph, id),
+          ...componentInstances(graph, id)
+        ])
+      : [])
+  ]
+  for (const node of nodes) removePropertyFromNode(graph, node, propertyId)
   return true
 }
