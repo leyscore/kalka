@@ -29,6 +29,8 @@ import IconLucidePanelBottom from '~icons/lucide/panel-bottom'
 import IconLucidePanelLeft from '~icons/lucide/panel-left'
 import IconLucidePanelRight from '~icons/lucide/panel-right'
 import IconLucidePanelTop from '~icons/lucide/panel-top'
+import CanvasLabelEditor from './canvas/labels/CanvasLabelEditor.vue'
+import { canvasLabelPresentation } from './canvas/labels/presentation'
 import CanvasMenu from './canvas/CanvasMenu.vue'
 import PreparationOverlay from '@/components/preparation/canvas/Overlay.vue'
 import NumberField from './inputs/NumberField.vue'
@@ -86,6 +88,10 @@ const { hitTestSectionTitle, hitTestComponentLabel, hitTestFrameTitle } = useCan
 )
 const {
   cursorOverride,
+  canvasLabelEdit,
+  updateCanvasLabelEdit,
+  commitCanvasLabelEdit,
+  cancelCanvasLabelEdit,
   autoLayoutPaddingEdit,
   updateAutoLayoutPaddingEdit,
   commitAutoLayoutPaddingEdit,
@@ -116,6 +122,21 @@ const paddingSideIcons = {
   bottom: IconLucidePanelBottom,
   left: IconLucidePanelLeft
 } satisfies Record<'top' | 'right' | 'bottom' | 'left', Component>
+
+const canvasLabelEditNode = computed(() => {
+  const edit = canvasLabelEdit.value
+  return edit ? store.graph.getNode(edit.nodeId) : null
+})
+const canvasLabelEditAnchor = computed(() => {
+  const node = canvasLabelEditNode.value
+  if (!node) return null
+  const abs = store.graph.getAbsolutePosition(node.id)
+  return { x: abs.x, y: abs.y }
+})
+const canvasLabelEditReference = useCanvasVirtualReference(canvasRef, store, canvasLabelEditAnchor)
+const canvasLabelEditPresentation = computed(() =>
+  canvasLabelPresentation(store, canvasLabelEditNode.value ?? null)
+)
 
 const paddingEditorAnchor = computed(() => {
   const edit = autoLayoutPaddingEdit.value
@@ -178,6 +199,14 @@ const cursor = computed(() => toolCursor(store.state.activeTool, cursorOverride.
             class="pointer-events-none absolute inset-0 z-40 border-2 border-dashed border-accent/60 bg-accent/5"
           />
         </Transition>
+        <CanvasLabelEditor
+          :edit="canvasLabelEdit"
+          :presentation="canvasLabelEditPresentation"
+          :reference="canvasLabelEditReference"
+          @update="updateCanvasLabelEdit"
+          @commit="commitCanvasLabelEdit"
+          @cancel="cancelCanvasLabelEdit"
+        />
         <PopoverRoot :open="!!autoLayoutPaddingEdit">
           <PopoverPortal>
             <PopoverContent

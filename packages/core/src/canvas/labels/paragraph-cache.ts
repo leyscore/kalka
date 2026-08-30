@@ -3,6 +3,7 @@ import type { Canvas, CanvasKit, Paragraph, TypefaceFontProvider } from 'canvask
 interface LabelParagraphEntry {
   paragraph: Paragraph
   width: number
+  height: number
 }
 
 const MAX_LABEL_PARAGRAPHS = 512
@@ -19,8 +20,8 @@ export class LabelParagraphCache {
     maxWidth: number,
     color: Float32Array,
     generation: number
-  ): number {
-    return this.entry(ck, provider, text, fontSize, maxWidth, color, generation).width
+  ): Pick<LabelParagraphEntry, 'width' | 'height'> {
+    return this.entry(ck, provider, text, fontSize, maxWidth, color, generation)
   }
 
   draw(
@@ -76,7 +77,11 @@ export class LabelParagraphCache {
       const paragraph = builder.build()
       builder.delete()
       paragraph.layout(boundedWidth)
-      entry = { paragraph, width: Math.min(paragraph.getLongestLine(), boundedWidth) }
+      entry = {
+        paragraph,
+        width: Math.min(paragraph.getLongestLine(), boundedWidth),
+        height: paragraph.getHeight()
+      }
       this.entries.set(key, entry)
       this.evict()
     } else {

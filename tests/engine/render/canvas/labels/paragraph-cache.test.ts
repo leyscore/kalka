@@ -20,9 +20,10 @@ describe('label paragraph cache', () => {
     provider.registerFont(data, 'Inter')
     const cache = new LabelParagraphCache()
     try {
-      const width = cache.measure(ck, provider, 'Primitives', 12, 200, ck.BLACK, 1)
-      expect(width).toBeGreaterThan(40)
-      expect(width).toBeLessThan(80)
+      const metrics = cache.measure(ck, provider, 'Primitives', 12, 200, ck.BLACK, 1)
+      expect(metrics.width).toBeGreaterThan(40)
+      expect(metrics.width).toBeLessThan(80)
+      expect(metrics.height).toBeGreaterThan(0)
       expect(cache.size()).toBe(1)
 
       cache.measure(ck, provider, 'Primitives', 12, 200, ck.BLACK, 1)

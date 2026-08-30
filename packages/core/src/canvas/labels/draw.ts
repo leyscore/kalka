@@ -2,6 +2,7 @@ import type { Canvas } from 'canvaskit-wasm'
 
 import type { SceneNode, SceneGraph } from '@open-pencil/scene-graph'
 
+import { canvasLabelForeground } from '#core/canvas/labels/color'
 import type { SkiaRenderer } from '#core/canvas/renderer'
 import {
   SECTION_TITLE_HEIGHT,
@@ -47,11 +48,11 @@ function drawSectionTitle(
     node.fills.length > 0 && node.fills[0].visible
       ? r.resolveFillColor(node.fills[0], 0, node, graph)
       : { r: 0.37, g: 0.37, b: 0.37, a: 1 }
-  const lum = 0.299 * pillColor.r + 0.587 * pillColor.g + 0.114 * pillColor.b
-  const textColor = lum > 0.5 ? r.ck.BLACK : r.ck.WHITE
+  const foreground = canvasLabelForeground(pillColor, r.pageColor)
+  const textColor = r.ck.Color4f(foreground.r, foreground.g, foreground.b, foreground.a)
 
   const maxTextW = Math.max(1, maxPillW - SECTION_TITLE_PADDING_X * 2)
-  const textWidth = r.labelParagraphCache.measure(
+  const textMetrics = r.labelParagraphCache.measure(
     r.ck,
     provider,
     node.name,
@@ -60,7 +61,7 @@ function drawSectionTitle(
     textColor,
     r.fontGeneration
   )
-  const pillW = Math.min(textWidth + SECTION_TITLE_PADDING_X * 2, maxPillW)
+  const pillW = Math.min(textMetrics.width + SECTION_TITLE_PADDING_X * 2, maxPillW)
   const pillH = SECTION_TITLE_HEIGHT
   const localPillX = 0
   const localPillY = nested ? SECTION_TITLE_GAP : -pillH - SECTION_TITLE_GAP
@@ -86,7 +87,7 @@ function drawSectionTitle(
     textColor,
     r.fontGeneration,
     localPillX + SECTION_TITLE_PADDING_X,
-    localPillY
+    localPillY + (pillH - textMetrics.height) / 2
   )
   canvas.restore()
 }
