@@ -50,11 +50,14 @@ describe('component properties', () => {
     const icon = component(graph, 'Icon', page.id)
     const keyed = component(graph, 'Keyed', page.id)
     graph.updateNode(keyed.id, { componentKey: 'icon-key' })
+    const library = component(graph, 'Library', page.id)
+    graph.updateNode(library.id, { sourceLibraryKey: 'library-key' })
     const set = graph.createNode('COMPONENT_SET', page.id)
     graph.reparentNode(icon.id, set.id)
 
     expect(resolveComponentPropertyValue(graph, keyed.id)?.id).toBe(keyed.id)
     expect(resolveComponentPropertyValue(graph, 'icon-key')?.id).toBe(keyed.id)
+    expect(resolveComponentPropertyValue(graph, 'library-key')?.id).toBe(library.id)
     expect(resolveComponentPropertyValue(graph, set.id)?.id).toBe(icon.id)
   })
 

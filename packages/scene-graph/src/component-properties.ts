@@ -39,13 +39,15 @@ export function resolveComponentPropertyValue(graph: SceneGraph, value: string):
     const componentId = direct.childIds.find((id) => graph.getNode(id)?.type === 'COMPONENT')
     return componentId ? (graph.getNode(componentId) ?? null) : null
   }
-  return (
-    [...graph.getAllNodes()].find(
-      (node) =>
-        node.type === 'COMPONENT' &&
-        (node.componentKey === value || node.sourceLibraryKey === value || node.source.id === value)
-    ) ?? null
-  )
+  for (const node of graph.getAllNodes()) {
+    if (
+      node.type === 'COMPONENT' &&
+      (node.componentKey === value || node.sourceLibraryKey === value || node.source.id === value)
+    ) {
+      return node
+    }
+  }
+  return null
 }
 
 export function findComponentPropertyTarget(
