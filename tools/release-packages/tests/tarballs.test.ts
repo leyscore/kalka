@@ -25,6 +25,12 @@ describe('package export targets', () => {
     ).toEqual(['./dist/*.js'])
   })
 
+  test('collects nested wildcard targets from conditional exports', () => {
+    expect(
+      packageExportTargetPaths({ exports: { './feature/*': { import: './dist/*.js' } } })
+    ).toEqual(['./dist/*.js'])
+  })
+
   test('collects targets from conditional exports', () => {
     expect(
       packageExportTargetPaths({

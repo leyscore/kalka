@@ -57,7 +57,7 @@ export async function validateTarballBinTargets(tarballPath: string): Promise<vo
 
 function exportTargetPattern(target: string): RegExp {
   const escaped = target.replace(/[.+?^${}()|[\]\\]/g, '\\$&')
-  return new RegExp(`^${escaped.replace(/\*/g, '[^/]+')}$`)
+  return new RegExp(`^${escaped.replace(/\*/g, '.*')}$`)
 }
 export async function validateTarballExportTargets(tarballPath: string): Promise<void> {
   const entries = await tarballEntries(tarballPath)
