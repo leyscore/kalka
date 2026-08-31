@@ -44,7 +44,8 @@ import {
   drawDashedRRectWithSolidCorners,
   drawStyledRRectStroke,
   getStrokeCapEntity,
-  getStrokeJoinEntity
+  getStrokeJoinEntity,
+  normalizeDashPattern
 } from './strokes'
 import {
   drawDerivedText,
@@ -672,8 +673,8 @@ function drawVectorPathStrokes(
   miterLimit: number,
   outlineCacheKey?: string
 ): void {
-  const dash = stroke.dashPattern
-  if (dash && dash.length > 0) {
+  const dash = normalizeDashPattern(stroke.dashPattern)
+  if (dash.length > 0) {
     r.strokePaint.setColor(r.ck.Color4f(sc.r, sc.g, sc.b, sc.a))
     r.strokePaint.setAlphaf(stroke.opacity)
     r.strokePaint.setStrokeWidth(stroke.weight)
