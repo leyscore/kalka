@@ -1,5 +1,6 @@
 import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
 
+import { documentFontStatus, type DocumentFontStatus } from '#core/text/font/status'
 import { queryByXPath } from '#core/xpath'
 
 import type { RPCCommand } from './types'
@@ -74,6 +75,11 @@ export const infoCommand: RPCCommand<void, InfoResult> = {
 
     return { pages: pages.length, totalNodes, types, fonts: [...fonts].sort(), pageCounts }
   }
+}
+
+export const fontStatusCommand: RPCCommand<void, DocumentFontStatus> = {
+  name: 'font-status',
+  execute: (graph) => documentFontStatus(graph, graph.getPages()[0]?.id ?? graph.rootId)
 }
 
 // ── pages ──
