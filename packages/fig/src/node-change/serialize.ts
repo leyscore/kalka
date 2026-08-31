@@ -411,10 +411,10 @@ function serializeGeometry(node: SceneNode, nc: KiwiNodeChange, blobs: Uint8Arra
   let styleOverrides: StyleOverride[] = []
   const vectorData: Record<string, unknown> = {}
   if (node.vectorNetwork && node.type === 'VECTOR') {
-    const { table, mirroringToId } = buildStyleOverrideTable(node.vectorNetwork)
+    const { table, styleToId } = buildStyleOverrideTable(node.vectorNetwork)
     styleOverrides = table
     const blobIdx = blobs.length
-    blobs.push(encodeVectorNetworkBlob(node.vectorNetwork, mirroringToId))
+    blobs.push(encodeVectorNetworkBlob(node.vectorNetwork, styleToId))
     vectorData.vectorNetworkBlob = blobIdx
     vectorData.normalizedSize = { x: node.width, y: node.height }
   }
@@ -493,7 +493,8 @@ export function sceneNodeToKiwi(
   assignedGuidValues?: Set<string>,
   runtime: FigNodeChangeExportRuntime = EMPTY_EXPORT_RUNTIME,
   componentPropertyDefinitionsById = buildComponentPropIndex(graph),
-  modeIdToGuid?: Map<string, GUID>
+  modeIdToGuid?: Map<string, GUID>,
+  propertyIdToGuid = new Map<string, GUID>()
 ): KiwiNodeChange[] {
   // Raw paints retain library asset refs; effects use this map because their
   // Kiwi schema accepts only GUID-backed aliases.
@@ -510,6 +511,7 @@ export function sceneNodeToKiwi(
     modeIdToGuid,
     assetRefToVarGuid,
     componentPropertyDefinitionsById,
+    propertyIdToGuid,
     fractionalPosition,
     mapToFigmaType,
     fillToKiwiPaint,

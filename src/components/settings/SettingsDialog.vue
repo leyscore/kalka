@@ -7,15 +7,19 @@ import { IS_TAURI } from '@open-pencil/core/constants'
 import { useAIChat } from '@/app/ai/chat/use'
 import { appCredentialServices } from '@/app/settings/credentials/app'
 import { settingsDialogOpen, settingsDialogSection } from '@/app/settings/dialog'
+import DiagnosticsSettingsPanel from '@/components/settings/diagnostics/DiagnosticsSettingsPanel.vue'
+import GeneralSettingsPanel from '@/components/settings/general/GeneralSettingsPanel.vue'
 import MCPConnectionsSection from '@/components/settings/mcp/MCPConnectionsSection.vue'
+import MCPSettingsPanel from '@/components/settings/mcp/MCPSettingsPanel.vue'
 import ModelsPanel from '@/components/settings/models/ModelsPanel.vue'
 import StockPhotoKeysSection from '@/components/settings/provider/StockPhotoKeysSection.vue'
+import UsageSettingsPanel from '@/components/settings/usage/UsageSettingsPanel.vue'
 import StorageSettingsPanel from '@/components/settings/storage/StorageSettingsPanel.vue'
 import VectorizeSettingsSection from '@/components/settings/vectorize/VectorizeSettingsSection.vue'
 import AppSwitch from '@/components/ui/AppSwitch.vue'
 import { AppDialogFooter, AppDialogHeader, AppDialogRoot } from '@/components/ui/dialog'
 
-const { dialogs } = useI18n()
+const { credentials, settings, common } = useI18n()
 const { browserCredentialsRemembered, setRememberCredentials } = useAIChat()
 function onOpenChange(open: boolean): void {
   settingsDialogOpen.value = open
@@ -30,12 +34,11 @@ const rememberCredentials = computed({
 
 const credentialBackendLabel = computed(() => {
   void browserCredentialsRemembered.value
-  if (appCredentialServices.manager.backend === 'native')
-    return dialogs.value.credentialBackendNative
+  if (appCredentialServices.manager.backend === 'native') return credentials.value.backendNative
   if (appCredentialServices.manager.backend === 'browser') {
-    return dialogs.value.credentialBackendBrowser
+    return credentials.value.backendBrowser
   }
-  return dialogs.value.credentialBackendMemory
+  return credentials.value.backendMemory
 })
 
 const navigationClass =
@@ -51,13 +54,23 @@ const navigationClass =
     @update:open="onOpenChange"
   >
     <AppDialogHeader
-      :heading="dialogs.settings"
-      :description="dialogs.settingsDescription"
-      :close-label="dialogs.close"
+      :heading="settings.title"
+      :description="settings.description"
+      :close-label="common.close"
     />
 
     <div class="flex min-h-0 flex-1">
-      <nav class="w-40 shrink-0 border-r border-border p-2" :aria-label="dialogs.settings">
+      <nav class="w-40 shrink-0 border-r border-border p-2" :aria-label="settings.title">
+        <button
+          type="button"
+          :class="navigationClass"
+          :data-state="settingsDialogSection === 'general' ? 'active' : 'inactive'"
+          data-test-id="settings-section-general"
+          @click="settingsDialogSection = 'general'"
+        >
+          <icon-lucide-settings class="size-3.5" />
+          {{ settings.general }}
+        </button>
         <button
           type="button"
           :class="navigationClass"
@@ -66,8 +79,29 @@ const navigationClass =
           @click="settingsDialogSection = 'ai'"
         >
           <icon-lucide-sparkles class="size-3.5" />
-          {{ dialogs.settingsAIAndAgents }}
+          {{ settings.aiAndAgents }}
         </button>
+        <button
+          type="button"
+          :class="navigationClass"
+          :data-state="settingsDialogSection === 'usage' ? 'active' : 'inactive'"
+          data-test-id="settings-section-usage"
+          @click="settingsDialogSection = 'usage'"
+        >
+          <icon-lucide-chart-no-axes-combined class="size-3.5" />
+          {{ settings.usage }}
+        </button>
+        <button
+          type="button"
+          :class="navigationClass"
+          :data-state="settingsDialogSection === 'diagnostics' ? 'active' : 'inactive'"
+          data-test-id="settings-section-diagnostics"
+          @click="settingsDialogSection = 'diagnostics'"
+        >
+          <icon-lucide-activity class="size-3.5" />
+          {{ settings.diagnostics }}
+        </button>
+
         <button
           type="button"
           :class="navigationClass"
@@ -76,7 +110,7 @@ const navigationClass =
           @click="settingsDialogSection = 'mcp'"
         >
           <icon-lucide-plug class="size-3.5" />
-          {{ dialogs.mcpConnections }}
+          {{ settings.automation }}
         </button>
         <button
           type="button"
@@ -86,7 +120,7 @@ const navigationClass =
           @click="settingsDialogSection = 'media'"
         >
           <icon-lucide-image class="size-3.5" />
-          {{ dialogs.settingsMedia }}
+          {{ settings.media }}
         </button>
         <button
           type="button"
@@ -96,24 +130,31 @@ const navigationClass =
           @click="settingsDialogSection = 'storage'"
         >
           <icon-lucide-cloud class="size-3.5" />
-          {{ dialogs.settingsStorage }}
+          {{ settings.storage }}
         </button>
       </nav>
 
       <div class="min-h-0 flex-1 overflow-y-auto p-4">
+        <GeneralSettingsPanel v-if="settingsDialogSection === 'general'" />
+
         <section
-          v-if="settingsDialogSection === 'ai'"
+          v-else-if="settingsDialogSection === 'ai'"
           class="flex h-full flex-col"
           data-test-id="settings-ai-panel"
         >
           <ModelsPanel />
         </section>
 
+        <UsageSettingsPanel v-else-if="settingsDialogSection === 'usage'" />
+
+        <DiagnosticsSettingsPanel v-else-if="settingsDialogSection === 'diagnostics'" />
+
         <section
           v-else-if="settingsDialogSection === 'mcp'"
           class="flex flex-col"
           data-test-id="settings-mcp-panel"
         >
+          <MCPSettingsPanel />
           <MCPConnectionsSection />
         </section>
 
@@ -122,7 +163,7 @@ const navigationClass =
           class="flex flex-col gap-2.5"
           data-test-id="settings-media-panel"
         >
-          <h3 class="text-xs font-semibold text-surface">{{ dialogs.settingsMedia }}</h3>
+          <h3 class="text-xs font-semibold text-surface">{{ settings.media }}</h3>
           <StockPhotoKeysSection />
           <VectorizeSettingsSection />
         </section>
@@ -136,15 +177,15 @@ const navigationClass =
         <AppSwitch
           v-if="!IS_TAURI"
           v-model="rememberCredentials"
-          :label="dialogs.rememberCredentials"
+          :label="credentials.remember"
           data-test-id="settings-remember-credentials"
         />
         <div>
           <p v-if="!IS_TAURI" class="text-[10px] text-surface">
-            {{ dialogs.rememberCredentials }}
+            {{ credentials.remember }}
           </p>
           <p class="text-[10px] text-muted" data-test-id="settings-credential-backend">
-            {{ dialogs.credentialStorage({ backend: credentialBackendLabel }) }}
+            {{ credentials.storage({ backend: credentialBackendLabel }) }}
           </p>
         </div>
       </div>
@@ -154,7 +195,7 @@ const navigationClass =
           class="rounded bg-accent px-3 py-1.5 text-[11px] font-medium text-white hover:bg-accent/90"
           data-test-id="app-settings-done"
         >
-          {{ dialogs.done }}
+          {{ common.done }}
         </button>
       </DialogClose>
     </AppDialogFooter>

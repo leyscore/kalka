@@ -2,6 +2,7 @@ import type { VectorRegion, VectorVertex } from '@open-pencil/scene-graph'
 import type { Color, Rect, Vector } from '@open-pencil/scene-graph/primitives'
 import type { SnapGuide } from '@open-pencil/scene-graph/snap'
 
+import type { GuideOverlayState } from '#core/canvas/guides/types'
 import type { TextEditor } from '#core/text/editor'
 
 export interface RulerTheme {
@@ -21,6 +22,7 @@ export interface RenderOverlays {
   textEditor?: TextEditor | null
   marquee?: Rect | null
   snapGuides?: SnapGuide[]
+  guides?: GuideOverlayState
   rotationPreview?: { nodeId: string; angle: number } | null
   dropTargetId?: string | null
   layoutInsertIndicator?: {
@@ -61,8 +63,7 @@ export interface RenderOverlays {
     }>
     regions: VectorRegion[]
     selectedVertexIndices: Set<number>
-    /** Set of selected handles as "segIdx:tangentField" strings */
-    selectedHandles?: Set<string>
+    selectedHandles?: Set<number>
     hoveredHandleInfo?: { segmentIndex: number; tangentField: 'tangentStart' | 'tangentEnd' } | null
   } | null
   remoteCursors?: Array<{

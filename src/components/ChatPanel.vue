@@ -27,11 +27,13 @@ import ACPPermissionDialog from '@/components/chat/ACPPermissionDialog.vue'
 import ChatInput from '@/components/chat/ChatInput.vue'
 import ChatMessage from '@/components/chat/ChatMessage.vue'
 import AppPlaceholder from '@/components/ui/AppPlaceholder.vue'
-import AppTextButton from '@/components/ui/AppTextButton.vue'
+import AppButton from '@/components/ui/AppButton.vue'
 import ProviderSetup from '@/components/chat/ProviderSetup.vue'
 import { useAIChat } from '@/app/ai/chat/use'
 import { toast } from '@/app/shell/ui'
 import { useI18n } from '@open-pencil/vue'
+
+import { useNotificationMessages } from '@/app/i18n/notifications'
 
 import type { Chat } from '@ai-sdk/vue'
 import type { UIMessage } from 'ai'
@@ -41,7 +43,8 @@ const IS_DEV = import.meta.env.DEV
 
 const { isConfigured, ensureChat, resetChat, chatFailure, clearChatFailure } = useAIChat()
 const { copy } = useClipboard()
-const { dialogs } = useI18n()
+const { ai } = useI18n()
+const notifications = useNotificationMessages()
 
 const chat = ref<Chat<UIMessage> | null>(null)
 const isPreparingImages = ref(false)
@@ -53,7 +56,11 @@ void ensureChat()
     return undefined
   })
   .catch((error: unknown) => {
-    toast.error(error instanceof Error ? error.message : 'Failed to initialize chat')
+    toast.error(
+      notifications.value.chatInitializationFailed({
+        error: error instanceof Error ? error.message : String(error)
+      })
+    )
   })
 const messagesEnd = ref<HTMLDivElement>()
 const debugCopied = refAutoReset(false, 1500)
@@ -63,16 +70,23 @@ const messages = computed(() => chat.value?.messages ?? [])
 const failureMessage = computed(() => {
   switch (chatFailure.value?.reason) {
     case 'insufficient-credit':
-      return dialogs.value.chatInsufficientCredit
+      return ai.value.chatInsufficientCredit
     case 'output-limit':
-      return dialogs.value.chatOutputLimit
+      return ai.value.chatOutputLimit
     case 'request-failed':
-      return dialogs.value.chatRequestFailed
+      return ai.value.chatRequestFailed
     default:
       return null
   }
 })
 const status = computed(() => chat.value?.status ?? 'ready')
+function isStreamingMessage(message: UIMessage, index: number): boolean {
+  return (
+    message.role === 'assistant' &&
+    index === messages.value.length - 1 &&
+    (status.value === 'submitted' || status.value === 'streaming')
+  )
+}
 const isThinking = computed(() => {
   const s = status.value
   if (s !== 'submitted' && s !== 'streaming') return false
@@ -106,7 +120,7 @@ watch(
   () => chatFailure.value?.reason,
   (reason) => {
     if (!reason) return
-    toast.error(failureMessage.value ?? dialogs.value.chatRequestFailed)
+    toast.error(failureMessage.value ?? ai.value.chatRequestFailed)
   }
 )
 watch(
@@ -123,7 +137,7 @@ watch(
 async function handleSubmit(text: string, images: ImageAttachmentDraft[] = []) {
   if (status.value === 'streaming' || status.value === 'submitted' || isPreparingImages.value) {
     for (const image of images) revokeImagePreviewURL(image.previewURL)
-    if (images.length > 0) toast.error(dialogs.value.chatRequestFailed)
+    if (images.length > 0) toast.error(ai.value.chatRequestFailed)
     return
   }
 
@@ -135,7 +149,7 @@ async function handleSubmit(text: string, images: ImageAttachmentDraft[] = []) {
     if (currentChat) chat.value = markRaw(currentChat)
     if (!currentChat || operationVersion !== attachmentOperationVersion) {
       for (const image of images) revokeImagePreviewURL(image.previewURL)
-      if (images.length > 0) toast.error(dialogs.value.chatRequestFailed)
+      if (images.length > 0) toast.error(ai.value.chatRequestFailed)
       return
     }
 
@@ -200,7 +214,7 @@ async function handleSubmit(text: string, images: ImageAttachmentDraft[] = []) {
     })
   } catch (e) {
     console.error('Chat error:', e)
-    toast.error(dialogs.value.chatRequestFailed)
+    toast.error(ai.value.chatRequestFailed)
   } finally {
     if (operationVersion === attachmentOperationVersion) isPreparingImages.value = false
   }
@@ -228,7 +242,9 @@ function handleClearChat() {
   clearChatFailure()
   clearImageAttachmentPresentations()
   chat.value = null
-  resetChat()
+  void resetChat().catch((error: unknown) => {
+    console.error('Chat reset error:', error)
+  })
   clearToolLogEntries()
   clearACPDebugLog()
 }
@@ -244,7 +260,7 @@ function handleClearChat() {
           <AppPlaceholder
             v-if="messages.length === 0"
             data-test-id="chat-empty-state"
-            :label="dialogs.describeCreateOrChange"
+            :label="ai.describeCreateOrChange"
             :ui="{ root: 'h-full' }"
           >
             <template #icon>
@@ -254,7 +270,12 @@ function handleClearChat() {
 
           <!-- Messages -->
           <div v-else data-test-id="chat-messages" class="flex flex-col gap-3">
-            <ChatMessage v-for="msg in messages" :key="msg.id" :message="msg" />
+            <ChatMessage
+              v-for="(msg, index) in messages"
+              :key="msg.id"
+              :message="msg"
+              :streaming="isStreamingMessage(msg, index)"
+            />
 
             <!-- Thinking indicator: shown when AI is working but no visible activity -->
             <div v-if="isThinking" data-test-id="chat-typing-indicator" class="flex gap-2">
@@ -303,31 +324,26 @@ function handleClearChat() {
         v-if="messages.length > 0"
         class="flex shrink-0 items-center gap-1 border-t border-border px-3 py-1"
       >
-        <AppTextButton
-          v-if="IS_DEV"
-          :ui="{ base: 'flex items-center gap-1 rounded px-1.5 py-0.5 hover:bg-hover' }"
-          @click="handleCopyDebug"
-        >
+        <AppButton v-if="IS_DEV" color="neutral" variant="ghost" size="xs" @click="handleCopyDebug">
           <icon-lucide-clipboard-copy v-if="!debugCopied" class="size-3" />
           <icon-lucide-check v-else class="size-3 text-green-400" />
           {{ debugCopied ? 'Copied' : 'Copy log' }}
-        </AppTextButton>
-        <AppTextButton
+        </AppButton>
+        <AppButton
           v-if="IS_DEV && hasACPDebugEntries()"
-          :ui="{ base: 'flex items-center gap-1 rounded px-1.5 py-0.5 hover:bg-hover' }"
+          color="neutral"
+          variant="ghost"
+          size="xs"
           @click="handleCopyACPLog"
         >
           <icon-lucide-bug v-if="!acpLogCopied" class="size-3" />
           <icon-lucide-check v-else class="size-3 text-green-400" />
           {{ acpLogCopied ? 'Copied' : 'ACP log' }}
-        </AppTextButton>
-        <AppTextButton
-          :ui="{ base: 'flex items-center gap-1 rounded px-1.5 py-0.5 hover:bg-hover' }"
-          @click="handleClearChat"
-        >
+        </AppButton>
+        <AppButton color="error" variant="ghost" size="xs" @click="handleClearChat">
           <icon-lucide-trash-2 class="size-3" />
           Clear
-        </AppTextButton>
+        </AppButton>
       </div>
 
       <ChatInput

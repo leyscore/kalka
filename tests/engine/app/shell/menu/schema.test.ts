@@ -53,6 +53,9 @@ describe('APP_MENU_SCHEMA', () => {
       'theme-light',
       'theme-dark',
       'theme-auto',
+      'snap-geometry',
+      'snap-objects',
+      'snap-pixel-grid',
       'settings'
     ])
   })
@@ -63,6 +66,15 @@ describe('APP_MENU_SCHEMA', () => {
 
     expect(entries).toContainEqual(
       expect.objectContaining({ id: 'open-storage-workspace', label: 'Open Storage Workspace…' })
+    )
+  })
+
+  test('exposes recent files through the native File menu', () => {
+    const fileMenu = APP_MENU_SCHEMA.find((group) => group.label === 'File')
+    const entries = fileMenu ? actionItems(fileMenu.items) : []
+
+    expect(entries).toContainEqual(
+      expect.objectContaining({ id: 'open-recent', label: 'Open Recent', target: 'native' })
     )
   })
 

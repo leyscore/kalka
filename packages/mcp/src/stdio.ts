@@ -2,8 +2,12 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 
+import { resolveMCPRoot } from '#mcp/root'
 import { MCP_VERSION, registerTools } from '#mcp/server'
 import { createStdioRPCBridge } from '#mcp/stdio/bridge'
+import type { ToolPolicy } from '#mcp/tool/metadata'
+import { parseDisabledTools } from '#mcp/tool/policy'
+import { readDiscoveryFile } from '#mcp/transport/discovery'
 
 if (process.argv.includes('--help') || process.argv.includes('-h')) {
   process.stdout.write(
@@ -19,14 +23,21 @@ if (process.argv.includes('--help') || process.argv.includes('-h')) {
       `  OPENPENCIL_MCP_SOCKET        Override socket path (auto-discovered from discovery file when unset)\n` +
       `  OPENPENCIL_MCP_AUTH_TOKEN    Bearer token for RPC auth\n` +
       `  OPENPENCIL_MCP_ROOT          Allowed directory for file-scoped tools\n` +
-      `                               (default: cwd when run standalone, home directory when app-spawned)\n` +
-      `  OPENPENCIL_MCP_EVAL          Set to 1 to enable the eval tool\n`
+      `                               (default: home directory on Windows, cwd elsewhere)\n` +
+      `  OPENPENCIL_MCP_EVAL          Set to 1 to enable the eval tool\n` +
+      `  OPENPENCIL_MCP_DISABLED_TOOLS Comma-separated tool names to omit; defaults to the app setting\n`
   )
   process.exit(0)
 }
 
-const enableEval = process.env.OPENPENCIL_MCP_EVAL === '1'
-const mcpRoot = process.env.OPENPENCIL_MCP_ROOT?.trim() || process.cwd()
+const toolPolicy: ToolPolicy = {
+  allowEval: process.env.OPENPENCIL_MCP_EVAL === '1',
+  disabledTools:
+    process.env.OPENPENCIL_MCP_DISABLED_TOOLS === undefined
+      ? ((await readDiscoveryFile())?.disabledTools ?? [])
+      : parseDisabledTools(process.env.OPENPENCIL_MCP_DISABLED_TOOLS)
+}
+const mcpRoot = resolveMCPRoot(process.env.OPENPENCIL_MCP_ROOT)
 // Auth token: undefined → auto-discover from discovery file, empty string →
 // disable auth, whitespace-only → reject (same fail-fast as index.ts to catch
 // misconfiguration), otherwise → use the trimmed value.
@@ -64,7 +75,7 @@ const bridge = createStdioRPCBridge({
 })
 
 const mcpServer = new McpServer({ name: 'open-pencil', version: MCP_VERSION })
-registerTools(mcpServer, { enableEval, mcpRoot, sendRPC: bridge.sendRPC })
+registerTools(mcpServer, { policy: toolPolicy, mcpRoot, sendRPC: bridge.sendRPC })
 
 const transport = new StdioServerTransport()
 mcpServer.connect(transport).catch((err) => {

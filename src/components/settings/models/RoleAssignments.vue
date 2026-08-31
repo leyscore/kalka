@@ -4,7 +4,7 @@ import { useI18n } from '@open-pencil/vue'
 
 import {
   aiModelSettings,
-  isACPModelProfile,
+  isAgentModelProfile,
   modelProfile,
   setModelRoleAssignment,
   type AIModelRole,
@@ -12,30 +12,30 @@ import {
 } from '@/app/ai/models'
 import AppSelect from '@/components/ui/AppSelect.vue'
 
-const { dialogs } = useI18n()
+const { ai } = useI18n()
 const SAME_AS_DESIGN = '__design__'
 const NO_MODEL = '__none__'
 
 const roleDefinitions = computed(() => [
   {
     role: 'design' as const,
-    label: dialogs.value.modelRoleDesign,
-    description: dialogs.value.modelRoleDesignDescription
+    label: ai.value.modelRoleDesign,
+    description: ai.value.modelRoleDesignDescription
   },
   {
     role: 'review' as const,
-    label: dialogs.value.modelRoleReview,
-    description: dialogs.value.modelRoleReviewDescription
+    label: ai.value.modelRoleReview,
+    description: ai.value.modelRoleReviewDescription
   },
   {
     role: 'fast' as const,
-    label: dialogs.value.modelRoleFast,
-    description: dialogs.value.modelRoleFastDescription
+    label: ai.value.modelRoleFast,
+    description: ai.value.modelRoleFastDescription
   },
   {
     role: 'vision' as const,
-    label: dialogs.value.modelRoleVision,
-    description: dialogs.value.modelRoleVisionDescription
+    label: ai.value.modelRoleVision,
+    description: ai.value.modelRoleVisionDescription
   }
 ])
 
@@ -49,7 +49,7 @@ function optionsForRole(role: AIModelRole) {
   const profiles = aiModelSettings.value.models
     .filter((profile) => {
       if (role === 'design') return profile.capabilities.includes('tools')
-      if (isACPModelProfile(profile)) return false
+      if (isAgentModelProfile(profile)) return false
       if (role === 'vision') return profile.capabilities.includes('vision')
       return true
     })
@@ -58,10 +58,10 @@ function optionsForRole(role: AIModelRole) {
 
   const design = modelProfile(aiModelSettings.value.assignments.design)
   const canInherit =
-    !isACPModelProfile(design) && (role !== 'vision' || design?.capabilities.includes('vision'))
+    !isAgentModelProfile(design) && (role !== 'vision' || design?.capabilities.includes('vision'))
   return [
-    ...(canInherit ? [{ value: SAME_AS_DESIGN, label: dialogs.value.modelRoleUseDesign }] : []),
-    { value: NO_MODEL, label: dialogs.value.noModel },
+    ...(canInherit ? [{ value: SAME_AS_DESIGN, label: ai.value.modelRoleUseDesign }] : []),
+    { value: NO_MODEL, label: ai.value.noModel },
     ...profiles
   ]
 }

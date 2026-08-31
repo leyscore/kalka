@@ -1,5 +1,6 @@
 /* eslint-disable max-lines -- SceneGraph exposes a stable facade over domain modules */
 export * from './images'
+export * from './components/properties'
 export * from './copy'
 export {
   copyInstanceComponentProps,
@@ -12,6 +13,8 @@ export * from './export-scale'
 export * from './coordinate'
 export * from './constants'
 export * from './geometry'
+export * from './guides'
+export * from './layout-guides'
 export * from './font-style'
 export * from './shared-styles'
 export { default as TransformMatrix } from './matrix'

@@ -20,9 +20,11 @@ import { IS_BROWSER } from '#core/constants'
 import type { RasterExportFormat } from '#core/io/formats/raster'
 import { documentFontStatus, type DocumentFontStatus } from '#core/text/font/status'
 
+import { combineComponentsAsVariants, exposeInstanceSwap } from './components'
 import type {
   FigmaBooleanOperationNode,
   FigmaComponentNode,
+  FigmaComponentSetNode,
   FigmaEllipseNode,
   FigmaFrameNode,
   FigmaGroupNode,
@@ -49,6 +51,7 @@ export { FigmaNodeProxy } from './proxy'
 export type {
   FigmaBooleanOperationNode,
   FigmaComponentNode,
+  FigmaComponentSetNode,
   FigmaEllipseNode,
   FigmaFrameNode,
   FigmaGroupNode,
@@ -250,6 +253,8 @@ export class FigmaAPI implements NodeProxyHost {
       layoutMode: raw.layoutMode,
       primaryAxisAlign: raw.primaryAxisAlign,
       counterAxisAlign: raw.counterAxisAlign,
+      primaryAxisSizing: raw.primaryAxisSizing,
+      counterAxisSizing: raw.counterAxisSizing,
       itemSpacing: raw.itemSpacing,
       paddingTop: raw.paddingTop,
       paddingRight: raw.paddingRight,
@@ -265,7 +270,38 @@ export class FigmaAPI implements NodeProxyHost {
     return this.wrapNode(comp.id)
   }
 
-  // --- Variables ---
+  combineAsVariants(
+    nodes: ReadonlyArray<FigmaComponentNode>,
+    parent: FigmaNodeProxy,
+    index?: number
+  ): FigmaComponentSetNode
+  combineAsVariants(
+    nodes: ReadonlyArray<ComponentNode>,
+    parent: BaseNode & ChildrenMixin,
+    index?: number
+  ): ComponentSetNode
+  combineAsVariants(
+    nodes: ReadonlyArray<ComponentNode | FigmaComponentNode>,
+    parent: (BaseNode & ChildrenMixin) | FigmaNodeProxy,
+    index?: number
+  ): FigmaComponentSetNode {
+    const componentSet = combineComponentsAsVariants(
+      this.graph,
+      nodes.map((node) => this._nodeId(node)),
+      this._nodeId(parent),
+      index
+    )
+    return this.wrapNode(componentSet.id) as FigmaComponentSetNode
+  }
+
+  exposeInstanceSwap(
+    slots: ReadonlyArray<FigmaNodeProxy>,
+    candidates: ReadonlyArray<FigmaNodeProxy>,
+    propertyName = 'Instance'
+  ): FigmaNodeProxy {
+    const host = exposeInstanceSwap(this.graph, slots, candidates, propertyName)
+    return this.wrapNode(host.id)
+  }
 
   getVariableById(id: string): Variable | null {
     return this.graph.variables.get(id) ?? null

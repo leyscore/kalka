@@ -7,6 +7,7 @@ import {
 import { parseVariantName } from '@open-pencil/scene-graph/variant-name'
 /* eslint-disable max-lines -- kiwi↔scene conversion helpers are tightly coupled */
 
+import { importCanvasGuides } from './canvas-guides'
 import { convertFigmaDerivedTextGlyphs } from './derived-text-glyphs'
 import { convertFontFeatures } from './font/features'
 import { convertFontVariations } from './font/variations'
@@ -485,10 +486,10 @@ function convertLayoutProps(
   }
 }
 
-function getVectorStrokeCap(nc: NodeChange, vectorNetwork: VectorNetwork | null): StrokeCap {
-  return (nc.strokeCap ??
-    vectorNetwork?.vertices.find((v) => v.strokeCap)?.strokeCap ??
-    'NONE') as StrokeCap
+function getVectorStrokeCap(nc: NodeChange): StrokeCap {
+  // Per-vertex caps stay on the vector network; promoting one to the node
+  // cap would put a head on both ends of a one-ended arrow.
+  return (nc.strokeCap ?? 'NONE') as StrokeCap
 }
 
 function getVectorStrokeJoin(nc: NodeChange, vectorNetwork: VectorNetwork | null): StrokeJoin {
@@ -548,7 +549,7 @@ function convertTextPathData(nc: NodeChange, blobs: Uint8Array[]): SceneNode['te
 
 function convertVectorAndStrokeProps(nc: NodeChange, blobs: Uint8Array[]) {
   const vectorNetwork = resolveVectorNetwork(nc, blobs)
-  const strokeCap = getVectorStrokeCap(nc, vectorNetwork)
+  const strokeCap = getVectorStrokeCap(nc)
   const strokeJoin = getVectorStrokeJoin(nc, vectorNetwork)
   const fillGeometry = alignGeometryWindingRules(
     resolveGeometryPaths(nc.fillGeometry, blobs, resolveVectorStyleOverrideFills(nc)),
@@ -640,6 +641,7 @@ export function nodeChangeToProps(
     ),
     effects: convertEffects(nc.effects),
     layoutGrids: convertLayoutGrids(nc.layoutGrids),
+    guides: importCanvasGuides(nc.guides),
     fillStyleId: styleRefId(nc.styleIdForFill),
     strokeStyleId: styleRefId(nc.styleIdForStrokeFill),
     textStyleId: styleRefId(nc.styleIdForText),
