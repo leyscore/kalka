@@ -133,6 +133,21 @@ function preferredValues(graph: SceneGraph, ids: string[]): InstanceSwapPreferre
   })
 }
 
+function propertyMetadata(
+  target: ProxyThis,
+  internals: NodeProxyInternals,
+  definition: ComponentPropertyDefinition,
+  includeVariantOptions: boolean
+): Pick<FigmaComponentPropertyDefinition, 'preferredValues' | 'variantOptions'> {
+  return {
+    ...(definition.preferredValues
+      ? { preferredValues: preferredValues(graph(target, internals), definition.preferredValues) }
+      : {}),
+    ...(includeVariantOptions && definition.variantOptions
+      ? { variantOptions: [...definition.variantOptions] }
+      : {})
+  }
+}
 function definitions(
   target: ProxyThis,
   internals: NodeProxyInternals
@@ -148,12 +163,7 @@ function definitions(
           definition.type === 'BOOLEAN'
             ? definition.defaultValue === 'true'
             : definition.defaultValue,
-        ...(definition.preferredValues
-          ? {
-              preferredValues: preferredValues(graph(target, internals), definition.preferredValues)
-            }
-          : {}),
-        ...(definition.variantOptions ? { variantOptions: [...definition.variantOptions] } : {})
+        ...propertyMetadata(target, internals, definition, true)
       }
     ])
   )
@@ -173,15 +183,7 @@ function componentProperties(
         {
           type: definition.type,
           value: definition.type === 'BOOLEAN' ? value === 'true' : value,
-          ...(definition.preferredValues
-            ? {
-                preferredValues: preferredValues(
-                  graph(target, internals),
-                  definition.preferredValues
-                )
-              }
-            : {}),
-          ...(definition.variantOptions ? { variantOptions: [...definition.variantOptions] } : {})
+          ...propertyMetadata(target, internals, definition, false)
         }
       ]
     })
