@@ -4,6 +4,15 @@ import type { NodeCloneMode } from './copy'
 
 export type { NodeCloneMode } from './copy'
 
+export const INSTANCE_SYNC_TEXT_PROPS = [
+  'name',
+  'text',
+  'fontSize',
+  'fontWeight',
+  'fontFamily',
+  'textDirection'
+] as const
+
 export const INSTANCE_SYNC_PROPS: (keyof SceneNode)[] = [
   'width',
   'height',
@@ -48,6 +57,8 @@ export const INSTANCE_SYNC_PROPS: (keyof SceneNode)[] = [
   'boundVariables',
   'variableModes'
 ]
+
+export const INSTANCE_SYNC_FIELDS = [...INSTANCE_SYNC_PROPS, ...INSTANCE_SYNC_TEXT_PROPS] as const
 
 function setSceneProp<K extends keyof SceneNode>(
   target: Partial<SceneNode>,
@@ -142,20 +153,7 @@ function syncChildren(
     const instChild = instChildMap.get(compChildId)
     if (!compChild || !instChild) continue
 
-    for (const key of INSTANCE_SYNC_PROPS) {
-      const overrideKey = `${instChild.id}:${key}`
-      if (overrideKey in overrides) continue
-      copyProp(instChild, compChild, key)
-    }
-
-    for (const key of [
-      'name',
-      'text',
-      'fontSize',
-      'fontWeight',
-      'fontFamily',
-      'textDirection'
-    ] as const) {
+    for (const key of INSTANCE_SYNC_FIELDS) {
       const overrideKey = `${instChild.id}:${key}`
       if (overrideKey in overrides) continue
       copyProp(instChild, compChild, key)
@@ -309,7 +307,10 @@ export function recordInstanceOverride(
   const instance = findInstanceAncestor(graph, nodeId)
   if (!instance) return
 
-  const relevant = [...fields].filter((field) => (INSTANCE_SYNC_PROPS as string[]).includes(field))
+  const relevant = [...fields].filter((field) =>
+    (INSTANCE_SYNC_FIELDS as readonly string[]).includes(field)
+  )
+
   if (relevant.length === 0) return
 
   const overrides = { ...instance.overrides }

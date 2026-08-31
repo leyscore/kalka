@@ -4,8 +4,9 @@ export * from './components/properties'
 export * from './copy'
 export {
   copyInstanceComponentProps,
-  findInstanceAncestor,
-  INSTANCE_SYNC_PROPS,
+  hasInstanceOverride,
+  INSTANCE_SYNC_FIELDS,
+  INSTANCE_SYNC_TEXT_PROPS,
   recordInstanceOverride
 } from './instances'
 export * from './snap'
