@@ -30,6 +30,13 @@ export function getStrokeJoinEntity(r: SkiaRenderer, join: string | undefined): 
   }
 }
 
+export function normalizeDashPattern(dash: readonly number[] | undefined): number[] {
+  if (!dash || dash.length === 0) return []
+  // Figma permits odd-length alternating patterns; CanvasKit requires the
+  // on/off interval list to contain a pair for every cycle.
+  return dash.length % 2 === 0 ? [...dash] : [...dash, ...dash]
+}
+
 function strokeInset(stroke: Stroke): number {
   if (stroke.align === 'INSIDE') return stroke.weight / 2
   if (stroke.align === 'OUTSIDE') return -stroke.weight / 2
@@ -45,7 +52,7 @@ export function drawDashedRRectWithSolidCorners(
   cornerRadius: number,
   dashPhase = 0
 ): void {
-  const dash = stroke.dashPattern ?? []
+  const dash = normalizeDashPattern(stroke.dashPattern)
   const inset = strokeInset(stroke)
   const left = inset
   const top = inset
@@ -166,7 +173,7 @@ export function drawStyledRRectStroke(
   color: Color,
   dashPhase = 0
 ): void {
-  const dash = stroke.dashPattern ?? []
+  const dash = normalizeDashPattern(stroke.dashPattern)
   configureStrokePaint(r, node, stroke, color)
   r.strokePaint.setPathEffect(dash.length > 0 ? r.ck.PathEffect.MakeDash(dash, dashPhase) : null)
   r.drawRRectStrokeWithAlign(canvas, rrect, node, stroke)
