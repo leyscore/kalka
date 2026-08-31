@@ -86,6 +86,7 @@
       "default": "./dist/rpc/index.js"
     },
     "./library": {
+      "bun": "./src/library/index.ts",
       "types": "./dist/library/index.d.ts",
       "import": "./dist/library/index.js",
       "default": "./dist/library/index.js"
@@ -131,6 +132,7 @@
       "default": "./dist/clipboard.js"
     },
     "./bytes": {
+      "bun": "./src/bytes/index.ts",
       "types": "./dist/bytes/index.d.ts",
       "import": "./dist/bytes/index.js",
       "default": "./dist/bytes/index.js"
