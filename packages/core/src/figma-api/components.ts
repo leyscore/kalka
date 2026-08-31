@@ -231,9 +231,11 @@ function editPropertyDefinitions(
   ) {
     throw new Error(`defaultValue is not supported for ${definition.type} properties`)
   }
+  const updatedName = changes.name?.trim()
+  if (updatedName === '') throw new Error('Property name must not be empty')
   const updated = {
     ...definition,
-    ...(changes.name ? { name: changes.name.trim() } : {}),
+    ...(updatedName ? { name: updatedName } : {}),
     ...(changes.defaultValue !== undefined
       ? {
           defaultValue:
@@ -272,7 +274,13 @@ function applyProperty(
   if (definition.type === 'VARIANT') {
     throw new Error('setProperties() cannot set VARIANT properties through the adapter')
   }
-  applyComponentPropertyValue(graph(target, internals), node.id, definition, String(value))
+  const result = applyComponentPropertyValue(
+    graph(target, internals),
+    node.id,
+    definition,
+    String(value)
+  )
+  if (!result) throw new Error(`Unable to apply component property: ${propertyName(definition)}`)
 }
 export function installComponentPropertyAccessors(
   prototype: object,
