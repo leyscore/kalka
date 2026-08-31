@@ -19,6 +19,12 @@ describe('packageBinTargets', () => {
 })
 
 describe('package export targets', () => {
+  test('collects wildcard targets from conditional exports', () => {
+    expect(
+      packageExportTargetPaths({ exports: { './feature/*': { import: './dist/*.js' } } })
+    ).toEqual(['./dist/*.js'])
+  })
+
   test('collects targets from conditional exports', () => {
     expect(
       packageExportTargetPaths({

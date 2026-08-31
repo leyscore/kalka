@@ -12,7 +12,6 @@ type PackageExports = {
 type PackageJSON = {
   bin?: Record<string, string> | string
   exports?: PackageExports
-  imports?: PackageExports
   name: string
 }
 
@@ -56,15 +55,29 @@ export async function validateTarballBinTargets(tarballPath: string): Promise<vo
   }
 }
 
+function exportTargetPattern(target: string): RegExp {
+  const escaped = target.replace(/[.+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(`^${escaped.replace(/\*/g, '[^/]+')}$`)
+}
 export async function validateTarballExportTargets(tarballPath: string): Promise<void> {
   const entries = await tarballEntries(tarballPath)
   const packageJSON = await tarballPackageJSON(tarballPath)
 
   for (const target of packageExportTargetPaths(packageJSON)) {
     if (!target.startsWith('./')) continue
-    const entry = `package/${target.slice(2)}`
-    if (!entries.has(entry)) {
-      throw new Error(`${tarballPath}: export target missing from tarball: ${entry}`)
+    const relativeTarget = target.slice(2)
+    let matchingEntries: string[]
+    if (relativeTarget.includes('*')) {
+      const pattern = exportTargetPattern(relativeTarget)
+      matchingEntries = [...entries].filter((entry) => pattern.test(entry.slice('package/'.length)))
+    } else {
+      const exactEntry = `package/${relativeTarget}`
+      matchingEntries = entries.has(exactEntry) ? [exactEntry] : []
+    }
+    if (matchingEntries.length === 0) {
+      throw new Error(
+        `${tarballPath}: export target missing from tarball: package/${relativeTarget}`
+      )
     }
   }
 }
