@@ -45,7 +45,9 @@ export interface VerifierContext {
   generation: number
 }
 
-type ComponentPropertyAssignments = SceneNode['componentPropertyAssignments']
+export interface CompareOptions extends Omit<VerifierContext, 'a' | 'b' | 'key' | 'path'> {
+  verifiers: Map<string, Verifier>
+}
 
 /** G1→G2 must be exactly equal (idempotent export). G0→G1 allows semantic equivalence. */
 const isIdempotent = (ctx: VerifierContext): boolean => ctx.generation === 1
@@ -85,6 +87,20 @@ function sameNodeReference(ctx: VerifierContext, a: string, b: string): boolean 
   return aPath !== undefined && aPath === bPath
 }
 
+function sameNodeReferences(
+  ctx: VerifierContext,
+  a: string[] | undefined,
+  b: string[] | undefined
+): boolean {
+  if (a === undefined || b === undefined) return a === b
+  return (
+    a.length === b.length &&
+    a.every((value, index) => {
+      const other = b[index]
+      return other !== undefined && sameNodeReference(ctx, value, other)
+    })
+  )
+}
 function isComponentPropertyDefinitions(value: unknown): value is ComponentPropertyDefinition[] {
   if (!Array.isArray(value)) return false
   return value.every(isComponentPropertyDefinition)
@@ -115,15 +131,24 @@ function verifyComponentPropertyDefinitions(ctx: VerifierContext): boolean {
   return aDefinitions.every((value, index) => {
     const definition = value
     const other = bDefinitions[index]
-    if (!other || definition.type !== other.type || definition.name !== other.name) return false
-    const { defaultValue, ...rest } = definition
-    const { defaultValue: otherDefaultValue, ...otherRest } = other
+    if (!other || definition.type !== other.type || definition.name !== other.name) {
+      return false
+    }
+
+    const { defaultValue, preferredValues, ...rest } = definition
+    const {
+      defaultValue: otherDefaultValue,
+      preferredValues: otherPreferredValues,
+      ...otherRest
+    } = other
     if (JSON.stringify(rest) !== JSON.stringify(otherRest)) return false
+
     if (definition.type !== 'INSTANCE_SWAP') return defaultValue === otherDefaultValue
     return (
       typeof defaultValue === 'string' &&
       typeof otherDefaultValue === 'string' &&
-      sameNodeReference(ctx, defaultValue, otherDefaultValue)
+      sameNodeReference(ctx, defaultValue, otherDefaultValue) &&
+      sameNodeReferences(ctx, preferredValues, otherPreferredValues)
     )
   })
 }
