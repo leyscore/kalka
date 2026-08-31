@@ -226,6 +226,8 @@ export interface VisualBoundsNode {
   flipX?: boolean
   flipY?: boolean
   strokes?: Stroke[]
+  strokeCap?: StrokeCap
+  vectorNetwork?: VectorNetwork | null
   effects?: Effect[]
   fillGeometry?: Array<{ commandsBlob: Uint8Array }>
   strokeGeometry?: Array<{ commandsBlob: Uint8Array }>
