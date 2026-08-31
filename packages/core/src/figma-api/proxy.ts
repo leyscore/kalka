@@ -27,6 +27,7 @@ import {
   type FigmaVectorPath
 } from './accessors/vector'
 import { installVisualNodeProxyAccessors } from './accessors/visual'
+import { installComponentPropertyAccessors } from './components'
 import type { FigmaFontName } from './fonts'
 import { getPageBackgrounds, setPageBackgrounds } from './page-backgrounds'
 import * as PluginData from './plugin-data'
@@ -596,3 +597,4 @@ const proxyInternals = {
 
 installLayoutNodeProxyAccessors(FigmaNodeProxy.prototype, proxyInternals)
 installVariableModeNodeProxyAccessors(FigmaNodeProxy.prototype, proxyInternals)
+installComponentPropertyAccessors(FigmaNodeProxy.prototype, proxyInternals)
