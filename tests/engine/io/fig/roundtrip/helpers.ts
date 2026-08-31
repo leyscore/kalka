@@ -88,12 +88,13 @@ function sameNodeReference(ctx: VerifierContext, a: string, b: string): boolean 
 }
 
 function verifyComponentPropertyDefinitions(ctx: VerifierContext): boolean {
-  if (!Array.isArray(ctx.a) || !Array.isArray(ctx.b)) return false
-  if (ctx.a.length !== ctx.b.length) return false
+  const aDefinitions = ctx.a
+  const bDefinitions = ctx.b
+  if (aDefinitions.length !== bDefinitions.length) return false
 
-  return ctx.a.every((value, index) => {
+  return aDefinitions.every((value, index) => {
     const definition = value as ComponentPropertyDefinition
-    const other = ctx.b[index] as ComponentPropertyDefinition | undefined
+    const other = bDefinitions[index] as ComponentPropertyDefinition | undefined
     if (!other || definition.type !== other.type || definition.name !== other.name) return false
     const { defaultValue, ...rest } = definition
     const { defaultValue: otherDefaultValue, ...otherRest } = other
@@ -107,12 +108,18 @@ function verifyComponentPropertyDefinitions(ctx: VerifierContext): boolean {
   })
 }
 
-function verifyComponentPropertyAssignments(ctx: VerifierContext): boolean {
-  if (!ctx.a || typeof ctx.a !== 'object' || Array.isArray(ctx.a)) return false
-  if (!ctx.b || typeof ctx.b !== 'object' || Array.isArray(ctx.b)) return false
+function isComponentPropertyAssignments(value: unknown): value is ComponentPropertyAssignments {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false
+  return Object.values(value).every((entry) => typeof entry === 'string')
+}
 
-  const aAssignments = ctx.a as Record<string, unknown>
-  const bAssignments = ctx.b as Record<string, unknown>
+function verifyComponentPropertyAssignments(ctx: VerifierContext): boolean {
+  if (!isComponentPropertyAssignments(ctx.a) || !isComponentPropertyAssignments(ctx.b)) {
+    return false
+  }
+
+  const aAssignments = ctx.a
+  const bAssignments = ctx.b
   const propertyIds = new Set([...Object.keys(aAssignments), ...Object.keys(bAssignments)])
   for (const propertyId of propertyIds) {
     const a = aAssignments[propertyId]
