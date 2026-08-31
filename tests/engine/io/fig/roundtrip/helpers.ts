@@ -81,39 +81,44 @@ export function buildComponentPropertyDefinitionIndex(
   return definitions
 }
 
-function sameNodeReference(ctx: VerifierContext, a: unknown, b: unknown): boolean {
-  if (typeof a !== 'string' || typeof b !== 'string') return false
+function sameNodeReference(ctx: VerifierContext, a: string, b: string): boolean {
   const aPath = ctx.aNodePaths.get(a)
   const bPath = ctx.bNodePaths.get(b)
   return aPath !== undefined && aPath === bPath
 }
 
-function componentPropertyDefinitionAt(
-  ctx: VerifierContext,
-  side: 'a' | 'b'
-): ComponentPropertyDefinition | undefined {
-  const match = /componentPropertyDefinitions\[(\d+)\]\.defaultValue$/.exec(ctx.key)
-  if (!match) return undefined
-  const index = Number.parseInt(match[1], 10)
-  const node = side === 'a' ? ctx.aNodes.get(ctx.path) : ctx.bNodes.get(ctx.path)
-  return node?.componentPropertyDefinitions[index]
-}
+function verifyComponentPropertyDefinitions(ctx: VerifierContext): boolean {
+  if (!Array.isArray(ctx.a) || !Array.isArray(ctx.b)) return false
+  if (ctx.a.length !== ctx.b.length) return false
 
-function isStringRecord(value: unknown): value is Record<string, string> {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return false
-  return Object.values(value).every((entry) => typeof entry === 'string')
+  return ctx.a.every((value, index) => {
+    const definition = value as ComponentPropertyDefinition
+    const other = ctx.b[index] as ComponentPropertyDefinition | undefined
+    if (!other || definition.type !== other.type || definition.name !== other.name) return false
+    const { defaultValue, ...rest } = definition
+    const { defaultValue: otherDefaultValue, ...otherRest } = other
+    if (JSON.stringify(rest) !== JSON.stringify(otherRest)) return false
+    if (definition.type !== 'INSTANCE_SWAP') return defaultValue === otherDefaultValue
+    return (
+      typeof defaultValue === 'string' &&
+      typeof otherDefaultValue === 'string' &&
+      sameNodeReference(ctx, defaultValue, otherDefaultValue)
+    )
+  })
 }
 
 function verifyComponentPropertyAssignments(ctx: VerifierContext): boolean {
-  if (!isStringRecord(ctx.a) || !isStringRecord(ctx.b)) return false
+  if (!ctx.a || typeof ctx.a !== 'object' || Array.isArray(ctx.a)) return false
+  if (!ctx.b || typeof ctx.b !== 'object' || Array.isArray(ctx.b)) return false
 
-  const aAssignments = ctx.a
-  const bAssignments = ctx.b
+  const aAssignments = ctx.a as Record<string, unknown>
+  const bAssignments = ctx.b as Record<string, unknown>
   const propertyIds = new Set([...Object.keys(aAssignments), ...Object.keys(bAssignments)])
   for (const propertyId of propertyIds) {
     const a = aAssignments[propertyId]
     const b = bAssignments[propertyId]
     if (a === b) continue
+    if (typeof a !== 'string' || typeof b !== 'string') return false
     const aDefinition = ctx.aComponentPropertyDefinitions.get(propertyId)
     const bDefinition = ctx.bComponentPropertyDefinitions.get(propertyId)
     if (aDefinition?.type !== 'INSTANCE_SWAP' || bDefinition?.type !== 'INSTANCE_SWAP') {
@@ -158,17 +163,7 @@ export const SCENE_VERIFIERS = new Map<string, Verifier>([
       return ctx.a === 'VARIANT' && ctx.b === 'TEXT'
     }
   ],
-  [
-    'defaultValue',
-    (ctx) => {
-      const aDefinition = componentPropertyDefinitionAt(ctx, 'a')
-      const bDefinition = componentPropertyDefinitionAt(ctx, 'b')
-      if (aDefinition?.type !== 'INSTANCE_SWAP' || bDefinition?.type !== 'INSTANCE_SWAP') {
-        return false
-      }
-      return sameNodeReference(ctx, ctx.a, ctx.b)
-    }
-  ],
+  ['componentPropertyDefinitions', verifyComponentPropertyDefinitions],
   ['componentPropertyAssignments', verifyComponentPropertyAssignments]
 ])
 
