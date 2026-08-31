@@ -1,14 +1,30 @@
 import { defineCommand } from 'citty'
 
-import type { DocumentFontStatus } from '@open-pencil/core/rpc'
+import { fontManager, prepareGraphFonts, type DocumentFontStatus } from '@open-pencil/core/text'
 
 import { appTargetOptions } from '#cli/app-target'
 import { bold, entity, fmtList, kv, printError } from '#cli/format'
+import { loadDocument } from '#cli/headless'
 import { loadRPCData } from '#cli/rpc-data'
-type FontStatusResult = DocumentFontStatus
 
-function statusLabel(status: FontStatusResult['faces'][number]['status']): string {
-  return status === 'available' ? 'available' : status
+function statusLabel(status: DocumentFontStatus['faces'][number]['status']): string {
+  return status
+}
+
+async function prepareFontStatus(
+  graph: Awaited<ReturnType<typeof loadDocument>>,
+  pageId: string
+): Promise<DocumentFontStatus> {
+  const previousProviders = fontManager.enabledOnlineFontProviders()
+  fontManager.setOnlineFontProviders({})
+  fontManager.setWebFontFetch(null)
+  try {
+    return prepareGraphFonts(graph, pageId, [pageId])
+  } finally {
+    fontManager.setOnlineFontProviders(
+      Object.fromEntries(previousProviders.map((provider) => [provider, true]))
+    )
+  }
 }
 
 export default defineCommand({
@@ -23,9 +39,16 @@ export default defineCommand({
     json: { type: 'boolean', description: 'Output as JSON' }
   },
   async run({ args }) {
-    let data: FontStatusResult
+    let data: DocumentFontStatus
     try {
-      data = await loadRPCData<FontStatusResult>(args.file, 'font-status', undefined, args)
+      if (!args.file) {
+        data = await loadRPCData<DocumentFontStatus>(args.file, 'font-status', undefined, args)
+      } else {
+        const graph = await loadDocument(args.file)
+        const page = graph.getPages()[0]
+        const pageId = page?.id ?? graph.rootId
+        data = await prepareFontStatus(graph, pageId)
+      }
     } catch (error) {
       printError(error)
       process.exit(1)
@@ -35,19 +58,17 @@ export default defineCommand({
       console.log(JSON.stringify(data, null, 2))
       return
     }
-
     if (data.faces.length === 0) {
       console.log('No fonts found.')
       return
     }
-
     console.log('')
     console.log(bold(`  ${data.faces.length} font face${data.faces.length !== 1 ? 's' : ''}`))
     console.log('')
     console.log(
       fmtList(
         data.faces.map((face) => ({
-          header: entity(`${face.family}`, face.style),
+          header: entity(face.family, face.style),
           details: {
             status: statusLabel(face.status),
             ...(face.source ? { source: face.source } : {}),

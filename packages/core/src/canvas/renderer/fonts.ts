@@ -118,10 +118,10 @@ export async function prepareForExport(
   const previousTextMeasurer = getTextMeasurer()
   setTextMeasurer((node, maxWidth) => r.measureTextNode(node, maxWidth))
 
-  const fontKeys = fontManager.collectFontKeys(graph, nodeIds)
   const requirements = collectGraphFontRequirements(graph, nodeIds)
+  const faces = requirements.nodes.flatMap(collectNodeFontFaces)
   await Promise.all(
-    fontKeys.map(([family, style]) => fontManager.loadFont(family, style, requirements.characters))
+    faces.map(({ family, style }) => fontManager.loadFont(family, style, requirements.characters))
   )
   await fontManager.ensureFallbackPack(
     missingGraphFontScripts(requirements),
