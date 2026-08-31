@@ -45,9 +45,7 @@ export interface VerifierContext {
   generation: number
 }
 
-export interface CompareOptions extends Omit<VerifierContext, 'a' | 'b' | 'key' | 'path'> {
-  verifiers: Map<string, Verifier>
-}
+type ComponentPropertyAssignments = SceneNode['componentPropertyAssignments']
 
 /** G1→G2 must be exactly equal (idempotent export). G0→G1 allows semantic equivalence. */
 const isIdempotent = (ctx: VerifierContext): boolean => ctx.generation === 1
@@ -87,14 +85,33 @@ function sameNodeReference(ctx: VerifierContext, a: string, b: string): boolean 
   return aPath !== undefined && aPath === bPath
 }
 
+function isComponentPropertyDefinitions(value: unknown): value is ComponentPropertyDefinition[] {
+  if (!Array.isArray(value)) return false
+  return value.every(
+    (entry) =>
+      typeof entry === 'object' &&
+      entry !== null &&
+      typeof entry.id === 'string' &&
+      typeof entry.name === 'string' &&
+      (entry.type === 'VARIANT' ||
+        entry.type === 'TEXT' ||
+        entry.type === 'BOOLEAN' ||
+        entry.type === 'INSTANCE_SWAP') &&
+      typeof entry.defaultValue === 'string'
+  )
+}
+
 function verifyComponentPropertyDefinitions(ctx: VerifierContext): boolean {
+  if (!isComponentPropertyDefinitions(ctx.a) || !isComponentPropertyDefinitions(ctx.b)) {
+    return false
+  }
   const aDefinitions = ctx.a
   const bDefinitions = ctx.b
   if (aDefinitions.length !== bDefinitions.length) return false
 
   return aDefinitions.every((value, index) => {
-    const definition = value as ComponentPropertyDefinition
-    const other = bDefinitions[index] as ComponentPropertyDefinition | undefined
+    const definition = value
+    const other = bDefinitions[index]
     if (!other || definition.type !== other.type || definition.name !== other.name) return false
     const { defaultValue, ...rest } = definition
     const { defaultValue: otherDefaultValue, ...otherRest } = other
