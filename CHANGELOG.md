@@ -67,6 +67,7 @@
 
 ### Fixed
 
+- Open legacy raw `.fig` files that store the Kiwi document and thumbnail without a ZIP wrapper. (#582)
 - Preserve a frame's auto-layout HUG sizing mode when converting it into a component with `create_component`, so later padding changes still resize the component as expected.
 - Run `openpencil import` on Node so the npm-installed CLI no longer fails with `Bun is not defined`. (#575)
 - Isolate browser-development MCP servers behind worktree-aware Portless WebSocket routes and per-runtime socket/discovery paths, preventing concurrent worktrees from competing for port 7600 or the global MCP socket.
