@@ -18,6 +18,7 @@ import { isEqual } from 'es-toolkit/predicate'
 
 import { guidToString, resolvedNumericBindingUpdate } from '@open-pencil/fig/node-change'
 import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import { hasInstanceOverride } from '@open-pencil/scene-graph'
 import {
   INSTANCE_SYNC_PROPS,
   INSTANCE_SYNC_TEXT_PROPS,

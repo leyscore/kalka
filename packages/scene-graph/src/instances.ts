@@ -294,7 +294,16 @@ export function findInstanceAncestor(graph: SceneGraph, nodeId: string): SceneNo
 }
 
 /**
- * Marks `nodeId`'s `fields` as instance overrides so resync (swapInstanceComponent,
+ * True when a node field is protected from instance synchronization.
+ */
+export function hasInstanceOverride(graph: SceneGraph, nodeId: string, field: string): boolean {
+  const instance = findInstanceAncestor(graph, nodeId)
+  if (!instance) return false
+  const key = nodeId === instance.id ? field : `${nodeId}:${field}`
+  return key in instance.overrides
+}
+
+/*
  * syncInstances) won't clobber them, and — if `nodeId` sits inside an INSTANCE —
  * so the .fig exporter knows to write the diff out as a symbol override. A no-op
  * for fields outside INSTANCE_SYNC_PROPS or nodes with no INSTANCE ancestor.

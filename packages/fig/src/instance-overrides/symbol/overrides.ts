@@ -1,4 +1,5 @@
-import { hasLiveOverride } from '../live-overrides'
+import { hasInstanceOverride } from '@open-pencil/scene-graph'
+
 import { applyOverridePatch } from '../patches'
 import { resolveOverrideTarget } from '../resolve'
 import type { OverrideContext } from '../types'
@@ -16,7 +17,9 @@ function dropLiveOverriddenFields(
 ): void {
   if (!patch?.props) return
   const kept = Object.fromEntries(
-    Object.entries(patch.props).filter(([field]) => !hasLiveOverride(ctx.graph, targetId, field))
+    Object.entries(patch.props).filter(
+      ([field]) => !hasInstanceOverride(ctx.graph, targetId, field)
+    )
   )
   patch.props = Object.keys(kept).length > 0 ? (kept as typeof patch.props) : undefined
 }
