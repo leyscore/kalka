@@ -71,6 +71,8 @@
 
 ### Fixed
 
+- Make published package export conditions resolve to files included in npm tarballs.
+- Use the user's home directory as the default MCP file root on Windows, avoiding the caller's unreliable working directory.
 - Open legacy raw `.fig` files that store the Kiwi document and thumbnail without a ZIP wrapper. (#582)
 - Preserve a frame's auto-layout HUG sizing mode when converting it into a component with `create_component`, so later padding changes still resize the component as expected.
 - Run `openpencil import` on Node so the npm-installed CLI no longer fails with `Bun is not defined`. (#575)

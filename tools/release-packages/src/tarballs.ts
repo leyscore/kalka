@@ -15,6 +15,17 @@ export function packageBinTargets(packageJSON: PackageJSON): Record<string, stri
   return packageJSON.bin ?? {}
 }
 
+function packageExportTargets(value: unknown): string[] {
+  if (typeof value === 'string') return [value]
+  if (Array.isArray(value)) return value.flatMap(packageExportTargets)
+  if (!value || typeof value !== 'object') return []
+  return Object.values(value).flatMap(packageExportTargets)
+}
+
+export function packageExportTargetPaths(packageJSON: { exports?: unknown }): string[] {
+  return packageExportTargets(packageJSON.exports)
+}
+
 export async function tarballEntries(tarballPath: string): Promise<Set<string>> {
   const { stdout } = await execFileAsync('tar', ['-tf', tarballPath], { encoding: 'utf8' })
   return new Set(stdout.trim().split('\n').filter(Boolean))
@@ -39,9 +50,24 @@ export async function validateTarballBinTargets(tarballPath: string): Promise<vo
   }
 }
 
+export async function validateTarballExportTargets(tarballPath: string): Promise<void> {
+  const entries = await tarballEntries(tarballPath)
+  const packageJSON = (await tarballPackageJSON(tarballPath)) as PackageJSON & { exports?: unknown }
+
+  for (const target of packageExportTargetPaths(packageJSON)) {
+    if (!target.startsWith('./')) continue
+    const entry = `package/${target.slice(2)}`
+    if (!entries.has(entry)) {
+      throw new Error(`${tarballPath}: export target missing from tarball: ${entry}`)
+    }
+  }
+}
+
 export async function validatePackedTarballs(directory: string): Promise<void> {
   const tarballs = (await readdir(directory)).filter((name) => name.endsWith('.tgz'))
   for (const tarball of tarballs) {
-    await validateTarballBinTargets(join(directory, tarball))
+    const path = join(directory, tarball)
+    await validateTarballBinTargets(path)
+    await validateTarballExportTargets(path)
   }
 }
