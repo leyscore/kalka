@@ -38,42 +38,48 @@ export type SupportedPluginAPI = Pick<
 export type FigmaAPIIncompatibleKeys = IncompatibleKeys<FigmaAPI, SupportedPluginAPI>
 export type FigmaAPICompatibility = Expect<FigmaAPIIncompatibleKeys extends never ? true : false>
 
-type ComponentPropertyDefinitionsMatch = Expect<
-  FigmaComponentNode['componentPropertyDefinitions'] extends ComponentPropertyDefinitions
-    ? ComponentPropertyDefinitions extends FigmaComponentNode['componentPropertyDefinitions']
-      ? true
-      : false
-    : false
->
+type Extends<Actual, Expected> = Actual extends Expected ? true : false
 
-type ComponentPropertyMethodsMatch = Expect<
-  FigmaComponentNode['addComponentProperty'] extends ComponentNode['addComponentProperty']
-    ? FigmaComponentSetNode['editComponentProperty'] extends ComponentSetNode['editComponentProperty']
-      ? true
-      : false
-    : false
->
-
-type InstancePropertySurfaceMatch = Expect<
-  Pick<
-    FigmaNodeProxy & InstanceNode,
-    | 'componentProperties'
-    | 'componentPropertyReferences'
-    | 'setProperties'
-    | 'isExposedInstance'
-    | 'exposedInstances'
-  > extends Pick<
-    InstanceNode,
-    | 'componentProperties'
-    | 'componentPropertyReferences'
-    | 'setProperties'
-    | 'isExposedInstance'
-    | 'exposedInstances'
-  >
+type Equal<Actual, Expected> = [Actual] extends [Expected]
+  ? [Expected] extends [Actual]
     ? true
     : false
+  : false
+
+type ComponentPropertyDefinitionsMatch = Expect<
+  Equal<FigmaComponentNode['componentPropertyDefinitions'], ComponentPropertyDefinitions>
+>
+const _componentPropertyDefinitionsMatch: ComponentPropertyDefinitionsMatch = true
+
+type ComponentPropertyMethodsMatch = Expect<
+  Extends<FigmaComponentNode['addComponentProperty'], ComponentNode['addComponentProperty']>
+>
+const _componentPropertyMethodsMatch: ComponentPropertyMethodsMatch = true
+
+type ComponentSetPropertyMethodsMatch = Expect<
+  Extends<FigmaComponentSetNode['editComponentProperty'], ComponentSetNode['editComponentProperty']>
+>
+const _componentSetPropertyMethodsMatch: ComponentSetPropertyMethodsMatch = true
+
+type InstancePropertySurfaceMatch = Expect<
+  Extends<
+    Pick<
+      FigmaNodeProxy & InstanceNode,
+      | 'componentProperties'
+      | 'componentPropertyReferences'
+      | 'setProperties'
+      | 'isExposedInstance'
+      | 'exposedInstances'
+    >,
+    Pick<
+      InstanceNode,
+      | 'componentProperties'
+      | 'componentPropertyReferences'
+      | 'setProperties'
+      | 'isExposedInstance'
+      | 'exposedInstances'
+    >
+  >
 >
 
-export type ComponentPropertyDefinitionsCompatibility = ComponentPropertyDefinitionsMatch
-export type ComponentPropertyMethodsCompatibility = ComponentPropertyMethodsMatch
-export type InstancePropertySurfaceCompatibility = InstancePropertySurfaceMatch
+const _instancePropertySurfaceMatch: InstancePropertySurfaceMatch = true
