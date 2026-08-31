@@ -74,6 +74,6 @@ type InstancePropertySurfaceMatch = Expect<
     : false
 >
 
-export type ComponentPropertyAPICompatibility = ComponentPropertyDefinitionsMatch &
-  ComponentPropertyMethodsMatch &
-  InstancePropertySurfaceMatch
+export type ComponentPropertyDefinitionsCompatibility = ComponentPropertyDefinitionsMatch
+export type ComponentPropertyMethodsCompatibility = ComponentPropertyMethodsMatch
+export type InstancePropertySurfaceCompatibility = InstancePropertySurfaceMatch
