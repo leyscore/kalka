@@ -21,6 +21,7 @@ import type { FigmaNodeProxy } from './proxy'
 type InstanceSwapPreferredValue = { type: 'COMPONENT' | 'COMPONENT_SET'; key: string }
 
 const COMPONENT_SET_PADDING = 40
+
 interface FigmaComponentPropertyDefinition {
   type: ComponentPropertyType
   defaultValue: string | boolean
@@ -213,13 +214,23 @@ function editPropertyDefinitions(
   target: ProxyThis,
   internals: NodeProxyInternals,
   propertyNameValue: string,
-  changes: { name?: string; defaultValue?: string | boolean }
+  changes: {
+    name?: string
+    defaultValue?: string | boolean
+    preferredValues?: InstanceSwapPreferredValue[]
+  }
 ): string {
   const node = raw(target, internals)
   if (node.type !== 'COMPONENT' && node.type !== 'COMPONENT_SET')
     throw new Error('editComponentProperty() can only be called on components')
   const definition = findDefinition(target, internals, propertyNameValue)
   if (!definition) throw new Error(`Unknown component property: ${propertyNameValue}`)
+  if (
+    changes.defaultValue !== undefined &&
+    !['BOOLEAN', 'TEXT', 'INSTANCE_SWAP'].includes(definition.type)
+  ) {
+    throw new Error(`defaultValue is not supported for ${definition.type} properties`)
+  }
   const updated = {
     ...definition,
     ...(changes.name ? { name: changes.name.trim() } : {}),
@@ -230,6 +241,9 @@ function editPropertyDefinitions(
               ? String(changes.defaultValue === true || changes.defaultValue === 'true')
               : String(changes.defaultValue)
         }
+      : {}),
+    ...(changes.preferredValues
+      ? { preferredValues: changes.preferredValues.map((value) => value.key) }
       : {})
   }
   updateNode(target, internals, {
@@ -365,7 +379,8 @@ export function installComponentPropertyAccessors(
         this: ProxyThis,
         name: string,
         type: ComponentPropertyType,
-        defaultValue: string | boolean
+        defaultValue: string | boolean,
+        options?: { preferredValues?: InstanceSwapPreferredValue[] }
       ) {
         const node = raw(this, internals)
         if (node.type !== 'COMPONENT' && node.type !== 'COMPONENT_SET')
@@ -377,7 +392,10 @@ export function installComponentPropertyAccessors(
           defaultValue:
             type === 'BOOLEAN'
               ? String(defaultValue === true || defaultValue === 'true')
-              : String(defaultValue)
+              : String(defaultValue),
+          ...(options?.preferredValues
+            ? { preferredValues: options.preferredValues.map((value) => value.key) }
+            : {})
         }
         updateNode(this, internals, {
           componentPropertyDefinitions: [...node.componentPropertyDefinitions, definition]
