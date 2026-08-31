@@ -4,6 +4,7 @@ import { ref } from 'vue'
 import {
   applySolidStrokeColor,
   BindableValueRoot,
+  isStrokeCapValue,
   MIXED,
   useColorBindingProvider,
   useI18n,
@@ -67,7 +68,7 @@ function updateStrokeColor(
 }
 
 function setCap(value: string) {
-  if (value === 'NONE' || value === 'ROUND' || value === 'SQUARE') {
+  if (isStrokeCapValue(value)) {
     strokeCtx.setCap(value)
   }
 }
@@ -279,7 +280,12 @@ function onToggleSides(activeNode: SceneNode | null) {
               <Tip :label="option.label">
                 <icon-lucide-minus v-if="option.value === 'NONE'" class="size-3" />
                 <icon-lucide-circle v-else-if="option.value === 'ROUND'" class="size-2.5" />
-                <icon-lucide-square v-else class="size-2.5" />
+                <icon-lucide-square v-else-if="option.value === 'SQUARE'" class="size-2.5" />
+                <icon-lucide-arrow-right
+                  v-else-if="option.value === 'ARROW_LINES'"
+                  class="size-3"
+                />
+                <icon-lucide-triangle v-else class="size-2.5" />
               </Tip>
             </template>
           </SegmentedControl>

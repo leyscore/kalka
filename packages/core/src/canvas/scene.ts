@@ -8,6 +8,12 @@ import {
   type SceneGraph,
   type Fill
 } from '@open-pencil/scene-graph'
+import type { ArrowEndpoint } from '@open-pencil/scene-graph/arrow-caps'
+import {
+  arrowCapOverflow,
+  collectArrowEndpoints,
+  lineArrowEndpoints
+} from '@open-pencil/scene-graph/arrow-caps'
 import { computeDescendantVisualBounds } from '@open-pencil/scene-graph/geometry'
 import Matrix from '@open-pencil/scene-graph/matrix'
 import type { Color } from '@open-pencil/scene-graph/primitives'
@@ -34,6 +40,7 @@ import {
 import { makeSmoothRRectPath, nodeHasRadius, nodeHasSmoothCorners } from './shapes'
 import {
   configureStrokePaint,
+  drawArrowHeads,
   drawDashedRRectWithSolidCorners,
   drawStyledRRectStroke,
   getStrokeCapEntity,
@@ -522,7 +529,10 @@ export function renderShape(
     return
   }
 
-  const margin = r.effectOverflow(node)
+  const margin = Math.max(
+    r.effectOverflow(node),
+    arrowCapOverflow(node.strokes, node.strokeCap, node.vectorNetwork)
+  )
   const width = node.width + margin * 2
   const height = node.height + margin * 2
   const scale = targetScale
@@ -784,6 +794,30 @@ function isPathTextWithStrokeGeometry(node: SceneNode): boolean {
   )
 }
 
+/**
+ * Draws arrow-cap heads for a stroke on the node types that carry open path
+ * ends. Runs after the shaft regardless of which branch painted it, so heads
+ * survive fills, non-center alignment, corner radii, and dashed shafts.
+ */
+function drawNodeArrowHeads(
+  r: SkiaRenderer,
+  canvas: Canvas,
+  node: SceneNode,
+  stroke: SceneNode['strokes'][0],
+  color: Color
+): void {
+  const cap = stroke.cap ?? node.strokeCap
+  let endpoints: ArrowEndpoint[] = []
+  if (node.type === 'LINE') {
+    endpoints = lineArrowEndpoints(node.width, node.height, cap)
+  } else if (node.type === 'VECTOR' && node.vectorNetwork) {
+    endpoints = collectArrowEndpoints(node.vectorNetwork, cap)
+  }
+  if (endpoints.length > 0) {
+    drawArrowHeads(r, canvas, endpoints, stroke.weight, color, stroke.opacity)
+  }
+}
+
 function paintNodeStrokes(
   r: SkiaRenderer,
   canvas: Canvas,
@@ -805,9 +839,11 @@ function paintNodeStrokes(
       const centerline = vectorNetworkToCenterlinePath(r.ck, node.vectorNetwork)
       drawVectorPathStrokes(r, canvas, [centerline], stroke, color, node.strokeMiterLimit)
       centerline.delete()
+      drawNodeArrowHeads(r, canvas, node, stroke, color)
       return
     }
     drawNodeStroke(r, canvas, node, rect, hasRadius, stroke, color, sg, vectorPaths, vectorStroke)
+    drawNodeArrowHeads(r, canvas, node, stroke, color)
   })
 }
 
