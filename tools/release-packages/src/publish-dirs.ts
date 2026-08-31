@@ -66,16 +66,20 @@ interface PackageExports {
   [key: string]: PackageExports | string | undefined
 }
 
-interface PublishPackageJSON extends Record<string, unknown> {
+interface PublishPackageJSON extends PackageJSON {
   exports?: PackageExports
   imports?: PackageExports
+}
+
+function isPackageExports(value: unknown): value is PackageExports {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 function removeUnpublishedConditions(value: PackageExports | undefined): void {
   if (!value) return
   delete value.bun
   for (const child of Object.values(value)) {
-    if (typeof child === 'object' && child) removeUnpublishedConditions(child)
+    if (isPackageExports(child)) removeUnpublishedConditions(child)
   }
 }
 

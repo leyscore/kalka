@@ -5,8 +5,14 @@ import { promisify } from 'node:util'
 
 const execFileAsync = promisify(execFile)
 
+type PackageExports = {
+  [key: string]: PackageExports | string | null | undefined
+}
+
 type PackageJSON = {
   bin?: Record<string, string> | string
+  exports?: PackageExports
+  imports?: PackageExports
   name: string
 }
 
@@ -22,7 +28,7 @@ function packageExportTargets(value: unknown): string[] {
   return Object.values(value).flatMap(packageExportTargets)
 }
 
-export function packageExportTargetPaths(packageJSON: { exports?: unknown }): string[] {
+export function packageExportTargetPaths(packageJSON: Pick<PackageJSON, 'exports'>): string[] {
   return packageExportTargets(packageJSON.exports)
 }
 
@@ -52,7 +58,7 @@ export async function validateTarballBinTargets(tarballPath: string): Promise<vo
 
 export async function validateTarballExportTargets(tarballPath: string): Promise<void> {
   const entries = await tarballEntries(tarballPath)
-  const packageJSON = (await tarballPackageJSON(tarballPath)) as PackageJSON & { exports?: unknown }
+  const packageJSON = await tarballPackageJSON(tarballPath)
 
   for (const target of packageExportTargetPaths(packageJSON)) {
     if (!target.startsWith('./')) continue
