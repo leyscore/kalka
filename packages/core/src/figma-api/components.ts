@@ -153,7 +153,7 @@ function definitions(
               preferredValues: preferredValues(graph(target, internals), definition.preferredValues)
             }
           : {}),
-        ...(definition.variantOptions ? { variantOptions: definition.variantOptions } : {})
+        ...(definition.variantOptions ? { variantOptions: [...definition.variantOptions] } : {})
       }
     ])
   )
@@ -181,7 +181,7 @@ function componentProperties(
                 )
               }
             : {}),
-          ...(definition.variantOptions ? { variantOptions: definition.variantOptions } : {})
+          ...(definition.variantOptions ? { variantOptions: [...definition.variantOptions] } : {})
         }
       ]
     })
