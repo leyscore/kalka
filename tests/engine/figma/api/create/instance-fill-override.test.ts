@@ -14,7 +14,9 @@ describe('setting fills on an instance descendant', () => {
 
     const vectorProxy = api.getNodeById(vector.id)
     if (!vectorProxy) throw new Error('vector proxy not found')
-    vectorProxy.fills = [{ type: 'SOLID', color: { r: 0, g: 0, b: 1, a: 1 }, opacity: 1, visible: true }]
+    vectorProxy.fills = [
+      { type: 'SOLID', color: { r: 0, g: 0, b: 1, a: 1 }, opacity: 1, visible: true }
+    ]
 
     const raw = api.graph.getNode(instance.id)
     expect(raw?.overrides[`${vector.id}:fills`]).toBe(true)
