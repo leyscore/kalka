@@ -87,17 +87,20 @@ function sameNodeReference(ctx: VerifierContext, a: string, b: string): boolean 
 
 function isComponentPropertyDefinitions(value: unknown): value is ComponentPropertyDefinition[] {
   if (!Array.isArray(value)) return false
-  return value.every(
-    (entry) =>
-      typeof entry === 'object' &&
-      entry !== null &&
-      typeof entry.id === 'string' &&
-      typeof entry.name === 'string' &&
-      (entry.type === 'VARIANT' ||
-        entry.type === 'TEXT' ||
-        entry.type === 'BOOLEAN' ||
-        entry.type === 'INSTANCE_SWAP') &&
-      typeof entry.defaultValue === 'string'
+  return value.every(isComponentPropertyDefinition)
+}
+
+function isComponentPropertyDefinition(value: unknown): value is ComponentPropertyDefinition {
+  if (!value || typeof value !== 'object') return false
+  const candidate = value as Partial<ComponentPropertyDefinition>
+  return (
+    typeof candidate.id === 'string' &&
+    typeof candidate.name === 'string' &&
+    (candidate.type === 'VARIANT' ||
+      candidate.type === 'TEXT' ||
+      candidate.type === 'BOOLEAN' ||
+      candidate.type === 'INSTANCE_SWAP') &&
+    typeof candidate.defaultValue === 'string'
   )
 }
 
