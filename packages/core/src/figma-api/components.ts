@@ -1,4 +1,9 @@
-import type { ComponentPropertyDefinition, SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import type {
+  ComponentPropertyDefinition,
+  ComponentPropertyType,
+  SceneGraph,
+  SceneNode
+} from '@open-pencil/scene-graph'
 import {
   applyComponentPropertyValue,
   componentPropertyDefinitions as sharedComponentPropertyDefinitions,
@@ -112,7 +117,17 @@ function preferredValues(
   })
 }
 
-function definitions(target: ProxyThis, internals: NodeProxyInternals): Record<string, unknown> {
+function definitions(
+  target: ProxyThis,
+  internals: NodeProxyInternals
+): Record<
+  string,
+  {
+    type: ComponentPropertyType
+    defaultValue: string | boolean
+    preferredValues?: Array<{ type: 'COMPONENT' | 'COMPONENT_SET'; key: string }>
+  }
+> {
   const node = raw(target, internals)
   if (node.type !== 'COMPONENT' && node.type !== 'COMPONENT_SET') return {}
   return Object.fromEntries(
@@ -137,7 +152,13 @@ function definitions(target: ProxyThis, internals: NodeProxyInternals): Record<s
 function componentProperties(
   target: ProxyThis,
   internals: NodeProxyInternals
-): Record<string, unknown> {
+): Record<
+  string,
+  {
+    type: ComponentPropertyType
+    value: string | boolean
+  }
+> {
   const node = raw(target, internals)
   if (node.type !== 'INSTANCE') return {}
   return Object.fromEntries(
@@ -200,6 +221,15 @@ function editPropertyDefinitions(
   })
   return propertyName(updated)
 }
+function propertyReferenceField(field: string): 'TEXT' | 'VISIBLE' | 'INSTANCE_SWAP' {
+  if (field === 'mainComponent') return 'INSTANCE_SWAP'
+  return field === 'characters' ? 'TEXT' : 'VISIBLE'
+}
+
+function propertyReferenceName(field: 'TEXT' | 'VISIBLE' | 'INSTANCE_SWAP'): string {
+  if (field === 'INSTANCE_SWAP') return 'mainComponent'
+  return field === 'TEXT' ? 'characters' : 'visible'
+}
 function applyProperty(
   target: ProxyThis,
   internals: NodeProxyInternals,
@@ -207,7 +237,9 @@ function applyProperty(
   definition: ComponentPropertyDefinition,
   value: string | boolean
 ): void {
-  if (definition.type === 'VARIANT' || node.type !== 'INSTANCE') return
+  if (definition.type === 'VARIANT') {
+    throw new Error('setProperties() cannot set VARIANT properties through the adapter')
+  }
   applyComponentPropertyValue(graph(target, internals), node.id, definition, String(value))
 }
 export function installComponentPropertyAccessors(
@@ -223,13 +255,31 @@ export function installComponentPropertyAccessors(
     componentPropertyReferences: {
       get(this: ProxyThis) {
         const node = raw(this, internals)
-        if (node.type !== 'INSTANCE' && node.type !== 'COMPONENT') return null
+        if (
+          node.type !== 'INSTANCE' &&
+          node.type !== 'COMPONENT' &&
+          node.type !== 'FRAME' &&
+          node.type !== 'TEXT'
+        )
+          return null
         return Object.fromEntries(
           node.componentPropertyReferences.map((reference) => [
-            reference.field === 'INSTANCE_SWAP' ? 'mainComponent' : reference.field.toLowerCase(),
+            propertyReferenceName(reference.field),
             reference.propertyId
           ])
         )
+      },
+      set(this: ProxyThis, value: Record<string, string> | null) {
+        if (value === null) {
+          updateNode(this, internals, { componentPropertyReferences: [] })
+          return
+        }
+        updateNode(this, internals, {
+          componentPropertyReferences: Object.entries(value).map(([field, propertyId]) => ({
+            propertyId,
+            field: propertyReferenceField(field)
+          }))
+        })
       }
     },
     componentProperties: {
@@ -287,7 +337,8 @@ export function installComponentPropertyAccessors(
           throw new Error('setProperties() can only be called on instances')
         for (const [name, value] of Object.entries(properties)) {
           const definition = findDefinition(this, internals, name)
-          if (definition) applyProperty(this, internals, node, definition, value)
+          if (!definition) throw new Error(`Unknown component property: ${name}`)
+          applyProperty(this, internals, node, definition, value)
         }
       }
     },
@@ -304,7 +355,7 @@ export function installComponentPropertyAccessors(
         const definition: ComponentPropertyDefinition = {
           id: `prop:${randomHex(8)}`,
           name: name.trim(),
-          type: type as SceneNode['componentPropertyDefinitions'][number]['type'],
+          type,
           defaultValue:
             type === 'BOOLEAN'
               ? String(defaultValue === true || defaultValue === 'true')
