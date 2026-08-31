@@ -18,7 +18,21 @@ import type { NodeProxyInternals, ProxyThis } from './accessor-utils'
 import { graph, raw, updateNode } from './accessor-utils'
 import type { FigmaNodeProxy } from './proxy'
 
+type InstanceSwapPreferredValue = { type: 'COMPONENT' | 'COMPONENT_SET'; key: string }
+
 const COMPONENT_SET_PADDING = 40
+interface FigmaComponentPropertyDefinition {
+  type: ComponentPropertyType
+  defaultValue: string | boolean
+  preferredValues?: InstanceSwapPreferredValue[]
+}
+
+interface FigmaComponentProperties {
+  [propertyName: string]: {
+    type: ComponentPropertyType
+    value: string | boolean
+  }
+}
 
 export function exposeInstanceSwap(
   graph: SceneGraph,
@@ -105,10 +119,7 @@ function propertyName(definition: ComponentPropertyDefinition): string {
   return definition.type === 'VARIANT' ? definition.name : `${definition.name}#${definition.id}`
 }
 
-function preferredValues(
-  graph: SceneGraph,
-  ids: string[]
-): Array<{ type: 'COMPONENT' | 'COMPONENT_SET'; key: string }> {
+function preferredValues(graph: SceneGraph, ids: string[]): InstanceSwapPreferredValue[] {
   return ids.flatMap((id) => {
     const node = graph.getNode(id)
     return node && (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET')
@@ -120,14 +131,7 @@ function preferredValues(
 function definitions(
   target: ProxyThis,
   internals: NodeProxyInternals
-): Record<
-  string,
-  {
-    type: ComponentPropertyType
-    defaultValue: string | boolean
-    preferredValues?: Array<{ type: 'COMPONENT' | 'COMPONENT_SET'; key: string }>
-  }
-> {
+): Record<string, FigmaComponentPropertyDefinition> {
   const node = raw(target, internals)
   if (node.type !== 'COMPONENT' && node.type !== 'COMPONENT_SET') return {}
   return Object.fromEntries(
@@ -152,13 +156,7 @@ function definitions(
 function componentProperties(
   target: ProxyThis,
   internals: NodeProxyInternals
-): Record<
-  string,
-  {
-    type: ComponentPropertyType
-    value: string | boolean
-  }
-> {
+): FigmaComponentProperties {
   const node = raw(target, internals)
   if (node.type !== 'INSTANCE') return {}
   return Object.fromEntries(
