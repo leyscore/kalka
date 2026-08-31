@@ -62,19 +62,25 @@ async function copyRecursive(from: string, to: string): Promise<void> {
   await copyFile(from, to)
 }
 
-function removeUnpublishedConditions(value: unknown): void {
-  if (!value || typeof value !== 'object') return
-  if (Array.isArray(value)) {
-    for (const item of value) removeUnpublishedConditions(item)
-    return
+interface PackageExports {
+  [key: string]: PackageExports | string | undefined
+}
+
+interface PublishPackageJSON extends Record<string, unknown> {
+  exports?: PackageExports
+  imports?: PackageExports
+}
+
+function removeUnpublishedConditions(value: PackageExports | undefined): void {
+  if (!value) return
+  delete value.bun
+  for (const child of Object.values(value)) {
+    if (typeof child === 'object' && child) removeUnpublishedConditions(child)
   }
-  const record = value as Record<string, unknown>
-  delete record.bun
-  for (const child of Object.values(record)) removeUnpublishedConditions(child)
 }
 
 export function publishPackageJSON(source: PackageJSON, coreVersion: string): PackageJSON {
-  const json = structuredClone(source)
+  const json = structuredClone(source) as PublishPackageJSON
   removeUnpublishedConditions(json.exports)
   removeUnpublishedConditions(json.imports)
 
