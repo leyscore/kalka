@@ -20,6 +20,24 @@ describe('setting fills on an instance descendant', () => {
     expect(raw?.overrides[`${vector.id}:fills`]).toBe(true)
   })
 
+  test('preserves text edits on an instance descendant during resync', () => {
+    const api = createAPI()
+    const component = api.createComponent()
+    const text = api.createText()
+    text.characters = 'Default'
+    component.appendChild(text)
+
+    const instance = component.createInstance()
+    const instanceText = instance.children[0]
+    if (!instanceText) throw new Error('instance text not found')
+    instanceText.characters = 'Custom'
+
+    expect(api.graph.getNode(instance.id)?.overrides[`${instanceText.id}:text`]).toBe(true)
+    text.characters = 'Updated default'
+    api.graph.syncInstances(component.id)
+
+    expect(instanceText.characters).toBe('Custom')
+  })
   test('does not record an override for a node with no instance ancestor', () => {
     const api = createAPI()
     const frame = api.createFrame()
