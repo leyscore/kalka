@@ -389,5 +389,11 @@
   "diagnosticsClearDescription": "这会从此设备中删除本地保存的诊断事件。",
   "diagnosticsCleared": "诊断数据已清除。",
   "diagnosticsCopied": "诊断数据已复制到剪贴板。",
-  "diagnosticsCopyFailed": "无法将诊断数据复制到剪贴板。"
+  "diagnosticsCopyFailed": "无法将诊断数据复制到剪贴板。",
+  "settingsRendering": "渲染",
+  "settingsRenderingDescription": "选择 OpenPencil 显示大型画布的方式。",
+  "progressiveTiledRendering": "渐进式分块画布渲染",
+  "progressiveTiledRenderingDescription": "导航时以有限大小的分块更新大型画布。此功能为实验性功能，需要重新加载。",
+  "rendererReloadRequired": "重新加载 OpenPencil 以应用此更改。",
+  "rendererURLOverride": "当前会话的渲染器由 URL 参数控制。移除该参数后将应用已保存的偏好设置。"
 }

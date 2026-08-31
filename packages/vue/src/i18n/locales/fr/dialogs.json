@@ -389,5 +389,11 @@
   "diagnosticsClearDescription": "Cette action supprime de cet appareil les événements de diagnostic stockés localement.",
   "diagnosticsCleared": "Diagnostics effacés.",
   "diagnosticsCopied": "Diagnostics copiés dans le presse-papiers.",
-  "diagnosticsCopyFailed": "Impossible de copier les diagnostics dans le presse-papiers."
+  "diagnosticsCopyFailed": "Impossible de copier les diagnostics dans le presse-papiers.",
+  "settingsRendering": "Rendu",
+  "settingsRenderingDescription": "Choisissez comment OpenPencil affiche les grandes zones de travail.",
+  "progressiveTiledRendering": "Rendu progressif par tuiles",
+  "progressiveTiledRenderingDescription": "Met à jour les grandes zones de travail par tuiles limitées pendant la navigation. Expérimental ; rechargement requis.",
+  "rendererReloadRequired": "Rechargez OpenPencil pour appliquer cette modification.",
+  "rendererURLOverride": "Le rendu de cette session est contrôlé par un paramètre d’URL. Votre préférence enregistrée s’appliquera après sa suppression."
 }

@@ -389,5 +389,11 @@
   "diagnosticsClearDescription": "Spowoduje to usunięcie lokalnie zapisanych zdarzeń diagnostycznych z tego urządzenia.",
   "diagnosticsCleared": "Wyczyszczono dane diagnostyczne.",
   "diagnosticsCopied": "Skopiowano dane diagnostyczne do schowka.",
-  "diagnosticsCopyFailed": "Nie można skopiować danych diagnostycznych do schowka."
+  "diagnosticsCopyFailed": "Nie można skopiować danych diagnostycznych do schowka.",
+  "settingsRendering": "Renderowanie",
+  "settingsRenderingDescription": "Wybierz sposób wyświetlania dużych obszarów roboczych w OpenPencil.",
+  "progressiveTiledRendering": "Progresywne renderowanie kafelkowe",
+  "progressiveTiledRenderingDescription": "Podczas nawigacji aktualizuje duże obszary robocze w ograniczonych kafelkach. Funkcja eksperymentalna; wymaga ponownego wczytania.",
+  "rendererReloadRequired": "Wczytaj ponownie OpenPencil, aby zastosować tę zmianę.",
+  "rendererURLOverride": "Renderer bieżącej sesji jest kontrolowany przez parametr URL. Zapisana preferencja zostanie użyta po usunięciu parametru."
 }
