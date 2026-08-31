@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 
 import { importNodeChanges } from '@open-pencil/core'
 
-import { canvas, doc, node } from './helpers'
+import { canvas, doc, node } from './legacy/helpers'
 
 describe('fig-import: stroke options', () => {
   test('stroke cap and join', () => {
