@@ -62,7 +62,10 @@ function applySwapProp(
   const swapId =
     propTextCharacters(val) ?? (val.guidValue ? guidToString(val.guidValue) : undefined)
   const newCompId = swapId ? ctx.guidToNodeId.get(swapId) : undefined
-  if (!newCompId) return
+  const currentCompId = ctx.graph.getNode(childId)?.componentId
+  if (currentCompId && getComponentRoot(ctx, currentCompId) === getComponentRoot(ctx, newCompId)) {
+    return
+  }
   applyPatchAndMark(
     ctx,
     childId,
