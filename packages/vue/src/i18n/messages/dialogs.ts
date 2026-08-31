@@ -190,6 +190,14 @@ export const dialogMessageDefaults = {
   snapToPixelGridDescription:
     'Align vector points, moved layers, and resized edges to whole pixels.',
   snapTemporaryDisableHint: 'Hold Control while dragging to temporarily disable snapping.',
+  settingsRendering: 'Rendering',
+  settingsRenderingDescription: 'Choose how OpenPencil presents large canvases.',
+  progressiveTiledRendering: 'Progressive tiled canvas rendering',
+  progressiveTiledRenderingDescription:
+    'Updates large canvases in bounded tiles while navigating. Experimental; reload required.',
+  rendererReloadRequired: 'Reload OpenPencil to apply this change.',
+  rendererURLOverride:
+    'The current session renderer is controlled by a URL override. Your saved preference applies when the override is removed.',
   settingsAIAndAgents: 'AI & agents',
   settingsUsage: 'Usage',
   usageDescription: 'Local usage summaries from recorded AI requests.',

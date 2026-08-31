@@ -1,12 +1,44 @@
-import type { ComponentPropertyDefinition, SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import type {
+  ComponentPropertyDefinition,
+  ComponentPropertyType,
+  SceneGraph,
+  SceneNode
+} from '@open-pencil/scene-graph'
+import {
+  applyComponentPropertyValue,
+  componentPropertyDefinitions as sharedComponentPropertyDefinitions,
+  removeComponentProperty
+} from '@open-pencil/scene-graph'
 import { computeAbsoluteBounds } from '@open-pencil/scene-graph/geometry'
 import { deriveSlashVariantProperties } from '@open-pencil/scene-graph/variant-properties'
 
 import { randomHex } from '#core/random'
 
+import type { NodeProxyInternals, ProxyThis } from './accessor-utils'
+import { graph, raw, updateNode } from './accessor-utils'
 import type { FigmaNodeProxy } from './proxy'
 
+type InstanceSwapPreferredValue = { type: 'COMPONENT' | 'COMPONENT_SET'; key: string }
+
 const COMPONENT_SET_PADDING = 40
+
+interface FigmaComponentPropertyDefinition {
+  type: ComponentPropertyType
+  defaultValue: string | boolean
+  preferredValues?: InstanceSwapPreferredValue[]
+  variantOptions?: string[]
+}
+
+interface FigmaComponentProperty {
+  type: ComponentPropertyType
+  value: string | boolean
+  preferredValues?: InstanceSwapPreferredValue[]
+  variantOptions?: string[]
+}
+
+interface FigmaComponentProperties {
+  [propertyName: string]: FigmaComponentProperty
+}
 
 export function exposeInstanceSwap(
   graph: SceneGraph,
@@ -89,6 +121,317 @@ function requireDistinctComponents(graph: SceneGraph, nodeIds: ReadonlyArray<str
   return nodes
 }
 
+function propertyName(definition: ComponentPropertyDefinition): string {
+  return definition.type === 'VARIANT' ? definition.name : `${definition.name}#${definition.id}`
+}
+
+function preferredValues(graph: SceneGraph, ids: string[]): InstanceSwapPreferredValue[] {
+  return ids.flatMap((id) => {
+    const node = graph.getNode(id)
+    return node && (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET')
+      ? [{ type: node.type, key: node.componentKey ?? node.sourceLibraryKey ?? node.id }]
+      : []
+  })
+}
+
+function propertyMetadata(
+  target: ProxyThis,
+  internals: NodeProxyInternals,
+  definition: ComponentPropertyDefinition,
+  includeVariantOptions: boolean
+): Pick<FigmaComponentPropertyDefinition, 'preferredValues' | 'variantOptions'> {
+  return {
+    ...(definition.preferredValues
+      ? { preferredValues: preferredValues(graph(target, internals), definition.preferredValues) }
+      : {}),
+    ...(includeVariantOptions && definition.variantOptions
+      ? { variantOptions: [...definition.variantOptions] }
+      : {})
+  }
+}
+function definitions(
+  target: ProxyThis,
+  internals: NodeProxyInternals
+): Record<string, FigmaComponentPropertyDefinition> {
+  const node = raw(target, internals)
+  if (node.type !== 'COMPONENT' && node.type !== 'COMPONENT_SET') return {}
+  return Object.fromEntries(
+    node.componentPropertyDefinitions.map((definition) => [
+      propertyName(definition),
+      {
+        type: definition.type,
+        defaultValue:
+          definition.type === 'BOOLEAN'
+            ? definition.defaultValue === 'true'
+            : definition.defaultValue,
+        ...propertyMetadata(target, internals, definition, true)
+      }
+    ])
+  )
+}
+
+function componentProperties(
+  target: ProxyThis,
+  internals: NodeProxyInternals
+): FigmaComponentProperties {
+  const node = raw(target, internals)
+  if (node.type !== 'INSTANCE') return {}
+  return Object.fromEntries(
+    sharedComponentPropertyDefinitions(graph(target, internals), node).map((definition) => {
+      const value = node.componentPropertyAssignments[definition.id] ?? definition.defaultValue
+      return [
+        propertyName(definition),
+        {
+          type: definition.type,
+          value: definition.type === 'BOOLEAN' ? value === 'true' : value,
+          ...propertyMetadata(target, internals, definition, false)
+        }
+      ]
+    })
+  )
+}
+
+function findDefinition(
+  target: ProxyThis,
+  internals: NodeProxyInternals,
+  name: string
+): ComponentPropertyDefinition | null {
+  const node = raw(target, internals)
+  const defs =
+    node.type === 'INSTANCE'
+      ? sharedComponentPropertyDefinitions(graph(target, internals), node)
+      : node.componentPropertyDefinitions
+  return (
+    defs.find(
+      (definition) =>
+        propertyName(definition) === name ||
+        (definition.type === 'VARIANT' && definition.name === name)
+    ) ?? null
+  )
+}
+
+function editPropertyDefinitions(
+  target: ProxyThis,
+  internals: NodeProxyInternals,
+  propertyNameValue: string,
+  changes: {
+    name?: string
+    defaultValue?: string | boolean
+    preferredValues?: InstanceSwapPreferredValue[]
+  }
+): string {
+  const node = raw(target, internals)
+  if (node.type !== 'COMPONENT' && node.type !== 'COMPONENT_SET')
+    throw new Error('editComponentProperty() can only be called on components')
+  const definition = findDefinition(target, internals, propertyNameValue)
+  if (!definition) throw new Error(`Unknown component property: ${propertyNameValue}`)
+  if (
+    changes.defaultValue !== undefined &&
+    !['BOOLEAN', 'TEXT', 'INSTANCE_SWAP'].includes(definition.type)
+  ) {
+    throw new Error(`defaultValue is not supported for ${definition.type} properties`)
+  }
+  const updatedName = changes.name?.trim()
+  if (updatedName === '') throw new Error('Property name must not be empty')
+  const updated = {
+    ...definition,
+    ...(updatedName ? { name: updatedName } : {}),
+    ...(changes.defaultValue !== undefined
+      ? {
+          defaultValue:
+            definition.type === 'BOOLEAN'
+              ? String(changes.defaultValue === true || changes.defaultValue === 'true')
+              : String(changes.defaultValue)
+        }
+      : {}),
+    ...(changes.preferredValues
+      ? { preferredValues: changes.preferredValues.map((value) => value.key) }
+      : {})
+  }
+  updateNode(target, internals, {
+    componentPropertyDefinitions: node.componentPropertyDefinitions.map((item) =>
+      item.id === definition.id ? updated : item
+    )
+  })
+  return propertyName(updated)
+}
+function propertyReferenceField(field: string): 'TEXT' | 'VISIBLE' | 'INSTANCE_SWAP' {
+  if (field === 'mainComponent') return 'INSTANCE_SWAP'
+  return field === 'characters' ? 'TEXT' : 'VISIBLE'
+}
+
+function propertyReferenceName(field: 'TEXT' | 'VISIBLE' | 'INSTANCE_SWAP'): string {
+  if (field === 'INSTANCE_SWAP') return 'mainComponent'
+  return field === 'TEXT' ? 'characters' : 'visible'
+}
+function applyProperty(
+  target: ProxyThis,
+  internals: NodeProxyInternals,
+  node: SceneNode,
+  definition: ComponentPropertyDefinition,
+  value: string | boolean
+): void {
+  if (definition.type === 'VARIANT') {
+    throw new Error('setProperties() cannot set VARIANT properties through the adapter')
+  }
+  const result = applyComponentPropertyValue(
+    graph(target, internals),
+    node.id,
+    definition,
+    String(value)
+  )
+  if (!result) throw new Error(`Unable to apply component property: ${propertyName(definition)}`)
+}
+export function installComponentPropertyAccessors(
+  prototype: object,
+  internals: NodeProxyInternals
+): void {
+  Object.defineProperties(prototype, {
+    componentPropertyDefinitions: {
+      get(this: ProxyThis) {
+        return definitions(this, internals)
+      }
+    },
+    componentPropertyReferences: {
+      get(this: ProxyThis) {
+        const node = raw(this, internals)
+        if (
+          node.type !== 'INSTANCE' &&
+          node.type !== 'COMPONENT' &&
+          node.type !== 'FRAME' &&
+          node.type !== 'TEXT'
+        )
+          return null
+        return Object.fromEntries(
+          node.componentPropertyReferences.map((reference) => [
+            propertyReferenceName(reference.field),
+            reference.propertyId
+          ])
+        )
+      },
+      set(this: ProxyThis, value: Record<string, string> | null) {
+        if (value === null) {
+          updateNode(this, internals, { componentPropertyReferences: [] })
+          return
+        }
+        updateNode(this, internals, {
+          componentPropertyReferences: Object.entries(value).map(([field, propertyId]) => ({
+            propertyId,
+            field: propertyReferenceField(field)
+          }))
+        })
+      }
+    },
+    componentProperties: {
+      get(this: ProxyThis) {
+        return componentProperties(this, internals)
+      }
+    },
+    isExposedInstance: {
+      get(this: ProxyThis) {
+        const node = raw(this, internals)
+        return (
+          node.type === 'INSTANCE' &&
+          node.componentPropertyReferences.some((reference) => reference.field === 'INSTANCE_SWAP')
+        )
+      },
+      set(this: ProxyThis, value: boolean) {
+        const node = raw(this, internals)
+        if (node.type !== 'INSTANCE')
+          throw new Error('isExposedInstance is only supported on instances')
+        if (!value)
+          updateNode(this, internals, {
+            componentPropertyReferences: node.componentPropertyReferences.filter(
+              (reference) => reference.field !== 'INSTANCE_SWAP'
+            )
+          })
+      }
+    },
+    exposedInstances: {
+      get(this: ProxyThis) {
+        const node = raw(this, internals)
+        if (node.type !== 'INSTANCE') return []
+        const result: FigmaNodeProxy[] = []
+        const visit = (id: string): void => {
+          const child = graph(this, internals).getNode(id)
+          if (!child) return
+          if (
+            child.type === 'INSTANCE' &&
+            child.componentPropertyReferences.some(
+              (reference) => reference.field === 'INSTANCE_SWAP'
+            )
+          )
+            result.push(
+              (this[internals.api] as { wrapNode(id: string): FigmaNodeProxy }).wrapNode(child.id)
+            )
+          child.childIds.forEach(visit)
+        }
+        node.childIds.forEach(visit)
+        return result
+      }
+    },
+    setProperties: {
+      value(this: ProxyThis, properties: Record<string, string | boolean>) {
+        const node = raw(this, internals)
+        if (node.type !== 'INSTANCE')
+          throw new Error('setProperties() can only be called on instances')
+        for (const [name, value] of Object.entries(properties)) {
+          const definition = findDefinition(this, internals, name)
+          if (!definition) throw new Error(`Unknown component property: ${name}`)
+          applyProperty(this, internals, node, definition, value)
+        }
+      }
+    },
+    addComponentProperty: {
+      value(
+        this: ProxyThis,
+        name: string,
+        type: ComponentPropertyType,
+        defaultValue: string | boolean,
+        options?: { preferredValues?: InstanceSwapPreferredValue[] }
+      ) {
+        const node = raw(this, internals)
+        if (node.type !== 'COMPONENT' && node.type !== 'COMPONENT_SET')
+          throw new Error('addComponentProperty() can only be called on components')
+        const definition: ComponentPropertyDefinition = {
+          id: `prop:${randomHex(8)}`,
+          name: name.trim(),
+          type,
+          defaultValue:
+            type === 'BOOLEAN'
+              ? String(defaultValue === true || defaultValue === 'true')
+              : String(defaultValue),
+          ...(options?.preferredValues
+            ? { preferredValues: options.preferredValues.map((value) => value.key) }
+            : {})
+        }
+        updateNode(this, internals, {
+          componentPropertyDefinitions: [...node.componentPropertyDefinitions, definition]
+        })
+        return propertyName(definition)
+      }
+    },
+    editComponentProperty: {
+      value(
+        this: ProxyThis,
+        name: string,
+        changes: { name?: string; defaultValue?: string | boolean }
+      ) {
+        return editPropertyDefinitions(this, internals, name, changes)
+      }
+    },
+    deleteComponentProperty: {
+      value(this: ProxyThis, name: string) {
+        const node = raw(this, internals)
+        if (node.type !== 'COMPONENT' && node.type !== 'COMPONENT_SET')
+          throw new Error('deleteComponentProperty() can only be called on components')
+        const definition = findDefinition(this, internals, name)
+        if (!definition) throw new Error(`Unknown component property: ${name}`)
+        removeComponentProperty(graph(this, internals), node.id, definition.id)
+      }
+    }
+  })
+}
 export function combineComponentsAsVariants(
   graph: SceneGraph,
   nodeIds: ReadonlyArray<string>,

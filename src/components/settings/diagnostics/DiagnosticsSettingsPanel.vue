@@ -16,6 +16,8 @@ import { toast } from '@/app/shell/ui'
 import { AppConfirmationDialog } from '@/components/ui/dialog'
 import AppButton from '@/components/ui/AppButton.vue'
 import AppSwitch from '@/components/ui/AppSwitch.vue'
+import SettingsGroup from '@/components/settings/layout/SettingsGroup.vue'
+import SettingsSectionHeader from '@/components/settings/layout/SettingsSectionHeader.vue'
 
 const { dialogs } = useI18n()
 const recentEvents = ref<DiagnosticEventSummary[]>([])
@@ -75,11 +77,11 @@ async function exportDiagnostics() {
 
 <template>
   <section class="flex flex-col gap-4" data-test-id="settings-diagnostics-panel">
-    <div>
-      <h3 class="text-xs font-semibold text-surface">{{ dialogs.diagnosticsTitle }}</h3>
-      <p class="mt-1 text-[11px] text-muted">{{ dialogs.diagnosticsDescription }}</p>
-    </div>
-    <div class="flex flex-col divide-y divide-border rounded border border-border">
+    <SettingsSectionHeader>
+      {{ dialogs.diagnosticsTitle }}
+      <template #description>{{ dialogs.diagnosticsDescription }}</template>
+    </SettingsSectionHeader>
+    <SettingsGroup>
       <label class="flex items-center justify-between gap-4 px-3 py-2.5">
         <span
           ><span class="block text-xs text-surface">{{ dialogs.localDiagnostics }}</span
@@ -120,7 +122,7 @@ async function exportDiagnostics() {
           >
         </SegmentedControlRoot>
       </div>
-    </div>
+    </SettingsGroup>
     <div
       v-if="recentEvents.length"
       class="flex max-h-64 flex-col overflow-y-auto divide-y divide-border rounded border border-border"

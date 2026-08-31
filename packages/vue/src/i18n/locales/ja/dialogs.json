@@ -389,5 +389,11 @@
   "diagnosticsClearDescription": "このデバイスに保存されている診断イベントを削除します。",
   "diagnosticsCleared": "診断データを消去しました。",
   "diagnosticsCopied": "診断データをクリップボードにコピーしました。",
-  "diagnosticsCopyFailed": "診断データをクリップボードにコピーできませんでした。"
+  "diagnosticsCopyFailed": "診断データをクリップボードにコピーできませんでした。",
+  "settingsRendering": "レンダリング",
+  "settingsRenderingDescription": "大きなキャンバスを OpenPencil で表示する方法を選択します。",
+  "progressiveTiledRendering": "プログレッシブタイルレンダリング",
+  "progressiveTiledRenderingDescription": "移動中に大きなキャンバスを限定されたタイル単位で更新します。試験機能のため、再読み込みが必要です。",
+  "rendererReloadRequired": "この変更を適用するには OpenPencil を再読み込みしてください。",
+  "rendererURLOverride": "現在のセッションのレンダラーは URL パラメーターで指定されています。保存した設定はパラメーターを削除すると適用されます。"
 }

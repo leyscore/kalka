@@ -389,5 +389,11 @@
   "diagnosticsClearDescription": "Esto elimina del dispositivo los eventos de diagnóstico almacenados localmente.",
   "diagnosticsCleared": "Diagnóstico borrado.",
   "diagnosticsCopied": "Diagnóstico copiado al portapapeles.",
-  "diagnosticsCopyFailed": "No se pudo copiar el diagnóstico al portapapeles."
+  "diagnosticsCopyFailed": "No se pudo copiar el diagnóstico al portapapeles.",
+  "settingsRendering": "Renderizado",
+  "settingsRenderingDescription": "Elige cómo presenta OpenPencil los lienzos grandes.",
+  "progressiveTiledRendering": "Renderizado progresivo por mosaicos",
+  "progressiveTiledRenderingDescription": "Actualiza los lienzos grandes en mosaicos limitados durante la navegación. Experimental; requiere recargar.",
+  "rendererReloadRequired": "Recarga OpenPencil para aplicar este cambio.",
+  "rendererURLOverride": "El renderizador de esta sesión está controlado por un parámetro de URL. Tu preferencia guardada se aplicará al eliminarlo."
 }

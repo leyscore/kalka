@@ -7,6 +7,9 @@ import { setSnappingPreference } from '@/app/settings/preferences/apply'
 import { appPreferences } from '@/app/settings/preferences/store'
 import AppSelect from '@/components/ui/AppSelect.vue'
 import AppSwitch from '@/components/ui/AppSwitch.vue'
+import RenderingSettingsSection from '@/components/settings/general/RenderingSettingsSection.vue'
+import SettingsGroup from '@/components/settings/layout/SettingsGroup.vue'
+import SettingsSectionHeader from '@/components/settings/layout/SettingsSectionHeader.vue'
 
 const { availableLocales, dialogs, locale, localeLabels, menu, setLocale } = useI18n()
 
@@ -61,12 +64,12 @@ const snapToPixelGrid = computed({
       </label>
     </div>
 
-    <div>
-      <h3 class="text-xs font-semibold text-surface">{{ dialogs.settingsRecovery }}</h3>
-      <p class="mt-1 text-[11px] text-muted">{{ dialogs.settingsRecoveryDescription }}</p>
-    </div>
+    <SettingsSectionHeader>
+      {{ dialogs.settingsRecovery }}
+      <template #description>{{ dialogs.settingsRecoveryDescription }}</template>
+    </SettingsSectionHeader>
 
-    <div class="flex flex-col rounded border border-border">
+    <SettingsGroup>
       <label class="flex items-center justify-between gap-4 px-3 py-2.5">
         <span>
           <span class="block text-xs text-surface">{{ dialogs.preserveUnsavedWork }}</span>
@@ -80,14 +83,14 @@ const snapToPixelGrid = computed({
           data-test-id="settings-recovery-enabled"
         />
       </label>
-    </div>
+    </SettingsGroup>
 
-    <div>
-      <h3 class="text-xs font-semibold text-surface">{{ dialogs.settingsEditing }}</h3>
-      <p class="mt-1 text-[11px] text-muted">{{ dialogs.settingsSnappingDescription }}</p>
-    </div>
+    <SettingsSectionHeader>
+      {{ dialogs.settingsEditing }}
+      <template #description>{{ dialogs.settingsSnappingDescription }}</template>
+    </SettingsSectionHeader>
 
-    <div class="flex flex-col divide-y divide-border rounded border border-border">
+    <SettingsGroup>
       <label class="flex items-center justify-between gap-4 px-3 py-2.5">
         <span>
           <span class="block text-xs text-surface">{{ dialogs.snapToGeometry }}</span>
@@ -121,8 +124,10 @@ const snapToPixelGrid = computed({
           data-test-id="settings-snap-pixel-grid"
         />
       </label>
-    </div>
+    </SettingsGroup>
 
     <p class="text-[10px] text-muted">{{ dialogs.snapTemporaryDisableHint }}</p>
+
+    <RenderingSettingsSection />
   </section>
 </template>
