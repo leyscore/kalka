@@ -8,7 +8,7 @@ import {
 import Matrix from '@open-pencil/scene-graph/matrix'
 
 export function worldNodeVisualBounds(graph: SceneGraph, node: SceneNode): VisualBounds {
-  const stroke = strokeOverflow(node.strokes)
+  const stroke = strokeOverflow(node.strokes, node.strokeCap, node.vectorNetwork)
   const effects = effectOverflow(node.effects)
   const points = Matrix.mapPoints(getWorldMatrix(node, graph), [
     -stroke - effects.left,

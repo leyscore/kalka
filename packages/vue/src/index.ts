@@ -103,6 +103,7 @@ export type {
 export { useEffectsControls } from '#vue/controls/effects/use'
 export { useSharedStyleBinding } from '#vue/controls/shared-style/use'
 export { useStrokeControls } from '#vue/controls/stroke/use'
+export { isStrokeCapValue } from '#vue/controls/stroke/helpers'
 export {
   applySolidFillColor,
   applySolidStrokeColor,

@@ -4,6 +4,7 @@ import { ref } from 'vue'
 import {
   applySolidStrokeColor,
   BindableValueRoot,
+  isStrokeCapValue,
   MIXED,
   useColorBindingProvider,
   useI18n,
@@ -67,7 +68,7 @@ function updateStrokeColor(
 }
 
 function setCap(value: string) {
-  if (value === 'NONE' || value === 'ROUND' || value === 'SQUARE') {
+  if (isStrokeCapValue(value)) {
     strokeCtx.setCap(value)
   }
 }

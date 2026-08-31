@@ -1,6 +1,8 @@
 import type { Canvas, EmbindEnumEntity, Paint } from 'canvaskit-wasm'
 
 import type { SceneNode, Stroke } from '@open-pencil/scene-graph'
+import type { ArrowEndpoint } from '@open-pencil/scene-graph/arrow-caps'
+import { arrowLinesSegments, equilateralArrowPoints } from '@open-pencil/scene-graph/arrow-caps'
 import type { Color } from '@open-pencil/scene-graph/primitives'
 
 import type { SkiaRenderer } from './renderer'
@@ -94,6 +96,51 @@ export function drawDashedRRectWithSolidCorners(
   canvas.drawLine(right - radius, bottom, left + radius, bottom, r.strokePaint)
   canvas.drawLine(left, bottom - radius, left, top + radius, r.strokePaint)
   r.strokePaint.setPathEffect(null)
+}
+
+/**
+ * Draws arrow heads at open path endpoints in the stroke's color. The shaft
+ * is expected to be drawn separately; heads overlay its terminal segment.
+ */
+export function drawArrowHeads(
+  r: SkiaRenderer,
+  canvas: Canvas,
+  endpoints: ArrowEndpoint[],
+  weight: number,
+  color: Color,
+  opacity: number
+): void {
+  for (const endpoint of endpoints) {
+    if (endpoint.cap === 'ARROW_EQUILATERAL') {
+      const [tip, left, right] = equilateralArrowPoints(
+        endpoint.x,
+        endpoint.y,
+        endpoint.angle,
+        weight
+      )
+      const builder = new r.ck.PathBuilder()
+      builder.moveTo(tip.x, tip.y)
+      builder.lineTo(left.x, left.y)
+      builder.lineTo(right.x, right.y)
+      builder.close()
+      const path = builder.detachAndDelete()
+      r.fillPaint.setColor(r.ck.Color4f(color.r, color.g, color.b, color.a))
+      r.fillPaint.setAlphaf(opacity)
+      r.fillPaint.setShader(null)
+      canvas.drawPath(path, r.fillPaint)
+      path.delete()
+    } else {
+      r.strokePaint.setColor(r.ck.Color4f(color.r, color.g, color.b, color.a))
+      r.strokePaint.setAlphaf(opacity)
+      r.strokePaint.setStrokeWidth(weight)
+      r.strokePaint.setStrokeCap(r.ck.StrokeCap.Butt)
+      r.strokePaint.setPathEffect(null)
+      r.strokePaint.setShader(null)
+      for (const wing of arrowLinesSegments(endpoint.x, endpoint.y, endpoint.angle, weight)) {
+        canvas.drawLine(wing.from.x, wing.from.y, wing.to.x, wing.to.y, r.strokePaint)
+      }
+    }
+  }
 }
 
 export function configureStrokePaint(
