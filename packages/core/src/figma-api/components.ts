@@ -25,13 +25,18 @@ interface FigmaComponentPropertyDefinition {
   type: ComponentPropertyType
   defaultValue: string | boolean
   preferredValues?: InstanceSwapPreferredValue[]
+  variantOptions?: string[]
+}
+
+interface FigmaComponentProperty {
+  type: ComponentPropertyType
+  value: string | boolean
+  preferredValues?: InstanceSwapPreferredValue[]
+  variantOptions?: string[]
 }
 
 interface FigmaComponentProperties {
-  [propertyName: string]: {
-    type: ComponentPropertyType
-    value: string | boolean
-  }
+  [propertyName: string]: FigmaComponentProperty
 }
 
 export function exposeInstanceSwap(
@@ -147,7 +152,8 @@ function definitions(
           ? {
               preferredValues: preferredValues(graph(target, internals), definition.preferredValues)
             }
-          : {})
+          : {}),
+        ...(definition.variantOptions ? { variantOptions: definition.variantOptions } : {})
       }
     ])
   )
@@ -164,7 +170,19 @@ function componentProperties(
       const value = node.componentPropertyAssignments[definition.id] ?? definition.defaultValue
       return [
         propertyName(definition),
-        { type: definition.type, value: definition.type === 'BOOLEAN' ? value === 'true' : value }
+        {
+          type: definition.type,
+          value: definition.type === 'BOOLEAN' ? value === 'true' : value,
+          ...(definition.preferredValues
+            ? {
+                preferredValues: preferredValues(
+                  graph(target, internals),
+                  definition.preferredValues
+                )
+              }
+            : {}),
+          ...(definition.variantOptions ? { variantOptions: definition.variantOptions } : {})
+        }
       ]
     })
   )
