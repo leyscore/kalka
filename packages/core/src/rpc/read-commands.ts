@@ -80,8 +80,8 @@ export const infoCommand: RPCCommand<void, InfoResult> = {
 export const fontStatusCommand: RPCCommand<void, DocumentFontStatus> = {
   name: 'font-status',
   execute: async (graph) => {
-    const pageId = graph.getPages()[0]?.id ?? graph.rootId
-    return prepareGraphFonts(graph, pageId, [pageId])
+    const pageIds = graph.getPages().map((page) => page.id)
+    return prepareGraphFonts(graph, pageIds[0] ?? graph.rootId, pageIds)
   }
 }
 

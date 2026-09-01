@@ -10,7 +10,7 @@ import {
   SIZE_FONT_SIZE
 } from '#core/constants'
 import { fontManager } from '#core/text/fonts'
-import { collectGraphFontRequirements } from '#core/text/requirements'
+import { collectGraphFontRequirements, collectNodeFontFaces } from '#core/text/requirements'
 import { missingGraphFontScripts } from '#core/text/resolved-requirements'
 import type { FontResolutionSnapshot } from '#core/text/resolver'
 

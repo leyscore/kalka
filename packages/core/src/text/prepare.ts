@@ -20,6 +20,5 @@ export async function prepareGraphFonts(
     missingGraphFontScripts(requirements),
     requirements.characters
   )
-  const status = documentFontStatus(graph, pageId)
-  return status
+  return documentFontStatus(graph, pageId)
 }
