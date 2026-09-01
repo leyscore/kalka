@@ -1,10 +1,11 @@
-import type {
-  ComponentPropertyDefinition,
-  SceneGraph,
-  SceneNode,
-  NodeType
+import {
+  setInstanceOverride,
+  type ComponentPropertyDefinition,
+  type NodeType,
+  type SceneGraph,
+  type SceneNode
 } from '@open-pencil/scene-graph'
-import { setInstanceOverride } from '@open-pencil/scene-graph'
+import type { Color } from '@open-pencil/scene-graph/primitives'
 
 import { parseColor } from '#core/color'
 import type { RenderOptions } from '#core/design-jsx/types'

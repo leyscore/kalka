@@ -1,4 +1,5 @@
 import {
+  applyComponentPropertyValue,
   cloneInstanceOverrideState,
   componentPropertyDefinitions,
   findComponentPropertyTarget,

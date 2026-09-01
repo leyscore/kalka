@@ -2,11 +2,6 @@ import { describe, expect, test } from 'bun:test'
 
 import { SceneGraph, type SceneNode } from '@open-pencil/core'
 import { getInstanceOverride, setInstanceOverride } from '@open-pencil/scene-graph'
-import {
-  createInstanceOverrideState,
-  getInstanceOverride,
-  setInstanceOverride
-} from '@open-pencil/scene-graph'
 import { cloneNodeProps } from '@open-pencil/scene-graph/copy'
 
 function pageId(graph: SceneGraph): string {
@@ -132,7 +127,6 @@ describe('cloneNodeProps deep-copies overrides values', () => {
     const clone = graph.cloneTree(instance.id, page)
     if (!clone) throw new Error('clone failed')
     const clonedInstance = graph.getNode(clone.id)
-    const overrideKey = 'fills'
     const cloneOverrideVal = getInstanceOverride(
       clonedInstance.instanceOverrides,
       clonedInstance.id,

@@ -11,6 +11,14 @@ export {
   INSTANCE_SYNC_TEXT_PROPS,
   recordInstanceOverride
 } from './instances'
+export {
+  clearInstanceOverrides,
+  cloneInstanceOverrideState,
+  forEachInstanceOverride,
+  getInstanceOverride,
+  setInstanceOverride,
+  type InstanceOverrideState
+} from './instance-overrides'
 export * from './snap'
 export * from './export-scale'
 export * from './coordinate'

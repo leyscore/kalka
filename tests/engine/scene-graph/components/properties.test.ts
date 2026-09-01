@@ -2,7 +2,6 @@ import { describe, expect, test } from 'bun:test'
 
 import {
   applyComponentPropertyValue,
-  getInstanceOverride,
   componentPropertyDefinitions,
   componentPropertyOwners,
   findComponentPropertyTarget,
