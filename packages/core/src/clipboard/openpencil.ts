@@ -65,7 +65,7 @@ function legacyInstanceOverrides(
 ): InstanceOverrideState {
   const state = createInstanceOverrideState()
   for (const [key, value] of Object.entries(overrides ?? {})) {
-    const separator = key.indexOf(':')
+    const separator = key.lastIndexOf(':')
     if (separator === -1) {
       setInstanceOverride(state, nodeId, nodeId, key, value)
     } else {

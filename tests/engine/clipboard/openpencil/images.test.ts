@@ -53,7 +53,7 @@ describe('clipboard roundtrip with images', () => {
         {
           id: 'instance',
           type: 'INSTANCE',
-          overrides: { text: 'Self', 'child:text': 'Custom' },
+          overrides: { text: 'Self', '0:2:text': 'Custom' },
           children: []
         }
       ],
@@ -69,7 +69,7 @@ describe('clipboard roundtrip with images', () => {
     expect(getInstanceOverride(instance.instanceOverrides, instance.id, instance.id, 'text')).toBe(
       'Self'
     )
-    expect(getInstanceOverride(instance.instanceOverrides, instance.id, 'child', 'text')).toBe(
+    expect(getInstanceOverride(instance.instanceOverrides, instance.id, '0:2', 'text')).toBe(
       'Custom'
     )
   })

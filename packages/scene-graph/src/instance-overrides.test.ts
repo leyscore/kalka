@@ -33,7 +33,7 @@ describe('instance override state', () => {
     state.self.set('opacity', undefined)
     state.descendants.set('child', new Map([['visible', undefined]]))
     // eslint-disable-next-line unicorn/prefer-structured-clone -- exercise the JSON boundary
-    const serialized = JSON.parse(JSON.stringify(serializeInstanceOverrideState(state)))
+    const serialized: unknown = JSON.parse(JSON.stringify(serializeInstanceOverrideState(state)))
     const restored = deserializeInstanceOverrideState(serialized)
 
     expect(hasInstanceOverride(restored, 'instance', 'instance', 'opacity')).toBe(true)

@@ -84,7 +84,8 @@ describe('storage library catalog', () => {
     const instance = graph.createInstance(nestedComponent.id, component.id)
     if (!instance) throw new Error('Expected instance')
     setInstanceOverride(instance.instanceOverrides, instance.id, instance.id, 'pluginData', {
-      $map: []
+      $openPencilType: 'openpencil/map',
+      entries: []
     })
 
     const published = await catalog.publishRevision({
@@ -106,7 +107,7 @@ describe('storage library catalog', () => {
         restoredInstance.id,
         'pluginData'
       )
-    ).toEqual({ $map: [] })
+    ).toEqual({ $openPencilType: 'openpencil/map', entries: [] })
   })
 
   test('rejects corrupted revision content', async () => {

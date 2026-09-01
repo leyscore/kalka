@@ -65,7 +65,8 @@ export function deserializeInstanceOverrideState(state: unknown): InstanceOverri
   if (!state || typeof state !== 'object' || Array.isArray(state)) {
     return createInstanceOverrideState()
   }
-  const self = 'self' in state ? deserializeEntries(state.self) : new Map()
+  const self =
+    'self' in state ? deserializeEntries(state.self) : new Map<InstanceOverrideField, unknown>()
   const descendants = new Map<string, Map<InstanceOverrideField, unknown>>()
   if ('descendants' in state && Array.isArray(state.descendants)) {
     for (const entry of state.descendants) {
