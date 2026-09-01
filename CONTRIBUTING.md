@@ -67,6 +67,12 @@ OpenPencil is a Bun monorepo. Stable ownership boundaries are:
 
 See [`AGENTS.md`](./AGENTS.md) for canonical package ownership and architecture rules, and [Architecture](https://openpencil.dev/development/architecture) for the public overview.
 
+## Codebase fit
+
+Before adding a helper, type, component, state mechanism, parser, or test utility, inspect the owning domain, nearby implementations, existing dependencies, and tests. Reuse or extend the established mechanism; extract genuinely shared logic instead of introducing a parallel implementation.
+
+Keep package boundaries and public exports intact. Keep pull requests focused: exclude temporary or development scaffolding, unrelated refactors, and changelog claims that are not represented by the diff.
+
 ## Tests
 
 Place tests in the established layer and mirror the source domain where practical:
