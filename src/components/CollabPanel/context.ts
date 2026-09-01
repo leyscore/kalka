@@ -6,6 +6,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from '@open-pencil/vue'
 
 import { DEFAULT_COLLAB_STATE, useCollabInjected } from '@/app/collab/use'
+import { useNotificationMessages } from '@/app/i18n/notifications'
 import { toast } from '@/app/shell/ui'
 import { getShareURL } from '@/constants'
 
@@ -14,7 +15,8 @@ function createCollabPanelContext() {
   const router = useRouter()
   const collab = useCollabInjected()
   const { copy, copied } = useClipboard({ copiedDuring: 2000 })
-  const { dialogs } = useI18n()
+  const { common, collaboration } = useI18n()
+  const notifications = useNotificationMessages()
 
   const joinInput = ref('')
   const nameDraft = ref(collab?.state.value.localName ?? '')
@@ -42,7 +44,7 @@ function createCollabPanelContext() {
   function copyLink() {
     if (!shareURL.value) return
     void copy(shareURL.value)
-    toast.info('Link copied to clipboard')
+    toast.info(notifications.value.linkCopied)
   }
 
   function share() {
@@ -51,7 +53,7 @@ function createCollabPanelContext() {
     const roomId = collab.shareCurrentDoc()
     void router.push(`/share/${roomId}`)
     void copy(getShareURL(roomId))
-    toast.info('Link copied to clipboard')
+    toast.info(notifications.value.linkCopied)
     popoverOpen.value = false
   }
 
@@ -77,7 +79,8 @@ function createCollabPanelContext() {
   }
 
   return {
-    dialogs,
+    common,
+    messages: collaboration,
     copied,
     joinInput,
     nameDraft,

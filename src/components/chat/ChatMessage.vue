@@ -10,14 +10,19 @@ import {
   imageAttachmentsForMessage,
   visibleUserMessageText
 } from '@/app/ai/attachment/image/presentation'
-import { resolvedAppTheme } from '@/app/shell/theme'
 import ImageAttachment from '@/components/chat/attachment/image/ImageAttachment.vue'
+import { resolvedAppTheme } from '@/app/shell/theme'
+import { classifyToolState } from './tool-state'
 
 import type { UIDataTypes, UIMessage, UIMessagePart, UITools } from 'ai'
 
-const { message } = defineProps<{ message: UIMessage }>()
-const { dialogs } = useI18n()
+const { message, streaming = false } = defineProps<{
+  message: UIMessage
+  streaming?: boolean
+}>()
+const { ai } = useI18n()
 const isDark = computed(() => resolvedAppTheme.value === 'dark')
+const markdownMode = computed(() => (streaming ? 'streaming' : 'static'))
 const imageAttachments = imageAttachmentsForMessage(message.id)
 
 type ToolPart = Extract<UIMessagePart<UIDataTypes, UITools>, { toolCallId: string }>
@@ -39,9 +44,11 @@ function hasErrorOutput(part: ToolPart): boolean {
 }
 
 function toolState(part: ToolPart): 'pending' | 'done' | 'error' {
-  if (part.state === 'output-error' || hasErrorOutput(part)) return 'error'
-  if (part.state === 'output-available') return 'done'
-  return 'pending'
+  return classifyToolState({
+    toolName: getToolName(part),
+    state: part.state,
+    output: part.output
+  })
 }
 
 function partKey(part: UIMessagePart<UIDataTypes, UITools>, index: number): string {
@@ -88,10 +95,10 @@ function partKey(part: UIMessagePart<UIDataTypes, UITools>, index: number): stri
                 <span class="text-[10px] text-muted">
                   {{
                     toolState(part) === 'pending'
-                      ? dialogs.toolRunning
+                      ? ai.toolRunning
                       : toolState(part) === 'done'
-                        ? dialogs.toolFinished
-                        : dialogs.toolError
+                        ? ai.toolFinished
+                        : ai.toolError
                   }}
                 </span>
                 <icon-lucide-chevron-down
@@ -121,9 +128,12 @@ function partKey(part: UIMessagePart<UIDataTypes, UITools>, index: number): stri
             class="rounded-xl rounded-tl-md bg-hover px-3 py-2 text-xs leading-relaxed text-surface"
           >
             <Markdown
+              :key="markdownMode"
               :content="part.text"
               :is-dark="isDark"
               :mermaid="false"
+              :mode="markdownMode"
+              :data-chat-markdown-mode="markdownMode"
               class="chat-markdown [&_[data-stream-markdown=code]]:!bg-input"
             />
           </div>

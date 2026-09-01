@@ -7,16 +7,17 @@ import { ref } from 'vue'
 import { ACP_AGENTS } from '@open-pencil/core/constants'
 import type { ACPAgentID, AIProviderID } from '@open-pencil/core/constants'
 
-import {
-  classifyAIChatError,
-  classifyAIChatFinish,
-  type AIChatFailure
-} from '@/app/ai/chat/failure'
+import { classifyAIChatError, type AIChatFailure } from '@/app/ai/chat/failure'
 import { resolveLanguageModelID } from '@/app/ai/chat/model'
 import { buildReasoningProviderOptions, type AIProviderOptions } from '@/app/ai/chat/reasoning'
 import SYSTEM_PROMPT from '@/app/ai/chat/system-prompt.md?raw'
-import { createAIModelRuntime } from '@/app/ai/models'
-import { MAX_AGENT_STEPS, createAITools, recordStepUsage, resetRunSteps } from '@/app/ai/tools'
+import { createAIModelRuntime, resolveModelConnectionAPIKey } from '@/app/ai/models'
+import { MAX_AGENT_STEPS, createAITools, recordStep, resetRunSteps } from '@/app/ai/tools'
+import {
+  recordChatCompleted,
+  recordChatFailed,
+  recordModelStepCompleted
+} from '@/app/diagnostics/events'
 import type { getActiveEditorStore } from '@/app/editor/active-store'
 
 type EditorStore = ReturnType<typeof getActiveEditorStore>
@@ -24,6 +25,7 @@ type EditorStore = ReturnType<typeof getActiveEditorStore>
 type ChatSessionOptions = {
   isConfigured: ComputedRef<boolean>
   isACPProvider: ComputedRef<boolean>
+  isHarnessProvider: ComputedRef<boolean>
   providerID: Ref<AIProviderID>
   credentialsReady: Promise<void>
   getActiveEditorStore: () => EditorStore
@@ -101,16 +103,15 @@ export function createToolLoopTransport({
       }
     },
     onStepFinish: ({ usage }) => {
-      recordStepUsage(
-        {
-          inputTokens: usage.inputTokens ?? 0,
-          outputTokens: usage.outputTokens ?? 0,
-          cacheReadTokens: usage.inputTokenDetails.cacheReadTokens ?? 0,
-          cacheWriteTokens: usage.inputTokenDetails.cacheWriteTokens ?? 0,
-          timestamp: Date.now()
-        },
-        store
-      )
+      recordStep(store)
+      recordModelStepCompleted({
+        provider: providerID,
+        model: effectiveModelID,
+        inputTokens: usage.inputTokens ?? null,
+        outputTokens: usage.outputTokens ?? null,
+        cacheReadTokens: usage.inputTokenDetails.cacheReadTokens ?? null,
+        cacheWriteTokens: usage.inputTokenDetails.cacheWriteTokens ?? null
+      })
     }
   })
 
@@ -120,6 +121,7 @@ export function createToolLoopTransport({
 export function createChatSessionManager({
   isConfigured,
   isACPProvider,
+  isHarnessProvider,
   providerID,
   credentialsReady,
   getActiveEditorStore
@@ -130,18 +132,23 @@ export function createChatSessionManager({
   let currentChatMessages = new WeakMap<EditorStore, UIMessage[]>()
   let chat: Chat<UIMessage> | null = null
   let acpTransportInstance: { destroy(): Promise<void> } | null = null
+  let harnessTransportInstance: { destroy(): Promise<void> } | null = null
   let overrideTransport: (() => ChatTransport<UIMessage>) | null = null
 
   function handleChatFinish({
     finishReason,
     isAbort,
+    isDisconnect,
     isError
   }: {
     finishReason?: FinishReason
     isAbort: boolean
+    isDisconnect: boolean
     isError: boolean
   }): void {
-    if (!isAbort && !isError) failure.value = classifyAIChatFinish(finishReason)
+    if (!isAbort && !isDisconnect && !isError) {
+      recordChatCompleted({ finishReason: finishReason ?? null })
+    }
   }
 
   function clearFailure(): void {
@@ -154,18 +161,58 @@ export function createChatSessionManager({
     currentChatMessages = new WeakMap()
   }
 
+  async function destroyAgentTransports(): Promise<void> {
+    const acp = acpTransportInstance
+    const harness = harnessTransportInstance
+    acpTransportInstance = null
+    harnessTransportInstance = null
+    const results = await Promise.allSettled([acp?.destroy(), harness?.destroy()])
+    const errors = results
+      .filter((result) => result.status === 'rejected')
+      .map((result) => result.reason)
+    if (errors.length) throw new AggregateError(errors, 'Agent transport teardown failed')
+  }
+
   async function createActiveACPTransport() {
-    await acpTransportInstance?.destroy()
+    await destroyAgentTransports()
     const transport = await createACPTransport(providerID.value)
     acpTransportInstance = transport
+    return transport as ChatTransport<UIMessage>
+  }
+
+  async function createActiveHarnessTransport() {
+    await destroyAgentTransports()
+    const runtime = await createAIModelRuntime('design')
+    if (runtime?.kind !== 'harness') throw new Error('The Design agent is not configured for Pi')
+    const [{ HarnessChatTransport }, { buildPiMCPServers }, { getActiveTabId }] = await Promise.all(
+      [import('@/app/ai/harness/transport'), import('@/app/integrations/mcp'), import('@/app/tabs')]
+    )
+    const apiKey = await resolveModelConnectionAPIKey(runtime.role.connection.id)
+    if (!apiKey) throw new Error('Credential is unavailable for the Pi agent')
+    const model = runtime.role.profile.customModelID || runtime.role.profile.modelID
+    const transport = new HarnessChatTransport(
+      `tab-${getActiveTabId()}-${runtime.role.profile.id}`,
+      {
+        adapter: 'pi',
+        sandbox: 'just-bash',
+        model,
+        settings: {
+          thinkingLevel: runtime.role.profile.harnessThinkingLevel ?? 'medium',
+          permissionMode: runtime.role.profile.harnessPermissionMode ?? 'allow-edits'
+        },
+        instructions: SYSTEM_PROMPT,
+        mcpServers: await buildPiMCPServers()
+      },
+      { OPENPENCIL_HARNESS_API_KEY: apiKey }
+    )
+    harnessTransportInstance = transport
     return transport as ChatTransport<UIMessage>
   }
 
   async function createTransport(store: EditorStore) {
     if (overrideTransport) return overrideTransport()
 
-    void acpTransportInstance?.destroy()
-    acpTransportInstance = null
+    await destroyAgentTransports()
 
     const runtime = await createAIModelRuntime('design')
     if (runtime?.kind !== 'direct') {
@@ -196,14 +243,16 @@ export function createChatSessionManager({
 
     if (!chat || transportDirty || currentChatStore !== store) {
       const messages = currentChatMessages.get(store)
-      const transport: ChatTransport<UIMessage> = isACPProvider.value
-        ? await createActiveACPTransport()
-        : await createTransport(store)
+      let transport: ChatTransport<UIMessage>
+      if (isACPProvider.value) transport = await createActiveACPTransport()
+      else if (isHarnessProvider.value) transport = await createActiveHarnessTransport()
+      else transport = await createTransport(store)
       chat = new Chat<UIMessage>({
         transport,
         messages,
         onError: (error) => {
           failure.value = classifyAIChatError(error)
+          recordChatFailed({ errorName: error instanceof Error ? error.name : 'unknown' })
         },
         onFinish: handleChatFinish
       })
@@ -213,8 +262,9 @@ export function createChatSessionManager({
     return chat
   }
 
-  function resetChat() {
+  async function resetChat() {
     if (currentChatStore) currentChatMessages.delete(currentChatStore)
+    await destroyAgentTransports()
     failure.value = null
     chat = null
     currentChatStore = null

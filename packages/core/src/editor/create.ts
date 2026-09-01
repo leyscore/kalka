@@ -8,7 +8,11 @@ import { UndoManager } from '@open-pencil/scene-graph/undo'
 import type { SkiaRenderer } from '#core/canvas/renderer'
 import { prefetchFigmaSchema } from '#core/clipboard'
 import { IS_BROWSER } from '#core/constants'
+import { clearLazyFigImportContext } from '#core/kiwi/fig/lazy-import'
+import { releaseFigPopulationWorker } from '#core/kiwi/fig/population/client'
+import { releaseOriginalFigArchive } from '#core/kiwi/fig/session/original-archive'
 import { setTextMeasurer } from '#core/layout'
+import { emitNavigationTrace } from '#core/profiler'
 import { TextEditor } from '#core/text/editor'
 import { fontManager } from '#core/text/fonts'
 import { fontResolver } from '#core/text/resolver'
@@ -24,6 +28,7 @@ import { createComponentSyncScheduler } from './component-sync'
 import { createComponentActions } from './components'
 import { createGraphEventSubscription } from './graph-events'
 import { createGraphReadActions } from './graph-reads'
+import { createGuideActions } from './guides'
 import { createLayoutRunner } from './layout-runner'
 import { createNodeActions } from './nodes'
 import { createPageActions } from './pages'
@@ -84,6 +89,11 @@ export function createEditor(options?: EditorOptions) {
   function requestRender() {
     state.renderVersion++
     state.sceneVersion++
+    emitNavigationTrace('render:requested', {
+      kind: 'render',
+      renderVersion: state.renderVersion,
+      sceneVersion: state.sceneVersion
+    })
     emitEditorEvent('render:requested', {
       renderVersion: state.renderVersion,
       sceneVersion: state.sceneVersion
@@ -92,10 +102,40 @@ export function createEditor(options?: EditorOptions) {
 
   function requestRepaint() {
     state.renderVersion++
+    emitNavigationTrace('render:requested', {
+      kind: 'repaint',
+      renderVersion: state.renderVersion,
+      sceneVersion: state.sceneVersion
+    })
     emitEditorEvent('repaint:requested', {
       renderVersion: state.renderVersion,
       sceneVersion: state.sceneVersion
     })
+  }
+
+  function setNavigationPhase(phase: EditorState['navigation']['phase'], inputAt = 0) {
+    const previous = { ...state.navigation }
+    const active = phase === 'pan' || phase === 'zoom' || phase === 'momentum'
+    const wasActive =
+      previous.phase === 'pan' || previous.phase === 'zoom' || previous.phase === 'momentum'
+    state.navigation = {
+      phase,
+      generation: active && !wasActive ? previous.generation + 1 : previous.generation,
+      lastInputAt: inputAt || previous.lastInputAt
+    }
+    if (
+      state.navigation.phase !== previous.phase ||
+      state.navigation.generation !== previous.generation ||
+      state.navigation.lastInputAt !== previous.lastInputAt
+    ) {
+      emitNavigationTrace('navigation:phase', {
+        phase: state.navigation.phase,
+        previousPhase: previous.phase,
+        generation: state.navigation.generation,
+        lastInputAt: state.navigation.lastInputAt
+      })
+      emitEditorEvent('navigation:changed', state.navigation, previous)
+    }
   }
 
   function setSelectedIds(ids: Set<string>) {
@@ -122,7 +162,7 @@ export function createEditor(options?: EditorOptions) {
   const { runLayoutForNode } = createLayoutRunner(() => _graph)
   const { scheduleComponentSync } = createComponentSyncScheduler(() => _graph, requestRender)
 
-  const { subscribeToGraph } = createGraphEventSubscription({
+  const { subscribeToGraph, unsubscribeFromGraph } = createGraphEventSubscription({
     getGraph: () => _graph,
     getRenderers: () => _renderers,
     scheduleComponentSync,
@@ -155,6 +195,7 @@ export function createEditor(options?: EditorOptions) {
     emitEditorEvent,
     setSelectedIds,
     setActiveTool,
+    setNavigationPhase,
     runLayoutForNode,
     subscribeToGraph
   }
@@ -163,6 +204,7 @@ export function createEditor(options?: EditorOptions) {
   const viewport = createViewportActions(ctx)
   const selection = createSelectionActions(ctx)
   const pages = createPageActions(ctx)
+  const guides = createGuideActions(ctx)
   const shapes = createShapeActions(ctx)
   const structure = createStructureActions(ctx)
   const components = createComponentActions(ctx)
@@ -206,12 +248,28 @@ export function createEditor(options?: EditorOptions) {
     setSelectedIds(new Set())
     state.hoveredNodeId = null
     state.measurementMode = 'off'
+    state.snapGuides = []
+    state.guides = { preview: null, hovered: null, selected: null, redline: null }
+    state.layoutInsertIndicator = null
+    state.dropTargetId = null
     pages.clearPageViewports()
+    for (const renderer of _renderers) renderer.tiledScene.invalidateStructure()
     emitEditorEvent('graph:replaced', _graph)
     if (previousPageId !== state.currentPageId) {
       emitEditorEvent('page:changed', state.currentPageId, previousPageId)
     }
     requestRender()
+  }
+
+  function dispose() {
+    stopFontResolutionEvents()
+    unsubscribeFromGraph()
+  }
+
+  function releaseGraphResources() {
+    releaseFigPopulationWorker(_graph)
+    releaseOriginalFigArchive(_graph)
+    clearLazyFigImportContext(_graph)
   }
 
   return {
@@ -238,16 +296,21 @@ export function createEditor(options?: EditorOptions) {
     requestRepaint,
     onEditorEvent,
     setCanvasKit,
+    setNavigationPhase,
     removeCanvasRenderer,
     replaceGraph,
     subscribeToGraph,
-    dispose: stopFontResolutionEvents,
+    dispose,
+    releaseGraphResources,
 
     // Selection
     ...selection,
 
     // Pages
     ...pages,
+
+    // Canvas and frame guides
+    ...guides,
 
     // Shapes & tools
     ...shapes,

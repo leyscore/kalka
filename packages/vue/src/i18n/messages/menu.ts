@@ -14,6 +14,10 @@ export const menuMessageDefaults = {
   save: 'Save',
   saveAs: 'Save as…',
   exportSelection: 'Export selection…',
+  exportSelectionAsPNG: 'Export selection as PNG',
+  exportSelectionAsSVG: 'Export selection as SVG',
+  exportSelectionAsPPTX: 'Export selection as PPTX',
+  exportSelectionAsFig: 'Export selection as .fig',
   autosave: 'Auto-save to local file',
   closeTab: 'Close tab',
 
@@ -29,6 +33,10 @@ export const menuMessageDefaults = {
   settings: 'Settings…',
   rulers: 'Rulers',
   multiplayerCursors: 'Multiplayer cursors',
+  preferences: 'Preferences',
+  snapToGeometry: 'Snap to geometry',
+  snapToObjects: 'Snap to objects',
+  snapToPixelGrid: 'Snap to pixel grid',
   checkUpdates: 'Check for updates…',
 
   moveToPage: 'Move to page',
@@ -69,7 +77,8 @@ export const menuMessageDefaults = {
   zoomOut: 'Zoom out',
   splitRight: 'Split right',
   splitDown: 'Split down',
-  closeView: 'Close view'
+  closeView: 'Close view',
+  removeGuide: 'Remove guide'
 } as const
 
 export const menuMessages = i18n('menu', menuMessageDefaults)

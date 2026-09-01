@@ -15,6 +15,8 @@ import {
 } from '@open-pencil/scene-graph/resize'
 
 import { calculateResizeRect } from '#vue/shared/input/resize/rect'
+import { applyResizeSnap } from '#vue/shared/input/resize/snap'
+import { optionalEditorState } from '#vue/shared/input/snap'
 import type { DragResize } from '#vue/shared/input/types'
 
 /**
@@ -56,9 +58,25 @@ function reflowedPathTextChanges(
   }
 }
 
-function resizeChanges(d: DragResize, cx: number, cy: number, constrain: boolean) {
+function resizeChanges(
+  d: DragResize,
+  cx: number,
+  cy: number,
+  constrain: boolean,
+  editor: Editor,
+  disableSnapping: boolean
+) {
   const { origRect } = d
-  const newRect = calculateResizeRect(d.handle, origRect, cx - d.startX, cy - d.startY, constrain)
+  const calculatedRect = calculateResizeRect(
+    d.handle,
+    origRect,
+    cx - d.startX,
+    cy - d.startY,
+    constrain
+  )
+  const newRect = constrain
+    ? calculatedRect
+    : applyResizeSnap(d, calculatedRect, editor, disableSnapping)
 
   const changes: Partial<SceneNode> = {
     ...newRect,
@@ -118,14 +136,16 @@ export function applyResize(
   cx: number,
   cy: number,
   constrain: boolean,
-  editor: Editor
+  editor: Editor,
+  disableSnapping = false
 ) {
   // Drag state lives in Vue-reactive input state; nested arrays read through
   // it are reactive proxies. Writing those into the graph poisons it for
   // structuredClone consumers (export subgraph clone, undo snapshots) with
   // DataCloneError. Unwrap once — also keeps the drag hot path off proxies.
   const d = toRaw(dragState)
-  const { changes, newRect } = resizeChanges(d, cx, cy, constrain)
+  const { changes, newRect } = resizeChanges(d, cx, cy, constrain, editor, disableSnapping)
+  d.appliedRect = { ...newRect }
   if (d.origRect.width > 0 && d.origRect.height > 0) {
     const reflow = reflowedPathTextChanges(
       {
@@ -209,6 +229,7 @@ function clearResizedRawGeometry(editor: Editor, nodeId: string): void {
 export function commitResizePreview(dragState: DragResize, editor: Editor) {
   // See applyResize — reactive drag state must not leak into graph writes.
   const d = toRaw(dragState)
+  optionalEditorState(editor)?.snapGuides.splice(0)
   const node = editor.graph.getNode(d.nodeId)
   if (!node) return
   const finalChanges = snapshotResizeFinal(node)
@@ -256,15 +277,14 @@ export function commitResizePreview(dragState: DragResize, editor: Editor) {
       editor.updateNode(d.nodeId, finalChanges)
     })
     clearResizedRawGeometry(editor, d.nodeId)
-    editor.commitResize(d.nodeId, {
-      ...d.origRect,
-      ...(d.origVectorNetwork || node.vectorNetwork ? { vectorNetwork: d.origVectorNetwork } : {}),
-      ...(d.origFillGeometry.length > 0 ? { fillGeometry: d.origFillGeometry } : {}),
-      ...(d.origStrokeGeometry.length > 0 ? { strokeGeometry: d.origStrokeGeometry } : {}),
-      ...(d.origDerivedTextGlyphs?.length ? { derivedTextGlyphs: d.origDerivedTextGlyphs } : {}),
-      ...(d.origStrokes.length > 0 ? { strokes: d.origStrokes } : {}),
-      ...(d.origTextPathData ? { textPathData: d.origTextPathData } : {}),
-      ...(d.origTextPathBox ? { textPathBox: d.origTextPathBox } : {})
-    })
+    const original: Parameters<typeof editor.commitResize>[1] = { ...d.origRect }
+    if (d.origVectorNetwork || node.vectorNetwork) original.vectorNetwork = d.origVectorNetwork
+    if (d.origFillGeometry.length > 0) original.fillGeometry = d.origFillGeometry
+    if (d.origStrokeGeometry.length > 0) original.strokeGeometry = d.origStrokeGeometry
+    if (d.origDerivedTextGlyphs?.length) original.derivedTextGlyphs = d.origDerivedTextGlyphs
+    if (d.origStrokes.length > 0) original.strokes = d.origStrokes
+    if (d.origTextPathData) original.textPathData = d.origTextPathData
+    if (d.origTextPathBox) original.textPathBox = d.origTextPathBox
+    editor.commitResize(d.nodeId, original)
   }
 }

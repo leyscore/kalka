@@ -17,6 +17,7 @@ Bun workspace packages:
 - `packages/vue` — `@open-pencil/vue`: headless Vue 3 SDK (Reka UI-style) for building custom OpenPencil-powered editor shells and embedded editing surfaces. Renderless components and composables. The app is one consumer of the SDK.
 - `packages/cli` — `@open-pencil/cli`: headless CLI for .fig inspection, export, linting. Uses `citty` + `agentfmt`.
 - `packages/mcp` — `@open-pencil/mcp`: MCP server for AI coding tools. Stdio + HTTP (Hono). Reuses core tools.
+- `packages/harness` — `@open-pencil/harness`: optional Node companion CLI for backend-neutral coding-agent sessions. Owns HarnessAgent adapters, opaque resume-state persistence, and the JSONL host protocol; the desktop detects and launches the separately installed command instead of bundling a JavaScript runtime.
 - `packages/docs` — `@open-pencil/docs`: published VitePress documentation site. Use `bun run docs:dev` for authoring, `bun run docs:build` for the default fast local render check without minification or generated LLM files, and `bun run docs:build:production` for the complete deployment output.
 
 The root app (`src/`) is the Tauri/Vite desktop editor. App-specific editor, document, AI, collaboration, shell, tabs, demo, and automation code lives under `src/app/*`. The app consumes scene graph primitives from `@open-pencil/scene-graph`, editor/rendering services through targeted `@open-pencil/core` subpath exports, and `@open-pencil/vue` through the public Vue SDK entrypoint.
@@ -64,7 +65,9 @@ App dialogs compose the Reka-backed components under `src/components/ui/dialog/`
 
 ## Commands
 
-- `bun run check` — type-aware lint + typecheck via oxlint + tsgo + architecture checks (run before committing)
+- `bun run dev:portless` — preferred browser development server at `https://open-pencil.localhost`; linked worktrees use `https://<branch>.open-pencil.localhost`
+- `bun run dev` — direct Vite server at `http://localhost:1420`, used by Playwright, Tauri, and Dev Containers
+- `bun run check` — complete repository quality gate: package builds, lint and type checks, architecture, docs, package/dependency/security checks, tooling tests, and duplicate detection
 - `bun run check:arch` — Steiger architecture lint for project-specific import boundaries
 - `bun run check:vue` — vue-tsc type-check for app and Vue SDK .vue files
 - `bun run test:dupes` — jscpd copy-paste detection across product TS sources
@@ -74,6 +77,10 @@ App dialogs compose the Reka-backed components under `src/components/ui/dialog/`
 - `bun run test` — Playwright E2E and visual regression tests
 - `bun run tauri dev` — desktop app with hot reload
 - `bun open-pencil --help` — list CLI commands. Common commands include `info`, `tree`, `find`, `node`, `pages`, `variables`, `export`, `import`, `convert`, `lint`, `query`, `selection`, `formats`, `analyze ...`, and `eval` for Figma Plugin API scripting.
+
+## Git worktrees and development servers
+
+Use `bun run dev:portless` for browser development, especially in worktrees; Portless assigns the main checkout `https://open-pencil.localhost` and each worktree a branch-prefixed URL. The Vite-owned development MCP server is registered as the matching `mcp.open-pencil` sibling service (for example, `https://fix-ui.mcp.open-pencil.localhost`) and uses isolated runtime socket/discovery paths. Keep `bun run dev` for Playwright, Tauri, and Dev Container flows that require `http://localhost:1420` and the fixed local automation port.
 
 ## Releases & CI
 
@@ -152,6 +159,7 @@ Release commits are the exception: keep using `Release v0.x.y`.
 
 Keep this section light; implementation details move often.
 
+- Harness-based coding agents live in the optional `@open-pencil/harness` Node companion rather than the browser app. Keep its session service backend-neutral, persist only opaque non-secret resume state, and expose host integration through its bounded JSONL protocol. Do not bundle a JavaScript runtime into Tauri; launch the separately installed `openpencil-harness` command. Pi may use local `just-bash`, but that in-memory sandbox does not provide process-restart recovery.
 - ACP UI/transport lives under `src/app/ai/acp/**`; provider definitions live in `packages/core/src/constants.ts`; app prompts live under `src/app/ai/**`. Direct model configuration lives under `src/app/ai/models/**`: reusable profiles reference provider connections, roles resolve to profiles, and runtime creation resolves credentials lazily. Keep model profiles, provider connections, and role assignments separate rather than returning to singleton provider/model settings. Public docs: `packages/docs/programmable/ai-chat.md` and `packages/docs/programmable/mcp-server.md`.
 - ACP transport uses Tauri shell permissions, so check `desktop/capabilities/**` when changing agent launch behavior.
 - Collaboration lives under `src/app/collab/**` and is documented in `packages/docs/programmable/collaboration.md`. It uses Trystero + Yjs + awareness; preserve crypto-safe room IDs and peer cleanup semantics when changing it.
@@ -160,7 +168,7 @@ Keep this section light; implementation details move often.
 
 - Do not place code or tests ad hoc. Before adding or moving files, inspect the existing folder structure and nearby patterns, then put changes in the established domain-specific location. If no proper location exists, create one deliberately and update docs/conventions as needed.
 - Architecture boundaries are enforced by `bun run check:arch` and related lint rules; keep app/package boundaries clean instead of relying on review to catch private imports. In practice: use public workspace exports across boundaries, keep core framework-agnostic, keep app services separate from component/view layers, keep shared UI free of app stores/services, and keep property-panel internals inside the property panel.
-- Test placement is strict: app E2E in `tests/e2e/**/*.spec.ts`, Figma automation in `tests/figma/**/*.spec.ts`, engine/unit tests in `tests/engine/**/*.test.ts`, shared test utilities in `tests/helpers/**`, and standalone package tests in their package `tests/**` when established. UI-visible behavior belongs in E2E; graph/internal-state assertions belong in engine/unit tests. Do not commit temporary/profile specs.
+- Test placement is strict: app E2E in `tests/e2e/**/*.spec.ts`, Figma automation in `tests/figma/**/*.spec.ts`, engine/unit tests in `tests/engine/**/*.test.ts`, shared test utilities in `tests/helpers/**`, and standalone package tests in their package `tests/**` when established. Mirror the source domain inside the appropriate test root where practical. Tests must exercise behavior or stable contracts, not inspect source text or implementation details. UI-visible behavior belongs in E2E; graph/internal-state assertions belong in engine/unit tests. Do not commit temporary/profile specs.
 
 ### File and folder naming
 
@@ -301,6 +309,8 @@ Keep responsibilities distinct: engine tests cover state contracts, Playwright b
 - App wrappers around SDK primitives should compose a single `ui` object from shared UI helpers (`useSelectUI`, `usePopoverUI`, etc.) rather than bypassing the design system with raw Tailwind strings spread across multiple props.
 - Editor commands share `packages/vue/src/editor/commands/registry.ts` as the canonical source for shortcut display tokens, keyboard bindings, and context-menu test IDs. Store portable shortcuts such as `MOD+D`, `MOD+SHIFT+H`, and `MOD+ALT+K`; format them with `formatShortcut()` at render time so macOS shows `⌘`/`⌥` and Windows/Linux show `Ctrl`/`Alt`.
 - Labels and translations must not contain shortcut text. Keep labels semantic (`Add auto layout`, `Show/Hide`) and render shortcuts from command metadata. Steiger enforces this for `packages/vue/src/i18n/messages.ts` and locale JSON files.
+- i18n messages use flat product-domain namespaces, not UI-container buckets. New app copy belongs in the narrow owning domain under `packages/vue/src/i18n/messages/<domain>.ts` with matching locale JSON (`ai`, `automation`, `code`, `collaboration`, `common`, `credentials`, `diagnostics`, `editor`, `files`, `fonts`, `media`, `recovery`, `rendering`, `rename`, `settings`, `storage`, `updates`, or `variables`). Use the narrow `use*Messages()` composable in new code; `useI18n()` remains a compatibility aggregate for multi-domain consumers. Add a new namespace only for a stable product/service boundary used across multiple surfaces—never create generic `dialogs`, `buttons`, `forms`, `errors`, `notifications`, or component-name namespaces.
+- `bun run check:i18n` enforces locale structure, interpolation-placeholder parity, and ratcheting baselines for source-identical and mixed-script translations. New unreviewed values fail CI; when cleaning up existing debt, remove the corresponding `locale:namespace.key` entry from `tools/i18n/translation-baseline.txt` or `tools/i18n/mixed-script-baseline.txt`. Baselines encode reviewed message identities—not vocabulary exceptions in code.
 - Canvas context-menu structure lives in `packages/vue/src/editor/menu-model/canvas.ts`. Do not hand-build command grouping in `src/components/canvas/CanvasMenu.vue`; the component should render menu entries and provide app-specific actions only when unavoidable.
 - Browser and Tauri menus share `src/app/shell/menu/schema.ts` as the canonical menu model. Do not add menu items directly in `src/components/Shell/AppMenu.vue` or `desktop/src/menu.rs`.
 - Regenerate the native menu with `bun run generate:tauri-menu` after editing the shared menu schema; `desktop/generated/menu.json` is consumed by the Tauri menu builder. Tauri also runs this generator from `desktop/tauri.conf.json` via `beforeDevCommand` and `beforeBuildCommand`.

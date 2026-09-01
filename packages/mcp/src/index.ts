@@ -1,5 +1,7 @@
 #!/usr/bin/env node
+import { resolveMCPRoot } from '#mcp/root'
 import { startServer } from '#mcp/server'
+import { readToolPolicyFromEnv } from '#mcp/tool/policy'
 
 if (process.argv.includes('--help') || process.argv.includes('-h')) {
   process.stdout.write(
@@ -16,8 +18,9 @@ if (process.argv.includes('--help') || process.argv.includes('-h')) {
       `                               platform path. Parent dir created 0o700. Mainly for test isolation.\n` +
       `  OPENPENCIL_MCP_TCP           Deprecated — TCP is controlled by PORT (>0 = on, 0 = off)\n` +
       `  OPENPENCIL_MCP_AUTH_TOKEN    Bearer token for MCP and RPC auth\n` +
-      `  OPENPENCIL_MCP_ROOT          Allowed directory for file-scoped tools (default: current working directory)\n` +
-      `  OPENPENCIL_MCP_EVAL          Set to 1 to enable the eval tool\n` +
+      `  OPENPENCIL_MCP_ROOT          Allowed directory for file-scoped tools (default: home directory on Windows, current working directory elsewhere)\n` +
+      `  OPENPENCIL_MCP_EVAL           Set to 1 to enable the eval tool\n` +
+      `  OPENPENCIL_MCP_DISABLED_TOOLS Comma-separated tool names to omit\n` +
       `  OPENPENCIL_MCP_CORS_ORIGIN   Allowed CORS origin\n` +
       `  OPENPENCIL_MCP_APP_TIMEOUT_MS  If set, close the server and remove its discovery\n` +
       `                               file after no app is attached for this many ms. The\n` +
@@ -65,12 +68,15 @@ if (rawAppTimeoutText) {
   }
 }
 
+const toolPolicy = readToolPolicyFromEnv()
+
 const handle = await startServer({
   httpPort: withTcp ? port : 0,
   withTcp,
   socketPath: process.env.OPENPENCIL_MCP_SOCKET?.trim() || null,
-  enableEval: process.env.OPENPENCIL_MCP_EVAL === '1',
-  mcpRoot: process.env.OPENPENCIL_MCP_ROOT?.trim() || process.cwd(),
+  enableEval: toolPolicy.allowEval,
+  disabledTools: toolPolicy.disabledTools,
+  mcpRoot: resolveMCPRoot(process.env.OPENPENCIL_MCP_ROOT),
   // Auth token: undefined → auto-generate, empty string → disable auth,
   // non-empty → use trimmed value. Whitespace-only is rejected to prevent a
   // silent fallback to an auto-generated token when the operator intended to

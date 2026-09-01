@@ -113,16 +113,16 @@ describe('Tauri process helpers', () => {
 
 describe('Tauri updater helper', () => {
   const messages = ref({
-    appUpToDate: 'Up to date',
-    updateAvailableTitle: 'Update available',
-    updateAvailable: ({ version }: { version: string }) => `Version ${version}`,
-    updateInstallPrompt: 'Install now?',
-    downloadingUpdate: ({ version }: { version: string }) => `Downloading ${version}`,
-    updateInstalledTitle: 'Installed',
-    updateInstalled: ({ version, size }: { version: string; size: string }) =>
+    upToDate: 'Up to date',
+    availableTitle: 'Update available',
+    available: ({ version }: { version: string }) => `Version ${version}`,
+    installPrompt: 'Install now?',
+    downloading: ({ version }: { version: string }) => `Downloading ${version}`,
+    installedTitle: 'Installed',
+    installed: ({ version, size }: { version: string; size: string }) =>
       `Installed ${version}${size}`,
-    updateUnavailable: 'Unavailable',
-    updateCheckFailed: ({ error }: { error: string }) => `Failed: ${error}`
+    unavailable: 'Unavailable',
+    checkFailed: ({ error }: { error: string }) => `Failed: ${error}`
   })
 
   test('returns quietly when no Tauri update is available', async () => {
@@ -152,7 +152,10 @@ describe('Tauri updater helper', () => {
           rawJson: '{}'
         }
       }
-      if (cmd === 'plugin:dialog|confirm') return true
+      if (cmd === 'plugin:dialog|message') {
+        const options = args as { buttons?: string }
+        if (options.buttons === 'OkCancel') return 'Ok'
+      }
       if (cmd === 'plugin:updater|download_and_install') {
         const onEvent = (args as { onEvent: { onmessage: (event: unknown) => void } }).onEvent
         onEvent.onmessage({ event: 'Started', data: { contentLength: 10 } })
@@ -165,14 +168,15 @@ describe('Tauri updater helper', () => {
 
     expect(calls.map((call) => call.cmd)).toEqual([
       'plugin:updater|check',
-      'plugin:dialog|confirm',
+      'plugin:dialog|message',
       'plugin:updater|download_and_install',
       'plugin:dialog|message',
       'plugin:process|restart'
     ])
     expect(calls[1]?.args).toMatchObject({
       title: 'Update available',
-      kind: 'info'
+      kind: 'info',
+      buttons: 'OkCancel'
     })
     expect(calls[2]?.args).toMatchObject({ rid: 9 })
   })

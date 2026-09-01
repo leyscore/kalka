@@ -8,17 +8,13 @@ import {
   serializedSceneGraphTransferList
 } from '#core/kiwi/fig/parse/transfer'
 import { buildFigPopulationDelta, installFigMutationJournal } from '#core/kiwi/fig/population/delta'
+import type { FigSessionPopulateRequest } from '#core/kiwi/fig/session/protocol'
 
 interface WorkerParseRequest {
   buffer: ArrayBuffer
   options?: { populate?: 'all' | 'first-page' }
 }
-interface PopulateRequest {
-  type: 'populate'
-  requestId: string
-  baseRevision: number
-  pageId: string
-}
+type PopulateRequest = FigSessionPopulateRequest
 type WorkerRequest = ArrayBuffer | WorkerParseRequest | PopulateRequest
 type WorkerPostMessage = (message: unknown, transfer: Transferable[]) => void
 const postWorkerMessage: WorkerPostMessage = (message, transfer) => {
@@ -58,7 +54,8 @@ self.onmessage = (event: MessageEvent<WorkerRequest>) => {
     const parseRequest: WorkerParseRequest =
       request instanceof ArrayBuffer ? { buffer: request } : request
     const { nodeChanges, blobs, images, figKiwiVersion, figSchemaDeflated } = parseFigBuffer(
-      parseRequest.buffer
+      parseRequest.buffer,
+      (pages) => postWorkerMessage({ type: 'page-manifest', pages }, [])
     )
     const parsedGraph = importNodeChanges(nodeChanges, blobs, new Map(images), parseRequest.options)
     parsedGraph.figKiwiVersion = figKiwiVersion
@@ -69,13 +66,13 @@ self.onmessage = (event: MessageEvent<WorkerRequest>) => {
       parseRequest.options?.populate === 'first-page'
         ? []
         : serializedSceneGraphTransferList(serialized)
-    postWorkerMessage({ graph: serialized }, transfer)
+    postWorkerMessage({ type: 'graph', graph: serialized }, transfer)
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
     postWorkerMessage(
       isPopulateRequest(request)
         ? { type: 'population-error', error: errorMessage }
-        : { error: errorMessage },
+        : { type: 'graph', error: errorMessage },
       []
     )
   }

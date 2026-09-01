@@ -3,12 +3,13 @@ import { computed } from 'vue'
 import { TabsList, TabsRoot, TabsTrigger } from 'reka-ui'
 import { tv } from 'tailwind-variants'
 
+import PreparationIndicator from '@/components/preparation/tab/Indicator.vue'
 import Tip from '@/components/ui/Tip.vue'
 import tabBarTheme from '@/theme/tab-bar'
-import { useTabsStore, createTab } from '@/app/tabs'
+import { useTabsStore, createHomeTab } from '@/app/tabs'
 import { useI18n } from '@open-pencil/vue'
 
-const { dialogs } = useI18n()
+const { files } = useI18n()
 
 const { tabs, activeTabId, switchTab, closeTab } = useTabsStore()
 const tabBarStyles = tv(tabBarTheme)
@@ -19,8 +20,14 @@ const modelValue = computed({
   set: (id: string) => switchTab(id)
 })
 
-function onMiddleClick(e: MouseEvent, tabId: string) {
-  if (e.button === 1) {
+function createNewTab(event: MouseEvent): void {
+  event.preventDefault()
+  if (event.currentTarget instanceof HTMLElement) event.currentTarget.blur()
+  createHomeTab()
+}
+
+function onMiddleClick(e: MouseEvent, tabId: string, isHome: boolean) {
+  if (e.button === 1 && (!isHome || tabs.value.length > 1)) {
     e.preventDefault()
     void closeTab(tabId)
   }
@@ -34,7 +41,7 @@ function onClose(e: MouseEvent, tabId: string) {
 
 <template>
   <TabsRoot
-    v-if="tabs.length > 1"
+    v-if="tabs.length > 0"
     v-model="modelValue"
     activation-mode="automatic"
     :class="baseStyles.root()"
@@ -47,16 +54,21 @@ function onClose(e: MouseEvent, tabId: string) {
         data-test-id="tabbar-tab"
         :class="tabBarStyles({ active: tab.isActive }).trigger()"
         :data-active="tab.isActive || undefined"
-        @mousedown="onMiddleClick($event, tab.id)"
+        @mousedown="onMiddleClick($event, tab.id, tab.isHome)"
       >
-        <icon-lucide-file :class="baseStyles.icon()" />
-        <span :class="baseStyles.label()">{{ tab.name }}</span>
-        <Tip :label="dialogs.closeTab({ name: tab.name })">
+        <icon-lucide-house v-if="tab.isHome" :class="baseStyles.icon()" />
+        <PreparationIndicator v-else-if="tab.isPreparing" :progress="tab.preparationProgress" />
+        <icon-lucide-file v-else :class="baseStyles.icon()" />
+        <span :class="baseStyles.label()">{{ tab.isHome ? files.newTab : tab.name }}</span>
+        <Tip
+          v-if="!tab.isHome || tabs.length > 1"
+          :label="files.closeTab({ name: tab.isHome ? files.newTab : tab.name })"
+        >
           <button
             data-test-id="tabbar-close"
             :class="tabBarStyles({ active: tab.isActive }).close()"
             :data-active="tab.isActive || undefined"
-            :aria-label="dialogs.closeTab({ name: tab.name })"
+            :aria-label="files.closeTab({ name: tab.isHome ? files.newTab : tab.name })"
             tabindex="-1"
             @click="onClose($event, tab.id)"
           >
@@ -65,12 +77,12 @@ function onClose(e: MouseEvent, tabId: string) {
         </Tip>
       </TabsTrigger>
     </TabsList>
-    <Tip :label="dialogs.newTab">
+    <Tip :label="files.newTab">
       <button
         data-test-id="tabbar-new"
         :class="baseStyles.newAction()"
-        :aria-label="dialogs.newTab"
-        @click="createTab()"
+        :aria-label="files.newTab"
+        @click="createNewTab"
       >
         <icon-lucide-plus :class="baseStyles.newIcon()" />
       </button>

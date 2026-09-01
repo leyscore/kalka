@@ -18,6 +18,8 @@ import {
   type FixtureSpec,
   type CompareOptions,
   type Verifier,
+  buildComponentPropertyDefinitionIndex,
+  buildNodePathIndex,
   isColorObj,
   SCENE_VERIFIERS,
   RAW_VERIFIERS
@@ -64,8 +66,8 @@ const SPECS: FixtureSpec[] = [
     thumbnailHeight: 239,
     imageCount: 3,
     figKiwiVersion: 101,
-    g1ExportSize: 597347,
-    g2ExportSize: 597347
+    g1ExportSize: 498456,
+    g2ExportSize: 498456
   }
 ]
 
@@ -230,6 +232,10 @@ function compareSceneProps(
     bNodes,
     aGraph,
     bGraph,
+    aNodePaths: buildNodePathIndex(aNodes),
+    bNodePaths: buildNodePathIndex(bNodes),
+    aComponentPropertyDefinitions: buildComponentPropertyDefinitionIndex(aGraph),
+    bComponentPropertyDefinitions: buildComponentPropertyDefinitionIndex(bGraph),
     errors,
     fixture,
     verifiers,
@@ -265,6 +271,10 @@ function compareRawNodeFields(
     bNodes,
     aGraph,
     bGraph,
+    aNodePaths: buildNodePathIndex(aNodes),
+    bNodePaths: buildNodePathIndex(bNodes),
+    aComponentPropertyDefinitions: buildComponentPropertyDefinitionIndex(aGraph),
+    bComponentPropertyDefinitions: buildComponentPropertyDefinitionIndex(bGraph),
     errors,
     fixture,
     verifiers,

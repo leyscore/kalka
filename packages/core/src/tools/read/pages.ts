@@ -18,6 +18,7 @@ export const listPages = defineTool({
 export const switchPage = defineTool({
   name: 'switch_page',
   mutates: true,
+  changesDocument: false,
   description: 'Switch to a different page by name or ID.',
   params: {
     page: { type: 'string', description: 'Page name or ID', required: true }

@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
+import { computeAllLayouts } from '@open-pencil/core'
+
 import { createAPI } from '../helpers'
 
 describe('createComponentFromNode', () => {
@@ -23,7 +25,7 @@ describe('createComponentFromNode', () => {
     expect(api.getNodeById(frameId)).toBeNull()
   })
 
-  test('preserves the frame own variable bindings', () => {
+  test('preserves root variable bindings and explicit modes', () => {
     const api = createAPI()
     const collection = api.createVariableCollection('Radii')
     const variable = api.createVariable('radius/md', 'FLOAT', collection.id, 8)
@@ -33,10 +35,51 @@ describe('createComponentFromNode', () => {
     frame.resize(200, 50)
     frame.cornerRadius = 8
     api.bindVariable(frame.id, 'cornerRadius', variable.id)
+    api.graph.updateNode(frame.id, {
+      variableModes: { [collection.id]: collection.defaultModeId }
+    })
 
     const comp = api.createComponentFromNode(frame)
-
     const raw = api.graph.getNode(comp.id)
+
     expect(raw?.boundVariables.cornerRadius).toBe(variable.id)
+    expect(raw?.variableModes).toEqual({ [collection.id]: collection.defaultModeId })
+  })
+
+  test('preserves auto-layout HUG sizing when padding changes after conversion', () => {
+    const api = createAPI()
+    const frame = api.createFrame()
+    frame.layoutMode = 'HORIZONTAL'
+    frame.primaryAxisSizingMode = 'AUTO'
+    frame.counterAxisSizingMode = 'AUTO'
+    const child = api.createRectangle()
+    child.resize(40, 20)
+    frame.appendChild(child)
+    computeAllLayouts(api.graph, frame.id)
+
+    const comp = api.createComponentFromNode(frame)
+    const initialWidth = comp.width
+    const initialHeight = comp.height
+    comp.paddingLeft = 20
+    comp.paddingRight = 20
+    comp.paddingTop = 10
+    comp.paddingBottom = 10
+    computeAllLayouts(api.graph, comp.id)
+
+    expect(comp.width).toBe(initialWidth + 40)
+    expect(comp.height).toBe(initialHeight + 20)
+  })
+  test('preserves auto-layout HUG sizing mode', () => {
+    const api = createAPI()
+    const frame = api.createFrame()
+    frame.layoutMode = 'HORIZONTAL'
+    frame.primaryAxisSizingMode = 'AUTO'
+    frame.counterAxisSizingMode = 'AUTO'
+
+    const comp = api.createComponentFromNode(frame)
+    const raw = api.graph.getNode(comp.id)
+
+    expect(raw?.primaryAxisSizing).toBe('HUG')
+    expect(raw?.counterAxisSizing).toBe('HUG')
   })
 })

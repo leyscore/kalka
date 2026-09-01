@@ -1,12 +1,31 @@
 /* eslint-disable max-lines -- SceneGraph exposes a stable facade over domain modules */
+export * from './instance-overrides'
 export * from './images'
+export * from './components/properties'
 export * from './copy'
-export { copyInstanceComponentProps } from './instances'
+export {
+  copyInstanceComponentProps,
+  hasInstanceOverride,
+  INSTANCE_SYNC_FIELDS,
+  INSTANCE_SYNC_PROPS,
+  INSTANCE_SYNC_TEXT_PROPS,
+  recordInstanceOverride
+} from './instances'
+export {
+  clearInstanceOverrides,
+  cloneInstanceOverrideState,
+  forEachInstanceOverride,
+  getInstanceOverride,
+  setInstanceOverride,
+  type InstanceOverrideState
+} from './instance-overrides'
 export * from './snap'
 export * from './export-scale'
 export * from './coordinate'
 export * from './constants'
 export * from './geometry'
+export * from './guides'
+export * from './layout-guides'
 export * from './font-style'
 export * from './shared-styles'
 export { default as TransformMatrix } from './matrix'

@@ -6,7 +6,16 @@ import { SceneGraph } from '@open-pencil/scene-graph'
 
 import { resolveBrowserFileURL } from '@/app/document/io/browser'
 import type { DocumentSourceIdentity } from '@/app/document/io/types'
-import { createTab, getActiveStore, openFileInNewTab, tabCount } from '@/app/tabs'
+import {
+  createDocumentInCurrentTab,
+  createHomeTab,
+  createTab,
+  getActiveStore,
+  getTabsSnapshot,
+  openFileInNewTab,
+  showNewTab,
+  tabCount
+} from '@/app/tabs'
 import { fileIdentitiesMatch, findTabByFileIdentity } from '@/app/tabs/open/identity'
 
 function setupGlobals() {
@@ -28,6 +37,36 @@ function setupGlobals() {
   } as Document
   globalThis.requestAnimationFrame = window.requestAnimationFrame
   globalThis.cancelAnimationFrame = window.cancelAnimationFrame
+}
+
+function acknowledgePendingPresentation(): void {
+  for (const tab of getTabsSnapshot()) {
+    if (tab.store.state.preparation?.phase !== 'preparing-render') continue
+    tab.store.preparationController.acknowledgePresentation(tab.store.state.sceneVersion)
+  }
+}
+
+type FileOpenOutcome = { status: 'fulfilled' } | { status: 'rejected'; reason: unknown }
+
+async function settleFileOpen(opening: Promise<void>): Promise<void> {
+  const outcome: Promise<FileOpenOutcome> = opening.then(
+    () => ({ status: 'fulfilled' }),
+    (reason: unknown) => ({ status: 'rejected', reason })
+  )
+
+  const awaitOutcome = async (): Promise<FileOpenOutcome> => {
+    acknowledgePendingPresentation()
+    const result = await Promise.race([
+      outcome,
+      new Promise<null>((resolve) => {
+        setTimeout(resolve, 0)
+      })
+    ])
+    return result ?? awaitOutcome()
+  }
+
+  const result = await awaitOutcome()
+  if (result.status === 'rejected') throw result.reason
 }
 
 function makeHandle(
@@ -115,13 +154,50 @@ describe('openFileInNewTab deduplication', () => {
     expect(resolveBrowserFileURL('/design.fig#selection').href).toBe('http://localhost/design.fig')
   })
 
+  test('reuses the existing New tab when navigating to the files workspace', () => {
+    const initialCount = tabCount()
+    const initialHomeCount = getTabsSnapshot().filter((tab) => tab.kind === 'home').length
+
+    showNewTab()
+    showNewTab()
+
+    expect(tabCount()).toBe(initialCount + (initialHomeCount === 0 ? 1 : 0))
+    expect(getTabsSnapshot().filter((tab) => tab.kind === 'home')).toHaveLength(1)
+  })
+
+  test('converts the current New tab into a blank document', () => {
+    createHomeTab()
+    const home = getTabsSnapshot().at(-1)
+    const count = tabCount()
+
+    const document = createDocumentInCurrentTab()
+
+    expect(tabCount()).toBe(count)
+    expect(document.id).toBe(home?.id)
+    expect(document.kind).toBe('document')
+  })
+
+  test('opens a file in the current New tab', async () => {
+    createHomeTab()
+    const home = getTabsSnapshot().at(-1)
+    const count = tabCount()
+
+    await settleFileOpen(
+      openFileInNewTab(new File([], 'design.fig'), undefined, '/tmp/from-home.fig')
+    )
+
+    expect(tabCount()).toBe(count)
+    expect(getTabsSnapshot().at(-1)?.id).toBe(home?.id)
+    expect(getTabsSnapshot().at(-1)?.kind).toBe('document')
+  })
+
   test('activates the existing tab when the same path is opened again', async () => {
     const initialCount = tabCount()
     const file = new File([], 'design.fig')
 
-    await openFileInNewTab(file, undefined, '/tmp/design.fig')
+    await settleFileOpen(openFileInNewTab(file, undefined, '/tmp/design.fig'))
     const openedStore = getActiveStore()
-    await openFileInNewTab(file, undefined, '/tmp/design.fig')
+    await settleFileOpen(openFileInNewTab(file, undefined, '/tmp/design.fig'))
 
     expect(tabCount()).toBe(initialCount)
     expect(getActiveStore()).toBe(openedStore)
@@ -145,7 +221,7 @@ describe('openFileInNewTab deduplication', () => {
 
     expect(figModule.readFigFile).toHaveBeenCalledTimes(1)
     read.resolve(new SceneGraph())
-    await Promise.all([first, second])
+    await Promise.all([settleFileOpen(first), settleFileOpen(second)])
     expect(tabCount()).toBe(initialCount)
   })
 
@@ -167,7 +243,7 @@ describe('openFileInNewTab deduplication', () => {
     expect(figModule.readFigFile).toHaveBeenCalledTimes(2)
     reads[0].resolve(new SceneGraph())
     reads[1].resolve(new SceneGraph())
-    await Promise.all([first, second])
+    await Promise.all([settleFileOpen(first), settleFileOpen(second)])
     expect(tabCount()).toBe(initialCount + 1)
   })
 
@@ -177,10 +253,10 @@ describe('openFileInNewTab deduplication', () => {
       .mockResolvedValueOnce(new SceneGraph())
 
     await expect(
-      openFileInNewTab(new File([], 'retry.fig'), undefined, '/tmp/retry.fig')
+      settleFileOpen(openFileInNewTab(new File([], 'retry.fig'), undefined, '/tmp/retry.fig'))
     ).rejects.toThrow('read failed')
     await expect(
-      openFileInNewTab(new File([], 'retry.fig'), undefined, '/tmp/retry.fig')
+      settleFileOpen(openFileInNewTab(new File([], 'retry.fig'), undefined, '/tmp/retry.fig'))
     ).resolves.toBeUndefined()
 
     expect(figModule.readFigFile).toHaveBeenCalledTimes(2)
@@ -191,8 +267,8 @@ describe('openFileInNewTab deduplication', () => {
     const initialCount = tabCount()
     const file = new File([], 'same-name.fig')
 
-    await openFileInNewTab(file)
-    await openFileInNewTab(file)
+    await settleFileOpen(openFileInNewTab(file))
+    await settleFileOpen(openFileInNewTab(file))
 
     expect(tabCount()).toBe(initialCount + 1)
     expect(figModule.readFigFile).toHaveBeenCalledTimes(2)

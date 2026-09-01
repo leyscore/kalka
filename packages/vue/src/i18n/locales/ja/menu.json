@@ -56,10 +56,19 @@
   "arrangeAlignMiddle": "上下中央揃え",
   "arrangeAlignBottom": "下揃え",
   "multiplayerCursors": "マルチプレイヤーカーソル",
+  "preferences": "環境設定",
+  "snapToGeometry": "ジオメトリにスナップ",
+  "snapToObjects": "オブジェクトにスナップ",
+  "snapToPixelGrid": "ピクセルグリッドにスナップ",
   "renameSelection": "選択範囲の名前を変更…",
   "rulers": "ルーラー",
   "settings": "設定…",
   "splitRight": "右に分割",
   "splitDown": "下に分割",
-  "closeView": "ビューを閉じる"
+  "closeView": "ビューを閉じる",
+  "removeGuide": "ガイドを削除",
+  "exportSelectionAsPNG": "選択範囲を PNG としてエクスポート",
+  "exportSelectionAsSVG": "選択範囲を SVG としてエクスポート",
+  "exportSelectionAsPPTX": "選択範囲を PPTX としてエクスポート",
+  "exportSelectionAsFig": "選択範囲を .fig としてエクスポート"
 }

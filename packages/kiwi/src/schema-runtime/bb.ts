@@ -16,6 +16,14 @@ export class ByteBuffer {
     this.length = data ? data.length : 0
   }
 
+  get offset(): number {
+    return this._index
+  }
+
+  set offset(value: number) {
+    this._index = value
+  }
+
   /**
    * Returns a view into the internal buffer, not a copy.
    *
@@ -37,6 +45,11 @@ export class ByteBuffer {
     const start = this._index
     this._index = start + length
     return this._data.slice(start, start + length)
+  }
+
+  skipByteArray(): void {
+    const length = this.readVarUint()
+    this._index += length
   }
 
   readVarFloat(): number {
@@ -115,12 +128,22 @@ export class ByteBuffer {
   }
 
   readString(): string {
-    const data = this._data
     const start = this._index
-    let i = start
-    while (data[i] !== 0) i++
+    const i = this.findStringTerminator(start)
     this._index = i + 1
-    return textDecoder.decode(data.subarray(start, i))
+    return textDecoder.decode(this._data.subarray(start, i))
+  }
+
+  skipString(): void {
+    this._index = this.findStringTerminator(this._index) + 1
+  }
+
+  private findStringTerminator(start: number): number {
+    const data = this._data
+    let index = start
+    while (index < data.length && data[index] !== 0) index++
+    if (index >= data.length) throw new Error('Unterminated string in Kiwi message')
+    return index
   }
 
   private _growBy(amount: number): void {
