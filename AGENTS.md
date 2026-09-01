@@ -67,7 +67,7 @@ App dialogs compose the Reka-backed components under `src/components/ui/dialog/`
 
 - `bun run dev:portless` — preferred browser development server at `https://open-pencil.localhost`; linked worktrees use `https://<branch>.open-pencil.localhost`
 - `bun run dev` — direct Vite server at `http://localhost:1420`, used by Playwright, Tauri, and Dev Containers
-- `bun run check` — type-aware lint + typecheck via oxlint + tsgo + architecture checks (run before committing)
+- `bun run check` — complete repository quality gate: package builds, lint and type checks, architecture, docs, package/dependency/security checks, tooling tests, and duplicate detection
 - `bun run check:arch` — Steiger architecture lint for project-specific import boundaries
 - `bun run check:vue` — vue-tsc type-check for app and Vue SDK .vue files
 - `bun run test:dupes` — jscpd copy-paste detection across product TS sources
@@ -168,7 +168,7 @@ Keep this section light; implementation details move often.
 
 - Do not place code or tests ad hoc. Before adding or moving files, inspect the existing folder structure and nearby patterns, then put changes in the established domain-specific location. If no proper location exists, create one deliberately and update docs/conventions as needed.
 - Architecture boundaries are enforced by `bun run check:arch` and related lint rules; keep app/package boundaries clean instead of relying on review to catch private imports. In practice: use public workspace exports across boundaries, keep core framework-agnostic, keep app services separate from component/view layers, keep shared UI free of app stores/services, and keep property-panel internals inside the property panel.
-- Test placement is strict: app E2E in `tests/e2e/**/*.spec.ts`, Figma automation in `tests/figma/**/*.spec.ts`, engine/unit tests in `tests/engine/**/*.test.ts`, shared test utilities in `tests/helpers/**`, and standalone package tests in their package `tests/**` when established. UI-visible behavior belongs in E2E; graph/internal-state assertions belong in engine/unit tests. Do not commit temporary/profile specs.
+- Test placement is strict: app E2E in `tests/e2e/**/*.spec.ts`, Figma automation in `tests/figma/**/*.spec.ts`, engine/unit tests in `tests/engine/**/*.test.ts`, shared test utilities in `tests/helpers/**`, and standalone package tests in their package `tests/**` when established. Mirror the source domain inside the appropriate test root where practical. Tests must exercise behavior or stable contracts, not inspect source text or implementation details. UI-visible behavior belongs in E2E; graph/internal-state assertions belong in engine/unit tests. Do not commit temporary/profile specs.
 
 ### File and folder naming
 
