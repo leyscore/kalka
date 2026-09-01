@@ -29,17 +29,28 @@ function revisionKey(libraryId: string, revisionId: string): string {
   return `${PREFIX}/${libraryId}/revisions/${revisionId}.json`
 }
 
+const MAP_TAG = 'openpencil/map'
+
 interface EncodedMap {
-  $map: unknown[]
+  $openPencilType: typeof MAP_TAG
+  entries: unknown[]
 }
 
 function isEncodedMap(value: object): value is EncodedMap {
-  return '$map' in value && Array.isArray(value.$map)
+  return (
+    '$openPencilType' in value &&
+    value.$openPencilType === MAP_TAG &&
+    'entries' in value &&
+    Array.isArray(value.entries)
+  )
 }
 
 function encodeValue(value: unknown): unknown {
   if (value instanceof Map) {
-    return { $map: [...value].map(([key, entry]) => [encodeValue(key), encodeValue(entry)]) }
+    return {
+      $openPencilType: MAP_TAG,
+      entries: [...value].map(([key, entry]) => [encodeValue(key), encodeValue(entry)])
+    }
   }
   if (value instanceof Uint8Array) return { $bytes: encodeBase64(value) }
   if (Array.isArray(value)) return value.map(encodeValue)
@@ -56,7 +67,7 @@ function decodeValue(value: unknown): unknown {
   if (value && typeof value === 'object') {
     if (isEncodedMap(value)) {
       return new Map(
-        value.$map.flatMap((entry) =>
+        value.entries.flatMap((entry) =>
           Array.isArray(entry) && entry.length === 2
             ? [[decodeValue(entry[0]), decodeValue(entry[1])] as const]
             : []

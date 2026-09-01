@@ -1,11 +1,15 @@
 import { describe, expect, test } from 'bun:test'
 
+import { deflateSync } from 'fflate'
+
 import {
   buildOpenPencilClipboardHTML,
   FigmaAPI,
   parseOpenPencilClipboard,
   SceneGraph
 } from '@open-pencil/core'
+import type { SceneNode } from '@open-pencil/core'
+import { encodeBase64 } from '@open-pencil/core/bytes'
 import { getInstanceOverride, setInstanceOverride } from '@open-pencil/scene-graph'
 
 import { expectDefined } from '#tests/helpers/assert'
@@ -41,6 +45,34 @@ describe('clipboard roundtrip with images', () => {
 
     return { graph, node, imageHash: hash, imageBytes }
   }
+
+  test('migrates legacy flat instance overrides', () => {
+    const legacy = {
+      format: 'openpencil/v1',
+      nodes: [
+        {
+          id: 'instance',
+          type: 'INSTANCE',
+          overrides: { text: 'Self', 'child:text': 'Custom' },
+          children: []
+        }
+      ],
+      images: {}
+    }
+    const encoded = encodeBase64(deflateSync(new TextEncoder().encode(JSON.stringify(legacy))))
+    const parsed = expectDefined(
+      parseOpenPencilClipboard(`<!--(openpencil)${encoded}(/openpencil)-->`),
+      'OpenPencil clipboard'
+    )
+    const instance = parsed.nodes[0]
+
+    expect(getInstanceOverride(instance.instanceOverrides, instance.id, instance.id, 'text')).toBe(
+      'Self'
+    )
+    expect(getInstanceOverride(instance.instanceOverrides, instance.id, 'child', 'text')).toBe(
+      'Custom'
+    )
+  })
 
   test('preserves structured instance overrides', () => {
     const graph = new SceneGraph()

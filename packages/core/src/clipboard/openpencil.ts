@@ -1,8 +1,11 @@
 import { deflateSync, inflateSync } from 'fflate'
 
 import {
+  createInstanceOverrideState,
   deserializeInstanceOverrideState,
   serializeInstanceOverrideState,
+  setInstanceOverride,
+  type InstanceOverrideState,
   type SceneGraph,
   type SceneNode,
   type SerializedInstanceOverrideState
@@ -12,6 +15,7 @@ import type { JSONObject } from '@open-pencil/scene-graph/primitives'
 import { decodeBase64, encodeBase64 } from '#core/bytes'
 
 interface SerializedClipboardNode extends JSONObject {
+  overrides?: Record<string, unknown>
   instanceOverrides?: SerializedInstanceOverrideState
   textPicture?: string | Uint8Array
   children?: SerializedClipboardNode[]
@@ -55,12 +59,32 @@ export function parseOpenPencilClipboard(html: string): OpenPencilClipboardData 
   return null
 }
 
+function legacyInstanceOverrides(
+  nodeId: string,
+  overrides: Record<string, unknown> | undefined
+): InstanceOverrideState {
+  const state = createInstanceOverrideState()
+  for (const [key, value] of Object.entries(overrides ?? {})) {
+    const separator = key.indexOf(':')
+    if (separator === -1) {
+      setInstanceOverride(state, nodeId, nodeId, key, value)
+    } else {
+      setInstanceOverride(state, nodeId, key.slice(0, separator), key.slice(separator + 1), value)
+    }
+  }
+  return state
+}
+
 function restoreNodeData(nodes: SerializedClipboardNode[]): ClipboardNode[] {
   return nodes.map((node) => {
-    const { children, instanceOverrides, textPicture, ...rest } = node
+    const { children, instanceOverrides, overrides, textPicture, ...rest } = node
+    const nodeId = typeof rest.id === 'string' ? rest.id : ''
+    const overrideState = instanceOverrides
+      ? deserializeInstanceOverrideState(instanceOverrides)
+      : legacyInstanceOverrides(nodeId, overrides)
     return {
       ...rest,
-      instanceOverrides: deserializeInstanceOverrideState(instanceOverrides),
+      instanceOverrides: overrideState,
       textPicture: typeof textPicture === 'string' ? decodeBase64(textPicture) : textPicture,
       ...(children ? { children: restoreNodeData(children) } : {})
     } as ClipboardNode

@@ -83,7 +83,9 @@ describe('storage library catalog', () => {
     })
     const instance = graph.createInstance(nestedComponent.id, component.id)
     if (!instance) throw new Error('Expected instance')
-    setInstanceOverride(instance.instanceOverrides, instance.id, instance.id, 'opacity', 0.5)
+    setInstanceOverride(instance.instanceOverrides, instance.id, instance.id, 'pluginData', {
+      $map: []
+    })
 
     const published = await catalog.publishRevision({
       libraryId: 'design-system',
@@ -102,9 +104,9 @@ describe('storage library catalog', () => {
         restoredInstance.instanceOverrides,
         restoredInstance.id,
         restoredInstance.id,
-        'opacity'
+        'pluginData'
       )
-    ).toBe(0.5)
+    ).toEqual({ $map: [] })
   })
 
   test('rejects corrupted revision content', async () => {

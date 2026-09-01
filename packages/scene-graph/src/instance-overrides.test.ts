@@ -5,8 +5,10 @@ import {
   cloneInstanceOverrideState,
   createInstanceOverrideState,
   deleteInstanceOverride,
+  deserializeInstanceOverrideState,
   getInstanceOverride,
   hasInstanceOverride,
+  serializeInstanceOverrideState,
   setInstanceOverride
 } from './instance-overrides'
 
@@ -24,6 +26,26 @@ describe('instance override state', () => {
     const state = createInstanceOverrideState()
     setInstanceOverride(state, 'instance', 'child', 'visible', undefined)
     expect(hasInstanceOverride(state, 'instance', 'child', 'visible')).toBe(true)
+  })
+
+  test('round-trips explicit undefined values through JSON', () => {
+    const state = createInstanceOverrideState()
+    state.self.set('opacity', undefined)
+    state.descendants.set('child', new Map([['visible', undefined]]))
+    // eslint-disable-next-line unicorn/prefer-structured-clone -- exercise the JSON boundary
+    const serialized = JSON.parse(JSON.stringify(serializeInstanceOverrideState(state)))
+    const restored = deserializeInstanceOverrideState(serialized)
+
+    expect(hasInstanceOverride(restored, 'instance', 'instance', 'opacity')).toBe(true)
+    expect(getInstanceOverride(restored, 'instance', 'instance', 'opacity')).toBeUndefined()
+    expect(hasInstanceOverride(restored, 'instance', 'child', 'visible')).toBe(true)
+    expect(getInstanceOverride(restored, 'instance', 'child', 'visible')).toBeUndefined()
+  })
+
+  test('ignores malformed serialized entries', () => {
+    const state = deserializeInstanceOverrideState({ self: [null], descendants: [] })
+    expect(state.self.size).toBe(0)
+    expect(state.descendants.size).toBe(0)
   })
 
   test('deletes empty descendant buckets', () => {

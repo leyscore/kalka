@@ -9,30 +9,71 @@ export function createInstanceOverrideState(): InstanceOverrideState {
   return { self: new Map(), descendants: new Map() }
 }
 
+export interface SerializedOverrideValue {
+  defined: boolean
+  value?: unknown
+}
+
 export interface SerializedInstanceOverrideState {
-  self: Array<[InstanceOverrideField, unknown]>
-  descendants: Array<[string, Array<[InstanceOverrideField, unknown]>]>
+  self: Array<[InstanceOverrideField, SerializedOverrideValue]>
+  descendants: Array<[string, Array<[InstanceOverrideField, SerializedOverrideValue]>]>
+}
+
+function serializeOverrideValue(value: unknown): SerializedOverrideValue {
+  return value === undefined ? { defined: false } : { defined: true, value }
+}
+
+function deserializeOverrideValue(value: unknown): { valid: boolean; value: unknown } {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return { valid: false, value: undefined }
+  }
+  if (!('defined' in value) || typeof value.defined !== 'boolean') {
+    return { valid: false, value: undefined }
+  }
+  if (value.defined) {
+    return 'value' in value
+      ? { valid: true, value: value['value'] }
+      : { valid: false, value: undefined }
+  }
+  return { valid: true, value: undefined }
+}
+
+function deserializeEntries(value: unknown): Map<InstanceOverrideField, unknown> {
+  const result = new Map<InstanceOverrideField, unknown>()
+  if (!Array.isArray(value)) return result
+  for (const entry of value) {
+    if (!Array.isArray(entry) || entry.length !== 2 || typeof entry[0] !== 'string') continue
+    const decoded = deserializeOverrideValue(entry[1])
+    if (decoded.valid) result.set(entry[0], decoded.value)
+  }
+  return result
 }
 
 export function serializeInstanceOverrideState(
   state: InstanceOverrideState
 ): SerializedInstanceOverrideState {
   return {
-    self: [...state.self],
-    descendants: [...state.descendants].map(([nodeId, fields]) => [nodeId, [...fields]])
+    self: [...state.self].map(([field, value]) => [field, serializeOverrideValue(value)]),
+    descendants: [...state.descendants].map(([nodeId, fields]) => [
+      nodeId,
+      [...fields].map(([field, value]) => [field, serializeOverrideValue(value)])
+    ])
   }
 }
 
-export function deserializeInstanceOverrideState(
-  state: SerializedInstanceOverrideState | undefined
-): InstanceOverrideState {
-  if (!state || !Array.isArray(state.self) || !Array.isArray(state.descendants)) {
+export function deserializeInstanceOverrideState(state: unknown): InstanceOverrideState {
+  if (!state || typeof state !== 'object' || Array.isArray(state)) {
     return createInstanceOverrideState()
   }
-  return {
-    self: new Map(state.self),
-    descendants: new Map(state.descendants.map(([nodeId, fields]) => [nodeId, new Map(fields)]))
+  const self = 'self' in state ? deserializeEntries(state.self) : new Map()
+  const descendants = new Map<string, Map<InstanceOverrideField, unknown>>()
+  if ('descendants' in state && Array.isArray(state.descendants)) {
+    for (const entry of state.descendants) {
+      if (!Array.isArray(entry) || entry.length !== 2 || typeof entry[0] !== 'string') continue
+      descendants.set(entry[0], deserializeEntries(entry[1]))
+    }
   }
+  return { self, descendants }
 }
 
 export function cloneInstanceOverrideState(state: InstanceOverrideState): InstanceOverrideState {
