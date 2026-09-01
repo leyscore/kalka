@@ -29,6 +29,8 @@ const statusMessage = computed(() => {
       return automation.value.statusStopped
     case 'error':
       return automation.value.statusError
+    default:
+      return automation.value.statusIdle
   }
 })
 const toolSearch = ref('')
