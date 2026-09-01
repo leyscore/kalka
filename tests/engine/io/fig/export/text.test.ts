@@ -295,6 +295,7 @@ describe('text node export', () => {
     const restored = parsed.getAllNodes().find((node) => node.name === text.name)
 
     expect(restored?.textAutoResize).toBe('NONE')
+    expect(restored?.source.fig.rawNodeFields).not.toHaveProperty('textAutoResize')
   })
 
   test('style runs produce multiple fontMetaData entries', async () => {
