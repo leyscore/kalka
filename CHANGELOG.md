@@ -73,6 +73,8 @@
 
 ### Fixed
 
+- Preserve implicit fixed-size text inside imported Figma auto-layout frames across save and reload.
+
 - Preserve imported Figma divider-line geometry during auto-layout recomputation, preventing half-pixel shifts on save and reload.
 
 - Make published package export conditions resolve to files included in npm tarballs.
