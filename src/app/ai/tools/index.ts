@@ -87,14 +87,18 @@ export function createAITools(store: EditorStore) {
       executeTool: async (def, figma, args) => {
         if (def.mutates) beforeSnapshot = store.snapshotPage()
         return def.mutates
-          ? store.runMutationWithLayout(() => def.execute(figma, args), figma.currentPageId)
+          ? store.runMutationWithLayout(
+              () => def.execute(figma, args),
+              figma.currentPageId,
+              async () => {
+                const pageNode = store.graph.getNode(figma.currentPageId)
+                if (pageNode) await ensureGraphFonts(store.graph, pageNode.childIds, store.renderer)
+              }
+            )
           : def.execute(figma, args)
       },
       onAfterExecute: async (def) => {
         if (def.mutates) {
-          const pageId = store.state.currentPageId
-          const pageNode = store.graph.getNode(pageId)
-          if (pageNode) await ensureGraphFonts(store.graph, pageNode.childIds, store.renderer)
           store.requestRender()
           if (beforeSnapshot) {
             const before = beforeSnapshot
