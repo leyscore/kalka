@@ -453,7 +453,7 @@ function applyInstanceOverrides(
   }
   walk(instance.id)
 
-  const overrides = new Map<string, unknown>()
+  let mutated = false
   for (const [key, value] of entries) {
     const sep = key.indexOf(':')
     if (sep === -1) continue
@@ -463,8 +463,9 @@ function applyInstanceOverrides(
     if (!child || !(prop in child)) continue
     graph.updateNode(child.id, { [prop]: value } as Partial<SceneNode>)
     setInstanceOverride(instance.instanceOverrides, instance.id, child.id, prop, value)
+    mutated = true
   }
-  if (overrides.size > 0) {
+  if (mutated) {
     graph.updateNode(instance.id, { instanceOverrides: instance.instanceOverrides })
   }
 }
