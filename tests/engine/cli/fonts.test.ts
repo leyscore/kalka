@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 import { BUILTIN_IO_FORMATS, IORegistry } from '@open-pencil/core/io'
+import type { DocumentFontStatus } from '@open-pencil/core/text'
 
 import { runOpenPencilCLI } from '#tests/helpers/cli'
 import { repoPath, requireBuiltWorkspacePackages } from '#tests/helpers/paths'
@@ -34,9 +35,9 @@ test('reports bundled fonts as available', async () => {
   const { stdout, stderr, exitCode } = await runOpenPencilCLI(['fonts', GOLD, '--json'])
   expect(stderr).toBe('')
   expect(exitCode).toBe(0)
-  const data = JSON.parse(stdout)
+  const data: DocumentFontStatus = JSON.parse(stdout)
   expect(data.faithful).toBe(true)
-  expect(data.faces.every((face: { source: string }) => face.source === 'bundled')).toBe(true)
+  expect(data.faces.every((face) => face.source === 'bundled')).toBe(true)
 })
 
 heavy('fonts CLI', () => {
@@ -45,10 +46,10 @@ heavy('fonts CLI', () => {
     const { stdout, stderr, exitCode } = await runOpenPencilCLI(['fonts', fixture, '--json'])
     expect(stderr).toBe('')
     expect(exitCode).toBe(0)
-    const data = JSON.parse(stdout)
+    const data: DocumentFontStatus = JSON.parse(stdout)
     expect(data.faithful).toBe(false)
     expect(data.issues.length).toBeGreaterThan(0)
-    expect(data.issues.every((face: { status: string }) => face.status === 'unresolved')).toBe(true)
+    expect(data.issues.every((face) => face.status === 'unresolved')).toBe(true)
   })
   test('uses the standard human-readable formatter', async () => {
     const { stdout, stderr, exitCode } = await runOpenPencilCLI(['fonts', GOLD])
