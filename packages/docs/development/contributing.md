@@ -18,7 +18,7 @@ bun run docs:dev     # Docs at localhost:5173
 
 ## Pull requests
 
-Follow the root PR template. Explain what changed, why it changed, and how it was validated. Remove template comments and unfinished placeholders, keep the title and body primarily in English, and complete the AI assistance section.
+Follow the root PR template. Explain what changed, why it changed, and how it was validated. Remove template comments and unfinished placeholders, keep the title in English and the body primarily in English, and complete the AI assistance section.
 
 CodeRabbit may flag description or readability issues for maintainers to review. Missing template sections or validation details are normal review feedback, not by themselves a judgment on the contributor.
 
