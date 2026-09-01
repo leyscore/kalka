@@ -1,3 +1,5 @@
+/* eslint-disable max-lines -- font loading scenarios share provider and CanvasKit lifecycle fixtures */
+
 import { describe, test, expect } from 'bun:test'
 
 import type { CanvasKit, TypefaceFontProvider } from 'canvaskit-wasm'

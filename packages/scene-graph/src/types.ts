@@ -1,3 +1,5 @@
+/* eslint-disable max-lines -- scene node contracts are kept together as the public graph type surface */
+
 import type { CanvasGuide } from './guides'
 import type { InstanceOverrideState } from './instance-overrides'
 import type { Color, Matrix, Rect, Vector } from './primitives'
