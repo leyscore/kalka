@@ -111,7 +111,10 @@ export function createComponentInstanceActions(ctx: EditorContext) {
         ctx.graph.updateNode(selectedNode.id, {
           type: 'INSTANCE',
           componentId: prevComponentId,
-          overrides: {}
+          instanceOverrides: {
+            self: new Map(),
+            descendants: new Map()
+          }
         })
       }
     })

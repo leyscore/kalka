@@ -1,4 +1,5 @@
 import type { SceneGraph } from '../index'
+import { setInstanceOverride } from '../instance-overrides'
 import type {
   ComponentPropertyDefinition,
   ComponentPropertyReferenceField,
@@ -87,48 +88,62 @@ export function findComponentPropertyTargets(
 function applyTextProperty(
   graph: SceneGraph,
   targets: ComponentPropertyTarget[],
-  value: string,
-  overrides: Record<string, unknown>
+  value: string
 ): void {
   for (const item of targets) {
     if (item.field !== 'TEXT' || item.node.type !== 'TEXT') continue
     graph.updateNode(item.node.id, { text: value })
-    overrides[`${item.node.id}:text`] = value
+    setInstanceOverride(item.node.instanceOverrides, item.node.id, item.node.id, 'text', value)
   }
 }
 
 function applyBooleanProperty(
   graph: SceneGraph,
   targets: ComponentPropertyTarget[],
-  value: string,
-  overrides: Record<string, unknown>
+  value: string
 ): void {
   for (const item of targets) {
     if (item.field !== 'VISIBLE') continue
     graph.updateNode(item.node.id, { visible: value === 'true' })
-    overrides[`${item.node.id}:visible`] = value === 'true'
+    setInstanceOverride(
+      item.node.instanceOverrides,
+      item.node.id,
+      item.node.id,
+      'visible',
+      value === 'true'
+    )
   }
 }
 
 function applyInstanceSwapProperty(
   graph: SceneGraph,
   targets: ComponentPropertyTarget[],
-  target: SceneNode,
-  overrides: Record<string, unknown>
+  target: SceneNode
 ): void {
   for (const item of targets) {
     if (item.field !== 'INSTANCE_SWAP' || item.node.type !== 'INSTANCE') continue
     graph.swapInstanceComponent(item.node.id, target.id)
-    graph.updateNode(item.node.id, {
-      name: target.name,
-      overrides: {
-        ...item.node.overrides,
-        [`${item.node.id}:name`]: target.name
-      }
-    })
-    overrides[`${item.node.id}:componentId`] = target.id
-    overrides[`${item.node.id}:sourceComponentId`] = item.source.id
-    overrides[`${item.node.id}:name`] = target.name
+    setInstanceOverride(
+      item.node.instanceOverrides,
+      item.node.id,
+      item.node.id,
+      'name',
+      target.name
+    )
+    setInstanceOverride(
+      item.node.instanceOverrides,
+      item.node.id,
+      item.node.id,
+      'componentId',
+      target.id
+    )
+    setInstanceOverride(
+      item.node.instanceOverrides,
+      item.node.id,
+      item.node.id,
+      'sourceComponentId',
+      item.source.id
+    )
   }
 }
 
@@ -145,20 +160,18 @@ export function applyComponentPropertyValue(
   const target =
     definition.type === 'INSTANCE_SWAP' ? resolveComponentPropertyValue(graph, value) : null
   if (definition.type === 'INSTANCE_SWAP' && !target) return null
-  const overrides = { ...instance.overrides }
   if (definition.type === 'TEXT') {
-    applyTextProperty(graph, targets, value, overrides)
+    applyTextProperty(graph, targets, value)
   } else if (definition.type === 'BOOLEAN') {
-    applyBooleanProperty(graph, targets, value, overrides)
+    applyBooleanProperty(graph, targets, value)
   } else if (target) {
-    applyInstanceSwapProperty(graph, targets, target, overrides)
+    applyInstanceSwapProperty(graph, targets, target)
   }
   graph.updateNode(instance.id, {
     componentPropertyAssignments: {
       ...instance.componentPropertyAssignments,
       [definition.id]: definition.type === 'INSTANCE_SWAP' && target ? target.id : value
-    },
-    overrides
+    }
   })
   return definition.type === 'INSTANCE_SWAP' ? target : instance
 }
