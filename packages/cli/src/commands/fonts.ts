@@ -19,7 +19,7 @@ async function prepareFontStatus(
   fontManager.setOnlineFontProviders({})
   fontManager.setWebFontFetch(null)
   try {
-    return await prepareGraphFonts(graph, pageId, [pageId])
+    return await prepareGraphFonts(graph, [pageId])
   } finally {
     fontManager.setOnlineFontProviders(
       Object.fromEntries(previousProviders.map((provider) => [provider, true]))

@@ -117,7 +117,7 @@ export async function prepareForExport(
   const previousTextMeasurer = getTextMeasurer()
   setTextMeasurer((node, maxWidth) => r.measureTextNode(node, maxWidth))
 
-  await prepareGraphFonts(graph, pageId, nodeIds)
+  await prepareGraphFonts(graph, nodeIds)
   syncFontGeneration(r)
   computeAllLayouts(graph, pageId)
 

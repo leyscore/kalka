@@ -8,7 +8,6 @@ import { documentFontStatus, type DocumentFontStatus } from './font/status'
 
 export async function prepareGraphFonts(
   graph: SceneGraph,
-  pageId: string,
   nodeIds: readonly string[]
 ): Promise<DocumentFontStatus> {
   const requirements = collectGraphFontRequirements(graph, nodeIds)
@@ -20,5 +19,5 @@ export async function prepareGraphFonts(
     missingGraphFontScripts(requirements),
     requirements.characters
   )
-  return documentFontStatus(graph, pageId)
+  return documentFontStatus(graph, nodeIds)
 }

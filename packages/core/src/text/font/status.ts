@@ -34,15 +34,15 @@ function faceKey(family: string, style: string): string {
   return `${family}\0${style}`
 }
 
-function pageTextNodes(graph: SceneGraph, pageIds: readonly string[]): SceneNode[] {
-  return pageIds.flatMap((pageId) =>
-    graph.flattenTree(pageId).flatMap(({ node }) => (node.type === 'TEXT' ? [node] : []))
+function rootTextNodes(graph: SceneGraph, rootIds: readonly string[]): SceneNode[] {
+  return rootIds.flatMap((rootId) =>
+    graph.flattenTree(rootId).flatMap(({ node }) => (node.type === 'TEXT' ? [node] : []))
   )
 }
 
-function collectFaceUses(graph: SceneGraph, pageIds: readonly string[]): MutableFontFaceUse[] {
+function collectFaceUses(graph: SceneGraph, rootIds: readonly string[]): MutableFontFaceUse[] {
   const uses = new Map<string, MutableFontFaceUse>()
-  for (const node of pageTextNodes(graph, pageIds)) {
+  for (const node of rootTextNodes(graph, rootIds)) {
     for (const { family, style } of collectNodeFontFaces(node)) {
       const key = faceKey(family, style)
       const use = uses.get(key) ?? {
@@ -99,11 +99,11 @@ function faceStatus(use: MutableFontFaceUse, manager: FontManager): DocumentFont
 
 export function documentFontStatus(
   graph: SceneGraph,
-  pageId: string | readonly string[],
+  rootIds: string | readonly string[],
   manager: FontManager = fontManager
 ): DocumentFontStatus {
-  const pageIds = typeof pageId === 'string' ? [pageId] : pageId
-  const faces = collectFaceUses(graph, pageIds)
+  const roots = typeof rootIds === 'string' ? [rootIds] : rootIds
+  const faces = collectFaceUses(graph, roots)
     .map((use) => faceStatus(use, manager))
     .sort((a, b) => a.family.localeCompare(b.family) || a.style.localeCompare(b.style))
   const issues = faces.filter((face) => face.status !== 'available')
