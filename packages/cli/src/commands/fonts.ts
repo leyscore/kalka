@@ -19,7 +19,7 @@ async function prepareFontStatus(
   fontManager.setOnlineFontProviders({})
   fontManager.setWebFontFetch(null)
   try {
-    return prepareGraphFonts(graph, pageId, [pageId])
+    return await prepareGraphFonts(graph, pageId, [pageId])
   } finally {
     fontManager.setOnlineFontProviders(
       Object.fromEntries(previousProviders.map((provider) => [provider, true]))
@@ -45,8 +45,8 @@ export default defineCommand({
         data = await loadRPCData<DocumentFontStatus>(args.file, 'font-status', undefined, args)
       } else {
         const graph = await loadDocument(args.file)
-        const page = graph.getPages()[0]
-        const pageId = page?.id ?? graph.rootId
+        const pages = graph.getPages()
+        const pageId = pages[0].id
         data = await prepareFontStatus(graph, pageId)
       }
     } catch (error) {
