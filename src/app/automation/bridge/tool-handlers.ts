@@ -23,9 +23,11 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
           x: toolArgs.x as number | undefined,
           y: toolArgs.y as number | undefined
         }),
-      target.pageId
+      target.pageId,
+      async (node) => {
+        await ensureGraphFonts(store.graph, [node.id], store.renderer)
+      }
     )
-    await ensureGraphFonts(store.graph, [result.id], store.renderer)
     store.requestRender()
     store.flashNodes([result.id])
     return {
@@ -51,12 +53,17 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
     registerComponentCatalog(store.graph, libraryService)
     const figma = makeFigma(store, target.pageId)
     const result = def.mutates
-      ? await store.runMutationWithLayout(() => def.execute(figma, toolArgs), figma.currentPageId)
+      ? await store.runMutationWithLayout(
+          () => def.execute(figma, toolArgs),
+          figma.currentPageId,
+          async () => {
+            const pageNode = store.graph.getNode(figma.currentPageId)
+            if (pageNode) await ensureGraphFonts(store.graph, pageNode.childIds, store.renderer)
+          }
+        )
       : await def.execute(figma, toolArgs)
 
     if (def.mutates) {
-      const pageNode = store.graph.getNode(figma.currentPageId)
-      if (pageNode) await ensureGraphFonts(store.graph, pageNode.childIds, store.renderer)
       store.requestRender()
       store.flashNodes(extractNodeIds(result))
     }

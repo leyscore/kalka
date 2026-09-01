@@ -39,10 +39,12 @@ export function createLayoutRunner(getGraph: () => SceneGraph) {
 
   async function runMutationWithLayout<T>(
     operation: () => T | Promise<T>,
-    fallbackId?: string
+    fallbackId?: string,
+    beforeLayout?: (result: T) => Promise<void> | void
   ): Promise<T> {
     const graph = getGraph()
     const { result, impact } = await collectSceneMutation(graph, operation)
+    await beforeLayout?.(result)
     const scopeIds = compactLayoutScope(impact)
     if (scopeIds.length > 0) {
       for (const id of scopeIds) runLayoutForNode(id)
