@@ -72,6 +72,8 @@
 
 ### Fixed
 
+- Preserve imported Figma divider-line geometry during auto-layout recomputation, preventing half-pixel shifts on save and reload.
+
 - Make published package export conditions resolve to files included in npm tarballs.
 - Use the user's home directory as the default MCP file root on Windows, avoiding the caller's unreliable working directory.
 - Open legacy raw `.fig` files that store the Kiwi document and thumbnail without a ZIP wrapper. (#582)
