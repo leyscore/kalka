@@ -29,7 +29,18 @@ function revisionKey(libraryId: string, revisionId: string): string {
   return `${PREFIX}/${libraryId}/revisions/${revisionId}.json`
 }
 
+interface EncodedMap {
+  $map: unknown[]
+}
+
+function isEncodedMap(value: object): value is EncodedMap {
+  return '$map' in value && Array.isArray(value.$map)
+}
+
 function encodeValue(value: unknown): unknown {
+  if (value instanceof Map) {
+    return { $map: [...value].map(([key, entry]) => [encodeValue(key), encodeValue(entry)]) }
+  }
   if (value instanceof Uint8Array) return { $bytes: encodeBase64(value) }
   if (Array.isArray(value)) return value.map(encodeValue)
   if (value && typeof value === 'object') {
@@ -43,6 +54,15 @@ function encodeValue(value: unknown): unknown {
 function decodeValue(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(decodeValue)
   if (value && typeof value === 'object') {
+    if (isEncodedMap(value)) {
+      return new Map(
+        value.$map.flatMap((entry) =>
+          Array.isArray(entry) && entry.length === 2
+            ? [[decodeValue(entry[0]), decodeValue(entry[1])] as const]
+            : []
+        )
+      )
+    }
     if ('$bytes' in value && typeof (value as { $bytes?: unknown }).$bytes === 'string') {
       return decodeBase64((value as { $bytes: string }).$bytes)
     }

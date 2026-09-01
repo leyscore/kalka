@@ -20,6 +20,12 @@ describe('instance override state', () => {
     expect(hasInstanceOverride(state, 'instance', 'child', 'text')).toBe(true)
   })
 
+  test('reports presence for an explicit undefined override', () => {
+    const state = createInstanceOverrideState()
+    setInstanceOverride(state, 'instance', 'child', 'visible', undefined)
+    expect(hasInstanceOverride(state, 'instance', 'child', 'visible')).toBe(true)
+  })
+
   test('deletes empty descendant buckets', () => {
     const state = createInstanceOverrideState()
     setInstanceOverride(state, 'instance', 'child', 'text')

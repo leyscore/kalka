@@ -9,6 +9,32 @@ export function createInstanceOverrideState(): InstanceOverrideState {
   return { self: new Map(), descendants: new Map() }
 }
 
+export interface SerializedInstanceOverrideState {
+  self: Array<[InstanceOverrideField, unknown]>
+  descendants: Array<[string, Array<[InstanceOverrideField, unknown]>]>
+}
+
+export function serializeInstanceOverrideState(
+  state: InstanceOverrideState
+): SerializedInstanceOverrideState {
+  return {
+    self: [...state.self],
+    descendants: [...state.descendants].map(([nodeId, fields]) => [nodeId, [...fields]])
+  }
+}
+
+export function deserializeInstanceOverrideState(
+  state: SerializedInstanceOverrideState | undefined
+): InstanceOverrideState {
+  if (!state || !Array.isArray(state.self) || !Array.isArray(state.descendants)) {
+    return createInstanceOverrideState()
+  }
+  return {
+    self: new Map(state.self),
+    descendants: new Map(state.descendants.map(([nodeId, fields]) => [nodeId, new Map(fields)]))
+  }
+}
+
 export function cloneInstanceOverrideState(state: InstanceOverrideState): InstanceOverrideState {
   return {
     self: new Map([...state.self].map(([field, value]) => [field, structuredClone(value)])),
@@ -36,7 +62,8 @@ export function hasInstanceOverride(
   nodeId: string,
   field: InstanceOverrideField
 ): boolean {
-  return getInstanceOverride(state, instanceId, nodeId, field) !== undefined
+  const fields = nodeId === instanceId ? state.self : state.descendants.get(nodeId)
+  return fields?.has(field) ?? false
 }
 
 export function setInstanceOverride(
