@@ -4,6 +4,7 @@
 
 ### Added
 
+- Add a searchable command palette for editor and application actions.
 - Render triangle and line arrow stroke caps on lines and open vector paths, and choose them from the stroke cap picker.
 - Add a timestamp-faithful pan and zoom benchmark workflow with physical macOS trackpad recording, CDP and DOM replay, Chromium traces, frame-pacing and latency distributions, zoom-anchor drift and viewport-jump detection, retained-backing settlement metrics, and a documented native Instruments acceptance procedure.
 
@@ -71,6 +72,8 @@
 - Reduce peak memory during `.fig` export by sharing immutable binary resources with the isolated export graph.
 
 ### Fixed
+
+- Preserve imported Figma divider-line geometry during auto-layout recomputation, preventing half-pixel shifts on save and reload.
 
 - Make published package export conditions resolve to files included in npm tarballs.
 - Use the user's home directory as the default MCP file root on Windows, avoiding the caller's unreliable working directory.
