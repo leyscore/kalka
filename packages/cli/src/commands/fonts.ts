@@ -13,13 +13,13 @@ function statusLabel(status: DocumentFontStatus['faces'][number]['status']): str
 
 async function prepareFontStatus(
   graph: Awaited<ReturnType<typeof loadDocument>>,
-  pageId: string
+  roots: string[]
 ): Promise<DocumentFontStatus> {
   const previousProviders = fontManager.enabledOnlineFontProviders()
   fontManager.setOnlineFontProviders({})
   fontManager.setWebFontFetch(null)
   try {
-    return await prepareGraphFonts(graph, [pageId])
+    return await prepareGraphFonts(graph, roots)
   } finally {
     fontManager.setOnlineFontProviders(
       Object.fromEntries(previousProviders.map((provider) => [provider, true]))
@@ -45,9 +45,8 @@ export default defineCommand({
         data = await loadRPCData<DocumentFontStatus>(args.file, 'font-status', undefined, args)
       } else {
         const graph = await loadDocument(args.file)
-        const pages = graph.getPages()
-        const pageId = pages[0].id
-        data = await prepareFontStatus(graph, pageId)
+        const pageIds = graph.getPages().map((page) => page.id)
+        data = await prepareFontStatus(graph, pageIds.length > 0 ? pageIds : [graph.rootId])
       }
     } catch (error) {
       printError(error)
