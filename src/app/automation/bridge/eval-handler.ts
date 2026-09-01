@@ -14,7 +14,7 @@ export function createAutomationEvalHandler(makeFigma: FigmaFactory) {
       /* noop */
     }).constructor
     const fn = new AsyncFunction('figma', wrapEvalCode(code))
-    const result = await fn(figma)
+    const result = await target.store.runMutationWithLayout(() => fn(figma), target.pageId)
     target.store.requestRender()
     return { ok: true, result: result ?? null }
   }

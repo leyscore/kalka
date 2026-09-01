@@ -6,7 +6,7 @@ export interface SceneGraphEvents {
   'node:created': (node: SceneNode) => void
   'node:updated': (id: string, changes: Partial<SceneNode>) => void
   'node:previewUpdated': (id: string, changes: Partial<SceneNode>) => void
-  'node:deleted': (id: string) => void
+  'node:deleted': (id: string, parentId: string | null) => void
   'node:reparented': (nodeId: string, oldParentId: string | null, newParentId: string) => void
   'node:reordered': (nodeId: string, parentId: string, index: number) => void
 }
@@ -15,7 +15,7 @@ export type SceneGraphEventHandlers = Partial<{
   created: (node: SceneNode) => void
   updated: (id: string, changes: Partial<SceneNode>) => void
   previewUpdated: (id: string, changes: Partial<SceneNode>) => void
-  deleted: (id: string) => void
+  deleted: (id: string, parentId: string | null) => void
   reparented: (nodeId: string, oldParentId: string | null, newParentId: string) => void
   reordered: (nodeId: string, parentId: string, index: number) => void
 }>

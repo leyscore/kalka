@@ -60,6 +60,8 @@
 
 ### Performance
 
+- Scope automation and Figma API layout reconciliation to graph nodes and parent containers actually changed by each mutation.
+
 - Keep rapid trackpad zoom reversals responsive on complex documents by cancelling obsolete high-resolution scene reconstruction and settling only after navigation becomes idle.
 - Keep zooming responsive on effect-heavy documents by reusing bounded, invalidation-aware raster snapshots for supported shadow effects while retaining vector-picture fallbacks for backdrop-dependent and oversized effects.
 - Show the FIG page list from a lightweight Kiwi scan before materializing the full document, making large files feel responsive sooner.

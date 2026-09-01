@@ -1,4 +1,5 @@
 /* eslint-disable max-lines -- SceneGraph exposes a stable facade over domain modules */
+export * from './mutation-impact'
 export * from './instance-overrides'
 export * from './images'
 export * from './components/properties'
@@ -553,7 +554,7 @@ export class SceneGraph {
       this.instanceIndex.get(node.componentId)?.delete(id)
     }
     this.nodes.delete(id)
-    this.emitter.emit('node:deleted', id)
+    this.emitter.emit('node:deleted', id, node.parentId)
   }
 
   hitTest(px: number, py: number, scopeId?: string): SceneNode | null {
