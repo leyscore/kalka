@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-### Added
+### Fixed
+
+- Preserve source text offsets when resolving fallback languages after text-case transformations.
+- Track character coverage restored from downloaded font cache entries.
+
 
 - Add a searchable command palette for editor and application actions.
 - Render triangle and line arrow stroke caps on lines and open vector paths, and choose them from the stroke cap picker.
