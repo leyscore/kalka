@@ -54,6 +54,29 @@ describe('scene mutation impact', () => {
     expect(impact.currentParentIds).toContain(right.id)
   })
 
+  test('retains old and new parents when reorderChild transfers a node', async () => {
+    const { graph, left, right, child } = transferSetup()
+
+    const { impact } = await collectSceneMutation(graph, () =>
+      graph.reorderChild(child.id, right.id, 0)
+    )
+
+    expect(child.parentId).toBe(right.id)
+    expect(left.childIds).not.toContain(child.id)
+    expect(right.childIds).toContain(child.id)
+    expect(impact.previousParentIds).toContain(left.id)
+    expect(impact.currentParentIds).toContain(right.id)
+  })
+
+  test('does not detach insertChildAt targets when the destination is missing', () => {
+    const { graph, left, child } = transferSetup()
+
+    graph.insertChildAt(child.id, 'missing', 0)
+
+    expect(child.parentId).toBe(left.id)
+    expect(left.childIds).toContain(child.id)
+  })
+
   test('retains old and new parents when insertChildAt transfers a node', async () => {
     const { graph, left, right, child } = transferSetup()
 
