@@ -37,6 +37,8 @@ const RAW_FIELD_COVERAGE = {
     'strokeJoin',
     'strokePaints',
     'strokeWeight',
+    'textAlignHorizontal',
+    'textAlignVertical',
     'textAutoResize',
     'textData',
     'textDecorationStyle',

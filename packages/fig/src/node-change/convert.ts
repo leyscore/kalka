@@ -1072,6 +1072,8 @@ export const FIGMA_RAW_NODE_FIELD_KEYS = [
   'gridChildVerticalAlign',
   'gridChildHorizontalAlign',
   'textAutoResize',
+  'textAlignHorizontal',
+  'textAlignVertical',
   'textData',
   'lineHeight',
   'fontName',
