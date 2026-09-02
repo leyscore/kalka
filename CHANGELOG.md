@@ -37,6 +37,7 @@
 
 ### Performance
 
+- Scope automation and Figma API layout reconciliation to graph nodes and parent containers actually changed by each mutation.
 - Keep rapid trackpad zoom reversals and effect-heavy document navigation responsive by cancelling obsolete reconstruction and reusing safe raster snapshots.
 - Show the FIG page list from a lightweight Kiwi scan before materializing the full document.
 - Avoid redundant collaboration writes when synchronized node fields have not changed.
