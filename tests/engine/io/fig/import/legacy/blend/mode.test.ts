@@ -23,9 +23,11 @@ describe('fig-import: blend mode', () => {
       canvas(),
       node('TEXT', 10, 1),
       node('VECTOR', 11, 1),
-      node('FRAME', 12, 1)
+      node('FRAME', 12, 1),
+      node('RECTANGLE', 13, 1)
     ])
     expect(graph.getChildren(graph.getPages()[0].id).map((item) => item.blendMode)).toEqual([
+      'PASS_THROUGH',
       'PASS_THROUGH',
       'PASS_THROUGH',
       'PASS_THROUGH'
