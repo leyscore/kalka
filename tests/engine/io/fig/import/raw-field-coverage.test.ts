@@ -74,6 +74,7 @@ const RAW_FIELD_COVERAGE = {
   ],
   roundTripOnly: [
     'annotationCategories',
+    'blendMode',
     'brushType',
     'codeSyntax',
     'componentPropRefs',

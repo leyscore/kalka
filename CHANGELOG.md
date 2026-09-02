@@ -37,6 +37,8 @@
 
 ### Fixed
 
+- Preserve explicit normal blend modes on imported Figma text and vector nodes across save and reload.
+
 - Preserve implicit fixed-size text inside imported Figma auto-layout frames across save and reload.
 - Stop showing a misleading desktop-only warning when web font loading or catalog lookup fails.
 - Preserve source text offsets when resolving fallback languages after text-case transformations.
