@@ -1,7 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { SceneGraph } from './index'
-import { collectSceneMutation, mutationLayoutScopeIds } from './mutation-impact'
+import { collectSceneMutation, mutationLayoutScopeIds, SceneGraph } from '@open-pencil/scene-graph'
 
 function pageId(graph: SceneGraph): string {
   return graph.getPages()[0].id
