@@ -35,19 +35,6 @@
 - Move MCP connections into their own Settings destination instead of presenting them as part of model configuration.
 - Pan horizontally with Shift+wheel while preserving native horizontal trackpad movement.
 
-### Performance
-
-- Scope automation and Figma API layout reconciliation to graph nodes and parent containers actually changed by each mutation.
-- Keep rapid trackpad zoom reversals and effect-heavy document navigation responsive by cancelling obsolete reconstruction and reusing safe raster snapshots.
-- Show the FIG page list from a lightweight Kiwi scan before materializing the full document.
-- Avoid redundant collaboration writes when synchronized node fields have not changed.
-- Release obsolete streamed Markdown parser history after each AI response completes, preventing chat memory from multiplying with every streamed chunk. (#544)
-- Open large documents faster by using cached world positions while finding layers under the pointer. (#527)
-- Coalesce writable-document autosaves that overlap an active `.fig` export while preserving a trailing save for newer edits. (#528)
-- Defer JSX generation and syntax highlighting until the Code panel is active, keeping large canvas selections responsive. (#500)
-- Index Figma clipboard children once during import instead of rescanning every pasted node, keeping large flat pastes linear. (#500)
-- Reduce peak memory during `.fig` export by sharing immutable binary resources with the isolated export graph.
-
 ### Fixed
 
 - Preserve implicit fixed-size text inside imported Figma auto-layout frames across save and reload.
@@ -94,6 +81,19 @@
 - Preserve circles, ellipses, rectangles, lines, polylines, and polygons supplied as JSX children of inline SVG elements. (#452)
 - Preserve component links when pasting Figma instances so later component edits continue to update them.
 - Stop local MCP servers after the app disconnects instead of leaving orphaned background processes. (#494)
+
+### Performance
+
+- Scope automation and Figma API layout reconciliation to graph nodes and parent containers actually changed by each mutation.
+- Keep rapid trackpad zoom reversals and effect-heavy document navigation responsive by cancelling obsolete reconstruction and reusing safe raster snapshots.
+- Show the FIG page list from a lightweight Kiwi scan before materializing the full document.
+- Avoid redundant collaboration writes when synchronized node fields have not changed.
+- Release obsolete streamed Markdown parser history after each AI response completes, preventing chat memory from multiplying with every streamed chunk. (#544)
+- Open large documents faster by using cached world positions while finding layers under the pointer. (#527)
+- Coalesce writable-document autosaves that overlap an active `.fig` export while preserving a trailing save for newer edits. (#528)
+- Defer JSX generation and syntax highlighting until the Code panel is active, keeping large canvas selections responsive. (#500)
+- Index Figma clipboard children once during import instead of rescanning every pasted node, keeping large flat pastes linear. (#500)
+- Reduce peak memory during `.fig` export by sharing immutable binary resources with the isolated export graph.
 
 
 ## 0.14.0 — 2026-08-10
