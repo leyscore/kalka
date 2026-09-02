@@ -49,13 +49,32 @@ describe('scene mutation impact', () => {
     expect(impact.currentParentIds).toContain(right.id)
   })
 
+  test('retains old and new parents when insertChildAt transfers a node', async () => {
+    const graph = new SceneGraph()
+    const page = pageId(graph)
+    const left = graph.createNode('FRAME', page)
+    const right = graph.createNode('FRAME', page)
+    const child = graph.createNode('RECTANGLE', left.id)
+
+    const { impact } = await collectSceneMutation(graph, () =>
+      graph.insertChildAt(child.id, right.id, 0)
+    )
+
+    expect(impact.previousParentIds).toContain(left.id)
+    expect(impact.currentParentIds).toContain(right.id)
+  })
+
   test('unsubscribes when an operation throws', async () => {
     const graph = new SceneGraph()
-    expect(() =>
-      collectSceneMutation(graph, () => {
-        throw new Error('failed')
-      })
-    ).toThrow('failed')
+    const rejection = collectSceneMutation(graph, async () => {
+      throw new Error('failed')
+    })
+    await rejection.then(
+      () => {
+        throw new Error('Expected rejection')
+      },
+      (error: unknown) => expect(error).toMatchObject({ message: 'failed' })
+    )
 
     graph.createNode('RECTANGLE', pageId(graph))
     const { impact } = await collectSceneMutation(graph, () => undefined)

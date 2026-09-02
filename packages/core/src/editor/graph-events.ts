@@ -120,8 +120,8 @@ export function createGraphEventSubscription(options: GraphEventOptions) {
         options.emitEditorEvent('node:reparented', nodeId, oldParentId, newParentId)
         onNodeStructureChanged(nodeId)
       },
-      reordered: (nodeId, parentId, index) => {
-        options.emitEditorEvent('node:reordered', nodeId, parentId, index)
+      reordered: (nodeId, parentId, index, previousParentId) => {
+        options.emitEditorEvent('node:reordered', nodeId, parentId, index, previousParentId)
         onNodeStructureChanged(nodeId)
       }
     })

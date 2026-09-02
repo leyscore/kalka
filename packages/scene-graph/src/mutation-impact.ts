@@ -48,8 +48,11 @@ export async function collectSceneMutation<T>(
       if (oldParentId) impact.previousParentIds.add(oldParentId)
       impact.currentParentIds.add(newParentId)
     },
-    reordered: (nodeId, parentId) => {
+    reordered: (nodeId, parentId, _index, previousParentId) => {
       impact.changedNodeIds.add(nodeId)
+      if (previousParentId && previousParentId !== parentId) {
+        impact.previousParentIds.add(previousParentId)
+      }
       impact.currentParentIds.add(parentId)
     }
   })

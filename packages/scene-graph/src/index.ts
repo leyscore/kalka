@@ -494,7 +494,8 @@ export class SceneGraph {
     const node = this.nodes.get(nodeId)
     if (!node) return
 
-    const oldParent = node.parentId ? this.nodes.get(node.parentId) : undefined
+    const previousParentId = node.parentId
+    const oldParent = previousParentId ? this.nodes.get(previousParentId) : undefined
     const newParent = this.nodes.get(parentId)
     if (!newParent || this.isDescendant(parentId, nodeId)) return
 
@@ -517,11 +518,13 @@ export class SceneGraph {
     idx = Math.min(idx, newParent.childIds.length)
     newParent.childIds.splice(idx, 0, nodeId)
 
-    this.emitter.emit('node:reordered', nodeId, parentId, idx)
+    this.emitter.emit('node:reordered', nodeId, parentId, idx, previousParentId)
   }
 
   insertChildAt(childId: string, parentId: string, index: number): void {
-    const oldParent = this.getNode(this.getNode(childId)?.parentId ?? '')
+    const node = this.getNode(childId)
+    const previousParentId = node?.parentId ?? null
+    const oldParent = previousParentId ? this.getNode(previousParentId) : undefined
     if (oldParent) {
       oldParent.childIds = oldParent.childIds.filter((id) => id !== childId)
     }
@@ -529,10 +532,9 @@ export class SceneGraph {
     if (!newParent) return
     newParent.childIds = newParent.childIds.filter((id) => id !== childId)
     newParent.childIds.splice(index, 0, childId)
-    const node = this.getNode(childId)
     if (node) node.parentId = parentId
     this.clearAbsPosCache()
-    this.emitter.emit('node:reordered', childId, parentId, index)
+    this.emitter.emit('node:reordered', childId, parentId, index, previousParentId)
   }
 
   deleteNode(id: string): void {

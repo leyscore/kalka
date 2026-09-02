@@ -10,7 +10,12 @@ export interface SceneGraphEvents {
   'node:previewUpdated': (id: string, changes: Partial<SceneNode>) => void
   'node:deleted': (id: string, parentId: string | null) => void
   'node:reparented': (nodeId: string, oldParentId: string | null, newParentId: string) => void
-  'node:reordered': (nodeId: string, parentId: string, index: number) => void
+  'node:reordered': (
+    nodeId: string,
+    parentId: string,
+    index: number,
+    previousParentId: string | null
+  ) => void
 }
 
 export type SceneGraphEventHandlers = Partial<{
@@ -19,7 +24,12 @@ export type SceneGraphEventHandlers = Partial<{
   previewUpdated: (id: string, changes: Partial<SceneNode>) => void
   deleted: (id: string, parentId: string | null) => void
   reparented: (nodeId: string, oldParentId: string | null, newParentId: string) => void
-  reordered: (nodeId: string, parentId: string, index: number) => void
+  reordered: (
+    nodeId: string,
+    parentId: string,
+    index: number,
+    previousParentId: string | null
+  ) => void
 }>
 
 export type DocumentColorSpace = 'srgb' | 'display-p3'
