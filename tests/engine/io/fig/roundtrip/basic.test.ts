@@ -150,6 +150,30 @@ describe('roundtrip: export → re-import', () => {
     reImportedNodes = collectAllNodes(reImported)
   })
 
+  test('preserves explicit NORMAL on imported nodes', async () => {
+    await initCodec()
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    const text = graph.createNode('TEXT', page.id, {
+      name: 'Normal text',
+      source: {
+        ...page.source,
+        format: 'fig',
+        id: '1:2',
+        fig: {
+          ...page.source.fig,
+          rawNodeFields: { blendMode: 'NORMAL' }
+        }
+      }
+    })
+
+    const restored = await parseFigFile((await exportFigFile(graph)).buffer as ArrayBuffer)
+    const roundTripped = restored.getAllNodes().find((node) => node.name === text.name)
+
+    expect(roundTripped?.blendMode).toBe('NORMAL')
+    expect(roundTripped?.source.fig.rawNodeFields.blendMode).toBe('NORMAL')
+  })
+
   test('preserves page count', () => {
     expect(reImported.getPages().length).toBe(2)
   })

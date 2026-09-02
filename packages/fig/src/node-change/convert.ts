@@ -1043,6 +1043,7 @@ export const FIGMA_RAW_NODE_FIELD_KEYS = [
   'parameterConsumptionMap',
   'editInfo',
   'backgroundColor',
+  'blendMode',
   'pageType',
   'isPageDivider',
   'guides',
