@@ -38,6 +38,7 @@
 ### Fixed
 
 - Preserve implicit fixed-size text inside imported Figma auto-layout frames across save and reload.
+- Stop showing a misleading desktop-only warning when web font loading or catalog lookup fails.
 - Preserve source text offsets when resolving fallback languages after text-case transformations.
 - Track character coverage restored from downloaded font cache entries.
 
