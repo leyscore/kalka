@@ -7,6 +7,15 @@ function pageId(graph: SceneGraph): string {
   return graph.getPages()[0].id
 }
 
+function transferSetup() {
+  const graph = new SceneGraph()
+  const page = pageId(graph)
+  const left = graph.createNode('FRAME', page)
+  const right = graph.createNode('FRAME', page)
+  const child = graph.createNode('RECTANGLE', left.id)
+  return { graph, left, right, child }
+}
+
 describe('scene mutation impact', () => {
   test('collects created and updated nodes with current parents', async () => {
     const graph = new SceneGraph()
@@ -35,11 +44,7 @@ describe('scene mutation impact', () => {
   })
 
   test('retains old and new parents when reparenting', async () => {
-    const graph = new SceneGraph()
-    const page = pageId(graph)
-    const left = graph.createNode('FRAME', page)
-    const right = graph.createNode('FRAME', page)
-    const child = graph.createNode('RECTANGLE', left.id)
+    const { graph, left, right, child } = transferSetup()
 
     const { impact } = await collectSceneMutation(graph, () =>
       graph.reparentNode(child.id, right.id)
@@ -50,11 +55,7 @@ describe('scene mutation impact', () => {
   })
 
   test('retains old and new parents when insertChildAt transfers a node', async () => {
-    const graph = new SceneGraph()
-    const page = pageId(graph)
-    const left = graph.createNode('FRAME', page)
-    const right = graph.createNode('FRAME', page)
-    const child = graph.createNode('RECTANGLE', left.id)
+    const { graph, left, right, child } = transferSetup()
 
     const { impact } = await collectSceneMutation(graph, () =>
       graph.insertChildAt(child.id, right.id, 0)
