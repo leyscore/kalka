@@ -77,6 +77,18 @@ describe('scene mutation impact', () => {
     expect(left.childIds).toContain(child.id)
   })
 
+  test('rejects cyclic insertChildAt destinations without mutating the tree', () => {
+    const { graph, left, child } = transferSetup()
+    const grandchild = graph.createNode('FRAME', child.id)
+
+    graph.insertChildAt(left.id, left.id, 0)
+    graph.insertChildAt(left.id, grandchild.id, 0)
+
+    expect(left.parentId).toBe(pageId(graph))
+    expect(graph.getNode(pageId(graph))?.childIds).toContain(left.id)
+    expect(grandchild.childIds).not.toContain(left.id)
+  })
+
   test('retains old and new parents when insertChildAt transfers a node', async () => {
     const { graph, left, right, child } = transferSetup()
 

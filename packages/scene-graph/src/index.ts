@@ -524,7 +524,7 @@ export class SceneGraph {
   insertChildAt(childId: string, parentId: string, index: number): void {
     const node = this.getNode(childId)
     const newParent = this.getNode(parentId)
-    if (!node || !newParent) return
+    if (!node || !newParent || childId === parentId || this.isDescendant(parentId, childId)) return
     const previousParentId = node.parentId
     const oldParent = previousParentId ? this.getNode(previousParentId) : undefined
     if (oldParent) {
