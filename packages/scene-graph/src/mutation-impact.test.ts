@@ -81,11 +81,18 @@ describe('scene mutation impact', () => {
     const { graph, left, child } = transferSetup()
     const grandchild = graph.createNode('FRAME', child.id)
 
+    const originalPageChildren = [...(graph.getNode(pageId(graph))?.childIds ?? [])]
+    const originalLeftChildren = [...left.childIds]
+    const originalLeftParentId = left.parentId
+    const originalChildParentId = child.parentId
+
     graph.insertChildAt(left.id, left.id, 0)
     graph.insertChildAt(left.id, grandchild.id, 0)
 
-    expect(left.parentId).toBe(pageId(graph))
-    expect(graph.getNode(pageId(graph))?.childIds).toContain(left.id)
+    expect(left.parentId).toBe(originalLeftParentId)
+    expect(left.childIds).toEqual(originalLeftChildren)
+    expect(child.parentId).toBe(originalChildParentId)
+    expect(graph.getNode(pageId(graph))?.childIds).toEqual(originalPageChildren)
     expect(grandchild.childIds).not.toContain(left.id)
   })
 
