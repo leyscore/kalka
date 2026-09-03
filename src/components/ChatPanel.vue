@@ -6,10 +6,7 @@ import { computed, markRaw, nextTick, ref, watch } from 'vue'
 import { getACPDebugText, clearACPDebugLog, hasACPDebugEntries } from '@/app/ai/acp/transport'
 import { copyChatLog } from '@/app/ai/debug'
 import { stripReferencedNodeContext } from '@/app/ai/chat/context'
-import {
-  clearVisibleMessageText,
-  setVisibleMessageText
-} from '@/app/ai/chat/presentation'
+import { clearVisibleMessageText, setVisibleMessageText } from '@/app/ai/chat/presentation'
 import {
   analyzeAttachedImages,
   designMessageWithImageFindings
