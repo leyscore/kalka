@@ -5,6 +5,11 @@ import { computed, markRaw, nextTick, ref, watch } from 'vue'
 
 import { getACPDebugText, clearACPDebugLog, hasACPDebugEntries } from '@/app/ai/acp/transport'
 import { copyChatLog } from '@/app/ai/debug'
+import { stripReferencedNodeContext } from '@/app/ai/chat/context'
+import {
+  clearVisibleMessageText,
+  setVisibleMessageText
+} from '@/app/ai/chat/presentation'
 import {
   analyzeAttachedImages,
   designMessageWithImageFindings
@@ -129,6 +134,7 @@ watch(
     attachmentOperationVersion += 1
     isPreparingImages.value = false
     clearImageAttachmentPresentations()
+    clearVisibleMessageText()
     const nextChat = await ensureChat()
     chat.value = nextChat ? markRaw(nextChat) : null
   }
@@ -154,7 +160,12 @@ async function handleSubmit(text: string, images: ImageAttachmentDraft[] = []) {
     }
 
     if (images.length === 0) {
+      const previousMessageIds = new Set(currentChat.messages.map((message) => message.id))
       await currentChat.sendMessage({ text })
+      const message = currentChat.messages.find(
+        (candidate) => candidate.role === 'user' && !previousMessageIds.has(candidate.id)
+      )
+      if (message) setVisibleMessageText(message.id, stripReferencedNodeContext(text))
       return
     }
 
@@ -241,6 +252,7 @@ function handleClearChat() {
   isPreparingImages.value = false
   clearChatFailure()
   clearImageAttachmentPresentations()
+  clearVisibleMessageText()
   chat.value = null
   void resetChat().catch((error: unknown) => {
     console.error('Chat reset error:', error)

@@ -1,13 +1,21 @@
 <script setup lang="ts">
-import { useFileDialog } from '@vueuse/core'
+import { useFileDialog, useTextareaAutosize } from '@vueuse/core'
 import { TooltipProvider } from 'reka-ui'
 import { computed, onBeforeUnmount, ref } from 'vue'
+
+import { useI18n, useSelectionState } from '@open-pencil/vue'
 
 import ChatProfileSelect from '@/components/chat/ChatProfileSelect.vue'
 import ProviderModelSelect from '@/components/chat/ProviderModelSelect.vue'
 import IconButton from '@/components/ui/IconButton.vue'
 import InputGroup from '@/components/ui/InputGroup.vue'
 import { useAIChat } from '@/app/ai/chat/use'
+import {
+  appendReferencedNodeContext,
+  MAX_REFERENCED_NODES,
+  resolveReferencedNodes,
+  type ReferencedNode
+} from '@/app/ai/chat/context'
 import { designModelProfile, designModelProfiles } from '@/app/ai/models'
 import {
   createImagePreviewURL,
@@ -15,12 +23,13 @@ import {
   validateImageAttachmentFile
 } from '@/app/ai/attachment/image/prepare'
 import { MAX_IMAGE_ATTACHMENTS, type ImageAttachmentDraft } from '@/app/ai/attachment/image/types'
+import { nodeIcon } from '@/app/editor/icons'
 import { openSettingsDialog } from '@/app/settings/dialog'
-import { useI18n } from '@open-pencil/vue'
 
 import { ACP_AGENTS } from '@open-pencil/core/constants'
 
 const { providerID, providerDef, modelID, customModelID } = useAIChat()
+const { editor, selectedIds } = useSelectionState()
 const { ai } = useI18n()
 
 const { status, disabled = false } = defineProps<{
@@ -34,8 +43,20 @@ const emit = defineEmits<{
   error: [message: string]
 }>()
 
+const textarea = ref<HTMLTextAreaElement>()
 const input = ref('')
+const { triggerResize } = useTextareaAutosize({ element: textarea, input, maxHeight: 160 })
 const images = ref<ImageAttachmentDraft[]>([])
+const referencedNodeIds = ref<string[]>([])
+const referencedNodes = computed(() =>
+  resolveReferencedNodes(editor.graph, referencedNodeIds.value)
+)
+const canAddSelection = computed(
+  () =>
+    selectedIds.value.size > 0 &&
+    referencedNodeIds.value.length < MAX_REFERENCED_NODES &&
+    [...selectedIds.value].some((id) => !referencedNodeIds.value.includes(id))
+)
 const {
   open: openImageDialog,
   reset: resetImageDialog,
@@ -132,15 +153,34 @@ function handleInputKeydown(event: KeyboardEvent) {
   if (target instanceof HTMLElement) target.closest('form')?.requestSubmit()
 }
 
+function removeReferencedNode(id: string): void {
+  referencedNodeIds.value = referencedNodeIds.value.filter((candidate) => candidate !== id)
+}
+
+function addCurrentSelection(): void {
+  referencedNodeIds.value = resolveReferencedNodes(editor.graph, [
+    ...referencedNodeIds.value,
+    ...selectedIds.value
+  ]).map((node) => node.id)
+}
+
+function referencedNodeIcon(node: ReferencedNode) {
+  const liveNode = editor.graph.getNode(node.id)
+  return liveNode ? nodeIcon(liveNode) : undefined
+}
+
 function handleSubmit(e: Event) {
   e.preventDefault()
   const text = input.value.trim()
   if (!text) return
   const submittedImages = images.value
+  const submittedNodes = referencedNodes.value
   images.value = []
+  referencedNodeIds.value = []
   resetImageDialog()
-  emit('submit', text, submittedImages)
+  emit('submit', appendReferencedNodeContext(text, submittedNodes), submittedImages)
   input.value = ''
+  triggerResize()
 }
 </script>
 
@@ -149,8 +189,30 @@ function handleSubmit(e: Event) {
     <div class="shrink-0 border-t border-border p-2.5">
       <form @submit="handleSubmit" @paste.stop="handlePaste">
         <InputGroup :disabled="isStreaming">
-          <template v-if="images.length" #attachment>
-            <div class="flex flex-wrap gap-1.5">
+          <template v-if="images.length || referencedNodes.length" #attachment>
+            <div v-if="referencedNodes.length" class="flex flex-wrap gap-1">
+              <div
+                v-for="node in referencedNodes"
+                :key="node.id"
+                data-slot="chat-context-chip"
+                class="flex min-w-0 items-center gap-1 rounded-md border border-border bg-hover px-1.5 py-0.5 text-[10px] text-surface"
+              >
+                <component
+                  :is="referencedNodeIcon(node)"
+                  class="size-2.5 shrink-0 text-muted"
+                  aria-hidden="true"
+                />
+                <span class="max-w-24 truncate">{{ node.name || node.type }}</span>
+                <IconButton
+                  :label="ai.removeNodeContext"
+                  size="xs"
+                  @click="removeReferencedNode(node.id)"
+                >
+                  <icon-lucide-x class="size-2.5" />
+                </IconButton>
+              </div>
+            </div>
+            <div v-if="images.length" class="flex flex-wrap gap-1.5">
               <div
                 v-for="(image, index) in images"
                 :key="image.previewURL"
@@ -178,19 +240,29 @@ function handleSubmit(e: Event) {
           </template>
 
           <textarea
+            ref="textarea"
             v-model="input"
             data-test-id="chat-input"
             :placeholder="ai.describeChange"
             :disabled="isStreaming"
             rows="2"
             aria-label="Describe a change"
-            class="block min-h-12 w-full resize-none bg-transparent px-3 pt-2.5 pb-1 text-xs leading-relaxed text-surface outline-none placeholder:text-muted disabled:cursor-not-allowed disabled:opacity-60"
+            class="block min-h-12 w-full resize-none overflow-y-auto bg-transparent px-3 pt-2.5 pb-1 text-xs leading-relaxed text-surface outline-none placeholder:text-muted disabled:cursor-not-allowed disabled:opacity-60"
             @keydown="handleInputKeydown"
             @copy.stop
             @cut.stop
           />
 
           <template #leading>
+            <IconButton
+              :label="ai.addSelectionContext"
+              size="sm"
+              :disabled="isStreaming || !canAddSelection"
+              data-slot="chat-add-selection-context"
+              @click="addCurrentSelection"
+            >
+              <icon-lucide-mouse-pointer-2 class="size-4" />
+            </IconButton>
             <IconButton
               label="Attach images"
               size="sm"

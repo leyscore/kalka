@@ -2,12 +2,14 @@ import { computed, shallowReactive } from 'vue'
 
 import { revokeImagePreviewURL } from '@/app/ai/attachment/image/prepare'
 import type { ImageAttachmentPresentation } from '@/app/ai/attachment/image/types'
+import { stripReferencedNodeContext } from '@/app/ai/chat/context'
+import { visibleMessageText } from '@/app/ai/chat/presentation'
 
 const attachments = shallowReactive(new Map<string, ImageAttachmentPresentation[]>())
 
 export function visibleUserMessageText(messageId: string, text: string): string {
   const attachment = attachments.get(messageId)?.[0]
-  return attachment?.displayText ?? text
+  return visibleMessageText(messageId, attachment?.displayText ?? stripReferencedNodeContext(text))
 }
 
 export function imageAttachmentsForMessage(messageId: string) {

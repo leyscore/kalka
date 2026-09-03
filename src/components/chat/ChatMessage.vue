@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { isTextUIPart, isToolUIPart, getToolName } from 'ai'
+import { refAutoReset, useClipboard } from '@vueuse/core'
+import { isReasoningUIPart, isTextUIPart, isToolUIPart, getToolName } from 'ai'
 import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from 'reka-ui'
 import { Markdown } from 'vue-stream-markdown'
 import { useI18n, vTestId } from '@open-pencil/vue'
@@ -11,6 +12,8 @@ import {
   visibleUserMessageText
 } from '@/app/ai/attachment/image/presentation'
 import ImageAttachment from '@/components/chat/attachment/image/ImageAttachment.vue'
+import ReasoningBlock from '@/components/chat/ReasoningBlock.vue'
+import IconButton from '@/components/ui/IconButton.vue'
 import { resolvedAppTheme } from '@/app/shell/theme'
 import { classifyToolState } from './tool-state'
 
@@ -24,6 +27,20 @@ const { ai } = useI18n()
 const isDark = computed(() => resolvedAppTheme.value === 'dark')
 const markdownMode = computed(() => (streaming ? 'streaming' : 'static'))
 const imageAttachments = imageAttachmentsForMessage(message.id)
+const assistantText = computed(() =>
+  message.parts
+    .filter(isTextUIPart)
+    .map((part) => part.text)
+    .join('')
+)
+const copied = refAutoReset(false, 1500)
+const { copy, isSupported: clipboardSupported } = useClipboard()
+
+async function copyResponse(): Promise<void> {
+  if (!assistantText.value || !clipboardSupported.value) return
+  await copy(assistantText.value)
+  copied.value = true
+}
 
 type ToolPart = Extract<UIMessagePart<UIDataTypes, UITools>, { toolCallId: string }>
 
@@ -68,6 +85,15 @@ function partKey(part: UIMessagePart<UIDataTypes, UITools>, index: number): stri
     >
       <template v-if="message.role === 'assistant'">
         <template v-for="(part, i) in message.parts" :key="partKey(part, i)">
+          <!-- Reasoning -->
+          <ReasoningBlock
+            v-if="isReasoningUIPart(part) && part.text"
+            :text="part.text"
+            :streaming="part.state === 'streaming'"
+            :thinking-label="ai.thinking"
+            :reasoning-label="ai.reasoning"
+          />
+
           <!-- Tool call -->
           <div v-if="isToolUIPart(part)" class="rounded-lg border border-border bg-canvas p-2">
             <CollapsibleRoot>
@@ -125,7 +151,7 @@ function partKey(part: UIMessagePart<UIDataTypes, UITools>, index: number): stri
           <div
             v-else-if="isTextUIPart(part) && part.text"
             data-test-id="chat-text-bubble"
-            class="rounded-xl rounded-tl-md bg-hover px-3 py-2 text-xs leading-relaxed text-surface"
+            class="group/response relative rounded-xl rounded-tl-md bg-hover px-3 py-2 text-xs leading-relaxed text-surface"
           >
             <Markdown
               :key="markdownMode"
@@ -136,6 +162,17 @@ function partKey(part: UIMessagePart<UIDataTypes, UITools>, index: number): stri
               :data-chat-markdown-mode="markdownMode"
               class="chat-markdown [&_[data-stream-markdown=code]]:!bg-input"
             />
+            <IconButton
+              v-if="assistantText && clipboardSupported"
+              :label="copied ? ai.responseCopied : ai.copyResponse"
+              size="xs"
+              data-slot="chat-copy-response"
+              class="absolute right-1 bottom-1 opacity-0 focus-visible:opacity-100 group-hover/response:opacity-100"
+              @click="copyResponse"
+            >
+              <icon-lucide-check v-if="copied" class="size-3 text-green-400" />
+              <icon-lucide-copy v-else class="size-3" />
+            </IconButton>
           </div>
         </template>
       </template>
