@@ -38,7 +38,7 @@ const { status, disabled = false } = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  submit: [text: string, images: ImageAttachmentDraft[]]
+  submit: [text: string, images: ImageAttachmentDraft[], displayText: string]
   stop: []
   error: [message: string]
 }>()
@@ -54,7 +54,7 @@ const referencedNodes = computed(() =>
 const canAddSelection = computed(
   () =>
     selectedIds.value.size > 0 &&
-    referencedNodeIds.value.length < MAX_REFERENCED_NODES &&
+    referencedNodes.value.length < MAX_REFERENCED_NODES &&
     [...selectedIds.value].some((id) => !referencedNodeIds.value.includes(id))
 )
 const {
@@ -178,7 +178,7 @@ function handleSubmit(e: Event) {
   images.value = []
   referencedNodeIds.value = []
   resetImageDialog()
-  emit('submit', appendReferencedNodeContext(text, submittedNodes), submittedImages)
+  emit('submit', appendReferencedNodeContext(text, submittedNodes), submittedImages, text)
   input.value = ''
   triggerResize()
 }

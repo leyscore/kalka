@@ -51,6 +51,8 @@ async function injectMockTransport(page: Page) {
         document.documentElement.dataset.lastChatRequest = text
         const wantsTool = lowerText.includes('frame') || lowerText.includes('rectangle')
         const wantsCode = lowerText.includes('code block')
+        const wantsUnsafeMarkdown = lowerText.includes('unsafe markdown')
+        const wantsMultipleParts = lowerText.includes('multiple parts')
         const wantsReasoning = lowerText.includes('reasoning')
 
         if (lowerText.includes('missing agent')) {
@@ -108,9 +110,25 @@ async function injectMockTransport(page: Page) {
               controller.enqueue({ type: 'reasoning-end', id: 'reasoning-1' })
             }
 
+            if (wantsMultipleParts) {
+              controller.enqueue({ type: 'text-start', id: 'text-a' })
+              controller.enqueue({ type: 'text-delta', id: 'text-a', delta: 'First' })
+              controller.enqueue({ type: 'text-end', id: 'text-a' })
+              controller.enqueue({ type: 'text-start', id: 'text-b' })
+              controller.enqueue({ type: 'text-delta', id: 'text-b', delta: 'Second' })
+              controller.enqueue({ type: 'text-end', id: 'text-b' })
+              controller.enqueue({ type: 'finish', finishReason: 'stop' })
+              controller.close()
+              return
+            }
+
             let words: string[]
             if (wantsTool) words = ['Created', 'a', 'frame', 'called', '"Card".']
-            else if (wantsCode) words = ['```typescript\nconst greeting = "Hello"\n```']
+            else if (wantsUnsafeMarkdown) {
+              words = [
+                '[unsafe](javascript:alert(1)) ![embedded](data:image/svg+xml,<svg onload=alert(1)></svg>) [safe](https://openpencil.dev)'
+              ]
+            } else if (wantsCode) words = ['```typescript\nconst greeting = "Hello"\n```']
             else words = `I'll help you with: "${text}". Here's a mock response.`.split(' ')
 
             controller.enqueue({ type: 'text-start', id: 'text-1' })
@@ -281,6 +299,20 @@ test('sending images shows the complete user message immediately', async () => {
   )
 })
 
+test('selected node context stays hidden when sending an image', async () => {
+  await chatInput().fill('Use this reference')
+  await page.getByRole('button', { name: 'Add current selection as context' }).click()
+  const chooser = page.waitForEvent('filechooser')
+  await page.getByRole('button', { name: 'Attach images' }).click()
+  await (await chooser).setFiles('tests/fixtures/vectorize/pilot_avatar.png')
+
+  await page.getByTestId('chat-send-button').click()
+
+  const userMessage = page.getByTestId('chat-message-user').last()
+  await expect(userMessage).toContainText('Use this reference', { timeout: 500 })
+  await expect(userMessage).not.toContainText('[Referenced nodes')
+})
+
 test('Shift+Enter inserts a line break without submitting', async () => {
   await chatInput().fill('First line')
   await chatInput().press('Shift+Enter')
@@ -340,6 +372,19 @@ test('assistant code blocks follow the active theme with readable contrast', asy
   await expect(code).toHaveCSS('background-color', 'rgb(255, 255, 255)')
 })
 
+test('assistant Markdown blocks unsafe URLs and keeps HTTPS links', async () => {
+  await chatInput().fill('Show unsafe Markdown')
+  await chatInput().press('Enter')
+
+  const assistant = page.getByTestId('chat-message-assistant').last()
+  await expect(assistant.locator('a[href^="javascript:"]')).toHaveCount(0)
+  await expect(assistant.locator('img[src^="data:"]')).toHaveCount(0)
+  await expect(assistant.getByRole('link', { name: 'safe' })).toHaveAttribute(
+    'href',
+    'https://openpencil.dev/'
+  )
+})
+
 test('model selector is visible and clickable', async () => {
   const trigger = page.getByTestId('chat-model-selector')
   await expect(trigger).toBeVisible()
@@ -367,6 +412,15 @@ test('reasoning and response copy actions render in assistant messages', async (
 
   await assistant.getByRole('button', { name: 'Copy response' }).focus()
   await expect(assistant.getByRole('button', { name: 'Copy response' })).toBeVisible()
+})
+
+test('assistant messages expose one response copy action across multiple text parts', async () => {
+  await chatInput().fill('Show multiple parts')
+  await chatInput().press('Enter')
+  await expect(page.getByTestId('chat-message-assistant').last()).toContainText('Second')
+  await expect(
+    page.getByTestId('chat-message-assistant').last().getByRole('button', { name: 'Copy response' })
+  ).toHaveCount(1)
 })
 
 test('tool calls render in assistant message', async () => {

@@ -3,18 +3,16 @@ import { computed } from 'vue'
 import { refAutoReset, useClipboard } from '@vueuse/core'
 import { isReasoningUIPart, isTextUIPart, isToolUIPart, getToolName } from 'ai'
 import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from 'reka-ui'
-import { Markdown } from 'vue-stream-markdown'
 import { useI18n, vTestId } from '@open-pencil/vue'
-import 'vue-stream-markdown/index.css'
 
 import {
   imageAttachmentsForMessage,
   visibleUserMessageText
 } from '@/app/ai/attachment/image/presentation'
+import ChatMarkdown from '@/components/chat/ChatMarkdown.vue'
 import ImageAttachment from '@/components/chat/attachment/image/ImageAttachment.vue'
 import ReasoningBlock from '@/components/chat/ReasoningBlock.vue'
 import IconButton from '@/components/ui/IconButton.vue'
-import { resolvedAppTheme } from '@/app/shell/theme'
 import { classifyToolState } from './tool-state'
 
 import type { UIDataTypes, UIMessage, UIMessagePart, UITools } from 'ai'
@@ -24,7 +22,6 @@ const { message, streaming = false } = defineProps<{
   streaming?: boolean
 }>()
 const { ai } = useI18n()
-const isDark = computed(() => resolvedAppTheme.value === 'dark')
 const markdownMode = computed(() => (streaming ? 'streaming' : 'static'))
 const imageAttachments = imageAttachmentsForMessage(message.id)
 const assistantText = computed(() =>
@@ -32,6 +29,9 @@ const assistantText = computed(() =>
     .filter(isTextUIPart)
     .map((part) => part.text)
     .join('')
+)
+const firstAssistantTextPartIndex = computed(() =>
+  message.parts.findIndex((part) => isTextUIPart(part) && part.text.length > 0)
 )
 const copied = refAutoReset(false, 1500)
 const { copy, isSupported: clipboardSupported } = useClipboard()
@@ -153,17 +153,9 @@ function partKey(part: UIMessagePart<UIDataTypes, UITools>, index: number): stri
             data-test-id="chat-text-bubble"
             class="group/response relative rounded-xl rounded-tl-md bg-hover px-3 py-2 text-xs leading-relaxed text-surface"
           >
-            <Markdown
-              :key="markdownMode"
-              :content="part.text"
-              :is-dark="isDark"
-              :mermaid="false"
-              :mode="markdownMode"
-              :data-chat-markdown-mode="markdownMode"
-              class="chat-markdown [&_[data-stream-markdown=code]]:!bg-input"
-            />
+            <ChatMarkdown :content="part.text" :mode="markdownMode" />
             <IconButton
-              v-if="assistantText && clipboardSupported"
+              v-if="i === firstAssistantTextPartIndex && assistantText && clipboardSupported"
               :label="copied ? ai.responseCopied : ai.copyResponse"
               size="xs"
               data-slot="chat-copy-response"

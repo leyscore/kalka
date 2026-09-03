@@ -25,6 +25,7 @@
 - Recover unsaved and pathless documents locally, with settings to disable recovery and remove retained snapshots. (#487, #574)
 - Inspect selected designs with a configured Vision model and attach images to AI chat with bounded analysis and previews. (#232, #471)
 - Pin selected layers as explicit AI chat context, show collapsible reasoning, copy individual responses, and grow the composer with multiline prompts. (#13)
+- Render streaming AI responses with the upstream Comark-based Markdown pipeline and optional Shiki code highlighting without the former project fork.
 
 ### Changed
 

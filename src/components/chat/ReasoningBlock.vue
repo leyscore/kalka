@@ -2,9 +2,8 @@
 import { useTimeoutFn } from '@vueuse/core'
 import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from 'reka-ui'
 import { computed, ref, watch } from 'vue'
-import { Markdown } from 'vue-stream-markdown'
 
-import { resolvedAppTheme } from '@/app/shell/theme'
+import ChatMarkdown from '@/components/chat/ChatMarkdown.vue'
 
 const {
   text,
@@ -20,7 +19,6 @@ const {
 
 const open = ref(streaming)
 const userChangedOpen = ref(false)
-const isDark = computed(() => resolvedAppTheme.value === 'dark')
 const markdownMode = computed(() => (streaming ? 'streaming' : 'static'))
 const { start: scheduleClose, stop: cancelClose } = useTimeoutFn(
   () => {
@@ -73,14 +71,7 @@ function updateOpen(value: boolean): void {
       data-slot="chat-reasoning-content"
       class="data-[state=closed]:collapsible-up data-[state=open]:collapsible-down overflow-hidden border-t border-border px-2 py-1.5 text-[11px] leading-relaxed text-muted"
     >
-      <Markdown
-        :key="markdownMode"
-        :content="text"
-        :is-dark="isDark"
-        :mermaid="false"
-        :mode="markdownMode"
-        class="chat-markdown [&_[data-stream-markdown=code]]:!bg-input"
-      />
+      <ChatMarkdown :content="text" :mode="markdownMode" surface="reasoning" />
     </CollapsibleContent>
   </CollapsibleRoot>
 </template>

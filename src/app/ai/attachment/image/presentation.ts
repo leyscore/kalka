@@ -9,7 +9,7 @@ const attachments = shallowReactive(new Map<string, ImageAttachmentPresentation[
 
 export function visibleUserMessageText(messageId: string, text: string): string {
   const attachment = attachments.get(messageId)?.[0]
-  return visibleMessageText(messageId, attachment?.displayText ?? stripReferencedNodeContext(text))
+  return visibleMessageText(messageId, stripReferencedNodeContext(attachment?.displayText ?? text))
 }
 
 export function imageAttachmentsForMessage(messageId: string) {

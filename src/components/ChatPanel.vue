@@ -5,7 +5,6 @@ import { computed, markRaw, nextTick, ref, watch } from 'vue'
 
 import { getACPDebugText, clearACPDebugLog, hasACPDebugEntries } from '@/app/ai/acp/transport'
 import { copyChatLog } from '@/app/ai/debug'
-import { stripReferencedNodeContext } from '@/app/ai/chat/context'
 import { clearVisibleMessageText, setVisibleMessageText } from '@/app/ai/chat/presentation'
 import {
   analyzeAttachedImages,
@@ -137,7 +136,22 @@ watch(
   }
 )
 
-async function handleSubmit(text: string, images: ImageAttachmentDraft[] = []) {
+type ChatInstance = Pick<Chat<UIMessage>, 'messages' | 'sendMessage'>
+
+async function sendTextMessage(
+  currentChat: ChatInstance,
+  text: string,
+  displayText: string
+): Promise<void> {
+  const previousMessageIds = new Set(currentChat.messages.map((message) => message.id))
+  await currentChat.sendMessage({ text })
+  const message = currentChat.messages.find(
+    (candidate) => candidate.role === 'user' && !previousMessageIds.has(candidate.id)
+  )
+  if (message) setVisibleMessageText(message.id, displayText)
+}
+
+async function handleSubmit(text: string, images: ImageAttachmentDraft[] = [], displayText = text) {
   if (status.value === 'streaming' || status.value === 'submitted' || isPreparingImages.value) {
     for (const image of images) revokeImagePreviewURL(image.previewURL)
     if (images.length > 0) toast.error(ai.value.chatRequestFailed)
@@ -157,12 +171,7 @@ async function handleSubmit(text: string, images: ImageAttachmentDraft[] = []) {
     }
 
     if (images.length === 0) {
-      const previousMessageIds = new Set(currentChat.messages.map((message) => message.id))
-      await currentChat.sendMessage({ text })
-      const message = currentChat.messages.find(
-        (candidate) => candidate.role === 'user' && !previousMessageIds.has(candidate.id)
-      )
-      if (message) setVisibleMessageText(message.id, stripReferencedNodeContext(text))
+      await sendTextMessage(currentChat, text, displayText)
       return
     }
 
@@ -183,7 +192,7 @@ async function handleSubmit(text: string, images: ImageAttachmentDraft[] = []) {
         previewWidth: 0,
         previewHeight: 0,
         previewURL: image.previewURL,
-        displayText: text
+        displayText
       }))
     )
 
@@ -208,7 +217,7 @@ async function handleSubmit(text: string, images: ImageAttachmentDraft[] = []) {
           previewWidth: prepared.width,
           previewHeight: prepared.height,
           previewURL,
-          displayText: text
+          displayText
         }
       })
     )
