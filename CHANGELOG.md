@@ -37,6 +37,8 @@
 
 ### Fixed
 
+- Preserve explicit text alignment metadata on imported Figma vectors across save and reload.
+
 - Preserve explicit normal blend modes on imported Figma text and vector nodes across save and reload.
 
 - Preserve implicit fixed-size text inside imported Figma auto-layout frames across save and reload.
