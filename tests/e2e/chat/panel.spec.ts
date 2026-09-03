@@ -46,6 +46,7 @@ async function injectMockTransport(page: Page) {
       }) {
         const lastUser = [...messages].reverse().find((m) => m.role === 'user')
         const text = lastUser?.parts?.find((p) => p.type === 'text')?.text ?? ''
+        const appOrigin = window.location.origin
         const msgId = `mock-msg-${++msgCounter}`
         const lowerText = text.toLowerCase()
         document.documentElement.dataset.lastChatRequest = text
@@ -126,7 +127,7 @@ async function injectMockTransport(page: Page) {
             if (wantsTool) words = ['Created', 'a', 'frame', 'called', '"Card".']
             else if (wantsUnsafeMarkdown) {
               words = [
-                '[unsafe](javascript:alert(1)) ![embedded](data:image/svg+xml,<svg onload=alert(1)></svg>) [safe](https://openpencil.dev)'
+                `[unsafe](javascript:alert(1)) ![embedded](data:image/svg+xml,<svg onload=alert(1)></svg>) ![approved](${appOrigin}/assets/approved.png) ![unapproved](https://example.com/unapproved.png) ![insecure](http://example.com/insecure.png) [safe](https://openpencil.dev)`
               ]
             } else if (wantsCode) words = ['```typescript\nconst greeting = "Hello"\n```']
             else words = `I'll help you with: "${text}". Here's a mock response.`.split(' ')
@@ -372,13 +373,29 @@ test('assistant code blocks follow the active theme with readable contrast', asy
   await expect(code).toHaveCSS('background-color', 'rgb(255, 255, 255)')
 })
 
-test('assistant Markdown blocks unsafe URLs and keeps HTTPS links', async () => {
+test('assistant Markdown restricts images and blocks unsafe link protocols', async () => {
+  const approvedImageURL = new URL('/assets/approved.png', page.url()).href
+  await page.route(approvedImageURL, async (route) => {
+    await route.fulfill({
+      body: Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M/wHwAEAQH/69cbGAAAAABJRU5ErkJggg==',
+        'base64'
+      ),
+      contentType: 'image/png'
+    })
+  })
   await chatInput().fill('Show unsafe Markdown')
   await chatInput().press('Enter')
 
   const assistant = page.getByTestId('chat-message-assistant').last()
   await expect(assistant.locator('a[href^="javascript:"]')).toHaveCount(0)
   await expect(assistant.locator('img[src^="data:"]')).toHaveCount(0)
+  await expect(assistant.getByRole('img', { name: 'approved' })).toHaveAttribute(
+    'src',
+    approvedImageURL
+  )
+  await expect(assistant.getByRole('img', { name: 'unapproved' })).toHaveCount(0)
+  await expect(assistant.getByRole('img', { name: 'insecure' })).toHaveCount(0)
   await expect(assistant.getByRole('link', { name: 'safe' })).toHaveAttribute(
     'href',
     'https://openpencil.dev/'

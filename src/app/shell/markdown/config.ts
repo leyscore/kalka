@@ -18,9 +18,13 @@ export const markdownExtensions = {
   })
 }
 
-export const markdownHardenOptions = {
-  allowedLinkPrefixes: ['*'],
-  allowedImagePrefixes: ['https://'],
-  allowedProtocols: ['http', 'https', 'mailto'],
-  allowDataImages: false
+export function createMarkdownHardenOptions(origin: string) {
+  const appOrigin = new URL('/', origin).href
+
+  return {
+    allowedLinkPrefixes: ['*'],
+    allowedImagePrefixes: [appOrigin],
+    allowedProtocols: ['http', 'https', 'mailto'],
+    allowDataImages: false
+  }
 }
