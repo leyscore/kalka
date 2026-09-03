@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Markdown } from 'vue-stream-markdown'
-import 'vue-stream-markdown/index.css'
 
 import { IS_BROWSER } from '@open-pencil/core/constants'
 
