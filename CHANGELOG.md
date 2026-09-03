@@ -37,6 +37,7 @@
 
 ### Fixed
 
+- Prevent the stock photo tool from replacing text, lines, structural layers, or containers with content while supporting closed shape geometry.
 - Preserve explicit text alignment metadata on imported Figma vectors across save and reload.
 
 - Preserve explicit normal blend modes on imported Figma text and vector nodes across save and reload.
