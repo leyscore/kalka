@@ -51,7 +51,6 @@ const AREA_TARGET_TYPES = [
   'ELLIPSE',
   'STAR',
   'POLYGON',
-  'VECTOR',
   'COMPONENT',
   'INSTANCE'
 ] as const satisfies readonly NodeType[]
@@ -104,6 +103,69 @@ describe('applyPhoto', () => {
       })
     })
   }
+
+  test('applies a photo to closed vector geometry', async () => {
+    const { graph, page, figma } = setup()
+    const vector = graph.createNode('VECTOR', page.id, {
+      name: 'Closed vector',
+      width: 100,
+      height: 100,
+      vectorNetwork: {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 100, y: 0 },
+          { x: 100, y: 100 },
+          { x: 0, y: 100 }
+        ],
+        segments: [
+          { start: 0, end: 1, tangentStart: { x: 0, y: 0 }, tangentEnd: { x: 0, y: 0 } },
+          { start: 1, end: 2, tangentStart: { x: 0, y: 0 }, tangentEnd: { x: 0, y: 0 } },
+          { start: 2, end: 3, tangentStart: { x: 0, y: 0 }, tangentEnd: { x: 0, y: 0 } },
+          { start: 3, end: 0, tangentStart: { x: 0, y: 0 }, tangentEnd: { x: 0, y: 0 } }
+        ],
+        regions: [{ windingRule: 'NONZERO', loops: [[0, 1, 2, 3]] }]
+      }
+    })
+    const calls: ProviderCall[] = []
+
+    const result = await applyPhoto(figma, createProvider(calls), {
+      id: vector.id,
+      query: 'marble texture'
+    })
+
+    expect(result.error).toBeUndefined()
+    expect(calls).toHaveLength(1)
+    expect(vector.fills[0]).toMatchObject({ type: 'IMAGE', imageScaleMode: 'FILL' })
+  })
+
+  test('rejects open vector geometry before searching', async () => {
+    const { graph, page, figma } = setup()
+    const vector = graph.createNode('VECTOR', page.id, {
+      name: 'Open vector',
+      vectorNetwork: {
+        vertices: [
+          { x: 0, y: 0 },
+          { x: 100, y: 100 }
+        ],
+        segments: [{ start: 0, end: 1, tangentStart: { x: 0, y: 0 }, tangentEnd: { x: 0, y: 0 } }],
+        regions: []
+      }
+    })
+    const originalFills = copyFills(vector.fills)
+    const calls: ProviderCall[] = []
+
+    const result = await applyPhoto(figma, createProvider(calls), {
+      id: vector.id,
+      query: 'should not run'
+    })
+
+    expect(result.error).toBe(
+      `"${vector.name}" has no closed vector regions — use closed area geometry`
+    )
+    expect(calls).toHaveLength(0)
+    expect(vector.fills).toEqual(originalFills)
+    expect(graph.images.size).toBe(0)
+  })
 
   test('applies a photo to Boolean geometry with operand children', async () => {
     const { graph, page, figma } = setup()

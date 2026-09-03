@@ -98,7 +98,7 @@ No style={{}}, className, CSS. No named colors or rgb(). No percentage values. N
 
 `stock_photo` places real Pexels images on leaf image placeholders. Prefer Rectangle, Rounded Rectangle, or Ellipse placeholders; closed vector and Boolean geometry are also supported. Pass a JSON array — **all photos fetched in parallel**:
 
-```
+```text
 stock_photo({ requests: '[{"id":"0:30","query":"wall street trading floor"},{"id":"0:58","query":"AI chip semiconductor"},{"id":"0:65","query":"bank finance credit card"}]' })
 ```
 
