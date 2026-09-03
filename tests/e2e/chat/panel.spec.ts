@@ -417,8 +417,8 @@ test('design profile selector is visible and exposes role capabilities', async (
 
   await expect(page.getByText('Design agent', { exact: true })).toBeVisible()
   await expect(page.getByRole('option', { name: /Claude Sonnet/ })).toContainText('OpenRouter')
-  await expect(page.getByRole('option', { name: /Claude Sonnet/ })).toContainText('Tools')
-  await expect(page.getByRole('option', { name: /Claude Sonnet/ })).toContainText('Vision')
+  await expect(page.getByLabel('Supports image input')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Manage models and roles…' })).toBeVisible()
 
   await page.getByRole('option', { name: /Claude Sonnet/ }).click()
   await expect(page.getByRole('option', { name: /Claude Sonnet/ })).toBeHidden()

@@ -63,6 +63,7 @@
   "saveModel": "Zapisz model",
   "deleteModel": "Usuń model",
   "deleteModelDescription": "Usunąć ten model i jego przypisania ról?",
+  "manageModelsAndRoles": "Zarządzaj modelami i rolami…",
   "modelAssignments": "Przypisania",
   "modelAssignmentsDescription": "Wybierz model obsługujący każdy rodzaj pracy.",
   "modelRoleDesign": "Agent projektowy",

@@ -63,6 +63,7 @@
   "saveModel": "モデルを保存",
   "deleteModel": "モデルを削除",
   "deleteModelDescription": "このモデルと役割の割り当てを削除しますか？",
+  "manageModelsAndRoles": "モデルとロールを管理…",
   "modelAssignments": "割り当て",
   "modelAssignmentsDescription": "作業の種類ごとに使用するモデルを選択します。",
   "modelRoleDesign": "デザインエージェント",

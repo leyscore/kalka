@@ -63,6 +63,7 @@
   "saveModel": "Guardar modelo",
   "deleteModel": "Eliminar modelo",
   "deleteModelDescription": "¿Eliminar este modelo y sus asignaciones de rol?",
+  "manageModelsAndRoles": "Gestionar modelos y roles…",
   "modelAssignments": "Asignaciones",
   "modelAssignmentsDescription": "Elige qué modelo configurado gestiona cada tipo de trabajo.",
   "modelRoleDesign": "Agente de diseño",

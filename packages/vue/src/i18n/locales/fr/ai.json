@@ -63,6 +63,7 @@
   "saveModel": "Enregistrer le modèle",
   "deleteModel": "Supprimer le modèle",
   "deleteModelDescription": "Supprimer ce modèle et ses affectations de rôle ?",
+  "manageModelsAndRoles": "Gérer les modèles et les rôles…",
   "modelAssignments": "Affectations",
   "modelAssignmentsDescription": "Choisissez le modèle configuré pour chaque type de tâche.",
   "modelRoleDesign": "Agent de design",

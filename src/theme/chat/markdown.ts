@@ -1,8 +1,8 @@
 import { tv } from 'tailwind-variants'
 
-export const chatUI = tv({
+export const chatMarkdownTheme = tv({
   slots: {
-    markdownRoot: 'chat-markdown-root',
+    root: 'chat-markdown-root',
     markdown: [
       'chat-markdown',
       '[--accent:var(--color-hover)]',

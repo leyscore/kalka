@@ -76,6 +76,7 @@ export const aiMessageDefaults = {
   saveModel: 'Save model',
   deleteModel: 'Delete model',
   deleteModelDescription: 'Delete this model and remove its role assignments?',
+  manageModelsAndRoles: 'Manage models and roles…',
   modelAssignments: 'Assignments',
   modelAssignmentsDescription: 'Choose which configured model handles each type of work.',
   modelRoleDesign: 'Design agent',

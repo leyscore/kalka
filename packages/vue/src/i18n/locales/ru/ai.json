@@ -63,6 +63,7 @@
   "saveModel": "Сохранить модель",
   "deleteModel": "Удалить модель",
   "deleteModelDescription": "Удалить эту модель и её назначения ролей?",
+  "manageModelsAndRoles": "Управлять моделями и ролями…",
   "modelAssignments": "Назначения",
   "modelAssignmentsDescription": "Выберите модель для каждого типа работы.",
   "modelRoleDesign": "Дизайн-агент",

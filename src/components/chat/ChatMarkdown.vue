@@ -7,7 +7,7 @@ import { IS_BROWSER } from '@open-pencil/core/constants'
 import { createMarkdownHardenOptions, markdownExtensions } from '@/app/shell/markdown/config'
 import { markdownRenderKey, type MarkdownSurface } from '@/app/shell/markdown/state'
 import { resolvedAppTheme } from '@/app/shell/theme'
-import { chatUI } from '@/theme/chat'
+import { chatMarkdownTheme } from '@/theme/chat/markdown'
 
 const {
   content,
@@ -20,7 +20,7 @@ const {
 }>()
 
 const isDark = computed(() => resolvedAppTheme.value === 'dark')
-const ui = chatUI()
+const ui = chatMarkdownTheme()
 const hardenOptions = computed(() =>
   createMarkdownHardenOptions(IS_BROWSER ? window.location.origin : 'http://localhost/')
 )
@@ -28,7 +28,7 @@ const renderKey = computed(() => markdownRenderKey({ mode, surface }))
 </script>
 
 <template>
-  <div data-slot="chat-markdown" :class="ui.markdownRoot()">
+  <div data-slot="chat-markdown" :class="ui.root()">
     <Markdown
       :key="renderKey"
       :content="content"

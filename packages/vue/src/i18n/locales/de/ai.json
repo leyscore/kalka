@@ -63,6 +63,7 @@
   "saveModel": "Modell speichern",
   "deleteModel": "Modell löschen",
   "deleteModelDescription": "Dieses Modell und seine Rollenzuweisungen löschen?",
+  "manageModelsAndRoles": "Modelle und Rollen verwalten…",
   "modelAssignments": "Zuweisungen",
   "modelAssignmentsDescription": "Lege fest, welches Modell welche Aufgabe übernimmt.",
   "modelRoleDesign": "Design-Agent",
