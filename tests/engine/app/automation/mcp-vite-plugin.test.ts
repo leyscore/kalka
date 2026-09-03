@@ -6,7 +6,8 @@ import {
   DevMCPConfigurationTooLargeError,
   createAutomationEnvironment,
   devMCPConfigurationErrorStatus,
-  readDevMCPConfiguration
+  readDevMCPConfiguration,
+  waitForAutomationHealth
 } from '@/app/automation/bridge/vite-plugin'
 import { parseDevMCPConfiguration } from '@/app/automation/mcp/dev-control'
 
@@ -69,6 +70,21 @@ describe('MCP Vite development server', () => {
       rootDirectory: '/设计',
       disabledTools: []
     })
+  })
+
+  test('waits through transient Portless responses until MCP is healthy', async () => {
+    const statuses = [404, 404, 200]
+    const requests: string[] = []
+    await waitForAutomationHealth('wss://feature.mcp.open-pencil.localhost', async (input) => {
+      requests.push(String(input))
+      return new Response(null, { status: statuses.shift() ?? 500 })
+    })
+
+    expect(requests).toEqual([
+      'https://feature.mcp.open-pencil.localhost/health',
+      'https://feature.mcp.open-pencil.localhost/health',
+      'https://feature.mcp.open-pencil.localhost/health'
+    ])
   })
 
   test('classifies malformed and oversized configuration requests', async () => {

@@ -50,6 +50,8 @@ export function createAutomationEnvironment(
 
 const MAX_CONFIGURATION_BYTES = 70_000
 const CHILD_EXIT_TIMEOUT_MS = 2_000
+const CHILD_HEALTH_ATTEMPTS = 40
+const CHILD_HEALTH_DELAY_MS = 50
 
 type DevMCPConfigurationErrorStatus = 400 | 413
 
@@ -96,6 +98,27 @@ export async function readDevMCPConfiguration(request: IncomingMessage): Promise
   } catch (error) {
     throw new DevMCPConfigurationSyntaxError(error)
   }
+}
+
+export async function waitForAutomationHealth(
+  browserURL: string,
+  fetcher: typeof fetch = fetch
+): Promise<void> {
+  const healthURL = `${browserURL.replace(/^ws/, 'http')}/health`
+  for (let attempt = 0; attempt < CHILD_HEALTH_ATTEMPTS; attempt++) {
+    try {
+      const response = await fetcher(healthURL)
+      if (response.ok) return
+    } catch (error) {
+      if (attempt === CHILD_HEALTH_ATTEMPTS - 1) {
+        console.warn(`[MCP] Health check failed at ${healthURL}`, error)
+      }
+    }
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, CHILD_HEALTH_DELAY_MS)
+    })
+  }
+  throw new Error(`MCP server did not become healthy at ${healthURL}`)
 }
 
 interface AutomationPluginOptions {
@@ -195,6 +218,8 @@ export function automationPlugin(
       if (code && code !== 0) console.error(`[MCP] Server exited with code ${code}`)
       if (child === spawned) child = null
     })
+
+    await waitForAutomationHealth(options.browserURL)
   }
 
   async function restartChild(nextConfiguration: DevMCPConfiguration): Promise<void> {
