@@ -1,0 +1,63 @@
+import { tv } from 'tailwind-variants'
+
+export const chatUI = tv({
+  slots: {
+    markdownRoot: [
+      '[&_[data-stream-markdown=code]]:![background-color:var(--color-input)]',
+      '[&_[data-stream-markdown=code-block]]:![background-color:var(--color-input)]'
+    ],
+    markdown: [
+      'chat-markdown text-[11px] leading-4',
+      '[&_[data-stream-markdown=blockquote]]:!my-2',
+      '[&_[data-stream-markdown=code-block-header]]:!leading-4',
+      '[&_[data-stream-markdown=code-block-header]]:!px-2',
+      '[&_[data-stream-markdown=code-block-header]]:!py-0.5',
+      '[&_[data-stream-markdown=code-block-header]]:!text-[9px]',
+      '[&_[data-stream-markdown=code-block-header]_[data-stream-markdown=button]]:!p-0.5',
+      '[&_[data-stream-markdown=code-block-header]_[data-stream-markdown=button]_svg]:!size-3',
+      '[&_[data-stream-markdown=code-block]]:!my-2',
+      '[&_[data-stream-markdown=code-line]]:!min-h-3.5',
+      '[&_[data-stream-markdown=code-line]]:!text-[11px]',
+      '[&_[data-stream-markdown=code-line]]:before:!mr-2',
+      '[&_[data-stream-markdown=code-line]]:before:!text-[10px]',
+      '[&_[data-stream-markdown=code]]:!p-2',
+      '[&_[data-stream-markdown=code]]:!text-[11px]',
+      '[&_[data-stream-markdown=heading-1]]:!mb-1',
+      '[&_[data-stream-markdown=heading-1]]:!mt-2.5',
+      '[&_[data-stream-markdown=heading-1]]:!text-sm',
+      '[&_[data-stream-markdown=heading-2]]:!mb-1',
+      '[&_[data-stream-markdown=heading-2]]:!mt-2.5',
+      '[&_[data-stream-markdown=heading-2]]:!text-xs',
+      '[&_[data-stream-markdown=heading-3]]:!mb-1',
+      '[&_[data-stream-markdown=heading-3]]:!mt-2',
+      '[&_[data-stream-markdown=heading-3]]:!text-[11px]',
+      '[&_[data-stream-markdown=heading-4]]:!mb-1',
+      '[&_[data-stream-markdown=heading-4]]:!mt-2',
+      '[&_[data-stream-markdown=heading-4]]:!text-[11px]',
+      '[&_[data-stream-markdown=heading-5]]:!mb-1',
+      '[&_[data-stream-markdown=heading-5]]:!mt-2',
+      '[&_[data-stream-markdown=heading-5]]:!text-[11px]',
+      '[&_[data-stream-markdown=heading-6]]:!mb-1',
+      '[&_[data-stream-markdown=heading-6]]:!mt-2',
+      '[&_[data-stream-markdown=heading-6]]:!text-[11px]',
+      '[&_[data-stream-markdown=language-name]]:!text-[10px]',
+      '[&_[data-stream-markdown=language-title]]:!gap-1',
+      '[&_[data-stream-markdown=language-title]_svg]:!size-3',
+      '[&_[data-stream-markdown=li]]:!py-0',
+      '[&_[data-stream-markdown=ol]]:!leading-4',
+      '[&_[data-stream-markdown=p]]:!my-1.5',
+      '[&_[data-stream-markdown=ul]]:!leading-4',
+      '[--accent:var(--color-hover)]',
+      '[--accent-foreground:var(--color-surface)]',
+      '[--background:var(--color-input)]',
+      '[--border:var(--color-border)]',
+      '[--foreground:var(--color-surface)]',
+      '[--muted:var(--color-hover)]',
+      '[--muted-foreground:var(--color-muted)]',
+      '[--popover:var(--color-panel)]',
+      '[--popover-foreground:var(--color-surface)]',
+      '[--primary:var(--color-accent)]',
+      '[--primary-foreground:white]'
+    ]
+  }
+})
