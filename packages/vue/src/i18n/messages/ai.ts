@@ -106,6 +106,7 @@ export const aiMessageDefaults = {
   chatOutputLimit:
     'The model ran out of output tokens while reasoning. Raise Max output tokens or lower reasoning effort.',
   chatRequestFailed: 'The model request failed. Check the provider settings and try again.',
+  visionModelUnavailable: 'Choose a Vision model in Settings before attaching images.',
   completions: 'Completions',
   responses: 'Responses'
 } as const

@@ -410,17 +410,18 @@ test('assistant Markdown restricts images and blocks unsafe link protocols', asy
   )
 })
 
-test('model selector is visible and clickable', async () => {
-  const trigger = page.getByTestId('chat-model-selector')
+test('design profile selector is visible and exposes role capabilities', async () => {
+  const trigger = page.getByTestId('chat-profile-selector')
   await expect(trigger).toBeVisible()
   await trigger.click()
 
-  await expect(page.getByRole('option', { name: /Claude Sonnet 4\.6/ })).toBeVisible()
-  await expect(page.getByText('Best for design')).toBeVisible()
-  await expect(page.getByText('Free').first()).toBeVisible()
+  await expect(page.getByText('Design agent', { exact: true })).toBeVisible()
+  await expect(page.getByRole('option', { name: /Claude Sonnet/ })).toContainText('OpenRouter')
+  await expect(page.getByRole('option', { name: /Claude Sonnet/ })).toContainText('Tools')
+  await expect(page.getByRole('option', { name: /Claude Sonnet/ })).toContainText('Vision')
 
-  await page.getByRole('option', { name: /Claude Sonnet 4\.6/ }).click()
-  await expect(page.getByRole('option', { name: /Claude Sonnet 4\.6/ })).toBeHidden()
+  await page.getByRole('option', { name: /Claude Sonnet/ }).click()
+  await expect(page.getByRole('option', { name: /Claude Sonnet/ })).toBeHidden()
 })
 
 test('reasoning and response copy actions render in assistant messages', async () => {
@@ -490,8 +491,7 @@ test('OpenRouter accepts a custom model ID from provider settings', async () => 
   await page.getByRole('button', { name: 'Save model' }).click()
   await page.getByTestId('app-settings-done').click()
 
-  await expect(page.getByTestId('chat-custom-model-label')).toContainText(customModel)
-  await expect(page.getByTestId('chat-model-selector')).toBeHidden()
+  await expect(page.getByTestId('chat-profile-selector')).toContainText('Claude Sonnet')
 
   await page.getByTestId('provider-settings-trigger').click()
   await page.locator('[data-model-id]').first().click()
@@ -502,7 +502,7 @@ test('OpenRouter accepts a custom model ID from provider settings', async () => 
   await page.getByRole('button', { name: 'Save model' }).click()
   await page.getByTestId('app-settings-done').click()
 
-  await expect(page.getByTestId('chat-model-selector')).toBeVisible()
+  await expect(page.getByTestId('chat-profile-selector')).toBeVisible()
 })
 
 test('transport errors show a safe localized toast', async () => {

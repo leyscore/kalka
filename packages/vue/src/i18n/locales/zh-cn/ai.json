@@ -91,6 +91,7 @@
   "chatInsufficientCredit": "提供商账户的余额或配额不足。请充值后重试。",
   "chatOutputLimit": "模型在推理时耗尽了输出 token。请提高最大输出 token 数或降低推理强度。",
   "chatRequestFailed": "模型请求失败。请检查提供商设置后重试。",
+  "visionModelUnavailable": "附加图片前，请在设置中选择视觉模型。",
   "completions": "Completions",
   "responses": "Responses",
   "connectProvider": "连接 AI 提供商以开始聊天。",

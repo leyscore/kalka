@@ -91,6 +91,7 @@
   "chatInsufficientCredit": "L’account del provider non dispone di credito o quota sufficiente. Ricaricalo e riprova.",
   "chatOutputLimit": "Il modello ha esaurito i token di output durante il ragionamento. Aumenta i token di output massimi o riduci lo sforzo di ragionamento.",
   "chatRequestFailed": "La richiesta al modello non è riuscita. Controlla le impostazioni del provider e riprova.",
+  "visionModelUnavailable": "Scegli un modello Vision nelle Impostazioni prima di allegare immagini.",
   "completions": "Completions",
   "responses": "Responses",
   "connectProvider": "Collega un provider AI per iniziare a chattare.",

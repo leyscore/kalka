@@ -8,7 +8,8 @@ import { copyChatLog } from '@/app/ai/debug'
 import { clearVisibleMessageText, setVisibleMessageText } from '@/app/ai/chat/presentation'
 import {
   analyzeAttachedImages,
-  designMessageWithImageFindings
+  designMessageWithImageFindings,
+  VisionModelUnavailableError
 } from '@/app/ai/attachment/image/analyze'
 import {
   createImagePreviewURL,
@@ -32,6 +33,7 @@ import AppButton from '@/components/ui/AppButton.vue'
 import ProviderSetup from '@/components/chat/ProviderSetup.vue'
 import { useAIChat } from '@/app/ai/chat/use'
 import { toast } from '@/app/shell/ui'
+import { openSettingsDialog } from '@/app/settings/dialog'
 import { useI18n } from '@open-pencil/vue'
 
 import { useNotificationMessages } from '@/app/i18n/notifications'
@@ -151,6 +153,16 @@ async function sendTextMessage(
   if (message) setVisibleMessageText(message.id, displayText)
 }
 
+function reportSubmitError(error: unknown): void {
+  console.error('Chat error:', error)
+  if (error instanceof VisionModelUnavailableError) {
+    toast.error(ai.value.visionModelUnavailable)
+    openSettingsDialog('ai')
+    return
+  }
+  toast.error(ai.value.chatRequestFailed)
+}
+
 async function handleSubmit(text: string, images: ImageAttachmentDraft[] = [], displayText = text) {
   if (status.value === 'streaming' || status.value === 'submitted' || isPreparingImages.value) {
     for (const image of images) revokeImagePreviewURL(image.previewURL)
@@ -229,9 +241,8 @@ async function handleSubmit(text: string, images: ImageAttachmentDraft[] = [], d
         findings
       )
     })
-  } catch (e) {
-    console.error('Chat error:', e)
-    toast.error(ai.value.chatRequestFailed)
+  } catch (error) {
+    reportSubmitError(error)
   } finally {
     if (operationVersion === attachmentOperationVersion) isPreparingImages.value = false
   }

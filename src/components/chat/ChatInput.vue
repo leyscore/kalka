@@ -7,7 +7,6 @@ import { useI18n, useSelectionState } from '@open-pencil/vue'
 
 import ChatNodePreview from '@/components/chat/ChatNodePreview.vue'
 import ChatProfileSelect from '@/components/chat/ChatProfileSelect.vue'
-import ProviderModelSelect from '@/components/chat/ProviderModelSelect.vue'
 import IconButton from '@/components/ui/IconButton.vue'
 import InputGroup from '@/components/ui/InputGroup.vue'
 import { useAIChat } from '@/app/ai/chat/use'
@@ -16,7 +15,7 @@ import {
   MAX_REFERENCED_NODES,
   resolveReferencedNodes
 } from '@/app/ai/chat/context'
-import { designModelProfile, designModelProfiles } from '@/app/ai/models'
+import { designModelProfile } from '@/app/ai/models'
 import {
   createImagePreviewURL,
   revokeImagePreviewURL,
@@ -125,9 +124,7 @@ const selectedModelName = computed(() => {
   return providerDef.value.models.find((m) => m.id === modelID.value)?.name ?? modelID.value
 })
 
-// Switching between saved profiles only makes sense once more than one can drive the design agent.
-const switchableProfiles = computed(designModelProfiles)
-const canSwitchProfile = computed(() => switchableProfiles.value.length > 1)
+// The composer switches configured Design-role profiles; raw provider model selection lives in Settings.
 const selectedProfileName = computed(
   () => designModelProfile.value?.name ?? selectedModelName.value
 )
@@ -284,26 +281,11 @@ function handleSubmit(e: Event) {
                   <span class="truncate">{{ agentName }}</span>
                 </div>
               </template>
-              <ChatProfileSelect
-                v-else-if="canSwitchProfile && (isCustomProvider || usesCustomModel)"
-              >
+              <ChatProfileSelect v-else>
                 <template #value>
                   <span class="min-w-0 truncate">{{ selectedProfileName }}</span>
                 </template>
               </ChatProfileSelect>
-              <div
-                v-else-if="isCustomProvider || usesCustomModel"
-                class="flex min-w-0 items-center gap-1 px-1.5 text-[10px] text-muted"
-                data-test-id="chat-custom-model-label"
-              >
-                <icon-lucide-bot class="size-3 shrink-0" />
-                <span class="truncate">{{ selectedModelName }}</span>
-              </div>
-              <ProviderModelSelect v-else>
-                <template #value>
-                  <span class="min-w-0 truncate">{{ selectedModelName }}</span>
-                </template>
-              </ProviderModelSelect>
             </div>
           </template>
 
