@@ -5,6 +5,7 @@ import { computed, onBeforeUnmount, ref } from 'vue'
 
 import { useI18n, useSelectionState } from '@open-pencil/vue'
 
+import ChatNodePreview from '@/components/chat/ChatNodePreview.vue'
 import ChatProfileSelect from '@/components/chat/ChatProfileSelect.vue'
 import ProviderModelSelect from '@/components/chat/ProviderModelSelect.vue'
 import IconButton from '@/components/ui/IconButton.vue'
@@ -13,8 +14,7 @@ import { useAIChat } from '@/app/ai/chat/use'
 import {
   appendReferencedNodeContext,
   MAX_REFERENCED_NODES,
-  resolveReferencedNodes,
-  type ReferencedNode
+  resolveReferencedNodes
 } from '@/app/ai/chat/context'
 import { designModelProfile, designModelProfiles } from '@/app/ai/models'
 import {
@@ -23,7 +23,6 @@ import {
   validateImageAttachmentFile
 } from '@/app/ai/attachment/image/prepare'
 import { MAX_IMAGE_ATTACHMENTS, type ImageAttachmentDraft } from '@/app/ai/attachment/image/types'
-import { nodeIcon } from '@/app/editor/icons'
 import { openSettingsDialog } from '@/app/settings/dialog'
 
 import { ACP_AGENTS } from '@open-pencil/core/constants'
@@ -51,11 +50,18 @@ const referencedNodeIds = ref<string[]>([])
 const referencedNodes = computed(() =>
   resolveReferencedNodes(editor.graph, referencedNodeIds.value)
 )
+const selectedReferencedNodeIds = computed(() =>
+  [...selectedIds.value].filter((id) => referencedNodeIds.value.includes(id))
+)
 const canAddSelection = computed(
   () =>
     selectedIds.value.size > 0 &&
-    referencedNodes.value.length < MAX_REFERENCED_NODES &&
-    [...selectedIds.value].some((id) => !referencedNodeIds.value.includes(id))
+    (selectedReferencedNodeIds.value.length > 0 ||
+      referencedNodes.value.length < MAX_REFERENCED_NODES)
+)
+const selectionContextActive = computed(
+  () =>
+    selectedIds.value.size > 0 && selectedReferencedNodeIds.value.length === selectedIds.value.size
 )
 const {
   open: openImageDialog,
@@ -157,16 +163,16 @@ function removeReferencedNode(id: string): void {
   referencedNodeIds.value = referencedNodeIds.value.filter((candidate) => candidate !== id)
 }
 
-function addCurrentSelection(): void {
+function toggleCurrentSelection(): void {
+  if (selectedReferencedNodeIds.value.length > 0) {
+    const selected = new Set(selectedIds.value)
+    referencedNodeIds.value = referencedNodeIds.value.filter((id) => !selected.has(id))
+    return
+  }
   referencedNodeIds.value = resolveReferencedNodes(editor.graph, [
     ...referencedNodeIds.value,
     ...selectedIds.value
   ]).map((node) => node.id)
-}
-
-function referencedNodeIcon(node: ReferencedNode) {
-  const liveNode = editor.graph.getNode(node.id)
-  return liveNode ? nodeIcon(liveNode) : undefined
 }
 
 function handleSubmit(e: Event) {
@@ -190,29 +196,25 @@ function handleSubmit(e: Event) {
       <form @submit="handleSubmit" @paste.stop="handlePaste">
         <InputGroup :disabled="isStreaming">
           <template v-if="images.length || referencedNodes.length" #attachment>
-            <div v-if="referencedNodes.length" class="flex flex-wrap gap-1">
+            <div class="flex flex-wrap gap-1.5">
               <div
                 v-for="node in referencedNodes"
                 :key="node.id"
                 data-slot="chat-context-chip"
-                class="flex min-w-0 items-center gap-1 rounded-md border border-border bg-hover px-1.5 py-0.5 text-[10px] text-surface"
+                class="flex min-w-0 max-w-full items-center gap-2 rounded-lg border border-border bg-canvas p-1.5 shadow-xs"
               >
-                <component
-                  :is="referencedNodeIcon(node)"
-                  class="size-2.5 shrink-0 text-muted"
-                  aria-hidden="true"
-                />
-                <span class="max-w-24 truncate">{{ node.name || node.type }}</span>
+                <ChatNodePreview :editor="editor" :node="node" />
+                <span class="min-w-0 flex-1 truncate text-[10px] text-surface">
+                  {{ node.name || node.type }}
+                </span>
                 <IconButton
                   :label="ai.removeNodeContext"
                   size="xs"
                   @click="removeReferencedNode(node.id)"
                 >
-                  <icon-lucide-x class="size-2.5" />
+                  <icon-lucide-x class="size-3" />
                 </IconButton>
               </div>
-            </div>
-            <div v-if="images.length" class="flex flex-wrap gap-1.5">
               <div
                 v-for="(image, index) in images"
                 :key="image.previewURL"
@@ -257,9 +259,10 @@ function handleSubmit(e: Event) {
             <IconButton
               :label="ai.addSelectionContext"
               size="sm"
+              :active="selectionContextActive"
               :disabled="isStreaming || !canAddSelection"
               data-slot="chat-add-selection-context"
-              @click="addCurrentSelection"
+              @click="toggleCurrentSelection"
             >
               <icon-lucide-mouse-pointer-2 class="size-4" />
             </IconButton>
