@@ -33,6 +33,20 @@ test('tool calls render their result', async ({ configuredChat: chat }) => {
   await expect(chat.assistantMessage().getByText('Created a frame', { exact: false })).toBeVisible()
 })
 
+test('authentication errors explain the cause and link to Settings', async ({
+  configuredChat: chat
+}) => {
+  await chat.submit('Trigger expired key error')
+
+  const toast = chat.page.getByTestId('toast-item').filter({
+    hasText: 'Your provider API key is invalid or expired. Replace it in Settings.'
+  })
+  await expect(toast).toBeVisible()
+  await expect(chat.page.getByTestId('toast-item')).toHaveCount(1)
+  await toast.getByRole('button', { name: 'Open settings' }).click()
+  await expect(chat.page.getByTestId('app-settings-dialog')).toBeVisible()
+})
+
 test('transport errors show a safe localized toast', async ({ configuredChat: chat }) => {
   await chat.submit('Trigger missing agent error')
   await expect(

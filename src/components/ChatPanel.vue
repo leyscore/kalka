@@ -42,6 +42,7 @@ const submission = useChatSubmission({
   clearFailure: clearChatFailure,
   getEditor: getActiveEditorStore,
   messages: computed(() => ({
+    openSettings: ai.value.openProviderSettingsAction,
     requestFailed: ai.value.chatRequestFailed,
     visionUnavailable: ai.value.visionModelUnavailable
   })),
@@ -68,16 +69,29 @@ const acpLogCopied = refAutoReset(false, 1500)
 const messages = computed(() => chat.value?.messages ?? [])
 const failureMessage = computed(() => {
   switch (chatFailure.value?.reason) {
+    case 'authentication':
+      return ai.value.chatAuthenticationFailed
+    case 'forbidden':
+      return ai.value.chatForbidden
     case 'insufficient-credit':
       return ai.value.chatInsufficientCredit
+    case 'model-not-found':
+      return ai.value.chatModelNotFound
+    case 'network':
+      return ai.value.chatNetworkFailed
     case 'output-limit':
       return ai.value.chatOutputLimit
+    case 'rate-limit':
+      return ai.value.chatRateLimited
     case 'request-failed':
       return ai.value.chatRequestFailed
     default:
       return null
   }
 })
+const failureHasSettingsAction = computed(() =>
+  ['authentication', 'forbidden', 'model-not-found'].includes(chatFailure.value?.reason ?? '')
+)
 const status = computed(() => chat.value?.status ?? 'ready')
 function isStreamingMessage(message: UIMessage, index: number): boolean {
   return (
@@ -119,7 +133,15 @@ watch(
   () => chatFailure.value?.reason,
   (reason) => {
     if (!reason) return
-    toast.error(failureMessage.value ?? ai.value.chatRequestFailed)
+    toast.error(
+      failureMessage.value ?? ai.value.chatRequestFailed,
+      failureHasSettingsAction.value
+        ? {
+            label: ai.value.openProviderSettingsAction,
+            run: () => openSettingsDialog('ai')
+          }
+        : undefined
+    )
   }
 )
 watch(

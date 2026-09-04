@@ -23,6 +23,14 @@ export async function injectMockChatTransport(page: Page): Promise<void> {
         const multipleParts = normalized.includes('multiple parts')
         const reasoning = normalized.includes('reasoning')
 
+        if (normalized.includes('expired key')) {
+          return new ReadableStream({
+            start(controller) {
+              controller.enqueue({ type: 'error', errorText: 'API key expired.' })
+              controller.close()
+            }
+          })
+        }
         if (normalized.includes('missing agent')) {
           throw new Error('Mock agent unavailable')
         }

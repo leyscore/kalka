@@ -21,6 +21,7 @@ import type { EditorStore } from '@/app/editor/active-store'
 export type ChatInstance = Pick<Chat<UIMessage>, 'messages' | 'sendMessage' | 'stop'>
 
 interface SubmissionMessages {
+  openSettings: string
   requestFailed: string
   visionUnavailable: string
 }
@@ -31,7 +32,7 @@ interface SubmissionOptions {
   clearFailure: () => void
   getEditor: () => EditorStore
   messages: Ref<SubmissionMessages>
-  reportError: (message: string) => void
+  reportError: (message: string, action?: { label: string; run: () => void }) => void
   openModelSettings: () => void
 }
 
@@ -41,7 +42,7 @@ export function useChatSubmission(options: SubmissionOptions) {
 
   async function sendText(currentChat: ChatInstance, submission: ChatSubmission): Promise<void> {
     const previousIds = new Set(currentChat.messages.map((message) => message.id))
-    await currentChat.sendMessage({ text: submission.modelText })
+    await currentChat.sendMessage({ text: submission.modelText }).catch(() => undefined)
     const message = currentChat.messages.find(
       (candidate) => candidate.role === 'user' && !previousIds.has(candidate.id)
     )
@@ -68,7 +69,9 @@ export function useChatSubmission(options: SubmissionOptions) {
     for (const image of submission.images) revokeImagePreviewURL(image.previewURL)
 
     if (submission.images.length === 0) {
-      await currentChat.sendMessage({ messageId, text: submission.modelText })
+      await currentChat
+        .sendMessage({ messageId, text: submission.modelText })
+        .catch(() => undefined)
       return
     }
 
@@ -84,21 +87,25 @@ export function useChatSubmission(options: SubmissionOptions) {
       preparedImages
     )
     setMessageAttachments(messageId, [...nodeAttachments, ...normalizedImages])
-    await currentChat.sendMessage({
-      messageId,
-      text: designMessageWithImageFindings(
-        submission.modelText,
-        submission.images.map((image) => image.file.name),
-        findings
-      )
-    })
+    await currentChat
+      .sendMessage({
+        messageId,
+        text: designMessageWithImageFindings(
+          submission.modelText,
+          submission.images.map((image) => image.file.name),
+          findings
+        )
+      })
+      .catch(() => undefined)
   }
 
   function reportSubmissionError(error: unknown): void {
     console.error('Chat error:', error)
     if (error instanceof VisionModelUnavailableError) {
-      options.reportError(options.messages.value.visionUnavailable)
-      options.openModelSettings()
+      options.reportError(options.messages.value.visionUnavailable, {
+        label: options.messages.value.openSettings,
+        run: options.openModelSettings
+      })
       return
     }
     options.reportError(options.messages.value.requestFailed)

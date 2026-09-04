@@ -107,11 +107,17 @@ export const aiMessageDefaults = {
   reasoningEffortPlaceholder: 'e.g. low, high, none',
   reasoningEffortDescription: 'Optional provider-specific value.',
   maxOutputTokens: 'Max output tokens',
+  chatAuthenticationFailed: 'Your provider API key is invalid or expired. Replace it in Settings.',
+  chatForbidden: 'This API key cannot use the selected model. Check its model access.',
   chatInsufficientCredit:
     'The provider account has insufficient credit or quota. Top it up and try again.',
   chatOutputLimit:
     'The model ran out of output tokens while reasoning. Raise Max output tokens or lower reasoning effort.',
+  chatModelNotFound: 'The selected model is unavailable. Choose another model in Settings.',
+  chatNetworkFailed: 'OpenPencil could not reach the provider. Check your connection and endpoint.',
+  chatRateLimited: 'The provider rate limit was reached. Wait a moment and try again.',
   chatRequestFailed: 'The model request failed. Check the provider settings and try again.',
+  openProviderSettingsAction: 'Open settings',
   visionModelUnavailable: 'Choose a Vision model in Settings before attaching images.',
   completions: 'Completions',
   responses: 'Responses'
