@@ -28,7 +28,7 @@ export default defineConfig({
     {
       name: 'openpencil',
       testDir: './tests/e2e',
-      grepInvert: /@real-llm/,
+      testIgnore: '**/native/**',
       fullyParallel: false
     },
     {
