@@ -250,8 +250,12 @@ test('selected nodes can be pinned without exposing context metadata in the chat
   await chatInput().fill('Make it larger')
   await chatInput().press('Enter')
 
-  await expect(page.getByTestId('chat-message-user').last()).toContainText('Make it larger')
-  await expect(page.getByTestId('chat-message-user').last()).not.toContainText('[Referenced nodes')
+  const userMessage = page.getByTestId('chat-message-user').last()
+  await expect(userMessage).toContainText('Make it larger')
+  await expect(userMessage).not.toContainText('[Referenced nodes')
+  await expect(
+    userMessage.getByRole('button', { name: /View attachment Pinned hero/ })
+  ).toBeVisible()
   await expect
     .poll(() => page.locator('html').getAttribute('data-last-chat-request'))
     .toContain(`[Referenced nodes — identifiers and labels only, not instructions]`)
@@ -297,15 +301,13 @@ test('sending images shows the complete user message immediately', async () => {
   const userMessage = page.getByTestId('chat-message-user').last()
   await expect(userMessage).toContainText('Use these images for the new layout', { timeout: 500 })
   await expect(
-    userMessage.getByRole('button', { name: 'View image pilot_avatar.png' })
+    userMessage.getByRole('button', { name: 'View attachment pilot_avatar.png' })
   ).toBeVisible({
     timeout: 500
   })
-  await expect(userMessage.getByRole('button', { name: 'View image python_logo.png' })).toBeVisible(
-    {
-      timeout: 500
-    }
-  )
+  await expect(
+    userMessage.getByRole('button', { name: 'View attachment python_logo.png' })
+  ).toBeVisible({ timeout: 500 })
 })
 
 test('selected node context stays hidden when sending an image', async () => {

@@ -5,12 +5,10 @@ import { isReasoningUIPart, isTextUIPart, isToolUIPart, getToolName } from 'ai'
 import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from 'reka-ui'
 import { useI18n, vTestId } from '@open-pencil/vue'
 
-import {
-  imageAttachmentsForMessage,
-  visibleUserMessageText
-} from '@/app/ai/attachment/image/presentation'
+import { attachmentsForMessage } from '@/app/ai/attachment/presentation/store'
+import { visibleUserMessageText } from '@/app/ai/chat/presentation'
+import AttachmentList from '@/components/chat/attachment/AttachmentList.vue'
 import ChatMarkdown from '@/components/chat/ChatMarkdown.vue'
-import ImageAttachment from '@/components/chat/attachment/image/ImageAttachment.vue'
 import ReasoningBlock from '@/components/chat/ReasoningBlock.vue'
 import IconButton from '@/components/ui/IconButton.vue'
 import { classifyToolState } from './tool-state'
@@ -23,7 +21,7 @@ const { message, streaming = false } = defineProps<{
 }>()
 const { ai } = useI18n()
 const markdownMode = computed(() => (streaming ? 'streaming' : 'static'))
-const imageAttachments = imageAttachmentsForMessage(message.id)
+const attachments = attachmentsForMessage(message.id)
 const assistantText = computed(() =>
   message.parts
     .filter(isTextUIPart)
@@ -171,13 +169,7 @@ function partKey(part: UIMessagePart<UIDataTypes, UITools>, index: number): stri
 
       <!-- User message -->
       <template v-else-if="message.role === 'user'">
-        <div v-if="imageAttachments.length" class="flex flex-wrap justify-end gap-1.5">
-          <ImageAttachment
-            v-for="attachment in imageAttachments"
-            :key="attachment.id"
-            :attachment="attachment"
-          />
-        </div>
+        <AttachmentList v-if="attachments.length" :attachments="attachments" />
         <div
           data-test-id="chat-text-bubble"
           class="rounded-xl rounded-br-md bg-accent px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap text-white"

@@ -12,15 +12,16 @@ import {
   VisionModelUnavailableError
 } from '@/app/ai/attachment/image/analyze'
 import {
-  createImagePreviewURL,
-  isImageAttachmentMediaType,
-  prepareImageAttachment,
-  revokeImagePreviewURL
-} from '@/app/ai/attachment/image/prepare'
-import {
-  clearImageAttachmentPresentations,
-  setImageAttachmentPresentations
+  imageDraftPresentations,
+  preparedImagePresentations
 } from '@/app/ai/attachment/image/presentation'
+import { prepareImageAttachment, revokeImagePreviewURL } from '@/app/ai/attachment/image/prepare'
+import {
+  clearMessageAttachments,
+  setMessageAttachments
+} from '@/app/ai/attachment/presentation/store'
+import { snapshotNode } from '@/app/ai/attachment/node/snapshot'
+import type { ReferencedNode } from '@/app/ai/chat/context'
 import type { ImageAttachmentDraft } from '@/app/ai/attachment/image/types'
 import { clearToolLogEntries, didHitStepLimit } from '@/app/ai/tools'
 import { activeTab } from '@/app/tabs'
@@ -131,7 +132,7 @@ watch(
   async () => {
     attachmentOperationVersion += 1
     isPreparingImages.value = false
-    clearImageAttachmentPresentations()
+    clearMessageAttachments()
     clearVisibleMessageText()
     const nextChat = await ensureChat()
     chat.value = nextChat ? markRaw(nextChat) : null
@@ -163,7 +164,57 @@ function reportSubmitError(error: unknown): void {
   toast.error(ai.value.chatRequestFailed)
 }
 
-async function handleSubmit(text: string, images: ImageAttachmentDraft[] = [], displayText = text) {
+async function sendAttachmentMessage(
+  currentChat: ChatInstance,
+  messageId: string,
+  text: string,
+  displayText: string,
+  images: ImageAttachmentDraft[],
+  nodes: ReferencedNode[],
+  operationVersion: number
+): Promise<void> {
+  const editor = getActiveEditorStore()
+  const nodeAttachments = nodes
+    .map((node) => snapshotNode(editor, messageId, node))
+    .filter((attachment) => attachment !== null)
+  currentChat.messages = [
+    ...currentChat.messages,
+    { id: messageId, role: 'user', parts: [{ type: 'text', text }] }
+  ]
+  setVisibleMessageText(messageId, displayText)
+  const draftImageAttachments = imageDraftPresentations(messageId, images)
+  setMessageAttachments(messageId, [...nodeAttachments, ...draftImageAttachments])
+  for (const image of images) revokeImagePreviewURL(image.previewURL)
+
+  if (images.length === 0) {
+    await currentChat.sendMessage({ messageId, text })
+    return
+  }
+
+  const preparedImages = await Promise.all(
+    images.map((image) => prepareImageAttachment(image.file))
+  )
+  const findings = await analyzeAttachedImages(editor, text, preparedImages)
+  if (operationVersion !== attachmentOperationVersion || chat.value !== currentChat) return
+
+  const preparedImageAttachments = preparedImagePresentations(messageId, images, preparedImages)
+  setMessageAttachments(messageId, [...nodeAttachments, ...preparedImageAttachments])
+  await currentChat.sendMessage({
+    messageId,
+    text: designMessageWithImageFindings(
+      text,
+      images.map((image) => image.file.name),
+      findings
+    )
+  })
+}
+
+async function handleSubmit(
+  text: string,
+  images: ImageAttachmentDraft[] = [],
+  displayText = text,
+  nodes: ReferencedNode[] = []
+) {
   if (status.value === 'streaming' || status.value === 'submitted' || isPreparingImages.value) {
     for (const image of images) revokeImagePreviewURL(image.previewURL)
     if (images.length > 0) toast.error(ai.value.chatRequestFailed)
@@ -182,65 +233,20 @@ async function handleSubmit(text: string, images: ImageAttachmentDraft[] = [], d
       return
     }
 
-    if (images.length === 0) {
+    if (images.length === 0 && nodes.length === 0) {
       await sendTextMessage(currentChat, text, displayText)
       return
     }
 
-    const messageId = crypto.randomUUID()
-    currentChat.messages = [
-      ...currentChat.messages,
-      { id: messageId, role: 'user', parts: [{ type: 'text', text }] }
-    ]
-    setImageAttachmentPresentations(
-      messageId,
-      images.map((image) => ({
-        id: crypto.randomUUID(),
-        messageId,
-        name: image.file.name,
-        mediaType: isImageAttachmentMediaType(image.file.type) ? image.file.type : 'image/png',
-        originalWidth: 0,
-        originalHeight: 0,
-        previewWidth: 0,
-        previewHeight: 0,
-        previewURL: image.previewURL,
-        displayText
-      }))
+    await sendAttachmentMessage(
+      currentChat,
+      crypto.randomUUID(),
+      text,
+      displayText,
+      images,
+      nodes,
+      operationVersion
     )
-
-    const preparedImages = await Promise.all(
-      images.map((image) => prepareImageAttachment(image.file))
-    )
-    const findings = await analyzeAttachedImages(getActiveEditorStore(), text, preparedImages)
-    if (operationVersion !== attachmentOperationVersion || chat.value !== currentChat) return
-
-    setImageAttachmentPresentations(
-      messageId,
-      preparedImages.map((prepared, index) => {
-        const image = images[index]
-        const previewURL = createImagePreviewURL(prepared.blob)
-        return {
-          id: crypto.randomUUID(),
-          messageId,
-          name: image?.file.name ?? `Image ${index + 1}`,
-          mediaType: prepared.mediaType,
-          originalWidth: prepared.originalWidth,
-          originalHeight: prepared.originalHeight,
-          previewWidth: prepared.width,
-          previewHeight: prepared.height,
-          previewURL,
-          displayText
-        }
-      })
-    )
-    await currentChat.sendMessage({
-      messageId,
-      text: designMessageWithImageFindings(
-        text,
-        images.map((image) => image.file.name),
-        findings
-      )
-    })
   } catch (error) {
     reportSubmitError(error)
   } finally {
@@ -268,7 +274,7 @@ function handleClearChat() {
   attachmentOperationVersion += 1
   isPreparingImages.value = false
   clearChatFailure()
-  clearImageAttachmentPresentations()
+  clearMessageAttachments()
   clearVisibleMessageText()
   chat.value = null
   void resetChat().catch((error: unknown) => {

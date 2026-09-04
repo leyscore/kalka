@@ -13,7 +13,8 @@ import { useAIChat } from '@/app/ai/chat/use'
 import {
   appendReferencedNodeContext,
   MAX_REFERENCED_NODES,
-  resolveReferencedNodes
+  resolveReferencedNodes,
+  type ReferencedNode
 } from '@/app/ai/chat/context'
 import { designModelProfile } from '@/app/ai/models'
 import {
@@ -36,7 +37,12 @@ const { status, disabled = false } = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  submit: [text: string, images: ImageAttachmentDraft[], displayText: string]
+  submit: [
+    text: string,
+    images: ImageAttachmentDraft[],
+    displayText: string,
+    nodes: ReferencedNode[]
+  ]
   stop: []
   error: [message: string]
 }>()
@@ -181,7 +187,13 @@ function handleSubmit(e: Event) {
   images.value = []
   referencedNodeIds.value = []
   resetImageDialog()
-  emit('submit', appendReferencedNodeContext(text, submittedNodes), submittedImages, text)
+  emit(
+    'submit',
+    appendReferencedNodeContext(text, submittedNodes),
+    submittedImages,
+    text,
+    submittedNodes
+  )
   input.value = ''
   triggerResize()
 }
@@ -228,7 +240,7 @@ function handleSubmit(e: Event) {
                   {{ image.file.name }}
                 </span>
                 <IconButton
-                  :label="`Remove image ${image.file.name}`"
+                  :label="ai.removeImageAttachment({ name: image.file.name })"
                   size="xs"
                   @click="removeImage(index)"
                 >
@@ -264,7 +276,7 @@ function handleSubmit(e: Event) {
               <icon-lucide-mouse-pointer-2 class="size-4" />
             </IconButton>
             <IconButton
-              label="Attach images"
+              :label="ai.attachImages"
               size="sm"
               :disabled="isStreaming || images.length >= MAX_IMAGE_ATTACHMENTS"
               @click="openImageDialog()"
