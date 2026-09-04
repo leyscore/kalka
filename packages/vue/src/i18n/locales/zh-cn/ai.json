@@ -83,7 +83,7 @@
   "noModel": "无",
   "apiKey": "API 密钥",
   "apiType": "API 类型",
-  "baseURL": "Base URL",
+  "baseURL": "基础 URL",
   "modelID": "模型 ID",
   "customModelID": "自定义模型 ID",
   "customModel": "自定义模型…",
