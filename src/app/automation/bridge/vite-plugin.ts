@@ -50,7 +50,7 @@ export function createAutomationEnvironment(
 
 const MAX_CONFIGURATION_BYTES = 70_000
 const CHILD_EXIT_TIMEOUT_MS = 2_000
-const CHILD_HEALTH_ATTEMPTS = 40
+const CHILD_HEALTH_ATTEMPTS = 200
 const CHILD_HEALTH_DELAY_MS = 50
 
 type DevMCPConfigurationErrorStatus = 400 | 413
@@ -131,6 +131,18 @@ interface AutomationPluginOptions {
 
 function safeRuntimeId(value: string): string {
   return createHash('sha256').update(value).digest('hex').slice(0, 16)
+}
+
+export function configurationsMatch(
+  current: DevMCPConfiguration,
+  next: DevMCPConfiguration
+): boolean {
+  return (
+    current.authenticationEnabled === next.authenticationEnabled &&
+    current.rootDirectory === next.rootDirectory &&
+    current.disabledTools.length === next.disabledTools.length &&
+    current.disabledTools.every((tool, index) => tool === next.disabledTools[index])
+  )
 }
 
 // TODO: production — bundle MCP server as Tauri sidecar or spawn via shell plugin
@@ -223,6 +235,7 @@ export function automationPlugin(
   }
 
   async function restartChild(nextConfiguration: DevMCPConfiguration): Promise<void> {
+    if (child && configurationsMatch(configuration, nextConfiguration)) return
     configuration = nextConfiguration
     await stopChild()
     await startChild()

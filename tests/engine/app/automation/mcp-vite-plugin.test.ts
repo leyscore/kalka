@@ -4,6 +4,7 @@ import { Readable } from 'node:stream'
 import {
   DevMCPConfigurationSyntaxError,
   DevMCPConfigurationTooLargeError,
+  configurationsMatch,
   createAutomationEnvironment,
   devMCPConfigurationErrorStatus,
   readDevMCPConfiguration,
@@ -70,6 +71,18 @@ describe('MCP Vite development server', () => {
       rootDirectory: '/设计',
       disabledTools: []
     })
+  })
+
+  test('does not restart MCP for unchanged configuration', () => {
+    const configuration = {
+      authenticationEnabled: true,
+      rootDirectory: '/designs',
+      disabledTools: ['eval', 'delete_node']
+    }
+    expect(configurationsMatch(configuration, structuredClone(configuration))).toBe(true)
+    expect(
+      configurationsMatch(configuration, { ...configuration, disabledTools: ['delete_node'] })
+    ).toBe(false)
   })
 
   test('waits through transient Portless responses until MCP is healthy', async () => {
