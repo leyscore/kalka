@@ -32,12 +32,6 @@ export default defineConfig({
       fullyParallel: false
     },
     {
-      name: 'openpencil-real-llm',
-      testDir: './tests/e2e',
-      grep: /@real-llm/,
-      fullyParallel: false
-    },
-    {
       name: 'openpencil-webkit',
       testDir: './tests/e2e',
       testMatch: [
