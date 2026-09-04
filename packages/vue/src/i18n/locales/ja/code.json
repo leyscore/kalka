@@ -1,5 +1,5 @@
 {
-  "copyJSXReference": "JSXのprops参照をクリップボードにコピー",
+  "copyJSXReference": "JSXのプロパティ参照をクリップボードにコピー",
   "jsxUpToDate": "最新です",
   "source": "コードソース",
   "sourceDesignJSX": "Design JSX",

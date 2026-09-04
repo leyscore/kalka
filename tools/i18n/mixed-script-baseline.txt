@@ -1,4 +1,3 @@
-
 ja:ai.apiKey
 ja:ai.apiType
 ja:ai.baseURL
@@ -60,16 +59,12 @@ ja:editor.showUI
 ja:files.browserFileAPINotSupported
 ja:files.clipboardImageFetchFailed
 ja:files.clipboardImagesFetchFailed
-ja:files.clipboardImagesUnavailableWeb
-ja:files.clipboardImageUnavailableWeb
 ja:files.importFailed
 ja:files.importHTMLCSS
 ja:files.importHTMLCSSDescription
 ja:files.orEdgeForFullSupport
 ja:files.useChrome
 ja:fonts.downloadFallbackPacksDescription
-ja:fonts.downloadMissingWebFonts
-ja:fonts.webFontProvidersRequireDesktopApp
 ja:media.getPexelsAPIKey
 ja:media.getUnsplashAccessKey
 ja:media.pexelsAlternativeOptional
@@ -111,14 +106,12 @@ ja:updates.downloading
 ja:updates.installed
 ja:updates.unavailable
 ja:updates.upToDate
-ja:variableTypes.booleanHint
 zh-cn:ai.apiKey
 zh-cn:ai.apiType
 zh-cn:ai.baseURLPlaceholder
 zh-cn:ai.chatAuthenticationFailed
 zh-cn:ai.chatForbidden
 zh-cn:ai.chatNetworkFailed
-zh-cn:ai.chatOutputLimit
 zh-cn:ai.connectionTestAPITypeMismatch
 zh-cn:ai.connectionTestAuthFailed
 zh-cn:ai.connectionTestBrowserNetworkFailed
@@ -131,7 +124,6 @@ zh-cn:ai.connectionTestNetworkFailed
 zh-cn:ai.connectProvider
 zh-cn:ai.customModelID
 zh-cn:ai.getProviderAPIKey
-zh-cn:ai.maxOutputTokens
 zh-cn:ai.modelID
 zh-cn:ai.modelIDPlaceholder
 zh-cn:ai.modelRoleDesignDescription
