@@ -1,168 +1,40 @@
 import { expect, test, type Page } from '@playwright/test'
 
-import { CanvasHelper } from '#tests/helpers/canvas'
-
-const USE_REAL_LLM = process.env.TEST_REAL_LLM === '1'
-const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY ?? ''
-
-let page: Page
-let canvas: CanvasHelper
+import {
+  apiKeyInput as getAPIKeyInput,
+  chatInput as getChatInput,
+  chatTab as getChatTab,
+  designTab as getDesignTab,
+  openChatTestApp,
+  USE_REAL_LLM
+} from '#tests/helpers/chat/app'
 
 test.describe.configure({ mode: 'serial' })
 
-test.beforeAll(async ({ browser }) => {
-  page = await browser.newPage()
-  await page.goto('/')
-  await page.evaluate(async () => {
-    const themeModulePath = '/src/app/shell/theme.ts'
-    const themeModule = await import(themeModulePath)
-    themeModule.useAppTheme().setTheme('dark')
-  })
-  await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark')
-  canvas = new CanvasHelper(page)
-  await canvas.waitForInit()
+let page: Page
 
-  if (!USE_REAL_LLM) {
-    await injectMockTransport(page)
-  }
+test.beforeAll(async ({ browser }) => {
+  ;({ page } = await openChatTestApp(browser))
 })
 
 test.afterAll(async () => {
   await page.close()
 })
 
-async function injectMockTransport(page: Page) {
-  await page.evaluate(() => {
-    const setChatTransport = window.openPencil?.setChatTransport
-    if (!setChatTransport) throw new Error('Transport override not available')
-
-    let msgCounter = 0
-
-    setChatTransport(() => ({
-      async sendMessages({
-        messages
-      }: {
-        messages: Array<{ role: string; parts: Array<{ type: string; text?: string }> }>
-      }) {
-        const lastUser = [...messages].reverse().find((m) => m.role === 'user')
-        const text = lastUser?.parts?.find((p) => p.type === 'text')?.text ?? ''
-        const appOrigin = window.location.origin
-        const msgId = `mock-msg-${++msgCounter}`
-        const lowerText = text.toLowerCase()
-        document.documentElement.dataset.lastChatRequest = text
-        const wantsTool = lowerText.includes('frame') || lowerText.includes('rectangle')
-        const wantsCode = lowerText.includes('code block')
-        const wantsUnsafeMarkdown = lowerText.includes('unsafe markdown')
-        const wantsMultipleParts = lowerText.includes('multiple parts')
-        const wantsReasoning = lowerText.includes('reasoning')
-
-        if (lowerText.includes('missing agent')) {
-          throw new Error(
-            '"claude-agent-acp" is not installed. Install it with: npm i -g @agentclientprotocol/claude-agent-acp'
-          )
-        }
-
-        return new ReadableStream({
-          start(controller) {
-            controller.enqueue({ type: 'start', messageId: msgId })
-
-            if (wantsTool) {
-              const toolCallId = `call-${msgId}`
-              controller.enqueue({
-                type: 'tool-input-start',
-                toolCallId,
-                toolName: 'create_shape'
-              })
-              controller.enqueue({
-                type: 'tool-input-delta',
-                toolCallId,
-                inputTextDelta:
-                  '{"type":"FRAME","x":100,"y":100,"width":200,"height":150,"name":"Card"}'
-              })
-              controller.enqueue({
-                type: 'tool-input-available',
-                toolCallId,
-                toolName: 'create_shape',
-                input: { type: 'FRAME', x: 100, y: 100, width: 200, height: 150, name: 'Card' }
-              })
-              controller.enqueue({
-                type: 'tool-output-available',
-                toolCallId,
-                toolName: 'create_shape',
-                output: {
-                  id: '0:99',
-                  type: 'FRAME',
-                  x: 100,
-                  y: 100,
-                  width: 200,
-                  height: 150,
-                  name: 'Card'
-                }
-              })
-            }
-
-            if (wantsReasoning) {
-              controller.enqueue({ type: 'reasoning-start', id: 'reasoning-1' })
-              controller.enqueue({
-                type: 'reasoning-delta',
-                id: 'reasoning-1',
-                delta: 'Inspecting the referenced layout.'
-              })
-              controller.enqueue({ type: 'reasoning-end', id: 'reasoning-1' })
-            }
-
-            if (wantsMultipleParts) {
-              controller.enqueue({ type: 'text-start', id: 'text-a' })
-              controller.enqueue({ type: 'text-delta', id: 'text-a', delta: 'First' })
-              controller.enqueue({ type: 'text-end', id: 'text-a' })
-              controller.enqueue({ type: 'text-start', id: 'text-b' })
-              controller.enqueue({ type: 'text-delta', id: 'text-b', delta: 'Second' })
-              controller.enqueue({ type: 'text-end', id: 'text-b' })
-              controller.enqueue({ type: 'finish', finishReason: 'stop' })
-              controller.close()
-              return
-            }
-
-            let words: string[]
-            if (wantsTool) words = ['Created', 'a', 'frame', 'called', '"Card".']
-            else if (wantsUnsafeMarkdown) {
-              words = [
-                `[unsafe](javascript:alert(1)) ![embedded](data:image/svg+xml,<svg onload=alert(1)></svg>) ![approved](${appOrigin}/assets/approved.png) ![unapproved](https://example.com/unapproved.png) ![insecure](http://example.com/insecure.png) [safe](https://openpencil.dev)`
-              ]
-            } else if (wantsCode) words = ['```typescript\nconst greeting = "Hello"\n```']
-            else words = `I'll help you with: "${text}". Here's a mock response.`.split(' ')
-
-            controller.enqueue({ type: 'text-start', id: 'text-1' })
-            for (const word of words) {
-              controller.enqueue({ type: 'text-delta', id: 'text-1', delta: word + ' ' })
-            }
-            controller.enqueue({ type: 'text-end', id: 'text-1' })
-            controller.enqueue({ type: 'finish', finishReason: 'stop' })
-            controller.close()
-          }
-        })
-      },
-      async reconnectToStream() {
-        return null
-      }
-    }))
-  })
-}
-
 function chatTab() {
-  return page.getByRole('tab', { name: 'AI' })
+  return getChatTab(page)
 }
 
 function designTab() {
-  return page.getByRole('tab', { name: 'Design' })
+  return getDesignTab(page)
 }
 
 function chatInput() {
-  return page.getByRole('textbox', { name: 'Describe a change' })
+  return getChatInput(page)
 }
 
 function apiKeyInput() {
-  return page.getByTestId('provider-settings-api-key')
+  return getAPIKeyInput(page)
 }
 
 test('⌘J switches to AI tab', async () => {
@@ -184,7 +56,7 @@ test('clicking AI tab directs provider setup to unified settings', async () => {
 })
 
 test('saving API key in unified settings shows chat interface', async () => {
-  const key = USE_REAL_LLM ? OPENROUTER_KEY : 'sk-or-test-key-12345'
+  const key = USE_REAL_LLM ? (process.env.OPENROUTER_API_KEY ?? '') : 'sk-or-test-key-12345'
   await page.getByTestId('provider-setup-open-settings').click()
   await expect(page.getByTestId('app-settings-dialog')).toBeVisible()
   await expect(page.getByTestId('settings-remember-credentials')).toHaveAttribute(
