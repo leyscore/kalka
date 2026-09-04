@@ -5,8 +5,7 @@ import {
   chatInput as getChatInput,
   chatTab as getChatTab,
   designTab as getDesignTab,
-  openChatTestApp,
-  USE_REAL_LLM
+  openChatTestApp
 } from '#tests/helpers/chat/app'
 
 test.describe.configure({ mode: 'serial' })
@@ -56,7 +55,7 @@ test('clicking AI tab directs provider setup to unified settings', async () => {
 })
 
 test('saving API key in unified settings shows chat interface', async () => {
-  const key = USE_REAL_LLM ? (process.env.OPENROUTER_API_KEY ?? '') : 'sk-or-test-key-12345'
+  const key = 'sk-or-test-key-12345'
   await page.getByTestId('provider-setup-open-settings').click()
   await expect(page.getByTestId('app-settings-dialog')).toBeVisible()
   await expect(page.getByTestId('settings-remember-credentials')).toHaveAttribute(
@@ -214,13 +213,7 @@ test('Enter submits message and clears input', async () => {
 })
 
 test('assistant responds', async () => {
-  if (USE_REAL_LLM) {
-    await expect(page.locator('.chat-markdown, [class*="rounded-tl-md"]').first()).toBeVisible({
-      timeout: 30000
-    })
-  } else {
-    await expect(page.getByText('mock response', { exact: false })).toBeVisible({ timeout: 5000 })
-  }
+  await expect(page.getByText('mock response', { exact: false })).toBeVisible({ timeout: 5000 })
 })
 
 test('completed Markdown responses release streaming parser history', async () => {
@@ -327,16 +320,10 @@ test('tool calls render in assistant message', async () => {
   await chatInput().fill('Create a frame')
   await chatInput().press('Enter')
 
-  if (USE_REAL_LLM) {
-    await expect(page.locator('.chat-markdown, [class*="rounded-tl-md"]').first()).toBeVisible({
-      timeout: 30000
-    })
-  } else {
-    const assistant = page.getByTestId('chat-message-assistant').last()
-    await expect(assistant.getByText('Create Shape')).toBeVisible({ timeout: 5000 })
-    await expect(assistant.getByText('Done')).toBeVisible()
-    await expect(assistant.getByText('Created a frame', { exact: false })).toBeVisible()
-  }
+  const assistant = page.getByTestId('chat-message-assistant').last()
+  await expect(assistant.getByText('Create Shape')).toBeVisible({ timeout: 5000 })
+  await expect(assistant.getByText('Done')).toBeVisible()
+  await expect(assistant.getByText('Created a frame', { exact: false })).toBeVisible()
 })
 
 test('switching tabs preserves chat', async () => {

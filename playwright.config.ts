@@ -28,6 +28,13 @@ export default defineConfig({
     {
       name: 'openpencil',
       testDir: './tests/e2e',
+      grepInvert: /@real-llm/,
+      fullyParallel: false
+    },
+    {
+      name: 'openpencil-real-llm',
+      testDir: './tests/e2e',
+      grep: /@real-llm/,
       fullyParallel: false
     },
     {
