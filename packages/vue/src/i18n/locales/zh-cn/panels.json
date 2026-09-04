@@ -267,7 +267,7 @@
   "variantPropertyValue": "初始值",
   "addVariantProperty": "添加变体属性",
   "addVariant": "添加变体",
-  "duplicateVariant": "重复变体",
+  "duplicateVariant": "复制变体",
   "removeVariant": "删除变体",
   "removeVariantProperty": "删除变体属性",
   "moveVariantPropertyUp": "向上移动变体属性",

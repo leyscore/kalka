@@ -238,7 +238,7 @@
   "reviewLibraryUpdate": "Bibliotheksaktualisierung prüfen",
   "reviewLibraryUpdateDescription": "Vergleichen Sie aktuelle und aktualisierte Instanzen, bevor Sie Änderungen akzeptieren.",
   "noLibraryAssetChanges": "Keine Änderungen an Assets",
-  "libraryUpdateImpact": "{affected} betroffene Instanzen · {fallback} Varianten-Ersatzwerte",
+  "libraryUpdateImpact": "{affected} betroffene Instanzen · {fallback} Fallback-Varianten",
   "publishLibrary": "Bibliothek veröffentlichen",
   "publishingLibrary": "Veröffentlichung…",
   "publishLibraryHelp": "Veröffentlichen Sie die Komponenten dieser Datei als unveränderliche Revision.",
