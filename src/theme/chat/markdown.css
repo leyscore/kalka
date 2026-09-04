@@ -39,6 +39,10 @@
     }
   }
 
+  [data-stream-markdown='code']:not(.shiki) {
+    @apply px-1 py-px text-[11px] leading-4;
+  }
+
   [data-stream-markdown='code-block'] [data-stream-markdown='code'] {
     @apply p-1.5 text-[11px] leading-4;
   }
