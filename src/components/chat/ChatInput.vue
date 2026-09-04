@@ -1,28 +1,19 @@
 <script setup lang="ts">
-import { useFileDialog, useTextareaAutosize } from '@vueuse/core'
+import { useTextareaAutosize } from '@vueuse/core'
 import { TooltipProvider } from 'reka-ui'
-import { computed, onBeforeUnmount, ref } from 'vue'
+import { computed, ref } from 'vue'
 
 import { useI18n, useSelectionState } from '@open-pencil/vue'
 
 import ChatNodePreview from '@/components/chat/ChatNodePreview.vue'
 import ChatProfileSelect from '@/components/chat/ChatProfileSelect.vue'
+import { useAttachmentDrafts } from '@/components/chat/input/useAttachments'
 import IconButton from '@/components/ui/IconButton.vue'
 import InputGroup from '@/components/ui/InputGroup.vue'
+import { MAX_IMAGE_ATTACHMENTS } from '@/app/ai/attachment/image/types'
+import type { ChatSubmission } from '@/app/ai/chat/submission/types'
 import { useAIChat } from '@/app/ai/chat/use'
-import {
-  appendReferencedNodeContext,
-  MAX_REFERENCED_NODES,
-  resolveReferencedNodes,
-  type ReferencedNode
-} from '@/app/ai/chat/context'
 import { designModelProfile } from '@/app/ai/models'
-import {
-  createImagePreviewURL,
-  revokeImagePreviewURL,
-  validateImageAttachmentFile
-} from '@/app/ai/attachment/image/prepare'
-import { MAX_IMAGE_ATTACHMENTS, type ImageAttachmentDraft } from '@/app/ai/attachment/image/types'
 import { openSettingsDialog } from '@/app/settings/dialog'
 
 import { ACP_AGENTS } from '@open-pencil/core/constants'
@@ -37,12 +28,7 @@ const { status, disabled = false } = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  submit: [
-    text: string,
-    images: ImageAttachmentDraft[],
-    displayText: string,
-    nodes: ReferencedNode[]
-  ]
+  submit: [submission: ChatSubmission]
   stop: []
   error: [message: string]
 }>()
@@ -50,62 +36,23 @@ const emit = defineEmits<{
 const textarea = ref<HTMLTextAreaElement>()
 const input = ref('')
 const { triggerResize } = useTextareaAutosize({ element: textarea, input, maxHeight: 160 })
-const images = ref<ImageAttachmentDraft[]>([])
-const referencedNodeIds = ref<string[]>([])
-const referencedNodes = computed(() =>
-  resolveReferencedNodes(editor.graph, referencedNodeIds.value)
-)
-const selectedReferencedNodeIds = computed(() =>
-  [...selectedIds.value].filter((id) => referencedNodeIds.value.includes(id))
-)
-const canAddSelection = computed(
-  () =>
-    selectedIds.value.size > 0 &&
-    (selectedReferencedNodeIds.value.length > 0 ||
-      referencedNodes.value.length < MAX_REFERENCED_NODES)
-)
-const selectionContextActive = computed(
-  () =>
-    selectedIds.value.size > 0 && selectedReferencedNodeIds.value.length === selectedIds.value.size
-)
-const {
-  open: openImageDialog,
-  reset: resetImageDialog,
-  onChange: onImageChange
-} = useFileDialog({
-  accept: 'image/png,image/jpeg,image/webp',
-  multiple: true,
-  reset: true
+const attachments = useAttachmentDrafts({
+  editor,
+  selectedIds,
+  reportError: (message) => emit('error', message)
 })
-
-function addImageFiles(files: File[]) {
-  const available = MAX_IMAGE_ATTACHMENTS - images.value.length
-  if (available <= 0) {
-    emit('error', `You can attach up to ${MAX_IMAGE_ATTACHMENTS} images.`)
-    resetImageDialog()
-    return
-  }
-
-  for (const file of files.slice(0, available)) {
-    const validationError = validateImageAttachmentFile(file)
-    if (validationError) {
-      emit('error', validationError)
-      continue
-    }
-    images.value.push({ file, previewURL: createImagePreviewURL(file) })
-  }
-  if (files.length > available) {
-    emit('error', `You can attach up to ${MAX_IMAGE_ATTACHMENTS} images.`)
-  }
-  resetImageDialog()
-}
-
-function removeImage(index: number) {
-  const image = images.value[index]
-  if (image) revokeImagePreviewURL(image.previewURL)
-  images.value.splice(index, 1)
-  resetImageDialog()
-}
+const {
+  images,
+  nodes: referencedNodes,
+  canToggleSelection: canAddSelection,
+  selectionActive: selectionContextActive,
+  openImageDialog,
+  removeImage,
+  removeNode: removeReferencedNode,
+  toggleSelection: toggleCurrentSelection,
+  handlePaste,
+  takeSubmission
+} = attachments
 
 const isStreaming = computed(() => disabled || status === 'streaming' || status === 'submitted')
 const isAgentProvider = computed(
@@ -135,26 +82,6 @@ const selectedProfileName = computed(
   () => designModelProfile.value?.name ?? selectedModelName.value
 )
 
-function clearImages() {
-  for (const image of images.value) revokeImagePreviewURL(image.previewURL)
-  images.value = []
-  resetImageDialog()
-}
-
-onImageChange((selectedFiles) => {
-  if (selectedFiles) addImageFiles([...selectedFiles])
-})
-
-function handlePaste(event: ClipboardEvent) {
-  const files = event.clipboardData?.files
-  const images = files ? [...files].filter((file) => file.type.startsWith('image/')) : []
-  if (images.length === 0) return
-  event.preventDefault()
-  addImageFiles(images)
-}
-
-onBeforeUnmount(clearImages)
-
 function handleInputKeydown(event: KeyboardEvent) {
   if (event.code !== 'Enter' || event.shiftKey || event.isComposing) return
   event.preventDefault()
@@ -162,38 +89,11 @@ function handleInputKeydown(event: KeyboardEvent) {
   if (target instanceof HTMLElement) target.closest('form')?.requestSubmit()
 }
 
-function removeReferencedNode(id: string): void {
-  referencedNodeIds.value = referencedNodeIds.value.filter((candidate) => candidate !== id)
-}
-
-function toggleCurrentSelection(): void {
-  if (selectedReferencedNodeIds.value.length > 0) {
-    const selected = new Set(selectedIds.value)
-    referencedNodeIds.value = referencedNodeIds.value.filter((id) => !selected.has(id))
-    return
-  }
-  referencedNodeIds.value = resolveReferencedNodes(editor.graph, [
-    ...referencedNodeIds.value,
-    ...selectedIds.value
-  ]).map((node) => node.id)
-}
-
 function handleSubmit(e: Event) {
   e.preventDefault()
   const text = input.value.trim()
   if (!text) return
-  const submittedImages = images.value
-  const submittedNodes = referencedNodes.value
-  images.value = []
-  referencedNodeIds.value = []
-  resetImageDialog()
-  emit(
-    'submit',
-    appendReferencedNodeContext(text, submittedNodes),
-    submittedImages,
-    text,
-    submittedNodes
-  )
+  emit('submit', takeSubmission(text))
   input.value = ''
   triggerResize()
 }

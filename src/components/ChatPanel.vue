@@ -1,28 +1,13 @@
 <script setup lang="ts">
 import { ScrollAreaRoot, ScrollAreaScrollbar, ScrollAreaThumb, ScrollAreaViewport } from 'reka-ui'
 import { refAutoReset, useClipboard } from '@vueuse/core'
-import { computed, markRaw, nextTick, ref, watch } from 'vue'
+import { computed, markRaw, shallowRef, nextTick, ref, watch } from 'vue'
 
 import { getACPDebugText, clearACPDebugLog, hasACPDebugEntries } from '@/app/ai/acp/transport'
 import { copyChatLog } from '@/app/ai/debug'
-import { clearVisibleMessageText, setVisibleMessageText } from '@/app/ai/chat/presentation'
-import {
-  analyzeAttachedImages,
-  designMessageWithImageFindings,
-  VisionModelUnavailableError
-} from '@/app/ai/attachment/image/analyze'
-import {
-  imageDraftPresentations,
-  preparedImagePresentations
-} from '@/app/ai/attachment/image/presentation'
-import { prepareImageAttachment, revokeImagePreviewURL } from '@/app/ai/attachment/image/prepare'
-import {
-  clearMessageAttachments,
-  setMessageAttachments
-} from '@/app/ai/attachment/presentation/store'
-import { snapshotNode } from '@/app/ai/attachment/node/snapshot'
-import type { ReferencedNode } from '@/app/ai/chat/context'
-import type { ImageAttachmentDraft } from '@/app/ai/attachment/image/types'
+import { clearVisibleMessageText } from '@/app/ai/chat/presentation'
+import { useChatSubmission } from '@/app/ai/chat/submission/use'
+import { clearMessageAttachments } from '@/app/ai/attachment/presentation/store'
 import { clearToolLogEntries, didHitStepLimit } from '@/app/ai/tools'
 import { activeTab } from '@/app/tabs'
 import { getActiveEditorStore } from '@/app/editor/active-store'
@@ -50,9 +35,19 @@ const { copy } = useClipboard()
 const { ai } = useI18n()
 const notifications = useNotificationMessages()
 
-const chat = ref<Chat<UIMessage> | null>(null)
-const isPreparingImages = ref(false)
-let attachmentOperationVersion = 0
+const chat = shallowRef<Chat<UIMessage> | null>(null)
+const submission = useChatSubmission({
+  chat,
+  ensureChat,
+  clearFailure: clearChatFailure,
+  getEditor: getActiveEditorStore,
+  messages: computed(() => ({
+    requestFailed: ai.value.chatRequestFailed,
+    visionUnavailable: ai.value.visionModelUnavailable
+  })),
+  reportError: toast.error,
+  openModelSettings: () => openSettingsDialog('ai')
+})
 
 void ensureChat()
   .then((c) => {
@@ -130,8 +125,7 @@ watch(
 watch(
   () => activeTab.value?.id,
   async () => {
-    attachmentOperationVersion += 1
-    isPreparingImages.value = false
+    submission.cancel()
     clearMessageAttachments()
     clearVisibleMessageText()
     const nextChat = await ensureChat()
@@ -139,123 +133,8 @@ watch(
   }
 )
 
-type ChatInstance = Pick<Chat<UIMessage>, 'messages' | 'sendMessage'>
-
-async function sendTextMessage(
-  currentChat: ChatInstance,
-  text: string,
-  displayText: string
-): Promise<void> {
-  const previousMessageIds = new Set(currentChat.messages.map((message) => message.id))
-  await currentChat.sendMessage({ text })
-  const message = currentChat.messages.find(
-    (candidate) => candidate.role === 'user' && !previousMessageIds.has(candidate.id)
-  )
-  if (message) setVisibleMessageText(message.id, displayText)
-}
-
-function reportSubmitError(error: unknown): void {
-  console.error('Chat error:', error)
-  if (error instanceof VisionModelUnavailableError) {
-    toast.error(ai.value.visionModelUnavailable)
-    openSettingsDialog('ai')
-    return
-  }
-  toast.error(ai.value.chatRequestFailed)
-}
-
-async function sendAttachmentMessage(
-  currentChat: ChatInstance,
-  messageId: string,
-  text: string,
-  displayText: string,
-  images: ImageAttachmentDraft[],
-  nodes: ReferencedNode[],
-  operationVersion: number
-): Promise<void> {
-  const editor = getActiveEditorStore()
-  const nodeAttachments = nodes
-    .map((node) => snapshotNode(editor, messageId, node))
-    .filter((attachment) => attachment !== null)
-  currentChat.messages = [
-    ...currentChat.messages,
-    { id: messageId, role: 'user', parts: [{ type: 'text', text }] }
-  ]
-  setVisibleMessageText(messageId, displayText)
-  const draftImageAttachments = imageDraftPresentations(messageId, images)
-  setMessageAttachments(messageId, [...nodeAttachments, ...draftImageAttachments])
-  for (const image of images) revokeImagePreviewURL(image.previewURL)
-
-  if (images.length === 0) {
-    await currentChat.sendMessage({ messageId, text })
-    return
-  }
-
-  const preparedImages = await Promise.all(
-    images.map((image) => prepareImageAttachment(image.file))
-  )
-  const findings = await analyzeAttachedImages(editor, text, preparedImages)
-  if (operationVersion !== attachmentOperationVersion || chat.value !== currentChat) return
-
-  const preparedImageAttachments = preparedImagePresentations(messageId, images, preparedImages)
-  setMessageAttachments(messageId, [...nodeAttachments, ...preparedImageAttachments])
-  await currentChat.sendMessage({
-    messageId,
-    text: designMessageWithImageFindings(
-      text,
-      images.map((image) => image.file.name),
-      findings
-    )
-  })
-}
-
-async function handleSubmit(
-  text: string,
-  images: ImageAttachmentDraft[] = [],
-  displayText = text,
-  nodes: ReferencedNode[] = []
-) {
-  if (status.value === 'streaming' || status.value === 'submitted' || isPreparingImages.value) {
-    for (const image of images) revokeImagePreviewURL(image.previewURL)
-    if (images.length > 0) toast.error(ai.value.chatRequestFailed)
-    return
-  }
-
-  const operationVersion = ++attachmentOperationVersion
-  if (images.length > 0) isPreparingImages.value = true
-  clearChatFailure()
-  try {
-    const currentChat = chat.value ?? (await ensureChat())
-    if (currentChat) chat.value = markRaw(currentChat)
-    if (!currentChat || operationVersion !== attachmentOperationVersion) {
-      for (const image of images) revokeImagePreviewURL(image.previewURL)
-      if (images.length > 0) toast.error(ai.value.chatRequestFailed)
-      return
-    }
-
-    if (images.length === 0 && nodes.length === 0) {
-      await sendTextMessage(currentChat, text, displayText)
-      return
-    }
-
-    await sendAttachmentMessage(
-      currentChat,
-      crypto.randomUUID(),
-      text,
-      displayText,
-      images,
-      nodes,
-      operationVersion
-    )
-  } catch (error) {
-    reportSubmitError(error)
-  } finally {
-    if (operationVersion === attachmentOperationVersion) isPreparingImages.value = false
-  }
-}
-
 function handleStop() {
-  chat.value?.stop()
+  submission.stop()
 }
 
 async function handleCopyDebug() {
@@ -271,8 +150,7 @@ async function handleCopyACPLog() {
 }
 
 function handleClearChat() {
-  attachmentOperationVersion += 1
-  isPreparingImages.value = false
+  submission.cancel()
   clearChatFailure()
   clearMessageAttachments()
   clearVisibleMessageText()
@@ -339,7 +217,14 @@ function handleClearChat() {
             <div v-if="showContinue" class="flex justify-center py-2">
               <button
                 class="flex items-center gap-1.5 rounded-full bg-accent/10 px-4 py-1.5 text-xs font-medium text-accent transition-colors hover:bg-accent/20"
-                @click="handleSubmit('Continue where you left off')"
+                @click="
+                  submission.submit({
+                    modelText: 'Continue where you left off',
+                    displayText: 'Continue where you left off',
+                    images: [],
+                    nodes: []
+                  })
+                "
               >
                 <icon-lucide-play class="size-3" />
                 Continue
@@ -383,8 +268,8 @@ function handleClearChat() {
 
       <ChatInput
         :status="status"
-        :disabled="isPreparingImages"
-        @submit="handleSubmit"
+        :disabled="submission.busy.value"
+        @submit="submission.submit"
         @stop="handleStop"
         @error="toast.error"
       />
