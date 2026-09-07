@@ -139,6 +139,24 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
       global: true
     },
     {
+      id: 'zoom-in',
+      keys: [appMenuTinykeysShortcut('zoom-in') ?? '$mod+Equal', '$mod+Shift+Equal'],
+      run: ({ store }) => {
+        const center = store.viewportScreenCenter()
+        store.applyZoom(-100, center.x, center.y)
+      },
+      global: true
+    },
+    {
+      id: 'zoom-out',
+      keys: appMenuTinykeysShortcut('zoom-out') ?? '$mod+Minus',
+      run: ({ store }) => {
+        const center = store.viewportScreenCenter()
+        store.applyZoom(100, center.x, center.y)
+      },
+      global: true
+    },
+    {
       id: 'close-tab',
       keys: appMenuTinykeysShortcut('close') ?? '$mod+KeyW',
       run: ({ closeActiveTab }) => closeActiveTab()

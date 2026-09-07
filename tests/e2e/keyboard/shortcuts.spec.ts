@@ -321,6 +321,48 @@ test.describe('opacity shortcuts', () => {
 })
 
 test.describe('zoom shortcuts', () => {
+  test('⌘= and ⌘- zoom the canvas and prevent browser defaults', async () => {
+    const result = await editor.page.evaluate(() => {
+      const store = window.openPencil?.getStore?.()
+      if (!store) throw new Error('OpenPencil store not initialized')
+      store.zoomTo100()
+
+      const modifier = /Mac|iPod|iPhone|iPad/.test(navigator.platform)
+        ? { metaKey: true }
+        : { ctrlKey: true }
+      const zoomInEvent = new KeyboardEvent('keydown', {
+        key: '=',
+        code: 'Equal',
+        ...modifier,
+        bubbles: true,
+        cancelable: true
+      })
+      window.dispatchEvent(zoomInEvent)
+      const zoomedIn = store.state.zoom
+
+      const zoomOutEvent = new KeyboardEvent('keydown', {
+        key: '-',
+        code: 'Minus',
+        ...modifier,
+        bubbles: true,
+        cancelable: true
+      })
+      window.dispatchEvent(zoomOutEvent)
+
+      return {
+        zoomInPrevented: zoomInEvent.defaultPrevented,
+        zoomOutPrevented: zoomOutEvent.defaultPrevented,
+        zoomedIn,
+        zoomedOut: store.state.zoom
+      }
+    })
+
+    expect(result.zoomInPrevented).toBe(true)
+    expect(result.zoomOutPrevented).toBe(true)
+    expect(result.zoomedIn).toBeGreaterThan(1)
+    expect(result.zoomedOut).toBeLessThan(result.zoomedIn)
+  })
+
   test('⌘0 zooms to 100%', async () => {
     await editor.canvas.clearCanvas()
     await editor.canvas.drawRect(100, 100, 60, 60)
