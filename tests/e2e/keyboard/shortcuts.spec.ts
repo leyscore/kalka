@@ -321,46 +321,42 @@ test.describe('opacity shortcuts', () => {
 })
 
 test.describe('zoom shortcuts', () => {
-  test('⌘= and ⌘- zoom the canvas and prevent browser defaults', async () => {
-    const result = await editor.page.evaluate(() => {
+  test('⌘=, ⌘+ and ⌘- zoom the canvas and prevent browser defaults', async () => {
+    await editor.page.evaluate(() => {
       const store = window.openPencil?.getStore?.()
       if (!store) throw new Error('OpenPencil store not initialized')
       store.zoomTo100()
-
-      const modifier = /Mac|iPod|iPhone|iPad/.test(navigator.platform)
-        ? { metaKey: true }
-        : { ctrlKey: true }
-      const zoomInEvent = new KeyboardEvent('keydown', {
-        key: '=',
-        code: 'Equal',
-        ...modifier,
-        bubbles: true,
-        cancelable: true
-      })
-      window.dispatchEvent(zoomInEvent)
-      const zoomedIn = store.state.zoom
-
-      const zoomOutEvent = new KeyboardEvent('keydown', {
-        key: '-',
-        code: 'Minus',
-        ...modifier,
-        bubbles: true,
-        cancelable: true
-      })
-      window.dispatchEvent(zoomOutEvent)
-
-      return {
-        zoomInPrevented: zoomInEvent.defaultPrevented,
-        zoomOutPrevented: zoomOutEvent.defaultPrevented,
-        zoomedIn,
-        zoomedOut: store.state.zoom
-      }
     })
 
-    expect(result.zoomInPrevented).toBe(true)
-    expect(result.zoomOutPrevented).toBe(true)
-    expect(result.zoomedIn).toBeGreaterThan(1)
-    expect(result.zoomedOut).toBeLessThan(result.zoomedIn)
+    const pressShortcut = async (shortcut: string, code: 'Equal' | 'Minus') => {
+      const observedEvent = editor.page.evaluate(
+        (expectedCode) =>
+          new Promise<{ defaultPrevented: boolean; shiftKey: boolean }>((resolve) => {
+            const handleKeydown = (event: KeyboardEvent) => {
+              if (event.code !== expectedCode) return
+              window.removeEventListener('keydown', handleKeydown)
+              resolve({ defaultPrevented: event.defaultPrevented, shiftKey: event.shiftKey })
+            }
+            window.addEventListener('keydown', handleKeydown)
+          }),
+        code
+      )
+
+      await editor.page.keyboard.press(shortcut)
+      await editor.canvas.waitForRender()
+      return { event: await observedEvent, zoom: await getZoom() }
+    }
+
+    const zoomedIn = await pressShortcut('ControlOrMeta+Equal', 'Equal')
+    const zoomedInWithShift = await pressShortcut('ControlOrMeta+Shift+Equal', 'Equal')
+    const zoomedOut = await pressShortcut('ControlOrMeta+Minus', 'Minus')
+
+    expect(zoomedIn.event).toEqual({ defaultPrevented: true, shiftKey: false })
+    expect(zoomedInWithShift.event).toEqual({ defaultPrevented: true, shiftKey: true })
+    expect(zoomedOut.event).toEqual({ defaultPrevented: true, shiftKey: false })
+    expect(zoomedIn.zoom).toBeGreaterThan(1)
+    expect(zoomedInWithShift.zoom).toBeGreaterThan(zoomedIn.zoom)
+    expect(zoomedOut.zoom).toBeLessThan(zoomedInWithShift.zoom)
   })
 
   test('⌘0 zooms to 100%', async () => {
