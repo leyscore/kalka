@@ -3,26 +3,29 @@ import { useTimeoutFn } from '@vueuse/core'
 import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from 'reka-ui'
 import { computed, ref, watch } from 'vue'
 
+import type { ReasoningDisplay } from '@/app/settings/preferences/store'
 import ChatMarkdown from '@/components/chat/ChatMarkdown.vue'
 
 const {
+  display = 'collapsed',
   text,
   streaming = false,
   thinkingLabel,
   reasoningLabel
 } = defineProps<{
+  display?: ReasoningDisplay
   text: string
   streaming?: boolean
   thinkingLabel: string
   reasoningLabel: string
 }>()
 
-const open = ref(streaming)
+const open = ref(display === 'expanded' || (display === 'while-thinking' && streaming))
 const userChangedOpen = ref(false)
 const markdownMode = computed(() => (streaming ? 'streaming' : 'static'))
 const { start: scheduleClose, stop: cancelClose } = useTimeoutFn(
   () => {
-    if (!streaming && !userChangedOpen.value) open.value = false
+    if (display === 'while-thinking' && !streaming && !userChangedOpen.value) open.value = false
   },
   1000,
   { immediate: false }
@@ -32,12 +35,21 @@ watch(
   () => streaming,
   (isStreaming, wasStreaming) => {
     cancelClose()
+    if (userChangedOpen.value) return
     if (isStreaming) {
-      userChangedOpen.value = false
-      open.value = true
-    } else if (wasStreaming) {
+      open.value = display !== 'collapsed'
+    } else if (wasStreaming && display === 'while-thinking') {
       scheduleClose()
     }
+  }
+)
+
+watch(
+  () => display,
+  () => {
+    cancelClose()
+    if (!userChangedOpen.value)
+      open.value = display === 'expanded' || (display === 'while-thinking' && streaming)
   }
 )
 
@@ -51,6 +63,7 @@ function updateOpen(value: boolean): void {
 <template>
   <CollapsibleRoot
     :open="open"
+    :unmount-on-hide="false"
     class="rounded-lg border border-border bg-canvas"
     @update:open="updateOpen"
   >
@@ -60,18 +73,24 @@ function updateOpen(value: boolean): void {
     >
       <icon-lucide-brain class="size-3.5 shrink-0 text-accent" aria-hidden="true" />
       <span class="flex-1">{{ streaming ? thinkingLabel : reasoningLabel }}</span>
-      <icon-lucide-loader-circle v-if="streaming" class="size-3 animate-spin" aria-hidden="true" />
+      <icon-lucide-loader-circle
+        v-if="streaming"
+        class="size-3 animate-spin motion-reduce:animate-none"
+        aria-hidden="true"
+      />
       <icon-lucide-chevron-down
         v-else
-        class="size-3 transition-transform [[data-state=open]>&]:rotate-180"
+        class="size-3 transition-transform motion-reduce:transition-none [[data-state=open]>&]:rotate-180"
         aria-hidden="true"
       />
     </CollapsibleTrigger>
     <CollapsibleContent
       data-slot="chat-reasoning-content"
-      class="data-[state=closed]:collapsible-up data-[state=open]:collapsible-down overflow-hidden border-t border-border px-2 py-1.5 text-[11px] leading-relaxed text-muted"
+      class="motion-safe:data-[state=closed]:animate-collapsible-up motion-safe:data-[state=open]:animate-collapsible-down animation-duration-150 overflow-hidden"
     >
-      <ChatMarkdown :content="text" :mode="markdownMode" surface="reasoning" />
+      <div class="border-t border-border px-2 py-1.5 text-[11px] leading-relaxed text-muted">
+        <ChatMarkdown :content="text" :mode="markdownMode" surface="reasoning" />
+      </div>
     </CollapsibleContent>
   </CollapsibleRoot>
 </template>

@@ -27,6 +27,6 @@ test('Shift+Enter inserts a line break without submitting', async ({ configuredC
 test('Enter submits and clears input', async ({ configuredChat: chat }) => {
   await chat.submit('Hello there')
 
-  await expect(chat.page.getByText('Hello there', { exact: true })).toBeVisible()
+  await expect(chat.userMessage()).toHaveText('Hello there')
   await expect(chat.input).toHaveValue('')
 })

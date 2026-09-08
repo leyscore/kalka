@@ -11,6 +11,7 @@ import DiagnosticsSettingsPanel from '@/components/settings/diagnostics/Diagnost
 import GeneralSettingsPanel from '@/components/settings/general/GeneralSettingsPanel.vue'
 import MCPConnectionsSection from '@/components/settings/mcp/MCPConnectionsSection.vue'
 import MCPSettingsPanel from '@/components/settings/mcp/MCPSettingsPanel.vue'
+import ChatSettingsSection from '@/components/settings/chat/ChatSettingsSection.vue'
 import ModelsPanel from '@/components/settings/models/ModelsPanel.vue'
 import StockPhotoKeysSection from '@/components/settings/provider/StockPhotoKeysSection.vue'
 import UsageSettingsPanel from '@/components/settings/usage/UsageSettingsPanel.vue'
@@ -142,6 +143,7 @@ const navigationClass =
           data-test-id="settings-ai-panel"
         >
           <ModelsPanel />
+          <ChatSettingsSection />
         </section>
 
         <UsageSettingsPanel v-else-if="settingsDialogSection === 'usage'" />

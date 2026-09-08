@@ -4,6 +4,8 @@
 
 ### Added
 
+- Save AI conversations and attachment previews locally, switch between chats, rename or delete them, and browse saved transcripts across documents. Choose whether reasoning stays collapsed, expands while thinking, or stays expanded, with animated disclosure controls that respect reduced motion.
+
 - Add a searchable command palette for editor and application actions.
 - Search current AI provider catalogs from model pickers, with curated recommendations, recent compatible models, and offline fallbacks.
 - Render triangle and line arrow stroke caps on lines and open vector paths, and choose them from the stroke cap picker.
