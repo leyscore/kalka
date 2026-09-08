@@ -40,6 +40,13 @@ function commandShortcuts(...commands: EditorCommandId[]): ShortcutDefinition[] 
   })
 }
 
+function zoomAtViewportCenter(delta: number): ShortcutAction {
+  return ({ store }) => {
+    const center = store.viewportCanvasCenter()
+    store.applyZoom(delta, center.x, center.y)
+  }
+}
+
 function opacityBindings(): ShortcutDefinition[] {
   return ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => ({
     id: `selection-opacity-${digit}`,
@@ -141,20 +148,24 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
     {
       id: 'zoom-in',
       keys: [appMenuTinykeysShortcut('zoom-in') ?? '$mod+Equal', '$mod+Shift+Equal'],
-      run: ({ store }) => {
-        const center = store.viewportScreenCenter()
-        store.applyZoom(-100, center.x, center.y)
-      },
+      run: zoomAtViewportCenter(-100),
       global: true
     },
     {
       id: 'zoom-out',
       keys: appMenuTinykeysShortcut('zoom-out') ?? '$mod+Minus',
-      run: ({ store }) => {
-        const center = store.viewportScreenCenter()
-        store.applyZoom(100, center.x, center.y)
-      },
+      run: zoomAtViewportCenter(100),
       global: true
+    },
+    {
+      id: 'zoom-in-unmodified',
+      keys: 'Shift+Equal',
+      run: zoomAtViewportCenter(-100)
+    },
+    {
+      id: 'zoom-out-unmodified',
+      keys: 'Minus',
+      run: zoomAtViewportCenter(100)
     },
     {
       id: 'close-tab',
