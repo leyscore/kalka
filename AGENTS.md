@@ -220,6 +220,14 @@ Keep responsibilities distinct: engine tests cover state contracts, Playwright b
 - Binding-aware fields detach/mutate only on the first value change; opening/focusing is non-destructive.
 - Preserve nearby interaction gotchas when refactoring: splitter handles, NumberField pointer ownership, section dragging, panel containment, and number-spinner styling.
 
+### Animations
+
+- Use Tailwind transitions and `tw-animate-css` for simple visual state changes and enter/exit animations. Use the existing `motion-v` dependency for gesture-driven motion, coordinated layout changes, and springs; do not add another animation library.
+- Use Reka state attributes and measured CSS variables for collapsibles. The utilities are `animate-collapsible-down` and `animate-collapsible-up`; keep padding and borders inside the animated height wrapper so they do not snap during collapse.
+- Respect `prefers-reduced-motion` in both CSS and Motion. Disable or simplify nonessential motion while preserving state changes and interaction feedback.
+- Keep reusable animation styling in the owning theme and share repeated duration/easing values rather than scattering timing constants across components.
+- Verify opening and closing, interrupted transitions, reduced motion, and scroll behavior. Expanding historical chat content must not force the transcript to the bottom.
+
 ## File format
 
 - Kiwi schema/runtime/codec/container helpers live in `@open-pencil/kiwi`; complete archive parsing and SceneGraph conversion live in `@open-pencil/fig`; Core owns format-neutral orchestration, runtime fonts/workers, and thumbnails.

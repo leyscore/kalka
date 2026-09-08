@@ -29,6 +29,7 @@ interface SubmissionMessages {
 interface SubmissionOptions {
   chat: Ref<Chat<UIMessage> | null>
   ensureChat: () => Promise<Chat<UIMessage> | null>
+  flush?: () => Promise<void>
   clearFailure: () => void
   getEditor: () => EditorStore
   messages: Ref<SubmissionMessages>
@@ -123,8 +124,8 @@ export function useChatSubmission(options: SubmissionOptions) {
     isPreparingAttachments.value = submission.images.length > 0
     options.clearFailure()
     try {
-      const currentChat = options.chat.value ?? (await options.ensureChat())
-      if (currentChat) options.chat.value = markRaw(currentChat)
+      const currentChat = await options.ensureChat()
+      if (currentChat && version === operationVersion) options.chat.value = markRaw(currentChat)
       if (!currentChat || version !== operationVersion) {
         for (const image of submission.images) revokeImagePreviewURL(image.previewURL)
         if (submission.images.length > 0) options.reportError(options.messages.value.requestFailed)
@@ -138,6 +139,7 @@ export function useChatSubmission(options: SubmissionOptions) {
     } catch (error) {
       reportSubmissionError(error)
     } finally {
+      await options.flush?.().catch(() => undefined)
       if (version === operationVersion) isPreparingAttachments.value = false
     }
   }

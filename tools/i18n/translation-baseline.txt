@@ -230,3 +230,7 @@ zh-cn:panels.maskTypeAlpha
 zh-cn:storage.providerAmazonS3
 zh-cn:storage.providerBackblaze
 zh-cn:storage.providerR2
+
+de:ai.chatSettings
+es:ai.chatSettings
+it:ai.chatSettings
