@@ -1,9 +1,5 @@
 export function installTauriMockWindow() {
-  const windowLike = globalThis as typeof globalThis & {
-    __TAURI_INTERNALS__?: unknown
-    __TAURI_EVENT_PLUGIN_INTERNALS__?: unknown
-  }
-  Object.assign(globalThis, { window: windowLike })
+  Object.assign(globalThis, { window: globalThis })
 }
 
 export async function mockTauriIPC(
@@ -26,5 +22,5 @@ export async function clearTauriMocks() {
   clearMocks()
   Reflect.deleteProperty(window, '__TAURI_INTERNALS__')
   Reflect.deleteProperty(window, '__TAURI_EVENT_PLUGIN_INTERNALS__')
-  delete (globalThis as typeof globalThis & { window?: unknown }).window
+  Reflect.deleteProperty(globalThis, 'window')
 }
