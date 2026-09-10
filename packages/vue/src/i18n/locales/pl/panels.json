@@ -346,5 +346,9 @@
   "brightness": "Jasność",
   "lightness": "Jasność",
   "chroma": "Chroma",
-  "alpha": "Alfa"
+  "alpha": "Alfa",
+  "individualPadding": "Indywidualne dopełnienie",
+  "strokeSettings": "Ustawienia obrysu",
+  "strokeDashLength": "Kreska",
+  "strokeDashGap": "Odstęp"
 }

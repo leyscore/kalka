@@ -346,5 +346,9 @@
   "brightness": "Brillo",
   "lightness": "Luminosidad",
   "chroma": "Croma",
-  "alpha": "Alfa"
+  "alpha": "Alfa",
+  "individualPadding": "Relleno individual",
+  "strokeSettings": "Ajustes de trazo",
+  "strokeDashLength": "Guion",
+  "strokeDashGap": "Espacio"
 }
