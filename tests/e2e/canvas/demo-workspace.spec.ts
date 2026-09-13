@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 
 import { CanvasHelper } from '#tests/helpers/canvas'
+import type * as DemoStartup from '#tests/helpers/canvas/demo-startup'
 import { waitForDemo } from '#tests/helpers/demo'
 
 async function openDemo(page: Page) {
@@ -46,6 +47,21 @@ for (const [name, snapshot] of [
     })
   })
 }
+
+test('demo completion preserves a document replaced during its final page switch', async ({ page }) => {
+  await page.goto('/?test&no-chrome&no-rulers')
+  const canvas = new CanvasHelper(page)
+  await canvas.waitForInit()
+  const result = await page.evaluate(async () => {
+    const store = window.openPencil?.getStore?.()
+    if (!store) throw new Error('Editor unavailable')
+    const fixtureURL = '/tests/helpers/canvas/demo-startup.ts'
+    const { replaceGraphDuringDemoSwitch }: typeof DemoStartup = await import(fixtureURL)
+    return replaceGraphDuringDemoSwitch(store)
+  })
+  expect(result.actual).toEqual(result.expected)
+  canvas.assertNoErrors()
+})
 
 test('demo tokens and main-component edits survive undo', async ({ page }) => {
   await openDemo(page)

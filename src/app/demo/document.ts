@@ -46,6 +46,7 @@ export async function createDemoShapes(store: EditorStore) {
     graph.getPages().map((page) => page.id)
   )
   await store.switchPage(announcements.id)
+  if (store.graph !== graph) return
   store.clearSelection()
   store.zoomToFit()
   store.requestRender()
