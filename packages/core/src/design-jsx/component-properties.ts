@@ -34,6 +34,11 @@ export function componentMetadata(
     const definitions = v.parse(v.array(definitionSchema), props.properties)
     if (new Set(definitions.map((definition) => definition.id)).size !== definitions.length)
       throw new Error('Duplicate component property IDs')
+    const variantNames = definitions
+      .filter((item) => item.type === 'VARIANT')
+      .map((item) => item.name)
+    if (new Set(variantNames).size !== variantNames.length)
+      throw new Error('Duplicate variant property names')
     result.componentPropertyDefinitions = definitions
   }
   if (props.propertyRefs !== undefined) {

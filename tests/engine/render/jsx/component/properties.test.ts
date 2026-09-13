@@ -174,4 +174,28 @@ test('validates metadata rather than accepting silent malformed property definit
   await expect(renderTree(graph, Component({ properties: [MESSAGE, MESSAGE] }))).rejects.toThrow(
     'Duplicate'
   )
+  for (const element of [Component, ComponentSet]) {
+    await expect(
+      renderTree(
+        graph,
+        element({
+          properties: [
+            { id: 'kind-a', name: 'Kind', type: 'VARIANT', defaultValue: 'A' },
+            { id: 'kind-b', name: 'Kind', type: 'VARIANT', defaultValue: 'B' }
+          ]
+        })
+      )
+    ).rejects.toThrow('Duplicate variant property names')
+  }
+})
+
+test('preserves duplicate display names for non-variant properties with distinct IDs', async () => {
+  const graph = makeSceneGraph()
+  const result = await renderTree(
+    graph,
+    Component({ properties: [MESSAGE, { ...MESSAGE, id: 'other-message' }] })
+  )
+  expect(
+    getNodeOrThrow(graph, result.id).componentPropertyDefinitions.map((item) => item.id)
+  ).toEqual(['message', 'other-message'])
 })
