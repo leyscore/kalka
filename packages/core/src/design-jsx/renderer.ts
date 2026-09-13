@@ -16,7 +16,11 @@ import type { IconData } from '#core/icons/types'
 import { computeAllLayouts } from '#core/layout'
 import { randomHex } from '#core/random'
 
-import { assignComponentProperties, componentMetadata } from './component-properties'
+import {
+  assignComponentProperties,
+  componentMetadata,
+  componentPropertyScope
+} from './component-properties'
 import { applySizeOverrides, propsToOverrides } from './props-overrides'
 import { prepareScalarBindings } from './scalar-bindings'
 import { isTreeNode } from './tree'
@@ -428,7 +432,7 @@ async function renderInstanceNode(
   }
   const overrides = {
     ...propsToOverrides(props, false, parentLayout),
-    ...componentMetadata(props, 'INSTANCE')
+    ...componentMetadata(props, 'INSTANCE', componentPropertyScope(graph, parentId))
   }
   const instance =
     graph.createInstance(component.id, parentId, overrides) ?? graph.createNode('FRAME', parentId)
@@ -490,7 +494,7 @@ async function renderArtworkNode(
   tree: TreeNode,
   parentId: string
 ): Promise<SceneNode> {
-  const metadata = componentMetadata(tree.props, 'VECTOR')
+  const metadata = componentMetadata(tree.props, 'VECTOR', componentPropertyScope(graph, parentId))
   const node =
     tree.type === 'icon'
       ? await renderIconNode(graph, tree, parentId)
@@ -513,7 +517,7 @@ async function renderNode(graph: SceneGraph, tree: TreeNode, parentId: string): 
   const { props, bindings } = preparePropsForRender(graph, tree.props, isText, parentId)
   const overrides = {
     ...propsToOverrides(props, isText, parentLayout),
-    ...componentMetadata(props, nodeType)
+    ...componentMetadata(props, nodeType, componentPropertyScope(graph, parentId))
   }
 
   if (isText) {

@@ -24,7 +24,8 @@ const referenceSchema = v.object({
 /** Accept the native graph contracts, without introducing a second property model. */
 export function componentMetadata(
   props: Record<string, unknown>,
-  type: SceneNode['type']
+  type: SceneNode['type'],
+  definitions?: readonly ComponentPropertyDefinition[]
 ): Partial<SceneNode> {
   const result: Partial<SceneNode> = {}
   if (props.properties !== undefined && type !== 'INSTANCE') {
@@ -42,10 +43,38 @@ export function componentMetadata(
         throw new Error('TEXT properties require a text node')
       if (reference.field === 'INSTANCE_SWAP' && type !== 'INSTANCE')
         throw new Error('INSTANCE_SWAP properties require an instance')
+      if (definitions) {
+        const definition = definitions.find((item) => item.id === reference.propertyId)
+        if (!definition)
+          throw new Error(`Unknown component property reference: ${reference.propertyId}`)
+        const expectedField = definition.type === 'BOOLEAN' ? 'VISIBLE' : definition.type
+        if (reference.field !== expectedField)
+          throw new Error(`Component property ${definition.id} cannot bind ${reference.field}`)
+      }
     }
     result.componentPropertyReferences = references
   }
   return result
+}
+
+/** Match the nearest component scope, including definitions inherited from its set. */
+export function componentPropertyScope(
+  graph: SceneGraph,
+  parentId: string
+): readonly ComponentPropertyDefinition[] | undefined {
+  let parent = graph.getNode(parentId)
+  while (parent) {
+    if (parent.type === 'INSTANCE') return componentPropertyDefinitions(graph, parent)
+    if (parent.type === 'COMPONENT_SET') return parent.componentPropertyDefinitions
+    if (parent.type === 'COMPONENT') {
+      const set = parent.parentId ? graph.getNode(parent.parentId) : undefined
+      return set?.type === 'COMPONENT_SET'
+        ? [...set.componentPropertyDefinitions, ...parent.componentPropertyDefinitions]
+        : parent.componentPropertyDefinitions
+    }
+    parent = parent.parentId ? graph.getNode(parent.parentId) : undefined
+  }
+  return undefined
 }
 
 export function assignComponentProperties(
