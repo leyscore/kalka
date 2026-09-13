@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto'
 import type { Server as HttpServer } from 'node:http'
 
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import type { McpServer } from '@modelcontextprotocol/server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { resolveCommand } from 'package-manager-detector/commands'
@@ -59,7 +59,6 @@ function mcpInstallCommand(): Promise<string> {
 export { fail, ok, type MCPContent, type MCPResult } from '#mcp/result'
 
 export { registerTools, type RegisterToolsOptions, type RPCSender } from '#mcp/tool/registration'
-export { paramToZod } from '#mcp/tool/schema'
 
 export interface ServerOptions {
   /** TCP port for the HTTP + WebSocket server. Ignored when `withTcp` is false. When set to 0 with `withTcp: true`, binds to an ephemeral port. Defaults to 7600. */

@@ -5,8 +5,7 @@ import { mkdir, stat } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-import { Client } from '@modelcontextprotocol/sdk/client/index.js'
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
+import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
 
 import { SceneGraph } from '@open-pencil/scene-graph'
 

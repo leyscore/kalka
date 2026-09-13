@@ -17,6 +17,7 @@ export {
   toolChangesDocument
 } from './schema'
 export type { ToolDef, ParamDef, ParamType } from './schema'
+export { toolInputEntries } from './validation'
 export { toolsToAI, buildDebugLog } from './ai-adapter'
 export type { ToolLogEntry, ToolDebugLog, AIAdapterOptions, StepBudget } from './ai-adapter'
 export { calcClusterConfidence, wrapEvalCode } from './analyze'

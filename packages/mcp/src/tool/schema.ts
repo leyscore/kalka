@@ -1,24 +1,23 @@
-import { z } from 'zod'
+import * as v from 'valibot'
 
-import type { ParamDef, ParamType } from '@open-pencil/core/tools'
+import { toolInputEntries, type ParamDef } from '@open-pencil/core/tools'
 
-export function paramToZod(param: ParamDef): z.ZodType {
-  const typeMap: Record<ParamType, () => z.ZodType> = {
-    string: () =>
-      param.enum
-        ? z.enum(param.enum as [string, ...string[]]).describe(param.description)
-        : z.string().describe(param.description),
-    number: () => {
-      let schema = z.coerce.number()
-      if (param.min !== undefined) schema = schema.min(param.min)
-      if (param.max !== undefined) schema = schema.max(param.max)
-      return schema.describe(param.description)
-    },
-    boolean: () => z.boolean().describe(param.description),
-    color: () => z.string().describe(param.description),
-    'string[]': () => z.array(z.string()).min(1).describe(param.description)
+/** Advertise canonical numeric inputs while preserving MCP's numeric coercion. */
+export function toolSchema(
+  params: Record<string, ParamDef>,
+  entries: v.ObjectEntries,
+  targetEntries: v.ObjectEntries
+): v.ObjectSchema<v.ObjectEntries, undefined> {
+  const schema = v.object({ ...entries, ...targetEntries })
+  const parser = v.object({
+    ...toolInputEntries(v, params, { coerceNumbers: true }),
+    ...targetEntries
+  })
+  return {
+    ...schema,
+    '~standard': {
+      ...schema['~standard'],
+      validate: parser['~standard'].validate
+    }
   }
-
-  const schema = typeMap[param.type]()
-  return param.required ? schema : schema.optional()
 }
