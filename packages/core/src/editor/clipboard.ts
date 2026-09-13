@@ -119,7 +119,7 @@ export function createClipboardActions(ctx: EditorContext) {
       created = pasteOpenPencilNodes(
         dependencies.nodes,
         snapshot.images,
-        snapshot.componentDependencies,
+        dependencies.componentDependencies,
         cursorPos,
         options
       )

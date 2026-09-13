@@ -38,7 +38,7 @@
 
 - Keep applied and available Effect styles concise, and collapse equal independent corner fields when all four use the same variable.
 - Keep pixel-grid rounding invisible while showing alignment guides only for real geometry, objects, and canvas/layout guides.
-- Copy selections as Figma-compatible clipboard data while preserving typed geometry, text sizing, images, components, variables, modes, and shared styles for lossless in-app paste.
+- Copy selections with embedded images into Figma while preserving typed geometry, text sizing, images, components, variables, modes, and shared styles for lossless in-app paste.
 - Choose whether interface animations follow the system motion preference or stay off, with live updates and a persistent override.
 - Put unbound fill and stroke style pickers in section headers, preserve applied and missing style rows, and remove the redundant Dimensions heading for text layers.
 - Open variable pickers below their trigger when space permits, flipping above near the viewport edge.
@@ -55,6 +55,8 @@
 
 ### Fixed
 
+- Keep FIT image fills proportional, centered, and fully visible without stretching or cropped edges.
+- Preserve edited instance text, including cleared labels, when saving and reopening `.fig` files.
 - Honor `.pen` frame layout defaults and sizing and padding shorthands so imported auto-layout frames keep their computed dimensions and child positions. (#564)
 - Avoid macOS Keychain prompts during credential status checks and pause repeated credential access after failures until explicitly retried from Settings.
 

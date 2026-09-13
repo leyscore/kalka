@@ -7,6 +7,7 @@ import { importClipboardVariables, remapClipboardVariableBindings } from './vari
 
 export interface ClipboardDependencyImport {
   nodes: ClipboardSnapshot['nodes']
+  componentDependencies: ClipboardSnapshot['componentDependencies']
   styleSnapshots: SceneNode[]
   applyVariables?: () => void
   revertVariables?: () => void
@@ -17,7 +18,14 @@ export function importClipboardDependencies(
   snapshot: ClipboardSnapshot
 ): ClipboardDependencyImport {
   const nodes = structuredClone(snapshot.nodes)
-  if (snapshot.sourceRootId === ctx.graph.rootId) return { nodes, styleSnapshots: [] }
+  const componentDependencies = structuredClone(snapshot.componentDependencies)
+  if (snapshot.sourceRootId === ctx.graph.rootId) {
+    return {
+      nodes,
+      componentDependencies: componentDependencies.filter((node) => !ctx.graph.getNode(node.id)),
+      styleSnapshots: []
+    }
+  }
   const styleIds = new Map<string, string>()
   const styleSnapshots: SceneNode[] = []
   for (const definition of snapshot.styleDefinitions) {
@@ -49,10 +57,11 @@ export function importClipboardDependencies(
     )
     for (const child of node.children ?? []) remap(child)
   }
-  for (const node of nodes) remap(node)
+  for (const node of [...nodes, ...componentDependencies]) remap(node)
   variables.apply()
   return {
     nodes,
+    componentDependencies,
     styleSnapshots,
     applyVariables: variables.apply,
     revertVariables: variables.revert
