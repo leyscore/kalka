@@ -112,6 +112,7 @@ Use Conventional Commits (`feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `bu
 - MCP-only filesystem/server tools live in `packages/mcp/src/tool/registration.ts`; listener/session lifecycle lives under `server/`, stdio under `stdio/`, and transport discovery under `transport/`. File access must resolve symlinks inside the effective MCP root; CLI defaults are cwd on macOS/Linux and home on Windows.
 - Keep MCP transport tests under `tests/engine/mcp/{server,stdio,transport}` and shared fixtures under `tests/helpers/mcp`; isolate tests from user runtime discovery.
 - Core codegen prompts live under `packages/core/src/tools/prompts/`; app chat/ACP prompts under `src/app/ai/**`.
+- The installable agent skill is maintained in `skills/open-pencil/`. Changes to agent-facing APIs, CLI/MCP behavior, or design authoring must update affected skill examples, prompts, and public documentation in the same change. Keep examples valid in their actual execution environment; do not advertise library exports as scripting globals unless exposed there. Prefer runtime discovery and canonical references over duplicated API/tool inventories.
 
 ## ACP and collaboration
 
