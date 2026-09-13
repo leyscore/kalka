@@ -46,7 +46,7 @@
 
 ### Fixed
 
-- load fonts with request in desktop app cause OOMs (replaced with fetch)
+- The desktop app now loads fonts with `fetch` instead of `request`, preventing out-of-memory errors.
 
 - Preserve edited instance text, including cleared labels, when saving and reopening `.fig` files.
 - Honor `.pen` frame layout defaults and sizing and padding shorthands so imported auto-layout frames keep their computed dimensions and child positions. (#564)
