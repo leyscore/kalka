@@ -16,6 +16,11 @@ import type { IconData } from '#core/icons/types'
 import { computeAllLayouts } from '#core/layout'
 import { randomHex } from '#core/random'
 
+import {
+  assignComponentProperties,
+  componentMetadata,
+  componentPropertyScope
+} from './component-properties'
 import { applySizeOverrides, propsToOverrides } from './props-overrides'
 import { prepareScalarBindings } from './scalar-bindings'
 import { isTreeNode } from './tree'
@@ -314,7 +319,7 @@ function parseVariantValues(name: string): Record<string, string> {
 function inferComponentSetProperties(graph: SceneGraph, componentSetId: string): void {
   const componentSet = graph.getNode(componentSetId)
   if (componentSet?.type !== 'COMPONENT_SET') return
-  if (componentSet.componentPropertyDefinitions.length > 0) return
+  const existingDefinitions = componentSet.componentPropertyDefinitions
 
   const variants = graph.getChildren(componentSetId).filter((node) => node.type === 'COMPONENT')
   const options = new Map<string, Set<string>>()
@@ -333,8 +338,14 @@ function inferComponentSetProperties(graph: SceneGraph, componentSetId: string):
     }
   }
 
-  const definitions: ComponentPropertyDefinition[] = [...options.entries()].map(
-    ([name, values]) => {
+  const definitions: ComponentPropertyDefinition[] = [...options.entries()]
+    .filter(
+      ([name]) =>
+        !existingDefinitions.some(
+          (definition) => definition.type === 'VARIANT' && definition.name === name
+        )
+    )
+    .map(([name, values]) => {
       const variantOptions = [...values]
       return {
         id: `prop:${randomHex(8)}`,
@@ -343,14 +354,14 @@ function inferComponentSetProperties(graph: SceneGraph, componentSetId: string):
         defaultValue: variantOptions[0] ?? '',
         variantOptions
       }
-    }
-  )
-  if (definitions.length === 0) return
+    })
 
   for (const [id, values] of valuesById) {
     graph.updateNode(id, { componentPropertyValues: values })
   }
-  graph.updateNode(componentSetId, { componentPropertyDefinitions: definitions })
+  graph.updateNode(componentSetId, {
+    componentPropertyDefinitions: [...existingDefinitions, ...definitions]
+  })
 }
 
 function findComponentByName(graph: SceneGraph, name: string): SceneNode | undefined {
@@ -367,7 +378,11 @@ function findVariantInSet(
 ) {
   const requested = Object.fromEntries(
     Object.entries(props)
-      .filter(([key]) => !['component', 'componentId', 'of', 'name', 'children'].includes(key))
+      .filter(([key]) =>
+        componentSet.componentPropertyDefinitions.some(
+          (definition) => definition.type === 'VARIANT' && definition.name === key
+        )
+      )
       .map(([key, value]) => [key, String(value)])
   )
   const variants = graph.getChildren(componentSet.id).filter((node) => node.type === 'COMPONENT')
@@ -415,12 +430,42 @@ async function renderInstanceNode(
     const label = typeof ref === 'string' || typeof ref === 'number' ? String(ref) : ''
     throw new Error(`<Instance> component not found: ${label}`)
   }
-  const overrides = propsToOverrides(props, false, parentLayout)
+  const overrides: Partial<SceneNode> = {
+    ...propsToOverrides(props, false, parentLayout),
+    ...componentMetadata(props, 'INSTANCE', componentPropertyScope(graph, parentId))
+  }
+  // Instances inherit their container layout, but explicitly authored dimensions
+  // must also replace the inherited sizing mode on that axis.
+  const layout = overrides.layoutMode ?? component.layoutMode
+  if (layout !== 'NONE') {
+    const axes =
+      layout === 'HORIZONTAL'
+        ? (['primaryAxisSizing', 'counterAxisSizing'] as const)
+        : (['counterAxisSizing', 'primaryAxisSizing'] as const)
+    for (const [dimension, field] of [
+      ['w', axes[0]],
+      ['h', axes[1]]
+    ] as const) {
+      const value = props[dimension]
+      if (typeof value === 'number') overrides[field] = 'FIXED'
+      else if (value === 'hug' || value === 'fill') overrides[field] = 'HUG'
+    }
+  }
   const instance =
     graph.createInstance(component.id, parentId, overrides) ?? graph.createNode('FRAME', parentId)
-  applyBindings(graph, instance.id, bindings)
-  applyInstanceOverrides(graph, instance, tree.props.overrides)
-  return instance
+  try {
+    for (const [field, value] of Object.entries(overrides)) {
+      setInstanceOverride(instance.instanceOverrides, instance.id, instance.id, field, value)
+    }
+    graph.updateNode(instance.id, { instanceOverrides: instance.instanceOverrides })
+    applyBindings(graph, instance.id, bindings)
+    applyInstanceOverrides(graph, instance, tree.props.overrides)
+    assignComponentProperties(graph, instance, props.properties)
+    return instance
+  } catch (error) {
+    graph.deleteNode(instance.id)
+    throw error
+  }
 }
 
 /**
@@ -465,9 +510,22 @@ function applyInstanceOverrides(
   }
 }
 
+async function renderArtworkNode(
+  graph: SceneGraph,
+  tree: TreeNode,
+  parentId: string
+): Promise<SceneNode> {
+  const metadata = componentMetadata(tree.props, 'VECTOR', componentPropertyScope(graph, parentId))
+  const node =
+    tree.type === 'icon'
+      ? await renderIconNode(graph, tree, parentId)
+      : await renderSVGNode(graph, tree, parentId)
+  if (Object.keys(metadata).length > 0) graph.updateNode(node.id, metadata)
+  return node
+}
+
 async function renderNode(graph: SceneGraph, tree: TreeNode, parentId: string): Promise<SceneNode> {
-  if (tree.type === 'icon') return renderIconNode(graph, tree, parentId)
-  if (tree.type === 'svg') return renderSVGNode(graph, tree, parentId)
+  if (tree.type === 'icon' || tree.type === 'svg') return renderArtworkNode(graph, tree, parentId)
   if (tree.type === 'instance') return renderInstanceNode(graph, tree, parentId)
 
   const nodeType = TYPE_MAP[tree.type]
@@ -478,7 +536,10 @@ async function renderNode(graph: SceneGraph, tree: TreeNode, parentId: string): 
 
   const isText = nodeType === 'TEXT'
   const { props, bindings } = preparePropsForRender(graph, tree.props, isText, parentId)
-  const overrides = propsToOverrides(props, isText, parentLayout)
+  const overrides = {
+    ...propsToOverrides(props, isText, parentLayout),
+    ...componentMetadata(props, nodeType, componentPropertyScope(graph, parentId))
+  }
 
   if (isText) {
     const childText = tree.children.filter((c): c is string => typeof c === 'string').join('')

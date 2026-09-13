@@ -21,6 +21,8 @@ export {
 export {
   type TreeNode,
   type BaseProps,
+  type ComponentProps,
+  type InstanceProps,
   type TextProps,
   type StyleProps,
   type PaintProp,
