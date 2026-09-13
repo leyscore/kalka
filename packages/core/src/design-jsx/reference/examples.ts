@@ -17,7 +17,7 @@ export const AUTHORING_EXAMPLES: readonly AuthoringExample[] = [
   {
     title: 'Variable-bound spacing and typography',
     jsx: dedent`<Frame name="Bound note" w={280} h="hug" flex="col" gap={designVar('Space/small')} p={designVar('Space/medium')} bg="#FFFFFF">
-  <Text name="Message" w="fill" size={designVar('Type/body')} color="#252A31">A note that grows with its content.</Text>
+  <Text name="Message" w="fill" size={designVar('Type/body')} lineHeight={designVar('Type/body-leading')} letterSpacing={designVar('Type/body-tracking')} color="#252A31">A note that grows with its content.</Text>
 </Frame>`
   }
 ]
