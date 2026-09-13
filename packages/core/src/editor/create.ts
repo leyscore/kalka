@@ -54,7 +54,7 @@ export { createDefaultEditorState } from './state'
 export function createEditor(options?: EditorOptions) {
   let _graph = options?.graph ?? new SceneGraph()
   const skipInitialGraphSetup = options?.skipInitialGraphSetup ?? false
-  const undo = new UndoManager()
+  const undo = new UndoManager({ onChange: () => emitEditorEvent('history:changed') })
   const _loadFont = options?.loadFont ?? fontManager.loadFont.bind(fontManager)
   const _getViewportSize =
     options?.getViewportSize ??
