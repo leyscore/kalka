@@ -49,6 +49,7 @@ const variable: Variable = {
 const values = new Map<string, number>([[variable.id, 16]])
 const bindings = new Map<string, string>()
 const getBindingId = (target: BindingTarget) => bindings.get(`${target.nodeId}:${target.path}`)
+const resolve: BindingProvider<number>['resolve'] = id => values.get(id)
 
 const provider: BindingProvider<number> = {
   listVariables: () => [variable],
@@ -59,9 +60,12 @@ const provider: BindingProvider<number> = {
     const ids = new Set(targets.map(getBindingId))
     if (ids.size === 0 || (ids.size === 1 && ids.has(undefined))) return 'unbound'
     if (ids.size > 1) return 'mixed'
-    return ids.has(variable.id) ? 'bound' : 'unresolved'
+    if (!ids.has(variable.id)) return 'unresolved'
+    const resolved = targets.map(target => resolve(variable.id, target))
+    if (resolved.some(value => value === undefined)) return 'unresolved'
+    return new Set(resolved).size > 1 ? 'mixed' : 'bound'
   },
-  resolve: id => values.get(id),
+  resolve,
   bind: (target: BindingTarget, variableId) => {
     bindings.set(`${target.nodeId}:${target.path}`, variableId)
   },
