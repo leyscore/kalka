@@ -48,7 +48,9 @@ for (const [name, snapshot] of [
   })
 }
 
-test('demo completion preserves a document replaced during its final page switch', async ({ page }) => {
+test('demo completion preserves a document replaced during its final page switch', async ({
+  page
+}) => {
   await page.goto('/?test&no-chrome&no-rulers')
   const canvas = new CanvasHelper(page)
   await canvas.waitForInit()
