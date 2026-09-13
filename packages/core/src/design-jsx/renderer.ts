@@ -16,6 +16,7 @@ import type { IconData } from '#core/icons/types'
 import { computeAllLayouts } from '#core/layout'
 import { randomHex } from '#core/random'
 
+import { assignComponentProperties, componentMetadata } from './component-properties'
 import { applySizeOverrides, propsToOverrides } from './props-overrides'
 import { prepareScalarBindings } from './scalar-bindings'
 import { isTreeNode } from './tree'
@@ -367,7 +368,11 @@ function findVariantInSet(
 ) {
   const requested = Object.fromEntries(
     Object.entries(props)
-      .filter(([key]) => !['component', 'componentId', 'of', 'name', 'children'].includes(key))
+      .filter(([key]) =>
+        componentSet.componentPropertyDefinitions.some(
+          (definition) => definition.type === 'VARIANT' && definition.name === key
+        )
+      )
       .map(([key, value]) => [key, String(value)])
   )
   const variants = graph.getChildren(componentSet.id).filter((node) => node.type === 'COMPONENT')
@@ -415,12 +420,21 @@ async function renderInstanceNode(
     const label = typeof ref === 'string' || typeof ref === 'number' ? String(ref) : ''
     throw new Error(`<Instance> component not found: ${label}`)
   }
-  const overrides = propsToOverrides(props, false, parentLayout)
+  const overrides = {
+    ...propsToOverrides(props, false, parentLayout),
+    ...componentMetadata(props, 'INSTANCE')
+  }
   const instance =
     graph.createInstance(component.id, parentId, overrides) ?? graph.createNode('FRAME', parentId)
-  applyBindings(graph, instance.id, bindings)
-  applyInstanceOverrides(graph, instance, tree.props.overrides)
-  return instance
+  try {
+    applyBindings(graph, instance.id, bindings)
+    applyInstanceOverrides(graph, instance, tree.props.overrides)
+    assignComponentProperties(graph, instance, props.properties)
+    return instance
+  } catch (error) {
+    graph.deleteNode(instance.id)
+    throw error
+  }
 }
 
 /**
@@ -465,9 +479,22 @@ function applyInstanceOverrides(
   }
 }
 
+async function renderArtworkNode(
+  graph: SceneGraph,
+  tree: TreeNode,
+  parentId: string
+): Promise<SceneNode> {
+  const metadata = componentMetadata(tree.props, 'VECTOR')
+  const node =
+    tree.type === 'icon'
+      ? await renderIconNode(graph, tree, parentId)
+      : await renderSVGNode(graph, tree, parentId)
+  if (Object.keys(metadata).length > 0) graph.updateNode(node.id, metadata)
+  return node
+}
+
 async function renderNode(graph: SceneGraph, tree: TreeNode, parentId: string): Promise<SceneNode> {
-  if (tree.type === 'icon') return renderIconNode(graph, tree, parentId)
-  if (tree.type === 'svg') return renderSVGNode(graph, tree, parentId)
+  if (tree.type === 'icon' || tree.type === 'svg') return renderArtworkNode(graph, tree, parentId)
   if (tree.type === 'instance') return renderInstanceNode(graph, tree, parentId)
 
   const nodeType = TYPE_MAP[tree.type]
@@ -478,7 +505,10 @@ async function renderNode(graph: SceneGraph, tree: TreeNode, parentId: string): 
 
   const isText = nodeType === 'TEXT'
   const { props, bindings } = preparePropsForRender(graph, tree.props, isText, parentId)
-  const overrides = propsToOverrides(props, isText, parentLayout)
+  const overrides = {
+    ...propsToOverrides(props, isText, parentLayout),
+    ...componentMetadata(props, nodeType)
+  }
 
   if (isText) {
     const childText = tree.children.filter((c): c is string => typeof c === 'string').join('')
