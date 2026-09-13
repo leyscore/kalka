@@ -81,7 +81,7 @@ export async function tauriFetch(
   maxResponseBytes?: number,
   timeoutMs?: number
 ): Promise<Response> {
-  const parsedURL = new URL(typeof input === 'object' ? (input as Request).url : input)
+  const parsedURL = new URL(input instanceof Request ? input.url : input)
   const isIpcURL =
     parsedURL.protocol === 'ipc:' ||
     ((parsedURL.protocol === 'http:' || parsedURL.protocol === 'https:') &&
