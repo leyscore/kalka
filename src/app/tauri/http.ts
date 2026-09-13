@@ -73,6 +73,7 @@ export interface TauriFetchOptions {
   maxResponseBytes?: number
 }
 
+const nativeFetch: typeof fetch = globalThis.fetch.bind(globalThis)
 
 export async function tauriFetch(
   input: RequestInfo | URL,
@@ -80,10 +81,13 @@ export async function tauriFetch(
   maxResponseBytes?: number,
   timeoutMs?: number
 ): Promise<Response> {
-  const url = typeof input === 'string' ? input : (input instanceof URL ? input.href : input.url);
-
-  if (url.startsWith('http://ipc.localhost') || url.startsWith('https://ipc.localhost') || url.startsWith('ipc://')) {
-    return fetch(input as RequestInfo, init);
+  const parsedURL = new URL(typeof input === 'object' ? (input as Request).url : input)
+  const isIpcURL =
+    parsedURL.protocol === 'ipc:' ||
+    ((parsedURL.protocol === 'http:' || parsedURL.protocol === 'https:') &&
+      parsedURL.hostname === 'ipc.localhost')
+  if (isIpcURL) {
+    return nativeFetch(input as RequestInfo, init)
   }
 
   const request = new Request(input, init)
