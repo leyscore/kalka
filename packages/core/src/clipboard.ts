@@ -1,4 +1,4 @@
-import { encodeFigmaClipboard } from '@open-pencil/fig/clipboard'
+import { embedClipboardImages, encodeFigmaClipboard } from '@open-pencil/fig/clipboard'
 export {
   parseFigmaClipboard,
   importClipboardNodes,
@@ -85,6 +85,7 @@ export async function buildFigmaClipboardHTML(
       change.derivedTextData = await buildDerivedTextDataV4(source, fontDigestMap, shaped, blobs)
     })
   )
+  await embedClipboardImages(nodeChanges, blobs, graph.images)
   return encodeFigmaClipboard(nodeChanges, blobs, randomInt())
 }
 
