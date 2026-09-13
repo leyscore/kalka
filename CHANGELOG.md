@@ -4,10 +4,12 @@
 
 ### Breaking changes
 
+- Use MCP SDK v2 server/client types for programmatic MCP integrations. Replace the removed `paramToZod()` export with the shared Valibot tool input contract from `@open-pencil/core/tools`.
 - Update custom Vue SDK binding providers to implement `getBindingId()` and handle `unresolved`. Replace `setValue()` with `prepareEdit()`, returning a stable edit key, captured value, setter, and restoration callback.
 
 ### Added
 
+- Expose design inspection and undoable layer-property and variable edits to browser agents through experimental WebMCP in supporting browsers.
 - Bind Design JSX spacing, sizing, corners, and typography directly to numeric document variables.
 - Define component properties and assign instance values in Design JSX using stable property IDs.
 - Save AI conversations and attachment previews locally, switch between chats, rename or delete them, and browse saved transcripts across documents. Choose whether reasoning stays collapsed, expands while thinking, or stays expanded, with animated disclosure controls that respect reduced motion.
