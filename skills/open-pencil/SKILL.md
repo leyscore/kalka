@@ -186,17 +186,19 @@ If `@open-pencil/mcp` is installed globally, direct binaries also work:
 
 ```bash
 export PORT=7600
-export OPENPENCIL_MCP_AUTH_TOKEN=secret       # optional auth for /mcp
-export OPENPENCIL_MCP_CORS_ORIGIN="*"         # optional CORS
-export OPENPENCIL_MCP_ROOT=/path/to/files     # enables/scopes open_file/save_file paths
+export OPENPENCIL_MCP_ROOT=/path/to/files     # explicitly limit filesystem access
 
 openpencil-mcp-http
 # or: bunx openpencil-mcp-http
 ```
 
+Authentication is enabled by default with an automatically generated token. `OPENPENCIL_MCP_AUTH_TOKEN` can supply an explicit non-empty token; an empty value disables authentication. If browser access needs CORS, set `OPENPENCIL_MCP_CORS_ORIGIN` to a trusted origin. Never combine wildcard CORS (`*`) with disabled authentication.
+
+The CLI defaults the filesystem root to the home directory on Windows and the current working directory elsewhere. Set `OPENPENCIL_MCP_ROOT` to an explicit narrow directory rather than relying on that default.
+
 ### MCP workflow
 
-1. **Open/create a document** — `open_file { path }` when `OPENPENCIL_MCP_ROOT` is configured, or `new_document {}`.
+1. **Open/create a document** — `open_file { path }` within the effective filesystem root, or `new_document {}`.
 2. **Query** — `get_page_tree`, `find_nodes`, `query_nodes`, `get_node`, `list_pages`, `get_current_page`.
 3. **Inspect** — `get_jsx`, `diff_jsx`, `describe`, `export_image`, `export_svg`, `export_pdf`.
 4. **Modify** — `render`, `batch_update`, `update_node`, `set_fill`, `set_layout`, `create_shape`, `import_svg`, etc.
@@ -207,7 +209,7 @@ openpencil-mcp-http
 
 Discover available tools and their arguments from the connected server; availability varies by version and server mode. Do not rely on a fixed tool count or a copied inventory.
 
-> Tool availability can depend on server mode. `open_file`, `save_file`, and disk-writing export paths require `OPENPENCIL_MCP_ROOT` for path scoping.
+> Tool availability can depend on server mode. `open_file`, `save_file`, and disk-writing export paths are scoped to the effective filesystem root; set it explicitly with `OPENPENCIL_MCP_ROOT`.
 
 ## Key tools for agents
 
