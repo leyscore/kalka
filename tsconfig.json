@@ -21,6 +21,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
+      "#ci/*": ["./tools/ci/src/*"],
       "@/*": [
         "./src/*"
       ],

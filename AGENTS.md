@@ -86,6 +86,8 @@ For releases, update versions in the root and publishable package manifests plus
 
 App/docs production workflows run on `v*` tags or `workflow_dispatch`, not ordinary `master` pushes. `ci.yml` and `heavy-tests.yml` define validation gates.
 
+PR CI always classifies changed paths through `tools/ci/`. Docs-only changes run documentation integrity/reference checks and the docs build, not engine, browser, Storybook, or native suites. Runtime prompt Markdown, executable examples, configuration, and unknown paths require code validation. The aggregate `CI result` gate requires successful classification and every applicable job; failures, cancellations, and unexpected skips cannot pass. Do not restore workflow-level path filtering on required CI.
+
 ## Documentation
 
 - `CHANGELOG.md` — curated user-facing changes by version; `Unreleased` stays first.
