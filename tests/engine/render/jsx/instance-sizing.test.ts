@@ -6,6 +6,19 @@ import { computeAllLayouts } from '@open-pencil/core/layout'
 import { getNodeOrThrow } from '#tests/helpers/assert'
 import { makeSceneGraph } from '#tests/helpers/scene'
 
+test('overriding one instance dimension preserves the other inherited dimension', async () => {
+  const graph = makeSceneGraph()
+  const component = await renderTree(graph, Component({ flex: 'col', w: 280, h: 100 }))
+  const result = await renderTree(graph, Instance({ of: component.id, w: 120 }))
+  graph.syncInstances(component.id)
+  computeAllLayouts(graph)
+  const instance = getNodeOrThrow(graph, result.id)
+  expect(instance.width).toBe(120)
+  expect(instance.height).toBe(100)
+  expect(instance.counterAxisSizing).toBe('FIXED')
+  expect(instance.primaryAxisSizing).toBe('FIXED')
+})
+
 for (const flex of ['row', 'col'] as const) {
   test(`instances fill their parent across inherited fixed ${flex} dimensions`, async () => {
     const graph = makeSceneGraph()
