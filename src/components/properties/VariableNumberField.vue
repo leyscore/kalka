@@ -19,7 +19,8 @@ const {
   sensitivity,
   placeholder,
   nodeId,
-  bindingPath
+  bindingPath,
+  bindingPaths
 } = defineProps<{
   modelValue: number | symbol
   min?: number
@@ -32,6 +33,7 @@ const {
   placeholder?: string
   nodeId: string
   bindingPath: NumberBindingPath
+  bindingPaths?: readonly NumberBindingPath[]
 }>()
 
 const emit = defineEmits<{
@@ -42,7 +44,9 @@ const emit = defineEmits<{
 const { panels, common } = useI18n()
 const provider = useNumberBindingProvider()
 const attrs = useAttrs()
-const targets = computed<BindingTarget[]>(() => [{ nodeId, path: bindingPath }])
+const targets = computed<BindingTarget[]>(() =>
+  (bindingPaths ?? [bindingPath]).map((path) => ({ nodeId, path }))
+)
 const accessibleLabel = computed(() => {
   const ariaLabel = attrs['aria-label']
   return typeof ariaLabel === 'string' ? ariaLabel : (label ?? bindingPath)
