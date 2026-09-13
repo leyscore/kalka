@@ -142,6 +142,7 @@ export class ACPChatTransport implements ChatTransport<UIMessage> {
 
     if (!this.session) {
       this.session = await this.spawnAgent()
+      this.sentContext = false
     }
 
     const promptText = this.sentContext ? text : `${SYSTEM_PROMPT}\n\n${text}`
