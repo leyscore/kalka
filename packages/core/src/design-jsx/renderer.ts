@@ -17,9 +17,10 @@ import { computeAllLayouts } from '#core/layout'
 import { randomHex } from '#core/random'
 
 import { applySizeOverrides, propsToOverrides } from './props-overrides'
+import { prepareScalarBindings } from './scalar-bindings'
 import { isTreeNode } from './tree'
 import type { TreeNode } from './tree'
-import { isVariable, type DesignVariable } from './vars'
+import { isVariable, resolveVariableId, type DesignVariable } from './vars'
 
 const TYPE_MAP: Partial<Record<string, NodeType>> = {
   frame: 'FRAME',
@@ -93,17 +94,8 @@ function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-function resolveVariableId(graph: SceneGraph, variable: DesignVariable): string | undefined {
-  if (variable.id && graph.variables.has(variable.id)) return variable.id
-  if (variable.id && !variable.name) return variable.id
-  for (const candidate of graph.variables.values()) {
-    if (candidate.name === variable.name || candidate.id === variable.name) return candidate.id
-  }
-  return variable.id
-}
-
 function variableFallback(graph: SceneGraph, variable: DesignVariable): string | Color | undefined {
-  if (variable.value !== undefined) return variable.value
+  if (variable.value !== undefined && typeof variable.value !== 'number') return variable.value
   const variableId = resolveVariableId(graph, variable)
   return variableId ? graph.resolveColorVariable(variableId) : undefined
 }
@@ -141,7 +133,8 @@ function bindStyleVariableProp(
 function preparePropsForRender(
   graph: SceneGraph,
   source: Record<string, unknown>,
-  isText: boolean
+  isText: boolean,
+  parentId: string
 ): PreparedProps {
   const props = { ...source }
   const bindings: Record<string, string> = {}
@@ -172,6 +165,8 @@ function preparePropsForRender(
     bindStyleVariableProp(graph, style, bindings, 'borderColor', 'strokes/0/color')
     props.style = style
   }
+
+  prepareScalarBindings(graph, props, bindings, isText, parentId)
 
   if (isObjectRecord(props.bind)) {
     for (const [field, value] of Object.entries(props.bind)) {
@@ -413,7 +408,7 @@ async function renderInstanceNode(
 ): Promise<SceneNode> {
   const parent = graph.getNode(parentId)
   const parentLayout = parent?.layoutMode ?? 'NONE'
-  const { props, bindings } = preparePropsForRender(graph, tree.props, false)
+  const { props, bindings } = preparePropsForRender(graph, tree.props, false, parentId)
   const component = resolveComponent(graph, props)
   if (!component) {
     const ref = props.component ?? props.componentId ?? props.of
@@ -482,7 +477,7 @@ async function renderNode(graph: SceneGraph, tree: TreeNode, parentId: string): 
   const parentLayout = parent?.layoutMode ?? 'NONE'
 
   const isText = nodeType === 'TEXT'
-  const { props, bindings } = preparePropsForRender(graph, tree.props, isText)
+  const { props, bindings } = preparePropsForRender(graph, tree.props, isText, parentId)
   const overrides = propsToOverrides(props, isText, parentLayout)
 
   if (isText) {
