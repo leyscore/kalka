@@ -10,7 +10,7 @@ import type { ACPAgentID, AIProviderID } from '@open-pencil/core/constants'
 import { classifyAIChatError, type AIChatFailure } from '@/app/ai/chat/failure'
 import { resolveLanguageModelID } from '@/app/ai/chat/model'
 import { buildReasoningProviderOptions, type AIProviderOptions } from '@/app/ai/chat/reasoning'
-import SYSTEM_PROMPT from '@/app/ai/chat/system-prompt.md?raw'
+import SYSTEM_PROMPT from '@/app/ai/chat/system-prompt'
 import { createAIModelRuntime, resolveModelConnectionAPIKey } from '@/app/ai/models'
 import { MAX_AGENT_STEPS, createAITools, recordStep, resetRunSteps } from '@/app/ai/tools'
 import {

@@ -72,7 +72,5 @@ export {
 } from './schema'
 export { transformDesignJSXExpression } from './transform'
 
-import jsxReference from '#core/tools/prompts/jsx-reference.md?raw'
-
 export { sceneNodeToJSX, selectionToJSX, type JSXFormat } from '#core/io/formats/jsx'
-export const JSX_REFERENCE: string = jsxReference
+export { JSX_REFERENCE, AUTHORING_EXAMPLES, type AuthoringExample } from './reference'

@@ -224,50 +224,9 @@ Discover available tools and their arguments from the connected server; availabi
 
 ## JSX Rendering
 
-Use the `render` tool or `eval` to create component trees. If unsure about JSX syntax, call `get_codegen_prompt` first.
+Read [Design authoring](references/design-authoring.md) before creating or modifying JSX designs. This bundled reference is generated from Core's authoring guidance, tested examples, and renderer metadata—the same reference used by chat and codegen prompts.
 
-```jsx
-<Frame name="Card" w={320} h="hug" flex="col" gap={16} p={24} bg="#FFF" rounded={16}>
-  <Text size={18} weight="bold" color="#111">Title</Text>
-  <Text size={14} color="#666">Description text</Text>
-  <Frame flex="row" gap={8}>
-    <Frame w={80} h={36} bg="#3B82F6" rounded={8} justify="center" items="center">
-      <Text size={14} color="#FFF" weight="600">Action</Text>
-    </Frame>
-  </Frame>
-</Frame>
-```
-
-Elements: `Frame`, `Text`, `Rectangle`, `Ellipse`, `Line`, `Star`, `Polygon`, `Group`, `Section`, `Component`, `Instance`.
-
-Text content is the child content of `<Text>`. Use design-JSX props, not Figma API field names:
-
-```jsx
-<Text size={48} weight="bold" font="Inter" color="#111">Design faster with AI</Text>
-```
-
-Common props:
-
-| Prop | Meaning |
-|------|---------|
-| `w`, `h` | Width, height (number or `"hug"` / `"fill"`) |
-| `flex` | `"row"` or `"col"` |
-| `grid`, `columns`, `rows` | CSS Grid, e.g. `columns="1fr 200px 1fr"` |
-| `gap`, `rowGap`, `columnGap` | Item spacing |
-| `p`, `px`, `py`, `pt`, `pr`, `pb`, `pl` | Padding |
-| `justify` | `"start"`, `"center"`, `"end"`, `"between"` |
-| `items` | `"start"`, `"center"`, `"end"`, `"stretch"` |
-| `grow` | Flex grow factor |
-| `bg` | Fill color (hex) |
-| `rounded`, `roundedTL/TR/BL/BR` | Corner radius |
-| `stroke`, `strokeWidth` | Stroke color and weight |
-| `opacity` | 0–1 |
-| `rotate` | Degrees |
-| `overflow` | `"hidden"` to clip children |
-| `shadow` | `"offsetX offsetY blur #color"` |
-| `blur` | Layer blur |
-| `size`, `weight`, `font`, `color`, `textAlign` | Text properties |
-| `colStart`, `rowStart`, `colSpan`, `rowSpan` | Grid child positioning |
+Use the `render` tool for JSX strings. Use only the APIs exposed by the installed `eval` environment; native library exports are not automatically scripting globals. The connected server's `get_codegen_prompt` provides its version's codegen and authoring guidance.
 
 ## Tips
 
