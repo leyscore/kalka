@@ -35,7 +35,7 @@ This reference describes scene creation, not React DOM output. Use the `render` 
 - Child `propertyRefs` connect fields to stable property IDs, for example `[{ propertyId: 'message', field: 'TEXT' }]`. Supported fields are `TEXT`, `VISIBLE`, and `INSTANCE_SWAP`; text and swap references require text and instance nodes respectively. References do not depend on layer names.
 - Instance assignments use the native string values (including `'true'` / `'false'` for BOOLEAN properties and component IDs for swaps). For example `Instance({ of: noteId, properties: { message: 'Updated review' } })`. Assignments persist through component synchronization; unknown IDs and invalid values fail rather than silently creating inert overrides. Select variants through component-set variant props, not through instance property assignments.
 - Reuse existing local or library components before recreating them. Keep meaningful text, visibility, and swap properties exposed rather than hand-editing cloned child nodes.
-- Distinguish a main component's default size from its instance's placement constraints. Verify the actual instance bounds in narrower parents; a requested Fill dimension alone is not proof that inherited sizing changed. Do not compensate for a sizing mismatch with guessed heights, clipping, or manually positioned siblings.
+- Explicit instance `w` / `h` replace the inherited sizing mode on that axis; omitted dimensions retain the main component's sizing. Authored overrides survive component synchronization. Distinguish those placement constraints from the main component's default size, and verify actual bounds in narrower parents. Do not compensate for a sizing mismatch with guessed heights, clipping, or manually positioned siblings.
 
 ## Verification
 
