@@ -4,6 +4,8 @@ import { ALL_TOOLS, registerComponentCatalog } from '@open-pencil/core/tools'
 import type { JSONObject } from '@open-pencil/scene-graph/primitives'
 
 import type { AutomationTarget } from '@/app/automation/bridge/target'
+import { ATOMIC_TOOL_NAMES } from '@/app/automation/execution/atomic'
+import { executeAtomicEditorTool } from '@/app/automation/execution/editor'
 import { ensureGraphFonts } from '@/app/editor/fonts'
 import { useLibraryService } from '@/app/libraries'
 
@@ -52,16 +54,21 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
     libraryService.bindEditor(store)
     registerComponentCatalog(store.graph, libraryService)
     const figma = makeFigma(store, target.pageId)
-    const result = def.mutates
-      ? await store.runMutationWithLayout(
-          () => def.execute(figma, toolArgs),
-          figma.currentPageId,
-          async () => {
-            const pageNode = store.graph.getNode(figma.currentPageId)
-            if (pageNode) await ensureGraphFonts(store.graph, pageNode.childIds, store.renderer)
-          }
-        )
-      : await def.execute(figma, toolArgs)
+    let result: unknown
+    if (ATOMIC_TOOL_NAMES.has(def.name)) {
+      result = await executeAtomicEditorTool(store, figma, def, toolArgs)
+    } else if (def.mutates) {
+      result = await store.runMutationWithLayout(
+        () => def.execute(figma, toolArgs),
+        figma.currentPageId,
+        async () => {
+          const pageNode = store.graph.getNode(figma.currentPageId)
+          if (pageNode) await ensureGraphFonts(store.graph, pageNode.childIds, store.renderer)
+        }
+      )
+    } else {
+      result = await def.execute(figma, toolArgs)
+    }
 
     if (def.mutates) {
       store.requestRender()
