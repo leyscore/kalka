@@ -8,6 +8,7 @@ import type { SceneGraph } from '@open-pencil/scene-graph'
 import { populateAndApplyOverrides, type InstanceNodeChange } from '../instance-overrides'
 import {
   nodeChangeToProps,
+  linkImportedInstanceChildren,
   shouldImportTextAsAutoSize,
   sortChildren,
   parseFigKiwiChunks,
@@ -288,6 +289,12 @@ export function importClipboardNodes(
   }
 
   detachOrphanedInstances(created, graph)
+
+  const pastedInstanceIds = new Set<string>()
+  for (const ourId of created.values()) {
+    if (graph.getNode(ourId)?.type === 'INSTANCE') pastedInstanceIds.add(ourId)
+  }
+  if (pastedInstanceIds.size > 0) linkImportedInstanceChildren(graph, pastedInstanceIds)
 
   return createdIds
 }
