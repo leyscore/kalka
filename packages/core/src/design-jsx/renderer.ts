@@ -315,7 +315,7 @@ function parseVariantValues(name: string): Record<string, string> {
 function inferComponentSetProperties(graph: SceneGraph, componentSetId: string): void {
   const componentSet = graph.getNode(componentSetId)
   if (componentSet?.type !== 'COMPONENT_SET') return
-  if (componentSet.componentPropertyDefinitions.length > 0) return
+  const existingDefinitions = componentSet.componentPropertyDefinitions
 
   const variants = graph.getChildren(componentSetId).filter((node) => node.type === 'COMPONENT')
   const options = new Map<string, Set<string>>()
@@ -334,8 +334,14 @@ function inferComponentSetProperties(graph: SceneGraph, componentSetId: string):
     }
   }
 
-  const definitions: ComponentPropertyDefinition[] = [...options.entries()].map(
-    ([name, values]) => {
+  const definitions: ComponentPropertyDefinition[] = [...options.entries()]
+    .filter(
+      ([name]) =>
+        !existingDefinitions.some(
+          (definition) => definition.type === 'VARIANT' && definition.name === name
+        )
+    )
+    .map(([name, values]) => {
       const variantOptions = [...values]
       return {
         id: `prop:${randomHex(8)}`,
@@ -344,14 +350,14 @@ function inferComponentSetProperties(graph: SceneGraph, componentSetId: string):
         defaultValue: variantOptions[0] ?? '',
         variantOptions
       }
-    }
-  )
-  if (definitions.length === 0) return
+    })
 
   for (const [id, values] of valuesById) {
     graph.updateNode(id, { componentPropertyValues: values })
   }
-  graph.updateNode(componentSetId, { componentPropertyDefinitions: definitions })
+  graph.updateNode(componentSetId, {
+    componentPropertyDefinitions: [...existingDefinitions, ...definitions]
+  })
 }
 
 function findComponentByName(graph: SceneGraph, name: string): SceneNode | undefined {
