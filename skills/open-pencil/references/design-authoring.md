@@ -28,8 +28,8 @@ This reference describes scene creation, not React DOM output. Use the `render` 
 ## Variables and components
 
 - Create document variables before referencing them with `designVar('id-or-name')`. `defineVars` groups references; it does not create variable collections.
-- COLOR references work in paint props. FLOAT references work in `w`, `h`, `gap`, padding, corner radii, `strokeWidth`, `opacity`, text `size`/`fontSize`, `lineHeight`, and `letterSpacing`; grid gaps and wrapped `rowGap` also support them.
-- References preserve real graph bindings, not just copied values. Initial scalar layout resolves the parent's inherited collection mode. Missing or incorrectly typed scalar variables are errors.
+- COLOR references work in paint props. FLOAT references work in `w`, `h`, `gap`, padding, corner radii, `strokeWidth`, `opacity`, text `size`/`fontSize`, `lineHeight`, and `letterSpacing`. Grid `columnGap`/`rowGap` and wrapped flex `rowGap` also support FLOAT references; grid `gap` overrides both axis-specific gaps. Use numbers or FLOAT references for these scalar props, not CSS unit strings.
+- References preserve real graph bindings, not just copied values. Set the intended collection mode on the parent before creating scalar-bound content: initial scalar layout resolves that inherited mode. This does not guarantee automatic scalar layout recomputation after a later mode switch. Verify resulting geometry as well as paint when changing modes. Missing or incorrectly typed scalar variables are errors.
 - `bind` maps supported scene-field paths to variable IDs or references when no shorthand exists. Use semantic tokens consistently rather than declaring unused collections.
 - A reusable JavaScript function shares source code, not component identity. Use `Component`, `ComponentSet`, and `Instance` for editable main components and linked instances.
 - `Instance` resolves an existing component through `of`, `component`, or `componentId`. Component-set children named `variant=Primary`, for example, define variants that can be selected when instantiating the set.
@@ -37,6 +37,7 @@ This reference describes scene creation, not React DOM output. Use the `render` 
 - Child `propertyRefs` connect fields to stable property IDs, for example `[{ propertyId: 'message', field: 'TEXT' }]`. Supported fields are `TEXT`, `VISIBLE`, and `INSTANCE_SWAP`; text and swap references require text and instance nodes respectively. References do not depend on layer names.
 - Instance assignments use the native string values (including `'true'` / `'false'` for BOOLEAN properties and component IDs for swaps). For example `Instance({ of: noteId, properties: { message: 'Updated review' } })`. Assignments persist through component synchronization; unknown IDs and invalid values fail rather than silently creating inert overrides. Select variants through component-set variant props, not through instance property assignments.
 - Reuse existing local or library components before recreating them. Keep meaningful text, visibility, and swap properties exposed rather than hand-editing cloned child nodes.
+- Distinguish a main component's default size from its instance's placement constraints. Verify the actual instance bounds in narrower parents; a requested Fill dimension alone is not proof that inherited sizing changed. Do not compensate for a sizing mismatch with guessed heights, clipping, or manually positioned siblings.
 
 ## Verification
 
@@ -57,7 +58,7 @@ The examples below are executed by the authoring-reference tests. Create the nam
 
 ```jsx
 <Frame name="Bound note" w={280} h="hug" flex="col" gap={designVar('Space/small')} p={designVar('Space/medium')} bg="#FFFFFF">
-<Text name="Message" w="fill" size={designVar('Type/body')} color="#252A31">A note that grows with its content.</Text>
+<Text name="Message" w="fill" size={designVar('Type/body')} lineHeight={designVar('Type/body-leading')} letterSpacing={designVar('Type/body-tracking')} color="#252A31">A note that grows with its content.</Text>
 </Frame>
 ```
 
