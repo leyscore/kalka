@@ -36,6 +36,15 @@
 
 ### Changed
 
+- Keep applied and available Effect styles concise, and collapse equal independent corner fields when all four use the same variable.
+- Keep pixel-grid rounding invisible while showing alignment guides only for real geometry, objects, and canvas/layout guides.
+- Copy selections with embedded images into Figma while preserving typed geometry, text sizing, images, components, variables, modes, and shared styles for lossless in-app paste.
+- Choose whether interface animations follow the system motion preference or stay off, with live updates and a persistent override.
+- Put unbound fill and stroke style pickers in section headers, preserve applied and missing style rows, and remove the redundant Dimensions heading for text layers.
+- Open variable pickers below their trigger when space permits, flipping above near the viewport edge.
+- Keep AI chat preferences with the model overview and edit models in a fixed-size Settings pane with explicit Save and Cancel actions.
+- Match page-list density to the layer tree and add subtle, reduced-motion-aware dialog transitions.
+- Fade in streaming Markdown list items and code lines without animating completed responses.
 - Vertically center shaped section titles and allow renaming a section by double-clicking its canvas label.
 - Load supported online fonts before revealing imported pages, preserve substituted text during editing, and shape canvas labels with bundled Inter typography.
 - Upgrade CanvasKit to 0.41 and use immutable renderer paths through `PathBuilder`.
@@ -46,8 +55,8 @@
 
 ### Fixed
 
-- The desktop app now loads fonts with `fetch` instead of `request`, preventing out-of-memory errors.
-
+- Avoid recursive desktop HTTP proxy requests when font downloads intercept Tauri IPC traffic.
+- Keep FIT image fills proportional, centered, and fully visible without stretching or cropped edges.
 - Preserve edited instance text, including cleared labels, when saving and reopening `.fig` files.
 - Honor `.pen` frame layout defaults and sizing and padding shorthands so imported auto-layout frames keep their computed dimensions and child positions. (#564)
 - Avoid macOS Keychain prompts during credential status checks and pause repeated credential access after failures until explicitly retried from Settings.
@@ -107,6 +116,7 @@
 - Preserve component links when pasting Figma instances so later component edits continue to update them.
 - Stop local MCP servers after the app disconnects instead of leaving orphaned background processes. (#494)
 
+- Prevent unbounded instance duplication when editing Figma-imported or pasted components with serialized or renamed children, keep extra instance children stable instead of yanking them to the front, and avoid pasted instances re-linking pre-existing instances during clipboard import.
 ### Performance
 
 - Scope automation and Figma API layout reconciliation to graph nodes and parent containers actually changed by each mutation.
