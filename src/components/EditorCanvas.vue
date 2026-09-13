@@ -87,6 +87,9 @@ const { hitTestSectionTitle, hitTestComponentLabel, hitTestFrameTitle } = useCan
   store,
   {
     layer: 'overlays',
+    get showRulers() {
+      return appRuntimeConfig.showRulers && store.state.showRulers
+    },
     shouldSuspendRender,
     getRenderState,
     onViewportResize
