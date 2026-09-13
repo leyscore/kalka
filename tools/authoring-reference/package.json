@@ -9,8 +9,8 @@
     "test": "bun test tests"
   },
   "dependencies": {
-    "@open-pencil/package-artifacts": "workspace:*",
     "@open-pencil/core": "workspace:*",
+    "@open-pencil/package-artifacts": "workspace:*",
     "dedent": "^1.7.2"
   }
 }

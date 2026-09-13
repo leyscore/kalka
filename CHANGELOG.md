@@ -26,7 +26,7 @@
 - Add local AI usage and technical diagnostics, including token telemetry, provider/model summaries, recent failures, configurable retention, export, and clear controls. (#588)
 - Import, render, edit, resize, select, and export Figma text-on-path layers while preserving their curved glyph layout.
 - Show temporary Figma-style distance measurements between selected and Option/Alt-hovered layers. (#491)
-- Edit Design JSX and HTML/CSS previews in CodeMirror, with Tailwind viewing, completion, diagnostics, bounded execution, and session-level undo. (#130)
+- Edit Design JSX and HTML/CSS previews in CodeMirror, with theme-aware highlighting, Tailwind viewing, completion, diagnostics, bounded execution, and session-level undo. (#130)
 - Set provider-specific reasoning effort on supported AI model profiles. (#454)
 - Show unavailable or substituted document fonts with affected-layer selection and retry actions, and expose font fidelity through the Figma API and MCP tooling. (#503)
 - Add reusable remote MCP connections for ACP agents, with Streamable HTTP endpoints and credential-backed bearer tokens.
@@ -38,6 +38,7 @@
 
 ### Changed
 
+- Use compact desktop Home search actions with consistent responsive layout and control sizing.
 - Keep applied and available Effect styles concise, and collapse equal independent corner fields when all four use the same variable.
 - Keep pixel-grid rounding invisible while showing alignment guides only for real geometry, objects, and canvas/layout guides.
 - Copy selections with embedded images into Figma while preserving typed geometry, text sizing, images, components, variables, modes, and shared styles for lossless in-app paste.
