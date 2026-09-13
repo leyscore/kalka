@@ -430,13 +430,34 @@ async function renderInstanceNode(
     const label = typeof ref === 'string' || typeof ref === 'number' ? String(ref) : ''
     throw new Error(`<Instance> component not found: ${label}`)
   }
-  const overrides = {
+  const overrides: Partial<SceneNode> = {
     ...propsToOverrides(props, false, parentLayout),
     ...componentMetadata(props, 'INSTANCE', componentPropertyScope(graph, parentId))
+  }
+  // Instances inherit their container layout, but explicitly authored dimensions
+  // must also replace the inherited sizing mode on that axis.
+  const layout = overrides.layoutMode ?? component.layoutMode
+  if (layout !== 'NONE') {
+    const axes =
+      layout === 'HORIZONTAL'
+        ? (['primaryAxisSizing', 'counterAxisSizing'] as const)
+        : (['counterAxisSizing', 'primaryAxisSizing'] as const)
+    for (const [dimension, field] of [
+      ['w', axes[0]],
+      ['h', axes[1]]
+    ] as const) {
+      const value = props[dimension]
+      if (typeof value === 'number') overrides[field] = 'FIXED'
+      else if (value === 'hug' || value === 'fill') overrides[field] = 'HUG'
+    }
   }
   const instance =
     graph.createInstance(component.id, parentId, overrides) ?? graph.createNode('FRAME', parentId)
   try {
+    for (const [field, value] of Object.entries(overrides)) {
+      setInstanceOverride(instance.instanceOverrides, instance.id, instance.id, field, value)
+    }
+    graph.updateNode(instance.id, { instanceOverrides: instance.instanceOverrides })
     applyBindings(graph, instance.id, bindings)
     applyInstanceOverrides(graph, instance, tree.props.overrides)
     assignComponentProperties(graph, instance, props.properties)

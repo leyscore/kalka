@@ -64,6 +64,7 @@
 - Honor `.pen` frame layout defaults and sizing and padding shorthands so imported auto-layout frames keep their computed dimensions and child positions. (#564)
 - Avoid macOS Keychain prompts during credential status checks and pause repeated credential access after failures until explicitly retried from Settings.
 
+- Honor explicit Design JSX instance dimensions and preserve authored overrides through component synchronization.
 - Route browser Command/Ctrl plus and minus shortcuts to canvas zoom instead of page zoom.
 - Resolve `$name` references in imported `.pen` fills, stroke fills, font families, dimensions, and spacing without requiring a `--` prefix. (#563)
 - Resolve bound fields in each layer’s mode, keep variable edits scoped and undoable, and make broken bindings visible and recoverable.
