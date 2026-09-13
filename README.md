@@ -223,7 +223,7 @@ Local clients discover the private Unix socket automatically and fall back to lo
 Teach your AI coding agent to use OpenPencil — inspect designs, export assets, analyze tokens, modify .fig files:
 
 ```sh
-npx skills add open-pencil/skills@open-pencil
+npx skills add open-pencil/open-pencil
 ```
 
 Works with Claude Code, Cursor, Windsurf, Codex, and any agent that supports [skills](https://skills.sh).
