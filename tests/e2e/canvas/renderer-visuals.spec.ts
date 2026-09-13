@@ -1,3 +1,5 @@
+import { readFile } from 'node:fs/promises'
+
 import { expect, test, useEditorSetupWithClear } from '#tests/e2e/fixtures'
 
 const editor = useEditorSetupWithClear('/?test&no-chrome&no-rulers')
@@ -62,6 +64,55 @@ test('boolean operations', async () => {
   })
   await editor.canvas.waitForRender()
   await expectCanvas('boolean-operations')
+})
+
+test('FIT avatar preserves the full clipboard fixture image', async () => {
+  const bytes = await readFile('tests/fixtures/vectorize/pilot_avatar.png')
+  await editor.page.evaluate(
+    (data) => {
+      const store = window.openPencil?.getStore?.()
+      if (!store) throw new Error('OpenPencil store not initialized')
+      const hash = store.storeImage(new Uint8Array(data))
+      store.graph.createNode('RECTANGLE', store.state.currentPageId, {
+        name: 'Bitmap background',
+        x: 80,
+        y: 80,
+        width: 320,
+        height: 222,
+        cornerRadius: 16,
+        fills: [
+          {
+            type: 'SOLID',
+            color: { r: 241 / 255, g: 245 / 255, b: 249 / 255, a: 1 },
+            visible: true,
+            opacity: 1
+          }
+        ]
+      })
+      store.graph.createNode('RECTANGLE', store.state.currentPageId, {
+        name: 'Pilot avatar · image fill FIT',
+        x: 138,
+        y: 90,
+        width: 204,
+        height: 202,
+        fills: [
+          {
+            type: 'IMAGE',
+            imageHash: hash,
+            imageScaleMode: 'FIT',
+            color: { r: 0, g: 0, b: 0, a: 1 },
+            visible: true,
+            opacity: 1
+          }
+        ]
+      })
+      store.clearSelection()
+      store.requestRender()
+    },
+    [...bytes]
+  )
+  await editor.canvas.waitForRender()
+  await expectCanvas('fit-avatar-clipboard-fixture')
 })
 
 test('gradients and image fill modes', async () => {
@@ -133,6 +184,24 @@ test('gradients and image fill modes', async () => {
         ]
       })
     }
+
+    store.graph.createNode('RECTANGLE', pageId, {
+      name: 'FIT image with transparent margins',
+      x: 568,
+      y: 84,
+      width: 140,
+      height: 172,
+      fills: [
+        {
+          type: 'IMAGE',
+          color: { r: 0, g: 0, b: 0, a: 1 },
+          visible: true,
+          opacity: 1,
+          imageHash,
+          imageScaleMode: 'FIT'
+        }
+      ]
+    })
 
     const scaleModes = ['FILL', 'FIT', 'TILE', 'CROP'] as const
     for (const [index, imageScaleMode] of scaleModes.entries()) {
