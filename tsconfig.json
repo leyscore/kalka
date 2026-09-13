@@ -22,6 +22,7 @@
     "noFallthroughCasesInSwitch": true,
     "paths": {
       "#authoring-reference/*": ["./tools/authoring-reference/src/*"],
+      "#ci/*": ["./tools/ci/src/*"],
       "@/*": [
         "./src/*"
       ],
