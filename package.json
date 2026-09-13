@@ -17,6 +17,7 @@
     "packages/docs",
     "tools/docs",
     "tools/package-artifacts",
+    "tools/authoring-reference",
     "tools/package-quality",
     "tools/release-packages",
     "tools/visual-oracles"
@@ -41,7 +42,9 @@
     "check": "bun run build:packages && bun run lint && tsgo --noEmit && bun run check:vue && bun run check:native-test && bun run check:i18n && bun run check:docs && bun run check:changelog && bun run check:packages && bun run check:deps && bun run check:audit && bun run check:secrets && bun run check:monorepo && bun run check:arch && bun run test:type-shapes && bun run test:tools && bun run test:dupes",
     "check:changelog": "bun tools/release-packages/src/check-changelog.ts",
     "check:deps": "knip --include unlisted,unresolved,binaries",
-    "check:docs": "bun --filter @open-pencil/docs check",
+    "check:docs": "bun --filter @open-pencil/docs check && bun run check:authoring-reference",
+    "check:authoring-reference": "bun tools/authoring-reference/src/check.ts",
+    "generate:authoring-reference": "bun tools/authoring-reference/src/generate.ts",
     "check:audit": "bun audit --audit-level=critical",
     "check:secrets": "bun tools/secret-scan/src/index.ts",
     "check:monorepo": "sherif --ignore-rule root-package-dependencies",
