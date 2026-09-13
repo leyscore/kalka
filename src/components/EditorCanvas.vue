@@ -58,9 +58,10 @@ function updatePaneCursor(cx: number, cy: number) {
 }
 
 const getRenderState = paneId ? () => store.getPaneRenderState(paneId) : undefined
-const onViewportResize = paneId
-  ? (width: number, height: number) => store.resizePane(paneId, width, height)
-  : undefined
+const onViewportResize = (width: number, height: number) => {
+  if (paneId) store.resizePane(paneId, width, height)
+  if (isActivePane.value) store.setViewportSize(width, height)
+}
 
 const { updateCursor } = useCanvasCollaborationAwareness(store, collab)
 const { selectAtContextPoint } = createCanvasContextSelection(canvasRef, store)
@@ -73,6 +74,7 @@ const shouldSuspendRender = () =>
 useCanvas(sceneCanvasRef, store, {
   layer: 'scene',
   sceneRenderer: appRuntimeConfig.sceneRenderer,
+  onReady: store.markCanvasReady,
   shouldSuspendRender,
   showRulers: false,
   getRenderState,
