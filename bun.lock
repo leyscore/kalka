@@ -203,6 +203,7 @@
         "svgpath": "^2.6.0",
         "twirlwind": "^0.3.0",
         "unifont": "0.7.4",
+        "valibot": "^1.4.2",
         "yoga-layout": "npm:@open-pencil/yoga-layout@3.3.0-grid.3",
       },
       "devDependencies": {

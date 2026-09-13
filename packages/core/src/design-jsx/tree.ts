@@ -1,4 +1,4 @@
-import type { Effect, Fill } from '@open-pencil/scene-graph'
+import type { Effect, Fill, SceneNode } from '@open-pencil/scene-graph'
 import type { Color } from '@open-pencil/scene-graph/primitives'
 
 import type { DesignVariable } from './vars'
@@ -163,12 +163,25 @@ export type StyleProps = {
   textAutoResize?: 'none' | 'width' | 'height'
 }
 
-export type BaseProps = StyleProps & {
+type NodeProps = StyleProps & {
   name?: string
   key?: string | number
   children?: unknown
   bind?: Record<string, unknown>
+  propertyRefs?: SceneNode['componentPropertyReferences']
   [key: string]: unknown
 }
 
+export type BaseProps = NodeProps & { properties?: never }
 export type TextProps = BaseProps
+
+export type ComponentProps = NodeProps & {
+  properties?: SceneNode['componentPropertyDefinitions']
+}
+
+export type InstanceProps = NodeProps & {
+  component?: string
+  componentId?: string
+  of?: string
+  properties?: SceneNode['componentPropertyAssignments']
+}
