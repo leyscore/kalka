@@ -405,20 +405,19 @@ export function makeImageFillLocalMatrix(
     }
   }
 
-  let sx: number, sy: number, sw: number, sh: number
   if (scaleMode === 'FIT') {
     const scale = Math.min(node.width / imgW, node.height / imgH)
-    sw = imgW
-    sh = imgH
-    sx = -(node.width / scale - imgW) / 2
-    sy = -(node.height / scale - imgH) / 2
-  } else {
-    const scale = Math.max(node.width / imgW, node.height / imgH)
-    sw = node.width / scale
-    sh = node.height / scale
-    sx = (imgW - sw) / 2
-    sy = (imgH - sh) / 2
+    return r.ck.Matrix.multiply(
+      r.ck.Matrix.translated((node.width - imgW * scale) / 2, (node.height - imgH * scale) / 2),
+      r.ck.Matrix.scaled(scale, scale)
+    )
   }
+
+  const scale = Math.max(node.width / imgW, node.height / imgH)
+  const sw = node.width / scale
+  const sh = node.height / scale
+  const sx = (imgW - sw) / 2
+  const sy = (imgH - sh) / 2
 
   return r.ck.Matrix.multiply(
     r.ck.Matrix.scaled(node.width / sw, node.height / sh),
@@ -463,9 +462,10 @@ export function applyImageFill(
     return true
   }
 
+  const tileMode = scaleMode === 'FIT' ? r.ck.TileMode.Decal : r.ck.TileMode.Clamp
   const shader = img.makeShaderOptions(
-    r.ck.TileMode.Clamp,
-    r.ck.TileMode.Clamp,
+    tileMode,
+    tileMode,
     r.ck.FilterMode.Linear,
     r.ck.MipmapMode.Linear,
     localMatrix
