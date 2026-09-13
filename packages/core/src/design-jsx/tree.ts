@@ -95,6 +95,7 @@ export type StyleProps = {
   gap?: number | DesignVariable
   wrap?: boolean
   rowGap?: number | DesignVariable
+  columnGap?: number | DesignVariable
   justify?: 'start' | 'end' | 'center' | 'between'
   justifyContent?: 'start' | 'end' | 'center' | 'between'
   items?: 'start' | 'end' | 'center' | 'stretch'
@@ -145,6 +146,8 @@ export type StyleProps = {
 
   size?: number | DesignVariable
   fontSize?: number | DesignVariable
+  lineHeight?: number | DesignVariable
+  letterSpacing?: number | DesignVariable
   font?: string
   fontFamily?: string
   weight?: number | 'bold' | 'medium' | 'normal'
