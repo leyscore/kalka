@@ -421,21 +421,9 @@
   },
   "overrides": [
     {
-      "files": [
-        "tools/lint/src/rules/quality/widen-then-assert.ts",
-        "tools/lint/src/support/dictionary-types.ts"
-      ],
+      "files": ["tools/lint/src/rules/quality/widen-then-assert.ts"],
       "rules": {
         "complexity": "off"
-      }
-    },
-    {
-      "files": [
-        "tools/lint/src/support/lexical-type-parameters.ts",
-        "tools/lint/src/support/type-alias-resolution.ts"
-      ],
-      "rules": {
-        "open-pencil/no-broad-double-cast": "off"
       }
     },
     {

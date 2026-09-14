@@ -1,15 +1,15 @@
-import { afterEach, describe, expect, test } from 'bun:test'
+import { describe, expect, test } from 'bun:test'
 
-import { cleanupLintFixtures, lint, ruleDiagnostics } from '#lint/support/lint-test.ts'
+import { lint, ruleDiagnostics } from './helpers/lint.ts'
 
 const rule = 'no-reduce-accumulator-copy'
 const rules = { [`open-pencil/${rule}`]: 'error' }
 
-afterEach(cleanupLintFixtures)
-
 describe('no-reduce-accumulator-copy', () => {
   test.each([
     'items.reduce((acc, item) => acc.concat([item]), [])',
+    'items.reduce((acc, item) => acc.slice(0, -1), [])',
+    'items.reduce((acc, item) => acc.slice(2), [])',
     'items.reduce((acc, item) => { const next = acc.slice(); next.push(item); return next }, [])',
     'items.reduce((acc, item) => Object.assign({}, acc, { [item.id]: item }), {})',
     'items.reduce((acc, item) => Array.from(acc), [])'
@@ -21,7 +21,10 @@ describe('no-reduce-accumulator-copy', () => {
     'items.reduce((acc, item) => { acc.push(item); return acc }, [])',
     'items.reduce((acc, item) => Object.assign(acc, { [item.id]: item }), {})',
     'items.reduce((acc, item) => item.slice(), [])',
-    'items.reduce(namedReducer, [])'
+    'items.reduce(namedReducer, [])',
+    'items.reduce((acc, item) => acc.slice(0, 1), [0])',
+    'items.reduce((acc, item) => acc.slice(-2), [0])',
+    'items.reduce((acc, item) => acc.slice(0, 0), [0])'
   ])('accepts owned mutation and unrelated copies: %s', async (source) => {
     expect(ruleDiagnostics(await lint(source, rules), rule)).toHaveLength(0)
   })

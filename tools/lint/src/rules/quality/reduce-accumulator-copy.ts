@@ -70,7 +70,25 @@ function isGlobalCopyOwner(sourceCode: SourceCode, node: ESTree.Node, name: stri
   return variable === null || variable.defs.length === 0
 }
 
-/** Reject non-spread copies of reducer accumulators; pair with oxc/no-accumulating-spread. */
+function numericLiteral(node: ESTree.Node | undefined): number | null {
+  if (node?.type === 'Literal' && typeof node.value === 'number') return node.value
+  if (node?.type === 'UnaryExpression' && node.operator === '-') {
+    const value = numericLiteral(node.argument)
+    return value === null ? null : -value
+  }
+  return null
+}
+
+function isBoundedSlice(node: ESTree.CallExpression): boolean {
+  const start = numericLiteral(node.arguments[0])
+  const end = numericLiteral(node.arguments[1])
+  return (
+    (start !== null && Number.isFinite(start) && start < 0) ||
+    (end !== null && Number.isFinite(end) && end >= 0)
+  )
+}
+
+/** Reject unbounded copies of reducer accumulators; pair with oxc/no-accumulating-spread. */
 export const noReduceAccumulatorCopyRule = defineRule({
   meta: {
     type: 'problem',
@@ -122,7 +140,10 @@ export const noReduceAccumulatorCopyRule = defineRule({
           const initialValue = reducer.initialValue
           const arrayAccumulator =
             initialValue !== undefined && isKnownArrayExpression(context.sourceCode, initialValue)
-          copiesAccumulator = arrayAccumulator && isAccumulator(method.object)
+          copiesAccumulator =
+            arrayAccumulator &&
+            isAccumulator(method.object) &&
+            !(method.name === 'slice' && isBoundedSlice(node))
         }
         if (copiesAccumulator) context.report({ node, messageId: 'accumulatorCopy' })
       }

@@ -16,6 +16,7 @@
     "packages/harness",
     "packages/docs",
     "tools/docs",
+    "tools/lint",
     "tools/package-artifacts",
     "tools/authoring-reference",
     "tools/package-quality",

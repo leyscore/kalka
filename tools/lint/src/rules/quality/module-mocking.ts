@@ -26,9 +26,9 @@ function isTestFrameworkObject(
     const source = definition.parent.source.value
     const name = importedName(definition.node)
     return (
-      (source === 'vitest' && name === 'vi') ||
+      (source === 'vitest' && (name === 'vi' || name === 'vitest')) ||
       (source === '@jest/globals' && name === 'jest') ||
-      (source === 'bun:test' && name === 'mock')
+      (source === 'bun:test' && (name === 'mock' || name === 'jest'))
     )
   })
 }

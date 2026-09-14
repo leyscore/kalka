@@ -388,6 +388,12 @@
     "tools/docs": {
       "name": "@open-pencil/docs-tools",
     },
+    "tools/lint": {
+      "name": "@open-pencil/lint-tools",
+      "devDependencies": {
+        "@open-pencil/package-artifacts": "workspace:*",
+      },
+    },
     "tools/package-artifacts": {
       "name": "@open-pencil/package-artifacts",
       "dependencies": {
@@ -1191,6 +1197,8 @@
     "@open-pencil/harness": ["@open-pencil/harness@workspace:packages/harness"],
 
     "@open-pencil/kiwi": ["@open-pencil/kiwi@workspace:packages/kiwi"],
+
+    "@open-pencil/lint-tools": ["@open-pencil/lint-tools@workspace:tools/lint"],
 
     "@open-pencil/mcp": ["@open-pencil/mcp@workspace:packages/mcp"],
 
