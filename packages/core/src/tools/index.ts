@@ -1,4 +1,4 @@
-import codegenPrompt from './prompts/codegen.md?raw'
+export { CODEGEN_PROMPT } from './prompts'
 
 export { getComponentCatalog, registerComponentCatalog } from './component-catalog'
 export type {
@@ -7,7 +7,6 @@ export type {
   ComponentCatalogLibraryAsset
 } from './component-catalog'
 export { ALL_TOOLS, CORE_TOOLS, EXTENDED_TOOLS } from './registry'
-export const CODEGEN_PROMPT: string = codegenPrompt
 export { exportImage } from './vector'
 export {
   defineTool,

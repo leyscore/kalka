@@ -218,12 +218,12 @@ Local clients discover the private Unix socket automatically and fall back to lo
 
 **File access:** Set `OPENPENCIL_MCP_ROOT` to scope file operations (`open_file`, `new_document`, export `path` param) to a directory. Defaults to the current working directory.
 
-### AI agent skill
+### [AI agent skill](skills/open-pencil/SKILL.md)
 
 Teach your AI coding agent to use OpenPencil — inspect designs, export assets, analyze tokens, modify .fig files:
 
 ```sh
-npx skills add open-pencil/skills@open-pencil
+npx skills add open-pencil/open-pencil
 ```
 
 Works with Claude Code, Cursor, Windsurf, Codex, and any agent that supports [skills](https://skills.sh).
