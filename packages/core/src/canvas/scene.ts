@@ -947,16 +947,15 @@ function shouldClipTextToLayoutBox(node: SceneNode): boolean {
   )
 }
 
-function drawSubstitutedPathText(
+function drawResolvedPathText(
   r: SkiaRenderer,
   canvas: Canvas,
   node: SceneNode,
   fontReadiness: ReturnType<SkiaRenderer['nodeFontReadiness']>
 ): boolean {
   return (
-    fontReadiness === 'substituted' &&
-    node.textPathData !== null &&
-    drawDerivedText(r, canvas, node)
+    // Resolving the exact face must not replace curved glyph placement with a straight paragraph.
+    fontReadiness !== 'exhausted' && node.textPathData !== null && drawDerivedText(r, canvas, node)
   )
 }
 
@@ -974,7 +973,7 @@ export function renderText(r: SkiaRenderer, canvas: Canvas, node: SceneNode, fil
     canvas.restore()
     return
   }
-  if (drawSubstitutedPathText(r, canvas, node, fontReadiness)) {
+  if (drawResolvedPathText(r, canvas, node, fontReadiness)) {
     canvas.restore()
     return
   }
