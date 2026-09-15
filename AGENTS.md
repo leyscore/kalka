@@ -70,7 +70,8 @@ App dialogs compose the Reka-backed components under `src/components/ui/dialog/`
 - `bun run dev` — fixed `http://localhost:1420` server for Playwright, Tauri, and Dev Containers.
 - `bun run check` — complete build, lint, type, architecture, docs, package, dependency, security, tooling, and duplication gate.
 - `bun run format` — format and sort imports.
-- `bun run test:unit` / `bun run test` — engine/unit and Playwright suites.
+- `bun run test:unit` / `bun run test` — engine/unit and app Playwright suites.
+- `bun run test:storybook` — the Storybook Playwright project in `playwright.config.ts`. Test scripts select their server; direct Playwright commands start both servers unless `OPENPENCIL_TEST_SERVER=app|storybook|all` is set.
 - `bun run tauri dev` — desktop app with hot reload.
 - `bun open-pencil --help` — current CLI command list.
 
@@ -99,11 +100,20 @@ PR CI always classifies changed paths through `tools/ci/`. Docs-only changes run
 
 For user-facing work, add one present-tense outcome under the single appropriate `Unreleased` category: `Breaking changes`, `Added`, `Changed`, `Fixed`, `Performance`, or `Security`. Treat it as release notes, not a commit log: omit tests, benchmarks, CI, internal refactors/tooling, and bugs both introduced and fixed since the last release. After merges, compare the whole section with changes since the latest release, preserve important outcomes, consolidate related work, and remove duplicate bullets/headings. End sentences with periods and retain relevant issue/PR references. Update `README.md` when appropriate and this file when architecture or conventions change. Keep internal plans in ignored `scratch/`, not published docs.
 
+Before finalizing `Unreleased`:
+
+- Compare released behavior at the latest published tag with the final implementation, not just commit subjects. Verify questionable fixes existed at that tag; fold fixes to newly added features into their final feature description.
+- Check public exports, model/config/data contracts, and peer requirements for removals, renames, and upgrade instructions under `Breaking changes`.
+- Remove superseded intermediate behavior and duplicate outcomes across categories. State platform requirements and concrete supported behavior instead of unqualified compatibility or performance claims.
+- Run `bun run check:changelog`. Keep historical sections unchanged during routine cleanup; release publication uses the matching tagged section, not regenerated prose.
+
 ## Commit messages
 
 `commitlint.config.ts` enforces message structure through the **Commit messages** CI job on all PRs, including docs-only changes. Run `bun run check:commits --last` or pass `--from`/`--to` for a branch range. Preserve the release exception and product casing when changing rules; CI gate policy lives in `tools/ci/src/policy.ts`.
 
 Use Conventional Commits (`feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `build`, `ci`, `chore`) for regular work. Keep subjects short, imperative, and narrowly scoped; explain rationale in the body. Preserve product casing such as DOM/CSS, HTML, JSX, Tailwind, Kiwi, `.fig`, MCP, CLI, AI, ACP, and i18n. Release commits use `Release vX.Y.Z`.
+
+Keep AI assistance in the PR's AI assistance section, not commit authorship or `Co-authored-by` trailers. Do not append tool-generated promotional signatures or session links. Preserve human co-author credits and required third-party notices. Follow the vendor-neutral attribution policy in `CONTRIBUTING.md`; the existing commitlint gate checks known AI co-author identities without rewriting base history.
 
 PR titles use Conventional Commits because GitHub uses them as merge subjects. The separate **PR title** workflow validates titles, including title edits, without rerunning the full CI suite. Preserve the conventional subject when merging via CLI/API; if setting it explicitly with `gh pr merge --subject`, use the validated PR title. Give branch-update merges explicit subjects such as `chore: merge master into <branch>`. Commitlint's default merge exceptions are not a naming convention. Do not rewrite published history solely to normalize messages.
 
@@ -210,7 +220,7 @@ Keep responsibilities distinct: engine tests cover state contracts, Playwright b
 - Section/frame title text never scales — render at fixed font size, ellipsize to fit
 - Rulers are rendered on the canvas (not DOM), with selection range badges that don't overlap tick numbers
 - Remote cursors: Figma-style colored arrows with white border + name pill, rendered in screen space
-- Pixel-affecting renderer features need committed visual coverage, not just mock/geometry assertions. Add or update a Playwright canvas snapshot for changes to fills, gradients, images, blend modes, masks, boolean geometry, corners, strokes, shadows, blur, text rendering, or demo showcase scenes. Use targeted snapshot updates such as `bunx playwright test tests/e2e/canvas/renderer-visuals.spec.ts --project=openpencil --update-snapshots` and then rerun the same test without `--update-snapshots`.
+- Pixel-affecting renderer features need committed visual coverage, not just mock/geometry assertions. Add or update a Playwright canvas snapshot for changes to fills, gradients, images, blend modes, masks, boolean geometry, corners, strokes, shadows, blur, text rendering, or demo showcase scenes. Use targeted snapshot updates such as `bun run test tests/e2e/canvas/renderer-visuals.spec.ts --update-snapshots` and then rerun the same test without `--update-snapshots`.
 
 ## Scene graph
 

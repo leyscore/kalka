@@ -7,7 +7,7 @@ export type ChangeScope = 'docs' | 'code'
 export function classifyPaths(paths: readonly string[]): ChangeScope {
   if (paths.length === 0) return 'code'
   return paths.every((path) => {
-    if (ROOT_DOCS.has(path)) return true
+    if (ROOT_DOCS.has(path) || /^packages\/[^/]+\/README\.md$/.test(path)) return true
     if (path.startsWith('packages/docs/')) return DOC_ASSET.test(path)
     if (path.startsWith('openspec/')) return path.endsWith('.md')
     if (path.startsWith('skills/')) return path.endsWith('.md') || path.endsWith('/LICENSE.txt')
