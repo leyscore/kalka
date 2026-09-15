@@ -83,8 +83,8 @@ function isBoundedSlice(node: ESTree.CallExpression): boolean {
   const start = numericLiteral(node.arguments[0])
   const end = numericLiteral(node.arguments[1])
   return (
-    (start !== null && Number.isFinite(start) && start < 0) ||
-    (end !== null && Number.isFinite(end) && end >= 0)
+    (start !== null && Number.isFinite(start) && Math.trunc(start) < 0) ||
+    (end !== null && Number.isFinite(end) && Math.trunc(end) >= 0)
   )
 }
 
