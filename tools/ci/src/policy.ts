@@ -26,6 +26,7 @@ export const CODE_JOBS = [
   'unit-tests'
 ] as const
 export const DOCS_JOB = 'documentation'
+export const ALWAYS_JOBS = ['commit-messages'] as const
 
 type JobResult = 'success' | 'failure' | 'cancelled' | 'skipped'
 export interface JobStatus {
@@ -39,7 +40,10 @@ export function gateErrors(needs: Partial<Record<string, JobStatus>>): string[] 
   if (detection?.result !== 'success') return ['Change detection did not succeed']
   const scope = detection.outputs?.scope
   if (scope !== 'docs' && scope !== 'code') return ['Invalid or missing change scope']
-  const required: readonly string[] = scope === 'docs' ? [DOCS_JOB] : CODE_JOBS
+  const required: readonly string[] = [
+    ...ALWAYS_JOBS,
+    ...(scope === 'docs' ? [DOCS_JOB] : CODE_JOBS)
+  ]
   const excluded: readonly string[] = scope === 'docs' ? CODE_JOBS : [DOCS_JOB]
   const errors = required
     .filter((job) => needs[job]?.result !== 'success')

@@ -110,3 +110,18 @@ See [`AGENTS.md`](./AGENTS.md) for the full architecture reference, code convent
 ## Commits
 
 Follow the commit-message conventions in [`AGENTS.md`](./AGENTS.md). Update `CHANGELOG.md` for user-facing changes.
+
+### Commit messages
+
+The **Commit messages** CI job checks every commit introduced by a PR, including docs-only PRs. It does not lint existing base-branch history or GitHub's synthetic merge commit. The aggregate CI result requires this job to pass.
+
+Use `type(optional-scope): short description`, for example `fix(MCP): preserve connection settings`. Allowed types are `feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `build`, `ci`, and `chore`. Keep headers within 100 characters and omit a trailing period. Product names retain their casing; bodies and footers may contain long lines.
+
+Standard merge/revert messages use commitlint's default exceptions. Release commits retain the exact `Release vX.Y.Z` subject convention. These checks validate structure, not whether a description is meaningful or the type is appropriate.
+
+```sh
+bun run check:commits --last
+bun run check:commits --from origin/master --to HEAD --verbose
+```
+
+If a message fails, use the reported rule and commit subject to locate it. Amend your latest commit with `git commit --amend`, or use an interactive rebase for earlier commits on your PR branch. Coordinate before rewriting a shared branch. No local Git hooks are installed automatically; CI is the enforcement point.

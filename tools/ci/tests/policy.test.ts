@@ -2,6 +2,7 @@ import { expect, test } from 'bun:test'
 
 import {
   classifyPaths,
+  ALWAYS_JOBS,
   CODE_JOBS,
   DOCS_JOB,
   gateErrors,
@@ -50,6 +51,7 @@ test('both sides of a rename affect classification', () => {
 function results(scope: ChangeScope): Record<string, JobStatus> {
   return {
     changes: { result: 'success', outputs: { scope } },
+    ...Object.fromEntries(ALWAYS_JOBS.map((job) => [job, { result: 'success' }])),
     [DOCS_JOB]: { result: scope === 'docs' ? 'success' : 'skipped' },
     ...Object.fromEntries(
       CODE_JOBS.map((job) => [job, { result: scope === 'code' ? 'success' : 'skipped' }])
@@ -69,7 +71,7 @@ test.each(['failure', 'cancelled', 'skipped'] as const)(
   (result) => {
     for (const scope of ['docs', 'code'] as const) {
       expect(gateErrors({ ...results(scope), changes: { result } })).not.toEqual([])
-      for (const job of scope === 'docs' ? [DOCS_JOB] : CODE_JOBS) {
+      for (const job of [...ALWAYS_JOBS, ...(scope === 'docs' ? [DOCS_JOB] : CODE_JOBS)]) {
         expect(gateErrors({ ...results(scope), [job]: { result } })).not.toEqual([])
       }
     }
@@ -86,7 +88,7 @@ test('missing jobs or outputs cannot pass', () => {
     })
   ).not.toEqual([])
   for (const scope of ['docs', 'code'] as const) {
-    for (const job of scope === 'docs' ? [DOCS_JOB] : CODE_JOBS) {
+    for (const job of [...ALWAYS_JOBS, ...(scope === 'docs' ? [DOCS_JOB] : CODE_JOBS)]) {
       const incomplete = Object.fromEntries(
         Object.entries(results(scope)).filter(([name]) => name !== job)
       )
