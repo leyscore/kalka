@@ -70,7 +70,8 @@ App dialogs compose the Reka-backed components under `src/components/ui/dialog/`
 - `bun run dev` — fixed `http://localhost:1420` server for Playwright, Tauri, and Dev Containers.
 - `bun run check` — complete build, lint, type, architecture, docs, package, dependency, security, tooling, and duplication gate.
 - `bun run format` — format and sort imports.
-- `bun run test:unit` / `bun run test` — engine/unit and Playwright suites.
+- `bun run test:unit` / `bun run test` — engine/unit and app Playwright suites.
+- `bun run test:storybook` — the Storybook Playwright project in `playwright.config.ts`. Test scripts select their server; direct Playwright commands start both servers unless `OPENPENCIL_TEST_SERVER=app|storybook|all` is set.
 - `bun run tauri dev` — desktop app with hot reload.
 - `bun open-pencil --help` — current CLI command list.
 
@@ -210,7 +211,7 @@ Keep responsibilities distinct: engine tests cover state contracts, Playwright b
 - Section/frame title text never scales — render at fixed font size, ellipsize to fit
 - Rulers are rendered on the canvas (not DOM), with selection range badges that don't overlap tick numbers
 - Remote cursors: Figma-style colored arrows with white border + name pill, rendered in screen space
-- Pixel-affecting renderer features need committed visual coverage, not just mock/geometry assertions. Add or update a Playwright canvas snapshot for changes to fills, gradients, images, blend modes, masks, boolean geometry, corners, strokes, shadows, blur, text rendering, or demo showcase scenes. Use targeted snapshot updates such as `bunx playwright test tests/e2e/canvas/renderer-visuals.spec.ts --project=openpencil --update-snapshots` and then rerun the same test without `--update-snapshots`.
+- Pixel-affecting renderer features need committed visual coverage, not just mock/geometry assertions. Add or update a Playwright canvas snapshot for changes to fills, gradients, images, blend modes, masks, boolean geometry, corners, strokes, shadows, blur, text rendering, or demo showcase scenes. Use targeted snapshot updates such as `bun run test tests/e2e/canvas/renderer-visuals.spec.ts --update-snapshots` and then rerun the same test without `--update-snapshots`.
 
 ## Scene graph
 
