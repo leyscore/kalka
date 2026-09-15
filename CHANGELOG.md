@@ -60,7 +60,8 @@
 ### Fixed
 
 - Keep newly created and edited objects visible during zoom instead of replaying outdated scene content.
-- Keep property fields and paint previews live during editing, and keep rotated selection labels aligned and object edges stable when previews settle.
+- Keep property fields and paint previews live during editing, rotated selection labels readable and aligned, and object edges stable when previews settle.
+- Show compact bordered section labels with inset nested titles and clearer hover feedback.
 - Keep Undo and Redo commands available as edit history changes, without requiring another scene edit.
 - Avoid recursive desktop HTTP proxy requests when font downloads intercept Tauri IPC traffic.
 - Keep FIT image fills proportional, centered, and fully visible without stretching or cropped edges.

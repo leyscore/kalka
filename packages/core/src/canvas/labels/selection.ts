@@ -15,7 +15,7 @@ import { createSceneGeometry } from '#core/geometry'
 
 import { hasFrameTitle, labelLayout } from './layout'
 import { measureGlyphWidth } from './paragraph-cache'
-import { labelScreenMatrix, labelTransform } from './transform'
+import { frameLabelPlacement, labelScreenMatrix } from './transform'
 
 function accumulateSelectionBounds(
   graph: SceneGraph,
@@ -47,11 +47,11 @@ function drawSingleFrameTitle(
   const provider = r.fontProvider
   if (!hasFrameTitle(node, parentNode) || !provider) return
 
-  const transform = labelTransform(node, graph, overlays.rotationPreview)
+  const transform = frameLabelPlacement(node, graph, overlays.rotationPreview)
 
   r.auxFill.setColor(r.selColor())
 
-  const layout = labelLayout('frame', node.width * r.zoom)
+  const layout = labelLayout('frame', transform.width * r.zoom)
   if (!layout) return
 
   canvas.save()
@@ -67,7 +67,8 @@ function drawSingleFrameTitle(
     r.selColor(),
     r.fontGeneration,
     layout.text.x,
-    layout.text.y
+    layout.text.y,
+    layout.fontWeight
   )
   canvas.restore()
 }
@@ -112,9 +113,9 @@ export function drawSingleSelectionSize(
 ): void {
   const sizeText = `${Math.round(node.width)} × ${Math.round(node.height)}`
   const pillColor = r.isComponentType(node.type) ? r.compColor() : r.selColor()
-  const transform = labelTransform(node, graph, overlays.rotationPreview, {
-    x: node.width / 2,
-    y: node.height
+  const transform = frameLabelPlacement(node, graph, overlays.rotationPreview, {
+    x: 0.5,
+    y: 1
   })
 
   // Keep the label's typography and gap in screen pixels rather than scaling them.

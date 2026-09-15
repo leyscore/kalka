@@ -6,7 +6,7 @@ import { SceneGraph } from '@open-pencil/scene-graph'
 
 import { LabelCache } from '#core/canvas/labels/cache'
 import { hitTestSectionTitle, hitTestFrameTitle } from '#core/canvas/labels/hit-test'
-import { labelTransform } from '#core/canvas/labels/transform'
+import { frameLabelPlacement, labelTransform } from '#core/canvas/labels/transform'
 import { createSceneGeometry } from '#core/geometry'
 
 import { expectDefined } from '#tests/helpers/assert'
@@ -58,6 +58,38 @@ test('label origins and edge anchors include a live ancestor rotation without mu
   expect(createSceneGeometry(graph, null).bounds(frame)).toEqual(bounds)
 })
 
+for (const [angle, rotation, width, height] of [
+  [40, 40, 80, 40],
+  [50, -40, 40, 80],
+  [140, -40, 80, 40],
+  [-145, 35, 80, 40],
+  [180, 0, 80, 40]
+] as const) {
+  test(`frame labels choose readable opposite edges at ${angle} degrees`, () => {
+    const { graph, frame } = fixture()
+    graph.updateNode(frame.id, { rotation: angle })
+    const title = frameLabelPlacement(frame, graph, null)
+    const size = frameLabelPlacement(frame, graph, null, { x: 0.5, y: 1 })
+    expect(title.rotation).toBeCloseTo(rotation, 9)
+    expect(title.width).toBe(width)
+    expect(title.height).toBe(height)
+    const radians = (rotation * Math.PI) / 180
+    const dx = size.x - title.x
+    const dy = size.y - title.y
+    expect(dx * Math.cos(radians) + dy * Math.sin(radians)).toBeCloseTo(width / 2, 9)
+    expect(-dx * Math.sin(radians) + dy * Math.cos(radians)).toBeCloseTo(height, 9)
+  })
+}
+
+test('readability thresholds use identical edges during preview and after commit', () => {
+  for (const angle of [-135, -45, 45, 135]) {
+    const { graph, frame } = fixture()
+    const preview = frameLabelPlacement(frame, graph, { nodeId: frame.id, angle })
+    graph.updateNode(frame.id, { rotation: angle })
+    expect(frameLabelPlacement(frame, graph, null)).toEqual(preview)
+  }
+})
+
 test('section culling uses preview world bounds rather than cached unrotated coordinates', () => {
   const { graph, page, section } = fixture()
   const cache = new LabelCache()
@@ -78,6 +110,7 @@ test('section and nested frame hit targets follow their rendered title transform
   for (const catalog of [undefined, cache]) {
     expect(hitTestSectionTitle(graph, 260, 54, 1, page.id, font, catalog)?.id).toBe(section.id)
   }
-  // Nested frame title local point (4, -10), through (220, 70) at 90 degrees.
-  expect(hitTestFrameTitle(graph, 230, 74, 1, new Set([frame.id]), font)?.id).toBe(frame.id)
+  // The readable frame title moves to the horizontal edge at (180, 70).
+  expect(hitTestFrameTitle(graph, 184, 60, 1, new Set([frame.id]), font)?.id).toBe(frame.id)
+  expect(hitTestFrameTitle(graph, 230, 74, 1, new Set([frame.id]), font)).toBeNull()
 })

@@ -16,6 +16,8 @@ export function sectionLabelColors(r: SkiaRenderer, graph: SceneGraph, node: Sce
   const foreground = canvasLabelForeground(background, r.pageColor)
   return {
     background,
+    border: r.ck.Color4f(foreground.r, foreground.g, foreground.b, 0.22),
+    hover: r.ck.Color4f(foreground.r, foreground.g, foreground.b, 0.08),
     foreground: r.ck.Color4f(foreground.r, foreground.g, foreground.b, foreground.a)
   }
 }
@@ -39,7 +41,8 @@ export function measureLabel(
     layout.fontSize,
     layout.maxTextWidth,
     color,
-    r.fontGeneration
+    r.fontGeneration,
+    layout.fontWeight
   )
 }
 

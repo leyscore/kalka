@@ -6,7 +6,12 @@ import Matrix from '@open-pencil/scene-graph/matrix'
 import type { Vector } from '@open-pencil/scene-graph/primitives'
 
 import type { RenderOverlays, SkiaRenderer } from '#core/canvas/renderer'
-import { HANDLE_HALF_SIZE, ROTATION_HANDLE_DISTANCE, SELECTION_DASH_ALPHA } from '#core/constants'
+import {
+  HANDLE_HALF_SIZE,
+  ROTATION_HANDLE_DISTANCE,
+  SELECTION_DASH_ALPHA,
+  SECTION_HOVER_STROKE_WIDTH
+} from '#core/constants'
 import {
   createSceneGeometry,
   viewportMatrix,
@@ -26,7 +31,7 @@ export function drawHoverHighlight(
 ): void {
   const node = hoveredNodeId ? graph.getNode(hoveredNodeId) : undefined
   if (!node) return
-  r.auxStroke.setStrokeWidth(1 / r.zoom)
+  r.auxStroke.setStrokeWidth((node.type === 'SECTION' ? SECTION_HOVER_STROKE_WIDTH : 1) / r.zoom)
   r.auxStroke.setColor(r.isComponentType(node.type) ? r.compColor() : r.selColor())
   r.auxStroke.setPathEffect(null)
   canvas.save()

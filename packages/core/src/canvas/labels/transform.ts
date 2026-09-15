@@ -22,6 +22,34 @@ export function labelTransform(
   }
 }
 
+/**
+ * Choose the most horizontal pair of edges, with left-to-right screen text.
+ * The anchor uses normalized coordinates within that readable rectangle.
+ */
+export function frameLabelPlacement(
+  node: SceneNode,
+  graph: SceneGraph,
+  preview: RotationPreview | null | undefined,
+  anchor: Vector = { x: 0, y: 0 }
+) {
+  const world = createSceneGeometry(graph, preview).unreflectedWorldMatrix(node)
+  const orientation = (Math.atan2(world[3], world[0]) * 180) / Math.PI
+  const turns = Math.floor((orientation + 45) / 90)
+  const corner = ((turns % 4) + 4) % 4
+  const origin = Matrix.mapPoint(world, {
+    x: corner >= 2 ? node.width : 0,
+    y: corner === 1 || corner === 2 ? node.height : 0
+  })
+  const width = corner % 2 === 0 ? node.width : node.height
+  const height = corner % 2 === 0 ? node.height : node.width
+  const rotation = orientation - turns * 90
+  const offset = Matrix.mapPoint(Matrix.rotated((rotation * Math.PI) / 180), {
+    x: anchor.x * width,
+    y: anchor.y * height
+  })
+  return { x: origin.x + offset.x, y: origin.y + offset.y, rotation, width, height }
+}
+
 type LabelTransform = ReturnType<typeof labelTransform>
 
 function labelWorldMatrix(transform: LabelTransform, zoom: number) {

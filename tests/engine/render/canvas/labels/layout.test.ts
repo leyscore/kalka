@@ -7,7 +7,11 @@ import Matrix from '@open-pencil/scene-graph/matrix'
 
 import { hitTestComponentLabel, hitTestFrameTitle } from '#core/canvas/labels/hit-test'
 import { labelLayout } from '#core/canvas/labels/layout'
-import { labelLocalPoint, labelScreenMatrix, labelTransform } from '#core/canvas/labels/transform'
+import {
+  frameLabelPlacement,
+  labelLocalPoint,
+  labelScreenMatrix
+} from '#core/canvas/labels/transform'
 import { createSceneGeometry } from '#core/geometry'
 
 import { expectDefined } from '#tests/helpers/assert'
@@ -28,8 +32,16 @@ test('layout bounds include clipped text, padding and the entire component icon'
     'section layout'
   )
   expect(section.bounds).toEqual({ x: 0, y: -30, width: 60, height: 24 })
-  expect(section.text).toEqual({ x: 8, y: -25 })
-  expect(section.maxTextWidth).toBe(44)
+  expect(section.text).toEqual({ x: 6, y: -25 })
+  expect(section.maxTextWidth).toBe(48)
+  const nested = expectDefined(
+    labelLayout('section', 60, true, { width: 100, height: 14 }),
+    'nested section layout'
+  )
+  expect(nested.bounds).toEqual({ x: 6, y: 6, width: 54, height: 24 })
+  expect(nested.text).toEqual({ x: 12, y: 11 })
+  expect(nested.maxTextWidth).toBe(42)
+  expect(nested.fontWeight).toBe(600)
   const component = expectDefined(
     labelLayout('component', 80, false, { width: 100, height: 11 }),
     'component layout'
@@ -47,7 +59,7 @@ for (const flipX of [false, true]) {
       const page = expectDefined(graph.getPages()[0], 'page')
       const { section, frame } = nestedGeometryFixture(graph, page.id, flipX, flipY)
       const preview = { nodeId: section.id, angle: 70 }
-      const transform = labelTransform(frame, graph, preview)
+      const transform = frameLabelPlacement(frame, graph, preview)
       const screen = Matrix.mapPoint(labelScreenMatrix(transform, { panX: 0, panY: 0, zoom: 2 }), {
         x: 4,
         y: -10
@@ -60,7 +72,14 @@ for (const flipX of [false, true]) {
         createSceneGeometry(graph, preview).toLocal(frame, world),
         'node-local point'
       )
-      expect(nodeLocal.y < 0 || nodeLocal.y > frame.height).toBe(true)
+      expect(
+        nodeLocal.x < 0 ||
+          nodeLocal.x > frame.width ||
+          nodeLocal.y < 0 ||
+          nodeLocal.y > frame.height
+      ).toBe(true)
+      expect(transform.rotation).toBeGreaterThanOrEqual(-45)
+      expect(transform.rotation).toBeLessThan(45)
       expect(
         hitTestFrameTitle(graph, world.x, world.y, 2, new Set([frame.id]), font, { preview })?.id
       ).toBe(frame.id)

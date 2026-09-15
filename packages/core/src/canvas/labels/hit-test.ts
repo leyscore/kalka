@@ -13,7 +13,7 @@ import {
   type LabelTextMetrics
 } from './layout'
 import { measureGlyphWidth } from './paragraph-cache'
-import { labelLocalPoint, labelTransform } from './transform'
+import { frameLabelPlacement, labelLocalPoint, labelTransform } from './transform'
 
 export interface LabelHitOptions {
   preview?: RotationPreview | null
@@ -32,19 +32,24 @@ function hitLabel(
   font: Font,
   options: LabelHitOptions
 ): SceneNode | null {
-  let layout = labelLayout(kind, node.width * zoom, inside)
+  const placement =
+    kind === 'frame'
+      ? frameLabelPlacement(node, graph, options.preview)
+      : { ...labelTransform(node, graph, options.preview), width: node.width }
+  let layout = labelLayout(kind, placement.width * zoom, inside)
   if (!layout) return null
-  const point = labelLocalPoint(labelTransform(node, graph, options.preview), zoom, {
+  const point = labelLocalPoint(placement, zoom, {
     x: canvasX,
     y: canvasY
   })
-  if (!point || point.x < 0 || point.x > node.width * zoom || point.y < layout.bounds.y) return null
+  if (!point || point.x < 0 || point.x > placement.width * zoom || point.y < layout.bounds.y)
+    return null
   if (kind === 'section' && point.y > layout.bounds.y + layout.bounds.height) return null
   const metrics = options.measure
     ? options.measure(node, layout)
     : { width: measureGlyphWidth(font, node.name), height: layout.fontSize }
   if (!metrics) return null
-  layout = labelLayout(kind, node.width * zoom, inside, metrics)
+  layout = labelLayout(kind, placement.width * zoom, inside, metrics)
   if (!layout) return null
   const { x, y, width, height } = layout.bounds
   return point.x >= x && point.x <= x + width && point.y >= y && point.y <= y + height ? node : null

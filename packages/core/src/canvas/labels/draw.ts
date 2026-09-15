@@ -37,7 +37,7 @@ function drawSectionTitle(
 ): void {
   let layout = labelLayout('section', node.width * r.zoom, nested)
   if (!layout) return
-  const { background, foreground } = sectionLabelColors(r, graph, node)
+  const { background, foreground, border, hover } = sectionLabelColors(r, graph, node)
   const metrics = r.labelParagraphCache.measure(
     r.ck,
     provider,
@@ -45,7 +45,8 @@ function drawSectionTitle(
     layout.fontSize,
     layout.maxTextWidth,
     foreground,
-    r.fontGeneration
+    r.fontGeneration,
+    layout.fontWeight
   )
   layout = labelLayout('section', node.width * r.zoom, nested, metrics)
   if (!layout) return
@@ -53,14 +54,20 @@ function drawSectionTitle(
   canvas.concat(labelScreenMatrix(labelTransform(node, graph, overlays?.rotationPreview), r))
   r.auxFill.setColor(r.ck.Color4f(background.r, background.g, background.b, background.a))
   const { x, y, width, height } = layout.bounds
-  canvas.drawRRect(
-    r.ck.RRectXY(
-      r.ck.LTRBRect(x, y, x + width, y + height),
-      SECTION_TITLE_RADIUS,
-      SECTION_TITLE_RADIUS
-    ),
-    r.auxFill
+  const bounds = r.ck.RRectXY(
+    r.ck.LTRBRect(x, y, x + width, y + height),
+    SECTION_TITLE_RADIUS,
+    SECTION_TITLE_RADIUS
   )
+  canvas.drawRRect(bounds, r.auxFill)
+  if (overlays?.hoveredNodeId === node.id) {
+    r.auxFill.setColor(hover)
+    canvas.drawRRect(bounds, r.auxFill)
+  }
+  r.auxStroke.setColor(border)
+  r.auxStroke.setStrokeWidth(1)
+  r.auxStroke.setPathEffect(null)
+  canvas.drawRRect(bounds, r.auxStroke)
   r.auxFill.setColor(foreground)
   r.labelParagraphCache.draw(
     r.ck,
@@ -72,7 +79,8 @@ function drawSectionTitle(
     foreground,
     r.fontGeneration,
     layout.text.x,
-    layout.text.y
+    layout.text.y,
+    layout.fontWeight
   )
   canvas.restore()
 }
@@ -151,7 +159,8 @@ export function drawComponentLabels(
       compColor,
       r.fontGeneration,
       layout.text.x,
-      layout.text.y
+      layout.text.y,
+      layout.fontWeight
     )
     canvas.restore()
   }

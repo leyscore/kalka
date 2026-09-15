@@ -1,4 +1,11 @@
-import type { Canvas, CanvasKit, Font, Paragraph, TypefaceFontProvider } from 'canvaskit-wasm'
+import type {
+  Canvas,
+  CanvasKit,
+  Font,
+  FontWeight,
+  Paragraph,
+  TypefaceFontProvider
+} from 'canvaskit-wasm'
 
 interface LabelParagraphEntry {
   paragraph: Paragraph
@@ -25,9 +32,10 @@ export class LabelParagraphCache {
     fontSize: number,
     maxWidth: number,
     color: Float32Array,
-    generation: number
+    generation: number,
+    fontWeight = 400
   ): Pick<LabelParagraphEntry, 'width' | 'height'> {
-    return this.entry(ck, provider, text, fontSize, maxWidth, color, generation)
+    return this.entry(ck, provider, text, fontSize, maxWidth, color, generation, fontWeight)
   }
 
   draw(
@@ -40,9 +48,10 @@ export class LabelParagraphCache {
     color: Float32Array,
     generation: number,
     x: number,
-    y: number
+    y: number,
+    fontWeight = 400
   ): number {
-    const entry = this.entry(ck, provider, text, fontSize, maxWidth, color, generation)
+    const entry = this.entry(ck, provider, text, fontSize, maxWidth, color, generation, fontWeight)
     canvas.drawParagraph(entry.paragraph, x, y)
     return entry.width
   }
@@ -63,20 +72,26 @@ export class LabelParagraphCache {
     fontSize: number,
     maxWidth: number,
     color: Float32Array,
-    generation: number
+    generation: number,
+    fontWeight: number
   ): LabelParagraphEntry {
     if (generation !== this.fontGeneration) {
       this.clear()
       this.fontGeneration = generation
     }
     const boundedWidth = Math.max(1, maxWidth)
-    const key = `${fontSize}\0${boundedWidth}\0${Array.from(color).join(',')}\0${text}`
+    const key = `${fontSize}\0${fontWeight}\0${boundedWidth}\0${Array.from(color).join(',')}\0${text}`
     let entry = this.entries.get(key)
     if (!entry) {
       const style = new ck.ParagraphStyle({
         maxLines: 1,
         ellipsis: '…',
-        textStyle: { color, fontFamilies: ['Inter'], fontSize }
+        textStyle: {
+          color,
+          fontFamilies: ['Inter'],
+          fontSize,
+          fontStyle: { weight: { value: fontWeight } as FontWeight }
+        }
       })
       const builder = ck.ParagraphBuilder.MakeFromFontProvider(style, provider)
       builder.addText(text)
