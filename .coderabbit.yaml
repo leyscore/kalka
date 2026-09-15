@@ -1,12 +1,23 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 language: "en-US"
 early_access: false
+tone_instructions: >-
+  Be concise and direct. Use short paragraphs or bullets.
+  No emojis, praise, jokes, decorative headings, or unnecessary tables.
+  Explain the concrete problem, consequence, and suggested correction.
 
 reviews:
   profile: "assertive"
   request_changes_workflow: false
-  high_level_summary: true
+  high_level_summary: false
   review_status: true
+  changed_files_summary: false
+  estimate_code_review_effort: false
+  suggested_labels: false
+  suggested_reviewers: false
+  in_progress_fortune: false
+  poem: false
+  enable_prompt_for_ai_agents: false
   sequence_diagrams: false
   finishing_touches:
     docstrings:
@@ -39,4 +50,5 @@ knowledge_base:
       - "CONTRIBUTING.md"
 
 chat:
-  auto_reply: true
+  art: false
+  auto_reply: false

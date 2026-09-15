@@ -164,6 +164,10 @@ Private tooling belongs under `tools/<domain>/{src,tests}`, with kebab-case doma
 - Keep Kiwi runtime changes minimal; prefer wrappers for project policy.
 - Guard browser globals explicitly in Core. Name repeated/cross-feature constants; app-wide values belong in `src/constants.ts`.
 
+## Issue and PR writing
+
+Use concise, concrete technical prose for issues, PR descriptions, and public comments. Lead with the problem and outcome; add a short example when needed to make the behavior clear. Avoid filler, promotional claims, decorative emojis, unnecessary tables, and file-by-file change inventories. Preserve the PR template's headings: Summary explains why and the outcome; What changed adds one to three non-repeated details; Validation reports actual commands/results and relevant omissions; AI assistance discloses known model names. Link lengthy logs or design notes rather than expanding the description into a work diary. Follow `CONTRIBUTING.md`; brevity must not omit reproduction steps, material risks, or validation limitations.
+
 ## Code review
 
 - Review codebase fit, not just the diff. Before judging or implementing a change, inspect the owning folder, nearby analogous implementations, shared helpers/types, public exports, callers, and tests. Check new files against the established file tree, package boundaries, naming, and local conventions. Prefer an existing abstraction when it fits; do not invent a parallel pattern or demand unrelated cleanup.

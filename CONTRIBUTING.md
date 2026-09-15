@@ -31,9 +31,9 @@ Pull requests must be reviewable without guessing the author's intent.
 ### PR body
 
 - Follow the PR template when one is provided.
-- Explain what changed and why it changed.
-- Include a concrete list or paragraph of meaningful changes.
-- Document validation, such as `bun run check`, targeted tests, docs-only review, or an explicit reason validation was not run.
+- Keep the existing template headings. Use one short Summary paragraph for the problem, why it matters, and the outcome. Use What changed for one to three meaningful implementation details, not a repeated summary or a file-by-file inventory.
+- Write concrete, direct prose. Avoid promotional claims, filler, decorative emojis, and unnecessary tables. Add a small example when the behavior is otherwise hard to explain; keep lengthy logs or design notes in linked material.
+- Document commands actually run and their results, such as `bun run check`, targeted tests, or docs-only review. State relevant checks not run and why, and note whether a changelog entry is needed. Do not present planned validation as completed.
 - Complete the AI assistance section. If an LLM materially helped create or modify the PR, list the model names you know. Write `None` otherwise. This is review context, not authorship attribution; prompts and transcripts are not required.
 - Keep the body primarily in English. Code identifiers, file paths, logs, error messages, and short quoted examples may use their original language.
 
