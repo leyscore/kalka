@@ -81,7 +81,7 @@ Change the font weight in the Typography section of the properties panel. Availa
 
 - **Default font** — Inter is loaded automatically
 - **Desktop app** — system fonts plus enabled Google Fonts, Fontsource, Bunny Fonts, and Fontshare catalogs
-- **Browser** — system fonts are available in Chrome and Edge with local-font permission. Enabled Fontsource, Bunny Fonts, and Fontshare providers can load online fonts, subject to network access and browser CORS rules; Google Fonts is disabled in the browser
+- **Browser** — system fonts are available in Chrome and Edge with local-font permission. Enabled Fontsource, Bunny Fonts, and Fontshare providers can load online fonts, subject to network access and browser CORS rules; Google Fonts is disabled in the OpenPencil browser app
 - **Downloaded fonts** — the desktop app caches downloaded faces for reuse on the same machine
 
 ## Missing Fonts and Substitutions
