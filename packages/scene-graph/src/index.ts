@@ -95,6 +95,8 @@ function stripUndefinedProps<T extends object>(obj: T): T {
   return result
 }
 
+export { captureGraphCheckpoint } from './checkpoint'
+
 export class SceneGraph {
   nodes = new Map<string, SceneNode>()
   images = new Map<string, Uint8Array>()
@@ -433,6 +435,30 @@ export class SceneGraph {
     const node = this.nodes.get(id)
     if (!node) return
     changes = stripUndefinedProps(styleDetachmentChanges(node, stripUndefinedProps(changes)))
+    this.applyNodeChanges(node, changes)
+  }
+
+  /** Replay captured properties without dropping explicit undefined values or absent keys. */
+  restoreNodeProperties(
+    id: string,
+    changes: Partial<SceneNode>,
+    absent: readonly (keyof SceneNode)[]
+  ): void {
+    const node = this.nodes.get(id)
+    if (node) this.applyNodeChanges(node, changes, absent)
+  }
+
+  private applyNodeChanges(
+    node: SceneNode,
+    changes: Partial<SceneNode>,
+    absent: readonly (keyof SceneNode)[] = []
+  ): void {
+    const { id } = node
+    // Include removed keys in cache invalidation and update notifications.
+    if (absent.length) {
+      changes = { ...changes }
+      for (const key of absent) Reflect.set(changes, key, undefined)
+    }
 
     // Only clear absPosCache when layout-affecting properties change.
     // Fills, strokes, effects, plugin data changes do NOT affect absolute position.
@@ -463,6 +489,7 @@ export class SceneGraph {
     Object.assign(node, changes)
     if (changes.fills) removeStaleBindings(node, 'fills', changes)
     if (changes.strokes) removeStaleBindings(node, 'strokes', changes)
+    for (const key of absent) Reflect.deleteProperty(node, key)
     this.emitter.emit('node:updated', id, changes)
   }
 

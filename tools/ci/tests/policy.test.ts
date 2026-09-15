@@ -2,6 +2,7 @@ import { expect, test } from 'bun:test'
 
 import {
   classifyPaths,
+  ALWAYS_JOBS,
   CODE_JOBS,
   DOCS_JOB,
   gateErrors,
@@ -13,6 +14,8 @@ const documentation = [
   'README.md',
   'AGENTS.md',
   'CHANGELOG.md',
+  'packages/vue/README.md',
+  'packages/core/README.md',
   'packages/docs/programmable/sdk/api/components/bindable-value.md',
   'packages/docs/public/logo.svg',
   'skills/open-pencil/SKILL.md',
@@ -22,6 +25,9 @@ const documentation = [
 const code = [
   'src/app/ai/chat/system-prompt.md',
   'packages/core/src/design-jsx/reference/authoring.md',
+  'packages/core/src/README.md',
+  'packages/core/README.md.ts',
+  'packages/core/instructions.md',
   'packages/docs/.vitepress/config.ts',
   'packages/docs/demo.vue',
   'skills/open-pencil/scripts/create.ts',
@@ -39,6 +45,11 @@ test.each(code)('code or unknown path: %s', (path) => {
   expect(classifyPaths([path])).toBe('code')
   expect(classifyPaths([...documentation, path])).toBe('code')
 })
+test('package READMEs and public guides share the docs-only route', () => {
+  expect(
+    classifyPaths(['packages/vue/README.md', 'packages/docs/programmable/sdk/getting-started.md'])
+  ).toBe('docs')
+})
 test('empty diffs fail safe to code checks', () => {
   expect(classifyPaths([])).toBe('code')
 })
@@ -50,6 +61,7 @@ test('both sides of a rename affect classification', () => {
 function results(scope: ChangeScope): Record<string, JobStatus> {
   return {
     changes: { result: 'success', outputs: { scope } },
+    ...Object.fromEntries(ALWAYS_JOBS.map((job) => [job, { result: 'success' }])),
     [DOCS_JOB]: { result: scope === 'docs' ? 'success' : 'skipped' },
     ...Object.fromEntries(
       CODE_JOBS.map((job) => [job, { result: scope === 'code' ? 'success' : 'skipped' }])
@@ -69,7 +81,7 @@ test.each(['failure', 'cancelled', 'skipped'] as const)(
   (result) => {
     for (const scope of ['docs', 'code'] as const) {
       expect(gateErrors({ ...results(scope), changes: { result } })).not.toEqual([])
-      for (const job of scope === 'docs' ? [DOCS_JOB] : CODE_JOBS) {
+      for (const job of [...ALWAYS_JOBS, ...(scope === 'docs' ? [DOCS_JOB] : CODE_JOBS)]) {
         expect(gateErrors({ ...results(scope), [job]: { result } })).not.toEqual([])
       }
     }
@@ -86,7 +98,7 @@ test('missing jobs or outputs cannot pass', () => {
     })
   ).not.toEqual([])
   for (const scope of ['docs', 'code'] as const) {
-    for (const job of scope === 'docs' ? [DOCS_JOB] : CODE_JOBS) {
+    for (const job of [...ALWAYS_JOBS, ...(scope === 'docs' ? [DOCS_JOB] : CODE_JOBS)]) {
       const incomplete = Object.fromEntries(
         Object.entries(results(scope)).filter(([name]) => name !== job)
       )

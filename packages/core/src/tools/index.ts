@@ -16,7 +16,9 @@ export {
   NodeNotFoundError,
   toolChangesDocument
 } from './schema'
-export type { ToolDef, ParamDef, ParamType } from './schema'
+export type { ToolDef, ToolExecution, ToolCapability } from './schema'
+export { isAtomicTool, isToolExposed, type ToolInterface, type ToolExposure } from './schema'
+export { toolNumber } from './input'
 export { toolsToAI, buildDebugLog } from './ai-adapter'
 export type { ToolLogEntry, ToolDebugLog, AIAdapterOptions, StepBudget } from './ai-adapter'
 export { calcClusterConfidence, wrapEvalCode } from './analyze'

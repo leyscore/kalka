@@ -2,11 +2,13 @@ import { expect, test } from 'bun:test'
 import { execFile } from 'node:child_process'
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { join } from 'node:path'
 import { promisify } from 'node:util'
 
+import { resolveWorkspaceRoot } from '@open-pencil/package-artifacts'
+
 const execute = promisify(execFile)
-const root = resolve(import.meta.dir, '../../..')
+const root = await resolveWorkspaceRoot(import.meta.dir)
 
 test.each(['app-first', 'sdk-first'])(
   'Vue module declarations preserve Storybook default args (%s)',

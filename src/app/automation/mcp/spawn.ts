@@ -34,6 +34,10 @@ export interface AutomationServerHandle {
 const DEV_AUTOMATION_HTTP_URL = import.meta.env.DEV
   ? __OPENPENCIL_LOCAL_AUTOMATION_HTTP_URL__
   : `http://127.0.0.1:${AUTOMATION_HTTP_PORT}`
+export function getMCPServerURL(): string {
+  return `${DEV_AUTOMATION_HTTP_URL}/mcp`
+}
+
 const DEV_AUTOMATION_AUTH_TOKEN =
   import.meta.env.DEV && typeof __OPENPENCIL_LOCAL_AUTOMATION_TOKEN__ === 'string'
     ? __OPENPENCIL_LOCAL_AUTOMATION_TOKEN__

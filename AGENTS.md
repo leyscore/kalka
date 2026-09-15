@@ -24,7 +24,9 @@ The root Tauri/Vite app lives in `src/`; app services and state belong under `sr
 
 ### Settings UI ownership
 
-Settings components own layout, translated copy, confirmation visibility, and emits. Reactive settings workflows live under the owning app domain's `settings/` folder (for example `src/app/ai/models/settings/profile-editor/{use,selection,connection}.ts`), not a global composables bucket. Use `use.ts` for orchestration and focused sibling modules for substantial sub-workflows. Keep persistence and external operations in domain services, and pure option projections as ordinary functions. Return operation outcomes rather than importing dialogs, routers, or toast UI into workflow composables. Keep newly entered secrets short-lived, never expose saved secrets, and guard async results against changed targets. Small presentation-only computed bindings can remain in components.
+Compose Settings sections with `SettingsSection` and its `title`, `description`, `actions`, and default content slots. It owns heading association and internal spacing; `SettingsGroup` owns bordered row grouping. Do not repeat section/header/spacing markup in each feature.
+
+Settings components own layout, translated copy, confirmation visibility, and emits. Reactive settings workflows live under the owning app domain's `settings/` folder (for example `src/app/ai/models/settings/profile-editor/{use,selection,connection}.ts`), not a global composables bucket. Use `use.ts` for orchestration and focused sibling modules for substantial sub-workflows. Keep persistence and external operations in domain services, and pure option projections as ordinary functions. Return operation outcomes rather than importing dialogs, routers, or toast UI into workflow composables. Keep newly entered secrets short-lived, never expose saved secrets, and guard async results against changed targets. Small presentation-only computed bindings can remain in components. New explicit settings forms use headless VeeValidate v5 with native Valibot schemas and existing controlled UI components; keep form state in the owning settings domain. Saved secrets and replacement-secret drafts stay outside form snapshots and devtools, and persistence/concurrency remain in domain workflows rather than form callbacks.
 
 ### Public package exports
 
@@ -72,7 +74,8 @@ App dialogs compose the Reka-backed components under `src/components/ui/dialog/`
 - `bun run dev` — fixed `http://localhost:1420` server for Playwright, Tauri, and Dev Containers.
 - `bun run check` — complete build, lint, type, architecture, docs, package, dependency, security, tooling, and duplication gate.
 - `bun run format` — format and sort imports.
-- `bun run test:unit` / `bun run test` — engine/unit and Playwright suites.
+- `bun run test:unit` / `bun run test` — engine/unit and app Playwright suites.
+- `bun run test:storybook` — the Storybook Playwright project in `playwright.config.ts`. Test scripts select their server; direct Playwright commands start both servers unless `OPENPENCIL_TEST_SERVER=app|storybook|all` is set.
 - `bun run tauri dev` — desktop app with hot reload.
 - `bun open-pencil --help` — current CLI command list.
 
@@ -101,9 +104,22 @@ PR CI always classifies changed paths through `tools/ci/`. Docs-only changes run
 
 For user-facing work, add one present-tense outcome under the single appropriate `Unreleased` category: `Breaking changes`, `Added`, `Changed`, `Fixed`, `Performance`, or `Security`. Treat it as release notes, not a commit log: omit tests, benchmarks, CI, internal refactors/tooling, and bugs both introduced and fixed since the last release. After merges, compare the whole section with changes since the latest release, preserve important outcomes, consolidate related work, and remove duplicate bullets/headings. End sentences with periods and retain relevant issue/PR references. Update `README.md` when appropriate and this file when architecture or conventions change. Keep internal plans in ignored `scratch/`, not published docs.
 
+Before finalizing `Unreleased`:
+
+- Compare released behavior at the latest published tag with the final implementation, not just commit subjects. Verify questionable fixes existed at that tag; fold fixes to newly added features into their final feature description.
+- Check public exports, model/config/data contracts, and peer requirements for removals, renames, and upgrade instructions under `Breaking changes`.
+- Remove superseded intermediate behavior and duplicate outcomes across categories. State platform requirements and concrete supported behavior instead of unqualified compatibility or performance claims.
+- Run `bun run check:changelog`. Keep historical sections unchanged during routine cleanup; release publication uses the matching tagged section, not regenerated prose.
+
 ## Commit messages
 
+`commitlint.config.ts` enforces message structure through the **Commit messages** CI job on all PRs, including docs-only changes. Run `bun run check:commits --last` or pass `--from`/`--to` for a branch range. Preserve the release exception and product casing when changing rules; CI gate policy lives in `tools/ci/src/policy.ts`.
+
 Use Conventional Commits (`feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `build`, `ci`, `chore`) for regular work. Keep subjects short, imperative, and narrowly scoped; explain rationale in the body. Preserve product casing such as DOM/CSS, HTML, JSX, Tailwind, Kiwi, `.fig`, MCP, CLI, AI, ACP, and i18n. Release commits use `Release vX.Y.Z`.
+
+Keep AI assistance in the PR's AI assistance section, not commit authorship or `Co-authored-by` trailers. Do not append tool-generated promotional signatures or session links. Preserve human co-author credits and required third-party notices. Follow the vendor-neutral attribution policy in `CONTRIBUTING.md`; the existing commitlint gate checks known AI co-author identities without rewriting base history.
+
+PR titles use Conventional Commits because GitHub uses them as merge subjects. The separate **PR title** workflow validates titles, including title edits, without rerunning the full CI suite. Preserve the conventional subject when merging via CLI/API; if setting it explicitly with `gh pr merge --subject`, use the validated PR title. Give branch-update merges explicit subjects such as `chore: merge master into <branch>`. Commitlint's default merge exceptions are not a naming convention. Do not rewrite published history solely to normalize messages.
 
 ## CLI
 
@@ -112,10 +128,11 @@ Use Conventional Commits (`feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `bu
 
 ## Tools (AI / MCP / CLI)
 
-- Core operations are `ToolDef`s under `packages/core/src/tools/**`; `schema.ts` defines their contract and registries expose them. Add work to the nearest existing domain and the appropriate registry.
+- Core operations are `ToolDef`s under `packages/core/src/tools/**`; `schema.ts` defines their contract and registries expose them. Each definition owns its native Valibot `input`, execution/mutation metadata, and optional per-interface exposure exclusions (`mcp`, `ai`, `webmcp`). Exposure defaults to inclusion; adapters use `isToolExposed()`, then apply execution support and user permissions independently. Infer arguments from the schema; derive effects and default capabilities from execution metadata instead of maintaining parameter DSLs or tool-name lists. Add work to the nearest existing domain and the appropriate registry.
 - `ai-adapter.ts` converts ToolDefs for Vercel AI; `src/app/ai/tools/index.ts` binds them to the active editor's `FigmaAPI`.
 - CLI commands own CLI UX independently; `eval` exposes operations through `FigmaAPI`.
 - MCP-only filesystem/server tools live in `packages/mcp/src/tool/registration.ts`; listener/session lifecycle lives under `server/`, stdio under `stdio/`, and transport discovery under `transport/`. File access must resolve symlinks inside the effective MCP root; CLI defaults are cwd on macOS/Linux and home on Windows.
+- Browser-native WebMCP registration lives under `src/app/automation/webmcp/`, consumes per-tool exposure metadata, and is feature-detected through `document.modelContext`. Core owns synchronous property/variable transactions in `editor/history/atomic-tool.ts`; Scene Graph owns checkpoint recovery, including hierarchy and indexes. AI, MCP, and WebMCP share this execution path; async and structural tools cannot declare atomic property execution. App completion under `src/app/automation/execution/` loads fonts after commit. Keep browser lifecycle out of Core and the MCP server package.
 - Keep MCP transport tests under `tests/engine/mcp/{server,stdio,transport}` and shared fixtures under `tests/helpers/mcp`; isolate tests from user runtime discovery.
 - Shared scene-authoring guidance and tested examples live under `packages/core/src/design-jsx/reference/`; `reference.ts` combines them with renderer metadata. Core codegen prompts under `packages/core/src/tools/prompts/` and the app chat/ACP prompt compose that public reference rather than copying it. Run `bun run generate:authoring-reference` after changes; committed skill/docs copies are checked by `check:authoring-reference` (also part of `check:docs`). Do not edit generated reference files directly.
 - The installable agent skill is maintained in `skills/open-pencil/`. Changes to agent-facing APIs, CLI/MCP behavior, or design authoring must update affected skill examples, prompts, and public documentation in the same change. Keep examples valid in their actual execution environment; do not advertise library exports as scripting globals unless exposed there. Prefer runtime discovery and canonical references over duplicated API/tool inventories.
@@ -129,7 +146,7 @@ Use Conventional Commits (`feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `bu
 
 ## Code conventions
 
-- Use Valibot for first-party runtime validation. Keep Zod at upstream SDK integration boundaries that require it, such as MCP tool registration; do not maintain parallel first-party schemas in both libraries.
+- Use Valibot for first-party runtime validation. MCP v2 registration uses Standard Schema with Valibot JSON Schema conversion; AI and WebMCP adapters share the Core tool input contract. Keep Zod only where upstream dependencies require it; do not maintain parallel first-party schemas in both libraries.
 
 - Put code and tests in the established owning domain; inspect nearby structure before adding files.
 - `bun run check:arch` enforces boundaries: use public workspace exports, keep Core framework-neutral, keep app services out of views/shared UI, and keep property-panel internals scoped to that panel.
@@ -160,6 +177,19 @@ Private tooling belongs under `tools/<domain>/{src,tests}`, with kebab-case doma
 - Components must not hold module-level mutable state. Share repeated logic/constants rather than copying it.
 - Keep Kiwi runtime changes minimal; prefer wrappers for project policy.
 - Guard browser globals explicitly in Core. Name repeated/cross-feature constants; app-wide values belong in `src/constants.ts`.
+
+## Issue and PR writing
+
+Use concise, concrete technical prose for issues, PR descriptions, and public comments. Lead with the problem and outcome; add a short example when needed to make the behavior clear. Avoid filler, promotional claims, decorative emojis, unnecessary tables, and file-by-file change inventories. Preserve the PR template's headings: Summary explains why and the outcome; What changed adds one to three non-repeated details; Validation reports actual commands/results and relevant omissions; AI assistance discloses known model names. Link lengthy logs or design notes rather than expanding the description into a work diary. Follow `CONTRIBUTING.md`; brevity must not omit reproduction steps, material risks, or validation limitations.
+
+## Code review
+
+- Review codebase fit, not just the diff. Before judging or implementing a change, inspect the owning folder, nearby analogous implementations, shared helpers/types, public exports, callers, and tests. Check new files against the established file tree, package boundaries, naming, and local conventions. Prefer an existing abstraction when it fits; do not invent a parallel pattern or demand unrelated cleanup.
+- Verify findings against the current PR head and pinned dependency APIs. Give the concrete failing scenario and consequence; distinguish demonstrated bugs from defensive hardening and preferences. If runtime validation or dependency source is unavailable, state that limitation rather than treating an assumption as a fact.
+- On re-review, check later commits and the discussion before repeating a finding. Mark addressed, obsolete, or intentionally declined suggestions accurately. Green checks and resolved threads are not substitutes for reviewing the current code.
+- Request evidence appropriate to the change: engine tests for state contracts, Storybook for isolated component states, browser integration tests for workflows, canvas snapshots for rendering, and native tests for platform delivery. Do not claim one proves another.
+- Preserve intentional behavior unless a concrete regression is demonstrated. For example, preferences and native credentials cannot transact together; documented partial-save outcomes and retryable drafts are not inherently bugs.
+- Keep review comments concise and actionable. Cite the relevant location and repository rule or existing analogue for codebase-fit findings. Independently assess automated suggestions; do not bulk-apply or bulk-resolve them merely to make a bot green.
 
 ## Code quality
 
@@ -202,7 +232,7 @@ Keep responsibilities distinct: engine tests cover state contracts, Playwright b
 - Section/frame title text never scales — render at fixed font size, ellipsize to fit
 - Rulers are rendered on the canvas (not DOM), with selection range badges that don't overlap tick numbers
 - Remote cursors: Figma-style colored arrows with white border + name pill, rendered in screen space
-- Pixel-affecting renderer features need committed visual coverage, not just mock/geometry assertions. Add or update a Playwright canvas snapshot for changes to fills, gradients, images, blend modes, masks, boolean geometry, corners, strokes, shadows, blur, text rendering, or demo showcase scenes. Use targeted snapshot updates such as `bunx playwright test tests/e2e/canvas/renderer-visuals.spec.ts --project=openpencil --update-snapshots` and then rerun the same test without `--update-snapshots`.
+- Pixel-affecting renderer features need committed visual coverage, not just mock/geometry assertions. Add or update a Playwright canvas snapshot for changes to fills, gradients, images, blend modes, masks, boolean geometry, corners, strokes, shadows, blur, text rendering, or demo showcase scenes. Use targeted snapshot updates such as `bun run test tests/e2e/canvas/renderer-visuals.spec.ts --update-snapshots` and then rerun the same test without `--update-snapshots`.
 
 ## Scene graph
 
@@ -247,6 +277,16 @@ Keep responsibilities distinct: engine tests cover state contracts, Playwright b
 - Use `Tip`, not native `title`; Lucide/Iconify components, not raw SVG/Unicode icons; and `e.code`, not `e.key`, for modified shortcuts.
 - Binding-aware fields detach/mutate only on the first value change; opening/focusing is non-destructive.
 - Preserve nearby interaction gotchas when refactoring: splitter handles, NumberField pointer ownership, section dragging, panel containment, and number-spinner styling.
+
+### Feedback and form submission
+
+- Use `AppAlert` (`src/components/ui/feedback/AppAlert.vue`) for persistent contextual errors, warnings, recovery guidance, and informative results. Its typed theme lives in `src/theme/feedback/alert.ts`; use translated `heading`/`description` and the `actions` slot for recovery controls. Do not hand-roll feature-level alert markup or colored error paragraphs.
+- Use the existing toast service for transient confirmations such as copying or completing an action after its view closes. Do not show both a toast and an alert for the same event. Partial saves and actionable failures must not disappear in a toast.
+- Field validation stays inline in the shared field component, with `aria-invalid`, associated error text before hints, and first-invalid-field focus. VeeValidate owns validation and form submission state; domain workflows retain their own pending/lifecycle guards for external operations. A credential-store failure does not make the entered key invalid.
+- Settings save feedback uses `SettingsSaveFeedback`, which maps domain outcomes to `AppAlert`. Keep persistence outcomes (`saved`, `failed`, `partial`) in the domain: a form library cannot make preferences and a native credential store transactional. Preserve retryable drafts, reuse already-persisted identities on retries, and show the partial-save warning. Never render raw credential backend errors or secrets.
+- Use `SettingsLink` for external Settings links, including provider key pages and setup guides. It owns link styling, the external-link icon, and native opening behavior. Keep arrow glyphs out of translated labels.
+- Ordinary labels such as Running/Stopped remain status text or badges, not alerts. Destructive confirmation belongs in the shared confirmation dialog. Alerts announce changes without taking keyboard focus.
+- Isolated feedback-component visual states belong in colocated Storybook stories, not Playwright application screenshots. Settings E2E tests cover integration behavior: when feedback appears, validation/focus, retained drafts, and successful retries.
 
 ### Animations
 
