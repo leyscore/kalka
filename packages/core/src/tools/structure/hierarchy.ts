@@ -27,7 +27,7 @@ export const groupNodes = defineTool({
   description: 'Group selected nodes.',
   execution: { kind: 'sync', mutation: 'document' },
   input: v.object({
-    ids: v.pipe(v.array(v.string()), v.minLength(1), v.description('Node IDs to group'))
+    ids: v.pipe(v.array(v.string()), v.minLength(2), v.description('Node IDs to group'))
   }),
   execute: (figma, { ids }) => {
     const nodes = requireNodes(figma, ids)

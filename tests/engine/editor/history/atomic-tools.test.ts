@@ -93,6 +93,69 @@ describe('atomic agent tools', () => {
     ).toMatchObject({ r: 0, g: 1 })
   })
 
+  test.each(['node', 'variable'] as const)('replays %s property presence exactly', (kind) => {
+    for (const before of ['absent', 'undefined', 'value'] as const) {
+      for (const after of ['absent', 'undefined', 'value'] as const) {
+        if (before === after) continue
+        const { graph, figma, editor, undo, rectangle, tool } = setup()
+        const collection = graph.createCollection('Test')
+        const variable = graph.createVariable('Test', 'STRING', collection.id, '')
+        const target = kind === 'node' ? graph.getNode(rectangle.id) : variable
+        if (!target) throw new Error('Missing target')
+        const key = kind === 'node' ? 'booleanOperation' : 'key'
+        const value = kind === 'node' ? 'UNION' : 'variable-key'
+        const set = (state: typeof before) => {
+          if (state === 'absent') Reflect.deleteProperty(target, key)
+          else Reflect.set(target, key, state === 'undefined' ? undefined : value)
+        }
+        const assertState = (state: typeof before) => {
+          expect(Object.hasOwn(target, key)).toBe(state !== 'absent')
+          expect(Reflect.get(target, key)).toBe(state === 'value' ? value : undefined)
+        }
+        set(before)
+        executeAtomicTool(
+          editor,
+          figma,
+          {
+            ...tool('set_opacity'),
+            execute: () => {
+              set(after)
+            }
+          },
+          {}
+        )
+        assertState(after)
+        expect(undo.canUndo).toBe(true)
+        undo.undo()
+        assertState(before)
+        undo.redo()
+        assertState(after)
+      }
+    }
+  })
+
+  test('rejects and restores instance index corruption even on reported success', () => {
+    const { graph, figma, editor, undo, tool } = setup()
+    const component = figma.createComponent()
+    const instance = component.createInstance()
+    const before = structuredClone(graph.instanceIndex)
+    expect(() =>
+      executeAtomicTool(
+        editor,
+        figma,
+        {
+          ...tool('set_opacity'),
+          execute: () => {
+            graph.instanceIndex.get(component.id)?.delete(instance.id)
+          }
+        },
+        {}
+      )
+    ).toThrow('Atomic tools must not change')
+    expect(graph.instanceIndex).toEqual(before)
+    expect(undo.canUndo).toBe(false)
+  })
+
   test('partial failures roll back without adding history', () => {
     const { figma, editor, undo, rectangle, tool } = setup()
     const def: ToolDef = {

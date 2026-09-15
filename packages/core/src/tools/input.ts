@@ -15,6 +15,7 @@ export function toolNumber(schema: v.GenericSchema<number, number> = v.number())
     finite,
     v.pipe(
       v.string(),
+      v.regex(/\S/, 'Expected a nonblank numeric string'),
       v.description(v.getDescription(schema) ?? 'Numeric value'),
       v.transform(Number),
       finite

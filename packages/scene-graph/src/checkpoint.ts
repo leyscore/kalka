@@ -58,6 +58,7 @@ export function captureGraphCheckpoint(graph: SceneGraph) {
     if (
       !isEqual(snapshot.variableCollections, graph.variableCollections) ||
       !isEqual(snapshot.activeMode, graph.activeMode) ||
+      !isEqual(snapshot.instanceIndex, graph.instanceIndex) ||
       !isEqual(snapshot.enabledLibraries, graph.enabledLibraries) ||
       images.size !== graph.images.size ||
       [...images].some(([id, bytes]) => graph.images.get(id) !== bytes) ||

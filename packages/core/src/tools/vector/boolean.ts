@@ -8,7 +8,7 @@ export const booleanUnion = defineTool({
   description: 'Union (combine) multiple nodes.',
   execution: { kind: 'sync', mutation: 'document' },
   input: v.object({
-    ids: v.pipe(v.array(v.string()), v.minLength(1), v.description('Node IDs to union'))
+    ids: v.pipe(v.array(v.string()), v.minLength(2), v.description('Node IDs to union'))
   }),
   execute: (figma, { ids }) => {
     const result = figma.booleanOperation('UNION', ids)
@@ -22,7 +22,7 @@ export const booleanSubtract = defineTool({
   description: 'Subtract the second node from the first.',
   execution: { kind: 'sync', mutation: 'document' },
   input: v.object({
-    ids: v.pipe(v.array(v.string()), v.minLength(1), v.description('Node IDs (first minus rest)'))
+    ids: v.pipe(v.array(v.string()), v.minLength(2), v.description('Node IDs (first minus rest)'))
   }),
   execute: (figma, { ids }) => {
     const result = figma.booleanOperation('SUBTRACT', ids)
@@ -36,7 +36,7 @@ export const booleanIntersect = defineTool({
   description: 'Intersect multiple nodes.',
   execution: { kind: 'sync', mutation: 'document' },
   input: v.object({
-    ids: v.pipe(v.array(v.string()), v.minLength(1), v.description('Node IDs to intersect'))
+    ids: v.pipe(v.array(v.string()), v.minLength(2), v.description('Node IDs to intersect'))
   }),
   execute: (figma, { ids }) => {
     const result = figma.booleanOperation('INTERSECT', ids)
@@ -50,7 +50,7 @@ export const booleanExclude = defineTool({
   description: 'Exclude (XOR) multiple nodes.',
   execution: { kind: 'sync', mutation: 'document' },
   input: v.object({
-    ids: v.pipe(v.array(v.string()), v.minLength(1), v.description('Node IDs to exclude'))
+    ids: v.pipe(v.array(v.string()), v.minLength(2), v.description('Node IDs to exclude'))
   }),
   execute: (figma, { ids }) => {
     const result = figma.booleanOperation('EXCLUDE', ids)

@@ -12,7 +12,13 @@ export const analyzeSpacing = defineTool({
   exposure: { webmcp: true },
   input: v.object({
     grid: v.optional(
-      toolNumber(v.pipe(v.number(), v.description('Base grid size to check against (default: 8)')))
+      toolNumber(
+        v.pipe(
+          v.number(),
+          v.gtValue(0),
+          v.description('Base grid size to check against (default: 8)')
+        )
+      )
     )
   }),
   execute: (figma, args) => {

@@ -11,17 +11,27 @@ import { getTool, setupToolTest } from '#tests/helpers/tools'
 describe('native tool input contracts', () => {
   const schema = v.object({ value: toolNumber(v.pipe(v.number(), v.minValue(0), v.maxValue(100))) })
 
-  test.each([Infinity, -Infinity, Number.NaN, 'Infinity', '-Infinity', 'NaN', '1e999', 'abc'])(
-    'rejects non-finite or invalid numeric input %s',
-    async (value) => {
-      expect(v.safeParse(schema, { value }).success).toBe(false)
-      const standard = toStandardJSONSchema(schema)
-      expect((await standard['~standard'].validate({ value })).issues).toBeDefined()
-    }
-  )
+  test.each([
+    Infinity,
+    -Infinity,
+    Number.NaN,
+    'Infinity',
+    '-Infinity',
+    'NaN',
+    '1e999',
+    'abc',
+    '',
+    ' ',
+    '\t\n'
+  ])('rejects non-finite or invalid numeric input %s', async (value) => {
+    expect(v.safeParse(schema, { value }).success).toBe(false)
+    const standard = toStandardJSONSchema(schema)
+    expect((await standard['~standard'].validate({ value })).issues).toBeDefined()
+  })
 
   test('numeric strings share numeric bounds and output types', () => {
     expect(v.parse(schema, { value: '42' })).toEqual({ value: 42 })
+    expect(v.parse(schema, { value: ' 42 ' })).toEqual({ value: 42 })
     expect(v.safeParse(schema, { value: '101' }).success).toBe(false)
     expect(v.safeParse(schema, { value: '-1' }).success).toBe(false)
   })
@@ -42,7 +52,48 @@ describe('native tool input contracts', () => {
     tool.execute(figma, { id: node.id, value: '0.5' })
     expect(node.opacity).toBe(0.5)
     expect(() => tool.execute(figma, { id: node.id, value: 'Infinity' })).toThrow()
+    expect(() => tool.execute(figma, { id: node.id, value: '  ' })).toThrow()
     expect(node.opacity).toBe(0.5)
+  })
+
+  test.each([
+    { name: 'analyze_spacing', field: 'grid', invalid: [0, -1], valid: [0.5, 8] },
+    { name: 'arrange', field: 'cols', invalid: [0, -1, 1.5], valid: [1, 3] },
+    { name: 'get_components', field: 'limit', invalid: [-1, 1.5], valid: [0, 50] },
+    { name: 'update_node', field: 'font_weight', invalid: [99, 901], valid: [100, 900] }
+  ])('$name validates $field before execution', ({ name, field, invalid, valid }) => {
+    const input = getTool(name).input
+    for (const value of invalid) {
+      expect(v.safeParse(input, { id: 'node', [field]: value }).success).toBe(false)
+      expect(v.safeParse(input, { id: 'node', [field]: String(value) }).success).toBe(false)
+    }
+    for (const value of valid) {
+      expect(v.safeParse(input, { id: 'node', [field]: value }).success).toBe(true)
+      expect(v.safeParse(input, { id: 'node', [field]: String(value) }).success).toBe(true)
+    }
+  })
+
+  test.each([
+    'group_nodes',
+    'boolean_subtract',
+    'boolean_union',
+    'boolean_intersect',
+    'boolean_exclude'
+  ])('%s advertises and enforces at least two operands', (name) => {
+    const input = getTool(name).input
+    expect(v.safeParse(input, { ids: ['one'] }).success).toBe(false)
+    expect(v.safeParse(input, { ids: ['one', 'two'] }).success).toBe(true)
+    const standard = toStandardJSONSchema(input)
+    expect(standard['~standard'].jsonSchema.input({ target: 'draft-07' })).toMatchObject({
+      properties: { ids: { minItems: 2 } }
+    })
+  })
+
+  test('font weight bounds also appear in the generated schema', () => {
+    const standard = toStandardJSONSchema(getTool('update_node').input)
+    expect(standard['~standard'].jsonSchema.input({ target: 'draft-07' })).toMatchObject({
+      properties: { font_weight: { anyOf: [{ minimum: 100, maximum: 900 }, { type: 'string' }] } }
+    })
   })
 
   test('defaults and enum aliases remain schema-owned', () => {

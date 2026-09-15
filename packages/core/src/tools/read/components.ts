@@ -42,7 +42,11 @@ export const getComponents = defineTool({
     library_id: v.optional(
       v.pipe(v.string(), v.description('Filter library components by library ID'))
     ),
-    limit: v.optional(toolNumber(v.pipe(v.number(), v.description('Max results (default: 50)'))))
+    limit: v.optional(
+      toolNumber(
+        v.pipe(v.number(), v.integer(), v.minValue(0), v.description('Max results (default: 50)'))
+      )
+    )
   }),
   execute: async (figma, args) => {
     const limit = args.limit ?? 50

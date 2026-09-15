@@ -26,7 +26,14 @@ export const arrangeNodes = defineTool({
       toolNumber(v.pipe(v.number(), v.description('Spacing between nodes (default: 40)')))
     ),
     cols: v.optional(
-      toolNumber(v.pipe(v.number(), v.description('Column count for grid mode (default: auto)')))
+      toolNumber(
+        v.pipe(
+          v.number(),
+          v.integer(),
+          v.minValue(1),
+          v.description('Column count for grid mode (default: auto)')
+        )
+      )
     )
   }),
   execute: (figma, args) => {

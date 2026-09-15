@@ -39,7 +39,11 @@ export const updateNode = defineTool({
     font_size: v.optional(
       toolNumber(v.pipe(v.number(), v.minValue(1), v.description('Font size')))
     ),
-    font_weight: v.optional(toolNumber(v.pipe(v.number(), v.description('Font weight (100-900)')))),
+    font_weight: v.optional(
+      toolNumber(
+        v.pipe(v.number(), v.minValue(100), v.maxValue(900), v.description('Font weight (100-900)'))
+      )
+    ),
     name: v.optional(v.pipe(v.string(), v.description('Layer name')))
   }),
   execute: (figma, args) => {

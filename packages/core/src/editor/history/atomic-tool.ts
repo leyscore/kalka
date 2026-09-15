@@ -15,7 +15,12 @@ import { isAtomicTool, type ToolDef } from '#core/tools/schema'
 const MAX_TRANSACTION_NODES = 10_000
 
 type MutationEditor = Pick<Editor, 'graph' | 'runLayoutForNode' | 'requestRender' | 'pushUndoEntry'>
-type Changes<T> = { id: string; before: Partial<T>; after: Partial<T> }
+type Changes<T> = {
+  id: string
+  before: Partial<T>
+  after: Partial<T>
+  absent: Record<'before' | 'after', (keyof T)[]>
+}
 
 function changes<T extends object>(before: Map<string, T>, after: Map<string, T>): Changes<T>[] {
   const result: Changes<T>[] = []
@@ -24,13 +29,18 @@ function changes<T extends object>(before: Map<string, T>, after: Map<string, T>
     if (!current) throw new Error('Atomic tools must not remove nodes or variables')
     const inverse: Partial<T> = {}
     const forward: Partial<T> = {}
+    const absent: Changes<T>['absent'] = { before: [], after: [] }
     const keys = new Set([...Object.keys(previous), ...Object.keys(current)] as (keyof T)[])
     for (const key of keys) {
-      if (isEqual(previous[key], current[key])) continue
+      const existed = Object.hasOwn(previous, key)
+      const exists = Object.hasOwn(current, key)
+      if (existed === exists && isEqual(previous[key], current[key])) continue
       inverse[key] = structuredClone(previous[key])
       forward[key] = structuredClone(current[key])
+      if (!existed) absent.before.push(key)
+      if (!exists) absent.after.push(key)
     }
-    if (Object.keys(forward).length) result.push({ id, before: inverse, after: forward })
+    if (Object.keys(forward).length) result.push({ id, before: inverse, after: forward, absent })
   }
   if (before.size !== after.size) throw new Error('Atomic tools must not create nodes or variables')
   return result
@@ -69,11 +79,18 @@ export function executeAtomicTool(
     if (editor.graph !== graph) throw new Error('The target document has been replaced')
     for (const change of variableChanges) {
       const variable = graph.variables.get(change.id)
-      if (variable) Object.assign(variable, structuredClone(change[direction]))
+      if (variable) {
+        Object.assign(variable, structuredClone(change[direction]))
+        for (const key of change.absent[direction]) Reflect.deleteProperty(variable, key)
+      }
     }
     graph.preserveSourceMetadataDuring(() => {
       for (const change of nodeChanges)
-        graph.updateNode(change.id, structuredClone(change[direction]))
+        graph.restoreNodeProperties(
+          change.id,
+          structuredClone(change[direction]),
+          change.absent[direction]
+        )
     })
     layout(
       graph,
