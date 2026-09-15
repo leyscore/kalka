@@ -69,7 +69,7 @@ test('progressive tiled rendering preference persists and URL overrides take pre
   await canvas.waitForInit()
 
   await page.getByTestId('app-settings-trigger').click()
-  const tiled = page.getByRole('switch', { name: 'Progressive tiled canvas rendering' })
+  const tiled = page.getByRole('switch', { name: 'Progressive rendering' })
   await expect(tiled).not.toBeChecked()
   await tiled.click()
   await expect(page.getByText('Reload OpenPencil to apply this change.')).toBeVisible()

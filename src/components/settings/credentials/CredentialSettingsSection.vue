@@ -4,7 +4,7 @@ import { useI18n } from '@open-pencil/vue'
 
 import { useCredentialSettings } from '@/app/settings/credentials/preferences/use'
 import SettingsGroup from '@/components/settings/layout/SettingsGroup.vue'
-import SettingsSectionHeader from '@/components/settings/layout/SettingsSectionHeader.vue'
+import SettingsSection from '@/components/settings/layout/SettingsSection.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import AppAlert from '@/components/ui/feedback/AppAlert.vue'
 import AppSwitch from '@/components/ui/toggle/AppSwitch.vue'
@@ -14,8 +14,8 @@ const { busy, paused, failed, checkFailed, remembered, retry, retryCheck } = use
 </script>
 
 <template>
-  <template v-if="!IS_TAURI || paused || failed || checkFailed">
-    <SettingsSectionHeader>{{ credentials.settingsTitle }}</SettingsSectionHeader>
+  <SettingsSection v-if="!IS_TAURI || paused || failed || checkFailed">
+    <template #title>{{ credentials.settingsTitle }}</template>
     <SettingsGroup v-if="!IS_TAURI">
       <label class="flex items-center justify-between gap-4 px-3 py-2.5">
         <span>
@@ -42,5 +42,5 @@ const { busy, paused, failed, checkFailed, remembered, retry, retryCheck } = use
       </template>
     </AppAlert>
     <AppAlert v-if="failed" tone="error" :heading="credentials.retryFailed" />
-  </template>
+  </SettingsSection>
 </template>

@@ -6,7 +6,7 @@ export const credentialsMessageDefaults = {
   checkFailed: 'Could not check access to saved credentials.',
   retryCheck: 'Retry check',
   retryAccess: 'Retry access',
-  settingsTitle: 'Saved passwords and API keys',
+  settingsTitle: 'Saved credentials',
   accessPaused: 'Access to saved credentials is paused.',
   rememberDevice: 'Remember API keys on this device',
   sessionOnly: 'Keys are kept only until you close this session.',
