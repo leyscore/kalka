@@ -3,9 +3,9 @@ import { computed } from 'vue'
 
 import { useI18n } from '@open-pencil/vue'
 
+import SettingsLink from '@/components/settings/layout/SettingsLink.vue'
 import ProviderSettingsField from '@/components/settings/provider/ProviderSettingsField.vue'
 import ProviderSettingsInput from '@/components/settings/provider/ProviderSettingsInput.vue'
-import ProviderSettingsLink from '@/components/settings/provider/ProviderSettingsLink.vue'
 
 const { label, modelValue, saved, kind, placeholder, keyURL, keyURLLabel, inputId, hint, error } =
   defineProps<{
@@ -67,9 +67,9 @@ const clearDataTestId = computed(() => {
       />
     </template>
     <template #hint>
-      <ProviderSettingsLink v-if="keyURL && keyURLLabel" :href="keyURL">
+      <SettingsLink v-if="keyURL && keyURLLabel" :href="keyURL">
         {{ keyURLLabel }}
-      </ProviderSettingsLink>
+      </SettingsLink>
     </template>
   </ProviderSettingsField>
 </template>

@@ -52,6 +52,7 @@ ja:code.copyJSXReference
 ja:code.editorHTMLCSSLabel
 ja:collaboration.pasteRoomLinkOrId
 ja:commands.paletteDescription
+ja:credentials.apiKey
 ja:credentials.getAPIKey
 ja:diagnostics.acpFailed
 ja:diagnostics.chatCompleted
@@ -171,6 +172,7 @@ zh-cn:code.copyJSXReference
 zh-cn:code.editorHTMLCSSLabel
 zh-cn:collaboration.pasteRoomLinkOrId
 zh-cn:commands.paletteDescription
+zh-cn:credentials.apiKey
 zh-cn:credentials.getAPIKey
 zh-cn:diagnostics.acpFailed
 zh-cn:diagnostics.chatCompleted

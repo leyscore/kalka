@@ -93,7 +93,11 @@ test('media explains optional keys and preserves input after a failed save', asy
   await openSettings(page)
   await page.getByTestId('settings-section-media').click()
   await page.getByRole('button', { name: /Pexels/ }).click()
-  const key = page.getByRole('textbox', { name: /Pexels/ })
+  const key = page.getByRole('textbox', { name: 'API key', exact: true })
+  await expect(page.getByRole('link', { name: 'Get API key' })).toHaveAttribute(
+    'href',
+    'https://www.pexels.com/api/'
+  )
   await expect(key).toHaveAccessibleDescription('Optional. Add a key to enable this service.')
   await key.fill('test-only-replacement')
   const failure = await failCredentialWrites(page)

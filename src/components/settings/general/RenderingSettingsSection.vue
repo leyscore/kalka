@@ -33,7 +33,9 @@ function setTiledRendering(enabled: boolean): void {
         <span>
           <span class="flex flex-wrap items-center gap-2 text-xs text-surface">
             {{ rendering.progressiveTiled }}
-            <AppBadge :ui="{ base: 'bg-hover text-surface' }">{{ rendering.experimental }}</AppBadge>
+            <AppBadge :ui="{ base: 'bg-hover text-surface' }">{{
+              rendering.experimental
+            }}</AppBadge>
           </span>
           <span class="block text-[10px] text-muted">{{
             rendering.progressiveTiledDescription

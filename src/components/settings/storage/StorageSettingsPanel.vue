@@ -193,8 +193,10 @@ async function testConnection() {
           :disabled="busy"
           data-test-id="settings-storage-test"
           @click="testConnection"
-          >{{ testing ? common.testingConnection : common.testConnection }}</AppButton
         >
+          <template #leading><icon-lucide-plug-zap aria-hidden="true" /></template>
+          {{ testing ? common.testingConnection : common.testConnection }}
+        </AppButton>
         <AppAlert
           v-if="testResult"
           :tone="testResult === 'success' ? 'success' : 'error'"

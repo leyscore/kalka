@@ -12,7 +12,7 @@ import { useMediaSettingsEditor, type MediaSettingsService } from '@/app/setting
 import { useSettingsFormGuard } from '@/app/settings/navigation/use'
 import SettingsPage from '@/components/settings/layout/SettingsPage.vue'
 import SettingsSaveFeedback from '@/components/settings/layout/SettingsSaveFeedback.vue'
-import SettingsSectionHeader from '@/components/settings/layout/SettingsSectionHeader.vue'
+import SettingsSection from '@/components/settings/layout/SettingsSection.vue'
 import ProviderSettingsKeyField from '@/components/settings/provider/ProviderSettingsKeyField.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
@@ -32,11 +32,9 @@ const title = computed(() => {
   if (service === 'vectorize') return media.value.vectorization
   return service === 'pexels' ? 'Pexels' : 'Unsplash'
 })
-const keyLabel = computed(() => {
-  if (service === 'pexels') return media.value.pexelsAPIKey
-  if (service === 'unsplash') return media.value.unsplashAccessKey
-  return title.value
-})
+const keyLabel = computed(() =>
+  service === 'unsplash' ? credentials.value.accessKey : credentials.value.apiKey
+)
 const keyURL = computed(() => {
   if (service === 'pexels') return 'https://www.pexels.com/api/'
   if (service === 'unsplash') return 'https://unsplash.com/oauth/applications'
@@ -44,8 +42,6 @@ const keyURL = computed(() => {
 })
 const placeholder = computed(() => {
   if (keyStatus.value === 'configured') return credentials.value.savedReplace
-  if (service === 'pexels') return media.value.stockPhotoToolOptional
-  if (service === 'unsplash') return media.value.pexelsAlternativeOptional
   return provider.value?.keyPlaceholder ?? ''
 })
 async function save() {
@@ -56,12 +52,9 @@ async function save() {
 <template>
   <form class="flex min-h-0 min-w-0 flex-1 flex-col" :aria-busy="busy" @submit.prevent="save">
     <SettingsPage>
-      <div class="flex flex-col gap-4">
-        <SettingsSectionHeader>
-          {{ title }}
-          <template #description>{{ settings.saveChangesDescription }}</template>
-        </SettingsSectionHeader>
-        <fieldset :disabled="busy" class="flex min-w-0 flex-col gap-4">
+      <SettingsSection class="gap-5">
+        <template #title>{{ title }}</template>
+        <fieldset :disabled="busy" class="flex w-full min-w-0 max-w-md flex-col gap-5">
           <label v-if="service === 'vectorize'" class="flex flex-col gap-1.5 text-xs text-surface">
             {{ media.vectorizeProvider }}
             <AppSelect
@@ -88,7 +81,7 @@ async function save() {
           />
         </fieldset>
         <SettingsSaveFeedback :error="error" />
-      </div>
+      </SettingsSection>
       <template #footer>
         <AppButton :disabled="busy" @click="emit('done')">{{ common.cancel }}</AppButton>
         <AppButton type="submit" color="primary" variant="solid" :loading="busy">{{

@@ -17,7 +17,9 @@ export const credentialsMessageDefaults = {
   backendMemory: 'this session only',
   remember: 'Remember credentials on this browser',
   savedReplace: 'Key saved — enter new to replace',
-  getAPIKey: 'Get API key →'
+  apiKey: 'API key',
+  accessKey: 'Access key',
+  getAPIKey: 'Get API key'
 } as const
 
 export const credentialsMessages = i18n('credentials', credentialsMessageDefaults)

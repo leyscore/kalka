@@ -6,6 +6,7 @@ import { useAutomationMessages } from '@open-pencil/vue'
 import type { WebMCPMode } from '@/app/automation/webmcp/policy'
 import type { WebMCPRuntimeState } from '@/app/automation/webmcp/service'
 import SettingsGroup from '@/components/settings/layout/SettingsGroup.vue'
+import SettingsLink from '@/components/settings/layout/SettingsLink.vue'
 import SettingsRow from '@/components/settings/layout/SettingsRow.vue'
 import SettingsSectionHeader from '@/components/settings/layout/SettingsSectionHeader.vue'
 import AppAlert from '@/components/ui/feedback/AppAlert.vue'
@@ -75,12 +76,8 @@ const status = computed(
       <p>{{ status }}</p>
       <p v-if="detail" class="mt-1 text-muted">{{ detail }}</p>
     </div>
-    <a
-      href="https://openpencil.dev/programmable/mcp-server#webmcp"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="self-start text-xs text-surface underline underline-offset-4"
-      >{{ automation.webmcpSetup }}</a
-    >
+    <SettingsLink href="https://openpencil.dev/programmable/mcp-server#webmcp">
+      {{ automation.webmcpSetup }}
+    </SettingsLink>
   </section>
 </template>
