@@ -100,6 +100,13 @@ PR CI always classifies changed paths through `tools/ci/`. Docs-only changes run
 
 For user-facing work, add one present-tense outcome under the single appropriate `Unreleased` category: `Breaking changes`, `Added`, `Changed`, `Fixed`, `Performance`, or `Security`. Treat it as release notes, not a commit log: omit tests, benchmarks, CI, internal refactors/tooling, and bugs both introduced and fixed since the last release. After merges, compare the whole section with changes since the latest release, preserve important outcomes, consolidate related work, and remove duplicate bullets/headings. End sentences with periods and retain relevant issue/PR references. Update `README.md` when appropriate and this file when architecture or conventions change. Keep internal plans in ignored `scratch/`, not published docs.
 
+Before finalizing `Unreleased`:
+
+- Compare released behavior at the latest published tag with the final implementation, not just commit subjects. Verify questionable fixes existed at that tag; fold fixes to newly added features into their final feature description.
+- Check public exports, model/config/data contracts, and peer requirements for removals, renames, and upgrade instructions under `Breaking changes`.
+- Remove superseded intermediate behavior and duplicate outcomes across categories. State platform requirements and concrete supported behavior instead of unqualified compatibility or performance claims.
+- Run `bun run check:changelog`. Keep historical sections unchanged during routine cleanup; release publication uses the matching tagged section, not regenerated prose.
+
 ## Commit messages
 
 `commitlint.config.ts` enforces message structure through the **Commit messages** CI job on all PRs, including docs-only changes. Run `bun run check:commits --last` or pass `--from`/`--to` for a branch range. Preserve the release exception and product casing when changing rules; CI gate policy lives in `tools/ci/src/policy.ts`.
