@@ -4,6 +4,7 @@ import type { Font, Paint, Surface } from 'canvaskit-wasm'
 
 import type { SkiaRenderer } from '#core/canvas/renderer'
 import { destroyRenderer } from '#core/canvas/renderer/lifecycle'
+import { TextPreparationCache } from '#core/canvas/text/preparation-cache'
 
 function deletable<T>() {
   return { delete: mock() } as T & { delete: ReturnType<typeof mock> }
@@ -12,6 +13,7 @@ function deletable<T>() {
 function createRenderer() {
   const renderer: Partial<SkiaRenderer> = {
     destroyed: false,
+    textPreparationCache: new TextPreparationCache(),
     imageCache: new Map(),
     vectorPathCache: new Map(),
     vectorStrokePathCache: new Map(),
@@ -67,6 +69,9 @@ function createRenderer() {
 test('destroyRenderer releases tiled resources before deleting the main surface', () => {
   const renderer = createRenderer()
   const teardown: string[] = []
+  renderer.textPreparationCache.clear = mock(() => {
+    teardown.push('text')
+  })
   renderer.tiledScene.destroy = mock(() => teardown.push('tiled'))
   renderer.surface.delete = mock(() => teardown.push('surface')) as typeof renderer.surface.delete
 
@@ -74,7 +79,7 @@ test('destroyRenderer releases tiled resources before deleting the main surface'
 
   expect(renderer.tiledScene.destroy).toHaveBeenCalledTimes(1)
   expect(renderer.surface.delete).toHaveBeenCalledTimes(1)
-  expect(teardown).toEqual(['tiled', 'surface'])
+  expect(teardown).toEqual(['text', 'tiled', 'surface'])
 })
 
 test('destroyRenderer deletes all renderer-owned paints and label fonts', () => {

@@ -27,6 +27,7 @@ export function clearSubtreePictureCache(r: SkiaRenderer): void {
 }
 
 export function invalidateAllPictures(r: SkiaRenderer): void {
+  r.textPreparationCache.clear()
   invalidateScenePicture(r)
   r.tiledScene.invalidateStructure()
   for (const pic of r.nodePictureCache.values()) pic?.delete()
@@ -38,6 +39,7 @@ export function invalidateAllPictures(r: SkiaRenderer): void {
 }
 
 export function invalidateNodePicture(r: SkiaRenderer, nodeId: string): void {
+  r.textPreparationCache.deleteNode(nodeId)
   deleteEffectRaster(r.effectRasterCache, nodeId)
   deleteEffectRasterDependencies(r.effectRasterCache, nodeId)
   for (const [ownerId, dependencyIds] of r.nodePictureCacheDependencies) {

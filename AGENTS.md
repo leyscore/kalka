@@ -182,7 +182,13 @@ Keep responsibilities distinct: engine tests cover state contracts, Playwright b
 
 - Canvas is CanvasKit (Skia WASM) on a WebGL surface, not DOM
 - `renderVersion` vs `sceneVersion`: `renderVersion` = canvas repaint (pan/zoom/hover); `sceneVersion` = scene graph mutations. UI that only cares about graph data should avoid watching repaint-only state; use editor events for incremental surfaces such as the layer tree.
-- `requestRender()` bumps both counters; `requestRepaint()` bumps only `renderVersion`
+- Live property controls use selected-node projections from `editor/selection-state/nodes.ts`: shallow reactive copies receive `node:previewUpdated` patches at property granularity. Never add preview invalidation to all `useSceneComputed` consumers; catalogs and unrelated controls must not refresh for geometry previews. Projection subscriptions belong to the consuming scope/session and must be disposed.
+- Numeric geometry edits own a `beginNodePreview()` handle with `update`, `commit`, and `cancel`. It captures all affected fields/layout children, publishes the complete delta once, and restores exact originals on cancellation. Selection/page/graph changes and disposal cancel the old edit; trailing input must not target the new selection. Controls must close previews even when a gesture returns to its starting value.
+- Renderer interaction policy uses explicit `beginInteractiveEdit()` leases and `isInteractiveEditing()`, not undo batching. Release leases on every terminal path. Keep live queries callable across app facades that spread editor actions.
+- Drawing and input share preview-aware geometry through `@open-pencil/core/geometry`, built on Scene Graph matrices. Use it for world/screen transforms, inverses, bounds, and handle placement instead of independently interpreting ancestor rotations or reflections. LINE pivots remain at the origin; other nodes rotate around their centers.
+- Label drawing and hit testing share `canvas/labels/{layout,transform,style}.ts`, including paragraph measurements and unreflected label axes. Rotation previews change through `setRotationPreview()` and `rotation:preview-changed`; cancellation must close the owning gesture without deselecting or committing it.
+- Paragraph construction is typed against `canvas/text/paragraph-inputs.ts`; the same inputs drive preparation-cache invalidation. Add a mutation case when extending that contract. Drawing borrows native paragraphs; the renderer owns their bounded cache and destruction.
+- `requestRender()` bumps `renderVersion` and `sceneVersion`; `requestRepaint()` bumps only `renderVersion`
 - `renderNow()` is only for surface recreation and font loading (need immediate draw)
 - Resize observer uses rAF throttle, not debounce — debounce causes canvas skew
 - Viewport culling skips off-screen nodes; unclipped parents are NOT culled (children may extend beyond bounds)

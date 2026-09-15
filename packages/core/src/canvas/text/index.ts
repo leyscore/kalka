@@ -26,7 +26,11 @@ import {
   type FontResolutionSettled
 } from '#core/text/resolver'
 
+import type { ParagraphNode } from './paragraph-inputs'
+import type { PreparedText, TextPreparationCache } from './preparation-cache'
+
 interface FontReadinessRenderer {
+  textPreparationCache?: TextPreparationCache
   ck?: CanvasKit
   fontProvider?: TypefaceFontProvider | null
   fontsLoaded?: boolean
@@ -130,14 +134,23 @@ function demandRemoteCoverage(r: TextRenderer, node: SceneNode, characters: stri
 }
 
 function observedGlyphReadiness(r: TextRenderer, node: SceneNode): NodeFontReadiness {
-  const paragraph = buildParagraph(r, node)
-  paragraph.layout(resolveParagraphLayoutWidth(node))
-  const missingOccurrences = missingGlyphOccurrences(
-    transformTextCase(node.text, node.textCase),
-    paragraph.getShapedLines(),
-    transformedSourceOffsets(node)
+  const missingOccurrences = withPreparedText(
+    r,
+    node,
+    'coverage',
+    () => buildParagraph(r, node),
+    (prepared) => {
+      if (!prepared.missingGlyphs) {
+        prepared.paragraph.layout(resolveParagraphLayoutWidth(node))
+        prepared.missingGlyphs = missingGlyphOccurrences(
+          transformTextCase(node.text, node.textCase),
+          prepared.paragraph.getShapedLines(),
+          transformedSourceOffsets(node)
+        )
+      }
+      return prepared.missingGlyphs
+    }
   )
-  paragraph.delete()
   if (missingOccurrences.length === 0) return 'ready'
 
   const charactersByScript = new Map<FontFallbackScript, string[]>()
@@ -232,14 +245,14 @@ export function buildTextPicture(r: TextRenderer, node: SceneNode): Uint8Array |
   return bytes ?? null
 }
 
-function resolveParagraphLayoutWidth(node: SceneNode, maxWidth?: number): number {
+function resolveParagraphLayoutWidth(node: ParagraphNode, maxWidth?: number): number {
   if (maxWidth !== undefined) return maxWidth
   if (node.textAutoResize === 'WIDTH_AND_HEIGHT') return 1e6
   return node.width || 1e6
 }
 
 function buildTruncateOpts(
-  node: SceneNode,
+  node: ParagraphNode,
   baseFontSize: number
 ): { maxLines?: number; ellipsis?: string } {
   if (node.textTruncation !== 'ENDING') return {}
@@ -374,7 +387,7 @@ function styleRunColor(
 
 function styleRunLanguage(
   style: SceneNode['styleRuns'][number]['style'],
-  node: SceneNode
+  node: Pick<ParagraphNode, 'textLanguage'>
 ): string | undefined {
   return style.textLanguage ?? node.textLanguage ?? undefined
 }
@@ -382,7 +395,7 @@ function styleRunLanguage(
 function pushStyleRun(
   r: TextRenderer,
   builder: ReturnType<CanvasKit['ParagraphBuilder']['MakeFromFontProvider']>,
-  node: SceneNode,
+  node: ParagraphNode,
   run: SceneNode['styleRuns'][number],
   baseColor: Float32Array,
   baseFontSize: number,
@@ -431,7 +444,7 @@ function pushStyleRun(
 
 function addParagraphText(
   builder: ReturnType<CanvasKit['ParagraphBuilder']['MakeFromFontProvider']>,
-  node: SceneNode,
+  node: Pick<ParagraphNode, 'textCase'>,
   text: string
 ): void {
   builder.addText(transformTextCase(text, node.textCase))
@@ -440,7 +453,7 @@ function addParagraphText(
 function addStyledRuns(
   r: TextRenderer,
   builder: ReturnType<CanvasKit['ParagraphBuilder']['MakeFromFontProvider']>,
-  node: SceneNode,
+  node: ParagraphNode,
   baseColor: Float32Array,
   baseFontSize: number,
   fontFamilies: (primary: string, weight: number, italic?: boolean) => string[],
@@ -460,9 +473,57 @@ function addStyledRuns(
   if (pos < text.length) addParagraphText(builder, node, text.slice(pos))
 }
 
+function withPreparedText<T>(
+  r: FontReadinessRenderer,
+  node: SceneNode,
+  variant: string,
+  build: () => Paragraph,
+  consume: (prepared: PreparedText) => T
+): T {
+  if (r.textPreparationCache && r.fontProvider) {
+    return r.textPreparationCache.use(
+      node,
+      variant,
+      fontManager.generation(),
+      r.fontProvider,
+      build,
+      consume
+    )
+  }
+  const paragraph = build()
+  try {
+    return consume({ paragraph })
+  } finally {
+    paragraph.delete()
+  }
+}
+
+/** Draw from a borrowed paragraph without transferring native resource ownership. */
+export function withTextParagraph<T>(
+  r: FontReadinessRenderer & {
+    buildParagraph: (
+      node: SceneNode,
+      color: Float32Array,
+      options: { halfLeading?: boolean }
+    ) => Paragraph
+  },
+  node: SceneNode,
+  color: Float32Array,
+  options: { halfLeading?: boolean },
+  draw: (paragraph: Paragraph) => T
+): T {
+  return withPreparedText(
+    r,
+    node,
+    `draw:${Boolean(options.halfLeading)}:${color.join(',')}`,
+    () => r.buildParagraph(node, color, options),
+    (prepared) => draw(prepared.paragraph)
+  )
+}
+
 export function buildParagraph(
   r: TextRenderer,
-  node: SceneNode,
+  node: ParagraphNode,
   color?: Float32Array,
   { halfLeading = false }: { halfLeading?: boolean } = {}
 ): Paragraph {

@@ -59,6 +59,7 @@
 
 ### Fixed
 
+- Keep property fields and paint previews live during editing, and keep selection labels attached and aligned during rotation.
 - Keep Undo and Redo commands available as edit history changes, without requiring another scene edit.
 - Avoid recursive desktop HTTP proxy requests when font downloads intercept Tauri IPC traffic.
 - Keep FIT image fills proportional, centered, and fully visible without stretching or cropped edges.
@@ -125,6 +126,7 @@
 - Prevent unbounded instance duplication when editing Figma-imported or pasted components with serialized or renamed children, keep extra instance children stable instead of yanking them to the front, and avoid pasted instances re-linking pre-existing instances during clipboard import.
 ### Performance
 
+- Reduce repeated text shaping and scene invalidation while moving and resizing objects.
 - Scope automation and Figma API layout reconciliation to graph nodes and parent containers actually changed by each mutation.
 - Keep rapid trackpad zoom reversals and effect-heavy document navigation responsive by cancelling obsolete reconstruction and reusing safe raster snapshots.
 - Show the FIG page list from a lightweight Kiwi scan before materializing the full document.

@@ -1,4 +1,4 @@
-import type { Canvas, CanvasKit, Paragraph, TypefaceFontProvider } from 'canvaskit-wasm'
+import type { Canvas, CanvasKit, Font, Paragraph, TypefaceFontProvider } from 'canvaskit-wasm'
 
 interface LabelParagraphEntry {
   paragraph: Paragraph
@@ -7,6 +7,12 @@ interface LabelParagraphEntry {
 }
 
 const MAX_LABEL_PARAGRAPHS = 512
+
+export function measureGlyphWidth(font: Font, text: string): number {
+  let width = 0
+  for (const advance of font.getGlyphWidths(font.getGlyphIDs(text))) width += advance
+  return width
+}
 
 export class LabelParagraphCache {
   private readonly entries = new Map<string, LabelParagraphEntry>()

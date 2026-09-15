@@ -23,7 +23,7 @@ function createRenderer(surfaceFactory: (info: ImageInfo) => Surface | null) {
         right,
         bottom
       ]),
-      FilterMode: { Linear: 'Linear' },
+      FilterMode: { Linear: 'Linear', Nearest: 'Nearest' },
       MipmapMode: { None: 'None' }
     } as SkiaRenderer['ck'],
     surface: {
@@ -213,6 +213,10 @@ test('retained scene backing filters cross-zoom previews instead of falling back
   r.zoom = 1
   r.sceneBackingPreviewUntil = Number.POSITIVE_INFINITY
   r.sceneBacking = {
+    anchorPanX: 0,
+    anchorPanY: 0,
+    marginDeviceX: 0,
+    marginDeviceY: 0,
     image: { delete: mock() } as CKImage,
     pageId: 'page',
     sceneVersion: 1,
@@ -247,6 +251,10 @@ test('retained scene backing allows same-zoom previews while panning', () => {
   r.zoom = 1
   r.sceneBackingPreviewUntil = Number.POSITIVE_INFINITY
   r.sceneBacking = {
+    anchorPanX: 0,
+    anchorPanY: 0,
+    marginDeviceX: 0,
+    marginDeviceY: 0,
     image: { delete: mock() } as CKImage,
     pageId: 'page',
     sceneVersion: 1,
@@ -272,6 +280,10 @@ test('retained scene backing allows same-zoom previews while panning', () => {
 test('retained scene backing invalidates stale position-preview metadata', () => {
   const r = createRenderer(() => null)
   r.sceneBacking = {
+    anchorPanX: 0,
+    anchorPanY: 0,
+    marginDeviceX: 0,
+    marginDeviceY: 0,
     image: { delete: mock() } as CKImage,
     pageId: 'page',
     sceneVersion: 1,

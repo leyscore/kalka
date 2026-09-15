@@ -84,6 +84,7 @@ function handleSelect(value: SizeSelectValue) {
       :binding-path="axis"
       @update:model-value="ctx.updateAxisSize(axis, $event)"
       @commit="(value: number, previous: number) => ctx.commitAxisSize(axis, value, previous)"
+      @cancel="ctx.cancelPreview"
     >
       <template #after-variable>
         <SelectRoot

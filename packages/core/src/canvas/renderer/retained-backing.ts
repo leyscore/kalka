@@ -67,8 +67,16 @@ function backingWorldCoverageContainsLiveViewport(r: SkiaRenderer): boolean {
   )
 }
 
-function backingZoomMatchesLiveViewport(r: SkiaRenderer): boolean {
-  return Math.abs((r.sceneBacking?.zoom ?? r.zoom) - r.zoom) <= 0.0001
+function backingPixelGridMatchesLiveViewport(r: SkiaRenderer): boolean {
+  const backing = r.sceneBacking
+  if (!backing || backing.dpr !== r.dpr || backing.zoom !== r.zoom) {
+    return false
+  }
+  // Compare against the original viewport, not its rounded overscan origin.
+  // A freshly built backing therefore always matches exactly (zero delta).
+  const x = (r.panX - backing.anchorPanX) * r.dpr
+  const y = (r.panY - backing.anchorPanY) * r.dpr
+  return Number.isInteger(x) && Number.isInteger(y)
 }
 
 function backingCoverageContainsLiveViewport(
@@ -78,9 +86,8 @@ function backingCoverageContainsLiveViewport(
   positionPreviewVersion: number
 ): boolean {
   if (!backingMetadataMatches(r, sceneVersion, positionPreviewVersion)) return false
-  const crispZoom = backingZoomMatchesLiveViewport(r)
   if (allowStaleZoom && backingScreenCoverageContainsViewport(r)) return true
-  return crispZoom && backingWorldCoverageContainsLiveViewport(r)
+  return backingPixelGridMatchesLiveViewport(r) && backingWorldCoverageContainsLiveViewport(r)
 }
 
 function drawSceneBacking(
@@ -98,15 +105,20 @@ function drawSceneBacking(
     return false
   }
 
+  const pixelAligned = backingPixelGridMatchesLiveViewport(r)
   const scale = r.zoom / backing.zoom
-  const x = r.panX - backing.panX * scale
-  const y = r.panY - backing.panY * scale
+  const x = pixelAligned
+    ? ((r.panX - backing.anchorPanX) * r.dpr - backing.marginDeviceX) / r.dpr
+    : r.panX - backing.panX * scale
+  const y = pixelAligned
+    ? ((r.panY - backing.anchorPanY) * r.dpr - backing.marginDeviceY) / r.dpr
+    : r.panY - backing.panY * scale
   r.opacityPaint.setAlphaf(1)
   canvas.drawImageRectOptions(
     backing.image,
     r.ck.LTRBRect(0, 0, backing.width * backing.dpr, backing.height * backing.dpr),
     r.ck.LTRBRect(x, y, x + backing.width * scale, y + backing.height * scale),
-    r.ck.FilterMode.Linear,
+    pixelAligned ? r.ck.FilterMode.Nearest : r.ck.FilterMode.Linear,
     r.ck.MipmapMode.None,
     r.opacityPaint
   )
@@ -125,13 +137,21 @@ function sceneBackingScale(r: SkiaRenderer): number {
 
 function sceneBackingGeometry(r: SkiaRenderer): SceneBackingGeometry {
   const backingScale = sceneBackingScale(r)
-  const marginX = r.viewportWidth * ((backingScale - 1) / 2)
-  const marginY = r.viewportHeight * ((backingScale - 1) / 2)
+  // Keep the raster on the live viewport's device-pixel grid. Fractional
+  // overscan offsets otherwise resample already antialiased edges on every blit.
+  const marginDeviceX = Math.floor(r.viewportWidth * ((backingScale - 1) / 2) * r.dpr)
+  const marginDeviceY = Math.floor(r.viewportHeight * ((backingScale - 1) / 2) * r.dpr)
+  const marginX = marginDeviceX / r.dpr
+  const marginY = marginDeviceY / r.dpr
   const width = Math.max(1, Math.ceil(r.viewportWidth + marginX * 2))
   const height = Math.max(1, Math.ceil(r.viewportHeight + marginY * 2))
   const backingPanX = r.panX + marginX
   const backingPanY = r.panY + marginY
   return {
+    anchorPanX: r.panX,
+    anchorPanY: r.panY,
+    marginDeviceX,
+    marginDeviceY,
     panX: backingPanX,
     panY: backingPanY,
     width,
@@ -315,6 +335,10 @@ function renderBackingChild(
 
 function sceneBackingMetrics(backing: SceneBackingGeometry): SceneBackingGeometry {
   return {
+    anchorPanX: backing.anchorPanX,
+    anchorPanY: backing.anchorPanY,
+    marginDeviceX: backing.marginDeviceX,
+    marginDeviceY: backing.marginDeviceY,
     panX: backing.panX,
     panY: backing.panY,
     zoom: backing.zoom,
@@ -364,6 +388,10 @@ function sceneBackingBuildMatches(r: SkiaRenderer, sceneVersion: number): boolea
     build.sceneVersion === sceneVersion &&
     build.positionPreviewVersion === build.graph.positionPreviewVersion &&
     build.fontGeneration === r.fontGeneration &&
+    build.anchorPanX === backing.anchorPanX &&
+    build.anchorPanY === backing.anchorPanY &&
+    build.width === backing.width &&
+    build.height === backing.height &&
     build.panX === backing.panX &&
     build.panY === backing.panY &&
     build.zoom === backing.zoom &&
@@ -399,23 +427,6 @@ function startSceneBackingBuild(r: SkiaRenderer, graph: SceneGraph, sceneVersion
   })
 }
 
-function sceneBackingGeometryFromBuild(
-  build: NonNullable<SkiaRenderer['sceneBackingBuild']>
-): SceneBackingGeometry {
-  return {
-    panX: build.panX,
-    panY: build.panY,
-    width: build.width,
-    height: build.height,
-    worldX: build.worldX,
-    worldY: build.worldY,
-    worldWidth: build.worldWidth,
-    worldHeight: build.worldHeight,
-    zoom: build.zoom,
-    dpr: build.dpr
-  }
-}
-
 function stepSceneBackingBuild(r: SkiaRenderer, sceneVersion: number): boolean {
   const build = r.sceneBackingBuild
   if (!build) return false
@@ -425,7 +436,7 @@ function stepSceneBackingBuild(r: SkiaRenderer, sceneVersion: number): boolean {
   }
 
   const startedAt = now()
-  const backing = sceneBackingGeometryFromBuild(build)
+  const backing = sceneBackingMetrics(build)
   do {
     const childId = build.childIds[build.index]
     if (!childId) break
@@ -530,7 +541,7 @@ export function renderSceneBacking(
     stepSceneBackingBuild(r, sceneVersion)
   }
 
-  const crisp = Math.abs((r.sceneBacking?.zoom ?? r.zoom) - r.zoom) <= 0.0001
+  const crisp = backingPixelGridMatchesLiveViewport(r)
   r.sceneBackingNeedsCrispRender = !crisp || !!r.sceneBackingBuild
   return drawSceneBacking(
     r,

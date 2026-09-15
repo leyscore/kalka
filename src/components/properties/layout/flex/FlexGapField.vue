@@ -66,6 +66,7 @@ function setMode(value: string) {
         :binding-path="prop"
         @update:model-value="ctx.updateProp(prop, $event)"
         @commit="(value, previous) => ctx.commitProp(prop, value, previous)"
+        @cancel="ctx.cancelPreview"
       >
         <template #icon>
           <icon-lucide-align-horizontal-space-between v-if="horizontal" class="size-3.5" />

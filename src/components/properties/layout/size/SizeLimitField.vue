@@ -38,6 +38,7 @@ function handleSelect(value: string) {
       :binding-path="item.prop"
       @update:model-value="ctx.updateSizeLimit(item.prop, $event)"
       @commit="(value: number, previous: number) => ctx.commitSizeLimit(item.prop, value, previous)"
+      @cancel="ctx.cancelPreview"
     >
       <template #after-variable>
         <SelectRoot :model-value="'VALUE'" @update:model-value="handleSelect($event as string)">

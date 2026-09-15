@@ -1,0 +1,116 @@
+import type { Paragraph, TypefaceFontProvider } from 'canvaskit-wasm'
+
+import type { SceneNode } from '@open-pencil/scene-graph'
+
+import type { missingGlyphOccurrences } from '#core/text/resolver'
+
+// Bound both the number of native paragraphs and the text retained by them.
+// Source UTF-16 units are a workload bound, not an estimate of native bytes.
+const MAX_PREPARED_PARAGRAPHS = 1024
+const MAX_PREPARED_TEXT_UNITS = 262_144
+
+import { PARAGRAPH_INPUT_KEYS } from './paragraph-inputs'
+
+type PreparationInput = SceneNode[(typeof PARAGRAPH_INPUT_KEYS)[number]]
+
+export interface PreparedText {
+  paragraph: Paragraph
+  missingGlyphs?: ReturnType<typeof missingGlyphOccurrences>
+}
+
+interface Entry extends PreparedText {
+  nodeId: string
+  inputs: PreparationInput[]
+  units: number
+}
+
+export class TextPreparationCache {
+  private readonly entries = new Map<string, Entry>()
+  private readonly nodeKeys = new Map<string, Set<string>>()
+  private units = 0
+  private generation = -1
+  private provider: TypefaceFontProvider | null = null
+
+  constructor(
+    private readonly maxEntries = MAX_PREPARED_PARAGRAPHS,
+    private readonly maxTextUnits = MAX_PREPARED_TEXT_UNITS
+  ) {}
+
+  /** Borrowed paragraphs must not be retained, deleted or relaid out by drawing callers. */
+  use<T>(
+    node: SceneNode,
+    variant: string,
+    generation: number,
+    provider: TypefaceFontProvider,
+    build: () => Paragraph,
+    consume: (prepared: PreparedText) => T
+  ): T {
+    if (this.generation !== generation || this.provider !== provider) {
+      this.clear()
+      this.generation = generation
+      this.provider = provider
+    }
+    if (node.text.length > this.maxTextUnits || this.maxEntries <= 0) {
+      const paragraph = build()
+      try {
+        return consume({ paragraph })
+      } finally {
+        paragraph.delete()
+      }
+    }
+    const key = `${node.id}\0${variant}`
+    let entry = this.entries.get(key)
+    if (
+      entry &&
+      !PARAGRAPH_INPUT_KEYS.every((prop, index) => entry?.inputs[index] === node[prop])
+    ) {
+      this.deleteNode(node.id)
+      entry = undefined
+    }
+    if (!entry) {
+      entry = {
+        nodeId: node.id,
+        inputs: PARAGRAPH_INPUT_KEYS.map((prop) => node[prop]),
+        paragraph: build(),
+        units: node.text.length
+      }
+      this.entries.set(key, entry)
+      const keys = this.nodeKeys.get(node.id) ?? new Set<string>()
+      keys.add(key)
+      this.nodeKeys.set(node.id, keys)
+      this.units += entry.units
+      while (this.entries.size > this.maxEntries || this.units > this.maxTextUnits) {
+        const oldest = this.entries.keys().next().value
+        if (oldest === undefined) break
+        this.remove(oldest)
+      }
+    } else {
+      this.entries.delete(key)
+      this.entries.set(key, entry)
+    }
+    return consume(entry)
+  }
+
+  deleteNode(id: string): void {
+    const keys = this.nodeKeys.get(id)
+    if (keys) for (const key of keys) this.remove(key)
+  }
+
+  clear(): void {
+    for (const entry of this.entries.values()) entry.paragraph.delete()
+    this.entries.clear()
+    this.nodeKeys.clear()
+    this.units = 0
+  }
+
+  private remove(key: string): void {
+    const entry = this.entries.get(key)
+    if (!entry) return
+    entry.paragraph.delete()
+    this.units -= entry.units
+    this.entries.delete(key)
+    const keys = this.nodeKeys.get(entry.nodeId)
+    keys?.delete(key)
+    if (keys?.size === 0) this.nodeKeys.delete(entry.nodeId)
+  }
+}

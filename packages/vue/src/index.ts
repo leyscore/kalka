@@ -31,6 +31,8 @@ export { useNodeProps, MIXED } from '#vue/controls/node-props/use'
 export type { MixedValue } from '#vue/controls/node-props/use'
 export { useSceneComputed } from '#vue/internal/scene-computed/use'
 export { useSelectionState } from '#vue/editor/selection-state/use'
+export { createSelectedNodeState } from '#vue/editor/selection-state/nodes'
+export type { SelectedNodeState } from '#vue/editor/selection-state/nodes'
 export { useEditorEvent } from '#vue/editor/events/use'
 export { useSelectionCapabilities } from '#vue/editor/selection-capabilities/use'
 
