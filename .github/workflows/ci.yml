@@ -37,6 +37,26 @@ jobs:
           CI_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: bun tools/ci/src/classify.ts
 
+  commit-messages:
+    name: Commit messages
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./.github/actions/setup-bun
+      - name: Validate PR commit messages
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if ! bun run check:commits --from "$BASE_SHA" --to "$HEAD_SHA" --verbose; then
+            echo '::error title=Commit messages::Check the messages listed above. Use type(scope): description, for example fix: preserve selection. See CONTRIBUTING.md#commit-messages.'
+            exit 1
+          fi
+
   documentation:
     name: Documentation
     needs: changes
@@ -95,6 +115,13 @@ jobs:
           persist-credentials: false
 
       - uses: ./.github/actions/setup-bun
+
+      - name: Cache npm consumer downloads
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: ~/.npm
+          key: npm-consumers-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: npm-consumers-${{ runner.os }}-
 
       - name: Build publishable packages
         run: bun run build:packages
@@ -225,7 +252,7 @@ jobs:
 
   result:
     name: CI result
-    needs: [changes, documentation, source-quality, package-quality, repository-quality, storybook, native-test-contracts, unit-tests]
+    needs: [changes, commit-messages, documentation, source-quality, package-quality, repository-quality, storybook, native-test-contracts, unit-tests]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 3
