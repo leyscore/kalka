@@ -45,7 +45,6 @@ import {
   drawReflowedPathTextSilhouettes,
   isReflowedPathText
 } from './text/derived'
-import { textNodeToOutlinePath } from './text/outlines'
 
 function drawVisibleFills(
   r: SkiaRenderer,
@@ -876,11 +875,7 @@ export function renderShapeUncached(
   r.renderEffects(canvas, node, rect, hasRadius, 'front', shadowChild)
 }
 
-function isGradientFill(fill?: Fill): boolean {
-  return fill?.type.startsWith('GRADIENT') === true
-}
-
-function shouldRenderTextAsOutline(fill?: Fill): boolean {
+function hasComplexTextFill(fill?: Fill): boolean {
   return fill !== undefined && fill.type !== 'SOLID'
 }
 
@@ -891,53 +886,22 @@ export function textVerticalOffset(node: SceneNode, contentHeight: number): numb
   return 0
 }
 
-function drawOutlinedText(
-  r: SkiaRenderer,
-  canvas: Canvas,
-  node: SceneNode,
-  paragraphY: number
-): boolean {
-  const outlineNode =
-    node.textCase === 'ORIGINAL'
-      ? node
-      : { ...node, text: transformTextCase(node.text, node.textCase), styleRuns: [] }
-  const path = textNodeToOutlinePath(r, outlineNode)
-  if (!path) return false
-  canvas.save()
-  canvas.translate(0, paragraphY)
-  canvas.drawPath(path, r.fillPaint)
-  canvas.restore()
-  path.delete()
-  return true
-}
-
-function drawGradientText(r: SkiaRenderer, canvas: Canvas, node: SceneNode): boolean {
+function drawPaintedText(r: SkiaRenderer, canvas: Canvas, node: SceneNode): boolean {
   if (!r.fontsLoaded || !r.fontProvider) return false
-
-  const paragraph = r.buildParagraph(node, r.ck.Color4f(0, 0, 0, 1), {
-    halfLeading: true
-  })
-  try {
-    const paragraphY = textVerticalOffset(node, paragraph.getHeight())
-    r.effectLayerPaint.setImageFilter(null)
-    r.effectLayerPaint.setColorFilter(null)
-    r.effectLayerPaint.setBlendMode(r.ck.BlendMode.SrcOver)
-    const bounds = r.ck.LTRBRect(0, paragraphY, node.width, paragraphY + node.height)
-    canvas.saveLayer(r.effectLayerPaint, bounds)
-    canvas.drawParagraph(paragraph, 0, paragraphY)
-
-    r.effectLayerPaint.setBlendMode(r.ck.BlendMode.SrcIn)
-    canvas.saveLayer(r.effectLayerPaint, bounds)
-    canvas.drawRect(r.ck.LTRBRect(0, 0, node.width, node.height), r.fillPaint)
-    canvas.restore()
-    canvas.restore()
-    return true
-  } finally {
-    paragraph.delete()
-    r.effectLayerPaint.setImageFilter(null)
-    r.effectLayerPaint.setColorFilter(null)
-    r.effectLayerPaint.setBlendMode(r.ck.BlendMode.SrcOver)
-  }
+  // Apply the shader directly to native glyphs: coverage layers add another rounding pass.
+  return withTextParagraph(
+    r,
+    node,
+    r.ck.Color4f(0, 0, 0, 1),
+    {
+      halfLeading: true,
+      foregroundPaint: r.fillPaint
+    },
+    (paragraph) => {
+      canvas.drawParagraph(paragraph, 0, textVerticalOffset(node, paragraph.getHeight()))
+      return true
+    }
+  )
 }
 
 function shouldClipTextToLayoutBox(node: SceneNode): boolean {
@@ -994,21 +958,7 @@ export function renderText(r: SkiaRenderer, canvas: Canvas, node: SceneNode, fil
     canvas.restore()
     return
   }
-  if (shouldRenderTextAsOutline(fill)) {
-    let paragraphY = 0
-    if (node.textAlignVertical !== 'TOP') {
-      const paragraph = r.buildParagraph(node, r.ck.Color4f(0, 0, 0, 1), {
-        halfLeading: true
-      })
-      paragraphY = textVerticalOffset(node, paragraph.getHeight())
-      paragraph.delete()
-    }
-    if (drawOutlinedText(r, canvas, node, paragraphY)) {
-      canvas.restore()
-      return
-    }
-  }
-  if (isGradientFill(fill) && drawGradientText(r, canvas, node)) {
+  if (hasComplexTextFill(fill) && drawPaintedText(r, canvas, node)) {
     canvas.restore()
     return
   }

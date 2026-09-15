@@ -59,6 +59,7 @@
 
 ### Fixed
 
+- Render four-point diamond gradients, preserve text layout across fill types, and keep image colors accurate on sRGB displays.
 - Keep newly created and edited objects visible during zoom instead of replaying outdated scene content.
 - Keep property fields and paint previews live during editing, rotated selection labels readable and aligned, and object edges stable when previews settle.
 - Show compact bordered section labels with inset nested titles and clearer hover feedback.

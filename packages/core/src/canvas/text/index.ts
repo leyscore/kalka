@@ -1,6 +1,7 @@
 import type {
   CanvasKit,
   FontWeight,
+  Paint,
   Paragraph,
   TextFontFeatures,
   TextFontVariations,
@@ -25,8 +26,12 @@ import {
 } from '#core/text/resolver'
 
 import { resolveParagraphFontFamilies } from './font-families'
+import { pushParagraphStyle, type ParagraphPaintStyle, type ParagraphBuildOptions } from './paint'
+import { withPreparedText } from './prepared'
+export { withTextParagraph } from './prepared'
+export type { ParagraphBuildOptions } from './paint'
 import type { ParagraphNode } from './paragraph-inputs'
-import type { PreparedText, TextPreparationCache } from './preparation-cache'
+import type { TextPreparationCache } from './preparation-cache'
 
 interface FontReadinessRenderer {
   textPreparationCache?: TextPreparationCache
@@ -370,46 +375,45 @@ function pushStyleRun(
   baseColor: Float32Array,
   baseFontSize: number,
   fontFamilies: (primary: string, weight: number, italic?: boolean) => string[],
-  halfLeading: boolean
+  halfLeading: boolean,
+  paintStyle?: ParagraphPaintStyle
 ): void {
   const ck = r.ck
   const style = run.style
   const runLineHeight = style.lineHeight !== undefined ? style.lineHeight : node.lineHeight
   const runFontSize = style.fontSize ?? baseFontSize
 
-  builder.pushStyle(
-    new ck.TextStyle({
-      color: styleRunColor(ck, style, baseColor),
-      fontFamilies: fontFamilies(
-        style.fontFamily ?? (node.fontFamily || DEFAULT_FONT_FAMILY),
-        style.fontWeight ?? node.fontWeight,
-        style.italic ?? node.italic
-      ),
-      fontSize: runFontSize,
-      locale: styleRunLanguage(style, node),
-      fontStyle: {
-        weight: { value: style.fontWeight ?? node.fontWeight } as FontWeight,
-        slant: (style.italic ?? node.italic) ? ck.FontSlant.Italic : ck.FontSlant.Upright
-      },
-      fontVariations: textFontVariations(style.fontVariations ?? node.fontVariations),
-      fontFeatures: textFontFeatures(style.fontFeatures ?? node.fontFeatures),
-      letterSpacing: style.letterSpacing ?? (node.letterSpacing || 0),
-      decoration: textDecorationValue(ck, style.textDecoration ?? node.textDecoration),
-      decorationStyle: textDecorationStyleValue(
-        ck,
-        style.textDecorationStyle ?? node.textDecorationStyle
-      ),
-      decorationThickness:
-        style.textDecorationThickness ?? node.textDecorationThickness ?? undefined,
-      decorationColor: textDecorationColor(
-        ck,
-        style.textDecorationFills ?? node.textDecorationFills,
-        baseColor
-      ),
-      heightMultiplier: runLineHeight ? runLineHeight / runFontSize : undefined,
-      halfLeading
-    })
-  )
+  const textStyle = new ck.TextStyle({
+    color: styleRunColor(ck, style, baseColor),
+    fontFamilies: fontFamilies(
+      style.fontFamily ?? (node.fontFamily || DEFAULT_FONT_FAMILY),
+      style.fontWeight ?? node.fontWeight,
+      style.italic ?? node.italic
+    ),
+    fontSize: runFontSize,
+    locale: styleRunLanguage(style, node),
+    fontStyle: {
+      weight: { value: style.fontWeight ?? node.fontWeight } as FontWeight,
+      slant: (style.italic ?? node.italic) ? ck.FontSlant.Italic : ck.FontSlant.Upright
+    },
+    fontVariations: textFontVariations(style.fontVariations ?? node.fontVariations),
+    fontFeatures: textFontFeatures(style.fontFeatures ?? node.fontFeatures),
+    letterSpacing: style.letterSpacing ?? (node.letterSpacing || 0),
+    decoration: textDecorationValue(ck, style.textDecoration ?? node.textDecoration),
+    decorationStyle: textDecorationStyleValue(
+      ck,
+      style.textDecorationStyle ?? node.textDecorationStyle
+    ),
+    decorationThickness: style.textDecorationThickness ?? node.textDecorationThickness ?? undefined,
+    decorationColor: textDecorationColor(
+      ck,
+      style.textDecorationFills ?? node.textDecorationFills,
+      baseColor
+    ),
+    heightMultiplier: runLineHeight ? runLineHeight / runFontSize : undefined,
+    halfLeading
+  })
+  pushParagraphStyle(builder, textStyle, paintStyle)
 }
 
 function addParagraphText(
@@ -427,14 +431,25 @@ function addStyledRuns(
   baseColor: Float32Array,
   baseFontSize: number,
   fontFamilies: (primary: string, weight: number, italic?: boolean) => string[],
-  halfLeading: boolean
+  halfLeading: boolean,
+  paintStyle?: ParagraphPaintStyle
 ): void {
   const text = node.text
   let pos = 0
 
   for (const run of node.styleRuns) {
     if (pos < run.start) addParagraphText(builder, node, text.slice(pos, run.start))
-    pushStyleRun(r, builder, node, run, baseColor, baseFontSize, fontFamilies, halfLeading)
+    pushStyleRun(
+      r,
+      builder,
+      node,
+      run,
+      baseColor,
+      baseFontSize,
+      fontFamilies,
+      halfLeading,
+      paintStyle
+    )
     addParagraphText(builder, node, text.slice(run.start, run.start + run.length))
     builder.pop()
     pos = run.start + run.length
@@ -443,59 +458,11 @@ function addStyledRuns(
   if (pos < text.length) addParagraphText(builder, node, text.slice(pos))
 }
 
-function withPreparedText<T>(
-  r: FontReadinessRenderer,
-  node: SceneNode,
-  variant: string,
-  build: () => Paragraph,
-  consume: (prepared: PreparedText) => T
-): T {
-  if (r.textPreparationCache && r.fontProvider) {
-    return r.textPreparationCache.use(
-      node,
-      variant,
-      fontManager.generation(),
-      r.fontProvider,
-      build,
-      consume
-    )
-  }
-  const paragraph = build()
-  try {
-    return consume({ paragraph })
-  } finally {
-    paragraph.delete()
-  }
-}
-
-/** Draw from a borrowed paragraph without transferring native resource ownership. */
-export function withTextParagraph<T>(
-  r: FontReadinessRenderer & {
-    buildParagraph: (
-      node: SceneNode,
-      color: Float32Array,
-      options: { halfLeading?: boolean }
-    ) => Paragraph
-  },
-  node: SceneNode,
-  color: Float32Array,
-  options: { halfLeading?: boolean },
-  draw: (paragraph: Paragraph) => T
-): T {
-  return withPreparedText(
-    r,
-    node,
-    `draw:${Boolean(options.halfLeading)}:${color.join(',')}`,
-    () => r.buildParagraph(node, color, options),
-    (prepared) => draw(prepared.paragraph)
-  )
-}
-
 export function buildParagraph(
   r: TextRenderer,
   node: ParagraphNode,
   color?: Float32Array,
-  { halfLeading = false }: { halfLeading?: boolean } = {}
+  { halfLeading = false, foregroundPaint }: ParagraphBuildOptions = {}
 ): Paragraph {
   const ck = r.ck
   const baseColor = color ?? ck.BLACK
@@ -514,52 +481,79 @@ export function buildParagraph(
       cjkFallbacks
     )
 
+  const baseTextStyle = {
+    color: baseColor,
+    fontFamilies: fontFamilies(
+      node.fontFamily || DEFAULT_FONT_FAMILY,
+      node.fontWeight,
+      node.italic
+    ),
+    fontSize: baseFontSize,
+    locale: node.textLanguage ?? undefined,
+    fontStyle: {
+      weight: { value: node.fontWeight } as FontWeight,
+      slant: node.italic ? ck.FontSlant.Italic : ck.FontSlant.Upright
+    },
+    fontVariations: textFontVariations(node.fontVariations),
+    fontFeatures: textFontFeatures(node.fontFeatures),
+    letterSpacing: node.letterSpacing || 0,
+    decoration: textDecorationValue(ck, node.textDecoration),
+    decorationStyle: textDecorationStyleValue(ck, node.textDecorationStyle),
+    decorationThickness: node.textDecorationThickness ?? undefined,
+    decorationColor: textDecorationColor(ck, node.textDecorationFills, baseColor),
+    heightMultiplier: node.lineHeight ? node.lineHeight / baseFontSize : undefined,
+    halfLeading
+  }
   const paraStyle = new ck.ParagraphStyle({
     textAlign: getParagraphTextAlign(ck, node),
     textDirection: textDirection === 'RTL' ? ck.TextDirection.RTL : ck.TextDirection.LTR,
     textHeightBehavior: textHeightBehaviorValue(ck, node.leadingTrim),
     ...truncateOpts,
-    textStyle: {
-      color: baseColor,
-      fontFamilies: fontFamilies(
-        node.fontFamily || DEFAULT_FONT_FAMILY,
-        node.fontWeight,
-        node.italic
-      ),
-      fontSize: baseFontSize,
-      locale: node.textLanguage ?? undefined,
-      fontStyle: {
-        weight: { value: node.fontWeight } as FontWeight,
-        slant: node.italic ? ck.FontSlant.Italic : ck.FontSlant.Upright
-      },
-      fontVariations: textFontVariations(node.fontVariations),
-      fontFeatures: textFontFeatures(node.fontFeatures),
-      letterSpacing: node.letterSpacing || 0,
-      decoration: textDecorationValue(ck, node.textDecoration),
-      decorationStyle: textDecorationStyleValue(ck, node.textDecorationStyle),
-      decorationThickness: node.textDecorationThickness ?? undefined,
-      decorationColor: textDecorationColor(ck, node.textDecorationFills, baseColor),
-      heightMultiplier: node.lineHeight ? node.lineHeight / baseFontSize : undefined,
-      halfLeading
-    }
+    textStyle: baseTextStyle
   })
 
   if (!r.fontProvider) throw new Error('Font provider not initialized')
   const builder = ck.ParagraphBuilder.MakeFromFontProvider(paraStyle, r.fontProvider)
 
-  if (node.styleRuns.length === 0) {
-    addParagraphText(builder, node, node.text)
-  } else {
-    addStyledRuns(r, builder, node, baseColor, baseFontSize, fontFamilies, halfLeading)
-  }
+  let background: Paint | undefined
+  try {
+    let paintStyle: ParagraphPaintStyle | undefined
+    if (foregroundPaint) {
+      background = new ck.Paint()
+      background.setColor(ck.TRANSPARENT)
+      paintStyle = { foreground: foregroundPaint, background }
+      builder.pushPaintStyle(new ck.TextStyle(baseTextStyle), foregroundPaint, background)
+    }
+    if (node.styleRuns.length === 0) {
+      addParagraphText(builder, node, node.text)
+    } else {
+      addStyledRuns(
+        r,
+        builder,
+        node,
+        baseColor,
+        baseFontSize,
+        fontFamilies,
+        halfLeading,
+        paintStyle
+      )
+    }
 
-  const paragraph = builder.build()
-  if (node.textAutoResize === 'WIDTH_AND_HEIGHT') {
-    paragraph.layout(1e6)
-    paragraph.layout(Math.max(node.width || 1, Math.ceil(paragraph.getLongestLine())))
-  } else {
-    paragraph.layout(resolveParagraphLayoutWidth(node))
+    const paragraph = builder.build()
+    try {
+      if (node.textAutoResize === 'WIDTH_AND_HEIGHT') {
+        paragraph.layout(1e6)
+        paragraph.layout(Math.max(node.width || 1, Math.ceil(paragraph.getLongestLine())))
+      } else {
+        paragraph.layout(resolveParagraphLayoutWidth(node))
+      }
+      return paragraph
+    } catch (error) {
+      paragraph.delete()
+      throw error
+    }
+  } finally {
+    builder.delete()
+    background?.delete()
   }
-  builder.delete()
-  return paragraph
 }

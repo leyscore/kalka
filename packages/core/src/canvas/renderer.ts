@@ -49,6 +49,7 @@ import type {
   SkPicture,
   ImageFilter,
   MaskFilter,
+  RuntimeEffect,
   Paragraph
 } from 'canvaskit-wasm'
 
@@ -73,6 +74,7 @@ export class SkiaRenderer {
   ck: CanvasKit
   surface: Surface
   declare fillPaint: Paint
+  diamondGradientEffect: RuntimeEffect | null = null
   declare strokePaint: Paint
   declare selectionPaint: Paint
   declare parentOutlinePaint: Paint
@@ -650,7 +652,7 @@ export class SkiaRenderer {
   buildParagraph(
     node: SceneNode,
     color?: Float32Array,
-    opts?: { halfLeading?: boolean }
+    opts?: RenderText.ParagraphBuildOptions
   ): Paragraph {
     return RenderText.buildParagraph(this, node, color, opts)
   }

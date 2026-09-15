@@ -34,6 +34,8 @@ export function destroyRenderer(r: SkiaRenderer): void {
   r.imageCache.clear()
   disposePathCaches(r)
   r.fillPaint.delete()
+  r.diamondGradientEffect?.delete()
+  r.diamondGradientEffect = null
   r.strokePaint.delete()
   r.selectionPaint.delete()
   r.parentOutlinePaint.delete()
