@@ -14,7 +14,7 @@ Before opening a PR, read `CONTRIBUTING.md` and `AGENTS.md`. PRs should explain 
 
 ### AI assistance
 
-<!-- If an LLM materially helped create or modify this PR, list the model names. Otherwise write “None”. No prompts or transcripts are required. -->
+<!-- If an LLM materially helped create or modify this PR, list the model names. Otherwise write “None”. This is disclosure, not co-authorship; omit tool promotional signatures and session links. No prompts or transcripts are required. -->
 
 Models: None
 
