@@ -40,6 +40,7 @@
 
 ### Changed
 
+- Explore editable component, typography, and paint comparisons in the demo, with the original examples preserved on a reference page.
 - Use compact desktop Home search actions with consistent responsive layout and control sizing.
 - Keep applied and available Effect styles concise, and collapse equal independent corner fields when all four use the same variable.
 - Keep pixel-grid rounding invisible while showing alignment guides only for real geometry, objects, and canvas/layout guides.
@@ -61,6 +62,7 @@
 
 ### Fixed
 
+- Keep Undo and Redo commands available as edit history changes, without requiring another scene edit.
 - Avoid recursive desktop HTTP proxy requests when font downloads intercept Tauri IPC traffic.
 - Keep FIT image fills proportional, centered, and fully visible without stretching or cropped edges.
 - Preserve edited instance text, including cleared labels, when saving and reopening `.fig` files.
