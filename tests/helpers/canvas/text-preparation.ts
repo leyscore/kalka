@@ -5,12 +5,11 @@ export function probeParagraphBuilds(page: Page) {
     const renderers = window.openPencil?.getStore?.().canvasRenderers
     if (!renderers?.length) throw new Error('Renderer unavailable')
     const restores: Array<() => void> = []
-    let count = 0
-    let readiness = 0
+    const counts = { builds: 0, readiness: 0 }
     for (const builder of new Set(renderers.map((renderer) => renderer.ck.ParagraphBuilder))) {
       const original = builder.MakeFromFontProvider
       builder.MakeFromFontProvider = (...args) => {
-        count++
+        counts.builds++
         return original.apply(builder, args)
       }
       restores.push(() => {
@@ -20,7 +19,7 @@ export function probeParagraphBuilds(page: Page) {
     for (const renderer of renderers) {
       const original = renderer.nodeFontReadiness
       renderer.nodeFontReadiness = (node) => {
-        readiness++
+        counts.readiness++
         return original.call(renderer, node)
       }
       restores.push(() => {
@@ -28,8 +27,8 @@ export function probeParagraphBuilds(page: Page) {
       })
     }
     return {
-      count: () => count,
-      readiness: () => readiness,
+      count: () => counts.builds,
+      readiness: () => counts.readiness,
       restore: () => {
         for (const restore of restores) restore()
       }
