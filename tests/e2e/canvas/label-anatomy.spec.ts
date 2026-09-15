@@ -1,10 +1,133 @@
+import { readFileSync } from 'node:fs'
+
 import type { SceneNode } from '@open-pencil/scene-graph'
 
 import { expect, test } from '#tests/e2e/fixtures'
 import { expectDefined } from '#tests/helpers/assert'
 import { CanvasHelper } from '#tests/helpers/canvas'
+import { mockFontsource } from '#tests/helpers/fonts/fontsource'
 
 test.use({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 2 })
+
+test('reused Unicode section labels match fresh paragraphs across zoom reversals', async ({
+  page
+}) => {
+  const fonts = await mockFontsource(page, [
+    {
+      family: 'Noto Naskh Arabic',
+      subset: 'arabic',
+      data: readFileSync('public/NotoNaskhArabic-Regular.ttf')
+    },
+    {
+      family: 'Noto Sans SC',
+      subset: 'chinese-simplified',
+      data: readFileSync('tests/fixtures/fonts/NotoSansCJK-Test.otf'),
+      format: 'otf'
+    }
+  ])
+  try {
+    await page.goto('/?test&no-rulers&navigation-benchmark')
+    const canvas = new CanvasHelper(page)
+    await canvas.waitForInit()
+    await page.evaluate(() => {
+      const store = window.openPencil?.getStore?.()
+      if (!store) throw new Error('Editor unavailable')
+      const names = [
+        'Button',
+        'AV To ffi',
+        'Привет',
+        'Ελληνικά',
+        'écho café',
+        'مرحبا',
+        '你好',
+        'Trail   ',
+        'one\ntwo'
+      ]
+      for (const [index, name] of names.entries()) {
+        store.graph.createNode('SECTION', store.state.currentPageId, {
+          name,
+          x: 80,
+          y: 70 + index * 70,
+          width: 130,
+          height: 40,
+          fills: [{ type: 'SOLID', color: { r: 1, g: 1, b: 1, a: 1 }, opacity: 1, visible: true }],
+          strokes: [
+            {
+              color: { r: 0.7, g: 0.7, b: 0.7, a: 1 },
+              weight: 1,
+              opacity: 1,
+              visible: true,
+              align: 'INSIDE'
+            }
+          ]
+        })
+      }
+      store.clearSelection()
+      store.requestRender()
+    })
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const renderer = window.openPencil
+            ?.getStore?.()
+            .canvasRenderers.find((r) => r.fontsLoaded && r.fontProvider)
+          const provider = renderer?.fontProvider
+          if (!renderer || !provider) return false
+          return ['مرحبا', '你好'].every((text) =>
+            renderer.labelParagraphCache.use(
+              renderer.ck,
+              provider,
+              text,
+              11,
+              300,
+              renderer.ck.BLACK,
+              renderer.fontGeneration,
+              ({ paragraph }) => {
+                const runs = paragraph.getShapedLines().flatMap((line) => line.runs)
+                return (
+                  runs.length > 0 &&
+                  runs.every(
+                    (run) => run.glyphs.length > 0 && run.glyphs.every((glyph) => glyph !== 0)
+                  )
+                )
+              },
+              600
+            )
+          )
+        })
+      )
+      .toBe(true)
+    expect(fonts.counts.downloads).toBeGreaterThanOrEqual(2)
+    await canvas.waitForRender()
+    for (const zoom of [1.25, 0.6, 1.1, 0.75, 1]) {
+      await page.evaluate((scale) => {
+        const store = window.openPencil?.getStore?.()
+        if (!store) throw new Error('Editor unavailable')
+        store.setZoomAroundPoint(scale, 0, 0)
+      }, zoom)
+      await page.evaluate(() => window.openPencil?.test?.navigation?.waitForSettlement())
+      await canvas.waitForRender()
+      const reused = await canvas.screenshotCanvasRegion(520, 840)
+      await page.evaluate(() => {
+        const store = window.openPencil?.getStore?.()
+        if (!store?.canvasRenderers.length) throw new Error('Renderer unavailable')
+        for (const renderer of store.canvasRenderers) renderer.labelParagraphCache.clear()
+        store.requestRepaint()
+      })
+      await canvas.waitForRender()
+      const fresh = await canvas.screenshotCanvasRegion(520, 840)
+      expect(reused.equals(fresh), `label pixels at ${zoom} zoom`).toBe(true)
+      if (zoom === 1)
+        expect(fresh).toMatchSnapshot('unicode-section-labels.png', {
+          threshold: 0,
+          maxDiffPixels: 0
+        })
+    }
+    canvas.assertNoErrors()
+  } finally {
+    await fonts.dispose()
+  }
+})
 
 for (const rotation of [-145, -40, 50]) {
   test(`frame titles and dimensions remain readable at ${rotation} degrees`, async ({ page }) => {

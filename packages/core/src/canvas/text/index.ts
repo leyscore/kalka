@@ -6,17 +6,13 @@ import type {
   TextFontVariations,
   TypefaceFontProvider
 } from 'canvaskit-wasm'
-import { uniq } from 'es-toolkit/array'
 
 import type { SceneNode } from '@open-pencil/scene-graph'
 
-import { ResourceCache } from '#core/cache/resource'
 import { resolveRGBAForPreview } from '#core/color/management'
 import { DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE } from '#core/constants'
 import { transformTextCase } from '#core/text/case'
-import { fontFallbackScriptForCharacter } from '#core/text/coverage'
 import { resolveNodeTextDirection } from '#core/text/direction'
-import type { FontFallbackScript } from '#core/text/fallbacks'
 import { fontManager, weightToStyle } from '#core/text/fonts'
 import {
   fontCoverageDemand,
@@ -24,9 +20,11 @@ import {
   fontRemoteCoverageDemand,
   fontResolver,
   missingGlyphOccurrences,
+  missingGlyphsByScript,
   type FontResolutionSettled
 } from '#core/text/resolver'
 
+import { resolveParagraphFontFamilies } from './font-families'
 import type { ParagraphNode } from './paragraph-inputs'
 import type { PreparedText, TextPreparationCache } from './preparation-cache'
 
@@ -44,9 +42,6 @@ interface TextRenderer extends FontReadinessRenderer {
   fontProvider: TypefaceFontProvider | null
   fontsLoaded: boolean
 }
-
-const FONT_FAMILY_CACHE_LIMIT = 256
-const fontFamilyCache = new ResourceCache<string, string[]>({ maxEntries: FONT_FAMILY_CACHE_LIMIT })
 
 function demandFace(
   r: FontReadinessRenderer,
@@ -163,14 +158,9 @@ function observedGlyphReadiness(r: TextRenderer, node: SceneNode): NodeFontReadi
     return 'ready'
   }
 
-  const charactersByScript = new Map<FontFallbackScript, string[]>()
-  for (const { character, utf16Start } of missingOccurrences) {
-    const script = fontFallbackScriptForCharacter(character, languageForCharacter(node, utf16Start))
-    if (!script) continue
-    const characters = charactersByScript.get(script) ?? []
-    characters.push(character)
-    charactersByScript.set(script, characters)
-  }
+  const charactersByScript = missingGlyphsByScript(missingOccurrences, (offset) =>
+    languageForCharacter(node, offset)
+  )
 
   let pending = false
   let exhausted = charactersByScript.size === 0
@@ -275,32 +265,6 @@ function buildTruncateOpts(
     opts.maxLines = Math.max(1, Math.floor(node.height / lineH))
   }
   return opts
-}
-
-function resolveParagraphFontFamilies(
-  primary: string,
-  style: string,
-  arabicFallbacks: readonly string[],
-  cjkFallbacks: readonly string[]
-): string[] {
-  const renderPrimary = fontManager.renderFamily(primary, style)
-  const renderArabicFallbacks = arabicFallbacks.map((family) =>
-    fontManager.renderFamily(family, 'Regular')
-  )
-  const renderCJKFallbacks = cjkFallbacks.map((family) =>
-    fontManager.renderFamily(family, 'Regular')
-  )
-  const key = `${renderPrimary}\0${renderArabicFallbacks.join('\0')}\0${renderCJKFallbacks.join('\0')}`
-  const cached = fontFamilyCache.peek(key)
-  if (cached) return cached
-
-  const families = [renderPrimary]
-  if (primary !== DEFAULT_FONT_FAMILY) families.push(DEFAULT_FONT_FAMILY)
-  families.push(...renderArabicFallbacks, ...renderCJKFallbacks)
-
-  const resolved = uniq(families)
-  fontFamilyCache.set(key, resolved)
-  return resolved
 }
 
 function getParagraphTextAlign(

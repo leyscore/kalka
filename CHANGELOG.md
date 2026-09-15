@@ -50,7 +50,7 @@
 - Match page-list density to the layer tree and add subtle, reduced-motion-aware dialog transitions.
 - Fade in streaming Markdown list items and code lines without animating completed responses.
 - Vertically center shaped section titles and allow renaming a section by double-clicking its canvas label.
-- Load supported online fonts before revealing imported pages, preserve substituted text during editing, and shape canvas labels with bundled Inter typography.
+- Load supported online fonts before revealing imported pages, preserve substituted text during editing, and shape canvas labels with Inter typography and shared Arabic/CJK font fallback.
 - Upgrade CanvasKit to 0.41 and use immutable renderer paths through `PathBuilder`.
 - Upgrade direct model chat providers and transports to AI SDK 7 while retaining the local ACP execution path.
 - Localize file, clipboard, collaboration, chat, vectorization, storage, recovery, and component-library notifications in every supported language.
@@ -129,7 +129,7 @@
 ### Performance
 
 - Reduce pauses after repeated frame creation without leaving hidden property edits or popups active.
-- Reduce repeated text shaping and scene invalidation while moving and resizing objects.
+- Reduce repeated text shaping and scene invalidation while moving and resizing objects, and reuse fitting canvas labels during zoom.
 - Scope automation and Figma API layout reconciliation to graph nodes and parent containers actually changed by each mutation.
 - Keep rapid trackpad zoom reversals and effect-heavy document navigation responsive by cancelling obsolete reconstruction and reusing safe raster snapshots.
 - Show the FIG page list from a lightweight Kiwi scan before materializing the full document.

@@ -35,54 +35,47 @@ function drawSectionTitle(
   nested: boolean,
   overlays?: RenderOverlays
 ): void {
-  let layout = labelLayout('section', node.width * r.zoom, nested)
-  if (!layout) return
+  const initialLayout = labelLayout('section', node.width * r.zoom, nested)
+  if (!initialLayout) return
   const { background, foreground, border, hover } = sectionLabelColors(r, graph, node)
-  const metrics = r.labelParagraphCache.measure(
+  r.labelParagraphCache.use(
     r.ck,
     provider,
     node.name,
-    layout.fontSize,
-    layout.maxTextWidth,
+    initialLayout.fontSize,
+    initialLayout.maxTextWidth,
     foreground,
     r.fontGeneration,
-    layout.fontWeight
+    ({ paragraph, metrics }) => {
+      const layout = labelLayout('section', node.width * r.zoom, nested, metrics)
+      if (!layout) return
+      canvas.save()
+      try {
+        canvas.concat(labelScreenMatrix(labelTransform(node, graph, overlays?.rotationPreview), r))
+        r.auxFill.setColor(r.ck.Color4f(background.r, background.g, background.b, background.a))
+        const { x, y, width, height } = layout.bounds
+        const bounds = r.ck.RRectXY(
+          r.ck.LTRBRect(x, y, x + width, y + height),
+          SECTION_TITLE_RADIUS,
+          SECTION_TITLE_RADIUS
+        )
+        canvas.drawRRect(bounds, r.auxFill)
+        if (overlays?.hoveredNodeId === node.id) {
+          r.auxFill.setColor(hover)
+          canvas.drawRRect(bounds, r.auxFill)
+        }
+        r.auxStroke.setColor(border)
+        r.auxStroke.setStrokeWidth(1)
+        r.auxStroke.setPathEffect(null)
+        canvas.drawRRect(bounds, r.auxStroke)
+        r.auxFill.setColor(foreground)
+        canvas.drawParagraph(paragraph, layout.text.x, layout.text.y)
+      } finally {
+        canvas.restore()
+      }
+    },
+    initialLayout.fontWeight
   )
-  layout = labelLayout('section', node.width * r.zoom, nested, metrics)
-  if (!layout) return
-  canvas.save()
-  canvas.concat(labelScreenMatrix(labelTransform(node, graph, overlays?.rotationPreview), r))
-  r.auxFill.setColor(r.ck.Color4f(background.r, background.g, background.b, background.a))
-  const { x, y, width, height } = layout.bounds
-  const bounds = r.ck.RRectXY(
-    r.ck.LTRBRect(x, y, x + width, y + height),
-    SECTION_TITLE_RADIUS,
-    SECTION_TITLE_RADIUS
-  )
-  canvas.drawRRect(bounds, r.auxFill)
-  if (overlays?.hoveredNodeId === node.id) {
-    r.auxFill.setColor(hover)
-    canvas.drawRRect(bounds, r.auxFill)
-  }
-  r.auxStroke.setColor(border)
-  r.auxStroke.setStrokeWidth(1)
-  r.auxStroke.setPathEffect(null)
-  canvas.drawRRect(bounds, r.auxStroke)
-  r.auxFill.setColor(foreground)
-  r.labelParagraphCache.draw(
-    r.ck,
-    canvas,
-    provider,
-    node.name,
-    layout.fontSize,
-    layout.maxTextWidth,
-    foreground,
-    r.fontGeneration,
-    layout.text.x,
-    layout.text.y,
-    layout.fontWeight
-  )
-  canvas.restore()
 }
 
 export function drawComponentLabels(

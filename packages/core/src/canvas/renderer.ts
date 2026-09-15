@@ -138,7 +138,9 @@ export class SkiaRenderer {
   subtreePictureCachePositionPreviewVersion = -1
   subtreePictureCacheFontGeneration = -1
   readonly labelCache = new LabelCache()
-  readonly labelParagraphCache = new LabelParagraphCache()
+  readonly labelParagraphCache = new LabelParagraphCache(undefined, undefined, {
+    onMissingGlyphs: (missing) => RendererFonts.resolveLabelFontCoverage(this, missing)
+  })
   readonly textPreparationCache = new TextPreparationCache()
   readonly tiledScene = new TiledSceneController()
   readonly profiler: RenderProfiler
