@@ -24,7 +24,9 @@ The root Tauri/Vite app lives in `src/`; app services and state belong under `sr
 
 ### Settings UI ownership
 
-Settings components own layout, translated copy, confirmation visibility, and emits. Reactive settings workflows live under the owning app domain's `settings/` folder (for example `src/app/ai/models/settings/profile-editor/{use,selection,connection}.ts`), not a global composables bucket. Use `use.ts` for orchestration and focused sibling modules for substantial sub-workflows. Keep persistence and external operations in domain services, and pure option projections as ordinary functions. Return operation outcomes rather than importing dialogs, routers, or toast UI into workflow composables. Keep newly entered secrets short-lived, never expose saved secrets, and guard async results against changed targets. Small presentation-only computed bindings can remain in components.
+Compose Settings sections with `SettingsSection` and its `title`, `description`, `actions`, and default content slots. It owns heading association and internal spacing; `SettingsGroup` owns bordered row grouping. Do not repeat section/header/spacing markup in each feature.
+
+Settings components own layout, translated copy, confirmation visibility, and emits. Reactive settings workflows live under the owning app domain's `settings/` folder (for example `src/app/ai/models/settings/profile-editor/{use,selection,connection}.ts`), not a global composables bucket. Use `use.ts` for orchestration and focused sibling modules for substantial sub-workflows. Keep persistence and external operations in domain services, and pure option projections as ordinary functions. Return operation outcomes rather than importing dialogs, routers, or toast UI into workflow composables. Keep newly entered secrets short-lived, never expose saved secrets, and guard async results against changed targets. Small presentation-only computed bindings can remain in components. New explicit settings forms use headless VeeValidate v5 with native Valibot schemas and existing controlled UI components; keep form state in the owning settings domain. Saved secrets and replacement-secret drafts stay outside form snapshots and devtools, and persistence/concurrency remain in domain workflows rather than form callbacks.
 
 ### Public package exports
 
@@ -108,10 +110,11 @@ Use Conventional Commits (`feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `bu
 
 ## Tools (AI / MCP / CLI)
 
-- Core operations are `ToolDef`s under `packages/core/src/tools/**`; `schema.ts` defines their contract and registries expose them. Add work to the nearest existing domain and the appropriate registry.
+- Core operations are `ToolDef`s under `packages/core/src/tools/**`; `schema.ts` defines their contract and registries expose them. Each definition owns its native Valibot `input`, execution/mutation metadata, and optional per-interface exposure exclusions (`mcp`, `ai`, `webmcp`). Exposure defaults to inclusion; adapters use `isToolExposed()`, then apply execution support and user permissions independently. Infer arguments from the schema; derive effects and default capabilities from execution metadata instead of maintaining parameter DSLs or tool-name lists. Add work to the nearest existing domain and the appropriate registry.
 - `ai-adapter.ts` converts ToolDefs for Vercel AI; `src/app/ai/tools/index.ts` binds them to the active editor's `FigmaAPI`.
 - CLI commands own CLI UX independently; `eval` exposes operations through `FigmaAPI`.
 - MCP-only filesystem/server tools live in `packages/mcp/src/tool/registration.ts`; listener/session lifecycle lives under `server/`, stdio under `stdio/`, and transport discovery under `transport/`. File access must resolve symlinks inside the effective MCP root; CLI defaults are cwd on macOS/Linux and home on Windows.
+- Browser-native WebMCP registration lives under `src/app/automation/webmcp/`, consumes per-tool exposure metadata, and is feature-detected through `document.modelContext`. Core owns synchronous property/variable transactions in `editor/history/atomic-tool.ts`; Scene Graph owns checkpoint recovery, including hierarchy and indexes. AI, MCP, and WebMCP share this execution path; async and structural tools cannot declare atomic property execution. App completion under `src/app/automation/execution/` loads fonts after commit. Keep browser lifecycle out of Core and the MCP server package.
 - Keep MCP transport tests under `tests/engine/mcp/{server,stdio,transport}` and shared fixtures under `tests/helpers/mcp`; isolate tests from user runtime discovery.
 - Shared scene-authoring guidance and tested examples live under `packages/core/src/design-jsx/reference/`; `reference.ts` combines them with renderer metadata. Core codegen prompts under `packages/core/src/tools/prompts/` and the app chat/ACP prompt compose that public reference rather than copying it. Run `bun run generate:authoring-reference` after changes; committed skill/docs copies are checked by `check:authoring-reference` (also part of `check:docs`). Do not edit generated reference files directly.
 - The installable agent skill is maintained in `skills/open-pencil/`. Changes to agent-facing APIs, CLI/MCP behavior, or design authoring must update affected skill examples, prompts, and public documentation in the same change. Keep examples valid in their actual execution environment; do not advertise library exports as scripting globals unless exposed there. Prefer runtime discovery and canonical references over duplicated API/tool inventories.
@@ -125,7 +128,7 @@ Use Conventional Commits (`feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `bu
 
 ## Code conventions
 
-- Use Valibot for first-party runtime validation. Keep Zod at upstream SDK integration boundaries that require it, such as MCP tool registration; do not maintain parallel first-party schemas in both libraries.
+- Use Valibot for first-party runtime validation. MCP v2 registration uses Standard Schema with Valibot JSON Schema conversion; AI and WebMCP adapters share the Core tool input contract. Keep Zod only where upstream dependencies require it; do not maintain parallel first-party schemas in both libraries.
 
 - Put code and tests in the established owning domain; inspect nearby structure before adding files.
 - `bun run check:arch` enforces boundaries: use public workspace exports, keep Core framework-neutral, keep app services out of views/shared UI, and keep property-panel internals scoped to that panel.
@@ -235,6 +238,16 @@ Keep responsibilities distinct: engine tests cover state contracts, Playwright b
 - Use `Tip`, not native `title`; Lucide/Iconify components, not raw SVG/Unicode icons; and `e.code`, not `e.key`, for modified shortcuts.
 - Binding-aware fields detach/mutate only on the first value change; opening/focusing is non-destructive.
 - Preserve nearby interaction gotchas when refactoring: splitter handles, NumberField pointer ownership, section dragging, panel containment, and number-spinner styling.
+
+### Feedback and form submission
+
+- Use `AppAlert` (`src/components/ui/feedback/AppAlert.vue`) for persistent contextual errors, warnings, recovery guidance, and informative results. Its typed theme lives in `src/theme/feedback/alert.ts`; use translated `heading`/`description` and the `actions` slot for recovery controls. Do not hand-roll feature-level alert markup or colored error paragraphs.
+- Use the existing toast service for transient confirmations such as copying or completing an action after its view closes. Do not show both a toast and an alert for the same event. Partial saves and actionable failures must not disappear in a toast.
+- Field validation stays inline in the shared field component, with `aria-invalid`, associated error text before hints, and first-invalid-field focus. VeeValidate owns validation and form submission state; domain workflows retain their own pending/lifecycle guards for external operations. A credential-store failure does not make the entered key invalid.
+- Settings save feedback uses `SettingsSaveFeedback`, which maps domain outcomes to `AppAlert`. Keep persistence outcomes (`saved`, `failed`, `partial`) in the domain: a form library cannot make preferences and a native credential store transactional. Preserve retryable drafts, reuse already-persisted identities on retries, and show the partial-save warning. Never render raw credential backend errors or secrets.
+- Use `SettingsLink` for external Settings links, including provider key pages and setup guides. It owns link styling, the external-link icon, and native opening behavior. Keep arrow glyphs out of translated labels.
+- Ordinary labels such as Running/Stopped remain status text or badges, not alerts. Destructive confirmation belongs in the shared confirmation dialog. Alerts announce changes without taking keyboard focus.
+- Isolated feedback-component visual states belong in colocated Storybook stories, not Playwright application screenshots. Settings E2E tests cover integration behavior: when feedback appears, validation/focus, retained drafts, and successful retries.
 
 ### Animations
 

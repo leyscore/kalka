@@ -22,7 +22,10 @@ test('model editing keeps the Settings shell stable and isolates the form', asyn
   expect(await dialog.boundingBox()).toEqual(before)
 
   // Accidental dismissal must not throw away an in-progress profile.
+  await editor.getByRole('textbox', { name: 'Name', exact: true }).fill('Draft profile')
   await page.keyboard.press('Escape')
+  await expect(page.getByRole('alertdialog')).toBeVisible()
+  await page.getByRole('button', { name: 'Keep editing', exact: true }).click()
   await expect(editor).toBeVisible()
   await editor.getByRole('button', { name: 'Cancel', exact: true }).click()
   await expect(editor).toHaveCount(0)

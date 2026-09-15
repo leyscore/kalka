@@ -2,7 +2,10 @@ import { panelFieldBase } from '../panel/field'
 
 const appComboboxTheme = {
   slots: {
-    trigger: [panelFieldBase, 'flex w-full min-w-0 items-center justify-between px-2'],
+    trigger: [
+      panelFieldBase,
+      'flex w-full min-w-0 items-center justify-between px-2 aria-invalid:border-error aria-invalid:focus:ring-error/25'
+    ],
     value: 'min-w-0 flex-1 truncate text-left text-[11px] text-surface',
     chevron: 'ml-1 size-3 shrink-0 text-muted',
     content:
