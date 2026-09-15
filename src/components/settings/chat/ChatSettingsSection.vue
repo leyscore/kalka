@@ -4,6 +4,8 @@ import { computed } from 'vue'
 import { useI18n } from '@open-pencil/vue'
 
 import { reasoningDisplay } from '@/app/ai/chat/preferences'
+import SettingsGroup from '@/components/settings/layout/SettingsGroup.vue'
+import SettingsRow from '@/components/settings/layout/SettingsRow.vue'
 import SettingsSectionHeader from '@/components/settings/layout/SettingsSectionHeader.vue'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
 
@@ -16,11 +18,17 @@ const options = computed(() => [
 </script>
 
 <template>
-  <section class="mt-5 flex flex-col gap-3 border-t border-border pt-4">
+  <section class="flex flex-col gap-4">
     <SettingsSectionHeader>{{ ai.chatSettings }}</SettingsSectionHeader>
-    <div class="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] items-center gap-3">
-      <span class="text-[11px] text-surface">{{ ai.reasoningDisplay }}</span>
-      <AppSelect v-model="reasoningDisplay" :label="ai.reasoningDisplay" :options="options" />
-    </div>
+    <SettingsGroup>
+      <SettingsRow :label="ai.reasoningDisplay" class="max-sm:flex-col max-sm:items-stretch">
+        <AppSelect
+          v-model="reasoningDisplay"
+          :label="ai.reasoningDisplay"
+          :options="options"
+          class="w-full sm:w-52"
+        />
+      </SettingsRow>
+    </SettingsGroup>
   </section>
 </template>

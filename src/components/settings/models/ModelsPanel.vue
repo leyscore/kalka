@@ -5,6 +5,8 @@ import { nextTick, ref, onUnmounted } from 'vue'
 import { useI18n } from '@open-pencil/vue'
 
 import { useModelSettings } from '@/app/ai/models/settings/use'
+import SettingsPage from '@/components/settings/layout/SettingsPage.vue'
+import SettingsSectionHeader from '@/components/settings/layout/SettingsSectionHeader.vue'
 import ProfileEditor from '@/components/settings/models/ProfileEditor.vue'
 import RoleAssignments from '@/components/settings/models/RoleAssignments.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
@@ -82,88 +84,93 @@ const { profiles, statusByConnection, refreshStatuses } = useModelSettings()
       </div>
     </Transition>
 
-    <div
-      v-show="!editing && !editorLeaving"
-      class="scrollbar-thin min-h-0 flex-1 overflow-y-auto pr-1"
-    >
-      <section>
-        <div class="mb-2 flex items-center justify-between">
-          <div>
-            <h3 class="text-xs font-semibold text-surface">{{ ai.modelsTitle }}</h3>
-            <p class="text-[10px] text-muted">{{ ai.modelsDescription }}</p>
+    <SettingsPage v-show="!editing && !editorLeaving">
+      <div class="flex flex-col gap-6">
+        <section class="flex flex-col gap-4">
+          <div class="flex items-start justify-between gap-4">
+            <SettingsSectionHeader>
+              {{ ai.modelsTitle }}
+              <template #description>{{ ai.modelsDescription }}</template>
+            </SettingsSectionHeader>
+            <AppButton
+              color="primary"
+              variant="solid"
+              data-test-id="settings-add-model"
+              @click="addModel"
+            >
+              <template #leading><icon-lucide-plus class="size-3" /></template>
+              {{ ai.addModel }}
+            </AppButton>
           </div>
-          <AppButton
-            color="primary"
-            variant="solid"
-            data-test-id="settings-add-model"
-            @click="addModel"
-          >
-            <template #leading><icon-lucide-plus class="size-3" /></template>
-            {{ ai.addModel }}
-          </AppButton>
-        </div>
 
-        <div class="flex flex-col gap-1.5" data-test-id="settings-model-list">
-          <AppActionRow
-            v-for="profile in profiles"
-            :key="profile.id"
-            :data-model-id="profile.id"
-            @click="editModel(profile.id)"
-          >
-            <template #leading>
-              <span class="flex size-8 items-center justify-center rounded bg-panel"
-                ><icon-lucide-bot class="size-4"
-              /></span>
-            </template>
-            {{ profile.name }}
-            <template #description>
-              {{ profile.providerName
-              }}<span v-if="profile.modelName"> · {{ profile.modelName }}</span>
-            </template>
-            <template #trailing>
-              <span
-                class="mr-1 flex items-center gap-1 text-[9px] text-muted"
-                :data-state="
-                  statusByConnection[profile.connectionId] === 'configured'
-                    ? 'configured'
-                    : 'missing'
-                "
-              >
+          <div class="flex flex-col gap-1.5" data-test-id="settings-model-list">
+            <AppActionRow
+              v-for="profile in profiles"
+              :key="profile.id"
+              :data-model-id="profile.id"
+              :ui="{
+                root: 'py-3 max-sm:flex-wrap',
+                label: 'text-xs',
+                description: 'text-[11px] leading-relaxed',
+                trailing: 'max-sm:w-full max-sm:justify-end'
+              }"
+              @click="editModel(profile.id)"
+            >
+              <template #leading>
+                <span class="flex size-8 items-center justify-center rounded bg-panel"
+                  ><icon-lucide-bot class="size-4"
+                /></span>
+              </template>
+              {{ profile.name }}
+              <template #description>
+                {{ profile.providerName
+                }}<span v-if="profile.modelName"> · {{ profile.modelName }}</span>
+              </template>
+              <template #trailing>
                 <span
-                  class="size-1.5 rounded-full bg-muted data-[state=configured]:bg-[var(--color-success)]"
+                  class="mr-1 flex items-center gap-1 text-[11px] text-muted"
                   :data-state="
                     statusByConnection[profile.connectionId] === 'configured'
                       ? 'configured'
                       : 'missing'
                   "
-                />
-                {{ statusLabel(profile.connectionId, profile.providerID) }}
-              </span>
-              <span
-                v-for="capability in profile.capabilities"
-                :key="capability"
-                class="rounded bg-panel px-1.5 py-0.5 text-[9px] text-muted"
-              >
-                {{
-                  capability === 'tools'
-                    ? ai.modelCapabilityToolsShort
-                    : ai.modelCapabilityVisionShort
-                }}
-              </span>
-              <icon-lucide-chevron-right class="size-3.5 shrink-0 text-muted" />
-            </template>
-          </AppActionRow>
-        </div>
-      </section>
+                >
+                  <span
+                    class="size-1.5 rounded-full bg-muted data-[state=configured]:bg-[var(--color-success)]"
+                    :data-state="
+                      statusByConnection[profile.connectionId] === 'configured'
+                        ? 'configured'
+                        : 'missing'
+                    "
+                  />
+                  {{ statusLabel(profile.connectionId, profile.providerID) }}
+                </span>
+                <span
+                  v-for="capability in profile.capabilities"
+                  :key="capability"
+                  class="rounded bg-panel px-1.5 py-0.5 text-[11px] text-muted"
+                >
+                  {{
+                    capability === 'tools'
+                      ? ai.modelCapabilityToolsShort
+                      : ai.modelCapabilityVisionShort
+                  }}
+                </span>
+                <icon-lucide-chevron-right class="size-3.5 shrink-0 text-muted" />
+              </template>
+            </AppActionRow>
+          </div>
+        </section>
 
-      <section class="mt-5 border-t border-border pt-4">
-        <div class="mb-3">
-          <h3 class="text-xs font-semibold text-surface">{{ ai.modelAssignments }}</h3>
-          <p class="text-[10px] text-muted">{{ ai.modelAssignmentsDescription }}</p>
-        </div>
-        <RoleAssignments />
-      </section>
-      <slot />
-    </div>
+        <section class="flex flex-col gap-4">
+          <SettingsSectionHeader>
+            {{ ai.modelAssignments }}
+            <template #description>{{ ai.modelAssignmentsDescription }}</template>
+          </SettingsSectionHeader>
+          <RoleAssignments />
+        </section>
+        <slot />
+      </div>
+    </SettingsPage>
   </div>
 </template>

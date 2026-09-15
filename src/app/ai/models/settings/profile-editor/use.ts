@@ -1,4 +1,6 @@
-import { computed, reactive, ref, watch } from 'vue'
+import { tryOnScopeDispose } from '@vueuse/core'
+import { isEqual } from 'es-toolkit'
+import { computed, reactive, ref, toRaw, watch } from 'vue'
 import type { Ref } from 'vue'
 
 import type { AIProviderID } from '@open-pencil/core/constants'
@@ -32,7 +34,6 @@ export function useModelProfileEditor({ profileId, keyInput, labels: ai }: Profi
     providerDef,
     isACP,
     isHarness,
-    customModelSelected,
     supportsReasoningEffort,
     providerDisplayName,
     modelOptions,
@@ -47,30 +48,32 @@ export function useModelProfileEditor({ profileId, keyInput, labels: ai }: Profi
   } = selection
 
   const saveError = ref<string | null>(null)
+  const busy = ref(false)
+  const initialDraft = structuredClone(toRaw(draft))
+  tryOnScopeDispose(() => {
+    keyInput.value = ''
+  })
 
   const {
     connectionTestStatus,
     connectionTestReason,
     hasExistingKey,
-    canTest,
     resetConnectionTest,
     refreshKeyStatus,
-    clearKey,
+    keyCleared,
+    clearKey: stageKeyRemoval,
     testConnection
-  } = useProfileConnection({ draft, keyInput, providerDef, isACP, isHarness, customModelSelected })
+  } = useProfileConnection({ draft, keyInput })
+
+  const dirty = computed(
+    () => !isEqual(draft, initialDraft) || keyInput.value.length > 0 || keyCleared.value
+  )
 
   const canDelete = computed(() => Boolean(profileId) && aiModelSettings.value.models.length > 1)
-  const canSave = computed(
-    () =>
-      Boolean(draft.name.trim()) &&
-      (isACP.value ||
-        (customModelSelected.value
-          ? Boolean(draft.customModelID.trim())
-          : Boolean(draft.modelID.trim())))
-  )
 
   function updateProvider(id: AIProviderID) {
     selection.updateProvider(id)
+    keyCleared.value = false
     keyInput.value = ''
     resetConnectionTest()
     void refreshKeyStatus()
@@ -81,14 +84,22 @@ export function useModelProfileEditor({ profileId, keyInput, labels: ai }: Profi
     resetConnectionTest()
   }
 
+  function clearKey() {
+    if (busy.value) return
+    saveError.value = null
+    stageKeyRemoval()
+  }
+
   async function save(): Promise<boolean> {
+    if (busy.value) return false
+    busy.value = true
     saveError.value = null
 
     try {
       applyKnownModelMetadata()
       if (!draft.name.trim()) draft.name = modelDisplayName.value || providerDisplayName.value
       const profile = saveModelProfileDraft(draft)
-      if (keyInput.value.trim()) {
+      if (keyInput.value.trim() || keyCleared.value) {
         await setModelConnectionAPIKey(profile.connectionId, keyInput.value)
         await refreshAIProviderStatus()
         keyInput.value = ''
@@ -97,20 +108,29 @@ export function useModelProfileEditor({ profileId, keyInput, labels: ai }: Profi
     } catch (reason) {
       saveError.value = reason instanceof Error ? reason.message : String(reason)
       return false
+    } finally {
+      busy.value = false
     }
   }
 
   async function remove(): Promise<boolean> {
-    if (!profileId) return false
-
-    const profile = modelProfile(profileId)
-    if (profile && modelConnectionUsageCount(profile.connectionId) === 1) {
-      await setModelConnectionAPIKey(profile.connectionId, '')
+    if (!profileId || busy.value) return false
+    busy.value = true
+    saveError.value = null
+    try {
+      const profile = modelProfile(profileId)
+      if (profile && modelConnectionUsageCount(profile.connectionId) === 1) {
+        await setModelConnectionAPIKey(profile.connectionId, '')
+      }
+      removeModelProfile(profileId)
+      await refreshAIProviderStatus()
+      return true
+    } catch (reason) {
+      saveError.value = reason instanceof Error ? reason.message : String(reason)
+      return false
+    } finally {
+      busy.value = false
     }
-    removeModelProfile(profileId)
-    await refreshAIProviderStatus()
-
-    return true
   }
 
   watch(
@@ -122,6 +142,8 @@ export function useModelProfileEditor({ profileId, keyInput, labels: ai }: Profi
 
   return {
     draft,
+    dirty,
+    busy,
     providerDef,
     isACP,
     isHarness,
@@ -129,6 +151,7 @@ export function useModelProfileEditor({ profileId, keyInput, labels: ai }: Profi
     providerDisplayName,
     modelOptions,
     selectedModelValue,
+    customModelSelected: selection.customModelSelected,
     knownModel,
     knownCapabilities,
     outputTokenRecommendation,
@@ -137,8 +160,6 @@ export function useModelProfileEditor({ profileId, keyInput, labels: ai }: Profi
     canDelete,
     toolsEnabled,
     visionEnabled,
-    canSave,
-    canTest,
     connectionTestStatus,
     connectionTestReason,
     saveError,

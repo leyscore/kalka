@@ -23,13 +23,16 @@ const connectionServices = {
 }
 
 export function useMCPConnectionSettings(
+  draft: Ref<MCPConnectionDraft>,
   tokenDraft: Ref<string>,
   automation: Readonly<Ref<{ bearerTokenRequired: string }>>,
   services = connectionServices
 ) {
-  const draft = ref<MCPConnectionDraft>(createMCPConnectionDraft())
   const tokenStatus = ref<CredentialStatus>('missing')
+  const credentialCleared = ref(false)
   const error = ref('')
+  const pending = ref(0)
+  const busy = computed(() => pending.value > 0)
 
   let version = 0
   let disposed = false
@@ -37,6 +40,7 @@ export function useMCPConnectionSettings(
   tryOnScopeDispose(() => {
     disposed = true
     version++
+    tokenDraft.value = ''
   })
 
   const savedConnection = computed(() =>
@@ -50,6 +54,7 @@ export function useMCPConnectionSettings(
   function startAdd(): void {
     version++
     draft.value = createMCPConnectionDraft()
+    credentialCleared.value = false
     tokenDraft.value = ''
     tokenStatus.value = 'missing'
     error.value = ''
@@ -60,7 +65,9 @@ export function useMCPConnectionSettings(
     if (!connection) return false
 
     const request = ++version
+    pending.value++
     draft.value = createMCPConnectionDraft(connection)
+    credentialCleared.value = false
     tokenDraft.value = ''
     tokenStatus.value = 'missing'
     error.value = ''
@@ -76,15 +83,19 @@ export function useMCPConnectionSettings(
 
       error.value = cause instanceof Error ? cause.message : String(cause)
       return true
+    } finally {
+      pending.value--
     }
   }
 
   async function save(): Promise<boolean> {
     const request = ++version
+    pending.value++
     const id: MCPConnectionID = draft.value.id ?? `mcp-${crypto.randomUUID()}`
     draft.value.id = id
     const target = { ...draft.value, id }
     const token = tokenDraft.value
+    const clearToken = credentialCleared.value
     error.value = ''
 
     try {
@@ -99,8 +110,9 @@ export function useMCPConnectionSettings(
 
       await enqueueMCPConnectionMutation(id, async () => {
         const connection = services.save({ ...target, enabled: false })
-        if (target.authenticationType === 'none') await services.setCredential(connection.id, '')
-        else if (token.trim()) await services.setCredential(connection.id, token)
+        if (target.authenticationType === 'none' || (clearToken && !token.trim())) {
+          await services.setCredential(connection.id, '')
+        } else if (token.trim()) await services.setCredential(connection.id, token)
         else if (target.enabled && (await services.status(connection.id)) !== 'configured') {
           throw new Error(automation.value.bearerTokenRequired)
         }
@@ -114,33 +126,18 @@ export function useMCPConnectionSettings(
     } catch (cause) {
       if (current(request)) error.value = cause instanceof Error ? cause.message : String(cause)
       return false
+    } finally {
+      pending.value--
     }
   }
 
-  async function clearCredential(): Promise<void> {
-    const id = draft.value.id
-    if (!id) return
-
-    const request = ++version
-    const token = tokenDraft.value
+  function clearCredential(): void {
+    if (busy.value) return
+    credentialCleared.value = true
+    draft.value.enabled = false
+    tokenDraft.value = ''
+    tokenStatus.value = 'missing'
     error.value = ''
-
-    try {
-      await enqueueMCPConnectionMutation(id, async () => {
-        const connection = mcpConnectionSettings.value.connections.find((item) => item.id === id)
-        if (!connection) throw new Error('Connection no longer exists')
-
-        services.save({ ...createMCPConnectionDraft(connection), enabled: false })
-        await services.setCredential(id, '')
-      })
-      if (!current(request)) return
-
-      draft.value.enabled = false
-      if (tokenDraft.value === token) tokenDraft.value = ''
-      tokenStatus.value = 'missing'
-    } catch (cause) {
-      if (current(request)) error.value = cause instanceof Error ? cause.message : String(cause)
-    }
   }
 
   async function remove(): Promise<boolean> {
@@ -148,6 +145,7 @@ export function useMCPConnectionSettings(
     if (!id) return false
 
     const request = ++version
+    pending.value++
     error.value = ''
 
     try {
@@ -156,6 +154,8 @@ export function useMCPConnectionSettings(
     } catch (cause) {
       if (current(request)) error.value = cause instanceof Error ? cause.message : String(cause)
       return false
+    } finally {
+      pending.value--
     }
   }
 
@@ -168,7 +168,10 @@ export function useMCPConnectionSettings(
 
   return {
     draft,
+    busy,
+    cancel: startAdd,
     tokenStatus,
+    credentialCleared,
     error,
     savedConnection,
     startAdd,

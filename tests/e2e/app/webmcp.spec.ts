@@ -48,6 +48,14 @@ test('native WebMCP discovery, editing, validation and undo', async ({ page, bro
 
   try {
     await cdp.send('WebMCP.enable')
+    expect(frames.size).toBe(0)
+    await page.getByTestId('app-settings-trigger').click()
+    await page.getByTestId('settings-section-mcp').click()
+    const access = page.getByRole('combobox', { name: 'Browser agent access' })
+    await expect(access).toHaveText('Off')
+    await access.click()
+    await page.getByRole('option', { name: 'Edit', exact: true }).click()
+    await page.getByTestId('app-settings-done').click()
     await expect.poll(() => frames.has('update_node')).toBe(true)
     expect(frames.has('eval')).toBe(false)
     expect(frames.has('save_file')).toBe(false)

@@ -28,16 +28,20 @@ const options = () => ({ signal: new AbortController().signal })
 
 describe('WebMCP registration', () => {
   test('unsupported browsers do nothing', async () => {
-    const registration = registerWebMCPTools(undefined, () => {
-      throw new Error('Must not resolve an editor')
-    })
+    const registration = registerWebMCPTools(
+      undefined,
+      () => {
+        throw new Error('Must not resolve an editor')
+      },
+      'edit'
+    )
     await registration.ready
     registration.dispose()
   })
 
   test('registers only reviewed tools and unregisters on disposal', async () => {
     const context = host()
-    const registration = registerWebMCPTools(context, () => ({ execute: async () => ({}) }))
+    const registration = registerWebMCPTools(context, () => ({ execute: async () => ({}) }), 'edit')
     await registration.ready
     expect(context.tools.has('get_node')).toBe(true)
     for (const name of [
@@ -64,16 +68,20 @@ describe('WebMCP registration', () => {
     const context = host()
     let active = 'first'
     let calls = 0
-    const registration = registerWebMCPTools(context, () => {
-      const captured = active
-      return {
-        execute: async () => {
-          calls++
-          await Promise.resolve()
-          return { document: captured }
+    const registration = registerWebMCPTools(
+      context,
+      () => {
+        const captured = active
+        return {
+          execute: async () => {
+            calls++
+            await Promise.resolve()
+            return { document: captured }
+          }
         }
-      }
-    })
+      },
+      'edit'
+    )
     await registration.ready
     try {
       const tool = requiredTool(context.tools, 'get_node')
@@ -90,9 +98,13 @@ describe('WebMCP registration', () => {
 
   test('rejects cancelled calls and excessive results', async () => {
     const context = host()
-    const registration = registerWebMCPTools(context, () => ({
-      execute: async () => 'x'.repeat(300_000)
-    }))
+    const registration = registerWebMCPTools(
+      context,
+      () => ({
+        execute: async () => 'x'.repeat(300_000)
+      }),
+      'edit'
+    )
     await registration.ready
     try {
       const tool = requiredTool(context.tools, 'get_node')
@@ -108,12 +120,16 @@ describe('WebMCP registration', () => {
   test('reports committed edits even when their result exceeds the size limit', async () => {
     const context = host()
     let content = ''
-    const registration = registerWebMCPTools(context, () => ({
-      execute: async (_def, args) => {
-        content = String(args.text)
-        return { id: args.id, text: content }
-      }
-    }))
+    const registration = registerWebMCPTools(
+      context,
+      () => ({
+        execute: async (_def, args) => {
+          content = String(args.text)
+          return { id: args.id, text: content }
+        }
+      }),
+      'edit'
+    )
     await registration.ready
     try {
       const text = 'x'.repeat(300_000)
@@ -143,7 +159,8 @@ describe('WebMCP registration', () => {
           await context.registerTool(tool, options)
         }
       },
-      () => ({ execute: async () => ({}) })
+      () => ({ execute: async () => ({}) }),
+      'edit'
     )
     await expect(registration.ready).rejects.toThrow('Registration denied')
     expect(context.tools.size).toBe(0)

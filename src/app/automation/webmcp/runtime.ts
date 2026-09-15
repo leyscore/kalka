@@ -5,13 +5,18 @@ import { executeAtomicEditorTool } from '@/app/automation/execution/editor'
 import type { EditorStore } from '@/app/editor/active-store'
 import { getTabById } from '@/app/tabs'
 
-import { registerWebMCPTools } from './registration'
+import { webmcpMode } from './preferences'
+import { createWebMCPRuntimeService } from './service'
+
+const service = createWebMCPRuntimeService()
+export const webmcpRuntime = service.state
 
 /** Browser-native tools reuse the same editor targeting and handlers as remote MCP. */
 export function startWebMCP(getStore: () => EditorStore): () => void {
   const handleTool = createAutomationToolHandler(makeFigmaFromStore)
-  const registration = registerWebMCPTools(
+  return service.start(
     typeof document === 'undefined' ? undefined : document.modelContext,
+    webmcpMode,
     () => {
       const target = resolveAutomationTarget(getStore(), undefined)
       if (getTabById(target.documentId)?.kind !== 'document') {
@@ -41,6 +46,4 @@ export function startWebMCP(getStore: () => EditorStore): () => void {
       }
     }
   )
-  void registration.ready.catch((error: unknown) => console.warn('[WebMCP]', error))
-  return registration.dispose
 }

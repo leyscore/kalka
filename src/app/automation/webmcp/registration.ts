@@ -3,7 +3,9 @@ import { toJsonSchema as toJSONSchema } from '@valibot/to-json-schema'
 import * as v from 'valibot'
 import type { WebMCP } from 'webmcp-types'
 
-import { ALL_TOOLS, type ToolDef } from '@open-pencil/core/tools'
+import type { ToolDef } from '@open-pencil/core/tools'
+
+import { getWebMCPTools, type WebMCPMode } from './policy'
 
 const MAX_RESULT_BYTES = 256 * 1024
 
@@ -19,15 +21,15 @@ export interface WebMCPRegistration {
 /** Capture the document before invoking any asynchronous work. */
 export function registerWebMCPTools(
   context: Pick<WebMCP.ModelContext, 'registerTool'> | undefined,
-  getTarget: () => WebMCPExecutionTarget
+  getTarget: () => WebMCPExecutionTarget,
+  mode: WebMCPMode
 ): WebMCPRegistration {
   const lifetime = new AbortController()
   const dispose = () => lifetime.abort()
   const ready = (async () => {
     if (!context) return
     try {
-      for (const def of ALL_TOOLS) {
-        if (!def.exposure.webmcp) continue
+      for (const def of getWebMCPTools(mode)) {
         lifetime.signal.throwIfAborted()
         const schema = def.input
         await context.registerTool(
@@ -38,7 +40,9 @@ export function registerWebMCPTools(
             annotations: { readOnlyHint: !def.mutates, untrustedContentHint: true },
             execute: async (input, options?: WebMCP.ToolExecuteCallbackOptions) => {
               // Early document.modelContext implementations omit execution options.
-              const signal = options?.signal ?? new AbortController().signal
+              const signal = options?.signal
+                ? AbortSignal.any([lifetime.signal, options.signal])
+                : lifetime.signal
               lifetime.signal.throwIfAborted()
               signal.throwIfAborted()
               const args = v.parse(schema, input)

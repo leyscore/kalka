@@ -9,7 +9,7 @@
 
 ### Added
 
-- Expose design inspection and undoable layer-property and variable edits to browser agents through experimental WebMCP in supporting browsers.
+- Expose design inspection and undoable layer-property and variable edits to browser agents through experimental WebMCP in supporting browsers, with explicit Off, Inspect, and Edit access controls in Settings.
 - Bind Design JSX spacing, sizing, corners, and typography directly to numeric document variables.
 - Define component properties and assign instance values in Design JSX using stable property IDs.
 - Save AI conversations and attachment previews locally, switch between chats, rename or delete them, and browse saved transcripts across documents. Choose whether reasoning stays collapsed, expands while thinking, or stays expanded, with animated disclosure controls that respect reduced motion.
@@ -44,7 +44,7 @@
 - Keep applied and available Effect styles concise, and collapse equal independent corner fields when all four use the same variable.
 - Keep pixel-grid rounding invisible while showing alignment guides only for real geometry, objects, and canvas/layout guides.
 - Copy selections with embedded images into Figma while preserving typed geometry, text sizing, images, components, variables, modes, and shared styles for lossless in-app paste.
-- Choose whether interface animations follow the system motion preference or stay off, with live updates and a persistent override.
+- Choose the app theme and whether animations follow the system or stay off under Appearance in General Settings, with live updates and persistent preferences.
 - Put unbound fill and stroke style pickers in section headers, preserve applied and missing style rows, and remove the redundant Dimensions heading for text layers.
 - Open variable pickers below their trigger when space permits, flipping above near the viewport edge.
 - Keep AI chat preferences with the model overview and edit models in a fixed-size Settings pane with explicit Save and Cancel actions.
@@ -55,7 +55,8 @@
 - Upgrade CanvasKit to 0.41 and use immutable renderer paths through `PathBuilder`.
 - Upgrade direct model chat providers and transports to AI SDK 7 while retaining the local ACP execution path.
 - Localize file, clipboard, collaboration, chat, vectorization, storage, recovery, and component-library notifications in every supported language.
-- Move MCP connections into their own Settings destination instead of presenting them as part of model configuration.
+- Separate local MCP server controls, browser WebMCP access, and remote connections in Settings, with inline searchable tool permissions.
+- Show translated field errors and hints in Settings forms, focus the first invalid field on submission, and explain missing requirements instead of silently disabling Save or Test.
 - Pan horizontally with Shift+wheel while preserving native horizontal trackpad movement.
 
 ### Fixed

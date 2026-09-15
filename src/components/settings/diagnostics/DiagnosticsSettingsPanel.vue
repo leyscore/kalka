@@ -111,7 +111,7 @@ async function exportDiagnostics() {
     </div>
     <div
       v-if="recentEvents.length"
-      class="flex max-h-64 flex-col overflow-y-auto divide-y divide-border rounded border border-border"
+      class="flex flex-col divide-y divide-border rounded border border-border"
     >
       <div
         v-for="event in recentEvents"
