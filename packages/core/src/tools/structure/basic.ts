@@ -60,8 +60,7 @@ export const nodeBounds = defineTool({
   input: nodeInput,
   execute: (figma, { id }) => {
     const node = figma.getNodeById(id)
-    if (!node) return { error: `Node "${id}" not found` }
-    return { id, bounds: node.absoluteBoundingBox }
+    return node ? { id, bounds: node.absoluteBoundingBox } : nodeNotFound(id)
   }
 })
 

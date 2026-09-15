@@ -32,6 +32,7 @@ export function captureGraphCheckpoint(graph: SceneGraph) {
       const after = graph.nodes.get(id)
       if (
         !after ||
+        after !== nodeRefs.get(id) ||
         before.id !== after.id ||
         before.type !== after.type ||
         before.parentId !== after.parentId ||
@@ -45,6 +46,7 @@ export function captureGraphCheckpoint(graph: SceneGraph) {
       const after = graph.variables.get(id)
       if (
         !after ||
+        after !== variableRefs.get(id) ||
         before.id !== after.id ||
         before.collectionId !== after.collectionId ||
         before.type !== after.type

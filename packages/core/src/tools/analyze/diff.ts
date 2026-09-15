@@ -6,7 +6,7 @@ import type { SceneNode } from '@open-pencil/scene-graph'
 
 import { colorToHex, parseColor } from '#core/color'
 import type { FigmaAPI } from '#core/figma-api'
-import { toolNumber, nodeIdInput } from '#core/tools/input'
+import { toolNumber, nodeIdInput, nodeComparisonInput } from '#core/tools/input'
 import { defineTool } from '#core/tools/schema'
 
 function serializePaintProps(raw: SceneNode, lines: string[]): void {
@@ -128,8 +128,7 @@ export const diffCreate = defineTool({
   execution: { kind: 'sync', mutation: 'none' },
   exposure: { webmcp: false },
   input: v.object({
-    from: v.pipe(v.string(), v.description('Source node ID')),
-    to: v.pipe(v.string(), v.description('Target node ID')),
+    ...nodeComparisonInput.entries,
     depth: v.optional(toolNumber(v.pipe(v.number(), v.description('Max tree depth (default: 10)'))))
   }),
   execute: (figma, args) => {

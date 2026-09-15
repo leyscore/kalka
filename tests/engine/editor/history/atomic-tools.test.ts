@@ -134,6 +134,31 @@ describe('atomic agent tools', () => {
     }
   })
 
+  test.each(['node', 'variable'] as const)('rejects replacement of a captured %s', (kind) => {
+    const { graph, figma, editor, undo, rectangle, tool } = setup()
+    const collection = graph.createCollection('Test')
+    const variable = graph.createVariable('Test', 'STRING', collection.id, '')
+    const node = graph.getNode(rectangle.id)
+    if (!node) throw new Error('Missing node')
+    expect(() =>
+      executeAtomicTool(
+        editor,
+        figma,
+        {
+          ...tool('set_opacity'),
+          execute: () => {
+            if (kind === 'node') graph.nodes.set(node.id, structuredClone(node))
+            else graph.variables.set(variable.id, structuredClone(variable))
+          }
+        },
+        {}
+      )
+    ).toThrow('Atomic tools must not change')
+    expect(graph.getNode(node.id)).toBe(node)
+    expect(graph.variables.get(variable.id)).toBe(variable)
+    expect(undo.canUndo).toBe(false)
+  })
+
   test('rejects and restores instance index corruption even on reported success', () => {
     const { graph, figma, editor, undo, tool } = setup()
     const component = figma.createComponent()

@@ -1,7 +1,5 @@
-import * as v from 'valibot'
-
 import type { FigmaNodeProxy } from '#core/figma-api'
-import { toolNumber, nodeIdInput, nodeInput } from '#core/tools/input'
+import { nodeTraversalInput, nodeInput } from '#core/tools/input'
 import { defineTool, getRawNodeOrError, nodeNotFound, nodeSummary } from '#core/tools/schema'
 
 export const nodeAncestors = defineTool({
@@ -9,10 +7,7 @@ export const nodeAncestors = defineTool({
   description: 'Get the ancestor chain from a node to the page root.',
   execution: { kind: 'sync', mutation: 'none' },
   exposure: { webmcp: false },
-  input: v.object({
-    id: nodeIdInput,
-    depth: v.optional(toolNumber(v.pipe(v.number(), v.description('Max depth to traverse'))))
-  }),
+  input: nodeTraversalInput('Max depth to traverse'),
   execute: (figma, args) => {
     const node = figma.getNodeById(args.id)
     if (!node) return { error: `Node "${args.id}" not found` }
@@ -46,12 +41,7 @@ export const nodeTree = defineTool({
   description: 'Get a node tree with types and hierarchy.',
   execution: { kind: 'sync', mutation: 'none' },
   exposure: { webmcp: false },
-  input: v.object({
-    id: nodeIdInput,
-    depth: v.optional(
-      toolNumber(v.pipe(v.number(), v.description('Max depth (default: unlimited)')))
-    )
-  }),
+  input: nodeTraversalInput('Max depth (default: unlimited)'),
   execute: (figma, args) => {
     const node = figma.getNodeById(args.id)
     if (!node) return { error: `Node "${args.id}" not found` }

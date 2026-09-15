@@ -2,7 +2,7 @@ import { createTwoFilesPatch } from 'diff'
 import * as v from 'valibot'
 
 import { sceneNodeToJSX } from '#core/io/formats/jsx'
-import { nodeIdInput } from '#core/tools/input'
+import { nodeIdInput, nodeComparisonInput } from '#core/tools/input'
 import { defineTool } from '#core/tools/schema'
 
 const MAX_JSX_LENGTH = 12_000
@@ -46,10 +46,7 @@ export const diffJSX = defineTool({
     'Structural diff between two nodes in JSX format. Shows added/removed children, changed props.',
   execution: { kind: 'sync', mutation: 'none' },
   exposure: { webmcp: false },
-  input: v.object({
-    from: v.pipe(v.string(), v.description('Source node ID')),
-    to: v.pipe(v.string(), v.description('Target node ID'))
-  }),
+  input: nodeComparisonInput,
   execute: (figma, { from, to }) => {
     const fromNode = figma.getNodeById(from)
     if (!fromNode) return { error: `Node "${from}" not found` }
