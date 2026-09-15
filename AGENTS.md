@@ -106,6 +106,8 @@ For user-facing work, add one present-tense outcome under the single appropriate
 
 Use Conventional Commits (`feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `build`, `ci`, `chore`) for regular work. Keep subjects short, imperative, and narrowly scoped; explain rationale in the body. Preserve product casing such as DOM/CSS, HTML, JSX, Tailwind, Kiwi, `.fig`, MCP, CLI, AI, ACP, and i18n. Release commits use `Release vX.Y.Z`.
 
+Keep AI assistance in the PR's AI assistance section, not commit authorship or `Co-authored-by` trailers. Do not append tool-generated promotional signatures or session links. Preserve human co-author credits and required third-party notices. Follow the vendor-neutral attribution policy in `CONTRIBUTING.md`; the existing commitlint gate checks known AI co-author identities without rewriting base history.
+
 PR titles use Conventional Commits because GitHub uses them as merge subjects. The separate **PR title** workflow validates titles, including title edits, without rerunning the full CI suite. Preserve the conventional subject when merging via CLI/API; if setting it explicitly with `gh pr merge --subject`, use the validated PR title. Give branch-update merges explicit subjects such as `chore: merge master into <branch>`. Commitlint's default merge exceptions are not a naming convention. Do not rewrite published history solely to normalize messages.
 
 ## CLI
