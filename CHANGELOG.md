@@ -72,7 +72,7 @@
 - Display letter spacing in pixels and support explicit automatic line height.
 - Prevent the stock photo tool from replacing text, lines, structural layers, or containers with content while supporting closed shape geometry.
 - Preserve imported Figma text alignment metadata, explicit normal blend modes on text and vectors, and implicit fixed text sizing in auto-layout frames across save and reload.
-- Normalize imported stroke dash patterns for more reliable `.fig` compatibility.
+- Render imported Figma strokes with odd-length dash patterns correctly.
 - Stop showing a misleading desktop-only warning when web font loading or catalog lookup fails.
 - Resolve fallback fonts reliably for cached characters, mixed-language text, and text-case transformations.
 - Preserve imported Figma divider-line geometry during auto-layout recomputation, preventing half-pixel shifts on save and reload.
