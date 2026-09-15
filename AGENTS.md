@@ -105,6 +105,8 @@ For user-facing work, add one present-tense outcome under the single appropriate
 
 Use Conventional Commits (`feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `build`, `ci`, `chore`) for regular work. Keep subjects short, imperative, and narrowly scoped; explain rationale in the body. Preserve product casing such as DOM/CSS, HTML, JSX, Tailwind, Kiwi, `.fig`, MCP, CLI, AI, ACP, and i18n. Release commits use `Release vX.Y.Z`.
 
+PR titles use Conventional Commits because GitHub uses them as merge subjects. The separate **PR title** workflow validates titles, including title edits, without rerunning the full CI suite. Preserve the conventional subject when merging via CLI/API; if setting it explicitly with `gh pr merge --subject`, use the validated PR title. Give branch-update merges explicit subjects such as `chore: merge master into <branch>`. Commitlint's default merge exceptions are not a naming convention. Do not rewrite published history solely to normalize messages.
+
 ## CLI
 
 - Format all output with the `agentfmt` helpers re-exported from `packages/cli/src/format.ts`; do not hand-roll terminal formatting.
@@ -161,6 +163,19 @@ Private tooling belongs under `tools/<domain>/{src,tests}`, with kebab-case doma
 - Components must not hold module-level mutable state. Share repeated logic/constants rather than copying it.
 - Keep Kiwi runtime changes minimal; prefer wrappers for project policy.
 - Guard browser globals explicitly in Core. Name repeated/cross-feature constants; app-wide values belong in `src/constants.ts`.
+
+## Issue and PR writing
+
+Use concise, concrete technical prose for issues, PR descriptions, and public comments. Lead with the problem and outcome; add a short example when needed to make the behavior clear. Avoid filler, promotional claims, decorative emojis, unnecessary tables, and file-by-file change inventories. Preserve the PR template's headings: Summary explains why and the outcome; What changed adds one to three non-repeated details; Validation reports actual commands/results and relevant omissions; AI assistance discloses known model names. Link lengthy logs or design notes rather than expanding the description into a work diary. Follow `CONTRIBUTING.md`; brevity must not omit reproduction steps, material risks, or validation limitations.
+
+## Code review
+
+- Review codebase fit, not just the diff. Before judging or implementing a change, inspect the owning folder, nearby analogous implementations, shared helpers/types, public exports, callers, and tests. Check new files against the established file tree, package boundaries, naming, and local conventions. Prefer an existing abstraction when it fits; do not invent a parallel pattern or demand unrelated cleanup.
+- Verify findings against the current PR head and pinned dependency APIs. Give the concrete failing scenario and consequence; distinguish demonstrated bugs from defensive hardening and preferences. If runtime validation or dependency source is unavailable, state that limitation rather than treating an assumption as a fact.
+- On re-review, check later commits and the discussion before repeating a finding. Mark addressed, obsolete, or intentionally declined suggestions accurately. Green checks and resolved threads are not substitutes for reviewing the current code.
+- Request evidence appropriate to the change: engine tests for state contracts, Storybook for isolated component states, browser integration tests for workflows, canvas snapshots for rendering, and native tests for platform delivery. Do not claim one proves another.
+- Preserve intentional behavior unless a concrete regression is demonstrated. For example, preferences and native credentials cannot transact together; documented partial-save outcomes and retryable drafts are not inherently bugs.
+- Keep review comments concise and actionable. Cite the relevant location and repository rule or existing analogue for codebase-fit findings. Independently assess automated suggestions; do not bulk-apply or bulk-resolve them merely to make a bot green.
 
 ## Code quality
 

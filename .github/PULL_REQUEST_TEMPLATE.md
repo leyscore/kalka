@@ -4,11 +4,13 @@ Before opening a PR, read `CONTRIBUTING.md` and `AGENTS.md`. PRs should explain 
 
 ### Summary
 
-<!-- Explain what this PR changes and why. Remove this comment before opening. -->
+<!-- One short paragraph: the problem, why it matters, and the outcome. Remove guidance comments before opening. -->
 
 ### What changed
 
-- Add a concise summary here.
+<!-- One to three meaningful implementation details. Do not repeat the Summary or list every changed file. -->
+
+- Describe a meaningful implementation detail.
 
 ### AI assistance
 
@@ -18,6 +20,7 @@ Models: None
 
 ### Validation
 
-- [ ] `bun run check`
-- [ ] Tests added or updated, or not needed because: explain here
-- [ ] CHANGELOG.md updated, or not needed because: explain here
+<!-- List commands actually run and their results, plus relevant checks not run and why. Note changelog status. Replace these examples; do not claim unperformed validation. -->
+
+- Checks/tests: commands and results, or not run and why.
+- Changelog: updated, or not needed and why.

@@ -2,6 +2,8 @@ import type { UserConfig } from '@commitlint/types'
 
 export default {
   extends: ['@commitlint/config-conventional'],
+  // PR titles must not bypass validation through Git's generated-message exceptions.
+  defaultIgnores: process.env.COMMITLINT_PR_TITLE !== '1',
   rules: {
     'type-enum': [
       2,
