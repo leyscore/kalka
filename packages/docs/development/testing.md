@@ -6,6 +6,7 @@
 | --------------------- | ---------- | -------------------- | --------------- |
 | E2E visual regression | Playwright | `bun run test`       | `tests/e2e/`    |
 | Figma CDP reference   | Playwright | `bun run test:figma` | `tests/figma/`  |
+| Storybook components | Playwright | `bun run test:storybook` | `tests/e2e/storybook/` |
 | Unit tests            | bun:test   | `bun run test:unit`  | `tests/engine/` |
 
 ## E2E Visual Regression
@@ -19,13 +20,15 @@ bun run test:update       # Regenerate baseline screenshots
 
 ### Server ownership and worktrees
 
-The canonical `playwright.config.ts` starts Vite from the current checkout and waits for its HTTP URL. Vite starts and stops its MCP companion. Server reuse is off by default and always off in CI, so a test run cannot silently attach to another checkout on the default port.
+The canonical `playwright.config.ts` owns app, Figma, and Storybook projects. The `test`, `test:update`, `test:real-llm`, and `test:figma` scripts select only the app server; `test:storybook` selects only Storybook on port `6017`. Direct Playwright commands start both servers by default. Set `OPENPENCIL_TEST_SERVER=app`, `storybook`, or `all` to select servers explicitly; `--project` selects tests, not servers.
+
+App tests start Vite from the current checkout and wait for its HTTP URL. Vite starts and stops its MCP companion. Server reuse is off by default and always off in CI, so a test run cannot silently attach to another checkout on the default port.
 
 Defaults are app port `1420` and MCP port `7600`. For concurrent worktrees, choose a free, distinct pair:
 
 ```sh
 OPENPENCIL_TEST_PORT=1482 OPENPENCIL_TEST_MCP_PORT=7682 \
-  bunx playwright test tests/e2e/settings --project=openpencil
+  bun run test tests/e2e/settings
 ```
 
 The configuration passes the app origin and MCP port to Vite; the companion receives matching CORS configuration and a port-specific socket/discovery directory. Port conflicts fail rather than silently selecting another endpoint. Do not reuse ports across concurrent runs.
@@ -43,6 +46,15 @@ For intentional local debugging against an already-running matching server, set 
 ### No-Chrome Test Mode
 
 The editor supports a test mode that hides UI chrome (toolbar, panels) for clean screenshot capture. Activated via URL parameter.
+
+## Storybook Component Tests
+
+```sh
+bun run test:storybook
+bun run test:storybook --list
+```
+
+The `storybook-chromium` project preserves its own viewport, device scale, screenshot defaults, and reduced-motion browser context. Storybook specs are excluded from the app projects. Snapshot updates use `bun run test:storybook --update-snapshots`.
 
 ## Figma CDP Reference Tests
 
