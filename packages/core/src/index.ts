@@ -85,8 +85,8 @@ export {
 } from './tools'
 export type {
   ToolDef,
-  ParamDef,
-  ParamType,
+  ToolExecution,
+  ToolCapability,
   ToolLogEntry,
   ToolDebugLog,
   AIAdapterOptions,

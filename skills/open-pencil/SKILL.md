@@ -213,7 +213,7 @@ Calls capture the active document/page. Cancellation prevents an edit from start
 
 ## Tool discovery
 
-Discover available tools and their arguments from the connected server or browser; availability varies by version and mode. Do not rely on a fixed tool count or a copied inventory.
+Discover available tools and their arguments from the connected server or browser; availability varies by version and mode. Each tool's schema and execution/exposure metadata are authoritative. Numeric inputs accept numbers or numeric strings consistently, but reject non-finite values. Do not rely on a fixed tool count or a copied inventory.
 
 > Tool availability can depend on server mode. `open_file`, `save_file`, and disk-writing export paths are scoped to the effective filesystem root; set it explicitly with `OPENPENCIL_MCP_ROOT`.
 

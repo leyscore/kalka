@@ -1,6 +1,8 @@
 import { createTwoFilesPatch } from 'diff'
+import * as v from 'valibot'
 
 import { sceneNodeToJSX } from '#core/io/formats/jsx'
+import { nodeIdInput } from '#core/tools/input'
 import { defineTool } from '#core/tools/schema'
 
 const MAX_JSX_LENGTH = 12_000
@@ -9,13 +11,19 @@ export const getJSX = defineTool({
   name: 'get_jsx',
   description:
     'Get JSX representation of a node and its children. Compact round-trip format — same syntax as the render tool.',
-  params: {
-    id: { type: 'string', description: 'Node ID', required: true },
-    path: {
-      type: 'string',
-      description: 'Write JSX to this path instead of returning it (requires OPENPENCIL_MCP_ROOT)'
-    }
-  },
+  execution: { kind: 'sync', mutation: 'none' },
+  exposure: { webmcp: true },
+  input: v.object({
+    id: nodeIdInput,
+    path: v.optional(
+      v.pipe(
+        v.string(),
+        v.description(
+          'Write JSX to this path instead of returning it (requires OPENPENCIL_MCP_ROOT)'
+        )
+      )
+    )
+  }),
   execute: (figma, { id }) => {
     const node = figma.getNodeById(id)
     if (!node) return { error: `Node "${id}" not found` }
@@ -37,10 +45,11 @@ export const diffJSX = defineTool({
   name: 'diff_jsx',
   description:
     'Structural diff between two nodes in JSX format. Shows added/removed children, changed props.',
-  params: {
-    from: { type: 'string', description: 'Source node ID', required: true },
-    to: { type: 'string', description: 'Target node ID', required: true }
-  },
+  execution: { kind: 'sync', mutation: 'none' },
+  input: v.object({
+    from: v.pipe(v.string(), v.description('Source node ID')),
+    to: v.pipe(v.string(), v.description('Target node ID'))
+  }),
   execute: (figma, { from, to }) => {
     const fromNode = figma.getNodeById(from)
     if (!fromNode) return { error: `Node "${from}" not found` }

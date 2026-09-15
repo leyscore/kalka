@@ -1,20 +1,18 @@
 /**
  * Adapter: tool definitions → Vercel AI SDK `tool()` objects.
  *
- * Converts ParamDef types to valibot schemas and wraps execute
- * functions with FigmaAPI instantiation.
+ * Consumes native tool input schemas and wraps execution with FigmaAPI instantiation.
  */
 
-import type { valibotSchema as createValibotSchema } from '@ai-sdk/valibot'
+// eslint-disable-next-line open-pencil/no-mixed-case-acronym-identifiers -- Upstream export spelling.
+import { toStandardJsonSchema as toStandardJSONSchema } from '@valibot/to-json-schema'
 import type { ToolSet, tool as createTool } from 'ai'
-import type * as valibot from 'valibot'
 
 import type { JSONObject } from '@open-pencil/scene-graph/primitives'
 
 import type { FigmaAPI } from '#core/figma-api'
 
 import type { ToolDef } from './schema'
-import { toolInputEntries } from './validation'
 
 export interface ToolLogEntry {
   tool: string
@@ -144,18 +142,16 @@ export function toolsToAI(
   tools: ToolDef[],
   options: AIAdapterOptions,
   deps: {
-    v: typeof valibot
-    valibotSchema: typeof createValibotSchema
     tool: typeof createTool
   }
 ): ToolSet {
-  const { v, valibotSchema, tool } = deps
+  const { tool } = deps
   const result: ToolSet = {}
 
   for (const def of tools) {
     const toolOpts: Record<string, unknown> = {
       description: def.description,
-      inputSchema: valibotSchema(v.object(toolInputEntries(v, def.params))),
+      inputSchema: toStandardJSONSchema(def.input),
       execute: async (args: Record<string, unknown>) => {
         const startTime = Date.now()
         const figma = options.getFigma()

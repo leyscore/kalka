@@ -1,10 +1,9 @@
+import { executeAtomicTool } from '@open-pencil/core/editor'
 import type { FigmaAPI } from '@open-pencil/core/figma-api'
 import type { ToolDef } from '@open-pencil/core/tools'
 
 import type { EditorStore } from '@/app/editor/active-store'
 import { ensureGraphFonts } from '@/app/editor/fonts'
-
-import { executeAtomicTool } from './atomic'
 
 /** Commit first; asynchronous font availability is presentation work, not a transaction. */
 export async function executeAtomicEditorTool(

@@ -6,7 +6,7 @@ import type { McpServer, ToolCallback, ToolAnnotations } from '@modelcontextprot
 import { toStandardJsonSchema as toStandardJSONSchema } from '@valibot/to-json-schema'
 import * as v from 'valibot'
 
-import { ALL_TOOLS, CODEGEN_PROMPT, toolInputEntries } from '@open-pencil/core/tools'
+import { ALL_TOOLS, CODEGEN_PROMPT } from '@open-pencil/core/tools'
 
 import type { RPCJSONObject } from '#mcp/json'
 import { MAX_RESULT_BYTES, fail, ok, resultTooLargeMessage } from '#mcp/result'
@@ -14,7 +14,6 @@ import { createToolDescriptors } from '#mcp/tool/manifest'
 import type { ToolDescriptor, ToolEffect, ToolPolicy } from '#mcp/tool/metadata'
 import { resolveSafePath, writeToolOutput } from '#mcp/tool/output'
 import { isToolEnabled } from '#mcp/tool/policy'
-import { toolSchema } from '#mcp/tool/schema'
 
 export type RPCSender = (body: Record<string, unknown>) => Promise<unknown>
 
@@ -80,12 +79,11 @@ export function registerTools(mcpServer: McpServer, options: RegisterToolsOption
   }
 
   for (const def of ALL_TOOLS) {
-    const shape = toolInputEntries(v, def.params)
     register(
       def.name,
       {
         description: def.description,
-        inputSchema: toolSchema(def.params, shape, automationTargetSchema)
+        inputSchema: v.object({ ...def.input.entries, ...automationTargetSchema })
       },
       async (args: Record<string, unknown>) => {
         try {

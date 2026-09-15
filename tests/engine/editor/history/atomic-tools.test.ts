@@ -1,12 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 
-import { createEditor } from '@open-pencil/core/editor'
+import { createEditor, executeAtomicTool } from '@open-pencil/core/editor'
 import { FigmaAPI } from '@open-pencil/core/figma-api'
 import { ALL_TOOLS, type ToolDef } from '@open-pencil/core/tools'
 import { SceneGraph } from '@open-pencil/scene-graph'
 import { UndoManager } from '@open-pencil/scene-graph/undo'
-
-import { executeAtomicTool } from '@/app/automation/execution/atomic'
 
 function setup() {
   const graph = new SceneGraph()
@@ -96,12 +94,10 @@ describe('atomic agent tools', () => {
   })
 
   test('partial failures roll back without adding history', () => {
-    const { figma, editor, undo, rectangle } = setup()
+    const { figma, editor, undo, rectangle, tool } = setup()
     const def: ToolDef = {
-      name: 'set_opacity',
-      params: {},
+      ...tool('set_opacity'),
       description: 'failure seam',
-      mutates: true,
       execute: () => {
         rectangle.opacity = 0.25
         throw new Error('Failed')
@@ -109,6 +105,77 @@ describe('atomic agent tools', () => {
     }
     expect(() => executeAtomicTool(editor, figma, def, {})).toThrow('Failed')
     expect(rectangle.opacity).toBe(1)
+    expect(undo.canUndo).toBe(false)
+  })
+
+  test.each([
+    'create node',
+    'delete node',
+    'create variable',
+    'delete variable',
+    'reparent',
+    'delete collection'
+  ])('rolls back forbidden %s and preserves graph bookkeeping', (operation) => {
+    const { graph, figma, editor, undo, rectangle, tool } = setup()
+    const collection = graph.createCollection('Values')
+    const variable = graph.createVariable('Spacing', 'FLOAT', collection.id, 8)
+    const component = figma.createComponent()
+    const instance = component.createInstance()
+    const nodes = structuredClone(graph.nodes)
+    const variables = structuredClone(graph.variables)
+    const collections = structuredClone(graph.variableCollections)
+    const index = structuredClone(graph.instanceIndex)
+    const modes = structuredClone(graph.activeMode)
+    const original = graph.getNode(instance.id)
+    const def: ToolDef = {
+      ...tool('set_opacity'),
+      execute: () => {
+        rectangle.opacity = 0.25
+        switch (operation) {
+          case 'create node':
+            component.createInstance()
+            break
+          case 'delete node':
+            graph.deleteNode(instance.id)
+            break
+          case 'create variable':
+            graph.createVariable('New', 'FLOAT', collection.id, 4)
+            break
+          case 'delete variable':
+            graph.removeVariable(variable.id)
+            break
+          case 'reparent':
+            graph.reparentNode(rectangle.id, component.id)
+            break
+          case 'delete collection':
+            graph.removeCollection(collection.id)
+            break
+        }
+        throw new Error('Original failure')
+      }
+    }
+    expect(() => executeAtomicTool(editor, figma, def, {})).toThrow('Original failure')
+    expect(graph.nodes).toEqual(nodes)
+    expect(graph.variables).toEqual(variables)
+    expect(graph.variableCollections).toEqual(collections)
+    expect(graph.instanceIndex).toEqual(index)
+    expect(graph.activeMode).toEqual(modes)
+    expect(graph.getNode(instance.id)).toBe(original)
+    expect(undo.canUndo).toBe(false)
+  })
+
+  test('rejects a structural edit even when the callback reports success', () => {
+    const { graph, figma, editor, undo, tool } = setup()
+    const nodes = structuredClone(graph.nodes)
+    const def: ToolDef = {
+      ...tool('set_opacity'),
+      execute: () => {
+        figma.createRectangle()
+        return { ok: true }
+      }
+    }
+    expect(() => executeAtomicTool(editor, figma, def, {})).toThrow('must not create or remove')
+    expect(graph.nodes).toEqual(nodes)
     expect(undo.canUndo).toBe(false)
   })
 

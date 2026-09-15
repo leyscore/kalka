@@ -1,45 +1,20 @@
 import { isEqual } from 'es-toolkit'
 
-import type { FigmaAPI } from '@open-pencil/core/figma-api'
-import type { ToolDef } from '@open-pencil/core/tools'
-import type { SceneGraph, SceneNode, Variable } from '@open-pencil/scene-graph'
+import {
+  captureGraphCheckpoint,
+  type SceneGraph,
+  type SceneNode,
+  type Variable
+} from '@open-pencil/scene-graph'
 
-import type { EditorStore } from '@/app/editor/active-store'
-
-/** Audited synchronous operations: update existing nodes/values, never hierarchy or assets. */
-export const ATOMIC_TOOL_NAMES: ReadonlySet<string> = new Set([
-  'update_node',
-  'set_rotation',
-  'set_opacity',
-  'set_radius',
-  'set_minmax',
-  'set_fill',
-  'set_stroke',
-  'set_effects',
-  'set_visible',
-  'set_blend',
-  'set_locked',
-  'set_stroke_align',
-  'set_layout',
-  'set_constraints',
-  'set_layout_child',
-  'set_text',
-  'set_font',
-  'set_font_range',
-  'set_text_resize',
-  'set_text_properties',
-  'set_variable',
-  'bind_variable',
-  'unbind_variable'
-])
+import type { Editor } from '#core/editor/create'
+import type { FigmaAPI } from '#core/figma-api'
+import { isAtomicTool, type ToolDef } from '#core/tools/schema'
 
 // Capture property changes across pages. Component synchronization remains editor-owned.
 const MAX_TRANSACTION_NODES = 10_000
 
-type MutationEditor = Pick<
-  EditorStore,
-  'graph' | 'runLayoutForNode' | 'requestRender' | 'pushUndoEntry'
->
+type MutationEditor = Pick<Editor, 'graph' | 'runLayoutForNode' | 'requestRender' | 'pushUndoEntry'>
 type Changes<T> = { id: string; before: Partial<T>; after: Partial<T> }
 
 function changes<T extends object>(before: Map<string, T>, after: Map<string, T>): Changes<T>[] {
@@ -73,7 +48,7 @@ export function executeAtomicTool(
   args: Record<string, unknown>,
   options: { signal?: AbortSignal; isLive?: () => boolean; label?: string } = {}
 ): unknown {
-  if (!ATOMIC_TOOL_NAMES.has(def.name)) throw new Error(`Not an atomic tool: ${def.name}`)
+  if (!isAtomicTool(def)) throw new Error(`Not an atomic tool: ${def.name}`)
   options.signal?.throwIfAborted()
   if (editor.graph !== figma.graph || options.isLive?.() === false) {
     throw new Error('The target document is no longer open')
@@ -82,8 +57,8 @@ export function executeAtomicTool(
   if (graph.nodes.size + graph.variables.size > MAX_TRANSACTION_NODES) {
     throw new Error('Document too large for atomic agent editing (maximum 10000 nodes)')
   }
-  const nodes = structuredClone(graph.nodes)
-  const variables = structuredClone(graph.variables)
+  const checkpoint = captureGraphCheckpoint(graph)
+  const { nodes, variables } = checkpoint
   const pageId = figma.currentPageId
 
   const replay = (
@@ -116,6 +91,7 @@ export function executeAtomicTool(
     if (result && typeof result === 'object' && 'error' in result) {
       throw new Error(String(result.error))
     }
+    checkpoint.assertPropertiesOnly()
     const variableChanges = changes(variables, graph.variables)
     layout(
       graph,
@@ -139,7 +115,8 @@ export function executeAtomicTool(
     }
     return result
   } catch (error) {
-    replay(changes(nodes, graph.nodes), changes(variables, graph.variables), 'before')
+    checkpoint.restore()
+    editor.requestRender()
     throw error
   }
 }

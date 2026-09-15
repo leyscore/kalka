@@ -4,7 +4,7 @@
 
 ### Breaking changes
 
-- Use MCP SDK v2 server/client types for programmatic MCP integrations. Replace the removed `paramToZod()` export with the shared Valibot tool input contract from `@open-pencil/core/tools`.
+- Use MCP SDK v2 server/client types for programmatic MCP integrations. Define custom tools with native Valibot `input` schemas and execution metadata instead of `params`, `ParamDef`, or `paramToZod()`; tool arguments and effects derive from this shared contract.
 - Update custom Vue SDK binding providers to implement `getBindingId()` and handle `unresolved`. Replace `setValue()` with `prepareEdit()`, returning a stable edit key, captured value, setter, and restoration callback.
 
 ### Added

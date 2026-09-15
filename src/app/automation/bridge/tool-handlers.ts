@@ -1,10 +1,9 @@
 import { renderTreeNode } from '@open-pencil/core/design-jsx'
 import type { FigmaAPI } from '@open-pencil/core/figma-api'
-import { ALL_TOOLS, registerComponentCatalog } from '@open-pencil/core/tools'
+import { ALL_TOOLS, registerComponentCatalog, isAtomicTool } from '@open-pencil/core/tools'
 import type { JSONObject } from '@open-pencil/scene-graph/primitives'
 
 import type { AutomationTarget } from '@/app/automation/bridge/target'
-import { ATOMIC_TOOL_NAMES } from '@/app/automation/execution/atomic'
 import { executeAtomicEditorTool } from '@/app/automation/execution/editor'
 import { ensureGraphFonts } from '@/app/editor/fonts'
 import { useLibraryService } from '@/app/libraries'
@@ -55,7 +54,7 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
     registerComponentCatalog(store.graph, libraryService)
     const figma = makeFigma(store, target.pageId)
     let result: unknown
-    if (ATOMIC_TOOL_NAMES.has(def.name)) {
+    if (isAtomicTool(def)) {
       result = await executeAtomicEditorTool(store, figma, def, toolArgs)
     } else if (def.mutates) {
       result = await store.runMutationWithLayout(

@@ -1,18 +1,16 @@
-import { valibotSchema } from '@ai-sdk/valibot'
 import { tool } from 'ai'
-import * as v from 'valibot'
 
 import {
   CORE_TOOLS,
   EXTENDED_TOOLS,
   registerComponentCatalog,
+  isAtomicTool,
   toolsToAI
 } from '@open-pencil/core/tools'
 import type { StepBudget, ToolLogEntry } from '@open-pencil/core/tools'
 import type { SceneNode } from '@open-pencil/scene-graph'
 
 import { makeFigmaFromStore } from '@/app/automation/bridge/figma-factory'
-import { ATOMIC_TOOL_NAMES } from '@/app/automation/execution/atomic'
 import { executeAtomicEditorTool } from '@/app/automation/execution/editor'
 import { getActiveEditorStore } from '@/app/editor/active-store'
 import type { EditorStore } from '@/app/editor/active-store'
@@ -87,7 +85,7 @@ export function createAITools(store: EditorStore) {
     {
       getFigma: () => makeFigmaFromStore(store),
       executeTool: async (def, figma, args) => {
-        if (ATOMIC_TOOL_NAMES.has(def.name)) {
+        if (isAtomicTool(def)) {
           return executeAtomicEditorTool(store, figma, def, args, { label: 'AI' })
         }
         if (def.mutates) beforeSnapshot = store.snapshotPage()
@@ -103,7 +101,7 @@ export function createAITools(store: EditorStore) {
           : def.execute(figma, args)
       },
       onAfterExecute: async (def) => {
-        if (ATOMIC_TOOL_NAMES.has(def.name)) return
+        if (isAtomicTool(def)) return
         if (def.mutates) {
           store.requestRender()
           if (beforeSnapshot) {
@@ -132,7 +130,7 @@ export function createAITools(store: EditorStore) {
         max: MAX_AGENT_STEPS
       })
     },
-    { v, valibotSchema, tool }
+    { tool }
   )
 }
 

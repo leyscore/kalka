@@ -6,11 +6,10 @@ import { dirname, join } from 'node:path'
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
 import * as v from 'valibot'
 
-import { toolInputEntries } from '@open-pencil/core/tools'
+import { toolNumber } from '@open-pencil/core/tools'
 import { SceneGraph } from '@open-pencil/scene-graph'
 
 import { startServer } from '#mcp/server'
-import { toolSchema } from '#mcp/tool/schema'
 import type { DiscoveryInfo } from '#mcp/transport/discovery'
 
 import {
@@ -198,10 +197,7 @@ describe('MCP server /rpc auth skip', () => {
 // ---------------------------------------------------------------------------
 
 describe('MCP numeric input coercion', () => {
-  const params = {
-    x: { type: 'number' as const, description: 'x', required: true, min: 0, max: 100 }
-  }
-  const schema = toolSchema(params, toolInputEntries(v, params), {})
+  const schema = v.object({ x: v.pipe(toolNumber(), v.minValue(0), v.maxValue(100)) })
 
   test('accepts numeric strings through Standard Schema validation', async () => {
     expect(await schema['~standard'].validate({ x: '42' })).toMatchObject({ value: { x: 42 } })

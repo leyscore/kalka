@@ -1,13 +1,17 @@
+import * as v from 'valibot'
+
 import type { FigmaNodeProxy } from '#core/figma-api'
+import { toolNumber, nodeIdInput, nodeInput } from '#core/tools/input'
 import { defineTool, getRawNodeOrError, nodeNotFound, nodeSummary } from '#core/tools/schema'
 
 export const nodeAncestors = defineTool({
   name: 'node_ancestors',
   description: 'Get the ancestor chain from a node to the page root.',
-  params: {
-    id: { type: 'string', description: 'Node ID', required: true },
-    depth: { type: 'number', description: 'Max depth to traverse' }
-  },
+  execution: { kind: 'sync', mutation: 'none' },
+  input: v.object({
+    id: nodeIdInput,
+    depth: v.optional(toolNumber(v.pipe(v.number(), v.description('Max depth to traverse'))))
+  }),
   execute: (figma, args) => {
     const node = figma.getNodeById(args.id)
     if (!node) return { error: `Node "${args.id}" not found` }
@@ -26,9 +30,8 @@ export const nodeAncestors = defineTool({
 export const nodeChildren = defineTool({
   name: 'node_children',
   description: 'Get direct children of a node.',
-  params: {
-    id: { type: 'string', description: 'Node ID', required: true }
-  },
+  execution: { kind: 'sync', mutation: 'none' },
+  input: nodeInput,
   execute: (figma, { id }) => {
     const node = figma.getNodeById(id)
     if (!node) return nodeNotFound(id)
@@ -39,10 +42,13 @@ export const nodeChildren = defineTool({
 export const nodeTree = defineTool({
   name: 'node_tree',
   description: 'Get a node tree with types and hierarchy.',
-  params: {
-    id: { type: 'string', description: 'Node ID', required: true },
-    depth: { type: 'number', description: 'Max depth (default: unlimited)' }
-  },
+  execution: { kind: 'sync', mutation: 'none' },
+  input: v.object({
+    id: nodeIdInput,
+    depth: v.optional(
+      toolNumber(v.pipe(v.number(), v.description('Max depth (default: unlimited)')))
+    )
+  }),
   execute: (figma, args) => {
     const node = figma.getNodeById(args.id)
     if (!node) return { error: `Node "${args.id}" not found` }
@@ -66,9 +72,8 @@ export const nodeTree = defineTool({
 export const nodeBindings = defineTool({
   name: 'node_bindings',
   description: 'Get variable bindings for a node.',
-  params: {
-    id: { type: 'string', description: 'Node ID', required: true }
-  },
+  execution: { kind: 'sync', mutation: 'none' },
+  input: nodeInput,
   execute: (figma, { id }) => {
     const result = getRawNodeOrError(figma, id)
     if ('error' in result) return result

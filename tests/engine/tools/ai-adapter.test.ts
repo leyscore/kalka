@@ -1,8 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { valibotSchema } from '@ai-sdk/valibot'
 import { tool } from 'ai'
-import * as v from 'valibot'
 
 import { ALL_TOOLS, FigmaAPI, SceneGraph, toolsToAI } from '@open-pencil/core'
 
@@ -29,7 +27,7 @@ function setup() {
       getFigma: () => figma,
       onAfterExecute: () => undefined
     },
-    { v, valibotSchema, tool }
+    { tool }
   )
 
   return { graph, figma, tools }
@@ -118,7 +116,7 @@ describe('AI adapter', () => {
           return def.execute(target, args)
         }
       },
-      { v, valibotSchema, tool }
+      { tool }
     )
 
     await adapterTool(tools, 'create_shape').execute({ type: 'RECTANGLE' })
@@ -138,7 +136,7 @@ describe('AI adapter', () => {
         onBeforeExecute: () => calls.push('before'),
         onAfterExecute: () => calls.push('after')
       },
-      { v, valibotSchema, tool }
+      { tool }
     )
 
     const listPages = adapterTool(tools, 'list_pages')
@@ -160,7 +158,7 @@ describe('AI adapter', () => {
           afterCalled = true
         }
       },
-      { v, valibotSchema, tool }
+      { tool }
     )
 
     const evalTool = adapterTool(tools, 'eval')

@@ -95,6 +95,8 @@ function stripUndefinedProps<T extends object>(obj: T): T {
   return result
 }
 
+export { captureGraphCheckpoint } from './checkpoint'
+
 export class SceneGraph {
   nodes = new Map<string, SceneNode>()
   images = new Map<string, Uint8Array>()

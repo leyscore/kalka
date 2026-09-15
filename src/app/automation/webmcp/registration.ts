@@ -3,29 +3,7 @@ import { toJsonSchema as toJSONSchema } from '@valibot/to-json-schema'
 import * as v from 'valibot'
 import type { WebMCP } from 'webmcp-types'
 
-import { ALL_TOOLS, toolInputEntries, type ToolDef } from '@open-pencil/core/tools'
-
-import { ATOMIC_TOOL_NAMES } from '@/app/automation/execution/atomic'
-
-/** Reviewed inspection surface: no code execution, network or file access. */
-const READ_TOOLS = new Set([
-  'get_page_tree',
-  'get_node',
-  'find_nodes',
-  'get_jsx',
-  'list_pages',
-  'get_current_page',
-  'list_variables',
-  'get_variable',
-  'find_variables',
-  'list_collections',
-  'get_components',
-  'analyze_colors',
-  'analyze_typography',
-  'analyze_spacing',
-  'design_to_tokens',
-  'design_to_component_map'
-])
+import { ALL_TOOLS, type ToolDef } from '@open-pencil/core/tools'
 
 const MAX_RESULT_BYTES = 256 * 1024
 
@@ -49,14 +27,14 @@ export function registerWebMCPTools(
     if (!context) return
     try {
       for (const def of ALL_TOOLS) {
-        if (!READ_TOOLS.has(def.name) && !ATOMIC_TOOL_NAMES.has(def.name)) continue
+        if (!def.exposure.webmcp) continue
         lifetime.signal.throwIfAborted()
-        const schema = v.object(toolInputEntries(v, def.params))
+        const schema = def.input
         await context.registerTool(
           {
             name: def.name,
             description: `${def.description} Targets the active OpenPencil document.`,
-            inputSchema: toJSONSchema(schema),
+            inputSchema: toJSONSchema(schema, { typeMode: 'input' }),
             annotations: { readOnlyHint: !def.mutates, untrustedContentHint: true },
             execute: async (input, options?: WebMCP.ToolExecuteCallbackOptions) => {
               // Early document.modelContext implementations omit execution options.
