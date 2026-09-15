@@ -1,11 +1,5 @@
 import type { SkiaRenderer } from '#core/canvas/renderer'
 
-import {
-  clearEffectRasterCache,
-  deleteEffectRaster,
-  deleteEffectRasterDependencies
-} from './effect-raster-cache'
-
 export function invalidateScenePicture(r: SkiaRenderer): void {
   r.scenePicture?.delete()
   r.scenePicture = null
@@ -34,14 +28,14 @@ export function invalidateAllPictures(r: SkiaRenderer): void {
   r.nodePictureCache.clear()
   r.nodePictureCacheGenerations.clear()
   r.nodePictureCacheDependencies.clear()
-  clearEffectRasterCache(r.effectRasterCache)
+  r.effectRasterCache.clear()
   clearSubtreePictureCache(r)
 }
 
 export function invalidateNodePicture(r: SkiaRenderer, nodeId: string): void {
   r.textPreparationCache.deleteNode(nodeId)
-  deleteEffectRaster(r.effectRasterCache, nodeId)
-  deleteEffectRasterDependencies(r.effectRasterCache, nodeId)
+  r.effectRasterCache.delete(nodeId)
+  r.effectRasterCache.deleteDependencies(nodeId)
   for (const [ownerId, dependencyIds] of r.nodePictureCacheDependencies) {
     if (!dependencyIds.includes(nodeId)) continue
     r.nodePictureCache.get(ownerId)?.delete()

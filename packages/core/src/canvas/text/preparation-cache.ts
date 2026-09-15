@@ -2,6 +2,7 @@ import type { Paragraph, TypefaceFontProvider } from 'canvaskit-wasm'
 
 import type { SceneNode } from '@open-pencil/scene-graph'
 
+import { ResourceCache } from '#core/cache/resource'
 import type { missingGlyphOccurrences } from '#core/text/resolver'
 
 // Bound both the number of native paragraphs and the text retained by them.
@@ -25,20 +26,31 @@ interface Entry extends PreparedText {
 }
 
 export class TextPreparationCache {
-  private readonly entries = new Map<string, Entry>()
+  private readonly entries: ResourceCache<string, Entry>
   private readonly nodeKeys = new Map<string, Set<string>>()
   // A successful coverage check contains no native resources. Keep that result
   // independently of paragraph LRU eviction, weakly owned by the source node.
   private glyphCoverage = new WeakMap<SceneNode, PreparationInput[]>()
   private readonly invalidatedCoverage = new Set<string>()
-  private units = 0
   private generation = -1
   private provider: TypefaceFontProvider | null = null
 
   constructor(
     private readonly maxEntries = MAX_PREPARED_PARAGRAPHS,
     private readonly maxTextUnits = MAX_PREPARED_TEXT_UNITS
-  ) {}
+  ) {
+    this.entries = new ResourceCache({
+      maxEntries,
+      maxWeight: maxTextUnits,
+      weight: (entry) => entry.units,
+      dispose: (entry, key) => {
+        const keys = this.nodeKeys.get(entry.nodeId)
+        keys?.delete(key)
+        if (keys?.size === 0) this.nodeKeys.delete(entry.nodeId)
+        entry.paragraph.delete()
+      }
+    })
+  }
 
   /** Borrowed paragraphs must not be retained, deleted or relaid out by drawing callers. */
   use<T>(
@@ -82,15 +94,6 @@ export class TextPreparationCache {
       const keys = this.nodeKeys.get(node.id) ?? new Set<string>()
       keys.add(key)
       this.nodeKeys.set(node.id, keys)
-      this.units += entry.units
-      while (this.entries.size > this.maxEntries || this.units > this.maxTextUnits) {
-        const oldest = this.entries.keys().next().value
-        if (oldest === undefined) break
-        this.remove(oldest)
-      }
-    } else {
-      this.entries.delete(key)
-      this.entries.set(key, entry)
     }
     return consume(entry)
   }
@@ -126,26 +129,13 @@ export class TextPreparationCache {
       this.invalidatedCoverage.clear()
     }
     const keys = this.nodeKeys.get(id)
-    if (keys) for (const key of keys) this.remove(key)
+    if (keys) for (const key of keys) this.entries.delete(key)
   }
 
   clear(): void {
-    for (const entry of this.entries.values()) entry.paragraph.delete()
-    this.entries.clear()
     this.nodeKeys.clear()
     this.glyphCoverage = new WeakMap()
     this.invalidatedCoverage.clear()
-    this.units = 0
-  }
-
-  private remove(key: string): void {
-    const entry = this.entries.get(key)
-    if (!entry) return
-    entry.paragraph.delete()
-    this.units -= entry.units
-    this.entries.delete(key)
-    const keys = this.nodeKeys.get(entry.nodeId)
-    keys?.delete(key)
-    if (keys?.size === 0) this.nodeKeys.delete(entry.nodeId)
+    this.entries.clear()
   }
 }

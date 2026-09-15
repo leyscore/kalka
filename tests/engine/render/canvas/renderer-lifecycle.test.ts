@@ -3,7 +3,9 @@ import { expect, mock, test } from 'bun:test'
 import type { Font, Paint, Surface } from 'canvaskit-wasm'
 
 import type { SkiaRenderer } from '#core/canvas/renderer'
+import { EffectRasterCache } from '#core/canvas/renderer/effect-raster-cache'
 import { destroyRenderer } from '#core/canvas/renderer/lifecycle'
+import { createGlyphSilhouetteCache } from '#core/canvas/text/derived'
 import { TextPreparationCache } from '#core/canvas/text/preparation-cache'
 
 function deletable<T>() {
@@ -20,7 +22,7 @@ function createRenderer() {
     vectorStrokeOutlineCache: new Map(),
     fillGeometryCache: new Map(),
     strokeGeometryCache: new Map(),
-    glyphSilhouetteCache: new Map(),
+    glyphSilhouetteCache: createGlyphSilhouetteCache(),
     fillPaint: deletable<Paint>(),
     strokePaint: deletable<Paint>(),
     selectionPaint: deletable<Paint>(),
@@ -52,7 +54,7 @@ function createRenderer() {
     imageFilterCache: new Map(),
     maskFilterCache: new Map(),
     nodePictureCache: new Map(),
-    effectRasterCache: new Map(),
+    effectRasterCache: new EffectRasterCache(),
     subtreePictureCache: new Map(),
     scenePicture: null,
     sceneBacking: null,

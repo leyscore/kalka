@@ -33,6 +33,7 @@ import * as RenderPipeline from './renderer/pipeline'
 import type { SceneBacking, SceneBackingBuild } from './renderer/retained-backing/types'
 import * as RendererState from './renderer/state'
 import * as RenderText from './text'
+import { createGlyphSilhouetteCache } from './text/derived'
 import { TextPreparationCache } from './text/preparation-cache'
 export type { MeasurementMode, RenderOverlays, RulerTheme } from './renderer/types'
 import type {
@@ -64,7 +65,7 @@ export interface PendingFontNode {
   keys: Set<string>
 }
 
-import type { EffectRasterCacheEntry } from './renderer/effect-raster-cache'
+import { EffectRasterCache } from './renderer/effect-raster-cache'
 import { TiledSceneController } from './renderer/tiles'
 import type { RenderOverlays, RulerTheme } from './renderer/types'
 
@@ -105,7 +106,7 @@ export class SkiaRenderer {
   fillGeometryCache = new Map<string, Path[]>()
   strokeGeometryCache = new Map<string, Path[]>()
   /** Path-text glyph silhouettes (stroke-and-union, font units) keyed by blob hash + relative weight. */
-  glyphSilhouetteCache = new Map<string, Path>()
+  glyphSilhouetteCache = createGlyphSilhouetteCache()
   renderingSceneBacking = false
   scenePicture: SkPicture | null = null
   scenePictureVersion = -1
@@ -130,7 +131,7 @@ export class SkiaRenderer {
   nodePictureCache = new Map<string, SkPicture | null>()
   nodePictureCacheGenerations = new Map<string, number>()
   nodePictureCacheDependencies = new Map<string, readonly string[]>()
-  effectRasterCache = new Map<string, EffectRasterCacheEntry>()
+  effectRasterCache = new EffectRasterCache()
   subtreePictureCache = new Map<string, SubtreePictureCacheEntry>()
   subtreePictureCachePageId: string | null = null
   subtreePictureCacheSceneVersion = -1

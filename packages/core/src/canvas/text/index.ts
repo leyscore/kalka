@@ -10,6 +10,7 @@ import { uniq } from 'es-toolkit/array'
 
 import type { SceneNode } from '@open-pencil/scene-graph'
 
+import { ResourceCache } from '#core/cache/resource'
 import { resolveRGBAForPreview } from '#core/color/management'
 import { DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE } from '#core/constants'
 import { transformTextCase } from '#core/text/case'
@@ -45,7 +46,7 @@ interface TextRenderer extends FontReadinessRenderer {
 }
 
 const FONT_FAMILY_CACHE_LIMIT = 256
-const fontFamilyCache = new Map<string, string[]>()
+const fontFamilyCache = new ResourceCache<string, string[]>({ maxEntries: FONT_FAMILY_CACHE_LIMIT })
 
 function demandFace(
   r: FontReadinessRenderer,
@@ -290,7 +291,7 @@ function resolveParagraphFontFamilies(
     fontManager.renderFamily(family, 'Regular')
   )
   const key = `${renderPrimary}\0${renderArabicFallbacks.join('\0')}\0${renderCJKFallbacks.join('\0')}`
-  const cached = fontFamilyCache.get(key)
+  const cached = fontFamilyCache.peek(key)
   if (cached) return cached
 
   const families = [renderPrimary]
@@ -299,10 +300,6 @@ function resolveParagraphFontFamilies(
 
   const resolved = uniq(families)
   fontFamilyCache.set(key, resolved)
-  if (fontFamilyCache.size > FONT_FAMILY_CACHE_LIMIT) {
-    const oldestKey = fontFamilyCache.keys().next().value
-    if (oldestKey) fontFamilyCache.delete(oldestKey)
-  }
   return resolved
 }
 

@@ -1,6 +1,7 @@
 import { expect, mock, test } from 'bun:test'
 
 import type { SkiaRenderer } from '#core/canvas/renderer'
+import { EffectRasterCache } from '#core/canvas/renderer/effect-raster-cache'
 import { invalidateAllPictures, invalidateNodePicture } from '#core/canvas/renderer/state'
 import { TextPreparationCache } from '#core/canvas/text/preparation-cache'
 
@@ -25,7 +26,7 @@ test('full picture invalidation resets tiled font-dependent resources', () => {
     nodePictureCache: new Map([['node', nodePicture]]),
     nodePictureCacheGenerations: new Map([['node', 1]]),
     nodePictureCacheDependencies: new Map([['node', []]]),
-    effectRasterCache: new Map(),
+    effectRasterCache: new EffectRasterCache(),
     subtreePictureCache: new Map([['subtree', { picture: subtreePicture }]]),
     subtreePictureCachePageId: 'page',
     subtreePictureCacheSceneVersion: 1,
@@ -63,7 +64,7 @@ test('node picture invalidation removes pictures that depend on a changed child'
       ['parent', ['child']],
       ['child', []]
     ]),
-    effectRasterCache: new Map(),
+    effectRasterCache: new EffectRasterCache(),
     subtreePictureCache: new Map()
   } as SkiaRenderer
 

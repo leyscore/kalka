@@ -7,6 +7,8 @@ import type {
   TypefaceFontProvider
 } from 'canvaskit-wasm'
 
+import { ResourceCache } from '#core/cache/resource'
+
 interface LabelParagraphEntry {
   paragraph: Paragraph
   width: number
@@ -22,7 +24,10 @@ export function measureGlyphWidth(font: Font, text: string): number {
 }
 
 export class LabelParagraphCache {
-  private readonly entries = new Map<string, LabelParagraphEntry>()
+  private readonly entries = new ResourceCache<string, LabelParagraphEntry>({
+    maxEntries: MAX_LABEL_PARAGRAPHS,
+    dispose: (entry) => entry.paragraph.delete()
+  })
   private fontGeneration = -1
 
   measure(
@@ -57,7 +62,6 @@ export class LabelParagraphCache {
   }
 
   clear(): void {
-    for (const entry of this.entries.values()) entry.paragraph.delete()
     this.entries.clear()
   }
 
@@ -104,20 +108,7 @@ export class LabelParagraphCache {
         height: paragraph.getHeight()
       }
       this.entries.set(key, entry)
-      this.evict()
-    } else {
-      this.entries.delete(key)
-      this.entries.set(key, entry)
     }
     return entry
-  }
-
-  private evict(): void {
-    while (this.entries.size > MAX_LABEL_PARAGRAPHS) {
-      const oldestKey = this.entries.keys().next().value
-      if (!oldestKey) return
-      this.entries.get(oldestKey)?.paragraph.delete()
-      this.entries.delete(oldestKey)
-    }
   }
 }

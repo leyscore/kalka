@@ -45,6 +45,32 @@ function squareCommandsBlob(): Uint8Array {
 }
 
 describe('derived text rendering', () => {
+  test('glyph silhouettes are disposed by cache clearing and renderer destruction', () => {
+    const renderer = new SkiaRenderer(
+      ck,
+      expectDefined(ck.MakeSurface(8, 8), 'glyph cache surface')
+    )
+    const first = new ck.Path()
+    const second = new ck.Path()
+    let disposedByRenderer = false
+    try {
+      renderer.glyphSilhouetteCache.set('first', first)
+      expect(renderer.glyphSilhouetteCache.peek('first')).toBe(first)
+      renderer.glyphSilhouetteCache.clear()
+      expect(first.isDeleted()).toBe(true)
+      renderer.glyphSilhouetteCache.set('second', second)
+    } finally {
+      try {
+        renderer.destroy()
+        disposedByRenderer = second.isDeleted()
+      } finally {
+        if (!first.isDeleted()) first.delete()
+        if (!second.isDeleted()) second.delete()
+      }
+    }
+    expect(disposedByRenderer).toBe(true)
+  })
+
   test('snaps Figma glyph baselines to device pixels', () => {
     expect(snapDerivedGlyphBaseline(47.45454406738281)).toBe(47)
     expect(snapDerivedGlyphBaseline(15.090909004211426)).toBe(15)

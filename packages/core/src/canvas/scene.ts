@@ -26,11 +26,8 @@ import { renderMaskedChildIds } from './masks'
 import type { SkiaRenderer, RenderOverlays } from './renderer'
 import {
   canCacheEffectRaster,
-  deleteEffectRaster,
   effectRasterScale,
-  effectRasterScaleMatches,
-  installEffectRaster,
-  touchEffectRaster
+  effectRasterScaleMatches
 } from './renderer/effect-raster-cache'
 import { makeSmoothRRectPath, nodeHasRadius, nodeHasSmoothCorners } from './shapes'
 import {
@@ -496,13 +493,13 @@ export function renderShape(
 
   const canRasterCache = r.renderingSceneBacking && canRasterCacheEffects(node)
   const targetScale = effectRasterScale(r.zoom * r.dpr)
-  const cachedRaster = canRasterCache ? touchEffectRaster(r.effectRasterCache, node.id) : null
+  const cachedRaster = canRasterCache ? r.effectRasterCache.get(node.id) : null
   if (
     cachedRaster &&
     (cachedRaster.fontGeneration !== r.fontGeneration ||
       !effectRasterScaleMatches(cachedRaster.scale, targetScale))
   ) {
-    deleteEffectRaster(r.effectRasterCache, node.id)
+    r.effectRasterCache.delete(node.id)
   } else if (cachedRaster) {
     canvas.drawImageRectOptions(
       cachedRaster.image,
@@ -543,7 +540,7 @@ export function renderShape(
       r.renderShapeUncached(rasterCanvas, node, graph)
       surface.flush()
       const image = surface.makeImageSnapshot()
-      installEffectRaster(r.effectRasterCache, node.id, {
+      const retained = r.effectRasterCache.set(node.id, {
         image,
         left: -margin,
         top: -margin,
@@ -554,14 +551,18 @@ export function renderShape(
         fontGeneration: r.fontGeneration,
         dependencyIds: node.childIds.slice(0, 1)
       })
-      canvas.drawImageRectOptions(
-        image,
-        r.ck.LTRBRect(0, 0, image.width(), image.height()),
-        r.ck.LTRBRect(-margin, -margin, node.width + margin, node.height + margin),
-        r.ck.FilterMode.Linear,
-        r.ck.MipmapMode.None,
-        null
-      )
+      try {
+        canvas.drawImageRectOptions(
+          image,
+          r.ck.LTRBRect(0, 0, image.width(), image.height()),
+          r.ck.LTRBRect(-margin, -margin, node.width + margin, node.height + margin),
+          r.ck.FilterMode.Linear,
+          r.ck.MipmapMode.None,
+          null
+        )
+      } finally {
+        if (!retained) image.delete()
+      }
       return
     } finally {
       surface.delete()

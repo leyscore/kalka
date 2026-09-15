@@ -1,5 +1,4 @@
 import type { SkiaRenderer } from '#core/canvas/renderer'
-import { clearEffectRasterCache } from '#core/canvas/renderer/effect-raster-cache'
 import { clearSubtreePictureCache } from '#core/canvas/renderer/state'
 import { fontManager } from '#core/text/fonts'
 
@@ -24,8 +23,6 @@ function disposePathCaches(r: SkiaRenderer): void {
     }
     cache.clear()
   }
-  // glyphSilhouetteCache maps to a single Path per entry (not an array).
-  for (const p of r.glyphSilhouetteCache.values()) p.delete()
   r.glyphSilhouetteCache.clear()
 }
 
@@ -75,7 +72,7 @@ export function destroyRenderer(r: SkiaRenderer): void {
   r.nodePictureCache.clear()
   r.labelParagraphCache.clear()
   r.textPreparationCache.clear()
-  clearEffectRasterCache(r.effectRasterCache)
+  r.effectRasterCache.clear()
   r.tiledScene.destroy()
   clearSubtreePictureCache(r)
   clearRetainedSceneState(r)
