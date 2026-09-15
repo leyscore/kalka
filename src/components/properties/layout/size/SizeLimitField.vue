@@ -9,7 +9,7 @@ import {
   SelectViewport
 } from 'reka-ui'
 
-import { useLayoutControlsContext } from '@open-pencil/vue'
+import { useLayoutControlsContext, useRetainedPopup } from '@open-pencil/vue'
 
 import type { SizeLimitFieldProps } from '@/components/properties/layout/size/types'
 import VariableNumberField from '@/components/properties/VariableNumberField.vue'
@@ -19,6 +19,7 @@ import { useSelectUI } from '@/components/ui/select/select'
 const { item } = defineProps<SizeLimitFieldProps>()
 
 const ctx = useLayoutControlsContext()
+const { open: popupOpen, portalActive } = useRetainedPopup()
 const selectUI = useSelectUI({ item: 'rounded py-1.5 px-2 text-xs' })
 
 function handleSelect(value: string) {
@@ -41,7 +42,11 @@ function handleSelect(value: string) {
       @cancel="ctx.cancelPreview"
     >
       <template #after-variable>
-        <SelectRoot :model-value="'VALUE'" @update:model-value="handleSelect($event as string)">
+        <SelectRoot
+          v-model:open="popupOpen"
+          :model-value="'VALUE'"
+          @update:model-value="handleSelect($event as string)"
+        >
           <SelectTrigger
             data-slot="limit-trigger"
             :aria-label="item.label"
@@ -50,7 +55,7 @@ function handleSelect(value: string) {
           >
             <icon-lucide-chevron-down class="size-3" />
           </SelectTrigger>
-          <SelectPortal>
+          <SelectPortal v-if="portalActive">
             <SelectContent
               position="popper"
               align="start"

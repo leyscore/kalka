@@ -1,4 +1,5 @@
 import { tryOnScopeDispose, useTimeoutFn } from '@vueuse/core'
+import { getCurrentInstance, onDeactivated } from 'vue'
 
 import type { UndoManager } from '@open-pencil/scene-graph'
 
@@ -43,6 +44,9 @@ export function useUndoBatch(undo: UndoManager, beginInteractiveEdit?: () => () 
   }
 
   tryOnScopeDispose(flush)
+  // These are applied property-list edits, not owned previews. Preserve the
+  // normal unmount behavior; preview owners cancel unfinished interactions.
+  if (getCurrentInstance()) onDeactivated(flush)
 
   return { ensure, flush }
 }

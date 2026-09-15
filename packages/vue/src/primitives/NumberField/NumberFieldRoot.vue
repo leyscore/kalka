@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useEventListener } from '@vueuse/core'
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { useEventListener, watchImmediate } from '@vueuse/core'
+import { computed, nextTick, onBeforeUnmount, onDeactivated, ref, watch } from 'vue'
 
 import {
   clampNumberValue,
@@ -9,6 +9,7 @@ import {
   stepNumberValue
 } from '#vue/controls/number-expression'
 import type { NumberExpressionError } from '#vue/controls/number-expression'
+import { useRetainedActivity } from '#vue/lifecycle/retention/context'
 import { useOptionalBindableValue } from '#vue/primitives/BindableValue/context'
 import { provideNumberField } from '#vue/primitives/NumberField/context'
 import type {
@@ -41,6 +42,7 @@ const {
 const emit = defineEmits<NumberFieldRootEmits>()
 defineSlots<NumberFieldRootSlots>()
 
+const retainedActivity = useRetainedActivity()
 const enclosingBinding = useOptionalBindableValue<number>()
 const binding = inheritBinding ? enclosingBinding : undefined
 const editing = ref(false)
@@ -394,13 +396,28 @@ watch(
   { immediate: true }
 )
 
-onBeforeUnmount(() => {
+function cancelDetachedInteraction() {
   stopScrubListeners()
   if (editing.value || scrubbing.value) {
+    restoreInteractionValue()
+    editing.value = false
+    scrubbing.value = false
     binding?.actions.cancelMutation()
     emit('cancel')
   }
-})
+}
+
+// Cancel before KeepAlive moves a focused input: detachment can synchronously
+// fire blur, which must not commit the draft before onDeactivated runs.
+watchImmediate(
+  () => retainedActivity?.value ?? true,
+  (active) => {
+    if (!active) cancelDetachedInteraction()
+  },
+  { flush: 'sync' }
+)
+onBeforeUnmount(cancelDetachedInteraction)
+onDeactivated(cancelDetachedInteraction)
 </script>
 
 <template>

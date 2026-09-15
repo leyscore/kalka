@@ -1,4 +1,5 @@
 import { tryOnScopeDispose } from '@vueuse/core'
+import { getCurrentInstance, onDeactivated } from 'vue'
 
 import type { Editor, NodePreview } from '@open-pencil/core/editor'
 import type { SceneNode } from '@open-pencil/scene-graph'
@@ -30,5 +31,6 @@ export function useNodePreview(editor: Editor) {
   }
 
   tryOnScopeDispose(cancel)
+  if (getCurrentInstance()) onDeactivated(cancel)
   return { update, commit, cancel }
 }

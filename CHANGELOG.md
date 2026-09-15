@@ -126,6 +126,7 @@
 - Prevent unbounded instance duplication when editing Figma-imported or pasted components with serialized or renamed children, keep extra instance children stable instead of yanking them to the front, and avoid pasted instances re-linking pre-existing instances during clipboard import.
 ### Performance
 
+- Reduce pauses after repeated frame creation without leaving hidden property edits or popups active.
 - Reduce repeated text shaping and scene invalidation while moving and resizing objects.
 - Scope automation and Figma API layout reconciliation to graph nodes and parent containers actually changed by each mutation.
 - Keep rapid trackpad zoom reversals and effect-heavy document navigation responsive by cancelling obsolete reconstruction and reusing safe raster snapshots.

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { computed, createApp, effectScope, shallowReactive } from 'vue'
+import { computed, createApp, effectScope, ref, shallowReactive } from 'vue'
 
 import { createDefaultEditorState, createEditor } from '@open-pencil/core/editor'
 import { getSharedStyles, SceneGraph } from '@open-pencil/scene-graph'
@@ -31,6 +31,40 @@ function setup() {
 }
 
 describe('selected-node preview projections', () => {
+  test('freezes inactive projections, refreshes on activation and disposes subscriptions', () => {
+    const fixture = setup()
+    const { editor, first, second } = fixture
+    const active = ref(true)
+    const selection = createSelectedNodeState(editor, active)
+    try {
+      const initial = selection.nodes.value
+      expect(selection.node.value?.x).toBe(10)
+
+      active.value = false
+      editor.graph.updateNodePreview(first.id, { x: 80 })
+      editor.select([second.id])
+      editor.graph.updateNodePreview(second.id, { x: 130 })
+      expect(selection.nodes.value).toBe(initial)
+      expect(selection.node.value?.x).toBe(10)
+
+      active.value = true
+      expect(selection.node.value?.id).toBe(second.id)
+      expect(selection.node.value?.x).toBe(130)
+      editor.graph.updateNodePreview(second.id, { x: 160 })
+      expect(selection.node.value?.x).toBe(160)
+
+      const last = selection.node.value
+      selection.dispose()
+      active.value = false
+      active.value = true
+      editor.graph.updateNodePreview(second.id, { x: 200 })
+      expect(last?.x).toBe(160)
+    } finally {
+      selection.dispose()
+      fixture.dispose()
+    }
+  })
+
   test('updates only consumers of changed properties, not scene catalogs or the graph object', () => {
     const fixture = setup()
     const { editor, first, second, selection } = fixture
