@@ -28,7 +28,7 @@ const editorElement = useTemplateRef('editorElement')
 const form = useMCPConnectionForm(settings, automation)
 const { draft, errors: fieldErrors } = form
 const connection = useMCPConnectionSettings(draft, tokenDraft, automation)
-const { tokenStatus, error, clearCredential } = connection
+const { tokenStatus, error, saveResult, clearCredential } = connection
 watch(
   () => Boolean(tokenDraft.value.trim() || tokenStatus.value === 'configured'),
   form.setCredentialReady,
@@ -51,7 +51,7 @@ function cancel() {
   editing.value = false
 }
 const submit = form.handleSubmit(async () => {
-  if (await connection.save()) cancel()
+  if ((await connection.save()) === 'saved') cancel()
 })
 async function save() {
   if (busy.value) return
@@ -72,6 +72,7 @@ async function remove() {
     v-model:token="tokenDraft"
     :token-status="tokenStatus"
     :error="error"
+    :save-result="saveResult"
     :field-errors="fieldErrors"
     :busy="busy"
     @cancel="cancel"

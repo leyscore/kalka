@@ -11,6 +11,7 @@ import { useSettingsFormGuard } from '@/app/settings/navigation/use'
 import ProviderConnectionTestButton from '@/components/chat/ProviderConnectionTestButton.vue'
 import { focusInvalidField } from '@/components/settings/layout/focus'
 import SettingsPage from '@/components/settings/layout/SettingsPage.vue'
+import SettingsSaveFeedback from '@/components/settings/layout/SettingsSaveFeedback.vue'
 import ProviderSelect from '@/components/settings/provider-select/ProviderSelect.vue'
 import ProviderSettingsField from '@/components/settings/provider/ProviderSettingsField.vue'
 import ProviderSettingsInput from '@/components/settings/provider/ProviderSettingsInput.vue'
@@ -50,6 +51,7 @@ const {
   connectionTestStatus,
   connectionTestReason,
   saveError,
+  saveResult,
   clearKey,
   testConnection: runConnectionTest
 } = profile
@@ -73,7 +75,7 @@ async function save() {
     await focusInvalidField(formElement.value)
     return
   }
-  if (await profile.save()) emit('done')
+  if ((await profile.save()) === 'saved') emit('done')
 }
 async function testConnection() {
   if (busy.value) return
@@ -335,7 +337,7 @@ async function remove() {
           </CollapsibleContent>
         </CollapsibleRoot>
 
-        <p v-if="saveError" class="text-xs text-error" role="alert">{{ settings.saveFailed }}</p>
+        <SettingsSaveFeedback :error="saveError" :result="saveResult" />
       </fieldset>
 
       <template #footer>

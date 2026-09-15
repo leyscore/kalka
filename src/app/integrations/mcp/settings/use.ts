@@ -22,6 +22,8 @@ const connectionServices = {
   remove: removeMCPConnection
 }
 
+import type { SettingsSaveResult } from '@/app/settings/save-result'
+
 export function useMCPConnectionSettings(
   draft: Ref<MCPConnectionDraft>,
   tokenDraft: Ref<string>,
@@ -31,6 +33,7 @@ export function useMCPConnectionSettings(
   const tokenStatus = ref<CredentialStatus>('missing')
   const credentialCleared = ref(false)
   const error = ref('')
+  const saveResult = ref<SettingsSaveResult | null>(null)
   const pending = ref(0)
   const busy = computed(() => pending.value > 0)
 
@@ -53,6 +56,7 @@ export function useMCPConnectionSettings(
 
   function startAdd(): void {
     version++
+    saveResult.value = null
     draft.value = createMCPConnectionDraft()
     credentialCleared.value = false
     tokenDraft.value = ''
@@ -66,6 +70,7 @@ export function useMCPConnectionSettings(
 
     const request = ++version
     pending.value++
+    saveResult.value = null
     draft.value = createMCPConnectionDraft(connection)
     credentialCleared.value = false
     tokenDraft.value = ''
@@ -88,7 +93,9 @@ export function useMCPConnectionSettings(
     }
   }
 
-  async function save(): Promise<boolean> {
+  async function save(): Promise<SettingsSaveResult> {
+    const progress = { persisted: false }
+    saveResult.value = null
     const request = ++version
     pending.value++
     const id: MCPConnectionID = draft.value.id ?? `mcp-${crypto.randomUUID()}`
@@ -110,6 +117,7 @@ export function useMCPConnectionSettings(
 
       await enqueueMCPConnectionMutation(id, async () => {
         const connection = services.save({ ...target, enabled: false })
+        progress.persisted = true
         if (target.authenticationType === 'none' || (clearToken && !token.trim())) {
           await services.setCredential(connection.id, '')
         } else if (token.trim()) await services.setCredential(connection.id, token)
@@ -119,13 +127,18 @@ export function useMCPConnectionSettings(
 
         services.save({ ...target, id: connection.id })
       })
-      if (!current(request)) return false
+      if (!current(request)) return 'partial'
 
       if (tokenDraft.value === token) tokenDraft.value = ''
-      return true
+      saveResult.value = 'saved'
+      return 'saved'
     } catch (cause) {
-      if (current(request)) error.value = cause instanceof Error ? cause.message : String(cause)
-      return false
+      const result = progress.persisted ? 'partial' : 'failed'
+      if (current(request)) {
+        error.value = cause instanceof Error ? cause.message : String(cause)
+        saveResult.value = result
+      }
+      return result
     } finally {
       pending.value--
     }
@@ -141,6 +154,7 @@ export function useMCPConnectionSettings(
   }
 
   async function remove(): Promise<boolean> {
+    saveResult.value = null
     const id = draft.value.id
     if (!id) return false
 
@@ -173,6 +187,7 @@ export function useMCPConnectionSettings(
     tokenStatus,
     credentialCleared,
     error,
+    saveResult,
     savedConnection,
     startAdd,
     startEdit,

@@ -8,6 +8,7 @@ import type { WebMCPRuntimeState } from '@/app/automation/webmcp/service'
 import SettingsGroup from '@/components/settings/layout/SettingsGroup.vue'
 import SettingsRow from '@/components/settings/layout/SettingsRow.vue'
 import SettingsSectionHeader from '@/components/settings/layout/SettingsSectionHeader.vue'
+import AppAlert from '@/components/ui/feedback/AppAlert.vue'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
 
 const mode = defineModel<WebMCPMode>({ required: true })
@@ -23,6 +24,23 @@ const descriptions = computed(() => ({
   inspect: automation.value.accessInspectDescription,
   edit: automation.value.accessEditDescription
 }))
+const tone = computed(
+  () =>
+    (
+      ({
+        off: 'info',
+        starting: 'info',
+        ready: 'success',
+        unsupported: 'warning',
+        error: 'error'
+      }) as const
+    )[state.status]
+)
+const detail = computed(() => {
+  if (state.error) return state.error
+  if (state.status === 'ready') return `${automation.value.tools}: ${state.toolCount}`
+  return undefined
+})
 const status = computed(
   () =>
     ({
@@ -47,13 +65,16 @@ const status = computed(
       </SettingsRow>
       <p class="px-3 py-2.5 text-xs leading-relaxed text-muted">{{ descriptions[mode] }}</p>
     </SettingsGroup>
-    <div class="text-xs leading-relaxed text-surface" role="status">
+    <AppAlert
+      v-if="state.status === 'unsupported' || state.status === 'error'"
+      :tone="tone"
+      :heading="status"
+      :description="detail"
+    />
+    <div v-else class="text-xs leading-relaxed text-surface" role="status">
       <p>{{ status }}</p>
-      <p v-if="state.status === 'ready'" class="mt-1 text-muted">
-        {{ automation.tools }}: {{ state.toolCount }}
-      </p>
+      <p v-if="detail" class="mt-1 text-muted">{{ detail }}</p>
     </div>
-    <p v-if="state.error" role="alert" class="text-xs text-error">{{ state.error }}</p>
     <a
       href="https://openpencil.dev/programmable/mcp-server#webmcp"
       target="_blank"

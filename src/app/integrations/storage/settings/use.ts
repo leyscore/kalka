@@ -25,6 +25,8 @@ const storageSettingsServices = {
   resume: resumeStorageSync
 }
 
+import type { SettingsSaveResult } from '@/app/settings/save-result'
+
 export function useStorageSettings(
   credentialDrafts: Ref<Record<string, string>>,
   services = storageSettingsServices
@@ -39,6 +41,7 @@ export function useStorageSettings(
   const operation = ref<'save' | 'test' | null>(null)
   const busy = computed(() => operation.value !== null)
   const error = ref('')
+  const saveResult = ref<SettingsSaveResult | null>(null)
   const dirty = computed(
     () =>
       !isEqual(preferenceDrafts.value, initialPreferences.value) ||
@@ -91,6 +94,7 @@ export function useStorageSettings(
   }
 
   function reset() {
+    saveResult.value = null
     version++
     preferenceDrafts.value = { ...services.readPreferences(provider.value.id) }
     initialPreferences.value = { ...preferenceDrafts.value }
@@ -106,8 +110,10 @@ export function useStorageSettings(
     cleared.value = [...new Set([...cleared.value, field])]
   }
 
-  async function save(): Promise<boolean> {
-    if (busy.value || disposed) return false
+  async function save(): Promise<SettingsSaveResult> {
+    if (busy.value || disposed) return 'failed'
+    let persisted = false
+    saveResult.value = null
     operation.value = 'save'
     error.value = ''
     const request = ++version
@@ -117,29 +123,35 @@ export function useStorageSettings(
     const removals = new Set(cleared.value)
     try {
       // Persistence spans preferences and the native credential store; it is not atomic.
-      for (const field of target.preferenceFields)
+      for (const field of target.preferenceFields) {
         services.writePreference(target.id, field.id, preferences[field.id] ?? '')
+        persisted = true
+      }
       for (const field of target.credentialFields) {
-        if (!current(request)) return false
+        if (!current(request)) return persisted ? 'partial' : 'failed'
         const reference = credentialRef(target.id, field.id)
         const replacement = credentials[field.id]?.trim()
         if (replacement) await services.manager.set(reference, replacement)
         else if (removals.has(field.id)) await services.manager.clear(reference)
+        if (replacement || removals.has(field.id)) persisted = true
       }
-      if (!current(request)) return false
+      if (!current(request)) return persisted ? 'partial' : 'failed'
       reset()
       void services
         .resume()
         .catch(() =>
           console.warn('[Storage] Could not resume synchronization after saving settings')
         )
-      return true
+      saveResult.value = 'saved'
+      return 'saved'
     } catch (cause) {
+      const result = persisted ? 'partial' : 'failed'
       if (current(request)) {
         error.value = cause instanceof Error ? cause.message : String(cause)
+        saveResult.value = result
         await refreshStatuses()
       }
-      return false
+      return result
     } finally {
       operation.value = null
     }
@@ -184,6 +196,7 @@ export function useStorageSettings(
     configured,
     dirty,
     error,
+    saveResult,
     begin: reset,
     cancel: reset,
     save,

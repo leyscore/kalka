@@ -7,7 +7,7 @@ import type { AIProviderID } from '@open-pencil/core/constants'
 
 import { refreshAIProviderStatus } from '@/app/ai/chat/storage'
 import {
-  aiModelSettings,
+  canRemoveModelProfile,
   createModelProfileDraft,
   modelConnectionUsageCount,
   modelProfile,
@@ -16,6 +16,7 @@ import {
   setModelConnectionAPIKey
 } from '@/app/ai/models'
 import type { ModelPickerLabels } from '@/app/ai/models/picker/options'
+import type { SettingsSaveResult } from '@/app/settings/save-result'
 
 import { useProfileConnection } from './connection'
 import { useProfileModelSelection } from './selection'
@@ -48,6 +49,7 @@ export function useModelProfileEditor({ profileId, keyInput, labels: ai }: Profi
   } = selection
 
   const saveError = ref<string | null>(null)
+  const saveResult = ref<SettingsSaveResult | null>(null)
   const busy = ref(false)
   const initialDraft = structuredClone(toRaw(draft))
   tryOnScopeDispose(() => {
@@ -69,7 +71,7 @@ export function useModelProfileEditor({ profileId, keyInput, labels: ai }: Profi
     () => !isEqual(draft, initialDraft) || keyInput.value.length > 0 || keyCleared.value
   )
 
-  const canDelete = computed(() => Boolean(profileId) && aiModelSettings.value.models.length > 1)
+  const canDelete = computed(() => (profileId ? canRemoveModelProfile(profileId) : false))
 
   function updateProvider(id: AIProviderID) {
     selection.updateProvider(id)
@@ -90,31 +92,39 @@ export function useModelProfileEditor({ profileId, keyInput, labels: ai }: Profi
     stageKeyRemoval()
   }
 
-  async function save(): Promise<boolean> {
-    if (busy.value) return false
+  async function save(): Promise<SettingsSaveResult> {
+    if (busy.value) return 'failed'
     busy.value = true
     saveError.value = null
+    saveResult.value = null
+    let persisted = false
 
     try {
       applyKnownModelMetadata()
       if (!draft.name.trim()) draft.name = modelDisplayName.value || providerDisplayName.value
       const profile = saveModelProfileDraft(draft)
+      persisted = true
+      // A credential failure must not create another profile on retry.
+      draft.profileId = profile.id
+      draft.sourceConnectionId = profile.connectionId
       if (keyInput.value.trim() || keyCleared.value) {
         await setModelConnectionAPIKey(profile.connectionId, keyInput.value)
         await refreshAIProviderStatus()
         keyInput.value = ''
       }
-      return true
+      saveResult.value = 'saved'
+      return 'saved'
     } catch (reason) {
       saveError.value = reason instanceof Error ? reason.message : String(reason)
-      return false
+      saveResult.value = persisted ? 'partial' : 'failed'
+      return saveResult.value
     } finally {
       busy.value = false
     }
   }
 
   async function remove(): Promise<boolean> {
-    if (!profileId || busy.value) return false
+    if (!profileId || busy.value || !canRemoveModelProfile(profileId)) return false
     busy.value = true
     saveError.value = null
     try {
@@ -124,7 +134,7 @@ export function useModelProfileEditor({ profileId, keyInput, labels: ai }: Profi
       }
       removeModelProfile(profileId)
       await refreshAIProviderStatus()
-      return true
+      return modelProfile(profileId) === null
     } catch (reason) {
       saveError.value = reason instanceof Error ? reason.message : String(reason)
       return false
@@ -163,6 +173,7 @@ export function useModelProfileEditor({ profileId, keyInput, labels: ai }: Profi
     connectionTestStatus,
     connectionTestReason,
     saveError,
+    saveResult,
     updateProvider,
     updateModel,
     save,

@@ -56,7 +56,7 @@
 - Upgrade direct model chat providers and transports to AI SDK 7 while retaining the local ACP execution path.
 - Localize file, clipboard, collaboration, chat, vectorization, storage, recovery, and component-library notifications in every supported language.
 - Separate local MCP server controls, browser WebMCP access, and remote connections in Settings, with inline searchable tool permissions.
-- Show translated field errors and hints in Settings forms, focus the first invalid field on submission, and explain missing requirements instead of silently disabling Save or Test.
+- Show translated field errors, hints, and consistent contextual alerts in Settings forms, focus the first invalid field on submission, and explain missing requirements instead of silently disabling Save or Test.
 - Pan horizontally with Shift+wheel while preserving native horizontal trackpad movement.
 
 ### Fixed

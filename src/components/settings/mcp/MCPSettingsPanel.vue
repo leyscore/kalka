@@ -18,6 +18,7 @@ import SettingsGroup from '@/components/settings/layout/SettingsGroup.vue'
 import SettingsRow from '@/components/settings/layout/SettingsRow.vue'
 import SettingsSectionHeader from '@/components/settings/layout/SettingsSectionHeader.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
+import AppAlert from '@/components/ui/feedback/AppAlert.vue'
 import AppSwitch from '@/components/ui/toggle/AppSwitch.vue'
 
 import MCPToolAccessPanel from './MCPToolAccessPanel.vue'
@@ -100,7 +101,7 @@ const { restart, chooseRootDirectory } = useMCPSettings()
           </div>
         </div>
       </SettingsGroup>
-      <p v-if="mcpRuntime.error" class="text-xs text-error" role="alert">{{ mcpRuntime.error }}</p>
+      <AppAlert v-if="mcpRuntime.error" tone="error" :heading="mcpRuntime.error" />
     </div>
     <SettingsDisclosure>
       <template #label>{{ automation.tools }}</template>

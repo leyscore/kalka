@@ -11,10 +11,12 @@ import {
 import type { MCPConnectionDraft } from '@/app/integrations/mcp'
 import type { MCPConnectionFieldErrors } from '@/app/integrations/mcp/settings/form'
 import type { CredentialStatus } from '@/app/settings/credentials/types'
+import type { SettingsSaveResult } from '@/app/settings/save-result'
 import { focusInvalidField } from '@/components/settings/layout/focus'
 import SettingsGroup from '@/components/settings/layout/SettingsGroup.vue'
 import SettingsPage from '@/components/settings/layout/SettingsPage.vue'
 import SettingsRow from '@/components/settings/layout/SettingsRow.vue'
+import SettingsSaveFeedback from '@/components/settings/layout/SettingsSaveFeedback.vue'
 import SettingsSectionHeader from '@/components/settings/layout/SettingsSectionHeader.vue'
 import ProviderSettingsField from '@/components/settings/provider/ProviderSettingsField.vue'
 import ProviderSettingsKeyField from '@/components/settings/provider/ProviderSettingsKeyField.vue'
@@ -28,11 +30,13 @@ const {
   tokenStatus,
   busy,
   error,
+  saveResult,
   fieldErrors = {}
 } = defineProps<{
   tokenStatus: CredentialStatus
   busy: boolean
   error: string
+  saveResult?: SettingsSaveResult | null
   fieldErrors?: MCPConnectionFieldErrors
 }>()
 defineEmits<{
@@ -138,7 +142,7 @@ defineExpose({ focusInvalid: () => focusInvalidField(formElement.value) })
             @blur="$emit('blurField', 'credential')"
           />
         </fieldset>
-        <p v-if="error" class="text-xs text-error" role="alert">{{ settings.saveFailed }}</p>
+        <SettingsSaveFeedback :error="error" :result="saveResult" />
       </div>
       <template #footer>
         <AppButton

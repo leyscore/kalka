@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, useTemplateRef } from 'vue'
+import { computed } from 'vue'
 
 import {
   useCommonMessages,
@@ -10,8 +10,8 @@ import {
 
 import { useMediaSettingsEditor, type MediaSettingsService } from '@/app/settings/media/use'
 import { useSettingsFormGuard } from '@/app/settings/navigation/use'
-import { focusInvalidField } from '@/components/settings/layout/focus'
 import SettingsPage from '@/components/settings/layout/SettingsPage.vue'
+import SettingsSaveFeedback from '@/components/settings/layout/SettingsSaveFeedback.vue'
 import SettingsSectionHeader from '@/components/settings/layout/SettingsSectionHeader.vue'
 import ProviderSettingsKeyField from '@/components/settings/provider/ProviderSettingsKeyField.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
@@ -20,7 +20,6 @@ import AppSelect from '@/components/ui/select/AppSelect.vue'
 const { service } = defineProps<{ service: MediaSettingsService }>()
 const emit = defineEmits<{ done: [] }>()
 const editor = useMediaSettingsEditor(service)
-const formElement = useTemplateRef<HTMLFormElement>('formElement')
 const { key, providerID, keyStatus, error, dirty, busy, clearCredential } = editor
 useSettingsFormGuard({ dirty, busy, cancel: () => emit('done') })
 const common = useCommonMessages()
@@ -51,17 +50,11 @@ const placeholder = computed(() => {
 })
 async function save() {
   if (await editor.save()) emit('done')
-  else await focusInvalidField(formElement.value)
 }
 </script>
 
 <template>
-  <form
-    ref="formElement"
-    class="flex min-h-0 min-w-0 flex-1 flex-col"
-    :aria-busy="busy"
-    @submit.prevent="save"
-  >
+  <form class="flex min-h-0 min-w-0 flex-1 flex-col" :aria-busy="busy" @submit.prevent="save">
     <SettingsPage>
       <div class="flex flex-col gap-4">
         <SettingsSectionHeader>
@@ -87,7 +80,6 @@ async function save() {
                 ? settings.savedCredentialHint
                 : settings.optionalCredentialHint
             "
-            :error="error ? settings.saveFailed : undefined"
             kind="api"
             :placeholder="placeholder"
             :key-u-r-l="keyURL"
@@ -95,6 +87,7 @@ async function save() {
             @clear="clearCredential"
           />
         </fieldset>
+        <SettingsSaveFeedback :error="error" />
       </div>
       <template #footer>
         <AppButton :disabled="busy" @click="emit('done')">{{ common.cancel }}</AppButton>

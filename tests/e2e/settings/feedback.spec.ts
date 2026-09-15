@@ -100,9 +100,14 @@ test('media explains optional keys and preserves input after a failed save', asy
   try {
     await page.getByRole('button', { name: 'Save', exact: true }).click()
     await expect(key).toHaveValue('test-only-replacement')
-    await expect(key).toBeFocused()
-    await expect(key).toHaveAttribute('aria-invalid', 'true')
-    await expect(key).toHaveAccessibleDescription(/Could not save these changes/)
+    await expect(key).not.toHaveAttribute('aria-invalid', 'true')
+    await expect(
+      page.getByRole('alert', {
+        name: 'Could not save these changes. Check the settings and try again.',
+        exact: true
+      })
+    ).toBeVisible()
+    await expect(key).toHaveAccessibleDescription('Optional. Add a key to enable this service.')
     await expect(page.getByRole('button', { name: 'Save', exact: true })).toBeEnabled()
   } finally {
     await failure.evaluate((handle) => handle.restore())
@@ -139,11 +144,64 @@ test('MCP requires a token only for enabled bearer connections and preserves fai
       })
     ).toBeVisible()
     await expect(key).toHaveValue('test-only-replacement')
+    await expect(
+      page.getByText('Some changes may already be saved. Review the settings and try again.')
+    ).toBeVisible()
     await expect(page.getByRole('button', { name: 'Save', exact: true })).toBeEnabled()
   } finally {
     await failure.evaluate((handle) => handle.restore())
     await failure.dispose()
   }
+})
+
+test('a partial model save is explained and retry does not duplicate the profile', async ({
+  page
+}) => {
+  await openSettings(page)
+  await page.getByTestId('settings-section-ai').click()
+  await page.getByTestId('settings-add-model').click()
+  await page.getByLabel('Name', { exact: true }).fill('Partial model')
+  await page.getByTestId('settings-model-provider').click()
+  await page.getByRole('option', { name: 'Google AI', exact: true }).click()
+  await page.getByLabel('Model ID', { exact: true }).click()
+  await page.getByRole('option').first().click()
+  await page.getByTestId('provider-settings-api-key').fill('test-only-key')
+  const failure = await failCredentialWrites(page)
+  try {
+    await page.getByRole('button', { name: 'Save model', exact: true }).click()
+    await expect(
+      page.getByText('Some changes may already be saved. Review the settings and try again.')
+    ).toBeVisible()
+    await expect(page.getByTestId('provider-settings-api-key')).toHaveValue('test-only-key')
+  } finally {
+    await failure.evaluate((handle) => handle.restore())
+    await failure.dispose()
+  }
+  await page.getByRole('button', { name: 'Save model', exact: true }).click()
+  await expect(page.getByRole('button', { name: /Partial model/ })).toHaveCount(1)
+})
+
+test('the sole design-capable profile cannot be deleted even with other profiles present', async ({
+  page
+}) => {
+  await openSettings(page)
+  const designId = await page.evaluate(async () => {
+    const path = '/src/app/ai/models/index.ts'
+    const models = await import(path)
+    const design = models.resolveAIModelRole('design')
+    if (!design) throw new Error('Missing Design profile')
+    const draft = models.createModelProfileDraft()
+    draft.name = 'Text only'
+    draft.providerID = 'google'
+    draft.customModelID = 'text-only'
+    draft.capabilities = []
+    models.saveModelProfileDraft(draft)
+    return design.profile.id
+  })
+  await page.getByTestId('settings-section-ai').click()
+  await page.locator(`[data-model-id="${designId}"]`).click()
+  await expect(page.getByRole('button', { name: 'Save model', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Delete model', exact: true })).toHaveCount(0)
 })
 
 test('MCP field feedback is translated after switching the locale', async ({ page }) => {

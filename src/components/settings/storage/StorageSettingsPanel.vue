@@ -16,9 +16,11 @@ import { settingsDialogOpen } from '@/app/settings/dialog'
 import { useSettingsFormGuard } from '@/app/settings/navigation/use'
 import { focusInvalidField } from '@/components/settings/layout/focus'
 import SettingsPage from '@/components/settings/layout/SettingsPage.vue'
+import SettingsSaveFeedback from '@/components/settings/layout/SettingsSaveFeedback.vue'
 import SettingsSectionHeader from '@/components/settings/layout/SettingsSectionHeader.vue'
 import ProviderSettingsField from '@/components/settings/provider/ProviderSettingsField.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
+import AppAlert from '@/components/ui/feedback/AppAlert.vue'
 import AppInput from '@/components/ui/input/AppInput.vue'
 import AppActionRow from '@/components/ui/list/AppActionRow.vue'
 
@@ -44,6 +46,7 @@ const {
   configured,
   dirty,
   error,
+  saveResult,
   clearCredential
 } = connection
 useSettingsFormGuard({ dirty, busy, cancel }, editing)
@@ -75,7 +78,7 @@ async function save() {
     await focusInvalidField(formElement.value)
     return
   }
-  if (await connection.save()) editing.value = false
+  if ((await connection.save()) === 'saved') editing.value = false
 }
 async function openWorkspace() {
   settingsDialogOpen.value = false
@@ -192,15 +195,14 @@ async function testConnection() {
           @click="testConnection"
           >{{ testing ? common.testingConnection : common.testConnection }}</AppButton
         >
-        <p v-if="testResult" role="status" class="text-xs text-surface">
-          {{
+        <AppAlert
+          v-if="testResult"
+          :tone="testResult === 'success' ? 'success' : 'error'"
+          :heading="
             testResult === 'success' ? notifications.storageConnected : settings.connectionFailed
-          }}
-        </p>
-        <div v-if="error" role="alert" class="text-xs text-error">
-          <p>{{ settings.saveFailed }}</p>
-          <p class="mt-1">{{ settings.partialSaveWarning }}</p>
-        </div>
+          "
+        />
+        <SettingsSaveFeedback :error="error" :result="saveResult" />
       </section>
       <template v-if="editing" #footer>
         <AppButton :disabled="busy" @click="cancel">{{ common.cancel }}</AppButton>

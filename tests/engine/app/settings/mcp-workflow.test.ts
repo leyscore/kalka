@@ -128,14 +128,14 @@ test('MCP failed writes preserve replacements and staged removals', async () => 
     )
     if (!state) throw new Error('Missing scope')
     state.draft.value.id = connection.id
-    expect(await state.save()).toBe(false)
+    expect(await state.save()).toBe('partial')
     expect(state.error.value).toBe('Offline')
     expect(token.value).toBe('replacement')
     state.clearCredential()
     expect(state.error.value).toBe('')
     expect(token.value).toBe('')
     expect(state.credentialCleared.value).toBe(true)
-    expect(await state.save()).toBe(false)
+    expect(await state.save()).toBe('partial')
     expect(state.error.value).toBe('Offline')
     expect(state.credentialCleared.value).toBe(true)
   } finally {
@@ -168,7 +168,7 @@ test('failed bearer write never enables the saved connection', async () => {
     if (!state) throw new Error('Missing scope')
     state.draft.value.authenticationType = 'bearer'
     state.draft.value.enabled = true
-    expect(await state.save()).toBe(false)
+    expect(await state.save()).toBe('partial')
     expect(saved).toEqual([false])
   } finally {
     scope.stop()
@@ -389,7 +389,7 @@ test('blank-token save rechecks status after a different editor clears the crede
     const clearing = first.save()
     const saving = second.save()
     await clearing
-    expect(await saving).toBe(false)
+    expect(await saving).toBe('partial')
     expect(second.error.value).toBe('Required')
     expect(enabled).toEqual([false, false, false])
   } finally {
