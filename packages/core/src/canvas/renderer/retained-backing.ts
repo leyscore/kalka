@@ -400,6 +400,17 @@ function installSceneBackingImage(
     fontGeneration: r.fontGeneration,
     ...sceneBackingMetrics(backing)
   }
+  // Advancing the preview baseline must not relabel an older whole-scene
+  // picture as current: navigation can still fall back to that picture.
+  if (
+    r.scenePictureVersion !== sceneVersion ||
+    r.scenePicturePositionPreviewVersion !== positionPreviewVersion ||
+    r.scenePicturePageId !== r.pageId ||
+    r.scenePictureFontGeneration !== r.fontGeneration
+  ) {
+    r.scenePicture?.delete()
+    r.scenePicture = null
+  }
   r.scenePictureVersion = sceneVersion
   r.scenePicturePositionPreviewVersion = positionPreviewVersion
   r.scenePicturePageId = r.pageId

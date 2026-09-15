@@ -59,6 +59,7 @@
 
 ### Fixed
 
+- Keep newly created and edited objects visible during zoom instead of replaying outdated scene content.
 - Keep property fields and paint previews live during editing, and keep rotated selection labels aligned and object edges stable when previews settle.
 - Keep Undo and Redo commands available as edit history changes, without requiring another scene edit.
 - Avoid recursive desktop HTTP proxy requests when font downloads intercept Tauri IPC traffic.

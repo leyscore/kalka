@@ -5,6 +5,7 @@ import { SceneGraph } from '@open-pencil/scene-graph'
 import { initCanvasKit } from '#cli/headless'
 import { SkiaRenderer } from '#core/canvas'
 import { render } from '#core/canvas/renderer/pipeline'
+import { renderSceneBacking } from '#core/canvas/renderer/retained-backing'
 
 import { expectDefined } from '#tests/helpers/assert'
 
@@ -40,6 +41,33 @@ function createRenderer(pageId: string) {
   renderer.panX = 0.125
   renderer.panY = 0.375
   return renderer
+}
+
+for (const scope of ['matching', 'scene', 'preview', 'page', 'font'] as const) {
+  test(`backing installation preserves only a matching whole-scene picture: ${scope}`, () => {
+    const { graph, pageId } = createFixture()
+    const renderer = createRenderer(pageId)
+    try {
+      render(renderer, graph, new Set(), {}, 1, 'full')
+      const picture = expectDefined(renderer.scenePicture, 'whole-scene picture')
+      const deletion = spyOn(picture, 'delete')
+      try {
+        if (scope === 'scene') renderer.scenePictureVersion--
+        if (scope === 'preview') renderer.scenePicturePositionPreviewVersion--
+        if (scope === 'page') renderer.scenePicturePageId = null
+        if (scope === 'font') renderer.scenePictureFontGeneration--
+        expect(renderSceneBacking(renderer, renderer.surface.getCanvas(), graph, 1)).not.toBe(false)
+        expect(renderer.scenePicture).toBe(scope === 'matching' ? picture : null)
+        expect(deletion).toHaveBeenCalledTimes(scope === 'matching' ? 0 : 1)
+        expect(renderer.scenePictureVersion).toBe(1)
+        expect(renderer.scenePicturePositionPreviewVersion).toBe(graph.positionPreviewVersion)
+      } finally {
+        deletion.mockRestore()
+      }
+    } finally {
+      renderer.destroy()
+    }
+  })
 }
 
 function pixels(renderer: SkiaRenderer) {
