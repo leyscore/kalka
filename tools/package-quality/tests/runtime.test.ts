@@ -54,6 +54,34 @@ test('public imports retain separate bounded Node and Bun invocations and the st
   }
 })
 
+test('phase timing preserves successful results when reporting throws', async () => {
+  const result = { verified: true }
+  expect(
+    await measurePhase(
+      'imports',
+      async () => result,
+      () => {
+        throw new Error('report failed')
+      }
+    )
+  ).toBe(result)
+})
+
+test('phase timing preserves the original exception when reporting throws', async () => {
+  const error = new Error('failed import')
+  await expect(
+    measurePhase(
+      'imports',
+      async () => {
+        throw error
+      },
+      () => {
+        throw new Error('report failed')
+      }
+    )
+  ).rejects.toBe(error)
+})
+
 test('phase timing preserves results and exceptions', async () => {
   const reports: string[] = []
   const result = { verified: true }
