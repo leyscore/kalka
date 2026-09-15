@@ -10,7 +10,7 @@ reviews:
   profile: "assertive"
   request_changes_workflow: false
   high_level_summary: false
-  review_status: true
+  review_status: false
   changed_files_summary: false
   estimate_code_review_effort: false
   suggested_labels: false
@@ -21,6 +21,8 @@ reviews:
   sequence_diagrams: false
   finishing_touches:
     docstrings:
+      enabled: false
+    unit_tests:
       enabled: false
   auto_review:
     enabled: true
