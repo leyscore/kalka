@@ -39,6 +39,7 @@ test.each([
 test.each([
   'fix: document Claude Code and OpenAI integration',
   'fix: preserve credits\n\nCo-authored-by: Claude Martin <claude@example.org>',
+  'fix: preserve credits\n\nCo-authored-by: person@example.org',
   'fix: preserve credits\n\nCo-authored-by: Claude <123+claude@users.noreply.github.com>',
   'fix: preserve credits\n\nCo-authored-by: Codex <456+codex@users.noreply.github.com>',
   'fix: preserve credits\n\nCo-authored-by: Human Contributor <person@anthropic.com>',
@@ -49,6 +50,8 @@ test.each([
 
 test.each([
   'Claude Sonnet 5 <noreply@anthropic.com>',
+  'noreply@anthropic.com',
+  'NOREPLY@OPENAI.COM',
   'Codex <codex@openai.com>',
   'Cursor <noreply@cursor.com>',
   'Gemini CLI <gemini-cli@google.com>',
@@ -83,6 +86,15 @@ test.each([
   expect(result.output).toContain('AI-assisted contributions are welcome')
   expect(result.output).toContain('Preserve human co-author credits')
 })
+
+test.each(['fix: update', 'Release v0.14.0'])(
+  'rejects bare assistant email trailers: %s',
+  async (subject) => {
+    const result = await lint(`${subject}\n\nCo-authored-by: noreply@anthropic.com`)
+    expect(result.code).not.toBe(0)
+    expect(result.output).toContain('no-ai-coauthors')
+  }
+)
 
 test.each([
   ['Fixed stuff', 'type-empty'],

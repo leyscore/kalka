@@ -22,8 +22,10 @@ export function hasAICoauthor(message: string): boolean {
     encoding: 'utf8'
   })
   return trailers.split('\n').some((line) => {
-    const email = /^co-authored-by:\s*.*<([^<>]+)>\s*$/i.exec(line)?.[1]?.trim().toLowerCase()
-    return email !== undefined && (AI_COAUTHOR_EMAILS.has(email) || AI_GITHUB_EMAIL.test(email))
+    const value = /^co-authored-by:\s*(.*)$/i.exec(line)?.[1]?.trim()
+    if (!value) return false
+    const email = (/<([^<>]+)>$/.exec(value)?.[1] ?? value).trim().toLowerCase()
+    return AI_COAUTHOR_EMAILS.has(email) || AI_GITHUB_EMAIL.test(email)
   })
 }
 
