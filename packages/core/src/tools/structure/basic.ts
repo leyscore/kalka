@@ -56,6 +56,7 @@ export const nodeBounds = defineTool({
   name: 'node_bounds',
   description: 'Get absolute bounding box of a node.',
   execution: { kind: 'sync', mutation: 'none' },
+  exposure: { webmcp: false },
   input: nodeInput,
   execute: (figma, { id }) => {
     const node = figma.getNodeById(id)

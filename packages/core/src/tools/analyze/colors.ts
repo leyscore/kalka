@@ -31,7 +31,6 @@ export const analyzeColors = defineTool({
   description:
     'Analyze color palette usage across the current page. Shows frequency, variable bindings, and optionally clusters similar colors.',
   execution: { kind: 'sync', mutation: 'none' },
-  exposure: { webmcp: true },
   input: v.object({
     limit: analysisLimitInput,
     show_similar: v.optional(

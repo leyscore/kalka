@@ -335,6 +335,7 @@ export const analyzeOverlaps = defineTool({
   description:
     'Detect visual overlaps and layout overflows across the current page. Useful for finding content that covers footers, text that bleeds outside frames, and accidental sibling overlaps.',
   execution: { kind: 'sync', mutation: 'none' },
+  exposure: { webmcp: false },
   input: v.object({
     scope: v.optional(
       v.pipe(

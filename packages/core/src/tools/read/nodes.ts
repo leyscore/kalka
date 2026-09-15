@@ -46,7 +46,6 @@ export const getPageTree = defineTool({
   description:
     'Get the node tree of the current page. Returns lightweight hierarchy: id, type, name, size. Use depth, root_id, or node_types to keep large pages small. Use get_node for full properties of a specific node.',
   execution: { kind: 'sync', mutation: 'none' },
-  exposure: { webmcp: true },
   input: v.object({
     depth: v.optional(
       toolNumber(
@@ -97,7 +96,6 @@ export const getNode = defineTool({
   description:
     'Get detailed properties of a node by ID. Use depth to limit child recursion (0 = node only, 1 = direct children, etc). Default: unlimited.',
   execution: { kind: 'sync', mutation: 'none' },
-  exposure: { webmcp: true },
   input: v.object({
     id: nodeIdInput,
     depth: v.optional(
@@ -120,7 +118,6 @@ export const findNodes = defineTool({
   name: 'find_nodes',
   description: 'Find nodes by name pattern and/or type.',
   execution: { kind: 'sync', mutation: 'none' },
-  exposure: { webmcp: true },
   input: v.object({
     name: v.optional(
       v.pipe(v.string(), v.description('Name substring to match (case-insensitive)'))

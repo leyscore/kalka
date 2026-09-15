@@ -27,6 +27,7 @@ export const calc = defineTool({
     'Supports: + - * / % ** ( ) min max floor ceil round abs sqrt pow. ' +
     'Examples: "844 - 56 - 96 - 82", \'["1440 * 8 / 12", "(952 - 16) / 2", "floor(390 * 0.6)"]\'',
   execution: { kind: 'sync', mutation: 'none' },
+  exposure: { webmcp: false },
   input: v.object({
     expr: v.pipe(v.string(), v.description('Single expression or JSON array of expressions'))
   }),

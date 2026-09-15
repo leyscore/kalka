@@ -21,6 +21,7 @@ export const pathGet = defineTool({
   name: 'path_get',
   description: 'Get vector path data of a node.',
   execution: { kind: 'sync', mutation: 'none' },
+  exposure: { webmcp: false },
   input: nodeInput,
   execute: (figma, { id }) => {
     const raw = figma.graph.getNode(id)

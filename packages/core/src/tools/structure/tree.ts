@@ -8,6 +8,7 @@ export const nodeAncestors = defineTool({
   name: 'node_ancestors',
   description: 'Get the ancestor chain from a node to the page root.',
   execution: { kind: 'sync', mutation: 'none' },
+  exposure: { webmcp: false },
   input: v.object({
     id: nodeIdInput,
     depth: v.optional(toolNumber(v.pipe(v.number(), v.description('Max depth to traverse'))))
@@ -31,6 +32,7 @@ export const nodeChildren = defineTool({
   name: 'node_children',
   description: 'Get direct children of a node.',
   execution: { kind: 'sync', mutation: 'none' },
+  exposure: { webmcp: false },
   input: nodeInput,
   execute: (figma, { id }) => {
     const node = figma.getNodeById(id)
@@ -43,6 +45,7 @@ export const nodeTree = defineTool({
   name: 'node_tree',
   description: 'Get a node tree with types and hierarchy.',
   execution: { kind: 'sync', mutation: 'none' },
+  exposure: { webmcp: false },
   input: v.object({
     id: nodeIdInput,
     depth: v.optional(
@@ -73,6 +76,7 @@ export const nodeBindings = defineTool({
   name: 'node_bindings',
   description: 'Get variable bindings for a node.',
   execution: { kind: 'sync', mutation: 'none' },
+  exposure: { webmcp: false },
   input: nodeInput,
   execute: (figma, { id }) => {
     const result = getRawNodeOrError(figma, id)

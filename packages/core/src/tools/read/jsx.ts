@@ -12,7 +12,6 @@ export const getJSX = defineTool({
   description:
     'Get JSX representation of a node and its children. Compact round-trip format — same syntax as the render tool.',
   execution: { kind: 'sync', mutation: 'none' },
-  exposure: { webmcp: true },
   input: v.object({
     id: nodeIdInput,
     path: v.optional(
@@ -46,6 +45,7 @@ export const diffJSX = defineTool({
   description:
     'Structural diff between two nodes in JSX format. Shows added/removed children, changed props.',
   execution: { kind: 'sync', mutation: 'none' },
+  exposure: { webmcp: false },
   input: v.object({
     from: v.pipe(v.string(), v.description('Source node ID')),
     to: v.pipe(v.string(), v.description('Target node ID'))

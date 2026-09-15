@@ -115,7 +115,6 @@ export const designToComponentMap = defineTool({
   description:
     'Analyze the document and return a structured component decomposition: components (with variants, props, instance counts), screens, and a dependency overview.',
   execution: { kind: 'sync', mutation: 'none' },
-  exposure: { webmcp: true },
   input: v.object({
     page: v.optional(
       v.pipe(v.string(), v.description('Page name to analyze (default: current page)'))

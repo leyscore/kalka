@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 
-import { ALL_TOOLS } from '@open-pencil/core/tools'
+import { ALL_TOOLS, isAtomicTool, isToolExposed, type ToolDef } from '@open-pencil/core/tools'
 
 export const webmcpModeSchema = v.picklist(['off', 'inspect', 'edit'])
 export type WebMCPMode = v.InferOutput<typeof webmcpModeSchema>
@@ -10,8 +10,12 @@ export function resolveWebMCPMode(value: unknown): WebMCPMode {
   return result.success ? result.output : 'off'
 }
 
-export function getWebMCPTools(mode: WebMCPMode) {
-  return ALL_TOOLS.filter(
-    (tool) => tool.exposure.webmcp && mode !== 'off' && (mode === 'edit' || !tool.mutates)
+export function getWebMCPTools(mode: WebMCPMode, tools: readonly ToolDef[] = ALL_TOOLS) {
+  return tools.filter(
+    (tool) =>
+      isToolExposed(tool, 'webmcp') &&
+      (tool.execution.mutation === 'none' || isAtomicTool(tool)) &&
+      mode !== 'off' &&
+      (mode === 'edit' || !tool.mutates)
   )
 }

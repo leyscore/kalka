@@ -12,7 +12,6 @@ export const updateNode = defineTool({
   description:
     'Update properties of an existing node: position, size, opacity, corner radius, visibility, text, font.',
   execution: { kind: 'sync', mutation: 'properties' },
-  exposure: { webmcp: true },
   input: v.object({
     id: nodeIdInput,
     x: v.optional(toolNumber(v.pipe(v.number(), v.description('X position')))),

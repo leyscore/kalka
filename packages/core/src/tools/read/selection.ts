@@ -7,6 +7,7 @@ export const getSelection = defineTool({
   name: 'get_selection',
   description: 'Get details about currently selected nodes.',
   execution: { kind: 'sync', mutation: 'none' },
+  exposure: { webmcp: false },
   input: v.object({}),
   execute: (figma) => {
     const selection = figma.currentPage.selection

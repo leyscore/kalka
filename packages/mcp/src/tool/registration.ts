@@ -6,11 +6,11 @@ import type { McpServer, ToolCallback, ToolAnnotations } from '@modelcontextprot
 import { toStandardJsonSchema as toStandardJSONSchema } from '@valibot/to-json-schema'
 import * as v from 'valibot'
 
-import { ALL_TOOLS, CODEGEN_PROMPT } from '@open-pencil/core/tools'
+import { CODEGEN_PROMPT } from '@open-pencil/core/tools'
 
 import type { RPCJSONObject } from '#mcp/json'
 import { MAX_RESULT_BYTES, fail, ok, resultTooLargeMessage } from '#mcp/result'
-import { createToolDescriptors } from '#mcp/tool/manifest'
+import { createToolDescriptors, getMCPToolDefinitions } from '#mcp/tool/manifest'
 import type { ToolDescriptor, ToolEffect, ToolPolicy } from '#mcp/tool/metadata'
 import { resolveSafePath, writeToolOutput } from '#mcp/tool/output'
 import { isToolEnabled } from '#mcp/tool/policy'
@@ -78,7 +78,7 @@ export function registerTools(mcpServer: McpServer, options: RegisterToolsOption
     )
   }
 
-  for (const def of ALL_TOOLS) {
+  for (const def of getMCPToolDefinitions()) {
     register(
       def.name,
       {

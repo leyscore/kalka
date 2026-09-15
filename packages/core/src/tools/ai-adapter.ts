@@ -12,7 +12,7 @@ import type { JSONObject } from '@open-pencil/scene-graph/primitives'
 
 import type { FigmaAPI } from '#core/figma-api'
 
-import type { ToolDef } from './schema'
+import { isToolExposed, type ToolDef } from './schema'
 
 export interface ToolLogEntry {
   tool: string
@@ -149,6 +149,7 @@ export function toolsToAI(
   const result: ToolSet = {}
 
   for (const def of tools) {
+    if (!isToolExposed(def, 'ai')) continue
     const toolOpts: Record<string, unknown> = {
       description: def.description,
       inputSchema: toStandardJSONSchema(def.input),

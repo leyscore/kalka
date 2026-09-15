@@ -8,6 +8,7 @@ import { defineTool } from '#core/tools/schema'
 
 export const fetchIconsTool = defineTool({
   name: 'fetch_icons',
+  exposure: { webmcp: false },
   description:
     'Pre-fetch icons from Iconify into cache. Batches by prefix (one HTTP request per set). Call this once with all needed icons, then use insert_icon to place them instantly. Popular sets: lucide (outline), mdi (filled), heroicons, tabler, solar, mingcute, ri (remix).',
   execution: { kind: 'async', mutation: 'none' },
@@ -106,6 +107,7 @@ export const insertIcon = defineTool({
 
 export const searchIconsTool = defineTool({
   name: 'search_icons',
+  exposure: { webmcp: false },
   description:
     'Search Iconify for icons by keyword. Accepts multiple queries — all searched in parallel. Returns results keyed by query.',
   execution: { kind: 'async', mutation: 'none' },

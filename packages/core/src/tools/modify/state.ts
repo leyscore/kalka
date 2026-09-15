@@ -8,7 +8,6 @@ export const setVisible = defineTool({
 
   description: 'Set visibility of a node.',
   execution: { kind: 'sync', mutation: 'properties' },
-  exposure: { webmcp: true },
   input: v.object({
     id: nodeIdInput,
     value: v.pipe(v.boolean(), v.description('Visible (true/false)'))
@@ -26,7 +25,6 @@ export const setBlend = defineTool({
 
   description: 'Set blend mode of a node.',
   execution: { kind: 'sync', mutation: 'properties' },
-  exposure: { webmcp: true },
   input: v.object({
     id: nodeIdInput,
     mode: v.pipe(
@@ -64,7 +62,6 @@ export const setLocked = defineTool({
 
   description: 'Set locked state of a node.',
   execution: { kind: 'sync', mutation: 'properties' },
-  exposure: { webmcp: true },
   input: v.object({
     id: nodeIdInput,
     value: v.pipe(v.boolean(), v.description('Locked (true/false)'))
@@ -82,7 +79,6 @@ export const setStrokeAlign = defineTool({
 
   description: 'Set stroke alignment of a node.',
   execution: { kind: 'sync', mutation: 'properties' },
-  exposure: { webmcp: true },
   input: v.object({
     id: nodeIdInput,
     align: v.pipe(v.picklist(['INSIDE', 'CENTER', 'OUTSIDE']), v.description('Stroke alignment'))

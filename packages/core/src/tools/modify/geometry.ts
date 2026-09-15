@@ -8,7 +8,6 @@ export const setRotation = defineTool({
 
   description: 'Set rotation angle of a node in degrees.',
   execution: { kind: 'sync', mutation: 'properties' },
-  exposure: { webmcp: true },
   input: v.object({
     id: nodeIdInput,
     angle: toolNumber(v.pipe(v.number(), v.description('Rotation angle in degrees')))
@@ -26,7 +25,6 @@ export const setOpacity = defineTool({
 
   description: 'Set opacity of a node (0-1).',
   execution: { kind: 'sync', mutation: 'properties' },
-  exposure: { webmcp: true },
   input: v.object({
     id: nodeIdInput,
     value: toolNumber(
@@ -46,7 +44,6 @@ export const setRadius = defineTool({
 
   description: 'Set corner radius. Use individual corners for independent values.',
   execution: { kind: 'sync', mutation: 'properties' },
-  exposure: { webmcp: true },
   input: v.object({
     id: nodeIdInput,
     radius: v.optional(
@@ -94,7 +91,6 @@ export const setMinMax = defineTool({
 
   description: 'Set min/max width and height constraints on a node.',
   execution: { kind: 'sync', mutation: 'properties' },
-  exposure: { webmcp: true },
   input: v.object({
     id: nodeIdInput,
     min_width: v.optional(

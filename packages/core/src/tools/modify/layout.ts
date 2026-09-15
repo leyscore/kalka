@@ -10,7 +10,6 @@ export const setLayout = defineTool({
 
   description: 'Set auto-layout (flexbox) on a frame. Direction, alignment, spacing, padding.',
   execution: { kind: 'sync', mutation: 'properties' },
-  exposure: { webmcp: true },
   input: v.object({
     id: v.pipe(v.string(), v.description('Frame node ID')),
     direction: v.optional(
@@ -109,7 +108,6 @@ export const setConstraints = defineTool({
 
   description: 'Set resize constraints for a node within its parent.',
   execution: { kind: 'sync', mutation: 'properties' },
-  exposure: { webmcp: true },
   input: v.object({
     id: nodeIdInput,
     horizontal: v.optional(
@@ -144,7 +142,6 @@ export const setLayoutChild = defineTool({
   description:
     'Configure auto-layout child: sizing (FIXED/HUG/FILL), grow, alignment, absolute positioning.',
   execution: { kind: 'sync', mutation: 'properties' },
-  exposure: { webmcp: true },
   input: v.object({
     id: v.pipe(v.string(), v.description('Child node ID')),
     sizing_horizontal: v.optional(

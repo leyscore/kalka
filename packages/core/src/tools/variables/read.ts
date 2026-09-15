@@ -6,7 +6,6 @@ export const listVariables = defineTool({
   name: 'list_variables',
   description: 'List all design variables (colors, numbers, strings, booleans).',
   execution: { kind: 'sync', mutation: 'none' },
-  exposure: { webmcp: true },
   input: v.object({
     type: v.optional(
       v.pipe(
@@ -25,7 +24,6 @@ export const getVariable = defineTool({
   name: 'get_variable',
   description: 'Get a variable by ID.',
   execution: { kind: 'sync', mutation: 'none' },
-  exposure: { webmcp: true },
   input: v.object({
     id: v.pipe(v.string(), v.description('Variable ID'))
   }),
@@ -40,7 +38,6 @@ export const findVariables = defineTool({
   name: 'find_variables',
   description: 'Find variables by name pattern.',
   execution: { kind: 'sync', mutation: 'none' },
-  exposure: { webmcp: true },
   input: v.object({
     query: v.pipe(v.string(), v.description('Name substring (case-insensitive)')),
     type: v.optional(

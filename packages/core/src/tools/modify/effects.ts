@@ -13,7 +13,6 @@ export const setEffects = defineTool({
   description:
     'Set effects on a node (drop shadow, inner shadow, blur). Pass an array or a single effect.',
   execution: { kind: 'sync', mutation: 'properties' },
-  exposure: { webmcp: true },
   input: v.object({
     id: nodeIdInput,
     type: v.pipe(

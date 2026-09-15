@@ -34,6 +34,22 @@ function setup() {
 }
 
 describe('AI adapter', () => {
+  test('honors AI exclusions independently of MCP and WebMCP exposure', () => {
+    const base = ALL_TOOLS[0]
+    if (!base) throw new Error('Missing tool fixture')
+    const { figma } = setup()
+    const tools = toolsToAI(
+      [
+        { ...base, name: 'default', exposure: {} },
+        { ...base, name: 'hidden', exposure: { ai: false } },
+        { ...base, name: 'other-interface', exposure: { webmcp: false, mcp: false } }
+      ],
+      { getFigma: () => figma },
+      { tool }
+    )
+    expect(Object.keys(tools)).toEqual(['default', 'other-interface'])
+  })
+
   test('generates tool for every definition', () => {
     const { tools } = setup()
     for (const def of ALL_TOOLS) {

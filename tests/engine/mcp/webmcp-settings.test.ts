@@ -3,6 +3,8 @@ import { describe, expect, test } from 'bun:test'
 import { ref } from 'vue'
 import type { WebMCP } from 'webmcp-types'
 
+import { ALL_TOOLS, isToolExposed, type ToolDef } from '@open-pencil/core/tools'
+
 import { getWebMCPTools, resolveWebMCPMode, type WebMCPMode } from '@/app/automation/webmcp/policy'
 import { createWebMCPRuntimeService } from '@/app/automation/webmcp/service'
 
@@ -29,6 +31,39 @@ async function ready(service: ReturnType<typeof createWebMCPRuntimeService>) {
 }
 
 describe('WebMCP access preferences', () => {
+  test('default inclusion cannot override execution support or user access', () => {
+    const base = ALL_TOOLS[0]
+    if (!base) throw new Error('Missing tool fixture')
+    const read: ToolDef = {
+      ...base,
+      name: 'read',
+      execution: { kind: 'sync', mutation: 'none' },
+      mutates: false,
+      exposure: {}
+    }
+    const edit: ToolDef = {
+      ...read,
+      name: 'edit',
+      execution: { kind: 'sync', mutation: 'properties' },
+      mutates: true
+    }
+    const tools: ToolDef[] = [
+      read,
+      edit,
+      { ...read, name: 'excluded', exposure: { webmcp: false } },
+      {
+        ...edit,
+        name: 'structural',
+        execution: { kind: 'sync', mutation: 'document' },
+        exposure: { webmcp: true }
+      },
+      { ...edit, name: 'async', execution: { kind: 'async', mutation: 'document' } }
+    ]
+    expect(getWebMCPTools('off', tools)).toEqual([])
+    expect(getWebMCPTools('inspect', tools).map((tool) => tool.name)).toEqual(['read'])
+    expect(getWebMCPTools('edit', tools).map((tool) => tool.name)).toEqual(['read', 'edit'])
+  })
+
   test('unrecognized stored access fails closed', () => {
     for (const value of [undefined, null, true, {}, 'all', 'EDIT']) {
       expect(resolveWebMCPMode(value)).toBe('off')
@@ -38,7 +73,7 @@ describe('WebMCP access preferences', () => {
     expect(getWebMCPTools('inspect').length).toBeGreaterThan(0)
     expect(getWebMCPTools('inspect').every((tool) => !tool.mutates)).toBe(true)
     expect(getWebMCPTools('edit').some((tool) => tool.mutates)).toBe(true)
-    expect(getWebMCPTools('edit').every((tool) => tool.exposure.webmcp)).toBe(true)
+    expect(getWebMCPTools('edit').every((tool) => isToolExposed(tool, 'webmcp'))).toBe(true)
   })
 
   test('reconfigures access and revokes retained callbacks immediately', async () => {

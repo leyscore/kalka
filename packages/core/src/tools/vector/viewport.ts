@@ -7,6 +7,7 @@ export const viewportGet = defineTool({
   name: 'viewport_get',
   description: 'Get current viewport position and zoom level.',
   execution: { kind: 'sync', mutation: 'none' },
+  exposure: { webmcp: false },
   input: v.object({}),
   execute: (figma) => {
     return figma.viewport

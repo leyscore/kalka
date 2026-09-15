@@ -167,7 +167,6 @@ export const designToTokens = defineTool({
   description:
     'Extract design tokens from Figma variables as CSS custom properties, Tailwind theme config, or JSON. Resolves aliases, handles multiple modes (light/dark).',
   execution: { kind: 'sync', mutation: 'none' },
-  exposure: { webmcp: true },
   input: v.object({
     format: v.optional(
       v.pipe(v.picklist(['css', 'tailwind', 'json']), v.description('Output format')),

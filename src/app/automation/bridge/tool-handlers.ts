@@ -1,6 +1,11 @@
 import { renderTreeNode } from '@open-pencil/core/design-jsx'
 import type { FigmaAPI } from '@open-pencil/core/figma-api'
-import { ALL_TOOLS, registerComponentCatalog, isAtomicTool } from '@open-pencil/core/tools'
+import {
+  ALL_TOOLS,
+  registerComponentCatalog,
+  isAtomicTool,
+  isToolExposed
+} from '@open-pencil/core/tools'
 import type { JSONObject } from '@open-pencil/scene-graph/primitives'
 
 import type { AutomationTarget } from '@/app/automation/bridge/target'
@@ -46,7 +51,7 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
       return handleToolRender(target, toolArgs)
     }
 
-    const def = ALL_TOOLS.find((t) => t.name === toolName)
+    const def = ALL_TOOLS.find((t) => t.name === toolName && isToolExposed(t, 'mcp'))
     if (!def) throw new Error(`Unknown tool: ${toolName}`)
     const store = target.store
     const libraryService = useLibraryService()

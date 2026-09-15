@@ -126,6 +126,7 @@ export const diffCreate = defineTool({
   description:
     'Create a structural diff between two node trees. Compares properties (fills, strokes, effects, text, size, position) in unified diff format.',
   execution: { kind: 'sync', mutation: 'none' },
+  exposure: { webmcp: false },
   input: v.object({
     from: v.pipe(v.string(), v.description('Source node ID')),
     to: v.pipe(v.string(), v.description('Target node ID')),
@@ -181,6 +182,7 @@ export const diffShow = defineTool({
   description:
     'Preview what would change if properties were applied to a node. Shows a unified diff of current vs proposed state.',
   execution: { kind: 'sync', mutation: 'none' },
+  exposure: { webmcp: false },
   input: v.object({
     id: nodeIdInput,
     props: v.pipe(

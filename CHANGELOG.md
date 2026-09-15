@@ -4,7 +4,7 @@
 
 ### Breaking changes
 
-- Use MCP SDK v2 server/client types for programmatic MCP integrations. Define custom tools with native Valibot `input` schemas and execution metadata instead of `params`, `ParamDef`, or `paramToZod()`; tool arguments and effects derive from this shared contract.
+- Use MCP SDK v2 server/client types for programmatic MCP integrations. Define custom tools with native Valibot `input` schemas and execution metadata instead of `params`, `ParamDef`, or `paramToZod()`; tool arguments and effects derive from this shared contract. Tool exposure defaults to inclusion, with independent `mcp`, `ai`, and `webmcp` exclusions; execution support and user permissions still apply.
 - Update custom Vue SDK binding providers to implement `getBindingId()` and handle `unresolved`. Replace `setValue()` with `prepareEdit()`, returning a stable edit key, captured value, setter, and restoration callback.
 
 ### Added

@@ -40,7 +40,6 @@ export const setVariable = defineTool({
 
   description: 'Set the value of a variable for a specific mode.',
   execution: { kind: 'sync', mutation: 'properties' },
-  exposure: { webmcp: true },
   input: v.object({
     id: v.pipe(v.string(), v.description('Variable ID')),
     mode: v.pipe(v.string(), v.description('Mode ID')),

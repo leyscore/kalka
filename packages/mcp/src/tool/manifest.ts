@@ -1,5 +1,5 @@
 import type { ToolDef } from '@open-pencil/core/tools'
-import { ALL_TOOLS, toolChangesDocument } from '@open-pencil/core/tools'
+import { ALL_TOOLS, toolChangesDocument, isToolExposed } from '@open-pencil/core/tools'
 
 import type {
   ToolAvailability,
@@ -31,8 +31,12 @@ function coreToolDescriptor(def: ToolDef): ToolDescriptor {
   }
 }
 
+export function getMCPToolDefinitions() {
+  return ALL_TOOLS.filter((def) => isToolExposed(def, 'mcp'))
+}
+
 export function createToolDescriptors(filesystemEnabled: boolean): ToolDescriptor[] {
-  const descriptors = ALL_TOOLS.map(coreToolDescriptor)
+  const descriptors = getMCPToolDefinitions().map(coreToolDescriptor)
   descriptors.push(
     {
       name: 'list_documents',

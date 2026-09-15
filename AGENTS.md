@@ -108,7 +108,7 @@ Use Conventional Commits (`feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `bu
 
 ## Tools (AI / MCP / CLI)
 
-- Core operations are `ToolDef`s under `packages/core/src/tools/**`; `schema.ts` defines their contract and registries expose them. Each definition owns its native Valibot `input`, execution/mutation metadata, and explicit browser exposure. Infer arguments from the schema; derive effects and default capabilities from execution metadata instead of maintaining parameter DSLs or tool-name lists. Add work to the nearest existing domain and the appropriate registry.
+- Core operations are `ToolDef`s under `packages/core/src/tools/**`; `schema.ts` defines their contract and registries expose them. Each definition owns its native Valibot `input`, execution/mutation metadata, and optional per-interface exposure exclusions (`mcp`, `ai`, `webmcp`). Exposure defaults to inclusion; adapters use `isToolExposed()`, then apply execution support and user permissions independently. Infer arguments from the schema; derive effects and default capabilities from execution metadata instead of maintaining parameter DSLs or tool-name lists. Add work to the nearest existing domain and the appropriate registry.
 - `ai-adapter.ts` converts ToolDefs for Vercel AI; `src/app/ai/tools/index.ts` binds them to the active editor's `FigmaAPI`.
 - CLI commands own CLI UX independently; `eval` exposes operations through `FigmaAPI`.
 - MCP-only filesystem/server tools live in `packages/mcp/src/tool/registration.ts`; listener/session lifecycle lives under `server/`, stdio under `stdio/`, and transport discovery under `transport/`. File access must resolve symlinks inside the effective MCP root; CLI defaults are cwd on macOS/Linux and home on Windows.

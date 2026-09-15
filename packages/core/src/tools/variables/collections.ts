@@ -6,7 +6,6 @@ export const listCollections = defineTool({
   name: 'list_collections',
   description: 'List all variable collections.',
   execution: { kind: 'sync', mutation: 'none' },
-  exposure: { webmcp: true },
   input: v.object({}),
   execute: (figma) => {
     const collections = figma.getLocalVariableCollections()
@@ -18,6 +17,7 @@ export const getCollection = defineTool({
   name: 'get_collection',
   description: 'Get a variable collection by ID.',
   execution: { kind: 'sync', mutation: 'none' },
+  exposure: { webmcp: false },
   input: v.object({
     id: v.pipe(v.string(), v.description('Collection ID'))
   }),

@@ -8,6 +8,7 @@ export const listLibraries = defineTool({
   name: 'list_libraries',
   description: 'List available published component libraries.',
   execution: { kind: 'async', mutation: 'none' },
+  exposure: { webmcp: false },
   input: v.object({}),
   execute: async (figma) => {
     const catalog = getComponentCatalog(figma.graph)

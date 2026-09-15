@@ -17,6 +17,7 @@ Examples:
 //*[@cornerRadius > 0] — any node with corner radius
 //TEXT[contains(@text, 'Hello')] — text nodes containing "Hello"`,
   execution: { kind: 'async', mutation: 'none' },
+  exposure: { webmcp: false },
   input: v.object({
     selector: v.pipe(v.string(), v.description('XPath selector')),
     page: v.optional(v.pipe(v.string(), v.description('Page name (default: current page)'))),

@@ -23,12 +23,15 @@ export type ToolExecution =
   | { kind: 'sync'; mutation: 'none' | 'view' | 'properties' | 'document' }
   | { kind: 'async'; mutation: 'none' | 'view' | 'document' }
 
+export type ToolInterface = 'mcp' | 'ai' | 'webmcp'
+export type ToolExposure = Partial<Record<ToolInterface, boolean>>
+
 interface ToolMetadata {
   name: string
   description: string
   execution: ToolExecution
-  /** Explicit browser opt-in, independent of execution or read-only status. */
-  exposure: { webmcp: boolean }
+  /** Interface inclusion defaults to true; execution support and user permissions remain separate. */
+  exposure: ToolExposure
   capabilities: readonly ToolCapability[]
   availability: 'default' | 'eval'
 }
@@ -52,7 +55,7 @@ export function defineTool<P extends v.ObjectEntries, R>(
 ): ToolDef {
   return {
     ...def,
-    exposure: def.exposure ?? { webmcp: false },
+    exposure: def.exposure ?? {},
     capabilities: def.capabilities ?? [
       toolChangesDocument(def) ? 'document:write' : 'document:read'
     ],
@@ -66,6 +69,10 @@ export function defineTool<P extends v.ObjectEntries, R>(
 
 export function toolChangesDocument(def: Pick<ToolDef, 'execution'>): boolean {
   return def.execution.mutation === 'properties' || def.execution.mutation === 'document'
+}
+
+export function isToolExposed(def: Pick<ToolDef, 'exposure'>, target: ToolInterface): boolean {
+  return def.exposure[target] !== false
 }
 
 export function isAtomicTool(def: ToolDef): boolean {

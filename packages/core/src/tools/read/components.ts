@@ -30,7 +30,6 @@ export const getComponents = defineTool({
   description:
     'List reusable components from the document and enabled component libraries, optionally filtered by name.',
   execution: { kind: 'async', mutation: 'none' },
-  exposure: { webmcp: true },
   input: v.object({
     name: v.optional(
       v.pipe(v.string(), v.description('Filter by name (case-insensitive substring)'))

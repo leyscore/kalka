@@ -14,7 +14,6 @@ export const setFill = defineTool({
   description:
     'Set fill on a node. Solid: color="#ff0000". Linear gradient: gradient="top-bottom" or "left-right" with color (start) and color_end (end).',
   execution: { kind: 'sync', mutation: 'properties' },
-  exposure: { webmcp: true },
   input: v.object({
     id: nodeIdInput,
     color: v.pipe(v.string(), v.description('Color (hex). For gradient: start color.')),
@@ -68,7 +67,6 @@ export const setStroke = defineTool({
 
   description: 'Set the stroke (border) of a node.',
   execution: { kind: 'sync', mutation: 'properties' },
-  exposure: { webmcp: true },
   input: v.object({
     id: nodeIdInput,
     color: v.pipe(v.string(), v.description('Stroke color (hex)')),
