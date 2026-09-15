@@ -5,9 +5,10 @@ import { join, resolve } from 'node:path'
 
 const root = resolve(import.meta.dir, '../../..')
 
-async function lint(message: string, args: string[] = []) {
+async function lint(message: string, args: string[] = [], prTitle = false) {
   const child = Bun.spawn([process.execPath, 'run', 'check:commits', '--verbose', ...args], {
     cwd: root,
+    env: { ...process.env, COMMITLINT_PR_TITLE: prTitle ? '1' : '0' },
     stdin: new Blob([message]),
     stdout: 'pipe',
     stderr: 'pipe'
@@ -45,6 +46,25 @@ test.each([
   expect(result.code).not.toBe(0)
   expect(result.output).toContain(rule)
   expect(result.output).toContain('CONTRIBUTING.md#commit-messages')
+})
+
+test.each([
+  'fix(MCP): preserve connection settings',
+  'feat!: change the tool contract',
+  'Release v0.14.0'
+])('accepts supported PR title: %s', async (title) => {
+  expect((await lint(title, [], true)).code).toBe(0)
+})
+
+test.each([
+  'Merge pull request #700 from open-pencil/build/commitlint',
+  "Merge remote-tracking branch 'origin/master' into build/commitlint",
+  'Revert "fix: preserve selection"',
+  'Fixed stuff'
+])('rejects non-conventional PR title: %s', async (title) => {
+  const result = await lint(title, [], true)
+  expect(result.code).not.toBe(0)
+  expect(result.output).toContain('type-empty')
 })
 
 test('checks the full PR range while excluding existing base history', async () => {

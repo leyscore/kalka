@@ -26,7 +26,7 @@ Pull requests must be reviewable without guessing the author's intent.
 
 - Write the title in English.
 - Be specific about the actual change; avoid vague titles such as `fix`, `update`, `some fixes`, `changes`, or `WIP`.
-- Use Conventional Commits when it fits the change, for example `fix: handle empty exports` or `docs: clarify CLI setup`.
+- Use Conventional Commits, for example `fix: handle empty exports` or `docs: clarify CLI setup`. The exact `Release vX.Y.Z` release-title exception is preserved. See [Commit messages](#commit-messages) for validation commands.
 
 ### PR body
 
@@ -117,11 +117,14 @@ The **Commit messages** CI job checks every commit introduced by a PR, including
 
 Use `type(optional-scope): short description`, for example `fix(MCP): preserve connection settings`. Allowed types are `feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `build`, `ci`, and `chore`. Keep headers within 100 characters and omit a trailing period. Product names retain their casing; bodies and footers may contain long lines.
 
-Standard merge/revert messages use commitlint's default exceptions. Release commits retain the exact `Release vX.Y.Z` subject convention. These checks validate structure, not whether a description is meaningful or the type is appropriate.
+PR titles follow the same convention because GitHub uses them as merge subjects. The separate **PR title** workflow checks new and updated PRs, including title edits, without rerunning the full CI suite. Title validation disables commitlint's default merge/revert exceptions. Release titles and commits retain the exact `Release vX.Y.Z` convention.
+
+Commit-range validation retains commitlint's default merge/revert exceptions, but they are not a naming convention. Preserve the validated PR title when merging via CLI/API, and use explicit conventional subjects for branch updates, for example `chore: merge master into my-branch`. Do not rewrite published history solely to normalize messages. These checks validate structure, not whether a description is meaningful or the type is appropriate.
 
 ```sh
 bun run check:commits --last
 bun run check:commits --from origin/master --to HEAD --verbose
+printf '%s\n' 'fix(MCP): preserve connection settings' | COMMITLINT_PR_TITLE=1 bun run check:commits
 ```
 
 If a message fails, use the reported rule and commit subject to locate it. Amend your latest commit with `git commit --amend`, or use an interactive rebase for earlier commits on your PR branch. Coordinate before rewriting a shared branch. No local Git hooks are installed automatically; CI is the enforcement point.
