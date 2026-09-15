@@ -14,6 +14,8 @@ const documentation = [
   'README.md',
   'AGENTS.md',
   'CHANGELOG.md',
+  'packages/vue/README.md',
+  'packages/core/README.md',
   'packages/docs/programmable/sdk/api/components/bindable-value.md',
   'packages/docs/public/logo.svg',
   'skills/open-pencil/SKILL.md',
@@ -23,6 +25,9 @@ const documentation = [
 const code = [
   'src/app/ai/chat/system-prompt.md',
   'packages/core/src/design-jsx/reference/authoring.md',
+  'packages/core/src/README.md',
+  'packages/core/README.md.ts',
+  'packages/core/instructions.md',
   'packages/docs/.vitepress/config.ts',
   'packages/docs/demo.vue',
   'skills/open-pencil/scripts/create.ts',
@@ -39,6 +44,11 @@ test.each(documentation)('docs-only path: %s', (path) => {
 test.each(code)('code or unknown path: %s', (path) => {
   expect(classifyPaths([path])).toBe('code')
   expect(classifyPaths([...documentation, path])).toBe('code')
+})
+test('package READMEs and public guides share the docs-only route', () => {
+  expect(
+    classifyPaths(['packages/vue/README.md', 'packages/docs/programmable/sdk/getting-started.md'])
+  ).toBe('docs')
 })
 test('empty diffs fail safe to code checks', () => {
   expect(classifyPaths([])).toBe('code')
