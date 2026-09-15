@@ -1,12 +1,14 @@
 import { describe, expect, test } from 'bun:test'
 
-import type { Paragraph } from 'canvaskit-wasm'
+import type { CanvasKit, Paragraph } from 'canvaskit-wasm'
 
 import { SceneGraph } from '@open-pencil/scene-graph'
 
 import { initCanvasKit } from '#cli/headless'
+import { buildParagraph, nodeFontReadiness } from '#core/canvas/text'
 import type { ParagraphNode } from '#core/canvas/text/paragraph-inputs'
 import { TextPreparationCache } from '#core/canvas/text/preparation-cache'
+import { fontManager } from '#core/text/fonts'
 
 async function fixture(maxEntries = 8, maxUnits = 1000) {
   const ck = await initCanvasKit()
@@ -53,6 +55,102 @@ async function fixture(maxEntries = 8, maxUnits = 1000) {
 }
 
 describe('text preparation cache', () => {
+  test('does not repeatedly shape coverage when a dense scan exceeds paragraph capacity', async () => {
+    const f = await fixture(8)
+    const data = await Bun.file('public/Inter-Regular.ttf').arrayBuffer()
+    f.provider.registerFont(data, 'Inter')
+    fontManager.markLoaded('Inter', 'Regular', data)
+    let builds = 0
+    const ck: CanvasKit = {
+      ...f.ck,
+      ParagraphBuilder: {
+        ...f.ck.ParagraphBuilder,
+        MakeFromFontProvider(
+          ...args: Parameters<typeof f.ck.ParagraphBuilder.MakeFromFontProvider>
+        ) {
+          builds++
+          return f.ck.ParagraphBuilder.MakeFromFontProvider(...args)
+        }
+      }
+    }
+    const renderer = {
+      ck,
+      fontProvider: f.provider,
+      fontsLoaded: true,
+      textPreparationCache: f.cache
+    }
+    const nodes = Array.from({ length: 6 }, (_, i) =>
+      f.graph.createNode('TEXT', f.node.parentId, {
+        text: `Label ${i}`,
+        fontFamily: 'Inter',
+        fontWeight: 400,
+        width: 100,
+        height: 30
+      })
+    )
+    function draw() {
+      for (const node of nodes) {
+        expect(nodeFontReadiness(renderer, node)).toBe('ready')
+        f.cache.use(
+          node,
+          'draw',
+          fontManager.generation(),
+          f.provider,
+          () => buildParagraph(renderer, node),
+          ({ paragraph }) => paragraph.getHeight()
+        )
+      }
+    }
+    try {
+      draw()
+      expect(builds).toBe(12)
+      draw()
+      const warmBuilds = builds
+      draw()
+      expect(builds).toBe(warmBuilds)
+      f.cache.deleteNode(nodes[0].id)
+      draw()
+      expect(builds).toBe(warmBuilds + 2)
+      f.graph.updateNodePreview(nodes[0].id, { text: 'Edited label' })
+      draw()
+      expect(builds).toBe(warmBuilds + 4)
+      f.cache.clear()
+      draw()
+      expect(builds).toBe(warmBuilds + 16)
+    } finally {
+      f.dispose()
+    }
+  })
+
+  test('scopes successful coverage to fonts, inputs and explicit invalidation', async () => {
+    const f = await fixture(2)
+    const otherProvider = f.ck.TypefaceFontProvider.Make()
+    try {
+      f.use('coverage', 1)
+      f.cache.recordGlyphCoverage(f.node)
+      expect(f.cache.hasGlyphCoverage(f.node, 1, f.provider)).toBe(true)
+      expect(f.cache.hasGlyphCoverage(f.node, 2, f.provider)).toBe(false)
+      expect(f.cache.hasGlyphCoverage(f.node, 1, otherProvider)).toBe(false)
+      f.graph.updateNodePreview(f.node.id, { x: 50, rotation: 20 })
+      expect(f.cache.hasGlyphCoverage(f.node, 1, f.provider)).toBe(true)
+      f.graph.updateNodePreview(f.node.id, { width: 80 })
+      expect(f.cache.hasGlyphCoverage(f.node, 1, f.provider)).toBe(false)
+      f.use('coverage', 1)
+      f.cache.recordGlyphCoverage(f.node)
+      f.cache.deleteNode('unrelated')
+      expect(f.cache.hasGlyphCoverage(f.node, 1, f.provider)).toBe(true)
+      f.cache.deleteNode('another')
+      f.cache.deleteNode('overflow')
+      expect(f.cache.hasGlyphCoverage(f.node, 1, f.provider)).toBe(false)
+      f.cache.recordGlyphCoverage(f.node)
+      f.use('draw', 2)
+      expect(f.cache.hasGlyphCoverage(f.node, 2, f.provider)).toBe(false)
+    } finally {
+      otherProvider.delete()
+      f.dispose()
+    }
+  })
+
   test('reuses native paragraphs during movement and invalidates text layout inputs', async () => {
     const f = await fixture()
     try {

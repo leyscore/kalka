@@ -1,4 +1,5 @@
 import { expect, test, useEditorSetupWithClear } from '#tests/e2e/fixtures'
+import { probeParagraphBuilds } from '#tests/helpers/canvas/text-preparation'
 
 const editor = useEditorSetupWithClear('/?test&no-chrome&no-rulers')
 
@@ -88,23 +89,7 @@ test('text case vertical alignment and ending truncation', async () => {
   }, previewId)
   await editor.canvas.waitForRender()
   const reference = await editor.canvas.screenshotCanvasRegion()
-  const preparations = await editor.page.evaluateHandle(() => {
-    const renderer = window.openPencil?.getStore?.().renderer
-    if (!renderer) throw new Error('Renderer unavailable')
-    const builder = renderer.ck.ParagraphBuilder
-    const original = builder.MakeFromFontProvider
-    let count = 0
-    builder.MakeFromFontProvider = (...args) => {
-      count++
-      return original.apply(builder, args)
-    }
-    return {
-      count: () => count,
-      restore: () => {
-        builder.MakeFromFontProvider = original
-      }
-    }
-  })
+  const preparations = await probeParagraphBuilds(editor.page)
   try {
     for (let step = 0; step < 3; step++) {
       await editor.page.evaluate(

@@ -27,6 +27,10 @@ interface Entry extends PreparedText {
 export class TextPreparationCache {
   private readonly entries = new Map<string, Entry>()
   private readonly nodeKeys = new Map<string, Set<string>>()
+  // A successful coverage check contains no native resources. Keep that result
+  // independently of paragraph LRU eviction, weakly owned by the source node.
+  private glyphCoverage = new WeakMap<SceneNode, PreparationInput[]>()
+  private readonly invalidatedCoverage = new Set<string>()
   private units = 0
   private generation = -1
   private provider: TypefaceFontProvider | null = null
@@ -91,7 +95,36 @@ export class TextPreparationCache {
     return consume(entry)
   }
 
+  hasGlyphCoverage(node: SceneNode, generation: number, provider: TypefaceFontProvider): boolean {
+    if (this.generation !== generation || this.provider !== provider) return false
+    if (this.invalidatedCoverage.delete(node.id)) {
+      this.glyphCoverage.delete(node)
+      return false
+    }
+    const inputs = this.glyphCoverage.get(node)
+    if (!inputs) return false
+    if (PARAGRAPH_INPUT_KEYS.every((prop, index) => inputs[index] === node[prop])) return true
+    this.glyphCoverage.delete(node)
+    return false
+  }
+
+  /** Call only after observing complete coverage with this cache's current font scope. */
+  recordGlyphCoverage(node: SceneNode): void {
+    this.invalidatedCoverage.delete(node.id)
+    this.glyphCoverage.set(
+      node,
+      PARAGRAPH_INPUT_KEYS.map((prop) => node[prop])
+    )
+  }
+
   deleteNode(id: string): void {
+    // Invalidation arrives by ID; don't add strong node ownership just to find
+    // weak observations. Bound pending IDs and conservatively reset on overflow.
+    this.invalidatedCoverage.add(id)
+    if (this.invalidatedCoverage.size > this.maxEntries) {
+      this.glyphCoverage = new WeakMap()
+      this.invalidatedCoverage.clear()
+    }
     const keys = this.nodeKeys.get(id)
     if (keys) for (const key of keys) this.remove(key)
   }
@@ -100,6 +133,8 @@ export class TextPreparationCache {
     for (const entry of this.entries.values()) entry.paragraph.delete()
     this.entries.clear()
     this.nodeKeys.clear()
+    this.glyphCoverage = new WeakMap()
+    this.invalidatedCoverage.clear()
     this.units = 0
   }
 

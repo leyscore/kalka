@@ -134,6 +134,12 @@ function demandRemoteCoverage(r: TextRenderer, node: SceneNode, characters: stri
 }
 
 function observedGlyphReadiness(r: TextRenderer, node: SceneNode): NodeFontReadiness {
+  if (
+    r.fontProvider &&
+    r.textPreparationCache?.hasGlyphCoverage(node, fontManager.generation(), r.fontProvider)
+  )
+    return 'ready'
+
   const missingOccurrences = withPreparedText(
     r,
     node,
@@ -151,7 +157,10 @@ function observedGlyphReadiness(r: TextRenderer, node: SceneNode): NodeFontReadi
       return prepared.missingGlyphs
     }
   )
-  if (missingOccurrences.length === 0) return 'ready'
+  if (missingOccurrences.length === 0) {
+    r.textPreparationCache?.recordGlyphCoverage(node)
+    return 'ready'
+  }
 
   const charactersByScript = new Map<FontFallbackScript, string[]>()
   for (const { character, utf16Start } of missingOccurrences) {
