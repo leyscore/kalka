@@ -16,7 +16,7 @@ import { isTauri } from '@/app/tauri/env'
 import SettingsDisclosure from '@/components/settings/layout/SettingsDisclosure.vue'
 import SettingsGroup from '@/components/settings/layout/SettingsGroup.vue'
 import SettingsRow from '@/components/settings/layout/SettingsRow.vue'
-import SettingsSectionHeader from '@/components/settings/layout/SettingsSectionHeader.vue'
+import SettingsSection from '@/components/settings/layout/SettingsSection.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import AppAlert from '@/components/ui/feedback/AppAlert.vue'
 import AppSwitch from '@/components/ui/toggle/AppSwitch.vue'
@@ -40,69 +40,65 @@ const { restart, chooseRootDirectory } = useMCPSettings()
 </script>
 
 <template>
-  <section class="flex flex-col gap-3" data-test-id="settings-mcp-automation-panel">
-    <div class="flex flex-col gap-3">
-      <SettingsSectionHeader>
-        {{ automation.localServer }}
-        <template #description>{{ automation.description }}</template>
-      </SettingsSectionHeader>
-      <SettingsGroup>
-        <SettingsRow :label="automation.status"
-          ><span class="text-xs text-surface" role="status">{{ statusMessage }}</span></SettingsRow
-        >
-        <div class="px-3 py-2.5">
-          <p class="mb-1 text-xs font-medium text-surface">{{ automation.address }}</p>
-          <div class="flex items-center justify-between gap-2">
-            <code class="min-w-0 select-all break-all text-xs text-surface">{{
-              mcpRuntime.endpoint
-            }}</code>
-            <AppButton size="xs" variant="link" @click="copy(mcpRuntime.endpoint)">{{
-              copied ? common.copied : common.copy
-            }}</AppButton>
-          </div>
+  <SettingsSection data-test-id="settings-mcp-automation-panel">
+    <template #title>{{ automation.localServer }}</template>
+    <template #description>{{ automation.description }}</template>
+    <SettingsGroup>
+      <SettingsRow :label="automation.status"
+        ><span class="text-xs text-surface" role="status">{{ statusMessage }}</span></SettingsRow
+      >
+      <div class="px-3 py-2.5">
+        <p class="mb-1 text-xs font-medium text-surface">{{ automation.address }}</p>
+        <div class="flex items-center justify-between gap-2">
+          <code class="min-w-0 select-all break-all text-xs text-surface">{{
+            mcpRuntime.endpoint
+          }}</code>
+          <AppButton size="xs" variant="link" @click="copy(mcpRuntime.endpoint)">{{
+            copied ? common.copied : common.copy
+          }}</AppButton>
         </div>
-        <SettingsRow v-if="mcpRuntime.version" :label="automation.version"
-          ><code class="text-xs text-surface">{{ mcpRuntime.version }}</code></SettingsRow
-        >
-        <SettingsRow
+      </div>
+      <SettingsRow v-if="mcpRuntime.version" :label="automation.version"
+        ><code class="text-xs text-surface">{{ mcpRuntime.version }}</code></SettingsRow
+      >
+      <SettingsRow
+        :label="automation.authentication"
+        :description="automation.authenticationDescription"
+      >
+        <AppSwitch
+          v-model="mcpAuthenticationEnabled"
           :label="automation.authentication"
-          :description="automation.authenticationDescription"
-        >
-          <AppSwitch
-            v-model="mcpAuthenticationEnabled"
-            :label="automation.authentication"
-            data-test-id="settings-mcp-authentication"
-          />
-        </SettingsRow>
-        <div class="flex flex-col gap-2 px-3 py-2.5">
-          <p class="text-xs font-medium text-surface">{{ automation.rootDirectory }}</p>
-          <p class="break-all font-mono text-xs text-surface">
-            {{ mcpRootDirectory || automation.rootDirectoryDefault }}
-          </p>
-          <p class="text-xs leading-relaxed text-muted">
-            {{ automation.rootDirectoryDescription }}
-          </p>
-          <div v-if="mcpRootDirectory || isTauri()" class="flex flex-wrap gap-2">
-            <AppButton
-              v-if="mcpRootDirectory"
-              size="xs"
-              variant="outline"
-              @click="mcpRootDirectory = ''"
-              >{{ automation.useDefaultRoot }}</AppButton
-            >
-            <AppButton
-              v-if="isTauri()"
-              size="xs"
-              variant="outline"
-              data-test-id="settings-mcp-root-directory"
-              @click="chooseRootDirectory"
-              >{{ automation.chooseRootDirectory }}</AppButton
-            >
-          </div>
+          data-test-id="settings-mcp-authentication"
+        />
+      </SettingsRow>
+      <div class="flex flex-col gap-2 px-3 py-2.5">
+        <p class="text-xs font-medium text-surface">{{ automation.rootDirectory }}</p>
+        <p class="break-all font-mono text-xs text-surface">
+          {{ mcpRootDirectory || automation.rootDirectoryDefault }}
+        </p>
+        <p class="text-xs leading-relaxed text-muted">
+          {{ automation.rootDirectoryDescription }}
+        </p>
+        <div v-if="mcpRootDirectory || isTauri()" class="flex flex-wrap gap-2">
+          <AppButton
+            v-if="mcpRootDirectory"
+            size="xs"
+            variant="outline"
+            @click="mcpRootDirectory = ''"
+            >{{ automation.useDefaultRoot }}</AppButton
+          >
+          <AppButton
+            v-if="isTauri()"
+            size="xs"
+            variant="outline"
+            data-test-id="settings-mcp-root-directory"
+            @click="chooseRootDirectory"
+            >{{ automation.chooseRootDirectory }}</AppButton
+          >
         </div>
-      </SettingsGroup>
-      <AppAlert v-if="mcpRuntime.error" tone="error" :heading="mcpRuntime.error" />
-    </div>
+      </div>
+    </SettingsGroup>
+    <AppAlert v-if="mcpRuntime.error" tone="error" :heading="mcpRuntime.error" />
     <SettingsDisclosure>
       <template #label>{{ automation.tools }}</template>
       <MCPToolAccessPanel v-model:disabled-tools="disabledMCPTools" :tools="configurableMCPTools">
@@ -127,5 +123,5 @@ const { restart, chooseRootDirectory } = useMCPSettings()
         {{ mcpRuntime.externallyManaged ? automation.externallyManaged : automation.restart }}
       </AppButton>
     </div>
-  </section>
+  </SettingsSection>
 </template>

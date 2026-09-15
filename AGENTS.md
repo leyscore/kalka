@@ -24,7 +24,7 @@ The root Tauri/Vite app lives in `src/`; app services and state belong under `sr
 
 ### Settings UI ownership
 
-Compose Settings sections with `SettingsSection` and its `title`, `description`, and default content slots. It owns heading association and internal spacing; `SettingsGroup` owns bordered row grouping. Do not repeat section/header/spacing markup in each feature.
+Compose Settings sections with `SettingsSection` and its `title`, `description`, `actions`, and default content slots. It owns heading association and internal spacing; `SettingsGroup` owns bordered row grouping. Do not repeat section/header/spacing markup in each feature.
 
 Settings components own layout, translated copy, confirmation visibility, and emits. Reactive settings workflows live under the owning app domain's `settings/` folder (for example `src/app/ai/models/settings/profile-editor/{use,selection,connection}.ts`), not a global composables bucket. Use `use.ts` for orchestration and focused sibling modules for substantial sub-workflows. Keep persistence and external operations in domain services, and pure option projections as ordinary functions. Return operation outcomes rather than importing dialogs, routers, or toast UI into workflow composables. Keep newly entered secrets short-lived, never expose saved secrets, and guard async results against changed targets. Small presentation-only computed bindings can remain in components. New explicit settings forms use headless VeeValidate v5 with native Valibot schemas and existing controlled UI components; keep form state in the owning settings domain. Saved secrets and replacement-secret drafts stay outside form snapshots and devtools, and persistence/concurrency remain in domain workflows rather than form callbacks.
 

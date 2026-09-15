@@ -9,7 +9,7 @@ import { useMCPConnectionForm } from '@/app/integrations/mcp/settings/form'
 import { useMCPConnectionSettings } from '@/app/integrations/mcp/settings/use'
 import { useSettingsFormGuard } from '@/app/settings/navigation/use'
 import SettingsPage from '@/components/settings/layout/SettingsPage.vue'
-import SettingsSectionHeader from '@/components/settings/layout/SettingsSectionHeader.vue'
+import SettingsSection from '@/components/settings/layout/SettingsSection.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import { AppAlertDialogRoot, AppDialogFooter, AppDialogHeader } from '@/components/ui/dialog'
 import AppPlaceholder from '@/components/ui/feedback/AppPlaceholder.vue'
@@ -84,11 +84,9 @@ async function remove() {
   <SettingsPage v-else>
     <div class="flex flex-col gap-6">
       <slot />
-      <section class="flex flex-col gap-4" :aria-busy="busy" data-mcp-connections>
-        <SettingsSectionHeader>
-          {{ automation.connections }}
-          <template #description>{{ automation.connectionsDescription }}</template>
-        </SettingsSectionHeader>
+      <SettingsSection :aria-busy="busy" data-mcp-connections>
+        <template #title>{{ automation.connections }}</template>
+        <template #description>{{ automation.connectionsDescription }}</template>
         <AppButton class="self-start" variant="outline" :loading="busy" @click="startAdd">
           <template #leading><icon-lucide-plus class="size-3.5" /></template>
           {{ automation.addConnection }}
@@ -110,7 +108,7 @@ async function remove() {
           </AppActionRow>
         </div>
         <AppPlaceholder v-else :label="automation.noConnections" />
-      </section>
+      </SettingsSection>
     </div>
   </SettingsPage>
   <AppAlertDialogRoot v-model:open="deleteOpen">

@@ -7,7 +7,7 @@ import { vectorizeProviderID, VECTORIZE_PROVIDER_DEFINITIONS } from '@/app/edito
 import { pexelsKeyStatus, unsplashKeyStatus } from '@/app/settings/credentials/media'
 import type { MediaSettingsService } from '@/app/settings/media/use'
 import SettingsPage from '@/components/settings/layout/SettingsPage.vue'
-import SettingsSectionHeader from '@/components/settings/layout/SettingsSectionHeader.vue'
+import SettingsSection from '@/components/settings/layout/SettingsSection.vue'
 import AppActionRow from '@/components/ui/list/AppActionRow.vue'
 
 import MediaCredentialEditor from './MediaCredentialEditor.vue'
@@ -33,32 +33,34 @@ const vectorProvider = computed(() =>
       @done="editing = null"
     />
     <SettingsPage v-else>
-      <section class="flex flex-col gap-4">
-        <SettingsSectionHeader>{{ settings.media }}</SettingsSectionHeader>
-        <AppActionRow
-          v-for="service in stockServices"
-          :key="service.id"
-          @click="editing = service.id"
-        >
-          {{ service.name }}
-          <template #description>{{
-            service.status === 'configured' ? settings.configured : settings.notConfigured
-          }}</template>
-          <template #trailing
-            >{{ settings.edit }}<icon-lucide-chevron-right class="size-3.5"
-          /></template>
-        </AppActionRow>
-        <SettingsSectionHeader>
-          {{ media.vectorization }}
+      <div class="flex flex-col gap-6">
+        <SettingsSection>
+          <template #title>{{ settings.media }}</template>
+          <AppActionRow
+            v-for="service in stockServices"
+            :key="service.id"
+            @click="editing = service.id"
+          >
+            {{ service.name }}
+            <template #description>{{
+              service.status === 'configured' ? settings.configured : settings.notConfigured
+            }}</template>
+            <template #trailing
+              >{{ settings.edit }}<icon-lucide-chevron-right class="size-3.5"
+            /></template>
+          </AppActionRow>
+        </SettingsSection>
+        <SettingsSection>
+          <template #title>{{ media.vectorization }}</template>
           <template #description>{{ media.vectorizationDescription }}</template>
-        </SettingsSectionHeader>
-        <AppActionRow data-vectorize-settings @click="editing = 'vectorize'">
-          {{ vectorProvider?.name }}
-          <template #trailing
-            >{{ settings.edit }}<icon-lucide-chevron-right class="size-3.5"
-          /></template>
-        </AppActionRow>
-      </section>
+          <AppActionRow data-vectorize-settings @click="editing = 'vectorize'">
+            {{ vectorProvider?.name }}
+            <template #trailing
+              >{{ settings.edit }}<icon-lucide-chevron-right class="size-3.5"
+            /></template>
+          </AppActionRow>
+        </SettingsSection>
+      </div>
     </SettingsPage>
   </div>
 </template>

@@ -8,7 +8,7 @@ import type { WebMCPRuntimeState } from '@/app/automation/webmcp/service'
 import SettingsGroup from '@/components/settings/layout/SettingsGroup.vue'
 import SettingsLink from '@/components/settings/layout/SettingsLink.vue'
 import SettingsRow from '@/components/settings/layout/SettingsRow.vue'
-import SettingsSectionHeader from '@/components/settings/layout/SettingsSectionHeader.vue'
+import SettingsSection from '@/components/settings/layout/SettingsSection.vue'
 import AppAlert from '@/components/ui/feedback/AppAlert.vue'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
 
@@ -55,11 +55,9 @@ const status = computed(
 </script>
 
 <template>
-  <section class="flex flex-col gap-4" data-slot="webmcp-settings">
-    <SettingsSectionHeader>
-      WebMCP
-      <template #description>{{ automation.webmcpDescription }}</template>
-    </SettingsSectionHeader>
+  <SettingsSection data-slot="webmcp-settings">
+    <template #title>WebMCP</template>
+    <template #description>{{ automation.webmcpDescription }}</template>
     <SettingsGroup>
       <SettingsRow :label="automation.browserAccess">
         <AppSelect v-model="mode" :options="options" :label="automation.browserAccess" />
@@ -79,5 +77,5 @@ const status = computed(
     <SettingsLink href="https://openpencil.dev/programmable/mcp-server#webmcp">
       {{ automation.webmcpSetup }}
     </SettingsLink>
-  </section>
+  </SettingsSection>
 </template>

@@ -3,7 +3,7 @@ import { useSettingsMessages } from '@open-pencil/vue'
 
 import { webmcpMode } from '@/app/automation/webmcp/preferences'
 import { webmcpRuntime } from '@/app/automation/webmcp/runtime'
-import SettingsSectionHeader from '@/components/settings/layout/SettingsSectionHeader.vue'
+import SettingsSection from '@/components/settings/layout/SettingsSection.vue'
 
 import MCPConnectionsSection from './MCPConnectionsSection.vue'
 import MCPSettingsPanel from './MCPSettingsPanel.vue'
@@ -15,9 +15,13 @@ const settings = useSettingsMessages()
 <template>
   <div class="flex min-h-0 min-w-0 flex-1 flex-col" data-test-id="settings-mcp-panel">
     <MCPConnectionsSection>
-      <SettingsSectionHeader>{{ settings.automation }}</SettingsSectionHeader>
-      <MCPSettingsPanel />
-      <WebMCPSettingsPanel v-model="webmcpMode" :state="webmcpRuntime" />
+      <SettingsSection>
+        <template #title>{{ settings.automation }}</template>
+        <div class="flex flex-col gap-6">
+          <MCPSettingsPanel />
+          <WebMCPSettingsPanel v-model="webmcpMode" :state="webmcpRuntime" />
+        </div>
+      </SettingsSection>
     </MCPConnectionsSection>
   </div>
 </template>

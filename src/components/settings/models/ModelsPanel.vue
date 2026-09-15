@@ -6,7 +6,7 @@ import { useI18n } from '@open-pencil/vue'
 
 import { useModelSettings } from '@/app/ai/models/settings/use'
 import SettingsPage from '@/components/settings/layout/SettingsPage.vue'
-import SettingsSectionHeader from '@/components/settings/layout/SettingsSectionHeader.vue'
+import SettingsSection from '@/components/settings/layout/SettingsSection.vue'
 import ProfileEditor from '@/components/settings/models/ProfileEditor.vue'
 import RoleAssignments from '@/components/settings/models/RoleAssignments.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
@@ -86,12 +86,10 @@ const { profiles, statusByConnection, refreshStatuses } = useModelSettings()
 
     <SettingsPage v-show="!editing && !editorLeaving">
       <div class="flex flex-col gap-6">
-        <section class="flex flex-col gap-4">
-          <div class="flex items-start justify-between gap-4">
-            <SettingsSectionHeader>
-              {{ ai.modelsTitle }}
-              <template #description>{{ ai.modelsDescription }}</template>
-            </SettingsSectionHeader>
+        <SettingsSection>
+          <template #title>{{ ai.modelsTitle }}</template>
+          <template #description>{{ ai.modelsDescription }}</template>
+          <template #actions>
             <AppButton
               color="primary"
               variant="solid"
@@ -101,7 +99,7 @@ const { profiles, statusByConnection, refreshStatuses } = useModelSettings()
               <template #leading><icon-lucide-plus class="size-3" /></template>
               {{ ai.addModel }}
             </AppButton>
-          </div>
+          </template>
 
           <div class="flex flex-col gap-1.5" data-test-id="settings-model-list">
             <AppActionRow
@@ -160,15 +158,13 @@ const { profiles, statusByConnection, refreshStatuses } = useModelSettings()
               </template>
             </AppActionRow>
           </div>
-        </section>
+        </SettingsSection>
 
-        <section class="flex flex-col gap-4">
-          <SettingsSectionHeader>
-            {{ ai.modelAssignments }}
-            <template #description>{{ ai.modelAssignmentsDescription }}</template>
-          </SettingsSectionHeader>
+        <SettingsSection>
+          <template #title>{{ ai.modelAssignments }}</template>
+          <template #description>{{ ai.modelAssignmentsDescription }}</template>
           <RoleAssignments />
-        </section>
+        </SettingsSection>
         <slot />
       </div>
     </SettingsPage>
