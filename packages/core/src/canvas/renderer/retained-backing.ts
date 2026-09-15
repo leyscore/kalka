@@ -288,6 +288,55 @@ function cachedSubtreePicture(
   }
 }
 
+function drawRetainedChild(
+  r: SkiaRenderer,
+  graph: SceneGraph,
+  canvas: Canvas,
+  childId: string,
+  sceneVersion: number,
+  renderingSceneBacking: boolean
+): void {
+  const child = graph.getNode(childId)
+  const hasCacheableEffects = child?.effects.some(
+    (effect) => effect.visible && (effect.type === 'DROP_SHADOW' || effect.type === 'INNER_SHADOW')
+  )
+  if (hasCacheableEffects) {
+    const previous = r.renderingSceneBacking
+    r.renderingSceneBacking = renderingSceneBacking
+    try {
+      r.renderNode(canvas, graph, childId, {})
+    } finally {
+      r.renderingSceneBacking = previous
+    }
+  } else {
+    const picture = cachedSubtreePicture(r, graph, childId, sceneVersion)
+    if (picture) canvas.drawPicture(picture)
+    else r.renderNode(canvas, graph, childId, {})
+  }
+}
+
+function drawSettledScene(
+  r: SkiaRenderer,
+  canvas: Canvas,
+  graph: SceneGraph,
+  sceneVersion: number
+): void {
+  // Analytic AA depends on framebuffer dimensions as well as pixel/quad phase.
+  // Reuse existing pictures at the live viewport origin and size. Overscan
+  // remains available for navigation; this creates no additional cache.
+  canvas.save()
+  try {
+    canvas.translate(r.panX, r.panY)
+    canvas.scale(r.zoom, r.zoom)
+    const page = graph.getNode(r.pageId ?? graph.rootId)
+    for (const childId of page?.childIds ?? []) {
+      drawRetainedChild(r, graph, canvas, childId, sceneVersion, false)
+    }
+  } finally {
+    canvas.restore()
+  }
+}
+
 function renderBackingChild(
   r: SkiaRenderer,
   graph: SceneGraph,
@@ -309,24 +358,7 @@ function renderBackingChild(
     canvas.scale(r.dpr, r.dpr)
     canvas.translate(backing.panX, backing.panY)
     canvas.scale(r.zoom, r.zoom)
-    const previousRenderingSceneBacking = r.renderingSceneBacking
-    const child = graph.getNode(childId)
-    const hasCacheableEffects = child?.effects.some(
-      (effect) =>
-        effect.visible && (effect.type === 'DROP_SHADOW' || effect.type === 'INNER_SHADOW')
-    )
-    if (hasCacheableEffects) {
-      r.renderingSceneBacking = true
-      try {
-        r.renderNode(canvas, graph, childId, {})
-      } finally {
-        r.renderingSceneBacking = previousRenderingSceneBacking
-      }
-    } else {
-      const picture = cachedSubtreePicture(r, graph, childId, sceneVersion)
-      if (picture) canvas.drawPicture(picture)
-      else r.renderNode(canvas, graph, childId, {})
-    }
+    drawRetainedChild(r, graph, canvas, childId, sceneVersion, true)
   } finally {
     canvas.restore()
     r.worldViewport = prevViewport
@@ -504,18 +536,16 @@ export function renderSceneBacking(
   canvas: Canvas,
   graph: SceneGraph,
   sceneVersion: number
-): boolean {
+): false | 'backing' | 'retained-pictures' {
   if (r.sceneBackingAllocationFailed) return false
-  const navigationActive =
-    r.navigationPhase === 'pan' ||
-    r.navigationPhase === 'zoom' ||
-    r.navigationPhase === 'momentum' ||
-    r.navigationPhase === 'settling'
+  const navigationActive = r.navigationPhase !== 'idle'
   if (navigationActive && r.sceneBacking) {
     r.sceneBackingBuild?.surface.delete()
     r.sceneBackingBuild = null
     r.sceneBackingNeedsCrispRender = true
     return drawSceneBacking(r, canvas, sceneVersion, true, graph.positionPreviewVersion)
+      ? 'backing'
+      : false
   }
   const positionPreviewVersion = graph.positionPreviewVersion
   const allowStaleZoom = now() < r.sceneBackingPreviewUntil
@@ -542,7 +572,15 @@ export function renderSceneBacking(
   }
 
   const crisp = backingPixelGridMatchesLiveViewport(r)
-  r.sceneBackingNeedsCrispRender = !crisp || !!r.sceneBackingBuild
+  r.sceneBackingNeedsCrispRender = allowStaleZoom || !crisp || !!r.sceneBackingBuild
+  if (
+    !allowStaleZoom &&
+    !r.sceneBackingBuild &&
+    backingMetadataMatches(r, sceneVersion, positionPreviewVersion)
+  ) {
+    drawSettledScene(r, canvas, graph, sceneVersion)
+    return 'retained-pictures'
+  }
   return drawSceneBacking(
     r,
     canvas,
@@ -550,4 +588,6 @@ export function renderSceneBacking(
     allowStaleZoom || !!r.sceneBackingBuild,
     positionPreviewVersion
   )
+    ? 'backing'
+    : false
 }

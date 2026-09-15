@@ -240,14 +240,12 @@ export function render(
       renderedScene = true
       p.setScenePictureMode('hit', tiled.covered ? 'tiled' : 'tiled-fallback')
     }
-    if (
-      !renderedScene &&
-      layer === 'scene' &&
-      !requiresUncachedSceneRender &&
-      renderSceneBacking(r, canvas, graph, sceneVersion)
-    ) {
-      renderedScene = true
-      p.setScenePictureMode('hit', 'backing')
+    if (!renderedScene && layer === 'scene' && !requiresUncachedSceneRender) {
+      const presentation = renderSceneBacking(r, canvas, graph, sceneVersion)
+      if (presentation) {
+        renderedScene = true
+        p.setScenePictureMode('hit', presentation)
+      }
     }
     if (!renderedScene) {
       canvas.translate(r.panX, r.panY)

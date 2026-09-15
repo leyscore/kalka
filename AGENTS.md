@@ -191,6 +191,7 @@ Keep responsibilities distinct: engine tests cover state contracts, Playwright b
 - `requestRender()` bumps `renderVersion` and `sceneVersion`; `requestRepaint()` bumps only `renderVersion`
 - `renderNow()` is only for surface recreation and font loading (need immediate draw)
 - Resize observer uses rAF throttle, not debounce — debounce causes canvas skew
+- Overscan images accelerate navigation; settled scenes rasterize existing retained pictures at the live viewport size/origin. Pixel-grid alignment alone does not guarantee Skia AA parity. Keep settlement pending until the viewport pass completes; do not add a second viewport image cache.
 - Viewport culling skips off-screen nodes; unclipped parents are NOT culled (children may extend beyond bounds)
 - Selection border width must be constant regardless of zoom — divide by scale
 - Section/frame title text never scales — render at fixed font size, ellipsize to fit

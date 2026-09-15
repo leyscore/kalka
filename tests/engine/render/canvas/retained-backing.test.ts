@@ -40,6 +40,7 @@ function createRenderer(surfaceFactory: (info: ImageInfo) => Surface | null) {
     viewportHeight: 100,
     pageColor: { r: 1, g: 1, b: 1 },
     pageId: 'page',
+    navigationPhase: 'idle',
     sceneBacking: null,
     sceneBackingBuild: null,
     sceneBackingAllocationFailed: false,
@@ -63,7 +64,11 @@ function createRenderer(surfaceFactory: (info: ImageInfo) => Surface | null) {
 function createCanvas() {
   const canvas: Partial<Canvas> = {
     drawImageRect: mock(),
-    drawImageRectOptions: mock()
+    drawImageRectOptions: mock(),
+    save: mock(),
+    restore: mock(),
+    translate: mock(),
+    scale: mock()
   }
   return canvas as Canvas
 }
@@ -235,7 +240,7 @@ test('retained scene backing filters cross-zoom previews instead of falling back
   const canvas = createCanvas()
   const graph = createGraph()
 
-  expect(renderSceneBacking(r, canvas, graph, 1)).toBe(true)
+  expect(renderSceneBacking(r, canvas, graph, 1)).toBe('backing')
   expect(canvas.drawImageRectOptions).toHaveBeenCalledWith(
     r.sceneBacking.image,
     expect.anything(),
@@ -273,8 +278,15 @@ test('retained scene backing allows same-zoom previews while panning', () => {
   const canvas = createCanvas()
   const graph = createGraph()
 
-  expect(renderSceneBacking(r, canvas, graph, 1)).toBe(true)
-  expect(canvas.drawImageRectOptions).toHaveBeenCalled()
+  expect(renderSceneBacking(r, canvas, graph, 1)).toBe('backing')
+  expect(canvas.drawImageRectOptions).toHaveBeenCalledTimes(1)
+  expect(r.sceneBackingNeedsCrispRender).toBe(true)
+
+  r.sceneBackingPreviewUntil = 0
+  expect(renderSceneBacking(r, canvas, graph, 1)).toBe('retained-pictures')
+  expect(r.sceneBackingNeedsCrispRender).toBe(false)
+  expect(canvas.drawImageRectOptions).toHaveBeenCalledTimes(1)
+  expect(r.surface.makeSurface).not.toHaveBeenCalled()
 })
 
 test('retained scene backing invalidates stale position-preview metadata', () => {

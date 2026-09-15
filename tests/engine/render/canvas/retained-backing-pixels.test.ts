@@ -1,4 +1,4 @@
-import { beforeAll, expect, test } from 'bun:test'
+import { beforeAll, expect, spyOn, test } from 'bun:test'
 
 import { SceneGraph } from '@open-pencil/scene-graph'
 
@@ -121,6 +121,44 @@ test('capped backing preserves the pixel grid after fractional pan and pixel-den
   } finally {
     direct.destroy()
     retained.destroy()
+  }
+})
+
+test('settlement reuses pictures and the navigation image without another cache', () => {
+  const { graph, pageId } = createFixture()
+  const renderer = createRenderer(pageId)
+  try {
+    renderer.render(graph, new Set(), {}, 1, 'scene')
+    const backing = expectDefined(renderer.sceneBacking, 'backing')
+    const pictures = new Map(
+      [...renderer.subtreePictureCache].map(([id, entry]) => [id, entry.picture])
+    )
+    expect(pictures.size).toBeGreaterThan(0)
+    const nodeDraws = spyOn(renderer, 'renderNode')
+    const allocations = spyOn(renderer.surface, 'makeSurface')
+    try {
+      renderer.sceneBackingPreviewUntil = 0
+      renderer.render(graph, new Set(), {}, 1, 'scene')
+      expect(renderer.profiler.stats.scenePictureMissReason).toBe('retained-pictures')
+      expect(renderer.sceneBacking).toBe(backing)
+      expect(renderer.scenePicture).toBeNull()
+      expect(renderer.subtreePictureCache.size).toBe(pictures.size)
+      for (const [id, picture] of pictures)
+        expect(renderer.subtreePictureCache.get(id)?.picture).toBe(picture)
+      expect(nodeDraws).not.toHaveBeenCalled()
+      expect(allocations).not.toHaveBeenCalled()
+      renderer.navigationPhase = 'pan'
+      renderer.render(graph, new Set(), {}, 1, 'scene')
+      expect(renderer.profiler.stats.scenePictureMissReason).toBe('backing')
+      expect(renderer.sceneBacking).toBe(backing)
+      expect(nodeDraws).not.toHaveBeenCalled()
+      expect(allocations).not.toHaveBeenCalled()
+    } finally {
+      nodeDraws.mockRestore()
+      allocations.mockRestore()
+    }
+  } finally {
+    renderer.destroy()
   }
 })
 

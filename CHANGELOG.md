@@ -59,7 +59,7 @@
 
 ### Fixed
 
-- Keep property fields and paint previews live during editing, and keep selection labels attached and aligned during rotation.
+- Keep property fields and paint previews live during editing, and keep rotated selection labels aligned and object edges stable when previews settle.
 - Keep Undo and Redo commands available as edit history changes, without requiring another scene edit.
 - Avoid recursive desktop HTTP proxy requests when font downloads intercept Tauri IPC traffic.
 - Keep FIT image fills proportional, centered, and fully visible without stretching or cropped edges.

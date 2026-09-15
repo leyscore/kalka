@@ -81,6 +81,19 @@ async function createOverlayDemo(rotation: number) {
 
 test('rotated frame selection labels render with hovered child', async () => {
   await createOverlayDemo(18)
+  const settled = await editor.canvas.screenshotCanvasRegion()
+  const release = await editor.page.evaluateHandle(() => {
+    const store = window.openPencil?.getStore?.()
+    if (!store) throw new Error('Editor unavailable')
+    return store.beginInteractiveEdit()
+  })
+  try {
+    await editor.canvas.waitForRender()
+    expect((await editor.canvas.screenshotCanvasRegion()).equals(settled)).toBe(true)
+  } finally {
+    await release.evaluate((stop) => stop())
+    await release.dispose()
+  }
   await expectCanvas('rotated-frame-selection-labels')
 })
 
