@@ -1,4 +1,4 @@
-import { expect, test } from 'bun:test'
+import { beforeAll, expect, test } from 'bun:test'
 
 import type { Paragraph } from 'canvaskit-wasm'
 
@@ -8,8 +8,18 @@ import { SceneGraph } from '@open-pencil/scene-graph'
 import { initCanvasKit } from '#cli/headless'
 import { SkiaRenderer } from '#core/canvas/renderer'
 import { withTextParagraph } from '#core/canvas/text'
+import { fontManager } from '#core/text/fonts'
 
 import { expectDefined } from '#tests/helpers/assert'
+import { repoPath } from '#tests/helpers/paths'
+
+const FONT_FAMILY = 'Painted text fixture'
+beforeAll(async () => {
+  for (const style of ['Regular', 'SemiBold']) {
+    const data = await Bun.file(repoPath(`public/Inter-${style}.ttf`)).arrayBuffer()
+    fontManager.markLoaded(FONT_FAMILY, style, data)
+  }
+})
 
 const solid: Fill = { type: 'SOLID', color: { r: 0, g: 0, b: 0, a: 1 }, opacity: 1, visible: true }
 const gradient: Fill = {
@@ -29,7 +39,7 @@ test('mutable foreground paints never enter the paragraph cache, including on er
   const page = expectDefined(graph.getPages()[0], 'page')
   const node = graph.createNode('TEXT', page.id, {
     text: 'Paint',
-    fontFamily: 'Inter',
+    fontFamily: FONT_FAMILY,
     width: 100,
     height: 100
   })
@@ -72,7 +82,7 @@ for (const textAlignVertical of ['TOP', 'CENTER', 'BOTTOM'] as const) {
       const page = expectDefined(graph.getPages()[0], 'page')
       const node = graph.createNode('TEXT', page.id, {
         ...fixture,
-        fontFamily: 'Inter',
+        fontFamily: FONT_FAMILY,
         fontWeight: 400,
         textAlignVertical,
         textAutoResize: 'NONE',
@@ -82,6 +92,7 @@ for (const textAlignVertical of ['TOP', 'CENTER', 'BOTTOM'] as const) {
       const renderer = new SkiaRenderer(ck, surface)
       try {
         await renderer.loadFonts()
+        expect(renderer.nodeFontReadiness(node)).toBe('ready')
         const draw = (fill: Fill) => {
           graph.updateNode(node.id, { fills: [fill] })
           const canvas = surface.getCanvas()
