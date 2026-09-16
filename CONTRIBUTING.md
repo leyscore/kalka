@@ -75,15 +75,9 @@ Keep package boundaries and public exports intact. Keep pull requests focused: e
 
 ## Tests
 
-Place tests in the established layer and mirror the source domain where practical:
+Follow the [testing architecture](packages/docs/development/testing.md) for ownership, helpers, fixtures, browser adapters and migration rules. Package-local tests mirror their source domains; central integration is reserved for genuinely cross-owner contracts. E2E follows user workflows rather than implementation files.
 
-- `tests/e2e/**/*.spec.ts` — browser UI and visual behavior.
-- `tests/figma/**/*.spec.ts` — Figma automation.
-- `tests/engine/**/*.test.ts` — engine and unit behavior.
-- `tests/helpers/**` — shared test utilities.
-- Package-local `tests/**` — standalone package coverage where that structure already exists.
-
-Test behavior and stable contracts, not source text or implementation details. Before adding a test file or helper, inspect nearby tests and follow their existing structure.
+Existing `tests/engine/**` coverage moves domain-by-domain with runner discovery, not opportunistically during feature work. Extend the existing home until that migration; do not create a duplicate suite. Test behavior and stable contracts, not source text. During iteration, run focused checks for the changed contract rather than the complete suite after every edit.
 
 ### Test selectors
 

@@ -52,6 +52,6 @@ export default defineConfig(async ({ command }) => {
     build: {
       chunkSizeWarningLimit: 2500
     },
-    server: createDevServerOptions(host)
+    server: createDevServerOptions(host, __dirname)
   }
 })

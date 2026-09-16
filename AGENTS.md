@@ -40,6 +40,10 @@ CanvasKit runtime loading is centralized in `@open-pencil/core/canvaskit`. Headl
 
 `Editor` type = `ReturnType<typeof createEditor>`. Core modules should share state through `EditorContext` rather than importing app code or Vue.
 
+#### Retained property panels
+
+`DesignPanel` retains at most one selection-property subtree through `RetainedPanel`. The app installs `createRetainedScopePlugin()` from the Vue SDK; opted-in descendants receive `provideRetainedActivity()`. Vue component scopes are detached, so pausing only a parent or using bare `KeepAlive` does not suspend descendant work. Cancel drafts synchronously before DOM detachment can fire blur, close transient state and gate portals with `useRetainedPopup()`, and invalidate pending async results on deactivation/disposal. The plugin lets cleanup flush before pausing each component scope and resumes it on activation; it requires Vue's Options API. Unmounting the owning editor releases the retained subtree.
+
 #### Editor event bus
 
 The editor exposes a typed nanoevents emitter. Event names/payloads live in `EditorEvents` in `packages/core/src/editor/types.ts`; graph events are bridged from SceneGraph by `graph-events.ts`. Subscribe with `editor.onEditorEvent(event, handler)`, or in Vue use `useEditorEvent(event, handler)` from `packages/vue/src/editor/events/use.ts`.
@@ -146,7 +150,7 @@ PR titles use Conventional Commits because GitHub uses them as merge subjects. T
 
 - Put code and tests in the established owning domain; inspect nearby structure before adding files.
 - `bun run check:arch` enforces boundaries: use public workspace exports, keep Core framework-neutral, keep app services out of views/shared UI, and keep property-panel internals scoped to that panel.
-- Tests belong in `tests/e2e/**/*.spec.ts` (browser UI/visual), `tests/figma/**/*.spec.ts` (Figma automation), `tests/engine/**/*.test.ts` (engine/unit), `tests/helpers/**` (shared helpers), or an established package-local test location. Mirror source domains where practical and test behavior/contracts, not source text. Never commit temporary/profile specs.
+- Follow the canonical [testing architecture](packages/docs/development/testing.md): package-local tests mirror source domains; central app tests mirror `src/app/**`; central integration requires a genuinely cross-owner contract. E2E follows user workflows; native and Figma acceptance remain explicit exceptions. Existing `tests/engine/**` domains migrate together with runner discovery—do not create competing homes or undiscovered suites. Owner-local helpers/fixtures stay local; only genuinely shared support is central. Specs use domain drivers/probes, not scattered Window/store traversal or unrestricted evaluator wrappers. Test contracts, not source text; never commit temporary/profile specs.
 
 ### File and folder naming
 
@@ -215,10 +219,18 @@ Keep responsibilities distinct: engine tests cover state contracts, Playwright b
 ## Rendering
 
 - Canvas is CanvasKit (Skia WASM) on a WebGL surface, not DOM
+- Bounded rendering caches share `packages/core/src/cache/resource.ts` for recency, count/weight accounting, and removal disposal. Domain adapters own keys, font/page/dependency invalidation, and sizing units; use non-touching `peek()` for FIFO/planning reads. Rejected insertions leave ownership with the caller. Keep weak memos, async request registries, pools, and dependency-owned picture/path maps on their distinct lifetime policies.
 - `renderVersion` vs `sceneVersion`: `renderVersion` = canvas repaint (pan/zoom/hover); `sceneVersion` = scene graph mutations. UI that only cares about graph data should avoid watching repaint-only state; use editor events for incremental surfaces such as the layer tree.
-- `requestRender()` bumps both counters; `requestRepaint()` bumps only `renderVersion`
+- Live property controls use selected-node projections from `editor/selection-state/nodes.ts`: shallow reactive copies receive `node:previewUpdated` patches at property granularity. Never add preview invalidation to all `useSceneComputed` consumers; catalogs and unrelated controls must not refresh for geometry previews. Projection subscriptions belong to the consuming scope/session and must be disposed.
+- Numeric geometry edits own a `beginNodePreview()` handle with `update`, `commit`, and `cancel`. It captures all affected fields/layout children, publishes the complete delta once, and restores exact originals on cancellation. Selection/page/graph changes and disposal cancel the old edit; trailing input must not target the new selection. Controls must close previews even when a gesture returns to its starting value.
+- Renderer interaction policy uses explicit `beginInteractiveEdit()` leases and `isInteractiveEditing()`, not undo batching. Release leases on every terminal path. Keep live queries callable across app facades that spread editor actions.
+- Drawing and input share preview-aware geometry through `@open-pencil/core/geometry`, built on Scene Graph matrices. Use it for world/screen transforms, inverses, bounds, and handle placement instead of independently interpreting ancestor rotations or reflections. LINE pivots remain at the origin; other nodes rotate around their centers.
+- Label drawing and hit testing share `canvas/labels/{layout,transform,style}.ts`, including paragraph measurements and unreflected label axes. Rotation previews change through `setRotationPreview()` and `rotation:preview-changed`; cancellation must close the owning gesture without deselecting or committing it.
+- Paragraph construction is typed against `canvas/text/paragraph-inputs.ts`; the same inputs drive preparation-cache invalidation. Add a mutation case when extending that contract. Drawing borrows native paragraphs; the renderer owns their bounded cache and destruction.
+- `requestRender()` bumps `renderVersion` and `sceneVersion`; `requestRepaint()` bumps only `renderVersion`
 - `renderNow()` is only for surface recreation and font loading (need immediate draw)
 - Resize observer uses rAF throttle, not debounce — debounce causes canvas skew
+- Overscan images accelerate navigation; settled scenes rasterize existing retained pictures at the live viewport size/origin. Pixel-grid alignment alone does not guarantee Skia AA parity. Keep settlement pending until the viewport pass completes; do not add a second viewport image cache.
 - Viewport culling skips off-screen nodes; unclipped parents are NOT culled (children may extend beyond bounds)
 - Selection border width must be constant regardless of zoom — divide by scale
 - Section/frame title text never scales — render at fixed font size, ellipsize to fit
