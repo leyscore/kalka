@@ -3,6 +3,8 @@ import { ProgressIndicator, ProgressRoot } from 'reka-ui'
 import { computed } from 'vue'
 
 import type { EditorPreparation } from '@/app/editor/preparation/types'
+import { resolvedAppTheme } from '@/app/shell/theme'
+import BrandMark from '@/components/brand/BrandMark.vue'
 import { preparationLabel, preparationPercent } from '@/components/preparation/presentation'
 
 const { preparation } = defineProps<{
@@ -24,7 +26,7 @@ const progressSteps = computed(() => Math.round(progressValue.value ?? 0))
       class="absolute inset-0 z-50 flex items-center justify-center bg-canvas"
     >
       <div class="flex w-72 flex-col items-center gap-3 text-center">
-        <icon-lucide-pencil-line class="size-8 text-surface opacity-45" />
+        <BrandMark variant="app-icon" :appearance="resolvedAppTheme" decorative class="size-12" />
         <div class="space-y-1">
           <p class="text-sm font-medium text-surface/80">{{ label }}</p>
           <p v-if="preparation.detail" class="truncate text-xs text-surface/45">

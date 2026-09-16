@@ -101,6 +101,7 @@ describe('discoverPublishPackages', () => {
 })
 
 describe('preparePublishDirectories', () => {
+  // This integration test starts npm; cold CI startup can exceed Bun's five-second default.
   test('copies declared artifacts and writes transformed package metadata', async () => {
     const root = await fixtureRoot()
     const outRoot = join(root, '.publish')
@@ -124,5 +125,5 @@ describe('preparePublishDirectories', () => {
       main: './dist/index.js',
       types: './dist/index.d.ts'
     })
-  })
+  }, 30_000)
 })
