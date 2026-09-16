@@ -15,19 +15,27 @@ export function useNodePreview(editor: Editor) {
       targets = [...ids]
       preview = editor.beginNodePreview(label)
     }
-    for (const id of targets) preview.update(id, changes)
+    try {
+      for (const id of targets) preview.update(id, changes)
+    } catch (error) {
+      cancel()
+      throw error
+    }
+  }
+
+  function takePreview() {
+    const current = preview
+    preview = undefined
+    targets = []
+    return current
   }
 
   function commit() {
-    preview?.commit()
-    preview = undefined
-    targets = []
+    takePreview()?.commit()
   }
 
   function cancel() {
-    preview?.cancel()
-    preview = undefined
-    targets = []
+    takePreview()?.cancel()
   }
 
   tryOnScopeDispose(cancel)

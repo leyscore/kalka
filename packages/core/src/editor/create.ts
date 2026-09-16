@@ -256,6 +256,7 @@ export function createEditor(options?: EditorOptions) {
 
   function replaceGraph(newGraph: SceneGraph) {
     nodes.cancelNodePreviews()
+    undo.discardBatches()
     _graph = newGraph
     subscribeToGraph()
     const previousPageId = state.currentPageId

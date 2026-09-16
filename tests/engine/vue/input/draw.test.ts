@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
 import { createEditor, type Editor, type Tool } from '@open-pencil/core/editor'
+import { SceneGraph } from '@open-pencil/scene-graph'
 
 import { handleDrawMove, startShapeDraw, startTextDraw } from '#vue/shared/input/draw'
 import type { DragState } from '#vue/shared/input/types'
@@ -19,6 +20,27 @@ function start(editor: Editor, tool: Tool = 'FRAME') {
 }
 
 describe('draw creation previews', () => {
+  test('graph replacement discards pending draw batches without replaying or deleting history', () => {
+    const editor = createEditor()
+    try {
+      editor.createShape('RECTANGLE', 0, 0, 20, 20)
+      const previousLabel = editor.undo.undoLabel
+      const drag = start(editor)
+      const graph = new SceneGraph()
+      const node = graph.createNode('RECTANGLE', graph.getPages()[0].id, { x: 10 })
+      editor.replaceGraph(graph)
+      expect(editor.undo.isBatching).toBe(false)
+      expect(editor.undo.undoLabel).toBe(previousLabel)
+      drag.commit()
+      editor.updateNodeWithUndo(node.id, { x: 50 }, 'New graph move')
+      expect(editor.undo.undoLabel).toBe('New graph move')
+      editor.undoAction()
+      expect(node.x).toBe(10)
+      expect(editor.undo.undoLabel).toBe(previousLabel)
+    } finally {
+      editor.dispose()
+    }
+  })
   test('is interactive immediately, previews geometry, and creates one undo step', () => {
     const editor = createEditor()
     try {

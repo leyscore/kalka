@@ -103,10 +103,15 @@ export class UndoManager {
     for (const entry of batch.entries.toReversed()) entry.inverse()
   }
 
+  /** Abandon provisional history without replaying it or changing committed undo/redo entries. */
+  discardBatches(): void {
+    this.batches = []
+  }
+
   clear(): void {
     this.undoStack = []
     this.redoStack = []
-    this.batches = []
+    this.discardBatches()
     this.onChange?.()
   }
 

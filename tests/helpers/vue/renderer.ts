@@ -18,16 +18,18 @@ function remove(child: HostNode): void {
   child.parent = null
 }
 
+function insert(child: HostNode, parent: HostNode, anchor?: HostNode | null): void {
+  remove(child)
+  child.parent = parent
+  const index = anchor ? parent.children.indexOf(anchor) : -1
+  if (index < 0) parent.children.push(child)
+  else parent.children.splice(index, 0, child)
+}
+
 export function createTestRenderer() {
   return createRenderer<HostNode, HostNode>({
     patchProp: () => undefined,
-    insert(child, parent, anchor) {
-      remove(child)
-      child.parent = parent
-      const index = anchor ? parent.children.indexOf(anchor) : -1
-      if (index < 0) parent.children.push(child)
-      else parent.children.splice(index, 0, child)
-    },
+    insert,
     remove,
     createElement: () => hostNode(),
     createText: hostNode,
@@ -47,7 +49,7 @@ export function createTestRenderer() {
     setScopeId: () => undefined,
     insertStaticContent(content, parent, anchor) {
       const node = hostNode(content)
-      this.insert(node, parent, anchor)
+      insert(node, parent, anchor)
       return [node, node]
     }
   })

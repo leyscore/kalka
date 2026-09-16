@@ -31,6 +31,52 @@ function setup() {
 }
 
 describe('selected-node preview projections', () => {
+  test('tracks committed changes and selection with a plain editor state', () => {
+    const editor = createEditor()
+    const active = ref(true)
+    const selection = createSelectedNodeState(editor, active)
+    try {
+      expect(selection.node.value).toBeNull()
+      const first = editor.graph.createNode('RECTANGLE', editor.state.currentPageId, { x: 10 })
+      editor.select([first.id])
+      expect(selection.node.value?.x).toBe(10)
+      editor.updateNodeWithUndo(first.id, { x: 40 })
+      expect(selection.node.value?.x).toBe(40)
+      editor.undoAction()
+      expect(selection.node.value?.x).toBe(10)
+      active.value = false
+      editor.updateNode(first.id, { x: 70 })
+      expect(selection.node.value?.x).toBe(10)
+      active.value = true
+      expect(selection.node.value?.x).toBe(70)
+      editor.graph.deleteNode(first.id)
+      expect(selection.node.value).toBeNull()
+    } finally {
+      selection.dispose()
+      editor.dispose()
+    }
+  })
+
+  test('projection writes stay isolated and preview cancellation restores the graph without history', () => {
+    const fixture = setup()
+    const { editor, first, selection } = fixture
+    try {
+      expect(selection.node.value?.x).toBe(10)
+      const preview = editor.beginNodePreview('Move')
+      preview.update(first.id, { x: 80 })
+      const projected = selection.node.value
+      if (!projected) throw new Error('Missing selected node')
+      expect(projected.x).toBe(80)
+      projected.x = 99
+      expect(first.x).toBe(80)
+      preview.cancel()
+      expect(selection.node.value?.x).toBe(10)
+      expect(first.x).toBe(10)
+      expect(editor.undo.canUndo).toBe(false)
+    } finally {
+      fixture.dispose()
+    }
+  })
   test('freezes inactive projections, refreshes on activation and disposes subscriptions', () => {
     const fixture = setup()
     const { editor, first, second } = fixture

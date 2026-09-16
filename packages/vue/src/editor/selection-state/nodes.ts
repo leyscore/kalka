@@ -1,5 +1,5 @@
 import { tryOnScopeDispose, watchImmediate } from '@vueuse/core'
-import { computed, shallowReactive } from 'vue'
+import { computed, shallowReactive, shallowRef } from 'vue'
 import type { ComputedRef, Ref } from 'vue'
 
 import type { Editor } from '@open-pencil/core/editor'
@@ -19,8 +19,16 @@ export function createSelectedNodeState(
   editor: Editor,
   active?: Readonly<Ref<boolean>>
 ): SelectedNodeState {
+  const revision = shallowRef(0)
+  const refresh = () => {
+    revision.value++
+  }
+  const refreshSelected = (id: string) => {
+    if (editor.state.selectedIds.has(id)) refresh()
+  }
   const nodes = computed<SceneNode[]>((previous) => {
     if (active?.value === false && previous) return previous
+    void revision.value
     void editor.state.sceneVersion
     void editor.state.currentPageId
     return editor.getSelectedNodes().map((node) => shallowReactive(node))
@@ -38,7 +46,16 @@ export function createSelectedNodeState(
     () => active?.value ?? true,
     (enabled, _previous, onCleanup) => {
       if (!enabled) return
+      refresh()
       onCleanup(editor.onEditorEvent('node:previewUpdated', updatePreview))
+      onCleanup(editor.onEditorEvent('node:updated', refreshSelected))
+      onCleanup(editor.onEditorEvent('selection:changed', refresh))
+      onCleanup(editor.onEditorEvent('graph:replaced', refresh))
+      onCleanup(editor.onEditorEvent('page:changed', refresh))
+      onCleanup(editor.onEditorEvent('node:created', refresh))
+      onCleanup(editor.onEditorEvent('node:deleted', refresh))
+      onCleanup(editor.onEditorEvent('node:reparented', refresh))
+      onCleanup(editor.onEditorEvent('node:reordered', refresh))
     },
     { flush: 'sync' }
   )
