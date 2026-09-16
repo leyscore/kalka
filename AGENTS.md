@@ -150,7 +150,7 @@ PR titles use Conventional Commits because GitHub uses them as merge subjects. T
 
 - Put code and tests in the established owning domain; inspect nearby structure before adding files.
 - `bun run check:arch` enforces boundaries: use public workspace exports, keep Core framework-neutral, keep app services out of views/shared UI, and keep property-panel internals scoped to that panel.
-- Tests belong in `tests/e2e/**/*.spec.ts` (browser UI/visual), `tests/figma/**/*.spec.ts` (Figma automation), `tests/engine/**/*.test.ts` (engine/unit), `tests/helpers/**` (shared helpers), or an established package-local test location. Mirror source domains where practical and test behavior/contracts, not source text. Never commit temporary/profile specs.
+- Follow the canonical [testing architecture](packages/docs/development/testing.md): package-local tests mirror source domains; central app tests mirror `src/app/**`; central integration requires a genuinely cross-owner contract. E2E follows user workflows; native and Figma acceptance remain explicit exceptions. Existing `tests/engine/**` domains migrate together with runner discovery—do not create competing homes or undiscovered suites. Owner-local helpers/fixtures stay local; only genuinely shared support is central. Specs use domain drivers/probes, not scattered Window/store traversal or unrestricted evaluator wrappers. Test contracts, not source text; never commit temporary/profile specs.
 
 ### File and folder naming
 

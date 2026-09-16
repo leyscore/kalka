@@ -9,6 +9,16 @@ import { withNativeEventRecorder } from '#tests/helpers/tauri/event-recorder'
 describe('native text editing', () => {
   it('commits ordinary WebView input exactly once', async () => {
     await createNativeTextFixture('Replace me')
+    const tabCount = await browser.execute(() => document.querySelectorAll('[role="tab"]').length)
+    const id = await createNativeTextFixture('Another fixture')
+    const prepared = await readNativeEditorSnapshot()
+    assert.equal(prepared.editingTextId, id)
+    assert.equal(prepared.editingText, 'Another fixture')
+    assert.equal(prepared.textNodeCount, 1)
+    assert.equal(
+      await browser.execute(() => document.querySelectorAll('[role="tab"]').length),
+      tabCount
+    )
     const textarea = await $('textarea[aria-hidden="true"]')
     await textarea.waitForExist()
 
@@ -37,19 +47,5 @@ describe('native text editing', () => {
         'WebDriver text insertion must produce one input event'
       )
     })
-  })
-
-  it('reuses the open document when preparing another text fixture', async () => {
-    const tabCount = await browser.execute(() => document.querySelectorAll('[role="tab"]').length)
-    const id = await createNativeTextFixture('Another fixture')
-    const snapshot = await readNativeEditorSnapshot()
-
-    assert.equal(snapshot.editingTextId, id)
-    assert.equal(snapshot.editingText, 'Another fixture')
-    assert.equal(snapshot.textNodeCount, 1)
-    assert.equal(
-      await browser.execute(() => document.querySelectorAll('[role="tab"]').length),
-      tabCount
-    )
   })
 })
