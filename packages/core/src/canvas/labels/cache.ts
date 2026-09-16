@@ -25,7 +25,7 @@ interface Viewport {
 }
 
 const LABEL_TYPES = new Set(['COMPONENT', 'COMPONENT_SET'])
-const COMPONENT_LABEL_PARENT_TYPES = new Set(['CANVAS', 'SECTION'])
+const COMPONENT_LABEL_PARENT_TYPES = new Set(['CANVAS', 'SECTION', 'COMPONENT_SET'])
 
 function isInViewport(absX: number, absY: number, w: number, h: number, vp: Viewport): boolean {
   return absX + w >= vp.x && absY + h >= vp.y && absX <= vp.x + vp.w && absY <= vp.y + vp.h
