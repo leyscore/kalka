@@ -31,7 +31,7 @@ export function createSelectedNodeState(
     void revision.value
     void editor.state.sceneVersion
     void editor.state.currentPageId
-    return editor.getSelectedNodes().map((node) => shallowReactive(node))
+    return editor.getSelectedNodes().map((node) => shallowReactive(structuredClone(node)))
   })
   const byId = computed(() => new Map(nodes.value.map((node) => [node.id, node])))
   const node = computed(() => (nodes.value.length === 1 ? nodes.value[0] : null))
@@ -39,7 +39,7 @@ export function createSelectedNodeState(
   function updatePreview(id: string, changes: Partial<SceneNode>) {
     if (!editor.state.selectedIds.has(id)) return
     const selected = byId.value.get(id)
-    if (selected) Object.assign(selected, changes)
+    if (selected) Object.assign(selected, structuredClone(changes))
   }
 
   const dispose = watchImmediate(

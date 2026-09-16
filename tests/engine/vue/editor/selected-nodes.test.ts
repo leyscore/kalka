@@ -3,7 +3,7 @@ import { describe, expect, test } from 'bun:test'
 import { computed, createApp, effectScope, ref, shallowReactive } from 'vue'
 
 import { createDefaultEditorState, createEditor } from '@open-pencil/core/editor'
-import { getSharedStyles, SceneGraph } from '@open-pencil/scene-graph'
+import { getSharedStyles, SceneGraph, type Fill } from '@open-pencil/scene-graph'
 
 import { EDITOR_KEY } from '#vue/editor/context'
 import { createSelectedNodeState, useSelectedNodeState } from '#vue/editor/selection-state/nodes'
@@ -31,6 +31,34 @@ function setup() {
 }
 
 describe('selected-node preview projections', () => {
+  for (const phase of ['initial', 'preview'] as const) {
+    test(`detaches nested ${phase} values from the graph`, () => {
+      const fixture = setup()
+      const { editor, first, selection } = fixture
+      const fill: Fill = {
+        type: 'SOLID',
+        color: { r: 0.2, g: 0.3, b: 0.4, a: 1 },
+        opacity: 1,
+        visible: true
+      }
+      try {
+        editor.updateNode(first.id, { fills: [fill] })
+        const projected = selection.node.value
+        if (!projected) throw new Error('Missing projection')
+        const preview = editor.beginNodePreview('Paint')
+        if (phase === 'preview') preview.update(first.id, { fills: [{ ...fill, opacity: 0.5 }] })
+        projected.fills[0].color.r = 0.9
+        projected.childIds.push('projection-only')
+        expect(first.fills[0].color.r).toBe(0.2)
+        expect(first.childIds).toEqual([])
+        preview.cancel()
+        expect(first.fills[0]).toEqual(fill)
+        expect(editor.undo.canUndo).toBe(false)
+      } finally {
+        fixture.dispose()
+      }
+    })
+  }
   test('tracks committed changes and selection with a plain editor state', () => {
     const editor = createEditor()
     const active = ref(true)
