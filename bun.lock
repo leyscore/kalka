@@ -445,6 +445,8 @@
         "@open-pencil/package-artifacts": "workspace:*",
         "@open-pencil/package-quality-tools": "workspace:*",
         "citty": "^0.1.6",
+        "es-toolkit": "^1.51.0",
+        "valibot": "^1.4.2",
       },
     },
     "tools/visual-oracles": {

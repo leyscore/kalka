@@ -7,7 +7,7 @@ import {
   discoverPublishPackages,
   preparePublishDirectories,
   publishPackageJSON
-} from '../src/publish-dirs'
+} from '#release/publish-dirs'
 
 async function fixtureRoot() {
   const root = join(tmpdir(), `open-pencil-release-packages-${crypto.randomUUID()}`)
