@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.15.0 — 2026-09-16
+
 ### Breaking changes
 
 - Use MCP SDK v2 server/client types for programmatic MCP integrations. Define custom tools with native Valibot `input` schemas and execution metadata instead of `params`, `ParamDef`, or `paramToZod()`.
@@ -130,6 +132,10 @@
 - Defer JSX generation and syntax highlighting until the Code panel is active, keeping large canvas selections responsive (#500).
 - Paste large, flat Figma selections faster by avoiding repeated scans of clipboard layers (#500).
 - Reduce peak memory during `.fig` export by sharing immutable binary resources with the isolated export graph.
+
+### Security
+
+- Protect new real-time collaboration sessions with stronger invitation credentials.
 
 ## 0.14.0 — 2026-08-10
 
