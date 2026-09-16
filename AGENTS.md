@@ -208,6 +208,25 @@ bun run test
 
 Self-review for duplication, named shared types, precise unions, and files approaching ~600 lines. Use `structuredClone` or typed copy helpers for nested mutable data. Check existing dependencies before implementing utilities; `es-toolkit` is available for focused helpers without replacing clear native code. Read current Reka UI, VueUse, and Tailwind/tailwind-variants docs before inventing UI primitives or composables, and update local wrappers deliberately when upstream APIs changed.
 
+### Dependency documentation
+
+Before using an unfamiliar dependency API or writing a replacement utility, inspect existing project wrappers and read the relevant official documentation. Start with the indexes below, then fetch specific pages rather than entire `llms-full.txt` dumps. Match documentation to versions in the package manifests and lockfiles; verify signatures against installed types/source when versions differ. Do not guess APIs or invent primitives already supplied by dependencies.
+
+| Dependency                   | Official documentation entrypoint                                                              |
+| ---------------------------- | ---------------------------------------------------------------------------------------------- |
+| Vue                          | https://vuejs.org/llms.txt                                                                     |
+| VueUse                       | https://vueuse.org/guide/ — follow individual composable documentation.                        |
+| Reka UI                      | https://reka-ui.com/llms.txt                                                                   |
+| Tauri v2                     | https://v2.tauri.app/llms.txt                                                                  |
+| Tailwind CSS                 | https://tailwindcss.com/docs                                                                   |
+| Tailwind Variants            | https://www.tailwind-variants.org/llms.txt                                                     |
+| Motion (use the Vue section) | https://motion.dev/llms.txt                                                                    |
+| Valibot                      | https://valibot.dev/llms.txt                                                                   |
+| es-toolkit                   | https://es-toolkit.dev/llms.txt                                                                |
+| CanvasKit                    | https://skia.org/docs/user/modules/canvaskit/ and installed `canvaskit-wasm/types/index.d.ts`. |
+
+VueUse currently serves HTML homepage content at its `llms.txt` URL; Tailwind CSS and Skia have no verified index there. Use their official documentation above instead. If an index disappears or returns HTML, fall back to official API documentation, not guessed methods or unofficial generated indexes.
+
 ### Native WebView tests
 
 Native desktop interaction checks live under `tests/e2e/native/**` and run through WebdriverIO against an explicit test-only Tauri binary. Use `bun run test:native` to build and run them, or `bun run build:native-test` when only the binary is needed. The embedded WebDriver plugin is compiled only with the `native-test` Cargo feature and must never be enabled in normal development or production binaries.
