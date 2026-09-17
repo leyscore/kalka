@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- Point Homebrew installation instructions to the official `openpencil` cask and document separate CLI installation.
+
 ## 0.15.0 — 2026-09-16
 
 ### Breaking changes
