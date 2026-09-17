@@ -2,15 +2,24 @@
 
 ## Unreleased
 
+### Added
+
+- Configure built-in AI and local MCP tool access independently on a Tool access page, including optional extended AI tools, searchable read-only and side-effect groups, and per-target defaults (#584).
+- Set the built-in AI's maximum steps per message in Chat settings, with consistent stopping and remaining-step warnings (#573).
+- Choose a custom number for diagnostics retention or the AI step limit instead of only the offered presets.
+
 ### Changed
 
 - Export diagnostics from Settings only. AI requests and tool activity now carry conversation and request identifiers, while chat no longer offers a separate diagnostic log or includes transcript content.
 
 ### Fixed
 
+- Explain why the local MCP server did not start — a missing `@open-pencil/mcp` install, a denied command, an early exit, a rejected local connection, or an unreachable address — with translated guidance and collapsible technical details instead of one generic health failure.
+- Find a globally installed `@open-pencil/mcp` when the desktop app is launched from the system shell, by searching the common global binary directories that a graphical launch omits from `PATH`.
 - Mark unsaved documents and ask whether to save before closing a tab, the desktop window, or the application, rather than relying on recovery alone.
 - Defer AI provider connections and system credential reads until you send a message or use a connected feature, so opening documents and browsing chat history no longer trigger unexpected credential prompts.
 - Point Homebrew installation instructions to the official `openpencil` cask and document separate CLI installation.
+- Let the desktop app use an MCP server you started yourself by allowing the app's own origin by default, instead of requiring `OPENPENCIL_MCP_CORS_ORIGIN`.
 - Reach the custom model option in the model picker for providers with large model catalogs instead of requiring a search for it.
 
 ## 0.15.0 — 2026-09-16
