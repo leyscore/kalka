@@ -51,11 +51,22 @@
         "rank": "Alternate"
       }
     ],
+    "linux": {
+      "deb": {
+        "desktopTemplate": "linux/main.desktop"
+      },
+      "rpm": {
+        "desktopTemplate": "linux/main.desktop"
+      }
+    },
     "macOS": {
       "signingIdentity": "Developer ID Application: Danila Poyarkov (N7D7M3Q3CD)"
     }
   },
   "plugins": {
+    "deep-link": {
+      "desktop": { "schemes": ["openpencil"] }
+    },
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDU4QzBCRjBFNzhFNEVEMDEKUldRQjdlUjREci9BV0hLaEJPeG5tRXdsWkhQWFdEa0VxcEtNR1o1S2VJeGlKU1VDTldQTi9wYncK",
       "endpoints": ["https://github.com/open-pencil/open-pencil/releases/latest/download/latest.json"],
