@@ -1,5 +1,10 @@
 # OpenPencil
 
+[![MIT license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![npm](https://img.shields.io/npm/v/@open-pencil/cli?label=%40open-pencil%2Fcli)](https://www.npmjs.com/package/@open-pencil/cli)
+[![Discord](https://img.shields.io/badge/Discord-join-5865F2?logo=discord&logoColor=white)](https://discord.gg/4wXc9fuZfm)
+[![GitHub Discussions](https://img.shields.io/github/discussions/open-pencil/open-pencil?logo=github&label=Discussions)](https://github.com/open-pencil/open-pencil/discussions)
+
 Open-source design editor. Opens `.fig` and `.pen` design files, includes built-in AI, and ships as a programmable toolkit with a headless Vue SDK for building custom editors.
 
 > **Status:** Active development. Usable today, with some rough edges as features evolve.
@@ -246,6 +251,12 @@ Figma is a closed platform that actively fights programmatic access. Their MCP s
 OpenPencil is the alternative: open source (MIT), reads .fig files natively, every operation is scriptable, and your data never leaves your machine.
 
 See the [roadmap](https://openpencil.dev/development/roadmap) for product direction and current Figma compatibility gaps.
+
+## Community
+
+- **[Discord](https://discord.gg/4wXc9fuZfm)** — chat, quick questions, and showing a problem live
+- **[GitHub Discussions](https://github.com/open-pencil/open-pencil/discussions)** — [Q&A](https://github.com/open-pencil/open-pencil/discussions/categories/q-a) for help, [Ideas](https://github.com/open-pencil/open-pencil/discussions/categories/ideas) for feature proposals, [Show and tell](https://github.com/open-pencil/open-pencil/discussions/categories/show-and-tell) for what you built; maintainers post [Announcements](https://github.com/open-pencil/open-pencil/discussions/categories/announcements) there
+- **[Issues](https://github.com/open-pencil/open-pencil/issues)** — reproducible bugs; report security problems through a [private advisory](https://github.com/open-pencil/open-pencil/security/advisories/new)
 
 ## Contributing
 
