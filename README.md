@@ -21,7 +21,7 @@ Or download from the [releases page](https://github.com/open-pencil/open-pencil/
 ## What it does
 
 - **Opens `.fig` and `.pen` files** — read and write native Figma files, open supported Pencil documents from the app or OS file browser, copy & paste nodes between apps
-- **AI builds designs** — describe what you want in chat, 90+ tools create and modify nodes. Connect OpenRouter, Anthropic, OpenAI, Google AI, Z.ai, MiniMax, or compatible endpoints
+- **AI builds designs** — describe what you want in chat, 100+ tools create and modify nodes. Connect OpenRouter, Anthropic, OpenAI, Google AI, DeepSeek, Z.ai, MiniMax, or compatible endpoints
 - **Fully programmable** — headless CLI, XPath queries, Figma Plugin API via `eval`, MCP server for AI agents, and desktop agent integrations for Claude Code, Codex, and Gemini CLI
 - **Lint, convert, and extract tokens** — inspect documents, lint naming/layout/accessibility, convert between supported formats, analyze colors/typography/spacing/clusters, and extract design tokens
 - **Components and variants** — create reusable components, group variants into component sets, insert local assets as instances, and switch variants from the inspector
@@ -30,7 +30,7 @@ Or download from the [releases page](https://github.com/open-pencil/open-pencil/
 - **Vue SDK for custom editors** — headless components and composables for embedding OpenPencil into other apps or building workflow-specific editing surfaces. [Read the SDK docs →](https://openpencil.dev/programmable/sdk/)
 - **Real-time collaboration** — P2P via WebRTC, no server, no account. Cursors, presence, follow mode
 - **Auto layout & CSS Grid** — flex and grid layout via Yoga WASM, with gap, padding, alignment, track sizing
-- **~7 MB desktop app** — Tauri v2 for macOS, Windows, Linux. Also runs in the browser as a PWA
+- **~15 MB desktop app** — Tauri v2 for macOS, Windows, Linux. Also runs in the browser as a PWA
 
 ## CLI
 
@@ -73,7 +73,7 @@ openpencil query design.fig "//SECTION//TEXT"                       # Text insid
 
 ### Export
 
-Render to PNG, JPG, WEBP, SVG, `.fig`, or JSX — or export selections/pages as `.fig` and convert whole documents between supported formats:
+Render to PNG, JPG, WEBP, SVG, PDF, PPTX, HTML, JSX, or `.fig` — or export selections/pages as `.fig` and convert whole documents between supported formats:
 
 ```sh
 openpencil export design.fig                           # PNG
@@ -162,7 +162,7 @@ All commands support `--json` for machine-readable output.
 
 ### Built-in chat
 
-Press <kbd>⌘</kbd><kbd>J</kbd> to open the AI assistant. It has 100+ tools that can create shapes, set fills and strokes, manage auto-layout, work with components and variables, run boolean operations, analyze design tokens, and export assets. Bring your own API key for OpenRouter, Anthropic, OpenAI, Google AI, Z.ai, MiniMax, or compatible endpoints. No backend, no account.
+Press <kbd>⌘</kbd><kbd>J</kbd> (<kbd>Ctrl</kbd><kbd>J</kbd> on Windows and Linux) to open the AI assistant. It has 100+ tools that can create shapes, set fills and strokes, manage auto-layout, work with components and variables, run boolean operations, analyze design tokens, and export assets. Bring your own API key for OpenRouter, Anthropic, OpenAI, Google AI, DeepSeek, Z.ai, MiniMax, or compatible endpoints. No backend, no account.
 
 Not every provider works in the browser, and not every model streams tool calls correctly. See [BYOK provider & model compatibility](packages/docs/programmable/byok-provider-compatibility.md) for measured results — contributions welcome.
 
@@ -183,11 +183,11 @@ Pi is also available as an optional AI SDK Harness provider. Install its compani
      }
    }
    ```
-3. Open the desktop app → <kbd>Ctrl</kbd><kbd>J</kbd> → select **Claude Code** from the provider dropdown
+3. Open the desktop app → <kbd>⌘</kbd><kbd>J</kbd> → select **Claude Code** from the provider dropdown
 
 ### MCP server
 
-Connect Claude Code, Cursor, Windsurf, or any MCP client to inspect, modify, and export design documents headlessly. 100+ tools. [Full docs →](https://openpencil.dev/reference/mcp-tools)
+Connect Claude Code, Cursor, Windsurf, or any MCP client to inspect, modify, and export design documents headlessly. 100+ tools. [Full docs →](https://openpencil.dev/programmable/mcp-server)
 
 **Stdio** (Claude Code, Cursor, Windsurf):
 
@@ -266,12 +266,13 @@ The Dev Container supports the web editor, packages, CLI, and automated checks. 
 
 ### Quality gates
 
-| Command             | Description           |
-| ------------------- | --------------------- |
-| `bun run check`     | Lint + typecheck      |
-| `bun run test`      | E2E visual regression |
-| `bun run test:unit` | Unit tests            |
-| `bun run format`    | Code formatting       |
+| Command                   | Description                                                 |
+| ------------------------- | ----------------------------------------------------------- |
+| `bun run check`           | Full gate: lint, typecheck, package, docs, and arch checks  |
+| `bun run test:unit:quick` | Unit tests in parallel, heavy fixtures skipped (about 15 s) |
+| `bun run test:unit`       | Every unit test, heavy fixtures included                    |
+| `bun run test`            | E2E visual regression                                       |
+| `bun run format`          | Code formatting                                             |
 
 ### Project structure
 
@@ -286,10 +287,13 @@ packages/
   vue/            @open-pencil/vue — headless Vue SDK
   cli/            @open-pencil/cli — headless CLI
   mcp/            @open-pencil/mcp — MCP server (stdio + HTTP)
+  harness/        @open-pencil/harness — companion CLI for coding-agent Harness sessions
   docs/           Documentation site (openpencil.dev)
 src/              Vue app (editor shell, AI, collaboration, document I/O)
 desktop/          Tauri v2 desktop app (Rust + config)
-tests/            E2E, visual, engine, and integration tests
+skills/           Agent skill (npx skills add open-pencil/open-pencil)
+tools/            Repository tooling: CI, release, lint, and test infrastructure
+tests/            E2E, visual, and engine tests
 ```
 
 ### Tech stack
@@ -302,7 +306,7 @@ tests/            E2E, visual, engine, and integration tests
 | File format   | Kiwi binary + Zstd + ZIP                                                          |
 | Collaboration | Trystero (WebRTC P2P) + Yjs (CRDT)                                                |
 | Desktop       | Tauri v2                                                                          |
-| AI/MCP        | Multi-provider (Anthropic, OpenAI, Google AI, OpenRouter), MCP SDK, Hono          |
+| AI/MCP        | Vercel AI SDK (multi-provider BYOK), MCP SDK, Hono                                |
 
 ### Desktop builds
 
