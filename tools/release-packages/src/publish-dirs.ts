@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs'
 import { cp, mkdir, rm, writeFile } from 'node:fs/promises'
 import { basename, dirname, join } from 'node:path'
 
@@ -16,11 +17,16 @@ export interface PackagePublishConfig {
   directory: string
 }
 
+/** Lists the files `npm pack` would ship from a package directory, relative to it. */
+export type PackageFileLister = (sourceDir: string) => Promise<string[]>
+
 export interface PreparePublishDirectoriesOptions {
   coreVersion: string
   packages: PackagePublishConfig[]
   root: string
   outRoot?: string
+  /** Defaults to a real `npm pack --dry-run`; tests inject a listing to stay out of npm. */
+  listPackageFiles?: PackageFileLister
   log?: (message: string) => void
 }
 
@@ -31,6 +37,7 @@ const PACKAGE_FIELDS = [
   'optionalDependencies'
 ] as const satisfies ReadonlyArray<keyof PackageManifest>
 const PUBLISH_CONFIG_FIELDS = new Set(['access', 'provenance', 'registry'])
+const LICENSE_FILE = 'LICENSE'
 
 export function publishPackageJSON(source: PackageManifest, coreVersion: string): PackageManifest {
   if (source.publishConfig) {
@@ -82,10 +89,21 @@ export async function discoverPublishPackages(root: string): Promise<PackagePubl
   return (await discoverPublicPackages(root)).map(packagePublishConfig)
 }
 
+export async function npmPackFileList(sourceDir: string): Promise<string[]> {
+  const listing = await runCommand({
+    command: 'npm',
+    args: ['pack', '--dry-run', '--json', '--ignore-scripts'],
+    cwd: sourceDir,
+    timeoutMs: 60_000
+  })
+  return parseNpmPack(listing.stdout).files
+}
+
 export async function preparePublishDirectories(
   options: PreparePublishDirectoriesOptions
 ): Promise<void> {
   const outRoot = options.outRoot ?? join(options.root, '.publish')
+  const listPackageFiles = options.listPackageFiles ?? npmPackFileList
   await rm(outRoot, { recursive: true, force: true })
   await mkdir(outRoot, { recursive: true })
 
@@ -94,18 +112,21 @@ export async function preparePublishDirectories(
     const destinationDir = join(outRoot, basename(pkg.directory))
     await mkdir(destinationDir, { recursive: true })
 
-    const listing = await runCommand({
-      command: 'npm',
-      args: ['pack', '--dry-run', '--json', '--ignore-scripts'],
-      cwd: sourceDir,
-      timeoutMs: 60_000
-    })
-    const files = parseNpmPack(listing.stdout).files
+    // npm always packs a root LICENSE, so a package without its own gets the repository's text.
+    const hasOwnLicense = existsSync(join(sourceDir, LICENSE_FILE))
+    const rootLicense = join(options.root, LICENSE_FILE)
+    if (!hasOwnLicense && !existsSync(rootLicense)) {
+      throw new Error(`${pkg.directory}: no LICENSE in the package or the repository root`)
+    }
+
+    const files = await listPackageFiles(sourceDir)
     for (const relativePath of files) {
       const destination = join(destinationDir, relativePath)
       await mkdir(dirname(destination), { recursive: true })
       await cp(join(sourceDir, relativePath), destination, { dereference: false })
     }
+
+    if (!hasOwnLicense) await cp(rootLicense, join(destinationDir, LICENSE_FILE))
 
     const packageJSON = await readPackageManifest(join(sourceDir, 'package.json'))
     const publishJSON = publishPackageJSON(packageJSON, options.coreVersion)
