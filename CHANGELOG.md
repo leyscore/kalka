@@ -28,6 +28,7 @@
 ### Fixed
 - Type `parameterConsumptionMap`, `propRefValue`, and `expressionValue` in the Kiwi `NodeChange` codec, which `fig.kiwi` declares but the TypeScript definitions omitted, so reading them no longer needs a cast.
 
+- Reject malformed effects assigned to `node.effects` in the plugin API with an error naming the invalid field, as Figma does, instead of storing them. `node.effects` now reads back in Figma's shape: layer blurs are `LAYER_BLUR` with `blurType`, and blurs no longer carry shadow fields (#786).
 - Render fragments (`<>…</>`) nested inside other elements in JSX from the AI and MCP `render` tool, which previously failed with `Unknown element: <>`.
 - Judge text contrast in the AI and MCP `describe` tool by its WCAG 2 ratio (4.5:1, or 3:1 for large text), the same ratio the `color-contrast` lint rule computes. It no longer reports passing dark text on mid-tone backgrounds as "dark on dark", now reports low-contrast light text, measures translucent and faded text as it is drawn, skips text whose color is bound to a variable, and says the ratio and the threshold it missed (#735).
 - Warn about options the paint and effect helpers ignore when rendering JSX instead of dropping them silently, and point `blur` in effect helpers at `radius`, the name Figma uses (#736).

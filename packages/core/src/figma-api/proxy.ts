@@ -5,7 +5,6 @@ import type {
   NodeType,
   Fill,
   Stroke,
-  Effect,
   LayoutMode
 } from '@open-pencil/scene-graph'
 import {
@@ -18,6 +17,7 @@ import type { OkHCLColor, OkHCLPayload } from '@open-pencil/scene-graph/color'
 import type { Rect } from '@open-pencil/scene-graph/primitives'
 
 import { assertNodeEditable } from '#core/editor/capabilities'
+import type { FigmaEffect } from '#core/figma-api/effects'
 
 import { installBasicNodeProxyAccessors } from './accessors/basic'
 import { installLayoutNodeProxyAccessors } from './accessors/layout'
@@ -78,7 +78,7 @@ export class FigmaNodeProxy {
 
   declare fills: readonly Fill[]
   declare strokes: readonly Stroke[]
-  declare effects: readonly Effect[]
+  declare effects: readonly FigmaEffect[]
   declare opacity: number
   declare visible: boolean
   declare locked: boolean

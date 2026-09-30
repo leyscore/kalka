@@ -1,6 +1,6 @@
-import type { Effect, Fill, SceneNode, Stroke } from '@open-pencil/scene-graph'
+import type { Fill, SceneNode, Stroke } from '@open-pencil/scene-graph'
 import { normalizeColor } from '@open-pencil/scene-graph/color'
-import { copyEffects, copyFills, copyStrokes } from '@open-pencil/scene-graph/copy'
+import { copyFills, copyStrokes } from '@open-pencil/scene-graph/copy'
 
 import {
   raw,
@@ -8,6 +8,7 @@ import {
   type NodeProxyInternals,
   type ProxyThis
 } from '#core/figma-api/accessor-utils'
+import { parseFigmaEffects, toFigmaEffect, type FigmaEffect } from '#core/figma-api/effects'
 
 export function installVisualNodeProxyAccessors(
   prototype: object,
@@ -43,13 +44,11 @@ export function installVisualNodeProxyAccessors(
       }
     },
     effects: {
-      get(this: ProxyThis): readonly Effect[] {
-        return Object.freeze(copyEffects(raw(this, internals).effects))
+      get(this: ProxyThis): readonly FigmaEffect[] {
+        return Object.freeze(raw(this, internals).effects.map(toFigmaEffect))
       },
-      set(this: ProxyThis, value: readonly Effect[]) {
-        updateNode(this, internals, {
-          effects: value.map((effect) => ({ ...effect, color: normalizeColor(effect.color) }))
-        })
+      set(this: ProxyThis, value: readonly FigmaEffect[]) {
+        updateNode(this, internals, { effects: parseFigmaEffects(value) })
       }
     },
     opacity: {

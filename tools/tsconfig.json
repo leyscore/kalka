@@ -9,6 +9,7 @@
     "*/*/src/**/*.ts",
     "*/*/tests/**/*.ts",
     "../src/global.d.ts",
+    "../src/markdown.d.ts",
     "../packages/core/src/global.d.ts",
     "../packages/vue/src/global.d.ts"
   ]
