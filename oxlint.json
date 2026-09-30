@@ -426,15 +426,15 @@
   },
   "overrides": [
     {
-      "files": ["tools/lint/src/rules/quality/widen-then-assert.ts"],
+      "files": ["tools/checks/lint/src/rules/quality/widen-then-assert.ts"],
       "rules": {
         "complexity": "off"
       }
     },
     {
       "files": [
-        "tools/lint/src/**/*.ts",
-        "tools/lint/tests/**/*.ts"
+        "tools/checks/lint/src/**/*.ts",
+        "tools/checks/lint/tests/**/*.ts"
       ],
       "rules": {
         "open-pencil/no-generated-test-id-literals": "off",

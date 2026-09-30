@@ -1,6 +1,6 @@
 # Docs site
 
-Published VitePress site. `bun run docs:dev`, `bun run docs:build` for fast checks, and `bun run docs:build:production` for deployment output. `bun run check:docs` runs the integrity checks in `tools/docs/` plus `check:authoring-reference`.
+Published VitePress site. `bun run docs:dev`, `bun run docs:build` for fast checks, and `bun run docs:build:production` for deployment output. `bun run check:docs` runs the integrity checks in `tools/checks/docs/` plus `check:authoring-reference`.
 
 - Keep routes under `/getting-started`, `/overview/**`, `/user-guide/**`, `/programmable/**`, `/reference/**`, and `/development/**`; do not recreate `/guide/**`. Preserve moves in `packages/docs/public/_redirects`.
 - Link untranslated locale navigation to canonical English pages rather than adding placeholders.

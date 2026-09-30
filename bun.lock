@@ -403,18 +403,92 @@
         "canvaskit-wasm",
       ],
     },
-    "tools/authoring-reference": {
+    "tools": {
+      "name": "@open-pencil/tools",
+      "devDependencies": {
+        "@types/bun": "^1.3.14",
+        "@types/mdast": "^4.0.4",
+        "@types/node": "^25.9.5",
+      },
+    },
+    "tools/checks/architecture": {
+      "name": "@open-pencil/architecture-tools",
+      "dependencies": {
+        "@open-pencil/package-artifacts-tools": "workspace:*",
+      },
+    },
+    "tools/checks/docs": {
+      "name": "@open-pencil/docs-tools",
+      "dependencies": {
+        "@open-pencil/package-artifacts-tools": "workspace:*",
+      },
+    },
+    "tools/checks/i18n": {
+      "name": "@open-pencil/i18n-tools",
+    },
+    "tools/checks/lint": {
+      "name": "@open-pencil/lint-tools",
+      "devDependencies": {
+        "@open-pencil/package-artifacts-tools": "workspace:*",
+      },
+    },
+    "tools/checks/package-quality": {
+      "name": "@open-pencil/package-quality-tools",
+      "dependencies": {
+        "@open-pencil/package-artifacts-tools": "workspace:*",
+        "citty": "^0.1.6",
+        "es-toolkit": "^1.51.0",
+      },
+    },
+    "tools/checks/secret-scan": {
+      "name": "@open-pencil/secret-scan-tools",
+    },
+    "tools/checks/test-homes": {
+      "name": "@open-pencil/test-homes-tools",
+      "dependencies": {
+        "@open-pencil/package-artifacts-tools": "workspace:*",
+        "@open-pencil/unit-tests-tools": "workspace:*",
+      },
+    },
+    "tools/checks/type-shapes": {
+      "name": "@open-pencil/type-shapes-tools",
+    },
+    "tools/ci/images": {
+      "name": "@open-pencil/ci-images-tools",
+    },
+    "tools/ci/policy": {
+      "name": "@open-pencil/ci-policy-tools",
+      "dependencies": {
+        "@open-pencil/package-artifacts-tools": "workspace:*",
+      },
+    },
+    "tools/ci/pr-review-guidance": {
+      "name": "@open-pencil/pr-review-guidance-tools",
+    },
+    "tools/dev/dev-server": {
+      "name": "@open-pencil/dev-server-tools",
+    },
+    "tools/dev/navigation-benchmark": {
+      "name": "@open-pencil/navigation-benchmark-tools",
+    },
+    "tools/dev/unit-tests": {
+      "name": "@open-pencil/unit-tests-tools",
+      "dependencies": {
+        "@open-pencil/package-artifacts-tools": "workspace:*",
+      },
+    },
+    "tools/generate/authoring-reference": {
       "name": "@open-pencil/authoring-reference-tools",
       "dependencies": {
         "@open-pencil/core": "workspace:*",
-        "@open-pencil/package-artifacts": "workspace:*",
+        "@open-pencil/package-artifacts-tools": "workspace:*",
         "dedent": "^1.7.2",
       },
     },
-    "tools/brand": {
+    "tools/generate/brand": {
       "name": "@open-pencil/brand-tools",
       "dependencies": {
-        "@open-pencil/package-artifacts": "workspace:*",
+        "@open-pencil/package-artifacts-tools": "workspace:*",
         "@realfavicongenerator/generate-favicon": "0.9.0",
         "@realfavicongenerator/image-adapter-node": "0.9.0",
         "@tauri-apps/cli": "2.11.4",
@@ -429,17 +503,21 @@
         "typescript": "~5.8.3",
       },
     },
-    "tools/docs": {
-      "name": "@open-pencil/docs-tools",
-    },
-    "tools/lint": {
-      "name": "@open-pencil/lint-tools",
+    "tools/generate/tauri-menu": {
+      "name": "@open-pencil/tauri-menu-tools",
       "devDependencies": {
-        "@open-pencil/package-artifacts": "workspace:*",
+        "@open-pencil/package-artifacts-tools": "workspace:*",
+        "@open-pencil/vue": "workspace:*",
       },
     },
-    "tools/package-artifacts": {
-      "name": "@open-pencil/package-artifacts",
+    "tools/generate/visual-oracles": {
+      "name": "@open-pencil/visual-oracles-tools",
+      "dependencies": {
+        "citty": "^0.1.6",
+      },
+    },
+    "tools/release/package-artifacts": {
+      "name": "@open-pencil/package-artifacts-tools",
       "dependencies": {
         "@publint/pack": "^0.1.5",
         "pkg-types": "^2.3.1",
@@ -450,18 +528,10 @@
         "nanotar": "^0.3.0",
       },
     },
-    "tools/package-quality": {
-      "name": "@open-pencil/package-quality-tools",
+    "tools/release/release-packages": {
+      "name": "@open-pencil/release-packages-tools",
       "dependencies": {
-        "@open-pencil/package-artifacts": "workspace:*",
-        "citty": "^0.1.6",
-        "es-toolkit": "^1.51.0",
-      },
-    },
-    "tools/release-packages": {
-      "name": "@open-pencil/release-packages",
-      "dependencies": {
-        "@open-pencil/package-artifacts": "workspace:*",
+        "@open-pencil/package-artifacts-tools": "workspace:*",
         "@open-pencil/package-quality-tools": "workspace:*",
         "citty": "^0.1.6",
         "es-toolkit": "^1.51.0",
@@ -470,25 +540,6 @@
       },
       "devDependencies": {
         "nanotar": "^0.3.0",
-      },
-    },
-    "tools/tauri-menu": {
-      "name": "@open-pencil/tauri-menu-tools",
-      "devDependencies": {
-        "@open-pencil/package-artifacts": "workspace:*",
-        "@open-pencil/vue": "workspace:*",
-      },
-    },
-    "tools/unit-tests": {
-      "name": "@open-pencil/tool-unit-tests",
-      "dependencies": {
-        "@open-pencil/package-artifacts": "workspace:*",
-      },
-    },
-    "tools/visual-oracles": {
-      "name": "@open-pencil/visual-oracle-tools",
-      "dependencies": {
-        "citty": "^0.1.6",
       },
     },
   },
@@ -1340,17 +1391,25 @@
 
     "@nodelib/fs.walk": ["@nodelib/fs.walk@1.2.8", "", { "dependencies": { "@nodelib/fs.scandir": "2.1.5", "fastq": "^1.6.0" } }, "sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg=="],
 
-    "@open-pencil/authoring-reference-tools": ["@open-pencil/authoring-reference-tools@workspace:tools/authoring-reference"],
+    "@open-pencil/architecture-tools": ["@open-pencil/architecture-tools@workspace:tools/checks/architecture"],
 
-    "@open-pencil/brand-tools": ["@open-pencil/brand-tools@workspace:tools/brand"],
+    "@open-pencil/authoring-reference-tools": ["@open-pencil/authoring-reference-tools@workspace:tools/generate/authoring-reference"],
+
+    "@open-pencil/brand-tools": ["@open-pencil/brand-tools@workspace:tools/generate/brand"],
+
+    "@open-pencil/ci-images-tools": ["@open-pencil/ci-images-tools@workspace:tools/ci/images"],
+
+    "@open-pencil/ci-policy-tools": ["@open-pencil/ci-policy-tools@workspace:tools/ci/policy"],
 
     "@open-pencil/cli": ["@open-pencil/cli@workspace:packages/cli"],
 
     "@open-pencil/core": ["@open-pencil/core@workspace:packages/core"],
 
+    "@open-pencil/dev-server-tools": ["@open-pencil/dev-server-tools@workspace:tools/dev/dev-server"],
+
     "@open-pencil/docs": ["@open-pencil/docs@workspace:packages/docs"],
 
-    "@open-pencil/docs-tools": ["@open-pencil/docs-tools@workspace:tools/docs"],
+    "@open-pencil/docs-tools": ["@open-pencil/docs-tools@workspace:tools/checks/docs"],
 
     "@open-pencil/dom-css": ["@open-pencil/dom-css@workspace:packages/dom-css"],
 
@@ -1358,27 +1417,41 @@
 
     "@open-pencil/harness": ["@open-pencil/harness@workspace:packages/harness"],
 
+    "@open-pencil/i18n-tools": ["@open-pencil/i18n-tools@workspace:tools/checks/i18n"],
+
     "@open-pencil/kiwi": ["@open-pencil/kiwi@workspace:packages/kiwi"],
 
-    "@open-pencil/lint-tools": ["@open-pencil/lint-tools@workspace:tools/lint"],
+    "@open-pencil/lint-tools": ["@open-pencil/lint-tools@workspace:tools/checks/lint"],
 
     "@open-pencil/mcp": ["@open-pencil/mcp@workspace:packages/mcp"],
 
-    "@open-pencil/package-artifacts": ["@open-pencil/package-artifacts@workspace:tools/package-artifacts"],
+    "@open-pencil/navigation-benchmark-tools": ["@open-pencil/navigation-benchmark-tools@workspace:tools/dev/navigation-benchmark"],
 
-    "@open-pencil/package-quality-tools": ["@open-pencil/package-quality-tools@workspace:tools/package-quality"],
+    "@open-pencil/package-artifacts-tools": ["@open-pencil/package-artifacts-tools@workspace:tools/release/package-artifacts"],
+
+    "@open-pencil/package-quality-tools": ["@open-pencil/package-quality-tools@workspace:tools/checks/package-quality"],
 
     "@open-pencil/pen": ["@open-pencil/pen@workspace:packages/pen"],
 
-    "@open-pencil/release-packages": ["@open-pencil/release-packages@workspace:tools/release-packages"],
+    "@open-pencil/pr-review-guidance-tools": ["@open-pencil/pr-review-guidance-tools@workspace:tools/ci/pr-review-guidance"],
+
+    "@open-pencil/release-packages-tools": ["@open-pencil/release-packages-tools@workspace:tools/release/release-packages"],
 
     "@open-pencil/scene-graph": ["@open-pencil/scene-graph@workspace:packages/scene-graph"],
 
-    "@open-pencil/tauri-menu-tools": ["@open-pencil/tauri-menu-tools@workspace:tools/tauri-menu"],
+    "@open-pencil/secret-scan-tools": ["@open-pencil/secret-scan-tools@workspace:tools/checks/secret-scan"],
 
-    "@open-pencil/tool-unit-tests": ["@open-pencil/tool-unit-tests@workspace:tools/unit-tests"],
+    "@open-pencil/tauri-menu-tools": ["@open-pencil/tauri-menu-tools@workspace:tools/generate/tauri-menu"],
 
-    "@open-pencil/visual-oracle-tools": ["@open-pencil/visual-oracle-tools@workspace:tools/visual-oracles"],
+    "@open-pencil/test-homes-tools": ["@open-pencil/test-homes-tools@workspace:tools/checks/test-homes"],
+
+    "@open-pencil/tools": ["@open-pencil/tools@workspace:tools"],
+
+    "@open-pencil/type-shapes-tools": ["@open-pencil/type-shapes-tools@workspace:tools/checks/type-shapes"],
+
+    "@open-pencil/unit-tests-tools": ["@open-pencil/unit-tests-tools@workspace:tools/dev/unit-tests"],
+
+    "@open-pencil/visual-oracles-tools": ["@open-pencil/visual-oracles-tools@workspace:tools/generate/visual-oracles"],
 
     "@open-pencil/vue": ["@open-pencil/vue@workspace:packages/vue"],
 
