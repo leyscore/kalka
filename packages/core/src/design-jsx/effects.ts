@@ -23,6 +23,9 @@ export interface BlurEffectOptions {
   visible?: boolean
 }
 
+/** Radius of a shadow or blur that does not set one. */
+const DEFAULT_EFFECT_RADIUS = 8
+
 function toColor(color: EffectColor | undefined): Color {
   if (color === undefined) return { ...TRANSPARENT }
   return typeof color === 'string' ? parseColor(color) : color
@@ -33,7 +36,7 @@ function shadowEffect(type: 'DROP_SHADOW' | 'INNER_SHADOW', options: ShadowEffec
     type,
     color: toColor(options.color ?? 'rgba(0, 0, 0, 0.25)'),
     offset: options.offset ?? { x: options.x ?? 0, y: options.y ?? 4 },
-    radius: options.radius ?? 8,
+    radius: options.radius ?? DEFAULT_EFFECT_RADIUS,
     spread: options.spread ?? 0,
     visible: options.visible ?? true,
     blendMode: options.blendMode,
@@ -43,7 +46,7 @@ function shadowEffect(type: 'DROP_SHADOW' | 'INNER_SHADOW', options: ShadowEffec
 
 function blurEffect(
   type: 'LAYER_BLUR' | 'BACKGROUND_BLUR' | 'FOREGROUND_BLUR',
-  radiusOrOptions: number | BlurEffectOptions = 8
+  radiusOrOptions: number | BlurEffectOptions = {}
 ): Effect {
   const options =
     typeof radiusOrOptions === 'number' ? { radius: radiusOrOptions } : radiusOrOptions
@@ -51,7 +54,7 @@ function blurEffect(
     type,
     color: { ...TRANSPARENT },
     offset: { x: 0, y: 0 },
-    radius: options.radius ?? 8,
+    radius: options.radius ?? DEFAULT_EFFECT_RADIUS,
     spread: 0,
     visible: options.visible ?? true
   }
