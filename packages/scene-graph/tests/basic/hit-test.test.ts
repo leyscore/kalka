@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 
-import { SceneGraph } from '@open-pencil/core'
+import { SceneGraph } from '@open-pencil/scene-graph'
 
+import { expectDefined } from '../helpers/assert'
 import { pageId, rect } from './helpers'
 
 describe('hitTest', () => {
@@ -114,7 +115,10 @@ describe('hitTest', () => {
       width: 30,
       height: 30
     })
-    const instId = graph.createInstance(compId, pageId(graph), { x: 300, y: 0 }).id
+    const instId = expectDefined(
+      graph.createInstance(compId, pageId(graph), { x: 300, y: 0 }),
+      'instance'
+    ).id
     // Hit on instance's child area — returns instance (opaque container)
     expect(graph.hitTest(320, 20, pageId(graph))?.id).toBe(instId)
     // Miss on instance's empty area (no fills)

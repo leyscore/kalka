@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 
 import { mergeVectorNetworks, type VectorNetwork } from '@open-pencil/scene-graph'
 
-import { expectDefined } from '#tests/helpers/assert'
+import { expectDefined } from './helpers/assert'
 
 function lineNetwork(x: number): VectorNetwork {
   return {

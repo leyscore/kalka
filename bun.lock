@@ -479,6 +479,12 @@
         "@open-pencil/vue": "workspace:*",
       },
     },
+    "tools/unit-tests": {
+      "name": "@open-pencil/tool-unit-tests",
+      "dependencies": {
+        "@open-pencil/package-artifacts": "workspace:*",
+      },
+    },
     "tools/visual-oracles": {
       "name": "@open-pencil/visual-oracle-tools",
       "dependencies": {
@@ -1369,6 +1375,8 @@
     "@open-pencil/scene-graph": ["@open-pencil/scene-graph@workspace:packages/scene-graph"],
 
     "@open-pencil/tauri-menu-tools": ["@open-pencil/tauri-menu-tools@workspace:tools/tauri-menu"],
+
+    "@open-pencil/tool-unit-tests": ["@open-pencil/tool-unit-tests@workspace:tools/unit-tests"],
 
     "@open-pencil/visual-oracle-tools": ["@open-pencil/visual-oracle-tools@workspace:tools/visual-oracles"],
 

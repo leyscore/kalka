@@ -192,10 +192,11 @@
   },
   "scripts": {
     "build": "bunx tsdown --config tsdown.config.ts",
-    "check": "bun run typecheck && bun run build && bun run smoke:dist",
+    "check": "bun run typecheck && bun run test && bun run build && bun run smoke:dist",
     "prepack": "bun run build",
     "smoke:dist": "bun scripts/smoke-dist.ts",
-    "typecheck": "bunx tsc --noEmit -p tsconfig.json"
+    "test": "bun test tests",
+    "typecheck": "bunx tsc --noEmit -p tsconfig.test.json"
   },
   "dependencies": {
     "culori": "^4.0.2",

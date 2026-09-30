@@ -1,16 +1,15 @@
 import { describe, expect, test } from 'bun:test'
 
-import { generateId, SceneGraph } from '@open-pencil/core'
+import { generateId, SceneGraph } from '@open-pencil/scene-graph'
 
-import { expectDefined } from '#tests/helpers/assert'
-
+import { expectDefined, getNodeOrThrow } from '../helpers/assert'
 import { pageId, rect } from './helpers'
 
 describe('SceneGraph', () => {
   test('create rectangle', () => {
     const graph = new SceneGraph()
     const id = rect(graph, 'Rect', 100, 100, 200, 150)
-    const node = graph.getNode(id)
+    const node = getNodeOrThrow(graph, id)
     expect(node).toBeDefined()
     expect(expectDefined(node, 'node').type).toBe('RECTANGLE')
     expect(node.x).toBe(100)
@@ -124,7 +123,7 @@ describe('SceneGraph', () => {
     const page = pageId(graph)
     const comp = graph.createNode('COMPONENT', page, { name: 'Comp', width: 100, height: 40 })
     graph.createNode('RECTANGLE', comp.id, { name: 'BG', width: 100, height: 40 })
-    const inst = graph.createInstance(comp.id, page)
+    const inst = expectDefined(graph.createInstance(comp.id, page), 'instance')
     expect(inst).toBeDefined()
     expect(graph.getInstances(comp.id)).toHaveLength(1)
 
@@ -159,12 +158,12 @@ describe('SceneGraph', () => {
     const graph = new SceneGraph()
     const page = pageId(graph)
     const r = rect(graph, 'R', 100, 200)
-    const node = graph.getNode(r)
+    const node = getNodeOrThrow(graph, r)
     expect(node).toBeDefined()
     expect(expectDefined(node, 'node').parentId).toBe(page)
     graph.reparentNode(r, page)
     // Position should not change
-    const after = graph.getNode(r)
+    const after = getNodeOrThrow(graph, r)
     expect(after).toBeDefined()
     expect(expectDefined(after, 'updated node').x).toBe(100)
     expect(expectDefined(after, 'updated node').y).toBe(200)
@@ -189,7 +188,7 @@ describe('SceneGraph', () => {
 
     graph.reparentNode(r, frame)
     // Now node is inside frame at (200,100), so local coords should be (100, 50)
-    const after = graph.getNode(r)
+    const after = getNodeOrThrow(graph, r)
     expect(after).toBeDefined()
     expect(expectDefined(after, 'updated node').x).toBe(100)
     expect(after.y).toBe(50)
@@ -258,7 +257,7 @@ describe('SceneGraph', () => {
     graph.reparentNode(inner, frame)
 
     // Inner was at (100,100), frame is at (50,50), so inner's local = (50,50)
-    const innerNode = graph.getNode(inner)
+    const innerNode = getNodeOrThrow(graph, inner)
     expect(innerNode).toBeDefined()
     expect(expectDefined(innerNode, 'inner node').x).toBe(50)
     expect(innerNode.y).toBe(50)
@@ -339,7 +338,7 @@ describe('SceneGraph', () => {
     const graph = new SceneGraph()
     const id = rect(graph, 'R')
     graph.updateNode(id, { x: 200, name: 'Updated' })
-    const node = graph.getNode(id)
+    const node = getNodeOrThrow(graph, id)
     expect(node).toBeDefined()
     expect(expectDefined(node, 'node').x).toBe(200)
     expect(node.name).toBe('Updated')
@@ -353,7 +352,7 @@ describe('SceneGraph', () => {
       height: 40
     })
     const child = graph.createNode('RECTANGLE', comp.id, { name: 'BG', width: 100, height: 40 })
-    const instance = graph.createInstance(comp.id, pageId(graph))
+    const instance = expectDefined(graph.createInstance(comp.id, pageId(graph)), 'instance')
     expect(instance).toBeDefined()
     expect(expectDefined(instance, 'instance').type).toBe('INSTANCE')
     expect(instance.componentId).toBe(comp.id)
@@ -371,7 +370,7 @@ describe('SceneGraph', () => {
       height: 100
     })
     const label = graph.createNode('TEXT', comp.id, { name: 'Title', text: 'Hello', fontSize: 14 })
-    const instance = graph.createInstance(comp.id, pageId(graph))
+    const instance = expectDefined(graph.createInstance(comp.id, pageId(graph)), 'instance')
     expect(instance).toBeDefined()
     const instLabel = graph.getChildren(expectDefined(instance, 'instance').id)[0]
     expect(instLabel.text).toBe('Hello')
@@ -391,7 +390,7 @@ describe('SceneGraph', () => {
       height: 100
     })
     graph.createNode('TEXT', comp.id, { name: 'Title', text: 'Default', fontSize: 14 })
-    const instance = graph.createInstance(comp.id, pageId(graph))
+    const instance = expectDefined(graph.createInstance(comp.id, pageId(graph)), 'instance')
     expect(instance).toBeDefined()
     const instLabel = graph.getChildren(expectDefined(instance, 'instance').id)[0]
 
@@ -421,7 +420,7 @@ describe('SceneGraph', () => {
       height: 100
     })
     graph.createNode('RECTANGLE', comp.id, { name: 'BG' })
-    const instance = graph.createInstance(comp.id, pageId(graph))
+    const instance = expectDefined(graph.createInstance(comp.id, pageId(graph)), 'instance')
     expect(instance).toBeDefined()
     expect(graph.getChildren(expectDefined(instance, 'instance').id)).toHaveLength(1)
 
@@ -442,7 +441,7 @@ describe('SceneGraph', () => {
       height: 40
     })
     graph.createNode('RECTANGLE', comp.id, { name: 'BG' })
-    const instance = graph.createInstance(comp.id, pageId(graph))
+    const instance = expectDefined(graph.createInstance(comp.id, pageId(graph)), 'instance')
     expect(instance).toBeDefined()
     expect(expectDefined(instance, 'instance').type).toBe('INSTANCE')
 

@@ -1,9 +1,8 @@
 import { describe, test, expect } from 'bun:test'
 
-import { SceneGraph, UndoManager } from '@open-pencil/core'
-import type { JSONObject } from '@open-pencil/scene-graph/primitives'
+import { SceneGraph, UndoManager, type SceneNode } from '@open-pencil/scene-graph'
 
-import { getNodeOrThrow } from '#tests/helpers/assert'
+import { getNodeOrThrow } from '../helpers/assert'
 
 // ---------------------------------------------------------------------------
 // SceneGraph + UndoManager — integration (updateNodeWithUndo pattern)
@@ -22,7 +21,7 @@ describe('SceneGraph + UndoManager — updateNode undo integration', () => {
     ) {
       const node = getNodeOrThrow(graph, id)
       const previous = Object.fromEntries(
-        (Object.keys(changes) as string[]).map((k) => [k, (node as JSONObject)[k]])
+        (Object.keys(changes) as Array<keyof SceneNode>).map((k) => [k, node[k]])
       )
       graph.updateNode(id, changes)
       undo.push({

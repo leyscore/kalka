@@ -3,7 +3,7 @@
 Private tooling lives under `tools/<domain>/{src,tests}` with kebab-case domains and focused tests; `bun run test:tools` runs every tool package with a `test` script. `scripts/` may contain only tiny compatibility entrypoints.
 
 - Resolve the workspace with `resolveWorkspaceRoot` from `@open-pencil/package-artifacts`, not parent-directory traversal. Use domain aliases for cross-directory tooling imports, including tests; keep sibling imports relative.
-- `tools/architecture` (Steiger rules) backs `check:arch`; `tools/docs` backs `check:docs`, including the guide-map check; `tools/i18n`, `tools/release-packages`, `tools/unit-tests`, `tools/ci`, and `tools/brand` own their namesake commands.
+- `tools/architecture` (Steiger rules) backs `check:arch`; `tools/docs` backs `check:docs`, including the guide-map check; `tools/unit-tests` backs the unit shards and `check:test-homes` with its `engine-baseline.txt`; `tools/i18n`, `tools/release-packages`, `tools/ci`, and `tools/brand` own their namesake commands.
 
 ## CI
 

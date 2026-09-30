@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 
-import { SceneGraph } from '@open-pencil/core'
+import { SceneGraph } from '@open-pencil/scene-graph'
+
+import { expectDefined, getNodeOrThrow } from '../helpers/assert'
 
 describe('SceneGraph.cloneTree', () => {
   test('clone clears source.id from the clone', () => {
@@ -15,11 +17,11 @@ describe('SceneGraph.cloneTree', () => {
     graph.updateNode(rect.id, {
       source: { ...rect.source, id: '1:42', orderKey: '!', format: 'fig' }
     })
-    const original = graph.getNode(rect.id)
+    const original = getNodeOrThrow(graph, rect.id)
     expect(original).toBeDefined()
     expect(original.source.id).toBe('1:42')
 
-    const clone = graph.cloneTree(rect.id, page.id)
+    const clone = expectDefined(graph.cloneTree(rect.id, page.id), 'clone')
     expect(clone).not.toBeNull()
     // Clone must NOT carry the original's Figma GUID
     expect(clone.source.id).toBeNull()
@@ -40,9 +42,9 @@ describe('SceneGraph.cloneTree', () => {
       source: { ...rect.source, id: '1:99', format: 'fig' }
     })
 
-    const clone1 = graph.cloneTree(rect.id, page.id)
+    const clone1 = expectDefined(graph.cloneTree(rect.id, page.id), 'clone')
     expect(clone1).not.toBeNull()
-    const clone2 = graph.cloneTree(clone1.id, page.id)
+    const clone2 = expectDefined(graph.cloneTree(clone1.id, page.id), 'clone')
     expect(clone2).not.toBeNull()
     expect(clone2.source.id).toBeNull()
   })
@@ -62,12 +64,13 @@ describe('SceneGraph.cloneTree', () => {
           type: 'SOLID',
           color: { r: 1, g: 0, b: 0, a: 1 },
           visible: true,
+          opacity: 1,
           blendMode: 'NORMAL' as const
         }
       ]
     })
 
-    const clone = graph.cloneTree(rect.id, page.id)
+    const clone = expectDefined(graph.cloneTree(rect.id, page.id), 'clone')
     expect(clone).not.toBeNull()
     expect(clone.name).toBe('Original')
     expect(clone.width).toBe(100)
@@ -95,7 +98,7 @@ describe('SceneGraph.cloneTree', () => {
       source: { ...child.source, id: '2:11', format: 'fig' }
     })
 
-    const clone = graph.cloneTree(frame.id, page.id)
+    const clone = expectDefined(graph.cloneTree(frame.id, page.id), 'clone')
     expect(clone).not.toBeNull()
     expect(clone.source.id).toBeNull()
     const clonedChild = graph.getChildren(clone.id)[0]
@@ -129,10 +132,10 @@ describe('SceneGraph.cloneTree', () => {
       }
     })
 
-    const original = graph.getNode(rect.id)
+    const original = getNodeOrThrow(graph, rect.id)
     expect(original.source.fig.rawNodeFields).toEqual({ visible: true, opacity: 1 })
 
-    const clone = graph.cloneTree(rect.id, page.id)
+    const clone = expectDefined(graph.cloneTree(rect.id, page.id), 'clone')
     expect(clone).not.toBeNull()
 
     // Mutate the clone's source.fig (simulating what clearEditedSourceMetadata does)

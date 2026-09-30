@@ -5,7 +5,7 @@
 ## Placement
 
 - Package-local tests mirror source domains under `packages/<owner>/tests/`; central app tests mirror `src/app/**` under `tests/app/`; `tests/integration/` requires a genuinely cross-owner contract; E2E under `tests/e2e/` follows user workflows; native and Figma acceptance are explicit exceptions.
-- Existing `tests/engine/**` domains migrate together with runner discovery: `tools/unit-tests/src/shards.ts` lists each owner's canonical home and its current `tests/engine` directories, so a move is a `git mv` plus imports. Do not create competing homes or undiscovered suites.
+- Existing `tests/engine/**` domains migrate together with runner discovery: `tools/unit-tests/src/shards.ts` lists each owner's canonical home and its current `tests/engine` directories, so a move is a `git mv` plus imports. `bun run check:test-homes` rejects any test added under `tests/engine` and any stale entry in `tools/unit-tests/engine-baseline.txt`; new tests go to the canonical home, and a moved file is removed from the baseline (`--write` regenerates it). Scene Graph has migrated to `packages/scene-graph/tests`.
 - Owner-local helpers and fixtures stay local; only genuinely shared support goes under central `tests/helpers/<domain>/` and `tests/fixtures/`. MCP transport tests: `tests/engine/mcp/{server,stdio,transport}` with `tests/helpers/mcp`.
 - Never commit temporary, diagnostic, or profile specs; keep them in ignored `scratch/`.
 

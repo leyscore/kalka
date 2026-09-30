@@ -1,8 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 
-import { SceneGraph, type SceneNode } from '@open-pencil/core'
+import { SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
 import { getInstanceOverride, setInstanceOverride } from '@open-pencil/scene-graph'
 import { cloneNodeProps } from '@open-pencil/scene-graph/copy'
+
+import { expectDefined, getNodeOrThrow } from '../helpers/assert'
 
 function pageId(graph: SceneGraph): string {
   return graph.getPages()[0].id
@@ -22,9 +24,9 @@ describe('cloneNodeProps deep-copies vectorNetwork', () => {
         regions: [{ windingRule: 'NONZERO', loops: [[0, 1]] }]
       }
     })
-    const original = graph.getNode(node.id)
-    const clone = graph.cloneTree(node.id, pageId(graph))
-    const clonedNode = graph.getNode(clone.id)
+    const original = getNodeOrThrow(graph, node.id)
+    const clone = expectDefined(graph.cloneTree(node.id, pageId(graph)), 'clone')
+    const clonedNode = getNodeOrThrow(graph, clone.id)
 
     expect(clonedNode.vectorNetwork).not.toBe(original.vectorNetwork)
     if (original.vectorNetwork && clonedNode.vectorNetwork) {
@@ -47,9 +49,9 @@ describe('cloneNodeProps deep-copies vectorNetwork', () => {
         regions: []
       }
     })
-    const original = graph.getNode(node.id)
-    const clone = graph.cloneTree(node.id, pageId(graph))
-    const clonedNode = graph.getNode(clone.id)
+    const original = getNodeOrThrow(graph, node.id)
+    const clone = expectDefined(graph.cloneTree(node.id, pageId(graph)), 'clone')
+    const clonedNode = getNodeOrThrow(graph, clone.id)
 
     if (clonedNode.vectorNetwork) clonedNode.vectorNetwork.vertices[0].x = 999
     expect(original.vectorNetwork?.vertices[0].x).toBe(0)
@@ -66,9 +68,9 @@ describe('cloneNodeProps deep-copies textPicture and derivedTextGlyphs', () => {
       fontFamily: 'Inter',
       textPicture: new Uint8Array([1, 2, 3, 4])
     })
-    const original = graph.getNode(node.id)
-    const clone = graph.cloneTree(node.id, pageId(graph))
-    const clonedNode = graph.getNode(clone.id)
+    const original = getNodeOrThrow(graph, node.id)
+    const clone = expectDefined(graph.cloneTree(node.id, pageId(graph)), 'clone')
+    const clonedNode = getNodeOrThrow(graph, clone.id)
 
     expect(clonedNode.textPicture).not.toBe(original.textPicture)
     if (original.textPicture && clonedNode.textPicture) {
@@ -89,9 +91,9 @@ describe('cloneNodeProps deep-copies textPicture and derivedTextGlyphs', () => {
         { commandsBlob: new Uint8Array([30, 40]), x: 10, y: 0, fontSize: 14 }
       ]
     })
-    const original = graph.getNode(node.id)
-    const clone = graph.cloneTree(node.id, pageId(graph))
-    const clonedNode = graph.getNode(clone.id)
+    const original = getNodeOrThrow(graph, node.id)
+    const clone = expectDefined(graph.cloneTree(node.id, pageId(graph)), 'clone')
+    const clonedNode = getNodeOrThrow(graph, clone.id)
 
     expect(clonedNode.derivedTextGlyphs).not.toBe(original.derivedTextGlyphs)
     if (original.derivedTextGlyphs && clonedNode.derivedTextGlyphs) {
@@ -117,16 +119,16 @@ describe('cloneNodeProps deep-copies overrides values', () => {
       fills: [{ type: 'SOLID', color: { r: 1, g: 0, b: 0, a: 1 }, visible: true, opacity: 1 }]
     })
 
-    const instance = graph.createInstance(component.id, page)
+    const instance = expectDefined(graph.createInstance(component.id, page), 'instance')
     if (!instance) throw new Error('instance failed')
     const instanceChild = graph.getChildren(instance.id)[0]
     setInstanceOverride(instance.instanceOverrides, instance.id, instanceChild.id, 'fills', [
       { type: 'SOLID', color: { r: 0, g: 0, b: 1, a: 1 }, visible: true, opacity: 1 }
     ])
 
-    const clone = graph.cloneTree(instance.id, page)
+    const clone = expectDefined(graph.cloneTree(instance.id, page), 'clone')
     if (!clone) throw new Error('clone failed')
-    const clonedInstance = graph.getNode(clone.id)
+    const clonedInstance = getNodeOrThrow(graph, clone.id)
     const cloneOverrideVal = getInstanceOverride(
       clonedInstance.instanceOverrides,
       clonedInstance.id,
@@ -159,6 +161,7 @@ describe('cloneNodeProps fig import mode', () => {
         format: 'fig',
         id: 'fig-source',
         orderKey: 'a',
+        editedFields: [],
         fig: {
           rawSize: { x: 100, y: 40 },
           rawTransform: null,
@@ -187,7 +190,7 @@ describe('cloneNodeProps coverage guard', () => {
     const graph = new SceneGraph()
     const page = pageId(graph)
     const node = graph.createNode('RECTANGLE', page, { name: 'Rect' })
-    const raw = graph.getNode(node.id)
+    const raw = getNodeOrThrow(graph, node.id)
     const patch: Partial<
       Pick<
         SceneNode,
@@ -224,6 +227,7 @@ describe('cloneNodeProps coverage guard', () => {
         format: 'fig',
         id: 'source-node',
         orderKey: 'a',
+        editedFields: [],
         fig: {
           rawSize: { x: 1, y: 2 },
           rawTransform: null,

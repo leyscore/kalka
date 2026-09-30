@@ -1,9 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 
-import { SceneGraph } from '@open-pencil/core'
+import { SceneGraph } from '@open-pencil/scene-graph'
 
-import { expectDefined } from '#tests/helpers/assert'
-
+import { expectDefined } from '../helpers/assert'
 import { pageId, rect } from './helpers'
 
 describe('updateNode', () => {
@@ -49,7 +48,7 @@ describe('updateNode', () => {
       width: 50,
       height: 50
     })
-    const inst = graph.createInstance(comp1.id, page, { x: 200, y: 0 })
+    const inst = expectDefined(graph.createInstance(comp1.id, page, { x: 200, y: 0 }), 'instance')
     // Instance should be indexed under comp1
     expect(graph.instanceIndex.get(comp1.id)?.has(inst.id)).toBe(true)
     // Re-point instance to comp2

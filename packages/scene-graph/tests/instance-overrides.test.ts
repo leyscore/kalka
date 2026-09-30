@@ -10,7 +10,7 @@ import {
   hasInstanceOverride,
   serializeInstanceOverrideState,
   setInstanceOverride
-} from './instance-overrides'
+} from '../src/instance-overrides'
 
 describe('instance override state', () => {
   test('stores self and descendant values structurally', () => {

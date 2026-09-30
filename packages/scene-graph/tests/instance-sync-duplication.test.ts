@@ -144,7 +144,7 @@ describe('instance synchronization child deduplication', () => {
     const page = graph.addPage('Page')
 
     const comp = graph.createNode('COMPONENT', page.id, { name: 'Menu' })
-    const _item1 = graph.createNode('FRAME', comp.id, { name: 'Item 1' })
+    graph.createNode('FRAME', comp.id, { name: 'Item 1' })
 
     const inst = graph.createNode('INSTANCE', page.id, {
       name: 'Menu Instance',
@@ -156,7 +156,7 @@ describe('instance synchronization child deduplication', () => {
     })
 
     // Now add a second child to the component
-    const _item2 = graph.createNode('FRAME', comp.id, { name: 'Item 2', height: 32 })
+    graph.createNode('FRAME', comp.id, { name: 'Item 2', height: 32 })
     graph.syncInstances(comp.id)
 
     expect(inst.childIds.length).toBe(2)

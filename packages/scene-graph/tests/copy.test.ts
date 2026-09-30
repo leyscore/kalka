@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test'
 
-import type { Fill, Stroke, Effect, StyleRun, GeometryPath } from '@open-pencil/core'
+import type { Fill, Stroke, Effect, StyleRun, GeometryPath } from '@open-pencil/scene-graph'
 import {
   copyFill,
   copyFills,
@@ -11,7 +11,7 @@ import {
   scaleGeometryPaths
 } from '@open-pencil/scene-graph/copy'
 
-import { expectDefined } from '#tests/helpers/assert'
+import { expectDefined } from './helpers/assert'
 
 describe('copy helpers — mutation isolation', () => {
   test('copyFill: mutating copy does not affect original', () => {
