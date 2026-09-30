@@ -1,3 +1,4 @@
+export * from './contrast'
 export * from './management'
 export { normalizeColor } from './normalize'
 export * from './okhcl'

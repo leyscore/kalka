@@ -25,6 +25,7 @@
 
 ### Fixed
 
+- Judge text contrast in the AI and MCP `describe` tool by its WCAG 2 ratio (4.5:1, or 3:1 for large text), the same ratio the `color-contrast` lint rule computes. It no longer reports passing dark text on mid-tone backgrounds as "dark on dark", now reports low-contrast light text, measures translucent and faded text as it is drawn, skips text whose color is bound to a variable, and says the ratio and the threshold it missed (#735).
 - Warn about options the paint and effect helpers ignore when rendering JSX instead of dropping them silently, and point `blur` in effect helpers at `radius`, the name Figma uses (#736).
 - Size groups and boolean operations made through the AI and MCP `group_nodes` and `boolean_*` tools to what they contain, as the editor's commands already do, instead of a default 100 × 100 box or the first operand's box (#738).
 - Keep a layer where it is drawn when it moves into or out of a rotated or flipped parent, instead of shifting it and leaving it at its old angle (#737).
