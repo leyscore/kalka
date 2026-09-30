@@ -1,6 +1,6 @@
 import { twirl } from 'twirlwind'
 
-import type { DesignDocument, DesignElement, DesignNode, DesignText } from './types'
+import type { DesignDocument, DesignElement, DesignNode, DesignText } from '../types'
 
 export interface SerializeHTMLOptions {
   style?: 'inline' | 'tailwind'

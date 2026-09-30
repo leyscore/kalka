@@ -1,4 +1,4 @@
-import type { DesignDocument, DesignNode, DesignStyleDeclaration } from '../types'
+import type { DesignDocument, DesignNode, DesignStyleDeclaration } from '#dom-css/types'
 
 export const Fragment = Symbol.for('open-pencil.dom-css.fragment')
 

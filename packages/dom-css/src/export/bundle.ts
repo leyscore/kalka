@@ -4,8 +4,8 @@ import { parseFragment, serialize, type DefaultTreeAdapterTypes } from 'parse5'
 
 import { normalizeFontFamily } from '@open-pencil/scene-graph'
 
-import { mergeClassNames, serializeHTML, splitWhitespace } from './serialize'
-import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from './types'
+import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
+import { mergeClassNames, serializeHTML, splitWhitespace } from './html'
 
 /** A font face the exported text uses. */
 export interface WebFontFaceRequest {

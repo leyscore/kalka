@@ -1,19 +1,19 @@
 import type * as DesignTypes from './types'
 
-export { exportHTMLBundle } from './html-export'
-export { exportStorybook, STORYBOOK_FRAMEWORKS } from './storybook/export'
-export { serializeHTML, serializeNode } from './serialize'
+export { exportHTMLBundle } from './export/bundle'
+export { exportStorybook, STORYBOOK_FRAMEWORKS } from './export/storybook/export'
+export { serializeHTML, serializeNode } from './export/html'
 export { createBrowserCSSRuntime, createCSSRuntime, createHeadlessCSSRuntime } from './runtime'
 export {
   htmlToDesignDocument,
   htmlToSceneGraph,
   tailwindHTMLToDesignDocument,
   tailwindHTMLToSceneGraph
-} from './convert'
-export { designDocumentToSceneGraph } from './to-scene-graph'
-export { sceneGraphToDesignDocument, sceneNodeToDesignDocument } from './from-scene-graph'
-export { designDocumentToTailwindJSX, sceneNodesToTailwindJSX } from './jsx/print'
-export { compileTailwindCSS } from './tailwind'
+} from './import/html'
+export { designDocumentToSceneGraph } from './import/scene-graph'
+export { sceneGraphToDesignDocument, sceneNodeToDesignDocument } from './export/projection'
+export { designDocumentToTailwindJSX, sceneNodesToTailwindJSX } from './export/tailwind-jsx'
+export { compileTailwindCSS } from './import/tailwind'
 export {
   browserHTMLToDesignDocument,
   browserHTMLToSceneGraph,
@@ -32,14 +32,14 @@ export {
   jsxs,
   tailwindJSXToDesignDocument,
   tailwindJSXToSceneGraph
-} from './jsx/runtime'
+} from './import/jsx/runtime'
 export type {
   HTMLToDesignDocumentOptions,
   HTMLToSceneGraphOptions,
   TailwindHTMLToDesignDocumentOptions,
   TailwindHTMLToSceneGraphOptions
-} from './convert'
-export type { ToDesignDocumentOptions } from './from-scene-graph'
+} from './import/html'
+export type { ToDesignDocumentOptions } from './export/projection'
 export type { BrowserCSSRuntimeOptions } from './runtime'
 export type {
   JSXChild,
@@ -52,7 +52,7 @@ export type {
   JSXToSceneGraphOptions,
   TailwindJSXToDesignDocumentOptions,
   TailwindJSXToSceneGraphOptions
-} from './jsx/runtime'
+} from './import/jsx/runtime'
 export type {
   BrowserHTMLToDesignDocumentOptions,
   BrowserHTMLToSceneGraphOptions,
@@ -63,7 +63,7 @@ export type {
   BrowserToDesignDocumentOptions,
   BrowserToSceneGraphOptions
 } from './browser'
-export type { CompileTailwindCSSOptions } from './tailwind'
+export type { CompileTailwindCSSOptions } from './import/tailwind'
 export type {
   ExportHTMLBundle,
   ExportHTMLBundleOptions,
@@ -71,10 +71,14 @@ export type {
   WebFontFaceAsset,
   WebFontFaceRequest,
   WebFontFaceResolver
-} from './html-export'
-export type { ExportStorybookOptions, StorybookFile, StorybookFramework } from './storybook/export'
-export type { SerializeHTMLOptions } from './serialize'
-export type { ToSceneGraphOptions } from './to-scene-graph'
+} from './export/bundle'
+export type {
+  ExportStorybookOptions,
+  StorybookFile,
+  StorybookFramework
+} from './export/storybook/export'
+export type { SerializeHTMLOptions } from './export/html'
+export type { ToSceneGraphOptions } from './import/scene-graph'
 export type CSSComputeOptions = DesignTypes.CSSComputeOptions
 export type CSSRuntime = DesignTypes.CSSRuntime
 export type DesignDocument = DesignTypes.DesignDocument

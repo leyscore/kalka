@@ -5,7 +5,7 @@ import {
   type CSSStyleRuleLike
 } from '@acemir/cssom'
 
-import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from './types'
+import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
 
 interface HeadlessCSSRule {
   selector: string

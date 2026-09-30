@@ -1,8 +1,8 @@
 import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
 
-import { sceneNodeToDesignDocument } from '../from-scene-graph'
-import type { ExportHTMLFile } from '../html-export'
-import { serializeHTML } from '../serialize'
+import type { ExportHTMLFile } from '../bundle'
+import { serializeHTML } from '../html'
+import { sceneNodeToDesignDocument } from '../projection'
 import { collectGroups, type StoryGroup } from './groups'
 import { printStoryModule, type StoryDesign, type StorybookFramework } from './module'
 import { claimName, identifierName, storyId } from './names'

@@ -1,6 +1,6 @@
 import type { GridTrack, SceneNode } from '@open-pencil/scene-graph'
 
-import type { DesignStyleDeclaration } from './types'
+import type { DesignStyleDeclaration } from '../types'
 
 function trackToCSS(track: GridTrack): string {
   if (track.sizing === 'FR') return `${track.value}fr`

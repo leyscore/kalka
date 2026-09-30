@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
-
-import { browserHTMLToSceneGraph } from '../src/browser'
-import type { DesignElement, DesignNode } from '../src/index'
+import { browserHTMLToSceneGraph } from '#dom-css/browser'
+import type { DesignElement, DesignNode } from '#dom-css/index'
 import {
   createHeadlessCSSRuntime,
   designDocumentToSceneGraph,
@@ -11,8 +9,11 @@ import {
   htmlToSceneGraph,
   sceneGraphToDesignDocument,
   serializeHTML
-} from '../src/index'
-import { TEST_COLORS, cardCSS, cardHTML, fixtureCSS, fixtureHTML } from './helpers'
+} from '#dom-css/index'
+
+import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+
+import { TEST_COLORS, cardCSS, cardHTML, fixtureCSS, fixtureHTML } from '../helpers'
 
 const TRANSPARENT_PIXEL_DATA_URL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADElEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='

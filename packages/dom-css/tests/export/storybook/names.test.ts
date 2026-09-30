@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 
-import { claimName, identifierName, storyId } from '#dom-css/storybook/names'
+import { claimName, identifierName, storyId } from '#dom-css/export/storybook/names'
 import { sanitize } from 'storybook/internal/csf'
 
 describe('storyId', () => {

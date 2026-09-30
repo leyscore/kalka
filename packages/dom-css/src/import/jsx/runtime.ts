@@ -1,8 +1,9 @@
+import type { CSSComputeOptions, CSSRuntime, DesignDocument } from '#dom-css/types'
+
 import type { SceneGraph } from '@open-pencil/scene-graph'
 
+import { designDocumentToSceneGraph, type ToSceneGraphOptions } from '../scene-graph'
 import { compileTailwindCSS, type CompileTailwindCSSOptions } from '../tailwind'
-import { designDocumentToSceneGraph, type ToSceneGraphOptions } from '../to-scene-graph'
-import type { CSSComputeOptions, CSSRuntime, DesignDocument } from '../types'
 import { jsxToDesignDocumentCore, type JSXChild } from './core'
 
 export { Fragment, jsx, jsxs } from './core'
@@ -31,7 +32,7 @@ export interface TailwindJSXToSceneGraphOptions
 
 async function runtimeForOptions(runtime: CSSRuntime | undefined) {
   if (runtime) return runtime
-  const { createCSSRuntime } = await import('../runtime')
+  const { createCSSRuntime } = await import('#dom-css/runtime')
   return createCSSRuntime()
 }
 

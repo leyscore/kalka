@@ -3,9 +3,9 @@ import tsx from 'esrap/languages/tsx'
 
 import type { SceneGraph } from '@open-pencil/scene-graph'
 
-import { sceneNodeToDesignDocument } from '../from-scene-graph'
-import { mergeClassNames, serializeTailwindClasses } from '../serialize'
 import type { DesignDocument, DesignElement, DesignNode } from '../types'
+import { mergeClassNames, serializeTailwindClasses } from './html'
+import { sceneNodeToDesignDocument } from './projection'
 
 /** A JSX node as esrap prints it. */
 interface JSXNode {

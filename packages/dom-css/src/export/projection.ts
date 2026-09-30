@@ -4,6 +4,7 @@ import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
 import { BLACK } from '@open-pencil/scene-graph/constants'
 import { resolveNodeTextDirection } from '@open-pencil/scene-graph/text-direction'
 
+import type { DesignDocument, DesignNode, DesignStyleDeclaration } from '../types'
 import {
   cssColor,
   dropShadowToCSS,
@@ -12,9 +13,8 @@ import {
   sceneNodeSizeStyle,
   strokeColorToCSS,
   strokeToCSS
-} from './css-values'
+} from './css'
 import { addGridContainer, addGridPlacement } from './grid'
-import type { DesignDocument, DesignNode, DesignStyleDeclaration } from './types'
 
 const DOM_CSS_PLUGIN_ID = 'open-pencil-dom-css'
 const IMAGE_SOURCE_URL_KEY = 'image-source-url'

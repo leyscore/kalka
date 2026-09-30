@@ -7,8 +7,9 @@ import {
   jsxToSceneGraph,
   serializeHTML,
   tailwindJSXToSceneGraph
-} from '../src/index'
-import { tailwindCardClasses } from './helpers'
+} from '#dom-css/index'
+
+import { tailwindCardClasses } from '../helpers'
 
 function CardTitle(props: { children?: string }) {
   return <h1 class="title">{props.children}</h1>

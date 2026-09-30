@@ -10,6 +10,7 @@ import {
 import { TRANSPARENT } from '@open-pencil/scene-graph/constants'
 import { computeImageHash } from '@open-pencil/scene-graph/images'
 
+import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
 import {
   colorToFillFromCSS,
   colorToStrokeFromCSS,
@@ -18,7 +19,6 @@ import {
   parseCSSNumber,
   pickStyle
 } from './css-values'
-import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from './types'
 
 const DOM_CSS_PLUGIN_ID = 'open-pencil-dom-css'
 const IMAGE_SOURCE_URL_KEY = 'image-source-url'

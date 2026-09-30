@@ -2,11 +2,11 @@ import { parse, type DefaultTreeAdapterTypes } from 'parse5'
 
 import type { SceneGraph } from '@open-pencil/scene-graph'
 
+import { createCSSRuntime } from '../runtime'
+import type { CSSComputeOptions, CSSRuntime, DesignDocument } from '../types'
 import { mergeCSSText } from './css-text'
-import { createCSSRuntime } from './runtime'
+import { designDocumentToSceneGraph, type ToSceneGraphOptions } from './scene-graph'
 import { compileTailwindCSS, type CompileTailwindCSSOptions } from './tailwind'
-import { designDocumentToSceneGraph, type ToSceneGraphOptions } from './to-scene-graph'
-import type { CSSComputeOptions, CSSRuntime, DesignDocument } from './types'
 
 export interface HTMLToDesignDocumentOptions {
   cssText?: string

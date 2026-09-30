@@ -16,15 +16,15 @@ export function createOpenPencilAliases(rootDir: string) {
     },
     {
       find: /^@open-pencil\/dom-css\/export$/,
-      replacement: resolve(rootDir, 'packages/dom-css/src/export.ts')
+      replacement: resolve(rootDir, 'packages/dom-css/src/export/index.ts')
     },
     {
       find: /^@open-pencil\/dom-css\/jsx-runtime$/,
-      replacement: resolve(rootDir, 'packages/dom-css/src/jsx/runtime.ts')
+      replacement: resolve(rootDir, 'packages/dom-css/src/import/jsx/runtime.ts')
     },
     {
       find: /^@open-pencil\/dom-css\/jsx-dev-runtime$/,
-      replacement: resolve(rootDir, 'packages/dom-css/src/jsx/dev-runtime.ts')
+      replacement: resolve(rootDir, 'packages/dom-css/src/import/jsx/dev-runtime.ts')
     },
     {
       find: /^@open-pencil\/dom-css$/,

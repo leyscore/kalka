@@ -5,8 +5,9 @@ import {
   createHeadlessCSSRuntime,
   designDocumentToSceneGraph,
   tailwindHTMLToSceneGraph
-} from '../src/index'
-import { tailwindCardClasses, tailwindInputClasses } from './helpers'
+} from '#dom-css/index'
+
+import { tailwindCardClasses, tailwindInputClasses } from '../helpers'
 
 describe('@open-pencil/dom-css Tailwind', () => {
   it('compiles utility candidates through Tailwind', async () => {
