@@ -1,7 +1,7 @@
 # Unit tests still under tests/engine, the migration debt from
 # packages/docs/development/testing.md. New tests go to the owner's canonical
 # home; remove a line here when its file moves. Regenerate with
-# `bun tools/dev/unit-tests/src/check-homes.ts --write`.
+# `bun tools/checks/test-homes/src/index.ts --write`.
 tests/engine/acp/permission.test.ts
 tests/engine/acp/transport.test.ts
 tests/engine/app/ai/attachment/image.test.ts
@@ -139,60 +139,6 @@ tests/engine/dom-css/conversion.test.ts
 tests/engine/dom-css/jsx.test.ts
 tests/engine/dom-css/runtime.test.ts
 tests/engine/dom-css/tailwind.test.ts
-tests/engine/editor/clipboard/binding-corruption.test.ts
-tests/engine/editor/clipboard/delete.test.ts
-tests/engine/editor/clipboard/figma-images.test.ts
-tests/engine/editor/clipboard/file-placement.test.ts
-tests/engine/editor/clipboard/import-nodes/components.test.ts
-tests/engine/editor/clipboard/import-nodes/filtering.test.ts
-tests/engine/editor/clipboard/import-nodes/hierarchy.test.ts
-tests/engine/editor/clipboard/import-nodes/instance-linkage.test.ts
-tests/engine/editor/clipboard/import-nodes/paste-scope.test.ts
-tests/engine/editor/clipboard/import-nodes/styling.test.ts
-tests/engine/editor/clipboard/import-nodes/text/metrics.test.ts
-tests/engine/editor/clipboard/import-nodes/undo/redo.test.ts
-tests/engine/editor/clipboard/paste-target.test.ts
-tests/engine/editor/clipboard/paste-to-replace.test.ts
-tests/engine/editor/components/library-capabilities.test.ts
-tests/engine/editor/components/properties.test.ts
-tests/engine/editor/components/sync-layout-scope.test.ts
-tests/engine/editor/components/variants.test.ts
-tests/engine/editor/effects-and-resize.test.ts
-tests/engine/editor/frame-presets.test.ts
-tests/engine/editor/graph/events-integration.test.ts
-tests/engine/editor/graph/events.test.ts
-tests/engine/editor/graph/replacement.test.ts
-tests/engine/editor/guides.test.ts
-tests/engine/editor/history/atomic-tools.test.ts
-tests/engine/editor/layout/mutation-impact.test.ts
-tests/engine/editor/navigation-lifecycle.test.ts
-tests/engine/editor/node-preview.test.ts
-tests/engine/editor/nudge.test.ts
-tests/engine/editor/opacity.test.ts
-tests/engine/editor/pages/loading.test.ts
-tests/engine/editor/preview-events.test.ts
-tests/engine/editor/selection/alignment.test.ts
-tests/engine/editor/selection/distribution.test.ts
-tests/engine/editor/selection/flip.test.ts
-tests/engine/editor/selection/hit-test.test.ts
-tests/engine/editor/selection/properties.test.ts
-tests/engine/editor/selection/semantics.test.ts
-tests/engine/editor/structure/boolean.test.ts
-tests/engine/editor/structure/flatten.test.ts
-tests/engine/editor/structure/frame-selection.test.ts
-tests/engine/editor/structure/state.test.ts
-tests/engine/editor/structure/z-order.test.ts
-tests/engine/editor/text-auto-resize.test.ts
-tests/engine/editor/undo/basic.test.ts
-tests/engine/editor/undo/batch-idle.test.ts
-tests/engine/editor/undo/create-instance.test.ts
-tests/engine/editor/undo/create-shape.test.ts
-tests/engine/editor/undo/group-resize.test.ts
-tests/engine/editor/undo/history-events.test.ts
-tests/engine/editor/undo/redo-sequence.test.ts
-tests/engine/editor/undo/variable-bindings.test.ts
-tests/engine/editor/vectorize.test.ts
-tests/engine/editor/view-state.test.ts
 tests/engine/figma/api/absolute/position.test.ts
 tests/engine/figma/api/auto-layout/basic.test.ts
 tests/engine/figma/api/auto-layout/extras.test.ts
