@@ -6,9 +6,8 @@ import type {
   GradientTransform
 } from '@open-pencil/scene-graph'
 import { colorToFill, parseColor } from '@open-pencil/scene-graph/color'
+import { TRANSPARENT } from '@open-pencil/scene-graph/constants'
 import type { Color } from '@open-pencil/scene-graph/primitives'
-
-import { TRANSPARENT } from '#core/constants'
 
 export type PaintColor = string | Color
 export type PaintStop = readonly [PaintColor, number] | { color: PaintColor; position: number }

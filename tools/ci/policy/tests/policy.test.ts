@@ -28,7 +28,7 @@ const documentation = [
 ]
 const code = [
   'src/app/ai/chat/system-prompt.md',
-  'packages/core/src/design-jsx/reference/authoring.md',
+  'packages/design-jsx/src/reference/authoring.md',
   'packages/core/src/README.md',
   'packages/core/README.md.ts',
   'packages/core/instructions.md',

@@ -1,78 +1,48 @@
-export {
-  Frame,
-  Text,
-  Rectangle,
-  Ellipse,
-  Line,
-  Star,
-  Polygon,
-  Vector,
-  Group,
-  Section,
-  Component,
-  ComponentSet,
-  Instance,
-  View,
-  Rect,
-  Page,
-  INTRINSIC_ELEMENTS
-} from './components'
+import { createDesignJSXRenderer, type SVGSource } from '@open-pencil/design-jsx'
 
-export {
-  type TreeNode,
-  type BaseProps,
-  type ComponentProps,
-  type InstanceProps,
-  type TextProps,
-  type StyleProps,
-  type PaintProp,
-  isTreeNode,
-  node,
-  resolveToTree
-} from './tree'
+import { fetchIcons } from '#core/icons'
+import { createIconFromPaths } from '#core/icons/render'
+import { extractPaths, extractPathsFromElements, scalePathInfos } from '#core/icons/svg'
+import type { IconData } from '#core/icons/types'
+import { computeAllLayouts } from '#core/layout'
 
-export { renderTree, type RenderResult } from './renderer'
+function parseViewBox(viewBox: string | undefined): { w: number; h: number } {
+  if (!viewBox) return { w: 0, h: 0 }
+  const parts = viewBox
+    .trim()
+    .split(/[\s,]+/)
+    .map(Number)
+  return { w: parts[2] ?? 0, h: parts[3] ?? 0 }
+}
 
-export {
-  backgroundBlur,
-  dropShadow,
-  foregroundBlur,
-  innerShadow,
-  layerBlur,
-  type BlurEffectOptions,
-  type EffectColor,
-  type ShadowEffectOptions
-} from './effects'
+/** Inline SVG through the same path pipeline as Iconify icons, scaled from its viewBox. */
+function svgIconData({ body, elements, props }: SVGSource, size: number): IconData | null {
+  // Children may arrive as parsed SVG elements rather than markup; both use the same shapes.
+  let pathInfos = body.trim() ? extractPaths(body) : []
+  if (pathInfos.length === 0) pathInfos = extractPathsFromElements(elements, props)
+  if (pathInfos.length === 0) return null
+  const viewBox = parseViewBox(props.viewBox as string | undefined)
+  return {
+    prefix: 'svg',
+    name: (props.name as string | undefined) ?? 'custom',
+    width: size,
+    height: size,
+    paths: scalePathInfos(
+      pathInfos,
+      viewBox.w > 0 ? size / viewBox.w : 1,
+      viewBox.h > 0 ? size / viewBox.h : 1
+    )
+  }
+}
 
-export {
-  angularGradient,
-  diamondGradient,
-  gradient,
-  linearGradient,
-  radialGradient,
-  solid,
-  type GradientPaintOptions,
-  type PaintColor,
-  type PaintStop,
-  type SolidPaintOptions
-} from './paints'
-
-export { defineVars, designVar, isVariable, type DesignVariable, type VarDef } from './vars'
-
-export { createElement } from './mini-react'
-
-export { renderJSX, renderTreeNode, buildComponent } from './render'
-export {
-  DESIGN_JSX_ELEMENTS,
-  DESIGN_JSX_HELPERS,
-  DESIGN_JSX_PROPERTIES,
-  DESIGN_JSX_SUPPORTED_PROPERTIES,
-  DESIGN_JSX_SUPPORTED_PROPERTY_NAMES,
-  type DesignJSXElementDefinition,
-  type DesignJSXHelperDefinition,
-  type DesignJSXPropertyDefinition
-} from './schema'
-export { transformDesignJSXExpression } from './transform'
-
-export { sceneNodeToJSX, selectionToJSX } from '#core/io/formats/jsx'
-export { JSX_REFERENCE, AUTHORING_EXAMPLES, type AuthoringExample } from './reference'
+/** Design JSX rendering with OpenPencil's icons, SVG conversion, and layout. */
+export const { renderJSX, renderTree } = createDesignJSXRenderer<IconData>({
+  async icon(name, size) {
+    const icon = (await fetchIcons([name], size)).get(name)
+    return icon && icon.paths.length > 0 ? icon : null
+  },
+  svg: svgIconData,
+  createArtwork: (graph, icon, { parentId, size, color, overrides }) =>
+    createIconFromPaths(graph, icon, icon.name, size, color, parentId, overrides),
+  layout: computeAllLayouts
+})

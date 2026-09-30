@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 
-import { Frame, Text, Rectangle, isTreeNode, node } from '@open-pencil/core'
-
-import { expectDefined } from '#tests/helpers/assert'
+import { Frame, Text, Rectangle, isTreeNode, node } from '#design-jsx/index'
 
 describe('TreeNode builders', () => {
   it('creates Frame tree node', () => {
@@ -29,7 +27,7 @@ describe('TreeNode builders', () => {
       ]
     })
     expect(tree.children.length).toBe(2)
-    expect(isTreeNode(expectDefined(tree.children[0], 'first tree child'))).toBe(true)
+    expect(isTreeNode(tree.children[0])).toBe(true)
     const bg = tree.children[0] as ReturnType<typeof Rectangle>
     expect(bg.type).toBe('rectangle')
     expect(bg.props.name).toBe('Bg')

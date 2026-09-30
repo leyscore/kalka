@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 
+import { renderTree, renderJSX } from '@open-pencil/core'
 import {
-  renderTree,
-  renderJSX,
-  renderTreeNode,
   Frame,
   Text,
   Rectangle,
@@ -22,7 +20,7 @@ import {
   layerBlur,
   linearGradient,
   solid
-} from '@open-pencil/core'
+} from '@open-pencil/design-jsx'
 
 import { expectDefined, getNodeOrThrow, childIdAt } from '#tests/helpers/assert'
 import { addTestColorVariable, makeSceneGraph } from '#tests/helpers/scene'
@@ -476,23 +474,28 @@ describe('renderTree', () => {
   })
 })
 
-describe('renderTreeNode', () => {
-  it('renders pre-built tree (browser path)', async () => {
+describe('fragments', () => {
+  it('renders every root of a fragment and returns the first', async () => {
     const g = makeSceneGraph()
-    const tree = Frame({
-      name: 'FromAI',
-      w: 200,
-      h: 100,
-      bg: '#3B82F6',
-      children: [Text({ name: 'Label', size: 16, color: '#FFF', children: 'Button' })]
+    const pageId = g.getPages()[0].id
+    const before = getNodeOrThrow(g, pageId).childIds.length
+    const result = await renderTree(g, {
+      type: '',
+      props: {},
+      children: [Frame({ name: 'A', w: 10, h: 10 }), Frame({ name: 'B', w: 10, h: 10 })]
     })
-    const result = await renderTreeNode(g, tree)
+    expect(result.name).toBe('A')
+    expect(getNodeOrThrow(g, pageId).childIds.length).toBe(before + 2)
+  })
 
-    expect(result.name).toBe('FromAI')
-    const node = getNodeOrThrow(g, result.id)
-    expect(node.childIds.length).toBe(1)
-    const label = getNodeOrThrow(g, childIdAt(node, 0))
-    expect(label.text).toBe('Button')
+  it('renders a nested fragment into its parent', async () => {
+    const g = makeSceneGraph()
+    const [result] = await renderJSX(
+      g,
+      '<Frame name="Card"><><Text>One</Text><Text>Two</Text></></Frame>'
+    )
+    const card = getNodeOrThrow(g, result.id)
+    expect(card.childIds.map((id) => getNodeOrThrow(g, id).text)).toEqual(['One', 'Two'])
   })
 })
 

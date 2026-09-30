@@ -3,7 +3,7 @@ import { useClipboard, useDebounceFn } from '@vueuse/core'
 import { tv } from 'tailwind-variants'
 import { computed, defineAsyncComponent, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 
-import { JSX_REFERENCE } from '@open-pencil/core/design-jsx'
+import { JSX_REFERENCE } from '@open-pencil/design-jsx'
 import { useI18n, useSceneComputed } from '@open-pencil/vue'
 
 import {

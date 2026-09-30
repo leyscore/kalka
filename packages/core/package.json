@@ -107,11 +107,6 @@
       "import": "./dist/io/formats/fig/index.js",
       "default": "./dist/io/formats/fig/index.js"
     },
-    "./io/formats/jsx": {
-      "types": "./dist/io/formats/jsx/index.d.ts",
-      "import": "./dist/io/formats/jsx/index.js",
-      "default": "./dist/io/formats/jsx/index.js"
-    },
     "./io/formats/raster": {
       "types": "./dist/io/formats/raster/index.d.ts",
       "import": "./dist/io/formats/raster/index.js",
@@ -171,6 +166,7 @@
   "dependencies": {
     "@chenglou/pretext": "^0.0.7",
     "@iconify/utils": "^3.1.4",
+    "@open-pencil/design-jsx": "workspace:*",
     "@open-pencil/dom-css": "workspace:*",
     "@open-pencil/fig": "workspace:*",
     "@open-pencil/kiwi": "workspace:*",

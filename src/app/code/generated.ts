@@ -1,4 +1,4 @@
-import { selectionToJSX } from '@open-pencil/core/design-jsx'
+import { selectionToJSX } from '@open-pencil/design-jsx'
 import { sceneNodesToTailwindJSX } from '@open-pencil/dom-css/export'
 import type { SceneGraph } from '@open-pencil/scene-graph'
 

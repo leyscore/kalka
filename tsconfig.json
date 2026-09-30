@@ -77,6 +77,12 @@
       "@open-pencil/scene-graph/*": [
         "./packages/scene-graph/src/*"
       ],
+      "#design-jsx/*": [
+        "./packages/design-jsx/src/*"
+      ],
+      "@open-pencil/design-jsx": [
+        "./packages/design-jsx/src/index.ts"
+      ],
       "#pen/*": [
         "./packages/pen/src/*"
       ],
@@ -94,7 +100,8 @@
     "packages/core/src/global.d.ts",
     "packages/vue/src/global.d.ts",
     "packages/dom-css/src/cssom.d.ts",
-    "packages/dom-css/src/postcss-value-parser.d.ts"
+    "packages/dom-css/src/postcss-value-parser.d.ts",
+    "packages/design-jsx/src/global.d.ts"
   ],
   "references": [
     {

@@ -1,7 +1,8 @@
 import { createTwoFilesPatch } from 'diff'
 import * as v from 'valibot'
 
-import { sceneNodeToJSX } from '#core/io/formats/jsx'
+import { sceneNodeToJSX } from '@open-pencil/design-jsx'
+
 import { nodeIdInput, nodeComparisonInput } from '#core/tools/input'
 import { defineTool } from '#core/tools/schema'
 

@@ -9,6 +9,15 @@ export interface TreeNode {
   children: (TreeNode | string)[]
 }
 
+/** A fragment (`<>…</>`) groups siblings without creating a node of its own. */
+export const FRAGMENT = ''
+
+function inlineFragments(children: (TreeNode | string)[]): (TreeNode | string)[] {
+  return children.flatMap((child) =>
+    typeof child !== 'string' && child.type === FRAGMENT ? child.children : [child]
+  )
+}
+
 export function isTreeNode(x: unknown): x is TreeNode {
   if (x === null || typeof x !== 'object') return false
   return (
@@ -62,7 +71,7 @@ export function resolveToTree(element: unknown, depth = 0): TreeNode | null {
       }
     }
     const { children: _, ...props } = element.props
-    return { type: element.type, props, children }
+    return { type: element.type, props, children: inlineFragments(children) }
   }
 
   return null
@@ -83,7 +92,7 @@ export function node(
     .flat(Infinity)
     .map(resolveChild)
     .filter((c): c is TreeNode | string => c !== null)
-  return { type, props: rest, children: processed }
+  return { type, props: rest, children: inlineFragments(processed) }
 }
 
 export type PaintProp = string | Color | Fill | DesignVariable

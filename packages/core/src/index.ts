@@ -1,5 +1,4 @@
 export { CODEGEN_PROMPT } from './tools/prompts'
-export { JSX_REFERENCE } from './design-jsx/reference'
 
 export { randomHex, randomInt, randomIndex } from './random'
 
@@ -306,69 +305,7 @@ export {
 } from './kiwi/fig/node-change/serialize'
 export { buildDerivedTextDataV4 } from './text/derived-text/clipboard'
 
-export {
-  createElement,
-  renderTree,
-  renderJSX,
-  renderTreeNode,
-  buildComponent,
-  backgroundBlur,
-  dropShadow,
-  foregroundBlur,
-  innerShadow,
-  layerBlur,
-  angularGradient,
-  diamondGradient,
-  gradient,
-  linearGradient,
-  radialGradient,
-  solid,
-  defineVars,
-  designVar,
-  isVariable,
-  Frame,
-  Text,
-  Rectangle,
-  Ellipse,
-  Line,
-  Star,
-  Polygon,
-  Vector as VectorNode,
-  Group,
-  Section,
-  View,
-  Rect as RectNode,
-  Component,
-  Component as ComponentNode,
-  ComponentSet,
-  ComponentSet as ComponentSetNode,
-  Instance,
-  Instance as InstanceNode,
-  Page as PageNode,
-  INTRINSIC_ELEMENTS,
-  isTreeNode,
-  resolveToTree,
-  node,
-  type TreeNode,
-  type BaseProps,
-  type ComponentProps,
-  type InstanceProps,
-  type TextProps,
-  type StyleProps,
-  type PaintProp,
-  type BlurEffectOptions,
-  type EffectColor,
-  type ShadowEffectOptions,
-  type GradientPaintOptions,
-  type PaintColor,
-  type PaintStop,
-  type SolidPaintOptions,
-  type DesignVariable,
-  type VarDef,
-  type RenderResult,
-  sceneNodeToJSX,
-  selectionToJSX
-} from './design-jsx'
+export { renderJSX, renderTree } from './design-jsx'
 export {
   parseFigmaClipboard,
   importClipboardNodes,

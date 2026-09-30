@@ -42,7 +42,13 @@ export const UNIT_TEST_GROUPS = {
     'tests/engine/tools',
     'tests/engine/vector'
   ],
-  dom: ['packages/dom-css/tests', 'packages/pen/tests', 'tests/engine/dom-css', 'tests/engine/pen'],
+  dom: [
+    'packages/design-jsx/tests',
+    'packages/dom-css/tests',
+    'packages/pen/tests',
+    'tests/engine/dom-css',
+    'tests/engine/pen'
+  ],
   fig: [
     'packages/fig/tests',
     'packages/kiwi/tests',

@@ -1,9 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import {
-  DESIGN_JSX_SUPPORTED_PROPERTIES,
-  transformDesignJSXExpression
-} from '@open-pencil/core/design-jsx'
+import { DESIGN_JSX_SUPPORTED_PROPERTIES, transformDesignJSXExpression } from '#design-jsx/index'
 
 describe('Design JSX schema', () => {
   test('includes renderer compatibility properties', () => {

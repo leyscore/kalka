@@ -8,14 +8,6 @@ import {
 } from '@open-pencil/scene-graph'
 import { parseColor } from '@open-pencil/scene-graph/color'
 
-import type { RenderOptions } from '#core/design-jsx/types'
-import { fetchIcons } from '#core/icons'
-import { createIconFromPaths } from '#core/icons/render'
-import { extractPaths, extractPathsFromElements, scalePathInfos } from '#core/icons/svg'
-import type { IconData } from '#core/icons/types'
-import { computeAllLayouts } from '#core/layout'
-import { randomHex } from '#core/random'
-
 import {
   assignComponentProperties,
   componentMetadata,
@@ -23,8 +15,10 @@ import {
 } from './component-properties'
 import { applySizeOverrides, propsToOverrides } from './props-overrides'
 import { prepareScalarBindings } from './scalar-bindings'
-import { isTreeNode } from './tree'
+import type { DesignJSXServices } from './services'
+import { FRAGMENT, isTreeNode } from './tree'
 import type { TreeNode } from './tree'
+import type { RenderOptions } from './types'
 import { isVariable, resolveVariableId, type DesignVariable } from './vars'
 
 const TYPE_MAP: Partial<Record<string, NodeType>> = {
@@ -68,26 +62,56 @@ export interface RenderResult {
   warnings?: string[]
 }
 
-export async function renderTree(
+/** Component property ids only need to be unique within a document. */
+function randomHex(bytes: number): string {
+  return Array.from(crypto.getRandomValues(new Uint8Array(bytes)), (byte) =>
+    byte.toString(16).padStart(2, '0')
+  ).join('')
+}
+
+/** The nodes a tree renders as: a fragment's children, or the tree itself. */
+function treeRoots(tree: TreeNode): TreeNode[] {
+  return tree.type === FRAGMENT ? tree.children.filter(isTreeNode) : [tree]
+}
+
+/** Render every root of `tree` into the parent and lay out once. */
+export async function renderRoots<Artwork>(
+  services: DesignJSXServices<Artwork>,
+  graph: SceneGraph,
+  tree: TreeNode,
+  options: RenderOptions = {}
+): Promise<RenderResult[]> {
+  const roots = treeRoots(tree)
+  if (roots.length === 0) throw new Error('JSX must return a Figma element (Frame, Text, etc)')
+  const parentId = options.parentId ?? graph.getPages()[0].id
+
+  const nodes: SceneNode[] = []
+  for (const root of roots) {
+    const node = await renderNode(services, graph, root, parentId)
+    if (options.x !== undefined) graph.updateNode(node.id, { x: options.x })
+    if (options.y !== undefined) graph.updateNode(node.id, { y: options.y })
+    nodes.push(node)
+  }
+
+  services.layout(graph)
+
+  return nodes.map((node) => ({
+    id: node.id,
+    name: node.name,
+    type: node.type,
+    childIds: node.childIds
+  }))
+}
+
+/** Render `tree` and return its first root; a fragment's other roots are rendered too. */
+export async function renderTree<Artwork>(
+  services: DesignJSXServices<Artwork>,
   graph: SceneGraph,
   tree: TreeNode,
   options: RenderOptions = {}
 ): Promise<RenderResult> {
-  const parentId = options.parentId ?? graph.getPages()[0].id
-
-  const result = await renderNode(graph, tree, parentId)
-
-  if (options.x !== undefined) graph.updateNode(result.id, { x: options.x })
-  if (options.y !== undefined) graph.updateNode(result.id, { y: options.y })
-
-  computeAllLayouts(graph)
-
-  return {
-    id: result.id,
-    name: result.name,
-    type: result.type,
-    childIds: result.childIds
-  }
+  const [first] = await renderRoots(services, graph, tree, options)
+  return first
 }
 
 interface PreparedProps {
@@ -204,23 +228,8 @@ function applyIconSize(
   if (typeof h !== 'number') overrides.height = size
 }
 
-function finishIconRender(
-  graph: SceneGraph,
-  icon: IconData,
-  props: Record<string, unknown>,
-  size: number,
-  color: Color,
-  parentId: string
-): SceneNode {
-  const parent = graph.getNode(parentId)
-  const parentLayout = parent?.layoutMode ?? 'NONE'
-  const overrides: Partial<SceneNode> = {}
-  if (props.label) overrides.name = props.label as string
-  applyIconSize(props, overrides, parentLayout, size)
-  return createIconFromPaths(graph, icon, icon.name, size, color, parentId, overrides)
-}
-
-async function renderIconNode(
+async function renderIconNode<Artwork>(
+  services: DesignJSXServices<Artwork>,
   graph: SceneGraph,
   tree: TreeNode,
   parentId: string
@@ -230,27 +239,37 @@ async function renderIconNode(
   if (!iconName) throw new Error('<Icon> requires a name prop (e.g. name="lucide:heart")')
 
   const size = (props.size as number | undefined) ?? 24
-  const colorHex = (props.color as string | undefined) ?? '#000000'
-  const parsedColor = parseColor(colorHex)
+  const artwork = await services.icon(iconName, size)
+  if (!artwork) throw new Error(`Icon "${iconName}" not found`)
+  return placeArtwork(services, graph, artwork, props, size, parentId)
+}
 
-  const icons = await fetchIcons([iconName], size)
-  const icon = icons.get(iconName)
-  if (!icon || icon.paths.length === 0) {
-    throw new Error(`Icon "${iconName}" not found`)
-  }
-  return finishIconRender(graph, icon, props, size, parsedColor, parentId)
+function placeArtwork<Artwork>(
+  services: DesignJSXServices<Artwork>,
+  graph: SceneGraph,
+  artwork: Artwork,
+  props: Record<string, unknown>,
+  size: number,
+  parentId: string
+): SceneNode {
+  const parentLayout = graph.getNode(parentId)?.layoutMode ?? 'NONE'
+  const overrides: Partial<SceneNode> = {}
+  if (props.label) overrides.name = props.label as string
+  applyIconSize(props, overrides, parentLayout, size)
+  const color = parseColor((props.color as string | undefined) ?? '#000000')
+  return services.createArtwork(graph, artwork, { parentId, size, color, overrides })
 }
 
 /**
- * Render an inline <svg> element into vector nodes. Reuses the same SVG-path
- * pipeline as iconify icons: the body may be passed as string children or a
- * `body`/`children` string prop, and is parsed with extractPaths + parseSVGPath.
+ * Render an inline <svg> element into vector nodes through the same artwork path as
+ * icons. The body may be string children or a `body` prop; parsed shape children work too.
  */
-async function renderSVGNode(
+function renderSVGNode<Artwork>(
+  services: DesignJSXServices<Artwork>,
   graph: SceneGraph,
   tree: TreeNode,
   parentId: string
-): Promise<SceneNode> {
+): SceneNode {
   const props = tree.props
   const explicitW = typeof props.w === 'number' ? props.w : 0
   const explicitH = typeof props.h === 'number' ? props.h : 0
@@ -258,47 +277,14 @@ async function renderSVGNode(
     explicitW > 0 || explicitH > 0
       ? Math.max(explicitW, explicitH)
       : ((props.size as number | undefined) ?? 24)
-  const colorHex = (props.color as string | undefined) ?? '#000000'
-  const parsedColor = parseColor(colorHex)
-
   const body =
     (typeof props.body === 'string' && props.body) ||
     tree.children.filter((c): c is string => typeof c === 'string').join('')
-
-  // Children may arrive as parsed SVG elements (mini-react lowercases tags)
-  // rather than raw markup. Route both representations through the shared SVG
-  // shape conversion so path and primitive children have identical behavior.
-  let pathInfos = body.trim() ? extractPaths(body) : []
-  if (pathInfos.length === 0) {
-    pathInfos = extractPathsFromElements(tree.children.filter(isTreeNode), props)
-  }
-  if (pathInfos.length === 0) {
+  const artwork = services.svg({ body, elements: tree.children.filter(isTreeNode), props }, size)
+  if (!artwork) {
     throw new Error('<svg> requires SVG markup, a body prop, or supported SVG shape children')
   }
-
-  const vb = parseViewBox(props.viewBox as string | undefined)
-  const scaleX = vb.w > 0 ? size / vb.w : 1
-  const scaleY = vb.h > 0 ? size / vb.h : 1
-
-  const icon: IconData = {
-    prefix: 'svg',
-    name: (props.name as string | undefined) ?? 'custom',
-    width: size,
-    height: size,
-    paths: scalePathInfos(pathInfos, scaleX, scaleY)
-  }
-  return finishIconRender(graph, icon, props, size, parsedColor, parentId)
-}
-
-function parseViewBox(viewBox: string | undefined): { w: number; h: number } {
-  if (!viewBox) return { w: 0, h: 0 }
-  const parts = viewBox
-    .trim()
-    .split(/[\s,]+/)
-    .map(Number)
-  const w = parts[2] ?? 0
-  const h = parts[3] ?? 0
-  return { w, h }
+  return placeArtwork(services, graph, artwork, props, size, parentId)
 }
 
 function parseVariantValues(name: string): Record<string, string> {
@@ -510,7 +496,8 @@ function applyInstanceOverrides(
   }
 }
 
-async function renderArtworkNode(
+async function renderArtworkNode<Artwork>(
+  services: DesignJSXServices<Artwork>,
   graph: SceneGraph,
   tree: TreeNode,
   parentId: string
@@ -518,14 +505,20 @@ async function renderArtworkNode(
   const metadata = componentMetadata(tree.props, 'VECTOR', componentPropertyScope(graph, parentId))
   const node =
     tree.type === 'icon'
-      ? await renderIconNode(graph, tree, parentId)
-      : await renderSVGNode(graph, tree, parentId)
+      ? await renderIconNode(services, graph, tree, parentId)
+      : renderSVGNode(services, graph, tree, parentId)
   if (Object.keys(metadata).length > 0) graph.updateNode(node.id, metadata)
   return node
 }
 
-async function renderNode(graph: SceneGraph, tree: TreeNode, parentId: string): Promise<SceneNode> {
-  if (tree.type === 'icon' || tree.type === 'svg') return renderArtworkNode(graph, tree, parentId)
+async function renderNode<Artwork>(
+  services: DesignJSXServices<Artwork>,
+  graph: SceneGraph,
+  tree: TreeNode,
+  parentId: string
+): Promise<SceneNode> {
+  if (tree.type === 'icon' || tree.type === 'svg')
+    return renderArtworkNode(services, graph, tree, parentId)
   if (tree.type === 'instance') return renderInstanceNode(graph, tree, parentId)
 
   const nodeType = TYPE_MAP[tree.type]
@@ -555,7 +548,7 @@ async function renderNode(graph: SceneGraph, tree: TreeNode, parentId: string): 
   for (const child of tree.children) {
     if (typeof child === 'string') continue
     if (isTreeNode(child)) {
-      await renderNode(graph, child, node.id)
+      await renderNode(services, graph, child, node.id)
     }
   }
 

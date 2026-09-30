@@ -3,13 +3,13 @@ import { transform } from 'sucrase'
 
 import type { SceneGraph } from '@open-pencil/scene-graph'
 
-import { DESIGN_JSX_SUPPORTED_PROPERTIES } from '#core/design-jsx/schema'
-import type { RenderOptions as RenderJSXOptions } from '#core/design-jsx/types'
-
 import { designJSXHelpers } from './helpers'
 import * as React from './mini-react'
-import { renderTree, type RenderResult } from './renderer'
+import { renderRoots, renderTree, type RenderResult } from './renderer'
+import { DESIGN_JSX_SUPPORTED_PROPERTIES } from './schema'
+import type { DesignJSXServices } from './services'
 import { isTreeNode, resolveToTree, type TreeNode } from './tree'
+import type { RenderOptions as RenderJSXOptions } from './types'
 
 /**
  * Build a component function from a JSX string using sucrase.
@@ -101,7 +101,8 @@ export function buildComponent(jsxString: string, warnings: string[] = []): Reac
  * Render a JSX string into the scene graph.
  * Works in both Node/Bun and the browser.
  */
-export async function renderJSX(
+async function renderJSX<Artwork>(
+  services: DesignJSXServices<Artwork>,
   graph: SceneGraph,
   jsxString: string,
   options?: RenderJSXOptions
@@ -118,22 +119,24 @@ export async function renderJSX(
   // A helper called in a loop reports each ignored option once.
   const warnings = uniq([...unsupportedPropWarnings(tree), ...helperWarnings])
 
-  if (tree.type === '' && tree.children.length > 0) {
-    const results: RenderResult[] = []
-    for (const child of tree.children) {
-      if (typeof child === 'string') continue
-      results.push(await renderTree(graph, child, options))
-    }
-    if (results.length === 0) {
-      throw new Error('JSX must return a Figma element (Frame, Text, etc)')
-    }
-    if (warnings.length > 0) results[0].warnings = warnings
-    return results
-  }
-
-  const result = await renderTree(graph, tree, options)
-  if (warnings.length > 0) result.warnings = warnings
-  return [result]
+  const results = await renderRoots(services, graph, tree, options)
+  if (warnings.length > 0) results[0].warnings = warnings
+  return results
 }
 
-export { renderTree as renderTreeNode }
+/**
+ * A Design JSX renderer bound to an engine. Rendering needs `services` for icons, inline
+ * SVG, and layout; OpenPencil's engine provides them through `@open-pencil/core/design-jsx`.
+ */
+export function createDesignJSXRenderer<Artwork>(services: DesignJSXServices<Artwork>) {
+  return {
+    /** Render a Design JSX string into the graph, one result per top-level element. */
+    renderJSX: (graph: SceneGraph, jsxString: string, options?: RenderJSXOptions) =>
+      renderJSX(services, graph, jsxString, options),
+    /** Render a tree built with the element functions into the graph. */
+    renderTree: (graph: SceneGraph, tree: TreeNode, options?: RenderJSXOptions) =>
+      renderTree(services, graph, tree, options)
+  }
+}
+
+export type DesignJSXRenderer = ReturnType<typeof createDesignJSXRenderer>
