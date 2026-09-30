@@ -58,7 +58,7 @@ import type { Emitter } from 'nanoevents'
 import {
   getAbsolutePosition,
   getNodeLocalMatrix,
-  getWorldMatrix,
+  getParentWorldMatrix,
   isTranslationOnly,
   localTransformFromWorld
 } from './coordinate'
@@ -537,8 +537,7 @@ export class SceneGraph {
   }
 
   private parentWorldMatrix(parent: SceneNode | undefined): Mat3 {
-    if (!parent || parent.id === this.rootId) return Matrix.identity()
-    return getWorldMatrix(parent, this)
+    return getParentWorldMatrix(parent, this)
   }
 
   reorderChild(nodeId: string, parentId: string, insertIndex: number): void {

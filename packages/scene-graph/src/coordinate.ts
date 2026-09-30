@@ -22,25 +22,56 @@ export function getWorldMatrix(node: SceneNode, graph: Pick<SceneGraph, 'getNode
   return matrix
 }
 
-export function getAxisAlignedWorldBounds(node: SceneNode, graph: Pick<SceneGraph, 'getNode'>) {
-  const matrix = getWorldMatrix(node, graph)
-  const points = Matrix.mapPoints(matrix, [
-    0,
-    0,
-    node.width,
-    0,
-    node.width,
-    node.height,
-    0,
-    node.height
-  ])
-  const xs = [points[0], points[2], points[4], points[6]]
-  const ys = [points[1], points[3], points[5], points[7]]
-  const minX = Math.min(...xs)
-  const maxX = Math.max(...xs)
-  const minY = Math.min(...ys)
-  const maxY = Math.max(...ys)
+/** Axis-aligned box around interleaved `x, y` points; empty input gives an empty box at the origin. */
+function boundsOfPoints(points: readonly number[]): Rect {
+  if (points.length === 0) return { x: 0, y: 0, width: 0, height: 0 }
+  let minX = Infinity
+  let minY = Infinity
+  let maxX = -Infinity
+  let maxY = -Infinity
+  for (let i = 0; i < points.length; i += 2) {
+    minX = Math.min(minX, points[i])
+    minY = Math.min(minY, points[i + 1])
+    maxX = Math.max(maxX, points[i])
+    maxY = Math.max(maxY, points[i + 1])
+  }
   return { x: minX, y: minY, width: maxX - minX, height: maxY - minY }
+}
+
+function cornersOf(node: Pick<SceneNode, 'width' | 'height'>): number[] {
+  return [0, 0, node.width, 0, node.width, node.height, 0, node.height]
+}
+
+export function getAxisAlignedWorldBounds(node: SceneNode, graph: Pick<SceneGraph, 'getNode'>) {
+  return boundsOfPoints(Matrix.mapPoints(getWorldMatrix(node, graph), cornersOf(node)))
+}
+
+/** World matrix of a parent; the document root and a missing parent are the identity. */
+export function getParentWorldMatrix(
+  parent: SceneNode | undefined,
+  graph: Pick<SceneGraph, 'getNode' | 'rootId'>
+): Mat3 {
+  if (!parent || parent.id === graph.rootId) return Matrix.identity()
+  return getWorldMatrix(parent, graph)
+}
+
+/**
+ * Axis-aligned box of `nodes` in `parentId`'s own axes: where a group, frame, or boolean operation
+ * made from them sits. Each node's corners are mapped through the parent's inverse world matrix,
+ * so a rotated or flipped parent gets a box in its own axes and the nodes keep their drawn places
+ * once they move into the container.
+ */
+export function getAxisAlignedBoundsInParent(
+  nodes: readonly SceneNode[],
+  parentId: string,
+  graph: Pick<SceneGraph, 'getNode' | 'rootId'>
+): Rect {
+  const toParent =
+    Matrix.invert(getParentWorldMatrix(graph.getNode(parentId), graph)) ?? Matrix.identity()
+  const points = nodes.flatMap((node) =>
+    Matrix.mapPoints(Matrix.multiply(toParent, getWorldMatrix(node, graph)), cornersOf(node))
+  )
+  return boundsOfPoints(points)
 }
 
 export function getAbsolutePosition(node: SceneNode, graph: SceneGraph): Vector {
@@ -142,31 +173,7 @@ export function getNodeLocalMatrix(n: SceneNode, position: Vector = n) {
   return matrix
 }
 export function getNodeWorldBounds(node: SceneNode) {
-  const m = getNodeLocalMatrix(node)
-
-  const points = Matrix.mapPoints(m, [0, 0, node.width, 0, node.width, node.height, 0, node.height])
-
-  let minX = Infinity
-  let minY = Infinity
-  let maxX = -Infinity
-  let maxY = -Infinity
-
-  for (let i = 0; i < points.length; i += 2) {
-    const x = points[i]
-    const y = points[i + 1]
-
-    minX = Math.min(minX, x)
-    minY = Math.min(minY, y)
-    maxX = Math.max(maxX, x)
-    maxY = Math.max(maxY, y)
-  }
-
-  return {
-    x: minX,
-    y: minY,
-    width: maxX - minX,
-    height: maxY - minY
-  }
+  return boundsOfPoints(Matrix.mapPoints(getNodeLocalMatrix(node), cornersOf(node)))
 }
 
 /**

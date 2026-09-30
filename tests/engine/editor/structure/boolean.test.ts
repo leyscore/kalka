@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 
 import { TRANSPARENT } from '@open-pencil/core/constants'
 import { createEditor } from '@open-pencil/core/editor'
+import { getAxisAlignedWorldBounds } from '@open-pencil/scene-graph/coordinate'
 
 describe('booleanOperationSelected', () => {
   test('wraps selected nodes in a boolean operation container', () => {
@@ -116,5 +117,70 @@ describe('booleanOperationSelected', () => {
     expect(editor.graph.getNode(pageId)?.childIds).toEqual([before.id, booleanId, after.id])
     expect(editor.graph.getNode(booleanId)?.booleanOperation).toBe('EXCLUDE')
     expect(editor.state.selectedIds).toEqual(new Set([booleanId]))
+  })
+})
+
+describe('container placement inside a rotated frame', () => {
+  function rotatedFrameWithChildren() {
+    const editor = createEditor()
+    const pageId = editor.state.currentPageId
+    const frame = editor.graph.createNode('FRAME', pageId, {
+      x: 100,
+      y: 200,
+      width: 300,
+      height: 300,
+      rotation: 90
+    })
+    const first = editor.graph.createNode('RECTANGLE', frame.id, {
+      x: 10,
+      y: 20,
+      width: 30,
+      height: 30
+    })
+    const second = editor.graph.createNode('RECTANGLE', frame.id, {
+      x: 60,
+      y: 70,
+      width: 20,
+      height: 20
+    })
+    const before = [first, second].map((node) => getAxisAlignedWorldBounds(node, editor.graph))
+    return { editor, frame, first, second, before }
+  }
+
+  function expectContainerInFrameAxes(editor: ReturnType<typeof createEditor>, id: string) {
+    const container = editor.graph.getNode(id)
+    expect(container?.x).toBeCloseTo(10, 6)
+    expect(container?.y).toBeCloseTo(20, 6)
+    expect(container?.width).toBeCloseTo(70, 6)
+    expect(container?.height).toBeCloseTo(70, 6)
+  }
+
+  test('a boolean operation sits in the frame axes and keeps its operands where drawn', () => {
+    const { editor, first, second, before } = rotatedFrameWithChildren()
+    editor.select([first.id, second.id])
+    editor.booleanOperationSelected('UNION')
+
+    const [booleanId] = [...editor.state.selectedIds]
+    expectContainerInFrameAxes(editor, booleanId)
+    const after = [first, second].map((node) => getAxisAlignedWorldBounds(node, editor.graph))
+    for (const [index, bounds] of after.entries()) {
+      expect(bounds.x).toBeCloseTo(before[index].x, 6)
+      expect(bounds.y).toBeCloseTo(before[index].y, 6)
+    }
+  })
+
+  test('a group sits in the frame axes and keeps its children where drawn', () => {
+    const { editor, first, second, before } = rotatedFrameWithChildren()
+    editor.select([first.id, second.id])
+    editor.groupSelected()
+
+    const [groupId] = [...editor.state.selectedIds]
+    expect(editor.graph.getNode(groupId)?.type).toBe('GROUP')
+    expectContainerInFrameAxes(editor, groupId)
+    const after = [first, second].map((node) => getAxisAlignedWorldBounds(node, editor.graph))
+    for (const [index, bounds] of after.entries()) {
+      expect(bounds.x).toBeCloseTo(before[index].x, 6)
+      expect(bounds.y).toBeCloseTo(before[index].y, 6)
+    }
   })
 })
