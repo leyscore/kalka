@@ -72,6 +72,7 @@ type InstancePropertySurfaceMatch = Expect<
       | 'exposedInstances'
       | 'getMainComponentAsync'
       | 'detachInstance'
+      | 'swapComponent'
     >,
     Pick<
       InstanceNode,
@@ -82,6 +83,7 @@ type InstancePropertySurfaceMatch = Expect<
       | 'exposedInstances'
       | 'getMainComponentAsync'
       | 'detachInstance'
+      | 'swapComponent'
     >
   >
 >
