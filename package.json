@@ -84,7 +84,7 @@
     "test:coverage": "bun tools/dev/unit-tests/src/run.ts all --include-heavy -- --coverage",
     "test:type-shapes": "bun tools/checks/type-shapes/src/index.ts",
     "test:tools": "bun --filter '@open-pencil/*-tools' test && bun --filter @open-pencil/harness test",
-    "test:dupes": "jscpd packages/scene-graph/src packages/pen/src packages/design-jsx/src packages/core/src packages/cli/src packages/dom-css/src src --min-lines 5 --min-tokens 50 --format typescript --threshold 0",
+    "test:dupes": "jscpd packages/scene-graph/src packages/pen/src packages/design-jsx/src packages/core/src packages/cli/src packages/dom-css/src packages/fig/src src --min-lines 5 --min-tokens 50 --format typescript --threshold 0",
     "test:packages": "bun tools/checks/package-quality/src/cli.ts verify",
     "build:packages": "bun tools/release/package-artifacts/src/build.ts",
     "open-pencil": "bun packages/cli/src/index.ts",

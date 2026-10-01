@@ -1,10 +1,20 @@
 import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-import type { Fill, GeometryPath, VectorNetwork, WindingRule } from '@open-pencil/scene-graph'
+import type { Fill, GeometryPath, VectorNetwork } from '@open-pencil/scene-graph'
 import { copyFills } from '@open-pencil/scene-graph/copy'
 import type { Vector } from '@open-pencil/scene-graph/primitives'
 
 import { convertFills } from './paint'
 import { decodeVectorNetworkBlob, type StyleOverride } from './vector-network'
+
+/** Scene winding rules name the even-odd case EVENODD; the archive names it ODD. */
+export function toKiwiWindingRule(rule: string | undefined): 'ODD' | 'NONZERO' {
+  return rule === 'EVENODD' ? 'ODD' : 'NONZERO'
+}
+
+/** The archive's ODD reads back as the scene's EVENODD. */
+export function fromKiwiWindingRule(rule: string | undefined): 'EVENODD' | 'NONZERO' {
+  return rule === 'ODD' || rule === 'EVENODD' ? 'EVENODD' : 'NONZERO'
+}
 
 export function alignGeometryWindingRules(
   geometry: GeometryPath[],
@@ -104,7 +114,7 @@ export function resolveGeometryPaths(
     if (blob.length === 0) continue
     const fills = p.styleID ? fillsByStyleId?.get(p.styleID) : undefined
     result.push({
-      windingRule: (p.windingRule === 'EVENODD' ? 'EVENODD' : 'NONZERO') as WindingRule,
+      windingRule: fromKiwiWindingRule(p.windingRule),
       commandsBlob: blob,
       fills: fills && fills.length > 0 ? copyFills(fills) : undefined
     })

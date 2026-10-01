@@ -43,13 +43,19 @@ export const ROOT_MARKDOWN_ALLOWLIST = new Set([
 ])
 export const PACKAGE_ALIASES: Record<string, string> = {
   '#core/': 'packages/core/src/',
+  '#fig/': 'packages/fig/src/',
+  '#fig-tests/': 'packages/fig/tests/',
   '#vue/': 'packages/vue/src/',
   '#cli/': 'packages/cli/src/',
   '#mcp/': 'packages/mcp/src/'
 }
 
 export const PACKAGE_ALIAS_OWNERS: Record<string, string> = {
-  '#core/': 'packages/core/src/',
+  // A package's own tests mirror its source tree, so they address it by alias rather than
+  // drilling up through ../../src.
+  '#core/': 'packages/core/',
+  '#fig/': 'packages/fig/',
+  '#fig-tests/': 'packages/fig/tests/',
   '#vue/': 'packages/vue/src/',
   '#cli/': 'packages/cli/src/',
   '#mcp/': 'packages/mcp/src/'

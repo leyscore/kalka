@@ -44,7 +44,7 @@ Before a PR run `bun run check`, `bun run format`, `bun run test:unit`, and `bun
 
 - Across package/app boundaries import the owning package's public exports, never workspace internals or forwarding-only shims. `@open-pencil/scene-graph` owns graph types and primitives; `@open-pencil/kiwi` owns low-level Kiwi/FIG helpers; `@open-pencil/core` provides the compatibility barrel plus the subpaths listed in `packages/core/package.json`.
 - `bun run check:arch` enforces: public workspace exports, framework-neutral Core, no app services in views or shared UI, property-panel internals scoped to that panel.
-- Package aliases are `#core/*`, `#vue/*`, `#cli/*`, `#mcp/*`, `#dom-css/*`, `#design-jsx/*`; the app uses `@/`. Prefer clear relative imports nearby. Never escape an alias root with `../` (for example `#tests/../vite`); fix module ownership instead.
+- Package aliases are `#core/*`, `#fig/*`, `#vue/*`, `#cli/*`, `#mcp/*`, `#dom-css/*`, `#design-jsx/*`; the app uses `@/`. Prefer clear relative imports nearby. Never escape an alias root with `../` (for example `#tests/../vite`); fix module ownership instead.
 - Reuse named types from `@open-pencil/scene-graph`; do not respell `Color`, `Vector`, `SceneNode`, `Effect`, `Fill`, or `Stroke`.
 
 ## Code conventions
