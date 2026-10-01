@@ -78,3 +78,9 @@ export { transformDesignJSXExpression } from './transform'
 
 export { sceneNodeToJSX, selectionToJSX } from './export'
 export { JSX_REFERENCE, AUTHORING_EXAMPLES, type AuthoringExample } from './reference'
+export {
+  createStreamingJSXParser,
+  type JSXPreviewNode,
+  type JSXPreviewPending,
+  type JSXPreviewSnapshot
+} from './streaming'

@@ -58,7 +58,11 @@
     "@open-pencil/scene-graph": "workspace:*"
   },
   "dependencies": {
+    "@lezer/common": "^1.5.2",
+    "@lezer/javascript": "^1.5.4",
+    "acorn": "^8.18.0",
     "dedent": "^1.7.2",
+    "entities": "^8.0.0",
     "es-toolkit": "^1.51.0",
     "sucrase": "^3.35.1",
     "valibot": "^1.4.2"

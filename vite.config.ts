@@ -39,6 +39,8 @@ export default defineConfig(async ({ command }) => {
         automationRoute.browserURL.replace(/^ws/, 'http')
       )
     },
+    // Dynamic browser fixtures must not trigger a dependency-optimizer reload mid-test.
+    optimizeDeps: { include: ['ai/test'] },
     plugins: [
       rawMarkdownPlugin(),
       copyCanvasKitAssetsPlugin(),

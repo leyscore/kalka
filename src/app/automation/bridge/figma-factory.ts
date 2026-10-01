@@ -10,9 +10,13 @@ export function makeFigmaFromStore(
   const api = new FigmaAPI(store.graph)
   api.setRenderer(store.renderer ?? null)
   api.currentPage = api.wrapNode(pageId)
-  api.currentPage.selection = [...store.state.selectedIds]
-    .map((id) => api.getNodeById(id))
-    .filter((n): n is NonNullable<typeof n> => n !== null)
+  // The user's selection belongs to the page on screen.
+  api.currentPage.selection =
+    pageId === store.state.currentPageId
+      ? [...store.state.selectedIds]
+          .map((id) => api.getNodeById(id))
+          .filter((n): n is NonNullable<typeof n> => n !== null)
+      : []
   api.viewport = {
     center: {
       x: (-store.state.panX + window.innerWidth / 2) / store.state.zoom,
