@@ -25,6 +25,7 @@
 
 ### Changed
 
+- Show Flatten, Outline text, and Outline stroke in the canvas context menu without icons, like every other item there.
 - Keep an AI chat working on the page where it started when you switch to another page, instead of sending its next edits to whichever page is on screen. When the AI switches pages itself, your view follows.
 - `openpencil://` and web `?node=` links select the layer on another page when the current page has none, switching to that page.
 - Generate Tailwind JSX with the same class mapping as Tailwind HTML export, so both describe a design the same way, and write opaque colors as hex in HTML, CSS, and Tailwind output. `openpencil export -f jsx --style tailwind` now exports a whole page when no `--node` is given.
@@ -32,6 +33,8 @@
 
 ### Fixed
 
+- Keep the view centered on what you were looking at when zooming to 100% or another fixed level, instead of jumping elsewhere whenever the zoom changes.
+- Draw collaborators' names on their cursors with proper letter spacing and fallback fonts, and end long names with an ellipsis.
 - Keep line breaks in multi-line text when exporting OpenPencil JSX, so `get_jsx` output and `openpencil export -f jsx` render back to the same text instead of joining the lines with spaces.
 - Announce unavailable commands in the command palette as disabled to screen readers.
 - Keep the ordering keys a `.fig` gave its layers when saving one again, instead of renumbering every sibling, and give every layer on a canvas its own key. Shared styles, variables and the canvas's own layers were numbered in separate passes that each restarted, so Figma saw siblings claiming the same position and ordered them arbitrarily.
