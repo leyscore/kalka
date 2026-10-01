@@ -104,19 +104,29 @@ function variableValueToKiwi(
   return { value: { floatValue: Number(value) }, dataType: 'FLOAT', resolvedDataType: 'FLOAT' }
 }
 
+/**
+ * Order keys for one parent, in call order. Collections, variables, shared styles and the
+ * canvas's own layers all append to the internal canvas, so they share one sequence rather
+ * than each numbering from zero and handing siblings the same key.
+ */
+export function sequentialPositions(start = 0): () => string {
+  let index = start
+  return () => fractionalPosition(index++)
+}
+
 export function appendVariableNodeChanges(
   graph: SceneGraph,
   changes: NodeChange[],
   parent: GUID,
   ids: Map<string, GUID>,
-  modes: Map<string, GUID>
+  modes: Map<string, GUID>,
+  nextPosition: () => string = sequentialPositions()
 ): void {
-  let index = 0
   for (const collection of graph.variableCollections.values()) {
     const guid = ids.get(collection.id) ?? stringToGuid(collection.id)
     changes.push({
       guid,
-      parentIndex: { guid: parent, position: fractionalPosition(index++) },
+      parentIndex: { guid: parent, position: nextPosition() },
       type: 'VARIABLE_SET',
       name: collection.name,
       phase: 'CREATED',
@@ -128,13 +138,12 @@ export function appendVariableNodeChanges(
         sortPosition: fractionalPosition(i)
       }))
     })
-    let variableIndex = 0
     for (const id of collection.variableIds) {
       const variable = graph.variables.get(id)
       if (!variable) continue
       changes.push({
         guid: ids.get(id) ?? stringToGuid(id),
-        parentIndex: { guid: parent, position: fractionalPosition(variableIndex++) },
+        parentIndex: { guid: parent, position: nextPosition() },
         type: 'VARIABLE',
         name: variable.name,
         phase: 'CREATED',

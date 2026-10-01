@@ -34,6 +34,7 @@ import { originalFigArchive } from '#core/kiwi/fig/session/original-archive'
 
 import {
   appendVariableNodeChanges,
+  sequentialPositions,
   assignSharedStyleGuids,
   assignVariableGuid,
   assignVariableGuids
@@ -239,9 +240,24 @@ interface InternalResourceContext {
   propertyIdToGuid: Map<string, GUID>
 }
 
+/**
+ * Children already written under a canvas. Shared styles, variables and the canvas's own
+ * layers all append to the internal canvas from separate passes, so each continues this
+ * count rather than numbering from zero and handing siblings the same order key.
+ */
+function countCanvasChildren(changes: readonly NodeChange[], canvas: GUID): number {
+  let count = 0
+  for (const change of changes) {
+    const parent = change.parentIndex?.guid
+    if (parent?.sessionID === canvas.sessionID && parent.localID === canvas.localID) count++
+  }
+  return count
+}
+
 function appendInternalResources(context: InternalResourceContext): void {
   const { graph, internalCanvasGuid, nodeChanges } = context
   if (!internalCanvasGuid) return
+  const written = countCanvasChildren(nodeChanges, internalCanvasGuid)
   const sharedStyleNodes = [...graph.nodes.values()].filter((node) => node.sharedStyleType !== null)
   assignSharedStyleGuids(
     sharedStyleNodes,
@@ -254,7 +270,7 @@ function appendInternalResources(context: InternalResourceContext): void {
       ...sceneNodeToKiwi(
         sharedStyleNodes[index],
         internalCanvasGuid,
-        index,
+        written + index,
         context.localIdCounter,
         graph,
         context.blobs,
@@ -278,7 +294,8 @@ function appendInternalResources(context: InternalResourceContext): void {
       nodeChanges,
       internalCanvasGuid,
       context.varIdToGuid,
-      context.modeIdToGuid
+      context.modeIdToGuid,
+      sequentialPositions(written + sharedStyleNodes.length)
     )
   }
 }
@@ -417,9 +434,10 @@ export async function exportFigFile(
     const children = graph
       .getChildren(page.id)
       .filter((child) => !child.internalOnly && child.sharedStyleType === null)
+    const base = countCanvasChildren(nodeChanges, canvasGuid)
     for (let i = 0; i < children.length; i++) {
       nodeChanges.push(
-        ...sceneNodeToKiwi(children[i], canvasGuid, i, localIdCounter, graph, blobs, {
+        ...sceneNodeToKiwi(children[i], canvasGuid, base + i, localIdCounter, graph, blobs, {
           nodeIdToGuid,
           fontDigestMap,
           varIdToGuid,
