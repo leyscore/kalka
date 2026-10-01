@@ -19,7 +19,7 @@ import {
   variableConsumptionEntries,
   VARIABLE_BINDING_FIELDS_INVERSE,
   referencesVariable
-} from './variable-bindings'
+} from './variable/bindings'
 
 export const OPEN_PENCIL_PLUGIN_ID = 'open-pencil'
 export const TEXT_DIRECTION_PLUGIN_KEY = 'textDirection'

@@ -9,7 +9,7 @@ import { parseVariantName } from '@open-pencil/scene-graph/variant-name'
 /* eslint-disable max-lines -- kiwi↔scene conversion helpers are tightly coupled */
 
 import { importCanvasGuides } from './canvas-guides'
-import { convertFigmaDerivedTextGlyphs } from './derived-text-glyphs'
+import { convertFigmaDerivedTextGlyphs } from './derived-text/glyphs'
 import { convertFontFeatures } from './font/features'
 import { convertFontVariations } from './font/variations'
 import { convertEffects, convertFills, convertStrokes } from './paint'
@@ -26,20 +26,20 @@ import {
   NODE_TYPE_PLUGIN_KEY,
   TEXT_DIRECTION_PLUGIN_KEY
 } from './plugin-data'
-import { importStyleRuns } from './style-runs'
-import { convertLetterSpacing, convertLineHeight, mapTextDecoration } from './text-values'
+import { importStyleRuns } from './style/runs'
+import { convertLetterSpacing, convertLineHeight, mapTextDecoration } from './text/values'
 import {
   alignGeometryWindingRules,
   resolveGeometryPaths,
   resolveVectorNetwork,
   resolveVectorStyleOverrideFills
-} from './vector-geometry'
-import { decodeVectorNetworkBlob, type StyleOverride } from './vector-network'
+} from './vector/geometry'
+import { decodeVectorNetworkBlob, type StyleOverride } from './vector/network'
 
 export { convertEffects, convertFills, convertStrokes, setVariableColorResolver } from './paint'
-export { importStyleRuns } from './style-runs'
-export { convertLetterSpacing, convertLineHeight, mapTextDecoration } from './text-values'
-export { resolveGeometryPaths } from './vector-geometry'
+export { importStyleRuns } from './style/runs'
+export { convertLetterSpacing, convertLineHeight, mapTextDecoration } from './text/values'
+export { resolveGeometryPaths } from './vector/geometry'
 
 import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
 import type {
@@ -72,8 +72,8 @@ import type {
 import type { GUID } from '@open-pencil/scene-graph/primitives'
 
 export { guidToString, stringToGuid } from '@open-pencil/kiwi/fig/guid'
-import { numericVariableAssignmentScales, sourceVariableBindingScales } from './variable-bindings'
-export { VARIABLE_BINDING_FIELDS, VARIABLE_BINDING_FIELDS_INVERSE } from './variable-bindings'
+import { numericVariableAssignmentScales, sourceVariableBindingScales } from './variable/bindings'
+export { VARIABLE_BINDING_FIELDS, VARIABLE_BINDING_FIELDS_INVERSE } from './variable/bindings'
 
 interface FigVariableModeMap {
   entries?: Array<{

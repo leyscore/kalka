@@ -2,9 +2,9 @@ import type { NodeChange, Paint } from '@open-pencil/kiwi/fig/codec'
 import { normalizeFontFamily } from '@open-pencil/scene-graph'
 import type { CharacterStyleOverride, SceneNode } from '@open-pencil/scene-graph'
 
-import { applyFontFeaturesToKiwi } from './font/features'
-import { weightToFigmaStyle } from './font/style'
-import { stringToFigmaAxisTag } from './font/variations'
+import { applyFontFeaturesToKiwi } from '../font/features'
+import { weightToFigmaStyle } from '../font/style'
+import { stringToFigmaAxisTag } from '../font/variations'
 
 export function fontVariationToKiwi(variation: SceneNode['fontVariations'][number]) {
   const axisTag = stringToFigmaAxisTag(variation.axis)

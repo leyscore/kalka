@@ -3,7 +3,7 @@ import { setInstanceOverride, type SceneGraph, type SceneNode } from '@open-penc
 import { createDefaultSourceMetadata } from '@open-pencil/scene-graph/node-defaults'
 
 import { nodeChangeToProps } from '../node-change'
-import { numericVariableBindingScales } from '../node-change/variable-bindings'
+import { numericVariableBindingScales } from '../node-change/variable/bindings'
 import {
   recordVariableBindingClaims,
   occurrenceAssignmentScales,

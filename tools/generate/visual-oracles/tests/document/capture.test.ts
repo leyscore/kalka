@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 
-import { captureDocumentOracle } from '#visual/document-capture'
+import { captureDocumentOracle } from '#visual/capture/document'
 
 import { SceneGraph } from '@open-pencil/scene-graph'
 

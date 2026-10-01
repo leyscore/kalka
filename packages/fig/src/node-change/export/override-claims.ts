@@ -4,8 +4,8 @@ import { stringToGuid } from '@open-pencil/kiwi/fig/guid'
 import { forEachInstanceOverride, type SceneNode } from '@open-pencil/scene-graph'
 import type { GUID, Vector } from '@open-pencil/scene-graph/primitives'
 
-import { instanceExportAddress } from '../instance-geometry'
-import { mergeVariableConsumptionMaps, overrideVariableBindingEntry } from '../variable-bindings'
+import { instanceExportAddress } from '../instance/geometry'
+import { mergeVariableConsumptionMaps, overrideVariableBindingEntry } from '../variable/bindings'
 import {
   buildStyleReferences,
   createFillPaints,

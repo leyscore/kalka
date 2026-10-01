@@ -1,3 +1,5 @@
+import type { DerivedSymbolOverride } from '#fig/instance-overrides/types'
+
 import type { GUID } from '@open-pencil/kiwi/fig/codec'
 import {
   findInstanceAncestor,
@@ -5,8 +7,6 @@ import {
   type SceneGraph,
   type SceneNode
 } from '@open-pencil/scene-graph'
-
-import type { DerivedSymbolOverride } from '../instance-overrides/types'
 
 type ResolveGuid = (id: string) => GUID | undefined
 

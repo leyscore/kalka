@@ -2,8 +2,8 @@ import {
   variableConsumptionEntries,
   numericVariableAssignmentScales,
   VARIABLE_BINDING_FIELDS_INVERSE
-} from '#fig/node-change/variable-bindings'
-import { linearVariableExpression } from '#fig/node-change/variable-expression'
+} from '#fig/node-change/variable/bindings'
+import { linearVariableExpression } from '#fig/node-change/variable/expression'
 
 import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
 import { setInstanceOverride, type SceneNode } from '@open-pencil/scene-graph'

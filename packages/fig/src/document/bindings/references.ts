@@ -1,6 +1,6 @@
 import { symbolOverridesOf, type SymbolOverride } from '#fig/instance-overrides/types'
-import { variableConsumptionEntries } from '#fig/node-change/variable-bindings'
-import { visitVariableReferences } from '#fig/node-change/variable-expression'
+import { variableConsumptionEntries } from '#fig/node-change/variable/bindings'
+import { visitVariableReferences } from '#fig/node-change/variable/expression'
 
 import type { GUID, NodeChange } from '@open-pencil/kiwi/fig/codec'
 import { guidToString, stringToGuid } from '@open-pencil/kiwi/fig/guid'

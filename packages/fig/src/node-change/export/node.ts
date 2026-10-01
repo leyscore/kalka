@@ -16,7 +16,7 @@ import type { GUID, Matrix, Vector } from '@open-pencil/scene-graph/primitives'
 import { siblingOrderKeys } from '../basics'
 import { bytesToHex } from '../bytes'
 import { exportCanvasGuides } from '../canvas-guides'
-import { snapshotInstanceGeometry } from '../instance-geometry'
+import { snapshotInstanceGeometry } from '../instance/geometry'
 import {
   applyExportSettingsPluginData,
   applyLibrarySourcePluginData,

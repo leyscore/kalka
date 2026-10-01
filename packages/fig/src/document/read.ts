@@ -12,7 +12,7 @@ import {
   type SourceIndex
 } from '../instance-overrides/source-index'
 import { symbolOverridesOf } from '../instance-overrides/types'
-import { applyStyleRefsToFields } from '../node-change/style-refs'
+import { applyStyleRefsToFields } from '../node-change/style/refs'
 import {
   resolveDocumentBindingReferences,
   type BindingReferenceDiagnostic

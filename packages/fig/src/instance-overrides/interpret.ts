@@ -3,7 +3,7 @@ import { guidToString } from '@open-pencil/kiwi/fig/guid'
 import type { Vector } from '@open-pencil/scene-graph'
 
 import { cloneRecord } from '../node-change/clone'
-import { mergeVariableConsumptionMaps } from '../node-change/variable-bindings'
+import { mergeVariableConsumptionMaps } from '../node-change/variable/bindings'
 import {
   bindSourceProperties,
   componentBindings,

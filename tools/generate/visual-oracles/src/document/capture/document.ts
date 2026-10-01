@@ -1,7 +1,7 @@
 import type { SceneGraph } from '@open-pencil/scene-graph'
 
-import { captureGraphOracle } from './capture-scene'
-import type { SceneOracleNode } from './scene-oracle'
+import type { SceneOracleNode } from '../scene-oracle'
+import { captureGraphOracle } from './scene'
 
 /**
  * Capture every page of a graph, not one frame of it. Page order is the archive's, and

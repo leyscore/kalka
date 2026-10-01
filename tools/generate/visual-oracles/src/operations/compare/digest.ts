@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 import { parseArgs } from 'node:util'
 
-import { captureDocumentOracle } from '#visual/document-capture'
+import { captureDocumentOracle } from '#visual/capture/document'
 import { compareSceneOracle, type SceneOracleNode } from '#visual/scene-oracle'
 
 import { materializeFigArchive } from '@open-pencil/fig'

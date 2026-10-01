@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 
 import type { DerivedSymbolOverride } from '#fig/instance-overrides/types'
-import { snapshotInstanceGeometry } from '#fig/node-change/instance-geometry'
+import { snapshotInstanceGeometry } from '#fig/node-change/instance/geometry'
 
 import { stringToGuid } from '@open-pencil/kiwi/fig/guid'
 import { SceneGraph } from '@open-pencil/scene-graph'

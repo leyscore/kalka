@@ -1,7 +1,7 @@
 import type { Color, Fill, SceneGraph, Stroke } from '@open-pencil/scene-graph'
 import { getWorldMatrix } from '@open-pencil/scene-graph/coordinate'
 
-import type { SceneOracleNode } from './scene-oracle'
+import type { SceneOracleNode } from '../scene-oracle'
 
 /**
  * Drawing takes a solid paint's alpha from its opacity, so that is the transparency a

@@ -3,7 +3,7 @@ import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { parseArgs } from 'node:util'
 
-import { captureGraphOracle, figmaOracleScript } from '#visual/capture-scene'
+import { captureGraphOracle, figmaOracleScript } from '#visual/capture/scene'
 import { summarizePathDiagnostics } from '#visual/path-diagnostics'
 import { compareSceneOracle, type SceneOracleNode } from '#visual/scene-oracle'
 import { $ } from 'bun'

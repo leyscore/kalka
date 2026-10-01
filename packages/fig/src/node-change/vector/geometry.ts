@@ -3,8 +3,8 @@ import type { Fill, GeometryPath, VectorNetwork } from '@open-pencil/scene-graph
 import { copyFills } from '@open-pencil/scene-graph/copy'
 import type { Vector } from '@open-pencil/scene-graph/primitives'
 
-import { convertFills } from './paint'
-import { decodeVectorNetworkBlob, type StyleOverride } from './vector-network'
+import { convertFills } from '../paint'
+import { decodeVectorNetworkBlob, type StyleOverride } from './network'
 
 /** Scene winding rules name the even-odd case EVENODD; the archive names it ODD. */
 export function toKiwiWindingRule(rule: string | undefined): 'ODD' | 'NONZERO' {

@@ -1,3 +1,5 @@
+import { effectiveFigmaRawNodeFields } from '#fig/source-metadata'
+
 import type { VariableConsumptionEntry, GUID } from '@open-pencil/kiwi/fig/codec'
 import { guidToString, stringToGuid } from '@open-pencil/kiwi/fig/guid'
 import {
@@ -6,9 +8,8 @@ import {
   type SceneGraph
 } from '@open-pencil/scene-graph'
 
-import { effectiveFigmaRawNodeFields } from '../source-metadata'
-import { cloneRecord } from './clone'
-import { linearVariableExpression } from './variable-expression'
+import { cloneRecord } from '../clone'
+import { linearVariableExpression } from './expression'
 
 export const VARIABLE_BINDING_FIELDS: Record<string, string> = {
   cornerRadius: 'CORNER_RADIUS',
