@@ -178,16 +178,19 @@ export function applyColorVariableBinding(
   field: string
 ): Paint {
   const variableId = node.boundVariables[field]
-  if (!variableId) return paint
+  // An imported paint carries the binding it arrived with. Unbinding the field has to clear
+  // it, or the export hands Figma back a variable the document no longer references.
+  if (!variableId) {
+    if (!paint.colorVar && !paint.colorVariableBinding) return paint
+    const { colorVar: _unbound, colorVariableBinding: _legacy, ...unbound } = paint
+    return unbound
+  }
   return {
     ...paint,
     colorVar: {
       dataType: 'ALIAS',
       resolvedDataType: 'COLOR',
       value: { alias: { guid: context.varIdToGuid?.get(variableId) ?? stringToGuid(variableId) } }
-    },
-    colorVariableBinding: {
-      variableID: context.varIdToGuid?.get(variableId) ?? stringToGuid(variableId)
     }
   }
 }

@@ -11,6 +11,7 @@ import { fillToKiwiPaint, safeColor } from './paint'
 import { bakeGlyphScale, encodePathCommandsBlob } from './path/commands'
 import {
   BOUND_VARIABLES_PLUGIN_KEY,
+  removePluginData,
   LAYOUT_DIRECTION_PLUGIN_KEY,
   TEXT_DIRECTION_PLUGIN_KEY,
   upsertPluginData,
@@ -491,15 +492,11 @@ function serializeVariableBindings(
     const varGuid = varIdToGuid?.get(varId) ?? stringToGuid(varId)
     roundtripBindings[field] = guidToString(varGuid)
   }
-  if (
-    Object.keys(roundtripBindings).length > 0 ||
-    node.pluginData.some(
-      (entry) =>
-        entry.pluginId === OPEN_PENCIL_PLUGIN_ID && entry.key === BOUND_VARIABLES_PLUGIN_KEY
-    )
-  ) {
+  // An entry the node was imported with is dropped rather than emptied: nothing reads an
+  // empty map, and writing one leaves the record in every file the node is exported to.
+  if (Object.keys(roundtripBindings).length > 0)
     upsertPluginData(node, BOUND_VARIABLES_PLUGIN_KEY, JSON.stringify(roundtripBindings))
-  }
+  else removePluginData(node, BOUND_VARIABLES_PLUGIN_KEY)
   if (entries.length > 0) {
     nc.variableConsumptionMap = { entries }
     Object.assign(

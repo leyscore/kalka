@@ -50,6 +50,12 @@ export function upsertPluginData(
   node.pluginData = pluginData
 }
 
+export function removePluginData(node: { pluginData: PluginDataEntry[] }, key: string): void {
+  node.pluginData = node.pluginData.filter(
+    (entry) => !(entry.pluginId === OPEN_PENCIL_PLUGIN_ID && entry.key === key)
+  )
+}
+
 export function applyExportSettingsPluginData(
   node: Pick<SceneNode, 'exportSettings' | 'pluginData' | 'source'>
 ): void {

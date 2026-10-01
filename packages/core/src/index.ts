@@ -336,8 +336,6 @@ export {
   createNodeChangesMessage,
   createNodeChange,
   parseVariableId,
-  encodePaintWithVariableBinding,
-  encodeNodeChangeWithVariables,
   type NodeChange,
   type GUID as KiwiGUID,
   type Color as KiwiColor,

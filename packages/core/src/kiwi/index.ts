@@ -14,8 +14,6 @@ export {
   createNodeChangesMessage,
   createNodeChange,
   parseVariableId,
-  encodePaintWithVariableBinding,
-  encodeNodeChangeWithVariables,
   type NodeChange,
   type GUID,
   type Color,
