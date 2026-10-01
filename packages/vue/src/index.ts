@@ -42,7 +42,7 @@ export { useEditorEvent } from '#vue/editor/events/use'
 export { useSelectionCapabilities } from '#vue/editor/selection-capabilities/use'
 
 /** Command palette primitives and search state. */
-export { CommandPaletteRoot } from '#vue/primitives/CommandPalette'
+export { CommandPaletteRoot, useCommandPalette } from '#vue/primitives/CommandPalette'
 export type {
   CommandPaletteGroup,
   CommandPaletteItem,
@@ -247,7 +247,7 @@ export type {
   VariantDefinitionControl
 } from '#vue/controls/component-props'
 export type { CornerGeometryKey, CornerRadiusKey } from '#vue/controls/appearance/types'
-export { PageListRoot } from '#vue/primitives/PageList'
+export { isPageDivider, PageListRoot, PAGE_DIVIDER_PATTERN } from '#vue/primitives/PageList'
 export { PositionControlsRoot } from '#vue/primitives/PositionControls'
 export { useEditorPropertyList } from '#vue/controls/property-list'
 export {

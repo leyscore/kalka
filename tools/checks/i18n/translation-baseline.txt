@@ -98,6 +98,7 @@ fr:code.sourceTailwindJSX
 fr:common.ok
 fr:diagnostics.title
 fr:pages.pageName
+fr:pages.pages
 fr:panels.alpha
 fr:panels.auto
 fr:panels.blendModeExclusion
