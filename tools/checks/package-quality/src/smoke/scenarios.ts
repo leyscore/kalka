@@ -33,6 +33,10 @@ export const runtimeScenarios: RuntimeScenario[] = [
     code: "const { parsePenFile } = await import('@open-pencil/pen'); const graph = parsePenFile(JSON.stringify({ version: '1', children: [{ id: 'frame', type: 'frame', width: 100, height: 50 }] })); if (graph.getPages()[0].childIds.length !== 1) throw new Error('Pen package smoke failed')"
   },
   {
+    name: 'Codegen package',
+    code: "const { jsx } = await import('@open-pencil/codegen'); const code = jsx.printJSX(jsx.element('Card', [jsx.attribute('wide', null)], [], 0)); if (code !== '<Card wide />') throw new Error('Codegen package smoke failed: ' + code)"
+  },
+  {
     name: 'Design JSX package',
     code: "const { Frame, Text, JSX_REFERENCE } = await import('@open-pencil/design-jsx'); const tree = Frame({ w: 100, children: [Text({ children: 'OpenPencil' })] }); if (tree.type !== 'frame' || tree.children.length !== 1 || !JSX_REFERENCE.includes('Frame')) throw new Error('Design JSX package smoke failed')"
   },
