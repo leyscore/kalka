@@ -6,7 +6,7 @@ import { createEditor } from '@open-pencil/core/editor'
 import { initCanvasKit } from '@open-pencil/core/io'
 import { fontManager } from '@open-pencil/core/text'
 
-import { textNodeToOutlineLayout } from '../../../src/text/outlines'
+import { textNodeToOutlineLayout } from '#core/text/outlines'
 
 async function createEditorWithRenderer() {
   const ck = await initCanvasKit()

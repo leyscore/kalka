@@ -74,9 +74,9 @@ export type UnitTestGroup = keyof typeof UNIT_TEST_GROUPS | 'all'
 export const HEAVY_UNIT_TEST_PATTERNS = [
   'tests/engine/clipboard/fixtures/',
   'tests/engine/io/fig/heavy/',
-  'tests/engine/io/fig/roundtrip/exhaustive.test.ts',
-  'tests/engine/io/fig/roundtrip/glyph-blob.test.ts',
-  'tests/engine/io/fig/roundtrip/variables.test.ts',
+  'packages/core/tests/io/formats/fig/roundtrip/exhaustive.test.ts',
+  'packages/core/tests/io/formats/fig/roundtrip/glyph-blob.test.ts',
+  'packages/core/tests/io/formats/fig/roundtrip/variables.test.ts',
   'tests/engine/io/fig/export/text.test.ts',
   'tests/engine/io/fig/export/worker.test.ts',
   'tests/engine/io/fig/import/group-reclassify.test.ts',

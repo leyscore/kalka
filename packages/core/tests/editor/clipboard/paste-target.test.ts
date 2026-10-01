@@ -3,7 +3,7 @@ import { describe, expect, test } from 'bun:test'
 import { createEditor, type EditorState } from '@open-pencil/core/editor'
 import { SceneGraph } from '@open-pencil/scene-graph'
 
-import { resolvePasteTarget } from '../../../src/editor/clipboard/paste-target'
+import { resolvePasteTarget } from '#core/editor/clipboard/paste-target'
 
 function setup() {
   const graph = new SceneGraph()

@@ -5,7 +5,7 @@ import { interpretInstance, materializeInstance } from '@open-pencil/fig/instanc
 import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
 import { SceneGraph } from '@open-pencil/scene-graph'
 
-import { guid } from '../../../../helpers/fig/guid'
+import { guid } from '#core-tests/helpers/fig/guid'
 
 test('text overrides discard inherited glyph data but accept occurrence-derived replacement data', () => {
   const changes = [

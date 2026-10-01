@@ -6,10 +6,11 @@ import { exportFigFile, initCodec, parseFigFile, SceneGraph } from '@open-pencil
 import { fontManager } from '@open-pencil/core/text'
 import { parseFigBuffer } from '@open-pencil/fig'
 
-import { HEAVY_TEST_TIMEOUT_MS } from '#tests/helpers/test-utils'
+import { HEAVY_TEST_TIMEOUT_MS } from '#core-tests/helpers/test-utils'
 
-const FIXTURES = resolve(import.meta.dir, '../../../../fixtures')
-const INTER_ASSETS = resolve(import.meta.dir, '../../../../../packages/core/assets')
+import { FIXTURES } from '#core-tests/helpers/fig/fixtures'
+
+const INTER_ASSETS = resolve(import.meta.dir, '../../../../../assets')
 
 function countGlyphBlobs(bytes: Uint8Array) {
   const parsed = parseFigBuffer(

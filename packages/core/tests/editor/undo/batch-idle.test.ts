@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test'
 
-import { createUndoManager, noop, undoEntry } from '../../helpers/undo'
+import { createUndoManager, noop, undoEntry } from '#core-tests/helpers/undo'
 
 function assignValue(setValue: (value: number) => void, value: number) {
   return () => setValue(value)

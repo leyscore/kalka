@@ -6,8 +6,8 @@ import { initCodec } from '@open-pencil/core/kiwi'
 import { materializeFigFragment } from '@open-pencil/fig'
 import { CommittedGraphEventError } from '@open-pencil/scene-graph'
 
-import { expectDefined } from '../../helpers/assert'
-import { readFixtureJSON } from '../../helpers/fig/fixtures'
+import { expectDefined } from '#core-tests/helpers/assert'
+import { readFixtureJSON } from '#core-tests/helpers/fig/fixtures'
 
 const fixture = readFixtureJSON<Record<string, unknown>[]>('nested-binding-ownership-records.json')
 

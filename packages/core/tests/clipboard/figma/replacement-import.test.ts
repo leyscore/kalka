@@ -3,7 +3,7 @@ import { expect, test } from 'bun:test'
 import { SceneGraph } from '@open-pencil/scene-graph'
 
 import { prepareClipboardImport } from '#core/clipboard/fig-import'
-import { readFixtureJSON } from '../../helpers/fig/fixtures'
+import { readFixtureJSON } from '#core-tests/helpers/fig/fixtures'
 
 const fixture = readFixtureJSON<Record<string, unknown>[]>('nested-binding-ownership-records.json')
 

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { rendererInvalidationForChanges } from '../../../src/editor/graph-events'
+import { rendererInvalidationForChanges } from '#core/editor/graph-events'
 
 describe('graph event renderer invalidation', () => {
   test('committed updates always invalidate node pictures', () => {

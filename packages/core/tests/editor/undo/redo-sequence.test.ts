@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'bun:test'
 
-import { expectDefined, getNodeOrThrow } from '../../helpers/assert'
-import { createHistoryFrame, setupEditorPage } from '../../helpers/editor-history'
+import { expectDefined, getNodeOrThrow } from '#core-tests/helpers/assert'
+import { createHistoryFrame, setupEditorPage } from '#core-tests/helpers/editor-history'
 
 describe('undo/redo multi-step sequences', () => {
   test('create → move → duplicate → move copy → undo all → redo all', () => {

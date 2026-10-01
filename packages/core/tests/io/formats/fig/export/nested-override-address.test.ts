@@ -4,7 +4,7 @@ import { exportFigFile, FigmaAPI, initCodec, parseFigFile, SceneGraph } from '@o
 import { parseFigBuffer } from '@open-pencil/fig'
 import { guidToString } from '@open-pencil/kiwi/fig/guid'
 
-import { expectDefined } from '../../../../helpers/assert'
+import { expectDefined } from '#core-tests/helpers/assert'
 
 // Captured from Figma's own clipboard encoding of the same edit: a text override inside a
 // nested instance is addressed as [nested instance, the nested component's child], never as

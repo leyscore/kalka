@@ -6,9 +6,9 @@ import { exportFigFile } from '@open-pencil/core/io'
 import { initCodec } from '@open-pencil/core/kiwi'
 import { materializeDocument, parseFigBuffer } from '@open-pencil/fig'
 
-import { expectDefined } from '../../../../helpers/assert'
-import { inheritedNestedBindingRecords } from '../../../../helpers/fig/nested-binding'
-import { readFixtureJSON } from '../../../../helpers/fig/fixtures'
+import { expectDefined } from '#core-tests/helpers/assert'
+import { inheritedNestedBindingRecords } from '#core-tests/helpers/fig/nested-binding'
+import { readFixtureJSON } from '#core-tests/helpers/fig/fixtures'
 
 const fixture = readFixtureJSON<Record<string, unknown>[]>('nested-binding-ownership-records.json')
 

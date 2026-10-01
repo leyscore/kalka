@@ -88,7 +88,9 @@ describe('node.effects', () => {
   test('accepts its own effects back', () => {
     const rect = assign([shadow, { type: 'LAYER_BLUR', radius: 4, visible: true }])
     const before = rect.effects
-    rect.effects = rect.effects
+    // Assigning the live array back through the setter must not clear or duplicate it.
+    const ownEffects = rect.effects
+    rect.effects = ownEffects
     expect(rect.effects).toEqual(before)
   })
 

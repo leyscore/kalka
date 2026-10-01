@@ -7,7 +7,7 @@ import { interpretInstance, materializeInstance } from '@open-pencil/fig/instanc
 import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
 import { SceneGraph } from '@open-pencil/scene-graph'
 
-import { guid } from '../../../../helpers/fig/guid'
+import { guid } from '#core-tests/helpers/fig/guid'
 
 test('nested instances retain their outer source-child correspondence during sync', () => {
   const source: NodeChange[] = [

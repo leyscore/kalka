@@ -5,7 +5,7 @@ import { SceneGraph } from '@open-pencil/scene-graph'
 import {
   createGraphEventSubscription,
   type GraphEventRenderer
-} from '../../../src/editor/graph-events'
+} from '#core/editor/graph-events'
 
 function createRenderer() {
   const invalidated: string[] = []

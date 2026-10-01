@@ -3,7 +3,7 @@ import { expect, test } from 'bun:test'
 import { createEditor } from '@open-pencil/core/editor'
 import { SceneGraph } from '@open-pencil/scene-graph'
 
-import type { PageSwitchProgress } from '../../../src/editor/pages'
+import type { PageSwitchProgress } from '#core/editor/pages'
 
 test('core page preparation only reports progress and never owns app suspension', async () => {
   const graph = new SceneGraph()

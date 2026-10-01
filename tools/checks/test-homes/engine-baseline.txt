@@ -264,15 +264,6 @@ tests/engine/io/fig/instance/swap-roundtrip.test.ts
 tests/engine/io/fig/instance/text-marker-roundtrip.test.ts
 tests/engine/io/fig/page-manifest.test.ts
 tests/engine/io/fig/plugin-data.test.ts
-tests/engine/io/fig/roundtrip/basic.test.ts
-tests/engine/io/fig/roundtrip/exhaustive.test.ts
-tests/engine/io/fig/roundtrip/export-settings.test.ts
-tests/engine/io/fig/roundtrip/glyph-blob.test.ts
-tests/engine/io/fig/roundtrip/group.test.ts
-tests/engine/io/fig/roundtrip/source-metadata.test.ts
-tests/engine/io/fig/roundtrip/variables.test.ts
-tests/engine/io/fig/roundtrip/verifier-contracts.test.ts
-tests/engine/io/fig/roundtrip/verifiers.test.ts
 tests/engine/io/fig/thumbnail-page.test.ts
 tests/engine/io/fig/thumbnail-range.test.ts
 tests/engine/io/pptx/export/fidelity.test.ts

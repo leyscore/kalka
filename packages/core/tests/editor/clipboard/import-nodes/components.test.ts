@@ -3,8 +3,8 @@ import { describe, expect, it } from 'bun:test'
 import { importClipboardNodes } from '@open-pencil/core'
 import type { NodeChange } from '@open-pencil/core'
 
-import { getNodeOrThrow } from '../../../helpers/assert'
-import { createClipboardGraph } from '../../../helpers/clipboard'
+import { getNodeOrThrow } from '#core-tests/helpers/assert'
+import { createClipboardGraph } from '#core-tests/helpers/clipboard'
 
 describe('importClipboardNodes: components', () => {
   it('maps SYMBOL type to COMPONENT with auto-layout', () => {

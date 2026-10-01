@@ -17,7 +17,8 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "imports": {
-    "#core/*": "./src/*.ts"
+    "#core/*": "./src/*.ts",
+    "#core-tests/*": "./tests/*.ts"
   },
   "exports": {
     "./package.json": "./package.json",

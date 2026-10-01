@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test'
 
-import { createUndoManager, undoEntry } from '../../helpers/undo'
+import { createUndoManager, undoEntry } from '#core-tests/helpers/undo'
 
 describe('UndoManager', () => {
   test('initial state', () => {

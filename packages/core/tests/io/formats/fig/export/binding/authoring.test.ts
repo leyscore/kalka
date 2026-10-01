@@ -8,9 +8,9 @@ import { materializeDocument, parseFigBuffer } from '@open-pencil/fig'
 import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
 import { cloneInstanceOverrideState } from '@open-pencil/scene-graph'
 
-import { expectDefined } from '../../../../../helpers/assert'
-import { inheritedNestedBindingRecords } from '../../../../../helpers/fig/nested-binding'
-import { readFixtureJSON } from '../../../../../helpers/fig/fixtures'
+import { expectDefined } from '#core-tests/helpers/assert'
+import { inheritedNestedBindingRecords } from '#core-tests/helpers/fig/nested-binding'
+import { readFixtureJSON } from '#core-tests/helpers/fig/fixtures'
 
 const oracle = readFixtureJSON<Record<string, unknown>[]>('nested-binding-authoring.json')
 

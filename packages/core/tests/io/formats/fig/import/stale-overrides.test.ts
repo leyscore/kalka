@@ -6,8 +6,8 @@ import { parseFigBuffer } from '@open-pencil/fig'
 import { readerDiagnostics, registerReaderSession } from '#core/kiwi/fig/session/document-state'
 import { openReaderSession } from '#core/kiwi/fig/session/reader'
 
-import { readFixtureArrayBuffer } from '../../../../helpers/fig/fixtures'
-import { HEAVY_TEST_TIMEOUT_MS, runsHeavyTests } from '../../../../helpers/test-utils'
+import { readFixtureArrayBuffer } from '#core-tests/helpers/fig/fixtures'
+import { HEAVY_TEST_TIMEOUT_MS, runsHeavyTests } from '#core-tests/helpers/test-utils'
 
 // material3.fig retains overrides on 58114:20598 that address 57994:10133, a node the
 // archive no longer contains. Figma keeps such records; opening the file must not.

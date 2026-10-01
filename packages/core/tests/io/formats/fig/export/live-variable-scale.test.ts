@@ -6,7 +6,7 @@ import { initCodec } from '@open-pencil/core/kiwi'
 import { materializeDocument, parseFigBuffer } from '@open-pencil/fig'
 import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
 
-import { readFixtureArrayBuffer } from '../../../../helpers/fig/fixtures'
+import { readFixtureArrayBuffer } from '#core-tests/helpers/fig/fixtures'
 
 function tagsInInput(graph: SceneGraph, rootId: string): SceneNode {
   const found: SceneNode[] = []
