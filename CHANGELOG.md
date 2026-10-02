@@ -39,6 +39,9 @@
 - Draw collaborators' names on their cursors with proper letter spacing and fallback fonts, and end long names with an ellipsis.
 - Keep line breaks in multi-line text when exporting OpenPencil JSX, so `get_jsx` output and `openpencil export -f jsx` render back to the same text instead of joining the lines with spaces.
 - Announce unavailable commands in the command palette as disabled to screen readers.
+- Show an imported Figma page's background, and keep a background you change when you switch pages or save the document.
+- Keep fixed-size text from collapsing and clipping beside smaller siblings in a Hug auto-layout container.
+- Keep the text and icon an instance was given when a page loads on its own, instead of resynchronising it back to the component's defaults.
 - Keep the ordering keys a `.fig` gave its layers when saving one again, instead of renumbering every sibling, and give every layer on a canvas its own key. Shared styles, variables and the canvas's own layers were numbered in separate passes that each restarted, so Figma saw siblings claiming the same position and ordered them arbitrarily.
 - Clear a `.fig` fill or stroke's colour-variable binding when you unbind it, instead of exporting the variable the layer was imported with and rebinding it on reopen. An emptied binding record is no longer written into the file either.
 - Keep an AI reply running in the chat panel, with its Stop button, when you switch pages, instead of detaching the panel from the reply in progress.
