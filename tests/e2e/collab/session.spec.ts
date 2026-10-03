@@ -231,7 +231,7 @@ test('two browser peers synchronize editing, awareness, departure, and reconnect
     })
     await expect
       .poll(() =>
-        host.page.evaluate(() => window.openPencil?.getStore?.().state.remoteCursors.length)
+        host.page.evaluate(() => window.openPencil?.getStore?.().state.presenceCursors.length)
       )
       .toBe(1)
 
@@ -243,7 +243,7 @@ test('two browser peers synchronize editing, awareness, departure, and reconnect
       .toBe(0)
     await expect
       .poll(() =>
-        host.page.evaluate(() => window.openPencil?.getStore?.().state.remoteCursors.length)
+        host.page.evaluate(() => window.openPencil?.getStore?.().state.presenceCursors.length)
       )
       .toBe(0)
 

@@ -12,6 +12,7 @@ import { runPageId } from '@/app/ai/tools'
 import { aiToolOverrides } from '@/app/ai/tools/preferences'
 import * as figmaFactory from '@/app/automation/bridge/figma-factory'
 import { createEditorStore } from '@/app/editor/session/create'
+import { presenceOf } from '@/app/presence/registry'
 import { appPreferences } from '@/app/settings/preferences/store'
 
 import { MOCK_USAGE } from '#tests/helpers/chat/usage'
@@ -142,5 +143,24 @@ test('a run falls back to the page on screen when its page is deleted', async ()
     await store.switchPage(b)
     store.graph.deleteNode(a)
     expect(runPageId(store)).toBe(b)
+  })
+})
+
+test("shows the chat's agent where its tools work, then takes it off the canvas", async () => {
+  await withStore(async (store, { a }) => {
+    let during: ReturnType<typeof presenceOf>['agents']['value'] = []
+    await runMessage(store, [
+      rectangle,
+      async (editor) => {
+        during = presenceOf(editor).agents.value
+      }
+    ])
+    const [shape] = store.graph.getChildren(a)
+    expect(during).toMatchObject([
+      { kind: 'chat', status: 'editing', cursor: { x: shape?.x, y: shape?.y, pageId: a } }
+    ])
+    expect(presenceOf(store).agents.value).toMatchObject([
+      { name: during[0]?.name, status: 'idle', cursor: undefined }
+    ])
   })
 })

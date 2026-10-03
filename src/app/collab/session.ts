@@ -6,11 +6,13 @@ import * as Y from 'yjs'
 
 import { randomIndex } from '@open-pencil/core/random'
 
+import { publishLocalAgents } from '@/app/collab/local-awareness'
 import { connectCollabRoom } from '@/app/collab/room'
 import type { CollabRoomTransport } from '@/app/collab/transport'
 import type { CollabState } from '@/app/collab/types'
 import { bindCollabGraphEvents, registerYjsObservers } from '@/app/collab/yjs-sync'
 import type { EditorStore } from '@/app/editor/active-store'
+import { setPeers } from '@/app/presence/registry'
 import { PEER_COLORS } from '@/constants'
 
 export type CollabRuntime = {
@@ -25,6 +27,7 @@ export type CollabRuntime = {
   suppressYjsEvents: boolean
   unbindGraphEvents: (() => void) | null
   stopZoomWatch: (() => void) | null
+  stopAgentSync: (() => void) | null
 }
 
 type ConnectCollabSessionOptions = {
@@ -60,6 +63,7 @@ type CollabSessionResources = {
   ydoc: Y.Doc | null
   unbindGraphEvents: (() => void) | null
   stopZoomWatch: (() => void) | null
+  stopAgentSync: (() => void) | null
   resetFollow: () => void
 }
 
@@ -75,7 +79,8 @@ export function createCollabRuntime(): CollabRuntime {
     suppressGraphSync: false,
     suppressYjsEvents: false,
     unbindGraphEvents: null,
-    stopZoomWatch: null
+    stopZoomWatch: null,
+    stopAgentSync: null
   }
 }
 
@@ -125,6 +130,7 @@ export function createCollabConnectionActions({
       ydoc: runtime.ydoc,
       unbindGraphEvents: runtime.unbindGraphEvents,
       stopZoomWatch: runtime.stopZoomWatch,
+      stopAgentSync: runtime.stopAgentSync,
       resetFollow
     })
     resetCollabRuntime(runtime)
@@ -199,6 +205,7 @@ export function connectCollabSession({
   broadcastAwareness()
 
   runtime.stopZoomWatch = watchAwarenessZoom(store, () => runtime.awareness)
+  runtime.stopAgentSync = publishLocalAgents(store, () => runtime.awareness, state.value.localColor)
 
   runtime.unbindGraphEvents = bindCollabGraphEvents({
     store,
@@ -215,6 +222,7 @@ export function connectCollabSession({
 export function resetCollabRuntime(runtime: CollabRuntime) {
   runtime.unbindGraphEvents = null
   runtime.stopZoomWatch = null
+  runtime.stopAgentSync = null
   runtime.room = null
   runtime.awareness = null
   runtime.persistence = null
@@ -239,7 +247,7 @@ export function disposeCollabSessionResources(resources: CollabSessionResources)
     void resources.persistence.destroy()
   }
   resources.ydoc?.destroy()
+  resources.stopAgentSync?.()
   resources.resetFollow()
-  resources.store.state.remoteCursors = []
-  resources.store.requestRender()
+  setPeers(resources.store, [])
 }

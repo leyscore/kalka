@@ -1,8 +1,10 @@
+import { computeContentBounds } from '@open-pencil/core/io'
 import type { StepBudget } from '@open-pencil/core/tools'
 
 import { DEFAULT_AGENT_STEPS, resolveAgentStepLimit } from '@/app/ai/chat/step-limit'
 import { getActiveEditorStore } from '@/app/editor/active-store'
 import type { EditorStore } from '@/app/editor/active-store'
+import { addAgent, type AgentHandle } from '@/app/presence/registry'
 
 class RunState {
   currentSteps = 0
@@ -10,6 +12,8 @@ class RunState {
   maxSteps = DEFAULT_AGENT_STEPS
   /** The page the run works on. The user's navigation does not move it; the agent's does. */
   pageId: string | null = null
+  /** The built-in chat as other people see it; one per document, kept between replies. */
+  agent: AgentHandle | null = null
 
   start(maxSteps: number, pageId: string): void {
     this.currentSteps = 0
@@ -34,8 +38,28 @@ function getRunState(store?: EditorStore): RunState {
 }
 
 /** Begin a run on the page the user is viewing. */
-export function startRun(store: EditorStore, maxSteps: number): void {
-  getRunState(store).start(maxSteps, store.state.currentPageId)
+export function startRun(store: EditorStore, maxSteps: number, model?: string): void {
+  const run = getRunState(store)
+  run.start(maxSteps, store.state.currentPageId)
+  run.agent ??= addAgent(store, 'chat', model)
+  run.agent.update({ status: 'thinking', model })
+}
+
+/** The reply finished, failed, or was stopped: the agent stays listed but leaves the canvas. */
+export function endRun(store: EditorStore): void {
+  getRunState(store).agent?.update({ status: 'idle', cursor: undefined, selection: undefined })
+}
+
+/** Point the run's agent at nodes a tool just created or changed. */
+export function markRunWork(store: EditorStore, nodeIds: string[]): void {
+  const run = getRunState(store)
+  const bounds = computeContentBounds(store.graph, nodeIds)
+  if (!run.agent || !bounds) return
+  run.agent.update({
+    status: 'editing',
+    cursor: { x: bounds.minX, y: bounds.minY, pageId: runPageId(store) },
+    selection: nodeIds
+  })
 }
 
 export function recordStep(store?: EditorStore): void {

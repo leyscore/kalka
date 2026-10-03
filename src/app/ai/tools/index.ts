@@ -10,9 +10,9 @@ import { ensureGraphFonts } from '@/app/editor/fonts'
 import { useLibraryService } from '@/app/libraries'
 
 import { aiToolDefinitions } from './catalog'
-import { moveRunToPage, runPageId, stepBudget } from './run'
+import { markRunWork, moveRunToPage, runPageId, stepBudget } from './run'
 
-export { didHitStepLimit, recordStep, runPageId, startRun } from './run'
+export { didHitStepLimit, endRun, recordStep, runPageId, startRun } from './run'
 
 export function createAITools(store: EditorStore, diagnosticContext?: AIDiagnosticContext) {
   let before: { pageId: string; snapshot: ReturnType<EditorStore['snapshotPage']> } | null = null
@@ -62,6 +62,7 @@ export function createAITools(store: EditorStore, diagnosticContext?: AIDiagnost
         }
       },
       onFlashNodes: (nodeIds) => {
+        markRunWork(store, nodeIds)
         store.renderer?.aiClearActive()
         if (nodeIds.length > 0) {
           store.aiFlashDone(nodeIds)

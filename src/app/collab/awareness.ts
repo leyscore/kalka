@@ -2,10 +2,10 @@ import { ref } from 'vue'
 import type * as awarenessProtocol from 'y-protocols/awareness'
 
 import { randomIndex } from '@open-pencil/core/random'
-import type { Color } from '@open-pencil/scene-graph/primitives'
 
 import type { EditorStore } from '@/app/editor/active-store'
-import { PEER_COLORS, ROOM_ID_CHARS, ROOM_ID_LENGTH } from '@/constants'
+import { parsePeer } from '@/app/presence/schema'
+import { ROOM_ID_CHARS, ROOM_ID_LENGTH } from '@/constants'
 
 import type { RemotePeer } from './types'
 
@@ -18,41 +18,14 @@ type CursorState = {
   zoom?: number
 }
 
+/** People in the room other than us, validated: awareness comes from other browsers. */
 export function buildRemotePeers(
   states: Map<number, Record<string, unknown>>,
   localClientId: number
 ): RemotePeer[] {
-  const peers: RemotePeer[] = []
-
-  states.forEach((peerState, clientId) => {
-    if (clientId === localClientId) return
-    const user = peerState.user as { name?: string; color?: Color } | undefined
-    if (!user) return
-    peers.push({
-      clientId,
-      name: user.name || 'Anonymous',
-      color: user.color || PEER_COLORS[clientId % PEER_COLORS.length],
-      cursor: peerState.cursor as RemotePeer['cursor'],
-      selection: peerState.selection as string[]
-    })
-  })
-
-  return peers
-}
-
-export function remotePeersToCursors(peers: RemotePeer[], currentPageId: string) {
-  return peers
-    .filter((p) => p.cursor && p.cursor.pageId === currentPageId)
-    .map((p) => {
-      const cursor = p.cursor as NonNullable<RemotePeer['cursor']>
-      return {
-        name: p.name,
-        color: p.color,
-        x: cursor.x,
-        y: cursor.y,
-        selection: p.selection
-      }
-    })
+  return [...states].flatMap(([clientId, state]) =>
+    clientId === localClientId ? [] : (parsePeer(clientId, state) ?? [])
+  )
 }
 
 export function createFollowActions(
