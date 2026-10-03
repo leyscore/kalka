@@ -1,3 +1,7 @@
+import { getToolName } from 'ai'
+
+import type { ToolCallPart } from '@/app/ai/chat/tool-calls/display'
+
 export type ToolDisplayState = 'pending' | 'done' | 'error'
 
 export type ToolStateInput = {
@@ -32,4 +36,9 @@ export function classifyToolState({ toolName, state, output }: ToolStateInput): 
 
   if (state === 'output-available') return 'done'
   return 'pending'
+}
+
+/** A chat tool call's display state. */
+export function toolCallState(part: ToolCallPart): ToolDisplayState {
+  return classifyToolState({ toolName: getToolName(part), state: part.state, output: part.output })
 }

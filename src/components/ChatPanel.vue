@@ -189,6 +189,7 @@ function handleStop() {
         :messages="messages"
         :status="status"
         :show-continue="showContinue"
+        :nodes-live="!history.readOnly.value"
         @continue="
           submission.submit({
             modelText: 'Continue where you left off',

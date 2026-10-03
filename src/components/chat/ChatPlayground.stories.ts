@@ -115,7 +115,7 @@ export const Interaction: Story = {
     await userEvent.type(title, 'My dashboard')
     await userEvent.click(canvas.getByRole('button', { name: 'Delete fixture' }))
     await expect(title).toHaveValue('Monthly expense dashboard')
-    await expect(canvas.getByRole('button', { name: 'Create Frame Done' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: /^Done Create Frame\b/ })).toBeVisible()
   }
 }
 export const Empty: Story = { args: { initialChat: 'empty' } }
