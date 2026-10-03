@@ -32,6 +32,35 @@ function nodeToJSX(node: SceneNode, graph: SceneGraph, depth: number): SyntaxNod
   return jsx.element(tag, attributes, children, depth)
 }
 
+/** A JSX attribute as the export prints it: its name and its source, such as `w={320}`. */
+export interface JSXAttributeSource {
+  name: string
+  source: string
+}
+
+/** Printed values break lines only between tokens, never inside a string, so joining is lossless. */
+function oneLine(source: string): string {
+  return source.replace(/\s*\n\s*/g, ' ')
+}
+
+/**
+ * The attributes `sceneNodeToJSX` prints for a node, each on one line, with a text node's
+ * content as a `text` attribute. `null` for a node the export does not write.
+ */
+export function sceneNodeAttributes(
+  nodeId: string,
+  graph: SceneGraph
+): JSXAttributeSource[] | null {
+  const node = graph.getNode(nodeId)
+  if (!node || !NODE_TYPE_TO_TAG[node.type]) return null
+  const props = collectProps(node, graph)
+  if (node.type === 'TEXT') props.push(['text', node.text])
+  return props.map((prop) => ({
+    name: prop[0],
+    source: oneLine(jsx.printJSX(propAttribute(prop)))
+  }))
+}
+
 export function sceneNodeToJSX(nodeId: string, graph: SceneGraph): string {
   const node = graph.getNode(nodeId)
   const syntax = node ? nodeToJSX(node, graph, 0) : null

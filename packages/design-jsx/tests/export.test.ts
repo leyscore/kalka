@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { sceneNodeToJSX, selectionToJSX } from '#design-jsx/index'
+import { sceneNodeAttributes, sceneNodeToJSX, selectionToJSX } from '#design-jsx/index'
 
 import { SceneGraph } from '@open-pencil/scene-graph'
 
@@ -437,6 +437,56 @@ describe('sceneNodeToJSX', () => {
     expect(jsx).toContain('rowStart={2}')
     expect(jsx).toContain('colSpan={2}')
     expect(jsx).not.toContain('rowSpan')
+  })
+})
+
+describe('sceneNodeAttributes', () => {
+  test('prints each attribute as sceneNodeToJSX does, on one line', () => {
+    const graph = makeGraph()
+    const node = graph.createNode('RECTANGLE', pageId(graph), {
+      name: 'Box',
+      width: 100,
+      height: 50,
+      strokes: [
+        {
+          color: { r: 1, g: 0, b: 0, a: 1 },
+          weight: 2,
+          opacity: 1,
+          visible: true,
+          align: 'OUTSIDE'
+        },
+        {
+          color: { r: 0, g: 0, b: 1, a: 1 },
+          weight: 1,
+          opacity: 1,
+          visible: false,
+          align: 'INSIDE'
+        }
+      ]
+    })
+    const attributes = sceneNodeAttributes(node.id, graph) ?? []
+    expect(attributes.map((attribute) => attribute.name)).toEqual(['name', 'w', 'h', 'strokes'])
+    expect(attributes.every((attribute) => !attribute.source.includes('\n'))).toBe(true)
+    expect(sceneNodeToJSX(node.id, graph)).toStartWith(
+      `<Rectangle ${attributes
+        .slice(0, 3)
+        .map((attribute) => attribute.source)
+        .join(' ')}`
+    )
+  })
+
+  test("writes a text node's content as a text attribute", () => {
+    const graph = makeGraph()
+    const node = graph.createNode('TEXT', pageId(graph), { name: 'Note', text: 'Two\nlines' })
+    expect(sceneNodeAttributes(node.id, graph)?.at(-1)).toEqual({
+      name: 'text',
+      source: 'text={"Two\\nlines"}'
+    })
+  })
+
+  test('is null for a node the export skips', () => {
+    const graph = makeGraph()
+    expect(sceneNodeAttributes(pageId(graph), graph)).toBeNull()
   })
 })
 

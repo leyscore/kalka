@@ -46,7 +46,6 @@ export const diffJSX = defineTool({
   description:
     'Structural diff between two nodes in JSX format. Shows added/removed children, changed props.',
   execution: { kind: 'sync', mutation: 'none' },
-  exposure: { webmcp: false },
   input: nodeComparisonInput,
   execute: (figma, { from, to }) => {
     const fromNode = figma.getNodeById(from)

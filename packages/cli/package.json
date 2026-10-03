@@ -4,7 +4,8 @@
   "license": "MIT",
   "type": "module",
   "imports": {
-    "#cli/*": "./src/*"
+    "#cli/*": "./src/*",
+    "#cli-tests/*": "./tests/*"
   },
   "bin": {
     "openpencil": "./bin/openpencil.js"
