@@ -61,7 +61,7 @@ async function runMessage(store: EditorStore, steps: Step[]) {
     model,
     effectiveModelID: 'test',
     maxOutputTokens: 100,
-    reasoningEffort: ''
+    thinkingLevel: () => 'default'
   })
   const stream = await transport.sendMessages({
     trigger: 'submit-message',

@@ -8,7 +8,8 @@ test('assistant responds', async ({ configuredChat: chat }) => {
 test('reasoning and response copy actions render', async ({ configuredChat: chat }) => {
   await chat.submit('Show reasoning')
 
-  const reasoning = chat.assistantMessage().getByRole('button', { name: 'Reasoning' })
+  // Reasoning that streamed in this session reports how long the model thought.
+  const reasoning = chat.assistantMessage().getByRole('button', { name: /^Thought for \d+s$/ })
   await expect(reasoning).toHaveAttribute('data-state', 'closed')
   await reasoning.click()
   await expect(reasoning).toHaveAttribute('data-state', 'open')

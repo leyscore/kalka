@@ -101,6 +101,7 @@ function partKey(part: UIMessagePart<UIDataTypes, UITools>, index: number): stri
             :streaming="part.state === 'streaming'"
             :thinking-label="ai.thinking"
             :reasoning-label="ai.reasoning"
+            :duration-label="(seconds) => ai.thoughtFor({ seconds })"
           />
 
           <!-- Tool call -->
