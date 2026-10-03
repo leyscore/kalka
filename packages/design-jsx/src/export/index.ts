@@ -2,20 +2,18 @@ import { jsx, type SyntaxNode } from '@open-pencil/codegen'
 import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
 
 import { collectProps, NODE_TYPE_TO_TAG, type JSXProp } from './props'
+import { valueSyntax } from './value'
 
 function propValue(value: JSXProp[1]): SyntaxNode | null {
   if (value === true) return null
   if (typeof value === 'string') return jsx.stringValue(value)
-  if (Array.isArray(value)) {
-    return jsx.container({
-      type: 'ArrayExpression',
-      elements: value.map((item) => jsx.literal(item))
-    })
-  }
-  return jsx.container(jsx.literal(value))
+  return jsx.container(valueSyntax(value))
 }
 
-/** A prop as a JSX attribute: `true` prints the bare name, other values as typed literals. */
+/**
+ * A prop as a JSX attribute: `true` prints the bare name, strings as attribute strings, and
+ * other values as expressions, with paint and effect helpers as calls.
+ */
 function propAttribute([name, value]: JSXProp): SyntaxNode {
   return jsx.attribute(name, propValue(value))
 }
@@ -27,9 +25,9 @@ function nodeToJSX(node: SceneNode, graph: SceneGraph, depth: number): SyntaxNod
   if (node.type === 'TEXT') {
     return jsx.element(tag, attributes, node.text ? [jsx.text(node.text)] : [], depth, true)
   }
+  // Hidden children export with `visible={false}` rather than disappearing.
   const children = graph
     .getChildren(node.id)
-    .filter((child) => child.visible)
     .flatMap((child) => nodeToJSX(child, graph, depth + 1) ?? [])
   return jsx.element(tag, attributes, children, depth)
 }

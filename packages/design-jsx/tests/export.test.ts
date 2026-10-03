@@ -221,7 +221,7 @@ describe('sceneNodeToJSX', () => {
     expect(jsx).toContain('strokeWidth={2}')
   })
 
-  test('hidden children are excluded', () => {
+  test('hidden children are kept and marked hidden', () => {
     const graph = makeGraph()
     const frame = graph.createNode('FRAME', pageId(graph), {
       name: 'Parent',
@@ -239,9 +239,14 @@ describe('sceneNodeToJSX', () => {
       height: 50,
       visible: false
     })
-    const jsx = sceneNodeToJSX(frame.id, graph)
-    expect(jsx).toContain('Visible')
-    expect(jsx).not.toContain('Hidden')
+    expect(sceneNodeToJSX(frame.id, graph)).toBe(
+      [
+        '<Frame name="Parent" w={100} h={100}>',
+        '  <Rectangle name="Visible" w={50} h={50} />',
+        '  <Rectangle name="Hidden" w={50} h={50} visible={false} />',
+        '</Frame>'
+      ].join('\n')
+    )
   })
 
   test('empty text node renders self-closing', () => {
@@ -299,6 +304,54 @@ describe('sceneNodeToJSX', () => {
     const jsx = sceneNodeToJSX(node.id, graph)
     expect(jsx).toContain('shadow="0 4 8')
     expect(jsx).toContain('blur={4}')
+  })
+
+  test('effects: two shadows become one effects prop, not duplicate attributes', () => {
+    const graph = makeGraph()
+    const shadow = {
+      type: 'DROP_SHADOW' as const,
+      color: { r: 0, g: 0, b: 0, a: 0.2 },
+      offset: { x: 0, y: 2 },
+      radius: 4,
+      spread: 0,
+      visible: true
+    }
+    const node = graph.createNode('RECTANGLE', pageId(graph), {
+      name: 'Card',
+      width: 10,
+      height: 10,
+      effects: [shadow, { ...shadow, offset: { x: 0, y: 8 }, radius: 16 }]
+    })
+    expect(sceneNodeToJSX(node.id, graph)).toBe(
+      [
+        '<Rectangle name="Card" w={10} h={10} effects={[',
+        '  dropShadow({ x: 0, y: 2, radius: 4, color: "#00000033" }),',
+        '  dropShadow({ x: 0, y: 8, radius: 16, color: "#00000033" })',
+        ']} />'
+      ].join('\n')
+    )
+  })
+
+  test('effects: a background blur is not exported as a layer blur', () => {
+    const graph = makeGraph()
+    const node = graph.createNode('RECTANGLE', pageId(graph), {
+      name: 'Glass',
+      width: 10,
+      height: 10,
+      effects: [
+        {
+          type: 'BACKGROUND_BLUR',
+          color: { r: 0, g: 0, b: 0, a: 0 },
+          offset: { x: 0, y: 0 },
+          radius: 12,
+          spread: 0,
+          visible: true
+        }
+      ]
+    })
+    expect(sceneNodeToJSX(node.id, graph)).toBe(
+      '<Rectangle name="Glass" w={10} h={10} effects={[backgroundBlur(12)]} />'
+    )
   })
 
   test('grid layout frame', () => {

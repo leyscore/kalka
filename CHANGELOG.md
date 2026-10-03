@@ -16,6 +16,7 @@
 ### Added
 
 - See where the built-in AI chat is working: while it replies, a cursor whose outlined label shows a sparkle and a callsign such as *Fern* marks the layers it edits. In a shared room, collaborators see each other's agents in the color of the person running them.
+- Hide, lock, and constrain layers in design JSX with `visible={false}`, `locked`, and `constraints={{ horizontal, vertical }}`, set italic text with `italic`, and describe strokes fully with `strokes`, `strokeWeights`, `strokeCap`, `strokeJoin`, and the node-level `dashPattern`. JSX export now writes these together with stacked, gradient, and image fills, every effect, absolutely positioned children, size limits, vertical text alignment, masks, and variable bindings, so rendering exported JSX reproduces them and `diff_jsx` reports changes to them.
 - Jump between pages from the command palette: it lists the pages you visited recently in the tab, **Go to page…** lists every page, and typing a page name finds it.
 - Choose how much an AI model thinks for each message from the chat composer, from Off to Extra high or the provider default. Anthropic, Google, DeepSeek, OpenAI, OpenRouter, and compatible models apply it, where reasoning effort previously reached only OpenAI and OpenRouter models. A model profile's thinking level, which replaces its free-text reasoning effort, sets the starting choice, and finished reasoning shows how long the model thought.
 - Preview designs progressively on the canvas as direct AI providers stream JSX, without saving partial designs or adding intermediate undo steps. A preview stays with its page: it hides while you view another page and returns when you come back.
@@ -37,6 +38,8 @@
 
 ### Fixed
 
+- Export layers with two shadows as one `effects` prop instead of repeating the `shadow` attribute, background blurs as `backgroundBlur` instead of a layer blur, hidden children with `visible={false}` instead of leaving them out, and per-corner radii even when the uniform radius is 0.
+- Apply `strokeAlign`, `strokeDash`, `minH`, and `maxH` in design JSX, which were accepted but ignored, and make `minW` and `maxW` set the layer's minimum and maximum width rather than only clamping its initial width.
 - Render the canvas with the Vue SDK's `CanvasRoot` and `CanvasSurface`; CanvasKit never started there and the canvas stayed blank.
 - Keep the view centered on what you were looking at when zooming to 100% or another fixed level, instead of jumping elsewhere whenever the zoom changes.
 - Draw collaborators' names on their cursors with proper letter spacing and fallback fonts, and end long names with an ellipsis.
