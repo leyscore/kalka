@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { PopoverContent, PopoverPortal, PopoverRoot, PopoverTrigger } from 'reka-ui'
-import { tv } from 'tailwind-variants'
 import { computed } from 'vue'
 
-import ConnectedRoom from '@/components/CollabPanel/ConnectedRoom.vue'
-import { useCollabPanelContext } from '@/components/CollabPanel/context'
-import JoinRoomPrompt from '@/components/CollabPanel/JoinRoomPrompt.vue'
-import ShareOrJoinRoom from '@/components/CollabPanel/ShareOrJoinRoom.vue'
+import ConnectedRoom from '@/components/collab-panel/ConnectedRoom.vue'
+import { useCollabPanelContext } from '@/components/collab-panel/context'
+import JoinRoomPrompt from '@/components/collab-panel/JoinRoomPrompt.vue'
+import ShareOrJoinRoom from '@/components/collab-panel/ShareOrJoinRoom.vue'
 import { usePopoverUI } from '@/components/ui/overlay/popover'
-import collaborationTheme from '@/theme/collaboration'
+import { shareButton } from '@/theme/collaboration/share-button'
 
 const collab = useCollabPanelContext()
 const cls = usePopoverUI({ content: 'z-50 w-72 p-3' })
@@ -17,8 +16,6 @@ const connection = computed(() => {
   if (collab.isJoining) return 'joining'
   return 'idle'
 })
-const collaboration = tv(collaborationTheme)
-const styles = computed(() => collaboration({ connection: connection.value }))
 </script>
 
 <template>
@@ -27,16 +24,10 @@ const styles = computed(() => collaboration({ connection: connection.value }))
       <button
         data-test-id="collab-share-button"
         :data-connection="connection"
-        :class="styles.shareButton()"
+        :class="shareButton({ connection })"
       >
         <icon-lucide-share-2 class="size-3.5" />
-        {{
-          collab.state.connected
-            ? collab.messages.connected
-            : collab.isJoining
-              ? collab.messages.joinRoom
-              : collab.messages.share
-        }}
+        {{ collab.isJoining ? collab.messages.joinRoom : collab.messages.share }}
       </button>
     </PopoverTrigger>
 

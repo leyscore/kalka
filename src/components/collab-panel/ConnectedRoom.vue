@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { selectTarget } from '@open-pencil/vue'
 
-import { useCollabPanelContext } from '@/components/CollabPanel/context'
+import { useCollabPanelContext } from '@/components/collab-panel/context'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import AppInput from '@/components/ui/input/AppInput.vue'
 
@@ -10,7 +10,7 @@ const collab = useCollabPanelContext()
 
 <template>
   <div class="mb-3 text-xs font-medium text-surface">{{ collab.messages.roomLink }}</div>
-  <div class="mb-3 flex items-center gap-1.5">
+  <div class="flex items-center gap-1.5">
     <AppInput
       :model-value="collab.shareURL"
       readonly
@@ -31,17 +31,4 @@ const collab = useCollabPanelContext()
       {{ collab.copied ? 'Copied' : 'Copy' }}
     </AppButton>
   </div>
-
-  <div class="mb-2 text-xs font-medium text-surface">
-    {{ collab.peers.length + 1 }} {{ collab.peers.length === 0 ? 'person' : 'people' }} in this room
-  </div>
-
-  <AppButton
-    variant="outline"
-    class="w-full"
-    data-test-id="collab-disconnect"
-    @click="collab.disconnect"
-  >
-    Disconnect
-  </AppButton>
 </template>

@@ -6,9 +6,14 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from '@open-pencil/vue'
 
 import { DEFAULT_COLLAB_STATE, useCollabInjected } from '@/app/collab/use'
+import { useActiveEditorStoreRef } from '@/app/editor/active-store'
 import { useNotificationMessages } from '@/app/i18n/notifications'
+import { presenceOf, renameAgent } from '@/app/presence/registry'
+import type { FollowTarget } from '@/app/presence/types'
 import { toast } from '@/app/shell/ui'
 import { getShareURL } from '@/constants'
+
+import { presenceRows as buildPresenceRows } from './presence'
 
 function createCollabPanelContext() {
   const route = useRoute()
@@ -26,7 +31,20 @@ function createCollabPanelContext() {
   const popoverOpen = ref(!!pendingRoomId.value)
   const state = computed(() => collab?.state.value ?? DEFAULT_COLLAB_STATE)
   const peers = computed(() => collab?.remotePeers.value ?? [])
-  const followingPeer = computed(() => collab?.followingPeer.value ?? null)
+  const following = computed(() => collab?.following.value ?? null)
+  const storeRef = useActiveEditorStoreRef()
+  const presenceRows = computed(() => {
+    const store = storeRef.value
+    return buildPresenceRows(
+      {
+        name: state.value.localName,
+        color: state.value.localColor,
+        agents: store ? presenceOf(store).agents.value : []
+      },
+      peers.value,
+      (pageId) => store?.graph.getNode(pageId)?.name
+    )
+  })
   const shareURL = computed(() => {
     if (!state.value.roomId) return ''
     return getShareURL(state.value.roomId)
@@ -74,8 +92,12 @@ function createCollabPanelContext() {
     void router.push('/')
   }
 
-  function toggleFollowPeer(clientId: number) {
-    collab?.followPeer(followingPeer.value === clientId ? null : clientId)
+  function follow(target: FollowTarget | null) {
+    collab?.follow(target)
+  }
+
+  function renameLocalAgent(agentId: string, name: string) {
+    if (storeRef.value) renameAgent(storeRef.value, agentId, name)
   }
 
   return {
@@ -86,15 +108,16 @@ function createCollabPanelContext() {
     nameDraft,
     popoverOpen,
     state,
-    peers,
-    followingPeer,
+    following,
+    presenceRows,
     shareURL,
     isJoining,
     copyLink,
     share,
     join,
     disconnect,
-    toggleFollowPeer
+    follow,
+    renameLocalAgent
   }
 }
 

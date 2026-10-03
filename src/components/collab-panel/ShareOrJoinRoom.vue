@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useCollabPanelContext } from '@/components/CollabPanel/context'
+import { useCollabPanelContext } from '@/components/collab-panel/context'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import AppInput from '@/components/ui/input/AppInput.vue'
 
