@@ -42,6 +42,8 @@
 
 ### Changed
 
+- Recommend the latest models in the AI model picker: Claude Sonnet 5.5 (the new Anthropic and OpenRouter default), Claude Opus 5.5, GPT-6.1 Sol (the new OpenAI default), GPT-6 Astra, and GPT-6 Luna, and replace the free OpenRouter models OpenRouter retired with Qwen3.8 27B and Gemma 4 31B. Saved profiles keep the model they chose.
+- The Linux AppImage no longer bundles `xdg-open`; opening links relies on the system's `xdg-utils`, as most desktop distributions provide.
 - With nothing selected, the Code tab explains that it shows the selection's code and offers Write JSX for new layers, instead of showing a template frame that looked like a real layer.
 - Design lint reports far fewer false positives in `openpencil lint` and the app: `no-hardcoded-colors` flags only colors that match a color variable and names it, `no-deeply-nested` flags only the layer that crosses the depth limit, `touch-target-size` checks the WCAG 2.2 AA minimum of 24 × 24 in the Recommended preset (Strict and Accessibility keep 44 × 44), matches control names as whole words (a layer named "Rectangle" is no longer a call to action) and ignores icons and controls inside other controls, `consistent-spacing` accepts multiples of 4, `color-contrast` checks text bound to color variables, and layers inside instances are checked once through their main component. The Recommended preset reports unbound colors, deep nesting, mixed text styles, and off-scale spacing as suggestions instead of warnings. Lint messages carry the measured values in `data`.
 - Keep the Share button labeled Share while you are in a room, instead of turning it into a Connected status; a green dot on your avatar shows the room is live.
@@ -103,6 +105,9 @@
 
 ### Security
 
+- Update the desktop app to Tauri 2.12, which binds large IPC channel responses to the webview that requested them instead of letting another webview fetch them (GHSA-w28w-mhc8-qvjv).
+- Install a desktop update only when its signature names the version the update server announces, so a tampered update manifest cannot pair a newer version number with an older signed build.
+- Update `@xmldom/xmldom` to 0.9.12, which fixes quadratic-time and quadratic-memory parsing of crafted SVG and XML and reports malformed end tags instead of accepting them.
 - Validate cursors, selections, and names that collaborators send before drawing them, and cap their size, so a broken or hostile peer cannot crash or flood the canvas.
 - Evaluate `calc` expressions through `jsep` and an arithmetic allowlist that never compiles input into JavaScript, replacing the `expr-eval` dependency and its unpatched critical code-execution advisory (GHSA-q9v2-7m5w-4693).
 - Escape layer names and other text properties in JSX and Tailwind JSX export, so text from a document can no longer add attributes or JavaScript expressions that the AI and MCP `render` and `replace` tools would execute, and names containing `&` no longer change when the JSX is rendered back.
