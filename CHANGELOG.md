@@ -107,6 +107,8 @@
 - Load the Bold, Medium, and other styles of macOS system fonts packaged as font collections, such as Menlo, Helvetica Neue, and Avenir Next, instead of reporting them as substituted or drawing a different style (#746).
 - Load the Medium, Semibold, Bold, and other styles of installed variable fonts such as SF Pro on macOS instead of reporting them as substituted (#752).
 - Ship the MIT license text in every published npm package, and add READMEs for `@open-pencil/core`, `@open-pencil/cli`, and `@open-pencil/mcp` on npm.
+- Reject malformed vector network JSON in the AI and MCP `path_set` tool with an error instead of storing it on the node, where later path tools failed on it.
+- Keep image bytes when the CLI reads a component library revision back from its catalog, instead of restoring every image empty.
 - Work with pages other than the one on screen through MCP, `eval`, and the CLI against the running app without switching to them: `openpencil export --page` and `--page-id` export that page instead of the selection, `export_image` and `openpencil export --node` export layers from any page instead of failing with "Raster export selection must stay on a single page", and a `.fig` page that has not been shown yet gets its layers, fonts, and layout before a command reads or changes it.
 - Fill the open subpaths of filled, unstroked SVG paths as if they were closed, as SVG does, in icons from `insert_icon` and Design JSX `<Icon>`, inline Design JSX `<svg>`, SVG from `import_svg` or dropped and pasted files, and SVG clip paths. Icons that cut holes with open subpaths, such as some Font Awesome icons, no longer render with those holes filled in, and filled `<polyline>` elements render filled instead of not at all.
 - Keep round and other stroke caps and joins after saving and reopening the file on icons from `insert_icon` and Design JSX `<Icon>`, and on vectors from inline Design JSX `<svg>`, `import_svg`, and dropped or pasted SVG files. They were set only on the stroke paint, which `.fig` does not store, so outline icons such as Lucide's reopened with butt caps and miter joins and showed gaps where their strokes meet.
@@ -123,6 +125,10 @@
 - Validate cursors, selections, and names that collaborators send before drawing them, and cap their size, so a broken or hostile peer cannot crash or flood the canvas.
 - Evaluate `calc` expressions through `jsep` and an arithmetic allowlist that never compiles input into JavaScript, replacing the `expr-eval` dependency and its unpatched critical code-execution advisory (GHSA-q9v2-7m5w-4693).
 - Escape layer names and other text properties in JSX and Tailwind JSX export, so text from a document can no longer add attributes or JavaScript expressions that the AI and MCP `render` and `replace` tools would execute, and names containing `&` no longer change when the JSX is rendered back.
+- Validate OpenPencil and Figma clipboard data before pasting, so malformed or hostile clipboard content is ignored instead of throwing out of paste or writing mistyped layers into the document.
+- Validate component library revisions from shared storage and from CLI catalogs before reading them, and run the CLI's revisions through the same size, identity, and content-hash checks as the app, so a malformed or tampered revision is rejected instead of crashing or entering the document.
+- Validate MCP and automation WebSocket messages and the MCP discovery file, so a malformed message or a non-string auth token is rejected instead of being used unchecked.
+- List AI models when the models.dev catalog returns a malformed entry: the curated list is shown instead of model listing failing until the app restarts.
 
 ## 0.15.1 — 2026-09-18
 
