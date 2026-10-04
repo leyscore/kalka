@@ -17,6 +17,9 @@
 
 ### Added
 
+- Check designs from the new Lint tab in the right panel: issues on the page, in the selection, or across the document are grouped by rule, hovering one highlights its layer on the canvas, clicking selects it and brings it into view, and one-click fixes bind colors to the variable they match and round subpixel geometry for a row or a whole group, and snap radius, spacing, and small text to the scale one row at a time. Rules can be turned off individually or switched between the Recommended, Strict, and Accessibility presets.
+- Fix lint issues outside the app: `openpencil lint --fix -o fixed.fig` binds colors to the variable they match and rounds subpixel geometry, and the `lint` and `lint_fix` tools let MCP clients and AI chat check a page and apply those fixes, plus radius, spacing, and text size suggestions on request. Lint messages carry each fix as data in `fix` and `suggestions`.
+- Mark layers with errors and warnings on the canvas while you work, and pin those outside the view to the canvas edge in their direction, with matching marks in the Layers panel and error and warning counts in the page list; hover a marker or pin for its issues or click it to open them in Lint, and turn markers on or off with View → Design issues.
 - Follow collaborators and their AI agents from the avatars in the toolbar: an avatar counts that person's agents, hovering lists what each is doing and on which page, and clicking follows. A frame in their color and a “Following …” bar show whom you follow; Escape, clicking, scrolling, zooming, or switching pages stops it. Your own avatar renames your agents and leaves the room.
 - See where the built-in AI chat is working: while it replies, a cursor whose outlined label shows a sparkle and a callsign such as *Fern* marks the layers it edits. In a shared room, collaborators see each other's agents in the color of the person running them.
 - See which pages people and AI agents are working on: the Pages panel marks those pages in their colors, the command palette names who is there, and the chat offers **Go to page** while its reply works on a page you're not viewing.
@@ -38,6 +41,7 @@
 
 ### Changed
 
+- Design lint reports far fewer false positives in `openpencil lint` and the app: `no-hardcoded-colors` flags only colors that match a color variable and names it, `no-deeply-nested` flags only the layer that crosses the depth limit, `touch-target-size` checks the WCAG 2.2 AA minimum of 24 × 24 in the Recommended preset (Strict and Accessibility keep 44 × 44), matches control names as whole words (a layer named "Rectangle" is no longer a call to action) and ignores icons and controls inside other controls, `consistent-spacing` accepts multiples of 4, `color-contrast` checks text bound to color variables, and layers inside instances are checked once through their main component. The Recommended preset reports unbound colors, deep nesting, mixed text styles, and off-scale spacing as suggestions instead of warnings. Lint messages carry the measured values in `data`.
 - Keep the Share button labeled Share while you are in a room, instead of turning it into a Connected status; a green dot on your avatar shows the room is live.
 - Show Flatten, Outline text, and Outline stroke in the canvas context menu without icons, like every other item there.
 - Keep an AI chat working on the page where it started when you switch to another page, instead of sending its next edits to whichever page is on screen. When the AI switches pages itself, your view follows.
