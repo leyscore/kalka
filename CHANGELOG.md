@@ -14,6 +14,8 @@
 - Color conversion and management and text/layout direction helpers moved from `@open-pencil/core/color` and `@open-pencil/core/text` to `@open-pencil/scene-graph/color` and `@open-pencil/scene-graph/text-direction`, and `@open-pencil/core/bytes` is removed in favor of `js-base64`; the `@open-pencil/core` root exports are unchanged. `@open-pencil/dom-css` no longer requires `@open-pencil/core`, and `exportHTMLBundle` takes a font resolver in `fonts` instead of `'assets'`; pass one built on `exportWebFontFaceAssets` from `@open-pencil/core/text/web-font/assets` to keep font files in standalone exports.
 - Design JSX moved from `@open-pencil/core` to the new `@open-pencil/design-jsx` package, which depends only on `@open-pencil/scene-graph`. Import elements, paint and effect helpers, variables, `JSX_REFERENCE`, `buildComponent`, `sceneNodeToJSX`, and `selectionToJSX` from `@open-pencil/design-jsx`; `@open-pencil/core/design-jsx` now exports only `renderJSX` and `renderTree`, which render with OpenPencil's icons and layout. The `@open-pencil/core` root keeps `renderJSX` and `renderTree` and drops the other design JSX exports, `renderTreeNode` is removed in favor of `renderTree`, and the `@open-pencil/core/io/formats/jsx` subpath is removed.
 - `diff_create` and `diff_show` patches list changed JSX attributes per node, such as `-rounded={8}` and `+rounded={12}`, instead of `key: value` property lines, so they cover every property the JSX export writes and report reordered children as moves. `diff_show` takes JSX attributes in `attributes`, such as `w={200} bg="#FF0000"`, instead of a JSON `props` object, and patches in the old format no longer apply.
+- `openpencil documents` is now a command group: list open documents with `openpencil documents list`.
+- The MCP `close_file` tool no longer asks in the app whether to save unsaved changes, a question an agent could not answer and that left the call timing out. With unsaved changes it now fails unless `unsaved` is `"save"` or `"discard"`, and it is marked as a write tool.
 
 ### Added
 
@@ -40,6 +42,7 @@
 - Choose PPTX in the Export panel's format list, alongside PNG, JPG, WEBP, SVG, and PDF.
 - Let AI and MCP agents verify and replay their edits with diff tools: `diff_visual` returns a pixel diff of two rendered nodes with the changed region, and `diff_apply` applies a `diff_create` or `diff_show` patch, including moved, added, and removed children, only when every node still matches it. The built-in AI chat enables `diff_create`, `diff_jsx`, and `diff_visual` by default.
 - Compare designs from the terminal with `openpencil diff`: `create`, `jsx`, `show`, `apply`, and `visual` work on a file or the running app, and `diff files` compares two documents page by page and exits with status 1 when they differ.
+- Control the running app from the CLI and MCP: `openpencil documents` opens, creates, saves, closes, and brings documents to the front, `openpencil undo` and `redo` step back through changes made through the CLI and MCP, refusing to revert edits made in the editor, and `openpencil settings get` and `set` read and change theme, language, animations, snapping, canvas rendering, recovery, chat, and design check settings. MCP clients get the same through `activate_document`, `undo`, `redo`, `get_settings`, and `update_settings`; credentials, models, MCP connections, storage, and tool access stay out of reach. `openpencil tool list`, `describe`, and `call` run any MCP tool from the shell, against the running app or headlessly on a file.
 
 ### Changed
 
@@ -56,6 +59,8 @@
 
 ### Fixed
 
+- Report a failed MCP `save_file` or `new_document` save as an error instead of success, and ask for a path rather than opening a Save dialog when the document has never been saved.
+- Undo layers that MCP clients and the CLI create, delete, or rearrange in the running app, including `render` and `eval` changes, with Edit → Undo. Previously only their property edits were undoable.
 - Save a `.fig` file that was opened and not edited yet. In the app the save never finished, and MCP `save_file` timed out without writing the file.
 - Show `.fig` thumbnails in the desktop app's recent files, which the app was not permitted to read.
 - Give paints set through the plugin API, `eval`, and AI and MCP scripts an opacity of 1 and make them visible when the script leaves those out, as Figma does. Such paints were stored without them, which the Design panel could not show.
