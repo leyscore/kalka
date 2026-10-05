@@ -160,46 +160,94 @@ export function hitTestDeep(
   return hitTestChildren(graph, px, py, scope, true)
 }
 
-function hitTestFrameChildren(
-  graph: SceneGraph,
-  px: number,
-  py: number,
-  parentId: string,
-  offsetX: number,
-  offsetY: number,
-  excludeIds: Set<string>
-): SceneNode | null {
-  const parent = graph.nodes.get(parentId)
-  if (!parent) return null
-
-  let best: SceneNode | null = null
-
-  for (const childId of parent.childIds) {
-    if (excludeIds.has(childId)) continue
-    const child = graph.nodes.get(childId)
-    if (!child || child.internalOnly || !child.visible) continue
-
-    const ax = offsetX + child.x
-    const ay = offsetY + child.y
-
-    if (!CONTAINER_TYPES.has(child.type)) continue
-    if (px < ax || px > ax + child.width || py < ay || py > ay + child.height) continue
-
-    best = child
-
-    const deeper = hitTestFrameChildren(graph, px, py, childId, ax, ay, excludeIds)
-    if (deeper) best = deeper
-  }
-
-  return best
+/** Whether the point lies inside the node's rotated and flipped bounds. */
+export function isPointInNode(graph: SceneGraph, nodeId: string, px: number, py: number): boolean {
+  const node = graph.nodes.get(nodeId)
+  return node !== undefined && containsPoint(px, py, node, graph, new Map())
 }
 
-export function hitTestFrame(
+/** Which layers take a drop, and which are only looked through, as in Figma. */
+interface DropRules {
+  takes: (node: SceneNode) => boolean
+  passThrough: ReadonlySet<NodeType>
+}
+
+const LAYER_TARGETS = new Set<NodeType>(['FRAME', 'SECTION', 'COMPONENT', 'INSTANCE'])
+const COMPONENT_TARGETS = new Set<NodeType>(['FRAME', 'SECTION', 'INSTANCE'])
+
+function dropRules(options: DropTargetOptions): DropRules {
+  const { componentSetIds } = options
+  if (!componentSetIds) {
+    return {
+      takes: (node) => LAYER_TARGETS.has(node.type),
+      passThrough: new Set(['GROUP', 'COMPONENT_SET'])
+    }
+  }
+  // Components never go into other components, and a set only takes back its own variants.
+  return {
+    takes: (node) =>
+      COMPONENT_TARGETS.has(node.type) ||
+      (node.type === 'COMPONENT_SET' && componentSetIds.has(node.id)),
+    passThrough: new Set(['GROUP'])
+  }
+}
+
+function dropTargetIn(
   graph: SceneGraph,
   px: number,
   py: number,
-  excludeIds: Set<string>,
-  scopeId?: string
+  parent: SceneNode,
+  excludeIds: ReadonlySet<string>,
+  rules: DropRules,
+  transformCache: Map<string, boolean>
 ): SceneNode | null {
-  return hitTestFrameChildren(graph, px, py, scopeId ?? graph.rootId, 0, 0, excludeIds)
+  // A clipped-away part of a child is not under the cursor.
+  if (
+    parent.type !== 'CANVAS' &&
+    parent.clipsContent &&
+    !containsPoint(px, py, parent, graph, transformCache)
+  )
+    return null
+
+  for (let i = parent.childIds.length - 1; i >= 0; i--) {
+    const childId = parent.childIds[i]
+    if (excludeIds.has(childId)) continue
+    const child = graph.nodes.get(childId)
+    if (!child || child.internalOnly || !child.visible || child.locked) continue
+    const target = rules.takes(child)
+    if (!target && !rules.passThrough.has(child.type)) continue
+
+    const deeper = dropTargetIn(graph, px, py, child, excludeIds, rules, transformCache)
+    if (deeper) return deeper
+    if (target && containsPoint(px, py, child, graph, transformCache)) return child
+  }
+
+  return null
+}
+
+export interface DropTargetOptions {
+  /**
+   * Set when the dropped layers are all main components: the component sets they come from.
+   * Components then go only into frames, sections, instances, and those sets.
+   */
+  componentSetIds?: ReadonlySet<string>
+}
+
+/**
+ * The topmost unlocked frame, section, component, or instance under the point, in its rotated
+ * shape and inside its clipping ancestors. Groups and component sets are looked through but never
+ * returned, except that a set takes dropped components; locked layers and their contents are
+ * skipped.
+ */
+export function hitTestDropTarget(
+  graph: SceneGraph,
+  px: number,
+  py: number,
+  excludeIds: ReadonlySet<string>,
+  scopeId?: string,
+  options: DropTargetOptions = {}
+): SceneNode | null {
+  const scope = graph.nodes.get(scopeId ?? graph.rootId)
+  if (!scope) return null
+  return dropTargetIn(graph, px, py, scope, excludeIds, dropRules(options), new Map())
 }
