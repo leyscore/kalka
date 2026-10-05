@@ -77,6 +77,8 @@
 
 ### Fixed
 
+- Read `repeat()` and `minmax()` in design JSX grid tracks, such as `columns="repeat(7, 1fr)"`, which collapsed the grid to near-zero columns. A track the grid cannot express sizes to its content instead of to 0.
+- Lay out text set to fill its container the way Figma does: fill text in an auto-layout row now shares the free space with its siblings instead of keeping its old width and overflowing the row.
 - Report what `linearGradient`, `radialGradient`, `angularGradient`, and `diamondGradient` expect when design JSX passes them something other than an array of stops, such as `linearGradient('#3b82f6')`, instead of failing with `stops.map is not a function`, so an AI agent can correct the call.
 - Keep the canvas context menu open when you right-click again right after closing it, which could close it again at once, especially with reduced motion.
 - Show and edit the component properties of an instance nested inside another instance; they were missing because the nested instance was read as its own component.

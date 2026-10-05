@@ -1,5 +1,6 @@
-import type { Fill, GridTrack, LayoutMode, SceneNode } from '@open-pencil/scene-graph'
+import type { Fill, LayoutMode, SceneNode } from '@open-pencil/scene-graph'
 import { colorToFill } from '@open-pencil/scene-graph/color'
+import { parseCSSGridTracks } from '@open-pencil/scene-graph/css'
 import type { Color, JSONObject } from '@open-pencil/scene-graph/primitives'
 
 import { applyEffectOverrides } from './overrides/effects'
@@ -258,20 +259,6 @@ function hasAutoLayoutTriggerProps(props: Record<string, unknown>): boolean {
   return AUTO_LAYOUT_TRIGGER_KEYS.some((k) => props[k] !== undefined)
 }
 
-function parseTrack(token: string): GridTrack {
-  if (token.endsWith('fr')) {
-    return { sizing: 'FR', value: Number.parseFloat(token) || 1 }
-  }
-  if (token === 'auto') {
-    return { sizing: 'AUTO', value: 0 }
-  }
-  return { sizing: 'FIXED', value: Number.parseFloat(token) || 0 }
-}
-
-function parseTrackList(value: string): GridTrack[] {
-  return value.trim().split(/\s+/).map(parseTrack)
-}
-
 function applyGridOverrides(
   props: Record<string, unknown>,
   o: Partial<SceneNode>,
@@ -284,7 +271,7 @@ function applyGridOverrides(
   if (typeof h === 'number') o.height = h
 
   if (typeof props.columns === 'string') {
-    o.gridTemplateColumns = parseTrackList(props.columns)
+    o.gridTemplateColumns = parseCSSGridTracks(props.columns)
   } else if (typeof props.columns === 'number') {
     o.gridTemplateColumns = Array.from({ length: props.columns }, () => ({
       sizing: 'FR' as const,
@@ -293,7 +280,7 @@ function applyGridOverrides(
   }
 
   if (typeof props.rows === 'string') {
-    o.gridTemplateRows = parseTrackList(props.rows)
+    o.gridTemplateRows = parseCSSGridTracks(props.rows)
   } else if (typeof props.rows === 'number') {
     o.gridTemplateRows = Array.from({ length: props.rows }, () => ({
       sizing: 'FR' as const,
