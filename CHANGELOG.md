@@ -80,6 +80,7 @@
 - Report a failed MCP `save_file` or `new_document` save as an error instead of success, and ask for a path rather than opening a Save dialog when the document has never been saved.
 - Undo layers that MCP clients and the CLI create, delete, or rearrange in the running app, including `render` and `eval` changes, with Edit → Undo. Previously only their property edits were undoable.
 - Save a `.fig` file that was opened and not edited yet. In the app the save never finished, and MCP `save_file` timed out without writing the file.
+- Show the text, visibility, or swapped component an instance sets when the component gains that layer after the instance was placed, instead of the component's default ([#849](https://github.com/open-pencil/open-pencil/issues/849)).
 - Show `.fig` thumbnails in the desktop app's recent files, which the app was not permitted to read.
 - Give paints set through the plugin API, `eval`, and AI and MCP scripts an opacity of 1 and make them visible when the script leaves those out, as Figma does. Such paints were stored without them, which the Design panel could not show.
 - Keep a layer's other plugin data when you pick or clear a colour in OkHCL. Picking one rewrote every plugin-data entry on the layer, including other plugins' and its export settings, as OkHCL data.
