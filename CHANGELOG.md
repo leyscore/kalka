@@ -80,6 +80,7 @@
 
 ### Fixed
 
+- Start Pi chats with OpenPencil's MCP tools when the Harness companion runs on Node 22.15 or later; the companion now installs the dependency Pi's MCP adapter needs and loads its TypeScript sources. A reopened Pi session starts fresh instead of failing to resume its in-memory sandbox, and npm output from Pi no longer mixes into the companion's protocol.
 - Import HTML and CSS with the right shadow and border colors. A shadow whose color follows its lengths, as CSS usually writes it, and a `border` with a color function such as `rgb(226, 232, 240)` came in black. Every layer of a `box-shadow` list now imports, `inset` ones as inner shadows, and lengths in `%`, `em`, or `vh` are no longer read as pixels.
 - Accept a CSS `box-shadow` list in design JSX's `shadow` prop: the color may come first, a fourth length sets the spread, several layers add several shadows, and `inset` makes an inner shadow. A color before the lengths or a spread made the shadow black.
 - Read `repeat()` and `minmax()` in design JSX grid tracks, such as `columns="repeat(7, 1fr)"`, which collapsed the grid to near-zero columns. A track the grid cannot express sizes to its content instead of to 0.
