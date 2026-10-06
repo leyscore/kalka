@@ -20,6 +20,7 @@ Variables are organized into collections. In a wide dialog they are listed in a 
 - **Switch collection** — click it in the sidebar or its tab
 - **Create collection** — click **+** next to Collections, or the folder button in the toolbar
 - **Rename or delete** — with no variable selected, the right side edits the collection: change its name, or delete it from the **⋯** menu next to the name
+- **Switch attribute** — the attribute that turns manually switched modes on, `data-theme` by default for a collection named Theme; type another name, such as `data-color-scheme`, to match an existing codebase
 
 ## Modes
 
@@ -33,7 +34,7 @@ The default mode is **Always on** and goes in `:root`. Every other mode has **Ap
 
 | Applies when | CSS |
 | --- | --- |
-| **Switched manually** | an attribute named after the collection and mode, such as `[data-theme="dark"]` for a Theme collection's Dark mode |
+| **Switched manually** | the collection's switch attribute set to the mode, such as `[data-theme="dark"]` for a Theme collection's Dark mode |
 | **System is in dark mode** / **System is in light mode** | `@media (prefers-color-scheme: dark)` / `light` |
 | **High contrast is on** | `@media (prefers-contrast: more)` |
 | **Reduced motion is on** | `@media (prefers-reduced-motion: reduce)` |

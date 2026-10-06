@@ -20,6 +20,7 @@ Zmienne są łączone w kolekcje. W szerokim oknie są wypisane na pasku bocznym
 - **Przejście do kolekcji:** kliknij ją na pasku bocznym lub jej kartę
 - **Tworzenie kolekcji:** kliknij **+** obok **Kolekcje** albo przycisk z folderem na pasku narzędzi (**Utwórz kolekcję**)
 - **Zmiana nazwy lub usuwanie:** gdy żadna zmienna nie jest zaznaczona, prawa strona edytuje kolekcję: zmień jej nazwę albo usuń ją z menu **⋯** obok nazwy (**Usuń kolekcję**)
+- **Atrybut przełączania:** atrybut, który włącza tryby przełączane ręcznie, domyślnie `data-theme` dla kolekcji o nazwie Theme; wpisz inną nazwę, np. `data-color-scheme`, aby dopasować go do istniejącego kodu
 
 ## Tryby
 
@@ -33,7 +34,7 @@ Tryb domyślny jest **Zawsze włączony** i trafia do `:root`. Każdy inny tryb 
 
 | Obowiązuje, gdy | CSS |
 | --- | --- |
-| **przełączono ręcznie** | atrybut nazwany od kolekcji i trybu, na przykład `[data-theme="dark"]` dla trybu Dark kolekcji Theme |
+| **przełączono ręcznie** | atrybut przełączania kolekcji z trybem jako wartością, na przykład `[data-theme="dark"]` dla trybu Dark kolekcji Theme |
 | **system jest w trybie ciemnym** / **system jest w trybie jasnym** | `@media (prefers-color-scheme: dark)` / `light` |
 | **włączony jest wysoki kontrast** | `@media (prefers-contrast: more)` |
 | **włączone jest ograniczenie ruchu** | `@media (prefers-reduced-motion: reduce)` |

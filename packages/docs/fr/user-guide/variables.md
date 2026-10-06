@@ -20,6 +20,7 @@ Les variables sont organisées en collections. Dans une boîte de dialogue large
 - **Changer de collection :** cliquez dessus dans la barre latérale ou sur son onglet
 - **Créer une collection :** cliquez sur **+** à côté de **Collections**, ou sur le bouton en forme de dossier dans la barre d’outils (**Créer une collection**)
 - **Renommer ou supprimer :** sans variable sélectionnée, la partie droite modifie la collection : changez son nom, ou supprimez-la depuis le menu **⋯** à côté du nom (**Supprimer la collection**)
+- **Attribut de bascule :** l’attribut qui active les modes activés manuellement, `data-theme` par défaut pour une collection nommée Theme ; saisissez un autre nom, comme `data-color-scheme`, pour correspondre à un code existant
 
 ## Modes
 
@@ -33,7 +34,7 @@ Le mode par défaut est **Toujours actif** et va dans `:root`. Chaque autre mode
 
 | S’applique quand | CSS |
 | --- | --- |
-| **il est activé manuellement** | un attribut nommé d’après la collection et le mode, comme `[data-theme="dark"]` pour le mode Sombre d’une collection Theme |
+| **il est activé manuellement** | l’attribut de bascule de la collection avec le mode pour valeur, comme `[data-theme="dark"]` pour le mode Sombre d’une collection Theme |
 | **le système est en mode sombre** / **le système est en mode clair** | `@media (prefers-color-scheme: dark)` / `light` |
 | **le contraste élevé est activé** | `@media (prefers-contrast: more)` |
 | **la réduction des animations est activée** | `@media (prefers-reduced-motion: reduce)` |

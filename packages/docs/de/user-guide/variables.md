@@ -20,6 +20,7 @@ Variablen sind in Sammlungen organisiert. In einem breiten Dialog stehen sie in 
 - **Sammlung wechseln:** in der Seitenleiste oder auf der Registerkarte darauf klicken
 - **Sammlung erstellen:** neben **Sammlungen** auf **+** oder in der Werkzeugleiste auf die Ordner-Schaltfläche (**Sammlung erstellen**) klicken
 - **Umbenennen oder löschen:** Ist keine Variable ausgewählt, bearbeitet die rechte Seite die Sammlung: Dort lässt sich der Name ändern oder die Sammlung über das Menü **⋯** neben dem Namen löschen (**Sammlung löschen**)
+- **Umschalt-Attribut:** das Attribut, das manuell umgeschaltete Modi aktiviert, standardmäßig `data-theme` für eine Sammlung namens Theme; ein anderer Name wie `data-color-scheme` passt es an eine bestehende Codebasis an
 
 ## Modi
 
@@ -33,7 +34,7 @@ Der Standardmodus ist **Immer aktiv** und steht in `:root`. Jeder andere Modus h
 
 | Gilt wenn | CSS |
 | --- | --- |
-| **manuell umgeschaltet wird** | ein Attribut, das nach Sammlung und Modus benannt ist, etwa `[data-theme="dark"]` für den Modus Dunkel einer Sammlung Theme |
+| **manuell umgeschaltet wird** | das Umschalt-Attribut der Sammlung mit dem Modus als Wert, etwa `[data-theme="dark"]` für den Modus Dunkel einer Sammlung Theme |
 | **das System im Dunkelmodus ist** / **das System im Hellmodus ist** | `@media (prefers-color-scheme: dark)` / `light` |
 | **hoher Kontrast aktiv ist** | `@media (prefers-contrast: more)` |
 | **reduzierte Bewegung aktiv ist** | `@media (prefers-reduced-motion: reduce)` |

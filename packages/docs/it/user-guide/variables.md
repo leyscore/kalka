@@ -20,6 +20,7 @@ Le variabili sono organizzate in raccolte. In una finestra larga sono elencate i
 - **Cambiare raccolta:** fai clic su di essa nella barra laterale o sulla sua scheda
 - **Creare una raccolta:** fai clic su **+** accanto a **Raccolte**, oppure sul pulsante a forma di cartella nella barra degli strumenti (**Crea raccolta**)
 - **Rinominare o eliminare:** senza alcuna variabile selezionata, la parte destra modifica la raccolta: cambia il nome, oppure eliminala dal menu **⋯** accanto al nome (**Elimina raccolta**)
+- **Attributo di attivazione:** l’attributo che attiva le modalità attivate manualmente, `data-theme` per impostazione predefinita per una raccolta chiamata Theme; scrivi un altro nome, come `data-color-scheme`, per adattarlo a un codice esistente
 
 ## Modalità
 
@@ -33,7 +34,7 @@ La modalità predefinita è **Sempre attivo** e va in `:root`. Ogni altra modali
 
 | Si applica quando | CSS |
 | --- | --- |
-| **viene attivata manualmente** | un attributo che prende il nome dalla raccolta e dalla modalità, come `[data-theme="dark"]` per la modalità Scuro di una raccolta Theme |
+| **viene attivata manualmente** | l’attributo di attivazione della raccolta con la modalità come valore, come `[data-theme="dark"]` per la modalità Scuro di una raccolta Theme |
 | **il sistema è in modalità scura** / **il sistema è in modalità chiara** | `@media (prefers-color-scheme: dark)` / `light` |
 | **il contrasto elevato è attivo** | `@media (prefers-contrast: more)` |
 | **la riduzione del movimento è attiva** | `@media (prefers-reduced-motion: reduce)` |
