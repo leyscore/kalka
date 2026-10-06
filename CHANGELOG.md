@@ -25,6 +25,7 @@
 - `fractionalPosition`, `orderKeyBetween`, and `siblingOrderKeys` moved from `@open-pencil/fig/node-change` to `@open-pencil/scene-graph/order-keys`; the `@open-pencil/core` root still exports `fractionalPosition`. `orderKeyBetween` now always returns a key: when no printable key sorts between its bounds it returns a key above `lo`, which `hasOrderKeyBetween` detects, and it takes an optional suffix that `siblingOrderKeys` can request through `{ suffix }`.
 - Shared rooms record the layer tree in a new format, so people on this version and on earlier versions can no longer join each other's rooms. A room this browser saved with an earlier version converts when you open it again.
 - `SceneGraph.hitTestFrame` is now `hitTestDropTarget`, which returns only layers that take a drop, as in Figma: it skips groups, boolean operations, component sets, and locked layers, follows rotation, and respects clipping. The editor's `adoptNodesIntoSection` is now `adoptCoveredLayers`, which also takes a frame, and leaves locked layers out.
+- `buildDerivedTextDataV4` is removed from `@open-pencil/core`, and `sceneNodeToKiwi` no longer writes glyph outlines by itself: pass the `runtime` that `withFigExportRuntime(graph, canvasKit, write)` hands its callback. In `@open-pencil/fig/node-change`, `FigNodeChangeExportRuntime` takes `shapeText(node)` instead of `getGlyphOutlineMetrics`, `buildDerivedTextData` takes the `baselines` it writes, and `convertFigmaDerivedTextGlyphs` takes the text's characters.
 
 ### Added
 
@@ -87,6 +88,7 @@
 
 ### Fixed
 
+- Text saved to `.fig` or copied to Figma keeps its layout in Figma: it wraps at the layer's width with its alignment and line height, and keeps ligatures and contextual forms such as Inter's arrows, where Figma previously drew every saved OpenPencil text layer on one unwrapped line (#914).
 - Release a document's memory when its tab closes. Every closed tab kept its scene, canvas, and editor panels alive until reload, so memory grew with each document opened and closed. Menus and shortcuts now also follow the active document, so Undo and Redo are offered according to its history rather than the first document opened.
 - Start Pi chats with OpenPencil's MCP tools when the Harness companion runs on Node 22.15 or later; the companion now installs the dependency Pi's MCP adapter needs and loads its TypeScript sources. A reopened Pi session starts fresh instead of failing to resume its in-memory sandbox, and npm output from Pi no longer mixes into the companion's protocol.
 - Import HTML and CSS with the right shadow and border colors. A shadow whose color follows its lengths, as CSS usually writes it, and a `border` with a color function such as `rgb(226, 232, 240)` came in black. Every layer of a `box-shadow` list now imports, `inset` ones as inner shadows, and lengths in `%`, `em`, or `vh` are no longer read as pixels.
