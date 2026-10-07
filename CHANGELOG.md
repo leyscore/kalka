@@ -125,6 +125,7 @@
 
 ### Fixed
 
+- Store crash recovery snapshots of any size. Snapshots of documents over 127 MiB failed to save to IndexedDB and stayed in memory for the rest of the session.
 - Keep an opened `.fig` file saved until it is edited. Laying out its first page, which recomputes auto-layout sizes and positions, and showing another page for the first time, which loads its layers from the file, marked it unsaved, so closing it asked to save changes nobody made.
 - Run crash recovery and autosave after edits, not whenever the canvas redraws. Opening a document, laying out a page, or loading a font started a recovery snapshot or an autosave, which encoded the whole document again once another page had loaded. In Safari, where every opened file gets recovery snapshots, a large page froze the browser for minutes after it first appeared.
 - Open image-heavy `.fig` files without the canvas running out of memory (#924). Decoded images stay within a fixed budget, and documents with many large images draw previews sized to the view, decoded in the background a few at a time, while exports keep the full images.
