@@ -40,6 +40,8 @@ export interface AppPreferences {
     reasoningDisplay: ReasoningDisplay
     maxAgentSteps: number
     changePreviewSize: ChangePreviewSize
+    /** Whether the view follows our AI agents while they work. */
+    followAgents: boolean
   }
   version: 1
   recovery: {
@@ -62,7 +64,8 @@ export const DEFAULT_APP_PREFERENCES: Readonly<AppPreferences> = {
   chat: {
     reasoningDisplay: 'collapsed',
     maxAgentSteps: DEFAULT_AGENT_STEPS,
-    changePreviewSize: 'medium'
+    changePreviewSize: 'medium',
+    followAgents: true
   },
   version: 1,
   recovery: { enabled: true },
@@ -96,7 +99,11 @@ const appPreferencesSchema = section({
       v.pipe(v.unknown(), v.transform(resolveAgentStepLimit)),
       defaults.chat.maxAgentSteps
     ),
-    changePreviewSize: v.fallback(v.picklist(CHANGE_PREVIEW_SIZES), defaults.chat.changePreviewSize)
+    changePreviewSize: v.fallback(
+      v.picklist(CHANGE_PREVIEW_SIZES),
+      defaults.chat.changePreviewSize
+    ),
+    followAgents: v.fallback(v.boolean(), defaults.chat.followAgents)
   }),
   version: v.fallback(v.literal(1), 1),
   recovery: section({ enabled: v.fallback(v.boolean(), defaults.recovery.enabled) }),
