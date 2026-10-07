@@ -14,6 +14,7 @@ import { createToolDescriptors, getMCPToolDefinitions } from '#mcp/tool/manifest
 import type { ToolDescriptor, ToolEffect, ToolPolicy } from '#mcp/tool/metadata'
 import { resolveSafePath, writeToolOutput } from '#mcp/tool/output'
 import { isToolEnabled } from '#mcp/tool/policy'
+import { SELECTION_SCOPE_FILE_OUTPUT_ERROR } from '#mcp/tool/scope'
 
 export type RPCSender = (body: Record<string, unknown>) => Promise<unknown>
 
@@ -124,9 +125,19 @@ export function registerTools(mcpServer: McpServer, options: RegisterToolsOption
       async (args: Record<string, unknown>) => {
         try {
           const { target, args: toolArgs } = splitAutomationTarget(args)
+          if (policy.scope === 'selection' && toolArgs.path !== undefined) {
+            return fail(new Error(SELECTION_SCOPE_FILE_OUTPUT_ERROR))
+          }
           const result = await sendRPC({
             command: 'tool',
-            args: { ...target, name: def.name, args: toolArgs, agent: agent() }
+            args: {
+              ...target,
+              name: def.name,
+              args: toolArgs,
+              agent: agent(),
+              // A client limited to the selection says so, whatever the server's own scope.
+              ...(policy.scope === 'selection' ? { scope: policy.scope } : {})
+            }
           })
           const res = result as { ok?: boolean; result?: unknown; error?: string }
           if (res.ok === false) return fail(new Error(res.error))
