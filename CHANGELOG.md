@@ -119,6 +119,7 @@
 
 ### Fixed
 
+- Keep an opened `.fig` file saved until it is edited. Laying out its first page, which recomputes auto-layout sizes and positions, marked it unsaved, so closing it asked to save changes nobody made.
 - Fill one axis of a grid cell: a grid child set to fill its width or its height no longer fills both, and an auto-layout child of a grid keeps its own size unless it fills, as in Figma. Design JSX renders and exports `w="fill"` and `h="fill"` in grids, and HTML and Tailwind export leave out the size a child fills, so it stretches in the browser too.
 - Resize auto-layout frames that fill across their parent with it: one with a fixed size on that axis kept its old size. A filling child still counts toward a hugging parent's size, as in Figma.
 - Set `layoutSizingHorizontal` and `layoutSizingVertical` in scripts as Figma does: Fill is recorded on the child for that axis instead of on the frame's own sizing, which `.fig` export dropped, text switches its `textAutoResize`, and sizing Figma refuses, such as Hug on a frame without auto layout, throws Figma's error.
