@@ -80,10 +80,7 @@ export const ROOM_STATUS_TICK_MS = 500
 export const WEB_APP_ORIGIN = 'https://app.openpencil.dev'
 /** Where the desktop app's installers are published. */
 export const DESKTOP_DOWNLOAD_URL = 'https://github.com/open-pencil/open-pencil/releases/latest'
-
-/** The running app's version, from `package.json` at build time. */
-export const APP_VERSION =
-  typeof __OPENPENCIL_APP_VERSION__ === 'string' ? __OPENPENCIL_APP_VERSION__ : ''
+export const NODE_DOWNLOAD_URL = 'https://nodejs.org/en/download'
 
 /** The published release page, with its full notes, for a desktop version. */
 export function releaseNotesURL(version: string): string {
