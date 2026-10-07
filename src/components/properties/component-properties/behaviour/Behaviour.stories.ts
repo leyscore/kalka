@@ -4,10 +4,12 @@ import { expect, userEvent, waitFor, within } from 'storybook/test'
 import BehaviourStates from './examples/States.vue'
 
 const meta = {
-  title: 'Editor/Properties/Behaviour',
+  title: 'App/Editor/Properties/Behaviour',
   component: BehaviourStates,
   tags: ['autodocs'],
   parameters: {
+    // The page shows one Behaviour section per demo; the editor only ever shows one.
+    a11y: { config: { rules: [{ id: 'landmark-unique', enabled: false }] } },
     docs: {
       description: {
         component:

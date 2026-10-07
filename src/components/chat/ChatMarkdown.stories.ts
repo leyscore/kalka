@@ -7,10 +7,28 @@ type ChatMarkdownStoryArgs = {
   mode?: 'static' | 'streaming'
 }
 
+/**
+ * vue-stream-markdown wraps each code block in its own <header> and <main>, which its component
+ * overrides cannot replace; until upstream drops them they read as page landmarks.
+ */
+const codeBlockLandmarks = {
+  a11y: {
+    config: {
+      rules: [
+        'landmark-banner-is-top-level',
+        'landmark-main-is-top-level',
+        'landmark-no-duplicate-banner',
+        'landmark-no-duplicate-main',
+        'landmark-unique'
+      ].map((id) => ({ id, enabled: false }))
+    }
+  }
+}
+
 type Story = StoryObj<ChatMarkdownStoryArgs>
 
 const meta = {
-  title: 'Chat/Markdown',
+  title: 'App/Chat/Markdown',
   component: ChatMarkdown,
   parameters: { layout: 'centered' },
   render: (args) => ({
@@ -48,6 +66,7 @@ export const InlineCode: Story = {
 }
 
 export const CodeBlock: Story = {
+  parameters: codeBlockLandmarks,
   args: {
     content: `\`\`\`typescript
 const button = {
@@ -59,6 +78,7 @@ const button = {
 }
 
 export const MixedContent: Story = {
+  parameters: codeBlockLandmarks,
   args: {
     content: `## Updated layout
 
