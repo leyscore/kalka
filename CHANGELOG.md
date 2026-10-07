@@ -125,6 +125,8 @@
 
 ### Fixed
 
+- Keep an opened `.fig` file saved until it is edited. Laying out its first page, which recomputes auto-layout sizes and positions, and showing another page for the first time, which loads its layers from the file, marked it unsaved, so closing it asked to save changes nobody made.
+- Run crash recovery and autosave after edits, not whenever the canvas redraws. Opening a document, laying out a page, or loading a font started a recovery snapshot or an autosave, which encoded the whole document again once another page had loaded. In Safari, where every opened file gets recovery snapshots, a large page froze the browser for minutes after it first appeared.
 - Open image-heavy `.fig` files without the canvas running out of memory (#924). Decoded images stay within a fixed budget, and documents with many large images draw previews sized to the view, decoded in the background a few at a time, while exports keep the full images.
 - Show tables in AI chat replies at the chat's text size and weight, with a light header and copy as their only action, and task lists with a checkbox in place of the bullet. Tooltips, the copy menu, and the confirmation before opening a link follow the app's style, and links no longer load each site's favicon.
 - Keep an opened `.fig` file saved until it is edited. Laying out its first page, which recomputes auto-layout sizes and positions, marked it unsaved, so closing it asked to save changes nobody made.
@@ -222,6 +224,7 @@
 
 ### Performance
 
+- Open and draw large pages faster: guides no longer scan every layer of the page on each frame, a layout pass only writes the layers it moved and asks for one redraw, and opening a `.fig` keeps one copy of the file on the main thread instead of three.
 - Edit variables in large documents without stalls: renaming, reordering, or adding a variable, or changing its CSS name, unit, scopes, or conditions, no longer redraws the canvas, and changing a value or mode updates only the layers bound to those variables or to variables aliasing them instead of re-resolving and laying out every bound layer in the document.
 - Open the `/demo` document like any `.fig` file, built ahead of time, instead of generating it in the browser, which froze the page for several seconds.
 - Open large `.fig` files with less memory in the macOS desktop app and Safari: imported layers now share one object layout in JavaScriptCore instead of each being stored as a slower, larger dictionary.
