@@ -77,7 +77,7 @@ import { computed, shallowRef, useTemplateRef, watch, type ComponentPublicInstan
 
 import { fuzzySearch, useRetainedPopup } from '@open-pencil/vue'
 
-import AppButton from '@/components/ui/button/AppButton.vue'
+import IconButton from '@/components/ui/button/IconButton.vue'
 import Tip from '@/components/ui/overlay/Tip.vue'
 import theme, { APP_PICKER_GRID_COLUMNS } from '@/theme/select/picker'
 
@@ -196,9 +196,9 @@ function select(value: AcceptableValue) {
         <div :class="styles.header({ class: ui?.header })">
           <h3 :class="styles.title({ class: ui?.title })">{{ heading }}</h3>
           <PopoverClose as-child>
-            <AppButton :aria-label="closeLabel" class="ml-auto">
+            <IconButton :label="closeLabel">
               <icon-lucide-x class="size-3.5" />
-            </AppButton>
+            </IconButton>
           </PopoverClose>
         </div>
         <ListboxRoot

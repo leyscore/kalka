@@ -89,6 +89,7 @@
 
 ### Changed
 
+- The properties panel's variable picker groups variables by collection and shows each color variable's swatch, and the variables dialog points a value at another variable with the same picker, detaching it from the picker's footer.
 - **Add variant** on a component set copies its last variant below it, 20 px apart, with the next free value such as `Variant3`, and grows the set to hold it, as Figma does. It used to place a copy with the same values to the right, which made a duplicate combination.
 - The `get_selection` tool returns the selected layers with their direct children by default instead of their whole subtrees, and takes a `depth` for more or fewer levels, so agents can start from what the user selected without reading the full tree.
 - The width and height menus in the properties panel offer Hug only for auto-layout frames and text, as in Figma; on a frame without auto layout it had no effect.
