@@ -126,6 +126,7 @@
 
 ### Fixed
 
+- Open S3 storage documents completely after their previews load. Storage servers that answer a preview's byte-range read with the whole-file status, such as `rclone serve s3`, left the browser holding the partial reply as the document, so the next open failed with "Invalid fig-kiwi container". Storage requests now skip the browser cache.
 - Keep a layer's `.fig` ID the same across saves (#890). Layers created in OpenPencil were numbered in tree order on each save until the file was reopened, so inserting a layer shifted the IDs of the layers after it; variable collections and modes could also be renumbered.
 - Store crash recovery snapshots of any size. Snapshots of documents over 127 MiB failed to save to IndexedDB and stayed in memory for the rest of the session.
 - Keep an opened `.fig` file saved until it is edited. Laying out its first page, which recomputes auto-layout sizes and positions, and showing another page for the first time, which loads its layers from the file, marked it unsaved, so closing it asked to save changes nobody made.

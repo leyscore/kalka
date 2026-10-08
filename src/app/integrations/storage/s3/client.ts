@@ -143,6 +143,9 @@ export async function s3Request(
         headers: signed.headers,
         body: init.body ?? undefined,
         credentials: 'omit',
+        // Objects change under the same URL, and a ranged read answered with 200 would
+        // otherwise be cached as the whole object and returned for the next full read.
+        cache: 'no-store',
         signal: init.signal
       })
     }
