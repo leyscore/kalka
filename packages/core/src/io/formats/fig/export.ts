@@ -20,6 +20,7 @@ import {
   readBehaviour,
   renameBehaviourProperties,
   withBehaviour,
+  type PluginDataEntry,
   type SceneGraph
 } from '@open-pencil/scene-graph'
 import { fractionalPosition } from '@open-pencil/scene-graph/order-keys'
@@ -33,12 +34,16 @@ import { findFigThumbnailPageId } from '#core/io/formats/fig/thumbnail-page'
 import { renderThumbnail } from '#core/io/formats/raster'
 import {
   sceneNodeToKiwi,
-  buildFontDigestMap,
+  settleFontDigestMap,
   makeDocumentNodeChange,
   makeCanvasNodeChange
 } from '#core/kiwi/fig/node-change/serialize'
 import { cloneSceneGraphForFigExport } from '#core/kiwi/fig/parse/transfer'
-import { populateReaderExport } from '#core/kiwi/fig/session/document-state'
+import {
+  hasPendingReaderPages,
+  populateFigInternalPages,
+  populateReaderExport
+} from '#core/kiwi/fig/session/document-state'
 import { originalFigArchive } from '#core/kiwi/fig/session/original-archive'
 
 import {
@@ -175,19 +180,25 @@ function assignComponentPropertyGuids(
   }
 }
 
-/** Behaviours bind component properties by id, so they follow the ids' new GUIDs. */
-function renameBehaviourPropertyIds(graph: SceneGraph, propertyIdToGuid: Map<string, GUID>): void {
+/**
+ * Behaviours bind component properties by id, so they follow the ids' new GUIDs. The renamed
+ * plugin data is written in place of the node's own; the document keeps its ids.
+ */
+function renamedBehaviourPluginData(
+  graph: SceneGraph,
+  propertyIdToGuid: Map<string, GUID>
+): Map<string, PluginDataEntry[]> {
   const rename = (propertyId: string) => {
     const guid = propertyIdToGuid.get(propertyId)
     return guid ? `${guid.sessionID}:${guid.localID}` : propertyId
   }
+  const renamed = new Map<string, PluginDataEntry[]>()
   for (const node of graph.getAllNodes()) {
     const behaviour = readBehaviour(node)
     if (behaviour)
-      graph.updateNode(node.id, {
-        pluginData: withBehaviour(node, renameBehaviourProperties(behaviour, rename))
-      })
+      renamed.set(node.id, withBehaviour(node, renameBehaviourProperties(behaviour, rename)))
   }
+  return renamed
 }
 
 function applyImportedCanvasFields(page: FigExportPage, canvasNc: KiwiNodeChange): void {
@@ -309,6 +320,7 @@ interface InternalResourceContext {
   assignedGuidValues: Set<string>
   componentPropertyDefinitionsById: ReturnType<typeof buildComponentPropIndex>
   propertyIdToGuid: Map<string, GUID>
+  pluginDataOverrides: ReadonlyMap<string, PluginDataEntry[]>
   runtime: FigNodeChangeExportRuntime
 }
 
@@ -356,6 +368,7 @@ function appendInternalResources(context: InternalResourceContext): void {
           componentPropertyDefinitionsById: context.componentPropertyDefinitionsById,
           modeIdToGuid: context.modeIdToGuid,
           propertyIdToGuid: context.propertyIdToGuid,
+          pluginDataOverrides: context.pluginDataOverrides,
           runtime: context.runtime
         }
       )
@@ -395,9 +408,18 @@ async function writeFigFile(
   pageId: string | undefined,
   renderHeadlessThumbnail: boolean
 ): Promise<Uint8Array> {
-  const graph = cloneSceneGraphForFigExport(sourceGraph)
-  populateReaderExport(sourceGraph, graph)
   await initCodec()
+  populateFigInternalPages(sourceGraph)
+  // The export reads the document itself and writes nothing to it. Only pages still in the
+  // archive need a copy, which they load into instead of the document.
+  let graph = sourceGraph
+  if (hasPendingReaderPages(sourceGraph)) {
+    graph = cloneSceneGraphForFigExport(sourceGraph)
+    populateReaderExport(sourceGraph, graph)
+  }
+  // The last await before the records: from here to the encoded message every record comes from
+  // one synchronous pass over the document, and the digests cover every font that pass reads.
+  const fontDigestMap = await settleFontDigestMap(graph)
 
   // When the document was imported from a .fig file, preserve the original
   // kiwi schema for both encoding and embedding. For the current version of
@@ -436,7 +458,6 @@ async function writeFigFile(
   const varIdToGuid = new Map<string, GUID>()
   const modeIdToGuid = new Map<string, GUID>()
   const propertyIdToGuid = new Map<string, GUID>()
-  const fontDigestMap = await buildFontDigestMap(graph)
   const glyphBlobMap = new Map<string, number>()
   const blobIndexByHex = new Map<string, number>()
   const componentPropertyDefinitionsById = buildComponentPropIndex(graph)
@@ -477,7 +498,7 @@ async function writeFigFile(
     assignedGuidValues,
     nodeSourceGuidValues
   )
-  renameBehaviourPropertyIds(graph, propertyIdToGuid)
+  const pluginDataOverrides = renamedBehaviourPluginData(graph, propertyIdToGuid)
   assignOwnLayerGuids(graph, nodeSourceGuidValues, nodeIdToGuid, assignedGuidValues)
 
   for (const entry of canvasEntries) nodeChanges.push(entry.canvasNc)
@@ -497,6 +518,7 @@ async function writeFigFile(
     assignedGuidValues,
     componentPropertyDefinitionsById,
     propertyIdToGuid,
+    pluginDataOverrides,
     runtime
   })
 
@@ -523,6 +545,7 @@ async function writeFigFile(
           modeIdToGuid,
           propertyIdToGuid,
           slotContentRecords,
+          pluginDataOverrides,
           runtime
         })
       )
