@@ -17,6 +17,7 @@ export interface SidebarLabels {
   components: string
   variables: string
   checkingDesigns: string
+  cloudStorage: string
   overview: string
   gettingStarted: string
   features: string
@@ -168,6 +169,7 @@ export const EN: SidebarLabels = {
   components: 'Components',
   variables: 'Variables',
   checkingDesigns: 'Checking Designs',
+  cloudStorage: 'Cloud Storage',
   icons: 'Icons',
   overview: 'Overview',
   gettingStarted: 'Getting Started',
@@ -195,6 +197,7 @@ export const DE: SidebarLabels = {
   components: 'Komponenten',
   variables: 'Variablen',
   checkingDesigns: 'Designs prüfen',
+  cloudStorage: 'Cloud-Speicher',
   icons: 'Symbole',
   overview: 'Überblick',
   gettingStarted: 'Erste Schritte',
@@ -222,6 +225,7 @@ export const IT: SidebarLabels = {
   components: 'Componenti',
   variables: 'Variabili',
   checkingDesigns: 'Verificare i design',
+  cloudStorage: 'Archiviazione cloud',
   icons: 'Icone',
   overview: 'Panoramica',
   gettingStarted: 'Per iniziare',
@@ -249,6 +253,7 @@ export const FR: SidebarLabels = {
   components: 'Composants',
   variables: 'Variables',
   checkingDesigns: 'Vérifier les designs',
+  cloudStorage: 'Stockage cloud',
   icons: 'Icônes',
   overview: 'Vue d’ensemble',
   gettingStarted: 'Premiers pas',
@@ -276,6 +281,7 @@ export const ES: SidebarLabels = {
   components: 'Componentes',
   variables: 'Variables',
   checkingDesigns: 'Revisar diseños',
+  cloudStorage: 'Almacenamiento en la nube',
   icons: 'Iconos',
   overview: 'Resumen',
   gettingStarted: 'Primeros pasos',
@@ -303,6 +309,7 @@ export const PL: SidebarLabels = {
   components: 'Komponenty',
   variables: 'Zmienne',
   checkingDesigns: 'Sprawdzanie projektów',
+  cloudStorage: 'Przechowywanie w chmurze',
   icons: 'Ikony',
   overview: 'Przegląd',
   gettingStarted: 'Rozpoczęcie pracy',
@@ -330,6 +337,7 @@ export const RU: SidebarLabels = {
   components: 'Компоненты',
   variables: 'Переменные',
   checkingDesigns: 'Проверка дизайна',
+  cloudStorage: 'Облачное хранилище',
   icons: 'Иконки',
   overview: 'Обзор',
   gettingStarted: 'Начало работы',

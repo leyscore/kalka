@@ -38,6 +38,7 @@
 
 ### Added
 
+- Save the open document to cloud storage with **File → Save to storage…**. The tab stays bound to the stored copy, so Save and auto-save write to the bucket; before storage is configured, the command opens its settings. A new Cloud Storage guide covers connecting a bucket, CORS, syncing, and provider notes.
 - Add a variant to a standalone component from the header's **Add variant** button, as in Figma (#847): it becomes a component set named after it, whose existing instances and properties carry over, with a `Property 1=Variant2` copy below. A set's variant properties are rows of its **Properties** list, each opening to rename it and add, rename, reorder, or remove its values; removing a value variants still use moves them to another value. Variants that share a combination of values are named in a notice that selects them.
 - Create and edit a component's text, boolean, and instance swap properties from the properties panel, as in Figma (#847). A layer in a main component links its text content, visibility, or swapped component to a new or existing property from the Typography and Appearance sections and the instance header, and shows the linked property in place of the value. The component lists its properties, each opening to rename it, change its default, see and unlink the layers it drives, or delete it, and reorders them by dragging. Expose nested instances so their properties show, grouped under the instance's name, on instances of the component. Typing into text a property drives sets the property: its default in the main component, the instance's value in an instance.
 - An icon picker searches Iconify's open-source sets from the toolbar, the Object menu, and the command palette, and inserts the chosen icon at the middle of the view. It starts with the icons already in the file and the ones picked lately, and a set button in the search field narrows it to one set. Placed icons keep their name, so the Design panel's Icon section can swap the glyph or change its color in one undo step, and design JSX and HTML exports write them as icons.
@@ -133,6 +134,7 @@
 
 ### Fixed
 
+- Show when the browser menubar has more menus than fit in the left panel. The clipped side fades out and a chevron scrolls to the hidden menus; before, Arrange and Text could be cut off with no sign the bar scrolls.
 - List storage documents as soon as storage settings are saved. The home tab kept asking to configure storage until it next refreshed, which happened on window focus or up to a minute later.
 - Keep a Figma file's exposed nested instances when it is saved from OpenPencil; their properties stopped showing on the outer component's instances in Figma.
 - Offer only components that fit in an instance swap's list: one that would contain itself, such as the component the swapped layer sits in, is left out, and a variant is named with its set, as in `Badge / State=Info`.
