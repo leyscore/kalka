@@ -1,16 +1,28 @@
 import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
 
 import type { ExportHTMLFile } from '../bundle'
-import { componentModel } from '../components/model'
+import { componentModel, type ComponentGenerator } from '../components/model'
+import { reactComponent } from '../components/react'
 import { vueComponent } from '../components/vue'
 import { serializeHTML } from '../html'
 import { sceneNodeToDesignDocument } from '../projection'
 import { printComponentStories } from './component'
 import { collectGroups, type StoryGroup } from './groups'
-import { printStoryModule, type StoryDesign, type StorybookFramework } from './module'
+import {
+  printStoryModule,
+  STORYBOOK_PACKAGES,
+  type StoryDesign,
+  type StorybookFramework
+} from './module'
 import { claimName, identifierName, storyId } from './names'
 
 export { STORYBOOK_FRAMEWORKS, type StorybookFramework } from './module'
+
+/** Frameworks whose stories render generated components; HTML stories stay static. */
+const GENERATORS: Partial<Record<StorybookFramework, ComponentGenerator>> = {
+  vue: vueComponent,
+  react: reactComponent
+}
 
 export interface ExportStorybookOptions {
   framework?: StorybookFramework
@@ -123,19 +135,22 @@ export async function exportStorybook(
       })
       if (options.pageId && page.id !== options.pageId) continue
 
-      const component = framework === 'vue' && group.set ? componentModel(graph, group.set) : null
-      if (component) {
+      const generate = GENERATORS[framework]
+      const component = generate && group.set ? componentModel(graph, group.set) : null
+      if (generate && component) {
         // The component is imported by the file's name, so the two always match.
         component.name = file
-        add(page, `${file}.vue`, await vueComponent(component))
+        const generated = await generate(component)
+        for (const item of generated.files) add(page, item.path, item.content)
         const design = designLink({ linkPath: options.linkPath, uniqueNames }, group.linkNode)
         add(
           page,
           `${file}.stories.ts`,
           printComponentStories({
+            storybook: STORYBOOK_PACKAGES[framework],
             title: group.title,
             component,
-            path: `./${file}.vue`,
+            generated,
             design: design.flatMap((entry) =>
               entry.type === 'link' ? [{ name: 'OpenPencil', type: 'link', url: entry.url }] : []
             )
