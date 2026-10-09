@@ -39,7 +39,7 @@
 
 ### Added
 
-- A three-step welcome on first launch asks what you came for, sets the theme and the code the Code tab opens on, and shows how to connect Claude Code, Claude Desktop or another MCP client, with a live connection status.
+- A three-step welcome on first launch asks what you came for, sets the theme and the code the Code tab opens on, and shows how to connect Claude Code, Claude Desktop or another MCP client, with a live connection status. In the desktop app, **Connect** adds Kalka to Claude Desktop's configuration, keeping its other servers and a backup of the previous file.
 - The home screen starts a design at a device size, opens a `.fig` or `.html` file, a pasted piece of HTML or a file from a URL, and opens the sample file or a one-minute tour of the editor.
 - Show the pixel grid when zoomed in, as in Figma: from 800% on a standard display and 400% on a Retina one, toggled with **View → Pixel Grid** or <kbd>⇧</kbd><kbd>'</kbd>. <kbd>⇧</kbd><kbd>⌘</kbd><kbd>'</kbd> toggles **Snap to Pixel Grid**. The zoom menu in the properties panel lists both, with Figma's shortcuts, and labels its shortcuts for zoom to fit (<kbd>⇧</kbd><kbd>1</kbd>) and 100% (<kbd>⌘</kbd><kbd>0</kbd>); <kbd>⇧</kbd><kbd>R</kbd> toggles rulers and <kbd>⌥</kbd><kbd>⌘</kbd><kbd>\\</kbd> multiplayer cursors.
 - Set a component's text, boolean, and swap properties on a design JSX `<Instance>` by name, as variants are set, such as `<Instance of="Card" Title="Hello" Badge={false} />`; `properties` accepts names too. An instance written this way still works after the document is saved to `.fig` and reopened, which gives each property a new ID ([#750](https://github.com/open-pencil/open-pencil/issues/750)).

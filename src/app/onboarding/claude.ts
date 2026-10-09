@@ -42,3 +42,21 @@ export const claudeConnection = computed<ClaudeConnection>(() => {
   if (mcpRuntime.status === 'starting' || mcpRuntime.status === 'idle') return 'starting'
   return 'off'
 })
+
+/** Where Kalka was added in Claude Desktop's configuration, and the bridge it starts. */
+export interface ClaudeDesktopConnection {
+  path: string
+  command: string
+}
+
+/** Whether this build can write Claude Desktop's configuration itself. */
+export const canConnectClaudeDesktop = isTauri()
+
+/**
+ * Adds Kalka to Claude Desktop's configuration, keeping its other servers and a backup of the
+ * previous file. Desktop only: the browser cannot reach another app's files.
+ */
+export async function connectClaudeDesktop(): Promise<ClaudeDesktopConnection> {
+  const { invoke } = await import('@tauri-apps/api/core')
+  return invoke<ClaudeDesktopConnection>('connect_claude_desktop')
+}

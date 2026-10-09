@@ -1,18 +1,39 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+
 import { useI18n } from '@open-pencil/vue'
 
 import {
+  canConnectClaudeDesktop,
   claudeCodeCommand,
+  connectClaudeDesktop,
   claudeDesktopConfigPath,
   mcpClientConfig,
   mcpInstallCommand
 } from '@/app/onboarding/claude'
+import AppButton from '@/components/ui/button/AppButton.vue'
 import AppCopyField from '@/components/ui/input/AppCopyField.vue'
 
 import ClaudeStatus from './ClaudeStatus.vue'
 
 const { welcome } = useI18n()
 const desktopConfigFile = claudeDesktopConfigPath()
+const desktop = ref<{ state: 'idle' | 'connecting' | 'done' | 'error'; message?: string }>({
+  state: 'idle'
+})
+
+async function connectDesktop(): Promise<void> {
+  desktop.value = { state: 'connecting' }
+  try {
+    await connectClaudeDesktop()
+    desktop.value = { state: 'done' }
+  } catch (error) {
+    desktop.value = {
+      state: 'error',
+      message: error instanceof Error ? error.message : String(error)
+    }
+  }
+}
 
 const TOOLS = [
   ['get_page_tree', 'toolPageTree'],
@@ -45,9 +66,41 @@ const TOOLS = [
         />
       </section>
       <section class="rounded-xl border border-border bg-panel p-4">
-        <h3 class="text-[13px] font-semibold text-surface">{{ welcome.claudeDesktopTitle }}</h3>
-        <p class="mt-0.5 mb-3 text-xs break-words text-muted">
-          {{ welcome.claudeDesktopHint({ file: desktopConfigFile }) }}
+        <div class="flex items-start gap-3">
+          <div class="min-w-0 flex-1">
+            <h3 class="text-[13px] font-semibold text-surface">
+              {{ welcome.claudeDesktopTitle }}
+            </h3>
+            <p class="mt-0.5 mb-3 text-xs break-words text-muted">
+              {{ welcome.claudeDesktopHint({ file: desktopConfigFile }) }}
+            </p>
+          </div>
+          <AppButton
+            v-if="canConnectClaudeDesktop"
+            size="lg"
+            color="primary"
+            variant="solid"
+            class="shrink-0 rounded-lg px-4"
+            :disabled="desktop.state === 'connecting'"
+            data-test-id="welcome-connect-claude-desktop"
+            @click="connectDesktop"
+          >
+            {{ desktop.state === 'connecting' ? welcome.connecting : welcome.connectAction }}
+          </AppButton>
+        </div>
+        <p
+          v-if="desktop.state === 'done'"
+          class="mb-3 flex items-center gap-2 rounded-lg bg-success/10 px-3 py-2 text-xs text-success"
+          role="status"
+        >
+          <icon-lucide-check class="size-3.5 shrink-0" />{{ welcome.desktopConnected }}
+        </p>
+        <p
+          v-else-if="desktop.state === 'error'"
+          class="mb-3 rounded-lg bg-error-bg px-3 py-2 text-xs text-error"
+          role="alert"
+        >
+          {{ desktop.message }}
         </p>
         <AppCopyField
           :value="mcpClientConfig"

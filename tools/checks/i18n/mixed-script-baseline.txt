@@ -476,3 +476,5 @@ zh-cn:welcome.tourToolbarTitle
 zh-cn:welcome.tourToolbarBody
 zh-cn:welcome.tourAITitle
 zh-cn:welcome.tourAIBody
+ja:welcome.desktopConnected
+zh-cn:welcome.desktopConnected

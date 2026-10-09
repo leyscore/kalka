@@ -6,6 +6,7 @@ import { delimiter, isAbsolute, join, sep } from 'node:path'
 import { net } from 'electron'
 
 import { registerAll, type CallContext } from '../ipc'
+import { connectClaudeDesktop } from './claude-desktop'
 import { credentialCommands } from './credentials'
 import { buildFigFile } from './fig'
 import { setChecked, setRecentFiles } from './menu'
@@ -185,6 +186,10 @@ const commands: Record<string, (args: never) => unknown> = {
       versions[packageName] = executable ? await companionVersion(executable, path) : null
     }
     return { executables, versions, searchPath: path }
+  },
+  async connect_claude_desktop() {
+    const path = await searchPath()
+    return connectClaudeDesktop((command) => which(command, path))
   },
   proxy_http_request: ({ request }: { request: ProxyRequest }) => proxyHttpRequest(request),
   build_fig_file: (input: Parameters<typeof buildFigFile>[0]) => buildFigFile(input)
