@@ -18,7 +18,10 @@ export const ARTBOARD_CSS = [
   'body{font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}',
   'img{display:block}',
   // Projected text is a span with a width; it lays out as a box.
-  '[data-kalka-text]{display:block}'
+  '[data-kalka-text]{display:block}',
+  // A shader layer plays its drawing behind its own content (dom-scene/shaders.ts).
+  ':where([data-paper-shader]){isolation:isolate;position:relative}',
+  '[data-kalka-shader-video]{position:absolute;inset:0;z-index:-1;display:block;width:100%;height:100%;object-fit:fill;border-radius:inherit;pointer-events:none}'
 ].join('')
 
 export function artboardSrcdoc(): string {

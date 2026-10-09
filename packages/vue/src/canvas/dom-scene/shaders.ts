@@ -93,18 +93,26 @@ interface Mounted {
   element: Element
   preset: ShaderPreset
   settings: string
+  /** Where Paper Shaders draws: a box in the editor's own page, sized like the layer. */
+  host: HTMLDivElement
   mount: ShaderMount
+  stream: MediaStream
+  video: HTMLVideoElement
+  resize: ResizeObserver
 }
 
 function prefersReducedMotion(): boolean {
   return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
+/** The attribute that marks the video a shader layer plays inside its artboard. */
+export const SHADER_VIDEO_ATTR = 'data-kalka-shader-video'
+
 /**
- * Runs the shader layers of the page on screen. Each is mounted on its layer's element in the
- * artboard iframe, where Paper Shaders draws a canvas behind the layer's content; a layer whose
- * element was rebuilt is mounted again, and one whose settings changed is updated in place.
- * The design itself never runs code: the editor drives the canvas from outside the iframe.
+ * Runs the shader layers of the page on screen. An artboard runs no scripts, and a canvas in a
+ * document without scripting shows its fallback content, never its drawing. So each shader
+ * draws in the editor's own page, in a box sized like its layer, and plays into the artboard
+ * as a muted video stream behind the layer's content. The design itself still runs no code.
  */
 export class ShaderLayers {
   private readonly mounted = new Map<string, Mounted>()
@@ -140,7 +148,8 @@ export class ShaderLayers {
   private update(id: string, element: Element, layer: ShaderLayer): void {
     const settings = JSON.stringify(layer)
     const current = this.mounted.get(id)
-    if (current?.element === element && current.preset === layer.preset) {
+    if (current?.preset === layer.preset) {
+      if (current.element !== element) this.attach(current, element)
       if (current.settings === settings) return
       current.mount.setUniforms(PRESETS[layer.preset].uniforms(layer))
       current.mount.setSpeed(prefersReducedMotion() ? 0 : layer.speed)
@@ -148,28 +157,78 @@ export class ShaderLayers {
       return
     }
     if (current) this.unmount(id)
-    if (!(element instanceof (element.ownerDocument.defaultView ?? window).HTMLElement)) return
+    this.mount(id, element, layer, settings)
+  }
+
+  private mount(id: string, element: Element, layer: ShaderLayer, settings: string): void {
+    const doc = element.ownerDocument
+    const view = doc.defaultView
+    if (!view) return
+    // Kept in the viewport, where Paper Shaders keeps animating, but never seen.
+    const host = document.createElement('div')
+    host.setAttribute('aria-hidden', 'true')
+    host.style.cssText =
+      'position:fixed;left:0;top:0;opacity:0;pointer-events:none;z-index:-1;overflow:hidden'
+    document.body.append(host)
     try {
       const preset = PRESETS[layer.preset]
       const mount = new ShaderMount(
-        element,
+        host,
         preset.fragment,
         preset.uniforms(layer),
         { premultipliedAlpha: false, preserveDrawingBuffer: true },
         prefersReducedMotion() ? 0 : layer.speed
       )
-      this.mounted.set(id, { element, preset: layer.preset, settings, mount })
+      const stream = mount.canvasElement.captureStream()
+      const video = doc.createElement('video')
+      const resize = new view.ResizeObserver(([entry]) => {
+        const { width, height } = entry.contentRect
+        host.style.width = `${Math.max(1, width)}px`
+        host.style.height = `${Math.max(1, height)}px`
+      })
+      const mounted: Mounted = {
+        element,
+        preset: layer.preset,
+        settings,
+        host,
+        mount,
+        stream,
+        video,
+        resize
+      }
+      video.setAttribute(SHADER_VIDEO_ATTR, '')
+      video.setAttribute('aria-hidden', 'true')
+      video.muted = true
+      video.autoplay = true
+      video.playsInline = true
+      video.srcObject = stream
+      this.mounted.set(id, mounted)
+      this.attach(mounted, element)
     } catch (error) {
+      host.remove()
       // Without WebGL the layer keeps its gradient stand-in.
       console.warn('[shaders] A shader layer could not start.', error)
     }
   }
 
+  /** Puts the layer's video in its element, as the first child behind its content. */
+  private attach(mounted: Mounted, element: Element): void {
+    mounted.resize.disconnect()
+    mounted.element = element
+    element.prepend(mounted.video)
+    mounted.resize.observe(element)
+    void mounted.video.play().catch(() => undefined)
+  }
+
   private unmount(id: string): void {
     const mounted = this.mounted.get(id)
     if (!mounted) return
+    mounted.resize.disconnect()
+    mounted.video.srcObject = null
+    mounted.video.remove()
+    for (const track of mounted.stream.getTracks()) track.stop()
     mounted.mount.dispose()
-    mounted.mount.canvasElement.remove()
+    mounted.host.remove()
     this.mounted.delete(id)
   }
 
