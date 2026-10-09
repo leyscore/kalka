@@ -12,7 +12,7 @@ export default {
     // Reads as a group heading; the gap below lives inside the animated content.
     moreTrigger: 'py-1.5 text-[11px] font-semibold text-muted transition-colors hover:text-surface',
     moreGroup: 'flex flex-col gap-2 pt-1',
-    connection: 'flex flex-col gap-3 rounded-md border border-border p-3',
+    connection: 'flex flex-col gap-3 rounded-[10px] border border-hairline bg-group p-3',
     connectionHeading: 'flex items-center gap-2 text-xs font-semibold text-surface',
     signIn: 'flex flex-wrap items-center justify-between gap-2 rounded bg-input px-3 py-2',
     signInStatus: 'flex items-center gap-2 text-xs text-surface',

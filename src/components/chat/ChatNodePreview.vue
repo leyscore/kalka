@@ -39,11 +39,11 @@ watch(
     v-if="previewURL"
     :src="previewURL"
     alt=""
-    class="size-10 shrink-0 rounded-md border border-border bg-canvas object-contain"
+    class="size-10 shrink-0 rounded-[7px] border border-hairline bg-panel-field object-contain"
   />
   <div
     v-else
-    class="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-canvas"
+    class="flex size-10 shrink-0 items-center justify-center rounded-[7px] border border-hairline bg-panel-field"
   >
     <icon-lucide-box class="size-4 text-muted" aria-hidden="true" />
   </div>

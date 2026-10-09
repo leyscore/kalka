@@ -22,7 +22,7 @@ const { editor } = useI18n()
 
 <template>
   <div
-    class="absolute top-7 left-7 z-10 flex items-center gap-2 rounded-lg border border-border bg-panel px-2 py-1 shadow-sm"
+    class="absolute top-7 left-7 z-10 flex items-center gap-2 rounded-[9px] border border-float-border bg-float px-2 py-1 shadow-(--float-shadow) backdrop-blur-[28px]"
     :data-mode="mode"
   >
     <BrandMark variant="app-icon" :appearance="resolvedAppTheme" class="size-6" />

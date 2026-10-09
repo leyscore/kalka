@@ -18,7 +18,7 @@
 
 /* The confirmation before opening a link, sized like the app's dialogs. */
 [data-stream-markdown='alert'] {
-  @apply max-w-80 gap-3 rounded-lg bg-panel p-4 text-surface shadow-lg;
+  @apply max-w-80 gap-3 rounded-[14px] bg-float p-4 text-surface shadow-(--float-shadow) backdrop-blur-[28px];
 }
 
 [data-stream-markdown='alert-title'] {

@@ -134,7 +134,7 @@ const selectedProfileName = computed(
           v-for="node in referencedNodes"
           :key="node.id"
           data-slot="chat-context-chip"
-          class="flex min-w-0 max-w-full items-center gap-2 rounded-lg border border-border bg-canvas p-1.5 shadow-xs"
+          class="flex min-w-0 max-w-full items-center gap-2 rounded-[10px] border border-hairline bg-group p-1.5"
         >
           <ChatNodePreview :editor="editor" :node="node" />
           <span class="min-w-0 flex-1 truncate text-[10px] text-surface">
@@ -151,7 +151,7 @@ const selectedProfileName = computed(
         <div
           v-for="(image, index) in images"
           :key="image.previewURL"
-          class="flex min-w-0 max-w-full items-center gap-2 rounded-lg border border-border bg-canvas p-1.5 shadow-xs"
+          class="flex min-w-0 max-w-full items-center gap-2 rounded-[10px] border border-hairline bg-group p-1.5"
         >
           <img
             :src="image.previewURL"

@@ -152,14 +152,14 @@ async function publish() {
         <AppTextarea v-model="description" :rows="2" />
       </label>
       <div
-        class="flex items-center justify-between rounded-lg border border-border bg-input px-3 py-2 text-xs"
+        class="flex items-center justify-between rounded-[10px] border border-hairline bg-group px-3 py-2 text-xs"
       >
         <span class="text-muted">{{ panels.libraryDestination }}</span>
         <span>{{
           service.catalogSource === 'storage' ? panels.storageLibraries : panels.localLibraries
         }}</span>
       </div>
-      <div class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border">
+      <div class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[10px] border border-hairline bg-group">
         <div class="flex items-center gap-2 border-b border-border px-3 py-2 text-xs font-medium">
           <AppCheckbox
             :model-value="selectionState"

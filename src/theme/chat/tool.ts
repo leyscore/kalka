@@ -2,7 +2,7 @@ import { tv } from 'tailwind-variants'
 
 export const chatToolTheme = tv({
   slots: {
-    root: 'rounded-lg border border-border bg-canvas',
+    root: 'rounded-[10px] border border-hairline bg-group',
     trigger:
       'flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-left hover:bg-hover disabled:cursor-default disabled:hover:bg-transparent',
     status:
