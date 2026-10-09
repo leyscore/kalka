@@ -102,4 +102,16 @@ describe('icons in HTML export', () => {
     expect(html).toContain('fill="#16A34A"')
     expect(html).toContain('fill="currentColor"')
   })
+
+  test('keep a translucent fill translucent', async () => {
+    const graph = new SceneGraph()
+    const frame = graph.createNode('FRAME', graph.getPages()[0].id, { width: 100, height: 100 })
+    graph.createNode('STAR', frame.id, {
+      width: 80,
+      height: 80,
+      fills: [{ type: 'SOLID', color: { r: 0, g: 0, b: 0, a: 1 }, opacity: 0.1, visible: true }]
+    })
+    const { html } = await renderNodesToHTML(graph, [frame.id])
+    expect(html).toContain('fill="#0000001A"')
+  })
 })

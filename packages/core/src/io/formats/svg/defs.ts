@@ -2,7 +2,7 @@ import { fromUint8Array } from 'js-base64'
 
 import type { Effect, Fill, SceneGraph, SceneNode } from '@open-pencil/scene-graph'
 import {
-  colorToHex,
+  colorToHex8,
   colorToDisplayCSS,
   getDefaultRenderColorSpace,
   type RenderColorSpace
@@ -36,7 +36,8 @@ export function formatColor(
   if (colorSpace === 'display-p3') {
     return colorToDisplayCSS(alphaColor, { colorSpace })
   }
-  return colorToHex(alphaColor)
+  // The paint's opacity stays in the color; a six-digit hex would draw it opaque.
+  return colorToHex8(alphaColor)
 }
 
 function createGradientDef(

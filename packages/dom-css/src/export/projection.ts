@@ -396,7 +396,30 @@ function styleFromTextNode(
   const textTransform = textCaseToCSS(node.textCase)
   if (textTransform) style['text-transform'] = textTransform
   style['white-space'] = textWhiteSpace(node)
+  addTruncation(style, node)
   return style
+}
+
+/**
+ * Text set to truncate ends with an ellipsis on its last line: the line limit when it has one,
+ * otherwise the lines its fixed height holds.
+ */
+function addTruncation(style: DesignStyleDeclaration, node: SceneNode): void {
+  if (node.textTruncation !== 'ENDING') return
+  const fixedHeight = node.textAutoResize === 'NONE' || node.textAutoResize === 'TRUNCATE'
+  const lines =
+    node.maxLines ??
+    (fixedHeight && node.lineHeight ? Math.max(1, Math.floor(node.height / node.lineHeight)) : null)
+  if (lines === null) return
+  style.overflow = 'hidden'
+  if (lines === 1) {
+    style['white-space'] = 'nowrap'
+    style['text-overflow'] = 'ellipsis'
+    return
+  }
+  style.display = '-webkit-box'
+  style['-webkit-box-orient'] = 'vertical'
+  style['-webkit-line-clamp'] = String(lines)
 }
 
 function imageSourceURL(node: SceneNode): string | undefined {
