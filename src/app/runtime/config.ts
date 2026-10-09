@@ -12,6 +12,8 @@ export interface AppRuntimeConfig {
   showRulers: boolean
   sceneRenderer: SceneRendererMode
   sceneRendererOverride: boolean
+  /** Draw the scene as real DOM (`?renderer=dom`) instead of with Skia. Kalka's engine. */
+  domScene: boolean
   collaborationTransport: CollaborationTransportMode
   collaborationRelayURL: string | null
 }
@@ -32,6 +34,7 @@ export function parseAppRuntimeConfig(
     showRulers: !params.has('no-rulers'),
     sceneRenderer,
     sceneRendererOverride: renderer === 'tiled' || renderer === 'retained',
+    domScene: renderer === 'dom',
     collaborationTransport: params.get('collabTransport') === 'test' ? 'test' : 'default',
     collaborationRelayURL: params.get('collabRelay')
   }

@@ -43,8 +43,18 @@ const BUNDLED_FONTS: Record<string, string> = {
   'Noto Naskh Arabic|Regular': '/NotoNaskhArabic-Regular.ttf'
 }
 
+/** A face the page can draw with, as handed to the browser. */
+export interface BrowserFontFace {
+  family: string
+  weight: string
+  style: 'normal' | 'italic'
+  data: ArrayBuffer
+}
+
 export class FontManager {
   private loadedFamilies = new Map<string, ArrayBuffer>()
+  private browserFaces: BrowserFontFace[] = []
+  private browserFaceListeners = new Set<(face: BrowserFontFace) => void>()
   private loadedFamilySources = new Map<string, FontLoadedSource>()
   private unavailableFaces = new Map<string, FontUnavailableReason>()
   private supplementalFamilyData = new Map<string, ArrayBuffer[]>()
@@ -650,11 +660,30 @@ export class FontManager {
     }
   }
 
+  /**
+   * Every face handed to the browser so far. Documents of their own, such as the DOM scene's
+   * artboard iframes, have their own font sets and add these themselves.
+   */
+  loadedBrowserFaces(): readonly BrowserFontFace[] {
+    return this.browserFaces
+  }
+
+  /** Calls `listener` for each face handed to the browser from now on. */
+  onBrowserFace(listener: (face: BrowserFontFace) => void): () => void {
+    this.browserFaceListeners.add(listener)
+    return () => this.browserFaceListeners.delete(listener)
+  }
+
   /** Makes a face available to the page's own text, such as fields over canvas labels. */
   registerFontInBrowser(family: string, style: string, data: ArrayBuffer) {
     if (!IS_BROWSER) return
     const weight = styleToWeight(style)
     const italic = style.toLowerCase().includes('italic') ? 'italic' : 'normal'
+    if (!this.browserFaces.some((known) => known.data === data && known.family === family)) {
+      const known: BrowserFontFace = { family, weight: String(weight), style: italic, data }
+      this.browserFaces.push(known)
+      for (const listener of this.browserFaceListeners) listener(known)
+    }
     const face = new FontFace(family, data, {
       weight: String(weight),
       style: italic

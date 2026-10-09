@@ -22,6 +22,8 @@ import {
   SECTION_TITLE_HEIGHT
 } from '@open-pencil/core/constants'
 import type { ViewportTransform } from '@open-pencil/core/geometry'
+import { vectorElement } from '@open-pencil/core/io'
+import { colorToCSS } from '@open-pencil/scene-graph/color'
 import {
   PlayIslands,
   toolCursor,
@@ -30,6 +32,7 @@ import {
   useCanvasInput,
   useCanvasIssueMarkers,
   useCanvasVirtualReference,
+  useDomScene,
   useTextEdit
 } from '@open-pencil/vue'
 
@@ -58,6 +61,8 @@ const { paneId } = defineProps<{
 
 const store = useEditorStore()
 const sceneCanvasRef = ref<HTMLCanvasElement | null>(null)
+const domSceneRef = ref<HTMLElement | null>(null)
+const domScene = appRuntimeConfig.domScene
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 
 const isActivePane = computed(() => !paneId || store.activePaneId.value === paneId)
@@ -74,6 +79,8 @@ function updatePaneCursor(cx: number, cy: number) {
 const getRenderState = paneId ? () => store.getPaneRenderState(paneId) : undefined
 /** This pane's view: its pan, zoom, page, and whether it previews. */
 const paneView = computed(() => (paneId ? store.getPaneRenderState(paneId) : store.state))
+/** The page color the DOM scene shows behind the artboards; Skia draws it itself. */
+const pageBackground = computed(() => colorToCSS(store.state.pageColor))
 const onViewportResize = (width: number, height: number) => {
   if (paneId) store.resizePane(paneId, width, height)
   if (isActivePane.value) store.setViewportSize(width, height)
@@ -89,6 +96,15 @@ const shouldSuspendRender = () =>
 
 /** The pan and zoom of the scene's last drawn frame, which preview islands follow. */
 const drawnView = shallowRef<ViewportTransform | null>(null)
+
+if (domScene) {
+  useDomScene(domSceneRef, store, {
+    getRenderState,
+    vectorElement,
+    onPresented: ({ sceneVersion }) =>
+      store.preparationController.acknowledgePresentation(sceneVersion)
+  })
+}
 
 useCanvas(sceneCanvasRef, store, {
   layer: 'scene',
@@ -245,7 +261,17 @@ const cursor = computed(() =>
         @wheel.capture="activatePane"
         @dragenter.capture="activatePane"
       >
+        <div
+          v-if="domScene"
+          ref="domSceneRef"
+          :data-pane-id="paneId"
+          data-test-id="dom-scene"
+          aria-hidden="true"
+          class="pointer-events-none absolute inset-0 overflow-hidden"
+          :style="{ background: pageBackground }"
+        />
         <canvas
+          v-else
           ref="sceneCanvasRef"
           :data-pane-id="paneId"
           data-test-id="scene-canvas-element"

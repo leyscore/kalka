@@ -11,7 +11,15 @@ import { resolveNodeTextDirection } from '@open-pencil/scene-graph/text-directio
 
 import { DesignTokens, type CSSModes } from '../tokens/references'
 import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
-import { cssColor, dropShadowToCSS, effectsToCSS, fillToCSS, strokeColorToCSS } from './css'
+import {
+  blendModeToCSS,
+  cssColor,
+  dropShadowToCSS,
+  effectsToCSS,
+  fillsToBackground,
+  fillToCSS,
+  strokeColorToCSS
+} from './css'
 import { addGridContainer, addGridPlacement } from './grid'
 
 const DOM_CSS_PLUGIN_ID = 'open-pencil-dom-css'
@@ -32,6 +40,11 @@ export interface SceneGraphToDesignOptions {
   vectorElement?: VectorElementRenderer
   /** Hidden layers to project as shown, such as the tab panels a component reveals itself. */
   shown?: ReadonlySet<string>
+  /**
+   * Project the root without its child layers, so a renderer patching the DOM layer by layer
+   * can restyle one element. Text keeps its characters; vector layers keep their SVG.
+   */
+  shallow?: boolean
 }
 
 /** Layers whose shape only paths describe, which CSS boxes cannot draw. */
@@ -110,9 +123,8 @@ function addSize(
 }
 
 /**
- * Whether a layer fills an axis by stretching, which a fixed CSS size would prevent: across a
- * flex parent, or either axis of a grid cell. Along a flex parent, fill is `flex-grow`, and the
- * size stays as its basis.
+ * Whether a layer fills an axis, which a fixed CSS size would prevent: across a flex parent by
+ * stretching, along it by growing from a zero basis, or either axis of a grid cell.
  */
 function stretches(
   node: SceneNode,
@@ -120,10 +132,16 @@ function stretches(
   axis: 'width' | 'height'
 ): boolean {
   const sizing = layoutSizingInParent(parent, node, axis === 'width' ? 'HORIZONTAL' : 'VERTICAL')
-  if (sizing !== 'FILL' || !parent) return false
-  if (parent.layoutMode === 'GRID') return true
-  const mainAxis = parent.layoutMode === 'HORIZONTAL' ? 'width' : 'height'
-  return axis !== mainAxis
+  return sizing === 'FILL' && parent !== undefined
+}
+
+/** Whether a layer fills its flex parent's main axis, sharing the free space with its peers. */
+function growsAlongParent(node: SceneNode, parent: SceneNode | undefined): boolean {
+  if (!parent || (parent.layoutMode !== 'HORIZONTAL' && parent.layoutMode !== 'VERTICAL'))
+    return false
+  if (node.layoutPositioning === 'ABSOLUTE') return false
+  const axis = parent.layoutMode === 'HORIZONTAL' ? 'HORIZONTAL' : 'VERTICAL'
+  return node.layoutGrow > 0 || layoutSizingInParent(parent, node, axis) === 'FILL'
 }
 
 /**
@@ -175,12 +193,35 @@ function addCornerRadii(style: DesignStyleDeclaration, node: SceneNode, css: Fie
   if (node.cornerRadius > 0) style['border-radius'] = css('cornerRadius', px(node.cornerRadius))
 }
 
+/** Where an outline sits so it draws a stroke inside, centered on, or outside the edge. */
+function outlineOffset(align: SceneNode['strokeAlign'], weight: number): number {
+  if (align === 'INSIDE') return -weight
+  if (align === 'CENTER') return -weight / 2
+  return 0
+}
+
+/** Auto-width text only breaks where its text does; one-line text never does. */
+function textWhiteSpace(node: SceneNode): string {
+  if (node.maxLines === 1) return 'nowrap'
+  if (node.textAutoResize === 'WIDTH_AND_HEIGHT') return 'pre'
+  return 'pre-wrap'
+}
+
 function addStroke(style: DesignStyleDeclaration, node: SceneNode, css: FieldCSS): void {
   const stroke = node.strokes.at(0)
   const literalColor = strokeColorToCSS(stroke)
   if (!literalColor || !stroke) return
   const color = css('strokes/0/color', literalColor)
   const borderStyle = node.dashPattern.length > 0 ? 'dashed' : 'solid'
+  // A stroke takes no room in auto layout unless the design says so: an outline draws it
+  // without moving the content, inside, centered on, or outside the edge.
+  if (!node.independentStrokeWeights && !node.strokesIncludedInLayout) {
+    const weight = stroke.weight
+    style.outline = `${css('strokeWeight', px(weight))} ${borderStyle} ${color}`
+    const offset = outlineOffset(node.strokeAlign, weight)
+    if (offset !== 0) style['outline-offset'] = px(offset)
+    return
+  }
   if (!node.independentStrokeWeights) {
     style.border = `${css('strokeWeight', px(stroke.weight))} solid ${color}`
     if (borderStyle !== 'solid') style['border-style'] = borderStyle
@@ -254,7 +295,16 @@ function addLayoutChild(
   parent: SceneNode | undefined
 ): void {
   if (parent?.layoutMode === 'GRID') addGridPlacement(style, node)
-  else if (parent && parent.layoutMode !== 'NONE' && node.layoutGrow > 0) style['flex-grow'] = '1'
+  else if (parent && parent.layoutMode !== 'NONE' && node.layoutPositioning !== 'ABSOLUTE') {
+    // Auto layout never squeezes a layer below its size; fill shares the free space equally,
+    // from nothing, and may go below its content as Figma's does.
+    if (growsAlongParent(node, parent)) {
+      style['flex-grow'] = '1'
+      style['flex-basis'] = '0px'
+      const minimum = parent.layoutMode === 'HORIZONTAL' ? 'min-width' : 'min-height'
+      style[minimum] ??= '0px'
+    } else style['flex-shrink'] = '0'
+  }
   if (node.rotation !== 0) style.transform = `rotate(${node.rotation}deg)`
 }
 
@@ -267,12 +317,18 @@ function styleFromSceneNode(
   addSize(style, node, parent, css)
   addPositioning(style, node, parent)
   addSizeConstraints(style, node, css)
-  const fill = fillToCSS(node.fills.at(0))
-  if (fill) style['background-color'] = css('fills/0/color', fill)
+  const layered = fillsToBackground(node.fills, node.width, node.height)
+  if (layered) Object.assign(style, layered)
+  else {
+    const fill = fillToCSS(node.fills.at(0))
+    if (fill) style['background-color'] = css('fills/0/color', fill)
+  }
   addImageStyle(style, node)
   addStroke(style, node, css)
   Object.assign(style, effectsToCSS(node.effects))
   if (node.opacity < 1) style.opacity = css('opacity', String(node.opacity))
+  const blend = blendModeToCSS(node.blendMode)
+  if (blend) style['mix-blend-mode'] = blend
   addCornerRadii(style, node, css)
   if (node.clipsContent) style.overflow = 'hidden'
   const alignSelf = alignToCSS(node.layoutAlignSelf)
@@ -308,6 +364,8 @@ function styleFromTextNode(
   const style: DesignStyleDeclaration = {}
   addSize(style, node, parent, css)
   addPositioning(style, node, parent)
+  const alignSelf = alignToCSS(node.layoutAlignSelf)
+  if (alignSelf) style['align-self'] = alignSelf
   addLayoutChild(style, node, parent)
   if (resolveNodeTextDirection(node) === 'RTL') style.direction = 'rtl'
   const color = fillToCSS(node.fills.at(0))
@@ -330,7 +388,7 @@ function styleFromTextNode(
   }
   const textTransform = textCaseToCSS(node.textCase)
   if (textTransform) style['text-transform'] = textTransform
-  style['white-space'] = node.maxLines === 1 ? 'nowrap' : 'pre-wrap'
+  style['white-space'] = textWhiteSpace(node)
   return style
 }
 
@@ -370,6 +428,7 @@ interface ProjectionContext {
   tokens: DesignTokens | undefined
   vectorElement: VectorElementRenderer | undefined
   shown: ReadonlySet<string> | undefined
+  shallow: boolean
 }
 
 /**
@@ -428,9 +487,12 @@ function sceneNodeToDesignNode(
     if (vector) return vector
   }
 
-  const children = nodeChildren(graph, node)
-    .map((child) => sceneNodeToDesignNode(context, child, modes, false))
-    .filter((child): child is DesignNode => child !== null)
+  const children =
+    context.shallow && root
+      ? []
+      : nodeChildren(graph, node)
+          .map((child) => sceneNodeToDesignNode(context, child, modes, false))
+          .filter((child): child is DesignNode => child !== null)
 
   if (node.type === 'CANVAS') {
     return {
@@ -456,14 +518,21 @@ function sceneNodeToDesignNode(
 
 function projectionContext(
   graph: SceneGraph,
-  { includeSourceIds = true, tokens = true, vectorElement, shown }: SceneGraphToDesignOptions
+  {
+    includeSourceIds = true,
+    tokens = true,
+    vectorElement,
+    shown,
+    shallow = false
+  }: SceneGraphToDesignOptions
 ): ProjectionContext {
   return {
     graph,
     includeSourceIds,
     tokens: tokens ? new DesignTokens(graph) : undefined,
     vectorElement,
-    shown
+    shown,
+    shallow
   }
 }
 

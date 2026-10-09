@@ -22,8 +22,9 @@ describe('Tailwind JSX appearance classes', () => {
     })
     const jsx = tw(graph, node.id)
     expect(jsx).toContain('bg-white')
-    // twirlwind maps 2px border correctly
-    expect(jsx).toContain('border-[#FF0000]')
+    // A stroke outside the layout is an outline, drawn inside the edge
+    expect(jsx).toContain('outline-[#FF0000]')
+    expect(jsx).toContain('outline-offset-[-2px]')
   })
 
   test('border radius — named values', () => {

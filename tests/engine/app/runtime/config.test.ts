@@ -16,6 +16,7 @@ describe('app runtime configuration', () => {
       showRulers: false,
       sceneRenderer: 'tiled',
       sceneRendererOverride: true,
+      domScene: false,
       collaborationTransport: 'test',
       collaborationRelayURL: 'ws://localhost:4000'
     })
@@ -31,6 +32,12 @@ describe('app runtime configuration', () => {
     expect(parseAppRuntimeConfig('?renderer=tiled', 'retained').sceneRenderer).toBe('tiled')
   })
 
+  test('draws the scene as DOM only when asked', () => {
+    expect(parseAppRuntimeConfig('?renderer=dom').domScene).toBe(true)
+    expect(parseAppRuntimeConfig('?renderer=dom', 'tiled').sceneRenderer).toBe('tiled')
+    expect(parseAppRuntimeConfig('', 'tiled').domScene).toBe(false)
+  })
+
   test('uses production-safe defaults for absent or unknown values', () => {
     expect(parseAppRuntimeConfig('?renderer=unknown')).toEqual({
       test: false,
@@ -40,6 +47,7 @@ describe('app runtime configuration', () => {
       showRulers: true,
       sceneRenderer: 'retained',
       sceneRendererOverride: false,
+      domScene: false,
       collaborationTransport: 'default',
       collaborationRelayURL: null
     })

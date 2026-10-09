@@ -23,4 +23,4 @@ export type {
   WebFontFaceRequest,
   WebFontFaceResolver
 } from './bundle'
-export type { DesignDocument, DesignElement, DesignNode } from '../types'
+export type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'

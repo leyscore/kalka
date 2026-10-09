@@ -54,6 +54,6 @@ describe('Tailwind JSX with tokens', () => {
 
     expect(code).toContain('gap-gutter')
     expect(code).toContain('bg-ink')
-    expect(code).toContain('border-(--brand-outline)')
+    expect(code).toContain('outline-(--brand-outline)')
   })
 })

@@ -298,6 +298,10 @@ function applyElementStyle(
       node.dashPattern = dashPattern
     }
     node.strokes = strokes
+    // A CSS border takes room in the layout; the stroke keeps doing so, and exports as a border.
+    node.strokesIncludedInLayout = true
+    strokes[0].align = 'INSIDE'
+    node.strokeAlign = 'INSIDE'
     setBorderWeights(node, style, strokes[0])
   }
 

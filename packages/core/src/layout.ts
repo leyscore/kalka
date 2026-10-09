@@ -23,6 +23,7 @@ import {
 import { usesDetachedDerivedLayout } from './layout/derived'
 import { applyEffectiveGeneratedTextLayout } from './layout/effective-generated-text'
 import { buildGridTree, createGridChildNode } from './layout/grid'
+export { getLayoutEngine, installLayoutEngine, type LayoutEngine } from './layout/engine'
 export {
   estimateTextSize,
   getTextMeasurer,
@@ -37,6 +38,7 @@ import {
   type SceneNode
 } from '@open-pencil/scene-graph'
 
+import { getLayoutEngine } from './layout/engine'
 import { estimateTextSize, getTextMeasurer } from './layout/text-measurement'
 import {
   applyMinMaxConstraints,
@@ -52,6 +54,7 @@ import {
 } from './layout/yoga-helpers'
 
 export function computeLayout(graph: SceneGraph, frameId: string): void {
+  if (getLayoutEngine()?.layout(graph, frameId)) return
   graph.withLayoutMutations(() => computeLayoutInternal(graph, frameId))
 }
 
@@ -79,6 +82,7 @@ function resolveComputedLayoutDirection(
 }
 
 export function computeAllLayouts(graph: SceneGraph, scopeId?: string): void {
+  if (getLayoutEngine()?.layout(graph, scopeId ?? graph.rootId)) return
   graph.withLayoutMutations(() => {
     const rootId = scopeId ?? graph.rootId
     const visited = new Set<string>()
