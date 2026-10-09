@@ -56,9 +56,9 @@ async function seeCode(): Promise<void> {
 }
 
 const chip =
-  'inline-flex h-10 items-center gap-2 rounded-lg border border-border bg-panel px-3.5 text-[13px] font-medium text-surface transition-colors hover:border-muted/40 hover:bg-hover focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none'
+  'inline-flex h-10 items-center gap-2 rounded-lg border border-border glass px-3.5 text-[13px] font-medium text-surface transition-colors hover:border-muted/40 hover:bg-hover focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none'
 const learnCard =
-  'group flex flex-col overflow-hidden rounded-xl border border-border bg-panel text-left transition-[border-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-muted/40 hover:shadow-lg hover:shadow-black/10 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none motion-reduce:hover:translate-y-0'
+  'group flex flex-col overflow-hidden rounded-xl border border-border glass text-left transition-[border-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-muted/40 hover:shadow-lg hover:shadow-black/10 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none motion-reduce:hover:translate-y-0'
 </script>
 
 <template>
@@ -72,7 +72,7 @@ const learnCard =
           v-for="(preset, index) in presets"
           :key="preset.id"
           type="button"
-          class="group flex flex-col rounded-xl border bg-panel p-3.5 text-left transition-[border-color,background-color] duration-150 hover:border-accent hover:bg-accent/5 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
+          class="group flex flex-col rounded-xl border glass p-3.5 text-left transition-[border-color,background-color] duration-150 hover:border-accent hover:bg-accent/5 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
           :class="index === 0 ? 'border-accent/60' : 'border-border'"
           :data-test-id="`home-preset-${preset.id}`"
           @click="startWithFrame(preset.name, preset.width, preset.height)"

@@ -32,7 +32,7 @@ const splitterStyles = tv(splitterTheme)({ direction: 'vertical' })
 <template>
   <aside
     data-test-id="layers-panel"
-    class="flex min-w-0 flex-1 flex-col overflow-hidden border-r border-border bg-panel"
+    class="flex min-w-0 flex-1 flex-col overflow-hidden border-r border-border/70 glass"
     style="contain: paint layout style"
   >
     <AppMenu />

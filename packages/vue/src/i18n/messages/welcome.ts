@@ -7,6 +7,10 @@ export const welcomeMessageDefaults = {
   title: 'Welcome to Kalka',
   intro:
     'Design like you do in Figma. Every layer you draw is real HTML and CSS. Tell us a bit about you so we can set things up.',
+  nameLabel: 'What should we call you?',
+  namePlaceholder: 'Your first name',
+  nameHint: 'Kept on this computer. People you share a file with see it next to your cursor.',
+  greeting: params('Hello, {name}'),
   roleQuestion: 'What brings you here?',
   roleDesign: 'I design interfaces',
   roleDesignHint: 'Websites, apps, landing pages',

@@ -4,6 +4,7 @@ import { computed, ref, watch } from 'vue'
 
 import { useDocumentWorkspace, useI18n, useViewportKind } from '@open-pencil/vue'
 
+import { useCollabIdentity } from '@/app/collab/identity'
 import {
   activeStorageProviderID,
   readStoragePreferences,
@@ -32,6 +33,7 @@ import SegmentedControl from '@/components/ui/select/SegmentedControl.vue'
 
 const emit = defineEmits<{ 'new-document': [] }>()
 const { panels, locale, storage, files, common, settings, welcome } = useI18n()
+const identity = useCollabIdentity()
 const { isMobile } = useViewportKind()
 const view = useLocalStorage<'grid' | 'list'>('open-pencil:home-files-view', 'grid')
 const query = ref('')
@@ -159,7 +161,7 @@ function formattedDate(updatedAt: string): string {
 </script>
 
 <template>
-  <div class="bg-backdrop grain-corners relative flex min-h-0 flex-1 text-surface">
+  <div class="relative flex min-h-0 flex-1 text-surface">
     <HomeSidebar />
     <main
       class="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto"
@@ -172,7 +174,11 @@ function formattedDate(updatedAt: string): string {
         <h1
           class="mb-6 font-display text-[clamp(28px,3.2vw,40px)] leading-none font-semibold tracking-[-0.035em] text-surface"
         >
-          {{ welcome.homeTitle }}
+          {{
+            identity.hasChosenName.value
+              ? welcome.greeting({ name: identity.name.value })
+              : welcome.homeTitle
+          }}
         </h1>
         <HomeSearchActions v-model="query" @new-document="emit('new-document')" />
         <HomeStart v-if="!normalizedQuery" class="mb-10" />

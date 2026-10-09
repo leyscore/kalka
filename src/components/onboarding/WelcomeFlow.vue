@@ -4,6 +4,7 @@ import { computed, ref } from 'vue'
 
 import { useI18n } from '@open-pencil/vue'
 
+import { useCollabIdentity } from '@/app/collab/identity'
 import {
   closeWelcome,
   closeWelcomeForAIChat,
@@ -17,6 +18,7 @@ import {
   type OnboardingRole
 } from '@/app/settings/preferences/store'
 import BrandMark from '@/components/brand/BrandMark.vue'
+import AppBackdrop from '@/components/shell/AppBackdrop.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 
 import WelcomeArt from './WelcomeArt.vue'
@@ -26,6 +28,8 @@ import WelcomeStepRole from './WelcomeStepRole.vue'
 
 const { welcome } = useI18n()
 const role = ref<OnboardingRole>(appPreferences.value.onboarding.role ?? 'design')
+const identity = useCollabIdentity()
+const name = ref(identity.hasChosenName.value ? identity.name.value : '')
 
 const index = computed(() => WELCOME_STEPS.indexOf(welcomeStep.value))
 const heading = computed(() => {
@@ -48,7 +52,11 @@ const width = computed(
 )
 
 function go(offset: number): void {
-  if (welcomeStep.value === 'role') updateOnboarding({ role: role.value })
+  if (welcomeStep.value === 'role') {
+    updateOnboarding({ role: role.value })
+    // The name is the one collaborators see, kept on this computer like the rest.
+    if (name.value.trim()) identity.setName(name.value)
+  }
   const next = WELCOME_STEPS[index.value + offset]
   if (next) welcomeStep.value = next
   else closeWelcome()
@@ -63,9 +71,10 @@ function onOpenChange(open: boolean): void {
   <DialogRoot :open="welcomeOpen" @update:open="onOpenChange">
     <DialogPortal>
       <DialogContent
-        class="bg-backdrop grain-corners fixed inset-0 z-[45] flex overflow-y-auto text-surface outline-none animate-in fade-in duration-300"
+        class="fixed inset-0 z-[45] isolate flex overflow-y-auto text-surface outline-none animate-in fade-in duration-300"
         data-test-id="welcome"
       >
+        <AppBackdrop fill="absolute" drift />
         <div
           v-if="welcomeStep === 'role'"
           class="sticky top-0 hidden h-dvh w-1/2 shrink-0 items-center justify-center bg-brand-blue p-[8%] lg:flex"
@@ -100,7 +109,7 @@ function onOpenChange(open: boolean): void {
             </DialogDescription>
 
             <div class="mt-9">
-              <WelcomeStepRole v-if="welcomeStep === 'role'" v-model="role" />
+              <WelcomeStepRole v-if="welcomeStep === 'role'" v-model="role" v-model:name="name" />
               <WelcomeStepPreferences v-else-if="welcomeStep === 'preferences'" />
               <WelcomeStepClaude v-else />
             </div>

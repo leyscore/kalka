@@ -94,6 +94,13 @@
   animation: kalka-float-in 260ms cubic-bezier(0.2, 1.3, 0.4, 1) both;
 }
 
+/* Backdrop light strength; the light theme sets its own. */
+:root {
+  --backdrop-glow-a: 0.32;
+  --backdrop-glow-b: 0.2;
+  --backdrop-glow-c: 0.12;
+}
+
 /*
  * The backdrop of full-page surfaces (home, welcome, boot): soft blue light in two corners over a
  * slight vertical gradient, rather than one flat color.
@@ -135,6 +142,26 @@
       radial-gradient(circle at 0 100%, black, transparent 30%),
       radial-gradient(circle at 100% 100%, black, transparent 42%);
   }
+}
+
+@keyframes kalka-backdrop-drift {
+  to {
+    transform: translate(8vmax, 6vmax) scale(1.12);
+  }
+}
+
+@utility animate-backdrop-drift {
+  animation: kalka-backdrop-drift 16s ease-in-out infinite alternate;
+}
+
+@utility animate-backdrop-drift-reverse {
+  animation: kalka-backdrop-drift 19s ease-in-out -8s infinite alternate-reverse;
+}
+
+/* Frosted glass for the app's panels and bars over the backdrop. */
+@utility glass {
+  background-color: color-mix(in srgb, var(--color-panel) 74%, transparent);
+  backdrop-filter: blur(28px) saturate(150%);
 }
 
 /* A glide pill sits under the items of its container, above the container's background. */
@@ -196,6 +223,9 @@
 
 html[data-theme='light'] {
   --grain-opacity: 0.16;
+  --backdrop-glow-a: 0.26;
+  --backdrop-glow-b: 0.42;
+  --backdrop-glow-c: 0.1;
   --color-panel: #efefec;
   --color-panel-secondary: #e8e8e4;
   --color-panel-field: #e3e3de;

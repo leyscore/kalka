@@ -4,7 +4,7 @@ export default {
   slots: {
     overlay: ['fixed inset-0 z-40 bg-black/50', motionStyles.overlay],
     content: [
-      'fixed top-1/2 left-1/2 z-50 flex max-h-[min(90vh,48rem)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-xl bg-panel shadow-[0_8px_30px_rgb(0_0_0/0.4)] outline-none data-[state=open]:zoom-in-98 data-[state=closed]:zoom-out-98',
+      'fixed top-1/2 left-1/2 z-50 flex max-h-[min(90vh,48rem)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl bg-panel/82 shadow-[0_0_0_1px_var(--color-border),0_24px_64px_-12px_rgb(0_0_0/0.5),0_2px_10px_rgb(0_0_0/0.15)] backdrop-blur-2xl backdrop-saturate-150 outline-none data-[state=open]:zoom-in-98 data-[state=closed]:zoom-out-98',
       motionStyles.overlay
     ],
     header: 'flex shrink-0 items-start justify-between gap-3 border-b border-border px-4 py-3',

@@ -9,6 +9,7 @@ import { ONBOARDING_ROLES, type OnboardingRole } from '@/app/settings/preference
 import WelcomeChoice from './WelcomeChoice.vue'
 
 const role = defineModel<OnboardingRole>({ required: true })
+const name = defineModel<string>('name', { required: true })
 const { welcome } = useI18n()
 
 const choices = computed(() => {
@@ -25,6 +26,20 @@ const choices = computed(() => {
 
 <template>
   <div>
+    <label class="mb-7 block">
+      <span class="mb-2 block text-[13px] font-semibold text-surface">{{ welcome.nameLabel }}</span>
+      <input
+        v-model="name"
+        type="text"
+        name="given-name"
+        autocomplete="given-name"
+        maxlength="40"
+        :placeholder="welcome.namePlaceholder"
+        class="h-11 w-full rounded-xl border border-border bg-panel/70 px-4 text-[15px] text-surface backdrop-blur-xl transition-[border-color,box-shadow] duration-150 outline-none placeholder:text-muted/70 hover:border-muted/50 focus:border-accent focus:shadow-[0_0_0_3px] focus:shadow-accent/20"
+        data-test-id="welcome-name"
+      />
+      <span class="mt-1.5 block text-xs text-muted">{{ welcome.nameHint }}</span>
+    </label>
     <p id="welcome-role-question" class="mb-3 text-[13px] font-semibold text-surface">
       {{ welcome.roleQuestion }}
     </p>

@@ -1,6 +1,6 @@
 const tabBarTheme = {
   slots: {
-    root: 'flex h-9 shrink-0 items-end border-b border-border bg-canvas',
+    root: 'flex h-9 shrink-0 items-end border-b border-border/70 bg-canvas/35 backdrop-blur-2xl',
     // Sized by its tabs until the bar runs out of room; then it scrolls and fades the clipped side.
     scroller:
       'scrollbar-none h-full min-w-0 scroll-px-8 overflow-x-auto data-overflow-end:mask-r-from-[calc(100%-2rem)] data-overflow-start:mask-l-from-[calc(100%-2rem)]',
@@ -24,8 +24,8 @@ const tabBarTheme = {
   variants: {
     active: {
       true: {
-        item: 'bg-panel text-surface',
-        trigger: 'bg-panel text-surface',
+        item: 'glass text-surface',
+        trigger: 'text-surface',
         close: 'opacity-100'
       },
       false: {
