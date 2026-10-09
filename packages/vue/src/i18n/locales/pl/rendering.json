@@ -3,6 +3,8 @@
   "settingsDescription": "Wybierz sposób wyświetlania dużych obszarów roboczych w Kalka.",
   "progressiveTiled": "Renderowanie progresywne",
   "progressiveTiledDescription": "Aktualizuje duże płótna w mniejszych kafelkach podczas nawigacji.",
+  "documentPageColor": "Własne tło strony",
+  "documentPageColorDescription": "Pokazuj za artboardami kolor tła zapisany w każdej stronie zamiast płótna Kalki.",
   "reloadRequired": "Wczytaj ponownie Kalka, aby zastosować tę zmianę.",
   "wideGamutUnavailable": "Ten ekran lub przeglądarka nie obsługuje kolorów Display-P3, więc kanwa wyświetla je w sRGB. Dokument zachowuje swoją przestrzeń kolorów.",
   "urlOverride": "Renderer bieżącej sesji jest kontrolowany przez parametr URL. Zapisana preferencja zostanie użyta po usunięciu parametru.",

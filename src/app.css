@@ -111,6 +111,7 @@
   --backdrop-grain: 0.08;
   --backdrop-grain-blend: screen;
   --toolbar-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
+  --loader-tile-border: rgb(255 255 255 / 0.16);
 }
 
 @keyframes kalka-backdrop-drift {
@@ -125,6 +126,31 @@
 
 @utility animate-backdrop-drift-reverse {
   animation: kalka-backdrop-drift 19s ease-in-out -8s infinite alternate-reverse;
+}
+
+/*
+ * Brand loader: Kalka's K, cut out of a glass tile, filling with blue liquid as at boot
+ * (index.html). The K is a mask of the mono mark, so the shape stays the brand asset.
+ */
+@utility mask-brand-k {
+  mask-image: url('/brand/mark-mono.svg');
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+}
+
+@keyframes kalka-liquid-fill {
+  from {
+    transform: translateY(100%);
+  }
+  72%,
+  to {
+    transform: translateY(0);
+  }
+}
+
+@utility animate-liquid-fill {
+  animation: kalka-liquid-fill 1.8s cubic-bezier(0.45, 0, 0.2, 1) infinite;
 }
 
 /* Frosted glass for the app's panels and bars over the backdrop. */
@@ -197,6 +223,8 @@
   --color-panel-selected: #2f5bea;
   --color-panel-selected-muted: #1e2540;
   --color-canvas: #0f0f12;
+  /* Behind the artboards, unless the person shows the document's own page color. */
+  --color-design-canvas: #1a1b20;
   --color-border: #2a2a30;
   --color-hover: #222227;
   --color-accent: #2f5bea;
@@ -234,6 +262,7 @@
 }
 
 html[data-theme='light'] {
+  --loader-tile-border: rgb(255 255 255 / 0.6);
   --pill-active-bg: color-mix(in srgb, white 92%, transparent);
   --pill-active-shadow: 0 1px 2px rgb(20 20 40 / 0.08);
   --pill-hover-bg: color-mix(in srgb, white 45%, transparent);
@@ -272,6 +301,7 @@ html[data-theme='light'] {
   --color-panel-selected: #2f5bea;
   --color-panel-selected-muted: #dde3f5;
   --color-canvas: #e2e3df;
+  --color-design-canvas: #ececee;
   --color-border: #d3d3cc;
   --color-hover: #e5e5e0;
   --color-accent: #2f5bea;

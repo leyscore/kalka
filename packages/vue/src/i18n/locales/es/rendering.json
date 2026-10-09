@@ -3,6 +3,8 @@
   "settingsDescription": "Elige cómo presenta Kalka los lienzos grandes.",
   "progressiveTiled": "Renderizado progresivo",
   "progressiveTiledDescription": "Actualiza los lienzos grandes en mosaicos más pequeños mientras navegas.",
+  "documentPageColor": "Fondo propio de la página",
+  "documentPageColorDescription": "Mostrar detrás de los artboards el color de fondo guardado en cada página, en lugar del lienzo de Kalka.",
   "reloadRequired": "Recarga Kalka para aplicar este cambio.",
   "wideGamutUnavailable": "Esta pantalla o este navegador no pueden mostrar colores Display-P3, así que el lienzo los previsualiza en sRGB. El documento conserva su espacio de color.",
   "urlOverride": "El renderizador de esta sesión está controlado por un parámetro de URL. Tu preferencia guardada se aplicará al eliminarlo.",

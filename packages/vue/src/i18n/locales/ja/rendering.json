@@ -3,6 +3,8 @@
   "settingsDescription": "大きなキャンバスを Kalka で表示する方法を選択します。",
   "progressiveTiled": "段階的な描画",
   "progressiveTiledDescription": "移動中に大きなキャンバスを小さなタイルに分けて更新します。",
+  "documentPageColor": "ページ固有の背景",
+  "documentPageColorDescription": "Kalka のキャンバスの代わりに、各ページに保存された背景色をアートボードの後ろに表示します。",
   "reloadRequired": "この変更を適用するには Kalka を再読み込みしてください。",
   "wideGamutUnavailable": "このディスプレイまたはブラウザーは Display-P3 の色を表示できないため、キャンバスでは sRGB でプレビューします。ドキュメントのカラースペースは保持されます。",
   "urlOverride": "現在のセッションのレンダラーは URL パラメーターで指定されています。保存した設定はパラメーターを削除すると適用されます。",

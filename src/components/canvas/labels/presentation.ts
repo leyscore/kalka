@@ -3,6 +3,8 @@ import type { Editor } from '@open-pencil/core/editor'
 import type { Color, SceneNode } from '@open-pencil/scene-graph'
 import type { CanvasLabelKind } from '@open-pencil/vue'
 
+import { canvasBackgroundColor } from '@/app/editor/canvas/background'
+
 export interface CanvasLabelPresentation {
   background: Color
   foreground: 'dark' | 'light'
@@ -27,6 +29,9 @@ export function canvasLabelPresentation(
     node && fill?.visible
       ? (editor.renderer?.resolveFillColor(fill, 0, node, editor.graph) ?? fill.color)
       : DEFAULT_LABEL_BACKGROUND
-  const foreground = canvasLabelForeground(background, editor.state.pageColor)
+  const foreground = canvasLabelForeground(
+    background,
+    canvasBackgroundColor(editor.state.pageColor)
+  )
   return { background, foreground: foreground.r === 0 ? 'dark' : 'light' }
 }

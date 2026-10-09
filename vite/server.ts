@@ -39,7 +39,12 @@ export function createDevServerOptions(host: string | undefined, rootDir: string
     forwardConsole: { unhandledErrors: true, logLevels: ['error'] },
     watch: {
       // Ignore nested checkouts, not an active checkout whose own path contains .worktrees.
-      ignored: [...WATCH_IGNORED, `${normalizePath(resolve(rootDir, '.worktrees'))}/**`]
+      ignored: [
+        ...WATCH_IGNORED,
+        `${normalizePath(resolve(rootDir, '.worktrees'))}/**`,
+        // Agent worktrees are whole checkouts; their edits must not reload this app.
+        `${normalizePath(resolve(rootDir, '.claude'))}/**`
+      ]
     }
   }
 }

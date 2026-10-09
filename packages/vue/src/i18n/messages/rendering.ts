@@ -5,6 +5,9 @@ export const renderingMessageDefaults = {
   settingsDescription: 'Choose how Kalka presents large canvases.',
   progressiveTiled: 'Progressive rendering',
   progressiveTiledDescription: 'Updates large canvases in smaller tiles as you navigate.',
+  documentPageColor: "Page's own background",
+  documentPageColorDescription:
+    "Show the background color saved in each page behind the artboards, instead of Kalka's canvas.",
   experimental: 'Experimental',
   reloadRequired: 'Reload Kalka to apply this change.',
   wideGamutUnavailable:

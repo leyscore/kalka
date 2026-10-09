@@ -70,6 +70,9 @@ export function useMCPClients() {
       ])
       clients.value = list
       bridge.value = command
+    } catch {
+      // A main process older than this page lists no clients; the config to paste still shows.
+      clients.value = []
     } finally {
       loading.value = false
     }

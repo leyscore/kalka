@@ -472,3 +472,5 @@ zh-cn:automation.clientsDescription
 zh-cn:automation.clientRestartHint
 zh-cn:automation.otherClientTitle
 zh-cn:automation.otherClientDescription
+ja:rendering.documentPageColorDescription
+zh-cn:rendering.documentPageColorDescription

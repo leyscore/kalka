@@ -10,6 +10,7 @@ import {
   type PlacedIssueMarker
 } from '@open-pencil/core/canvas'
 import type { Editor, EditorState } from '@open-pencil/core/editor'
+import type { Color } from '@open-pencil/scene-graph'
 import type { Rect } from '@open-pencil/scene-graph/primitives'
 
 import { composeOverlay } from '#vue/canvas/svg-overlay/compose'
@@ -25,6 +26,8 @@ export interface UseSVGOverlayOptions {
   showRulers?: () => boolean
   /** UI floating over the canvas, in its CSS pixels, which edge-pinned markers keep clear of. */
   getOverlayObstacles?: () => readonly Rect[]
+  /** The color behind the artboards, when the app shows its own instead of the page's. */
+  getCanvasColor?: (pageColor: Color) => Color
 }
 
 /** Text widths as the overlay draws them, with the app's interface font. */
@@ -81,6 +84,7 @@ export function useSVGOverlay(
     const animating = flashes.length > 0 || aiMarks.done.length > 0 || renderer?._aiActiveNodes.size
     const showRulers = options.showRulers?.() ?? false
     const obstacles = options.getOverlayObstacles?.() ?? []
+    const canvasColor = options.getCanvasColor?.(state.pageColor) ?? state.pageColor
     const width = element.clientWidth
     const height = element.clientHeight
     const key = [
@@ -95,7 +99,7 @@ export function useSVGOverlay(
       state.designIssues,
       state.presenceCursors,
       state.guides,
-      state.pageColor,
+      canvasColor,
       state.rulerTheme,
       showRulers,
       width,
@@ -118,7 +122,7 @@ export function useSVGOverlay(
       sceneVersion: state.sceneVersion,
       viewportSize: { width, height },
       dpr: window.devicePixelRatio,
-      pageColor: state.pageColor,
+      pageColor: canvasColor,
       labels,
       showRulers,
       rulerTheme: state.rulerTheme,

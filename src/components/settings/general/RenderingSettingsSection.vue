@@ -4,8 +4,13 @@ import { computed } from 'vue'
 import { useI18n } from '@open-pencil/vue'
 
 import { appRuntimeConfig } from '@/app/runtime/config'
-import { appPreferences, updateCanvasRenderingMode } from '@/app/settings/preferences/store'
+import {
+  appPreferences,
+  updateCanvasBackground,
+  updateCanvasRenderingMode
+} from '@/app/settings/preferences/store'
 import SettingsGroup from '@/components/settings/layout/SettingsGroup.vue'
+import SettingsRow from '@/components/settings/layout/SettingsRow.vue'
 import SettingsSection from '@/components/settings/layout/SettingsSection.vue'
 import AppAlert from '@/components/ui/feedback/AppAlert.vue'
 import AppBadge from '@/components/ui/feedback/AppBadge.vue'
@@ -18,6 +23,14 @@ const changed = computed(
   () => appPreferences.value.rendering.canvasMode !== appRuntimeConfig.sceneRenderer
 )
 
+const documentPageColor = computed(
+  () => appPreferences.value.rendering.canvasBackground === 'document'
+)
+
+function setDocumentPageColor(enabled: boolean): void {
+  updateCanvasBackground(enabled ? 'document' : 'kalka')
+}
+
 function setTiledRendering(enabled: boolean): void {
   updateCanvasRenderingMode(enabled ? 'tiled' : 'retained')
 }
@@ -29,6 +42,17 @@ function setTiledRendering(enabled: boolean): void {
     <template #description>{{ rendering.settingsDescription }}</template>
 
     <SettingsGroup>
+      <SettingsRow
+        :label="rendering.documentPageColor"
+        :description="rendering.documentPageColorDescription"
+      >
+        <AppSwitch
+          :model-value="documentPageColor"
+          :label="rendering.documentPageColor"
+          data-test-id="settings-document-page-color"
+          @update:model-value="setDocumentPageColor"
+        />
+      </SettingsRow>
       <label class="flex items-center justify-between gap-4 px-3 py-2.5">
         <span>
           <span class="flex flex-wrap items-center gap-2 text-xs text-surface">

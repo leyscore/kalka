@@ -42,6 +42,7 @@ import {
 
 import { useAIChat } from '@/app/ai/chat/use'
 import { useEditorStore } from '@/app/editor/active-store'
+import { canvasBackgroundColor, showsKalkaCanvas } from '@/app/editor/canvas/background'
 import { useCanvasCollaborationAwareness } from '@/app/editor/canvas/collaboration-awareness'
 import { createCanvasContextSelection } from '@/app/editor/canvas/context-selection'
 import { canvasOverlayObstacles } from '@/app/editor/canvas/obstacles'
@@ -84,8 +85,10 @@ function updatePaneCursor(cx: number, cy: number) {
 const getRenderState = paneId ? () => store.getPaneRenderState(paneId) : undefined
 /** This pane's view: its pan, zoom, page, and whether it previews. */
 const paneView = computed(() => (paneId ? store.getPaneRenderState(paneId) : store.state))
-/** The page color the DOM scene shows behind the artboards; Skia draws it itself. */
-const pageBackground = computed(() => colorToCSS(store.state.pageColor))
+/** What the DOM scene shows behind the artboards; Skia draws the page color itself. */
+const pageBackground = computed(() =>
+  showsKalkaCanvas.value ? 'var(--color-design-canvas)' : colorToCSS(store.state.pageColor)
+)
 const onViewportResize = (width: number, height: number) => {
   if (paneId) store.resizePane(paneId, width, height)
   if (isActivePane.value) store.setViewportSize(width, height)
@@ -159,7 +162,8 @@ const svgOverlay = domScene
       getRenderState,
       showRulers: () =>
         appRuntimeConfig.showRulers && store.state.showRulers && paneView.value.play === null,
-      getOverlayObstacles: () => canvasOverlayObstacles(canvasRef.value)
+      getOverlayObstacles: () => canvasOverlayObstacles(canvasRef.value),
+      getCanvasColor: canvasBackgroundColor
     })
   : null
 // Over the DOM scene, names are hit tested where the SVG overlay drew them.

@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import { ProgressIndicator, ProgressRoot } from 'reka-ui'
 import { computed } from 'vue'
 
 import type { EditorPreparation } from '@/app/editor/preparation/types'
-import { resolvedAppTheme } from '@/app/shell/theme'
-import BrandMark from '@/components/brand/BrandMark.vue'
+import BrandLoader from '@/components/brand/BrandLoader.vue'
 import { preparationLabel, preparationPercent } from '@/components/preparation/presentation'
 
 const { preparation } = defineProps<{
@@ -13,46 +11,34 @@ const { preparation } = defineProps<{
 
 const label = computed(() => preparationLabel(preparation))
 const progressValue = computed(() => preparationPercent(preparation.progress))
-const progressSteps = computed(() => Math.round(progressValue.value ?? 0))
 </script>
 
 <template>
-  <Transition leave-active-class="transition-opacity duration-300" leave-to-class="opacity-0">
+  <Transition
+    leave-active-class="transition-[opacity,filter] duration-300"
+    leave-to-class="opacity-0 blur-sm"
+  >
     <div
       data-test-id="canvas-loading"
       role="status"
       aria-live="polite"
       :aria-label="label"
-      class="absolute inset-0 z-50 flex items-center justify-center bg-canvas"
+      class="absolute inset-0 z-50 flex items-center justify-center bg-design-canvas"
     >
-      <div class="flex w-72 flex-col items-center gap-3 text-center">
-        <BrandMark variant="app-icon" :appearance="resolvedAppTheme" decorative class="size-12" />
+      <div class="flex w-72 flex-col items-center gap-4 text-center">
+        <BrandLoader :progress="progressValue" />
         <div class="space-y-1">
-          <p class="text-sm font-medium text-surface/80">{{ label }}</p>
+          <p class="text-[13px] font-medium text-surface/85">{{ label }}</p>
           <p v-if="preparation.detail" class="truncate text-xs text-surface/45">
             {{ preparation.detail }}
           </p>
+          <p
+            v-if="progressValue !== null"
+            class="font-mono text-[11px] tabular-nums text-surface/45"
+          >
+            {{ preparation.progress?.completed }} / {{ preparation.progress?.total }}
+          </p>
         </div>
-        <ProgressRoot
-          :model-value="progressValue"
-          class="h-0.5 w-25 overflow-hidden rounded-full bg-surface/8"
-        >
-          <ProgressIndicator
-            v-if="progressValue === null"
-            class="h-full w-2/5 animate-[slide_1s_ease-in-out_infinite] motion-reduce:animate-none rounded-full bg-surface/25"
-          />
-          <div v-else class="flex h-full w-full">
-            <span
-              v-for="step in 100"
-              :key="step"
-              :data-complete="step <= progressSteps"
-              class="h-full flex-1 bg-transparent transition-colors duration-150 data-[complete=true]:bg-surface/35"
-            />
-          </div>
-        </ProgressRoot>
-        <p v-if="progressValue !== null" class="text-xs tabular-nums text-surface/45">
-          {{ preparation.progress?.completed }} of {{ preparation.progress?.total }}
-        </p>
       </div>
     </div>
   </Transition>

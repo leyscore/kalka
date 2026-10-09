@@ -37,6 +37,7 @@ const appDefaults = {
   use: {
     baseURL: origin,
     // Tests start past the first-run welcome, tour and AI setup offer; their specs clear this.
+    // Canvas snapshots draw each page's own background, which `CanvasHelper` sets.
     storageState: {
       cookies: [],
       origins: [
@@ -47,7 +48,8 @@ const appDefaults = {
               name: 'open-pencil:preferences:v1',
               value: JSON.stringify({
                 version: 1,
-                onboarding: { aiSetup: 'done', welcome: 'done', tour: 'done' }
+                onboarding: { aiSetup: 'done', welcome: 'done', tour: 'done' },
+                rendering: { canvasMode: 'retained', canvasBackground: 'document' }
               })
             }
           ]

@@ -17,6 +17,9 @@ export const CHANGE_PREVIEW_SIZES = ['off', 'small', 'medium', 'large'] as const
 export type ChangePreviewSize = (typeof CHANGE_PREVIEW_SIZES)[number]
 
 export const CANVAS_RENDERING_MODES = ['retained', 'tiled'] as const
+/** What shows behind the artboards: Kalka's canvas color, or the page color the document saved. */
+export const CANVAS_BACKGROUNDS = ['kalka', 'document'] as const
+export type CanvasBackground = (typeof CANVAS_BACKGROUNDS)[number]
 export type CanvasRenderingMode = (typeof CANVAS_RENDERING_MODES)[number]
 
 export const DESIGN_CHECK_PRESETS = ['recommended', 'strict', 'accessibility'] as const
@@ -64,6 +67,7 @@ export interface AppPreferences {
   }
   rendering: {
     canvasMode: CanvasRenderingMode
+    canvasBackground: CanvasBackground
   }
   designCheck: DesignCheckPreferences
   onboarding: {
@@ -90,7 +94,7 @@ export const DEFAULT_APP_PREFERENCES: Readonly<AppPreferences> = {
   editing: {
     snapping: { ...DEFAULT_SNAPPING_PREFERENCES }
   },
-  rendering: { canvasMode: 'retained' },
+  rendering: { canvasMode: 'retained', canvasBackground: 'kalka' },
   designCheck: { showOnCanvas: true, preset: 'recommended', disabledRules: [] },
   onboarding: { aiSetup: 'pending', welcome: 'pending', tour: 'pending', role: null },
   code: { defaultSource: 'html-css' }
@@ -134,7 +138,11 @@ const appPreferencesSchema = section({
     })
   }),
   rendering: section({
-    canvasMode: v.fallback(v.picklist(CANVAS_RENDERING_MODES), defaults.rendering.canvasMode)
+    canvasMode: v.fallback(v.picklist(CANVAS_RENDERING_MODES), defaults.rendering.canvasMode),
+    canvasBackground: v.fallback(
+      v.picklist(CANVAS_BACKGROUNDS),
+      defaults.rendering.canvasBackground
+    )
   }),
   designCheck: section({
     showOnCanvas: v.fallback(v.boolean(), defaults.designCheck.showOnCanvas),
@@ -197,7 +205,14 @@ export function updateDefaultCodeSource(defaultSource: DefaultCodeSource): void 
 export function updateCanvasRenderingMode(canvasMode: CanvasRenderingMode): void {
   appPreferences.value = {
     ...appPreferences.value,
-    rendering: { canvasMode }
+    rendering: { ...appPreferences.value.rendering, canvasMode }
+  }
+}
+
+export function updateCanvasBackground(canvasBackground: CanvasBackground): void {
+  appPreferences.value = {
+    ...appPreferences.value,
+    rendering: { ...appPreferences.value.rendering, canvasBackground }
   }
 }
 
