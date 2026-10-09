@@ -35,7 +35,7 @@ const choices = computed(() => {
         autocomplete="given-name"
         maxlength="40"
         :placeholder="welcome.namePlaceholder"
-        class="h-11 w-full rounded-xl border border-border bg-panel/70 px-4 text-[15px] text-surface backdrop-blur-xl transition-[border-color,box-shadow] duration-150 outline-none placeholder:text-muted/70 hover:border-muted/50 focus:border-accent focus:shadow-[0_0_0_3px] focus:shadow-accent/20"
+        class="h-11 w-full rounded-[12px] border border-glass-border bg-glass px-4 text-[15px] text-surface backdrop-blur-[24px] transition-[border-color,box-shadow] duration-200 outline-none placeholder:text-muted focus:border-accent/50 focus:shadow-[0_0_0_4px_color-mix(in_srgb,var(--color-accent)_14%,transparent)]"
         data-test-id="welcome-name"
       />
       <span class="mt-1.5 block text-xs text-muted">{{ welcome.nameHint }}</span>

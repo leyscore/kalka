@@ -8,7 +8,7 @@ const { value, label, hint } = defineProps<{ value: string; label: string; hint?
 <template>
   <RadioGroupItem
     :value="value"
-    class="group flex w-full items-center gap-3.5 rounded-xl border border-border bg-panel px-4 py-3 text-left transition-[border-color,background-color,box-shadow] duration-150 outline-none hover:border-muted/50 focus-visible:ring-2 focus-visible:ring-accent/50 data-[state=checked]:border-accent data-[state=checked]:bg-accent/10 data-[state=checked]:shadow-[0_0_0_1px_var(--color-accent)]"
+    class="group flex w-full items-center gap-3.5 rounded-[14px] border border-transparent bg-card px-4 py-3 text-left transition-[border-color,background-color] duration-150 outline-none hover:bg-card-hover focus-visible:ring-2 focus-visible:ring-accent/50 data-[state=checked]:border-accent/70 data-[state=checked]:bg-row-selected/60"
   >
     <span
       class="grid size-4 shrink-0 place-items-center rounded-full border-[1.5px] border-muted/70 transition-colors group-data-[state=checked]:border-accent"

@@ -141,7 +141,7 @@ function onOpenChange(open: boolean): void {
                 size="lg"
                 color="primary"
                 variant="solid"
-                class="h-11 rounded-lg px-6 text-sm"
+                class="h-10 rounded-[9px] px-5 text-[13px] font-semibold"
                 data-test-id="welcome-continue"
                 @click="go(1)"
               >
