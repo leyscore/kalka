@@ -39,6 +39,7 @@
 
 ### Added
 
+- MCP and the AI chat can work in HTML: `write_html` adds HTML and CSS to the design as editable layers, `get_html` reads a layer back as HTML, `update_styles` changes a layer with CSS declarations, and `get_screenshot` shows the result as an image.
 - Pasting HTML copied from a web page, or HTML source copied as text from a code editor, adds it to the canvas as editable layers.
 - A three-step welcome on first launch asks what you came for, sets the theme and the code the Code tab opens on, and shows how to connect Claude Code, Claude Desktop or another MCP client, with a live connection status. In the desktop app, **Connect** adds Kalka to Claude Desktop's configuration, keeping its other servers and a backup of the previous file.
 - The home screen starts a design at a device size, opens a `.fig` or `.html` file, a pasted piece of HTML or a file from a URL, and opens the sample file or a one-minute tour of the editor.

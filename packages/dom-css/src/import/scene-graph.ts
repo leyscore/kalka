@@ -375,6 +375,31 @@ function applyTextStyle(node: SceneNode, style: DesignStyleDeclaration): void {
   if (pickStyle(style, 'white-space') === 'nowrap') node.maxLines = 1
 }
 
+/**
+ * What CSS declarations change on a layer: the fields they set, and only those that differ, so
+ * a partial update such as `{ "padding": "24px" }` leaves the rest of the layer as it was.
+ */
+export function cssToNodeChanges(
+  graph: SceneGraph,
+  node: SceneNode,
+  declarations: DesignStyleDeclaration
+): Partial<SceneNode> {
+  const draft = structuredClone(node)
+  if (node.type === 'TEXT') applyTextStyle(draft, declarations)
+  else {
+    const element: DesignElement = { type: 'element', tagName: 'div', attrs: {}, children: [] }
+    applyElementStyle(graph, draft, element, declarations)
+  }
+  // The text mapping reads a missing font-style as upright; here it means "leave it".
+  if (!('font-style' in declarations)) draft.italic = node.italic
+  const changes: Partial<SceneNode> = {}
+  for (const key of Object.keys(draft) as (keyof SceneNode)[]) {
+    if (JSON.stringify(draft[key]) !== JSON.stringify(node[key]))
+      Object.assign(changes, { [key]: draft[key] })
+  }
+  return changes
+}
+
 function createTextNode(
   graph: SceneGraph,
   parentId: string,

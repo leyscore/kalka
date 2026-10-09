@@ -10,7 +10,7 @@ export {
   tailwindHTMLToDesignDocument,
   tailwindHTMLToSceneGraph
 } from './import/html'
-export { designDocumentToSceneGraph } from './import/scene-graph'
+export { cssToNodeChanges, designDocumentToSceneGraph } from './import/scene-graph'
 export { sceneGraphToDesignDocument, sceneNodeToDesignDocument } from './export/projection'
 export {
   designDocumentToTailwindJSX,
