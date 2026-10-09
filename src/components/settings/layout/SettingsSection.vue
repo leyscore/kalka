@@ -9,7 +9,7 @@ const headingId = useId()
     <div class="flex min-h-7 items-center justify-between gap-4 px-0.5">
       <div class="min-w-0 flex-1">
         <h3 :id="headingId" class="text-[11px] font-medium text-muted"><slot name="title" /></h3>
-        <p v-if="$slots.description" class="mt-0.5 text-[11px] leading-relaxed text-faint">
+        <p v-if="$slots.description" class="mt-0.5 text-[11px] leading-relaxed text-muted">
           <slot name="description" />
         </p>
       </div>

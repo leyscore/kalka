@@ -236,6 +236,7 @@
   --color-float: rgb(32 33 42 / 0.86);
   --color-float-border: rgb(255 255 255 / 0.1);
   --color-group: rgb(255 255 255 / 0.035);
+  --color-code-bg: rgb(0 0 0 / 0.28);
   --color-component: #bb8cff;
   --color-slot: #f45cc4;
   --color-warning-bg: rgb(245 158 11 / 0.1);
@@ -309,7 +310,7 @@ html[data-theme='light'] {
   --color-canvas: #e2e3df;
   --color-design-canvas: #ececee;
   --color-border: rgb(20 20 40 / 0.11);
-  --color-hover: rgb(20 20 40 / 0.05);
+  --color-hover: rgb(20 20 40 / 0.04);
   --color-accent: #2f5bea;
   --color-primary: #2448c4;
   --color-inverted: #efefec;
@@ -320,6 +321,7 @@ html[data-theme='light'] {
   --color-float: rgb(250 250 248 / 0.88);
   --color-float-border: rgb(20 20 40 / 0.1);
   --color-group: rgb(255 255 255 / 0.5);
+  --color-code-bg: rgb(20 20 40 / 0.04);
   --color-component: #7c3aed;
   --color-slot: #db2777;
   --color-warning-bg: rgb(245 158 11 / 0.14);

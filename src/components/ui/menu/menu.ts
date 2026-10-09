@@ -9,7 +9,7 @@ export const menu = tv({
     item: 'flex min-h-7 cursor-pointer items-center gap-2 rounded-[7px] px-2.5 py-1 text-xs outline-none select-none data-[disabled]:cursor-default data-[disabled]:text-muted/50',
     separator: 'mx-1.5 my-1 h-px bg-hairline',
     label: 'px-2.5 pt-1.5 pb-1 text-[11px] text-muted select-none',
-    shortcut: 'text-[11px] text-faint',
+    shortcut: 'text-[11px] text-muted',
     icon: 'size-3 text-muted',
     subTrigger:
       'flex min-h-7 cursor-pointer items-center gap-2 rounded-[7px] px-2.5 py-1 text-xs outline-none select-none'

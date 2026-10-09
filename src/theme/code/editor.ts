@@ -39,7 +39,7 @@ export function codeEditorTheme(dark: boolean) {
         '.cm-line': { padding: '0 8px' },
         '.cm-gutters': {
           backgroundColor: 'transparent',
-          color: 'var(--color-faint)',
+          color: 'var(--color-muted)',
           border: 'none'
         },
         '.cm-lineNumbers .cm-gutterElement': { padding: '0 4px 0 8px', minWidth: '24px' },

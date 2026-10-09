@@ -5,7 +5,7 @@
 .stream-markdown {
   --accent: var(--color-hover);
   --accent-foreground: var(--color-surface);
-  --background: var(--color-input);
+  --background: var(--color-code-bg);
   --border: var(--color-border);
   --foreground: var(--color-surface);
   --muted: var(--color-hover);
