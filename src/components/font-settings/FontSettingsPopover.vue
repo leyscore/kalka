@@ -110,7 +110,9 @@ onMounted(() => {
             </div>
           </div>
 
-          <div class="grid gap-1.5 rounded-[10px] border border-hairline bg-group p-2.5 text-[11px]">
+          <div
+            class="grid gap-1.5 rounded-[10px] border border-hairline bg-group p-2.5 text-[11px]"
+          >
             <div class="flex justify-between gap-3 text-muted">
               <span>{{ fonts.localFonts }}</span>
               <span class="text-surface">{{ accessStateLabel }}</span>
@@ -132,7 +134,9 @@ onMounted(() => {
           </div>
 
           <div class="space-y-1.5">
-            <div class="grid grid-cols-[1fr_auto] gap-2 rounded-[10px] border border-hairline bg-group p-2.5">
+            <div
+              class="grid grid-cols-[1fr_auto] gap-2 rounded-[10px] border border-hairline bg-group p-2.5"
+            >
               <div>
                 <p class="text-[10px] font-medium text-surface">{{ fonts.systemFontAccess }}</p>
                 <p class="mt-0.5 text-[10px] leading-relaxed text-muted">

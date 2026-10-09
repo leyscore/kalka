@@ -15,7 +15,8 @@ const appComboboxTheme = {
       floatingSurface,
       motionStyles.floating
     ],
-    search: 'relative m-1 flex h-7 items-center rounded-[7px] border border-transparent bg-panel-field',
+    search:
+      'relative m-1 flex h-7 items-center rounded-[7px] border border-transparent bg-panel-field',
     input:
       'h-full min-w-0 flex-1 bg-transparent pr-2 pl-7 text-[11px] text-surface outline-none placeholder:text-muted',
     searchIcon: 'pointer-events-none absolute left-2 size-3 text-muted',

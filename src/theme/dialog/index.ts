@@ -7,7 +7,8 @@ export default {
       'fixed top-1/2 left-1/2 z-50 flex max-h-[min(90vh,48rem)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-[16px] bg-float text-surface shadow-[0_0_0_1px_var(--color-float-border),var(--float-shadow)] backdrop-blur-[28px] backdrop-saturate-150 outline-none data-[state=open]:zoom-in-98 data-[state=closed]:zoom-out-98',
       motionStyles.overlay
     ],
-    header: 'flex shrink-0 items-start justify-between gap-3 border-b border-hairline px-5 pt-4 pb-3.5',
+    header:
+      'flex shrink-0 items-start justify-between gap-3 border-b border-hairline px-5 pt-4 pb-3.5',
     heading: 'min-w-0',
     title:
       'font-display text-[15px] font-semibold tracking-[-0.01em] text-surface data-[visually-hidden=true]:sr-only',

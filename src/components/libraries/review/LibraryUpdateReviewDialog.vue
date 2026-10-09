@@ -208,7 +208,9 @@ watch([request, currentInstanceId], () => void loadPreview(), { immediate: true 
           />
         </div>
       </section>
-      <div class="absolute bottom-3 left-3 flex items-center gap-3 rounded-[9px] border border-float-border bg-float p-1 shadow-(--float-shadow) backdrop-blur-[28px]">
+      <div
+        class="absolute bottom-3 left-3 flex items-center gap-3 rounded-[9px] border border-float-border bg-float p-1 shadow-(--float-shadow) backdrop-blur-[28px]"
+      >
         <SegmentedControl
           v-model="mode"
           :options="modeOptions"
