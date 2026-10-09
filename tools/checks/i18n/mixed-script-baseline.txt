@@ -415,7 +415,6 @@ ja:welcome.statusStarting
 ja:welcome.statusOff
 ja:welcome.statusWeb
 ja:welcome.toolsIntro
-ja:welcome.toolRender
 ja:welcome.privacy
 ja:welcome.setUpChat
 ja:welcome.homeTitle
@@ -454,7 +453,6 @@ zh-cn:welcome.statusStarting
 zh-cn:welcome.statusOff
 zh-cn:welcome.statusWeb
 zh-cn:welcome.toolsIntro
-zh-cn:welcome.toolRender
 zh-cn:welcome.privacy
 zh-cn:welcome.setUpChat
 zh-cn:welcome.homeTitle
@@ -474,3 +472,9 @@ zh-cn:welcome.tourAITitle
 zh-cn:welcome.tourAIBody
 ja:welcome.desktopConnected
 zh-cn:welcome.desktopConnected
+ja:welcome.toolWriteHTML
+ja:welcome.toolUpdateStyles
+ja:welcome.toolGetHTML
+zh-cn:welcome.toolWriteHTML
+zh-cn:welcome.toolUpdateStyles
+zh-cn:welcome.toolGetHTML

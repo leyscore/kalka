@@ -38,10 +38,10 @@ async function connectDesktop(): Promise<void> {
 
 const TOOLS = [
   ['get_page_tree', 'toolPageTree'],
-  ['render', 'toolRender'],
-  ['get_jsx', 'toolJSX'],
-  ['export_image', 'toolExportImage'],
-  ['find_nodes', 'toolFind']
+  ['write_html', 'toolWriteHTML'],
+  ['update_styles', 'toolUpdateStyles'],
+  ['get_screenshot', 'toolExportImage'],
+  ['get_html', 'toolGetHTML']
 ] as const
 </script>
 
