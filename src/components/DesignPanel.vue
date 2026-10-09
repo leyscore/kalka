@@ -37,6 +37,7 @@ import PageSection from './properties/PageSection.vue'
 import RetainedPanel from './properties/panel/RetainedPanel.vue'
 import PositionSection from './properties/PositionSection.vue'
 import SelectionActionsControl from './properties/SelectionActionsControl.vue'
+import ShaderSection from './properties/ShaderSection.vue'
 import StrokeSection from './properties/stroke/StrokeSection.vue'
 import TypographySection from './properties/TypographySection.vue'
 import VariablesSection from './properties/VariablesSection.vue'
@@ -202,6 +203,7 @@ const { panels } = useI18n()
       <StrokeSection />
       <LayoutGridSection v-if="supportsLayoutGuides" />
       <EffectsSection />
+      <ShaderSection />
 
       <ExportSection />
     </div>

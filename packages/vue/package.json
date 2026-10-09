@@ -50,6 +50,7 @@
     "@vueuse/core": "^14.4.0",
     "es-toolkit": "^1.52.0",
     "fuse.js": "^7.5.0",
+    "@paper-design/shaders": "0.0.81",
     "js-base64": "^3.9.3",
     "nanostores": "^1.5.4",
     "prosemirror-commands": "1.7.2",

@@ -325,3 +325,10 @@ it:automation.serverType
 it:automation.authenticationBearer
 pl:automation.authenticationBearer
 fr:panels.versions
+de:panels.shader
+es:panels.shader
+fr:panels.shader
+fr:panels.shaderGrain
+fr:panels.shaderProportion
+it:panels.shader
+pl:panels.shader

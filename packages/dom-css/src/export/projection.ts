@@ -341,6 +341,17 @@ function addLayoutChild(
   if (node.rotation !== 0) style.transform = `rotate(${node.rotation}deg)`
 }
 
+/**
+ * A shader layer's stand-in where no shader runs, such as in a static export: its colors as a
+ * gradient. On the canvas the shader's own drawing covers it.
+ */
+function addShaderFallback(style: DesignStyleDeclaration, node: SceneNode): void {
+  const colors = node.shader?.colors ?? []
+  if (colors.length === 0 || style['background-image']) return
+  const stops = colors.length === 1 ? [colors[0], colors[0]] : colors
+  style['background-image'] = `linear-gradient(135deg, ${stops.map(cssColor).join(', ')})`
+}
+
 function styleFromSceneNode(
   node: SceneNode,
   parent: SceneNode | undefined,
@@ -357,6 +368,7 @@ function styleFromSceneNode(
     if (fill) style['background-color'] = css('fills/0/color', fill)
   }
   addImageStyle(style, node)
+  addShaderFallback(style, node)
   addStroke(style, node, css)
   Object.assign(style, effectsToCSS(node.effects))
   if (node.opacity < 1) style.opacity = css('opacity', String(node.opacity))
@@ -464,6 +476,11 @@ function attrsForNode(
     : {}
   const sourceURL = imageSourceURL(node)
   if (sourceURL) attrs.src = sourceURL
+  if (node.shader) {
+    // Paper Shaders mounts on elements marked so; the layer's settings travel with the export.
+    attrs['data-paper-shader'] = ''
+    attrs['data-kalka-shader'] = JSON.stringify(node.shader)
+  }
   const fill = node.fills.at(0)
   if (fill?.type !== 'IMAGE' || !fill.imageHash) return attrs
   const bytes = graph.images.get(fill.imageHash)

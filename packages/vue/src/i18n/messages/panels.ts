@@ -3,6 +3,23 @@ import { count, params } from '@nanostores/i18n'
 import { i18n } from '#vue/i18n/create'
 
 export const panelMessageDefaults = {
+  shader: 'Shader',
+  addShader: 'Add shader',
+  removeShader: 'Remove shader',
+  shaderMeshGradient: 'Mesh gradient',
+  shaderGrainGradient: 'Grain gradient',
+  shaderWarp: 'Warp',
+  shaderColors: 'Colors',
+  addShaderColor: 'Add color',
+  removeShaderColor: 'Remove color',
+  shaderDistortion: 'Distortion',
+  shaderSwirl: 'Swirl',
+  shaderGrain: 'Grain',
+  shaderSoftness: 'Softness',
+  shaderIntensity: 'Intensity',
+  shaderNoise: 'Noise',
+  shaderProportion: 'Proportion',
+  shaderSpeed: 'Speed',
   versions: 'Versions',
   versionsUnsaved: 'Save the document on this computer to keep its versions.',
   versionsUntracked:

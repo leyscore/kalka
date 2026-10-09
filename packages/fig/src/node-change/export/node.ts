@@ -969,6 +969,11 @@ export function sceneNodeToKiwiWithContext(
   applyInstancePayload(context, node, nc, localIdCounter)
   if (node.type === 'COMPONENT_SET')
     node.pluginData = withPluginData(node.pluginData, OPEN_PENCIL_PLUGIN_DATA.nodeType, node.type)
+  node.pluginData = withPluginData(
+    node.pluginData,
+    OPEN_PENCIL_PLUGIN_DATA.shader,
+    node.shader ?? undefined
+  )
   if (nc.type === 'CANVAS') nc.pageType = 'DESIGN'
   if (node.type === 'BOOLEAN_OPERATION')
     nc.booleanOperation = toKiwiBooleanOperation(node.booleanOperation)

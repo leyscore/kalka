@@ -639,6 +639,7 @@ export function nodeChangeToProps(
     strokeWeight: nc.strokeWeight ?? DEFAULT_STROKE_WEIGHT,
     strokeAlign: convertStrokeAlign(nc.strokeAlign),
     effects: convertEffects(nc.effects),
+    shader: readNodeChangePluginData(nc, OPEN_PENCIL_PLUGIN_DATA.shader) ?? null,
     layoutGrids: convertLayoutGrids(nc.layoutGrids),
     guides: importCanvasGuides(nc.guides),
     fillStyleId: styleRefId(nc.styleIdForFill),

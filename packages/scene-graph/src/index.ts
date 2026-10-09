@@ -897,3 +897,4 @@ export class SceneGraph {
     return result
   }
 }
+export * from './shader'

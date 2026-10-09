@@ -11,6 +11,7 @@ import Matrix from '@open-pencil/scene-graph/matrix'
 
 import { DomLayoutEngine } from './layout'
 import { DomSceneProjector } from './projector'
+import { ShaderLayers } from './shaders'
 import { DomTextEditor } from './text/editor'
 
 export interface UseDomSceneOptions {
@@ -38,6 +39,7 @@ export function useDomScene(
   const view = () => options.getRenderState?.() ?? editor.state
   let projector: DomSceneProjector | null = null
   let engine: DomLayoutEngine | null = null
+  let shaders: ShaderLayers | null = null
   const reflowed = new Set<string>()
   let frame = 0
   let lastTransform = ''
@@ -92,6 +94,7 @@ export function useDomScene(
       if (projector.needsFlush) projector.flush()
     }
     const state = view()
+    shaders?.sync(state.sceneVersion)
     if (state.sceneVersion !== presentedScene) {
       presentedScene = state.sceneVersion
       options.onPresented?.({
@@ -116,6 +119,7 @@ export function useDomScene(
     })
     const p = projector
     engine = new DomLayoutEngine(p, () => editor.graph)
+    shaders = new ShaderLayers(p, () => editor.graph)
     // Text is edited in place, in the page, instead of by the canvas text engine.
     editor.setExternalTextEditor(new DomTextEditor(editor, p))
     stops.push(
@@ -140,6 +144,8 @@ export function useDomScene(
     cancelAnimationFrame(frame)
     for (const unsubscribe of stops.splice(0)) unsubscribe()
     if (projector) editor.setExternalTextEditor(null)
+    shaders?.destroy()
+    shaders = null
     projector?.destroy()
     projector = null
     engine = null

@@ -5,7 +5,8 @@ import {
   type Fill,
   type ImageScaleMode,
   type SceneNode,
-  type Stroke
+  type Stroke,
+  parseShaderLayer
 } from '@open-pencil/scene-graph'
 import { TRANSPARENT } from '@open-pencil/scene-graph/constants'
 import { parseCSSNumber, parseCSSShadows } from '@open-pencil/scene-graph/css'
@@ -469,11 +470,20 @@ function createElementNode(graph: SceneGraph, parentId: string, element: DesignE
     return createTextNode(graph, parentId, textContent(element), style)
   }
 
+  const shaderJSON = element.attrs['data-kalka-shader']
   const node = graph.createNode('FRAME', parentId, {
     name: element.attrs.id || element.attrs.class || element.tagName,
-    clipsContent: false
+    clipsContent: false,
+    // An exported shader layer comes back as one; its gradient was only the stand-in.
+    shader: shaderJSON ? parseShaderLayer(shaderJSON) : null
   })
   applyElementStyle(graph, node, element, style)
+  if (node.shader) {
+    // The gradient written for the shader stands in for it; the shader is the layer's paint.
+    graph.updateNode(node.id, {
+      fills: node.fills.filter((fill) => !fill.type.startsWith('GRADIENT'))
+    })
+  }
 
   for (const child of element.children) {
     createDesignNode(graph, node.id, child, style)

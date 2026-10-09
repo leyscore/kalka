@@ -4,6 +4,7 @@ import type { ExportFormatId } from './export-format'
 import type { CanvasGuide } from './guides'
 import type { InstanceOverrideState } from './instance-overrides'
 import type { Color, Matrix, Rect, Vector } from './primitives'
+import type { ShaderLayer } from './shader'
 
 export interface SceneGraphEvents {
   'node:created': (node: SceneNode) => void
@@ -439,6 +440,8 @@ export interface SceneNode {
   fills: Fill[]
   strokes: Stroke[]
   effects: Effect[]
+  /** A live shader drawn behind the layer's content, or null. */
+  shader: ShaderLayer | null
   layoutGrids: LayoutGrid[]
   guides: CanvasGuide[]
   fillStyleId: string | null

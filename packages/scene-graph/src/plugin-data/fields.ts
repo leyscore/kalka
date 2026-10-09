@@ -6,6 +6,7 @@ import { isExportFormatId, type ExportFormatId } from '../export-format'
 import { clampExportScale } from '../export-scale'
 import { iconSchema, iconTintSchema } from '../icons/schema'
 import type { Rect } from '../primitives'
+import { shaderLayerSchema } from '../shader'
 import {
   MODE_ATTRIBUTE_PATTERN,
   TOKEN_UNITS,
@@ -145,6 +146,8 @@ export const OPEN_PENCIL_PLUGIN_DATA = {
   /** Variable bindings by field path, including those Figma cannot store natively. */
   boundVariables: jsonPluginDataField('boundVariables', 'format', boundVariables),
   exportSettings: jsonPluginDataField('exportSettings', 'format', exportSettings),
+  /** A shader drawn behind the layer's content, which Figma has no paint for. */
+  shader: jsonPluginDataField('shader', 'format', shaderLayerSchema),
   /** The node-local rect a TEXT_PATH layout maps onto, which Kiwi has no field for. */
   textPathBox: jsonPluginDataField('textPathBox', 'format', textPathBox),
   /** The library asset a node was inserted from. */

@@ -73,6 +73,7 @@ export function createDefaultNode(
       type === 'TEXT' ? [{ type: 'SOLID' as const, color: BLACK, opacity: 1, visible: true }] : [],
     strokes: [],
     effects: [],
+    shader: null,
     layoutGrids: [],
     guides: [],
     fillStyleId: null,
