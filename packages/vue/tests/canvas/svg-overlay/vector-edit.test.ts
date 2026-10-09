@@ -3,7 +3,8 @@ import { describe, expect, test } from 'bun:test'
 import {
   PEN_CLOSE_RADIUS_BOOST,
   PEN_PATH_STROKE_WIDTH,
-  PEN_VERTEX_RADIUS
+  PEN_VERTEX_RADIUS,
+  SELECTION_COLOR
 } from '@open-pencil/core/constants'
 import { SceneGraph } from '@open-pencil/scene-graph'
 
@@ -17,8 +18,8 @@ import {
 import { css } from '#vue/canvas/svg-overlay/shapes'
 
 const WHITE = css({ r: 1, g: 1, b: 1, a: 1 })
-const BLUE = css({ r: 0.23, g: 0.51, b: 0.96, a: 1 })
-const LIGHT_BLUE = css({ r: 0.376, g: 0.647, b: 0.98, a: 1 })
+const BLUE = css(SELECTION_COLOR)
+const LIGHT_BLUE = css({ r: 0.42, g: 0.553, b: 0.949, a: 1 })
 const ZERO = { x: 0, y: 0 }
 
 function context(overlays: OverlayContext['overlays'], graph = new SceneGraph()): OverlayContext {

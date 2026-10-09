@@ -7,7 +7,8 @@ export const IS_TAURI = IS_BROWSER && '__TAURI_INTERNALS__' in window
 export const BLACK: Color = { r: 0, g: 0, b: 0, a: 1 }
 export const TRANSPARENT: Color = { r: 0, g: 0, b: 0, a: 0 }
 export const DEFAULT_SHADOW_COLOR: Color = { r: 0, g: 0, b: 0, a: 0.25 }
-export const SELECTION_COLOR = { r: 0.23, g: 0.51, b: 0.96, a: 1 } satisfies Color
+/** Kalka blue, #2F5BEA. */
+export const SELECTION_COLOR = { r: 0.184, g: 0.357, b: 0.918, a: 1 } satisfies Color
 export const COMPONENT_COLOR = { r: 0.592, g: 0.278, b: 1, a: 1 } satisfies Color
 /** Slot frames and their outlines, `#f24bbc` like the app's `--color-slot`. */
 export const SLOT_COLOR = { r: 0.949, g: 0.294, b: 0.737, a: 1 } satisfies Color
@@ -80,8 +81,8 @@ export const AUTO_LAYOUT_HOVER_TICK_HIT_TOLERANCE = 8
 export const AUTO_LAYOUT_HOVER_PADDING_REGION_TOLERANCE = 20
 export const AUTO_LAYOUT_PADDING_EDITOR_OFFSET_X = 18
 export const AUTO_LAYOUT_PADDING_EDITOR_OFFSET_Y = 36
-export const AUTO_LAYOUT_HOVER_BLUE = { r: 0.28, g: 0.64, b: 1, a: 0.82 } satisfies Color
-export const AUTO_LAYOUT_HOVER_BLUE_FILL = { r: 0.28, g: 0.64, b: 1, a: 0.1 } satisfies Color
+export const AUTO_LAYOUT_HOVER_BLUE = { r: 0.294, g: 0.455, b: 0.941, a: 0.82 } satisfies Color
+export const AUTO_LAYOUT_HOVER_BLUE_FILL = { r: 0.294, g: 0.455, b: 0.941, a: 0.1 } satisfies Color
 export const AUTO_LAYOUT_HOVER_MAGENTA = { r: 1, g: 0.32, b: 0.68, a: 0.78 } satisfies Color
 export const AUTO_LAYOUT_HOVER_MAGENTA_FILL = { r: 1, g: 0.32, b: 0.68, a: 0.1 } satisfies Color
 
@@ -142,12 +143,12 @@ export const ISSUE_MARKER_RING_WIDTH = 1.5
 export const ISSUE_HIGHLIGHT_STROKE_WIDTH = 1.5
 export const ISSUE_HIGHLIGHT_FILL_ALPHA = 0.08
 
-export const AI_ACTIVE_COLOR = { r: 0.26, g: 0.52, b: 0.96 }
+export const AI_ACTIVE_COLOR = { r: 0.184, g: 0.357, b: 0.918 }
 export const AI_DONE_COLOR = { r: 0.16, g: 0.73, b: 0.36 }
 export const AI_PULSE_PERIOD_MS = 1500
 export const AI_DONE_DURATION_MS = 800
 
-export const TEXT_SELECTION_COLOR = { r: 0.26, g: 0.52, b: 0.96, a: 0.3 }
+export const TEXT_SELECTION_COLOR = { r: 0.184, g: 0.357, b: 0.918, a: 0.3 }
 export const TEXT_CARET_COLOR = BLACK
 export const TEXT_CARET_WIDTH = 1
 

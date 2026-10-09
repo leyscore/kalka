@@ -21,10 +21,10 @@ type ToScreen = (x: number, y: number) => Vector
 const rgb = (r: number, g: number, b: number): Color => ({ r, g, b, a: 1 })
 
 const WHITE = css(rgb(1, 1, 1))
-/** rgb(59,130,246), the node-edit blue. */
-const BLUE = css(rgb(0.23, 0.51, 0.96))
-/** rgb(96,165,250), a hovered handle. */
-const LIGHT_BLUE = css(rgb(0.376, 0.647, 0.98))
+/** rgb(47,91,234), Kalka blue. */
+const BLUE = css(rgb(0.184, 0.357, 0.918))
+/** rgb(107,141,242), a hovered handle. */
+const LIGHT_BLUE = css(rgb(0.42, 0.553, 0.949))
 const HANDLE_LINE_GRAY = css(rgb(0.6, 0.6, 0.6))
 /** rgb(178,178,178), the thin outline drawn over a path being edited or drawn. */
 const TECH_GRAY = css(rgb(0.698, 0.698, 0.698))

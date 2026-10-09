@@ -38,10 +38,10 @@ export interface NodeEditOverlayState {
   hoveredHandleInfo?: HandleInfo
 }
 
-// Blue = rgb(59,130,246) ≈ 0.23, 0.51, 0.96
-// Light blue (hover) = rgb(96,165,250) ≈ 0.376, 0.647, 0.98
-const BLUE = [0.23, 0.51, 0.96] as const
-const LIGHT_BLUE = [0.376, 0.647, 0.98] as const
+// Blue = Kalka blue, rgb(47,91,234) ≈ 0.184, 0.357, 0.918
+// Light blue (hover) = rgb(107,141,242) ≈ 0.42, 0.553, 0.949
+const BLUE = [0.184, 0.357, 0.918] as const
+const LIGHT_BLUE = [0.42, 0.553, 0.949] as const
 
 export function computeHandleVisibleVertices(
   selectedVertexIndices: Set<number>,
