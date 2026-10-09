@@ -24,14 +24,14 @@ const appButton = tv({
       link: {}
     },
     size: {
-      xs: { base: 'h-6 px-1.5 text-[10px]', icon: 'size-3' },
+      xs: { base: 'h-6 px-2 text-[11px]', icon: 'size-3' },
       sm: { base: 'h-7 px-2 text-xs' },
       md: { base: 'h-8 px-3 text-xs' },
       lg: { base: 'h-9 px-3.5 text-sm' }
     },
     shape: {
       square: { base: 'rounded' },
-      rounded: { base: 'rounded-md' },
+      rounded: { base: 'rounded-[7px]' },
       pill: { base: 'rounded-full' }
     }
   },
@@ -44,22 +44,22 @@ const appButton = tv({
     {
       color: 'neutral',
       variant: 'outline',
-      class: { base: 'border border-border text-surface hover:bg-hover' }
+      class: { base: 'border border-separator text-surface hover:bg-panel-field' }
     },
     {
       color: 'neutral',
       variant: 'soft',
-      class: { base: 'bg-hover text-surface hover:bg-hover/80' }
+      class: { base: 'bg-panel-field text-surface hover:bg-panel-field-hover' }
     },
     {
       color: 'neutral',
       variant: 'subtle',
-      class: { base: 'border border-border/60 text-muted hover:bg-hover hover:text-surface' }
+      class: { base: 'border border-hairline text-subtle hover:bg-panel-field hover:text-surface' }
     },
     {
       color: 'neutral',
       variant: 'ghost',
-      class: { base: 'text-muted hover:bg-hover hover:text-surface' }
+      class: { base: 'text-subtle hover:bg-panel-field hover:text-surface' }
     },
     {
       color: 'neutral',
@@ -69,7 +69,7 @@ const appButton = tv({
     {
       color: 'primary',
       variant: 'solid',
-      class: { base: 'bg-accent text-white shadow-sm shadow-accent/20 hover:bg-accent/90' }
+      class: { base: 'bg-accent text-white hover:bg-accent/90' }
     },
     {
       color: 'primary',

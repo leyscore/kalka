@@ -12,7 +12,7 @@ export const chatProfileTheme = tv({
     content: ['w-72 max-w-[calc(100vw-1rem)] overflow-hidden', motionStyles.floating],
     viewport: 'max-h-72 p-1',
     header: 'px-2 pt-1.5 pb-2',
-    headerLabel: 'text-[9px] font-medium tracking-wide text-muted uppercase',
+    headerLabel: 'text-[11px] text-muted',
     headerDescription: 'mt-0.5 text-[9px] leading-3 text-muted',
     item: 'grid h-auto min-h-11 grid-cols-[14px_minmax(0,1fr)_auto] gap-2 rounded px-2 py-1.5',
     indicator: 'flex size-3.5 shrink-0 items-center justify-center text-primary',

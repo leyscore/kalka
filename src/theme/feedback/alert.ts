@@ -1,6 +1,6 @@
 const alertTheme = {
   slots: {
-    root: 'flex items-start gap-2.5 rounded-lg border p-3 text-xs',
+    root: 'flex items-start gap-2.5 rounded-[10px] border p-3 text-xs',
     icon: 'mt-0.5 size-4 shrink-0',
     content: 'min-w-0 flex-1',
     heading: 'font-medium leading-relaxed',
@@ -10,7 +10,7 @@ const alertTheme = {
   },
   variants: {
     tone: {
-      info: { root: 'border-border bg-panel-field text-surface', icon: 'text-muted' },
+      info: { root: 'border-hairline bg-group text-surface', icon: 'text-muted' },
       success: { root: 'border-success/30 bg-success/5 text-surface', icon: 'text-success' },
       warning: { root: 'border-warning-border bg-warning-bg text-warning-text' },
       error: { root: 'border-error-border bg-error-bg text-error' }

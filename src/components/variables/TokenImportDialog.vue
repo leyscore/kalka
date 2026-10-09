@@ -201,7 +201,7 @@ function importTokens() {
 
       <div
         v-if="options && bundle?.collections.length"
-        class="max-h-72 overflow-y-auto rounded-lg border border-border"
+        class="max-h-72 overflow-y-auto rounded-[10px] border border-hairline bg-group"
       >
         <section
           v-for="(collection, index) in bundle.collections"
@@ -257,7 +257,7 @@ function importTokens() {
           {{ variables.importSkippedTitle }}
           <span class="text-muted">{{ plan.skipped.length }}</span>
         </template>
-        <ul class="mt-2 max-h-32 overflow-y-auto rounded-lg border border-border">
+        <ul class="mt-2 max-h-32 overflow-y-auto rounded-[10px] border border-hairline bg-group">
           <li
             v-for="(skip, index) in plan.skipped"
             :key="`${index}:${skip.name}`"

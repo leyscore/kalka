@@ -13,7 +13,7 @@ export const chatHistoryTheme = tv({
     icon: 'size-3.5 shrink-0',
     content: ['z-50 w-80 max-w-[calc(100vw-1rem)] p-2', floatingSurface, motionStyles.floating],
     input:
-      'w-full rounded border border-border bg-input px-2 py-1.5 text-xs outline-none focus:border-panel-focus',
+      'w-full rounded-[7px] border border-transparent bg-panel-field px-2.5 py-1.5 text-xs outline-none placeholder:text-muted focus:border-panel-focus',
     scope: 'my-2 flex gap-1',
     scopeButton:
       'flex-1 rounded px-2 py-1 text-[11px] text-muted hover:bg-hover data-[active=true]:bg-hover data-[active=true]:text-surface',

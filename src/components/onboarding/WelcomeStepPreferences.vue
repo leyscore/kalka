@@ -55,9 +55,9 @@ const codeOrder = [...CODE_SOURCES].sort(
           v-for="option in themes"
           :key="option.value"
           :value="option.value"
-          class="group rounded-xl border border-border bg-panel p-2.5 text-left transition-[border-color,box-shadow] duration-150 outline-none hover:border-muted/50 focus-visible:ring-2 focus-visible:ring-accent/50 data-[state=checked]:border-accent data-[state=checked]:shadow-[0_0_0_1px_var(--color-accent)]"
+          class="group rounded-[14px] border border-transparent bg-card p-2.5 text-left transition-[border-color,background-color] duration-150 outline-none hover:bg-card-hover focus-visible:ring-2 focus-visible:ring-accent/50 data-[state=checked]:border-accent/70 data-[state=checked]:bg-row-selected/60"
         >
-          <span class="flex h-24 overflow-hidden rounded-lg border border-border/70">
+          <span class="flex h-24 overflow-hidden rounded-[9px] border border-hairline">
             <span
               v-for="(look, index) in option.looks"
               :key="index"
@@ -90,13 +90,13 @@ const codeOrder = [...CODE_SOURCES].sort(
         v-model="codeSource"
         aria-labelledby="welcome-code"
         orientation="horizontal"
-        class="grid grid-cols-3 gap-1 rounded-xl border border-border bg-panel p-1"
+        class="grid grid-cols-3 gap-1 rounded-[12px] bg-track p-1"
       >
         <RadioGroupItem
           v-for="source in codeOrder"
           :key="source"
           :value="source"
-          class="h-9 rounded-lg text-[13px] font-medium text-muted transition-colors outline-none hover:text-surface focus-visible:ring-2 focus-visible:ring-accent/50 data-[state=checked]:bg-accent data-[state=checked]:text-white data-[state=checked]:shadow-sm"
+          class="h-9 rounded-[9px] text-[13px] font-medium text-muted transition-colors outline-none hover:text-surface focus-visible:ring-2 focus-visible:ring-accent/50 data-[state=checked]:bg-(--pill-active-bg) data-[state=checked]:font-semibold data-[state=checked]:text-surface data-[state=checked]:shadow-(--pill-active-shadow)"
         >
           {{ codeLabels[source] }}
         </RadioGroupItem>

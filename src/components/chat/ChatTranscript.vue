@@ -141,7 +141,7 @@ const { arrivedState, resumeFollowing } = useScrollFollowing(
     <IconButton
       v-if="messages.length && !arrivedState.bottom"
       :label="ai.jumpToLatest"
-      class="absolute right-3 bottom-3 border border-border bg-panel shadow-sm"
+      class="absolute right-3 bottom-3 border border-float-border bg-float shadow-(--float-shadow) backdrop-blur-[28px]"
       @click="resumeFollowing"
       ><icon-lucide-arrow-down class="size-4"
     /></IconButton>

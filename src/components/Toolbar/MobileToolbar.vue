@@ -101,7 +101,7 @@ function navigationClass(disabled: boolean) {
       <motion.div
         :layout="animationsEnabled"
         data-test-id="mobile-toolbar-container"
-        class="relative flex h-11 items-center overflow-hidden rounded-[8px] border border-border bg-panel px-2 shadow-lg"
+        class="relative flex h-11 items-center overflow-hidden rounded-[12px] border border-glass-strong-border bg-glass-strong px-2 shadow-(--toolbar-shadow) backdrop-blur-[28px] backdrop-saturate-150"
         :transition="layoutTransition"
       >
         <AnimatePresence mode="popLayout" :custom="slideDirection">

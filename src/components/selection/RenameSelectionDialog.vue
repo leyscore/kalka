@@ -80,7 +80,7 @@ function submit() {
             <input
               ref="match-input"
               v-model="match"
-              class="h-8 rounded border border-border bg-input px-2 text-sm text-surface outline-none focus:border-panel-focus"
+              class="h-7 rounded-[7px] border border-transparent bg-panel-field px-2.5 text-xs text-surface outline-none hover:bg-panel-field-hover focus:border-panel-focus"
               @keydown.enter.prevent="submit"
             />
           </label>
@@ -89,7 +89,7 @@ function submit() {
             <input
               ref="replacement-input"
               v-model="replacement"
-              class="h-8 rounded border border-border bg-input px-2 text-sm text-surface outline-none focus:border-panel-focus"
+              class="h-7 rounded-[7px] border border-transparent bg-panel-field px-2.5 text-xs text-surface outline-none hover:bg-panel-field-hover focus:border-panel-focus"
               @keydown.enter.prevent="submit"
             />
           </label>
@@ -111,7 +111,7 @@ function submit() {
             <input
               v-model.number="startNumber"
               type="number"
-              class="h-8 w-16 rounded border border-border bg-input px-2 text-sm text-surface outline-none focus:border-panel-focus"
+              class="h-7 w-16 rounded-[7px] border border-transparent bg-panel-field px-2.5 text-xs text-surface outline-none hover:bg-panel-field-hover focus:border-panel-focus"
               @keydown.enter.prevent="submit"
             />
           </label>

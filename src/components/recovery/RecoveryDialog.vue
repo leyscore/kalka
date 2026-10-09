@@ -81,7 +81,7 @@ onMounted(async () => {
         <div
           v-for="snapshot in snapshots"
           :key="snapshot.id"
-          class="flex items-center gap-3 rounded border border-border p-3"
+          class="flex items-center gap-3 rounded-[10px] border border-hairline bg-group p-3"
         >
           <icon-lucide-file-clock class="size-4 shrink-0 text-muted" />
           <div class="min-w-0 flex-1">

@@ -42,7 +42,7 @@ function setExpanded(effect: 'read' | 'write', open: boolean) {
 <template>
   <div class="flex min-h-0 min-w-0 flex-1 flex-col" data-slot="tool-access">
     <div
-      class="flex shrink-0 flex-wrap items-center gap-2 border-b border-border px-5 py-3 sm:px-6"
+      class="flex shrink-0 flex-wrap items-center gap-2 border-b border-hairline px-5 py-3 sm:px-6"
       data-slot="tool-access-toolbar"
     >
       <SegmentedControl
@@ -82,7 +82,7 @@ function setExpanded(effect: 'read' | 'write', open: boolean) {
         @set-group="setGroupEnabled"
         @set-tool="setToolEnabled"
       />
-      <p class="border-t border-border pt-3 text-xs leading-relaxed text-muted">
+      <p class="border-t border-hairline pt-3 text-xs leading-relaxed text-muted">
         {{
           target === 'ai'
             ? automation.aiToolsNotice

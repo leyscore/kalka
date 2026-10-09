@@ -62,7 +62,7 @@ const status = computed(
       <SettingsRow :label="automation.browserAccess">
         <AppSelect v-model="mode" :options="options" :label="automation.browserAccess" />
       </SettingsRow>
-      <p class="px-3 py-2.5 text-xs leading-relaxed text-muted">{{ descriptions[mode] }}</p>
+      <p class="px-3.5 py-2.5 text-xs leading-relaxed text-muted">{{ descriptions[mode] }}</p>
     </SettingsGroup>
     <AppAlert
       v-if="state.status === 'unsupported' || state.status === 'error'"

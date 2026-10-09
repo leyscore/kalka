@@ -2,7 +2,7 @@ import { twMerge } from 'tailwind-merge'
 import { tv } from 'tailwind-variants'
 
 const surface = tv({
-  base: 'border border-border/80 bg-panel',
+  base: 'border border-float-border bg-float backdrop-blur-[28px] backdrop-saturate-150',
   variants: {
     elevation: {
       md: 'shadow-[0_4px_12px_-2px_rgb(0_0_0/0.18),0_1px_3px_rgb(0_0_0/0.1)]',

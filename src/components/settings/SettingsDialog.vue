@@ -89,7 +89,7 @@ function onOpenChange(open: boolean): void {
       @update:model-value="onSectionChange"
       :orientation="isMobile ? 'horizontal' : 'vertical'"
     >
-      <div v-if="isMobile" class="shrink-0 border-b border-border p-3">
+      <div v-if="isMobile" class="shrink-0 border-b border-hairline p-3">
         <AppSelect
           :model-value="settingsDialogSection"
           :options="sections"
@@ -100,35 +100,35 @@ function onOpenChange(open: boolean): void {
       </div>
       <AppTabsList v-show="!isMobile" :label="settings.title">
         <AppTabsTrigger value="general" data-test-id="settings-section-general">
-          <template #leading><icon-lucide-settings class="size-3.5" /></template>
+          <template #leading><icon-lucide-settings class="size-4" /></template>
           {{ settings.general }}
         </AppTabsTrigger>
         <AppTabsTrigger value="ai" data-test-id="settings-section-ai">
-          <template #leading><icon-lucide-sparkles class="size-3.5" /></template>
+          <template #leading><icon-lucide-sparkles class="size-4" /></template>
           {{ settings.aiAndAgents }}
         </AppTabsTrigger>
         <AppTabsTrigger value="usage" data-test-id="settings-section-usage">
-          <template #leading><icon-lucide-chart-no-axes-combined class="size-3.5" /></template>
+          <template #leading><icon-lucide-chart-no-axes-combined class="size-4" /></template>
           {{ settings.usage }}
         </AppTabsTrigger>
         <AppTabsTrigger value="diagnostics" data-test-id="settings-section-diagnostics">
-          <template #leading><icon-lucide-activity class="size-3.5" /></template>
+          <template #leading><icon-lucide-activity class="size-4" /></template>
           {{ settings.diagnostics }}
         </AppTabsTrigger>
         <AppTabsTrigger value="mcp" data-test-id="settings-section-mcp">
-          <template #leading><icon-lucide-plug class="size-3.5" /></template>
+          <template #leading><icon-lucide-plug class="size-4" /></template>
           {{ settings.mcp }}
         </AppTabsTrigger>
         <AppTabsTrigger value="tools" data-test-id="settings-section-tools">
-          <template #leading><icon-lucide-sliders-horizontal class="size-3.5" /></template>
+          <template #leading><icon-lucide-sliders-horizontal class="size-4" /></template>
           {{ settings.toolAccess }}
         </AppTabsTrigger>
         <AppTabsTrigger value="media" data-test-id="settings-section-media">
-          <template #leading><icon-lucide-image class="size-3.5" /></template>
+          <template #leading><icon-lucide-image class="size-4" /></template>
           {{ settings.media }}
         </AppTabsTrigger>
         <AppTabsTrigger value="storage" data-test-id="settings-section-storage">
-          <template #leading><icon-lucide-cloud class="size-3.5" /></template>
+          <template #leading><icon-lucide-cloud class="size-4" /></template>
           {{ settings.storage }}
         </AppTabsTrigger>
       </AppTabsList>

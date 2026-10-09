@@ -362,7 +362,7 @@ async function insertSelectedAsset() {
 
     <div class="scrollbar-thin flex min-h-0 flex-1 flex-col overflow-y-auto px-2 pb-2">
       <section v-for="group in assetGroups" :key="group.pageId" class="mb-3">
-        <h2 class="mb-1 px-1 text-[10px] font-medium tracking-wide text-muted uppercase">
+        <h2 class="mb-1 px-1 text-[11px] text-muted">
           {{ group.pageName }}
         </h2>
         <div :class="assetView === 'grid' ? 'grid grid-cols-2 gap-2' : 'flex flex-col gap-0.5'">
@@ -570,7 +570,7 @@ async function insertSelectedAsset() {
 
         <div class="min-w-0 p-4">
           <section v-if="selectedAsset.description" class="mb-4">
-            <h3 class="text-[11px] font-medium tracking-wider text-muted uppercase">
+            <h3 class="text-[11px] text-muted">
               {{ panels.description }}
             </h3>
             <p data-test-id="asset-details-description" class="mt-1 text-xs leading-5 text-surface">
@@ -579,7 +579,7 @@ async function insertSelectedAsset() {
           </section>
 
           <section v-if="selectedAsset.sourceLibraryKey" class="mb-4">
-            <h3 class="text-[11px] font-medium tracking-wider text-muted uppercase">
+            <h3 class="text-[11px] text-muted">
               {{ panels.assetLibraryBadge }}
             </h3>
             <p data-test-id="asset-details-library" class="mt-1 break-all text-xs text-muted">
@@ -588,7 +588,7 @@ async function insertSelectedAsset() {
           </section>
 
           <section v-if="selectedAsset.docsURL" class="mb-4">
-            <h3 class="text-[11px] font-medium tracking-wider text-muted uppercase">
+            <h3 class="text-[11px] text-muted">
               {{ panels.documentation }}
             </h3>
             <AppButton
@@ -605,7 +605,7 @@ async function insertSelectedAsset() {
           </section>
 
           <section v-if="selectedAsset.variants.length > 0">
-            <h3 class="text-[11px] font-medium tracking-wider text-muted uppercase">
+            <h3 class="text-[11px] text-muted">
               {{ panels.properties }}
             </h3>
             <div class="mt-2 flex flex-col gap-2">
@@ -613,7 +613,7 @@ async function insertSelectedAsset() {
                 v-for="variant in selectedAsset.variants"
                 :key="variant.name"
                 data-test-id="asset-details-property"
-                class="rounded border border-border bg-input/40 px-2 py-1.5"
+                class="rounded-[7px] border border-hairline bg-group px-2 py-1.5"
               >
                 <div class="text-xs font-medium text-surface">{{ variant.name }}</div>
                 <div class="mt-1 text-[11px] text-muted">{{ variant.values.join(', ') }}</div>

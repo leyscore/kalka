@@ -78,7 +78,7 @@ function updateOpen(value: boolean): void {
   <CollapsibleRoot
     :open="open"
     :unmount-on-hide="false"
-    class="rounded-lg border border-border bg-canvas"
+    class="rounded-[10px] border border-hairline bg-group"
     @update:open="updateOpen"
   >
     <CollapsibleTrigger

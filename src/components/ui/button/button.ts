@@ -12,7 +12,7 @@ const button = tv({
     },
     shape: {
       square: 'rounded',
-      rounded: 'rounded-md',
+      rounded: 'rounded-[7px]',
       pill: 'rounded-full'
     },
     size: {

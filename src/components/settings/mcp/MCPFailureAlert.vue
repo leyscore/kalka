@@ -100,7 +100,7 @@ async function copyDetails(): Promise<void> {
         data-test-id="settings-mcp-failure-details"
       >
         <pre
-          class="max-h-40 overflow-auto rounded border border-border bg-input p-2 font-mono text-[11px] whitespace-pre-wrap text-muted"
+          class="max-h-40 overflow-auto rounded-[7px] border border-hairline bg-panel-field p-2 font-mono text-[11px] whitespace-pre-wrap text-muted"
           data-test-id="settings-mcp-failure-detail"
           >{{ detail }}</pre>
       </AppCollapsible>

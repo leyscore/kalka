@@ -22,7 +22,7 @@ const appPickerTheme = {
       'h-full min-w-0 flex-1 bg-transparent pr-2 pl-7 text-xs text-surface outline-none placeholder:text-muted',
     list: 'flex min-h-0 flex-col gap-2 overflow-y-auto px-2 pb-2',
     group: '',
-    groupLabel: 'px-1 pb-1 text-[10px] font-medium tracking-wide text-muted uppercase',
+    groupLabel: 'px-1 pb-1 text-[11px] text-muted',
     item: 'flex w-full cursor-pointer items-center gap-2 rounded px-1 py-1 text-left outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[highlighted]:bg-hover',
     leading:
       'flex size-8 shrink-0 items-center justify-center overflow-hidden rounded border border-border bg-panel-secondary text-muted',

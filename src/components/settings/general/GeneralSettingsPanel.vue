@@ -58,7 +58,7 @@ const snapToPixelGrid = computed({
       <template #title>{{ menu.language }}</template>
       <template #description>{{ settings.languageDescription }}</template>
       <SettingsGroup>
-        <label class="flex items-center justify-between gap-4 px-3 py-2.5">
+        <label class="flex min-h-11 items-center justify-between gap-4 px-3.5 py-2">
           <span class="text-xs text-surface">{{ menu.language }}</span>
           <AppSelect
             v-model="language"
@@ -74,7 +74,7 @@ const snapToPixelGrid = computed({
     <SettingsSection>
       <template #title>{{ settings.appearance }}</template>
       <SettingsGroup>
-        <label class="flex items-center justify-between gap-4 px-3 py-2.5">
+        <label class="flex min-h-11 items-center justify-between gap-4 px-3.5 py-2">
           <span class="text-xs text-surface">{{ menu.theme }}</span>
           <AppSelect
             v-model="theme"
@@ -87,7 +87,7 @@ const snapToPixelGrid = computed({
             :ui="selectUI"
           />
         </label>
-        <label class="flex items-center justify-between gap-4 px-3 py-2.5">
+        <label class="flex min-h-11 items-center justify-between gap-4 px-3.5 py-2">
           <span class="text-xs text-surface">{{ settings.animations }}</span>
           <AppSelect
             v-model="animationPreference"
@@ -108,10 +108,10 @@ const snapToPixelGrid = computed({
       <template #title>{{ recovery.settingsTitle }}</template>
 
       <SettingsGroup>
-        <label class="flex items-center justify-between gap-4 px-3 py-2.5">
+        <label class="flex min-h-11 items-center justify-between gap-4 px-3.5 py-2">
           <span>
             <span class="block text-xs text-surface">{{ recovery.preserveUnsavedWork }}</span>
-            <span class="block text-[10px] text-muted">{{
+            <span class="block text-[11px] text-muted">{{
               recovery.preserveUnsavedWorkDescription
             }}</span>
           </span>
@@ -129,10 +129,10 @@ const snapToPixelGrid = computed({
       <template #description>{{ settings.snappingDescription }}</template>
 
       <SettingsGroup>
-        <label class="flex items-center justify-between gap-4 px-3 py-2.5">
+        <label class="flex min-h-11 items-center justify-between gap-4 px-3.5 py-2">
           <span>
             <span class="block text-xs text-surface">{{ settings.snapToGeometry }}</span>
-            <span class="block text-[10px] text-muted">{{
+            <span class="block text-[11px] text-muted">{{
               settings.snapToGeometryDescription
             }}</span>
           </span>
@@ -142,10 +142,10 @@ const snapToPixelGrid = computed({
             data-test-id="settings-snap-geometry"
           />
         </label>
-        <label class="flex items-center justify-between gap-4 px-3 py-2.5">
+        <label class="flex min-h-11 items-center justify-between gap-4 px-3.5 py-2">
           <span>
             <span class="block text-xs text-surface">{{ settings.snapToObjects }}</span>
-            <span class="block text-[10px] text-muted">{{
+            <span class="block text-[11px] text-muted">{{
               settings.snapToObjectsDescription
             }}</span>
           </span>
@@ -155,10 +155,10 @@ const snapToPixelGrid = computed({
             data-test-id="settings-snap-objects"
           />
         </label>
-        <label class="flex items-center justify-between gap-4 px-3 py-2.5">
+        <label class="flex min-h-11 items-center justify-between gap-4 px-3.5 py-2">
           <span>
             <span class="block text-xs text-surface">{{ settings.snapToPixelGrid }}</span>
-            <span class="block text-[10px] text-muted">{{
+            <span class="block text-[11px] text-muted">{{
               settings.snapToPixelGridDescription
             }}</span>
           </span>

@@ -24,7 +24,8 @@ export function codeEditorTheme(dark: boolean) {
       {
         '&': {
           height: '100%',
-          backgroundColor: 'var(--color-panel)',
+          // The panel's glass shows through, as behind the properties panel's fields.
+          backgroundColor: 'transparent',
           color: 'var(--color-surface)',
           fontSize: '12px'
         },
@@ -37,7 +38,7 @@ export function codeEditorTheme(dark: boolean) {
         '.cm-content': { padding: '10px 0', caretColor: 'var(--color-primary)' },
         '.cm-line': { padding: '0 8px' },
         '.cm-gutters': {
-          backgroundColor: 'var(--color-panel)',
+          backgroundColor: 'transparent',
           color: 'var(--color-muted)',
           border: 'none'
         },
@@ -59,11 +60,12 @@ export function codeEditorTheme(dark: boolean) {
           outline: '1px solid var(--color-border)'
         },
         '.cm-tooltip, .cm-panels': {
-          backgroundColor: 'var(--color-panel)',
+          backgroundColor: 'var(--color-float)',
+          backdropFilter: 'blur(28px) saturate(150%)',
           color: 'var(--color-surface)',
-          border: '1px solid var(--color-border)'
+          border: '1px solid var(--color-float-border)'
         },
-        '.cm-tooltip': { borderRadius: '6px', overflow: 'hidden' },
+        '.cm-tooltip': { borderRadius: '9px', overflow: 'hidden' },
         '.cm-tooltip-autocomplete > ul > li[aria-selected]': {
           backgroundColor: 'var(--color-hover)',
           color: 'var(--color-surface)'
@@ -82,8 +84,8 @@ export function codeEditorTheme(dark: boolean) {
         '.cm-textfield, .cm-button': {
           background: 'var(--color-input)',
           color: 'var(--color-surface)',
-          border: '1px solid var(--color-border)',
-          borderRadius: '4px',
+          border: '1px solid transparent',
+          borderRadius: '7px',
           font: 'inherit'
         }
       },

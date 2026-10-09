@@ -108,7 +108,7 @@ const { profiles, statusByConnection, refreshStatuses } = useModelSettings()
               @click="editModel(profile.id)"
             >
               <template #leading>
-                <span class="flex size-8 items-center justify-center rounded bg-panel"
+                <span class="flex size-8 items-center justify-center rounded-[7px] bg-panel-field"
                   ><icon-lucide-bot class="size-4"
                 /></span>
               </template>
@@ -139,7 +139,7 @@ const { profiles, statusByConnection, refreshStatuses } = useModelSettings()
                 <span
                   v-for="capability in profile.capabilities"
                   :key="capability"
-                  class="rounded bg-panel px-1.5 py-0.5 text-[11px] text-muted"
+                  class="rounded-[5px] bg-panel-field px-1.5 py-0.5 text-[11px] text-muted"
                 >
                   {{
                     capability === 'tools'

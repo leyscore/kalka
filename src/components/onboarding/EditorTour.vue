@@ -97,8 +97,8 @@ const spotlight = computed(() => {
   <template v-if="tourStop">
     <div
       v-if="spotlight"
-      class="pointer-events-none fixed z-[150] rounded-lg ring-2 ring-accent transition-all duration-300 ease-out motion-reduce:transition-none"
-      :style="{ ...spotlight, boxShadow: '0 0 0 100vmax rgb(0 0 0 / 0.5)' }"
+      class="pointer-events-none fixed z-[150] rounded-[10px] ring-2 ring-accent transition-all duration-300 ease-out motion-reduce:transition-none"
+      :style="{ ...spotlight, boxShadow: '0 0 0 100vmax var(--color-scrim)' }"
       aria-hidden="true"
     />
     <PopoverRoot :open="anchor !== null" :modal="false">
@@ -109,22 +109,22 @@ const spotlight = computed(() => {
           :side="tourStop.side"
           :side-offset="14"
           :collision-padding="16"
-          class="z-[160] w-[320px] rounded-2xl bg-brand-paper p-5 text-brand-ink shadow-2xl shadow-black/30 outline-none animate-in fade-in zoom-in-95 duration-200"
+          class="z-[160] w-[320px] rounded-[16px] bg-float p-5 text-surface shadow-[0_0_0_1px_var(--color-float-border),var(--float-shadow)] backdrop-blur-[28px] backdrop-saturate-150 outline-none animate-in fade-in zoom-in-95 duration-200"
           data-test-id="editor-tour"
           @escape-key-down="endTour"
           @interact-outside.prevent
         >
-          <p class="mb-1.5 text-[11px] font-semibold text-brand-blue tabular-nums">
+          <p class="mb-1.5 font-mono text-[11px] font-medium text-highlight tabular-nums">
             {{ welcome.tourStep({ current: (tourIndex ?? 0) + 1, total: TOUR_STOPS.length }) }}
           </p>
           <h2 class="font-display text-xl leading-tight font-semibold tracking-[-0.03em]">
             {{ text.title }}
           </h2>
-          <p class="mt-2 text-[13px] leading-relaxed text-brand-ink/75">{{ text.body }}</p>
+          <p class="mt-2 text-[13px] leading-relaxed text-muted">{{ text.body }}</p>
           <div class="mt-5 flex items-center justify-between">
             <button
               type="button"
-              class="text-[13px] font-medium text-brand-ink/60 transition-colors hover:text-brand-ink"
+              class="rounded-[7px] text-[13px] font-medium text-muted transition-colors outline-none hover:text-surface focus-visible:ring-2 focus-visible:ring-accent/50"
               @click="endTour"
             >
               {{ welcome.tourSkip }}
@@ -133,7 +133,7 @@ const spotlight = computed(() => {
               size="lg"
               color="primary"
               variant="solid"
-              class="rounded-lg px-5"
+              class="rounded-[9px] px-5 font-semibold"
               @click="nextTourStop"
             >
               {{ isLast ? welcome.tourDone : welcome.tourNext }}

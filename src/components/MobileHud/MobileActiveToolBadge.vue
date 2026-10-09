@@ -7,7 +7,7 @@ const hud = useMobileHudContext()
 
 <template>
   <div
-    class="flex size-8 items-center justify-center rounded-full border border-accent/20 bg-panel/70 shadow-md backdrop-blur-xl transition-colors duration-200"
+    class="flex size-8 items-center justify-center rounded-full border border-glass-strong-border bg-glass-strong shadow-(--toolbar-shadow) backdrop-blur-[28px] transition-colors duration-200"
   >
     <Transition mode="out-in" v-bind="feedbackTransition">
       <component
