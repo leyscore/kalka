@@ -48,10 +48,12 @@ export const automationMessageDefaults = {
   clientReconnect: 'Reconnect',
   clientConnectedStatus: 'Connected',
   clientNotInstalled: 'Not found on this computer',
+  clientDetected: 'Found on this computer',
+  clientsMore: params('{count} other clients'),
   clientRestartHint: params('Kalka was added. Restart {client} to load it.'),
   otherClientTitle: 'Any other MCP client',
   otherClientDescription:
-    'Paste this server entry into its configuration. Clients that connect over HTTP use the local server address below instead.',
+    'Paste this server entry into its configuration. Clients that connect over HTTP use the local server address in Settings › MCP instead.',
   webmcpDescription:
     'Let browser agents use this document directly, without a local MCP server or bearer token. Local server settings do not apply here.',
   browserAccess: 'Browser agent access',
