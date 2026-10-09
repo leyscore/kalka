@@ -7,12 +7,12 @@ export default {
     trigger: [panelFieldBase, 'flex items-center justify-between text-xs'],
     value: 'min-w-0 flex-1 truncate text-left',
     content: [
-      'z-[110] min-w-[var(--reka-select-trigger-width)] overflow-hidden text-[11px]',
+      'z-[110] min-w-[var(--reka-select-trigger-width)] overflow-hidden text-xs',
       floatingSurface,
       motionStyles.floating
     ],
     viewport: '',
-    item: 'relative flex h-6 cursor-pointer items-center text-surface outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50'
+    item: 'relative flex h-7 cursor-pointer rounded-[6px] items-center text-surface outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50'
   },
   variants: {
     padding: {
