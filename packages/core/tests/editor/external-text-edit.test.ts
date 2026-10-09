@@ -52,4 +52,21 @@ describe('external text editing', () => {
     editor.commitTextEdit()
     expect(editor.undo.canUndo).toBe(false)
   })
+
+  test('typing into a text layer just created joins its creation, so one undo removes it', () => {
+    const editor = createEditor()
+    editor.setExternalTextEditor(recorder())
+    const id = editor.createShape('TEXT', 10, 10, 100, 20)
+    const pageChildren = () => editor.graph.getNode(editor.state.currentPageId)?.childIds.length
+    expect(pageChildren()).toBe(1)
+
+    editor.startTextEditing(id)
+    editor.updateTextEditNode(id, { text: 'Hello', styleRuns: [] })
+    editor.commitTextEdit()
+
+    editor.undoAction()
+    expect(pageChildren()).toBe(0)
+    editor.redoAction()
+    expect(editor.graph.getNode(id)?.text).toBe('Hello')
+  })
 })

@@ -135,6 +135,28 @@ export class UndoManager {
     return this.undoStack.at(-1 - depth)
   }
 
+  /**
+   * Joins the top undo entry into the one below it, so one Undo reverts both and one Redo
+   * reapplies both in order, such as creating a text layer and typing its first text.
+   */
+  mergeWithPrevious(label?: string): void {
+    const last = this.undoStack.at(-1)
+    const previous = this.undoStack.at(-2)
+    if (!last || !previous) return
+    this.undoStack.splice(-2, 2, {
+      label: label ?? previous.label,
+      forward: () => {
+        previous.forward()
+        last.forward()
+      },
+      inverse: () => {
+        last.inverse()
+        previous.inverse()
+      }
+    })
+    this.onChange?.()
+  }
+
   /** The entry `depth` steps below the top of the redo stack, the next one Redo applies at 0. */
   peekRedo(depth = 0): UndoEntry | undefined {
     return this.redoStack.at(-1 - depth)

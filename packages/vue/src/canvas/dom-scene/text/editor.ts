@@ -147,14 +147,42 @@ export class DomTextEditor implements ExternalTextEditor {
         }
       }
     )
+    // Keys reach the artboard's own window; app shortcuts listen on the editor's.
+    this.view.dom.addEventListener('keydown', this.forwardShortcut)
     this.selectAll()
     this.focus()
+  }
+
+  /**
+   * A shortcut the text editor leaves alone, such as save or open, goes on to the app as if it
+   * were pressed there. Undo, formatting and plain typing stay the editor's.
+   */
+  private readonly forwardShortcut = (event: KeyboardEvent): void => {
+    if (event.defaultPrevented || !(event.metaKey || event.ctrlKey)) return
+    const forwarded = new KeyboardEvent('keydown', {
+      key: event.key,
+      code: event.code,
+      metaKey: event.metaKey,
+      ctrlKey: event.ctrlKey,
+      shiftKey: event.shiftKey,
+      altKey: event.altKey,
+      repeat: event.repeat,
+      bubbles: true,
+      cancelable: true
+    })
+    window.dispatchEvent(forwarded)
+    // Handled by the app, it must not also do what the browser would, such as saving the page.
+    if (forwarded.defaultPrevented) event.preventDefault()
   }
 
   stop(): void {
     cancelAnimationFrame(this.focusFrame)
     const id = this.nodeId
+    const frame = this.view?.dom.ownerDocument.defaultView?.frameElement
+    this.view?.dom.removeEventListener('keydown', this.forwardShortcut)
     this.view?.destroy()
+    // Focus leaves the artboard with the edit, so the app's shortcuts hear the next key.
+    if (frame && document.activeElement === frame && frame instanceof HTMLElement) frame.blur()
     this.view = null
     this.nodeId = null
     if (id) this.projector.unlock(id)

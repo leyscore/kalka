@@ -27,6 +27,8 @@ type ShortcutDefinition = {
   global?: boolean
   /** Whether the shortcut also works while a canvas previews. */
   preview?: boolean
+  /** Whether it works while text is being edited, as saving and opening do in Figma. */
+  whileEditingText?: boolean
 }
 
 function commandShortcut(
@@ -77,7 +79,13 @@ function hasOpenDismissableLayer() {
   return document.querySelector('[data-dismissable-layer]:not([data-state="closed"])') !== null
 }
 
-function shouldIgnoreShortcut(event: KeyboardEvent, options: KeyboardShortcutOptions) {
+function shouldIgnoreShortcut(
+  event: KeyboardEvent,
+  options: KeyboardShortcutOptions,
+  whileEditingText = false
+) {
+  // Text being edited on the canvas keeps its keys, except the document's own shortcuts.
+  if (whileEditingText && options.store.state.editingTextId) return hasOpenDismissableLayer()
   return (
     isButtonActivation(event) ||
     hasOpenDismissableLayer() ||
@@ -130,12 +138,14 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
     {
       id: 'export-selection-png',
       keys: appMenuTinykeysShortcut('export-selection') ?? '$mod+Shift+KeyE',
-      run: ({ actions }) => actions.exportSelectionPNG()
+      run: ({ actions }) => actions.exportSelectionPNG(),
+      whileEditingText: true
     },
     {
       id: 'save-as',
       keys: appMenuTinykeysShortcut('save-as') ?? '$mod+Shift+KeyS',
-      run: ({ store }) => void store.saveFigFileAs()
+      run: ({ store }) => void store.saveFigFileAs(),
+      whileEditingText: true
     },
     ...commandShortcuts('selection.ungroup', 'edit.redo'),
     {
@@ -178,7 +188,8 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
     {
       id: 'toggle-ui',
       keys: appMenuTinykeysShortcut('toggle-ui') ?? '$mod+Backslash',
-      run: ({ actions }) => actions.toggleUI()
+      run: ({ actions }) => actions.toggleUI(),
+      whileEditingText: true
     },
     { id: 'toggle-ai', keys: '$mod+KeyJ', run: ({ actions }) => actions.toggleAI() },
     {
@@ -212,9 +223,15 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
     {
       id: 'close-tab',
       keys: appMenuTinykeysShortcut('close') ?? '$mod+KeyW',
-      run: ({ closeActiveTab }) => closeActiveTab()
+      run: ({ closeActiveTab }) => closeActiveTab(),
+      whileEditingText: true
     },
-    { id: 'new-tab', keys: ['$mod+KeyN', '$mod+KeyT'], run: ({ createTab }) => createTab() },
+    {
+      id: 'new-tab',
+      keys: ['$mod+KeyN', '$mod+KeyT'],
+      run: ({ createTab }) => createTab(),
+      whileEditingText: true
+    },
     {
       id: 'rename-selection',
       keys: appMenuTinykeysShortcut('selection.rename') ?? '$mod+KeyR',
@@ -232,12 +249,14 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
     {
       id: 'save',
       keys: appMenuTinykeysShortcut('save') ?? '$mod+KeyS',
-      run: ({ store }) => void store.saveFigFile()
+      run: ({ store }) => void store.saveFigFile(),
+      whileEditingText: true
     },
     {
       id: 'open-file',
       keys: appMenuTinykeysShortcut('open') ?? '$mod+KeyO',
-      run: ({ openFileDialog }) => openFileDialog()
+      run: ({ openFileDialog }) => openFileDialog(),
+      whileEditingText: true
     },
     ...commandShortcuts('selection.group'),
     {
@@ -266,6 +285,11 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
 
   const bindings: KeyBindingMap = {}
   const globalBindings: KeyBindingMap = {}
+  const textEditingKeys = new Set(
+    shortcuts
+      .filter((shortcut) => shortcut.whileEditingText)
+      .flatMap((shortcut) => [shortcut.keys].flat())
+  )
   /** Keys that keep working while a canvas previews; everything else would edit the design. */
   const previewKeys = new Set(
     shortcuts.filter((shortcut) => shortcut.preview).flatMap((shortcut) => [shortcut.keys].flat())
@@ -285,7 +309,7 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
       Object.entries(bindings).map(([keys, handler]) => [
         keys,
         (event: KeyboardEvent) => {
-          if (shouldIgnoreShortcut(event, options)) return
+          if (shouldIgnoreShortcut(event, options, textEditingKeys.has(keys))) return
           if (options.store.state.play && !previewKeys.has(keys)) return
           handler(event)
         }

@@ -2,7 +2,8 @@ import {
   cloneInstanceOverrideState,
   setInstanceOverride,
   type InstanceOverrideState,
-  type SceneNode
+  type SceneNode,
+  type UndoEntry
 } from '@open-pencil/scene-graph'
 import { copyDerivedGlyphs, copyGeometryPaths } from '@open-pencil/scene-graph/copy'
 
@@ -103,6 +104,17 @@ function applyTextInstanceOverride(
 
 export function createTextActions(ctx: EditorContext) {
   let activeSession: TextEditSession | null = null
+  /**
+   * The undo step that created the layer being edited, when the edit starts on a layer that has
+   * no text yet: its first text joins that step, so one Undo removes the new text layer.
+   */
+  let creationStep: UndoEntry | undefined
+
+  function joinCreationStep() {
+    const created = creationStep
+    creationStep = undefined
+    if (created && ctx.undo.peekUndo(1) === created) ctx.undo.mergeWithPrevious(created.label)
+  }
 
   function updateTextEditNode(nodeId: string, changes: Partial<SceneNode>) {
     const node = ctx.graph.getNode(nodeId)
@@ -119,6 +131,7 @@ export function createTextActions(ctx: EditorContext) {
     // Font-gated: unavailable-font path text stays a non-editable baked graphic.
     if (!isPathTextEditable(node)) return
     activeSession = createTextEditSession(node)
+    creationStep = node.text === '' ? ctx.undo.peekUndo() : undefined
     ctx.state.editingTextId = nodeId
     if (external) {
       external.start(nodeId)
@@ -169,6 +182,7 @@ export function createTextActions(ctx: EditorContext) {
       })
       if (before.text !== after.text) applyBoundTextEdit(ctx, node.id, after.text)
     })
+    joinCreationStep()
     ctx.requestRender()
   }
 
@@ -255,6 +269,7 @@ export function createTextActions(ctx: EditorContext) {
       })
       if (before.text !== after.text) applyBoundTextEdit(ctx, result.nodeId, after.text)
     })
+    joinCreationStep()
   }
 
   return { startTextEditing, updateTextEditNode, commitTextEdit }
