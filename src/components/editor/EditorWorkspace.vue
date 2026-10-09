@@ -37,7 +37,7 @@ const store = tab.store
 provideTabEditorStore(store)
 const { isMobile } = useViewportKind()
 const initialEditorLayout = loadEditorLayout()
-const horizontalSplitterStyles = tv(splitterTheme)({ direction: 'horizontal' })
+const horizontalSplitterStyles = tv(splitterTheme)({ direction: 'horizontal', gutter: true })
 /** One canvas previewing takes the whole window, in the canvas-only layout; split view keeps panels. */
 const playingAlone = computed(() => store.state.play !== null && store.visiblePaneCount.value <= 1)
 const { editor } = useI18n()
@@ -54,7 +54,7 @@ const { pending: roomPending } = useRoomActions()
     v-else-if="!isMobile && showChrome && store.state.showUI && !playingAlone"
     :key="tab.id"
     direction="horizontal"
-    class="flex-1 overflow-hidden"
+    class="flex-1 overflow-hidden px-2 pb-2"
     @layout="saveEditorLayout"
   >
     <SplitterPanel
@@ -62,7 +62,7 @@ const { pending: roomPending } = useRoomActions()
       :default-size="initialEditorLayout[0]"
       :min-size="10"
       :max-size="30"
-      class="flex"
+      class="flex panel-float overflow-hidden"
     >
       <LayersPanel />
     </SplitterPanel>
@@ -72,7 +72,12 @@ const { pending: roomPending } = useRoomActions()
     >
       <div :class="horizontalSplitterStyles.divider()" />
     </SplitterResizeHandle>
-    <SplitterPanel id="canvas" :default-size="initialEditorLayout[1]" :min-size="30" class="flex">
+    <SplitterPanel
+      id="canvas"
+      :default-size="initialEditorLayout[1]"
+      :min-size="30"
+      class="flex overflow-hidden rounded-[14px] border border-canvas-edge"
+    >
       <div class="relative flex min-w-0 flex-1">
         <CanvasSplitRoot />
         <ActiveRoomOverlay />
@@ -87,9 +92,9 @@ const { pending: roomPending } = useRoomActions()
       :default-size="initialEditorLayout[2]"
       :min-size="10"
       :max-size="30"
-      class="flex flex-col"
+      class="flex flex-col panel-float overflow-hidden"
     >
-      <div class="flex shrink-0 items-center gap-1 border-b border-border px-1.5 py-1.5">
+      <div class="flex shrink-0 items-center gap-1 pt-2.5 pr-2.5 pb-2 pl-3">
         <CollabPanel class="min-w-0 flex-1" />
         <IconButton
           :label="
@@ -98,6 +103,7 @@ const { pending: roomPending } = useRoomActions()
             })
           "
           data-test-id="editor-start-preview"
+          class="size-[30px] rounded-lg text-label"
           @click="store.startPlay()"
         >
           <icon-lucide-play class="size-3.5" />

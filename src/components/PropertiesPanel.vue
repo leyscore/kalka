@@ -45,7 +45,7 @@ const problemCount = computed(() => {
 <template>
   <aside
     data-test-id="properties-panel"
-    class="flex min-w-0 flex-1 flex-col overflow-hidden border-l border-border/70 glass"
+    class="flex min-w-0 flex-1 flex-col overflow-hidden"
     style="contain: paint layout style"
   >
     <TabsRoot v-model="activeTab" class="flex min-h-0 flex-1 flex-col">

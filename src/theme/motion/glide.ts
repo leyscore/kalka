@@ -11,7 +11,11 @@ export const glidePills = {
   /** The pill behind the active item of a panel's tabs or a segmented control. */
   active: `rounded-md bg-(--pill-active-bg) shadow-(--pill-active-shadow) ${glideMotion}`,
   /** The chosen option of a segmented control: a raised chip in the track. */
-  segment: `rounded-sm bg-(--pill-active-bg) shadow-(--pill-active-shadow) ${glideMotion}`,
+  segment: `rounded-md bg-(--pill-active-bg) shadow-(--pill-active-shadow) ${glideMotion}`,
+  /** The current place in a page's navigation, such as Home's sidebar: a roomier chip. */
+  navActive: `rounded-[9px] bg-(--pill-active-bg) shadow-(--pill-active-shadow) ${glideMotion}`,
+  /** The hover highlight in that navigation. */
+  navHover: `rounded-[9px] bg-(--pill-hover-bg) ${glideMotion}`,
   /** The accent pill behind the active tool. */
-  accent: `rounded-lg bg-accent shadow-[0_2px_10px_-2px] shadow-accent/60 ${glideMotion}`
+  accent: `rounded-[9px] bg-accent ${glideMotion}`
 } as const

@@ -4,7 +4,7 @@ import { panelFieldBase } from '../panel/field'
 
 export default {
   slots: {
-    trigger: [panelFieldBase, 'flex items-center justify-between text-[11px]'],
+    trigger: [panelFieldBase, 'flex items-center justify-between text-xs'],
     value: 'min-w-0 flex-1 truncate text-left',
     content: [
       'z-[110] min-w-[var(--reka-select-trigger-width)] overflow-hidden text-[11px]',

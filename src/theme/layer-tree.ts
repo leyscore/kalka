@@ -1,26 +1,26 @@
 const layerTreeTheme = {
   slots: {
-    viewport: 'scrollbar-thin h-full overflow-y-auto px-1',
-    row: 'group/row relative flex w-full cursor-pointer items-center gap-1 rounded-md border-none bg-transparent pr-1 text-left text-[11px] text-surface transition-colors duration-75',
+    viewport: 'scrollbar-thin h-full overflow-y-auto px-2 pb-2',
+    row: 'group/row relative flex w-full cursor-pointer items-center gap-[7px] rounded-[7px] border-none bg-transparent pr-1.5 text-left text-xs text-subtle transition-colors duration-75',
     disclosure:
       'flex w-4 shrink-0 cursor-pointer items-center justify-center text-current transition-transform',
     disclosurePlaceholder: 'w-4 shrink-0',
-    icon: 'size-3 shrink-0',
+    icon: 'size-[13px] shrink-0',
     label: 'min-w-0 flex-1 truncate',
     actions: 'flex shrink-0 items-center gap-0.5',
     action:
       'flex size-4 items-center justify-center rounded text-current outline-none hover:bg-surface/10 focus-visible:ring-1 focus-visible:ring-panel-focus',
     actionIcon: 'size-3',
     dropIndicator: 'pointer-events-none absolute bg-accent',
-    renameRow: 'group/row relative flex w-full items-center gap-1 pr-1 text-[11px] text-surface',
-    renameIcon: 'size-3 shrink-0 opacity-70',
+    renameRow: 'group/row relative flex w-full items-center gap-[7px] pr-1.5 text-xs text-surface',
+    renameIcon: 'size-[13px] shrink-0 text-faint',
     renameInput:
-      'min-w-0 flex-1 rounded border border-accent bg-input px-1 py-0 text-[11px] text-surface outline-none'
+      'min-w-0 flex-1 rounded border border-accent bg-input px-1 py-0 text-xs text-surface outline-none'
   },
   variants: {
     selected: {
-      true: { row: 'bg-accent/22 text-surface hover:bg-accent/28' },
-      false: { row: 'bg-transparent text-surface' }
+      true: { row: 'bg-row-selected font-semibold text-row-selected-text' },
+      false: { row: 'bg-transparent' }
     },
     focused: {
       true: {},
@@ -35,8 +35,8 @@ const layerTreeTheme = {
       false: {}
     },
     component: {
-      true: { icon: 'text-component opacity-100' },
-      false: { icon: 'opacity-70' }
+      true: { icon: 'text-component' },
+      false: {}
     },
     slot: {
       true: { icon: 'text-slot opacity-100', label: 'text-slot' },
@@ -60,7 +60,7 @@ const layerTreeTheme = {
     },
     childDropTarget: {
       true: {
-        row: 'bg-accent/15 text-surface'
+        row: 'bg-row-selected/60 text-surface'
       },
       false: {}
     },
@@ -73,15 +73,12 @@ const layerTreeTheme = {
     }
   },
   compoundVariants: [
-    {
-      selected: true,
-      focused: true,
-      class: { icon: 'text-primary opacity-100' }
-    },
+    // Unselected icons recede; a selected row takes its own color, softer once the tree loses focus.
+    { selected: false, component: false, slot: false, class: { icon: 'text-faint' } },
     {
       selected: true,
       focused: false,
-      class: { row: 'bg-panel-selected-muted text-surface hover:bg-panel-selected-muted' }
+      class: { row: 'bg-row-selected/70' }
     },
     // A hidden layer dims while its name still reads at 4.5:1. Once selected, fading the row would
     // fade its highlight too, so only the icon dims.

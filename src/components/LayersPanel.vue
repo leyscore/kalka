@@ -25,22 +25,23 @@ const panelOptions = computed(() => [
   { value: 'file', label: menu.value.file },
   { value: 'assets', label: panels.value.assets }
 ])
-const panelTabsUI = { root: 'w-full' }
+const panelTabsUI = { root: 'grid w-full grid-cols-2' }
 const splitterStyles = tv(splitterTheme)({ direction: 'vertical' })
 </script>
 
 <template>
   <aside
     data-test-id="layers-panel"
-    class="flex min-w-0 flex-1 flex-col overflow-hidden border-r border-border/70 glass"
+    class="flex min-w-0 flex-1 flex-col overflow-hidden"
     style="contain: paint layout style"
   >
     <AppMenu />
-    <div class="shrink-0 border-b border-border px-2 py-1.5">
+    <div class="shrink-0 px-3 pb-3">
       <SegmentedControl
         v-model="panelModel"
         :options="panelOptions"
         :label="panels.layers"
+        size="lg"
         :ui="panelTabsUI"
       >
         <template #option="{ option }">
@@ -63,7 +64,7 @@ const splitterStyles = tv(splitterTheme)({ direction: 'vertical' })
       class="flex-1 overflow-hidden"
     >
       <SplitterPanel
-        :default-size="30"
+        :default-size="22"
         :min-size="10"
         :max-size="60"
         class="flex flex-col overflow-hidden"
@@ -71,12 +72,12 @@ const splitterStyles = tv(splitterTheme)({ direction: 'vertical' })
         <PagesPanel />
       </SplitterPanel>
       <SplitterResizeHandle :class="splitterStyles.handle()">
-        <div :class="splitterStyles.divider()" />
+        <div :class="splitterStyles.divider({ class: 'inset-x-3 bg-hairline' })" />
       </SplitterResizeHandle>
-      <SplitterPanel :default-size="70" :min-size="20" class="flex flex-col overflow-hidden">
+      <SplitterPanel :default-size="78" :min-size="20" class="flex flex-col overflow-hidden">
         <header
           data-test-id="layers-header"
-          class="shrink-0 px-3 py-2 text-[11px] font-semibold text-surface"
+          class="shrink-0 px-4 pt-3 pb-1.5 text-[11px] font-semibold text-muted"
         >
           {{ panels.layers }}
         </header>

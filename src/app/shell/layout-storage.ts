@@ -3,7 +3,7 @@ import * as v from 'valibot'
 import { IS_BROWSER } from '@open-pencil/core/constants'
 
 const EDITOR_LAYOUT_KEY = 'open-pencil:editor-layout'
-const DEFAULT_EDITOR_LAYOUT = [18, 64, 18]
+const DEFAULT_EDITOR_LAYOUT = [17, 64, 19]
 const EditorLayoutJSON = v.pipe(
   v.string(),
   v.parseJson(),

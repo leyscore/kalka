@@ -54,12 +54,10 @@ const pageStates = [
             :class="pageStyles({ dropPosition: state.dropPosition }).dropIndicator()"
           />
           <button :class="pageStyles({ active: state.active }).item()">
-            <icon-lucide-file :class="pageStyles().icon()" />
             <span :class="pageStyles().label()">{{ state.label }}</span>
           </button>
         </div>
         <div aria-label="Rename" :class="pageStyles().renameRow()">
-          <icon-lucide-file :class="pageStyles().icon()" />
           <input :class="pageStyles().renameInput()" value="Rename page" aria-label="Page name" />
         </div>
       </div>

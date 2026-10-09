@@ -1,11 +1,11 @@
 const toolbarTheme = {
   slots: {
     button:
-      'flex size-8 cursor-pointer items-center justify-center border-none bg-transparent text-muted transition-[background-color,color,box-shadow] duration-150 outline-none focus-visible:ring-1 focus-visible:ring-panel-focus',
+      'flex size-9 cursor-pointer items-center justify-center border-none bg-transparent text-label transition-[background-color,color,box-shadow,scale] duration-150 outline-none focus-visible:ring-1 focus-visible:ring-panel-focus active:scale-[0.94] motion-reduce:active:scale-100',
     icon: 'size-4',
     flyoutGroup: 'flex items-center',
     flyoutTrigger:
-      'flex h-8 w-3 cursor-pointer items-center justify-center border-none bg-transparent text-muted transition-colors outline-none data-[state=open]:bg-hover data-[state=open]:text-surface focus-visible:ring-1 focus-visible:ring-panel-focus',
+      'flex h-9 w-3.5 cursor-pointer items-center justify-center border-none bg-transparent text-faint transition-colors outline-none data-[state=open]:text-surface focus-visible:ring-1 focus-visible:ring-panel-focus',
     flyoutTriggerIcon: 'size-2.5',
     flyoutContent: '',
     flyoutItem: '',
@@ -29,12 +29,13 @@ const toolbarTheme = {
     },
     mobile: {
       true: {
-        button: 'rounded-[6px] select-none',
-        flyoutTrigger: 'rounded-[6px] select-none active:bg-hover active:text-surface'
+        button: 'size-8 rounded-[6px] text-muted select-none',
+        flyoutTrigger:
+          'h-8 w-3 rounded-[6px] text-muted select-none active:bg-hover active:text-surface'
       },
       false: {
-        button: 'rounded-lg',
-        flyoutTrigger: 'rounded-lg hover:text-surface'
+        button: 'rounded-[9px]',
+        flyoutTrigger: 'rounded-md hover:text-surface'
       }
     },
     disabled: {

@@ -128,9 +128,9 @@ defineOptions({ inheritAttrs: false })
         :class="styles.leading({ class: ui?.leading })"
       >
         <slot name="icon">
-          <span v-if="icon" class="text-[11px] leading-none">{{ icon }}</span>
+          <span v-if="icon" class="text-xs leading-none">{{ icon }}</span>
         </slot>
-        <span v-if="label" class="text-[11px] leading-none">{{ label }}</span>
+        <span v-if="label" class="text-xs leading-none">{{ label }}</span>
       </span>
       <NumberFieldInput :class="styles.field({ class: ui?.field })" />
       <NumberFieldValue :class="styles.display({ class: ui?.display })">

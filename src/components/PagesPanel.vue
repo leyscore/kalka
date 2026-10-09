@@ -143,7 +143,6 @@ useGlide(pageList, { items: '[data-slot="page-item"]', hover: true, pillClass: g
                   v-if="rename.editingId.value === pg.id"
                   :class="pageStyles(pg, currentPageId).renameRow()"
                 >
-                  <icon-lucide-file :class="pageStyles(pg, currentPageId).icon()" />
                   <input
                     ref="pageInput"
                     data-test-id="pages-item-input"
@@ -171,7 +170,6 @@ useGlide(pageList, { items: '[data-slot="page-item"]', hover: true, pillClass: g
                     @click="actions.switch(pg.id)"
                     @dblclick="startRename(pg, actions.rename)"
                   >
-                    <icon-lucide-file :class="pageStyles(pg, currentPageId).icon()" />
                     <span :class="pageStyles(pg, currentPageId).label()">{{ pg.name }}</span>
                     <span :class="pageStyles(pg, currentPageId).trailing()">
                       <PresenceMarkers :entries="pagePresence.get(pg.id) ?? []" />

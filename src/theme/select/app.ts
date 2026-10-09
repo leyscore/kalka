@@ -3,7 +3,7 @@ import selectTheme from './select'
 const appSelectTheme = {
   slots: {
     ...selectTheme.slots,
-    trigger: [selectTheme.slots.trigger, 'w-full min-w-0 px-1.5'],
+    trigger: [selectTheme.slots.trigger, 'w-full min-w-0 pr-2 pl-[9px]'],
     value: [selectTheme.slots.value, 'min-w-0 flex-1 truncate text-left'],
     content: [selectTheme.slots.content, 'max-h-56'],
     viewport: [selectTheme.slots.viewport, 'p-0.5'],
