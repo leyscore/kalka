@@ -86,8 +86,6 @@
   "navHome": "首页",
   "navLearn": "学习",
   "navFiles": "你的文件",
-  "claudeConnected": "Claude 已连接",
-  "connectClaude": "连接 Claude",
   "tourStep": "{current}/{total}",
   "tourNext": "下一步",
   "tourDone": "完成",

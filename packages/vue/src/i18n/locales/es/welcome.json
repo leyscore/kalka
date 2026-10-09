@@ -86,8 +86,6 @@
   "navHome": "Inicio",
   "navLearn": "Aprender",
   "navFiles": "Tus archivos",
-  "claudeConnected": "Claude conectado",
-  "connectClaude": "Conectar Claude",
   "tourStep": "{current} de {total}",
   "tourNext": "Siguiente",
   "tourDone": "Listo",

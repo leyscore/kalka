@@ -430,8 +430,6 @@ ja:welcome.invalidURL
 ja:welcome.learnCodeHint
 ja:welcome.learnClaude
 ja:welcome.learnClaudeHint
-ja:welcome.claudeConnected
-ja:welcome.connectClaude
 ja:welcome.tourCodeBody
 ja:welcome.tourToolbarTitle
 ja:welcome.tourToolbarBody
@@ -469,8 +467,6 @@ zh-cn:welcome.invalidURL
 zh-cn:welcome.learnCodeHint
 zh-cn:welcome.learnClaude
 zh-cn:welcome.learnClaudeHint
-zh-cn:welcome.claudeConnected
-zh-cn:welcome.connectClaude
 zh-cn:welcome.tourCodeBody
 zh-cn:welcome.tourToolbarTitle
 zh-cn:welcome.tourToolbarBody

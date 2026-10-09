@@ -86,8 +86,6 @@
   "navHome": "Главная",
   "navLearn": "Обучение",
   "navFiles": "Ваши файлы",
-  "claudeConnected": "Claude подключён",
-  "connectClaude": "Подключить Claude",
   "tourStep": "{current} из {total}",
   "tourNext": "Далее",
   "tourDone": "Готово",

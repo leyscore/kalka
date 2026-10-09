@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { useI18n } from '@open-pencil/vue'
 
-import { openWelcome } from '@/app/onboarding/welcome'
 import { openSettingsDialog } from '@/app/settings/dialog'
 import BrandMark from '@/components/brand/BrandMark.vue'
-import ClaudeStatus from '@/components/onboarding/ClaudeStatus.vue'
 
 const { welcome, settings } = useI18n()
 
@@ -37,14 +35,7 @@ const item =
         <icon-lucide-folder class="size-4" />{{ welcome.navFiles }}
       </button>
     </div>
-    <div class="mt-auto flex flex-col gap-1">
-      <button
-        type="button"
-        class="flex h-10 items-center rounded-lg border border-border bg-panel px-3 text-xs font-medium text-surface transition-colors hover:bg-hover focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
-        @click="openWelcome('claude')"
-      >
-        <ClaudeStatus compact />
-      </button>
+    <div class="mt-auto">
       <button type="button" :class="item" @click="openSettingsDialog()">
         <icon-lucide-settings class="size-4" />{{ settings.title }}
       </button>

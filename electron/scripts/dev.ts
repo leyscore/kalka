@@ -1,9 +1,11 @@
 /**
  * Runs the desktop app in development: starts the Vite dev server unless one already answers,
- * waits for it, builds the main process, then opens Electron. Closing Electron stops the server
- * this script started.
+ * waits for it, builds the main process, then opens Electron. A change under `src/` rebuilds the
+ * main process and reopens Electron, since the page reloads on its own and must not talk to an
+ * older main process. Closing Electron stops the server this script started.
  */
 import { spawn, type ChildProcess } from 'node:child_process'
+import { watch } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -42,21 +44,48 @@ if (!(await answers())) {
   }
 }
 
-const build = run('bun', ['run', 'build'], electronDir)
-await new Promise((resolve) => build.once('exit', resolve))
-if (build.exitCode !== 0) {
-  server?.kill()
-  process.exit(build.exitCode ?? 1)
+async function build(): Promise<boolean> {
+  const child = run('bun', ['run', 'build'], electronDir)
+  await new Promise((resolve) => child.once('exit', resolve))
+  return child.exitCode === 0
 }
 
-const electron = run('bunx', ['electron', '.'], electronDir, { ...process.env, KALKA_DEV_URL: URL })
+if (!(await build())) {
+  server?.kill()
+  process.exit(1)
+}
+
+let electron: ChildProcess
+let restarting = false
+
+function open(): void {
+  electron = run('bunx', ['electron', '.'], electronDir, { ...process.env, KALKA_DEV_URL: URL })
+  electron.once('exit', (code) => {
+    if (restarting) return
+    server?.kill()
+    process.exit(code ?? 0)
+  })
+}
+
+let pending: ReturnType<typeof setTimeout> | undefined
+watch(join(electronDir, 'src'), { recursive: true }, () => {
+  clearTimeout(pending)
+  pending = setTimeout(async () => {
+    console.log('[kalka] The main process changed; rebuilding and reopening Electron…')
+    if (!(await build())) return
+    restarting = true
+    electron.once('exit', () => {
+      restarting = false
+      open()
+    })
+    electron.kill()
+  }, 200)
+})
+
+open()
 const stop = () => {
   electron.kill()
   server?.kill()
 }
 process.on('SIGINT', stop)
 process.on('SIGTERM', stop)
-electron.once('exit', (code) => {
-  server?.kill()
-  process.exit(code ?? 0)
-})

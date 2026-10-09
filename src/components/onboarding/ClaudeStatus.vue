@@ -6,12 +6,10 @@ import { useI18n } from '@open-pencil/vue'
 import { claudeConnection } from '@/app/onboarding/claude'
 
 /** A dot and a line saying how far Claude is from the canvas. */
-const { compact = false } = defineProps<{ compact?: boolean }>()
 const { welcome } = useI18n()
 
 const label = computed(() => {
   const w = welcome.value
-  if (compact) return claudeConnection.value === 'connected' ? w.claudeConnected : w.connectClaude
   return {
     connected: w.statusConnected,
     waiting: w.statusWaiting,

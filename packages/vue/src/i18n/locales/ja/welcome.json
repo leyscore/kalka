@@ -86,8 +86,6 @@
   "navHome": "ホーム",
   "navLearn": "学ぶ",
   "navFiles": "ファイル",
-  "claudeConnected": "Claude接続済み",
-  "connectClaude": "Claudeを接続",
   "tourStep": "{current}/{total}",
   "tourNext": "次へ",
   "tourDone": "完了",

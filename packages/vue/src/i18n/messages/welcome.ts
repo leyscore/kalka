@@ -94,8 +94,6 @@ export const welcomeMessageDefaults = {
   navHome: 'Home',
   navLearn: 'Learn',
   navFiles: 'Your files',
-  claudeConnected: 'Claude connected',
-  connectClaude: 'Connect Claude',
   tourStep: params('{current} of {total}'),
   tourNext: 'Next',
   tourDone: 'Done',
