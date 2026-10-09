@@ -4,6 +4,7 @@ import { serializeHTML } from '../export/html'
 import { parseStyleAttribute } from '../import/style-attribute'
 import type { CSSRuntime, DesignDocument, DesignElement, DesignNode } from '../types'
 import { computeHeadlessStyles } from './headless-css'
+import { isSafeAttribute, UNSAFE_OR_HIDDEN_TAGS } from './sanitize'
 
 function attrsToRecord(attrs: DefaultTreeAdapterTypes.Element['attrs']): Record<string, string> {
   const result: Record<string, string> = {}
@@ -17,17 +18,15 @@ function isTextNode(
   return node.nodeName === '#text'
 }
 
-const NON_RENDERED_TAGS = new Set(['head', 'link', 'meta', 'script', 'style', 'template', 'title'])
-
 function childToDesignNode(node: DefaultTreeAdapterTypes.ChildNode): DesignNode | null {
   if (isTextNode(node)) {
     return node.value.trim().length > 0 ? { type: 'text', text: node.value } : null
   }
 
   if (!('tagName' in node)) return null
-  if (NON_RENDERED_TAGS.has(node.tagName.toLowerCase())) return null
+  if (UNSAFE_OR_HIDDEN_TAGS.has(node.tagName.toLowerCase())) return null
 
-  const attrs = attrsToRecord(node.attrs)
+  const attrs = attrsToRecord(node.attrs.filter((attr) => isSafeAttribute(attr.name, attr.value)))
   const element: DesignElement = {
     type: 'element',
     tagName: node.tagName.toLowerCase(),

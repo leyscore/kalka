@@ -3,6 +3,7 @@ import { useEventListener } from '@vueuse/core'
 import { extractImageFilesFromClipboard } from '@open-pencil/vue'
 
 import type { EditorStore } from '@/app/editor/active-store'
+import { isHTMLSource } from '@/app/editor/clipboard/external-html'
 import { getInMemoryClipboardHTML } from '@/app/editor/clipboard/memory'
 import { pasteClipboardHTML } from '@/app/editor/clipboard/paste'
 import { browserSystemClipboard } from '@/app/editor/clipboard/system/browser'
@@ -81,6 +82,13 @@ export function bindEditorClipboard(store: EditorStore) {
     const html = e.clipboardData?.getData('text/html') ?? ''
     if (html) {
       void pasteClipboardHTML(store, html)
+      return
+    }
+
+    // HTML source copied as text, such as a component from a code editor, pastes as layers.
+    const text = e.clipboardData?.getData('text/plain') ?? ''
+    if (isHTMLSource(text)) {
+      void pasteClipboardHTML(store, text)
       return
     }
 

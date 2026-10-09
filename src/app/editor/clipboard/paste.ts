@@ -1,6 +1,7 @@
 import type { Editor } from '@open-pencil/core/editor'
 import type { Vector } from '@open-pencil/scene-graph/primitives'
 
+import { externalHTMLAsDesignClipboard, isExternalHTML } from './external-html'
 import { matchingClipboardSnapshot } from './memory'
 
 export async function pasteClipboardHTML(
@@ -10,6 +11,11 @@ export async function pasteClipboardHTML(
   options: Parameters<Editor['pasteFromHTML']>[2] = {}
 ): Promise<void> {
   const snapshot = matchingClipboardSnapshot(html)
-  if (snapshot) await editor.pasteSnapshot(snapshot, cursorPos, options)
-  else await editor.pasteFromHTML(html, cursorPos, options)
+  if (snapshot) {
+    await editor.pasteSnapshot(snapshot, cursorPos, options)
+    return
+  }
+  // Markup from a web page or a code editor becomes editable layers.
+  const design = isExternalHTML(html) ? await externalHTMLAsDesignClipboard(html) : null
+  await editor.pasteFromHTML(design ?? html, cursorPos, options)
 }

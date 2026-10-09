@@ -39,6 +39,7 @@
 
 ### Added
 
+- Pasting HTML copied from a web page, or HTML source copied as text from a code editor, adds it to the canvas as editable layers.
 - A three-step welcome on first launch asks what you came for, sets the theme and the code the Code tab opens on, and shows how to connect Claude Code, Claude Desktop or another MCP client, with a live connection status. In the desktop app, **Connect** adds Kalka to Claude Desktop's configuration, keeping its other servers and a backup of the previous file.
 - The home screen starts a design at a device size, opens a `.fig` or `.html` file, a pasted piece of HTML or a file from a URL, and opens the sample file or a one-minute tour of the editor.
 - Show the pixel grid when zoomed in, as in Figma: from 800% on a standard display and 400% on a Retina one, toggled with **View → Pixel Grid** or <kbd>⇧</kbd><kbd>'</kbd>. <kbd>⇧</kbd><kbd>⌘</kbd><kbd>'</kbd> toggles **Snap to Pixel Grid**. The zoom menu in the properties panel lists both, with Figma's shortcuts, and labels its shortcuts for zoom to fit (<kbd>⇧</kbd><kbd>1</kbd>) and 100% (<kbd>⌘</kbd><kbd>0</kbd>); <kbd>⇧</kbd><kbd>R</kbd> toggles rulers and <kbd>⌥</kbd><kbd>⌘</kbd><kbd>\\</kbd> multiplayer cursors.
@@ -271,6 +272,7 @@
 
 ### Security
 
+- Imported and pasted HTML loses scripts, event handlers, script URLs, embedded frames and objects before Kalka lays it out, so nothing in it can run.
 - Refuse writes from the desktop app to places where a written file would run: login items and startup folders, PowerShell profiles, global package and executable folders such as Homebrew, `/usr/local`, npm, Volta, and Scoop, and the MCP discovery files coding agents trust. On Windows, hidden files and folders such as shell profiles and agent settings are now off-limits too, as on macOS and Linux, except a document you open there yourself, which can still be saved.
 - Limit the programs the desktop app may start to the exact command lines of the supported coding agents, the MCP server, and the Harness companion. On Windows the app could run any command through `cmd /c`, so any code running in the editor's webview could start arbitrary programs.
 - Update the desktop app to Tauri 2.12, which binds large IPC channel responses to the webview that requested them instead of letting another webview fetch them (GHSA-w28w-mhc8-qvjv).

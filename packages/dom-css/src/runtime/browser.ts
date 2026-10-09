@@ -6,6 +6,7 @@ import type {
   DesignElement,
   DesignNode
 } from '../types'
+import { isSafeAttribute, UNSAFE_OR_HIDDEN_TAGS } from './sanitize'
 
 export interface BrowserCSSRuntimeOptions {
   document?: Document
@@ -86,7 +87,7 @@ function resolveBrowserDocument(documentOverride: Document | undefined): Documen
 function attributesToRecord(element: Element): Record<string, string> {
   const attrs: Record<string, string> = {}
   for (const attr of Array.from(element.attributes)) {
-    attrs[attr.name] = attr.value
+    if (isSafeAttribute(attr.name, attr.value)) attrs[attr.name] = attr.value
   }
   return attrs
 }
@@ -100,8 +101,6 @@ function styleToRecord(style: CSSStyleDeclaration): Record<string, string> | und
   return Object.keys(entries).length > 0 ? entries : undefined
 }
 
-const NON_RENDERED_TAGS = new Set(['head', 'link', 'meta', 'script', 'style', 'template', 'title'])
-
 function domNodeToDesignNode(node: Node): DesignNode | null {
   if (node.nodeType === 3) {
     const text = node.textContent ?? ''
@@ -111,7 +110,7 @@ function domNodeToDesignNode(node: Node): DesignNode | null {
   if (node.nodeType !== 1) return null
 
   const element = node as Element
-  if (NON_RENDERED_TAGS.has(element.tagName.toLowerCase())) return null
+  if (UNSAFE_OR_HIDDEN_TAGS.has(element.tagName.toLowerCase())) return null
   const children = Array.from(element.childNodes)
     .map(domNodeToDesignNode)
     .filter((child): child is DesignNode => child !== null)
