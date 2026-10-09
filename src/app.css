@@ -2,7 +2,7 @@
 @import 'tw-animate-css';
 @import '@fontsource-variable/geist';
 @import '@fontsource-variable/bricolage-grotesque';
-@import '@fontsource-variable/jetbrains-mono';
+@import '@fontsource-variable/geist-mono';
 @import 'vue-stream-markdown/index.css' layer(components);
 @import './theme/markdown/markdown.css';
 
@@ -99,61 +99,18 @@
  * Dark values first; the light theme sets its own.
  */
 :root {
-  --pill-active-bg: color-mix(in srgb, white 9%, transparent);
-  --pill-active-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.07), 0 0 0 0.5px rgb(255 255 255 / 0.06),
-    0 1px 3px rgb(0 0 0 / 0.35), 0 4px 12px -4px rgb(0 0 0 / 0.4);
-  --pill-hover-bg: color-mix(in srgb, white 4.5%, transparent);
+  --pill-active-bg: color-mix(in srgb, white 12%, transparent);
+  --pill-active-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
+  --pill-hover-bg: color-mix(in srgb, white 5%, transparent);
 }
 
-/* Backdrop light strength; the light theme sets its own. */
+/* Backdrop light: two soft lights over the page color; the light theme sets its own. */
 :root {
-  --backdrop-glow-a: 0.32;
-  --backdrop-glow-b: 0.2;
-  --backdrop-glow-c: 0.12;
-}
-
-/*
- * The backdrop of full-page surfaces (home, welcome, boot): soft blue light in two corners over a
- * slight vertical gradient, rather than one flat color.
- */
-@utility bg-backdrop {
-  background-color: var(--color-canvas);
-  background-image:
-    radial-gradient(
-      70rem 40rem at -10% -15%,
-      color-mix(in srgb, var(--color-accent) 16%, transparent),
-      transparent 60%
-    ),
-    radial-gradient(
-      60rem 36rem at 110% 115%,
-      color-mix(in srgb, var(--color-brand-sky) 18%, transparent),
-      transparent 60%
-    ),
-    linear-gradient(
-      180deg,
-      var(--color-canvas),
-      color-mix(in srgb, var(--color-canvas) 92%, var(--color-accent))
-    );
-}
-
-/* Film grain in the corners of a positioned surface, fading out toward its middle. */
-@utility grain-corners {
-  isolation: isolate;
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.7 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    opacity: var(--grain-opacity, 0.22);
-    mask-image:
-      radial-gradient(circle at 0 0, black, transparent 42%),
-      radial-gradient(circle at 100% 0, black, transparent 30%),
-      radial-gradient(circle at 0 100%, black, transparent 30%),
-      radial-gradient(circle at 100% 100%, black, transparent 42%);
-  }
+  --backdrop-glow-a: 0.4;
+  --backdrop-glow-b: 0.35;
+  --backdrop-grain: 0.08;
+  --backdrop-grain-blend: screen;
+  --toolbar-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
 }
 
 @keyframes kalka-backdrop-drift {
@@ -172,8 +129,29 @@
 
 /* Frosted glass for the app's panels and bars over the backdrop. */
 @utility glass {
-  background-color: color-mix(in srgb, var(--color-panel) 74%, transparent);
-  backdrop-filter: blur(28px) saturate(150%);
+  background-color: var(--color-glass);
+  backdrop-filter: blur(28px) saturate(var(--glass-saturate, 140%));
+}
+
+/* A floating panel of the app shell: frosted glass with a hairline edge, inset from the window. */
+@utility panel-float {
+  border: 1px solid var(--color-glass-border);
+  border-radius: 14px;
+  background-color: var(--color-glass);
+  backdrop-filter: blur(28px) saturate(var(--glass-saturate, 140%));
+}
+
+/* Even film grain over a whole positioned surface, blended into the colors beneath it. */
+@utility grain {
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: var(--backdrop-grain);
+    mix-blend-mode: var(--backdrop-grain-blend);
+  }
 }
 
 /* A glide pill sits under the items of its container, above the container's background. */
@@ -184,24 +162,46 @@
 @theme {
   --font-sans: 'Geist Variable', 'Helvetica Neue', system-ui, sans-serif;
   --font-display: 'Bricolage Grotesque Variable', 'Helvetica Neue', sans-serif;
-  --font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-mono: 'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
   --color-brand-blue: #2f5bea;
   --color-brand-sky: #9db7f5;
   --color-brand-ink: #121214;
   --color-brand-paper: #efefec;
+  --color-glass: rgb(24 25 33 / 0.55);
+  --color-glass-border: rgb(255 255 255 / 0.09);
+  --color-glass-strong: rgb(30 31 40 / 0.8);
+  --color-glass-strong-border: rgb(255 255 255 / 0.1);
+  --color-tab-active: rgb(255 255 255 / 0.08);
+  --color-track: rgb(255 255 255 / 0.05);
+  --color-hairline: rgb(255 255 255 / 0.07);
+  --color-separator: rgb(255 255 255 / 0.12);
+  --color-canvas-edge: rgb(255 255 255 / 0.07);
+  --color-row-selected: rgb(47 91 234 / 0.3);
+  --color-row-selected-text: #dce4fc;
+  --color-backdrop-a: #2f5bea;
+  --color-backdrop-b: #7c8bb8;
+  --color-label: #d4d6e0;
+  --color-subtle: #c4c6d2;
+  --color-faint: #8a8c9a;
+  --color-link: #9db7f5;
+  --color-highlight: #9db7f5;
+  --color-link-hover: #c9d7fa;
+  --color-card: rgb(255 255 255 / 0.05);
+  --color-card-hover: rgb(255 255 255 / 0.08);
+  --color-dash: rgb(255 255 255 / 0.2);
   --color-panel: #18181b;
   --color-panel-secondary: #141416;
-  --color-panel-field: #232327;
-  --color-panel-field-hover: #2b2b31;
+  --color-panel-field: rgb(255 255 255 / 0.06);
+  --color-panel-field-hover: rgb(255 255 255 / 0.09);
   --color-panel-focus: #4b74f0;
   --color-panel-selected: #2f5bea;
   --color-panel-selected-muted: #1e2540;
-  --color-canvas: #121214;
+  --color-canvas: #0f0f12;
   --color-border: #2a2a30;
   --color-hover: #222227;
   --color-accent: #2f5bea;
-  --color-surface: #efefec;
-  --color-muted: #a1a1a8;
+  --color-surface: #ededf0;
+  --color-muted: #a6a8b6;
   --color-input: #121214;
   --color-component: #bb8cff;
   --color-slot: #f45cc4;
@@ -227,36 +227,58 @@
   --color-code-punctuation: #888888;
   --color-checkerboard: #2a2a30;
   --color-checkerboard-muted: #38383f;
-  --color-ruler-bg: rgb(20, 20, 22);
-  --color-ruler-tick: rgb(102, 102, 102);
-  --color-ruler-text: rgb(140, 140, 140);
-  --color-ruler-label: rgb(255, 255, 255);
+  --color-ruler-bg: rgb(30 30 30);
+  --color-ruler-tick: rgb(255 255 255 / 0.12);
+  --color-ruler-text: rgb(110 112 128);
+  --color-ruler-label: rgb(255 255 255);
 }
 
 html[data-theme='light'] {
-  --grain-opacity: 0.16;
-  --pill-active-bg: color-mix(in srgb, white 88%, transparent);
-  --pill-active-shadow:
-    0 0 0 0.5px rgb(0 0 0 / 0.07), 0 1px 2px rgb(0 0 0 / 0.06), 0 4px 12px -6px rgb(0 0 0 / 0.12);
-  --pill-hover-bg: color-mix(in srgb, black 4.5%, transparent);
-  --backdrop-glow-a: 0.26;
-  --backdrop-glow-b: 0.42;
-  --backdrop-glow-c: 0.1;
+  --pill-active-bg: color-mix(in srgb, white 92%, transparent);
+  --pill-active-shadow: 0 1px 2px rgb(20 20 40 / 0.08);
+  --pill-hover-bg: color-mix(in srgb, white 45%, transparent);
+  --backdrop-glow-a: 0.4;
+  --backdrop-glow-b: 0.5;
+  --backdrop-grain: 0.12;
+  --backdrop-grain-blend: multiply;
+  --toolbar-shadow: 0 8px 24px rgb(20 25 60 / 0.12);
+  --color-glass: rgb(255 255 255 / 0.55);
+  --color-glass-border: rgb(255 255 255 / 0.85);
+  --color-glass-strong: rgb(255 255 255 / 0.75);
+  --color-glass-strong-border: rgb(255 255 255 / 0.95);
+  --color-tab-active: rgb(255 255 255 / 0.6);
+  --color-track: rgb(20 20 40 / 0.06);
+  --color-hairline: rgb(20 20 40 / 0.07);
+  --color-separator: rgb(20 20 40 / 0.12);
+  --color-canvas-edge: rgb(255 255 255 / 0.7);
+  --color-row-selected: #dce4fc;
+  --color-row-selected-text: #1e3fb8;
+  --color-backdrop-a: #6f8cec;
+  --color-backdrop-b: #a9bef2;
+  --color-label: #2a2a33;
+  --color-subtle: #3a3a45;
+  --color-faint: #696975;
+  --color-link: #1e3fb8;
+  --color-highlight: #2f5bea;
+  --color-link-hover: #2f5bea;
+  --color-card: rgb(255 255 255 / 0.45);
+  --color-card-hover: rgb(255 255 255 / 0.7);
+  --color-dash: rgb(42 42 51 / 0.3);
   --color-panel: #efefec;
   --color-panel-secondary: #e8e8e4;
-  --color-panel-field: #e3e3de;
-  --color-panel-field-hover: #d9d9d3;
+  --color-panel-field: rgb(20 20 40 / 0.05);
+  --color-panel-field-hover: rgb(20 20 40 / 0.08);
   --color-panel-focus: #2f5bea;
   --color-panel-selected: #2f5bea;
   --color-panel-selected-muted: #dde3f5;
-  --color-canvas: #e4e4df;
+  --color-canvas: #e2e3df;
   --color-border: #d3d3cc;
   --color-hover: #e5e5e0;
   --color-accent: #2f5bea;
   --color-primary: #2448c4;
   --color-inverted: #efefec;
   --color-surface: #121214;
-  --color-muted: #5c5c63;
+  --color-muted: #5a5a66;
   --color-input: #efefec;
   --color-component: #7c3aed;
   --color-slot: #db2777;
@@ -280,10 +302,10 @@ html[data-theme='light'] {
   --color-code-punctuation: #64748b;
   --color-checkerboard: #d6d6d0;
   --color-checkerboard-muted: #e3e3de;
-  --color-ruler-bg: rgb(239, 239, 236);
-  --color-ruler-tick: rgb(163, 171, 182);
-  --color-ruler-text: rgb(90, 99, 112);
-  --color-ruler-label: rgb(255, 255, 255);
+  --color-ruler-bg: rgb(245 245 245);
+  --color-ruler-tick: rgb(20 20 40 / 0.12);
+  --color-ruler-text: rgb(154 154 164);
+  --color-ruler-label: rgb(255 255 255);
 }
 
 html,
