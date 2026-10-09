@@ -11,12 +11,12 @@ const dropOverlayTheme = {
   variants: {
     accepts: {
       true: { root: 'border-accent/60 bg-accent/5', label: 'text-accent' },
-      false: { root: 'border-border bg-panel/70', label: 'text-muted' }
+      false: { root: 'border-border bg-float', label: 'text-muted' }
     },
     // After `accepts`, so a field's own fill replaces the tint.
     shape: {
-      surface: { label: 'rounded-md bg-panel px-2 py-1 shadow-sm' },
-      field: { root: 'rounded-xl bg-input/95' }
+      surface: { label: 'rounded-[7px] bg-float px-2 py-1 shadow-sm backdrop-blur-xl' },
+      field: { root: 'rounded-[12px] bg-float backdrop-blur-xl' }
     }
   },
   defaultVariants: { shape: 'surface' as const, accepts: true }
