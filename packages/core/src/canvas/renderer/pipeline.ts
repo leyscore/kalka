@@ -5,7 +5,7 @@ import { computeDescendantVisualBounds } from '@open-pencil/scene-graph/geometry
 
 import { needsImagePreviews } from '#core/canvas/images/previews'
 import type { RenderOverlays, SkiaRenderer } from '#core/canvas/renderer'
-import { playIslandRoots } from '#core/editor/play/islands'
+import { overlaysFromEditorState } from '#core/canvas/renderer/state-overlays'
 import type { EditorState } from '#core/editor/types'
 import { emitNavigationTrace } from '#core/profiler'
 
@@ -75,41 +75,12 @@ export function renderFromEditorState(
   r.pageId = state.currentPageId
   r.navigationPhase = state.navigation.phase
   r.navigationGeneration = state.navigation.generation
-  // A previewing canvas shows the design as it runs: no selection, hover, or edit chrome.
   const previewing = state.play !== null
   render(
     r,
     graph,
     previewing ? new Set<string>() : state.selectedIds,
-    {
-      playing: previewing,
-      playIslands: previewing ? new Set(playIslandRoots(graph, state.currentPageId)) : undefined,
-      hoveredNodeId: previewing ? null : state.hoveredNodeId,
-      showPixelGrid: !previewing && state.showPixelGrid !== false,
-      transforming: state.transforming,
-      measurementMode: state.measurementMode,
-      enteredContainerId: state.enteredContainerId,
-      editingTextId: state.editingTextId,
-      textEditor: textEditor as RenderOverlays['textEditor'],
-      marquee: state.marquee,
-      snapGuides: state.snapGuides,
-      guides: state.guides,
-      rotationPreview: state.rotationPreview,
-      dropTargetId: state.dropTargetId,
-      layoutInsertIndicator: state.layoutInsertIndicator,
-      penState: state.penState
-        ? ({
-            ...state.penState,
-            cursorX: state.penCursorX ?? undefined,
-            cursorY: state.penCursorY ?? undefined
-          } as RenderOverlays['penState'])
-        : null,
-      nodeEditState: state.nodeEditState ?? null,
-      presenceCursors: state.presenceCursors,
-      designIssues: state.designIssues,
-      codeFocusNodeId: state.codeFocusNodeId,
-      autoLayoutHover: state.autoLayoutHover
-    },
+    overlaysFromEditorState(state, graph, textEditor),
     // Recorded pictures follow what the canvas draws, not every document change.
     state.canvasVersion,
     layer,

@@ -33,6 +33,8 @@ import {
   useCanvasIssueMarkers,
   useCanvasVirtualReference,
   useDomScene,
+  useSVGOverlay,
+  SVG_OVERLAY_LAYERS,
   useTextEdit
 } from '@open-pencil/vue'
 
@@ -62,6 +64,7 @@ const { paneId } = defineProps<{
 const store = useEditorStore()
 const sceneCanvasRef = ref<HTMLCanvasElement | null>(null)
 const domSceneRef = ref<HTMLElement | null>(null)
+const svgOverlayRef = ref<HTMLElement | null>(null)
 const domScene = appRuntimeConfig.domScene
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 
@@ -104,6 +107,7 @@ if (domScene) {
     onPresented: ({ sceneVersion }) =>
       store.preparationController.acknowledgePresentation(sceneVersion)
   })
+  useSVGOverlay(svgOverlayRef, store, { getRenderState })
 }
 
 useCanvas(sceneCanvasRef, store, {
@@ -130,6 +134,7 @@ const { hitTestSectionTitle, hitTestComponentLabel, hitTestFrameTitle, hitTestIs
       return appRuntimeConfig.showRulers && store.state.showRulers && paneView.value.play === null
     },
     getOverlayObstacles: () => canvasOverlayObstacles(canvasRef.value),
+    delegatedOverlays: domScene ? SVG_OVERLAY_LAYERS : undefined,
     shouldSuspendRender,
     getRenderState,
     onViewportResize
@@ -269,6 +274,13 @@ const cursor = computed(() =>
           aria-hidden="true"
           class="pointer-events-none absolute inset-0 overflow-hidden"
           :style="{ background: pageBackground }"
+        />
+        <div
+          v-if="domScene"
+          ref="svgOverlayRef"
+          :data-pane-id="paneId"
+          data-test-id="svg-overlay"
+          class="pointer-events-none absolute inset-0 overflow-hidden"
         />
         <canvas
           v-else

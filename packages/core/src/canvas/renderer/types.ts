@@ -95,3 +95,16 @@ export interface RenderOverlays {
   designIssues?: DesignIssueOverlay | null
   codeFocusNodeId?: string | null
 }
+
+/**
+ * Overlays another backend draws instead of the Skia overlay canvas, such as the DOM scene's
+ * SVG overlay. The Skia pass skips them.
+ */
+export type OverlayLayerId =
+  | 'hover'
+  | 'selection'
+  | 'enteredContainer'
+  | 'dropTarget'
+  | 'marquee'
+  | 'snapGuides'
+  | 'layoutInsertIndicator'

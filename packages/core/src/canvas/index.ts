@@ -20,7 +20,15 @@ export { hitTestGuides, type GuideHit } from './guides/hit-test'
 export type { GuideOverlayState, GuidePreview, GuideSelection } from './guides/types'
 export { canvasLabelForeground } from './labels/color'
 export type { ImagePreview, ImagePreviewDecoder } from './images/previews'
-export { SkiaRenderer, type PresenceCursor, type RenderOverlays, type RulerTheme } from './renderer'
+export {
+  SkiaRenderer,
+  type OverlayLayerId,
+  type PresenceCursor,
+  type RenderOverlays,
+  type RulerTheme
+} from './renderer'
+export { overlaysFromEditorState } from './renderer/state-overlays'
+export { frameLabelPlacement, labelScreenMatrix } from './labels/transform'
 export {
   hitTestIssueMarkers,
   issueMarkerLabel,

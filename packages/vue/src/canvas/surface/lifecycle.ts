@@ -110,6 +110,7 @@ export function createCanvasSurfaceManager({
     state.renderer.presentationColorSpace = result.presentation ?? 'srgb'
     state.renderer.tracksSceneSettlement = options?.layer !== 'overlays'
     state.renderer.tiledSceneEnabled = options?.sceneRenderer === 'tiled'
+    if (options?.delegatedOverlays) state.renderer.delegatedOverlays = options.delegatedOverlays
     editor.setCanvasKit(ck, state.renderer)
     canvas.dataset.ready = '1'
 

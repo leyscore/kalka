@@ -40,7 +40,13 @@ import * as RendererState from './renderer/state'
 import * as RenderText from './text'
 import { createGlyphSilhouetteCache } from './text/derived'
 import { TextPreparationCache } from './text/preparation-cache'
-export type { MeasurementMode, PresenceCursor, RenderOverlays, RulerTheme } from './renderer/types'
+export type {
+  MeasurementMode,
+  OverlayLayerId,
+  PresenceCursor,
+  RenderOverlays,
+  RulerTheme
+} from './renderer/types'
 import type {
   Path,
   CanvasKit,
@@ -74,7 +80,7 @@ import type { PlacedIssueMarker } from './issues/types'
 import { EffectRasterCache } from './renderer/effect-raster-cache'
 import { TiledSceneController } from './renderer/tiles'
 import type { TransientCanvasPreview } from './renderer/transient-previews'
-import type { PresenceCursor, RenderOverlays, RulerTheme } from './renderer/types'
+import type { OverlayLayerId, PresenceCursor, RenderOverlays, RulerTheme } from './renderer/types'
 
 export class SkiaRenderer {
   ck: CanvasKit
@@ -188,6 +194,8 @@ export class SkiaRenderer {
   issueMarkers: PlacedIssueMarker[] = []
   /** Screen rectangles of UI floating over this canvas, which overlays such as edge pins avoid. */
   overlayObstacles: readonly Rect[] = []
+  /** Overlays another backend draws over this canvas; the overlay pass leaves them out. */
+  delegatedOverlays: ReadonlySet<OverlayLayerId> = new Set()
 
   boundEffectLayersToViewport = false
   worldViewport = { x: 0, y: 0, w: 0, h: 0 }

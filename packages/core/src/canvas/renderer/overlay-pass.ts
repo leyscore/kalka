@@ -13,6 +13,7 @@ import { drawPixelGrid } from '#core/canvas/overlays/pixel-grid'
 import { drawCodeFocus } from '#core/canvas/overlays/selection'
 import { drawSlotOutlines } from '#core/canvas/overlays/slots'
 import type { RenderOverlays, SkiaRenderer } from '#core/canvas/renderer'
+import type { OverlayLayerId } from '#core/canvas/renderer/types'
 import { RULER_SIZE } from '#core/constants'
 
 function measurementVisible(overlays: RenderOverlays): boolean {
@@ -87,6 +88,15 @@ function updateIssueMarkers(r: SkiaRenderer, graph: SceneGraph, overlays: Render
   })
 }
 
+/** Snap lines, the marquee and the auto layout insert position, unless drawn elsewhere. */
+function drawGestureFeedback(r: SkiaRenderer, canvas: Canvas, overlays: RenderOverlays): void {
+  const own = (layer: OverlayLayerId) => !r.delegatedOverlays.has(layer)
+  if (own('snapGuides')) r.drawSnapGuides(canvas, overlays.snapGuides)
+  if (own('marquee')) r.drawMarquee(canvas, overlays.marquee)
+  if (own('layoutInsertIndicator'))
+    r.drawLayoutInsertIndicator(canvas, overlays.layoutInsertIndicator)
+}
+
 export function drawOverlayPass(
   r: SkiaRenderer,
   canvas: Canvas,
@@ -106,22 +116,23 @@ export function drawOverlayPass(
   if (!measuring)
     drawSlotOutlines(r, canvas, graph, selectedIds, hoveredNodeId, overlays.rotationPreview)
   if (!measuring) drawLayoutOutlines(r, canvas, graph, selectedIds, hoveredNodeId, overlays)
-  r.drawHoverHighlight(canvas, graph, hoveredNodeId, overlays.rotationPreview)
+  const own = (layer: OverlayLayerId) => !r.delegatedOverlays.has(layer)
+  if (own('hover')) r.drawHoverHighlight(canvas, graph, hoveredNodeId, overlays.rotationPreview)
   drawIssueHighlight(r, canvas, graph, overlays.designIssues?.highlight, overlays.rotationPreview)
-  r.drawEnteredContainer(canvas, graph, overlays.enteredContainerId, overlays.rotationPreview)
-  drawDropTarget(r, canvas, graph, overlays.dropTargetId, overlays.rotationPreview)
+  if (own('enteredContainer'))
+    r.drawEnteredContainer(canvas, graph, overlays.enteredContainerId, overlays.rotationPreview)
+  if (own('dropTarget'))
+    drawDropTarget(r, canvas, graph, overlays.dropTargetId, overlays.rotationPreview)
   drawEditingText(r, canvas, graph, overlays)
   r.profiler.beginPhase('render:selection')
-  r.drawSelection(canvas, graph, selectedIds, overlays)
+  if (own('selection')) r.drawSelection(canvas, graph, selectedIds, overlays)
   if (measuring) r.drawMeasurements(canvas, graph, selectedIds, overlays.hoveredNodeId)
   r.profiler.endPhase('render:selection')
 
   r.drawFlashes(canvas, graph)
   if (overlays.guides?.redline) drawMeasurementSegment(r, canvas, overlays.guides.redline.segment)
   drawGuides(r, canvas, graph, overlays.guides)
-  r.drawSnapGuides(canvas, overlays.snapGuides)
-  r.drawMarquee(canvas, overlays.marquee)
-  r.drawLayoutInsertIndicator(canvas, overlays.layoutInsertIndicator)
+  drawGestureFeedback(r, canvas, overlays)
   if (!measuring && !overlays.transforming) {
     r.drawAutoLayoutHover(canvas, graph, overlays.autoLayoutHover)
   }

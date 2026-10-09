@@ -1,3 +1,4 @@
+import type { OverlayLayerId } from '@open-pencil/core/canvas'
 import type { EditorState } from '@open-pencil/core/editor'
 import type { ViewportTransform } from '@open-pencil/core/geometry'
 import type { Rect } from '@open-pencil/scene-graph/primitives'
@@ -60,6 +61,11 @@ export interface UseCanvasOptions {
    * instead of running ahead of it while the canvas is still catching up.
    */
   onFrame?: (view: ViewportTransform) => void
+  /**
+   * Overlays another backend draws over this canvas, such as the DOM scene's SVG overlay.
+   * This canvas leaves them out.
+   */
+  delegatedOverlays?: ReadonlySet<OverlayLayerId>
   /**
    * Receives this canvas surface's CSS viewport size after creation and resize.
    */
