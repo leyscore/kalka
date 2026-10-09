@@ -1,8 +1,12 @@
 import { onScopeDispose, watch, type Ref } from 'vue'
 
 import {
+  hitTestComponentLabel,
+  hitTestFrameTitle,
+  hitTestSectionTitle,
   LabelCache,
   overlaysFromEditorState,
+  type LabelHitOptions,
   type PlacedIssueMarker
 } from '@open-pencil/core/canvas'
 import type { Editor, EditorState } from '@open-pencil/core/editor'
@@ -137,8 +141,35 @@ export function useSVGOverlay(
     if (host.value) clearOverlay(host.value)
   })
 
+  /** Label hit tests measure names as the overlay draws them, so a click lands on what shows. */
+  function labelHits(hit: typeof hitTestFrameTitle) {
+    return (worldX: number, worldY: number) => {
+      const state = options.getRenderState?.() ?? editor.state
+      const element = host.value
+      const { panX, panY, zoom } = state
+      labels.update(editor.graph, state.currentPageId, state.sceneVersion)
+      const hitOptions: LabelHitOptions = {
+        preview: state.rotationPreview,
+        viewport: {
+          x: -panX / zoom,
+          y: -panY / zoom,
+          w: (element?.clientWidth ?? 0) / zoom,
+          h: (element?.clientHeight ?? 0) / zoom
+        },
+        measure: (node, layout) => ({
+          width: measureText(node.name, layout.fontSize, layout.fontWeight),
+          height: layout.fontSize
+        })
+      }
+      return hit(editor.graph, worldX, worldY, zoom, state.currentPageId, null, labels, hitOptions)
+    }
+  }
+
   return {
     /** The issue markers as last drawn, in the host's CSS pixels, for pointer hit testing. */
-    issueMarkers: () => issueMarkers
+    issueMarkers: () => issueMarkers,
+    hitTestFrameTitle: labelHits(hitTestFrameTitle),
+    hitTestSectionTitle: labelHits(hitTestSectionTitle),
+    hitTestComponentLabel: labelHits(hitTestComponentLabel)
   }
 }

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { LabelCache } from '@open-pencil/core/canvas'
+import { hitTestFrameTitle, LabelCache } from '@open-pencil/core/canvas'
 import { SceneGraph } from '@open-pencil/scene-graph'
 
 import {
@@ -114,5 +114,30 @@ describe('SVG rulers', () => {
     )
     const labels = texts(shapes)
     for (const value of ['120', '320', '80', '180']) expect(labels).toContain(value)
+  })
+})
+
+describe('label hit testing without Skia fonts', () => {
+  test('a click on a frame name finds the frame, measured as the overlay draws it', () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0].id
+    const frame = graph.createNode('FRAME', page, {
+      name: 'Accueil',
+      x: 10,
+      y: 40,
+      width: 300,
+      height: 200
+    })
+    const labels = new LabelCache()
+    labels.update(graph, page, 1)
+    const measure = (node: { name: string }, layout: { fontSize: number }) => ({
+      width: measureText(node.name),
+      height: layout.fontSize
+    })
+    // The name sits just above the frame; it is seven characters, 42px wide here.
+    expect(hitTestFrameTitle(graph, 20, 32, 1, page, null, labels, { measure })?.id).toBe(frame.id)
+    expect(hitTestFrameTitle(graph, 200, 32, 1, page, null, labels, { measure })).toBeNull()
+    // Without a font and without a measure, nothing can be hit.
+    expect(hitTestFrameTitle(graph, 20, 32, 1, page, null, labels)).toBeNull()
   })
 })

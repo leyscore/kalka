@@ -10,7 +10,11 @@ afterEach(() => editor.dispose())
 
 function marquee(from: [number, number], to: [number, number], containerId?: string) {
   editor.clearSelection()
-  handleMarqueeMove(editor, { type: 'marquee', startX: from[0], startY: from[1], containerId }, ...to)
+  handleMarqueeMove(
+    editor,
+    { type: 'marquee', startX: from[0], startY: from[1], containerId },
+    ...to
+  )
   return [...editor.state.selectedIds]
 }
 

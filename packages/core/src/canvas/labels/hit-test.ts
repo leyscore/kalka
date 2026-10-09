@@ -29,7 +29,7 @@ function hitLabel(
   canvasX: number,
   canvasY: number,
   zoom: number,
-  font: Font,
+  font: Font | null,
   options: LabelHitOptions
 ): SceneNode | null {
   const placement =
@@ -45,9 +45,9 @@ function hitLabel(
   if (!point || point.x < 0 || point.x > placement.width * zoom || point.y < layout.bounds.y)
     return null
   if (kind === 'section' && point.y > layout.bounds.y + layout.bounds.height) return null
-  const metrics = options.measure
-    ? options.measure(node, layout)
-    : { width: measureGlyphWidth(font, node.name), height: layout.fontSize }
+  let metrics: LabelTextMetrics | null = null
+  if (options.measure) metrics = options.measure(node, layout)
+  else if (font) metrics = { width: measureGlyphWidth(font, node.name), height: layout.fontSize }
   if (!metrics) return null
   layout = labelLayout(kind, placement.width * zoom, inside, metrics)
   if (!layout) return null
@@ -73,7 +73,8 @@ function catalogHitTest(kind: 'section' | 'component' | 'frame') {
     labelCache?: LabelCache,
     options: LabelHitOptions = {}
   ): SceneNode | null {
-    if (!font) return null
+    // Without a Skia font, the caller measures, as an SVG overlay does with its own text.
+    if (!font && !options.measure) return null
     const cache = catalog(graph, pageId, labelCache)
     const viewport = options.viewport ? labelViewport(options.viewport, zoom) : undefined
     let candidates: Array<{ nodeId: string; inside: boolean }>

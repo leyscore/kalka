@@ -30,6 +30,12 @@ export {
 export { overlaysFromEditorState } from './renderer/state-overlays'
 export { frameLabelPlacement, labelScreenMatrix, labelTransform } from './labels/transform'
 export { LabelCache } from './labels/cache'
+export {
+  hitTestComponentLabel,
+  hitTestFrameTitle,
+  hitTestSectionTitle,
+  type LabelHitOptions
+} from './labels/hit-test'
 export { resolveFillColor } from './renderer/colors'
 export { pixelGridVisible } from './overlays/pixel-grid'
 export { computeMeasurementSegments, type MeasurementSegment } from './overlays/measurement'

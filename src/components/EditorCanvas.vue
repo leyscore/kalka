@@ -139,6 +139,18 @@ const { hitTestSectionTitle, hitTestComponentLabel, hitTestFrameTitle, hitTestIs
     getRenderState,
     onViewportResize
   })
+// Editor chrome over the DOM scene: everything but the text caret moves from the overlay canvas.
+const svgOverlay = domScene
+  ? useSVGOverlay(svgOverlayRef, store, {
+      getRenderState,
+      showRulers: () =>
+        appRuntimeConfig.showRulers && store.state.showRulers && paneView.value.play === null,
+      getOverlayObstacles: () => canvasOverlayObstacles(canvasRef.value)
+    })
+  : null
+// Over the DOM scene, names are hit tested where the SVG overlay drew them.
+const labelHits = svgOverlay ?? { hitTestSectionTitle, hitTestComponentLabel, hitTestFrameTitle }
+
 const {
   cursorOverride,
   canvasLabelEdit,
@@ -153,9 +165,9 @@ const {
 } = useCanvasInput(
   canvasRef,
   store,
-  hitTestSectionTitle,
-  hitTestComponentLabel,
-  hitTestFrameTitle,
+  labelHits.hitTestSectionTitle,
+  labelHits.hitTestComponentLabel,
+  labelHits.hitTestFrameTitle,
   updatePaneCursor,
   activatePane,
   () => isActivePane.value
@@ -166,15 +178,6 @@ watch(isActivePane, (active) => {
 })
 onUnmounted(cleanupInteractions)
 
-// Editor chrome over the DOM scene: everything but the text caret moves from the overlay canvas.
-const svgOverlay = domScene
-  ? useSVGOverlay(svgOverlayRef, store, {
-      getRenderState,
-      showRulers: () =>
-        appRuntimeConfig.showRulers && store.state.showRulers && paneView.value.play === null,
-      getOverlayObstacles: () => canvasOverlayObstacles(canvasRef.value)
-    })
-  : null
 const hitTestDrawnIssueMarker = svgOverlay
   ? (x: number, y: number) => hitTestIssueMarkers(svgOverlay.issueMarkers(), x, y)
   : hitTestIssueMarker

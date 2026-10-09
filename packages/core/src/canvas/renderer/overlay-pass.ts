@@ -160,8 +160,14 @@ function drawTopOverlays(
   overlays: RenderOverlays
 ): void {
   const own = ownership(r)
-  // The live shape follows the vertices as they move; only its chrome can be drawn elsewhere.
-  r.drawNodeEditOverlay(canvas, graph, overlays.nodeEditState, own('nodeEdit'))
+  // The shape follows the vertices as they move; the DOM scene redraws it itself.
+  r.drawNodeEditOverlay(
+    canvas,
+    graph,
+    overlays.nodeEditState,
+    own('nodeEdit'),
+    own('nodeEditShape')
+  )
   if (own('pen')) r.drawPenOverlay(canvas, overlays.penState)
   if (own('issueMarkers')) {
     updateIssueMarkers(r, graph, overlays)

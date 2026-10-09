@@ -3,7 +3,11 @@ import { onScopeDispose, watch, type Ref } from 'vue'
 import type { Editor, EditorState } from '@open-pencil/core/editor'
 import { installLayoutEngine } from '@open-pencil/core/layout'
 import { fontManager } from '@open-pencil/core/text'
+import { regenerateFillGeometry } from '@open-pencil/core/vector'
 import type { VectorElementRenderer } from '@open-pencil/dom-css/export'
+import { transformVectorNetwork, type SceneNode } from '@open-pencil/scene-graph'
+import { getWorldMatrix } from '@open-pencil/scene-graph/coordinate'
+import Matrix from '@open-pencil/scene-graph/matrix'
 
 import { DomLayoutEngine } from './layout'
 import { DomSceneProjector } from './projector'
@@ -37,6 +41,27 @@ export function useDomScene(
   let frame = 0
   let lastTransform = ''
   let presentedScene = -1
+  let editState: EditorState['nodeEditState'] = null
+  let editVersion = -1
+
+  /** A path being edited is drawn from its live vertices, mapped back into its own frame. */
+  function livePatch(id: string): Partial<SceneNode> | null {
+    const edit = view().nodeEditState
+    if (edit?.nodeId !== id) return null
+    const node = editor.graph.getNode(id)
+    const inverse = node ? Matrix.invert(getWorldMatrix(node, editor.graph)) : null
+    if (!node || !inverse) return null
+    const vectorNetwork = transformVectorNetwork(inverse, {
+      vertices: edit.vertices,
+      segments: edit.segments,
+      regions: edit.regions
+    })
+    return {
+      vectorNetwork,
+      fillGeometry: regenerateFillGeometry(vectorNetwork, node.fillGeometry),
+      strokeGeometry: []
+    }
+  }
   const stops: (() => void)[] = []
 
   function tick() {
@@ -47,6 +72,16 @@ export function useDomScene(
     if (transform !== lastTransform) {
       projector.world.style.transform = transform
       lastTransform = transform
+    }
+    // Each step of a path edit redraws that path, and leaving the edit restores it. Vertices
+    // move in place, so any repaint while editing counts as a step.
+    const edit = view().nodeEditState ?? null
+    const version = view().renderVersion
+    if (edit !== editState || (edit && version !== editVersion)) {
+      if (editState && editState !== edit) projector.nodeUpdated(editState.nodeId, {})
+      if (edit) projector.nodeUpdated(edit.nodeId, {})
+      editState = edit
+      editVersion = version
     }
     if (projector.needsFlush) projector.flush()
     // Whatever changed the DOM this frame is read back before the next one draws.
@@ -75,7 +110,8 @@ export function useDomScene(
         for (const id of ids) reflowed.add(id)
         if (projector) options.onPatched?.(projector, ids)
       },
-      onReflow: (id) => reflowed.add(id)
+      onReflow: (id) => reflowed.add(id),
+      livePatch
     })
     const p = projector
     engine = new DomLayoutEngine(p, () => editor.graph)
@@ -106,6 +142,7 @@ export function useDomScene(
     reflowed.clear()
     lastTransform = ''
     presentedScene = -1
+    editState = null
   }
 
   watch(

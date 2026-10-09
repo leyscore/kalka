@@ -70,8 +70,10 @@ export function drawNodeEditOverlay(
   canvas: Canvas,
   graph: SceneGraph,
   editState: RenderOverlays['nodeEditState'],
-  /** False when another backend draws the editing chrome: only the live shape is drawn. */
-  chrome = true
+  /** False when another backend draws the editing chrome: vertices, handles, outline. */
+  chrome = true,
+  /** False when the scene itself follows the live vertices, as the DOM scene does. */
+  shape = true
 ): void {
   if (!editState) return
   const { segments, selectedVertexIndices } = editState
@@ -96,7 +98,7 @@ export function drawNodeEditOverlay(
   )
 
   // Draw the node shape with its original fills/strokes/effects using live vertices
-  drawLiveShape(r, canvas, graph, editState.nodeId, vertices, segments, regions)
+  if (shape) drawLiveShape(r, canvas, graph, editState.nodeId, vertices, segments, regions)
   if (!chrome) return
 
   // Draw technical stroke outline over the shape

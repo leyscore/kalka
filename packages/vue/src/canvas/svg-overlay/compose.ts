@@ -68,6 +68,8 @@ export const SVG_OVERLAY_LAYERS: ReadonlySet<OverlayLayerId> = new Set<OverlayLa
   'layoutInsertIndicator',
   'autoLayoutHover',
   'nodeEdit',
+  // The DOM scene redraws the path being edited from its live vertices.
+  'nodeEditShape',
   'pen',
   'issueMarkers',
   'presence',

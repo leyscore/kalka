@@ -120,6 +120,7 @@ export type OverlayLayerId =
   | 'layoutInsertIndicator'
   | 'autoLayoutHover'
   | 'nodeEdit'
+  | 'nodeEditShape'
   | 'pen'
   | 'issueMarkers'
   | 'presence'

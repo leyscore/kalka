@@ -53,6 +53,11 @@ export interface DomSceneProjectorOptions {
    * finished loading, images that decoded, text that reflowed.
    */
   onReflow?: (artboardId: string) => void
+  /**
+   * Fields a layer is drawn with instead of its own while an edit previews them, such as the
+   * vertices of a path being edited. The graph is not changed.
+   */
+  livePatch?: (id: string) => Partial<SceneNode> | null
 }
 
 /**
@@ -351,6 +356,22 @@ export class DomSceneProjector {
   }
 
   private project(id: string, shallow: boolean): DesignNode | null {
+    const patch = this.options.livePatch?.(id)
+    const node = patch ? this.graph.getNode(id) : undefined
+    if (!patch || !node) return this.projectStored(id, shallow)
+    // Drawn with the previewed fields for this projection only, as the Skia overlay did.
+    const stored = Object.fromEntries(
+      Object.keys(patch).map((key) => [key, node[key as keyof SceneNode]])
+    )
+    Object.assign(node, patch)
+    try {
+      return this.projectStored(id, shallow)
+    } finally {
+      Object.assign(node, stored)
+    }
+  }
+
+  private projectStored(id: string, shallow: boolean): DesignNode | null {
     const doc = sceneNodeToDesignDocument(this.graph, id, {
       includeSourceIds: false,
       // Variables are written as values until each artboard carries the tokens stylesheet.

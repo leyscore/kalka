@@ -149,14 +149,16 @@ const rendererMethods: ThisType<SkiaRenderer> = {
     canvas: Canvas,
     graph: SceneGraph,
     editState: RenderOverlays['nodeEditState'],
-    chrome = true
+    chrome = true,
+    shape = true
   ): void {
     NodeEditOverlay.drawNodeEditOverlay(
       this,
       canvas,
       graph,
       editState as NodeEditOverlayState | null,
-      chrome
+      chrome,
+      shape
     )
   },
 
