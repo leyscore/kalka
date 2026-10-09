@@ -26,6 +26,7 @@ import { openStorageDocumentInNewTab } from '@/app/tabs'
 import DocumentEntry from '@/components/home/document/DocumentEntry.vue'
 import HomeSidebar from '@/components/home/HomeSidebar.vue'
 import HomeSearchActions from '@/components/home/search/HomeSearchActions.vue'
+import HomeSearchField from '@/components/home/search/HomeSearchField.vue'
 import HomeStart from '@/components/home/start/HomeStart.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
@@ -171,17 +172,24 @@ function formattedDate(updatedAt: string): string {
         id="home-top"
         class="mx-auto flex w-full max-w-6xl flex-col pt-6 pr-[max(1rem,env(safe-area-inset-right))] pb-12 pl-[max(1rem,env(safe-area-inset-left))] sm:px-10 sm:pt-10"
       >
-        <h1
-          class="mb-6 font-display text-[clamp(28px,3.2vw,40px)] leading-none font-semibold tracking-[-0.035em] text-surface"
-        >
-          {{
-            identity.hasChosenName.value
-              ? welcome.greeting({ name: identity.name.value })
-              : welcome.homeTitle
-          }}
-        </h1>
-        <HomeSearchActions v-model="query" @new-document="emit('new-document')" />
-        <HomeStart v-if="!normalizedQuery" class="mb-10" />
+        <header class="mb-12 flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+          <h1
+            class="font-display text-[clamp(30px,3.4vw,44px)] leading-none font-semibold tracking-[-0.035em] text-balance text-surface"
+          >
+            {{
+              identity.hasChosenName.value
+                ? welcome.greeting({ name: identity.name.value })
+                : welcome.homeTitle
+            }}
+          </h1>
+          <HomeSearchActions @new-document="emit('new-document')" />
+        </header>
+        <HomeStart class="mb-14" />
+
+        <div id="home-files" class="mb-5 flex scroll-mt-6 flex-wrap items-center gap-3">
+          <h2 class="flex-1 text-sm font-semibold">{{ welcome.navFiles }}</h2>
+          <HomeSearchField v-model="query" class="w-full sm:w-72" />
+        </div>
 
         <p v-if="openError" class="mb-4 text-xs text-danger" role="alert">{{ openError }}</p>
         <p
@@ -191,13 +199,10 @@ function formattedDate(updatedAt: string): string {
           {{ files.noMatchingFiles({ query: query.trim() }) }}
         </p>
 
-        <section v-if="!noSearchMatches" id="home-files" class="scroll-mt-6">
+        <section v-if="!noSearchMatches">
           <div class="mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3 gap-y-2">
             <div class="col-span-2 min-w-0 sm:col-span-1">
-              <h2 class="text-sm font-semibold">{{ files.recentFiles }}</h2>
-              <p class="mt-0.5 text-pretty text-xs text-muted">
-                {{ files.recentFilesDescription }}
-              </p>
+              <h3 class="text-xs font-semibold text-muted">{{ files.recentFiles }}</h3>
             </div>
             <div class="col-span-2 flex items-center justify-end gap-1 sm:col-span-1">
               <IconButton
@@ -268,7 +273,7 @@ function formattedDate(updatedAt: string): string {
         <section class="mt-7">
           <div class="mb-3 flex items-start gap-3">
             <div class="min-w-0">
-              <h2 class="text-sm font-semibold">{{ storage.workspace }}</h2>
+              <h3 class="text-xs font-semibold text-muted">{{ storage.workspace }}</h3>
               <p class="mt-0.5 truncate text-xs text-muted sm:whitespace-normal">
                 {{ storageDescription }}
               </p>

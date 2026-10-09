@@ -34,7 +34,7 @@ function join() {
 <template>
   <PopoverRoot v-model:open="open">
     <PopoverTrigger as-child>
-      <AppButton :size="size" variant="outline" data-test-id="home-join-room">
+      <AppButton :size="size" variant="ghost" data-test-id="home-join-room">
         <template #leading><icon-lucide-users class="size-3.5" /></template>
         {{ messages.joinRoomEllipsis }}
       </AppButton>
