@@ -108,7 +108,7 @@ function createWindow(): BrowserWindow {
     width: 1280,
     height: 800,
     show: false,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#121214',
     webPreferences: {
       preload: PRELOAD,
       contextIsolation: true,

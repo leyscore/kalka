@@ -10,6 +10,7 @@ import { recordRuntimeError } from '@/app/diagnostics'
 import { preloadFonts } from '@/app/editor/fonts'
 import { observeBootErrors } from '@/app/shell/support/boot'
 import { reportBootFailure } from '@/app/shell/support/gate'
+import { releaseBootSplash } from '@/app/shell/support/splash'
 import { IS_TAURI } from '@/constants'
 
 import App from './App.vue'
@@ -36,6 +37,7 @@ export async function boot(): Promise<void> {
     await reportBootFailure(failure.error)
     return
   }
+  void releaseBootSplash()
   // Component errors after boot reach only this handler, not the window; keep them diagnosable.
   app.config.errorHandler = (error, _instance, info) => {
     recordRuntimeError(error, 'vue', info)

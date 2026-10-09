@@ -1,6 +1,7 @@
 import { IS_TAURI } from '@open-pencil/core/constants'
 
 import type { SupportNotice } from './guidance'
+import { removeBootSplash } from './splash'
 
 /**
  * Root element the notice replaces. It is the app mount point, so the notice
@@ -32,6 +33,7 @@ function createLink(doc: Document, label: string, href: string): HTMLAnchorEleme
  * `#boot-notice` styles in `index.html`.
  */
 export function renderSupportNotice(notice: SupportNotice, doc: Document = document): void {
+  removeBootSplash(doc)
   const root = doc.querySelector(APP_ROOT_SELECTOR) ?? doc.body
   root.replaceChildren()
 

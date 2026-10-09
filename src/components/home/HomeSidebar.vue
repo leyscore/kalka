@@ -32,7 +32,7 @@ const item =
 
 <template>
   <nav
-    class="hidden w-56 shrink-0 flex-col border-r border-border bg-panel-secondary px-3 py-5 md:flex"
+    class="hidden w-56 shrink-0 flex-col border-r border-border/60 bg-panel-secondary/55 px-3 py-5 backdrop-blur-xl md:flex"
     :aria-label="welcome.navHome"
   >
     <div class="mb-6 flex items-center gap-2.5 px-2">

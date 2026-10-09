@@ -63,7 +63,7 @@ function onOpenChange(open: boolean): void {
   <DialogRoot :open="welcomeOpen" @update:open="onOpenChange">
     <DialogPortal>
       <DialogContent
-        class="fixed inset-0 z-[45] flex overflow-y-auto bg-canvas text-surface outline-none animate-in fade-in duration-300"
+        class="bg-backdrop grain-corners fixed inset-0 z-[45] flex overflow-y-auto text-surface outline-none animate-in fade-in duration-300"
         data-test-id="welcome"
       >
         <div
