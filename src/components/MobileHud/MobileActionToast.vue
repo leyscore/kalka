@@ -10,7 +10,7 @@ const hud = useMobileHudContext()
     <div
       v-if="hud.actionToast"
       :key="hud.actionToast"
-      class="flex h-8 items-center rounded-full border border-accent/20 bg-panel/70 px-3 shadow-md backdrop-blur-xl"
+      class="flex h-8 items-center rounded-full border border-glass-strong-border bg-glass-strong px-3 shadow-(--toolbar-shadow) backdrop-blur-[28px]"
     >
       <span class="text-xs whitespace-nowrap text-primary">{{ hud.actionToast }}</span>
     </div>
