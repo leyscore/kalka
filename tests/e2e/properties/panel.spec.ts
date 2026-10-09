@@ -29,7 +29,7 @@ test('appearance fields share control height and show variable actions', async (
     section.getByRole('spinbutton', { name: 'Corner smoothing' })
   ]
   for (const control of controls) {
-    await expect(control).toHaveCSS('height', '24px')
+    await expect(control).toHaveCSS('height', '28px')
   }
 
   const applyVariable = section.getByRole('button', { name: 'Apply variable' }).first()
@@ -74,7 +74,7 @@ test('paint fields retain editable color and opacity widths', async () => {
   await editor.canvas.drawRect(200, 200, 80, 80)
   const fillItem = propertyItems(editor.page, 'fills').first()
   const paintField = fillItem.locator('[data-slot="paint-field"]')
-  await expect(paintField).toHaveCSS('height', '24px')
+  await expect(paintField).toHaveCSS('height', '28px')
   const colorBox = expectDefined(
     await fillItem.getByRole('textbox', { name: 'Fill' }).boundingBox(),
     'fill color bounds'
