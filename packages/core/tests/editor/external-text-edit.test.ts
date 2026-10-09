@@ -34,7 +34,8 @@ describe('external text editing', () => {
     editor.commitTextEdit()
     expect(external.calls.at(-1)).toBe('stop')
     expect(editor.state.editingTextId).toBeNull()
-    expect(editor.undo.undoStack.map((entry) => entry.label)).toEqual(['Edit text'])
+    expect(editor.undo.undoLabel).toBe('Edit text')
+    expect(editor.undo.peekUndo(1)).toBeUndefined()
 
     editor.undoAction()
     expect(editor.graph.getNode(text.id)?.text).toBe('Bonjour')
@@ -49,6 +50,6 @@ describe('external text editing', () => {
     editor.setExternalTextEditor(recorder())
     editor.startTextEditing(text.id)
     editor.commitTextEdit()
-    expect(editor.undo.undoStack).toHaveLength(0)
+    expect(editor.undo.canUndo).toBe(false)
   })
 })

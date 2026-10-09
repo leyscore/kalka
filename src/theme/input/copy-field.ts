@@ -6,7 +6,10 @@ export default {
   variants: {
     look: {
       /** A command to run, set apart like a terminal line. */
-      command: { root: 'rounded bg-input px-2.5 py-1.5', value: 'font-mono text-[11px]' },
+      command: {
+        root: 'rounded-lg border border-border/70 bg-input py-1.5 pr-1.5 pl-3',
+        value: 'font-mono text-[11px] leading-relaxed'
+      },
       /** An address or token inside a settings row. */
       plain: { value: 'text-xs' }
     }

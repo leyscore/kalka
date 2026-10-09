@@ -39,6 +39,8 @@
 
 ### Added
 
+- A three-step welcome on first launch asks what you came for, sets the theme and the code the Code tab opens on, and shows how to connect Claude Code, Claude Desktop or another MCP client, with a live connection status.
+- The home screen starts a design at a device size, opens a `.fig` or `.html` file, a pasted piece of HTML or a file from a URL, and opens the sample file or a one-minute tour of the editor.
 - Show the pixel grid when zoomed in, as in Figma: from 800% on a standard display and 400% on a Retina one, toggled with **View → Pixel Grid** or <kbd>⇧</kbd><kbd>'</kbd>. <kbd>⇧</kbd><kbd>⌘</kbd><kbd>'</kbd> toggles **Snap to Pixel Grid**. The zoom menu in the properties panel lists both, with Figma's shortcuts, and labels its shortcuts for zoom to fit (<kbd>⇧</kbd><kbd>1</kbd>) and 100% (<kbd>⌘</kbd><kbd>0</kbd>); <kbd>⇧</kbd><kbd>R</kbd> toggles rulers and <kbd>⌥</kbd><kbd>⌘</kbd><kbd>\\</kbd> multiplayer cursors.
 - Set a component's text, boolean, and swap properties on a design JSX `<Instance>` by name, as variants are set, such as `<Instance of="Card" Title="Hello" Badge={false} />`; `properties` accepts names too. An instance written this way still works after the document is saved to `.fig` and reopened, which gives each property a new ID ([#750](https://github.com/open-pencil/open-pencil/issues/750)).
 - Save the open document to cloud storage with **File → Save to storage…**. The tab stays bound to the stored copy, so Save and auto-save write to the bucket; before storage is configured, the command opens its settings. A new Cloud Storage guide covers connecting a bucket, CORS, syncing, and provider notes.
@@ -93,7 +95,7 @@
 
 ### Changed
 
-- The app is now Kalka: its name, icons, window and menu titles, `kalka://` links, and the folder where the MCP server finds the running app (`Kalka` on macOS and Windows, `kalka` on Linux).
+- The app is now Kalka: its blue and paper colors, the Geist, Bricolage Grotesque and JetBrains Mono fonts, its name, icons, window and menu titles, `kalka://` links, and the folder where the MCP server finds the running app (`Kalka` on macOS and Windows, `kalka` on Linux).
 - With **Snap to Pixel Grid** on, moved layers and resized edges land on whole pixels at any zoom, and drawn layers start and end on whole pixels, as in Figma; zoomed in, moves and resizes could leave fractions before, and drawing was not snapped.
 - Layers inside components and instances are outlined in purple when hovered or selected, with a purple size label, as in Figma; they were blue.
 - The properties panel's variable picker groups variables by collection and shows each color variable's swatch, and the variables dialog points a value at another variable with the same picker, detaching it from the picker's footer.

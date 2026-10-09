@@ -22,6 +22,7 @@ import {
   pageMessages,
   panelMessages,
   recoveryMessages,
+  welcomeMessages,
   renderingMessages,
   renameMessages,
   settingsMessages,
@@ -53,6 +54,7 @@ export const useMenuMessages = () => useI18nNamespace(menuMessages)
 export const usePageMessages = () => useI18nNamespace(pageMessages)
 export const usePanelMessages = () => useI18nNamespace(panelMessages)
 export const useRecoveryMessages = () => useI18nNamespace(recoveryMessages)
+export const useWelcomeMessages = () => useI18nNamespace(welcomeMessages)
 export const useRenderingMessages = () => useI18nNamespace(renderingMessages)
 export const useRenameMessages = () => useI18nNamespace(renameMessages)
 export const useSettingsMessages = () => useI18nNamespace(settingsMessages)
@@ -89,6 +91,7 @@ export function useI18n() {
     updates: useUpdateMessages(),
     variables: useVariableMessages(),
     variableTypes: useVariableTypeMessages(),
+    welcome: useWelcomeMessages(),
     locale: useStore(locale) as Ref<Locale>,
     availableLocales: AVAILABLE_LOCALES,
     localeLabels: LOCALE_LABELS,

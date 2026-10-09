@@ -45,4 +45,19 @@ describe('parseAppPreferences', () => {
       'pending'
     )
   })
+
+  test('keeps the welcome, tour, role and default code, each on its own', () => {
+    const stored = parseAppPreferences({
+      onboarding: { welcome: 'done', tour: 'soon', role: 'build' },
+      code: { defaultSource: 'tailwind-jsx' }
+    })
+    expect(stored.onboarding).toMatchObject({ welcome: 'done', tour: 'pending', role: 'build' })
+    expect(stored.code.defaultSource).toBe('tailwind-jsx')
+    const invalid = parseAppPreferences({
+      onboarding: { role: 'pilot' },
+      code: { defaultSource: 'php' }
+    })
+    expect(invalid.onboarding.role).toBeNull()
+    expect(invalid.code.defaultSource).toBe(DEFAULT_APP_PREFERENCES.code.defaultSource)
+  })
 })

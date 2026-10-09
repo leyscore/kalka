@@ -34,6 +34,18 @@ export interface DesignCheckPreferences {
 export const AI_SETUP_STATES = ['pending', 'done'] as const
 export type AISetupState = (typeof AI_SETUP_STATES)[number]
 
+/** Whether a first-run step (the welcome, the editor tour) is still to show. */
+export const ONBOARDING_STEP_STATES = ['pending', 'done'] as const
+export type OnboardingStepState = (typeof ONBOARDING_STEP_STATES)[number]
+
+/** What the person told the welcome they came for. */
+export const ONBOARDING_ROLES = ['design', 'build', 'both', 'ai'] as const
+export type OnboardingRole = (typeof ONBOARDING_ROLES)[number]
+
+/** The code the Code panel shows first. */
+export const CODE_SOURCES = ['design-jsx', 'tailwind-jsx', 'html-css'] as const
+export type DefaultCodeSource = (typeof CODE_SOURCES)[number]
+
 export interface AppPreferences {
   appearance: { animations: AnimationPreference }
   chat: {
@@ -56,6 +68,12 @@ export interface AppPreferences {
   designCheck: DesignCheckPreferences
   onboarding: {
     aiSetup: AISetupState
+    welcome: OnboardingStepState
+    tour: OnboardingStepState
+    role: OnboardingRole | null
+  }
+  code: {
+    defaultSource: DefaultCodeSource
   }
 }
 
@@ -74,7 +92,8 @@ export const DEFAULT_APP_PREFERENCES: Readonly<AppPreferences> = {
   },
   rendering: { canvasMode: 'retained' },
   designCheck: { showOnCanvas: true, preset: 'recommended', disabledRules: [] },
-  onboarding: { aiSetup: 'pending' }
+  onboarding: { aiSetup: 'pending', welcome: 'pending', tour: 'pending', role: null },
+  code: { defaultSource: 'html-css' }
 }
 
 const STORAGE_KEY = 'open-pencil:preferences:v1'
@@ -129,7 +148,13 @@ const appPreferencesSchema = section({
     )
   }),
   onboarding: section({
-    aiSetup: v.fallback(v.picklist(AI_SETUP_STATES), defaults.onboarding.aiSetup)
+    aiSetup: v.fallback(v.picklist(AI_SETUP_STATES), defaults.onboarding.aiSetup),
+    welcome: v.fallback(v.picklist(ONBOARDING_STEP_STATES), defaults.onboarding.welcome),
+    tour: v.fallback(v.picklist(ONBOARDING_STEP_STATES), defaults.onboarding.tour),
+    role: v.fallback(v.nullable(v.picklist(ONBOARDING_ROLES)), defaults.onboarding.role)
+  }),
+  code: section({
+    defaultSource: v.fallback(v.picklist(CODE_SOURCES), defaults.code.defaultSource)
   })
 })
 
@@ -155,7 +180,18 @@ export function updateRecoveryEnabled(enabled: boolean): void {
 }
 
 export function updateAISetupState(aiSetup: AISetupState): void {
-  appPreferences.value = { ...appPreferences.value, onboarding: { aiSetup } }
+  updateOnboarding({ aiSetup })
+}
+
+export function updateOnboarding(changes: Partial<AppPreferences['onboarding']>): void {
+  appPreferences.value = {
+    ...appPreferences.value,
+    onboarding: { ...appPreferences.value.onboarding, ...changes }
+  }
+}
+
+export function updateDefaultCodeSource(defaultSource: DefaultCodeSource): void {
+  appPreferences.value = { ...appPreferences.value, code: { defaultSource } }
 }
 
 export function updateCanvasRenderingMode(canvasMode: CanvasRenderingMode): void {

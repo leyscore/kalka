@@ -35,6 +35,7 @@ import {
 } from '@/app/code/live-preview'
 import { starterSourceFor, type CodeSource } from '@/app/code/templates'
 import { useEditorStore } from '@/app/editor/active-store'
+import { appPreferences, updateDefaultCodeSource } from '@/app/settings/preferences/store'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import AppPlaceholder from '@/components/ui/feedback/AppPlaceholder.vue'
 import Tip from '@/components/ui/overlay/Tip.vue'
@@ -49,7 +50,7 @@ const editorActive = computed(() => active)
 const { code, common } = useI18n()
 const { copy, copied } = useClipboard({ copiedDuring: 2000 })
 const { copy: copyReference, copied: copiedReference } = useClipboard({ copiedDuring: 2000 })
-const source = ref<CodeSource>('design-jsx')
+const source = ref<CodeSource>(appPreferences.value.code.defaultSource)
 const draft = ref('')
 /** The person has written in the code since it was generated for the current selection. */
 const edited = ref(false)
@@ -272,6 +273,7 @@ async function changeSource(next: CodeSource): Promise<void> {
   if (next === source.value) return
   await commitCurrentSession()
   source.value = next
+  updateDefaultCodeSource(next)
   edited.value = false
   error.value = ''
   status.value = 'idle'

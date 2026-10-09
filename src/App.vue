@@ -19,6 +19,7 @@ import { prepareForReload } from '@/app/tabs'
 import UnsavedChangesDialog from '@/components/document/UnsavedChangesDialog.vue'
 import PublishLibraryDialog from '@/components/libraries/PublishLibraryDialog.vue'
 import LibraryUpdateReviewDialog from '@/components/libraries/review/LibraryUpdateReviewDialog.vue'
+import WelcomeFlow from '@/components/onboarding/WelcomeFlow.vue'
 import RecoveryDialog from '@/components/recovery/RecoveryDialog.vue'
 import AISetupDialog from '@/components/settings/ai-setup/AISetupDialog.vue'
 import SettingsDialog from '@/components/settings/SettingsDialog.vue'
@@ -62,6 +63,7 @@ onMounted(() => {
       <UnsavedChangesDialog />
       <PublishLibraryDialog />
       <LibraryUpdateReviewDialog />
+      <WelcomeFlow />
       <Toaster />
     </TooltipProvider>
   </MotionConfig>

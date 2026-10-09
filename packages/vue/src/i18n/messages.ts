@@ -29,6 +29,7 @@ import {
   variableTypeMessages
 } from '#vue/i18n/messages/variable-types'
 import { variablesMessageDefaults, variablesMessages } from '#vue/i18n/messages/variables'
+import { welcomeMessageDefaults, welcomeMessages } from '#vue/i18n/messages/welcome'
 
 export {
   aiMessages,
@@ -48,6 +49,7 @@ export {
   pageMessages,
   panelMessages,
   recoveryMessages,
+  welcomeMessages,
   renderingMessages,
   renameMessages,
   settingsMessages,
@@ -83,5 +85,6 @@ export const messageDefaults = {
   tools: toolMessageDefaults,
   updates: updatesMessageDefaults,
   variables: variablesMessageDefaults,
-  variableTypes: variableTypeMessageDefaults
+  variableTypes: variableTypeMessageDefaults,
+  welcome: welcomeMessageDefaults
 } as const

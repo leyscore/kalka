@@ -23,13 +23,15 @@ import { openFileFromPath } from '@/app/shell/menu/use'
 import { createStorageWorkspaceSource } from '@/app/storage/workspace/source'
 import { openStorageDocumentInNewTab } from '@/app/tabs'
 import DocumentEntry from '@/components/home/document/DocumentEntry.vue'
+import HomeSidebar from '@/components/home/HomeSidebar.vue'
 import HomeSearchActions from '@/components/home/search/HomeSearchActions.vue'
+import HomeStart from '@/components/home/start/HomeStart.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import SegmentedControl from '@/components/ui/select/SegmentedControl.vue'
 
 const emit = defineEmits<{ 'new-document': [] }>()
-const { panels, locale, storage, files, common, settings } = useI18n()
+const { panels, locale, storage, files, common, settings, welcome } = useI18n()
 const { isMobile } = useViewportKind()
 const view = useLocalStorage<'grid' | 'list'>('open-pencil:home-files-view', 'grid')
 const query = ref('')
@@ -157,194 +159,206 @@ function formattedDate(updatedAt: string): string {
 </script>
 
 <template>
-  <main
-    class="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto bg-app text-surface"
-    data-test-id="recent-files-home"
-  >
-    <section
-      class="mx-auto flex w-full max-w-7xl flex-col pt-4 pr-[max(1rem,env(safe-area-inset-right))] pb-4 pl-[max(1rem,env(safe-area-inset-left))] sm:px-6 sm:py-5"
+  <div class="flex min-h-0 flex-1 bg-canvas text-surface">
+    <HomeSidebar />
+    <main
+      class="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto"
+      data-test-id="recent-files-home"
     >
-      <HomeSearchActions v-model="query" @new-document="emit('new-document')" />
-
-      <p v-if="openError" class="mb-4 text-xs text-danger" role="alert">{{ openError }}</p>
-      <p
-        v-if="noSearchMatches"
-        class="rounded-lg border border-dashed border-border px-4 py-8 text-center text-xs text-muted"
+      <section
+        id="home-top"
+        class="mx-auto flex w-full max-w-6xl flex-col pt-6 pr-[max(1rem,env(safe-area-inset-right))] pb-12 pl-[max(1rem,env(safe-area-inset-left))] sm:px-10 sm:pt-10"
       >
-        {{ files.noMatchingFiles({ query: query.trim() }) }}
-      </p>
-
-      <section v-if="!noSearchMatches">
-        <div class="mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3 gap-y-2">
-          <div class="col-span-2 min-w-0 sm:col-span-1">
-            <h1 class="text-base font-semibold">{{ files.recentFiles }}</h1>
-            <p class="mt-0.5 text-pretty text-xs text-muted">{{ files.recentFilesDescription }}</p>
-          </div>
-          <div class="col-span-2 flex items-center justify-end gap-1 sm:col-span-1">
-            <IconButton
-              v-if="hasRecentFiles"
-              :label="common.clear"
-              class="size-10 sm:size-7"
-              data-test-id="recent-files-clear"
-              @click="clearRecentFiles"
-            >
-              <icon-lucide-trash-2 class="size-3.5" />
-            </IconButton>
-            <SegmentedControl
-              v-model="view"
-              required
-              :label="files.recentFiles"
-              :size="isMobile ? 'touch' : 'md'"
-              :options="[
-                { value: 'grid', label: panels.gridView },
-                { value: 'list', label: panels.listView }
-              ]"
-            >
-              <template #option="{ option }">
-                <icon-lucide-layout-grid v-if="option.value === 'grid'" class="size-3.5" />
-                <icon-lucide-list v-else class="size-3.5" />
-              </template>
-            </SegmentedControl>
-          </div>
-        </div>
-
-        <div
-          v-if="filteredRecentFiles.length && view === 'grid'"
-          class="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))]"
+        <h1
+          class="mb-6 font-display text-[clamp(28px,3.2vw,40px)] leading-none font-semibold tracking-[-0.035em] text-surface"
         >
-          <DocumentEntry
-            v-for="document in filteredRecentFiles"
-            :key="document.id"
-            v-workspace-preview="document.id"
-            :name="document.name"
-            :metadata="formattedDate(document.updatedAt)"
-            :previewURL="previewURL(document.id)"
-            @open="openRecent(document)"
-          />
-        </div>
+          {{ welcome.homeTitle }}
+        </h1>
+        <HomeSearchActions v-model="query" @new-document="emit('new-document')" />
+        <HomeStart v-if="!normalizedQuery" class="mb-10" />
 
-        <div
-          v-else-if="filteredRecentFiles.length"
-          class="overflow-hidden rounded-lg border border-border"
+        <p v-if="openError" class="mb-4 text-xs text-danger" role="alert">{{ openError }}</p>
+        <p
+          v-if="noSearchMatches"
+          class="rounded-lg border border-dashed border-border px-4 py-8 text-center text-xs text-muted"
         >
-          <DocumentEntry
-            v-for="document in filteredRecentFiles"
-            :key="document.id"
-            view="list"
-            :name="document.name"
-            :metadata="formattedDate(document.updatedAt)"
-            @open="openRecent(document)"
-          />
-        </div>
+          {{ files.noMatchingFiles({ query: query.trim() }) }}
+        </p>
 
-        <div
-          v-else-if="!normalizedQuery"
-          class="rounded-lg border border-dashed border-border px-4 py-4 text-center sm:py-6"
-        >
-          <p class="text-xs font-medium">{{ files.noRecentFiles }}</p>
-          <p class="mt-1 text-xs text-muted">{{ files.noRecentFilesDescription }}</p>
-        </div>
-      </section>
-
-      <section class="mt-7">
-        <div class="mb-3 flex items-start gap-3">
-          <div class="min-w-0">
-            <h2 class="text-base font-semibold">{{ storage.workspace }}</h2>
-            <p class="mt-0.5 truncate text-xs text-muted sm:whitespace-normal">
-              {{ storageDescription }}
-            </p>
+        <section v-if="!noSearchMatches" id="home-files" class="scroll-mt-6">
+          <div class="mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3 gap-y-2">
+            <div class="col-span-2 min-w-0 sm:col-span-1">
+              <h2 class="text-sm font-semibold">{{ files.recentFiles }}</h2>
+              <p class="mt-0.5 text-pretty text-xs text-muted">
+                {{ files.recentFilesDescription }}
+              </p>
+            </div>
+            <div class="col-span-2 flex items-center justify-end gap-1 sm:col-span-1">
+              <IconButton
+                v-if="hasRecentFiles"
+                :label="common.clear"
+                class="size-10 sm:size-7"
+                data-test-id="recent-files-clear"
+                @click="clearRecentFiles"
+              >
+                <icon-lucide-trash-2 class="size-3.5" />
+              </IconButton>
+              <SegmentedControl
+                v-model="view"
+                required
+                :label="files.recentFiles"
+                :size="isMobile ? 'touch' : 'md'"
+                :options="[
+                  { value: 'grid', label: panels.gridView },
+                  { value: 'list', label: panels.listView }
+                ]"
+              >
+                <template #option="{ option }">
+                  <icon-lucide-layout-grid v-if="option.value === 'grid'" class="size-3.5" />
+                  <icon-lucide-list v-else class="size-3.5" />
+                </template>
+              </SegmentedControl>
+            </div>
           </div>
-          <div class="ml-auto flex shrink-0 items-center gap-1">
-            <IconButton
-              :label="common.refresh"
-              class="size-10 sm:size-7"
-              @click="storageWorkspace.refresh"
-            >
-              <icon-lucide-refresh-cw class="size-3.5" />
-            </IconButton>
-            <IconButton
-              :label="settings.title"
-              class="size-10 sm:size-7"
-              @click="openSettingsDialog('storage')"
-            >
-              <icon-lucide-settings-2 class="size-3.5" />
-            </IconButton>
-          </div>
-        </div>
 
-        <div
-          v-if="storageLoading && storageDocuments.length === 0"
-          class="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))]"
-          :aria-label="storage.loadingWorkspace"
-        >
           <div
-            v-for="index in 3"
-            :key="index"
-            class="min-w-0 animate-pulse motion-reduce:animate-none"
+            v-if="filteredRecentFiles.length && view === 'grid'"
+            class="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))]"
           >
-            <div class="aspect-video rounded-lg border border-border bg-panel-field" />
-            <div class="mt-2 h-3 w-2/3 rounded bg-panel-field" />
-            <div class="mt-1.5 h-2.5 w-1/3 rounded bg-panel-field" />
+            <DocumentEntry
+              v-for="document in filteredRecentFiles"
+              :key="document.id"
+              v-workspace-preview="document.id"
+              :name="document.name"
+              :metadata="formattedDate(document.updatedAt)"
+              :previewURL="previewURL(document.id)"
+              @open="openRecent(document)"
+            />
           </div>
-        </div>
 
-        <div
-          v-else-if="storageError && storageDocuments.length === 0"
-          class="rounded-lg border border-danger/40 px-4 py-6 text-center"
-          role="alert"
-        >
-          <p class="text-xs text-danger">{{ storageError }}</p>
-          <AppButton variant="outline" class="mt-3" @click="storageWorkspace.refresh">
-            {{ common.refresh }}
-          </AppButton>
-        </div>
+          <div
+            v-else-if="filteredRecentFiles.length"
+            class="overflow-hidden rounded-lg border border-border"
+          >
+            <DocumentEntry
+              v-for="document in filteredRecentFiles"
+              :key="document.id"
+              view="list"
+              :name="document.name"
+              :metadata="formattedDate(document.updatedAt)"
+              @open="openRecent(document)"
+            />
+          </div>
 
-        <div
-          v-else-if="filteredStorageDocuments.length && view === 'grid'"
-          class="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))]"
-        >
-          <DocumentEntry
-            v-for="document in filteredStorageDocuments"
-            :key="document.id"
-            v-storage-preview="document.id"
-            :name="document.name"
-            :metadata="formattedDate(document.updatedAt)"
-            :previewURL="storagePreviewURL(document.id)"
-            @open="openStorageDocument(document)"
-          />
-        </div>
+          <div
+            v-else-if="!normalizedQuery"
+            class="rounded-lg border border-dashed border-border px-4 py-4 text-center sm:py-6"
+          >
+            <p class="text-xs font-medium">{{ files.noRecentFiles }}</p>
+            <p class="mt-1 text-xs text-muted">{{ files.noRecentFilesDescription }}</p>
+          </div>
+        </section>
 
-        <div
-          v-else-if="filteredStorageDocuments.length"
-          class="overflow-hidden rounded-lg border border-border"
-        >
-          <DocumentEntry
-            v-for="document in filteredStorageDocuments"
-            :key="document.id"
-            view="list"
-            :name="document.name"
-            :metadata="formattedDate(document.updatedAt)"
-            @open="openStorageDocument(document)"
-          />
-        </div>
+        <section class="mt-7">
+          <div class="mb-3 flex items-start gap-3">
+            <div class="min-w-0">
+              <h2 class="text-sm font-semibold">{{ storage.workspace }}</h2>
+              <p class="mt-0.5 truncate text-xs text-muted sm:whitespace-normal">
+                {{ storageDescription }}
+              </p>
+            </div>
+            <div class="ml-auto flex shrink-0 items-center gap-1">
+              <IconButton
+                :label="common.refresh"
+                class="size-10 sm:size-7"
+                @click="storageWorkspace.refresh"
+              >
+                <icon-lucide-refresh-cw class="size-3.5" />
+              </IconButton>
+              <IconButton
+                :label="settings.title"
+                class="size-10 sm:size-7"
+                @click="openSettingsDialog('storage')"
+              >
+                <icon-lucide-settings-2 class="size-3.5" />
+              </IconButton>
+            </div>
+          </div>
 
-        <div
-          v-else-if="!storageConfigured"
-          class="rounded-lg border border-dashed border-border px-4 py-4 text-center text-xs text-muted sm:py-6"
-        >
-          <p>{{ storage.notConfigured }}</p>
-          <AppButton variant="outline" class="mt-3" @click="openSettingsDialog('storage')">
-            {{ settings.title }}
-          </AppButton>
-        </div>
+          <div
+            v-if="storageLoading && storageDocuments.length === 0"
+            class="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))]"
+            :aria-label="storage.loadingWorkspace"
+          >
+            <div
+              v-for="index in 3"
+              :key="index"
+              class="min-w-0 animate-pulse motion-reduce:animate-none"
+            >
+              <div class="aspect-video rounded-lg border border-border bg-panel-field" />
+              <div class="mt-2 h-3 w-2/3 rounded bg-panel-field" />
+              <div class="mt-1.5 h-2.5 w-1/3 rounded bg-panel-field" />
+            </div>
+          </div>
 
-        <div
-          v-else-if="!normalizedQuery"
-          class="rounded-lg border border-dashed border-border px-4 py-4 text-center text-xs text-muted sm:py-6"
-        >
-          {{ storage.emptyStorageWorkspace }}
-        </div>
+          <div
+            v-else-if="storageError && storageDocuments.length === 0"
+            class="rounded-lg border border-danger/40 px-4 py-6 text-center"
+            role="alert"
+          >
+            <p class="text-xs text-danger">{{ storageError }}</p>
+            <AppButton variant="outline" class="mt-3" @click="storageWorkspace.refresh">
+              {{ common.refresh }}
+            </AppButton>
+          </div>
+
+          <div
+            v-else-if="filteredStorageDocuments.length && view === 'grid'"
+            class="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))]"
+          >
+            <DocumentEntry
+              v-for="document in filteredStorageDocuments"
+              :key="document.id"
+              v-storage-preview="document.id"
+              :name="document.name"
+              :metadata="formattedDate(document.updatedAt)"
+              :previewURL="storagePreviewURL(document.id)"
+              @open="openStorageDocument(document)"
+            />
+          </div>
+
+          <div
+            v-else-if="filteredStorageDocuments.length"
+            class="overflow-hidden rounded-lg border border-border"
+          >
+            <DocumentEntry
+              v-for="document in filteredStorageDocuments"
+              :key="document.id"
+              view="list"
+              :name="document.name"
+              :metadata="formattedDate(document.updatedAt)"
+              @open="openStorageDocument(document)"
+            />
+          </div>
+
+          <div
+            v-else-if="!storageConfigured"
+            class="rounded-lg border border-dashed border-border px-4 py-4 text-center text-xs text-muted sm:py-6"
+          >
+            <p>{{ storage.notConfigured }}</p>
+            <AppButton variant="outline" class="mt-3" @click="openSettingsDialog('storage')">
+              {{ settings.title }}
+            </AppButton>
+          </div>
+
+          <div
+            v-else-if="!normalizedQuery"
+            class="rounded-lg border border-dashed border-border px-4 py-4 text-center text-xs text-muted sm:py-6"
+          >
+            {{ storage.emptyStorageWorkspace }}
+          </div>
+        </section>
       </section>
-    </section>
-  </main>
+    </main>
+  </div>
 </template>

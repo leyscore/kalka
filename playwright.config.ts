@@ -36,7 +36,7 @@ const appDefaults = {
   },
   use: {
     baseURL: origin,
-    // Tests start past the first-run AI setup offer; its own spec clears this.
+    // Tests start past the first-run welcome, tour and AI setup offer; their specs clear this.
     storageState: {
       cookies: [],
       origins: [
@@ -45,7 +45,10 @@ const appDefaults = {
           localStorage: [
             {
               name: 'open-pencil:preferences:v1',
-              value: JSON.stringify({ version: 1, onboarding: { aiSetup: 'done' } })
+              value: JSON.stringify({
+                version: 1,
+                onboarding: { aiSetup: 'done', welcome: 'done', tour: 'done' }
+              })
             }
           ]
         }

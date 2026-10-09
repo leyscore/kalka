@@ -123,7 +123,14 @@ describe('component set borders', () => {
       width: 100,
       height: 60,
       strokes: [
-        { color: { r: 0, g: 0, b: 0, a: 1 }, weight: 1, opacity: 1, visible: true, align: 'INSIDE' }
+        {
+          type: 'SOLID',
+          color: { r: 0, g: 0, b: 0, a: 1 },
+          weight: 1,
+          opacity: 1,
+          visible: true,
+          align: 'INSIDE'
+        }
       ]
     })
     graph.createNode('COMPONENT_SET', page, { width: 100, height: 60, visible: false })

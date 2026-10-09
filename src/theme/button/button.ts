@@ -69,7 +69,7 @@ const appButton = tv({
     {
       color: 'primary',
       variant: 'solid',
-      class: { base: 'bg-primary text-inverted hover:bg-primary/90' }
+      class: { base: 'bg-accent text-white shadow-sm shadow-accent/20 hover:bg-accent/90' }
     },
     {
       color: 'primary',

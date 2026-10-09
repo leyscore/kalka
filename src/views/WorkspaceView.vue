@@ -6,7 +6,6 @@ import { useRoute, useRouter } from 'vue-router'
 
 import { useI18n } from '@open-pencil/vue'
 
-import { offerAISetupOnFirstRun } from '@/app/ai/models/settings/onboarding/dialog'
 import { exposeAutomationTestRequests } from '@/app/automation/bridge/test-hooks'
 import { startMCPRuntime, stopMCPRuntime } from '@/app/automation/mcp/runtime'
 import { startWebMCP } from '@/app/automation/webmcp/runtime'
@@ -20,7 +19,9 @@ import type { PendingOpenFile } from '@/app/document/io/pending-open'
 import { openPendingFiles } from '@/app/document/io/pending-open'
 import { openWebLinkFromLocation, withoutWebLinkParams } from '@/app/document/io/web-link'
 import { focusNodesByName } from '@/app/editor/selection/focus'
+import { startBlank } from '@/app/home/start'
 import { notificationMessages } from '@/app/i18n/notifications'
+import { offerWelcomeOnFirstRun } from '@/app/onboarding/welcome'
 import { appRuntimeConfig } from '@/app/runtime/config'
 import { useDocumentDrop } from '@/app/shell/document-drop'
 import { useKeyboard } from '@/app/shell/keyboard/use'
@@ -28,7 +29,6 @@ import { useEditorMenu } from '@/app/shell/menu/use'
 import { toast } from '@/app/shell/ui'
 import {
   activeTab,
-  createDocumentInCurrentTab,
   createHomeTab,
   createTab,
   getActiveStore,
@@ -43,6 +43,7 @@ import EditorWorkspace from '@/components/editor/EditorWorkspace.vue'
 import FileApiBanner from '@/components/FileApiBanner.vue'
 import FontStatusBanner from '@/components/font-status/FontStatusBanner.vue'
 import HomeWorkspace from '@/components/home/HomeWorkspace.vue'
+import EditorTour from '@/components/onboarding/EditorTour.vue'
 import RenameSelectionDialog from '@/components/selection/RenameSelectionDialog.vue'
 import TabBar from '@/components/TabBar.vue'
 import { IS_BROWSER } from '@/constants'
@@ -85,7 +86,7 @@ function openFirstTab(): Tab {
 }
 
 if (createdInitialTab && route.path === '/' && !appRuntimeConfig.test && !route.meta.demo) {
-  offerAISetupOnFirstRun()
+  offerWelcomeOnFirstRun()
 }
 
 useHead({ title: route.meta.demo ? 'Demo' : undefined })
@@ -230,11 +231,12 @@ onUnmounted(() => {
     <RenameSelectionDialog />
     <CommandPalette />
     <TabBar />
-    <HomeWorkspace v-show="activeTab?.kind === 'home'" @new-document="createDocumentInCurrentTab" />
+    <HomeWorkspace v-show="activeTab?.kind === 'home'" @new-document="startBlank" />
     <EditorWorkspace
       v-if="activeTab && activeTab.kind !== 'home'"
       :key="activeTab.id"
       :tab="activeTab"
     />
+    <EditorTour v-if="activeTab && activeTab.kind !== 'home'" />
   </div>
 </template>

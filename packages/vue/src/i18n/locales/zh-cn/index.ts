@@ -25,6 +25,7 @@ import tools from './tools.json'
 import updates from './updates.json'
 import variableTypes from './variable-types.json'
 import variables from './variables.json'
+import welcome from './welcome.json'
 
 export default {
   ai,
@@ -51,5 +52,6 @@ export default {
   tools,
   updates,
   variables,
-  variableTypes
+  variableTypes,
+  welcome
 } satisfies ComponentsJSON

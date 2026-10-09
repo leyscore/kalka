@@ -25,7 +25,8 @@ export {
   useToolMessages,
   useUpdateMessages,
   useVariableMessages,
-  useVariableTypeMessages
+  useVariableTypeMessages,
+  useWelcomeMessages
 } from '#vue/i18n/useI18n'
 export { i18n } from '#vue/i18n/create'
 export {
