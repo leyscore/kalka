@@ -27,7 +27,7 @@ function reveal(id: string): void {
 }
 
 const item =
-  'flex h-9 w-full items-center gap-2.5 rounded-lg px-2.5 text-[13px] font-medium text-muted transition-colors duration-150 hover:text-surface aria-[current=true]:text-primary focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none'
+  'flex h-9 w-full items-center gap-2.5 rounded-lg px-2.5 text-[13px] font-medium text-muted transition-colors duration-150 hover:text-surface aria-[current=true]:text-surface focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none'
 </script>
 
 <template>

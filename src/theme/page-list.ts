@@ -22,7 +22,7 @@ const pageListTheme = {
   variants: {
     active: {
       // Pills glide behind the current page and the hovered one (PagesPanel).
-      true: { item: 'bg-transparent font-medium text-primary' },
+      true: { item: 'bg-transparent font-medium text-surface' },
       false: { item: 'bg-transparent text-muted transition-colors duration-150 hover:text-surface' }
     },
     dragging: {

@@ -56,7 +56,7 @@ async function seeCode(): Promise<void> {
 }
 
 const link =
-  'inline-flex h-8 items-center gap-1.5 rounded-md px-2 text-[13px] text-muted transition-colors duration-150 hover:bg-accent/7 hover:text-surface focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none'
+  'inline-flex h-8 items-center gap-1.5 rounded-md px-2 text-[13px] text-muted transition-colors duration-150 hover:bg-(--pill-hover-bg) hover:text-surface focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none'
 const learnCard =
   'group flex items-center gap-3.5 rounded-xl border border-border/70 glass p-3 text-left transition-[border-color,translate,box-shadow,scale] duration-200 ease-out hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-lg hover:shadow-accent/10 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none motion-reduce:hover:translate-y-0'
 </script>

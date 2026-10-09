@@ -94,6 +94,18 @@
   animation: kalka-float-in 260ms cubic-bezier(0.2, 1.3, 0.4, 1) both;
 }
 
+/*
+ * Glide pills: the active one is a raised chip, crisp and neutral, the hover one a faint veil.
+ * Dark values first; the light theme sets its own.
+ */
+:root {
+  --pill-active-bg: color-mix(in srgb, white 9%, transparent);
+  --pill-active-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.07), 0 0 0 0.5px rgb(255 255 255 / 0.06),
+    0 1px 3px rgb(0 0 0 / 0.35), 0 4px 12px -4px rgb(0 0 0 / 0.4);
+  --pill-hover-bg: color-mix(in srgb, white 4.5%, transparent);
+}
+
 /* Backdrop light strength; the light theme sets its own. */
 :root {
   --backdrop-glow-a: 0.32;
@@ -223,6 +235,10 @@
 
 html[data-theme='light'] {
   --grain-opacity: 0.16;
+  --pill-active-bg: color-mix(in srgb, white 88%, transparent);
+  --pill-active-shadow:
+    0 0 0 0.5px rgb(0 0 0 / 0.07), 0 1px 2px rgb(0 0 0 / 0.06), 0 4px 12px -6px rgb(0 0 0 / 0.12);
+  --pill-hover-bg: color-mix(in srgb, black 4.5%, transparent);
   --backdrop-glow-a: 0.26;
   --backdrop-glow-b: 0.42;
   --backdrop-glow-c: 0.1;

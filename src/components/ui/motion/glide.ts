@@ -70,6 +70,8 @@ export function attachGlide(container: HTMLElement, options: GlideOptions): () =
     pill.style.transform = `translate(${x}px, ${y}px)`
     pill.style.width = `${rect.width}px`
     pill.style.height = `${rect.height}px`
+    // The pill takes the corners of the item it rests on.
+    pill.style.borderRadius = getComputedStyle(item).borderRadius
     pill.style.opacity = '1'
     if (!shown) {
       void pill.offsetWidth
