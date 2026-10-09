@@ -23,26 +23,22 @@ export function native(): KalkaNative {
   return bridge
 }
 
+/** The main process answers every call with its value or the value it failed with. */
+type CallResult = { ok: true; value: unknown } | { ok: false; error: unknown }
+
+function isCallResult(value: unknown): value is CallResult {
+  return typeof value === 'object' && value !== null && 'ok' in value
+}
+
 /**
  * Calls a main-process handler. Rejects as Tauri does, with the value the handler failed with:
  * a message string, or an object such as `{code, message}`.
  */
 export async function call<T = unknown>(name: string, ...args: unknown[]): Promise<T> {
-  try {
-    return await native().call<T>(name, ...args)
-  } catch (error) {
-    throw unwrapError(error)
-  }
-}
-
-/** Electron wraps a handler's error in its own message; the value sits after the marker. */
-function unwrapError(error: unknown): unknown {
-  const message = error instanceof Error ? error.message : String(error)
-  const marker = message.indexOf('KALKA_ERROR:')
-  if (marker === -1) return message
-  try {
-    return JSON.parse(message.slice(marker + 'KALKA_ERROR:'.length)) as unknown
-  } catch {
-    return message
-  }
+  const result: unknown = await native().call(name, ...args)
+  if (!isCallResult(result)) throw new Error(`Malformed reply to ${name}`)
+  // Rethrows the handler's own value, as Tauri rejects with it.
+  // oxlint-disable-next-line no-throw-literal
+  if (!result.ok) throw result.error
+  return result.value as T
 }

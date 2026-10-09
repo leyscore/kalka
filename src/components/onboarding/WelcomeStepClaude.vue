@@ -12,6 +12,7 @@ import {
   mcpInstallCommand
 } from '@/app/onboarding/claude'
 import AppButton from '@/components/ui/button/AppButton.vue'
+import AppAlert from '@/components/ui/feedback/AppAlert.vue'
 import AppCopyField from '@/components/ui/input/AppCopyField.vue'
 
 import ClaudeStatus from './ClaudeStatus.vue'
@@ -88,20 +89,18 @@ const TOOLS = [
             {{ desktop.state === 'connecting' ? welcome.connecting : welcome.connectAction }}
           </AppButton>
         </div>
-        <p
+        <AppAlert
           v-if="desktop.state === 'done'"
-          class="mb-3 flex items-center gap-2 rounded-lg bg-success/10 px-3 py-2 text-xs text-success"
-          role="status"
-        >
-          <icon-lucide-check class="size-3.5 shrink-0" />{{ welcome.desktopConnected }}
-        </p>
-        <p
-          v-else-if="desktop.state === 'error'"
-          class="mb-3 rounded-lg bg-error-bg px-3 py-2 text-xs text-error"
-          role="alert"
-        >
-          {{ desktop.message }}
-        </p>
+          tone="success"
+          :heading="welcome.desktopConnected"
+          class="mb-3"
+        />
+        <AppAlert
+          v-else-if="desktop.state === 'error' && desktop.message"
+          tone="error"
+          :heading="desktop.message"
+          class="mb-3"
+        />
         <AppCopyField
           :value="mcpClientConfig"
           :copy-label="welcome.copyConfig"

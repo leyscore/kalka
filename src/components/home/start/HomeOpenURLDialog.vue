@@ -11,6 +11,7 @@ import {
   AppDialogHeader,
   AppDialogRoot
 } from '@/components/ui/dialog'
+import AppAlert from '@/components/ui/feedback/AppAlert.vue'
 import AppInput from '@/components/ui/input/AppInput.vue'
 
 const open = defineModel<boolean>('open', { default: false })
@@ -53,7 +54,7 @@ async function submit(): Promise<void> {
           :aria-label="welcome.openURL"
         />
       </form>
-      <p v-if="error" class="mt-2 text-xs text-error" role="alert">{{ error }}</p>
+      <AppAlert v-if="error" tone="error" :heading="error" class="mt-3" />
     </AppDialogBody>
     <AppDialogFooter>
       <AppButton size="md" @click="open = false">{{ welcome.cancel }}</AppButton>

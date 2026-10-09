@@ -32,11 +32,14 @@ export function installIPC(windowOf: (sender: WebContents) => BrowserWindow | nu
     const handler = handlers.get(name)
     if (!handler) throw new Error(`Unknown native call: ${name}`)
     const context: CallContext = { sender: event.sender, window: windowOf(event.sender) }
+    // Failures come back as values: a handler failing is expected (a missing cache file), and
+    // Electron logs every rejected handle() call to the console.
     try {
-      return await (handler as (context: CallContext, ...rest: unknown[]) => unknown)(
+      const value = await (handler as (context: CallContext, ...rest: unknown[]) => unknown)(
         context,
         ...args
       )
+      return { ok: true, value }
     } catch (error) {
       // Tauri rejects with the value a command returned as its error; carry it over intact.
       const value =
@@ -45,7 +48,7 @@ export function installIPC(windowOf: (sender: WebContents) => BrowserWindow | nu
           : error instanceof Error
             ? error.message
             : String(error)
-      throw new Error(`KALKA_ERROR:${JSON.stringify(value)}`)
+      return { ok: false, error: value }
     }
   })
 }
