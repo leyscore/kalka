@@ -9,7 +9,7 @@ type Frame = { id: string; name: string; x: number; y: number; parentId: string 
 function topLevelFrames(page: Page): Promise<Frame[]> {
   return page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageNode = store.graph.getNode(store.state.currentPageId)
     return (pageNode?.childIds ?? []).flatMap((id) => {
       const node = store.graph.getNode(id)
@@ -23,7 +23,7 @@ function topLevelFrames(page: Page): Promise<Frame[]> {
 function selection(page: Page): Promise<string[]> {
   return page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     return [...store.state.selectedIds]
   })
 }
@@ -32,7 +32,7 @@ function selection(page: Page): Promise<string[]> {
 function namePoint(page: Page, frame: Frame) {
   return page.evaluate((target) => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const { zoom, panX, panY } = store.state
     return { x: target.x * zoom + panX + 6, y: target.y * zoom + panY - 13 }
   }, frame)

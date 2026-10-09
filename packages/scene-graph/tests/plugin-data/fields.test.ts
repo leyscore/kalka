@@ -24,7 +24,7 @@ function entry(key: string, value: string): PluginDataEntry {
   return { pluginId: OPEN_PENCIL_PLUGIN_ID, key, value }
 }
 
-describe('OpenPencil plugin data', () => {
+describe('Kalka plugin data', () => {
   test('keeps content and other plugins’ entries as a node’s content', () => {
     const entries = [
       OTHER_PLUGIN,

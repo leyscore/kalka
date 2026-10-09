@@ -24,34 +24,32 @@ describe('brand generation', () => {
     expect(icoSizes(file('favicon.ico')).sort((a, b) => a - b)).toEqual([16, 32, 48])
   })
 
-  test('preserves transparent counters and renders the micro master at 16px', async () => {
+  test('keeps the K open between its stem and arms, at 256px and at 16px', async () => {
+    const alpha = (pixels: Buffer, size: number, x: number, y: number) =>
+      pixels[(y * size + x) * 4 + 3]
     const main = await sharp(file('brand/mark.svg')).ensureAlpha().raw().toBuffer()
-    expect(main[(80 * 256 + 130) * 4 + 3]).toBe(0)
-    expect(main[(80 * 256 + 90) * 4 + 3]).toBe(255)
+    expect(alpha(main, 256, 39, 128)).toBe(255)
+    expect(alpha(main, 256, 85, 128)).toBe(0)
+    expect(alpha(main, 256, 164, 21)).toBe(0)
     const micro = await sharp(file('brand/mark-micro.svg')).ensureAlpha().raw().toBuffer()
-    expect(micro[(6 * 16 + 8) * 4 + 3]).toBe(0)
-    expect(micro[(6 * 16 + 4) * 4 + 3]).toBe(255)
     expect(micro.length).toBe(16 * 16 * 4)
+    expect(alpha(micro, 16, 2, 8)).toBe(255)
+    expect(alpha(micro, 16, 10, 1)).toBe(0)
   })
 
-  test('preserves blue handle borders and white centers in both themes and sizes', async () => {
+  test('draws the K in Kalka blue on light surfaces and in paper on dark ones', async () => {
     for (const name of ['mark', 'mark-micro']) {
-      for (const suffix of ['', '-dark']) {
-        const pixels = await sharp(file(`brand/${name}${suffix}.svg`), { density: 1152 })
+      for (const [suffix, rgba] of [
+        ['', [47, 91, 234, 255]],
+        ['-dark', [239, 239, 236, 255]]
+      ] as const) {
+        const pixels = await sharp(file(`brand/${name}${suffix}.svg`))
           .resize(256, 256)
           .ensureAlpha()
           .raw()
           .toBuffer()
-        const center = suffix ? [244, 251, 250, 255] : [255, 255, 255, 255]
-        const border = suffix ? [67, 140, 255, 255] : [0, 92, 255, 255]
-        for (const [x, y, rgba] of [
-          [54, 27, center],
-          [202, 101, center],
-          [name === 'mark' ? 38 : 32, 27, border]
-        ] as const) {
-          const offset = (y * 256 + x) * 4
-          expect([...pixels.subarray(offset, offset + 4)]).toEqual([...rgba])
-        }
+        const offset = (128 * 256 + 39) * 4
+        expect([...pixels.subarray(offset, offset + 4)]).toEqual([...rgba])
       }
     }
   })
@@ -62,7 +60,7 @@ describe('brand generation', () => {
     expect(file('brand/mark-micro-dark.svg').equals(file('brand/mark-micro.svg'))).toBe(false)
   })
 
-  test('keeps monochrome artwork flat rather than retaining the decorative grid', async () => {
+  test('keeps monochrome artwork flat', async () => {
     for (const suffix of ['', '-dark']) {
       const pixels = await sharp(file(`brand/mark-mono${suffix}.svg`))
         .ensureAlpha()
@@ -74,7 +72,7 @@ describe('brand generation', () => {
           colors.add(pixels.subarray(offset, offset + 3).toString('hex'))
       }
       expect(colors.size).toBeGreaterThan(0)
-      const expected = Buffer.from(suffix ? 'f5f5ef' : '202b2d', 'hex')
+      const expected = Buffer.from(suffix ? 'efefec' : '121214', 'hex')
       for (const color of colors) {
         // Overlapping antialiased edges can round a channel down by one.
         expect(
@@ -84,7 +82,7 @@ describe('brand generation', () => {
     }
   })
 
-  test('shares the ivory rounded tile across profile and any-purpose PWA assets', async () => {
+  test('shares the blue rounded tile across profile and any-purpose PWA assets', async () => {
     for (const [name, size] of [
       ['brand/app-icon-1024.png', 1024],
       ['brand/favicon-96x96.png', 96],
@@ -97,7 +95,7 @@ describe('brand generation', () => {
         .toBuffer({ resolveWithObject: true })
       expect([info.width, info.height]).toEqual([size, size])
       expect(data[3]).toBe(0)
-      // No desktop-style inset: the ivory reaches the midpoint of each edge.
+      // No desktop-style inset: the blue reaches the midpoint of each edge.
       for (const [x, y] of [
         [size / 2, 0],
         [0, size / 2],
@@ -105,10 +103,10 @@ describe('brand generation', () => {
         [size / 2, size - 1]
       ]) {
         const edge = (y * size + x) * 4
-        expect([...data.subarray(edge, edge + 4)]).toEqual([245, 245, 239, 255])
+        expect([...data.subarray(edge, edge + 4)]).toEqual([47, 91, 234, 255])
       }
       const offset = (Math.round((size * 80) / 1024) * size + size / 2) * 4
-      expect([...data.subarray(offset, offset + 4)]).toEqual([245, 245, 239, 255])
+      expect([...data.subarray(offset, offset + 4)]).toEqual([47, 91, 234, 255])
     }
     const svg = await sharp(file('brand/app-icon.svg')).ensureAlpha().raw().toBuffer()
     const png = await sharp(file('brand/app-icon-1024.png')).ensureAlpha().raw().toBuffer()

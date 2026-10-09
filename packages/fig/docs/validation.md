@@ -22,7 +22,7 @@ Figma-authored archive
 | Check | Proves | Does not prove |
 | --- | --- | --- |
 | Encoded-field assertions | Requested records were emitted | Figma interprets them correctly |
-| OpenPencil round trip | Reader and writer agree on tested behavior | Independent format correctness |
+| Kalka round trip | Reader and writer agree on tested behavior | Independent format correctness |
 | Figma property comparison | Tested effective properties match | Actual pixels or untested metadata |
 | Direct render comparison | New-reader graph renders similarly | Export/reopen fidelity |
 | Figma reopen and interaction | External interpretation and tested editing work | All documents/features work |

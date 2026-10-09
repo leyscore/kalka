@@ -149,7 +149,7 @@ export async function publicBrowserSceneGraph(page: Page, classes: string[], css
       const graph = await browserJSXToSceneGraph(
         jsx('article', {
           class: candidates.join(' '),
-          children: jsx('h1', { children: 'OpenPencil' })
+          children: jsx('h1', { children: 'Kalka' })
         }),
         { cssText: css }
       )

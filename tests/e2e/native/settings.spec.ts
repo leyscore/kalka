@@ -12,7 +12,7 @@ describe('native preferences', () => {
   it('opens Settings with the platform shortcut while an input is focused', async () => {
     await browser.waitUntil(
       async () => browser.execute(() => Boolean(window.openPencil?.getStore?.())),
-      { timeout: 30_000, timeoutMsg: 'OpenPencil editor did not initialize' }
+      { timeout: 30_000, timeoutMsg: 'Kalka editor did not initialize' }
     )
     await browser.execute(() => {
       const input = document.createElement('input')
@@ -33,7 +33,7 @@ describe('native preferences', () => {
   it('keeps native snapping checkmarks synchronized with preferences', async () => {
     await browser.waitUntil(
       async () => browser.execute(() => Boolean(window.openPencil?.getStore?.())),
-      { timeout: 30_000, timeoutMsg: 'OpenPencil editor did not initialize' }
+      { timeout: 30_000, timeoutMsg: 'Kalka editor did not initialize' }
     )
     const initial = await invokeNative<boolean>('native_menu_checked', { id: 'snap-objects' })
     assert.equal(initial, true)

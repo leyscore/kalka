@@ -131,7 +131,7 @@ const sourceLibraryPublication: v.GenericSchema<unknown, SourceLibraryPublicatio
 })
 
 /**
- * Every plugin-data entry OpenPencil writes under {@link OPEN_PENCIL_PLUGIN_ID}: state Figma's
+ * Every plugin-data entry Kalka writes under {@link OPEN_PENCIL_PLUGIN_ID}: state Figma's
  * format has no field for. Add a key here, never as a string elsewhere, so reading and writing
  * it share one schema.
  */
@@ -182,7 +182,7 @@ const NOT_CONTENT = Object.values(OPEN_PENCIL_PLUGIN_DATA).filter(
 )
 
 /**
- * A node's plugin data that is part of its content, in a stable order: OpenPencil's content
+ * A node's plugin data that is part of its content, in a stable order: Kalka's content
  * fields and every other plugin's entries, which the node carries wherever it goes. Format
  * copies of node fields and bookkeeping are left out.
  */

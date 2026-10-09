@@ -12,8 +12,8 @@ export function openPencilPwaPlugin() {
       navigateFallbackDenylist: [/^\/oauth\//]
     },
     manifest: {
-      name: 'OpenPencil',
-      short_name: 'OpenPencil',
+      name: 'Kalka',
+      short_name: 'Kalka',
       description: 'Open-source design editor',
       display: 'standalone',
       orientation: 'any',

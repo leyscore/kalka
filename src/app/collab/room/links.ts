@@ -2,18 +2,18 @@ import * as v from 'valibot'
 
 import { isTauri } from '@/app/tauri/env'
 
-/** Desktop events and commands for `openpencil://join?room=<id>` links (`desktop/src/lib.rs`). */
+/** Desktop events and commands for `kalka://join?room=<id>` links (`desktop/src/lib.rs`). */
 export const ROOM_LINKS_EVENT = 'open-room-links'
 const TAKE_PENDING_ROOMS = 'take_pending_rooms'
 
 const pendingRoomsSchema = v.array(v.string())
 
 export function roomLinkURL(roomId: string): string {
-  return `openpencil://join?room=${encodeURIComponent(roomId)}`
+  return `kalka://join?room=${encodeURIComponent(roomId)}`
 }
 
 /**
- * Opens the rooms of `openpencil://join` links the desktop app received, at startup and while
+ * Opens the rooms of `kalka://join` links the desktop app received, at startup and while
  * running. The native side validates each room ID; `open` validates it again before joining.
  */
 export async function bindDesktopRoomLinks(open: (roomId: string) => void): Promise<() => void> {

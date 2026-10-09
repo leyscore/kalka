@@ -10,7 +10,7 @@ import { verifyPackageBinaries, verifyPublicImports, verifyRuntimeScenarios } fr
 import { runtimeScenarios } from './scenarios'
 import { verifyTypeConsumer } from './type-consumer'
 
-/** Verify an entire OpenPencil artifact set, without rebuilding or modifying its archives. */
+/** Verify an entire Kalka artifact set, without rebuilding or modifying its archives. */
 export async function verifyArtifactConsumers(root: string, tarballs: string[]): Promise<void> {
   if (tarballs.length === 0) throw new Error('Cannot verify an empty artifact set')
   const inspections = await Promise.all(tarballs.map(inspectTarball))

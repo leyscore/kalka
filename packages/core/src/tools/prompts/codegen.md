@@ -245,4 +245,4 @@ assets/
 
 ## Scene authoring reference
 
-The appended reference applies when inspecting or editing OpenPencil scenes, not to the target frontend framework's API.
+The appended reference applies when inspecting or editing Kalka scenes, not to the target frontend framework's API.

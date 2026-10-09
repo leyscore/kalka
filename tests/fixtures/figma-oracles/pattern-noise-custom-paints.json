@@ -5,7 +5,7 @@
     "captured": "2026-05-22"
   },
   "pattern": {
-    "page": "OpenPencil pattern visible source oracle 2026-05-22",
+    "page": "Kalka pattern visible source oracle 2026-05-22",
     "frame": {
       "id": "296784:2258",
       "name": "Pattern visible source frame"
@@ -200,7 +200,7 @@
   },
   "status": "A real PATTERN payload is captured through Figma's async paint API with source and target in the same copied subtree. Real NOISE and CUSTOM paint payloads are still unavailable as Paint payloads in the connected Figma file and committed .fig fixtures. Figma Plugin API does expose NOISE, TEXTURE, and GLASS Effect payloads, recorded here for follow-up effect fidelity work.",
   "patternAlignment": {
-    "page": "OpenPencil pattern alignment oracle 2026-05-27",
+    "page": "Kalka pattern alignment oracle 2026-05-27",
     "frame": {
       "id": "297316:2267",
       "name": "Pattern alignment frame"
@@ -287,7 +287,7 @@
       "fuzzDifferentPercent": 30.51,
       "rmseNormalized": 0.246422
     },
-    "note": "Captures START/CENTER/END pattern alignment in one frame with a visible source node. START matches current OpenPencil row origin closely; CENTER and END show remaining Figma origin differences.",
+    "note": "Captures START/CENTER/END pattern alignment in one frame with a visible source node. START matches current Kalka row origin closely; CENTER and END show remaining Figma origin differences.",
     "analysis": {
       "START": {
         "pairedRowCount": 6,

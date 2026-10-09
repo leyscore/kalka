@@ -3,7 +3,7 @@
   "version": "0.15.1",
   "private": false,
   "license": "MIT",
-  "description": "Optional OpenPencil companion CLI for coding-agent Harness sessions",
+  "description": "Optional Kalka companion CLI for coding-agent Harness sessions",
   "type": "module",
   "exports": {
     ".": {

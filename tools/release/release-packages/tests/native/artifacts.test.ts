@@ -30,7 +30,7 @@ async function withArtifacts(run: (root: string, reported: string[]) => Promise<
 
 test('uses reported paths and retains the stable macOS archive name', () =>
   withArtifacts(async (root, reported) => {
-    const app = join(root, 'OpenPencil.app')
+    const app = join(root, 'Kalka.app')
     await mkdir(app)
     await writeFile(join(root, 'unrelated-file.dmg'), 'not reported')
 

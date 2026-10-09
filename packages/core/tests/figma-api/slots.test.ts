@@ -112,8 +112,8 @@ describe('slots', () => {
   })
 
   // Figma returns the copy as a SLOT without references; the typings promise a FrameNode,
-  // and OpenPencil, whose slots are frames bound to a property, returns that frame. Figma
-  // also moves the copy to the page, so it reads null references; OpenPencil's clone stays
+  // and Kalka, whose slots are frames bound to a property, returns that frame. Figma
+  // also moves the copy to the page, so it reads null references; Kalka's clone stays
   // beside the original, inside the component, where it binds nothing.
   test('a cloned slot is a plain frame bound to nothing', () => {
     const { component } = setup()

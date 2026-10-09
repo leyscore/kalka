@@ -17,7 +17,7 @@ test('renders imported .pen variable colors and fonts like literal values', asyn
   ).toEqual(['Noto Naskh Arabic', 'Noto Naskh Arabic', 'Noto Naskh Arabic'])
   await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     store.state.zoom = 1
     store.state.panX = 0
     store.state.panY = 0

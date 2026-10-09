@@ -1,15 +1,15 @@
 ---
 name: open-pencil
-description: Work with Figma .fig design files and the running OpenPencil editor — inspect structure, query nodes, analyze design tokens, export PNG/SVG/PDF/JSX, and modify designs programmatically. Use when asked to open, inspect, export, analyze, or edit .fig files, or to control the running OpenPencil app.
+description: Work with Figma .fig design files and the running Kalka editor — inspect structure, query nodes, analyze design tokens, export PNG/SVG/PDF/JSX, and modify designs programmatically. Use when asked to open, inspect, export, analyze, or edit .fig files, or to control the running Kalka app.
 ---
 
-# OpenPencil
+# Kalka
 
-OpenPencil provides a CLI and MCP server for `.fig` design files and the running OpenPencil editor.
+Kalka provides a CLI and MCP server for `.fig` design files and the running Kalka editor.
 
 Use two modes:
 
-- **App mode** — connect to the running OpenPencil editor by omitting the file argument.
+- **App mode** — connect to the running Kalka editor by omitting the file argument.
 - **Headless mode** — work with `.fig` files directly by passing a file path.
 
 ```bash
@@ -163,7 +163,7 @@ openpencil eval design.fig -o modified.fig -c '...'
 echo 'figma.currentPage.children.map(n => n.name)' | openpencil eval design.fig --stdin
 ```
 
-Next to `figma`, scripts get `openpencil`: what OpenPencil adds to the Figma API, in its style. A main component can behave as a Reka UI control, by its own property and slot names:
+Next to `figma`, scripts get `openpencil`: what Kalka adds to the Figma API, in its style. A main component can behave as a Reka UI control, by its own property and slot names:
 
 ```bash
 openpencil eval design.fig -w -c '
@@ -274,7 +274,7 @@ Use `undo` / `redo { document_id }` to step back your own changes. They refuse w
 
 ### Browser-native WebMCP (experimental)
 
-WebMCP is off by default. In **Settings → MCP → WebMCP**, choose **Inspect** for read-only tools or **Edit** for scoped changes. These controls are independent of local MCP settings. Supporting browsers expose inspection and undoable existing-layer/property and variable edits directly from the OpenPencil workspace through `document.modelContext`, without an MCP server connection. Discover this browser surface separately: it excludes structural creation/deletion, arbitrary JS/JSX execution, external assets, filesystem operations, and credentials.
+WebMCP is off by default. In **Settings → MCP → WebMCP**, choose **Inspect** for read-only tools or **Edit** for scoped changes. These controls are independent of local MCP settings. Supporting browsers expose inspection and undoable existing-layer/property and variable edits directly from the Kalka workspace through `document.modelContext`, without an MCP server connection. Discover this browser surface separately: it excludes structural creation/deletion, arbitrary JS/JSX execution, external assets, filesystem operations, and credentials.
 
 Calls capture the active document/page. Cancellation prevents an edit from starting but does not reverse an already committed edit; use editor undo instead. Atomic edits require at most 10,000 nodes and variables combined, including when these same tools run through app AI/MCP. See the [WebMCP guide](https://openpencil.dev/programmable/mcp-server#webmcp) for scope and browser requirements.
 
@@ -296,7 +296,7 @@ Discover available tools and their arguments from the connected server or browse
 - **`batch_update`** — apply multiple node updates efficiently.
 - **`export_image` / `export_svg` / `export_pdf`** — visual verification and deliverables.
 - **`viewport_zoom_to_fit` / `viewport_set` / `viewport_get`** — move the user's view only when they ask to be shown something.
-- **`get_codegen_prompt`** — retrieve OpenPencil's current JSX/codegen guidance.
+- **`get_codegen_prompt`** — retrieve Kalka's current JSX/codegen guidance.
 - **`undo` / `redo`** — revert or reapply your newest change; they refuse to touch the user's edits.
 - **`list_documents` / `activate_document`** — discover open tabs and show the one you worked on.
 
@@ -308,7 +308,7 @@ Use the `render` tool for JSX strings. Use only the APIs exposed by the installe
 
 ## Tips
 
-- Omit the file path to work with the document open in the running OpenPencil editor.
+- Omit the file path to work with the document open in the running Kalka editor.
 - Start with `info` or `get_page_tree` to understand the document.
 - Use `tree --depth 2` or `query_nodes` to avoid overwhelming output on large files.
 - Export specific nodes with `--node` for faster visual checks.

@@ -110,7 +110,7 @@ function toError(error: unknown): Error {
 
 function missingMCPError(searched: string[] = []): Error {
   return new MCPStartupError(
-    `MCP automation is not installed. Install ${MCP_INSTALL_TARGET} globally with your package manager, then restart OpenPencil.`,
+    `MCP automation is not installed. Install ${MCP_INSTALL_TARGET} globally with your package manager, then restart Kalka.`,
     searched.length > 0
       ? mcpFailure('not-installed', searched.join(', '))
       : mcpFailure('not-installed')
@@ -174,16 +174,16 @@ async function computeExpectedDiscoveryPath(): Promise<string> {
   // matches the server's path in the common case. When it doesn't (custom
   // LOCALAPPDATA), resolveDiscoveryPath() falls back to the /health endpoint.
   if (isMac) {
-    return join(home, 'Library', 'Application Support', 'OpenPencil', 'mcp.json')
+    return join(home, 'Library', 'Application Support', 'Kalka', 'mcp.json')
   }
   if (isWindows) {
-    return join(home, 'AppData', 'Local', 'OpenPencil', 'mcp.json')
+    return join(home, 'AppData', 'Local', 'Kalka', 'mcp.json')
   }
-  // Linux: $XDG_RUNTIME_DIR/openpencil/mcp.json or ~/.openpencil/mcp.json.
+  // Linux: $XDG_RUNTIME_DIR/kalka/mcp.json or ~/.kalka/mcp.json.
   // In Tauri we don't have direct env access, so we use the home-directory
   // fallback. The server may use XDG_RUNTIME_DIR if set — when the paths
   // differ, resolveDiscoveryPath() falls back to the /health endpoint.
-  return join(home, '.openpencil', 'mcp.json')
+  return join(home, '.kalka', 'mcp.json')
 }
 
 /**
@@ -198,8 +198,8 @@ async function computeExpectedDiscoveryPath(): Promise<string> {
  * compromised server could redirect us to a malicious path. This is mitigated
  * by the fact that the server is on localhost and was spawned by us. The
  * fallback exists because local computation can be wrong (e.g., XDG_RUNTIME_DIR
- * mismatches on Linux where the server uses `$XDG_RUNTIME_DIR/openpencil` but
- * the local computation falls back to `~/.openpencil`).
+ * mismatches on Linux where the server uses `$XDG_RUNTIME_DIR/kalka` but
+ * the local computation falls back to `~/.kalka`).
  */
 async function resolveDiscoveryPath(healthDiscoveryPath?: string): Promise<string> {
   const expected = await computeExpectedDiscoveryPath()
@@ -337,10 +337,10 @@ function assertCompatibleMCPVersion(health: AutomationHealth): void {
   if (runningMajorMinor === oursMajorMinor) return
   const runningVersion = health.version ? `v${health.version}` : 'an older version'
   const updateHint = health.installCommand
-    ? `Run: ${health.installCommand}, then restart OpenPencil.`
-    : `Update the global @open-pencil/mcp package to v${APP_VERSION} with your package manager, then restart OpenPencil.`
+    ? `Run: ${health.installCommand}, then restart Kalka.`
+    : `Update the global @open-pencil/mcp package to v${APP_VERSION} with your package manager, then restart Kalka.`
   throw new Error(
-    `OpenPencil desktop v${APP_VERSION} requires @open-pencil/mcp v${oursMajorMinor}.x ` +
+    `Kalka desktop v${APP_VERSION} requires @open-pencil/mcp v${oursMajorMinor}.x ` +
       `(major.minor compatibility), but the running MCP server is ${runningVersion}. ${updateHint}`
   )
 }

@@ -4,7 +4,7 @@ import { expect, type Page } from '@playwright/test'
 export function addPages(page: Page, names: string[]): Promise<void> {
   return page.evaluate((pageNames) => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     for (const name of pageNames) store.graph.addPage(name)
     store.requestRender()
   }, names)

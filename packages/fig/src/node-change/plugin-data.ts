@@ -34,7 +34,7 @@ const NATIVE_EXPORT_FORMATS: Record<string, ExportFormatId> = {
   PDF: 'pdf'
 }
 
-/** An OpenPencil plugin-data value on a record read from a `.fig` file. */
+/** An Kalka plugin-data value on a record read from a `.fig` file. */
 export function readNodeChangePluginData<T>(
   nc: Pick<NodeChange, 'pluginData'>,
   field: PluginDataField<T>
@@ -60,7 +60,7 @@ export function applyExportSettingsPluginData(
 }
 
 /**
- * textPathBox is OpenPencil-only state (the node-local rect the TEXT_PATH
+ * textPathBox is Kalka-only state (the node-local rect the TEXT_PATH
  * layout path maps onto, after import-time box expansion and resize scaling).
  * The Kiwi schema has no home for it, and reconstructing it from an expanded,
  * resized node is ambiguous — persist it as plugin data so save/reopen keeps

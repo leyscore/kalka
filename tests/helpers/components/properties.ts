@@ -11,7 +11,7 @@ export interface PropertyAuthoringScene {
 export function createPropertyAuthoringScene(page: Page): Promise<PropertyAuthoringScene> {
   return page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     const button = store.graph.createNode('COMPONENT', pageId, { name: 'Button', width: 120 })
     const label = store.graph.createNode('TEXT', button.id, { name: 'Label', text: 'Button' })
@@ -31,7 +31,7 @@ export function createPropertyAuthoringScene(page: Page): Promise<PropertyAuthor
 export async function selectNode(page: Page, nodeId: string): Promise<void> {
   await page.evaluate((id) => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     store.select([id])
   }, nodeId)
 }

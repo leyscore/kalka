@@ -34,7 +34,7 @@ export interface ExportStorybookOptions {
    * page's name between when it has several. Without it, stories are titled by page.
    */
   document?: string
-  /** Repository-relative `.fig`/`.pen` path; adds an `openpencil://` design link to stories. */
+  /** Repository-relative `.fig`/`.pen` path; adds an `kalka://` design link to stories. */
   linkPath?: string
   /** Renders a variant to PNG; each story then shows it next to the link as its design. */
   renderDesignImage?: (nodeId: string) => Promise<Uint8Array>
@@ -72,7 +72,7 @@ function designLink(
 ): StoryDesign[] {
   const node = candidates.find((name) => name !== undefined && context.uniqueNames.has(name))
   if (!context.linkPath || !node) return []
-  const url = `openpencil://open?file=${encodeURIComponent(context.linkPath)}&node=${encodeURIComponent(node)}`
+  const url = `kalka://open?file=${encodeURIComponent(context.linkPath)}&node=${encodeURIComponent(node)}`
   return [{ type: 'link', url }]
 }
 
@@ -232,7 +232,7 @@ export async function exportStorybook(
           component,
           generated,
           design: design.flatMap((entry) =>
-            entry.type === 'link' ? [{ name: 'OpenPencil', type: 'link', url: entry.url }] : []
+            entry.type === 'link' ? [{ name: 'Kalka', type: 'link', url: entry.url }] : []
           )
         })
       )

@@ -136,7 +136,7 @@ describe('node.effects', () => {
     expect(() => assign([shadow, { ...shadow, foo: 1 }])).toThrow('[1]')
   })
 
-  test('reports Figma effects OpenPencil does not model yet', () => {
+  test('reports Figma effects Kalka does not model yet', () => {
     expect(() => assign([{ type: 'NOISE' }])).toThrow('NOISE effects are not supported')
     expect(() =>
       assign([{ type: 'LAYER_BLUR', blurType: 'PROGRESSIVE', radius: 4, visible: true }])

@@ -16,7 +16,7 @@ test.beforeAll(async ({ browser }) => {
   await canvas.waitForInit()
   targetId = await page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     const fill = store.graph.createNode('RECTANGLE', pageId, {
       name: 'Brand/Primary',
@@ -92,7 +92,7 @@ async function chooseStyle(section: string, label: string, option: string) {
 async function targetStyles(id = targetId) {
   return page.evaluate((nodeId) => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const node = store.graph.getNode(nodeId)
     return node
       ? {
@@ -157,7 +157,7 @@ test('manual paint edits detach the style and undo restores the reference', asyn
 test('applies text styles and batches mixed selection binding', async () => {
   const textId = await page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const text = store.graph.createNode('TEXT', store.state.currentPageId, {
       name: 'Text target',
       text: 'Shared style',
@@ -176,7 +176,7 @@ test('applies text styles and batches mixed selection binding', async () => {
 
   const secondId = await page.evaluate((firstId) => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const second = store.graph.createNode('FRAME', store.state.currentPageId, {
       name: 'Second style target',
       x: 120,

@@ -25,7 +25,7 @@ test.describe('@open-pencil/dom-css browser CSS media and image oracle', () => {
           .panel { width: 30rem; }
         }
       `,
-      '<section class="panel">OpenPencil</section>'
+      '<section class="panel">Kalka</section>'
     )
 
     const widePanel = await computedStyleProperties(page, '.panel', [

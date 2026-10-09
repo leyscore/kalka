@@ -10,7 +10,7 @@ test('lays out Pen frames whose default horizontal layout is omitted', async () 
 
   const geometry = await editor.page.evaluate(() => {
     const graph = window.openPencil?.getStore?.().graph
-    if (!graph) throw new Error('OpenPencil graph not initialized')
+    if (!graph) throw new Error('Kalka graph not initialized')
     const section = graph.getNode('section')
     const fixed = graph.getNode('fixed-child')
     const fill = graph.getNode('fill-child')

@@ -3,7 +3,7 @@ import type { Page } from '@playwright/test'
 export async function measureHitTesting(page: Page, run: () => Promise<void>) {
   const probe = await page.evaluateHandle(() => {
     const graph = window.openPencil?.getStore?.().graph
-    if (!graph) throw new Error('OpenPencil graph not initialized')
+    if (!graph) throw new Error('Kalka graph not initialized')
     const original = graph.hitTestSelectable
     let calls = 0
     let totalMs = 0

@@ -682,7 +682,7 @@ export function nodeChangeToProps(
   // See path/text-layout.ts — expand the layout box before node creation so
   // clipsContent parents don't shave overflowing path lettering at first paint.
   expandPathTextLayoutBox(props, textPathData)
-  // A saved OpenPencil doc carries the true textPathBox (reflow may have
+  // A saved Kalka doc carries the true textPathBox (reflow may have
   // scaled it); the expand-time reconstruction is only right for pristine
   // Figma exports. Plugin box is in pre-expansion local coords — expand's
   // shift is textPathBox.x/y by construction, so re-home it.

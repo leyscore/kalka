@@ -12,7 +12,7 @@ test('resizing uses repaint-only previews until mouseup', async ({ page }) => {
 
   const id = await page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     store.state.zoom = 1
     store.state.panX = 0
     store.state.panY = 0
@@ -43,7 +43,7 @@ test('resizing uses repaint-only previews until mouseup', async ({ page }) => {
   const counters = await measureInteraction(page, () => canvas.drag(340, 240, 420, 290, 12), id)
   const node = await page.evaluate((nodeId) => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     return store.graph.getNode(nodeId)
   }, id)
 

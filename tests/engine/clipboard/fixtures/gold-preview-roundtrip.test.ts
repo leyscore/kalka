@@ -43,10 +43,10 @@ describe('gold-preview.fig clipboard roundtrip', () => {
     { timeout: HEAVY_TEST_TIMEOUT_MS }
   )
 
-  it('OpenPencil format: zero property differences', () => {
+  it('Kalka format: zero property differences', () => {
     const html = buildOpenPencilClipboardHTML(topLevelNodes, graph)
     const parsed = parseOpenPencilClipboard(html)
-    const clipboard = expectDefined(parsed, 'OpenPencil clipboard')
+    const clipboard = expectDefined(parsed, 'Kalka clipboard')
 
     const origAll = flatten(graph, pageId)
 
@@ -77,7 +77,7 @@ describe('gold-preview.fig clipboard roundtrip', () => {
     expect(diffs).toBe(0)
   })
 
-  it('OpenPencil format: compressed data is under 1MB', () => {
+  it('Kalka format: compressed data is under 1MB', () => {
     const html = buildOpenPencilClipboardHTML(topLevelNodes, graph)
     expect(html.length).toBeLessThan(5 * 1024 * 1024)
   })

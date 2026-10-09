@@ -1,4 +1,4 @@
-# OpenPencil design authoring
+# Kalka design authoring
 
 This reference describes scene creation, not React DOM output. Use the `render` tool for JSX strings, or import `Frame`, `Text`, and other authoring exports from `@open-pencil/design-jsx` and render them with `renderTree` from `@open-pencil/core/design-jsx` in library code. Library exports are not automatically globals in agent `eval`; use only the bindings exposed by that execution environment.
 

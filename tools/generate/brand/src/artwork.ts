@@ -14,27 +14,22 @@ export async function loadArtwork(root: string) {
   return { adapter, main, micro }
 }
 
+function fillParts(source: string, adapter: ImageAdapter, color: string) {
+  const svg = stringToSVG(source, adapter)
+  for (const path of svg.find('[data-part]')) path.fill(color)
+  return svg
+}
+
+/** The K on dark surfaces is paper; monochrome artwork is ink, or paper on dark. */
 export function recolor(
   source: string,
   adapter: ImageAdapter,
   mode: 'dark' | 'mono' | 'mono-dark'
 ) {
-  const svg = stringToSVG(source, adapter)
-  if (mode === 'dark') {
-    for (const [part, color] of Object.entries(brand.darkPalette)) {
-      for (const path of svg.find(`[data-part="${part}"]`)) path.fill(color)
-    }
-    for (const grid of svg.find('[data-detail="grid"]')) grid.opacity(brand.darkGridOpacity)
-  } else {
-    for (const detail of svg.find('[data-detail]')) detail.remove()
-    for (const path of svg.find('[data-part]')) {
-      path.fill(mode === 'mono' ? brand.darkBackground : brand.background)
-    }
-  }
-  return svg.svg()
+  return fillParts(source, adapter, mode === 'mono' ? brand.ink : brand.paper).svg()
 }
 
-/** Shared rounded app icon; touch and maskable variants leave cropping to the platform. */
+/** Shared app icon: the paper K on the blue tile; touch and maskable leave cropping to the platform. */
 export function appArtwork(
   source: string,
   adapter: ImageAdapter,
@@ -43,14 +38,12 @@ export function appArtwork(
   const svg = adapter.createSvg().size(1024, 1024).viewbox(0, 0, 1024, 1024)
   const rounded = kind === 'tile' || kind === 'desktop'
   const inset = kind === 'desktop' ? brand.tileInset : 0
-  const background = svg
-    .rect(1024 - inset * 2, 1024 - inset * 2)
-    .move(inset, inset)
-    .fill(brand.background)
-  if (rounded) background.radius(brand.tileRadius)
+  const side = 1024 - inset * 2
+  const background = svg.rect(side, side).move(inset, inset).fill(brand.background)
+  if (rounded) background.radius((brand.tileRadius * side) / 1024)
   const regularScale = kind === 'tile' ? brand.tileScale : brand.appScale
-  const scale = kind === 'maskable' ? brand.maskableScale : regularScale
-  const mark = stringToSVG(source, adapter).size(1024 * scale, 1024 * scale)
+  const scale = (kind === 'maskable' ? brand.maskableScale : regularScale) * (side / 1024)
+  const mark = fillParts(source, adapter, brand.paper).size(1024 * scale, 1024 * scale)
   mark.move((1024 * (1 - scale)) / 2, (1024 * (1 - scale)) / 2)
   svg.add(mark)
   return svg.svg()

@@ -125,7 +125,7 @@ try {
     )
     await page.evaluate(() => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not available after opening benchmark document')
+      if (!store) throw new Error('Kalka store not available after opening benchmark document')
       store.zoomToFit()
     })
   } else {
@@ -135,7 +135,7 @@ try {
   if (!documentPath) {
     await page.evaluate((viewport) => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not available')
+      if (!store) throw new Error('Kalka store not available')
       store.state.panX = viewport.panX
       store.state.panY = viewport.panY
       store.state.zoom = viewport.zoom
@@ -156,7 +156,7 @@ try {
     await page.evaluate(
       ({ nodeId, opacity }) => {
         const store = window.openPencil?.getStore?.()
-        if (!store) throw new Error('OpenPencil store not available for benchmark mutation')
+        if (!store) throw new Error('Kalka store not available for benchmark mutation')
         if (!store.graph.getNode(nodeId))
           throw new Error(`Benchmark mutation node not found: ${nodeId}`)
         store.graph.updateNode(nodeId, { opacity })

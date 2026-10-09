@@ -26,7 +26,7 @@
   "deepLinkPickerDismissed": "Enlace cancelado: no se eligió ningún archivo.",
   "deepLinkCancelled": "Enlace cancelado: se esperaba un archivo que terminara en «{file}».",
   "deepLinkNodeNotFound": "No se encontró la capa «{node}» en «{file}».",
-  "openQueuedFilesFailed": "No se pudieron abrir los archivos entregados a OpenPencil: {error}",
+  "openQueuedFilesFailed": "No se pudieron abrir los archivos entregados a Kalka: {error}",
   "tokensLeftOut": "No incluido en la hoja de estilos: {names}.",
   "designTokensLeftOut": "No incluidos en los design tokens: {names}.",
   "designTokensImported": "Se importaron {count} design tokens."

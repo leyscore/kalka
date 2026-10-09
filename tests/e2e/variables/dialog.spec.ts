@@ -6,7 +6,7 @@ const editor = useEditorSetup()
 async function createColorVariable(name: string) {
   return editor.page.evaluate((varName: string) => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const existing = [...store.graph.variableCollections.values()]
     const col = existing.length > 0 ? existing[0] : store.graph.createCollection('Test Collection')
     const v = store.graph.createVariable(varName, 'COLOR', col.id, { r: 1, g: 0, b: 0, a: 1 })
@@ -51,7 +51,7 @@ test('variables dialog opens on the token list, collection, and stylesheet', asy
 test('search filters variable rows', async () => {
   await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const col = [...store.graph.variableCollections.values()][0]
     store.graph.createVariable('beta-spacing', 'FLOAT', col.id, 8)
     store.state.sceneVersion++

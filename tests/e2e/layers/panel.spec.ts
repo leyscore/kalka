@@ -26,7 +26,7 @@ interface SceneTreeNode {
 async function getSceneTree(): Promise<SceneTreeNode> {
   return editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
 
     const nodeTree = (id: string): SceneTreeNode | null => {
       const node = store.graph.getNode(id)
@@ -48,7 +48,7 @@ async function getSceneTree(): Promise<SceneTreeNode> {
 async function getSelectedCount(): Promise<number> {
   return editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     return store.state.selectedIds.size
   })
 }
@@ -64,7 +64,7 @@ test('demo layers visible in panel', async () => {
 test('clicking a node inside a frame does not reparent it', async () => {
   const target = await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const nodes = [...store.graph.nodes.values()]
     const root = nodes.find((node) => node.name === 'Announcement system')
     const nested = nodes.find((node) => node.name === 'Source components')
@@ -86,7 +86,7 @@ test('clicking a node inside a frame does not reparent it', async () => {
   const after = await editor.page.evaluate(
     ({ id, rootId }) => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       return {
         parentId: store.graph.getNode(id)?.parentId ?? null,
         rootParentId: store.graph.getNode(rootId)?.parentId ?? null,

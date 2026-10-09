@@ -321,7 +321,7 @@ export interface PluginRelaunchDataEntry {
 
 /**
  * One derived glyph outline for display (path text / missing-font fidelity).
- * Figma import is one producer; OpenPencil editing and reflow can regenerate it.
+ * Figma import is one producer; Kalka editing and reflow can regenerate it.
  * commandsBlob is in font units; paint multiplies by fontSize (and scaleX/Y).
  */
 export interface TextPathData {

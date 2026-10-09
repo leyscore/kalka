@@ -7,9 +7,9 @@ import { dirname, join } from 'node:path'
  * and the discovery JSON file.
  *
  * Socket directory layout (overridable via OPENPENCIL_MCP_SOCKET):
- *   macOS:   ~/Library/Application Support/OpenPencil/
- *   Linux:   $XDG_RUNTIME_DIR/openpencil/  (fallback: ~/.openpencil/)
- *   Windows: %LOCALAPPDATA%\OpenPencil\  (fallback: ~\AppData\Local\OpenPencil\)
+ *   macOS:   ~/Library/Application Support/Kalka/
+ *   Linux:   $XDG_RUNTIME_DIR/kalka/  (fallback: ~/.kalka/)
+ *   Windows: %LOCALAPPDATA%\Kalka\  (fallback: ~\AppData\Local\Kalka\)
  *
  * On Windows, Unix domain sockets are unavailable — the server uses TCP only.
  *
@@ -25,8 +25,8 @@ import { dirname, join } from 'node:path'
  * OPENPENCIL_MCP_SOCKET is set, the discovery file stays at getPlatformDir().
  */
 
-const DIR_NAME_UNIX = 'openpencil'
-const DIR_NAME_MACOS = 'OpenPencil'
+const DIR_NAME_UNIX = 'kalka'
+const DIR_NAME_MACOS = 'Kalka'
 const SOCKET_FILENAME = 'mcp.sock'
 const DISCOVERY_FILENAME = 'mcp.json'
 

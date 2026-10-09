@@ -50,7 +50,7 @@ test('autosave triggers after scene changes with a file handle', async () => {
   // Check that the scene version changed
   const versionAfterDraw = await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     return store.state.sceneVersion
   })
   expect(versionAfterDraw).toBeGreaterThan(0)

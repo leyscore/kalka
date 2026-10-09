@@ -59,7 +59,7 @@ function createRenderer(icons: IconProvider) {
 const renderers = new WeakMap<IconProvider, ReturnType<typeof createRenderer>>()
 
 /**
- * Design JSX rendering with OpenPencil's SVG conversion and layout, drawing `<Icon>` from
+ * Design JSX rendering with Kalka's SVG conversion and layout, drawing `<Icon>` from
  * `icons`, such as the `FigmaAPI`'s provider, so a host's own icons render too.
  */
 export function designJSXRenderer(icons: IconProvider = iconify) {

@@ -19,7 +19,7 @@ const sources = {
   'app-icon': 'app-icon'
 } as const
 const source = computed(() => {
-  // The ivory tile owns its background and always uses the light palette.
+  // The blue tile owns its background and always uses the light palette.
   const suffix = variant !== 'app-icon' && appearance === 'dark' ? '-dark' : ''
   return `/brand/${sources[variant]}${suffix}.svg`
 })
@@ -29,7 +29,7 @@ const source = computed(() => {
   <img
     :src="source"
     :class="brandMark({ class: className })"
-    :alt="decorative ? '' : 'OpenPencil'"
+    :alt="decorative ? '' : 'Kalka'"
     width="16"
     height="16"
   />

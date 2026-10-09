@@ -7,7 +7,7 @@ const editor = useEditorSetup('/?test&no-rulers')
 function buildScene(page: Page): Promise<void> {
   return page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     const card = store.graph.createNode('FRAME', pageId, {
       name: 'Card',

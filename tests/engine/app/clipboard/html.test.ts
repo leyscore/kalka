@@ -3,7 +3,7 @@ import { describe, expect, test } from 'bun:test'
 import { isDesignClipboardHTML } from '@/app/editor/clipboard/html'
 
 describe('design clipboard HTML recognition', () => {
-  test('accepts complete OpenPencil and Figma clipboard comments', () => {
+  test('accepts complete Kalka and Figma clipboard comments', () => {
     expect(isDesignClipboardHTML('<!--(openpencil)payload(/openpencil)-->')).toBe(true)
     expect(isDesignClipboardHTML('<span data-buffer="<!--(figma)payload(/figma)-->"></span>')).toBe(
       true

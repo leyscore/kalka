@@ -19,7 +19,7 @@ async function expectCanvas(name: string) {
 async function createCards() {
   return editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const graph = store.graph
     const pageId = store.state.currentPageId
     const fill = (r: number, g: number, b: number) => [
@@ -105,7 +105,7 @@ async function show(selected: string[], hovered: string | null) {
   await editor.page.evaluate(
     ({ selected, hovered }) => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       store.select(selected)
       store.setHoveredNode(hovered)
       store.requestRender()
@@ -119,7 +119,7 @@ async function at(id: string, dx: number, dy: number) {
   return editor.page.evaluate(
     ({ id, dx, dy }) => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       const abs = store.graph.getAbsolutePosition(id)
       const { zoom, panX, panY } = store.state
       return { x: (abs.x + dx) * zoom + panX, y: (abs.y + dy) * zoom + panY }

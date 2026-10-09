@@ -27,7 +27,7 @@ function effectsSection() {
 function getNode(id: string) {
   return editor.page.evaluate((nodeId) => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const n = store.graph.getNode(nodeId)
     if (!n) return null
     return {
@@ -51,7 +51,7 @@ function getNode(id: string) {
 function getSelectedId() {
   return editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     return [...store.state.selectedIds][0] ?? null
   })
 }
@@ -59,7 +59,7 @@ function getSelectedId() {
 function getSelectedIds() {
   return editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     return [...store.state.selectedIds]
   })
 }

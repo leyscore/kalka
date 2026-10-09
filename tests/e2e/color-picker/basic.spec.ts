@@ -23,7 +23,7 @@ test.afterAll(async () => {
 async function getSelectedFill() {
   return page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const id = [...store.state.selectedIds][0]
     if (!id) return null
     const node = store.graph.getNode(id)
@@ -34,7 +34,7 @@ async function getSelectedFill() {
 async function getSelectedFillOkHCL() {
   const value = await page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const id = [...store.state.selectedIds][0]
     if (!id) return null
     const node = store.graph.getNode(id)

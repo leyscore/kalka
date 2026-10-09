@@ -16,7 +16,7 @@ test.describe('Render performance', () => {
 
     await page.evaluate((count: number) => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       const arr = new Uint8Array(count * 3)
       crypto.getRandomValues(arr)
       const cols = Math.ceil(Math.sqrt(count))
@@ -88,9 +88,9 @@ test.describe('Render performance', () => {
   test('benchmark: synchronous render throughput', async () => {
     const results = await helper.page.evaluate((iterations: number) => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       const renderer = store.renderer
-      if (!renderer) throw new Error('OpenPencil renderer not initialized')
+      if (!renderer) throw new Error('Kalka renderer not initialized')
 
       const setupRenderer = () => {
         renderer.dpr = window.devicePixelRatio || 1
@@ -181,9 +181,9 @@ test.describe('Render performance', () => {
     const results = await helper.page.evaluate(
       ({ count, iterations }) => {
         const store = window.openPencil?.getStore?.()
-        if (!store) throw new Error('OpenPencil store not initialized')
+        if (!store) throw new Error('Kalka store not initialized')
         const renderer = store.renderer
-        if (!renderer) throw new Error('OpenPencil renderer not initialized')
+        if (!renderer) throw new Error('Kalka renderer not initialized')
         const graph = store.graph
         const pageId = store.state.currentPageId
 

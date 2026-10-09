@@ -55,7 +55,7 @@ test('mixed SVG and raster drops share placement, selection, and undo', async ()
 
   const placed = await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     return {
       nodes: store.graph
         .getChildren(store.state.currentPageId)

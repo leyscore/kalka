@@ -48,7 +48,7 @@ function createTarget(editor: Editor, parentId = editor.state.currentPageId) {
 }
 
 describe('paste to replace', () => {
-  test('replaces selected nodes with pasted OpenPencil nodes', async () => {
+  test('replaces selected nodes with pasted Kalka nodes', async () => {
     const html = copiedRectangleHTML()
     const editor = createEditor()
     const pageId = editor.state.currentPageId

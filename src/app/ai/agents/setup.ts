@@ -17,7 +17,7 @@ export interface AgentSetupState {
   checked: boolean
   scanning: boolean
   detected: DetectedAgent | null
-  /** OpenPencil's MCP server, through which agents reach the canvas. */
+  /** Kalka's MCP server, through which agents reach the canvas. */
   bridge: boolean
   /** The installed MCP server does not match this app's version. */
   bridgeOutdated: boolean
@@ -45,12 +45,12 @@ export interface PiSetupState {
   npm: boolean
   installingCompanion: boolean
   installingBridge: boolean
-  /** The default model set in Pi, used unless OpenPencil names another. */
+  /** The default model set in Pi, used unless Kalka names another. */
   defaultModel: string | null
   error: DiscoveryError | null
 }
 
-/** An OpenPencil companion as setup presents it, with the one-click fix that applies. */
+/** An Kalka companion as setup presents it, with the one-click fix that applies. */
 export interface CompanionCheck {
   /** Installed and matching this app. */
   ready: boolean

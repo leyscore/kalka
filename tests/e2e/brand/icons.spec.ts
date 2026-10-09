@@ -5,11 +5,11 @@ import { CanvasHelper } from '#tests/helpers/canvas'
 for (const deviceScaleFactor of [1, 2]) {
   test.describe(`brand at ${deviceScaleFactor}x`, () => {
     test.use({ deviceScaleFactor })
-    test('the editor keeps its 24px ivory tile in both app themes', async ({ page }) => {
+    test('the editor keeps its 24px blue tile in both app themes', async ({ page }) => {
       await page.goto('/?test')
       await new CanvasHelper(page).waitForInit()
       const logo = page.getByTestId('app-logo')
-      await expect(logo).toHaveAttribute('alt', 'OpenPencil')
+      await expect(logo).toHaveAttribute('alt', 'Kalka')
       for (const appearance of ['light', 'dark'] as const) {
         await page.evaluate(async (appearance) => {
           const path = '/src/app/shell/theme.ts'
@@ -30,13 +30,13 @@ for (const deviceScaleFactor of [1, 2]) {
       }
     })
 
-    test('the 16px favicon keeps its edge-to-edge ivory tile in both browser themes', async ({
+    test('the 16px favicon keeps its edge-to-edge blue tile in both browser themes', async ({
       page,
       baseURL
     }) => {
       const src = new URL('/brand/favicon.svg', baseURL).href
-      await page.setContent(`<img src="${src}" alt="OpenPencil favicon" width="16" height="16">`)
-      const icon = page.getByRole('img', { name: 'OpenPencil favicon' })
+      await page.setContent(`<img src="${src}" alt="Kalka favicon" width="16" height="16">`)
+      const icon = page.getByRole('img', { name: 'Kalka favicon' })
       await icon.evaluate((image: HTMLImageElement) => image.decode())
       for (const colorScheme of ['light', 'dark'] as const) {
         await page.emulateMedia({ colorScheme })
@@ -62,7 +62,7 @@ test('the main SVG retains its approved appearance', async ({ page }) => {
   await expect(page.locator('svg')).toHaveScreenshot('brand-mark.png')
 })
 
-test('the larger dark SVG retains its palette and subtle grid', async ({ page }) => {
+test('the larger dark SVG draws the K in paper', async ({ page }) => {
   await page.goto('/brand/mark-dark.svg')
   const mark = page.locator('svg')
   await mark.evaluate((svg) => {
@@ -71,7 +71,7 @@ test('the larger dark SVG retains its palette and subtle grid', async ({ page })
   await expect(mark).toHaveScreenshot('brand-mark-dark.png')
 })
 
-test('the ivory app tile works on light and dark surfaces', async ({ page }) => {
+test('the blue app tile works on light and dark surfaces', async ({ page }) => {
   await page.goto('/brand/app-icon.svg')
   const icon = page.locator('svg').first()
   for (const appearance of ['light', 'dark'] as const) {

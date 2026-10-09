@@ -193,23 +193,23 @@ export const aiMessageDefaults = {
   chatOutputLimit:
     'The model ran out of output tokens while reasoning. Raise Max output tokens or lower reasoning effort.',
   chatModelNotFound: 'The selected model is unavailable. Choose another model in Settings.',
-  chatNetworkFailed: 'OpenPencil could not reach the provider. Check your connection and endpoint.',
+  chatNetworkFailed: 'Kalka could not reach the provider. Check your connection and endpoint.',
   chatRateLimited: 'The provider rate limit was reached. Wait a moment and try again.',
   chatRequestFailed: 'The model request failed. Check the provider settings and try again.',
   openProviderSettingsAction: 'Open settings',
   visionModelUnavailable: 'Choose a Vision model in Settings before attaching images.',
   chatPiCompanionMissing: 'Pi needs the Harness companion. Run guided setup to install it.',
   chatPiCompanionOutdated:
-    'The Harness companion doesn’t match this version of OpenPencil. Run guided setup to update it.',
+    'The Harness companion doesn’t match this version of Kalka. Run guided setup to update it.',
   chatMCPOutdated:
-    'OpenPencil’s MCP server doesn’t match this version of OpenPencil. Run guided setup to update it.',
+    'Kalka’s MCP server doesn’t match this version of Kalka. Run guided setup to update it.',
   chatPiSignIn:
     'Pi isn’t signed in to a provider. Run pi in a terminal and type /login, or add an AI Gateway key.',
   chatPiModel:
     'Pi has no model to use. Run pi in a terminal and type /model, or choose one in Settings.',
   completions: 'Completions',
   responses: 'Responses',
-  aiSetupWelcomeTitle: 'Welcome to OpenPencil',
+  aiSetupWelcomeTitle: 'Welcome to Kalka',
   aiSetupWelcomeDescription:
     'Create and edit designs on an open canvas. Import Figma files and make them your own.',
   aiSetupWelcomeAITitle: 'Design with AI',
@@ -231,7 +231,7 @@ export const aiMessageDefaults = {
   aiSetupAccessAgents: 'Coding agents on this computer',
   aiSetupAccessAgentsDescription:
     'Use your existing subscription. The agent chooses its own model.',
-  aiSetupAccessAgentsDesktop: 'Coding agents are available in the OpenPencil desktop app.',
+  aiSetupAccessAgentsDesktop: 'Coding agents are available in the Kalka desktop app.',
   aiSetupAccessAPI: 'API accounts',
   aiSetupAccessServer: 'Local model or company server',
   aiSetupAccessMore: 'More providers',
@@ -241,19 +241,19 @@ export const aiMessageDefaults = {
   aiSetupConnectTitle: 'Connect your AI',
   aiSetupNothingDescription: 'Go back to choose other access, or set up AI in advanced settings.',
   aiSetupAgentDescription: params(
-    'OpenPencil starts {agent} when you send a message. Sign in with its own command-line tool first.'
+    'Kalka starts {agent} when you send a message. Sign in with its own command-line tool first.'
   ),
   aiSetupAgentInstall: 'If it is not installed yet, run:',
   aiSetupAgentChecking: 'Checking this computer…',
   aiSetupAgentInstalled: 'installed',
   aiSetupAgentNotFound: 'not found',
-  aiSetupAgentMCP: 'OpenPencil MCP server',
+  aiSetupAgentMCP: 'Kalka MCP server',
   aiSetupAgentMCPInstall:
-    'Coding agents reach the canvas through OpenPencil’s MCP server. Install it with:',
+    'Coding agents reach the canvas through Kalka’s MCP server. Install it with:',
   aiSetupAgentPromptHint: params(
-    'Already using {agent} or another coding agent? Copy the setup prompt and paste it there; it installs what OpenPencil needs.'
+    'Already using {agent} or another coding agent? Copy the setup prompt and paste it there; it installs what Kalka needs.'
   ),
-  aiSetupAgentNeedsAdapter: 'installed · OpenPencil adapter missing',
+  aiSetupAgentNeedsAdapter: 'installed · Kalka adapter missing',
   aiSetupAgentInstallAdapter: 'Install adapter',
   aiSetupAgentInstallMCP: 'Install MCP server',
   aiSetupAgentUpdateMCP: 'Update MCP server',
@@ -265,13 +265,13 @@ export const aiMessageDefaults = {
   aiSetupAgentInstallFailed:
     'The installation didn’t finish. Check your connection, or run the command yourself.',
   aiSetupAgentMCPStartFailed:
-    'The MCP server is installed but didn’t start. Restart OpenPencil, then check again.',
+    'The MCP server is installed but didn’t start. Restart Kalka, then check again.',
   aiSetupAgentLookupFailed: 'Couldn’t check this computer. Try again.',
   aiSetupAgentCopyPrompt: 'Copy setup prompt',
   aiSetupAgentCheckAgain: 'Check again',
   aiSetupAgentGuide: 'Setup guide',
   aiSetupPiDescription:
-    'OpenPencil runs Pi through its Harness companion and uses the providers you signed in to in Pi.',
+    'Kalka runs Pi through its Harness companion and uses the providers you signed in to in Pi.',
   aiSetupPiCompanion: 'Harness companion',
   aiSetupPiInstallCompanion: 'Install companion',
   aiSetupPiUpdateCompanion: 'Update companion',
@@ -305,7 +305,7 @@ export const aiMessageDefaults = {
   aiSetupOpenRouterReopen: 'Open again',
   aiSetupOpenRouterOrKey: 'Or paste an API key',
   aiSetupOpenRouterBlocked:
-    'Your browser blocked the sign-in window. Allow pop-ups for OpenPencil and try again.',
+    'Your browser blocked the sign-in window. Allow pop-ups for Kalka and try again.',
   aiSetupOpenRouterCancelled: 'Sign-in was cancelled.',
   aiSetupOpenRouterExpired: 'Sign-in took too long. Try again.',
   aiSetupOpenRouterFailed: 'Couldn’t sign in to OpenRouter. Try again or paste an API key.',

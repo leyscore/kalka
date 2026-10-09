@@ -11,7 +11,7 @@ async function expectCanvas(name: string) {
 test('pattern fills from source nodes', async () => {
   await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
 
     const source = store.graph.createNode('ELLIPSE', pageId, {
@@ -69,7 +69,7 @@ test('pattern fills from source nodes', async () => {
 test('luminance masks and transformed tile fills', async () => {
   await editor.page.evaluate(async () => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
 
     const imageCanvas = document.createElement('canvas')

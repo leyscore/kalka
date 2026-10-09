@@ -12,7 +12,7 @@ test('dragging a nested card uses repaint-only position previews', async ({ page
 
   await page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     store.state.zoom = 1
     store.state.panX = 0
     store.state.panY = 0

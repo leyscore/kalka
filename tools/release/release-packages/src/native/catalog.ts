@@ -44,7 +44,7 @@ export interface DesktopAsset {
   signed: boolean
 }
 
-/** Required OpenPencil release outputs, not a discovery or packaging implementation. */
+/** Required Kalka release outputs, not a discovery or packaging implementation. */
 export function desktopAssets(target: DesktopTarget, version: string): DesktopAsset[] {
   releaseVersion(`v${version}`)
 
@@ -59,7 +59,7 @@ export function desktopAssets(target: DesktopTarget, version: string): DesktopAs
         signed: false
       },
       {
-        source: 'OpenPencil.app.tar.gz',
+        source: 'Kalka.app.tar.gz',
         name: `OpenPencil_${arch}.app.tar.gz`,
         updaterKeys: [platform, `${platform}-app`],
         signed: true
@@ -98,8 +98,8 @@ export function desktopAssets(target: DesktopTarget, version: string): DesktopAs
       signed: true
     },
     {
-      source: `OpenPencil-${version}-1.x86_64.rpm`,
-      name: `OpenPencil-${version}-1.x86_64.rpm`,
+      source: `Kalka-${version}-1.x86_64.rpm`,
+      name: `Kalka-${version}-1.x86_64.rpm`,
       updaterKeys: ['linux-x86_64-rpm'],
       signed: true
     }

@@ -16,7 +16,7 @@ describe('@open-pencil/dom-css JSX authoring', () => {
       jsx('article', {
         class: 'card',
         style: { width: '320px', backgroundColor: 'white' },
-        children: jsx('h1', { children: 'OpenPencil' })
+        children: jsx('h1', { children: 'Kalka' })
       })
     )
     const card = document.children[0]
@@ -33,7 +33,7 @@ describe('@open-pencil/dom-css JSX authoring', () => {
     const graph = await jsxToSceneGraph(
       jsx('article', {
         class: 'card',
-        children: jsx('h1', { class: 'title', children: 'OpenPencil' })
+        children: jsx('h1', { class: 'title', children: 'Kalka' })
       }),
       {
         runtime: createHeadlessCSSRuntime(),
@@ -57,7 +57,7 @@ describe('@open-pencil/dom-css JSX authoring', () => {
     const graph = await tailwindJSXToSceneGraph(
       jsx('article', {
         class: classes.join(' '),
-        children: jsx('h1', { children: 'OpenPencil' })
+        children: jsx('h1', { children: 'Kalka' })
       }),
       classes,
       { runtime: createHeadlessCSSRuntime() }

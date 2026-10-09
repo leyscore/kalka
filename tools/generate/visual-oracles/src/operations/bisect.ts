@@ -57,12 +57,12 @@ Options:
   --depth N             Max bisection depth (default: 8)
   --min-size N          Stop splitting groups at this child count (default: 1)
   --background HEX      Matte color for transparent pixels (default: #f9f9f9)
-  --root-node-id ID     OpenPencil node whose children should be bisected
+  --root-node-id ID     Kalka node whose children should be bisected
   --figma-root-id ID    Matching Figma node whose children should be bisected
 
 What it does:
   It hides all top-level page children except a candidate subset in both Figma
-  and OpenPencil, exports that subset from both renderers, diffs the images,
+  and Kalka, exports that subset from both renderers, diffs the images,
   then recursively splits only subsets that still differ. This isolates which
   top-level page children introduce visual differences without staring at the
   full-page diff.`)
@@ -185,7 +185,7 @@ async function exportOpenPencilSubset(indices: number[], path: string): Promise<
       format: 'PNG',
       trimTransparent: nodeIds.every((id) => graph.getNode(id)?.type === 'TEXT')
     })
-    if (!data) throw new Error(`OpenPencil render produced no image for ${indices.join(',')}`)
+    if (!data) throw new Error(`Kalka render produced no image for ${indices.join(',')}`)
     await Bun.write(path, data)
   } finally {
     for (const entry of changed) {

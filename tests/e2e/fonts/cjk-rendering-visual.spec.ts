@@ -18,7 +18,7 @@ async function openEditor(page: Page): Promise<CanvasHelper> {
   await canvas.waitForInit()
   await page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageNode = store.graph.getNode(store.state.currentPageId)
     const childIds = pageNode?.childIds.slice() ?? []
     for (const id of childIds) store.graph.deleteNode(id)
@@ -55,7 +55,7 @@ test('international text is correct on its first visible paint', async ({ page }
 
   const result = await page.evaluate(async () => {
     const store = window.openPencil?.getStore?.()
-    if (!store?.renderer) throw new Error('OpenPencil renderer not initialized')
+    if (!store?.renderer) throw new Error('Kalka renderer not initialized')
     const fontModuleURL = performance
       .getEntriesByType('resource')
       .map((entry) => entry.name)
@@ -83,7 +83,7 @@ test('international text is correct on its first visible paint', async ({ page }
       { label: 'Arabic', text: 'مرحبا بالعالم', language: 'ar', family: 'Noto Naskh Arabic' },
       {
         label: 'Mixed scripts',
-        text: 'OpenPencil · 你好 · مرحبا',
+        text: 'Kalka · 你好 · مرحبا',
         language: 'en',
         family: 'Noto Sans CJK SC'
       }
@@ -203,7 +203,7 @@ test('typed and tool-created text repaint with the same resolved fallbacks', asy
 
   const ids = await page.evaluate(async () => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
 
     const labels = ['Tool-created', 'Interactively typed']
@@ -245,7 +245,7 @@ test('typed and tool-created text repaint with the same resolved fallbacks', asy
       name: 'Tool-created mixed script',
       x: 300,
       y: 104,
-      text: 'OpenPencil · 你好 · مرحبا'
+      text: 'Kalka · 你好 · مرحبا'
     })
     const typed = store.graph.createNode('TEXT', pageId, {
       ...common,
@@ -270,10 +270,10 @@ test('typed and tool-created text repaint with the same resolved fallbacks', asy
     return { nodeIds, toolId: tool.id, typedId: typed.id }
   })
 
-  await page.locator('textarea[aria-hidden="true"]').fill('OpenPencil · 你好 · مرحبا')
+  await page.locator('textarea[aria-hidden="true"]').fill('Kalka · 你好 · مرحبا')
   await page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store?.renderer) throw new Error('OpenPencil renderer not initialized')
+    if (!store?.renderer) throw new Error('Kalka renderer not initialized')
     store.renderer.invalidateAllPictures()
     store.renderer.renderFromEditorState(
       store.state,
@@ -302,7 +302,7 @@ test('typed and tool-created text repaint with the same resolved fallbacks', asy
 
   const resolved = await page.evaluate(async ({ nodeIds, toolId, typedId }) => {
     const store = window.openPencil?.getStore?.()
-    if (!store?.renderer) throw new Error('OpenPencil renderer not initialized')
+    if (!store?.renderer) throw new Error('Kalka renderer not initialized')
     const fontModuleURL = performance
       .getEntriesByType('resource')
       .map((entry) => entry.name)
@@ -367,7 +367,7 @@ test('substituted fonts still request fallbacks for CJK text', async ({ page }) 
 
   const result = await page.evaluate(async () => {
     const store = window.openPencil?.getStore?.()
-    if (!store?.renderer) throw new Error('OpenPencil renderer not initialized')
+    if (!store?.renderer) throw new Error('Kalka renderer not initialized')
     const fontModuleURL = performance
       .getEntriesByType('resource')
       .map((entry) => entry.name)

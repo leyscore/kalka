@@ -43,7 +43,7 @@ type AsyncFunctionConstructor = new (...args: string[]) => (...args: unknown[]) 
 
 /**
  * Compile a script for a document: it sees the `figma` global, the Figma Plugin API, and the
- * `openpencil` global, what OpenPencil adds to it, both over the same document.
+ * `openpencil` global, what Kalka adds to it, both over the same document.
  */
 export function compileScript(code: string): (figma: FigmaAPI) => Promise<unknown> {
   const AsyncFunction = Object.getPrototypeOf(async () => undefined)

@@ -21,7 +21,7 @@ async function createTauriEditorPage(page: Page) {
 function pageChildren(page: Page): Promise<PageChildSummary[]> {
   return page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     return store.graph.getChildren(store.state.currentPageId).map((node) => ({
       name: node.name,
       type: node.type
@@ -32,7 +32,7 @@ function pageChildren(page: Page): Promise<PageChildSummary[]> {
 function selectedCount(page: Page): Promise<number> {
   return page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     return store.state.selectedIds.size
   })
 }

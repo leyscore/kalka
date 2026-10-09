@@ -43,7 +43,7 @@ fileDialog.onChange((files) => {
 })
 
 /**
- * Opens a picked or dropped document in a new tab, rejecting formats OpenPencil cannot read.
+ * Opens a picked or dropped document in a new tab, rejecting formats Kalka cannot read.
  * A file system handle, when the browser provides one, lets the tab save back to the file.
  */
 export function openDesignFile(file: File, handle?: FileSystemFileHandle): Promise<void> {

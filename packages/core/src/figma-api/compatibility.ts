@@ -104,6 +104,6 @@ type SlotSurfaceMatch = Expect<
 >
 const _slotSurfaceMatch: SlotSurfaceMatch = true
 
-// `Effect` here is Figma's plugin-typings union; OpenPencil reads and writes a subset of it.
+// `Effect` here is Figma's plugin-typings union; Kalka reads and writes a subset of it.
 type EffectShapeMatch = Expect<Extends<FigmaNodeProxy['effects'][number], Effect>>
 const _effectShapeMatch: EffectShapeMatch = true

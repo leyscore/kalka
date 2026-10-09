@@ -464,7 +464,7 @@ describe('@open-pencil/fig SceneGraph export policy', () => {
     expect(change.fillPaints?.[0]?.colorVar).toBeUndefined()
   })
 
-  test('drops the OpenPencil bindings entry when an imported node is no longer bound', () => {
+  test('drops the Kalka bindings entry when an imported node is no longer bound', () => {
     const graph = new SceneGraph()
     const page = graph.getPages()[0]
     const node = graph.createNode('RECTANGLE', page.id, {

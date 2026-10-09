@@ -11,7 +11,7 @@ test('a fresh install offers guided AI setup once and remembers skipping it', as
   // The offer is made while the workspace starts, so it is open once the canvas is ready.
   await new CanvasHelper(page).waitForInit()
   const setup = page.getByTestId('ai-setup-dialog')
-  await expect(setup.getByRole('heading', { name: 'Welcome to OpenPencil' })).toBeVisible()
+  await expect(setup.getByRole('heading', { name: 'Welcome to Kalka' })).toBeVisible()
   await setup.getByRole('button', { name: 'Start designing' }).click()
   await expect(setup).toHaveCount(0)
 

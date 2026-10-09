@@ -17,11 +17,11 @@ export const automationMessageDefaults = {
     'Changes apply to your next message. Tool switches are not a sandbox: enabled script tools can still perform other design operations.',
   mcpFailureNotInstalled: 'MCP automation is not installed',
   mcpFailureNotInstalledHint: params(
-    'Install {package} globally with your package manager, then restart OpenPencil.'
+    'Install {package} globally with your package manager, then restart Kalka.'
   ),
-  mcpFailurePermission: 'OpenPencil cannot start the MCP server',
+  mcpFailurePermission: 'Kalka cannot start the MCP server',
   mcpFailurePermissionHint:
-    'The system denied the command. Reinstall OpenPencil with its shell permissions, or start the server manually.',
+    'The system denied the command. Reinstall Kalka with its shell permissions, or start the server manually.',
   mcpFailureExited: 'MCP server stopped during startup',
   mcpFailureExitedHint: 'The process exited before it became ready.',
   mcpFailureTimeout: 'MCP server did not respond in time',
@@ -30,7 +30,7 @@ export const automationMessageDefaults = {
   mcpFailureRejectedHint: 'Restart the MCP server to issue a new token.',
   mcpFailureMalformed: 'MCP server returned an unexpected response',
   mcpFailureMalformedHint:
-    'The configured version and the running server may not match. Update both and restart OpenPencil.',
+    'The configured version and the running server may not match. Update both and restart Kalka.',
   mcpFailureUnreachable: 'MCP server is not reachable',
   mcpFailureUnreachableHint: params(
     'Nothing is listening at {endpoint}. Check that the address is free, then start the server.'

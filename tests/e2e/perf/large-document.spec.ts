@@ -43,9 +43,9 @@ test.describe.serial('large-document performance', () => {
 
       const result = await page.evaluate((profile): TimingSummary => {
         const store = window.openPencil?.getStore?.()
-        if (!store) throw new Error('OpenPencil store not initialized')
+        if (!store) throw new Error('Kalka store not initialized')
         const renderer = store.renderer
-        if (!renderer) throw new Error('OpenPencil renderer not initialized')
+        if (!renderer) throw new Error('Kalka renderer not initialized')
         const graph = store.graph
         const iterations = 50
 

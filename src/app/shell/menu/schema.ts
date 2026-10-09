@@ -454,7 +454,7 @@ export const APP_MENU_SCHEMA = [
  * sit between them. Only the labels and accelerators are shared here.
  */
 export const APP_MENU_APP_ITEMS = [
-  { id: 'about', label: 'About OpenPencil' },
+  { id: 'about', label: 'About Kalka' },
   { id: 'check-updates', label: 'Check for Updates…' },
-  { id: 'quit', label: 'Quit OpenPencil', shortcut: 'MOD+Q' }
+  { id: 'quit', label: 'Quit Kalka', shortcut: 'MOD+Q' }
 ] satisfies AppMenuActionItem[]

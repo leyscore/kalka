@@ -12,7 +12,7 @@ describe('native agent discovery', () => {
   it('answers agent discovery through the desktop shell', async () => {
     await browser.waitUntil(
       async () => browser.execute(() => Boolean(window.openPencil?.getStore?.())),
-      { timeout: 30_000, timeoutMsg: 'OpenPencil editor did not initialize' }
+      { timeout: 30_000, timeoutMsg: 'Kalka editor did not initialize' }
     )
     const lookup = await invokeNative<AgentLookup>('agent_lookup')
     assert.ok(Object.keys(lookup.executables).length > 0)

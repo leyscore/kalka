@@ -5,7 +5,7 @@ use std::process::{Command, Stdio};
 use std::time::{Duration, Instant};
 
 // Only inspect known executables. Discovery never launches an agent or reads credentials;
-// it runs only OpenPencil's own companions, and only to ask their version.
+// it runs only Kalka's own companions, and only to ask their version.
 const EXECUTABLES: &[&str] = &[
     "claude",
     "claude-agent-acp",
@@ -17,7 +17,7 @@ const EXECUTABLES: &[&str] = &[
     "npm",
 ];
 
-// OpenPencil's own companions, whose installed version must match the app.
+// Kalka's own companions, whose installed version must match the app.
 const PACKAGES: &[(&str, &str)] = &[
     ("openpencil-mcp-http", "@open-pencil/mcp"),
     ("openpencil-harness", "@open-pencil/harness"),
@@ -27,7 +27,7 @@ const PACKAGES: &[(&str, &str)] = &[
 #[serde(rename_all = "camelCase")]
 pub struct AgentLookup {
     executables: BTreeMap<String, Option<String>>,
-    /// Versions OpenPencil's companions report for `--version`; `None` when one predates it.
+    /// Versions Kalka's companions report for `--version`; `None` when one predates it.
     versions: BTreeMap<String, Option<String>>,
     search_path: String,
 }
@@ -47,7 +47,7 @@ fn parse_version(output: &str) -> Option<String> {
     (numeric && core.next().is_none()).then(|| line.to_owned())
 }
 
-/// Asks one of OpenPencil's own companions for its version. Asking the program reports what
+/// Asks one of Kalka's own companions for its version. Asking the program reports what
 /// actually runs, through npm and bun shims, `.cmd` wrappers on Windows, and version managers.
 /// `--help` follows so that a release older than `--version` prints its help and exits; it has
 /// no version line, which reads as outdated.

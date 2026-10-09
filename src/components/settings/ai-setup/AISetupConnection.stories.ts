@@ -113,7 +113,7 @@ export const OpenRouterWaiting: Story = {
 }
 export const OpenRouterVerifying: Story = { args: { signInStatus: 'verifying' } }
 export const OpenRouterSignedIn: Story = {
-  args: { account: { label: 'OpenPencil', freeTier: false } },
+  args: { account: { label: 'Kalka', freeTier: false } },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('status')).toHaveTextContent('Signed in to OpenRouter')
@@ -122,7 +122,7 @@ export const OpenRouterSignedIn: Story = {
   }
 }
 export const OpenRouterSignedInWithoutCredits: Story = {
-  args: { account: { label: 'OpenPencil', freeTier: true } }
+  args: { account: { label: 'Kalka', freeTier: true } }
 }
 export const OpenRouterPopupBlocked: Story = { args: { signInStatus: 'blocked' } }
 export const OpenRouterFailed: Story = { args: { signInStatus: 'failed' } }
@@ -234,7 +234,7 @@ export const PiOutdatedMCPFromBun: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByText(/OpenPencil MCP server · update needed/)).toBeVisible()
+    await expect(canvas.getByText(/Kalka MCP server · update needed/)).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Update MCP server' })).toBeVisible()
     await expect(canvas.getByText('bun add -g @open-pencil/mcp@0.15.1')).toBeVisible()
   }

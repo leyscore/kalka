@@ -27,7 +27,7 @@ test('single rectangle panel', async () => {
   await reset()
   await page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const node = store.graph.createNode('RECTANGLE', store.state.currentPageId, {
       name: 'Card',
       x: 100,
@@ -46,7 +46,7 @@ test('text selection panel', async () => {
   await reset()
   await page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const node = store.graph.createNode('TEXT', store.state.currentPageId, {
       name: 'Heading',
       text: 'Panel typography',
@@ -66,7 +66,7 @@ test('mixed selection panel', async () => {
   await reset()
   await page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const first = store.graph.createNode('RECTANGLE', store.state.currentPageId, {
       x: 100,
       y: 100,
@@ -89,7 +89,7 @@ test('instance panel', async () => {
   await reset()
   await page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const component = store.graph.createNode('COMPONENT', store.state.currentPageId, {
       name: 'Button',
       componentPropertyDefinitions: [
@@ -123,7 +123,7 @@ test('nested groups layer tree', async () => {
   await reset()
   await page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const outer = store.graph.createNode('GROUP', store.state.currentPageId, {
       name: 'Outer group',
       expanded: true

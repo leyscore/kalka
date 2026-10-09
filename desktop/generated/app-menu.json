@@ -1,12 +1,12 @@
 {
   "about": {
-    "label": "About OpenPencil"
+    "label": "About Kalka"
   },
   "check-updates": {
     "label": "Check for Updates…"
   },
   "quit": {
-    "label": "Quit OpenPencil",
+    "label": "Quit Kalka",
     "accelerator": "CmdOrCtrl+Q"
   }
 }

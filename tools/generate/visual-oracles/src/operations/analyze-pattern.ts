@@ -52,7 +52,7 @@ const minComponentPixels = Number(opts.threshold)
 const regions = parseRegions(opts.regions)
 
 if (!existsSync(figmaPath)) throw new Error(`Missing Figma image: ${figmaPath}`)
-if (!existsSync(oursPath)) throw new Error(`Missing OpenPencil image: ${oursPath}`)
+if (!existsSync(oursPath)) throw new Error(`Missing Kalka image: ${oursPath}`)
 
 const figma = await loadImage(figmaPath)
 const ours = await loadImage(oursPath)

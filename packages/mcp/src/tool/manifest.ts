@@ -41,7 +41,7 @@ export function createToolDescriptors(filesystemEnabled: boolean): ToolDescripto
     {
       name: 'list_documents',
       description:
-        'List open OpenPencil documents/tabs with their IDs, file paths, current pages, and pages.',
+        'List open Kalka documents/tabs with their IDs, file paths, current pages, and pages.',
       effect: 'read',
       availability: 'default',
       capabilities: ['document:read'],

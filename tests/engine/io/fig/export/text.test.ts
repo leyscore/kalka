@@ -73,7 +73,7 @@ describe('text node export', () => {
     expect(textNode?.fontFeatures).toContainEqual({ tag: 'LIGA', enabled: false })
   })
 
-  test('keeps OpenPencil text language hints out of the .fig schema', async () => {
+  test('keeps Kalka text language hints out of the .fig schema', async () => {
     await initCodec()
 
     const graph = new SceneGraph()

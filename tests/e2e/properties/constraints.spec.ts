@@ -12,7 +12,7 @@ test.beforeEach(async ({ page }) => {
 async function createConstrainedChildren(page: Parameters<typeof propertySection>[0]) {
   return page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const frame = store.graph.createNode('FRAME', store.state.currentPageId, {
       name: 'Constraint frame',
       x: 100,

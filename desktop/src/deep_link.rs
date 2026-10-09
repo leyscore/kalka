@@ -8,7 +8,7 @@ pub struct DeepLinkOpen {
     pub node: Option<String>,
 }
 
-/// A collaboration room to open, from `openpencil://join?room=<id>`.
+/// A collaboration room to open, from `kalka://join?room=<id>`.
 #[derive(Debug, PartialEq, Eq)]
 pub struct DeepLinkJoin {
     pub room: String,
@@ -44,7 +44,7 @@ fn is_room_id(room: &str) -> bool {
 }
 
 pub fn parse_deep_link(url: &Url) -> Result<DeepLink, DeepLinkError> {
-    // openpencil://<action>?…  → host is the action.
+    // kalka://<action>?…  → host is the action.
     match url.host_str().unwrap_or("") {
         "open" => parse_open_url(url).map(DeepLink::Open),
         "join" => parse_join_url(url).map(DeepLink::Join),
@@ -65,7 +65,7 @@ fn parse_join_url(url: &Url) -> Result<DeepLinkJoin, DeepLinkError> {
     Ok(DeepLinkJoin { room })
 }
 
-/// An OAuth redirect relayed by the web app's callback page: `openpencil://oauth/<provider>?…`.
+/// An OAuth redirect relayed by the web app's callback page: `kalka://oauth/<provider>?…`.
 /// The query goes to the webview untouched; the attempt that started sign-in checks its state.
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
 pub struct OAuthCallback {
@@ -208,7 +208,7 @@ mod tests {
     #[test]
     fn passes_an_oauth_redirect_through_with_its_provider() {
         assert_eq!(
-            oauth("openpencil://oauth/openrouter?code=abc&state=xyz"),
+            oauth("kalka://oauth/openrouter?code=abc&state=xyz"),
             Some(OAuthCallback {
                 provider: "openrouter".to_owned(),
                 query: "?code=abc&state=xyz".to_owned(),
@@ -218,9 +218,9 @@ mod tests {
 
     #[test]
     fn refuses_an_oauth_link_without_a_plain_provider() {
-        assert_eq!(oauth("openpencil://oauth?code=abc"), None);
-        assert_eq!(oauth("openpencil://oauth/open/router?code=abc"), None);
-        assert_eq!(oauth("openpencil://open?file=a.pen"), None);
+        assert_eq!(oauth("kalka://oauth?code=abc"), None);
+        assert_eq!(oauth("kalka://oauth/open/router?code=abc"), None);
+        assert_eq!(oauth("kalka://open?file=a.pen"), None);
     }
 
     fn parse(s: &str) -> Result<DeepLinkOpen, DeepLinkError> {
@@ -230,7 +230,7 @@ mod tests {
     #[test]
     fn open_with_file_and_node() {
         assert_eq!(
-            parse("openpencil://open?file=web%2Fdesign%2Fhikyo.pen&node=Button%2FPrimary"),
+            parse("kalka://open?file=web%2Fdesign%2Fhikyo.pen&node=Button%2FPrimary"),
             Ok(DeepLinkOpen {
                 file: "web/design/hikyo.pen".into(),
                 node: Some("Button/Primary".into())
@@ -240,7 +240,7 @@ mod tests {
 
     #[test]
     fn node_is_optional() {
-        assert_eq!(parse("openpencil://open?file=a.pen").unwrap().node, None);
+        assert_eq!(parse("kalka://open?file=a.pen").unwrap().node, None);
     }
 
     const ROOM: &str = "abcdefghijklmnopqrstuvwxyz012345";
@@ -248,7 +248,7 @@ mod tests {
     #[test]
     fn join_with_room() {
         assert_eq!(
-            parse_deep_link(&Url::parse(&format!("openpencil://join?room={ROOM}")).unwrap()),
+            parse_deep_link(&Url::parse(&format!("kalka://join?room={ROOM}")).unwrap()),
             Ok(DeepLink::Join(DeepLinkJoin { room: ROOM.into() }))
         );
     }
@@ -256,12 +256,12 @@ mod tests {
     #[test]
     fn join_refuses_a_room_that_is_not_a_room_id() {
         for url in [
-            "openpencil://join".to_string(),
-            "openpencil://join?room=".to_string(),
-            "openpencil://join?room=short".to_string(),
-            format!("openpencil://join?room={}", ROOM.to_uppercase()),
-            format!("openpencil://join?room={ROOM}x"),
-            format!("openpencil://join?room={}%2F", &ROOM[..31]),
+            "kalka://join".to_string(),
+            "kalka://join?room=".to_string(),
+            "kalka://join?room=short".to_string(),
+            format!("kalka://join?room={}", ROOM.to_uppercase()),
+            format!("kalka://join?room={ROOM}x"),
+            format!("kalka://join?room={}%2F", &ROOM[..31]),
         ] {
             assert_eq!(
                 parse_deep_link(&Url::parse(&url).unwrap()),
@@ -274,11 +274,11 @@ mod tests {
     #[test]
     fn deep_link_routes_open_and_refuses_other_actions() {
         assert!(matches!(
-            parse_deep_link(&Url::parse("openpencil://open?file=a.pen").unwrap()),
+            parse_deep_link(&Url::parse("kalka://open?file=a.pen").unwrap()),
             Ok(DeepLink::Open(_))
         ));
         assert_eq!(
-            parse_deep_link(&Url::parse("openpencil://export?file=a.pen").unwrap()),
+            parse_deep_link(&Url::parse("kalka://export?file=a.pen").unwrap()),
             Err(DeepLinkError::UnknownAction("export".into()))
         );
     }
@@ -286,14 +286,14 @@ mod tests {
     #[test]
     fn unknown_action() {
         assert_eq!(
-            parse("openpencil://export?file=a.pen"),
+            parse("kalka://export?file=a.pen"),
             Err(DeepLinkError::UnknownAction("export".into()))
         );
     }
 
     #[test]
     fn missing_file() {
-        assert_eq!(parse("openpencil://open"), Err(DeepLinkError::MissingFile));
+        assert_eq!(parse("kalka://open"), Err(DeepLinkError::MissingFile));
     }
 
     #[test]
@@ -301,7 +301,7 @@ mod tests {
         // The matcher refuses `.` too, so accepting it here would queue a link that can
         // never resolve against an open tab or a picked file.
         assert_eq!(
-            parse("openpencil://open?file=web%2F.%2Fdesign.pen"),
+            parse("kalka://open?file=web%2F.%2Fdesign.pen"),
             Err(DeepLinkError::ParentSegment)
         );
     }
@@ -309,11 +309,11 @@ mod tests {
     #[test]
     fn absolute_refused() {
         assert_eq!(
-            parse("openpencil://open?file=%2FUsers%2Fx%2Fa.pen"),
+            parse("kalka://open?file=%2FUsers%2Fx%2Fa.pen"),
             Err(DeepLinkError::AbsolutePath)
         );
         assert_eq!(
-            parse("openpencil://open?file=C%3A%5Cx%5Ca.pen"),
+            parse("kalka://open?file=C%3A%5Cx%5Ca.pen"),
             Err(DeepLinkError::AbsolutePath)
         );
     }
@@ -321,12 +321,12 @@ mod tests {
     #[test]
     fn parent_segment_refused() {
         assert_eq!(
-            parse("openpencil://open?file=..%2Fa.pen"),
+            parse("kalka://open?file=..%2Fa.pen"),
             Err(DeepLinkError::ParentSegment)
         );
         // The dots themselves percent-encoded: decoding happens before the check.
         assert_eq!(
-            parse("openpencil://open?file=%2E%2E%2Fa.pen"),
+            parse("kalka://open?file=%2E%2E%2Fa.pen"),
             Err(DeepLinkError::ParentSegment)
         );
     }
@@ -334,10 +334,10 @@ mod tests {
     #[test]
     fn extension_checked() {
         assert_eq!(
-            parse("openpencil://open?file=a.txt"),
+            parse("kalka://open?file=a.txt"),
             Err(DeepLinkError::BadExtension)
         );
-        assert!(parse("openpencil://open?file=a.fig").is_ok());
+        assert!(parse("kalka://open?file=a.fig").is_ok());
     }
 
     #[test]

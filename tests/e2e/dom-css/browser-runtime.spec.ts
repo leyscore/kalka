@@ -33,7 +33,7 @@ test.describe('@open-pencil/dom-css browser CSS runtime oracle', () => {
     await setStyledContent(
       page,
       css,
-      `<article class="${tailwindCardClasses.join(' ')}"><h1>OpenPencil</h1></article>`
+      `<article class="${tailwindCardClasses.join(' ')}"><h1>Kalka</h1></article>`
     )
 
     const styles = await computedStyleProperties(page, 'article', [
@@ -180,7 +180,7 @@ test.describe('@open-pencil/dom-css browser CSS runtime oracle', () => {
       css,
       `
         <nav class="${navClasses.join(' ')}">
-          <span>OpenPencil</span>
+          <span>Kalka</span>
           <span class="${badgeClasses.join(' ')}">Beta</span>
         </nav>
         <input class="${inputClasses.join(' ')}" value="https://openpencil.dev" />
@@ -321,7 +321,7 @@ test.describe('@open-pencil/dom-css browser CSS runtime oracle', () => {
           white-space: nowrap;
         }
       `,
-      '<div class="ratio"></div><img class="media" alt="Preview" /><h1 class="title">OpenPencil</h1>'
+      '<div class="ratio"></div><img class="media" alt="Preview" /><h1 class="title">Kalka</h1>'
     )
 
     const ratio = await computedStyleProperties(page, '.ratio', ['aspect-ratio', 'height', 'width'])
@@ -344,7 +344,7 @@ test.describe('@open-pencil/dom-css browser CSS runtime oracle', () => {
   }) => {
     const textNode = await publicBrowserTextNode(
       page,
-      '<h1 class="title">OpenPencil</h1>',
+      '<h1 class="title">Kalka</h1>',
       '.title { color: #111827; text-transform: uppercase; white-space: nowrap; }'
     )
 
@@ -431,7 +431,7 @@ test.describe('@open-pencil/dom-css browser CSS runtime oracle', () => {
           type: 'element',
           tagName: 'article',
           attrs: { class: 'card' },
-          children: [{ type: 'text', text: 'OpenPencil' }]
+          children: [{ type: 'text', text: 'Kalka' }]
         }
       ]
     }
@@ -480,7 +480,7 @@ test.describe('@open-pencil/dom-css browser CSS runtime oracle', () => {
     `
     const card = await publicBrowserHTMLSceneGraph(
       page,
-      '<article class="card"><h1>OpenPencil</h1></article>',
+      '<article class="card"><h1>Kalka</h1></article>',
       css
     )
 
@@ -533,7 +533,7 @@ test.describe('@open-pencil/dom-css browser CSS runtime oracle', () => {
     const document = await jsxToDesignDocument(
       jsx('article', {
         class: classes.join(' '),
-        children: jsx('h1', { children: 'OpenPencil' })
+        children: jsx('h1', { children: 'Kalka' })
       })
     )
     const css = await compileTailwindCSS(classes)

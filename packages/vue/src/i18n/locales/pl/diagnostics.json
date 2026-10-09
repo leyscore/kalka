@@ -21,7 +21,7 @@
   "mcpFailed": "Połączenie MCP nie powiodło się",
   "retention": "Retencja diagnostyki",
   "retentionDescription": "Zachowuj lokalnie do tej liczby ostatnich zdarzeń.",
-  "description": "Zapisuj lokalnie zdarzenia techniczne, aby ułatwić rozwiązywanie problemów z OpenPencil. Prompty, zawartość projektu, dane logowania i klucze API są wykluczone.",
+  "description": "Zapisuj lokalnie zdarzenia techniczne, aby ułatwić rozwiązywanie problemów z Kalka. Prompty, zawartość projektu, dane logowania i klucze API są wykluczone.",
   "eventCount": "{count} zdarzeń · {size} KB",
   "copy": "Kopiuj diagnostykę",
   "clear": "Wyczyść",

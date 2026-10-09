@@ -8,7 +8,7 @@ const editor = useEditorSetupWithClear('/?test&no-chrome&no-rulers')
 test('Fill instances wrap inside narrower parents after component synchronization', async () => {
   await editor.page.evaluate(async () => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const fixtureURL = '/tests/helpers/canvas/instance-sizing.ts'
     const { createInstanceSizingScene }: typeof SizingFixture = await import(fixtureURL)
     const { boardId, componentId } = await createInstanceSizingScene(

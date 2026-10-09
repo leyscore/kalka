@@ -76,7 +76,7 @@ async function createStdioClient(socketPath: string, authToken: string | null) {
         // Buffer stderr so the readiness marker is not missed if it
         // straddles a chunk boundary.
         stderrBuffer += chunk.toString()
-        if (stderrBuffer.includes('Connected to OpenPencil')) {
+        if (stderrBuffer.includes('Connected to Kalka')) {
           clearTimeout(timer)
           resolve()
         }
@@ -352,7 +352,7 @@ describe('MCP stdio readiness without an open document', () => {
       const result = await client.callTool({ name: 'get_current_page', arguments: {} })
       expect(result.isError).toBe(true)
       const message = textContent(result.content)
-      expect(message).toContain('OpenPencil app is not connected')
+      expect(message).toContain('Kalka app is not connected')
       expect(message).toContain('no document is open')
     } finally {
       await client?.close().catch(() => undefined)

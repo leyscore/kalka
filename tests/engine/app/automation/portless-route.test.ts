@@ -47,7 +47,7 @@ describe('Portless MCP routing', () => {
 
   test('rejects unrelated Portless hostnames', () => {
     expect(() => devAutomationRoute('https://other.localhost', 7600)).toThrow(
-      'Unexpected OpenPencil Portless URL'
+      'Unexpected Kalka Portless URL'
     )
   })
 })

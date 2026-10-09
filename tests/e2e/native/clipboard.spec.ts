@@ -7,7 +7,7 @@ describe('native clipboard routing', () => {
     if (process.platform !== 'win32') this.skip()
     await browser.waitUntil(
       async () => browser.execute(() => Boolean(window.openPencil?.getStore?.())),
-      { timeout: 30_000, timeoutMsg: 'OpenPencil editor did not initialize' }
+      { timeout: 30_000, timeoutMsg: 'Kalka editor did not initialize' }
     )
     await browser.execute(() => {
       const input = document.createElement('input')

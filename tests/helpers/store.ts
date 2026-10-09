@@ -3,7 +3,7 @@ import type { Page } from '@playwright/test'
 export function getSelectedIds(page: Page) {
   return page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     return store.state.selectedIds.size
   })
 }
@@ -11,7 +11,7 @@ export function getSelectedIds(page: Page) {
 export function getPageChildren(page: Page) {
   return page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     return store.graph.getChildren(store.state.currentPageId).map((n) => ({
       id: n.id,
       type: n.type,
@@ -29,7 +29,7 @@ export function getPageChildren(page: Page) {
 export function getSelectedNode(page: Page) {
   return page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const id = [...store.state.selectedIds][0]
     if (!id) return null
     const n = store.graph.getNode(id)
@@ -69,7 +69,7 @@ export function getSelectedNode(page: Page) {
 export function getSelectedNodes(page: Page) {
   return page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     return [...store.state.selectedIds].map((id) => {
       const n = store.graph.getNode(id)
       if (!n) throw new Error(`Selected node ${id} not found`)
@@ -90,7 +90,7 @@ export function getSelectedNodes(page: Page) {
 export function getNodeById(page: Page, id: string) {
   return page.evaluate((nodeId: string) => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const n = store.graph.getNode(nodeId)
     if (!n) return null
     return {
@@ -134,7 +134,7 @@ export function getNodeById(page: Page, id: string) {
 export function getEditingTextId(page: Page) {
   return page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     return store.state.editingTextId
   })
 }

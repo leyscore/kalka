@@ -20,7 +20,7 @@ export const OPENROUTER_CALLBACK_PATH = '/oauth/openrouter.html'
 export const OPENROUTER_CALLBACK_CHANNEL = 'open-pencil:openrouter-oauth'
 /** Served from `public/` on the web app; it hands the redirect to the desktop app's deep link. */
 export const OPENROUTER_DESKTOP_CALLBACK_PATH = '/oauth/openrouter-desktop.html'
-/** Emitted by the desktop shell for an `openpencil://oauth/<provider>?…` link. */
+/** Emitted by the desktop shell for an `kalka://oauth/<provider>?…` link. */
 const OAUTH_CALLBACK_EVENT = 'oauth-callback'
 const POPUP_NAME = 'open-pencil-openrouter'
 const POPUP_FEATURES = 'popup,width=520,height=720'
@@ -36,7 +36,7 @@ export interface OpenRouterSignInOptions {
   keyLabel: string
 }
 
-/** What the desktop shell forwards from an `openpencil://oauth/<provider>?…` link. */
+/** What the desktop shell forwards from an `kalka://oauth/<provider>?…` link. */
 const oauthCallbackSchema = v.object({ provider: v.string(), query: v.string() })
 
 export interface OpenRouterSignIn {
@@ -128,7 +128,7 @@ function browserSignIn({ signal, keyLabel }: OpenRouterSignInOptions): OpenRoute
 }
 
 /**
- * Listens for the `openpencil://oauth/openrouter` link the hosted callback page opens; the
+ * Listens for the `kalka://oauth/openrouter` link the hosted callback page opens; the
  * desktop shell forwards its query as an `oauth-callback` event.
  */
 async function listenForDesktopCallback() {

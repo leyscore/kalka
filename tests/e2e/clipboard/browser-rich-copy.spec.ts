@@ -7,7 +7,7 @@ test.beforeAll(async () => {
   await editor.page.context().grantPermissions(['clipboard-read', 'clipboard-write'])
 })
 
-test('browser menu copy writes rich and plain OpenPencil clipboard formats', async () => {
+test('browser menu copy writes rich and plain Kalka clipboard formats', async () => {
   await editor.canvas.clearCanvas()
   await editor.canvas.drawRect(100, 100, 120, 80)
   await editor.canvas.waitForRender()
@@ -43,7 +43,7 @@ test('browser menu copy writes rich and plain OpenPencil clipboard formats', asy
 
   const before = await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     return store.graph.getChildren(store.state.currentPageId).length
   })
   const pasteMenu = await openAppMenu(editor.page, 'Edit')
@@ -52,7 +52,7 @@ test('browser menu copy writes rich and plain OpenPencil clipboard formats', asy
     .poll(() =>
       editor.page.evaluate(() => {
         const store = window.openPencil?.getStore?.()
-        if (!store) throw new Error('OpenPencil store not initialized')
+        if (!store) throw new Error('Kalka store not initialized')
         return store.graph.getChildren(store.state.currentPageId).length
       })
     )

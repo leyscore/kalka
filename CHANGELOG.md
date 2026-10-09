@@ -93,6 +93,7 @@
 
 ### Changed
 
+- The app is now Kalka: its name, icons, window and menu titles, `kalka://` links, and the folder where the MCP server finds the running app (`Kalka` on macOS and Windows, `kalka` on Linux).
 - With **Snap to Pixel Grid** on, moved layers and resized edges land on whole pixels at any zoom, and drawn layers start and end on whole pixels, as in Figma; zoomed in, moves and resizes could leave fractions before, and drawing was not snapped.
 - Layers inside components and instances are outlined in purple when hovered or selected, with a purple size label, as in Figma; they were blue.
 - The properties panel's variable picker groups variables by collection and shows each color variable's swatch, and the variables dialog points a value at another variable with the same picker, detaching it from the picker's footer.

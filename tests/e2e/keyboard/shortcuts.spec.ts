@@ -14,7 +14,7 @@ const ObservedShortcutJSON = v.pipe(
 function getActiveTool() {
   return editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     return store.state.activeTool
   })
 }
@@ -22,7 +22,7 @@ function getActiveTool() {
 function getSelectedCount() {
   return editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     return store.state.selectedIds.size
   })
 }
@@ -30,7 +30,7 @@ function getSelectedCount() {
 function getPageChildren() {
   return editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     return store.graph.getChildren(store.state.currentPageId).map((n) => ({
       id: n.id,
       type: n.type,
@@ -43,7 +43,7 @@ function getPageChildren() {
 function getUIVisible() {
   return editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     return store.state.showUI
   })
 }
@@ -51,7 +51,7 @@ function getUIVisible() {
 function getZoom() {
   return editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     return store.state.zoom
   })
 }
@@ -59,7 +59,7 @@ function getZoom() {
 function getSelectedOpacity() {
   return editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const id = [...store.state.selectedIds][0]
     return id ? store.graph.getNode(id)?.opacity : undefined
   })
@@ -125,7 +125,7 @@ test.describe('selection shortcuts', () => {
   test('⌘R starts inline rename for one layer', async () => {
     const id = await editor.page.evaluate(() => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       const node = store.graph.createNode('RECTANGLE', store.state.currentPageId)
       store.select([node.id])
       return node.id
@@ -144,7 +144,7 @@ test.describe('selection shortcuts', () => {
   test('⌘R opens bulk rename for multiple layers', async () => {
     const ids = await editor.page.evaluate(() => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       const first = store.graph.createNode('RECTANGLE', store.state.currentPageId)
       const second = store.graph.createNode('RECTANGLE', store.state.currentPageId)
       store.select([first.id, second.id])
@@ -193,7 +193,7 @@ test.describe('z-order shortcuts', () => {
     // Select the first (bottom) node
     await editor.page.evaluate((id) => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       store.select([id])
     }, firstId)
     await editor.canvas.waitForRender()
@@ -212,7 +212,7 @@ test.describe('z-order shortcuts', () => {
     // Select the last (top) node
     await editor.page.evaluate((id) => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       store.select([id])
     }, lastId)
     await editor.canvas.waitForRender()
@@ -334,7 +334,7 @@ test.describe('zoom shortcuts', () => {
   test('⌘=, ⌘+ and ⌘- zoom the canvas and prevent browser defaults', async () => {
     await editor.page.evaluate(() => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       store.zoomTo100()
     })
 
@@ -378,7 +378,7 @@ test.describe('zoom shortcuts', () => {
   test('Figma plus and minus shortcuts zoom around the active canvas center', async () => {
     await editor.page.evaluate(() => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       store.zoomTo100()
       store.splitPane(store.activePaneId.value, 'horizontal')
     })
@@ -405,7 +405,7 @@ test.describe('zoom shortcuts', () => {
 
     const centerBefore = await editor.page.evaluate(() => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       const center = store.viewportCanvasCenter()
       return { center, canvasPoint: store.screenToCanvas(center.x, center.y) }
     })
@@ -418,7 +418,7 @@ test.describe('zoom shortcuts', () => {
     const zoomedIn = await getZoom()
     const centerAfter = await editor.page.evaluate(() => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       const center = store.viewportCanvasCenter()
       return { center, canvasPoint: store.screenToCanvas(center.x, center.y) }
     })
@@ -430,7 +430,7 @@ test.describe('zoom shortcuts', () => {
     if (!inactivePaneId) throw new Error('Expected inactive canvas pane')
     await editor.page.evaluate((paneId) => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       store.closePane(paneId)
     }, inactivePaneId)
     await expect(editor.page.locator('[data-active-pane]')).toHaveCount(1)
@@ -449,7 +449,7 @@ test.describe('zoom shortcuts', () => {
     // Set zoom to something other than 100%
     await editor.page.evaluate(() => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       store.state.zoom = 2
     })
     await editor.canvas.waitForRender()
@@ -531,7 +531,7 @@ test.describe('auto-layout shortcut', () => {
     // Change to frame type for auto-layout
     await editor.page.evaluate(() => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       const nodes = [...store.state.selectedIds]
       if (nodes[0]) store.updateNode(nodes[0], { type: 'FRAME' })
     })
@@ -539,7 +539,7 @@ test.describe('auto-layout shortcut', () => {
 
     const layoutBefore = await editor.page.evaluate(() => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       const nodes = [...store.state.selectedIds]
       return store.graph.getNode(nodes[0])?.layoutMode
     })
@@ -550,7 +550,7 @@ test.describe('auto-layout shortcut', () => {
 
     const layoutAfter = await editor.page.evaluate(() => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       const nodes = [...store.state.selectedIds]
       return store.graph.getNode(nodes[0])?.layoutMode
     })
@@ -562,7 +562,7 @@ test.describe('auto-layout shortcut', () => {
 
     const layoutFinal = await editor.page.evaluate(() => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       const nodes = [...store.state.selectedIds]
       return store.graph.getNode(nodes[0])?.layoutMode
     })

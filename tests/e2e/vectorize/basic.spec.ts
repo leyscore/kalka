@@ -31,7 +31,7 @@ async function rightClickSelected(): Promise<void> {
 async function createImageNode(): Promise<string> {
   return editor.page.evaluate(async () => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
 
     const imageCanvas = document.createElement('canvas')
     imageCanvas.width = 120

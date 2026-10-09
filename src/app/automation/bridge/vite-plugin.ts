@@ -231,7 +231,7 @@ export function automationPlugin(
       const text = data.toString()
       if (text.includes('EADDRINUSE')) {
         console.error(
-          `\x1b[31m[MCP] MCP bind failed (${options.browserURL}${socketPath ? ` or socket ${socketPath}` : ''}). Is another OpenPencil instance running?\x1b[0m`
+          `\x1b[31m[MCP] MCP bind failed (${options.browserURL}${socketPath ? ` or socket ${socketPath}` : ''}). Is another Kalka instance running?\x1b[0m`
         )
         spawned.kill()
         if (child === spawned) child = null

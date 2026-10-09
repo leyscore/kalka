@@ -149,7 +149,7 @@ export interface DecodedVariable {
   hiddenFromPublishing?: boolean
   description?: string
   /**
-   * Whether the token carries OpenPencil's own fields. Its unit, scopes, and code syntax then
+   * Whether the token carries Kalka's own fields. Its unit, scopes, and code syntax then
    * replace a variable's, missing ones included; other tools' tokens leave them as they are.
    */
   own: boolean
@@ -249,7 +249,7 @@ function impliedScopes(token: ReadToken): VariableScope[] | undefined {
   return undefined
 }
 
-/** A token as a variable value and OpenPencil's own token fields. */
+/** A token as a variable value and Kalka's own token fields. */
 export function decodeVariableToken(token: ReadToken): DecodedVariable | DecodeFailure {
   const type = variableTypeOf(token)
   if (type === 'unsupported-type' || type === 'invalid-value') return type

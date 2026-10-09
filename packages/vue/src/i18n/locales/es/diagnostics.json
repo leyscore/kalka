@@ -21,7 +21,7 @@
   "mcpFailed": "Conexión MCP fallida",
   "retention": "Retención de diagnósticos",
   "retentionDescription": "Conserva localmente hasta este número de eventos recientes.",
-  "description": "Guarda eventos técnicos localmente para ayudar a solucionar problemas de OpenPencil. Se excluyen prompts, contenido de diseño, credenciales y claves API.",
+  "description": "Guarda eventos técnicos localmente para ayudar a solucionar problemas de Kalka. Se excluyen prompts, contenido de diseño, credenciales y claves API.",
   "eventCount": "{count} eventos · {size} KB",
   "copy": "Copiar diagnóstico",
   "clear": "Borrar",

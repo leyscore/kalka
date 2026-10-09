@@ -152,7 +152,7 @@ function rasterFormat<F extends RasterExportFormat>(format: F): IOFormatAdapter<
 
 export const figFormat: IOFormatAdapter<'fig'> = {
   id: 'fig',
-  label: 'OpenPencil Document',
+  label: 'Kalka Document',
   role: 'native-document',
   category: 'document',
   extensions: ['fig'],

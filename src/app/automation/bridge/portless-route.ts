@@ -25,7 +25,7 @@ export function devAutomationRoute(
   const appURL = new URL(portlessURL)
   const marker = `${APP_NAME}.`
   const markerIndex = appURL.hostname.lastIndexOf(marker)
-  if (markerIndex === -1) throw new Error(`Unexpected OpenPencil Portless URL: ${portlessURL}`)
+  if (markerIndex === -1) throw new Error(`Unexpected Kalka Portless URL: ${portlessURL}`)
   const prefix = appURL.hostname.slice(0, markerIndex)
   const suffix = appURL.hostname.slice(markerIndex + APP_NAME.length)
   const mcpHostname = `${prefix}${MCP_SERVICE_NAME}${suffix}`

@@ -3,7 +3,7 @@
   "version": "0.15.1",
   "license": "MIT",
   "type": "module",
-  "description": "How OpenPencil exporters emit source: JavaScript, TypeScript, and JSX built as ESTree and printed with esrap.",
+  "description": "How Kalka exporters emit source: JavaScript, TypeScript, and JSX built as ESTree and printed with esrap.",
   "imports": {
     "#emit/*": {
       "types": "./src/*",

@@ -62,7 +62,7 @@ describe('clipboard roundtrip with images', () => {
     const encoded = fromUint8Array(deflateSync(new TextEncoder().encode(JSON.stringify(legacy))))
     const parsed = expectDefined(
       parseOpenPencilClipboard(`<!--(openpencil)${encoded}(/openpencil)-->`),
-      'OpenPencil clipboard'
+      'Kalka clipboard'
     )
     const instance = parsed.nodes[0]
 
@@ -85,7 +85,7 @@ describe('clipboard roundtrip with images', () => {
 
     const parsed = expectDefined(
       parseOpenPencilClipboard(buildOpenPencilClipboardHTML([instance], graph)),
-      'OpenPencil clipboard'
+      'Kalka clipboard'
     )
     const pasted = parsed.nodes[0]
 
@@ -102,7 +102,7 @@ describe('clipboard roundtrip with images', () => {
     const html = buildOpenPencilClipboardHTML([node], graph)
     const parsed = parseOpenPencilClipboard(html)
 
-    const clipboard = expectDefined(parsed, 'OpenPencil clipboard')
+    const clipboard = expectDefined(parsed, 'Kalka clipboard')
     expect(clipboard.images.size).toBe(1)
     expect(clipboard.images.get(imageHash)).toEqual(imageBytes)
   })
@@ -113,7 +113,7 @@ describe('clipboard roundtrip with images', () => {
     const html = buildOpenPencilClipboardHTML([node], graph)
     const parsed = parseOpenPencilClipboard(html)
 
-    const fill = expectDefined(parsed, 'OpenPencil clipboard').nodes[0]?.fills[0]
+    const fill = expectDefined(parsed, 'Kalka clipboard').nodes[0]?.fills[0]
     expect(fill.type).toBe('IMAGE')
     expect(fill.imageHash).toBe(imageHash)
   })
@@ -162,7 +162,7 @@ describe('clipboard roundtrip with images', () => {
     const html = buildOpenPencilClipboardHTML([node1, node2], graph)
     const parsed = parseOpenPencilClipboard(html)
 
-    const clipboard = expectDefined(parsed, 'OpenPencil clipboard')
+    const clipboard = expectDefined(parsed, 'Kalka clipboard')
     expect(clipboard.images.size).toBe(2)
     expect(clipboard.images.get(hash1)).toEqual(bytes1)
     expect(clipboard.images.get(hash2)).toEqual(bytes2)
@@ -181,7 +181,7 @@ describe('clipboard roundtrip with images', () => {
     const html = buildOpenPencilClipboardHTML([node], graph)
     const parsed = parseOpenPencilClipboard(html)
 
-    expect(expectDefined(parsed, 'OpenPencil clipboard').images.size).toBe(0)
+    expect(expectDefined(parsed, 'Kalka clipboard').images.size).toBe(0)
   })
 
   test('child node image hashes are collected', () => {
@@ -212,7 +212,7 @@ describe('clipboard roundtrip with images', () => {
     const html = buildOpenPencilClipboardHTML([frame], graph)
     const parsed = parseOpenPencilClipboard(html)
 
-    const clipboard = expectDefined(parsed, 'OpenPencil clipboard')
+    const clipboard = expectDefined(parsed, 'Kalka clipboard')
     expect(clipboard.images.size).toBe(1)
     expect(clipboard.images.get(hash)).toEqual(bytes)
   })

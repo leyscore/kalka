@@ -35,7 +35,7 @@ async function chooseFormat(page: Page, label: 'RGB' | 'HSL' | 'HSB' | 'OkHCL') 
 async function getSelectedStroke(page: Page) {
   return page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const id = [...store.state.selectedIds][0]
     const node = store.graph.getNode(id)
     return node?.strokes?.[0] ?? null
@@ -92,7 +92,7 @@ test('stroke picker hsb saturation and brightness sliders update stroke color on
 
   await page.evaluate(async () => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const nodes = Array.from(store.graph.nodes.values())
     const card =
       nodes.find((node) => node.name === 'Card' && node.type === 'COMPONENT') ??
@@ -153,7 +153,7 @@ test('bound stroke picker is non-destructive, rolls back Escape, and detaches in
 
   const before = await page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const collection = store.graph.createCollection('Colors')
     const variable = store.graph.createVariable('stroke-brand', 'COLOR', collection.id, {
       r: 0.9,
@@ -174,7 +174,7 @@ test('bound stroke picker is non-destructive, rolls back Escape, and detaches in
   expect(
     await page.evaluate(() => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       const id = [...store.state.selectedIds][0]
       return id ? store.getNode(id)?.boundVariables['strokes/0/color'] : undefined
     })
@@ -185,7 +185,7 @@ test('bound stroke picker is non-destructive, rolls back Escape, and detaches in
   await canvas.waitForRender()
   const afterEscape = await page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const id = [...store.state.selectedIds][0]
     const node = id ? store.getNode(id) : null
     return { color: node?.strokes[0]?.color, binding: node?.boundVariables['strokes/0/color'] }
@@ -205,7 +205,7 @@ test('bound stroke picker is non-destructive, rolls back Escape, and detaches in
   await canvas.waitForRender()
   const restored = await page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const id = [...store.state.selectedIds][0]
     const node = id ? store.getNode(id) : null
     return { color: node?.strokes[0]?.color, binding: node?.boundVariables['strokes/0/color'] }

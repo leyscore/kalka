@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import { invokeNative, writeNativeFile } from '#tests/helpers/tauri/invoke'
 
 const NAME = 'openpencil-native-test-scope.txt'
-const DISCOVERY = join(homedir(), 'Library', 'Application Support', 'OpenPencil', 'mcp.json')
+const DISCOVERY = join(homedir(), 'Library', 'Application Support', 'Kalka', 'mcp.json')
 
 describe('desktop file scope', () => {
   // The protected paths below are macOS ones; other platforms are not claimed.

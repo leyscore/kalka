@@ -119,7 +119,7 @@ describe('native MCP server lifecycle', () => {
   it('uses the server it resolves, or reports why it cannot', async () => {
     await browser.waitUntil(
       async () => browser.execute(() => Boolean(window.openPencil?.getStore?.())),
-      { timeout: 30_000, timeoutMsg: 'OpenPencil editor did not initialize' }
+      { timeout: 30_000, timeoutMsg: 'Kalka editor did not initialize' }
     )
     await openMCPSettings()
 

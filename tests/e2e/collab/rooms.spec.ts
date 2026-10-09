@@ -17,7 +17,7 @@ import {
 function addRectangle(page: Page, name: string) {
   return page.evaluate((layerName) => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.graph.getPages()[0]?.id
     if (!pageId) throw new Error('No page')
     return store.graph.createNode('RECTANGLE', pageId, { name: layerName, width: 80, height: 60 })

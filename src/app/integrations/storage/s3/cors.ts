@@ -2,7 +2,7 @@ import { compact } from 'es-toolkit/array'
 
 import { IS_BROWSER, WEB_APP_ORIGIN } from '@/constants'
 
-/** Origins OpenPencil may run from when calling S3 from the browser. */
+/** Origins Kalka may run from when calling S3 from the browser. */
 export const CLOUD_CORS_STATIC_ORIGINS = [
   // Exact production origin — providers without partial-wildcard support
   // (e.g. R2) need it verbatim even when CORS is configured from dev.

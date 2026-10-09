@@ -12,7 +12,7 @@ test('centered and bottom-aligned text selection follows the rendered text', asy
     const geometry = await editor.page.evaluate(
       ({ horizontal, vertical }) => {
         const store = window.openPencil?.getStore?.()
-        if (!store) throw new Error('OpenPencil store not initialized')
+        if (!store) throw new Error('Kalka store not initialized')
         const id = store.createShape('TEXT', 300, 250, 220, 120)
         store.graph.updateNode(id, {
           text: 'Aligned text',

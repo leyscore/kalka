@@ -5,7 +5,7 @@ const editor = useEditorSetupWithClear('/?test&no-chrome&no-rulers')
 test('Option hover shows temporary distances between layers', async () => {
   await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     store.state.zoom = 1
     store.state.panX = 0
     store.state.panY = 0
@@ -57,7 +57,7 @@ test('Option hover shows temporary distances between layers', async () => {
 test('deep measurement modifier targets a nested component child', async () => {
   const ids = await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     store.state.zoom = 1
     store.state.panX = 0
     store.state.panY = 0

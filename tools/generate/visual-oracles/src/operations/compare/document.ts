@@ -137,9 +137,9 @@ async function captureOpenPencilTarget(
   const metadata = await page.evaluate(
     async ({ target, scale }) => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store unavailable')
+      if (!store) throw new Error('Kalka store unavailable')
       const pageNode = store.graph.getPages().find((candidate) => candidate.name === target.page)
-      if (!pageNode) throw new Error(`OpenPencil page missing: ${target.page}`)
+      if (!pageNode) throw new Error(`Kalka page missing: ${target.page}`)
       await store.switchPage(pageNode.id)
       const pageRoots = store.graph.getChildren(pageNode.id)
       const node = target.openPencilNodeId
@@ -148,7 +148,7 @@ async function captureOpenPencilTarget(
             (candidate) => candidate.name === target.node && candidate.parentId === pageNode.id
           )
       if (!node || node.parentId !== pageNode.id) {
-        throw new Error(`OpenPencil node missing from page: ${target.page} / ${target.node}`)
+        throw new Error(`Kalka node missing from page: ${target.page} / ${target.node}`)
       }
       const position = store.graph.getAbsolutePosition(node.id)
       const viewportWidth = 1280

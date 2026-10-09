@@ -94,7 +94,7 @@ export const SECTION_TITLE_FONT_SIZE = 11
  * canvas and in the page, so renaming a title shows the same glyphs and document fonts named
  * Inter cannot replace them.
  */
-export const SECTION_TITLE_FONT_FAMILY = 'OpenPencil Section Title'
+export const SECTION_TITLE_FONT_FAMILY = 'Kalka Section Title'
 export const SECTION_TITLE_FONT_URL = '/Inter-SemiBold.ttf'
 export const SECTION_TITLE_GAP = 6
 export const SECTION_HOVER_STROKE_WIDTH = 2

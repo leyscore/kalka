@@ -2,7 +2,7 @@ import type { NodeChange, Paint } from '@open-pencil/kiwi/fig/codec'
 
 import { bytesToHex } from '../node-change/bytes'
 
-/** Clipboard recipients cannot fetch image hashes from an OpenPencil source file. */
+/** Clipboard recipients cannot fetch image hashes from an Kalka source file. */
 export async function embedClipboardImages(
   changes: NodeChange[],
   blobs: Uint8Array[],

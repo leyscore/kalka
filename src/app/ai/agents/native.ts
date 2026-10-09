@@ -8,7 +8,7 @@ import { resolvePlatformCommand } from '@/app/tauri/command'
 
 const lookupSchema = v.object({
   executables: v.record(v.string(), v.nullable(v.string())),
-  /** Versions of OpenPencil's own companions, keyed by package name. */
+  /** Versions of Kalka's own companions, keyed by package name. */
   versions: v.record(v.string(), v.nullable(v.string())),
   searchPath: v.string()
 })

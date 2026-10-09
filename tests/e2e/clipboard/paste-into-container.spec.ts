@@ -5,7 +5,7 @@ const editor = useEditorSetup()
 function getNodeChildren(nodeId: string) {
   return editor.page.evaluate((id) => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     return store.graph.getChildren(id).map((n) => ({
       id: n.id,
       name: n.name,
@@ -18,7 +18,7 @@ function getNodeChildren(nodeId: string) {
 function getSelectedParent() {
   return editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const id = [...store.state.selectedIds][0]
     if (!id) return null
     const node = store.graph.getNode(id)
@@ -29,7 +29,7 @@ function getSelectedParent() {
 function createFrameWithChild() {
   return editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     const frameId = store.createShape('FRAME', 50, 50, 300, 200, pageId)
     store.graph.updateNode(frameId, { name: 'Container' })
@@ -43,7 +43,7 @@ function createFrameWithChild() {
 function selectNode(nodeId: string) {
   return editor.page.evaluate((id) => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     store.select([id])
     store.requestRender()
   }, nodeId)
@@ -52,7 +52,7 @@ function selectNode(nodeId: string) {
 function copyAndPaste() {
   return editor.page.evaluate(async () => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const { html } = await store.prepareCopy()
     if (html) await store.pasteFromHTML(html)
   })
@@ -74,7 +74,7 @@ test('paste into selected frame places node as child', async () => {
 
   await editor.page.evaluate(async () => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const rect = [...store.graph.nodes.values()].find(
       (n) => n.name === 'Rectangle 1' && n.type === 'RECTANGLE'
     )
@@ -108,7 +108,7 @@ test('paste with child selected places node as sibling in parent frame', async (
   await editor.page.evaluate(
     async ({ childId: cid }) => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       const rect = [...store.graph.nodes.values()].find(
         (n) => n.name === 'Rectangle 1' && n.type === 'RECTANGLE'
       )
@@ -138,7 +138,7 @@ test('paste with no selection places on page', async () => {
 
   await editor.page.evaluate(async () => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const { html } = await store.prepareCopy()
     store.clearSelection()
     if (html) await store.pasteFromHTML(html)
@@ -148,7 +148,7 @@ test('paste with no selection places on page', async () => {
   const parent = await getSelectedParent()
   const pageId = await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     return store.state.currentPageId
   })
   expect(parent).toBe(pageId)

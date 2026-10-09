@@ -12,7 +12,7 @@ async function expectCanvas(name: string) {
 async function createSlottedCard(): Promise<string> {
   return editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const graph = store.graph
     const pageId = store.state.currentPageId
     const white = [
@@ -73,7 +73,7 @@ test('selected slot frame and its hovered content render in slot pink', async ()
   const instanceId = await createSlottedCard()
   await editor.page.evaluate((id) => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const [body] = store.graph.getChildren(id)
     store.select([body.id])
     store.state.hoveredNodeId = store.graph.getChildren(body.id)[0]?.id ?? null

@@ -47,7 +47,7 @@
   "paletteSearchPlaceholder": "Escribe un comando o busca…",
   "paletteAriaLabel": "Paleta de comandos",
   "paletteSearchAriaLabel": "Buscar comandos",
-  "paletteDescription": "Busca y ejecuta comandos de OpenPencil.",
+  "paletteDescription": "Busca y ejecuta comandos de Kalka.",
   "paletteNoCommands": "No se encontraron comandos.",
   "paletteBack": "Atrás"
 }

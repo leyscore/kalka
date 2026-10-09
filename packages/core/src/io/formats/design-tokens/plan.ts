@@ -289,7 +289,7 @@ function plannedVariable(
 }
 
 /**
- * A variable's unit, scopes, and code syntax. OpenPencil's tokens state them, so theirs replace
+ * A variable's unit, scopes, and code syntax. Kalka's tokens state them, so theirs replace
  * the variable's; other tools' tokens leave an updated variable's own where they say nothing.
  */
 function tokenFields(fields: DecodedVariable | undefined, existing: Variable | undefined) {

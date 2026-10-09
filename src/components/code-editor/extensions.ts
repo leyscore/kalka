@@ -65,7 +65,7 @@ function semanticDiagnostics(view: EditorView): Diagnostic[] {
           from: node.from,
           to: node.to,
           severity: 'warning',
-          message: `Unknown OpenPencil property “${name}”.`
+          message: `Unknown Kalka property “${name}”.`
         })
         return
       }
@@ -80,7 +80,7 @@ function semanticDiagnostics(view: EditorView): Diagnostic[] {
           from: node.from,
           to: node.to,
           severity: 'warning',
-          message: `Unknown OpenPencil element <${name}>.`
+          message: `Unknown Kalka element <${name}>.`
         })
       }
     }

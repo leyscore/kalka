@@ -33,7 +33,7 @@
   "receivingDescription": "Die Datei kommt von {name}.",
   "othersWaiting": "Ebenfalls am Warten: {names}",
   "unreachableTitle": "Die Server des Raums sind nicht erreichbar",
-  "unreachableDescription": "Prüfe deine Internetverbindung. OpenPencil versucht es weiter und öffnet die Datei, sobald die Verbindung steht.",
+  "unreachableDescription": "Prüfe deine Internetverbindung. Kalka versucht es weiter und öffnet die Datei, sobald die Verbindung steht.",
   "waitingTitle": "Warten auf jemanden, der diese Datei hat",
   "waitingDescription": "Räume werden nicht auf einem Server gespeichert. Die Datei liegt auf den Geräten der Personen, die im Raum waren, und lässt sich nur öffnen, solange eine davon online ist.",
   "waitingAskSharer": "Bitte die Person, die den Link geteilt hat, ihn zu öffnen.",

@@ -41,7 +41,7 @@ describe('transport/paths', () => {
       try {
         const dir = await getSocketDir()
         if (process.platform === 'darwin') {
-          expect(dir).toContain('Library/Application Support/OpenPencil')
+          expect(dir).toContain('Library/Application Support/Kalka')
         } else if (process.platform === 'win32') {
           const localAppData = process.env.LOCALAPPDATA
           if (localAppData) {

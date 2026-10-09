@@ -498,7 +498,7 @@ export async function figFileExtras(
   )
   const metaJSON = JSON.stringify({
     version: 1,
-    app: 'OpenPencil',
+    app: 'Kalka',
     createdAt: new Date().toISOString()
   })
   return { thumbnailPNG, metaJSON, images: collectImageEntries(graph) }

@@ -16,7 +16,7 @@
       "rmseNormalized": 0.235698,
       "previousDifferentPixels": 13026,
       "previousDifferentPercent": 62.33,
-      "finding": "This is the reliable pattern oracle: source and target are copied together and Figma renders the pattern. OpenPencil resolves the source and now uses a closer Figma-like pattern origin, but exact row spacing/tile origin still differs.",
+      "finding": "This is the reliable pattern oracle: source and target are copied together and Figma renders the pattern. Kalka resolves the source and now uses a closer Figma-like pattern origin, but exact row spacing/tile origin still differs.",
       "fuzz": "2%",
       "fuzzDifferentPixels": 6337,
       "fuzzDifferentPercent": 30.32,
@@ -57,7 +57,7 @@
       "openPencilSize": "160x100",
       "differentPixels": 16000,
       "differentPercent": 100,
-      "finding": "Copying/exporting only a pattern-filled target does not include its source node in clipboard data; OpenPencil must fall back without whole-document context."
+      "finding": "Copying/exporting only a pattern-filled target does not include its source node in clipboard data; Kalka must fall back without whole-document context."
     },
     {
       "name": "pattern-frame-with-hidden-source",
@@ -67,7 +67,7 @@
       "openPencilSize": "180x100",
       "differentPixels": 9102,
       "differentPercent": 50.57,
-      "finding": "Resolving pattern sources by imported Figma source id works in OpenPencil, but this hidden-source frame oracle renders blank in Figma and is not a parity baseline."
+      "finding": "Resolving pattern sources by imported Figma source id works in Kalka, but this hidden-source frame oracle renders blank in Figma and is not a parity baseline."
     }
   ],
   "nextActions": [

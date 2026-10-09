@@ -66,8 +66,8 @@
       "identifier": "fs:allow-open",
       "allow": [{ "path": "**" }],
       "deny": [
-        { "path": "$HOME/Library/Application Support/OpenPencil/mcp.json" },
-        { "path": "$LOCALDATA/OpenPencil/mcp.json" },
+        { "path": "$HOME/Library/Application Support/Kalka/mcp.json" },
+        { "path": "$LOCALDATA/Kalka/mcp.json" },
         { "path": "$RUNTIME/openpencil/mcp.json" },
         { "path": "$HOME/.openpencil/mcp.json" }
       ]
@@ -79,8 +79,8 @@
       "identifier": "fs:allow-read-text-file",
       "allow": [
         { "path": "$HOME/.pi/agent/settings.json" },
-        { "path": "$HOME/Library/Application Support/OpenPencil/mcp.json" },
-        { "path": "$LOCALDATA/OpenPencil/mcp.json" },
+        { "path": "$HOME/Library/Application Support/Kalka/mcp.json" },
+        { "path": "$LOCALDATA/Kalka/mcp.json" },
         { "path": "$RUNTIME/openpencil/mcp.json" },
         { "path": "$HOME/.openpencil/mcp.json" }
       ]
@@ -89,8 +89,8 @@
       "identifier": "fs:allow-write-file",
       "allow": [{ "path": "**" }],
       "deny": [
-        { "path": "$HOME/Library/Application Support/OpenPencil/mcp.json" },
-        { "path": "$LOCALDATA/OpenPencil/mcp.json" },
+        { "path": "$HOME/Library/Application Support/Kalka/mcp.json" },
+        { "path": "$LOCALDATA/Kalka/mcp.json" },
         { "path": "$RUNTIME/openpencil/mcp.json" },
         { "path": "$HOME/.openpencil/mcp.json" }
       ]
@@ -99,8 +99,8 @@
       "identifier": "fs:allow-exists",
       "allow": [
         { "path": "$HOME/.pi/agent/auth.json" },
-        { "path": "$HOME/Library/Application Support/OpenPencil/mcp.json" },
-        { "path": "$LOCALDATA/OpenPencil/mcp.json" },
+        { "path": "$HOME/Library/Application Support/Kalka/mcp.json" },
+        { "path": "$LOCALDATA/Kalka/mcp.json" },
         { "path": "$RUNTIME/openpencil/mcp.json" },
         { "path": "$HOME/.openpencil/mcp.json" }
       ]
@@ -113,8 +113,8 @@
       "identifier": "fs:allow-remove",
       "allow": [{ "path": "**" }],
       "deny": [
-        { "path": "$HOME/Library/Application Support/OpenPencil/mcp.json" },
-        { "path": "$LOCALDATA/OpenPencil/mcp.json" },
+        { "path": "$HOME/Library/Application Support/Kalka/mcp.json" },
+        { "path": "$LOCALDATA/Kalka/mcp.json" },
         { "path": "$RUNTIME/openpencil/mcp.json" },
         { "path": "$HOME/.openpencil/mcp.json" }
       ]

@@ -295,7 +295,7 @@ const noDirectOpenPencilBrowserStore = {
 const noDirectOpenPencilWindowInternals = {
   meta: {
     docs: {
-      description: 'Disallow direct access to private OpenPencil window internals'
+      description: 'Disallow direct access to private Kalka window internals'
     }
   },
   create(context) {

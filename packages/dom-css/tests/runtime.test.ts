@@ -11,7 +11,7 @@ import { cardDocument, TEST_COLORS } from './helpers'
 describe('@open-pencil/dom-css runtime', () => {
   it('serializes DesignDOM as HTML', () => {
     expect(serializeHTML(cardDocument)).toContain('<article class="card">')
-    expect(serializeHTML(cardDocument)).toContain('OpenPencil')
+    expect(serializeHTML(cardDocument)).toContain('Kalka')
   })
 
   it('keeps images with invalid Base64 inline instead of extracting them', async () => {
@@ -44,14 +44,14 @@ describe('@open-pencil/dom-css runtime', () => {
               gap: '8px',
               'background-color': 'white'
             },
-            children: [{ type: 'text', text: 'OpenPencil' }]
+            children: [{ type: 'text', text: 'Kalka' }]
           }
         ]
       },
       { style: 'tailwind' }
     )
 
-    expect(html).toBe('<section class="card flex p-4 gap-2 bg-white">OpenPencil</section>')
+    expect(html).toBe('<section class="card flex p-4 gap-2 bg-white">Kalka</section>')
   })
 
   it('exports standalone HTML documents when requested', async () => {
@@ -60,7 +60,7 @@ describe('@open-pencil/dom-css runtime', () => {
 
     expect(html).toContain('<!doctype html>')
     expect(html).toContain('data-open-pencil-html="standalone"')
-    expect(html).toContain('OpenPencil')
+    expect(html).toContain('Kalka')
     expect(html).not.toContain('@tailwindcss/browser@4')
   })
 
@@ -76,13 +76,13 @@ describe('@open-pencil/dom-css runtime', () => {
     const runtime = createCSSRuntime()
 
     expect(runtime.kind).toBe('headless')
-    expect(runtime.serializeHTML(cardDocument)).toContain('OpenPencil')
+    expect(runtime.serializeHTML(cardDocument)).toContain('Kalka')
   })
 
   it('parses HTML with inline styles', () => {
     const runtime = createHeadlessCSSRuntime()
     const document = runtime.parseHTML(
-      '<section class="card" style="width: 320px; color: rgb(17, 24, 39)">OpenPencil</section>'
+      '<section class="card" style="width: 320px; color: rgb(17, 24, 39)">Kalka</section>'
     )
     const section = document.children[0]
 
@@ -92,13 +92,13 @@ describe('@open-pencil/dom-css runtime', () => {
     expect(section.attrs.class).toBe('card')
     expect(section.inlineStyle?.width).toBe('320px')
     expect(section.inlineStyle?.color).toBe('rgb(17, 24, 39)')
-    expect(section.children[0]).toEqual({ type: 'text', text: 'OpenPencil' })
+    expect(section.children[0]).toEqual({ type: 'text', text: 'Kalka' })
   })
 
   it('parses inline style values with embedded semicolons', () => {
     const runtime = createHeadlessCSSRuntime()
     const document = runtime.parseHTML(
-      '<section style="background-image: url(\'data:image/svg+xml;utf8,<svg></svg>\'); width: 320px">OpenPencil</section>'
+      '<section style="background-image: url(\'data:image/svg+xml;utf8,<svg></svg>\'); width: 320px">Kalka</section>'
     )
     const section = document.children[0]
 
@@ -114,7 +114,7 @@ describe('@open-pencil/dom-css runtime', () => {
     const runtime = createHeadlessCSSRuntime()
     const parsed = runtime.parseHTML(`
       <article id="hero" class="card featured">
-        <header><h1 class="title">OpenPencil</h1></header>
+        <header><h1 class="title">Kalka</h1></header>
       </article>
     `)
     const document = await runtime.computeStyles(

@@ -16,6 +16,8 @@ const DEV_URL = process.env.KALKA_DEV_URL?.replace(/\/$/, '')
 const APP_SCHEME = 'kalka-app'
 const APP_ORIGIN = `${APP_SCHEME}://app`
 const DIST = normalize(join(here, '..', '..', 'dist'))
+/** The brand kit's app icon; a packaged app takes its icon from the bundle instead. */
+const ICON = join(here, '..', 'build', 'icon.png')
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -102,6 +104,7 @@ function grantPermissions(): void {
 function createWindow(): BrowserWindow {
   const window = new BrowserWindow({
     title: 'Kalka',
+    icon: ICON,
     width: 1280,
     height: 800,
     show: false,
@@ -159,6 +162,7 @@ if (!app.requestSingleInstanceLock()) {
   })
 
   void app.whenReady().then(() => {
+    if (!app.isPackaged) app.dock?.setIcon(ICON)
     grantPermissions()
     serveApp()
     installIPC((contents) => BrowserWindow.fromWebContents(contents))

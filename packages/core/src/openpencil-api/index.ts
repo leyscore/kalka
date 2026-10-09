@@ -18,7 +18,7 @@ import {
 export { BehaviourHandle, type NodeRef } from './behaviours'
 
 /**
- * What OpenPencil adds to the Figma Plugin API for scripts, as the `openpencil` global next to
+ * What Kalka adds to the Figma Plugin API for scripts, as the `openpencil` global next to
  * `figma`: features Figma has no API for, in the same style. It edits the same document as the
  * `figma` it is made for.
  */

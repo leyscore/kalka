@@ -35,7 +35,7 @@ export const notificationMessageDefaults = {
   deepLinkPickerDismissed: 'Link cancelled: no file was chosen.',
   deepLinkCancelled: params('Link cancelled: expected a file ending in “{file}”.'),
   deepLinkNodeNotFound: params('Node “{node}” was not found in “{file}”.'),
-  openQueuedFilesFailed: params('Could not open the files handed to OpenPencil: {error}')
+  openQueuedFilesFailed: params('Could not open the files handed to Kalka: {error}')
 } as const
 
 const localeLoaders = {

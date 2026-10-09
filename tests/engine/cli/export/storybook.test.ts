@@ -493,7 +493,7 @@ test('export CLI refuses a manifest that lists files outside the output', async 
   ])
 
   expect(exitCode).toBe(1)
-  expect(stderr).toContain('is not a valid OpenPencil stories manifest')
+  expect(stderr).toContain('is not a valid Kalka stories manifest')
   expect(await Bun.file(join(dir, 'outside.png')).text()).toBe('keep')
 })
 

@@ -2,7 +2,7 @@ import * as v from 'valibot'
 
 import type { PluginDataEntry } from '../types'
 
-/** The plugin id OpenPencil keeps its own state under, on nodes and in `.fig` files. */
+/** The plugin id Kalka keeps its own state under, on nodes and in `.fig` files. */
 export const OPEN_PENCIL_PLUGIN_ID = 'open-pencil'
 
 /**
@@ -15,7 +15,7 @@ export const OPEN_PENCIL_PLUGIN_ID = 'open-pencil'
  */
 export type PluginDataRole = 'content' | 'format' | 'bookkeeping'
 
-/** One OpenPencil plugin-data key. */
+/** One Kalka plugin-data key. */
 export interface PluginDataKey {
   readonly key: string
   readonly role: PluginDataRole

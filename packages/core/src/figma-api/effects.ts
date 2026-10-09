@@ -26,7 +26,7 @@ const BLEND_MODE_KEYS = {
 
 const BLEND_MODES = Object.keys(BLEND_MODE_KEYS) as BlendMode[]
 
-/** Effect kinds Figma's plugin API accepts that OpenPencil does not model yet. */
+/** Effect kinds Figma's plugin API accepts that Kalka does not model yet. */
 const UNSUPPORTED_EFFECT_TYPES = new Set(['NOISE', 'TEXTURE', 'GLASS', 'SHADER'])
 
 // Figma rejects Infinity as well as NaN ("Number must be finite").

@@ -37,7 +37,7 @@ test("a guest's agent shows on their avatar and can be followed until Escape", a
 
     await host.page.evaluate(() => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       store.graph.addPage('Checkout')
     })
     const peer = guest
@@ -84,7 +84,7 @@ test('an MCP session shows as an agent at the layers it touches, to collaborator
     await connect(guest)
     const nodeId = await host.page.evaluate(() => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       return store.graph.createNode('FRAME', store.state.currentPageId, {
         name: 'Card',
         x: 240,

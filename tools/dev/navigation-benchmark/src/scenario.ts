@@ -6,7 +6,7 @@ export async function setupScenario(page: Page, scenario: NavigationScenario): P
   if (scenario === 'current-document') return
   await page.evaluate((selectedScenario) => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not available')
+    if (!store) throw new Error('Kalka store not available')
     const pageId = store.state.currentPageId
     const existing = store.graph.getNode(pageId)?.childIds ?? []
     for (const id of existing) store.graph.deleteNode(id)

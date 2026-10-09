@@ -23,7 +23,7 @@ describe('OpenRouter OAuth PKCE', () => {
       openRouterAuthorizationURL(
         'http://localhost:4123/callback',
         { verifier: 'v', challenge: 'c', state: 's' },
-        'OpenPencil'
+        'Kalka'
       )
     )
     expect(url.origin + url.pathname).toBe('https://openrouter.ai/auth')
@@ -32,7 +32,7 @@ describe('OpenRouter OAuth PKCE', () => {
       code_challenge: 'c',
       code_challenge_method: 'S256',
       state: 's',
-      key_label: 'OpenPencil'
+      key_label: 'Kalka'
     })
   })
 

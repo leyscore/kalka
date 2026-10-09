@@ -11,7 +11,7 @@ test('font settings popover exposes web font access without desktop-only cache a
 
   await page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const id = store.createShape('TEXT', 120, 120, 240, 40)
     store.updateNode(id, {
       text: 'Font settings smoke',

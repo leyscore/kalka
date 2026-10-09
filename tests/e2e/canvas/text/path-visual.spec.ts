@@ -9,7 +9,7 @@ test('renders imported text on a path with its selection overlay', async () => {
 
   const selected = await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const node = [...store.graph.getAllNodes()].find(
       (candidate) => candidate.name === 'ArnoCoenen.art'
     )

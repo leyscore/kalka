@@ -49,7 +49,7 @@ test.describe('browser support gate', () => {
     await page.goto('/')
 
     const notice = page.getByRole('alert')
-    await expect(notice.getByRole('heading', { level: 1 })).toHaveText("OpenPencil couldn't start")
+    await expect(notice.getByRole('heading', { level: 1 })).toHaveText("Kalka couldn't start")
     await expect(notice).toContainText('Chrome 111')
     await notice.getByText('Details', { exact: true }).click()
     await expect(notice.locator('pre')).toContainText('history is unavailable')
@@ -69,7 +69,7 @@ test.describe('browser support gate', () => {
     await page.goto('/')
 
     const notice = page.getByRole('alert')
-    await expect(notice.getByRole('heading', { level: 1 })).toHaveText("OpenPencil couldn't start")
+    await expect(notice.getByRole('heading', { level: 1 })).toHaveText("Kalka couldn't start")
     await notice.getByText('Details', { exact: true }).click()
     await expect(notice.locator('pre')).toContainText('getRandomValues is unavailable')
   })

@@ -57,7 +57,7 @@ test('two browser peers synchronize editing, awareness, departure, and reconnect
 
     const nodeId = await host.page.evaluate(() => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       const node = store.graph.createNode('RECTANGLE', store.state.currentPageId, {
         name: 'Shared rectangle',
         x: 160,
@@ -77,7 +77,7 @@ test('two browser peers synchronize editing, awareness, departure, and reconnect
 
     await guest.page.evaluate((id) => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       store.updateNode(id, { name: 'Edited by Guest', x: 320 })
       store.select([id])
       window.openPencil?.test?.collab?.updateSelection([id])
@@ -95,12 +95,12 @@ test('two browser peers synchronize editing, awareness, departure, and reconnect
     relay.pause()
     await guest.page.evaluate((id) => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       store.updateNode(id, { y: 280 })
     }, nodeId)
     await host.page.evaluate((id) => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       store.updateNode(id, { name: 'Host partition edit' })
     }, nodeId)
     await expect.poll(() => relay.queuedCount()).toBeGreaterThan(0)
@@ -118,7 +118,7 @@ test('two browser peers synchronize editing, awareness, departure, and reconnect
 
     await guest.page.evaluate(() => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       window.openPencil?.test?.collab?.updateCursor(420, 260, store.state.currentPageId)
     })
     await expect
@@ -143,7 +143,7 @@ test('two browser peers synchronize editing, awareness, departure, and reconnect
     try {
       await host.page.evaluate((id) => {
         const store = window.openPencil?.getStore?.()
-        if (!store) throw new Error('OpenPencil store not initialized')
+        if (!store) throw new Error('Kalka store not initialized')
         store.updateNode(id, { name: 'Edited while offline', y: 260 })
       }, nodeId)
       await connect(reconnectingGuest)

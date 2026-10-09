@@ -4,9 +4,9 @@ import type { DerivedTextGlyph } from '@open-pencil/scene-graph'
 type DerivedTextData = NonNullable<NodeChange['derivedTextData']>
 
 /**
- * OpenPencil wrote text it had no glyphs for as one unwrapped line at `y = lineHeight`, with a
+ * Kalka wrote text it had no glyphs for as one unwrapped line at `y = lineHeight`, with a
  * character offset map one entry longer than the text. Figma's map has one entry per character,
- * and later OpenPencil writers follow it, so that length together with every glyph on the one
+ * and later Kalka writers follow it, so that length together with every glyph on the one
  * written baseline identifies glyphs that were never laid out at the node's width (#914).
  */
 function isUnshapedOpenPencilText(derivedTextData: DerivedTextData, characters: string): boolean {

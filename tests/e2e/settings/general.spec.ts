@@ -78,7 +78,7 @@ test('progressive tiled rendering preference persists and URL overrides take pre
   const tiled = page.getByRole('switch', { name: 'Progressive rendering' })
   await expect(tiled).not.toBeChecked()
   await tiled.click()
-  await expect(page.getByText('Reload OpenPencil to apply this change.')).toBeVisible()
+  await expect(page.getByText('Reload Kalka to apply this change.')).toBeVisible()
 
   await page.reload()
   await canvas.waitForInit()

@@ -1,4 +1,4 @@
-/** Fixed OpenPencil namespace inside a shared storage backend. */
+/** Fixed Kalka namespace inside a shared storage backend. */
 export const STORAGE_NAMESPACE = 'open_pencil_storage'
 export const STORAGE_NAMESPACE_MARKER = `${STORAGE_NAMESPACE}/.openpencil-namespace`
 export const STORAGE_DOCUMENTS_PREFIX = `${STORAGE_NAMESPACE}/canvases/`

@@ -30,7 +30,7 @@ export function asPageNode(
 }
 
 /**
- * A solid paint that satisfies both the OpenPencil `Fill` and the Figma `SolidPaint` shape, as the
+ * A solid paint that satisfies both the Kalka `Fill` and the Figma `SolidPaint` shape, as the
  * node proxies expose the intersection of the two.
  */
 export function solidFill(

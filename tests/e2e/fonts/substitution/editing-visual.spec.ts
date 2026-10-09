@@ -18,7 +18,7 @@ test('first edit replaces baked missing-font glyphs with visible live substituti
   await editor.canvas.clearCanvas()
   const textId = await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store?.renderer) throw new Error('OpenPencil renderer not initialized')
+    if (!store?.renderer) throw new Error('Kalka renderer not initialized')
     const pageId = store.state.currentPageId
     const node = store.graph.createNode('TEXT', pageId, {
       name: 'Missing font text',

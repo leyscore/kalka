@@ -17,7 +17,7 @@ async function selectOption(label: string, option: string) {
 async function instanceState(id = instanceId) {
   return page.evaluate((nodeId) => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const instance = store.graph.getNode(nodeId)
     if (!instance) return null
     const children = store.graph.getChildren(nodeId)
@@ -40,7 +40,7 @@ test.beforeAll(async ({ browser }) => {
   await canvas.waitForInit()
   instanceId = await page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     const iconA = store.graph.createNode('COMPONENT', pageId, { name: 'Icon A' })
     store.graph.createNode('RECTANGLE', iconA.id, { name: 'A shape' })
@@ -145,7 +145,7 @@ test('renders and applies all component property control types', async () => {
 test('batches compatible mixed selection and undo', async () => {
   const secondId = await page.evaluate((firstId) => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const first = store.graph.getNode(firstId)
     if (!first?.componentId) throw new Error('Missing first instance')
     const second = store.graph.createInstance(first.componentId, store.state.currentPageId, {
@@ -185,7 +185,7 @@ test('batches compatible mixed selection and undo', async () => {
 
   await page.evaluate((id) => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const rectangle = store.graph.createNode('RECTANGLE', store.state.currentPageId)
     store.select([id, rectangle.id])
   }, instanceId)

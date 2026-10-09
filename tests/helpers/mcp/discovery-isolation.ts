@@ -5,9 +5,9 @@ import { join } from 'node:path'
 
 /**
  * Test preload: isolate the MCP discovery file so `bun test` runs never
- * clobber the real `~/Library/Application Support/OpenPencil/mcp.json`.
+ * clobber the real `~/Library/Application Support/Kalka/mcp.json`.
  *
- * Deleting that file while the OpenPencil desktop app is running breaks every
+ * Deleting that file while the Kalka desktop app is running breaks every
  * MCP client: the discovery file is the only place the server's auth token is
  * published, so stdio bridges fall back to a null token and every /rpc call
  * returns 401 (surfacing as a spurious "auth issue"). The engine tests in

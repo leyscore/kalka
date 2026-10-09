@@ -21,7 +21,7 @@
   "mcpFailed": "MCP 连接失败",
   "retention": "诊断数据保留量",
   "retentionDescription": "在本地保留不超过此数量的最新事件。",
-  "description": "在本地保存技术事件，帮助排查 OpenPencil 问题。不保存提示词、设计内容、凭据和 API 密钥。",
+  "description": "在本地保存技术事件，帮助排查 Kalka 问题。不保存提示词、设计内容、凭据和 API 密钥。",
   "eventCount": "{count} 个事件 · {size} KB",
   "copy": "复制诊断数据",
   "clear": "清除",

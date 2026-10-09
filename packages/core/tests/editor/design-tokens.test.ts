@@ -180,7 +180,7 @@ describe('design token import', () => {
       fontSize: 32,
       textStyleId: style.id
     })
-    // Edited in another tool, which keeps OpenPencil's extension as it was.
+    // Edited in another tool, which keeps Kalka's extension as it was.
     const files = exported(designSystem()).map((file) =>
       file.path === 'styles.tokens.json'
         ? {
@@ -198,7 +198,7 @@ describe('design token import', () => {
     expect(graph.getNode(layer.id)).toMatchObject({ fontSize: 40, textStyleId: style.id })
   })
 
-  test('a style token as OpenPencil wrote it keeps the exact fields its value cannot hold', () => {
+  test('a style token as Kalka wrote it keeps the exact fields its value cannot hold', () => {
     const graph = new SceneGraph()
     const source = designSystem()
     const [heading] = getSharedStyles(source, 'text')

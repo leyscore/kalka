@@ -21,7 +21,7 @@
   "mcpFailed": "MCP接続失敗",
   "retention": "診断データの保持数",
   "retentionDescription": "この数までの最新イベントを端末に保存します。",
-  "description": "OpenPencilのトラブルシューティングに役立つ技術イベントを端末に保存します。プロンプト、デザイン内容、認証情報、APIキーは除外されます。",
+  "description": "Kalkaのトラブルシューティングに役立つ技術イベントを端末に保存します。プロンプト、デザイン内容、認証情報、APIキーは除外されます。",
   "eventCount": "{count} 件 · {size} KB",
   "copy": "診断データをコピー",
   "clear": "消去",

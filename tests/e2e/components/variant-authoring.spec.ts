@@ -11,7 +11,7 @@ test('authors multiple variant dimensions and reports duplicate combinations', a
 
   const ids = await page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     const componentSet = store.graph.createNode('COMPONENT_SET', pageId, {
       name: 'Button',
@@ -77,14 +77,14 @@ test('authors multiple variant dimensions and reports duplicate combinations', a
 
   const definitions = await page.evaluate((componentSetId) => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     return store.graph.getNode(componentSetId)?.componentPropertyDefinitions
   }, ids.componentSetId)
   expect(definitions?.map((definition) => definition.name)).toEqual(['Type', 'Size', 'State'])
 
   await page.evaluate((variantId) => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     store.select([variantId])
   }, ids.primaryLargeId)
   await canvas.waitForRender()
@@ -100,7 +100,7 @@ test('authors multiple variant dimensions and reports duplicate combinations', a
 
   const state = await page.evaluate((variantId) => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const node = store.graph.getNode(variantId)
     return node
       ? { name: node.name, values: node.componentPropertyValues, undoLabel: store.undo.undoLabel }
@@ -130,7 +130,7 @@ test('adds a variant to a standalone component the way Figma does', async ({ pag
   await canvas.waitForInit()
   const chipId = await page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const chip = store.graph.createNode('COMPONENT', store.state.currentPageId, {
       name: 'Chip',
       x: 40,

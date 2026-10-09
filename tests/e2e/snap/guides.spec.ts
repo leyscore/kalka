@@ -25,7 +25,7 @@ async function createRects() {
   await canvas.clearCanvas()
   await page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     store.state.snappingPreferences = { geometry: true, objects: true, pixelGrid: false }
     store.createShape('RECTANGLE', 100, 100, 80, 80)
     const b = store.createShape('RECTANGLE', 300, 100, 80, 80)
@@ -37,7 +37,7 @@ async function createRects() {
 async function selectedPosition(): Promise<Vector> {
   return page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const id = store.state.selectedIds.values().next().value
     const node = id ? store.graph.getNode(id) : undefined
     if (!node) throw new Error('Selected node not found')
@@ -119,7 +119,7 @@ test('pixel snapping preference controls fractional object movement', async () =
   await canvas.clearCanvas()
   await page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     store.state.snappingPreferences = { geometry: true, objects: false, pixelGrid: false }
     const id = store.createShape('RECTANGLE', 120.25, 100.25, 80, 80)
     store.select([id])
@@ -135,7 +135,7 @@ test('pixel snapping preference controls fractional object movement', async () =
 
   await page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     store.state.snappingPreferences.pixelGrid = true
   })
   await page.mouse.move(box.x + 166.25, box.y + 147.25)
@@ -154,7 +154,7 @@ test('Control bypasses object and pixel snapping during a real pointer drag', as
   await canvas.clearCanvas()
   await page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     store.state.snappingPreferences = { geometry: true, objects: true, pixelGrid: true }
     store.createShape('RECTANGLE', 100, 100, 80, 80)
     const id = store.createShape('RECTANGLE', 300, 100, 80, 80)

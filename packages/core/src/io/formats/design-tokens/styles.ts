@@ -51,7 +51,7 @@ export function typographyValue(
   }
 }
 
-/** A text style as a typography token; its own fields ride along so OpenPencil reads it back exactly. */
+/** A text style as a typography token; its own fields ride along so Kalka reads it back exactly. */
 function typographyToken(node: SceneNode, references: TokenReferences): DesignToken {
   const bound = bindingReferences(node, references)
   return {
@@ -99,7 +99,7 @@ export function shadowTokenValue(effects: readonly Effect[]) {
 
 /**
  * An effect style's shadows as a shadow token. Effects a shadow token cannot express, such as
- * blurs or hidden shadows, ride along whole in OpenPencil's extension, in the plugin API's shape;
+ * blurs or hidden shadows, ride along whole in Kalka's extension, in the plugin API's shape;
  * a style with no visible shadow has no token.
  */
 function shadowToken(node: SceneNode): DesignToken | undefined {
@@ -151,7 +151,7 @@ export function styleTokens(
   return { tokens, issues }
 }
 
-/** Keeps a name the token path could not hold, such as one with a `.`, in OpenPencil's extension. */
+/** Keeps a name the token path could not hold, such as one with a `.`, in Kalka's extension. */
 export function withOriginalName(
   token: DesignToken,
   name: string,

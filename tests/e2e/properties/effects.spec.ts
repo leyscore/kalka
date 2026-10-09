@@ -11,7 +11,7 @@ async function expectCanvas(name: string) {
 test('drop shadow on white card', async () => {
   await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     store.graph.createNode('FRAME', pageId, {
       name: 'Card',
@@ -42,7 +42,7 @@ test('drop shadow on white card', async () => {
 test('drop shadow with spread', async () => {
   await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     store.graph.createNode('FRAME', pageId, {
       name: 'Card',
@@ -73,7 +73,7 @@ test('drop shadow with spread', async () => {
 test('inner shadow', async () => {
   await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     store.graph.createNode('FRAME', pageId, {
       name: 'Card',
@@ -106,7 +106,7 @@ test('inner shadow', async () => {
 test('inner shadow with spread', async () => {
   await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     store.graph.createNode('FRAME', pageId, {
       name: 'Card',
@@ -139,7 +139,7 @@ test('inner shadow with spread', async () => {
 test('blend modes', async () => {
   await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     store.graph.createNode('FRAME', pageId, {
       name: 'Blend Backdrop',
@@ -214,7 +214,7 @@ test('blend modes', async () => {
 test('alpha mask stack', async () => {
   await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     const frame = store.graph.createNode('FRAME', pageId, {
       name: 'Mask Backdrop',
@@ -289,7 +289,7 @@ test('alpha mask stack', async () => {
 test('smoothed corners with blended shadow', async () => {
   await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     store.graph.createNode('FRAME', pageId, {
       name: 'Smooth Rectangle Backdrop',
@@ -371,7 +371,7 @@ test('smoothed corners with blended shadow', async () => {
 test('drop shadow on ellipse', async () => {
   await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     store.graph.createNode('ELLIPSE', pageId, {
       name: 'Circle',
@@ -403,7 +403,7 @@ test('drop shadow on ellipse', async () => {
 test('combined drop and inner shadow', async () => {
   await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     store.graph.createNode('FRAME', pageId, {
       name: 'Card',
@@ -442,7 +442,7 @@ test('combined drop and inner shadow', async () => {
 test('text drop shadow on glyphs', async () => {
   await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     store.graph.createNode('TEXT', pageId, {
       name: 'Shadow Text',
@@ -478,7 +478,7 @@ test('text drop shadow on glyphs', async () => {
 test('layer blur', async () => {
   await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     store.graph.createNode('RECTANGLE', pageId, {
       name: 'Blurred',
@@ -511,7 +511,7 @@ test('layer blur', async () => {
 test('invisible effect has no visual impact', async () => {
   await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     store.graph.createNode('FRAME', pageId, {
       name: 'Card',

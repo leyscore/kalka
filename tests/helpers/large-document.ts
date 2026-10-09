@@ -14,7 +14,7 @@ export async function seedLargeDocument(
 ): Promise<LargeDocumentProfile> {
   return page.evaluate((count) => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const graph = store.graph
     const pageId = store.state.currentPageId
     const leafIds: string[] = []

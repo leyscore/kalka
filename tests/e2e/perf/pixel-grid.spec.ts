@@ -13,7 +13,7 @@ test('the pixel grid adds no CPU time to panning frames', async ({ page }) => {
   await new CanvasHelper(page).waitForInit()
   const cost = await page.evaluate(async () => {
     const found = window.openPencil?.getStore?.()
-    if (!found?.renderer) throw new Error('OpenPencil renderer not initialized')
+    if (!found?.renderer) throw new Error('Kalka renderer not initialized')
     const store = found
     const profiler = found.renderer.profiler
     profiler.setVisible(true)

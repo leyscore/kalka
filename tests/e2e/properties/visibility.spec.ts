@@ -93,7 +93,7 @@ test('multi-selection list add is one undo step', async () => {
   const strokeCounts = () =>
     editor.page.evaluate(() => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       return [...store.state.selectedIds].map((id) => store.getNode(id)?.strokes.length ?? -1)
     })
 

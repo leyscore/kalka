@@ -17,8 +17,8 @@ function copiedNode() {
   return { graph, node }
 }
 
-describe('OpenPencil clipboard parsing', () => {
-  test('restores nodes copied by OpenPencil', () => {
+describe('Kalka clipboard parsing', () => {
+  test('restores nodes copied by Kalka', () => {
     const { graph, node } = copiedNode()
     const parsed = parseOpenPencilClipboard(buildOpenPencilClipboardHTML([node], graph))
     expect(parsed?.nodes).toHaveLength(1)

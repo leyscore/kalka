@@ -1,8 +1,8 @@
 {
-  "upToDate": "OpenPencil è aggiornato",
+  "upToDate": "Kalka è aggiornato",
   "windowTitle": "Aggiornamento software",
   "checking": "Ricerca aggiornamenti…",
-  "available": "OpenPencil {version} è disponibile",
+  "available": "Kalka {version} è disponibile",
   "currentVersion": "Hai la versione {version}.",
   "whatsNew": "Novità",
   "noNotes": "Questa versione non ha note di rilascio.",
@@ -14,12 +14,12 @@
   "downloadProgress": "{percent}% · {downloaded} di {total}",
   "downloadProgressUnknown": "{downloaded} scaricati",
   "installing": "Installazione…",
-  "installed": "OpenPencil {version} è installato",
-  "restartToFinish": "Riavvia OpenPencil per iniziare a usare la nuova versione.",
+  "installed": "Kalka {version} è installato",
+  "restartToFinish": "Riavvia Kalka per iniziare a usare la nuova versione.",
   "restartNow": "Riavvia ora",
   "downloadFailed": "Impossibile scaricare l’aggiornamento: {error}",
   "installFailed": "Impossibile installare l’aggiornamento: {error}",
-  "restartFailed": "Impossibile riavviare OpenPencil: {error}",
+  "restartFailed": "Impossibile riavviare Kalka: {error}",
   "unavailable": "Gli aggiornamenti non sono ancora disponibili. Pubblica prima una release firmata con latest.json.",
   "checkFailed": "Impossibile controllare gli aggiornamenti: {error}"
 }

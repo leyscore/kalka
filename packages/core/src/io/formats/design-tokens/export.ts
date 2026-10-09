@@ -56,7 +56,7 @@ interface ExportContext {
   issues: DesignTokenIssue[]
 }
 
-/** OpenPencil's own token fields, which DTCG has no place for. */
+/** Kalka's own token fields, which DTCG has no place for. */
 function openPencilFields(variable: Variable, modeId: string) {
   const fields = omitBy(
     {
@@ -114,7 +114,7 @@ function variableToken(
   return token
 }
 
-/** What a mode file says about its collection and mode, for OpenPencil to read back. */
+/** What a mode file says about its collection and mode, for Kalka to read back. */
 function modeExtension(collection: VariableCollection, mode: VariableCollectionMode) {
   return {
     [OPENPENCIL_EXTENSION]: omitBy(
@@ -167,7 +167,7 @@ function resolverDocument(collections: readonly CollectionFiles[], stylesPath: s
 /**
  * The document's variables and styles as W3C design tokens: one file per collection mode, which
  * Figma imports as a mode, a file of typography and shadow tokens from text and effect styles,
- * and a resolver document that combines them. OpenPencil's own fields ride in
+ * and a resolver document that combines them. Kalka's own fields ride in
  * `$extensions["dev.openpencil"]`, so reading the export back loses nothing.
  */
 export function exportDesignTokens(graph: SceneGraph): DesignTokenExport {

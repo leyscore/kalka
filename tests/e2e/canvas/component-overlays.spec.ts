@@ -7,7 +7,7 @@ const editor = useEditorSetupWithClear('/?test&no-chrome&no-rulers')
 test('layers inside a component and an instance outline in component purple', async () => {
   await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const graph = store.graph
     const pageId = store.state.currentPageId
     const fill = (r: number, g: number, b: number) => [

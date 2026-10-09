@@ -8,7 +8,7 @@ export async function measureInteraction(
 ) {
   const probe = await page.evaluateHandle((selectedId) => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const update = store.updateNode
     const graphUpdate = store.graph.updateNode
     const counts = { storeUpdateCount: 0, graphUpdateCount: 0, repaintCount: 0 }

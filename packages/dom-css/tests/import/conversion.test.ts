@@ -261,7 +261,7 @@ describe('@open-pencil/dom-css conversion', () => {
     const document = sceneGraphToDesignDocument(graph)
     const html = serializeHTML(document)
 
-    expect(html).toContain('OpenPencil')
+    expect(html).toContain('Kalka')
     expect(html).toContain('box-shadow')
   })
 

@@ -9,7 +9,7 @@ test('editing section labels preserve dark and light label presentation', async 
   ] as const
   await editor.page.evaluate((items) => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     for (const item of items) {
       store.graph.createNode('SECTION', store.state.currentPageId, {
         id: item.id,
@@ -50,7 +50,7 @@ test('editing section labels preserve dark and light label presentation', async 
 test('double-clicking a section title renames it inline', async () => {
   await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     store.graph.createNode('SECTION', pageId, {
       id: 'section-inline-rename',
@@ -90,7 +90,7 @@ test('double-clicking a section title renames it inline', async () => {
 test('double-clicking a frame or component name renames it inline and keeps it selected', async () => {
   const ids = await editor.page.evaluate(() => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     const white = [
       { type: 'SOLID' as const, color: { r: 1, g: 1, b: 1, a: 1 }, visible: true, opacity: 1 }

@@ -16,7 +16,7 @@ test('FIT avatar preserves the full clipboard fixture image', async () => {
   await editor.page.evaluate(
     (data) => {
       const store = window.openPencil?.getStore?.()
-      if (!store) throw new Error('OpenPencil store not initialized')
+      if (!store) throw new Error('Kalka store not initialized')
       const hash = store.storeImage(new Uint8Array(data))
       store.graph.createNode('RECTANGLE', store.state.currentPageId, {
         name: 'Bitmap background',
@@ -63,7 +63,7 @@ test('FIT avatar preserves the full clipboard fixture image', async () => {
 test('gradients and image fill modes', async () => {
   await editor.page.evaluate(async () => {
     const store = window.openPencil?.getStore?.()
-    if (!store) throw new Error('OpenPencil store not initialized')
+    if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
 
     const imageCanvas = document.createElement('canvas')
