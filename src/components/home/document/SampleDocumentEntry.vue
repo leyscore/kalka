@@ -13,7 +13,6 @@ const styles = documentEntry({ view: 'grid' })
   <div data-slot="document-entry" :class="styles.root()">
     <button
       type="button"
-      data-test-id="home-sample-file"
       :aria-label="welcome.openSample"
       :class="styles.trigger()"
       @click="startWithSample"

@@ -94,13 +94,12 @@ function runImport(choice: ImportChoice): void {
         </span>
       </button>
     </div>
-    <p class="text-[13px] text-muted" data-test-id="home-import">
+    <p class="text-[13px] text-muted">
       <template v-for="(part, index) in importParts" :key="index">
         <button
           v-if="part.choice"
           type="button"
           :class="inlineLink"
-          :data-test-id="`home-import-${part.choice}`"
           @click="runImport(part.choice)"
         >
           {{ part.text }}

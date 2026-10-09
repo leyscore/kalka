@@ -30,7 +30,7 @@ function generate(): void {
 </script>
 
 <template>
-  <form :class="styles.root()" data-test-id="home-prompt" @submit.prevent="generate">
+  <form :class="styles.root()" @submit.prevent="generate">
     <icon-lucide-sparkle :class="styles.icon()" aria-hidden="true" />
     <input
       ref="input"
@@ -38,12 +38,11 @@ function generate(): void {
       type="text"
       name="design-prompt"
       autocomplete="off"
-      data-test-id="home-prompt-input"
       :aria-label="welcome.promptLabel"
       :placeholder="welcome.promptPlaceholder"
       :class="styles.input()"
     />
-    <button type="submit" data-test-id="home-prompt-submit" :class="styles.submit()">
+    <button type="submit" :class="styles.submit()">
       {{ welcome.promptSubmit }}
     </button>
   </form>
