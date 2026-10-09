@@ -7,15 +7,15 @@ export const updatePromptTheme = tv({
     icon: 'size-14 shrink-0',
     content: 'flex min-w-0 flex-1 flex-col',
     alert: 'mb-3',
-    title: 'text-sm font-semibold text-surface',
+    title: 'font-display text-[17px] font-semibold tracking-[-0.01em] text-surface',
     subtitle: 'mt-0.5 text-xs text-muted',
     notesHeader: 'mt-4 mb-1.5 flex items-baseline justify-between gap-3',
-    notesLabel: 'text-xs font-semibold text-surface',
+    notesLabel: 'text-[11px] font-medium text-muted',
     notes:
-      'min-h-0 flex-1 overflow-y-auto rounded-lg border border-border bg-input px-3.5 py-3 select-text',
+      'min-h-0 flex-1 overflow-y-auto rounded-xl border border-hairline bg-group px-3.5 py-3 select-text',
     empty: 'text-xs text-muted',
     spinner: 'size-4 text-muted',
-    footer: 'flex min-h-14 shrink-0 items-center gap-2 border-t border-border px-5 py-3',
+    footer: 'flex min-h-14 shrink-0 items-center gap-2 border-t border-hairline px-5 py-3',
     progress: 'flex-1',
     actions: 'ms-auto flex items-center gap-2'
   }
@@ -24,7 +24,7 @@ export const updatePromptTheme = tv({
 /** AppPlaceholder overrides for the states without a release: a large app icon over the title. */
 export const updateStatusUI = {
   icon: 'mb-3 size-16 rounded-none bg-transparent',
-  label: 'text-sm font-semibold',
+  label: 'font-display text-[17px] font-semibold tracking-[-0.01em]',
   body: 'mt-4 flex flex-col items-center gap-2 text-xs text-muted',
   content: 'max-w-sm'
 }
