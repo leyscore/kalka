@@ -8,7 +8,7 @@ import {
   ContextMenuTrigger
 } from 'reka-ui'
 import { tv } from 'tailwind-variants'
-import { computed, ref, watch, type ComponentPublicInstance } from 'vue'
+import { computed, ref, useTemplateRef, watch, type ComponentPublicInstance } from 'vue'
 
 import type { SceneNode } from '@open-pencil/scene-graph'
 import { PageListRoot, useFlatReorderDrag, useI18n, useInlineRename } from '@open-pencil/vue'
@@ -21,6 +21,8 @@ import PagePresenceHover from '@/components/presence/PagePresenceHover.vue'
 import PresenceMarkers from '@/components/presence/PresenceMarkers.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import { useMenuUI } from '@/components/ui/menu/menu'
+import { useGlide } from '@/components/ui/motion/useGlide'
+import { glidePills } from '@/theme/motion/glide'
 import pageListTheme from '@/theme/page-list'
 
 type PageItem = Pick<SceneNode, 'id' | 'name' | 'childIds'>
@@ -99,6 +101,15 @@ function setupPageRowRef(
   currentMovePage.value = movePage
   pageReorder.setupItem(value instanceof HTMLElement ? value : null, () => ({ id: pg.id }))
 }
+
+// The current page's pill slides to the page chosen; a soft one follows the pointer.
+const pageList = useTemplateRef<HTMLElement>('pageList')
+useGlide(pageList, {
+  items: '[data-slot="page-item"]',
+  active: '[data-slot="page-item"][aria-current="page"]',
+  pillClass: glidePills.active
+})
+useGlide(pageList, { items: '[data-slot="page-item"]', hover: true, pillClass: glidePills.hover })
 </script>
 
 <template>
@@ -111,7 +122,7 @@ function setupPageRowRef(
         </IconButton>
       </div>
       <div :class="baseStyles.body()">
-        <div data-test-id="pages-scroll" :class="baseStyles.viewport()">
+        <div ref="pageList" data-test-id="pages-scroll" :class="baseStyles.viewport()">
           <ContextMenuRoot v-for="pg in pages" :key="pg.id" :modal="false">
             <ContextMenuTrigger as-child>
               <div
@@ -154,6 +165,8 @@ function setupPageRowRef(
                 <PagePresenceHover v-else :page-id="pg.id">
                   <button
                     data-test-id="pages-item"
+                    data-slot="page-item"
+                    :aria-current="pg.id === currentPageId ? 'page' : undefined"
                     :class="pageStyles(pg, currentPageId).item()"
                     @click="actions.switch(pg.id)"
                     @dblclick="startRename(pg, actions.rename)"

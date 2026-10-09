@@ -7,9 +7,9 @@ const glideMotion =
 
 export const glidePills = {
   /** A hover highlight in menus, lists, and navigation. */
-  hover: `rounded-md bg-hover ${glideMotion}`,
+  hover: `rounded-md bg-accent/7 ${glideMotion}`,
   /** The pill behind the active item of a panel's tabs or a segmented control. */
-  active: `rounded-md bg-panel-field-hover shadow-sm ${glideMotion}`,
+  active: `rounded-md bg-accent/14 shadow-[inset_0_0_0_1px] shadow-accent/30 ${glideMotion}`,
   /** The chosen option of a segmented control: a raised chip in the track. */
   segment: `rounded-sm bg-panel shadow-sm shadow-black/20 ring-[0.5px] ring-border ${glideMotion}`,
   /** The accent pill behind the active tool. */

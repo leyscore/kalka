@@ -7,7 +7,7 @@ import {
   ContextMenuPortal
 } from 'reka-ui'
 import { tv } from 'tailwind-variants'
-import { computed, useAttrs, watch } from 'vue'
+import { computed, useAttrs, useTemplateRef, watch } from 'vue'
 
 import { LayerTreeRoot, LayerTreeItem, useInlineRename } from '@open-pencil/vue'
 import type {
@@ -20,7 +20,9 @@ import type {
 import { useEditorStore } from '@/app/editor/active-store'
 import { layerIssueMarks } from '@/app/editor/design-check/layers'
 import { appPreferences } from '@/app/settings/preferences/store'
+import { useGlide } from '@/components/ui/motion/useGlide'
 import layerTreeTheme from '@/theme/layer-tree'
+import { glidePills } from '@/theme/motion/glide'
 
 import CanvasMenu from '../canvas/CanvasMenu.vue'
 import { LAYER_TREE_ROW_HEIGHT } from './geometry'
@@ -159,6 +161,10 @@ function onFocusOut(event: FocusEvent, actions: LayerTreeRootActions) {
   }
   actions.setFocused(false)
 }
+
+// A hover highlight glides between rows; selected rows keep their own tint above it.
+const viewport = useTemplateRef<HTMLElement>('viewport')
+useGlide(viewport, { items: '[data-slot="row"]', hover: true, pillClass: glidePills.hover })
 </script>
 
 <template>
@@ -172,6 +178,7 @@ function onFocusOut(event: FocusEvent, actions: LayerTreeRootActions) {
       >
         <ContextMenuTrigger as-child @contextmenu="onLayerRightClick">
           <div
+            ref="viewport"
             data-test-id="layers-scroll"
             data-slot="viewport"
             :class="styles.viewport({ class: ui?.viewport })"
