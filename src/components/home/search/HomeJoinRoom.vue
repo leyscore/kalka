@@ -8,9 +8,9 @@ import { useJoinRoom } from '@/app/collab/join'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import AppInput from '@/components/ui/input/AppInput.vue'
 import { usePopoverUI } from '@/components/ui/overlay/popover'
+import { homeAction } from '@/theme/home/start'
 
 /** "Join room…" on Home: paste a room link or ID to open someone's shared file in a new tab. */
-const { size = 'md' } = defineProps<{ size?: 'md' | 'lg' }>()
 
 const messages = useCollaborationMessages()
 const joinRoomFromInput = useJoinRoom()
@@ -34,8 +34,7 @@ function join() {
 <template>
   <PopoverRoot v-model:open="open">
     <PopoverTrigger as-child>
-      <AppButton :size="size" variant="ghost" data-test-id="home-join-room">
-        <template #leading><icon-lucide-users class="size-3.5" /></template>
+      <AppButton size="lg" variant="ghost" :class="homeAction.quiet" data-test-id="home-join-room">
         {{ messages.joinRoomEllipsis }}
       </AppButton>
     </PopoverTrigger>

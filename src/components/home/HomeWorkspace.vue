@@ -24,13 +24,17 @@ import { openFileFromPath } from '@/app/shell/menu/use'
 import { createStorageWorkspaceSource } from '@/app/storage/workspace/source'
 import { openStorageDocumentInNewTab } from '@/app/tabs'
 import DocumentEntry from '@/components/home/document/DocumentEntry.vue'
+import SampleDocumentEntry from '@/components/home/document/SampleDocumentEntry.vue'
 import HomeSidebar from '@/components/home/HomeSidebar.vue'
+import HomeLearn from '@/components/home/learn/HomeLearn.vue'
+import HomePrompt from '@/components/home/prompt/HomePrompt.vue'
 import HomeSearchActions from '@/components/home/search/HomeSearchActions.vue'
 import HomeSearchField from '@/components/home/search/HomeSearchField.vue'
 import HomeStart from '@/components/home/start/HomeStart.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import SegmentedControl from '@/components/ui/select/SegmentedControl.vue'
+import { homeHeading } from '@/theme/home/start'
 
 const emit = defineEmits<{ 'new-document': [] }>()
 const { panels, locale, storage, files, common, settings, welcome } = useI18n()
@@ -162,53 +166,41 @@ function formattedDate(updatedAt: string): string {
 </script>
 
 <template>
-  <div class="relative flex min-h-0 flex-1 text-surface">
+  <div class="relative flex min-h-0 flex-1 gap-2 text-surface md:px-2 md:pb-2">
     <HomeSidebar />
     <main
       class="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto"
       data-test-id="recent-files-home"
     >
-      <section
-        id="home-top"
-        class="mx-auto flex w-full max-w-6xl flex-col pt-6 pr-[max(1rem,env(safe-area-inset-right))] pb-12 pl-[max(1rem,env(safe-area-inset-left))] sm:px-10 sm:pt-10"
+      <div
+        class="mx-auto flex w-full max-w-[1044px] flex-col gap-12 pt-8 pr-[max(1rem,env(safe-area-inset-right))] pb-12 pl-[max(1rem,env(safe-area-inset-left))] sm:px-8 sm:pt-14"
       >
-        <header class="mb-12 flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
-          <h1
-            class="font-display text-[clamp(30px,3.4vw,44px)] leading-none font-semibold tracking-[-0.035em] text-balance text-surface"
-          >
-            {{
-              identity.hasChosenName.value
-                ? welcome.greeting({ name: identity.name.value })
-                : welcome.homeTitle
-            }}
-          </h1>
-          <HomeSearchActions @new-document="emit('new-document')" />
-        </header>
-        <HomeStart class="mb-14" />
+        <section id="home-top" class="flex scroll-mt-14 flex-col gap-6">
+          <header class="flex flex-wrap items-end justify-between gap-5">
+            <h1
+              class="font-display text-[clamp(30px,3.4vw,44px)] leading-none font-semibold tracking-[-0.035em] text-balance text-surface"
+            >
+              {{
+                identity.hasChosenName.value
+                  ? welcome.greeting({ name: identity.name.value })
+                  : welcome.homeTitle
+              }}
+            </h1>
+            <HomeSearchActions @new-document="emit('new-document')" />
+          </header>
+          <HomePrompt />
+        </section>
 
-        <div id="home-files" class="mb-5 flex scroll-mt-6 flex-wrap items-center gap-3">
-          <h2 class="flex-1 text-sm font-semibold">{{ welcome.navFiles }}</h2>
-          <HomeSearchField v-model="query" class="w-full sm:w-72" />
-        </div>
+        <HomeStart />
 
-        <p v-if="openError" class="mb-4 text-xs text-danger" role="alert">{{ openError }}</p>
-        <p
-          v-if="noSearchMatches"
-          class="rounded-lg border border-dashed border-border px-4 py-8 text-center text-xs text-muted"
-        >
-          {{ files.noMatchingFiles({ query: query.trim() }) }}
-        </p>
-
-        <section v-if="!noSearchMatches">
-          <div class="mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-3 gap-y-2">
-            <div class="col-span-2 min-w-0 sm:col-span-1">
-              <h3 class="text-xs font-semibold text-muted">{{ files.recentFiles }}</h3>
-            </div>
-            <div class="col-span-2 flex items-center justify-end gap-1 sm:col-span-1">
+        <section id="home-files" class="flex scroll-mt-14 flex-col gap-3.5">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 :class="homeHeading">{{ files.recentFiles }}</h2>
+            <div class="flex w-full items-center gap-1.5 sm:w-auto">
               <IconButton
                 v-if="hasRecentFiles"
                 :label="common.clear"
-                class="size-10 sm:size-7"
+                class="size-10 sm:size-8"
                 data-test-id="recent-files-clear"
                 @click="clearRecentFiles"
               >
@@ -229,12 +221,22 @@ function formattedDate(updatedAt: string): string {
                   <icon-lucide-list v-else class="size-3.5" />
                 </template>
               </SegmentedControl>
+              <HomeSearchField v-model="query" class="min-w-0 flex-1 sm:w-[244px] sm:flex-none" />
             </div>
           </div>
 
+          <p v-if="openError" class="text-xs text-danger" role="alert">{{ openError }}</p>
+          <p
+            v-if="noSearchMatches"
+            class="rounded-[14px] bg-card px-4 py-8 text-center text-xs text-muted"
+          >
+            {{ files.noMatchingFiles({ query: query.trim() }) }}
+          </p>
+
+          <!-- With nothing opened yet, the sample file stands in for the recent files. -->
           <div
-            v-if="filteredRecentFiles.length && view === 'grid'"
-            class="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))]"
+            v-else-if="view === 'grid' || !filteredRecentFiles.length"
+            class="grid grid-cols-1 gap-x-2.5 gap-y-5 sm:grid-cols-[repeat(auto-fill,minmax(210px,1fr))]"
           >
             <DocumentEntry
               v-for="document in filteredRecentFiles"
@@ -245,12 +247,19 @@ function formattedDate(updatedAt: string): string {
               :previewURL="previewURL(document.id)"
               @open="openRecent(document)"
             />
+            <template v-if="!normalizedQuery">
+              <SampleDocumentEntry />
+              <div
+                v-if="!hasRecentFiles"
+                class="flex flex-col justify-center gap-1 px-1 sm:h-[124px] sm:px-3"
+              >
+                <p class="text-[13px] font-medium text-label">{{ files.noRecentFiles }}</p>
+                <p class="text-xs text-muted">{{ files.noRecentFilesDescription }}</p>
+              </div>
+            </template>
           </div>
 
-          <div
-            v-else-if="filteredRecentFiles.length"
-            class="overflow-hidden rounded-lg border border-border"
-          >
+          <div v-else class="overflow-hidden rounded-[14px] bg-card">
             <DocumentEntry
               v-for="document in filteredRecentFiles"
               :key="document.id"
@@ -260,20 +269,14 @@ function formattedDate(updatedAt: string): string {
               @open="openRecent(document)"
             />
           </div>
-
-          <div
-            v-else-if="!normalizedQuery"
-            class="rounded-lg border border-dashed border-border px-4 py-4 text-center sm:py-6"
-          >
-            <p class="text-xs font-medium">{{ files.noRecentFiles }}</p>
-            <p class="mt-1 text-xs text-muted">{{ files.noRecentFilesDescription }}</p>
-          </div>
         </section>
 
-        <section class="mt-7">
-          <div class="mb-3 flex items-start gap-3">
+        <HomeLearn id="home-learn" class="scroll-mt-14" />
+
+        <section class="flex flex-col gap-3.5">
+          <div class="flex items-start gap-3">
             <div class="min-w-0">
-              <h3 class="text-xs font-semibold text-muted">{{ storage.workspace }}</h3>
+              <h2 :class="homeHeading">{{ storage.workspace }}</h2>
               <p class="mt-0.5 truncate text-xs text-muted sm:whitespace-normal">
                 {{ storageDescription }}
               </p>
@@ -281,14 +284,14 @@ function formattedDate(updatedAt: string): string {
             <div class="ml-auto flex shrink-0 items-center gap-1">
               <IconButton
                 :label="common.refresh"
-                class="size-10 sm:size-7"
+                class="size-10 sm:size-8"
                 @click="storageWorkspace.refresh"
               >
                 <icon-lucide-refresh-cw class="size-3.5" />
               </IconButton>
               <IconButton
                 :label="settings.title"
-                class="size-10 sm:size-7"
+                class="size-10 sm:size-8"
                 @click="openSettingsDialog('storage')"
               >
                 <icon-lucide-settings-2 class="size-3.5" />
@@ -298,7 +301,7 @@ function formattedDate(updatedAt: string): string {
 
           <div
             v-if="storageLoading && storageDocuments.length === 0"
-            class="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))]"
+            class="grid grid-cols-1 gap-x-2.5 gap-y-5 sm:grid-cols-[repeat(auto-fill,minmax(210px,1fr))]"
             :aria-label="storage.loadingWorkspace"
           >
             <div
@@ -306,15 +309,15 @@ function formattedDate(updatedAt: string): string {
               :key="index"
               class="min-w-0 animate-pulse motion-reduce:animate-none"
             >
-              <div class="aspect-video rounded-lg border border-border bg-panel-field" />
-              <div class="mt-2 h-3 w-2/3 rounded bg-panel-field" />
-              <div class="mt-1.5 h-2.5 w-1/3 rounded bg-panel-field" />
+              <div class="h-[124px] rounded-[14px] bg-card" />
+              <div class="mt-2.5 h-3 w-2/3 rounded bg-card" />
+              <div class="mt-1.5 h-2.5 w-1/3 rounded bg-card" />
             </div>
           </div>
 
           <div
             v-else-if="storageError && storageDocuments.length === 0"
-            class="rounded-lg border border-danger/40 px-4 py-6 text-center"
+            class="rounded-[14px] border border-danger/40 px-4 py-6 text-center"
             role="alert"
           >
             <p class="text-xs text-danger">{{ storageError }}</p>
@@ -325,7 +328,7 @@ function formattedDate(updatedAt: string): string {
 
           <div
             v-else-if="filteredStorageDocuments.length && view === 'grid'"
-            class="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))]"
+            class="grid grid-cols-1 gap-x-2.5 gap-y-5 sm:grid-cols-[repeat(auto-fill,minmax(210px,1fr))]"
           >
             <DocumentEntry
               v-for="document in filteredStorageDocuments"
@@ -340,7 +343,7 @@ function formattedDate(updatedAt: string): string {
 
           <div
             v-else-if="filteredStorageDocuments.length"
-            class="overflow-hidden rounded-lg border border-border"
+            class="overflow-hidden rounded-[14px] bg-card"
           >
             <DocumentEntry
               v-for="document in filteredStorageDocuments"
@@ -354,22 +357,22 @@ function formattedDate(updatedAt: string): string {
 
           <div
             v-else-if="!storageConfigured"
-            class="rounded-lg border border-dashed border-border px-4 py-4 text-center text-xs text-muted sm:py-6"
+            class="flex flex-wrap items-center justify-between gap-3 rounded-[14px] bg-card px-4 py-3 text-[13px] text-muted"
           >
             <p>{{ storage.notConfigured }}</p>
-            <AppButton variant="outline" class="mt-3" @click="openSettingsDialog('storage')">
+            <AppButton variant="outline" @click="openSettingsDialog('storage')">
               {{ settings.title }}
             </AppButton>
           </div>
 
           <div
             v-else-if="!normalizedQuery"
-            class="rounded-lg border border-dashed border-border px-4 py-4 text-center text-xs text-muted sm:py-6"
+            class="rounded-[14px] bg-card px-4 py-3 text-[13px] text-muted"
           >
             {{ storage.emptyStorageWorkspace }}
           </div>
         </section>
-      </section>
+      </div>
     </main>
   </div>
 </template>

@@ -6,6 +6,7 @@ import { useI18n } from '@open-pencil/vue'
 import { openSettingsDialog } from '@/app/settings/dialog'
 import BrandMark from '@/components/brand/BrandMark.vue'
 import { useGlide } from '@/components/ui/motion/useGlide'
+import { homeNav } from '@/theme/home/start'
 import { glidePills } from '@/theme/motion/glide'
 
 import { useActiveSection } from './useActiveSection'
@@ -17,57 +18,49 @@ const navList = useTemplateRef<HTMLElement>('navList')
 useGlide(navList, {
   items: 'button',
   active: '[aria-current="true"]',
-  pillClass: glidePills.active
+  pillClass: glidePills.navActive
 })
-useGlide(navList, { items: 'button', hover: true, pillClass: glidePills.hover })
+useGlide(navList, { items: 'button', hover: true, pillClass: glidePills.navHover })
 
 /** The home page is one scroll; the entries take it to their section. */
 function reveal(id: string): void {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
-
-const item =
-  'flex h-9 w-full items-center gap-2.5 rounded-lg px-2.5 text-[13px] font-medium text-muted transition-colors duration-150 hover:text-surface aria-[current=true]:text-surface focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none'
 </script>
 
 <template>
-  <nav
-    class="hidden w-56 shrink-0 flex-col border-r border-border/60 bg-panel-secondary/55 px-3 py-5 backdrop-blur-xl md:flex"
-    :aria-label="welcome.navHome"
-  >
-    <div class="mb-6 flex items-center gap-2.5 px-2">
-      <BrandMark variant="app-icon" decorative class="size-7" />
-      <span class="font-display text-lg font-semibold tracking-[-0.035em] text-surface">Kalka</span>
+  <nav :class="homeNav.root" :aria-label="welcome.navHome">
+    <div :class="homeNav.brand">
+      <BrandMark variant="app-icon" decorative class="size-7 overflow-hidden rounded-[7px]" />
+      <span :class="homeNav.name">Kalka</span>
     </div>
-    <div ref="navList" class="flex flex-col gap-0.5">
+    <div ref="navList" class="flex flex-1 flex-col gap-0.5">
       <button
         type="button"
-        :class="item"
+        :class="homeNav.item"
         :aria-current="activeSection === 'home-top'"
         @click="reveal('home-top')"
       >
-        <icon-lucide-house class="size-4" />{{ welcome.navHome }}
+        <icon-lucide-house :class="homeNav.icon" />{{ welcome.navHome }}
       </button>
       <button
         type="button"
-        :class="item"
+        :class="homeNav.item"
         :aria-current="activeSection === 'home-learn'"
         @click="reveal('home-learn')"
       >
-        <icon-lucide-book-open class="size-4" />{{ welcome.navLearn }}
+        <icon-lucide-book-open :class="homeNav.icon" />{{ welcome.navLearn }}
       </button>
       <button
         type="button"
-        :class="item"
+        :class="homeNav.item"
         :aria-current="activeSection === 'home-files'"
         @click="reveal('home-files')"
       >
-        <icon-lucide-folder class="size-4" />{{ welcome.navFiles }}
+        <icon-lucide-folder :class="homeNav.icon" />{{ welcome.navFiles }}
       </button>
-    </div>
-    <div class="mt-auto">
-      <button type="button" :class="item" @click="openSettingsDialog()">
-        <icon-lucide-settings class="size-4" />{{ settings.title }}
+      <button type="button" :class="[homeNav.item, 'mt-auto']" @click="openSettingsDialog()">
+        <icon-lucide-settings :class="homeNav.icon" />{{ settings.title }}
       </button>
     </div>
   </nav>

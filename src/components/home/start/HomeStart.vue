@@ -3,28 +3,16 @@ import { computed, ref } from 'vue'
 
 import { useI18n } from '@open-pencil/vue'
 
-import { useAIChat } from '@/app/ai/chat/use'
-import {
-  FRAME_PRESETS,
-  startBlank,
-  startWithFrame,
-  startWithSample,
-  type FramePresetID
-} from '@/app/home/start'
-import { startTour } from '@/app/onboarding/tour'
-import { openWelcome } from '@/app/onboarding/welcome'
+import { FRAME_PRESETS, startBlank, startWithFrame, type FramePresetID } from '@/app/home/start'
 import { openFileDialog } from '@/app/shell/menu/use'
+import { homeHeading, inlineLink, presetCard } from '@/theme/home/start'
 
 import HomeOpenURLDialog from './HomeOpenURLDialog.vue'
 import HomePasteHTMLDialog from './HomePasteHTMLDialog.vue'
 
 const { welcome } = useI18n()
-const { activeTab: panelTab } = useAIChat()
 const pasteOpen = ref(false)
 const urlOpen = ref(false)
-
-const THUMB_WIDTH = 60
-const THUMB_HEIGHT = 46
 
 const presets = computed(() => {
   const w = welcome.value
@@ -35,151 +23,93 @@ const presets = computed(() => {
     mobile: w.presetMobile,
     social: w.presetSocial
   }
-  return FRAME_PRESETS.map((preset) => {
-    const scale = Math.min(THUMB_WIDTH / preset.width, THUMB_HEIGHT / preset.height)
-    return {
-      ...preset,
-      name: names[preset.id],
-      thumb: { width: `${preset.width * scale}px`, height: `${preset.height * scale}px` }
-    }
-  })
+  return FRAME_PRESETS.map((preset) => ({
+    ...preset,
+    name: names[preset.id],
+    styles: presetCard({ device: preset.id })
+  }))
+})
+const custom = presetCard({ kind: 'custom' })
+
+type ImportChoice = 'file' | 'html' | 'url'
+const IMPORT_CHOICES = ['file', 'html', 'url'] as const
+
+/** The import sentence, split around its three choices so each one can be a link. */
+const importParts = computed(() => {
+  const sentence = welcome.value.importSentence({ file: '{file}', html: '{html}', url: '{url}' })
+  return sentence
+    .split(/(\{file\}|\{html\}|\{url\})/)
+    .filter((part) => part !== '')
+    .map((part) => {
+      const choice = IMPORT_CHOICES.find((candidate) => part === `{${candidate}}`)
+      return choice ? { choice, text: importLabel(choice) } : { choice: null, text: part }
+    })
 })
 
-async function takeTour(): Promise<void> {
-  await startWithSample()
-  startTour()
+function importLabel(choice: ImportChoice): string {
+  if (choice === 'file') return welcome.value.importFile
+  if (choice === 'html') return welcome.value.importHTML
+  return welcome.value.importURL
 }
 
-async function seeCode(): Promise<void> {
-  await startWithSample()
-  panelTab.value = 'code'
+function runImport(choice: ImportChoice): void {
+  if (choice === 'file') openFileDialog()
+  else if (choice === 'html') pasteOpen.value = true
+  else urlOpen.value = true
 }
-
-const link =
-  'inline-flex h-8 items-center gap-1.5 rounded-md px-2 text-[13px] text-muted transition-colors duration-150 hover:bg-(--pill-hover-bg) hover:text-surface focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none'
-const learnCard =
-  'group flex items-center gap-3.5 rounded-xl border border-border/70 glass p-3 text-left transition-[border-color,translate,box-shadow,scale] duration-200 ease-out hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-lg hover:shadow-accent/10 active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none motion-reduce:hover:translate-y-0'
 </script>
 
 <template>
-  <div class="flex flex-col gap-12">
-    <section aria-labelledby="home-sizes">
-      <h2 id="home-sizes" class="mb-4 text-sm font-semibold text-surface">
-        {{ welcome.startWithSize }}
-      </h2>
-      <div class="flex flex-wrap gap-x-3 gap-y-5">
-        <button
-          v-for="preset in presets"
-          :key="preset.id"
-          type="button"
-          class="group flex w-[112px] flex-col items-center rounded-xl text-center outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
-          :data-test-id="`home-preset-${preset.id}`"
-          @click="startWithFrame(preset.name, preset.width, preset.height)"
-        >
-          <span
-            class="grid h-[88px] w-full place-items-center rounded-xl border border-border/60 glass transition-[border-color,translate,box-shadow,scale] duration-200 ease-out group-hover:-translate-y-0.5 group-hover:border-accent/50 group-hover:shadow-lg group-hover:shadow-accent/15 group-active:scale-[0.97] motion-reduce:group-hover:translate-y-0"
-          >
-            <span
-              class="rounded-[4px] bg-muted/25 transition-colors duration-200 group-hover:bg-accent"
-              :style="preset.thumb"
-            />
-          </span>
-          <span class="mt-2.5 text-[13px] font-medium text-surface">{{ preset.name }}</span>
-          <span class="font-mono text-[11px] text-muted tabular-nums">
-            {{ preset.width }} × {{ preset.height }}
-          </span>
-        </button>
-        <button
-          type="button"
-          class="group flex w-[112px] flex-col items-center rounded-xl text-center outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
-          data-test-id="home-preset-custom"
-          @click="startBlank"
-        >
-          <span
-            class="grid h-[88px] w-full place-items-center rounded-xl border border-dashed border-border text-muted transition-[border-color,color,scale] duration-200 group-hover:border-accent/60 group-hover:text-accent group-active:scale-[0.97]"
-          >
-            <icon-lucide-plus class="size-5" />
-          </span>
-          <span class="mt-2.5 text-[13px] font-medium text-surface">{{
-            welcome.presetCustom
-          }}</span>
-          <span class="text-[11px] text-muted">{{ welcome.presetCustomHint }}</span>
-        </button>
-      </div>
-      <div
-        class="mt-5 flex flex-wrap items-center gap-x-1 gap-y-1"
-        :aria-label="welcome.bringSomethingIn"
+  <section aria-labelledby="home-sizes" class="flex flex-col gap-3.5">
+    <h2 id="home-sizes" :class="homeHeading">{{ welcome.startWithSize }}</h2>
+    <div class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-2.5">
+      <button
+        v-for="preset in presets"
+        :key="preset.id"
+        type="button"
+        :class="preset.styles.root()"
+        :data-test-id="`home-preset-${preset.id}`"
+        @click="startWithFrame(preset.name, preset.width, preset.height)"
       >
-        <span class="mr-1 text-xs text-muted">{{ welcome.bringSomethingIn }}</span>
-        <button type="button" :class="link" @click="openFileDialog">
-          <icon-lucide-file-down class="size-3.5" />{{ welcome.openFile }}
+        <span :class="preset.styles.device()" aria-hidden="true">
+          <span :class="preset.styles.outline()" />
+        </span>
+        <span :class="preset.styles.body()">
+          <span :class="preset.styles.name()">{{ preset.name }}</span>
+          <span :class="preset.styles.detail()">{{ preset.width }} × {{ preset.height }}</span>
+        </span>
+      </button>
+      <button
+        type="button"
+        :class="custom.root()"
+        data-test-id="home-preset-custom"
+        @click="startBlank"
+      >
+        <span :class="custom.device()" aria-hidden="true">
+          <icon-lucide-plus class="size-[22px]" />
+        </span>
+        <span :class="custom.body()">
+          <span :class="custom.name()">{{ welcome.presetCustom }}</span>
+          <span :class="custom.detail()">{{ welcome.presetCustomHint }}</span>
+        </span>
+      </button>
+    </div>
+    <p class="text-[13px] text-muted" data-test-id="home-import">
+      <template v-for="(part, index) in importParts" :key="index">
+        <button
+          v-if="part.choice"
+          type="button"
+          :class="inlineLink"
+          :data-test-id="`home-import-${part.choice}`"
+          @click="runImport(part.choice)"
+        >
+          {{ part.text }}
         </button>
-        <button type="button" :class="link" @click="pasteOpen = true">
-          <icon-lucide-code-xml class="size-3.5" />{{ welcome.pasteHTML }}
-        </button>
-        <button type="button" :class="link" @click="urlOpen = true">
-          <icon-lucide-globe class="size-3.5" />{{ welcome.openURL }}
-        </button>
-        <button type="button" :class="link" @click="startWithSample">
-          <icon-lucide-sparkles class="size-3.5" />{{ welcome.openSample }}
-        </button>
-      </div>
-    </section>
-
-    <section id="home-learn" aria-labelledby="home-learn-heading" class="scroll-mt-6">
-      <h2 id="home-learn-heading" class="mb-4 text-sm font-semibold text-surface">
-        {{ welcome.learnBasics }}
-      </h2>
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <button type="button" :class="learnCard" @click="takeTour">
-          <span
-            class="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-blue text-white"
-          >
-            <icon-lucide-route class="size-4.5" />
-          </span>
-          <span class="min-w-0">
-            <span class="block text-[13px] font-semibold text-surface">{{
-              welcome.learnTour
-            }}</span>
-            <span class="mt-0.5 block truncate text-xs text-muted">{{
-              welcome.learnTourHint
-            }}</span>
-          </span>
-        </button>
-        <button type="button" :class="learnCard" @click="seeCode">
-          <span
-            class="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-ink text-brand-sky ring-1 ring-white/10"
-          >
-            <icon-lucide-code-xml class="size-4.5" />
-          </span>
-          <span class="min-w-0">
-            <span class="block text-[13px] font-semibold text-surface">{{
-              welcome.learnCode
-            }}</span>
-            <span class="mt-0.5 block truncate text-xs text-muted">{{
-              welcome.learnCodeHint
-            }}</span>
-          </span>
-        </button>
-        <button type="button" :class="learnCard" @click="openWelcome('claude')">
-          <span
-            class="grid size-10 shrink-0 place-items-center rounded-lg bg-brand-sky text-brand-ink"
-          >
-            <icon-lucide-sparkles class="size-4.5" />
-          </span>
-          <span class="min-w-0">
-            <span class="block text-[13px] font-semibold text-surface">{{
-              welcome.learnClaude
-            }}</span>
-            <span class="mt-0.5 block truncate text-xs text-muted">{{
-              welcome.learnClaudeHint
-            }}</span>
-          </span>
-        </button>
-      </div>
-    </section>
+        <template v-else>{{ part.text }}</template>
+      </template>
+    </p>
 
     <HomePasteHTMLDialog v-model:open="pasteOpen" />
     <HomeOpenURLDialog v-model:open="urlOpen" />
-  </div>
+  </section>
 </template>
