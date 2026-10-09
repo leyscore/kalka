@@ -1,7 +1,7 @@
 import { tv } from 'tailwind-variants'
 
 export const shareButton = tv({
-  base: 'flex h-7 cursor-pointer items-center gap-1.5 rounded border-none px-3 text-[11px] font-medium transition-colors outline-none focus-visible:ring-1 focus-visible:ring-panel-focus',
+  base: 'flex h-[30px] cursor-pointer items-center gap-1.5 rounded-lg border-none px-3 text-xs font-semibold transition-[background-color,scale] duration-150 outline-none focus-visible:ring-2 focus-visible:ring-accent/50 active:scale-[0.97] motion-reduce:active:scale-100',
   variants: {
     connection: {
       idle: 'bg-accent text-white hover:bg-accent/90',

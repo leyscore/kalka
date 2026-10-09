@@ -47,12 +47,12 @@ useGlide(toolbarElement, { items: 'button', hover: true, pillClass: glidePills.h
 <template>
   <div
     data-canvas-obstacle
-    class="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center"
+    class="absolute bottom-[18px] left-1/2 z-10 flex -translate-x-1/2 items-center"
   >
     <ToolbarRoot
       ref="toolbarRoot"
       data-test-id="toolbar"
-      class="flex gap-0.5 rounded-2xl border border-border/70 bg-panel/90 p-1.5 shadow-[0_16px_40px_-10px_rgb(0_0_0/0.45),0_2px_8px_rgb(0_0_0/0.15)] backdrop-blur-xl backdrop-saturate-150"
+      class="flex items-center gap-0.5 rounded-[14px] border border-glass-strong-border bg-glass-strong p-[5px] shadow-(--toolbar-shadow) backdrop-blur-[24px]"
     >
       <template v-for="tool in tools" :key="tool.key">
         <Tip
@@ -85,6 +85,7 @@ useGlide(toolbarElement, { items: 'button', hover: true, pillClass: glidePills.h
         </ToolbarItem>
       </template>
       <!-- Inserting rather than drawing: commands such as placing an icon. -->
+      <span aria-hidden="true" class="mx-1 h-5 w-px shrink-0 bg-separator" />
       <slot name="end" />
     </ToolbarRoot>
   </div>

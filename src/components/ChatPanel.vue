@@ -7,6 +7,7 @@ import { useI18n } from '@open-pencil/vue'
 
 import { revokeImagePreviewURL } from '@/app/ai/attachment/image/prepare'
 import { chatDocumentId } from '@/app/ai/chat/history/document'
+import { takeQueuedChatPrompt } from '@/app/ai/chat/queued-prompt'
 import { useChatRunLocation } from '@/app/ai/chat/run-location'
 import type { ChatSubmission } from '@/app/ai/chat/submission/types'
 import { useChatSubmission } from '@/app/ai/chat/submission/use'
@@ -74,8 +75,17 @@ async function submitMessage(message: ChatSubmission) {
   if (generation === viewGeneration) chatInput.value?.restoreDraft(message)
   else for (const image of message.images) revokeImagePreviewURL(image.previewURL)
 }
+/** Sends the prompt the document was started with, such as one from Home, once its canvas is up. */
+async function sendQueuedPrompt() {
+  const store = getActiveEditorStore()
+  const text = takeQueuedChatPrompt(store)
+  if (!text) return
+  await store.canvasReady
+  await submitMessage({ modelText: text, displayText: text, images: [], nodes: [] })
+}
+
 // Restoring local history must not open a provider connection or read credentials.
-void history.initialize().catch(() => {
+void history.initialize().then(sendQueuedPrompt, () => {
   toast.error(ai.value.chatHistoryFailed)
 })
 

@@ -1,7 +1,22 @@
+import { queueChatPrompt } from '@/app/ai/chat/queued-prompt'
+import { isConfigured } from '@/app/ai/chat/storage'
+import { useAIChat } from '@/app/ai/chat/use'
 import { openDemoDocument } from '@/app/demo/document'
 import { offerTourOnFirstDocument } from '@/app/onboarding/tour'
 import { openBrowserFileFromURL } from '@/app/shell/menu/files'
 import { createDocumentInCurrentTab } from '@/app/tabs'
+
+/**
+ * A new document whose AI chat opens with the prompt as its first message. Without a model to
+ * send it to, nothing is created and the caller offers AI setup, keeping the prompt.
+ */
+export function startWithPrompt(prompt: string): 'started' | 'needs-setup' {
+  if (!isConfigured.value) return 'needs-setup'
+  const { store } = createDocumentInCurrentTab()
+  queueChatPrompt(store, prompt.trim())
+  useAIChat().activeTab.value = 'ai'
+  return 'started'
+}
 
 /** Sizes a new design can start from, in CSS pixels. */
 export const FRAME_PRESETS = [

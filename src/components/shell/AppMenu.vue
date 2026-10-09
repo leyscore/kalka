@@ -66,19 +66,19 @@ const { overflowStart, overflowEnd, scrollTowardHidden } = useScrollOverflow(men
 </script>
 
 <template>
-  <div class="shrink-0 border-b border-border">
-    <div class="flex items-center gap-2 px-2 py-1.5">
+  <div class="shrink-0">
+    <div class="flex items-center gap-1 pt-3 pr-3 pb-2.5 pl-3">
       <BrandMark
         data-test-id="app-logo"
         variant="app-icon"
         :appearance="resolvedAppTheme"
-        class="size-6"
+        class="me-1 size-6 rounded-md"
       />
       <input
         v-if="editingName"
         ref="nameInput"
         data-test-id="app-document-name-input"
-        class="min-w-0 flex-1 rounded border border-accent bg-input px-1 py-0.5 text-xs text-surface outline-none"
+        class="min-w-0 flex-1 rounded-md border border-accent bg-input px-1 py-0.5 text-[13px] font-semibold text-surface outline-none"
         :value="store.state.documentName"
         @blur="commitRename($event)"
         @keydown="rename.onKeydown"
@@ -86,26 +86,28 @@ const { overflowStart, overflowEnd, scrollTowardHidden } = useScrollOverflow(men
       <span
         v-else
         data-test-id="app-document-name"
-        class="min-w-0 flex-1 cursor-default truncate rounded px-1 py-0.5 text-xs text-surface hover:bg-hover"
+        class="min-w-0 flex-1 cursor-default truncate rounded-md px-1 py-0.5 text-[13px] font-semibold text-surface transition-colors hover:bg-(--pill-hover-bg)"
         @dblclick="startRename"
         >{{ store.state.documentName }}</span
       >
       <IconButton
         :label="settings.title"
         data-test-id="app-settings-trigger"
+        class="size-7 rounded-[7px]"
         @click="openSettingsDialog()"
       >
-        <icon-lucide-settings class="size-3.5" />
+        <icon-lucide-settings class="size-[15px]" />
       </IconButton>
       <IconButton
         :label="`${t.toggleUI} (${appMenuShortcutLabel('toggle-ui')})`"
         data-test-id="app-toggle-ui"
+        class="size-7 rounded-[7px]"
         @click="store.state.showUI = !store.state.showUI"
       >
-        <icon-lucide-sidebar class="size-3.5" />
+        <icon-lucide-panel-left class="size-[15px]" />
       </IconButton>
     </div>
-    <div v-if="!IS_TAURI" class="flex items-center px-1 pb-1">
+    <div v-if="!IS_TAURI" class="-mt-1 flex items-center px-2 pb-2.5">
       <div
         ref="menubar"
         class="scrollbar-none min-w-0 flex-1 overflow-x-auto data-overflow-end:mask-r-from-[calc(100%-2rem)] data-overflow-start:mask-l-from-[calc(100%-2rem)]"
@@ -116,7 +118,7 @@ const { overflowStart, overflowEnd, scrollTowardHidden } = useScrollOverflow(men
           <MenubarMenu v-for="menu in topMenus" :key="menu.label">
             <MenubarTrigger
               v-test-id="`menubar-${menu.label.toLowerCase()}`"
-              class="flex cursor-pointer items-center rounded px-2 py-1 text-[11px] text-surface/80 transition-colors select-none hover:bg-hover hover:text-surface data-[state=open]:bg-hover data-[state=open]:text-surface"
+              class="flex cursor-pointer items-center rounded-md px-2 py-1 text-[11px] text-muted transition-colors select-none hover:bg-(--pill-hover-bg) hover:text-surface data-[state=open]:bg-(--pill-hover-bg) data-[state=open]:text-surface"
             >
               {{ menu.label }}
             </MenubarTrigger>

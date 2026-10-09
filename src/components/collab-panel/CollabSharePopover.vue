@@ -26,7 +26,6 @@ const connection = computed(() => {
         :data-connection="connection"
         :class="shareButton({ connection })"
       >
-        <icon-lucide-share-2 class="size-3.5" />
         {{ collab.messages.share }}
       </button>
     </PopoverTrigger>
