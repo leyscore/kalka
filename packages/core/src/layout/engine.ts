@@ -10,6 +10,15 @@ export interface LayoutEngine {
    * Returns false to leave the layer to Yoga, for graphs or pages the engine does not draw.
    */
   layout(graph: SceneGraph, nodeId: string): boolean
+  /**
+   * The CSS the browser computed for a layer as it draws it, for the properties named (all of
+   * them when the list is empty). Null when the engine does not draw the layer right now.
+   */
+  computedStyle?(
+    graph: SceneGraph,
+    nodeId: string,
+    properties: readonly string[]
+  ): Record<string, string> | null
 }
 
 let installed: LayoutEngine | null = null

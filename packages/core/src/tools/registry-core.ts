@@ -2,7 +2,7 @@ import { diffChanges, diffCreate, diffVisual, evalCode } from './analyze'
 import { calc } from './calc'
 import { render } from './create'
 import { describe } from './describe'
-import { getHTML, getScreenshot, updateStyles, writeHTML } from './html'
+import { getComputedStyles, getHTML, getScreenshot, updateStyles, writeHTML } from './html'
 import {
   setFill,
   setLayout,
@@ -31,6 +31,7 @@ export const CORE_TOOLS: ToolDef[] = [
   getJSX,
   getHTML,
   getScreenshot,
+  getComputedStyles,
   // Create
   render,
   writeHTML,

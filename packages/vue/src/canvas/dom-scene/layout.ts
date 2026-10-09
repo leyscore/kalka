@@ -32,6 +32,26 @@ export class DomLayoutEngine implements LayoutEngine {
     return true
   }
 
+  computedStyle(
+    graph: SceneGraph,
+    nodeId: string,
+    properties: readonly string[]
+  ): Record<string, string> | null {
+    if (graph !== this.getGraph()) return null
+    if (this.projector.needsFlush) this.projector.flush()
+    const element = this.projector.elementOf(nodeId)
+    const view = element?.ownerDocument.defaultView
+    if (!element || !view) return null
+    const style = view.getComputedStyle(element)
+    const names = properties.length > 0 ? properties : Array.from(style)
+    const values: Record<string, string> = {}
+    for (const name of names) {
+      const value = style.getPropertyValue(name)
+      if (value) values[name] = value
+    }
+    return values
+  }
+
   /** Re-reads artboards whose layout changed on its own, such as when a font arrives. */
   refresh(artboardIds: Iterable<string>): void {
     const graph = this.getGraph()
