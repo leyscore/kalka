@@ -8,6 +8,7 @@ import { createRetainedScopePlugin } from '@open-pencil/vue'
 import './app.css'
 import { recordRuntimeError } from '@/app/diagnostics'
 import { preloadFonts } from '@/app/editor/fonts'
+import { appRuntimeConfig } from '@/app/runtime/config'
 import { observeBootErrors } from '@/app/shell/support/boot'
 import { reportBootFailure } from '@/app/shell/support/gate'
 import { releaseBootSplash } from '@/app/shell/support/splash'
@@ -37,7 +38,7 @@ export async function boot(): Promise<void> {
     await reportBootFailure(failure.error)
     return
   }
-  void releaseBootSplash()
+  void releaseBootSplash({ immediate: appRuntimeConfig.test })
   // Component errors after boot reach only this handler, not the window; keep them diagnosable.
   app.config.errorHandler = (error, _instance, info) => {
     recordRuntimeError(error, 'vue', info)

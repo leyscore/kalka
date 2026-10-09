@@ -9,7 +9,7 @@ const LIGHT = 0.96
 async function openFresh(page: Page) {
   await page.goto('/')
   await page.getByTestId('canvas-element').and(page.locator('[data-ready="1"]')).waitFor()
-  await page.locator('#loader').waitFor({ state: 'detached' })
+  await page.locator('#boot-splash').waitFor({ state: 'detached' })
 }
 
 function currentPageColor(page: Page) {

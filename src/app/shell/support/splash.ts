@@ -9,10 +9,20 @@ function delay(ms: number): Promise<void> {
   })
 }
 
-/** Fades the boot splash out once the app has mounted, then removes it. */
-export async function releaseBootSplash(doc: Document = document): Promise<void> {
+/**
+ * Fades the boot splash out once the app has mounted, then removes it. Test runs remove it at
+ * once, since every page load would otherwise wait for it.
+ */
+export async function releaseBootSplash(
+  options: { immediate?: boolean } = {},
+  doc: Document = document
+): Promise<void> {
   const splash = doc.getElementById(SPLASH_ID)
   if (!splash) return
+  if (options.immediate) {
+    splash.remove()
+    return
+  }
   const wait = MINIMUM_SHOWN_MS - performance.now()
   if (wait > 0) await delay(wait)
   splash.dataset.leaving = ''
