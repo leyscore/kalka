@@ -3,6 +3,23 @@ import { count, params } from '@nanostores/i18n'
 import { i18n } from '#vue/i18n/create'
 
 export const panelMessageDefaults = {
+  versions: 'Versions',
+  versionsUnsaved: 'Save the document on this computer to keep its versions.',
+  versionsUntracked:
+    'This folder does not keep versions yet. Kalka uses Git: the history stays in the folder and works with GitHub or any Git tool.',
+  versionsStart: 'Keep versions',
+  versionsChanges: 'Changes',
+  versionsNoChanges: 'Everything is recorded.',
+  versionsUnsavedChanges: 'Unsaved edits are saved when you record a version.',
+  versionsMessage: 'What changed',
+  versionsMessagePlaceholder: 'Describe this version',
+  versionsCommit: 'Record version',
+  versionsHistory: 'History',
+  versionsNoHistory: 'No versions yet.',
+  versionsPull: 'Get updates',
+  versionsPush: 'Publish',
+  versionsDetached: 'No branch',
+  versionsSync: params('{ahead} to publish · {behind} to get'),
   untitled: 'Untitled',
   individualPadding: 'Individual padding',
   layers: 'Layers',

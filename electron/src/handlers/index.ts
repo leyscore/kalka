@@ -3,6 +3,7 @@ import { BrowserWindow } from 'electron'
 import { registerCommandHandlers } from './commands'
 import { registerDialogHandlers } from './dialog'
 import { registerFsHandlers } from './fs'
+import { registerGitHandlers } from './git'
 import { registerMCPStdioHandlers } from './mcp/stdio'
 import { buildMenu } from './menu'
 import { registerOAuthHandlers } from './oauth'
@@ -23,6 +24,7 @@ export function registerHandlers(host: WindowHost): void {
   registerCommandHandlers()
   registerMCPStdioHandlers()
   registerOAuthHandlers()
+  registerGitHandlers()
   setOpenTarget(() => mainContents() ?? BrowserWindow.getAllWindows()[0]?.webContents ?? null)
   installQuitGuard()
   buildMenu()

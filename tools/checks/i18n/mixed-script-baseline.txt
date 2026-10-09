@@ -482,3 +482,5 @@ zh-cn:automation.serverCommandHint
 zh-cn:automation.environmentHint
 zh-cn:automation.environmentInvalid
 zh-cn:automation.oauthHint
+ja:panels.versionsUntracked
+zh-cn:panels.versionsUntracked

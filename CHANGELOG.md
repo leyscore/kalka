@@ -40,6 +40,7 @@
 ### Added
 
 - MCP and the AI chat can work in HTML: `write_html` adds HTML and CSS to the design as editable layers, `get_html` reads a layer back as HTML, `update_styles` changes a layer with CSS declarations, and `get_screenshot` shows the result as an image.
+- The desktop app keeps a document's versions with Git in a Versions tab beside File and Assets: start tracking the folder, see what changed, record a version with a message (unsaved edits are saved first), browse the history, and get or publish updates when the branch has a remote. A design inside a larger repository records only its own folder.
 - Agents can read the CSS the browser computed for a layer with the `get_computed_styles` MCP tool, such as resolved widths, flex settings and fonts, to check why a layout looks the way it does.
 - MCP connections in Settings › MCP can be local servers started by a command, such as `npx -y @notionhq/notion-mcp-server`, with secret environment variables, and remote servers can sign in with OAuth in the browser. The desktop app asks before running a command line for the first time, and keeps environments, tokens and sign-ins in the system credential store. ACP agents get local servers too; the Pi agent keeps to remote ones.
 - The built-in AI chat uses the MCP servers connected in Settings › MCP, as ACP and Pi agents already did: their tools appear in the chat as `server` › `tool`, so it can read your docs, tickets or data before it designs. In the desktop app the requests go through the main process, so servers without CORS headers work.

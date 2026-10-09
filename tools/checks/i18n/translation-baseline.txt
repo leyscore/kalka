@@ -324,3 +324,4 @@ es:automation.authenticationBearer
 it:automation.serverType
 it:automation.authenticationBearer
 pl:automation.authenticationBearer
+fr:panels.versions

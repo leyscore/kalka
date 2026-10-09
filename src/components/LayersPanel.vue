@@ -5,6 +5,7 @@ import { computed, ref } from 'vue'
 
 import { useI18n } from '@open-pencil/vue'
 
+import { isTauri } from '@/app/tauri/env'
 import AppMenu from '@/components/shell/AppMenu.vue'
 import SegmentedControl from '@/components/ui/select/SegmentedControl.vue'
 import splitterTheme from '@/theme/splitter'
@@ -12,20 +13,34 @@ import splitterTheme from '@/theme/splitter'
 import AssetsPanel from './assets-panel/AssetsPanel.vue'
 import LayerTree from './LayerTree/LayerTree.vue'
 import PagesPanel from './PagesPanel.vue'
+import VersionsPanel from './versions/VersionsPanel.vue'
 
 const { menu, panels } = useI18n()
-const activePanel = ref<'file' | 'assets'>('file')
+type LeftPanel = 'file' | 'assets' | 'versions'
+// Versions use the git on this computer, so only the desktop app offers them.
+const hasVersions = isTauri()
+const activePanel = ref<LeftPanel>('file')
 const panelModel = computed({
   get: () => activePanel.value,
   set: (value: string) => {
-    if (value === 'file' || value === 'assets') activePanel.value = value
+    if (value === 'file' || value === 'assets' || (value === 'versions' && hasVersions)) {
+      activePanel.value = value
+    }
   }
 })
 const panelOptions = computed(() => [
   { value: 'file', label: menu.value.file },
-  { value: 'assets', label: panels.value.assets }
+  { value: 'assets', label: panels.value.assets },
+  ...(hasVersions ? [{ value: 'versions', label: panels.value.versions }] : [])
 ])
-const panelTabsUI = { root: 'grid w-full grid-cols-2' }
+const panelTabsUI = hasVersions
+  ? { root: 'grid w-full grid-cols-3' }
+  : { root: 'grid w-full grid-cols-2' }
+const TAB_TEST_IDS: Record<string, string> = {
+  file: 'left-panel-layers-tab',
+  assets: 'left-panel-assets-tab',
+  versions: 'left-panel-versions-tab'
+}
 const splitterStyles = tv(splitterTheme)({ direction: 'vertical' })
 </script>
 
@@ -45,18 +60,14 @@ const splitterStyles = tv(splitterTheme)({ direction: 'vertical' })
         :ui="panelTabsUI"
       >
         <template #option="{ option }">
-          <span
-            :data-test-id="
-              option.value === 'file' ? 'left-panel-layers-tab' : 'left-panel-assets-tab'
-            "
-            class="truncate"
-          >
+          <span :data-test-id="TAB_TEST_IDS[option.value]" class="truncate">
             {{ option.label }}
           </span>
         </template>
       </SegmentedControl>
     </div>
     <AssetsPanel v-if="activePanel === 'assets'" />
+    <VersionsPanel v-else-if="activePanel === 'versions'" />
     <SplitterGroup
       v-else
       direction="vertical"
