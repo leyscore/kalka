@@ -6,6 +6,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/server/stdio'
 
 import { resolveMCPRoot } from '#mcp/root'
 import { MCP_VERSION, registerTools } from '#mcp/server'
+import { createServerIdentity } from '#mcp/server/identity'
 import { createStdioRPCBridge } from '#mcp/stdio/bridge'
 import type { ToolPolicy } from '#mcp/tool/metadata'
 import { parseDisabledTools } from '#mcp/tool/policy'
@@ -91,7 +92,7 @@ const bridge = createStdioRPCBridge({
   }
 })
 
-const mcpServer = new McpServer({ name: 'open-pencil', version: MCP_VERSION })
+const mcpServer = new McpServer(...createServerIdentity(MCP_VERSION))
 // One client per process: its tool calls show as one agent in the app.
 registerTools(mcpServer, {
   policy: toolPolicy,

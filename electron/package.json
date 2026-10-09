@@ -4,7 +4,7 @@
   "type": "module",
   "main": "dist/main.js",
   "scripts": {
-    "build": "bun build src/main.ts --target=node --format=esm --outfile=dist/main.js --external electron && bun build src/preload.ts --target=node --format=cjs --outfile=dist/preload.cjs --external electron",
+    "build": "bun scripts/build-mcp.ts && bun build src/main.ts --target=node --format=esm --outfile=dist/main.js --external electron && bun build src/preload.ts --target=node --format=cjs --outfile=dist/preload.cjs --external electron",
     "start": "bun run build && electron .",
     "dev": "bun scripts/dev.ts",
     "package": "bun run build && electron-builder --publish never",
@@ -12,7 +12,8 @@
   },
   "devDependencies": {
     "electron": "44.4.5",
-    "electron-builder": "26.0.12"
+    "electron-builder": "26.0.12",
+    "smol-toml": "1.9.0"
   },
   "productName": "Kalka",
   "version": "0.15.1",
@@ -81,6 +82,9 @@
       ],
       "icon": "build/icon.png",
       "category": "Graphics"
-    }
+    },
+    "asarUnpack": [
+      "dist/mcp/**"
+    ]
   }
 }

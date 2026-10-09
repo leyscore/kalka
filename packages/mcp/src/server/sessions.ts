@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 
 import { McpServer, WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/server'
 
+import { createServerIdentity } from '#mcp/server/identity'
 import type { MCPAgentKind, MCPAgentSession } from '#mcp/tool/registration'
 
 export type MCPTransport = {
@@ -107,7 +108,7 @@ export function createMCPSessionManager({
     if (inFlight) return inFlight
 
     const promise = (async () => {
-      const server = new McpServer({ name: 'open-pencil', version: serverVersion })
+      const server = new McpServer(...createServerIdentity(serverVersion))
       registerTools(server, { id, kind })
 
       const transport = new WebStandardStreamableHTTPServerTransport({

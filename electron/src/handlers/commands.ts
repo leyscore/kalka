@@ -6,8 +6,9 @@ import { delimiter, isAbsolute, join, sep } from 'node:path'
 import { net } from 'electron'
 
 import { registerAll, type CallContext } from '../ipc'
-import { connectClaudeDesktop } from './claude-desktop'
 import { credentialCommands } from './credentials'
+import { BUNDLED_MCP_HTTP, bundledMCPScript } from './mcp/bundled'
+import { bridgeCommand, connectMCPClient, isMCPClientID, listMCPClients } from './mcp/clients'
 import { buildFigFile } from './fig'
 import { setChecked, setRecentFiles } from './menu'
 import { takePendingOpen, takePendingRooms } from './pending'
@@ -167,6 +168,9 @@ const commands: Record<string, (args: never) => unknown> = {
   path_matches_suffix: ({ candidate, suffix }: { candidate: string; suffix: string }) =>
     pathMatchesSuffix(candidate, suffix),
   async mcp_lookup() {
+    // The bundled server always matches the app; a global install is the fallback.
+    const bundled = await bundledMCPScript(BUNDLED_MCP_HTTP)
+    if (bundled) return { available: true, path: bundled, searched: [] }
     const path = await searchPath()
     const found = await which('openpencil-mcp-http', path)
     const searched = [
@@ -187,9 +191,15 @@ const commands: Record<string, (args: never) => unknown> = {
     }
     return { executables, versions, searchPath: path }
   },
-  async connect_claude_desktop() {
+  mcp_clients: () => listMCPClients(),
+  async mcp_bridge_command() {
     const path = await searchPath()
-    return connectClaudeDesktop((command) => which(command, path))
+    return bridgeCommand((command) => which(command, path))
+  },
+  async connect_mcp_client({ id }: { id: unknown }) {
+    if (!isMCPClientID(id)) throw new Error('Unknown MCP client')
+    const path = await searchPath()
+    return connectMCPClient(id, (command) => which(command, path), path)
   },
   proxy_http_request: ({ request }: { request: ProxyRequest }) => proxyHttpRequest(request),
   build_fig_file: (input: Parameters<typeof buildFigFile>[0]) => buildFigFile(input)

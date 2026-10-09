@@ -3,6 +3,7 @@ import { constants } from 'node:os'
 
 import capabilities from '../../../desktop/capabilities/default.json'
 import { emit, registerAll, type CallContext } from '../ipc'
+import { BUNDLED_MCP_HTTP, bundledMCPCommand, bundledMCPScript } from './mcp/bundled'
 
 type ArgRule = string | { validator: string }
 interface ScopeEntry {
@@ -36,6 +37,21 @@ export function resolveAllowed(name: string, args: string[]): { cmd: string; arg
     if (!ok) throw new Error(`Argument ${index} not allowed for ${name}`)
   })
   return { cmd: entry.cmd, args }
+}
+
+/** The editor starts the MCP server by its global name; the copy bundled with the app wins. */
+const MCP_SERVER_NAMES = new Set(['openpencil-mcp-http', 'cmd-openpencil-mcp-http'])
+
+async function resolveProgram(
+  name: string,
+  args: string[]
+): Promise<{ cmd: string; args: string[]; env: Record<string, string> }> {
+  const script = MCP_SERVER_NAMES.has(name) ? await bundledMCPScript(BUNDLED_MCP_HTTP) : null
+  if (script) {
+    const bundled = bundledMCPCommand(script)
+    return { cmd: bundled.command, args: bundled.args, env: bundled.env }
+  }
+  return { ...resolveAllowed(name, args), env: {} }
 }
 
 /**
@@ -89,10 +105,10 @@ export const shellHandlers = {
     args: string[],
     options: { cwd?: string; env?: Record<string, string>; raw?: boolean }
   ) {
-    const allowed = resolveAllowed(name, args)
+    const allowed = await resolveProgram(name, args)
     const child = spawn(allowed.cmd, allowed.args, {
       cwd: options.cwd,
-      env: await inheritedEnv(options.env),
+      env: await inheritedEnv({ ...options.env, ...allowed.env }),
       stdio: 'pipe',
       windowsHide: true
     })

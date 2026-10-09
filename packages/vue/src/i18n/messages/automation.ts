@@ -41,6 +41,17 @@ export const automationMessageDefaults = {
   mcpFailureCopy: 'Copy details',
   mcpFailureCopied: 'Diagnostic details copied.',
   localServer: 'Local server',
+  clientsTitle: 'Connect an agent',
+  clientsDescription:
+    'Add Kalka to the MCP clients on this computer. Any agent that speaks MCP can then read and edit your designs, next to its other servers such as your docs, tickets or data.',
+  clientConnect: 'Connect',
+  clientReconnect: 'Reconnect',
+  clientConnectedStatus: 'Connected',
+  clientNotInstalled: 'Not found on this computer',
+  clientRestartHint: params('Kalka was added. Restart {client} to load it.'),
+  otherClientTitle: 'Any other MCP client',
+  otherClientDescription:
+    'Paste this server entry into its configuration. Clients that connect over HTTP use the local server address below instead.',
   webmcpDescription:
     'Let browser agents use this document directly, without a local MCP server or bearer token. Local server settings do not apply here.',
   browserAccess: 'Browser agent access',

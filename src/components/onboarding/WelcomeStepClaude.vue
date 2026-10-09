@@ -1,40 +1,14 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-
 import { useI18n } from '@open-pencil/vue'
 
-import {
-  canConnectClaudeDesktop,
-  claudeCodeCommand,
-  connectClaudeDesktop,
-  claudeDesktopConfigPath,
-  mcpClientConfig,
-  mcpInstallCommand
-} from '@/app/onboarding/claude'
-import AppButton from '@/components/ui/button/AppButton.vue'
-import AppAlert from '@/components/ui/feedback/AppAlert.vue'
+import { canConnectMCPClients } from '@/app/automation/mcp/clients'
+import { mcpInstallCommand } from '@/app/onboarding/claude'
+import MCPClientList from '@/components/settings/mcp/MCPClientList.vue'
 import AppCopyField from '@/components/ui/input/AppCopyField.vue'
 
 import ClaudeStatus from './ClaudeStatus.vue'
 
 const { welcome } = useI18n()
-const desktopConfigFile = claudeDesktopConfigPath()
-const desktop = ref<{ state: 'idle' | 'connecting' | 'done' | 'error'; message?: string }>({
-  state: 'idle'
-})
-
-async function connectDesktop(): Promise<void> {
-  desktop.value = { state: 'connecting' }
-  try {
-    await connectClaudeDesktop()
-    desktop.value = { state: 'done' }
-  } catch (error) {
-    desktop.value = {
-      state: 'error',
-      message: error instanceof Error ? error.message : String(error)
-    }
-  }
-}
 
 const TOOLS = [
   ['get_page_tree', 'toolPageTree'],
@@ -48,7 +22,7 @@ const TOOLS = [
 <template>
   <div class="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
     <div class="flex flex-col gap-3">
-      <section class="rounded-xl border border-border bg-panel p-4">
+      <section v-if="!canConnectMCPClients" class="rounded-xl border border-border bg-panel p-4">
         <h3 class="text-[13px] font-semibold text-surface">{{ welcome.installTitle }}</h3>
         <p class="mt-0.5 mb-3 text-xs text-muted">{{ welcome.installHint }}</p>
         <AppCopyField
@@ -57,61 +31,7 @@ const TOOLS = [
           :copied-label="welcome.copied"
         />
       </section>
-      <section class="rounded-xl border border-border bg-panel p-4">
-        <h3 class="text-[13px] font-semibold text-surface">{{ welcome.claudeCodeTitle }}</h3>
-        <p class="mt-0.5 mb-3 text-xs text-muted">{{ welcome.claudeCodeHint }}</p>
-        <AppCopyField
-          :value="claudeCodeCommand"
-          :copy-label="welcome.copy"
-          :copied-label="welcome.copied"
-        />
-      </section>
-      <section class="rounded-xl border border-border bg-panel p-4">
-        <div class="flex items-start gap-3">
-          <div class="min-w-0 flex-1">
-            <h3 class="text-[13px] font-semibold text-surface">
-              {{ welcome.claudeDesktopTitle }}
-            </h3>
-            <p class="mt-0.5 mb-3 text-xs break-words text-muted">
-              {{ welcome.claudeDesktopHint({ file: desktopConfigFile }) }}
-            </p>
-          </div>
-          <AppButton
-            v-if="canConnectClaudeDesktop"
-            size="lg"
-            color="primary"
-            variant="solid"
-            class="shrink-0 rounded-lg px-4"
-            :disabled="desktop.state === 'connecting'"
-            data-test-id="welcome-connect-claude-desktop"
-            @click="connectDesktop"
-          >
-            {{ desktop.state === 'connecting' ? welcome.connecting : welcome.connectAction }}
-          </AppButton>
-        </div>
-        <AppAlert
-          v-if="desktop.state === 'done'"
-          tone="success"
-          :heading="welcome.desktopConnected"
-          class="mb-3"
-        />
-        <AppAlert
-          v-else-if="desktop.state === 'error' && desktop.message"
-          tone="error"
-          :heading="desktop.message"
-          class="mb-3"
-        />
-        <AppCopyField
-          :value="mcpClientConfig"
-          :copy-label="welcome.copyConfig"
-          :copied-label="welcome.copied"
-          :ui="{ value: 'whitespace-pre' }"
-        />
-        <p class="mt-3 text-xs text-muted">
-          <span class="font-medium text-surface">{{ welcome.otherClientTitle }}.</span>
-          {{ welcome.otherClientHint }}
-        </p>
-      </section>
+      <MCPClientList />
     </div>
 
     <aside class="self-start rounded-2xl border border-border bg-panel p-5">
