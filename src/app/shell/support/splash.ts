@@ -3,14 +3,20 @@ const SPLASH_ID = 'boot-splash'
 const MINIMUM_SHOWN_MS = 900
 const FADE_MS = 420
 
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
+}
+
 /** Fades the boot splash out once the app has mounted, then removes it. */
 export async function releaseBootSplash(doc: Document = document): Promise<void> {
   const splash = doc.getElementById(SPLASH_ID)
   if (!splash) return
   const wait = MINIMUM_SHOWN_MS - performance.now()
-  if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait))
+  if (wait > 0) await delay(wait)
   splash.dataset.leaving = ''
-  await new Promise((resolve) => setTimeout(resolve, FADE_MS))
+  await delay(FADE_MS)
   splash.remove()
 }
 
