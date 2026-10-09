@@ -21,6 +21,7 @@ import {
   frameTitlesLayer,
   sectionTitlesLayer
 } from '#vue/canvas/svg-overlay/layers/labels'
+import { layoutGridsLayer } from '#vue/canvas/svg-overlay/layers/layout-grids'
 import { measurementsLayer } from '#vue/canvas/svg-overlay/layers/measurement'
 import {
   codeFocusLayer,
@@ -85,6 +86,8 @@ export const SVG_OVERLAY_LAYERS: ReadonlySet<OverlayLayerId> = new Set<OverlayLa
 /** Everything a frame of the overlay depends on beyond the shared overlay context. */
 export interface ComposeInput extends OverlayContext {
   pageId: string
+  /** The document's version, which caches what only changes with the document. */
+  sceneVersion: number
   viewportSize: { width: number; height: number }
   dpr: number
   pageColor: Color
@@ -138,6 +141,7 @@ export function composeOverlay(input: ComposeInput): ComposedOverlay {
     ...sectionTitlesLayer(input),
     ...componentLabelsLayer(input),
     // Structure, over the design and under every editing outline.
+    ...layoutGridsLayer(input, input.pageId, input.sceneVersion),
     ...pixelGridLayer(input, { ...input.viewportSize, dpr: input.dpr, pageColor: input.pageColor }),
     ...componentSetBordersLayer(input, input.pageId),
     ...codeFocusLayer(input),

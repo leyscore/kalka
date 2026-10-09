@@ -115,6 +115,7 @@ export function useSVGOverlay(
       selectedIds: overlays.playing ? new Set() : state.selectedIds,
       measureText,
       pageId: state.currentPageId,
+      sceneVersion: state.sceneVersion,
       viewportSize: { width, height },
       dpr: window.devicePixelRatio,
       pageColor: state.pageColor,

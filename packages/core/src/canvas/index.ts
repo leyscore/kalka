@@ -36,6 +36,7 @@ export {
   hitTestSectionTitle,
   type LabelHitOptions
 } from './labels/hit-test'
+export { hasLayoutGrids, layoutGridPaints, type LayoutGridPaint } from './layout-grids'
 export { resolveFillColor } from './renderer/colors'
 export { pixelGridVisible } from './overlays/pixel-grid'
 export { computeMeasurementSegments, type MeasurementSegment } from './overlays/measurement'

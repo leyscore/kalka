@@ -17,6 +17,7 @@ function context(graph: SceneGraph, patch: Partial<OverlayContext> = {}): Compos
     selectedIds: new Set(),
     measureText: (text) => text.length * 6,
     pageId: graph.getPages()[0].id,
+    sceneVersion: 0,
     viewportSize: { width: 1000, height: 800 },
     dpr: 1,
     pageColor: { r: 1, g: 1, b: 1, a: 1 },

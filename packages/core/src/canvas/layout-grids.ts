@@ -75,44 +75,48 @@ function gridGeometry(grid: RawLayoutGrid): GridGeometry | null {
   }
 }
 
-function drawColumnGrid(
-  r: SkiaRenderer,
-  canvas: Canvas,
-  node: SceneNode,
-  grid: GridGeometry
-): void {
-  for (const section of layoutGuideSections(node, grid)) {
-    canvas.drawRect(r.ck.LTRBRect(section.start, 0, section.end, node.height), r.auxFill)
-  }
+/** A layout grid's color and the rectangles it covers, in the frame's own coordinates. */
+export interface LayoutGridPaint {
+  color: Color
+  rects: [x: number, y: number, width: number, height: number][]
 }
 
-function drawRowGrid(r: SkiaRenderer, canvas: Canvas, node: SceneNode, grid: GridGeometry): void {
-  for (const section of layoutGuideSections(node, grid)) {
-    canvas.drawRect(r.ck.LTRBRect(0, section.start, node.width, section.end), r.auxFill)
-  }
+/** Whether a layer has layout grids to show. */
+export function hasLayoutGrids(node: SceneNode): boolean {
+  return rawLayoutGrids(node).some((grid) => gridGeometry(grid) !== null)
 }
 
-function drawSquareGrid(
-  r: SkiaRenderer,
-  canvas: Canvas,
-  node: SceneNode,
-  grid: GridGeometry
-): void {
-  for (let x = grid.offset; x < node.width; x += grid.sectionSize) {
-    canvas.drawRect(r.ck.LTRBRect(x, 0, x + 1, node.height), r.auxFill)
-  }
-  for (let y = grid.offset; y < node.height; y += grid.sectionSize) {
-    canvas.drawRect(r.ck.LTRBRect(0, y, node.width, y + 1), r.auxFill)
-  }
-}
-
-export function drawLayoutGrids(r: SkiaRenderer, canvas: Canvas, node: SceneNode): void {
+/** What a frame's visible layout grids cover: column and row bands, or a square grid's lines. */
+export function layoutGridPaints(node: SceneNode): LayoutGridPaint[] {
+  const paints: LayoutGridPaint[] = []
   for (const rawGrid of rawLayoutGrids(node)) {
     const grid = gridGeometry(rawGrid)
     if (!grid) continue
-    r.auxFill.setColor(r.ck.Color4f(grid.color.r, grid.color.g, grid.color.b, grid.color.a))
-    if (grid.pattern === 'GRID') drawSquareGrid(r, canvas, node, grid)
-    else if (grid.pattern === 'ROWS') drawRowGrid(r, canvas, node, grid)
-    else drawColumnGrid(r, canvas, node, grid)
+    const rects: LayoutGridPaint['rects'] = []
+    if (grid.pattern === 'GRID') {
+      for (let x = grid.offset; x < node.width; x += grid.sectionSize)
+        rects.push([x, 0, 1, node.height])
+      for (let y = grid.offset; y < node.height; y += grid.sectionSize)
+        rects.push([0, y, node.width, 1])
+    } else {
+      for (const section of layoutGuideSections(node, grid)) {
+        const size = section.end - section.start
+        rects.push(
+          grid.pattern === 'ROWS'
+            ? [0, section.start, node.width, size]
+            : [section.start, 0, size, node.height]
+        )
+      }
+    }
+    paints.push({ color: grid.color, rects })
+  }
+  return paints
+}
+
+export function drawLayoutGrids(r: SkiaRenderer, canvas: Canvas, node: SceneNode): void {
+  for (const { color, rects } of layoutGridPaints(node)) {
+    r.auxFill.setColor(r.ck.Color4f(color.r, color.g, color.b, color.a))
+    for (const [x, y, width, height] of rects)
+      canvas.drawRect(r.ck.XYWHRect(x, y, width, height), r.auxFill)
   }
 }
