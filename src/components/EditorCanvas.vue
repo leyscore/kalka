@@ -13,6 +13,7 @@ import IconLucidePanelLeft from '~icons/lucide/panel-left'
 import IconLucidePanelRight from '~icons/lucide/panel-right'
 import IconLucidePanelTop from '~icons/lucide/panel-top'
 
+import { hitTestIssueMarkers } from '@open-pencil/core/canvas'
 import {
   AUTO_LAYOUT_PADDING_EDITOR_OFFSET_X,
   AUTO_LAYOUT_PADDING_EDITOR_OFFSET_Y,
@@ -107,7 +108,6 @@ if (domScene) {
     onPresented: ({ sceneVersion }) =>
       store.preparationController.acknowledgePresentation(sceneVersion)
   })
-  useSVGOverlay(svgOverlayRef, store, { getRenderState })
 }
 
 useCanvas(sceneCanvasRef, store, {
@@ -166,12 +166,25 @@ watch(isActivePane, (active) => {
 })
 onUnmounted(cleanupInteractions)
 
+// Editor chrome over the DOM scene: everything but the text caret moves from the overlay canvas.
+const svgOverlay = domScene
+  ? useSVGOverlay(svgOverlayRef, store, {
+      getRenderState,
+      showRulers: () =>
+        appRuntimeConfig.showRulers && store.state.showRulers && paneView.value.play === null,
+      getOverlayObstacles: () => canvasOverlayObstacles(canvasRef.value)
+    })
+  : null
+const hitTestDrawnIssueMarker = svgOverlay
+  ? (x: number, y: number) => hitTestIssueMarkers(svgOverlay.issueMarkers(), x, y)
+  : hitTestIssueMarker
+
 const { activeTab: propertiesTab } = useAIChat()
 const { detailMarker: hoveredIssueMarker, cursor: issueMarkerCursor } = useCanvasIssueMarkers(
   canvasRef,
   store,
   {
-    hitTest: hitTestIssueMarker,
+    hitTest: hitTestDrawnIssueMarker,
     onHover: (marker) => store.designCheck.highlightMarker(marker?.nodeIds ?? null),
     onActivate: (marker) => {
       activatePane()

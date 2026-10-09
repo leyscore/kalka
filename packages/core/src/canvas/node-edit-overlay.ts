@@ -69,7 +69,9 @@ export function drawNodeEditOverlay(
   r: SkiaRenderer,
   canvas: Canvas,
   graph: SceneGraph,
-  editState: RenderOverlays['nodeEditState']
+  editState: RenderOverlays['nodeEditState'],
+  /** False when another backend draws the editing chrome: only the live shape is drawn. */
+  chrome = true
 ): void {
   if (!editState) return
   const { segments, selectedVertexIndices } = editState
@@ -95,6 +97,7 @@ export function drawNodeEditOverlay(
 
   // Draw the node shape with its original fills/strokes/effects using live vertices
   drawLiveShape(r, canvas, graph, editState.nodeId, vertices, segments, regions)
+  if (!chrome) return
 
   // Draw technical stroke outline over the shape
   drawTechStroke(r, canvas, graph, editState.nodeId, vertices, segments, regions)

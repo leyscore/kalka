@@ -49,6 +49,10 @@ export interface OverlayContext {
   overlays: RenderOverlays
   selectedIds: ReadonlySet<string>
   measureText: MeasureText
+  /** The pane's size in screen pixels, for overlays laid out against its edges. */
+  viewportSize?: { width: number; height: number }
+  /** The page's color, which canvas labels contrast with. */
+  pageColor?: Color
 }
 
 const WHITE = css({ r: 1, g: 1, b: 1, a: 1 })

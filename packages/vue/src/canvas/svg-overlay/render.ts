@@ -70,7 +70,8 @@ function vnode(shape: OverlayShape, key: number): VNode {
           'font-size': shape.fontSize,
           'font-weight': shape.fontWeight,
           'font-family': shape.fontFamily ?? 'Inter, system-ui, sans-serif',
-          'text-anchor': shape.anchor
+          'text-anchor': shape.anchor,
+          'dominant-baseline': shape.baseline === 'top' ? 'text-before-edge' : undefined
         },
         shape.text
       )

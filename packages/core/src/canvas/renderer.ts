@@ -285,7 +285,8 @@ export class SkiaRenderer {
   declare drawNodeEditOverlay: (
     canvas: Canvas,
     graph: SceneGraph,
-    editState?: RenderOverlays['nodeEditState']
+    editState?: RenderOverlays['nodeEditState'],
+    chrome?: boolean
   ) => void
   declare drawPenOverlay: (canvas: Canvas, penState: RenderOverlays['penState']) => void
   declare drawPresenceCursors: (

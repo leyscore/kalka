@@ -34,6 +34,8 @@ export type OverlayShape =
       fontFamily?: string
       /** Where `x` sits along the text; its start by default. */
       anchor?: 'start' | 'middle' | 'end'
+      /** Whether `y` is the text's baseline (default) or the top of its line. */
+      baseline?: 'alphabetic' | 'top'
       opacity?: number
     }
   | { type: 'group'; matrix?: Mat3; opacity?: number; children: OverlayShape[] }
