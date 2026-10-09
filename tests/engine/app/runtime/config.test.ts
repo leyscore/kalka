@@ -32,10 +32,12 @@ describe('app runtime configuration', () => {
     expect(parseAppRuntimeConfig('?renderer=tiled', 'retained').sceneRenderer).toBe('tiled')
   })
 
-  test('draws the scene as DOM only when asked', () => {
+  test('draws the scene as DOM unless a Skia renderer is asked for', () => {
+    expect(parseAppRuntimeConfig('').domScene).toBe(true)
+    expect(parseAppRuntimeConfig('', 'tiled').domScene).toBe(true)
     expect(parseAppRuntimeConfig('?renderer=dom').domScene).toBe(true)
-    expect(parseAppRuntimeConfig('?renderer=dom', 'tiled').sceneRenderer).toBe('tiled')
-    expect(parseAppRuntimeConfig('', 'tiled').domScene).toBe(false)
+    expect(parseAppRuntimeConfig('?renderer=skia').domScene).toBe(false)
+    expect(parseAppRuntimeConfig('?renderer=tiled').domScene).toBe(false)
   })
 
   test('uses production-safe defaults for absent or unknown values', () => {
@@ -47,7 +49,7 @@ describe('app runtime configuration', () => {
       showRulers: true,
       sceneRenderer: 'retained',
       sceneRendererOverride: false,
-      domScene: false,
+      domScene: true,
       collaborationTransport: 'default',
       collaborationRelayURL: null
     })

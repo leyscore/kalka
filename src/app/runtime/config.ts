@@ -12,7 +12,10 @@ export interface AppRuntimeConfig {
   showRulers: boolean
   sceneRenderer: SceneRendererMode
   sceneRendererOverride: boolean
-  /** Draw the scene as real DOM (`?renderer=dom`) instead of with Skia. Kalka's engine. */
+  /**
+   * Draw the scene as real DOM, Kalka's engine. Skia stays reachable with `?renderer=skia`
+   * only to compare the two until it is removed at the end of jalon 1.
+   */
   domScene: boolean
   collaborationTransport: CollaborationTransportMode
   collaborationRelayURL: string | null
@@ -34,7 +37,7 @@ export function parseAppRuntimeConfig(
     showRulers: !params.has('no-rulers'),
     sceneRenderer,
     sceneRendererOverride: renderer === 'tiled' || renderer === 'retained',
-    domScene: renderer === 'dom',
+    domScene: renderer !== 'skia' && renderer !== 'tiled' && renderer !== 'retained',
     collaborationTransport: params.get('collabTransport') === 'test' ? 'test' : 'default',
     collaborationRelayURL: params.get('collabRelay')
   }
