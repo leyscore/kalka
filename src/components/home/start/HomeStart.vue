@@ -72,7 +72,7 @@ const learnCard =
           v-for="(preset, index) in presets"
           :key="preset.id"
           type="button"
-          class="group flex flex-col rounded-xl border glass p-3.5 text-left transition-[border-color,background-color] duration-150 hover:border-accent hover:bg-accent/5 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
+          class="group flex flex-col rounded-xl border glass p-3.5 text-left transition-[border-color,background-color,translate,box-shadow,scale] duration-200 ease-out hover:-translate-y-0.5 hover:border-accent hover:bg-accent/5 hover:shadow-lg hover:shadow-accent/10 active:scale-[0.98] motion-reduce:hover:translate-y-0 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
           :class="index === 0 ? 'border-accent/60' : 'border-border'"
           :data-test-id="`home-preset-${preset.id}`"
           @click="startWithFrame(preset.name, preset.width, preset.height)"

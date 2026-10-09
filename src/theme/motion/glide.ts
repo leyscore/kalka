@@ -10,6 +10,8 @@ export const glidePills = {
   hover: `rounded-md bg-hover ${glideMotion}`,
   /** The pill behind the active item of a panel's tabs or a segmented control. */
   active: `rounded-md bg-panel-field-hover shadow-sm ${glideMotion}`,
+  /** The chosen option of a segmented control: a raised chip in the track. */
+  segment: `rounded-sm bg-panel shadow-sm shadow-black/20 ring-[0.5px] ring-border ${glideMotion}`,
   /** The accent pill behind the active tool. */
   accent: `rounded-lg bg-accent shadow-[0_2px_10px_-2px] shadow-accent/60 ${glideMotion}`
 } as const

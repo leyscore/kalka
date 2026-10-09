@@ -3,7 +3,7 @@ import { tv } from 'tailwind-variants'
 const appButton = tv({
   slots: {
     base: [
-      'inline-flex items-center justify-center gap-1.5 font-medium whitespace-nowrap select-none transition-colors',
+      'inline-flex items-center justify-center gap-1.5 font-medium whitespace-nowrap select-none transition-[color,background-color,border-color,box-shadow,scale] duration-150 active:scale-[0.97] motion-reduce:active:scale-100',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50',
       'disabled:cursor-not-allowed disabled:opacity-50'
     ],
