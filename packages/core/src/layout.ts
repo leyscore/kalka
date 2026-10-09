@@ -181,14 +181,12 @@ function configureFlexContainer(
   yogaNode.setPadding(Edge.Left, node.paddingLeft)
 
   const primaryGap = node.primaryAxisAlign === 'SPACE_BETWEEN' ? 0 : node.itemSpacing
-  yogaNode.setGap(
-    Gutter.Column,
-    node.layoutMode === 'HORIZONTAL' ? primaryGap : node.counterAxisSpacing
-  )
-  yogaNode.setGap(
-    Gutter.Row,
-    node.layoutMode === 'HORIZONTAL' ? node.counterAxisSpacing : primaryGap
-  )
+  // Figma leaves the spacing between wrapped rows unset when it follows the item spacing.
+  const counterGap = Number.isFinite(node.counterAxisSpacing)
+    ? node.counterAxisSpacing
+    : node.itemSpacing
+  yogaNode.setGap(Gutter.Column, node.layoutMode === 'HORIZONTAL' ? primaryGap : counterGap)
+  yogaNode.setGap(Gutter.Row, node.layoutMode === 'HORIZONTAL' ? counterGap : primaryGap)
 
   applyMinMaxConstraints(yogaNode, node)
 }

@@ -117,6 +117,6 @@ export function drawLayoutGrids(r: SkiaRenderer, canvas: Canvas, node: SceneNode
   for (const { color, rects } of layoutGridPaints(node)) {
     r.auxFill.setColor(r.ck.Color4f(color.r, color.g, color.b, color.a))
     for (const [x, y, width, height] of rects)
-      canvas.drawRect(r.ck.XYWHRect(x, y, width, height), r.auxFill)
+      canvas.drawRect(r.ck.LTRBRect(x, y, x + width, y + height), r.auxFill)
   }
 }

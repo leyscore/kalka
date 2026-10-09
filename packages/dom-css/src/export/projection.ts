@@ -214,12 +214,34 @@ function textWhiteSpace(node: SceneNode): string {
   return 'pre-wrap'
 }
 
+/**
+ * A line has no height, so an outline around its box draws nothing. A solid line is a shadow as
+ * thick as its stroke, centered on it, which leaves layout alone; a dashed one is a top border.
+ */
+function addLineStroke(
+  style: DesignStyleDeclaration,
+  weight: number,
+  borderStyle: string,
+  color: string,
+  css: FieldCSS
+): void {
+  if (borderStyle === 'solid') {
+    style['box-shadow'] = `0 0 0 ${px(weight / 2)} ${color}`
+    return
+  }
+  style['border-top'] = `${css('strokeWeight', px(weight))} ${borderStyle} ${color}`
+}
+
 function addStroke(style: DesignStyleDeclaration, node: SceneNode, css: FieldCSS): void {
   const stroke = node.strokes.at(0)
   const literalColor = strokeColorToCSS(stroke)
   if (!literalColor || !stroke) return
   const color = css('strokes/0/color', literalColor)
   const borderStyle = node.dashPattern.length > 0 ? 'dashed' : 'solid'
+  if (node.type === 'LINE') {
+    addLineStroke(style, stroke.weight, borderStyle, color, css)
+    return
+  }
   // A stroke takes no room in auto layout unless the design says so: an outline draws it
   // without moving the content, inside, centered on, or outside the edge.
   if (!node.independentStrokeWeights && !node.strokesIncludedInLayout) {
@@ -269,14 +291,18 @@ function addPadding(style: DesignStyleDeclaration, node: SceneNode, css: FieldCS
 }
 
 function addFlexGap(style: DesignStyleDeclaration, node: SceneNode, css: FieldCSS): void {
-  if (node.itemSpacing <= 0 && node.counterAxisSpacing <= 0) return
+  // Figma leaves the spacing between wrapped rows unset when it follows the item spacing.
+  const counterSpacing = Number.isFinite(node.counterAxisSpacing)
+    ? node.counterAxisSpacing
+    : node.itemSpacing
+  if (node.itemSpacing <= 0 && counterSpacing <= 0) return
   const item = css('itemSpacing', px(node.itemSpacing))
-  if (node.counterAxisSpacing <= 0) {
+  if (counterSpacing <= 0 || counterSpacing === node.itemSpacing) {
     style.gap = item
     return
   }
 
-  const counter = css('counterAxisSpacing', px(node.counterAxisSpacing))
+  const counter = css('counterAxisSpacing', px(counterSpacing))
   if (node.layoutMode === 'HORIZONTAL') {
     if (node.itemSpacing > 0) style['column-gap'] = item
     style['row-gap'] = counter

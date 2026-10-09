@@ -1,3 +1,5 @@
+import * as v from 'valibot'
+
 /**
  * The desktop bridge Electron's preload exposes. The modules next to this file stand in for
  * `@tauri-apps/*` (see `vite/aliases.ts`), so the app keeps its Tauri-shaped calls while the
@@ -32,13 +34,31 @@ function isCallResult(value: unknown): value is CallResult {
 
 /**
  * Calls a main-process handler. Rejects as Tauri does, with the value the handler failed with:
- * a message string, or an object such as `{code, message}`.
+ * a message string, or an object such as `{code, message}`. During development the page can
+ * reload ahead of the main process, so a bare value and an error in the older format still read.
  */
 export async function call<T = unknown>(name: string, ...args: unknown[]): Promise<T> {
-  const result: unknown = await native().call(name, ...args)
-  if (!isCallResult(result)) throw new Error(`Malformed reply to ${name}`)
+  let result: unknown
+  try {
+    result = await native().call(name, ...args)
+  } catch (error) {
+    throw unwrapError(error)
+  }
+  if (!isCallResult(result)) return result as T
   // Rethrows the handler's own value, as Tauri rejects with it.
   // oxlint-disable-next-line no-throw-literal
   if (!result.ok) throw result.error
   return result.value as T
+}
+
+/** An error from an older main process carries its value in the message, after a marker. */
+function unwrapError(error: unknown): unknown {
+  const message = error instanceof Error ? error.message : String(error)
+  const marker = message.indexOf('KALKA_ERROR:')
+  if (marker === -1) return message
+  const parsed = v.safeParse(
+    v.pipe(v.string(), v.parseJson()),
+    message.slice(marker + 'KALKA_ERROR:'.length)
+  )
+  return parsed.success ? parsed.output : message
 }

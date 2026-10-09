@@ -63,3 +63,39 @@ describe('truncated text', () => {
     expect(text({ textTruncation: 'DISABLED' })?.overflow).toBeUndefined()
   })
 })
+
+describe('lines and wrapped rows', () => {
+  it('draws a solid line as a centered band as thick as its stroke', () => {
+    const graph = new SceneGraph()
+    const line = graph.createNode('LINE', graph.getPages()[0].id, {
+      width: 300,
+      height: 0,
+      strokes: [
+        {
+          type: 'SOLID',
+          color: { r: 0, g: 0, b: 0, a: 1 },
+          opacity: 1,
+          visible: true,
+          weight: 2,
+          align: 'CENTER'
+        }
+      ]
+    })
+    const [root] = sceneNodeToDesignDocument(graph, line.id).children
+    const style = root?.type === 'element' ? root.inlineStyle : undefined
+    expect(style?.['box-shadow']).toBe('0 0 0 1px #000000')
+    expect(style?.outline).toBeUndefined()
+  })
+
+  it('spaces wrapped rows like items when the file leaves their spacing unset', () => {
+    const graph = new SceneGraph()
+    const frame = graph.createNode('FRAME', graph.getPages()[0].id, {
+      layoutMode: 'HORIZONTAL',
+      layoutWrap: 'WRAP',
+      itemSpacing: 20,
+      counterAxisSpacing: Number.NaN
+    })
+    const [root] = sceneNodeToDesignDocument(graph, frame.id).children
+    expect(root?.type === 'element' && root.inlineStyle?.gap).toBe('20px')
+  })
+})
