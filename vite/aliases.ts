@@ -4,6 +4,11 @@ export function createOpenPencilAliases(rootDir: string) {
   const emptyNodeModule = resolve(rootDir, 'vite/empty-node-module.ts')
 
   return [
+    // The desktop app runs on Electron: Tauri's modules are stand-ins over its IPC bridge.
+    {
+      find: /^@tauri-apps\/(api\/(?:core|event|path|window|webviewWindow)|plugin-(?:fs|dialog|shell|clipboard-manager|opener|os|process|updater))$/,
+      replacement: `${resolve(rootDir, 'src/app/platform/tauri')}/$1`
+    },
     { find: /^fs$/, replacement: emptyNodeModule },
     { find: /^path$/, replacement: emptyNodeModule },
     { find: '@', replacement: resolve(rootDir, 'src') },

@@ -1,0 +1,14 @@
+{
+  "name": "@kalka/electron",
+  "private": true,
+  "type": "module",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "bun build src/main.ts --target=node --format=esm --outfile=dist/main.js --external electron && bun build src/preload.ts --target=node --format=cjs --outfile=dist/preload.cjs --external electron",
+    "start": "bun run build && electron .",
+    "dev": "bun run build && KALKA_DEV_URL=http://localhost:1420 electron ."
+  },
+  "devDependencies": {
+    "electron": "44.4.5"
+  }
+}
