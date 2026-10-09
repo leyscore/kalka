@@ -81,6 +81,16 @@ async function renderRaster(
   if (!target) return null
   const scale = options.scale ?? 1
 
+  const drawn = await context?.rasterize?.({
+    graph: request.graph,
+    pageId: target.pageId,
+    nodeIds: target.nodeIds,
+    scale,
+    format: options.format,
+    quality: options.quality
+  })
+  if (drawn) return drawn
+
   if (context?.canvasKit && context.renderer) {
     return renderNodesToImage(
       context.canvasKit,

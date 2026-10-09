@@ -10,7 +10,8 @@ export const ARTBOARD_SANDBOX = 'allow-same-origin'
 export const ARTBOARD_CSP =
   "default-src 'none'; style-src 'unsafe-inline'; img-src data: blob:; font-src data: blob:"
 
-const ARTBOARD_CSS = [
+/** The base stylesheet of every artboard document, which raster exports share. */
+export const ARTBOARD_CSS = [
   'html,body{margin:0;padding:0;background:transparent;overflow:hidden}',
   '*,*::before,*::after{box-sizing:border-box}',
   // A layer's text keeps the font the projection writes; this is only the fallback.

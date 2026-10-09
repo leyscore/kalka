@@ -1,6 +1,7 @@
 import type { Editor, EditorState } from '@open-pencil/core/editor'
 import type { BuiltinIOFormatId, ExportRequest, IORegistry } from '@open-pencil/core/io'
 
+import { domRasterize } from '@/app/document/export/dom-raster'
 import {
   bundleExportFiles,
   createExportTargetActions,
@@ -44,7 +45,9 @@ export function createDocumentExportActions(
       formatId,
       { graph: editor.graph, target },
       exportOptions,
-      editor.renderer ? { canvasKit: editor.renderer.ck, renderer: editor.renderer } : undefined
+      editor.renderer
+        ? { canvasKit: editor.renderer.ck, renderer: editor.renderer, rasterize: domRasterize }
+        : { rasterize: domRasterize }
     )
 
     const baseName = getExportBaseName(editor.graph, target)

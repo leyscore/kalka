@@ -100,6 +100,7 @@
 ### Changed
 
 - The interface is calmer and sharper: text renders antialiased, selected layers get a blue tint instead of a solid fill, selection, text selection and agent marks on the canvas use Kalka blue, the toolbar floats with a frosted background, and menus and popovers cast softer, deeper shadows.
+- PNG and JPG exports in the desktop app are drawn by the browser from the same HTML and CSS as the canvas, so they match what you see; copies as PNG and agents' screenshots use it too. WebP and the web app still draw with CanvasKit.
 - The app is now Kalka: its blue and paper colors, the Geist, Bricolage Grotesque and JetBrains Mono fonts, its name, icons, window and menu titles, `kalka://` links, and the folder where the MCP server finds the running app (`Kalka` on macOS and Windows, `kalka` on Linux).
 - With **Snap to Pixel Grid** on, moved layers and resized edges land on whole pixels at any zoom, and drawn layers start and end on whole pixels, as in Figma; zoomed in, moves and resizes could leave fractions before, and drawing was not snapped.
 - Layers inside components and instances are outlined in purple when hovered or selected, with a purple size label, as in Figma; they were blue.

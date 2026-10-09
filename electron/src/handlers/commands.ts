@@ -12,6 +12,7 @@ import { bridgeCommand, connectMCPClient, isMCPClientID, listMCPClients } from '
 import { buildFigFile } from './fig'
 import { setChecked, setRecentFiles } from './menu'
 import { takePendingOpen, takePendingRooms } from './pending'
+import { renderHTMLImage, type RenderHTMLImageRequest } from './raster'
 import { loginShellPath } from './shell'
 
 const AGENT_EXECUTABLES = [
@@ -202,6 +203,7 @@ const commands: Record<string, (args: never) => unknown> = {
     return connectMCPClient(id, (command) => which(command, path), path)
   },
   proxy_http_request: ({ request }: { request: ProxyRequest }) => proxyHttpRequest(request),
+  render_html_image: ({ request }: { request: RenderHTMLImageRequest }) => renderHTMLImage(request),
   build_fig_file: (input: Parameters<typeof buildFigFile>[0]) => buildFigFile(input)
 }
 

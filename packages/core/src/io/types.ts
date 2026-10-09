@@ -59,9 +59,26 @@ export interface ExportRequest {
   fileName?: string
 }
 
+/** What a raster export draws: layers of one page, at a scale, in a format. */
+export interface NodeRasterRequest {
+  graph: SceneGraph
+  pageId: string
+  nodeIds: string[]
+  scale: number
+  format: RasterExportFormat
+  quality?: number
+}
+
+/**
+ * Draws layers with the engine that draws the canvas. Returns null when it cannot, and the export
+ * falls back to CanvasKit.
+ */
+export type NodeRasterizer = (request: NodeRasterRequest) => Promise<Uint8Array | null>
+
 export interface IOContext {
   canvasKit?: CanvasKit
   renderer?: SkiaRenderer
+  rasterize?: NodeRasterizer
 }
 
 export interface FigWriteOptions {

@@ -57,6 +57,8 @@ export type {
   ExportResult,
   HTMLExportOptions,
   IOContext,
+  NodeRasterRequest,
+  NodeRasterizer,
   FigWriteOptions,
   RasterExportOptions,
   SVGExportOptions,

@@ -11,6 +11,7 @@ import {
 import { renderNodesToImage } from '@open-pencil/core/io/formats/raster'
 import type { SceneGraph } from '@open-pencil/scene-graph'
 
+import { domRasterize } from '@/app/document/export/dom-raster'
 import type { ExportOptions } from '@/app/document/export/types'
 import { pickBrowserSaveFile, supportsFileSystemAccess } from '@/app/document/io/capability'
 import { isTauri } from '@/app/tauri/env'
@@ -108,11 +109,19 @@ export function createExportTargetActions(editor: Editor, state: EditorState, io
     format: RasterExportFormat,
     pageId = state.currentPageId
   ): Promise<Uint8Array | null> {
-    const renderer = editor.renderer
-    if (!renderer) return null
     const ids = nodeIds.length > 0 ? nodeIds : editor.graph.getChildren(pageId).map((n) => n.id)
     if (ids.length === 0) return null
     const ownerPageId = findPageId(editor.graph, ids[0]) ?? pageId
+    const drawn = await domRasterize({
+      graph: editor.graph,
+      pageId: ownerPageId,
+      nodeIds: ids,
+      scale,
+      format
+    })
+    if (drawn) return drawn
+    const renderer = editor.renderer
+    if (!renderer) return null
     return renderNodesToImage(renderer.ck, renderer, editor.graph, ownerPageId, ids, {
       scale,
       format
