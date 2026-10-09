@@ -70,19 +70,19 @@ async function exportDiagnostics() {
     <template #title>{{ diagnosticMessages.title }}</template>
     <template #description>{{ diagnosticMessages.description }}</template>
     <SettingsGroup>
-      <label class="flex items-center justify-between gap-4 px-3 py-2.5">
+      <label class="flex min-h-11 items-center justify-between gap-4 px-3.5 py-2">
         <span
           ><span class="block text-xs text-surface">{{ diagnosticMessages.localDiagnostics }}</span
-          ><span class="block text-[10px] text-muted">{{
+          ><span class="block text-[11px] text-muted">{{
             diagnosticMessages.localDiagnosticsDescription
           }}</span></span
         >
         <AppSwitch v-model="diagnosticsEnabled" :label="diagnosticMessages.localDiagnostics" />
       </label>
-      <label class="flex items-center justify-between gap-4 px-3 py-2.5">
+      <label class="flex min-h-11 items-center justify-between gap-4 px-3.5 py-2">
         <span
           ><span class="block text-xs text-surface">{{ diagnosticMessages.usageHistory }}</span
-          ><span v-if="usageEnabled" class="block text-[10px] text-muted">{{
+          ><span v-if="usageEnabled" class="block text-[11px] text-muted">{{
             diagnosticMessages.usageHistoryDescription
           }}</span></span
         >

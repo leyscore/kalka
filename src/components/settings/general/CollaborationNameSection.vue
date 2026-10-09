@@ -23,7 +23,7 @@ function save() {
     <template #title>{{ messages.nameSettingTitle }}</template>
     <template #description>{{ messages.nameSettingDescription }}</template>
     <SettingsGroup>
-      <div class="px-3 py-2.5">
+      <div class="px-3.5 py-2.5">
         <AppInput
           v-model="draft"
           data-test-id="settings-collab-name"

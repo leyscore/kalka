@@ -153,7 +153,7 @@ async function remove() {
 
           <template v-if="!isACP">
             <div class="flex items-center gap-2 pt-1">
-              <p class="text-[10px] font-medium uppercase tracking-wide text-muted">
+              <p class="text-[11px] font-medium text-muted">
                 {{ ai.modelConfiguration }}
               </p>
               <div class="h-px flex-1 bg-border" />
@@ -196,7 +196,7 @@ async function remove() {
             </ProviderSettingsField>
 
             <div class="flex items-center gap-2 pt-1">
-              <p class="text-[10px] font-medium uppercase tracking-wide text-muted">
+              <p class="text-[11px] font-medium text-muted">
                 {{ ai.connectionSettings }}
               </p>
               <div class="h-px flex-1 bg-border" />
@@ -261,16 +261,16 @@ async function remove() {
             v-if="!isACP"
             v-model:open="advancedOpen"
             :ui="{
-              root: 'rounded border border-border',
+              root: 'rounded-xl border border-hairline bg-group',
               trigger: 'px-2.5 py-2 text-[11px] text-muted hover:text-surface',
               icon: 'size-3'
             }"
           >
             <template #label>{{ ai.advancedModelSettings }}</template>
-            <div class="flex flex-col gap-3 border-t border-border p-2.5">
+            <div class="flex flex-col gap-3 border-t border-hairline p-2.5">
               <div>
                 <p class="text-[11px] font-medium text-surface">{{ ai.modelCapabilities }}</p>
-                <p class="mt-0.5 text-[10px] text-muted">
+                <p class="mt-0.5 text-[11px] text-muted">
                   {{ knownModel ? ai.modelCapabilitiesDetected : ai.modelCapabilitiesManual }}
                 </p>
               </div>
@@ -278,7 +278,7 @@ async function remove() {
               <div class="flex flex-col gap-2">
                 <div class="flex items-center justify-between gap-3">
                   <span class="text-[11px] text-muted">{{ ai.modelCapabilityTools }}</span>
-                  <span v-if="knownModel" class="text-[10px] text-surface">
+                  <span v-if="knownModel" class="text-[11px] text-surface">
                     {{
                       knownCapabilities.includes('tools') ? common.supported : common.unsupported
                     }}
@@ -287,7 +287,7 @@ async function remove() {
                 </div>
                 <div class="flex items-center justify-between gap-3">
                   <span class="text-[11px] text-muted">{{ ai.modelCapabilityVision }}</span>
-                  <span v-if="knownModel" class="text-[10px] text-surface">
+                  <span v-if="knownModel" class="text-[11px] text-surface">
                     {{
                       knownCapabilities.includes('vision') ? common.supported : common.unsupported
                     }}
@@ -302,7 +302,7 @@ async function remove() {
                   :label="ai.thinkingLevel"
                   :options="thinkingLevelOptions"
                 />
-                <p class="mt-1 text-[10px] text-muted">{{ ai.thinkingLevelDescription }}</p>
+                <p class="mt-1 text-[11px] text-muted">{{ ai.thinkingLevelDescription }}</p>
               </ProviderSettingsField>
 
               <ProviderSettingsField v-if="isHarness" :label="ai.harnessToolPermissions">
@@ -317,9 +317,9 @@ async function remove() {
                 />
               </ProviderSettingsField>
 
-              <div class="border-t border-border pt-2.5">
+              <div class="border-t border-hairline pt-2.5">
                 <p class="text-[11px] font-medium text-surface">{{ ai.outputLimit }}</p>
-                <p class="mt-0.5 text-[10px] text-muted">
+                <p class="mt-0.5 text-[11px] text-muted">
                   {{ ai.outputLimitAutomatic }} ·
                   {{ outputTokenRecommendation.toLocaleString() }}
                   {{ common.tokens }}

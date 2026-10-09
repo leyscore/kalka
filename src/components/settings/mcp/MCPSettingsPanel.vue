@@ -45,7 +45,7 @@ const { restart, chooseRootDirectory } = useMCPSettings()
       <SettingsRow :label="automation.status"
         ><span class="text-xs text-surface" role="status">{{ statusMessage }}</span></SettingsRow
       >
-      <div class="px-3 py-2.5">
+      <div class="px-3.5 py-2.5">
         <p class="mb-1 text-xs font-medium text-surface">{{ automation.address }}</p>
         <AppCopyField
           look="plain"
@@ -77,7 +77,7 @@ const { restart, chooseRootDirectory } = useMCPSettings()
           data-test-id="settings-mcp-selection-scope"
         />
       </SettingsRow>
-      <div class="flex flex-col gap-2 px-3 py-2.5">
+      <div class="flex flex-col gap-2 px-3.5 py-2.5">
         <p class="text-xs font-medium text-surface">{{ automation.rootDirectory }}</p>
         <p class="break-all font-mono text-xs text-surface">
           {{ mcpRootDirectory || automation.rootDirectoryDefault }}

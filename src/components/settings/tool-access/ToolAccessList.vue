@@ -22,7 +22,7 @@ const emit = defineEmits<{
       <SettingsDisclosure
         v-if="group.tools.length"
         :open="expanded[group.effect]"
-        class="border-b border-border"
+        class="border-b border-hairline"
         @update:open="emit('update:expanded', group.effect, $event)"
       >
         <template #label>{{ group.label }}</template>

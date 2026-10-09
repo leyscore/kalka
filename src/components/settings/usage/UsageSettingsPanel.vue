@@ -19,22 +19,22 @@ const { summary } = useUsageSettings()
     <template #description>{{ diagnosticMessages.usageDescription }}</template>
 
     <div class="grid grid-cols-2 gap-2">
-      <div class="rounded border border-border p-3">
-        <div class="text-[10px] text-muted">{{ diagnosticMessages.usageRequests }}</div>
+      <div class="rounded-xl border border-hairline bg-group p-3.5">
+        <div class="text-[11px] text-muted">{{ diagnosticMessages.usageRequests }}</div>
         <div class="mt-1 text-sm font-semibold text-surface">{{ summary.requests }}</div>
       </div>
-      <div class="rounded border border-border p-3">
-        <div class="text-[10px] text-muted">{{ diagnosticMessages.usageCompleted }}</div>
+      <div class="rounded-xl border border-hairline bg-group p-3.5">
+        <div class="text-[11px] text-muted">{{ diagnosticMessages.usageCompleted }}</div>
         <div class="mt-1 text-sm font-semibold text-surface">{{ summary.completedRequests }}</div>
       </div>
-      <div class="rounded border border-border p-3">
-        <div class="text-[10px] text-muted">{{ diagnosticMessages.usageInputTokens }}</div>
+      <div class="rounded-xl border border-hairline bg-group p-3.5">
+        <div class="text-[11px] text-muted">{{ diagnosticMessages.usageInputTokens }}</div>
         <div class="mt-1 text-sm font-semibold text-surface">
           {{ formatTokenValue(summary.inputTokens) }}
         </div>
       </div>
-      <div class="rounded border border-border p-3">
-        <div class="text-[10px] text-muted">{{ diagnosticMessages.usageOutputTokens }}</div>
+      <div class="rounded-xl border border-hairline bg-group p-3.5">
+        <div class="text-[11px] text-muted">{{ diagnosticMessages.usageOutputTokens }}</div>
         <div class="mt-1 text-sm font-semibold text-surface">
           {{ formatTokenValue(summary.outputTokens) }}
         </div>
@@ -42,7 +42,7 @@ const { summary } = useUsageSettings()
     </div>
 
     <div class="flex flex-col gap-2">
-      <h4 class="text-xs font-semibold text-surface">{{ diagnosticMessages.usageByModel }}</h4>
+      <h4 class="text-[11px] font-medium text-muted">{{ diagnosticMessages.usageByModel }}</h4>
       <div v-if="summary.models.length === 0" class="text-[11px] text-muted">
         {{ diagnosticMessages.usageNoData }}
       </div>
@@ -56,6 +56,6 @@ const { summary } = useUsageSettings()
       </div>
     </div>
 
-    <p class="text-[10px] text-muted">{{ diagnosticMessages.usageCacheNote }}</p>
+    <p class="text-[11px] text-muted">{{ diagnosticMessages.usageCacheNote }}</p>
   </SettingsSection>
 </template>
