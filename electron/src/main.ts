@@ -15,7 +15,29 @@ const PRELOAD = join(here, 'preload.cjs')
 const DEV_URL = process.env.KALKA_DEV_URL?.replace(/\/$/, '')
 const APP_SCHEME = 'kalka-app'
 const APP_ORIGIN = `${APP_SCHEME}://app`
-const DIST = normalize(join(here, '..', '..', 'dist'))
+/** The built app: shipped in the package's resources, or the workspace build in development. */
+const DIST = app.isPackaged
+  ? normalize(join(process.resourcesPath, 'renderer'))
+  : normalize(join(here, '..', '..', 'dist'))
+/**
+ * What the editor's pages may load and run: their own files, CanvasKit's WebAssembly, images and
+ * fonts from data, blobs and HTTPS, and requests to HTTPS services and the local MCP server.
+ * Artboards add their own, stricter policy.
+ */
+const CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  "script-src 'self' 'wasm-unsafe-eval'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self' data: blob: https:",
+  "connect-src 'self' data: blob: https: http://127.0.0.1:* ws://127.0.0.1:*",
+  "media-src 'self' data: blob: https:",
+  "worker-src 'self' blob:",
+  "frame-src 'self' about: blob: data:",
+  "object-src 'none'",
+  "base-uri 'none'",
+  "form-action 'none'"
+].join('; ')
 /** The brand kit's app icon; a packaged app takes its icon from the bundle instead. */
 const ICON = join(here, '..', 'build', 'icon.png')
 
@@ -57,11 +79,10 @@ function serveApp(): void {
     const extension = extname(file)
     try {
       const body = await readFile(extension ? file : join(DIST, 'index.html'))
-      return new Response(body, {
-        headers: {
-          'content-type': MIME[extension] ?? (extension ? 'application/octet-stream' : 'text/html')
-        }
-      })
+      const type = MIME[extension] ?? (extension ? 'application/octet-stream' : 'text/html')
+      const headers: Record<string, string> = { 'content-type': type }
+      if (type === 'text/html') headers['content-security-policy'] = CONTENT_SECURITY_POLICY
+      return new Response(body, { headers })
     } catch {
       return new Response('Not found', { status: 404 })
     }
@@ -161,7 +182,8 @@ if (!app.requestSingleInstanceLock()) {
     handleLink(url)
   })
 
-  void app.whenReady().then(() => {
+  void (async () => {
+    await app.whenReady()
     if (!app.isPackaged) app.dock?.setIcon(ICON)
     grantPermissions()
     serveApp()
@@ -171,7 +193,7 @@ if (!app.requestSingleInstanceLock()) {
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow()
     })
-  })
+  })()
 
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit()

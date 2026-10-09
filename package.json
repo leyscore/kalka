@@ -49,6 +49,7 @@
     "build": "bun run build:packages && bun run lint && vite build",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
+    "package:desktop": "vite build && bun run --cwd electron package",
     "build-storybook": "storybook build",
     "tauri": "tauri",
     "build:native-test": "bun run generate:icons --target desktop && bun run build:packages && bun tauri build --debug --no-bundle --features native-test --config desktop/tauri.native-test.conf.json",

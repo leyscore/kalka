@@ -40,6 +40,7 @@
 ### Added
 
 - MCP and the AI chat can work in HTML: `write_html` adds HTML and CSS to the design as editable layers, `get_html` reads a layer back as HTML, `update_styles` changes a layer with CSS declarations, and `get_screenshot` shows the result as an image.
+- `bun run package:desktop` builds an installable Kalka desktop app: a DMG and ZIP on macOS, an installer on Windows, and an AppImage on Linux, which opens `.fig` and `.pen` files and `kalka://` links.
 - Pasting HTML copied from a web page, or HTML source copied as text from a code editor, adds it to the canvas as editable layers.
 - A three-step welcome on first launch asks what you came for, sets the theme and the code the Code tab opens on, and shows how to connect Claude Code, Claude Desktop or another MCP client, with a live connection status. In the desktop app, **Connect** adds Kalka to Claude Desktop's configuration, keeping its other servers and a backup of the previous file.
 - The home screen starts a design at a device size, opens a `.fig` or `.html` file, a pasted piece of HTML or a file from a URL, and opens the sample file or a one-minute tour of the editor.
@@ -274,6 +275,7 @@
 ### Security
 
 - Imported and pasted HTML loses scripts, event handlers, script URLs, embedded frames and objects before Kalka lays it out, so nothing in it can run.
+- The desktop app serves its pages under a strict Content Security Policy: scripts load only from the app itself, and frames, forms and plugins cannot reach other sites.
 - Refuse writes from the desktop app to places where a written file would run: login items and startup folders, PowerShell profiles, global package and executable folders such as Homebrew, `/usr/local`, npm, Volta, and Scoop, and the MCP discovery files coding agents trust. On Windows, hidden files and folders such as shell profiles and agent settings are now off-limits too, as on macOS and Linux, except a document you open there yourself, which can still be saved.
 - Limit the programs the desktop app may start to the exact command lines of the supported coding agents, the MCP server, and the Harness companion. On Windows the app could run any command through `cmd /c`, so any code running in the editor's webview could start arbitrary programs.
 - Update the desktop app to Tauri 2.12, which binds large IPC channel responses to the webview that requested them instead of letting another webview fetch them (GHSA-w28w-mhc8-qvjv).

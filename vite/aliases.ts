@@ -13,6 +13,11 @@ export function createOpenPencilAliases(rootDir: string) {
       find: /^@tauri-apps\/plugin-(fs|dialog|shell|clipboard-manager|opener|os|process|updater)$/,
       replacement: `${resolve(rootDir, 'src/app/platform/tauri/plugin')}/$1`
     },
+    // cssom's `browser` build is a script global with no named exports; its CommonJS entry is plain JS.
+    {
+      find: /^@acemir\/cssom$/,
+      replacement: resolve(rootDir, 'packages/dom-css/node_modules/@acemir/cssom/lib/index.js')
+    },
     { find: /^fs$/, replacement: emptyNodeModule },
     { find: /^path$/, replacement: emptyNodeModule },
     { find: '@', replacement: resolve(rootDir, 'src') },

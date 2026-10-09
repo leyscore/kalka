@@ -74,7 +74,7 @@ function onOpenChange(open: boolean): void {
         class="fixed inset-0 z-[45] isolate flex overflow-y-auto text-surface outline-none animate-in fade-in duration-300"
         data-test-id="welcome"
       >
-        <AppBackdrop fill="absolute" drift />
+        <AppBackdrop drift />
         <div
           v-if="welcomeStep === 'role'"
           class="sticky top-0 hidden h-dvh w-1/2 shrink-0 items-center justify-center bg-brand-blue p-[8%] lg:flex"

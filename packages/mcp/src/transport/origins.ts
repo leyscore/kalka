@@ -3,14 +3,15 @@
  *
  * The desktop app's webview always calls the server from its own origin, so a
  * manually started server must allow it without extra configuration. Browsers
- * set `Origin` themselves, and only the Tauri webview serves these origins, so
+ * set `Origin` themselves, and only the desktop webview (Tauri or Electron) serves these origins, so
  * allowing them does not expose the server to arbitrary websites. Requests still
  * need the bearer token whenever authentication is enabled.
  */
 export const DESKTOP_APP_ORIGINS = [
   'tauri://localhost',
   'http://tauri.localhost',
-  'https://tauri.localhost'
+  'https://tauri.localhost',
+  'kalka-app://app'
 ] as const
 
 /** Parse a comma-separated override. Returns null when nothing usable is set. */

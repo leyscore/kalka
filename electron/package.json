@@ -6,9 +6,81 @@
   "scripts": {
     "build": "bun build src/main.ts --target=node --format=esm --outfile=dist/main.js --external electron && bun build src/preload.ts --target=node --format=cjs --outfile=dist/preload.cjs --external electron",
     "start": "bun run build && electron .",
-    "dev": "bun scripts/dev.ts"
+    "dev": "bun scripts/dev.ts",
+    "package": "bun run build && electron-builder --publish never",
+    "package:dir": "bun run build && electron-builder --dir --publish never"
   },
   "devDependencies": {
-    "electron": "44.4.5"
+    "electron": "44.4.5",
+    "electron-builder": "26.0.12"
+  },
+  "productName": "Kalka",
+  "version": "0.15.1",
+  "description": "Design like you do in Figma. Every layer is real HTML and CSS.",
+  "build": {
+    "appId": "design.kalka.app",
+    "productName": "Kalka",
+    "copyright": "Kalka contributors",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../dist",
+        "to": "renderer",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "asar": true,
+    "protocols": [
+      {
+        "name": "Kalka link",
+        "schemes": [
+          "kalka"
+        ]
+      }
+    ],
+    "fileAssociations": [
+      {
+        "ext": "fig",
+        "name": "Figma file",
+        "role": "Editor"
+      },
+      {
+        "ext": "pen",
+        "name": "Pencil file",
+        "role": "Editor"
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.graphics-design",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "build/icon.icns",
+      "hardenedRuntime": true,
+      "darkModeSupport": true
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.ico"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "icon": "build/icon.png",
+      "category": "Graphics"
+    }
   }
 }
