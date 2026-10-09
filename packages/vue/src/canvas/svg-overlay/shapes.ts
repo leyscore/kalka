@@ -22,6 +22,7 @@ export type OverlayShape =
   | ({ type: 'ellipse'; cx: number; cy: number; rx: number; ry: number } & Paint)
   | ({ type: 'line'; x1: number; y1: number; x2: number; y2: number } & Paint)
   | ({ type: 'path'; d: string } & Paint)
+  | ({ type: 'polygon'; points: readonly number[] } & Paint)
   | {
       type: 'text'
       x: number
@@ -30,8 +31,12 @@ export type OverlayShape =
       fill: string
       fontSize: number
       fontWeight?: number
+      fontFamily?: string
+      /** Where `x` sits along the text; its start by default. */
+      anchor?: 'start' | 'middle' | 'end'
+      opacity?: number
     }
-  | { type: 'group'; matrix?: Mat3; children: OverlayShape[] }
+  | { type: 'group'; matrix?: Mat3; opacity?: number; children: OverlayShape[] }
 
 /** A color as CSS, with an optional alpha that replaces its own. */
 export function css(color: Color, alpha = color.a): string {

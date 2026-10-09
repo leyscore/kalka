@@ -19,7 +19,11 @@ function vnode(shape: OverlayShape, key: number): VNode {
     case 'group':
       return h(
         'g',
-        { key, transform: shape.matrix ? svgMatrix(shape.matrix) : undefined },
+        {
+          key,
+          transform: shape.matrix ? svgMatrix(shape.matrix) : undefined,
+          opacity: shape.opacity
+        },
         shape.children.map(vnode)
       )
     case 'rect':
@@ -50,6 +54,8 @@ function vnode(shape: OverlayShape, key: number): VNode {
         y2: shape.y2,
         ...paintProps(shape)
       })
+    case 'polygon':
+      return h('polygon', { key, points: shape.points.join(' '), ...paintProps(shape) })
     case 'path':
       return h('path', { key, d: shape.d, ...paintProps(shape) })
     default:
@@ -60,8 +66,11 @@ function vnode(shape: OverlayShape, key: number): VNode {
           x: shape.x,
           y: shape.y,
           fill: shape.fill,
+          opacity: shape.opacity,
           'font-size': shape.fontSize,
-          'font-weight': shape.fontWeight
+          'font-weight': shape.fontWeight,
+          'font-family': shape.fontFamily ?? 'Inter, system-ui, sans-serif',
+          'text-anchor': shape.anchor
         },
         shape.text
       )
