@@ -95,6 +95,7 @@
 
 ### Changed
 
+- The interface is calmer and sharper: text renders antialiased, selected layers get a blue tint instead of a solid fill, the toolbar floats with a frosted background, and menus and popovers cast softer, deeper shadows.
 - The app is now Kalka: its blue and paper colors, the Geist, Bricolage Grotesque and JetBrains Mono fonts, its name, icons, window and menu titles, `kalka://` links, and the folder where the MCP server finds the running app (`Kalka` on macOS and Windows, `kalka` on Linux).
 - With **Snap to Pixel Grid** on, moved layers and resized edges land on whole pixels at any zoom, and drawn layers start and end on whole pixels, as in Figma; zoomed in, moves and resizes could leave fractions before, and drawing was not snapped.
 - Layers inside components and instances are outlined in purple when hovered or selected, with a purple size label, as in Figma; they were blue.

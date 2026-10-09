@@ -38,7 +38,7 @@ const emit = defineEmits<{
   >
     <ToolbarRoot
       data-test-id="toolbar"
-      class="flex gap-0.5 rounded-xl bg-panel p-1 shadow-[0_8px_30px_rgb(0_0_0/0.4)]"
+      class="flex gap-0.5 rounded-2xl border border-border/70 bg-panel/90 p-1.5 shadow-[0_16px_40px_-10px_rgb(0_0_0/0.45),0_2px_8px_rgb(0_0_0/0.15)] backdrop-blur-xl backdrop-saturate-150"
     >
       <template v-for="tool in tools" :key="tool.key">
         <Tip

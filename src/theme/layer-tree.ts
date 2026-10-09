@@ -1,7 +1,7 @@
 const layerTreeTheme = {
   slots: {
     viewport: 'scrollbar-thin h-full overflow-y-auto px-1',
-    row: 'group/row relative flex w-full cursor-pointer items-center gap-1 rounded border-none bg-transparent pr-1 text-left text-[11px] text-surface hover:bg-hover',
+    row: 'group/row relative flex w-full cursor-pointer items-center gap-1 rounded-md border-none bg-transparent pr-1 text-left text-[11px] text-surface transition-colors duration-75 hover:bg-hover',
     disclosure:
       'flex w-4 shrink-0 cursor-pointer items-center justify-center text-current transition-transform',
     disclosurePlaceholder: 'w-4 shrink-0',
@@ -9,7 +9,7 @@ const layerTreeTheme = {
     label: 'min-w-0 flex-1 truncate',
     actions: 'flex shrink-0 items-center gap-0.5',
     action:
-      'flex size-4 items-center justify-center rounded text-current outline-none hover:bg-white/15 focus-visible:ring-1 focus-visible:ring-panel-focus',
+      'flex size-4 items-center justify-center rounded text-current outline-none hover:bg-surface/10 focus-visible:ring-1 focus-visible:ring-panel-focus',
     actionIcon: 'size-3',
     dropIndicator: 'pointer-events-none absolute bg-accent',
     renameRow: 'group/row relative flex w-full items-center gap-1 pr-1 text-[11px] text-surface',
@@ -19,7 +19,7 @@ const layerTreeTheme = {
   },
   variants: {
     selected: {
-      true: { row: 'bg-panel-selected text-white hover:bg-panel-selected' },
+      true: { row: 'bg-accent/22 text-surface hover:bg-accent/28' },
       false: { row: 'bg-transparent text-surface hover:bg-hover' }
     },
     focused: {
@@ -76,7 +76,7 @@ const layerTreeTheme = {
     {
       selected: true,
       focused: true,
-      class: { icon: 'text-white opacity-100' }
+      class: { icon: 'text-primary opacity-100' }
     },
     {
       selected: true,

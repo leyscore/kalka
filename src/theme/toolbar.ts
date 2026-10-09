@@ -1,7 +1,7 @@
 const toolbarTheme = {
   slots: {
     button:
-      'flex size-8 cursor-pointer items-center justify-center border-none bg-transparent text-muted transition-colors outline-none focus-visible:ring-1 focus-visible:ring-panel-focus',
+      'flex size-8 cursor-pointer items-center justify-center border-none bg-transparent text-muted transition-[background-color,color,box-shadow] duration-150 outline-none focus-visible:ring-1 focus-visible:ring-panel-focus',
     icon: 'size-4',
     flyoutGroup: 'flex items-center',
     flyoutTrigger:
@@ -22,7 +22,7 @@ const toolbarTheme = {
   variants: {
     active: {
       true: {
-        button: 'bg-accent text-white'
+        button: 'bg-accent text-white shadow-[0_2px_8px_-1px] shadow-accent/50'
       },
       false: {}
     },

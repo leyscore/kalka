@@ -158,6 +158,9 @@ body,
 body {
   font-family: var(--font-sans);
   font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   color: var(--color-surface);
   background: var(--color-canvas);
   user-select: none;
