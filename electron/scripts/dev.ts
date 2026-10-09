@@ -4,8 +4,8 @@
  * main process and reopens Electron, since the page reloads on its own and must not talk to an
  * older main process. Closing Electron stops the server this script started.
  */
-import { spawn, type ChildProcess } from 'node:child_process'
-import { watch } from 'node:fs'
+import { execFileSync, spawn, type ChildProcess } from 'node:child_process'
+import { cpSync, existsSync, rmSync, watch } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -55,11 +55,41 @@ if (!(await build())) {
   process.exit(1)
 }
 
+/**
+ * macOS names the Dock icon after the bundle that runs, so development launches a copy of
+ * Electron's bundle renamed Kalka, with Kalka's icon. Rebuilt when Electron's version changes.
+ */
+function electronBinary(): string {
+  const stock = execFileSync('bun', ['-e', "import p from 'electron'; process.stdout.write(p)"], {
+    cwd: electronDir,
+    encoding: 'utf8'
+  })
+  if (process.platform !== 'darwin') return stock
+  const source = stock.slice(0, stock.indexOf('/Contents/MacOS/'))
+  const version = source.match(/electron@([^/]+)/)?.[1] ?? 'unknown'
+  const bundle = join(electronDir, '.dev', version, 'Kalka.app')
+  if (!existsSync(bundle)) {
+    rmSync(join(electronDir, '.dev'), { recursive: true, force: true })
+    cpSync(source, bundle, { recursive: true, verbatimSymlinks: true })
+    const plist = join(bundle, 'Contents', 'Info.plist')
+    for (const key of ['CFBundleName', 'CFBundleDisplayName'])
+      execFileSync('plutil', ['-replace', key, '-string', 'Kalka', plist])
+    cpSync(
+      join(electronDir, 'build', 'icon.icns'),
+      join(bundle, 'Contents', 'Resources', 'electron.icns')
+    )
+    // Editing the bundle breaks its seal; an ad hoc signature lets macOS run it again.
+    execFileSync('codesign', ['--force', '--deep', '--sign', '-', bundle])
+  }
+  return join(bundle, 'Contents', 'MacOS', 'Electron')
+}
+
+const binary = electronBinary()
 let electron: ChildProcess
 let restarting = false
 
 function open(): void {
-  electron = run('bunx', ['electron', '.'], electronDir, { ...process.env, KALKA_DEV_URL: URL })
+  electron = run(binary, ['.'], electronDir, { ...process.env, KALKA_DEV_URL: URL })
   electron.once('exit', (code) => {
     if (restarting) return
     server?.kill()
