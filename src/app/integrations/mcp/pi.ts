@@ -4,14 +4,22 @@ import { getAutomationAuthToken } from '@/app/automation/mcp/spawn'
 
 import { mcpConnectionHeaders } from './headers'
 import { enabledMCPConnections } from './store'
-import type { MCPConnection } from './types'
+import type { MCPConnection, MCPHTTPTransport } from './types'
+
+function isHTTPConnection(
+  connection: MCPConnection
+): connection is MCPConnection & { transport: MCPHTTPTransport } {
+  return connection.transport.type === 'streamable-http'
+}
 export type PiMCPServer = {
   url: string
   headers?: Record<string, string>
   auth: false
 }
 
-async function externalPiMCPServer(connection: MCPConnection): Promise<PiMCPServer> {
+async function externalPiMCPServer(
+  connection: MCPConnection & { transport: MCPHTTPTransport }
+): Promise<PiMCPServer> {
   const headers = await mcpConnectionHeaders(connection)
   return {
     url: connection.transport.url,
@@ -28,9 +36,10 @@ export async function buildPiMCPServers(options?: {
       ? options.authorizationToken
       : await getAutomationAuthToken()
   const entries = await Promise.all(
-    enabledMCPConnections.value.map(
-      async (connection) => [connection.name, await externalPiMCPServer(connection)] as const
-    )
+    // The Pi harness reaches servers by URL; stdio servers stay with Kalka and ACP agents.
+    enabledMCPConnections.value
+      .filter((connection) => isHTTPConnection(connection))
+      .map(async (connection) => [connection.name, await externalPiMCPServer(connection)] as const)
   )
   return {
     ...Object.fromEntries(entries),

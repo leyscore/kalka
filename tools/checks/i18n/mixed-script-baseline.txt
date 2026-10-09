@@ -72,7 +72,6 @@ ja:ai.changePreviewHint
 ja:automation.addServerConnection
 ja:automation.aiToolAccessDescription
 ja:automation.authenticationDescription
-ja:automation.bearerAuthentication
 ja:automation.bearerToken
 ja:automation.bearerTokenPlaceholder
 ja:automation.bearerTokenRequired
@@ -267,7 +266,6 @@ zh-cn:ai.changePreviewHint
 zh-cn:automation.addServerConnection
 zh-cn:automation.aiToolAccessDescription
 zh-cn:automation.authenticationDescription
-zh-cn:automation.bearerAuthentication
 zh-cn:automation.bearerToken
 zh-cn:automation.bearerTokenPlaceholder
 zh-cn:automation.bearerTokenRequired
@@ -474,3 +472,13 @@ zh-cn:automation.otherClientTitle
 zh-cn:automation.otherClientDescription
 ja:rendering.documentPageColorDescription
 zh-cn:rendering.documentPageColorDescription
+ja:automation.transportHTTP
+ja:automation.serverCommandHint
+ja:automation.environmentHint
+ja:automation.environmentInvalid
+ja:automation.oauthHint
+zh-cn:automation.transportHTTP
+zh-cn:automation.serverCommandHint
+zh-cn:automation.environmentHint
+zh-cn:automation.environmentInvalid
+zh-cn:automation.oauthHint

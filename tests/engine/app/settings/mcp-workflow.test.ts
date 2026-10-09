@@ -189,7 +189,7 @@ test('clear never persists unsaved fields and cancel discards removal', async ()
           setCredential: async () => undefined,
           save: (draft) => {
             names.push(draft.name)
-            expect(draft.url).toBe(connection.transport.url)
+            expect(draft.url).toBe('https://example.com/mcp')
             return connection
           },
           remove: async () => undefined

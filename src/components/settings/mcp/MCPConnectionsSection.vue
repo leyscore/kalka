@@ -6,8 +6,10 @@ import { useAutomationMessages, useCommonMessages, useSettingsMessages } from '@
 
 import { mcpConnectionSettings } from '@/app/integrations/mcp'
 import { useMCPConnectionForm } from '@/app/integrations/mcp/settings/form'
+import { useMCPOAuthSignIn } from '@/app/integrations/mcp/settings/oauth'
 import { useMCPConnectionSettings } from '@/app/integrations/mcp/settings/use'
 import { useSettingsFormGuard } from '@/app/settings/navigation/use'
+import { isTauri } from '@/app/tauri/env'
 import SettingsPage from '@/components/settings/layout/SettingsPage.vue'
 import SettingsSection from '@/components/settings/layout/SettingsSection.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
@@ -28,7 +30,16 @@ const editorElement = useTemplateRef('editorElement')
 const form = useMCPConnectionForm(settings, automation)
 const { draft, errors: fieldErrors } = form
 const connection = useMCPConnectionSettings(draft, tokenDraft, automation)
-const { tokenStatus, error, saveResult, clearCredential } = connection
+const { tokenStatus, error, saveResult, clearCredential, savedConnection } = connection
+const oauth = useMCPOAuthSignIn(savedConnection)
+const canRunLocal = isTauri()
+// Sign-in needs the connection saved as it is drafted: the server and the kind of sign-in.
+const savedForSignIn = computed(
+  () =>
+    savedConnection.value?.authentication.type === 'oauth' &&
+    savedConnection.value.transport.type === 'streamable-http' &&
+    savedConnection.value.transport.url === draft.value.url.trim()
+)
 watch(
   () => Boolean(tokenDraft.value.trim() || tokenStatus.value === 'configured'),
   form.setCredentialReady,
@@ -58,6 +69,10 @@ async function save() {
   await submit()
   await editorElement.value?.focusInvalid()
 }
+async function signIn() {
+  await oauth.signIn()
+}
+
 async function remove() {
   if (await connection.remove()) cancel()
   deleteOpen.value = false
@@ -75,6 +90,12 @@ async function remove() {
     :save-result="saveResult"
     :field-errors="fieldErrors"
     :busy="busy"
+    :oauth-status="oauth.status.value"
+    :oauth-error="oauth.error.value"
+    :can-run-local="canRunLocal"
+    :saved="savedForSignIn"
+    @sign-in="signIn"
+    @sign-out="oauth.signOut"
     @cancel="cancel"
     @save="save"
     @blur-field="form.blur"
@@ -100,7 +121,9 @@ async function remove() {
           >
             <template #leading><icon-lucide-plug class="size-3.5" /></template>
             {{ item.name }}
-            <template #description>{{ item.transport.url }}</template>
+            <template #description>{{
+              item.transport.type === 'stdio' ? item.transport.command : item.transport.url
+            }}</template>
             <template #trailing>
               <span class="text-xs">{{ item.enabled ? common.enabled : common.disabled }}</span>
               <icon-lucide-chevron-right class="size-3.5" />

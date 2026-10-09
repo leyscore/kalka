@@ -15,6 +15,8 @@ type Args = {
 const emptyDraft: MCPConnectionDraft = {
   id: null,
   name: '',
+  transportType: 'streamable-http',
+  command: '',
   url: '',
   enabled: false,
   authenticationType: 'none'
@@ -22,6 +24,8 @@ const emptyDraft: MCPConnectionDraft = {
 const savedDraft: MCPConnectionDraft = {
   id: 'mcp-story',
   name: 'Design library',
+  transportType: 'streamable-http',
+  command: '',
   url: 'https://example.com/mcp',
   enabled: true,
   authenticationType: 'bearer'

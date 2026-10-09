@@ -1,4 +1,9 @@
-import { Client, StreamableHTTPClientTransport, type FetchLike } from '@modelcontextprotocol/client'
+import {
+  Client,
+  StreamableHTTPClientTransport,
+  type FetchLike,
+  type Transport
+} from '@modelcontextprotocol/client'
 import { dynamicTool, jsonSchema, type JSONSchema7, type Tool } from 'ai'
 
 import { describeDiagnosticError, recordMCPConnectionFailure } from '@/app/diagnostics'
@@ -6,7 +11,10 @@ import { APP_VERSION } from '@/app/runtime/version'
 import { isTauri } from '@/app/tauri/env'
 import { tauriFetch } from '@/app/tauri/http'
 
+import { isStdioConnection, stdioServerSpec } from './environment'
 import { mcpConnectionHeaders } from './headers'
+import { isOAuthConnection, oauthProvider } from './oauth'
+import { DesktopStdioTransport } from './stdio'
 import { enabledMCPConnections } from './store'
 import type { MCPConnection } from './types'
 
@@ -68,14 +76,32 @@ function isToolArguments(value: unknown): value is { [name: string]: unknown } {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+/** The transport a connection talks through: HTTP, with its token or sign-in, or a local server. */
+async function transportFor(connection: MCPConnection): Promise<Transport> {
+  if (isStdioConnection(connection)) {
+    if (!isTauri())
+      throw new Error(`${connection.name} runs on this computer; open the desktop app`)
+    return new DesktopStdioTransport(await stdioServerSpec(connection))
+  }
+  const { transport } = connection
+  if (transport.type !== 'streamable-http') throw new Error('Unknown MCP transport')
+  const url = new URL(transport.url)
+  const fetch = isTauri() ? proxiedFetch : undefined
+  if (isOAuthConnection(connection)) {
+    return new StreamableHTTPClientTransport(url, {
+      authProvider: await oauthProvider(connection),
+      ...(fetch ? { fetch } : {})
+    })
+  }
+  const requestInit = { headers: await mcpConnectionHeaders(connection) }
+  return fetch
+    ? new StreamableHTTPClientTransport(url, { requestInit, fetch })
+    : new StreamableHTTPClientTransport(url, { requestInit })
+}
+
 async function connect(connection: MCPConnection): Promise<Client> {
   const client = new Client({ name: 'kalka', version: APP_VERSION })
-  const requestInit = { headers: await mcpConnectionHeaders(connection) }
-  const url = new URL(connection.transport.url)
-  const transport = isTauri()
-    ? new StreamableHTTPClientTransport(url, { requestInit, fetch: proxiedFetch })
-    : new StreamableHTTPClientTransport(url, { requestInit })
-  await client.connect(transport)
+  await client.connect(await transportFor(connection))
   return client
 }
 
@@ -108,7 +134,7 @@ export function createExternalMCPTools() {
   const sessions = new Map<string, Session>()
 
   async function sessionFor(connection: MCPConnection): Promise<Session | null> {
-    const key = JSON.stringify([connection.transport.url, connection.authentication])
+    const key = JSON.stringify([connection.transport, connection.authentication])
     const known = sessions.get(connection.id)
     if (known?.key === key) return known
     if (known) await known.client.close().catch(() => undefined)

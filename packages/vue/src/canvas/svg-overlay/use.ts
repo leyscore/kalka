@@ -73,6 +73,11 @@ export function useSVGOverlay(
     return true
   }
 
+  /** The color behind the artboards: the app's, when it shows its own, else the page's. */
+  function canvasColorOf(state: EditorState): Color {
+    return options.getCanvasColor ? options.getCanvasColor(state.pageColor) : state.pageColor
+  }
+
   function tick() {
     frame = requestAnimationFrame(tick)
     const element = host.value
@@ -84,7 +89,7 @@ export function useSVGOverlay(
     const animating = flashes.length > 0 || aiMarks.done.length > 0 || renderer?._aiActiveNodes.size
     const showRulers = options.showRulers?.() ?? false
     const obstacles = options.getOverlayObstacles?.() ?? []
-    const canvasColor = options.getCanvasColor?.(state.pageColor) ?? state.pageColor
+    const canvasColor = canvasColorOf(state)
     const width = element.clientWidth
     const height = element.clientHeight
     const key = [

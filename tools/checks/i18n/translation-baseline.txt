@@ -317,3 +317,10 @@ pl:welcome.presetLaptop
 pl:welcome.presetTablet
 ru:welcome.codeHTML
 zh-cn:welcome.codeHTML
+de:automation.serverType
+de:automation.transportHTTP
+de:automation.authenticationBearer
+es:automation.authenticationBearer
+it:automation.serverType
+it:automation.authenticationBearer
+pl:automation.authenticationBearer

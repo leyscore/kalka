@@ -40,6 +40,7 @@
 ### Added
 
 - MCP and the AI chat can work in HTML: `write_html` adds HTML and CSS to the design as editable layers, `get_html` reads a layer back as HTML, `update_styles` changes a layer with CSS declarations, and `get_screenshot` shows the result as an image.
+- MCP connections in Settings › MCP can be local servers started by a command, such as `npx -y @notionhq/notion-mcp-server`, with secret environment variables, and remote servers can sign in with OAuth in the browser. The desktop app asks before running a command line for the first time, and keeps environments, tokens and sign-ins in the system credential store. ACP agents get local servers too; the Pi agent keeps to remote ones.
 - The built-in AI chat uses the MCP servers connected in Settings › MCP, as ACP and Pi agents already did: their tools appear in the chat as `server` › `tool`, so it can read your docs, tickets or data before it designs. In the desktop app the requests go through the main process, so servers without CORS headers work.
 - The desktop app includes its MCP server and starts it itself, so connecting an agent no longer needs `@open-pencil/mcp` installed globally. The server tells every client to gather specs, docs and data from its other MCP servers before designing.
 - `bun run package:desktop` builds an installable Kalka desktop app: a DMG and ZIP on macOS, an installer on Windows, and an AppImage on Linux, which opens `.fig` and `.pen` files and `kalka://` links.

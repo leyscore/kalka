@@ -6,32 +6,81 @@ import { appCredentialServices } from '@/app/settings/credentials/app'
 import { credentialRef } from '@/app/settings/credentials/reference'
 import type { CredentialRef, CredentialStatus } from '@/app/settings/credentials/types'
 
+import { formatCommandLine, parseCommandLine } from './command-line'
 import { readMCPConnectionSettingsStorage, writeMCPConnectionSettingsStorage } from './storage'
 import type {
   MCPAuthentication,
+  MCPAuthenticationType,
   MCPConnection,
   MCPConnectionDraft,
   MCPConnectionID,
-  MCPConnectionSettings
+  MCPConnectionSettings,
+  MCPTransport,
+  MCPTransportType
 } from './types'
 
 export const MCP_CONNECTION_NAME_MAX_LENGTH = 80
 const MAX_URL_LENGTH = 2048
+const MAX_COMMAND_LENGTH = 4096
 const MCP_CONNECTION_ID_PATTERN = /^mcp-[a-z0-9._-]{1,60}$/
 
-const bearerSchema = v.object({
-  type: v.literal('bearer'),
+const storedAuthenticationSchema = v.object({
+  type: v.picklist(['bearer', 'oauth', 'env']),
   credentialRef: v.object({ integrationId: v.string(), profileId: v.string(), field: v.string() })
 })
 
-/** A stored bearer token counts only when it points at this connection's own credential. */
-function parseAuthentication(value: unknown, id: MCPConnectionID): MCPAuthentication {
-  const bearer = v.safeParse(bearerSchema, value)
-  const expected = mcpConnectionCredentialRef(id)
-  return bearer.success && isEqual(bearer.output.credentialRef, expected)
-    ? { type: 'bearer', credentialRef: expected }
+/** Each secret kind has its own credential, so switching kinds never reads another's value. */
+const CREDENTIAL_FIELDS = { bearer: 'bearer-token', oauth: 'oauth', env: 'env' } as const
+type MCPSecretType = keyof typeof CREDENTIAL_FIELDS
+
+export function mcpCredentialRef(id: MCPConnectionID, type: MCPSecretType): CredentialRef {
+  return credentialRef('mcp', CREDENTIAL_FIELDS[type], id)
+}
+
+/** The secret kinds each transport can use; a stdio server takes its secrets as environment. */
+const AUTHENTICATION_BY_TRANSPORT: Record<MCPTransportType, readonly MCPAuthenticationType[]> = {
+  'streamable-http': ['none', 'bearer', 'oauth'],
+  stdio: ['none', 'env']
+}
+
+export function mcpAuthenticationTypes(
+  transport: MCPTransportType
+): readonly MCPAuthenticationType[] {
+  return AUTHENTICATION_BY_TRANSPORT[transport]
+}
+
+/** A stored secret counts only when it points at this connection's own credential of its kind. */
+function parseAuthentication(
+  value: unknown,
+  id: MCPConnectionID,
+  transport: MCPTransportType
+): MCPAuthentication {
+  const stored = v.safeParse(storedAuthenticationSchema, value)
+  if (!stored.success || !AUTHENTICATION_BY_TRANSPORT[transport].includes(stored.output.type)) {
+    return { type: 'none' }
+  }
+  const type = stored.output.type
+  const expected = mcpCredentialRef(id, type)
+  return isEqual(stored.output.credentialRef, expected)
+    ? { type, credentialRef: expected }
     : { type: 'none' }
 }
+
+const transportSchema = v.variant('type', [
+  v.object({
+    type: v.literal('streamable-http'),
+    url: v.pipe(
+      v.string(),
+      v.trim(),
+      v.check((url) => isValidMCPConnectionURL(url))
+    )
+  }),
+  v.object({
+    type: v.literal('stdio'),
+    command: v.pipe(v.string(), v.trim(), v.minLength(1), v.maxLength(MAX_COMMAND_LENGTH)),
+    args: v.fallback(v.array(v.pipe(v.string(), v.maxLength(MAX_COMMAND_LENGTH))), [])
+  })
+])
 
 const connectionSchema = v.object({
   id: v.pipe(v.string(), v.regex(MCP_CONNECTION_ID_PATTERN)),
@@ -42,14 +91,7 @@ const connectionSchema = v.object({
     v.transform((name) => name.slice(0, MCP_CONNECTION_NAME_MAX_LENGTH))
   ),
   enabled: v.fallback(v.boolean(), false),
-  transport: v.object({
-    type: v.literal('streamable-http'),
-    url: v.pipe(
-      v.string(),
-      v.trim(),
-      v.check((url) => isValidMCPConnectionURL(url))
-    )
-  }),
+  transport: transportSchema,
   authentication: v.optional(v.unknown())
 })
 
@@ -58,7 +100,11 @@ function parseConnection(value: unknown): MCPConnection | null {
   if (!parsed.success) return null
   const { authentication, ...connection } = parsed.output
   const id = connection.id as MCPConnectionID
-  return { ...connection, id, authentication: parseAuthentication(authentication, id) }
+  return {
+    ...connection,
+    id,
+    authentication: parseAuthentication(authentication, id, connection.transport.type)
+  }
 }
 
 const settingsSchema = v.object({ version: v.literal(1), connections: v.array(v.unknown()) })
@@ -120,17 +166,32 @@ export const enabledMCPConnections = computed(() =>
 )
 
 export function mcpConnectionCredentialRef(id: MCPConnectionID): CredentialRef {
-  return credentialRef('mcp', 'bearer-token', id)
+  return mcpCredentialRef(id, 'bearer')
 }
 
 export function createMCPConnectionDraft(connection?: MCPConnection): MCPConnectionDraft {
+  const transport = connection?.transport
   return {
     id: connection?.id ?? null,
     name: connection?.name ?? '',
-    url: connection?.transport.url ?? '',
+    transportType: transport?.type ?? 'streamable-http',
+    url: transport?.type === 'streamable-http' ? transport.url : '',
+    command: transport?.type === 'stdio' ? formatCommandLine(transport) : '',
     enabled: connection?.enabled ?? false,
     authenticationType: connection?.authentication.type ?? 'none'
   }
+}
+
+/** The transport a draft describes, or an error naming what is wrong with it. */
+export function draftTransport(draft: MCPConnectionDraft): MCPTransport {
+  if (draft.transportType === 'streamable-http') {
+    return { type: 'streamable-http', url: validateMCPConnectionURL(draft.url.trim()).toString() }
+  }
+  const commandLine = parseCommandLine(draft.command.trim())
+  if (!commandLine || draft.command.length > MAX_COMMAND_LENGTH) {
+    throw new Error('Enter the command that starts the server')
+  }
+  return { type: 'stdio', ...commandLine }
 }
 
 export function saveMCPConnectionDraft(draft: MCPConnectionDraft): MCPConnection {
@@ -143,42 +204,49 @@ export function saveMCPConnectionDraft(draft: MCPConnectionDraft): MCPConnection
       connection.id !== draft.id && connection.name.toLowerCase() === name.toLowerCase()
   )
   if (duplicateName) throw new Error('Connection names must be unique')
-  const url = validateMCPConnectionURL(draft.url.trim()).toString()
+  const transport = draftTransport(draft)
   if (draft.id && !MCP_CONNECTION_ID_PATTERN.test(draft.id)) {
     throw new Error('Connection ID is invalid')
   }
   const id = draft.id ?? (`mcp-${crypto.randomUUID()}` as MCPConnectionID)
+  const type = AUTHENTICATION_BY_TRANSPORT[transport.type].includes(draft.authenticationType)
+    ? draft.authenticationType
+    : 'none'
   const authentication: MCPAuthentication =
-    draft.authenticationType === 'bearer'
-      ? { type: 'bearer', credentialRef: mcpConnectionCredentialRef(id) }
-      : { type: 'none' }
-  const connection: MCPConnection = {
-    id,
-    name,
-    enabled: draft.enabled,
-    transport: { type: 'streamable-http', url },
-    authentication
-  }
+    type === 'none' ? { type } : { type, credentialRef: mcpCredentialRef(id, type) }
+  const connection: MCPConnection = { id, name, enabled: draft.enabled, transport, authentication }
   const index = mcpConnectionSettings.value.connections.findIndex((item) => item.id === id)
   if (index === -1) mcpConnectionSettings.value.connections.push(connection)
   else mcpConnectionSettings.value.connections[index] = connection
   return connection
 }
 
-export function setMCPConnectionCredential(id: MCPConnectionID, value: string): Promise<void> {
-  const token = value.trim()
-  const reference = mcpConnectionCredentialRef(id)
-  return token
-    ? appCredentialServices.manager.set(reference, token)
+/** Saves or clears the secret a connection's form edits: its bearer token or environment. */
+export function setMCPConnectionCredential(
+  id: MCPConnectionID,
+  value: string,
+  type: 'bearer' | 'env' = 'bearer'
+): Promise<void> {
+  const secret = value.trim()
+  const reference = mcpCredentialRef(id, type)
+  return secret
+    ? appCredentialServices.manager.set(reference, secret)
     : appCredentialServices.manager.clear(reference)
 }
 
-export function mcpConnectionCredentialStatus(id: MCPConnectionID): Promise<CredentialStatus> {
-  return appCredentialServices.manager.status(mcpConnectionCredentialRef(id))
+export function mcpConnectionCredentialStatus(
+  id: MCPConnectionID,
+  type: MCPSecretType = 'bearer'
+): Promise<CredentialStatus> {
+  return appCredentialServices.manager.status(mcpCredentialRef(id, type))
 }
 
 export async function removeMCPConnection(id: MCPConnectionID): Promise<void> {
-  await appCredentialServices.manager.clear(mcpConnectionCredentialRef(id))
+  await Promise.all(
+    (Object.keys(CREDENTIAL_FIELDS) as MCPSecretType[]).map((type) =>
+      appCredentialServices.manager.clear(mcpCredentialRef(id, type))
+    )
+  )
   mcpConnectionSettings.value.connections = mcpConnectionSettings.value.connections.filter(
     (connection) => connection.id !== id
   )

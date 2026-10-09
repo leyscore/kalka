@@ -12,8 +12,16 @@ import {
 } from '@/app/integrations/mcp'
 import type { CredentialStatus } from '@/app/settings/credentials/types'
 
+import { parseEnvironment } from '../environment'
 import { enqueueMCPConnectionMutation } from '../mutations'
-import type { MCPConnectionID } from '../types'
+import type { MCPAuthenticationType, MCPConnectionID } from '../types'
+
+/** The secret a connection's form edits for its kind: a bearer token or an environment. */
+export type MCPFormSecret = 'bearer' | 'env'
+
+export function formSecretOf(type: MCPAuthenticationType): MCPFormSecret | null {
+  return type === 'bearer' || type === 'env' ? type : null
+}
 
 const connectionServices = {
   status: mcpConnectionCredentialStatus,
@@ -27,7 +35,7 @@ import type { SettingsSaveResult } from '@/app/settings/save-result'
 export function useMCPConnectionSettings(
   draft: Ref<MCPConnectionDraft>,
   tokenDraft: Ref<string>,
-  automation: Readonly<Ref<{ bearerTokenRequired: string }>>,
+  automation: Readonly<Ref<{ bearerTokenRequired: string; environmentInvalid?: string }>>,
   services = connectionServices
 ) {
   const tokenStatus = ref<CredentialStatus>('missing')
@@ -78,7 +86,10 @@ export function useMCPConnectionSettings(
     error.value = ''
 
     try {
-      const status = await services.status(connection.id)
+      const status = await services.status(
+        connection.id,
+        formSecretOf(connection.authentication.type) ?? 'bearer'
+      )
       if (!current(request)) return false
 
       tokenStatus.value = status
@@ -106,22 +117,28 @@ export function useMCPConnectionSettings(
     error.value = ''
 
     try {
-      if (
-        target.enabled &&
-        target.authenticationType === 'bearer' &&
-        !token.trim() &&
-        tokenStatus.value !== 'configured'
-      ) {
+      const secret = formSecretOf(target.authenticationType)
+      if (secret === 'env' && token.trim() && !parseEnvironment(token).ok) {
+        throw new Error(automation.value.environmentInvalid ?? 'Each line must be KEY=value')
+      }
+      if (secret && target.enabled && !token.trim() && tokenStatus.value !== 'configured') {
         throw new Error(automation.value.bearerTokenRequired)
       }
 
       await enqueueMCPConnectionMutation(id, async () => {
         const connection = services.save({ ...target, enabled: false })
         progress.persisted = true
-        if (target.authenticationType === 'none' || (clearToken && !token.trim())) {
-          await services.setCredential(connection.id, '')
-        } else if (token.trim()) await services.setCredential(connection.id, token)
-        else if (target.enabled && (await services.status(connection.id)) !== 'configured') {
+        if (!secret) {
+          // A kind without a form secret keeps none; a sign-in is kept by its own credential.
+          await services.setCredential(connection.id, '', 'bearer')
+          await services.setCredential(connection.id, '', 'env')
+        } else if (clearToken && !token.trim()) {
+          await services.setCredential(connection.id, '', secret)
+        } else if (token.trim()) await services.setCredential(connection.id, token, secret)
+        else if (
+          target.enabled &&
+          (await services.status(connection.id, secret)) !== 'configured'
+        ) {
           throw new Error(automation.value.bearerTokenRequired)
         }
 
@@ -173,10 +190,21 @@ export function useMCPConnectionSettings(
     }
   }
 
+  // Each kind has its own secret: switching kinds in the same draft starts from that kind's saved
+  // state. Opening another connection loads its own status instead.
   watch(
-    () => draft.value.authenticationType,
-    (type) => {
-      if (type === 'none') tokenDraft.value = ''
+    () => [draft.value.id, draft.value.authenticationType] as const,
+    async ([id, type], [previousID, previousType]) => {
+      if (id !== previousID || type === previousType) return
+      tokenDraft.value = ''
+      tokenStatus.value = 'missing'
+      const secret = formSecretOf(type)
+      if (!secret || !id) return
+      const request = version
+      const status = await services.status(id, secret).catch(() => 'missing' as const)
+      if (current(request) && formSecretOf(draft.value.authenticationType) === secret) {
+        tokenStatus.value = status
+      }
     }
   )
 

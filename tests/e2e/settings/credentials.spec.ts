@@ -57,8 +57,8 @@ test('MCP connections keep bearer tokens out of ordinary settings', async ({ pag
   await expect(section.getByLabel('MCP server URL')).toHaveAttribute('aria-invalid', 'true')
 
   await section.getByLabel('MCP server URL').fill('https://example.com/mcp')
-  await section.getByRole('switch', { name: 'Enable for ACP agents' }).click()
-  await section.getByRole('switch', { name: 'Use bearer authentication' }).click()
+  await section.getByRole('switch', { name: 'Use with the AI and agents' }).click()
+  await section.getByRole('button', { name: 'Token', exact: true }).click()
   await section.getByLabel('Bearer token').fill('secret-mcp-token')
   await section.getByRole('button', { name: 'Save' }).click()
 

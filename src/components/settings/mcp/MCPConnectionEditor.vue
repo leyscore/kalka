@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useTemplateRef } from 'vue'
+import { computed, useTemplateRef } from 'vue'
 
 import {
   useAutomationMessages,
@@ -8,8 +8,13 @@ import {
   useSettingsMessages
 } from '@open-pencil/vue'
 
-import type { MCPConnectionDraft } from '@/app/integrations/mcp'
-import type { MCPConnectionFieldErrors } from '@/app/integrations/mcp/settings/form'
+import { mcpAuthenticationTypes, type MCPConnectionDraft } from '@/app/integrations/mcp'
+import type {
+  MCPConnectionField,
+  MCPConnectionFieldErrors
+} from '@/app/integrations/mcp/settings/form'
+import type { MCPOAuthStatus } from '@/app/integrations/mcp/settings/oauth'
+import type { MCPAuthenticationType, MCPTransportType } from '@/app/integrations/mcp/types'
 import type { CredentialStatus } from '@/app/settings/credentials/types'
 import type { SettingsSaveResult } from '@/app/settings/save-result'
 import { focusInvalidField } from '@/components/settings/layout/focus'
@@ -21,7 +26,10 @@ import SettingsSection from '@/components/settings/layout/SettingsSection.vue'
 import ProviderSettingsField from '@/components/settings/provider/ProviderSettingsField.vue'
 import ProviderSettingsKeyField from '@/components/settings/provider/ProviderSettingsKeyField.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
+import AppAlert from '@/components/ui/feedback/AppAlert.vue'
 import AppInput from '@/components/ui/input/AppInput.vue'
+import AppTextarea from '@/components/ui/input/AppTextarea.vue'
+import SegmentedControl from '@/components/ui/select/SegmentedControl.vue'
 import AppSwitch from '@/components/ui/toggle/AppSwitch.vue'
 
 const draft = defineModel<MCPConnectionDraft>('draft', { required: true })
@@ -31,26 +39,76 @@ const {
   busy,
   error,
   saveResult,
-  fieldErrors = {}
+  fieldErrors = {},
+  oauthStatus = 'signed-out',
+  oauthError = '',
+  canRunLocal = false,
+  saved = false
 } = defineProps<{
   tokenStatus: CredentialStatus
   busy: boolean
   error: string
   saveResult?: SettingsSaveResult | null
   fieldErrors?: MCPConnectionFieldErrors
+  oauthStatus?: MCPOAuthStatus
+  oauthError?: string
+  /** Whether this build can start local servers: the desktop app. */
+  canRunLocal?: boolean
+  /** Whether the draft matches a saved connection, so it can sign in. */
+  saved?: boolean
 }>()
 defineEmits<{
   cancel: []
   save: []
   remove: []
   clear: []
-  blurField: [field: 'name' | 'url' | 'credential']
+  signIn: []
+  signOut: []
+  blurField: [field: MCPConnectionField]
 }>()
 const automation = useAutomationMessages()
 const common = useCommonMessages()
 const credentials = useCredentialMessages()
 const settings = useSettingsMessages()
 const formElement = useTemplateRef<HTMLFormElement>('formElement')
+
+const transportOptions = computed(() => [
+  { value: 'streamable-http', label: automation.value.transportHTTP },
+  { value: 'stdio', label: automation.value.transportStdio, disabled: !canRunLocal }
+])
+const authenticationLabels = computed<Record<MCPAuthenticationType, string>>(() => ({
+  none: automation.value.authenticationNone,
+  bearer: automation.value.authenticationBearer,
+  oauth: automation.value.authenticationOAuth,
+  env: automation.value.authenticationEnv
+}))
+const authenticationOptions = computed(() =>
+  mcpAuthenticationTypes(draft.value.transportType).map((value) => ({
+    value,
+    label: authenticationLabels.value[value]
+  }))
+)
+
+function isTransportType(value: string): value is MCPTransportType {
+  return value === 'streamable-http' || value === 'stdio'
+}
+
+function isAuthenticationType(value: string): value is MCPAuthenticationType {
+  return mcpAuthenticationTypes(draft.value.transportType).some((type) => type === value)
+}
+
+/** A transport keeps the authentication it allows; the others fall back to none. */
+function setTransport(value: string): void {
+  if (!isTransportType(value)) return
+  draft.value.transportType = value
+  if (!mcpAuthenticationTypes(value).includes(draft.value.authenticationType)) {
+    draft.value.authenticationType = 'none'
+  }
+}
+
+function setAuthentication(value: string): void {
+  if (isAuthenticationType(value)) draft.value.authenticationType = value
+}
 defineExpose({ focusInvalid: () => focusInvalidField(formElement.value) })
 </script>
 
@@ -84,7 +142,16 @@ defineExpose({ focusInvalid: () => focusInvalidField(formElement.value) })
               autocomplete="off"
             />
           </ProviderSettingsField>
+          <ProviderSettingsField :label="automation.serverType">
+            <SegmentedControl
+              :model-value="draft.transportType"
+              :options="transportOptions"
+              :label="automation.serverType"
+              @update:model-value="setTransport"
+            />
+          </ProviderSettingsField>
           <ProviderSettingsField
+            v-if="draft.transportType === 'streamable-http'"
             v-slot="{ control }"
             :label="automation.serverURL"
             :hint="automation.serverURLHint"
@@ -103,6 +170,26 @@ defineExpose({ focusInvalid: () => focusInvalidField(formElement.value) })
               :spellcheck="false"
             />
           </ProviderSettingsField>
+          <ProviderSettingsField
+            v-else
+            v-slot="{ control }"
+            :label="automation.serverCommand"
+            :hint="canRunLocal ? automation.serverCommandHint : automation.localServersDesktopOnly"
+            :error="fieldErrors.command"
+            @blur="$emit('blurField', 'command')"
+          >
+            <AppInput
+              v-bind="control"
+              v-model="draft.command"
+              tone="panel"
+              class="font-mono"
+              :aria-label="automation.serverCommand"
+              placeholder="npx -y @notionhq/notion-mcp-server"
+              autocomplete="off"
+              autocapitalize="off"
+              :spellcheck="false"
+            />
+          </ProviderSettingsField>
           <SettingsGroup>
             <SettingsRow :label="automation.enableConnection">
               <AppSwitch
@@ -111,15 +198,15 @@ defineExpose({ focusInvalid: () => focusInvalidField(formElement.value) })
                 :disabled="busy"
               />
             </SettingsRow>
-            <SettingsRow :label="automation.bearerAuthentication">
-              <AppSwitch
-                :model-value="draft.authenticationType === 'bearer'"
-                :label="automation.bearerAuthentication"
-                :disabled="busy"
-                @update:model-value="draft.authenticationType = $event ? 'bearer' : 'none'"
-              />
-            </SettingsRow>
           </SettingsGroup>
+          <ProviderSettingsField :label="automation.connectionAuthentication">
+            <SegmentedControl
+              :model-value="draft.authenticationType"
+              :options="authenticationOptions"
+              :label="automation.connectionAuthentication"
+              @update:model-value="setAuthentication"
+            />
+          </ProviderSettingsField>
           <ProviderSettingsKeyField
             v-if="draft.authenticationType === 'bearer'"
             v-model="token"
@@ -141,6 +228,61 @@ defineExpose({ focusInvalid: () => focusInvalidField(formElement.value) })
             @clear="$emit('clear')"
             @blur="$emit('blurField', 'credential')"
           />
+          <ProviderSettingsField
+            v-else-if="draft.authenticationType === 'env'"
+            v-slot="{ control }"
+            :label="automation.environment"
+            :hint="
+              tokenStatus === 'configured'
+                ? settings.savedCredentialHint
+                : automation.environmentHint
+            "
+            :error="fieldErrors.credential"
+            @blur="$emit('blurField', 'credential')"
+          >
+            <AppTextarea
+              v-bind="control"
+              v-model="token"
+              :rows="3"
+              class="font-mono"
+              :aria-label="automation.environment"
+              :placeholder="tokenStatus === 'configured' ? credentials.savedReplace : 'API_KEY=…'"
+              autocomplete="off"
+              autocapitalize="off"
+              :spellcheck="false"
+            />
+          </ProviderSettingsField>
+          <SettingsGroup v-else-if="draft.authenticationType === 'oauth'">
+            <SettingsRow
+              :label="
+                oauthStatus === 'signed-in' ? automation.oauthSignedIn : automation.oauthSignedOut
+              "
+              :description="saved ? automation.oauthHint : automation.oauthSaveFirst"
+            >
+              <AppButton
+                v-if="oauthStatus === 'signed-in'"
+                size="xs"
+                variant="outline"
+                :disabled="busy"
+                @click="$emit('signOut')"
+                >{{ automation.oauthSignOut }}</AppButton
+              >
+              <AppButton
+                v-else
+                size="xs"
+                color="primary"
+                variant="solid"
+                :disabled="busy || !saved || !canRunLocal"
+                :loading="oauthStatus === 'signing-in'"
+                data-test-id="mcp-oauth-sign-in"
+                @click="$emit('signIn')"
+                >{{
+                  oauthStatus === 'signing-in' ? automation.oauthSigningIn : automation.oauthSignIn
+                }}</AppButton
+              >
+            </SettingsRow>
+          </SettingsGroup>
+          <AppAlert v-if="oauthError" tone="error" :heading="oauthError" />
         </fieldset>
         <SettingsSaveFeedback :error="error" :result="saveResult" />
       </SettingsSection>
