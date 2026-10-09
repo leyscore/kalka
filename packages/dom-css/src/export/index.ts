@@ -13,6 +13,7 @@ export {
   type TailwindJSXWithLayers
 } from './tailwind-jsx'
 export { serializeHTML } from './html'
+export { characterStyleToCSS, textRunChildren } from './text-runs'
 export * from '../tokens'
 export * from '../behaviours'
 export type {

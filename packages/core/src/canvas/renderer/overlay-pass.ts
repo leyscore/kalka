@@ -200,7 +200,7 @@ export function drawOverlayPass(
     r.drawEnteredContainer(canvas, graph, overlays.enteredContainerId, overlays.rotationPreview)
   if (own('dropTarget'))
     drawDropTarget(r, canvas, graph, overlays.dropTargetId, overlays.rotationPreview)
-  drawEditingText(r, canvas, graph, overlays)
+  if (own('textEdit')) drawEditingText(r, canvas, graph, overlays)
   r.profiler.beginPhase('render:selection')
   if (own('selection')) r.drawSelection(canvas, graph, selectedIds, overlays)
   if (own('measurements') && measuring)

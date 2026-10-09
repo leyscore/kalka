@@ -200,7 +200,8 @@ const { detailMarker: hoveredIssueMarker, cursor: issueMarkerCursor } = useCanva
   }
 )
 
-useTextEdit(canvasRef, store, { isEnabled: () => isActivePane.value })
+// Over the DOM scene, text is edited in the page itself; the hidden textarea is the canvas's.
+if (!domScene) useTextEdit(canvasRef, store, { isEnabled: () => isActivePane.value })
 const { isDraggingOver } = useCanvasDrop(canvasRef, store, activatePane)
 
 const paddingSideIcons = {

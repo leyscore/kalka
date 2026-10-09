@@ -33,6 +33,10 @@ export function defineEditorStoreAccessors(store: object, editor: Editor) {
     textEditor: {
       enumerable: true,
       get: () => editor.textEditor
+    },
+    textCaret: {
+      enumerable: true,
+      get: () => editor.textCaret
     }
   })
 }

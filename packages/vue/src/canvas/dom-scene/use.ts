@@ -11,6 +11,7 @@ import Matrix from '@open-pencil/scene-graph/matrix'
 
 import { DomLayoutEngine } from './layout'
 import { DomSceneProjector } from './projector'
+import { DomTextEditor } from './text/editor'
 
 export interface UseDomSceneOptions {
   /** The view drawn by this pane. Defaults to `editor.state`. */
@@ -115,6 +116,8 @@ export function useDomScene(
     })
     const p = projector
     engine = new DomLayoutEngine(p, () => editor.graph)
+    // Text is edited in place, in the page, instead of by the canvas text engine.
+    editor.setExternalTextEditor(new DomTextEditor(editor, p))
     stops.push(
       editor.onEditorEvent('node:updated', (id, changes) => p.nodeUpdated(id, changes)),
       editor.onEditorEvent('node:previewUpdated', (id, changes) => p.nodeUpdated(id, changes)),
@@ -136,6 +139,7 @@ export function useDomScene(
   function stop() {
     cancelAnimationFrame(frame)
     for (const unsubscribe of stops.splice(0)) unsubscribe()
+    if (projector) editor.setExternalTextEditor(null)
     projector?.destroy()
     projector = null
     engine = null

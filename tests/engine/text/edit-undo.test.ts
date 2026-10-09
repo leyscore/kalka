@@ -44,6 +44,7 @@ function setup() {
       state.renderVersion++
     },
     getTextEditor: () => textEditor,
+    getExternalTextEditor: () => null,
     getRenderer: () => null,
     runLayoutForNode: () => undefined,
     runMutationWithLayout: async (operation) => operation(),

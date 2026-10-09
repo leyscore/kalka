@@ -1,7 +1,7 @@
 import type { Editor } from '@open-pencil/core/editor'
 
 export function handleTextSelectMove(editor: Editor, cx: number, cy: number) {
-  const textEditor = editor.textEditor
+  const textEditor = editor.textCaret
   const editNode = editor.state.editingTextId
     ? editor.graph.getNode(editor.state.editingTextId)
     : null

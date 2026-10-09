@@ -37,7 +37,7 @@ export function elementAttributes(element: DesignElement): Map<string, string> {
 export function buildNode(
   doc: Document,
   node: DesignNode,
-  register: (id: string, element: Element) => void,
+  register?: (id: string, element: Element) => void,
   inSVG = false
 ): Node {
   if (node.type === 'text') return doc.createTextNode(node.text)
@@ -45,7 +45,7 @@ export function buildNode(
   const element = svg ? doc.createElementNS(SVG_NS, node.tagName) : doc.createElement(node.tagName)
   for (const [name, value] of elementAttributes(node)) element.setAttribute(name, value)
   for (const child of node.children) element.append(buildNode(doc, child, register, svg))
-  if (node.sourceSceneNodeId) register(node.sourceSceneNodeId, element)
+  if (node.sourceSceneNodeId) register?.(node.sourceSceneNodeId, element)
   return element
 }
 

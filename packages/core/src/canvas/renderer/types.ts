@@ -121,6 +121,7 @@ export type OverlayLayerId =
   | 'autoLayoutHover'
   | 'nodeEdit'
   | 'nodeEditShape'
+  | 'textEdit'
   | 'pen'
   | 'issueMarkers'
   | 'presence'

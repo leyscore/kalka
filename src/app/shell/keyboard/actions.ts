@@ -51,7 +51,7 @@ export function createKeyboardActions({
     if (node?.type === 'TEXT') {
       requestAnimationFrame(() => {
         store.startTextEditing(node.id)
-        store.textEditor?.selectAll()
+        store.textCaret?.selectAll()
         store.requestRender()
       })
     }

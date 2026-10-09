@@ -70,6 +70,8 @@ export const SVG_OVERLAY_LAYERS: ReadonlySet<OverlayLayerId> = new Set<OverlayLa
   'nodeEdit',
   // The DOM scene redraws the path being edited from its live vertices.
   'nodeEditShape',
+  // Text being edited is the page's own, caret and selection included.
+  'textEdit',
   'pen',
   'issueMarkers',
   'presence',

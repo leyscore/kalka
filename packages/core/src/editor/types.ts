@@ -174,6 +174,26 @@ export interface EditorOptions {
   skipInitialGraphSetup?: boolean
 }
 
+/** What pointer input does to the text being edited: place, extend or widen the selection. */
+export interface TextCaretControl {
+  selectAll(): void
+  /** Node-local coordinates. */
+  selectWordAt(x: number, y: number): void
+  /** Node-local coordinates; `extend` keeps the anchor, as a shift-click or a drag does. */
+  setCursorAt(x: number, y: number, extend?: boolean): void
+}
+
+/**
+ * Text editing done outside the canvas renderer, such as the DOM scene's editor in the page.
+ * While installed, the editor's own text engine stays idle: this edits the layer in place and
+ * keeps its `text` and `styleRuns` up to date in the graph as the user types.
+ */
+export interface ExternalTextEditor extends TextCaretControl {
+  start(nodeId: string): void
+  /** Ends the edit; the graph already holds what was typed. */
+  stop(): void
+}
+
 export interface EditorContext {
   get graph(): SceneGraph
   set graph(g: SceneGraph)
@@ -191,6 +211,7 @@ export interface EditorContext {
   getCk: () => CanvasKit | null
   getRenderer: () => SkiaRenderer | null
   getTextEditor: () => TextEditor | null
+  getExternalTextEditor: () => ExternalTextEditor | null
   requestRender: () => void
   /** A document change the canvas does not draw: views and saving follow, nothing is redrawn. */
   requestRefresh: () => void

@@ -18,7 +18,7 @@ import {
   textSnapshotChanged,
   type TextEditSession
 } from './text/session'
-import type { EditorContext } from './types'
+import type { EditorContext, ExternalTextEditor } from './types'
 
 /**
  * Path text is edited by re-flowing glyph OUTLINES along its path. When the font
@@ -112,6 +112,7 @@ export function createTextActions(ctx: EditorContext) {
 
   function startTextEditing(nodeId: string) {
     const te = ctx.getTextEditor()
+    const external = ctx.getExternalTextEditor()
     if (ctx.state.editingTextId) commitTextEdit()
     const node = ctx.graph.getNode(nodeId)
     if (!node) return
@@ -119,14 +120,64 @@ export function createTextActions(ctx: EditorContext) {
     if (!isPathTextEditable(node)) return
     activeSession = createTextEditSession(node)
     ctx.state.editingTextId = nodeId
-    if (te) {
+    if (external) {
+      external.start(nodeId)
+    } else if (te) {
       te.setRenderer(ctx.getRenderer())
       te.start(node)
     }
     ctx.requestRender()
   }
 
+  /** Ends an edit made by an external editor, which kept the graph in step while typing. */
+  function commitExternalTextEdit(external: ExternalTextEditor) {
+    const session = activeSession
+    external.stop()
+    activeSession = null
+    ctx.state.editingTextId = null
+    const node = session ? ctx.graph.getNode(session.nodeId) : undefined
+    if (!session || !node) {
+      ctx.requestRender()
+      return
+    }
+    // The graph already holds the edit; this records it as one undo step and keeps instances
+    // and bound properties in step, as a canvas edit does.
+    const after = snapshotTextNode(node, node.text)
+    const before = session.before
+    if (!textSnapshotChanged(before, after)) {
+      ctx.requestRender()
+      return
+    }
+    const containingInstances = containingInstanceIds(ctx, node.id)
+    const instanceOverridesBefore = snapshotInstanceOverrides(ctx, containingInstances)
+    if (before.text !== after.text)
+      applyTextInstanceOverride(ctx, containingInstances, node.id, after.text)
+    const instanceOverridesAfter = snapshotInstanceOverrides(ctx, containingInstances)
+    ctx.undo.runBatch('Edit text', () => {
+      ctx.undo.push({
+        label: 'Edit text',
+        forward: () => {
+          ctx.graph.updateNode(node.id, { text: after.text, styleRuns: after.styleRuns })
+          restoreInstanceOverrides(ctx, instanceOverridesAfter)
+          ctx.runLayoutForNode(node.id)
+        },
+        inverse: () => {
+          ctx.graph.updateNode(node.id, { text: before.text, styleRuns: before.styleRuns })
+          restoreInstanceOverrides(ctx, instanceOverridesBefore)
+          ctx.runLayoutForNode(node.id)
+        }
+      })
+      if (before.text !== after.text) applyBoundTextEdit(ctx, node.id, after.text)
+    })
+    ctx.requestRender()
+  }
+
   function commitTextEdit() {
+    const external = ctx.getExternalTextEditor()
+    if (external && ctx.state.editingTextId) {
+      commitExternalTextEdit(external)
+      return
+    }
     const te = ctx.getTextEditor()
     if (!te?.isActive) {
       ctx.state.editingTextId = null

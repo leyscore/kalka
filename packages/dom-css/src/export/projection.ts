@@ -21,6 +21,7 @@ import {
   strokeColorToCSS
 } from './css'
 import { addGridContainer, addGridPlacement } from './grid'
+import { textRunChildren } from './text-runs'
 
 const DOM_CSS_PLUGIN_ID = 'open-pencil-dom-css'
 const IMAGE_SOURCE_URL_KEY = 'image-source-url'
@@ -477,7 +478,7 @@ function sceneNodeToDesignNode(
       inlineStyle: styleFromTextNode(node, parent, css),
       sourceSceneNodeId: node.id,
       sourceSceneNode: node,
-      children: [{ type: 'text', text: node.text }]
+      children: textRunChildren(node)
     }
   }
 

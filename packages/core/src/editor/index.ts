@@ -48,6 +48,8 @@ export type {
   EditorState,
   EditorSharedState,
   EditorViewState,
+  ExternalTextEditor,
   FigmaClipboardImageResolver,
+  TextCaretControl,
   Tool
 } from './types'

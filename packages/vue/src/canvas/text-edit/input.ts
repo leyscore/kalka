@@ -37,7 +37,7 @@ export function createTextEditInput(options: TextEditInputOptions) {
   } = options
 
   function handleTextEditClick(cx: number, cy: number, shiftKey: boolean): boolean {
-    const textEd = editor.textEditor
+    const textEd = editor.textCaret
     const editNode = editor.state.editingTextId
       ? editor.graph.getNode(editor.state.editingTextId)
       : null
@@ -74,7 +74,7 @@ export function createTextEditInput(options: TextEditInputOptions) {
     editor.startTextEditing(hit.id)
     // Text the editor refuses, such as path text without its font, stays selected only.
     if (editor.state.editingTextId !== hit.id) return
-    const textEd = editor.textEditor
+    const textEd = editor.textCaret
     if (textEd) {
       const abs = editor.graph.getAbsolutePosition(hit.id)
       textEd.selectWordAt(cx - abs.x, cy - abs.y)

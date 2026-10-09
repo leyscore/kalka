@@ -72,6 +72,10 @@ export class DomSceneProjector {
   private readonly artboards = new Map<string, Artboard>()
   private readonly elements = new Map<string, Element>()
   private readonly dirty = new Set<string>()
+  /** What each text element was last built from, so unchanged text is left alone. */
+  private readonly textContent = new WeakMap<Element, string>()
+  /** Layers edited in place, such as text under the in-page editor: not patched meanwhile. */
+  private readonly locked = new Set<string>()
   private pageDirty = true
   private pageId: string | null = null
   private destroyed = false
@@ -108,6 +112,26 @@ export class DomSceneProjector {
   }
 
   // ------------------------------------------------------------------ invalidation
+
+  /**
+   * Hands a layer's element to another owner, such as the text editor: the projector leaves
+   * it untouched until `unlock`, which rebuilds it from the graph.
+   */
+  lock(id: string): Element | undefined {
+    this.locked.add(id)
+    return this.elements.get(id)
+  }
+
+  unlock(id: string): void {
+    if (!this.locked.delete(id)) return
+    const element = this.elements.get(id)
+    const node = this.graph.getNode(id)
+    if (element) this.removeElement(element)
+    if (!node) return
+    const artboardId = this.topLevelOf(node)
+    // Its parent puts the rebuilt element back; an artboard rebuilds itself.
+    this.dirty.add(artboardId === id || !node.parentId ? id : node.parentId)
+  }
 
   /** A font loaded after the artboards opened: every artboard gets it. */
   addFont(face: ArtboardFontFace): void {
@@ -387,6 +411,7 @@ export class DomSceneProjector {
     const graph = this.graph
     const node = graph.getNode(id)
     if (!node) return null
+    if (this.locked.has(id)) return this.topLevelOf(node)
     const artboardId = this.topLevelOf(node)
     if (!artboardId) return null
     const artboard = this.artboards.get(artboardId)
@@ -414,10 +439,13 @@ export class DomSceneProjector {
 
     patchAttributes(current, this.attributesFor(node, projected, isRoot))
     if (node.type === 'TEXT') {
-      const text = projected.children
-        .map((child) => (child.type === 'text' ? child.text : ''))
-        .join('')
-      if (current.textContent !== text) current.textContent = text
+      // Characters and their style runs: rebuilt only when they changed.
+      const content = JSON.stringify(projected.children)
+      if (this.textContent.get(current) !== content) {
+        const doc = artboard.doc
+        current.replaceChildren(...projected.children.map((child) => buildNode(doc, child)))
+        this.textContent.set(current, content)
+      }
     } else {
       this.reconcileChildren(artboard.doc, node, current)
     }

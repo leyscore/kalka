@@ -52,7 +52,9 @@ import type {
   EditorEventName,
   EditorEvents,
   EditorOptions,
-  EditorState
+  EditorState,
+  ExternalTextEditor,
+  TextCaretControl
 } from './types'
 import { createUndoActions } from './undo'
 import { createVariableActions } from './variables'
@@ -78,6 +80,7 @@ export function createEditor(options?: EditorOptions) {
   let uninstallTextMeasurer: (() => void) | null = null
   const interactiveEdits = new Set<symbol>()
   let _textEditor: TextEditor | null = null
+  let _externalTextEditor: ExternalTextEditor | null = null
   const events: Emitter<EditorEvents> = createNanoEvents()
   const stopFontResolutionEvents = fontResolver.subscribe((event, snapshot) => {
     events.emit('font:resolution-changed', event, snapshot)
@@ -225,6 +228,7 @@ export function createEditor(options?: EditorOptions) {
     getCk: () => _ck,
     getRenderer: () => _renderer,
     getTextEditor: () => _textEditor,
+    getExternalTextEditor: () => _externalTextEditor,
     requestRender,
     requestRefresh,
     requestRepaint,
@@ -339,6 +343,15 @@ export function createEditor(options?: EditorOptions) {
     },
     get textEditor() {
       return _textEditor
+    },
+    /** What pointer input moves while editing text: the external editor if one is installed. */
+    get textCaret(): TextCaretControl | null {
+      return _externalTextEditor ?? _textEditor
+    },
+    /** Installs an editor that edits text in place instead of the canvas text engine. */
+    setExternalTextEditor(editor: ExternalTextEditor | null) {
+      if (_externalTextEditor && ctx.state.editingTextId) text.commitTextEdit()
+      _externalTextEditor = editor
     },
     undo,
     state,
