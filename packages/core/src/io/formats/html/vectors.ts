@@ -6,6 +6,8 @@ import { iconColor } from '#core/icons/render'
 import { renderNodeSVGElement } from '#core/io/formats/svg/export'
 import type { SVGNode } from '#core/io/formats/svg/node'
 
+import { pathTextElement } from './path-text'
+
 function designNode(node: SVGNode | string): DesignNode {
   if (typeof node === 'string') return { type: 'text', text: node }
   return {
@@ -34,6 +36,7 @@ function idPart(id: string): string {
  * other's gradients or filters.
  */
 export const vectorElement: VectorElementRenderer = (graph, node) => {
+  if (node.type === 'TEXT') return pathTextElement(node)
   const idPrefix = `${idPart(node.id)}-`
   const icon = readIcon(node)
   const drawn = renderNodeSVGElement(graph, node, {

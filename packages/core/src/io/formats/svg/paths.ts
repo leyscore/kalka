@@ -35,7 +35,9 @@ export function geometryBlobToSVGPath(blob: Uint8Array, decimals: number | null 
     const cmd = blob[o++]
     switch (cmd) {
       case CMD_CLOSE:
-        parts.push('Z')
+        // A close before any move closes nothing, and SVG rejects a path that does not start
+        // with a move. Figma's glyph outlines start this way.
+        if (parts.length > 0) parts.push('Z')
         break
       case CMD_MOVE_TO: {
         const x = coordinate(dv.getFloat32(o, true), decimals)

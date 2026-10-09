@@ -95,7 +95,8 @@ export class DomSceneProjector {
   }
 
   get needsFlush(): boolean {
-    return this.pageDirty || this.dirty.size > 0
+    // A switch to an empty page changes nothing else, yet must clear the previous page's artboards.
+    return this.pageDirty || this.dirty.size > 0 || this.currentPageId() !== this.pageId
   }
 
   /** The element drawing a layer, if it is on the current page. */
@@ -401,7 +402,8 @@ export class DomSceneProjector {
       // Variables are written as values until each artboard carries the tokens stylesheet.
       tokens: false,
       vectorElement: this.options.vectorElement,
-      shallow
+      shallow,
+      derivedSizes: true
     })
     return doc.children[0] ?? null
   }

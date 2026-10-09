@@ -30,8 +30,11 @@ export function createArtboardFrame(ownerDocument: Document, nodeId: string): HT
   frame.setAttribute('aria-hidden', 'true')
   frame.setAttribute('tabindex', '-1')
   frame.dataset.kalkaArtboard = nodeId
+  // A design draws in light colors whatever the editor's theme. The frame states the same color
+  // scheme as its document: when they differ, browsers paint the frame opaque, and a frame
+  // without fills would show white instead of the canvas.
   frame.style.cssText =
-    'position:absolute;left:0;top:0;border:0;margin:0;padding:0;background:transparent;pointer-events:none;overflow:hidden'
+    'position:absolute;left:0;top:0;border:0;margin:0;padding:0;background:transparent;pointer-events:none;overflow:hidden;color-scheme:light'
   frame.srcdoc = artboardSrcdoc()
   return frame
 }

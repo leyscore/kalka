@@ -46,6 +46,12 @@ export interface SceneGraphToDesignOptions {
    * can restyle one element. Text keeps its characters; vector layers keep their SVG.
    */
   shallow?: boolean
+  /**
+   * Size auto layout frames that hug from the sizes their file saved, where it saved them, as the
+   * Yoga engine does for imported documents. For a canvas showing a file as its author laid it
+   * out; exports leave hugging frames to their content.
+   */
+  derivedSizes?: boolean
 }
 
 /** Layers whose shape only paths describe, which CSS boxes cannot draw. */
@@ -430,6 +436,29 @@ interface ProjectionContext {
   vectorElement: VectorElementRenderer | undefined
   shown: ReadonlySet<string> | undefined
   shallow: boolean
+  derivedSizes: boolean
+}
+
+/**
+ * A hugging auto layout frame as fixed at the size its file saved, on each axis it saved one,
+ * so the browser lays out its content inside the box the author's tool computed.
+ */
+function withDerivedSize(node: SceneNode): SceneNode {
+  const derived = node.derivedLayout
+  if (!derived || (node.layoutMode !== 'HORIZONTAL' && node.layoutMode !== 'VERTICAL')) return node
+  const row = node.layoutMode === 'HORIZONTAL'
+  const sized: Partial<SceneNode> = {}
+  const main = row ? derived.width : derived.height
+  const cross = row ? derived.height : derived.width
+  if (node.primaryAxisSizing === 'HUG' && main !== undefined) {
+    sized.primaryAxisSizing = 'FIXED'
+    sized[row ? 'width' : 'height'] = main
+  }
+  if (node.counterAxisSizing === 'HUG' && cross !== undefined) {
+    sized.counterAxisSizing = 'FIXED'
+    sized[row ? 'height' : 'width'] = cross
+  }
+  return Object.keys(sized).length > 0 ? { ...node, ...sized } : node
 }
 
 /**
@@ -456,6 +485,31 @@ function vectorDesignNode(
   }
 }
 
+/** A text layer as a span of its runs, or, set on a path, as the SVG of its saved glyphs. */
+function textDesignNode(
+  context: ProjectionContext,
+  node: SceneNode,
+  attrs: Record<string, string>,
+  parent: SceneNode | undefined,
+  css: FieldCSS
+): DesignNode {
+  const style = styleFromTextNode(node, parent, css)
+  // CSS cannot lay text along a curve; its saved glyph outlines draw it instead.
+  if (node.textPathData !== null) {
+    const curved = vectorDesignNode(context, node, attrs, style)
+    if (curved) return curved
+  }
+  return {
+    type: 'element',
+    tagName: 'span',
+    attrs,
+    inlineStyle: style,
+    sourceSceneNodeId: node.id,
+    sourceSceneNode: node,
+    children: textRunChildren(node)
+  }
+}
+
 function sceneNodeToDesignNode(
   context: ProjectionContext,
   node: SceneNode,
@@ -470,17 +524,7 @@ function sceneNodeToDesignNode(
   const attrs = { ...attrsForNode(graph, node, includeSourceIds), ...entered?.attrs }
   const css: FieldCSS = (field, literal) => tokens?.reference(node, field, modes) ?? literal
 
-  if (node.type === 'TEXT') {
-    return {
-      type: 'element',
-      tagName: 'span',
-      attrs,
-      inlineStyle: styleFromTextNode(node, parent, css),
-      sourceSceneNodeId: node.id,
-      sourceSceneNode: node,
-      children: textRunChildren(node)
-    }
-  }
+  if (node.type === 'TEXT') return textDesignNode(context, node, attrs, parent, css)
 
   // An icon is one drawing, however many paths it has.
   if (VECTOR_SHAPES.has(node.type) || readIcon(node)) {
@@ -510,7 +554,11 @@ function sceneNodeToDesignNode(
     type: 'element',
     tagName: tagNameForNode(node),
     attrs,
-    inlineStyle: styleFromSceneNode(node, parent, css),
+    inlineStyle: styleFromSceneNode(
+      context.derivedSizes ? withDerivedSize(node) : node,
+      parent,
+      css
+    ),
     sourceSceneNodeId: node.id,
     sourceSceneNode: node,
     children
@@ -524,7 +572,8 @@ function projectionContext(
     tokens = true,
     vectorElement,
     shown,
-    shallow = false
+    shallow = false,
+    derivedSizes = false
   }: SceneGraphToDesignOptions
 ): ProjectionContext {
   return {
@@ -533,7 +582,8 @@ function projectionContext(
     tokens: tokens ? new DesignTokens(graph) : undefined,
     vectorElement,
     shown,
-    shallow
+    shallow,
+    derivedSizes
   }
 }
 
