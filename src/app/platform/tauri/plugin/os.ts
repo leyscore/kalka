@@ -1,4 +1,4 @@
-import { native } from './bridge'
+import { native } from '../bridge'
 
 const PLATFORMS: Record<string, string> = { darwin: 'macos', win32: 'windows', linux: 'linux' }
 

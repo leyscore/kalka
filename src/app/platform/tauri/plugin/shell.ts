@@ -1,4 +1,4 @@
-import { call, native } from './bridge'
+import { call, native } from '../bridge'
 
 export interface SpawnOptions {
   cwd?: string

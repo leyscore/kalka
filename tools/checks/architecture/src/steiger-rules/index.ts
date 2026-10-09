@@ -226,7 +226,8 @@ const noPrototypeOrGeneratedImports = createImportRule(
     if (resolved.startsWith('scratch/')) {
       return 'Committed code must not import scratch prototypes.'
     }
-    if (resolved.startsWith('desktop/generated/')) {
+    // The desktop shell builds its native menus from them, as the Tauri shell's Rust did.
+    if (resolved.startsWith('desktop/generated/') && !sourceRel.startsWith('electron/src/')) {
       return 'Do not import generated desktop artifacts from TypeScript/app code.'
     }
     if (

@@ -21,8 +21,9 @@ const toolbarTheme = {
   },
   variants: {
     active: {
+      // On desktop a pill glides behind the active tool (DesktopToolbar); mobile paints its own.
       true: {
-        button: 'bg-accent text-white shadow-[0_2px_8px_-1px] shadow-accent/50'
+        button: 'text-white'
       },
       false: {}
     },
@@ -33,7 +34,7 @@ const toolbarTheme = {
       },
       false: {
         button: 'rounded-lg',
-        flyoutTrigger: 'rounded-lg hover:bg-hover hover:text-surface'
+        flyoutTrigger: 'rounded-lg hover:text-surface'
       }
     },
     disabled: {
@@ -55,7 +56,14 @@ const toolbarTheme = {
       active: false,
       mobile: false,
       class: {
-        button: 'hover:bg-hover hover:text-surface'
+        button: 'hover:text-surface'
+      }
+    },
+    {
+      active: true,
+      mobile: true,
+      class: {
+        button: 'bg-accent shadow-[0_2px_8px_-1px] shadow-accent/50'
       }
     }
   ],

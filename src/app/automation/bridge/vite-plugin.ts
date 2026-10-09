@@ -50,6 +50,8 @@ export function createAutomationEnvironment(
   return environment
 }
 
+/** Where the running dev MCP child's stop lives, across Vite config reloads. */
+const RUNNING_DEV_MCP = Symbol.for('kalka.devMCP.stop')
 const MAX_CONFIGURATION_BYTES = 70_000
 const CHILD_EXIT_TIMEOUT_MS = 2_000
 const CHILD_HEALTH_ATTEMPTS = 200
@@ -298,6 +300,14 @@ export function automationPlugin(
           }
         })()
       })
+      // Vite builds the new server before closing the old one when its config changes, and the
+      // config is evaluated anew, so the previous instance's child still holds the port. It is
+      // reached through the process instead, and stopped first.
+      const registry = globalThis as typeof globalThis & {
+        [RUNNING_DEV_MCP]?: () => Promise<void>
+      }
+      await registry[RUNNING_DEV_MCP]?.()
+      registry[RUNNING_DEV_MCP] = () => enqueue(stopChild)
       await enqueue(startChild)
     },
     async buildEnd() {

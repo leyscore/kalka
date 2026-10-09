@@ -1,4 +1,4 @@
-import { call } from './bridge'
+import { call } from '../bridge'
 
 export interface DialogFilter {
   name: string

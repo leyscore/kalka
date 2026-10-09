@@ -12,7 +12,7 @@ export default {
       motionStyles.floating
     ],
     viewport: '',
-    item: 'relative flex h-6 cursor-pointer items-center text-surface outline-none select-none data-[disabled]:pointer-events-none data-[highlighted]:bg-hover data-[disabled]:opacity-50'
+    item: 'relative flex h-6 cursor-pointer items-center text-surface outline-none select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50'
   },
   variants: {
     padding: {

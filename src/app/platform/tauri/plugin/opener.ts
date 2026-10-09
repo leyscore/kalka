@@ -1,4 +1,4 @@
-import { call } from './bridge'
+import { call } from '../bridge'
 
 export function openUrl(url: string | URL): Promise<void> {
   return call('opener.openUrl', String(url))

@@ -6,7 +6,7 @@ import { floatingSurface } from '@/theme/overlay'
 export const menu = tv({
   slots: {
     content: ['z-50 p-1', floatingSurface, motionStyles.floating],
-    item: 'flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-[11px] outline-none select-none data-[disabled]:cursor-default data-[disabled]:text-muted/50 data-[highlighted]:bg-hover',
+    item: 'flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-[11px] outline-none select-none data-[disabled]:cursor-default data-[disabled]:text-muted/50',
     separator: 'mx-1 my-1 h-px bg-border',
     label: 'px-2 pt-1.5 pb-1 text-[11px] text-muted select-none',
     shortcut: 'text-[11px] text-muted',

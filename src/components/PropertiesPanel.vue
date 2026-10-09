@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from 'reka-ui'
-import { computed } from 'vue'
+import { computed, useTemplateRef } from 'vue'
 
 import { useDesignCheckMessages, useI18n } from '@open-pencil/vue'
 
 import { useAIChat } from '@/app/ai/chat/use'
 import { useEditorStore } from '@/app/editor/active-store'
 import { countIssues } from '@/app/editor/design-check/issues'
+import { useGlide } from '@/components/ui/motion/useGlide'
+import { glidePills } from '@/theme/motion/glide'
 import { propertiesTabs } from '@/theme/panel/properties-tabs'
 
 import ChatPanel from './ChatPanel.vue'
@@ -21,6 +23,15 @@ const checkMessages = useDesignCheckMessages()
 const store = useEditorStore()
 
 const tabStyles = propertiesTabs()
+
+const tabList = useTemplateRef<{ $el: HTMLElement }>('tabList')
+const tabListElement = computed(() => tabList.value?.$el ?? null)
+useGlide(tabListElement, {
+  items: '[role="tab"]',
+  active: '[role="tab"][data-state="active"]',
+  pillClass: glidePills.active
+})
+useGlide(tabListElement, { items: '[role="tab"]', hover: true, pillClass: glidePills.hover })
 
 /** Errors and warnings on the current page; suggestions do not earn an indicator. */
 const problemCount = computed(() => {
@@ -38,7 +49,7 @@ const problemCount = computed(() => {
     style="contain: paint layout style"
   >
     <TabsRoot v-model="activeTab" class="flex min-h-0 flex-1 flex-col">
-      <TabsList :class="tabStyles.list()">
+      <TabsList ref="tabList" :class="tabStyles.list()">
         <TabsTrigger
           value="design"
           data-test-id="properties-tab-design"

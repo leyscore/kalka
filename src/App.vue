@@ -3,13 +3,14 @@ import { useHead } from '@unhead/vue'
 import { useEventListener } from '@vueuse/core'
 import { MotionConfig } from 'motion-v'
 import { TooltipProvider } from 'reka-ui'
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, onScopeDispose } from 'vue'
 
 import { provideEditor, useI18n } from '@open-pencil/vue'
 
 import { useDocumentCloseProtection } from '@/app/document/close/use'
 import { useFollowingEditorStore } from '@/app/editor/active-store'
 import { animationsEnabled } from '@/app/shell/motion'
+import { installMenuGlide } from '@/app/shell/motion/menu-glide'
 import { useAppTheme } from '@/app/shell/theme'
 import { toast } from '@/app/shell/ui'
 import { useRestartApprovals } from '@/app/shell/updater/approvals'
@@ -44,7 +45,10 @@ useEventListener(window, 'pagehide', () => {
   void prepareForReload()
 })
 
+let stopMenuGlide: (() => void) | null = null
+onScopeDispose(() => stopMenuGlide?.())
 onMounted(() => {
+  stopMenuGlide = installMenuGlide()
   toast.setupGlobalErrorHandler()
   scheduleStartupUpdateCheck(updates)
   void kickSyncEngine()

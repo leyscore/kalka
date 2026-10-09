@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ToolbarRoot } from 'reka-ui'
+import { computed, useTemplateRef } from 'vue'
 
 import type { EditorToolDef } from '@open-pencil/core/editor'
 import {
@@ -13,7 +14,9 @@ import type { Tool } from '@open-pencil/vue'
 import ToolButton from '@/components/Toolbar/ToolButton.vue'
 import ToolFlyout from '@/components/Toolbar/ToolFlyout.vue'
 import type { ToolbarUI, ToolIconMap, ToolLabels } from '@/components/Toolbar/types'
+import { useGlide } from '@/components/ui/motion/useGlide'
 import Tip from '@/components/ui/overlay/Tip.vue'
+import { glidePills } from '@/theme/motion/glide'
 
 const { tools, activeTool, flyoutSelections, toolIcons, toolLabels, toolShortcuts, ui } =
   defineProps<{
@@ -29,6 +32,16 @@ const { tools, activeTool, flyoutSelections, toolIcons, toolLabels, toolShortcut
 const emit = defineEmits<{
   setTool: [tool: Tool]
 }>()
+
+// The active tool's accent pill slides from tool to tool, and a soft one follows the pointer.
+const toolbarRoot = useTemplateRef<{ $el: HTMLElement }>('toolbarRoot')
+const toolbarElement = computed(() => toolbarRoot.value?.$el ?? null)
+useGlide(toolbarElement, {
+  items: 'button',
+  active: 'button[aria-pressed="true"]',
+  pillClass: glidePills.accent
+})
+useGlide(toolbarElement, { items: 'button', hover: true, pillClass: glidePills.hover })
 </script>
 
 <template>
@@ -37,6 +50,7 @@ const emit = defineEmits<{
     class="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center"
   >
     <ToolbarRoot
+      ref="toolbarRoot"
       data-test-id="toolbar"
       class="flex gap-0.5 rounded-2xl border border-border/70 bg-panel/90 p-1.5 shadow-[0_16px_40px_-10px_rgb(0_0_0/0.45),0_2px_8px_rgb(0_0_0/0.15)] backdrop-blur-xl backdrop-saturate-150"
     >

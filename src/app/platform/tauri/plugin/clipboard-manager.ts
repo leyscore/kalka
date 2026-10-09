@@ -1,4 +1,4 @@
-import { call } from './bridge'
+import { call } from '../bridge'
 
 export function writeText(text: string): Promise<void> {
   return call('clipboard.writeText', text)
