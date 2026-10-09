@@ -10,7 +10,7 @@
   "addConnection": "接続を追加",
   "connectionName": "接続名",
   "connections": "MCP接続",
-  "connectionsDescription": "ACPエージェントに信頼できるリモートツールやサービスへのアクセスを許可します。",
+  "connectionsDescription": "組み込み AI とエージェントに、ドキュメントやチケット、データなど信頼できるリモートのツールやサービスを渡し、実際の内容からデザインを始められるようにします。",
   "addServerConnection": "MCP接続を追加",
   "editConnection": "MCP接続を編集",
   "connectionEditorDescription": "Streamable HTTPサーバーと任意の認証を設定します。",

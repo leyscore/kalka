@@ -5,6 +5,7 @@ import type {
   ChatTransport,
   FinishReason,
   LanguageModel,
+  Tool,
   ToolExecutionOptions,
   UIMessage
 } from 'ai'
@@ -34,6 +35,7 @@ import {
 } from '@/app/diagnostics/events'
 import type { AIDiagnosticContext } from '@/app/diagnostics/events/ai'
 import type { getActiveEditorStore } from '@/app/editor/active-store'
+import { EXTERNAL_MCP_TOOL_PREFIX, externalMCPTools } from '@/app/integrations/mcp/client'
 
 import { resumableTransport } from './history/continuation'
 import { maxAgentSteps } from './preferences'
@@ -138,8 +140,13 @@ export function createToolLoopTransport({
       return {
         ...options,
         stopWhen: stepCountIs(stepLimit),
-        // Keep the full catalog for validating history; offer only enabled tools to this request.
-        tools: Object.fromEntries(Object.entries(tools).filter(([name]) => enabledNames.has(name))),
+        // Keep the full catalog for validating history; offer only enabled tools to this request,
+        // and the tools of the outside servers connected in Settings › MCP.
+        tools: Object.fromEntries(
+          Object.entries(tools).filter(
+            ([name]) => enabledNames.has(name) || name.startsWith(EXTERNAL_MCP_TOOL_PREFIX)
+          )
+        ),
         maxOutputTokens,
         ...callSettings(providerID, cacheProviderOptions, thinkingLevel())
       }
@@ -180,6 +187,8 @@ export function createToolLoopTransport({
     async sendMessages(options) {
       // Stopping a reply ends the run without onFinish.
       if (options.abortSignal) useEventListener(options.abortSignal, 'abort', () => endRun(store))
+      // Outside servers join the catalog before the request, so the agent can read from them.
+      await externalMCPTools.sync(tools as Record<string, Tool>)
       // DirectChatTransport handles error chunks, but not a rejected underlying stream.
       return createUIMessageStream<UIMessage>({
         execute: async ({ writer }) => {

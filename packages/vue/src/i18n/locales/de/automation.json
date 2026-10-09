@@ -10,7 +10,7 @@
   "addConnection": "Verbindung hinzufügen",
   "connectionName": "Verbindungsname",
   "connections": "MCP-Verbindungen",
-  "connectionsDescription": "Gewähre ACP-Agenten Zugriff auf vertrauenswürdige entfernte Tools und Dienste.",
+  "connectionsDescription": "Geben Sie der integrierten KI und Ihren Agenten vertrauenswürdige Remote-Tools und -Dienste wie Ihre Dokumente, Tickets oder Daten, damit Entwürfe mit echten Inhalten beginnen.",
   "addServerConnection": "MCP-Verbindung hinzufügen",
   "editConnection": "MCP-Verbindung bearbeiten",
   "connectionEditorDescription": "Konfiguriere einen Streamable-HTTP-Server und optionale Authentifizierung.",

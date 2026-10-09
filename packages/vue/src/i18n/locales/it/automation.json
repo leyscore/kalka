@@ -10,7 +10,7 @@
   "addConnection": "Aggiungi connessione",
   "connectionName": "Nome connessione",
   "connections": "Connessioni MCP",
-  "connectionsDescription": "Consenti agli agenti ACP di accedere a strumenti e servizi remoti attendibili.",
+  "connectionsDescription": "Dai all’IA integrata e ai tuoi agenti strumenti e servizi remoti affidabili, come documenti, ticket o dati, per progettare partendo da contenuti reali.",
   "addServerConnection": "Aggiungi connessione MCP",
   "editConnection": "Modifica connessione MCP",
   "connectionEditorDescription": "Configura un server Streamable HTTP e l’autenticazione facoltativa.",

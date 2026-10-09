@@ -10,7 +10,7 @@
   "addConnection": "添加连接",
   "connectionName": "连接名称",
   "connections": "MCP 连接",
-  "connectionsDescription": "允许 ACP 代理访问受信任的远程工具和服务。",
+  "connectionsDescription": "为内置 AI 和你的智能体提供可信的远程工具和服务，例如文档、工单或数据，让设计从真实内容开始。",
   "addServerConnection": "添加 MCP 连接",
   "editConnection": "编辑 MCP 连接",
   "connectionEditorDescription": "配置 Streamable HTTP 服务器和可选身份验证。",

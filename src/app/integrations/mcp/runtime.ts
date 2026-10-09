@@ -2,9 +2,7 @@ import type { McpServer } from '@agentclientprotocol/sdk'
 
 import { AUTOMATION_HTTP_PORT, MCP_AGENT_HEADER } from '@open-pencil/core/constants'
 
-import { describeDiagnosticError, recordMCPConnectionFailure } from '@/app/diagnostics'
-import { appCredentialServices } from '@/app/settings/credentials/app'
-
+import { mcpConnectionHeaders } from './headers'
 import { enabledMCPConnections } from './store'
 import type { MCPConnection } from './types'
 export type BuiltInMCPServerOptions = {
@@ -27,24 +25,12 @@ export function builtInMCPServer(options: BuiltInMCPServerOptions): McpServer {
 }
 
 async function externalMCPServer(connection: MCPConnection): Promise<McpServer> {
-  const headers = []
-  if (connection.authentication.type === 'bearer') {
-    try {
-      const token = await appCredentialServices.resolver.resolve(
-        connection.authentication.credentialRef
-      )
-      if (!token) throw new Error('MCP connection needs a bearer token')
-      headers.push({ name: 'Authorization', value: `Bearer ${token}` })
-    } catch (error) {
-      recordMCPConnectionFailure({ operation: 'connect', ...describeDiagnosticError(error) })
-      throw error
-    }
-  }
+  const headers = await mcpConnectionHeaders(connection)
   return {
     type: 'http',
     name: connection.name,
     url: connection.transport.url,
-    headers
+    headers: Object.entries(headers).map(([name, value]) => ({ name, value }))
   }
 }
 

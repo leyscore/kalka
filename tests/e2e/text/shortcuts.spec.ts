@@ -18,7 +18,7 @@ test('document shortcuts work while text is edited, and canvas shortcuts stay wi
   // A canvas shortcut is a letter of the text.
   await page.keyboard.press('KeyR')
   await expect
-    .poll(() => page.evaluate(() => window.openPencil?.getStore?.().state.tool))
+    .poll(() => page.evaluate(() => window.openPencil?.getStore?.().state.activeTool))
     .not.toBe('RECTANGLE')
 
   // A document shortcut still reaches the app.

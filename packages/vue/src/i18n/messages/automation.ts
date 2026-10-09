@@ -69,7 +69,8 @@ export const automationMessageDefaults = {
   webmcpSetup: 'WebMCP setup guide',
   noMatchingTools: 'No tools match your search.',
   connections: 'MCP connections',
-  connectionsDescription: 'Give ACP agents access to trusted remote tools and services.',
+  connectionsDescription:
+    'Give the built-in AI and your agents trusted remote tools and services, such as your docs, tickets or data, so designs start from real content.',
   addConnection: 'Add connection',
   addServerConnection: 'Add MCP connection',
   editConnection: 'Edit MCP connection',

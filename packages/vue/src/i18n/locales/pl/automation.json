@@ -10,7 +10,7 @@
   "addConnection": "Dodaj połączenie",
   "connectionName": "Nazwa połączenia",
   "connections": "Połączenia MCP",
-  "connectionsDescription": "Zapewnij agentom ACP dostęp do zaufanych zdalnych narzędzi i usług.",
+  "connectionsDescription": "Daj wbudowanej AI i swoim agentom zaufane zdalne narzędzia i usługi, takie jak dokumenty, zgłoszenia czy dane, aby projekty powstawały z prawdziwych treści.",
   "addServerConnection": "Dodaj połączenie MCP",
   "editConnection": "Edytuj połączenie MCP",
   "connectionEditorDescription": "Skonfiguruj serwer Streamable HTTP i opcjonalne uwierzytelnianie.",
