@@ -28,7 +28,7 @@ export function tryStartRotation(
   const geometry = createSceneGeometry(editor.graph, editor.state.rotationPreview)
   const center = geometry.rotationOrigin(node)
 
-  const zoom = editor.renderer?.zoom ?? 1
+  const zoom = editor.state.zoom
   const hitsRotationHandle =
     hitTestTopRotationHandleByMatrix(
       cx,

@@ -43,6 +43,46 @@ function envelope(elapsed: number): { opacity: number; extraPad: number } {
 }
 
 /**
+ * A rounded ring around a layer, a little outside its box and turned with it, as the Skia
+ * highlight rectangle draws it. `extraPad` widens it, for a ring that closes in.
+ */
+export function highlightRing(
+  context: OverlayContext,
+  nodeId: string,
+  stroke: string,
+  extraPad = 0
+): OverlayShape[] {
+  const { graph } = context
+  const { panX, panY, zoom } = context.view
+  const node = graph.getNode(nodeId)
+  if (!node) return []
+  const abs = graph.getAbsolutePosition(nodeId)
+  const cx = (abs.x + node.width / 2) * zoom + panX
+  const cy = (abs.y + node.height / 2) * zoom + panY
+  const hw = (node.width / 2) * zoom
+  const hh = (node.height / 2) * zoom
+  const pad = FLASH_PADDING + extraPad
+  const ring: OverlayShape = {
+    type: 'rect',
+    x: cx - hw - pad,
+    y: cy - hh - pad,
+    width: (hw + pad) * 2,
+    height: (hh + pad) * 2,
+    rx: FLASH_RADIUS,
+    stroke,
+    strokeWidth: FLASH_STROKE_WIDTH
+  }
+  if (node.rotation === 0) return [ring]
+  return [
+    {
+      type: 'group',
+      matrix: Matrix.rotated((node.rotation * Math.PI) / 180, cx, cy),
+      children: [ring]
+    }
+  ]
+}
+
+/**
  * Rings drawn around layers to point them out, such as those an agent just made. Pure in `now`:
  * the caller owns the flash list, drops finished ones (see `liveFlashes`) and asks for frames
  * while any run.
@@ -53,7 +93,6 @@ export function flashesLayer(
   now: number
 ): OverlayShape[] {
   const { graph } = context
-  const { panX, panY, zoom } = context.view
   const shapes: OverlayShape[] = []
   // Backwards, as the Skia loop walks it, so older flashes draw over newer ones.
   for (let i = flashes.length - 1; i >= 0; i--) {
@@ -64,31 +103,7 @@ export function flashesLayer(
     if (!node) continue
     const { opacity, extraPad } = envelope(elapsed)
 
-    const abs = graph.getAbsolutePosition(flash.nodeId)
-    const cx = (abs.x + node.width / 2) * zoom + panX
-    const cy = (abs.y + node.height / 2) * zoom + panY
-    const hw = (node.width / 2) * zoom
-    const hh = (node.height / 2) * zoom
-    const pad = FLASH_PADDING + extraPad
-    const ring: OverlayShape = {
-      type: 'rect',
-      x: cx - hw - pad,
-      y: cy - hh - pad,
-      width: (hw + pad) * 2,
-      height: (hh + pad) * 2,
-      rx: FLASH_RADIUS,
-      stroke: css(FLASH_COLOR, opacity),
-      strokeWidth: FLASH_STROKE_WIDTH
-    }
-    shapes.push(
-      node.rotation === 0
-        ? ring
-        : {
-            type: 'group',
-            matrix: Matrix.rotated((node.rotation * Math.PI) / 180, cx, cy),
-            children: [ring]
-          }
-    )
+    shapes.push(...highlightRing(context, flash.nodeId, css(FLASH_COLOR, opacity), extraPad))
   }
   return shapes
 }

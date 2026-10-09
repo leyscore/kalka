@@ -19,7 +19,7 @@ function getResizeCursorForSelection(cx: number, cy: number, editor: Editor): st
       cy,
       node,
       editor.graph,
-      editor.renderer?.zoom ?? 1,
+      editor.state.zoom,
       editor.state.rotationPreview
     )
     if (handleHit?.handle) return buildResizeCursor(handleHit.rotation)
@@ -39,7 +39,7 @@ function getRotationCursorForSelection(cx: number, cy: number, editor: Editor): 
     cy,
     node,
     editor.graph,
-    editor.renderer?.zoom ?? 1,
+    editor.state.zoom,
     editor.state.rotationPreview
   )
   if (!corner) return null

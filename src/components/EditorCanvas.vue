@@ -34,8 +34,9 @@ import {
   useCanvasIssueMarkers,
   useCanvasVirtualReference,
   useDomScene,
+  useOffscreenCanvasKit,
   useSVGOverlay,
-  SVG_OVERLAY_LAYERS,
+  useViewportSize,
   useTextEdit
 } from '@open-pencil/vue'
 
@@ -110,35 +111,48 @@ if (domScene) {
   })
 }
 
-useCanvas(sceneCanvasRef, store, {
-  layer: 'scene',
-  onFrame: (view) => {
-    drawnView.value = view
-  },
-  sceneRenderer: appRuntimeConfig.sceneRenderer,
-  onReady: store.markCanvasReady,
-  shouldSuspendRender,
-  showRulers: false,
-  getRenderState,
-  onViewportResize,
-  onPresented: ({ sceneVersion }) =>
-    store.preparationController.acknowledgePresentation(sceneVersion),
-  onPresentation: (colorSpace) => {
-    store.state.canvasPresentation = colorSpace
-  }
-})
-const { hitTestSectionTitle, hitTestComponentLabel, hitTestFrameTitle, hitTestIssueMarker } =
-  useCanvas(canvasRef, store, {
-    layer: 'overlays',
-    get showRulers() {
-      return appRuntimeConfig.showRulers && store.state.showRulers && paneView.value.play === null
-    },
-    getOverlayObstacles: () => canvasOverlayObstacles(canvasRef.value),
-    delegatedOverlays: domScene ? SVG_OVERLAY_LAYERS : undefined,
-    shouldSuspendRender,
-    getRenderState,
-    onViewportResize
+// Over the DOM scene, nothing on screen is drawn by Skia: the canvas element only takes input,
+// and CanvasKit works offscreen for exports, previews and path operations.
+if (domScene) {
+  useOffscreenCanvasKit(store, {
+    onReady: () => {
+      store.markCanvasReady()
+      // Tests and the navigation benchmark wait for this, as they did for the Skia surface.
+      if (canvasRef.value) canvasRef.value.dataset.ready = '1'
+    }
   })
+  useViewportSize(canvasRef, onViewportResize)
+} else {
+  useCanvas(sceneCanvasRef, store, {
+    layer: 'scene',
+    onFrame: (view) => {
+      drawnView.value = view
+    },
+    sceneRenderer: appRuntimeConfig.sceneRenderer,
+    onReady: store.markCanvasReady,
+    shouldSuspendRender,
+    showRulers: false,
+    getRenderState,
+    onViewportResize,
+    onPresented: ({ sceneVersion }) =>
+      store.preparationController.acknowledgePresentation(sceneVersion),
+    onPresentation: (colorSpace) => {
+      store.state.canvasPresentation = colorSpace
+    }
+  })
+}
+const canvasHitTests = domScene
+  ? null
+  : useCanvas(canvasRef, store, {
+      layer: 'overlays',
+      get showRulers() {
+        return appRuntimeConfig.showRulers && store.state.showRulers && paneView.value.play === null
+      },
+      getOverlayObstacles: () => canvasOverlayObstacles(canvasRef.value),
+      shouldSuspendRender,
+      getRenderState,
+      onViewportResize
+    })
 // Editor chrome over the DOM scene: everything but the text caret moves from the overlay canvas.
 const svgOverlay = domScene
   ? useSVGOverlay(svgOverlayRef, store, {
@@ -149,7 +163,8 @@ const svgOverlay = domScene
     })
   : null
 // Over the DOM scene, names are hit tested where the SVG overlay drew them.
-const labelHits = svgOverlay ?? { hitTestSectionTitle, hitTestComponentLabel, hitTestFrameTitle }
+const labelHits = svgOverlay ?? canvasHitTests
+if (!labelHits) throw new Error('The canvas has neither an SVG overlay nor a Skia overlay')
 
 const {
   cursorOverride,
@@ -180,7 +195,7 @@ onUnmounted(cleanupInteractions)
 
 const hitTestDrawnIssueMarker = svgOverlay
   ? (x: number, y: number) => hitTestIssueMarkers(svgOverlay.issueMarkers(), x, y)
-  : hitTestIssueMarker
+  : (x: number, y: number) => canvasHitTests?.hitTestIssueMarker(x, y) ?? null
 
 const { activeTab: propertiesTab } = useAIChat()
 const { detailMarker: hoveredIssueMarker, cursor: issueMarkerCursor } = useCanvasIssueMarkers(

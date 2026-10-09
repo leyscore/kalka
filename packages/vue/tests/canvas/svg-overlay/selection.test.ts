@@ -24,6 +24,7 @@ function context(graph: SceneGraph, patch: Partial<OverlayContext> = {}): Compos
     showRulers: false,
     obstacles: [],
     flashes: [],
+    aiMarks: { active: [], done: [] },
     now: 0,
     ...patch
   }

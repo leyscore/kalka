@@ -75,7 +75,10 @@ export function useSVGOverlay(
     const element = host.value
     if (!element) return
     const state = options.getRenderState?.() ?? editor.state
-    const flashes = editor.renderer?._flashes ?? []
+    const renderer = editor.renderer
+    const flashes = renderer?._flashes ?? []
+    const aiMarks = { active: renderer?._aiActiveNodes ?? [], done: renderer?._aiDoneFlashes ?? [] }
+    const animating = flashes.length > 0 || aiMarks.done.length > 0 || renderer?._aiActiveNodes.size
     const showRulers = options.showRulers?.() ?? false
     const obstacles = options.getOverlayObstacles?.() ?? []
     const width = element.clientWidth
@@ -99,8 +102,8 @@ export function useSVGOverlay(
       height,
       window.devicePixelRatio,
       obstacles.map((rect) => `${rect.x},${rect.y},${rect.width},${rect.height}`).join(';'),
-      // Flashes animate: redraw every frame while one runs.
-      flashes.length > 0 ? performance.now() : 0
+      // Flashes and AI marks animate: redraw every frame while one runs.
+      animating ? performance.now() : 0
     ]
     if (!changed(key)) return
     labels.update(editor.graph, state.currentPageId, state.sceneVersion)
@@ -120,6 +123,7 @@ export function useSVGOverlay(
       rulerTheme: state.rulerTheme,
       obstacles,
       flashes,
+      aiMarks,
       now: performance.now()
     })
     issueMarkers = composed.issueMarkers

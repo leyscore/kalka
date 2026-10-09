@@ -13,7 +13,7 @@ export function tryStartResize(cx: number, cy: number, editor: Editor): DragResi
       cy,
       node,
       editor.graph,
-      editor.renderer?.zoom,
+      editor.state.zoom,
       editor.state.rotationPreview
     )
     if (handleResult) {

@@ -2,6 +2,12 @@ import type { SceneNode } from '@open-pencil/scene-graph'
 
 import type { SkiaRenderer } from '#core/canvas/renderer'
 import { changesShaping } from '#core/canvas/text/paragraph-inputs'
+import {
+  AI_DONE_DURATION_MS,
+  FLASH_ATTACK_MS,
+  FLASH_HOLD_MS,
+  FLASH_RELEASE_MS
+} from '#core/constants'
 
 export function invalidateScenePicture(r: SkiaRenderer): void {
   r.scenePicture?.delete()
@@ -99,6 +105,21 @@ export function aiClearAll(r: SkiaRenderer): void {
   r._aiDoneFlashes = []
 }
 
+/**
+ * Drops flashes that have run their course. Drawing them used to do this; a renderer that never
+ * draws, such as the offscreen one behind the DOM scene, still has to stop asking for frames.
+ */
+function pruneExpiredFlashes(r: SkiaRenderer, now: number): void {
+  const flashTotal = FLASH_ATTACK_MS + FLASH_HOLD_MS + FLASH_RELEASE_MS
+  if (r._flashes.some((flash) => now - flash.startTime > flashTotal))
+    r._flashes = r._flashes.filter((flash) => now - flash.startTime <= flashTotal)
+  if (r._aiDoneFlashes.some((flash) => now - flash.startTime > AI_DONE_DURATION_MS))
+    r._aiDoneFlashes = r._aiDoneFlashes.filter(
+      (flash) => now - flash.startTime <= AI_DONE_DURATION_MS
+    )
+}
+
 export function hasActiveFlashes(r: SkiaRenderer): boolean {
+  pruneExpiredFlashes(r, performance.now())
   return r._flashes.length > 0 || r._aiActiveNodes.size > 0 || r._aiDoneFlashes.length > 0
 }
