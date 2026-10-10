@@ -86,6 +86,7 @@ openpencil export design.fig -f jpg -s 2      # JPG at 2x
 openpencil export design.fig -f tailwind-jsx  # Tailwind JSX
 openpencil export design.fig -f storybook     # Storybook stories per component
 openpencil convert design.pen design.fig      # Between document formats
+openpencil convert design.fig -f folder       # Kalka folder: pages/*.html, tokens, assets
 openpencil import card.html --css card.css    # HTML/CSS → editable .fig
 ```
 

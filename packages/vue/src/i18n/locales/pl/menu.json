@@ -10,6 +10,8 @@
   "openStorageWorkspace": "Otwórz obszar przechowywania…",
   "save": "Zapisz",
   "saveAs": "Zapisz jako…",
+  "openFolder": "Otwórz folder…",
+  "saveAsFolder": "Zapisz jako folder…",
   "saveToStorage": "Zapisz w obszarze przechowywania…",
   "exportSelection": "Eksportuj zaznaczenie…",
   "autosave": "Automatyczny zapis do pliku",

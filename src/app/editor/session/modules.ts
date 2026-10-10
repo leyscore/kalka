@@ -98,6 +98,7 @@ export function createEditorStoreModules(
     setStorageDocumentSource: documentIO.setStorageDocumentSource,
     setPlannedFilePath: documentIO.setPlannedFilePath,
     saveFigFileToPath: documentIO.saveFigFileToPath,
+    saveKalkaFolderToPath: documentIO.saveKalkaFolderToPath,
     saveFigFileToStorage: documentIO.saveFigFileToStorage,
     startWatchingCurrentFile: documentIO.startWatchingCurrentFile,
     designCheck,

@@ -13,6 +13,8 @@ export const menuMessageDefaults = {
   openStorageWorkspace: 'Open storage workspace…',
   save: 'Save',
   saveAs: 'Save as…',
+  openFolder: 'Open folder…',
+  saveAsFolder: 'Save as folder…',
   saveToStorage: 'Save to storage…',
   exportSelection: 'Export selection…',
   exportSelectionAsPNG: 'Export selection as PNG',

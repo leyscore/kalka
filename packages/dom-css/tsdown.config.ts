@@ -5,6 +5,7 @@ export default defineConfig({
     index: './src/index.ts',
     browser: './src/browser.ts',
     export: './src/export/index.ts',
+    import: './src/import/layers.ts',
     'jsx-runtime': './src/import/jsx/runtime.ts',
     'jsx-dev-runtime': './src/import/jsx/dev-runtime.ts'
   },

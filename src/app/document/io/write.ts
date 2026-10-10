@@ -1,4 +1,6 @@
 import { describeDiagnosticError, recordDocumentFailure } from '@/app/diagnostics'
+import { writeKalkaFolderFiles } from '@/app/document/io/kalka-folder'
+import type { DocumentPayload } from '@/app/document/io/types'
 import type { StorageDocumentBinding } from '@/app/integrations/storage/types'
 import { persistStorageCanvasLocally } from '@/app/storage/sync/persist'
 import { isTauri } from '@/app/tauri/env'
@@ -34,10 +36,17 @@ export function createDocumentWriter({
     return true
   }
 
-  return async function writeFile(data: Uint8Array, version: number): Promise<boolean> {
+  return async function writeFile(data: DocumentPayload, version: number): Promise<boolean> {
     setLastWriteTime(Date.now())
     try {
       const storage = getStorageBinding()
+      if (!(data instanceof Uint8Array)) {
+        // A Kalka folder saves file by file, on desktop, into the folder it came from.
+        const folder = getFilePath()
+        if (!folder || !isTauri()) return false
+        await writeKalkaFolderFiles(folder, data.files)
+        return await finishWrite(version)
+      }
       if (storage) {
         await persistStorageCanvasLocally({
           providerId: storage.providerId,

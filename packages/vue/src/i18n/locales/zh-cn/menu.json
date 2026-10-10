@@ -10,6 +10,8 @@
   "openStorageWorkspace": "打开存储工作区…",
   "save": "保存",
   "saveAs": "另存为…",
+  "openFolder": "打开文件夹…",
+  "saveAsFolder": "另存为文件夹…",
   "saveToStorage": "保存到存储工作区…",
   "exportSelection": "导出所选内容…",
   "autosave": "自动保存到本地文件",

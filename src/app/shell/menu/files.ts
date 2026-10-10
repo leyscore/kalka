@@ -2,6 +2,7 @@ import { useFileDialog } from '@vueuse/core'
 import { uniq } from 'es-toolkit/array'
 
 import { BUILTIN_IO_FORMATS, IORegistry } from '@open-pencil/core/io'
+import { menuMessages } from '@open-pencil/vue'
 
 import { setOpenPencilOpenFileHandler } from '@/app/browser-bridge'
 import {
@@ -9,6 +10,8 @@ import {
   MAX_REMOTE_DOCUMENT_BYTES,
   readBoundedBody
 } from '@/app/document/io/browser'
+import { chooseKalkaFolder, readKalkaFolderAsFile } from '@/app/document/io/kalka-folder'
+import type { EditorStore } from '@/app/editor/active-store'
 import { notificationMessages } from '@/app/i18n/notifications'
 import { rememberRecentFile } from '@/app/recent-files'
 import { toast } from '@/app/shell/ui'
@@ -130,9 +133,38 @@ export async function chooseTauriOpenPaths(): Promise<string[]> {
 
 export async function openFileFromPath(path: string) {
   if (!isTauri()) return
+  const { stat } = await import('@tauri-apps/plugin-fs')
+  // A recent document can be a Kalka folder as well as a file.
+  if ((await stat(path)).isDirectory) {
+    await openFolderFromPath(path)
+    return
+  }
   const file = await readTauriDesignFile(path)
   await openFileInNewTab(file, undefined, path)
   rememberRecentFile(path)
+}
+
+/** Opens a Kalka folder in a new tab; saving writes back into the folder. Desktop only. */
+export async function openFolderFromPath(path: string) {
+  if (!isTauri()) return
+  const file = await readKalkaFolderAsFile(path)
+  await openFileInNewTab(file, undefined, path)
+  rememberRecentFile(path)
+}
+
+export async function openFolderDialog() {
+  if (!isTauri()) return
+  const path = await chooseKalkaFolder(menuMessages.get().openFolder.replace('…', ''))
+  if (!path) return
+  await openDesignFileBatch([path], (item) => item, openFolderFromPath)
+}
+
+/** Saves the active document as a Kalka folder the user picks, and keeps it there. */
+export async function saveAsFolderDialog(store: EditorStore) {
+  if (!isTauri()) return
+  const path = await chooseKalkaFolder(menuMessages.get().saveAsFolder.replace('…', ''))
+  if (!path) return
+  if (await store.saveKalkaFolderToPath(path)) rememberRecentFile(path)
 }
 
 /**
@@ -165,6 +197,7 @@ export async function openFileDialog() {
             description: 'Design file',
             accept: {
               'application/octet-stream': ['.fig'],
+              'application/zip': ['.kalka'],
               'application/json': ['.pen'],
               'text/html': ['.html', '.htm'],
               'application/xhtml+xml': ['.xhtml'],

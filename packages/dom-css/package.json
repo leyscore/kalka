@@ -30,6 +30,12 @@
       "import": "./dist/export.js",
       "default": "./dist/export.js"
     },
+    "./import": {
+      "types": "./dist/import.d.ts",
+      "bun": "./src/import/layers.ts",
+      "import": "./dist/import.js",
+      "default": "./dist/import.js"
+    },
     "./jsx-runtime": {
       "types": "./dist/jsx-runtime.d.ts",
       "bun": "./src/import/jsx/runtime.ts",

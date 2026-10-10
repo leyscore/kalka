@@ -10,6 +10,8 @@
   "openStorageWorkspace": "Ouvrir l’espace de stockage…",
   "save": "Enregistrer",
   "saveAs": "Enregistrer sous…",
+  "openFolder": "Ouvrir un dossier…",
+  "saveAsFolder": "Enregistrer comme dossier…",
   "saveToStorage": "Enregistrer dans l’espace de stockage…",
   "exportSelection": "Exporter la sélection…",
   "autosave": "Enregistrement automatique",

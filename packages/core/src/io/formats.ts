@@ -217,6 +217,39 @@ export const figFormat: IOFormatAdapter<'fig'> = {
   }
 }
 
+/**
+ * Kalka's own document: a folder of HTML pages, CSS, design tokens, and images. As one file it
+ * is that folder zipped, `.kalka`; the desktop app also opens and saves the folder itself.
+ */
+export const kalkaFormat: IOFormatAdapter<'kalka'> = {
+  id: 'kalka',
+  label: 'Kalka Folder',
+  role: 'native-document',
+  category: 'document',
+  extensions: ['kalka'],
+  mimeTypes: ['application/zip'],
+  support: {
+    readDocument: true,
+    writeDocument: true
+  },
+  matchesFile(fileName) {
+    return lowerExt(fileName) === 'kalka'
+  },
+  async readDocument(input) {
+    const { readKalkaArchive } = await import('./formats/kalka')
+    return { graph: readKalkaArchive(input.data), sourceFormat: 'kalka' }
+  },
+  async writeDocument(graph) {
+    const { writeKalkaArchive } = await import('./formats/kalka')
+    return {
+      format: 'kalka',
+      mimeType: 'application/zip',
+      extension: 'kalka',
+      data: await writeKalkaArchive(graph)
+    }
+  }
+}
+
 export const penFormat: IOFormatAdapter<'pen'> = {
   id: 'pen',
   label: 'Pencil Document',
@@ -418,6 +451,7 @@ export const tailwindJSXFormat: IOFormatAdapter<'tailwind-jsx'> = {
 
 export const BUILTIN_IO_FORMATS = [
   figFormat,
+  kalkaFormat,
   penFormat,
   pngFormat,
   jpgFormat,

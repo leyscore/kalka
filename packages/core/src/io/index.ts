@@ -4,6 +4,7 @@ export {
   BUILTIN_IO_FORMATS,
   type BuiltinIOFormatId,
   figFormat,
+  kalkaFormat,
   penFormat,
   pngFormat,
   jpgFormat,

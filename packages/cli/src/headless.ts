@@ -1,7 +1,9 @@
-import { readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises'
+import { dirname, join, relative, sep } from 'node:path'
 
 import { BUILTIN_IO_FORMATS, IORegistry, initCanvasKit } from '@open-pencil/core/io'
 import { populateAllFigPages, populateFigPage } from '@open-pencil/core/io/formats/fig'
+import { readKalkaFolder, type KalkaFile } from '@open-pencil/core/io/formats/kalka'
 import { computeAllLayouts } from '@open-pencil/core/layout'
 import type { SceneGraph } from '@open-pencil/scene-graph'
 
@@ -11,9 +13,34 @@ export { initCanvasKit }
 
 const io = new IORegistry(BUILTIN_IO_FORMATS)
 
+/** Every file under a folder, by its `/`-separated path inside it. */
+async function readFolderFiles(folder: string): Promise<Map<string, Uint8Array>> {
+  const files = new Map<string, Uint8Array>()
+  for (const entry of await readdir(folder, { recursive: true, withFileTypes: true })) {
+    if (!entry.isFile()) continue
+    const path = join(entry.parentPath, entry.name)
+    files.set(relative(folder, path).split(sep).join('/'), new Uint8Array(await readFile(path)))
+  }
+  return files
+}
+
+/** Writes a Kalka folder's files under `folder`, creating it and its subfolders. */
+export async function writeFolderFiles(folder: string, files: readonly KalkaFile[]): Promise<void> {
+  for (const file of files) {
+    const path = join(folder, ...file.path.split('/'))
+    await mkdir(dirname(path), { recursive: true })
+    await writeFile(path, file.content)
+  }
+}
+
 export async function loadDocument(filePath: string): Promise<SceneGraph> {
-  const bytes = new Uint8Array(await readFile(filePath))
-  const { graph } = await io.readDocument({ name: filePath, data: bytes })
+  let graph: SceneGraph
+  if ((await stat(filePath)).isDirectory()) {
+    graph = readKalkaFolder(await readFolderFiles(filePath))
+  } else {
+    const bytes = new Uint8Array(await readFile(filePath))
+    graph = (await io.readDocument({ name: filePath, data: bytes })).graph
+  }
   computeAllLayouts(graph)
   return graph
 }

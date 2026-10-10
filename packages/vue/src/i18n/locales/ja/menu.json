@@ -10,6 +10,8 @@
   "openStorageWorkspace": "ストレージワークスペースを開く…",
   "save": "保存",
   "saveAs": "名前を付けて保存…",
+  "openFolder": "フォルダを開く…",
+  "saveAsFolder": "フォルダとして保存…",
   "saveToStorage": "ストレージに保存…",
   "exportSelection": "選択範囲をエクスポート…",
   "autosave": "ファイルに自動保存",

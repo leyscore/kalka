@@ -13,6 +13,10 @@
         "accelerator": "CmdOrCtrl+O"
       },
       {
+        "id": "open-folder",
+        "label": "Open Folder…"
+      },
+      {
         "id": "open-recent",
         "label": "Open Recent"
       },
@@ -32,6 +36,10 @@
         "id": "save-as",
         "label": "Save As…",
         "accelerator": "CmdOrCtrl+Shift+S"
+      },
+      {
+        "id": "save-as-folder",
+        "label": "Save As Folder…"
       },
       {
         "id": "save-to-storage",

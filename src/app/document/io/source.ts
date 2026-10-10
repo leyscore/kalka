@@ -1,8 +1,10 @@
 import type { Editor, EditorState } from '@open-pencil/core/editor'
 import { exportFigFile } from '@open-pencil/core/io/formats/fig'
+import { writeKalkaArchive, writeKalkaFolder } from '@open-pencil/core/io/formats/kalka'
 
 import { createAutosave } from '@/app/document/autosave'
 import { createDocumentChanges } from '@/app/document/io/changes'
+import { folderName, isKalkaFolderPath } from '@/app/document/io/kalka-folder'
 import {
   documentNameFromFigPath,
   downloadNameFromPath,
@@ -10,7 +12,12 @@ import {
 } from '@/app/document/io/names'
 import { createSaveActions } from '@/app/document/io/save'
 import { createDocumentSourceState } from '@/app/document/io/source-state'
-import type { DocumentSourceAccess } from '@/app/document/io/types'
+import {
+  fileFormatForName,
+  type DocumentFileFormat,
+  type DocumentPayload,
+  type DocumentSourceAccess
+} from '@/app/document/io/types'
 import { createDocumentRecovery } from '@/app/document/recovery'
 import { recoveryEnabled } from '@/app/document/recovery/preferences'
 import type { StorageDocumentBinding, StorageProviderID } from '@/app/integrations/storage/types'
@@ -29,6 +36,8 @@ type DocumentSourceOptions = DocumentSourceAccess & {
   stopWatchingFile: () => void
   startWatchingFile: () => Promise<void>
   getRenderer: () => Editor['renderer']
+  getSourceFormat: () => DocumentFileFormat
+  setSourceFormat: (format: DocumentFileFormat) => void
 }
 
 export function createDocumentSourceActions({
@@ -48,7 +57,9 @@ export function createDocumentSourceActions({
   getSavedVersion,
   setSavedVersion,
   setLastWriteTime,
-  getRenderer
+  getRenderer,
+  getSourceFormat,
+  setSourceFormat
 }: DocumentSourceOptions) {
   const changes = createDocumentChanges(editor)
 
@@ -59,7 +70,12 @@ export function createDocumentSourceActions({
     return saved
   }
 
-  function buildFigFile() {
+  /** The document as its source saves it: a `.fig`, a `.kalka`, or a Kalka folder's files. */
+  async function buildDocumentFile(): Promise<DocumentPayload> {
+    const format = getSourceFormat()
+    if (format === 'kalka-folder')
+      return { kind: 'folder', files: await writeKalkaFolder(editor.graph) }
+    if (format === 'kalka') return writeKalkaArchive(editor.graph)
     const renderer = getRenderer()
     return exportFigFile(editor.graph, renderer?.ck, renderer ?? undefined, state.currentPageId)
   }
@@ -79,7 +95,8 @@ export function createDocumentSourceActions({
   const { saveFigFile, saveFigFileAs, writeFile } = createSaveActions({
     state,
     version: changes.capture,
-    buildFigFile,
+    buildFigFile: buildDocumentFile,
+    setSourceFormat,
     getFilePath,
     setFilePath,
     getFileHandle,
@@ -105,7 +122,7 @@ export function createDocumentSourceActions({
     hasWritableSource: () => !!getFileHandle() || !!getFilePath() || !!getStorageBinding(),
     saveCurrentDocument: async (version) => {
       const revision = changes.capture()
-      const data = await buildFigFile()
+      const data = await buildDocumentFile()
       if (await writeFile(data, version)) changes.markSaved(revision)
     }
   })
@@ -124,19 +141,27 @@ export function createDocumentSourceActions({
     stopWatchingFile()
     setStorageBinding(null)
     const isFig = sourceFormat === 'fig'
-    setFileHandle(isFig ? (handle ?? null) : null)
-    setFilePath(isFig ? (path ?? null) : null)
+    const isKalka = sourceFormat === 'kalka'
+    // A Kalka folder opens as the `.kalka` file it zips to, with the folder as its path.
+    const isFolder = isKalka && isKalkaFolderPath(path ?? null)
+    const savesInPlace = isFig || isKalka
+    if (isFolder) setSourceFormat('kalka-folder')
+    else setSourceFormat(isKalka ? 'kalka' : 'fig')
+    setFileHandle(savesInPlace ? (handle ?? null) : null)
+    setFilePath(savesInPlace ? (path ?? null) : null)
     setDownloadName(figDownloadName(fileName, sourceFormat))
     setSourceIdentity({ handle: handle ?? null, path: path ?? null })
     markDocumentSaved()
     void recovery.markProtectedVersion(changes.capture())
-    if (isFig && (handle || path)) {
+    // A folder has no single file to watch; it is read again when opened again.
+    if (savesInPlace && !isFolder && (handle || path)) {
       void startWatchingFile()
     }
   }
 
   function setStorageDocumentSource(binding: StorageDocumentBinding, documentName: string) {
     stopWatchingFile()
+    setSourceFormat('fig')
     setFileHandle(null)
     setFilePath(null)
     setDownloadName(`${documentName}.fig`)
@@ -151,6 +176,7 @@ export function createDocumentSourceActions({
   function setPlannedFilePath(path: string) {
     stopWatchingFile()
     setStorageBinding(null)
+    setSourceFormat(fileFormatForName(path))
     setFileHandle(null)
     setFilePath(path)
     const downloadName = downloadNameFromPath(path)
@@ -172,9 +198,11 @@ export function createDocumentSourceActions({
       fileHandle: getFileHandle(),
       storageBinding: getStorageBinding(),
       downloadName: getDownloadName(),
-      documentName: state.documentName
+      documentName: state.documentName,
+      sourceFormat: getSourceFormat()
     }
     const restore = () => {
+      setSourceFormat(previous.sourceFormat)
       setStorageBinding(previous.storageBinding)
       setFileHandle(previous.fileHandle)
       setFilePath(previous.filePath)
@@ -208,12 +236,28 @@ export function createDocumentSourceActions({
       setFileHandle(null)
       setFilePath(null)
       setDownloadName(`${state.documentName}.fig`)
+      setSourceFormat('fig')
       setStorageBinding({ providerId, documentId: createCanvasId() })
     })
     if (saved) {
       setSourceIdentity({ handle: null, path: null })
       state.autosaveEnabled = true
     }
+    return saved
+  }
+
+  /** Save the document as a Kalka folder and keep editing it there. */
+  async function saveKalkaFolderToPath(folder: string): Promise<boolean> {
+    const saved = await saveToNewTarget(() => {
+      stopWatchingFile()
+      setStorageBinding(null)
+      setFileHandle(null)
+      setFilePath(folder)
+      state.documentName = folderName(folder)
+      setDownloadName(`${state.documentName}.kalka`)
+      setSourceFormat('kalka-folder')
+    })
+    if (saved) setSourceIdentity({ handle: null, path: folder })
     return saved
   }
 
@@ -233,6 +277,7 @@ export function createDocumentSourceActions({
     setStorageDocumentSource,
     setPlannedFilePath,
     saveFigFileToPath,
+    saveKalkaFolderToPath,
     saveFigFileToStorage,
     startWatchingCurrentFile,
     disposeDocumentIO,

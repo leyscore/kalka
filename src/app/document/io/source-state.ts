@@ -1,4 +1,4 @@
-import type { DocumentSourceIdentity } from '@/app/document/io/types'
+import type { DocumentFileFormat, DocumentSourceIdentity } from '@/app/document/io/types'
 import type { StorageDocumentBinding } from '@/app/integrations/storage/types'
 
 export function createDocumentSourceState() {
@@ -9,6 +9,7 @@ export function createDocumentSourceState() {
   let storageBinding: StorageDocumentBinding | null = null
   let savedVersion = 0
   let lastWriteTime = 0
+  let sourceFormat: DocumentFileFormat = 'fig'
 
   return {
     getFileHandle: () => fileHandle,
@@ -34,6 +35,10 @@ export function createDocumentSourceState() {
     getSavedVersion: () => savedVersion,
     setSavedVersion: (version: number) => {
       savedVersion = version
+    },
+    getSourceFormat: () => sourceFormat,
+    setSourceFormat: (format: DocumentFileFormat) => {
+      sourceFormat = format
     },
     getLastWriteTime: () => lastWriteTime,
     setLastWriteTime: (time: number) => {
