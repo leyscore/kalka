@@ -7,7 +7,7 @@ import { normalizeFontFamily } from '@open-pencil/scene-graph'
 import { tokenStylesheet, type TokenStylesheetFormat } from '../tokens/stylesheet'
 import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
 import { mergeClassNames, serializeHTML, splitWhitespace } from './html'
-import { HTML_TAG_RESET_CSS } from './tag-reset'
+import { hasBrowserDefaults, HTML_TAG_RESET_CSS, scopedTagResetCSS } from './tag-reset'
 
 /** A font face the exported text uses. */
 export interface WebFontFaceRequest {
@@ -407,8 +407,30 @@ export async function exportHTMLBundle(
 
   return {
     entrypoint: 'index.html',
-    files: [
-      { path: 'index.html', content: serializeHTML(document, { style: resolvedOptions.style }) }
-    ]
+    files: [{ path: 'index.html', content: fragmentHTML(document, resolvedOptions.style) }]
   }
+}
+
+const FRAGMENT_ROOT_ATTRIBUTE = 'data-open-pencil-html'
+
+function usesBrowserDefaults(node: DesignNode): boolean {
+  if (node.type === 'text') return false
+  return hasBrowserDefaults(node.tagName) || node.children.some(usesBrowserDefaults)
+}
+
+/**
+ * HTML to paste into another page. When it uses tags the browser styles, such as an `h1`, it
+ * starts with the reset that keeps them as designed, scoped to its own marked roots.
+ */
+function fragmentHTML(document: DesignDocument, style: 'inline' | 'tailwind'): string {
+  if (!document.children.some(usesBrowserDefaults)) return serializeHTML(document, { style })
+  const marked: DesignDocument = {
+    ...document,
+    children: document.children.map((node) =>
+      node.type === 'element'
+        ? { ...node, attrs: { ...node.attrs, [FRAGMENT_ROOT_ATTRIBUTE]: 'fragment' } }
+        : node
+    )
+  }
+  return `${styleTag(scopedTagResetCSS(FRAGMENT_ROOT_ATTRIBUTE))}${serializeHTML(marked, { style })}`
 }

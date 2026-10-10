@@ -10,12 +10,16 @@ import { exportWebFontFaceAssets } from '#core/text/web-font/assets'
 
 import { vectorElement } from './vectors'
 
-function designDocument(graph: SceneGraph, nodeIds: string[]): DesignDocument {
+function designDocument(
+  graph: SceneGraph,
+  nodeIds: string[],
+  includeSourceIds: boolean
+): DesignDocument {
   return {
     type: 'document',
     sourceGraph: graph,
     children: nodeIds.flatMap(
-      (id) => sceneNodeToDesignDocument(graph, id, { vectorElement }).children
+      (id) => sceneNodeToDesignDocument(graph, id, { vectorElement, includeSourceIds }).children
     )
   }
 }
@@ -35,7 +39,7 @@ export async function renderNodesToHTML(
   options: HTMLExportOptions = {},
   fileName?: string
 ): Promise<{ html: string; assets: ExportAsset[] }> {
-  const bundle = await exportHTMLBundle(designDocument(graph, nodeIds), {
+  const bundle = await exportHTMLBundle(designDocument(graph, nodeIds, !!options.sourceIds), {
     html: options.html,
     style: options.style,
     assets: options.assets,

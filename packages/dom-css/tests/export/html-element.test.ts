@@ -1,6 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 
-import { sceneNodesToTailwindJSX, sceneNodeToDesignDocument } from '#dom-css/export/index'
+import {
+  exportHTMLBundle,
+  sceneNodesToTailwindJSX,
+  sceneNodeToDesignDocument
+} from '#dom-css/export/index'
 import { designDocumentToSceneGraph } from '#dom-css/import/scene-graph'
 import type { DesignElement } from '#dom-css/types'
 
@@ -102,5 +106,29 @@ describe('HTML tags and classes in export and import', () => {
     const code = sceneNodesToTailwindJSX(graph, [title.id, body.id])
     expect(code).toContain('<h1')
     expect(code).toMatch(/<p[^>]*className="lead /)
+  })
+
+  test('a fragment with styled tags brings the reset, scoped to its own roots', async () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    const hero = graph.createNode('FRAME', page.id, { name: 'Hero', htmlTag: 'section' })
+    graph.createNode('TEXT', hero.id, { text: 'Title', htmlTag: 'h1' })
+    const plain = graph.createNode('FRAME', page.id, { name: 'Plain' })
+
+    const fragment = async (id: string) => {
+      const document = sceneNodeToDesignDocument(graph, id, { includeSourceIds: false })
+      const bundle = await exportHTMLBundle(document)
+      return String(bundle.files[0]?.content)
+    }
+    const html = await fragment(hero.id)
+    expect(html).toStartWith(
+      '<style>:where([data-open-pencil-html],[data-open-pencil-html] *):where('
+    )
+    expect(html).toContain('<section data-open-pencil-html="fragment"')
+    expect(html).not.toContain('data-open-pencil-node-id')
+
+    const bare = await fragment(plain.id)
+    expect(bare).not.toContain('<style>')
+    expect(bare).not.toContain('data-open-pencil-html')
   })
 })

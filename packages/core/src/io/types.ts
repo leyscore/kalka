@@ -120,6 +120,11 @@ export interface HTMLExportOptions {
   assets?: 'inline' | 'external'
   /** `assets` ships web fonts with external assets. */
   fonts?: 'assets' | 'none'
+  /**
+   * Marks each element with the layer it came from, for tools that map the HTML back to the
+   * document. Exported files leave it out: it is editor data, not part of the page.
+   */
+  sourceIds?: boolean
 }
 
 export interface IOFormatSupport {

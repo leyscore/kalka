@@ -147,7 +147,8 @@ test('export CLI writes HTML with inline styles by default', async () => {
   expect(exitCode).toBe(0)
 
   const html = await Bun.file(output).text()
-  expect(html).toContain('data-open-pencil-node-id')
+  // Editor data stays out of exported files.
+  expect(html).not.toContain('data-open-pencil-node-id')
   expect(html).toContain('style=')
   expect(html).toContain('display: flex')
 })
@@ -171,7 +172,8 @@ test('export CLI can write HTML styles as Tailwind classes', async () => {
   expect(exitCode).toBe(0)
 
   const html = await Bun.file(output).text()
-  expect(html).toContain('data-open-pencil-node-id')
+  // Editor data stays out of exported files.
+  expect(html).not.toContain('data-open-pencil-node-id')
   expect(html).toContain('class="')
   expect(html).toContain('flex')
   expect(html).not.toContain('style=')
