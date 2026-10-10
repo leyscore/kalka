@@ -17,6 +17,7 @@ describe('HTML export of a page with breakpoints', () => {
     })
     const title = graph.createNode('TEXT', desktop.id, { name: 'Title', text: 'Hi', fontSize: 76 })
     const aside = graph.createNode('FRAME', desktop.id, { name: 'Aside', width: 300, height: 200 })
+    graph.createNode('TEXT', aside.id, { name: 'Note', text: 'Aside' })
     const tablet = createBreakpoint(graph, desktop.id, 810, 'Tablet')
     const phone = createBreakpoint(graph, desktop.id, 390, 'Phone')
     if (!tablet || !phone) throw new Error('No breakpoints')
@@ -36,7 +37,8 @@ describe('HTML export of a page with breakpoints', () => {
     expect(html).toContain('@media (max-width:1439px){')
     expect(html).toMatch(/@media \(max-width:1439px\)\{\.op-\d+\{flex-direction: column\}\}/)
     expect(html).toMatch(/@media \(max-width:809px\)\{\.op-\d+\{font-size: 40px\}\}/)
-    expect(html).toMatch(/@media \(max-width:809px\)\{\.op-\d+\{display: none\}\}/)
+    // The hidden aside is hidden once; its text needs no rule of its own.
+    expect(html.match(/display: none/g)).toHaveLength(1)
     // The wider rules come first, so the phone's win below 810px.
     expect(html.indexOf('max-width:1439px')).toBeLessThan(html.indexOf('max-width:809px'))
     // The breakpoint artboards are not exported as pages of their own.

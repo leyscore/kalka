@@ -6,17 +6,36 @@ import { inlineStyleOverClasses } from './classes'
 /** Projects one artboard as the export does, so breakpoints compare like with like. */
 export type ArtboardProjector = (nodeId: string) => DesignNode | undefined
 
+const sourceOf = (element: DesignElement) =>
+  element.sourceSceneNode?.responsiveSource ?? element.sourceSceneNode?.id
+
 /** Each element of a projected artboard by the primary layer it stands for. */
 function elementsBySource(root: DesignNode | undefined): Map<string, DesignElement> {
   const elements = new Map<string, DesignElement>()
   const visit = (node: DesignNode) => {
     if (node.type === 'text') return
-    const layer = node.sourceSceneNode
-    if (layer) elements.set(layer.responsiveSource ?? layer.id, node)
+    const source = sourceOf(node)
+    if (source) elements.set(source, node)
     node.children.forEach(visit)
   }
   if (root) visit(root)
   return elements
+}
+
+/** The source of each element's parent element, by the element's source. */
+function parentSources(root: DesignElement): Map<string, string> {
+  const parents = new Map<string, string>()
+  const visit = (node: DesignElement) => {
+    const source = sourceOf(node)
+    for (const child of node.children) {
+      if (child.type === 'text') continue
+      const childSource = sourceOf(child)
+      if (source && childSource) parents.set(childSource, source)
+      visit(child)
+    }
+  }
+  visit(root)
+  return parents
 }
 
 function withoutWidth(style: DesignStyleDeclaration): DesignStyleDeclaration {
@@ -38,6 +57,7 @@ function responsiveRoot(
   if (!primary) return root
   const artboards = responsiveArtboards(graph, primary.id)
   const elements = elementsBySource(root)
+  const parents = parentSources(root)
   let wider = elements
   artboards.slice(1).forEach((artboard, index) => {
     const maxWidth = artboards[index].width - 1
@@ -46,6 +66,9 @@ function responsiveRoot(
       const element = elements.get(source)
       if (!element) continue
       const copy = current.get(source)
+      // Inside a layer hidden here, hiding the layer is enough.
+      const parent = parents.get(source)
+      if (!copy && parent && wider.has(parent) && !current.has(parent)) continue
       let style = copy
         ? inlineStyleOverClasses(copy.inlineStyle ?? {}, previous.inlineStyle ?? {})
         : { display: 'none' }
