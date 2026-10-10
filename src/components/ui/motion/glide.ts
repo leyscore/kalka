@@ -19,6 +19,8 @@ export interface GlideOptions {
 const HIDE_DELAY_MS = 80
 
 const OBSERVED_STATE = [
+  // The toolbar marks its active tool as pressed.
+  'aria-pressed',
   'data-state',
   'data-highlighted',
   'aria-current',
