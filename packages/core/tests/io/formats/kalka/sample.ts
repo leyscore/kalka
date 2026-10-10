@@ -176,9 +176,30 @@ export function sampleDocument(): SceneGraph {
     width: 160,
     height: 40,
     htmlTag: 'nav',
-    htmlClasses: ['site-nav', 'md:px-4']
+    htmlClasses: ['site-nav', 'md:px-4'],
+    fills: [solid(0.1, 0.2, 0.8)],
+    cornerRadius: 12,
+    paddingLeft: 24
   })
-  graph.createNode('TEXT', nav.id, { name: 'Headline', text: 'Studio', htmlTag: 'h1' })
+  graph.createNode('TEXT', nav.id, {
+    name: 'Headline',
+    text: 'Studio',
+    htmlTag: 'h1',
+    htmlClasses: ['title'],
+    fontSize: 40,
+    fontWeight: 700
+  })
+  // Classes: the nav keeps one value of its own over its class, the headline none.
+  graph.updateNode(graph.rootId, {
+    cssClasses: [
+      {
+        name: 'site-nav',
+        kind: 'box',
+        style: { fills: [solid(0.1, 0.2, 0.8)], cornerRadius: 999, paddingLeft: 24 }
+      },
+      { name: 'title', kind: 'text', style: { fontSize: 40, fontWeight: 700 } }
+    ]
+  })
 
   const component = graph.createNode('COMPONENT', second.id, {
     name: 'Button',

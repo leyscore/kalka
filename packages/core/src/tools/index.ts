@@ -45,3 +45,4 @@ export {
 } from './analyze/overlaps/params'
 export { setPexelsAPIKey, setUnsplashAccessKey } from './stock-photo'
 export { importSVG } from './create'
+export { editCSSClass, setHTMLElement } from './html'

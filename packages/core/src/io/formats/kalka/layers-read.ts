@@ -5,6 +5,8 @@ import {
   applyLayerStyle,
   applyLayerText,
   parseStyleDeclarations,
+  type ClassRule,
+  type DesignStyleDeclaration,
   type DesignElement,
   type DesignNode,
   type ImageSourceResolver
@@ -34,6 +36,27 @@ export interface ReadLayersOptions {
   /** Where each artboard sits on the canvas, from `project.json`. */
   artboards: ReadonlyMap<string, Vector>
   resolveImage: ImageSourceResolver
+  /** The class rules of `styles.css`, which apply before each element's own style. */
+  classRules?: readonly ClassRule[]
+}
+
+/** The value a page's style writes to undo a class declaration the layer does not have. */
+const UNSET = 'initial'
+
+/**
+ * An element's style as the cascade gives it: its classes' rules in stylesheet order, then its
+ * own declarations, with the ones it undoes left out.
+ */
+function cascadedStyle(
+  rules: readonly ClassRule[],
+  classAttribute: string | undefined,
+  own: DesignStyleDeclaration
+): DesignStyleDeclaration {
+  const names = new Set(classAttribute?.split(/\s+/))
+  const style: DesignStyleDeclaration = {}
+  for (const rule of rules) if (names.has(rule.name)) Object.assign(style, rule.declarations)
+  Object.assign(style, own)
+  return Object.fromEntries(Object.entries(style).filter(([, value]) => value !== UNSET))
 }
 
 /** Elements that are document plumbing, never layers. */
@@ -158,7 +181,12 @@ class LayerReader {
 
     const design = designNode(element)
     if (design?.type !== 'element') return
-    applyLayerStyle(this.graph, node, design, design.inlineStyle ?? {}, {
+    const style = cascadedStyle(
+      this.options.classRules ?? [],
+      attrs.class,
+      design.inlineStyle ?? {}
+    )
+    applyLayerStyle(this.graph, node, design, style, {
       parent,
       resolveImage: this.options.resolveImage
     })

@@ -21,6 +21,13 @@
   "htmlTagDefault": "Авто ({tag})",
   "htmlClasses": "Классы",
   "htmlClassesPlaceholder": "hero card",
+  "htmlOwnValues": {
+    "one": "{count} своё значение",
+    "few": "{count} своих значения",
+    "many": "{count} своих значений"
+  },
+  "htmlUpdateClass": "Обновить класс",
+  "htmlResetToClass": "Сбросить",
   "versions": "Версии",
   "versionsUnsaved": "Сохраните документ на этом компьютере, чтобы хранить его версии.",
   "versionsUntracked": "Эта папка пока не хранит версии. Kalka использует Git: история остаётся в папке и работает с GitHub и любыми инструментами Git.",

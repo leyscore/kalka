@@ -1,7 +1,13 @@
 import * as v from 'valibot'
 
 import type { RenderResult } from '@open-pencil/design-jsx'
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import {
+  cssClassKind,
+  findCSSClass,
+  setCSSClass,
+  type SceneGraph,
+  type SceneNode
+} from '@open-pencil/scene-graph'
 
 import { finishRenderPlacement, resolveRenderPlacement } from '#core/design-jsx/placement'
 import { toolNumber } from '#core/tools/input'
@@ -23,10 +29,32 @@ function copySubtree(
   return created
 }
 
+/** The text of the `<style>` elements of written HTML. */
+function styleSheets(html: string): string {
+  return [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)].map((match) => match[1]).join('\n')
+}
+
+/**
+ * Keeps the class rules of written HTML as document classes, so the layers that name them share
+ * one style; a class the document already has is left as it is.
+ */
+async function registerClasses(graph: SceneGraph, html: string, written: readonly SceneNode[]) {
+  const { cssClassFromRule, parseClassRules } = await import('@open-pencil/dom-css/import')
+  const nodes = written.flatMap((root) => [
+    root,
+    ...graph.flattenTree(root.id).map((entry) => entry.node)
+  ])
+  for (const rule of parseClassRules(styleSheets(html))) {
+    if (findCSSClass(graph, rule.name)) continue
+    const user = nodes.find((node) => node.htmlClasses.includes(rule.name))
+    if (user) setCSSClass(graph, cssClassFromRule(rule, cssClassKind(user)))
+  }
+}
+
 export const writeHTML = defineTool({
   name: 'write_html',
   description:
-    'Write HTML and CSS into the design as editable layers: elements become frames and text, flex layouts become auto layout, inline styles and <style> rules are kept. Scripts and event handlers are dropped. Use parent_id to write into a frame and replace_id to replace a placeholder.',
+    'Write HTML and CSS into the design as editable layers: elements become frames and text, flex layouts become auto layout, inline styles and <style> rules are kept, and a rule for one class (.btn { ... }) becomes a document class its layers share. Scripts and event handlers are dropped. Use parent_id to write into a frame and replace_id to replace a placeholder.',
   execution: { kind: 'async', mutation: 'document' },
   input: v.strictObject({
     html: v.pipe(
@@ -60,6 +88,11 @@ export const writeHTML = defineTool({
       return { id: created.id, name: created.name, type: created.type, childIds: created.childIds }
     })
     finishRenderPlacement(graph, results, placement)
+    await registerClasses(
+      graph,
+      args.html,
+      results.flatMap((result) => graph.getNode(result.id) ?? [])
+    )
     return {
       layers: results.map(({ id, name, type }) => ({ id, name, type }))
     }

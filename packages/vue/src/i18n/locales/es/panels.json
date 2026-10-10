@@ -21,6 +21,12 @@
   "htmlTagDefault": "Auto ({tag})",
   "htmlClasses": "Clases",
   "htmlClassesPlaceholder": "hero card",
+  "htmlOwnValues": {
+    "one": "{count} valor propio",
+    "many": "{count} valores propios"
+  },
+  "htmlUpdateClass": "Actualizar clase",
+  "htmlResetToClass": "Restablecer",
   "versions": "Versiones",
   "versionsUnsaved": "Guarda el documento en este ordenador para conservar sus versiones.",
   "versionsUntracked": "Esta carpeta aún no guarda versiones. Kalka usa Git: el historial queda en la carpeta y funciona con GitHub o cualquier herramienta Git.",

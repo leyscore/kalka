@@ -2,10 +2,11 @@ import type { CSSFontFaceRule } from '@acemir/cssom'
 import { isValid, toUint8Array } from 'js-base64'
 import { parseFragment, serialize, type DefaultTreeAdapterTypes } from 'parse5'
 
-import { normalizeFontFamily } from '@open-pencil/scene-graph'
+import { documentCSSClasses, normalizeFontFamily } from '@open-pencil/scene-graph'
 
 import { tokenStylesheet, type TokenStylesheetFormat } from '../tokens/stylesheet'
 import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
+import { cssClassStylesheet, withClassRules } from './classes'
 import { mergeClassNames, serializeHTML, splitWhitespace } from './html'
 import { hasBrowserDefaults, HTML_TAG_RESET_CSS, scopedTagResetCSS } from './tag-reset'
 
@@ -358,11 +359,15 @@ async function exportStandaloneHTML(
     )
   } else {
     css += await tokenCSS(document, 'css')
+    // The document's classes are rules of their own; each layer's rule then adds what is its own.
+    const graph = document.sourceGraph
+    const classed = graph ? withClassRules(graph, doc) : doc
+    if (graph) css += cssClassStylesheet(documentCSSClasses(graph), { compact: true })
     const rules: string[] = []
     const index = { value: 0 }
     const styledDocument: DesignDocument = {
-      ...doc,
-      children: doc.children.map((node) => extractInlineStyles(node, rules, index))
+      ...classed,
+      children: classed.children.map((node) => extractInlineStyles(node, rules, index))
     }
     body = serializeHTML(styledDocument)
     css += rules.join('')

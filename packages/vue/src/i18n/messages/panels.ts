@@ -25,6 +25,9 @@ export const panelMessageDefaults = {
   htmlTagDefault: params('Auto ({tag})'),
   htmlClasses: 'Classes',
   htmlClassesPlaceholder: 'hero card',
+  htmlOwnValues: count({ one: '{count} own value', many: '{count} own values' }),
+  htmlUpdateClass: 'Update class',
+  htmlResetToClass: 'Reset',
   versions: 'Versions',
   versionsUnsaved: 'Save the document on this computer to keep its versions.',
   versionsUntracked:

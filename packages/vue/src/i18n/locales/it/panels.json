@@ -21,6 +21,12 @@
   "htmlTagDefault": "Auto ({tag})",
   "htmlClasses": "Classi",
   "htmlClassesPlaceholder": "hero card",
+  "htmlOwnValues": {
+    "one": "{count} valore proprio",
+    "many": "{count} valori propri"
+  },
+  "htmlUpdateClass": "Aggiorna classe",
+  "htmlResetToClass": "Ripristina",
   "versions": "Versioni",
   "versionsUnsaved": "Salva il documento su questo computer per conservarne le versioni.",
   "versionsUntracked": "Questa cartella non conserva ancora versioni. Kalka usa Git: la cronologia resta nella cartella e funziona con GitHub o qualsiasi strumento Git.",

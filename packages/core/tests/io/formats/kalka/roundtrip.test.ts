@@ -43,6 +43,7 @@ describe('Kalka folder', () => {
     expect(nodeNamed(read, 'Shader').shader).toEqual(nodeNamed(graph, 'Shader').shader)
     expect(nodeNamed(read, 'Nav').htmlClasses).toEqual(['site-nav', 'md:px-4'])
     expect(nodeNamed(read, 'Headline').htmlTag).toBe('h1')
+    expect(read.getNode(read.rootId)?.cssClasses).toEqual(graph.getNode(graph.rootId)?.cssClasses)
   })
 
   test('lays the folder out as the format says', async () => {
@@ -124,5 +125,34 @@ describe('Kalka folder', () => {
     const project = new TextDecoder().decode(files.get('project.json'))
     files.set('project.json', new TextEncoder().encode(project.replace('"version": 1', '"version": 2')))
     expect(() => readKalkaFolder(files)).toThrow('newer version')
+  })
+
+  test('keeps class rules in styles.css and only a layer’s own values inline', async () => {
+    const files = await writeKalkaFolder(sampleDocument())
+    const styles = text(files, 'styles.css')
+    expect(styles).toContain(`.site-nav {
+  background-color: #1A33CC;
+  border-radius: 999px;
+}`)
+    expect(styles).toContain('.title {')
+    const nav = /<nav [^>]*>/.exec(text(files, 'pages/home.html'))?.[0] ?? ''
+    expect(nav).toContain('border-radius: 12px')
+    expect(nav).not.toContain('background-color')
+  })
+
+  test('opens a class edited by hand in styles.css on every layer that has it', async () => {
+    const files = asMap(await writeKalkaFolder(sampleDocument()))
+    const styles = new TextDecoder().decode(files.get('styles.css'))
+    files.set(
+      'styles.css',
+      new TextEncoder().encode(styles.replace('background-color: #1A33CC;', 'background-color: #FF0000;'))
+    )
+    const read = readKalkaFolder(files)
+    const red = { r: 1, g: 0, b: 0, a: 1 }
+    expect(nodeNamed(read, 'Nav').fills[0]).toMatchObject({ type: 'SOLID', color: red })
+    const navClass = read.getNode(read.rootId)?.cssClasses.find((item) => item.name === 'site-nav')
+    expect(navClass?.style.fills?.[0]).toMatchObject({ color: red })
+    // The nav's own corner radius stays its own.
+    expect(nodeNamed(read, 'Nav').cornerRadius).toBe(12)
   })
 })

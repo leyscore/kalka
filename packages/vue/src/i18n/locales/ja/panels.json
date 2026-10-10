@@ -21,6 +21,11 @@
   "htmlTagDefault": "自動（{tag}）",
   "htmlClasses": "クラス",
   "htmlClassesPlaceholder": "hero card",
+  "htmlOwnValues": {
+    "many": "独自の値 {count} 件"
+  },
+  "htmlUpdateClass": "クラスを更新",
+  "htmlResetToClass": "リセット",
   "versions": "バージョン",
   "versionsUnsaved": "バージョンを残すには、このコンピューターに書類を保存してください。",
   "versionsUntracked": "このフォルダーはまだバージョンを残していません。Kalka は Git を使います。履歴はフォルダー内に残り、GitHub などの Git ツールで使えます。",

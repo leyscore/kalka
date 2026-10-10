@@ -9,7 +9,8 @@ export const MCP_SERVER_INSTRUCTIONS = [
   'Kalka is a design editor whose canvas is real HTML and CSS: every layer is an element the user can export without rewriting it.',
   'Before you design, gather what the design depends on from the other servers this client has connected, such as product specs, docs, tickets, brand guidelines or real data, and use that content instead of placeholders.',
   'Start with get_selection or get_page_tree to see what exists. Build layouts with write_html (flexbox and real CSS), adjust them with update_styles, read them back with get_html or get_computed_styles, and check your work with get_screenshot after each meaningful change. The user watches the canvas live, so work in small steps.',
-  "Give layers the semantics the exported page needs: write_html keeps the tags and class attributes you write, and set_html_element changes a layer's tag (h1, nav, a, button) or classes without changing its look."
+  "Give layers the semantics the exported page needs: write_html keeps the tags and class attributes you write, and set_html_element changes a layer's tag (h1, nav, a, button) or classes without changing its look.",
+  'Share styles through classes: a <style> rule for one class in write_html becomes a document class, update_css_class creates or changes one for every layer that has it, and get_css_classes lists them.'
 ].join('\n\n')
 
 /** The server info and options every Kalka MCP server is created with. */

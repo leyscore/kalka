@@ -28,4 +28,15 @@ describe('roundtrip: a layer keeps its HTML tag and classes in a .fig file', () 
     expect(named('Plain')?.htmlTag).toBeNull()
     expect(named('Plain')?.htmlClasses).toEqual([])
   })
+
+  test('the document’s CSS classes come back', async () => {
+    const graph = new SceneGraph()
+    const classes = [
+      { name: 'btn', kind: 'box' as const, style: { cornerRadius: 999, opacity: 0.9 } },
+      { name: 'lead', kind: 'text' as const, style: { fontSize: 20 } }
+    ]
+    graph.updateNode(graph.rootId, { cssClasses: classes })
+    const read = await parseFigFile((await exportFigFile(graph)).buffer as ArrayBuffer)
+    expect(read.getNode(read.rootId)?.cssClasses).toEqual(classes)
+  })
 })

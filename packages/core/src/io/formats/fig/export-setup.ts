@@ -25,7 +25,7 @@ import type { GUID } from '@open-pencil/scene-graph/primitives'
 
 import type { SkiaRenderer } from '#core/canvas'
 import { CANVAS_BG_COLOR, IS_BROWSER, IS_TAURI } from '#core/constants'
-import { applyEnabledLibrariesPluginData } from '#core/io/formats/fig/library-metadata'
+import { applyDocumentPluginData } from '#core/io/formats/fig/library-metadata'
 import { findFigThumbnailPageId } from '#core/io/formats/fig/thumbnail-page'
 import { renderThumbnail } from '#core/io/formats/raster'
 import {
@@ -367,7 +367,7 @@ export async function prepareFigExport(
   const documentNc = makeDocumentNodeChange(docGuid, graph.documentColorSpace)
   const rootNode = graph.getNode(graph.rootId)
   if (rootNode) Object.assign(documentNc, rootNode.source.fig.rawNodeFields)
-  applyEnabledLibrariesPluginData(documentNc, graph)
+  applyDocumentPluginData(documentNc, graph)
 
   const pages = graph.getPages(true)
   const nodeIdToGuid = new Map<string, GUID>()

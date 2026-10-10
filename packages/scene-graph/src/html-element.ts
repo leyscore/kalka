@@ -84,13 +84,13 @@ export function parseHTMLTag(value: string | null | undefined): HTMLTag | null {
  * One class name as HTML and CSS frameworks write it: Tailwind's `md:px-4`, `w-[12px]`, `w-1/2`
  * pass; quotes, angle brackets, `=` and backticks, which could break out of the attribute, do not.
  */
-const CLASS_NAME = /^[^\s"'<>=`]+$/
+export const HTML_CLASS_NAME_PATTERN = /^[^\s"'<>=`]+$/
 
 const MAX_CLASSES = 64
-const MAX_CLASS_LENGTH = 128
+export const MAX_HTML_CLASS_LENGTH = 128
 
 export function isHTMLClassName(value: string): boolean {
-  return value.length <= MAX_CLASS_LENGTH && CLASS_NAME.test(value)
+  return value.length <= MAX_HTML_CLASS_LENGTH && HTML_CLASS_NAME_PATTERN.test(value)
 }
 
 /** The classes of a `class` attribute or a typed list: valid names, each once, in order. */

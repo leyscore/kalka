@@ -21,6 +21,13 @@
   "htmlTagDefault": "Auto ({tag})",
   "htmlClasses": "Klasy",
   "htmlClassesPlaceholder": "hero card",
+  "htmlOwnValues": {
+    "one": "{count} własna wartość",
+    "few": "{count} własne wartości",
+    "many": "{count} własnych wartości"
+  },
+  "htmlUpdateClass": "Zaktualizuj klasę",
+  "htmlResetToClass": "Resetuj",
   "versions": "Wersje",
   "versionsUnsaved": "Zapisz dokument na tym komputerze, aby zachowywać jego wersje.",
   "versionsUntracked": "Ten folder nie przechowuje jeszcze wersji. Kalka używa Gita: historia zostaje w folderze i działa z GitHubem lub dowolnym narzędziem Git.",

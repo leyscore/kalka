@@ -297,6 +297,7 @@ export function cloneNodeProps(
     textPathBox: src.textPathBox ? { ...src.textPathBox } : null,
     gridPosition: src.gridPosition ? { ...src.gridPosition } : null,
     shader: src.shader ? structuredClone(src.shader) : null,
-    htmlClasses: [...src.htmlClasses]
+    htmlClasses: [...src.htmlClasses],
+    cssClasses: structuredClone(src.cssClasses)
   }
 }

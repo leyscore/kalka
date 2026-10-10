@@ -11,6 +11,13 @@ export {
 export { exportHTMLBundle } from './bundle'
 export { HTML_TAG_RESET_CSS } from './tag-reset'
 export {
+  classRuleStyle,
+  cssClassDeclarations,
+  cssClassStylesheet,
+  inlineStyleOverClasses,
+  withClassRules
+} from './classes'
+export {
   designDocumentToTailwindJSX,
   sceneNodesToTailwindJSX,
   sceneNodesToTailwindJSXWithLayers,

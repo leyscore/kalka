@@ -1,5 +1,6 @@
 /* eslint-disable max-lines -- scene node contracts are kept together as the public graph type surface */
 
+import type { CSSClass } from './class-styles'
 import type { ExportFormatId } from './export-format'
 import type { CanvasGuide } from './guides'
 import type { HTMLTag } from './html-element'
@@ -447,6 +448,8 @@ export interface SceneNode {
   htmlTag: HTMLTag | null
   /** Class names the layer's element carries for the developer's CSS and scripts. */
   htmlClasses: string[]
+  /** The document's CSS classes, in stylesheet order; only the document's root holds any. */
+  cssClasses: CSSClass[]
   layoutGrids: LayoutGrid[]
   guides: CanvasGuide[]
   fillStyleId: string | null

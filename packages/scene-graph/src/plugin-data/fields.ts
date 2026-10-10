@@ -1,6 +1,7 @@
 import * as v from 'valibot'
 
 import { behaviourSchema } from '../behaviours/schema'
+import { cssClassesSchema } from '../class-styles'
 import type { OkHCLPayload } from '../color/okhcl'
 import { isExportFormatId, type ExportFormatId } from '../export-format'
 import { clampExportScale } from '../export-scale'
@@ -153,6 +154,8 @@ export const OPEN_PENCIL_PLUGIN_DATA = {
   htmlTag: textPluginDataField('htmlTag', 'format', HTML_TAGS),
   /** The class names a layer's element carries. */
   htmlClasses: jsonPluginDataField('htmlClasses', 'format', htmlClassesSchema),
+  /** The document's CSS classes, on its root, which Figma has no notion of. */
+  cssClasses: jsonPluginDataField('cssClasses', 'format', cssClassesSchema),
   /** The node-local rect a TEXT_PATH layout maps onto, which Kiwi has no field for. */
   textPathBox: jsonPluginDataField('textPathBox', 'format', textPathBox),
   /** The library asset a node was inserted from. */

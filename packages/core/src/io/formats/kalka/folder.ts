@@ -1,6 +1,6 @@
 import { omit } from 'es-toolkit/object'
 
-import { HTML_TAG_RESET_CSS, tokenStylesheet } from '@open-pencil/dom-css/export'
+import { tokenStylesheet } from '@open-pencil/dom-css/export'
 import {
   createDefaultNode,
   generateId,
@@ -10,6 +10,7 @@ import {
 } from '@open-pencil/scene-graph'
 
 import { imageFilePath, imageHashFromPath, imageSourceResolver } from './assets'
+import { readClassRules, reconcileClasses, stylesFile } from './classes'
 import {
   ATTR,
   KALKA_FORMAT_ID,
@@ -33,18 +34,6 @@ export interface KalkaFile {
   path: string
   content: Uint8Array
 }
-
-const STYLES_CSS = `/*
- * Styles every page of this Kalka document shares. Kalka writes layer styles inline and keeps
- * the rules below; classes and @media rules for shared styles land here in a later version.
- */
-[hidden] {
-  display: none !important;
-}
-
-/* Layers written as an h1, a list or a button draw as their own CSS says. */
-${HTML_TAG_RESET_CSS}
-`
 
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
@@ -141,7 +130,7 @@ export async function writeKalkaFolder(graph: SceneGraph): Promise<KalkaFile[]> 
   const tokens = json(tokensDocument(graph))
   text(TOKENS_FILE, tokens)
   text(TOKENS_CSS_FILE, (await tokenStylesheet(graph, { format: 'css' })).css)
-  text(STYLES_FILE, STYLES_CSS)
+  text(STYLES_FILE, stylesFile(graph))
 
   for (const [hash, bytes] of graph.images)
     files.push({ path: imageFilePath(hash, bytes), content: bytes })
@@ -230,6 +219,7 @@ export function readKalkaFolder(files: ReadonlyMap<string, Uint8Array>): SceneGr
   applySettings(graph, project.settings)
 
   const resolveImage = imageSourceResolver(graph.images)
+  const classRules = readClassRules(textOf(STYLES_FILE))
   for (const saved of [...project.pages, ...unlistedPages(files, project)]) {
     const html = textOf(saved.file)
     if (html === undefined) throw new Error(`A page is missing: ${saved.file}`)
@@ -237,10 +227,12 @@ export function readKalkaFolder(files: ReadonlyMap<string, Uint8Array>): SceneGr
     readPageLayers(graph, page, html, {
       artboards: new Map((saved.artboards ?? []).map(({ id, x, y }) => [id, { x, y }])),
       resolveImage,
+      classRules,
       residual: (node, attrs) => {
         return ATTR.props in attrs ? parseResidualAttribute(attrs[ATTR.props], node) : null
       }
     })
   }
+  reconcileClasses(graph, classRules)
   return graph
 }

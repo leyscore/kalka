@@ -1,12 +1,20 @@
 import { isValid, toUint8Array } from 'js-base64'
 
 import {
+  cssClassDeclarations,
   sceneNodeToDesignDocument,
   serializeHTML,
+  withClassRules,
   type DesignElement,
   type DesignNode
 } from '@open-pencil/dom-css/export'
-import { SceneGraph, type SceneNode, type Vector } from '@open-pencil/scene-graph'
+import type { ClassRule } from '@open-pencil/dom-css/import'
+import {
+  documentCSSClasses,
+  SceneGraph,
+  type SceneNode,
+  type Vector
+} from '@open-pencil/scene-graph'
 import { computeImageHash } from '@open-pencil/scene-graph/images'
 
 import { vectorElement } from '#core/io/formats/html/vectors'
@@ -23,12 +31,18 @@ export interface PageWriteContext {
   hidden: ReadonlySet<string>
   /** Saved image hashes by the hash of their bytes, to name images SVG drawings embed. */
   imagesByContent: ReadonlyMap<string, string>
+  /** The class rules `styles.css` holds, which layers with those classes rely on. */
+  classRules: readonly ClassRule[]
 }
 
 export function pageWriteContext(graph: SceneGraph): PageWriteContext {
   const hidden = new Set<string>()
   for (const node of graph.getAllNodes()) if (!node.visible) hidden.add(node.id)
-  return { hidden, imagesByContent: imagesByContent(graph.images) }
+  const classRules = documentCSSClasses(graph).map((cssClass) => ({
+    name: cssClass.name,
+    declarations: cssClassDeclarations(cssClass)
+  }))
+  return { hidden, imagesByContent: imagesByContent(graph.images), classRules }
 }
 
 function typeAttribute(type: SceneNode['type']): string {
@@ -84,12 +98,14 @@ class PageProjector {
 
   /** A layer and its subtree, followed by a template of the children its SVG drawing hides. */
   project(nodeId: string): DesignNode[] {
-    const projected = sceneNodeToDesignDocument(this.graph, nodeId, {
+    const projectedDocument = sceneNodeToDesignDocument(this.graph, nodeId, {
       includeSourceIds: false,
       vectorElement,
       shown: this.context.hidden,
       internal: true
-    }).children
+    })
+    // `styles.css` holds the class rules; a layer's style keeps what is its own.
+    const projected = withClassRules(this.graph, projectedDocument).children
     return projected.flatMap((node) => this.decorate(node))
   }
 
@@ -215,6 +231,7 @@ export function writePageHTML(graph: SceneGraph, page: SceneNode, context: PageW
   const residuals = new Map<string, Residual>()
   readPageLayers(scratch, scratchPage, printPage(page, layers), {
     artboards,
+    classRules: context.classRules,
     resolveImage: imageSourceResolver(graph.images),
     residual: (read) => {
       const original = graph.getNode(read.id)

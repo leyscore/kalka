@@ -21,6 +21,12 @@
   "htmlTagDefault": "Auto ({tag})",
   "htmlClasses": "Klassen",
   "htmlClassesPlaceholder": "hero card",
+  "htmlOwnValues": {
+    "one": "{count} eigener Wert",
+    "many": "{count} eigene Werte"
+  },
+  "htmlUpdateClass": "Klasse aktualisieren",
+  "htmlResetToClass": "Zurücksetzen",
   "versions": "Versionen",
   "versionsUnsaved": "Speichern Sie das Dokument auf diesem Computer, um seine Versionen zu behalten.",
   "versionsUntracked": "Dieser Ordner speichert noch keine Versionen. Kalka nutzt Git: Der Verlauf bleibt im Ordner und funktioniert mit GitHub oder jedem Git-Werkzeug.",

@@ -8,13 +8,20 @@ import {
   type SceneGraph
 } from '@open-pencil/scene-graph'
 
-const { enabledLibraries } = OPEN_PENCIL_PLUGIN_DATA
+const { cssClasses, enabledLibraries } = OPEN_PENCIL_PLUGIN_DATA
 
-export function applyEnabledLibrariesPluginData(
+/** The document record's plugin data: its CSS classes and the libraries it has enabled. */
+export function applyDocumentPluginData(
   documentNodeChange: KiwiNodeChange,
   graph: SceneGraph
 ): void {
-  const rootPluginData = graph.getNode(graph.rootId)?.pluginData ?? []
+  const root = graph.getNode(graph.rootId)
+  const classes = root?.cssClasses ?? []
+  const rootPluginData = withPluginData(
+    root?.pluginData ?? [],
+    cssClasses,
+    classes.length > 0 ? classes : undefined
+  )
   const bindings = [...graph.enabledLibraries.values()]
   // With no libraries enabled, the entry the document was opened with is kept as it was.
   const opened = rootPluginData.find((entry) => isPluginDataEntry(entry, enabledLibraries))

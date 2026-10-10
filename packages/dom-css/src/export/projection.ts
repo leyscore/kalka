@@ -497,6 +497,17 @@ function attrsForNode(
   return { ...attrs, src: `data:image/png;base64,${fromUint8Array(bytes)}` }
 }
 
+/**
+ * The CSS of a layer on its own, without a parent or variables: what a class template writes,
+ * so its declarations compare with those of the layers projected with the class.
+ */
+export function standaloneLayerStyle(node: SceneNode): DesignStyleDeclaration {
+  const literal: FieldCSS = (_field, value) => value
+  return node.type === 'TEXT'
+    ? styleFromTextNode(node, undefined, literal)
+    : styleFromSceneNode(node, undefined, literal)
+}
+
 /** The tag a layer's element takes when the layer sets none. */
 export function defaultTagForNode(node: SceneNode): string {
   if (node.type === 'TEXT') return 'span'

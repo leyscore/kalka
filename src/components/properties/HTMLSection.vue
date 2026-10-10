@@ -2,10 +2,16 @@
 import { computed, ref, watch } from 'vue'
 
 import { canTakeHTMLTag, defaultTagForNode } from '@open-pencil/dom-css/export'
-import { HTML_TAGS, parseHTMLClasses, parseHTMLTag } from '@open-pencil/scene-graph'
+import { classOverrides, HTML_TAGS, parseHTMLClasses, parseHTMLTag } from '@open-pencil/scene-graph'
 import { useI18n } from '@open-pencil/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
+import {
+  resetLayerToClasses,
+  setLayerClasses,
+  updateClassFromLayer
+} from '@/app/editor/classes/actions'
+import AppButton from '@/components/ui/button/AppButton.vue'
 import AppInput from '@/components/ui/input/AppInput.vue'
 import PanelFieldGroup from '@/components/ui/panel/PanelFieldGroup.vue'
 import PanelSection from '@/components/ui/panel/PanelSection.vue'
@@ -61,8 +67,21 @@ function commitClasses(): void {
   if (!layer) return
   const next = parseHTMLClasses(classDraft.value)
   classDraft.value = next.join(' ')
-  if (next.join(' ') !== layer.htmlClasses.join(' '))
-    store.updateNodeWithUndo(layer.id, { htmlClasses: next }, 'HTML classes')
+  if (next.join(' ') !== layer.htmlClasses.join(' ')) setLayerClasses(store, layer.id, next)
+}
+
+/** How many of the layer's values are its own rather than its classes'. */
+const ownValues = computed(() => {
+  const layer = current()
+  return layer ? classOverrides(store.graph, layer).length : 0
+})
+
+function updateClass(): void {
+  if (node.value) updateClassFromLayer(store, node.value.id)
+}
+
+function resetToClasses(): void {
+  if (node.value) resetLayerToClasses(store, node.value.id)
 }
 </script>
 
@@ -93,6 +112,33 @@ function commitClasses(): void {
           @enter="commitClasses"
         />
       </PanelFieldGroup>
+      <div
+        v-if="ownValues > 0"
+        class="flex flex-col gap-1.5 text-[11px] text-muted"
+        data-test-id="html-class-overrides"
+      >
+        <span>{{ panels.htmlOwnValues(ownValues) }}</span>
+        <div class="flex gap-1.5">
+          <AppButton
+            size="xs"
+            variant="ghost"
+            class="flex-1"
+            data-test-id="html-class-reset"
+            @click="resetToClasses"
+          >
+            {{ panels.htmlResetToClass }}
+          </AppButton>
+          <AppButton
+            size="xs"
+            variant="soft"
+            class="flex-1"
+            data-test-id="html-class-update"
+            @click="updateClass"
+          >
+            {{ panels.htmlUpdateClass }}
+          </AppButton>
+        </div>
+      </div>
     </div>
   </PanelSection>
 </template>

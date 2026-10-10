@@ -3,10 +3,13 @@ import { calc } from './calc'
 import { render } from './create'
 import { describe } from './describe'
 import {
+  editCSSClass,
   getComputedStyles,
+  getCSSClasses,
   getHTML,
   getScreenshot,
   setHTMLElement,
+  updateCSSClass,
   updateStyles,
   writeHTML
 } from './html'
@@ -27,7 +30,7 @@ import { batchUpdate, deleteNode, nodeResize, reparentNode } from './structure'
 import { viewportZoomToFit } from './vector'
 
 /**
- * Core tools registered by default in AI chat (31 tools, ~5.6K schema tokens).
+ * Core tools registered by default in AI chat (34 tools, ~6K schema tokens).
  * Covers 90%+ of design sessions: render and HTML, describe, modify, structure, and diff checks.
  */
 export const CORE_TOOLS: ToolDef[] = [
@@ -46,6 +49,9 @@ export const CORE_TOOLS: ToolDef[] = [
   updateNode,
   updateStyles,
   setHTMLElement,
+  getCSSClasses,
+  updateCSSClass,
+  editCSSClass,
   setLayout,
   setLayoutChild,
   setRadius,
