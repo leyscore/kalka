@@ -42,14 +42,18 @@ function json(value: unknown): string {
   return `${JSON.stringify(value, null, 2)}\n`
 }
 
-/** A page name as a file name: lowercase ASCII words joined by `-`. */
+/**
+ * A page name as a file name: lowercase words joined by `-`, Latin letters without their accents,
+ * other scripts as they are, so `日本語` stays a name rather than becoming `page`.
+ */
 function slug(name: string): string {
   return (
     name
       .normalize('NFKD')
-      .replaceAll(/[̀-ͯ]/g, '')
+      .replaceAll(/(?<=[a-z])[̀-ͯ]+/gi, '')
+      .normalize('NFC')
       .toLowerCase()
-      .replaceAll(/[^a-z0-9]+/g, '-')
+      .replaceAll(/[^\p{L}\p{N}]+/gu, '-')
       .replaceAll(/^-+|-+$/g, '') || 'page'
   )
 }

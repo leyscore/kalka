@@ -178,4 +178,15 @@ describe('Kalka folder', () => {
     expect(readTitle?.responsiveSource).toBe(graph.getChildren(desktop.id)[0]?.id)
     expect(readTitle && responsiveOverrides(read, readTitle)).toEqual(['fontSize'])
   })
+
+  test('names page files after pages in any script', async () => {
+    const graph = new SceneGraph()
+    for (const page of graph.getPages()) graph.deleteNode(page.id)
+    for (const name of ['Français', '日本語', 'Русский', '!!!']) graph.addPage(name)
+    const files = await writeKalkaFolder(graph)
+    const pages = files.map((file) => file.path).filter((path) => path.startsWith('pages/'))
+    expect(pages.sort()).toEqual(
+      ['pages/francais.html', 'pages/page.html', 'pages/русский.html', 'pages/日本語.html'].sort()
+    )
+  })
 })
