@@ -4,7 +4,12 @@ import type { EditorCommandId } from '@open-pencil/vue'
 import { useEditorStore } from '@/app/editor/active-store'
 import { clearRecentFiles, forgetRecentFile, recentLocalFileAt } from '@/app/recent-files'
 import { createSharedEditorMenuActions } from '@/app/shell/menu/editor-actions'
-import { openFileDialog, openFileFromPath } from '@/app/shell/menu/files'
+import {
+  openFileDialog,
+  openFileFromPath,
+  openFolderDialog,
+  saveAsFolderDialog
+} from '@/app/shell/menu/files'
 import { useNativeMenuEvents } from '@/app/shell/menu/native-events'
 import { OPEN_RECENT_EVENT_PREFIX, watchRecentFilesMenu } from '@/app/shell/menu/recent-files'
 import { APP_MENU_SCHEMA, type AppMenuEntry } from '@/app/shell/menu/schema'
@@ -38,6 +43,8 @@ export function useEditorMenu() {
   const actions: Partial<Record<string, () => void>> = {
     new: () => createTab(),
     open: () => void openFileDialog(),
+    'open-folder': () => void openFolderDialog(),
+    'save-as-folder': () => void saveAsFolderDialog(store),
     close: () => {
       if (activeTab.value) void closeTab(activeTab.value.id)
     },

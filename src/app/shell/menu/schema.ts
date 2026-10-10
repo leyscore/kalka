@@ -68,11 +68,13 @@ export const APP_MENU_SCHEMA = [
     items: [
       { id: 'new', label: 'New', shortcut: 'MOD+N' },
       { id: 'open', label: 'Open…', shortcut: 'MOD+O' },
+      { id: 'open-folder', label: 'Open Folder…', target: 'native' },
       { id: 'open-recent', label: 'Open Recent', target: 'native' },
       { id: 'open-storage-workspace', label: 'Open Storage Workspace…', handler: 'shell' },
       { type: 'separator' },
       { id: 'save', label: 'Save', shortcut: 'MOD+S' },
       { id: 'save-as', label: 'Save As…', shortcut: 'MOD+SHIFT+S' },
+      { id: 'save-as-folder', label: 'Save As Folder…', target: 'native' },
       { id: 'save-to-storage', label: 'Save to Storage…' },
       { type: 'separator' },
       {

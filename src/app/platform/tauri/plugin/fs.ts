@@ -67,6 +67,18 @@ export function remove(
   return call('fs.remove', path, base(options), options?.recursive ?? false)
 }
 
+export interface DirEntry {
+  name: string
+  isFile: boolean
+  isDirectory: boolean
+  isSymlink: boolean
+}
+
+/** A directory's entries, not recursive. */
+export function readDir(path: string, options?: BaseOptions): Promise<DirEntry[]> {
+  return call<DirEntry[]>('fs.readDir', path, base(options))
+}
+
 export function exists(path: string, options?: BaseOptions): Promise<boolean> {
   return call<boolean>('fs.exists', path, base(options))
 }

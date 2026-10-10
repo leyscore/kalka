@@ -3,7 +3,7 @@ export function documentNameFromFigPath(path: string): string {
     path
       .split(/[\\/]/)
       .pop()
-      ?.replace(/\.fig$/i, '') ?? 'Untitled'
+      ?.replace(/\.(fig|kalka)$/i, '') ?? 'Untitled'
   )
 }
 
@@ -12,5 +12,6 @@ export function downloadNameFromPath(path: string): string {
 }
 
 export function figDownloadName(fileName: string, sourceFormat: string): string {
-  return sourceFormat === 'fig' ? fileName : fileName.replace(/\.[^.]+$/i, '.fig')
+  if (sourceFormat === 'fig' || sourceFormat === 'kalka') return fileName
+  return fileName.replace(/\.[^.]+$/i, '.fig')
 }

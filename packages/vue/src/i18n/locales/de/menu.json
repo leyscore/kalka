@@ -10,6 +10,8 @@
   "openStorageWorkspace": "Speicher-Arbeitsbereich öffnen…",
   "save": "Speichern",
   "saveAs": "Speichern unter…",
+  "openFolder": "Ordner öffnen…",
+  "saveAsFolder": "Als Ordner speichern…",
   "saveToStorage": "Im Speicher-Arbeitsbereich speichern…",
   "exportSelection": "Auswahl exportieren…",
   "autosave": "Automatisch in Datei speichern",

@@ -50,6 +50,11 @@
     ],
     "fileAssociations": [
       {
+        "ext": "kalka",
+        "name": "Kalka document",
+        "role": "Editor"
+      },
+      {
         "ext": "fig",
         "name": "Figma file",
         "role": "Editor"

@@ -98,6 +98,8 @@ export function useAppMenu() {
   const translatedMenuItemLabels: Partial<Record<string, keyof typeof menu.value>> = {
     new: 'new',
     open: 'open',
+    'open-folder': 'openFolder',
+    'save-as-folder': 'saveAsFolder',
     'open-storage-workspace': 'openStorageWorkspace',
     save: 'save',
     'save-as': 'saveAs',
