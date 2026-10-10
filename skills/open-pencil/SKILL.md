@@ -118,6 +118,8 @@ openpencil export design.fig --thumbnail --width 1920 --height 1080
 openpencil export --page "Components" -o components.png
 
 openpencil convert design.fig -o design.pen
+openpencil convert design.fig -f folder -o design   # Kalka folder of HTML pages, tokens, assets
+openpencil info design                              # a Kalka folder reads like any document
 openpencil formats
 ```
 
