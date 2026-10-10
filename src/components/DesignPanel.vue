@@ -14,6 +14,7 @@ import Tip from '@/components/ui/overlay/Tip.vue'
 import PanelHeader from '@/components/ui/panel/PanelHeader.vue'
 
 import AppearanceSection from './properties/AppearanceSection.vue'
+import BreakpointsSection from './properties/BreakpointsSection.vue'
 import BehaviourPanel from './properties/component-properties/behaviour/BehaviourPanel.vue'
 import ComponentPropertiesSection from './properties/component-properties/ComponentPropertiesSection.vue'
 import ComponentPropertyListSection from './properties/component-properties/ComponentPropertyListSection.vue'
@@ -192,6 +193,7 @@ const { panels } = useI18n()
 
       <!-- Presets size artboards; an icon is a glyph. -->
       <FramePresetSelect v-if="node.type === 'FRAME' && !readIcon(node)" />
+      <BreakpointsSection />
 
       <IconSection />
       <PositionSection />

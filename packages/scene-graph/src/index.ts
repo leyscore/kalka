@@ -663,11 +663,13 @@ export class SceneGraph {
     if (changes.vectorNetwork) {
       changes = { ...changes, vectorNetwork: normalizeVectorNetwork(changes.vectorNetwork) }
     }
+    const previous: Partial<SceneNode> = {}
+    for (const key of Object.keys(changes)) Reflect.set(previous, key, Reflect.get(node, key))
     Object.assign(node, changes)
     if (changes.fills) removeStaleBindings(node, 'fills', changes)
     if (changes.strokes) removeStaleBindings(node, 'strokes', changes)
     for (const key of absent) Reflect.deleteProperty(node, key)
-    this.emitter.emit('node:updated', id, changes)
+    this.emitter.emit('node:updated', id, changes, previous)
   }
 
   reparentNode(nodeId: string, newParentId: string): void {
@@ -899,4 +901,5 @@ export class SceneGraph {
 }
 export * from './class-styles'
 export * from './html-element'
+export * from './responsive'
 export * from './shader'

@@ -28,6 +28,16 @@
   },
   "htmlUpdateClass": "Zaktualizuj klasę",
   "htmlResetToClass": "Resetuj",
+  "breakpoints": "Punkty przerwania",
+  "breakpointTablet": "Tablet",
+  "breakpointPhone": "Telefon",
+  "breakpointOf": "Punkt przerwania {name} · {width}px",
+  "breakpointOwnValues": {
+    "one": "{count} własna wartość tutaj",
+    "few": "{count} własne wartości tutaj",
+    "many": "{count} własnych wartości tutaj"
+  },
+  "breakpointReset": "Resetuj",
   "versions": "Wersje",
   "versionsUnsaved": "Zapisz dokument na tym komputerze, aby zachowywać jego wersje.",
   "versionsUntracked": "Ten folder nie przechowuje jeszcze wersji. Kalka używa Gita: historia zostaje w folderze i działa z GitHubem lub dowolnym narzędziem Git.",

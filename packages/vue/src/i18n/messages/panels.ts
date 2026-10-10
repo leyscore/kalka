@@ -28,6 +28,15 @@ export const panelMessageDefaults = {
   htmlOwnValues: count({ one: '{count} own value', many: '{count} own values' }),
   htmlUpdateClass: 'Update class',
   htmlResetToClass: 'Reset',
+  breakpoints: 'Breakpoints',
+  breakpointTablet: 'Tablet',
+  breakpointPhone: 'Phone',
+  breakpointOf: params('{name} breakpoint · {width}px'),
+  breakpointOwnValues: count({
+    one: '{count} value of its own here',
+    many: '{count} values of its own here'
+  }),
+  breakpointReset: 'Reset',
   versions: 'Versions',
   versionsUnsaved: 'Save the document on this computer to keep its versions.',
   versionsUntracked:

@@ -7,6 +7,8 @@ import {
 
 import type { SkiaRenderer } from '#core/canvas/renderer'
 
+import type { ResponsiveSync } from './responsive-sync'
+
 type EmittedGraphEventName = keyof SceneGraphEvents
 
 /** The renderer surface graph events invalidate; tests provide a double of just this. */
@@ -21,6 +23,8 @@ type GraphEventOptions = {
   getGraph: () => SceneGraph
   getRenderers: () => Iterable<GraphEventRenderer>
   scheduleComponentSync: (nodeId: string) => void
+  /** Breakpoint artboards follow their primary's edits; see `responsive-sync.ts`. */
+  responsive?: ResponsiveSync
   requestRender: () => void
   emitEditorEvent: <K extends EmittedGraphEventName>(
     event: K,
@@ -102,10 +106,11 @@ export function createGraphEventSubscription(options: GraphEventOptions) {
     })
   }
 
-  function onNodeUpdated(id: string, changes: Partial<SceneNode>) {
+  function onNodeUpdated(id: string, changes: Partial<SceneNode>, previous: Partial<SceneNode>) {
     const graph = options.getGraph()
     invalidateRenderersForChange(graph, options.getRenderers(), id, changes, true)
-    options.emitEditorEvent('node:updated', id, changes)
+    options.emitEditorEvent('node:updated', id, changes, previous)
+    options.responsive?.onUpdated(id, changes, previous)
     options.scheduleComponentSync(id)
     requestRenderFor(graph)
   }
@@ -133,24 +138,29 @@ export function createGraphEventSubscription(options: GraphEventOptions) {
 
   function subscribeToGraph() {
     unbindGraphEvents?.()
+    options.responsive?.indexDocument()
     unbindGraphEvents = options.getGraph().onNodeEvents({
       updated: onNodeUpdated,
       previewUpdated: onNodePreviewUpdated,
       created: (node) => {
         options.emitEditorEvent('node:created', node)
         onNodeStructureChanged(node.id)
+        options.responsive?.onCreated(node)
       },
-      deleted: (id, _parentId) => {
-        options.emitEditorEvent('node:deleted', id, _parentId)
+      deleted: (id, parentId) => {
+        options.emitEditorEvent('node:deleted', id, parentId)
         onNodeStructureChanged(id)
+        options.responsive?.onDeleted(id, parentId)
       },
       reparented: (nodeId, oldParentId, newParentId) => {
         options.emitEditorEvent('node:reparented', nodeId, oldParentId, newParentId)
         onNodeStructureChanged(nodeId)
+        options.responsive?.onReparented(nodeId, oldParentId, newParentId)
       },
       reordered: (nodeId, parentId, index, previousParentId) => {
         options.emitEditorEvent('node:reordered', nodeId, parentId, index, previousParentId)
         onNodeStructureChanged(nodeId)
+        options.responsive?.onReordered(nodeId, parentId, index)
       }
     })
   }

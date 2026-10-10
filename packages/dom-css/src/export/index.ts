@@ -10,6 +10,7 @@ export {
 } from './projection'
 export { exportHTMLBundle } from './bundle'
 export { HTML_TAG_RESET_CSS } from './tag-reset'
+export { isResponsiveRoot, withResponsiveStyles, type ArtboardProjector } from './responsive'
 export {
   classRuleStyle,
   cssClassDeclarations,

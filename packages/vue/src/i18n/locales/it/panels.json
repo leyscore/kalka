@@ -27,6 +27,15 @@
   },
   "htmlUpdateClass": "Aggiorna classe",
   "htmlResetToClass": "Ripristina",
+  "breakpoints": "Breakpoint",
+  "breakpointTablet": "Tablet",
+  "breakpointPhone": "Telefono",
+  "breakpointOf": "Breakpoint {name} · {width}px",
+  "breakpointOwnValues": {
+    "one": "{count} valore proprio qui",
+    "many": "{count} valori propri qui"
+  },
+  "breakpointReset": "Ripristina",
   "versions": "Versioni",
   "versionsUnsaved": "Salva il documento su questo computer per conservarne le versioni.",
   "versionsUntracked": "Questa cartella non conserva ancora versioni. Kalka usa Git: la cronologia resta nella cartella e funziona con GitHub o qualsiasi strumento Git.",

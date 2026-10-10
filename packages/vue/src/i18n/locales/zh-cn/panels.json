@@ -26,6 +26,14 @@
   },
   "htmlUpdateClass": "更新类",
   "htmlResetToClass": "重置",
+  "breakpoints": "断点",
+  "breakpointTablet": "平板",
+  "breakpointPhone": "手机",
+  "breakpointOf": "{name} 断点 · {width}px",
+  "breakpointOwnValues": {
+    "many": "此处 {count} 个自有值"
+  },
+  "breakpointReset": "重置",
   "versions": "版本",
   "versionsUnsaved": "请将文档保存到这台电脑上以保留其版本。",
   "versionsUntracked": "此文件夹尚未保留版本。Kalka 使用 Git：历史记录保存在文件夹中，可用于 GitHub 或任何 Git 工具。",

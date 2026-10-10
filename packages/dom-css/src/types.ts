@@ -22,6 +22,14 @@ export interface DesignElement {
   computedStyle?: DesignStyleDeclaration
   sourceSceneNodeId?: string
   sourceSceneNode?: SceneNode
+  /** Declarations that apply at narrower viewports, from the layer's breakpoints. */
+  mediaStyles?: MediaStyle[]
+}
+
+/** A breakpoint's declarations for an element, written in `@media (max-width: …)`. */
+export interface MediaStyle {
+  maxWidth: number
+  style: DesignStyleDeclaration
 }
 
 export interface DesignText {

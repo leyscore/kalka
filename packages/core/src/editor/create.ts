@@ -42,6 +42,7 @@ import { createDesignIssueActions } from './issues'
 import { createNodeActions } from './nodes'
 import { createPageActions } from './pages'
 import { createPlayActions } from './play/actions'
+import { createResponsiveSync } from './responsive-sync'
 import { createSelectionActions } from './selection'
 import { createShapeActions } from './shapes'
 import { createDefaultEditorState } from './state'
@@ -196,6 +197,11 @@ export function createEditor(options?: EditorOptions) {
     getGraph: () => _graph,
     getRenderers: () => _renderers,
     scheduleComponentSync,
+    responsive: createResponsiveSync({
+      getGraph: () => _graph,
+      isReplaying: () => undo.isReplaying,
+      requestRender
+    }),
     requestRender,
     emitEditorEvent
   })

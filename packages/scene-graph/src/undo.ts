@@ -25,6 +25,7 @@ export class UndoManager {
   private batches: UndoBatch[] = []
   private readonly limit: number
   private readonly onChange: (() => void) | undefined
+  private replaying = 0
 
   constructor(options: UndoManagerOptions = {}) {
     this.limit = options.limit ?? DEFAULT_HISTORY_LIMIT
@@ -53,10 +54,24 @@ export class UndoManager {
     this.pushUndoEntry(entry)
   }
 
+  /** Whether an undo or redo is replaying an entry now. */
+  get isReplaying(): boolean {
+    return this.replaying > 0
+  }
+
+  private replay(run: () => void): void {
+    this.replaying++
+    try {
+      run()
+    } finally {
+      this.replaying--
+    }
+  }
+
   undo(): string | null {
     const entry = this.undoStack.pop()
     if (!entry) return null
-    entry.inverse()
+    this.replay(() => entry.inverse())
     this.redoStack.push(entry)
     this.onChange?.()
     return entry.label
@@ -65,7 +80,7 @@ export class UndoManager {
   redo(): string | null {
     const entry = this.redoStack.pop()
     if (!entry) return null
-    entry.forward()
+    this.replay(() => entry.forward())
     this.undoStack.push(entry)
     this.onChange?.()
     return entry.label

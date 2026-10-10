@@ -1,6 +1,12 @@
 import { describe, expect, test } from 'bun:test'
 
-import { SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
+import {
+  breakpointsOf,
+  createBreakpoint,
+  responsiveOverrides,
+  SceneGraph,
+  type SceneNode
+} from '@open-pencil/scene-graph'
 
 import {
   readKalkaArchive,
@@ -154,5 +160,22 @@ describe('Kalka folder', () => {
     expect(navClass?.style.fills?.[0]).toMatchObject({ color: red })
     // The nav's own corner radius stays its own.
     expect(nodeNamed(read, 'Nav').cornerRadius).toBe(12)
+  })
+
+  test('keeps breakpoint artboards linked to their primary', async () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    const desktop = graph.createNode('FRAME', page.id, { name: 'Desktop', width: 1440, height: 900 })
+    graph.createNode('TEXT', desktop.id, { name: 'Title', text: 'Hi', fontSize: 76 })
+    const phone = createBreakpoint(graph, desktop.id, 390, 'Phone')
+    const phoneTitle = phone && graph.getChildren(phone.id)[0]
+    if (!phoneTitle) throw new Error('No copy')
+    graph.updateNode(phoneTitle.id, { fontSize: 40 })
+
+    const read = readKalkaFolder(asMap(await writeKalkaFolder(graph)))
+    expect(breakpointsOf(read, desktop.id).map((breakpoint) => breakpoint.width)).toEqual([390])
+    const readTitle = read.getNode(phoneTitle.id)
+    expect(readTitle?.responsiveSource).toBe(graph.getChildren(desktop.id)[0]?.id)
+    expect(readTitle && responsiveOverrides(read, readTitle)).toEqual(['fontSize'])
   })
 })

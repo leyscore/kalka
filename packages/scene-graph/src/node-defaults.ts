@@ -77,6 +77,7 @@ export function createDefaultNode(
     htmlTag: null,
     htmlClasses: [],
     cssClasses: [],
+    responsiveSource: null,
     layoutGrids: [],
     guides: [],
     fillStyleId: null,

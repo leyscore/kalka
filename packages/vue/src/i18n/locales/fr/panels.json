@@ -27,6 +27,15 @@
   },
   "htmlUpdateClass": "Mettre à jour la classe",
   "htmlResetToClass": "Réinitialiser",
+  "breakpoints": "Breakpoints",
+  "breakpointTablet": "Tablette",
+  "breakpointPhone": "Mobile",
+  "breakpointOf": "Breakpoint {name} · {width}px",
+  "breakpointOwnValues": {
+    "one": "{count} valeur propre ici",
+    "many": "{count} valeurs propres ici"
+  },
+  "breakpointReset": "Réinitialiser",
   "versions": "Versions",
   "versionsUnsaved": "Enregistrez le document sur cet ordinateur pour garder ses versions.",
   "versionsUntracked": "Ce dossier ne garde pas encore de versions. Kalka utilise Git : l’historique reste dans le dossier et fonctionne avec GitHub ou tout outil Git.",

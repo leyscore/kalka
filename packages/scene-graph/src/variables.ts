@@ -47,10 +47,15 @@ export function removeVariable(graph: SceneGraph, id: string): void {
       node.variableBindingScales,
       (_, field) => !(field in node.boundVariables)
     )
-    graph.emitter.emit('node:updated', node.id, {
-      boundVariables: { ...node.boundVariables },
-      variableBindingScales: { ...node.variableBindingScales }
-    })
+    graph.emitter.emit(
+      'node:updated',
+      node.id,
+      {
+        boundVariables: { ...node.boundVariables },
+        variableBindingScales: { ...node.variableBindingScales }
+      },
+      {}
+    )
     markBoundVariablesOverrideOnInstance(graph, node.id)
   }
 }
@@ -402,10 +407,15 @@ export function bindVariable(
   node.boundVariables = { ...node.boundVariables, [field]: variableId }
   assignVariableBindingUnits(graph, node, field)
   markBoundVariablesOverrideOnInstance(graph, nodeId, field)
-  graph.emitter.emit('node:updated', nodeId, {
-    boundVariables: { ...node.boundVariables },
-    variableBindingScales: { ...node.variableBindingScales }
-  })
+  graph.emitter.emit(
+    'node:updated',
+    nodeId,
+    {
+      boundVariables: { ...node.boundVariables },
+      variableBindingScales: { ...node.variableBindingScales }
+    },
+    {}
+  )
 }
 
 export function unbindVariable(graph: SceneGraph, nodeId: string, field: string): void {
@@ -415,10 +425,15 @@ export function unbindVariable(graph: SceneGraph, nodeId: string, field: string)
   node.boundVariables = omit(node.boundVariables, [field])
   node.variableBindingScales = omit(node.variableBindingScales, [field])
   markBoundVariablesOverrideOnInstance(graph, nodeId, field)
-  graph.emitter.emit('node:updated', nodeId, {
-    boundVariables: { ...node.boundVariables },
-    variableBindingScales: { ...node.variableBindingScales }
-  })
+  graph.emitter.emit(
+    'node:updated',
+    nodeId,
+    {
+      boundVariables: { ...node.boundVariables },
+      variableBindingScales: { ...node.variableBindingScales }
+    },
+    {}
+  )
 }
 
 function markBoundVariablesOverrideOnInstance(

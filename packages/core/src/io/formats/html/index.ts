@@ -1,6 +1,7 @@
 import {
   exportHTMLBundle,
   sceneNodeToDesignDocument,
+  withResponsiveStyles,
   type DesignDocument
 } from '@open-pencil/dom-css/export'
 import type { SceneGraph } from '@open-pencil/scene-graph'
@@ -39,7 +40,17 @@ export async function renderNodesToHTML(
   options: HTMLExportOptions = {},
   fileName?: string
 ): Promise<{ html: string; assets: ExportAsset[] }> {
-  const bundle = await exportHTMLBundle(designDocument(graph, nodeIds, !!options.sourceIds), {
+  const projected = designDocument(graph, nodeIds, !!options.sourceIds)
+  // A page's breakpoints become media rules, which only a stylesheet can hold.
+  const exported =
+    options.html === 'standalone' && options.style !== 'tailwind'
+      ? withResponsiveStyles(
+          graph,
+          projected,
+          (id) => designDocument(graph, [id], !!options.sourceIds).children[0]
+        )
+      : projected
+  const bundle = await exportHTMLBundle(exported, {
     html: options.html,
     style: options.style,
     assets: options.assets,

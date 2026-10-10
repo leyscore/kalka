@@ -10,7 +10,8 @@ import type { ShaderLayer } from './shader'
 
 export interface SceneGraphEvents {
   'node:created': (node: SceneNode) => void
-  'node:updated': (id: string, changes: Partial<SceneNode>) => void
+  /** `previous` holds what the changed fields were before, for listeners that compare. */
+  'node:updated': (id: string, changes: Partial<SceneNode>, previous: Partial<SceneNode>) => void
   'node:previewUpdated': (id: string, changes: Partial<SceneNode>) => void
   'node:deleted': (id: string, parentId: string | null) => void
   'node:reparented': (nodeId: string, oldParentId: string | null, newParentId: string) => void
@@ -24,7 +25,7 @@ export interface SceneGraphEvents {
 
 export type SceneGraphEventHandlers = Partial<{
   created: (node: SceneNode) => void
-  updated: (id: string, changes: Partial<SceneNode>) => void
+  updated: (id: string, changes: Partial<SceneNode>, previous: Partial<SceneNode>) => void
   previewUpdated: (id: string, changes: Partial<SceneNode>) => void
   deleted: (id: string, parentId: string | null) => void
   reparented: (nodeId: string, oldParentId: string | null, newParentId: string) => void
@@ -450,6 +451,8 @@ export interface SceneNode {
   htmlClasses: string[]
   /** The document's CSS classes, in stylesheet order; only the document's root holds any. */
   cssClasses: CSSClass[]
+  /** On a breakpoint copy, the primary artboard's layer it mirrors; null elsewhere. */
+  responsiveSource: string | null
   layoutGrids: LayoutGrid[]
   guides: CanvasGuide[]
   fillStyleId: string | null

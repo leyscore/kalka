@@ -5,7 +5,13 @@ import { parseFragment, serialize, type DefaultTreeAdapterTypes } from 'parse5'
 import { documentCSSClasses, normalizeFontFamily } from '@open-pencil/scene-graph'
 
 import { tokenStylesheet, type TokenStylesheetFormat } from '../tokens/stylesheet'
-import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
+import type {
+  DesignDocument,
+  DesignElement,
+  DesignNode,
+  DesignStyleDeclaration,
+  MediaStyle
+} from '../types'
 import { cssClassStylesheet, withClassRules } from './classes'
 import { mergeClassNames, serializeHTML, splitWhitespace } from './html'
 import { hasBrowserDefaults, HTML_TAG_RESET_CSS, scopedTagResetCSS } from './tag-reset'
@@ -106,6 +112,10 @@ function standaloneNode(
   parent?: DesignElement
 ): DesignNode {
   if (node.type === 'text') return cloneNode(node)
+  // A page with breakpoints lays out as its CSS says, at any width, rather than at fixed places.
+  if (!parent && node.mediaStyles?.length) {
+    return { ...node, inlineStyle: { ...node.inlineStyle, position: 'relative' } }
+  }
   const standalone: DesignElement = {
     ...node,
     attrs: { ...node.attrs },
@@ -148,18 +158,39 @@ function cssClassName(index: number): string {
   return `op-${index.toString(36)}`
 }
 
+function mediaRule(className: string, { maxWidth, style }: MediaStyle): MediaRule {
+  return { maxWidth, css: `@media (max-width:${maxWidth}px){.${className}{${styleToCSS(style)}}}` }
+}
+
+interface MediaRule {
+  maxWidth: number
+  css: string
+}
+
+/** The media rules of a page, widest first, so a narrower breakpoint's rules win below it. */
+function mediaCSS(rules: readonly MediaRule[]): string {
+  return [...rules]
+    .sort((a, b) => b.maxWidth - a.maxWidth)
+    .map((rule) => rule.css)
+    .join('')
+}
+
 function extractInlineStyles(
   node: DesignNode,
   rules: string[],
-  nextIndex: { value: number }
+  nextIndex: { value: number },
+  media: MediaRule[]
 ): DesignNode {
   if (node.type === 'text') return node
-  const children = node.children.map((child) => extractInlineStyles(child, rules, nextIndex))
-  if (!node.inlineStyle || Object.keys(node.inlineStyle).length === 0) return { ...node, children }
+  const children = node.children.map((child) => extractInlineStyles(child, rules, nextIndex, media))
+  const hasMedia = (node.mediaStyles?.length ?? 0) > 0
+  if ((!node.inlineStyle || Object.keys(node.inlineStyle).length === 0) && !hasMedia)
+    return { ...node, children }
 
   const className = cssClassName(nextIndex.value)
   nextIndex.value += 1
-  rules.push(`.${className}{${styleToCSS(node.inlineStyle)}}`)
+  rules.push(`.${className}{${styleToCSS(node.inlineStyle ?? {})}}`)
+  for (const style of node.mediaStyles ?? []) media.push(mediaRule(className, style))
   return {
     ...node,
     attrs: { ...node.attrs, class: mergeClassNames(node.attrs.class, className) ?? className },
@@ -347,7 +378,12 @@ async function exportStandaloneHTML(
 ): Promise<ExportHTMLBundle> {
   const size = standaloneSize(document)
   const doc = standaloneDocument(document, size)
-  const stageCSS = `.op-stage{position:relative;width:${size.width}px;height:${size.height}px;overflow:hidden;background:transparent}`
+  const responsive = document.children.some(
+    (node) => node.type === 'element' && (node.mediaStyles?.length ?? 0) > 0
+  )
+  const stageCSS = responsive
+    ? '.op-stage{position:relative;width:100%;background:transparent}'
+    : `.op-stage{position:relative;width:${size.width}px;height:${size.height}px;overflow:hidden;background:transparent}`
   let body: string
   let css = `${RESET_CSS}${stageCSS}`
 
@@ -364,13 +400,14 @@ async function exportStandaloneHTML(
     const classed = graph ? withClassRules(graph, doc) : doc
     if (graph) css += cssClassStylesheet(documentCSSClasses(graph), { compact: true })
     const rules: string[] = []
+    const media: MediaRule[] = []
     const index = { value: 0 }
     const styledDocument: DesignDocument = {
       ...classed,
-      children: classed.children.map((node) => extractInlineStyles(node, rules, index))
+      children: classed.children.map((node) => extractInlineStyles(node, rules, index, media))
     }
     body = serializeHTML(styledDocument)
-    css += rules.join('')
+    css += rules.join('') + mediaCSS(media)
   }
 
   if (options.assets === 'external') {

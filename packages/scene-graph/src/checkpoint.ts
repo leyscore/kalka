@@ -92,7 +92,7 @@ export function captureGraphCheckpoint(graph: SceneGraph) {
       if (!graph.nodes.has(id)) graph.emitter.emit('node:deleted', id, node.parentId)
     }
     for (const [id, node] of graph.nodes) {
-      if (failedNodes.has(id)) graph.emitter.emit('node:updated', id, node)
+      if (failedNodes.has(id)) graph.emitter.emit('node:updated', id, node, {})
       else graph.emitter.emit('node:created', node)
     }
   }

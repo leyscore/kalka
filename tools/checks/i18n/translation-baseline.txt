@@ -336,6 +336,8 @@ de:panels.html
 de:panels.htmlTag
 de:panels.htmlTagDefault
 de:panels.htmlClassesPlaceholder
+de:panels.breakpoints
+de:panels.breakpointTablet
 es:panels.shader
 es:panels.html
 es:panels.htmlTagDefault
@@ -347,12 +349,15 @@ fr:panels.html
 fr:panels.htmlTagDefault
 fr:panels.htmlClasses
 fr:panels.htmlClassesPlaceholder
+fr:panels.breakpoints
 it:panels.shader
 it:panels.html
 it:panels.htmlTag
 it:panels.htmlTagDefault
 it:panels.htmlClassesPlaceholder
+it:panels.breakpointTablet
 pl:panels.shader
 pl:panels.html
 pl:panels.htmlTagDefault
 pl:panels.htmlClassesPlaceholder
+pl:panels.breakpointTablet

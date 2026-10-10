@@ -26,6 +26,14 @@
   },
   "htmlUpdateClass": "クラスを更新",
   "htmlResetToClass": "リセット",
+  "breakpoints": "ブレークポイント",
+  "breakpointTablet": "タブレット",
+  "breakpointPhone": "スマートフォン",
+  "breakpointOf": "{name} ブレークポイント · {width}px",
+  "breakpointOwnValues": {
+    "many": "ここだけの値 {count} 件"
+  },
+  "breakpointReset": "リセット",
   "versions": "バージョン",
   "versionsUnsaved": "バージョンを残すには、このコンピューターに書類を保存してください。",
   "versionsUntracked": "このフォルダーはまだバージョンを残していません。Kalka は Git を使います。履歴はフォルダー内に残り、GitHub などの Git ツールで使えます。",
