@@ -181,10 +181,13 @@ export class ShaderLayers {
       )
       const stream = mount.canvasElement.captureStream()
       const video = doc.createElement('video')
+      // Sized on the next frame: resizing inside the callback would report a resize loop.
       const resize = new view.ResizeObserver(([entry]) => {
         const { width, height } = entry.contentRect
-        host.style.width = `${Math.max(1, width)}px`
-        host.style.height = `${Math.max(1, height)}px`
+        requestAnimationFrame(() => {
+          host.style.width = `${Math.max(1, width)}px`
+          host.style.height = `${Math.max(1, height)}px`
+        })
       })
       const mounted: Mounted = {
         element,

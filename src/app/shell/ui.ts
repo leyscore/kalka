@@ -128,11 +128,18 @@ function remove(id: number) {
   toasts.value = toasts.value.filter((t) => t.id !== id)
 }
 
+/**
+ * Browsers report a resize observer whose callback resized something it observes as an error,
+ * though nothing failed: the next frame delivers the rest. It is not the person's to act on.
+ */
+const BENIGN_ERRORS = [/^ResizeObserver loop/]
+
 function setupGlobalErrorHandler() {
   if (errorHandlersInitialized) return
   errorHandlersInitialized = true
 
   useEventListener(window, 'error', (e) => {
+    if (BENIGN_ERRORS.some((pattern) => pattern.test(e.message))) return
     recordRuntimeError(e.error ?? e.message, 'window')
     error(e.message || 'An unexpected error occurred')
   })
