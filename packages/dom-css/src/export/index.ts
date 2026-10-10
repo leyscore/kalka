@@ -2,12 +2,10 @@
 export {
   sceneGraphToDesignDocument,
   sceneNodeToDesignDocument,
-  canTakeHTMLTag,
-  defaultTagForNode,
-  tagForNode,
   type SceneGraphToDesignOptions,
   type VectorElementRenderer
 } from './projection'
+export { canTakeHTMLTag, defaultTagForNode, tagForNode } from './tags'
 export { exportHTMLBundle } from './bundle'
 export { HTML_TAG_RESET_CSS } from './tag-reset'
 export { isResponsiveRoot, withResponsiveStyles, type ArtboardProjector } from './responsive'

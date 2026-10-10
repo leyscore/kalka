@@ -1,10 +1,12 @@
 import { serializeHTML } from '../export/html'
+import { parseStyleDeclarations } from '../import/declarations'
 import type {
   CSSComputeOptions,
   CSSRuntime,
   DesignDocument,
   DesignElement,
-  DesignNode
+  DesignNode,
+  LayoutBox
 } from '../types'
 import { isSafeAttribute, UNSAFE_OR_HIDDEN_TAGS } from './sanitize'
 
@@ -52,6 +54,10 @@ const DEFAULT_COMPUTED_PROPERTIES = [
   'justify-content',
   'letter-spacing',
   'left',
+  'margin-bottom',
+  'margin-left',
+  'margin-right',
+  'margin-top',
   'line-height',
   'max-height',
   'max-width',
@@ -72,8 +78,12 @@ const DEFAULT_COMPUTED_PROPERTIES = [
   'text-shadow',
   'text-transform',
   'top',
+  'rotate',
+  'transform',
+  'visibility',
   'white-space',
-  'width'
+  'width',
+  'z-index'
 ] as const
 
 function resolveBrowserDocument(documentOverride: Document | undefined): Document {
@@ -92,15 +102,6 @@ function attributesToRecord(element: Element): Record<string, string> {
   return attrs
 }
 
-function styleToRecord(style: CSSStyleDeclaration): Record<string, string> | undefined {
-  const entries: Record<string, string> = {}
-  for (const property of Array.from(style)) {
-    const value = style.getPropertyValue(property)
-    if (value) entries[property] = value
-  }
-  return Object.keys(entries).length > 0 ? entries : undefined
-}
-
 function domNodeToDesignNode(node: Node): DesignNode | null {
   if (node.nodeType === 3) {
     const text = node.textContent ?? ''
@@ -114,14 +115,16 @@ function domNodeToDesignNode(node: Node): DesignNode | null {
   const children = Array.from(element.childNodes)
     .map(domNodeToDesignNode)
     .filter((child): child is DesignNode => child !== null)
-  const style = 'style' in element ? (element.style as CSSStyleDeclaration) : undefined
+  // The attribute as written: a shorthand that uses a variable, such as `background:
+  // var(--glass)`, reads back empty through `element.style`, and its paint would be lost.
+  const declared = parseStyleDeclarations(element.getAttribute('style') ?? undefined)
 
   return {
     type: 'element',
     tagName: element.tagName.toLowerCase(),
     attrs: attributesToRecord(element),
     children,
-    inlineStyle: style ? styleToRecord(style) : undefined
+    inlineStyle: Object.keys(declared).length > 0 ? declared : undefined
   }
 }
 
@@ -138,25 +141,26 @@ function parseHTMLWithDocument(browserDocument: Document, html: string): DesignD
   }
 }
 
-function collectElementPairs(
-  designNode: DesignNode,
-  domNode: Node,
-  pairs: [DesignElement, Element][]
-): void {
-  if (designNode.type === 'text') return
-  const view = domNode.ownerDocument?.defaultView
-  if (!view || !(domNode instanceof view.Element)) return
+const MEASURE_ATTRIBUTE = 'data-kalka-measure'
 
-  pairs.push([designNode, domNode])
-
-  const elementChildren = designNode.children.filter(
-    (child): child is DesignElement => child.type === 'element'
-  )
-  const domChildren = Array.from(domNode.children)
-  for (const [index, child] of elementChildren.entries()) {
-    const domChild = domChildren.at(index)
-    if (domChild) collectElementPairs(child, domChild, pairs)
+/**
+ * The design document to render, each element marked with its index: the HTML parser rewrites
+ * invalid nesting (a `div` in a `p`), so rendered elements are found by mark, not by position.
+ */
+function markedForMeasure(designDocument: DesignDocument): {
+  marked: DesignDocument
+  elements: DesignElement[]
+} {
+  const marked = structuredClone(designDocument)
+  const elements: DesignElement[] = []
+  const visit = (node: DesignNode) => {
+    if (node.type === 'text') return
+    node.attrs[MEASURE_ATTRIBUTE] = String(elements.length)
+    elements.push(node)
+    node.children.forEach(visit)
   }
+  marked.children.forEach(visit)
+  return { marked, elements }
 }
 
 function computedStyleToRecord(
@@ -184,12 +188,32 @@ function requestFrame(browserDocument: Document): Promise<void> {
   })
 }
 
-function applySandboxHostStyle(element: HTMLElement): void {
+const DEFAULT_VIEWPORT_WIDTH = 1000
+
+const AT_REST_CSS = '*,*::before,*::after{animation:none!important;transition:none!important}'
+
+/** How long measuring waits for the page's web fonts before it goes ahead without them. */
+const FONT_WAIT_MS = 4000
+
+function fontsLoaded(browserDocument: Document): Promise<void> {
+  const view = browserDocument.defaultView
+  if (!view || !('fonts' in browserDocument)) return Promise.resolve()
+  return new Promise((resolve) => {
+    const timer = view.setTimeout(resolve, FONT_WAIT_MS)
+    void browserDocument.fonts.ready.then(() => {
+      view.clearTimeout(timer)
+      resolve()
+      return undefined
+    })
+  })
+}
+
+function applySandboxHostStyle(element: HTMLElement, width = DEFAULT_VIEWPORT_WIDTH): void {
   element.style.cssText = [
     'position: fixed',
     'left: -100000px',
     'top: 0',
-    'width: 1000px',
+    `width: ${width}px`,
     'height: auto',
     'visibility: hidden',
     'pointer-events: none',
@@ -204,7 +228,7 @@ async function computeStylesInShadowRoot(
   options: CSSComputeOptions
 ): Promise<DesignDocument> {
   const host = browserDocument.createElement('div')
-  applySandboxHostStyle(host)
+  applySandboxHostStyle(host, options.viewportWidth)
 
   const shadow = host.attachShadow({ mode: 'open' })
   const style = browserDocument.createElement('style')
@@ -212,13 +236,14 @@ async function computeStylesInShadowRoot(
   shadow.append(style)
 
   const content = browserDocument.createElement('div')
-  content.innerHTML = serializeHTML(designDocument)
+  const { marked, elements } = markedForMeasure(designDocument)
+  content.innerHTML = serializeHTML(marked)
   shadow.append(content)
   browserDocument.body.append(host)
 
   try {
     await requestFrame(browserDocument)
-    return copyComputedStyles(designDocument, content, options)
+    return copyComputedStyles(marked, elements, content, options)
   } finally {
     host.remove()
   }
@@ -231,52 +256,122 @@ async function computeStylesInIframe(
   options: CSSComputeOptions
 ): Promise<DesignDocument> {
   const iframe = browserDocument.createElement('iframe')
-  applySandboxHostStyle(iframe)
+  applySandboxHostStyle(iframe, options.viewportWidth)
   browserDocument.body.append(iframe)
 
   try {
     const iframeDocument = iframe.contentDocument
     if (!iframeDocument) throw new TypeError('Browser CSS runtime could not create iframe document')
     iframeDocument.open()
-    iframeDocument.write(`<!doctype html><html><head></head><body></body></html>`)
+    // A browser's default 8px body margin would narrow the page the content lays out in; the
+    // page's own stylesheet, added after, still sets the body's margin when it has one.
+    // Animations and transitions would be measured mid-way; a design is read at rest.
+    iframeDocument.write(
+      `<!doctype html><html><head><style>body{margin:0}</style></head><body></body></html>`
+    )
     iframeDocument.close()
 
     const style = iframeDocument.createElement('style')
-    style.textContent = cssText
+    style.textContent = `${cssText}\n${AT_REST_CSS}`
     iframeDocument.head.append(style)
 
     const content = iframeDocument.createElement('div')
-    content.innerHTML = serializeHTML(designDocument)
+    const { marked, elements } = markedForMeasure(designDocument)
+    content.innerHTML = serializeHTML(marked)
     iframeDocument.body.append(content)
 
+    // Text measured in a fallback font would size boxes and wrap lines as the page never does.
+    // Laying the content out first is what starts its fonts loading.
+    void content.getBoundingClientRect()
+    await fontsLoaded(iframeDocument)
     await requestFrame(iframeDocument)
-    return copyComputedStyles(designDocument, content, options)
+    return copyComputedStyles(marked, elements, content, options)
   } finally {
     iframe.remove()
   }
 }
 
+function boxOf(rect: DOMRect, origin: DOMRect): LayoutBox {
+  return {
+    x: rect.left - origin.left,
+    y: rect.top - origin.top,
+    width: rect.width,
+    height: rect.height
+  }
+}
+
+/**
+ * An element's box before its transform: the layer model draws a transformed element at its
+ * own size, so a rotated or tilted element keeps its width and sits where its middle shows.
+ */
+function layoutBoxOf(element: Element, origin: DOMRect): LayoutBox {
+  const rect = element.getBoundingClientRect()
+  const view = element.ownerDocument.defaultView
+  const style = view?.getComputedStyle(element)
+  // `rotate`, `scale` and `translate` transform as `transform` does; Tailwind 4 writes them.
+  const transformed =
+    !!style &&
+    [style.transform, style.rotate, style.scale, style.translate].some(
+      (value) => value !== 'none' && value !== ''
+    )
+  const sized = element as Partial<HTMLElement>
+  if (!transformed || sized.offsetWidth === undefined || sized.offsetHeight === undefined)
+    return boxOf(rect, origin)
+  const width = sized.offsetWidth
+  const height = sized.offsetHeight
+  return {
+    x: rect.left + rect.width / 2 - width / 2 - origin.left,
+    y: rect.top + rect.height / 2 - height / 2 - origin.top,
+    width,
+    height
+  }
+}
+
+/** The box a text node's lines take, from a range over it. */
+function textBox(node: Node, origin: DOMRect): LayoutBox | undefined {
+  const range = node.ownerDocument?.createRange()
+  if (!range) return undefined
+  range.selectNodeContents(node)
+  const rect = range.getBoundingClientRect()
+  return rect.width > 0 || rect.height > 0 ? boxOf(rect, origin) : undefined
+}
+
 function copyComputedStyles(
-  designDocument: DesignDocument,
+  marked: DesignDocument,
+  elements: DesignElement[],
   content: Element,
   options: CSSComputeOptions
 ): DesignDocument {
   const view = content.ownerDocument.defaultView
   if (!view) throw new TypeError('Browser CSS runtime requires getComputedStyle')
 
-  const nextDocument = structuredClone(designDocument)
-  const pairs: [DesignElement, Element][] = []
-  const domChildren = Array.from(content.childNodes)
-  for (const [index, child] of nextDocument.children.entries()) {
-    const domChild = domChildren.at(index)
-    if (domChild) collectElementPairs(child, domChild, pairs)
-  }
+  const rendered = new Map<string, Element>()
+  for (const element of content.querySelectorAll(`[${MEASURE_ATTRIBUTE}]`))
+    rendered.set(element.getAttribute(MEASURE_ATTRIBUTE) ?? '', element)
 
-  for (const [designElement, domElement] of pairs) {
+  const origin = content.getBoundingClientRect()
+  for (const [index, designElement] of elements.entries()) {
+    Reflect.deleteProperty(designElement.attrs, MEASURE_ATTRIBUTE)
+    const domElement = rendered.get(String(index))
+    if (!domElement) continue
     designElement.computedStyle = computedStyleToRecord(view.getComputedStyle(domElement), options)
+    designElement.layoutBox = layoutBoxOf(domElement, origin)
+    // Its text runs, in order, against the rendered element's own text nodes.
+    const texts = Array.from(domElement.childNodes).filter((child) => child.nodeType === 3)
+    let next = 0
+    for (const child of designElement.children) {
+      if (child.type !== 'text') continue
+      const domText = texts.at(next++)
+      if (domText) child.layoutBox = textBox(domText, origin)
+    }
   }
-
-  return nextDocument
+  const body = content.ownerDocument.body
+  marked.viewport = {
+    width: options.viewportWidth ?? DEFAULT_VIEWPORT_WIDTH,
+    height: Math.max(origin.height, content.scrollHeight),
+    bodyStyle: computedStyleToRecord(view.getComputedStyle(body), options)
+  }
+  return marked
 }
 
 export function createBrowserCSSRuntime(options: BrowserCSSRuntimeOptions = {}): CSSRuntime {

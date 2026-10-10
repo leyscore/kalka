@@ -1,8 +1,6 @@
 import { fromUint8Array } from 'js-base64'
 
 import {
-  INLINE_HTML_TAGS,
-  isHTMLTag,
   layoutSizingInParent,
   readIcon,
   type SceneGraph,
@@ -23,10 +21,14 @@ import {
   strokeColorToCSS
 } from './css'
 import { addGridContainer, addGridPlacement } from './grid'
+import {
+  imageSourceURL,
+  INTERACTIVE_TAGS,
+  nestedTag,
+  VECTOR_SHAPES,
+  withBlockDisplay
+} from './tags'
 import { textRunChildren } from './text-runs'
-
-const DOM_CSS_PLUGIN_ID = 'open-pencil-dom-css'
-const IMAGE_SOURCE_URL_KEY = 'image-source-url'
 
 /**
  * Draws a vector-shaped layer as an inline `<svg>` element sized to the layer, from the
@@ -60,9 +62,6 @@ export interface SceneGraphToDesignOptions {
    */
   internal?: boolean
 }
-
-/** Layers whose shape only paths describe, which CSS boxes cannot draw. */
-const VECTOR_SHAPES = new Set<SceneNode['type']>(['VECTOR', 'BOOLEAN_OPERATION', 'STAR', 'POLYGON'])
 
 /** What a box draws itself, which the SVG of a vector layer draws instead. */
 const BOX_PAINT = /^(background|border|box-shadow|outline|filter)/
@@ -468,12 +467,6 @@ function addTruncation(style: DesignStyleDeclaration, node: SceneNode): void {
   style['-webkit-line-clamp'] = String(lines)
 }
 
-function imageSourceURL(node: SceneNode): string | undefined {
-  return node.pluginData.find(
-    (entry) => entry.pluginId === DOM_CSS_PLUGIN_ID && entry.key === IMAGE_SOURCE_URL_KEY
-  )?.value
-}
-
 function attrsForNode(
   graph: SceneGraph,
   node: SceneNode,
@@ -508,40 +501,6 @@ export function standaloneLayerStyle(node: SceneNode): DesignStyleDeclaration {
     : styleFromSceneNode(node, undefined, literal)
 }
 
-/** The tag a layer's element takes when the layer sets none. */
-export function defaultTagForNode(node: SceneNode): string {
-  if (node.type === 'TEXT') return 'span'
-  if (node.type === 'SECTION') return 'section'
-  const fill = node.fills.at(0)
-  if ((fill?.type === 'IMAGE' || imageSourceURL(node)) && node.childIds.length === 0) return 'img'
-  return 'div'
-}
-
-/**
- * Whether a layer is written as an element whose tag it may choose: a page is `<main>`, and
- * vectors, icons, curved text and images are `<svg>` and `<img>` whatever the layer asks for.
- */
-export function canTakeHTMLTag(node: SceneNode): boolean {
-  if (node.type === 'CANVAS' || VECTOR_SHAPES.has(node.type) || readIcon(node)) return false
-  if (node.type === 'TEXT' && node.textPathData !== null) return false
-  return defaultTagForNode(node) !== 'img'
-}
-
-/** The tag a layer is written as: its own, unless it draws as an image, which stays an `<img>`. */
-export function tagForNode(node: SceneNode): string {
-  const fallback = defaultTagForNode(node)
-  return node.htmlTag && fallback !== 'img' ? node.htmlTag : fallback
-}
-
-/**
- * A frame given an inline tag (`a`, `button`) lays out as the block its `div` was, unless its
- * CSS already sets a display; otherwise the browser would ignore its width and height.
- */
-function withBlockDisplay(tag: string, style: DesignStyleDeclaration): DesignStyleDeclaration {
-  if (!isHTMLTag(tag) || !INLINE_HTML_TAGS.has(tag) || style.display) return style
-  return { ...style, display: 'block' }
-}
-
 interface ProjectionContext {
   graph: SceneGraph
   includeSourceIds: boolean
@@ -551,6 +510,8 @@ interface ProjectionContext {
   shallow: boolean
   derivedSizes: boolean
   internal: boolean
+  /** Inside an `a` or `button`, which HTML does not let another one sit in. */
+  interactive: boolean
 }
 
 /**
@@ -600,6 +561,40 @@ function vectorDesignNode(
 }
 
 /** A text layer as a span of its runs, or, set on a path, as the SVG of its saved glyphs. */
+/** A frame's CSS, positioned so its absolutely placed children and siblings stack in order. */
+function frameStyle(
+  context: ProjectionContext,
+  node: SceneNode,
+  parent: SceneNode | undefined,
+  css: FieldCSS,
+  tagName: string
+): DesignStyleDeclaration {
+  const style = withBlockDisplay(
+    tagName,
+    styleFromSceneNode(context.derivedSizes ? withDerivedSize(node) : node, parent, css)
+  )
+  // An auto layout frame is where its absolutely placed children are measured from.
+  if (!style.position && hasAbsoluteChild(context.graph, node)) style.position = 'relative'
+  stackInLayerOrder(context.graph, style, parent)
+  return style
+}
+
+function hasAbsoluteChild(graph: SceneGraph, node: SceneNode): boolean {
+  return nodeChildren(graph, node).some((child) => child.layoutPositioning === 'ABSOLUTE')
+}
+
+/**
+ * Beside an absolutely placed sibling, an in-flow layer is positioned too: browsers paint
+ * positioned elements over the others, and layers paint in their order.
+ */
+function stackInLayerOrder(
+  graph: SceneGraph,
+  style: DesignStyleDeclaration,
+  parent: SceneNode | undefined
+): void {
+  if (!style.position && parent && hasAbsoluteChild(graph, parent)) style.position = 'relative'
+}
+
 function textDesignNode(
   context: ProjectionContext,
   node: SceneNode,
@@ -608,6 +603,7 @@ function textDesignNode(
   css: FieldCSS
 ): DesignNode {
   const style = styleFromTextNode(node, parent, css)
+  stackInLayerOrder(context.graph, style, parent)
   // CSS cannot lay text along a curve; its saved glyph outlines draw it instead.
   if (node.textPathData !== null) {
     const curved = vectorDesignNode(context, node, attrs, style)
@@ -615,7 +611,7 @@ function textDesignNode(
   }
   return {
     type: 'element',
-    tagName: tagForNode(node),
+    tagName: nestedTag(context.graph, node, context),
     attrs,
     inlineStyle: style,
     sourceSceneNodeId: node.id,
@@ -651,7 +647,16 @@ function sceneNodeToDesignNode(
     context.shallow && root
       ? []
       : nodeChildren(graph, node)
-          .map((child) => sceneNodeToDesignNode(context, child, modes, false))
+          .map((child) =>
+            sceneNodeToDesignNode(
+              INTERACTIVE_TAGS.has(nestedTag(context.graph, node, context))
+                ? { ...context, interactive: true }
+                : context,
+              child,
+              modes,
+              false
+            )
+          )
           .filter((child): child is DesignNode => child !== null)
 
   if (node.type === 'CANVAS') {
@@ -665,15 +670,13 @@ function sceneNodeToDesignNode(
     }
   }
 
-  const tagName = tagForNode(node)
+  const tagName = nestedTag(context.graph, node, context)
+  const style = frameStyle(context, node, parent, css, tagName)
   return {
     type: 'element',
     tagName,
     attrs,
-    inlineStyle: withBlockDisplay(
-      tagName,
-      styleFromSceneNode(context.derivedSizes ? withDerivedSize(node) : node, parent, css)
-    ),
+    inlineStyle: style,
     sourceSceneNodeId: node.id,
     sourceSceneNode: node,
     children
@@ -700,7 +703,8 @@ function projectionContext(
     shown,
     shallow,
     derivedSizes,
-    internal
+    internal,
+    interactive: false
   }
 }
 

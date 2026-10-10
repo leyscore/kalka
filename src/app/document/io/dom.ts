@@ -36,7 +36,12 @@ type DOMImportOptions = {
 type DOMTextImportOptions = {
   cssText?: string
   documentName?: string
+  /** The window width the page is laid out at; a desktop width when left out. */
+  viewportWidth?: number
 }
+
+/** Pasted pages lay out at the desktop artboard width, as their authors mostly designed them. */
+const IMPORT_VIEWPORT_WIDTH = 1440
 
 function errorDetail(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
@@ -64,6 +69,7 @@ export function createDOMOpenActions({
     const graph = await browserHTMLToSceneGraph(html, {
       cssText: options.cssText,
       pageName,
+      compute: { viewportWidth: options.viewportWidth ?? IMPORT_VIEWPORT_WIDTH },
       signal: load.signal
     })
     load.signal.throwIfAborted()

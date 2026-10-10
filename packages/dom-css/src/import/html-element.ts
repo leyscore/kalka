@@ -1,6 +1,6 @@
 import { parseHTMLClasses, parseHTMLTag, type SceneNode } from '@open-pencil/scene-graph'
 
-import { defaultTagForNode } from '../export/projection'
+import { defaultTagForNode } from '../export/tags'
 import type { DesignElement } from '../types'
 
 /** The classes HTML export writes for extracted inline styles, which are not the layer's own. */
