@@ -2,6 +2,7 @@ import type { FontFaceData, RemoteFontSource, ResolveFontResult } from 'unifont'
 
 import { IS_BROWSER } from '#core/constants'
 import { parseFontStyle } from '#core/text/face'
+import { loadGoogleOpticalSizes, type AxisRange } from '#core/text/web-font/google-axes'
 import {
   createProviderUnifont,
   isRemoteFontSource,
@@ -131,6 +132,7 @@ export class WebFontResolver {
   private failedFonts = new Set<string>()
   private fontPromises = new Map<string, Promise<ArrayBuffer[]>>()
   private remoteFetch: WebFontFetch | null = null
+  private opticalSizes: Promise<Map<string, AxisRange>> | null = null
   private fetchProxyQueue: Promise<void> = Promise.resolve()
 
   setEnabled(settings: Partial<Record<WebFontProviderId, boolean>>): void {
@@ -140,6 +142,7 @@ export class WebFontResolver {
 
   setRemoteFetch(fetcher: WebFontFetch | null): void {
     this.remoteFetch = fetcher
+    this.opticalSizes = null
     this.unifontPromises.clear()
     this.familiesPromises.clear()
     this.familiesCache.clear()
@@ -240,6 +243,23 @@ export class WebFontResolver {
     return fetch(url, init)
   }
 
+  /** Google's optical size ranges, read once; none when the metadata cannot be read. */
+  private googleOpticalSizes(): Promise<Map<string, AxisRange>> {
+    this.opticalSizes ??= loadGoogleOpticalSizes((url) => this.fetchRemote(url)).catch(
+      () => new Map<string, AxisRange>()
+    )
+    return this.opticalSizes
+  }
+
+  /** What a Google Fonts request asks for beyond weight and style: glyphs, optical sizes. */
+  private async googleFamilyOptions(family: string, characters: string) {
+    const opsz = (await this.googleOpticalSizes()).get(family)
+    const experimental: { glyphs?: string[]; variableAxis?: { opsz: AxisRange[] } } = {}
+    if (characters) experimental.glyphs = [characters]
+    if (opsz) experimental.variableAxis = { opsz: [opsz] }
+    return Object.keys(experimental).length > 0 ? { options: { google: { experimental } } } : {}
+  }
+
   private async unifont(provider: WebFontProviderId, signal?: AbortSignal): Promise<WebUnifont> {
     let promise = this.unifontPromises.get(provider)
     if (!promise) {
@@ -314,9 +334,7 @@ export class WebFontResolver {
         styles: [parsed.italic ? 'italic' : 'normal'],
         formats: ['ttf', 'otf', 'woff2', 'woff'],
         subsets: webFontSubsetsForText(characters),
-        ...(provider === 'google' && characters
-          ? { options: { google: { experimental: { glyphs: [characters] } } } }
-          : {})
+        ...(provider === 'google' ? await this.googleFamilyOptions(family, characters) : {})
       } satisfies WebFontResolveOptions
       const result = await this.withFetchProxy<ResolveFontResult>(
         () => unifont.resolveFont(family, options),
