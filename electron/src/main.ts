@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { dirname, extname, join, normalize, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -145,7 +146,11 @@ function createWindow(): BrowserWindow {
   return window
 }
 
-const designFiles = (args: string[]) => args.filter((arg) => /\.(fig|pen)$/i.test(arg))
+/** Documents a launch names: design files, `.kalka` archives and Kalka folders. */
+const designFiles = (args: string[]) =>
+  args.filter(
+    (arg) => /\.(fig|pen|kalka)$/i.test(arg) || existsSync(join(arg, 'project.json'))
+  )
 const links = (args: string[]) => args.filter((arg) => arg.startsWith(`${LINK_SCHEME}://`))
 
 if (!app.requestSingleInstanceLock()) {

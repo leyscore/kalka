@@ -1,4 +1,5 @@
 import { realpath, stat } from 'node:fs/promises'
+import { join } from 'node:path'
 
 import type { WebContents } from 'electron'
 
@@ -33,11 +34,15 @@ export function takePendingRooms(): string[] {
   return taken
 }
 
-/** A design file the app opens: existing, and a `.fig` or `.pen`. */
+/** A document the app opens: an existing `.fig`, `.pen` or `.kalka` file, or a Kalka folder. */
 async function designFile(path: string): Promise<string | null> {
   try {
     const resolved = await realpath(path)
-    return (await stat(resolved)).isFile() && /\.(fig|pen)$/i.test(resolved) ? resolved : null
+    const entry = await stat(resolved)
+    if (entry.isFile()) return /\.(fig|pen|kalka)$/i.test(resolved) ? resolved : null
+    return entry.isDirectory() && (await stat(join(resolved, 'project.json'))).isFile()
+      ? resolved
+      : null
   } catch {
     return null
   }
