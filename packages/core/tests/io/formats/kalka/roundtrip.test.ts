@@ -41,6 +41,8 @@ describe('Kalka folder', () => {
       'Internal Only Canvas'
     ])
     expect(nodeNamed(read, 'Shader').shader).toEqual(nodeNamed(graph, 'Shader').shader)
+    expect(nodeNamed(read, 'Nav').htmlClasses).toEqual(['site-nav', 'md:px-4'])
+    expect(nodeNamed(read, 'Headline').htmlTag).toBe('h1')
   })
 
   test('lays the folder out as the format says', async () => {
@@ -63,6 +65,9 @@ describe('Kalka folder', () => {
     expect(home).toContain('hidden')
     expect(home).toContain('data-kalka-locked')
     expect(home).toContain('data-kalka-shader')
+    // A layer's tag and classes are the page's own HTML, not saved props.
+    expect(home).toMatch(/<nav [^>]*class="site-nav md:px-4"/)
+    expect(home).toMatch(/<h1 [^>]*data-kalka-name="Headline"/)
     // Bound values read as the tokens they are.
     expect(home).toContain('var(--')
 

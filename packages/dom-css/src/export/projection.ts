@@ -1,6 +1,8 @@
 import { fromUint8Array } from 'js-base64'
 
 import {
+  INLINE_HTML_TAGS,
+  isHTMLTag,
   layoutSizingInParent,
   readIcon,
   type SceneGraph,
@@ -482,6 +484,7 @@ function attrsForNode(
     : {}
   const sourceURL = imageSourceURL(node)
   if (sourceURL) attrs.src = sourceURL
+  if (node.htmlClasses.length > 0) attrs.class = node.htmlClasses.join(' ')
   if (node.shader) {
     // Paper Shaders mounts on elements marked so; the layer's settings travel with the export.
     attrs['data-paper-shader'] = ''
@@ -494,11 +497,38 @@ function attrsForNode(
   return { ...attrs, src: `data:image/png;base64,${fromUint8Array(bytes)}` }
 }
 
-function tagNameForNode(node: SceneNode): string {
+/** The tag a layer's element takes when the layer sets none. */
+export function defaultTagForNode(node: SceneNode): string {
+  if (node.type === 'TEXT') return 'span'
   if (node.type === 'SECTION') return 'section'
   const fill = node.fills.at(0)
   if ((fill?.type === 'IMAGE' || imageSourceURL(node)) && node.childIds.length === 0) return 'img'
   return 'div'
+}
+
+/**
+ * Whether a layer is written as an element whose tag it may choose: a page is `<main>`, and
+ * vectors, icons, curved text and images are `<svg>` and `<img>` whatever the layer asks for.
+ */
+export function canTakeHTMLTag(node: SceneNode): boolean {
+  if (node.type === 'CANVAS' || VECTOR_SHAPES.has(node.type) || readIcon(node)) return false
+  if (node.type === 'TEXT' && node.textPathData !== null) return false
+  return defaultTagForNode(node) !== 'img'
+}
+
+/** The tag a layer is written as: its own, unless it draws as an image, which stays an `<img>`. */
+export function tagForNode(node: SceneNode): string {
+  const fallback = defaultTagForNode(node)
+  return node.htmlTag && fallback !== 'img' ? node.htmlTag : fallback
+}
+
+/**
+ * A frame given an inline tag (`a`, `button`) lays out as the block its `div` was, unless its
+ * CSS already sets a display; otherwise the browser would ignore its width and height.
+ */
+function withBlockDisplay(tag: string, style: DesignStyleDeclaration): DesignStyleDeclaration {
+  if (!isHTMLTag(tag) || !INLINE_HTML_TAGS.has(tag) || style.display) return style
+  return { ...style, display: 'block' }
 }
 
 interface ProjectionContext {
@@ -574,7 +604,7 @@ function textDesignNode(
   }
   return {
     type: 'element',
-    tagName: 'span',
+    tagName: tagForNode(node),
     attrs,
     inlineStyle: style,
     sourceSceneNodeId: node.id,
@@ -624,14 +654,14 @@ function sceneNodeToDesignNode(
     }
   }
 
+  const tagName = tagForNode(node)
   return {
     type: 'element',
-    tagName: tagNameForNode(node),
+    tagName,
     attrs,
-    inlineStyle: styleFromSceneNode(
-      context.derivedSizes ? withDerivedSize(node) : node,
-      parent,
-      css
+    inlineStyle: withBlockDisplay(
+      tagName,
+      styleFromSceneNode(context.derivedSizes ? withDerivedSize(node) : node, parent, css)
     ),
     sourceSceneNodeId: node.id,
     sourceSceneNode: node,

@@ -169,6 +169,16 @@ export function sampleDocument(): SceneGraph {
     height: 90,
     shader: createShaderLayer()
   })
+  const nav = graph.createNode('FRAME', board.id, {
+    name: 'Nav',
+    x: 200,
+    y: 120,
+    width: 160,
+    height: 40,
+    htmlTag: 'nav',
+    htmlClasses: ['site-nav', 'md:px-4']
+  })
+  graph.createNode('TEXT', nav.id, { name: 'Headline', text: 'Studio', htmlTag: 'h1' })
 
   const component = graph.createNode('COMPONENT', second.id, {
     name: 'Button',

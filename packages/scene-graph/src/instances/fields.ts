@@ -20,6 +20,8 @@ export const INSTANCE_SYNC_PROPS: (keyof SceneNode)[] = [
   'strokes',
   'effects',
   'shader',
+  'htmlTag',
+  'htmlClasses',
   'opacity',
   'cornerRadius',
   'topLeftRadius',

@@ -1,6 +1,6 @@
 import { omit } from 'es-toolkit/object'
 
-import { tokenStylesheet } from '@open-pencil/dom-css/export'
+import { HTML_TAG_RESET_CSS, tokenStylesheet } from '@open-pencil/dom-css/export'
 import {
   createDefaultNode,
   generateId,
@@ -41,6 +41,9 @@ const STYLES_CSS = `/*
 [hidden] {
   display: none !important;
 }
+
+/* Layers written as an h1, a list or a button draw as their own CSS says. */
+${HTML_TAG_RESET_CSS}
 `
 
 const encoder = new TextEncoder()

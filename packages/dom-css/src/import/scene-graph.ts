@@ -14,6 +14,7 @@ import { computeImageHash } from '@open-pencil/scene-graph/images'
 
 import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
 import { colorToFillFromCSS, colorToStrokeFromCSS, mergedStyle, pickStyle } from './css-values'
+import { applyHTMLElement } from './html-element'
 import {
   blendModeFromCSS,
   blurEffects,
@@ -512,7 +513,9 @@ function createElementNode(graph: SceneGraph, parentId: string, element: DesignE
     !hasBoxStyle(style) &&
     element.children.every((child) => child.type === 'text')
   ) {
-    return createTextNode(graph, parentId, textContent(element), style)
+    const text = createTextNode(graph, parentId, textContent(element), style)
+    applyHTMLElement(text, element)
+    return text
   }
 
   const shaderJSON = element.attrs['data-kalka-shader']
@@ -523,6 +526,7 @@ function createElementNode(graph: SceneGraph, parentId: string, element: DesignE
     shader: shaderJSON ? parseShaderLayer(shaderJSON) : null
   })
   applyElementStyle(graph, node, element, style)
+  applyHTMLElement(node, element)
   if (node.shader) {
     // The gradient written for the shader stands in for it; the shader is the layer's paint.
     graph.updateNode(node.id, {

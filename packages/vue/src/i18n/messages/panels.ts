@@ -20,6 +20,11 @@ export const panelMessageDefaults = {
   shaderNoise: 'Noise',
   shaderProportion: 'Proportion',
   shaderSpeed: 'Speed',
+  html: 'HTML',
+  htmlTag: 'Tag',
+  htmlTagDefault: params('Auto ({tag})'),
+  htmlClasses: 'Classes',
+  htmlClassesPlaceholder: 'hero card',
   versions: 'Versions',
   versionsUnsaved: 'Save the document on this computer to keep its versions.',
   versionsUntracked:

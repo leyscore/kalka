@@ -1,3 +1,5 @@
+import { HTML_TAG_RESET_CSS } from '@open-pencil/dom-css/export'
+
 /**
  * An artboard document: one iframe per top-level layer, so its CSS is a real page of its own
  * (real `@media`, no leak into the editor or out of it) laid out and drawn by the browser.
@@ -14,6 +16,8 @@ export const ARTBOARD_CSP =
 export const ARTBOARD_CSS = [
   'html,body{margin:0;padding:0;background:transparent;overflow:hidden}',
   '*,*::before,*::after{box-sizing:border-box}',
+  // A layer written as an h1 or a button draws as its CSS says, not with browser defaults.
+  HTML_TAG_RESET_CSS,
   // A layer's text keeps the font the projection writes; this is only the fallback.
   'body{font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}',
   'img{display:block}',

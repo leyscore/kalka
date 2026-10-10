@@ -2,6 +2,7 @@ import { parseShaderLayer, type SceneGraph, type SceneNode } from '@open-pencil/
 import { parseCSSNumber } from '@open-pencil/scene-graph/css'
 
 import type { DesignElement, DesignStyleDeclaration } from '../types'
+import { applyHTMLElement } from './html-element'
 import { paintColor } from './paint'
 import { applyElementStyle, applyTextStyle, type ImageSourceResolver } from './scene-graph'
 import { textContentFromChildren } from './text-runs'
@@ -93,6 +94,7 @@ export function applyLayerStyle(
     const shader = element.attrs['data-kalka-shader']
     if (shader) node.shader = parseShaderLayer(shader)
   }
+  applyHTMLElement(node, element)
   if (node.type === 'LINE') applyLineStroke(node)
   if (!laysOutChildren(parent)) {
     node.layoutPositioning = positioning

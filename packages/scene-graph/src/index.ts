@@ -897,4 +897,5 @@ export class SceneGraph {
     return result
   }
 }
+export * from './html-element'
 export * from './shader'

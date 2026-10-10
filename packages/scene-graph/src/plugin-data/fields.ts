@@ -4,6 +4,7 @@ import { behaviourSchema } from '../behaviours/schema'
 import type { OkHCLPayload } from '../color/okhcl'
 import { isExportFormatId, type ExportFormatId } from '../export-format'
 import { clampExportScale } from '../export-scale'
+import { HTML_TAGS, htmlClassesSchema } from '../html-element'
 import { iconSchema, iconTintSchema } from '../icons/schema'
 import type { Rect } from '../primitives'
 import { shaderLayerSchema } from '../shader'
@@ -148,6 +149,10 @@ export const OPEN_PENCIL_PLUGIN_DATA = {
   exportSettings: jsonPluginDataField('exportSettings', 'format', exportSettings),
   /** A shader drawn behind the layer's content, which Figma has no paint for. */
   shader: jsonPluginDataField('shader', 'format', shaderLayerSchema),
+  /** The HTML tag a layer is written as, which Figma has no field for. */
+  htmlTag: textPluginDataField('htmlTag', 'format', HTML_TAGS),
+  /** The class names a layer's element carries. */
+  htmlClasses: jsonPluginDataField('htmlClasses', 'format', htmlClassesSchema),
   /** The node-local rect a TEXT_PATH layout maps onto, which Kiwi has no field for. */
   textPathBox: jsonPluginDataField('textPathBox', 'format', textPathBox),
   /** The library asset a node was inserted from. */

@@ -25,7 +25,8 @@ import {
   referencesVariable
 } from './variable/bindings'
 
-const { boundVariables, exportSettings, librarySource, textPathBox } = OPEN_PENCIL_PLUGIN_DATA
+const { boundVariables, exportSettings, htmlClasses, htmlTag, librarySource, textPathBox } =
+  OPEN_PENCIL_PLUGIN_DATA
 
 const NATIVE_EXPORT_FORMATS: Record<string, ExportFormatId> = {
   PNG: 'png',
@@ -144,6 +145,20 @@ export function extractPluginData(nc: NodeChange): PluginDataEntry[] {
 
 export function extractLibrarySource(nc: NodeChange): SceneNode['librarySource'] {
   return readNodeChangePluginData(nc, librarySource) ?? null
+}
+
+/** The HTML tag and classes a layer is exported with, which Figma has no fields for. */
+export function extractHTMLElement(nc: NodeChange): Pick<SceneNode, 'htmlTag' | 'htmlClasses'> {
+  return {
+    htmlTag: readNodeChangePluginData(nc, htmlTag) ?? null,
+    htmlClasses: readNodeChangePluginData(nc, htmlClasses) ?? []
+  }
+}
+
+export function applyHTMLElementPluginData(node: SceneNode): void {
+  node.pluginData = withPluginData(node.pluginData, htmlTag, node.htmlTag ?? undefined)
+  const classes = node.htmlClasses.length > 0 ? node.htmlClasses : undefined
+  node.pluginData = withPluginData(node.pluginData, htmlClasses, classes)
 }
 
 export function applyLibrarySourcePluginData(node: SceneNode): void {

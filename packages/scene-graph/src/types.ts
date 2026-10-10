@@ -2,6 +2,7 @@
 
 import type { ExportFormatId } from './export-format'
 import type { CanvasGuide } from './guides'
+import type { HTMLTag } from './html-element'
 import type { InstanceOverrideState } from './instance-overrides'
 import type { Color, Matrix, Rect, Vector } from './primitives'
 import type { ShaderLayer } from './shader'
@@ -442,6 +443,10 @@ export interface SceneNode {
   effects: Effect[]
   /** A live shader drawn behind the layer's content, or null. */
   shader: ShaderLayer | null
+  /** The tag the layer's element is written as; null keeps the one its type gives. */
+  htmlTag: HTMLTag | null
+  /** Class names the layer's element carries for the developer's CSS and scripts. */
+  htmlClasses: string[]
   layoutGrids: LayoutGrid[]
   guides: CanvasGuide[]
   fillStyleId: string | null

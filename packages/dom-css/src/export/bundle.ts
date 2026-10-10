@@ -7,6 +7,7 @@ import { normalizeFontFamily } from '@open-pencil/scene-graph'
 import { tokenStylesheet, type TokenStylesheetFormat } from '../tokens/stylesheet'
 import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
 import { mergeClassNames, serializeHTML, splitWhitespace } from './html'
+import { HTML_TAG_RESET_CSS } from './tag-reset'
 
 /** A font face the exported text uses. */
 export interface WebFontFaceRequest {
@@ -64,8 +65,7 @@ type ParseNode = DefaultTreeAdapterTypes.Node
 type ParseParent = DefaultTreeAdapterTypes.ParentNode
 type ParseElement = DefaultTreeAdapterTypes.Element
 
-const RESET_CSS =
-  '*,*::before,*::after{box-sizing:border-box}html,body{margin:0;padding:0}body{font-family:system-ui,sans-serif;background:#fff}'
+const RESET_CSS = `*,*::before,*::after{box-sizing:border-box}html,body{margin:0;padding:0}body{font-family:system-ui,sans-serif;background:#fff}${HTML_TAG_RESET_CSS}`
 
 function styleToCSS(style: DesignStyleDeclaration): string {
   return Object.entries(style)

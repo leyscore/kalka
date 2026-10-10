@@ -592,7 +592,8 @@ describe('@open-pencil/dom-css conversion', () => {
     const title = card.children[0]
     expect(title?.type).toBe('element')
     if (title?.type !== 'element') return
-    expect(title.tagName).toBe('span')
+    // The title was read from an h1 and keeps its tag.
+    expect(title.tagName).toBe('h1')
     expect(title.inlineStyle?.['font-size']).toBe('24px')
   })
 })

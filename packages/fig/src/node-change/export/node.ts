@@ -24,6 +24,7 @@ import { exportCanvasGuides } from '../canvas-guides'
 import { snapshotInstanceGeometry } from '../instance/geometry'
 import {
   applyExportSettingsPluginData,
+  applyHTMLElementPluginData,
   applyLibrarySourcePluginData,
   applyTextPathBoxPluginData,
   mergePluginData,
@@ -993,6 +994,7 @@ export function sceneNodeToKiwiWithContext(
 
   applyExportSettingsPluginData(node)
   applyLibrarySourcePluginData(node)
+  applyHTMLElementPluginData(node)
   applyTextPathBoxPluginData(node)
   const pluginData = mergePluginData(node.pluginData)
   if (pluginData.length > 0) nc.pluginData = pluginData

@@ -29,6 +29,7 @@ import ExportSection from './properties/ExportSection.vue'
 import FillSection from './properties/FillSection.vue'
 import FramePresetSelect from './properties/frame-presets/FramePresetSelect.vue'
 import FramePresetsSection from './properties/frame-presets/FramePresetsSection.vue'
+import HTMLSection from './properties/HTMLSection.vue'
 import IconSection from './properties/IconSection.vue'
 import LayoutGridSection from './properties/layout/guides/LayoutGridSection.vue'
 import LayoutSection from './properties/layout/LayoutSection.vue'
@@ -204,6 +205,7 @@ const { panels } = useI18n()
       <LayoutGridSection v-if="supportsLayoutGuides" />
       <EffectsSection />
       <ShaderSection />
+      <HTMLSection />
 
       <ExportSection />
     </div>
