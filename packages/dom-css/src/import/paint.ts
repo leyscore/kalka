@@ -89,8 +89,9 @@ export function outlineStroke(
 }
 
 /** The blur in `blur(8px)`, or null. */
+/** The radius of the `blur()` in a filter list, such as `blur(150px) brightness(1.1)`. */
 function blurRadius(value: string | undefined): number | null {
-  const match = value ? /^blur\(([^)]*)\)$/i.exec(value.trim()) : null
+  const match = value ? /(?:^|\s)blur\(([^)]*)\)/i.exec(value) : null
   return match ? parseCSSNumber(match[1]) : null
 }
 

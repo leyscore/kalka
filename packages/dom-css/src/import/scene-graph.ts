@@ -141,12 +141,25 @@ function setBorderWeights(node: SceneNode, style: DesignStyleDeclaration, stroke
   )
 }
 
+/**
+ * A corner radius in pixels. A percentage is of the box, as `border-radius: 50%` draws a circle;
+ * an elliptical corner keeps its horizontal radius.
+ */
+function cornerRadiusOf(node: SceneNode, style: DesignStyleDeclaration, property: string) {
+  const value = pickStyle(style, property)?.trim().split(/\s+/)[0]
+  if (value?.endsWith('%')) {
+    const percent = Number.parseFloat(value)
+    return Number.isFinite(percent) ? (Math.min(node.width, node.height) * percent) / 100 : null
+  }
+  return parseCSSNumber(value)
+}
+
 function applyCornerRadii(node: SceneNode, style: DesignStyleDeclaration): void {
-  const cornerRadius = firstCSSNumber(style, 'border-radius')
-  const topLeft = firstCSSNumber(style, 'border-top-left-radius')
-  const topRight = firstCSSNumber(style, 'border-top-right-radius')
-  const bottomRight = firstCSSNumber(style, 'border-bottom-right-radius')
-  const bottomLeft = firstCSSNumber(style, 'border-bottom-left-radius')
+  const cornerRadius = cornerRadiusOf(node, style, 'border-radius')
+  const topLeft = cornerRadiusOf(node, style, 'border-top-left-radius')
+  const topRight = cornerRadiusOf(node, style, 'border-top-right-radius')
+  const bottomRight = cornerRadiusOf(node, style, 'border-bottom-right-radius')
+  const bottomLeft = cornerRadiusOf(node, style, 'border-bottom-left-radius')
 
   if (cornerRadius !== null) node.cornerRadius = cornerRadius
   if (topLeft === null && topRight === null && bottomRight === null && bottomLeft === null) return

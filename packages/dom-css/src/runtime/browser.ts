@@ -18,6 +18,7 @@ export interface BrowserCSSRuntimeOptions {
 const DEFAULT_COMPUTED_PROPERTIES = [
   'align-items',
   'aspect-ratio',
+  'backdrop-filter',
   'background-color',
   'background-image',
   'border-bottom-color',
@@ -41,6 +42,7 @@ const DEFAULT_COMPUTED_PROPERTIES = [
   'color',
   'column-gap',
   'display',
+  'filter',
   'align-self',
   'bottom',
   'flex-direction',

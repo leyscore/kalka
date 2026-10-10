@@ -137,4 +137,23 @@ describe('measured HTML import', () => {
     expect(rotationFromTransform('matrix(2, 0, 0, 2, 0, 0)')).toBeNull()
     expect(rotationFromTransform('none')).toBeNull()
   })
+
+  test('a blurred circle stays a round glow', () => {
+    const { graph, artboard } = graphOf(
+      measured([
+        element('div', box(-88, 102, 749, 749), {
+          ...BLOCK,
+          position: 'absolute',
+          width: '749px',
+          height: '749px',
+          'background-color': 'rgb(111, 140, 236)',
+          'border-radius': '50%',
+          filter: 'blur(150px) brightness(1)'
+        })
+      ])
+    )
+    const [glow] = graph.getChildren(artboard.id)
+    expect(glow.cornerRadius).toBe(374.5)
+    expect(glow.effects).toMatchObject([{ type: 'LAYER_BLUR', radius: 150 }])
+  })
 })
