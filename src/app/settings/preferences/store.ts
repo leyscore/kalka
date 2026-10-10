@@ -171,10 +171,25 @@ export function parseAppPreferences(value: unknown): AppPreferences {
   return v.parse(appPreferencesSchema, value)
 }
 
+const StoredJSON = v.pipe(v.string(), v.parseJson())
+
+/**
+ * Every read goes through the schema, including values another window writes: VueUse applies
+ * `mergeDefaults` only on its first read, not on storage events, so a partial value from
+ * elsewhere would otherwise reach the app as is.
+ */
 export const appPreferences = useLocalStorage<AppPreferences>(
   STORAGE_KEY,
   structuredClone(DEFAULT_APP_PREFERENCES),
-  { mergeDefaults: (storageValue) => parseAppPreferences(storageValue) }
+  {
+    serializer: {
+      read: (raw) => {
+        const parsed = v.safeParse(StoredJSON, raw)
+        return parseAppPreferences(parsed.success ? parsed.output : undefined)
+      },
+      write: (value) => JSON.stringify(value)
+    }
+  }
 )
 
 export function updateAnimationPreference(animations: AnimationPreference): void {
