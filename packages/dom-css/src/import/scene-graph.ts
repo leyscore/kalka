@@ -14,6 +14,13 @@ import { computeImageHash } from '@open-pencil/scene-graph/images'
 
 import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
 import { colorToFillFromCSS, colorToStrokeFromCSS, mergedStyle, pickStyle } from './css-values'
+import {
+  blendModeFromCSS,
+  blurEffects,
+  expandBorderShorthands,
+  outlineStroke,
+  rotationFromCSS
+} from './paint'
 
 const DOM_CSS_PLUGIN_ID = 'open-pencil-dom-css'
 const IMAGE_SOURCE_URL_KEY = 'image-source-url'
@@ -21,6 +28,9 @@ const IMAGE_SOURCE_URL_KEY = 'image-source-url'
 export interface DesignDocumentToSceneGraphOptions {
   pageName?: string
 }
+
+/** The image hash an `<img src>` names in the graph, for sources that are not data URLs. */
+export type ImageSourceResolver = (source: string) => string | null
 
 function textContent(node: DesignNode): string {
   if (node.type === 'text') return node.text
@@ -240,14 +250,31 @@ function bytesFromDataURL(value: string | undefined): Uint8Array | null {
   return toUint8Array(body)
 }
 
+function imageFill(hash: string, style: DesignStyleDeclaration): Fill {
+  return {
+    type: 'IMAGE',
+    imageHash: hash,
+    imageScaleMode: imageScaleModeFromObjectFit(pickStyle(style, 'object-fit')) ?? 'FILL',
+    color: TRANSPARENT,
+    opacity: 1,
+    visible: true
+  }
+}
+
 function applyImageFill(
   graph: SceneGraph,
   node: SceneNode,
   element: DesignElement,
-  style: DesignStyleDeclaration
+  style: DesignStyleDeclaration,
+  resolveImage?: ImageSourceResolver
 ): void {
   if (element.tagName.toLowerCase() !== 'img') return
   const source = element.attrs.src
+  const resolved = source && resolveImage ? resolveImage(source) : null
+  if (resolved) {
+    node.fills = [imageFill(resolved, style)]
+    return
+  }
   const bytes = bytesFromDataURL(source)
   if (!bytes) {
     if (source) {
@@ -262,32 +289,31 @@ function applyImageFill(
 
   const imageHash = computeImageHash(bytes)
   graph.images.set(imageHash, bytes)
-  node.fills = [
-    {
-      type: 'IMAGE',
-      imageHash,
-      imageScaleMode: imageScaleModeFromObjectFit(pickStyle(style, 'object-fit')) ?? 'FILL',
-      color: TRANSPARENT,
-      opacity: 1,
-      visible: true
-    }
-  ]
+  node.fills = [imageFill(imageHash, style)]
 }
 
-function applyElementStyle(
-  graph: SceneGraph,
-  node: SceneNode,
-  element: DesignElement,
-  style: DesignStyleDeclaration
-): void {
+/** What every layer takes from its own CSS and its parent's layout, text or box alike. */
+function applyLayerCommons(node: SceneNode, style: DesignStyleDeclaration): void {
   setNodeBox(node, style)
   applyPositioning(node, style)
-  applyPadding(node, style)
 
-  const fills = fillsFromStyle(style, 'background-color')
-  if (fills.length > 0) node.fills = fills
-  applyImageFill(graph, node, element, style)
+  const opacity = parseCSSNumber(pickStyle(style, 'opacity'))
+  if (opacity !== null) node.opacity = opacity
 
+  const alignSelf = layoutAlignSelfFromCSS(pickStyle(style, 'align-self'))
+  if (alignSelf !== 'AUTO') node.layoutAlignSelf = alignSelf
+
+  const grow = parseCSSNumber(pickStyle(style, 'flex-grow'))
+  if (grow !== null && grow > 0) node.layoutGrow = grow
+
+  const rotation = rotationFromCSS(pickStyle(style, 'transform'))
+  if (rotation !== null) node.rotation = rotation
+
+  const blendMode = blendModeFromCSS(pickStyle(style, 'mix-blend-mode'))
+  if (blendMode) node.blendMode = blendMode
+}
+
+function applyStrokes(node: SceneNode, style: DesignStyleDeclaration): void {
   const strokes = colorToStrokeFromCSS(
     firstStrokeColor(style),
     strokeWeightFromStyle(style)?.toString()
@@ -299,26 +325,50 @@ function applyElementStyle(
       node.dashPattern = dashPattern
     }
     node.strokes = strokes
+    node.strokeWeight = strokes[0].weight
     // A CSS border takes room in the layout; the stroke keeps doing so, and exports as a border.
     node.strokesIncludedInLayout = true
     strokes[0].align = 'INSIDE'
     node.strokeAlign = 'INSIDE'
     setBorderWeights(node, style, strokes[0])
+    return
   }
 
-  const effects = parseCSSShadows(pickStyle(style, 'box-shadow'))
-  if (effects.length > 0) node.effects = effects
+  // An outline draws a stroke that takes no room, as auto layout strokes do by default.
+  const outline = outlineStroke(style)
+  if (!outline) return
+  node.strokes = [outline.stroke]
+  node.strokeWeight = outline.stroke.weight
+  node.strokeAlign = outline.stroke.align
+  node.strokesIncludedInLayout = false
+  if (outline.dashed) node.dashPattern = [outline.stroke.weight * 3, outline.stroke.weight * 2]
+}
 
-  const opacity = parseCSSNumber(pickStyle(style, 'opacity'))
-  if (opacity !== null) node.opacity = opacity
+export function applyElementStyle(
+  graph: SceneGraph,
+  node: SceneNode,
+  element: DesignElement,
+  declared: DesignStyleDeclaration,
+  resolveImage?: ImageSourceResolver
+): void {
+  const style = expandBorderShorthands(declared)
+  applyLayerCommons(node, style)
+  applyPadding(node, style)
+
+  const fills = fillsFromStyle(style, 'background-color')
+  if (fills.length > 0) node.fills = fills
+  applyImageFill(graph, node, element, style, resolveImage)
+  applyStrokes(node, style)
+
+  const effects = [...parseCSSShadows(pickStyle(style, 'box-shadow')), ...blurEffects(style)]
+  if (effects.length > 0) node.effects = effects
 
   applyCornerRadii(node, style)
 
   const overflow = pickStyle(style, 'overflow')
   if (overflow === 'hidden' || overflow === 'clip') node.clipsContent = true
 
-  const alignSelf = layoutAlignSelfFromCSS(pickStyle(style, 'align-self'))
-  if (alignSelf !== 'AUTO') node.layoutAlignSelf = alignSelf
+  if (pickStyle(style, 'direction') === 'rtl') node.layoutDirection = 'RTL'
 
   const display = pickStyle(style, 'display')
   if (display === 'flex' || display === 'inline-flex') {
@@ -330,9 +380,8 @@ function applyElementStyle(
   }
 }
 
-function applyTextStyle(node: SceneNode, style: DesignStyleDeclaration): void {
-  setNodeBox(node, style)
-  applyPositioning(node, style)
+export function applyTextStyle(node: SceneNode, style: DesignStyleDeclaration): void {
+  applyLayerCommons(node, style)
 
   const fills = fillsFromStyle(style, 'color')
   if (fills.length > 0) node.fills = fills
@@ -349,9 +398,6 @@ function applyTextStyle(node: SceneNode, style: DesignStyleDeclaration): void {
   const letterSpacing = parseCSSNumber(pickStyle(style, 'letter-spacing'))
   if (letterSpacing !== null) node.letterSpacing = letterSpacing
 
-  const opacity = parseCSSNumber(pickStyle(style, 'opacity'))
-  if (opacity !== null) node.opacity = opacity
-
   const effects = parseCSSShadows(pickStyle(style, 'text-shadow'))
   if (effects.length > 0) node.effects = effects
 
@@ -362,9 +408,8 @@ function applyTextStyle(node: SceneNode, style: DesignStyleDeclaration): void {
   node.italic = pickStyle(style, 'font-style') === 'italic'
 
   const textAlign = pickStyle(style, 'text-align')?.toUpperCase()
-  if (textAlign === 'CENTER' || textAlign === 'RIGHT' || textAlign === 'JUSTIFIED') {
-    node.textAlignHorizontal = textAlign
-  }
+  if (textAlign === 'CENTER' || textAlign === 'RIGHT') node.textAlignHorizontal = textAlign
+  if (textAlign === 'JUSTIFY') node.textAlignHorizontal = 'JUSTIFIED'
 
   const textDecoration = pickStyle(style, 'text-decoration-line')
   if (textDecoration === 'underline') node.textDecoration = 'UNDERLINE'

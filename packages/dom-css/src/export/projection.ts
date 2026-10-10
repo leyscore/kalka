@@ -52,6 +52,11 @@ export interface SceneGraphToDesignOptions {
    * out; exports leave hugging frames to their content.
    */
   derivedSizes?: boolean
+  /**
+   * Project internal-only layers, such as shared style definitions, which exports leave out. A
+   * format that saves the whole document keeps them.
+   */
+  internal?: boolean
 }
 
 /** Layers whose shape only paths describe, which CSS boxes cannot draw. */
@@ -422,7 +427,8 @@ function styleFromTextNode(
   if (node.lineHeight !== null) style['line-height'] = css('lineHeight', px(node.lineHeight))
   if (node.letterSpacing !== 0)
     style['letter-spacing'] = css('letterSpacing', px(node.letterSpacing))
-  if (node.textAlignHorizontal !== 'LEFT')
+  if (node.textAlignHorizontal === 'JUSTIFIED') style['text-align'] = 'justify'
+  else if (node.textAlignHorizontal !== 'LEFT')
     style['text-align'] = node.textAlignHorizontal.toLowerCase()
   if (node.opacity < 1) style.opacity = css('opacity', String(node.opacity))
   const shadow = dropShadowToCSS(node.effects[0])
@@ -503,6 +509,7 @@ interface ProjectionContext {
   shown: ReadonlySet<string> | undefined
   shallow: boolean
   derivedSizes: boolean
+  internal: boolean
 }
 
 /**
@@ -582,7 +589,8 @@ function sceneNodeToDesignNode(
   inherited: CSSModes,
   root: boolean
 ): DesignNode | null {
-  if ((!node.visible && !context.shown?.has(node.id)) || node.internalOnly) return null
+  if (!node.visible && !context.shown?.has(node.id)) return null
+  if (node.internalOnly && !context.internal) return null
   const { graph, includeSourceIds, tokens } = context
   const parent = node.parentId ? graph.getNode(node.parentId) : undefined
   const entered = tokens?.enter(node, inherited, root)
@@ -639,7 +647,8 @@ function projectionContext(
     vectorElement,
     shown,
     shallow = false,
-    derivedSizes = false
+    derivedSizes = false,
+    internal = false
   }: SceneGraphToDesignOptions
 ): ProjectionContext {
   return {
@@ -649,7 +658,8 @@ function projectionContext(
     vectorElement,
     shown,
     shallow,
-    derivedSizes
+    derivedSizes,
+    internal
   }
 }
 

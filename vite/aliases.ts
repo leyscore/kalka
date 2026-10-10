@@ -33,6 +33,10 @@ export function createOpenPencilAliases(rootDir: string) {
       replacement: resolve(rootDir, 'packages/dom-css/src/export/index.ts')
     },
     {
+      find: /^@open-pencil\/dom-css\/import$/,
+      replacement: resolve(rootDir, 'packages/dom-css/src/import/layers.ts')
+    },
+    {
       find: /^@open-pencil\/dom-css\/jsx-runtime$/,
       replacement: resolve(rootDir, 'packages/dom-css/src/import/jsx/runtime.ts')
     },
