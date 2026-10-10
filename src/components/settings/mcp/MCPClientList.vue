@@ -107,7 +107,7 @@ onMounted(refresh)
         :value="config"
         :copy-label="common.copy"
         :copied-label="common.copied"
-        :ui="{ value: 'whitespace-pre' }"
+        :ui="{ value: 'whitespace-pre-wrap' }"
       />
     </section>
   </div>
