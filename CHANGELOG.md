@@ -161,6 +161,7 @@
 
 ### Fixed
 
+- Opening a page with Chinese, Japanese or Korean text no longer exhausts memory: each installed fallback font, such as Hiragino Sans or PingFang, is read once instead of once per text.
 - Renaming a section title on the canvas keeps the title's size, weight, and place. Section titles draw in Inter SemiBold rather than an emboldened regular weight, and labels that are not rotated sit on whole pixels, so they stay crisp.
 - Reject an argument an AI, MCP, CLI, or WebMCP tool does not take, such as `properties: { y: 500 }` for `update_node` or `font: { family }` for `set_font`, and name it, instead of reporting success without changing anything (#977).
 - Choose an instance's variant by its variant property in design JSX, such as `<Instance component="Button" State="Pressed" />`, without a warning that the property is unsupported.

@@ -53,6 +53,8 @@ export interface BrowserFontFace {
 
 export class FontManager {
   private loadedFamilies = new Map<string, ArrayBuffer>()
+  /** Installed fallback faces read or being read, so concurrent requests share one read. */
+  private localFallbackReads = new Map<string, Promise<ArrayBuffer | null>>()
   private browserFaces: BrowserFontFace[] = []
   private browserFaceListeners = new Set<(face: BrowserFontFace) => void>()
   private loadedFamilySources = new Map<string, FontLoadedSource>()
@@ -150,6 +152,7 @@ export class FontManager {
 
   setHostFontLoader(loader: HostFontLoader | null): void {
     this.hostFontLoader = loader
+    this.localFallbackReads.clear()
   }
 
   setOnlineFontProviders(settings: Partial<Record<WebFontProviderId, boolean>>): void {
@@ -205,6 +208,7 @@ export class FontManager {
       }
       this.localFonts = result
       this.localFontAccessState = 'granted'
+      this.localFallbackReads.clear()
       return result
     } catch {
       this.localFonts = []
@@ -496,11 +500,7 @@ export class FontManager {
 
     for (const family of manifest.localFamilies) {
       signal?.throwIfAborted()
-      const buffer =
-        (await this.loadHostFont(family, 'Regular')) ??
-        (await this.findLocalFont(family, undefined, {
-          allowVariable: options.allowVariableLocalFonts
-        }))
+      const buffer = await this.localFallbackFont(family, options.allowVariableLocalFonts)
       if (
         buffer &&
         this.registerAndCache(family, 'Regular', buffer, 'fallback') &&
@@ -531,6 +531,27 @@ export class FontManager {
     }
 
     return targetFamilies
+  }
+
+  /**
+   * An installed fallback face, read once: every text that needs the script asks for it, often
+   * all at once, and a CJK face is tens of megabytes, so reading it per request exhausts memory.
+   */
+  private localFallbackFont(
+    family: string,
+    allowVariable: boolean | undefined
+  ): Promise<ArrayBuffer | null> {
+    const key = `${family}|Regular`
+    const loaded = this.loadedFamilies.get(key)
+    if (loaded) return Promise.resolve(loaded)
+    let pending = this.localFallbackReads.get(key)
+    if (!pending) {
+      pending = (async () =>
+        (await this.loadHostFont(family, 'Regular')) ??
+        (await this.findLocalFont(family, undefined, { allowVariable })))()
+      this.localFallbackReads.set(key, pending)
+    }
+    return pending
   }
 
   private async loadHostFont(family: string, style: string): Promise<ArrayBuffer | null> {
