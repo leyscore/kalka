@@ -99,7 +99,8 @@ test('storage rule permits data keys but rejects storage access', async () => {
     const diagnostics = await lint(source, { [`open-pencil/${rule}`]: 'error' })
     expect(ruleDiagnostics(diagnostics, rule)).toHaveLength(count)
   }
-})
+  // Four linter runs in a row outlast the default five seconds on a CI runner.
+}, 20_000)
 
 afterEach(async () => {
   await Promise.all(
