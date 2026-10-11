@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "electron": "44.4.5",
-    "electron-builder": "26.0.12",
+    "electron-builder": "26.15.3",
     "smol-toml": "1.9.0"
   },
   "productName": "Kalka",

@@ -13,5 +13,5 @@
     "/src/app/tabs/index.ts",
     "#core/*"
   ],
-  "ignoreBinaries": ["figma-use", "identify", "magick", "open", "osascript"]
+  "ignoreBinaries": ["codesign", "figma-use", "identify", "magick", "open", "osascript", "plutil"]
 }
