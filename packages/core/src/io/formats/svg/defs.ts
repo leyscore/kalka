@@ -7,6 +7,7 @@ import {
   getDefaultRenderColorSpace,
   type RenderColorSpace
 } from '@open-pencil/scene-graph/color'
+import { CSS_BLEND_MODES } from '@open-pencil/scene-graph/css'
 import type { Color } from '@open-pencil/scene-graph/primitives'
 
 import { svg, type SVGNode } from './node'
@@ -249,21 +250,4 @@ export const SVG_STROKE_JOIN: Record<string, string> = {
   BEVEL: 'bevel'
 }
 
-export const SVG_BLEND_MODE: Record<string, string> = {
-  NORMAL: 'normal',
-  DARKEN: 'darken',
-  MULTIPLY: 'multiply',
-  COLOR_BURN: 'color-burn',
-  LIGHTEN: 'lighten',
-  SCREEN: 'screen',
-  COLOR_DODGE: 'color-dodge',
-  OVERLAY: 'overlay',
-  SOFT_LIGHT: 'soft-light',
-  HARD_LIGHT: 'hard-light',
-  DIFFERENCE: 'difference',
-  EXCLUSION: 'exclusion',
-  HUE: 'hue',
-  SATURATION: 'saturation',
-  COLOR: 'color',
-  LUMINOSITY: 'luminosity'
-}
+export const SVG_BLEND_MODE: Record<string, string> = { NORMAL: 'normal', ...CSS_BLEND_MODES }

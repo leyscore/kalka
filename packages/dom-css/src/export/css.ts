@@ -1,5 +1,6 @@
 import type { BlendMode, Effect, Fill, Stroke } from '@open-pencil/scene-graph'
 import { colorToCSS, colorToHex } from '@open-pencil/scene-graph/color'
+import { CSS_BLEND_MODES } from '@open-pencil/scene-graph/css'
 import type { Color } from '@open-pencil/scene-graph/primitives'
 
 import type { DesignStyleDeclaration } from '../types'
@@ -129,24 +130,6 @@ export function fillLayerToCSS(fill: Fill, width: number, height: number): strin
     return radialGradientToCSS(fill, width, height)
   if (fill.type === 'GRADIENT_ANGULAR') return angularGradientToCSS(fill, width, height)
   return undefined
-}
-
-const CSS_BLEND_MODES: Partial<Record<BlendMode, string>> = {
-  DARKEN: 'darken',
-  MULTIPLY: 'multiply',
-  COLOR_BURN: 'color-burn',
-  LIGHTEN: 'lighten',
-  SCREEN: 'screen',
-  COLOR_DODGE: 'color-dodge',
-  OVERLAY: 'overlay',
-  SOFT_LIGHT: 'soft-light',
-  HARD_LIGHT: 'hard-light',
-  DIFFERENCE: 'difference',
-  EXCLUSION: 'exclusion',
-  HUE: 'hue',
-  SATURATION: 'saturation',
-  COLOR: 'color',
-  LUMINOSITY: 'luminosity'
 }
 
 /** A blend mode CSS can draw, or undefined for normal, pass-through, and the linear modes. */
