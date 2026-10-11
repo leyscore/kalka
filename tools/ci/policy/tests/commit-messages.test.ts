@@ -1,4 +1,4 @@
-import { expect, test } from 'bun:test'
+import { expect, setDefaultTimeout, test } from 'bun:test'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -8,6 +8,10 @@ import { hasAICoauthor } from '#ci/commit-attribution'
 import { resolveWorkspaceRoot } from '@open-pencil/package-artifacts-tools'
 
 const root = await resolveWorkspaceRoot(import.meta.dir)
+
+// Every test starts commitlint, which can take more than the default five seconds to start
+// cold on a CI runner.
+setDefaultTimeout(20_000)
 
 async function lint(message: string, args: string[] = [], prTitle = false) {
   const child = Bun.spawn([process.execPath, 'run', 'check:commits', '--verbose', ...args], {
