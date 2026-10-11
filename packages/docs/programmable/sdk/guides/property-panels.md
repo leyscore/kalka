@@ -40,7 +40,7 @@ non-destructive:
 - Put explicit detach actions in the picker rather than on a destructive one-click field icon.
 - Keep binding replacement, detach-on-edit, and multi-target changes in one provider batch.
 
-OpenPencil's app skin uses a violet variable-name pill at rest and reveals the resolved numeric
+Kalka's app skin uses a violet variable-name pill at rest and reveals the resolved numeric
 value when NumberField enters editing mode. Custom editor shells can present the same headless
 state differently.
 

@@ -29,7 +29,7 @@ Supported kinds are `fill`, `stroke`, `text`, `effect`, and `grid`.
 Manual edits to fills, strokes, supported text properties, effects, or layout grids automatically
 detach the matching style reference. Other style domains remain bound.
 
-OpenPencil currently consumes styles already present in a document. Creating, renaming, publishing,
+Kalka currently consumes styles already present in a document. Creating, renaming, publishing,
 and synchronizing style libraries is outside this composable's scope.
 
 ## Related APIs

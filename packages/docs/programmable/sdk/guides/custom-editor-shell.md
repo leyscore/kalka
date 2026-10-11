@@ -5,7 +5,7 @@ description: Build your own editor shell with provideEditor, CanvasRoot, menus, 
 
 # Custom Editor Shell
 
-A typical OpenPencil Vue app has three layers:
+A typical Kalka Vue app has three layers:
 
 1. `@open-pencil/core` creates the editor
 2. `@open-pencil/vue` adapts it into Vue composables and headless primitives
@@ -13,7 +13,7 @@ A typical OpenPencil Vue app has three layers:
 
 ## Why this matters
 
-The built-in OpenPencil app is only one possible shell.
+The built-in Kalka app is only one possible shell.
 
 You can build a very different one for a focused workflow: an embedded editor inside another product, an internal asset tool, a template editor, an annotation UI, or an AI-assisted editing surface with custom controls.
 

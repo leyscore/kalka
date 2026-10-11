@@ -1,14 +1,14 @@
 # Coding agents
 
-The OpenPencil desktop app can use a coding agent you already have — Claude Code, Codex, Gemini CLI, or [Pi](#pi) — as its design agent. The agent runs on your computer with your own subscription and chooses its own model; OpenPencil starts it when you send a message, through the [Agent Client Protocol](https://agentclientprotocol.com/) or, for Pi, its Harness companion, and gives it the canvas tools through OpenPencil's local [MCP server](./mcp-server).
+The Kalka desktop app can use a coding agent you already have — Claude Code, Codex, Gemini CLI, or [Pi](#pi) — as its design agent. The agent runs on your computer with your own subscription and chooses its own model; Kalka starts it when you send a message, through the [Agent Client Protocol](https://agentclientprotocol.com/) or, for Pi, its Harness companion, and gives it the canvas tools through Kalka's local [MCP server](./mcp-server).
 
 Coding agents need the desktop app; the browser cannot start programs on your computer. They take only the **Design agent** role. Visual review, plan reviews, and fast background work need an API model, which guided setup can add for you.
 
 ## What you need
 
-1. The [OpenPencil desktop app](https://github.com/open-pencil/open-pencil/releases/latest).
+1. The Kalka desktop app, built with `bun run package:desktop` until releases are published.
 2. The agent's ACP program, installed globally (see each agent below).
-3. OpenPencil's MCP server, installed globally. Use the version that matches your app:
+3. Kalka's MCP server, installed globally. Use the version that matches your app:
 
    ```sh
    npm install -g @open-pencil/mcp
@@ -48,19 +48,19 @@ Gemini CLI speaks ACP itself, so there is no separate program. Run `gemini` once
 
 ## Pi
 
-Pi runs through OpenPencil's Harness companion instead of ACP. It needs Node.js 22.15 or later, or Bun. Guided setup installs the companion with one click; to install it yourself, use the version that matches your app:
+Pi runs through Kalka's Harness companion instead of ACP. It needs Node.js 22.15 or later, or Bun. Guided setup installs the companion with one click; to install it yourself, use the version that matches your app:
 
 ```sh
 npm install -g @open-pencil/harness
 ```
 
-OpenPencil uses the providers you signed in to in Pi and Pi's default model, so there is no key to paste. Sign in by running `pi` and using `/login`, and pick a default model with `/model`. To use another model in OpenPencil, enter it as `provider/model` in the Pi model's settings. An [AI Gateway](https://vercel.com/ai-gateway) key is optional; when you save one, Pi uses the gateway instead of your Pi sign-ins.
+Kalka uses the providers you signed in to in Pi and Pi's default model, so there is no key to paste. Sign in by running `pi` and using `/login`, and pick a default model with `/model`. To use another model in Kalka, enter it as `provider/model` in the Pi model's settings. An [AI Gateway](https://vercel.com/ai-gateway) key is optional; when you save one, Pi uses the gateway instead of your Pi sign-ins.
 
-OpenPencil reads only Pi's `settings.json` for the default model; your credentials stay with Pi. Your Pi extensions, themes, and prompt templates are not loaded into OpenPencil's sessions. Pi keeps a conversation's context while it runs; after Pi or OpenPencil restarts, the conversation continues in a fresh Pi session, because Pi's workspace lives in memory.
+Kalka reads only Pi's `settings.json` for the default model; your credentials stay with Pi. Your Pi extensions, themes, and prompt templates are not loaded into Kalka's sessions. Pi keeps a conversation's context while it runs; after Pi or Kalka restarts, the conversation continues in a fresh Pi session, because Pi's workspace lives in memory.
 
 ## Troubleshooting
 
-- **Shown as not found after installing.** Apps started from the Dock or Start menu do not see every folder your terminal adds to `PATH`. OpenPencil also looks in common global folders for npm, Bun, Volta, mise, and Homebrew; if your package manager installs elsewhere, add that folder to your login shell's `PATH` and restart OpenPencil.
+- **Shown as not found after installing.** Apps started from the Dock or Start menu do not see every folder your terminal adds to `PATH`. Kalka also looks in common global folders for npm, Bun, Volta, mise, and Homebrew; if your package manager installs elsewhere, add that folder to your login shell's `PATH` and restart Kalka.
 - **Shown as update needed.** The MCP server or Pi's companion does not match the app version. Press the update button, or run the command guided setup shows with the package manager that installed it, then press **Check again**. A chat that needs it says so and offers **Run guided setup**.
-- **The agent starts but cannot edit the canvas.** The MCP server is missing or not running. Install the matching `@open-pencil/mcp` version and restart OpenPencil.
+- **The agent starts but cannot edit the canvas.** The MCP server is missing or not running. Install the matching `@open-pencil/mcp` version and restart Kalka.
 - **The agent asks you to sign in.** Sign in with the agent's own command-line tool as described above, then send your message again.

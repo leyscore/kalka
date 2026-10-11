@@ -1,11 +1,11 @@
 ---
 title: JSX Renderer
-description: Create editable designs using the same declarative authoring library as OpenPencil agents.
+description: Create editable designs using the same declarative authoring library as Kalka agents.
 ---
 
 # JSX Renderer
 
-OpenPencil's design JSX creates scene nodes, not browser DOM. You can use readable component trees, JavaScript expressions, and reusable functions to construct editable designs.
+Kalka's design JSX creates scene nodes, not browser DOM. You can use readable component trees, JavaScript expressions, and reusable functions to construct editable designs.
 
 ## Creating Designs
 
@@ -24,11 +24,11 @@ Use Hug/Fill and flex or grid for content-driven sizing. Bind semantic variables
 ## Exporting to JSX
 
 ```sh
-openpencil export design.fig -f jsx                   # OpenPencil format
+openpencil export design.fig -f jsx                   # Kalka format
 openpencil export design.fig -f jsx --style tailwind  # Tailwind classes
 ```
 
-Exported OpenPencil JSX can be edited and rendered back into the document. The export writes hidden and locked layers, constraints, size limits, stacked, gradient, and image fills, strokes, effects, masks, and variable bindings, so rendering an export reproduces them and `diff_jsx` shows changes to any of them. Rich text with mixed styles, vector paths, layout grids, shared styles, and component property definitions are not written yet. Instances are written as frames with their content, so exported JSX stands on its own. See [CLI exports](./cli/exporting).
+Exported design JSX can be edited and rendered back into the document. The export writes hidden and locked layers, constraints, size limits, stacked, gradient, and image fills, strokes, effects, masks, and variable bindings, so rendering an export reproduces them and `diff_jsx` shows changes to any of them. Rich text with mixed styles, vector paths, layout grids, shared styles, and component property definitions are not written yet. Instances are written as frames with their content, so exported JSX stands on its own. See [CLI exports](./cli/exporting).
 
 ## Visual Diffing
 

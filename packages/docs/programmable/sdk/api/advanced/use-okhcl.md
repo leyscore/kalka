@@ -11,7 +11,7 @@ field format for each fill or stroke.
 
 Use [`useColorModel()`](../composables/use-color-model) for framework-agnostic conversion, channel
 editing, and slider presentation. Use `useOkHCL()` only where those edits need to be persisted to an
-OpenPencil editor.
+Kalka editor.
 
 ## Usage
 

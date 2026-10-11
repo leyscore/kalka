@@ -1,14 +1,14 @@
 ---
 title: File Format
-description: Technical reference for OpenPencil .fig and .pen document formats, Kiwi binary structure, import pipeline, and export behavior.
+description: Technical reference for Kalka .fig and .pen document formats, Kiwi binary structure, import pipeline, and export behavior.
 ---
 
 # File Format
 
 ::: warning Figma round-trip limitations
-Complex Figma documents can lose visual fidelity when saved by OpenPencil and reopened in Figma, even without edits. Component content, colors, and text may differ or appear missing. This is an existing compatibility limitation; preserving the layer count does not guarantee the same appearance.
+Complex Figma documents can lose visual fidelity when saved by Kalka and reopened in Figma, even without edits. Component content, colors, and text may differ or appear missing. This is an existing compatibility limitation; preserving the layer count does not guarantee the same appearance.
 
-Keep the original `.fig`, use **Save As** for an OpenPencil copy, and inspect the exported copy in Figma before replacing your original.
+Keep the original `.fig`, use **Save As** for a Kalka copy, and inspect the exported copy in Figma before replacing your original.
 :::
 
 ## .fig File Structure
@@ -41,9 +41,9 @@ SceneGraph → NodeChange[] → Kiwi encode → compress (Zstd/deflate)
   → write .fig file
 ```
 
-Export uses <kbd>⌘</kbd><kbd>S</kbd> (Save) and <kbd>⇧</kbd><kbd>⌘</kbd><kbd>S</kbd> (Save As) with native OS dialogs on the desktop app. The exported file includes a `thumbnail.png` required by Figma for file preview. OpenPencil uses the first page named exactly `Cover` (case-insensitive), then the first page whose name contains `Cover`. The desktop app also caches this Cover after opening a file so Recent Files can prefer the generated preview without modifying the source `.fig`.
+Export uses <kbd>⌘</kbd><kbd>S</kbd> (Save) and <kbd>⇧</kbd><kbd>⌘</kbd><kbd>S</kbd> (Save As) with native OS dialogs on the desktop app. The exported file includes a `thumbnail.png` required by Figma for file preview. Kalka uses the first page named exactly `Cover` (case-insensitive), then the first page whose name contains `Cover`. The desktop app also caches this Cover after opening a file so Recent Files can prefer the generated preview without modifying the source `.fig`.
 
-Compression uses Zstd via Tauri Rust command on desktop, with deflate fallback in the browser.
+Compression uses Zstd through Node's `zlib` in the desktop app's main process, with deflate as the fallback in the browser.
 
 ## Kiwi Binary Codec
 
@@ -62,7 +62,7 @@ Figma's schema uses non-contiguous field IDs (e.g. 1, 2, 5, 10 with gaps). The k
 
 ### Compression
 
-`.fig` files use Zstd compression for both the schema and message payloads. Decompression uses the `fzstd` library. For export, Zstd compression is offloaded to a Tauri Rust command on the desktop app (better performance, correct frame headers). In the browser, deflate via `fflate` is used as a fallback.
+`.fig` files use Zstd compression for both the schema and message payloads. Decompression uses the `fzstd` library. For export, the desktop app's main process compresses with Zstd through Node's `zlib` (`build_fig_file`), which writes correct frame headers. In the browser, deflate via `fflate` is used as a fallback.
 
 ## Supported Formats
 
@@ -83,4 +83,4 @@ Copy/paste uses the same Kiwi binary encoding:
 1. **Copy** — encode selected `NodeChange[]` to Kiwi binary, compress, write to clipboard as `application/x-figma-design` MIME type
 2. **Paste** — read clipboard, decompress, decode Kiwi binary, create nodes in scene graph
 
-Encoding happens synchronously in the copy event handler (not async Clipboard API) for browser compatibility. This enables bidirectional clipboard between OpenPencil and Figma.
+Encoding happens synchronously in the copy event handler (not async Clipboard API) for browser compatibility. This enables bidirectional clipboard between Kalka and Figma.

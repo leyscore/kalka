@@ -11,7 +11,7 @@ import { data } from './channel-slider.data'
 # ChannelSlider
 
 `ChannelSlider` provides the same Root/Track/Thumb composition and keyboard behavior as Reka's
-Slider while accepting an arbitrary scalar channel. OpenPencil uses it only for OkHCL channels;
+Slider while accepting an arbitrary scalar channel. Kalka uses it only for OkHCL channels;
 standard RGB, HSL, and HSB controls should use Reka `ColorSlider` directly.
 
 <FillStates />

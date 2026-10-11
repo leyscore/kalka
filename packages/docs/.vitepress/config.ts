@@ -8,9 +8,8 @@ import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vitepress'
 import llmstxt from 'vitepress-plugin-llms'
 
-import { docsLocales } from './locales.ts'
 import { rootThemeConfig } from './root-theme.ts'
-import { BASE, LOCALE_PREFIXES, applyPageSeo, siteHead, withAlternateSitemapLinks } from './seo.ts'
+import { BASE, applyPageSeo, siteHead } from './seo.ts'
 
 await ensureBrandAssets(['docs'])
 
@@ -22,31 +21,28 @@ const fastBuild = process.env.OPENPENCIL_DOCS_FAST_BUILD === '1'
 
 const llmsPlugin = llmstxt({
   domain: BASE,
-  ignoreFiles: LOCALE_PREFIXES.map((locale) => `${locale}/**`),
   generateLLMsTxt: !fastBuild,
   generateLLMsFullTxt: !fastBuild,
   generateLLMFriendlyDocsForEachPage: !fastBuild,
   injectLLMHint: false,
   customTemplateVariables: {
-    title: 'OpenPencil',
+    title: 'Kalka developer docs',
     description:
-      'Open-source, AI-native design editor and toolkit. Opens Figma .fig files, provides a programmable scene graph, CLI, MCP server, and Vue SDK for custom editor shells.',
-    details:
-      'Use this file as the compact map for agents. For complete Markdown content, fetch https://openpencil.dev/llms-full.txt.'
+      'Developer documentation for Kalka, a design editor whose canvas is real HTML and CSS: architecture, scene graph, CLI, MCP server, Vue SDK and file formats.',
+    details: `Use this file as the compact map for agents. For complete Markdown content, fetch ${BASE}/llms-full.txt.`
   }
 })
 
 export default defineConfig({
-  title: 'OpenPencil',
+  title: 'Kalka developer docs',
   description:
-    'Open-source, AI-native design editor. Figma alternative built from scratch with full .fig file compatibility.',
+    'Developer documentation for Kalka, a design editor whose canvas is real HTML and CSS.',
   cleanUrls: true,
   lastUpdated: true,
   appearance: 'dark',
 
   sitemap: {
-    hostname: BASE,
-    transformItems: withAlternateSitemapLinks
+    hostname: BASE
   },
 
   head: siteHead,
@@ -82,8 +78,6 @@ export default defineConfig({
     },
     plugins: [tailwindcss(), llmsPlugin]
   },
-
-  locales: docsLocales,
 
   themeConfig: rootThemeConfig()
 })

@@ -1,6 +1,8 @@
 # Figma Feature Matrix
 
-Feature-by-feature comparison of Figma Design capabilities with Open Pencil's current implementation status.
+Feature-by-feature comparison of Figma Design capabilities with Kalka's current implementation status.
+
+The implementation notes predate the DOM canvas. Where they name CanvasKit or Yoga, the canvas now uses the browser's own CSS rendering and layout, and the note describes the export and off-screen path.
 
 ::: tip Status Legend
 ✅ Supported — feature works end-to-end · 🟡 Partial — core behavior exists, some sub-features missing · 🔲 Not yet implemented

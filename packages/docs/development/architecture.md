@@ -7,42 +7,57 @@ For source identity, override evaluation, page sessions, and export contracts, s
 
 ```mermaid
 graph TB
-    subgraph Tauri["Tauri v2 Shell"]
-        subgraph Editor["Editor (Web)"]
-            UI["Vue 3 UI<br/>Toolbar · Panels · Properties<br/>Layers · Color Picker"]
-            Skia["Skia CanvasKit (WASM, 7MB)<br/>Vector rendering · Text shaping<br/>Effects · Export"]
-            subgraph Core["Core Engine (TS)"]
-                SG[SceneGraph] --- Layout[Layout - Yoga]
+    subgraph Desktop["Electron shell"]
+        subgraph Editor["Editor (web)"]
+            UI["Vue 3 UI<br/>Toolbar · Panels · Properties<br/>Layers · Code tab"]
+            subgraph Canvas["Canvas"]
+                DOM["DOM scene<br/>one sandboxed iframe per artboard<br/>CSS laid out and painted by the browser"]
+                Overlay["SVG overlay<br/>selection · guides · handles"]
+            end
+            subgraph Core["Core engine (TS)"]
+                SG[SceneGraph] --- Layout["Layout<br/>browser measurement · Yoga off screen"]
                 SG --- Selection
-                Undo[Undo/Redo] --- Constraints
-                Constraints --- HitTest[Hit Testing]
+                Undo[Undo/Redo] --- HitTest[Hit testing]
             end
-            subgraph FileFormat["File Format Layer"]
-                FigIO[".fig import/export"] --- Kiwi[Kiwi codec]
-                Kiwi --- SVG[SVG export]
+            subgraph Formats["Formats"]
+                Folder["Kalka folder<br/>HTML · CSS · JSON"] --- Fig[".fig (Kiwi codec)"]
+                Fig --- Export["HTML · JSX · SVG export"]
             end
+            Skia["CanvasKit (WASM)<br/>raster export · thumbnails · booleans"]
         end
-        MCP["MCP Server (90 tools, stdio+HTTP)"]
-        Collab["P2P Collab (Trystero + Yjs)"]
+        MCP["MCP server (stdio + HTTP), bundled"]
+        Collab["P2P collab (Trystero + Yjs)"]
     end
 ```
 
 ## Editor Layout
 
-The UI follows Figma's UI3 layout — toolbar at the bottom, navigation on the left, properties on the right:
+The UI follows Figma's UI3 layout: toolbar at the bottom, navigation on the left, properties on the right.
 
-- **Navigation panel (left)** — Layers tree, pages panel
-- **Canvas (center)** — Infinite canvas with CanvasKit rendering, zoom/pan
-- **Properties panel (right)** — Context-sensitive sections: Appearance, Fill, Stroke, Typography, Layout, Position
-- **Toolbar (bottom)** — Tool selection: Select, Frame, Section, Rectangle, Ellipse, Line, Text, Pen, Hand
+- **Navigation panel (left)**: pages, the layers tree (which is the artboard's DOM), assets and versions
+- **Canvas (center)**: infinite canvas of artboards drawn as real web pages, with zoom and pan
+- **Properties panel (right)**: Design, Code, AI and Lint tabs; the Design tab adds HTML (tag and classes) and Breakpoints sections to Figma's
+- **Toolbar (bottom)**: Select, Frame, Section, Rectangle, Ellipse, Line, Text, Pen, Hand
 
 ## Components
 
-### Rendering (CanvasKit WASM)
+### Canvas (DOM scene)
 
-The same rendering engine as Figma. CanvasKit provides GPU-accelerated 2D drawing with vector shapes, text shaping via Paragraph API, effects (shadows, blurs, blend modes), and export (PNG, SVG). The 7MB WASM binary loads at startup and creates a GPU surface on the HTML canvas.
+Every top-level layer (an artboard) is drawn as its own page in a sandboxed iframe (`allow-same-origin`, no scripts, a CSP that keeps it off the network). `DomSceneProjector` in `packages/vue/src/canvas/dom-scene/` projects layers to HTML and CSS through `@open-pencil/dom-css`, patches the DOM when the graph changes, and the browser lays out and paints the result. Text is edited in place with ProseMirror.
 
-The renderer is split into focused modules in `packages/core/src/renderer/`: scene traversal, overlays, fills, strokes, shapes, effects, rulers, labels, and remote cursors.
+Selection, hover, guides, handles and other editor feedback are drawn by an SVG overlay above the iframes (`packages/vue/src/canvas/svg-overlay/`).
+
+### Layout
+
+The browser is the layout engine. `DomLayoutEngine` (installed through `installLayoutEngine` from `@open-pencil/core/layout`) measures each box after the DOM is written and stores it back into the layers' `x`, `y`, `width` and `height`, which become a cache of what the browser computed. Graphs the canvas does not draw, such as other pages, headless CLI runs and export previews, still use Yoga WASM.
+
+### CanvasKit
+
+CanvasKit (Skia WASM) no longer draws the canvas. It renders raster exports where the browser cannot, thumbnails, boolean geometry and vector conversion. On desktop, PNG and JPG exports are captured from the browser instead (`render_html_image`), so they match the canvas.
+
+### HTML model
+
+Layers carry what the exported page needs: an HTML tag and class names (`htmlTag`, `htmlClasses`), document classes holding shared styles (`cssClasses` on the root), and breakpoint artboards that share their primary's layers (`responsiveSource`), exported as `@media` rules. The projection, the class model and the breakpoint cascade live in `@open-pencil/scene-graph` and `@open-pencil/dom-css`.
 
 ### Scene Graph
 
@@ -52,9 +67,9 @@ The graph emits typed events via nanoevents: `node:created`, `node:updated`, `no
 
 See [Scene Graph Reference](/reference/scene-graph) for internals.
 
-### Layout Engine (Yoga WASM)
+### Off-screen layout (Yoga WASM)
 
-Meta's Yoga provides CSS flexbox and grid layout computation via a [fork](https://github.com/open-pencil/yoga/tree/grid) with CSS Grid support. A thin adapter maps Figma property names to Yoga equivalents:
+Where the browser does not lay a graph out, Meta's Yoga computes flexbox and grid through a [fork](https://github.com/open-pencil/yoga/tree/grid) with CSS Grid support. A thin adapter maps Figma property names to Yoga equivalents:
 
 | Figma Property | Yoga Equivalent |
 |---|---|
@@ -65,11 +80,11 @@ Meta's Yoga provides CSS flexbox and grid layout computation via a [fork](https:
 | `stackJustify` | `justifyContent` |
 | `stackChildPrimaryGrow` | `flexGrow` |
 
-### File Format (Kiwi Binary)
+### File formats
 
-Reuses Figma's Kiwi binary codec with 194 message/enum/struct definitions. Import: parse header → Zstd decompress → Kiwi decode → `NodeChange`[] → scene graph. Export reverses the process with thumbnail generation.
+A Kalka document is saved as a folder: one HTML page per page with inline CSS and `data-kalka-*` editor attributes, `styles.css` for classes, design tokens and assets. See [File Format Reference](/reference/file-format).
 
-See [File Format Reference](/reference/file-format) for details.
+`.fig` files reuse Figma's Kiwi binary codec with 194 message/enum/struct definitions. Import: parse header → Zstd decompress → Kiwi decode → `NodeChange`[] → scene graph. Export reverses the process with thumbnail generation.
 
 ### AI & Tools
 
@@ -79,7 +94,9 @@ Tools are defined once in `packages/core/src/tools/`, split by domain: read, cre
 - **MCP server** — zod schemas, stdio + HTTP transports
 - **CLI** — available via the `eval` command, whose scripts get the `figma` Plugin API and the `openpencil` API
 
-90+ core tools + 3 MCP file management tools. Includes XPath query (`query_nodes`), JSX inspection (`get_jsx`, `diff_jsx`), semantic description (`describe`), and vision-based verification (`export_image` returns images to the model).
+The HTML tools are how agents work in Kalka: `write_html` adds HTML and CSS as editable layers, `get_html` and `get_computed_styles` read them back, `update_styles`, `set_html_element`, `update_css_class` and `add_breakpoint` change them, and `get_screenshot` lets the agent check its work. The MCP server ships inside the desktop app and states these instructions to every client (`packages/mcp/src/server/identity.ts`).
+
+Beyond them, the tools include XPath query (`query_nodes`), JSX inspection (`get_jsx`, `diff_jsx`), semantic description (`describe`), and vision-based verification (`export_image` returns images to the model).
 
 ### Behaviours and Preview
 
@@ -103,18 +120,4 @@ When the desktop app is running, CLI commands connect to it via WebSocket instea
 
 ## What's Next
 
-### Full figma-use Tool Set
-
-The MCP server currently exposes 90 tools. The reference implementation in [figma-use](https://github.com/dannote/figma-use) has 118. The remaining tools cover advanced layout constraints, prototype connections, advanced component property editing, and bulk document operations.
-
-### CI Design Tooling
-
-The headless CLI already supports `analyze colors/typography/spacing/clusters`. Next: GitHub Actions integration for automated design linting and visual regression in PRs.
-
-### Prototyping
-
-Preview already runs components with behaviours as live controls. Next: reactions and variables that let controls drive the rest of a design, frame-to-frame transitions, interaction triggers, and overlays.
-
-### Windows Code Signing
-
-macOS binaries are signed and notarized since v0.6.0. Windows Authenticode signing via Azure Code Signing is planned to remove the SmartScreen warning.
+Product direction and the remaining Figma compatibility gaps are tracked in the [roadmap](./roadmap).

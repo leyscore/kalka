@@ -135,7 +135,7 @@ openpencil export [file] [options]
 
 ## import
 
-Import HTML/CSS/Tailwind into an editable OpenPencil document.
+Import HTML/CSS/Tailwind into an editable Kalka document.
 
 ```sh
 openpencil import page.html [options]

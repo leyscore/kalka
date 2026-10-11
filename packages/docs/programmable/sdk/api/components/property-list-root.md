@@ -59,9 +59,9 @@ See the [PropertySection demo](./property-section) for the shared interactive st
 
 ## Editor adapter
 
-OpenPencil panels use `useEditorPropertyList(propKey)` to connect controlled events to selection,
+Kalka panels use `useEditorPropertyList(propKey)` to connect controlled events to selection,
 multi-node updates, undo batching, and reordering. Third-party SDK consumers can provide their own
-state adapter without an OpenPencil editor context.
+state adapter without a Kalka editor context.
 
 ## Generated API reference
 

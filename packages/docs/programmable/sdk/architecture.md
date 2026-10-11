@@ -113,7 +113,7 @@ Prefer focused slot props or direct composable usage over giant `v-slot="ctx"` p
 
 ## Practical rule of thumb
 
-If a piece of logic could be reused in a different OpenPencil-based app without bringing app styling with it, it probably belongs in `@open-pencil/vue`.
+If a piece of logic could be reused in a different Kalka-based app without bringing app styling with it, it probably belongs in `@open-pencil/vue`.
 
 ## Related pages
 

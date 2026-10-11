@@ -5,7 +5,9 @@ description: Use the CanvasKit renderer profiler HUD and frame capture tools to 
 
 # Renderer Profiler
 
-OpenPencil includes a CanvasKit renderer profiler for debugging frame time, GPU timing, draw calls, cache behavior, and expensive render phases.
+> Kalka draws the canvas with the DOM. CanvasKit now renders raster exports, thumbnails and boolean geometry, not the canvas on screen; this page documents that renderer.
+
+Kalka includes a CanvasKit renderer profiler for debugging frame time, GPU timing, draw calls, cache behavior, and expensive render phases.
 
 ## Enable the HUD
 

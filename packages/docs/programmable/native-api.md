@@ -1,11 +1,11 @@
 ---
 title: Native JavaScript APIs
-description: Find OpenPencil's public document, editor, layout, and design-authoring APIs.
+description: Find Kalka's public document, editor, layout, and design-authoring APIs.
 ---
 
 # Native JavaScript APIs
 
-OpenPencil's native APIs are the ordinary JavaScript libraries used by the editor itself. There is no separate RPC-style authoring language or parallel agent implementation.
+Kalka's native APIs are the ordinary JavaScript libraries used by the editor itself. There is no separate RPC-style authoring language or parallel agent implementation.
 
 | Responsibility | Public entry point | Start here |
 | --- | --- | --- |

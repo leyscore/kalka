@@ -1,5 +1,7 @@
 # Navigation performance benchmark
 
+> Kalka draws the canvas with the DOM. CanvasKit now renders raster exports, thumbnails and boolean geometry, not the canvas on screen; this page documents that renderer.
+
 The navigation benchmark measures the complete wheel/trackpad-to-render pipeline. It is intentionally separate from the synchronous microbenchmark in `tests/e2e/viewport/zoom-pan.spec.ts`: accepting JavaScript calls quickly does not prove smooth navigation.
 
 ## Renderer lifecycle and ownership
@@ -11,11 +13,11 @@ The benchmark validates the retained and tiled renderer contracts documented in 
 Every run writes `recording.json`, `metrics.json`, and `environment.json`. When tracing is enabled, it also writes `trace.json.gz`:
 
 - `trace.json.gz` (when tracing is enabled): Chromium tracing data for Perfetto or Chrome tracing tools.
-- `recording.json`: wheel samples plus OpenPencil input, viewport, render, and retained-backing events.
+- `recording.json`: wheel samples plus Kalka input, viewport, render, and retained-backing events.
 - `metrics.json`: frame pacing, input latency, zoom-anchor drift, viewport jumps, exact active-renderer settlement, and tiled scheduler throughput/cancellation when enabled.
 - `environment.json`: browser, runtime, replay mode, and source gesture information.
 
-OpenPencil emits User Timing marks under `openpencil:*`, including wheel receipt/flush, viewport mutation, render start/end, backing preview/build, crisp-backing completion, and exact tiled coverage. The recording also runs a continuous `requestAnimationFrame` heartbeat and observes browser Long Tasks, so display stalls remain visible even when OpenPencil does not render.
+Kalka emits User Timing marks under `openpencil:*`, including wheel receipt/flush, viewport mutation, render start/end, backing preview/build, crisp-backing completion, and exact tiled coverage. The recording also runs a continuous `requestAnimationFrame` heartbeat and observes browser Long Tasks, so display stalls remain visible even when Kalka does not render.
 
 ## Record a physical macOS trackpad gesture
 
@@ -156,11 +158,11 @@ Keep large or binary `.fig` fixtures in Git LFS. Synthetic fixture generation mu
 
 ## Native macOS acceptance
 
-Chromium replay does not establish WKWebView or physical trackpad behavior. Before a release with navigation changes:
+Replayed input does not establish physical trackpad behavior. Before a release with navigation changes:
 
-1. Build a release-mode Tauri application.
+1. Build a release desktop app with `bun run package:desktop`.
 2. Record the same gesture on physical target hardware.
-3. Capture Instruments **Time Profiler** and **Core Animation** traces, including OpenPencil and WebKit processes.
+3. Capture Instruments **Time Profiler** and **Core Animation** traces, including Kalka's renderer and GPU processes.
 4. Check input delivery, main-thread/WASM work, GPU/compositor stalls, viewport continuity, and final crisp settlement.
 5. Store the recording, metrics, hardware/macOS metadata, and Instruments trace as release artifacts.
 

@@ -1,6 +1,6 @@
 ---
 title: Scene Graph
-description: Technical reference for OpenPencil's flat scene graph, node lookup, tree relationships, mutations, events, and traversal APIs.
+description: Technical reference for Kalka's flat scene graph, node lookup, tree relationships, mutations, events, and traversal APIs.
 ---
 
 # Scene Graph
@@ -61,9 +61,9 @@ Before applying any change, affected fields are snapshotted. The snapshot become
 
 **Batching** — operations like drag-to-move produce hundreds of position changes per second. These are debounced into a single undo entry. `beginBatch`/`commitBatch` wraps multi-step operations.
 
-## Layout Engine (Yoga)
+## Layout Engine
 
-Figma's auto-layout properties map to Yoga flexbox:
+On the canvas the browser lays layers out from their CSS, and the measured boxes are written back to `x`, `y`, `width` and `height`. Graphs the canvas does not draw use Yoga, where Figma's auto-layout properties map to Yoga flexbox:
 
 | Figma Property | Yoga Equivalent |
 |---|---|

@@ -1,6 +1,6 @@
 ---
 title: useI18n
-description: Read localized OpenPencil UI messages and switch the active SDK locale.
+description: Read localized Kalka UI messages and switch the active SDK locale.
 ---
 
 # useI18n

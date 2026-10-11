@@ -1,43 +1,40 @@
 ---
 layout: home
-title: OpenPencil — Open-Source Design Editor
-description: Open-source Figma alternative. Opens .fig files, built-in AI, fully programmable.
+title: Kalka developer docs
+description: How Kalka is built, and how to script it, extend it and contribute to it.
 
 hero:
-  name: OpenPencil
-  text: Open-Source Design Editor
-  tagline: Opens Figma files. Built-in AI. Fully programmable. Also a toolkit for building custom editors.
+  name: Kalka
+  text: Developer docs
+  tagline: Kalka is a design editor whose canvas is real HTML and CSS. These pages cover how it is built and how to script, extend and contribute to it.
   actions:
     - theme: brand
-      text: Try Online
-      link: https://app.openpencil.dev/demo
+      text: Contributing
+      link: /development/contributing
     - theme: alt
-      text: Download
-      link: https://github.com/open-pencil/open-pencil/releases/latest
+      text: Architecture
+      link: /development/architecture
     - theme: alt
       text: GitHub
-      link: https://github.com/open-pencil/open-pencil
+      link: https://github.com/leyscore/kalka
 
 features:
-  - icon: 📂
-    title: Figma-Compatible
-    details: Opens .fig files natively. Copy & paste between Figma and OpenPencil. Kiwi binary codec with round-trip fidelity.
-  - icon: ⚡
-    title: Programmable
-    details: Headless CLI to inspect, export, and analyze .fig files. Figma Plugin API via eval. Tailwind CSS export. JSON output for CI and automation.
-  - icon: 🧩
-    title: Toolkit, not just app
-    details: Build custom editing surfaces with the Vue SDK, embed OpenPencil into other products, or assemble workflow-specific editors around the same core.
-  - icon: 🤖
-    title: AI-Native
-    details: Built-in chat with 90 tools — create shapes, set styles, manage layout, analyze tokens. MCP server for Claude Code, Cursor, Windsurf.
-  - icon: 📖
-    title: Open Source
-    details: MIT license. Read and modify everything — the editor, the engine, the file codec, the CLI.
-  - icon: 🖥️
-    title: Free & Local
-    details: No account, no server, no internet required. ~7 MB desktop app via Homebrew, or use the web app.
-  - icon: 👥
-    title: Real-Time Collaboration
-    details: P2P via WebRTC — no server. Share a link, edit together with live cursors and follow mode.
+  - title: Architecture
+    details: The scene graph, the DOM canvas, layout, the editor and the packages that own each part.
+    link: /development/architecture
+  - title: MCP server and AI tools
+    details: The tools agents call to read the canvas, write HTML, change styles and check their work.
+    link: /programmable/mcp-server
+  - title: CLI
+    details: Inspect, query, lint, convert and export design files without opening the editor, or drive the running app.
+    link: /reference/cli
+  - title: Vue SDK
+    details: Headless components and composables for building editor surfaces on the same core.
+    link: /programmable/sdk/
+  - title: File formats
+    details: Kalka folders of HTML, CSS and JSON, and the .fig files Kalka reads and writes.
+    link: /reference/file-format
+  - title: Testing
+    details: Where each kind of test lives, which suite proves what, and how to run them.
+    link: /development/testing
 ---

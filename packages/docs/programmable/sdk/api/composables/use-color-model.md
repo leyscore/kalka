@@ -71,7 +71,7 @@ model.updateOkHCLChannel('c', 0.24)
 ```
 
 When no OkHCL callback is supplied, OkHCL edits emit a gamut-mapped scene color through
-`onUpdate`. Conversion and gamut handling reuse OpenPencil's culori-backed core color APIs.
+`onUpdate`. Conversion and gamut handling reuse Kalka's culori-backed core color APIs.
 
 ## Slider presentation
 

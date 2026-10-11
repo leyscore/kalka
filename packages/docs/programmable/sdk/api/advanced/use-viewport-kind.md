@@ -5,7 +5,7 @@ description: Read coarse mobile and desktop viewport flags for responsive editor
 
 # useViewportKind
 
-`useViewportKind()` returns simple responsive flags used by OpenPencil editor UI.
+`useViewportKind()` returns simple responsive flags used by Kalka editor UI.
 
 Use it when your shell needs a light abstraction over breakpoints instead of wiring `useBreakpoints()` directly.
 

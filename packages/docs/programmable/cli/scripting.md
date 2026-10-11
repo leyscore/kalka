@@ -5,7 +5,7 @@ description: Execute JavaScript with a Figma-compatible Plugin API to query, bat
 
 # Scripting
 
-`openpencil eval` runs JavaScript against an OpenPencil document with a Figma-compatible `figma` global. Use it for headless batch edits, inspection, fixture setup, and automation without opening the editor UI.
+`openpencil eval` runs JavaScript against a Kalka document with a Figma-compatible `figma` global. Use it for headless batch edits, inspection, fixture setup, and automation without opening the editor UI.
 
 ## Basic usage
 
@@ -87,9 +87,9 @@ Use `--quiet` / `-q` to suppress output when only writing a file.
 
 ## The `openpencil` API
 
-Next to `figma`, scripts get `openpencil`: what OpenPencil adds to the Figma Plugin API, in the same style. The same global is available to the `eval` tool and the running app's automation.
+Next to `figma`, scripts get `openpencil`: what Kalka adds to the Figma Plugin API, in the same style. The same global is available to the `eval` tool and the running app's automation.
 
-A main component or component set can [behave as a Reka UI control](/user-guide/components#behaviours-and-preview). Bind it by its own property and slot names:
+A main component or component set can [behave as a Reka UI control](/development/behaviours-and-preview). Bind it by its own property and slot names:
 
 ```sh
 openpencil eval design.fig -w -c '
@@ -112,7 +112,7 @@ Names the component does not have fail with an error that lists the ones it has.
 
 ## Supported API surface
 
-The API is intentionally close to Figma's Plugin API, but it maps to OpenPencil's scene graph and file format.
+The API is intentionally close to Figma's Plugin API, but it maps to Kalka's scene graph and file format.
 
 ### Document and pages
 
@@ -186,7 +186,7 @@ Common node properties are readable/writable through the proxy, including:
 
 - `figma.mixed`
 - `figma.createImage(data)`
-- `figma.loadFontAsync(fontName)` no-ops because OpenPencil does not gate text edits on plugin font loading
+- `figma.loadFontAsync(fontName)` no-ops because Kalka does not gate text edits on plugin font loading
 - `figma.listAvailableFontsAsync()` returns host-provided fonts when available
 - `figma.getNodeByIdAsync(id)` and `instance.getMainComponentAsync()` resolve to the same nodes as `figma.getNodeById(id)` and `instance.mainComponent`, for scripts written for Figma's dynamic-page mode
 - `figma.notify(message)` logs a warning in headless mode
@@ -204,4 +204,4 @@ These Figma APIs are not exposed as compatible helpers yet:
 - Figma style APIs such as `figma.createPaintStyle()` / `figma.createTextStyle()`
 - Full vector boolean operation parity
 
-Use OpenPencil CLI export commands, core tools, or direct scene-graph helpers where available.
+Use Kalka CLI export commands, core tools, or direct scene-graph helpers where available.

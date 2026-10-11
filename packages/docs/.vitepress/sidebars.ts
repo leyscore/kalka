@@ -1,61 +1,6 @@
 import type { ProgrammableLabels, SidebarLabels } from './labels.ts'
 import type { DefaultTheme } from 'vitepress'
 
-export const guideSidebar = (prefix: string, labels: SidebarLabels): DefaultTheme.SidebarItem[] => [
-  {
-    text: labels.overview,
-    items: [
-      { text: labels.gettingStarted, link: `${prefix}/getting-started` },
-      { text: labels.features, link: `${prefix}/overview/features` },
-      { text: labels.comparison, link: `${prefix}/overview/comparison` },
-    ],
-  },
-]
-
-export const userGuideSidebar = (
-  prefix: string,
-  labels: SidebarLabels,
-): DefaultTheme.SidebarItem[] => [
-  {
-    text: labels.gettingAround,
-    items: [
-      { text: labels.canvasNav, link: `${prefix}/user-guide/canvas-navigation` },
-      { text: labels.selection, link: `${prefix}/user-guide/selection-and-manipulation` },
-      { text: labels.contextMenu, link: `${prefix}/user-guide/context-menu` },
-    ],
-  },
-  {
-    text: labels.creatingContent,
-    items: [
-      { text: labels.shapes, link: `${prefix}/user-guide/drawing-shapes` },
-      { text: labels.text, link: `${prefix}/user-guide/text-editing` },
-      { text: labels.pen, link: `${prefix}/user-guide/pen-tool` },
-      { text: labels.vectorEditing, link: `${prefix}/user-guide/vector-edit` },
-      // English only until translated; locales link to the canonical page.
-      { text: labels.icons, link: '/user-guide/icons' },
-    ],
-  },
-  {
-    text: labels.organizing,
-    items: [
-      { text: labels.layers, link: `${prefix}/user-guide/layers-and-pages` },
-      { text: labels.exporting, link: `${prefix}/user-guide/exporting` },
-      // English only until translated; locales link to the canonical page.
-      { text: labels.cloudStorage, link: '/user-guide/cloud-storage' },
-    ],
-  },
-  {
-    text: labels.advanced,
-    items: [
-      { text: labels.autoLayout, link: `${prefix}/user-guide/auto-layout` },
-      { text: labels.components, link: `${prefix}/user-guide/components` },
-      { text: labels.variables, link: `${prefix}/user-guide/variables` },
-      // English only until translated; locales link to the canonical page.
-      { text: labels.checkingDesigns, link: '/user-guide/checking-designs' },
-    ],
-  },
-]
-
 export const programmableSidebar = (
   prefix: string,
   labels: ProgrammableLabels,

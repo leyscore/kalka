@@ -1,5 +1,7 @@
 # Renderer lifecycle and ownership
 
+> Kalka draws the canvas with the DOM. CanvasKit now renders raster exports, thumbnails and boolean geometry, not the canvas on screen; this page documents that renderer.
+
 The CanvasKit renderer keeps hot drawing loops direct, but its retained and tiled paths follow explicit lifecycle contracts. Preserve these contracts when changing renderer structure or cache policy.
 
 ## Navigation and settlement

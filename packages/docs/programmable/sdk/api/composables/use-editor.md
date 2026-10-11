@@ -1,11 +1,11 @@
 ---
 title: useEditor
-description: Access the current injected OpenPencil editor instance.
+description: Access the current injected Kalka editor instance.
 ---
 
 # useEditor
 
-`useEditor()` returns the current injected OpenPencil editor.
+`useEditor()` returns the current injected Kalka editor.
 
 It is the main entry point for SDK composables and headless primitives that need editor access.
 

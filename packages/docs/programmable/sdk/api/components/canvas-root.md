@@ -1,6 +1,6 @@
 ---
 title: CanvasRoot
-description: Headless canvas primitive for OpenPencil rendering surfaces.
+description: Headless canvas primitive for Kalka rendering surfaces.
 ---
 
 # CanvasRoot

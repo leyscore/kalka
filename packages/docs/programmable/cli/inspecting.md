@@ -7,12 +7,12 @@ description: Browse node trees, search by name or type, and dig into properties 
 
 The CLI lets you explore design documents without opening the editor. Every command also works on the live app — just omit the file argument.
 
-::: tip Install
+::: tip Run it
+
+The CLI is not published under the Kalka name yet. From a checkout, `bun open-pencil <command>` runs it; the examples below use its command name, `openpencil`.
 
 ```sh
-npm install -g @open-pencil/cli
-# or
-bun add -g @open-pencil/cli
+bun open-pencil --help
 ```
 
 :::

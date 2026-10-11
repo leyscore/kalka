@@ -1,6 +1,6 @@
 ---
 title: useCanvas
-description: Attach CanvasKit-backed rendering to a canvas element for an OpenPencil editor.
+description: Attach CanvasKit-backed rendering to a canvas element for a Kalka editor.
 ---
 
 # useCanvas
