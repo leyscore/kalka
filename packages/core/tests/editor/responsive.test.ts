@@ -39,7 +39,7 @@ describe('breakpoint sync in the editor', () => {
     expect(copy(title.id, phone).fontSize).toBe(40)
     expect(copy(title.id, phone).text).toBe('Hello')
 
-    editor.undoAction(() => undefined)
+    editor.undoAction()
     expect(copy(title.id, tablet).fontSize).toBe(76)
     expect(copy(title.id, phone).text).toBe('Hi')
     expect(responsiveOverrides(editor.graph, copy(title.id, phone))).toEqual(['fontSize'])

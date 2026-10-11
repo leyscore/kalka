@@ -1,8 +1,7 @@
+import type { StdioServerSpec } from './stdio'
+
 /** A command line split into its program and arguments. */
-export interface CommandLine {
-  command: string
-  args: string[]
-}
+export type CommandLine = Pick<StdioServerSpec, 'command' | 'args'>
 
 /**
  * Splits a command line as a shell would for plain words: whitespace separates arguments,

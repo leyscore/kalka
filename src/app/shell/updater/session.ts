@@ -1,4 +1,4 @@
-import type { DownloadEvent } from '@tauri-apps/plugin-updater'
+import type { Update } from '@tauri-apps/plugin-updater'
 import { shallowRef, type ShallowRef } from 'vue'
 
 import type { UpdateFailureStep } from './messages'
@@ -23,14 +23,10 @@ export type UpdaterState =
   | { status: 'failed'; step: UpdateFailureStep; release?: ReleaseInfo; error: string }
 
 /** The slice of a Tauri `Update` the window uses. */
-export interface PendingUpdate {
-  version: string
-  currentVersion: string
-  body?: string
-  download(onEvent: (event: DownloadEvent) => void): Promise<void>
-  install(): Promise<void>
-  close(): Promise<void>
-}
+export type PendingUpdate = Pick<
+  Update,
+  'version' | 'currentVersion' | 'body' | 'download' | 'install' | 'close'
+>
 
 export interface UpdaterBackend {
   check(): Promise<PendingUpdate | null>

@@ -1,3 +1,4 @@
+import type { BrowserFontFace } from '@open-pencil/core/text'
 import { HTML_TAG_RESET_CSS } from '@open-pencil/dom-css/export'
 
 /**
@@ -47,12 +48,7 @@ export function createArtboardFrame(ownerDocument: Document, nodeId: string): HT
   return frame
 }
 
-export interface ArtboardFontFace {
-  family: string
-  weight: string
-  style: 'normal' | 'italic'
-  data: ArrayBuffer
-}
+export type ArtboardFontFace = BrowserFontFace
 
 /**
  * Adds a font to an artboard's own font set. Each iframe is a document of its own: fonts the

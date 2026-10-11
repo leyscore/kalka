@@ -1,5 +1,6 @@
 import { computed, reactive, ref } from 'vue'
 
+import type { StdioServerSpec } from '@/app/integrations/mcp/stdio'
 import { isTauri } from '@/app/tauri/env'
 
 /** The name Kalka's tools appear under in a client: `mcp__kalka__*`. */
@@ -15,11 +16,7 @@ export interface MCPClientStatus {
 }
 
 /** How a client starts Kalka's stdio bridge. */
-export interface MCPBridgeCommand {
-  command: string
-  args: string[]
-  env: Record<string, string>
-}
+export type MCPBridgeCommand = StdioServerSpec
 
 type ClientState =
   | { state: 'idle' }

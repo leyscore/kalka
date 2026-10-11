@@ -26,7 +26,11 @@ function fakeUpdate(options: { failInstall?: string } = {}) {
     download(onEvent) {
       calls.push('download')
       const done = createDeferred<undefined>()
-      downloads.push({ emit: onEvent, finish: () => done.resolve(undefined), fail: done.reject })
+      downloads.push({
+        emit: onEvent ?? (() => undefined),
+        finish: () => done.resolve(undefined),
+        fail: done.reject
+      })
       return done.promise
     },
     async install() {

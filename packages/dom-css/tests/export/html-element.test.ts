@@ -73,7 +73,16 @@ describe('HTML tags and classes in export and import', () => {
       name: 'Photo',
       htmlTag: 'figure',
       htmlClasses: ['photo'],
-      fills: [{ type: 'IMAGE', imageHash: hash, imageScaleMode: 'FILL', opacity: 1, visible: true }]
+      fills: [
+        {
+          type: 'IMAGE',
+          color: { r: 0, g: 0, b: 0, a: 1 },
+          imageHash: hash,
+          imageScaleMode: 'FILL',
+          opacity: 1,
+          visible: true
+        }
+      ]
     })
     const element = project(graph, image)
     expect(element.tagName).toBe('img')
