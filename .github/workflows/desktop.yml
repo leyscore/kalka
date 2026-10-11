@@ -1,0 +1,45 @@
+name: Desktop package
+
+# Manual only: macOS minutes count ten times against a private repository's allowance.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  macos:
+    name: macOS app
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-bun
+        with:
+          cache-scope: desktop
+
+      - name: Build packages
+        run: bun run build:packages
+
+      # Unsigned until Apple signing secrets exist: open it with right-click, Open.
+      - name: Package the DMG and ZIP
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: bun run package:desktop
+
+      - name: Upload the installers
+        uses: actions/upload-artifact@v7
+        with:
+          name: kalka-macos-${{ github.sha }}
+          path: |
+            electron/release/*.dmg
+            electron/release/*.zip
+          if-no-files-found: error
+          retention-days: 7

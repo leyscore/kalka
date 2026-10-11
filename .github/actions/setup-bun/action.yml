@@ -28,13 +28,36 @@ inputs:
 runs:
   using: composite
   steps:
+    # GitHub LFS bandwidth is metered, so objects are cached by the pointers they resolve and
+    # fetched only when a fixture changes. The job's checkout must keep its credentials.
+    - name: Key LFS objects
+      if: inputs.lfs == 'true'
+      id: lfs-key
+      shell: bash
+      env:
+        LFS_INCLUDE: ${{ inputs.lfs-include }}
+      run: |
+        git lfs install --force
+        if [ -n "$LFS_INCLUDE" ]; then
+          pointers=$(git lfs ls-files --long --include="$LFS_INCLUDE")
+        else
+          pointers=$(git lfs ls-files --long)
+        fi
+        echo "key=lfs-$(printf '%s' "$pointers" | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+
+    - uses: actions/cache/restore@v6
+      if: inputs.lfs == 'true'
+      id: lfs-cache
+      with:
+        path: .git/lfs/objects
+        key: ${{ steps.lfs-key.outputs.key }}
+
     - name: Pull LFS files
       if: inputs.lfs == 'true'
       shell: bash
       env:
         LFS_INCLUDE: ${{ inputs.lfs-include }}
       run: |
-        git lfs install --force
         if [ -n "$LFS_INCLUDE" ]; then
           git lfs pull --include="$LFS_INCLUDE"
         else
@@ -42,6 +65,13 @@ runs:
           head -c 4 tests/fixtures/material3.fig | xxd
         fi
         head -c 4 tests/fixtures/gold-preview.fig | xxd
+
+    - name: Save LFS objects
+      if: inputs.lfs == 'true' && steps.lfs-cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v6
+      with:
+        path: .git/lfs/objects
+        key: ${{ steps.lfs-key.outputs.key }}
 
     - uses: oven-sh/setup-bun@v2
       with:

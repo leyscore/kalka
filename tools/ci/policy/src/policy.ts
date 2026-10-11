@@ -24,7 +24,7 @@ export const CODE_JOBS = [
   'package-quality',
   'repository-quality',
   'storybook',
-  'native-test-contracts',
+  'desktop',
   'unit-tests'
 ] as const
 export const DOCS_JOB = 'documentation'

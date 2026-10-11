@@ -1,9 +1,8 @@
 name: Heavy tests
 
+# Manual only: the full fixture corpus is large, and this repository's LFS bandwidth is metered.
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '17 3 * * *'
 
 concurrency:
   group: heavy-tests-${{ github.ref }}
