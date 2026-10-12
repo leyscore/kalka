@@ -61,7 +61,10 @@ export type DesignStyleDeclaration = Record<string, string>
 
 export interface CSSComputeOptions {
   includeBrowserDefaults?: boolean
-  /** The width to render the content at, as a browser window would be; 1000 when left out. */
+  /**
+   * Lay the content out as a page in a window this wide, and import it as one artboard of that
+   * width. Left out, content renders 1000px wide and keeps its own root.
+   */
   viewportWidth?: number
 }
 

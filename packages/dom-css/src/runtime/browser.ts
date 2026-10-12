@@ -367,11 +367,15 @@ function copyComputedStyles(
       if (domText) child.layoutBox = textBox(domText, origin)
     }
   }
-  const body = content.ownerDocument.body
-  marked.viewport = {
-    width: options.viewportWidth ?? DEFAULT_VIEWPORT_WIDTH,
-    height: Math.max(origin.height, content.scrollHeight),
-    bodyStyle: computedStyleToRecord(view.getComputedStyle(body), options)
+  // Only a page laid out at a chosen width becomes an artboard of its own; HTML written into a
+  // design (write_html, pasted fragments) keeps its own root.
+  if (options.viewportWidth !== undefined) {
+    const body = content.ownerDocument.body
+    marked.viewport = {
+      width: options.viewportWidth,
+      height: Math.max(origin.height, content.scrollHeight),
+      bodyStyle: computedStyleToRecord(view.getComputedStyle(body), options)
+    }
   }
   return marked
 }
