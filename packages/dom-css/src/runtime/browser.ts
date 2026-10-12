@@ -217,7 +217,8 @@ function applySandboxHostStyle(element: HTMLElement, width = DEFAULT_VIEWPORT_WI
     'top: 0',
     `width: ${width}px`,
     'height: auto',
-    'visibility: hidden',
+    // Not `visibility: hidden`: it inherits into the content, which would read as hidden layers.
+    'opacity: 0',
     'pointer-events: none',
     'contain: layout style paint'
   ].join(';')
