@@ -36,6 +36,7 @@ export {
   type SVGImportData,
   type SVGImportOptions
 } from './formats/svg'
+export { renderNodesToHTML } from './formats/html'
 export { vectorElement } from './formats/html/vectors'
 export {
   renderNodesToPPTX,

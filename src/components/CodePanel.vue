@@ -23,7 +23,7 @@ import {
   resetDOMCodePreview,
   type DOMCodeSession
 } from '@/app/code/dom-preview'
-import { generatedCodeFor, type GeneratedCode } from '@/app/code/generated'
+import { generatedCodeFor, selectionHTMLCode, type GeneratedCode } from '@/app/code/generated'
 import { useCodeLayers } from '@/app/code/layers/use'
 import {
   createDesignJSXEditSession,
@@ -127,7 +127,11 @@ const sourceOptions = computed(() => [
   { value: 'tailwind-jsx' as const, label: code.value.sourceTailwindJSX },
   { value: 'html-css' as const, label: code.value.sourceHTMLCSS }
 ])
-const readOnly = computed(() => source.value === 'tailwind-jsx')
+/** HTML/CSS shows the selection's exported code, read-only; with nothing selected it writes new HTML. */
+const showsSelectionHTML = computed(
+  () => source.value === 'html-css' && store.state.selectedIds.size > 0 && !edited.value
+)
+const readOnly = computed(() => source.value === 'tailwind-jsx' || showsSelectionHTML.value)
 const editorLabel = computed(() =>
   source.value === 'html-css' ? code.value.editorHTMLCSSLabel : code.value.editorDesignLabel
 )
@@ -300,8 +304,32 @@ function showCanvas(next: Exclude<CodeSource, 'html-css'>) {
  * generated again; code the person wrote is patched where layers changed, keeping the rest as
  * written. Another selection starts over with its generated code.
  */
+let selectionHTMLVersion = 0
+let showingSelectionHTML = false
+
+/** HTML/CSS follows the selection with the code Kalka exports for it, until someone writes. */
+async function followSelectionHTML(): Promise<void> {
+  if (edited.value) return
+  const version = ++selectionHTMLVersion
+  const ids = [...store.state.selectedIds]
+  if (ids.length === 0) {
+    if (showingSelectionHTML) draft.value = starterSourceFor('html-css')
+    showingSelectionHTML = false
+    return
+  }
+  const generated = await selectionHTMLCode(store.graph, ids)
+  if (version !== selectionHTMLVersion || edited.value || source.value !== 'html-css') return
+  showingSelectionHTML = true
+  followedSelection = selectionKey.value
+  draft.value = generated.code
+}
+
 function followCanvas(live = false) {
   const current = source.value
+  if (editorActive.value && current === 'html-css' && previewing === 0) {
+    void followSelectionHTML()
+    return
+  }
   if (!editorActive.value || current === 'html-css' || previewing > 0) return
   if (selectionKey.value !== followedSelection) {
     if (designSession.value) designSession.value = null

@@ -1,7 +1,9 @@
+import { renderNodesToHTML } from '@open-pencil/core/io'
 import { selectionToJSXWithLayers } from '@open-pencil/design-jsx'
 import { sceneNodesToTailwindJSXWithLayers } from '@open-pencil/dom-css/export'
 import type { SceneGraph } from '@open-pencil/scene-graph'
 
+import { formatHTML } from '@/app/code/format-html'
 import { starterSourceFor, type CodeSource } from '@/app/code/templates'
 
 /** Generated code and the layer behind each of its elements, in pre-order. */
@@ -20,4 +22,16 @@ export function generatedCodeFor(
   return source === 'tailwind-jsx'
     ? sceneNodesToTailwindJSXWithLayers(graph, nodeIds)
     : selectionToJSXWithLayers(nodeIds, graph)
+}
+
+/**
+ * The selection as the HTML and CSS Kalka exports, shown read-only. Images stay external so the
+ * code is not buried under data URLs. Layer links follow JSX syntax only, so none are listed.
+ */
+export async function selectionHTMLCode(
+  graph: SceneGraph,
+  nodeIds: string[]
+): Promise<GeneratedCode> {
+  const { html } = await renderNodesToHTML(graph, nodeIds, { html: 'fragment', assets: 'external' })
+  return { code: formatHTML(html), layerIds: [] }
 }
