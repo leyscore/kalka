@@ -1,3 +1,5 @@
+import { isEqual } from 'es-toolkit/predicate'
+
 import { copyFills, copyStrokes } from '../copy'
 import type { SceneGraph } from '../index'
 import { hasInstanceOverride } from '../instances'
@@ -174,10 +176,15 @@ function scopedNodes(graph: SceneGraph, scope: BindingScope | undefined): Iterab
 export function reconcileVariableBindings(graph: SceneGraph, scope?: BindingScope): string[] {
   const changed: string[] = []
   for (const node of scopedNodes(graph, scope)) {
-    const updates = {
+    const updates: Partial<SceneNode> = {
       ...resolvedNumericBindings(graph, node),
       ...resolvedValueBindings(graph, node)
     }
+    // Paints keep the color their binding resolved to, so a renderer drawing from the layer's own
+    // fills (the DOM canvas, exports) follows the variable; unchanged paints are left alone.
+    const paints = resolvedPaintBindings(graph, node)
+    if (paints.fills && !isEqual(paints.fills, node.fills)) updates.fills = paints.fills
+    if (paints.strokes && !isEqual(paints.strokes, node.strokes)) updates.strokes = paints.strokes
     if (Object.keys(updates).length === 0) continue
     graph.updateNode(node.id, updates)
     changed.push(node.id)
