@@ -212,6 +212,10 @@ function fontsLoaded(browserDocument: Document): Promise<void> {
 
 function applySandboxHostStyle(element: HTMLElement, width = DEFAULT_VIEWPORT_WIDTH): void {
   element.style.cssText = [
+    // The content must not inherit the editor's own color, font or visibility; text with no
+    // font of its own falls back to the artboards' default.
+    'all: initial',
+    'font-family: Inter, system-ui, sans-serif',
     'position: fixed',
     'left: -100000px',
     'top: 0',
