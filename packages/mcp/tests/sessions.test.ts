@@ -1,6 +1,6 @@
 import { afterEach, expect, setSystemTime, test } from 'bun:test'
 
-import { createMCPSessionManager } from '#mcp/server/sessions'
+import { createMCPSessionManager } from '../src/server/sessions'
 
 afterEach(() => setSystemTime())
 
