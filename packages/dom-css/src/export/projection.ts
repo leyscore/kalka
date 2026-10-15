@@ -419,8 +419,19 @@ function styleFromTextNode(
   if (alignSelf) style['align-self'] = alignSelf
   addLayoutChild(style, node, parent)
   if (resolveNodeTextDirection(node) === 'RTL') style.direction = 'rtl'
-  const color = fillToCSS(node.fills.at(0))
-  style.color = color ? css('fills/0/color', color) : cssColor(BLACK)
+  const gradient = node.fills.some((fill) => fill.visible && fill.type.startsWith('GRADIENT'))
+    ? fillsToBackground(node.fills, node.width, node.height)
+    : undefined
+  if (gradient) {
+    // Gradient text: the fills paint the background, clipped to the letters.
+    Object.assign(style, gradient)
+    style['-webkit-background-clip'] = 'text'
+    style['background-clip'] = 'text'
+    style.color = 'transparent'
+  } else {
+    const color = fillToCSS(node.fills.at(0))
+    style.color = color ? css('fills/0/color', color) : cssColor(BLACK)
+  }
   style['font-family'] = node.fontFamily
   style['font-size'] = css('fontSize', px(node.fontSize))
   style['font-weight'] = String(node.fontWeight)

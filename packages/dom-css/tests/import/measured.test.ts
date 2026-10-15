@@ -156,4 +156,76 @@ describe('measured HTML import', () => {
     expect(glow.cornerRadius).toBe(374.5)
     expect(glow.effects).toMatchObject([{ type: 'LAYER_BLUR', radius: 150 }])
   })
+
+  test('a padded box keeps the size the browser drew, padding included', () => {
+    const { graph, artboard } = graphOf(
+      measured([
+        element(
+          'a',
+          box(0, 0, 146, 52),
+          {
+            ...BLOCK,
+            display: 'flex',
+            width: '86px',
+            height: '20px',
+            'padding-top': '16px',
+            'padding-right': '30px',
+            'padding-bottom': '16px',
+            'padding-left': '30px',
+            'background-image': 'linear-gradient(90deg, rgb(139, 92, 246), rgb(236, 72, 153))'
+          },
+          [{ type: 'text', text: 'Get started', layoutBox: box(30, 16, 86, 20) }]
+        )
+      ])
+    )
+    const [pill] = graph.getChildren(artboard.id)
+    expect([pill.width, pill.height]).toEqual([146, 52])
+    expect(pill.fills.map((fill) => fill.type)).toEqual(['GRADIENT_LINEAR'])
+  })
+
+  test('a gradient clipped to its text paints the letters, not a box', () => {
+    const { graph, artboard } = graphOf(
+      measured([
+        element(
+          'h1',
+          box(0, 0, 600, 59),
+          {
+            ...BLOCK,
+            color: 'rgba(0, 0, 0, 0)',
+            'background-image': 'linear-gradient(90deg, rgb(139, 92, 246), rgb(236, 72, 153))',
+            'background-clip': 'text'
+          },
+          [{ type: 'text', text: 'Gradient words' }]
+        )
+      ])
+    )
+    const [heading] = graph.getChildren(artboard.id)
+    expect(heading.type).toBe('TEXT')
+    expect(heading.fills.map((fill) => fill.type)).toEqual(['GRADIENT_LINEAR'])
+  })
+
+  test('a one line badge keeps its words on one line', () => {
+    const { graph, artboard } = graphOf(
+      measured([
+        element(
+          'span',
+          box(0, 0, 113, 33),
+          {
+            ...BLOCK,
+            display: 'inline',
+            'padding-top': '8px',
+            'padding-right': '16px',
+            'padding-bottom': '8px',
+            'padding-left': '16px',
+            'background-color': 'rgb(238, 238, 255)',
+            'line-height': '17px'
+          },
+          [{ type: 'text', text: 'New feature' }]
+        )
+      ])
+    )
+    const [badge] = graph.getChildren(artboard.id)
+    const [label] = graph.getChildren(badge.id)
+    expect(label.textAutoResize).toBe('WIDTH_AND_HEIGHT')
+  })
 })

@@ -44,12 +44,19 @@ const INLINE_TAGS = new Set([
 
 const NONE = /^(?:none|0px|0|rgba\(0, 0, 0, 0\)|transparent)?$/
 
+/** `background-clip: text`: the background, a gradient most often, paints the letters. */
+export function clipsBackgroundToText(style: DesignStyleDeclaration): boolean {
+  return [pickStyle(style, 'background-clip'), pickStyle(style, '-webkit-background-clip')].some(
+    (value) => value?.trim() === 'text'
+  )
+}
+
 /** Whether an element paints a box of its own: a background, a border, padding or a shadow. */
 export function paintsBox(style: DesignStyleDeclaration): boolean {
   const painted = (property: string) => !NONE.test(pickStyle(style, property)?.trim() ?? '')
   return (
     painted('background-color') ||
-    painted('background-image') ||
+    (painted('background-image') && !clipsBackgroundToText(style)) ||
     painted('box-shadow') ||
     ['top', 'right', 'bottom', 'left'].some(
       (side) => painted(`border-${side}-width`) || painted(`padding-${side}`)

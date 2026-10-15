@@ -19,6 +19,7 @@ const DEFAULT_COMPUTED_PROPERTIES = [
   'align-items',
   'aspect-ratio',
   'backdrop-filter',
+  'background-clip',
   'background-color',
   'background-image',
   'border-bottom-color',

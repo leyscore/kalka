@@ -16,6 +16,7 @@ import { DOM_CSS_PLUGIN_ID, IMAGE_SOURCE_URL_KEY } from '../export/tags'
 import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
 import { colorToFillFromCSS, colorToStrokeFromCSS, mergedStyle, pickStyle } from './css-values'
 import { hasBoxStyle, isTextLikeElement, textContent } from './element-kinds'
+import { linearGradientFill } from './gradient'
 import { applyHTMLElement } from './html-element'
 import {
   inheritedTextStyle,
@@ -34,7 +35,7 @@ import {
   outlineStroke,
   rotationFromCSS
 } from './paint'
-import { isPhrasingBlock, paintsBox, phrasingContent } from './phrasing'
+import { clipsBackgroundToText, isPhrasingBlock, paintsBox, phrasingContent } from './phrasing'
 
 export interface DesignDocumentToSceneGraphOptions {
   pageName?: string
@@ -359,6 +360,15 @@ export function applyElementStyle(
   applyPadding(node, style)
 
   const fills = fillsFromStyle(style, 'background-color')
+  // A gradient clipped to the text paints the text, not the box (see applyTextStyle).
+  const gradient = clipsBackgroundToText(style)
+    ? null
+    : linearGradientFill(
+        pickStyle(style, 'background-image'),
+        element.layoutBox?.width ?? parseCSSNumber(pickStyle(style, 'width')) ?? 0,
+        element.layoutBox?.height ?? parseCSSNumber(pickStyle(style, 'height')) ?? 0
+      )
+  if (gradient) fills.push(gradient)
   if (fills.length > 0) node.fills = fills
   applyImageFill(graph, node, element, style, resolveImage)
   applyStrokes(node, style)
@@ -387,7 +397,12 @@ export function applyTextStyle(node: SceneNode, style: DesignStyleDeclaration): 
   applyLayerCommons(node, style)
 
   const fills = fillsFromStyle(style, 'color')
-  if (fills.length > 0) node.fills = fills
+  // The text's own box is not known yet; a square keeps the gradient's direction close.
+  const clipped = clipsBackgroundToText(style)
+    ? linearGradientFill(pickStyle(style, 'background-image'), 100, 100)
+    : null
+  if (clipped) node.fills = [clipped]
+  else if (fills.length > 0) node.fills = fills
 
   const fontSize = parseCSSNumber(pickStyle(style, 'font-size'))
   if (fontSize !== null) node.fontSize = fontSize
@@ -489,10 +504,17 @@ function createPhrasingNode(
   if (box) {
     const left = firstCSSNumber(style, 'padding-left') ?? 0
     const right = firstCSSNumber(style, 'padding-right') ?? 0
-    label.width = Math.max(1, box.width - left - right)
-    label.textAutoResize = frame.layoutMode === 'NONE' ? 'HEIGHT' : 'WIDTH_AND_HEIGHT'
+    const top = firstCSSNumber(style, 'padding-top') ?? 0
+    const bottom = firstCSSNumber(style, 'padding-bottom') ?? 0
+    const lineHeight = label.lineHeight ?? label.fontSize * 1.3
+    // One line (a badge, a button) keeps the width of its words, so slightly wider font metrics
+    // cannot wrap its last word; a paragraph wraps where the browser wrapped it, with a little room.
+    const oneLine = box.height - top - bottom < lineHeight * 1.5
+    const width = Math.max(1, box.width - left - right)
+    label.width = oneLine ? width : Math.ceil(width * 1.01) + 1
+    label.textAutoResize = oneLine || frame.layoutMode !== 'NONE' ? 'WIDTH_AND_HEIGHT' : 'HEIGHT'
     label.x = left
-    label.y = firstCSSNumber(style, 'padding-top') ?? 0
+    label.y = top
   }
   return frame
 }
@@ -521,6 +543,12 @@ function createFrameNode(
     })
   }
   if (!keepsAutoLayout(node, element)) node.layoutMode = 'NONE'
+  if (element.layoutBox) {
+    // The computed width and height leave padding and borders out under content-box sizing,
+    // the browser default; the measured box is the size the layer draws at.
+    node.width = Math.max(element.layoutBox.width, 0.01)
+    node.height = Math.max(element.layoutBox.height, 0.01)
+  }
   if (placement?.byMeasure && element.layoutBox) placeAtMeasure(node, element.layoutBox, placement)
   const rotation = element.layoutBox
     ? rotationFromTransform(pickStyle(style, 'transform'), pickStyle(style, 'rotate'))
