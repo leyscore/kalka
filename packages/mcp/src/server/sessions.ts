@@ -25,6 +25,11 @@ type MCPSessionManagerOptions = {
 
 const MAX_MCP_SESSIONS = 10
 const MCP_SESSION_TTL_MS = 15 * 60_000
+/**
+ * At the session limit, a session idle this long gives its place to a new one: a client that
+ * crashed without closing its session would otherwise lock every other client out until the TTL.
+ */
+const MCP_SESSION_EVICT_IDLE_MS = 60_000
 const SESSION_CLOSE_TIMEOUT_MS = 5_000
 
 function describeError(e: unknown): string {
@@ -99,6 +104,18 @@ export function createMCPSessionManager({
     }
   }
 
+  /** Closes the session idle the longest, when it has been idle long enough to give way. */
+  function evictIdlest(): boolean {
+    let idlest: [string, MCPSession] | undefined
+    for (const entry of sessions) {
+      if (!idlest || entry[1].lastSeen < idlest[1].lastSeen) idlest = entry
+    }
+    if (!idlest || Date.now() - idlest[1].lastSeen < MCP_SESSION_EVICT_IDLE_MS) return false
+    sessions.delete(idlest[0])
+    void scheduleClose(idlest[1], idlest[0])
+    return true
+  }
+
   const creating = new Map<string, Promise<MCPTransport>>()
   let closed = false
 
@@ -168,7 +185,7 @@ export function createMCPSessionManager({
         })
       }
     }
-    if (sessions.size + creating.size + closing.size >= MAX_MCP_SESSIONS) {
+    if (sessions.size + creating.size + closing.size >= MAX_MCP_SESSIONS && !evictIdlest()) {
       return Promise.resolve({ error: 'too_many' })
     }
     return createSession(sessionId ?? randomUUID(), kind).catch((e) => {
