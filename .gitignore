@@ -69,6 +69,7 @@ public/canvaskit.wasm
 
 # Documentation build/cache output
 packages/docs/.vitepress/cache/
+packages/docs/.vitepress/.temp/
 packages/docs/.vitepress/dist/
 docs/.vitepress/cache/
 docs/.vitepress/dist/
