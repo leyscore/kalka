@@ -24,7 +24,7 @@ test('text with a gradient fill paints its letters with the gradient', () => {
     ]
   })
   const [element] = sceneNodeToDesignDocument(graph, text.id).children
-  const style = element.type === 'element' ? element.inlineStyle : {}
+  const style: Record<string, string> = element.type === 'element' ? { ...element.inlineStyle } : {}
   expect(style).toMatchObject({ 'background-clip': 'text', color: 'transparent' })
   expect(Object.values(style).some((value) => value.startsWith('linear-gradient(90deg'))).toBe(true)
 })
