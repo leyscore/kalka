@@ -8,19 +8,15 @@ Coding agents need the desktop app; the browser cannot start programs on your co
 
 1. The Kalka desktop app, built with `bun run package:desktop` until releases are published.
 2. The agent's ACP program, installed globally (see each agent below).
-3. Kalka's MCP server, installed globally. Use the version that matches your app:
+3. The agent signed in to your account with its own command-line tool.
 
-   ```sh
-   npm install -g @open-pencil/mcp
-   ```
+The agent reaches the canvas through the MCP server built into the desktop app, so there is no MCP package to install.
 
-4. The agent signed in to your account with its own command-line tool.
-
-Then open **Settings → AI & agents → Run guided setup**, choose the agent under **Coding agents on this computer**, and check that both the agent and the MCP server show as installed. **Check again** looks again after you install something.
+Then open **Settings → AI & agents → Run guided setup**, choose the agent under **Coding agents on this computer**, and check that the agent shows as installed. **Check again** looks again after you install something.
 
 ### Let your agent set itself up
 
-If you already use one of these agents in a terminal, guided setup can do the typing for you: press **Copy setup prompt** on the agent's card and paste the prompt into the agent. It asks the agent to install its ACP program and the MCP server, confirm both are on your `PATH`, and make sure you are signed in.
+If you already use one of these agents in a terminal, guided setup can do the typing for you: press **Copy setup prompt** on the agent's card and paste the prompt into the agent. It asks the agent to install its ACP program, confirm it is on your `PATH`, and make sure you are signed in.
 
 ## Claude Code
 

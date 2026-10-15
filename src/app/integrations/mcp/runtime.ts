@@ -5,6 +5,7 @@ import { AUTOMATION_HTTP_PORT, MCP_AGENT_HEADER } from '@open-pencil/core/consta
 
 import { call } from '@/app/platform/tauri/bridge'
 
+import { BUILT_IN_MCP_SERVER_NAME } from './built-in'
 import { isStdioConnection, stdioServerSpec } from './environment'
 import { mcpConnectionHeaders } from './headers'
 import { enabledMCPConnections } from './store'
@@ -16,7 +17,7 @@ export type BuiltInMCPServerOptions = {
 export function builtInMCPServer(options: BuiltInMCPServerOptions): McpServer {
   return {
     type: 'http',
-    name: 'open-pencil',
+    name: BUILT_IN_MCP_SERVER_NAME,
     url: `http://127.0.0.1:${AUTOMATION_HTTP_PORT}/mcp`,
     // An ACP chat's tool calls show as an ACP agent rather than an outside MCP client.
     headers: [

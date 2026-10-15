@@ -9,6 +9,7 @@ import {
   mcpConnectionSettings,
   MCP_CONNECTION_NAME_MAX_LENGTH
 } from '@/app/integrations/mcp'
+import { isReservedMCPConnectionName } from '@/app/integrations/mcp/built-in'
 import { parseCommandLine } from '@/app/integrations/mcp/command-line'
 import { parseEnvironment } from '@/app/integrations/mcp/environment'
 import { requiredSetting, type SettingsValidationMessages } from '@/app/settings/validation/schema'
@@ -52,7 +53,7 @@ export function useMCPConnectionForm(
           v.check(
             (name) =>
               name.length <= MCP_CONNECTION_NAME_MAX_LENGTH &&
-              name.toLowerCase() !== 'open-pencil' &&
+              !isReservedMCPConnectionName(name) &&
               !mcpConnectionSettings.value.connections.some(
                 (connection) =>
                   connection.id !== id.value && connection.name.toLowerCase() === name.toLowerCase()

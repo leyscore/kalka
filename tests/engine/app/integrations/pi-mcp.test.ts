@@ -39,7 +39,7 @@ describe('Pi MCP configuration', () => {
       headers: { Authorization: 'Bearer external-token' },
       auth: false
     })
-    expect(servers['open-pencil']).toEqual({
+    expect(servers.kalka).toEqual({
       url: expect.stringContaining('/mcp'),
       headers: { [MCP_AGENT_HEADER]: 'harness', Authorization: 'Bearer built-in-token' },
       auth: false

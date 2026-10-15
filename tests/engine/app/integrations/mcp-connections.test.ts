@@ -148,7 +148,7 @@ describe('MCP connections', () => {
       expect(await buildACPMCPServers({ authorizationToken: 'built-in-token' })).toEqual([
         {
           type: 'http',
-          name: 'open-pencil',
+          name: 'kalka',
           url: expect.stringContaining('/mcp'),
           headers: [
             { name: MCP_AGENT_HEADER, value: 'acp' },
@@ -192,7 +192,7 @@ describe('MCP connections', () => {
     expect(await captureACPSessionMCPServers()).toEqual([
       {
         type: 'http',
-        name: 'open-pencil',
+        name: 'kalka',
         url: expect.stringContaining('/mcp'),
         headers: [
           { name: MCP_AGENT_HEADER, value: 'acp' },

@@ -10,7 +10,9 @@ const lookupSchema = v.object({
   executables: v.record(v.string(), v.nullable(v.string())),
   /** Versions of Kalka's own companions, keyed by package name. */
   versions: v.record(v.string(), v.nullable(v.string())),
-  searchPath: v.string()
+  searchPath: v.string(),
+  /** The app ships its MCP server (desktop builds), so no global install is needed. */
+  bundledMCP: v.optional(v.boolean())
 })
 
 export type AgentLookup = v.InferOutput<typeof lookupSchema>

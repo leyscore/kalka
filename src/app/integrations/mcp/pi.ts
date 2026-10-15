@@ -2,6 +2,7 @@ import { AUTOMATION_HTTP_PORT, MCP_AGENT_HEADER } from '@open-pencil/core/consta
 
 import { getAutomationAuthToken } from '@/app/automation/mcp/spawn'
 
+import { BUILT_IN_MCP_SERVER_NAME } from './built-in'
 import { mcpConnectionHeaders } from './headers'
 import { enabledMCPConnections } from './store'
 import type { MCPConnection, MCPHTTPTransport } from './types'
@@ -43,7 +44,7 @@ export async function buildPiMCPServers(options?: {
   )
   return {
     ...Object.fromEntries(entries),
-    'open-pencil': {
+    [BUILT_IN_MCP_SERVER_NAME]: {
       url: `http://127.0.0.1:${AUTOMATION_HTTP_PORT}/mcp`,
       // The Pi harness chat's tool calls show as its agent rather than an outside MCP client.
       headers: {

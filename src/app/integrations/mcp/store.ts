@@ -2,6 +2,7 @@ import { isEqual } from 'es-toolkit'
 import * as v from 'valibot'
 import { computed, ref, toRaw, watch } from 'vue'
 
+import { isReservedMCPConnectionName } from '@/app/integrations/mcp/built-in'
 import { appCredentialServices } from '@/app/settings/credentials/app'
 import { credentialRef } from '@/app/settings/credentials/reference'
 import type { CredentialRef, CredentialStatus } from '@/app/settings/credentials/types'
@@ -119,7 +120,7 @@ export function parseMCPConnectionSettings(value: unknown): MCPConnectionSetting
     const connection = parseConnection(candidate)
     if (!connection || ids.has(connection.id)) continue
     const normalizedName = connection.name.toLowerCase()
-    if (normalizedName === 'open-pencil' || names.has(normalizedName)) continue
+    if (isReservedMCPConnectionName(normalizedName) || names.has(normalizedName)) continue
     ids.add(connection.id)
     names.add(normalizedName)
     connections.push(connection)
@@ -198,7 +199,7 @@ export function saveMCPConnectionDraft(draft: MCPConnectionDraft): MCPConnection
   const name = draft.name.trim()
   if (!name) throw new Error('Connection name is required')
   if (name.length > MCP_CONNECTION_NAME_MAX_LENGTH) throw new Error('Connection name is too long')
-  if (name.toLowerCase() === 'open-pencil') throw new Error('The open-pencil name is reserved')
+  if (isReservedMCPConnectionName(name)) throw new Error(`The ${name} name is reserved`)
   const duplicateName = mcpConnectionSettings.value.connections.some(
     (connection) =>
       connection.id !== draft.id && connection.name.toLowerCase() === name.toLowerCase()

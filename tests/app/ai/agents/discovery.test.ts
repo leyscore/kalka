@@ -21,7 +21,8 @@ function lookup(...commands: string[]): AgentLookup {
         return name ? [[name, '0.0.0']] : []
       })
     ),
-    executables: Object.fromEntries(commands.map((command) => [command, `/test/bin/${command}`]))
+    executables: Object.fromEntries(commands.map((command) => [command, `/test/bin/${command}`])),
+    bundledMCP: false
   }
 }
 
@@ -276,5 +277,17 @@ describe('Harness companion setup', () => {
     await failing.refresh()
     await failing.setupHarness()
     expect(failing.error.value).toBe('harness-install')
+  })
+
+  test('the MCP server built into the app counts as installed and current, with no npm package', async () => {
+    const discovery = createAgentDiscovery({
+      enabled: true,
+      lookup: async () => ({ ...lookup('gemini'), bundledMCP: true }),
+      install: async () => undefined
+    })
+    await discovery.refresh()
+    expect(discovery.canvasBridgeAvailable.value).toBe(true)
+    expect(discovery.canvasBridgeBundled.value).toBe(true)
+    expect(discovery.canvasBridgeOutdated.value).toBe(false)
   })
 })

@@ -37,6 +37,7 @@ function agentSetup(overrides: Partial<AgentSetupState>): AgentSetupState {
     detected: null,
     bridge: false,
     bridgeOutdated: false,
+    bridgeBundled: false,
     bridgeCommand: 'npm i -g @open-pencil/mcp@0.15.1',
     npm: true,
     installingAgent: false,

@@ -21,6 +21,8 @@ export interface AgentSetupState {
   bridge: boolean
   /** The installed MCP server does not match this app's version. */
   bridgeOutdated: boolean
+  /** The app's own MCP server answers agents, so nothing needs installing for it. */
+  bridgeBundled: boolean
   /** Installs or updates the MCP server by hand. */
   bridgeCommand: string
   /** npm, which one-click installation runs. */
@@ -190,6 +192,7 @@ export function useAgentSetup(
       detected: discovery.agents.value.find((agent) => agent.definition.id === id) ?? null,
       bridge: discovery.canvasBridgeAvailable.value,
       bridgeOutdated: discovery.canvasBridgeOutdated.value,
+      bridgeBundled: discovery.canvasBridgeBundled.value,
       bridgeCommand: discovery.canvasBridgeCommand.value,
       npm: discovery.npmAvailable.value,
       installingAgent: discovery.installing.value === id,

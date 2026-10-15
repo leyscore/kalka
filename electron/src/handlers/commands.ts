@@ -190,7 +190,9 @@ const commands: Record<string, (args: never) => unknown> = {
       const executable = executables[command]
       versions[packageName] = executable ? await companionVersion(executable, path) : null
     }
-    return { executables, versions, searchPath: path }
+    // The app starts its own MCP server; agents reach it over HTTP, with nothing to install.
+    const bundledMCP = (await bundledMCPScript(BUNDLED_MCP_HTTP)) !== null
+    return { executables, versions, searchPath: path, bundledMCP }
   },
   mcp_clients: () => listMCPClients(),
   async mcp_bridge_command() {

@@ -76,11 +76,15 @@ export function createAgentDiscovery(options: {
   /** A lookup has finished, so a later rescan can keep showing its results. */
   const checked = computed(() => snapshot.value !== null)
   // Checks read through functions so they see the snapshot of a rescan that just finished.
-  function hasBridge(): boolean {
-    return Boolean(snapshot.value?.executables[MCP_EXECUTABLE])
+  function hasBundledBridge(): boolean {
+    return snapshot.value?.bundledMCP === true
   }
-  /** An installed MCP server whose version does not match the app. */
+  function hasBridge(): boolean {
+    return hasBundledBridge() || Boolean(snapshot.value?.executables[MCP_EXECUTABLE])
+  }
+  /** An installed MCP server whose version does not match the app; the bundled one always does. */
   function bridgeOutdated(): boolean {
+    if (hasBundledBridge()) return false
     return hasBridge() && isOutdatedCompanion(snapshot.value?.versions[MCP_PACKAGE_NAME])
   }
   function hasHarness(): boolean {
@@ -90,6 +94,8 @@ export function createAgentDiscovery(options: {
     return hasHarness() && isOutdatedCompanion(snapshot.value?.versions[HARNESS_PACKAGE])
   }
   const canvasBridgeAvailable = computed(hasBridge)
+  /** The app's own MCP server, which agents reach without installing anything. */
+  const canvasBridgeBundled = computed(hasBundledBridge)
   const canvasBridgeOutdated = computed(bridgeOutdated)
   /** The Harness companion that runs Pi. */
   const harnessAvailable = computed(hasHarness)
@@ -205,6 +211,7 @@ export function createAgentDiscovery(options: {
     error,
     npmAvailable,
     canvasBridgeAvailable,
+    canvasBridgeBundled,
     canvasBridgeOutdated,
     canvasBridgeCommand,
     harnessAvailable,
