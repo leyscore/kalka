@@ -13,7 +13,9 @@ describe('CSS linear gradients as fills', () => {
     expect(fill?.gradientStops?.map((stop) => stop.position)).toEqual([0, 1])
     const t = fill?.gradientTransform
     expect(
-      [t?.m00, t?.m02, t?.m10, t?.m12].map((value) => Math.round((value ?? NaN) * 1e6) / 1e6 + 0)
+      [t?.m00, t?.m02, t?.m10, t?.m12].map(
+        (value) => Math.round((value ?? Number.NaN) * 1e6) / 1e6 + 0
+      )
     ).toEqual([1, 0, 0, 0.5])
   })
 
