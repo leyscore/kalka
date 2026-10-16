@@ -38,4 +38,28 @@ describe('.fig export warnings', () => {
     const tags = [...read.graph.getAllNodes()].map((node) => node.htmlTag)
     expect(tags).toContain('nav')
   })
+
+  test('carry the CSS a layer keeps beside its fields there and back', async () => {
+    const { graph } = frameGraph({
+      name: 'Card',
+      style: { width: '50%', transition: 'opacity 200ms' }
+    })
+    const written = await io.writeDocument('fig', graph)
+    expect(written.warnings?.join(' ')).toContain('CSS kept beside the layers’ fields')
+    const read = await io.readDocument({ name: 'card.fig', data: written.data as Uint8Array })
+    const card = [...read.graph.getAllNodes()].find((node) => node.name === 'Card')
+    expect(card?.style).toEqual({ width: '50%', transition: 'opacity 200ms' })
+  })
+
+  test('write no CSS for a layer that keeps none', async () => {
+    const { graph } = frameGraph({ name: 'Plain' })
+    const read = await io.readDocument({
+      name: 'plain.fig',
+      data: (await io.writeDocument('fig', graph)).data as Uint8Array
+    })
+    const plain = [...read.graph.getAllNodes()].find((node) => node.name === 'Plain')
+    expect(plain?.style).toEqual({})
+    expect(plain?.pluginData.some((entry) => entry.key === 'style')).toBe(false)
+  })
 })
+

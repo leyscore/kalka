@@ -154,6 +154,8 @@ export const KALKA_PLUGIN_DATA = {
   htmlTag: textPluginDataField('htmlTag', 'format', HTML_TAGS),
   /** The class names a layer's element carries. */
   htmlClasses: jsonPluginDataField('htmlClasses', 'format', htmlClassesSchema),
+  /** The CSS a layer keeps beside its fields, such as `width: 50%`, which Figma has no notion of. */
+  style: jsonPluginDataField('style', 'format', v.record(v.string(), v.string())),
   /** The document's CSS classes, on its root, which Figma has no notion of. */
   cssClasses: jsonPluginDataField('cssClasses', 'format', cssClassesSchema),
   /** The node-local rect a TEXT_PATH layout maps onto, which Kiwi has no field for. */

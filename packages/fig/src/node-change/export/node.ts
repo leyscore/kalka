@@ -25,6 +25,7 @@ import { snapshotInstanceGeometry } from '../instance/geometry'
 import {
   applyExportSettingsPluginData,
   applyHTMLElementPluginData,
+  applyStylePluginData,
   applyLibrarySourcePluginData,
   applyTextPathBoxPluginData,
   mergePluginData,
@@ -995,6 +996,7 @@ export function sceneNodeToKiwiWithContext(
   applyExportSettingsPluginData(node)
   applyLibrarySourcePluginData(node)
   applyHTMLElementPluginData(node)
+  applyStylePluginData(node)
   applyTextPathBoxPluginData(node)
   const pluginData = mergePluginData(node.pluginData)
   if (pluginData.length > 0) nc.pluginData = pluginData

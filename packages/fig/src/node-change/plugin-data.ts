@@ -26,7 +26,7 @@ import {
   referencesVariable
 } from './variable/bindings'
 
-const { boundVariables, exportSettings, htmlClasses, htmlTag, librarySource, textPathBox } =
+const { boundVariables, exportSettings, htmlClasses, htmlTag, librarySource, style, textPathBox } =
   KALKA_PLUGIN_DATA
 
 const NATIVE_EXPORT_FORMATS: Record<string, ExportFormatId> = {
@@ -160,6 +160,16 @@ export function applyHTMLElementPluginData(node: SceneNode): void {
   node.pluginData = withPluginData(node.pluginData, htmlTag, node.htmlTag ?? undefined)
   const classes = node.htmlClasses.length > 0 ? node.htmlClasses : undefined
   node.pluginData = withPluginData(node.pluginData, htmlClasses, classes)
+}
+
+/** The CSS a layer keeps beside its fields, which a Figma file holds only as plugin data. */
+export function extractStyle(nc: NodeChange): Pick<SceneNode, 'style'> {
+  return { style: readNodeChangePluginData(nc, style) ?? {} }
+}
+
+export function applyStylePluginData(node: SceneNode): void {
+  const kept = Object.keys(node.style).length > 0 ? node.style : undefined
+  node.pluginData = withPluginData(node.pluginData, style, kept)
 }
 
 export function applyLibrarySourcePluginData(node: SceneNode): void {

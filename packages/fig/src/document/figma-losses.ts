@@ -9,6 +9,7 @@ export type FigmaLossKind =
   | 'shaders'
   | 'html-tags'
   | 'right-to-left'
+  | 'kept-css'
 
 export interface FigmaLoss {
   kind: FigmaLossKind
@@ -25,7 +26,8 @@ const CSS: Record<FigmaLossKind, string> = {
   'token-expressions': 'calc() and clamp() values',
   shaders: 'shader backgrounds',
   'html-tags': 'HTML element tags',
-  'right-to-left': 'direction: rtl'
+  'right-to-left': 'direction: rtl',
+  'kept-css': 'CSS kept beside the layers’ fields, such as width: 50% or transition'
 }
 
 const LAYER_CHECKS: [FigmaLossKind, (node: SceneNode) => boolean][] = [
@@ -33,7 +35,8 @@ const LAYER_CHECKS: [FigmaLossKind, (node: SceneNode) => boolean][] = [
   ['breakpoints', (node) => node.responsiveSource !== null],
   ['shaders', (node) => node.shader !== null],
   ['html-tags', (node) => node.htmlTag !== null],
-  ['right-to-left', (node) => node.layoutDirection === 'RTL' || node.textDirection === 'RTL']
+  ['right-to-left', (node) => node.layoutDirection === 'RTL' || node.textDirection === 'RTL'],
+  ['kept-css', (node) => Object.keys(node.style).length > 0]
 ]
 
 /**
