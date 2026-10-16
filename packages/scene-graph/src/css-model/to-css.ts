@@ -10,14 +10,19 @@ export function cssColor(color: Color): string {
   return color.a >= 1 ? colorToHex(color) : colorToCSS(color)
 }
 
+/** A solid paint's color as drawn: its own alpha times the paint's opacity. */
+function paintToCSS(paint: Fill): string {
+  return cssColor({ ...paint.color, a: paint.color.a * paint.opacity })
+}
+
 export function fillToCSS(fill: Fill | undefined): string | undefined {
   if (fill?.type !== 'SOLID' || !fill.visible) return undefined
-  return cssColor({ ...fill.color, a: fill.opacity })
+  return paintToCSS(fill)
 }
 
 export function strokeColorToCSS(stroke: Stroke | undefined): string | undefined {
   if (!stroke?.visible) return undefined
-  return cssColor({ ...stroke.color, a: stroke.opacity })
+  return paintToCSS(stroke)
 }
 
 function shadowToCSS(effect: Effect): string {
@@ -131,7 +136,7 @@ function angularGradientToCSS(fill: Fill, width: number, height: number): string
 export function fillLayerToCSS(fill: Fill, width: number, height: number): string | undefined {
   if (!fill.visible) return undefined
   if (fill.type === 'SOLID') {
-    const color = cssColor({ ...fill.color, a: fill.opacity })
+    const color = paintToCSS(fill)
     return `linear-gradient(${color}, ${color})`
   }
   if (fill.type === 'GRADIENT_LINEAR') return linearGradientToCSS(fill, width, height)

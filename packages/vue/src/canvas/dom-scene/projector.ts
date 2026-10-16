@@ -6,6 +6,7 @@ import {
   type VectorElementRenderer
 } from '@kalka/dom-css/export'
 import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import { blendModeToCSS } from '@kalka/scene-graph/css-model'
 
 import { LAYER_ID_ATTR, buildNode, elementAttributes, patchAttributes } from './build'
 import {
@@ -375,7 +376,10 @@ export class DomSceneProjector {
     return artboard
   }
 
-  /** Sizes and places an artboard's iframe from the layer's geometry. */
+  /**
+   * Sizes and places an artboard's iframe from the layer's geometry. The iframe carries the
+   * layer's blend mode: inside its own document the layer has nothing below it to blend with.
+   */
   private placeArtboard(node: SceneNode, artboard: Artboard): void {
     const position = this.graph.getAbsolutePosition(node.id)
     const style = artboard.frame.style
@@ -383,10 +387,12 @@ export class DomSceneProjector {
     const top = `${position.y}px`
     const width = `${Math.max(1, node.width)}px`
     const height = `${Math.max(1, node.height)}px`
+    const blend = blendModeToCSS(node.blendMode) ?? ''
     if (style.left !== left) style.left = left
     if (style.top !== top) style.top = top
     if (style.width !== width) style.width = width
     if (style.height !== height) style.height = height
+    if (style.mixBlendMode !== blend) style.mixBlendMode = blend
   }
 
   // ------------------------------------------------------------------ layers
