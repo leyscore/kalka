@@ -16,6 +16,16 @@ function storageFetchSignal(external?: AbortSignal | null): StorageFetchSignal {
   }
 }
 
+/**
+ * A fetch function typed as the global one. Bun's `fetch` type also has `preconnect`, which a
+ * plain function lacks; copying the global's own properties covers it in every runtime.
+ */
+export function asFetch(
+  request: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
+): typeof fetch {
+  return Object.assign(request, fetch)
+}
+
 /** Prefer Tauri HTTP bridge on desktop to avoid bucket CORS requirements. */
 export async function storageFetch(
   input: RequestInfo | URL,
