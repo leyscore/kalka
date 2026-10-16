@@ -17,7 +17,7 @@
 - Assert state and outcomes, never copy, prompts, or constants: a test must not fail on rewording, a catalog update, or a list it restates. Name controls by role to reach them, assert what they do, and never recompute an expected value with the rule under test (`tests/app/ai/models/settings/onboarding/plan.test.ts`).
 - Locate behavior by accessible role and name, then label, then visible text. Scope repeated controls to a named region. Use scoped `data-slot` anatomy or semantic attributes (`data-property`, `data-command`, `data-node-id`) when needed; reserve `data-test-id` for integration boundaries and never add test-hook props or compound IDs.
 - Prefer test-runner-owned fixtures and request/route counters over browser globals. For in-page performance instrumentation, return a scoped `JSHandle` from `evaluateHandle()`, restore patched methods and listeners, and dispose the handle in `finally`; handles do not survive navigation. Assert transient DOM state with locators before the interaction ends.
-- Do not create a catch-all test Window interface or ad-hoc counter properties on `window`. Native-test declarations live in `tests/helpers/tauri/native-global.d.ts`; never expand production Window declarations for fixtures.
+- Do not create a catch-all test Window interface or ad-hoc counter properties on `window`. Never expand production Window declarations for fixtures.
 - Tests are typechecked: `bun run check:test-types` covers `tests/**` and `packages/*/tests/**` through `tsconfig.tests.json`, and reports test files only because sources are judged by `bun run typecheck` against the globals they ship with.
 - Build a fixture with the owning factory (`createDefaultNode`, `colorToFill`) rather than a partial literal asserted to the type; a partial that drops a required field is exactly what the typecheck exists to catch.
 - A stand-in for an interface a test cannot build (CanvasKit, `EditorStore`) goes through `asDouble` from `#tests/helpers/doubles`, which is the one sanctioned widening; `kalka/no-broad-double-cast` rejects the `as unknown as` spelling.
@@ -31,9 +31,6 @@
 - App projects start with the first-run AI setup offer already dismissed through the shared `storageState` in `playwright.config.ts`. A spec that overrides `storageState` and loads without `?test` must keep that preference unless it tests the offer (`tests/e2e/settings/ai-setup-first-run.spec.ts`).
 - Pixel-affecting renderer changes need committed canvas snapshots (`packages/core/AGENTS.md`, Renderer). Update only the justified affected snapshot and rerun without update mode.
 
-## Native WebView
+## Desktop
 
-- Native checks live under `tests/e2e/native/**` and run through WebdriverIO against an explicit test-only Tauri binary: `bun run test:native` builds and runs, `bun run build:native-test` only builds. The binary uses a separate application identifier, an ephemeral WebView data store, and process-memory credentials.
-- Never run UI smoke tests against production Keychain entries or clear user recovery data to unblock tests. Persistence across restarts needs a dedicated test-owned persistent profile.
-- Native tests answer only whether the real WebView and Tauri shell deliver an interaction; engine tests cover state contracts and Playwright covers app integration. Platform-limited checks skip rather than claim coverage. Synthetic composition does not prove IME behavior; native clipboard remains a separate acceptance gap without trusted OS clipboard events.
-- Centralize native invocation in a guarded helper using vendor-derived types; do not import packages inside serialized WebView callbacks or repeat direct Tauri-global access in specs.
+- `bun run --cwd electron smoke` starts the packaged desktop app with its own profile and waits for the editor; CI runs it on every platform (`electron/AGENTS.md`). Never run UI tests against the production profile, Keychain entries or recovery data.

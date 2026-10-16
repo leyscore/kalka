@@ -6,8 +6,8 @@ import { APP_MENU_APP_ITEMS, APP_MENU_SCHEMA } from '@/app/shell/menu/schema'
 import type { AppMenuActionItem, AppMenuEntry, AppMenuGroupSchema } from '@/app/shell/menu/schema'
 import { shortcutTokenToAccelerator } from '@/app/shell/menu/shortcut'
 
-export const MENU_PATH = 'desktop/generated/menu.json'
-export const APP_MENU_PATH = 'desktop/generated/app-menu.json'
+export const MENU_PATH = 'electron/generated/menu.json'
+export const APP_MENU_PATH = 'electron/generated/app-menu.json'
 
 function isNativeVisible(entry: { target?: string }): boolean {
   return entry.target !== 'browser'

@@ -85,7 +85,7 @@ Current commands:
 | App browser E2E                | `bun run test`               |
 | Storybook browser              | `bun run test:storybook`     |
 | Figma acceptance               | `bun run test:figma`         |
-| Native WebView                 | `bun run test:native`        |
+| Desktop app smoke              | `bun run --cwd electron smoke` |
 
 During implementation, run the affected unit files or one representative browser scenario. Inspect discovery changes without executing the whole suite when reorganizing files. Use the final CI gate after integration; do not rerun full suites for each edit. Report commands actually run, and distinguish focused coverage from full acceptance.
 

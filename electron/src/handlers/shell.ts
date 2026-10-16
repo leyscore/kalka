@@ -1,7 +1,7 @@
 import { spawn, type ChildProcess, execFile } from 'node:child_process'
 import { constants } from 'node:os'
 
-import capabilities from '../../../desktop/capabilities/default.json'
+import capabilities from '../../capabilities/shell.json'
 import { emit, registerAll, type CallContext } from '../ipc'
 import { BUNDLED_MCP_HTTP, bundledMCPCommand, bundledMCPScript } from './mcp/bundled'
 

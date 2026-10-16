@@ -11,7 +11,7 @@ function ignoreMarkdownOutsideSource(path: string): boolean {
 }
 
 export const WATCH_IGNORED = [
-  '**/desktop/**',
+  '**/electron/**',
   '**/packages/cli/**',
   '**/packages/mcp/**',
   '**/packages/docs/**',

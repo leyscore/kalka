@@ -75,7 +75,7 @@ const ShellScope = v.object({
 })
 
 function spawnScope() {
-  const text = readFileSync(repoPath('desktop/capabilities/default.json'), 'utf8')
+  const text = readFileSync(repoPath('electron/capabilities/shell.json'), 'utf8')
   const capability = v.parse(v.pipe(v.string(), v.parseJson(), ShellScope), text)
   const spawn = capability.permissions.find(
     (permission) => typeof permission !== 'string' && permission.identifier === 'shell:allow-spawn'

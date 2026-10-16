@@ -41,7 +41,6 @@ export function endTour(): void {
 
 /** The first document someone opens after the welcome gets the tour, once. */
 export function offerTourOnFirstDocument(): void {
-  if (import.meta.env.MODE === 'native-test') return
   if (appPreferences.value.onboarding.tour === 'done' || tourIndex.value !== null) return
   startTour()
 }

@@ -10,7 +10,6 @@ paths = [
   '''(^|/)\.worktrees/''',
   '''(^|/)dist/''',
   '''(^|/)node_modules/''',
-  '''^desktop/target/''',
   '''^packages/[^/]+/dist/''',
   '''^test-results/''',
   '''^scratch/'''

@@ -31,8 +31,6 @@ export function closeWelcomeForAIChat(): void {
 
 /** A fresh install sees the welcome; someone who already went through it may still get the AI offer. */
 export function offerWelcomeOnFirstRun(): void {
-  // The native test binary starts every run with an empty data store.
-  if (import.meta.env.MODE === 'native-test') return
   if (appPreferences.value.onboarding.welcome === 'pending') {
     openWelcome()
     return

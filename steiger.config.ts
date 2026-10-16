@@ -14,7 +14,6 @@ export default defineConfig([
       '.claude/**',
       'node_modules/**',
       'dist/**',
-      'desktop/**',
       'public/**',
       'scratch/**',
       'demo-recordings/**'

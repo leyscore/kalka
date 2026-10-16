@@ -46,8 +46,6 @@ storybook-static/
 .turbo/
 
 # Tauri updater private signing keys
-/desktop/*.key
-!/desktop/*.key.pub
 
 # Generated from assets/brand by tools/generate/brand (never hand-edit these outputs)
 /.cache/brand/
@@ -62,7 +60,6 @@ storybook-static/
 /.cache/demo/
 /.cache/demo.lock/
 /public/demo.fig
-/desktop/icons/
 
 # Copied from node_modules at build time
 public/canvaskit.wasm

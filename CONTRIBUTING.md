@@ -15,18 +15,18 @@ git clone https://github.com/leyscore/kalka.git
 cd kalka
 bun install
 bun run dev:portless  # Web editor at https://kalka.localhost
-bun run dev           # Fixed http://localhost:1420 for Playwright, Tauri, and Dev Containers
-bun run tauri dev     # Desktop app (requires Rust)
+bun run dev           # Fixed http://localhost:1420 for Playwright and Dev Containers
+bun run dev:desktop   # Desktop app (Electron) on the dev server
 ```
 
 The first Portless run creates and trusts a local HTTPS certificate. Linked Git worktrees receive branch-prefixed URLs such as `https://fix-ui.kalka.localhost` and matching `https://fix-ui.mcp.kalka.localhost` MCP bridges with isolated ports and socket files, so concurrent servers do not compete for port 1420. Run `bunx portless doctor` if routing or certificate trust fails.
 
-The repository also works in any [Dev Container](https://containers.dev/)-compatible tool: the container pins Bun, installs dependencies, and forwards port 1420; start with `bun run dev`. It covers the web editor, packages, CLI, and automated checks. Native Tauri development needs [Rust](https://rustup.rs/) and the [Tauri v2 prerequisites](https://v2.tauri.app/start/prerequisites/) on the host.
+The repository also works in any [Dev Container](https://containers.dev/)-compatible tool: the container pins Bun, installs dependencies, and forwards port 1420; start with `bun run dev`. It covers the web editor, packages, CLI, and automated checks.
 
-For macOS release builds with ad-hoc signing (no Apple Developer account, local testing only):
+Desktop installers for the current platform, unsigned unless signing secrets are set (`electron/AGENTS.md`):
 
 ```sh
-APPLE_SIGNING_IDENTITY=- bun run tauri build -c '{"bundle": { "createUpdaterArtifacts": false }}'
+bun run package:desktop
 ```
 
 ## Making a change

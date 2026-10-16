@@ -2,7 +2,7 @@ import * as v from 'valibot'
 
 import { isTauri } from '@/app/tauri/env'
 
-/** Desktop events and commands for `kalka://join?room=<id>` links (`desktop/src/lib.rs`). */
+/** Desktop events and commands for `kalka://join?room=<id>` links (`electron/src/handlers/pending.ts`). */
 export const ROOM_LINKS_EVENT = 'open-room-links'
 const TAKE_PENDING_ROOMS = 'take_pending_rooms'
 

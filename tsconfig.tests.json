@@ -120,10 +120,6 @@
     "packages/dom-css/src/postcss-value-parser.d.ts",
     "packages/design-jsx/src/global.d.ts",
     "tests/**/*.ts",
-    "packages/*/tests/**/*.ts",
-    "tests/helpers/tauri/native-global.d.ts"
-  ],
-  "exclude": [
-    "tests/e2e/native/**"
+    "packages/*/tests/**/*.ts"
   ]
 }

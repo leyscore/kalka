@@ -19,7 +19,7 @@ async function resolveDiscovery(): Promise<DiscoveryInfo> {
   if (!info) {
     throw new Error(
       'Could not read MCP discovery file.\n' +
-        'Is the app running? Start it with: bun run tauri dev'
+        'Is the app running? Start it with: bun run dev:desktop'
     )
   }
 

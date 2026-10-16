@@ -6,7 +6,7 @@ Private tooling lives under `tools/<role>/<domain>/{src,tests}`; Steiger enforce
 | ----------- | ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | `checks/`   | Read the tree and exit non-zero; never write inside the repository except an own baseline behind an explicit `--write` | `architecture`, `lint`, `i18n`, `secret-scan`, `type-shapes`, `docs`, `test-homes`, `package-quality` |
 | `generate/` | Write generated files or artifacts, idempotently                                                                       | `brand`, `demo`, `tauri-menu`, `authoring-reference`, `visual-oracles`                                |
-| `release/`  | Build, verify, and publish packages and native artifacts                                                               | `package-artifacts`, `release-packages`                                                               |
+| `release/`  | Build, verify, and publish packages (desktop installers come from electron-builder)                                    | `package-artifacts`, `release-packages`                                                               |
 | `ci/`       | Consumed by workflows: path classification and gate policy, container images, the review-guidance bot                  | `policy`, `images`, `pr-review-guidance`                                                              |
 | `dev/`      | Test running and benchmarks for humans                                                                                 | `unit-tests`, `navigation-benchmark`, `dev-server`                                                    |
 
@@ -27,7 +27,7 @@ Private tooling lives under `tools/<role>/<domain>/{src,tests}`; Steiger enforce
 
 ## Releases
 
-- Update versions in the root and publishable package manifests plus `desktop/tauri.conf.json` and `desktop/Cargo.toml`; move `Unreleased` into `## x.y.z — YYYY-MM-DD`; commit `Release vX.Y.Z`; tag and push `vX.Y.Z`.
+- Update versions in the root and publishable package manifests plus `electron/package.json`; move `Unreleased` into `## x.y.z — YYYY-MM-DD`; commit `Release vX.Y.Z`; tag and push `vX.Y.Z`.
 - There is no release workflow yet: the inherited Tauri `build.yml` was removed with the move to Electron, and `tools/release/release-packages` still describes it. Build installers with `bun run package:desktop`.
 - Public workspace packages are discovered by the package-artifacts catalog. Bun source exports require the complete `src` directory in package contents; Node exports use `dist`. Release preparation must preserve resolution maps. Prepared publish directories receive the root `LICENSE` when a package has none of its own, and every package needs a `README.md` because npm renders it. Publishing uses prepared npm tarballs verified through the shared Node/Bun consumer checks; never publish package directories manually. `test:packages` first runs the packaging guards in `tools/checks/package-quality/src/smoke/guards.ts`: fixture manifests packed with the real `npm pack` that must trip the tarball inspector and the Node/Bun consumer checks before those checks vouch for real packages.
 - Ensure Tauri and Apple signing/notarization secrets are configured. Verify the draft title, body, and artifacts, then publish. Release titles are exactly the tag (`vX.Y.Z`) without a product-name prefix.
@@ -39,4 +39,4 @@ The `/demo` document is built from `tools/generate/demo/src/document/` into the 
 
 ## Brand assets
 
-Canonical artwork lives in `assets/brand/` (main mark and optical micro master; see its README). `tools/generate/brand/` derives web, docs, and native icons with RealFaviconGenerator and Tauri; generated assets are ignored, not committed. Vite and VitePress configs prepare their own targets, and Tauri dev/build hooks prepare native icons.
+Canonical artwork lives in `assets/brand/` (main mark and optical micro master; see its README). `tools/generate/brand/` derives web, docs, and native icons with RealFaviconGenerator and Tauri; generated assets are ignored, not committed. Vite and VitePress configs prepare their own targets; the desktop installers use the icons in `electron/build`.

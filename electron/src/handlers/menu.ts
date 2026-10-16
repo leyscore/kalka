@@ -2,8 +2,8 @@ import { basename, dirname } from 'node:path'
 
 import { app, BrowserWindow, Menu, type MenuItemConstructorOptions } from 'electron'
 
-import appMenuSpec from '../../../desktop/generated/app-menu.json'
-import menuSpec from '../../../desktop/generated/menu.json'
+import appMenuSpec from '../../generated/app-menu.json'
+import menuSpec from '../../generated/menu.json'
 import { emit } from '../ipc'
 
 /** Entries of the menu the app's menu schema generates (`bun run generate:tauri-menu`). */
