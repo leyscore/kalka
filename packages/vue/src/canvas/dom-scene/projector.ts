@@ -85,6 +85,8 @@ export class DomSceneProjector {
   private readonly textContent = new WeakMap<Element, string>()
   /** Layers edited in place, such as text under the in-page editor: not patched meanwhile. */
   private readonly locked = new Set<string>()
+  /** Layers holding a mask: the CSS of their other children depends on where it sits. */
+  private readonly maskParents = new Set<string>()
   private pageDirty = true
   private pageId: string | null = null
   private destroyed = false
@@ -175,6 +177,7 @@ export class DomSceneProjector {
     }
     this.artboards.clear()
     this.elements.clear()
+    this.maskParents.clear()
     this.dirty.clear()
     this.pageDirty = true
   }
@@ -186,6 +189,11 @@ export class DomSceneProjector {
     const keys = Object.keys(changes) as (keyof SceneNode)[]
     if (keys.some((key) => CHILD_STYLE_KEYS.has(key))) {
       for (const childId of node.childIds) this.dirty.add(childId)
+    }
+    // A mask is drawn as the `mask-image` of the layers above it.
+    if (node.parentId && (node.isMask || 'isMask' in changes)) {
+      this.maskParents.add(node.parentId)
+      this.restyleChildren(node.parentId)
     }
     if (node.parentId) {
       if ('visible' in changes || 'internalOnly' in changes) this.dirty.add(node.parentId)
@@ -199,7 +207,24 @@ export class DomSceneProjector {
       if (!id) continue
       if (id === pageId) this.pageDirty = true
       else this.dirty.add(id)
+      // Masks added, removed, or reordered change which layers they mask.
+      if (this.maskParents.has(id)) this.restyleChildren(id)
     }
+  }
+
+  private restyleChildren(parentId: string): void {
+    const parent = this.graph.getNode(parentId)
+    if (!parent) return
+    for (const childId of parent.childIds) this.dirty.add(childId)
+    if (!parent.childIds.some((id) => this.graph.getNode(id)?.isMask))
+      this.maskParents.delete(parentId)
+  }
+
+  /** Records a layer's element as built, and its parent when the layer is a mask. */
+  private register(id: string, element: Element): void {
+    this.elements.set(id, element)
+    const node = this.graph.getNode(id)
+    if (node?.isMask && node.parentId) this.maskParents.add(node.parentId)
   }
 
   // ------------------------------------------------------------------ flush
@@ -509,9 +534,7 @@ export class DomSceneProjector {
       current?.remove()
       return
     }
-    const built = buildNode(doc, projected, (layerId, element) =>
-      this.elements.set(layerId, element)
-    )
+    const built = buildNode(doc, projected, (layerId, element) => this.register(layerId, element))
     const node = this.graph.getNode(id)
     if (isRoot && node && built instanceof Element && projected.type === 'element') {
       patchAttributes(built, this.attributesFor(node, projected, true))
@@ -541,7 +564,7 @@ export class DomSceneProjector {
         const projected = this.project(child.id, false)
         if (!projected) continue
         childElement = buildNode(doc, projected, (layerId, built) =>
-          this.elements.set(layerId, built)
+          this.register(layerId, built)
         ) as Element
       }
       const expected: Element | null = cursor

@@ -62,6 +62,26 @@ describe('Kalka folder', () => {
     expect(graphDifferences(graph, read)).toEqual([])
   })
 
+  test('keeps masks as layers that mask, not as the CSS that draws them', async () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    const frame = graph.createNode('FRAME', page.id, { name: 'Frame', width: 100, height: 100 })
+    graph.createNode('ELLIPSE', frame.id, {
+      name: 'Mask',
+      width: 60,
+      height: 40,
+      isMask: true,
+      maskType: 'LUMINANCE'
+    })
+    graph.createNode('RECTANGLE', frame.id, { name: 'Masked', width: 80, height: 20 })
+
+    const read = readKalkaFolder(asMap(await writeKalkaFolder(graph)))
+    expect(graphDifferences(graph, read)).toEqual([])
+    expect(nodeNamed(read, 'Mask')).toMatchObject({ isMask: true, maskType: 'LUMINANCE' })
+    expect(nodeNamed(read, 'Mask').style.visibility).toBeUndefined()
+    expect(nodeNamed(read, 'Masked').style['mask-image']).toBeUndefined()
+  })
+
   test('lays the folder out as the format says', async () => {
     const files = await writeKalkaFolder(sampleDocument())
     const paths = files.map((file) => file.path)

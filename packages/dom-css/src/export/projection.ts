@@ -1,3 +1,4 @@
+import { isEmptyObject } from 'es-toolkit/predicate'
 import { fromUint8Array } from 'js-base64'
 
 import { readIcon, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
@@ -5,6 +6,7 @@ import { writeLayerStyle, type FieldCSS, type WriteContext } from '@kalka/scene-
 
 import { DesignTokens, type CSSModes } from '../tokens/references'
 import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
+import { maskStyle } from './masks'
 import {
   imageSourceURL,
   INTERACTIVE_TAGS,
@@ -48,6 +50,11 @@ export interface SceneGraphToDesignOptions {
    * format that saves the whole document keeps them.
    */
   internal?: boolean
+  /**
+   * Draw masks as CSS: a mask hidden in its place, and the layers above it through `mask-image`.
+   * Default true; a format that saves which layers are masks leaves the CSS they derive out.
+   */
+  masks?: boolean
 }
 
 /** What a box draws itself, which the SVG of a vector layer draws instead. */
@@ -103,6 +110,7 @@ interface ProjectionContext {
   shallow: boolean
   derivedSizes: boolean
   internal: boolean
+  masks: boolean
   /** Inside an `a` or `button`, which HTML does not let another one sit in. */
   interactive: boolean
 }
@@ -219,6 +227,19 @@ function sceneNodeToDesignNode(
   inherited: CSSModes,
   root: boolean
 ): DesignNode | null {
+  const projected = layerDesignNode(context, node, inherited, root)
+  if (projected?.type !== 'element' || !context.masks) return projected
+  const masked = maskStyle(context.graph, node, context.vectorElement)
+  if (isEmptyObject(masked)) return projected
+  return { ...projected, inlineStyle: { ...projected.inlineStyle, ...masked } }
+}
+
+function layerDesignNode(
+  context: ProjectionContext,
+  node: SceneNode,
+  inherited: CSSModes,
+  root: boolean
+): DesignNode | null {
   if (!node.visible && !context.shown?.has(node.id)) return null
   if (node.internalOnly && !context.internal) return null
   const { graph, includeSourceIds, tokens } = context
@@ -293,7 +314,8 @@ function projectionContext(
     shown,
     shallow = false,
     derivedSizes = false,
-    internal = false
+    internal = false,
+    masks = true
   }: SceneGraphToDesignOptions
 ): ProjectionContext {
   return {
@@ -305,6 +327,7 @@ function projectionContext(
     shallow,
     derivedSizes,
     internal,
+    masks,
     interactive: false
   }
 }
