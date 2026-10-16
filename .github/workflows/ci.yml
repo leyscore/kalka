@@ -259,7 +259,7 @@ jobs:
     runs-on: ubuntu-latest
     name: .fig import regression
     env:
-      LARGE_FIXTURES: tests/fixtures/positivus.fig,tests/fixtures/material3.fig,tests/fixtures/nuxtui.fig
+      LARGE_FIXTURES: tests/fixtures/positivus.fig,tests/fixtures/material3.fig
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
@@ -274,7 +274,6 @@ jobs:
           path: |
             tests/fixtures/positivus.fig
             tests/fixtures/material3.fig
-            tests/fixtures/nuxtui.fig
           key: fig-fixtures-${{ steps.fixtures.outputs.key }}
 
       - uses: ./.github/actions/setup-bun

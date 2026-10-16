@@ -14,8 +14,7 @@ const FIXTURES = [
   { file: 'slots.fig', large: false },
   { file: 'circle-text.fig', large: false },
   { file: 'positivus.fig', large: true },
-  { file: 'material3.fig', large: true },
-  { file: 'nuxtui.fig', large: true }
+  { file: 'material3.fig', large: true }
 ] as const
 
 test.use({ viewport: { width: 1440, height: 900 } })

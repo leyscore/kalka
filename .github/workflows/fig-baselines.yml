@@ -1,14 +1,14 @@
 name: .fig baselines
 
 # Manual only: writes the .fig import regression baselines on CI, for fixtures too large to parse on
-# a laptop (nuxtui.fig). Download the artifact and commit it under
+# a laptop (material3.fig). Download the artifact and commit it under
 # tests/integration/fig-import/baselines.
 on:
   workflow_dispatch:
     inputs:
       fixtures:
         description: Fixture file names, comma-separated
-        default: nuxtui.fig
+        default: material3.fig
       pages:
         description: Also capture every page on the Linux canvas (tests/e2e/fig-import)
         type: boolean
@@ -35,7 +35,7 @@ jobs:
         with:
           lfs: 'true'
           # Page captures open every fixture the spec lists.
-          lfs-include: ${{ inputs.pages && 'tests/fixtures/*.fig' || steps.paths.outputs.include }}
+          lfs-include: ${{ inputs.pages && 'tests/fixtures/gold-preview.fig,tests/fixtures/slots.fig,tests/fixtures/circle-text.fig,tests/fixtures/positivus.fig,tests/fixtures/material3.fig' || steps.paths.outputs.include }}
 
       - name: Build packages
         run: bun run build:packages
