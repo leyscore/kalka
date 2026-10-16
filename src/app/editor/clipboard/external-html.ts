@@ -18,9 +18,12 @@ export function isHTMLSource(text: string): boolean {
  * place, as one undo step, selected. The DOM/CSS importer lays it out in a sandboxed document
  * that keeps nothing able to run.
  */
-export async function externalHTMLAsDesignClipboard(html: string): Promise<string | null> {
+export async function externalHTMLAsDesignClipboard(
+  html: string,
+  keepAuthoredCSS: boolean
+): Promise<string | null> {
   const { browserHTMLToSceneGraph } = await import('@kalka/dom-css/browser')
-  const graph = await browserHTMLToSceneGraph(html, { pageName: 'Pasted HTML' })
+  const graph = await browserHTMLToSceneGraph(html, { pageName: 'Pasted HTML', keepAuthoredCSS })
   const roots = graph.getPages().flatMap((page) => graph.getChildren(page.id))
   if (roots.length === 0) return null
   return buildKalkaClipboardHTML(roots, graph)

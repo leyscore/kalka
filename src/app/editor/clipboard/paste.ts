@@ -16,6 +16,8 @@ export async function pasteClipboardHTML(
     return
   }
   // Markup from a web page or a code editor becomes editable layers.
-  const design = isExternalHTML(html) ? await externalHTMLAsDesignClipboard(html) : null
+  const design = isExternalHTML(html)
+    ? await externalHTMLAsDesignClipboard(html, editor.cssWrites.has('import'))
+    : null
   await editor.pasteFromHTML(design ?? html, cursorPos, options)
 }

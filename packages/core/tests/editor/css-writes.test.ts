@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 
 import { createEditor, type CSSWriter } from '@kalka/core/editor'
 import type { SceneNode } from '@kalka/scene-graph'
-import { layerCSS } from '@kalka/scene-graph/css-model'
+import { cssWrite, layerCSS } from '@kalka/scene-graph/css-model'
 
 function setup(cssWrites: readonly CSSWriter[] = ['panel']) {
   const editor = createEditor({ cssWrites })
@@ -44,11 +44,13 @@ describe('the properties panel writes CSS', () => {
 
   test('CSS written as is gives way only to the fields of its own family, and undo restores it', () => {
     const { editor, page, card } = setup()
-    editor.graph.updateNode(card.id, { style: { 'border-radius': '1rem', cursor: 'pointer' } })
-
-    // Writing the CSS reads 1rem into the field, and keeps the declaration as written.
-    editor.updateNodeWithUndo(card.id, { opacity: 0.5 }, 'Opacity', 'panel')
+    editor.graph.updateNode(
+      card.id,
+      cssWrite(card, page, { ...layerCSS(card, page), 'border-radius': '1rem', cursor: 'pointer' })
+    )
+    // Written as CSS, 1rem is read into the field and kept as written.
     expect(card.cornerRadius).toBe(16)
+    editor.updateNodeWithUndo(card.id, { opacity: 0.5 }, 'Opacity', 'panel')
     expect(card.style).toEqual({ 'border-radius': '1rem', cursor: 'pointer' })
 
     editor.updateNodeWithUndo(card.id, { cornerRadius: 6 }, 'Radius', 'panel')

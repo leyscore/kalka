@@ -21,6 +21,7 @@ test.use({ viewport: { width: 1440, height: 900 } })
 
 // The first load compiles the app; on a cold CI runner that alone outlasts a test's wait.
 test.beforeAll(async ({ browser }) => {
+  test.setTimeout(240_000)
   const page = await browser.newPage()
   await page.goto('/?test&no-chrome&no-rulers')
   await page.getByTestId('canvas-element').and(page.locator('[data-ready="1"]')).waitFor({

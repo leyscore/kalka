@@ -70,7 +70,8 @@ export function createDOMOpenActions({
       cssText: options.cssText,
       pageName,
       compute: { viewportWidth: options.viewportWidth ?? IMPORT_VIEWPORT_WIDTH },
-      signal: load.signal
+      signal: load.signal,
+      keepAuthoredCSS: editor.cssWrites.has('import')
     })
     load.signal.throwIfAborted()
     await yieldToUI()

@@ -17,7 +17,7 @@ import {
 export type CSSWriter = 'panel' | 'mcp' | 'import' | 'drag' | 'plugin' | 'fig'
 
 /** The writers already moved to CSS. */
-export const DEFAULT_CSS_WRITES: readonly CSSWriter[] = ['panel', 'mcp']
+export const DEFAULT_CSS_WRITES: readonly CSSWriter[] = ['panel', 'mcp', 'import']
 
 /** The writers an editor moves to CSS: those its options name, or `DEFAULT_CSS_WRITES`. */
 export function cssWritesFor(options?: { cssWrites?: readonly CSSWriter[] }): Set<CSSWriter> {
@@ -43,9 +43,9 @@ export function changesAsCSS(
     style: styleAfterFieldChanges(node, keys) ?? node.style
   }
   const { style, ...read } = cssWrite(node, parent, layerCSS(draft, parent))
-  // Only the families the change wrote, or whose CSS was written as is, read back: reading the
-  // others would only round them through CSS.
-  const owned = new Set([...familyFields(keys), ...fieldsOwning(Object.keys(draft.style))])
+  // Only the families the change wrote read back: the others already hold what their CSS says,
+  // and reading a value no field can hold, such as `var(--x)`, would reset them.
+  const owned = familyFields(keys)
   const fields = pickBy(read, (_value, field) => owned.has(field))
   const result: Partial<SceneNode> = { ...changes, ...fields }
   // The CSS rides along when it changed or gave fields beyond those asked for, so the graph
@@ -72,10 +72,7 @@ export function declarationChanges(
 ): Partial<SceneNode> {
   const parent = node.parentId ? graph.getNode(node.parentId) : undefined
   const { style, ...read } = cssWrite(node, parent, { ...layerCSS(node, parent), ...declarations })
-  const owned = new Set([
-    ...fieldsOwning(Object.keys(declarations)),
-    ...fieldsOwning(Object.keys(node.style))
-  ])
+  const owned = fieldsOwning(Object.keys(declarations))
   const result: Partial<SceneNode> = pickBy(read, (_value, field) => owned.has(field))
   if (style && !isEqual(style, node.style)) result.style = style
   return result

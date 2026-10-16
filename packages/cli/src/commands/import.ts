@@ -3,6 +3,7 @@ import { basename, dirname, extname, resolve } from 'node:path'
 
 import { defineCommand } from 'citty'
 
+import { cssWritesFor } from '@kalka/core/editor'
 import { BUILTIN_IO_FORMATS, IORegistry } from '@kalka/core/io'
 import {
   createHeadlessCSSRuntime,
@@ -69,14 +70,21 @@ async function importHTML(args: ImportArgs) {
   const cssText = await cssTextForArgs(args)
 
   if (tailwind) {
-    const options = { ...args, css: cssText, runtime }
+    const options = {
+      ...args,
+      css: cssText,
+      runtime,
+      keepAuthoredCSS: cssWritesFor().has('import')
+    }
     return {
       document: await tailwindHTMLToDesignDocument(html, tailwind, options),
       graph: await tailwindHTMLToSceneGraph(html, tailwind, options)
     }
   }
 
-  const options = { cssText, runtime, pageName: args.pageName }
+  // The CLI has no editor: it writes CSS as the editor does by default.
+  const keepAuthoredCSS = cssWritesFor().has('import')
+  const options = { cssText, runtime, pageName: args.pageName, keepAuthoredCSS }
   return {
     document: await htmlToDesignDocument(html, options),
     graph: await htmlToSceneGraph(html, options)

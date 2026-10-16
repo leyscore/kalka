@@ -52,6 +52,16 @@ describe('Kalka folder', () => {
     expect(read.getNode(read.rootId)?.cssClasses).toEqual(graph.getNode(graph.rootId)?.cssClasses)
   })
 
+  test('keeps the CSS a layer’s fields cannot hold', async () => {
+    const graph = sampleDocument()
+    const nav = nodeNamed(graph, 'Nav')
+    graph.updateNode(nav.id, { style: { width: '50%', transition: 'opacity 200ms' } })
+    const files = await writeKalkaFolder(graph)
+    const read = readKalkaFolder(asMap(files))
+    expect(nodeNamed(read, 'Nav').style).toEqual({ width: '50%', transition: 'opacity 200ms' })
+    expect(graphDifferences(graph, read)).toEqual([])
+  })
+
   test('lays the folder out as the format says', async () => {
     const files = await writeKalkaFolder(sampleDocument())
     const paths = files.map((file) => file.path)
