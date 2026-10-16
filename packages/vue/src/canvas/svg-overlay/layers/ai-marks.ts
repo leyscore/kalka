@@ -3,7 +3,7 @@ import {
   AI_DONE_COLOR,
   AI_DONE_DURATION_MS,
   AI_PULSE_PERIOD_MS
-} from '@open-pencil/core/constants'
+} from '@kalka/core/constants'
 
 import { highlightRing, type Flash } from '#vue/canvas/svg-overlay/layers/flashes'
 import type { OverlayContext } from '#vue/canvas/svg-overlay/layers/selection'

@@ -2,8 +2,8 @@ import { orderBy } from 'es-toolkit/array'
 import { sumBy } from 'es-toolkit/math'
 import * as v from 'valibot'
 
-import { colorDistance, colorToHex } from '@open-pencil/scene-graph/color'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import { colorDistance, colorToHex } from '@kalka/scene-graph/color'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import { toolNumber } from '#core/tools/input'
 import { defineTool } from '#core/tools/schema'

@@ -1,6 +1,6 @@
-import type { Fill, NodeType, SceneNode, Stroke } from '@open-pencil/scene-graph'
-import { DEFAULT_STROKE_WEIGHT } from '@open-pencil/scene-graph'
-import { copyFills, copyStrokes } from '@open-pencil/scene-graph/copy'
+import type { Fill, NodeType, SceneNode, Stroke } from '@kalka/scene-graph'
+import { DEFAULT_STROKE_WEIGHT } from '@kalka/scene-graph'
+import { copyFills, copyStrokes } from '@kalka/scene-graph/copy'
 
 import {
   BLACK,

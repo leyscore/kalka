@@ -1,14 +1,14 @@
 import { describe, expect, test } from 'bun:test'
 
-import { createEditor } from '@open-pencil/core/editor'
+import { createEditor } from '@kalka/core/editor'
 import {
   applyLintFixes,
   createLinter,
   graphFixTarget,
   safeFixes,
   type LintMessage
-} from '@open-pencil/core/lint'
-import { SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
+} from '@kalka/core/lint'
+import { SceneGraph, type SceneNode } from '@kalka/scene-graph'
 
 import { getNodeOrThrow } from '../helpers/assert'
 

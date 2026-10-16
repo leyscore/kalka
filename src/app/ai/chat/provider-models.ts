@@ -1,7 +1,7 @@
 import * as v from 'valibot'
 
-import { AI_PROVIDERS } from '@open-pencil/core/constants'
-import type { AIProviderID, ModelOption } from '@open-pencil/core/constants'
+import { AI_PROVIDERS } from '@kalka/core/constants'
+import type { AIProviderID, ModelOption } from '@kalka/core/constants'
 
 import { readCacheJSON, writeCacheJSON } from '@/app/cache'
 

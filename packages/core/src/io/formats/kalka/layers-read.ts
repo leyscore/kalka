@@ -10,14 +10,14 @@ import {
   type DesignElement,
   type DesignNode,
   type ImageSourceResolver
-} from '@open-pencil/dom-css/import'
+} from '@kalka/dom-css/import'
 import {
   createDefaultNode,
   type NodeType,
   type SceneGraph,
   type SceneNode,
   type Vector
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { ATTR, LAYER_TYPES, type LayerType } from './constants'
 import type { Residual } from './residual'

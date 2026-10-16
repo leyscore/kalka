@@ -2,17 +2,17 @@ export { constrainToAspectRatio } from '#vue/shared/input/resize/rect'
 export { tryStartResize } from '#vue/shared/input/resize/start'
 import { toRaw } from 'vue'
 
-import type { Editor } from '@open-pencil/core/editor'
-import { computeAllLayouts } from '@open-pencil/core/layout'
-import { calibratePathTextLayout, reflowPathTextGlyphs } from '@open-pencil/core/text'
-import { cloneVectorNetwork } from '@open-pencil/scene-graph'
-import type { SceneNode } from '@open-pencil/scene-graph'
-import { copyDerivedGlyphs, copyGeometryPaths, copyStrokes } from '@open-pencil/scene-graph/copy'
+import type { Editor } from '@kalka/core/editor'
+import { computeAllLayouts } from '@kalka/core/layout'
+import { calibratePathTextLayout, reflowPathTextGlyphs } from '@kalka/core/text'
+import { cloneVectorNetwork } from '@kalka/scene-graph'
+import type { SceneNode } from '@kalka/scene-graph'
+import { copyDerivedGlyphs, copyGeometryPaths, copyStrokes } from '@kalka/scene-graph/copy'
 import {
   computeConstrainedResizeChanges,
   scaledGeometryChanges,
   type ResizeSnapshot
-} from '@open-pencil/scene-graph/resize'
+} from '@kalka/scene-graph/resize'
 
 import { calculateResizeRect } from '#vue/shared/input/resize/rect'
 import { applyResizeSnap } from '#vue/shared/input/resize/snap'

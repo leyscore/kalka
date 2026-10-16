@@ -8,7 +8,7 @@ import {
   readBehaviour,
   SceneGraph,
   withBehaviour
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 /** A Switch set with a State variant property and a Thumb slot. */
 function switchSet() {

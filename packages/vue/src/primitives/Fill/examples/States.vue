@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import type { Fill, Variable } from '@open-pencil/scene-graph'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import type { Fill, Variable } from '@kalka/scene-graph'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import type { BindingProvider, BindingTarget } from '#vue/controls/binding-provider/types'
 import BindableValueRoot from '#vue/primitives/BindableValue/BindableValueRoot.vue'

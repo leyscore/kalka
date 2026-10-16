@@ -1,6 +1,6 @@
-import { renderTree } from '@open-pencil/core/design-jsx'
-import { Text } from '@open-pencil/design-jsx'
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import { renderTree } from '@kalka/core/design-jsx'
+import { Text } from '@kalka/design-jsx'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 interface TypographySample {
   name: string

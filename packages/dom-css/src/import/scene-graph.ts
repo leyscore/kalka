@@ -7,10 +7,10 @@ import {
   type SceneNode,
   type Stroke,
   parseShaderLayer
-} from '@open-pencil/scene-graph'
-import { TRANSPARENT } from '@open-pencil/scene-graph/constants'
-import { parseCSSNumber, parseCSSShadows } from '@open-pencil/scene-graph/css'
-import { computeImageHash } from '@open-pencil/scene-graph/images'
+} from '@kalka/scene-graph'
+import { TRANSPARENT } from '@kalka/scene-graph/constants'
+import { parseCSSNumber, parseCSSShadows } from '@kalka/scene-graph/css'
+import { computeImageHash } from '@kalka/scene-graph/images'
 
 import { DOM_CSS_PLUGIN_ID, IMAGE_SOURCE_URL_KEY } from '../export/tags'
 import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'

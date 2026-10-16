@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, test } from 'bun:test'
 
-import { SkiaRenderer } from '@open-pencil/core/canvas'
-import { BLACK, TRANSPARENT } from '@open-pencil/core/constants'
-import { createEditor } from '@open-pencil/core/editor'
-import { initCanvasKit } from '@open-pencil/core/io'
-import { fontManager } from '@open-pencil/core/text'
+import { SkiaRenderer } from '@kalka/core/canvas'
+import { BLACK, TRANSPARENT } from '@kalka/core/constants'
+import { createEditor } from '@kalka/core/editor'
+import { initCanvasKit } from '@kalka/core/io'
+import { fontManager } from '@kalka/core/text'
 
 import { textNodeToOutlineLayout } from '#core/text/outlines'
 

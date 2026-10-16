@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, setDefaultTimeout, test } from 'bun:test'
 
 import { collectAllNodes } from '#core-tests/helpers/fig/traversal'
 
-import { exportFigFile, initCodec, parseFigFile, SceneGraph } from '@open-pencil/core'
+import { exportFigFile, initCodec, parseFigFile, SceneGraph } from '@kalka/core'
 
 setDefaultTimeout(60_000)
 

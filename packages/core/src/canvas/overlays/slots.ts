@@ -1,7 +1,7 @@
 import type { Canvas } from 'canvaskit-wasm'
 
-import { instanceSlotFrames, slotPropertyId } from '@open-pencil/scene-graph'
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import { instanceSlotFrames, slotPropertyId } from '@kalka/scene-graph'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 import type { SkiaRenderer } from '#core/canvas/renderer'
 import { SLOT_EMPTY_FILL_ALPHA } from '#core/constants'

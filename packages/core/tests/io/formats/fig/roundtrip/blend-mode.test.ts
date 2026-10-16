@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, test } from 'bun:test'
 
-import { exportFigFile, initCodec, parseFigFile, SceneGraph } from '@open-pencil/core'
-import { populateFigPage } from '@open-pencil/core/io/formats/fig'
+import { exportFigFile, initCodec, parseFigFile, SceneGraph } from '@kalka/core'
+import { populateFigPage } from '@kalka/core/io/formats/fig'
 
 describe('roundtrip: layer blend modes', () => {
   beforeAll(async () => {

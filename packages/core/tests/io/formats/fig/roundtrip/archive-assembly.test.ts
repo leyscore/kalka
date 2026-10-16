@@ -1,9 +1,9 @@
 import { expect, test } from 'bun:test'
 
-import { exportFigFile } from '@open-pencil/core/io'
-import { initCodec } from '@open-pencil/core/kiwi'
-import { materializeDocument, materializeFigArchive, parseFigBuffer } from '@open-pencil/fig'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { exportFigFile } from '@kalka/core/io'
+import { initCodec } from '@kalka/core/kiwi'
+import { materializeDocument, materializeFigArchive, parseFigBuffer } from '@kalka/fig'
+import { SceneGraph } from '@kalka/scene-graph'
 
 test('archive-owned assembly matches record-based assembly and isolates returned graphs', async () => {
   await initCodec()

@@ -18,8 +18,8 @@ import {
 } from '@codemirror/view'
 import { useTemplateRef, watch } from 'vue'
 
-import { DESIGN_JSX_ELEMENTS, type DesignJSXElement } from '@open-pencil/design-jsx'
-import { useI18n } from '@open-pencil/vue'
+import { DESIGN_JSX_ELEMENTS, type DesignJSXElement } from '@kalka/design-jsx'
+import { useI18n } from '@kalka/vue'
 
 import type { LayerIssue } from '@/app/code/layers/issues'
 import type { LayerLinkSource } from '@/app/code/layers/links'

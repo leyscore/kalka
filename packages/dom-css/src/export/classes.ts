@@ -5,7 +5,7 @@ import {
   type CSSClass,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import type { DesignDocument, DesignNode, DesignStyleDeclaration } from '../types'
 import { standaloneLayerStyle } from './projection'

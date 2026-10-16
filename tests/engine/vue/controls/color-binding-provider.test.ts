@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { createEditor } from '@open-pencil/core/editor'
-import type { Color, Fill } from '@open-pencil/scene-graph'
+import { createEditor } from '@kalka/core/editor'
+import type { Color, Fill } from '@kalka/scene-graph'
 
 import { createAndBindColorVariable } from '#vue/controls/binding-provider/color'
 import { prepareModeEdit } from '#vue/controls/binding-provider/mode-edit'

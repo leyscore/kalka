@@ -9,7 +9,7 @@ import {
   type VariableCollection,
   type VariableType,
   type VariableValue
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { reconcileVariableLayouts } from '#core/layout/variables'
 

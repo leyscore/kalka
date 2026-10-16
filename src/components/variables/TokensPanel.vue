@@ -3,10 +3,10 @@ import { useElementSize } from '@vueuse/core'
 import { tv } from 'tailwind-variants'
 import { computed, ref, useTemplateRef, watch } from 'vue'
 
-import type { VariableTokenFields } from '@open-pencil/core/editor'
-import type { TokenStylesheetFormat } from '@open-pencil/dom-css/export'
-import type { VariableType, VariableValue } from '@open-pencil/scene-graph'
-import { useI18n, useSceneComputed, useVariables } from '@open-pencil/vue'
+import type { VariableTokenFields } from '@kalka/core/editor'
+import type { TokenStylesheetFormat } from '@kalka/dom-css/export'
+import type { VariableType, VariableValue } from '@kalka/scene-graph'
+import { useI18n, useSceneComputed, useVariables } from '@kalka/vue'
 
 import {
   aliasCandidates,

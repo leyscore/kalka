@@ -1,6 +1,6 @@
 import { defineCommand } from 'citty'
 
-import { BUILTIN_IO_FORMATS, IORegistry } from '@open-pencil/core/io'
+import { BUILTIN_IO_FORMATS, IORegistry } from '@kalka/core/io'
 
 import { bold, fmtList, kv } from '#cli/format'
 

@@ -5,8 +5,8 @@ import {
 } from '#fig/node-change/variable/bindings'
 import { linearVariableExpression } from '#fig/node-change/variable/expression'
 
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-import { setInstanceOverride, type SceneNode } from '@open-pencil/scene-graph'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
+import { setInstanceOverride, type SceneNode } from '@kalka/scene-graph'
 
 import type { InstanceOccurrence } from '../occurrence/types'
 import { uniformScaleOf } from '../types'

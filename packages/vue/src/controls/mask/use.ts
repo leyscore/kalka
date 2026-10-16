@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 
-import type { MaskType } from '@open-pencil/scene-graph'
+import type { MaskType } from '@kalka/scene-graph'
 
 import { useEditor } from '#vue/editor/context'
 import { useSelectionState } from '#vue/editor/selection-state/use'

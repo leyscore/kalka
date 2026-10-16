@@ -1,6 +1,6 @@
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
-import { copyFills } from '@open-pencil/scene-graph/copy'
-import { parseSVGPath } from '@open-pencil/scene-graph/parse-path'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import { copyFills } from '@kalka/scene-graph/copy'
+import { parseSVGPath } from '@kalka/scene-graph/parse-path'
 
 import { makeBooleanSourcePath, makeStrokeOutlinePath, nodePathTransform } from './boolean'
 import type { SkiaRenderer } from './renderer'

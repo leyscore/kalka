@@ -1,15 +1,15 @@
 import { pick } from 'es-toolkit/object'
 import { toUint8Array } from 'js-base64'
 
-import { computeAllLayouts, computeLayout } from '@open-pencil/core/layout'
-import { materializeDocument } from '@open-pencil/fig'
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
+import { computeAllLayouts, computeLayout } from '@kalka/core/layout'
+import { materializeDocument } from '@kalka/fig'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
 import {
   reconcileVariableBindings,
   rescaleNodeTree,
   type SceneNode,
   type SceneGraph
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { expect, test, useEditorSetupWithClear } from '#tests/e2e/fixtures'
 import bindingFixture from '#tests/fixtures/nested-binding-ownership-records.json' with { type: 'json' }

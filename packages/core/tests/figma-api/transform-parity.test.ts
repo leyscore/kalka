@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 
-import { FigmaAPI } from '@open-pencil/core/figma-api'
-import { SceneGraph } from '@open-pencil/scene-graph'
-import type { Rect } from '@open-pencil/scene-graph/primitives'
+import { FigmaAPI } from '@kalka/core/figma-api'
+import { SceneGraph } from '@kalka/scene-graph'
+import type { Rect } from '@kalka/scene-graph/primitives'
 
 // Recorded with the same script in Figma desktop 126: the plugin API turns a node
 // counterclockwise about its top-left corner, and x and y are that corner in the parent.

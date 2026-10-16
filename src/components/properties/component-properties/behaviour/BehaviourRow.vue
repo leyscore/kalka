@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed, reactive, watch } from 'vue'
 
-import { isNumberRange, type BehaviourKind } from '@open-pencil/scene-graph'
-import { useI18n } from '@open-pencil/vue'
+import { isNumberRange, type BehaviourKind } from '@kalka/scene-graph'
+import { useI18n } from '@kalka/vue'
 import type {
   BehaviourBooleanControl,
   BehaviourNumberControl,
   BehaviourPartControl,
   BehaviourValueControl
-} from '@open-pencil/vue'
+} from '@kalka/vue'
 
 import NumberField from '@/components/inputs/NumberField.vue'
 import PanelFieldGroup from '@/components/ui/panel/PanelFieldGroup.vue'

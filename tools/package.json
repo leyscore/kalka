@@ -1,5 +1,5 @@
 {
-  "name": "@open-pencil/tools",
+  "name": "@kalka/tools",
   "private": true,
   "type": "module",
   "devDependencies": {

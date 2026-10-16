@@ -1,6 +1,6 @@
 import type { Paragraph, TypefaceFontProvider } from 'canvaskit-wasm'
 
-import type { SceneNode } from '@open-pencil/scene-graph'
+import type { SceneNode } from '@kalka/scene-graph'
 
 import { fontManager } from '#core/text/fonts'
 

@@ -1,10 +1,10 @@
 import { unzipSync, zipSync, type Unzipped, type Zippable } from 'fflate'
 
-import type { FigPageManifestEntry } from '@open-pencil/kiwi/fig'
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-import { buildFigKiwi, parseFigKiwiChunks } from '@open-pencil/kiwi/fig/container'
-import { decodeFigKiwiCanvas, parseFigKiwiContainer } from '@open-pencil/kiwi/fig/parse'
-import type { HeaderFields } from '@open-pencil/kiwi/schema-runtime'
+import type { FigPageManifestEntry } from '@kalka/kiwi/fig'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
+import { buildFigKiwi, parseFigKiwiChunks } from '@kalka/kiwi/fig/container'
+import { decodeFigKiwiCanvas, parseFigKiwiContainer } from '@kalka/kiwi/fig/parse'
+import type { HeaderFields } from '@kalka/kiwi/schema-runtime'
 
 import { hasPNGSignature } from './thumbnail'
 

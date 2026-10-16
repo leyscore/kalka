@@ -4,8 +4,8 @@ import {
   type InstanceOverrideState,
   type SceneNode,
   type UndoEntry
-} from '@open-pencil/scene-graph'
-import { copyDerivedGlyphs, copyGeometryPaths } from '@open-pencil/scene-graph/copy'
+} from '@kalka/scene-graph'
+import { copyDerivedGlyphs, copyGeometryPaths } from '@kalka/scene-graph/copy'
 
 import { weightToStyle } from '#core/text/fonts'
 import { hasGlyphOutlines } from '#core/text/opentype'

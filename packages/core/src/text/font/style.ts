@@ -1,5 +1,5 @@
-import { normalizeFontFamily } from '@open-pencil/scene-graph'
-import type { FontFamilyStyle } from '@open-pencil/scene-graph'
+import { normalizeFontFamily } from '@kalka/scene-graph'
+import type { FontFamilyStyle } from '@kalka/scene-graph'
 
 export {
   FONT_WEIGHT_NAMES,
@@ -7,7 +7,7 @@ export {
   styleToVariant,
   styleToWeight,
   weightToStyle
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { parseFontStyle } from '#core/text/face'
 
@@ -45,4 +45,4 @@ export function chooseLocalFontMatch<T extends FontFamilyStyle>(
   return undefined
 }
 
-export { weightToFigmaStyle } from '@open-pencil/fig/node-change'
+export { weightToFigmaStyle } from '@kalka/fig/node-change'

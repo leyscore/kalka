@@ -1,12 +1,9 @@
 <script setup lang="ts" generic="K extends PropertyListKey">
 import type { VNode } from 'vue'
 
-import type { SceneNode } from '@open-pencil/scene-graph'
-import {
-  PropertyListRoot as HeadlessPropertyListRoot,
-  useEditorPropertyList
-} from '@open-pencil/vue'
-import type { PropertyListKey, PropertyListRootSlotProps } from '@open-pencil/vue'
+import type { SceneNode } from '@kalka/scene-graph'
+import { PropertyListRoot as HeadlessPropertyListRoot, useEditorPropertyList } from '@kalka/vue'
+import type { PropertyListKey, PropertyListRootSlotProps } from '@kalka/vue'
 
 const { propKey, label } = defineProps<{
   propKey: K

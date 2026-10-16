@@ -1,4 +1,4 @@
-import type { ModelOption } from '@open-pencil/core/constants'
+import type { ModelOption } from '@kalka/core/constants'
 
 export interface ModelPickerLabels {
   recommendedModels: string

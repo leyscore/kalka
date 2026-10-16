@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 
-import { createEditor, executeAtomicTool } from '@open-pencil/core/editor'
-import { FigmaAPI } from '@open-pencil/core/figma-api'
-import { ALL_TOOLS, type ToolDef } from '@open-pencil/core/tools'
-import { SceneGraph } from '@open-pencil/scene-graph'
-import { UndoManager } from '@open-pencil/scene-graph/undo'
+import { createEditor, executeAtomicTool } from '@kalka/core/editor'
+import { FigmaAPI } from '@kalka/core/figma-api'
+import { ALL_TOOLS, type ToolDef } from '@kalka/core/tools'
+import { SceneGraph } from '@kalka/scene-graph'
+import { UndoManager } from '@kalka/scene-graph/undo'
 
 function setup() {
   const graph = new SceneGraph()

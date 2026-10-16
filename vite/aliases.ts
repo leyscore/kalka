@@ -25,62 +25,62 @@ export function createOpenPencilAliases(rootDir: string) {
     { find: '#core', replacement: resolve(rootDir, 'packages/core/src') },
     { find: '#dom-css', replacement: resolve(rootDir, 'packages/dom-css/src') },
     {
-      find: /^@open-pencil\/dom-css\/browser$/,
+      find: /^@kalka\/dom-css\/browser$/,
       replacement: resolve(rootDir, 'packages/dom-css/src/browser.ts')
     },
     {
-      find: /^@open-pencil\/dom-css\/export$/,
+      find: /^@kalka\/dom-css\/export$/,
       replacement: resolve(rootDir, 'packages/dom-css/src/export/index.ts')
     },
     {
-      find: /^@open-pencil\/dom-css\/import$/,
+      find: /^@kalka\/dom-css\/import$/,
       replacement: resolve(rootDir, 'packages/dom-css/src/import/layers.ts')
     },
     {
-      find: /^@open-pencil\/dom-css\/jsx-runtime$/,
+      find: /^@kalka\/dom-css\/jsx-runtime$/,
       replacement: resolve(rootDir, 'packages/dom-css/src/import/jsx/runtime.ts')
     },
     {
-      find: /^@open-pencil\/dom-css\/jsx-dev-runtime$/,
+      find: /^@kalka\/dom-css\/jsx-dev-runtime$/,
       replacement: resolve(rootDir, 'packages/dom-css/src/import/jsx/dev-runtime.ts')
     },
     {
-      find: /^@open-pencil\/dom-css$/,
+      find: /^@kalka\/dom-css$/,
       replacement: resolve(rootDir, 'packages/dom-css/src/index.ts')
     },
     {
-      find: /^@open-pencil\/scene-graph$/,
+      find: /^@kalka\/scene-graph$/,
       replacement: resolve(rootDir, 'packages/scene-graph/src/index.ts')
     },
-    { find: '@open-pencil/scene-graph', replacement: resolve(rootDir, 'packages/scene-graph/src') },
+    { find: '@kalka/scene-graph', replacement: resolve(rootDir, 'packages/scene-graph/src') },
     { find: '#emit', replacement: resolve(rootDir, 'packages/emit/src') },
     {
-      find: /^@open-pencil\/emit$/,
+      find: /^@kalka\/emit$/,
       replacement: resolve(rootDir, 'packages/emit/src/index.ts')
     },
     { find: '#design-jsx', replacement: resolve(rootDir, 'packages/design-jsx/src') },
     {
-      find: /^@open-pencil\/design-jsx$/,
+      find: /^@kalka\/design-jsx$/,
       replacement: resolve(rootDir, 'packages/design-jsx/src/index.ts')
     },
-    { find: /^@open-pencil\/pen$/, replacement: resolve(rootDir, 'packages/pen/src/index.ts') },
-    { find: '@open-pencil/pen', replacement: resolve(rootDir, 'packages/pen/src') },
-    { find: /^@open-pencil\/kiwi$/, replacement: resolve(rootDir, 'packages/kiwi/src/index.ts') },
-    { find: '@open-pencil/kiwi', replacement: resolve(rootDir, 'packages/kiwi/src') },
-    { find: /^@open-pencil\/fig$/, replacement: resolve(rootDir, 'packages/fig/src/index.ts') },
-    { find: '@open-pencil/fig', replacement: resolve(rootDir, 'packages/fig/src') },
+    { find: /^@kalka\/pen$/, replacement: resolve(rootDir, 'packages/pen/src/index.ts') },
+    { find: '@kalka/pen', replacement: resolve(rootDir, 'packages/pen/src') },
+    { find: /^@kalka\/kiwi$/, replacement: resolve(rootDir, 'packages/kiwi/src/index.ts') },
+    { find: '@kalka/kiwi', replacement: resolve(rootDir, 'packages/kiwi/src') },
+    { find: /^@kalka\/fig$/, replacement: resolve(rootDir, 'packages/fig/src/index.ts') },
+    { find: '@kalka/fig', replacement: resolve(rootDir, 'packages/fig/src') },
     {
-      find: /^@open-pencil\/mcp\/discovery$/,
+      find: /^@kalka\/mcp\/discovery$/,
       replacement: resolve(rootDir, 'packages/mcp/src/transport/discovery.ts')
     },
     {
-      find: /^@open-pencil\/mcp\/transport$/,
+      find: /^@kalka\/mcp\/transport$/,
       replacement: resolve(rootDir, 'packages/mcp/src/transport/paths.ts')
     },
-    { find: /^@open-pencil\/vue$/, replacement: resolve(rootDir, 'packages/vue/src/index.ts') },
-    { find: '@open-pencil/vue', replacement: resolve(rootDir, 'packages/vue/src') },
-    { find: /^@open-pencil\/core$/, replacement: resolve(rootDir, 'packages/core/src/index.ts') },
-    { find: '@open-pencil/core', replacement: resolve(rootDir, 'packages/core/src') },
+    { find: /^@kalka\/vue$/, replacement: resolve(rootDir, 'packages/vue/src/index.ts') },
+    { find: '@kalka/vue', replacement: resolve(rootDir, 'packages/vue/src') },
+    { find: /^@kalka\/core$/, replacement: resolve(rootDir, 'packages/core/src/index.ts') },
+    { find: '@kalka/core', replacement: resolve(rootDir, 'packages/core/src') },
     {
       find: 'opentype.js',
       replacement: resolve(rootDir, 'node_modules/opentype.js/dist/opentype.mjs')

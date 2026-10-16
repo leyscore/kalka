@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@kalka/vue'
 
 import { startWithHTML } from '@/app/home/start'
 import AppButton from '@/components/ui/button/AppButton.vue'

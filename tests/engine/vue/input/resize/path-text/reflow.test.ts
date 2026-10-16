@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'bun:test'
 
-import type { Editor } from '@open-pencil/core/editor'
-import { parseFigBuffer } from '@open-pencil/fig'
-import { SceneGraph } from '@open-pencil/scene-graph'
-import type { Fill, SceneNode, Stroke, VectorNetwork } from '@open-pencil/scene-graph'
-import { copyGeometryPaths, copyStrokes } from '@open-pencil/scene-graph/copy'
-import type { ResizeSnapshot } from '@open-pencil/scene-graph/resize'
+import type { Editor } from '@kalka/core/editor'
+import { parseFigBuffer } from '@kalka/fig'
+import { SceneGraph } from '@kalka/scene-graph'
+import type { Fill, SceneNode, Stroke, VectorNetwork } from '@kalka/scene-graph'
+import { copyGeometryPaths, copyStrokes } from '@kalka/scene-graph/copy'
+import type { ResizeSnapshot } from '@kalka/scene-graph/resize'
 
 import { exportFigFile } from '#core/io/formats/fig/export'
 import { getTextPathData, layoutPathTextFromAdvances } from '#core/text/path'

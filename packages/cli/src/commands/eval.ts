@@ -1,7 +1,7 @@
 import { defineCommand } from 'citty'
 
-import { FigmaAPI } from '@open-pencil/core/figma-api'
-import { compileScript } from '@open-pencil/core/tools'
+import { FigmaAPI } from '@kalka/core/figma-api'
+import { compileScript } from '@kalka/core/tools'
 
 import { isAppMode, requireFile, rpc } from '#cli/app/client'
 import { appTargetOptions, appTargetRPCArgs } from '#cli/app/target'

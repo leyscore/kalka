@@ -10,14 +10,14 @@ import {
   SELECTION_COLOR,
   SLOT_COLOR,
   SLOT_EMPTY_FILL_ALPHA
-} from '@open-pencil/core/constants'
-import { createSceneGeometry } from '@open-pencil/core/geometry'
+} from '@kalka/core/constants'
+import { createSceneGeometry } from '@kalka/core/geometry'
 import {
   instanceSlotFrames,
   slotPropertyId,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import {
   nodeShape,

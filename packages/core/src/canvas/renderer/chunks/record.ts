@@ -1,8 +1,8 @@
 import type { Canvas, SkPicture } from 'canvaskit-wasm'
 
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
-import { getWorldMatrix } from '@open-pencil/scene-graph/coordinate'
-import Matrix from '@open-pencil/scene-graph/matrix'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import { getWorldMatrix } from '@kalka/scene-graph/coordinate'
+import Matrix from '@kalka/scene-graph/matrix'
 
 import type { SkiaRenderer } from '#core/canvas/renderer'
 import { recordWorldPicture, withWorldViewport } from '#core/canvas/renderer/picture'

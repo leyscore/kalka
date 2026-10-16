@@ -5,8 +5,8 @@ import {
   slotPropertyId,
   type ComponentPropertyDefinition,
   type SceneNode
-} from '@open-pencil/scene-graph'
-import type { GUID } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/scene-graph'
+import type { GUID } from '@kalka/scene-graph/primitives'
 
 import type { KiwiNodeChange, SceneNodeToKiwiContext } from './context'
 

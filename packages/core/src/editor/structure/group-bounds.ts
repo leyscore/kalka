@@ -1,4 +1,4 @@
-import { fitEnclosingGroups, redoGroupFit, undoGroupFit } from '@open-pencil/scene-graph'
+import { fitEnclosingGroups, redoGroupFit, undoGroupFit } from '@kalka/scene-graph'
 
 import { groupFitOptions } from '#core/canvas/boolean'
 import type { EditorContext } from '#core/editor/types'

@@ -1,13 +1,13 @@
 import { describe, expect, test } from 'bun:test'
 
-import { exportFigFile, initCodec, parseFigFile } from '@open-pencil/core'
-import { createEditor } from '@open-pencil/core/editor'
+import { exportFigFile, initCodec, parseFigFile } from '@kalka/core'
+import { createEditor } from '@kalka/core/editor'
 import {
   emptyBehaviour,
   guessInteractionStates,
   missingBindings,
   readBehaviour
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 describe('.fig round trip of behaviours', () => {
   test('bindings follow the GUIDs their component properties get', async () => {

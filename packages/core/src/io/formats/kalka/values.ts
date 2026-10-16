@@ -1,7 +1,7 @@
 import { fromUint8Array, isValid, toUint8Array } from 'js-base64'
 
-import { colorToCSS, colorToHex } from '@open-pencil/scene-graph/color'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import { colorToCSS, colorToHex } from '@kalka/scene-graph/color'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 /** A value JSON can hold. */
 export type JSONValue =

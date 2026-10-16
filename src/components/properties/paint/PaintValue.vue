@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import type { Color } from '@open-pencil/scene-graph/primitives'
-import { inputValue, useColorModel } from '@open-pencil/vue'
+import type { Color } from '@kalka/scene-graph/primitives'
+import { inputValue, useColorModel } from '@kalka/vue'
 
 import { BindingPill } from '@/components/ui/binding'
 

@@ -1,6 +1,6 @@
 import { Schema, type Mark, type Node as ProseMirrorNode } from 'prosemirror-model'
 
-import type { CharacterStyleOverride, StyleRun } from '@open-pencil/scene-graph'
+import type { CharacterStyleOverride, StyleRun } from '@kalka/scene-graph'
 
 import { characterStyleToCSS, styleText } from '#vue/canvas/dom-scene/text/css'
 

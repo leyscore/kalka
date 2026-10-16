@@ -1,7 +1,7 @@
-import { canvasLabelForeground } from '@open-pencil/core/canvas'
-import type { Editor } from '@open-pencil/core/editor'
-import type { Color, SceneNode } from '@open-pencil/scene-graph'
-import type { CanvasLabelKind } from '@open-pencil/vue'
+import { canvasLabelForeground } from '@kalka/core/canvas'
+import type { Editor } from '@kalka/core/editor'
+import type { Color, SceneNode } from '@kalka/scene-graph'
+import type { CanvasLabelKind } from '@kalka/vue'
 
 import { canvasBackgroundColor } from '@/app/editor/canvas/background'
 

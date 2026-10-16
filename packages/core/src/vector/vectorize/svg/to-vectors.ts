@@ -7,12 +7,12 @@
  */
 import svgpath from 'svgpath'
 
-import type { Fill, Stroke, VectorNetwork, WindingRule } from '@open-pencil/scene-graph'
-import { mergeVectorNetworks } from '@open-pencil/scene-graph'
-import { parseColor } from '@open-pencil/scene-graph/color'
-import { computeBounds } from '@open-pencil/scene-graph/geometry'
-import { parseSVGPath } from '@open-pencil/scene-graph/parse-path'
-import type { Rect, Size } from '@open-pencil/scene-graph/primitives'
+import type { Fill, Stroke, VectorNetwork, WindingRule } from '@kalka/scene-graph'
+import { mergeVectorNetworks } from '@kalka/scene-graph'
+import { parseColor } from '@kalka/scene-graph/color'
+import { computeBounds } from '@kalka/scene-graph/geometry'
+import { parseSVGPath } from '@kalka/scene-graph/parse-path'
+import type { Rect, Size } from '@kalka/scene-graph/primitives'
 
 import { createPathStroke } from '#core/icons/path-style'
 import { extractPaths } from '#core/icons/svg'

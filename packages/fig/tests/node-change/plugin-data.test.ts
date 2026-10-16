@@ -7,12 +7,12 @@ import {
   extractTextPathBox
 } from '#fig/node-change/plugin-data'
 
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
 import {
   clampExportScale,
   OPEN_PENCIL_PLUGIN_DATA,
   OPEN_PENCIL_PLUGIN_ID
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 function withPluginValue(key: string, value: string, extra: NodeChange = {}): NodeChange {
   return { ...extra, pluginData: [{ pluginID: OPEN_PENCIL_PLUGIN_ID, key, value }] }

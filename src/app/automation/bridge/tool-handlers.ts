@@ -1,13 +1,13 @@
-import { renderTree } from '@open-pencil/core/design-jsx'
-import type { FigmaAPI } from '@open-pencil/core/figma-api'
+import { renderTree } from '@kalka/core/design-jsx'
+import type { FigmaAPI } from '@kalka/core/figma-api'
 import {
   ALL_TOOLS,
   registerComponentCatalog,
   isAtomicTool,
   isToolExposed,
   toolChangesDocument
-} from '@open-pencil/core/tools'
-import type { JSONObject } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/core/tools'
+import type { JSONObject } from '@kalka/scene-graph/primitives'
 
 import {
   agentFinished,

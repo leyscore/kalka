@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 
-import { exportFigFile, parseFigFile } from '@open-pencil/core/io'
-import { initCodec } from '@open-pencil/core/kiwi'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { exportFigFile, parseFigFile } from '@kalka/core/io'
+import { initCodec } from '@kalka/core/kiwi'
+import { SceneGraph } from '@kalka/scene-graph'
 
 describe('instance descendant fill override round trip', () => {
   test('a recolored nested instance child keeps its color after a save/reload cycle', async () => {
@@ -26,7 +26,7 @@ describe('instance descendant fill override round trip', () => {
     graph.updateNode(instancePath.id, {
       fills: [{ type: 'SOLID', color: { r: 0, g: 0, b: 1, a: 1 }, opacity: 1, visible: true }]
     })
-    const { recordInstanceOverride } = await import('@open-pencil/scene-graph')
+    const { recordInstanceOverride } = await import('@kalka/scene-graph')
     recordInstanceOverride(graph, instancePath.id, ['fills'])
 
     const exported = await exportFigFile(graph)

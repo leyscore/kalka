@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { pathTextElement } from '#core/io/formats/html/path-text'
 import { geometryBlobToSVGPath } from '#core/io/formats/svg/paths'

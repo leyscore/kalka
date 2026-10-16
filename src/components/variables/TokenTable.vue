@@ -3,8 +3,8 @@ import { ListboxContent, ListboxGroup, ListboxGroupLabel, ListboxItem, ListboxRo
 import { tv } from 'tailwind-variants'
 import { computed, ref, useTemplateRef, type ComponentPublicInstance } from 'vue'
 
-import type { VariableCollection, VariableValue } from '@open-pencil/scene-graph'
-import { useFlatReorderDrag, useI18n } from '@open-pencil/vue'
+import type { VariableCollection, VariableValue } from '@kalka/scene-graph'
+import { useFlatReorderDrag, useI18n } from '@kalka/vue'
 
 import {
   parseTokenValueText,

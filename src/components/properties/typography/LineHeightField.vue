@@ -10,8 +10,8 @@ import {
 } from 'reka-ui'
 import { computed } from 'vue'
 
-import type { SceneNode } from '@open-pencil/scene-graph'
-import { useEditor, useI18n, useRetainedPopup } from '@open-pencil/vue'
+import type { SceneNode } from '@kalka/scene-graph'
+import { useEditor, useI18n, useRetainedPopup } from '@kalka/vue'
 
 import VariableNumberField from '@/components/properties/VariableNumberField.vue'
 import { useSelectUI } from '@/components/ui/select/select'

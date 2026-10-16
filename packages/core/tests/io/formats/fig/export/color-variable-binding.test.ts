@@ -3,10 +3,10 @@ import { beforeAll, describe, expect, test } from 'bun:test'
 import { expectDefined } from '#core-tests/helpers/assert'
 import { inflateSync, unzipSync } from 'fflate'
 
-import { exportFigFile, initCodec, SceneGraph } from '@open-pencil/core'
-import { parseFigKiwiContainer } from '@open-pencil/kiwi/fig/parse'
-import { ByteBuffer, compileSchema, decodeBinarySchema } from '@open-pencil/kiwi/schema-runtime'
-import type { Color, GUID } from '@open-pencil/scene-graph/primitives'
+import { exportFigFile, initCodec, SceneGraph } from '@kalka/core'
+import { parseFigKiwiContainer } from '@kalka/kiwi/fig/parse'
+import { ByteBuffer, compileSchema, decodeBinarySchema } from '@kalka/kiwi/schema-runtime'
+import type { Color, GUID } from '@kalka/scene-graph/primitives'
 
 interface DecodedPaint {
   color?: Color

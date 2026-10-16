@@ -2,7 +2,7 @@ import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-import { inspectTarball } from '@open-pencil/package-artifacts-tools/tarball'
+import { inspectTarball } from '@kalka/package-artifacts-tools/tarball'
 
 import { measurePhase } from '../timing'
 import { installPackedPackages } from './install'

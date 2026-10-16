@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import type { Fill, Stroke } from '@open-pencil/scene-graph'
-import { applyStrokePaint } from '@open-pencil/vue'
+import type { Fill, Stroke } from '@kalka/scene-graph'
+import { applyStrokePaint } from '@kalka/vue'
 
 const GRADIENT: Fill = {
   type: 'GRADIENT_LINEAR',

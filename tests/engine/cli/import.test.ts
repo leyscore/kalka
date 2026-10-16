@@ -3,8 +3,8 @@ import { mkdtemp } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-import { parseFigFile } from '@open-pencil/core/io'
-import type { SceneNode } from '@open-pencil/scene-graph'
+import { parseFigFile } from '@kalka/core/io'
+import type { SceneNode } from '@kalka/scene-graph'
 
 import { runOpenPencilCLI } from '#tests/helpers/cli'
 import { uint8ArrayToArrayBuffer } from '#tests/helpers/fig/fixtures'

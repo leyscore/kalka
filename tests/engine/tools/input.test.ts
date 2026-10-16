@@ -4,7 +4,7 @@ import { describe, expect, test } from 'bun:test'
 import { toStandardJsonSchema as toStandardJSONSchema } from '@valibot/to-json-schema'
 import * as v from 'valibot'
 
-import { toolNumber } from '@open-pencil/core/tools'
+import { toolNumber } from '@kalka/core/tools'
 
 import { getTool, setupToolTest } from '#tests/helpers/tools'
 

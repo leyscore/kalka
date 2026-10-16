@@ -1,9 +1,4 @@
-import {
-  type Color,
-  type SceneGraph,
-  type SceneNode,
-  type Variable
-} from '@open-pencil/scene-graph'
+import { type Color, type SceneGraph, type SceneNode, type Variable } from '@kalka/scene-graph'
 
 import { collectionVariables, variableCSSNames, variableNamespace } from './names'
 import { modeAttribute } from './stylesheet'

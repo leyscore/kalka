@@ -3,9 +3,9 @@ import { describe, expect, test } from 'bun:test'
 import { toolModelMessageSchema } from 'ai'
 import * as v from 'valibot'
 
-import { FigmaAPI } from '@open-pencil/core/figma-api'
-import { defineTool, toolsToAI, type ToolLogEntry } from '@open-pencil/core/tools'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { FigmaAPI } from '@kalka/core/figma-api'
+import { defineTool, toolsToAI, type ToolLogEntry } from '@kalka/core/tools'
+import { SceneGraph } from '@kalka/scene-graph'
 
 type ToolFactory = Parameters<typeof toolsToAI>[2]['tool']
 

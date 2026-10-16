@@ -1,4 +1,4 @@
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 export const COMPONENT_LIBRARY_SCHEMA_VERSION = 1 as const
 

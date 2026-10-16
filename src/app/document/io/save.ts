@@ -1,5 +1,5 @@
-import type { EditorState } from '@open-pencil/core/editor'
-import { filesMessages } from '@open-pencil/vue'
+import type { EditorState } from '@kalka/core/editor'
+import { filesMessages } from '@kalka/vue'
 
 import { downloadBlob } from '@/app/document/io/browser'
 import { documentNameFromFigPath } from '@/app/document/io/names'

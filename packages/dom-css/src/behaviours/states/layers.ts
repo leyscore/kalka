@@ -16,7 +16,7 @@ import {
   slotPropertyId,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import type { StateElement } from './types'
 

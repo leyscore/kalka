@@ -5,9 +5,9 @@ import {
   PEN_PATH_STROKE_WIDTH,
   PEN_VERTEX_RADIUS,
   SELECTION_COLOR
-} from '@open-pencil/core/constants'
-import { vectorHandleId, vectorHandleParts } from '@open-pencil/core/vector'
-import type { Color, Vector } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/core/constants'
+import { vectorHandleId, vectorHandleParts } from '@kalka/core/vector'
+import type { Color, Vector } from '@kalka/scene-graph/primitives'
 
 import type { OverlayContext } from '#vue/canvas/svg-overlay/layers/selection'
 import { css, type OverlayShape, type Paint } from '#vue/canvas/svg-overlay/shapes'

@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 
-import { behaviourSpecSchema } from '@open-pencil/scene-graph'
+import { behaviourSpecSchema } from '@kalka/scene-graph'
 
 import { OpenPencilAPI } from '#core/openpencil-api'
 import { defineTool } from '#core/tools/schema'

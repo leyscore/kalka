@@ -9,8 +9,8 @@ import {
 } from 'reka-ui'
 import { computed } from 'vue'
 
-import type { PlacedIssueMarker } from '@open-pencil/core/canvas'
-import { useDesignCheckMessages } from '@open-pencil/vue'
+import type { PlacedIssueMarker } from '@kalka/core/canvas'
+import { useDesignCheckMessages } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import { issueDetail, ruleTitle } from '@/app/editor/design-check/format'

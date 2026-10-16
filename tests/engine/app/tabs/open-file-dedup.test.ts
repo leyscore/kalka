@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'bun:test'
 
-import * as figModule from '@open-pencil/core/io/formats/fig'
-import * as layoutModule from '@open-pencil/core/layout'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import * as figModule from '@kalka/core/io/formats/fig'
+import * as layoutModule from '@kalka/core/layout'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { resolveBrowserFileURL } from '@/app/document/io/browser'
 import type { DocumentSourceIdentity } from '@/app/document/io/types'

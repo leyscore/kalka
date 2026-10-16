@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-import { resolveWorkspaceRoot } from '@open-pencil/package-artifacts-tools'
+import { resolveWorkspaceRoot } from '@kalka/package-artifacts-tools'
 
 const temporaryDirectories: string[] = []
 const repositoryRoot = await resolveWorkspaceRoot(import.meta.dir)

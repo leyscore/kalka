@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { createEditor } from '@open-pencil/core/editor'
-import { getSharedStyles, SceneGraph, type Variable } from '@open-pencil/scene-graph'
+import { createEditor } from '@kalka/core/editor'
+import { getSharedStyles, SceneGraph, type Variable } from '@kalka/scene-graph'
 
 import {
   defaultTokenImportOptions,

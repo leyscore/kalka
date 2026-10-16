@@ -9,7 +9,7 @@ import type {
   LibrarySummary,
   PublishLibraryInput,
   StoredLibraryLatestManifest
-} from '@open-pencil/core/library'
+} from '@kalka/core/library'
 import {
   createLibraryRevision,
   deserializeLibraryRevision,
@@ -19,7 +19,7 @@ import {
   serializeLibraryRevision,
   StoredLibraryLatestManifestSchema,
   validateLibraryRevision
-} from '@open-pencil/core/library'
+} from '@kalka/core/library'
 
 const catalogPublicationQueues = new Map<string, Promise<void>>()
 

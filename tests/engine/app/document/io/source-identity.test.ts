@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from 'bun:test'
 
-import { createDefaultEditorState } from '@open-pencil/core/editor'
+import { createDefaultEditorState } from '@kalka/core/editor'
 
 import { createSaveActions } from '@/app/document/io/save'
 import { createDocumentSourceState } from '@/app/document/io/source-state'

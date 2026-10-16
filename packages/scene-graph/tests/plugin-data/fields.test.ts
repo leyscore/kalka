@@ -9,13 +9,13 @@ import {
   SceneGraph,
   withPluginData,
   type PluginDataEntry
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 import {
   clearNodeFillOkHCL,
   getNodeOkHCLPayloads,
   setNodeFillOkHCL,
   setNodeStrokeOkHCL
-} from '@open-pencil/scene-graph/color'
+} from '@kalka/scene-graph/color'
 
 const { exportSettings, okhcl, textDirection } = OPEN_PENCIL_PLUGIN_DATA
 const OTHER_PLUGIN: PluginDataEntry = { pluginId: 'other-plugin', key: 'okhcl', value: 'theirs' }

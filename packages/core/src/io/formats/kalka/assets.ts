@@ -1,4 +1,4 @@
-import { computeImageHash } from '@open-pencil/scene-graph/images'
+import { computeImageHash } from '@kalka/scene-graph/images'
 
 import { IMAGES_DIR } from './constants'
 

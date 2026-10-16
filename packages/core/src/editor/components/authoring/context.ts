@@ -1,8 +1,4 @@
-import type {
-  ComponentPropertyReferenceField,
-  SceneGraph,
-  SceneNode
-} from '@open-pencil/scene-graph'
+import type { ComponentPropertyReferenceField, SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 import { getNodeEditCapability } from '#core/editor/capabilities'
 

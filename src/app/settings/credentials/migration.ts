@@ -1,4 +1,4 @@
-import { AI_PROVIDERS, type AIProviderID } from '@open-pencil/core/constants'
+import { AI_PROVIDERS, type AIProviderID } from '@kalka/core/constants'
 
 import { appCredentialStore } from '@/app/settings/credentials/app'
 import { credentialKey, credentialRef } from '@/app/settings/credentials/reference'

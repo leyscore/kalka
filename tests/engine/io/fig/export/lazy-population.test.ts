@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 
-import { exportFigFile, initCodec, parseFigFile } from '@open-pencil/core'
-import { cloneSceneGraphForFigExport } from '@open-pencil/core/kiwi/fig/parse/transfer'
-import { SceneGraph, setInstanceOverride } from '@open-pencil/scene-graph'
+import { exportFigFile, initCodec, parseFigFile } from '@kalka/core'
+import { cloneSceneGraphForFigExport } from '@kalka/core/kiwi/fig/parse/transfer'
+import { SceneGraph, setInstanceOverride } from '@kalka/scene-graph'
 
 function lazyExportGraph() {
   const graph = new SceneGraph()

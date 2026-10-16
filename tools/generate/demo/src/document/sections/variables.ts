@@ -1,4 +1,4 @@
-import type { Color, SceneGraph } from '@open-pencil/scene-graph'
+import type { Color, SceneGraph } from '@kalka/scene-graph'
 
 import { DEMO_COLORS } from '../colors'
 

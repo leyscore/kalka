@@ -1,7 +1,7 @@
 import type { Canvas, Paint } from 'canvaskit-wasm'
 
-import type { SceneNode, SceneGraph, Fill } from '@open-pencil/scene-graph'
-import type { Color, Rect, Vector } from '@open-pencil/scene-graph/primitives'
+import type { SceneNode, SceneGraph, Fill } from '@kalka/scene-graph'
+import type { Color, Rect, Vector } from '@kalka/scene-graph/primitives'
 
 import { figmaBlendModeToSkia } from './blend'
 import { makeDiamondGradient } from './gradients/diamond'

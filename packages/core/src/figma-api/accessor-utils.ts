@@ -2,8 +2,8 @@ import {
   fitEnclosingGroups,
   FITTED_CONTAINER_TYPES,
   recordInstanceOverride
-} from '@open-pencil/scene-graph'
-import type { GroupFitOptions, SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
+import type { GroupFitOptions, SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 import { assertNodeEditable } from '#core/editor/capabilities'
 import { textAutoResizeChanges } from '#core/editor/text/auto-resize'

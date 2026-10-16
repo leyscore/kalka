@@ -16,8 +16,8 @@
     "rootDir": "src",
     "paths": {
       "#core/*": ["./src/*"],
-      "@open-pencil/core": ["./src/index.ts"],
-      "@open-pencil/core/*": ["./src/*"]
+      "@kalka/core": ["./src/index.ts"],
+      "@kalka/core/*": ["./src/*"]
     }
   },
   "include": ["src"]

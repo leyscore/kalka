@@ -7,7 +7,7 @@ import {
   tokenNumberToCSS,
   variableCSSNames,
   variableUnit
-} from '@open-pencil/dom-css/export'
+} from '@kalka/dom-css/export'
 import {
   tokenNumberFromUnit,
   tokenNumberInUnit,
@@ -16,9 +16,9 @@ import {
   type Variable,
   type VariableCollection,
   type VariableValue
-} from '@open-pencil/scene-graph'
-import { colorToHex } from '@open-pencil/scene-graph/color'
-import { fuzzyFilter } from '@open-pencil/vue'
+} from '@kalka/scene-graph'
+import { colorToHex } from '@kalka/scene-graph/color'
+import { fuzzyFilter } from '@kalka/vue'
 
 /** One mode's value as the stylesheet writes it, with what the panel previews beside it. */
 export interface TokenModeValue {

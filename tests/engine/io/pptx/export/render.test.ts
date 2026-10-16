@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { renderNodesToPPTX, type PPTXExportStats } from '@open-pencil/core'
-import { BUILTIN_IO_FORMATS } from '@open-pencil/core/io'
+import { renderNodesToPPTX, type PPTXExportStats } from '@kalka/core'
+import { BUILTIN_IO_FORMATS } from '@kalka/core/io'
 
 import { expectDefined } from '#tests/helpers/assert'
 

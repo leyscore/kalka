@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test'
 
-import { computeAbsoluteBounds, computeBounds, type Vector } from '@open-pencil/scene-graph'
+import { computeAbsoluteBounds, computeBounds, type Vector } from '@kalka/scene-graph'
 
 describe('computeBounds', () => {
   test('empty iterable returns zero rect', () => {

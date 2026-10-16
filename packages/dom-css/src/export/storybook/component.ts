@@ -1,7 +1,7 @@
 import dedent from 'dedent'
 import { compact } from 'es-toolkit/array'
 
-import { es } from '@open-pencil/emit'
+import { es } from '@kalka/emit'
 
 import type { ComponentModel, GeneratedComponent, GeneratedKind } from '../components/model'
 import { claimName, identifierName } from './names'

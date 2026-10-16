@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import type { Fill } from '@open-pencil/scene-graph'
-import { colorToHexRaw } from '@open-pencil/scene-graph/color'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import type { Fill } from '@kalka/scene-graph'
+import { colorToHexRaw } from '@kalka/scene-graph/color'
+import type { Color } from '@kalka/scene-graph/primitives'
 import {
   BindableValueRoot,
   useColorBindingProvider,
   useFillControls,
   useI18n,
   useOkHCL
-} from '@open-pencil/vue'
-import type { BindableValueActions } from '@open-pencil/vue'
+} from '@kalka/vue'
+import type { BindableValueActions } from '@kalka/vue'
 
 import FillPicker from '@/components/fill-picker/FillPicker.vue'
 import VariableBindingPicker from '@/components/properties/binding/VariableBindingPicker.vue'

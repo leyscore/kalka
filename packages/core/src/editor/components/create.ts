@@ -1,4 +1,4 @@
-import type { SceneNode } from '@open-pencil/scene-graph'
+import type { SceneNode } from '@kalka/scene-graph'
 
 import { newLayerDefaults } from '#core/editor/shapes/defaults'
 

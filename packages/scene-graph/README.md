@@ -1,4 +1,4 @@
-# @open-pencil/scene-graph
+# @kalka/scene-graph
 
 Shared OpenPencil design document model.
 

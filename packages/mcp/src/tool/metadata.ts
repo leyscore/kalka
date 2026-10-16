@@ -1,9 +1,9 @@
 import * as v from 'valibot'
 
-import type { ToolCapability } from '@open-pencil/core/tools'
+import type { ToolCapability } from '@kalka/core/tools'
 
 import type { MCPToolScope } from '#mcp/tool/scope'
-export type { ToolCapability } from '@open-pencil/core/tools'
+export type { ToolCapability } from '@kalka/core/tools'
 
 const TOOL_EFFECTS = ['read', 'write'] as const
 const TOOL_AVAILABILITIES = ['default', 'eval', 'filesystem'] as const

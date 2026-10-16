@@ -1,4 +1,4 @@
-import type { SceneNode } from '@open-pencil/scene-graph'
+import type { SceneNode } from '@kalka/scene-graph'
 
 /** Paragraph construction is typed against this list, which also drives cache invalidation. */
 export const PARAGRAPH_INPUT_KEYS = [

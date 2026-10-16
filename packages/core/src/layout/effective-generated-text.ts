@@ -1,4 +1,4 @@
-import type { SceneGraph, SceneNode, Size } from '@open-pencil/scene-graph'
+import type { SceneGraph, SceneNode, Size } from '@kalka/scene-graph'
 
 import { getTextMeasurer } from './text-measurement'
 

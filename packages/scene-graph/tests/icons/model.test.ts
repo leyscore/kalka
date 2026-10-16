@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { iconNames, SceneGraph, withIcon } from '@open-pencil/scene-graph'
+import { iconNames, SceneGraph, withIcon } from '@kalka/scene-graph'
 
 function icon(graph: SceneGraph, parentId: string, name: string) {
   const frame = graph.createNode('FRAME', parentId, { name: `Icon / ${name}` })

@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 
 import { createTypographySection } from '#demo/document/typography/section'
 
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { SceneGraph } from '@kalka/scene-graph'
 
 describe('demo document', () => {
   test('showcases OpenType features and native text decorations', async () => {

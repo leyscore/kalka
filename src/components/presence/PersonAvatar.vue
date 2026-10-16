@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { colorToCSS } from '@open-pencil/scene-graph/color'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import { colorToCSS } from '@kalka/scene-graph/color'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import { initials } from '@/app/shell/ui'
 import { avatar } from '@/theme/collaboration/avatar'

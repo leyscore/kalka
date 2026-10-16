@@ -8,9 +8,9 @@ import {
   type ShapedText
 } from '#fig/node-change/index'
 
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-import { SceneGraph } from '@open-pencil/scene-graph'
-import type { SceneNode } from '@open-pencil/scene-graph'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
+import { SceneGraph } from '@kalka/scene-graph'
+import type { SceneNode } from '@kalka/scene-graph'
 
 const SQUARE = [
   { type: 'M', x: 0, y: 0 },

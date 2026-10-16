@@ -2,7 +2,7 @@ import type { UIMessage } from 'ai'
 import * as v from 'valibot'
 import { shallowReactive, shallowRef, type ShallowRef } from 'vue'
 
-import type { UndoEntry } from '@open-pencil/scene-graph/undo'
+import type { UndoEntry } from '@kalka/scene-graph/undo'
 
 import type { EditorStore } from '@/app/editor/active-store'
 

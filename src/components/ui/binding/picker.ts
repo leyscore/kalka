@@ -1,5 +1,5 @@
-import type { Color } from '@open-pencil/scene-graph/primitives'
-import type { BindingState } from '@open-pencil/vue'
+import type { Color } from '@kalka/scene-graph/primitives'
+import type { BindingState } from '@kalka/vue'
 
 import type { BindingFieldUI } from './ui'
 

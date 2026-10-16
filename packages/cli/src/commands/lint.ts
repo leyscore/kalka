@@ -3,8 +3,8 @@ import { resolve } from 'node:path'
 
 import { defineCommand } from 'citty'
 
-import { BUILTIN_IO_FORMATS, IORegistry } from '@open-pencil/core/io'
-import { computeAllLayouts } from '@open-pencil/core/layout'
+import { BUILTIN_IO_FORMATS, IORegistry } from '@kalka/core/io'
+import { computeAllLayouts } from '@kalka/core/layout'
 import {
   allRules,
   applyLintFixes,
@@ -13,7 +13,7 @@ import {
   presets,
   safeFixes,
   type LintMessage
-} from '@open-pencil/core/lint'
+} from '@kalka/core/lint'
 
 import { bold, dim, fail, fmtList, ok, printError } from '#cli/format'
 import { loadDocument, populateWholeDocument } from '#cli/headless'

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 
-import { useAutomationMessages, useCommonMessages } from '@open-pencil/vue'
+import { useAutomationMessages, useCommonMessages } from '@kalka/vue'
 
 import {
   canConnectMCPClients,

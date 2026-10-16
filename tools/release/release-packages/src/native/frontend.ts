@@ -1,7 +1,7 @@
 import { writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
-import { readPackageManifest } from '@open-pencil/package-artifacts-tools'
+import { readPackageManifest } from '@kalka/package-artifacts-tools'
 
 import { releaseCommands } from './commands.ts'
 import { createReleaseContext } from './context.ts'

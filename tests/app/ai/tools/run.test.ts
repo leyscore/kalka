@@ -5,7 +5,7 @@ import { simulateReadableStream } from 'ai'
 import { MockLanguageModelV4 } from 'ai/test'
 import { toRaw } from 'vue'
 
-import { FigmaAPI } from '@open-pencil/core/figma-api'
+import { FigmaAPI } from '@kalka/core/figma-api'
 
 import { createToolLoopTransport } from '@/app/ai/chat/transports'
 import { endRun, markRunPreview, runPageId, startRun } from '@/app/ai/tools'

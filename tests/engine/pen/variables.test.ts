@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { parsePenFile, type PenDocument, type PenNode } from '@open-pencil/pen'
+import { parsePenFile, type PenDocument, type PenNode } from '@kalka/pen'
 
 import { expectDefined } from '#tests/helpers/assert'
 

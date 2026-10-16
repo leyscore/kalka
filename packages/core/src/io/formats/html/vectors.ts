@@ -1,6 +1,6 @@
-import type { DesignElement, DesignNode, VectorElementRenderer } from '@open-pencil/dom-css/export'
-import { isIconModified, readIcon, readIconTint } from '@open-pencil/scene-graph'
-import { colorToHex } from '@open-pencil/scene-graph/color'
+import type { DesignElement, DesignNode, VectorElementRenderer } from '@kalka/dom-css/export'
+import { isIconModified, readIcon, readIconTint } from '@kalka/scene-graph'
+import { colorToHex } from '@kalka/scene-graph/color'
 
 import { iconColor } from '#core/icons/render'
 import { renderNodeSVGElement } from '#core/io/formats/svg/export'

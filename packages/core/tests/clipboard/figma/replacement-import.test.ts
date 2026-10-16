@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 
 import { CapturedFigRecords, readFixture } from '#core-tests/helpers/fig/fixtures'
 
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { prepareClipboardImport } from '#core/clipboard/fig-import'
 

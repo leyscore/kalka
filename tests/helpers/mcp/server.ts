@@ -9,9 +9,9 @@ import {
   FigmaAPI,
   computeAllLayouts,
   executeRPCCommand
-} from '@open-pencil/core'
-import type { ToolDescriptor } from '@open-pencil/mcp/tools'
-import { randomHex } from '@open-pencil/scene-graph/random'
+} from '@kalka/core'
+import type { ToolDescriptor } from '@kalka/mcp/tools'
+import { randomHex } from '@kalka/scene-graph/random'
 
 const ToolDescriptorShape = v.looseObject({ name: v.string(), enabled: v.boolean() })
 

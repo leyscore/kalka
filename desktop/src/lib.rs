@@ -77,7 +77,7 @@ fn set_recent_files(app: tauri::AppHandle, paths: Vec<String>) -> Result<(), Str
     install_app_menu(&app, &paths).map_err(|error| error.to_string())
 }
 
-/// Name of the MCP entry point installed by `@open-pencil/mcp`.
+/// Name of the MCP entry point installed by `@kalka/mcp`.
 const MCP_EXECUTABLE: &str = "openpencil-mcp-http";
 /// Bound on the directories reported back to the settings diagnostics.
 const MAX_REPORTED_SEARCH_DIRS: usize = 12;

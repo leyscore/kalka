@@ -9,7 +9,7 @@ description: Read and update resize constraints for eligible frame children.
 undo-aware actions.
 
 ```ts
-import { useConstraints } from '@open-pencil/vue'
+import { useConstraints } from '@kalka/vue'
 
 const constraints = useConstraints()
 constraints.setAxis('horizontal', 'STRETCH')

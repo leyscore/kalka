@@ -13,9 +13,9 @@ import {
   type VariableCollection,
   type VariableScope,
   type VariableValue
-} from '@open-pencil/scene-graph'
-import { copyEffects } from '@open-pencil/scene-graph/copy'
-import { randomHex } from '@open-pencil/scene-graph/random'
+} from '@kalka/scene-graph'
+import { copyEffects } from '@kalka/scene-graph/copy'
+import { randomHex } from '@kalka/scene-graph/random'
 
 import { reconcileVariableLayouts } from '#core/layout/variables'
 

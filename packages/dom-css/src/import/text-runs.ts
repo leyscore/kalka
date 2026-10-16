@@ -1,5 +1,5 @@
-import type { CharacterStyleOverride, StyleRun } from '@open-pencil/scene-graph'
-import { parseCSSColor, parseCSSNumber } from '@open-pencil/scene-graph/css'
+import type { CharacterStyleOverride, StyleRun } from '@kalka/scene-graph'
+import { parseCSSColor, parseCSSNumber } from '@kalka/scene-graph/css'
 
 import type { DesignNode, DesignStyleDeclaration } from '../types'
 import { paintColor } from './paint'

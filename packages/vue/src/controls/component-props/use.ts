@@ -1,7 +1,7 @@
 import { computed, watch } from 'vue'
 
-import { exposedInstances, findComponentPropertyTargets } from '@open-pencil/scene-graph'
-import type { ComponentPropertyDefinition, SceneNode } from '@open-pencil/scene-graph'
+import { exposedInstances, findComponentPropertyTargets } from '@kalka/scene-graph'
+import type { ComponentPropertyDefinition, SceneNode } from '@kalka/scene-graph'
 
 import {
   compatibleComponentPropertyDefinitions,

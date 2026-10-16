@@ -3,7 +3,7 @@ import { createServer, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { join } from 'node:path'
 
-import { removeDiscoveryFile, writeDiscoveryFile } from '@open-pencil/mcp/discovery'
+import { removeDiscoveryFile, writeDiscoveryFile } from '@kalka/mcp/discovery'
 
 import { rpc } from '#cli/app/client'
 

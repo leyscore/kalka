@@ -3,7 +3,7 @@ import {
   INSTANCE_SYNC_FIELDS,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import type { MaterializedInstance } from './materialize-instance'
 

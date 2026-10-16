@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 
-import { SceneGraph, setInstanceOverride } from '@open-pencil/scene-graph'
+import { SceneGraph, setInstanceOverride } from '@kalka/scene-graph'
 
 import { expectDefined } from '../helpers/assert'
 

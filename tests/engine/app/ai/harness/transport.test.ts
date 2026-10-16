@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 
-import type { HarnessSidecarMessage } from '@open-pencil/harness'
+import type { HarnessSidecarMessage } from '@kalka/harness'
 
 import { HarnessChatTransport } from '@/app/ai/harness/transport'
 

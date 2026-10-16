@@ -1,6 +1,6 @@
-import type { PageSnapshot } from '@open-pencil/core/editor'
-import type { StepBudget } from '@open-pencil/core/tools'
-import type { UndoEntry } from '@open-pencil/scene-graph/undo'
+import type { PageSnapshot } from '@kalka/core/editor'
+import type { StepBudget } from '@kalka/core/tools'
+import type { UndoEntry } from '@kalka/scene-graph/undo'
 
 import { DEFAULT_AGENT_STEPS, resolveAgentStepLimit } from '@/app/ai/chat/step-limit'
 import type { PreviewFocus } from '@/app/ai/preview/canvas'

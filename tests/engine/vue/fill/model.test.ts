@@ -2,14 +2,14 @@ import { describe, expect, test } from 'bun:test'
 
 import { ref } from 'vue'
 
-import type { Fill } from '@open-pencil/scene-graph'
+import type { Fill } from '@kalka/scene-graph'
 import {
   fillCategory,
   fillIsTransparent,
   fillSwatchBackground,
   useFill,
   useGradientStops
-} from '@open-pencil/vue'
+} from '@kalka/vue'
 
 const solid: Fill = {
   type: 'SOLID',

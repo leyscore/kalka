@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'bun:test'
 
-import { SceneGraph } from '@open-pencil/core'
-import { FigmaAPI } from '@open-pencil/core/figma-api'
-import { nodeProxyToJSON } from '@open-pencil/core/figma-api/serialization'
-import { setInstanceOverride } from '@open-pencil/scene-graph'
+import { SceneGraph } from '@kalka/core'
+import { FigmaAPI } from '@kalka/core/figma-api'
+import { nodeProxyToJSON } from '@kalka/core/figma-api/serialization'
+import { setInstanceOverride } from '@kalka/scene-graph'
 
 import { getNodeOrThrow } from '#tests/helpers/assert'
 

@@ -1,7 +1,7 @@
 import * as v from 'valibot'
 
-import { validateVectorNetwork } from '@open-pencil/scene-graph'
-import type { VectorNetwork } from '@open-pencil/scene-graph'
+import { validateVectorNetwork } from '@kalka/scene-graph'
+import type { VectorNetwork } from '@kalka/scene-graph'
 
 const finiteNumber = v.pipe(v.number(), v.finite())
 const zeroVector = () => ({ x: 0, y: 0 })

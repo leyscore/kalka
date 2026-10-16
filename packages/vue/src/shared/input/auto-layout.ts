@@ -1,7 +1,7 @@
-import type { Editor } from '@open-pencil/core/editor'
-import type { SceneNode } from '@open-pencil/scene-graph'
-import type { Vector } from '@open-pencil/scene-graph/primitives'
-import { resolveNodeLayoutDirection } from '@open-pencil/scene-graph/text-direction'
+import type { Editor } from '@kalka/core/editor'
+import type { SceneNode } from '@kalka/scene-graph'
+import type { Vector } from '@kalka/scene-graph/primitives'
+import { resolveNodeLayoutDirection } from '@kalka/scene-graph/text-direction'
 
 import type { DragMove } from '#vue/shared/input/types'
 

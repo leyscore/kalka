@@ -9,14 +9,14 @@ import {
   serializeLibraryRevision,
   StoredLibraryLatestManifestSchema,
   validateLibraryRevision
-} from '@open-pencil/core/library'
+} from '@kalka/core/library'
 import type {
   ComponentLibraryRevision,
   LibraryCatalog,
   LibrarySummary,
   PublishLibraryInput,
   StoredLibraryLatestManifest
-} from '@open-pencil/core/library'
+} from '@kalka/core/library'
 
 import type { LibraryObjectStore } from '@/app/integrations/storage'
 

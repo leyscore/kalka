@@ -6,8 +6,8 @@ import { dirname, join } from 'node:path'
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
 import * as v from 'valibot'
 
-import { toolNumber } from '@open-pencil/core/tools'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { toolNumber } from '@kalka/core/tools'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { startServer } from '#mcp/server'
 import { parseDiscoveryInfo } from '#mcp/transport/discovery'

@@ -1,11 +1,6 @@
-import type { EditorState } from '@open-pencil/core/editor'
-import type {
-  VectorNetwork,
-  VectorRegion,
-  VectorSegment,
-  VectorVertex
-} from '@open-pencil/scene-graph'
-import type { Rect } from '@open-pencil/scene-graph/primitives'
+import type { EditorState } from '@kalka/core/editor'
+import type { VectorNetwork, VectorRegion, VectorSegment, VectorVertex } from '@kalka/scene-graph'
+import type { Rect } from '@kalka/scene-graph/primitives'
 
 export type NodeEditState = {
   nodeId: string

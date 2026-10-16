@@ -1,4 +1,4 @@
-import type { NodeType, SceneNode } from '@open-pencil/scene-graph'
+import type { NodeType, SceneNode } from '@kalka/scene-graph'
 
 import { prepareSlotEdits } from './components/slots'
 import { adoptCoveredLayers } from './shapes/adopt'

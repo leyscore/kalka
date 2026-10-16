@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'bun:test'
 
-import { materializeDocument } from '@open-pencil/fig'
-import type { DerivedSymbolOverride } from '@open-pencil/fig/instance-overrides'
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-import { getNodeLocalMatrix } from '@open-pencil/scene-graph'
+import { materializeDocument } from '@kalka/fig'
+import type { DerivedSymbolOverride } from '@kalka/fig/instance-overrides'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
+import { getNodeLocalMatrix } from '@kalka/scene-graph'
 
 const guid = (localID: number) => ({ sessionID: 1, localID })
 function derivedChild(

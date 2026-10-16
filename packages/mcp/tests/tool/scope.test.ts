@@ -5,7 +5,7 @@ import {
   narrowestScope,
   parseToolScope,
   type ToolDescriptor
-} from '@open-pencil/mcp/tools'
+} from '@kalka/mcp/tools'
 
 function tool(name: string): ToolDescriptor {
   return {

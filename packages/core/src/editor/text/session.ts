@@ -1,8 +1,8 @@
 import type { Paragraph } from 'canvaskit-wasm'
 import { isEqual } from 'es-toolkit/predicate'
 
-import type { SceneNode, StyleRun } from '@open-pencil/scene-graph'
-import { copyDerivedGlyphs, copyGeometryPaths, copyStyleRuns } from '@open-pencil/scene-graph/copy'
+import type { SceneNode, StyleRun } from '@kalka/scene-graph'
+import { copyDerivedGlyphs, copyGeometryPaths, copyStyleRuns } from '@kalka/scene-graph/copy'
 
 export type TextEditSizeSnapshot = Partial<Pick<SceneNode, 'width' | 'height'>>
 

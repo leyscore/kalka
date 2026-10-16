@@ -1,6 +1,6 @@
-import type { Editor, Tool } from '@open-pencil/core/editor'
-import { transformVectorNetwork } from '@open-pencil/scene-graph'
-import { getWorldMatrix } from '@open-pencil/scene-graph/coordinate'
+import type { Editor, Tool } from '@kalka/core/editor'
+import { transformVectorNetwork } from '@kalka/scene-graph'
+import { getWorldMatrix } from '@kalka/scene-graph/coordinate'
 
 import {
   createResumedPenState,

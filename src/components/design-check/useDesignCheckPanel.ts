@@ -1,7 +1,7 @@
 import { computed, nextTick, onBeforeUnmount, reactive, ref, watch, type Ref } from 'vue'
 
-import type { SceneGraph } from '@open-pencil/scene-graph'
-import { useDesignCheckMessages } from '@open-pencil/vue'
+import type { SceneGraph } from '@kalka/scene-graph'
+import { useDesignCheckMessages } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import {

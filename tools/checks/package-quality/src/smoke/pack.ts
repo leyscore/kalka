@@ -4,15 +4,8 @@ import { isAbsolute, join } from 'node:path'
 
 import { mapAsync } from 'es-toolkit'
 
-import {
-  parseNpmPack,
-  runCommand,
-  type WorkspacePackage
-} from '@open-pencil/package-artifacts-tools'
-import {
-  inspectTarball,
-  type TarballInspection
-} from '@open-pencil/package-artifacts-tools/tarball'
+import { parseNpmPack, runCommand, type WorkspacePackage } from '@kalka/package-artifacts-tools'
+import { inspectTarball, type TarballInspection } from '@kalka/package-artifacts-tools/tarball'
 
 export interface PackedPackageSet {
   inspections: TarballInspection[]

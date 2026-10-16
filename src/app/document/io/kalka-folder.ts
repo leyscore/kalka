@@ -1,4 +1,4 @@
-import { zipKalkaFiles, type KalkaFile } from '@open-pencil/core/io/formats/kalka'
+import { zipKalkaFiles, type KalkaFile } from '@kalka/core/io/formats/kalka'
 
 /** Folders a Kalka document owns and rewrites on every save; files in them that are no longer saved go. */
 const OWNED_FOLDERS = ['pages', 'assets/images']

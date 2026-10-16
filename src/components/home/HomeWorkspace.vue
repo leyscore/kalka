@@ -2,7 +2,7 @@
 import { useLocalStorage } from '@vueuse/core'
 import { computed, ref, watch } from 'vue'
 
-import { useDocumentWorkspace, useI18n, useViewportKind } from '@open-pencil/vue'
+import { useDocumentWorkspace, useI18n, useViewportKind } from '@kalka/vue'
 
 import { useCollabIdentity } from '@/app/collab/identity'
 import {

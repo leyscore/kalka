@@ -3,11 +3,11 @@ import { expect, test } from 'bun:test'
 import { expectDefined } from '#core-tests/helpers/assert'
 import { CapturedFigRecords, readFixture } from '#core-tests/helpers/fig/fixtures'
 
-import { buildFigmaClipboardHTML } from '@open-pencil/core/clipboard'
-import { createEditor } from '@open-pencil/core/editor'
-import { initCodec } from '@open-pencil/core/kiwi'
-import { materializeFigFragment } from '@open-pencil/fig'
-import { CommittedGraphEventError } from '@open-pencil/scene-graph'
+import { buildFigmaClipboardHTML } from '@kalka/core/clipboard'
+import { createEditor } from '@kalka/core/editor'
+import { initCodec } from '@kalka/core/kiwi'
+import { materializeFigFragment } from '@kalka/fig'
+import { CommittedGraphEventError } from '@kalka/scene-graph'
 
 const fixture = readFixture('nested-binding-ownership-records.json', CapturedFigRecords)
 

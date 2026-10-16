@@ -6,7 +6,7 @@ import {
   normalizeVectorNetwork,
   type VectorNetwork,
   type VectorSegment
-} from '@open-pencil/core'
+} from '@kalka/core'
 
 describe('normalizeVectorNetwork', () => {
   test('passes through segments that already have tangents', () => {

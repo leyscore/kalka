@@ -2,11 +2,11 @@ import { expect, test } from 'bun:test'
 
 import { expectDefined } from '#core-tests/helpers/assert'
 
-import { exportFigFile, FigmaAPI, initCodec, parseFigFile, SceneGraph } from '@open-pencil/core'
-import { parseFigBuffer } from '@open-pencil/fig'
-import type { SymbolData } from '@open-pencil/fig/instance-overrides'
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-import { guidToString } from '@open-pencil/kiwi/fig/guid'
+import { exportFigFile, FigmaAPI, initCodec, parseFigFile, SceneGraph } from '@kalka/core'
+import { parseFigBuffer } from '@kalka/fig'
+import type { SymbolData } from '@kalka/fig/instance-overrides'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
+import { guidToString } from '@kalka/kiwi/fig/guid'
 
 /** The Kiwi codec types only `symbolID`; the rest of the symbol payload is read through here. */
 const symbolDataOf = (record: NodeChange): SymbolData | undefined =>

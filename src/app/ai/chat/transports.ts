@@ -12,8 +12,8 @@ import type {
 import type { ComputedRef, Ref } from 'vue'
 import { ref } from 'vue'
 
-import { ACP_AGENTS } from '@open-pencil/core/constants'
-import type { ACPAgentID, AIProviderID } from '@open-pencil/core/constants'
+import { ACP_AGENTS } from '@kalka/core/constants'
+import type { ACPAgentID, AIProviderID } from '@kalka/core/constants'
 
 import { AgentSetupError, assertAgentReady } from '@/app/ai/agents/readiness'
 import { classifyAIChatError, type AIChatFailure } from '@/app/ai/chat/failure'

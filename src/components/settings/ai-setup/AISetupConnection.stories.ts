@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import { expect, within } from 'storybook/test'
 
-import { ACP_AGENTS, type ACPAgentID } from '@open-pencil/core/constants'
+import { ACP_AGENTS, type ACPAgentID } from '@kalka/core/constants'
 
 import type { DetectedAgent } from '@/app/ai/agents/discovery'
 import type { AgentSetupState, PiSetupState } from '@/app/ai/agents/setup'
@@ -38,7 +38,7 @@ function agentSetup(overrides: Partial<AgentSetupState>): AgentSetupState {
     bridge: false,
     bridgeOutdated: false,
     bridgeBundled: false,
-    bridgeCommand: 'npm i -g @open-pencil/mcp@0.15.1',
+    bridgeCommand: 'npm i -g @kalka/mcp@0.15.1',
     npm: true,
     installingAgent: false,
     installingBridge: false,
@@ -54,10 +54,10 @@ function piSetup(overrides: Partial<PiSetupState>): PiSetupState {
     scanning: false,
     companion: false,
     companionOutdated: false,
-    companionCommand: 'npm i -g @open-pencil/harness@0.15.1',
+    companionCommand: 'npm i -g @kalka/harness@0.15.1',
     bridge: false,
     bridgeOutdated: false,
-    bridgeCommand: 'npm i -g @open-pencil/mcp@0.15.1',
+    bridgeCommand: 'npm i -g @kalka/mcp@0.15.1',
     npm: true,
     installingCompanion: false,
     installingBridge: false,
@@ -185,7 +185,7 @@ export const CodingAgentNeedsNpm: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.getByText('npm i -g @agentclientprotocol/claude-agent-acp')).toBeVisible()
     await expect(canvas.queryByRole('button', { name: 'Install adapter' })).toBeNull()
-    await expect(canvas.getByText(/npm i -g @open-pencil\/mcp@/)).toBeVisible()
+    await expect(canvas.getByText(/npm i -g @kalka\/mcp@/)).toBeVisible()
   }
 }
 export const PiNeedsCompanion: Story = {
@@ -217,7 +217,7 @@ export const PiNeedsNpm: Story = {
   args: { providerID: 'harness:pi', recommended: false, piSetup: piSetup({ npm: false }) },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByText(/npm i -g @open-pencil\/harness@/)).toBeVisible()
+    await expect(canvas.getByText(/npm i -g @kalka\/harness@/)).toBeVisible()
   }
 }
 export const PiOutdatedMCPFromBun: Story = {
@@ -228,7 +228,7 @@ export const PiOutdatedMCPFromBun: Story = {
       companion: true,
       bridge: true,
       bridgeOutdated: true,
-      bridgeCommand: 'bun add -g @open-pencil/mcp@0.15.1',
+      bridgeCommand: 'bun add -g @kalka/mcp@0.15.1',
       defaultModel: 'openai-codex/gpt-5.6',
       error: 'canvas-install'
     })
@@ -237,6 +237,6 @@ export const PiOutdatedMCPFromBun: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.getByText(/Kalka MCP server · update needed/)).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Update MCP server' })).toBeVisible()
-    await expect(canvas.getByText('bun add -g @open-pencil/mcp@0.15.1')).toBeVisible()
+    await expect(canvas.getByText('bun add -g @kalka/mcp@0.15.1')).toBeVisible()
   }
 }

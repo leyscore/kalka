@@ -1,11 +1,6 @@
-import type {
-  DerivedTextGlyph,
-  GeometryPath,
-  SceneNode,
-  TextPathData
-} from '@open-pencil/scene-graph'
-import { transformGeometryPaths } from '@open-pencil/scene-graph/copy'
-import { geometryBlobBounds } from '@open-pencil/scene-graph/geometry'
+import type { DerivedTextGlyph, GeometryPath, SceneNode, TextPathData } from '@kalka/scene-graph'
+import { transformGeometryPaths } from '@kalka/scene-graph/copy'
+import { geometryBlobBounds } from '@kalka/scene-graph/geometry'
 
 /**
  * Shift geometry command blobs in node space. Used when we grow the layout box

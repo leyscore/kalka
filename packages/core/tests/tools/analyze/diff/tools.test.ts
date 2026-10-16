@@ -2,9 +2,9 @@ import { describe, expect, test } from 'bun:test'
 
 import { expectDefined, getNodeOrThrow } from '#core-tests/helpers/assert'
 
-import { FigmaAPI } from '@open-pencil/core/figma-api'
-import { ALL_TOOLS, diffDocuments } from '@open-pencil/core/tools'
-import { SceneGraph, type Color } from '@open-pencil/scene-graph'
+import { FigmaAPI } from '@kalka/core/figma-api'
+import { ALL_TOOLS, diffDocuments } from '@kalka/core/tools'
+import { SceneGraph, type Color } from '@kalka/scene-graph'
 
 type DiffResult = { diff?: string | null; message?: string; error?: string }
 type ApplyResult = {

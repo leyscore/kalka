@@ -6,8 +6,8 @@ import {
   type ControlRole,
   type DesignElement,
   type DesignNode
-} from '@open-pencil/dom-css/export'
-import { layerPath, type SceneGraph } from '@open-pencil/scene-graph'
+} from '@kalka/dom-css/export'
+import { layerPath, type SceneGraph } from '@kalka/scene-graph'
 
 import { wrapRole } from './controls'
 import type { IslandState } from './state'

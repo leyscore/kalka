@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import type { LayoutDirection } from '@open-pencil/scene-graph'
-import { useI18n, useLayoutControlsContext } from '@open-pencil/vue'
+import type { LayoutDirection } from '@kalka/scene-graph'
+import { useI18n, useLayoutControlsContext } from '@kalka/vue'
 
 import AppSelect from '@/components/ui/select/AppSelect.vue'
 

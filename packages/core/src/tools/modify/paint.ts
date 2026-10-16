@@ -1,8 +1,8 @@
 import { isValid, toUint8Array } from 'js-base64'
 import * as v from 'valibot'
 
-import { parseColor } from '@open-pencil/scene-graph/color'
-import type { Matrix } from '@open-pencil/scene-graph/primitives'
+import { parseColor } from '@kalka/scene-graph/color'
+import type { Matrix } from '@kalka/scene-graph/primitives'
 
 import { BLACK } from '#core/constants'
 import { toolNumber, nodeIdInput } from '#core/tools/input'

@@ -6,7 +6,7 @@ import {
   type LayoutSizing,
   type LayoutSizingAxis,
   type SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import {
   graph,

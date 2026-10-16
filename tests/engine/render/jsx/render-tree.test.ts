@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 
-import { renderTree, renderJSX } from '@open-pencil/core'
+import { renderTree, renderJSX } from '@kalka/core'
 import {
   Frame,
   Text,
@@ -20,7 +20,7 @@ import {
   layerBlur,
   linearGradient,
   solid
-} from '@open-pencil/design-jsx'
+} from '@kalka/design-jsx'
 
 import { expectDefined, getNodeOrThrow, childIdAt } from '#tests/helpers/assert'
 import { addTestColorVariable, makeSceneGraph } from '#tests/helpers/scene'

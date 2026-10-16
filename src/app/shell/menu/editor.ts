@@ -1,5 +1,5 @@
-import { useEditorCommands } from '@open-pencil/vue'
-import type { EditorCommandId } from '@open-pencil/vue'
+import { useEditorCommands } from '@kalka/vue'
+import type { EditorCommandId } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import { clearRecentFiles, forgetRecentFile, recentLocalFileAt } from '@/app/recent-files'

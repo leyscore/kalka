@@ -2,8 +2,8 @@ import { describe, expect, test } from 'bun:test'
 
 import { ref } from 'vue'
 
-import type { Editor } from '@open-pencil/core/editor'
-import type { Variable, VariableCollection } from '@open-pencil/scene-graph'
+import type { Editor } from '@kalka/core/editor'
+import type { Variable, VariableCollection } from '@kalka/scene-graph'
 
 import { createVariableCollectionActions, createVariableValueActions } from '#vue/variables/helpers'
 

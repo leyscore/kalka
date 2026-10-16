@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { createEditor } from '@open-pencil/core/editor'
-import { computeSnap, createDefaultNode } from '@open-pencil/scene-graph'
+import { createEditor } from '@kalka/core/editor'
+import { computeSnap, createDefaultNode } from '@kalka/scene-graph'
 
 import { computePixelGridSnap, resolveObjectPixelSnap } from '#vue/shared/input/snap'
 

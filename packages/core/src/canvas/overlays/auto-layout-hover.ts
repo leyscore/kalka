@@ -1,7 +1,7 @@
 import type { Canvas } from 'canvaskit-wasm'
 
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import { strokeLayoutChildren } from '#core/canvas/overlays/layout-outlines'
 import type { RenderOverlays, SkiaRenderer } from '#core/canvas/renderer'

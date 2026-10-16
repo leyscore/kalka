@@ -4,7 +4,7 @@ import type {
   HarnessSessionConfiguration,
   HarnessSidecarMessage,
   HarnessTurnEvent
-} from '@open-pencil/harness'
+} from '@kalka/harness'
 
 import { spawnHarnessProcess, type HarnessProcess } from './process'
 

@@ -3,7 +3,7 @@ import { describe, expect, test } from 'bun:test'
 import { sceneGraphToDesignDocument, sceneNodeToDesignDocument } from '#dom-css/export/index'
 import { designDocumentToSceneGraph } from '#dom-css/import/scene-graph'
 
-import { createShaderLayer, SceneGraph } from '@open-pencil/scene-graph'
+import { createShaderLayer, SceneGraph } from '@kalka/scene-graph'
 
 describe('shader layers in HTML', () => {
   test('export carries the layer and a gradient stand-in, and import brings the layer back', () => {

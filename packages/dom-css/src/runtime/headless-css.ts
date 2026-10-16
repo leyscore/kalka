@@ -5,8 +5,8 @@ import {
   type CSSStyleRuleLike
 } from '@acemir/cssom'
 
-import { tryParseColor } from '@open-pencil/scene-graph/color'
-import { parseCSSNumber, splitCSSValue } from '@open-pencil/scene-graph/css'
+import { tryParseColor } from '@kalka/scene-graph/color'
+import { parseCSSNumber, splitCSSValue } from '@kalka/scene-graph/css'
 
 import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
 

@@ -1,5 +1,5 @@
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-import { SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
+import { SceneGraph, type SceneNode } from '@kalka/scene-graph'
 
 import {
   reconcileLiveComponentEdits,

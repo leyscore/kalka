@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 
-import { figmaNodesBounds } from '@open-pencil/core'
-import type { NodeChange } from '@open-pencil/core'
+import { figmaNodesBounds } from '@kalka/core'
+import type { NodeChange } from '@kalka/core'
 
 describe('figmaNodesBounds', () => {
   it('computes bounds of top-level visual nodes', () => {

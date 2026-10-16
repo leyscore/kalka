@@ -11,7 +11,7 @@ import {
   compressFigDataSync,
   initCodec,
   SceneGraph
-} from '@open-pencil/core'
+} from '@kalka/core'
 
 import { coreSourcePath, testPath } from '#tests/helpers/paths'
 import { heavy } from '#tests/helpers/test-utils'

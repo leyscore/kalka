@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { tv } from 'tailwind-variants'
 
-import type { Fill } from '@open-pencil/scene-graph'
-import { colorToCSS } from '@open-pencil/scene-graph/color'
+import type { Fill } from '@kalka/scene-graph'
+import { colorToCSS } from '@kalka/scene-graph/color'
 import {
   GradientEditorRoot,
   GradientEditorBar,
   GradientEditorStop,
   inputValue,
   useI18n
-} from '@open-pencil/vue'
+} from '@kalka/vue'
 
 import ColorPickerPanel from '@/components/color-picker-panel/ColorPickerPanel.vue'
 import NumberField from '@/components/inputs/NumberField.vue'

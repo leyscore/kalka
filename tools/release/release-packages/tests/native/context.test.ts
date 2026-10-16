@@ -6,7 +6,7 @@ import { ARTIFACT_TRANSFER_TIMEOUT_MS, releaseCommands } from '#release/native/c
 import { createReleaseContext, releaseVersion } from '#release/native/context'
 import { releasePaths } from '#release/workflow'
 
-import type { CommandRequest } from '@open-pencil/package-artifacts-tools'
+import type { CommandRequest } from '@kalka/package-artifacts-tools'
 
 const environment = {
   RELEASE_TAG: 'v0.15.0',

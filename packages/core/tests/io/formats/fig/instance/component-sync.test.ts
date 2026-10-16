@@ -2,12 +2,12 @@ import { expect, test } from 'bun:test'
 
 import { guid } from '#core-tests/helpers/fig/guid'
 
-import { FigmaAPI } from '@open-pencil/core'
-import { exportFigFile, parseFigFile } from '@open-pencil/core/io'
-import { initCodec } from '@open-pencil/core/kiwi'
-import { interpretInstance, materializeInstance } from '@open-pencil/fig/instance-overrides'
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { FigmaAPI } from '@kalka/core'
+import { exportFigFile, parseFigFile } from '@kalka/core/io'
+import { initCodec } from '@kalka/core/kiwi'
+import { interpretInstance, materializeInstance } from '@kalka/fig/instance-overrides'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
+import { SceneGraph } from '@kalka/scene-graph'
 
 test('nested instances retain their outer source-child correspondence during sync', () => {
   const source: NodeChange[] = [

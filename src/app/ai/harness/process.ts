@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 
-import type { HarnessSidecarMessage, JSONValue } from '@open-pencil/harness'
+import type { HarnessSidecarMessage, JSONValue } from '@kalka/harness'
 
 import { resolvePlatformCommand } from '@/app/tauri/command'
 

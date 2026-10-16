@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path'
 
 import * as v from 'valibot'
 
-import { resolveWorkspaceRoot } from '@open-pencil/package-artifacts-tools'
+import { resolveWorkspaceRoot } from '@kalka/package-artifacts-tools'
 
 const diagnosticSchema = v.object({
   code: v.optional(v.string()),

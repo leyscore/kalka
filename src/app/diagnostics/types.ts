@@ -1,4 +1,4 @@
-import type { AIProviderID } from '@open-pencil/core/constants'
+import type { AIProviderID } from '@kalka/core/constants'
 
 export type DiagnosticCategory =
   | 'ai'

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { clipBoundsToPolygon, clipPolygon, type Vector } from '@open-pencil/scene-graph'
+import { clipBoundsToPolygon, clipPolygon, type Vector } from '@kalka/scene-graph'
 
 describe('clipPolygon', () => {
   test('returns the subject unchanged when the clip has fewer than 3 corners', () => {

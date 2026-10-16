@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, useAttrs } from 'vue'
 
-import { BindableValueRoot, useI18n, useNumberBindingProvider } from '@open-pencil/vue'
-import type { BindingTarget, NumberBindingPath } from '@open-pencil/vue'
+import { BindableValueRoot, useI18n, useNumberBindingProvider } from '@kalka/vue'
+import type { BindingTarget, NumberBindingPath } from '@kalka/vue'
 
 import NumberField from '@/components/inputs/NumberField.vue'
 import VariableBindingPicker from '@/components/properties/binding/VariableBindingPicker.vue'

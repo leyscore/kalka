@@ -4,7 +4,7 @@ import {
   SceneGraph,
   recordInstanceOverride,
   deleteInstanceOverride
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 test('outer sync preserves a nested edit without blocking sibling or other-field inheritance', () => {
   const graph = new SceneGraph()

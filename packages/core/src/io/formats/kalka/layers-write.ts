@@ -7,15 +7,10 @@ import {
   withClassRules,
   type DesignElement,
   type DesignNode
-} from '@open-pencil/dom-css/export'
-import type { ClassRule } from '@open-pencil/dom-css/import'
-import {
-  documentCSSClasses,
-  SceneGraph,
-  type SceneNode,
-  type Vector
-} from '@open-pencil/scene-graph'
-import { computeImageHash } from '@open-pencil/scene-graph/images'
+} from '@kalka/dom-css/export'
+import type { ClassRule } from '@kalka/dom-css/import'
+import { documentCSSClasses, SceneGraph, type SceneNode, type Vector } from '@kalka/scene-graph'
+import { computeImageHash } from '@kalka/scene-graph/images'
 
 import { vectorElement } from '#core/io/formats/html/vectors'
 

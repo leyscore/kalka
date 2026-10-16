@@ -1,5 +1,5 @@
-import type { GUID } from '@open-pencil/kiwi/fig/codec'
-import { guidToString } from '@open-pencil/kiwi/fig/guid'
+import type { GUID } from '@kalka/kiwi/fig/codec'
+import { guidToString } from '@kalka/kiwi/fig/guid'
 
 import { sameGuid } from '../source-index'
 import { descendants, findWithinBoundary, type TreeShape } from '../tree'

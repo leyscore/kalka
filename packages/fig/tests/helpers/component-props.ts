@@ -1,6 +1,6 @@
 import type { ComponentPropDef, ComponentPropRef } from '#fig/instance-overrides/types'
 
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
 
 /** Export writes preferred values onto a definition; the interpreter never reads them. */
 export interface ExportedComponentPropDef extends ComponentPropDef {

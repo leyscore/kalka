@@ -2,9 +2,9 @@ import { describe, expect, test } from 'bun:test'
 
 import { expectDefined, getNodeOrThrow } from '#core-tests/helpers/assert'
 
-import { SceneGraph } from '@open-pencil/core'
-import { collectSubtrees } from '@open-pencil/core/editor/clipboard/subtree-history'
-import { createInstanceOverrideState } from '@open-pencil/scene-graph'
+import { SceneGraph } from '@kalka/core'
+import { collectSubtrees } from '@kalka/core/editor/clipboard/subtree-history'
+import { createInstanceOverrideState } from '@kalka/scene-graph'
 
 function pageId(graph: SceneGraph): string {
   return graph.getPages()[0].id

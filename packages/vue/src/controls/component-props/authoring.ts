@@ -1,7 +1,7 @@
 import { uniqBy } from 'es-toolkit/array'
 import { computed } from 'vue'
 
-import { instanceExposureIssue, type ComponentPropertyType } from '@open-pencil/scene-graph'
+import { instanceExposureIssue, type ComponentPropertyType } from '@kalka/scene-graph'
 
 import { useEditor } from '#vue/editor/context'
 import { useSceneComputed } from '#vue/internal/scene-computed/use'

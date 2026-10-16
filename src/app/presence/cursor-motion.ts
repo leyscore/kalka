@@ -1,5 +1,5 @@
-import type { PresenceCursor } from '@open-pencil/core/canvas'
-import type { Vector } from '@open-pencil/scene-graph/primitives'
+import type { PresenceCursor } from '@kalka/core/canvas'
+import type { Vector } from '@kalka/scene-graph/primitives'
 
 import type { EditorStore } from '@/app/editor/active-store'
 import { animationsEnabled } from '@/app/shell/motion'

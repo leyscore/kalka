@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { SharedStyleKind } from '@open-pencil/scene-graph'
-import { useI18n } from '@open-pencil/vue'
+import type { SharedStyleKind } from '@kalka/scene-graph'
+import { useI18n } from '@kalka/vue'
 
 import { useSharedStylePicker } from '@/components/properties/shared-style/useSharedStylePicker'
 import PanelFieldGroup from '@/components/ui/panel/PanelFieldGroup.vue'

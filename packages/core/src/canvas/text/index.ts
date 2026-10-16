@@ -8,9 +8,9 @@ import type {
   TypefaceFontProvider
 } from 'canvaskit-wasm'
 
-import type { SceneNode } from '@open-pencil/scene-graph'
-import { resolveRGBAForPreview } from '@open-pencil/scene-graph/color'
-import { resolveNodeTextDirection } from '@open-pencil/scene-graph/text-direction'
+import type { SceneNode } from '@kalka/scene-graph'
+import { resolveRGBAForPreview } from '@kalka/scene-graph/color'
+import { resolveNodeTextDirection } from '@kalka/scene-graph/text-direction'
 
 import { DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE } from '#core/constants'
 import { transformTextCase } from '#core/text/case'

@@ -9,7 +9,7 @@ import {
 } from '@modelcontextprotocol/client'
 import * as v from 'valibot'
 
-import { randomHex } from '@open-pencil/scene-graph/random'
+import { randomHex } from '@kalka/scene-graph/random'
 
 import { call } from '@/app/platform/tauri/bridge'
 import { appCredentialServices } from '@/app/settings/credentials/app'

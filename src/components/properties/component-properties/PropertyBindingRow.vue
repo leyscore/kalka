@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { ComponentBinding } from '@open-pencil/vue'
-import { usePanelMessages } from '@open-pencil/vue'
+import type { ComponentBinding } from '@kalka/vue'
+import { usePanelMessages } from '@kalka/vue'
 
 import { sceneNodeIcon } from '@/app/editor/icons'
 import AppButton from '@/components/ui/button/AppButton.vue'

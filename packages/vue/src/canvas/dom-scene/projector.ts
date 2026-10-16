@@ -3,8 +3,8 @@ import {
   type DesignElement,
   type DesignNode,
   type VectorElementRenderer
-} from '@open-pencil/dom-css/export'
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+} from '@kalka/dom-css/export'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 import { LAYER_ID_ATTR, buildNode, elementAttributes, patchAttributes } from './build'
 import { addArtboardFont, createArtboardFrame, type ArtboardFontFace } from './frame'

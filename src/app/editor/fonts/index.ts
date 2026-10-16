@@ -11,8 +11,8 @@ import {
   type LocalFontAccessState,
   type WebFontProviderId,
   UnsupportedFontFormatError
-} from '@open-pencil/core/text'
-import type { SceneGraph } from '@open-pencil/scene-graph'
+} from '@kalka/core/text'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 import { browserWebFontFetch } from '@/app/editor/fonts/browser-fetch'
 import {

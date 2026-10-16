@@ -1,4 +1,4 @@
-import { renderNodesToImage } from '@open-pencil/core/io'
+import { renderNodesToImage } from '@kalka/core/io'
 
 import type { NodePresentation } from '@/app/ai/attachment/presentation/types'
 import type { ReferencedNode } from '@/app/ai/chat/context'

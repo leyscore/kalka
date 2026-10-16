@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import type { Color, Fill, SceneNode, Stroke } from '@open-pencil/scene-graph'
+import type { Color, Fill, SceneNode, Stroke } from '@kalka/scene-graph'
 
 import { expectDefined } from '#tests/helpers/assert'
 import { getTool, setupToolTest, type ToolResult } from '#tests/helpers/tools'

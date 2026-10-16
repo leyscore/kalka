@@ -3,8 +3,8 @@ import {
   sceneNodeToDesignDocument,
   withResponsiveStyles,
   type DesignDocument
-} from '@open-pencil/dom-css/export'
-import type { SceneGraph } from '@open-pencil/scene-graph'
+} from '@kalka/dom-css/export'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 import type { ExportAsset, HTMLExportOptions } from '#core/io/types'
 import { exportWebFontFaceAssets } from '#core/text/web-font/assets'

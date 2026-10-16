@@ -1,5 +1,5 @@
-import type { LayoutEngine } from '@open-pencil/core/layout'
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import type { LayoutEngine } from '@kalka/core/layout'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 import type { DomSceneProjector, MeasuredGeometry } from './projector'
 

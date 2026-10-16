@@ -1,5 +1,5 @@
-import { readIcon, type SceneNode } from '@open-pencil/scene-graph'
-import type { Rect, Vector } from '@open-pencil/scene-graph/primitives'
+import { readIcon, type SceneNode } from '@kalka/scene-graph'
+import type { Rect, Vector } from '@kalka/scene-graph/primitives'
 
 import {
   COMPONENT_LABEL_FONT_SIZE,

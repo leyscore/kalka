@@ -1,9 +1,9 @@
 import { expect, test } from 'bun:test'
 
-import { FigmaAPI } from '@open-pencil/core'
-import { exportFigFile, parseFigFile } from '@open-pencil/core/io'
-import { initCodec } from '@open-pencil/core/kiwi'
-import { SceneGraph, getInstanceOverride } from '@open-pencil/scene-graph'
+import { FigmaAPI } from '@kalka/core'
+import { exportFigFile, parseFigFile } from '@kalka/core/io'
+import { initCodec } from '@kalka/core/kiwi'
+import { SceneGraph, getInstanceOverride } from '@kalka/scene-graph'
 
 for (const text of ['User edit', '']) {
   test(`preserves API instance text edit ${JSON.stringify(text)} across save/reload`, async () => {

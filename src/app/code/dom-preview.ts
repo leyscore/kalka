@@ -1,5 +1,5 @@
-import { browserHTMLToSceneGraph } from '@open-pencil/dom-css/browser'
-import type { SceneGraph } from '@open-pencil/scene-graph'
+import { browserHTMLToSceneGraph } from '@kalka/dom-css/browser'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 import type { EditorStore } from '@/app/editor/active-store'
 

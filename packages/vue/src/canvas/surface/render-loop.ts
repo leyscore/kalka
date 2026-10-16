@@ -1,4 +1,4 @@
-import type { Editor, EditorState } from '@open-pencil/core/editor'
+import type { Editor, EditorState } from '@kalka/core/editor'
 
 import type { CanvasRenderLayer } from './types'
 

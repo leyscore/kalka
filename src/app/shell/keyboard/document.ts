@@ -1,6 +1,6 @@
 import { createKeybindingsHandler, type KeyBindingMap } from 'tinykeys'
 
-import { editorCommandMetadata, useEditorCommands, type EditorCommandId } from '@open-pencil/vue'
+import { editorCommandMetadata, useEditorCommands, type EditorCommandId } from '@kalka/vue'
 
 import { isEditing } from '@/app/shell/keyboard/focus'
 

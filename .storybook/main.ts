@@ -1,7 +1,7 @@
 import type { StorybookConfig } from '@storybook/vue3-vite'
 import type { PluginOption } from 'vite'
 
-import { ensureBrandAssets } from '@open-pencil/brand-tools'
+import { ensureBrandAssets } from '@kalka/brand-tools'
 
 function flattenPlugins(plugins: PluginOption[]): PluginOption[] {
   return plugins.flatMap((plugin) => (Array.isArray(plugin) ? flattenPlugins(plugin) : [plugin]))

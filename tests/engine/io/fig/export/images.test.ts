@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, test } from 'bun:test'
 
 import { unzipSync } from 'fflate'
 
-import { exportFigFile, FigmaAPI, initCodec, parseFigFile, SceneGraph } from '@open-pencil/core'
+import { exportFigFile, FigmaAPI, initCodec, parseFigFile, SceneGraph } from '@kalka/core'
 
 import { expectDefined } from '#tests/helpers/assert'
 

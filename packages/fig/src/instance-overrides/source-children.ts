@@ -1,4 +1,4 @@
-import { setInstanceOverride, type SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
+import { setInstanceOverride, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
 
 import type { MaterializedInstance } from './materialize-instance'
 import { occurrences } from './occurrence/path'

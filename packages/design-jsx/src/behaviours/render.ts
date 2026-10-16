@@ -1,4 +1,4 @@
-import type { NodeType, SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import type { NodeType, SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 import { designJSXProp } from '../schema'
 import type { TreeNode } from '../tree'

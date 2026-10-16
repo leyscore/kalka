@@ -9,7 +9,7 @@ import {
   SelectViewport
 } from 'reka-ui'
 
-import { useLayoutControlsContext, useRetainedPopup } from '@open-pencil/vue'
+import { useLayoutControlsContext, useRetainedPopup } from '@kalka/vue'
 
 import type { SizeLimitFieldProps } from '@/components/properties/layout/size/types'
 import VariableNumberField from '@/components/properties/VariableNumberField.vue'

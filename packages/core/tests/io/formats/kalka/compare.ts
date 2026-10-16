@@ -1,4 +1,4 @@
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 import { UNSAVED_LAYER_FIELDS } from '#core/io/formats/kalka'
 import { sameAsWritten } from '#core/io/formats/kalka/values'

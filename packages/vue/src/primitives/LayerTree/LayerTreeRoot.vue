@@ -2,7 +2,7 @@
 import { TreeRoot } from 'reka-ui'
 import { computed, nextTick, onScopeDispose, ref } from 'vue'
 
-import type { SceneNode } from '@open-pencil/scene-graph'
+import type { SceneNode } from '@kalka/scene-graph'
 
 import { useEditor } from '#vue/editor/context'
 import { provideLayerTree } from '#vue/primitives/LayerTree/context'

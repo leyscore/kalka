@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, test } from 'bun:test'
 
-import { readKalkaArchive, writeKalkaFolder } from '@open-pencil/core/io/formats/kalka'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { readKalkaArchive, writeKalkaFolder } from '@kalka/core/io/formats/kalka'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { readKalkaFolderAsFile, writeKalkaFolderFiles } from '@/app/document/io/kalka-folder'
 

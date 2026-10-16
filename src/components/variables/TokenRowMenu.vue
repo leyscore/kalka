@@ -11,7 +11,7 @@ import {
   ContextMenuTrigger
 } from 'reka-ui'
 
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@kalka/vue'
 
 import { useMenuUI } from '@/components/ui/menu/menu'
 

@@ -1,8 +1,8 @@
 import { useFileDialog } from '@vueuse/core'
 import { uniq } from 'es-toolkit/array'
 
-import { BUILTIN_IO_FORMATS, IORegistry } from '@open-pencil/core/io'
-import { menuMessages } from '@open-pencil/vue'
+import { BUILTIN_IO_FORMATS, IORegistry } from '@kalka/core/io'
+import { menuMessages } from '@kalka/vue'
 
 import { setOpenPencilOpenFileHandler } from '@/app/browser-bridge'
 import {

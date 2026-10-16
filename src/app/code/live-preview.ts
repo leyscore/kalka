@@ -1,7 +1,7 @@
-import { renderTree } from '@open-pencil/core/design-jsx'
-import { computeAllLayouts } from '@open-pencil/core/layout'
-import { reconcileRenderedLayers, type TreeNode } from '@open-pencil/design-jsx'
-import type { SceneNode, Vector } from '@open-pencil/scene-graph'
+import { renderTree } from '@kalka/core/design-jsx'
+import { computeAllLayouts } from '@kalka/core/layout'
+import { reconcileRenderedLayers, type TreeNode } from '@kalka/design-jsx'
+import type { SceneNode, Vector } from '@kalka/scene-graph'
 
 import { convertDesignJSXRoots } from '@/app/code/sandbox/convert'
 import { evaluateDesignJSX } from '@/app/code/sandbox/evaluate'

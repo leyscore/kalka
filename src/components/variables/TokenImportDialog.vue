@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 
-import type { TokenImportResult } from '@open-pencil/core/editor'
+import type { TokenImportResult } from '@kalka/core/editor'
 import {
   defaultTokenImportOptions,
   planTokenImport,
@@ -11,8 +11,8 @@ import {
   type ImportSkipReason,
   type ModeTarget,
   type TokenImportOptions
-} from '@open-pencil/core/io/formats/design-tokens'
-import { useI18n } from '@open-pencil/vue'
+} from '@kalka/core/io/formats/design-tokens'
+import { useI18n } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import { notificationMessages } from '@/app/i18n/notifications'

@@ -1,5 +1,5 @@
-import { readIcon, slotPropertyId } from '@open-pencil/scene-graph'
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import { readIcon, slotPropertyId } from '@kalka/scene-graph'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 import type { LayerNode, LayerRow, LayerSelectionMode } from '#vue/primitives/LayerTree/context'
 

@@ -1,5 +1,5 @@
-import type { Color, Fill, SceneGraph, Stroke } from '@open-pencil/scene-graph'
-import { getWorldMatrix } from '@open-pencil/scene-graph/coordinate'
+import type { Color, Fill, SceneGraph, Stroke } from '@kalka/scene-graph'
+import { getWorldMatrix } from '@kalka/scene-graph/coordinate'
 
 import type { SceneOracleNode } from '../scene-oracle'
 

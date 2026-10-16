@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
 
-import { EDITOR_TOOLS } from '@open-pencil/core/editor'
-import type { EditorToolDef, Tool } from '@open-pencil/core/editor'
+import { EDITOR_TOOLS } from '@kalka/core/editor'
+import type { EditorToolDef, Tool } from '@kalka/core/editor'
 
 import { useEditor } from '#vue/editor/context'
 import { provideToolbar } from '#vue/primitives/Toolbar/context'

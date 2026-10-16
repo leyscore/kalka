@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'bun:test'
 
-import { FigmaAPI } from '@open-pencil/core'
-import { exportFigFile, parseFigFile } from '@open-pencil/core/io'
-import { initCodec } from '@open-pencil/core/kiwi'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { FigmaAPI } from '@kalka/core'
+import { exportFigFile, parseFigFile } from '@kalka/core/io'
+import { initCodec } from '@kalka/core/kiwi'
+import { SceneGraph } from '@kalka/scene-graph'
 
 const BLUE = { r: 0, g: 0, b: 1, a: 1 }
 const RED = { r: 1, g: 0, b: 0, a: 1 }

@@ -1,5 +1,5 @@
-import { Frame, Text } from '@open-pencil/design-jsx'
-import type { TreeNode } from '@open-pencil/design-jsx'
+import { Frame, Text } from '@kalka/design-jsx'
+import type { TreeNode } from '@kalka/design-jsx'
 
 const INK = '#172554'
 const MUTED = '#536487'

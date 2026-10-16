@@ -1,8 +1,8 @@
-import { SkiaRenderer } from '@open-pencil/core/canvas'
-import { exportFigFile, initCanvasKit } from '@open-pencil/core/io'
-import { computeAllLayouts, installTextMeasurer } from '@open-pencil/core/layout'
-import { fontManager, prepareGraphFonts } from '@open-pencil/core/text'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { SkiaRenderer } from '@kalka/core/canvas'
+import { exportFigFile, initCanvasKit } from '@kalka/core/io'
+import { computeAllLayouts, installTextMeasurer } from '@kalka/core/layout'
+import { fontManager, prepareGraphFonts } from '@kalka/core/text'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { createAnnouncementSection } from './document/announcement/section'
 import { createControlsSection } from './document/controls/section'

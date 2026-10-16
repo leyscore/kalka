@@ -1,9 +1,9 @@
 import { beforeAll, describe, expect, test } from 'bun:test'
 
-import { exportFigFile, initCodec, parseFigFile, SceneGraph } from '@open-pencil/core'
-import { effectiveFigmaRawNodeFields, parseFigBuffer } from '@open-pencil/fig'
-import { guidToString } from '@open-pencil/fig/node-change'
-import type { Vector } from '@open-pencil/scene-graph'
+import { exportFigFile, initCodec, parseFigFile, SceneGraph } from '@kalka/core'
+import { effectiveFigmaRawNodeFields, parseFigBuffer } from '@kalka/fig'
+import { guidToString } from '@kalka/fig/node-change'
+import type { Vector } from '@kalka/scene-graph'
 
 /** The codec types only the fields it writes; raw passthrough metadata is read through these. */
 interface RawLayoutGrid {

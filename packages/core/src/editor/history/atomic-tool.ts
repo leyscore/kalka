@@ -3,7 +3,7 @@ import {
   type SceneGraph,
   type SceneNode,
   type Variable
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import type { Editor } from '#core/editor/create'
 import type { FigmaAPI } from '#core/figma-api'

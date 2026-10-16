@@ -1,5 +1,5 @@
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
-import { getWorldMatrix } from '@open-pencil/scene-graph/coordinate'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import { getWorldMatrix } from '@kalka/scene-graph/coordinate'
 import {
   clipPolygon,
   effectOverflow,
@@ -8,9 +8,9 @@ import {
   strokeOverflow,
   unionVisualBounds,
   type VisualBounds
-} from '@open-pencil/scene-graph/geometry'
-import Matrix from '@open-pencil/scene-graph/matrix'
-import type { Rect, Vector } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/scene-graph/geometry'
+import Matrix from '@kalka/scene-graph/matrix'
+import type { Rect, Vector } from '@kalka/scene-graph/primitives'
 
 import type {
   AnalyzeOverlapsArgs,

@@ -1,9 +1,9 @@
 import type { Canvas } from 'canvaskit-wasm'
 
-import { readEffectiveFigmaRawField } from '@open-pencil/fig'
-import type { SceneNode } from '@open-pencil/scene-graph'
-import { layoutGuideSections } from '@open-pencil/scene-graph/layout-guides'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import { readEffectiveFigmaRawField } from '@kalka/fig'
+import type { SceneNode } from '@kalka/scene-graph'
+import { layoutGuideSections } from '@kalka/scene-graph/layout-guides'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import { SELECTION_COLOR } from '#core/constants'
 

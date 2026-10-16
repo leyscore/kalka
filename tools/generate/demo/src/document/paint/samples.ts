@@ -10,8 +10,8 @@ import {
   linearGradient,
   radialGradient,
   solid
-} from '@open-pencil/design-jsx'
-import type { TreeNode } from '@open-pencil/design-jsx'
+} from '@kalka/design-jsx'
+import type { TreeNode } from '@kalka/design-jsx'
 
 export interface PaintExample {
   title: string

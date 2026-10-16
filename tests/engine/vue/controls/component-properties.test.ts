@@ -1,12 +1,12 @@
 import { describe, expect, test } from 'bun:test'
 
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { SceneGraph } from '@kalka/scene-graph'
 import {
   MIXED,
   compatibleComponentPropertyDefinitions,
   instanceSwapOptions,
   mergedComponentPropertyValue
-} from '@open-pencil/vue'
+} from '@kalka/vue'
 
 describe('component property control model', () => {
   test('requires identical ordered property IDs and types', () => {

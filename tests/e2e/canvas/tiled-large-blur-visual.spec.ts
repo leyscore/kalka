@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 
 import * as v from 'valibot'
 
-import type { RecordedWheelSample } from '@open-pencil/core/profiler'
+import type { RecordedWheelSample } from '@kalka/core/profiler'
 
 import { expect, test, useEditorSetup } from '#tests/e2e/fixtures'
 

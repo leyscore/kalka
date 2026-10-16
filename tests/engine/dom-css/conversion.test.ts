@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 
-import type { DesignElement } from '@open-pencil/dom-css'
+import type { DesignElement } from '@kalka/dom-css'
 import {
   compileTailwindCSS,
   createHeadlessCSSRuntime,
@@ -10,9 +10,9 @@ import {
   sceneGraphToDesignDocument,
   serializeHTML,
   tailwindHTMLToSceneGraph
-} from '@open-pencil/dom-css'
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
-import { parseColor } from '@open-pencil/scene-graph/color'
+} from '@kalka/dom-css'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import { parseColor } from '@kalka/scene-graph/color'
 
 import {
   DOM_CSS_COLORS,
@@ -142,7 +142,7 @@ function expectStyleRoundTripHTML(graph: SceneGraph) {
   expectRoundTripHeadingStyle(roundTripHeading)
 }
 
-describe('@open-pencil/dom-css conversion', () => {
+describe('@kalka/dom-css conversion', () => {
   it('converts HTML and CSS to DesignDOM with one API call', async () => {
     const document = await htmlToDesignDocument(cssCardHTML, {
       cssText: cssCardCSS,

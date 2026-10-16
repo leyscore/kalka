@@ -1,6 +1,6 @@
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
-import Matrix from '@open-pencil/scene-graph/matrix'
-import type { Rect, Vector } from '@open-pencil/scene-graph/primitives'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import Matrix from '@kalka/scene-graph/matrix'
+import type { Rect, Vector } from '@kalka/scene-graph/primitives'
 
 import {
   ISSUE_EDGE_ARROW,

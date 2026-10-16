@@ -1,5 +1,5 @@
-import type { SceneNode } from '@open-pencil/scene-graph'
-import type { Matrix } from '@open-pencil/scene-graph/primitives'
+import type { SceneNode } from '@kalka/scene-graph'
+import type { Matrix } from '@kalka/scene-graph/primitives'
 
 export function mapToFigmaType(type: SceneNode['type']): string {
   switch (type) {

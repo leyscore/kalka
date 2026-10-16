@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 
-import { newStrokeGeometry, type Stroke } from '@open-pencil/scene-graph'
+import { newStrokeGeometry, type Stroke } from '@kalka/scene-graph'
 
 import { useNodeProps } from '#vue/controls/node-props/use'
 import {

@@ -2,9 +2,9 @@ import { expect, test } from 'bun:test'
 
 import { expectDefined } from '#core-tests/helpers/assert'
 
-import { exportFigFile, initCodec, parseFigFile } from '@open-pencil/core'
-import { createEditor } from '@open-pencil/core/editor'
-import { emptyBehaviour, readBehaviour, SceneGraph } from '@open-pencil/scene-graph'
+import { exportFigFile, initCodec, parseFigFile } from '@kalka/core'
+import { createEditor } from '@kalka/core/editor'
+import { emptyBehaviour, readBehaviour, SceneGraph } from '@kalka/scene-graph'
 
 import { settleFontDigestMap } from '#core/kiwi/fig/node-change/font/digests'
 import { fontManager } from '#core/text/fonts'

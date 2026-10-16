@@ -1,4 +1,4 @@
-import type { SceneNode } from '@open-pencil/scene-graph'
+import type { SceneNode } from '@kalka/scene-graph'
 
 import { createComponentAuthoringActions } from './components/authoring'
 import { createBehaviourActions } from './components/behaviours'

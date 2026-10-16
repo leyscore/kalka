@@ -2,8 +2,8 @@ import { describe, expect, test } from 'bun:test'
 
 import { computed, createApp, effectScope, ref, shallowReactive } from 'vue'
 
-import { createDefaultEditorState, createEditor } from '@open-pencil/core/editor'
-import { getSharedStyles, SceneGraph, type Fill } from '@open-pencil/scene-graph'
+import { createDefaultEditorState, createEditor } from '@kalka/core/editor'
+import { getSharedStyles, SceneGraph, type Fill } from '@kalka/scene-graph'
 
 import { EDITOR_KEY } from '#vue/editor/context'
 import { createSelectedNodeState, useSelectedNodeState } from '#vue/editor/selection-state/nodes'

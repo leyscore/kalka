@@ -1,6 +1,6 @@
 import { uniq } from 'es-toolkit/array'
 
-import type { TokenStylesheetFormat, TokenStylesheetIssue } from '@open-pencil/dom-css/export'
+import type { TokenStylesheetFormat, TokenStylesheetIssue } from '@kalka/dom-css/export'
 
 import type { EditorStore } from '@/app/editor/active-store'
 import { copyPendingText } from '@/app/editor/clipboard/text'
@@ -35,7 +35,7 @@ export function createTokenCopy(store: EditorStore) {
   return async function copyTokens(format: TokenStylesheetFormat): Promise<void> {
     // The stylesheet generator and its CSS parser load only when someone copies tokens. The
     // clipboard write starts before either is ready, while the click still allows it.
-    const stylesheet = import('@open-pencil/dom-css/export').then(({ tokenStylesheet }) =>
+    const stylesheet = import('@kalka/dom-css/export').then(({ tokenStylesheet }) =>
       tokenStylesheet(store.graph, { format })
     )
     const css = stylesheet.then((result) => {

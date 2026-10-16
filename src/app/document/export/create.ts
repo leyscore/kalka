@@ -1,5 +1,5 @@
-import type { Editor, EditorState } from '@open-pencil/core/editor'
-import type { BuiltinIOFormatId, ExportRequest, IORegistry } from '@open-pencil/core/io'
+import type { Editor, EditorState } from '@kalka/core/editor'
+import type { BuiltinIOFormatId, ExportRequest, IORegistry } from '@kalka/core/io'
 
 import { domRasterize } from '@/app/document/export/dom-raster'
 import {

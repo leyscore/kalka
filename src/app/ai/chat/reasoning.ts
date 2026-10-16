@@ -1,6 +1,6 @@
 import type { LanguageModelCallOptions } from 'ai'
 
-import type { AIProviderID } from '@open-pencil/core/constants'
+import type { AIProviderID } from '@kalka/core/constants'
 
 import type { ThinkingLevel } from '@/app/ai/models/types'
 

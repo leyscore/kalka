@@ -2,8 +2,8 @@
 import { tv } from 'tailwind-variants'
 import { ref, watch } from 'vue'
 
-import { iconLayerName } from '@open-pencil/scene-graph'
-import { useCommonMessages, useIcon, usePanelMessages } from '@open-pencil/vue'
+import { iconLayerName } from '@kalka/scene-graph'
+import { useCommonMessages, useIcon, usePanelMessages } from '@kalka/vue'
 
 import ColorInput from '@/components/ColorPicker/ColorInput.vue'
 import IconPicker from '@/components/icon-picker/IconPicker.vue'

@@ -1,6 +1,6 @@
 import { describe, expect, test, beforeAll } from 'bun:test'
 
-import { createIconifyProvider } from '@open-pencil/core'
+import { createIconifyProvider } from '@kalka/core'
 
 const provider = createIconifyProvider()
 const fetchIcons = (names: string[], size = 24) => provider.icons(names, size)

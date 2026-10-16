@@ -2,13 +2,13 @@
 import { tv } from 'tailwind-variants'
 import { computed } from 'vue'
 
-import { constraintPins, useI18n } from '@open-pencil/vue'
+import { constraintPins, useI18n } from '@kalka/vue'
 import type {
   ConstraintsControlActions,
   ConstraintAxis,
   ConstraintEdge,
   ConstraintValue
-} from '@open-pencil/vue'
+} from '@kalka/vue'
 
 import Tip from '@/components/ui/overlay/Tip.vue'
 import constraintsTheme from '@/theme/constraints'

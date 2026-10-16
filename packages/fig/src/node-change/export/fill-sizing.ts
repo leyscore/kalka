@@ -1,4 +1,4 @@
-import { layoutSizing, type SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
+import { layoutSizing, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
 
 export type OwnSizingField = 'stackPrimarySizing' | 'stackCounterSizing'
 

@@ -4,7 +4,7 @@ import {
   jsx,
   jsxToDesignDocument,
   type DesignDocument
-} from '@open-pencil/dom-css'
+} from '@kalka/dom-css'
 
 import {
   DOM_CSS_COLORS,
@@ -27,7 +27,7 @@ import {
 
 import { expect, test } from '../fixtures'
 
-test.describe('@open-pencil/dom-css browser CSS runtime oracle', () => {
+test.describe('@kalka/dom-css browser CSS runtime oracle', () => {
   test('resolves Tailwind card variables and calc values in a real browser', async ({ page }) => {
     const css = await compileTailwindCSS(tailwindCardClasses)
     await setStyledContent(

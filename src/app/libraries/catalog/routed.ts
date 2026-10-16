@@ -4,7 +4,7 @@ import {
   type LibraryCatalog,
   type LibrarySummary,
   type PublishLibraryInput
-} from '@open-pencil/core/library'
+} from '@kalka/core/library'
 
 import type { LocalLibraryCatalog } from './local'
 

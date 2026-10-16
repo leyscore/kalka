@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { GridTrackSizing } from '@open-pencil/scene-graph'
-import { useI18n, useLayoutControlsContext } from '@open-pencil/vue'
+import type { GridTrackSizing } from '@kalka/scene-graph'
+import { useI18n, useLayoutControlsContext } from '@kalka/vue'
 
 import NumberField from '@/components/inputs/NumberField.vue'
 import type { GridTrackProp } from '@/components/properties/layout/types'

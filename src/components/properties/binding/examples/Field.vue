@@ -1,11 +1,6 @@
 <script setup lang="ts">
-import type { BindingProvider, BindingTarget, BoundEditPolicy } from '@open-pencil/vue'
-import {
-  BindableValueRoot,
-  NumberFieldInput,
-  NumberFieldRoot,
-  NumberFieldValue
-} from '@open-pencil/vue'
+import type { BindingProvider, BindingTarget, BoundEditPolicy } from '@kalka/vue'
+import { BindableValueRoot, NumberFieldInput, NumberFieldRoot, NumberFieldValue } from '@kalka/vue'
 
 import VariableBindingPicker from '@/components/properties/binding/VariableBindingPicker.vue'
 import { BindingPill } from '@/components/ui/binding'

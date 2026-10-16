@@ -2,12 +2,12 @@ import { tryOnScopeDispose, watchImmediate } from '@vueuse/core'
 import { useFilter } from 'reka-ui'
 import { computed, ref, watch } from 'vue'
 
-import type { FontFamilyOption } from '@open-pencil/core/text'
+import type { FontFamilyOption } from '@kalka/core/text'
 
 import { useRetainedActivity } from '#vue/lifecycle/retention/context'
 
 export type FontAccessState = 'unsupported' | 'prompt' | 'granted' | 'denied'
-export type { FontFamilyOption, FontFamilySource } from '@open-pencil/core/text'
+export type { FontFamilyOption, FontFamilySource } from '@kalka/core/text'
 
 export interface FontAccessController {
   state: () => FontAccessState

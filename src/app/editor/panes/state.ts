@@ -1,7 +1,7 @@
 import { shallowReactive } from 'vue'
 
-import type { EditorState, EditorViewState } from '@open-pencil/core/editor'
-import { copyEditorViewState, pickEditorViewState } from '@open-pencil/core/editor'
+import type { EditorState, EditorViewState } from '@kalka/core/editor'
+import { copyEditorViewState, pickEditorViewState } from '@kalka/core/editor'
 
 export interface CanvasPaneState extends EditorViewState {
   id: string

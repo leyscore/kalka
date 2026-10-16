@@ -1,10 +1,10 @@
 import { toUint8Array } from 'js-base64'
 
-import { slotPropertyId } from '@open-pencil/scene-graph'
-import type { SceneNode, SceneGraph, Fill, Stroke } from '@open-pencil/scene-graph'
-import type { RenderColorSpace, ResolvedRenderColor } from '@open-pencil/scene-graph/color'
-import type { Color, Rect, Vector } from '@open-pencil/scene-graph/primitives'
-import type { SnapGuide } from '@open-pencil/scene-graph/snap'
+import { slotPropertyId } from '@kalka/scene-graph'
+import type { SceneNode, SceneGraph, Fill, Stroke } from '@kalka/scene-graph'
+import type { RenderColorSpace, ResolvedRenderColor } from '@kalka/scene-graph/color'
+import type { Color, Rect, Vector } from '@kalka/scene-graph/primitives'
+import type { SnapGuide } from '@kalka/scene-graph/snap'
 
 /* eslint-disable max-lines -- SkiaRenderer facade owns CanvasKit state and delegates domain drawing */
 import {

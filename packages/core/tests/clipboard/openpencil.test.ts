@@ -3,8 +3,8 @@ import { describe, expect, test } from 'bun:test'
 import { deflateSync } from 'fflate'
 import { fromUint8Array } from 'js-base64'
 
-import { buildOpenPencilClipboardHTML, parseOpenPencilClipboard } from '@open-pencil/core/clipboard'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { buildOpenPencilClipboardHTML, parseOpenPencilClipboard } from '@kalka/core/clipboard'
+import { SceneGraph } from '@kalka/scene-graph'
 
 function clipboardHTML(payload: string): string {
   const compressed = deflateSync(new TextEncoder().encode(payload))

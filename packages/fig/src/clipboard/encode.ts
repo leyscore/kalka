@@ -1,8 +1,8 @@
 import { deflateSync } from 'fflate'
 import { encode, fromUint8Array } from 'js-base64'
 
-import { getCompiledSchema, getSchemaBytes } from '@open-pencil/kiwi/fig/codec'
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
+import { getCompiledSchema, getSchemaBytes } from '@kalka/kiwi/fig/codec'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
 
 import { buildFigKiwi } from '../node-change'
 

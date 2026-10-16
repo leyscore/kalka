@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { createEditor } from '@open-pencil/core/editor'
-import { counterpartIn, createBreakpoint, responsiveOverrides } from '@open-pencil/scene-graph'
+import { createEditor } from '@kalka/core/editor'
+import { counterpartIn, createBreakpoint, responsiveOverrides } from '@kalka/scene-graph'
 
 const settle = () =>
   new Promise<void>((resolve) => {

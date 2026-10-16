@@ -1,6 +1,6 @@
 import { computed, reactive, ref, watch } from 'vue'
 
-import { IS_TAURI } from '@open-pencil/core/constants'
+import { IS_TAURI } from '@kalka/core/constants'
 
 import { useAgentSetup } from '@/app/ai/agents/setup'
 import { refreshAIProviderStatus } from '@/app/ai/chat/storage'

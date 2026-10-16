@@ -15,7 +15,7 @@ export {
   tailwindJSXFormat
 } from './formats'
 export { exportFigFile, parseFigFile, readFigFile, type ParseFigFileOptions } from './formats/fig'
-export { parsePenFile, readPenFile } from '@open-pencil/pen'
+export { parsePenFile, readPenFile } from '@kalka/pen'
 export {
   computeContentBounds,
   renderNodesToImage,

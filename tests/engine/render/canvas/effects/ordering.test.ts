@@ -1,7 +1,7 @@
 import { describe, expect, mock, test } from 'bun:test'
 
-import type { SceneGraph } from '@open-pencil/scene-graph'
-import { createDefaultNode } from '@open-pencil/scene-graph/node-defaults'
+import type { SceneGraph } from '@kalka/scene-graph'
+import { createDefaultNode } from '@kalka/scene-graph/node-defaults'
 
 import { renderShapeUncached } from '#core/canvas/scene'
 

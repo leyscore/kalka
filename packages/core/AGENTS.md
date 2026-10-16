@@ -3,8 +3,8 @@
 Renderer, layout, editor, Figma API, tools, clipboard, vector conversion, and document I/O. Depends on scene-graph, pen, kiwi, and fig. Framework-neutral: no Vue, no app imports, no browser DOM; guard browser globals explicitly.
 
 - Public surface is the compatibility barrel plus the subpaths listed in `packages/core/package.json` `exports`; add a subpath there rather than deep-importing.
-- CanvasKit runtime loading is centralized in `@open-pencil/core/canvaskit`. Headless raster export may dynamically load `canvaskit-wasm/full`; elsewhere `import type` and pass CanvasKit in.
-- Drawing and input share preview-aware geometry through `@open-pencil/core/geometry`, built on Scene Graph matrices. Use it for world/screen transforms, inverses, bounds, and handle placement.
+- CanvasKit runtime loading is centralized in `@kalka/core/canvaskit`. Headless raster export may dynamically load `canvaskit-wasm/full`; elsewhere `import type` and pass CanvasKit in.
+- Drawing and input share preview-aware geometry through `@kalka/core/geometry`, built on Scene Graph matrices. Use it for world/screen transforms, inverses, bounds, and handle placement.
 - Copies of part of a document, such as previews, history snapshots, and exports, come from `extractPageContext` or `extractExportGraph` in `packages/core/src/io/subgraph.ts`, not another copier. Pass `componentSets` when instances must switch variant and `shareTables` for a read-only view rebuilt often (`packages/core/tests/io/subgraph.test.ts`).
 - Undo for structural AI and MCP edits records only the layers an edit touches with `capturePageChange`, whose capture shares unchanged values instead of deep-copying the page, since a page copy per tool call grows memory with every call. It relies on every change emitting a graph event and on values being replaced rather than written into, apart from the child lists, source metadata, and override maps it copies (`packages/core/tests/editor/history/page-change.test.ts`).
 
@@ -80,7 +80,7 @@ Canvas is CanvasKit (Skia WASM) on a WebGL surface, not DOM.
 
 ### Geometry and overlays
 
-- Use `@open-pencil/core/geometry` for world/screen transforms, inverses, bounds, and handle placement instead of interpreting ancestor rotations or reflections independently.
+- Use `@kalka/core/geometry` for world/screen transforms, inverses, bounds, and handle placement instead of interpreting ancestor rotations or reflections independently.
 - Label drawing and hit testing share `packages/core/src/canvas/labels/{layout,transform,style}.ts`, including paragraph measurements and unreflected label axes.
 - Editor chrome sized in screen pixels (outlines, borders, carets, highlights) draws in the overlay pass, never in the scene, which is cached and scaled while navigating. Draw outlines with `withScreenStroke` and `inNodeSpace` (`packages/core/src/canvas/overlays/outline.ts`). `open-pencil/no-zoom-in-scene-drawing` enforces it.
 - Selection border width is constant regardless of zoom: divide by scale. Section and frame title text never scales: render at a fixed font size and ellipsize to fit.

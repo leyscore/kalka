@@ -1,5 +1,5 @@
 {
-  "name": "@open-pencil/core",
+  "name": "@kalka/core",
   "version": "0.15.1",
   "license": "MIT",
   "repository": {
@@ -177,12 +177,12 @@
   "dependencies": {
     "@chenglou/pretext": "^0.0.7",
     "@iconify/utils": "^3.1.4",
-    "@open-pencil/design-jsx": "workspace:*",
-    "@open-pencil/dom-css": "workspace:*",
-    "@open-pencil/fig": "workspace:*",
-    "@open-pencil/kiwi": "workspace:*",
-    "@open-pencil/pen": "workspace:*",
-    "@open-pencil/scene-graph": "workspace:*",
+    "@kalka/design-jsx": "workspace:*",
+    "@kalka/dom-css": "workspace:*",
+    "@kalka/fig": "workspace:*",
+    "@kalka/kiwi": "workspace:*",
+    "@kalka/pen": "workspace:*",
+    "@kalka/scene-graph": "workspace:*",
     "@tauri-apps/api": "^2.12.1",
     "@valibot/to-json-schema": "^1.8.0",
     "@xmldom/xmldom": "^0.9.12",

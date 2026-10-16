@@ -1,6 +1,6 @@
 import dedent from 'dedent'
 
-import { ACP_AGENTS, type ACPAgentID } from '@open-pencil/core/constants'
+import { ACP_AGENTS, type ACPAgentID } from '@kalka/core/constants'
 
 import { MCP_INSTALL_TARGET } from '@/app/automation/mcp/failure'
 

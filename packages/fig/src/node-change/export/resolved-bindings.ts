@@ -4,7 +4,7 @@ import {
   resolvedValueBindings,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 /**
  * Figma draws the value a bound field stores until something makes it resolve the binding

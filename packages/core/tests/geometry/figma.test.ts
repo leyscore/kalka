@@ -1,13 +1,13 @@
 import { describe, expect, test } from 'bun:test'
 
-import { FigmaAPI } from '@open-pencil/core/figma-api'
+import { FigmaAPI } from '@kalka/core/figma-api'
 import {
   panelPosition,
   panelPositionChange,
   panelRotation,
   panelRotationChange
-} from '@open-pencil/core/geometry'
-import { SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
+} from '@kalka/core/geometry'
+import { SceneGraph, type SceneNode } from '@kalka/scene-graph'
 
 // Recorded in Figma desktop 126 by reading and typing into the properties panel's X, Y, and
 // rotation fields for layers a script made.

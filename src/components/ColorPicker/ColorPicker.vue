@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { VNode } from 'vue'
 
-import type { Color } from '@open-pencil/scene-graph/primitives'
-import { ColorPickerRoot, useI18n } from '@open-pencil/vue'
-import type { OkHCLControls } from '@open-pencil/vue'
+import type { Color } from '@kalka/scene-graph/primitives'
+import { ColorPickerRoot, useI18n } from '@kalka/vue'
+import type { OkHCLControls } from '@kalka/vue'
 
 import ColorPickerPanel from '@/components/color-picker-panel/ColorPickerPanel.vue'
 import { usePopoverUI } from '@/components/ui/overlay/popover'

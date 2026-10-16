@@ -1,7 +1,7 @@
 import { describe, expect, setDefaultTimeout, test } from 'bun:test'
 
-import { type NodeChange, parseFigFile, type SceneNode } from '@open-pencil/core'
-import { materializeDocument } from '@open-pencil/fig'
+import { type NodeChange, parseFigFile, type SceneNode } from '@kalka/core'
+import { materializeDocument } from '@kalka/fig'
 
 import { expectDefined } from '#tests/helpers/assert'
 import { sharedGoldPreviewFixture } from '#tests/helpers/fig/fixtures'

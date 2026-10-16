@@ -1,12 +1,12 @@
 import { expect, test } from 'bun:test'
 import { resolve } from 'node:path'
 
-import { SkiaRenderer } from '@open-pencil/core'
-import { createEditor } from '@open-pencil/core/editor'
-import { initCanvasKit, renderNodesToImage } from '@open-pencil/core/io'
-import { materializeDocument } from '@open-pencil/fig'
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-import { rescaleNodeTree } from '@open-pencil/scene-graph'
+import { SkiaRenderer } from '@kalka/core'
+import { createEditor } from '@kalka/core/editor'
+import { initCanvasKit, renderNodesToImage } from '@kalka/core/io'
+import { materializeDocument } from '@kalka/fig'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
+import { rescaleNodeTree } from '@kalka/scene-graph'
 
 import { expectDefined } from '../helpers/assert'
 import {

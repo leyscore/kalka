@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 
-import { sceneNodeToDesignDocument } from '@open-pencil/dom-css/export'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { sceneNodeToDesignDocument } from '@kalka/dom-css/export'
+import { SceneGraph } from '@kalka/scene-graph'
 
 test('text with a gradient fill paints its letters with the gradient', () => {
   const graph = new SceneGraph()

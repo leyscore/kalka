@@ -2,9 +2,9 @@
 import { PopoverContent, PopoverPortal, PopoverRoot, PopoverTrigger } from 'reka-ui'
 import { onMounted } from 'vue'
 
-import { WEB_FONT_PROVIDER_IDS, WEB_FONT_PROVIDER_LABELS } from '@open-pencil/core/text'
-import type { WebFontProviderId } from '@open-pencil/core/text'
-import { useI18n, useRetainedPopup } from '@open-pencil/vue'
+import { WEB_FONT_PROVIDER_IDS, WEB_FONT_PROVIDER_LABELS } from '@kalka/core/text'
+import type { WebFontProviderId } from '@kalka/core/text'
+import { useI18n, useRetainedPopup } from '@kalka/vue'
 
 import { isTauri } from '@/app/tauri/env'
 import AppButton from '@/components/ui/button/AppButton.vue'

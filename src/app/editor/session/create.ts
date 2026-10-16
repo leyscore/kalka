@@ -1,8 +1,8 @@
 import { shallowReactive } from 'vue'
 
-import { createEditor } from '@open-pencil/core/editor'
-import { BUILTIN_IO_FORMATS, IORegistry } from '@open-pencil/core/io'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { createEditor } from '@kalka/core/editor'
+import { BUILTIN_IO_FORMATS, IORegistry } from '@kalka/core/io'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { recordPreparationOutcome } from '@/app/diagnostics'
 import {
@@ -34,8 +34,8 @@ import { createDeferred } from '@/app/runtime/deferred'
 import { toast } from '@/app/shell/ui'
 import { IS_BROWSER, IS_TAURI } from '@/constants'
 
-export { EDITOR_TOOLS as TOOLS, TOOL_SHORTCUTS } from '@open-pencil/core/editor'
-export type { EditorToolDef as ToolDef, Tool } from '@open-pencil/core/editor'
+export { EDITOR_TOOLS as TOOLS, TOOL_SHORTCUTS } from '@kalka/core/editor'
+export type { EditorToolDef as ToolDef, Tool } from '@kalka/core/editor'
 
 function buildEditorStore(initialGraph?: SceneGraph) {
   const graph = initialGraph ?? new SceneGraph()

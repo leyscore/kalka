@@ -4,10 +4,10 @@ import {
   assertNodeEditable,
   getNodeEditCapability,
   ReadOnlyLibraryDefinitionError
-} from '@open-pencil/core/editor'
-import { FigmaAPI } from '@open-pencil/core/figma-api'
-import { updateNode } from '@open-pencil/core/tools/modify'
-import { SceneGraph } from '@open-pencil/scene-graph'
+} from '@kalka/core/editor'
+import { FigmaAPI } from '@kalka/core/figma-api'
+import { updateNode } from '@kalka/core/tools/modify'
+import { SceneGraph } from '@kalka/scene-graph'
 
 describe('library definition capabilities', () => {
   test('protects materialized definitions and descendants but not their instances', async () => {

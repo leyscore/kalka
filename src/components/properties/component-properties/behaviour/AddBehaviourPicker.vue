@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { BEHAVIOUR_KINDS, type BehaviourKind } from '@open-pencil/scene-graph'
-import { useI18n } from '@open-pencil/vue'
+import { BEHAVIOUR_KINDS, type BehaviourKind } from '@kalka/scene-graph'
+import { useI18n } from '@kalka/vue'
 
 import IconButton from '@/components/ui/button/IconButton.vue'
 import AppPicker, { type AppPickerItem } from '@/components/ui/select/AppPicker.vue'

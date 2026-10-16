@@ -11,7 +11,7 @@ import {
 } from 'reka-ui'
 import { computed, ref } from 'vue'
 
-import { useI18n, useLayoutControlsContext, useRetainedPopup } from '@open-pencil/vue'
+import { useI18n, useLayoutControlsContext, useRetainedPopup } from '@kalka/vue'
 
 import VariableNumberField from '@/components/properties/VariableNumberField.vue'
 import { useSelectUI } from '@/components/ui/select/select'

@@ -14,7 +14,7 @@ import {
   encodeMessage,
   getSchemaBytes,
   initCodec
-} from '@open-pencil/kiwi/fig/codec'
+} from '@kalka/kiwi/fig/codec'
 
 const PNG_SIGNATURE = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
 
@@ -26,7 +26,7 @@ function appendChunk(container: Uint8Array, chunk: Uint8Array): Uint8Array {
   return bytes
 }
 
-describe('@open-pencil/fig package API', () => {
+describe('@kalka/fig package API', () => {
   beforeAll(async () => {
     await initCodec()
   })

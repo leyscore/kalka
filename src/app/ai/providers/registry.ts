@@ -2,7 +2,7 @@ import { createDeepSeek } from '@ai-sdk/deepseek'
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 
-import type { AIProviderID } from '@open-pencil/core/constants'
+import type { AIProviderID } from '@kalka/core/constants'
 
 import {
   createAnthropicCompatibleAdapter,

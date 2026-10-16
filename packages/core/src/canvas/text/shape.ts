@@ -5,8 +5,8 @@ import {
   type FigNodeChangeExportRuntime,
   type ShapedText,
   type ShapedTextGlyph
-} from '@open-pencil/fig/node-change'
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+} from '@kalka/fig/node-change'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 import { buildParagraph, textVerticalOffset } from '#core/canvas/text'
 import { getCanvasKit } from '#core/canvaskit'

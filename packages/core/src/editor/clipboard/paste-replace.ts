@@ -1,5 +1,5 @@
-import type { SceneNode } from '@open-pencil/scene-graph'
-import { computeAbsoluteBounds } from '@open-pencil/scene-graph/geometry'
+import type { SceneNode } from '@kalka/scene-graph'
+import { computeAbsoluteBounds } from '@kalka/scene-graph/geometry'
 
 import { getNodeEditCapability } from '#core/editor/capabilities'
 import type { EditorContext } from '#core/editor/types'

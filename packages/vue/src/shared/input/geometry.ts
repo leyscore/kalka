@@ -1,14 +1,14 @@
-import { CORNER_ROTATE_ZONE, HANDLE_HIT_RADIUS } from '@open-pencil/core/constants'
-import type { Editor } from '@open-pencil/core/editor'
+import { CORNER_ROTATE_ZONE, HANDLE_HIT_RADIUS } from '@kalka/core/constants'
+import type { Editor } from '@kalka/core/editor'
 import {
   createSceneGeometry,
   selectionHandleRect,
   rotationHandleLayout,
   type SceneGeometry,
   type RotationPreview
-} from '@open-pencil/core/geometry'
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
-import type { Vector } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/core/geometry'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import type { Vector } from '@kalka/scene-graph/primitives'
 
 import resizeCursorSVG from '#vue/shared/assets/resize-cursor.svg?raw'
 import rotateCursorSVG from '#vue/shared/assets/rotate-cursor.svg?raw'

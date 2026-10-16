@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 
-import { renderJSX } from '@open-pencil/core'
+import { renderJSX } from '@kalka/core'
 
 import { makeSceneGraph } from '#tests/helpers/scene'
 

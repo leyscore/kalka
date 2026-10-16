@@ -1,6 +1,6 @@
-import type { Editor } from '@open-pencil/core/editor'
-import type { SceneNode } from '@open-pencil/scene-graph'
-import type { Rect, Vector } from '@open-pencil/scene-graph/primitives'
+import type { Editor } from '@kalka/core/editor'
+import type { SceneNode } from '@kalka/scene-graph'
+import type { Rect, Vector } from '@kalka/scene-graph/primitives'
 
 import { explicitSnapTargets } from '#vue/shared/input/explicit-snap-targets'
 import {

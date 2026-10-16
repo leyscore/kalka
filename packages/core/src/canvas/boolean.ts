@@ -1,6 +1,6 @@
 import type { Canvas, Path, PathBuilder, PathOp } from 'canvaskit-wasm'
 
-import type { GroupFitOptions, SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import type { GroupFitOptions, SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 import { getTextOutlineSupport } from '#core/text/outlines'
 

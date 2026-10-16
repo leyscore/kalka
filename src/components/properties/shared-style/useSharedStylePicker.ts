@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 
-import type { SharedStyleKind } from '@open-pencil/scene-graph'
-import { MIXED, useI18n, useSharedStyleBinding } from '@open-pencil/vue'
+import type { SharedStyleKind } from '@kalka/scene-graph'
+import { MIXED, useI18n, useSharedStyleBinding } from '@kalka/vue'
 
 export function useSharedStylePicker(kind: SharedStyleKind) {
   const { panels } = useI18n()

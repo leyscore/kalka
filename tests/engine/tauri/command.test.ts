@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 
 import * as v from 'valibot'
 
-import { ACP_AGENTS } from '@open-pencil/core/constants'
+import { ACP_AGENTS } from '@kalka/core/constants'
 
 import { npmInstallArgs } from '@/app/ai/agents/native'
 import { HARNESS_PACKAGE } from '@/app/ai/harness/companion'
@@ -145,7 +145,7 @@ describe('shell scope', () => {
     expect(validators.length).toBeGreaterThan(0)
     for (const validator of validators) {
       const pattern = new RegExp(v.parse(v.object({ validator: v.string() }), validator).validator)
-      for (const target of ['left-pad', '@open-pencil/mcp@0.15.1 & calc', '@open-pencil/mcp']) {
+      for (const target of ['left-pad', '@kalka/mcp@0.15.1 & calc', '@kalka/mcp']) {
         expect(pattern.test(target)).toBe(false)
       }
     }

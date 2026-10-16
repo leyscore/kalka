@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 
-import { parseColor } from '@open-pencil/scene-graph/color'
+import { parseColor } from '@kalka/scene-graph/color'
 
 import { placeIcon } from '#core/icons'
 import { toolNumber } from '#core/tools/input'

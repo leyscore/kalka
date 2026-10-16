@@ -9,9 +9,9 @@
  * normalize into each node's bounding box (objectBoundingBox) space, matching the
  * gradientTransform convention used by the SVG exporter (see io/formats/svg/defs).
  */
-import type { Fill, GradientStop } from '@open-pencil/scene-graph'
-import { parseColor } from '@open-pencil/scene-graph/color'
-import type { Color, Matrix, Rect, Vector } from '@open-pencil/scene-graph/primitives'
+import type { Fill, GradientStop } from '@kalka/scene-graph'
+import { parseColor } from '@kalka/scene-graph/color'
+import type { Color, Matrix, Rect, Vector } from '@kalka/scene-graph/primitives'
 
 import { parseSVGDocument } from '#core/io/formats/svg/document'
 

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { DEFAULT_FONT_FAMILY, FigmaAPI, fontManager } from '@open-pencil/core'
+import { DEFAULT_FONT_FAMILY, FigmaAPI, fontManager } from '@kalka/core'
 
 import { expectDefined } from '#tests/helpers/assert'
 import { getTool, setupToolTest, type ALL_TOOLS, type ToolResult } from '#tests/helpers/tools'

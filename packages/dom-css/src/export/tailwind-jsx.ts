@@ -1,5 +1,5 @@
-import { jsx, type SyntaxNode } from '@open-pencil/emit'
-import type { SceneGraph } from '@open-pencil/scene-graph'
+import { jsx, type SyntaxNode } from '@kalka/emit'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 import type { DesignDocument, DesignElement, DesignNode } from '../types'
 import { mergeClassNames, serializeTailwindClasses } from './html'

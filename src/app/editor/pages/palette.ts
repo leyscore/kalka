@@ -3,13 +3,13 @@ import { computed } from 'vue'
 import IconFile from '~icons/lucide/file'
 import IconFiles from '~icons/lucide/files'
 
-import type { SceneNode } from '@open-pencil/scene-graph'
+import type { SceneNode } from '@kalka/scene-graph'
 import {
   isPageDivider,
   usePageMessages,
   type CommandPaletteGroup,
   type CommandPaletteItem
-} from '@open-pencil/vue'
+} from '@kalka/vue'
 
 import type { EditorStore } from '@/app/editor/active-store'
 import { presenceByPage, type PagePresenceEntry } from '@/app/presence/registry'

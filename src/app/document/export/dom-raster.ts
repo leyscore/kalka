@@ -1,6 +1,6 @@
-import type { NodeRasterizer } from '@open-pencil/core/io'
-import { fontManager } from '@open-pencil/core/text'
-import { rasterDocument } from '@open-pencil/vue'
+import type { NodeRasterizer } from '@kalka/core/io'
+import { fontManager } from '@kalka/core/text'
+import { rasterDocument } from '@kalka/vue'
 
 import { isTauri } from '@/app/tauri/env'
 

@@ -47,7 +47,7 @@ Gemini CLI speaks ACP itself, so there is no separate program. Run `gemini` once
 Pi runs through Kalka's Harness companion instead of ACP. It needs Node.js 22.15 or later, or Bun. Guided setup installs the companion with one click; to install it yourself, use the version that matches your app:
 
 ```sh
-npm install -g @open-pencil/harness
+npm install -g @kalka/harness
 ```
 
 Kalka uses the providers you signed in to in Pi and Pi's default model, so there is no key to paste. Sign in by running `pi` and using `/login`, and pick a default model with `/model`. To use another model in Kalka, enter it as `provider/model` in the Pi model's settings. An [AI Gateway](https://vercel.com/ai-gateway) key is optional; when you save one, Pi uses the gateway instead of your Pi sign-ins.
@@ -58,5 +58,5 @@ Kalka reads only Pi's `settings.json` for the default model; your credentials st
 
 - **Shown as not found after installing.** Apps started from the Dock or Start menu do not see every folder your terminal adds to `PATH`. Kalka also looks in common global folders for npm, Bun, Volta, mise, and Homebrew; if your package manager installs elsewhere, add that folder to your login shell's `PATH` and restart Kalka.
 - **Shown as update needed.** The MCP server or Pi's companion does not match the app version. Press the update button, or run the command guided setup shows with the package manager that installed it, then press **Check again**. A chat that needs it says so and offers **Run guided setup**.
-- **The agent starts but cannot edit the canvas.** The MCP server is missing or not running. Install the matching `@open-pencil/mcp` version and restart Kalka.
+- **The agent starts but cannot edit the canvas.** The MCP server is missing or not running. Install the matching `@kalka/mcp` version and restart Kalka.
 - **The agent asks you to sign in.** Sign in with the agent's own command-line tool as described above, then send your message again.

@@ -1,12 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import {
-  useComponentProperties,
-  useExposedInstances,
-  useI18n,
-  useSlotProperties
-} from '@open-pencil/vue'
+import { useComponentProperties, useExposedInstances, useI18n, useSlotProperties } from '@kalka/vue'
 
 import AssetThumbnail from '@/components/assets-panel/AssetThumbnail.vue'
 import PanelSection from '@/components/ui/panel/PanelSection.vue'

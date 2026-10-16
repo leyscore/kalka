@@ -1,6 +1,6 @@
-import { readIcon, type SceneNode } from '@open-pencil/scene-graph'
-import { BLACK } from '@open-pencil/scene-graph/constants'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import { readIcon, type SceneNode } from '@kalka/scene-graph'
+import { BLACK } from '@kalka/scene-graph/constants'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import { restoreSubtree, snapshotSubtree } from '#core/editor/clipboard/subtree-history'
 import type { EditorContext } from '#core/editor/types'

@@ -1,4 +1,4 @@
-import type { Rect } from '@open-pencil/scene-graph/primitives'
+import type { Rect } from '@kalka/scene-graph/primitives'
 
 import type { HandlePosition } from '#vue/shared/input/types'
 

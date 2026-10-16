@@ -1,7 +1,7 @@
 import { converter } from 'culori'
 import { computed } from 'vue'
 
-import type { Color } from '@open-pencil/scene-graph'
+import type { Color } from '@kalka/scene-graph'
 
 import { appPreferences } from '@/app/settings/preferences/store'
 import { resolvedAppTheme } from '@/app/shell/theme'

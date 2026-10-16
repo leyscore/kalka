@@ -3,8 +3,8 @@ import { resolve } from 'node:path'
 
 import { bench, group, run } from 'mitata'
 
-import { parseFigFile, exportFigFile, initCodec, SceneGraph } from '@open-pencil/core'
-import { copyFills } from '@open-pencil/scene-graph/copy'
+import { parseFigFile, exportFigFile, initCodec, SceneGraph } from '@kalka/core'
+import { copyFills } from '@kalka/scene-graph/copy'
 
 const FIXTURES = resolve(import.meta.dir, '../fixtures')
 

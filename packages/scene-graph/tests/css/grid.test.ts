@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import type { GridTrack } from '@open-pencil/scene-graph'
-import { parseCSSGridTracks } from '@open-pencil/scene-graph/css'
+import type { GridTrack } from '@kalka/scene-graph'
+import { parseCSSGridTracks } from '@kalka/scene-graph/css'
 
 const fr = (value: number): GridTrack => ({ sizing: 'FR', value })
 const fixed = (value: number): GridTrack => ({ sizing: 'FIXED', value })

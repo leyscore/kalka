@@ -1,8 +1,8 @@
 import { reactive } from 'vue'
 
-import type { InstanceState } from '@open-pencil/core/editor'
-import { booleanOf, type ControlModel } from '@open-pencil/dom-css/export'
-import { numberSettings, type InteractionState } from '@open-pencil/scene-graph'
+import type { InstanceState } from '@kalka/core/editor'
+import { booleanOf, type ControlModel } from '@kalka/dom-css/export'
+import { numberSettings, type InteractionState } from '@kalka/scene-graph'
 
 /** What one control of an island holds while it runs. */
 export interface ControlState {

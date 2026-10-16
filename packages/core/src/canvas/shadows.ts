@@ -1,8 +1,8 @@
 import type { Canvas, Path } from 'canvaskit-wasm'
 
-import { readEffectiveFigmaRawField } from '@open-pencil/fig'
-import type { SceneNode } from '@open-pencil/scene-graph'
-import type { Color, Vector } from '@open-pencil/scene-graph/primitives'
+import { readEffectiveFigmaRawField } from '@kalka/fig'
+import type { SceneNode } from '@kalka/scene-graph'
+import type { Color, Vector } from '@kalka/scene-graph/primitives'
 
 import { BLACK } from '#core/constants'
 

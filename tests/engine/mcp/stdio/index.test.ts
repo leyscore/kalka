@@ -7,7 +7,7 @@ import type { Client } from '@modelcontextprotocol/client'
 import type { StdioClientTransport } from '@modelcontextprotocol/client/stdio'
 import * as v from 'valibot'
 
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { startServer, type ServerHandle } from '#mcp/server'
 

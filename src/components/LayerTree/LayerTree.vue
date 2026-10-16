@@ -9,13 +9,13 @@ import {
 import { tv } from 'tailwind-variants'
 import { computed, useAttrs, useTemplateRef, watch } from 'vue'
 
-import { LayerTreeRoot, LayerTreeItem, useInlineRename } from '@open-pencil/vue'
+import { LayerTreeRoot, LayerTreeItem, useInlineRename } from '@kalka/vue'
 import type {
   LayerDragInstruction,
   LayerNode,
   LayerSelectionMode,
   LayerTreeVirtualizer
-} from '@open-pencil/vue'
+} from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import { layerIssueMarks } from '@/app/editor/design-check/layers'

@@ -1,13 +1,13 @@
 import { describe, expect, test } from 'bun:test'
 
-import { createEditor, playIslandRoots, resolvePlayState } from '@open-pencil/core/editor'
+import { createEditor, playIslandRoots, resolvePlayState } from '@kalka/core/editor'
 import {
   emptyBehaviour,
   findLayerByPath,
   instanceMainComponent,
   layerPath,
   SceneGraph
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 /** A Switch set (State × Interaction) and a card frame holding an Off instance with a label. */
 function switchCard() {

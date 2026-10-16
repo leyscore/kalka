@@ -245,7 +245,7 @@ jobs:
           lfs-include: tests/fixtures/gold-preview.fig,tests/fixtures/circle-text.fig,tests/fixtures/slots.fig,tests/fixtures/variable-override-precedence.fig,tests/fixtures/fonts/*
 
       - name: Build shared Core test dependency
-        run: bun --filter @open-pencil/core build
+        run: bun --filter @kalka/core build
 
       - name: Run ${{ matrix.group }} unit tests
         run: bun tools/dev/unit-tests/src/run.ts "${{ matrix.group }}"

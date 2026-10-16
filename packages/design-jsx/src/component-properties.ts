@@ -1,12 +1,12 @@
 import * as v from 'valibot'
 
-import { applyComponentPropertyValue, componentPropertyDefinitions } from '@open-pencil/scene-graph'
+import { applyComponentPropertyValue, componentPropertyDefinitions } from '@kalka/scene-graph'
 import type {
   ComponentPropertyDefinition,
   ComponentPropertyReference,
   SceneGraph,
   SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { DESIGN_JSX_SUPPORTED_PROPERTIES } from './schema'
 import { parseScriptInput } from './validation'

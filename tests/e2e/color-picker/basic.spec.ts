@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 
-import { parseOkHCLPayload } from '@open-pencil/scene-graph/color'
+import { parseOkHCLPayload } from '@kalka/scene-graph/color'
 
 import { CanvasHelper } from '#tests/helpers/canvas'
 

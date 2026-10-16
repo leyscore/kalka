@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, setDefaultTimeout, test } from 'bun:test'
 
-import { SceneGraph, type SceneNode } from '@open-pencil/core'
+import { SceneGraph, type SceneNode } from '@kalka/core'
 
 import { sharedGoldPreviewFixture, VALID_NODE_TYPES } from '#tests/helpers/fig/fixtures'
 

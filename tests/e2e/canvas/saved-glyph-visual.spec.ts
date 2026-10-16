@@ -1,4 +1,4 @@
-import type { Fill, StyleRun } from '@open-pencil/scene-graph'
+import type { Fill, StyleRun } from '@kalka/scene-graph'
 
 import { expect, test, useEditorSetupWithClear } from '#tests/e2e/fixtures'
 import styledGlyphs from '#tests/fixtures/styled-saved-glyphs.json' with { type: 'json' }

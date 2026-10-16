@@ -12,7 +12,7 @@ import {
 import { useEditor } from '#vue/editor/context'
 import { useSceneComputed } from '#vue/internal/scene-computed/use'
 
-export type { ExportFormatId, ExportSetting } from '@open-pencil/scene-graph'
+export type { ExportFormatId, ExportSetting } from '@kalka/scene-graph'
 export type { ExportFormatOption, ExportPanelTarget } from '#vue/document/export/helpers'
 
 export function useExport() {

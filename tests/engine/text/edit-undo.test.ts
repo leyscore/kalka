@@ -2,13 +2,13 @@ import { describe, test, expect } from 'bun:test'
 
 import type { CanvasKit } from 'canvaskit-wasm'
 
-import { SceneGraph, TextEditor, UndoManager } from '@open-pencil/core'
-import type { StyleRun } from '@open-pencil/core'
-import { createTextActions } from '@open-pencil/core/editor'
-import type { EditorContext, EditorState } from '@open-pencil/core/editor'
-import { iconify } from '@open-pencil/core/icons'
-import { getInstanceOverride } from '@open-pencil/scene-graph'
-import type { DerivedTextGlyph } from '@open-pencil/scene-graph'
+import { SceneGraph, TextEditor, UndoManager } from '@kalka/core'
+import type { StyleRun } from '@kalka/core'
+import { createTextActions } from '@kalka/core/editor'
+import type { EditorContext, EditorState } from '@kalka/core/editor'
+import { iconify } from '@kalka/core/icons'
+import { getInstanceOverride } from '@kalka/scene-graph'
+import type { DerivedTextGlyph } from '@kalka/scene-graph'
 
 import { fontManager } from '#core/text/fonts'
 

@@ -1,4 +1,4 @@
-import { breakpointsOf, responsiveArtboards, type SceneGraph } from '@open-pencil/scene-graph'
+import { breakpointsOf, responsiveArtboards, type SceneGraph } from '@kalka/scene-graph'
 
 import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
 import { inlineStyleOverClasses } from './classes'

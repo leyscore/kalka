@@ -9,15 +9,15 @@ import {
   type IconPaint,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/scene-graph'
-import { parseColor } from '@open-pencil/scene-graph/color'
-import { BLACK } from '@open-pencil/scene-graph/constants'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/scene-graph'
+import { parseColor } from '@kalka/scene-graph/color'
+import { BLACK } from '@kalka/scene-graph/constants'
+import type { Color } from '@kalka/scene-graph/primitives'
 import {
   createResizeSnapshot,
   scaledChildRect,
   scaledGeometryChanges
-} from '@open-pencil/scene-graph/resize'
+} from '@kalka/scene-graph/resize'
 
 import { createPathStroke, pathStrokeLineStyle } from '#core/icons/path-style'
 

@@ -5,7 +5,7 @@ import {
   AI_PROVIDERS,
   type AIProviderID,
   type ModelOption
-} from '@open-pencil/core/constants'
+} from '@kalka/core/constants'
 
 import type { AIModelProfileDraft, AIModelCapability } from '@/app/ai/models'
 import { resolveModelsDevModel } from '@/app/ai/models/catalog'

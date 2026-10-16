@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 
-import type { BlendMode } from '@open-pencil/scene-graph'
-import { useI18n } from '@open-pencil/vue'
+import type { BlendMode } from '@kalka/scene-graph'
+import { useI18n } from '@kalka/vue'
 
 export function commitDiscretePropertyListChange(flush: () => void, update: () => void): void {
   update()

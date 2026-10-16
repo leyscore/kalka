@@ -1,4 +1,4 @@
-import type { NodeChange } from '@open-pencil/core'
+import type { NodeChange } from '@kalka/core'
 
 export function doc(): NodeChange {
   return {

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { nodeChangeToProps } from '@open-pencil/fig/node-change'
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
+import { nodeChangeToProps } from '@kalka/fig/node-change'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
 
 import { parseFixture } from '#tests/helpers/fig/fixtures'
 import { collectAllNodes } from '#tests/helpers/fig/traversal'

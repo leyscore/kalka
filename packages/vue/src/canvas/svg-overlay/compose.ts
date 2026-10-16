@@ -1,11 +1,6 @@
-import type {
-  LabelCache,
-  OverlayLayerId,
-  PlacedIssueMarker,
-  RulerTheme
-} from '@open-pencil/core/canvas'
-import { RULER_SIZE } from '@open-pencil/core/constants'
-import type { Color, Rect } from '@open-pencil/scene-graph/primitives'
+import type { LabelCache, OverlayLayerId, PlacedIssueMarker, RulerTheme } from '@kalka/core/canvas'
+import { RULER_SIZE } from '@kalka/core/constants'
+import type { Color, Rect } from '@kalka/scene-graph/primitives'
 
 import { aiMarksLayer, type AIMarks } from '#vue/canvas/svg-overlay/layers/ai-marks'
 import { autoLayoutHoverLayer } from '#vue/canvas/svg-overlay/layers/auto-layout-hover'

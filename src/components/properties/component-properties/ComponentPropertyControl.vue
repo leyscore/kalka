@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { MIXED, useI18n } from '@open-pencil/vue'
-import type { ComponentPropertyControl } from '@open-pencil/vue'
+import { MIXED, useI18n } from '@kalka/vue'
+import type { ComponentPropertyControl } from '@kalka/vue'
 
 import type { AppPickerItem } from '@/components/ui/select/AppPicker.vue'
 import AppPickerField from '@/components/ui/select/AppPickerField.vue'

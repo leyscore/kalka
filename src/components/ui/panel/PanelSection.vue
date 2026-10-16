@@ -32,7 +32,7 @@ import {
   PropertySectionHeader,
   PropertySectionRoot,
   PropertySectionTitle
-} from '@open-pencil/vue'
+} from '@kalka/vue'
 
 import theme from '@/theme/panel/section'
 

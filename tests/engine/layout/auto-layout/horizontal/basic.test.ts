@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { computeAllLayouts, computeLayout, createEditor, SceneGraph } from '@open-pencil/core'
+import { computeAllLayouts, computeLayout, createEditor, SceneGraph } from '@kalka/core'
 
 import { autoFrame, pageId, rect } from '#tests/helpers/layout'
 

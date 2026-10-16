@@ -6,8 +6,8 @@ import {
   responsiveOverrides,
   responsiveParent,
   responsivePrimaryOf
-} from '@open-pencil/scene-graph'
-import { useI18n } from '@open-pencil/vue'
+} from '@kalka/scene-graph'
+import { useI18n } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import {

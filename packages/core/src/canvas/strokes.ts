@@ -1,9 +1,9 @@
 import type { Canvas, EmbindEnumEntity, Paint } from 'canvaskit-wasm'
 
-import type { SceneGraph, SceneNode, Stroke } from '@open-pencil/scene-graph'
-import type { ArrowEndpoint } from '@open-pencil/scene-graph/arrow-caps'
-import { arrowLinesSegments, equilateralArrowPoints } from '@open-pencil/scene-graph/arrow-caps'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import type { SceneGraph, SceneNode, Stroke } from '@kalka/scene-graph'
+import type { ArrowEndpoint } from '@kalka/scene-graph/arrow-caps'
+import { arrowLinesSegments, equilateralArrowPoints } from '@kalka/scene-graph/arrow-caps'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import { applyGradientFill, applyImageFill } from './fills'
 import type { SkiaRenderer } from './renderer'

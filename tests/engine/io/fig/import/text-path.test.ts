@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 
-import { parseFigBuffer } from '@open-pencil/fig'
-import { convertFigmaDerivedTextGlyphs, nodeChangeToProps } from '@open-pencil/fig/node-change'
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-import { SceneGraph } from '@open-pencil/scene-graph'
-import type { Vector } from '@open-pencil/scene-graph/primitives'
+import { parseFigBuffer } from '@kalka/fig'
+import { convertFigmaDerivedTextGlyphs, nodeChangeToProps } from '@kalka/fig/node-change'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
+import { SceneGraph } from '@kalka/scene-graph'
+import type { Vector } from '@kalka/scene-graph/primitives'
 
 import { exportFigFile } from '#core/io/formats/fig/export'
 import { encodeVectorNetworkBlob } from '#core/vector'

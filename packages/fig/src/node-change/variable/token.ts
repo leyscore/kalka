@@ -1,7 +1,7 @@
 import { mapKeys } from 'es-toolkit/object'
 import { isEmptyObject } from 'es-toolkit/predicate'
 
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
 import {
   OPEN_PENCIL_PLUGIN_DATA,
   pluginDataEntry,
@@ -10,7 +10,7 @@ import {
   type Variable,
   type VariableCollection,
   type VariableValue
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { readNodeChangePluginData } from '../plugin-data'
 

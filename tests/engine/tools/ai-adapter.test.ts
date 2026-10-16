@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 
 import { tool } from 'ai'
 
-import { ALL_TOOLS, FigmaAPI, SceneGraph, toolsToAI } from '@open-pencil/core'
+import { ALL_TOOLS, FigmaAPI, SceneGraph, toolsToAI } from '@kalka/core'
 
 import { expectDefined } from '#tests/helpers/assert'
 

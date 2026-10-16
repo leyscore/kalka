@@ -1,17 +1,17 @@
 import { writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
-import { runCommand } from '@open-pencil/package-artifacts-tools'
+import { runCommand } from '@kalka/package-artifacts-tools'
 
-const TYPE_CONSUMER = `import { createEditor, type Editor } from '@open-pencil/core'
-import { Frame, type TreeNode } from '@open-pencil/design-jsx'
-import { htmlToDesignDocument, type DesignDocument } from '@open-pencil/dom-css'
-import { FIG_PACKAGE_STATUS, type FigContainerDocument } from '@open-pencil/fig'
-import { FIG_KIWI_DEFAULT_VERSION, buildFigKiwi } from '@open-pencil/kiwi/fig/container'
-import { type GUID as KiwiGUID } from '@open-pencil/kiwi/fig'
-import { parsePenFile, type PenDocument } from '@open-pencil/pen'
-import { SceneGraph, type Color, type SceneNode, type Vector } from '@open-pencil/scene-graph'
-import { testIdSelector } from '@open-pencil/vue'
+const TYPE_CONSUMER = `import { createEditor, type Editor } from '@kalka/core'
+import { Frame, type TreeNode } from '@kalka/design-jsx'
+import { htmlToDesignDocument, type DesignDocument } from '@kalka/dom-css'
+import { FIG_PACKAGE_STATUS, type FigContainerDocument } from '@kalka/fig'
+import { FIG_KIWI_DEFAULT_VERSION, buildFigKiwi } from '@kalka/kiwi/fig/container'
+import { type GUID as KiwiGUID } from '@kalka/kiwi/fig'
+import { parsePenFile, type PenDocument } from '@kalka/pen'
+import { SceneGraph, type Color, type SceneNode, type Vector } from '@kalka/scene-graph'
+import { testIdSelector } from '@kalka/vue'
 
 const graph = new SceneGraph()
 const editorFactory: typeof createEditor = createEditor

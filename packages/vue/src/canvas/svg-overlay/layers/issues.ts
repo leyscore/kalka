@@ -3,7 +3,7 @@ import {
   layoutIssueMarkers,
   type DesignIssueSeverity,
   type PlacedIssueMarker
-} from '@open-pencil/core/canvas'
+} from '@kalka/core/canvas'
 import {
   ISSUE_EDGE_ARROW,
   ISSUE_ERROR_COLOR,
@@ -13,9 +13,9 @@ import {
   ISSUE_MARKER_RING_WIDTH,
   ISSUE_WARNING_COLOR,
   SIZE_FONT_SIZE
-} from '@open-pencil/core/constants'
-import { createSceneGeometry } from '@open-pencil/core/geometry'
-import type { Color, Rect } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/core/constants'
+import { createSceneGeometry } from '@kalka/core/geometry'
+import type { Color, Rect } from '@kalka/scene-graph/primitives'
 
 import { nodeShape, type OverlayContext } from '#vue/canvas/svg-overlay/layers/selection'
 import { css, type OverlayShape } from '#vue/canvas/svg-overlay/shapes'

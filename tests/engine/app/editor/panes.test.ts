@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { createDefaultEditorState } from '@open-pencil/core/editor'
+import { createDefaultEditorState } from '@kalka/core/editor'
 
 import { createCanvasPaneRegistry } from '@/app/editor/panes/registry'
 import {

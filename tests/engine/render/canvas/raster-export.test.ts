@@ -2,8 +2,8 @@ import { beforeAll, describe, expect, test } from 'bun:test'
 
 import type { Canvas } from 'canvaskit-wasm'
 
-import { renderNodesToImage, SceneGraph, SkiaRenderer } from '@open-pencil/core'
-import { getWorldMatrix } from '@open-pencil/scene-graph'
+import { renderNodesToImage, SceneGraph, SkiaRenderer } from '@kalka/core'
+import { getWorldMatrix } from '@kalka/scene-graph'
 
 import { initCanvasKit } from '#cli/headless'
 import { renderSceneToCanvas } from '#core/canvas/renderer/pipeline'

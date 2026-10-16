@@ -5,8 +5,8 @@ import {
   readIconTint,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/scene-graph'
-import { colorToHex } from '@open-pencil/scene-graph/color'
+} from '@kalka/scene-graph'
+import { colorToHex } from '@kalka/scene-graph/color'
 
 import type { JSXProp } from './props'
 

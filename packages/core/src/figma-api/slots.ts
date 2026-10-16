@@ -12,7 +12,7 @@ import {
   type SceneGraph,
   type SlotLimitViolation,
   type SlotSettings
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import type { NodeProxyInternals, ProxyThis } from './accessor-utils'
 import { assertProxyEditable, graph, nodeId, raw } from './accessor-utils'

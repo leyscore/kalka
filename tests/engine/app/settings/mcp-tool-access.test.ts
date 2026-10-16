@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 
 import { effectScope, nextTick, ref } from 'vue'
 
-import type { ToolDescriptor } from '@open-pencil/mcp/tools'
+import type { ToolDescriptor } from '@kalka/mcp/tools'
 
 import { useToolAccess } from '@/app/automation/tool-access/settings/list'
 

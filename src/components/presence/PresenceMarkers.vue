@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { colorToCSS } from '@open-pencil/scene-graph/color'
+import { colorToCSS } from '@kalka/scene-graph/color'
 
 import type { PagePresenceEntry } from '@/app/presence/registry'
 import Tip from '@/components/ui/overlay/Tip.vue'

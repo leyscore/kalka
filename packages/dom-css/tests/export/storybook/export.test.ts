@@ -5,7 +5,7 @@ import { join } from 'node:path'
 
 import { exportStorybook } from '#dom-css/index'
 
-import { emptyBehaviour, SceneGraph, withBehaviour } from '@open-pencil/scene-graph'
+import { emptyBehaviour, SceneGraph, withBehaviour } from '@kalka/scene-graph'
 
 function buttonGraph() {
   const graph = new SceneGraph()

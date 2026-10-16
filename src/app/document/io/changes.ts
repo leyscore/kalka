@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue'
 
-import type { Editor } from '@open-pencil/core/editor'
+import type { Editor } from '@kalka/core/editor'
 
 /**
  * Content-only revisions: viewport repainting, layout, loading a page's layers, and recovery

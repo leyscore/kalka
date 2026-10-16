@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 
-import type { BlendMode, Effect } from '@open-pencil/scene-graph'
+import type { BlendMode, Effect } from '@kalka/scene-graph'
 
 import { TRANSPARENT } from '#core/constants'
 

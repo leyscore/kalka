@@ -2,8 +2,8 @@
 import { useEventListener } from '@vueuse/core'
 import { computed } from 'vue'
 
-import { colorToCSS, readableForeground } from '@open-pencil/scene-graph/color'
-import { useI18n } from '@open-pencil/vue'
+import { colorToCSS, readableForeground } from '@kalka/scene-graph/color'
+import { useI18n } from '@kalka/vue'
 
 import type { FollowedLabel } from '@/app/presence/registry'
 import { isEditing } from '@/app/shell/keyboard/focus'

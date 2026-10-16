@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 
-import { sceneNodeToDesignDocument } from '@open-pencil/dom-css/export'
-import { SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
+import { sceneNodeToDesignDocument } from '@kalka/dom-css/export'
+import { SceneGraph, type SceneNode } from '@kalka/scene-graph'
 
 function hugging() {
   const graph = new SceneGraph()

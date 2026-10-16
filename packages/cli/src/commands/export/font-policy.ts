@@ -1,5 +1,5 @@
-import { prepareGraphFonts } from '@open-pencil/core/text'
-import type { SceneGraph } from '@open-pencil/scene-graph'
+import { prepareGraphFonts } from '@kalka/core/text'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 import { fail, printError } from '#cli/format'
 

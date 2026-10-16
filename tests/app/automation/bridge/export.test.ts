@@ -3,9 +3,9 @@ import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 
 import { toUint8Array } from 'js-base64'
 
-import { SkiaRenderer } from '@open-pencil/core/canvas'
-import { BUILTIN_IO_FORMATS, IORegistry, initCanvasKit, parseFigFile } from '@open-pencil/core/io'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { SkiaRenderer } from '@kalka/core/canvas'
+import { BUILTIN_IO_FORMATS, IORegistry, initCanvasKit, parseFigFile } from '@kalka/core/io'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { makeFigmaFromStore } from '@/app/automation/bridge/figma-factory'
 import { createAutomationCommandHandlers } from '@/app/automation/bridge/handlers'

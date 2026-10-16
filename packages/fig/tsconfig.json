@@ -14,9 +14,9 @@
     "resolveJsonModule": true,
     "types": ["bun"],
     "paths": {
-      "@open-pencil/fig": ["./src/index.ts"],
-      "@open-pencil/fig/instance-overrides": ["./src/instance-overrides/index.ts"],
-      "@open-pencil/fig/node-change": ["./src/node-change/index.ts"]
+      "@kalka/fig": ["./src/index.ts"],
+      "@kalka/fig/instance-overrides": ["./src/instance-overrides/index.ts"],
+      "@kalka/fig/node-change": ["./src/node-change/index.ts"]
     }
   },
   "include": ["src/**/*.ts"],

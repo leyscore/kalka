@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from 'reka-ui'
 
-import { useComponentProperties, useSceneComputed, useEditor } from '@open-pencil/vue'
+import { useComponentProperties, useSceneComputed, useEditor } from '@kalka/vue'
 
 import { collapsibleContentMotion } from '@/theme/collapsible/collapsible'
 

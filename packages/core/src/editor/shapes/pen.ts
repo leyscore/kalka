@@ -1,10 +1,5 @@
-import type {
-  SceneNode,
-  VectorNetwork,
-  VectorRegion,
-  VectorSegment
-} from '@open-pencil/scene-graph'
-import type { Vector } from '@open-pencil/scene-graph/primitives'
+import type { SceneNode, VectorNetwork, VectorRegion, VectorSegment } from '@kalka/scene-graph'
+import type { Vector } from '@kalka/scene-graph/primitives'
 
 import { BLACK } from '#core/constants'
 import type { EditorContext } from '#core/editor/types'

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, onUnmounted, useTemplateRef } from 'vue'
 
-import { HARNESS_PROVIDER_ID } from '@open-pencil/core/constants'
-import { useI18n } from '@open-pencil/vue'
+import { HARNESS_PROVIDER_ID } from '@kalka/core/constants'
+import { useI18n } from '@kalka/vue'
 
 import { openAISetup } from '@/app/ai/models/settings/onboarding/dialog'
 import { useModelSettings } from '@/app/ai/models/settings/use'

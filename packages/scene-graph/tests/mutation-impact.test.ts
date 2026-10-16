@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { collectSceneMutation, mutationLayoutScopeIds, SceneGraph } from '@open-pencil/scene-graph'
+import { collectSceneMutation, mutationLayoutScopeIds, SceneGraph } from '@kalka/scene-graph'
 
 function pageId(graph: SceneGraph): string {
   return graph.getPages()[0].id

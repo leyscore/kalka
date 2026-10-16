@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'bun:test'
 
-import { exportFigFile, extractExportGraph, parseFigFile } from '@open-pencil/core/io'
-import { initCodec } from '@open-pencil/core/kiwi'
-import { parseFigBuffer } from '@open-pencil/fig'
-import type { SymbolData } from '@open-pencil/fig/instance-overrides'
-import { guidToString } from '@open-pencil/kiwi/fig/guid'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { exportFigFile, extractExportGraph, parseFigFile } from '@kalka/core/io'
+import { initCodec } from '@kalka/core/kiwi'
+import { parseFigBuffer } from '@kalka/fig'
+import type { SymbolData } from '@kalka/fig/instance-overrides'
+import { guidToString } from '@kalka/kiwi/fig/guid'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { expectDefined } from '#tests/helpers/assert'
 import { sharedGoldPreviewFixture } from '#tests/helpers/fig/fixtures'

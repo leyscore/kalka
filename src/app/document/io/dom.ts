@@ -1,5 +1,5 @@
-import type { Editor, EditorState } from '@open-pencil/core/editor'
-import { browserHTMLToSceneGraph } from '@open-pencil/dom-css/browser'
+import type { Editor, EditorState } from '@kalka/core/editor'
+import { browserHTMLToSceneGraph } from '@kalka/dom-css/browser'
 
 import { describeDiagnosticError, recordDocumentFailure } from '@/app/diagnostics'
 import { yieldToUI } from '@/app/document/io/browser'

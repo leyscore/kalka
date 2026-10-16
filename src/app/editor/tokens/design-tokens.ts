@@ -1,10 +1,7 @@
 import { uniq } from 'es-toolkit/array'
 import { strFromU8, strToU8, unzipSync, zipSync, type Zippable } from 'fflate'
 
-import type {
-  DesignTokenIssue,
-  DesignTokenSourceFile
-} from '@open-pencil/core/io/formats/design-tokens'
+import type { DesignTokenIssue, DesignTokenSourceFile } from '@kalka/core/io/formats/design-tokens'
 
 import { saveExportedFile } from '@/app/document/export/files'
 import { downloadBlob } from '@/app/document/io/browser'
@@ -28,7 +25,7 @@ function issueName(issue: DesignTokenIssue): string {
  * collection mode, the styles, and the resolver that combines them.
  */
 export async function exportDesignTokenArchive(store: EditorStore): Promise<void> {
-  const { exportDesignTokens } = await import('@open-pencil/core/io/formats/design-tokens')
+  const { exportDesignTokens } = await import('@kalka/core/io/formats/design-tokens')
   const { files, issues } = exportDesignTokens(store.graph)
   const entries: Zippable = {}
   for (const file of files)

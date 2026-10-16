@@ -1,4 +1,4 @@
-import { colorToCSS } from '@open-pencil/scene-graph/color'
+import { colorToCSS } from '@kalka/scene-graph/color'
 
 import { expect, test, useEditorSetupWithClear } from '#tests/e2e/fixtures'
 import { propertySection } from '#tests/helpers/properties'

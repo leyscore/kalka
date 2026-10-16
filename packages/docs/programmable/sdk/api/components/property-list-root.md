@@ -24,12 +24,12 @@ mutation and undo behavior stay in `useEditorPropertyList()` or an application a
 ```vue twoslash
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { Fill } from '@open-pencil/scene-graph'
+import type { Fill } from '@kalka/scene-graph'
 import {
   PropertyListItem,
   PropertyListRemove,
   PropertyListRoot
-} from '@open-pencil/vue'
+} from '@kalka/vue'
 
 const fills = ref<Fill[]>([])
 </script>

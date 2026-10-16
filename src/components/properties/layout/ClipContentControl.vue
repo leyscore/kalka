@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useI18n, useLayoutControlsContext } from '@open-pencil/vue'
+import { useI18n, useLayoutControlsContext } from '@kalka/vue'
 
 const ctx = useLayoutControlsContext()
 

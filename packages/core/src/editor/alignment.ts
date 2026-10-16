@@ -1,8 +1,8 @@
-import type { SceneNode } from '@open-pencil/scene-graph'
-import { getAbsolutePositionFull, getWorldMatrix } from '@open-pencil/scene-graph/coordinate'
-import { computeAbsoluteBounds } from '@open-pencil/scene-graph/geometry'
-import Matrix from '@open-pencil/scene-graph/matrix'
-import type { Vector } from '@open-pencil/scene-graph/primitives'
+import type { SceneNode } from '@kalka/scene-graph'
+import { getAbsolutePositionFull, getWorldMatrix } from '@kalka/scene-graph/coordinate'
+import { computeAbsoluteBounds } from '@kalka/scene-graph/geometry'
+import Matrix from '@kalka/scene-graph/matrix'
+import type { Vector } from '@kalka/scene-graph/primitives'
 
 import { createFlipRotateActions } from '#core/editor/alignment/flip-rotate'
 

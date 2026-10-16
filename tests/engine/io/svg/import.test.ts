@@ -2,8 +2,8 @@ import { describe, test, expect, beforeEach } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { FigmaAPI, renderNodesToSVG, SceneGraph } from '@open-pencil/core'
-import { importSVG } from '@open-pencil/core/tools'
+import { FigmaAPI, renderNodesToSVG, SceneGraph } from '@kalka/core'
+import { importSVG } from '@kalka/core/tools'
 
 import { expectDefined, getNodeOrThrow } from '#tests/helpers/assert'
 

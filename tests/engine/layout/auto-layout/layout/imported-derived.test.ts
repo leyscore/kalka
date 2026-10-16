@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { computeAllLayouts, SceneGraph } from '@open-pencil/core'
-import { getAbsolutePositionFull } from '@open-pencil/scene-graph'
+import { computeAllLayouts, SceneGraph } from '@kalka/core'
+import { getAbsolutePositionFull } from '@kalka/scene-graph'
 
 describe('imported auto-layout bounds', () => {
   test('preserves direct imported line geometry inside imported parents', () => {

@@ -8,11 +8,11 @@ import {
   resolveFillColor,
   type LabelCache,
   type LabelLayout
-} from '@open-pencil/core/canvas'
-import { COMPONENT_COLOR, SECTION_TITLE_RADIUS, SELECTION_COLOR } from '@open-pencil/core/constants'
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
-import { WHITE } from '@open-pencil/scene-graph'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/core/canvas'
+import { COMPONENT_COLOR, SECTION_TITLE_RADIUS, SELECTION_COLOR } from '@kalka/core/constants'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import { WHITE } from '@kalka/scene-graph'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import type { OverlayContext } from '#vue/canvas/svg-overlay/layers/selection'
 import { css, type MeasureText, type OverlayShape } from '#vue/canvas/svg-overlay/shapes'

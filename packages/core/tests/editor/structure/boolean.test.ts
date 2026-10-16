@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 
-import { TRANSPARENT } from '@open-pencil/core/constants'
-import { createEditor } from '@open-pencil/core/editor'
-import { getAxisAlignedWorldBounds } from '@open-pencil/scene-graph/coordinate'
+import { TRANSPARENT } from '@kalka/core/constants'
+import { createEditor } from '@kalka/core/editor'
+import { getAxisAlignedWorldBounds } from '@kalka/scene-graph/coordinate'
 
 describe('booleanOperationSelected', () => {
   test('wraps selected nodes in a boolean operation container', () => {

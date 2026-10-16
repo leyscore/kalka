@@ -1,4 +1,4 @@
-import { generateId } from '@open-pencil/scene-graph'
+import { generateId } from '@kalka/scene-graph'
 import type {
   Color,
   Effect,
@@ -19,10 +19,10 @@ import type {
   VariableCollectionMode,
   VariableType,
   VariableValue
-} from '@open-pencil/scene-graph'
-import { parseColor } from '@open-pencil/scene-graph/color'
-import { BLACK } from '@open-pencil/scene-graph/constants'
-import type { Vector } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/scene-graph'
+import { parseColor } from '@kalka/scene-graph/color'
+import { BLACK } from '@kalka/scene-graph/constants'
+import type { Vector } from '@kalka/scene-graph/primitives'
 
 export interface PenDocument {
   version: string

@@ -1,10 +1,10 @@
 import { expect, test } from 'bun:test'
 
-import { createEditor } from '@open-pencil/core/editor'
-import { exportFigFile, parseFigFile } from '@open-pencil/core/io'
-import { populateFigPage } from '@open-pencil/core/io/formats/fig'
-import { initCodec } from '@open-pencil/core/kiwi'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { createEditor } from '@kalka/core/editor'
+import { exportFigFile, parseFigFile } from '@kalka/core/io'
+import { populateFigPage } from '@kalka/core/io/formats/fig'
+import { initCodec } from '@kalka/core/kiwi'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import type { PageSwitchProgress } from '#core/editor/pages'
 

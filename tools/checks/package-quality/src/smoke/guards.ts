@@ -4,11 +4,8 @@ import { dirname, join } from 'node:path'
 
 import { isEqual } from 'es-toolkit'
 
-import { CommandError, parseNpmPack, runCommand } from '@open-pencil/package-artifacts-tools'
-import {
-  inspectTarball,
-  type TarballDiagnostic
-} from '@open-pencil/package-artifacts-tools/tarball'
+import { CommandError, parseNpmPack, runCommand } from '@kalka/package-artifacts-tools'
+import { inspectTarball, type TarballDiagnostic } from '@kalka/package-artifacts-tools/tarball'
 
 import { installPackedPackages } from './install'
 import { evaluateRuntime, type RuntimeName } from './runtime'

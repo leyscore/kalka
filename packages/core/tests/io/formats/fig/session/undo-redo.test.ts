@@ -1,10 +1,10 @@
 import { expect, test } from 'bun:test'
 
-import { createEditor } from '@open-pencil/core/editor'
-import { exportFigFile } from '@open-pencil/core/io'
-import { initCodec } from '@open-pencil/core/kiwi'
-import { createFigDocumentSession } from '@open-pencil/fig'
-import { SceneGraph, recordInstanceOverride } from '@open-pencil/scene-graph'
+import { createEditor } from '@kalka/core/editor'
+import { exportFigFile } from '@kalka/core/io'
+import { initCodec } from '@kalka/core/kiwi'
+import { createFigDocumentSession } from '@kalka/fig'
+import { SceneGraph, recordInstanceOverride } from '@kalka/scene-graph'
 
 test('a deleted source node stays deleted across resume and remains undoable', async () => {
   await initCodec()

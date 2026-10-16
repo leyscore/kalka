@@ -1,5 +1,5 @@
-import { cloneNodeProps, contentPluginData, SceneGraph } from '@open-pencil/scene-graph'
-import type { SceneNode } from '@open-pencil/scene-graph'
+import { cloneNodeProps, contentPluginData, SceneGraph } from '@kalka/scene-graph'
+import type { SceneNode } from '@kalka/scene-graph'
 
 import { contentHash } from './hash'
 import { assertLibraryAssetKey } from './identity'

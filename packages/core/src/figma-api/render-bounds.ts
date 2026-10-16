@@ -1,13 +1,13 @@
-import { getWorldMatrix, type SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
+import { getWorldMatrix, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
 import {
   geometryBlobBounds,
   intersectVisualBounds,
   strokeOverflow,
   unionVisualBounds,
   type VisualBounds
-} from '@open-pencil/scene-graph/geometry'
-import Matrix from '@open-pencil/scene-graph/matrix'
-import type { Rect, Vector } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/scene-graph/geometry'
+import Matrix from '@kalka/scene-graph/matrix'
+import type { Rect, Vector } from '@kalka/scene-graph/primitives'
 
 const INTRINSIC_CONTAINER_TYPES = new Set([
   'FRAME',

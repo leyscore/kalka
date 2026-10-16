@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'bun:test'
 
-import { FigmaAPI } from '@open-pencil/core/figma-api'
-import { installLayoutEngine, type LayoutEngine } from '@open-pencil/core/layout'
-import { ALL_TOOLS } from '@open-pencil/core/tools'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { FigmaAPI } from '@kalka/core/figma-api'
+import { installLayoutEngine, type LayoutEngine } from '@kalka/core/layout'
+import { ALL_TOOLS } from '@kalka/core/tools'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { expectDefined } from '#core-tests/helpers/assert'
 

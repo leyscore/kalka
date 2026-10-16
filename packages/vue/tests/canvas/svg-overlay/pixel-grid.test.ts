@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { pixelGridLayer, type PixelGridViewport } from '#vue/canvas/svg-overlay/layers/pixel-grid'
 import type { OverlayContext } from '#vue/canvas/svg-overlay/layers/selection'

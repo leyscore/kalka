@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { createEditor } from '@open-pencil/core/editor'
-import { instanceSlotFrames, slotPropertyId } from '@open-pencil/scene-graph'
+import { createEditor } from '@kalka/core/editor'
+import { instanceSlotFrames, slotPropertyId } from '@kalka/scene-graph'
 
 /** A Card component with a Body frame holding Default, and an instance of it. */
 function setup() {

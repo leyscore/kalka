@@ -1,5 +1,5 @@
-import type { FigPageManifestEntry } from '@open-pencil/kiwi/fig'
-import type { SceneGraph } from '@open-pencil/scene-graph'
+import type { FigPageManifestEntry } from '@kalka/kiwi/fig'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 import { IS_BROWSER } from '#core/constants'
 import { deserializeSceneGraph } from '#core/kiwi/fig/parse/transfer'

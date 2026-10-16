@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 
-import { sceneNodeToJSX } from '@open-pencil/design-jsx'
+import { sceneNodeToJSX } from '@kalka/design-jsx'
 
 import { jsxPatch } from '#core/tools/analyze/diff/jsx'
 import { nodeIdInput, nodeComparisonInput } from '#core/tools/input'

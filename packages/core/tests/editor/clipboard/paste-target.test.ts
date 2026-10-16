@@ -3,8 +3,8 @@ import { describe, expect, test } from 'bun:test'
 import {
   createEditor,
   resolvePasteTarget as publicResolvePasteTarget
-} from '@open-pencil/core/editor'
-import { SceneGraph } from '@open-pencil/scene-graph'
+} from '@kalka/core/editor'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { resolvePasteTarget } from '#core/editor/clipboard/paste-target'
 

@@ -1,11 +1,11 @@
 import { promiseTimeout } from '@vueuse/core'
 import { shallowRef, computed, triggerRef } from 'vue'
 
-import { BUILTIN_IO_FORMATS, IORegistry } from '@open-pencil/core/io'
-import { findFigThumbnailPageId, populateFigPage } from '@open-pencil/core/io/formats/fig'
-import { renderThumbnail } from '@open-pencil/core/io/formats/raster'
-import { computeAllLayouts } from '@open-pencil/core/layout'
-import type { SceneGraph } from '@open-pencil/scene-graph'
+import { BUILTIN_IO_FORMATS, IORegistry } from '@kalka/core/io'
+import { findFigThumbnailPageId, populateFigPage } from '@kalka/core/io/formats/fig'
+import { renderThumbnail } from '@kalka/core/io/formats/raster'
+import { computeAllLayouts } from '@kalka/core/layout'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 import { setOpenPencilStore } from '@/app/browser-bridge'
 import { describeDiagnosticError, recordStorageFailure } from '@/app/diagnostics'

@@ -2,9 +2,9 @@ import {
   AUTO_LAYOUT_HOVER_GAP_REGION_TOLERANCE,
   AUTO_LAYOUT_HOVER_PADDING_REGION_TOLERANCE,
   AUTO_LAYOUT_HOVER_TICK_HIT_TOLERANCE
-} from '@open-pencil/core/constants'
-import type { Editor } from '@open-pencil/core/editor'
-import type { SceneNode } from '@open-pencil/scene-graph'
+} from '@kalka/core/constants'
+import type { Editor } from '@kalka/core/editor'
+import type { SceneNode } from '@kalka/scene-graph'
 
 type AutoLayoutHover = NonNullable<Editor['state']['autoLayoutHover']>
 

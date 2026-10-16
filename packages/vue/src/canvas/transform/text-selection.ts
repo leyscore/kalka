@@ -1,4 +1,4 @@
-import type { Editor } from '@open-pencil/core/editor'
+import type { Editor } from '@kalka/core/editor'
 
 export function handleTextSelectMove(editor: Editor, cx: number, cy: number) {
   const textEditor = editor.textCaret

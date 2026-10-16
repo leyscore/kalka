@@ -2,9 +2,9 @@ import { describe, expect, test } from 'bun:test'
 
 import { effectiveFigmaRawNodeFields, effectiveFigmaSourcePayload } from '#fig/source-metadata'
 
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { SceneGraph } from '@kalka/scene-graph'
 
-describe('@open-pencil/fig source metadata policy', () => {
+describe('@kalka/fig source metadata policy', () => {
   test('filters only raw fields made stale by normalized edits', () => {
     const graph = new SceneGraph()
     const node = graph.createNode('RECTANGLE', graph.getPages()[0].id)

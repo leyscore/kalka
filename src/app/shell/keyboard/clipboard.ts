@@ -1,6 +1,6 @@
 import { useEventListener } from '@vueuse/core'
 
-import { extractImageFilesFromClipboard } from '@open-pencil/vue'
+import { extractImageFilesFromClipboard } from '@kalka/vue'
 
 import type { EditorStore } from '@/app/editor/active-store'
 import { isHTMLSource } from '@/app/editor/clipboard/external-html'

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 
-import { createHeadlessCSSRuntime, type DesignNode } from '@open-pencil/dom-css'
+import { createHeadlessCSSRuntime, type DesignNode } from '@kalka/dom-css'
 
 function elements(nodes: DesignNode[]): Extract<DesignNode, { type: 'element' }>[] {
   return nodes.flatMap((node) =>

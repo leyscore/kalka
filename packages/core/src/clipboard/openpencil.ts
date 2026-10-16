@@ -13,8 +13,8 @@ import {
   type SceneGraph,
   type SceneNode,
   type WindingRule
-} from '@open-pencil/scene-graph'
-import type { JSONObject } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/scene-graph'
+import type { JSONObject } from '@kalka/scene-graph/primitives'
 
 import type { ClipboardSnapshot } from '#core/editor/clipboard/copy'
 

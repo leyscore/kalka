@@ -14,7 +14,7 @@ import {
 import { createTarGzip } from 'nanotar'
 import * as v from 'valibot'
 
-import { readTarball } from '@open-pencil/package-artifacts-tools/tarball'
+import { readTarball } from '@kalka/package-artifacts-tools/tarball'
 
 const FIXTURE_FILES = ['dist/index.js', 'dist/index.d.ts']
 

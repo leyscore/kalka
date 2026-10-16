@@ -2,8 +2,8 @@ import { describe, test, expect } from 'bun:test'
 
 import type { CanvasKit, Paragraph, RectWithDirection } from 'canvaskit-wasm'
 
-import { TextEditor, type SceneNode } from '@open-pencil/core'
-import { createDefaultNode } from '@open-pencil/scene-graph/node-defaults'
+import { TextEditor, type SceneNode } from '@kalka/core'
+import { createDefaultNode } from '@kalka/scene-graph/node-defaults'
 
 import { expectDefined } from '#tests/helpers/assert'
 import { asDouble } from '#tests/helpers/doubles'

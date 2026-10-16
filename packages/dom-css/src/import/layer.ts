@@ -1,5 +1,5 @@
-import { parseShaderLayer, type SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
-import { parseCSSNumber } from '@open-pencil/scene-graph/css'
+import { parseShaderLayer, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
+import { parseCSSNumber } from '@kalka/scene-graph/css'
 
 import type { DesignElement, DesignStyleDeclaration } from '../types'
 import { applyHTMLElement } from './html-element'

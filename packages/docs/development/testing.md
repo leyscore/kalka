@@ -26,7 +26,7 @@ Discovery already covers the destinations: `tools/dev/unit-tests/src/shards.ts` 
 
 `test:unit:quick` runs files in Bun worker processes (`--parallel`), which is the fastest local loop. CI shards still run each group in one process; `test:unit:isolated` (`--isolate`, also run nightly) gives every file a fresh global object and is the check to run when a suite passes alone but fails in a shard. Shards share one Bun process, so module-level state (a `fake-indexeddb/auto` import, an IndexedDB connection left open by `createEditorStore()`, a patched global) leaks into later files in the same shard. A package-local run (`bun test tests` inside the package) is a fresh process and will not reproduce that leak. Close what a test opens and restore what it patches.
 
-Run `bun --filter @open-pencil/core build` before unit tests. Files under `tests/` and under `packages/core/tests` resolve `@open-pencil/core` and its subpaths to `packages/core/src` through the root and Core tsconfig path mappings, but other package sources (`packages/dom-css/src`, `packages/mcp/src`, …) use their own tsconfig, where `@open-pencil/core/<subpath>` falls back to the package `exports` and therefore to `dist`. One process can hold both copies; only `packages/vue` maps Core to `src`. Aligning the other package tsconfigs is a packaging change (it affects `tsdown` declaration output), not a test change.
+Run `bun --filter @kalka/core build` before unit tests. Files under `tests/` and under `packages/core/tests` resolve `@kalka/core` and its subpaths to `packages/core/src` through the root and Core tsconfig path mappings, but other package sources (`packages/dom-css/src`, `packages/mcp/src`, …) use their own tsconfig, where `@kalka/core/<subpath>` falls back to the package `exports` and therefore to `dist`. One process can hold both copies; only `packages/vue` maps Core to `src`. Aligning the other package tsconfigs is a packaging change (it affects `tsdown` declaration output), not a test change.
 
 ## Test purpose
 
@@ -95,7 +95,7 @@ Visual changes require inspection and committed coverage. Update only a justifie
 
 Two environment faults look exactly like a code regression, and both have cost real debugging time.
 
-Browser suites resolve `@open-pencil/*` through each package's built `dist`, which Vite then pre-bundles. Rebuilding a package does not invalidate that cache, so a Playwright run can execute code from before your change — including throwing on a field you just added. If a browser run contradicts the source you are reading, delete `node_modules/.vite` and run again before believing it.
+Browser suites resolve `@kalka/*` through each package's built `dist`, which Vite then pre-bundles. Rebuilding a package does not invalidate that cache, so a Playwright run can execute code from before your change — including throwing on a field you just added. If a browser run contradicts the source you are reading, delete `node_modules/.vite` and run again before believing it.
 
 Heavier `.fig` suites are sensitive to machine load. A full run alongside other work has reported failures that vanish on a quiet re-run, with the same suite taking three times as long. Re-run a failing heavy test alone before concluding anything, and compare against the same test on `master` under the same load rather than against a remembered baseline. Raising its timeout is still never the fix.
 

@@ -1,7 +1,7 @@
 import type { Canvas } from 'canvaskit-wasm'
 
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
-import { guideOwnersOnPage } from '@open-pencil/scene-graph/guides'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import { guideOwnersOnPage } from '@kalka/scene-graph/guides'
 
 import type { RenderOverlays, SkiaRenderer } from '#core/canvas/renderer'
 

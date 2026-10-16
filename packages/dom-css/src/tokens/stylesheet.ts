@@ -4,7 +4,7 @@ import type {
   VariableCollection,
   VariableCollectionMode,
   VariableValue
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { cssColor } from '../export/css'
 import { collectionVariables, tokenSlug, variableCSSNames, variableNamespace } from './names'

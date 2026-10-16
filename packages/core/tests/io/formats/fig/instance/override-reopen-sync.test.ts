@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 
-import { createEditor } from '@open-pencil/core/editor'
-import { FigmaAPI } from '@open-pencil/core/figma-api'
-import { exportFigFile, parseFigFile } from '@open-pencil/core/io'
-import { initCodec } from '@open-pencil/core/kiwi'
-import { SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
+import { createEditor } from '@kalka/core/editor'
+import { FigmaAPI } from '@kalka/core/figma-api'
+import { exportFigFile, parseFigFile } from '@kalka/core/io'
+import { initCodec } from '@kalka/core/kiwi'
+import { SceneGraph, type SceneNode } from '@kalka/scene-graph'
 
 import { deserializeSceneGraph, serializeSceneGraph } from '#core/kiwi/fig/parse/transfer'
 import {

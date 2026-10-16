@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 
-import { SceneGraph, withIcon } from '@open-pencil/scene-graph'
+import { SceneGraph, withIcon } from '@kalka/scene-graph'
 
 import { LabelCache } from '#core/canvas/labels/cache'
 

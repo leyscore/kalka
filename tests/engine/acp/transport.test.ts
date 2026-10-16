@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 
 import type { SessionUpdate } from '@agentclientprotocol/sdk'
 
-import type { ACPAgentDef } from '@open-pencil/core/constants'
+import type { ACPAgentDef } from '@kalka/core/constants'
 
 import { mapUpdate } from '@/app/ai/acp/map-update'
 import { formatConnectionError, buildCrashChunks } from '@/app/ai/acp/transport'

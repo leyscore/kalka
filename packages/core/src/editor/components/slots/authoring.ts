@@ -8,7 +8,7 @@ import {
   type SceneNode,
   type SlotPropertyPatch,
   createComponentPropertyId
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { wrapInAutoLayout } from '#core/editor/structure/auto-layout-wrap'
 import type { EditorContext } from '#core/editor/types'

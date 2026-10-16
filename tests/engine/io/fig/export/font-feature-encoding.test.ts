@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, test } from 'bun:test'
 
-import { exportFigFile, initCodec, parseFigFile } from '@open-pencil/core'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { exportFigFile, initCodec, parseFigFile } from '@kalka/core'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { HEAVY_TEST_TIMEOUT_MS } from '#tests/helpers/test-utils'
 

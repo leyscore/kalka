@@ -1,6 +1,6 @@
-import { createDefaultEditorState, type EditorState } from '@open-pencil/core/editor'
-import type { DocumentColorSpace } from '@open-pencil/scene-graph'
-import type { PresentationColorSpace } from '@open-pencil/vue'
+import { createDefaultEditorState, type EditorState } from '@kalka/core/editor'
+import type { DocumentColorSpace } from '@kalka/scene-graph'
+import type { PresentationColorSpace } from '@kalka/vue'
 
 import type { EditorPreparation } from '@/app/editor/preparation/types'
 import type { NodeEditState } from '@/app/editor/vector/types'

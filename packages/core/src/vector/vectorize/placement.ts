@@ -1,12 +1,6 @@
-import type {
-  Fill,
-  GeometryPath,
-  SceneGraph,
-  SceneNode,
-  VectorNetwork
-} from '@open-pencil/scene-graph'
-import { mergeVectorNetworks } from '@open-pencil/scene-graph'
-import type { Rect } from '@open-pencil/scene-graph/primitives'
+import type { Fill, GeometryPath, SceneGraph, SceneNode, VectorNetwork } from '@kalka/scene-graph'
+import { mergeVectorNetworks } from '@kalka/scene-graph'
+import type { Rect } from '@kalka/scene-graph/primitives'
 
 import { pathStrokeLineStyle } from '#core/icons/path-style'
 import { computeAccurateBounds } from '#core/vector/curve-math'

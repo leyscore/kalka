@@ -1,13 +1,13 @@
 import * as v from 'valibot'
 
-import type { RenderResult } from '@open-pencil/design-jsx'
+import type { RenderResult } from '@kalka/design-jsx'
 import {
   cssClassKind,
   findCSSClass,
   setCSSClass,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { finishRenderPlacement, resolveRenderPlacement } from '#core/design-jsx/placement'
 import { toolNumber } from '#core/tools/input'
@@ -39,7 +39,7 @@ function styleSheets(html: string): string {
  * one style; a class the document already has is left as it is.
  */
 async function registerClasses(graph: SceneGraph, html: string, written: readonly SceneNode[]) {
-  const { cssClassFromRule, parseClassRules } = await import('@open-pencil/dom-css/import')
+  const { cssClassFromRule, parseClassRules } = await import('@kalka/dom-css/import')
   const nodes = written.flatMap((root) => [
     root,
     ...graph.flattenTree(root.id).map((entry) => entry.node)
@@ -73,7 +73,7 @@ export const writeHTML = defineTool({
     y: v.optional(toolNumber(v.pipe(v.number(), v.description('Y position of the first layer'))))
   }),
   execute: async (figma, args) => {
-    const { htmlToSceneGraph } = await import('@open-pencil/dom-css')
+    const { htmlToSceneGraph } = await import('@kalka/dom-css')
     const imported = await htmlToSceneGraph(args.html, { pageName: 'HTML' })
     const roots = imported.getPages().flatMap((page) => imported.getChildren(page.id))
     if (roots.length === 0) return { error: 'The HTML has no visible elements' }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useBehaviour } from '@open-pencil/vue'
+import { useBehaviour } from '@kalka/vue'
 
 import BehaviourSection from './BehaviourSection.vue'
 

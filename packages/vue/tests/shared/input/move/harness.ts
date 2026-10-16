@@ -1,5 +1,5 @@
-import { createEditor } from '@open-pencil/core/editor'
-import type { SceneNode } from '@open-pencil/scene-graph'
+import { createEditor } from '@kalka/core/editor'
+import type { SceneNode } from '@kalka/scene-graph'
 
 import { handleMoveMove, handleMoveUp, type MoveModifiers } from '#vue/shared/input/move'
 import { createSelectionMoveDrag } from '#vue/shared/input/select/move'

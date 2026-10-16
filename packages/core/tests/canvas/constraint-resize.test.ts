@@ -1,9 +1,9 @@
 import { expect, test } from 'bun:test'
 import { resolve } from 'node:path'
 
-import { SkiaRenderer } from '@open-pencil/core'
-import { initCanvasKit, renderNodesToImage } from '@open-pencil/core/io'
-import { materializeDocument } from '@open-pencil/fig'
+import { SkiaRenderer } from '@kalka/core'
+import { initCanvasKit, renderNodesToImage } from '@kalka/core/io'
+import { materializeDocument } from '@kalka/fig'
 
 import { expectDefined } from '../helpers/assert'
 import { absoluteConstraintRecords } from '../helpers/fig/absolute-constraints'

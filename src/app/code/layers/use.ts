@@ -4,8 +4,8 @@ import {
   designJSXElement,
   selectionToJSXWithLayers,
   type DesignJSXElement
-} from '@open-pencil/design-jsx'
-import { useDesignCheckMessages } from '@open-pencil/vue'
+} from '@kalka/design-jsx'
+import { useDesignCheckMessages } from '@kalka/vue'
 
 import type { GeneratedCode } from '@/app/code/generated'
 import type { DesignJSXLayerLine } from '@/app/code/live-preview'

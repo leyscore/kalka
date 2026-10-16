@@ -6,8 +6,8 @@ export type {
   EditorEventName,
   Tool,
   EditorToolDef
-} from '@open-pencil/core/editor'
-export { createEditor, EDITOR_TOOLS, TOOL_SHORTCUTS } from '@open-pencil/core/editor'
+} from '@kalka/core/editor'
+export { createEditor, EDITOR_TOOLS, TOOL_SHORTCUTS } from '@kalka/core/editor'
 
 /**
  * Public editor-context API for the Vue SDK.

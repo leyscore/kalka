@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test'
 
-import type { Fill, Stroke, Effect, StyleRun, GeometryPath } from '@open-pencil/scene-graph'
+import type { Fill, Stroke, Effect, StyleRun, GeometryPath } from '@kalka/scene-graph'
 import {
   copyFill,
   copyFills,
@@ -9,7 +9,7 @@ import {
   copyStyleRun,
   copyGeometryPaths,
   scaleGeometryPaths
-} from '@open-pencil/scene-graph/copy'
+} from '@kalka/scene-graph/copy'
 
 import { expectDefined } from './helpers/assert'
 

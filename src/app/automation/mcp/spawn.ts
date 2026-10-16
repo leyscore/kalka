@@ -2,14 +2,10 @@ import { promiseTimeout } from '@vueuse/core'
 import { compact } from 'es-toolkit/array'
 import * as v from 'valibot'
 
-import { AUTOMATION_HTTP_PORT } from '@open-pencil/core/constants'
-import type { DiscoveryInfo } from '@open-pencil/mcp/discovery'
-import {
-  parseToolDescriptor,
-  serializeDisabledTools,
-  type ToolDescriptor
-} from '@open-pencil/mcp/tools'
-import { randomHex } from '@open-pencil/scene-graph/random'
+import { AUTOMATION_HTTP_PORT } from '@kalka/core/constants'
+import type { DiscoveryInfo } from '@kalka/mcp/discovery'
+import { parseToolDescriptor, serializeDisabledTools, type ToolDescriptor } from '@kalka/mcp/tools'
+import { randomHex } from '@kalka/scene-graph/random'
 
 import { APP_VERSION } from '@/app/runtime/version'
 import { decodeTauriStderr } from '@/app/shell/ui'
@@ -338,9 +334,9 @@ function assertCompatibleMCPVersion(health: AutomationHealth): void {
   const runningVersion = health.version ? `v${health.version}` : 'an older version'
   const updateHint = health.installCommand
     ? `Run: ${health.installCommand}, then restart Kalka.`
-    : `Update the global @open-pencil/mcp package to v${APP_VERSION} with your package manager, then restart Kalka.`
+    : `Update the global @kalka/mcp package to v${APP_VERSION} with your package manager, then restart Kalka.`
   throw new Error(
-    `Kalka desktop v${APP_VERSION} requires @open-pencil/mcp v${oursMajorMinor}.x ` +
+    `Kalka desktop v${APP_VERSION} requires @kalka/mcp v${oursMajorMinor}.x ` +
       `(major.minor compatibility), but the running MCP server is ${runningVersion}. ${updateHint}`
   )
 }

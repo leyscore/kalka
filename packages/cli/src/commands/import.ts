@@ -3,7 +3,7 @@ import { basename, dirname, extname, resolve } from 'node:path'
 
 import { defineCommand } from 'citty'
 
-import { BUILTIN_IO_FORMATS, IORegistry } from '@open-pencil/core/io'
+import { BUILTIN_IO_FORMATS, IORegistry } from '@kalka/core/io'
 import {
   createHeadlessCSSRuntime,
   htmlToDesignDocument,
@@ -11,7 +11,7 @@ import {
   tailwindHTMLToDesignDocument,
   tailwindHTMLToSceneGraph,
   type DesignDocument
-} from '@open-pencil/dom-css'
+} from '@kalka/dom-css'
 
 import { requireFile } from '#cli/app/client'
 import { fmtList, ok, printError } from '#cli/format'

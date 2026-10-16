@@ -1,4 +1,4 @@
-import type { Rect } from '@open-pencil/scene-graph/primitives'
+import type { Rect } from '@kalka/scene-graph/primitives'
 
 export const AGENT_KINDS = ['chat', 'acp', 'harness', 'mcp'] as const
 export type AgentKind = (typeof AGENT_KINDS)[number]

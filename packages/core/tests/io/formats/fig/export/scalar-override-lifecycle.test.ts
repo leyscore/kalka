@@ -1,8 +1,8 @@
 import { expect, test } from 'bun:test'
 
-import { exportFigFile } from '@open-pencil/core/io'
-import { initCodec } from '@open-pencil/core/kiwi'
-import { materializeDocument, parseFigBuffer } from '@open-pencil/fig'
+import { exportFigFile } from '@kalka/core/io'
+import { initCodec } from '@kalka/core/kiwi'
+import { materializeDocument, parseFigBuffer } from '@kalka/fig'
 
 const guid = (localID: number) => ({ sessionID: 1, localID })
 const records = () => [

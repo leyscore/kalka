@@ -1,7 +1,7 @@
 import { expect, spyOn, test } from 'bun:test'
 
-import { createEditor } from '@open-pencil/core/editor'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { createEditor } from '@kalka/core/editor'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { fitDemoPagesOnFirstVisit } from '@/app/demo/viewport'
 

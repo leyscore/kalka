@@ -1,5 +1,5 @@
-import { getNodeEditCapability, type Editor } from '@open-pencil/core/editor'
-import type { SceneNode } from '@open-pencil/scene-graph'
+import { getNodeEditCapability, type Editor } from '@kalka/core/editor'
+import type { SceneNode } from '@kalka/scene-graph'
 
 import type { CanvasLabelKind } from '#vue/canvas/labels/edit'
 import type { DragState } from '#vue/shared/input/types'

@@ -1,7 +1,7 @@
 import { uniq } from 'es-toolkit/array'
 import { transform } from 'sucrase'
 
-import type { SceneGraph } from '@open-pencil/scene-graph'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 import { REKA_ELEMENTS } from './behaviours'
 import { designJSXHelpers } from './helpers'
@@ -144,7 +144,7 @@ async function renderJSX<Artwork>(
 
 /**
  * A Design JSX renderer bound to an engine. Rendering needs `services` for icons, inline
- * SVG, and layout; Kalka's engine provides them through `@open-pencil/core/design-jsx`.
+ * SVG, and layout; Kalka's engine provides them through `@kalka/core/design-jsx`.
  */
 export function createDesignJSXRenderer<Artwork>(services: DesignJSXServices<Artwork>) {
   return {

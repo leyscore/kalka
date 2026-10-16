@@ -26,8 +26,8 @@ const AGENT_EXECUTABLES = [
   'npm'
 ]
 const COMPANION_PACKAGES: [string, string][] = [
-  ['openpencil-mcp-http', '@open-pencil/mcp'],
-  ['openpencil-harness', '@open-pencil/harness']
+  ['openpencil-mcp-http', '@kalka/mcp'],
+  ['openpencil-harness', '@kalka/harness']
 ]
 
 /** Where npm, bun, Homebrew and version managers put global programs. */

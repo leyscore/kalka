@@ -1,8 +1,8 @@
 import valueParser, { type FunctionNode, type Node } from 'postcss-value-parser'
 
-import type { Fill, GradientStop } from '@open-pencil/scene-graph'
-import { TRANSPARENT } from '@open-pencil/scene-graph/constants'
-import { parseCSSColor } from '@open-pencil/scene-graph/css'
+import type { Fill, GradientStop } from '@kalka/scene-graph'
+import { TRANSPARENT } from '@kalka/scene-graph/constants'
+import { parseCSSColor } from '@kalka/scene-graph/css'
 
 /** `to <side>` directions as CSS angles: 0deg points up, 90deg right. */
 const SIDE_ANGLES: Record<string, number> = { top: 0, right: 90, bottom: 180, left: 270 }

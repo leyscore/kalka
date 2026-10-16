@@ -43,7 +43,7 @@
       "#mcp/*": [
         "./packages/mcp/src/*"
       ],
-      "@open-pencil/harness": [
+      "@kalka/harness": [
         "./packages/harness/src/index.ts"
       ],
       "#dom-css/*": [
@@ -58,49 +58,49 @@
       "tinykeys": [
         "./node_modules/tinykeys/dist/tinykeys.d.ts"
       ],
-      "@open-pencil/cli/library": [
+      "@kalka/cli/library": [
         "./packages/cli/src/library/index.ts"
       ],
-      "@open-pencil/vue": [
+      "@kalka/vue": [
         "./packages/vue/src/index.ts"
       ],
-      "@open-pencil/core": [
+      "@kalka/core": [
         "./packages/core/src/index.ts"
       ],
-      "@open-pencil/core/*": [
+      "@kalka/core/*": [
         "./packages/core/src/*"
       ],
-      "@open-pencil/dom-css": [
+      "@kalka/dom-css": [
         "./packages/dom-css/src/index.ts"
       ],
       "#scene-graph/*": [
         "./packages/scene-graph/src/*"
       ],
-      "@open-pencil/scene-graph": [
+      "@kalka/scene-graph": [
         "./packages/scene-graph/src/index.ts"
       ],
-      "@open-pencil/scene-graph/*": [
+      "@kalka/scene-graph/*": [
         "./packages/scene-graph/src/*"
       ],
       "#emit/*": [
         "./packages/emit/src/*"
       ],
-      "@open-pencil/emit": [
+      "@kalka/emit": [
         "./packages/emit/src/index.ts"
       ],
       "#design-jsx/*": [
         "./packages/design-jsx/src/*"
       ],
-      "@open-pencil/design-jsx": [
+      "@kalka/design-jsx": [
         "./packages/design-jsx/src/index.ts"
       ],
       "#pen/*": [
         "./packages/pen/src/*"
       ],
-      "@open-pencil/pen": [
+      "@kalka/pen": [
         "./packages/pen/src/index.ts"
       ],
-      "@open-pencil/pen/*": [
+      "@kalka/pen/*": [
         "./packages/pen/src/*"
       ]
     }

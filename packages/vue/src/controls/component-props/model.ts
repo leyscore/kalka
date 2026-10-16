@@ -1,11 +1,11 @@
-import type { Editor } from '@open-pencil/core/editor'
-import { canCreateInstance } from '@open-pencil/scene-graph'
+import type { Editor } from '@kalka/core/editor'
+import { canCreateInstance } from '@kalka/scene-graph'
 import type {
   ComponentPropertyDefinition,
   ComponentPropertyType,
   SceneGraph,
   SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { MIXED, type MixedValue } from '#vue/controls/node-props/helpers'
 

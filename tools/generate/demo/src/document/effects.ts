@@ -1,5 +1,5 @@
-import { TRANSPARENT } from '@open-pencil/core/constants'
-import type { Color, Effect } from '@open-pencil/scene-graph'
+import { TRANSPARENT } from '@kalka/core/constants'
+import type { Color, Effect } from '@kalka/scene-graph'
 
 export function dropShadow(
   ox = 0,

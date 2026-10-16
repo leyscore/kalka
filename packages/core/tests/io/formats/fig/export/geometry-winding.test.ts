@@ -1,9 +1,9 @@
 import { expect, test } from 'bun:test'
 
-import { exportFigFile, parseFigFile } from '@open-pencil/core/io'
-import { initCodec } from '@open-pencil/core/kiwi'
-import { resolveGeometryPaths } from '@open-pencil/fig/node-change'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { exportFigFile, parseFigFile } from '@kalka/core/io'
+import { initCodec } from '@kalka/core/kiwi'
+import { resolveGeometryPaths } from '@kalka/fig/node-change'
+import { SceneGraph } from '@kalka/scene-graph'
 
 test('decodes Kiwi ODD geometry as scene even-odd', () => {
   const paths = resolveGeometryPaths(

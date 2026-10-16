@@ -1,9 +1,9 @@
 import { shallowRef, type ShallowRef } from 'vue'
 
-import { AI_ACTIVE_COLOR } from '@open-pencil/core/constants'
-import { computeContentBounds } from '@open-pencil/core/io'
-import type { Color } from '@open-pencil/scene-graph/primitives'
-import { randomHex } from '@open-pencil/scene-graph/random'
+import { AI_ACTIVE_COLOR } from '@kalka/core/constants'
+import { computeContentBounds } from '@kalka/core/io'
+import type { Color } from '@kalka/scene-graph/primitives'
+import { randomHex } from '@kalka/scene-graph/random'
 
 import type { RemotePeer } from '@/app/collab/types'
 import type { EditorStore } from '@/app/editor/active-store'

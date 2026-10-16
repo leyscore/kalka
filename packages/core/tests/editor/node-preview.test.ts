@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { createEditor } from '@open-pencil/core/editor'
-import { SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
+import { createEditor } from '@kalka/core/editor'
+import { SceneGraph, type SceneNode } from '@kalka/scene-graph'
 
 describe('owned node previews', () => {
   test('publishes layout children with their layout provenance and preserves one-step undo', () => {

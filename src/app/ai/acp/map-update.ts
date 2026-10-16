@@ -1,7 +1,7 @@
 import type { SessionUpdate } from '@agentclientprotocol/sdk'
 import type { UIMessageChunk } from 'ai'
 
-import type { JSONObject } from '@open-pencil/scene-graph/primitives'
+import type { JSONObject } from '@kalka/scene-graph/primitives'
 
 export interface MapResult {
   chunks: UIMessageChunk[]

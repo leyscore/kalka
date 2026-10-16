@@ -1,7 +1,7 @@
 import type { Ref } from 'vue'
 
-import { PEN_CLOSE_THRESHOLD } from '@open-pencil/core/constants'
-import type { Editor } from '@open-pencil/core/editor'
+import { PEN_CLOSE_THRESHOLD } from '@kalka/core/constants'
+import type { Editor } from '@kalka/core/editor'
 
 import { createPenDrag, handlePenDragMove } from '#vue/canvas/pen/drag'
 import type { DragState } from '#vue/shared/input/types'

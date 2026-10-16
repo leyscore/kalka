@@ -1,5 +1,5 @@
 {
-  "name": "@open-pencil/dom-css",
+  "name": "@kalka/dom-css",
   "version": "0.15.1",
   "license": "MIT",
   "type": "module",
@@ -75,7 +75,7 @@
     "provenance": true
   },
   "peerDependencies": {
-    "@open-pencil/scene-graph": "workspace:*"
+    "@kalka/scene-graph": "workspace:*"
   },
   "devDependencies": {
     "@iconify/react": "^6.0.2",
@@ -96,7 +96,7 @@
   },
   "dependencies": {
     "@acemir/cssom": "^0.9.31",
-    "@open-pencil/emit": "workspace:*",
+    "@kalka/emit": "workspace:*",
     "css-tree": "^3.2.1",
     "cssesc": "^3.0.0",
     "dedent": "^1.7.2",

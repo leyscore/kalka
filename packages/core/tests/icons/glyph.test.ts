@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'bun:test'
 
-import { isIconModified, readIcon, readIconTint, SceneGraph, withIcon } from '@open-pencil/scene-graph'
-import { parseColor } from '@open-pencil/scene-graph/color'
+import { isIconModified, readIcon, readIconTint, SceneGraph, withIcon } from '@kalka/scene-graph'
+import { parseColor } from '@kalka/scene-graph/color'
 import {
   collectResizeDescendants,
   computeConstrainedResizeChanges
-} from '@open-pencil/scene-graph/resize'
+} from '@kalka/scene-graph/resize'
 
 import { detachIcon, placeIcon, recolorIcon, swapIcon } from '#core/icons/render'
 import { buildIconData } from '#core/icons/svg'

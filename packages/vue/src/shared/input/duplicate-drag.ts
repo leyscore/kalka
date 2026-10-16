@@ -1,4 +1,4 @@
-import type { Editor } from '@open-pencil/core/editor'
+import type { Editor } from '@kalka/core/editor'
 
 import type { DragOriginal } from '#vue/shared/input/drag-original'
 import type { DragState } from '#vue/shared/input/types'

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { tv } from 'tailwind-variants'
 
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@kalka/vue'
 
 import type { GroupEntry } from '@/app/editor/tokens/model'
 import IconButton from '@/components/ui/button/IconButton.vue'

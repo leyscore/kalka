@@ -1,6 +1,6 @@
 import { uniq } from 'es-toolkit/array'
 
-import type { CanvasGuide } from '@open-pencil/scene-graph/guides'
+import type { CanvasGuide } from '@kalka/scene-graph/guides'
 
 import type { EditorContext } from './types'
 

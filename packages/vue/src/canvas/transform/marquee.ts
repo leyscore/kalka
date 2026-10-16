@@ -1,6 +1,6 @@
-import type { Editor } from '@open-pencil/core/editor'
-import { getAxisAlignedWorldBounds } from '@open-pencil/scene-graph/coordinate'
-import type { Rect } from '@open-pencil/scene-graph/primitives'
+import type { Editor } from '@kalka/core/editor'
+import { getAxisAlignedWorldBounds } from '@kalka/scene-graph/coordinate'
+import type { Rect } from '@kalka/scene-graph/primitives'
 
 import type { DragMarquee } from '#vue/shared/input/types'
 

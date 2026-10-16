@@ -1,4 +1,4 @@
-import { readFigFile } from '@open-pencil/core/io/formats/fig'
+import { readFigFile } from '@kalka/core/io/formats/fig'
 
 import { isTauri } from '@/app/tauri/env'
 

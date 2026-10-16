@@ -1,5 +1,5 @@
-import type { SceneNode, Vector } from '@open-pencil/scene-graph'
-import type { Rect } from '@open-pencil/scene-graph/primitives'
+import type { SceneNode, Vector } from '@kalka/scene-graph'
+import type { Rect } from '@kalka/scene-graph/primitives'
 
 import { ROTATION_HANDLE_DISTANCE } from '#core/constants'
 import { fitTextPathBoxToGlyphs, getTextPathData, sampleTextPath } from '#core/text/path'

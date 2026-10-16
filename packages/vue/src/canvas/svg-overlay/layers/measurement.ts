@@ -1,4 +1,4 @@
-import { computeMeasurementSegments, type MeasurementSegment } from '@open-pencil/core/canvas'
+import { computeMeasurementSegments, type MeasurementSegment } from '@kalka/core/canvas'
 import {
   MEASUREMENT_COLOR,
   MEASUREMENT_PILL_HEIGHT,
@@ -6,13 +6,13 @@ import {
   MEASUREMENT_PILL_RADIUS,
   MEASUREMENT_TEXT_BASELINE,
   SIZE_FONT_SIZE
-} from '@open-pencil/core/constants'
-import { viewportMatrix, type ViewportTransform } from '@open-pencil/core/geometry'
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
-import { getAxisAlignedWorldBounds, getWorldMatrix } from '@open-pencil/scene-graph/coordinate'
-import { computeBounds } from '@open-pencil/scene-graph/geometry'
-import Matrix from '@open-pencil/scene-graph/matrix'
-import type { Rect } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/core/constants'
+import { viewportMatrix, type ViewportTransform } from '@kalka/core/geometry'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import { getAxisAlignedWorldBounds, getWorldMatrix } from '@kalka/scene-graph/coordinate'
+import { computeBounds } from '@kalka/scene-graph/geometry'
+import Matrix from '@kalka/scene-graph/matrix'
+import type { Rect } from '@kalka/scene-graph/primitives'
 
 import type { OverlayContext } from '#vue/canvas/svg-overlay/layers/selection'
 import { css, type MeasureText, type OverlayShape } from '#vue/canvas/svg-overlay/shapes'

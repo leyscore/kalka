@@ -7,9 +7,9 @@ import {
   FLASH_RADIUS,
   FLASH_RELEASE_MS,
   FLASH_STROKE_WIDTH
-} from '@open-pencil/core/constants'
-import type { SceneGraph } from '@open-pencil/scene-graph'
-import Matrix from '@open-pencil/scene-graph/matrix'
+} from '@kalka/core/constants'
+import type { SceneGraph } from '@kalka/scene-graph'
+import Matrix from '@kalka/scene-graph/matrix'
 
 import type { OverlayContext } from '#vue/canvas/svg-overlay/layers/selection'
 import { css, type OverlayShape } from '#vue/canvas/svg-overlay/shapes'

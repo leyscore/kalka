@@ -1,7 +1,7 @@
-import { cloneInstanceOverrideState } from '@open-pencil/scene-graph'
-import type { SceneNode, Vector } from '@open-pencil/scene-graph'
-import { getAxisAlignedWorldBounds, getWorldMatrix } from '@open-pencil/scene-graph/coordinate'
-import Matrix from '@open-pencil/scene-graph/matrix'
+import { cloneInstanceOverrideState } from '@kalka/scene-graph'
+import type { SceneNode, Vector } from '@kalka/scene-graph'
+import { getAxisAlignedWorldBounds, getWorldMatrix } from '@kalka/scene-graph/coordinate'
+import Matrix from '@kalka/scene-graph/matrix'
 
 import { prepareSlotEdits } from '#core/editor/components/slots'
 import type { EditorContext } from '#core/editor/types'

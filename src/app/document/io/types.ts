@@ -1,4 +1,4 @@
-import type { KalkaFile } from '@open-pencil/core/io/formats/kalka'
+import type { KalkaFile } from '@kalka/core/io/formats/kalka'
 
 import type { StorageDocumentBinding } from '@/app/integrations/storage/types'
 

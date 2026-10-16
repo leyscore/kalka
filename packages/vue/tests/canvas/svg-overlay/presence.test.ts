@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import type { PresenceCursor } from '@open-pencil/core/canvas'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import type { PresenceCursor } from '@kalka/core/canvas'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { fitLabel, presenceLayer } from '#vue/canvas/svg-overlay/layers/presence'
 import type { OverlayContext } from '#vue/canvas/svg-overlay/layers/selection'

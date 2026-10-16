@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'bun:test'
 
-import { SceneGraph, type Effect } from '@open-pencil/core'
-import type { Rect } from '@open-pencil/scene-graph/primitives'
+import { SceneGraph, type Effect } from '@kalka/core'
+import type { Rect } from '@kalka/scene-graph/primitives'
 
 import { getNodeOrThrow } from '../helpers/assert'
 

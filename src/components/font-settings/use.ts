@@ -1,11 +1,7 @@
 import { computed, ref } from 'vue'
 
-import type {
-  FontFamilyOption,
-  LocalFontAccessState,
-  WebFontProviderId
-} from '@open-pencil/core/text'
-import { useI18n } from '@open-pencil/vue'
+import type { FontFamilyOption, LocalFontAccessState, WebFontProviderId } from '@kalka/core/text'
+import { useI18n } from '@kalka/vue'
 
 import {
   clearDownloadedFontCache,

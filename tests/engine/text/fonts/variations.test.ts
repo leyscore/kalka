@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { FontManager } from '@open-pencil/core'
+import { FontManager } from '@kalka/core'
 
 import { isVariableFont, namedInstanceVariations } from '#core/text/font/variation'
 

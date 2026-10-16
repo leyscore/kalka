@@ -1,4 +1,4 @@
-import type { GUID, NodeChange } from '@open-pencil/kiwi/fig/codec'
+import type { GUID, NodeChange } from '@kalka/kiwi/fig/codec'
 
 import type { InstanceAssignmentDiagnostic } from './occurrence/types'
 import { symbolOverridesOf, type ComponentPropAssignment } from './types'

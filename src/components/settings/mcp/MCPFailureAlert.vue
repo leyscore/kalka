@@ -3,7 +3,7 @@ import { useClipboard } from '@vueuse/core'
 import { compact } from 'es-toolkit/array'
 import { computed, ref } from 'vue'
 
-import { useAutomationMessages } from '@open-pencil/vue'
+import { useAutomationMessages } from '@kalka/vue'
 
 import {
   MCP_INSTALL_TARGET,

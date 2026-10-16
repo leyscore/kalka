@@ -1,5 +1,5 @@
-import type { Editor, EditorState } from '@open-pencil/core/editor'
-import type { ViewportTransform } from '@open-pencil/core/geometry'
+import type { Editor, EditorState } from '@kalka/core/editor'
+import type { ViewportTransform } from '@kalka/core/geometry'
 
 export type ReloadStateSnapshot = {
   viewport: ViewportTransform

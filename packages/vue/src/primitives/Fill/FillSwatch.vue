@@ -2,7 +2,7 @@
 import { Primitive } from 'reka-ui'
 import { computed } from 'vue'
 
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import { useOptionalBindableValue } from '#vue/primitives/BindableValue/context'
 

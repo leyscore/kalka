@@ -11,7 +11,7 @@ import {
   parseFigFile,
   rgbaToOkHCL,
   SceneGraph
-} from '@open-pencil/core'
+} from '@kalka/core'
 
 import { solidFill, solidStroke } from '#tests/engine/figma/api/helpers'
 import { expectDefined } from '#tests/helpers/assert'

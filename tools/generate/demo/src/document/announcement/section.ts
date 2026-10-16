@@ -1,6 +1,6 @@
-import { renderTree } from '@open-pencil/core/design-jsx'
-import { Frame, Instance, Text } from '@open-pencil/design-jsx'
-import type { SceneGraph } from '@open-pencil/scene-graph'
+import { renderTree } from '@kalka/core/design-jsx'
+import { Frame, Instance, Text } from '@kalka/design-jsx'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 import { ANNOUNCEMENT_PROPERTIES, createAnnouncementComponent } from './component'
 import { EDITING_PROMPT } from './content'

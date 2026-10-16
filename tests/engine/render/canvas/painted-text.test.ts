@@ -2,8 +2,8 @@ import { beforeAll, expect, test } from 'bun:test'
 
 import type { Paragraph } from 'canvaskit-wasm'
 
-import type { Fill } from '@open-pencil/scene-graph'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import type { Fill } from '@kalka/scene-graph'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { initCanvasKit } from '#cli/headless'
 import { SkiaRenderer } from '#core/canvas/renderer'

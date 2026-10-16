@@ -1,4 +1,4 @@
-import { IS_BROWSER } from '@open-pencil/core/constants'
+import { IS_BROWSER } from '@kalka/core/constants'
 
 import {
   describeDiagnosticError,

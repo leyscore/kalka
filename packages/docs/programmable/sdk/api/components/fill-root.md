@@ -22,8 +22,8 @@ category is already active.
 ```vue twoslash
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { Fill } from '@open-pencil/scene-graph'
-import { FillRoot } from '@open-pencil/vue'
+import type { Fill } from '@kalka/scene-graph'
+import { FillRoot } from '@kalka/vue'
 
 const fill = ref<Fill>({
   type: 'SOLID',

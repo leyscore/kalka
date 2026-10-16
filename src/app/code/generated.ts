@@ -1,7 +1,7 @@
-import { renderNodesToHTML } from '@open-pencil/core/io'
-import { selectionToJSXWithLayers } from '@open-pencil/design-jsx'
-import { sceneNodesToTailwindJSXWithLayers } from '@open-pencil/dom-css/export'
-import type { SceneGraph } from '@open-pencil/scene-graph'
+import { renderNodesToHTML } from '@kalka/core/io'
+import { selectionToJSXWithLayers } from '@kalka/design-jsx'
+import { sceneNodesToTailwindJSXWithLayers } from '@kalka/dom-css/export'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 import { formatHTML } from '@/app/code/format-html'
 import { starterSourceFor, type CodeSource } from '@/app/code/templates'

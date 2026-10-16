@@ -1,11 +1,6 @@
 import { computed, ref, shallowRef } from 'vue'
 
-import {
-  ACP_AGENTS,
-  IS_TAURI,
-  type ACPAgentDef,
-  type ACPAgentID
-} from '@open-pencil/core/constants'
+import { ACP_AGENTS, IS_TAURI, type ACPAgentDef, type ACPAgentID } from '@kalka/core/constants'
 
 import {
   HARNESS_EXECUTABLE,

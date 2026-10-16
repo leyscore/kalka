@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 
 import * as Y from 'yjs'
 
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { encodeNodeForYjs } from '@/app/collab/node-codec'
 import {

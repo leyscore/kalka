@@ -1,14 +1,14 @@
 import { tool } from 'ai'
 
-import { graphFromPageSnapshot, isEmptyPageChange } from '@open-pencil/core/editor'
-import type { FigmaAPI } from '@open-pencil/core/figma-api'
+import { graphFromPageSnapshot, isEmptyPageChange } from '@kalka/core/editor'
+import type { FigmaAPI } from '@kalka/core/figma-api'
 import {
   registerComponentCatalog,
   isAtomicTool,
   toolChangesDocument,
   toolsToAI,
   type ToolDef
-} from '@open-pencil/core/tools'
+} from '@kalka/core/tools'
 
 import { makeFigmaFromStore } from '@/app/automation/bridge/figma-factory'
 import { executeAtomicEditorTool } from '@/app/automation/execution/editor'

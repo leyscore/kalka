@@ -13,7 +13,7 @@ import {
   resetClassOverrides,
   setCSSClass,
   updateClassFromNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { assertNodeEditable } from '#core/editor/capabilities'
 import { computeAllLayouts } from '#core/layout'
@@ -34,7 +34,7 @@ export const getCSSClasses = defineTool({
   execution: { kind: 'async', mutation: 'none' },
   input: v.strictObject({}),
   execute: async (figma) => {
-    const { cssClassDeclarations } = await import('@open-pencil/dom-css/export')
+    const { cssClassDeclarations } = await import('@kalka/dom-css/export')
     const users = new Map<string, number>()
     for (const node of figma.graph.getAllNodes())
       for (const name of node.htmlClasses) users.set(name, (users.get(name) ?? 0) + 1)
@@ -63,8 +63,8 @@ export const updateCSSClass = defineTool({
     kind: v.optional(v.pipe(v.picklist(CSS_CLASS_KINDS), v.description('For a new class')), 'box')
   }),
   execute: async (figma, { name, styles, kind }) => {
-    const { cssToNodeChanges } = await import('@open-pencil/dom-css')
-    const { cssClassDeclarations } = await import('@open-pencil/dom-css/export')
+    const { cssToNodeChanges } = await import('@kalka/dom-css')
+    const { cssClassDeclarations } = await import('@kalka/dom-css/export')
     const graph = figma.graph
     const current = findCSSClass(graph, name) ?? { name, kind, style: {} }
     const template = {

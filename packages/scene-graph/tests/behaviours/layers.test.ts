@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { findLayerByPath, layerPath, SceneGraph } from '@open-pencil/scene-graph'
+import { findLayerByPath, layerPath, SceneGraph } from '@kalka/scene-graph'
 
 describe('layer paths', () => {
   test('round-trip names that contain the path separators', () => {

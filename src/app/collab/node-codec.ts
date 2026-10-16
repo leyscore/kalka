@@ -1,15 +1,9 @@
 import { isEqual } from 'es-toolkit/predicate'
 
-import type {
-  Fill,
-  FillType,
-  GeometryPath,
-  SceneNode,
-  SourceMetadata
-} from '@open-pencil/scene-graph'
-import { copyFills } from '@open-pencil/scene-graph/copy'
-import { createDefaultSourceMetadata } from '@open-pencil/scene-graph/node-defaults'
-import type { Matrix, Vector } from '@open-pencil/scene-graph/primitives'
+import type { Fill, FillType, GeometryPath, SceneNode, SourceMetadata } from '@kalka/scene-graph'
+import { copyFills } from '@kalka/scene-graph/copy'
+import { createDefaultSourceMetadata } from '@kalka/scene-graph/node-defaults'
+import type { Matrix, Vector } from '@kalka/scene-graph/primitives'
 
 import { ORDER_KEY_FIELD, PAGE_FIELD, PARENTS_FIELD } from '@/app/collab/shared-tree/fields'
 

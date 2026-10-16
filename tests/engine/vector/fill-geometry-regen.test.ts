@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'bun:test'
 
-import { regenerateFillGeometry } from '@open-pencil/core/vector'
-import type { GeometryPath, VectorNetwork } from '@open-pencil/scene-graph'
+import { regenerateFillGeometry } from '@kalka/core/vector'
+import type { GeometryPath, VectorNetwork } from '@kalka/scene-graph'
 
 function square(): VectorNetwork {
   return {

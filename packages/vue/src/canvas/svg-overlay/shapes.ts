@@ -1,6 +1,6 @@
-import { colorToCSS } from '@open-pencil/scene-graph/color'
-import type { Mat3 } from '@open-pencil/scene-graph/matrix'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import { colorToCSS } from '@kalka/scene-graph/color'
+import type { Mat3 } from '@kalka/scene-graph/matrix'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 /**
  * Overlay drawings as plain data, in screen pixels unless a group places them with a matrix.

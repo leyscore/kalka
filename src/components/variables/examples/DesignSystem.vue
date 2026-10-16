@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { shallowReactive } from 'vue'
 
-import { createDefaultEditorState, createEditor } from '@open-pencil/core/editor'
-import { SceneGraph, type Variable, type VariableValue } from '@open-pencil/scene-graph'
-import { parseColor } from '@open-pencil/scene-graph/color'
-import { provideEditor } from '@open-pencil/vue'
+import { createDefaultEditorState, createEditor } from '@kalka/core/editor'
+import { SceneGraph, type Variable, type VariableValue } from '@kalka/scene-graph'
+import { parseColor } from '@kalka/scene-graph/color'
+import { provideEditor } from '@kalka/vue'
 
 import TokensPanel from '@/components/variables/TokensPanel.vue'
 

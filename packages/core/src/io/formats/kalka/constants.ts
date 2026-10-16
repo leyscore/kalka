@@ -1,4 +1,4 @@
-import type { NodeType } from '@open-pencil/scene-graph'
+import type { NodeType } from '@kalka/scene-graph'
 
 /** The folder format's version, written to `project.json`; a newer one is refused. */
 export const KALKA_FORMAT_VERSION = 1

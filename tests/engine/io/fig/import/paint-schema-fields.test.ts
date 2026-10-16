@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { nodeChangeToProps } from '@open-pencil/fig/node-change'
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
+import { nodeChangeToProps } from '@kalka/fig/node-change'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
 
 const sourceNodeId = { sessionID: 12, localID: 34 }
 const customEffectId = { guid: { sessionID: 56, localID: 78 } }

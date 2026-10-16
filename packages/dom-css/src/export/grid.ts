@@ -1,4 +1,4 @@
-import type { GridTrack, SceneNode } from '@open-pencil/scene-graph'
+import type { GridTrack, SceneNode } from '@kalka/scene-graph'
 
 import type { DesignStyleDeclaration } from '../types'
 

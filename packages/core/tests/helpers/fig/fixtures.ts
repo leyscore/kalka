@@ -8,8 +8,8 @@ import {
   type ParseFigFileOptions,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/core'
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
+} from '@kalka/core'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
 
 import { FIXTURES } from '../paths'
 import { collectAllNodes } from './traversal'

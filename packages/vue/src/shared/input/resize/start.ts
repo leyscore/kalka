@@ -1,5 +1,5 @@
-import type { Editor } from '@open-pencil/core/editor'
-import { collectResizeDescendants, createResizeSnapshot } from '@open-pencil/scene-graph/resize'
+import type { Editor } from '@kalka/core/editor'
+import { collectResizeDescendants, createResizeSnapshot } from '@kalka/scene-graph/resize'
 
 import { getHitHandleByMatrix } from '#vue/shared/input/geometry'
 import type { DragResize } from '#vue/shared/input/types'

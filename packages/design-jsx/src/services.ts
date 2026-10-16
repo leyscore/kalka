@@ -1,4 +1,4 @@
-import type { Color, SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import type { Color, SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 import type { TreeNode } from './tree'
 

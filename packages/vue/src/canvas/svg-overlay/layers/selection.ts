@@ -1,8 +1,4 @@
-import {
-  frameLabelPlacement,
-  labelScreenMatrix,
-  type RenderOverlays
-} from '@open-pencil/core/canvas'
+import { frameLabelPlacement, labelScreenMatrix, type RenderOverlays } from '@kalka/core/canvas'
 import {
   COMPONENT_COLOR,
   DROP_HIGHLIGHT_ALPHA,
@@ -24,17 +20,17 @@ import {
   SIZE_PILL_TEXT_OFFSET_Y,
   SLOT_COLOR,
   SNAP_COLOR
-} from '@open-pencil/core/constants'
+} from '@kalka/core/constants'
 import {
   createSceneGeometry,
   rotationHandleLayout,
   viewportMatrix,
   type ViewportTransform
-} from '@open-pencil/core/geometry'
-import { slotPropertyId, type SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
-import { computeBounds } from '@open-pencil/scene-graph/geometry'
-import Matrix from '@open-pencil/scene-graph/matrix'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/core/geometry'
+import { slotPropertyId, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
+import { computeBounds } from '@kalka/scene-graph/geometry'
+import Matrix from '@kalka/scene-graph/matrix'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import {
   css,

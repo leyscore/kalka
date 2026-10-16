@@ -1,8 +1,8 @@
 import { defineCommand } from 'citty'
 
-import type { NodeResult } from '@open-pencil/core/rpc'
-import { colorToHex } from '@open-pencil/scene-graph/color'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import type { NodeResult } from '@kalka/core/rpc'
+import { colorToHex } from '@kalka/scene-graph/color'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import { appTargetOptions } from '#cli/app/target'
 import { fmtNode, printError, formatType } from '#cli/format'

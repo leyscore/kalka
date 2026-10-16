@@ -4,7 +4,7 @@ import {
   withPluginData,
   type SceneGraph,
   type SourceLibraryPublication
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 export function readSourceLibraryPublication(graph: SceneGraph): SourceLibraryPublication | null {
   const root = graph.getNode(graph.rootId)

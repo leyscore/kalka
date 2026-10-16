@@ -1,4 +1,4 @@
-import type { DesignElement, DesignNode, DesignStyleDeclaration } from '@open-pencil/dom-css/export'
+import type { DesignElement, DesignNode, DesignStyleDeclaration } from '@kalka/dom-css/export'
 
 /** The attribute that ties a DOM element to its scene-graph layer. */
 export const LAYER_ID_ATTR = 'data-kalka-id'

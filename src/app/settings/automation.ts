@@ -1,7 +1,7 @@
 import * as v from 'valibot'
 
-import { allRules } from '@open-pencil/core/lint'
-import { AVAILABLE_LOCALES, locale, setLocale, type Locale } from '@open-pencil/vue'
+import { allRules } from '@kalka/core/lint'
+import { AVAILABLE_LOCALES, locale, setLocale, type Locale } from '@kalka/vue'
 
 import { agentStepLimitSchema } from '@/app/ai/chat/step-limit'
 import { applySnappingPreferences, setDesignIssuesOnCanvas } from '@/app/settings/preferences/apply'

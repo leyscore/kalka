@@ -6,12 +6,12 @@ import type {
   LibrarySummary,
   PublishLibraryInput,
   SerializedComponentLibraryRevision
-} from '@open-pencil/core/library'
+} from '@kalka/core/library'
 import {
   createLibraryRevision,
   deserializeLibraryRevision,
   serializeLibraryRevision
-} from '@open-pencil/core/library'
+} from '@kalka/core/library'
 
 import { APP_DATABASE_NAMES, defineAppDatabase, openAppDatabase } from '@/app/storage/idb'
 

@@ -1,6 +1,6 @@
 export { prefetchFigmaSchema } from '#core/clipboard'
 export { readFigFile, parseFigFile } from './fig/file'
-export { deduplicateNodeChangePluginData } from '@open-pencil/kiwi/fig/parse'
+export { deduplicateNodeChangePluginData } from '@kalka/kiwi/fig/parse'
 export {
   initCodec,
   encodeMessage,
@@ -25,7 +25,7 @@ export {
   type VariableDataValuesEntry,
   type ParentIndex,
   type FigmaMessage
-} from '@open-pencil/kiwi/fig/codec'
+} from '@kalka/kiwi/fig/codec'
 export {
   MESSAGE_TYPES,
   NODE_TYPES,
@@ -44,4 +44,4 @@ export {
   getKiwiMessageType,
   parseVarint,
   FIG_WIRE_MAGIC
-} from '@open-pencil/kiwi/fig'
+} from '@kalka/kiwi/fig'

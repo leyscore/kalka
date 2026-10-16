@@ -3,10 +3,10 @@ import { describe, expect, test } from 'bun:test'
 import { measuringRenderer, withMeasuredText } from '#demo/build'
 import { createControlsSection } from '#demo/document/controls/section'
 
-import { exportFigFile, readFigFile } from '@open-pencil/core/io'
-import { populateAllFigPages } from '@open-pencil/core/io/formats/fig'
-import { computeAllLayouts } from '@open-pencil/core/layout'
-import { missingBindings, readBehaviour, SceneGraph } from '@open-pencil/scene-graph'
+import { exportFigFile, readFigFile } from '@kalka/core/io'
+import { populateAllFigPages } from '@kalka/core/io/formats/fig'
+import { computeAllLayouts } from '@kalka/core/layout'
+import { missingBindings, readBehaviour, SceneGraph } from '@kalka/scene-graph'
 
 describe('demo controls', () => {
   test('keep complete behaviours through the .fig the demo opens', async () => {

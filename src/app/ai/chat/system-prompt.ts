@@ -1,4 +1,4 @@
-import { JSX_REFERENCE } from '@open-pencil/design-jsx'
+import { JSX_REFERENCE } from '@kalka/design-jsx'
 
 import behavior from './system-prompt.md?raw'
 

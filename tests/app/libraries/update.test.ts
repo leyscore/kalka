@@ -6,8 +6,8 @@ import {
   materializeLibraryAsset,
   planLibraryInstanceUpdates,
   summarizeLibraryUpdate
-} from '@open-pencil/core/library'
-import { SceneGraph } from '@open-pencil/scene-graph'
+} from '@kalka/core/library'
+import { SceneGraph } from '@kalka/scene-graph'
 
 function revisionGraph(label: string, includeLarge = true) {
   const graph = new SceneGraph()

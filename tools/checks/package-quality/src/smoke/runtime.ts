@@ -5,7 +5,7 @@ import {
   runCommand,
   type CommandRequest,
   type PackageManifest
-} from '@open-pencil/package-artifacts-tools'
+} from '@kalka/package-artifacts-tools'
 
 import { runPackageChecks } from '../checks/run'
 
@@ -37,7 +37,7 @@ export async function verifyPublicImports(
   consumerDirectory: string,
   execute: typeof runCommand = runCommand
 ): Promise<void> {
-  const skipped = new Set(['@open-pencil/mcp/stdio'])
+  const skipped = new Set(['@kalka/mcp/stdio'])
   const specifiers = manifests
     .flatMap(concreteImportSpecifiers)
     .filter((specifier) => !skipped.has(specifier))

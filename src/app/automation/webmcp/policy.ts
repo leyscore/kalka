@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 
-import { ALL_TOOLS, isAtomicTool, isToolExposed, type ToolDef } from '@open-pencil/core/tools'
+import { ALL_TOOLS, isAtomicTool, isToolExposed, type ToolDef } from '@kalka/core/tools'
 
 export const webmcpModeSchema = v.picklist(['off', 'inspect', 'edit'])
 export type WebMCPMode = v.InferOutput<typeof webmcpModeSchema>

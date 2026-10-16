@@ -1,8 +1,8 @@
 import { fromUint8Array } from 'js-base64'
 import type PptxGenJS from 'pptxgenjs'
 
-import type { Fill, Mat3, SceneGraph, SceneNode } from '@open-pencil/scene-graph'
-import { TransformMatrix, getWorldMatrix } from '@open-pencil/scene-graph'
+import type { Fill, Mat3, SceneGraph, SceneNode } from '@kalka/scene-graph'
+import { TransformMatrix, getWorldMatrix } from '@kalka/scene-graph'
 
 import {
   hasUnsupportedTransform,

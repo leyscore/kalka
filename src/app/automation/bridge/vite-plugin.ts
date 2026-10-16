@@ -7,8 +7,8 @@ import { join } from 'node:path'
 
 import type { Plugin } from 'vite'
 
-import { serializeDisabledTools } from '@open-pencil/mcp/tools'
-import { platformHasUnixSockets } from '@open-pencil/mcp/transport'
+import { serializeDisabledTools } from '@kalka/mcp/tools'
+import { platformHasUnixSockets } from '@kalka/mcp/transport'
 
 import {
   DEV_MCP_RESTART_PATH,

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { mergeVectorNetworks, type VectorNetwork } from '@open-pencil/scene-graph'
+import { mergeVectorNetworks, type VectorNetwork } from '@kalka/scene-graph'
 
 import { expectDefined } from './helpers/assert'
 

@@ -1,8 +1,8 @@
 import type { ImageFilter, MaskFilter, Canvas, Paint, Path } from 'canvaskit-wasm'
 
-import type { Fill, SceneGraph, SceneNode, Stroke } from '@open-pencil/scene-graph'
-import type { Rect, Vector } from '@open-pencil/scene-graph/primitives'
-import type { SnapGuide } from '@open-pencil/scene-graph/snap'
+import type { Fill, SceneGraph, SceneNode, Stroke } from '@kalka/scene-graph'
+import type { Rect, Vector } from '@kalka/scene-graph/primitives'
+import type { SnapGuide } from '@kalka/scene-graph/snap'
 
 import * as Effects from '#core/canvas/effects'
 import * as Fills from '#core/canvas/fills'

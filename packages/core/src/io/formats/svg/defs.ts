@@ -1,14 +1,14 @@
 import { fromUint8Array } from 'js-base64'
 
-import type { Effect, Fill, SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import type { Effect, Fill, SceneGraph, SceneNode } from '@kalka/scene-graph'
 import {
   colorToHex8,
   colorToDisplayCSS,
   getDefaultRenderColorSpace,
   type RenderColorSpace
-} from '@open-pencil/scene-graph/color'
-import { CSS_BLEND_MODES } from '@open-pencil/scene-graph/css'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/scene-graph/color'
+import { CSS_BLEND_MODES } from '@kalka/scene-graph/css'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import { svg, type SVGNode } from './node'
 import { round } from './paths'

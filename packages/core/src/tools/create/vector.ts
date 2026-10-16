@@ -1,9 +1,9 @@
 import * as v from 'valibot'
 
-import { transformVectorNetwork } from '@open-pencil/scene-graph'
-import type { VectorNetwork } from '@open-pencil/scene-graph'
-import { parseColor } from '@open-pencil/scene-graph/color'
-import { parseSVGPath } from '@open-pencil/scene-graph/parse-path'
+import { transformVectorNetwork } from '@kalka/scene-graph'
+import type { VectorNetwork } from '@kalka/scene-graph'
+import { parseColor } from '@kalka/scene-graph/color'
+import { parseSVGPath } from '@kalka/scene-graph/parse-path'
 
 import { toolNumber, positionInputs } from '#core/tools/input'
 import { defineTool, nodeSummary } from '#core/tools/schema'

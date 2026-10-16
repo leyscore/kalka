@@ -276,7 +276,7 @@ const noPackageInternalsInApp = createImportRule(
       specifier in PACKAGE_ALIASES ||
       Object.keys(PACKAGE_ALIASES).some((alias) => specifier.startsWith(alias))
     ) {
-      return 'App code must use package public exports such as @open-pencil/core or @open-pencil/vue, not package-local aliases.'
+      return 'App code must use package public exports such as @kalka/core or @kalka/vue, not package-local aliases.'
     }
     if (resolved?.startsWith('packages/')) {
       return 'App code must not import workspace package internals. Use package public exports instead.'
@@ -504,7 +504,7 @@ const noUIImportsInCore = createImportRule(
       specifier.startsWith('@vueuse/') ||
       specifier === 'reka-ui' ||
       specifier.startsWith('#vue/') ||
-      specifier.startsWith('@open-pencil/vue')
+      specifier.startsWith('@kalka/vue')
     ) {
       return 'Core must stay framework-agnostic and cannot import Vue/UI modules.'
     }

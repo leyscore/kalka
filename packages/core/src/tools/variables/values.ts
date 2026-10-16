@@ -1,7 +1,7 @@
 import * as v from 'valibot'
 
-import type { VariableType, VariableValue } from '@open-pencil/scene-graph'
-import { parseColor } from '@open-pencil/scene-graph/color'
+import type { VariableType, VariableValue } from '@kalka/scene-graph'
+import { parseColor } from '@kalka/scene-graph/color'
 
 import { defineTool } from '#core/tools/schema'
 

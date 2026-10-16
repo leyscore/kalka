@@ -9,7 +9,7 @@ import type {
   Stroke,
   StyleRun,
   TextDecorationStyle
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { ResourceCache } from '#core/cache/resource'
 import type { SkiaRenderer } from '#core/canvas/renderer'

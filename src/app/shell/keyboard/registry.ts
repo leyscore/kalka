@@ -2,8 +2,8 @@ import { tinykeys } from 'tinykeys'
 import type { KeyBindingMap } from 'tinykeys'
 import { onScopeDispose } from 'vue'
 
-import { editorCommandMetadata } from '@open-pencil/vue'
-import type { EditorCommandId } from '@open-pencil/vue'
+import { editorCommandMetadata } from '@kalka/vue'
+import type { EditorCommandId } from '@kalka/vue'
 
 import { requestRenameSelection } from '@/app/editor/selection/rename-dialog'
 import { TOOL_SHORTCUTS } from '@/app/editor/session'

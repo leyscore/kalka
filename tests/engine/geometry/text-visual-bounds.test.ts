@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import type { VisualBoundsNode } from '@open-pencil/scene-graph/geometry'
-import { nodeVisualBounds } from '@open-pencil/scene-graph/geometry'
+import type { VisualBoundsNode } from '@kalka/scene-graph/geometry'
+import { nodeVisualBounds } from '@kalka/scene-graph/geometry'
 
 describe('text visual bounds', () => {
   test('includes decoration overflow below text nodes', () => {

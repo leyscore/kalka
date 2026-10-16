@@ -1,5 +1,5 @@
-import { ROTATION_HANDLE_DISTANCE } from '@open-pencil/core/constants'
-import type { Vector } from '@open-pencil/scene-graph/primitives'
+import { ROTATION_HANDLE_DISTANCE } from '@kalka/core/constants'
+import type { Vector } from '@kalka/scene-graph/primitives'
 
 import { expect, test, useEditorSetupWithClear } from '#tests/e2e/fixtures'
 import { expectDefined } from '#tests/helpers/assert'

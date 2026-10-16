@@ -19,8 +19,8 @@ const EXECUTABLES: &[&str] = &[
 
 // Kalka's own companions, whose installed version must match the app.
 const PACKAGES: &[(&str, &str)] = &[
-    ("openpencil-mcp-http", "@open-pencil/mcp"),
-    ("openpencil-harness", "@open-pencil/harness"),
+    ("openpencil-mcp-http", "@kalka/mcp"),
+    ("openpencil-harness", "@kalka/harness"),
 ];
 
 #[derive(serde::Serialize)]
@@ -149,10 +149,10 @@ mod tests {
         );
         assert_eq!(result.executables["claude-agent-acp"], None);
         assert_eq!(
-            result.versions["@open-pencil/mcp"],
+            result.versions["@kalka/mcp"],
             Some("0.15.1".to_owned())
         );
-        assert_eq!(result.versions["@open-pencil/harness"], None);
+        assert_eq!(result.versions["@kalka/harness"], None);
     }
 
     #[test]

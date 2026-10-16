@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, test } from 'bun:test'
 
-import { exportFigFile, initCodec, parseFigFile, SceneGraph } from '@open-pencil/core'
+import { exportFigFile, initCodec, parseFigFile, SceneGraph } from '@kalka/core'
 
 /**
  * Regression test: two distinct nodes sharing the same source.id

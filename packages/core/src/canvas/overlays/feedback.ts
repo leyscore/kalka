@@ -1,8 +1,8 @@
 import type { Canvas } from 'canvaskit-wasm'
 
-import type { SceneGraph } from '@open-pencil/scene-graph'
-import type { Rect } from '@open-pencil/scene-graph/primitives'
-import type { SnapGuide } from '@open-pencil/scene-graph/snap'
+import type { SceneGraph } from '@kalka/scene-graph'
+import type { Rect } from '@kalka/scene-graph/primitives'
+import type { SnapGuide } from '@kalka/scene-graph/snap'
 
 import { drawNodeHighlightRect } from '#core/canvas/highlight-rect'
 import type { RenderOverlays, SkiaRenderer } from '#core/canvas/renderer'

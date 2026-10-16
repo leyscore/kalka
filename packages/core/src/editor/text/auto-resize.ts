@@ -1,4 +1,4 @@
-import { TEXT_METRIC_FIELDS, type SceneNode } from '@open-pencil/scene-graph'
+import { TEXT_METRIC_FIELDS, type SceneNode } from '@kalka/scene-graph'
 
 import { estimateTextSize, getTextMeasurer } from '#core/layout/text-measurement'
 

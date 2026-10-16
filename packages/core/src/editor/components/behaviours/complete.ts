@@ -6,7 +6,7 @@ import {
   type Behaviour,
   type InteractionState,
   type SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { recordSubtreeEdit } from '#core/editor/components/slots/history'
 import { VARIANT_SET_PADDING, variantSetProps } from '#core/editor/components/variant-set'

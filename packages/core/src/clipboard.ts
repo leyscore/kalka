@@ -1,11 +1,11 @@
-import { embedClipboardImages, encodeFigmaClipboard } from '@open-pencil/fig/clipboard'
-import { randomInt } from '@open-pencil/scene-graph/random'
-export { parseFigmaClipboard, figmaNodesBounds } from '@open-pencil/fig/clipboard'
-import { placeSlotContent, type FigNodeChangeExportRuntime } from '@open-pencil/fig/node-change'
-import { initCodec } from '@open-pencil/kiwi/fig/codec'
-import type { GUID, NodeChange as KiwiNodeChange } from '@open-pencil/kiwi/fig/codec'
-import { ownsSlotContent, type SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
-import { fractionalPosition } from '@open-pencil/scene-graph/order-keys'
+import { embedClipboardImages, encodeFigmaClipboard } from '@kalka/fig/clipboard'
+import { randomInt } from '@kalka/scene-graph/random'
+export { parseFigmaClipboard, figmaNodesBounds } from '@kalka/fig/clipboard'
+import { placeSlotContent, type FigNodeChangeExportRuntime } from '@kalka/fig/node-change'
+import { initCodec } from '@kalka/kiwi/fig/codec'
+import type { GUID, NodeChange as KiwiNodeChange } from '@kalka/kiwi/fig/codec'
+import { ownsSlotContent, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
+import { fractionalPosition } from '@kalka/scene-graph/order-keys'
 
 import {
   appendVariableNodeChanges,

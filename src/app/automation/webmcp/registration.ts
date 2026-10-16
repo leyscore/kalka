@@ -2,7 +2,7 @@
 import { toJsonSchema as toJSONSchema } from '@valibot/to-json-schema'
 import type { WebMCP } from 'webmcp-types'
 
-import { parseToolArgs, type ToolDef } from '@open-pencil/core/tools'
+import { parseToolArgs, type ToolDef } from '@kalka/core/tools'
 
 import { getWebMCPTools, type WebMCPMode } from './policy'
 

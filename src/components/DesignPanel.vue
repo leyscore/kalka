@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { getNodeEditCapability } from '@open-pencil/core/editor'
-import { readIcon } from '@open-pencil/scene-graph'
-import { useI18n, useSelectionState, useEditorCommands } from '@open-pencil/vue'
+import { getNodeEditCapability } from '@kalka/core/editor'
+import { readIcon } from '@kalka/scene-graph'
+import { useI18n, useSelectionState, useEditorCommands } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import { COMPONENT_TYPES, sceneNodeIcon } from '@/app/editor/icons'

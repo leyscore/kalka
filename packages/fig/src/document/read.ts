@@ -1,7 +1,7 @@
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-import { guidToString } from '@open-pencil/kiwi/fig/guid'
-import { deduplicateNodeChangePluginData } from '@open-pencil/kiwi/fig/parse'
-import { decodeWhole } from '@open-pencil/kiwi/schema-runtime'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
+import { guidToString } from '@kalka/kiwi/fig/guid'
+import { deduplicateNodeChangePluginData } from '@kalka/kiwi/fig/parse'
+import { decodeWhole } from '@kalka/kiwi/schema-runtime'
 
 import { parseFigBuffer } from '../archive'
 import { createIndexedOccurrenceInterpreter } from '../instance-overrides/interpret'

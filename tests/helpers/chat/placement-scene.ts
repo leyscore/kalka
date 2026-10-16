@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test'
 
-import type { RenderPlacementInput } from '@open-pencil/core/design-jsx'
-import type { Color, Fill } from '@open-pencil/scene-graph'
+import type { RenderPlacementInput } from '@kalka/core/design-jsx'
+import type { Color, Fill } from '@kalka/scene-graph'
 
 export type PlacementScenario =
   | 'nested-fill'

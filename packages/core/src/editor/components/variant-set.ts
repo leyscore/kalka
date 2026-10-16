@@ -3,10 +3,10 @@ import {
   type SceneGraph,
   type SceneNode,
   type Stroke
-} from '@open-pencil/scene-graph'
-import { getAxisAlignedBoundsInParent } from '@open-pencil/scene-graph/coordinate'
-import { copyStrokes } from '@open-pencil/scene-graph/copy'
-import { deriveVariantProperties } from '@open-pencil/scene-graph/variant-properties'
+} from '@kalka/scene-graph'
+import { getAxisAlignedBoundsInParent } from '@kalka/scene-graph/coordinate'
+import { copyStrokes } from '@kalka/scene-graph/copy'
+import { deriveVariantProperties } from '@kalka/scene-graph/variant-properties'
 
 /**
  * How a new component set looks. Figma's Combine as variants command (`canvas`) pads the variants

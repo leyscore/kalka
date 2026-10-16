@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import type { Color, Effect } from '@open-pencil/scene-graph'
-import { parseCSSShadows } from '@open-pencil/scene-graph/css'
+import type { Color, Effect } from '@kalka/scene-graph'
+import { parseCSSShadows } from '@kalka/scene-graph/css'
 
 const RED: Color = { r: 1, g: 0, b: 0, a: 1 }
 

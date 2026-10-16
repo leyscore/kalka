@@ -1,4 +1,4 @@
-import type { Effect, Fill, GradientTransform, SceneNode, Stroke } from '@open-pencil/scene-graph'
+import type { Effect, Fill, GradientTransform, SceneNode, Stroke } from '@kalka/scene-graph'
 
 import { formatColor, formatShadow } from './helpers'
 import { helperCall, plainValue, type HelperCall, type JSXProp, type JSXValue } from './value'

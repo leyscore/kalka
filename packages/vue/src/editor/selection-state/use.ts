@@ -5,7 +5,7 @@ import {
   readIcon,
   slotOwner,
   slotPropertyId
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { useEditor } from '#vue/editor/context'
 import { useSelectedNodeState } from '#vue/editor/selection-state/nodes'

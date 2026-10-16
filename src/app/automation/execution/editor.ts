@@ -1,6 +1,6 @@
-import { executeAtomicTool, isEmptyPageChange } from '@open-pencil/core/editor'
-import type { FigmaAPI } from '@open-pencil/core/figma-api'
-import type { ToolDef } from '@open-pencil/core/tools'
+import { executeAtomicTool, isEmptyPageChange } from '@kalka/core/editor'
+import type { FigmaAPI } from '@kalka/core/figma-api'
+import type { ToolDef } from '@kalka/core/tools'
 
 import type { EditorStore } from '@/app/editor/active-store'
 import { ensureGraphFonts } from '@/app/editor/fonts'

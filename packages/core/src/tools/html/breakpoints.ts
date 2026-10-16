@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 
-import { createBreakpoint, responsiveArtboards } from '@open-pencil/scene-graph'
+import { createBreakpoint, responsiveArtboards } from '@kalka/scene-graph'
 
 import { computeAllLayouts } from '#core/layout'
 import { nodeIdInput, toolNumber } from '#core/tools/input'

@@ -1,4 +1,4 @@
-import { AI_PROVIDERS, type AIProviderID, type ModelOption } from '@open-pencil/core/constants'
+import { AI_PROVIDERS, type AIProviderID, type ModelOption } from '@kalka/core/constants'
 
 import { modelProviderName } from '@/app/ai/models/provider-name'
 import type { AIModelCapability, AIModelProfileId, AIModelRole } from '@/app/ai/models/types'

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 
-import type { SceneNode, Stroke } from '@open-pencil/scene-graph'
+import type { SceneNode, Stroke } from '@kalka/scene-graph'
 
 import { CanvasHelper } from '#tests/helpers/canvas'
 import { waitForDemo } from '#tests/helpers/demo'

@@ -14,7 +14,7 @@ import {
   solid,
   type DesignJSXProgram,
   type TreeNode
-} from '@open-pencil/design-jsx'
+} from '@kalka/design-jsx'
 
 import type { DesignJSXHelperDescriptor } from '@/app/code/sandbox/types'
 

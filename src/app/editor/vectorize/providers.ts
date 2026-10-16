@@ -1,6 +1,6 @@
 import { fromUint8Array } from 'js-base64'
 
-import { IS_TAURI } from '@open-pencil/core/constants'
+import { IS_TAURI } from '@kalka/core/constants'
 
 import { readBoundedBody } from '@/app/document/io/browser'
 import { tauriFetch } from '@/app/tauri/http'

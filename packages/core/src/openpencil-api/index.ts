@@ -3,7 +3,7 @@ import {
   BEHAVIOUR_KINDS,
   type BehaviourKind,
   type BehaviourSpec
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import type { FigmaAPI } from '#core/figma-api'
 

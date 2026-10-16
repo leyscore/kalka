@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import type { Stroke, VectorNetwork } from '@open-pencil/scene-graph'
-import type { ArrowEndpoint } from '@open-pencil/scene-graph/arrow-caps'
+import type { Stroke, VectorNetwork } from '@kalka/scene-graph'
+import type { ArrowEndpoint } from '@kalka/scene-graph/arrow-caps'
 import {
   arrowCapOverflow,
   arrowLinesSegments,
@@ -9,8 +9,8 @@ import {
   equilateralArrowPoints,
   isArrowCap,
   lineArrowEndpoints
-} from '@open-pencil/scene-graph/arrow-caps'
-import { strokeOverflow } from '@open-pencil/scene-graph/geometry'
+} from '@kalka/scene-graph/arrow-caps'
+import { strokeOverflow } from '@kalka/scene-graph/geometry'
 
 const SQRT3 = Math.sqrt(3)
 

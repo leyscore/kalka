@@ -1,4 +1,4 @@
-import type { Fill, SceneGraph, SceneNode, Stroke } from '@open-pencil/scene-graph'
+import type { Fill, SceneGraph, SceneNode, Stroke } from '@kalka/scene-graph'
 import {
   resolveNodeFillColor,
   resolveNodeStrokeColor,
@@ -8,8 +8,8 @@ import {
   normalizeColor,
   getFillOkHCL,
   getStrokeOkHCL
-} from '@open-pencil/scene-graph/color'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/scene-graph/color'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 function resolvedVariableColor(
   color: Color,

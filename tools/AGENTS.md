@@ -1,6 +1,6 @@
 # Repo tooling, CI, and releases
 
-Private tooling lives under `tools/<role>/<domain>/{src,tests}`; Steiger enforces the layout and kebab-case domain names. Every tool is a workspace named `@open-pencil/<domain>-tools`, listed literally in the root `workspaces` (the manifest schema rejects globs on purpose), so it can declare dependencies and run through `bun --filter`. `bun run check:tools` type-checks every tool through `tools/tsconfig.json`; `bun run test:tools` runs every tool with a `test` script. A tool imports its own files through its package.json `imports` alias (`#ci/*`, `#release/*`), other tools through their package name, and the docs site config through the shared `#docs-config/*` path.
+Private tooling lives under `tools/<role>/<domain>/{src,tests}`; Steiger enforces the layout and kebab-case domain names. Every tool is a workspace named `@kalka/<domain>-tools`, listed literally in the root `workspaces` (the manifest schema rejects globs on purpose), so it can declare dependencies and run through `bun --filter`. `bun run check:tools` type-checks every tool through `tools/tsconfig.json`; `bun run test:tools` runs every tool with a `test` script. A tool imports its own files through its package.json `imports` alias (`#ci/*`, `#release/*`), other tools through their package name, and the docs site config through the shared `#docs-config/*` path.
 
 | Role        | Contract                                                                                                               | Domains                                                                                               |
 | ----------- | ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
@@ -11,7 +11,7 @@ Private tooling lives under `tools/<role>/<domain>/{src,tests}`; Steiger enforce
 | `dev/`      | Test running and benchmarks for humans                                                                                 | `unit-tests`, `navigation-benchmark`, `dev-server`                                                    |
 
 - Nothing under `generate/` or `release/` runs from `bun run check` except through a check entrypoint; `generate/authoring-reference` keeps its `check.ts` beside `generate.ts` until it splits.
-- Resolve the workspace with `resolveWorkspaceRoot` from `@open-pencil/package-artifacts-tools`, not parent-directory traversal. Keep sibling imports relative.
+- Resolve the workspace with `resolveWorkspaceRoot` from `@kalka/package-artifacts-tools`, not parent-directory traversal. Keep sibling imports relative.
 - `checks/test-homes` owns `engine-baseline.txt` and `check:test-homes`; `dev/unit-tests` owns the shard map and runner (`tests/AGENTS.md`).
 - No `scripts/` entrypoints: root `package.json` scripts call tool files directly.
 

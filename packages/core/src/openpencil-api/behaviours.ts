@@ -16,7 +16,7 @@ import {
   type BehaviourSpec,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 /** A node as scripts pass it: a Figma API node, or its id. */
 export type NodeRef = { readonly id: string } | string

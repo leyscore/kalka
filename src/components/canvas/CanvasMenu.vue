@@ -19,8 +19,8 @@ import {
   useSelectionState,
   editorCommandMetadata,
   formatShortcut
-} from '@open-pencil/vue'
-import type { EditorCommandId } from '@open-pencil/vue'
+} from '@kalka/vue'
+import type { EditorCommandId } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import { createCanvasMenuActions } from '@/app/editor/canvas/menu/actions'

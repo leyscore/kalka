@@ -93,7 +93,7 @@ export interface FigKiwiDecodeResult {
   figSchemaDeflated: Uint8Array
 }
 
-/** Decode one raw `fig-kiwi` canvas payload. Outer `.fig` archive handling lives in `@open-pencil/fig`. */
+/** Decode one raw `fig-kiwi` canvas payload. Outer `.fig` archive handling lives in `@kalka/fig`. */
 export function decodeFigKiwiCanvas(
   data: Uint8Array,
   onPages?: (pages: FigPageManifestEntry[]) => void,

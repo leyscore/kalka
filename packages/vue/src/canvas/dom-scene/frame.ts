@@ -1,5 +1,5 @@
-import type { BrowserFontFace } from '@open-pencil/core/text'
-import { HTML_TAG_RESET_CSS } from '@open-pencil/dom-css/export'
+import type { BrowserFontFace } from '@kalka/core/text'
+import { HTML_TAG_RESET_CSS } from '@kalka/dom-css/export'
 
 /**
  * An artboard document: one iframe per top-level layer, so its CSS is a real page of its own

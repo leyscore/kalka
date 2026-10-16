@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 
-import { IS_TAURI } from '@open-pencil/core/constants'
+import { IS_TAURI } from '@kalka/core/constants'
 
 import { createDeferred } from '@/app/runtime/deferred'
 import { openExternalLink } from '@/app/shell/ui'

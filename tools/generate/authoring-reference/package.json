@@ -1,5 +1,5 @@
 {
-  "name": "@open-pencil/authoring-reference-tools",
+  "name": "@kalka/authoring-reference-tools",
   "private": true,
   "type": "module",
   "imports": {
@@ -9,9 +9,9 @@
     "test": "bun test tests"
   },
   "dependencies": {
-    "@open-pencil/core": "workspace:*",
-    "@open-pencil/design-jsx": "workspace:*",
-    "@open-pencil/package-artifacts-tools": "workspace:*",
+    "@kalka/core": "workspace:*",
+    "@kalka/design-jsx": "workspace:*",
+    "@kalka/package-artifacts-tools": "workspace:*",
     "dedent": "^1.7.2"
   }
 }

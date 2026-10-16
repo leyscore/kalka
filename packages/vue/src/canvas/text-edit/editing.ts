@@ -1,9 +1,9 @@
 import { useIntervalFn } from '@vueuse/core'
 import type { ShallowRef } from 'vue'
 
-import type { Editor } from '@open-pencil/core/editor'
-import { adjustRunsForDelete, adjustRunsForInsert } from '@open-pencil/core/text'
-import type { SceneNode } from '@open-pencil/scene-graph'
+import type { Editor } from '@kalka/core/editor'
+import { adjustRunsForDelete, adjustRunsForInsert } from '@kalka/core/text'
+import type { SceneNode } from '@kalka/scene-graph'
 
 const CARET_BLINK_MS = 530
 

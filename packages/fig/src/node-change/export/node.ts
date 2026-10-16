@@ -1,22 +1,22 @@
 import type { DerivedSymbolOverride } from '#fig/instance-overrides/types'
 import { effectiveFigmaRawNodeFields, effectiveFigmaSourcePayload } from '#fig/source-metadata'
 
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-import { stringToGuid } from '@open-pencil/kiwi/fig/guid'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
+import { stringToGuid } from '@kalka/kiwi/fig/guid'
 import type {
   ComponentPropertyDefinition,
   ComponentPropertyReferenceField,
   SceneGraph,
   SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 import {
   DEFAULT_STROKE_MITER_LIMIT,
   DEFAULT_STROKE_WEIGHT,
   OPEN_PENCIL_PLUGIN_DATA,
   withPluginData
-} from '@open-pencil/scene-graph'
-import { siblingOrderKeys } from '@open-pencil/scene-graph/order-keys'
-import type { GUID, Matrix, Vector } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/scene-graph'
+import { siblingOrderKeys } from '@kalka/scene-graph/order-keys'
+import type { GUID, Matrix, Vector } from '@kalka/scene-graph/primitives'
 
 /* eslint-disable max-lines */
 import { bytesToHex } from '../bytes'

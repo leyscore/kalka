@@ -14,7 +14,7 @@ import { normalizedFilename } from '#lint/support/context.ts'
 import type { RuleContext, RuleDefinition, RuleSourceCode } from '#lint/support/types.ts'
 import { AST_NODE_TYPES, type TSESTree } from '@typescript-eslint/utils'
 
-import { resolveWorkspaceRoot } from '@open-pencil/package-artifacts-tools'
+import { resolveWorkspaceRoot } from '@kalka/package-artifacts-tools'
 
 import { lint, ruleDiagnostics } from './helpers/lint.ts'
 

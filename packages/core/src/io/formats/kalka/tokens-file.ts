@@ -1,7 +1,7 @@
 import { isPlainObject } from 'es-toolkit/predicate'
 import * as v from 'valibot'
 
-import type { SceneGraph } from '@open-pencil/scene-graph'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 import {
   exportDesignTokens,

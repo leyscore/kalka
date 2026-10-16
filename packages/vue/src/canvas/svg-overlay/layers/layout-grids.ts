@@ -1,6 +1,6 @@
-import { hasLayoutGrids, layoutGridPaints } from '@open-pencil/core/canvas'
-import { createSceneGeometry } from '@open-pencil/core/geometry'
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import { hasLayoutGrids, layoutGridPaints } from '@kalka/core/canvas'
+import { createSceneGeometry } from '@kalka/core/geometry'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 import type { OverlayContext } from '#vue/canvas/svg-overlay/layers/selection'
 import { css, type OverlayShape } from '#vue/canvas/svg-overlay/shapes'

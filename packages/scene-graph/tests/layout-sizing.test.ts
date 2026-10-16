@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { layoutSizing, layoutSizingUpdates, SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
+import { layoutSizing, layoutSizingUpdates, SceneGraph, type SceneNode } from '@kalka/scene-graph'
 
 function child(parent: Partial<SceneNode>, node: Partial<SceneNode> = {}) {
   const graph = new SceneGraph()

@@ -1,14 +1,14 @@
 import { describe, expect, test } from 'bun:test'
 
-import type { RenderOverlays } from '@open-pencil/core/canvas'
+import type { RenderOverlays } from '@kalka/core/canvas'
 import {
   AUTO_LAYOUT_HOVER_BLUE,
   AUTO_LAYOUT_HOVER_BLUE_FILL,
   AUTO_LAYOUT_HOVER_MAGENTA,
   AUTO_LAYOUT_HOVER_MAGENTA_FILL,
   SELECTION_COLOR
-} from '@open-pencil/core/constants'
-import { SceneGraph } from '@open-pencil/scene-graph'
+} from '@kalka/core/constants'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import {
   autoLayoutHoverLayer,

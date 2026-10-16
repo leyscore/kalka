@@ -1,8 +1,4 @@
-import {
-  reconcileVariableBindings,
-  type BindingScope,
-  type SceneGraph
-} from '@open-pencil/scene-graph'
+import { reconcileVariableBindings, type BindingScope, type SceneGraph } from '@kalka/scene-graph'
 
 import { computeLayout } from '#core/layout'
 

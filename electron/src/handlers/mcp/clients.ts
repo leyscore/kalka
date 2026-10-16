@@ -11,7 +11,7 @@ import { BUNDLED_MCP_STDIO, bundledMCPCommand, bundledMCPScript } from './bundle
 
 /** The name Kalka's tools appear under in a client: `mcp__kalka__*`. */
 const MCP_SERVER_NAME = 'kalka'
-/** The stdio bridge of a global `@open-pencil/mcp` install, for builds without the bundled one. */
+/** The stdio bridge of a global `@kalka/mcp` install, for builds without the bundled one. */
 const GLOBAL_MCP_BRIDGE = 'openpencil-mcp'
 
 export const MCP_CLIENT_IDS = [
@@ -42,7 +42,7 @@ export async function bridgeCommand(locate: Locate): Promise<BridgeCommand> {
   const bridge = await locate(GLOBAL_MCP_BRIDGE)
   if (!bridge)
     throw new NativeError(
-      `${GLOBAL_MCP_BRIDGE} is not installed. Install @open-pencil/mcp globally, then connect again.`
+      `${GLOBAL_MCP_BRIDGE} is not installed. Install @kalka/mcp globally, then connect again.`
     )
   // Clients start servers without a login shell: name the bridge by its full path and put its
   // folder, where Node usually sits too, on the PATH it runs with.

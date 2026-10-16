@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { generateId, SceneGraph } from '@open-pencil/scene-graph'
+import { generateId, SceneGraph } from '@kalka/scene-graph'
 
 import { expectDefined, getNodeOrThrow } from '../helpers/assert'
 import { pageId, rect } from './helpers'

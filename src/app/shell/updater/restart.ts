@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 
-import { randomHex } from '@open-pencil/scene-graph/random'
+import { randomHex } from '@kalka/scene-graph/random'
 
 import { createDeferred } from '@/app/runtime/deferred'
 

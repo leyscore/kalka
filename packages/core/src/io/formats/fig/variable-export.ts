@@ -1,16 +1,13 @@
-import {
-  collectionPluginDataNodeChange,
-  variableMetadataNodeChange
-} from '@open-pencil/fig/node-change'
-import type { GUID, NodeChange, VariableDataEntry } from '@open-pencil/kiwi/fig/codec'
-import { guidToString, stringToGuid } from '@open-pencil/kiwi/fig/guid'
+import { collectionPluginDataNodeChange, variableMetadataNodeChange } from '@kalka/fig/node-change'
+import type { GUID, NodeChange, VariableDataEntry } from '@kalka/kiwi/fig/codec'
+import { guidToString, stringToGuid } from '@kalka/kiwi/fig/guid'
 import {
   modesDefaultFirst,
   type SceneGraph,
   type SceneNode,
   type VariableValue
-} from '@open-pencil/scene-graph'
-import { fractionalPosition } from '@open-pencil/scene-graph/order-keys'
+} from '@kalka/scene-graph'
+import { fractionalPosition } from '@kalka/scene-graph/order-keys'
 
 import { safeColor } from '#core/kiwi/fig/node-change/serialize'
 

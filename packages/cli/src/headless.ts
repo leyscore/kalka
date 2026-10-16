@@ -1,11 +1,11 @@
 import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises'
 import { dirname, join, relative, sep } from 'node:path'
 
-import { BUILTIN_IO_FORMATS, IORegistry, initCanvasKit } from '@open-pencil/core/io'
-import { populateAllFigPages, populateFigPage } from '@open-pencil/core/io/formats/fig'
-import { readKalkaFolder, type KalkaFile } from '@open-pencil/core/io/formats/kalka'
-import { computeAllLayouts } from '@open-pencil/core/layout'
-import type { SceneGraph } from '@open-pencil/scene-graph'
+import { BUILTIN_IO_FORMATS, IORegistry, initCanvasKit } from '@kalka/core/io'
+import { populateAllFigPages, populateFigPage } from '@kalka/core/io/formats/fig'
+import { readKalkaFolder, type KalkaFile } from '@kalka/core/io/formats/kalka'
+import { computeAllLayouts } from '@kalka/core/layout'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 import { printError } from '#cli/format'
 

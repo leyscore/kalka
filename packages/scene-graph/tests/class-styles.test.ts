@@ -13,7 +13,7 @@ import {
   setCSSClass,
   updateClassFromNode,
   type Fill
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 import * as v from 'valibot'
 
 const solid = (r: number, g: number, b: number): Fill[] => [

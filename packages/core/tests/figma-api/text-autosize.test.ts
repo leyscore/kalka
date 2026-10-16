@@ -3,8 +3,8 @@ import { beforeAll, describe, expect, test } from 'bun:test'
 import { expectDefined } from '#core-tests/helpers/assert'
 import { fontManager } from '#core/text/fonts'
 
-import { FigmaAPI } from '@open-pencil/core/figma-api'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { FigmaAPI } from '@kalka/core/figma-api'
+import { SceneGraph } from '@kalka/scene-graph'
 
 // Recorded with the same script in live Figma on 2026-10-07, Inter Regular. Line metrics round
 // differently by up to a pixel.

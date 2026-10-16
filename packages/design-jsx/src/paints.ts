@@ -1,15 +1,9 @@
 import * as v from 'valibot'
 
-import type {
-  BlendMode,
-  Fill,
-  FillType,
-  GradientStop,
-  GradientTransform
-} from '@open-pencil/scene-graph'
-import { colorToFill, parseColor } from '@open-pencil/scene-graph/color'
-import { TRANSPARENT } from '@open-pencil/scene-graph/constants'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import type { BlendMode, Fill, FillType, GradientStop, GradientTransform } from '@kalka/scene-graph'
+import { colorToFill, parseColor } from '@kalka/scene-graph/color'
+import { TRANSPARENT } from '@kalka/scene-graph/constants'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import { parseScriptInput } from './validation'
 

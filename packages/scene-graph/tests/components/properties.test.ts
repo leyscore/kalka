@@ -9,7 +9,7 @@ import {
   removeComponentProperty,
   resolveComponentPropertyValue,
   SceneGraph
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 function component(
   graph: SceneGraph,

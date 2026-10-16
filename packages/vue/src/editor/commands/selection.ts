@@ -1,4 +1,4 @@
-import { readIcon, type SceneNode } from '@open-pencil/scene-graph'
+import { readIcon, type SceneNode } from '@kalka/scene-graph'
 
 import type { EditorCommandMapOptions } from './context'
 import type { EditorCommand, EditorCommandId } from './types'

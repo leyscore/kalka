@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 
-import { setPexelsAPIKey, setUnsplashAccessKey } from '@open-pencil/core/tools'
+import { setPexelsAPIKey, setUnsplashAccessKey } from '@kalka/core/tools'
 
 import { appCredentialServices } from './app'
 import {

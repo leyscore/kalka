@@ -2,7 +2,7 @@
 import { tv } from 'tailwind-variants'
 import { computed } from 'vue'
 
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@kalka/vue'
 
 import type { ProviderConnectionTestFailureReason } from '@/app/ai/chat/connection-test'
 import AppButton from '@/components/ui/button/AppButton.vue'

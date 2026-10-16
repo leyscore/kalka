@@ -9,7 +9,7 @@ import {
   slotPropertyId,
   slotScope,
   type SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 /** A component set with a Small and a Large variant, each with a `Content` slot. */
 function panel(graph: SceneGraph, page: SceneNode) {

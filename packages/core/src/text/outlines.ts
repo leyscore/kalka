@@ -1,6 +1,6 @@
 import { prepareWithSegments, layoutWithLines } from '@chenglou/pretext'
 
-import type { CharacterStyleOverride, SceneNode } from '@open-pencil/scene-graph'
+import type { CharacterStyleOverride, SceneNode } from '@kalka/scene-graph'
 
 import { fontManager, weightToStyle } from '#core/text/fonts'
 import {

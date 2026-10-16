@@ -1,4 +1,4 @@
-import type { SceneGraph, SceneNode, Vector } from '@open-pencil/scene-graph'
+import type { SceneGraph, SceneNode, Vector } from '@kalka/scene-graph'
 
 type FixtureNode = Pick<
   SceneNode,

@@ -2,8 +2,8 @@ import { expect, test } from 'bun:test'
 
 import { range } from 'es-toolkit'
 
-import { createEditor } from '@open-pencil/core/editor'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { createEditor } from '@kalka/core/editor'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { createRecentPages } from '@/app/editor/pages/recent'
 

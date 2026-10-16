@@ -1,4 +1,4 @@
-import type { SnappingPreferences } from '@open-pencil/core/editor'
+import type { SnappingPreferences } from '@kalka/core/editor'
 
 import { isTauri } from '@/app/tauri/env'
 

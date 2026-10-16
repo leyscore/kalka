@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url'
 
-import { resolveWorkspaceRoot } from '@open-pencil/package-artifacts-tools/workspace'
+import { resolveWorkspaceRoot } from '@kalka/package-artifacts-tools/workspace'
 
 export const repositoryRoot = await resolveWorkspaceRoot(fileURLToPath(import.meta.url))
 export const targets = ['web', 'docs', 'desktop'] as const

@@ -1,7 +1,7 @@
-import type { BlendMode, Effect, Stroke } from '@open-pencil/scene-graph'
-import { TRANSPARENT } from '@open-pencil/scene-graph/constants'
-import { parseCSSColor, parseCSSNumber, splitCSSValue } from '@open-pencil/scene-graph/css'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import type { BlendMode, Effect, Stroke } from '@kalka/scene-graph'
+import { TRANSPARENT } from '@kalka/scene-graph/constants'
+import { parseCSSColor, parseCSSNumber, splitCSSValue } from '@kalka/scene-graph/css'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import type { DesignStyleDeclaration } from '../types'
 

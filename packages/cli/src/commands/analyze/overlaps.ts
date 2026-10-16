@@ -1,6 +1,6 @@
 import { defineCommand } from 'citty'
 
-import type { AnalyzeOverlapsResult } from '@open-pencil/core/rpc'
+import type { AnalyzeOverlapsResult } from '@kalka/core/rpc'
 import {
   VALID_OVERLAP_CATEGORIES,
   VALID_OVERLAP_SCOPES,
@@ -8,7 +8,7 @@ import {
   parseOverlapCategories,
   parseOverlapScope,
   parseOverlapSeverity
-} from '@open-pencil/core/tools'
+} from '@kalka/core/tools'
 
 import { bold, fail, fmtList, fmtSummary, kv } from '#cli/format'
 import { loadRPCData } from '#cli/rpc-data'

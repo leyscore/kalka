@@ -1,14 +1,14 @@
 import { effectiveFigmaRawNodeFields } from '#fig/source-metadata'
 
-import type { NodeChange, Paint } from '@open-pencil/kiwi/fig/codec'
-import { stringToGuid } from '@open-pencil/kiwi/fig/guid'
+import type { NodeChange, Paint } from '@kalka/kiwi/fig/codec'
+import { stringToGuid } from '@kalka/kiwi/fig/guid'
 import type {
   ComponentPropertyDefinition,
   PluginDataEntry,
   SceneGraph,
   SceneNode
-} from '@open-pencil/scene-graph'
-import type { Color, GUID, Matrix } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/scene-graph'
+import type { Color, GUID, Matrix } from '@kalka/scene-graph/primitives'
 
 export type KiwiNodeChange = NodeChange & Record<string, unknown>
 

@@ -1,6 +1,6 @@
-import { SceneGraph } from '@open-pencil/core'
-import type { SceneNode } from '@open-pencil/core'
-import type { Color } from '@open-pencil/scene-graph'
+import { SceneGraph } from '@kalka/core'
+import type { SceneNode } from '@kalka/core'
+import type { Color } from '@kalka/scene-graph'
 
 export function makeSceneGraph(pageName = 'Test'): SceneGraph {
   const graph = new SceneGraph()

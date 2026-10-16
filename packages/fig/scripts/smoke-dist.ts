@@ -13,7 +13,7 @@ if (
   typeof nodeChange.convertLineHeight !== 'function' ||
   typeof nodeChange.sceneNodeToKiwi !== 'function'
 ) {
-  throw new Error('Expected @open-pencil/fig archive API exports')
+  throw new Error('Expected @kalka/fig archive API exports')
 }
 
 const bytes = mod.writeFigContainer({
@@ -23,5 +23,5 @@ const bytes = mod.writeFigContainer({
 const document = mod.readFigContainer(bytes)
 
 if (document.dataRaw[0] !== 2) {
-  throw new Error('Expected @open-pencil/fig container round-trip')
+  throw new Error('Expected @kalka/fig container round-trip')
 }

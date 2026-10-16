@@ -1,7 +1,7 @@
 import { hasInjectionContext, inject, provide, shallowRef, triggerRef, watch } from 'vue'
 import type { InjectionKey } from 'vue'
 
-import { provideEditor } from '@open-pencil/vue'
+import { provideEditor } from '@kalka/vue'
 
 import type { EditorStore } from '@/app/editor/session'
 

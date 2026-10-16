@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { createNodeChangesMessage, encodeMessage, initCodec } from '@open-pencil/kiwi/fig/codec'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { createNodeChangesMessage, encodeMessage, initCodec } from '@kalka/kiwi/fig/codec'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { sceneNodeToKiwi } from '#core/kiwi/fig/node-change/serialize'
 

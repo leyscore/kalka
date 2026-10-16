@@ -2,8 +2,8 @@ import { afterEach, beforeEach, expect, test } from 'bun:test'
 
 import { toRaw } from 'vue'
 
-import { allRules } from '@open-pencil/core/lint'
-import { locale, setLocale } from '@open-pencil/vue'
+import { allRules } from '@kalka/core/lint'
+import { locale, setLocale } from '@kalka/vue'
 
 import { readAutomationSettings, updateAutomationSettings } from '@/app/settings/automation'
 import { appPreferences } from '@/app/settings/preferences/store'

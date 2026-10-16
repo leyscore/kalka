@@ -1,7 +1,7 @@
-import { getGuideScreenSegment } from '@open-pencil/core/canvas'
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
-import { guideOwnersOnPage } from '@open-pencil/scene-graph/guides'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import { getGuideScreenSegment } from '@kalka/core/canvas'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import { guideOwnersOnPage } from '@kalka/scene-graph/guides'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import { measurementSegmentShapes } from '#vue/canvas/svg-overlay/layers/measurement'
 import type { OverlayContext } from '#vue/canvas/svg-overlay/layers/selection'

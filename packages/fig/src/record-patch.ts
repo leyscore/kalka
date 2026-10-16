@@ -1,15 +1,15 @@
 import { inflateSync } from 'fflate'
 
-import type { GUID, NodeChange } from '@open-pencil/kiwi/fig/codec'
-import { guidToString } from '@open-pencil/kiwi/fig/guid'
+import type { GUID, NodeChange } from '@kalka/kiwi/fig/codec'
+import { guidToString } from '@kalka/kiwi/fig/guid'
 import {
   ByteBuffer,
   compileSchema,
   createSchemaSkipper,
   decodeBinarySchema,
   type SchemaSkipper
-} from '@open-pencil/kiwi/schema-runtime'
-import { orderKeyBetween } from '@open-pencil/scene-graph/order-keys'
+} from '@kalka/kiwi/schema-runtime'
+import { orderKeyBetween } from '@kalka/scene-graph/order-keys'
 
 import { readFigArchiveParts, writeFigArchive, type FigImageEntry } from './archive'
 import { symbolDataOf, symbolOverridesOf } from './instance-overrides/types'

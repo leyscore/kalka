@@ -5,8 +5,8 @@ import { guid } from '#fig-tests/helpers/guid'
 import { materializeDocument, materializeFigArchive } from '#fig/document/materialize'
 import { DEFAULT_SLOT_CONTENT } from '#fig/instance-overrides/types'
 
-import type { GUID, NodeChange } from '@open-pencil/kiwi/fig/codec'
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import type { GUID, NodeChange } from '@kalka/kiwi/fig/codec'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 /**
  * `slots.fig` was built with Figma's plugin API (`createSlot`, `appendChild`, `resetSlot`,

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { BlendMode } from '@open-pencil/scene-graph'
-import { AppearanceControlsRoot, MIXED, useI18n } from '@open-pencil/vue'
+import type { BlendMode } from '@kalka/scene-graph'
+import { AppearanceControlsRoot, MIXED, useI18n } from '@kalka/vue'
 
 import NumberField from '@/components/inputs/NumberField.vue'
 import { useBlendModeOptions } from '@/components/properties/blend-mode/use'

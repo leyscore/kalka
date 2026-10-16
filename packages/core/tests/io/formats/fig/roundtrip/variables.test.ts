@@ -11,8 +11,8 @@ import {
   parseFigFile,
   SceneGraph,
   type Variable
-} from '@open-pencil/core'
-import type { Color } from '@open-pencil/scene-graph'
+} from '@kalka/core'
+import type { Color } from '@kalka/scene-graph'
 
 setDefaultTimeout(60_000)
 

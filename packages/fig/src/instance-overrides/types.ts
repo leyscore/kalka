@@ -1,6 +1,6 @@
-import type { GUID, NodeChange, VariableConsumptionEntry } from '@open-pencil/kiwi/fig/codec'
-import { isUnsetGuid, UNSET_GUID } from '@open-pencil/kiwi/fig/guid'
-import type { Matrix, Vector } from '@open-pencil/scene-graph/primitives'
+import type { GUID, NodeChange, VariableConsumptionEntry } from '@kalka/kiwi/fig/codec'
+import { isUnsetGuid, UNSET_GUID } from '@kalka/kiwi/fig/guid'
+import type { Matrix, Vector } from '@kalka/scene-graph/primitives'
 
 export interface VariableConsumptionMapFields {
   variableConsumptionMap?: { entries?: VariableConsumptionEntry[] }

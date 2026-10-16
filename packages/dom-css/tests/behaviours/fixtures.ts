@@ -5,7 +5,7 @@ import {
   withIcon,
   type Behaviour,
   type SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 const solid = (r: number, g: number, b: number) => [
   { type: 'SOLID' as const, color: { r, g, b, a: 1 }, opacity: 1, visible: true }

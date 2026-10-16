@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 
-import { computeAllLayouts, exportFigFile, initCodec, parseFigFile, SceneGraph } from '@open-pencil/core'
+import { computeAllLayouts, exportFigFile, initCodec, parseFigFile, SceneGraph } from '@kalka/core'
 
 import { archiveChanges } from '#core/kiwi/fig/session/archive-changes'
 

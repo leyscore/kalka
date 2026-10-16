@@ -2,7 +2,7 @@
 import { AlertDialogAction, AlertDialogCancel } from 'reka-ui'
 import { computed, ref, useTemplateRef, watch } from 'vue'
 
-import { useAutomationMessages, useCommonMessages, useSettingsMessages } from '@open-pencil/vue'
+import { useAutomationMessages, useCommonMessages, useSettingsMessages } from '@kalka/vue'
 
 import { mcpConnectionSettings } from '@/app/integrations/mcp'
 import { useMCPConnectionForm } from '@/app/integrations/mcp/settings/form'

@@ -1,6 +1,6 @@
 import { Align, type Node as YogaNode } from 'yoga-layout'
 
-import type { LayoutSizing, SceneNode } from '@open-pencil/scene-graph'
+import type { LayoutSizing, SceneNode } from '@kalka/scene-graph'
 
 type Axis = 'width' | 'height'
 

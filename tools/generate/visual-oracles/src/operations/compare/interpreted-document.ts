@@ -9,8 +9,8 @@ import { compareSceneOracle, SceneOracleNodeSchema } from '#visual/scene-oracle'
 import { $ } from 'bun'
 import * as v from 'valibot'
 
-import { materializeDocument, parseFigBuffer } from '@open-pencil/fig'
-import type { InstancePathDiagnostic } from '@open-pencil/fig/instance-overrides'
+import { materializeDocument, parseFigBuffer } from '@kalka/fig'
+import type { InstancePathDiagnostic } from '@kalka/fig/instance-overrides'
 
 const { values } = parseArgs({
   options: {

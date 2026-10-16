@@ -1,7 +1,7 @@
 import type { McpServer } from '@agentclientprotocol/sdk'
 import { compact } from 'es-toolkit'
 
-import { AUTOMATION_HTTP_PORT, MCP_AGENT_HEADER } from '@open-pencil/core/constants'
+import { AUTOMATION_HTTP_PORT, MCP_AGENT_HEADER } from '@kalka/core/constants'
 
 import { call } from '@/app/platform/tauri/bridge'
 

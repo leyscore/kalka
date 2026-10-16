@@ -1,5 +1,5 @@
 {
-  "name": "@open-pencil/fig",
+  "name": "@kalka/fig",
   "version": "0.15.1",
   "license": "MIT",
   "repository": {
@@ -70,7 +70,7 @@
     "typescript": "~5.8.3"
   },
   "peerDependencies": {
-    "@open-pencil/kiwi": "workspace:*",
-    "@open-pencil/scene-graph": "workspace:*"
+    "@kalka/kiwi": "workspace:*",
+    "@kalka/scene-graph": "workspace:*"
   }
 }

@@ -1,7 +1,7 @@
 import * as v from 'valibot'
 import * as Y from 'yjs'
 
-import { siblingOrderKeys } from '@open-pencil/scene-graph/order-keys'
+import { siblingOrderKeys } from '@kalka/scene-graph/order-keys'
 
 import { topEdge } from '@/app/collab/tree/entries'
 

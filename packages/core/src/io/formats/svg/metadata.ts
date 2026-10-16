@@ -1,6 +1,6 @@
 import type { Element } from '@xmldom/xmldom'
 
-import type { Rect, Size } from '@open-pencil/scene-graph/primitives'
+import type { Rect, Size } from '@kalka/scene-graph/primitives'
 
 import { parseSVGDocument } from './document'
 

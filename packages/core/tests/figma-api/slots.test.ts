@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { FigmaAPI, type FigmaNodeProxy, type FigmaSlotNode } from '@open-pencil/core/figma-api'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { FigmaAPI, type FigmaNodeProxy, type FigmaSlotNode } from '@kalka/core/figma-api'
+import { SceneGraph } from '@kalka/scene-graph'
 
 /** Figma's typings only expose the slot members on `SlotNode`, so narrow before reading them. */
 const isSlot = (node: FigmaNodeProxy): node is FigmaSlotNode => node.type === 'SLOT'

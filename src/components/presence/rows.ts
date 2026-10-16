@@ -1,4 +1,4 @@
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import type { RemotePeer } from '@/app/collab/types'
 import { agentPage } from '@/app/presence/registry'

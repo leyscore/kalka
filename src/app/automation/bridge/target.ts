@@ -1,4 +1,4 @@
-import type { AutomationDocumentSummary } from '@open-pencil/core/rpc'
+import type { AutomationDocumentSummary } from '@kalka/core/rpc'
 
 import type { EditorStore } from '@/app/editor/active-store'
 import { getTabById, getTabForStore, getTabsSnapshot } from '@/app/tabs'

@@ -8,12 +8,7 @@ import {
   type DesignElement
 } from '#dom-css/import/layers'
 
-import {
-  createDefaultNode,
-  SceneGraph,
-  type SceneNode,
-  type ShaderLayer
-} from '@open-pencil/scene-graph'
+import { createDefaultNode, SceneGraph, type SceneNode, type ShaderLayer } from '@kalka/scene-graph'
 
 function element(tagName = 'div', attrs: Record<string, string> = {}): DesignElement {
   return { type: 'element', tagName, attrs, children: [] }

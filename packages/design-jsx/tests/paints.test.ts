@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { linearGradient, radialGradient } from '@open-pencil/design-jsx'
+import { linearGradient, radialGradient } from '@kalka/design-jsx'
 
 const expected =
   "linearGradient() expects an array of stops, such as [['#3b82f6', 0], ['#8b5cf6', 1]]"

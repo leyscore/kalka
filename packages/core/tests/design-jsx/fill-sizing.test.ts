@@ -2,10 +2,10 @@ import { describe, expect, it } from 'bun:test'
 
 import { getNodeOrThrow } from '#core-tests/helpers/assert'
 
-import { renderJSX } from '@open-pencil/core/design-jsx'
-import { computeAllLayouts } from '@open-pencil/core/layout'
-import { sceneNodeToJSX } from '@open-pencil/design-jsx'
-import { layoutSizing, SceneGraph } from '@open-pencil/scene-graph'
+import { renderJSX } from '@kalka/core/design-jsx'
+import { computeAllLayouts } from '@kalka/core/layout'
+import { sceneNodeToJSX } from '@kalka/design-jsx'
+import { layoutSizing, SceneGraph } from '@kalka/scene-graph'
 
 const makeSceneGraph = () => new SceneGraph()
 

@@ -1,4 +1,4 @@
-import { cloneNodeProps, type SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
+import { cloneNodeProps, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
 
 import { findLibraryDefinition } from './definitions'
 import { assertLibraryAssetKey, assertLibraryId, libraryAssetIdentityKey } from './identity'

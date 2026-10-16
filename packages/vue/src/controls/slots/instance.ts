@@ -4,8 +4,8 @@ import {
   nonPreferredLayers,
   ownsSlotContent,
   slotPropertyId
-} from '@open-pencil/scene-graph'
-import type { ComponentPropertyDefinition, SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
+import type { ComponentPropertyDefinition, SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 import { useEditor } from '#vue/editor/context'
 import { useSceneComputed } from '#vue/internal/scene-computed/use'

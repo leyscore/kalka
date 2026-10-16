@@ -18,7 +18,7 @@ import {
   type SceneGraph,
   type ShaderLayer,
   type ShaderPreset
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import type { DomSceneProjector } from './projector'
 

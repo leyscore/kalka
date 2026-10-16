@@ -1,12 +1,7 @@
 import { compact } from 'es-toolkit/array'
 
-import type {
-  SceneNode,
-  VectorNetwork,
-  VectorSegment,
-  VectorVertex
-} from '@open-pencil/scene-graph'
-import { polygonVertices } from '@open-pencil/scene-graph/geometry'
+import type { SceneNode, VectorNetwork, VectorSegment, VectorVertex } from '@kalka/scene-graph'
+import { polygonVertices } from '@kalka/scene-graph/geometry'
 
 import { nodeHasRadius } from '#core/canvas/shapes'
 

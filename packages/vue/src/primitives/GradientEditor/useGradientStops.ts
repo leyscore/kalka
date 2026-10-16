@@ -1,8 +1,8 @@
 import { computed, ref, type Ref } from 'vue'
 
-import type { Fill, GradientStop, GradientTransform } from '@open-pencil/scene-graph'
-import { colorToCSS } from '@open-pencil/scene-graph/color'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import type { Fill, GradientStop, GradientTransform } from '@kalka/scene-graph'
+import { colorToCSS } from '@kalka/scene-graph/color'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import { useColorModel } from '#vue/controls/color-model/use'
 

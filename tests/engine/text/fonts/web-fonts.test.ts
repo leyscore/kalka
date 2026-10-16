@@ -1,10 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import {
-  normalizedCoverageText,
-  WebFontResolver,
-  webFontSubsetsForText
-} from '@open-pencil/core/text'
+import { normalizedCoverageText, WebFontResolver, webFontSubsetsForText } from '@kalka/core/text'
 
 describe('web font coverage requests', () => {
   test('normalizes coverage without splitting supplementary code points', () => {

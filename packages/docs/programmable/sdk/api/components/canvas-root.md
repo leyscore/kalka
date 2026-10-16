@@ -5,7 +5,7 @@ description: Headless canvas primitive for Kalka rendering surfaces.
 
 # CanvasRoot
 
-`CanvasRoot` is the structural canvas primitive in `@open-pencil/vue`.
+`CanvasRoot` is the structural canvas primitive in `@kalka/vue`.
 
 Use it when you want SDK-provided canvas structure and context with app-owned layout and styling.
 

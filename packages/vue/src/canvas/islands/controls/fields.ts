@@ -6,8 +6,8 @@ import {
 } from 'reka-ui'
 import { h, type VNode } from 'vue'
 
-import { booleanOf, type ControlModel, type ControlRole } from '@open-pencil/dom-css/export'
-import { numberSettings } from '@open-pencil/scene-graph'
+import { booleanOf, type ControlModel, type ControlRole } from '@kalka/dom-css/export'
+import { numberSettings } from '@kalka/scene-graph'
 
 import type { ElementOverride, IslandRenderContext } from '#vue/canvas/islands/render'
 

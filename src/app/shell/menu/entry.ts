@@ -1,4 +1,4 @@
-import type { MenuActionNode, MenuEntry } from '@open-pencil/vue'
+import type { MenuActionNode, MenuEntry } from '@kalka/vue'
 
 export function isMenuSeparator(entry: MenuEntry) {
   return 'separator' in entry && entry.separator

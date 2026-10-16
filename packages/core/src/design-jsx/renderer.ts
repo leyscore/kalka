@@ -1,4 +1,4 @@
-import { createDesignJSXRenderer, type SVGSource } from '@open-pencil/design-jsx'
+import { createDesignJSXRenderer, type SVGSource } from '@kalka/design-jsx'
 
 import { iconify, placeIcon, type IconProvider } from '#core/icons'
 import { extractPaths, extractPathsFromElements, scalePathInfos } from '#core/icons/svg'

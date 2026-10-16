@@ -1,6 +1,6 @@
-import type { PresenceCursor } from '@open-pencil/core/canvas'
-import { getWorldMatrix } from '@open-pencil/scene-graph/coordinate'
-import Matrix from '@open-pencil/scene-graph/matrix'
+import type { PresenceCursor } from '@kalka/core/canvas'
+import { getWorldMatrix } from '@kalka/scene-graph/coordinate'
+import Matrix from '@kalka/scene-graph/matrix'
 
 import type { OverlayContext } from '#vue/canvas/svg-overlay/layers/selection'
 import { css, type MeasureText, type OverlayShape } from '#vue/canvas/svg-overlay/shapes'

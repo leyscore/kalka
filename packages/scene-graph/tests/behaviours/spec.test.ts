@@ -5,7 +5,7 @@ import {
   behaviourToSpec,
   guessOnOff,
   SceneGraph
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 /** A switch set with State and Interaction variant properties and a Thumb slot. */
 function switchSet() {

@@ -1,4 +1,4 @@
-import { HTML_TAGS } from '@open-pencil/scene-graph'
+import { HTML_TAGS } from '@kalka/scene-graph'
 
 /** Tags whose browser defaults the reset clears; `div` and `span` have none to clear. */
 const STYLED_TAGS: ReadonlySet<string> = new Set(

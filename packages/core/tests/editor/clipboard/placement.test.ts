@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, test } from 'bun:test'
 
-import { createEditor, type Editor } from '@open-pencil/core/editor'
-import type { SceneNode } from '@open-pencil/scene-graph'
+import { createEditor, type Editor } from '@kalka/core/editor'
+import type { SceneNode } from '@kalka/scene-graph'
 
 // Each case matches Cmd+D or Cmd+V observed in Figma desktop 126.
 

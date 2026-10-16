@@ -2,7 +2,7 @@
 import { useDevicePixelRatio } from '@vueuse/core'
 import { computed, nextTick, ref, watch } from 'vue'
 
-import { SECTION_TITLE_FONT_FAMILY } from '@open-pencil/core/constants'
+import { SECTION_TITLE_FONT_FAMILY } from '@kalka/core/constants'
 
 const {
   modelValue,

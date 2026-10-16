@@ -11,7 +11,7 @@ import {
 import { compileTailwindCSS } from '#dom-css/import/tailwind'
 import type { DesignElement, DesignNode } from '#dom-css/types'
 
-import { emptyBehaviour } from '@open-pencil/scene-graph'
+import { emptyBehaviour } from '@kalka/scene-graph'
 
 import {
   buttonSet,

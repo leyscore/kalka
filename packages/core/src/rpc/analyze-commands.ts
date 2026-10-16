@@ -1,8 +1,8 @@
 import { orderBy, sortBy } from 'es-toolkit/array'
 
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
-import { colorToHex, colorDistance as colorDist } from '@open-pencil/scene-graph/color'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import { colorToHex, colorDistance as colorDist } from '@kalka/scene-graph/color'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import type { ColorUsageEntry } from '#core/tools/analyze/colors'
 import {

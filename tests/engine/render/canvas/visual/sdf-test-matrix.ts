@@ -1,9 +1,9 @@
 import { mkdir, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
-import { SceneGraph } from '@open-pencil/scene-graph'
-import type { SceneNode } from '@open-pencil/scene-graph'
-import type { Color, Vector } from '@open-pencil/scene-graph/primitives'
+import { SceneGraph } from '@kalka/scene-graph'
+import type { SceneNode } from '@kalka/scene-graph'
+import type { Color, Vector } from '@kalka/scene-graph/primitives'
 
 import { initCanvasKit } from '#cli/headless'
 import { SkiaRenderer } from '#core/canvas'

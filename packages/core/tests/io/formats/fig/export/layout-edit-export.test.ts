@@ -2,10 +2,10 @@ import { expect, test } from 'bun:test'
 
 import { guid } from '#core-tests/helpers/fig/guid'
 
-import { exportFigFile } from '@open-pencil/core/io'
-import { initCodec } from '@open-pencil/core/kiwi'
-import { materializeDocument, parseFigBuffer } from '@open-pencil/fig'
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
+import { exportFigFile } from '@kalka/core/io'
+import { initCodec } from '@kalka/core/kiwi'
+import { materializeDocument, parseFigBuffer } from '@kalka/fig'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
 
 test('retained implicit layout survives import but does not override an explicit sizing edit', async () => {
   await initCodec()

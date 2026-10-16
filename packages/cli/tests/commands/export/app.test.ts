@@ -8,8 +8,8 @@ import { join } from 'node:path'
 import { runCommand } from 'citty'
 import * as v from 'valibot'
 
-import type { AutomationDocumentSummary } from '@open-pencil/core/rpc'
-import { removeDiscoveryFile, writeDiscoveryFile } from '@open-pencil/mcp/discovery'
+import type { AutomationDocumentSummary } from '@kalka/core/rpc'
+import { removeDiscoveryFile, writeDiscoveryFile } from '@kalka/mcp/discovery'
 
 import exportCommand from '#cli/commands/export'
 

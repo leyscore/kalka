@@ -1,4 +1,4 @@
-import type { AIProviderID } from '@open-pencil/core/constants'
+import type { AIProviderID } from '@kalka/core/constants'
 
 export const AI_MODEL_ROLES = ['design', 'review', 'fast', 'vision'] as const
 export const AI_MODEL_CAPABILITIES = ['tools', 'vision'] as const

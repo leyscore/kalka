@@ -1,4 +1,4 @@
-import { selectionToJSX } from '@open-pencil/design-jsx'
+import { selectionToJSX } from '@kalka/design-jsx'
 
 import type { EditorContext } from '#core/editor/types'
 import { renderNodesToSVG } from '#core/io/formats/svg'

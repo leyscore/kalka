@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 
-import { exportFigFile, initCodec } from '@open-pencil/core'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { exportFigFile, initCodec } from '@kalka/core'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { openReaderSession } from '#core/kiwi/fig/session/reader'
 

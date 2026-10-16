@@ -1,5 +1,5 @@
-import { canCreateInstance, type SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
-import { CONTAINER_TYPES } from '@open-pencil/scene-graph/node-defaults'
+import { canCreateInstance, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
+import { CONTAINER_TYPES } from '@kalka/scene-graph/node-defaults'
 
 import { acceptingParent } from '#core/editor/components/slots'
 import type { EditorContext } from '#core/editor/types'

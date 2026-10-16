@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PositionControlsRoot, useI18n } from '@open-pencil/vue'
+import { PositionControlsRoot, useI18n } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import NumberField from '@/components/inputs/NumberField.vue'

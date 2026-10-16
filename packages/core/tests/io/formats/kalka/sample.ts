@@ -1,5 +1,5 @@
-import { createShaderLayer, SceneGraph, type Fill } from '@open-pencil/scene-graph'
-import { computeImageHash } from '@open-pencil/scene-graph/images'
+import { createShaderLayer, SceneGraph, type Fill } from '@kalka/scene-graph'
+import { computeImageHash } from '@kalka/scene-graph/images'
 
 const PNG = Uint8Array.from([
   0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52

@@ -1,11 +1,11 @@
 {
-  "name": "@open-pencil/docs-tools",
+  "name": "@kalka/docs-tools",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "bun test tests"
   },
   "dependencies": {
-    "@open-pencil/package-artifacts-tools": "workspace:*"
+    "@kalka/package-artifacts-tools": "workspace:*"
   }
 }

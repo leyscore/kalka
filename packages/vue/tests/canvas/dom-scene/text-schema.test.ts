@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import type { StyleRun } from '@open-pencil/scene-graph'
+import type { StyleRun } from '@kalka/scene-graph'
 
 import { docToText, textToDoc } from '#vue/canvas/dom-scene/text/schema'
 

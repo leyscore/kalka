@@ -1,7 +1,7 @@
 import { compact } from 'es-toolkit/array'
 
-import { jsx, type SyntaxNode } from '@open-pencil/emit'
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import { jsx, type SyntaxNode } from '@kalka/emit'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 import { rekaExport, type RekaExport } from './behaviours'
 import { iconProps } from './icons'

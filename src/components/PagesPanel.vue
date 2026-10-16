@@ -10,8 +10,8 @@ import {
 import { tv } from 'tailwind-variants'
 import { computed, ref, useTemplateRef, watch, type ComponentPublicInstance } from 'vue'
 
-import type { SceneNode } from '@open-pencil/scene-graph'
-import { PageListRoot, useFlatReorderDrag, useI18n, useInlineRename } from '@open-pencil/vue'
+import type { SceneNode } from '@kalka/scene-graph'
+import { PageListRoot, useFlatReorderDrag, useI18n, useInlineRename } from '@kalka/vue'
 
 import { useActiveEditorStoreRef } from '@/app/editor/active-store'
 import { presenceByPage } from '@/app/presence/registry'

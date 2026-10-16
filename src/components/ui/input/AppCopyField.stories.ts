@@ -12,7 +12,7 @@ interface Args {
 const meta = {
   title: 'Design System/Inputs/Copy Field',
   args: {
-    value: 'npm i -g @open-pencil/mcp@0.15.1',
+    value: 'npm i -g @kalka/mcp@0.15.1',
     copyLabel: 'Copy',
     copiedLabel: 'Copied'
   },

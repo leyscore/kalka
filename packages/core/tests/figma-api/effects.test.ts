@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { FigmaAPI } from '@open-pencil/core/figma-api'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { FigmaAPI } from '@kalka/core/figma-api'
+import { SceneGraph } from '@kalka/scene-graph'
 
 // Accepted shapes, read-back values, and rejections were recorded by running the
 // same assignments against a rectangle in live Figma through figma-use.

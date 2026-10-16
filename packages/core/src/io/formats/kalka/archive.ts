@@ -1,6 +1,6 @@
 import { unzipSync, zipSync, type Zippable } from 'fflate'
 
-import type { SceneGraph } from '@open-pencil/scene-graph'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 import { PROJECT_FILE } from './constants'
 import { readKalkaFolder, writeKalkaFolder, type KalkaFile } from './folder'

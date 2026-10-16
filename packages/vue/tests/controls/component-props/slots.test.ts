@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 
-import { SceneGraph, instanceSlotFrames } from '@open-pencil/scene-graph'
-import type { ComponentPropertyDefinition } from '@open-pencil/scene-graph'
-import { slotInstanceOptions, slotLimits } from '@open-pencil/vue'
+import { SceneGraph, instanceSlotFrames } from '@kalka/scene-graph'
+import type { ComponentPropertyDefinition } from '@kalka/scene-graph'
+import { slotInstanceOptions, slotLimits } from '@kalka/vue'
 
 function card() {
   const graph = new SceneGraph()

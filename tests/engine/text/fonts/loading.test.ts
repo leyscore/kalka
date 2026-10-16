@@ -15,7 +15,7 @@ import {
   weightToStyle,
   FontManager,
   SceneGraph
-} from '@open-pencil/core'
+} from '@kalka/core'
 
 import { expectDefined } from '#tests/helpers/assert'
 import { fetchStub } from '#tests/helpers/fetch'

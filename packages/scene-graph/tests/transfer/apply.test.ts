@@ -5,7 +5,7 @@ import {
   prepareGraphTransfer,
   SceneGraph,
   CommittedGraphEventError
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 function setup() {
   const source = new SceneGraph(),

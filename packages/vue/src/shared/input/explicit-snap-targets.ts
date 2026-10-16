@@ -1,9 +1,9 @@
-import type { Editor } from '@open-pencil/core/editor'
-import type { SceneNode } from '@open-pencil/scene-graph'
-import { getWorldMatrix } from '@open-pencil/scene-graph/coordinate'
-import { layoutGuideLines } from '@open-pencil/scene-graph/layout-guides'
-import Matrix from '@open-pencil/scene-graph/matrix'
-import type { Vector } from '@open-pencil/scene-graph/primitives'
+import type { Editor } from '@kalka/core/editor'
+import type { SceneNode } from '@kalka/scene-graph'
+import { getWorldMatrix } from '@kalka/scene-graph/coordinate'
+import { layoutGuideLines } from '@kalka/scene-graph/layout-guides'
+import Matrix from '@kalka/scene-graph/matrix'
+import type { Vector } from '@kalka/scene-graph/primitives'
 
 import type { ExplicitSnapTarget } from '#vue/shared/input/snap'
 

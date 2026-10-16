@@ -3,8 +3,8 @@ import { expect, test } from 'bun:test'
 import { readFixtureArrayBuffer } from '#fig-tests/helpers/fig-fixtures'
 import { interpretInstance, resolveOccurrencePath } from '#fig/instance-overrides/interpret'
 
-import { parseFigBuffer } from '@open-pencil/fig'
-import { nodeChangeToProps, stringToGuid } from '@open-pencil/fig/node-change'
+import { parseFigBuffer } from '@kalka/fig'
+import { nodeChangeToProps, stringToGuid } from '@kalka/fig/node-change'
 
 import oracle from './fixtures/gold-input-layout.json'
 

@@ -3,7 +3,7 @@ import {
   type TokenUnit,
   type Variable,
   type VariableScope
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { variableNamespace } from './names'
 

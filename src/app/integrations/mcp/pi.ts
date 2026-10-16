@@ -1,4 +1,4 @@
-import { AUTOMATION_HTTP_PORT, MCP_AGENT_HEADER } from '@open-pencil/core/constants'
+import { AUTOMATION_HTTP_PORT, MCP_AGENT_HEADER } from '@kalka/core/constants'
 
 import { getAutomationAuthToken } from '@/app/automation/mcp/spawn'
 

@@ -1,6 +1,6 @@
 import { isEqual } from 'es-toolkit/predicate'
 
-import type { SceneGraph } from '@open-pencil/scene-graph'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 /**
  * How a document opened from a `.fig` archive has diverged from it, for writing only what

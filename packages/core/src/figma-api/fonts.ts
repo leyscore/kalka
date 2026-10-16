@@ -1,4 +1,4 @@
-import type { FontFamilyStyle } from '@open-pencil/scene-graph'
+import type { FontFamilyStyle } from '@kalka/scene-graph'
 
 import { FONT_WEIGHT_NAMES } from '#core/text/fonts'
 

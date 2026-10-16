@@ -3,7 +3,7 @@ import { describe, expect, test } from 'bun:test'
 import { getNodeOrThrow } from '#core-tests/helpers/assert'
 import { createRect, firstPageId } from '#core-tests/helpers/scene'
 
-import { SceneGraph } from '@open-pencil/core'
+import { SceneGraph } from '@kalka/core'
 
 describe('single-node alignment to parent', () => {
   function setup() {

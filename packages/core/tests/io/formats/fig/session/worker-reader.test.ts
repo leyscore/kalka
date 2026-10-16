@@ -1,8 +1,8 @@
 import { expect, test } from 'bun:test'
 
-import { exportFigFile } from '@open-pencil/core/io'
-import { initCodec } from '@open-pencil/core/kiwi'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { exportFigFile } from '@kalka/core/io'
+import { initCodec } from '@kalka/core/kiwi'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import type { FigSessionResponse } from '#core/kiwi/fig/session/protocol'
 

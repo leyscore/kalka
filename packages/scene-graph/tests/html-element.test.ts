@@ -6,7 +6,7 @@ import {
   parseHTMLTag,
   readPluginData,
   OPEN_PENCIL_PLUGIN_ID
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 describe('HTML tags and classes of a layer', () => {
   test('a tag is one a layer can take, in lower case', () => {

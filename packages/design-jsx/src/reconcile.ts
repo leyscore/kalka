@@ -1,4 +1,4 @@
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 /**
  * Fields a layer keeps when its code is rendered again: its place in the tree and the identity

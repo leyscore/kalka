@@ -5,7 +5,7 @@ import {
   createDefaultEditorState,
   createDefaultEditorViewState,
   pickEditorViewState
-} from '@open-pencil/core/editor'
+} from '@kalka/core/editor'
 
 describe('editor state ownership', () => {
   test('composes editor state from shared and view defaults', () => {

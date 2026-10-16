@@ -10,7 +10,7 @@ import { Primitive } from 'reka-ui'
 import type { ComponentPublicInstance } from 'vue'
 import { computed, nextTick, onDeactivated, ref, watch } from 'vue'
 
-import { useRetainedPopup } from '@open-pencil/vue'
+import { useRetainedPopup } from '@kalka/vue'
 
 import { useTooltipUI } from '@/components/ui/overlay/tooltip'
 import { motionStyles } from '@/theme/motion/styles'

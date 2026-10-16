@@ -1,4 +1,4 @@
-import { compressFigDataSync } from '@open-pencil/fig'
+import { compressFigDataSync } from '@kalka/fig'
 
 interface CompressMessage {
   schemaDeflated: Uint8Array

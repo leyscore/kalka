@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { createEditor, type ExternalTextEditor } from '@open-pencil/core/editor'
+import { createEditor, type ExternalTextEditor } from '@kalka/core/editor'
 
 function recorder(): ExternalTextEditor & { calls: string[] } {
   const calls: string[] = []

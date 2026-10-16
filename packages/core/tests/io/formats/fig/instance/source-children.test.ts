@@ -2,18 +2,18 @@ import { expect, test } from 'bun:test'
 
 import { guid } from '#core-tests/helpers/fig/guid'
 
-import { FigmaAPI } from '@open-pencil/core'
-import { exportFigFile, parseFigFile } from '@open-pencil/core/io'
-import { initCodec } from '@open-pencil/core/kiwi'
+import { FigmaAPI } from '@kalka/core'
+import { exportFigFile, parseFigFile } from '@kalka/core/io'
+import { initCodec } from '@kalka/core/kiwi'
 import {
   interpretComponent,
   interpretInstance,
   linkInstanceSourceChildren,
   mapInstanceSourceChildren,
   materializeInstance
-} from '@open-pencil/fig/instance-overrides'
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-import { SceneGraph } from '@open-pencil/scene-graph'
+} from '@kalka/fig/instance-overrides'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
+import { SceneGraph } from '@kalka/scene-graph'
 
 test('derives repeated nested child correspondence from materialized component occurrences', async () => {
   const changes: NodeChange[] = [

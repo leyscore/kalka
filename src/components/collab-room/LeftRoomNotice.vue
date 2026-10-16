@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useCollaborationMessages } from '@open-pencil/vue'
+import { useCollaborationMessages } from '@kalka/vue'
 
 import IconButton from '@/components/ui/button/IconButton.vue'
 import { roomNotice } from '@/theme/collaboration/room-screen'

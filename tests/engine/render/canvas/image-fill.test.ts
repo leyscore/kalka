@@ -1,6 +1,6 @@
 import { describe, expect, mock, test } from 'bun:test'
 
-import type { Fill, SceneNode } from '@open-pencil/scene-graph'
+import type { Fill, SceneNode } from '@kalka/scene-graph'
 
 import { makeImageFillLocalMatrix, patternTileLayout } from '#core/canvas/fills'
 

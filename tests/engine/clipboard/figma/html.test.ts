@@ -7,8 +7,8 @@ import {
   initCodec,
   parseFigmaClipboard,
   SceneGraph
-} from '@open-pencil/core'
-import { slotPropertyId } from '@open-pencil/scene-graph'
+} from '@kalka/core'
+import { slotPropertyId } from '@kalka/scene-graph'
 
 import { expectDefined } from '#tests/helpers/assert'
 

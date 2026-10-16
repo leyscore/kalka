@@ -1,4 +1,4 @@
-import { type SceneGraph, type SceneNode, setInstanceOverride } from '@open-pencil/scene-graph'
+import { type SceneGraph, type SceneNode, setInstanceOverride } from '@kalka/scene-graph'
 
 function linkSubtree(
   graph: SceneGraph,

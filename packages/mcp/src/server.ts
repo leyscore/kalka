@@ -8,7 +8,7 @@ import { resolveCommand } from 'package-manager-detector/commands'
 import { detect, getUserAgent } from 'package-manager-detector/detect'
 import { WebSocketServer, type WebSocket } from 'ws'
 
-import { MCP_AGENT_HEADER } from '@open-pencil/core/constants'
+import { MCP_AGENT_HEADER } from '@kalka/core/constants'
 
 import { bearerToken, isAuthorized, mcpRequestToken } from '#mcp/auth'
 import { createBrowserRPCBridge } from '#mcp/browser-rpc'
@@ -54,8 +54,8 @@ async function resolveMCPInstallCommand(): Promise<string> {
       })
     )?.agent ??
     'npm'
-  const resolved = resolveCommand(agent, 'global', [`@open-pencil/mcp@${MCP_VERSION}`])
-  if (!resolved) return `npm install -g @open-pencil/mcp@${MCP_VERSION}`
+  const resolved = resolveCommand(agent, 'global', [`@kalka/mcp@${MCP_VERSION}`])
+  if (!resolved) return `npm install -g @kalka/mcp@${MCP_VERSION}`
   return [resolved.command, ...resolved.args].join(' ')
 }
 

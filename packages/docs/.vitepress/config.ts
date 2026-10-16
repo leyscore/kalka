@@ -1,7 +1,7 @@
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { ensureBrandAssets } from '@open-pencil/brand-tools'
+import { ensureBrandAssets } from '@kalka/brand-tools'
 import { transformerTwoslash } from '@shikijs/vitepress-twoslash'
 import { createFileSystemTypesCache } from '@shikijs/vitepress-twoslash/cache-fs'
 import tailwindcss from '@tailwindcss/vite'
@@ -59,7 +59,7 @@ export default defineConfig({
           compilerOptions: {
             baseUrl: repoRoot,
             paths: {
-              '@open-pencil/vue': ['packages/vue/src/index.ts'],
+              '@kalka/vue': ['packages/vue/src/index.ts'],
               '#vue/*': ['packages/vue/src/*']
             }
           }

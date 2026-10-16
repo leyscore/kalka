@@ -3,7 +3,7 @@ import { useRafFn } from '@vueuse/core'
 import { PopoverAnchor, PopoverContent, PopoverPortal, PopoverRoot } from 'reka-ui'
 import { computed, shallowRef, watch } from 'vue'
 
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@kalka/vue'
 
 import { useAIChat } from '@/app/ai/chat/use'
 import {

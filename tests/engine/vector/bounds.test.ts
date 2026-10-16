@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test'
 
-import { computeAccurateBounds } from '@open-pencil/core'
+import { computeAccurateBounds } from '@kalka/core'
 
 describe('computeAccurateBounds', () => {
   test('empty network', () => {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useTemplateRef } from 'vue'
 
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@kalka/vue'
 
 import { openSettingsDialog } from '@/app/settings/dialog'
 import BrandMark from '@/components/brand/BrandMark.vue'

@@ -9,11 +9,11 @@ import type {
   VariableCollection,
   VariableType,
   VariableValue
-} from '@open-pencil/scene-graph'
-import { copyFills } from '@open-pencil/scene-graph/copy'
-import { computeBounds } from '@open-pencil/scene-graph/geometry'
-import { computeImageHash } from '@open-pencil/scene-graph/images'
-import type { Rect, Vector } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/scene-graph'
+import { copyFills } from '@kalka/scene-graph/copy'
+import { computeBounds } from '@kalka/scene-graph/geometry'
+import { computeImageHash } from '@kalka/scene-graph/images'
+import type { Rect, Vector } from '@kalka/scene-graph/primitives'
 
 import type { SkiaRenderer } from '#core/canvas'
 import { canMakeBooleanSourceNode, groupFitOptions } from '#core/canvas/boolean'

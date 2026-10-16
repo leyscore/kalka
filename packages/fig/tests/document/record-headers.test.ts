@@ -16,10 +16,10 @@ import {
   getSchemaBytes,
   initCodec,
   type NodeChange
-} from '@open-pencil/kiwi/fig/codec'
-import { deduplicateNodeChangePluginData } from '@open-pencil/kiwi/fig/parse'
-import { decodeWhole } from '@open-pencil/kiwi/schema-runtime'
-import { setIdSession, type SceneGraph } from '@open-pencil/scene-graph'
+} from '@kalka/kiwi/fig/codec'
+import { deduplicateNodeChangePluginData } from '@kalka/kiwi/fig/parse'
+import { decodeWhole } from '@kalka/kiwi/schema-runtime'
+import { setIdSession, type SceneGraph } from '@kalka/scene-graph'
 
 const FIXTURE = 'gold-preview.fig'
 

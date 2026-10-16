@@ -1,13 +1,8 @@
 import type { CanvasKit, Canvas } from 'canvaskit-wasm'
 
-import {
-  getWorldMatrix,
-  type Mat3,
-  type SceneGraph,
-  type SceneNode
-} from '@open-pencil/scene-graph'
-import type { RenderColorSpace } from '@open-pencil/scene-graph/color'
-import { computeDescendantVisualBounds, type VisualBounds } from '@open-pencil/scene-graph/geometry'
+import { getWorldMatrix, type Mat3, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
+import type { RenderColorSpace } from '@kalka/scene-graph/color'
+import { computeDescendantVisualBounds, type VisualBounds } from '@kalka/scene-graph/geometry'
 
 import type { SkiaRenderer } from '#core/canvas'
 import { extractExportGraph, findPageId } from '#core/io/subgraph'

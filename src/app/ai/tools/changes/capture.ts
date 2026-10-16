@@ -1,8 +1,8 @@
 import { diffLines, type ChangeObject } from 'diff'
 import { compact } from 'es-toolkit/array'
 
-import { graphFromPageChange, isEmptyPageChange, type PageChange } from '@open-pencil/core/editor'
-import { diffPageLayersJSX } from '@open-pencil/core/tools'
+import { graphFromPageChange, isEmptyPageChange, type PageChange } from '@kalka/core/editor'
+import { diffPageLayersJSX } from '@kalka/core/tools'
 
 import { changePreviewSize } from '@/app/ai/chat/preferences'
 import type { EditorStore } from '@/app/editor/active-store'

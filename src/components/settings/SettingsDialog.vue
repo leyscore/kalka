@@ -3,7 +3,7 @@ import { tryOnScopeDispose } from '@vueuse/core'
 import { AlertDialogCancel, DialogClose } from 'reka-ui'
 import { computed } from 'vue'
 
-import { useI18n, useViewportKind } from '@open-pencil/vue'
+import { useI18n, useViewportKind } from '@kalka/vue'
 
 import {
   settingsDialogOpen,

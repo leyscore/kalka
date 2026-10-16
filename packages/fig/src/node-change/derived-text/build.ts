@@ -1,8 +1,8 @@
 import { groupBy } from 'es-toolkit/array'
 
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-import { normalizeFontFamily, weightToStyle } from '@open-pencil/scene-graph'
-import type { DerivedTextGlyph, SceneNode } from '@open-pencil/scene-graph'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
+import { normalizeFontFamily, weightToStyle } from '@kalka/scene-graph'
+import type { DerivedTextGlyph, SceneNode } from '@kalka/scene-graph'
 
 import { bytesToHex } from '../bytes'
 import { weightToFigmaStyle } from '../font/style'

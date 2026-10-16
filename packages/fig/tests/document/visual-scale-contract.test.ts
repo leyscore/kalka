@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 
-import { materializeDocument } from '@open-pencil/fig'
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
+import { materializeDocument } from '@kalka/fig'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
 
 test('uniform FIG scale covers corners, dashes, and effects', () => {
   const guid = (localID: number) => ({ sessionID: 1, localID })

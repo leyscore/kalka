@@ -2,15 +2,15 @@ import { describe, expect, test } from 'bun:test'
 
 import { expectDefined } from '#core-tests/helpers/assert'
 
-import { SkiaRenderer } from '@open-pencil/core'
+import { SkiaRenderer } from '@kalka/core'
 import {
   exportFigFile,
   initCanvasKit,
   parseFigFile,
   renderNodesToImage
-} from '@open-pencil/core/io'
-import { readIcon, readIconTint, SceneGraph } from '@open-pencil/scene-graph'
-import { parseColor } from '@open-pencil/scene-graph/color'
+} from '@kalka/core/io'
+import { readIcon, readIconTint, SceneGraph } from '@kalka/scene-graph'
+import { parseColor } from '@kalka/scene-graph/color'
 
 import { iconColor, placeIcon, recolorIcon, swapIcon } from '#core/icons/render'
 import { buildIconData } from '#core/icons/svg'

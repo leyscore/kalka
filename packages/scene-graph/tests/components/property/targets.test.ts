@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 
-import { SceneGraph, findComponentPropertyTarget } from '@open-pencil/scene-graph'
+import { SceneGraph, findComponentPropertyTarget } from '@kalka/scene-graph'
 
 test('component properties follow source identity when instance siblings are reordered', () => {
   const graph = new SceneGraph()

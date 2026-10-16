@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@kalka/vue'
 
 import { useUsageSettings } from '@/app/usage/settings/use'
 import SettingsSection from '@/components/settings/layout/SettingsSection.vue'

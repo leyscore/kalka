@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { SceneGraph, withIcon } from '@open-pencil/scene-graph'
-import { buildLayerTreeModel, patchLayerNode } from '@open-pencil/vue'
+import { SceneGraph, withIcon } from '@kalka/scene-graph'
+import { buildLayerTreeModel, patchLayerNode } from '@kalka/vue'
 
 describe('layer tree model', () => {
   test('marks icon frames, so rows can show them as icons', () => {

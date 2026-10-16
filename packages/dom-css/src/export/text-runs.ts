@@ -1,4 +1,4 @@
-import type { CharacterStyleOverride, SceneNode, StyleRun } from '@open-pencil/scene-graph'
+import type { CharacterStyleOverride, SceneNode, StyleRun } from '@kalka/scene-graph'
 
 import type { DesignNode, DesignStyleDeclaration } from '../types'
 import { fillToCSS } from './css'

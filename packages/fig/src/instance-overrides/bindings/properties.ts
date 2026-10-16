@@ -1,6 +1,6 @@
 import { cloneRecord } from '#fig/node-change/clone'
 
-import type { GUID, NodeChange } from '@open-pencil/kiwi/fig/codec'
+import type { GUID, NodeChange } from '@kalka/kiwi/fig/codec'
 
 import { sameGuid } from '../source-index'
 import type {

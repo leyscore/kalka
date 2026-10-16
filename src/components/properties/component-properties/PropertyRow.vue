@@ -2,9 +2,9 @@
 import { PopoverClose, PopoverContent, PopoverPortal, PopoverRoot, PopoverTrigger } from 'reka-ui'
 import { computed, ref, watch } from 'vue'
 
-import type { ComponentPropertyType } from '@open-pencil/scene-graph'
-import { useI18n, useRetainedPopup } from '@open-pencil/vue'
-import type { ComponentBinding, ComponentBindingGroup } from '@open-pencil/vue'
+import type { ComponentPropertyType } from '@kalka/scene-graph'
+import { useI18n, useRetainedPopup } from '@kalka/vue'
+import type { ComponentBinding, ComponentBindingGroup } from '@kalka/vue'
 
 import AppButton from '@/components/ui/button/AppButton.vue'
 import AppInput from '@/components/ui/input/AppInput.vue'

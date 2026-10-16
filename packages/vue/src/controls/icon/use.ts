@@ -1,9 +1,9 @@
 import { watchImmediate } from '@vueuse/core'
 import { computed, ref } from 'vue'
 
-import { iconColor } from '@open-pencil/core/icons'
-import { isIconModified, readIcon } from '@open-pencil/scene-graph'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import { iconColor } from '@kalka/core/icons'
+import { isIconModified, readIcon } from '@kalka/scene-graph'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import { useUndoBatch } from '#vue/controls/undo-batch/use'
 import { useEditor } from '#vue/editor/context'

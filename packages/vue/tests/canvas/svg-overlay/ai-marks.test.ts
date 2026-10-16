@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { AI_DONE_DURATION_MS, AI_PULSE_PERIOD_MS } from '@open-pencil/core/constants'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { AI_DONE_DURATION_MS, AI_PULSE_PERIOD_MS } from '@kalka/core/constants'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { aiMarksLayer } from '#vue/canvas/svg-overlay/layers/ai-marks'
 import type { OverlayContext } from '#vue/canvas/svg-overlay/layers/selection'

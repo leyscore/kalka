@@ -4,7 +4,7 @@ import dedent from 'dedent'
 import { omit } from 'es-toolkit/object'
 import { camelCase, upperFirst } from 'es-toolkit/string'
 
-import { es, jsx } from '@open-pencil/emit'
+import { es, jsx } from '@kalka/emit'
 
 import type {
   ComponentElement,

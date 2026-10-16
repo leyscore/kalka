@@ -1,7 +1,7 @@
-import type { OverlayLayerId } from '@open-pencil/core/canvas'
-import type { EditorState } from '@open-pencil/core/editor'
-import type { ViewportTransform } from '@open-pencil/core/geometry'
-import type { Rect } from '@open-pencil/scene-graph/primitives'
+import type { OverlayLayerId } from '@kalka/core/canvas'
+import type { EditorState } from '@kalka/core/editor'
+import type { ViewportTransform } from '@kalka/core/geometry'
+import type { Rect } from '@kalka/scene-graph/primitives'
 
 import type { PresentationColorSpace } from '#vue/canvas/surface/color-space'
 

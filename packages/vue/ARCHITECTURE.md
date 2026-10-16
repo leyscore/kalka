@@ -1,4 +1,4 @@
-# @open-pencil/vue architecture
+# @kalka/vue architecture
 
 ## Folder conventions
 

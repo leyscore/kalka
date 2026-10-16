@@ -2,7 +2,7 @@
 
 import type { CanvasKit, TypefaceFontProvider } from 'canvaskit-wasm'
 
-import type { FontVariation, SceneGraph } from '@open-pencil/scene-graph'
+import type { FontVariation, SceneGraph } from '@kalka/scene-graph'
 
 import { DEFAULT_FONT_FAMILY, IS_BROWSER } from '#core/constants'
 import {
@@ -253,7 +253,7 @@ export class FontManager {
     const { readFile } = await import(/* @vite-ignore */ 'node:fs/promises')
     const { resolve, dirname } = await import(/* @vite-ignore */ 'node:path')
     const { fileURLToPath } = await import(/* @vite-ignore */ 'node:url')
-    const packageJSONURL = import.meta.resolve('@open-pencil/core/package.json')
+    const packageJSONURL = import.meta.resolve('@kalka/core/package.json')
     const packageRoot = dirname(fileURLToPath(packageJSONURL))
     const assetPath = resolve(packageRoot, `assets${url}`)
     const buf = await readFile(assetPath)

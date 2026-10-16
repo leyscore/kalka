@@ -2,8 +2,8 @@ import { expect, test } from 'bun:test'
 
 import * as v from 'valibot'
 
-import { materializeFigFragment } from '@open-pencil/fig'
-import { prepareGraphTransfer, applyGraphTransfer, SceneGraph } from '@open-pencil/scene-graph'
+import { materializeFigFragment } from '@kalka/fig'
+import { prepareGraphTransfer, applyGraphTransfer, SceneGraph } from '@kalka/scene-graph'
 
 import { readFixtureObject } from '#tests/helpers/fig/fixtures'
 

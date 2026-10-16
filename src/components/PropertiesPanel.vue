@@ -2,7 +2,7 @@
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from 'reka-ui'
 import { computed, useTemplateRef } from 'vue'
 
-import { useDesignCheckMessages, useI18n } from '@open-pencil/vue'
+import { useDesignCheckMessages, useI18n } from '@kalka/vue'
 
 import { useAIChat } from '@/app/ai/chat/use'
 import { useEditorStore } from '@/app/editor/active-store'

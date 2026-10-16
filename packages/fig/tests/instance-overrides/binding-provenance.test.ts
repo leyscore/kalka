@@ -12,8 +12,8 @@ import { interpretInstance } from '#fig/instance-overrides/interpret'
 import { materializeInstance } from '#fig/instance-overrides/materialize-instance'
 import { mapInstanceSourceChildren } from '#fig/instance-overrides/source-children'
 
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-import { SceneGraph, hasInstanceOverride } from '@open-pencil/scene-graph'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
+import { SceneGraph, hasInstanceOverride } from '@kalka/scene-graph'
 
 test('materialization preserves explicit equal-to-default text', () => {
   const changes: NodeChange[] = [

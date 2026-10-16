@@ -1,7 +1,7 @@
-import type { BlendMode, Effect, Fill, Stroke } from '@open-pencil/scene-graph'
-import { colorToCSS, colorToHex } from '@open-pencil/scene-graph/color'
-import { CSS_BLEND_MODES } from '@open-pencil/scene-graph/css'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import type { BlendMode, Effect, Fill, Stroke } from '@kalka/scene-graph'
+import { colorToCSS, colorToHex } from '@kalka/scene-graph/color'
+import { CSS_BLEND_MODES } from '@kalka/scene-graph/css'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import type { DesignStyleDeclaration } from '../types'
 

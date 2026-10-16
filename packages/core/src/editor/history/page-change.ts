@@ -8,7 +8,7 @@ import {
   type SceneGraph,
   type SceneNode,
   type SourceMetadata
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import type { EditorContext } from '#core/editor/types'
 import { computeAllLayouts } from '#core/layout'
@@ -86,7 +86,7 @@ function restoreLayer(graph: SceneGraph, update: LayerUpdate, side: Side): void 
 
 /**
  * A copy that keeps the layer's values as they are now. Values are replaced, never written into
- * (`materialize-instance.ts` in `@open-pencil/fig`), so sharing them is safe; the graph edits
+ * (`materialize-instance.ts` in `@kalka/fig`), so sharing them is safe; the graph edits
  * child lists, source metadata, and override maps in place, so those are copied.
  */
 function captureNode(node: SceneNode): SceneNode {

@@ -1,4 +1,4 @@
-import type { Color, SceneGraph } from '@open-pencil/scene-graph'
+import type { Color, SceneGraph } from '@kalka/scene-graph'
 
 const VAR_SYMBOL = Symbol.for('open-pencil.variable')
 

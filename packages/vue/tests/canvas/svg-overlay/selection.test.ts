@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { LabelCache } from '@open-pencil/core/canvas'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { LabelCache } from '@kalka/core/canvas'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { composeOverlay as compose, type ComposeInput } from '#vue/canvas/svg-overlay/compose'
 import type { OverlayContext } from '#vue/canvas/svg-overlay/layers/selection'

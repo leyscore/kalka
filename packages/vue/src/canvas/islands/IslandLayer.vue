@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { playIslandRoots, type PlayState } from '@open-pencil/core/editor'
-import type { ViewportTransform } from '@open-pencil/core/geometry'
+import { playIslandRoots, type PlayState } from '@kalka/core/editor'
+import type { ViewportTransform } from '@kalka/core/geometry'
 
 import { useEditor } from '#vue/editor/context'
 

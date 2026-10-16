@@ -14,8 +14,8 @@ import {
   parseFigKiwiChunks,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/core'
-import type { JSONObject } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/core'
+import type { JSONObject } from '@kalka/scene-graph/primitives'
 
 import {
   type Mismatch,

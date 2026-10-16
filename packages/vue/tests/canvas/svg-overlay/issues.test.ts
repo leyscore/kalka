@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 
-import { hitTestIssueMarkers, type RenderOverlays } from '@open-pencil/core/canvas'
-import { ISSUE_ERROR_COLOR, ISSUE_WARNING_COLOR } from '@open-pencil/core/constants'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { hitTestIssueMarkers, type RenderOverlays } from '@kalka/core/canvas'
+import { ISSUE_ERROR_COLOR, ISSUE_WARNING_COLOR } from '@kalka/core/constants'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import {
   issueHighlightLayer,

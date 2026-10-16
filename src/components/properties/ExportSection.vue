@@ -2,7 +2,7 @@
 import { tryOnScopeDispose, useObjectUrl } from '@vueuse/core'
 import { computed, onActivated, onDeactivated, ref, shallowRef, watch } from 'vue'
 
-import { useExport, useI18n, useRetainedActivity } from '@open-pencil/vue'
+import { useExport, useI18n, useRetainedActivity } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import ExportScaleInput from '@/components/properties/ExportScaleInput.vue'

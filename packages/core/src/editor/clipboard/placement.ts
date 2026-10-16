@@ -1,9 +1,9 @@
 import { isNotNil } from 'es-toolkit/predicate'
 
-import type { SceneNode } from '@open-pencil/scene-graph'
-import { getAxisAlignedBoundsInParent } from '@open-pencil/scene-graph/coordinate'
-import { computeBounds } from '@open-pencil/scene-graph/geometry'
-import type { Rect, Vector } from '@open-pencil/scene-graph/primitives'
+import type { SceneNode } from '@kalka/scene-graph'
+import { getAxisAlignedBoundsInParent } from '@kalka/scene-graph/coordinate'
+import { computeBounds } from '@kalka/scene-graph/geometry'
+import type { Rect, Vector } from '@kalka/scene-graph/primitives'
 
 import { DUPLICATE_FRAME_GAP } from '#core/constants'
 import type { EditorContext } from '#core/editor/types'

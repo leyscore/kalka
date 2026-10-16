@@ -3,8 +3,8 @@ import { mkdtemp } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-import { BUILTIN_IO_FORMATS, IORegistry } from '@open-pencil/core/io'
-import type { DocumentFontStatus } from '@open-pencil/core/text'
+import { BUILTIN_IO_FORMATS, IORegistry } from '@kalka/core/io'
+import type { DocumentFontStatus } from '@kalka/core/text'
 
 import { runOpenPencilCLI } from '#tests/helpers/cli'
 import { repoPath, requireBuiltWorkspacePackages } from '#tests/helpers/paths'

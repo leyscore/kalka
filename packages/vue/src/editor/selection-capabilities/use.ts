@@ -1,6 +1,6 @@
 import { computed, shallowRef } from 'vue'
 
-import { canMakeBooleanSourceNode, hasVisibleStrokeSourceNode } from '@open-pencil/core/canvas'
+import { canMakeBooleanSourceNode, hasVisibleStrokeSourceNode } from '@kalka/core/canvas'
 
 import { useEditorEvent } from '#vue/editor/events/use'
 import { useSelectionState } from '#vue/editor/selection-state/use'

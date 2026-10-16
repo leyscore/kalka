@@ -1,5 +1,5 @@
-import { preprocessForVectorize, svgToVectorPaths } from '@open-pencil/core/vector'
-import type { Fill, SceneNode } from '@open-pencil/scene-graph'
+import { preprocessForVectorize, svgToVectorPaths } from '@kalka/core/vector'
+import type { Fill, SceneNode } from '@kalka/scene-graph'
 
 import type { EditorStore } from '@/app/editor/active-store'
 import { notificationMessages } from '@/app/i18n/notifications'

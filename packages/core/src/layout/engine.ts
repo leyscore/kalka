@@ -1,4 +1,4 @@
-import type { SceneGraph } from '@open-pencil/scene-graph'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 /**
  * Lays out layers somewhere other than Yoga, such as a browser that renders the page as DOM:

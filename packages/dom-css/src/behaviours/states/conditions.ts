@@ -4,7 +4,7 @@ import {
   type ComponentPropertyDefinition,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { behaviourArgs, type BehaviourArgs, type BooleanArg } from '../args'
 import type { StateCondition } from './types'

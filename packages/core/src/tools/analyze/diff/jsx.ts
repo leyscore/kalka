@@ -1,7 +1,7 @@
 import { createTwoFilesPatch, FILE_HEADERS_ONLY } from 'diff'
 
-import { sceneNodeToJSX } from '@open-pencil/design-jsx'
-import type { SceneGraph } from '@open-pencil/scene-graph'
+import { sceneNodeToJSX } from '@kalka/design-jsx'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 /** Unified diff of two JSX sources, as `diff_jsx` returns it; `null` when they match. */
 export function jsxPatch(

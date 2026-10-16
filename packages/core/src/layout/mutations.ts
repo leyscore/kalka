@@ -3,7 +3,7 @@ import {
   mutationLayoutScopeIds,
   type SceneGraph,
   type SceneMutationImpact
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { computeAllLayouts, computeLayout } from '#core/layout'
 

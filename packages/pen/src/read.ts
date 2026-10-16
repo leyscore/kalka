@@ -1,14 +1,14 @@
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { SceneGraph } from '@kalka/scene-graph'
 import type {
   AxisSizingMode,
   LayoutMode,
   LayoutSizing,
   SceneNode,
   VectorNetwork
-} from '@open-pencil/scene-graph'
-import { copyEffects, copyFills, copyStrokes } from '@open-pencil/scene-graph/copy'
-import { populateInstanceChildren } from '@open-pencil/scene-graph/instances'
-import { parseSVGPath } from '@open-pencil/scene-graph/parse-path'
+} from '@kalka/scene-graph'
+import { copyEffects, copyFills, copyStrokes } from '@kalka/scene-graph/copy'
+import { populateInstanceChildren } from '@kalka/scene-graph/instances'
+import { parseSVGPath } from '@kalka/scene-graph/parse-path'
 
 import {
   applyCornerRadius,

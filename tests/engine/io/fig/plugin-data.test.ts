@@ -7,8 +7,8 @@ import {
   parseFigFile,
   SceneGraph,
   type NodeChange
-} from '@open-pencil/core'
-import { materializeDocument } from '@open-pencil/fig'
+} from '@kalka/core'
+import { materializeDocument } from '@kalka/fig'
 
 import { deduplicateNodeChangePluginData } from '#core/kiwi'
 

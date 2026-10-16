@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import { CollapsibleRoot, CollapsibleContent, CollapsibleTrigger } from 'reka-ui'
 
-import {
-  usePanelMessages,
-  type ComponentBinding,
-  type ComponentBindingGroup
-} from '@open-pencil/vue'
+import { usePanelMessages, type ComponentBinding, type ComponentBindingGroup } from '@kalka/vue'
 
 import { sceneNodeIcon } from '@/app/editor/icons'
 import AppButton from '@/components/ui/button/AppButton.vue'

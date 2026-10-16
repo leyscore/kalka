@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 
 import { reconcileRenderedLayers } from '#design-jsx/index'
 
-import { SceneGraph, type NodeType, type SceneNode } from '@open-pencil/scene-graph'
+import { SceneGraph, type NodeType, type SceneNode } from '@kalka/scene-graph'
 
 interface Layer {
   type: NodeType

@@ -20,7 +20,7 @@ export const updateStyles = defineTool({
   execute: async (figma, { id, styles }) => {
     const node = figma.graph.getNode(id)
     if (!node) return { error: `Node "${id}" not found` }
-    const { cssToNodeChanges } = await import('@open-pencil/dom-css')
+    const { cssToNodeChanges } = await import('@kalka/dom-css')
     const changes = cssToNodeChanges(figma.graph, node, styles)
     const changed = Object.keys(changes)
     if (changed.length > 0) {

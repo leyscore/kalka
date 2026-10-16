@@ -4,8 +4,8 @@ import { basename, dirname, extname, join, resolve } from 'node:path'
 import { defineCommand } from 'citty'
 import { toUint8Array } from 'js-base64'
 
-import { BUILTIN_IO_FORMATS, IORegistry, type ExportResult } from '@open-pencil/core/io'
-import type { AutomationDocumentSummary } from '@open-pencil/core/rpc'
+import { BUILTIN_IO_FORMATS, IORegistry, type ExportResult } from '@kalka/core/io'
+import type { AutomationDocumentSummary } from '@kalka/core/rpc'
 
 import { isAppMode, requireFile, rpc } from '#cli/app/client'
 import { appTargetOptions, appTargetRPCArgs } from '#cli/app/target'

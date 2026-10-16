@@ -1,9 +1,9 @@
 import { expect, test } from 'bun:test'
 
-import { exportFigFile } from '@open-pencil/core/io'
-import { initCodec } from '@open-pencil/core/kiwi'
-import { parseFigBuffer } from '@open-pencil/fig'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { exportFigFile } from '@kalka/core/io'
+import { initCodec } from '@kalka/core/kiwi'
+import { parseFigBuffer } from '@kalka/fig'
+import { SceneGraph } from '@kalka/scene-graph'
 
 test('exports shared styles once even when present in a normal page subtree', async () => {
   await initCodec()

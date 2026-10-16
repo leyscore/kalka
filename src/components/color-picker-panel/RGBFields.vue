@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inputNumberValue, useI18n } from '@open-pencil/vue'
+import { inputNumberValue, useI18n } from '@kalka/vue'
 
 import { useColorPickerPanelContext } from '@/components/color-picker-panel/context'
 

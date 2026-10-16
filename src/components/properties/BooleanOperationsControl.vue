@@ -19,8 +19,8 @@ import {
   useEditorCommands,
   useI18n,
   useRetainedPopup
-} from '@open-pencil/vue'
-import type { EditorCommandId } from '@open-pencil/vue'
+} from '@kalka/vue'
+import type { EditorCommandId } from '@kalka/vue'
 
 import { menuItem, useMenuUI } from '@/components/ui/menu/menu'
 import Tip from '@/components/ui/overlay/Tip.vue'

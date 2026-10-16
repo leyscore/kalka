@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { createEditor } from '@open-pencil/core/editor'
-import { svgToVectorPaths } from '@open-pencil/core/vector'
+import { createEditor } from '@kalka/core/editor'
+import { svgToVectorPaths } from '@kalka/core/vector'
 
 import { expectDefined, getNodeOrThrow } from '../helpers/assert'
 

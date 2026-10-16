@@ -11,7 +11,7 @@ import {
   serializeHTML
 } from '#dom-css/index'
 
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 import { TEST_COLORS, cardCSS, cardHTML, fixtureCSS, fixtureHTML } from '../helpers'
 
@@ -158,7 +158,7 @@ function expectStyleRoundTripHTML(graph: SceneGraph) {
   expectRoundTripHeadingStyle(roundTripHeading)
 }
 
-describe('@open-pencil/dom-css conversion', () => {
+describe('@kalka/dom-css conversion', () => {
   it('rejects pre-aborted browser conversion before runtime work', async () => {
     const abort = new AbortController()
     abort.abort()

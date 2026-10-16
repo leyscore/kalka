@@ -13,7 +13,7 @@ import IconLucidePanelLeft from '~icons/lucide/panel-left'
 import IconLucidePanelRight from '~icons/lucide/panel-right'
 import IconLucidePanelTop from '~icons/lucide/panel-top'
 
-import { hitTestIssueMarkers } from '@open-pencil/core/canvas'
+import { hitTestIssueMarkers } from '@kalka/core/canvas'
 import {
   AUTO_LAYOUT_PADDING_EDITOR_OFFSET_X,
   AUTO_LAYOUT_PADDING_EDITOR_OFFSET_Y,
@@ -21,10 +21,10 @@ import {
   COMPONENT_LABEL_ICON_SIZE,
   SECTION_TITLE_GAP,
   SECTION_TITLE_HEIGHT
-} from '@open-pencil/core/constants'
-import type { ViewportTransform } from '@open-pencil/core/geometry'
-import { vectorElement } from '@open-pencil/core/io'
-import { colorToCSS } from '@open-pencil/scene-graph/color'
+} from '@kalka/core/constants'
+import type { ViewportTransform } from '@kalka/core/geometry'
+import { vectorElement } from '@kalka/core/io'
+import { colorToCSS } from '@kalka/scene-graph/color'
 import {
   PlayIslands,
   toolCursor,
@@ -38,7 +38,7 @@ import {
   useSVGOverlay,
   useViewportSize,
   useTextEdit
-} from '@open-pencil/vue'
+} from '@kalka/vue'
 
 import { useAIChat } from '@/app/ai/chat/use'
 import { useEditorStore } from '@/app/editor/active-store'

@@ -4,7 +4,7 @@ import type {
   Variable,
   VariableCollection,
   VariableType
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import {
   decodeVariableToken,

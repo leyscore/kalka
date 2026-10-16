@@ -1,6 +1,6 @@
-import { defineVars } from '@open-pencil/design-jsx'
-import type { SceneGraph } from '@open-pencil/scene-graph'
-import { parseColor } from '@open-pencil/scene-graph/color'
+import { defineVars } from '@kalka/design-jsx'
+import type { SceneGraph } from '@kalka/scene-graph'
+import { parseColor } from '@kalka/scene-graph/color'
 
 export function createAnnouncementTokens(graph: SceneGraph) {
   graph.addCollection({

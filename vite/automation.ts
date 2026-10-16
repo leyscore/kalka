@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import process from 'node:process'
 
-import { AUTOMATION_HTTP_PORT } from '@open-pencil/core/constants'
+import { AUTOMATION_HTTP_PORT } from '@kalka/core/constants'
 
 import { devAutomationRoute } from '../src/app/automation/bridge/portless-route'
 import { automationPlugin } from '../src/app/automation/bridge/vite-plugin'

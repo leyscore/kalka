@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'bun:test'
 
-import { createEditor } from '@open-pencil/core/editor'
-import { parseIconName, type IconProvider } from '@open-pencil/core/icons'
-import { isIconModified, readIcon, SceneGraph } from '@open-pencil/scene-graph'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import { createEditor } from '@kalka/core/editor'
+import { parseIconName, type IconProvider } from '@kalka/core/icons'
+import { isIconModified, readIcon, SceneGraph } from '@kalka/scene-graph'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import { buildIconData } from '#core/icons/svg'
 

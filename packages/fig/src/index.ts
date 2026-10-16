@@ -43,7 +43,7 @@ import {
   buildFigKiwi,
   decompressFigKiwiData,
   parseFigKiwiChunks
-} from '@open-pencil/kiwi/fig/container'
+} from '@kalka/kiwi/fig/container'
 
 export interface FigDocumentSource {
   readonly bytes?: Uint8Array

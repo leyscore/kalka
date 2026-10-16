@@ -1,4 +1,4 @@
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@kalka/vue'
 
 import type { SetupProblem } from '@/app/ai/agents/setup'
 

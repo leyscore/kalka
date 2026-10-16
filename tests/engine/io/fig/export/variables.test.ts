@@ -1,7 +1,7 @@
 import { describe, test, expect, beforeAll } from 'bun:test'
 
-import { exportFigFile, parseFigFile, initCodec, SceneGraph } from '@open-pencil/core'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import { exportFigFile, parseFigFile, initCodec, SceneGraph } from '@kalka/core'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import { expectDefined } from '#tests/helpers/assert'
 

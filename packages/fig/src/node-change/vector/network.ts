@@ -1,4 +1,4 @@
-import type { Paint } from '@open-pencil/kiwi/fig/codec'
+import type { Paint } from '@kalka/kiwi/fig/codec'
 import type {
   HandleMirroring,
   VectorNetwork,
@@ -6,7 +6,7 @@ import type {
   VectorSegment,
   VectorVertex,
   WindingRule
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 export interface StyleOverride {
   styleID: number

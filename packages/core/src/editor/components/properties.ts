@@ -5,12 +5,12 @@ import {
   findComponentPropertyTargets,
   resolveComponentPropertyValue,
   setInstanceOverride
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 import type {
   ComponentPropertyDefinition,
   ComponentPropertyTarget,
   SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { assertNodeEditable } from '#core/editor/capabilities'
 import type { EditorContext } from '#core/editor/types'

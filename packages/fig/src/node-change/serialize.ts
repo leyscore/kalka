@@ -3,8 +3,8 @@ import {
   normalizeFontFamily,
   OPEN_PENCIL_PLUGIN_DATA,
   withPluginData
-} from '@open-pencil/scene-graph'
-import { fractionalPosition } from '@open-pencil/scene-graph/order-keys'
+} from '@kalka/scene-graph'
+import { fractionalPosition } from '@kalka/scene-graph/order-keys'
 
 import { effectiveFigmaRawNodeFields } from '../source-metadata'
 import { computeExportTransform, mapToFigmaType } from './basics'
@@ -29,16 +29,16 @@ export {
   decompressFigKiwiDataAsync,
   FIG_KIWI_DEFAULT_VERSION,
   parseFigKiwiChunks
-} from '@open-pencil/kiwi/fig/container'
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-import { guidToString, stringToGuid } from '@open-pencil/kiwi/fig/guid'
+} from '@kalka/kiwi/fig/container'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
+import { guidToString, stringToGuid } from '@kalka/kiwi/fig/guid'
 import type {
   ComponentPropertyDefinition,
   PluginDataEntry,
   SceneGraph,
   SceneNode
-} from '@open-pencil/scene-graph'
-import type { GUID, JSONObject } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/scene-graph'
+import type { GUID, JSONObject } from '@kalka/scene-graph/primitives'
 
 import {
   buildAssetRefToVarGuidMap,

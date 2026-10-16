@@ -1,4 +1,4 @@
-import type { StrokeCap } from '@open-pencil/scene-graph'
+import type { StrokeCap } from '@kalka/scene-graph'
 
 import { expect, test, useEditorSetupWithClear } from '#tests/e2e/fixtures'
 

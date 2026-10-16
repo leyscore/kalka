@@ -6,8 +6,8 @@ import {
   initCodec,
   parseFigFile,
   SceneGraph
-} from '@open-pencil/core'
-import type { JSONObject } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/core'
+import type { JSONObject } from '@kalka/scene-graph/primitives'
 
 import { expectDefined } from '#tests/helpers/assert'
 import { parseFixture } from '#tests/helpers/fig/fixtures'
@@ -120,8 +120,8 @@ describe('text node export', () => {
 
     const { unzipSync, inflateSync } = await import('fflate')
     const { decodeBinarySchema, compileSchema, ByteBuffer } =
-      await import('@open-pencil/kiwi/schema-runtime')
-    const { parseFigKiwiChunks } = await import('@open-pencil/core')
+      await import('@kalka/kiwi/schema-runtime')
+    const { parseFigKiwiChunks } = await import('@kalka/core')
 
     const graph = new SceneGraph()
     const page = graph.getPages()[0]
@@ -188,8 +188,8 @@ describe('text node export', () => {
 
     const { unzipSync, inflateSync } = await import('fflate')
     const { decodeBinarySchema, compileSchema, ByteBuffer } =
-      await import('@open-pencil/kiwi/schema-runtime')
-    const { parseFigKiwiChunks } = await import('@open-pencil/core')
+      await import('@kalka/kiwi/schema-runtime')
+    const { parseFigKiwiChunks } = await import('@kalka/core')
 
     const graph = new SceneGraph()
     const page = graph.getPages()[0]
@@ -234,8 +234,8 @@ describe('text node export', () => {
 
     const { unzipSync, inflateSync } = await import('fflate')
     const { decodeBinarySchema, compileSchema, ByteBuffer } =
-      await import('@open-pencil/kiwi/schema-runtime')
-    const { parseFigKiwiChunks } = await import('@open-pencil/core')
+      await import('@kalka/kiwi/schema-runtime')
+    const { parseFigKiwiChunks } = await import('@kalka/core')
 
     const graph = new SceneGraph()
     const page = graph.getPages()[0]
@@ -310,8 +310,8 @@ describe('text node export', () => {
 
     const { unzipSync, inflateSync } = await import('fflate')
     const { decodeBinarySchema, compileSchema, ByteBuffer } =
-      await import('@open-pencil/kiwi/schema-runtime')
-    const { parseFigKiwiChunks } = await import('@open-pencil/core')
+      await import('@kalka/kiwi/schema-runtime')
+    const { parseFigKiwiChunks } = await import('@kalka/core')
 
     const graph = new SceneGraph()
     const page = graph.getPages()[0]

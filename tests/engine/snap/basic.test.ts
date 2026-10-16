@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test'
 
-import { computeSnap, computeSelectionBounds, type SceneNode } from '@open-pencil/core'
+import { computeSnap, computeSelectionBounds, type SceneNode } from '@kalka/core'
 
 import { expectDefined } from '#tests/helpers/assert'
 

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { materializeDocument } from '@open-pencil/fig'
+import { materializeDocument } from '@kalka/fig'
 
 import { canvas, doc, node } from '../helpers'
 

@@ -1,10 +1,10 @@
 import { compact } from 'es-toolkit/array'
 import { computed, type ComputedRef, type Ref } from 'vue'
 
-import { BLACK } from '@open-pencil/core/constants'
-import type { Editor } from '@open-pencil/core/editor'
-import { cloneVectorNetwork } from '@open-pencil/scene-graph'
-import type { SceneNode, Stroke, StrokeCap, StrokeJoin } from '@open-pencil/scene-graph'
+import { BLACK } from '@kalka/core/constants'
+import type { Editor } from '@kalka/core/editor'
+import { cloneVectorNetwork } from '@kalka/scene-graph'
+import type { SceneNode, Stroke, StrokeCap, StrokeJoin } from '@kalka/scene-graph'
 
 import { MIXED } from '#vue/controls/node-props/use'
 import type { MixedValue } from '#vue/controls/node-props/use'

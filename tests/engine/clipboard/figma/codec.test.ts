@@ -2,8 +2,8 @@ import { expect, test } from 'bun:test'
 
 import { encode } from 'js-base64'
 
-import { encodeFigmaClipboard, parseFigmaClipboard } from '@open-pencil/fig/clipboard'
-import { initCodec } from '@open-pencil/kiwi/fig/codec'
+import { encodeFigmaClipboard, parseFigmaClipboard } from '@kalka/fig/clipboard'
+import { initCodec } from '@kalka/kiwi/fig/codec'
 
 test('Fig clipboard codec preserves prepared node changes and binary blobs', async () => {
   await initCodec()

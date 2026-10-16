@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 
-import { extractFigThumbnailFromReader } from '@open-pencil/fig'
+import { extractFigThumbnailFromReader } from '@kalka/fig'
 
 import { isTauri } from '@/app/tauri/env'
 

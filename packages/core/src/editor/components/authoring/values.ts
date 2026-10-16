@@ -1,5 +1,5 @@
-import { canCreateInstance, resolveComponentPropertyValue } from '@open-pencil/scene-graph'
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import { canCreateInstance, resolveComponentPropertyValue } from '@kalka/scene-graph'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 import { textAutoResizeChanges } from '#core/editor/text/auto-resize'
 import { pathTextEditChanges } from '#core/editor/text/path-edit'

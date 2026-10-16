@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test } from 'bun:test'
 
-import { computeAllLayouts, SceneGraph, setTextMeasurer } from '@open-pencil/core'
+import { computeAllLayouts, SceneGraph, setTextMeasurer } from '@kalka/core'
 
 function importedText(graph: SceneGraph, text: string, width: number, height: number, id: string) {
   const page = graph.getPages()[0]

@@ -1,8 +1,8 @@
 import { expect, test } from 'bun:test'
 
-import { SceneGraph, copyStyleRuns } from '@open-pencil/scene-graph'
-import type { SceneNode } from '@open-pencil/scene-graph'
-import { scaledGeometryChanges } from '@open-pencil/scene-graph/resize'
+import { SceneGraph, copyStyleRuns } from '@kalka/scene-graph'
+import type { SceneNode } from '@kalka/scene-graph'
+import { scaledGeometryChanges } from '@kalka/scene-graph/resize'
 
 const shapingEdits: Partial<SceneNode>[] = [
   { fontVariations: [{ axis: 'wght', value: 600 }] },

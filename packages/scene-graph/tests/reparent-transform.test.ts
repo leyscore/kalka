@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { getWorldMatrix, SceneGraph, TransformMatrix } from '@open-pencil/scene-graph'
+import { getWorldMatrix, SceneGraph, TransformMatrix } from '@kalka/scene-graph'
 
 function setup() {
   const graph = new SceneGraph()

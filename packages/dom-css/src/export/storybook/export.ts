@@ -1,4 +1,4 @@
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 import type { ExportHTMLFile } from '../bundle'
 import { componentModel, type ComponentGenerator, type ComponentModel } from '../components/model'

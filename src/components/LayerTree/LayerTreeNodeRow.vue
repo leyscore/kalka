@@ -2,7 +2,7 @@
 import { tv } from 'tailwind-variants'
 import { computed } from 'vue'
 
-import type { LayerNode } from '@open-pencil/vue'
+import type { LayerNode } from '@kalka/vue'
 
 import type { LayerIssueMark as LayerIssueMarkData } from '@/app/editor/design-check/layers'
 import { COMPONENT_TYPES, nodeIcon } from '@/app/editor/icons'

@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 
-import { createEditor } from '@open-pencil/core/editor'
-import { computeLayout } from '@open-pencil/core/layout'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { createEditor } from '@kalka/core/editor'
+import { computeLayout } from '@kalka/core/layout'
+import { SceneGraph } from '@kalka/scene-graph'
 
 function hugRow(graph: SceneGraph, children: number) {
   const row = graph.createNode('FRAME', graph.getPages()[0].id, {

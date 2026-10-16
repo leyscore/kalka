@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { colorToCSS } from '@open-pencil/scene-graph/color'
-import { inputNumberValue, useI18n } from '@open-pencil/vue'
+import { colorToCSS } from '@kalka/scene-graph/color'
+import { inputNumberValue, useI18n } from '@kalka/vue'
 
 import { useColorPickerPanelContext } from '@/components/color-picker-panel/context'
 import StandardColorSlider from '@/components/color-picker-panel/StandardColorSlider.vue'

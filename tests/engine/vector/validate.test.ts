@@ -5,7 +5,7 @@ import {
   validateVectorNetwork,
   type VectorNetwork,
   type VectorSegment
-} from '@open-pencil/core'
+} from '@kalka/core'
 
 describe('validateVectorNetwork', () => {
   test('valid network returns no errors', () => {

@@ -1,12 +1,12 @@
 import type { CanvasKit } from 'canvaskit-wasm'
 
-import { compressFigDataSync } from '@open-pencil/fig'
-import { placeSlotContent, type FigNodeChangeExportRuntime } from '@open-pencil/fig/node-change'
-import { initCodec } from '@open-pencil/kiwi/fig/codec'
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-import type { SceneGraph } from '@open-pencil/scene-graph'
-import { fractionalPosition } from '@open-pencil/scene-graph/order-keys'
-import type { GUID } from '@open-pencil/scene-graph/primitives'
+import { compressFigDataSync } from '@kalka/fig'
+import { placeSlotContent, type FigNodeChangeExportRuntime } from '@kalka/fig/node-change'
+import { initCodec } from '@kalka/kiwi/fig/codec'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
+import type { SceneGraph } from '@kalka/scene-graph'
+import { fractionalPosition } from '@kalka/scene-graph/order-keys'
+import type { GUID } from '@kalka/scene-graph/primitives'
 
 import type { SkiaRenderer } from '#core/canvas'
 import { withFigExportRuntime } from '#core/canvas/text/shape'
@@ -217,7 +217,7 @@ async function writeFigFile(
   )
 }
 
-export { compressFigDataSync } from '@open-pencil/fig'
+export { compressFigDataSync } from '@kalka/fig'
 
 function canUseWorker(): boolean {
   return typeof Worker !== 'undefined' && IS_BROWSER

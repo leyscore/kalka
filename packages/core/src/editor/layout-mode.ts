@@ -1,6 +1,6 @@
 import { pick } from 'es-toolkit/object'
 
-import type { LayoutMode, SceneNode } from '@open-pencil/scene-graph'
+import type { LayoutMode, SceneNode } from '@kalka/scene-graph'
 
 import { computeLayout } from '#core/layout'
 

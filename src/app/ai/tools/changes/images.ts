@@ -5,9 +5,9 @@ import {
   computeContentBounds,
   createCanvasKitRasterCodec,
   renderRegionToImage
-} from '@open-pencil/core/io/formats/raster'
-import type { SceneGraph } from '@open-pencil/scene-graph'
-import type { VisualBounds } from '@open-pencil/scene-graph/geometry'
+} from '@kalka/core/io/formats/raster'
+import type { SceneGraph } from '@kalka/scene-graph'
+import type { VisualBounds } from '@kalka/scene-graph/geometry'
 
 import { boundedImageScale } from '@/app/ai/tools/vision'
 import type { EditorStore } from '@/app/editor/active-store'

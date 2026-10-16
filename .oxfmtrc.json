@@ -10,14 +10,14 @@
     "order": "asc",
     "ignoreCase": true,
     "newlinesBetween": true,
-    "internalPattern": ["@open-pencil/", "@/", "#core/", "#vue/", "#cli/", "#mcp/", "#tests/"],
+    "internalPattern": ["@kalka/", "@/", "#core/", "#vue/", "#cli/", "#mcp/", "#tests/"],
     "customGroups": [
       {
         "groupName": "type-workspace",
-        "elementNamePattern": ["@open-pencil/**"],
+        "elementNamePattern": ["@kalka/**"],
         "modifiers": ["type"]
       },
-      { "groupName": "workspace", "elementNamePattern": ["@open-pencil/**"] },
+      { "groupName": "workspace", "elementNamePattern": ["@kalka/**"] },
       { "groupName": "type-app", "elementNamePattern": ["@/**"], "modifiers": ["type"] },
       { "groupName": "app", "elementNamePattern": ["@/**"] },
       {

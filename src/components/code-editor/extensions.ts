@@ -5,11 +5,7 @@ import { linter, type Diagnostic } from '@codemirror/lint'
 import type { Extension } from '@codemirror/state'
 import type { EditorView } from '@codemirror/view'
 
-import {
-  DESIGN_JSX_ELEMENTS,
-  DESIGN_JSX_HELPERS,
-  DESIGN_JSX_PROPERTIES
-} from '@open-pencil/design-jsx'
+import { DESIGN_JSX_ELEMENTS, DESIGN_JSX_HELPERS, DESIGN_JSX_PROPERTIES } from '@kalka/design-jsx'
 
 const ELEMENTS = DESIGN_JSX_ELEMENTS.map(({ name }) => name)
 const PROPS = DESIGN_JSX_PROPERTIES.map(({ name }) => name)

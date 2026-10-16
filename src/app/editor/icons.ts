@@ -19,7 +19,7 @@ import IconStar from '~icons/lucide/star'
 import IconTriangle from '~icons/lucide/triangle'
 import IconType from '~icons/lucide/type'
 
-import { readIcon, slotPropertyId, type SceneNode } from '@open-pencil/scene-graph'
+import { readIcon, slotPropertyId, type SceneNode } from '@kalka/scene-graph'
 
 import type { Tool } from '@/app/editor/session'
 

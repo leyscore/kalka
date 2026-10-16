@@ -3,13 +3,13 @@ import { expect, test } from 'bun:test'
 import { expectDefined } from '#core-tests/helpers/assert'
 import { CapturedFigRecords, readFixture } from '#core-tests/helpers/fig/fixtures'
 
-import { createEditor } from '@open-pencil/core/editor'
-import { FigmaAPI } from '@open-pencil/core/figma-api'
-import { exportFigFile } from '@open-pencil/core/io'
-import { initCodec } from '@open-pencil/core/kiwi'
-import { materializeDocument, parseFigBuffer } from '@open-pencil/fig'
-import { symbolDataOf } from '@open-pencil/fig/instance-overrides'
-import { setInstanceOverride } from '@open-pencil/scene-graph'
+import { createEditor } from '@kalka/core/editor'
+import { FigmaAPI } from '@kalka/core/figma-api'
+import { exportFigFile } from '@kalka/core/io'
+import { initCodec } from '@kalka/core/kiwi'
+import { materializeDocument, parseFigBuffer } from '@kalka/fig'
+import { symbolDataOf } from '@kalka/fig/instance-overrides'
+import { setInstanceOverride } from '@kalka/scene-graph'
 
 const fixture = readFixture('nested-binding-ownership-records.json', CapturedFigRecords)
 

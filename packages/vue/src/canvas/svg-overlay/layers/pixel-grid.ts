@@ -1,5 +1,5 @@
-import { pixelGridVisible } from '@open-pencil/core/canvas'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import { pixelGridVisible } from '@kalka/core/canvas'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import type { OverlayContext } from '#vue/canvas/svg-overlay/layers/selection'
 import { css, type OverlayShape } from '#vue/canvas/svg-overlay/shapes'

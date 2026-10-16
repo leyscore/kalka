@@ -2,7 +2,7 @@
 import { useFileDialog, useObjectUrl } from '@vueuse/core'
 import { computed, shallowRef, watch } from 'vue'
 
-import type { Fill, ImageScaleMode } from '@open-pencil/scene-graph'
+import type { Fill, ImageScaleMode } from '@kalka/scene-graph'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import AppButton from '@/components/ui/button/AppButton.vue'

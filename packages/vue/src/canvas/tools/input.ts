@@ -1,6 +1,6 @@
 import type { Ref } from 'vue'
 
-import type { Editor } from '@open-pencil/core/editor'
+import type { Editor } from '@kalka/core/editor'
 
 import { startPenInput } from '#vue/canvas/pen/input'
 import { startShapeDraw, startTextDraw } from '#vue/shared/input/draw'

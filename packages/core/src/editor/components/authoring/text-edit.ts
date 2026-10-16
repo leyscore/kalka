@@ -5,8 +5,8 @@ import {
   cloneInstanceOverrideState,
   componentPropertyDefinitions,
   findComponentPropertyTargets
-} from '@open-pencil/scene-graph'
-import type { SceneNode } from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
+import type { SceneNode } from '@kalka/scene-graph'
 
 import type { EditorContext } from '#core/editor/types'
 

@@ -1,4 +1,4 @@
-import { extractFigThumbnailFromReader } from '@open-pencil/fig'
+import { extractFigThumbnailFromReader } from '@kalka/fig'
 
 import { readCacheBytes, removeCachePrefix, writeCacheBytes } from '@/app/cache'
 import { isTauri } from '@/app/tauri/env'

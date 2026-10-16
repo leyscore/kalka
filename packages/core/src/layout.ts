@@ -11,7 +11,7 @@ import {
   type Node as YogaNode
 } from 'yoga-layout'
 
-import { resolveNodeLayoutDirection } from '@open-pencil/scene-graph/text-direction'
+import { resolveNodeLayoutDirection } from '@kalka/scene-graph/text-direction'
 
 import { applyYogaLayout } from './layout/apply'
 import {
@@ -36,7 +36,7 @@ import {
   type LayoutSizing,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { getLayoutEngine } from './layout/engine'
 import { estimateTextSize, getTextMeasurer } from './layout/text-measurement'

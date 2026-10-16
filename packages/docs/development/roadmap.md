@@ -24,7 +24,7 @@ v0.14.0 established several foundations that earlier versions of this roadmap tr
 - A local-first Storage Workspace for S3-compatible providers with background synchronization and remote document previews.
 - Editable PowerPoint export; editable HTML, CSS, Tailwind, JSX, SVG, and image-vectorization workflows.
 - Private local MCP transport discovery, an installable Kalka agent skill, and stronger CLI/MCP support for large and multi-document sessions.
-- Published `@open-pencil/scene-graph`, `@open-pencil/pen`, `@open-pencil/kiwi`, `@open-pencil/fig`, `@open-pencil/dom-css`, and `@open-pencil/vue` packages with documented public boundaries.
+- Published `@kalka/scene-graph`, `@kalka/pen`, `@kalka/kiwi`, `@kalka/fig`, `@kalka/dom-css`, and `@kalka/vue` packages with documented public boundaries.
 
 ### Current development version
 

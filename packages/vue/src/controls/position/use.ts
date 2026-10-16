@@ -5,8 +5,8 @@ import {
   panelPositionChange,
   panelRotation,
   panelRotationChange
-} from '@open-pencil/core/geometry'
-import type { NumericNodeProperty, SceneNode } from '@open-pencil/scene-graph'
+} from '@kalka/core/geometry'
+import type { NumericNodeProperty, SceneNode } from '@kalka/scene-graph'
 
 import { MIXED, useNodeProps, type MixedValue } from '#vue/controls/node-props/use'
 import { usePropScrub } from '#vue/controls/prop-scrub/use'

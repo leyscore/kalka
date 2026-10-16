@@ -28,7 +28,7 @@ export interface SegmentedControlSlots {
 import { tv } from 'tailwind-variants'
 import { computed, useTemplateRef } from 'vue'
 
-import { SegmentedControlItem, SegmentedControlRoot } from '@open-pencil/vue'
+import { SegmentedControlItem, SegmentedControlRoot } from '@kalka/vue'
 
 import { useGlide } from '@/components/ui/motion/useGlide'
 import { glidePills } from '@/theme/motion/glide'

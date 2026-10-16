@@ -2,7 +2,7 @@ import { describe, expect, mock, test } from 'bun:test'
 
 import { nextTick, ref } from 'vue'
 
-import { ACP_AGENTS, type ACPAgentDef } from '@open-pencil/core/constants'
+import { ACP_AGENTS, type ACPAgentDef } from '@kalka/core/constants'
 
 import { createAgentDiscovery, type DetectedAgent } from '@/app/ai/agents/discovery'
 import type { AgentLookup } from '@/app/ai/agents/native'
@@ -68,7 +68,7 @@ function agentState(overrides: Partial<AgentSetupState> = {}): AgentSetupState {
     bridge: true,
     bridgeOutdated: false,
     bridgeBundled: false,
-    bridgeCommand: 'npm i -g @open-pencil/mcp@1.0.0',
+    bridgeCommand: 'npm i -g @kalka/mcp@1.0.0',
     npm: true,
     installingAgent: false,
     installingBridge: false,
@@ -84,10 +84,10 @@ function piState(overrides: Partial<PiSetupState> = {}): PiSetupState {
     scanning: false,
     companion: true,
     companionOutdated: false,
-    companionCommand: 'npm i -g @open-pencil/harness@1.0.0',
+    companionCommand: 'npm i -g @kalka/harness@1.0.0',
     bridge: true,
     bridgeOutdated: false,
-    bridgeCommand: 'npm i -g @open-pencil/mcp@1.0.0',
+    bridgeCommand: 'npm i -g @kalka/mcp@1.0.0',
     npm: true,
     installingCompanion: false,
     installingBridge: false,
@@ -126,7 +126,7 @@ describe('agentSetupView', () => {
     expect(view.bridge.action).toBeNull()
     expect(view.problem).toBe('needs-npm')
     expect(view.manualAgentCommand).toBe(claude.installCommand ?? null)
-    expect(view.manualBridgeCommand).toBe('npm i -g @open-pencil/mcp@1.0.0')
+    expect(view.manualBridgeCommand).toBe('npm i -g @kalka/mcp@1.0.0')
   })
 
   test('offers the command of an agent without an adapter package to install by hand', () => {
@@ -146,13 +146,13 @@ describe('agentSetupView', () => {
       agentState({ detected: needsAdapter, bridge: false, error: 'canvas-install' })
     )
     expect(view.problem).toBe('install-failed')
-    expect(view.manualBridgeCommand).toBe('npm i -g @open-pencil/mcp@1.0.0')
+    expect(view.manualBridgeCommand).toBe('npm i -g @kalka/mcp@1.0.0')
   })
 
   test('gives only instructions where agents cannot run', () => {
     const view = agentSetupView(claude, agentState({ supported: false, bridge: false }))
     expect(view.manualAgentCommand).toBe(claude.installCommand ?? null)
-    expect(view.manualBridgeCommand).toMatch(/@open-pencil\/mcp/)
+    expect(view.manualBridgeCommand).toMatch(/@kalka\/mcp/)
   })
 })
 
@@ -169,7 +169,7 @@ describe('piSetupView', () => {
     expect(piSetupView(piState({ ...missing, checked: false })).problem).toBeNull()
     const view = piSetupView(piState(missing))
     expect(view.problem).toBe('needs-npm')
-    expect(view.manualCommands).toEqual(['npm i -g @open-pencil/harness@1.0.0'])
+    expect(view.manualCommands).toEqual(['npm i -g @kalka/harness@1.0.0'])
   })
 
   test('reports a failed companion installation, which the agent panel ignores', () => {

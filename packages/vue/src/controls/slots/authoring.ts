@@ -1,9 +1,5 @@
-import { canCreateSlot, slotOwner, slotPropertyId } from '@open-pencil/scene-graph'
-import type {
-  ComponentPropertyDefinition,
-  SceneNode,
-  SlotPropertyPatch
-} from '@open-pencil/scene-graph'
+import { canCreateSlot, slotOwner, slotPropertyId } from '@kalka/scene-graph'
+import type { ComponentPropertyDefinition, SceneNode, SlotPropertyPatch } from '@kalka/scene-graph'
 
 import { useEditor } from '#vue/editor/context'
 import { useSceneComputed } from '#vue/internal/scene-computed/use'

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { useI18n } from '@open-pencil/vue'
-import type { SlotInstanceOption } from '@open-pencil/vue'
+import { useI18n } from '@kalka/vue'
+import type { SlotInstanceOption } from '@kalka/vue'
 
 import IconButton from '@/components/ui/button/IconButton.vue'
 import AppPicker, { type AppPickerItem } from '@/components/ui/select/AppPicker.vue'

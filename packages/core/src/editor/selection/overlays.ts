@@ -1,5 +1,5 @@
-import type { Rect } from '@open-pencil/scene-graph/primitives'
-import type { SnapGuide } from '@open-pencil/scene-graph/snap'
+import type { Rect } from '@kalka/scene-graph/primitives'
+import type { SnapGuide } from '@kalka/scene-graph/snap'
 
 import type { GuidePreview } from '#core/canvas/guides/types'
 import type { EditorContext } from '#core/editor/types'

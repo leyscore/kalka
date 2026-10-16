@@ -8,7 +8,7 @@ import {
   type ParseFigFileOptions,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/core'
+} from '@kalka/core'
 
 import { testPath } from '../paths'
 import { collectAllNodes } from './traversal'

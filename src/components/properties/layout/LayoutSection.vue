@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LayoutControlsRoot, useI18n } from '@open-pencil/vue'
+import { LayoutControlsRoot, useI18n } from '@kalka/vue'
 
 import ClipContentControl from '@/components/properties/layout/ClipContentControl.vue'
 import FlexControls from '@/components/properties/layout/flex/FlexControls.vue'

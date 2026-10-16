@@ -1,5 +1,5 @@
-import type { GUID, NodeChange } from '@open-pencil/kiwi/fig/codec'
-import type { Vector } from '@open-pencil/scene-graph'
+import type { GUID, NodeChange } from '@kalka/kiwi/fig/codec'
+import type { Vector } from '@kalka/scene-graph'
 
 import type { BoundPropertyClaim } from '../bindings/properties'
 import type { ComponentPropAssignment } from '../types'

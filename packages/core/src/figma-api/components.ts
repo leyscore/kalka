@@ -6,7 +6,7 @@ import type {
   ComponentPropertyType,
   SceneGraph,
   SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 import {
   applyComponentPropertyValue,
   componentPropertyDefinitions as sharedComponentPropertyDefinitions,
@@ -14,8 +14,8 @@ import {
   createComponentPropertyId,
   exposedInstances,
   instanceExposureIssue
-} from '@open-pencil/scene-graph'
-import { cloneNodeProps } from '@open-pencil/scene-graph/copy'
+} from '@kalka/scene-graph'
+import { cloneNodeProps } from '@kalka/scene-graph/copy'
 
 import { becomesComponent, componentWrapProps } from '#core/editor/components/create'
 import { applyVariantProperties, variantSetProps } from '#core/editor/components/variant-set'

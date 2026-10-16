@@ -1,6 +1,6 @@
 import { parse, type CSSStyleRuleLike } from '@acemir/cssom'
 
-import { colorToCSS } from '@open-pencil/scene-graph/color'
+import { colorToCSS } from '@kalka/scene-graph/color'
 
 import type { DesignDocument } from '../src/index'
 

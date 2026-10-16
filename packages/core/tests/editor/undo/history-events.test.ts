@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 
-import { createEditor } from '@open-pencil/core/editor'
+import { createEditor } from '@kalka/core/editor'
 
 const entry = { label: 'Edit', forward: () => undefined, inverse: () => undefined }
 

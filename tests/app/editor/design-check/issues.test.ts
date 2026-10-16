@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import type { LintMessage } from '@open-pencil/core/lint'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import type { LintMessage } from '@kalka/core/lint'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import {
   countIssues,

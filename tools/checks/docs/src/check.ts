@@ -5,7 +5,7 @@ import { EN, EN_PROG } from '#docs-config/labels'
 import { sdkSidebar } from '#docs-config/sdk-sidebar'
 import { developmentSidebar, programmableSidebar, referenceSidebar } from '#docs-config/sidebars'
 
-import { resolveWorkspaceRoot } from '@open-pencil/package-artifacts-tools'
+import { resolveWorkspaceRoot } from '@kalka/package-artifacts-tools'
 
 import { checkGuideMap } from './guides'
 import { checkDocsIntegrity } from './integrity'

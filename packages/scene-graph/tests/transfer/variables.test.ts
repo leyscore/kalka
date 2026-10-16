@@ -4,7 +4,7 @@ import {
   prepareVariableTransfer,
   type Variable,
   type VariableCollection
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 const collections: VariableCollection[] = [
   {

@@ -1,7 +1,7 @@
 import { simulateReadableStream } from 'ai'
 import { MockLanguageModelV4, mockValues } from 'ai/test'
 
-import type { RenderPlacementInput } from '@open-pencil/core/design-jsx'
+import type { RenderPlacementInput } from '@kalka/core/design-jsx'
 
 import { MOCK_USAGE } from '../usage'
 import { createStreamGate } from './gate'

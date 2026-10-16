@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MIXED, type MixedValue } from '@open-pencil/vue'
+import { MIXED, type MixedValue } from '@kalka/vue'
 
 import AppInput from '@/components/ui/input/AppInput.vue'
 

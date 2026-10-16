@@ -7,8 +7,8 @@ import {
   useI18n,
   useToolbarState,
   useViewportKind
-} from '@open-pencil/vue'
-import type { Tool } from '@open-pencil/vue'
+} from '@kalka/vue'
+import type { Tool } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import { toolIcons } from '@/app/editor/icons'

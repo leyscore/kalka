@@ -4,9 +4,9 @@ import { expectDefined, getNodeOrThrow } from '#core-tests/helpers/assert'
 import { findByName, PROPERTY_CASES } from '#core-tests/helpers/property-cases'
 import { pick } from 'es-toolkit'
 
-import { renderJSX } from '@open-pencil/core/design-jsx'
-import { sceneNodeToJSX } from '@open-pencil/design-jsx'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { renderJSX } from '@kalka/core/design-jsx'
+import { sceneNodeToJSX } from '@kalka/design-jsx'
+import { SceneGraph } from '@kalka/scene-graph'
 
 describe('attribute string round-trip', () => {
   it.each([

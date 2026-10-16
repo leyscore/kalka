@@ -1,4 +1,4 @@
-import { BLACK } from '@open-pencil/core/constants'
+import { BLACK } from '@kalka/core/constants'
 import {
   copyEffects,
   copyFills,
@@ -6,7 +6,7 @@ import {
   sharedStyleRefKey,
   type SceneNode,
   type SharedStyleKind
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 function strokePaintsFromStyle(target: SceneNode, style: SceneNode): SceneNode['strokes'] {
   const fills = style.fills.filter((fill) => fill.type === 'SOLID')

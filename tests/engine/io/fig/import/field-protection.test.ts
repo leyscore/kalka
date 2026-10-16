@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'bun:test'
 
-import { materializeDocument } from '@open-pencil/fig'
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-import { SceneGraph, setInstanceOverride } from '@open-pencil/scene-graph'
-import type { Fill, Stroke } from '@open-pencil/scene-graph'
+import { materializeDocument } from '@kalka/fig'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
+import { SceneGraph, setInstanceOverride } from '@kalka/scene-graph'
+import type { Fill, Stroke } from '@kalka/scene-graph'
 
 function pageId(graph: SceneGraph): string {
   return graph.getPages()[0].id

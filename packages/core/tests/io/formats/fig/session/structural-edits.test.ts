@@ -1,9 +1,9 @@
 import { expect, test } from 'bun:test'
 
-import { exportFigFile } from '@open-pencil/core/io'
-import { initCodec } from '@open-pencil/core/kiwi'
-import { createFigDocumentSession } from '@open-pencil/fig'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { exportFigFile } from '@kalka/core/io'
+import { initCodec } from '@kalka/core/kiwi'
+import { createFigDocumentSession } from '@kalka/fig'
+import { SceneGraph } from '@kalka/scene-graph'
 
 for (const mutation of ['delete', 'reorder', 'add'] as const) {
   test(`later loads preserve live ${mutation} of component children`, async () => {

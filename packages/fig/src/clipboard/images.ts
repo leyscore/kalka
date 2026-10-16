@@ -1,4 +1,4 @@
-import type { NodeChange, Paint } from '@open-pencil/kiwi/fig/codec'
+import type { NodeChange, Paint } from '@kalka/kiwi/fig/codec'
 
 import { bytesToHex } from '../node-change/bytes'
 

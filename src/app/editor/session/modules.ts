@@ -1,8 +1,8 @@
 import { computed } from 'vue'
 
-import type { Editor } from '@open-pencil/core/editor'
-import type { IORegistry } from '@open-pencil/core/io'
-import { createSelectedNodeState } from '@open-pencil/vue'
+import type { Editor } from '@kalka/core/editor'
+import type { IORegistry } from '@kalka/core/io'
+import { createSelectedNodeState } from '@kalka/vue'
 
 import { createDocumentExportActions } from '@/app/document/export'
 import { createDocumentIOActions } from '@/app/document/io'

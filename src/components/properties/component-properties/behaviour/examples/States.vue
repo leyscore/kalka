@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import type { BehaviourControl } from '@open-pencil/vue'
+import type { BehaviourControl } from '@kalka/vue'
 
 import BehaviourSection from '../BehaviourSection.vue'
 

@@ -1,5 +1,5 @@
-import { createComponentPropertyId, type SceneNode } from '@open-pencil/scene-graph'
-import { buildVariantName } from '@open-pencil/scene-graph/variant-name'
+import { createComponentPropertyId, type SceneNode } from '@kalka/scene-graph'
+import { buildVariantName } from '@kalka/scene-graph/variant-name'
 
 import { assertNodeEditable } from '#core/editor/capabilities'
 import { restoreSubtree, snapshotSubtree } from '#core/editor/clipboard/subtree-history'

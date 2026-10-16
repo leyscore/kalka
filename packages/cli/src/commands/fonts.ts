@@ -1,6 +1,6 @@
 import { defineCommand } from 'citty'
 
-import { fontManager, prepareGraphFonts, type DocumentFontStatus } from '@open-pencil/core/text'
+import { fontManager, prepareGraphFonts, type DocumentFontStatus } from '@kalka/core/text'
 
 import { appTargetOptions } from '#cli/app/target'
 import { bold, entity, fmtList, kv, printError } from '#cli/format'

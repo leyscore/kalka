@@ -1,5 +1,5 @@
-import { styleToWeight } from '@open-pencil/scene-graph'
-import type { FontVariation } from '@open-pencil/scene-graph'
+import { styleToWeight } from '@kalka/scene-graph'
+import type { FontVariation } from '@kalka/scene-graph'
 
 interface TableRange {
   offset: number

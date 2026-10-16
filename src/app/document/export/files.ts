@@ -1,15 +1,15 @@
 import { zipSync, type Zippable } from 'fflate'
 
-import type { Editor, EditorState } from '@open-pencil/core/editor'
+import type { Editor, EditorState } from '@kalka/core/editor'
 import {
   findPageId,
   type ExportRequest,
   type IOFormatAdapter,
   type IORegistry,
   type RasterExportFormat
-} from '@open-pencil/core/io'
-import { renderNodesToImage } from '@open-pencil/core/io/formats/raster'
-import type { SceneGraph } from '@open-pencil/scene-graph'
+} from '@kalka/core/io'
+import { renderNodesToImage } from '@kalka/core/io/formats/raster'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 import { domRasterize } from '@/app/document/export/dom-raster'
 import type { ExportOptions } from '@/app/document/export/types'

@@ -1,6 +1,6 @@
 import type { Canvas, Paint } from 'canvaskit-wasm'
 
-import type { Vector } from '@open-pencil/scene-graph/primitives'
+import type { Vector } from '@kalka/scene-graph/primitives'
 
 import { PEN_HANDLE_RADIUS, PEN_VERTEX_RADIUS, PEN_CLOSE_RADIUS_BOOST } from '#core/constants'
 

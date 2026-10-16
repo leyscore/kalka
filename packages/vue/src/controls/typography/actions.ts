@@ -1,9 +1,9 @@
 import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
 
-import type { Editor } from '@open-pencil/core/editor'
-import { FONT_WEIGHT_NAMES, weightToStyle } from '@open-pencil/core/text'
-import type { SceneNode, TextDecoration } from '@open-pencil/scene-graph'
+import type { Editor } from '@kalka/core/editor'
+import { FONT_WEIGHT_NAMES, weightToStyle } from '@kalka/core/text'
+import type { SceneNode, TextDecoration } from '@kalka/scene-graph'
 
 import type { UseTypographyOptions } from '#vue/controls/typography/use'
 import { useSceneComputed } from '#vue/internal/scene-computed/use'

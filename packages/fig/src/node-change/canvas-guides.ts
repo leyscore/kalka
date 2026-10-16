@@ -1,5 +1,5 @@
-import type { CanvasGuide } from '@open-pencil/scene-graph/guides'
-import type { GUID } from '@open-pencil/scene-graph/primitives'
+import type { CanvasGuide } from '@kalka/scene-graph/guides'
+import type { GUID } from '@kalka/scene-graph/primitives'
 
 interface FigmaCanvasGuide {
   axis?: string

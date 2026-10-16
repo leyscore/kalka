@@ -1,6 +1,6 @@
-import { ROTATION_SNAP_DEGREES } from '@open-pencil/core/constants'
-import type { Editor } from '@open-pencil/core/editor'
-import { createSceneGeometry } from '@open-pencil/core/geometry'
+import { ROTATION_SNAP_DEGREES } from '@kalka/core/constants'
+import type { Editor } from '@kalka/core/editor'
+import { createSceneGeometry } from '@kalka/core/geometry'
 
 import {
   hitTestCornerRotationByMatrix,

@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 
-import { createEditor } from '@open-pencil/core/editor'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { createEditor } from '@kalka/core/editor'
+import { SceneGraph } from '@kalka/scene-graph'
 
 const BLUE = { r: 0.184, g: 0.357, b: 0.918, a: 1 }
 const ORANGE = { r: 0.91, g: 0.35, b: 0.05, a: 1 }

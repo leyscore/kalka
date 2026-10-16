@@ -16,15 +16,15 @@ describe('isOutdatedCompanion', () => {
 
 describe('globalInstallCommand', () => {
   test('uses the package manager that installed the program', () => {
-    expect(globalInstallCommand('@open-pencil/mcp@0.15.1', '/Users/me/.bun/bin/x')).toBe(
-      'bun add -g @open-pencil/mcp@0.15.1'
+    expect(globalInstallCommand('@kalka/mcp@0.15.1', '/Users/me/.bun/bin/x')).toBe(
+      'bun add -g @kalka/mcp@0.15.1'
     )
-    expect(globalInstallCommand('@open-pencil/mcp@0.15.1', 'C:\\Users\\me\\.bun\\bin\\x.exe')).toBe(
-      'bun add -g @open-pencil/mcp@0.15.1'
+    expect(globalInstallCommand('@kalka/mcp@0.15.1', 'C:\\Users\\me\\.bun\\bin\\x.exe')).toBe(
+      'bun add -g @kalka/mcp@0.15.1'
     )
-    expect(globalInstallCommand('@open-pencil/mcp@0.15.1', '/usr/local/bin/x')).toBe(
-      'npm i -g @open-pencil/mcp@0.15.1'
+    expect(globalInstallCommand('@kalka/mcp@0.15.1', '/usr/local/bin/x')).toBe(
+      'npm i -g @kalka/mcp@0.15.1'
     )
-    expect(globalInstallCommand('@open-pencil/mcp@0.15.1')).toBe('npm i -g @open-pencil/mcp@0.15.1')
+    expect(globalInstallCommand('@kalka/mcp@0.15.1')).toBe('npm i -g @kalka/mcp@0.15.1')
   })
 })

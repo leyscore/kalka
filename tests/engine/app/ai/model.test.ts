@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 
 import type { LanguageModel } from 'ai'
 
-import { AI_PROVIDERS } from '@open-pencil/core/constants'
+import { AI_PROVIDERS } from '@kalka/core/constants'
 
 import { resolveLanguageModelID } from '@/app/ai/chat/model'
 import { normalizeOpenRouterModel } from '@/app/ai/chat/provider-models'

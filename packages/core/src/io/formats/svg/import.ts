@@ -1,5 +1,5 @@
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
-import type { Size } from '@open-pencil/scene-graph/primitives'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import type { Size } from '@kalka/scene-graph/primitives'
 
 import { createFlattenedVectorFrameChildren } from '#core/vector/vectorize/placement'
 import { svgToVectorPaths, type SVGVectorizeResult } from '#core/vector/vectorize/svg/to-vectors'

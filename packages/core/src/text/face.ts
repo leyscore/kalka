@@ -1,8 +1,8 @@
-import { parseFontStyle } from '@open-pencil/scene-graph'
-import type { ParsedFontStyle } from '@open-pencil/scene-graph'
+import { parseFontStyle } from '@kalka/scene-graph'
+import type { ParsedFontStyle } from '@kalka/scene-graph'
 
-export { normalizeFontStyleName, parseFontStyle, styleToWeight } from '@open-pencil/scene-graph'
-export type { ParsedFontStyle } from '@open-pencil/scene-graph'
+export { normalizeFontStyleName, parseFontStyle, styleToWeight } from '@kalka/scene-graph'
+export type { ParsedFontStyle } from '@kalka/scene-graph'
 
 export interface FontFaceRef extends ParsedFontStyle {
   family: string

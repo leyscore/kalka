@@ -2,7 +2,7 @@
 import { tv } from 'tailwind-variants'
 import { computed } from 'vue'
 
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@kalka/vue'
 
 import { piSetupView, type CompanionCheck, type PiSetupState } from '@/app/ai/agents/setup'
 import SettingsLink from '@/components/settings/layout/SettingsLink.vue'

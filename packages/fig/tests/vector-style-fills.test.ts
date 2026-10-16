@@ -7,10 +7,10 @@ import {
   type StyleOverride
 } from '#fig/node-change/index'
 
-import type { Paint } from '@open-pencil/kiwi/fig/codec'
-import type { Fill } from '@open-pencil/scene-graph'
-import { SceneGraph } from '@open-pencil/scene-graph'
-import { scaleGeometryPaths } from '@open-pencil/scene-graph/copy'
+import type { Paint } from '@kalka/kiwi/fig/codec'
+import type { Fill } from '@kalka/scene-graph'
+import { SceneGraph } from '@kalka/scene-graph'
+import { scaleGeometryPaths } from '@kalka/scene-graph/copy'
 
 function solidFill(r: number, g: number, b: number): Fill {
   return {

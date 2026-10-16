@@ -1,6 +1,6 @@
-import type { Effect, SceneNode } from '@open-pencil/scene-graph'
-import { TRANSPARENT } from '@open-pencil/scene-graph/constants'
-import { parseCSSShadows } from '@open-pencil/scene-graph/css'
+import type { Effect, SceneNode } from '@kalka/scene-graph'
+import { TRANSPARENT } from '@kalka/scene-graph/constants'
+import { parseCSSShadows } from '@kalka/scene-graph/css'
 
 function isEffect(value: unknown): value is Effect {
   return (

@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 
-import { assignHTMLClasses, HTML_TAGS } from '@open-pencil/scene-graph'
+import { assignHTMLClasses, HTML_TAGS } from '@kalka/scene-graph'
 
 import { assertNodeEditable } from '#core/editor/capabilities'
 import { nodeIdInput } from '#core/tools/input'

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { FLASH_COLOR } from '@open-pencil/core/constants'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { FLASH_COLOR } from '@kalka/core/constants'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import {
   FLASH_DURATION_MS,

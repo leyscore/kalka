@@ -9,9 +9,9 @@ import {
   slotPropertyId,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/scene-graph'
-import type { Mat3 } from '@open-pencil/scene-graph/matrix'
-import type { Rect } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/scene-graph'
+import type { Mat3 } from '@kalka/scene-graph/matrix'
+import type { Rect } from '@kalka/scene-graph/primitives'
 
 import { assertNodeEditable } from '#core/editor/capabilities'
 import {

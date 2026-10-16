@@ -38,8 +38,8 @@ where possible.
 ## Provider example
 
 ```ts twoslash
-import type { Variable } from '@open-pencil/scene-graph'
-import type { BindingProvider, BindingTarget } from '@open-pencil/vue'
+import type { Variable } from '@kalka/scene-graph'
+import type { BindingProvider, BindingTarget } from '@kalka/vue'
 
 const variable: Variable = {
   id: 'spacing/md', name: 'Spacing / Medium', type: 'FLOAT',

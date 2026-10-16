@@ -1,4 +1,4 @@
-import { renderTree } from '@open-pencil/core/design-jsx'
+import { renderTree } from '@kalka/core/design-jsx'
 import {
   Component,
   ComponentSet,
@@ -8,9 +8,9 @@ import {
   Rectangle,
   Text,
   linearGradient
-} from '@open-pencil/design-jsx'
-import type { TreeNode } from '@open-pencil/design-jsx'
-import type { ComponentPropertyDefinition, SceneGraph, Vector } from '@open-pencil/scene-graph'
+} from '@kalka/design-jsx'
+import type { TreeNode } from '@kalka/design-jsx'
+import type { ComponentPropertyDefinition, SceneGraph, Vector } from '@kalka/scene-graph'
 
 import { createArtworkTile, createExampleColumn } from './example'
 

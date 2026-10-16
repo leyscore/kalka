@@ -13,7 +13,7 @@ import { tv } from 'tailwind-variants'
 import { computed } from 'vue'
 import IconChevronDown from '~icons/lucide/chevron-down'
 
-import type { EditorToolDef } from '@open-pencil/core/editor'
+import type { EditorToolDef } from '@kalka/core/editor'
 import {
   isToolbarToolActive,
   toolbarFlyoutItemTestId,
@@ -21,8 +21,8 @@ import {
   toolbarToolTestId,
   useI18n,
   vTestId
-} from '@open-pencil/vue'
-import type { Tool } from '@open-pencil/vue'
+} from '@kalka/vue'
+import type { Tool } from '@kalka/vue'
 
 import ToolButton from '@/components/Toolbar/ToolButton.vue'
 import type { ToolbarUI, ToolIconMap, ToolLabels } from '@/components/Toolbar/types'

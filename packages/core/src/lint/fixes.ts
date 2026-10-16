@@ -1,5 +1,5 @@
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
-import { colorToHex } from '@open-pencil/scene-graph/color'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import { colorToHex } from '@kalka/scene-graph/color'
 
 import type { LintFix, LintMessage } from './types'
 import { ownsComponentTree } from './utils'

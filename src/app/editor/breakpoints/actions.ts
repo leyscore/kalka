@@ -3,7 +3,7 @@ import {
   responsiveOverrides,
   responsiveParent,
   type SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { executeWithPageUndo } from '@/app/automation/execution/editor'
 import type { EditorStore } from '@/app/editor/active-store'

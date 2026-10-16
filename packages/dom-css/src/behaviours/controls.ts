@@ -16,7 +16,7 @@ import {
   type ComponentPropertyDefinition,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 /** A boolean value of a control and the property that draws it. */
 export interface BooleanModel {

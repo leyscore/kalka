@@ -8,10 +8,10 @@ import {
   importCanvasGuides,
   stringToGuid,
   type FigNodeChangeExportRuntime
-} from '@open-pencil/fig/node-change'
-import { getCompiledSchema, getSchemaBytes } from '@open-pencil/kiwi/fig/codec'
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-import { decodeBinarySchema, compileSchema, ByteBuffer } from '@open-pencil/kiwi/schema-runtime'
+} from '@kalka/fig/node-change'
+import { getCompiledSchema, getSchemaBytes } from '@kalka/kiwi/fig/codec'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
+import { decodeBinarySchema, compileSchema, ByteBuffer } from '@kalka/kiwi/schema-runtime'
 import {
   ownsSlotContent,
   readBehaviour,
@@ -19,9 +19,9 @@ import {
   withBehaviour,
   type PluginDataEntry,
   type SceneGraph
-} from '@open-pencil/scene-graph'
-import { fractionalPosition } from '@open-pencil/scene-graph/order-keys'
-import type { GUID } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/scene-graph'
+import { fractionalPosition } from '@kalka/scene-graph/order-keys'
+import type { GUID } from '@kalka/scene-graph/primitives'
 
 import type { SkiaRenderer } from '#core/canvas'
 import { CANVAS_BG_COLOR, IS_BROWSER, IS_TAURI } from '#core/constants'

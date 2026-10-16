@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 
-import { type FigmaNodeProxy } from '@open-pencil/core/figma-api'
-import { encodePathCommandsBlob } from '@open-pencil/fig/node-change'
-import type { SceneNode } from '@open-pencil/scene-graph'
+import { type FigmaNodeProxy } from '@kalka/core/figma-api'
+import { encodePathCommandsBlob } from '@kalka/fig/node-change'
+import type { SceneNode } from '@kalka/scene-graph'
 
 import { createAPI, solidFill } from '../helpers'
 

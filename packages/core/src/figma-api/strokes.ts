@@ -1,6 +1,6 @@
-import { recordInstanceOverride } from '@open-pencil/scene-graph'
-import type { SceneGraph, SceneNode, Stroke } from '@open-pencil/scene-graph'
-import { copyStroke } from '@open-pencil/scene-graph/copy'
+import { recordInstanceOverride } from '@kalka/scene-graph'
+import type { SceneGraph, SceneNode, Stroke } from '@kalka/scene-graph'
+import { copyStroke } from '@kalka/scene-graph/copy'
 
 /**
  * Sets the weight of all of a node's strokes and the weight it keeps with none, as Figma's

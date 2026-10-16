@@ -1,6 +1,6 @@
 import { writeFile } from 'node:fs/promises'
 
-import { CORNER_ROTATE_ZONE, HANDLE_HIT_RADIUS } from '@open-pencil/core/constants'
+import { CORNER_ROTATE_ZONE, HANDLE_HIT_RADIUS } from '@kalka/core/constants'
 
 import { expect, test, useEditorSetupWithClear } from '#tests/e2e/fixtures'
 import { expectDefined } from '#tests/helpers/assert'

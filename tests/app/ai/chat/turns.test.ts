@@ -4,7 +4,7 @@ import { afterEach, beforeEach, expect, spyOn, test } from 'bun:test'
 import type { ToolExecutionOptions, UIMessage } from 'ai'
 import { ref, shallowRef, toRaw } from 'vue'
 
-import { FigmaAPI } from '@open-pencil/core/figma-api'
+import { FigmaAPI } from '@kalka/core/figma-api'
 
 import { REVERTED_TURN_CONTEXT_MARKER } from '@/app/ai/chat/context'
 import { snapshotMessages } from '@/app/ai/chat/history/messages'

@@ -1,4 +1,4 @@
-import type { VariableAnyValue, VariableDataEntry } from '@open-pencil/kiwi/fig/codec'
+import type { VariableAnyValue, VariableDataEntry } from '@kalka/kiwi/fig/codec'
 
 type Reference = NonNullable<VariableAnyValue['alias']>
 interface LinearValue {

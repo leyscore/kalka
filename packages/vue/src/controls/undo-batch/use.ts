@@ -1,7 +1,7 @@
 import { tryOnScopeDispose, useTimeoutFn } from '@vueuse/core'
 import { getCurrentInstance, onDeactivated } from 'vue'
 
-import type { UndoManager } from '@open-pencil/scene-graph'
+import type { UndoManager } from '@kalka/scene-graph'
 
 const BATCH_IDLE_MS = 300
 

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import type { MaskType } from '@open-pencil/scene-graph'
-import { useI18n, useMask } from '@open-pencil/vue'
+import type { MaskType } from '@kalka/scene-graph'
+import { useI18n, useMask } from '@kalka/vue'
 
 import PanelFieldGroup from '@/components/ui/panel/PanelFieldGroup.vue'
 import PanelSection from '@/components/ui/panel/PanelSection.vue'

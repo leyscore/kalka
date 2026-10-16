@@ -29,7 +29,7 @@ async function problem(agent: 'acp' | 'pi', lookup: () => Promise<AgentLookup>) 
 describe('assertAgentReady', () => {
   test('lets a chat start when its companions match the app', async () => {
     const lookup = installed(
-      { '@open-pencil/harness': '0.0.2', '@open-pencil/mcp': '0.0.2' },
+      { '@kalka/harness': '0.0.2', '@kalka/mcp': '0.0.2' },
       'openpencil-harness',
       'openpencil-mcp-http'
     )
@@ -40,11 +40,11 @@ describe('assertAgentReady', () => {
   test('names the missing or mismatched companion', async () => {
     expect(await problem('pi', installed({}, 'openpencil-mcp-http'))).toBe('companion-missing')
     expect(
-      await problem('pi', installed({ '@open-pencil/harness': '0.12.0' }, 'openpencil-harness'))
+      await problem('pi', installed({ '@kalka/harness': '0.12.0' }, 'openpencil-harness'))
     ).toBe('companion-outdated')
-    expect(
-      await problem('acp', installed({ '@open-pencil/mcp': '0.12.0' }, 'openpencil-mcp-http'))
-    ).toBe('mcp-outdated')
+    expect(await problem('acp', installed({ '@kalka/mcp': '0.12.0' }, 'openpencil-mcp-http'))).toBe(
+      'mcp-outdated'
+    )
   })
 
   test('only Pi needs the Harness companion', async () => {

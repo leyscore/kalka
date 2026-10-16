@@ -7,7 +7,7 @@ import {
   type Effect,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { tryParseFigmaEffects } from '#core/figma-api/effects'
 

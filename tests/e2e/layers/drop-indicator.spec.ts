@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 
-import type { Vector } from '@open-pencil/scene-graph'
+import type { Vector } from '@kalka/scene-graph'
 
 import { CanvasHelper } from '#tests/helpers/canvas'
 

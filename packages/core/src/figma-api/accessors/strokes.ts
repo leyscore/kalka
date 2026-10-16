@@ -1,4 +1,4 @@
-import { newStrokeGeometry, type SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
+import { newStrokeGeometry, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
 
 import {
   nodeId,

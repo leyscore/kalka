@@ -1,5 +1,5 @@
-import type { SceneGraph, Variable, VariableType } from '@open-pencil/scene-graph'
-import { colorToHex } from '@open-pencil/scene-graph/color'
+import type { SceneGraph, Variable, VariableType } from '@kalka/scene-graph'
+import { colorToHex } from '@kalka/scene-graph/color'
 
 import { exportTokenStylesheet, type TokenExport } from '#core/tools/codegen/tokens'
 

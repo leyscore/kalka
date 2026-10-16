@@ -3,7 +3,7 @@ import {
   type SceneGraph,
   type SceneGraphEvents,
   type SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import type { SkiaRenderer } from '#core/canvas/renderer'
 

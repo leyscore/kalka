@@ -4,7 +4,7 @@ import { compact } from 'es-toolkit/array'
 import { omit } from 'es-toolkit/object'
 import { camelCase, upperFirst } from 'es-toolkit/string'
 
-import { es, vue } from '@open-pencil/emit'
+import { es, vue } from '@kalka/emit'
 
 import { claimName } from '../storybook/names'
 import type {

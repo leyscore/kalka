@@ -2,14 +2,14 @@
 import { ToolbarRoot } from 'reka-ui'
 import { computed, useTemplateRef } from 'vue'
 
-import type { EditorToolDef } from '@open-pencil/core/editor'
+import type { EditorToolDef } from '@kalka/core/editor'
 import {
   getToolbarToolSelection,
   isToolbarToolActive,
   toolbarToolTestId,
   ToolbarItem
-} from '@open-pencil/vue'
-import type { Tool } from '@open-pencil/vue'
+} from '@kalka/vue'
+import type { Tool } from '@kalka/vue'
 
 import ToolButton from '@/components/Toolbar/ToolButton.vue'
 import ToolFlyout from '@/components/Toolbar/ToolFlyout.vue'

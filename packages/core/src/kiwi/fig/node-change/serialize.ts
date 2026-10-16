@@ -10,5 +10,5 @@ export {
   sceneNodeToKiwi,
   type KiwiNodeChange,
   type SceneNodeToKiwiOptions
-} from '@open-pencil/fig/node-change'
+} from '@kalka/fig/node-change'
 export { buildFontDigestMap, settleFontDigestMap } from './font/digests'

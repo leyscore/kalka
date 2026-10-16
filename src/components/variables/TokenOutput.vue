@@ -11,8 +11,8 @@ import {
 import { tv } from 'tailwind-variants'
 import { computed } from 'vue'
 
-import type { TokenStylesheetFormat } from '@open-pencil/dom-css/export'
-import { useEditor, useI18n, useSceneComputed } from '@open-pencil/vue'
+import type { TokenStylesheetFormat } from '@kalka/dom-css/export'
+import { useEditor, useI18n, useSceneComputed } from '@kalka/vue'
 
 import CodeViewer from '@/components/code-editor/CodeViewer.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
@@ -42,7 +42,7 @@ const collectionVariables = useSceneComputed(() => [
  */
 const stylesheet = computedAsync(async () => {
   const ids = new Set(collectionVariables.value.map((variable) => variable.id))
-  const { tokenStylesheet } = await import('@open-pencil/dom-css/export')
+  const { tokenStylesheet } = await import('@kalka/dom-css/export')
   const { css } = await tokenStylesheet(editor.graph, {
     format: 'css',
     include: (variable) => ids.has(variable.id)

@@ -23,7 +23,7 @@ It exposes:
 ## Usage
 
 ```ts
-import { useTypography } from '@open-pencil/vue'
+import { useTypography } from '@kalka/vue'
 
 const typography = useTypography()
 ```

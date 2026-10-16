@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import { useCollaborationMessages } from '@open-pencil/vue'
+import { useCollaborationMessages } from '@kalka/vue'
 
 import { useCollabIdentity } from '@/app/collab/identity'
 import SettingsGroup from '@/components/settings/layout/SettingsGroup.vue'

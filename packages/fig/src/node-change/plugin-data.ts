@@ -1,7 +1,7 @@
 import { omit } from 'es-toolkit/object'
 
-import type { NodeChange, PluginData, PluginRelaunchData } from '@open-pencil/kiwi/fig/codec'
-import { guidToString } from '@open-pencil/kiwi/fig/guid'
+import type { NodeChange, PluginData, PluginRelaunchData } from '@kalka/kiwi/fig/codec'
+import { guidToString } from '@kalka/kiwi/fig/guid'
 import {
   clampExportScale,
   hasPluginData,
@@ -14,8 +14,8 @@ import {
   type PluginDataField,
   type PluginRelaunchDataEntry,
   type SceneNode
-} from '@open-pencil/scene-graph'
-import type { Rect } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/scene-graph'
+import type { Rect } from '@kalka/scene-graph/primitives'
 
 import { readEffectiveFigmaRawField } from '../source-metadata'
 import {

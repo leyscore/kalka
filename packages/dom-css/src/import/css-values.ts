@@ -1,5 +1,5 @@
-import type { Fill, Stroke } from '@open-pencil/scene-graph'
-import { parseCSSColor, parseCSSNumber } from '@open-pencil/scene-graph/css'
+import type { Fill, Stroke } from '@kalka/scene-graph'
+import { parseCSSColor, parseCSSNumber } from '@kalka/scene-graph/css'
 
 import type { DesignStyleDeclaration } from '../types'
 import { paintColor } from './paint'

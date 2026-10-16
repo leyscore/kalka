@@ -5,7 +5,7 @@ import {
   parseShaderLayer,
   SHADER_PRESET_INFO,
   shaderParameter
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 describe('shader layers', () => {
   test('a new layer has every parameter of its preset at its default', () => {

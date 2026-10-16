@@ -2,7 +2,7 @@ import {
   isSelectionScopeTool,
   SELECTION_SCOPE_FILE_OUTPUT_ERROR,
   SELECTION_SCOPE_TOOLS
-} from '@open-pencil/mcp/tools'
+} from '@kalka/mcp/tools'
 
 import type { EditorStore } from '@/app/editor/active-store'
 

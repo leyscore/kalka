@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 
-import { MCP_AGENT_HEADER } from '@open-pencil/core/constants'
+import { MCP_AGENT_HEADER } from '@kalka/core/constants'
 
 import { replaceMCPConnectionSettings, setMCPConnectionCredential } from '@/app/integrations/mcp'
 import { buildPiMCPServers } from '@/app/integrations/mcp/pi'

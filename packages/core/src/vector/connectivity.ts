@@ -1,9 +1,4 @@
-import type {
-  VectorNetwork,
-  VectorRegion,
-  VectorSegment,
-  VectorVertex
-} from '@open-pencil/scene-graph'
+import type { VectorNetwork, VectorRegion, VectorSegment, VectorVertex } from '@kalka/scene-graph'
 
 export function findConnectedComponents(network: VectorNetwork): number[][] {
   const n = network.vertices.length

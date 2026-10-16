@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 
-import { FigmaAPI } from '@open-pencil/core/figma-api'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { FigmaAPI } from '@kalka/core/figma-api'
+import { SceneGraph } from '@kalka/scene-graph'
 
 test('Figma API edits reconcile existing scaled bindings without an editor', () => {
   const graph = new SceneGraph()

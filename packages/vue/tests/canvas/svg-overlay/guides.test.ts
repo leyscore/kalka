@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { guideRedlineLayer, guidesLayer } from '#vue/canvas/svg-overlay/layers/guides'
 import type { OverlayContext } from '#vue/canvas/svg-overlay/layers/selection'

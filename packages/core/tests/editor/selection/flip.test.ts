@@ -3,7 +3,7 @@ import { describe, expect, test } from 'bun:test'
 import { expectDefined, getNodeOrThrow } from '#core-tests/helpers/assert'
 import { createRect, firstPageId } from '#core-tests/helpers/scene'
 
-import { SceneGraph } from '@open-pencil/core'
+import { SceneGraph } from '@kalka/core'
 
 describe('flip', () => {
   test('flipX defaults to false', () => {
@@ -41,9 +41,9 @@ describe('flip', () => {
 
 describe('flip roundtrip via kiwi', () => {
   async function roundtrip(graph: SceneGraph) {
-    const { initCodec } = await import('@open-pencil/kiwi/fig/codec')
-    const { parseFigFile } = await import('@open-pencil/core/kiwi')
-    const { exportFigFile } = await import('@open-pencil/core/io/formats/fig')
+    const { initCodec } = await import('@kalka/kiwi/fig/codec')
+    const { parseFigFile } = await import('@kalka/core/kiwi')
+    const { exportFigFile } = await import('@kalka/core/io/formats/fig')
     await initCodec()
     const buf = await exportFigFile(graph)
     return parseFigFile(buf.slice().buffer)

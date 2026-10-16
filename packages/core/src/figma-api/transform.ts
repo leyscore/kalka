@@ -4,8 +4,8 @@ import {
   localTransformFromWorld,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/scene-graph'
-import Matrix, { type Mat3 } from '@open-pencil/scene-graph/matrix'
+} from '@kalka/scene-graph'
+import Matrix, { type Mat3 } from '@kalka/scene-graph/matrix'
 
 import { figmaRotation } from '#core/geometry/figma'
 

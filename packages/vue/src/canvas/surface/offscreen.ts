@@ -1,9 +1,9 @@
 import { useResizeObserver } from '@vueuse/core'
 import { onScopeDispose, type Ref } from 'vue'
 
-import { SkiaRenderer } from '@open-pencil/core/canvas'
-import { getCanvasKit } from '@open-pencil/core/canvaskit'
-import type { Editor } from '@open-pencil/core/editor'
+import { SkiaRenderer } from '@kalka/core/canvas'
+import { getCanvasKit } from '@kalka/core/canvaskit'
+import type { Editor } from '@kalka/core/editor'
 
 /**
  * CanvasKit without a screen. The DOM scene draws everything the user sees; Skia still serves

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { useAutomationMessages, useCommonMessages, useSettingsMessages } from '@open-pencil/vue'
+import { useAutomationMessages, useCommonMessages, useSettingsMessages } from '@kalka/vue'
 
 import {
   mcpAuthenticationEnabled,

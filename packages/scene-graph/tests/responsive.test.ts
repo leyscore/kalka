@@ -10,7 +10,7 @@ import {
   responsiveOverrides,
   SceneGraph,
   type SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 function page() {
   const graph = new SceneGraph()

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 
-import { canTakeHTMLTag, defaultTagForNode } from '@open-pencil/dom-css/export'
-import { classOverrides, HTML_TAGS, parseHTMLClasses, parseHTMLTag } from '@open-pencil/scene-graph'
-import { useI18n } from '@open-pencil/vue'
+import { canTakeHTMLTag, defaultTagForNode } from '@kalka/dom-css/export'
+import { classOverrides, HTML_TAGS, parseHTMLClasses, parseHTMLTag } from '@kalka/scene-graph'
+import { useI18n } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import {

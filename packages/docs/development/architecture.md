@@ -43,13 +43,13 @@ The UI follows Figma's UI3 layout: toolbar at the bottom, navigation on the left
 
 ### Canvas (DOM scene)
 
-Every top-level layer (an artboard) is drawn as its own page in a sandboxed iframe (`allow-same-origin`, no scripts, a CSP that keeps it off the network). `DomSceneProjector` in `packages/vue/src/canvas/dom-scene/` projects layers to HTML and CSS through `@open-pencil/dom-css`, patches the DOM when the graph changes, and the browser lays out and paints the result. Text is edited in place with ProseMirror.
+Every top-level layer (an artboard) is drawn as its own page in a sandboxed iframe (`allow-same-origin`, no scripts, a CSP that keeps it off the network). `DomSceneProjector` in `packages/vue/src/canvas/dom-scene/` projects layers to HTML and CSS through `@kalka/dom-css`, patches the DOM when the graph changes, and the browser lays out and paints the result. Text is edited in place with ProseMirror.
 
 Selection, hover, guides, handles and other editor feedback are drawn by an SVG overlay above the iframes (`packages/vue/src/canvas/svg-overlay/`).
 
 ### Layout
 
-The browser is the layout engine. `DomLayoutEngine` (installed through `installLayoutEngine` from `@open-pencil/core/layout`) measures each box after the DOM is written and stores it back into the layers' `x`, `y`, `width` and `height`, which become a cache of what the browser computed. Graphs the canvas does not draw, such as other pages, headless CLI runs and export previews, still use Yoga WASM.
+The browser is the layout engine. `DomLayoutEngine` (installed through `installLayoutEngine` from `@kalka/core/layout`) measures each box after the DOM is written and stores it back into the layers' `x`, `y`, `width` and `height`, which become a cache of what the browser computed. Graphs the canvas does not draw, such as other pages, headless CLI runs and export previews, still use Yoga WASM.
 
 ### CanvasKit
 
@@ -57,7 +57,7 @@ CanvasKit (Skia WASM) no longer draws the canvas. It renders raster exports wher
 
 ### HTML model
 
-Layers carry what the exported page needs: an HTML tag and class names (`htmlTag`, `htmlClasses`), document classes holding shared styles (`cssClasses` on the root), and breakpoint artboards that share their primary's layers (`responsiveSource`), exported as `@media` rules. The projection, the class model and the breakpoint cascade live in `@open-pencil/scene-graph` and `@open-pencil/dom-css`.
+Layers carry what the exported page needs: an HTML tag and class names (`htmlTag`, `htmlClasses`), document classes holding shared styles (`cssClasses` on the root), and breakpoint artboards that share their primary's layers (`responsiveSource`), exported as `@media` rules. The projection, the class model and the breakpoint cascade live in `@kalka/scene-graph` and `@kalka/dom-css`.
 
 ### Scene Graph
 

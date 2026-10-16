@@ -2,15 +2,15 @@ import { beforeAll, describe, expect, test } from 'bun:test'
 
 import { expectDefined } from '#core-tests/helpers/assert'
 
-import { FigmaAPI } from '@open-pencil/core/figma-api'
+import { FigmaAPI } from '@kalka/core/figma-api'
 import {
   createCanvasKitRasterCodec,
   headlessRenderNodes,
   initCanvasKit
-} from '@open-pencil/core/io/formats/raster'
-import { ALL_TOOLS } from '@open-pencil/core/tools'
-import { SceneGraph, type Color } from '@open-pencil/scene-graph'
-import type { Rect } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/core/io/formats/raster'
+import { ALL_TOOLS } from '@kalka/core/tools'
+import { SceneGraph, type Color } from '@kalka/scene-graph'
+import type { Rect } from '@kalka/scene-graph/primitives'
 
 type VisualDiff = {
   error?: string

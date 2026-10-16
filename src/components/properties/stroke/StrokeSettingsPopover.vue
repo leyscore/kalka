@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { PopoverRoot, PopoverTrigger, PopoverPortal, PopoverContent, PopoverClose } from 'reka-ui'
 
-import type { Stroke } from '@open-pencil/scene-graph'
-import { useI18n, useRetainedPopup } from '@open-pencil/vue'
+import type { Stroke } from '@kalka/scene-graph'
+import { useI18n, useRetainedPopup } from '@kalka/vue'
 
 import AppButton from '@/components/ui/button/AppButton.vue'
 import { usePopoverUI } from '@/components/ui/overlay/popover'

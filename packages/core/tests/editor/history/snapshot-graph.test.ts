@@ -2,13 +2,13 @@ import { describe, expect, test } from 'bun:test'
 
 import { expectDefined } from '#core-tests/helpers/assert'
 
-import { createEditor, graphFromPageSnapshot } from '@open-pencil/core/editor'
+import { createEditor, graphFromPageSnapshot } from '@kalka/core/editor'
 import {
   comparePNGs,
   createCanvasKitRasterCodec,
   initCanvasKit,
   renderRegionToImage
-} from '@open-pencil/core/io/formats/raster'
+} from '@kalka/core/io/formats/raster'
 
 function setup() {
   const editor = createEditor()

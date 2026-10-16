@@ -2,7 +2,7 @@
 import { templateRef } from '@vueuse/core'
 import { nextTick, watch } from 'vue'
 
-import { useI18n, useViewportKind } from '@open-pencil/vue'
+import { useI18n, useViewportKind } from '@kalka/vue'
 
 import { activeTab } from '@/app/tabs'
 import AppInput from '@/components/ui/input/AppInput.vue'

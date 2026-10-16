@@ -5,8 +5,8 @@ import type { Node as ProseMirrorNode } from 'prosemirror-model'
 import { AllSelection, EditorState, TextSelection, type Command } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
 
-import type { Editor, ExternalTextEditor } from '@open-pencil/core/editor'
-import type { CharacterStyleOverride, SceneNode } from '@open-pencil/scene-graph'
+import type { Editor, ExternalTextEditor } from '@kalka/core/editor'
+import type { CharacterStyleOverride, SceneNode } from '@kalka/scene-graph'
 
 import type { DomSceneProjector } from '#vue/canvas/dom-scene/projector'
 import { docToText, textSchema, textToDoc } from '#vue/canvas/dom-scene/text/schema'

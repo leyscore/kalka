@@ -5,7 +5,7 @@ import { join } from 'node:path'
 
 import type { WebSocket } from 'ws'
 
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { startServer, type ServerHandle } from '#mcp/server'
 import { parseDiscoveryInfo } from '#mcp/transport/discovery'

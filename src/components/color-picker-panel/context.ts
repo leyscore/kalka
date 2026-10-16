@@ -1,9 +1,9 @@
 import { computed, inject, provide, proxyRefs } from 'vue'
 import type { InjectionKey, ShallowUnwrapRef } from 'vue'
 
-import type { Color } from '@open-pencil/scene-graph/primitives'
-import { useColorModel, useI18n } from '@open-pencil/vue'
-import type { ColorFieldFormat, OkHCLControls } from '@open-pencil/vue'
+import type { Color } from '@kalka/scene-graph/primitives'
+import { useColorModel, useI18n } from '@kalka/vue'
+import type { ColorFieldFormat, OkHCLControls } from '@kalka/vue'
 
 interface ColorPanelProps {
   color: Color

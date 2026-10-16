@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 
-import { renderTree } from '@open-pencil/core/design-jsx'
-import type { TreeNode } from '@open-pencil/design-jsx'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { renderTree } from '@kalka/core/design-jsx'
+import type { TreeNode } from '@kalka/design-jsx'
+import { SceneGraph } from '@kalka/scene-graph'
 
 describe('renderTree onNode', () => {
   test('reports every element with the layer rendered from it', async () => {

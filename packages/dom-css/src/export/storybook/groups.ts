@@ -1,8 +1,8 @@
 import { behaviourArgs } from '#dom-css/behaviours/args'
 import { uniq } from 'es-toolkit/array'
 
-import { readBehaviour, type SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
-import { deriveSlashVariantProperties } from '@open-pencil/scene-graph/variant-properties'
+import { readBehaviour, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
+import { deriveSlashVariantProperties } from '@kalka/scene-graph/variant-properties'
 
 import type { StoryProp } from './module'
 import { claimName } from './names'

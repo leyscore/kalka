@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import type { Editor } from '@open-pencil/core/editor'
-import { createDefaultNode, type SceneNode } from '@open-pencil/scene-graph'
+import type { Editor } from '@kalka/core/editor'
+import { createDefaultNode, type SceneNode } from '@kalka/scene-graph'
 
 import { resolveAutoLayoutHover } from '#vue/shared/input/auto-layout-hover'
 

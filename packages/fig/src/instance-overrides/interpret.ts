@@ -1,5 +1,5 @@
-import type { GUID, NodeChange } from '@open-pencil/kiwi/fig/codec'
-import { guidToString } from '@open-pencil/kiwi/fig/guid'
+import type { GUID, NodeChange } from '@kalka/kiwi/fig/codec'
+import { guidToString } from '@kalka/kiwi/fig/guid'
 
 import { cloneRecord } from '../node-change/clone'
 import { mergeVariableConsumptionMaps } from '../node-change/variable/bindings'

@@ -2,11 +2,7 @@ import { describe, expect, test } from 'bun:test'
 
 import { applyDocumentMetadata } from '#fig/document/metadata'
 
-import {
-  OPEN_PENCIL_PLUGIN_DATA,
-  OPEN_PENCIL_PLUGIN_ID,
-  SceneGraph
-} from '@open-pencil/scene-graph'
+import { OPEN_PENCIL_PLUGIN_DATA, OPEN_PENCIL_PLUGIN_ID, SceneGraph } from '@kalka/scene-graph'
 
 function enabledLibraries(value: string) {
   const graph = new SceneGraph()

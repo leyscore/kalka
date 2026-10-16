@@ -2,8 +2,8 @@
 import { tv } from 'tailwind-variants'
 import { computed } from 'vue'
 
-import type { ConstraintType } from '@open-pencil/scene-graph'
-import { ConstraintsControlRoot, MIXED, useI18n } from '@open-pencil/vue'
+import type { ConstraintType } from '@kalka/scene-graph'
+import { ConstraintsControlRoot, MIXED, useI18n } from '@kalka/vue'
 
 import ConstraintsPinControl from '@/components/properties/constraints/ConstraintsPinControl.vue'
 import PanelFieldGroup from '@/components/ui/panel/PanelFieldGroup.vue'

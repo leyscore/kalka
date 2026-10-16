@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 
 import type { CanvasKit, Paragraph } from 'canvaskit-wasm'
 
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { initCanvasKit } from '#cli/headless'
 import { buildParagraph, nodeFontReadiness } from '#core/canvas/text'

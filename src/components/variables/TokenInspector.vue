@@ -4,14 +4,14 @@ import { omit } from 'es-toolkit'
 import { tv } from 'tailwind-variants'
 import { computed, reactive, useId, watch } from 'vue'
 
-import type { VariableTokenFields } from '@open-pencil/core/editor'
+import type { VariableTokenFields } from '@kalka/core/editor'
 import {
   cssNameCodeSyntax,
   explicitCSSName,
   loadTokenValidator,
   parseCSSName,
   variableUnit
-} from '@open-pencil/dom-css/export'
+} from '@kalka/dom-css/export'
 import {
   TOKEN_UNITS,
   tokenNumberFromUnit,
@@ -22,9 +22,9 @@ import {
   type VariableCollection,
   type VariableScope,
   type VariableValue
-} from '@open-pencil/scene-graph'
-import { randomHex } from '@open-pencil/scene-graph/random'
-import { useI18n } from '@open-pencil/vue'
+} from '@kalka/scene-graph'
+import { randomHex } from '@kalka/scene-graph/random'
+import { useI18n } from '@kalka/vue'
 
 import type { AliasCandidate, TokenRow } from '@/app/editor/tokens/model'
 import { SCOPES_BY_TYPE } from '@/app/editor/tokens/scopes'

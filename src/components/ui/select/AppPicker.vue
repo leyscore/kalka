@@ -75,7 +75,7 @@ import {
 import { tv } from 'tailwind-variants'
 import { computed, shallowRef, useTemplateRef, watch, type ComponentPublicInstance } from 'vue'
 
-import { fuzzySearch, useRetainedPopup } from '@open-pencil/vue'
+import { fuzzySearch, useRetainedPopup } from '@kalka/vue'
 
 import IconButton from '@/components/ui/button/IconButton.vue'
 import Tip from '@/components/ui/overlay/Tip.vue'

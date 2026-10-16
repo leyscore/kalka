@@ -7,7 +7,7 @@ import type {
   Variable,
   VariableCollection,
   VariableCollectionMode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { fileSegment, placeTokens, tokenPath, tokenReference, tokenTree } from './paths'
 import { styleTokens, withOriginalName, type TokenReferences } from './styles'

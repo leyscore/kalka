@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test'
 
-import { SceneGraph, UndoManager, type SceneNode } from '@open-pencil/scene-graph'
+import { SceneGraph, UndoManager, type SceneNode } from '@kalka/scene-graph'
 
 import { getNodeOrThrow } from '../helpers/assert'
 

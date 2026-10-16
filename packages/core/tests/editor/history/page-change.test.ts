@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 
 import { expectDefined } from '#core-tests/helpers/assert'
 
-import { createEditor, graphFromPageChange, isEmptyPageChange } from '@open-pencil/core/editor'
+import { createEditor, graphFromPageChange, isEmptyPageChange } from '@kalka/core/editor'
 
 function setup() {
   const editor = createEditor()

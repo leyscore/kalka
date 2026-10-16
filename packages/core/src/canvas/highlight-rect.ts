@@ -1,6 +1,6 @@
 import type { Canvas, Paint } from 'canvaskit-wasm'
 
-import type { SceneGraph } from '@open-pencil/scene-graph'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 import { FLASH_PADDING, FLASH_STROKE_WIDTH, FLASH_RADIUS } from '#core/constants'
 

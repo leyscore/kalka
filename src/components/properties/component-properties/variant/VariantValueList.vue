@@ -2,8 +2,8 @@
 import { omit } from 'es-toolkit'
 import { ref, type ComponentPublicInstance } from 'vue'
 
-import type { VariantMutationResult } from '@open-pencil/core/editor'
-import { useFlatReorderDrag, useI18n } from '@open-pencil/vue'
+import type { VariantMutationResult } from '@kalka/core/editor'
+import { useFlatReorderDrag, useI18n } from '@kalka/vue'
 
 import IconButton from '@/components/ui/button/IconButton.vue'
 import AppInput from '@/components/ui/input/AppInput.vue'

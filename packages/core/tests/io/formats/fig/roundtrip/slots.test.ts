@@ -10,10 +10,10 @@ import {
   parseFigFile,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/core'
-import { parseFigBuffer } from '@open-pencil/fig'
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-import { slotPropertyId } from '@open-pencil/scene-graph'
+} from '@kalka/core'
+import { parseFigBuffer } from '@kalka/fig'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
+import { slotPropertyId } from '@kalka/scene-graph'
 
 let original: SceneGraph
 let reopened: SceneGraph

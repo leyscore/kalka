@@ -1,5 +1,5 @@
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-import type { DerivedTextGlyph } from '@open-pencil/scene-graph'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
+import type { DerivedTextGlyph } from '@kalka/scene-graph'
 
 type DerivedTextData = NonNullable<NodeChange['derivedTextData']>
 

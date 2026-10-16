@@ -5,7 +5,7 @@ import {
   captureTransferredState,
   prepareGraphTransfer,
   SceneGraph
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 test('history captures post-placement geometry and separates reused image ownership', () => {
   const source = new SceneGraph(),

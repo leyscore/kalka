@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 
-import type { LibraryAssetChange } from '@open-pencil/core/library'
+import type { LibraryAssetChange } from '@kalka/core/library'
 import {
   ensureLibraryAssetKeys,
   publishableLibraryRoots,
   readSourceLibraryPublication
-} from '@open-pencil/core/library'
-import { useI18n } from '@open-pencil/vue'
+} from '@kalka/core/library'
+import { useI18n } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import { publishLibraryDialogOpen, useLibraryService } from '@/app/libraries'

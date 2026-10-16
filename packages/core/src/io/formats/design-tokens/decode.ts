@@ -10,9 +10,9 @@ import {
   type TokenUnit,
   type VariableScope,
   type VariableType
-} from '@open-pencil/scene-graph'
-import { parseDisplayableColor } from '@open-pencil/scene-graph/color'
-import { parseCSSNumber } from '@open-pencil/scene-graph/css'
+} from '@kalka/scene-graph'
+import { parseDisplayableColor } from '@kalka/scene-graph/color'
+import { parseCSSNumber } from '@kalka/scene-graph/css'
 
 import type { ReadToken } from './read'
 import { OPENPENCIL_EXTENSION } from './types'

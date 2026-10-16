@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 
 import { renderNodesToHTML } from '#core/io/formats/html'
 
-import { counterpartIn, createBreakpoint, SceneGraph } from '@open-pencil/scene-graph'
+import { counterpartIn, createBreakpoint, SceneGraph } from '@kalka/scene-graph'
 
 describe('HTML export of a page with breakpoints', () => {
   test('each breakpoint writes what it changes below the wider artboard’s width', async () => {

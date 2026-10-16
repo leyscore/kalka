@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 
-import { createEditor } from '@open-pencil/core/editor'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { createEditor } from '@kalka/core/editor'
+import { SceneGraph } from '@kalka/scene-graph'
 
 /** A layer saved at 24 while its binding resolves to 40, as layers in imported files can be. */
 function drifted() {

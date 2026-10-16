@@ -7,8 +7,8 @@ description: Build your own editor shell with provideEditor, CanvasRoot, menus, 
 
 A typical Kalka Vue app has three layers:
 
-1. `@open-pencil/core` creates the editor
-2. `@open-pencil/vue` adapts it into Vue composables and headless primitives
+1. `@kalka/core` creates the editor
+2. `@kalka/vue` adapts it into Vue composables and headless primitives
 3. your app renders the shell, styling, and product UX
 
 ## Why this matters
@@ -34,15 +34,15 @@ A practical shell often looks like this:
 ```vue
 <script setup lang="ts">
 import { reactive } from 'vue'
-import { createDefaultEditorState, createEditor } from '@open-pencil/core/editor'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { createDefaultEditorState, createEditor } from '@kalka/core/editor'
+import { SceneGraph } from '@kalka/scene-graph'
 import {
   provideEditor,
   CanvasRoot,
   CanvasSurface,
   ToolbarRoot,
   PageListRoot,
-} from '@open-pencil/vue'
+} from '@kalka/vue'
 
 const graph = new SceneGraph()
 const page = graph.getPages()[0]

@@ -1,6 +1,6 @@
 import type { Canvas } from 'canvaskit-wasm'
 
-import type { SceneNode, SceneGraph } from '@open-pencil/scene-graph'
+import type { SceneNode, SceneGraph } from '@kalka/scene-graph'
 
 import type { RenderOverlays, SkiaRenderer } from '#core/canvas/renderer'
 import { SECTION_TITLE_RADIUS } from '#core/constants'

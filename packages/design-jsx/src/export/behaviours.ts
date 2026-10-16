@@ -7,7 +7,7 @@ import {
   type BehaviourKind,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { REKA_ELEMENTS, rekaRole } from '../behaviours'
 import type { JSXProp, JSXValue } from './value'

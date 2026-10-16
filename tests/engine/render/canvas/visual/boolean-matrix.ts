@@ -1,7 +1,7 @@
 import { writeFile } from 'node:fs/promises'
 
-import type { SceneNode } from '@open-pencil/scene-graph'
-import { parseSVGPath } from '@open-pencil/scene-graph/parse-path'
+import type { SceneNode } from '@kalka/scene-graph'
+import { parseSVGPath } from '@kalka/scene-graph/parse-path'
 
 import { initCanvasKit } from '#cli/headless'
 import { SkiaRenderer } from '#core/canvas'

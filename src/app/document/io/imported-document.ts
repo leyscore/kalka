@@ -1,5 +1,5 @@
-import { createEditor, type Editor } from '@open-pencil/core/editor'
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import { createEditor, type Editor } from '@kalka/core/editor'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 import { loadFont } from '@/app/editor/fonts'
 import type { EditorPreparationHandle as DocumentLoadSession } from '@/app/editor/preparation/types'

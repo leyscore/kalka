@@ -1,5 +1,5 @@
-import type { RenderResult } from '@open-pencil/design-jsx'
-import type { SceneGraph } from '@open-pencil/scene-graph'
+import type { RenderResult } from '@kalka/design-jsx'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 import { findPageId } from '#core/io/subgraph'
 import { computeAllLayouts } from '#core/layout'

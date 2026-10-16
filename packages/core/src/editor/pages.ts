@@ -1,7 +1,7 @@
 import { limitAsync } from 'es-toolkit/promise'
 
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import {
   getPageColor,

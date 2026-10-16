@@ -1,4 +1,4 @@
-import type { Tool } from '@open-pencil/core/editor'
+import type { Tool } from '@kalka/core/editor'
 import type {
   DerivedTextGlyph,
   GeometryPath,
@@ -7,9 +7,9 @@ import type {
   Stroke,
   TextPathData,
   VectorNetwork
-} from '@open-pencil/scene-graph'
-import type { Rect, Vector } from '@open-pencil/scene-graph/primitives'
-import type { ResizeSnapshot } from '@open-pencil/scene-graph/resize'
+} from '@kalka/scene-graph'
+import type { Rect, Vector } from '@kalka/scene-graph/primitives'
+import type { ResizeSnapshot } from '@kalka/scene-graph/resize'
 
 export type HandlePosition = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w'
 

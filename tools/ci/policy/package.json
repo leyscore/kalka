@@ -1,5 +1,5 @@
 {
-  "name": "@open-pencil/ci-policy-tools",
+  "name": "@kalka/ci-policy-tools",
   "private": true,
   "type": "module",
   "imports": {
@@ -9,6 +9,6 @@
     "test": "bun test tests"
   },
   "dependencies": {
-    "@open-pencil/package-artifacts-tools": "workspace:*"
+    "@kalka/package-artifacts-tools": "workspace:*"
   }
 }

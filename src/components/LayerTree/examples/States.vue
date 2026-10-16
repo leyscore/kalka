@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { LayerNode } from '@open-pencil/vue'
+import type { LayerNode } from '@kalka/vue'
 
 import type { LayerIssueMark } from '@/app/editor/design-check/layers'
 import LayerTreeNodeRow from '@/components/LayerTree/LayerTreeNodeRow.vue'

@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 
-import { materializeDocument } from '@open-pencil/fig'
-import { nodeChangeToProps } from '@open-pencil/fig/node-change'
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
+import { materializeDocument } from '@kalka/fig'
+import { nodeChangeToProps } from '@kalka/fig/node-change'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
 
 import { canvas, doc, node } from '../helpers'
 

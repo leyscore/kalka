@@ -6,7 +6,7 @@
  */
 import * as v from 'valibot'
 
-import { randomHex } from '@open-pencil/scene-graph/random'
+import { randomHex } from '@kalka/scene-graph/random'
 
 import { endAgentSession, readAgentSession } from '@/app/automation/agents'
 import { makeFigmaFromStore } from '@/app/automation/bridge/figma-factory'

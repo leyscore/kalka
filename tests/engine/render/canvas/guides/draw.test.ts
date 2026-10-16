@@ -1,7 +1,7 @@
 import { describe, expect, mock, test } from 'bun:test'
 
-import { createDefaultNode, SceneGraph } from '@open-pencil/scene-graph'
-import type { SceneNode } from '@open-pencil/scene-graph'
+import { createDefaultNode, SceneGraph } from '@kalka/scene-graph'
+import type { SceneNode } from '@kalka/scene-graph'
 
 import { drawGuides } from '#core/canvas/guides/draw'
 

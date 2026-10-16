@@ -1,4 +1,4 @@
-import type { DocumentAssemblyOptions } from '@open-pencil/fig'
+import type { DocumentAssemblyOptions } from '@kalka/fig'
 
 type Handler<K extends keyof DocumentAssemblyOptions> = NonNullable<DocumentAssemblyOptions[K]>
 

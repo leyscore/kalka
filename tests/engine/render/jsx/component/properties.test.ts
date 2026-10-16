@@ -1,8 +1,8 @@
 import { expect, expectTypeOf, test } from 'bun:test'
 
-import { renderTree } from '@open-pencil/core/design-jsx'
-import { Component, ComponentSet, type Frame, Instance, Text, node } from '@open-pencil/design-jsx'
-import type { ComponentPropertyDefinition, SceneNode } from '@open-pencil/scene-graph'
+import { renderTree } from '@kalka/core/design-jsx'
+import { Component, ComponentSet, type Frame, Instance, Text, node } from '@kalka/design-jsx'
+import type { ComponentPropertyDefinition, SceneNode } from '@kalka/scene-graph'
 
 import { getNodeOrThrow } from '#tests/helpers/assert'
 import { makeSceneGraph } from '#tests/helpers/scene'

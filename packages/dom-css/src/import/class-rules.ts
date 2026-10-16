@@ -4,7 +4,7 @@ import {
   SceneGraph,
   type CSSClass,
   type CSSClassKind
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import type { DesignStyleDeclaration } from '../types'
 import { parseStyleDeclarations } from './declarations'

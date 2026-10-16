@@ -10,9 +10,9 @@ import {
 import { tv } from 'tailwind-variants'
 import { computed, reactive, useId, watch } from 'vue'
 
-import { defaultModeAttributeName } from '@open-pencil/dom-css/export'
-import { isModeAttributeName, type VariableCollection } from '@open-pencil/scene-graph'
-import { useI18n } from '@open-pencil/vue'
+import { defaultModeAttributeName } from '@kalka/dom-css/export'
+import { isModeAttributeName, type VariableCollection } from '@kalka/scene-graph'
+import { useI18n } from '@kalka/vue'
 
 import {
   changeConditionKind,

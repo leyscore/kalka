@@ -1,6 +1,6 @@
-import type { NodeChange, VariableDataValuesEntry } from '@open-pencil/kiwi/fig/codec'
-import { guidToString } from '@open-pencil/kiwi/fig/guid'
-import type { SceneGraph, VariableValue } from '@open-pencil/scene-graph'
+import type { NodeChange, VariableDataValuesEntry } from '@kalka/kiwi/fig/codec'
+import { guidToString } from '@kalka/kiwi/fig/guid'
+import type { SceneGraph, VariableValue } from '@kalka/scene-graph'
 
 import { extractPluginData } from '../node-change/plugin-data'
 import { readVariableMetadata } from '../node-change/variable/metadata'

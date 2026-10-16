@@ -2,8 +2,8 @@
 import { PopoverClose, PopoverContent, PopoverPortal, PopoverRoot, PopoverTrigger } from 'reka-ui'
 import { computed, ref, watch } from 'vue'
 
-import { useI18n, useRetainedPopup } from '@open-pencil/vue'
-import type { SlotDefinitionControl, SlotInstanceOption } from '@open-pencil/vue'
+import { useI18n, useRetainedPopup } from '@kalka/vue'
+import type { SlotDefinitionControl, SlotInstanceOption } from '@kalka/vue'
 
 import AppButton from '@/components/ui/button/AppButton.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'

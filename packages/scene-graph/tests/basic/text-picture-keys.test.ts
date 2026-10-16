@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { SceneGraph } from '@kalka/scene-graph'
 
 describe('text rendering invalidation keys', () => {
   test('TEXT_PICTURE_KEYS contains rendered-picture properties', () => {

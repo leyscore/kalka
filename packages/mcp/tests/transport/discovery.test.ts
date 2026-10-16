@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { parseDiscoveryInfo } from '@open-pencil/mcp/discovery'
+import { parseDiscoveryInfo } from '@kalka/mcp/discovery'
 
 const VALID = {
   pid: 4242,

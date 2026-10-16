@@ -3,8 +3,8 @@ import { useFileDialog } from '@vueuse/core'
 import { DialogTitle } from 'reka-ui'
 import { computed, defineAsyncComponent, ref, shallowRef } from 'vue'
 
-import type { DesignTokenBundle } from '@open-pencil/core/io/formats/design-tokens'
-import { useI18n } from '@open-pencil/vue'
+import type { DesignTokenBundle } from '@kalka/core/io/formats/design-tokens'
+import { useI18n } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import { createTokenCopy } from '@/app/editor/tokens/copy'
@@ -57,7 +57,7 @@ tokenFiles.onChange((files) => {
   const picked = [...files]
   void (async () => {
     const sources = await readDesignTokenFiles(picked)
-    const { readDesignTokens } = await import('@open-pencil/core/io/formats/design-tokens')
+    const { readDesignTokens } = await import('@kalka/core/io/formats/design-tokens')
     importBundle.value = readDesignTokens(sources)
     importOpen.value = true
   })().catch(reportFailure)

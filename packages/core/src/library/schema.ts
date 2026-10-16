@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 
-import type { SceneNode, Variable, VariableCollection } from '@open-pencil/scene-graph'
+import type { SceneNode, Variable, VariableCollection } from '@kalka/scene-graph'
 
 import type { SerializedComponentLibraryRevision } from './serialization'
 import { COMPONENT_LIBRARY_SCHEMA_VERSION } from './types'

@@ -2,8 +2,8 @@
 import { compact } from 'es-toolkit'
 import { computed, ref, watch } from 'vue'
 
-import { iconNames } from '@open-pencil/scene-graph'
-import { useCommonMessages, useIconSearch, usePanelMessages } from '@open-pencil/vue'
+import { iconNames } from '@kalka/scene-graph'
+import { useCommonMessages, useIconSearch, usePanelMessages } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import { lastIconSet, recentIcons, rememberIcon } from '@/app/editor/icon-picker/history'

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useAIMessages } from '@open-pencil/vue'
+import { useAIMessages } from '@kalka/vue'
 
 import { useActiveEditorStoreRef } from '@/app/editor/active-store'
 import { followWorkingAgents } from '@/app/presence/registry'

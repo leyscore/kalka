@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { computeAllLayouts } from '@open-pencil/core/layout'
-import { parsePenFile, parseSize, type PenDocument, type PenNode } from '@open-pencil/pen'
+import { computeAllLayouts } from '@kalka/core/layout'
+import { parsePenFile, parseSize, type PenDocument, type PenNode } from '@kalka/pen'
 
 function parseLayoutDocument(children: PenNode[]) {
   const document: PenDocument = { version: '2.17', children }

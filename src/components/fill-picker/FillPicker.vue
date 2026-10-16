@@ -2,9 +2,9 @@
 import { PopoverContent, PopoverPortal, PopoverRoot, PopoverTrigger } from 'reka-ui'
 import { tv } from 'tailwind-variants'
 
-import type { Fill } from '@open-pencil/scene-graph'
-import { applySolidFillColor, FillRoot, useI18n, useRetainedPopup } from '@open-pencil/vue'
-import type { OkHCLControls } from '@open-pencil/vue'
+import type { Fill } from '@kalka/scene-graph'
+import { applySolidFillColor, FillRoot, useI18n, useRetainedPopup } from '@kalka/vue'
+import type { OkHCLControls } from '@kalka/vue'
 
 import ColorPickerPanel from '@/components/color-picker-panel/ColorPickerPanel.vue'
 import GradientEditor from '@/components/fill-picker/GradientEditor.vue'

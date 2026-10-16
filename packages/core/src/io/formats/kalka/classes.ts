@@ -1,18 +1,14 @@
 import { isEqual } from 'es-toolkit'
 
-import {
-  cssClassDeclarations,
-  cssClassStylesheet,
-  HTML_TAG_RESET_CSS
-} from '@open-pencil/dom-css/export'
-import { cssClassFromRule, parseClassRules, type ClassRule } from '@open-pencil/dom-css/import'
+import { cssClassDeclarations, cssClassStylesheet, HTML_TAG_RESET_CSS } from '@kalka/dom-css/export'
+import { cssClassFromRule, parseClassRules, type ClassRule } from '@kalka/dom-css/import'
 import {
   cssClassKind,
   documentCSSClasses,
   type CSSClass,
   type CSSClassKind,
   type SceneGraph
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 const STYLES_HEADER = `/*
  * Styles every page of this Kalka document shares: the document's classes, which layers name in

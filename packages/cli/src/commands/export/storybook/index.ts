@@ -12,13 +12,13 @@ import {
   sep
 } from 'node:path'
 
-import { BUILTIN_IO_FORMATS, IORegistry, vectorElement } from '@open-pencil/core/io'
+import { BUILTIN_IO_FORMATS, IORegistry, vectorElement } from '@kalka/core/io'
 import {
   exportStorybook,
   STORYBOOK_FRAMEWORKS,
   type StorybookFile,
   type StorybookFramework
-} from '@open-pencil/dom-css'
+} from '@kalka/dom-css'
 
 import { requireFile } from '#cli/app/client'
 import { applyExportFontPolicy } from '#cli/commands/export/font-policy'

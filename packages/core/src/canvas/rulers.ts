@@ -1,7 +1,7 @@
 import type { Canvas, CanvasKit } from 'canvaskit-wasm'
 
-import type { SceneNode, SceneGraph } from '@open-pencil/scene-graph'
-import { computeAbsoluteBounds } from '@open-pencil/scene-graph/geometry'
+import type { SceneNode, SceneGraph } from '@kalka/scene-graph'
+import { computeAbsoluteBounds } from '@kalka/scene-graph/geometry'
 
 import { getGuideScreenSegment } from '#core/canvas/guides/geometry'
 import type { GuideOverlayState, GuideSelection } from '#core/canvas/guides/types'

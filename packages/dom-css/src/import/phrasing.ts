@@ -1,6 +1,6 @@
 import { isEqual } from 'es-toolkit'
 
-import type { CharacterStyleOverride, StyleRun } from '@open-pencil/scene-graph'
+import type { CharacterStyleOverride, StyleRun } from '@kalka/scene-graph'
 
 import type { DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
 import { mergedStyle, pickStyle } from './css-values'

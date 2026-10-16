@@ -1,5 +1,5 @@
-import { IS_BROWSER } from '@open-pencil/core/constants'
-import type { DocumentColorSpace } from '@open-pencil/scene-graph'
+import { IS_BROWSER } from '@kalka/core/constants'
+import type { DocumentColorSpace } from '@kalka/scene-graph'
 
 export type PresentationColorSpace = 'srgb' | 'display-p3'
 

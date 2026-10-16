@@ -19,12 +19,12 @@ import { parseArgs } from 'node:util'
 
 import { $ } from 'bun'
 
-import { SkiaRenderer } from '@open-pencil/core/canvas'
-import { importClipboardNodes, parseFigmaClipboard } from '@open-pencil/core/clipboard'
-import { renderNodesToImage, initCanvasKit } from '@open-pencil/core/io'
-import { computeAllLayouts } from '@open-pencil/core/layout'
-import { fontManager } from '@open-pencil/core/text'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { SkiaRenderer } from '@kalka/core/canvas'
+import { importClipboardNodes, parseFigmaClipboard } from '@kalka/core/clipboard'
+import { renderNodesToImage, initCanvasKit } from '@kalka/core/io'
+import { computeAllLayouts } from '@kalka/core/layout'
+import { fontManager } from '@kalka/core/text'
+import { SceneGraph } from '@kalka/scene-graph'
 
 const { values: opts } = parseArgs({
   options: {

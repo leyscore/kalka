@@ -1,5 +1,5 @@
-import type { RenderColorSpace } from '@open-pencil/scene-graph/color'
-import { resolveNodeTextDirection } from '@open-pencil/scene-graph/text-direction'
+import type { RenderColorSpace } from '@kalka/scene-graph/color'
+import { resolveNodeTextDirection } from '@kalka/scene-graph/text-direction'
 
 import { computeContentBounds } from '#core/io/formats/raster'
 
@@ -30,7 +30,7 @@ import type {
   Fill,
   Stroke,
   CharacterStyleOverride
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import type { SVGExportContext } from './defs'
 import { svg, renderSVGNode } from './node'

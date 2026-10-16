@@ -1,4 +1,4 @@
-import type { RecordedWheelSample } from '@open-pencil/core/profiler'
+import type { RecordedWheelSample } from '@kalka/core/profiler'
 
 export type WheelSample = RecordedWheelSample
 

@@ -1,5 +1,5 @@
-import type { Editor } from '@open-pencil/core/editor'
-import { breakAtVertex, deleteVertex, vectorHandleParts } from '@open-pencil/core/vector'
+import type { Editor } from '@kalka/core/editor'
+import { breakAtVertex, deleteVertex, vectorHandleParts } from '@kalka/core/vector'
 
 import { pushNodeEditHistory } from './history'
 import { getLiveNetwork, setNodeEditNetwork } from './network'

@@ -8,8 +8,8 @@ import {
 } from 'reka-ui'
 import { computed } from 'vue'
 
-import type { VariableType } from '@open-pencil/scene-graph'
-import { useI18n, variablesAddTestId, vTestId } from '@open-pencil/vue'
+import type { VariableType } from '@kalka/scene-graph'
+import { useI18n, variablesAddTestId, vTestId } from '@kalka/vue'
 
 import AppButton from '@/components/ui/button/AppButton.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'

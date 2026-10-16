@@ -10,7 +10,7 @@ import {
   shortcutPlatform,
   useCommandMessages,
   useCommonMessages
-} from '@open-pencil/vue'
+} from '@kalka/vue'
 
 import { usePagePaletteGroup } from '@/app/editor/pages/palette'
 import { useAppMenu } from '@/app/shell/menu/app-menu'

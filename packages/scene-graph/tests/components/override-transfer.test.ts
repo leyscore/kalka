@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 
-import { createInstanceOverrideState, remapInstanceOverrideState } from '@open-pencil/scene-graph'
+import { createInstanceOverrideState, remapInstanceOverrideState } from '@kalka/scene-graph'
 
 test('override transfer remaps typed identities without rewriting equal text', () => {
   const state = createInstanceOverrideState()

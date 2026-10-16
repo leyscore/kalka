@@ -1,13 +1,13 @@
 import type { DerivedSymbolOverride } from '#fig/instance-overrides/types'
 
-import type { GUID } from '@open-pencil/kiwi/fig/codec'
+import type { GUID } from '@kalka/kiwi/fig/codec'
 import {
   findInstanceAncestor,
   getInstanceOverride,
   ownsSlotContent,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 type ResolveGuid = (id: string) => GUID | undefined
 

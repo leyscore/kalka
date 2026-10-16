@@ -1,4 +1,4 @@
-import type { SceneNode } from '@open-pencil/scene-graph'
+import type { SceneNode } from '@kalka/scene-graph'
 
 import {
   autoLayoutInsertIndex,
@@ -11,8 +11,8 @@ import {
 } from '#vue/shared/input/drag-threshold'
 import { findMoveDropTarget, reparentDroppedNodes } from '#vue/shared/input/drop-target'
 export { duplicateAndDrag } from '#vue/shared/input/duplicate-drag'
-import { AUTO_LAYOUT_BREAK_THRESHOLD } from '@open-pencil/core/constants'
-import type { Editor } from '@open-pencil/core/editor'
+import { AUTO_LAYOUT_BREAK_THRESHOLD } from '@kalka/core/constants'
+import type { Editor } from '@kalka/core/editor'
 
 import { applyMoveSnap } from '#vue/shared/input/move-snap'
 import type { DragMove } from '#vue/shared/input/types'

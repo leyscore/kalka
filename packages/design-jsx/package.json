@@ -1,5 +1,5 @@
 {
-  "name": "@open-pencil/design-jsx",
+  "name": "@kalka/design-jsx",
   "version": "0.15.1",
   "license": "MIT",
   "type": "module",
@@ -55,12 +55,12 @@
     "provenance": true
   },
   "peerDependencies": {
-    "@open-pencil/scene-graph": "workspace:*"
+    "@kalka/scene-graph": "workspace:*"
   },
   "dependencies": {
+    "@kalka/emit": "workspace:*",
     "@lezer/common": "^1.5.2",
     "@lezer/javascript": "^1.5.4",
-    "@open-pencil/emit": "workspace:*",
     "acorn": "^8.18.0",
     "dedent": "^1.7.2",
     "entities": "^8.0.0",

@@ -2,11 +2,11 @@ import { describe, expect, test } from 'bun:test'
 
 import { reactive } from 'vue'
 
-import type { Editor } from '@open-pencil/core/editor'
-import { SceneGraph } from '@open-pencil/scene-graph'
-import type { DerivedTextGlyph, Fill, SceneNode, Stroke } from '@open-pencil/scene-graph'
-import { copyGeometryPaths, copyStrokes } from '@open-pencil/scene-graph/copy'
-import type { ResizeSnapshot } from '@open-pencil/scene-graph/resize'
+import type { Editor } from '@kalka/core/editor'
+import { SceneGraph } from '@kalka/scene-graph'
+import type { DerivedTextGlyph, Fill, SceneNode, Stroke } from '@kalka/scene-graph'
+import { copyGeometryPaths, copyStrokes } from '@kalka/scene-graph/copy'
+import type { ResizeSnapshot } from '@kalka/scene-graph/resize'
 
 import { applyResize, commitResizePreview } from '#vue/shared/input/resize'
 import type { DragResize } from '#vue/shared/input/types'

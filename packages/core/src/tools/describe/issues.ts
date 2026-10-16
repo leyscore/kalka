@@ -1,5 +1,5 @@
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
-import { colorDistance, colorToHex } from '@open-pencil/scene-graph/color'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import { colorDistance, colorToHex } from '@kalka/scene-graph/color'
 
 import { detectLayoutIssues } from './layout-issues'
 import { CONTAINER_TYPES, findAncestorBackground, looksLikeButton } from './shared'

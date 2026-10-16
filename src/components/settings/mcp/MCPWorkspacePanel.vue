@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useAutomationMessages } from '@open-pencil/vue'
+import { useAutomationMessages } from '@kalka/vue'
 
 import { webmcpMode } from '@/app/automation/webmcp/preferences'
 import { webmcpRuntime } from '@/app/automation/webmcp/runtime'

@@ -9,8 +9,8 @@ import {
   parseFigFile,
   SceneGraph,
   type SceneNode
-} from '@open-pencil/core'
-import { populateFigPage } from '@open-pencil/core/io/formats/fig'
+} from '@kalka/core'
+import { populateFigPage } from '@kalka/core/io/formats/fig'
 
 setDefaultTimeout(60_000)
 

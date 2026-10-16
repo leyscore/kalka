@@ -1,4 +1,4 @@
-import { colorToHex, contrastRatio } from '@open-pencil/scene-graph/color'
+import { colorToHex, contrastRatio } from '@kalka/scene-graph/color'
 
 import { defineRule } from '#core/lint/rule'
 

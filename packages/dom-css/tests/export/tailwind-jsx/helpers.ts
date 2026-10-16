@@ -1,6 +1,6 @@
 import { sceneNodesToTailwindJSX } from '#dom-css/index'
 
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { SceneGraph } from '@kalka/scene-graph'
 
 export function makeGraph() {
   const graph = new SceneGraph()

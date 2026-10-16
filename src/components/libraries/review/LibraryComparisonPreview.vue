@@ -2,8 +2,8 @@
 import { useObjectUrl } from '@vueuse/core'
 import { shallowRef, watch } from 'vue'
 
-import { renderNodesToImage } from '@open-pencil/core/io'
-import type { SceneGraph } from '@open-pencil/scene-graph'
+import { renderNodesToImage } from '@kalka/core/io'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 import { useEditorStore } from '@/app/editor/active-store'
 

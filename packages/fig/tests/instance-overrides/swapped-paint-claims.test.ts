@@ -4,7 +4,7 @@ import { expectPathError } from '#fig-tests/helpers/errors'
 import { guid } from '#fig-tests/helpers/guid'
 import { interpretInstance } from '#fig/instance-overrides/interpret'
 
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
 
 test('binding swap ignores known removed-child paint claims without discarding unswapped source claims', () => {
   const changes = [

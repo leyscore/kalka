@@ -1,4 +1,4 @@
-import { recordInstanceOverride, slotPropertyId } from '@open-pencil/scene-graph'
+import { recordInstanceOverride, slotPropertyId } from '@kalka/scene-graph'
 import type {
   GroupFitOptions,
   SceneGraph,
@@ -7,15 +7,15 @@ import type {
   Fill,
   Stroke,
   LayoutMode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 import {
   getFillOkHCL,
   getStrokeOkHCL,
   setNodeFillOkHCL,
   setNodeStrokeOkHCL
-} from '@open-pencil/scene-graph/color'
-import type { OkHCLColor, OkHCLPayload } from '@open-pencil/scene-graph/color'
-import type { Rect } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/scene-graph/color'
+import type { OkHCLColor, OkHCLPayload } from '@kalka/scene-graph/color'
+import type { Rect } from '@kalka/scene-graph/primitives'
 
 import { assertNodeEditable } from '#core/editor/capabilities'
 import type { FigmaEffect } from '#core/figma-api/effects'

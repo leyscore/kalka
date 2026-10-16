@@ -5,14 +5,14 @@ import react from '@vitejs/plugin-react'
 import vue from '@vitejs/plugin-vue'
 import { createServer, type PluginOption, type ViteDevServer } from 'vite'
 
-import { exportStorybook } from '@open-pencil/dom-css'
+import { exportStorybook } from '@kalka/dom-css'
 import {
   emptyBehaviour,
   SceneGraph,
   withBehaviour,
   type Behaviour,
   type ComponentPropertyReference
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { expect, test } from '../fixtures'
 

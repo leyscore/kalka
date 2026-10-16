@@ -5,7 +5,7 @@ import {
   exposableInstances,
   exposedInstances,
   SceneGraph
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 function setup() {
   const graph = new SceneGraph()

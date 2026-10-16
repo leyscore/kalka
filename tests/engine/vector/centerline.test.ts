@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'bun:test'
 
-import { fitCircleArc, isClosedThinCrescent } from '@open-pencil/core/vector'
-import type { Vector, VectorNetwork } from '@open-pencil/scene-graph'
+import { fitCircleArc, isClosedThinCrescent } from '@kalka/core/vector'
+import type { Vector, VectorNetwork } from '@kalka/scene-graph'
 
 import { expectDefined } from '#tests/helpers/assert'
 

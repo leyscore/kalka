@@ -1,4 +1,4 @@
-import { readFigFile } from '@open-pencil/core/io/formats/fig'
+import { readFigFile } from '@kalka/core/io/formats/fig'
 
 export function readFigDocument(file: File, signal?: AbortSignal) {
   return readFigFile(file, {

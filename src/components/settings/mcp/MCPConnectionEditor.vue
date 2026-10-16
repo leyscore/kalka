@@ -6,7 +6,7 @@ import {
   useCommonMessages,
   useCredentialMessages,
   useSettingsMessages
-} from '@open-pencil/vue'
+} from '@kalka/vue'
 
 import { mcpAuthenticationTypes, type MCPConnectionDraft } from '@/app/integrations/mcp'
 import type {

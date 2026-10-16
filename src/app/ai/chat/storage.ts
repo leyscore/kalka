@@ -1,6 +1,6 @@
 import { computed, ref, watch } from 'vue'
 
-import { IS_TAURI } from '@open-pencil/core/constants'
+import { IS_TAURI } from '@kalka/core/constants'
 
 import {
   designCustomAPIType,

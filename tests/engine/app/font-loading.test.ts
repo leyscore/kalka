@@ -5,8 +5,8 @@ import {
   fontManager,
   missingGraphFontScripts,
   type FontFallbackScript
-} from '@open-pencil/core/text'
-import { SceneGraph } from '@open-pencil/scene-graph'
+} from '@kalka/core/text'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { ensureGraphFonts } from '@/app/editor/fonts'
 

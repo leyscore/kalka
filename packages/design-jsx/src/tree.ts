@@ -1,5 +1,5 @@
-import type { Effect, Fill, SceneNode } from '@open-pencil/scene-graph'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import type { Effect, Fill, SceneNode } from '@kalka/scene-graph'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import type { DesignVariable } from './vars'
 

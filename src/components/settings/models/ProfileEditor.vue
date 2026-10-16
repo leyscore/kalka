@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, useTemplateRef } from 'vue'
 
-import type { AIProviderID } from '@open-pencil/core/constants'
-import { useI18n } from '@open-pencil/vue'
+import type { AIProviderID } from '@kalka/core/constants'
+import { useI18n } from '@kalka/vue'
 
 import { usePiSetup } from '@/app/ai/agents/setup'
 import { useModelProfileFeedback } from '@/app/ai/models/settings/profile-editor/feedback'

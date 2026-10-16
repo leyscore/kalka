@@ -8,8 +8,8 @@ import {
 } from 'reka-ui'
 import { toRef } from 'vue'
 
-import type { SceneNode } from '@open-pencil/scene-graph'
-import { useI18n, useRetainedPopup } from '@open-pencil/vue'
+import type { SceneNode } from '@kalka/scene-graph'
+import { useI18n, useRetainedPopup } from '@kalka/vue'
 
 import type { EditorStore } from '@/app/editor/session'
 import type { LibraryService } from '@/app/libraries'

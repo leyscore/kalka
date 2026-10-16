@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { INTERACTION_STATES, type InteractionState } from '@open-pencil/scene-graph'
-import { useI18n } from '@open-pencil/vue'
-import type { BehaviourStatesControl } from '@open-pencil/vue'
+import { INTERACTION_STATES, type InteractionState } from '@kalka/scene-graph'
+import { useI18n } from '@kalka/vue'
+import type { BehaviourStatesControl } from '@kalka/vue'
 
 import PanelFieldGroup from '@/components/ui/panel/PanelFieldGroup.vue'
 import AppPickerField from '@/components/ui/select/AppPickerField.vue'

@@ -4,7 +4,7 @@ import {
   reconcileVariableBindings,
   SceneGraph,
   variablesResolvingThrough
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 /** Two layers saved at 10 while their bindings say otherwise, as layers in imported files can be. */
 function drifted() {

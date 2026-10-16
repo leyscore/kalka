@@ -2,8 +2,8 @@ import type { CanvasKit } from 'canvaskit-wasm'
 import { onScopeDispose } from 'vue'
 import type { Ref } from 'vue'
 
-import { SkiaRenderer } from '@open-pencil/core/canvas'
-import type { Editor } from '@open-pencil/core/editor'
+import { SkiaRenderer } from '@kalka/core/canvas'
+import type { Editor } from '@kalka/core/editor'
 
 import {
   supportsWideGamutPresentation,

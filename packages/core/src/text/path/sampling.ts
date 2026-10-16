@@ -1,7 +1,7 @@
 import { svgPathProperties } from 'svg-path-properties'
 
-import type { TextPathData } from '@open-pencil/scene-graph'
-import type { Rect } from '@open-pencil/scene-graph/primitives'
+import type { TextPathData } from '@kalka/scene-graph'
+import type { Rect } from '@kalka/scene-graph/primitives'
 
 type PathProperties = InstanceType<typeof svgPathProperties>
 

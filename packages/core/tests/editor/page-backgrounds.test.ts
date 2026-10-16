@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 
-import { createDefaultEditorState, createEditor } from '@open-pencil/core/editor'
-import { FigmaAPI } from '@open-pencil/core/figma-api'
-import { exportFigFile, parseFigFile } from '@open-pencil/core/io'
-import { SceneGraph } from '@open-pencil/scene-graph'
-import type { Color } from '@open-pencil/scene-graph'
+import { createDefaultEditorState, createEditor } from '@kalka/core/editor'
+import { FigmaAPI } from '@kalka/core/figma-api'
+import { exportFigFile, parseFigFile } from '@kalka/core/io'
+import { SceneGraph } from '@kalka/scene-graph'
+import type { Color } from '@kalka/scene-graph'
 
 // Exact float32 backgroundColor from the reported finance FIG canvas 0:4.
 const navy: Color = {

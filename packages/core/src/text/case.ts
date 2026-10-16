@@ -1,4 +1,4 @@
-import type { TextCase } from '@open-pencil/scene-graph'
+import type { TextCase } from '@kalka/scene-graph'
 
 export function transformTextCase(text: string, textCase: TextCase): string {
   if (textCase === 'UPPER') return text.toLocaleUpperCase()

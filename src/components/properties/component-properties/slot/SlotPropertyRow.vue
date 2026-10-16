@@ -7,8 +7,8 @@ import {
   DropdownMenuTrigger
 } from 'reka-ui'
 
-import { useI18n } from '@open-pencil/vue'
-import type { SlotInstanceOption, SlotLimit } from '@open-pencil/vue'
+import { useI18n } from '@kalka/vue'
+import type { SlotInstanceOption, SlotLimit } from '@kalka/vue'
 
 import IconButton from '@/components/ui/button/IconButton.vue'
 import { menuItem, useMenuUI } from '@/components/ui/menu/menu'

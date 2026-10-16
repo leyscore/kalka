@@ -1,9 +1,9 @@
 import { expect, test } from 'bun:test'
 
-import { buildFigmaClipboardHTML, FigmaAPI } from '@open-pencil/core'
-import { parseFigmaClipboard } from '@open-pencil/fig/clipboard'
-import { initCodec } from '@open-pencil/kiwi/fig/codec'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { buildFigmaClipboardHTML, FigmaAPI } from '@kalka/core'
+import { parseFigmaClipboard } from '@kalka/fig/clipboard'
+import { initCodec } from '@kalka/kiwi/fig/codec'
+import { SceneGraph } from '@kalka/scene-graph'
 
 // Valid PNG: Figma validates the embedded bytes against the SHA-1 image reference.
 const bytes = new Uint8Array(

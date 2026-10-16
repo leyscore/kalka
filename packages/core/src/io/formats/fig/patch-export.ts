@@ -1,15 +1,11 @@
 import type { CanvasKit } from 'canvaskit-wasm'
 
-import {
-  figCheckpointRecords,
-  type FigArchiveRecordInfo,
-  type FigRecordPatch
-} from '@open-pencil/fig'
-import type { FigNodeChangeExportRuntime } from '@open-pencil/fig/node-change'
-import { stringToGuid } from '@open-pencil/kiwi/fig/guid'
-import { ownsSlotContent, type SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
-import { siblingOrderKeys } from '@open-pencil/scene-graph/order-keys'
-import type { GUID } from '@open-pencil/scene-graph/primitives'
+import { figCheckpointRecords, type FigArchiveRecordInfo, type FigRecordPatch } from '@kalka/fig'
+import type { FigNodeChangeExportRuntime } from '@kalka/fig/node-change'
+import { stringToGuid } from '@kalka/kiwi/fig/guid'
+import { ownsSlotContent, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
+import { siblingOrderKeys } from '@kalka/scene-graph/order-keys'
+import type { GUID } from '@kalka/scene-graph/primitives'
 
 import type { SkiaRenderer } from '#core/canvas'
 import {

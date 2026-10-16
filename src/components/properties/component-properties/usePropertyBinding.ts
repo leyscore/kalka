@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 
-import { useComponentPropertyAuthoring, usePanelMessages } from '@open-pencil/vue'
+import { useComponentPropertyAuthoring, usePanelMessages } from '@kalka/vue'
 
 export type BindableField = 'TEXT' | 'VISIBLE' | 'INSTANCE_SWAP'
 

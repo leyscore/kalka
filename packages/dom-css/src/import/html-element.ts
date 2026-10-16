@@ -1,4 +1,4 @@
-import { parseHTMLClasses, parseHTMLTag, type SceneNode } from '@open-pencil/scene-graph'
+import { parseHTMLClasses, parseHTMLTag, type SceneNode } from '@kalka/scene-graph'
 
 import { defaultTagForNode } from '../export/tags'
 import type { DesignElement } from '../types'

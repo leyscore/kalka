@@ -6,7 +6,7 @@ import {
   cloneInstanceOverrideState,
   recordInstanceOverride,
   type SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { reconcileVariableLayouts } from '#core/layout/variables'
 

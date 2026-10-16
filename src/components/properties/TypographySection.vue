@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { TypographyControlsRoot, useI18n } from '@open-pencil/vue'
+import { TypographyControlsRoot, useI18n } from '@kalka/vue'
 
 import { loadFont } from '@/app/editor/fonts'
 import { appMenuShortcutLabel } from '@/app/shell/menu/shortcut'

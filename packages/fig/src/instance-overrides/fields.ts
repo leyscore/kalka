@@ -1,4 +1,4 @@
-import type { SceneNode } from '@open-pencil/scene-graph'
+import type { SceneNode } from '@kalka/scene-graph'
 
 /**
  * How a claim on a raw Kiwi field maps onto SceneGraph. Materialization records the

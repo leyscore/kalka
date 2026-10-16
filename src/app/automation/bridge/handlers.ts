@@ -1,4 +1,4 @@
-import type { FigmaAPI } from '@open-pencil/core/figma-api'
+import type { FigmaAPI } from '@kalka/core/figma-api'
 
 import { endAgentSession } from '@/app/automation/agents'
 import {

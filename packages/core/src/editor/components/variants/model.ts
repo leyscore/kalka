@@ -1,6 +1,6 @@
 import { uniq } from 'es-toolkit/array'
 
-import type { ComponentPropertyDefinition, SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import type { ComponentPropertyDefinition, SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 export type VariantConflict = {
   values: Record<string, string>

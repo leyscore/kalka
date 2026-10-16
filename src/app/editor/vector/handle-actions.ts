@@ -1,6 +1,6 @@
-import type { Editor } from '@open-pencil/core/editor'
-import { findAllHandles, findOppositeHandle, mirrorHandle } from '@open-pencil/core/vector'
-import type { Vector } from '@open-pencil/scene-graph/primitives'
+import type { Editor } from '@kalka/core/editor'
+import { findAllHandles, findOppositeHandle, mirrorHandle } from '@kalka/core/vector'
+import type { Vector } from '@kalka/scene-graph/primitives'
 
 import { constrainContinuousTangent } from './handles'
 import { pushNodeEditHistory } from './history'

@@ -1,5 +1,5 @@
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
-import { getAxisAlignedBoundsInParent } from '@open-pencil/scene-graph/coordinate'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import { getAxisAlignedBoundsInParent } from '@kalka/scene-graph/coordinate'
 
 import { prepareSlotEdits } from '#core/editor/components/slots'
 import { nextNumberedName } from '#core/editor/structure/rename'

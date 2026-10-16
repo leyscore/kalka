@@ -2,11 +2,11 @@ import process from 'node:process'
 
 import { test, type Page } from '@playwright/test'
 
-import type { DesignDocument } from '@open-pencil/dom-css'
-import type { SceneNode } from '@open-pencil/scene-graph'
+import type { DesignDocument } from '@kalka/dom-css'
+import type { SceneNode } from '@kalka/scene-graph'
 
 const BROWSER_RUNTIME_MODULE = `/@fs${process.cwd()}/packages/dom-css/src/runtime/browser.ts`
-const DOM_CSS_BROWSER_MODULE = '/@id/@open-pencil/dom-css/browser'
+const DOM_CSS_BROWSER_MODULE = '/@id/@kalka/dom-css/browser'
 
 async function ensureAppPage(page: Page) {
   const baseURL = test.info().project.use.baseURL
@@ -78,8 +78,8 @@ export async function browserTokenStylesheet(page: Page) {
       return { css, issues: issues.map((issue: { message: string }) => issue.message) }
     },
     {
-      exportModule: '/@id/@open-pencil/dom-css/export',
-      graphModule: '/@id/@open-pencil/scene-graph'
+      exportModule: '/@id/@kalka/dom-css/export',
+      graphModule: '/@id/@kalka/scene-graph'
     }
   )
 }

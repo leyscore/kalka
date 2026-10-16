@@ -1,4 +1,4 @@
-import type { DesignJSXProgram } from '@open-pencil/design-jsx'
+import type { DesignJSXProgram } from '@kalka/design-jsx'
 
 export const DESIGN_JSX_MAX_SOURCE_BYTES = 256_000
 export const DESIGN_JSX_MAX_OUTPUT_BYTES = 2_000_000

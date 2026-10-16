@@ -3,8 +3,8 @@ import { describe, expect, test } from 'bun:test'
 import { getNodeOrThrow } from '#core-tests/helpers/assert'
 import { autoFrame, rect } from '#core-tests/helpers/layout'
 
-import { createEditor } from '@open-pencil/core/editor'
-import { computeAllLayouts } from '@open-pencil/core/layout'
+import { createEditor } from '@kalka/core/editor'
+import { computeAllLayouts } from '@kalka/core/layout'
 
 describe('deleteSelected', () => {
   test('reflows fixed vertical auto-layout siblings', () => {

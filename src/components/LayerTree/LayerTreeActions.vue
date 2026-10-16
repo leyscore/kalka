@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useI18n } from '@open-pencil/vue'
-import type { LayerNode } from '@open-pencil/vue'
+import { useI18n } from '@kalka/vue'
+import type { LayerNode } from '@kalka/vue'
 
 import Tip from '../ui/overlay/Tip.vue'
 

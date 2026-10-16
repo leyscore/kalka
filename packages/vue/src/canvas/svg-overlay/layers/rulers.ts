@@ -1,4 +1,4 @@
-import { getGuideScreenSegment, type RulerTheme } from '@open-pencil/core/canvas'
+import { getGuideScreenSegment, type RulerTheme } from '@kalka/core/canvas'
 import {
   MEASUREMENT_COLOR,
   RULER_BADGE_EXCLUSION,
@@ -17,10 +17,10 @@ import {
   RULER_TICK_COLOR,
   SELECTION_COLOR,
   SIZE_FONT_SIZE
-} from '@open-pencil/core/constants'
-import type { SceneNode } from '@open-pencil/scene-graph'
-import { computeAbsoluteBounds } from '@open-pencil/scene-graph/geometry'
-import Matrix from '@open-pencil/scene-graph/matrix'
+} from '@kalka/core/constants'
+import type { SceneNode } from '@kalka/scene-graph'
+import { computeAbsoluteBounds } from '@kalka/scene-graph/geometry'
+import Matrix from '@kalka/scene-graph/matrix'
 
 import type { OverlayContext } from '#vue/canvas/svg-overlay/layers/selection'
 import { css, type OverlayShape } from '#vue/canvas/svg-overlay/shapes'

@@ -1,4 +1,4 @@
-import { findInstanceAncestor, setInstanceOverride } from '@open-pencil/scene-graph'
+import { findInstanceAncestor, setInstanceOverride } from '@kalka/scene-graph'
 
 import { assertNodeEditable } from '#core/editor/capabilities'
 import type { EditorContext } from '#core/editor/types'

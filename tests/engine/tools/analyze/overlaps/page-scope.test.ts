@@ -1,12 +1,12 @@
 import { describe, expect, test } from 'bun:test'
 
-import { FigmaAPI, SceneGraph } from '@open-pencil/core'
+import { FigmaAPI, SceneGraph } from '@kalka/core'
 import {
   analyzeOverlaps,
   computeOverlaps,
   findPageId,
   type AnalyzeOverlapsResult
-} from '@open-pencil/core/tools/analyze/overlaps'
+} from '@kalka/core/tools/analyze/overlaps'
 
 import { pageId, rect } from './helpers'
 

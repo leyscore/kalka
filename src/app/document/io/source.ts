@@ -1,6 +1,6 @@
-import type { Editor, EditorState } from '@open-pencil/core/editor'
-import { exportFigFile } from '@open-pencil/core/io/formats/fig'
-import { writeKalkaArchive, writeKalkaFolder } from '@open-pencil/core/io/formats/kalka'
+import type { Editor, EditorState } from '@kalka/core/editor'
+import { exportFigFile } from '@kalka/core/io/formats/fig'
+import { writeKalkaArchive, writeKalkaFolder } from '@kalka/core/io/formats/kalka'
 
 import { createAutosave } from '@/app/document/autosave'
 import { createDocumentChanges } from '@/app/document/io/changes'

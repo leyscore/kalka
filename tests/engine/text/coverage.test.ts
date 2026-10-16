@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'bun:test'
 
-import { SceneGraph } from '@open-pencil/core'
+import { SceneGraph } from '@kalka/core'
 import {
   collectGraphFontRequirements,
   fontManager,
   textNeededFallbackScripts
-} from '@open-pencil/core/text'
+} from '@kalka/core/text'
 
 function pageId(graph: SceneGraph): string {
   return graph.getPages()[0].id

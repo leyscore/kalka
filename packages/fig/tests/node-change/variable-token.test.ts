@@ -2,8 +2,8 @@ import { describe, expect, test } from 'bun:test'
 
 import { readModeConditions, readVariableToken } from '#fig/node-change/index'
 
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-import { OPEN_PENCIL_PLUGIN_DATA, OPEN_PENCIL_PLUGIN_ID } from '@open-pencil/scene-graph'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
+import { OPEN_PENCIL_PLUGIN_DATA, OPEN_PENCIL_PLUGIN_ID } from '@kalka/scene-graph'
 
 function record(key: string, value: string): NodeChange {
   return { pluginData: [{ pluginID: OPEN_PENCIL_PLUGIN_ID, key, value }] }

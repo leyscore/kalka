@@ -2,7 +2,7 @@
 import { RadioGroupRoot } from 'reka-ui'
 import { computed } from 'vue'
 
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@kalka/vue'
 
 import { ONBOARDING_ROLES, type OnboardingRole } from '@/app/settings/preferences/store'
 

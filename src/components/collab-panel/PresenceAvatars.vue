@@ -10,7 +10,7 @@ import {
   PopoverTrigger
 } from 'reka-ui'
 
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@kalka/vue'
 
 import type { FollowTarget } from '@/app/presence/types'
 import AvatarStack from '@/components/presence/AvatarStack.vue'

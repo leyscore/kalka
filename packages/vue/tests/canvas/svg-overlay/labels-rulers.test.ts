@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { hitTestFrameTitle, LabelCache } from '@open-pencil/core/canvas'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { hitTestFrameTitle, LabelCache } from '@kalka/core/canvas'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import {
   componentLabelsLayer,

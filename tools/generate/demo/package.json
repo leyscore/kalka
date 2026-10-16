@@ -1,5 +1,5 @@
 {
-  "name": "@open-pencil/demo-tools",
+  "name": "@kalka/demo-tools",
   "private": true,
   "type": "module",
   "imports": {
@@ -12,10 +12,10 @@
     "test": "bun test tests"
   },
   "dependencies": {
-    "@open-pencil/core": "workspace:*",
-    "@open-pencil/design-jsx": "workspace:*",
-    "@open-pencil/package-artifacts-tools": "workspace:*",
-    "@open-pencil/scene-graph": "workspace:*",
+    "@kalka/core": "workspace:*",
+    "@kalka/design-jsx": "workspace:*",
+    "@kalka/package-artifacts-tools": "workspace:*",
+    "@kalka/scene-graph": "workspace:*",
     "proper-lockfile": "4.1.2"
   },
   "devDependencies": {

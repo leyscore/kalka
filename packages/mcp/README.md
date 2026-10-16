@@ -1,9 +1,9 @@
-# @open-pencil/mcp
+# @kalka/mcp
 
 Model Context Protocol server for [OpenPencil](https://openpencil.dev). It lets MCP clients such as Claude Code, Cursor, and Windsurf inspect and edit designs through the running app, reusing the same tool definitions as the built-in AI chat.
 
 ```sh
-npm install -g @open-pencil/mcp
+npm install -g @kalka/mcp
 openpencil-mcp        # stdio transport for MCP clients
 openpencil-mcp-http   # Streamable HTTP transport for browser extensions and scripts
 ```

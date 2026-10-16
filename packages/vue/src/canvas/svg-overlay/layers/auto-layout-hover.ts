@@ -1,4 +1,4 @@
-import type { RenderOverlays } from '@open-pencil/core/canvas'
+import type { RenderOverlays } from '@kalka/core/canvas'
 import {
   AUTO_LAYOUT_HOVER_BLUE,
   AUTO_LAYOUT_HOVER_BLUE_FILL,
@@ -16,10 +16,10 @@ import {
   LAYOUT_OUTLINE_DASH,
   LAYOUT_OUTLINE_GAP,
   SELECTION_COLOR
-} from '@open-pencil/core/constants'
-import { createSceneGeometry } from '@open-pencil/core/geometry'
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/core/constants'
+import { createSceneGeometry } from '@kalka/core/geometry'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import { outlineColor, type OverlayContext } from '#vue/canvas/svg-overlay/layers/selection'
 import { css, type OverlayShape } from '#vue/canvas/svg-overlay/shapes'

@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 
-import { parseOpenPencilClipboard } from '@open-pencil/core'
-import { geometryBlobBounds } from '@open-pencil/scene-graph/geometry'
+import { parseOpenPencilClipboard } from '@kalka/core'
+import { geometryBlobBounds } from '@kalka/scene-graph/geometry'
 
 const fixture = await Bun.file('tests/fixtures/clipboard/green-50.openpencil.html').text()
 

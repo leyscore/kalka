@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import type { Color, Fill } from '@open-pencil/scene-graph'
-import { useI18n } from '@open-pencil/vue'
+import type { Color, Fill } from '@kalka/scene-graph'
+import { useI18n } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import { updateCanvasBackground } from '@/app/settings/preferences/store'

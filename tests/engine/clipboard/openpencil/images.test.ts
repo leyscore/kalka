@@ -8,9 +8,9 @@ import {
   FigmaAPI,
   parseOpenPencilClipboard,
   SceneGraph
-} from '@open-pencil/core'
-import type { SceneNode } from '@open-pencil/core'
-import { getInstanceOverride, setInstanceOverride } from '@open-pencil/scene-graph'
+} from '@kalka/core'
+import type { SceneNode } from '@kalka/core'
+import { getInstanceOverride, setInstanceOverride } from '@kalka/scene-graph'
 
 import { expectDefined } from '#tests/helpers/assert'
 

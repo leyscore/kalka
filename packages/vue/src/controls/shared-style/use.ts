@@ -6,7 +6,7 @@ import {
   sharedStyleTypeForKind,
   type SceneNode,
   type SharedStyleKind
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { useNodeProps } from '#vue/controls/node-props/use'
 import { sharedStyleDetachPatch, sharedStylePatch } from '#vue/controls/shared-style/model'

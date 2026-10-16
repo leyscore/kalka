@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 
-import { exportFigFile, initCodec, parseFigFile } from '@open-pencil/core'
-import { SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
+import { exportFigFile, initCodec, parseFigFile } from '@kalka/core'
+import { SceneGraph, type SceneNode } from '@kalka/scene-graph'
 
 const red = { r: 1, g: 0, b: 0, a: 1 }
 const blue = { r: 0, g: 0, b: 1, a: 1 }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { colorToCSS } from '@open-pencil/scene-graph/color'
-import { useI18n, useInlineRename } from '@open-pencil/vue'
+import { colorToCSS } from '@kalka/scene-graph/color'
+import { useI18n, useInlineRename } from '@kalka/vue'
 
 import type { FollowTarget } from '@/app/presence/types'
 import { initials } from '@/app/shell/ui'

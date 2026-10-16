@@ -1,5 +1,5 @@
-import type { Editor } from '@open-pencil/core/editor'
-import type { Vector } from '@open-pencil/scene-graph/primitives'
+import type { Editor } from '@kalka/core/editor'
+import type { Vector } from '@kalka/scene-graph/primitives'
 
 import { externalHTMLAsDesignClipboard, isExternalHTML } from './external-html'
 import { matchingClipboardSnapshot } from './memory'

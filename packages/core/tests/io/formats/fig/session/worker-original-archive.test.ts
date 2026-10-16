@@ -2,10 +2,10 @@ import { expect, test } from 'bun:test'
 
 import { isEqual } from 'es-toolkit/predicate'
 
-import { exportFigFile } from '@open-pencil/core/io'
-import { parseFigBuffer } from '@open-pencil/fig'
-import { initCodec } from '@open-pencil/core/kiwi'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { exportFigFile } from '@kalka/core/io'
+import { parseFigBuffer } from '@kalka/fig'
+import { initCodec } from '@kalka/core/kiwi'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { parseFigFileViaWorker } from '#core/io/formats/fig/read'
 import {

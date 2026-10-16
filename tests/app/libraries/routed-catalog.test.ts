@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 
 import 'fake-indexeddb/auto'
 
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import type { LibraryObjectStore } from '@/app/integrations/storage'
 import { LocalLibraryCatalog } from '@/app/libraries/catalog/local'

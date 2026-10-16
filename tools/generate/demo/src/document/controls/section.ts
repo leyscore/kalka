@@ -1,7 +1,7 @@
-import { renderTree } from '@open-pencil/core/design-jsx'
-import { Frame, Instance, Text } from '@open-pencil/design-jsx'
-import type { TreeNode } from '@open-pencil/design-jsx'
-import type { SceneGraph } from '@open-pencil/scene-graph'
+import { renderTree } from '@kalka/core/design-jsx'
+import { Frame, Instance, Text } from '@kalka/design-jsx'
+import type { TreeNode } from '@kalka/design-jsx'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 import { BUTTON, CHECKBOX, CONTROL_COLORS, SLIDER, SWITCH, TABS, TEXT_FIELD } from './components'
 

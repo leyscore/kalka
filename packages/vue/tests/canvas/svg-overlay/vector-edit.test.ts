@@ -5,8 +5,8 @@ import {
   PEN_PATH_STROKE_WIDTH,
   PEN_VERTEX_RADIUS,
   SELECTION_COLOR
-} from '@open-pencil/core/constants'
-import { SceneGraph } from '@open-pencil/scene-graph'
+} from '@kalka/core/constants'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import type { OverlayContext } from '#vue/canvas/svg-overlay/layers/selection'
 import {

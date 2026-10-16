@@ -1,5 +1,5 @@
-import { encodePathCommandsBlob } from '@open-pencil/fig/node-change'
-import type { SceneNode } from '@open-pencil/scene-graph'
+import { encodePathCommandsBlob } from '@kalka/fig/node-change'
+import type { SceneNode } from '@kalka/scene-graph'
 
 import { weightToStyle } from '#core/text/fonts'
 import { getGlyphOutlineMetricsSync } from '#core/text/opentype'

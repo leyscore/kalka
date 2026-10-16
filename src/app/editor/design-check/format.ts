@@ -1,5 +1,5 @@
-import type { LintFix, LintFixRequest } from '@open-pencil/core/lint'
-import type { useDesignCheckMessages } from '@open-pencil/vue'
+import type { LintFix, LintFixRequest } from '@kalka/core/lint'
+import type { useDesignCheckMessages } from '@kalka/vue'
 
 import { formatNumber } from '@/app/i18n/number'
 

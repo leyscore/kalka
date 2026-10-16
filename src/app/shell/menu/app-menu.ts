@@ -16,9 +16,9 @@ import IconVariables from '~icons/lucide/variable'
 import IconZoomIn from '~icons/lucide/zoom-in'
 import IconZoomOut from '~icons/lucide/zoom-out'
 
-import type { BuiltinIOFormatId } from '@open-pencil/core/io'
-import type { CommandPaletteGroup, CommandPaletteItem, MenuEntry } from '@open-pencil/vue'
-import { shortcutPlatform, useEditorCommands, useI18n } from '@open-pencil/vue'
+import type { BuiltinIOFormatId } from '@kalka/core/io'
+import type { CommandPaletteGroup, CommandPaletteItem, MenuEntry } from '@kalka/vue'
+import { shortcutPlatform, useEditorCommands, useI18n } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import { openVariablesDialog } from '@/app/editor/tokens/dialog'

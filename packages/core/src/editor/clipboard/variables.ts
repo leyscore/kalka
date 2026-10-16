@@ -1,4 +1,4 @@
-import type { SceneGraph, SceneNode, Variable, VariableCollection } from '@open-pencil/scene-graph'
+import type { SceneGraph, SceneNode, Variable, VariableCollection } from '@kalka/scene-graph'
 
 export interface ClipboardVariables {
   activeModes: Array<[string, string]>

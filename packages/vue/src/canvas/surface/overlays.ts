@@ -1,5 +1,5 @@
-import { hitTestIssueMarkers, type SkiaRenderer } from '@open-pencil/core/canvas'
-import type { Editor } from '@open-pencil/core/editor'
+import { hitTestIssueMarkers, type SkiaRenderer } from '@kalka/core/canvas'
+import type { Editor } from '@kalka/core/editor'
 
 import { useViewportKind } from '#vue/editor/viewport-kind/use'
 

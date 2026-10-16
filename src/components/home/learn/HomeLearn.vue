@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@kalka/vue'
 
 import { useAIChat } from '@/app/ai/chat/use'
 import { startWithSample } from '@/app/home/start'

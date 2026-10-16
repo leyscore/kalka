@@ -8,7 +8,7 @@ import {
   AUTOMATION_HTTP_PORT,
   IS_TAURI,
   type AIProviderID
-} from '@open-pencil/core/constants'
+} from '@kalka/core/constants'
 
 import AppGroupedSelect from '@/components/ui/select/AppGroupedSelect.vue'
 

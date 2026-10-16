@@ -1,5 +1,5 @@
-import type { VectorNetwork, VectorSegment } from '@open-pencil/scene-graph'
-import type { Vector, Rect } from '@open-pencil/scene-graph/primitives'
+import type { VectorNetwork, VectorSegment } from '@kalka/scene-graph'
+import type { Vector, Rect } from '@kalka/scene-graph/primitives'
 
 export interface CubicPoints {
   p0: Vector

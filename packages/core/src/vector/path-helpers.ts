@@ -1,4 +1,4 @@
-import type { VectorSegment, VectorVertex } from '@open-pencil/scene-graph'
+import type { VectorSegment, VectorVertex } from '@kalka/scene-graph'
 
 /** Anything path commands can be emitted into: a canvaskit Path or a blob encoder. */
 export interface PathSink {

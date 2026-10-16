@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 
-import type { VariantConflict } from '@open-pencil/core/editor'
-import type { ComponentPropertyDefinition, SceneNode } from '@open-pencil/scene-graph'
+import type { VariantConflict } from '@kalka/core/editor'
+import type { ComponentPropertyDefinition, SceneNode } from '@kalka/scene-graph'
 
 import { useEditor } from '#vue/editor/context'
 import { useSceneComputed } from '#vue/internal/scene-computed/use'

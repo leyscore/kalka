@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { linkImportedInstanceChildren } from '@open-pencil/fig/node-change'
-import { SceneGraph, recordInstanceOverride } from '@open-pencil/scene-graph'
+import { linkImportedInstanceChildren } from '@kalka/fig/node-change'
+import { SceneGraph, recordInstanceOverride } from '@kalka/scene-graph'
 
 describe('instance synchronization child deduplication', () => {
   test('syncInstances on instance with imported children without componentId does not duplicate children', () => {

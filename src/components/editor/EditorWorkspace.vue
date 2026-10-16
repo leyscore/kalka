@@ -3,7 +3,7 @@ import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'reka-ui'
 import { tv } from 'tailwind-variants'
 import { computed } from 'vue'
 
-import { formatShortcut, useI18n, useViewportKind } from '@open-pencil/vue'
+import { formatShortcut, useI18n, useViewportKind } from '@kalka/vue'
 
 import { provideTabEditorStore } from '@/app/editor/active-store'
 import { appRuntimeConfig } from '@/app/runtime/config'

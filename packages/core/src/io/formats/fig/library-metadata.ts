@@ -1,12 +1,12 @@
-import { mergePluginData } from '@open-pencil/fig/node-change'
-import type { KiwiNodeChange } from '@open-pencil/fig/node-change'
+import { mergePluginData } from '@kalka/fig/node-change'
+import type { KiwiNodeChange } from '@kalka/fig/node-change'
 import {
   isPluginDataEntry,
   OPEN_PENCIL_PLUGIN_DATA,
   withoutPluginData,
   withPluginData,
   type SceneGraph
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 const { cssClasses, enabledLibraries } = OPEN_PENCIL_PLUGIN_DATA
 

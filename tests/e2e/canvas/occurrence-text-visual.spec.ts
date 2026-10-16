@@ -1,6 +1,6 @@
-import { interpretInstance } from '@open-pencil/fig/instance-overrides'
-import { nodeChangeToProps } from '@open-pencil/fig/node-change'
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
+import { interpretInstance } from '@kalka/fig/instance-overrides'
+import { nodeChangeToProps } from '@kalka/fig/node-change'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
 
 import { expect, test, useEditorSetupWithClear } from '#tests/e2e/fixtures'
 import fixture from '#tests/fixtures/styled-saved-glyphs.json' with { type: 'json' }

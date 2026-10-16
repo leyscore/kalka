@@ -16,7 +16,7 @@ Kalka editor.
 ## Usage
 
 ```ts
-import { useOkHCL } from '@open-pencil/vue'
+import { useOkHCL } from '@kalka/vue'
 
 const okhcl = useOkHCL()
 

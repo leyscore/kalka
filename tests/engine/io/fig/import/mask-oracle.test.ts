@@ -3,9 +3,9 @@ import { readFileSync } from 'node:fs'
 
 import * as v from 'valibot'
 
-import { nodeChangeToProps } from '@open-pencil/fig/node-change'
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-import { SceneGraph, type MaskType } from '@open-pencil/scene-graph'
+import { nodeChangeToProps } from '@kalka/fig/node-change'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
+import { SceneGraph, type MaskType } from '@kalka/scene-graph'
 
 import { sceneNodeToKiwi } from '#core/kiwi/fig/node-change/serialize'
 

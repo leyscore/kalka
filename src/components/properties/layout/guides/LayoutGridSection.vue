@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import type { LayoutGrid } from '@open-pencil/scene-graph'
-import { useEditor, useI18n, useSceneComputed } from '@open-pencil/vue'
+import type { LayoutGrid } from '@kalka/scene-graph'
+import { useEditor, useI18n, useSceneComputed } from '@kalka/vue'
 
 import NumberField from '@/components/inputs/NumberField.vue'
 import SharedStyleField from '@/components/properties/shared-style/SharedStyleField.vue'

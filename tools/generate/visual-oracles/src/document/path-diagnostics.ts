@@ -1,4 +1,4 @@
-import type { InstancePathDiagnostic } from '@open-pencil/fig/instance-overrides'
+import type { InstancePathDiagnostic } from '@kalka/fig/instance-overrides'
 
 export interface CountedPathDiagnostic extends InstancePathDiagnostic {
   occurrences: number

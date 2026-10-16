@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { renderNodesToPPTX, type Effect, type PPTXExportStats } from '@open-pencil/core'
-import { TransformMatrix } from '@open-pencil/scene-graph'
+import { renderNodesToPPTX, type Effect, type PPTXExportStats } from '@kalka/core'
+import { TransformMatrix } from '@kalka/scene-graph'
 
 import { hasUnsupportedTransform, nodeBox } from '#core/io/formats/pptx/geometry'
 

@@ -1,7 +1,7 @@
 import { omit } from 'es-toolkit/object'
 
-import type { ComponentPropertyDefinition, ComponentPropertyType } from '@open-pencil/scene-graph'
-import { createComponentPropertyId } from '@open-pencil/scene-graph'
+import type { ComponentPropertyDefinition, ComponentPropertyType } from '@kalka/scene-graph'
+import { createComponentPropertyId } from '@kalka/scene-graph'
 
 import { assertNodeEditable } from '#core/editor/capabilities'
 import type { EditorContext } from '#core/editor/types'

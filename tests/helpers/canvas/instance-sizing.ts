@@ -1,6 +1,6 @@
-import { renderTree } from '@open-pencil/core/design-jsx'
-import { Component, Frame, Instance, Text } from '@open-pencil/design-jsx'
-import type { SceneGraph } from '@open-pencil/scene-graph'
+import { renderTree } from '@kalka/core/design-jsx'
+import { Component, Frame, Instance, Text } from '@kalka/design-jsx'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 export async function createInstanceSizingScene(graph: SceneGraph, parentId: string) {
   const library = graph.addPage('Sizing component')

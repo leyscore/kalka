@@ -1,8 +1,8 @@
 import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
 
-import type { Editor } from '@open-pencil/core/editor'
-import { BUILTIN_IO_FORMATS, IORegistry, type BuiltinIOFormatId } from '@open-pencil/core/io'
+import type { Editor } from '@kalka/core/editor'
+import { BUILTIN_IO_FORMATS, IORegistry, type BuiltinIOFormatId } from '@kalka/core/io'
 import {
   EXPORT_FORMAT_IDS,
   MAX_EXPORT_SCALE,
@@ -10,8 +10,8 @@ import {
   OPEN_PENCIL_PLUGIN_DATA,
   clampExportScale,
   withPluginData
-} from '@open-pencil/scene-graph'
-import type { ExportFormatId, ExportSetting, PluginDataEntry } from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
+import type { ExportFormatId, ExportSetting, PluginDataEntry } from '@kalka/scene-graph'
 
 import { useSceneComputed } from '#vue/internal/scene-computed/use'
 

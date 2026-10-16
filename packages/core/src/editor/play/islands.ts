@@ -1,4 +1,4 @@
-import { hasBehaviour, type SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
+import { hasBehaviour, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
 
 function containsControl(graph: SceneGraph, node: SceneNode): boolean {
   if (hasBehaviour(graph, node)) return true

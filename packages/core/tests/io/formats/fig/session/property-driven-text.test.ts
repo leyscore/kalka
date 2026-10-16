@@ -2,10 +2,10 @@ import { expect, test } from 'bun:test'
 
 import { expectDefined } from '#core-tests/helpers/assert'
 
-import { exportFigFile } from '@open-pencil/core/io'
-import { initCodec } from '@open-pencil/core/kiwi'
-import { createFigDocumentSession, materializeFigArchive } from '@open-pencil/fig'
-import { SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
+import { exportFigFile } from '@kalka/core/io'
+import { initCodec } from '@kalka/core/kiwi'
+import { createFigDocumentSession, materializeFigArchive } from '@kalka/fig'
+import { SceneGraph, type SceneNode } from '@kalka/scene-graph'
 
 /**
  * The component lives on one page and the instance that assigns its properties on another, so

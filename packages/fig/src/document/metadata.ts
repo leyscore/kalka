@@ -1,5 +1,5 @@
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
-import { OPEN_PENCIL_PLUGIN_DATA, type SceneGraph } from '@open-pencil/scene-graph'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
+import { OPEN_PENCIL_PLUGIN_DATA, type SceneGraph } from '@kalka/scene-graph'
 
 import { readNodeChangePluginData } from '../node-change/plugin-data'
 

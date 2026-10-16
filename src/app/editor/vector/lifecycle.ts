@@ -1,13 +1,9 @@
-import type { Editor } from '@open-pencil/core/editor'
-import { computeAccurateBounds, regenerateFillGeometry } from '@open-pencil/core/vector'
-import {
-  cloneVectorNetwork,
-  transformVectorNetwork,
-  vectorNetworksEqual
-} from '@open-pencil/scene-graph'
-import type { VectorNetwork } from '@open-pencil/scene-graph'
-import { getNodeLocalMatrix, getWorldMatrix } from '@open-pencil/scene-graph/coordinate'
-import Matrix from '@open-pencil/scene-graph/matrix'
+import type { Editor } from '@kalka/core/editor'
+import { computeAccurateBounds, regenerateFillGeometry } from '@kalka/core/vector'
+import { cloneVectorNetwork, transformVectorNetwork, vectorNetworksEqual } from '@kalka/scene-graph'
+import type { VectorNetwork } from '@kalka/scene-graph'
+import { getNodeLocalMatrix, getWorldMatrix } from '@kalka/scene-graph/coordinate'
+import Matrix from '@kalka/scene-graph/matrix'
 
 import { getLiveNetwork } from './network'
 import type { VectorEditState } from './types'

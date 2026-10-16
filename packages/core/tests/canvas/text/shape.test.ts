@@ -2,9 +2,9 @@ import { beforeAll, describe, expect, test } from 'bun:test'
 
 import { expectDefined } from '#core-tests/helpers/assert'
 
-import type { ShapedText } from '@open-pencil/fig/node-change'
-import { SceneGraph } from '@open-pencil/scene-graph'
-import type { SceneNode } from '@open-pencil/scene-graph'
+import type { ShapedText } from '@kalka/fig/node-change'
+import { SceneGraph } from '@kalka/scene-graph'
+import type { SceneNode } from '@kalka/scene-graph'
 
 import { withFigExportRuntime } from '#core/canvas/text/shape'
 import { getCanvasKit } from '#core/canvaskit'

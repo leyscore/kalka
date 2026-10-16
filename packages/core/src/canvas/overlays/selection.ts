@@ -1,10 +1,10 @@
 import type { Canvas } from 'canvaskit-wasm'
 
-import { slotPropertyId } from '@open-pencil/scene-graph'
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
-import { computeBounds, rotatedCorners } from '@open-pencil/scene-graph/geometry'
-import Matrix from '@open-pencil/scene-graph/matrix'
-import type { Vector } from '@open-pencil/scene-graph/primitives'
+import { slotPropertyId } from '@kalka/scene-graph'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import { computeBounds, rotatedCorners } from '@kalka/scene-graph/geometry'
+import Matrix from '@kalka/scene-graph/matrix'
+import type { Vector } from '@kalka/scene-graph/primitives'
 
 import type { RenderOverlays, SkiaRenderer } from '#core/canvas/renderer'
 import {

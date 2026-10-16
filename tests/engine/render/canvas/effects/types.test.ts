@@ -2,8 +2,8 @@ import { describe, expect, mock, test } from 'bun:test'
 
 import type { ImageFilter, Path } from 'canvaskit-wasm'
 
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
-import { createDefaultSourceMetadata } from '@open-pencil/scene-graph/node-defaults'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import { createDefaultSourceMetadata } from '@kalka/scene-graph/node-defaults'
 
 import { applyClippedBlur } from '#core/canvas/effects'
 import { renderNode } from '#core/canvas/scene'

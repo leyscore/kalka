@@ -1,5 +1,5 @@
-import type { ClipboardImageResolution, Editor } from '@open-pencil/core/editor'
-import { filesMessages } from '@open-pencil/vue'
+import type { ClipboardImageResolution, Editor } from '@kalka/core/editor'
+import { filesMessages } from '@kalka/vue'
 
 import { toast } from '@/app/shell/ui'
 

@@ -1,11 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 
-import { exportFigFile, initCodec, parseFigFile } from '@open-pencil/core'
-import {
-  readSourceLibraryPublication,
-  writeSourceLibraryPublication
-} from '@open-pencil/core/library'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { exportFigFile, initCodec, parseFigFile } from '@kalka/core'
+import { readSourceLibraryPublication, writeSourceLibraryPublication } from '@kalka/core/library'
+import { SceneGraph } from '@kalka/scene-graph'
 
 describe('source library publication identity', () => {
   test('survives a FIG export and reimport', async () => {

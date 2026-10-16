@@ -1,7 +1,7 @@
-import type { Fill, LayoutMode, SceneNode } from '@open-pencil/scene-graph'
-import { colorToFill } from '@open-pencil/scene-graph/color'
-import { parseCSSGridTracks, parseCSSNumber } from '@open-pencil/scene-graph/css'
-import type { Color, JSONObject } from '@open-pencil/scene-graph/primitives'
+import type { Fill, LayoutMode, SceneNode } from '@kalka/scene-graph'
+import { colorToFill } from '@kalka/scene-graph/color'
+import { parseCSSGridTracks, parseCSSNumber } from '@kalka/scene-graph/css'
+import type { Color, JSONObject } from '@kalka/scene-graph/primitives'
 
 import { applyEffectOverrides } from './overrides/effects'
 import { applyStateOverrides } from './overrides/state'

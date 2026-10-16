@@ -1,5 +1,5 @@
-import type { SceneGraph } from '@open-pencil/scene-graph'
-import { guideOwnersOnPage, type CanvasGuide } from '@open-pencil/scene-graph/guides'
+import type { SceneGraph } from '@kalka/scene-graph'
+import { guideOwnersOnPage, type CanvasGuide } from '@kalka/scene-graph/guides'
 
 import { distanceToGuideSegment, getGuideScreenSegment, type GuideViewport } from './geometry'
 

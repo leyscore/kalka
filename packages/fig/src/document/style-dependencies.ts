@@ -1,5 +1,5 @@
-import type { NodeChange, StyleReference } from '@open-pencil/kiwi/fig/codec'
-import { guidToString } from '@open-pencil/kiwi/fig/guid'
+import type { NodeChange, StyleReference } from '@kalka/kiwi/fig/codec'
+import { guidToString } from '@kalka/kiwi/fig/guid'
 
 import { forEachOverrideRecord } from '../instance-overrides/types'
 

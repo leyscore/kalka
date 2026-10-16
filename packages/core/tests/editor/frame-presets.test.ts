@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { createEditor } from '@open-pencil/core/editor'
-import { computeLayout } from '@open-pencil/core/layout'
+import { createEditor } from '@kalka/core/editor'
+import { computeLayout } from '@kalka/core/layout'
 
 import { getNodeOrThrow } from '../helpers/assert'
 

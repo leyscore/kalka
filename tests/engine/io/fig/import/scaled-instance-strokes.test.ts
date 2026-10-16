@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 
-import { materializeDocument } from '@open-pencil/fig'
-import type { SymbolData } from '@open-pencil/fig/instance-overrides'
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
+import { materializeDocument } from '@kalka/fig'
+import type { SymbolData } from '@kalka/fig/instance-overrides'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
 
 import { canvas, doc, node } from './legacy/helpers'
 

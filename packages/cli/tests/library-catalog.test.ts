@@ -3,9 +3,9 @@ import { mkdtemp, readFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { SceneGraph } from '@kalka/scene-graph'
 
-import { FileSystemLibraryCatalog } from '@open-pencil/cli/library'
+import { FileSystemLibraryCatalog } from '@kalka/cli/library'
 
 describe('filesystem library catalog', () => {
   test('publishes and restores revisions under a bounded root', async () => {

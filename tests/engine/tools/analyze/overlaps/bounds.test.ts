@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 
-import { SceneGraph } from '@open-pencil/core'
-import { computeOverlaps } from '@open-pencil/core/tools/analyze/overlaps'
-import type { Rect } from '@open-pencil/scene-graph/primitives'
+import { SceneGraph } from '@kalka/core'
+import { computeOverlaps } from '@kalka/core/tools/analyze/overlaps'
+import type { Rect } from '@kalka/scene-graph/primitives'
 
 import { frame, pageId, rect } from './helpers'
 

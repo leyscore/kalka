@@ -7,9 +7,9 @@ import { FIXTURES } from '#core-tests/helpers/fig/fixtures'
 import { corePackagePath } from '#core-tests/helpers/paths'
 import { HEAVY_TEST_TIMEOUT_MS } from '#core-tests/helpers/test-utils'
 
-import { exportFigFile, initCodec, parseFigFile, SceneGraph } from '@open-pencil/core'
-import { fontManager } from '@open-pencil/core/text'
-import { parseFigBuffer } from '@open-pencil/fig'
+import { exportFigFile, initCodec, parseFigFile, SceneGraph } from '@kalka/core'
+import { fontManager } from '@kalka/core/text'
+import { parseFigBuffer } from '@kalka/fig'
 
 const INTER_ASSETS = corePackagePath('assets')
 

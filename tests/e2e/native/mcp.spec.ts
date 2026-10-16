@@ -140,7 +140,7 @@ describe('native MCP server lifecycle', () => {
       const detail = await mcpFailureDetail()
       assert.match(
         detail ?? '',
-        /requires @open-pencil\/mcp|major\.minor compatibility/,
+        /requires @kalka\/mcp|major\.minor compatibility/,
         `resolved ${lookup.path} but failed without a version explanation: ${detail}`
       )
       return

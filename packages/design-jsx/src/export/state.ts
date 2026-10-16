@@ -1,4 +1,4 @@
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 import type { getNodeContext } from './helpers'
 import { helperCall, type JSXProp, type JSXValue } from './value'

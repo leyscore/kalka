@@ -1,5 +1,5 @@
-import type { Mat3, SceneGraph, SceneNode, Vector } from '@open-pencil/scene-graph'
-import { TransformMatrix, getWorldMatrix } from '@open-pencil/scene-graph'
+import type { Mat3, SceneGraph, SceneNode, Vector } from '@kalka/scene-graph'
+import { TransformMatrix, getWorldMatrix } from '@kalka/scene-graph'
 
 import { clampRot, round2 } from './style'
 

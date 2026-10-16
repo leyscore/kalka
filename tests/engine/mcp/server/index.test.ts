@@ -7,8 +7,8 @@ import { join } from 'node:path'
 
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client'
 
-import { MCP_AGENT_HEADER } from '@open-pencil/core/constants'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { MCP_AGENT_HEADER } from '@kalka/core/constants'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { startServer, type ServerHandle } from '#mcp/server'
 import { createToolDescriptors, getMCPToolDefinitions } from '#mcp/tool/manifest'

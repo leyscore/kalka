@@ -1,4 +1,4 @@
-import { resolvedPaintBindings, type SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
+import { resolvedPaintBindings, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
 
 /** Resolve bound paint colors only after occurrence hierarchy and modes are available. */
 export function applyDocumentPaintBindings(

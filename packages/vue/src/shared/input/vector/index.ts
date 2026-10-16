@@ -13,9 +13,9 @@ export {
   isEndpoint,
   NODE_HIT_THRESHOLD
 } from '#vue/shared/input/vector/hit-test'
-import type { Editor } from '@open-pencil/core/editor'
-import { vectorHandleId } from '@open-pencil/core/vector'
-import type { Vector } from '@open-pencil/scene-graph/primitives'
+import type { Editor } from '@kalka/core/editor'
+import { vectorHandleId } from '@kalka/core/vector'
+import type { Vector } from '@kalka/scene-graph/primitives'
 
 type NodeEditEditor = Partial<{
   nodeEditSelectVertex: (vertexIndex: number, addToSelection: boolean) => void

@@ -1,13 +1,13 @@
 import { omit } from 'es-toolkit/object'
 
-import { tokenStylesheet } from '@open-pencil/dom-css/export'
+import { tokenStylesheet } from '@kalka/dom-css/export'
 import {
   createDefaultNode,
   generateId,
   SceneGraph,
   type EnabledLibraryBinding,
   type SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { imageFilePath, imageHashFromPath, imageSourceResolver } from './assets'
 import { readClassRules, reconcileClasses, stylesFile } from './classes'

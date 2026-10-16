@@ -1,4 +1,4 @@
-import { IS_BROWSER, IS_TAURI } from '@open-pencil/core/constants'
+import { IS_BROWSER, IS_TAURI } from '@kalka/core/constants'
 
 import ACP_DESIGN_CONTEXT from '@/app/ai/acp/design-context.md'
 
@@ -59,9 +59,9 @@ export {
   COMPONENT_LABEL_ICON_GAP,
   RULER_TARGET_PIXEL_SPACING,
   RULER_MAJOR_TOLERANCE
-} from '@open-pencil/core/constants'
+} from '@kalka/core/constants'
 
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 /**
  * The collaboration namespace. It names the shared document format, so builds that sync the layer
@@ -109,7 +109,7 @@ export {
   ZOOM_DIVISOR,
   ZOOM_SCALE_MIN,
   ZOOM_SCALE_MAX
-} from '@open-pencil/core/constants'
+} from '@kalka/core/constants'
 
 export const ASSET_GRID_THUMBNAIL_SIZE = 96
 export const ASSET_LIST_THUMBNAIL_SIZE = 40

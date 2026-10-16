@@ -1,5 +1,5 @@
-import type { FigmaAPI } from '@open-pencil/core/figma-api'
-import { compileScript } from '@open-pencil/core/tools'
+import type { FigmaAPI } from '@kalka/core/figma-api'
+import { compileScript } from '@kalka/core/tools'
 
 import type { AutomationTarget } from '@/app/automation/bridge/target'
 import { automationUndoLabel, executeWithPageUndo } from '@/app/automation/execution/editor'

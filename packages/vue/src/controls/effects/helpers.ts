@@ -1,8 +1,8 @@
 import type { Ref } from 'vue'
 
-import type { Editor } from '@open-pencil/core/editor'
-import type { Effect, SceneNode } from '@open-pencil/scene-graph'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+import type { Editor } from '@kalka/core/editor'
+import type { Effect, SceneNode } from '@kalka/scene-graph'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import { useI18n } from '#vue/i18n/useI18n.js'
 

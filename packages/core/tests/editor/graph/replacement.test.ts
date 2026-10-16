@@ -1,8 +1,8 @@
 import { expect, mock, test } from 'bun:test'
 
-import type { SkiaRenderer } from '@open-pencil/core/canvas'
-import { createEditor } from '@open-pencil/core/editor'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import type { SkiaRenderer } from '@kalka/core/canvas'
+import { createEditor } from '@kalka/core/editor'
+import { SceneGraph } from '@kalka/scene-graph'
 
 test('graph replacement clears tiled state even when page IDs are reused', () => {
   const editor = createEditor()

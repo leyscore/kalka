@@ -1,7 +1,7 @@
 import { createAnthropic } from '@ai-sdk/anthropic'
 import { createOpenAI } from '@ai-sdk/openai'
 
-import { IS_TAURI } from '@open-pencil/core/constants'
+import { IS_TAURI } from '@kalka/core/constants'
 
 import type { ModelConfig, ModelProviderAdapter } from '@/app/ai/providers/types'
 

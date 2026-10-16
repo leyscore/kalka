@@ -1,4 +1,4 @@
-/** @jsxImportSource @open-pencil/design-jsx */
+/** @jsxImportSource @kalka/design-jsx */
 /**
  * The demo's controls, written with Reka UI's element names: each is a main component (or set)
  * with a behaviour, ready to place and to run in preview.
@@ -14,7 +14,7 @@ import {
   TextField,
   type BaseProps,
   type TreeNode
-} from '@open-pencil/design-jsx'
+} from '@kalka/design-jsx'
 
 export const CONTROL_COLORS = {
   ink: '#172554',

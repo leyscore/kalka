@@ -1,9 +1,9 @@
 import { createHead } from '@unhead/vue/client'
 import { createApp, nextTick } from 'vue'
 
-import { setIdSession } from '@open-pencil/scene-graph'
-import { randomInt } from '@open-pencil/scene-graph/random'
-import { createRetainedScopePlugin } from '@open-pencil/vue'
+import { setIdSession } from '@kalka/scene-graph'
+import { randomInt } from '@kalka/scene-graph/random'
+import { createRetainedScopePlugin } from '@kalka/vue'
 
 import './app.css'
 import { recordRuntimeError } from '@/app/diagnostics'

@@ -1,6 +1,6 @@
-import { FigmaAPI, SceneGraph } from '@open-pencil/core'
-import type { FigmaNodeProxy } from '@open-pencil/core'
-import type { Color, Fill, Stroke } from '@open-pencil/scene-graph'
+import { FigmaAPI, SceneGraph } from '@kalka/core'
+import type { FigmaNodeProxy } from '@kalka/core'
+import type { Color, Fill, Stroke } from '@kalka/scene-graph'
 
 export function createAPI(): FigmaAPI {
   return new FigmaAPI(new SceneGraph())

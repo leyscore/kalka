@@ -1,6 +1,6 @@
 import { useEventListener } from '@vueuse/core'
 
-import { filterCanvasFiles } from '@open-pencil/vue'
+import { filterCanvasFiles } from '@kalka/vue'
 
 import { openDesignFile, openDesignFileBatch } from '@/app/shell/menu/files'
 

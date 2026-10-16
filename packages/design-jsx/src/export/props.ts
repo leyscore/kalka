@@ -1,11 +1,6 @@
-import {
-  layoutSizing,
-  type SceneGraph,
-  type SceneNode,
-  type NodeType
-} from '@open-pencil/scene-graph'
-import { DEFAULT_FONT_FAMILY } from '@open-pencil/scene-graph/constants'
-import { resolveNodeTextDirection } from '@open-pencil/scene-graph/text-direction'
+import { layoutSizing, type SceneGraph, type SceneNode, type NodeType } from '@kalka/scene-graph'
+import { DEFAULT_FONT_FAMILY } from '@kalka/scene-graph/constants'
+import { resolveNodeTextDirection } from '@kalka/scene-graph/text-direction'
 
 import {
   collectCornerRadii,

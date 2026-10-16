@@ -1,10 +1,10 @@
 import RBush from 'rbush'
 
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
-import { getWorldMatrix } from '@open-pencil/scene-graph/coordinate'
-import { computeDescendantVisualBounds } from '@open-pencil/scene-graph/geometry'
-import type { Mat3 } from '@open-pencil/scene-graph/matrix'
-import Matrix from '@open-pencil/scene-graph/matrix'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import { getWorldMatrix } from '@kalka/scene-graph/coordinate'
+import { computeDescendantVisualBounds } from '@kalka/scene-graph/geometry'
+import type { Mat3 } from '@kalka/scene-graph/matrix'
+import Matrix from '@kalka/scene-graph/matrix'
 
 import { worldNodeVisualBounds } from '#core/canvas/renderer/visual-bounds'
 

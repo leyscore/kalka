@@ -1,8 +1,8 @@
 import { isEqual } from 'es-toolkit/predicate'
 
-import type { NodeChange, Paint } from '@open-pencil/kiwi/fig/codec'
-import { setInstanceOverride, type SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
-import { createDefaultSourceMetadata } from '@open-pencil/scene-graph/node-defaults'
+import type { NodeChange, Paint } from '@kalka/kiwi/fig/codec'
+import { setInstanceOverride, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
+import { createDefaultSourceMetadata } from '@kalka/scene-graph/node-defaults'
 
 import { nodeChangeToProps } from '../node-change'
 import { numericVariableBindingScales } from '../node-change/variable/bindings'

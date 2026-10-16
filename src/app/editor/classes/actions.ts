@@ -1,5 +1,5 @@
-import { executeAtomicTool } from '@open-pencil/core/editor'
-import { editCSSClass, setHTMLElement } from '@open-pencil/core/tools'
+import { executeAtomicTool } from '@kalka/core/editor'
+import { editCSSClass, setHTMLElement } from '@kalka/core/tools'
 
 import { makeFigmaFromStore } from '@/app/automation/bridge/figma-factory'
 import type { EditorStore } from '@/app/editor/active-store'

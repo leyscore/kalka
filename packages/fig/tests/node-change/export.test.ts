@@ -10,11 +10,11 @@ import {
   type FigNodeChangeExportRuntime
 } from '#fig/node-change/index'
 
-import { SceneGraph } from '@open-pencil/scene-graph'
-import { fractionalPosition } from '@open-pencil/scene-graph/order-keys'
-import type { GUID } from '@open-pencil/scene-graph/primitives'
+import { SceneGraph } from '@kalka/scene-graph'
+import { fractionalPosition } from '@kalka/scene-graph/order-keys'
+import type { GUID } from '@kalka/scene-graph/primitives'
 
-describe('@open-pencil/fig SceneGraph export policy', () => {
+describe('@kalka/fig SceneGraph export policy', () => {
   test('maps node types deterministically', () => {
     expect(mapToFigmaType('COMPONENT')).toBe('SYMBOL')
   })

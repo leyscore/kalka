@@ -1,6 +1,6 @@
 import type { RemoteFontSource, ResolveFontResult } from 'unifont'
 
-import type { WebFontFaceAsset, WebFontFaceRequest } from '@open-pencil/dom-css/export'
+import type { WebFontFaceAsset, WebFontFaceRequest } from '@kalka/dom-css/export'
 
 import {
   createProviderUnifont,

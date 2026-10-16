@@ -5,7 +5,7 @@ import { checkpointComponent, restoreComponentCheckpoint } from '#fig/document/c
 import { interpretComponent } from '#fig/instance-overrides/interpret'
 import { materializeInstance } from '#fig/instance-overrides/materialize-instance'
 
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { SceneGraph } from '@kalka/scene-graph'
 
 function setup() {
   const occurrence = interpretComponent(

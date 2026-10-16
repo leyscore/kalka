@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, useTemplateRef } from 'vue'
 
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@kalka/vue'
 
 import { openAISetup } from '@/app/ai/models/settings/onboarding/dialog'
 import { startWithPrompt } from '@/app/home/start'

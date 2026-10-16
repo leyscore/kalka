@@ -1,11 +1,11 @@
-import { SNAP_THRESHOLD_SCREEN_PX } from '@open-pencil/core/constants'
-import type { Editor } from '@open-pencil/core/editor'
-import { computeSnap } from '@open-pencil/scene-graph'
-import type { SceneNode } from '@open-pencil/scene-graph'
-import { getAxisAlignedWorldBounds, getWorldMatrix } from '@open-pencil/scene-graph/coordinate'
-import Matrix from '@open-pencil/scene-graph/matrix'
-import type { Rect, Vector } from '@open-pencil/scene-graph/primitives'
-import type { SnapGuide } from '@open-pencil/scene-graph/snap'
+import { SNAP_THRESHOLD_SCREEN_PX } from '@kalka/core/constants'
+import type { Editor } from '@kalka/core/editor'
+import { computeSnap } from '@kalka/scene-graph'
+import type { SceneNode } from '@kalka/scene-graph'
+import { getAxisAlignedWorldBounds, getWorldMatrix } from '@kalka/scene-graph/coordinate'
+import Matrix from '@kalka/scene-graph/matrix'
+import type { Rect, Vector } from '@kalka/scene-graph/primitives'
+import type { SnapGuide } from '@kalka/scene-graph/snap'
 
 export interface PixelSnapResult {
   delta: Vector

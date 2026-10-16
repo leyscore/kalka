@@ -1,6 +1,6 @@
 import { describe, expect, test, mock } from 'bun:test'
 
-import type { ACPAgentDef } from '@open-pencil/core/constants'
+import type { ACPAgentDef } from '@kalka/core/constants'
 
 import { createAgentDiscovery, detectedAgents } from '@/app/ai/agents/discovery'
 import type { AgentLookup } from '@/app/ai/agents/native'
@@ -8,8 +8,8 @@ import { createDeferred } from '@/app/runtime/deferred'
 
 // Installed companions report the version of the app under test, as matching ones do.
 const COMPANION_PACKAGES: Record<string, string> = {
-  'openpencil-mcp-http': '@open-pencil/mcp',
-  'openpencil-harness': '@open-pencil/harness'
+  'openpencil-mcp-http': '@kalka/mcp',
+  'openpencil-harness': '@kalka/harness'
 }
 
 function lookup(...commands: string[]): AgentLookup {
@@ -221,7 +221,7 @@ describe('Harness companion setup', () => {
       enabled: true,
       lookup: async () => ({
         ...lookup('npm', 'openpencil-harness'),
-        versions: { '@open-pencil/harness': version }
+        versions: { '@kalka/harness': version }
       }),
       install: async () => undefined,
       installHarness
@@ -242,14 +242,14 @@ describe('Harness companion setup', () => {
       lookup: async () => ({
         searchPath: '/test/bin',
         executables: { npm: '/test/bin/npm', 'openpencil-mcp-http': '/home/me/.bun/bin/mcp' },
-        versions: { '@open-pencil/mcp': '0.12.0' }
+        versions: { '@kalka/mcp': '0.12.0' }
       }),
       install: async () => undefined,
       installBridge,
       restartBridge
     })
     await discovery.refresh()
-    expect(discovery.canvasBridgeCommand.value).toStartWith('bun add -g @open-pencil/mcp@')
+    expect(discovery.canvasBridgeCommand.value).toStartWith('bun add -g @kalka/mcp@')
     await discovery.setupCanvasBridge()
     expect(installBridge).toHaveBeenCalledTimes(1)
     expect(restartBridge).not.toHaveBeenCalled()

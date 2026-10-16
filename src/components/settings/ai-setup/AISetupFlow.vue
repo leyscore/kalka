@@ -2,8 +2,8 @@
 import { tv } from 'tailwind-variants'
 import { computed, ref } from 'vue'
 
-import { IS_TAURI } from '@open-pencil/core/constants'
-import { useI18n } from '@open-pencil/vue'
+import { IS_TAURI } from '@kalka/core/constants'
+import { useI18n } from '@kalka/vue'
 
 import type { AISetupEntry } from '@/app/ai/models/settings/onboarding/dialog'
 import type { OnboardingAccess } from '@/app/ai/models/settings/onboarding/plan'

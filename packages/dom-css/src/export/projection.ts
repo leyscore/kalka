@@ -1,13 +1,8 @@
 import { fromUint8Array } from 'js-base64'
 
-import {
-  layoutSizingInParent,
-  readIcon,
-  type SceneGraph,
-  type SceneNode
-} from '@open-pencil/scene-graph'
-import { BLACK } from '@open-pencil/scene-graph/constants'
-import { resolveNodeTextDirection } from '@open-pencil/scene-graph/text-direction'
+import { layoutSizingInParent, readIcon, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
+import { BLACK } from '@kalka/scene-graph/constants'
+import { resolveNodeTextDirection } from '@kalka/scene-graph/text-direction'
 
 import { DesignTokens, type CSSModes } from '../tokens/references'
 import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'

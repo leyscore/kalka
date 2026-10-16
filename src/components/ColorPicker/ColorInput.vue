@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { useAttrs } from 'vue'
 
-import type { Color } from '@open-pencil/scene-graph/primitives'
-import { ColorInputRoot, inputValue } from '@open-pencil/vue'
-import type { OkHCLControls } from '@open-pencil/vue'
+import type { Color } from '@kalka/scene-graph/primitives'
+import { ColorInputRoot, inputValue } from '@kalka/vue'
+import type { OkHCLControls } from '@kalka/vue'
 
 import ColorPicker from '@/components/ColorPicker/ColorPicker.vue'
 

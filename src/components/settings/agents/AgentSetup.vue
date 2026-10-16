@@ -3,8 +3,8 @@ import { useClipboard } from '@vueuse/core'
 import { tv } from 'tailwind-variants'
 import { computed } from 'vue'
 
-import type { ACPAgentDef } from '@open-pencil/core/constants'
-import { useI18n } from '@open-pencil/vue'
+import type { ACPAgentDef } from '@kalka/core/constants'
+import { useI18n } from '@kalka/vue'
 
 import { codingAgentGuideURL, codingAgentSetupPrompt } from '@/app/ai/acp/setup-prompt'
 import { agentSetupView, type AgentSetupState } from '@/app/ai/agents/setup'

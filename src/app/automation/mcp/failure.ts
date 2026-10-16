@@ -1,12 +1,12 @@
 import { APP_VERSION } from '@/app/runtime/version'
 
 /**
- * Name of the entry point installed by `@open-pencil/mcp`.
+ * Name of the entry point installed by `@kalka/mcp`.
  *
  * Kept here rather than in the spawner so Settings can render the install
  * instruction without importing the spawning code.
  */
-export const MCP_PACKAGE_NAME = '@open-pencil/mcp'
+export const MCP_PACKAGE_NAME = '@kalka/mcp'
 
 /** Exact package spec a user should install to match this app. */
 export const MCP_INSTALL_TARGET = `${MCP_PACKAGE_NAME}@${APP_VERSION}`

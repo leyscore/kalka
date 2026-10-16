@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { SceneGraph, getInstanceOverride, setInstanceOverride, type SceneNode } from '@open-pencil/scene-graph'
-import { cloneNodeProps } from '@open-pencil/scene-graph/copy'
+import { SceneGraph, getInstanceOverride, setInstanceOverride, type SceneNode } from '@kalka/scene-graph'
+import { cloneNodeProps } from '@kalka/scene-graph/copy'
 
 import { expectDefined, getNodeOrThrow } from '../helpers/assert'
 

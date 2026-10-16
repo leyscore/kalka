@@ -9,7 +9,7 @@ import type {
   VariableScope,
   VariableType,
   VariableValue
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import {
   decodeVariableToken,

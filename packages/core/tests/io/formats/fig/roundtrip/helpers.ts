@@ -1,8 +1,8 @@
 import { isEqual } from 'es-toolkit/predicate'
 
-import type { SceneGraph, SceneNode } from '@open-pencil/core'
-import type { ComponentPropertyDefinition } from '@open-pencil/scene-graph'
-import type { JSONObject } from '@open-pencil/scene-graph/primitives'
+import type { SceneGraph, SceneNode } from '@kalka/core'
+import type { ComponentPropertyDefinition } from '@kalka/scene-graph'
+import type { JSONObject } from '@kalka/scene-graph/primitives'
 
 import { verifyComponentPropDefs, verifyDerivedTextData } from './raw-verifiers/helpers'
 

@@ -4,7 +4,7 @@ import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'reka-ui'
 import { tv } from 'tailwind-variants'
 import { computed, ref } from 'vue'
 
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@kalka/vue'
 
 import type { ToolChange } from '@/app/ai/tools/changes/types'
 import CodeViewer from '@/components/code-editor/LazyCodeViewer.vue'

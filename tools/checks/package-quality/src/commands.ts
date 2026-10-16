@@ -1,6 +1,6 @@
 import { defineCommand } from 'citty'
 
-import { resolveWorkspaceRoot } from '@open-pencil/package-artifacts-tools'
+import { resolveWorkspaceRoot } from '@kalka/package-artifacts-tools'
 
 import { checkTypes } from './checks/attw'
 import { formatPackageDiagnostics, validatePackageMetadata } from './checks/metadata'

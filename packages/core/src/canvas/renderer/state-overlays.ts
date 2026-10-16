@@ -1,4 +1,4 @@
-import type { SceneGraph } from '@open-pencil/scene-graph'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 import type { RenderOverlays } from '#core/canvas/renderer/types'
 import { playIslandRoots } from '#core/editor/play/islands'

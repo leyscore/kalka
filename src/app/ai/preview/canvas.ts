@@ -2,15 +2,11 @@ import type { CanvasKit, SkPicture } from 'canvaskit-wasm'
 import { uniq } from 'es-toolkit/array'
 import { watch } from 'vue'
 
-import {
-  recordJSXPreview,
-  stageJSXPreview,
-  type StagedJSXPreview
-} from '@open-pencil/core/design-jsx'
-import { computeContentBounds } from '@open-pencil/core/io'
-import type { JSXPreviewNode } from '@open-pencil/design-jsx'
-import type { SceneGraph } from '@open-pencil/scene-graph'
-import type { Rect, Vector } from '@open-pencil/scene-graph/primitives'
+import { recordJSXPreview, stageJSXPreview, type StagedJSXPreview } from '@kalka/core/design-jsx'
+import { computeContentBounds } from '@kalka/core/io'
+import type { JSXPreviewNode } from '@kalka/design-jsx'
+import type { SceneGraph } from '@kalka/scene-graph'
+import type { Rect, Vector } from '@kalka/scene-graph/primitives'
 
 import {
   getActiveEditorStoreOrNull,

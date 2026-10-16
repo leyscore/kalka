@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 
-import type { DownloadedFontCache } from '@open-pencil/core/text'
+import type { DownloadedFontCache } from '@kalka/core/text'
 
 import {
   readCacheBytes,

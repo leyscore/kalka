@@ -1,4 +1,4 @@
-import { MCP_TOOL_SCOPES, type MCPToolScope } from '@open-pencil/mcp/tools'
+import { MCP_TOOL_SCOPES, type MCPToolScope } from '@kalka/mcp/tools'
 
 export const DEV_MCP_RESTART_PATH = '/__openpencil/mcp/restart'
 

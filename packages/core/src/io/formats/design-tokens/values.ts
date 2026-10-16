@@ -1,6 +1,6 @@
-import { variableUnit } from '@open-pencil/dom-css/export'
-import type { Color, TokenUnit, Variable } from '@open-pencil/scene-graph'
-import { colorToHex } from '@open-pencil/scene-graph/color'
+import { variableUnit } from '@kalka/dom-css/export'
+import type { Color, TokenUnit, Variable } from '@kalka/scene-graph'
+import { colorToHex } from '@kalka/scene-graph/color'
 
 import type { DesignTokenType } from './types'
 

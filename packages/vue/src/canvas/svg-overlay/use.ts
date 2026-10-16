@@ -8,10 +8,10 @@ import {
   overlaysFromEditorState,
   type LabelHitOptions,
   type PlacedIssueMarker
-} from '@open-pencil/core/canvas'
-import type { Editor, EditorState } from '@open-pencil/core/editor'
-import type { Color } from '@open-pencil/scene-graph'
-import type { Rect } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/core/canvas'
+import type { Editor, EditorState } from '@kalka/core/editor'
+import type { Color } from '@kalka/scene-graph'
+import type { Rect } from '@kalka/scene-graph/primitives'
 
 import { composeOverlay } from '#vue/canvas/svg-overlay/compose'
 import { clearOverlay, renderOverlay } from '#vue/canvas/svg-overlay/render'

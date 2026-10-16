@@ -11,9 +11,9 @@ import {
 } from 'reka-ui'
 import { computed, onMounted, ref, shallowRef, watch } from 'vue'
 
-import type { SceneNode } from '@open-pencil/scene-graph'
-import { createDefaultNode } from '@open-pencil/scene-graph/node-defaults'
-import { useI18n } from '@open-pencil/vue'
+import type { SceneNode } from '@kalka/scene-graph'
+import { createDefaultNode } from '@kalka/scene-graph/node-defaults'
+import { useI18n } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import { nodeIcon } from '@/app/editor/icons'

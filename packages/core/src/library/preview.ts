@@ -1,4 +1,4 @@
-import { cloneNodeProps, SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
+import { cloneNodeProps, SceneGraph, type SceneNode } from '@kalka/scene-graph'
 
 import { reapplyInstanceComponentProperties } from '#core/editor/components/properties'
 

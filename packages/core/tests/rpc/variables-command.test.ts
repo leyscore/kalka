@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { executeRPCCommand, type TokensResult } from '@open-pencil/core/rpc'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { executeRPCCommand, type TokensResult } from '@kalka/core/rpc'
+import { SceneGraph } from '@kalka/scene-graph'
 
 function graphWithTokens(): SceneGraph {
   const graph = new SceneGraph()

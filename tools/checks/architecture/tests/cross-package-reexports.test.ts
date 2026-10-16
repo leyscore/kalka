@@ -7,13 +7,13 @@ describe('cross-package re-export shims', () => {
     expect(
       isCrossPackageReexportShim(
         'packages/core/src/kiwi/fig/instance-overrides/index.ts',
-        "export * from '@open-pencil/fig/instance-overrides'\n"
+        "export * from '@kalka/fig/instance-overrides'\n"
       )
     ).toBe(true)
     expect(
       isCrossPackageReexportShim(
         'packages/core/src/io/formats/fig/compress.ts',
-        "export { compressFigDataSync } from '@open-pencil/fig'\n"
+        "export { compressFigDataSync } from '@kalka/fig'\n"
       )
     ).toBe(true)
   })
@@ -22,13 +22,13 @@ describe('cross-package re-export shims', () => {
     expect(
       isCrossPackageReexportShim(
         'packages/core/src/index.ts',
-        "export { parsePenFile } from '@open-pencil/pen'\nexport { createEditor } from './editor'\n"
+        "export { parsePenFile } from '@kalka/pen'\nexport { createEditor } from './editor'\n"
       )
     ).toBe(false)
     expect(
       isCrossPackageReexportShim(
         'packages/core/src/io/formats.ts',
-        "import { parsePenFile } from '@open-pencil/pen'\nexport const pen = parsePenFile\n"
+        "import { parsePenFile } from '@kalka/pen'\nexport const pen = parsePenFile\n"
       )
     ).toBe(false)
   })

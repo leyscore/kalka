@@ -48,7 +48,7 @@
         "paths": [
           {
             "name": "@/types",
-            "message": "Import types directly from @open-pencil/core."
+            "message": "Import types directly from @kalka/core."
           },
           {
             "name": "node:module",
@@ -63,7 +63,7 @@
             "group": [
               "@/engine/*"
             ],
-            "message": "Import from @open-pencil/core unless the module adds platform-specific logic.",
+            "message": "Import from @kalka/core unless the module adds platform-specific logic.",
             "allowImportNames": [
               "loadFont",
               "listFamilies",
@@ -76,7 +76,7 @@
               "../../packages/*",
               "../../../packages/*"
             ],
-            "message": "Use the workspace package name (e.g. @open-pencil/core) instead of relative paths to packages/."
+            "message": "Use the workspace package name (e.g. @kalka/core) instead of relative paths to packages/."
           }
         ]
       }

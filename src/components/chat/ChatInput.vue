@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, useTemplateRef } from 'vue'
 
-import { ACP_AGENTS } from '@open-pencil/core/constants'
-import { useI18n, useSelectionState } from '@open-pencil/vue'
+import { ACP_AGENTS } from '@kalka/core/constants'
+import { useI18n, useSelectionState } from '@kalka/vue'
 
 import { revokeImagePreviewURL } from '@/app/ai/attachment/image/prepare'
 import { MAX_IMAGE_ATTACHMENTS } from '@/app/ai/attachment/image/types'

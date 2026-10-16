@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'bun:test'
 
-import { importClipboardNodes } from '@open-pencil/core'
-import type { NodeChange } from '@open-pencil/core'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { importClipboardNodes } from '@kalka/core'
+import type { NodeChange } from '@kalka/core'
+import { SceneGraph } from '@kalka/scene-graph'
 
 describe('importClipboardNodes: paste linkage scoping', () => {
   // This suite proves scoped paste linkage is load-bearing. Test 1 locks the

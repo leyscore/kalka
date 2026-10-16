@@ -8,10 +8,10 @@ function isPackageOrSubpath(source: string, packageName: string): boolean {
 }
 
 const noVueSelfPackageImports = createImportSourceRule({
-  description: 'Disallow @open-pencil/vue self-imports inside the Vue SDK — use #vue/* aliases',
+  description: 'Disallow @kalka/vue self-imports inside the Vue SDK — use #vue/* aliases',
   applies: (file) => file.includes('/packages/vue/src/'),
   check: (source) =>
-    isPackageOrSubpath(source, '@open-pencil/vue') &&
+    isPackageOrSubpath(source, '@kalka/vue') &&
     `Use #vue/* for internal Vue SDK imports instead of self-package import '${source}'.`
 })
 
@@ -192,37 +192,35 @@ function createExactCoreBarrelImportRule({
   return createImportSourceRule({
     description,
     applies,
-    check: (source) => source === '@open-pencil/core' && message
+    check: (source) => source === '@kalka/core' && message
   })
 }
 
 const noMcpCoreBarrelImports = createExactCoreBarrelImportRule({
-  description: 'Disallow MCP imports from @open-pencil/core root barrel — use domain subpaths',
+  description: 'Disallow MCP imports from @kalka/core root barrel — use domain subpaths',
   applies: (file) => file.includes('/packages/mcp/src/'),
-  message:
-    'Use a targeted @open-pencil/core subpath in MCP code instead of the compatibility barrel.'
+  message: 'Use a targeted @kalka/core subpath in MCP code instead of the compatibility barrel.'
 })
 
 const noCliCoreBarrelImports = createExactCoreBarrelImportRule({
-  description: 'Disallow CLI imports from @open-pencil/core root barrel — use domain subpaths',
+  description: 'Disallow CLI imports from @kalka/core root barrel — use domain subpaths',
   applies: (file) => file.includes('/packages/cli/src/'),
-  message:
-    'Use a targeted @open-pencil/core subpath in CLI code instead of the compatibility barrel.'
+  message: 'Use a targeted @kalka/core subpath in CLI code instead of the compatibility barrel.'
 })
 
 const noScriptCoreBarrelImports = createExactCoreBarrelImportRule({
-  description: 'Disallow script imports from @open-pencil/core root barrel — use domain subpaths',
+  description: 'Disallow script imports from @kalka/core root barrel — use domain subpaths',
   applies: (file) => file.includes('/scripts/'),
   message:
-    'Use a targeted @open-pencil/core subpath or #core/* alias in scripts instead of the compatibility barrel.'
+    'Use a targeted @kalka/core subpath or #core/* alias in scripts instead of the compatibility barrel.'
 })
 
 const noCoreSelfPackageImports = createImportSourceRule({
-  description: 'Disallow @open-pencil/core self-imports inside packages/core/src',
+  description: 'Disallow @kalka/core self-imports inside packages/core/src',
   applies: (file) => file.includes('/packages/core/src/'),
   check: (source) =>
-    isPackageOrSubpath(source, '@open-pencil/core') &&
-    'Core internals must import local modules directly instead of importing the @open-pencil/core public package entrypoints.'
+    isPackageOrSubpath(source, '@kalka/core') &&
+    'Core internals must import local modules directly instead of importing the @kalka/core public package entrypoints.'
 })
 
 const noInlinePromptConstants = {
@@ -249,11 +247,11 @@ const noInlinePromptConstants = {
 
 const noAppVueCoreBarrelImports = createExactCoreBarrelImportRule({
   description:
-    'Disallow app and Vue SDK imports from @open-pencil/core root barrel — use domain subpaths',
+    'Disallow app and Vue SDK imports from @kalka/core root barrel — use domain subpaths',
   applies: (file) =>
     (file.includes('/src/') && !file.includes('/packages/')) || file.includes('/packages/vue/src/'),
   message:
-    'Use a targeted @open-pencil/core subpath (editor, scene-graph, constants, io, etc.) instead of the compatibility barrel.'
+    'Use a targeted @kalka/core subpath (editor, scene-graph, constants, io, etc.) instead of the compatibility barrel.'
 })
 
 const noAppImportsInPackages = createImportSourceRule({
@@ -266,13 +264,13 @@ const noAppImportsInPackages = createImportSourceRule({
 const frameworkImportPrefixes = ['@vue/', '@tauri-apps/', '@/']
 
 const noCoreFrameworkImports = createImportSourceRule({
-  description: 'Keep @open-pencil/core framework-agnostic by disallowing Vue/Tauri/app imports',
+  description: 'Keep @kalka/core framework-agnostic by disallowing Vue/Tauri/app imports',
   applies: (file) => file.includes('/packages/core/src/'),
   check: (source) =>
     (source === 'vue' ||
-      isPackageOrSubpath(source, '@open-pencil/vue') ||
+      isPackageOrSubpath(source, '@kalka/vue') ||
       frameworkImportPrefixes.some((prefix) => source.startsWith(prefix))) &&
-    `@open-pencil/core must stay framework-agnostic; do not import '${source}'.`
+    `@kalka/core must stay framework-agnostic; do not import '${source}'.`
 })
 
 export {

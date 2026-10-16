@@ -1,8 +1,8 @@
 import { computed } from 'vue'
 
-import { DEFAULT_FONT_FAMILY } from '@open-pencil/core/constants'
-import { fontManager } from '@open-pencil/core/text'
-import type { SceneNode } from '@open-pencil/scene-graph'
+import { DEFAULT_FONT_FAMILY } from '@kalka/core/constants'
+import { fontManager } from '@kalka/core/text'
+import type { SceneNode } from '@kalka/scene-graph'
 
 /**
  * Returns missing-font information for a text node getter.

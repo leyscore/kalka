@@ -2,11 +2,11 @@ import { expect, test } from 'bun:test'
 
 import { readFixtureArrayBuffer } from '#core-tests/helpers/fig/fixtures'
 
-import { createEditor } from '@open-pencil/core/editor'
-import { exportFigFile } from '@open-pencil/core/io'
-import { initCodec } from '@open-pencil/core/kiwi'
-import { materializeDocument, parseFigBuffer } from '@open-pencil/fig'
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import { createEditor } from '@kalka/core/editor'
+import { exportFigFile } from '@kalka/core/io'
+import { initCodec } from '@kalka/core/kiwi'
+import { materializeDocument, parseFigBuffer } from '@kalka/fig'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 function tagsInInput(graph: SceneGraph, rootId: string): SceneNode {
   const found: SceneNode[] = []

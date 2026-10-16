@@ -19,8 +19,8 @@ Consumers can place a checkerboard below the slot's `background` value for trans
 
 ```vue twoslash
 <script setup lang="ts">
-import type { Fill } from '@open-pencil/scene-graph'
-import { FillSwatch } from '@open-pencil/vue'
+import type { Fill } from '@kalka/scene-graph'
+import { FillSwatch } from '@kalka/vue'
 
 const fill: Fill = {
   type: 'SOLID',

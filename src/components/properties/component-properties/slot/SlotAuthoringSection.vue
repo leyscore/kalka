@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive, watch } from 'vue'
 
-import { useI18n, useSlotAuthoring } from '@open-pencil/vue'
+import { useI18n, useSlotAuthoring } from '@kalka/vue'
 
 import AssetThumbnail from '@/components/assets-panel/AssetThumbnail.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'

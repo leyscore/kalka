@@ -1,12 +1,12 @@
 /* eslint-disable max-lines -- retained backing allocation, coverage, and incremental construction share renderer state */
 import type { Canvas, Image as CKImage, Surface } from 'canvaskit-wasm'
 
-import { type SceneGraph } from '@open-pencil/scene-graph'
+import { type SceneGraph } from '@kalka/scene-graph'
 import {
   computeDescendantVisualBounds,
   unionVisualBounds,
   type VisualBounds
-} from '@open-pencil/scene-graph/geometry'
+} from '@kalka/scene-graph/geometry'
 
 import type { SkiaRenderer } from '#core/canvas/renderer'
 import { recordWorldPicture } from '#core/canvas/renderer/picture'

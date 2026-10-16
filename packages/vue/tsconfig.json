@@ -16,12 +16,12 @@
     "paths": {
       "#vue/*": ["./src/*", "./src/*.vue"],
       "#core/*": ["../core/src/*"],
-      "@open-pencil/vue": ["./src/index.ts"],
-      "@open-pencil/core": ["../core/src/index.ts"],
-      "@open-pencil/core/*": ["../core/src/*"],
-      "@open-pencil/core/editor": ["../core/src/editor/index.ts"],
-      "@open-pencil/core/render": ["../core/src/render/index.ts"],
-      "@open-pencil/core/color": ["../core/src/color.ts"]
+      "@kalka/vue": ["./src/index.ts"],
+      "@kalka/core": ["../core/src/index.ts"],
+      "@kalka/core/*": ["../core/src/*"],
+      "@kalka/core/editor": ["../core/src/editor/index.ts"],
+      "@kalka/core/render": ["../core/src/render/index.ts"],
+      "@kalka/core/color": ["../core/src/color.ts"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.vue", "src/**/*.d.ts", "../core/src/global.d.ts"],

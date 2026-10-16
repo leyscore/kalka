@@ -1,5 +1,5 @@
-import type { ToolDef } from '@open-pencil/core/tools'
-import { ALL_TOOLS, toolChangesDocument, isToolExposed } from '@open-pencil/core/tools'
+import type { ToolDef } from '@kalka/core/tools'
+import { ALL_TOOLS, toolChangesDocument, isToolExposed } from '@kalka/core/tools'
 
 import type {
   ToolAvailability,

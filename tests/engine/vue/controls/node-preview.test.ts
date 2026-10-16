@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 
-import { createEditor } from '@open-pencil/core/editor'
+import { createEditor } from '@kalka/core/editor'
 
 import { useNodePreview } from '#vue/controls/node-preview/use'
 

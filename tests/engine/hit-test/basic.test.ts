@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { SceneGraph } from '@open-pencil/core'
+import { SceneGraph } from '@kalka/core'
 
 function pageId(graph: SceneGraph) {
   return graph.getPages()[0].id

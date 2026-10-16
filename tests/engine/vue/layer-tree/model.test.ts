@@ -5,7 +5,7 @@ import {
   layerSelectionForTarget,
   patchLayerNode,
   visibleLayerRows
-} from '@open-pencil/vue'
+} from '@kalka/vue'
 
 import { createRect, firstPageId, makeSceneGraph } from '#tests/helpers/scene'
 

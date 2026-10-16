@@ -5,7 +5,7 @@ import { join } from 'node:path'
 
 import { hasAICoauthor } from '#ci/commit-attribution'
 
-import { resolveWorkspaceRoot } from '@open-pencil/package-artifacts-tools'
+import { resolveWorkspaceRoot } from '@kalka/package-artifacts-tools'
 
 const root = await resolveWorkspaceRoot(import.meta.dir)
 

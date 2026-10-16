@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { useSettingsMessages } from '@open-pencil/vue'
+import { useSettingsMessages } from '@kalka/vue'
 
 import type { SettingsSaveResult } from '@/app/settings/save-result'
 import AppAlert from '@/components/ui/feedback/AppAlert.vue'

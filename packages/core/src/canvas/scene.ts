@@ -1,16 +1,16 @@
 /* eslint-disable max-lines -- scene dispatch stays together while shape domains live in sibling modules */
 import type { Canvas, Path } from 'canvaskit-wasm'
 
-import { type SceneNode, type SceneGraph, type Fill } from '@open-pencil/scene-graph'
-import type { ArrowEndpoint } from '@open-pencil/scene-graph/arrow-caps'
+import { type SceneNode, type SceneGraph, type Fill } from '@kalka/scene-graph'
+import type { ArrowEndpoint } from '@kalka/scene-graph/arrow-caps'
 import {
   arrowCapOverflow,
   collectArrowEndpoints,
   lineArrowEndpoints
-} from '@open-pencil/scene-graph/arrow-caps'
-import { computeDescendantVisualBounds } from '@open-pencil/scene-graph/geometry'
-import Matrix from '@open-pencil/scene-graph/matrix'
-import type { Color } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/scene-graph/arrow-caps'
+import { computeDescendantVisualBounds } from '@kalka/scene-graph/geometry'
+import Matrix from '@kalka/scene-graph/matrix'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import { createSceneGeometry, nodeOrientationMatrix, projectedNode } from '#core/geometry'
 import { transformTextCase } from '#core/text/case'

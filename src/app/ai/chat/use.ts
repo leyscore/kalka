@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 
-import { IS_BROWSER } from '@open-pencil/core/constants'
+import { IS_BROWSER } from '@kalka/core/constants'
 
 import { createConversationHistory } from '@/app/ai/chat/history/controller'
 import {

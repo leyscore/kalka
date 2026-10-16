@@ -1,8 +1,8 @@
 import { fromUint8Array } from 'js-base64'
 
-import { computeContentBounds, vectorElement } from '@open-pencil/core/io'
-import { sceneNodeToDesignDocument } from '@open-pencil/dom-css/export'
-import type { SceneGraph } from '@open-pencil/scene-graph'
+import { computeContentBounds, vectorElement } from '@kalka/core/io'
+import { sceneNodeToDesignDocument } from '@kalka/dom-css/export'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 import { buildNode, patchAttributes, elementAttributes } from './build'
 import { ARTBOARD_CSP, ARTBOARD_CSS, type ArtboardFontFace } from './frame'

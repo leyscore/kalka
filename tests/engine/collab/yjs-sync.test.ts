@@ -4,10 +4,10 @@ import { create as createPRNG } from 'lib0/prng'
 import * as Y from 'yjs'
 import { TestConnector, type TestYInstance } from 'yjs/testHelper'
 
-import type { Fill, GeometryPath, SceneNode } from '@open-pencil/scene-graph'
-import { SceneGraph } from '@open-pencil/scene-graph'
-import { nodeVisualBounds } from '@open-pencil/scene-graph/geometry'
-import { createDefaultSourceMetadata } from '@open-pencil/scene-graph/node-defaults'
+import type { Fill, GeometryPath, SceneNode } from '@kalka/scene-graph'
+import { SceneGraph } from '@kalka/scene-graph'
+import { nodeVisualBounds } from '@kalka/scene-graph/geometry'
+import { createDefaultSourceMetadata } from '@kalka/scene-graph/node-defaults'
 
 import { decodeNodeFromYjs, syncEncodedNodeToYMap } from '@/app/collab/node-codec'
 

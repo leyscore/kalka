@@ -1,12 +1,8 @@
 import { effectiveFigmaRawNodeFields } from '#fig/source-metadata'
 
-import type { VariableConsumptionEntry, GUID } from '@open-pencil/kiwi/fig/codec'
-import { guidToString, stringToGuid } from '@open-pencil/kiwi/fig/guid'
-import {
-  isNumericVariableBindingField,
-  type SceneNode,
-  type SceneGraph
-} from '@open-pencil/scene-graph'
+import type { VariableConsumptionEntry, GUID } from '@kalka/kiwi/fig/codec'
+import { guidToString, stringToGuid } from '@kalka/kiwi/fig/guid'
+import { isNumericVariableBindingField, type SceneNode, type SceneGraph } from '@kalka/scene-graph'
 
 import { cloneRecord } from '../clone'
 import { linearVariableExpression } from './expression'

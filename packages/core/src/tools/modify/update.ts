@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 
-import type { SceneNode } from '@open-pencil/scene-graph'
+import type { SceneNode } from '@kalka/scene-graph'
 
 import { assertNodeEditable } from '#core/editor/capabilities'
 import { toolNumber, nodeIdInput } from '#core/tools/input'

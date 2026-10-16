@@ -8,7 +8,7 @@ import {
 } from '../src/index'
 import { cardDocument, TEST_COLORS } from './helpers'
 
-describe('@open-pencil/dom-css runtime', () => {
+describe('@kalka/dom-css runtime', () => {
   it('serializes DesignDOM as HTML', () => {
     expect(serializeHTML(cardDocument)).toContain('<article class="card">')
     expect(serializeHTML(cardDocument)).toContain('Kalka')

@@ -1,4 +1,4 @@
-import type { ConstraintType, SceneNode } from '@open-pencil/scene-graph'
+import type { ConstraintType, SceneNode } from '@kalka/scene-graph'
 
 const CONSTRAINT_VALUES: Record<string, ConstraintType> = {
   min: 'MIN',

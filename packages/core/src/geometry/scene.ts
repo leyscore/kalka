@@ -1,13 +1,13 @@
-import type { SceneGraph, SceneNode, Vector } from '@open-pencil/scene-graph'
+import type { SceneGraph, SceneNode, Vector } from '@kalka/scene-graph'
 import {
   getAxisAlignedWorldBounds,
   getNodeLocalMatrix,
   getNodeRotationOrigin,
   getWorldHandles,
   getWorldMatrix
-} from '@open-pencil/scene-graph/coordinate'
-import Matrix from '@open-pencil/scene-graph/matrix'
-import type { Rect } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/scene-graph/coordinate'
+import Matrix from '@kalka/scene-graph/matrix'
+import type { Rect } from '@kalka/scene-graph/primitives'
 
 import type { RotationPreview, ViewportTransform } from './types'
 

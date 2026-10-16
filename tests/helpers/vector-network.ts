@@ -1,4 +1,4 @@
-import type { VectorNetwork, VectorSegment, VectorVertex } from '@open-pencil/core'
+import type { VectorNetwork, VectorSegment, VectorVertex } from '@kalka/core'
 
 export function vectorVertex(x: number, y: number): VectorVertex {
   return { x, y, handleMirroring: 'NONE' }

@@ -1,4 +1,4 @@
-import type { SceneNode } from '@open-pencil/scene-graph'
+import type { SceneNode } from '@kalka/scene-graph'
 
 export function usesDetachedDerivedLayout(child: SceneNode): boolean {
   const derived = child.derivedLayout

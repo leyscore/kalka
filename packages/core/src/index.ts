@@ -66,7 +66,7 @@ export {
   type StyleRun,
   type SceneGraphEvents,
   type DocumentColorSpace
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 export { FigmaAPI, FigmaNodeProxy, computeImageHash, type FigmaFontName } from './figma-api'
 export { BehaviourHandle, OpenPencilAPI, type NodeRef } from './openpencil-api'
@@ -107,7 +107,7 @@ export {
   getStrokeOkHCL,
   type OkHCLColor,
   type OkHCLPayload
-} from '@open-pencil/scene-graph/color'
+} from '@kalka/scene-graph/color'
 export type {
   InfoResult,
   PageItem,
@@ -154,7 +154,7 @@ export {
   resolveNodeLayoutDirection,
   isLogicalTextAlignStart,
   isLogicalTextAlignEnd
-} from '@open-pencil/scene-graph/text-direction'
+} from '@kalka/scene-graph/text-direction'
 export {
   FONT_WEIGHT_NAMES,
   FontManager,
@@ -206,7 +206,7 @@ export {
   rgba255ToColor,
   colorToFill,
   colorDistance
-} from '@open-pencil/scene-graph/color'
+} from '@kalka/scene-graph/color'
 export {
   resolveOkHCLForPreview,
   resolveRGBAForPreview,
@@ -218,7 +218,7 @@ export {
   type ColorIntentSpace,
   type ColorPreviewOptions,
   type ResolvedRenderColor
-} from '@open-pencil/scene-graph/color'
+} from '@kalka/scene-graph/color'
 export {
   vectorNetworkToPath,
   geometryBlobToPath,
@@ -249,8 +249,8 @@ export {
   type NearestResult,
   type NetworkNearestResult
 } from './vector/bezier'
-export { computeSelectionBounds, computeSnap, type SnapGuide } from '@open-pencil/scene-graph/snap'
-export { UndoManager, type UndoEntry, type UndoManagerOptions } from '@open-pencil/scene-graph/undo'
+export { computeSelectionBounds, computeSnap, type SnapGuide } from '@kalka/scene-graph/snap'
+export { UndoManager, type UndoEntry, type UndoManagerOptions } from '@kalka/scene-graph/undo'
 export { TextEditor, type TextCaret, type TextEditorState } from './text/editor'
 export {
   getStyleAt,
@@ -280,7 +280,7 @@ export {
   type SVGExportOptions
 } from './io/formats/svg/export'
 export { svg, renderSVGNode, type SVGNode } from './io/formats/svg/node'
-export { parseSVGPath } from '@open-pencil/scene-graph/parse-path'
+export { parseSVGPath } from '@kalka/scene-graph/parse-path'
 export {
   createIconifyProvider,
   iconColor,
@@ -306,7 +306,7 @@ export {
   sceneNodeToKiwi,
   mapToFigmaType
 } from './kiwi/fig/node-change/serialize'
-export { fractionalPosition } from '@open-pencil/scene-graph/order-keys'
+export { fractionalPosition } from '@kalka/scene-graph/order-keys'
 export { withFigExportRuntime } from './canvas/text/shape'
 
 export { renderJSX, renderTree } from './design-jsx'
@@ -323,7 +323,7 @@ export {
 } from './clipboard'
 export { probeGlyphOutlineCommands, type GlyphOutlineProbe } from './text/opentype'
 
-export { readPenFile, parsePenFile } from '@open-pencil/pen'
+export { readPenFile, parsePenFile } from '@kalka/pen'
 
 export {
   readFigFile,

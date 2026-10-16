@@ -1,5 +1,5 @@
-import { sceneNodeToJSX, selectionToJSX } from '@open-pencil/design-jsx'
-import { parsePenFile } from '@open-pencil/pen'
+import { sceneNodeToJSX, selectionToJSX } from '@kalka/design-jsx'
+import { parsePenFile } from '@kalka/pen'
 
 import { exportFigFile, parseFigFile } from './formats/fig'
 import type { PPTXExportOptions } from './formats/pptx'
@@ -435,7 +435,7 @@ export const tailwindJSXFormat: IOFormatAdapter<'tailwind-jsx'> = {
   async exportContent(request) {
     const target = resolveExportNodes(request)
     if (!target) throw new Error('Nothing to export')
-    const { sceneNodesToTailwindJSX } = await import('@open-pencil/dom-css/export')
+    const { sceneNodesToTailwindJSX } = await import('@kalka/dom-css/export')
     const { vectorElement } = await import('#core/io/formats/html/vectors')
     const data = sceneNodesToTailwindJSX(request.graph, target.nodeIds, { vectorElement })
     if (!data) throw new Error('Nothing to export')

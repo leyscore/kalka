@@ -8,7 +8,7 @@ import {
 } from '#dom-css/export/index'
 import { cssClassFromRule, parseClassRules } from '#dom-css/import/class-rules'
 
-import { assignHTMLClasses, SceneGraph, type CSSClass, type Fill } from '@open-pencil/scene-graph'
+import { assignHTMLClasses, SceneGraph, type CSSClass, type Fill } from '@kalka/scene-graph'
 
 const INK: Fill[] = [
   {

@@ -1,8 +1,8 @@
 import { expect, test } from 'bun:test'
 
-import { exportFigFile, initCodec, parseFigFile } from '@open-pencil/core'
-import { populateAllFigPages, populateFigPage } from '@open-pencil/core/io/formats/fig'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { exportFigFile, initCodec, parseFigFile } from '@kalka/core'
+import { populateAllFigPages, populateFigPage } from '@kalka/core/io/formats/fig'
+import { SceneGraph } from '@kalka/scene-graph'
 
 async function createLazyGraph() {
   await initCodec()

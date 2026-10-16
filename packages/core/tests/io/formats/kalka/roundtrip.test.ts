@@ -6,7 +6,7 @@ import {
   responsiveOverrides,
   SceneGraph,
   type SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import {
   readKalkaArchive,

@@ -7,11 +7,11 @@ import type {
   SceneNode,
   VectorSegment,
   VectorVertex
-} from '@open-pencil/scene-graph'
-import type { CanvasGuide } from '@open-pencil/scene-graph/guides'
-import type { Color, Rect, Vector } from '@open-pencil/scene-graph/primitives'
-import type { SnapGuide } from '@open-pencil/scene-graph/snap'
-import type { UndoManager } from '@open-pencil/scene-graph/undo'
+} from '@kalka/scene-graph'
+import type { CanvasGuide } from '@kalka/scene-graph/guides'
+import type { Color, Rect, Vector } from '@kalka/scene-graph/primitives'
+import type { SnapGuide } from '@kalka/scene-graph/snap'
+import type { UndoManager } from '@kalka/scene-graph/undo'
 
 import type { GuideOverlayState } from '#core/canvas/guides/types'
 import type { DesignIssueOverlay } from '#core/canvas/issues/types'

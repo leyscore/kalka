@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { computeAllLayouts, SceneGraph } from '@open-pencil/core'
+import { computeAllLayouts, SceneGraph } from '@kalka/core'
 
 // Reduced from BIZUP's classification label rows: a 10px marker and a
 // fixed-size 16px text box that fills both axes in a cross-axis HUG row.

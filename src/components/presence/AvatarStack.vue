@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { useCommonMessages } from '@open-pencil/vue'
+import { useCommonMessages } from '@kalka/vue'
 
 import { avatarStack } from '@/theme/collaboration/avatar-stack'
 

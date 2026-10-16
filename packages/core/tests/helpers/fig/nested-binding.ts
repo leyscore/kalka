@@ -1,5 +1,5 @@
-import { symbolOverridesOf } from '@open-pencil/fig/instance-overrides'
-import type { NodeChange } from '@open-pencil/kiwi/fig/codec'
+import { symbolOverridesOf } from '@kalka/fig/instance-overrides'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
 
 import { expectDefined } from '../assert'
 import { CapturedFigRecords, readFixture } from './fixtures'

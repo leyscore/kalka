@@ -1,8 +1,8 @@
-import type { ClipboardPayload } from '@open-pencil/core/editor'
-import type { Vector } from '@open-pencil/scene-graph/primitives'
+import type { ClipboardPayload } from '@kalka/core/editor'
+import type { Vector } from '@kalka/scene-graph/primitives'
 
 import type { EditorStore } from '@/app/editor/active-store'
-export type { ClipboardPayload } from '@open-pencil/core/editor'
+export type { ClipboardPayload } from '@kalka/core/editor'
 
 export interface SystemClipboard {
   copy(store: EditorStore): Promise<boolean>

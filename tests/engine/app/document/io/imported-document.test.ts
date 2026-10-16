@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 
-import { createEditor } from '@open-pencil/core/editor'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { createEditor } from '@kalka/core/editor'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { applyImportedDocument } from '@/app/document/io/imported-document'
 import { createEditorPreparationController } from '@/app/editor/preparation/controller'

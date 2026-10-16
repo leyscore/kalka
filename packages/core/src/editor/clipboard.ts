@@ -1,7 +1,7 @@
-import { CommittedGraphEventError } from '@open-pencil/scene-graph'
-import type { SceneNode } from '@open-pencil/scene-graph'
-import { getAxisAlignedBoundsInParent } from '@open-pencil/scene-graph/coordinate'
-import type { Rect, Vector } from '@open-pencil/scene-graph/primitives'
+import { CommittedGraphEventError } from '@kalka/scene-graph'
+import type { SceneNode } from '@kalka/scene-graph'
+import { getAxisAlignedBoundsInParent } from '@kalka/scene-graph/coordinate'
+import type { Rect, Vector } from '@kalka/scene-graph/primitives'
 
 import { parseFigmaClipboard, parseOpenPencilClipboard } from '#core/clipboard'
 import { prepareClipboardImport } from '#core/clipboard/fig-import'

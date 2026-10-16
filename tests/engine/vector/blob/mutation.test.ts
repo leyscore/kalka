@@ -1,10 +1,6 @@
 import { describe, test, expect } from 'bun:test'
 
-import {
-  decodeVectorNetworkBlob,
-  encodeVectorNetworkBlob,
-  type VectorNetwork
-} from '@open-pencil/core'
+import { decodeVectorNetworkBlob, encodeVectorNetworkBlob, type VectorNetwork } from '@kalka/core'
 
 // ---------------------------------------------------------------------------
 // vectorNetworkBlob — precision and handleMirroring round-trip

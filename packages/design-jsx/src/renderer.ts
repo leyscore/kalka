@@ -8,8 +8,8 @@ import {
   type NodeType,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/scene-graph'
-import { parseColor } from '@open-pencil/scene-graph/color'
+} from '@kalka/scene-graph'
+import { parseColor } from '@kalka/scene-graph/color'
 
 import type { RekaScope } from './behaviours'
 import { renderRekaNode } from './behaviours/render'

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
-import { useMediaMessages, useSettingsMessages } from '@open-pencil/vue'
+import { useMediaMessages, useSettingsMessages } from '@kalka/vue'
 
 import { vectorizeProviderID, VECTORIZE_PROVIDER_DEFINITIONS } from '@/app/editor/vectorize'
 import { pexelsKeyStatus, unsplashKeyStatus } from '@/app/settings/credentials/media'

@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 
 import type * as Y from 'yjs'
 
-import { captureGraphCheckpoint } from '@open-pencil/scene-graph'
+import { captureGraphCheckpoint } from '@kalka/scene-graph'
 
 import { readPage } from '@/app/collab/shared-tree/fields'
 

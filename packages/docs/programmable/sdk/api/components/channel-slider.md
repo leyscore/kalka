@@ -33,7 +33,7 @@ import {
   ChannelSliderRoot,
   ChannelSliderThumb,
   ChannelSliderTrack
-} from '@open-pencil/vue'
+} from '@kalka/vue'
 
 const chroma = ref(0.16)
 </script>

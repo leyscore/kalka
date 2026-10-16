@@ -4,9 +4,9 @@ import {
   type FigArchiveRecordInfo,
   type FigPatchedArchiveInput,
   type FigRecordPatch
-} from '@open-pencil/fig'
-import type { SceneGraph } from '@open-pencil/scene-graph'
-import { randomHex } from '@open-pencil/scene-graph/random'
+} from '@kalka/fig'
+import type { SceneGraph } from '@kalka/scene-graph'
+import { randomHex } from '@kalka/scene-graph/random'
 
 import type { FigSessionRequest, FigSessionResponse } from '#core/kiwi/fig/session/protocol'
 

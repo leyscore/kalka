@@ -15,7 +15,7 @@ import {
 import { tv } from 'tailwind-variants'
 import { computed } from 'vue'
 
-import { useRetainedPopup } from '@open-pencil/vue'
+import { useRetainedPopup } from '@kalka/vue'
 
 import type { ComponentUI } from '@/components/ui/types'
 import theme from '@/theme/select/app'

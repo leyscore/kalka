@@ -1,13 +1,13 @@
 import { SCENE_OVERRIDE_FIELDS } from '#fig/instance-overrides/fields'
 
-import { stringToGuid } from '@open-pencil/kiwi/fig/guid'
+import { stringToGuid } from '@kalka/kiwi/fig/guid'
 import {
   forEachInstanceOverride,
   ownsSlotContent,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/scene-graph'
-import type { GUID, Vector } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/scene-graph'
+import type { GUID, Vector } from '@kalka/scene-graph/primitives'
 
 import { instanceExportAddress } from '../instance/geometry'
 import { mergeVariableConsumptionMaps, overrideVariableBindingEntry } from '../variable/bindings'

@@ -44,7 +44,7 @@ bun run check         # Build, lint, types, architecture and docs checks
 bun run test:unit     # Engine and unit tests
 ```
 
-[CONTRIBUTING.md](CONTRIBUTING.md) covers setup, quality gates, pull requests and commits. [AGENTS.md](AGENTS.md) maps the repository and links the guide inside each package. Some package and command names still carry the project's previous name, such as the `@open-pencil/*` workspace packages and the `openpencil` CLI (`bun open-pencil --help`).
+[CONTRIBUTING.md](CONTRIBUTING.md) covers setup, quality gates, pull requests and commits. [AGENTS.md](AGENTS.md) maps the repository and links the guide inside each package. Some package and command names still carry the project's previous name, such as the `@kalka/*` workspace packages and the `openpencil` CLI (`bun open-pencil --help`).
 
 ### Tech stack
 

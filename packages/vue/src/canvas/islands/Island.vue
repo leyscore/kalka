@@ -1,12 +1,8 @@
 <script setup lang="ts">
 import { computed, shallowRef, useTemplateRef, watch } from 'vue'
 
-import { resolvePlayState } from '@open-pencil/core/editor'
-import {
-  behaviourControls,
-  controlRoles,
-  sceneNodeToDesignDocument
-} from '@open-pencil/dom-css/export'
+import { resolvePlayState } from '@kalka/core/editor'
+import { behaviourControls, controlRoles, sceneNodeToDesignDocument } from '@kalka/dom-css/export'
 
 import { useEditor } from '#vue/editor/context'
 

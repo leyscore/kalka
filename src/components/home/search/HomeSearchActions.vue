@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useI18n } from '@open-pencil/vue'
+import { useI18n } from '@kalka/vue'
 
 import { openFileDialog, openFolderDialog } from '@/app/shell/menu/use'
 import { isTauri } from '@/app/tauri/env'

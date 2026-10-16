@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { computeAllLayouts } from '@open-pencil/core'
+import { computeAllLayouts } from '@kalka/core'
 
 import { createAPI } from '../helpers'
 

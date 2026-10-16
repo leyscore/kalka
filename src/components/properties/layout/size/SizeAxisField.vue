@@ -10,9 +10,9 @@ import {
   SelectViewport
 } from 'reka-ui'
 
-import type { LayoutSizing } from '@open-pencil/scene-graph'
-import { useI18n, useLayoutControlsContext, useRetainedPopup } from '@open-pencil/vue'
-import type { SizeLimitProp } from '@open-pencil/vue'
+import type { LayoutSizing } from '@kalka/scene-graph'
+import { useI18n, useLayoutControlsContext, useRetainedPopup } from '@kalka/vue'
+import type { SizeLimitProp } from '@kalka/vue'
 
 import type { SizeAxisFieldProps } from '@/components/properties/layout/size/types'
 import VariableNumberField from '@/components/properties/VariableNumberField.vue'

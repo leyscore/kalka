@@ -4,7 +4,7 @@ import {
   type BehaviourKind,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 /** A variant property a boolean value draws, as the component's boolean prop. */
 export interface BooleanArg {

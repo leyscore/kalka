@@ -1,7 +1,7 @@
 import type { Ref } from 'vue'
 
-import { opacityFromBuffer } from '@open-pencil/core/editor'
-import type { useEditorCommands, useViewportKind } from '@open-pencil/vue'
+import { opacityFromBuffer } from '@kalka/core/editor'
+import type { useEditorCommands, useViewportKind } from '@kalka/vue'
 
 import type { PropertiesTab } from '@/app/ai/chat/use'
 import type { EditorStore } from '@/app/editor/active-store'

@@ -18,7 +18,7 @@ import {
 } from 'agentfmt'
 import type { TreeNode, ListItem, NodeData } from 'agentfmt'
 
-import type { SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 export {
   ok,

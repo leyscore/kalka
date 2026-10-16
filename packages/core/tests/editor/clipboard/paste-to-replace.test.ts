@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 
-import { buildOpenPencilClipboardHTML } from '@open-pencil/core/clipboard'
-import { createEditor } from '@open-pencil/core/editor'
-import type { Editor } from '@open-pencil/core/editor'
+import { buildOpenPencilClipboardHTML } from '@kalka/core/clipboard'
+import { createEditor } from '@kalka/core/editor'
+import type { Editor } from '@kalka/core/editor'
 
 function copiedRectangleHTML(name = 'Pasted') {
   const source = createEditor()

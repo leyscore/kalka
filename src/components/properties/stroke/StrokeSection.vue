@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import type { Color, Fill, SceneNode, Stroke } from '@open-pencil/scene-graph'
-import { colorToHexRaw } from '@open-pencil/scene-graph/color'
+import type { Color, Fill, SceneNode, Stroke } from '@kalka/scene-graph'
+import { colorToHexRaw } from '@kalka/scene-graph/color'
 import {
   applySolidStrokeColor,
   applyStrokePaint,
@@ -11,8 +11,8 @@ import {
   useI18n,
   useOkHCL,
   useStrokeControls
-} from '@open-pencil/vue'
-import type { BindableValueActions } from '@open-pencil/vue'
+} from '@kalka/vue'
+import type { BindableValueActions } from '@kalka/vue'
 
 import FillPicker from '@/components/fill-picker/FillPicker.vue'
 import NumberField from '@/components/inputs/NumberField.vue'

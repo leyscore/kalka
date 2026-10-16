@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DesignIssueSeverity } from '@open-pencil/core/canvas'
+import type { DesignIssueSeverity } from '@kalka/core/canvas'
 
 import { severityIcon } from '@/theme/feedback/severity'
 

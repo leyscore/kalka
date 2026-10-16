@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test'
 
-import type { ExportSetting } from '@open-pencil/scene-graph'
+import type { ExportSetting } from '@kalka/scene-graph'
 
 import { expectInViewport } from '#tests/e2e/fixtures'
 import { CanvasHelper } from '#tests/helpers/canvas'

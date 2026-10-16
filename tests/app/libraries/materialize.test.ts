@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { createLibraryRevision, materializeLibraryAsset } from '@open-pencil/core/library'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { createLibraryRevision, materializeLibraryAsset } from '@kalka/core/library'
+import { SceneGraph } from '@kalka/scene-graph'
 
 function sourceLibrary() {
   const graph = new SceneGraph()

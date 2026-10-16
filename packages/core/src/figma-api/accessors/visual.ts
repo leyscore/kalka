@@ -1,6 +1,6 @@
-import { newStrokeGeometry, type Fill, type SceneNode, type Stroke } from '@open-pencil/scene-graph'
-import { normalizeColor } from '@open-pencil/scene-graph/color'
-import { copyFills, copyStrokes } from '@open-pencil/scene-graph/copy'
+import { newStrokeGeometry, type Fill, type SceneNode, type Stroke } from '@kalka/scene-graph'
+import { normalizeColor } from '@kalka/scene-graph/color'
+import { copyFills, copyStrokes } from '@kalka/scene-graph/copy'
 
 import {
   raw,

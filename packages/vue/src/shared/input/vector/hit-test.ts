@@ -1,6 +1,6 @@
-import type { Editor } from '@open-pencil/core/editor'
-import { vectorHandleParts } from '@open-pencil/core/vector'
-import type { VectorSegment, VectorVertex } from '@open-pencil/scene-graph'
+import type { Editor } from '@kalka/core/editor'
+import { vectorHandleParts } from '@kalka/core/vector'
+import type { VectorSegment, VectorVertex } from '@kalka/scene-graph'
 
 export type NodeEditState = {
   nodeId: string

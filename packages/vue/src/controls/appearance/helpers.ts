@@ -1,8 +1,8 @@
 import { computed } from 'vue'
 import type { ComputedRef, Ref } from 'vue'
 
-import type { Editor } from '@open-pencil/core/editor'
-import type { BlendMode, SceneNode } from '@open-pencil/scene-graph'
+import type { Editor } from '@kalka/core/editor'
+import type { BlendMode, SceneNode } from '@kalka/scene-graph'
 
 import type { CornerGeometryKey, CornerRadiusKey } from '#vue/controls/appearance/types'
 import { MIXED, type MixedValue } from '#vue/controls/node-props/use'

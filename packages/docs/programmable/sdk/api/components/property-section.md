@@ -31,7 +31,7 @@ import {
   PropertySectionHeader,
   PropertySectionRoot,
   PropertySectionTitle
-} from '@open-pencil/vue'
+} from '@kalka/vue'
 </script>
 
 <template>

@@ -3,7 +3,7 @@ import {
   recordSceneMutations,
   type SceneGraph,
   type SceneMutationImpact
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import { createLayoutRunner } from '#core/layout/mutations'
 

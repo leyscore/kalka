@@ -1,6 +1,6 @@
-import type { DesignElement, DesignNode } from '@open-pencil/dom-css/export'
-import type { DerivedTextGlyph, SceneNode } from '@open-pencil/scene-graph'
-import { colorToCSS } from '@open-pencil/scene-graph/color'
+import type { DesignElement, DesignNode } from '@kalka/dom-css/export'
+import type { DerivedTextGlyph, SceneNode } from '@kalka/scene-graph'
+import { colorToCSS } from '@kalka/scene-graph/color'
 
 import { geometryBlobToSVGPath } from '#core/io/formats/svg/paths'
 

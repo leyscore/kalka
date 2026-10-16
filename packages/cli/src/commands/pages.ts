@@ -1,6 +1,6 @@
 import { defineCommand } from 'citty'
 
-import type { PageItem } from '@open-pencil/core/rpc'
+import type { PageItem } from '@kalka/core/rpc'
 
 import { appTargetOptions } from '#cli/app/target'
 import { bold, fmtList, entity } from '#cli/format'

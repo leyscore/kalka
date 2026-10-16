@@ -12,9 +12,9 @@ import {
   watch
 } from 'vue'
 
-import { JSX_REFERENCE } from '@open-pencil/design-jsx'
-import type { SceneNode } from '@open-pencil/scene-graph'
-import { useEditorEvent, useI18n } from '@open-pencil/vue'
+import { JSX_REFERENCE } from '@kalka/design-jsx'
+import type { SceneNode } from '@kalka/scene-graph'
+import { useEditorEvent, useI18n } from '@kalka/vue'
 
 import {
   commitDOMCodeSession,

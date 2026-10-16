@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
-import { COMPONENT_COLOR, SELECTION_COLOR, SLOT_COLOR } from '@open-pencil/core/constants'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { COMPONENT_COLOR, SELECTION_COLOR, SLOT_COLOR } from '@kalka/core/constants'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import {
   codeFocusLayer,

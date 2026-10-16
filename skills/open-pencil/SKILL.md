@@ -26,13 +26,13 @@ Use `openpencil --help`, per-command help, and the connected MCP server’s tool
 
 ```bash
 # CLI
-bun add -g @open-pencil/cli
+bun add -g @kalka/cli
 
 # MCP server used by the desktop app and external MCP clients
-bun add -g @open-pencil/mcp
+bun add -g @kalka/mcp
 ```
 
-The desktop app starts `openpencil-mcp-http` automatically in production Tauri builds when `@open-pencil/mcp` is installed globally and exposes automation on:
+The desktop app starts `openpencil-mcp-http` automatically in production Tauri builds when `@kalka/mcp` is installed globally and exposes automation on:
 
 - HTTP/RPC: `http://127.0.0.1:7600`
 - WebSocket bridge: `ws://127.0.0.1:7601`
@@ -237,7 +237,7 @@ Use Bun by default:
 }
 ```
 
-If `@open-pencil/mcp` is installed globally, direct binaries also work:
+If `@kalka/mcp` is installed globally, direct binaries also work:
 
 ```json
 {

@@ -1,8 +1,8 @@
-# @open-pencil/kiwi
+# @kalka/kiwi
 
 Scene-graph-agnostic Kiwi runtime utilities for OpenPencil.
 
-This package owns pure Kiwi schema parsing, Figma Kiwi schema data, low-level Figma message encode/decode, raw `fig-kiwi` container helpers, and GUID formatting. Complete `.fig` archive parsing lives in `@open-pencil/fig`; SceneGraph integration remains outside this package.
+This package owns pure Kiwi schema parsing, Figma Kiwi schema data, low-level Figma message encode/decode, raw `fig-kiwi` container helpers, and GUID formatting. Complete `.fig` archive parsing lives in `@kalka/fig`; SceneGraph integration remains outside this package.
 
 ## Credits and licensing
 
@@ -13,7 +13,7 @@ is licensed under the MIT License. OpenPencil's adapted runtime is distributed
 under the terms of that license; see [`NOTICE`](./NOTICE).
 
 ```sh
-bun add @open-pencil/kiwi
+bun add @kalka/kiwi
 ```
 
 ## Package-local checks
@@ -34,7 +34,7 @@ Package scripts:
 ## Schema runtime
 
 ```ts
-import { compileSchema, parseSchema, validateSchema } from '@open-pencil/kiwi/schema-runtime'
+import { compileSchema, parseSchema, validateSchema } from '@kalka/kiwi/schema-runtime'
 
 const schema = parseSchema(`
 message Point {
@@ -52,7 +52,7 @@ const point = codec.decodeMessage(bytes)
 ## Figma Kiwi codec
 
 ```ts
-import { createNodeChangesMessage, encodeMessage, initCodec } from '@open-pencil/kiwi/fig/codec'
+import { createNodeChangesMessage, encodeMessage, initCodec } from '@kalka/kiwi/fig/codec'
 
 await initCodec()
 
@@ -74,7 +74,7 @@ Boolean operation payloads use Figma's Kiwi enum names. SceneGraph `EXCLUDE` is 
 ## FIG Kiwi containers
 
 ```ts
-import { buildFigKiwi, parseFigKiwiChunks } from '@open-pencil/kiwi/fig/container'
+import { buildFigKiwi, parseFigKiwiChunks } from '@kalka/kiwi/fig/container'
 
 const container = buildFigKiwi(new Uint8Array([1, 2, 3]))
 const chunks = parseFigKiwiChunks(container)
@@ -83,18 +83,18 @@ const chunks = parseFigKiwiChunks(container)
 ## Raw `fig-kiwi` payload decoding
 
 ```ts
-import { decodeFigKiwiCanvas } from '@open-pencil/kiwi/fig/parse'
+import { decodeFigKiwiCanvas } from '@kalka/kiwi/fig/parse'
 
 const decoded = decodeFigKiwiCanvas(canvasBytes)
 console.log(decoded.nodeChanges.length, decoded.blobs.length)
 ```
 
-Use `parseFigBuffer()` from `@open-pencil/fig` for complete zipped `.fig` files, including image resources. Use `@open-pencil/core/io` for conversion into an editable `SceneGraph`.
+Use `parseFigBuffer()` from `@kalka/fig` for complete zipped `.fig` files, including image resources. Use `@kalka/core/io` for conversion into an editable `SceneGraph`.
 
 ## GUID helpers
 
 ```ts
-import { guidToString, stringToGuid } from '@open-pencil/kiwi/fig/guid'
+import { guidToString, stringToGuid } from '@kalka/kiwi/fig/guid'
 
 const id = guidToString({ sessionID: 1, localID: 42 })
 const guid = stringToGuid('1:42')
@@ -102,12 +102,12 @@ const guid = stringToGuid('1:42')
 
 ## Public subpaths
 
-- `@open-pencil/kiwi`
-- `@open-pencil/kiwi/schema-runtime`
-- `@open-pencil/kiwi/fig`
-- `@open-pencil/kiwi/fig/codec`
-- `@open-pencil/kiwi/fig/container`
-- `@open-pencil/kiwi/fig/guid`
-- `@open-pencil/kiwi/fig/parse`
+- `@kalka/kiwi`
+- `@kalka/kiwi/schema-runtime`
+- `@kalka/kiwi/fig`
+- `@kalka/kiwi/fig/codec`
+- `@kalka/kiwi/fig/container`
+- `@kalka/kiwi/fig/guid`
+- `@kalka/kiwi/fig/parse`
 
-`@open-pencil/kiwi` must not import `@open-pencil/core`, `#core/*`, app code, Vue code, CLI code, or MCP code.
+`@kalka/kiwi` must not import `@kalka/core`, `#core/*`, app code, Vue code, CLI code, or MCP code.

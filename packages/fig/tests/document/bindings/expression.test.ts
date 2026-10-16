@@ -2,8 +2,8 @@ import { expect, test } from 'bun:test'
 
 import { linearVariableExpression } from '#fig/node-change/variable/expression'
 
-import { nodeChangeToProps } from '@open-pencil/fig/node-change'
-import type { VariableDataEntry } from '@open-pencil/kiwi/fig/codec'
+import { nodeChangeToProps } from '@kalka/fig/node-change'
+import type { VariableDataEntry } from '@kalka/kiwi/fig/codec'
 
 const alias: VariableDataEntry = {
   dataType: 'ALIAS',

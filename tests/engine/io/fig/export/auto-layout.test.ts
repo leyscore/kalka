@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, test } from 'bun:test'
 
-import { exportFigFile, initCodec, parseFigFile, SceneGraph } from '@open-pencil/core'
-import { parseFigBuffer } from '@open-pencil/fig'
+import { exportFigFile, initCodec, parseFigFile, SceneGraph } from '@kalka/core'
+import { parseFigBuffer } from '@kalka/fig'
 
 import { uint8ArrayToArrayBuffer } from '#tests/helpers/fig/fixtures'
 

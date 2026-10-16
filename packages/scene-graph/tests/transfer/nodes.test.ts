@@ -4,7 +4,7 @@ import {
   prepareNodeTransfer,
   SceneGraph,
   type NodeTransferReferences
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 const references = (): NodeTransferReferences => ({
   nodes: new Map([['component', 'new-component']]),

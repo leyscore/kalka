@@ -1,4 +1,4 @@
-import type { SceneNode } from '@open-pencil/scene-graph'
+import type { SceneNode } from '@kalka/scene-graph'
 
 export const ARTICLE = {
   eyebrow: 'A NOTE ON MAKING THINGS',

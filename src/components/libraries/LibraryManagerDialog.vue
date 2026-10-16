@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { nextTick, watch } from 'vue'
 
-import { useI18n, useViewportKind } from '@open-pencil/vue'
+import { useI18n, useViewportKind } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import { openLibraryReview, openPublishLibraryDialog, useLibraryService } from '@/app/libraries'

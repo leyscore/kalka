@@ -9,7 +9,7 @@ A behaviour makes a main component or component set work as a real control: a Sw
 
 ## The model
 
-The model lives in `@open-pencil/scene-graph` (`packages/scene-graph/src/behaviours/`).
+The model lives in `@kalka/scene-graph` (`packages/scene-graph/src/behaviours/`).
 
 - **Kinds and contracts** (`kinds.ts`). `BEHAVIOUR_CONTRACTS` gives each kind its values and parts, keyed by kind, so a kind without a contract does not type-check. Contracts follow Reka UI's anatomy: every Reka subcomponent is a slot of the component, the component itself is the root, and a slot that holds repeated parts names the Reka part of its children, such as the tab list's triggers or a group's items.
 - **Storage** (`schema.ts`, `model.ts`). A behaviour is stored as the `behaviour` field of Kalka's plugin data on the component or set, with properties and slots bound by id. Its role is `content`, so it travels with library assets and counts towards their update hash. `.fig` export renames the bound ids to the GUIDs it gives the properties.
@@ -35,8 +35,8 @@ Preview is a per-pane mode (`EditorViewState.play`). It runs controls as real co
 1. **Islands.** `playIslandRoots` (Core) picks the top-level layers of the page that hold an instance with a behaviour. The renderer skips them while the pane previews, and `PlayIslands` (`packages/vue/src/canvas/islands/`) mounts one island per root, laid over the canvas at the pan and zoom of the canvas's last drawn frame, so the islands never run ahead of a canvas still catching up while panning and zooming.
 2. **Shadow DOM.** Each island renders into its own shadow root: app CSS does not reach in, island CSS does not leak out, fonts already loaded by the app apply, and the island moves with the canvas in the same frame. Wheel gestures over an island are passed to the canvas.
 3. **State to design.** An island keeps each control's state (values, choice, number, typed text, hover, pressed, focus). Core's `resolvePlayState` copies the island's layers into a private graph and shows each instance in its state: the matching variant, boolean properties, and layers a control reveals, such as tab panels. The copy comes from the page extractor history and export use (`extractPageContext`), with every variant of each instance's set so it can switch, and the document's variables and images shared rather than copied, since a state never changes them. The document is never changed.
-4. **Design to DOM.** The private graph is projected to DOM through `@open-pencil/dom-css`, the same projection HTML export uses, so island fidelity and export fidelity improve together.
-5. **DOM to Reka.** Each projected layer has a role: a control's root, a part, a group's item, a tab trigger or panel, or a text input. `behaviourControls` and `controlRoles` in `@open-pencil/dom-css` (`packages/dom-css/src/behaviours/`) assign them, so code export reads the same roles. Roles wrap the layer in its Reka UI primitive with `asChild`, so Reka renders through the designed element. Typing, focus, keyboard navigation, and accessibility are the browser's and Reka's.
+4. **Design to DOM.** The private graph is projected to DOM through `@kalka/dom-css`, the same projection HTML export uses, so island fidelity and export fidelity improve together.
+5. **DOM to Reka.** Each projected layer has a role: a control's root, a part, a group's item, a tab trigger or panel, or a text input. `behaviourControls` and `controlRoles` in `@kalka/dom-css` (`packages/dom-css/src/behaviours/`) assign them, so code export reads the same roles. Roles wrap the layer in its Reka UI primitive with `asChild`, so Reka renders through the designed element. Typing, focus, keyboard navigation, and accessibility are the browser's and Reka's.
 
 Controls and DOM keys use layer paths (names below the island root), not node ids: a variant switch rebuilds an instance's layers with new ids, and a stable path keeps the DOM in place, including a focused input.
 

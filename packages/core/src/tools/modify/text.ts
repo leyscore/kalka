@@ -1,7 +1,7 @@
 import * as v from 'valibot'
 
-import type { CharacterStyleOverride, SceneNode } from '@open-pencil/scene-graph'
-import { parseColor } from '@open-pencil/scene-graph/color'
+import type { CharacterStyleOverride, SceneNode } from '@kalka/scene-graph'
+import { parseColor } from '@kalka/scene-graph/color'
 
 import { styleToWeight } from '#core/text/fonts'
 import { applyStyleToRange } from '#core/text/style-runs'

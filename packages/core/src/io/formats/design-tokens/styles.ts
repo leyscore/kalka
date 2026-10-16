@@ -1,6 +1,6 @@
 import { isEmptyObject, isPlainObject } from 'es-toolkit/predicate'
 
-import type { Effect, SceneGraph, SceneNode } from '@open-pencil/scene-graph'
+import type { Effect, SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 import { toFigmaEffect } from '#core/figma-api/effects'
 

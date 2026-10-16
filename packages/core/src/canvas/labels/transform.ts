@@ -1,5 +1,5 @@
-import type { SceneGraph, SceneNode, Vector } from '@open-pencil/scene-graph'
-import Matrix from '@open-pencil/scene-graph/matrix'
+import type { SceneGraph, SceneNode, Vector } from '@kalka/scene-graph'
+import Matrix from '@kalka/scene-graph/matrix'
 
 import {
   createSceneGeometry,

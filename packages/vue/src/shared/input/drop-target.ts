@@ -1,5 +1,5 @@
-import type { Editor } from '@open-pencil/core/editor'
-import type { NodeType, SceneNode } from '@open-pencil/scene-graph'
+import type { Editor } from '@kalka/core/editor'
+import type { NodeType, SceneNode } from '@kalka/scene-graph'
 
 /** Parents a layer stays in while dragged until it lands on another frame. */
 const ENCLOSING_TYPES = new Set<NodeType>(['GROUP', 'BOOLEAN_OPERATION'])

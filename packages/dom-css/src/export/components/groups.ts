@@ -6,7 +6,7 @@ import {
   instanceMainComponent,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/scene-graph'
+} from '@kalka/scene-graph'
 
 import type { ComponentModel } from './model'
 import { placementOnly, referenceValues, shownText, type UsedLayer } from './references'

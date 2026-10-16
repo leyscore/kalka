@@ -5,8 +5,8 @@ import {
   type GroupFitOptions,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/scene-graph'
-import { copyFills } from '@open-pencil/scene-graph/copy'
+} from '@kalka/scene-graph'
+import { copyFills } from '@kalka/scene-graph/copy'
 
 import { canMakeBooleanSourceNode, groupFitOptions } from '#core/canvas/boolean'
 import { restoreSubtree, snapshotSubtree } from '#core/editor/clipboard/subtree-history'

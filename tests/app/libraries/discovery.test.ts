@@ -4,8 +4,8 @@ import {
   createLibraryRevision,
   materializeLibraryAsset,
   MemoryLibraryCatalog
-} from '@open-pencil/core/library'
-import { SceneGraph } from '@open-pencil/scene-graph'
+} from '@kalka/core/library'
+import { SceneGraph } from '@kalka/scene-graph'
 
 import { createEditorStore } from '@/app/editor/session'
 import { LibraryService } from '@/app/libraries/service'

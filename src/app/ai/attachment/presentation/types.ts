@@ -1,4 +1,4 @@
-import type { SceneNode, Vector } from '@open-pencil/scene-graph'
+import type { SceneNode, Vector } from '@kalka/scene-graph'
 
 import type { ImageAttachmentMediaType } from '@/app/ai/attachment/image/types'
 

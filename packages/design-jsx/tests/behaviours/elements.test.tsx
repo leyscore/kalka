@@ -1,4 +1,4 @@
-/** @jsxImportSource @open-pencil/design-jsx */
+/** @jsxImportSource @kalka/design-jsx */
 import { describe, expect, test } from 'bun:test'
 
 import { REKA_ELEMENTS } from '#design-jsx/behaviours'

@@ -1,10 +1,10 @@
 import { isEqual } from 'es-toolkit'
 import { pick } from 'es-toolkit/object'
 
-import type { SceneNode } from '@open-pencil/scene-graph'
-import type { Rect, Vector } from '@open-pencil/scene-graph/primitives'
-import { createResizeSnapshot, type ResizeSnapshot } from '@open-pencil/scene-graph/resize'
-import type { UndoEntry } from '@open-pencil/scene-graph/undo'
+import type { SceneNode } from '@kalka/scene-graph'
+import type { Rect, Vector } from '@kalka/scene-graph/primitives'
+import { createResizeSnapshot, type ResizeSnapshot } from '@kalka/scene-graph/resize'
+import type { UndoEntry } from '@kalka/scene-graph/undo'
 
 import { assertNodeEditable } from './capabilities'
 import { restoreSubtree, snapshotSubtree } from './clipboard/subtree-history'

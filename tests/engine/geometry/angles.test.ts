@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test'
 
-import { degToRad, radToDeg } from '@open-pencil/scene-graph'
+import { degToRad, radToDeg } from '@kalka/scene-graph'
 
 describe('degToRad / radToDeg', () => {
   test('degToRad converts degrees to radians', () => {

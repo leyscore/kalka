@@ -9,7 +9,7 @@ import { expect, test } from '../fixtures'
 const TRANSPARENT_PIXEL_DATA_URL =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADElEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
 
-test.describe('@open-pencil/dom-css browser CSS media and image oracle', () => {
+test.describe('@kalka/dom-css browser CSS media and image oracle', () => {
   test('resolves media queries and inherited em/rem units in a real browser', async ({ page }) => {
     await page.setViewportSize({ width: 900, height: 600 })
     await setStyledContent(

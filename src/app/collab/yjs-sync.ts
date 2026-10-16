@@ -1,7 +1,7 @@
 import * as Y from 'yjs'
 
-import type { SceneGraph } from '@open-pencil/scene-graph'
-import { siblingOrderKeys } from '@open-pencil/scene-graph/order-keys'
+import type { SceneGraph } from '@kalka/scene-graph'
+import { siblingOrderKeys } from '@kalka/scene-graph/order-keys'
 
 import { decodeNodeFromYjs, syncEncodedNodeToYMap } from '@/app/collab/node-codec'
 import {

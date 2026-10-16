@@ -1,5 +1,5 @@
-import type { GUID, NodeChange } from '@open-pencil/kiwi/fig/codec'
-import { guidToString, isUnsetGuid } from '@open-pencil/kiwi/fig/guid'
+import type { GUID, NodeChange } from '@kalka/kiwi/fig/codec'
+import { guidToString, isUnsetGuid } from '@kalka/kiwi/fig/guid'
 
 import { findWithinBoundary, type TreeShape } from './tree'
 

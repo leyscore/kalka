@@ -8,7 +8,7 @@ import {
 import { designDocumentToSceneGraph } from '#dom-css/import/scene-graph'
 import type { DesignElement } from '#dom-css/types'
 
-import { SceneGraph, type SceneNode } from '@open-pencil/scene-graph'
+import { SceneGraph, type SceneNode } from '@kalka/scene-graph'
 
 function project(graph: SceneGraph, node: SceneNode): DesignElement {
   const element = sceneNodeToDesignDocument(graph, node.id).children[0]

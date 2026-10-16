@@ -5,7 +5,7 @@ import { MotionConfig } from 'motion-v'
 import { TooltipProvider } from 'reka-ui'
 import { computed, onMounted, onScopeDispose } from 'vue'
 
-import { provideEditor, useI18n } from '@open-pencil/vue'
+import { provideEditor, useI18n } from '@kalka/vue'
 
 import { useDocumentCloseProtection } from '@/app/document/close/use'
 import { useFollowingEditorStore } from '@/app/editor/active-store'

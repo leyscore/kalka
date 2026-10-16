@@ -2,10 +2,10 @@ import { expect, test } from 'bun:test'
 
 import { readFixtureArrayBuffer } from '#core-tests/helpers/fig/fixtures'
 
-import { FigmaAPI } from '@open-pencil/core'
-import { exportFigFile, parseFigFile } from '@open-pencil/core/io'
-import { initCodec } from '@open-pencil/core/kiwi'
-import { parseFigBuffer } from '@open-pencil/fig'
+import { FigmaAPI } from '@kalka/core'
+import { exportFigFile, parseFigFile } from '@kalka/core/io'
+import { initCodec } from '@kalka/core/kiwi'
+import { parseFigBuffer } from '@kalka/fig'
 import {
   interpretInstance,
   linkInstanceSourceChildren,
@@ -13,8 +13,8 @@ import {
   materializeComponentClosure,
   materializeInstance,
   type InstanceOccurrence
-} from '@open-pencil/fig/instance-overrides'
-import { SceneGraph } from '@open-pencil/scene-graph'
+} from '@kalka/fig/instance-overrides'
+import { SceneGraph } from '@kalka/scene-graph'
 
 function named(node: InstanceOccurrence, name: string): InstanceOccurrence {
   const child = node.children.find((candidate) => candidate.properties.name === name)

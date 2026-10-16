@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 
-import { materializeDocument } from '@open-pencil/fig'
+import { materializeDocument } from '@kalka/fig'
 
 test('nested source instances inherit text geometry and paints without clone repair', () => {
   const guid = (localID: number) => ({ sessionID: 1, localID })

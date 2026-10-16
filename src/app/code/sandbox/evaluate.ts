@@ -1,10 +1,10 @@
-import { IS_BROWSER } from '@open-pencil/core/constants'
+import { IS_BROWSER } from '@kalka/core/constants'
 import {
   DESIGN_JSX_ELEMENTS,
   DESIGN_JSX_HELPERS,
   transformDesignJSXProgram,
   type DesignJSXProgram
-} from '@open-pencil/design-jsx'
+} from '@kalka/design-jsx'
 
 import { sandboxDocument } from '@/app/code/sandbox/document'
 import {

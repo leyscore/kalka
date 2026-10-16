@@ -1,4 +1,4 @@
-import type { SceneGraph, Fill, SceneNode, Stroke } from '@open-pencil/scene-graph'
+import type { SceneGraph, Fill, SceneNode, Stroke } from '@kalka/scene-graph'
 
 import { expectDefined } from './assert'
 

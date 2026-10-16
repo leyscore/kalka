@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 
-import { exportFigFile, initCodec, parseFigFile } from '@open-pencil/core'
-import { createLibraryRevision, discoverPublishableLibraryChanges } from '@open-pencil/core/library'
-import { SceneGraph } from '@open-pencil/scene-graph'
+import { exportFigFile, initCodec, parseFigFile } from '@kalka/core'
+import { createLibraryRevision, discoverPublishableLibraryChanges } from '@kalka/core/library'
+import { SceneGraph } from '@kalka/scene-graph'
 
 function source() {
   const graph = new SceneGraph()

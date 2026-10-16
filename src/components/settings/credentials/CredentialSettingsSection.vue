@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { IS_TAURI } from '@open-pencil/core/constants'
-import { useI18n } from '@open-pencil/vue'
+import { IS_TAURI } from '@kalka/core/constants'
+import { useI18n } from '@kalka/vue'
 
 import { useCredentialSettings } from '@/app/settings/credentials/preferences/use'
 import SettingsGroup from '@/components/settings/layout/SettingsGroup.vue'

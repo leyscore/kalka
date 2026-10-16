@@ -7,8 +7,8 @@ import type {
   TypefaceFontProvider
 } from 'canvaskit-wasm'
 
-import type { Size } from '@open-pencil/scene-graph'
-import { detectTextDirection } from '@open-pencil/scene-graph/text-direction'
+import type { Size } from '@kalka/scene-graph'
+import { detectTextDirection } from '@kalka/scene-graph/text-direction'
 
 import { ResourceCache } from '#core/cache/resource'
 import { resolveParagraphFontFamilies } from '#core/canvas/text/font-families'

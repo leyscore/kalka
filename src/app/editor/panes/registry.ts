@@ -1,7 +1,7 @@
 import { computed, ref, shallowRef, triggerRef } from 'vue'
 
-import type { EditorState } from '@open-pencil/core/editor'
-import { copyEditorViewState, pickEditorViewState } from '@open-pencil/core/editor'
+import type { EditorState } from '@kalka/core/editor'
+import { copyEditorViewState, pickEditorViewState } from '@kalka/core/editor'
 
 import {
   closePaneNode,

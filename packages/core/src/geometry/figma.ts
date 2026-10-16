@@ -4,9 +4,9 @@ import {
   getWorldMatrix,
   type SceneGraph,
   type SceneNode
-} from '@open-pencil/scene-graph'
-import Matrix, { type Mat3 } from '@open-pencil/scene-graph/matrix'
-import type { Vector } from '@open-pencil/scene-graph/primitives'
+} from '@kalka/scene-graph'
+import Matrix, { type Mat3 } from '@kalka/scene-graph/matrix'
+import type { Vector } from '@kalka/scene-graph/primitives'
 
 /**
  * Figma's rotation of a transform: counterclockwise degrees in (-180, 180]. The plugin API and the
