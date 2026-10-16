@@ -10,6 +10,7 @@ import { registerOAuthHandlers } from './oauth'
 import { setOpenTarget } from './pending'
 import { registerShellHandlers } from './shell'
 import { registerSystemHandlers } from './system'
+import { registerUpdaterHandlers } from './updater'
 import { installQuitGuard, mainContents, registerWindowHandlers, type WindowHost } from './windows'
 
 export { handleLink, LINK_SCHEME, queueOpenPaths, takePendingOpen } from './pending'
@@ -25,6 +26,7 @@ export function registerHandlers(host: WindowHost): void {
   registerMCPStdioHandlers()
   registerOAuthHandlers()
   registerGitHandlers()
+  registerUpdaterHandlers()
   setOpenTarget(() => mainContents() ?? BrowserWindow.getAllWindows()[0]?.webContents ?? null)
   installQuitGuard()
   buildMenu()

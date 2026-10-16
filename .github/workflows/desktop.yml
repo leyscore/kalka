@@ -3,6 +3,11 @@ name: Desktop package
 # Manual only: macOS minutes count ten times against a private repository's allowance.
 on:
   workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the installers as a release on the update feed (needs RELEASES_TOKEN)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -12,10 +17,30 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  macos:
-    name: macOS app
-    runs-on: macos-latest
-    timeout-minutes: 30
+  package:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS app
+            os: macos-latest
+            artifacts: |
+              electron/release/*.dmg
+              electron/release/*.zip
+              electron/release/*.yml
+          - name: Windows app
+            os: windows-latest
+            artifacts: |
+              electron/release/*.exe
+              electron/release/*.yml
+          - name: Linux app
+            os: ubuntu-latest
+            artifacts: |
+              electron/release/*.AppImage
+              electron/release/*.yml
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -23,23 +48,53 @@ jobs:
 
       - uses: ./.github/actions/setup-bun
         with:
-          cache-scope: desktop
+          cache-scope: desktop-${{ runner.os }}
 
       - name: Build packages
         run: bun run build:packages
 
-      # Unsigned until Apple signing secrets exist: open it with right-click, Open.
-      - name: Package the DMG and ZIP
+      - name: Build the app
+        run: bunx vite build
+
+      # Starts the unpacked app and waits for the editor; Linux has no display, so xvfb gives one.
+      - name: Smoke test
+        shell: bash
+        run: |
+          cd electron
+          CSC_IDENTITY_AUTO_DISCOVERY=false bun run package:dir
+          if [ "$RUNNER_OS" = "Linux" ]; then xvfb-run --auto-servernum bun run smoke; else bun run smoke; fi
+
+      # Signs and notarizes on macOS when the Apple secrets exist; unsigned builds open with
+      # right-click, Open. Publishing needs a token for the release feed repository.
+      - name: Package the installers
+        shell: bash
         env:
-          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-        run: bun run package:desktop
+          CSC_LINK: ${{ secrets.MAC_CERTIFICATE_P12_BASE64 }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CERTIFICATE_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+          PUBLISH: ${{ inputs.publish && 'always' || 'never' }}
+        run: |
+          if [ -z "$CSC_LINK" ]; then export CSC_IDENTITY_AUTO_DISCOVERY=false; fi
+          cd electron
+          bun run build
+          bunx electron-builder --publish "$PUBLISH"
+
+      - name: Upload the smoke screenshot
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: kalka-smoke-${{ runner.os }}-${{ github.sha }}
+          path: electron/release/smoke.png
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Upload the installers
         uses: actions/upload-artifact@v7
         with:
-          name: kalka-macos-${{ github.sha }}
-          path: |
-            electron/release/*.dmg
-            electron/release/*.zip
+          name: kalka-${{ runner.os }}-${{ github.sha }}
+          path: ${{ matrix.artifacts }}
           if-no-files-found: error
           retention-days: 7

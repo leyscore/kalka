@@ -3,6 +3,7 @@ import { homedir } from 'node:os'
 import { app, clipboard, ClipboardItem, shell } from 'electron'
 
 import { registerAll, type CallContext } from '../ipc'
+import { installDownloadedUpdate } from './updater'
 import { markExiting } from './windows'
 
 const EXTERNAL = /^(https?:|mailto:)/i
@@ -38,6 +39,7 @@ export function registerSystemHandlers(): void {
         app.exit(code)
       },
       relaunch() {
+        if (installDownloadedUpdate()) return
         markExiting()
         app.relaunch()
         app.exit(0)

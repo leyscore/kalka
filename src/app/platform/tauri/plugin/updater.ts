@@ -1,6 +1,10 @@
+import * as v from 'valibot'
+
+import { call, native } from '../bridge'
+
 /**
- * Automatic updates come with signed Electron releases (V1). Until then there is never an
- * update to offer, and the app's updater flows stay idle.
+ * Tauri's updater API over Electron's (`electron/src/handlers/updater.ts`): the main process
+ * checks the release feed and downloads; restarting installs what it downloaded.
  */
 export type DownloadEvent =
   | { event: 'Started'; data: { contentLength?: number } }
@@ -16,6 +20,37 @@ export interface Update {
   close(): Promise<void>
 }
 
+const ReleaseSchema = v.nullable(
+  v.object({ version: v.string(), currentVersion: v.string(), body: v.optional(v.string()) })
+)
+const ProgressSchema = v.object({ total: v.number(), delta: v.number() })
+
+async function download(onEvent?: (event: DownloadEvent) => void): Promise<void> {
+  let started = false
+  const stop = native().on('updater:progress', (payload) => {
+    const progress = v.safeParse(ProgressSchema, payload)
+    if (!progress.success) return
+    if (!started) {
+      started = true
+      onEvent?.({ event: 'Started', data: { contentLength: progress.output.total } })
+    }
+    onEvent?.({ event: 'Progress', data: { chunkLength: progress.output.delta } })
+  })
+  try {
+    await call('updater.download')
+    onEvent?.({ event: 'Finished' })
+  } finally {
+    stop()
+  }
+}
+
 export async function check(): Promise<Update | null> {
-  return null
+  const release = v.parse(ReleaseSchema, await call('updater.check'))
+  if (!release) return null
+  return {
+    ...release,
+    download,
+    install: () => call('updater.install'),
+    close: () => Promise.resolve()
+  }
 }

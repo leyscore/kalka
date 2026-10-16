@@ -8,11 +8,13 @@
     "start": "bun run build && electron .",
     "dev": "bun scripts/dev.ts",
     "package": "bun run build && electron-builder --publish never",
-    "package:dir": "bun run build && electron-builder --dir --publish never"
+    "package:dir": "bun run build && electron-builder --dir --publish never",
+    "smoke": "bun scripts/smoke.ts"
   },
   "devDependencies": {
     "electron": "44.4.5",
     "electron-builder": "26.15.3",
+    "electron-updater": "6.8.10",
     "smol-toml": "1.9.0"
   },
   "productName": "Kalka",
@@ -68,12 +70,27 @@
     "mac": {
       "category": "public.app-category.graphics-design",
       "target": [
-        "dmg",
-        "zip"
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
       ],
       "icon": "build/icon.icns",
       "hardenedRuntime": true,
-      "darkModeSupport": true
+      "darkModeSupport": true,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "notarize": true
     },
     "win": {
       "target": [
@@ -86,10 +103,19 @@
         "AppImage"
       ],
       "icon": "build/icon.png",
-      "category": "Graphics"
+      "category": "Graphics",
+      "executableName": "kalka"
     },
     "asarUnpack": [
       "dist/mcp/**"
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "leyscore",
+        "repo": "kalka-releases",
+        "releaseType": "release"
+      }
     ]
   }
 }
