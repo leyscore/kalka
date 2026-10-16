@@ -142,6 +142,19 @@ function readStroke(style: CSSDeclarations, node: SceneNode): void {
 /** Strokes are borders when they take room in the layout, outlines when they do not. */
 export const stroke: PropertyFamily = {
   name: 'stroke',
+  fields: [
+    'strokes',
+    'strokeWeight',
+    'strokeAlign',
+    'strokesIncludedInLayout',
+    'dashPattern',
+    'type',
+    'independentStrokeWeights',
+    'borderTopWeight',
+    'borderRightWeight',
+    'borderBottomWeight',
+    'borderLeftWeight'
+  ],
   properties: [
     'border',
     'border-top',

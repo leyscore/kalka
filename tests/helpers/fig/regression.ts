@@ -58,8 +58,10 @@ function fieldsFingerprint(
   const layers = new Set<object>(nodes)
   const json = JSON.stringify(nodes, function (this: unknown, key, value: unknown) {
     if (key === 'id') return undefined
-    // A layer's CSS follows its fields; the HTML fingerprint covers what it draws.
-    if (key === 'style' && typeof this === 'object' && this !== null && layers.has(this))
+    // Imported layers hold no CSS beyond their fields until the import writes CSS (PLAN.md, b8);
+    // an empty style stays out so the fingerprints taken before it existed still hold.
+    const empty = typeof value === 'object' && value !== null && Object.keys(value).length === 0
+    if (key === 'style' && empty && typeof this === 'object' && this !== null && layers.has(this))
       return undefined
     if (typeof value === 'string' && GENERATED_ID.test(value) && !order.has(value)) {
       if (!outside.has(value)) outside.set(value, `@${outside.size}`)

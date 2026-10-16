@@ -1,31 +1,25 @@
 import { describe, expect, test } from 'bun:test'
 
-import { SceneGraph, type SceneNode } from '@kalka/scene-graph'
+import { SceneGraph } from '@kalka/scene-graph'
 import {
-  layerStyle,
-  PARENT_STYLE_FIELDS,
-  STYLE_FIELDS,
+  BOX_PROPERTIES,
+  cssWrite,
+  layerCSS,
+  TEXT_PROPERTIES,
   writeLayerStyle
 } from '@kalka/scene-graph/css-model'
 
 import { SAMPLES } from './samples'
 
-/** The fields a write reads, traced on the layer and on its parent. */
-function readFields(node: SceneNode, parent: SceneNode | undefined) {
-  const own = new Set<string>()
-  const ofParent = new Set<string>()
-  const traced = <T extends object>(target: T, into: Set<string>) =>
-    new Proxy(target, {
-      get(object, key, receiver) {
-        if (typeof key === 'string') into.add(key)
-        return Reflect.get(object, key, receiver)
-      }
-    })
-  writeLayerStyle(traced(node, own), {
-    parent: parent && traced(parent, ofParent),
-    css: (_field, literal) => literal
+const literal = (_field: string, value: string) => value
+
+function traced<T extends object>(target: T, into: Set<string>): T {
+  return new Proxy(target, {
+    get(object, key, receiver) {
+      if (typeof key === 'string') into.add(key)
+      return Reflect.get(object, key, receiver)
+    }
   })
-  return { own, ofParent }
 }
 
 function graphWithPage() {
@@ -33,63 +27,84 @@ function graphWithPage() {
   return { graph, page: graph.getPages()[0] }
 }
 
-describe('CSS kept in step with the fields', () => {
-  test('the fields that change CSS are every field the table writes from', () => {
-    for (const { type = 'FRAME', fields, parent: parentFields } of SAMPLES) {
-      const { graph, page } = graphWithPage()
-      const parent = parentFields ? graph.createNode('FRAME', page.id, parentFields) : undefined
-      const node = graph.createNode(type, parent?.id ?? page.id, fields)
-      const { own, ofParent } = readFields(node, parent)
-      expect([...own].filter((key) => !STYLE_FIELDS.has(key))).toEqual([])
-      expect([...ofParent].filter((key) => !PARENT_STYLE_FIELDS.has(key))).toEqual([])
+function place({ type = 'FRAME', fields, parent: parentFields }: (typeof SAMPLES)[number]) {
+  const { graph, page } = graphWithPage()
+  const parent = parentFields ? graph.createNode('FRAME', page.id, parentFields) : undefined
+  return { graph, parent, node: graph.createNode(type, parent?.id ?? page.id, fields) }
+}
+
+describe('a layer’s CSS', () => {
+  test('each family names every field it writes CSS from', () => {
+    for (const sample of SAMPLES) {
+      const { node, parent } = place(sample)
+      const families = node.type === 'TEXT' ? TEXT_PROPERTIES : BOX_PROPERTIES
+      for (const family of families) {
+        const read = new Set<string>()
+        family.write?.({}, traced(node, read), { parent, css: literal })
+        const missing = [...read].filter((key) => !family.fields.some((field) => field === key))
+        expect({ family: family.name, missing }).toEqual({ family: family.name, missing: [] })
+      }
     }
   })
 
-  test('a new layer, and an edit to it, rewrite its CSS', () => {
+  test('writing a layer’s CSS gives back its fields', () => {
+    for (const sample of SAMPLES) {
+      const { graph, node, parent } = place(sample)
+      const css = writeLayerStyle(node, { parent, css: literal })
+      const blank = graph.createNode(node.type, parent?.id ?? graph.getPages()[0].id, {})
+      const changes = cssWrite(blank, parent, css)
+      expect({ sample: sample.name, style: changes.style }).toEqual({ sample: sample.name, style: {} })
+      for (const [field, value] of Object.entries(sample.fields))
+        expect({ field, value: Reflect.get({ ...blank, ...changes }, field) }).toEqual({
+          field,
+          value: value as unknown
+        })
+    }
+  })
+
+  test('CSS the fields cannot write back stays as written, and wins', () => {
     const { graph, page } = graphWithPage()
     const card = graph.createNode('FRAME', page.id, { width: 120, height: 40 })
-    expect(card.style).toMatchObject({ width: '120px', height: '40px' })
-
-    graph.updateNode(card.id, { opacity: 0.5, cornerRadius: 8 })
-    expect(card.style).toMatchObject({ opacity: '0.5', 'border-radius': '8px' })
-    expect(card.style).toEqual(layerStyle(card, page))
+    graph.updateNode(
+      card.id,
+      cssWrite(card, page, {
+        width: '50%',
+        height: '40px',
+        padding: '1rem',
+        opacity: '0.5',
+        cursor: 'pointer'
+      })
+    )
+    expect(card.opacity).toBe(0.5)
+    expect(card.height).toBe(40)
+    // A percentage is no size the fields hold: layout measures it.
+    expect(card.width).toBe(120)
+    expect(card.style).toEqual({ width: '50%', padding: '1rem', cursor: 'pointer' })
+    expect(layerCSS(card, page)).toMatchObject({ width: '50%', opacity: '0.5', cursor: 'pointer' })
   })
 
-  test('a parent that starts laying out its children rewrites theirs', () => {
-    const { graph, page } = graphWithPage()
-    const row = graph.createNode('FRAME', page.id, { width: 300, height: 100 })
-    const item = graph.createNode('RECTANGLE', row.id, { x: 10, y: 20, width: 40, height: 40 })
-    expect(item.style).toMatchObject({ position: 'absolute', left: '10px', top: '20px' })
-    expect(row.style.position).toBe('relative')
-
-    graph.updateNode(row.id, { layoutMode: 'HORIZONTAL' })
-    expect(item.style.position).toBeUndefined()
-    expect(item.style['flex-shrink']).toBe('0')
-  })
-
-  test('moving a layer rewrites it and both parents', () => {
-    const { graph, page } = graphWithPage()
-    const free = graph.createNode('FRAME', page.id, { width: 300, height: 100 })
-    const row = graph.createNode('FRAME', page.id, { layoutMode: 'HORIZONTAL' })
-    const item = graph.createNode('RECTANGLE', free.id, { width: 40, height: 40 })
-    graph.reparentNode(item.id, row.id)
-    expect(item.style.position).toBeUndefined()
-    expect(free.style.position).toBeUndefined()
-    graph.deleteNode(item.id)
-    expect(row.style).toEqual(layerStyle(row, page))
-  })
-
-  test('declarations the fields cannot hold are kept as written', () => {
+  test('a field set afterwards replaces the CSS written for it, and only that', () => {
     const { graph, page } = graphWithPage()
     const card = graph.createNode('FRAME', page.id, {
-      width: 120,
-      style: { cursor: 'pointer', transition: 'opacity 200ms' }
+      style: { width: '50%', cursor: 'pointer', 'border-radius': '1rem' }
     })
     graph.updateNode(card.id, { width: 200 })
-    expect(card.style).toMatchObject({
-      width: '200px',
-      cursor: 'pointer',
-      transition: 'opacity 200ms'
+    expect(card.style).toEqual({ cursor: 'pointer', 'border-radius': '1rem' })
+    expect(layerCSS(card, page).width).toBe('200px')
+  })
+
+  test('measured sizes stay when the CSS leaves them to layout', () => {
+    const { graph, page } = graphWithPage()
+    const row = graph.createNode('FRAME', page.id, {
+      layoutMode: 'HORIZONTAL',
+      primaryAxisSizing: 'HUG',
+      counterAxisSizing: 'HUG',
+      width: 236,
+      height: 48
     })
+    const changes = cssWrite(row, page, { display: 'flex', gap: '12px' })
+    expect(changes.itemSpacing).toBe(12)
+    expect('width' in changes).toBe(false)
+    expect('height' in changes).toBe(false)
   })
 })

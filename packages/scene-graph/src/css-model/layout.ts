@@ -77,6 +77,18 @@ function growsAlongParent(node: SceneNode, parent: SceneNode | undefined): boole
  */
 export const layoutChild: PropertyFamily = {
   name: 'layout child',
+  dependsOnParent: true,
+  fields: [
+    'layoutAlignSelf',
+    'layoutPositioning',
+    'layoutGrow',
+    'gridPosition',
+    'rotation',
+    'type',
+    'layoutMode',
+    'minWidth',
+    'minHeight'
+  ],
   properties: [
     'align-self',
     'flex-grow',
@@ -123,6 +135,7 @@ export const layoutChild: PropertyFamily = {
 
 export const direction: PropertyFamily = {
   name: 'direction',
+  fields: ['layoutDirection'],
   properties: ['direction'],
   write(style, node) {
     if (node.layoutDirection === 'RTL') style.direction = 'rtl'
@@ -135,6 +148,7 @@ export const direction: PropertyFamily = {
 /** Text runs in the direction its characters set unless the layer says otherwise. */
 export const textDirection: PropertyFamily = {
   name: 'text direction',
+  fields: ['textDirection', 'text'],
   properties: ['direction'],
   write(style, node) {
     if (resolveNodeTextDirection(node) === 'RTL') style.direction = 'rtl'
@@ -210,6 +224,22 @@ function readPadding(style: CSSDeclarations, node: SceneNode): void {
 /** Auto layout is flexbox, grid layout is CSS grid; either way padding insets the children. */
 export const container: PropertyFamily = {
   name: 'layout container',
+  fields: [
+    'layoutMode',
+    'primaryAxisAlign',
+    'counterAxisAlign',
+    'layoutWrap',
+    'itemSpacing',
+    'counterAxisSpacing',
+    'paddingTop',
+    'paddingRight',
+    'paddingBottom',
+    'paddingLeft',
+    'gridTemplateColumns',
+    'gridTemplateRows',
+    'gridColumnGap',
+    'gridRowGap'
+  ],
   properties: [
     'display',
     'flex-direction',

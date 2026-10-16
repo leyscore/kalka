@@ -14,6 +14,7 @@ import {
 import type { OkHCLColor, OkHCLColorSpace } from '@kalka/scene-graph/color'
 
 import type { ColorFieldFormat } from '#vue/controls/color-model/types'
+import { writeFromPanel } from '#vue/controls/panel-write'
 
 type ColorKind = 'fill' | 'stroke'
 
@@ -46,7 +47,8 @@ export function createOkHCLActions(editor: Editor) {
   const colorSpace = () => editor.graph.documentColorSpace
 
   function ensureFillOkHCL(node: SceneNode, index: number) {
-    editor.updateNodeWithUndo(
+    writeFromPanel(
+      editor,
       node.id,
       setNodeFillOkHCL(node, index, fallbackFillOkHCL(node, index, colorSpace()), colorSpace()),
       'Update fill color model'
@@ -54,7 +56,8 @@ export function createOkHCLActions(editor: Editor) {
   }
 
   function ensureStrokeOkHCL(node: SceneNode, index: number) {
-    editor.updateNodeWithUndo(
+    writeFromPanel(
+      editor,
       node.id,
       setNodeStrokeOkHCL(node, index, fallbackStrokeOkHCL(node, index, colorSpace()), colorSpace()),
       'Update stroke color model'
@@ -63,7 +66,8 @@ export function createOkHCLActions(editor: Editor) {
 
   function updateFillOkHCL(node: SceneNode, index: number, patch: Partial<OkHCLColor>) {
     const current = fallbackFillOkHCL(node, index, colorSpace())
-    editor.updateNodeWithUndo(
+    writeFromPanel(
+      editor,
       node.id,
       setNodeFillOkHCL(node, index, { ...current, ...patch }, colorSpace()),
       'Change fill OkHCL'
@@ -72,7 +76,8 @@ export function createOkHCLActions(editor: Editor) {
 
   function updateStrokeOkHCL(node: SceneNode, index: number, patch: Partial<OkHCLColor>) {
     const current = fallbackStrokeOkHCL(node, index, colorSpace())
-    editor.updateNodeWithUndo(
+    writeFromPanel(
+      editor,
       node.id,
       setNodeStrokeOkHCL(node, index, { ...current, ...patch }, colorSpace()),
       'Change stroke OkHCL'

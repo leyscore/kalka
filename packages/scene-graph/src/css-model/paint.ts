@@ -10,6 +10,7 @@ const BACKGROUND = ['background-color', 'background-image', 'background-blend-mo
 /** A box's fills: one solid color, or gradients and several layers as background images. */
 export const fills: PropertyFamily = {
   name: 'fills',
+  fields: ['fills', 'width', 'height'],
   properties: BACKGROUND,
   write(style, node, { css }) {
     const layered = fillsToBackground(node.fills, node.width, node.height)
@@ -41,6 +42,7 @@ export const fills: PropertyFamily = {
  */
 export const image: PropertyFamily = {
   name: 'image',
+  fields: ['fills', 'width', 'height'],
   properties: ['aspect-ratio', 'object-fit'],
   write(style, node) {
     const fill = node.fills.at(0)
@@ -57,6 +59,7 @@ export const image: PropertyFamily = {
  */
 export const shaderFallback: PropertyFamily = {
   name: 'shader fallback',
+  fields: ['shader', 'fills'],
   properties: ['background-image'],
   write(style, node) {
     const colors = node.shader?.colors ?? []
@@ -69,6 +72,7 @@ export const shaderFallback: PropertyFamily = {
 /** Text paints its letters: one color, or gradients as a background clipped to them. */
 export const textFills: PropertyFamily = {
   name: 'text fills',
+  fields: ['fills', 'width', 'height'],
   properties: ['color', ...BACKGROUND, '-webkit-background-clip', 'background-clip'],
   write(style, node, { css }) {
     const gradient = node.fills.some((fill) => fill.visible && fill.type.startsWith('GRADIENT'))

@@ -9,6 +9,8 @@ import { firstCSSNumber, laysOutChildren, type PropertyFamily } from './types'
  */
 export const position: PropertyFamily = {
   name: 'position',
+  dependsOnParent: true,
+  fields: ['layoutPositioning', 'layoutMode', 'type', 'childIds', 'x', 'y'],
   properties: ['position', 'left', 'top'],
   write(style, node, { parent }) {
     const placed =

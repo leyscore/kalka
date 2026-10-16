@@ -2,11 +2,13 @@
 export type { CSSDeclarations, FieldCSS, PropertyFamily, ReadContext, WriteContext } from './types'
 export { hugs } from './size'
 export {
-  changesStyle,
-  extraDeclarations,
-  layerStyle,
-  PARENT_STYLE_FIELDS,
-  STYLE_FIELDS
+  cssWrite,
+  familyFields,
+  fieldsFromStyle,
+  fieldsOwning,
+  layerCSS,
+  STYLE_FIELDS,
+  styleAfterFieldChanges
 } from './sync'
 export { firstCSSNumber, laysOutChildren, px } from './types'
 export * from './to-css'

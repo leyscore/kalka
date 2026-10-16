@@ -7,6 +7,7 @@ import { type CSSDeclarations, type PropertyFamily, px } from './types'
 
 export const effects: PropertyFamily = {
   name: 'effects',
+  fields: ['effects'],
   properties: ['box-shadow', 'filter', 'backdrop-filter'],
   write(style, node) {
     Object.assign(style, effectsToCSS(node.effects))
@@ -20,6 +21,7 @@ export const effects: PropertyFamily = {
 /** Text draws its first shadow on the letters. */
 export const textShadow: PropertyFamily = {
   name: 'text shadow',
+  fields: ['effects'],
   properties: ['text-shadow'],
   write(style, node) {
     const shadow = dropShadowToCSS(node.effects[0])
@@ -33,6 +35,7 @@ export const textShadow: PropertyFamily = {
 
 export const opacity: PropertyFamily = {
   name: 'opacity',
+  fields: ['opacity'],
   properties: ['opacity'],
   write(style, node, { css }) {
     if (node.opacity < 1) style.opacity = css('opacity', String(node.opacity))
@@ -45,6 +48,7 @@ export const opacity: PropertyFamily = {
 
 export const blendMode: PropertyFamily = {
   name: 'blend mode',
+  fields: ['blendMode'],
   properties: ['mix-blend-mode'],
   write(style, node) {
     const blend = blendModeToCSS(node.blendMode)
@@ -78,6 +82,15 @@ function cornerRadiusOf(node: SceneNode, style: CSSDeclarations, property: strin
 
 export const cornerRadii: PropertyFamily = {
   name: 'corner radii',
+  fields: [
+    'type',
+    'independentCorners',
+    'cornerRadius',
+    'topLeftRadius',
+    'topRightRadius',
+    'bottomRightRadius',
+    'bottomLeftRadius'
+  ],
   properties: ['border-radius', ...CORNERS.map(([property]) => property)],
   write(style, node, { css }) {
     if (node.type === 'ELLIPSE') {
@@ -107,6 +120,7 @@ export const cornerRadii: PropertyFamily = {
 
 export const clipsContent: PropertyFamily = {
   name: 'clip content',
+  fields: ['clipsContent'],
   properties: ['overflow'],
   write(style, node) {
     if (node.clipsContent) style.overflow = 'hidden'

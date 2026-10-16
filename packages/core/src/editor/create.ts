@@ -33,6 +33,7 @@ import { createClipboardActions } from './clipboard'
 import { createColorSpaceActions } from './color-space'
 import { createComponentSyncScheduler } from './component-sync'
 import { createComponentActions } from './components'
+import { cssWritesFor } from './css-writes'
 import { createDesignTokenActions } from './design-tokens'
 import { createGraphEventSubscription } from './graph-events'
 import { createGraphReadActions } from './graph-reads'
@@ -226,6 +227,7 @@ export function createEditor(options?: EditorOptions) {
       _graph = g
     },
     undo,
+    cssWrites: cssWritesFor(options),
     state,
     loadFont: _loadFont,
     resolveFigmaClipboardImages: options?.resolveFigmaClipboardImages ?? null,

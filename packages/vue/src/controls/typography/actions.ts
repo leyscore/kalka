@@ -5,6 +5,7 @@ import type { Editor } from '@kalka/core/editor'
 import { FONT_WEIGHT_NAMES, weightToStyle } from '@kalka/core/text'
 import type { SceneNode, TextDecoration } from '@kalka/scene-graph'
 
+import { writeFromPanel } from '#vue/controls/panel-write'
 import type { UseTypographyOptions } from '#vue/controls/typography/use'
 import { useSceneComputed } from '#vue/internal/scene-computed/use'
 import { useNodeFontStatus } from '#vue/shared/font-status/use'
@@ -78,34 +79,31 @@ export function createTypographyActions({
   async function setFamily(family: string) {
     if (!node.value) return
     await doLoadFont(family, currentWeightLabel.value)
-    editor.updateNodeWithUndo(node.value.id, { fontFamily: family }, 'Change font')
+    writeFromPanel(editor, node.value.id, { fontFamily: family }, 'Change font')
   }
 
   async function setWeight(weight: number) {
     if (!node.value) return
     const { id, fontFamily } = node.value
     const style = weightToStyle(weight)
-    editor.updateNodeWithUndo(id, { fontWeight: weight }, 'Change font weight')
+    writeFromPanel(editor, id, { fontWeight: weight }, 'Change font weight')
     await doLoadFont(fontFamily, style)
   }
 
   function setAlign(align: TextAlign) {
     if (!node.value) return
-    editor.updateNodeWithUndo(
-      node.value.id,
-      { textAlignHorizontal: align },
-      'Change text alignment'
-    )
+    writeFromPanel(editor, node.value.id, { textAlignHorizontal: align }, 'Change text alignment')
   }
 
   function setDirection(direction: TextDirection) {
     if (!node.value) return
-    editor.updateNodeWithUndo(node.value.id, { textDirection: direction }, 'Change text direction')
+    writeFromPanel(editor, node.value.id, { textDirection: direction }, 'Change text direction')
   }
 
   function setVerticalAlign(align: TextVerticalAlign) {
     if (!node.value) return
-    editor.updateNodeWithUndo(
+    writeFromPanel(
+      editor,
       node.value.id,
       { textAlignVertical: align },
       'Change vertical text alignment'
@@ -114,19 +112,19 @@ export function createTypographyActions({
 
   function setTextCase(textCase: TextCase) {
     if (!node.value) return
-    editor.updateNodeWithUndo(node.value.id, { textCase }, 'Change text case')
+    writeFromPanel(editor, node.value.id, { textCase }, 'Change text case')
   }
 
   function setTruncation(textTruncation: TextTruncation) {
     if (!node.value) return
-    editor.updateNodeWithUndo(node.value.id, { textTruncation }, 'Change text truncation')
+    writeFromPanel(editor, node.value.id, { textTruncation }, 'Change text truncation')
   }
 
   function setFontFeature(tag: string, enabled: boolean) {
     if (!node.value) return
     const fontFeatures = node.value.fontFeatures.filter((feature) => feature.tag !== tag)
     fontFeatures.push({ tag, enabled })
-    editor.updateNodeWithUndo(node.value.id, { fontFeatures }, `Change ${tag} feature`)
+    writeFromPanel(editor, node.value.id, { fontFeatures }, `Change ${tag} feature`)
   }
 
   function toggleBold() {
@@ -136,13 +134,14 @@ export function createTypographyActions({
 
   function toggleItalic() {
     if (!node.value) return
-    editor.updateNodeWithUndo(node.value.id, { italic: !node.value.italic }, 'Toggle italic')
+    writeFromPanel(editor, node.value.id, { italic: !node.value.italic }, 'Toggle italic')
   }
 
   function toggleDecoration(deco: 'UNDERLINE' | 'STRIKETHROUGH') {
     if (!node.value) return
     const current = node.value.textDecoration
-    editor.updateNodeWithUndo(
+    writeFromPanel(
+      editor,
       node.value.id,
       { textDecoration: (current === deco ? 'NONE' : deco) as TextDecoration },
       `Toggle ${deco.toLowerCase()}`

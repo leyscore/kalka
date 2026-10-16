@@ -2,6 +2,7 @@ import { computed } from 'vue'
 
 import type { MaskType } from '@kalka/scene-graph'
 
+import { writeFromPanel } from '#vue/controls/panel-write'
 import { useEditor } from '#vue/editor/context'
 import { useSelectionState } from '#vue/editor/selection-state/use'
 
@@ -16,7 +17,7 @@ export function useMask() {
   function setMaskType(value: MaskType) {
     const node = selectedNode.value
     if (!node?.isMask || node.maskType === value) return
-    editor.updateNodeWithUndo(node.id, { maskType: value }, 'Change mask type')
+    writeFromPanel(editor, node.id, { maskType: value }, 'Change mask type')
   }
 
   return { active, maskType, setMaskType }

@@ -4,6 +4,7 @@ import type { ComputedRef } from 'vue'
 import type { Editor } from '@kalka/core/editor'
 import type { Effect, Fill, SceneNode, Stroke } from '@kalka/scene-graph'
 
+import { writeFromPanel } from '#vue/controls/panel-write'
 import { useSelectedNodeState } from '#vue/editor/selection-state/nodes'
 
 export const MIXED = Symbol('mixed')
@@ -75,7 +76,7 @@ export function createNodePropSelectionState(store: Editor) {
 
   function updateAllWithUndo(patch: Partial<SceneNode>, label: string) {
     for (const n of nodes.value) {
-      store.updateNodeWithUndo(n.id, patch, label)
+      writeFromPanel(store, n.id, patch, label)
     }
   }
 
@@ -127,13 +128,14 @@ export function createNodePropArrayActions({
     for (const n of targetNodes()) {
       const arr = [...n[key]]
       arr[index] = { ...arr[index], ...patch } as (typeof arr)[number]
-      store.updateNodeWithUndo(n.id, { [key]: arr } as Partial<SceneNode>, label)
+      writeFromPanel(store, n.id, { [key]: arr } as Partial<SceneNode>, label)
     }
   }
 
   function removeArrayItem(key: ArrayPropKey, index: number, label: string) {
     for (const n of targetNodes()) {
-      store.updateNodeWithUndo(
+      writeFromPanel(
+        store,
         n.id,
         { [key]: (n[key] as unknown[]).filter((_, i) => i !== index) } as Partial<SceneNode>,
         label
@@ -147,11 +149,7 @@ export function createNodePropArrayActions({
       if (!items[index]) continue
       const arr = [...n[key]]
       arr[index] = { ...arr[index], visible: !items[index].visible }
-      store.updateNodeWithUndo(
-        n.id,
-        { [key]: arr } as Partial<SceneNode>,
-        `Toggle ${key} visibility`
-      )
+      writeFromPanel(store, n.id, { [key]: arr } as Partial<SceneNode>, `Toggle ${key} visibility`)
     }
   }
 

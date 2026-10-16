@@ -1,12 +1,7 @@
 import { fromUint8Array } from 'js-base64'
 
 import { readIcon, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
-import {
-  extraDeclarations,
-  writeLayerStyle,
-  type FieldCSS,
-  type WriteContext
-} from '@kalka/scene-graph/css-model'
+import { writeLayerStyle, type FieldCSS, type WriteContext } from '@kalka/scene-graph/css-model'
 
 import { DesignTokens, type CSSModes } from '../tokens/references'
 import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
@@ -58,9 +53,9 @@ export interface SceneGraphToDesignOptions {
 /** What a box draws itself, which the SVG of a vector layer draws instead. */
 const BOX_PAINT = /^(background|border|box-shadow|outline|filter)/
 
-/** A layer's CSS: what the table writes from its fields, then what only its CSS holds. */
+/** A layer's CSS: what the table writes from its fields, then what its CSS says otherwise. */
 function layerCSS(node: SceneNode, context: WriteContext): DesignStyleDeclaration {
-  return { ...writeLayerStyle(node, context), ...extraDeclarations(node) }
+  return { ...writeLayerStyle(node, context), ...node.style }
 }
 
 function nodeChildren(graph: SceneGraph, node: SceneNode): SceneNode[] {

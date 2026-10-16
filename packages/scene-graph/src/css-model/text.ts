@@ -5,6 +5,7 @@ import { px, type PropertyFamily } from './types'
 
 export const font: PropertyFamily = {
   name: 'font',
+  fields: ['fontFamily', 'fontSize', 'fontWeight', 'italic', 'lineHeight', 'letterSpacing'],
   properties: [
     'font-family',
     'font-size',
@@ -41,6 +42,7 @@ export const font: PropertyFamily = {
 
 export const textAlign: PropertyFamily = {
   name: 'text align',
+  fields: ['textAlignHorizontal'],
   properties: ['text-align'],
   write(style, node) {
     if (node.textAlignHorizontal === 'JUSTIFIED') style['text-align'] = 'justify'
@@ -62,6 +64,7 @@ const TEXT_CASES = [
 
 export const textDecoration: PropertyFamily = {
   name: 'text decoration',
+  fields: ['textDecoration', 'textCase'],
   properties: ['text-decoration-line', 'text-transform'],
   write(style, node) {
     if (node.textDecoration !== 'NONE') {
@@ -94,6 +97,7 @@ function textWhiteSpace(node: SceneNode): string {
  */
 export const textWrap: PropertyFamily = {
   name: 'text wrap',
+  fields: ['maxLines', 'textAutoResize', 'textTruncation', 'lineHeight', 'height'],
   properties: [
     'white-space',
     'overflow',

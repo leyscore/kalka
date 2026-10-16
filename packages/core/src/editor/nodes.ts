@@ -10,6 +10,7 @@ import {
 
 import { reconcileVariableLayouts } from '#core/layout/variables'
 
+import { changesAsCSS, type CSSWriter } from './css-writes'
 import { createLayoutModeActions } from './layout-mode'
 import { createNodePreviewActions } from './node-preview'
 import { createNudgeActions } from './nudge'
@@ -53,9 +54,22 @@ export function createNodeActions(ctx: EditorContext) {
     runChangedLayout(id, nextChanges)
   }
 
-  function updateNodeWithUndo(id: string, changes: Partial<SceneNode>, label = 'Update') {
+  /**
+   * `writer` names who writes: one the editor has moved to CSS (`ctx.cssWrites`) writes the
+   * layer's CSS, which gives the fields (`#core/editor/css-writes`).
+   */
+  function updateNodeWithUndo(
+    id: string,
+    fieldChanges: Partial<SceneNode>,
+    label = 'Update',
+    writer?: CSSWriter
+  ) {
     const node = ctx.graph.getNode(id)
     if (!node) return
+    const changes =
+      writer && ctx.cssWrites.has(writer)
+        ? changesAsCSS(ctx.graph, node, fieldChanges)
+        : fieldChanges
     // Same ordering rationale as updateNode: reflowed path-text glyphs win.
     const nextChanges = styleDetachmentChanges(node, {
       ...changes,
@@ -66,10 +80,11 @@ export function createNodeActions(ctx: EditorContext) {
     const previousOverrides = owner
       ? cloneInstanceOverrideState(owner.instanceOverrides)
       : undefined
-    const previous = pick(
-      node,
-      Object.keys(nextChanges) as (keyof SceneNode)[]
-    ) as Partial<SceneNode>
+    // The graph may let CSS written as is give way to the fields (`styleAfterFieldChanges`).
+    const previous = pick(node, [
+      ...(Object.keys(nextChanges) as (keyof SceneNode)[]),
+      'style'
+    ]) as Partial<SceneNode>
     ctx.graph.updateNode(id, nextChanges)
     recordInstanceOverride(ctx.graph, id, Object.keys(nextChanges))
     runChangedLayout(id, nextChanges)

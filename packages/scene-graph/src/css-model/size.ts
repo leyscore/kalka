@@ -79,6 +79,19 @@ function readContentSizing(
  */
 export const size: PropertyFamily = {
   name: 'size',
+  dependsOnParent: true,
+  fields: [
+    'width',
+    'height',
+    'type',
+    'textAutoResize',
+    'layoutMode',
+    'primaryAxisSizing',
+    'counterAxisSizing',
+    'layoutPositioning',
+    'layoutGrow',
+    'layoutAlignSelf'
+  ],
   properties: ['width', 'height', 'aspect-ratio'],
   write(style, node, { parent, css }) {
     const sized = (axis: Axis) =>
@@ -100,6 +113,18 @@ export const size: PropertyFamily = {
 /** Hug sizing, read once the layout mode and the parent's sizing of the layer are known. */
 export const contentSizing: PropertyFamily = {
   name: 'content sizing',
+  dependsOnParent: true,
+  fields: [
+    'width',
+    'height',
+    'type',
+    'textAutoResize',
+    'layoutMode',
+    'primaryAxisSizing',
+    'counterAxisSizing',
+    'layoutGrow',
+    'layoutAlignSelf'
+  ],
   properties: [],
   read(style, node, { projected }) {
     if (projected) readContentSizing(node, style, projected.parent)
@@ -115,6 +140,7 @@ const CONSTRAINTS = [
 
 export const sizeConstraints: PropertyFamily = {
   name: 'size constraints',
+  fields: ['minWidth', 'maxWidth', 'minHeight', 'maxHeight'],
   properties: CONSTRAINTS.map(([property]) => property),
   write(style, node, { css }) {
     for (const [property, field] of CONSTRAINTS) {

@@ -77,7 +77,7 @@ import { removeStaleBindings } from './bindings'
 export { CommittedGraphEventError } from './buffered-events'
 import { BufferedSceneEmitter } from './buffered-events'
 import { cloneNodeProps } from './copy'
-import { changesStyle, layerStyle, PARENT_STYLE_FIELDS } from './css-model/sync'
+import { styleAfterFieldChanges } from './css-model/sync'
 import { bindNodeEvents } from './events'
 import * as HitTest from './hit-test'
 export type { DropTargetOptions } from './hit-test'
@@ -159,6 +159,13 @@ function stripUndefinedProps<T extends object>(obj: T): T {
 }
 
 export { captureGraphCheckpoint } from './checkpoint'
+
+/** CSS written as is gives way to the fields set after it, in the same change. */
+function withStyleGivingWay(node: SceneNode, changes: Partial<SceneNode>): Partial<SceneNode> {
+  if ('style' in changes) return changes
+  const style = styleAfterFieldChanges(node, Object.keys(changes))
+  return style ? { ...changes, style } : changes
+}
 
 export class SceneGraph {
   nodes = new Map<string, SceneNode>()
@@ -457,28 +464,9 @@ export class SceneGraph {
     }
     return false
   }
-  /**
-   * Keeps a layer's CSS in step with its fields. A layer's CSS is derived from what the graph
-   * holds, so replaying the same changes rebuilds it: it raises no event of its own.
-   */
-  private syncStyle(node: SceneNode | undefined): void {
-    if (!node) return
-    node.style = layerStyle(node, node.parentId ? this.nodes.get(node.parentId) : undefined)
-  }
-
-  /** After a change to a layer: its CSS unless the change set it, and its children's. */
-  private syncStylesAfter(node: SceneNode, changes: Partial<SceneNode>): void {
-    const keys = Object.keys(changes)
-    if (!('style' in changes) && changesStyle(keys)) this.syncStyle(node)
-    if (keys.some((key) => PARENT_STYLE_FIELDS.has(key)))
-      for (const childId of node.childIds) this.syncStyle(this.nodes.get(childId))
-  }
-
   private registerNode(node: SceneNode, parentId: string | null): SceneNode {
     node.parentId = parentId
     this.nodes.set(node.id, node)
-    this.syncStyle(node)
-    if (parentId) this.syncStyle(this.nodes.get(parentId))
     if (node.type === 'INSTANCE' && node.componentId) {
       let set = this.instanceIndex.get(node.componentId)
       if (!set) {
@@ -683,13 +671,13 @@ export class SceneGraph {
     if (changes.vectorNetwork) {
       changes = { ...changes, vectorNetwork: normalizeVectorNetwork(changes.vectorNetwork) }
     }
+    changes = withStyleGivingWay(node, changes)
     const previous: Partial<SceneNode> = {}
     for (const key of Object.keys(changes)) Reflect.set(previous, key, Reflect.get(node, key))
     Object.assign(node, changes)
     if (changes.fills) removeStaleBindings(node, 'fills', changes)
     if (changes.strokes) removeStaleBindings(node, 'strokes', changes)
     for (const key of absent) Reflect.deleteProperty(node, key)
-    this.syncStylesAfter(node, changes)
     this.emitter.emit('node:updated', id, changes, previous)
   }
 
@@ -725,9 +713,6 @@ export class SceneGraph {
       if (local) Object.assign(node, local)
     }
 
-    this.syncStyle(node)
-    this.syncStyle(oldParent)
-    this.syncStyle(newParent)
     this.emitter.emit('node:reparented', nodeId, oldParentId, newParentId)
   }
 
@@ -762,9 +747,6 @@ export class SceneGraph {
     this.absPosCache.clear()
     idx = Math.min(idx, newParent.childIds.length)
     newParent.childIds.splice(idx, 0, nodeId)
-    this.syncStyle(node)
-    this.syncStyle(oldParent)
-    this.syncStyle(newParent)
 
     this.emitter.emit('node:reordered', nodeId, parentId, idx, previousParentId)
   }
@@ -782,9 +764,6 @@ export class SceneGraph {
     newParent.childIds.splice(index, 0, childId)
     node.parentId = parentId
     this.clearAbsPosCache()
-    this.syncStyle(node)
-    this.syncStyle(oldParent)
-    this.syncStyle(newParent)
     this.emitter.emit('node:reordered', childId, parentId, index, previousParentId)
   }
 
@@ -796,7 +775,6 @@ export class SceneGraph {
       const parent = this.nodes.get(node.parentId)
       if (parent) {
         parent.childIds = parent.childIds.filter((cid) => cid !== id)
-        this.syncStyle(parent)
       }
     }
 

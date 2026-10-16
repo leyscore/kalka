@@ -6,6 +6,7 @@ import type { BlendMode, SceneNode } from '@kalka/scene-graph'
 
 import type { CornerGeometryKey, CornerRadiusKey } from '#vue/controls/appearance/types'
 import { MIXED, type MixedValue } from '#vue/controls/node-props/use'
+import { writeFromPanel } from '#vue/controls/panel-write'
 
 const CORNER_RADIUS_TYPES = new Set([
   'RECTANGLE',
@@ -146,7 +147,7 @@ export function createAppearanceActions({
 
     editor.undo.runBatch('Change blend mode', () => {
       for (const target of changed) {
-        editor.updateNodeWithUndo(target.id, { blendMode: value }, 'Change blend mode')
+        writeFromPanel(editor, target.id, { blendMode: value }, 'Change blend mode')
       }
     })
   }
@@ -160,7 +161,7 @@ export function createAppearanceActions({
       const allVisible = liveNodes.every((n) => n.visible)
       editor.undo.runBatch('Toggle visibility', () => {
         for (const n of liveNodes) {
-          editor.updateNodeWithUndo(n.id, { visible: !allVisible }, 'Toggle visibility')
+          writeFromPanel(editor, n.id, { visible: !allVisible }, 'Toggle visibility')
         }
       })
       return
@@ -170,7 +171,7 @@ export function createAppearanceActions({
     if (!selected) return
     const liveNode = editor.getNode(selected.id)
     if (!liveNode) return
-    editor.updateNodeWithUndo(liveNode.id, { visible: !liveNode.visible }, 'Toggle visibility')
+    writeFromPanel(editor, liveNode.id, { visible: !liveNode.visible }, 'Toggle visibility')
   }
 
   function toggleIndependentCorners() {
@@ -198,7 +199,8 @@ export function createAppearanceActions({
         for (const target of targets) {
           if (makeIndependent) {
             if (target.independentCorners) continue
-            editor.updateNodeWithUndo(
+            writeFromPanel(
+              editor,
               target.id,
               {
                 independentCorners: true,
@@ -211,7 +213,8 @@ export function createAppearanceActions({
             )
           } else {
             const uniform = target.topLeftRadius
-            editor.updateNodeWithUndo(
+            writeFromPanel(
+              editor,
               target.id,
               {
                 independentCorners: false,

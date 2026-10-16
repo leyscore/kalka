@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import type { SceneNode } from '@kalka/scene-graph'
 
 import { useNodeProps } from '#vue/controls/node-props/use'
+import { writeFromPanel } from '#vue/controls/panel-write'
 import { useUndoBatch } from '#vue/controls/undo-batch/use'
 import { useEditor } from '#vue/editor/context'
 import type {
@@ -44,7 +45,7 @@ export function useEditorPropertyList<K extends PropertyListKey>(propKey: K) {
   }
 
   function updateArray(node: SceneNode, value: PropertyListItemFor<K>[], label: string) {
-    editor.updateNodeWithUndo(node.id, { [propKey]: value } as Partial<SceneNode>, label)
+    writeFromPanel(editor, node.id, { [propKey]: value } as Partial<SceneNode>, label)
   }
 
   function add(item: PropertyListItemFor<K>) {

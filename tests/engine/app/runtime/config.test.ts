@@ -18,7 +18,8 @@ describe('app runtime configuration', () => {
       sceneRendererOverride: true,
       domScene: false,
       collaborationTransport: 'test',
-      collaborationRelayURL: 'ws://localhost:4000'
+      collaborationRelayURL: 'ws://localhost:4000',
+      fieldWrites: false
     })
   })
 
@@ -51,7 +52,8 @@ describe('app runtime configuration', () => {
       sceneRendererOverride: false,
       domScene: true,
       collaborationTransport: 'default',
-      collaborationRelayURL: null
+      collaborationRelayURL: null,
+      fieldWrites: false
     })
   })
 })

@@ -34,7 +34,7 @@ async function openFixture(page: Page, file: string): Promise<string[]> {
 
 /** Waits until every artboard's frame has loaded and its fonts are in, then for two frames. */
 async function settle(page: Page, canvas: CanvasHelper): Promise<void> {
-  await page.waitForLoadState('networkidle')
+  // Not the network going idle: the editor keeps connections open.
   for (const frame of page.frames()) {
     if (frame === page.mainFrame()) continue
     await frame.waitForLoadState('load')

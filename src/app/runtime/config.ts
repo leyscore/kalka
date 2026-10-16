@@ -19,6 +19,11 @@ export interface AppRuntimeConfig {
   domScene: boolean
   collaborationTransport: CollaborationTransportMode
   collaborationRelayURL: string | null
+  /**
+   * `?field-writes`: every writer sets fields, as before the CSS model's migration, to compare
+   * the two paths while it lasts (PLAN.md, section 12).
+   */
+  fieldWrites: boolean
 }
 
 export function parseAppRuntimeConfig(
@@ -39,7 +44,8 @@ export function parseAppRuntimeConfig(
     sceneRendererOverride: renderer === 'tiled' || renderer === 'retained',
     domScene: renderer !== 'skia' && renderer !== 'tiled' && renderer !== 'retained',
     collaborationTransport: params.get('collabTransport') === 'test' ? 'test' : 'default',
-    collaborationRelayURL: params.get('collabRelay')
+    collaborationRelayURL: params.get('collabRelay'),
+    fieldWrites: params.has('field-writes')
   }
 }
 

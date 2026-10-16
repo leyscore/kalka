@@ -17,6 +17,7 @@ import {
 } from '@kalka/scene-graph'
 
 import { useNodePreview } from '#vue/controls/node-preview/use'
+import { writeFromPanel } from '#vue/controls/panel-write'
 import { useSelectedNodeState } from '#vue/editor/selection-state/nodes'
 import type { useI18n } from '#vue/i18n'
 
@@ -95,12 +96,13 @@ export function createGridTrackActions(editor: Editor, node: ComputedRef<SceneNo
     if (!node.value) return
     const tracks = [...node.value[prop]]
     tracks[index] = { ...tracks[index], ...updates }
-    editor.updateNodeWithUndo(node.value.id, { [prop]: tracks }, 'Change grid track')
+    writeFromPanel(editor, node.value.id, { [prop]: tracks }, 'Change grid track')
   }
 
   function addTrack(prop: GridTrackProp) {
     if (!node.value) return
-    editor.updateNodeWithUndo(
+    writeFromPanel(
+      editor,
       node.value.id,
       { [prop]: [...node.value[prop], { sizing: 'FR' as const, value: 1 }] },
       'Add grid track'
@@ -109,7 +111,8 @@ export function createGridTrackActions(editor: Editor, node: ComputedRef<SceneNo
 
   function removeTrack(prop: GridTrackProp, index: number) {
     if (!node.value) return
-    editor.updateNodeWithUndo(
+    writeFromPanel(
+      editor,
       node.value.id,
       { [prop]: node.value[prop].filter((_: GridTrack, i: number) => i !== index) },
       'Remove grid track'
@@ -213,7 +216,7 @@ export function createLayoutActions({
     const n = node.value
     if (!n) return
     const value = prop === 'minWidth' || prop === 'maxWidth' ? n.width : n.height
-    editor.updateNodeWithUndo(n.id, { [prop]: Math.round(value) }, `Set ${prop}`)
+    writeFromPanel(editor, n.id, { [prop]: Math.round(value) }, `Set ${prop}`)
   }
 
   function commitSizeLimit(_prop: SizeLimitProp, _value: number, _previous: number) {
@@ -224,12 +227,12 @@ export function createLayoutActions({
     const n = node.value
     if (!n) return
     const fallback = prop === 'minWidth' || prop === 'maxWidth' ? n.width : n.height
-    editor.updateNodeWithUndo(n.id, { [prop]: Math.round(fallback) }, `Add ${prop}`)
+    writeFromPanel(editor, n.id, { [prop]: Math.round(fallback) }, `Add ${prop}`)
   }
 
   function removeSizeLimit(prop: SizeLimitProp) {
     if (!node.value) return
-    editor.updateNodeWithUndo(node.value.id, { [prop]: null }, `Remove ${prop}`)
+    writeFromPanel(editor, node.value.id, { [prop]: null }, `Remove ${prop}`)
   }
 
   function commitProp(_key: NumericNodeProperty, _value: number, _previous: number) {
@@ -239,7 +242,8 @@ export function createLayoutActions({
   function setAxisSizing(axis: LayoutAxis, sizing: LayoutSizing) {
     const n = node.value
     if (!n) return
-    editor.updateNodeWithUndo(
+    writeFromPanel(
+      editor,
       n.id,
       axisSizingPatchForNode(editor.graph, n, axis, sizing),
       `Set ${axis} sizing`
@@ -261,7 +265,8 @@ export function createLayoutActions({
 
   function setAlignment(primary: LayoutAlign, counter: LayoutCounterAlign) {
     if (!node.value) return
-    editor.updateNodeWithUndo(
+    writeFromPanel(
+      editor,
       node.value.id,
       { primaryAxisAlign: primary, counterAxisAlign: counter },
       'Change alignment'
@@ -271,7 +276,8 @@ export function createLayoutActions({
   function setGapAuto(enabled: boolean) {
     const n = node.value
     if (!n) return
-    editor.updateNodeWithUndo(
+    writeFromPanel(
+      editor,
       n.id,
       { primaryAxisAlign: enabled ? 'SPACE_BETWEEN' : 'MIN' },
       enabled ? 'Set gap to auto' : 'Set gap to fixed'
@@ -280,11 +286,7 @@ export function createLayoutActions({
 
   function setLayoutDirection(direction: SceneNode['layoutDirection']) {
     if (!node.value) return
-    editor.updateNodeWithUndo(
-      node.value.id,
-      { layoutDirection: direction },
-      'Change layout direction'
-    )
+    writeFromPanel(editor, node.value.id, { layoutDirection: direction }, 'Change layout direction')
   }
 
   return {

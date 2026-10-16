@@ -51,16 +51,7 @@ export interface PageChange {
   children: Record<Side, ChildList[]>
 }
 
-/**
- * Compared on their own, or not at all: a layer's CSS follows its fields, so restoring the
- * fields rebuilds it (`packages/scene-graph/src/css-model/sync.ts`).
- */
-const NESTED_FIELDS: ReadonlySet<keyof SceneNode> = new Set([
-  'childIds',
-  'parentId',
-  'source',
-  'style'
-])
+const NESTED_FIELDS: ReadonlySet<keyof SceneNode> = new Set(['childIds', 'parentId', 'source'])
 const SOURCE_PAYLOAD: ReadonlySet<keyof SourceMetadata> = new Set(['fig'])
 
 function diffLayer(id: string, previous: SceneNode, current: SceneNode): LayerUpdate | null {

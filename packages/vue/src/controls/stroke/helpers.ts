@@ -8,6 +8,7 @@ import type { SceneNode, Stroke, StrokeCap, StrokeJoin } from '@kalka/scene-grap
 
 import { MIXED } from '#vue/controls/node-props/use'
 import type { MixedValue } from '#vue/controls/node-props/use'
+import { writeFromPanel } from '#vue/controls/panel-write'
 
 export type StrokeSides = 'ALL' | 'TOP' | 'BOTTOM' | 'LEFT' | 'RIGHT' | 'CUSTOM'
 
@@ -100,13 +101,14 @@ export function createStrokeGeometryActions(
         for (const vertex of network.vertices) delete vertex.strokeCap
         changes.vectorNetwork = network
       }
-      editor.updateNodeWithUndo(node.id, changes, 'Change stroke cap')
+      writeFromPanel(editor, node.id, changes, 'Change stroke cap')
     })
   }
 
   function setJoin(value: StrokeJoin) {
     runForSelection('Change stroke join', (node) => {
-      editor.updateNodeWithUndo(
+      writeFromPanel(
+        editor,
         node.id,
         { strokeJoin: value, strokes: node.strokes.map((stroke) => ({ ...stroke, join: value })) },
         'Change stroke join'
@@ -137,7 +139,7 @@ export function createStrokeGeometryActions(
 export function updateAlign(editor: Editor, align: Stroke['align'], activeNode: SceneNode | null) {
   if (!activeNode) return
   const strokes = activeNode.strokes.map((s) => ({ ...s, align }))
-  editor.updateNodeWithUndo(activeNode.id, { strokes }, 'Change stroke align')
+  writeFromPanel(editor, activeNode.id, { strokes }, 'Change stroke align')
 }
 
 export function currentAlign(activeNode: SceneNode | null): Stroke['align'] {
@@ -199,7 +201,8 @@ export function createStrokeSideActions(editor: Editor, sideMenuOpen: Ref<boolea
     if (!activeNode) return
     const weight = activeNode.strokes.length > 0 ? activeNode.strokes[0].weight : 1
     if (side === 'ALL') {
-      editor.updateNodeWithUndo(
+      writeFromPanel(
+        editor,
         activeNode.id,
         {
           independentStrokeWeights: false,
@@ -219,7 +222,8 @@ export function createStrokeSideActions(editor: Editor, sideMenuOpen: Ref<boolea
             left: activeNode.borderLeftWeight
           }
         : { top: weight, right: weight, bottom: weight, left: weight }
-      editor.updateNodeWithUndo(
+      writeFromPanel(
+        editor,
         activeNode.id,
         {
           independentStrokeWeights: true,
@@ -231,7 +235,8 @@ export function createStrokeSideActions(editor: Editor, sideMenuOpen: Ref<boolea
         'Custom stroke sides'
       )
     } else {
-      editor.updateNodeWithUndo(
+      writeFromPanel(
+        editor,
         activeNode.id,
         {
           independentStrokeWeights: true,
@@ -253,7 +258,8 @@ export function createStrokeSideActions(editor: Editor, sideMenuOpen: Ref<boolea
   ) {
     if (!activeNode) return
     const key = `border${side[0].toUpperCase()}${side.slice(1)}Weight` as keyof SceneNode
-    editor.updateNodeWithUndo(
+    writeFromPanel(
+      editor,
       activeNode.id,
       { [key]: value } as Partial<SceneNode>,
       'Change stroke weight'

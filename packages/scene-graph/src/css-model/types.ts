@@ -31,6 +31,10 @@ export interface PropertyFamily {
   name: string
   /** Every CSS property the family writes or reads. */
   properties: readonly string[]
+  /** Every layer field it writes CSS from, or reads CSS into; a change to one rewrites it. */
+  fields: readonly (keyof SceneNode)[]
+  /** Whether its CSS depends on how the parent lays out its children. */
+  dependsOnParent?: true
   write?(style: CSSDeclarations, node: SceneNode, context: WriteContext): void
   read?(style: CSSDeclarations, node: SceneNode, context: ReadContext): void
 }
