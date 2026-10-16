@@ -22,5 +22,6 @@ export {
   type TokenStylesheetIssue,
   type TokenStylesheetOptions
 } from './stylesheet'
+export { DesignTokens } from './references'
 export { createTokenValidator, type TokenValidator } from './validate'
 export { tokenNumberToCSS, variableUnit } from './values'

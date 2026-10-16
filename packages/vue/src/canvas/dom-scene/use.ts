@@ -13,6 +13,7 @@ import { DomLayoutEngine } from './layout'
 import { DomSceneProjector } from './projector'
 import { ShaderLayers } from './shaders'
 import { DomTextEditor } from './text/editor'
+import { CanvasTokens } from './tokens'
 
 export interface UseDomSceneOptions {
   /** The view drawn by this pane. Defaults to `editor.state`. */
@@ -40,6 +41,7 @@ export function useDomScene(
   let projector: DomSceneProjector | null = null
   let engine: DomLayoutEngine | null = null
   let shaders: ShaderLayers | null = null
+  let tokens: CanvasTokens | null = null
   const reflowed = new Set<string>()
   let frame = 0
   let lastTransform = ''
@@ -95,6 +97,7 @@ export function useDomScene(
     }
     const state = view()
     shaders?.sync(state.sceneVersion)
+    if (state.sceneVersion !== presentedScene) tokens?.sync()
     if (state.sceneVersion !== presentedScene) {
       presentedScene = state.sceneVersion
       options.onPresented?.({
@@ -115,9 +118,18 @@ export function useDomScene(
         if (projector) options.onPatched?.(projector, ids)
       },
       onReflow: (id) => reflowed.add(id),
-      livePatch
+      livePatch,
+      tokens: () => canvasTokens.references
     })
     const p = projector
+    const canvasTokens = new CanvasTokens(
+      () => editor.graph,
+      (css) => p.setTokensCSS(css),
+      // Every layer naming a renamed variable is rebuilt with its new name.
+      () => p.reset()
+    )
+    tokens = canvasTokens
+    canvasTokens.sync()
     engine = new DomLayoutEngine(p, () => editor.graph)
     shaders = new ShaderLayers(p, () => editor.graph)
     // Text is edited in place, in the page, instead of by the canvas text engine.
@@ -133,7 +145,12 @@ export function useDomScene(
       editor.onEditorEvent('node:reordered', (_id, parentId, _index, previousParentId) =>
         p.structureChanged(parentId, previousParentId)
       ),
-      editor.onEditorEvent('graph:replaced', () => p.reset()),
+      editor.onEditorEvent('graph:replaced', () => {
+        canvasTokens.sync()
+        p.reset()
+      }),
+      // Renaming a variable or changing a mode's condition changes no layer.
+      editor.onEditorEvent('history:changed', () => canvasTokens.sync()),
       fontManager.onBrowserFace((face) => p.addFont(face)),
       installLayoutEngine(engine)
     )
@@ -146,6 +163,7 @@ export function useDomScene(
     if (projector) editor.setExternalTextEditor(null)
     shaders?.destroy()
     shaders = null
+    tokens = null
     projector?.destroy()
     projector = null
     engine = null

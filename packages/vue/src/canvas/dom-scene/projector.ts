@@ -1,5 +1,6 @@
 import {
   sceneNodeToDesignDocument,
+  type DesignTokens,
   type DesignElement,
   type DesignNode,
   type VectorElementRenderer
@@ -7,7 +8,12 @@ import {
 import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 import { LAYER_ID_ATTR, buildNode, elementAttributes, patchAttributes } from './build'
-import { addArtboardFont, createArtboardFrame, type ArtboardFontFace } from './frame'
+import {
+  addArtboardFont,
+  createArtboardFrame,
+  setArtboardTokens,
+  type ArtboardFontFace
+} from './frame'
 
 /** Changes to a layer that restyle its children too: their CSS depends on how it lays them out. */
 const CHILD_STYLE_KEYS = new Set<keyof SceneNode>([
@@ -58,6 +64,8 @@ export interface DomSceneProjectorOptions {
    * vertices of a path being edited. The graph is not changed.
    */
   livePatch?: (id: string) => Partial<SceneNode> | null
+  /** The variable references layers are projected with, as `var(--name)`. */
+  tokens?: () => DesignTokens
 }
 
 /**
@@ -132,6 +140,18 @@ export class DomSceneProjector {
     const artboardId = this.topLevelOf(node)
     // Its parent puts the rebuilt element back; an artboard rebuilds itself.
     this.dirty.add(artboardId === id || !node.parentId ? id : node.parentId)
+  }
+
+  #tokensCSS = ''
+
+  /** The variables stylesheet every artboard carries, now and when it opens. */
+  setTokensCSS(css: string): void {
+    this.#tokensCSS = css
+    for (const artboard of this.artboards.values()) {
+      if (artboard.doc) setArtboardTokens(artboard.doc, css)
+    }
+    // Values moved, so layouts can too.
+    for (const id of this.artboards.keys()) this.options.onReflow?.(id)
   }
 
   /** A font loaded after the artboards opened: every artboard gets it. */
@@ -337,6 +357,7 @@ export class DomSceneProjector {
         artboard.doc = doc
         if (doc) {
           for (const face of this.options.fonts?.() ?? []) addArtboardFont(doc, face)
+          setArtboardTokens(doc, this.#tokensCSS)
           const reflowed = () => {
             artboard.stale = true
             this.options.onReflow?.(id)
@@ -399,8 +420,8 @@ export class DomSceneProjector {
   private projectStored(id: string, shallow: boolean): DesignNode | null {
     const doc = sceneNodeToDesignDocument(this.graph, id, {
       includeSourceIds: false,
-      // Variables are written as values until each artboard carries the tokens stylesheet.
-      tokens: false,
+      // Variable-bound values are `var(--name)`, defined by each artboard's tokens stylesheet.
+      tokens: this.options.tokens?.() ?? false,
       vectorElement: this.options.vectorElement,
       shallow,
       derivedSizes: true

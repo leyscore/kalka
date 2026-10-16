@@ -34,8 +34,11 @@ export type VectorElementRenderer = (graph: SceneGraph, node: SceneNode) => Desi
 export interface SceneGraphToDesignOptions {
   rootId?: string
   includeSourceIds?: boolean
-  /** Write variable-bound values as `var(--name)` where CSS resolves them as drawn. Default true. */
-  tokens?: boolean
+  /**
+   * Write variable-bound values as `var(--name)` where CSS resolves them as drawn. Default true;
+   * a caller projecting often can pass the references it keeps instead of building new ones.
+   */
+  tokens?: boolean | DesignTokens
   /** Vector, boolean, star, polygon, and icon layers as inline SVG; without it they project as boxes. */
   vectorElement?: VectorElementRenderer
   /** Hidden layers to project as shown, such as the tab panels a component reveals itself. */
@@ -687,6 +690,14 @@ function sceneNodeToDesignNode(
   }
 }
 
+function projectionTokens(
+  graph: SceneGraph,
+  tokens: boolean | DesignTokens
+): DesignTokens | undefined {
+  if (tokens instanceof DesignTokens) return tokens
+  return tokens ? new DesignTokens(graph) : undefined
+}
+
 function projectionContext(
   graph: SceneGraph,
   {
@@ -702,7 +713,7 @@ function projectionContext(
   return {
     graph,
     includeSourceIds,
-    tokens: tokens ? new DesignTokens(graph) : undefined,
+    tokens: projectionTokens(graph, tokens),
     vectorElement,
     shown,
     shallow,

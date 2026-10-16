@@ -115,6 +115,7 @@
 
 ### Changed
 
+- The canvas draws variable-bound values with real CSS variables, defined in every artboard for each mode, so editing or renaming a variable restyles every layer that uses it at once, as the exported page does.
 - Standalone HTML exports keep auto layout as flex instead of placing every layer at fixed coordinates, so only layers that are really fixed keep pixel sizes; classes are named after the layers, layers styled alike share one, and the page has no wrapper or editor attributes.
 - HTML export no longer marks each element with `data-kalka-node-id`; the editor's layer IDs stay out of exported files. The `get_html` AI and MCP tool still includes them so agents can map the HTML back to layers.
 - The interface is calmer and sharper: text renders antialiased, selected layers get a blue tint instead of a solid fill, selection, text selection and agent marks on the canvas use Kalka blue, the toolbar floats with a frosted background, and menus and popovers cast softer, deeper shadows.

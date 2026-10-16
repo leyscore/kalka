@@ -54,6 +54,19 @@ export type ArtboardFontFace = BrowserFontFace
  * Adds a font to an artboard's own font set. Each iframe is a document of its own: fonts the
  * editor loaded are not visible in it until added there, through its own `FontFace`.
  */
+const TOKENS_STYLE_ATTR = 'data-kalka-tokens'
+
+/** Replaces the variables stylesheet of an artboard document. */
+export function setArtboardTokens(doc: Document, css: string): void {
+  let style = doc.head.querySelector<HTMLStyleElement>(`style[${TOKENS_STYLE_ATTR}]`)
+  if (!style) {
+    style = doc.createElement('style')
+    style.setAttribute(TOKENS_STYLE_ATTR, '')
+    doc.head.append(style)
+  }
+  style.textContent = css
+}
+
 export function addArtboardFont(doc: Document, face: ArtboardFontFace): void {
   const view = doc.defaultView
   if (!view) return
