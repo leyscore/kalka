@@ -36,8 +36,8 @@ test('dragging selected nested instance content reorders its auto-layout item', 
 
     const first = store.graph.createNode('INSTANCE', frame.id, {
       name: 'First item',
-      x: 110,
-      y: 110,
+      x: 10,
+      y: 10,
       width: 120,
       height: 60
     })
@@ -52,8 +52,8 @@ test('dragging selected nested instance content reorders its auto-layout item', 
 
     const second = store.graph.createNode('INSTANCE', frame.id, {
       name: 'Second item',
-      x: 250,
-      y: 110,
+      x: 150,
+      y: 10,
       width: 120,
       height: 60
     })
@@ -72,7 +72,7 @@ test('dragging selected nested instance content reorders its auto-layout item', 
   })
   await canvas.waitForRender()
 
-  await canvas.drag(370, 228, 230, 228, 12)
+  await canvas.drag(270, 128, 130, 128, 12)
   await canvas.waitForRender()
 
   const childIds = await page.evaluate((frameId) => {
@@ -114,15 +114,15 @@ test('auto-layout drag does not show an insert indicator before order changes', 
     })
     const first = store.graph.createNode('INSTANCE', frame.id, {
       name: 'First item',
-      x: 110,
-      y: 110,
+      x: 10,
+      y: 10,
       width: 120,
       height: 60
     })
     const second = store.graph.createNode('INSTANCE', frame.id, {
       name: 'Second item',
-      x: 250,
-      y: 110,
+      x: 150,
+      y: 10,
       width: 120,
       height: 60
     })
@@ -143,9 +143,9 @@ test('auto-layout drag does not show an insert indicator before order changes', 
 
   const box = await canvas.canvas.boundingBox()
   if (!box) throw new Error('Canvas has no bounding box')
-  await page.mouse.move(box.x + 370, box.y + 228)
+  await page.mouse.move(box.x + 270, box.y + 128)
   await page.mouse.down()
-  await page.mouse.move(box.x + 365, box.y + 228, { steps: 3 })
+  await page.mouse.move(box.x + 265, box.y + 128, { steps: 3 })
   await canvas.waitForRender()
 
   const indicator = await page.evaluate(() => {

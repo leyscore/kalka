@@ -34,8 +34,8 @@ test('scene canvas repaints selected node during drag', async () => {
   })
   await canvas.waitForRender()
 
-  const sceneCanvas = page.getByTestId('scene-canvas-element')
-  const beforeDrag = await sceneCanvas.screenshot()
+  const scene = page.getByTestId('dom-scene')
+  const beforeDrag = await scene.screenshot()
   const box = await page.getByTestId('canvas-element').boundingBox()
   if (!box) throw new Error('No canvas')
 
@@ -43,7 +43,7 @@ test('scene canvas repaints selected node during drag', async () => {
   await page.mouse.down()
   await page.mouse.move(box.x + 260, box.y + 160, { steps: 12 })
   await canvas.waitForRender()
-  const duringDrag = await sceneCanvas.screenshot()
+  const duringDrag = await scene.screenshot()
   await page.mouse.up()
 
   expect(Buffer.compare(beforeDrag, duringDrag)).not.toBe(0)

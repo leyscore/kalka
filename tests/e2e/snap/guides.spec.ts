@@ -126,10 +126,14 @@ test('pixel snapping preference controls fractional object movement', async () =
   })
   const box = await page.getByTestId('canvas-element').boundingBox()
   if (!box) throw new Error('No canvas')
+  // Pointer events land on whole CSS pixels, so the drags start from a whole-pixel origin to keep
+  // each pointer delta independent of where the panels leave the canvas.
+  const x = Math.ceil(box.x)
+  const y = Math.ceil(box.y)
 
-  await page.mouse.move(box.x + 160.25, box.y + 140.25)
+  await page.mouse.move(x + 160.25, y + 140.25)
   await page.mouse.down()
-  await page.mouse.move(box.x + 166.55, box.y + 147.65, { steps: 5 })
+  await page.mouse.move(x + 166.55, y + 147.65, { steps: 5 })
   await page.mouse.up()
   expect(await selectedPosition()).toEqual({ x: 126.25, y: 107.25 })
 
@@ -138,9 +142,9 @@ test('pixel snapping preference controls fractional object movement', async () =
     if (!store) throw new Error('Kalka store not initialized')
     store.state.snappingPreferences.pixelGrid = true
   })
-  await page.mouse.move(box.x + 166.25, box.y + 147.25)
+  await page.mouse.move(x + 166.25, y + 147.25)
   await page.mouse.down()
-  await page.mouse.move(box.x + 172.8, box.y + 155.05, { steps: 5 })
+  await page.mouse.move(x + 173.8, y + 155.05, { steps: 5 })
   expect(await snapGuides()).toEqual([])
   if (process.platform === 'darwin') {
     expect(await canvas.screenshotCanvas()).toMatchSnapshot('pixel-rounding-without-guides.png')
