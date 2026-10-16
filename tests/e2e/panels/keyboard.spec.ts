@@ -5,7 +5,7 @@ const editor = useEditorSetupWithClear()
 
 test('property fields follow keyboard tab order', async () => {
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const node = store.graph.createNode('RECTANGLE', store.state.currentPageId, {
       x: 120,
@@ -30,7 +30,7 @@ test('property fields follow keyboard tab order', async () => {
 
 test('select and switch controls work from the keyboard', async () => {
   const textId = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const node = store.graph.createNode('TEXT', store.state.currentPageId, {
       text: 'Keyboard typography',
@@ -61,7 +61,7 @@ test('select and switch controls work from the keyboard', async () => {
   await editor.canvas.waitForRender()
 
   const state = await editor.page.evaluate((id) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     const node = store?.graph.getNode(id)
     return node ? { textCase: node.textCase, fontFeatures: node.fontFeatures } : null
   }, textId)

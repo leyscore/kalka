@@ -92,7 +92,7 @@ Tools are defined once in `packages/core/src/tools/`, split by domain: read, cre
 
 - **AI chat** — valibot schemas, multi-provider (Anthropic, OpenAI, Google AI, OpenRouter, compatible endpoints)
 - **MCP server** — zod schemas, stdio + HTTP transports
-- **CLI** — available via the `eval` command, whose scripts get the `figma` Plugin API and the `openpencil` API
+- **CLI** — available via the `eval` command, whose scripts get the `figma` Plugin API and the `kalka` API
 
 The HTML tools are how agents work in Kalka: `write_html` adds HTML and CSS as editable layers, `get_html` and `get_computed_styles` read them back, `update_styles`, `set_html_element`, `update_css_class` and `add_breakpoint` change them, and `get_screenshot` lets the agent check its work. The MCP server ships inside the desktop app and states these instructions to every client (`packages/mcp/src/server/identity.ts`).
 

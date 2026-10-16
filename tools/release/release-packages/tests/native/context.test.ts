@@ -15,7 +15,7 @@ const environment = {
   GITHUB_RUN_ID: '123',
   GITHUB_RUN_ATTEMPT: '1',
   FRONTEND_SHA256: 'c'.repeat(64),
-  GITHUB_REPOSITORY: 'open-pencil/open-pencil'
+  GITHUB_REPOSITORY: 'kalka/kalka'
 }
 
 test('one context owns release identity and reuses existing npm paths', () => {

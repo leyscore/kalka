@@ -3,7 +3,7 @@ import { ref } from 'vue'
 
 import { IS_BROWSER } from '@kalka/core/constants'
 
-const MCP_CONNECTION_SETTINGS_KEY = 'open-pencil:mcp-connections'
+const MCP_CONNECTION_SETTINGS_KEY = 'kalka:mcp-connections'
 
 const connectionSettings = !IS_BROWSER
   ? ref<unknown>(null)

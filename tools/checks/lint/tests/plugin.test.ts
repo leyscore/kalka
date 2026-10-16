@@ -77,7 +77,7 @@ async function runRule(
 }
 
 test('domain naming uses ownership prefixes, not control-kind suffixes', async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'open-pencil-domains-'))
+  const directory = await mkdtemp(join(tmpdir(), 'kalka-domains-'))
   temporaryDirectories.push(directory)
   await mkdir(join(directory, 'list'))
   expect(
@@ -96,7 +96,7 @@ test('storage rule permits data keys but rejects storage access', async () => {
     ['window.sessionStorage.clear()', 1],
     ['const value = {localStorage}', 1]
   ] as const) {
-    const diagnostics = await lint(source, { [`open-pencil/${rule}`]: 'error' })
+    const diagnostics = await lint(source, { [`kalka/${rule}`]: 'error' })
     expect(ruleDiagnostics(diagnostics, rule)).toHaveLength(count)
   }
   // Four linter runs in a row outlast the default five seconds on a CI runner.
@@ -110,7 +110,7 @@ afterEach(async () => {
 
 describe('no-conditional-object-spreads', () => {
   const rule = 'no-conditional-object-spreads'
-  const rules = { [`open-pencil/${rule}`]: 'error' }
+  const rules = { [`kalka/${rule}`]: 'error' }
 
   test('accepts a simple one-property projection', async () => {
     const diagnostics = await lint(
@@ -142,7 +142,7 @@ describe('AST-backed rules', () => {
     const rule = 'no-unknown-record-double-cast'
     const diagnostics = await lint(
       'export const result = value as unknown as Record< string, unknown >',
-      { [`open-pencil/${rule}`]: 'error' }
+      { [`kalka/${rule}`]: 'error' }
     )
     expect(ruleDiagnostics(diagnostics, rule)).toHaveLength(1)
   })
@@ -154,7 +154,7 @@ describe('AST-backed rules', () => {
         'interface First { handler: (value: string) => number; enabled: boolean }',
         'interface Second { handler: (value: number) => number; enabled: boolean }'
       ].join('\n'),
-      { [`open-pencil/${rule}`]: 'error' }
+      { [`kalka/${rule}`]: 'error' }
     )
     expect(ruleDiagnostics(diagnostics, rule)).toHaveLength(0)
   })

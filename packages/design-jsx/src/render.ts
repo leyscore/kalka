@@ -86,7 +86,7 @@ export function buildComponent(jsxString: string, warnings: string[] = []): Reac
     const radialGradient = __helpers.radialGradient
     const angularGradient = __helpers.angularGradient
     const diamondGradient = __helpers.diamondGradient
-    const __varSymbol = Symbol.for('open-pencil.variable')
+    const __varSymbol = Symbol.for('kalka.variable')
     const designVar = (def, value) => typeof def === 'string'
       ? ({ [__varSymbol]: true, id: def, name: def, value })
       : ({ [__varSymbol]: true, id: def.id, name: def.name ?? def.id ?? '', value: def.value })

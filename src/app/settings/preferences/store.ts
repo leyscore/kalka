@@ -100,7 +100,7 @@ export const DEFAULT_APP_PREFERENCES: Readonly<AppPreferences> = {
   code: { defaultSource: 'html-css' }
 }
 
-const STORAGE_KEY = 'open-pencil:preferences:v1'
+const STORAGE_KEY = 'kalka:preferences:v1'
 
 /** An object whose fields each fall back to their default, and that is all defaults when absent. */
 function section<TEntries extends v.ObjectEntries>(entries: TEntries) {

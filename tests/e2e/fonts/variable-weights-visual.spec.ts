@@ -21,7 +21,7 @@ test('variable fonts render each style at its named instance', async ({ page }) 
   await openEditor(page)
 
   const result = await page.evaluate(async () => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store?.renderer) throw new Error('Kalka renderer not initialized')
     const fontModuleURL = performance
       .getEntriesByType('resource')

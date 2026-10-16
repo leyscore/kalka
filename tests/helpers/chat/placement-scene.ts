@@ -13,7 +13,7 @@ export type PlacementScenario =
 
 export function setupPlacementScene(page: Page, scenario: PlacementScenario) {
   return page.evaluate((scenario) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Editor unavailable')
     const pageId = store.state.currentPageId
     const solid = (color: Color): Fill => ({ type: 'SOLID', color, opacity: 1, visible: true })

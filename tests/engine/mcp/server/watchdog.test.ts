@@ -19,7 +19,7 @@ let testCounter = 0
 
 function testSocketPath(): string | null {
   if (process.platform === 'win32') return null
-  return join(tmpdir(), `openpencil-test-watchdog-${process.pid}-${++testCounter}.sock`)
+  return join(tmpdir(), `kalka-test-watchdog-${process.pid}-${++testCounter}.sock`)
 }
 
 async function fileExists(path: string): Promise<boolean> {

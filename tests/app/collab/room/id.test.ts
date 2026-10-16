@@ -9,10 +9,10 @@ describe('room links and IDs', () => {
     for (const input of [
       ROOM,
       `  ${ROOM}  `,
-      `https://app.openpencil.dev/share/${ROOM}`,
-      `https://app.openpencil.dev/share/${ROOM}/`,
-      `https://app.openpencil.dev/share/${ROOM}?test#layers`,
-      `open-pencil.localhost/share/${ROOM}#x`
+      `https://kalka.design/share/${ROOM}`,
+      `https://kalka.design/share/${ROOM}/`,
+      `https://kalka.design/share/${ROOM}?test#layers`,
+      `kalka.localhost/share/${ROOM}#x`
     ]) {
       expect(parseRoomInput(input)).toBe(ROOM)
     }
@@ -25,8 +25,8 @@ describe('room links and IDs', () => {
       ROOM.slice(1),
       `${ROOM}0`,
       ROOM.toUpperCase(),
-      `https://app.openpencil.dev/share/${ROOM.slice(0, 31)}!`,
-      `https://app.openpencil.dev/demo`
+      `https://kalka.design/share/${ROOM.slice(0, 31)}!`,
+      `https://kalka.design/demo`
     ]) {
       expect(parseRoomInput(input)).toBeNull()
     }

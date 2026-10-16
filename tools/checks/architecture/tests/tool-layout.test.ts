@@ -1,11 +1,11 @@
 import { expect, test } from 'bun:test'
 import { join } from 'node:path'
 
-import { openPencilArchitecturePlugin } from '../src/steiger-rules/index'
+import { kalkaArchitecturePlugin } from '../src/steiger-rules/index'
 
 test('keeps tool test helpers beside tests without allowing arbitrary tool locations', () => {
-  const rule = openPencilArchitecturePlugin.ruleDefinitions.find(
-    (rule) => rule.name === 'open-pencil/strict-tools-layout'
+  const rule = kalkaArchitecturePlugin.ruleDefinitions.find(
+    (rule) => rule.name === 'kalka/strict-tools-layout'
   )
   if (!rule) throw new Error('Missing tool layout rule')
   for (const [file, valid] of [

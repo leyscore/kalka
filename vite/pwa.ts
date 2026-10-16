@@ -1,6 +1,6 @@
 import { VitePWA } from 'vite-plugin-pwa'
 
-export function openPencilPwaPlugin() {
+export function kalkaPwaPlugin() {
   return VitePWA({
     registerType: 'autoUpdate',
     devOptions: { enabled: false },

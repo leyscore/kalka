@@ -10,7 +10,7 @@ async function expectCanvas(name: string) {
 
 test('boolean operations', async () => {
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     const operations = ['UNION', 'SUBTRACT', 'INTERSECT', 'EXCLUDE'] as const

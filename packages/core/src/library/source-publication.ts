@@ -1,5 +1,5 @@
 import {
-  OPEN_PENCIL_PLUGIN_DATA,
+  KALKA_PLUGIN_DATA,
   readPluginData,
   withPluginData,
   type SceneGraph,
@@ -8,7 +8,7 @@ import {
 
 export function readSourceLibraryPublication(graph: SceneGraph): SourceLibraryPublication | null {
   const root = graph.getNode(graph.rootId)
-  return readPluginData(root?.pluginData, OPEN_PENCIL_PLUGIN_DATA.sourceLibraryPublication) ?? null
+  return readPluginData(root?.pluginData, KALKA_PLUGIN_DATA.sourceLibraryPublication) ?? null
 }
 
 export function writeSourceLibraryPublication(
@@ -20,7 +20,7 @@ export function writeSourceLibraryPublication(
   graph.updateNode(root.id, {
     pluginData: withPluginData(
       root.pluginData,
-      OPEN_PENCIL_PLUGIN_DATA.sourceLibraryPublication,
+      KALKA_PLUGIN_DATA.sourceLibraryPublication,
       publication
     )
   })

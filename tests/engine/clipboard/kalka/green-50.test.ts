@@ -1,12 +1,12 @@
 import { expect, test } from 'bun:test'
 
-import { parseOpenPencilClipboard } from '@kalka/core'
+import { parseKalkaClipboard } from '@kalka/core'
 import { geometryBlobBounds } from '@kalka/scene-graph/geometry'
 
-const fixture = await Bun.file('tests/fixtures/clipboard/green-50.openpencil.html').text()
+const fixture = await Bun.file('tests/fixtures/clipboard/green-50.kalka.html').text()
 
 test('preserved Green/50 clipboard geometry restores typed command buffers', () => {
-  const parsed = parseOpenPencilClipboard(fixture)
+  const parsed = parseKalkaClipboard(fixture)
   const node = parsed?.nodes[0]
   expect(node?.name).toBe('Green/50')
   const path = node?.fillGeometry[0]

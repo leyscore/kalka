@@ -15,7 +15,7 @@ test('FIT avatar preserves the full clipboard fixture image', async () => {
   const bytes = await readFile('tests/fixtures/vectorize/pilot_avatar.png')
   await editor.page.evaluate(
     (data) => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Kalka store not initialized')
       const hash = store.storeImage(new Uint8Array(data))
       store.graph.createNode('RECTANGLE', store.state.currentPageId, {
@@ -62,7 +62,7 @@ test('FIT avatar preserves the full clipboard fixture image', async () => {
 
 test('gradients and image fill modes', async () => {
   await editor.page.evaluate(async () => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
 

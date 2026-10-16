@@ -7,7 +7,7 @@ test.use({ viewport: { width: 390, height: 844 } })
 
 test('mobile Code drawer mounts one live editor only while open', async () => {
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const frameId = store.createShape('FRAME', 0, 0, 100, 100)
     store.select([frameId])

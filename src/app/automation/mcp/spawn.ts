@@ -43,19 +43,19 @@ export interface AutomationServerHandle {
 }
 
 const DEV_AUTOMATION_HTTP_URL = import.meta.env.DEV
-  ? __OPENPENCIL_LOCAL_AUTOMATION_HTTP_URL__
+  ? __KALKA_LOCAL_AUTOMATION_HTTP_URL__
   : `http://127.0.0.1:${AUTOMATION_HTTP_PORT}`
 export function getMCPServerURL(): string {
   return `${DEV_AUTOMATION_HTTP_URL}/mcp`
 }
 
 const DEV_AUTOMATION_AUTH_TOKEN =
-  import.meta.env.DEV && typeof __OPENPENCIL_LOCAL_AUTOMATION_TOKEN__ === 'string'
-    ? __OPENPENCIL_LOCAL_AUTOMATION_TOKEN__
+  import.meta.env.DEV && typeof __KALKA_LOCAL_AUTOMATION_TOKEN__ === 'string'
+    ? __KALKA_LOCAL_AUTOMATION_TOKEN__
     : null
 const noop = () => undefined
 const MAX_STARTUP_STDERR_LENGTH = 8_192
-const MCP_EXECUTABLE = 'openpencil-mcp-http'
+const MCP_EXECUTABLE = 'kalka-mcp-http'
 
 interface MCPLookup {
   available: boolean
@@ -469,13 +469,13 @@ async function startMCPIfNeeded(timing: MCPStartupTiming): Promise<AutomationSer
   const command = Command.create(resolved.command, resolved.args, {
     env: {
       PORT: String(AUTOMATION_HTTP_PORT),
-      OPENPENCIL_MCP_AUTH_TOKEN: authToken ?? '',
-      OPENPENCIL_MCP_CORS_ORIGIN: window.location.origin,
-      OPENPENCIL_MCP_TCP: '1',
-      OPENPENCIL_MCP_ROOT: mcpRoot,
-      OPENPENCIL_MCP_APP_TIMEOUT_MS: String(MCP_APP_ATTACH_TIMEOUT_MS),
-      OPENPENCIL_MCP_DISABLED_TOOLS: serializeDisabledTools(disabledMCPTools.value),
-      OPENPENCIL_MCP_SCOPE: mcpScope()
+      KALKA_MCP_AUTH_TOKEN: authToken ?? '',
+      KALKA_MCP_CORS_ORIGIN: window.location.origin,
+      KALKA_MCP_TCP: '1',
+      KALKA_MCP_ROOT: mcpRoot,
+      KALKA_MCP_APP_TIMEOUT_MS: String(MCP_APP_ATTACH_TIMEOUT_MS),
+      KALKA_MCP_DISABLED_TOOLS: serializeDisabledTools(disabledMCPTools.value),
+      KALKA_MCP_SCOPE: mcpScope()
     }
   })
 
@@ -579,7 +579,7 @@ export async function spawnMCPIfNeeded(
 }
 
 /**
- * Returns the user's home directory. Used as the default OPENPENCIL_MCP_ROOT
+ * Returns the user's home directory. Used as the default KALKA_MCP_ROOT
  * so file-scoped tools operate on paths inside ~, which is writable and
  * matches user expectations. Throws if the Tauri path plugin is unavailable
  * — this function is only invoked under !import.meta.env.DEV && isTauri(),

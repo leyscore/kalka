@@ -23,7 +23,7 @@ async function selectDemoCard(page: Page, canvas: CanvasHelper) {
   await waitForDemo(page)
 
   await page.evaluate(async () => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const nodes = Array.from(store.graph.nodes.values())
     const card =
@@ -53,7 +53,7 @@ async function selectDemoCard(page: Page, canvas: CanvasHelper) {
 
 async function getSelectedFill(page: Page) {
   return page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const id = [...store.state.selectedIds][0]
     const node = store.graph.getNode(id)

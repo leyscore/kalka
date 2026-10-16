@@ -18,14 +18,14 @@ test.describe('browser support gate', () => {
     await expect(notice).toContainText('String.prototype.isWellFormed')
     await expect(notice.getByRole('link', { name: 'System requirements' })).toHaveAttribute(
       'href',
-      'https://openpencil.dev/getting-started#system-requirements'
+      'https://github.com/leyscore/kalka/blob/main/packages/docs/getting-started.md#system-requirements'
     )
 
     const report = notice.getByRole('link', { name: 'Report a problem' })
     const href = new URL((await report.getAttribute('href')) ?? '')
-    expect(href.pathname).toBe('/open-pencil/open-pencil/issues/new')
+    expect(href.pathname).toBe('/kalka/kalka/issues/new')
     expect(href.searchParams.get('template')).toBe('bug_report.yml')
-    expect(href.searchParams.get('platform')).toBe('Web (app.openpencil.dev)')
+    expect(href.searchParams.get('platform')).toBe('Web (kalka.design)')
     expect(href.searchParams.get('logs')).toContain('Missing: String.prototype.isWellFormed')
 
     await notice.getByText('Details', { exact: true }).click()

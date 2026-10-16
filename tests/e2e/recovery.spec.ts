@@ -12,7 +12,7 @@ test('keeps recovery independent from cancelling an unsaved-document close', asy
   await canvas.waitForInit()
 
   await page.evaluate(async () => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const id = store.createShape('RECTANGLE', 120, 120, 240, 140)
     await store.persistRecoveryNow()
@@ -30,7 +30,7 @@ test('keeps recovery independent from cancelling an unsaved-document close', asy
   await expect
     .poll(() =>
       page.evaluate(async () => {
-        const request = indexedDB.open('open-pencil-recovery')
+        const request = indexedDB.open('kalka-recovery')
         const database = await new Promise<IDBDatabase>((resolve, reject) => {
           request.onsuccess = () => resolve(request.result)
           request.onerror = () => reject(request.error)

@@ -17,7 +17,7 @@ async function openEditor(page: Page): Promise<CanvasHelper> {
   const canvas = new CanvasHelper(page)
   await canvas.waitForInit()
   await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageNode = store.graph.getNode(store.state.currentPageId)
     const childIds = pageNode?.childIds.slice() ?? []
@@ -54,7 +54,7 @@ test('international text is correct on its first visible paint', async ({ page }
   await openEditor(page)
 
   const result = await page.evaluate(async () => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store?.renderer) throw new Error('Kalka renderer not initialized')
     const fontModuleURL = performance
       .getEntriesByType('resource')
@@ -202,7 +202,7 @@ test('typed and tool-created text repaint with the same resolved fallbacks', asy
   const canvas = await openEditor(page)
 
   const ids = await page.evaluate(async () => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
 
@@ -272,7 +272,7 @@ test('typed and tool-created text repaint with the same resolved fallbacks', asy
 
   await page.locator('textarea[aria-hidden="true"]').fill('Kalka · 你好 · مرحبا')
   await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store?.renderer) throw new Error('Kalka renderer not initialized')
     store.renderer.invalidateAllPictures()
     store.renderer.renderFromEditorState(
@@ -301,7 +301,7 @@ test('typed and tool-created text repaint with the same resolved fallbacks', asy
   await expectCanvas(canvas, 'interactive-font-fallback-pending')
 
   const resolved = await page.evaluate(async ({ nodeIds, toolId, typedId }) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store?.renderer) throw new Error('Kalka renderer not initialized')
     const fontModuleURL = performance
       .getEntriesByType('resource')
@@ -366,7 +366,7 @@ test('substituted fonts still request fallbacks for CJK text', async ({ page }) 
   await openEditor(page)
 
   const result = await page.evaluate(async () => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store?.renderer) throw new Error('Kalka renderer not initialized')
     const fontModuleURL = performance
       .getEntriesByType('resource')

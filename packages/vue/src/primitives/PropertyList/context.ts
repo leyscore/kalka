@@ -11,17 +11,14 @@ export function providePropertyList<K extends PropertyListKey>(context: Property
 
 export function usePropertyList<K extends PropertyListKey>(): PropertyListContext<K> {
   const context = inject(PROPERTY_LIST_KEY)
-  if (!context)
-    throw new Error('[open-pencil] PropertyList part must be used inside PropertyListRoot')
+  if (!context) throw new Error('[kalka] PropertyList part must be used inside PropertyListRoot')
   return context as PropertyListContext<K>
 }
 
 export function usePropertyListPart<K extends PropertyListKey>(propKey: K): PropertyListContext<K> {
   const context = usePropertyList<K>()
   if (context.propKey !== propKey) {
-    throw new Error(
-      `[open-pencil] PropertyList part propKey must match PropertyListRoot (${propKey})`
-    )
+    throw new Error(`[kalka] PropertyList part propKey must match PropertyListRoot (${propKey})`)
   }
   return context
 }

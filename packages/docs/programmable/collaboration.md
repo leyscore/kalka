@@ -17,7 +17,7 @@ Only Share puts a document into a room: the tab you share from becomes the room'
 
 ## Joining a Room
 
-Open the link, or paste it (or just the room ID) into **Join** in the share panel or **Join room…** on Home. The room opens in a tab of its own, so the documents you already have open are never changed. On a computer, a browser also offers **Open in desktop app**, which opens the room in Kalka through an `openpencil://join` link.
+Open the link, or paste it (or just the room ID) into **Join** in the share panel or **Join room…** on Home. The room opens in a tab of its own, so the documents you already have open are never changed. On a computer, a browser also offers **Open in desktop app**, which opens the room in Kalka through an `kalka://join` link.
 
 You join right away under a generated name such as *Teal Fox*; set your own in the share panel or in Settings, and it is used in every room.
 

@@ -1,6 +1,6 @@
 # @kalka/fig
 
-`.fig` file-format package for OpenPencil.
+`.fig` file-format package for Kalka.
 
 The package owns the outer `.fig` archive boundary and is the staged home for Figma-specific
 SceneGraph conversion policy. Production SceneGraph read/write remains available through

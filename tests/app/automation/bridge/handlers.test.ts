@@ -18,7 +18,7 @@ function setupGlobals() {
       return 0
     },
     cancelAnimationFrame: vi.fn(),
-    openPencil: {},
+    kalka: {},
     location: { href: 'http://localhost/' } as Location,
     addEventListener: vi.fn(),
     removeEventListener: vi.fn()

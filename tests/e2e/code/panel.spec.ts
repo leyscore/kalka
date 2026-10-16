@@ -48,7 +48,7 @@ async function selectSource(label: string) {
 
 test('inactive Code tab defers JSX generation for large selections', async () => {
   const selectionDuration = await editor.page.evaluate(async () => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const ids: string[] = []
     for (let frameIndex = 0; frameIndex < 50; frameIndex++) {

@@ -3,7 +3,7 @@ import type { SceneNode } from '@kalka/scene-graph'
 import { getAxisAlignedBoundsInParent } from '@kalka/scene-graph/coordinate'
 import type { Rect, Vector } from '@kalka/scene-graph/primitives'
 
-import { parseFigmaClipboard, parseOpenPencilClipboard } from '#core/clipboard'
+import { parseFigmaClipboard, parseKalkaClipboard } from '#core/clipboard'
 import { prepareClipboardImport } from '#core/clipboard/fig-import'
 import { computeAllLayouts } from '#core/layout'
 
@@ -150,7 +150,7 @@ export function createClipboardActions(ctx: EditorContext) {
           inverse: dependencies.revertVariables
         })
       }
-      created = pasteOpenPencilNodes(
+      created = pasteKalkaNodes(
         dependencies.nodes,
         snapshot.images,
         dependencies.componentDependencies,
@@ -162,11 +162,11 @@ export function createClipboardActions(ctx: EditorContext) {
   }
 
   async function pasteFromHTML(html: string, cursorPos?: Vector, options: PasteOptions = {}) {
-    const openPencil = parseOpenPencilClipboard(html)
-    if (openPencil) {
+    const kalka = parseKalkaClipboard(html)
+    if (kalka) {
       // One undo step for the paste and any slot it claims.
       const created = ctx.undo.runBatch('Paste', () =>
-        pasteOpenPencilNodes(openPencil.nodes, openPencil.images, [], cursorPos, options)
+        pasteKalkaNodes(kalka.nodes, kalka.images, [], cursorPos, options)
       )
       await fontActions.loadFontsForNodes(created)
       return
@@ -220,7 +220,7 @@ export function createClipboardActions(ctx: EditorContext) {
     }
   }
 
-  function pasteOpenPencilNodes(
+  function pasteKalkaNodes(
     nodes: Array<SceneNode & { children?: SceneNode[] }>,
     images: Map<string, Uint8Array>,
     dependencies: Array<SceneNode & { children?: SceneNode[] }> = [],

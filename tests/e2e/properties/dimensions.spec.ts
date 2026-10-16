@@ -12,7 +12,7 @@ for (const theme of ['light', 'dark']) {
           origins: [
             {
               origin: new URL(baseURL).origin,
-              localStorage: [{ name: 'open-pencil:theme', value: theme }]
+              localStorage: [{ name: 'kalka:theme', value: theme }]
             }
           ]
         })
@@ -22,7 +22,7 @@ for (const theme of ['light', 'dark']) {
       await page.goto('/?test')
       await new CanvasHelper(page).waitForInit()
       await page.evaluate(() => {
-        const editor = window.openPencil?.getStore?.()
+        const editor = window.kalka?.getStore?.()
         if (!editor) throw new Error('Editor unavailable')
         const id = editor.createShape('FRAME', 0, 0, 12345, 6789)
         editor.select([id])

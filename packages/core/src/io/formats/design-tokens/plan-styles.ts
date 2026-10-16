@@ -21,7 +21,7 @@ import {
 import type { AliasTarget, ImportSkip, ResolvedReference } from './plan'
 import type { DesignTokenBundle, ReadToken } from './read'
 import { isShadow, shadowTokenValue, typographyValue } from './styles'
-import { OPENPENCIL_EXTENSION } from './types'
+import { kalkaExtension } from './types'
 
 /** A text or effect style the import makes or updates. */
 export interface PlannedStyle {
@@ -88,7 +88,7 @@ const pixels = (value: unknown) =>
  * the edit wins over the exact fields.
  */
 function ownText(token: ReadToken) {
-  const own = v.safeParse(OwnTextSchema, token.extensions[OPENPENCIL_EXTENSION])
+  const own = v.safeParse(OwnTextSchema, kalkaExtension(token.extensions))
   if (!own.success) return null
   const { text, bindings = {} } = own.output
   return { ...own.output, current: isEqual(token.value, typographyValue(text, bindings)) }
@@ -190,7 +190,7 @@ function replaceShadows(exact: readonly Effect[], shadows: readonly Effect[]): E
 
 /** A shadow token as effects, preferring the exact effects Kalka wrote. */
 function effectFields(token: ReadToken, resolve: Resolve): Partial<SceneNode> | null {
-  const own = v.safeParse(OwnEffectsSchema, token.extensions[OPENPENCIL_EXTENSION])
+  const own = v.safeParse(OwnEffectsSchema, kalkaExtension(token.extensions))
   // Extension effects that do not read fall back to the token's own shadows.
   const exact = own.success ? tryParseFigmaEffects(own.output.effects) : null
   if (exact && isEqual(token.value, shadowTokenValue(exact))) return { effects: exact }

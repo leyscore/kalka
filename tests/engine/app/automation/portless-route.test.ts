@@ -22,27 +22,27 @@ describe('Portless MCP routing', () => {
   })
 
   test('derives a sibling MCP service for the main checkout', () => {
-    expect(devAutomationRoute('https://open-pencil.localhost', 7600)).toEqual({
-      browserURL: 'wss://mcp.open-pencil.localhost',
-      corsOrigin: 'https://open-pencil.localhost',
-      portlessServiceName: 'mcp.open-pencil',
-      runtimeId: 'mcp.open-pencil.localhost'
+    expect(devAutomationRoute('https://kalka.localhost', 7600)).toEqual({
+      browserURL: 'wss://mcp.kalka.localhost',
+      corsOrigin: 'https://kalka.localhost',
+      portlessServiceName: 'mcp.kalka',
+      runtimeId: 'mcp.kalka.localhost'
     })
   })
 
   test('preserves the worktree prefix for the MCP service', () => {
-    expect(devAutomationRoute('https://portless-mcp-routing.open-pencil.localhost', 7600)).toEqual({
-      browserURL: 'wss://portless-mcp-routing.mcp.open-pencil.localhost',
-      corsOrigin: 'https://portless-mcp-routing.open-pencil.localhost',
-      portlessServiceName: 'mcp.open-pencil',
-      runtimeId: 'portless-mcp-routing.mcp.open-pencil.localhost'
+    expect(devAutomationRoute('https://portless-mcp-routing.kalka.localhost', 7600)).toEqual({
+      browserURL: 'wss://portless-mcp-routing.mcp.kalka.localhost',
+      corsOrigin: 'https://portless-mcp-routing.kalka.localhost',
+      portlessServiceName: 'mcp.kalka',
+      runtimeId: 'portless-mcp-routing.mcp.kalka.localhost'
     })
   })
 
   test('preserves a nonstandard HTTPS proxy port', () => {
-    const route = devAutomationRoute('https://chat-history.open-pencil.localhost:1355', 7600)
-    expect(route.browserURL).toBe('wss://chat-history.mcp.open-pencil.localhost:1355')
-    expect(route.corsOrigin).toBe('https://chat-history.open-pencil.localhost:1355')
+    const route = devAutomationRoute('https://chat-history.kalka.localhost:1355', 7600)
+    expect(route.browserURL).toBe('wss://chat-history.mcp.kalka.localhost:1355')
+    expect(route.corsOrigin).toBe('https://chat-history.kalka.localhost:1355')
   })
 
   test('rejects unrelated Portless hostnames', () => {

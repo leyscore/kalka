@@ -37,7 +37,7 @@ export interface PiSetupState {
   supported: boolean
   checked: boolean
   scanning: boolean
-  /** The `openpencil-harness` companion that runs Pi. */
+  /** The `kalka-harness` companion that runs Pi. */
   companion: boolean
   companionOutdated: boolean
   companionCommand: string

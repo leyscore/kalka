@@ -8,9 +8,9 @@ export {
   useBindingProvider
 } from '#vue/controls/binding-provider/context'
 export {
-  useOpenPencilBindingProvider,
-  type OpenPencilBindingProviderOptions
-} from '#vue/controls/binding-provider/open-pencil'
+  useKalkaBindingProvider,
+  type KalkaBindingProviderOptions
+} from '#vue/controls/binding-provider/kalka'
 export {
   createAndBindNumberVariable,
   useNumberBindingProvider

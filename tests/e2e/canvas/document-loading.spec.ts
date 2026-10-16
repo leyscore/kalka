@@ -4,7 +4,7 @@ const editor = useEditorSetup('/?test&no-chrome&no-rulers')
 
 test('shows staged and determinate document loading progress in the existing canvas overlay', async () => {
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const load = store.preparationController.begin({
       kind: 'document-open',
@@ -43,7 +43,7 @@ test('shows staged and determinate document loading progress in the existing can
   }
 
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) return
     store.preparationController.dispose()
   })

@@ -235,7 +235,7 @@ configuration is owner-readable only and is removed on exit.
 set -euo pipefail
 BASE="https://api.example.com/v1"
 MODEL="MODEL"
-ORIGIN="https://open-pencil.localhost"
+ORIGIN="https://kalka.localhost"
 read -rsp "API key: " API_KEY; printf '\n'
 CURL_CONFIG="$(mktemp)"
 PREFLIGHT_HEADERS="$(mktemp)"

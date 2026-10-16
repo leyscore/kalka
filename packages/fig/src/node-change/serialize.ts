@@ -1,7 +1,7 @@
 import {
   DEFAULT_STROKE_WEIGHT,
   normalizeFontFamily,
-  OPEN_PENCIL_PLUGIN_DATA,
+  KALKA_PLUGIN_DATA,
   withPluginData
 } from '@kalka/scene-graph'
 import { fractionalPosition } from '@kalka/scene-graph/order-keys'
@@ -95,7 +95,7 @@ function serializeTextProps(
 ): void {
   node.pluginData = withPluginData(
     node.pluginData,
-    OPEN_PENCIL_PLUGIN_DATA.textDirection,
+    KALKA_PLUGIN_DATA.textDirection,
     node.textDirection
   )
   nc.fontSize = node.fontSize
@@ -277,7 +277,7 @@ function applyEditedLayoutFields(node: SceneNode, nc: KiwiNodeChange): void {
 function writeLayoutDirection(node: SceneNode): void {
   node.pluginData = withPluginData(
     node.pluginData,
-    OPEN_PENCIL_PLUGIN_DATA.layoutDirection,
+    KALKA_PLUGIN_DATA.layoutDirection,
     node.layoutDirection
   )
 }
@@ -420,7 +420,7 @@ function serializeVariableBindings(
   // empty map, and writing one leaves the record in every file the node is exported to.
   node.pluginData = withPluginData(
     node.pluginData,
-    OPEN_PENCIL_PLUGIN_DATA.boundVariables,
+    KALKA_PLUGIN_DATA.boundVariables,
     Object.keys(roundtripBindings).length > 0 ? roundtripBindings : undefined
   )
   if (entries.length > 0) {

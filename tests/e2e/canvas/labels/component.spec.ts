@@ -24,7 +24,7 @@ test.beforeEach(async () => {
 
 test('component labels in component sets are hit-tested above the component bounds', async () => {
   const componentId = await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const graph = store.graph
     const pageId = graph.getPages()[0].id
@@ -71,7 +71,7 @@ test('component labels in component sets are hit-tested above the component boun
   await canvas.waitForRender()
 
   const selected = await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     return [...store.state.selectedIds]
   })

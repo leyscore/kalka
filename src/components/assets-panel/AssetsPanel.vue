@@ -293,7 +293,7 @@ async function insertAsset(asset: LocalAsset) {
 
 function onDragStart(event: DragEvent, asset: LocalAsset) {
   if (!event.dataTransfer || !asset.componentId) return
-  event.dataTransfer.setData('application/x-openpencil-component', asset.componentId)
+  event.dataTransfer.setData('application/x-kalka-component', asset.componentId)
   event.dataTransfer.effectAllowed = 'copy'
 }
 

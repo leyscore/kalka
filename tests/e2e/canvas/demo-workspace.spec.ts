@@ -21,7 +21,7 @@ for (const [name, snapshot] of [
   test(`demo startup and page navigation: ${name}`, async ({ page }) => {
     const canvas = await openDemo(page)
     const bounds = await page.evaluate(async (name) => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Editor unavailable')
       const page = store.graph.getPages().find((page) => page.name === name)
       if (!page) throw new Error(`Missing page: ${name}`)
@@ -51,7 +51,7 @@ for (const [name, snapshot] of [
 test('the demo opens as a document with every page', async ({ page }) => {
   await openDemo(page)
   const opened = await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Editor unavailable')
     return {
       name: store.state.documentName,
@@ -74,7 +74,7 @@ test('the demo opens as a document with every page', async ({ page }) => {
 test('demo tokens and main-component edits survive undo', async ({ page }) => {
   await openDemo(page)
   const result = await page.evaluate(async () => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Editor unavailable')
     const graph = store.graph
     // The demo is opened from `.fig`, which gives variables and modes ids of its own.

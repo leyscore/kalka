@@ -473,7 +473,7 @@ describe('fig roundtrip source metadata', () => {
     vector.source.id = '4:465'
     vector.source.fig.rawNodeFields.vectorData = {
       normalizedSize: { x: 0, y: 0 },
-      vectorNetworkBlob: { __openPencilFigmaBlob: rawVectorBlob }
+      vectorNetworkBlob: { __kalkaFigmaBlob: rawVectorBlob }
     }
 
     const decoded = decodeExport(await exportFigFile(graph))

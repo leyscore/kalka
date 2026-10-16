@@ -28,7 +28,7 @@ async function captureText(
     await canvas.waitForInit()
     await canvas.clearCanvas()
     const lease = await page.evaluateHandle(async (backing) => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       const renderer = store?.canvasRenderers.find((candidate) => candidate.tracksSceneSettlement)
       if (!store || !renderer) throw new Error('Scene renderer unavailable')
       const release = backing ? undefined : store.beginInteractiveEdit()
@@ -92,7 +92,7 @@ async function captureText(
       await canvas.waitForRender()
       for (const solid of [false, true]) {
         await page.evaluate((solid) => {
-          const store = window.openPencil?.getStore?.()
+          const store = window.kalka?.getStore?.()
           const node = [...(store?.graph.getAllNodes() ?? [])].find(
             (node) => node.name === 'Raster history subject'
           )
@@ -113,7 +113,7 @@ async function captureText(
         await canvas.waitForRender()
       }
       const result = await page.evaluate(() => {
-        const store = window.openPencil?.getStore?.()
+        const store = window.kalka?.getStore?.()
         const renderer = store?.canvasRenderers.find((candidate) => candidate.tracksSceneSettlement)
         const source = document.querySelector<HTMLCanvasElement>(
           '[data-test-id="scene-canvas-element"]'

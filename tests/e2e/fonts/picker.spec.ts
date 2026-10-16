@@ -9,7 +9,7 @@ async function openTypographyForText(page: Page) {
   await canvas.waitForInit()
 
   return page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const id = store.createShape('TEXT', 120, 120, 240, 40)
     store.updateNode(id, { text: 'Font picker smoke' })
@@ -41,7 +41,7 @@ test('font picker selects local fonts without browser web-font access', async ({
         {
           family: 'Kalka Local Font',
           fullName: 'Kalka Local Font Regular',
-          postscriptName: 'OpenPencilLocalFont-Regular',
+          postscriptName: 'KalkaLocalFont-Regular',
           style: 'Regular'
         }
       ]
@@ -61,7 +61,7 @@ test('font picker selects local fonts without browser web-font access', async ({
   await expect
     .poll(async () =>
       page.evaluate((id) => {
-        const store = window.openPencil?.getStore?.()
+        const store = window.kalka?.getStore?.()
         const node = store?.graph.getNode(id)
         return node?.type === 'TEXT' ? node.fontFamily : null
       }, textId)

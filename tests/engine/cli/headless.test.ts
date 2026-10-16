@@ -38,7 +38,7 @@ async function createLazyFixture() {
     height: 40
   })
 
-  const dir = await mkdtemp(join(tmpdir(), 'open-pencil-headless-lazy-'))
+  const dir = await mkdtemp(join(tmpdir(), 'kalka-headless-lazy-'))
   const path = join(dir, 'lazy.fig')
   const result = await io.writeDocument('fig', graph)
   await Bun.write(path, result.data as Uint8Array)

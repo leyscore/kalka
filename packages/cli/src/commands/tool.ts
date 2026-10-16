@@ -1,4 +1,4 @@
-// eslint-disable-next-line open-pencil/no-mixed-case-acronym-identifiers -- Upstream export spelling.
+// eslint-disable-next-line kalka/no-mixed-case-acronym-identifiers -- Upstream export spelling.
 import { toJsonSchema as toJSONSchema } from '@valibot/to-json-schema'
 import { defineCommand } from 'citty'
 import * as v from 'valibot'
@@ -20,7 +20,7 @@ const TOOLS = ALL_TOOLS.filter((def) => isToolExposed(def, 'mcp'))
 
 function findTool(name: string): ToolDef {
   const def = TOOLS.find((candidate) => candidate.name === name)
-  if (!def) throw new Error(`Unknown tool "${name}". Run \`openpencil tool list\` to see tools.`)
+  if (!def) throw new Error(`Unknown tool "${name}". Run \`kalka tool list\` to see tools.`)
   return def
 }
 
@@ -108,7 +108,7 @@ function printResult(result: unknown): void {
   const binary = result as { base64?: unknown; mimeType?: unknown } | null
   if (binary && typeof binary.base64 === 'string' && typeof binary.mimeType === 'string') {
     const bytes = Math.floor((binary.base64.length * 3) / 4)
-    console.log(kv(binary.mimeType, `${bytes} bytes; use openpencil export to write files`))
+    console.log(kv(binary.mimeType, `${bytes} bytes; use kalka export to write files`))
     return
   }
   console.log(JSON.stringify(result, null, 2))
@@ -138,7 +138,7 @@ const call = defineCommand({
     try {
       if (!args.file && (args.write || args.output)) {
         throw new Error(
-          '--write and --output need a document file; in the running app, use `openpencil documents save`'
+          '--write and --output need a document file; in the running app, use `kalka documents save`'
         )
       }
       const def = findTool(args.name)

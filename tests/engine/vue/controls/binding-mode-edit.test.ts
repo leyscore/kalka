@@ -2,8 +2,8 @@ import { expect, test } from 'bun:test'
 
 import { createEditor } from '@kalka/core/editor'
 
+import { createKalkaBindingProvider } from '#vue/controls/binding-provider/kalka'
 import { prepareModeEdit } from '#vue/controls/binding-provider/mode-edit'
-import { createOpenPencilBindingProvider } from '#vue/controls/binding-provider/open-pencil'
 import { prepareBindingEdits } from '#vue/controls/binding-provider/prepare-edits'
 import { resolveEffectiveBindingValue } from '#vue/controls/binding-provider/resolution'
 
@@ -47,7 +47,7 @@ test('prepared edits retain modes after targets change and undo atomically', () 
   const b = editor.graph.createNode('FRAME', page.id, {
     variableModes: { [collection.id]: 'alternate' }
   })
-  const provider = createOpenPencilBindingProvider(editor, {
+  const provider = createKalkaBindingProvider(editor, {
     type: 'FLOAT',
     resolve: (e, id, target) =>
       target

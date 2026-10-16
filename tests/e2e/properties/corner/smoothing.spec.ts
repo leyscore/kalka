@@ -27,7 +27,7 @@ async function drawFrame(x: number, y: number) {
 
 async function selectedSmoothing() {
   return page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     return [...store.state.selectedIds].map(
       (id) => store.graph.getNode(id)?.cornerSmoothing ?? null
@@ -66,7 +66,7 @@ test('shows smoothing for corner-capable nodes and keeps it with independent rad
 test('updates normalized smoothing and undoes the committed edit', async () => {
   await drawFrame(100, 240)
   await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const id = [...store.state.selectedIds][0]
     if (id) store.updateNode(id, { cornerRadius: 24 })
@@ -86,7 +86,7 @@ test('restores mixed per-node values in one undo step', async () => {
   await canvas.pressKey('Meta+a')
   await canvas.waitForRender()
   await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const ids = [...store.state.selectedIds]
     if (ids[0]) store.updateNode(ids[0], { cornerRadius: 20, cornerSmoothing: 0.2 })

@@ -5,7 +5,7 @@ import { credentialKey, credentialRef } from '@/app/settings/credentials/referen
 import { browserCredentialStorage } from '@/app/settings/credentials/storage'
 import type { CredentialRef, CredentialStore } from '@/app/settings/credentials/types'
 
-const STORAGE_PREFIX = 'open-pencil:'
+const STORAGE_PREFIX = 'kalka:'
 const MIGRATION_VERSION_KEY = `${STORAGE_PREFIX}credential-migration`
 const MIGRATION_VERSION = '1'
 const LEGACY_OPENROUTER_KEY = `${STORAGE_PREFIX}openrouter-api-key`

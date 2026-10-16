@@ -3,10 +3,10 @@ import { ref } from 'vue'
 
 import type { MCPToolScope, ToolDescriptor } from '@kalka/mcp/tools'
 
-const DISABLED_TOOLS_STORAGE_KEY = 'open-pencil:mcp:disabled-tools'
-const ROOT_DIRECTORY_STORAGE_KEY = 'open-pencil:mcp:root-directory'
-const AUTHENTICATION_ENABLED_STORAGE_KEY = 'open-pencil:mcp:authentication-enabled'
-const SELECTION_ONLY_STORAGE_KEY = 'open-pencil:mcp:selection-only'
+const DISABLED_TOOLS_STORAGE_KEY = 'kalka:mcp:disabled-tools'
+const ROOT_DIRECTORY_STORAGE_KEY = 'kalka:mcp:root-directory'
+const AUTHENTICATION_ENABLED_STORAGE_KEY = 'kalka:mcp:authentication-enabled'
+const SELECTION_ONLY_STORAGE_KEY = 'kalka:mcp:selection-only'
 
 export const configurableMCPTools = ref<ToolDescriptor[]>([])
 

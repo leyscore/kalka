@@ -19,7 +19,7 @@ test('configured storage lists previews through ranges before opening the docume
         body: `<ListBucketResult>
           <IsTruncated>false</IsTruncated>
           <Contents>
-            <Key>open_pencil_storage/canvases/remote-1.fig</Key>
+            <Key>kalka_storage/canvases/remote-1.fig</Key>
             <LastModified>2026-01-02T03:04:05.000Z</LastModified>
             <Size>${fixture.byteLength}</Size>
           </Contents>
@@ -187,8 +187,8 @@ test('Save to storage uploads the open document and lists it in the workspace', 
   await expect
     .poll(() => [...objects.keys()].filter((key) => key.includes('/canvases/')).sort())
     .toEqual([
-      expect.stringMatching(/^open_pencil_storage\/canvases\/[^/]+\.fig$/),
-      expect.stringMatching(/^open_pencil_storage\/canvases\/[^/]+\.meta\.json$/)
+      expect.stringMatching(/^kalka_storage\/canvases\/[^/]+\.fig$/),
+      expect.stringMatching(/^kalka_storage\/canvases\/[^/]+\.meta\.json$/)
     ])
   const uploaded = [...objects].find(([key]) => key.endsWith('.fig'))?.[1]
   // An exported .fig is a zip archive holding the document and its thumbnail.

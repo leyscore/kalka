@@ -34,7 +34,7 @@ async function chooseFormat(page: Page, label: 'RGB' | 'HSL' | 'HSB' | 'OkHCL') 
 
 async function getSelectedStroke(page: Page) {
   return page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const id = [...store.state.selectedIds][0]
     const node = store.graph.getNode(id)
@@ -91,7 +91,7 @@ test('stroke picker hsb saturation and brightness sliders update stroke color on
   await waitForDemo(page)
 
   await page.evaluate(async () => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const nodes = Array.from(store.graph.nodes.values())
     const card =
@@ -152,7 +152,7 @@ test('bound stroke picker is non-destructive, rolls back Escape, and detaches in
   await canvas.waitForRender()
 
   const before = await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const collection = store.graph.createCollection('Colors')
     const variable = store.graph.createVariable('stroke-brand', 'COLOR', collection.id, {
@@ -173,7 +173,7 @@ test('bound stroke picker is non-destructive, rolls back Escape, and detaches in
   await openStrokePicker(page)
   expect(
     await page.evaluate(() => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Kalka store not initialized')
       const id = [...store.state.selectedIds][0]
       return id ? store.getNode(id)?.boundVariables['strokes/0/color'] : undefined
@@ -184,7 +184,7 @@ test('bound stroke picker is non-destructive, rolls back Escape, and detaches in
   await page.keyboard.press('Escape')
   await canvas.waitForRender()
   const afterEscape = await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const id = [...store.state.selectedIds][0]
     const node = id ? store.getNode(id) : null
@@ -204,7 +204,7 @@ test('bound stroke picker is non-destructive, rolls back Escape, and detaches in
   await canvas.undo()
   await canvas.waitForRender()
   const restored = await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const id = [...store.state.selectedIds][0]
     const node = id ? store.getNode(id) : null

@@ -1,6 +1,6 @@
 # Design JSX
 
-OpenPencil's design JSX: the elements (`Frame`, `Text`, …) and the trees they build, paint and effect helpers, design variables, the prop schema and authoring reference, component transforms, the string renderer, and `sceneNodeToJSX`/`selectionToJSX` export.
+Kalka's design JSX: the elements (`Frame`, `Text`, …) and the trees they build, paint and effect helpers, design variables, the prop schema and authoring reference, component transforms, the string renderer, and `sceneNodeToJSX`/`selectionToJSX` export.
 
 Rules:
 

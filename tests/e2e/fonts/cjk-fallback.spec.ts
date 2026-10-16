@@ -17,7 +17,7 @@ test('tool-created CJK text requests fallback through app font loading', async (
   await canvas.waitForInit()
 
   const result = await page.evaluate(async () => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
 
     const appFontsURL = '/src/app/editor/fonts/index.ts'
@@ -80,7 +80,7 @@ test('CJK text waits for fallback fonts and repaints after they load', async ({ 
   await canvas.waitForInit()
 
   const result = await page.evaluate(async () => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store?.renderer) throw new Error('Kalka renderer not initialized')
     const renderer = store.renderer
     const response = await fetch('/tests/fixtures/fonts/NotoSansCJK-Test.otf')

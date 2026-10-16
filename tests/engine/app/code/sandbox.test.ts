@@ -32,7 +32,7 @@ describe('Design JSX sandbox output', () => {
 
   test('validates and converts the same serialized element contract', () => {
     const roots = validateDesignJSXOutput(
-      frame({ fill: { __openPencilHelper: 'solid', args: ['#ff0000'] } }, [
+      frame({ fill: { __kalkaHelper: 'solid', args: ['#ff0000'] } }, [
         { type: 'text', props: {}, children: ['Hello ', 2] }
       ]),
       limits
@@ -95,7 +95,7 @@ describe('Design JSX sandbox output', () => {
   test('rejects unknown helper descriptors during trusted conversion', () => {
     for (const helperName of ['unknown', 'toString', 'constructor', 'valueOf']) {
       const roots = validateDesignJSXOutput(
-        frame({ fill: { __openPencilHelper: helperName, args: [] } }),
+        frame({ fill: { __kalkaHelper: helperName, args: [] } }),
         limits
       )
       expect(() => convertDesignJSXRoots(roots)).toThrow('Unknown Design JSX helper')

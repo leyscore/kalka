@@ -147,7 +147,7 @@ impl CredentialBackend for NativeCredentialBackend {
     }
     fn write(&self, account: &str, value: &str) -> Result<(), BackendError> {
         // Reserved fixture value in the memory-only native-test backend.
-        if value == "open-pencil-native-test-denied" {
+        if value == "kalka-native-test-denied" {
             return Err(BackendError::Locked);
         }
         TEST_CREDENTIALS

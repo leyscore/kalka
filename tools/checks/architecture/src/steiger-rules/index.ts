@@ -26,7 +26,7 @@ import {
 } from './support.ts'
 
 const preferDomainFoldersOverFilenamePrefixes: Rule = {
-  name: 'open-pencil/prefer-domain-folders-over-filename-prefixes',
+  name: 'kalka/prefer-domain-folders-over-filename-prefixes',
   check(root) {
     const diagnostics: Diagnostic[] = []
     for (const folder of collectFolders(root)) {
@@ -54,7 +54,7 @@ const preferDomainFoldersOverFilenamePrefixes: Rule = {
 }
 
 const scriptsAreEntrypointShims = createTextRule(
-  'open-pencil/scripts-are-entrypoint-shims',
+  'kalka/scripts-are-entrypoint-shims',
   (sourceRel, content) => {
     if (!sourceRel.startsWith('scripts/')) return []
     if (/^#!\/usr\/bin\/env bun\s+import ['"]\.\.\/tools\/[^'"]+['"]\s*;?$/u.test(content.trim()))
@@ -71,7 +71,7 @@ const TOOL_ROLES = new Set(['checks', 'generate', 'release', 'ci', 'dev'])
 const TOOL_LAYOUT_MESSAGE =
   'Tool files must live under tools/<role>/<domain>/src/**, tests/**/*.test.ts, or tests/helpers/**.'
 
-const strictToolsLayout = createFileRule('open-pencil/strict-tools-layout', (sourceRel) => {
+const strictToolsLayout = createFileRule('kalka/strict-tools-layout', (sourceRel) => {
   if (!sourceRel.startsWith('tools/') || !TEXT_EXTENSIONS.has(path.extname(sourceRel))) return null
   const [, role, domain, segment] = sourceRel.split('/')
   if (!TOOL_ROLES.has(role))
@@ -88,40 +88,37 @@ const strictToolsLayout = createFileRule('open-pencil/strict-tools-layout', (sou
   return TOOL_LAYOUT_MESSAGE
 })
 
-const strictTestFilePlacement = createFileRule(
-  'open-pencil/strict-test-file-placement',
-  (sourceRel) => {
-    if (!sourceRel.startsWith('tests/')) return null
-    if (!TEXT_EXTENSIONS.has(path.extname(sourceRel))) return null
-    const name = path.basename(sourceRel)
-    if (name.includes('.tmp.') || name.includes('.profile.')) {
-      return 'Temporary/profile test files must not be committed. Move exploratory specs to scratch/ or delete them.'
-    }
-    if (sourceRel.startsWith('tests/e2e/')) {
-      if (sourceRel.endsWith('.spec.ts') || sourceRel.endsWith('/fixtures.ts')) return null
-      return 'E2E tests must live under tests/e2e/** and use *.spec.ts.'
-    }
-    if (sourceRel.startsWith('tests/figma/')) {
-      return sourceRel.endsWith('.spec.ts')
-        ? null
-        : 'Figma Playwright tests must live under tests/figma/** and use *.spec.ts.'
-    }
-    if (sourceRel.startsWith('tests/engine/')) {
-      if (sourceRel.endsWith('.test.ts')) return null
-      if (sourceRel.endsWith('/helpers.ts') || sourceRel.endsWith('.bench.ts')) return null
-      if (/\/visual\/[^/]+\.ts$/.test(sourceRel)) return null
-      return 'Engine/unit tests must live under tests/engine/** and use *.test.ts; helpers.ts, *.bench.ts, and domain visual support scripts are allowed.'
-    }
-    // Canonical unit-test homes from packages/docs/development/testing.md.
-    if (sourceRel.startsWith('tests/app/') || sourceRel.startsWith('tests/integration/')) {
-      return sourceRel.endsWith('.test.ts')
-        ? null
-        : 'App and integration unit tests must use *.test.ts under tests/app/** or tests/integration/**.'
-    }
-    if (sourceRel.startsWith('tests/helpers/')) return null
-    return 'Tests must live under tests/e2e/** (*.spec.ts), tests/app/**, tests/integration/**, tests/engine/** (*.test.ts), or tests/helpers/**.'
+const strictTestFilePlacement = createFileRule('kalka/strict-test-file-placement', (sourceRel) => {
+  if (!sourceRel.startsWith('tests/')) return null
+  if (!TEXT_EXTENSIONS.has(path.extname(sourceRel))) return null
+  const name = path.basename(sourceRel)
+  if (name.includes('.tmp.') || name.includes('.profile.')) {
+    return 'Temporary/profile test files must not be committed. Move exploratory specs to scratch/ or delete them.'
   }
-)
+  if (sourceRel.startsWith('tests/e2e/')) {
+    if (sourceRel.endsWith('.spec.ts') || sourceRel.endsWith('/fixtures.ts')) return null
+    return 'E2E tests must live under tests/e2e/** and use *.spec.ts.'
+  }
+  if (sourceRel.startsWith('tests/figma/')) {
+    return sourceRel.endsWith('.spec.ts')
+      ? null
+      : 'Figma Playwright tests must live under tests/figma/** and use *.spec.ts.'
+  }
+  if (sourceRel.startsWith('tests/engine/')) {
+    if (sourceRel.endsWith('.test.ts')) return null
+    if (sourceRel.endsWith('/helpers.ts') || sourceRel.endsWith('.bench.ts')) return null
+    if (/\/visual\/[^/]+\.ts$/.test(sourceRel)) return null
+    return 'Engine/unit tests must live under tests/engine/** and use *.test.ts; helpers.ts, *.bench.ts, and domain visual support scripts are allowed.'
+  }
+  // Canonical unit-test homes from packages/docs/development/testing.md.
+  if (sourceRel.startsWith('tests/app/') || sourceRel.startsWith('tests/integration/')) {
+    return sourceRel.endsWith('.test.ts')
+      ? null
+      : 'App and integration unit tests must use *.test.ts under tests/app/** or tests/integration/**.'
+  }
+  if (sourceRel.startsWith('tests/helpers/')) return null
+  return 'Tests must live under tests/e2e/** (*.spec.ts), tests/app/**, tests/integration/**, tests/engine/** (*.test.ts), or tests/helpers/**.'
+})
 
 const ENGINE_TEST_DOMAIN_REDIRECTS: Array<{
   from: string
@@ -151,7 +148,7 @@ const ENGINE_TEST_DOMAIN_REDIRECTS: Array<{
 ]
 
 const noMisplacedEngineTestDomainPaths = createFileRule(
-  'open-pencil/no-misplaced-engine-test-domain-paths',
+  'kalka/no-misplaced-engine-test-domain-paths',
   (sourceRel) => {
     const redirect = ENGINE_TEST_DOMAIN_REDIRECTS.find(({ from }) => sourceRel.startsWith(from))
     if (redirect) {
@@ -165,7 +162,7 @@ const noMisplacedEngineTestDomainPaths = createFileRule(
 )
 
 const noKitchenSinkEngineBasicTests: Rule = {
-  name: 'open-pencil/no-kitchen-sink-engine-basic-tests',
+  name: 'kalka/no-kitchen-sink-engine-basic-tests',
   check(root) {
     const diagnostics: Diagnostic[] = []
     for (const file of collectFiles(root)) {
@@ -188,7 +185,7 @@ const noKitchenSinkEngineBasicTests: Rule = {
 }
 
 const noEngineOnlyAssertionsInE2E = createImportRule(
-  'open-pencil/no-engine-only-assertions-in-e2e',
+  'kalka/no-engine-only-assertions-in-e2e',
   (sourceRel, specifier, resolved) => {
     if (!sourceRel.startsWith('tests/e2e/')) return null
     if (specifier === 'bun:test' || resolved?.startsWith('tests/engine/')) {
@@ -199,7 +196,7 @@ const noEngineOnlyAssertionsInE2E = createImportRule(
 )
 
 const noE2EImportsInEngineTests = createImportRule(
-  'open-pencil/no-e2e-imports-in-engine-tests',
+  'kalka/no-e2e-imports-in-engine-tests',
   (sourceRel, _specifier, resolved) => {
     if (!sourceRel.startsWith('tests/engine/')) return null
     if (resolved?.startsWith('tests/e2e/')) {
@@ -209,18 +206,15 @@ const noE2EImportsInEngineTests = createImportRule(
   }
 )
 
-const noRootMarkdownClutter = createFileRule(
-  'open-pencil/no-root-markdown-clutter',
-  (sourceRel) => {
-    if (sourceRel.includes('/')) return null
-    if (!sourceRel.endsWith('.md')) return null
-    if (ROOT_MARKDOWN_ALLOWLIST.has(sourceRel)) return null
-    return 'Do not add ad hoc root Markdown files. Put durable docs under packages/docs/** or update the root allowlist deliberately.'
-  }
-)
+const noRootMarkdownClutter = createFileRule('kalka/no-root-markdown-clutter', (sourceRel) => {
+  if (sourceRel.includes('/')) return null
+  if (!sourceRel.endsWith('.md')) return null
+  if (ROOT_MARKDOWN_ALLOWLIST.has(sourceRel)) return null
+  return 'Do not add ad hoc root Markdown files. Put durable docs under packages/docs/** or update the root allowlist deliberately.'
+})
 
 const noPrototypeOrGeneratedImports = createImportRule(
-  'open-pencil/no-prototype-or-generated-imports',
+  'kalka/no-prototype-or-generated-imports',
   (sourceRel, _specifier, resolved) => {
     if (!resolved) return null
     if (resolved.startsWith('scratch/')) {
@@ -242,7 +236,7 @@ const noPrototypeOrGeneratedImports = createImportRule(
 )
 
 const noPropertyPanelImportsInCanvas = createImportRule(
-  'open-pencil/no-property-panel-imports-in-canvas',
+  'kalka/no-property-panel-imports-in-canvas',
   (sourceRel, _specifier, resolved) => {
     const isCanvasSurface =
       sourceRel === 'src/components/EditorCanvas.vue' ||
@@ -258,7 +252,7 @@ const noPropertyPanelImportsInCanvas = createImportRule(
 )
 
 const noAppImportsInWorkspacePackages = createImportRule(
-  'open-pencil/no-app-imports-in-workspace-packages',
+  'kalka/no-app-imports-in-workspace-packages',
   (sourceRel, specifier, resolved) => {
     const isWorkspacePackage = /^packages\/[^/]+\/src\//.test(sourceRel)
     if (isWorkspacePackage && (specifier.startsWith('@/') || resolved?.startsWith('src/'))) {
@@ -269,7 +263,7 @@ const noAppImportsInWorkspacePackages = createImportRule(
 )
 
 const noPackageInternalsInApp = createImportRule(
-  'open-pencil/no-package-internals-in-app',
+  'kalka/no-package-internals-in-app',
   (sourceRel, specifier, resolved) => {
     if (!sourceRel.startsWith('src/')) return null
     if (
@@ -286,7 +280,7 @@ const noPackageInternalsInApp = createImportRule(
 )
 
 const noForeignPackageLocalAliases = createImportRule(
-  'open-pencil/no-foreign-package-local-aliases',
+  'kalka/no-foreign-package-local-aliases',
   (sourceRel, specifier) => {
     if (sourceRel.startsWith('scripts/') || sourceRel.startsWith('tests/')) return null
     for (const [alias, owner] of Object.entries(PACKAGE_ALIAS_OWNERS)) {
@@ -299,7 +293,7 @@ const noForeignPackageLocalAliases = createImportRule(
 )
 
 const noAppImportsComponentsOrViews = createImportRule(
-  'open-pencil/no-app-imports-components-or-views',
+  'kalka/no-app-imports-components-or-views',
   (sourceRel, _specifier, resolved) => {
     if (!sourceRel.startsWith('src/app/')) return null
     const importsAppComponent =
@@ -312,7 +306,7 @@ const noAppImportsComponentsOrViews = createImportRule(
 )
 
 const noComponentsImportViews = createImportRule(
-  'open-pencil/no-components-import-views',
+  'kalka/no-components-import-views',
   (sourceRel, _specifier, resolved) => {
     if (!sourceRel.startsWith('src/components/')) return null
     if (resolved?.startsWith('src/views/')) {
@@ -323,7 +317,7 @@ const noComponentsImportViews = createImportRule(
 )
 
 const noNonUIImportsInSharedUI = createImportRule(
-  'open-pencil/no-non-ui-imports-in-shared-ui',
+  'kalka/no-non-ui-imports-in-shared-ui',
   (sourceRel, _specifier, resolved) => {
     if (!sourceRel.startsWith('src/components/ui/')) return null
     if (resolved?.startsWith('src/components/') && !resolved.startsWith('src/components/ui/')) {
@@ -337,7 +331,7 @@ const noNonUIImportsInSharedUI = createImportRule(
 const VIEW_ENTRYPOINTS = new Set(['src/App.vue', 'src/main.ts', 'src/router.ts', 'src/updater.ts'])
 
 const noViewsImportedOutsideEntry = createImportRule(
-  'open-pencil/no-views-imported-outside-entry',
+  'kalka/no-views-imported-outside-entry',
   (sourceRel, _specifier, resolved) => {
     if (!resolved?.startsWith('src/views/')) return null
     if (VIEW_ENTRYPOINTS.has(sourceRel)) return null
@@ -346,7 +340,7 @@ const noViewsImportedOutsideEntry = createImportRule(
 )
 
 const noAppImportsInSharedUI = createImportRule(
-  'open-pencil/no-app-imports-in-shared-ui',
+  'kalka/no-app-imports-in-shared-ui',
   (sourceRel, _specifier, resolved) => {
     if (!sourceRel.startsWith('src/components/ui/')) return null
     if (resolved?.startsWith('src/app/')) {
@@ -357,7 +351,7 @@ const noAppImportsInSharedUI = createImportRule(
 )
 
 const noPropertyPanelInternalsOutsidePanel = createImportRule(
-  'open-pencil/no-property-panel-internals-outside-panel',
+  'kalka/no-property-panel-internals-outside-panel',
   (sourceRel, _specifier, resolved) => {
     if (!resolved?.startsWith('src/components/properties/')) return null
     if (sourceRel.startsWith('src/components/properties/')) return null
@@ -369,7 +363,7 @@ const noPropertyPanelInternalsOutsidePanel = createImportRule(
 const MACOS_MODIFIER_GLYPH_PATTERN = /[⌘⌥⌃]/u
 
 const noHardcodedMacOSShortcutGlyphs = createTextRule(
-  'open-pencil/no-hardcoded-macos-shortcut-glyphs',
+  'kalka/no-hardcoded-macos-shortcut-glyphs',
   (sourceRel, content) => {
     if (!sourceRel.endsWith('.vue')) return []
     const diagnostics: Array<{ message: string; line?: number; column?: number }> = []
@@ -415,7 +409,7 @@ const SHARED_TEST_ID_ALLOWLIST = new Set([
 ])
 
 const noProductionTestIdsInSharedLayers = createTextRule(
-  'open-pencil/no-production-test-ids-in-shared-layers',
+  'kalka/no-production-test-ids-in-shared-layers',
   (sourceRel, content) => {
     const inSharedLayer =
       sourceRel.startsWith('src/components/ui/') ||
@@ -439,7 +433,7 @@ const noProductionTestIdsInSharedLayers = createTextRule(
 )
 
 const noNativeTitleAttributesInVue = createTextRule(
-  'open-pencil/no-native-title-attributes-in-vue',
+  'kalka/no-native-title-attributes-in-vue',
   (sourceRel, content) => {
     if (
       !sourceRel.endsWith('.vue') ||
@@ -468,7 +462,7 @@ const noNativeTitleAttributesInVue = createTextRule(
 const SHORTCUT_LABEL_PATTERN = /(?:Shift|Ctrl|Alt|Option|Cmd|Command|⌘|⇧|⌥|⌃)\s*[+)\w]/u
 
 const noShortcutTextInLabels = createTextRule(
-  'open-pencil/no-shortcut-text-in-labels',
+  'kalka/no-shortcut-text-in-labels',
   (sourceRel, content) => {
     if (
       sourceRel !== 'packages/vue/src/i18n/messages.ts' &&
@@ -496,7 +490,7 @@ const noShortcutTextInLabels = createTextRule(
 )
 
 const noUIImportsInCore = createImportRule(
-  'open-pencil/no-ui-imports-in-core',
+  'kalka/no-ui-imports-in-core',
   (sourceRel, specifier) => {
     if (!sourceRel.startsWith('packages/core/src/')) return null
     if (
@@ -512,8 +506,8 @@ const noUIImportsInCore = createImportRule(
   }
 )
 
-export const openPencilArchitecturePlugin = {
-  meta: { name: 'open-pencil-architecture', version: '0.0.0' },
+export const kalkaArchitecturePlugin = {
+  meta: { name: 'kalka-architecture', version: '0.0.0' },
   ruleDefinitions: [
     preferDomainFoldersOverFilenamePrefixes,
     noCrossPackageReexportShims,

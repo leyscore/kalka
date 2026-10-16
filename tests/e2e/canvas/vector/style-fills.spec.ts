@@ -4,7 +4,7 @@ const editor = useEditorSetupWithClear('/?test&no-chrome&no-rulers')
 
 test('vector paths render their resolved style fills', async () => {
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
 
     const rectangleBlob = (x: number, y: number, width: number, height: number) => {

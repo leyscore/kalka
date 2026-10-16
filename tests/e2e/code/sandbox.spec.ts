@@ -36,7 +36,7 @@ test('evaluates JSX into plain inert data', async ({ page }) => {
         type: 'frame',
         props: {
           w: 320,
-          fill: { __openPencilHelper: 'solid', args: ['#fff'] }
+          fill: { __kalkaHelper: 'solid', args: ['#fff'] }
         },
         children: [{ type: 'text', props: {}, children: ['Hello'], source: ['expression', 1] }],
         source: ['expression', 1]
@@ -91,7 +91,7 @@ test('converts variable helpers without executing host capabilities', async ({ p
   expect(result.roots[0]).toMatchObject({
     type: 'frame',
     props: {
-      fill: { __openPencilHelper: 'designVar' }
+      fill: { __kalkaHelper: 'designVar' }
     }
   })
 })

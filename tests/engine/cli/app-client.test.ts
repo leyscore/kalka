@@ -40,7 +40,7 @@ describe('CLI app transport discovery', () => {
 
     await writeDiscoveryFile({
       pid: process.pid,
-      socketPath: join('/tmp', `missing-openpencil-${process.pid}.sock`),
+      socketPath: join('/tmp', `missing-kalka-${process.pid}.sock`),
       httpPort: address.port,
       authRequired: true,
       authToken: token,

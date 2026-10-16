@@ -195,7 +195,7 @@ async function observeGuard(
 
 /** Prove the packaging checks catch broken manifests before trusting them on real packages. */
 export async function verifyPackagingGuards(guards = packagingGuards): Promise<void> {
-  const root = await mkdtemp(join(tmpdir(), 'open-pencil-packaging-guards-'))
+  const root = await mkdtemp(join(tmpdir(), 'kalka-packaging-guards-'))
   try {
     const mismatches: string[] = []
     for (const [index, guard] of guards.entries()) {

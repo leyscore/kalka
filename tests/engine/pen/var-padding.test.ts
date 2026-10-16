@@ -5,7 +5,7 @@ import { applyPadding, isVarRef, type VarContext } from '@kalka/pen'
 import type { Variable } from '@kalka/scene-graph'
 
 /**
- * Regression test for open-pencil/open-pencil#201
+ * Regression test for kalka/kalka#201
  *
  * Design token variables ($--spacing-lg etc.) in padding and gap fields
  * must be resolved to numeric values before reaching yoga-layout.

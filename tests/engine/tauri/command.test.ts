@@ -40,15 +40,15 @@ describe('resolvePlatformCommand', () => {
   })
 
   test('defaults args to an empty array', () => {
-    expect(resolvePlatformCommand('openpencil-mcp-http', undefined, MAC_UA)).toEqual({
-      command: 'openpencil-mcp-http',
+    expect(resolvePlatformCommand('kalka-mcp-http', undefined, MAC_UA)).toEqual({
+      command: 'kalka-mcp-http',
       args: []
     })
   })
 
   test('passes through when the user agent is unavailable (headless/non-browser)', () => {
-    expect(resolvePlatformCommand('openpencil-mcp-http', ['--stdio'], '')).toEqual({
-      command: 'openpencil-mcp-http',
+    expect(resolvePlatformCommand('kalka-mcp-http', ['--stdio'], '')).toEqual({
+      command: 'kalka-mcp-http',
       args: ['--stdio']
     })
   })
@@ -111,8 +111,8 @@ describe('shell scope', () => {
   ]
   const spawns: [string, string[]][] = [
     ...ACP_AGENTS.map((agent): [string, string[]] => [agent.command, agent.args]),
-    ['openpencil-mcp-http', []],
-    ['openpencil-harness', []],
+    ['kalka-mcp-http', []],
+    ['kalka-harness', []],
     ...installs.map((target): [string, string[]] => ['npm', npmInstallArgs(target)])
   ]
 

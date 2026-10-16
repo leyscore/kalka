@@ -36,7 +36,7 @@ function exportButton() {
 async function createRectangles(count: number, settings: ExportSetting[][] = []) {
   const ids = await page.evaluate(
     ({ count: nodeCount, settingsByNode }) => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Kalka store not initialized')
       for (const node of store.graph.getChildren(store.state.currentPageId)) {
         store.graph.deleteNode(node.id)
@@ -65,7 +65,7 @@ async function createRectangles(count: number, settings: ExportSetting[][] = [])
 
 async function selectedExportSettings() {
   return page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     return [...store.state.selectedIds].map((id) => store.graph.getNode(id)?.exportSettings ?? [])
   })
@@ -186,7 +186,7 @@ async function forceBlobDownload() {
 // actually exportable, then attach the export settings under test.
 async function createExportableRect(settings: ExportSetting[]) {
   await page.evaluate((nodeSettings) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     for (const node of store.graph.getChildren(store.state.currentPageId)) {
       store.graph.deleteNode(node.id)

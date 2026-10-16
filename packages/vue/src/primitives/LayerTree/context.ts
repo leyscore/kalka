@@ -69,6 +69,6 @@ export function provideLayerTree(ctx: LayerTreeContext) {
 
 export function useLayerTree(): LayerTreeContext {
   const ctx = inject(LAYER_TREE_KEY)
-  if (!ctx) throw new Error('[open-pencil] useLayerTree() called outside <LayerTreeRoot>')
+  if (!ctx) throw new Error('[kalka] useLayerTree() called outside <LayerTreeRoot>')
   return ctx
 }

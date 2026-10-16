@@ -3,7 +3,21 @@ import * as v from 'valibot'
 import type { PluginDataEntry } from '../types'
 
 /** The plugin id Kalka keeps its own state under, on nodes and in `.fig` files. */
-export const OPEN_PENCIL_PLUGIN_ID = 'open-pencil'
+export const KALKA_PLUGIN_ID = 'kalka'
+
+/**
+ * Plugin ids written before the app was renamed Kalka. Files saved then, and `.fig` files from
+ * the editor Kalka is forked from, keep them; reading maps them to the current ids.
+ */
+const LEGACY_PLUGIN_IDS: Readonly<Record<string, string>> = {
+  'open-pencil': KALKA_PLUGIN_ID,
+  'open-pencil-dom-css': 'kalka-dom-css'
+}
+
+/** A plugin id as Kalka reads it: a legacy id becomes the one Kalka writes today. */
+export function canonicalPluginId(pluginId: string): string {
+  return LEGACY_PLUGIN_IDS[pluginId] ?? pluginId
+}
 
 /**
  * What a field holds:
@@ -68,7 +82,7 @@ export function textPluginDataField<const T extends string>(
 }
 
 export function isPluginDataEntry(entry: PluginDataEntry, field: PluginDataKey): boolean {
-  return entry.pluginId === OPEN_PENCIL_PLUGIN_ID && entry.key === field.key
+  return entry.pluginId === KALKA_PLUGIN_ID && entry.key === field.key
 }
 
 export function hasPluginData(
@@ -98,7 +112,7 @@ export function readAllPluginData<T>(
 }
 
 export function pluginDataEntry<T>(field: PluginDataField<T>, value: T): PluginDataEntry {
-  return { pluginId: OPEN_PENCIL_PLUGIN_ID, key: field.key, value: field.encode(value) }
+  return { pluginId: KALKA_PLUGIN_ID, key: field.key, value: field.encode(value) }
 }
 
 /** Entries other than those of `fields`; other plugins' entries are always kept. */

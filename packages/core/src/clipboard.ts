@@ -187,8 +187,8 @@ async function writeFigmaClipboardHTML(
 }
 
 export {
-  buildOpenPencilClipboardHTML,
-  parseOpenPencilClipboard,
-  type OpenPencilClipboardData,
+  buildKalkaClipboardHTML,
+  parseKalkaClipboard,
+  type KalkaClipboardData,
   type TextPictureBuilder
-} from './clipboard/openpencil'
+} from './clipboard/kalka'

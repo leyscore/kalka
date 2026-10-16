@@ -1,12 +1,12 @@
 /** Stable names for the app's independent IndexedDB databases. */
 export const APP_DATABASE_NAMES = {
-  chats: 'open-pencil-chats',
-  credentials: 'open-pencil-credentials',
-  libraries: 'open-pencil-libraries',
-  localCanvas: 'open-pencil-cloud-local',
-  outbox: 'open-pencil-cloud-outbox',
-  recovery: 'open-pencil-recovery',
-  diagnostics: 'open-pencil-diagnostics',
+  chats: 'kalka-chats',
+  credentials: 'kalka-credentials',
+  libraries: 'kalka-libraries',
+  localCanvas: 'kalka-cloud-local',
+  outbox: 'kalka-cloud-outbox',
+  recovery: 'kalka-recovery',
+  diagnostics: 'kalka-diagnostics',
   /** Written and deleted once per page, to learn whether the engine stores Blobs. */
-  blobProbe: 'open-pencil-blob-probe'
+  blobProbe: 'kalka-blob-probe'
 } as const

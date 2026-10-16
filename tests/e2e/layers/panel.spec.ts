@@ -25,7 +25,7 @@ interface SceneTreeNode {
 
 async function getSceneTree(): Promise<SceneTreeNode> {
   return editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
 
     const nodeTree = (id: string): SceneTreeNode | null => {
@@ -47,7 +47,7 @@ async function getSceneTree(): Promise<SceneTreeNode> {
 
 async function getSelectedCount(): Promise<number> {
   return editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     return store.state.selectedIds.size
   })
@@ -63,7 +63,7 @@ test('demo layers visible in panel', async () => {
 
 test('clicking a node inside a frame does not reparent it', async () => {
   const target = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const nodes = [...store.graph.nodes.values()]
     const root = nodes.find((node) => node.name === 'Announcement system')
@@ -85,7 +85,7 @@ test('clicking a node inside a frame does not reparent it', async () => {
 
   const after = await editor.page.evaluate(
     ({ id, rootId }) => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Kalka store not initialized')
       return {
         parentId: store.graph.getNode(id)?.parentId ?? null,
@@ -218,7 +218,7 @@ test('clearing a layer name keeps the name it had', async () => {
   await editor.canvas.waitForRender()
 
   const drawn = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     const id = store ? [...store.state.selectedIds][0] : undefined
     return id ? (store?.graph.getNode(id)?.name ?? '') : ''
   })

@@ -219,8 +219,8 @@ async function diff() {
   const alphaMetrics = opts['alpha-diff'] ? await diffAlpha(compareOursPath, total) : null
   const metrics = {
     figmaSize,
-    openPencilSize: oursSize,
-    comparedOpenPencilPath: compareOursPath,
+    kalkaSize: oursSize,
+    comparedKalkaPath: compareOursPath,
     resized: Boolean(opts.resize && figmaSize !== oursSize),
     normalized: figmaSize !== oursSize,
     differentPixels: diffPixels,

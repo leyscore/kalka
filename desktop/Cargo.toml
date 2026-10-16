@@ -1,5 +1,5 @@
 [package]
-name = "open_pencil"
+name = "kalka"
 version = "0.15.1"
 description = "Kalka desktop app"
 authors = ["Danila Poyarkov"]
@@ -16,7 +16,7 @@ name = "Kalka"
 path = "src/main.rs"
 
 [lib]
-name = "open_pencil_lib"
+name = "kalka_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

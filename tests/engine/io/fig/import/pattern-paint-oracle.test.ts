@@ -51,8 +51,8 @@ const PaintOracleJSON = v.pipe(
           pairedRowCount: v.number(),
           avgDeltaY: v.number(),
           avgDeltaFirstX: v.number(),
-          missingOpenPencilRows: v.number(),
-          extraOpenPencilRows: v.number()
+          missingKalkaRows: v.number(),
+          extraKalkaRows: v.number()
         })
       )
     }),

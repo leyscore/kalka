@@ -45,7 +45,7 @@ export function resolveDesignJSXValidationLimits(
 }
 
 export type DesignJSXHelperDescriptor = {
-  __openPencilHelper: string
+  __kalkaHelper: string
   args: unknown[]
 }
 

@@ -2,7 +2,7 @@ import * as v from 'valibot'
 
 import { IS_BROWSER } from '@kalka/core/constants'
 
-const EDITOR_LAYOUT_KEY = 'open-pencil:editor-layout'
+const EDITOR_LAYOUT_KEY = 'kalka:editor-layout'
 const DEFAULT_EDITOR_LAYOUT = [17, 64, 19]
 const EditorLayoutJSON = v.pipe(
   v.string(),

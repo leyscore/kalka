@@ -42,7 +42,7 @@ test('browser menu copy writes rich and plain Kalka clipboard formats', async ()
   expect(clipboard.plainText).not.toBe('')
 
   const before = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     return store.graph.getChildren(store.state.currentPageId).length
   })
@@ -51,7 +51,7 @@ test('browser menu copy writes rich and plain Kalka clipboard formats', async ()
   await expect
     .poll(() =>
       editor.page.evaluate(() => {
-        const store = window.openPencil?.getStore?.()
+        const store = window.kalka?.getStore?.()
         if (!store) throw new Error('Kalka store not initialized')
         return store.graph.getChildren(store.state.currentPageId).length
       })

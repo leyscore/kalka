@@ -130,14 +130,12 @@ describe('HTML tags and classes in export and import', () => {
       return String(bundle.files[0]?.content)
     }
     const html = await fragment(hero.id)
-    expect(html).toStartWith(
-      '<style>:where([data-open-pencil-html],[data-open-pencil-html] *):where('
-    )
-    expect(html).toContain('<section data-open-pencil-html="fragment"')
-    expect(html).not.toContain('data-open-pencil-node-id')
+    expect(html).toStartWith('<style>:where([data-kalka-html],[data-kalka-html] *):where(')
+    expect(html).toContain('<section data-kalka-html="fragment"')
+    expect(html).not.toContain('data-kalka-node-id')
 
     const bare = await fragment(plain.id)
     expect(bare).not.toContain('<style>')
-    expect(bare).not.toContain('data-open-pencil-html')
+    expect(bare).not.toContain('data-kalka-html')
   })
 })

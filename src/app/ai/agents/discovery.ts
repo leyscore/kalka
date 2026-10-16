@@ -18,7 +18,7 @@ import {
   type AgentLookup
 } from './native'
 
-const MCP_EXECUTABLE = 'openpencil-mcp-http'
+const MCP_EXECUTABLE = 'kalka-mcp-http'
 
 export type DetectedAgent = {
   definition: ACPAgentDef

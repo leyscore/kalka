@@ -159,13 +159,13 @@ async function createMockTcpMCPServer(
 // ---------------------------------------------------------------------------
 
 describe('stdio-bridge transport reconnection', () => {
-  const origSocketEnv = process.env.OPENPENCIL_MCP_SOCKET
+  const origSocketEnv = process.env.KALKA_MCP_SOCKET
 
   afterEach(async () => {
     if (origSocketEnv === undefined) {
-      delete process.env.OPENPENCIL_MCP_SOCKET
+      delete process.env.KALKA_MCP_SOCKET
     } else {
-      process.env.OPENPENCIL_MCP_SOCKET = origSocketEnv
+      process.env.KALKA_MCP_SOCKET = origSocketEnv
     }
     try {
       const discoveryPath = await getDiscoveryPath()
@@ -203,7 +203,7 @@ describe('stdio-bridge transport reconnection', () => {
       try {
         await mkdir(TEST_DIR, { recursive: true })
         await writeMockDiscovery(SOCKET_PATH, AUTH_TOKEN)
-        process.env.OPENPENCIL_MCP_SOCKET = SOCKET_PATH
+        process.env.KALKA_MCP_SOCKET = SOCKET_PATH
 
         // Start server
         server1 = await createMockMCPServer(SOCKET_PATH, {
@@ -270,9 +270,9 @@ describe('stdio-bridge transport reconnection', () => {
       try {
         await mkdir(TEST_DIR, { recursive: true })
         await writeMockDiscovery(SOCKET_PATH, AUTH_TOKEN)
-        // Set OPENPENCIL_MCP_SOCKET so the bridge's readDiscoveryFile() finds
+        // Set KALKA_MCP_SOCKET so the bridge's readDiscoveryFile() finds
         // the mock discovery file in our test directory.
-        process.env.OPENPENCIL_MCP_SOCKET = SOCKET_PATH
+        process.env.KALKA_MCP_SOCKET = SOCKET_PATH
 
         // Start server
         server1 = await createMockMCPServer(SOCKET_PATH, {
@@ -341,7 +341,7 @@ describe('stdio-bridge transport reconnection', () => {
       try {
         await mkdir(TEST_DIR, { recursive: true })
         await writeMockDiscovery(SOCKET_PATH, AUTH_TOKEN)
-        process.env.OPENPENCIL_MCP_SOCKET = SOCKET_PATH
+        process.env.KALKA_MCP_SOCKET = SOCKET_PATH
 
         server1 = await createMockMCPServer(SOCKET_PATH, {
           authToken: AUTH_TOKEN,
@@ -401,7 +401,7 @@ describe('stdio-bridge transport reconnection', () => {
       try {
         await mkdir(TEST_DIR, { recursive: true })
         await writeMockDiscovery(SOCKET_PATH, AUTH_TOKEN)
-        process.env.OPENPENCIL_MCP_SOCKET = SOCKET_PATH
+        process.env.KALKA_MCP_SOCKET = SOCKET_PATH
 
         // Start server on SOCKET_PATH
         server1 = await createMockMCPServer(SOCKET_PATH, {

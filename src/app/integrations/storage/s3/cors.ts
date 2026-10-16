@@ -7,13 +7,13 @@ export const CLOUD_CORS_STATIC_ORIGINS = [
   // Exact production origin — providers without partial-wildcard support
   // (e.g. R2) need it verbatim even when CORS is configured from dev.
   WEB_APP_ORIGIN,
-  // Wildcards: any openpencil.dev subdomain (staging, demo, …), Cloudflare
+  // Wildcards: any kalka.dev subdomain (staging, demo, …), Cloudflare
   // Pages PR previews, and any local dev port. S3/B2 allow one '*' per origin.
   // collectCloudCORSOrigins() also appends the current origin, so strict
   // providers still get an exact match for wherever the app is running when
   // CORS is applied.
-  'https://*.openpencil.dev',
-  'https://*.openpencil-app.pages.dev',
+  'https://*.kalka.dev',
+  'https://*.kalka-app.pages.dev',
   'http://localhost:*',
   'http://127.0.0.1:*'
 ] as const

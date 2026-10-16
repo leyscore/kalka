@@ -4,7 +4,7 @@ const editor = useEditorSetupWithClear('/?test&no-chrome&no-rulers')
 
 test('vector edit overlay follows nested transforms and live path fills', async () => {
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     const rectBlob = (x: number, y: number, width: number, height: number) => {
@@ -103,7 +103,7 @@ test('vector edit overlay follows nested transforms and live path fills', async 
 
 test('a Pen-created Bézier commits a vertex drag on mouseup', async () => {
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     store.exitNodeEditMode(true)
     store.setTool('PEN')
@@ -123,20 +123,20 @@ test('a Pen-created Bézier commits a vertex drag on mouseup', async () => {
   await editor.page.mouse.move(box.x + 460, box.y + 360, { steps: 4 })
   await editor.page.mouse.up()
   const penBeforeCommit = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     return { tool: store?.state.activeTool, vertices: store?.state.penState?.vertices.length ?? 0 }
   })
   expect(penBeforeCommit.tool).toBe('PEN')
   expect(penBeforeCommit.vertices).toBeGreaterThanOrEqual(2)
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     store.penCommit(false)
   })
   await editor.canvas.waitForRender()
 
   const vectorId = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const page = store.graph.getNode(store.state.currentPageId)
     const vector = page?.childIds
@@ -147,14 +147,14 @@ test('a Pen-created Bézier commits a vertex drag on mouseup', async () => {
   })
 
   await editor.page.evaluate((id) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     store.enterNodeEditMode(id)
   }, vectorId)
   await editor.canvas.waitForRender()
 
   const vertex = await editor.page.evaluate((id) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     const node = store?.graph.getNode(id)
     const edit = store?.getNodeEditState?.()
     if (!node || node.type !== 'VECTOR' || !edit) throw new Error('Vector edit state unavailable')
@@ -167,7 +167,7 @@ test('a Pen-created Bézier commits a vertex drag on mouseup', async () => {
   await editor.page.mouse.up()
 
   const result = await editor.page.evaluate((id) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     const edit = store?.getNodeEditState?.()
     const node = store?.graph.getNode(id)
     return {
@@ -182,7 +182,7 @@ test('a Pen-created Bézier commits a vertex drag on mouseup', async () => {
 })
 test('dragging a vector point snaps to sibling bounds and clears guides on release', async () => {
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     const vector = store.graph.createNode('VECTOR', pageId, {
@@ -222,7 +222,7 @@ test('dragging a vector point snaps to sibling bounds and clears guides on relea
   await editor.page.mouse.move(box.x + 297, box.y + 100, { steps: 12 })
 
   const duringDrag = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     const editState = store?.getNodeEditState()
     return {
       vertex: editState?.vertices[0],
@@ -235,11 +235,11 @@ test('dragging a vector point snaps to sibling bounds and clears guides on relea
   await editor.page.mouse.up()
   await expect
     .poll(() =>
-      editor.page.evaluate(() => window.openPencil?.getStore?.().state.snapGuides.length ?? -1)
+      editor.page.evaluate(() => window.kalka?.getStore?.().state.snapGuides.length ?? -1)
     )
     .toBe(0)
   const committed = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     const editState = store?.getNodeEditState()
     const nodeId = editState?.nodeId
     const node = nodeId ? store?.graph.getNode(nodeId) : null
@@ -258,7 +258,7 @@ test('dragging a vector point snaps to sibling bounds and clears guides on relea
   await editor.page.mouse.move(box.x + 420, box.y + 260, { steps: 5 })
   expect(
     await editor.page.evaluate(
-      () => window.openPencil?.getStore?.()?.getNodeEditState()?.vertices[0] ?? null
+      () => window.kalka?.getStore?.()?.getNodeEditState()?.vertices[0] ?? null
     )
   ).toEqual(committedVertex)
 
@@ -267,7 +267,7 @@ test('dragging a vector point snaps to sibling bounds and clears guides on relea
   await editor.page.keyboard.down('Control')
   await editor.page.mouse.move(box.x + 297, box.y + 100, { steps: 3 })
   const withControl = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     return {
       vertex: store?.getNodeEditState()?.vertices[0],
       guides: store?.state.snapGuides ?? []

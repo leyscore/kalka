@@ -18,9 +18,7 @@ export const getJSX = defineTool({
     path: v.optional(
       v.pipe(
         v.string(),
-        v.description(
-          'Write JSX to this path instead of returning it (requires OPENPENCIL_MCP_ROOT)'
-        )
+        v.description('Write JSX to this path instead of returning it (requires KALKA_MCP_ROOT)')
       )
     )
   }),

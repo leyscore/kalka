@@ -35,11 +35,11 @@ const { values: opts } = parseArgs({
   options: {
     figma: {
       type: 'string',
-      default: '/tmp/open-pencil-oracles/pattern-visible-source-tuned/figma.png'
+      default: '/tmp/kalka-oracles/pattern-visible-source-tuned/figma.png'
     },
     ours: {
       type: 'string',
-      default: '/tmp/open-pencil-oracles/pattern-visible-source-tuned/ours.png'
+      default: '/tmp/kalka-oracles/pattern-visible-source-tuned/ours.png'
     },
     threshold: { type: 'string', default: '10' },
     regions: { type: 'string' }
@@ -278,7 +278,7 @@ function nearestRowDeltas(figmaRows: RowSummary[], oursRows: RowSummary[]) {
 function rowDeltaSummary(
   rows: ReturnType<typeof pairedRowDeltas>,
   figmaRowCount: number,
-  openPencilRowCount: number
+  kalkaRowCount: number
 ) {
   const valid = rows.filter((row) => row.deltaY !== null && row.deltaFirstX !== null)
   if (valid.length === 0) return null
@@ -288,7 +288,7 @@ function rowDeltaSummary(
     pairedRowCount: valid.length,
     avgDeltaY: Number(avgDeltaY.toFixed(2)),
     avgDeltaFirstX: Number(avgDeltaFirstX.toFixed(2)),
-    missingOpenPencilRows: Math.max(0, figmaRowCount - openPencilRowCount),
-    extraOpenPencilRows: Math.max(0, openPencilRowCount - figmaRowCount)
+    missingKalkaRows: Math.max(0, figmaRowCount - kalkaRowCount),
+    extraKalkaRows: Math.max(0, kalkaRowCount - figmaRowCount)
   }
 }

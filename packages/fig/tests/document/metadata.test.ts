@@ -2,14 +2,12 @@ import { describe, expect, test } from 'bun:test'
 
 import { applyDocumentMetadata } from '#fig/document/metadata'
 
-import { OPEN_PENCIL_PLUGIN_DATA, OPEN_PENCIL_PLUGIN_ID, SceneGraph } from '@kalka/scene-graph'
+import { KALKA_PLUGIN_DATA, KALKA_PLUGIN_ID, SceneGraph } from '@kalka/scene-graph'
 
 function enabledLibraries(value: string) {
   const graph = new SceneGraph()
   applyDocumentMetadata(graph, {
-    pluginData: [
-      { pluginID: OPEN_PENCIL_PLUGIN_ID, key: OPEN_PENCIL_PLUGIN_DATA.enabledLibraries.key, value }
-    ]
+    pluginData: [{ pluginID: KALKA_PLUGIN_ID, key: KALKA_PLUGIN_DATA.enabledLibraries.key, value }]
   })
   return [...graph.enabledLibraries.values()]
 }

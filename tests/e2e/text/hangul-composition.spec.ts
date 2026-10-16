@@ -24,7 +24,7 @@ async function stubGoogleFonts(page: Page) {
 
 async function startEmptyTextEdit(page: Page) {
   return await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
 
     const id = store.createShape('TEXT', 120, 120, 280, 36)
@@ -56,7 +56,7 @@ test('Hangul text input commits without CanvasKit paragraph errors', async ({ pa
   await canvas.waitForRender()
 
   const result = await page.evaluate((nodeId) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const node = store.graph.getNode(nodeId)
     if (!node || node.type !== 'TEXT') return null
@@ -84,7 +84,7 @@ test('Hangul composition updates are visible before IME commit', async ({ page }
   const id = await startEmptyTextEdit(page)
 
   const composing = await page.evaluate((nodeId) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     const textarea = document.querySelector<HTMLTextAreaElement>('textarea[aria-hidden="true"]')
     if (!store || !textarea) throw new Error('Text edit session was not initialized')
 
@@ -132,7 +132,7 @@ test('Hangul composition updates are visible before IME commit', async ({ page }
 
   await canvas.click(20, 20)
   const committed = await page.evaluate((nodeId) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     return {
       editingTextId: store.state.editingTextId,

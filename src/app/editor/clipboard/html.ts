@@ -1,5 +1,5 @@
-const OPENPENCIL_START = '<!--(openpencil)'
-const OPENPENCIL_END = '(/openpencil)-->'
+const KALKA_START = '<!--(kalka)'
+const KALKA_END = '(/kalka)-->'
 const FIGMA_START = '<!--(figma)'
 const FIGMA_END = '(/figma)-->'
 const ESCAPED_FIGMA_START = '&lt;!--(figma)'
@@ -12,7 +12,7 @@ function hasCompleteMarker(html: string, start: string, end: string): boolean {
 
 export function isDesignClipboardHTML(html: string): boolean {
   return (
-    hasCompleteMarker(html, OPENPENCIL_START, OPENPENCIL_END) ||
+    hasCompleteMarker(html, KALKA_START, KALKA_END) ||
     hasCompleteMarker(html, FIGMA_START, FIGMA_END) ||
     hasCompleteMarker(html, ESCAPED_FIGMA_START, ESCAPED_FIGMA_END)
   )

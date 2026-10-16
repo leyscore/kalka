@@ -35,9 +35,7 @@ const retainedActivity = useRetainedActivity()
 const injectedProvider = useBindingProvider<V>()
 const resolvedProvider = providerProp ?? injectedProvider
 if (!resolvedProvider) {
-  throw new Error(
-    '[open-pencil] BindableValueRoot requires a provider prop or provideBindingProvider()'
-  )
+  throw new Error('[kalka] BindableValueRoot requires a provider prop or provideBindingProvider()')
 }
 const provider: BindingProvider<V> = resolvedProvider
 const beginProviderBatch = provider.beginBatch

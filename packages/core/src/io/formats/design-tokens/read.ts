@@ -2,7 +2,7 @@ import { isPlainObject } from 'es-toolkit/predicate'
 import * as v from 'valibot'
 
 import { pathName } from './paths'
-import { OPENPENCIL_EXTENSION } from './types'
+import { kalkaExtension } from './types'
 
 /** A file the user picked: its path within the folder or archive, and its text. */
 export interface DesignTokenSourceFile {
@@ -97,7 +97,7 @@ function extensionsOf(node: Record<string, unknown>): Record<string, unknown> {
 
 /** The collection and mode a file says it holds, which Kalka writes into each mode file. */
 function modeInfo(parsed: Record<string, unknown> | undefined) {
-  const own = v.safeParse(ModeExtensionSchema, parsed && extensionsOf(parsed)[OPENPENCIL_EXTENSION])
+  const own = v.safeParse(ModeExtensionSchema, parsed && kalkaExtension(extensionsOf(parsed)))
   return own.success ? own.output : {}
 }
 
@@ -114,7 +114,7 @@ export function documentTokens(parsed: Record<string, unknown>): ReadToken[] {
         continue
       }
       const extensions = extensionsOf(child)
-      const own = v.safeParse(NameExtensionSchema, extensions[OPENPENCIL_EXTENSION])
+      const own = v.safeParse(NameExtensionSchema, kalkaExtension(extensions))
       tokens.push({
         path: at,
         name: (own.success ? own.output.name : undefined) ?? pathName(at),

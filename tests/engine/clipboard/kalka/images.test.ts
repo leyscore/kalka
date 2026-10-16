@@ -3,12 +3,7 @@ import { describe, expect, test } from 'bun:test'
 import { deflateSync } from 'fflate'
 import { fromUint8Array } from 'js-base64'
 
-import {
-  buildOpenPencilClipboardHTML,
-  FigmaAPI,
-  parseOpenPencilClipboard,
-  SceneGraph
-} from '@kalka/core'
+import { buildKalkaClipboardHTML, FigmaAPI, parseKalkaClipboard, SceneGraph } from '@kalka/core'
 import type { SceneNode } from '@kalka/core'
 import { getInstanceOverride, setInstanceOverride } from '@kalka/scene-graph'
 
@@ -48,7 +43,7 @@ describe('clipboard roundtrip with images', () => {
 
   test('migrates legacy flat instance overrides', () => {
     const legacy = {
-      format: 'openpencil/v1',
+      format: 'kalka/v1',
       nodes: [
         {
           id: 'instance',
@@ -61,7 +56,7 @@ describe('clipboard roundtrip with images', () => {
     }
     const encoded = fromUint8Array(deflateSync(new TextEncoder().encode(JSON.stringify(legacy))))
     const parsed = expectDefined(
-      parseOpenPencilClipboard(`<!--(openpencil)${encoded}(/openpencil)-->`),
+      parseKalkaClipboard(`<!--(kalka)${encoded}(/kalka)-->`),
       'Kalka clipboard'
     )
     const instance = parsed.nodes[0]
@@ -84,7 +79,7 @@ describe('clipboard roundtrip with images', () => {
     setInstanceOverride(instance.instanceOverrides, instance.id, child.id, 'text', 'Custom')
 
     const parsed = expectDefined(
-      parseOpenPencilClipboard(buildOpenPencilClipboardHTML([instance], graph)),
+      parseKalkaClipboard(buildKalkaClipboardHTML([instance], graph)),
       'Kalka clipboard'
     )
     const pasted = parsed.nodes[0]
@@ -99,8 +94,8 @@ describe('clipboard roundtrip with images', () => {
   test('round-trips image bytes through clipboard', () => {
     const { graph, node, imageHash, imageBytes } = graphWithImageNode()
 
-    const html = buildOpenPencilClipboardHTML([node], graph)
-    const parsed = parseOpenPencilClipboard(html)
+    const html = buildKalkaClipboardHTML([node], graph)
+    const parsed = parseKalkaClipboard(html)
 
     const clipboard = expectDefined(parsed, 'Kalka clipboard')
     expect(clipboard.images.size).toBe(1)
@@ -110,8 +105,8 @@ describe('clipboard roundtrip with images', () => {
   test('preserves imageHash on the fill', () => {
     const { graph, node, imageHash } = graphWithImageNode()
 
-    const html = buildOpenPencilClipboardHTML([node], graph)
-    const parsed = parseOpenPencilClipboard(html)
+    const html = buildKalkaClipboardHTML([node], graph)
+    const parsed = parseKalkaClipboard(html)
 
     const fill = expectDefined(parsed, 'Kalka clipboard').nodes[0]?.fills[0]
     expect(fill.type).toBe('IMAGE')
@@ -159,8 +154,8 @@ describe('clipboard roundtrip with images', () => {
       ]
     })
 
-    const html = buildOpenPencilClipboardHTML([node1, node2], graph)
-    const parsed = parseOpenPencilClipboard(html)
+    const html = buildKalkaClipboardHTML([node1, node2], graph)
+    const parsed = parseKalkaClipboard(html)
 
     const clipboard = expectDefined(parsed, 'Kalka clipboard')
     expect(clipboard.images.size).toBe(2)
@@ -178,8 +173,8 @@ describe('clipboard roundtrip with images', () => {
       fills: [{ type: 'SOLID', color: { r: 1, g: 0, b: 0, a: 1 }, opacity: 1, visible: true }]
     })
 
-    const html = buildOpenPencilClipboardHTML([node], graph)
-    const parsed = parseOpenPencilClipboard(html)
+    const html = buildKalkaClipboardHTML([node], graph)
+    const parsed = parseKalkaClipboard(html)
 
     expect(expectDefined(parsed, 'Kalka clipboard').images.size).toBe(0)
   })
@@ -209,8 +204,8 @@ describe('clipboard roundtrip with images', () => {
       ]
     })
 
-    const html = buildOpenPencilClipboardHTML([frame], graph)
-    const parsed = parseOpenPencilClipboard(html)
+    const html = buildKalkaClipboardHTML([frame], graph)
+    const parsed = parseKalkaClipboard(html)
 
     const clipboard = expectDefined(parsed, 'Kalka clipboard')
     expect(clipboard.images.size).toBe(1)

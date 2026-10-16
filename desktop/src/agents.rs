@@ -12,15 +12,15 @@ const EXECUTABLES: &[&str] = &[
     "codex",
     "codex-acp",
     "gemini",
-    "openpencil-mcp-http",
-    "openpencil-harness",
+    "kalka-mcp-http",
+    "kalka-harness",
     "npm",
 ];
 
 // Kalka's own companions, whose installed version must match the app.
 const PACKAGES: &[(&str, &str)] = &[
-    ("openpencil-mcp-http", "@kalka/mcp"),
-    ("openpencil-harness", "@kalka/harness"),
+    ("kalka-mcp-http", "@kalka/mcp"),
+    ("kalka-harness", "@kalka/harness"),
 ];
 
 #[derive(serde::Serialize)]
@@ -136,7 +136,7 @@ mod tests {
         let result = lookup_with(
             "/agents/bin".to_owned(),
             |command| match command {
-                "claude" | "npm" | "openpencil-mcp-http" => {
+                "claude" | "npm" | "kalka-mcp-http" => {
                     Some(PathBuf::from("/agents/bin").join(command))
                 }
                 _ => None,
@@ -164,7 +164,7 @@ mod tests {
         );
         // A release older than `--version` prints its help instead.
         assert_eq!(
-            parse_version("openpencil-mcp-http\n\nStart the server."),
+            parse_version("kalka-mcp-http\n\nStart the server."),
             None
         );
         assert_eq!(parse_version("1.2\n"), None);
@@ -174,7 +174,7 @@ mod tests {
     #[cfg(unix)]
     fn script(name: &str, body: &str) -> PathBuf {
         use std::os::unix::fs::PermissionsExt;
-        let dir = std::env::temp_dir().join(format!("openpencil-agents-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("kalka-agents-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join(name);
         std::fs::write(&path, format!("#!/bin/sh\n{body}\n")).unwrap();

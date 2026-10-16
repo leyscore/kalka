@@ -8,7 +8,7 @@ export function pixelGridDriver(page: () => Page) {
     /** The probe rectangle 40 screen pixels in from the canvas corner at `zoom`. */
     showAtZoom(zoom: number) {
       return page().evaluate(async (zoom) => {
-        const store = window.openPencil?.getStore?.()
+        const store = window.kalka?.getStore?.()
         if (!store) throw new Error('Kalka store not initialized')
         const fixtureURL = '/tests/helpers/canvas/pixel-grid.ts'
         const scene: typeof PixelGridScene = await import(fixtureURL)
@@ -26,9 +26,7 @@ export function pixelGridDriver(page: () => Page) {
     },
 
     snapsToPixelGrid() {
-      return page().evaluate(
-        () => window.openPencil?.getStore?.().state.snappingPreferences.pixelGrid
-      )
+      return page().evaluate(() => window.kalka?.getStore?.().state.snappingPreferences.pixelGrid)
     }
   }
 }

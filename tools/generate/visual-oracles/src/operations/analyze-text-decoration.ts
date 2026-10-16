@@ -15,11 +15,11 @@ const { values: opts } = parseArgs({
   options: {
     figma: {
       type: 'string',
-      default: '/tmp/open-pencil-oracles/rich-text/derived-decorations3/figma.png'
+      default: '/tmp/kalka-oracles/rich-text/derived-decorations3/figma.png'
     },
     ours: {
       type: 'string',
-      default: '/tmp/open-pencil-oracles/rich-text/derived-decorations3/ours.png'
+      default: '/tmp/kalka-oracles/rich-text/derived-decorations3/ours.png'
     }
   }
 })

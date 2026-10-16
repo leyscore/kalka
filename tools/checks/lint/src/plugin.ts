@@ -411,8 +411,8 @@ import {
   noComponentRootSiblingFolder,
   noUselessPassThroughWrappers,
   noFunctionAliasImports,
-  noDirectOpenPencilBrowserStore,
-  noDirectOpenPencilWindowInternals,
+  noDirectKalkaBrowserStore,
+  noDirectKalkaWindowInternals,
   noBunGlobalsInCli,
   noTopLevelPrefixedTestFiles,
   noSiblingDomainPrefixedFiles
@@ -425,7 +425,7 @@ import {
 } from '#lint/rules/typescript.ts'
 
 const plugin = {
-  meta: { name: 'open-pencil' },
+  meta: { name: 'kalka' },
   rules: {
     'no-inline-named-types': noInlineNamedTypes,
     'no-import-type-annotations': noImportTypeAnnotations,
@@ -478,8 +478,8 @@ const plugin = {
     'no-reflect-delete-global-this-outside-tests': noReflectDeleteGlobalThisOutsideTests,
     'no-core-browser-globals': noCoreBrowserGlobals,
     'no-zoom-in-scene-drawing': noZoomInSceneDrawing,
-    'no-direct-open-pencil-window-internals': noDirectOpenPencilWindowInternals,
-    'no-direct-open-pencil-browser-store': noDirectOpenPencilBrowserStore,
+    'no-direct-kalka-window-internals': noDirectKalkaWindowInternals,
+    'no-direct-kalka-browser-store': noDirectKalkaBrowserStore,
     'no-direct-graph-emitter-subscriptions': noDirectGraphEmitterSubscriptions,
     'no-on-unmounted-in-composition-roots': noOnUnmountedInCompositionRoots,
     'no-composable-state-wrappers': noComposableStateWrappers,

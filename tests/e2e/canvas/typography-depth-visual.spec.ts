@@ -5,7 +5,7 @@ const editor = useEditorSetupWithClear('/?test&no-chrome&no-rulers')
 
 test('text case vertical alignment and ending truncation', async () => {
   const previewId = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     const cases = [
@@ -81,7 +81,7 @@ test('text case vertical alignment and ending truncation', async () => {
 
   // Compare cold and warm text on the same direct-render path, not retained vs direct rasterization.
   await editor.page.evaluate((id) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store?.renderer) throw new Error('Renderer unavailable')
     store.renderer.textPreparationCache.clear()
     store.graph.updateNodePreview(id, { x: -10004 })
@@ -94,7 +94,7 @@ test('text case vertical alignment and ending truncation', async () => {
     for (let step = 0; step < 3; step++) {
       await editor.page.evaluate(
         ({ id, x }) => {
-          const store = window.openPencil?.getStore?.()
+          const store = window.kalka?.getStore?.()
           if (!store) throw new Error('Editor unavailable')
           store.graph.updateNodePreview(id, { x })
           store.requestRepaint()

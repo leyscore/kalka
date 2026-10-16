@@ -15,7 +15,7 @@ async function paste(type: 'text/html' | 'text/plain', content: string) {
 
 function pageLayers() {
   return editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const page = store.graph.getNode(store.state.currentPageId)
     return (page?.childIds ?? []).map((id) => store.graph.getNode(id)?.name ?? '')
@@ -33,7 +33,7 @@ test('HTML copied from a page pastes as editable layers and runs nothing', async
     await editor.page.evaluate(() => (window as { __pasteRan?: boolean }).__pasteRan)
   ).toBeUndefined()
   const texts = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     const found: string[] = []
     for (const node of store?.graph.nodes.values() ?? [])
       if (node.type === 'TEXT') found.push(node.text)
@@ -44,7 +44,7 @@ test('HTML copied from a page pastes as editable layers and runs nothing', async
 
 test('HTML source copied as text pastes as layers too', async () => {
   // Pasted onto the page rather than into the section the last paste selected.
-  await editor.page.evaluate(() => window.openPencil?.getStore?.().clearSelection())
+  await editor.page.evaluate(() => window.kalka?.getStore?.().clearSelection())
   const before = (await pageLayers()).length
   await paste('text/plain', '<div style="width:120px;height:40px;background:#121214"></div>')
   await expect.poll(async () => (await pageLayers()).length).toBe(before + 1)

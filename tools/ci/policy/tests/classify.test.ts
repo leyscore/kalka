@@ -19,7 +19,7 @@ function git(cwd: string, ...args: string[]): string {
 }
 
 test('classifier reads real Git deletions and renames without losing the original path', async () => {
-  const root = await mkdtemp(join(tmpdir(), 'open-pencil-ci-'))
+  const root = await mkdtemp(join(tmpdir(), 'kalka-ci-'))
   roots.push(root)
   git(root, 'init')
   await writeFile(join(root, 'runtime.ts'), 'export const version = 1\n')

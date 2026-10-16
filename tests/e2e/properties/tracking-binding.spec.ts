@@ -11,7 +11,7 @@ for (const theme of ['light', 'dark']) {
       const path = '/src/app/shell/theme.ts'
       const module = await import(path)
       module.useAppTheme().setTheme(mode)
-      const editor = window.openPencil?.getStore?.()
+      const editor = window.kalka?.getStore?.()
       if (!editor) throw new Error('Editor unavailable')
       const id = editor.createShape('TEXT', 100, 100, 240, 80)
       editor.updateNode(id, { text: 'Tracking review', fontSize: 24, letterSpacing: 2 })
@@ -35,7 +35,7 @@ for (const theme of ['light', 'dark']) {
     await input.press('Enter')
     await expect
       .poll(() =>
-        page.evaluate((id) => window.openPencil?.getStore?.().graph.getNode(id)?.letterSpacing, id)
+        page.evaluate((id) => window.kalka?.getStore?.().graph.getNode(id)?.letterSpacing, id)
       )
       .toBe(3)
     await expect(field).not.toHaveAttribute('data-bound')

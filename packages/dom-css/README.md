@@ -1,8 +1,8 @@
 # @kalka/dom-css
 
-DOM and CSS projection utilities for OpenPencil.
+DOM and CSS projection utilities for Kalka.
 
-This package is the compatibility layer between OpenPencil's scene graph and DOM-shaped design documents. It is intentionally separate from `@kalka/core` so browser/CSS parser integrations can evolve without adding DOM dependencies to the renderer and editor core.
+This package is the compatibility layer between Kalka's scene graph and DOM-shaped design documents. It is intentionally separate from `@kalka/core` so browser/CSS parser integrations can evolve without adding DOM dependencies to the renderer and editor core.
 
 ## Installation
 
@@ -10,7 +10,7 @@ This package is the compatibility layer between OpenPencil's scene graph and DOM
 bun add @kalka/dom-css @kalka/core
 ```
 
-`@kalka/core` is a peer dependency because `@kalka/dom-css` projects to and from OpenPencil scene graphs. Consumers that only parse/serialize DesignDOM still need the peer installed for the package entrypoint.
+`@kalka/core` is a peer dependency because `@kalka/dom-css` projects to and from Kalka scene graphs. Consumers that only parse/serialize DesignDOM still need the peer installed for the package entrypoint.
 
 ## Package-local checks
 
@@ -41,7 +41,7 @@ Use the browser runtime as the high-fidelity source of truth whenever a DOM is a
 import { createBrowserCSSRuntime } from '@kalka/dom-css'
 
 const runtime = createBrowserCSSRuntime({ sandbox: 'iframe' })
-const document = runtime.parseHTML('<article class="card">OpenPencil</article>')
+const document = runtime.parseHTML('<article class="card">Kalka</article>')
 const styled = await runtime.computeStyles(document, '.card { width: calc(10rem + 16px); }')
 ```
 
@@ -61,7 +61,7 @@ The convenience helpers run the full pipeline:
 import { htmlToSceneGraph } from '@kalka/dom-css'
 
 const graph = await htmlToSceneGraph(
-  '<article class="card"><h1>OpenPencil</h1></article>',
+  '<article class="card"><h1>Kalka</h1></article>',
   {
     cssText: '.card { display: flex; gap: 12px; width: 320px; padding: 24px; }'
   }
@@ -80,7 +80,7 @@ import { createBrowserCSSRuntime, jsxToSceneGraph } from '@kalka/dom-css'
 
 const graph = await jsxToSceneGraph(
   <article class="card">
-    <h1>OpenPencil</h1>
+    <h1>Kalka</h1>
   </article>,
   {
     cssText: '.card { display: flex; width: 320px; padding: 24px; }',
@@ -99,7 +99,7 @@ import { browserJSXToSceneGraph } from '@kalka/dom-css/browser'
 
 const graph = await browserJSXToSceneGraph(
   <article class="card">
-    <h1>OpenPencil</h1>
+    <h1>Kalka</h1>
   </article>,
   {
     cssText: '.card { display: flex; width: 320px; padding: 24px; }',
@@ -124,7 +124,7 @@ import { browserHTMLToSceneGraph } from '@kalka/dom-css/browser'
 import tailwindCSS from './generated-tailwind.css?raw'
 
 const graph = await browserHTMLToSceneGraph(
-  '<article class="flex w-80 rounded-xl bg-white p-6">OpenPencil</article>',
+  '<article class="flex w-80 rounded-xl bg-white p-6">Kalka</article>',
   {
     cssText: tailwindCSS,
     sandbox: 'iframe'
@@ -141,7 +141,7 @@ import { browserJSXToSceneGraph } from '@kalka/dom-css/browser'
 import tailwindCSS from './generated-tailwind.css?raw'
 
 const graph = await browserJSXToSceneGraph(
-  <article class="flex w-80 rounded-xl bg-white p-6">OpenPencil</article>,
+  <article class="flex w-80 rounded-xl bg-white p-6">Kalka</article>,
   {
     cssText: tailwindCSS,
     sandbox: 'iframe'
@@ -158,7 +158,7 @@ import { browserTailwindHTMLToSceneGraph } from '@kalka/dom-css/browser'
 
 const classes = ['flex', 'w-80', 'rounded-xl', 'bg-white', 'p-6']
 const graph = await browserTailwindHTMLToSceneGraph(
-  `<article class="${classes.join(' ')}">OpenPencil</article>`,
+  `<article class="${classes.join(' ')}">Kalka</article>`,
   classes,
   {
     css: await fetch('/tailwind-source.css').then((response) => response.text()),
@@ -174,7 +174,7 @@ import { browserTailwindHTMLToSceneGraph } from '@kalka/dom-css/browser'
 
 const classes = ['flex', 'w-80', 'rounded-xl', 'bg-white', 'p-6']
 const graph = await browserTailwindHTMLToSceneGraph(
-  `<article class="${classes.join(' ')}">OpenPencil</article>`,
+  `<article class="${classes.join(' ')}">Kalka</article>`,
   classes,
   {
     css: '@import "tailwindcss";',
@@ -196,7 +196,7 @@ import { tailwindHTMLToSceneGraph } from '@kalka/dom-css'
 
 const classes = ['flex', 'w-80', 'p-6', 'rounded-xl', 'bg-white']
 const graph = await tailwindHTMLToSceneGraph(
-  `<article class="${classes.join(' ')}">OpenPencil</article>`,
+  `<article class="${classes.join(' ')}">Kalka</article>`,
   classes
 )
 ```
@@ -216,6 +216,6 @@ const graph = await tailwindHTMLToSceneGraph(
 ## Roadmap
 
 - Expand reusable fixtures: inputs, badges, nav/menu rows, dialog shells, and richer cards
-- Map more computed CSS properties to scene graph fields through browser-native computed style or dependency-backed parsers: richer shadows, typography details, position constraints, borders, gradients, and grid once OpenPencil's grid support matures
+- Map more computed CSS properties to scene graph fields through browser-native computed style or dependency-backed parsers: richer shadows, typography details, position constraints, borders, gradients, and grid once Kalka's grid support matures
 - Improve SceneGraph → CSS export so generated HTML/CSS is useful for JSX, Tailwind, and web export
 - Keep `@kalka/dom-css` stable before splitting lower-level file-format packages such as future `@kalka/kiwi` and `@kalka/fig`

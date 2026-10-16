@@ -37,9 +37,9 @@ test('uses reported paths and retains the stable macOS archive name', () =>
     const assets = await resolveReportedAssets([...reported, app], expected, root)
 
     expect(assets.map((asset) => asset.name).sort()).toEqual([
-      'OpenPencil_0.15.0_aarch64.dmg',
-      'OpenPencil_aarch64.app.tar.gz',
-      'OpenPencil_aarch64.app.tar.gz.sig'
+      'Kalka_0.15.0_aarch64.dmg',
+      'Kalka_aarch64.app.tar.gz',
+      'Kalka_aarch64.app.tar.gz.sig'
     ])
   }))
 

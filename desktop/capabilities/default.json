@@ -68,8 +68,8 @@
       "deny": [
         { "path": "$HOME/Library/Application Support/Kalka/mcp.json" },
         { "path": "$LOCALDATA/Kalka/mcp.json" },
-        { "path": "$RUNTIME/openpencil/mcp.json" },
-        { "path": "$HOME/.openpencil/mcp.json" }
+        { "path": "$RUNTIME/kalka/mcp.json" },
+        { "path": "$HOME/.kalka/mcp.json" }
       ]
     },
     "fs:allow-fstat",
@@ -81,8 +81,8 @@
         { "path": "$HOME/.pi/agent/settings.json" },
         { "path": "$HOME/Library/Application Support/Kalka/mcp.json" },
         { "path": "$LOCALDATA/Kalka/mcp.json" },
-        { "path": "$RUNTIME/openpencil/mcp.json" },
-        { "path": "$HOME/.openpencil/mcp.json" }
+        { "path": "$RUNTIME/kalka/mcp.json" },
+        { "path": "$HOME/.kalka/mcp.json" }
       ]
     },
     {
@@ -91,8 +91,8 @@
       "deny": [
         { "path": "$HOME/Library/Application Support/Kalka/mcp.json" },
         { "path": "$LOCALDATA/Kalka/mcp.json" },
-        { "path": "$RUNTIME/openpencil/mcp.json" },
-        { "path": "$HOME/.openpencil/mcp.json" }
+        { "path": "$RUNTIME/kalka/mcp.json" },
+        { "path": "$HOME/.kalka/mcp.json" }
       ]
     },
     {
@@ -101,8 +101,8 @@
         { "path": "$HOME/.pi/agent/auth.json" },
         { "path": "$HOME/Library/Application Support/Kalka/mcp.json" },
         { "path": "$LOCALDATA/Kalka/mcp.json" },
-        { "path": "$RUNTIME/openpencil/mcp.json" },
-        { "path": "$HOME/.openpencil/mcp.json" }
+        { "path": "$RUNTIME/kalka/mcp.json" },
+        { "path": "$HOME/.kalka/mcp.json" }
       ]
     },
     {
@@ -115,8 +115,8 @@
       "deny": [
         { "path": "$HOME/Library/Application Support/Kalka/mcp.json" },
         { "path": "$LOCALDATA/Kalka/mcp.json" },
-        { "path": "$RUNTIME/openpencil/mcp.json" },
-        { "path": "$HOME/.openpencil/mcp.json" }
+        { "path": "$RUNTIME/kalka/mcp.json" },
+        { "path": "$HOME/.kalka/mcp.json" }
       ]
     },
     {
@@ -142,8 +142,8 @@
             "--registry=https://registry.npmjs.org"
           ]
         },
-        { "name": "openpencil-mcp-http", "cmd": "openpencil-mcp-http", "args": false },
-        { "name": "openpencil-harness", "cmd": "openpencil-harness", "args": false },
+        { "name": "kalka-mcp-http", "cmd": "kalka-mcp-http", "args": false },
+        { "name": "kalka-harness", "cmd": "kalka-harness", "args": false },
         { "name": "cmd-claude-agent-acp", "cmd": "cmd", "args": ["/c", "claude-agent-acp"] },
         { "name": "cmd-codex-acp", "cmd": "cmd", "args": ["/c", "codex-acp"] },
         { "name": "cmd-gemini", "cmd": "cmd", "args": ["/c", "gemini", "--acp"] },
@@ -161,8 +161,8 @@
             "--registry=https://registry.npmjs.org"
           ]
         },
-        { "name": "cmd-openpencil-mcp-http", "cmd": "cmd", "args": ["/c", "openpencil-mcp-http"] },
-        { "name": "cmd-openpencil-harness", "cmd": "cmd", "args": ["/c", "openpencil-harness"] }
+        { "name": "cmd-kalka-mcp-http", "cmd": "cmd", "args": ["/c", "kalka-mcp-http"] },
+        { "name": "cmd-kalka-harness", "cmd": "cmd", "args": ["/c", "kalka-harness"] }
       ]
     },
     "shell:allow-stdin-write",

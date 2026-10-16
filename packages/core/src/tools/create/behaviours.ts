@@ -2,7 +2,7 @@ import * as v from 'valibot'
 
 import { behaviourSpecSchema } from '@kalka/scene-graph'
 
-import { OpenPencilAPI } from '#core/openpencil-api'
+import { KalkaAPI } from '#core/kalka-api'
 import { defineTool } from '#core/tools/schema'
 
 const failure = (error: unknown) => ({
@@ -31,9 +31,9 @@ export const setBehaviour = defineTool({
   }),
   execute: (figma, { id, behaviour }) => {
     try {
-      const openpencil = new OpenPencilAPI(figma)
-      if (behaviour) return openpencil.setBehaviour(id, behaviour).toJSON()
-      openpencil.getBehaviour(id)?.remove()
+      const kalka = new KalkaAPI(figma)
+      if (behaviour) return kalka.setBehaviour(id, behaviour).toJSON()
+      kalka.getBehaviour(id)?.remove()
       return { ok: true }
     } catch (error) {
       return failure(error)
@@ -52,7 +52,7 @@ export const createSlot = defineTool({
   }),
   execute: (figma, { id }) => {
     try {
-      return { slot: new OpenPencilAPI(figma).createSlot(id) }
+      return { slot: new KalkaAPI(figma).createSlot(id) }
     } catch (error) {
       return failure(error)
     }
@@ -70,10 +70,10 @@ export const getBehaviour = defineTool({
     id: v.optional(v.pipe(v.string(), v.description('Component, set, or variant ID')))
   }),
   execute: (figma, { id }) => {
-    const openpencil = new OpenPencilAPI(figma)
-    if (!id) return { kinds: openpencil.behaviourKinds }
+    const kalka = new KalkaAPI(figma)
+    if (!id) return { kinds: kalka.behaviourKinds }
     try {
-      return openpencil.getBehaviour(id)?.toJSON() ?? { behaviour: null }
+      return kalka.getBehaviour(id)?.toJSON() ?? { behaviour: null }
     } catch (error) {
       return failure(error)
     }

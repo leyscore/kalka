@@ -1,6 +1,6 @@
 import { resolve } from 'node:path'
 
-export function createOpenPencilAliases(rootDir: string) {
+export function createKalkaAliases(rootDir: string) {
   const emptyNodeModule = resolve(rootDir, 'vite/empty-node-module.ts')
 
   return [

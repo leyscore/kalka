@@ -56,7 +56,7 @@ describe('source library publication identity', () => {
       })
     ]) {
       graph.updateNode(root.id, {
-        pluginData: [{ pluginId: 'open-pencil', key: 'sourceLibraryPublication', value }]
+        pluginData: [{ pluginId: 'kalka', key: 'sourceLibraryPublication', value }]
       })
       expect(readSourceLibraryPublication(graph)).toBeNull()
     }

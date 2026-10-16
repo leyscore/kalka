@@ -3,7 +3,7 @@ import { isEmptyObject } from 'es-toolkit/predicate'
 
 import type { NodeChange } from '@kalka/kiwi/fig/codec'
 import {
-  OPEN_PENCIL_PLUGIN_DATA,
+  KALKA_PLUGIN_DATA,
   pluginDataEntry,
   withoutPluginData,
   type PluginDataEntry,
@@ -14,7 +14,7 @@ import {
 
 import { readNodeChangePluginData } from '../plugin-data'
 
-const { token, modeConditions, modeAttribute } = OPEN_PENCIL_PLUGIN_DATA
+const { token, modeConditions, modeAttribute } = KALKA_PLUGIN_DATA
 
 type TokenFields = Pick<Variable, 'unit' | 'expressions'>
 

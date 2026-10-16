@@ -4,7 +4,7 @@ import { uniq } from 'es-toolkit/array'
 import { BUILTIN_IO_FORMATS, IORegistry } from '@kalka/core/io'
 import { menuMessages } from '@kalka/vue'
 
-import { setOpenPencilOpenFileHandler } from '@/app/browser-bridge'
+import { setKalkaOpenFileHandler } from '@/app/browser-bridge'
 import {
   resolveBrowserFileURL,
   MAX_REMOTE_DOCUMENT_BYTES,
@@ -55,7 +55,7 @@ export function openDesignFile(file: File, handle?: FileSystemFileHandle): Promi
 }
 
 if (IS_BROWSER && 'window' in globalThis) {
-  setOpenPencilOpenFileHandler(async (path: string) => {
+  setKalkaOpenFileHandler(async (path: string) => {
     await openBrowserFileFromURL(resolveBrowserFileURL(path))
   })
 }

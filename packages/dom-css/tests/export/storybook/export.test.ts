@@ -58,7 +58,7 @@ function storyExport(module: StoryModule, name: string): Story {
 }
 
 async function importStory(content: string): Promise<StoryModule> {
-  const dir = await mkdtemp(join(tmpdir(), 'open-pencil-storybook-'))
+  const dir = await mkdtemp(join(tmpdir(), 'kalka-storybook-'))
   const path = join(dir, 'story.ts')
   await writeFile(path, content)
   return import(path)

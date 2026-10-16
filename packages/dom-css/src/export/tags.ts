@@ -8,7 +8,7 @@ import {
 
 import type { DesignStyleDeclaration } from '../types'
 
-export const DOM_CSS_PLUGIN_ID = 'open-pencil-dom-css'
+export const DOM_CSS_PLUGIN_ID = 'kalka-dom-css'
 export const IMAGE_SOURCE_URL_KEY = 'image-source-url'
 
 /** Layers whose shape only paths describe, which CSS boxes cannot draw. */

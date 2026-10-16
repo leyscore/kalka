@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'bun:test'
 
 import {
-  OPEN_PENCIL_PLUGIN_DATA,
+  KALKA_PLUGIN_DATA,
   parseHTMLClasses,
   parseHTMLTag,
   readPluginData,
-  OPEN_PENCIL_PLUGIN_ID
+  KALKA_PLUGIN_ID
 } from '@kalka/scene-graph'
 
 describe('HTML tags and classes of a layer', () => {
@@ -28,8 +28,8 @@ describe('HTML tags and classes of a layer', () => {
   })
 
   test('stored values from a file are read through the same rules', () => {
-    const entry = (key: string, value: string) => [{ pluginId: OPEN_PENCIL_PLUGIN_ID, key, value }]
-    const { htmlTag, htmlClasses } = OPEN_PENCIL_PLUGIN_DATA
+    const entry = (key: string, value: string) => [{ pluginId: KALKA_PLUGIN_ID, key, value }]
+    const { htmlTag, htmlClasses } = KALKA_PLUGIN_DATA
     expect(readPluginData(entry(htmlTag.key, 'section'), htmlTag)).toBe('section')
     expect(readPluginData(entry(htmlTag.key, 'script'), htmlTag)).toBeUndefined()
     expect(readPluginData(entry(htmlClasses.key, '["card","x\\"y"]'), htmlClasses)).toEqual([

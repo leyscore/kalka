@@ -3253,7 +3253,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "open_pencil"
+name = "kalka"
 version = "0.15.1"
 dependencies = [
  "fix-path-env",

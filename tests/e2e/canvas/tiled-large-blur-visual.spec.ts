@@ -27,12 +27,12 @@ const reversal = v.parse(
 )
 
 async function waitForTiledSettlement() {
-  await editor.page.evaluate(() => window.openPencil?.test?.navigation?.waitForSettlement())
+  await editor.page.evaluate(() => window.kalka?.test?.navigation?.waitForSettlement())
 }
 
 async function setLargeBlurRadius(radius: number) {
   await editor.page.evaluate((nextRadius) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const node = [...store.graph.getAllNodes()].find(
       (candidate) =>
@@ -80,11 +80,9 @@ async function replayReversal() {
 
 test('large blur remains seamless after tiled mutation and zoom reversal', async () => {
   test.setTimeout(120_000)
-  await editor.page.evaluate(() =>
-    window.openPencil?.openFile?.('/tests/fixtures/gold-preview.fig')
-  )
+  await editor.page.evaluate(() => window.kalka?.openFile?.('/tests/fixtures/gold-preview.fig'))
   await editor.page.waitForFunction(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     return (
       store != null &&
       store.state.preparation === null &&
@@ -98,7 +96,7 @@ test('large blur remains seamless after tiled mutation and zoom reversal', async
     )
   })
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     store.zoomToFit()
   })

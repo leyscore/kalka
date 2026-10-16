@@ -1,6 +1,6 @@
 # @kalka/vue
 
-Headless Vue 3 SDK for building OpenPencil-powered editors.
+Headless Vue 3 SDK for building Kalka-powered editors.
 
 `@kalka/vue` sits on top of `@kalka/core` and provides:
 
@@ -17,7 +17,7 @@ The SDK is headless by design: it provides logic and structure, while your app o
 bun add @kalka/vue @kalka/core @kalka/scene-graph canvaskit-wasm
 ```
 
-The current development version requires Vue `^3.5.41` and, when supplying the optional CanvasKit peer, `canvaskit-wasm >=0.41.1`. See [SDK Getting Started](https://openpencil.dev/programmable/sdk/getting-started) for migration guidance; older releases may have different peer requirements.
+The current development version requires Vue `^3.5.41` and, when supplying the optional CanvasKit peer, `canvaskit-wasm >=0.41.1`. See [SDK Getting Started](https://github.com/leyscore/kalka/blob/main/packages/docs/programmable/sdk/getting-started.md) for migration guidance; older releases may have different peer requirements.
 
 ## Quick start
 
@@ -117,7 +117,7 @@ dimension can switch that axis to Fixed inside the same provider transaction.
 and undo-batched multi-selection updates. `AppearanceControlsRoot`
 exposes selection-derived independent-corner presentation state so consumers do not need parallel
 expansion heuristics. `PropertyListRoot` is controlled and
-editor-agnostic; OpenPencil panels connect it to selection and undo through
+editor-agnostic; Kalka panels connect it to selection and undo through
 `useEditorPropertyList()`. `useColorModel()` provides precise scene-color/Reka bridges, reactive
 RGB/HSL/HSB/OkHCL channels, extensible format state, and shared slider presentation data.
 `FillRoot` and `FillSwatch` separate fill behavior and binding-aware previews from popover

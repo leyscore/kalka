@@ -15,7 +15,7 @@ const reasons: Record<MCPFailureCode, MCPFailure> = {
   },
   'permission-denied': {
     code: 'permission-denied',
-    detail: 'shell command openpencil-mcp-http not allowed by ACL'
+    detail: 'shell command kalka-mcp-http not allowed by ACL'
   },
   exited: {
     code: 'exited',

@@ -17,12 +17,12 @@ import {
 
 /** Served from `public/`; it relays the redirect to the editor over this channel. */
 export const OPENROUTER_CALLBACK_PATH = '/oauth/openrouter.html'
-export const OPENROUTER_CALLBACK_CHANNEL = 'open-pencil:openrouter-oauth'
+export const OPENROUTER_CALLBACK_CHANNEL = 'kalka:openrouter-oauth'
 /** Served from `public/` on the web app; it hands the redirect to the desktop app's deep link. */
 export const OPENROUTER_DESKTOP_CALLBACK_PATH = '/oauth/openrouter-desktop.html'
 /** Emitted by the desktop shell for an `kalka://oauth/<provider>?…` link. */
 const OAUTH_CALLBACK_EVENT = 'oauth-callback'
-const POPUP_NAME = 'open-pencil-openrouter'
+const POPUP_NAME = 'kalka-openrouter'
 const POPUP_FEATURES = 'popup,width=520,height=720'
 
 export type OpenRouterSignInFailure = 'cancelled' | 'blocked' | 'expired' | 'failed'

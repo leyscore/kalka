@@ -5,7 +5,7 @@ import { getEditingTextId } from '#tests/helpers/store'
 
 async function addTwoTopLevelTexts(page: Page) {
   return page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     store.state.zoom = 1
     store.state.panX = 0
@@ -22,7 +22,7 @@ async function addTwoTopLevelTexts(page: Page) {
 
 async function addTopLevelText(page: Page) {
   return page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     store.state.zoom = 1
     store.state.panX = 0
@@ -37,7 +37,7 @@ async function addTopLevelText(page: Page) {
 
 async function addFrameWithNestedText(page: Page) {
   return page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     store.state.zoom = 1
     store.state.panX = 0
@@ -114,7 +114,7 @@ test('double-click drill enters nested text edit mode', async ({ page }) => {
   await expect
     .poll(() =>
       page.evaluate(() => {
-        const store = window.openPencil?.getStore?.()
+        const store = window.kalka?.getStore?.()
         if (!store) throw new Error('Kalka store not initialized')
         return [...store.state.selectedIds]
       })

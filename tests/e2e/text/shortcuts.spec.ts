@@ -5,7 +5,7 @@ const editor = useEditorSetup()
 test('document shortcuts work while text is edited, and canvas shortcuts stay with the text', async () => {
   const page = editor.page
   await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const id = store.createShape('TEXT', 300, 250, 220, 60)
     store.graph.updateNode(id, { text: 'Hello', fontSize: 24 })
@@ -18,7 +18,7 @@ test('document shortcuts work while text is edited, and canvas shortcuts stay wi
   // A canvas shortcut is a letter of the text.
   await page.keyboard.press('KeyR')
   await expect
-    .poll(() => page.evaluate(() => window.openPencil?.getStore?.().state.activeTool))
+    .poll(() => page.evaluate(() => window.kalka?.getStore?.().state.activeTool))
     .not.toBe('RECTANGLE')
 
   // A document shortcut still reaches the app.

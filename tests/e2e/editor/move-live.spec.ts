@@ -24,7 +24,7 @@ test.beforeEach(async () => {
 
 test('scene canvas repaints selected node during drag', async () => {
   await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const id = store.createShape('RECTANGLE', 120, 120, 80, 80)
     store.updateNode(id, {

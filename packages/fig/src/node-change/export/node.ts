@@ -12,7 +12,7 @@ import type {
 import {
   DEFAULT_STROKE_MITER_LIMIT,
   DEFAULT_STROKE_WEIGHT,
-  OPEN_PENCIL_PLUGIN_DATA,
+  KALKA_PLUGIN_DATA,
   withPluginData
 } from '@kalka/scene-graph'
 import { siblingOrderKeys } from '@kalka/scene-graph/order-keys'
@@ -246,11 +246,11 @@ interface MaterializeFigmaPayloadOptions {
 }
 
 function materializeFigmaBlob(
-  value: { __openPencilFigmaBlob?: Uint8Array | Record<string, number> },
+  value: { __kalkaFigmaBlob?: Uint8Array | Record<string, number> },
   blobs: Uint8Array[],
   options: MaterializeFigmaPayloadOptions
 ): number {
-  const blob = value.__openPencilFigmaBlob
+  const blob = value.__kalkaFigmaBlob
   const bytes = blob instanceof Uint8Array ? blob : new Uint8Array(Object.values(blob ?? {}))
   const key = bytesToHex(bytes)
   const existing = options.blobIndexByHex?.get(key)
@@ -284,9 +284,9 @@ function materializeFigmaPayload(
   if (Array.isArray(value))
     return value.map((item) => materializeFigmaPayload(item, blobs, options))
   if (!value || typeof value !== 'object') return value
-  if ('__openPencilFigmaBlob' in value) {
+  if ('__kalkaFigmaBlob' in value) {
     return materializeFigmaBlob(
-      value as { __openPencilFigmaBlob?: Uint8Array | Record<string, number> },
+      value as { __kalkaFigmaBlob?: Uint8Array | Record<string, number> },
       blobs,
       options
     )
@@ -969,10 +969,10 @@ export function sceneNodeToKiwiWithContext(
   applyComponentMetadata(context, node, nc, localIdCounter)
   applyInstancePayload(context, node, nc, localIdCounter)
   if (node.type === 'COMPONENT_SET')
-    node.pluginData = withPluginData(node.pluginData, OPEN_PENCIL_PLUGIN_DATA.nodeType, node.type)
+    node.pluginData = withPluginData(node.pluginData, KALKA_PLUGIN_DATA.nodeType, node.type)
   node.pluginData = withPluginData(
     node.pluginData,
-    OPEN_PENCIL_PLUGIN_DATA.shader,
+    KALKA_PLUGIN_DATA.shader,
     node.shader ?? undefined
   )
   if (nc.type === 'CANVAS') nc.pageType = 'DESIGN'

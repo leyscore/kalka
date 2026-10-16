@@ -25,12 +25,12 @@ async function run(code: string) {
   return { graph, set, result }
 }
 
-describe('openpencil scripting API', () => {
+describe('kalka scripting API', () => {
   test('a script gives a component set a behaviour by property and slot names', async () => {
     const { graph, set, result } = await run(`
       const set = figma.currentPage.findOne((node) => node.name === 'Switch')
       const thumb = set.findOne((node) => node.name === 'Thumb')
-      const behaviour = openpencil.setBehaviour(set, 'switch')
+      const behaviour = kalka.setBehaviour(set, 'switch')
       behaviour.bindValue('value', 'State').bindPart('thumb', thumb)
       return { spec: behaviour.spec, missing: behaviour.missing }
     `)
@@ -48,11 +48,11 @@ describe('openpencil scripting API', () => {
   test('a variant reads its set’s behaviour, and removing it leaves the component alone', async () => {
     const { graph, set, result } = await run(`
       const set = figma.currentPage.findOne((node) => node.name === 'Switch')
-      openpencil.setBehaviour(set, { kind: 'switch', values: { value: 'State' } })
+      kalka.setBehaviour(set, { kind: 'switch', values: { value: 'State' } })
       const variant = set.children[0]
-      const kind = openpencil.getBehaviour(variant).kind
-      openpencil.getBehaviour(set).remove()
-      return [kind, openpencil.getBehaviour(set), openpencil.behaviourKinds.length]
+      const kind = kalka.getBehaviour(variant).kind
+      kalka.getBehaviour(set).remove()
+      return [kind, kalka.getBehaviour(set), kalka.behaviourKinds.length]
     `)
     expect(result).toEqual(['switch', null, 15])
     expect(graph.getNode(set.id)?.componentPropertyDefinitions.map((item) => item.name)).toContain(
@@ -64,7 +64,7 @@ describe('openpencil scripting API', () => {
     await expect(
       run(`
         const set = figma.currentPage.findOne((node) => node.name === 'Switch')
-        openpencil.setBehaviour(set, { kind: 'switch', values: { value: 'Checked' } })
+        kalka.setBehaviour(set, { kind: 'switch', values: { value: 'Checked' } })
       `)
     ).rejects.toThrow('named "Checked"; the component has "State"')
   })

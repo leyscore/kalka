@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 
 import { McpServer, WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/server'
-// eslint-disable-next-line open-pencil/no-mixed-case-acronym-identifiers -- Upstream export spelling.
+// eslint-disable-next-line kalka/no-mixed-case-acronym-identifiers -- Upstream export spelling.
 import { toStandardJsonSchema as toStandardJSONSchema } from '@valibot/to-json-schema'
 import type { Tool } from 'ai'
 import * as v from 'valibot'

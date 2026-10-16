@@ -10,7 +10,7 @@ import { getActiveEditorStoreOrNull, useActiveEditorStoreRef } from '@/app/edito
 export const APP_THEMES = ['dark', 'light', 'auto'] as const
 export type AppTheme = (typeof APP_THEMES)[number]
 
-const THEME_STORAGE_KEY = 'open-pencil:theme'
+const THEME_STORAGE_KEY = 'kalka:theme'
 const DEFAULT_THEME: AppTheme = 'dark'
 
 const theme = useLocalStorage<AppTheme>(THEME_STORAGE_KEY, DEFAULT_THEME)

@@ -3,7 +3,7 @@ import {
   DEFAULT_FONT_FAMILY,
   DEFAULT_STROKE_MITER_LIMIT,
   DEFAULT_STROKE_WEIGHT,
-  OPEN_PENCIL_PLUGIN_DATA,
+  KALKA_PLUGIN_DATA,
   styleToWeight
 } from '@kalka/scene-graph'
 import { createDefaultSourceMetadata } from '@kalka/scene-graph/node-defaults'
@@ -371,7 +371,7 @@ function convertTextProps(nc: NodeChange, blobs: Uint8Array[]): TextProps {
     fontVariations: convertFontVariations(nc),
     fontFeatures: convertFontFeatures(nc),
     textTruncation: (nc.textTruncation as string) === 'ENDING' ? 'ENDING' : 'DISABLED',
-    textDirection: readNodeChangePluginData(nc, OPEN_PENCIL_PLUGIN_DATA.textDirection) ?? 'AUTO',
+    textDirection: readNodeChangePluginData(nc, KALKA_PLUGIN_DATA.textDirection) ?? 'AUTO',
     ...convertDerivedText(nc, blobs)
   }
 }
@@ -489,8 +489,7 @@ function convertLayoutProps(
       (nc.stackCounterAlignContent as string) === 'SPACE_BETWEEN' ? 'SPACE_BETWEEN' : 'AUTO',
     itemReverseZIndex: (nc.stackReverseZIndex ?? false) as boolean,
     strokesIncludedInLayout: (nc.strokesIncludedInLayout ?? false) as boolean,
-    layoutDirection:
-      readNodeChangePluginData(nc, OPEN_PENCIL_PLUGIN_DATA.layoutDirection) ?? 'AUTO',
+    layoutDirection: readNodeChangePluginData(nc, KALKA_PLUGIN_DATA.layoutDirection) ?? 'AUTO',
     ...(derivedLayout ? { derivedLayout } : {})
   }
 }
@@ -587,7 +586,7 @@ function resolveNodeType(nc: NodeChange): NodeType | 'DOCUMENT' | 'VARIABLE' {
   const nodeType = mapNodeType(nc.type)
   if (
     (nodeType === 'FRAME' && isComponentSet(nc)) ||
-    readNodeChangePluginData(nc, OPEN_PENCIL_PLUGIN_DATA.nodeType) === 'COMPONENT_SET'
+    readNodeChangePluginData(nc, KALKA_PLUGIN_DATA.nodeType) === 'COMPONENT_SET'
   ) {
     return 'COMPONENT_SET'
   }
@@ -640,7 +639,7 @@ export function nodeChangeToProps(
     strokeWeight: nc.strokeWeight ?? DEFAULT_STROKE_WEIGHT,
     strokeAlign: convertStrokeAlign(nc.strokeAlign),
     effects: convertEffects(nc.effects),
-    shader: readNodeChangePluginData(nc, OPEN_PENCIL_PLUGIN_DATA.shader) ?? null,
+    shader: readNodeChangePluginData(nc, KALKA_PLUGIN_DATA.shader) ?? null,
     ...extractHTMLElement(nc),
     layoutGrids: convertLayoutGrids(nc.layoutGrids),
     guides: importCanvasGuides(nc.guides),
@@ -1026,7 +1025,7 @@ export function sortChildren(
 }
 
 interface PreservedFigmaBlob {
-  __openPencilFigmaBlob: Uint8Array
+  __kalkaFigmaBlob: Uint8Array
 }
 
 function preserveFigmaPayloadBlobs(value: unknown, blobs: Uint8Array[]): unknown {
@@ -1041,7 +1040,7 @@ function preserveFigmaPayloadBlobs(value: unknown, blobs: Uint8Array[]): unknown
         result[key] = child
       } else {
         result[key] = {
-          __openPencilFigmaBlob:
+          __kalkaFigmaBlob:
             blob instanceof Uint8Array
               ? blob
               : new Uint8Array(Object.values(blob as Record<string, number>))

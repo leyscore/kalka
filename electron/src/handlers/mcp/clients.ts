@@ -12,7 +12,7 @@ import { BUNDLED_MCP_STDIO, bundledMCPCommand, bundledMCPScript } from './bundle
 /** The name Kalka's tools appear under in a client: `mcp__kalka__*`. */
 const MCP_SERVER_NAME = 'kalka'
 /** The stdio bridge of a global `@kalka/mcp` install, for builds without the bundled one. */
-const GLOBAL_MCP_BRIDGE = 'openpencil-mcp'
+const GLOBAL_MCP_BRIDGE = 'kalka-mcp'
 
 export const MCP_CLIENT_IDS = [
   'claude-desktop',

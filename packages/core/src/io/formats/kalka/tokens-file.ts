@@ -9,7 +9,7 @@ import {
   STYLES_FILE
 } from '#core/io/formats/design-tokens/export'
 import { readDesignTokens, type DesignTokenBundle } from '#core/io/formats/design-tokens/read'
-import { OPENPENCIL_EXTENSION } from '#core/io/formats/design-tokens/types'
+import { kalkaExtension } from '#core/io/formats/design-tokens/types'
 
 const TOKEN_FILE_SUFFIX = '.tokens.json'
 
@@ -17,7 +17,7 @@ const ModeInfoSchema = v.object({ collection: v.string(), mode: v.string() })
 
 function modeInfo(content: Record<string, unknown>) {
   const extensions = isPlainObject(content.$extensions) ? content.$extensions : {}
-  const parsed = v.safeParse(ModeInfoSchema, extensions[OPENPENCIL_EXTENSION])
+  const parsed = v.safeParse(ModeInfoSchema, kalkaExtension(extensions))
   return parsed.success ? parsed.output : null
 }
 

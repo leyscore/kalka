@@ -478,9 +478,7 @@ function attrsForNode(
   node: SceneNode,
   includeSourceIds: boolean
 ): Record<string, string> {
-  const attrs: Record<string, string> = includeSourceIds
-    ? { 'data-open-pencil-node-id': node.id }
-    : {}
+  const attrs: Record<string, string> = includeSourceIds ? { 'data-kalka-node-id': node.id } : {}
   const sourceURL = imageSourceURL(node)
   if (sourceURL) attrs.src = sourceURL
   if (node.htmlClasses.length > 0) attrs.class = node.htmlClasses.join(' ')

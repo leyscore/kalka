@@ -2,8 +2,8 @@ import { describe, expect, test } from 'bun:test'
 
 import {
   contentPluginData,
-  OPEN_PENCIL_PLUGIN_DATA,
-  OPEN_PENCIL_PLUGIN_ID,
+  KALKA_PLUGIN_DATA,
+  KALKA_PLUGIN_ID,
   readAllPluginData,
   readPluginData,
   SceneGraph,
@@ -17,11 +17,11 @@ import {
   setNodeStrokeOkHCL
 } from '@kalka/scene-graph/color'
 
-const { exportSettings, okhcl, textDirection } = OPEN_PENCIL_PLUGIN_DATA
+const { exportSettings, okhcl, textDirection } = KALKA_PLUGIN_DATA
 const OTHER_PLUGIN: PluginDataEntry = { pluginId: 'other-plugin', key: 'okhcl', value: 'theirs' }
 
 function entry(key: string, value: string): PluginDataEntry {
-  return { pluginId: OPEN_PENCIL_PLUGIN_ID, key, value }
+  return { pluginId: KALKA_PLUGIN_ID, key, value }
 }
 
 describe('Kalka plugin data', () => {
@@ -36,7 +36,7 @@ describe('Kalka plugin data', () => {
   })
 
   test('gives every field its own key', () => {
-    const keys = Object.values(OPEN_PENCIL_PLUGIN_DATA).map((field) => field.key)
+    const keys = Object.values(KALKA_PLUGIN_DATA).map((field) => field.key)
     expect(new Set(keys).size).toBe(keys.length)
   })
 

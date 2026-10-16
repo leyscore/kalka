@@ -5,8 +5,8 @@ import * as v from 'valibot'
 import { ICON_NAME } from '@kalka/scene-graph'
 
 const MAX_RECENT_ICONS = 24
-const RECENT_ICONS_STORAGE_KEY = 'open-pencil:recent-icons'
-const ICON_SET_STORAGE_KEY = 'open-pencil:icon-set'
+const RECENT_ICONS_STORAGE_KEY = 'kalka:recent-icons'
+const ICON_SET_STORAGE_KEY = 'kalka:icon-set'
 
 /** Stored icon names; anything unreadable reads as none rather than failing the picker. */
 const RecentIconsJSON = v.pipe(

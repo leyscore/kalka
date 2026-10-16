@@ -5,7 +5,7 @@ import type { Effect, SceneGraph, SceneNode } from '@kalka/scene-graph'
 import { toFigmaEffect } from '#core/figma-api/effects'
 
 import { pathName, placeTokens, tokenPath, tokenReference } from './paths'
-import { OPENPENCIL_EXTENSION, type DesignToken, type DesignTokenIssue } from './types'
+import { KALKA_EXTENSION, kalkaExtension, type DesignToken, type DesignTokenIssue } from './types'
 import { colorTokenValue, dimensionTokenValue, trimNumber } from './values'
 
 /** Where a variable's token sits, for references to it. */
@@ -58,7 +58,7 @@ function typographyToken(node: SceneNode, references: TokenReferences): DesignTo
     $type: 'typography',
     $value: typographyValue(node, bound),
     $extensions: {
-      [OPENPENCIL_EXTENSION]: {
+      [KALKA_EXTENSION]: {
         text: {
           fontFamily: node.fontFamily,
           fontWeight: node.fontWeight,
@@ -117,7 +117,7 @@ function shadowToken(node: SceneNode): DesignToken | undefined {
     $value,
     ...(exact
       ? {}
-      : { $extensions: { [OPENPENCIL_EXTENSION]: { effects: node.effects.map(toFigmaEffect) } } })
+      : { $extensions: { [KALKA_EXTENSION]: { effects: node.effects.map(toFigmaEffect) } } })
   }
 }
 
@@ -158,12 +158,12 @@ export function withOriginalName(
   path: readonly string[]
 ): DesignToken {
   if (pathName(path) === name) return token
-  const own = token.$extensions?.[OPENPENCIL_EXTENSION]
+  const own = kalkaExtension(token.$extensions)
   return {
     ...token,
     $extensions: {
       ...token.$extensions,
-      [OPENPENCIL_EXTENSION]: { ...(isPlainObject(own) ? own : {}), name }
+      [KALKA_EXTENSION]: { ...(isPlainObject(own) ? own : {}), name }
     }
   }
 }

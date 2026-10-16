@@ -5,18 +5,18 @@ description: Execute JavaScript with a Figma-compatible Plugin API to query, bat
 
 # Scripting
 
-`openpencil eval` runs JavaScript against a Kalka document with a Figma-compatible `figma` global. Use it for headless batch edits, inspection, fixture setup, and automation without opening the editor UI.
+`kalka eval` runs JavaScript against a Kalka document with a Figma-compatible `figma` global. Use it for headless batch edits, inspection, fixture setup, and automation without opening the editor UI.
 
 ## Basic usage
 
 ```sh
-openpencil eval design.fig -c "return figma.currentPage.children.length"
+kalka eval design.fig -c "return figma.currentPage.children.length"
 ```
 
 The `-c` flag accepts JavaScript. Its last expression is the result, so `return` is optional; `await` works at the top level. A script whose last statement is not an expression, such as a declaration, has no result and prints nothing.
 
 ```sh
-openpencil eval design.fig -c "
+kalka eval design.fig -c "
   const frame = figma.createFrame()
   frame.name = 'Card'
   frame.resize(300, 200)
@@ -29,7 +29,7 @@ openpencil eval design.fig -c "
 ## Query nodes
 
 ```sh
-openpencil eval design.fig -c "
+kalka eval design.fig -c "
   return figma.currentPage
     .findAll((node) => node.type === 'FRAME' && node.name.includes('Button'))
     .map((button) => ({
@@ -46,7 +46,7 @@ openpencil eval design.fig -c "
 Use `--write` / `-w` to write changes back to the input file:
 
 ```sh
-openpencil eval design.fig -c "
+kalka eval design.fig -c "
   figma.currentPage.children.forEach((node) => {
     node.opacity = 0.5
   })
@@ -56,13 +56,13 @@ openpencil eval design.fig -c "
 Use `--output` / `-o` to write to a new file:
 
 ```sh
-openpencil eval design.fig -c "figma.currentPage.name = 'Updated'" -o updated.fig
+kalka eval design.fig -c "figma.currentPage.name = 'Updated'" -o updated.fig
 ```
 
 ## Read scripts from stdin
 
 ```sh
-cat transform.js | openpencil eval design.fig --stdin --write
+cat transform.js | kalka eval design.fig --stdin --write
 ```
 
 ## Live app mode
@@ -70,7 +70,7 @@ cat transform.js | openpencil eval design.fig --stdin --write
 Omit the file path to run against the currently open document in the desktop app:
 
 ```sh
-openpencil eval -c "return figma.currentPage.name"
+kalka eval -c "return figma.currentPage.name"
 ```
 
 The desktop app must be running with a document open.
@@ -80,21 +80,21 @@ The desktop app must be running with a document open.
 By default, non-TTY output is JSON. Use `--json` to force JSON output:
 
 ```sh
-openpencil eval design.fig -c "return figma.currentPage.children.map((n) => n.name)" --json
+kalka eval design.fig -c "return figma.currentPage.children.map((n) => n.name)" --json
 ```
 
 Use `--quiet` / `-q` to suppress output when only writing a file.
 
-## The `openpencil` API
+## The `kalka` API
 
-Next to `figma`, scripts get `openpencil`: what Kalka adds to the Figma Plugin API, in the same style. The same global is available to the `eval` tool and the running app's automation.
+Next to `figma`, scripts get `kalka`: what Kalka adds to the Figma Plugin API, in the same style. The same global is available to the `eval` tool and the running app's automation.
 
 A main component or component set can [behave as a Reka UI control](/development/behaviours-and-preview). Bind it by its own property and slot names:
 
 ```sh
-openpencil eval design.fig -w -c '
+kalka eval design.fig -w -c '
   const set = figma.currentPage.findOne((n) => n.type === "COMPONENT_SET" && n.name === "Switch")
-  const behaviour = openpencil.setBehaviour(set, "switch")
+  const behaviour = kalka.setBehaviour(set, "switch")
     .bindValue("value", "State")                          // On and Off guessed from the variants
     .bindPart("thumb", set.findOne((n) => n.name === "Thumb")) // the frame becomes a slot
   behaviour.states = "Interaction"
@@ -102,11 +102,11 @@ openpencil eval design.fig -w -c '
 '
 ```
 
-- `openpencil.setBehaviour(node, kindOrSpec)` replaces a component's behaviour: a kind alone, or a spec such as `{ kind: "slider", parts: { track: "Track", thumb: "Thumb" }, numbers: { value: { min: 0, max: 10 } } }`. It returns the behaviour.
-- `openpencil.getBehaviour(node)` reads one, or `null`; a variant reads its set's.
+- `kalka.setBehaviour(node, kindOrSpec)` replaces a component's behaviour: a kind alone, or a spec such as `{ kind: "slider", parts: { track: "Track", thumb: "Thumb" }, numbers: { value: { min: 0, max: 10 } } }`. It returns the behaviour.
+- `kalka.getBehaviour(node)` reads one, or `null`; a variant reads its set's.
 - A behaviour has `kind`, `spec` (by name), `missing` (required values and parts still unbound), and `states`, and `bindValue(valueId, property, { on, off })`, `bindPart(partId, slotNameOrFrame)`, `setNumber(valueId, { min, max, step, default })`, and `remove()`.
-- `openpencil.behaviourKinds` lists every kind with the values and parts it binds.
-- `openpencil.createSlot(frame)` makes a frame of a main component a slot and returns its name.
+- `kalka.behaviourKinds` lists every kind with the values and parts it binds.
+- `kalka.createSlot(frame)` makes a frame of a main component a slot and returns its name.
 
 Names the component does not have fail with an error that lists the ones it has.
 

@@ -69,7 +69,7 @@ export {
 } from '@kalka/scene-graph'
 
 export { FigmaAPI, FigmaNodeProxy, computeImageHash, type FigmaFontName } from './figma-api'
-export { BehaviourHandle, OpenPencilAPI, type NodeRef } from './openpencil-api'
+export { BehaviourHandle, KalkaAPI, type NodeRef } from './kalka-api'
 export {
   ALL_TOOLS,
   CORE_TOOLS,
@@ -314,12 +314,12 @@ export {
   parseFigmaClipboard,
   importClipboardNodes,
   figmaNodesBounds,
-  parseOpenPencilClipboard,
+  parseKalkaClipboard,
   buildFigmaClipboardHTML,
-  buildOpenPencilClipboardHTML,
+  buildKalkaClipboardHTML,
   prefetchFigmaSchema,
   type TextPictureBuilder,
-  type OpenPencilClipboardData
+  type KalkaClipboardData
 } from './clipboard'
 export { probeGlyphOutlineCommands, type GlyphOutlineProbe } from './text/opentype'
 

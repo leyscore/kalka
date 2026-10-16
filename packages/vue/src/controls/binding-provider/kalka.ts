@@ -15,7 +15,7 @@ import { useSceneComputed } from '#vue/internal/scene-computed/use'
 
 import { resolveEffectiveBindingValue } from './resolution'
 
-export interface OpenPencilBindingProviderOptions<V> {
+export interface KalkaBindingProviderOptions<V> {
   type: VariableType
   resolve(editor: Editor, variableId: string, target?: BindingTarget): V | undefined
   create?(editor: Editor, target: BindingTarget, value: V, name: string): void
@@ -26,9 +26,9 @@ export interface OpenPencilBindingProviderOptions<V> {
   ): BindingValueEdit<V> | undefined
 }
 
-export function createOpenPencilBindingProvider<V>(
+export function createKalkaBindingProvider<V>(
   editor: Editor,
-  options: OpenPencilBindingProviderOptions<V>,
+  options: KalkaBindingProviderOptions<V>,
   revision?: BindingProvider<V>['revision']
 ): BindingProvider<V> {
   const { contains } = useFilter({ sensitivity: 'base' })
@@ -110,10 +110,10 @@ export function createOpenPencilBindingProvider<V>(
   }
 }
 
-export function useOpenPencilBindingProvider<V>(
-  options: OpenPencilBindingProviderOptions<V>
+export function useKalkaBindingProvider<V>(
+  options: KalkaBindingProviderOptions<V>
 ): BindingProvider<V> {
   const editor = useEditor()
   const revision = useSceneComputed(() => editor.state.sceneVersion)
-  return createOpenPencilBindingProvider(editor, options, revision)
+  return createKalkaBindingProvider(editor, options, revision)
 }

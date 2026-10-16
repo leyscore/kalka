@@ -73,7 +73,7 @@ export const fixtureHTML = `
       <span class="brand">Kalka</span>
       <span class="badge">Beta</span>
     </nav>
-    <input class="input" value="https://openpencil.dev" />
+    <input class="input" value="https://kalka.design" />
   </section>
 `
 

@@ -517,7 +517,7 @@ describe('@kalka/dom-css conversion', () => {
           <span>Kalka</span>
           <span class="${badgeClasses.join(' ')}">Beta</span>
         </nav>
-        <input class="${inputClasses.join(' ')}" value="https://openpencil.dev" />
+        <input class="${inputClasses.join(' ')}" value="https://kalka.design" />
       `),
       await compileTailwindCSS(classes)
     )
@@ -587,7 +587,7 @@ describe('@kalka/dom-css conversion', () => {
     expect(card.inlineStyle?.width).toBe('320px')
     expect(card.inlineStyle?.display).toBe('flex')
     expect(card.inlineStyle?.['flex-direction']).toBe('column')
-    expect(card.attrs['data-open-pencil-node-id']).toBeTruthy()
+    expect(card.attrs['data-kalka-node-id']).toBeTruthy()
 
     const title = card.children[0]
     expect(title?.type).toBe('element')

@@ -101,8 +101,8 @@ export const automationMessageDefaults = {
   connectionEditorDescription:
     'Connect a remote server by its URL or a local server by its command, with optional authentication.',
   connectionName: 'Connection name',
-  connectionNameHint: 'Use a unique name, up to 80 characters. The name open-pencil is reserved.',
-  connectionNameInvalid: 'Choose a unique name of at most 80 characters, other than open-pencil.',
+  connectionNameHint: 'Use a unique name, up to 80 characters. The name kalka is reserved.',
+  connectionNameInvalid: 'Choose a unique name of at most 80 characters, other than kalka.',
   serverURLHint:
     'Use HTTPS. HTTP is allowed only for localhost or a loopback address. Do not include credentials in the URL.',
   serverURL: 'MCP server URL',

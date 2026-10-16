@@ -36,7 +36,7 @@ const sessionSockets = new Map<string, Set<WebSocket>>()
 export function connectAutomation(
   getStore: () => EditorStore,
   authToken: string | null = null,
-  automationURL = __OPENPENCIL_LOCAL_AUTOMATION_URL__
+  automationURL = __KALKA_LOCAL_AUTOMATION_URL__
 ) {
   const token = authToken ?? randomHex(32)
   let ws: WebSocket | null = null

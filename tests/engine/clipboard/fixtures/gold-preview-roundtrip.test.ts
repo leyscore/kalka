@@ -3,10 +3,10 @@ import { readFileSync } from 'node:fs'
 
 import {
   buildFigmaClipboardHTML,
-  buildOpenPencilClipboardHTML,
+  buildKalkaClipboardHTML,
   importClipboardNodes,
   parseFigmaClipboard,
-  parseOpenPencilClipboard,
+  parseKalkaClipboard,
   readFigFile,
   initCodec,
   type SceneNode,
@@ -44,8 +44,8 @@ describe('gold-preview.fig clipboard roundtrip', () => {
   )
 
   it('Kalka format: zero property differences', () => {
-    const html = buildOpenPencilClipboardHTML(topLevelNodes, graph)
-    const parsed = parseOpenPencilClipboard(html)
+    const html = buildKalkaClipboardHTML(topLevelNodes, graph)
+    const parsed = parseKalkaClipboard(html)
     const clipboard = expectDefined(parsed, 'Kalka clipboard')
 
     const origAll = flatten(graph, pageId)
@@ -78,7 +78,7 @@ describe('gold-preview.fig clipboard roundtrip', () => {
   })
 
   it('Kalka format: compressed data is under 1MB', () => {
-    const html = buildOpenPencilClipboardHTML(topLevelNodes, graph)
+    const html = buildKalkaClipboardHTML(topLevelNodes, graph)
     expect(html.length).toBeLessThan(5 * 1024 * 1024)
   })
 

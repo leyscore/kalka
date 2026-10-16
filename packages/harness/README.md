@@ -11,7 +11,7 @@ The first backend uses AI SDK `HarnessAgent`, Pi, and local `just-bash`. Pi runs
 - JSONL stdio sidecar transport.
 - Pi + `just-bash` backend.
 
-The package is installed as an optional companion CLI for the desktop application. It is not bundled into every Tauri build; install `@kalka/harness` globally to make the `openpencil-harness` command available. It runs on Node 22.15 or later, or Bun: Pi's MCP adapter publishes TypeScript sources, which the companion strips through Node's module hooks. Credentials are supplied to the companion process at runtime and are never written to resume-state storage.
+The package is installed as an optional companion CLI for the desktop application. It is not bundled into every Tauri build; install `@kalka/harness` globally to make the `kalka-harness` command available. It runs on Node 22.15 or later, or Bun: Pi's MCP adapter publishes TypeScript sources, which the companion strips through Node's module hooks. Credentials are supplied to the companion process at runtime and are never written to resume-state storage.
 
 ## Local sandbox limitation
 

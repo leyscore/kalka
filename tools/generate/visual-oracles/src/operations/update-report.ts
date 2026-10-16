@@ -9,7 +9,7 @@ const MetricsJSON = v.pipe(
   v.parseJson(),
   v.object({
     figmaSize: v.string(),
-    openPencilSize: v.string(),
+    kalkaSize: v.string(),
     differentPixels: v.number(),
     differentPercent: v.number(),
     fuzz: v.optional(v.string()),
@@ -30,7 +30,7 @@ const ReportJSON = v.pipe(
         nodeId: v.string(),
         output: v.string(),
         figmaSize: v.optional(v.string()),
-        openPencilSize: v.optional(v.string()),
+        kalkaSize: v.optional(v.string()),
         differentPixels: v.optional(v.number()),
         differentPercent: v.optional(v.number()),
         fuzz: v.optional(v.string()),
@@ -63,7 +63,7 @@ const comparison = report.comparisons.find((item) => item.name === opts.name)
 if (!comparison) throw new Error(`No comparison named ${opts.name}`)
 
 comparison.figmaSize = metrics.figmaSize
-comparison.openPencilSize = metrics.openPencilSize
+comparison.kalkaSize = metrics.kalkaSize
 comparison.differentPixels = metrics.differentPixels
 comparison.differentPercent = metrics.differentPercent
 comparison.fuzz = metrics.fuzz

@@ -31,7 +31,7 @@ describe('useAgentSetup', () => {
     })
     const discovery = createAgentDiscovery({
       enabled: true,
-      lookup: async () => lookup('npm', ...(installed ? ['openpencil-harness'] : [])),
+      lookup: async () => lookup('npm', ...(installed ? ['kalka-harness'] : [])),
       install: async () => undefined,
       installHarness
     })
@@ -181,7 +181,7 @@ describe('piSetupView', () => {
 
 describe('usePiSetup', () => {
   test('checks Pi each time the editor switches to it', async () => {
-    const scan = mock(async () => lookup('npm', 'openpencil-harness'))
+    const scan = mock(async () => lookup('npm', 'kalka-harness'))
     const discovery = createAgentDiscovery({
       enabled: true,
       lookup: scan,

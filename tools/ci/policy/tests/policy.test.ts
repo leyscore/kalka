@@ -22,8 +22,8 @@ const documentation = [
   'tools/AGENTS.md',
   'packages/docs/programmable/sdk/api/components/bindable-value.md',
   'packages/docs/public/logo.svg',
-  'skills/open-pencil/SKILL.md',
-  'skills/open-pencil/references/design-authoring.md',
+  'skills/kalka/SKILL.md',
+  'skills/kalka/references/design-authoring.md',
   'openspec/proposal.md'
 ]
 const code = [
@@ -36,7 +36,7 @@ const code = [
   'packages/core/src/AGENTS.md.ts',
   'packages/docs/.vitepress/config.ts',
   'packages/docs/demo.vue',
-  'skills/open-pencil/scripts/create.ts',
+  'skills/kalka/scripts/create.ts',
   'package.json',
   'bun.lock',
   '.github/workflows/ci.yml',

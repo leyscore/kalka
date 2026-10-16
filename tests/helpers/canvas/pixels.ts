@@ -5,7 +5,7 @@ import type { Vector } from '@kalka/scene-graph'
 /** Read freshly painted scene pixels in sRGB, before WebGL discards its drawing buffer. */
 export async function readScenePixels(page: Page, points: readonly Vector[]): Promise<number[][]> {
   return page.evaluate((points) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     const renderer = store?.canvasRenderers.find((candidate) => candidate.tracksSceneSettlement)
     const source = document.querySelector<HTMLCanvasElement>(
       '[data-test-id="scene-canvas-element"]'

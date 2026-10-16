@@ -45,7 +45,7 @@ describe('tool CLI', () => {
   })
 
   test('calls a write tool headlessly and saves the result with --output', async () => {
-    const outPath = join(await mkdtemp(join(tmpdir(), 'open-pencil-tool-')), 'out.fig')
+    const outPath = join(await mkdtemp(join(tmpdir(), 'kalka-tool-')), 'out.fig')
     const created = await cli([
       'tool',
       'call',

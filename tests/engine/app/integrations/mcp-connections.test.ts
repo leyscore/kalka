@@ -128,7 +128,7 @@ describe('MCP connections', () => {
     duplicate.name = 'github'
     duplicate.url = 'https://other.example.com/mcp'
     expect(() => saveMCPConnectionDraft(duplicate)).toThrow('unique')
-    duplicate.name = 'open-pencil'
+    duplicate.name = 'kalka'
     expect(() => saveMCPConnectionDraft(duplicate)).toThrow('reserved')
 
     duplicate.id = 'mcp-../../unsafe' as typeof duplicate.id

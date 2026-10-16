@@ -50,7 +50,7 @@ describe('@kalka/dom-css Tailwind', () => {
   it('converts Tailwind HTML to scene graph frames', async () => {
     const classes = [...tailwindInputClasses]
     const graph = await tailwindHTMLToSceneGraph(
-      `<input class="${classes.join(' ')}" value="https://openpencil.dev" />`,
+      `<input class="${classes.join(' ')}" value="https://kalka.design" />`,
       classes,
       { runtime: createHeadlessCSSRuntime() }
     )

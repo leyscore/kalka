@@ -1,4 +1,4 @@
-import type { OpenPencilWindowAPI } from './app/browser-bridge'
+import type { KalkaWindowAPI } from './app/browser-bridge'
 
 export {}
 
@@ -20,7 +20,7 @@ declare global {
   }
 
   interface Window {
-    openPencil?: OpenPencilWindowAPI
+    kalka?: KalkaWindowAPI
     showOpenFilePicker?(options?: FilePickerOptions): Promise<FileSystemFileHandle[]>
     showSaveFilePicker?(options?: FilePickerOptions): Promise<FileSystemFileHandle>
     mockWindowOpen?(url: string): void

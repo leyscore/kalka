@@ -1,4 +1,4 @@
-title = "OpenPencil Gitleaks configuration"
+title = "Kalka Gitleaks configuration"
 
 [extend]
 useDefault = true

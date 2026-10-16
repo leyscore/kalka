@@ -90,7 +90,7 @@ class ConnectionOAuthProvider implements OAuthClientProvider {
     private readonly record: OAuthRecord
   ) {}
 
-  // eslint-disable-next-line open-pencil/no-mixed-case-acronym-identifiers -- Upstream interface spelling.
+  // eslint-disable-next-line kalka/no-mixed-case-acronym-identifiers -- Upstream interface spelling.
   get redirectUrl(): string | undefined {
     return this.record.redirectURL
   }

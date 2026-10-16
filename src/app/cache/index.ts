@@ -3,7 +3,7 @@ import * as v from 'valibot'
 import { IS_TAURI } from '@kalka/core/constants'
 
 const APP_CACHE_DIR = 'cache/v1'
-const STORAGE_PREFIX = 'open-pencil:cache:v1:'
+const STORAGE_PREFIX = 'kalka:cache:v1:'
 
 const textEncoder = new TextEncoder()
 const textDecoder = new TextDecoder()

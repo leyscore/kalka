@@ -105,7 +105,7 @@ export function createConversationStore(): ConversationStore {
       await transaction.done
     },
     async resolveFile(handle) {
-      return navigator.locks.request('open-pencil-chat-file-identity', async () => {
+      return navigator.locks.request('kalka-chat-file-identity', async () => {
         const db = await getDatabase()
         // isSameEntry is asynchronous and must run outside an IDB transaction.
         const transaction = db.transaction('files')

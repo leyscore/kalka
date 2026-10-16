@@ -1,6 +1,6 @@
 # @kalka/emit
 
-How OpenPencil's exporters emit source code. Build JavaScript, TypeScript, and JSX as ESTree nodes and print them with [esrap](https://github.com/sveltejs/esrap), instead of concatenating strings.
+How Kalka's exporters emit source code. Build JavaScript, TypeScript, and JSX as ESTree nodes and print them with [esrap](https://github.com/sveltejs/esrap), instead of concatenating strings.
 
 ```ts
 import { jsx } from '@kalka/emit'

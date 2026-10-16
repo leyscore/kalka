@@ -1,4 +1,4 @@
-# OpenPencil
+# Kalka
 
 Vue 3 + CanvasKit (Skia WASM) + Yoga WASM design editor. Tauri v2 desktop, also runs in browser. Bun workspace monorepo.
 
@@ -15,7 +15,7 @@ This file holds the repository map and the rules that apply everywhere. Rules fo
 | `packages/core`        | Renderer, layout, editor, Figma API, tools, clipboard, vector conversion, document I/O; depends on scene-graph and the format packages (pen, kiwi, fig, dom-css, design-jsx); no browser DOM      | `packages/core/AGENTS.md`         |
 | `packages/dom-css`     | DOM/CSS/HTML/JSX/Tailwind projection and browser/headless adapters; depends only on scene-graph and emit, and takes engine services such as web-font resolution as injected options               | `packages/dom-css/AGENTS.md`      |
 | `packages/emit`        | Source emission for exporters: ESTree and JSX builders, template filling, and esrap printing, with the literal rules that keep exported strings from being reinterpreted                          | —                                 |
-| `packages/design-jsx`  | OpenPencil design JSX: elements, paint/effect helpers, variables, schema and authoring reference, JSX export, and a renderer that takes icons, SVG, and layout as injected services               | `packages/design-jsx/AGENTS.md`   |
+| `packages/design-jsx`  | Kalka design JSX: elements, paint/effect helpers, variables, schema and authoring reference, JSX export, and a renderer that takes icons, SVG, and layout as injected services               | `packages/design-jsx/AGENTS.md`   |
 | `packages/vue`         | Headless Vue 3 SDK primitives, composables, commands, i18n, menu model                                                                                                                            | `packages/vue/AGENTS.md`          |
 | `packages/cli`         | Headless `.fig` inspection, export, linting, `eval`                                                                                                                                               | `packages/cli/AGENTS.md`          |
 | `packages/mcp`         | stdio and Hono HTTP MCP server reusing Core tools                                                                                                                                                 | `packages/mcp/AGENTS.md`          |
@@ -25,19 +25,19 @@ This file holds the repository map and the rules that apply everywhere. Rules fo
 | `desktop`              | Tauri v2 shell, capabilities, native credentials, menus                                                                                                                                           | `desktop/AGENTS.md`               |
 | `tests`                | Central app, integration, E2E, native, and Figma acceptance tests                                                                                                                                 | `tests/AGENTS.md`                 |
 | `tools`, `.github`     | Private repo tooling, CI classification, releases, brand generation                                                                                                                               | `tools/AGENTS.md`                 |
-| `skills/open-pencil`   | Installable agent skill                                                                                                                                                                           | `packages/core/AGENTS.md` (Tools) |
+| `skills/kalka`   | Installable agent skill                                                                                                                                                                           | `packages/core/AGENTS.md` (Tools) |
 | `assets/brand`         | Canonical brand artwork                                                                                                                                                                           | `assets/brand/README.md`          |
 
 ## Commands
 
-- `bun run dev:portless` — preferred browser server at `https://open-pencil.localhost`; worktrees get `https://<branch>.open-pencil.localhost` and a sibling `mcp.open-pencil` URL with isolated runtime discovery.
+- `bun run dev:portless` — preferred browser server at `https://kalka.localhost`; worktrees get `https://<branch>.kalka.localhost` and a sibling `mcp.kalka` URL with isolated runtime discovery.
 - `bun run dev` — fixed `http://localhost:1420`; use only for Playwright, Tauri, and Dev Containers.
 - `bun run tauri dev` — desktop app with hot reload.
 - A fresh worktree needs `bun install` and `bun run build:packages` before docs, Storybook, or any workflow that resolves workspace subpath exports; without the package builds those resolve to missing `packages/*/dist` targets.
 - `bun run check` — complete build, lint, type, architecture, docs, package, dependency, security, tooling, and duplication gate.
 - `bun run format` — format and sort imports.
 - `bun run test:unit` / `bun run test` / `bun run test:storybook` — engine/unit, app Playwright, and Storybook Playwright suites. See `tests/AGENTS.md` for server selection and worktree ports.
-- `bun open-pencil --help` — current CLI command list.
+- `bun kalka --help` — current CLI command list.
 
 Before a PR run `bun run check`, `bun run format`, `bun run test:unit`, and `bun run test`.
 
@@ -46,7 +46,7 @@ Before a PR run `bun run check`, `bun run format`, `bun run test:unit`, and `bun
 - Across package/app boundaries import the owning package's public exports, never workspace internals or forwarding-only shims. `@kalka/scene-graph` owns graph types and primitives; `@kalka/kiwi` owns low-level Kiwi/FIG helpers; `@kalka/core` provides the compatibility barrel plus the subpaths listed in `packages/core/package.json`.
 - `bun run check:arch` enforces: public workspace exports, framework-neutral Core, no app services in views or shared UI, property-panel internals scoped to that panel.
 - Package aliases are `#core/*`, `#fig/*`, `#vue/*`, `#cli/*`, `#mcp/*`, `#dom-css/*`, `#design-jsx/*`, `#emit/*`; a package's own tests use `#core-tests/*`, `#fig-tests/*`, and `#dom-css-tests/*`; the app uses `@/`. Prefer clear relative imports nearby. Never escape an alias root with `../` (for example `#tests/../vite`); fix module ownership instead.
-- Never drill with `../../`: one `../` to a sibling folder is fine, two or more means an alias. This holds in tests as much as in source — a test reaches its package's source through `#<pkg>/*` and its own helpers through `#<pkg>-tests/*`. `open-pencil/no-deep-parent-relative-imports` enforces it for imports and `open-pencil/no-deep-parent-relative-paths` for paths built from `import.meta`; a new test directory must be added to `lint:structure` so the rules reach it.
+- Never drill with `../../`: one `../` to a sibling folder is fine, two or more means an alias. This holds in tests as much as in source — a test reaches its package's source through `#<pkg>/*` and its own helpers through `#<pkg>-tests/*`. `kalka/no-deep-parent-relative-imports` enforces it for imports and `kalka/no-deep-parent-relative-paths` for paths built from `import.meta`; a new test directory must be added to `lint:structure` so the rules reach it.
 - Reuse named types from `@kalka/scene-graph`; do not respell `Color`, `Vector`, `SceneNode`, `Effect`, `Fill`, or `Stroke`.
 
 ## Code conventions
@@ -56,9 +56,9 @@ Before a PR run `bun run check`, `bun run format`, `bun run test:unit`, and `bun
 - No `any`, non-null assertions, or `Math.random()`; use precise types, guards, and `crypto.getRandomValues()` — through `randomHex`, `randomInt`, and `randomIndex` from `@kalka/scene-graph/random` rather than new copies. New component property IDs come from `createComponentPropertyId()`, and graph entity IDs from the `SceneGraph`'s generator (`createNode`, `createCollection`, `createMode`).
 - Valibot for first-party runtime validation. Keep Zod only where an upstream dependency requires it; never maintain parallel first-party schemas in both.
 - Use existing dependencies before writing utilities: `culori` for color conversion, VueUse for browser, event, focus, clipboard, storage, and timer behavior (one-shot rAF or service-owned timers are fine when clearer), `dedent` for multiline prompt composition and embedded examples. Keep substantial prompt prose in the owning Markdown source and compose it.
-- Reach for `es-toolkit` before hand-writing a collection or object helper: `uniq`/`uniqBy` over `Set` round trips, `compact` over `filter(Boolean)`, `groupBy`/`keyBy`/`partition`/`countBy` over accumulator loops, `pick`/`omit`/`mapValues`/`mapKeys` over rewriting `Object.entries`, `isEmptyObject`/`isEqual` over manual checks. Keep native code where it is a single clear call (`map`, `some`, `Object.fromEntries` of a direct mapping) or on a measured hot path such as per-frame rendering and layout. `open-pencil/prefer-es-toolkit` enforces the `uniq` and `compact` cases.
-- Use `js-base64` directly for Base64: `fromUint8Array`/`toUint8Array` for bytes, `encode`/`decode` for text, and `isValid` before decoding input from outside (clipboard, imported files, tool arguments). Do not wrap it or use `atob`, `btoa`, or `Buffer` Base64 conversions; `open-pencil/no-hand-rolled-base64` enforces this.
-- Parse JSON from outside the process (clipboard, files, network, storage, tool arguments) with `v.safeParse(v.pipe(v.string(), v.parseJson(), Schema), text)`, so malformed JSON and a wrong shape fail the same way. Never assert a type on a `JSON.parse` or `.json()` result other than `unknown`; `open-pencil/no-unvalidated-json-parse` enforces this in source, tests, and tooling.
+- Reach for `es-toolkit` before hand-writing a collection or object helper: `uniq`/`uniqBy` over `Set` round trips, `compact` over `filter(Boolean)`, `groupBy`/`keyBy`/`partition`/`countBy` over accumulator loops, `pick`/`omit`/`mapValues`/`mapKeys` over rewriting `Object.entries`, `isEmptyObject`/`isEqual` over manual checks. Keep native code where it is a single clear call (`map`, `some`, `Object.fromEntries` of a direct mapping) or on a measured hot path such as per-frame rendering and layout. `kalka/prefer-es-toolkit` enforces the `uniq` and `compact` cases.
+- Use `js-base64` directly for Base64: `fromUint8Array`/`toUint8Array` for bytes, `encode`/`decode` for text, and `isValid` before decoding input from outside (clipboard, imported files, tool arguments). Do not wrap it or use `atob`, `btoa`, or `Buffer` Base64 conversions; `kalka/no-hand-rolled-base64` enforces this.
+- Parse JSON from outside the process (clipboard, files, network, storage, tool arguments) with `v.safeParse(v.pipe(v.string(), v.parseJson(), Schema), text)`, so malformed JSON and a wrong shape fail the same way. Never assert a type on a `JSON.parse` or `.json()` result other than `unknown`; `kalka/no-unvalidated-json-parse` enforces this in source, tests, and tooling.
 - Browser-shipped code targets the supported browser baseline in `src/app/shell/support/baseline.ts`: TypeScript `lib` stays ES2023 and `compat/compat` rejects missing Web APIs; Node-only packages (`cli`, `mcp`, `harness`) are exempt. Details in `src/AGENTS.md` (Browser baseline).
 - Components must not hold module-level mutable state. Name repeated or cross-feature constants; app-wide values belong in `src/constants.ts`.
 - Window API augmentations belong to the owning compilation boundary: `src/global.d.ts` for the app, the package's `global.d.ts` for package DOM gaps, `tests/helpers/tauri/native-global.d.ts` for native tests. Never put `declare global` in specs or implementation modules; include canonical declarations through tsconfig. Keep app API contracts named and owned by their implementation domain; derive vendor API types from top-level type imports. Optional runtime globals stay optional and need a runtime guard.

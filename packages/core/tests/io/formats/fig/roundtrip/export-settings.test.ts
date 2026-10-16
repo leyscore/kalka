@@ -111,7 +111,7 @@ describe('fig roundtrip export settings', () => {
 
     expect(
       exportedRect?.pluginData?.some(
-        (entry) => entry.pluginID === 'open-pencil' && entry.key === 'exportSettings'
+        (entry) => entry.pluginID === 'kalka' && entry.key === 'exportSettings'
       ) ?? false
     ).toBe(false)
   })

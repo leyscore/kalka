@@ -24,7 +24,7 @@ if (!manifestPath) {
   process.exit(1)
 }
 const manifest = readVisualOracleManifest(manifestPath)
-const outputDir = resolve(values.output ?? manifest.output ?? '/tmp/open-pencil-document-oracle')
+const outputDir = resolve(values.output ?? manifest.output ?? '/tmp/kalka-document-oracle')
 mkdirSync(outputDir, { recursive: true })
 const bytes = await Bun.file(resolve(manifest.document)).bytes()
 const browser = await chromium.launch({ headless: !values.headed })
@@ -45,9 +45,9 @@ try {
     `${manifest.appURL}${manifest.appURL.includes('?') ? '&' : '?'}test&no-chrome&no-rulers&navigation-benchmark`
   )
   await page.locator('[data-test-id="canvas-element"][data-ready="1"]').waitFor({ timeout: 30_000 })
-  await page.evaluate((path) => window.openPencil?.openFile?.(path), documentPath)
+  await page.evaluate((path) => window.kalka?.openFile?.(path), documentPath)
   await page.waitForFunction(
-    () => window.openPencil?.getStore?.().state.preparation == null,
+    () => window.kalka?.getStore?.().state.preparation == null,
     undefined,
     {
       timeout: 120_000
@@ -71,8 +71,8 @@ async function compareTarget(page: Page, target: VisualOracleTarget) {
   const targetDir = `${outputDir}/${stem}`
   mkdirSync(targetDir, { recursive: true })
   const figmaPath = `${targetDir}/figma.png`
-  const openPencilPath = `${targetDir}/openpencil.png`
-  const normalizedPath = `${targetDir}/openpencil-normalized.png`
+  const kalkaPath = `${targetDir}/kalka.png`
+  const normalizedPath = `${targetDir}/kalka-normalized.png`
   const diffPath = `${targetDir}/diff.png`
   const heatmapPath = `${targetDir}/heatmap.png`
   const scale = target.scale ?? 1
@@ -80,7 +80,7 @@ async function compareTarget(page: Page, target: VisualOracleTarget) {
     await $`figma-use export node ${target.figmaNodeId} --output ${figmaPath} --scale ${String(scale)}`.quiet()
   }
 
-  const metadata = await captureOpenPencilTarget(page, target, openPencilPath, scale)
+  const metadata = await captureKalkaTarget(page, target, kalkaPath, scale)
   if (metadata.pageRoots < (target.minimumPageRoots ?? 1)) {
     throw new Error(
       `${target.page} has ${metadata.pageRoots} roots; expected at least ${target.minimumPageRoots ?? 1}`
@@ -94,10 +94,10 @@ async function compareTarget(page: Page, target: VisualOracleTarget) {
   }
 
   const figmaSize = await imageSize(figmaPath)
-  const openPencilSize = await imageSize(openPencilPath)
-  const comparePath = figmaSize === openPencilSize ? openPencilPath : normalizedPath
+  const kalkaSize = await imageSize(kalkaPath)
+  const comparePath = figmaSize === kalkaSize ? kalkaPath : normalizedPath
   if (comparePath === normalizedPath) {
-    await $`magick ${openPencilPath} -background none -gravity northwest -extent ${figmaSize} ${normalizedPath}`.quiet()
+    await $`magick ${kalkaPath} -background none -gravity northwest -extent ${figmaSize} ${normalizedPath}`.quiet()
   }
   const fuzz = target.fuzz ?? '2%'
   const difference =
@@ -116,7 +116,7 @@ async function compareTarget(page: Page, target: VisualOracleTarget) {
   const metrics = {
     target,
     figmaSize,
-    openPencilSize,
+    kalkaSize,
     metadata,
     fuzz,
     differentPixels: pixels,
@@ -128,7 +128,7 @@ async function compareTarget(page: Page, target: VisualOracleTarget) {
   return metrics
 }
 
-async function captureOpenPencilTarget(
+async function captureKalkaTarget(
   page: Page,
   target: VisualOracleTarget,
   outputPath: string,
@@ -136,14 +136,14 @@ async function captureOpenPencilTarget(
 ) {
   const metadata = await page.evaluate(
     async ({ target, scale }) => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Kalka store unavailable')
       const pageNode = store.graph.getPages().find((candidate) => candidate.name === target.page)
       if (!pageNode) throw new Error(`Kalka page missing: ${target.page}`)
       await store.switchPage(pageNode.id)
       const pageRoots = store.graph.getChildren(pageNode.id)
-      const node = target.openPencilNodeId
-        ? store.graph.getNode(target.openPencilNodeId)
+      const node = target.kalkaNodeId
+        ? store.graph.getNode(target.kalkaNodeId)
         : [...store.graph.getAllNodes()].find(
             (candidate) => candidate.name === target.node && candidate.parentId === pageNode.id
           )
@@ -162,7 +162,7 @@ async function captureOpenPencilTarget(
           requestAnimationFrame(() => resolveFrame())
         })
       })
-      await window.openPencil?.test?.navigation?.waitForSettlement()
+      await window.kalka?.test?.navigation?.waitForSettlement()
       return {
         pageId: pageNode.id,
         nodeId: node.id,

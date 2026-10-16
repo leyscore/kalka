@@ -371,7 +371,7 @@ export type {
 export {
   provideBindingProvider,
   useBindingProvider,
-  useOpenPencilBindingProvider,
+  useKalkaBindingProvider,
   useNumberBindingProvider,
   useColorBindingProvider
 } from '#vue/controls/binding-provider'
@@ -381,7 +381,7 @@ export type {
   BindingState,
   BindingTarget,
   BoundEditPolicy,
-  OpenPencilBindingProviderOptions
+  KalkaBindingProviderOptions
 } from '#vue/controls/binding-provider'
 export {
   NumberFieldRoot,

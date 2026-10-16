@@ -21,7 +21,7 @@ test('Fig clipboard codec preserves prepared node changes and binary blobs', asy
     123
   )
   const parsed = await parseFigmaClipboard(html)
-  expect(parsed?.meta).toEqual({ fileKey: 'openpencil', pasteID: 123, dataType: 'scene' })
+  expect(parsed?.meta).toEqual({ fileKey: 'kalka', pasteID: 123, dataType: 'scene' })
   expect(parsed?.nodes[0]).toMatchObject({ name: 'Prepared rectangle', size: { x: 100, y: 80 } })
   expect(parsed?.blobs[0]).toEqual(bytes)
   expect(parsed?.blobs[0]).toBeInstanceOf(Uint8Array)

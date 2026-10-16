@@ -293,22 +293,22 @@
         "pairedRowCount": 6,
         "avgDeltaY": 0,
         "avgDeltaFirstX": 0,
-        "missingOpenPencilRows": 0,
-        "extraOpenPencilRows": 0
+        "missingKalkaRows": 0,
+        "extraKalkaRows": 0
       },
       "CENTER": {
         "pairedRowCount": 6,
         "avgDeltaY": 3,
         "avgDeltaFirstX": -0.5,
-        "missingOpenPencilRows": 1,
-        "extraOpenPencilRows": 0
+        "missingKalkaRows": 1,
+        "extraKalkaRows": 0
       },
       "END": {
         "pairedRowCount": 6,
         "avgDeltaY": -6.67,
         "avgDeltaFirstX": -0.5,
-        "missingOpenPencilRows": 0,
-        "extraOpenPencilRows": 0
+        "missingKalkaRows": 0,
+        "extraKalkaRows": 0
       }
     }
   }

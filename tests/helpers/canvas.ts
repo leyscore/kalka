@@ -45,7 +45,7 @@ export class CanvasHelper {
    */
   async useLightPage() {
     await this.page.evaluate(() => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) return
       const pages = store.graph.getPages()
       const [first] = pages

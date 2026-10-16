@@ -104,7 +104,7 @@ if (!remote.isDraft || !isEqual(remoteNames, names)) {
   throw new Error('Uploaded asset set mismatch')
 }
 
-const temporary = await mkdtemp(join(tmpdir(), 'open-pencil-release-verify-'))
+const temporary = await mkdtemp(join(tmpdir(), 'kalka-release-verify-'))
 
 try {
   await github(

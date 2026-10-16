@@ -18,7 +18,7 @@ async function expectCanvas(name: string) {
  */
 async function createCards() {
   return editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const graph = store.graph
     const pageId = store.state.currentPageId
@@ -104,7 +104,7 @@ async function createCards() {
 async function show(selected: string[], hovered: string | null) {
   await editor.page.evaluate(
     ({ selected, hovered }) => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Kalka store not initialized')
       store.select(selected)
       store.setHoveredNode(hovered)
@@ -118,7 +118,7 @@ async function show(selected: string[], hovered: string | null) {
 async function at(id: string, dx: number, dy: number) {
   return editor.page.evaluate(
     ({ id, dx, dy }) => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Kalka store not initialized')
       const abs = store.graph.getAbsolutePosition(id)
       const { zoom, panX, panY } = store.state
@@ -163,13 +163,13 @@ test('outlines step aside while a layer moves', async () => {
   await editor.page.mouse.down()
   await editor.page.mouse.move(box.x + from.x + 4, box.y + from.y + 4, { steps: 4 })
   await expect
-    .poll(() => editor.page.evaluate(() => window.openPencil?.getStore?.().state.transforming))
+    .poll(() => editor.page.evaluate(() => window.kalka?.getStore?.().state.transforming))
     .toBe(true)
   await editor.canvas.waitForRender()
   await expectCanvas('layout-outlines-moving-child')
 
   await editor.page.mouse.up()
   await expect
-    .poll(() => editor.page.evaluate(() => window.openPencil?.getStore?.().state.transforming))
+    .poll(() => editor.page.evaluate(() => window.kalka?.getStore?.().state.transforming))
     .toBe(false)
 })

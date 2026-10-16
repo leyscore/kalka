@@ -70,14 +70,12 @@ function isSerializedElement(value: unknown): value is SerializedDesignJSXElemen
 }
 
 function isHelper(value: unknown): value is DesignJSXHelperDescriptor {
-  return (
-    isRecord(value) && typeof value.__openPencilHelper === 'string' && Array.isArray(value.args)
-  )
+  return isRecord(value) && typeof value.__kalkaHelper === 'string' && Array.isArray(value.args)
 }
 
 function convertValue(value: unknown): unknown {
   if (isHelper(value)) {
-    const helperName = value.__openPencilHelper
+    const helperName = value.__kalkaHelper
     const helper = Object.hasOwn(HELPERS, helperName)
       ? (HELPERS[helperName as HelperName] as (...args: unknown[]) => unknown)
       : undefined

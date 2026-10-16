@@ -4,7 +4,7 @@ const editor = useEditorSetupWithClear('/?test&no-chrome&no-rulers')
 
 async function pageChildren() {
   return editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const page = store.graph.getNode(store.state.currentPageId)
     if (!page) throw new Error('Current page not found')

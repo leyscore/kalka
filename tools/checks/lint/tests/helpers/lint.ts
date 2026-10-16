@@ -21,7 +21,7 @@ export async function lint(
   relativePath = 'fixture.ts'
 ): Promise<Diagnostic[]> {
   const root = await resolveWorkspaceRoot(import.meta.dir)
-  const directory = await mkdtemp(join(tmpdir(), 'open-pencil-lint-'))
+  const directory = await mkdtemp(join(tmpdir(), 'kalka-lint-'))
   try {
     const sourcePath = join(directory, relativePath)
     const configPath = join(directory, 'oxlint.json')
@@ -58,5 +58,5 @@ export async function lint(
 }
 
 export function ruleDiagnostics(diagnostics: Diagnostic[], rule: string): Diagnostic[] {
-  return diagnostics.filter((diagnostic) => diagnostic.code === `open-pencil(${rule})`)
+  return diagnostics.filter((diagnostic) => diagnostic.code === `kalka(${rule})`)
 }

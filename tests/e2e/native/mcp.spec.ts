@@ -118,7 +118,7 @@ describe('native MCP server lifecycle', () => {
 
   it('uses the server it resolves, or reports why it cannot', async () => {
     await browser.waitUntil(
-      async () => browser.execute(() => Boolean(window.openPencil?.getStore?.())),
+      async () => browser.execute(() => Boolean(window.kalka?.getStore?.())),
       { timeout: 30_000, timeoutMsg: 'Kalka editor did not initialize' }
     )
     await openMCPSettings()
@@ -147,7 +147,7 @@ describe('native MCP server lifecycle', () => {
     }
 
     await waitForStatus('Running')
-    const discoveryPath = process.env.OPENPENCIL_MCP_DISCOVERY_PATH
+    const discoveryPath = process.env.KALKA_MCP_DISCOVERY_PATH
     assert.ok(discoveryPath, 'discovery path missing from the wdio configuration')
     const discovery = v.parse(DiscoveryFileJSON, readFileSync(discoveryPath, 'utf8'))
     assert.ok(discovery.authToken, 'discovery file omitted the auth token')

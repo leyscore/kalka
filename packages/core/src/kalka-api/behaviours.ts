@@ -89,7 +89,7 @@ export class BehaviourHandle {
     return this.stored.kind
   }
 
-  /** The behaviour with properties and slots by name, as `openpencil.setBehaviour` takes it. */
+  /** The behaviour with properties and slots by name, as `kalka.setBehaviour` takes it. */
   get spec(): BehaviourSpec {
     return behaviourToSpec(this.graph, this.owner, this.stored)
   }

@@ -26,7 +26,7 @@ interface BisectResult {
   names: string[]
   metrics: DiffMetrics
   figmaPath: string
-  openPencilPath: string
+  kalkaPath: string
 }
 
 const { values, positionals } = parseArgs({
@@ -34,7 +34,7 @@ const { values, positionals } = parseArgs({
   options: {
     page: { type: 'string', short: 'p' },
     'figma-page-id': { type: 'string' },
-    output: { type: 'string', short: 'o', default: '/tmp/open-pencil-visual-bisect' },
+    output: { type: 'string', short: 'o', default: '/tmp/kalka-visual-bisect' },
     scale: { type: 'string', default: '1' },
     threshold: { type: 'string', default: '0.25' },
     depth: { type: 'string', default: '8' },
@@ -51,7 +51,7 @@ if (!figPath || !values.page || !values['figma-page-id']) {
   bun tools/generate/visual-oracles/src/cli.ts bisect <file.fig> --page Primitives --figma-page-id 1:22 [options]
 
 Options:
-  --output DIR          Output directory (default: /tmp/open-pencil-visual-bisect)
+  --output DIR          Output directory (default: /tmp/kalka-visual-bisect)
   --scale N             Export scale (default: 1)
   --threshold PERCENT   Stop splitting groups under this >40 diff percent (default: 0.25)
   --depth N             Max bisection depth (default: 8)
@@ -71,7 +71,7 @@ What it does:
 
 const pageName = values.page
 const figmaPageId = values['figma-page-id']
-const outputDir = values.output ?? '/tmp/open-pencil-visual-bisect'
+const outputDir = values.output ?? '/tmp/kalka-visual-bisect'
 const scale = Number(values.scale ?? '1')
 const threshold = Number(values.threshold ?? '0.25')
 const maxDepth = Number(values.depth ?? '8')
@@ -153,22 +153,22 @@ async function bisect(indices: number[], depth: number): Promise<void> {
 async function compareSubset(indices: number[], depth: number): Promise<BisectResult> {
   const stem = `d${depth}-${indices[0]}-${indices.at(-1)}-${indices.length}`
   const figmaPath = `${outputDir}/${stem}-figma.png`
-  const openPencilPath = `${outputDir}/${stem}-open-pencil.png`
+  const kalkaPath = `${outputDir}/${stem}-kalka.png`
 
   await exportFigmaSubset(figmaRootId, indices, figmaPath)
-  await exportOpenPencilSubset(indices, openPencilPath)
+  await exportKalkaSubset(indices, kalkaPath)
 
   return {
     depth,
     indices,
     names: indices.map((index) => childNames[index]),
-    metrics: await diffImages(figmaPath, openPencilPath),
+    metrics: await diffImages(figmaPath, kalkaPath),
     figmaPath,
-    openPencilPath
+    kalkaPath
   }
 }
 
-async function exportOpenPencilSubset(indices: number[], path: string): Promise<void> {
+async function exportKalkaSubset(indices: number[], path: string): Promise<void> {
   const indexSet = new Set(indices)
   const changed: Array<{ id: string; visible: boolean }> = []
   for (let index = 0; index < childIds.length; index++) {
@@ -307,7 +307,7 @@ async function writeReport(items: BisectResult[]): Promise<void> {
 
   for (const item of items) {
     lines.push(
-      `| ${item.depth} | ${item.indices.join(',')} | ${item.metrics.above40.toFixed(3)}% | ${item.metrics.above20.toFixed(3)}% | ${item.metrics.mean.toFixed(3)} | ${item.names.map(escapePipes).join('<br>')} | [figma](${item.figmaPath}) / [open-pencil](${item.openPencilPath}) |`
+      `| ${item.depth} | ${item.indices.join(',')} | ${item.metrics.above40.toFixed(3)}% | ${item.metrics.above20.toFixed(3)}% | ${item.metrics.mean.toFixed(3)} | ${item.names.map(escapePipes).join('<br>')} | [figma](${item.figmaPath}) / [kalka](${item.kalkaPath}) |`
     )
   }
 

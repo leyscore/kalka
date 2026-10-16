@@ -171,7 +171,7 @@ export const CodingAgentNeedsAdapter: Story = {
     await expect(canvas.getByRole('button', { name: 'Install MCP server' })).toBeVisible()
     await expect(canvas.getByRole('link', { name: /Setup guide/ })).toHaveAttribute(
       'href',
-      'https://openpencil.dev/programmable/coding-agents#codex'
+      'https://github.com/leyscore/kalka/blob/main/packages/docs/programmable/coding-agents.md#codex'
     )
   }
 }

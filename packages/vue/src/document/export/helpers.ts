@@ -7,7 +7,7 @@ import {
   EXPORT_FORMAT_IDS,
   MAX_EXPORT_SCALE,
   MIN_EXPORT_SCALE,
-  OPEN_PENCIL_PLUGIN_DATA,
+  KALKA_PLUGIN_DATA,
   clampExportScale,
   withPluginData
 } from '@kalka/scene-graph'
@@ -125,7 +125,7 @@ function syncExportSettingsPluginData(
 ): PluginDataEntry[] {
   return withPluginData(
     pluginData,
-    OPEN_PENCIL_PLUGIN_DATA.exportSettings,
+    KALKA_PLUGIN_DATA.exportSettings,
     settings.length > 0 ? settings : undefined
   )
 }

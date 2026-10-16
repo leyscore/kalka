@@ -2,7 +2,7 @@ import { Buffer } from 'node:buffer'
 import { resolve } from 'node:path'
 
 import type { McpServer, ToolCallback, ToolAnnotations } from '@modelcontextprotocol/server'
-// eslint-disable-next-line open-pencil/no-mixed-case-acronym-identifiers -- Upstream export spelling.
+// eslint-disable-next-line kalka/no-mixed-case-acronym-identifiers -- Upstream export spelling.
 import { toStandardJsonSchema as toStandardJSONSchema } from '@valibot/to-json-schema'
 import * as v from 'valibot'
 
@@ -109,7 +109,7 @@ export function registerTools(mcpServer: McpServer, options: RegisterToolsOption
         description: toolOptions.description ?? descriptor.description,
         inputSchema: toStandardJSONSchema(toolOptions.inputSchema),
         annotations: toolAnnotations(descriptor.effect),
-        _meta: { 'openpencil/capabilities': descriptor.capabilities }
+        _meta: { 'kalka/capabilities': descriptor.capabilities }
       },
       handler
     )

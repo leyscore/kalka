@@ -6,7 +6,7 @@ import { CanvasHelper } from '#tests/helpers/canvas'
 
 async function observeScenePixels(page: Page) {
   return page.evaluateHandle(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     const renderer = store?.canvasRenderers.find((r) => r.tracksSceneSettlement)
     const node = store?.getSelectedNodes()[0]
     const scene = document.querySelector<HTMLCanvasElement>('[data-test-id="scene-canvas-element"]')
@@ -55,7 +55,7 @@ for (const renderer of ['retained', 'tiled'] as const) {
     const canvas = new CanvasHelper(page)
     await canvas.waitForInit()
     await page.evaluate(() => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Editor unavailable')
       const node = store.graph.createNode('RECTANGLE', store.state.currentPageId, {
         x: 300,
@@ -67,7 +67,7 @@ for (const renderer of ['retained', 'tiled'] as const) {
       store.select([node.id])
       store.requestRender()
     })
-    await page.evaluate(() => window.openPencil?.test?.navigation?.waitForSettlement())
+    await page.evaluate(() => window.kalka?.test?.navigation?.waitForSettlement())
     const box = expectDefined(await canvas.canvas.boundingBox(), 'canvas bounds')
     const x = box.x + 300
     const y = box.y + 250
@@ -81,10 +81,10 @@ for (const renderer of ['retained', 'tiled'] as const) {
     } finally {
       await page.keyboard.up('Control')
     }
-    await page.evaluate(() => window.openPencil?.test?.navigation?.waitForSettlement())
+    await page.evaluate(() => window.kalka?.test?.navigation?.waitForSettlement())
     expect(
       await page.evaluate(() =>
-        window.openPencil
+        window.kalka
           ?.getStore?.()
           .canvasRenderers.some((r) => r.tracksSceneSettlement && r.scenePicture !== null)
       )
@@ -104,7 +104,7 @@ for (const renderer of ['retained', 'tiled'] as const) {
         await canvas.waitForRender()
       }
       await page.keyboard.up('Control')
-      await page.evaluate(() => window.openPencil?.test?.navigation?.waitForSettlement())
+      await page.evaluate(() => window.kalka?.test?.navigation?.waitForSettlement())
       const samples = await probe.evaluate((p) => p.samples())
       expect(samples.length).toBeGreaterThan(4)
       expect(samples.some((sample) => sample.zoom < 0.3)).toBe(true)

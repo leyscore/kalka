@@ -32,7 +32,7 @@ const {
   /** The person's name in the room, generated until they set one. */
   name: string
   copied?: boolean
-  /** An `openpencil://join` link, offered in desktop browsers. */
+  /** An `kalka://join` link, offered in desktop browsers. */
   desktopLink?: string | null
   /** Where to get the desktop app, offered beside `desktopLink`. */
   downloadURL?: string | null

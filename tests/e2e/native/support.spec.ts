@@ -6,7 +6,7 @@ import { nativeOSFacts } from '#tests/helpers/tauri/os'
 describe('native support facts', () => {
   it('boots through the support gate into the editor', async () => {
     await browser.waitUntil(
-      async () => browser.execute(() => Boolean(window.openPencil?.getStore?.())),
+      async () => browser.execute(() => Boolean(window.kalka?.getStore?.())),
       { timeout: 30_000, timeoutMsg: 'Kalka editor did not initialize' }
     )
     const notice = await browser.execute(() => Boolean(document.querySelector('#boot-notice')))

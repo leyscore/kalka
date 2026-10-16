@@ -29,7 +29,7 @@ const FORMAT_LIST = `${FORMAT_IDS.slice(0, -1).join(', ')}, or ${FORMAT_IDS.at(-
 function formatSupportsScale(format: string): boolean {
   return io.getFormat(format.toLowerCase())?.exportOptions?.scale ?? false
 }
-const JSX_STYLES = new Set(['openpencil', 'tailwind'])
+const JSX_STYLES = new Set(['kalka', 'tailwind'])
 const HTML_STYLES = new Set(['inline', 'tailwind'])
 const HTML_MODES = new Set(['fragment', 'standalone'])
 const HTML_ASSETS = new Set(['inline', 'external'])
@@ -308,8 +308,8 @@ export default defineCommand({
     },
     style: {
       type: 'string',
-      description: 'JSX style: openpencil or tailwind (default: openpencil)',
-      default: 'openpencil'
+      description: 'JSX style: kalka or tailwind (default: kalka)',
+      default: 'kalka'
     },
     html: {
       type: 'string',
@@ -367,7 +367,7 @@ export default defineCommand({
     }
 
     if (format === 'JSX' && !JSX_STYLES.has(args.style)) {
-      printError(`Invalid JSX style "${args.style}". Use openpencil or tailwind.`)
+      printError(`Invalid JSX style "${args.style}". Use kalka or tailwind.`)
       process.exit(1)
     }
 

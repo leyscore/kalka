@@ -9,7 +9,7 @@ import { FileSystemLibraryCatalog } from '@kalka/cli/library'
 
 describe('filesystem library catalog', () => {
   test('publishes and restores revisions under a bounded root', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'open-pencil-libraries-'))
+    const root = await mkdtemp(join(tmpdir(), 'kalka-libraries-'))
     const graph = new SceneGraph()
     graph.createNode('COMPONENT', graph.getPages()[0].id, {
       name: 'Button',
@@ -28,7 +28,7 @@ describe('filesystem library catalog', () => {
   })
 
   test('rejects traversal and preserves malformed indexes', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'open-pencil-libraries-'))
+    const root = await mkdtemp(join(tmpdir(), 'kalka-libraries-'))
     const catalog = new FileSystemLibraryCatalog(root)
     await expect(catalog.getRevision('../outside')).rejects.toThrow('Invalid catalog path')
     await Bun.write(join(root, 'libraries.json'), '{invalid')
@@ -42,7 +42,7 @@ describe('filesystem library catalog', () => {
   })
 
   test('restores image bytes from stored revisions', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'open-pencil-libraries-'))
+    const root = await mkdtemp(join(tmpdir(), 'kalka-libraries-'))
     const graph = new SceneGraph()
     graph.images.set('image-hash', new Uint8Array([1, 2, 3]))
     graph.createNode('COMPONENT', graph.getPages()[0].id, {
@@ -66,7 +66,7 @@ describe('filesystem library catalog', () => {
   })
 
   test('rejects revisions that are malformed or fail integrity validation', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'open-pencil-libraries-'))
+    const root = await mkdtemp(join(tmpdir(), 'kalka-libraries-'))
     const graph = new SceneGraph()
     graph.createNode('COMPONENT', graph.getPages()[0].id, {
       name: 'Button',
@@ -94,7 +94,7 @@ describe('filesystem library catalog', () => {
   })
 
   test('serializes concurrent publishers and keeps a valid index', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'open-pencil-libraries-'))
+    const root = await mkdtemp(join(tmpdir(), 'kalka-libraries-'))
     const graph = new SceneGraph()
     graph.createNode('COMPONENT', graph.getPages()[0].id, {
       name: 'Button',

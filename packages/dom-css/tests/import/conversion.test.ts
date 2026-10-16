@@ -315,7 +315,7 @@ describe('@kalka/dom-css conversion', () => {
 
     expect(image.fills[0]).toBeUndefined()
     expect(image.pluginData).toContainEqual({
-      pluginId: 'open-pencil-dom-css',
+      pluginId: 'kalka-dom-css',
       key: 'image-source-url',
       value: 'https://example.com/hero.png'
     })

@@ -15,17 +15,17 @@ import { join } from 'node:path'
  * removes the discovery file — without isolation they did so at the real
  * platform path.
  *
- * Honored via OPENPENCIL_MCP_DISCOVERY_PATH in getDiscoveryPath()
+ * Honored via KALKA_MCP_DISCOVERY_PATH in getDiscoveryPath()
  * (packages/mcp/src/transport/paths.ts). Per-process temp path so parallel
  * bun workers don't collide. A crypto.randomUUID() suffix guarantees that
  * PID reuse after a crash cannot reuse a stale discovery dir from a prior
  * process that happened to recycle the same PID. An operator-provided value
  * is respected.
  */
-const tmpDiscoveryDir = join(tmpdir(), `openpencil-mcp-test-${process.pid}-${randomUUID()}`)
+const tmpDiscoveryDir = join(tmpdir(), `kalka-mcp-test-${process.pid}-${randomUUID()}`)
 let ownsDiscoveryPath = false
-if (!process.env.OPENPENCIL_MCP_DISCOVERY_PATH) {
-  process.env.OPENPENCIL_MCP_DISCOVERY_PATH = join(tmpDiscoveryDir, 'mcp.json')
+if (!process.env.KALKA_MCP_DISCOVERY_PATH) {
+  process.env.KALKA_MCP_DISCOVERY_PATH = join(tmpDiscoveryDir, 'mcp.json')
   ownsDiscoveryPath = true
 }
 
@@ -73,15 +73,15 @@ export function isProcessAlive(pid: number): boolean {
  * Best-effort cleanup of stale temp dirs from previous (crashed/killed) test
  * runs. bun's test runner does not emit 'exit'/'beforeExit' reliably, so we
  * cannot rely on a process-exit handler. Instead, sweep $TMPDIR at startup for
- * our own `openpencil-mcp-test-<pid>` dirs (with or without a UUID suffix)
+ * our own `kalka-mcp-test-<pid>` dirs (with or without a UUID suffix)
  * whose owner PID is no longer alive. Live PIDs (concurrent runs) are skipped;
  * the current run's dir does not exist yet at this point so it is never touched.
  */
 if (ownsDiscoveryPath) {
-  // Matches both the old format (openpencil-mcp-test-<pid>) and the new
-  // UUID-suffixed format (openpencil-mcp-test-<pid>-<uuid>) so leftovers
+  // Matches both the old format (kalka-mcp-test-<pid>) and the new
+  // UUID-suffixed format (kalka-mcp-test-<pid>-<uuid>) so leftovers
   // from either naming convention are swept. The PID is always capture group 1.
-  const stalePattern = /^openpencil-mcp-test-(\d+)(?:-[a-f0-9-]+)?$/
+  const stalePattern = /^kalka-mcp-test-(\d+)(?:-[a-f0-9-]+)?$/
   let entries: string[] = []
   try {
     entries = readdirSync(tmpdir())

@@ -177,7 +177,7 @@ async function writeStories(
   await mkdir(outputDir, { recursive: true })
   // Staged next to the output so a failed write leaves the previous export in place,
   // and in a dot folder, which Storybook's story globs skip.
-  const staging = await mkdtemp(join(outputDir, '.openpencil-export-'))
+  const staging = await mkdtemp(join(outputDir, '.kalka-export-'))
   try {
     for (const story of files) {
       await mkdir(dirname(join(staging, story.path)), { recursive: true })

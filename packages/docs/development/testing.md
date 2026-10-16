@@ -60,7 +60,7 @@ Prefer test-runner-owned fixtures, such as Playwright `test.extend`, over implic
 
 ## Browser and native boundaries
 
-Specs should read as fixture setup, user action, observation and assertion. Do not scatter `window.openPencil`, store/renderer traversal, internal module URLs or resource-timing module discovery through specs.
+Specs should read as fixture setup, user action, observation and assertion. Do not scatter `window.kalka`, store/renderer traversal, internal module URLs or resource-timing module discovery through specs.
 
 Keep unavoidable transport access in a small guarded adapter with named domain operations. Separate:
 
@@ -101,16 +101,16 @@ Heavier `.fig` suites are sensitive to machine load. A full run alongside other 
 
 ## Server ownership and worktrees
 
-The canonical `playwright.config.ts` owns app, Figma and Storybook projects. The `test`, `test:update`, `test:real-llm` and `test:figma` scripts select only the app server; `test:storybook` selects Storybook on port `6017`. Direct Playwright commands start both servers by default. Set `OPENPENCIL_TEST_SERVER=app`, `storybook` or `all`; `--project` selects tests, not servers.
+The canonical `playwright.config.ts` owns app, Figma and Storybook projects. The `test`, `test:update`, `test:real-llm` and `test:figma` scripts select only the app server; `test:storybook` selects Storybook on port `6017`. Direct Playwright commands start both servers by default. Set `KALKA_TEST_SERVER=app`, `storybook` or `all`; `--project` selects tests, not servers.
 
 App tests start Vite from the current checkout and wait for its HTTP URL. Vite owns its MCP companion. Reuse is off by default and always off in CI. Default ports are app `1420` and MCP `7600`; concurrent worktrees need distinct free pairs:
 
 ```sh
-OPENPENCIL_TEST_SERVER=app OPENPENCIL_TEST_PORT=1482 OPENPENCIL_TEST_MCP_PORT=7682 \
-  bunx playwright test tests/e2e/properties/effect-panel.spec.ts --project=openpencil
+KALKA_TEST_SERVER=app KALKA_TEST_PORT=1482 KALKA_TEST_MCP_PORT=7682 \
+  bunx playwright test tests/e2e/properties/effect-panel.spec.ts --project=kalka
 ```
 
-Use the configured base URL and same-origin paths, never hard-coded ports in specs or adapters. For intentional debugging against a verified matching server, set `OPENPENCIL_TEST_REUSE_SERVER=1`. HTTP readiness alone does not prove checkout identity, so do not reuse servers for baseline comparisons. Portless remains the preferred interactive preview workflow, separate from managed fixed-port tests.
+Use the configured base URL and same-origin paths, never hard-coded ports in specs or adapters. For intentional debugging against a verified matching server, set `KALKA_TEST_REUSE_SERVER=1`. HTTP readiness alone does not prove checkout identity, so do not reuse servers for baseline comparisons. Portless remains the preferred interactive preview workflow, separate from managed fixed-port tests.
 
 ## External-system acceptance
 

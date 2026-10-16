@@ -12,7 +12,7 @@ import { expectDefined } from '#tests/helpers/assert'
 const CELL_W = 180
 const CELL_H = 150
 const COLUMNS = 4
-const OUT = '/tmp/open-pencil-boolean-matrix.png'
+const OUT = '/tmp/kalka-boolean-matrix.png'
 
 type Operation = 'union' | 'subtract' | 'intersect' | 'exclude'
 type CaseName = 'rect' | 'rounded' | 'ellipse' | 'arc' | 'line' | 'polygon' | 'star' | 'vector'

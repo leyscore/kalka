@@ -134,11 +134,11 @@ const sourceLibraryPublication: v.GenericSchema<unknown, SourceLibraryPublicatio
 })
 
 /**
- * Every plugin-data entry Kalka writes under {@link OPEN_PENCIL_PLUGIN_ID}: state Figma's
+ * Every plugin-data entry Kalka writes under {@link KALKA_PLUGIN_ID}: state Figma's
  * format has no field for. Add a key here, never as a string elsewhere, so reading and writing
  * it share one schema.
  */
-export const OPEN_PENCIL_PLUGIN_DATA = {
+export const KALKA_PLUGIN_DATA = {
   /** A text node's direction, on TEXT nodes. */
   textDirection: textPluginDataField('textDirection', 'format', DIRECTIONS),
   /** An auto-layout frame's direction. */
@@ -188,9 +188,7 @@ export const OPEN_PENCIL_PLUGIN_DATA = {
   iconTint: jsonPluginDataField('iconTint', 'content', iconTintSchema)
 } satisfies Record<string, PluginDataKey>
 
-const NOT_CONTENT = Object.values(OPEN_PENCIL_PLUGIN_DATA).filter(
-  (field) => field.role !== 'content'
-)
+const NOT_CONTENT = Object.values(KALKA_PLUGIN_DATA).filter((field) => field.role !== 'content')
 
 /**
  * A node's plugin data that is part of its content, in a stable order: Kalka's content

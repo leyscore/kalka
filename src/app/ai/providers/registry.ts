@@ -20,7 +20,7 @@ const MODEL_PROVIDER_ADAPTERS = {
         fetch: runtime.fetch,
         headers: {
           'X-OpenRouter-Title': 'Kalka',
-          'HTTP-Referer': 'https://github.com/open-pencil/open-pencil'
+          'HTTP-Referer': 'https://github.com/leyscore/kalka'
         }
       })
       return provider(config.customModelID.trim() || config.modelID)

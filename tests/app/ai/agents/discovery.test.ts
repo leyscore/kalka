@@ -8,8 +8,8 @@ import { createDeferred } from '@/app/runtime/deferred'
 
 // Installed companions report the version of the app under test, as matching ones do.
 const COMPANION_PACKAGES: Record<string, string> = {
-  'openpencil-mcp-http': '@kalka/mcp',
-  'openpencil-harness': '@kalka/harness'
+  'kalka-mcp-http': '@kalka/mcp',
+  'kalka-harness': '@kalka/harness'
 }
 
 function lookup(...commands: string[]): AgentLookup {
@@ -37,7 +37,7 @@ describe('local agent discovery', () => {
     const restartBridge = mock(async () => undefined)
     const discovery = createAgentDiscovery({
       enabled: true,
-      lookup: async () => lookup('gemini', 'npm', ...(installed ? ['openpencil-mcp-http'] : [])),
+      lookup: async () => lookup('gemini', 'npm', ...(installed ? ['kalka-mcp-http'] : [])),
       install: async () => undefined,
       installBridge,
       restartBridge
@@ -61,7 +61,7 @@ describe('local agent discovery', () => {
     })
     const discovery = createAgentDiscovery({
       enabled: true,
-      lookup: async () => lookup('gemini', 'openpencil-mcp-http'),
+      lookup: async () => lookup('gemini', 'kalka-mcp-http'),
       install: async () => undefined,
       installBridge,
       restartBridge
@@ -200,7 +200,7 @@ describe('Harness companion setup', () => {
     })
     const discovery = createAgentDiscovery({
       enabled: true,
-      lookup: async () => lookup('npm', ...(installed ? ['openpencil-harness'] : [])),
+      lookup: async () => lookup('npm', ...(installed ? ['kalka-harness'] : [])),
       install: async () => undefined,
       installHarness
     })
@@ -220,7 +220,7 @@ describe('Harness companion setup', () => {
     const discovery = createAgentDiscovery({
       enabled: true,
       lookup: async () => ({
-        ...lookup('npm', 'openpencil-harness'),
+        ...lookup('npm', 'kalka-harness'),
         versions: { '@kalka/harness': version }
       }),
       install: async () => undefined,
@@ -241,7 +241,7 @@ describe('Harness companion setup', () => {
       enabled: true,
       lookup: async () => ({
         searchPath: '/test/bin',
-        executables: { npm: '/test/bin/npm', 'openpencil-mcp-http': '/home/me/.bun/bin/mcp' },
+        executables: { npm: '/test/bin/npm', 'kalka-mcp-http': '/home/me/.bun/bin/mcp' },
         versions: { '@kalka/mcp': '0.12.0' }
       }),
       install: async () => undefined,

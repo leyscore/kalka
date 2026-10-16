@@ -3,7 +3,7 @@ import type { VariableCollection } from '@kalka/scene-graph'
 import type { Color } from '@kalka/scene-graph/primitives'
 import { randomHex } from '@kalka/scene-graph/random'
 
-import { useOpenPencilBindingProvider } from '#vue/controls/binding-provider/open-pencil'
+import { useKalkaBindingProvider } from '#vue/controls/binding-provider/kalka'
 import type { BindingTarget } from '#vue/controls/binding-provider/types'
 
 import { prepareModeEdit } from './mode-edit'
@@ -60,7 +60,7 @@ function resolveColor(editor: Editor, id: string, target?: BindingTarget) {
 }
 
 export function useColorBindingProvider() {
-  return useOpenPencilBindingProvider<Color>({
+  return useKalkaBindingProvider<Color>({
     type: 'COLOR',
     resolve: resolveColor,
     prepareEdit: (editor, id, target) =>

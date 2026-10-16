@@ -17,7 +17,7 @@ Every run writes `recording.json`, `metrics.json`, and `environment.json`. When 
 - `metrics.json`: frame pacing, input latency, zoom-anchor drift, viewport jumps, exact active-renderer settlement, and tiled scheduler throughput/cancellation when enabled.
 - `environment.json`: browser, runtime, replay mode, and source gesture information.
 
-Kalka emits User Timing marks under `openpencil:*`, including wheel receipt/flush, viewport mutation, render start/end, backing preview/build, crisp-backing completion, and exact tiled coverage. The recording also runs a continuous `requestAnimationFrame` heartbeat and observes browser Long Tasks, so display stalls remain visible even when Kalka does not render.
+Kalka emits User Timing marks under `kalka:*`, including wheel receipt/flush, viewport mutation, render start/end, backing preview/build, crisp-backing completion, and exact tiled coverage. The recording also runs a continuous `requestAnimationFrame` heartbeat and observes browser Long Tasks, so display stalls remain visible even when Kalka does not render.
 
 ## Record a physical macOS trackpad gesture
 
@@ -37,13 +37,13 @@ Kalka emits User Timing marks under `openpencil:*`, including wheel receipt/flus
 3. In DevTools, start recording:
 
    ```js
-   openPencil.test.navigation.startRecording('macbook-fast-pinch-reversal')
+   kalka.test.navigation.startRecording('macbook-fast-pinch-reversal')
    ```
 
 4. Perform exactly one gesture, allow the canvas to become crisp, then stop and copy the result:
 
    ```js
-   copy(JSON.stringify(openPencil.test.navigation.stopRecording(), null, 2))
+   copy(JSON.stringify(kalka.test.navigation.stopRecording(), null, 2))
    ```
 
 5. Save the result under `tests/fixtures/navigation/gestures/`. Do not edit delta values or timestamps. Remove document names if they contain private information.
@@ -90,7 +90,7 @@ Open the trace:
 open https://ui.perfetto.dev
 ```
 
-Then load `trace.json.gz` and search for `openpencil:`.
+Then load `trace.json.gz` and search for `kalka:`.
 
 ## Baseline comparison
 

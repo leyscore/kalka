@@ -15,7 +15,7 @@ async function expectCanvas(name: string) {
 
 async function createOverlayDemo(rotation: number) {
   await editor.page.evaluate((frameRotation) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
 
@@ -83,7 +83,7 @@ test('rotated frame selection labels render with hovered child', async () => {
   await createOverlayDemo(18)
   const settled = await editor.canvas.screenshotCanvasRegion()
   const release = await editor.page.evaluateHandle(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Editor unavailable')
     return store.beginInteractiveEdit()
   })
@@ -101,7 +101,7 @@ test('rotation preview updates frame labels before mouse up', async () => {
   await createOverlayDemo(0)
 
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const frameId = [...store.state.selectedIds][0]
     store.setRotationPreview({ nodeId: frameId, angle: 28 })
@@ -118,7 +118,7 @@ test('hover highlight stays aligned for child inside rotated frame', async () =>
 
 test('nested frame labels use the parent transform during rotation preview', async () => {
   const id = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Editor unavailable')
     const sectionId = store.createShape('SECTION', 140, 140, 500, 350)
     store.updateNode(sectionId, { name: 'Rotated section', rotation: 25 })
@@ -139,7 +139,7 @@ test('nested frame labels use the parent transform during rotation preview', asy
   await expectCanvas('nested-frame-rotation-preview')
   const during = await editor.canvas.screenshotCanvasRegion()
   await editor.page.evaluate((nodeId) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Editor unavailable')
     store.updateNode(nodeId, { rotation: -55 })
     store.setRotationPreview(null)
@@ -154,7 +154,7 @@ test('nested frame labels use the parent transform during rotation preview', asy
 for (const angle of [-32, 32]) {
   test(`labels follow a held ${angle}-degree corner rotation without jumping on release`, async () => {
     const id = await editor.page.evaluate(() => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Editor unavailable')
       const frame = store.graph.createNode('FRAME', store.state.currentPageId, {
         name: 'Frame',
@@ -174,7 +174,7 @@ for (const angle of [-32, 32]) {
       'canvas bounds'
     )
     const viewport = await editor.page.evaluate(() => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Editor unavailable')
       return { zoom: store.state.zoom, panX: store.state.panX, panY: store.state.panY }
     })
@@ -194,7 +194,7 @@ for (const angle of [-32, 32]) {
       )
       await editor.canvas.waitForRender()
       const held = await editor.page.evaluate((nodeId) => {
-        const store = window.openPencil?.getStore?.()
+        const store = window.kalka?.getStore?.()
         return {
           rotation: store?.graph.getNode(nodeId)?.rotation,
           preview: store?.state.rotationPreview
@@ -214,17 +214,17 @@ for (const angle of [-32, 32]) {
       await editor.page.mouse.up()
       await editor.canvas.waitForRender()
       expect((await editor.canvas.screenshotCanvasRegion()).equals(during)).toBe(true)
-      await editor.page.evaluate(() => window.openPencil?.getStore?.().undoAction())
+      await editor.page.evaluate(() => window.kalka?.getStore?.().undoAction())
       expect(
         await editor.page.evaluate(
-          (nodeId) => window.openPencil?.getStore?.().graph.getNode(nodeId)?.rotation,
+          (nodeId) => window.kalka?.getStore?.().graph.getNode(nodeId)?.rotation,
           id
         )
       ).toBe(0)
-      await editor.page.evaluate(() => window.openPencil?.getStore?.().redoAction())
+      await editor.page.evaluate(() => window.kalka?.getStore?.().redoAction())
       expect(
         await editor.page.evaluate(
-          (nodeId) => window.openPencil?.getStore?.().graph.getNode(nodeId)?.rotation,
+          (nodeId) => window.kalka?.getStore?.().graph.getNode(nodeId)?.rotation,
           id
         )
       ).toBe(preview.angle)

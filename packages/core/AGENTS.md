@@ -30,7 +30,7 @@ Renderer, layout, editor, Figma API, tools, clipboard, vector conversion, and do
 - `packages/core/src/tools/ai-adapter.ts` converts ToolDefs for Vercel AI; the app binds them to the active editor's `FigmaAPI` in `src/app/ai/tools/index.ts`. MCP v2 registration uses Standard Schema with Valibot JSON Schema conversion; AI and WebMCP adapters share the same input contract.
 - `packages/core/src/editor/history/atomic-tool.ts` owns synchronous property/variable transactions; Scene Graph owns checkpoint recovery. AI, MCP, and WebMCP share this execution path. Async and structural tools cannot declare atomic property execution.
 - Shared scene-authoring guidance and tested examples live under `packages/design-jsx/src/reference/`; `reference.ts` combines them with renderer metadata. Prompts under `packages/core/src/tools/prompts/` and the app chat/ACP prompt compose that reference rather than copying it. Run `bun run generate:authoring-reference` after changes; `check:authoring-reference` (part of `check:docs`) verifies the committed skill/docs copies. Do not edit generated reference files.
-- The installable agent skill is maintained in `skills/open-pencil/`. Changes to agent-facing APIs, CLI/MCP behavior, or design authoring must update affected skill examples, prompts, and public documentation in the same change. Keep examples valid in their actual execution environment; do not advertise library exports as scripting globals unless exposed there. Prefer runtime discovery and canonical references over duplicated API/tool inventories.
+- The installable agent skill is maintained in `skills/kalka/`. Changes to agent-facing APIs, CLI/MCP behavior, or design authoring must update affected skill examples, prompts, and public documentation in the same change. Keep examples valid in their actual execution environment; do not advertise library exports as scripting globals unless exposed there. Prefer runtime discovery and canonical references over duplicated API/tool inventories.
 - MCP-only tools and transports: `packages/mcp/AGENTS.md`. WebMCP registration and app completion: `src/AGENTS.md`.
 
 ## Editor
@@ -46,14 +46,14 @@ Renderer, layout, editor, Figma API, tools, clipboard, vector conversion, and do
 - Renderer interaction policy uses explicit `beginInteractiveEdit()` leases and `isInteractiveEditing()`, not undo batching. Release leases on every terminal path. Keep live queries callable across app facades that spread editor actions.
 - `packages/core/src/editor/history/atomic-tool.ts` owns synchronous property/variable transactions for AI, MCP, and WebMCP tools; see Tools above.
 
-## OpenPencil API
+## Kalka API
 
-`OpenPencilAPI` (`packages/core/src/openpencil-api/`) is what OpenPencil adds to the Plugin API, exposed to scripts as the `openpencil` global next to `figma`.
+`KalkaAPI` (`packages/core/src/kalka-api/`) is what Kalka adds to the Plugin API, exposed to scripts as the `kalka` global next to `figma`.
 
-- Keep `figma` Figma-shaped and put OpenPencil-only features on `openpencil`, in the same style: methods and node-like handles with getters and setters, not parallel helper functions. Never add non-Figma members to `FigmaAPI` (`compatibility.ts`).
-- Script runners get both globals only through `compileScript` (`packages/core/src/tools/analyze/eval/wrap.ts`); the `eval` tool, `openpencil eval`, and app automation must not build their own `AsyncFunction`.
-- Members take names, not internal ids, and write through the same scene-graph functions the editor's actions use, such as `behaviourFromSpec`; errors name what exists. Tools for the same feature wrap the `openpencil` API rather than reimplementing it (`packages/core/src/tools/create/behaviours.ts`).
-- A new member updates `packages/docs/programmable/cli/scripting.md` and the agent skill in the same change; tests drive it as scripts do, through `compileScript` (`packages/core/tests/openpencil-api/`).
+- Keep `figma` Figma-shaped and put Kalka-only features on `kalka`, in the same style: methods and node-like handles with getters and setters, not parallel helper functions. Never add non-Figma members to `FigmaAPI` (`compatibility.ts`).
+- Script runners get both globals only through `compileScript` (`packages/core/src/tools/analyze/eval/wrap.ts`); the `eval` tool, `kalka eval`, and app automation must not build their own `AsyncFunction`.
+- Members take names, not internal ids, and write through the same scene-graph functions the editor's actions use, such as `behaviourFromSpec`; errors name what exists. Tools for the same feature wrap the `kalka` API rather than reimplementing it (`packages/core/src/tools/create/behaviours.ts`).
+- A new member updates `packages/docs/programmable/cli/scripting.md` and the agent skill in the same change; tests drive it as scripts do, through `compileScript` (`packages/core/tests/kalka-api/`).
 
 ## Renderer
 
@@ -82,7 +82,7 @@ Canvas is CanvasKit (Skia WASM) on a WebGL surface, not DOM.
 
 - Use `@kalka/core/geometry` for world/screen transforms, inverses, bounds, and handle placement instead of interpreting ancestor rotations or reflections independently.
 - Label drawing and hit testing share `packages/core/src/canvas/labels/{layout,transform,style}.ts`, including paragraph measurements and unreflected label axes.
-- Editor chrome sized in screen pixels (outlines, borders, carets, highlights) draws in the overlay pass, never in the scene, which is cached and scaled while navigating. Draw outlines with `withScreenStroke` and `inNodeSpace` (`packages/core/src/canvas/overlays/outline.ts`). `open-pencil/no-zoom-in-scene-drawing` enforces it.
+- Editor chrome sized in screen pixels (outlines, borders, carets, highlights) draws in the overlay pass, never in the scene, which is cached and scaled while navigating. Draw outlines with `withScreenStroke` and `inNodeSpace` (`packages/core/src/canvas/overlays/outline.ts`). `kalka/no-zoom-in-scene-drawing` enforces it.
 - Selection border width is constant regardless of zoom: divide by scale. Section and frame title text never scales: render at a fixed font size and ellipsize to fit.
 - Rulers are rendered on the canvas with selection range badges that do not overlap tick numbers. Remote cursors are Figma-style colored arrows with a white border and name pill, rendered in screen space.
 
@@ -92,7 +92,7 @@ Pixel-affecting features need committed visual coverage, not only mock or geomet
 
 ## Figma API
 
-`FigmaAPI` mimics Figma's Plugin API over the SceneGraph. `openpencil eval`, the AI and MCP tools, and the app bind to it. Tests live under `tests/engine/figma/api/` and mirror the API surface.
+`FigmaAPI` mimics Figma's Plugin API over the SceneGraph. `kalka eval`, the AI and MCP tools, and the app bind to it. Tests live under `tests/engine/figma/api/` and mirror the API surface.
 
 - **Shape follows Figma.** Match `@figma/plugin-typings` at the version pinned in the root `package.json`. `packages/core/src/figma-api/compatibility.ts` type-checks the supported surface against `PluginAPI`; add every new member to `SupportedPluginAPI` there. Model unsupported members explicitly rather than approximating them.
 - **Behavior follows Figma.** Read the Plugin API documentation for the member, and for anything observable (geometry, ordering, defaults, errors) run the same script in live Figma and record the observed result in the test. `figma-use` and `tests/figma/` are the live oracle; `tests/fixtures/figma-oracles/` holds recorded values.

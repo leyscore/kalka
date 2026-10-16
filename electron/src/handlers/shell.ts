@@ -40,7 +40,7 @@ export function resolveAllowed(name: string, args: string[]): { cmd: string; arg
 }
 
 /** The editor starts the MCP server by its global name; the copy bundled with the app wins. */
-const MCP_SERVER_NAMES = new Set(['openpencil-mcp-http', 'cmd-openpencil-mcp-http'])
+const MCP_SERVER_NAMES = new Set(['kalka-mcp-http', 'cmd-kalka-mcp-http'])
 
 async function resolveProgram(
   name: string,

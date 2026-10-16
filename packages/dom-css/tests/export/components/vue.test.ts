@@ -22,7 +22,7 @@ import { renderToString } from 'vue/server-renderer'
 /** The packages generated code imports, linked so it resolves them as an app would. */
 const APP_PACKAGES = ['vue', 'reka-ui', '@iconify/vue', 'storybook']
 
-const output = await mkdtemp(join(tmpdir(), 'open-pencil-vue-'))
+const output = await mkdtemp(join(tmpdir(), 'kalka-vue-'))
 await mkdir(join(output, 'node_modules'))
 await mkdir(join(output, 'node_modules', '@iconify'))
 for (const name of APP_PACKAGES)

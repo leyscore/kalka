@@ -473,7 +473,7 @@ describe('@kalka/fig SceneGraph export policy', () => {
       height: 40,
       boundVariables: {},
       pluginData: [
-        { pluginId: 'open-pencil', key: 'boundVariables', value: '{"fills/0/color":"0:12"}' },
+        { pluginId: 'kalka', key: 'boundVariables', value: '{"fills/0/color":"0:12"}' },
         { pluginId: 'other-plugin', key: 'boundVariables', value: 'kept' }
       ]
     })

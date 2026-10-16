@@ -56,7 +56,7 @@ export async function spawnHarnessProcess(options: {
   onUnexpectedClose: () => void
 }): Promise<HarnessProcess> {
   const { Command } = await import('@tauri-apps/plugin-shell')
-  const resolved = resolvePlatformCommand('openpencil-harness')
+  const resolved = resolvePlatformCommand('kalka-harness')
   const command = Command.create(resolved.command, resolved.args, {
     encoding: 'raw',
     env: options.environment

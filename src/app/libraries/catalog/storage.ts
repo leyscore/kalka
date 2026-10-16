@@ -20,7 +20,7 @@ import type {
 
 import type { LibraryObjectStore } from '@/app/integrations/storage'
 
-const PREFIX = 'open-pencil/libraries'
+const PREFIX = 'kalka/libraries'
 const textDecoder = new TextDecoder()
 const textEncoder = new TextEncoder()
 
@@ -32,17 +32,17 @@ function revisionKey(libraryId: string, revisionId: string): string {
   return `${PREFIX}/${libraryId}/revisions/${revisionId}.json`
 }
 
-const MAP_TAG = 'openpencil/map'
+const MAP_TAG = 'kalka/map'
 
 interface EncodedMap {
-  $openPencilType: typeof MAP_TAG
+  $kalkaType: typeof MAP_TAG
   entries: unknown[]
 }
 
 function isEncodedMap(value: object): value is EncodedMap {
   return (
-    '$openPencilType' in value &&
-    value.$openPencilType === MAP_TAG &&
+    '$kalkaType' in value &&
+    value.$kalkaType === MAP_TAG &&
     'entries' in value &&
     Array.isArray(value.entries)
   )
@@ -53,13 +53,13 @@ function isMap(value: unknown): value is Map<unknown, unknown> {
 }
 
 function isMarkerShapedObject(value: object): boolean {
-  return '$openPencilType' in value
+  return '$kalkaType' in value
 }
 
 function encodeValue(value: unknown): unknown {
   if (isMap(value)) {
     return {
-      $openPencilType: MAP_TAG,
+      $kalkaType: MAP_TAG,
       entries: [...value].map(([key, entry]) => [encodeValue(key), encodeValue(entry)])
     }
   }
@@ -69,9 +69,7 @@ function encodeValue(value: unknown): unknown {
     const encoded = Object.fromEntries(
       Object.entries(value).map(([key, entry]) => [key, encodeValue(entry)])
     )
-    return isMarkerShapedObject(value)
-      ? { $openPencilType: 'openpencil/object', value: encoded }
-      : encoded
+    return isMarkerShapedObject(value) ? { $kalkaType: 'kalka/object', value: encoded } : encoded
   }
   return value
 }
@@ -80,8 +78,8 @@ function decodeValue(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(decodeValue)
   if (value && typeof value === 'object') {
     if (
-      '$openPencilType' in value &&
-      value.$openPencilType === 'openpencil/object' &&
+      '$kalkaType' in value &&
+      value.$kalkaType === 'kalka/object' &&
       'value' in value &&
       value.value &&
       typeof value.value === 'object' &&

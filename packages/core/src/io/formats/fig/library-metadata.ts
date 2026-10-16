@@ -2,13 +2,13 @@ import { mergePluginData } from '@kalka/fig/node-change'
 import type { KiwiNodeChange } from '@kalka/fig/node-change'
 import {
   isPluginDataEntry,
-  OPEN_PENCIL_PLUGIN_DATA,
+  KALKA_PLUGIN_DATA,
   withoutPluginData,
   withPluginData,
   type SceneGraph
 } from '@kalka/scene-graph'
 
-const { cssClasses, enabledLibraries } = OPEN_PENCIL_PLUGIN_DATA
+const { cssClasses, enabledLibraries } = KALKA_PLUGIN_DATA
 
 /** The document record's plugin data: its CSS classes and the libraries it has enabled. */
 export function applyDocumentPluginData(

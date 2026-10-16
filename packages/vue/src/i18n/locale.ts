@@ -39,7 +39,7 @@ export const LOCALE_LABELS: Record<Locale, string> = {
   'zh-CN': '中文（简体）'
 }
 
-const LOCALE_STORAGE_KEY = 'open-pencil-locale'
+const LOCALE_STORAGE_KEY = 'kalka-locale'
 
 export const localeSetting = atom<Locale | undefined>(undefined)
 

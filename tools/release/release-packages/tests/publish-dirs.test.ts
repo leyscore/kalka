@@ -10,7 +10,7 @@ import {
 } from '#release/publish-dirs'
 
 async function fixtureRoot({ rootLicense = true } = {}) {
-  const root = join(tmpdir(), `open-pencil-release-packages-${crypto.randomUUID()}`)
+  const root = join(tmpdir(), `kalka-release-packages-${crypto.randomUUID()}`)
   await mkdir(join(root, 'packages/example/dist'), { recursive: true })
   await writeFile(join(root, 'packages/example/dist/index.js'), 'export {}\n')
   await writeFile(join(root, 'packages/example/README.md'), '# Example\n')

@@ -3,12 +3,12 @@ import { describe, expect, test } from 'bun:test'
 import { deflateSync } from 'fflate'
 import { fromUint8Array } from 'js-base64'
 
-import { buildOpenPencilClipboardHTML, parseOpenPencilClipboard } from '@kalka/core/clipboard'
+import { buildKalkaClipboardHTML, parseKalkaClipboard } from '@kalka/core/clipboard'
 import { SceneGraph } from '@kalka/scene-graph'
 
 function clipboardHTML(payload: string): string {
   const compressed = deflateSync(new TextEncoder().encode(payload))
-  return `<!--(openpencil)${fromUint8Array(compressed)}(/openpencil)-->`
+  return `<!--(kalka)${fromUint8Array(compressed)}(/kalka)-->`
 }
 
 function copiedNode() {
@@ -20,47 +20,47 @@ function copiedNode() {
 describe('Kalka clipboard parsing', () => {
   test('restores nodes copied by Kalka', () => {
     const { graph, node } = copiedNode()
-    const parsed = parseOpenPencilClipboard(buildOpenPencilClipboardHTML([node], graph))
+    const parsed = parseKalkaClipboard(buildKalkaClipboardHTML([node], graph))
     expect(parsed?.nodes).toHaveLength(1)
     expect(parsed?.nodes[0]).toMatchObject({ id: node.id, type: 'RECTANGLE', name: 'Card', x: 5 })
   })
 
   test.each([
-    ['malformed JSON', '{"format": "openpencil/v1", "nodes": ['],
-    ['an unknown format', JSON.stringify({ format: 'openpencil/v2', nodes: [] })],
-    ['non-array nodes', JSON.stringify({ format: 'openpencil/v1', nodes: {} })],
+    ['malformed JSON', '{"format": "kalka/v1", "nodes": ['],
+    ['an unknown format', JSON.stringify({ format: 'kalka/v2', nodes: [] })],
+    ['non-array nodes', JSON.stringify({ format: 'kalka/v1', nodes: {} })],
     [
       'a node with a string coordinate',
       JSON.stringify({
-        format: 'openpencil/v1',
+        format: 'kalka/v1',
         nodes: [{ id: '0:1', type: 'RECTANGLE', x: '5', y: 6 }]
       })
     ],
     [
       'a node with an unknown type',
       JSON.stringify({
-        format: 'openpencil/v1',
+        format: 'kalka/v1',
         nodes: [{ id: '0:1', type: 'WIDGET', x: 5, y: 6 }]
       })
     ],
     [
       'a malformed child',
       JSON.stringify({
-        format: 'openpencil/v1',
+        format: 'kalka/v1',
         nodes: [{ id: '0:1', type: 'FRAME', x: 0, y: 0, children: [{ id: 7 }] }]
       })
     ],
     [
       'malformed geometry',
       JSON.stringify({
-        format: 'openpencil/v1',
+        format: 'kalka/v1',
         nodes: [{ id: '0:1', type: 'VECTOR', x: 0, y: 0, fillGeometry: [null] }]
       })
     ],
     [
       'geometry bytes outside 0-255',
       JSON.stringify({
-        format: 'openpencil/v1',
+        format: 'kalka/v1',
         nodes: [
           {
             id: '0:1',
@@ -73,6 +73,6 @@ describe('Kalka clipboard parsing', () => {
       })
     ]
   ])('ignores %s', (_label, payload) => {
-    expect(parseOpenPencilClipboard(clipboardHTML(payload))).toBeNull()
+    expect(parseKalkaClipboard(clipboardHTML(payload))).toBeNull()
   })
 })

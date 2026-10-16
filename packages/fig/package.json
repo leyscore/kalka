@@ -4,7 +4,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/open-pencil/open-pencil.git",
+    "url": "git+https://github.com/leyscore/kalka.git",
     "directory": "packages/fig"
   },
   "files": [

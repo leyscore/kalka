@@ -188,7 +188,7 @@ test('variable bind badge appears on fill', async () => {
   await editor.canvas.drawRect(200, 200, 80, 80)
 
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const col = store.graph.createCollection('Colors')
     const v = store.graph.createVariable('brand-red', 'COLOR', col.id, { r: 1, g: 0, b: 0, a: 1 })
@@ -208,7 +208,7 @@ test('fill color can bind an existing variable', async () => {
   await editor.canvas.drawRect(200, 200, 80, 80)
 
   const variableId = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const col = store.graph.createCollection('Colors')
     const variable = store.graph.createVariable('test-brand-red', 'COLOR', col.id, {
@@ -243,13 +243,13 @@ test('fill color can bind an existing variable', async () => {
   await editor.canvas.waitForRender()
   await expect(fillItem.getByText('test-brand-red')).toHaveCount(0)
   const undoLabel = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     return store.undo.undoLabel
   })
   expect(undoLabel).toBe('Change fill color')
   const boundVariableId = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const id = [...store.state.selectedIds][0]
     return id ? (store.getNode(id)?.boundVariables['fills/0/color'] ?? null) : null
@@ -259,13 +259,13 @@ test('fill color can bind an existing variable', async () => {
   await editor.canvas.undo()
   await editor.canvas.waitForRender()
   const undoLabelAfter = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     return store.undo.undoLabel
   })
   expect(undoLabelAfter).toBe('Bind variable')
   const restoredBinding = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const id = [...store.state.selectedIds][0]
     return id ? store.getNode(id)?.boundVariables['fills/0/color'] : undefined
@@ -280,7 +280,7 @@ test('bound fill picker opens non-destructively and Escape rolls back color edit
   await editor.canvas.drawRect(200, 200, 80, 80)
 
   const before = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const collection = store.graph.createCollection('Colors')
     const variable = store.graph.createVariable('rollback-brand', 'COLOR', collection.id, {
@@ -303,7 +303,7 @@ test('bound fill picker opens non-destructively and Escape rolls back color edit
   await expect(fillItem.getByText('rollback-brand')).toBeVisible()
 
   const opened = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const id = [...store.state.selectedIds][0]
     const node = id ? store.getNode(id) : null
@@ -318,7 +318,7 @@ test('bound fill picker opens non-destructively and Escape rolls back color edit
   await editor.canvas.waitForRender()
 
   const after = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const id = [...store.state.selectedIds][0]
     const node = id ? store.getNode(id) : null
@@ -343,7 +343,7 @@ test('fill color can create and bind a variable', async () => {
 
   await expect(fillItem.getByText('Surface/default')).toBeVisible()
   const boundVariable = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const id = [...store.state.selectedIds][0]
     if (!id) return null
@@ -368,7 +368,7 @@ test('width can create, bind, and detach a number variable', async () => {
 
   await expect(widthField.getByText('Card/width')).toBeVisible()
   const boundVariable = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const id = [...store.state.selectedIds][0]
     if (!id) return null
@@ -386,7 +386,7 @@ test('width can create, bind, and detach a number variable', async () => {
 
   await expect(widthField.getByText('Card/width')).toHaveCount(0)
   const directWidth = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const id = [...store.state.selectedIds][0]
     const node = id ? store.getNode(id) : null
@@ -410,7 +410,7 @@ test('bound NumberField detach edit is one undo step', async () => {
 
   const readState = () =>
     editor.page.evaluate(() => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Kalka store not initialized')
       const id = [...store.state.selectedIds][0]
       const node = id ? store.getNode(id) : null

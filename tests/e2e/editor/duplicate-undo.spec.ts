@@ -4,7 +4,7 @@ const editor = useEditorSetupWithClear('/?test')
 
 async function rectangleCount() {
   return editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     return [...store.graph.nodes.values()].filter((node) => node.type === 'RECTANGLE').length
   })
@@ -16,7 +16,7 @@ async function layerItems() {
 
 async function historyState() {
   return editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     return {
       canUndo: store.undo.canUndo,

@@ -61,7 +61,7 @@ function renderTree(graph: SceneGraph, rootId: string): RenderNode {
 
 async function renderTrees(trees: RenderNode[]) {
   await editor.page.evaluate((trees) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Missing editor')
     const visit = (tree: RenderNode, parentId: string) => {
       const { type, ...props } = tree.props
@@ -85,7 +85,7 @@ test('absolute constraints survive occurrence resizing', async () => {
   const child = graph.getChildren(id)[0]
   expect([child.x, child.y, child.width, child.height]).toEqual([180, 10, 10, 100])
   await renderTrees([renderTree(graph, id)])
-  await editor.page.evaluate(() => window.openPencil?.getStore?.().setZoomAroundPoint(2, 0, 0))
+  await editor.page.evaluate(() => window.kalka?.getStore?.().setZoomAroundPoint(2, 0, 0))
   expect(await editor.canvas.screenshotCanvasRegion()).toMatchSnapshot(
     'absolute-constraint-resize.png'
   )

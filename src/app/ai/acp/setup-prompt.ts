@@ -55,8 +55,8 @@ export function codingAgentSetupPrompt(
     Please do this for me:
 
     1. If \`${agent.command}\` is not on my PATH, install it: \`${install}\`
-    2. If \`openpencil-mcp-http\` is not on my PATH, install Kalka's MCP server: \`${MCP_INSTALL_COMMAND}\`
-    3. Confirm both commands are found, for example with \`which ${agent.command}\` and \`which openpencil-mcp-http\` (\`where\` on Windows). If a global npm folder is missing from my PATH, tell me how to add it.
+    2. If \`kalka-mcp-http\` is not on my PATH, install Kalka's MCP server: \`${MCP_INSTALL_COMMAND}\`
+    3. Confirm both commands are found, for example with \`which ${agent.command}\` and \`which kalka-mcp-http\` (\`where\` on Windows). If a global npm folder is missing from my PATH, tell me how to add it.
     4. ${SIGN_IN[agentID]}
 
     Then tell me what you installed and anything I still need to do myself. I will press "Check again" in Kalka's AI setup afterwards.

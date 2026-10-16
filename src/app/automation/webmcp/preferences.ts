@@ -3,7 +3,7 @@ import { computed } from 'vue'
 
 import { resolveWebMCPMode, type WebMCPMode } from './policy'
 
-const storedMode = useLocalStorage('open-pencil:webmcp:mode', 'off')
+const storedMode = useLocalStorage('kalka:webmcp:mode', 'off')
 
 export const webmcpMode = computed<WebMCPMode>({
   get: () => resolveWebMCPMode(storedMode.value),

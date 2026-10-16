@@ -1,6 +1,6 @@
 # CLI
 
-Headless `.fig` inspection, export, linting, and scripting with `citty`. `bun open-pencil --help` lists current commands.
+Headless `.fig` inspection, export, linting, and scripting with `citty`. `bun kalka --help` lists current commands.
 
 - Format all output with the `agentfmt` helpers re-exported from `packages/cli/src/format.ts`; do not hand-roll terminal formatting.
 - Data and inspection commands support `--json`.

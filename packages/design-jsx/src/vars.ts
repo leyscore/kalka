@@ -1,6 +1,6 @@
 import type { Color, SceneGraph } from '@kalka/scene-graph'
 
-const VAR_SYMBOL = Symbol.for('open-pencil.variable')
+const VAR_SYMBOL = Symbol.for('kalka.variable')
 
 export type VarDef =
   | string

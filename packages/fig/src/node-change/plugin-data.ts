@@ -5,8 +5,9 @@ import { guidToString } from '@kalka/kiwi/fig/guid'
 import {
   clampExportScale,
   hasPluginData,
-  OPEN_PENCIL_PLUGIN_DATA,
-  OPEN_PENCIL_PLUGIN_ID,
+  KALKA_PLUGIN_DATA,
+  canonicalPluginId,
+  KALKA_PLUGIN_ID,
   withPluginData,
   type ExportFormatId,
   type ExportSetting,
@@ -26,7 +27,7 @@ import {
 } from './variable/bindings'
 
 const { boundVariables, exportSettings, htmlClasses, htmlTag, librarySource, textPathBox } =
-  OPEN_PENCIL_PLUGIN_DATA
+  KALKA_PLUGIN_DATA
 
 const NATIVE_EXPORT_FORMATS: Record<string, ExportFormatId> = {
   PNG: 'png',
@@ -42,7 +43,7 @@ export function readNodeChangePluginData<T>(
 ): T | undefined {
   return field.decode(
     nc.pluginData?.find(
-      (entry) => entry.pluginID === OPEN_PENCIL_PLUGIN_ID && entry.key === field.key
+      (entry) => canonicalPluginId(entry.pluginID) === KALKA_PLUGIN_ID && entry.key === field.key
     )?.value
   )
 }
@@ -137,7 +138,7 @@ export function extractExportSettings(nc: NodeChange): ExportSetting[] {
 
 export function extractPluginData(nc: NodeChange): PluginDataEntry[] {
   return (nc.pluginData ?? []).map((entry) => ({
-    pluginId: entry.pluginID,
+    pluginId: canonicalPluginId(entry.pluginID),
     key: entry.key,
     value: entry.value
   }))
@@ -167,7 +168,7 @@ export function applyLibrarySourcePluginData(node: SceneNode): void {
 
 export function extractPluginRelaunchData(nc: NodeChange): PluginRelaunchDataEntry[] {
   return (nc.pluginRelaunchData ?? []).map((entry) => ({
-    pluginId: entry.pluginID,
+    pluginId: canonicalPluginId(entry.pluginID),
     command: entry.command,
     message: entry.message,
     isDeleted: entry.isDeleted

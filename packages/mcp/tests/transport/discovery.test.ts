@@ -4,7 +4,7 @@ import { parseDiscoveryInfo } from '@kalka/mcp/discovery'
 
 const VALID = {
   pid: 4242,
-  socketPath: '/tmp/open-pencil.sock',
+  socketPath: '/tmp/kalka.sock',
   httpPort: 7600,
   authRequired: true,
   authToken: 'token',

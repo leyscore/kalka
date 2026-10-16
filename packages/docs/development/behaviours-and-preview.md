@@ -24,8 +24,8 @@ All of them write the same model.
 | Surface | Where | Notes |
 |---|---|---|
 | Behaviour section | `src/components/properties/component-properties/behaviour/`, `useBehaviour` in `packages/vue` | Binds by id; Core's editor actions (`setBehaviour`, `addBehaviourText`, `addBehaviourVariant`, `addBehaviourPart`) create what is missing in one undo step. |
-| `openpencil` scripting API | `packages/core/src/openpencil-api/` | The `openpencil` global next to `figma` in every script runner, through `compileScript`. |
-| Tools | `packages/core/src/tools/create/behaviours.ts` | `set_behaviour`, `get_behaviour`, `create_slot`, built on the `openpencil` API. |
+| `kalka` scripting API | `packages/core/src/kalka-api/` | The `kalka` global next to `figma` in every script runner, through `compileScript`. |
+| Tools | `packages/core/src/tools/create/behaviours.ts` | `set_behaviour`, `get_behaviour`, `create_slot`, built on the `kalka` API. |
 | Design JSX | `packages/design-jsx/src/behaviours/`, `export/behaviours.ts` | Reka-named elements (`Switch.Root`, `Switch.Thumb`) render and export components with behaviours. |
 
 ## Preview islands

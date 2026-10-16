@@ -26,7 +26,7 @@ async function reset() {
 test('single rectangle panel', async () => {
   await reset()
   await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const node = store.graph.createNode('RECTANGLE', store.state.currentPageId, {
       name: 'Card',
@@ -45,7 +45,7 @@ test('single rectangle panel', async () => {
 test('text selection panel', async () => {
   await reset()
   await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const node = store.graph.createNode('TEXT', store.state.currentPageId, {
       name: 'Heading',
@@ -65,7 +65,7 @@ test('text selection panel', async () => {
 test('mixed selection panel', async () => {
   await reset()
   await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const first = store.graph.createNode('RECTANGLE', store.state.currentPageId, {
       x: 100,
@@ -88,7 +88,7 @@ test('mixed selection panel', async () => {
 test('instance panel', async () => {
   await reset()
   await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const component = store.graph.createNode('COMPONENT', store.state.currentPageId, {
       name: 'Button',
@@ -122,7 +122,7 @@ test('empty canvas panel', async () => {
 test('nested groups layer tree', async () => {
   await reset()
   await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const outer = store.graph.createNode('GROUP', store.state.currentPageId, {
       name: 'Outer group',

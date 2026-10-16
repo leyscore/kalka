@@ -7,7 +7,7 @@ import { renderThumbnail } from '@kalka/core/io/formats/raster'
 import { computeAllLayouts } from '@kalka/core/layout'
 import type { SceneGraph } from '@kalka/scene-graph'
 
-import { setOpenPencilStore } from '@/app/browser-bridge'
+import { setKalkaStore } from '@/app/browser-bridge'
 import { describeDiagnosticError, recordStorageFailure } from '@/app/diagnostics'
 import { confirmAllDocuments } from '@/app/document/close/all'
 import { confirmDocumentClose } from '@/app/document/close/controller'
@@ -143,7 +143,7 @@ function activateTab(tab: Tab) {
   activeTabId.value = tab.id
   setActiveEditorStore(tab.store)
   triggerRef(tabsRef)
-  setOpenPencilStore(tab.store)
+  setKalkaStore(tab.store)
 }
 
 /** Activates the tab. False when no tab carries that id, so callers can tell a no-op apart. */

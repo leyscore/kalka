@@ -6,7 +6,7 @@ import type { StorageProviderID } from '@/app/integrations/storage'
 import { clearRecentFileThumbnails } from './thumbnails'
 
 const MAX_RECENT_DOCUMENTS = 10
-const RECENT_DOCUMENTS_STORAGE_KEY = 'open-pencil:recent-documents'
+const RECENT_DOCUMENTS_STORAGE_KEY = 'kalka:recent-documents'
 
 export interface RecentLocalDocument {
   id: string

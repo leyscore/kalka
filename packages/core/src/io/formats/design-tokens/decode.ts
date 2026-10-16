@@ -15,7 +15,7 @@ import { parseDisplayableColor } from '@kalka/scene-graph/color'
 import { parseCSSNumber } from '@kalka/scene-graph/css'
 
 import type { ReadToken } from './read'
-import { OPENPENCIL_EXTENSION } from './types'
+import { kalkaExtension } from './types'
 
 /** A `{group.token}` reference, as its path segments. */
 export function referencePath(value: unknown): string[] | null {
@@ -253,7 +253,7 @@ function impliedScopes(token: ReadToken): VariableScope[] | undefined {
 export function decodeVariableToken(token: ReadToken): DecodedVariable | DecodeFailure {
   const type = variableTypeOf(token)
   if (type === 'unsupported-type' || type === 'invalid-value') return type
-  const own = v.safeParse(OwnFieldsSchema, token.extensions[OPENPENCIL_EXTENSION])
+  const own = v.safeParse(OwnFieldsSchema, kalkaExtension(token.extensions))
   const fields = own.success ? own.output : {}
   const reference = referencePath(token.value)
   let value: DecodedValue

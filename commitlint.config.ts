@@ -27,5 +27,5 @@ export default {
       (/^Release v\d+\.\d+\.\d+$/.test(message.split('\n')[0] ?? '') ||
         (process.env.COMMITLINT_PR_TITLE !== '1' && isIgnored(message)))
   ],
-  helpUrl: 'https://github.com/open-pencil/open-pencil/blob/master/CONTRIBUTING.md#commit-messages'
+  helpUrl: 'https://github.com/leyscore/kalka/blob/main/CONTRIBUTING.md#commit-messages'
 } satisfies UserConfig

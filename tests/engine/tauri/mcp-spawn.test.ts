@@ -11,10 +11,10 @@ import {
 import { fetchStub } from '#tests/helpers/fetch'
 import { clearTauriMocks, installTauriMockWindow, mockTauriIPC } from '#tests/helpers/tauri/mocks'
 
-const DISCOVERY_PATH = '/mock/home/.openpencil/mcp.json'
+const DISCOVERY_PATH = '/mock/home/.kalka/mcp.json'
 const DISCOVERY_JSON = JSON.stringify({
   pid: 1234,
-  socketPath: '/mock/home/.openpencil/mcp.sock',
+  socketPath: '/mock/home/.kalka/mcp.sock',
   httpPort: 7600,
   authRequired: true,
   authToken: 'discovery-token',
@@ -81,7 +81,7 @@ describe('Tauri MCP spawning', () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('', { status: 404 }))
     await mockTauriIPC((cmd, args) => {
       if (cmd === 'mcp_lookup')
-        return { available: true, path: '/mock/bin/openpencil-mcp-http', searched: ['/mock/bin'] }
+        return { available: true, path: '/mock/bin/kalka-mcp-http', searched: ['/mock/bin'] }
       if (cmd === 'plugin:path|resolve_directory') return '/mock/home'
       if (cmd === 'plugin:fs|exists') return false
       if (cmd === 'plugin:shell|spawn') {
@@ -120,7 +120,7 @@ describe('Tauri MCP spawning', () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('', { status: 404 }))
     await mockTauriIPC((cmd) => {
       if (cmd === 'mcp_lookup')
-        return { available: true, path: '/mock/bin/openpencil-mcp-http', searched: ['/mock/bin'] }
+        return { available: true, path: '/mock/bin/kalka-mcp-http', searched: ['/mock/bin'] }
       if (cmd === 'plugin:path|resolve_directory') return '/mock/home'
       if (cmd === 'plugin:fs|exists') return false
       if (cmd === 'plugin:shell|spawn') throw new Error('shell permission denied')
@@ -188,19 +188,19 @@ describe('Tauri MCP spawning', () => {
     await mockTauriIPC((cmd, args) => {
       calls.push({ cmd, args })
       if (cmd === 'mcp_lookup')
-        return { available: true, path: '/mock/bin/openpencil-mcp-http', searched: ['/mock/bin'] }
+        return { available: true, path: '/mock/bin/kalka-mcp-http', searched: ['/mock/bin'] }
       if (cmd === 'plugin:shell|spawn') {
         expect(args).toMatchObject({
-          program: 'openpencil-mcp-http',
+          program: 'kalka-mcp-http',
           args: [],
           options: {
             env: {
               PORT: '7600',
-              OPENPENCIL_MCP_AUTH_TOKEN: expect.any(String),
-              OPENPENCIL_MCP_CORS_ORIGIN: 'tauri://localhost',
-              OPENPENCIL_MCP_TCP: '1',
-              OPENPENCIL_MCP_ROOT: '/mock/home',
-              OPENPENCIL_MCP_APP_TIMEOUT_MS: '30000'
+              KALKA_MCP_AUTH_TOKEN: expect.any(String),
+              KALKA_MCP_CORS_ORIGIN: 'tauri://localhost',
+              KALKA_MCP_TCP: '1',
+              KALKA_MCP_ROOT: '/mock/home',
+              KALKA_MCP_APP_TIMEOUT_MS: '30000'
             }
           }
         })

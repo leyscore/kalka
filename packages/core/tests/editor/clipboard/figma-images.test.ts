@@ -88,7 +88,7 @@ describe('Figma clipboard images', () => {
 
     await editor.pasteFromHTML(html)
 
-    expect(calls).toEqual([{ fileKey: 'openpencil', hashes: [IMAGE_HASH_A] }])
+    expect(calls).toEqual([{ fileKey: 'kalka', hashes: [IMAGE_HASH_A] }])
     expect(editor.graph.images.get(IMAGE_HASH_A)).toEqual(imageBytes)
     expect(resolutions).toEqual([])
   })

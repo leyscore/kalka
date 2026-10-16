@@ -2,7 +2,7 @@ import type { Editor } from '@kalka/core/editor'
 import type { VariableCollection } from '@kalka/scene-graph'
 import { randomHex } from '@kalka/scene-graph/random'
 
-import { useOpenPencilBindingProvider } from '#vue/controls/binding-provider/open-pencil'
+import { useKalkaBindingProvider } from '#vue/controls/binding-provider/kalka'
 import type { BindingTarget } from '#vue/controls/binding-provider/types'
 
 import { prepareModeEdit } from './mode-edit'
@@ -57,7 +57,7 @@ function resolveNumber(editor: Editor, id: string, target?: BindingTarget) {
 }
 
 export function useNumberBindingProvider() {
-  return useOpenPencilBindingProvider<number>({
+  return useKalkaBindingProvider<number>({
     type: 'FLOAT',
     resolve: resolveNumber,
     prepareEdit: (editor, id, target) =>

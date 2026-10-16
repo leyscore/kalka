@@ -13,7 +13,7 @@ async function expectCanvas(name: string) {
 
 test('arrow stroke caps', async () => {
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     const ink = { r: 0.08, g: 0.1, b: 0.18, a: 1 }

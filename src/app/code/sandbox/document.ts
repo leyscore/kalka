@@ -21,9 +21,9 @@ self.onmessage = ({ data }) => {
     if (__source && typeof __source.lineNumber === 'number') element.source = [String(__source.fileName), __source.lineNumber]
     return element
   }
-  const helper = (name) => (...args) => ({ __openPencilHelper: name, args })
+  const helper = (name) => (...args) => ({ __kalkaHelper: name, args })
   const helperRuntime = (name) => {
-    if (name === 'defineVars') return (vars) => Object.fromEntries(Object.entries(vars).map(([key, value]) => [key, { __openPencilHelper: 'designVar', args: [value] }]))
+    if (name === 'defineVars') return (vars) => Object.fromEntries(Object.entries(vars).map(([key, value]) => [key, { __kalkaHelper: 'designVar', args: [value] }]))
     return helper(name)
   }
   // A dotted element such as Button.Root is a member of its namespace, as JSX reads the tag.
@@ -109,21 +109,21 @@ export function sandboxDocument({ elements, helpers, limits }: SandboxDocumentOp
   const workers = new Map()
   addEventListener('message', (event) => {
     const message = event.data
-    if (!message || message.type !== 'open-pencil-design-jsx-run') return
+    if (!message || message.type !== 'kalka-design-jsx-run') return
     const worker = new Worker(workerURL)
     workers.set(message.id, worker)
     worker.onmessage = ({ data }) => {
-      parent.postMessage({ type: 'open-pencil-design-jsx-result', ...data }, '*')
+      parent.postMessage({ type: 'kalka-design-jsx-result', ...data }, '*')
       worker.terminate()
       workers.delete(message.id)
     }
     worker.onerror = () => {
-      parent.postMessage({ type: 'open-pencil-design-jsx-result', id: message.id, ok: false, error: 'Design JSX execution failed.' }, '*')
+      parent.postMessage({ type: 'kalka-design-jsx-result', id: message.id, ok: false, error: 'Design JSX execution failed.' }, '*')
       worker.terminate()
       workers.delete(message.id)
     }
     worker.postMessage({ id: message.id, code: message.code, elements: ${escapedElements}, helpers: ${escapedHelpers}, limits: ${escapedLimits} })
   })
-  parent.postMessage({ type: 'open-pencil-design-jsx-ready' }, '*')
+  parent.postMessage({ type: 'kalka-design-jsx-ready' }, '*')
   </script></body></html>`
 }

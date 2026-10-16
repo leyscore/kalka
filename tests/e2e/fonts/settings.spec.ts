@@ -10,7 +10,7 @@ test('font settings popover exposes web font access without desktop-only cache a
   await canvas.waitForInit()
 
   await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const id = store.createShape('TEXT', 120, 120, 240, 40)
     store.updateNode(id, {
@@ -34,7 +34,7 @@ test('font settings popover exposes web font access without desktop-only cache a
   await page.getByTestId('font-status-select').click()
   await expect(page.getByTestId('font-status-banner')).toBeVisible()
   const selected = await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     return store ? [...store.state.selectedIds] : []
   })
   expect(selected).toHaveLength(1)

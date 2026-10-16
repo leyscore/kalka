@@ -1,5 +1,5 @@
 ---
-name: open-pencil
+name: kalka
 description: Work with Figma .fig design files and the running Kalka editor — inspect structure, query nodes, analyze design tokens, export PNG/SVG/PDF/JSX, and modify designs programmatically. Use when asked to open, inspect, export, analyze, or edit .fig files, or to control the running Kalka app.
 ---
 
@@ -14,13 +14,13 @@ Use two modes:
 
 ```bash
 # App mode — operates on the document open in the editor
-openpencil tree
+kalka tree
 
 # Headless mode — operates on a .fig file
-openpencil tree design.fig
+kalka tree design.fig
 ```
 
-Use `openpencil --help`, per-command help, and the connected MCP server’s tool schemas to check the installed version’s capabilities. See the [CLI reference](https://openpencil.dev/reference/cli) and [MCP guide](https://openpencil.dev/programmable/mcp-server) for current documentation.
+Use `kalka --help`, per-command help, and the connected MCP server’s tool schemas to check the installed version’s capabilities. See the [CLI reference](https://github.com/leyscore/kalka/blob/main/packages/docs/reference/cli.md) and [MCP guide](https://github.com/leyscore/kalka/blob/main/packages/docs/programmable/mcp-server.md) for current documentation.
 
 ## Requirements
 
@@ -32,7 +32,7 @@ bun add -g @kalka/cli
 bun add -g @kalka/mcp
 ```
 
-The desktop app starts `openpencil-mcp-http` automatically in production Tauri builds when `@kalka/mcp` is installed globally and exposes automation on:
+The desktop app starts `kalka-mcp-http` automatically in production Tauri builds when `@kalka/mcp` is installed globally and exposes automation on:
 
 - HTTP/RPC: `http://127.0.0.1:7600`
 - WebSocket bridge: `ws://127.0.0.1:7601`
@@ -41,7 +41,7 @@ The desktop app starts `openpencil-mcp-http` automatically in production Tauri b
 ## CLI Commands
 
 ```bash
-openpencil --help
+kalka --help
 ```
 
 Common commands:
@@ -69,33 +69,33 @@ Common commands:
 ### Inspect
 
 ```bash
-openpencil info design.fig
-openpencil tree design.fig
-openpencil tree --page "Components" --depth 3  # app mode
-openpencil pages design.fig
-openpencil node design.fig --id 1:23
-openpencil node --id 1:23  # app mode
-openpencil selection --json
-openpencil variables design.fig
-openpencil variables --collection "Colors" --type COLOR
-openpencil tokens design.fig --format tailwind > theme.css
-openpencil tokens design.fig --format dtcg --out tokens  # W3C design tokens; import_design_tokens reads them back
+kalka info design.fig
+kalka tree design.fig
+kalka tree --page "Components" --depth 3  # app mode
+kalka pages design.fig
+kalka node design.fig --id 1:23
+kalka node --id 1:23  # app mode
+kalka selection --json
+kalka variables design.fig
+kalka variables --collection "Colors" --type COLOR
+kalka tokens design.fig --format tailwind > theme.css
+kalka tokens design.fig --format dtcg --out tokens  # W3C design tokens; import_design_tokens reads them back
 ```
 
 ### Search and XPath query
 
 ```bash
-openpencil find design.fig --name "Button"
-openpencil find --type FRAME                          # app mode
-openpencil find design.fig --type TEXT --page "Home"
-openpencil find design.fig --name "Card" --type COMPONENT --limit 50
+kalka find design.fig --name "Button"
+kalka find --type FRAME                          # app mode
+kalka find design.fig --type TEXT --page "Home"
+kalka find design.fig --name "Card" --type COMPONENT --limit 50
 
-openpencil query design.fig "//FRAME"
-openpencil query design.fig "//FRAME[@width < 300]"
-openpencil query design.fig "//TEXT[contains(@name, 'Button')]"
-openpencil query design.fig "//COMPONENT[@stackMode]"
-openpencil query design.fig "//COMPONENT//FRAME//TEXT"
-openpencil query "//FRAME[@width > 1000]"             # app mode
+kalka query design.fig "//FRAME"
+kalka query design.fig "//FRAME[@width < 300]"
+kalka query design.fig "//TEXT[contains(@name, 'Button')]"
+kalka query design.fig "//COMPONENT[@stackMode]"
+kalka query design.fig "//COMPONENT//FRAME//TEXT"
+kalka query "//FRAME[@width > 1000]"             # app mode
 ```
 
 Common node types: `FRAME`, `TEXT`, `RECTANGLE`, `ELLIPSE`, `VECTOR`, `GROUP`, `COMPONENT`, `COMPONENT_SET`, `INSTANCE`, `SECTION`, `LINE`, `STAR`, `POLYGON`, `SLICE`, `BOOLEAN_OPERATION`.
@@ -103,37 +103,37 @@ Common node types: `FRAME`, `TEXT`, `RECTANGLE`, `ELLIPSE`, `VECTOR`, `GROUP`, `
 ### Export and convert
 
 ```bash
-openpencil export design.fig -o hero.png
-openpencil export -o hero.png                         # app mode
-openpencil export design.fig --node 1:23 -s 2 -o button@2x.png
-openpencil export design.fig -f jpg -q 85 -o preview.jpg
-openpencil export design.fig -f svg --node 1:23 -o icon.svg
-openpencil export design.fig -f pdf -o page.pdf
-openpencil export design.fig -f fig -o roundtrip.fig
-openpencil export design.fig -f jsx -o component.jsx
-openpencil export design.fig -f jsx --style tailwind -o component.tsx
-openpencil export design.pen -f storybook -o src/stories --watch  # stories + design images per component, re-exported on save
-openpencil export 'src/**/*.pen' -f storybook --beside  # stories next to each design file
-openpencil export design.fig --thumbnail --width 1920 --height 1080
-openpencil export --page "Components" -o components.png
+kalka export design.fig -o hero.png
+kalka export -o hero.png                         # app mode
+kalka export design.fig --node 1:23 -s 2 -o button@2x.png
+kalka export design.fig -f jpg -q 85 -o preview.jpg
+kalka export design.fig -f svg --node 1:23 -o icon.svg
+kalka export design.fig -f pdf -o page.pdf
+kalka export design.fig -f fig -o roundtrip.fig
+kalka export design.fig -f jsx -o component.jsx
+kalka export design.fig -f jsx --style tailwind -o component.tsx
+kalka export design.pen -f storybook -o src/stories --watch  # stories + design images per component, re-exported on save
+kalka export 'src/**/*.pen' -f storybook --beside  # stories next to each design file
+kalka export design.fig --thumbnail --width 1920 --height 1080
+kalka export --page "Components" -o components.png
 
-openpencil convert design.fig -o design.pen
-openpencil convert design.fig -f folder -o design   # Kalka folder of HTML pages, tokens, assets
-openpencil info design                              # a Kalka folder reads like any document
-openpencil formats
+kalka convert design.fig -o design.pen
+kalka convert design.fig -f folder -o design   # Kalka folder of HTML pages, tokens, assets
+kalka info design                              # a Kalka folder reads like any document
+kalka formats
 ```
 
 ### Analyze and lint
 
 ```bash
-openpencil analyze colors design.fig
-openpencil analyze colors --similar --threshold 10     # app mode
-openpencil analyze typography design.fig --group-by size
-openpencil analyze spacing design.fig --grid 8
-openpencil analyze clusters design.fig --min-count 3
-openpencil lint design.fig
-openpencil lint design.fig --json
-openpencil lint design.fig --fix -o fixed.fig     # bind matching color variables, round to whole pixels
+kalka analyze colors design.fig
+kalka analyze colors --similar --threshold 10     # app mode
+kalka analyze typography design.fig --group-by size
+kalka analyze spacing design.fig --grid 8
+kalka analyze clusters design.fig --min-count 3
+kalka lint design.fig
+kalka lint design.fig --json
+kalka lint design.fig --fix -o fixed.fig     # bind matching color variables, round to whole pixels
 ```
 
 In MCP and AI chat, `lint` lists findings with their `fix` and `suggestions`; `lint_fix` applies the safe fixes, and the first suggestion of each finding with `suggestions: true`.
@@ -143,35 +143,35 @@ In MCP and AI chat, `lint` lists findings with their `fix` and `suggestions`; `l
 Execute JavaScript against the document using a Figma Plugin API-compatible runtime:
 
 ```bash
-openpencil eval design.fig -c 'figma.currentPage.findAll(n => n.type === "TEXT").length'
+kalka eval design.fig -c 'figma.currentPage.findAll(n => n.type === "TEXT").length'
 
 # App mode — modifies the live document in the editor
-openpencil eval -c '
+kalka eval -c '
   const buttons = figma.currentPage.findAll(n => n.name === "Button");
   buttons.forEach(b => { b.cornerRadius = 8 });
   buttons.length + " buttons updated"
 '
 
 # Modify and save to the same file
-openpencil eval design.fig -w -c '
+kalka eval design.fig -w -c '
   const texts = figma.currentPage.findAll(n => n.type === "TEXT");
   texts.forEach(t => { t.fontSize = 16 });
 '
 
 # Save to a different file
-openpencil eval design.fig -o modified.fig -c '...'
+kalka eval design.fig -o modified.fig -c '...'
 
 # Read code from stdin
-echo 'figma.currentPage.children.map(n => n.name)' | openpencil eval design.fig --stdin
+echo 'figma.currentPage.children.map(n => n.name)' | kalka eval design.fig --stdin
 ```
 
-Next to `figma`, scripts get `openpencil`: what Kalka adds to the Figma API, in its style. A main component can behave as a Reka UI control, by its own property and slot names:
+Next to `figma`, scripts get `kalka`: what Kalka adds to the Figma API, in its style. A main component can behave as a Reka UI control, by its own property and slot names:
 
 ```bash
-openpencil eval design.fig -w -c '
+kalka eval design.fig -w -c '
   const set = figma.currentPage.findOne(n => n.type === "COMPONENT_SET" && n.name === "Switch");
   const thumb = set.findOne(n => n.name === "Thumb");
-  const behaviour = openpencil.setBehaviour(set, "switch")
+  const behaviour = kalka.setBehaviour(set, "switch")
     .bindValue("value", "State")      // On/Off guessed from the variant values
     .bindPart("thumb", thumb);        // the frame becomes a slot
   behaviour.states = "Interaction";
@@ -179,43 +179,43 @@ openpencil eval design.fig -w -c '
 '
 ```
 
-`openpencil.behaviourKinds` lists every kind with its values and parts; `openpencil.getBehaviour(node)` reads one (a variant reads its set's); `openpencil.createSlot(frame)` makes a frame a slot. The `set_behaviour`, `get_behaviour`, and `create_slot` tools do the same over MCP, and design JSX writes controls with Reka's element names (`Switch.Root`, `Switch.Thumb`).
+`kalka.behaviourKinds` lists every kind with its values and parts; `kalka.getBehaviour(node)` reads one (a variant reads its set's); `kalka.createSlot(frame)` makes a frame a slot. The `set_behaviour`, `get_behaviour`, and `create_slot` tools do the same over MCP, and design JSX writes controls with Reka's element names (`Switch.Root`, `Switch.Thumb`).
 
 ### Diff
 
 Compare nodes and documents, and apply patches:
 
 ```bash
-openpencil diff create design.fig --from 1:23 --to 1:87       # JSX attribute patch
-openpencil diff jsx design.fig --from 1:23 --to 1:87          # JSX structure
-openpencil diff show 1:24 design.fig --attributes 'rounded={8}' > fix.diff
-openpencil diff apply fix.diff design.fig --dry-run           # fails on stale values
-openpencil diff apply fix.diff design.fig --write
-openpencil diff visual design.fig --from 1:23 --to 1:87 -o diff.png
-openpencil diff files before.fig after.fig                    # exit 1 when different
+kalka diff create design.fig --from 1:23 --to 1:87       # JSX attribute patch
+kalka diff jsx design.fig --from 1:23 --to 1:87          # JSX structure
+kalka diff show 1:24 design.fig --attributes 'rounded={8}' > fix.diff
+kalka diff apply fix.diff design.fig --dry-run           # fails on stale values
+kalka diff apply fix.diff design.fig --write
+kalka diff visual design.fig --from 1:23 --to 1:87 -o diff.png
+kalka diff files before.fig after.fig                    # exit 1 when different
 ```
 
 ### Control the running app
 
 ```bash
-openpencil documents list --json                       # tab IDs, paths, pages
-openpencil documents open designs/landing.fig          # new tab; --json returns target.documentId
-openpencil documents new --path designs/draft.fig
-openpencil documents activate tab-123 --page-id 0:4    # bring a tab to the front
-openpencil documents save --document-id tab-123
-openpencil documents close --document-id tab-123 --save   # or --discard; fails on unsaved changes otherwise
-openpencil undo --document-id tab-123                  # also: redo
-openpencil settings get --json
-openpencil settings set editing.snapping.pixelGrid false
+kalka documents list --json                       # tab IDs, paths, pages
+kalka documents open designs/landing.fig          # new tab; --json returns target.documentId
+kalka documents new --path designs/draft.fig
+kalka documents activate tab-123 --page-id 0:4    # bring a tab to the front
+kalka documents save --document-id tab-123
+kalka documents close --document-id tab-123 --save   # or --discard; fails on unsaved changes otherwise
+kalka undo --document-id tab-123                  # also: redo
+kalka settings get --json
+kalka settings set editing.snapping.pixelGrid false
 ```
 
 `tool` exposes every MCP tool, so the CLI is never limited to its dedicated commands:
 
 ```bash
-openpencil tool list
-openpencil tool describe set_fill                      # JSON Schema for the arguments
-openpencil tool call set_fill --document-id tab-123 --args '{"id":"0:5","color":"#2563eb"}'
-openpencil tool call create_page design.fig --args '{"name":"Icons"}' --write   # headless
+kalka tool list
+kalka tool describe set_fill                      # JSON Schema for the arguments
+kalka tool call set_fill --document-id tab-123 --args '{"id":"0:5","color":"#2563eb"}'
+kalka tool call create_page design.fig --args '{"name":"Icons"}' --write   # headless
 ```
 
 Every command that reports structured data supports `--json` when appropriate.
@@ -229,9 +229,9 @@ Use Bun by default:
 ```json
 {
   "mcpServers": {
-    "open-pencil": {
+    "kalka": {
       "command": "bunx",
-      "args": ["openpencil-mcp"]
+      "args": ["kalka-mcp"]
     }
   }
 }
@@ -242,8 +242,8 @@ If `@kalka/mcp` is installed globally, direct binaries also work:
 ```json
 {
   "mcpServers": {
-    "open-pencil": {
-      "command": "openpencil-mcp"
+    "kalka": {
+      "command": "kalka-mcp"
     }
   }
 }
@@ -253,15 +253,15 @@ If `@kalka/mcp` is installed globally, direct binaries also work:
 
 ```bash
 export PORT=7600
-export OPENPENCIL_MCP_ROOT=/path/to/files     # explicitly limit filesystem access
+export KALKA_MCP_ROOT=/path/to/files     # explicitly limit filesystem access
 
-openpencil-mcp-http
-# or: bunx openpencil-mcp-http
+kalka-mcp-http
+# or: bunx kalka-mcp-http
 ```
 
-Authentication is enabled by default with an automatically generated token. `OPENPENCIL_MCP_AUTH_TOKEN` can supply an explicit non-empty token; an empty value disables authentication. If browser access needs CORS, set `OPENPENCIL_MCP_CORS_ORIGIN` to a trusted origin. Never combine wildcard CORS (`*`) with disabled authentication.
+Authentication is enabled by default with an automatically generated token. `KALKA_MCP_AUTH_TOKEN` can supply an explicit non-empty token; an empty value disables authentication. If browser access needs CORS, set `KALKA_MCP_CORS_ORIGIN` to a trusted origin. Never combine wildcard CORS (`*`) with disabled authentication.
 
-The CLI defaults the filesystem root to the home directory on Windows and the current working directory elsewhere. Set `OPENPENCIL_MCP_ROOT` to an explicit narrow directory rather than relying on that default.
+The CLI defaults the filesystem root to the home directory on Windows and the current working directory elsewhere. Set `KALKA_MCP_ROOT` to an explicit narrow directory rather than relying on that default.
 
 ### MCP workflow
 
@@ -278,7 +278,7 @@ Use `undo` / `redo { document_id }` to step back your own changes. They refuse w
 
 WebMCP is off by default. In **Settings → MCP → WebMCP**, choose **Inspect** for read-only tools or **Edit** for scoped changes. These controls are independent of local MCP settings. Supporting browsers expose inspection and undoable existing-layer/property and variable edits directly from the Kalka workspace through `document.modelContext`, without an MCP server connection. Discover this browser surface separately: it excludes structural creation/deletion, arbitrary JS/JSX execution, external assets, filesystem operations, and credentials.
 
-Calls capture the active document/page. Cancellation prevents an edit from starting but does not reverse an already committed edit; use editor undo instead. Atomic edits require at most 10,000 nodes and variables combined, including when these same tools run through app AI/MCP. See the [WebMCP guide](https://openpencil.dev/programmable/mcp-server#webmcp) for scope and browser requirements.
+Calls capture the active document/page. Cancellation prevents an edit from starting but does not reverse an already committed edit; use editor undo instead. Atomic edits require at most 10,000 nodes and variables combined, including when these same tools run through app AI/MCP. See the [WebMCP guide](https://github.com/leyscore/kalka/blob/main/packages/docs/programmable/mcp-server.md#webmcp) for scope and browser requirements.
 
 ## Tool discovery
 
@@ -286,7 +286,7 @@ Users configure local server tools in **Settings → Tool access** → **Local M
 
 Discover available tools and their arguments from the connected server or browser; availability varies by version and mode. Each tool's schema and execution/exposure metadata are authoritative. Numeric inputs accept numbers or numeric strings consistently, but reject non-finite values. Do not rely on a fixed tool count or a copied inventory.
 
-> Tool availability can depend on server mode. `open_file`, `save_file`, and disk-writing export paths are scoped to the effective filesystem root; set it explicitly with `OPENPENCIL_MCP_ROOT`.
+> Tool availability can depend on server mode. `open_file`, `save_file`, and disk-writing export paths are scoped to the effective filesystem root; set it explicitly with `KALKA_MCP_ROOT`.
 
 ## Key tools for agents
 
@@ -317,6 +317,6 @@ Use the `render` tool for JSX strings. Use only the APIs exposed by the installe
 - Use `export_image` after changes to verify visual quality.
 - The running editor shows each MCP session as an agent at the layers its tools touch, and follows it while it works when the user has Follow agents on. Leave the user's selection and view alone unless they ask to be shown something.
 - Use `analyze colors --similar` to find near-duplicate colors.
-- Use `openpencil tool call` for MCP tools without a dedicated CLI command, and `eval` for Figma Plugin API operations not covered by any tool.
+- Use `kalka tool call` for MCP tools without a dedicated CLI command, and `eval` for Figma Plugin API operations not covered by any tool.
 - Use `--json` when piping CLI output to scripts.
 - In app mode, `eval` and MCP modifications are reflected live in the editor.

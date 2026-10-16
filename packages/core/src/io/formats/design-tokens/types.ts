@@ -51,7 +51,15 @@ export function designTokenIssueMessage(issue: DesignTokenIssue): string {
 }
 
 /** The key Kalka's own token data is kept under in `$extensions`. */
-export const OPENPENCIL_EXTENSION = 'dev.openpencil'
+export const KALKA_EXTENSION = 'design.kalka'
+
+/** The extension key tokens carried before the app was renamed Kalka, still read. */
+const LEGACY_EXTENSION = 'dev.openpencil'
+
+/** Kalka's own fields in a token's `$extensions`, under the current key or the legacy one. */
+export function kalkaExtension(extensions: Record<string, unknown> | undefined): unknown {
+  return extensions?.[KALKA_EXTENSION] ?? extensions?.[LEGACY_EXTENSION]
+}
 
 /** The resolver document version DTCG 2025.10 requires. */
 export const RESOLVER_VERSION = '2025-11-01'

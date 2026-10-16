@@ -114,27 +114,27 @@ try {
   }
   await page.locator('[data-test-id="canvas-element"][data-ready="1"]').waitFor({ timeout: 30_000 })
   if (documentPath) {
-    await page.evaluate((path) => window.openPencil?.openFile?.(path), documentURLPath)
+    await page.evaluate((path) => window.kalka?.openFile?.(path), documentURLPath)
     await page.waitForFunction(
       () => {
-        const store = window.openPencil?.getStore?.()
+        const store = window.kalka?.getStore?.()
         return store != null && store.graph.getChildren(store.state.currentPageId).length > 0
       },
       undefined,
       { timeout: 90_000 }
     )
     await page.evaluate(() => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Kalka store not available after opening benchmark document')
       store.zoomToFit()
     })
   } else {
     await setupScenario(page, scenario)
   }
-  await page.evaluate(() => window.openPencil?.test?.navigation?.waitForSettlement())
+  await page.evaluate(() => window.kalka?.test?.navigation?.waitForSettlement())
   if (!documentPath) {
     await page.evaluate((viewport) => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Kalka store not available')
       store.state.panX = viewport.panX
       store.state.panY = viewport.panY
@@ -142,20 +142,17 @@ try {
       store.requestRepaint()
     }, input.initialViewport)
   }
-  await page.evaluate(() => window.openPencil?.test?.navigation?.waitForSettlement())
-  await page.evaluate(
-    (name) => window.openPencil?.test?.navigation?.startRecording(name),
-    input.name
-  )
+  await page.evaluate(() => window.kalka?.test?.navigation?.waitForSettlement())
+  await page.evaluate((name) => window.kalka?.test?.navigation?.startRecording(name), input.name)
 
   const trace = traceEnabled ? await startChromiumTrace(page, { cpuProfile }) : null
   if (mutationNodeId && mutationOpacity !== null) {
     const previousSceneVersion = await page.evaluate(
-      () => window.openPencil?.getStore?.().state.sceneVersion ?? -1
+      () => window.kalka?.getStore?.().state.sceneVersion ?? -1
     )
     await page.evaluate(
       ({ nodeId, opacity }) => {
-        const store = window.openPencil?.getStore?.()
+        const store = window.kalka?.getStore?.()
         if (!store) throw new Error('Kalka store not available for benchmark mutation')
         if (!store.graph.getNode(nodeId))
           throw new Error(`Benchmark mutation node not found: ${nodeId}`)
@@ -165,7 +162,7 @@ try {
     )
     if (replayAfterMutation) {
       await page.waitForFunction((sceneVersion) => {
-        const store = window.openPencil?.getStore?.()
+        const store = window.kalka?.getStore?.()
         return (
           store != null &&
           store.state.sceneVersion > sceneVersion &&
@@ -179,11 +176,11 @@ try {
   } else {
     await replay(page, input, mode)
   }
-  await page.evaluate(() => window.openPencil?.test?.navigation?.waitForSettlement())
+  await page.evaluate(() => window.kalka?.test?.navigation?.waitForSettlement())
   await trace?.stop(resolve(output, 'trace.json.gz'))
 
   const recording = await page.evaluate(
-    () => window.openPencil?.test?.navigation?.stopRecording() as NavigationRecordingFile
+    () => window.kalka?.test?.navigation?.stopRecording() as NavigationRecordingFile
   )
   const metrics = computeNavigationMetrics(recording)
   const environment = {

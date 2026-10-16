@@ -33,7 +33,7 @@ struct PendingOpenFile {
     path: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     node: Option<String>,
-    /// Which producer queued this entry: a `openpencil://` link (true) or a file
+    /// Which producer queued this entry: a `kalka://` link (true) or a file
     /// association / argv path (false). The frontend cannot tell them apart from
     /// the path alone — a canonicalized Windows path is verbatim (`\\?\C:\…`).
     #[serde(rename = "deepLink")]
@@ -42,7 +42,7 @@ struct PendingOpenFile {
 
 struct PendingOpen(Mutex<Vec<PendingOpenFile>>);
 
-/// Rooms from `openpencil://join` links, waiting for the frontend to open them.
+/// Rooms from `kalka://join` links, waiting for the frontend to open them.
 struct PendingRooms(Mutex<Vec<String>>);
 
 #[tauri::command]
@@ -78,7 +78,7 @@ fn set_recent_files(app: tauri::AppHandle, paths: Vec<String>) -> Result<(), Str
 }
 
 /// Name of the MCP entry point installed by `@kalka/mcp`.
-const MCP_EXECUTABLE: &str = "openpencil-mcp-http";
+const MCP_EXECUTABLE: &str = "kalka-mcp-http";
 /// Bound on the directories reported back to the settings diagnostics.
 const MAX_REPORTED_SEARCH_DIRS: usize = 12;
 
@@ -258,7 +258,7 @@ fn queue_open_paths<R: tauri::Runtime>(app: &tauri::AppHandle<R>, paths: Vec<Pat
 fn queue_deep_links<R: tauri::Runtime>(app: &tauri::AppHandle<R>, urls: Vec<url::Url>) {
     let mut files = Vec::new();
     let mut rooms = Vec::new();
-    for url in urls.iter().filter(|url| url.scheme() == "openpencil") {
+    for url in urls.iter().filter(|url| url.scheme() == "kalka") {
         match deep_link::parse_deep_link(url) {
             Ok(deep_link::DeepLink::Open(open)) => files.push(PendingOpenFile {
                 path: open.file,
@@ -296,11 +296,11 @@ fn queue_rooms<R: tauri::Runtime>(app: &tauri::AppHandle<R>, rooms: Vec<String>)
     }
 }
 
-/// `openpencil://` URLs among a second launch's arguments: Windows and Linux start a new
+/// `kalka://` URLs among a second launch's arguments: Windows and Linux start a new
 /// process for a link, and the single-instance plugin hands its arguments to this one.
 fn deep_links_from_args(args: &[String]) -> Vec<url::Url> {
     args.iter()
-        .filter(|arg| arg.starts_with("openpencil://"))
+        .filter(|arg| arg.starts_with("kalka://"))
         .filter_map(|arg| url::Url::parse(arg).ok())
         .collect()
 }
@@ -396,7 +396,7 @@ pub fn run() {
             // - Windows / Linux: the link is argv, and the plugin parses it in its own
             //   setup (`handle_cli_arguments`).
             // - macOS: AppKit delivers the GetURL event *before* the app's setup. Traced
-            //   on a cold `open openpencil://…`: `RunEvent::Opened` at T+0.085 s, this
+            //   on a cold `open kalka://…`: `RunEvent::Opened` at T+0.085 s, this
             //   closure at T+0.342 s, and `on_open_url` never fired.
             //
             // In all three cases the URL survives only in the plugin's `current`, so it
@@ -449,11 +449,11 @@ mod tests {
     #[test]
     fn augment_path_appends_missing_candidates_once() {
         let current_dir = std::env::temp_dir();
-        let appended_dir = std::env::temp_dir().join("open-pencil-appended");
+        let appended_dir = std::env::temp_dir().join("kalka-appended");
         std::fs::create_dir_all(&appended_dir).expect("create candidate dir");
 
         let current =
-            std::env::join_paths([PathBuf::from("/open-pencil-first"), current_dir.clone()])
+            std::env::join_paths([PathBuf::from("/kalka-first"), current_dir.clone()])
                 .expect("join path list");
         let candidates = vec![current_dir.clone(), appended_dir.clone()];
         let entries: Vec<PathBuf> =
@@ -464,7 +464,7 @@ mod tests {
         assert_eq!(
             entries,
             vec![
-                PathBuf::from("/open-pencil-first"),
+                PathBuf::from("/kalka-first"),
                 current_dir,
                 appended_dir.clone(),
             ]
@@ -476,10 +476,10 @@ mod tests {
     #[test]
     fn augment_path_ignores_candidates_that_do_not_exist() {
         let current =
-            std::env::join_paths([PathBuf::from("/open-pencil-only")]).expect("join path list");
+            std::env::join_paths([PathBuf::from("/kalka-only")]).expect("join path list");
         let augmented = augment_path(
             &current.to_string_lossy(),
-            &[PathBuf::from("/open-pencil-nonexistent")],
+            &[PathBuf::from("/kalka-nonexistent")],
         );
 
         assert!(!augmented.contains("nonexistent"));

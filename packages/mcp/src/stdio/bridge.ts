@@ -52,7 +52,7 @@ export function createStdioRPCBridge({
   // Socket path resolution has two tiers:
   //   Explicit: socketPathOverride parameter — authoritative pin, never
   //             overwritten by discovery during reconnect.
-  //   Hint:     OPENPENCIL_MCP_SOCKET env var — resolved through
+  //   Hint:     KALKA_MCP_SOCKET env var — resolved through
   //             getSocketPath() and readDiscoveryFile(); NOT treated as
   //             explicit, so the bridge can pick up a changed path from the
   //             discovery file after a server restart.
@@ -310,7 +310,7 @@ export function createStdioRPCBridge({
     // completes and we're still not ready.
     const awaitReady = async (): Promise<void> => {
       if (!ready && connectPromise) await connectPromise
-      if (authFailure) throw new Error('Unauthorized: check OPENPENCIL_MCP_AUTH_TOKEN')
+      if (authFailure) throw new Error('Unauthorized: check KALKA_MCP_AUTH_TOKEN')
       if (!ready) throw new Error(DISCONNECTED_MESSAGE)
     }
 
@@ -402,7 +402,7 @@ export function createStdioRPCBridge({
                   ready = false
                   settled = true
                   scheduleReconnect()
-                  reject(new Error('Unauthorized: check OPENPENCIL_MCP_AUTH_TOKEN'))
+                  reject(new Error('Unauthorized: check KALKA_MCP_AUTH_TOKEN'))
                   return undefined
                 }
 

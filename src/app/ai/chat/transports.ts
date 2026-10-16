@@ -306,8 +306,8 @@ export function createChatSessionManager({
         mcpServers: await buildPiMCPServers()
       },
       apiKey
-        ? { OPENPENCIL_HARNESS_API_KEY: apiKey }
-        : { OPENPENCIL_HARNESS_AGENT_DIR: account?.agentDir ?? '' }
+        ? { KALKA_HARNESS_API_KEY: apiKey }
+        : { KALKA_HARNESS_AGENT_DIR: account?.agentDir ?? '' }
     )
     harnessTransportInstance = transport
     return transport as ChatTransport<UIMessage>

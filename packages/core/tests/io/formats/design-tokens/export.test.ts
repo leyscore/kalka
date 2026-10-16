@@ -95,7 +95,7 @@ describe('design token export', () => {
       $root: {
         $type: 'dimension',
         $value: { value: 24, unit: 'px' },
-        $extensions: { 'dev.openpencil': { unit: 'rem' } }
+        $extensions: { 'design.kalka': { unit: 'rem' } }
       },
       Small: { $type: 'dimension', $value: { value: 8, unit: 'px' } }
     })
@@ -103,7 +103,7 @@ describe('design token export', () => {
       Fast: {
         $type: 'duration',
         $value: { value: 0.15, unit: 's' },
-        $extensions: { 'dev.openpencil': { unit: 'ms' } }
+        $extensions: { 'design.kalka': { unit: 'ms' } }
       }
     })
     expect(light.Flags).toEqual({
@@ -113,7 +113,7 @@ describe('design token export', () => {
       Body: {
         $type: 'fontFamily',
         $value: 'Inter',
-        $extensions: { 'dev.openpencil': { scopes: ['FONT_FAMILY'] } }
+        $extensions: { 'design.kalka': { scopes: ['FONT_FAMILY'] } }
       }
     })
   })
@@ -124,13 +124,13 @@ describe('design token export', () => {
     expect(dark['Ratio 1-5']).toEqual({
       $type: 'dimension',
       $value: { value: 1.5, unit: 'px' },
-      $extensions: { 'dev.openpencil': { name: 'Ratio 1.5' } }
+      $extensions: { 'design.kalka': { name: 'Ratio 1.5' } }
     })
     expect(dark.Accent).toMatchObject({
       $value: { colorSpace: 'srgb', components: [1, 1, 1], alpha: 1, hex: '#ffffff' }
     })
     expect(dark.$extensions).toEqual({
-      'dev.openpencil': { collection: 'Theme', mode: 'Dark', default: false }
+      'design.kalka': { collection: 'Theme', mode: 'Dark', default: false }
     })
   })
 

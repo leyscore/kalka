@@ -9,7 +9,7 @@ test.use({ viewport: { width: 1400, height: 900 }, deviceScaleFactor: 1 })
 
 async function settle(page: Page) {
   await page.evaluate(async () => {
-    const hooks = window.openPencil?.test?.navigation
+    const hooks = window.kalka?.test?.navigation
     if (!hooks) throw new Error('Navigation hooks unavailable')
     await hooks.waitForSettlement()
   })
@@ -17,7 +17,7 @@ async function settle(page: Page) {
 
 async function takeRecording(page: Page) {
   return page.evaluate(() => {
-    const hooks = window.openPencil?.test?.navigation
+    const hooks = window.kalka?.test?.navigation
     if (!hooks) throw new Error('Navigation hooks unavailable')
     const recording = hooks.stopRecording()
     hooks.startRecording('next-phase')
@@ -44,7 +44,7 @@ function expectTiledSubmission(
 
 async function sceneVersion(page: Page) {
   return page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Editor unavailable')
     return store.state.sceneVersion
   })
@@ -57,7 +57,7 @@ async function crop(page: Page) {
 
 async function directReference(page: Page) {
   const probe = await page.evaluateHandle(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Editor unavailable')
     const renderer = store.canvasRenderers.find((r) => r.tracksSceneSettlement)
     if (!renderer) throw new Error('Scene renderer unavailable')
@@ -79,8 +79,8 @@ test.beforeEach(async ({ page }) => {
   await page.goto('/?test&no-rulers&renderer=tiled&navigation-benchmark')
   await new CanvasHelper(page).waitForInit()
   await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
-    const hooks = window.openPencil?.test?.navigation
+    const store = window.kalka?.getStore?.()
+    const hooks = window.kalka?.test?.navigation
     if (!store || !hooks) throw new Error('Editor unavailable')
     hooks.startRecording('tiled-property-preview')
     store.setZoomAroundPoint(1, 0, 0)
@@ -104,7 +104,7 @@ test.beforeEach(async ({ page }) => {
 })
 
 test.afterEach(async ({ page }) => {
-  await page.evaluate(() => window.openPencil?.test?.navigation?.stopRecording())
+  await page.evaluate(() => window.kalka?.test?.navigation?.stopRecording())
 })
 
 for (const [property, label] of [
@@ -125,9 +125,9 @@ for (const [property, label] of [
       await page.mouse.move(x + 24, y, { steps: 4 })
       await expect(field).not.toHaveAttribute('aria-valuenow', String(before))
       expect(await sceneVersion(page)).toBe(version)
-      expect(
-        await page.evaluate(() => window.openPencil?.getStore?.().isInteractiveEditing())
-      ).toBe(true)
+      expect(await page.evaluate(() => window.kalka?.getStore?.().isInteractiveEditing())).toBe(
+        true
+      )
     } finally {
       await page.mouse.up()
     }
@@ -148,9 +148,7 @@ for (const [property, label] of [
     await settle(page)
     expect((await crop(page)).equals(committedPixels)).toBe(true)
     const cancelledVersion = await sceneVersion(page)
-    expect(await page.evaluate(() => window.openPencil?.getStore?.().isInteractiveEditing())).toBe(
-      false
-    )
+    expect(await page.evaluate(() => window.kalka?.getStore?.().isInteractiveEditing())).toBe(false)
 
     expectTiledSubmission(await takeRecording(page), cancelledVersion)
     canvas.assertNoErrors()
@@ -167,7 +165,7 @@ test('font arrival invalidates tiled text and matches a fresh direct render', as
   })
   try {
     await page.evaluate(() => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Editor unavailable')
       const frame = store.getSelectedNodes()[0]
       const textId = frame?.childIds[0]

@@ -10,7 +10,7 @@ test('authors multiple variant dimensions and reports duplicate combinations', a
   await canvas.waitForInit()
 
   const ids = await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     const componentSet = store.graph.createNode('COMPONENT_SET', pageId, {
@@ -76,14 +76,14 @@ test('authors multiple variant dimensions and reports duplicate combinations', a
   await renameProperty('Property 1', 'State')
 
   const definitions = await page.evaluate((componentSetId) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     return store.graph.getNode(componentSetId)?.componentPropertyDefinitions
   }, ids.componentSetId)
   expect(definitions?.map((definition) => definition.name)).toEqual(['Type', 'Size', 'State'])
 
   await page.evaluate((variantId) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     store.select([variantId])
   }, ids.primaryLargeId)
@@ -99,7 +99,7 @@ test('authors multiple variant dimensions and reports duplicate combinations', a
   await expect(variantSection.getByRole('textbox', { name: 'Size' })).toHaveValue('Large')
 
   const state = await page.evaluate((variantId) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const node = store.graph.getNode(variantId)
     return node
@@ -129,7 +129,7 @@ test('adds a variant to a standalone component the way Figma does', async ({ pag
   await page.goto('/?test')
   await canvas.waitForInit()
   const chipId = await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const chip = store.graph.createNode('COMPONENT', store.state.currentPageId, {
       name: 'Chip',
@@ -168,7 +168,7 @@ test('adds a variant to a standalone component the way Figma does', async ({ pag
 
 async function setOf(page: Page, componentId: string): Promise<string> {
   const id = await page.evaluate(
-    (nodeId) => window.openPencil?.getStore?.()?.graph.getNode(nodeId)?.parentId,
+    (nodeId) => window.kalka?.getStore?.()?.graph.getNode(nodeId)?.parentId,
     componentId
   )
   if (!id) throw new Error('Expected a component set')
@@ -177,7 +177,7 @@ async function setOf(page: Page, componentId: string): Promise<string> {
 
 function variantNames(page: Page, componentId: string) {
   return page.evaluate((nodeId) => {
-    const graph = window.openPencil?.getStore?.()?.graph
+    const graph = window.kalka?.getStore?.()?.graph
     const setId = graph?.getNode(nodeId)?.parentId
     return setId ? (graph?.getChildren(setId).map((node) => node.name) ?? []) : []
   }, componentId)

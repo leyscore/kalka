@@ -15,7 +15,7 @@ test.describe('Render performance', () => {
     await helper.waitForInit()
 
     await page.evaluate((count: number) => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Kalka store not initialized')
       const arr = new Uint8Array(count * 3)
       crypto.getRandomValues(arr)
@@ -87,7 +87,7 @@ test.describe('Render performance', () => {
 
   test('benchmark: synchronous render throughput', async () => {
     const results = await helper.page.evaluate((iterations: number) => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Kalka store not initialized')
       const renderer = store.renderer
       if (!renderer) throw new Error('Kalka renderer not initialized')
@@ -180,7 +180,7 @@ test.describe('Render performance', () => {
 
     const results = await helper.page.evaluate(
       ({ count, iterations }) => {
-        const store = window.openPencil?.getStore?.()
+        const store = window.kalka?.getStore?.()
         if (!store) throw new Error('Kalka store not initialized')
         const renderer = store.renderer
         if (!renderer) throw new Error('Kalka renderer not initialized')

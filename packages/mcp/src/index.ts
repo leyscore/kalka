@@ -11,7 +11,7 @@ if (process.argv.includes('--version')) {
 
 if (process.argv.includes('--help') || process.argv.includes('-h')) {
   process.stdout.write(
-    `openpencil-mcp-http\n\n` +
+    `kalka-mcp-http\n\n` +
       `Start the Kalka MCP server.\n\n` +
       `On macOS/Linux, the server listens on a Unix domain socket by default\n` +
       `with optional TCP for browser clients. On Windows, only TCP is available.\n\n` +
@@ -20,20 +20,20 @@ if (process.argv.includes('--help') || process.argv.includes('-h')) {
       `  --version     Print the version\n\n` +
       `Environment variables:\n` +
       `  PORT                         TCP port (default: 7600, set to 0 to disable TCP)\n` +
-      `  OPENPENCIL_MCP_SOCKET        Override Unix socket path (recorded in the discovery file)\n` +
-      `  OPENPENCIL_MCP_DISCOVERY_PATH Override discovery file (mcp.json) location; defaults to the\n` +
+      `  KALKA_MCP_SOCKET        Override Unix socket path (recorded in the discovery file)\n` +
+      `  KALKA_MCP_DISCOVERY_PATH Override discovery file (mcp.json) location; defaults to the\n` +
       `                               platform path. Parent dir created 0o700. Mainly for test isolation.\n` +
-      `  OPENPENCIL_MCP_TCP           Deprecated — TCP is controlled by PORT (>0 = on, 0 = off)\n` +
-      `  OPENPENCIL_MCP_AUTH_TOKEN    Bearer token for MCP and RPC auth\n` +
-      `  OPENPENCIL_MCP_ROOT          Allowed directory for file-scoped tools (default: home directory on Windows, current working directory elsewhere)\n` +
-      `  OPENPENCIL_MCP_EVAL           Set to 1 to enable the eval tool\n` +
-      `  OPENPENCIL_MCP_DISABLED_TOOLS Comma-separated tool names to omit\n` +
-      `  OPENPENCIL_MCP_SCOPE         "selection" to let clients read only the selected layers\n` +
+      `  KALKA_MCP_TCP           Deprecated — TCP is controlled by PORT (>0 = on, 0 = off)\n` +
+      `  KALKA_MCP_AUTH_TOKEN    Bearer token for MCP and RPC auth\n` +
+      `  KALKA_MCP_ROOT          Allowed directory for file-scoped tools (default: home directory on Windows, current working directory elsewhere)\n` +
+      `  KALKA_MCP_EVAL           Set to 1 to enable the eval tool\n` +
+      `  KALKA_MCP_DISABLED_TOOLS Comma-separated tool names to omit\n` +
+      `  KALKA_MCP_SCOPE         "selection" to let clients read only the selected layers\n` +
       `                               (default: "document")\n` +
-      `  OPENPENCIL_MCP_CORS_ORIGIN   Allowed CORS origins, comma-separated.\n` +
+      `  KALKA_MCP_CORS_ORIGIN   Allowed CORS origins, comma-separated.\n` +
       `                               Defaults to the desktop app origin, since the app\n` +
       `                               webview is the only view that calls this server.\n` +
-      `  OPENPENCIL_MCP_APP_TIMEOUT_MS  If set, close the server and remove its discovery\n` +
+      `  KALKA_MCP_APP_TIMEOUT_MS  If set, close the server and remove its discovery\n` +
       `                               file after no app is attached for this many ms. The\n` +
       `                               grace period starts at startup and after disconnects.\n` +
       `                               Unset/0 disables it (default) — do not set this for\n` +
@@ -56,24 +56,24 @@ if (rawPort < 0 || rawPort > 65535) {
   process.exit(1)
 }
 const port = rawPort
-// OPENPENCIL_MCP_TCP is accepted for backward compat but has no effect —
+// KALKA_MCP_TCP is accepted for backward compat but has no effect —
 // the PORT value alone determines whether TCP is enabled (PORT=0 is the kill switch).
 const withTcp = port > 0
 
 const MAX_APP_TIMEOUT_MS = 2_147_483_647
-const rawAppTimeoutText = process.env.OPENPENCIL_MCP_APP_TIMEOUT_MS?.trim()
+const rawAppTimeoutText = process.env.KALKA_MCP_APP_TIMEOUT_MS?.trim()
 let appAttachTimeoutMs: number | undefined
 if (rawAppTimeoutText) {
   if (!/^\d+$/.test(rawAppTimeoutText)) {
     process.stderr.write(
-      `Error: OPENPENCIL_MCP_APP_TIMEOUT_MS must be a non-negative integer, got "${rawAppTimeoutText}"\n`
+      `Error: KALKA_MCP_APP_TIMEOUT_MS must be a non-negative integer, got "${rawAppTimeoutText}"\n`
     )
     process.exit(1)
   }
   appAttachTimeoutMs = Number.parseInt(rawAppTimeoutText, 10)
   if (!Number.isSafeInteger(appAttachTimeoutMs) || appAttachTimeoutMs > MAX_APP_TIMEOUT_MS) {
     process.stderr.write(
-      `Error: OPENPENCIL_MCP_APP_TIMEOUT_MS must be an integer in 0–${MAX_APP_TIMEOUT_MS}, got "${rawAppTimeoutText}"\n`
+      `Error: KALKA_MCP_APP_TIMEOUT_MS must be an integer in 0–${MAX_APP_TIMEOUT_MS}, got "${rawAppTimeoutText}"\n`
     )
     process.exit(1)
   }
@@ -84,34 +84,34 @@ const toolPolicy = readToolPolicyFromEnv()
 const handle = await startServer({
   httpPort: withTcp ? port : 0,
   withTcp,
-  socketPath: process.env.OPENPENCIL_MCP_SOCKET?.trim() || null,
+  socketPath: process.env.KALKA_MCP_SOCKET?.trim() || null,
   enableEval: toolPolicy.allowEval,
   disabledTools: toolPolicy.disabledTools,
   scope: toolPolicy.scope,
-  mcpRoot: resolveMCPRoot(process.env.OPENPENCIL_MCP_ROOT),
+  mcpRoot: resolveMCPRoot(process.env.KALKA_MCP_ROOT),
   // Auth token: undefined → auto-generate, empty string → disable auth,
   // non-empty → use trimmed value. Whitespace-only is rejected to prevent a
   // silent fallback to an auto-generated token when the operator intended to
   // set an explicit one.
   authToken: (() => {
-    const raw = process.env.OPENPENCIL_MCP_AUTH_TOKEN
+    const raw = process.env.KALKA_MCP_AUTH_TOKEN
     if (raw === undefined) return undefined
     if (raw === '') return null
     const trimmed = raw.trim()
     if (!trimmed) {
       process.stderr.write(
-        'Error: OPENPENCIL_MCP_AUTH_TOKEN is whitespace-only. Set a real token, or use an empty string to disable auth.\n'
+        'Error: KALKA_MCP_AUTH_TOKEN is whitespace-only. Set a real token, or use an empty string to disable auth.\n'
       )
       process.exit(1)
     }
     return trimmed
   })(),
-  corsOrigin: resolveCORSOrigins(process.env.OPENPENCIL_MCP_CORS_ORIGIN),
+  corsOrigin: resolveCORSOrigins(process.env.KALKA_MCP_CORS_ORIGIN),
   appAttachTimeoutMs
 })
 
-const readyMarker = process.env.OPENPENCIL_MCP_READY_MARKER
-if (readyMarker && /^open-pencil-ready:[a-f0-9-]{36}$/.test(readyMarker)) {
+const readyMarker = process.env.KALKA_MCP_READY_MARKER
+if (readyMarker && /^kalka-ready:[a-f0-9-]{36}$/.test(readyMarker)) {
   process.stderr.write(`${readyMarker}\n`)
 }
 

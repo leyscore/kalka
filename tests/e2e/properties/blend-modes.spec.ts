@@ -17,7 +17,7 @@ async function chooseBlend(sectionName: string, option: string) {
 
 async function nodeState(id: string) {
   return page.evaluate((nodeId) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const node = store.graph.getNode(nodeId)
     return node
@@ -39,7 +39,7 @@ test.beforeAll(async ({ browser }) => {
   canvas = new CanvasHelper(page)
   await canvas.waitForInit()
   ;[firstId, secondId] = await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const props = {
       fills: [
@@ -106,7 +106,7 @@ test('edits fill and effect blend modes with style detachment and undo', async (
 test('batches fill blend modes across a compatible selection', async () => {
   await page.evaluate(
     ([first, second]) => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Kalka store not initialized')
       store.select([first, second])
     },

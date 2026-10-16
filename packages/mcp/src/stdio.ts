@@ -20,7 +20,7 @@ if (process.argv.includes('--version')) {
 
 if (process.argv.includes('--help') || process.argv.includes('-h')) {
   process.stdout.write(
-    `openpencil-mcp\n\n` +
+    `kalka-mcp\n\n` +
       `Start the Kalka MCP stdio bridge.\n\n` +
       `Connects to the MCP server via Unix domain socket on macOS/Linux ` +
       `(with TCP fallback) or via TCP on Windows.\n` +
@@ -30,39 +30,36 @@ if (process.argv.includes('--help') || process.argv.includes('-h')) {
       `  --help, -h    Show this help message\n` +
       `  --version     Print the version\n\n` +
       `Environment variables:\n` +
-      `  OPENPENCIL_MCP_SOCKET        Override socket path (auto-discovered from discovery file when unset)\n` +
-      `  OPENPENCIL_MCP_AUTH_TOKEN    Bearer token for RPC auth\n` +
-      `  OPENPENCIL_MCP_ROOT          Allowed directory for file-scoped tools\n` +
+      `  KALKA_MCP_SOCKET        Override socket path (auto-discovered from discovery file when unset)\n` +
+      `  KALKA_MCP_AUTH_TOKEN    Bearer token for RPC auth\n` +
+      `  KALKA_MCP_ROOT          Allowed directory for file-scoped tools\n` +
       `                               (default: home directory on Windows, cwd elsewhere)\n` +
-      `  OPENPENCIL_MCP_EVAL          Set to 1 to enable the eval tool\n` +
-      `  OPENPENCIL_MCP_DISABLED_TOOLS Comma-separated tool names to omit; defaults to the app setting\n` +
-      `  OPENPENCIL_MCP_SCOPE         "selection" to read only the selected layers; defaults to the app setting\n`
+      `  KALKA_MCP_EVAL          Set to 1 to enable the eval tool\n` +
+      `  KALKA_MCP_DISABLED_TOOLS Comma-separated tool names to omit; defaults to the app setting\n` +
+      `  KALKA_MCP_SCOPE         "selection" to read only the selected layers; defaults to the app setting\n`
   )
   process.exit(0)
 }
 
 const discovery = await readDiscoveryFile()
 const toolPolicy: ToolPolicy = {
-  allowEval: process.env.OPENPENCIL_MCP_EVAL === '1',
+  allowEval: process.env.KALKA_MCP_EVAL === '1',
   disabledTools:
-    process.env.OPENPENCIL_MCP_DISABLED_TOOLS === undefined
+    process.env.KALKA_MCP_DISABLED_TOOLS === undefined
       ? (discovery?.disabledTools ?? [])
-      : parseDisabledTools(process.env.OPENPENCIL_MCP_DISABLED_TOOLS),
+      : parseDisabledTools(process.env.KALKA_MCP_DISABLED_TOOLS),
   // The server enforces its own scope on every call; this keeps the tool list in step with it,
   // and lets the client limit itself further.
-  scope: narrowestScope(
-    discovery?.scope ?? 'document',
-    parseToolScope(process.env.OPENPENCIL_MCP_SCOPE)
-  )
+  scope: narrowestScope(discovery?.scope ?? 'document', parseToolScope(process.env.KALKA_MCP_SCOPE))
 }
-const mcpRoot = resolveMCPRoot(process.env.OPENPENCIL_MCP_ROOT)
+const mcpRoot = resolveMCPRoot(process.env.KALKA_MCP_ROOT)
 // Auth token: undefined → auto-discover from discovery file, empty string →
 // disable auth, whitespace-only → reject (same fail-fast as index.ts to catch
 // misconfiguration), otherwise → use the trimmed value.
-const rawAuthToken = process.env.OPENPENCIL_MCP_AUTH_TOKEN
+const rawAuthToken = process.env.KALKA_MCP_AUTH_TOKEN
 if (rawAuthToken !== undefined && rawAuthToken !== '' && rawAuthToken.trim() === '') {
   process.stderr.write(
-    'Error: OPENPENCIL_MCP_AUTH_TOKEN is whitespace-only. Set a real token, or use an empty string to disable auth.\n'
+    'Error: KALKA_MCP_AUTH_TOKEN is whitespace-only. Set a real token, or use an empty string to disable auth.\n'
   )
   process.exit(1)
 }
@@ -73,7 +70,7 @@ function resolveAuthToken(raw: string | undefined): string | null | undefined {
 }
 const authToken = resolveAuthToken(rawAuthToken)
 
-// OPENPENCIL_MCP_SOCKET is intentionally NOT forwarded as an explicit socketPath.
+// KALKA_MCP_SOCKET is intentionally NOT forwarded as an explicit socketPath.
 // The bridge reads the socket path from the discovery file (whose `socketPath`
 // field records the override) via auto-discovery. Treating the env var as an
 // explicit pin would prevent the bridge from following discovery updates after

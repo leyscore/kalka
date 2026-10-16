@@ -53,7 +53,7 @@ describe('in-memory clipboard', () => {
     expect(hasInMemoryClipboardHTML()).toBe(false)
     expect(getInMemoryClipboardHTML()).toBe('')
 
-    const sampleHTML = '<!--(openpencil)test-->'
+    const sampleHTML = '<!--(kalka)test-->'
     setInMemoryClipboardHTML(sampleHTML)
 
     expect(getInMemoryClipboardHTML('unrelated')).toBe('')
@@ -232,7 +232,7 @@ describe('in-memory clipboard', () => {
   })
 
   test('browser clipboard does not paste cached design data over unrelated current HTML', async () => {
-    setInMemoryClipboardHTML('<!--(openpencil)cached(/openpencil)-->')
+    setInMemoryClipboardHTML('<!--(kalka)cached(/kalka)-->')
     const store = createEditorStore()
     const paste = mock(async () => undefined)
     store.pasteFromHTML = paste
@@ -246,7 +246,7 @@ describe('in-memory clipboard', () => {
   })
 
   test('browser clipboard rejects a successful plain-text-only read over stale memory', async () => {
-    setInMemoryClipboardHTML('<!--(openpencil)cached(/openpencil)-->', 'cached')
+    setInMemoryClipboardHTML('<!--(kalka)cached(/kalka)-->', 'cached')
     const store = createEditorStore()
     const paste = mock(async () => undefined)
     store.pasteFromHTML = paste

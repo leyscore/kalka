@@ -30,8 +30,8 @@ export function serializeDisabledTools(names: readonly string[]): string {
 
 export function readToolPolicyFromEnv(env: NodeJS.ProcessEnv = process.env): ToolPolicy {
   return {
-    allowEval: env.OPENPENCIL_MCP_EVAL === '1',
-    disabledTools: parseDisabledTools(env.OPENPENCIL_MCP_DISABLED_TOOLS),
-    scope: parseToolScope(env.OPENPENCIL_MCP_SCOPE)
+    allowEval: env.KALKA_MCP_EVAL === '1',
+    disabledTools: parseDisabledTools(env.KALKA_MCP_DISABLED_TOOLS),
+    scope: parseToolScope(env.KALKA_MCP_SCOPE)
   }
 }

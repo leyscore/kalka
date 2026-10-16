@@ -50,7 +50,7 @@ export function renderElement(
   )
   const children =
     override.children ?? (() => element.children.map((child) => renderNode(context, child, path)))
-  const { 'data-open-pencil-node-id': _id, ...attrs } = element.attrs
+  const { 'data-kalka-node-id': _id, ...attrs } = element.attrs
   return h(
     override.tag ?? element.tagName,
     { ...attrs, key: path, 'data-layer': path, style, ...override.props },

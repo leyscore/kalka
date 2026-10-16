@@ -37,7 +37,7 @@ test('layer reorder exposes a visible drop indicator before dropping', async ({ 
   await canvas.clearCanvas()
 
   const ids = await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     const first = store.graph.createNode('RECTANGLE', pageId, { name: 'Layer A' })
@@ -65,7 +65,7 @@ test('layer child drop exposes a visible container highlight before dropping', a
   await canvas.clearCanvas()
 
   const ids = await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     const frame = store.graph.createNode('FRAME', pageId, {

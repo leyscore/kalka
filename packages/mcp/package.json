@@ -4,12 +4,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/open-pencil/open-pencil.git",
+    "url": "git+https://github.com/leyscore/kalka.git",
     "directory": "packages/mcp"
   },
   "bin": {
-    "openpencil-mcp": "./dist/stdio.mjs",
-    "openpencil-mcp-http": "./dist/index.mjs"
+    "kalka-mcp": "./dist/stdio.mjs",
+    "kalka-mcp-http": "./dist/index.mjs"
   },
   "files": [
     "dist",

@@ -4,7 +4,7 @@ const editor = useEditorSetup()
 
 function getPages() {
   return editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     return store.graph.getPages().map((p) => ({ id: p.id, name: p.name }))
   })
@@ -12,7 +12,7 @@ function getPages() {
 
 function getCurrentPageId() {
   return editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     return store.state.currentPageId
   })
@@ -20,7 +20,7 @@ function getCurrentPageId() {
 
 function getPageChildCount() {
   return editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     return store.graph.getChildren(store.state.currentPageId).length
   })
@@ -114,7 +114,7 @@ test('delete current page switches to adjacent', async () => {
   const deletingId = await getCurrentPageId()
 
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     store.deletePage(store.state.currentPageId)
   })
@@ -133,7 +133,7 @@ test('rename page via store', async () => {
 
   await editor.page.evaluate(
     ([id, name]) => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Kalka store not initialized')
       store.renamePage(id, name)
     },
@@ -188,7 +188,7 @@ test('cannot delete the last page', async () => {
   let pages = await getPages()
   while (pages.length > 1) {
     await editor.page.evaluate(() => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Kalka store not initialized')
       store.deletePage(store.state.currentPageId)
     })
@@ -200,7 +200,7 @@ test('cannot delete the last page', async () => {
 
   // Try deleting the last one — should be a no-op
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     store.deletePage(store.state.currentPageId)
   })
@@ -236,7 +236,7 @@ test('page context menu deletes a page', async () => {
 
 test('dragging a page row reorders pages', async () => {
   const currentPageId = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     while (store.graph.getPages().length < 3) store.addPage()
     for (const [index, page] of store.graph.getPages().entries()) {
@@ -259,7 +259,7 @@ test('dragging a page row reorders pages', async () => {
   const pages = await getPages()
   const names = pages.map((page) => page.name)
   const currentAfterReorder = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     return store.state.currentPageId
   })

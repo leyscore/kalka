@@ -22,7 +22,7 @@ export async function verifyArtifactConsumers(root: string, tarballs: string[]):
         .join('\n')
     )
   }
-  const consumer = await mkdtemp(join(tmpdir(), 'open-pencil-artifact-consumer-'))
+  const consumer = await mkdtemp(join(tmpdir(), 'kalka-artifact-consumer-'))
   try {
     await measurePhase('consumer install', () => installPackedPackages(consumer, tarballs))
     await measurePhase('public imports', () =>

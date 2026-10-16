@@ -6,7 +6,7 @@ export const LAYER_ID_ATTR = 'data-kalka-id'
 const SVG_NS = 'http://www.w3.org/2000/svg'
 
 /** The projection's own id attribute; the renderer writes {@link LAYER_ID_ATTR} instead. */
-const PROJECTION_ID_ATTR = 'data-open-pencil-node-id'
+const PROJECTION_ID_ATTR = 'data-kalka-node-id'
 
 export function styleText(style: DesignStyleDeclaration | undefined): string {
   if (!style) return ''

@@ -1,6 +1,6 @@
 /** Fixed Kalka namespace inside a shared storage backend. */
-export const STORAGE_NAMESPACE = 'open_pencil_storage'
-export const STORAGE_NAMESPACE_MARKER = `${STORAGE_NAMESPACE}/.openpencil-namespace`
+export const STORAGE_NAMESPACE = 'kalka_storage'
+export const STORAGE_NAMESPACE_MARKER = `${STORAGE_NAMESPACE}/.kalka-namespace`
 export const STORAGE_DOCUMENTS_PREFIX = `${STORAGE_NAMESPACE}/canvases/`
 
 export function documentFigKey(documentId: string): string {
@@ -23,6 +23,6 @@ export function documentIdFromFigKey(key: string): string | null {
 }
 
 export const NAMESPACE_MARKER_BODY = JSON.stringify({
-  app: 'open-pencil',
+  app: 'kalka',
   version: 1
 })

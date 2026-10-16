@@ -19,7 +19,7 @@ test.each(['valid', 'source', 'version', 'digest'])(
       await writeFile(
         join(root, 'package.json'),
         JSON.stringify({
-          name: 'open-pencil',
+          name: 'kalka',
           version: scenario === 'version' ? '0.14.0' : '0.15.0'
         })
       )
@@ -35,7 +35,7 @@ test.each(['valid', 'source', 'version', 'digest'])(
       }
       const context = {
         identity,
-        repository: 'open-pencil/open-pencil',
+        repository: 'kalka/kalka',
         version: '0.15.0',
         paths: desktopReleasePaths(root)
       }

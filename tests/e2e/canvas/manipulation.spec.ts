@@ -88,7 +88,7 @@ test('resize corner handle drag increases node dimensions', async () => {
   expect(before).not.toBeNull()
 
   const viewport = await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const id = [...store.state.selectedIds][0]
     const n = store.graph.getNode(id)
@@ -129,7 +129,7 @@ test('resize corner handle drag increases node dimensions', async () => {
 test('resize snapping preferences control pixel alignment and Control bypass', async () => {
   await canvas.clearCanvas()
   await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     store.state.snappingPreferences = { geometry: true, objects: false, pixelGrid: false }
     const id = store.createShape('RECTANGLE', 100.25, 100.25, 100, 100)
@@ -146,7 +146,7 @@ test('resize snapping preferences control pixel alignment and Control bypass', a
   expect(await getSelectedNode(page)).toMatchObject({ width: 106, height: 107 })
 
   await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     store.state.snappingPreferences.pixelGrid = true
   })
@@ -177,7 +177,7 @@ test('rotation handle drag rotates node', async () => {
   const initialRotation = expectDefined(before, 'selected node before').rotation ?? 0
 
   const viewport = await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const id = [...store.state.selectedIds][0]
     const n = store.graph.getNode(id)
@@ -230,7 +230,7 @@ async function setupFrameChild(rotation: number) {
   await canvas.clearCanvas()
 
   const setup = await page.evaluate((frameRotation) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const frameId = store.createShape('FRAME', 180, 160, 240, 160)
     if (!frameId) return null
@@ -248,7 +248,7 @@ async function setupFrameChild(rotation: number) {
   await canvas.waitForRender()
 
   const state = await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     const pageNode = store.graph.getNode(pageId)
@@ -290,7 +290,7 @@ test('frame children keep correct hover and click hit area without rotation', as
   await canvas.hover(state.hitX, state.hitY)
   const hoveredId = await page.evaluate(() =>
     (() => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Kalka store not initialized')
       return store.state.hoveredNodeId
     })()
@@ -305,7 +305,7 @@ test('frame children keep correct hover and click hit area without rotation', as
   await canvas.hover(state.missX, state.missY)
   const hoveredMiss = await page.evaluate(() =>
     (() => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Kalka store not initialized')
       return store.state.hoveredNodeId
     })()
@@ -320,7 +320,7 @@ test('rotated frame children keep correct hover and click hit area', async () =>
   await canvas.hover(state.hitX, state.hitY)
   const hoveredId = await page.evaluate(() =>
     (() => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Kalka store not initialized')
       return store.state.hoveredNodeId
     })()
@@ -335,7 +335,7 @@ test('rotated frame children keep correct hover and click hit area', async () =>
   await canvas.hover(state.missX, state.missY)
   const hoveredMiss = await page.evaluate(() =>
     (() => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Kalka store not initialized')
       return store.state.hoveredNodeId
     })()
@@ -351,7 +351,7 @@ test('rotation drag exposes live rotation preview state', async () => {
   await canvas.waitForRender()
 
   const viewport = await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const id = [...store.state.selectedIds][0]
     const n = store.graph.getNode(id)
@@ -380,7 +380,7 @@ test('rotation drag exposes live rotation preview state', async () => {
 
   const preview = await page.evaluate(() =>
     (() => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Kalka store not initialized')
       return store.state.rotationPreview
     })()
@@ -392,7 +392,7 @@ test('rotation drag exposes live rotation preview state', async () => {
 
   const clearedPreview = await page.evaluate(() =>
     (() => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Kalka store not initialized')
       return store.state.rotationPreview
     })()

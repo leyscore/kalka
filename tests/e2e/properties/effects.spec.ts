@@ -10,7 +10,7 @@ async function expectCanvas(name: string) {
 
 test('drop shadow on white card', async () => {
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     store.graph.createNode('FRAME', pageId, {
@@ -41,7 +41,7 @@ test('drop shadow on white card', async () => {
 
 test('drop shadow with spread', async () => {
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     store.graph.createNode('FRAME', pageId, {
@@ -72,7 +72,7 @@ test('drop shadow with spread', async () => {
 
 test('inner shadow', async () => {
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     store.graph.createNode('FRAME', pageId, {
@@ -105,7 +105,7 @@ test('inner shadow', async () => {
 
 test('inner shadow with spread', async () => {
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     store.graph.createNode('FRAME', pageId, {
@@ -138,7 +138,7 @@ test('inner shadow with spread', async () => {
 
 test('blend modes', async () => {
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     store.graph.createNode('FRAME', pageId, {
@@ -213,7 +213,7 @@ test('blend modes', async () => {
 
 test('alpha mask stack', async () => {
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     const frame = store.graph.createNode('FRAME', pageId, {
@@ -288,7 +288,7 @@ test('alpha mask stack', async () => {
 
 test('smoothed corners with blended shadow', async () => {
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     store.graph.createNode('FRAME', pageId, {
@@ -370,7 +370,7 @@ test('smoothed corners with blended shadow', async () => {
 
 test('drop shadow on ellipse', async () => {
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     store.graph.createNode('ELLIPSE', pageId, {
@@ -402,7 +402,7 @@ test('drop shadow on ellipse', async () => {
 
 test('combined drop and inner shadow', async () => {
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     store.graph.createNode('FRAME', pageId, {
@@ -441,7 +441,7 @@ test('combined drop and inner shadow', async () => {
 
 test('text drop shadow on glyphs', async () => {
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     store.graph.createNode('TEXT', pageId, {
@@ -477,7 +477,7 @@ test('text drop shadow on glyphs', async () => {
 
 test('layer blur', async () => {
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     store.graph.createNode('RECTANGLE', pageId, {
@@ -510,7 +510,7 @@ test('layer blur', async () => {
 
 test('invisible effect has no visual impact', async () => {
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     store.graph.createNode('FRAME', pageId, {

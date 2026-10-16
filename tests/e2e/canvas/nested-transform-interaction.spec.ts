@@ -12,7 +12,7 @@ for (const flipX of [false, true]) {
     test(`nested rotation, labels and cancellation (flipX=${flipX}, flipY=${flipY})`, async () => {
       const data = nestedGeometryData(flipX, flipY)
       const id = await editor.page.evaluate((fixture) => {
-        const store = window.openPencil?.getStore?.()
+        const store = window.kalka?.getStore?.()
         if (!store) throw new Error('Editor unavailable')
         const s = fixture.section
         const sectionId = store.createShape('SECTION', s.x, s.y, s.width, s.height)
@@ -42,7 +42,7 @@ for (const flipX of [false, true]) {
         'canvas bounds'
       )
       const viewport = await editor.page.evaluate(() => {
-        const state = window.openPencil?.getStore?.().state
+        const state = window.kalka?.getStore?.().state
         if (!state) throw new Error('Editor unavailable')
         return { zoom: state.zoom, panX: state.panX, panY: state.panY }
       })
@@ -76,7 +76,7 @@ for (const flipX of [false, true]) {
         await move(end, 8)
         await editor.canvas.waitForRender()
         const held = await editor.page.evaluate((nodeId) => {
-          const store = window.openPencil?.getStore?.()
+          const store = window.kalka?.getStore?.()
           return {
             rotation: store?.graph.getNode(nodeId)?.rotation,
             preview: store?.state.rotationPreview
@@ -93,11 +93,11 @@ for (const flipX of [false, true]) {
         await editor.page.keyboard.press('Escape')
         await editor.canvas.waitForRender()
         expect(
-          await editor.page.evaluate(() => window.openPencil?.getStore?.().state.rotationPreview)
+          await editor.page.evaluate(() => window.kalka?.getStore?.().state.rotationPreview)
         ).toBeNull()
         expect(
           await editor.page.evaluate(() => [
-            ...(window.openPencil?.getStore?.().state.selectedIds ?? [])
+            ...(window.kalka?.getStore?.().state.selectedIds ?? [])
           ])
         ).toEqual([id])
         await editor.page.mouse.up()
@@ -108,30 +108,28 @@ for (const flipX of [false, true]) {
         await editor.page.mouse.down()
         await move(end, 8)
         const committedAngle = expectDefined(
-          await editor.page.evaluate(
-            () => window.openPencil?.getStore?.().state.rotationPreview?.angle
-          ),
+          await editor.page.evaluate(() => window.kalka?.getStore?.().state.rotationPreview?.angle),
           'preview angle'
         )
         await editor.page.mouse.up()
         await editor.canvas.waitForRender()
         expect(
           await editor.page.evaluate(
-            (nodeId) => window.openPencil?.getStore?.().graph.getNode(nodeId)?.rotation,
+            (nodeId) => window.kalka?.getStore?.().graph.getNode(nodeId)?.rotation,
             id
           )
         ).toBe(committedAngle)
-        await editor.page.evaluate(() => window.openPencil?.getStore?.().undoAction())
+        await editor.page.evaluate(() => window.kalka?.getStore?.().undoAction())
         expect(
           await editor.page.evaluate(
-            (nodeId) => window.openPencil?.getStore?.().graph.getNode(nodeId)?.rotation,
+            (nodeId) => window.kalka?.getStore?.().graph.getNode(nodeId)?.rotation,
             id
           )
         ).toBe(data.frame.rotation)
-        await editor.page.evaluate(() => window.openPencil?.getStore?.().redoAction())
+        await editor.page.evaluate(() => window.kalka?.getStore?.().redoAction())
         expect(
           await editor.page.evaluate(
-            (nodeId) => window.openPencil?.getStore?.().graph.getNode(nodeId)?.rotation,
+            (nodeId) => window.kalka?.getStore?.().graph.getNode(nodeId)?.rotation,
             id
           )
         ).toBe(committedAngle)

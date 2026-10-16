@@ -86,7 +86,7 @@ describe('behaviour model', () => {
   test('unreadable plugin data reads as no behaviour', () => {
     const { graph, set } = switchSet()
     graph.updateNode(set.id, {
-      pluginData: [{ pluginId: 'open-pencil', key: 'behaviour', value: '{"kind":"dial"}' }]
+      pluginData: [{ pluginId: 'kalka', key: 'behaviour', value: '{"kind":"dial"}' }]
     })
     expect(readBehaviour(set)).toBeNull()
   })

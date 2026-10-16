@@ -53,14 +53,14 @@ export function desktopAssets(target: DesktopTarget, version: string): DesktopAs
     const platform = arch === 'x64' ? 'darwin-x86_64' : 'darwin-aarch64'
     return [
       {
-        source: `OpenPencil_${version}_${arch}.dmg`,
-        name: `OpenPencil_${version}_${arch}.dmg`,
+        source: `Kalka_${version}_${arch}.dmg`,
+        name: `Kalka_${version}_${arch}.dmg`,
         updaterKeys: [],
         signed: false
       },
       {
         source: 'Kalka.app.tar.gz',
-        name: `OpenPencil_${arch}.app.tar.gz`,
+        name: `Kalka_${arch}.app.tar.gz`,
         updaterKeys: [platform, `${platform}-app`],
         signed: true
       }
@@ -71,14 +71,14 @@ export function desktopAssets(target: DesktopTarget, version: string): DesktopAs
     const platform = target.startsWith('aarch64') ? 'windows-aarch64' : 'windows-x86_64'
     return [
       {
-        source: `OpenPencil_${version}_${arch}-setup.exe`,
-        name: `OpenPencil_${version}_${arch}-setup.exe`,
+        source: `Kalka_${version}_${arch}-setup.exe`,
+        name: `Kalka_${version}_${arch}-setup.exe`,
         updaterKeys: [`${platform}-nsis`],
         signed: true
       },
       {
-        source: `OpenPencil_${version}_${arch}_en-US.msi`,
-        name: `OpenPencil_${version}_${arch}_en-US.msi`,
+        source: `Kalka_${version}_${arch}_en-US.msi`,
+        name: `Kalka_${version}_${arch}_en-US.msi`,
         updaterKeys: [platform, `${platform}-msi`],
         signed: true
       }
@@ -86,14 +86,14 @@ export function desktopAssets(target: DesktopTarget, version: string): DesktopAs
   }
   return [
     {
-      source: `OpenPencil_${version}_amd64.AppImage`,
-      name: `OpenPencil_${version}_amd64.AppImage`,
+      source: `Kalka_${version}_amd64.AppImage`,
+      name: `Kalka_${version}_amd64.AppImage`,
       updaterKeys: ['linux-x86_64', 'linux-x86_64-appimage'],
       signed: true
     },
     {
-      source: `OpenPencil_${version}_amd64.deb`,
-      name: `OpenPencil_${version}_amd64.deb`,
+      source: `Kalka_${version}_amd64.deb`,
+      name: `Kalka_${version}_amd64.deb`,
       updaterKeys: ['linux-x86_64-deb'],
       signed: true
     },

@@ -270,7 +270,7 @@ describe('variable roundtrip', () => {
       defaultModeId: '4:3',
       variableIds: [],
       pluginData: [
-        { pluginId: 'open-pencil', key: 'note', value: 'collection' },
+        { pluginId: 'kalka', key: 'note', value: 'collection' },
         { pluginId: 'tokens-studio', key: 'theme', value: 'base' }
       ]
     })
@@ -285,7 +285,7 @@ describe('variable roundtrip', () => {
       scopes: ['CORNER_RADIUS'],
       codeSyntax: { WEB: '--radius-card', iOS: 'Radius.card' },
       pluginData: [
-        { pluginId: 'open-pencil', key: 'note', value: 'variable' },
+        { pluginId: 'kalka', key: 'note', value: 'variable' },
         { pluginId: 'tokens-studio', key: 'path', value: 'radius.card' }
       ]
     })

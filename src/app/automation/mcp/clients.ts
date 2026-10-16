@@ -35,7 +35,7 @@ async function invoke<T>(command: string, args?: Record<string, unknown>): Promi
 /** The server entry any client that starts stdio servers accepts, in the common `mcpServers` shape. */
 export function mcpClientConfig(bridge: MCPBridgeCommand | null): string {
   const entry: { command: string; args?: string[]; env?: Record<string, string> } = {
-    command: bridge?.command ?? 'openpencil-mcp'
+    command: bridge?.command ?? 'kalka-mcp'
   }
   if (bridge && bridge.args.length > 0) entry.args = bridge.args
   if (bridge && Object.keys(bridge.env).length > 0) entry.env = bridge.env

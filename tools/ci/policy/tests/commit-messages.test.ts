@@ -35,7 +35,7 @@ test.each([
   'feat!: change the tool contract',
   `fix: explain the change\n\n${'Detailed rationale. '.repeat(12)}`,
   'Release v0.14.0',
-  'Merge pull request #697 from open-pencil/mcp-v2-webmcp'
+  'Merge pull request #697 from kalka/mcp-v2-webmcp'
 ])('accepts supported commit: %s', async (message) => {
   const result = await lint(message)
   expect(result.output).toContain('found 0 problems')
@@ -125,7 +125,7 @@ test.each([
 })
 
 test.each([
-  'Merge pull request #700 from open-pencil/build/commitlint',
+  'Merge pull request #700 from kalka/build/commitlint',
   "Merge remote-tracking branch 'origin/master' into build/commitlint",
   'Revert "fix: preserve selection"',
   'Fixed stuff'
@@ -136,7 +136,7 @@ test.each([
 })
 
 test('checks the full PR range while excluding existing base history', async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'open-pencil-commitlint-'))
+  const directory = await mkdtemp(join(tmpdir(), 'kalka-commitlint-'))
   async function git(...args: string[]) {
     const child = Bun.spawn(['git', ...args], { cwd: directory, stdout: 'pipe', stderr: 'pipe' })
     const [code, stdout, stderr] = await Promise.all([

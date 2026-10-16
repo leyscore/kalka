@@ -51,7 +51,7 @@ test('retained implicit layout survives import but does not override an explicit
   expect(exported?.stackCounterAlignItems).toBe('MAX')
   expect(exported?.stackCounterSizing).toBe('FIXED')
   expect(exported?.pluginData).toContainEqual({
-    pluginID: 'open-pencil',
+    pluginID: 'kalka',
     key: 'layoutDirection',
     value: 'RTL'
   })

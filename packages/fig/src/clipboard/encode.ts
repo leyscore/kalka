@@ -17,7 +17,7 @@ export function encodeFigmaClipboard(
     sessionID: 0,
     ackID: 0,
     pasteID,
-    pasteFileKey: 'openpencil',
+    pasteFileKey: 'kalka',
     nodeChanges,
     blobs: blobs.map((bytes) => ({ bytes }))
   }
@@ -25,6 +25,6 @@ export function encodeFigmaClipboard(
     deflateSync(getSchemaBytes()),
     getCompiledSchema().encodeMessage(message)
   )
-  const meta = encode(JSON.stringify({ fileKey: 'openpencil', pasteID, dataType: 'scene' }))
+  const meta = encode(JSON.stringify({ fileKey: 'kalka', pasteID, dataType: 'scene' }))
   return `<meta charset='utf-8'><span data-metadata="<!--(figmeta)${meta}(/figmeta)-->"></span><span data-buffer="<!--(figma)${fromUint8Array(binary)}(/figma)-->"></span>`
 }

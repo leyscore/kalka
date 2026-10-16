@@ -58,8 +58,8 @@ describe('storage library catalog', () => {
     })
 
     expect([...objects.values.keys()]).toEqual([
-      `open-pencil/libraries/design-system/revisions/${revision.manifest.revisionId}.json`,
-      'open-pencil/libraries/design-system/manifest.json'
+      `kalka/libraries/design-system/revisions/${revision.manifest.revisionId}.json`,
+      'kalka/libraries/design-system/manifest.json'
     ])
     expect(await catalog.listLibraries()).toMatchObject([
       { libraryId: 'design-system', latestRevisionId: revision.manifest.revisionId }
@@ -84,7 +84,7 @@ describe('storage library catalog', () => {
     const instance = graph.createInstance(nestedComponent.id, component.id)
     if (!instance) throw new Error('Expected instance')
     setInstanceOverride(instance.instanceOverrides, instance.id, instance.id, 'pluginData', {
-      $openPencilType: 'openpencil/map',
+      $kalkaType: 'kalka/map',
       entries: []
     })
 
@@ -107,7 +107,7 @@ describe('storage library catalog', () => {
         restoredInstance.id,
         'pluginData'
       )
-    ).toEqual({ $openPencilType: 'openpencil/map', entries: [] })
+    ).toEqual({ $kalkaType: 'kalka/map', entries: [] })
   })
 
   test('rejects corrupted revision content', async () => {
@@ -118,7 +118,7 @@ describe('storage library catalog', () => {
       name: 'Design system',
       graph: sourceGraph()
     })
-    const key = `open-pencil/libraries/design-system/revisions/${revision.manifest.revisionId}.json`
+    const key = `kalka/libraries/design-system/revisions/${revision.manifest.revisionId}.json`
     const bytes = objects.values.get(key)
     if (!bytes) throw new Error('Expected revision object')
     const source = new TextDecoder().decode(bytes).replace('Button', 'Corrupted')
@@ -136,7 +136,7 @@ describe('storage library catalog', () => {
       name: 'Design system',
       graph: sourceGraph()
     })
-    const key = `open-pencil/libraries/design-system/revisions/${revision.manifest.revisionId}.json`
+    const key = `kalka/libraries/design-system/revisions/${revision.manifest.revisionId}.json`
     for (const source of [
       '{not json',
       JSON.stringify({ manifest: revision.manifest, graph: { nodes: 'none' } })
@@ -172,7 +172,7 @@ describe('storage library catalog', () => {
       name: 'Design system',
       graph
     })
-    const key = `open-pencil/libraries/design-system/revisions/${revision.manifest.revisionId}.json`
+    const key = `kalka/libraries/design-system/revisions/${revision.manifest.revisionId}.json`
     const bytes = objects.values.get(key)
     if (!bytes) throw new Error('Expected revision object')
     const source = new TextDecoder().decode(bytes)

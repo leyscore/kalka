@@ -33,20 +33,20 @@ export function createAutomationEnvironment(
   const { authToken, baseEnv, configuration, corsOrigin, discoveryPath, httpPort, socketPath } =
     options
   const childEnv = { ...baseEnv }
-  delete childEnv.OPENPENCIL_MCP_SOCKET
-  delete childEnv.OPENPENCIL_MCP_AUTH_TOKEN
+  delete childEnv.KALKA_MCP_SOCKET
+  delete childEnv.KALKA_MCP_AUTH_TOKEN
   const environment: NodeJS.ProcessEnv = {
     ...childEnv,
     PORT: String(httpPort),
-    OPENPENCIL_MCP_TCP: '1',
-    OPENPENCIL_MCP_AUTH_TOKEN: configuration.authenticationEnabled ? (authToken ?? '') : '',
-    OPENPENCIL_MCP_CORS_ORIGIN: corsOrigin,
-    OPENPENCIL_MCP_ROOT: configuration.rootDirectory.trim() || process.cwd(),
-    OPENPENCIL_MCP_DISABLED_TOOLS: serializeDisabledTools(configuration.disabledTools),
-    OPENPENCIL_MCP_SCOPE: configuration.scope
+    KALKA_MCP_TCP: '1',
+    KALKA_MCP_AUTH_TOKEN: configuration.authenticationEnabled ? (authToken ?? '') : '',
+    KALKA_MCP_CORS_ORIGIN: corsOrigin,
+    KALKA_MCP_ROOT: configuration.rootDirectory.trim() || process.cwd(),
+    KALKA_MCP_DISABLED_TOOLS: serializeDisabledTools(configuration.disabledTools),
+    KALKA_MCP_SCOPE: configuration.scope
   }
-  if (socketPath) environment.OPENPENCIL_MCP_SOCKET = socketPath
-  if (discoveryPath) environment.OPENPENCIL_MCP_DISCOVERY_PATH = discoveryPath
+  if (socketPath) environment.KALKA_MCP_SOCKET = socketPath
+  if (discoveryPath) environment.KALKA_MCP_DISCOVERY_PATH = discoveryPath
   return environment
 }
 
@@ -196,7 +196,7 @@ export function automationPlugin(
   }
 
   async function startChild(): Promise<void> {
-    const runtimeDir = join(tmpdir(), 'open-pencil-mcp', safeRuntimeId(options.runtimeId))
+    const runtimeDir = join(tmpdir(), 'kalka-mcp', safeRuntimeId(options.runtimeId))
     await mkdir(runtimeDir, { recursive: true, mode: 0o700 })
     const socketPath = platformHasUnixSockets() ? join(runtimeDir, 'mcp.sock') : null
     const discoveryPath = join(runtimeDir, 'mcp.json')
@@ -205,7 +205,7 @@ export function automationPlugin(
     const spawnArgs = options.portlessServiceName
       ? ['run', '--name', options.portlessServiceName, ...command]
       : command.slice(1)
-    const readyMarker = `open-pencil-ready:${randomUUID()}`
+    const readyMarker = `kalka-ready:${randomUUID()}`
     const spawned = spawn(spawnCommand, spawnArgs, {
       stdio: ['ignore', 'inherit', 'pipe'],
       env: {
@@ -218,7 +218,7 @@ export function automationPlugin(
           httpPort: options.httpPort,
           socketPath
         }),
-        OPENPENCIL_MCP_READY_MARKER: readyMarker
+        KALKA_MCP_READY_MARKER: readyMarker
       }
     })
     const ready = waitForChildReady(spawned, readyMarker)
@@ -270,7 +270,7 @@ export function automationPlugin(
   }
 
   return {
-    name: 'open-pencil-automation',
+    name: 'kalka-automation',
     async configureServer(server) {
       server.middlewares.use(DEV_MCP_RESTART_PATH, (request, response, next) => {
         if (request.method !== 'POST') {

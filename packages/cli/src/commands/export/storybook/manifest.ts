@@ -7,7 +7,7 @@ import * as v from 'valibot'
  * Records which document and page generated each file in a Storybook output folder, so a
  * re-export replaces its own stories and leaves every other file alone.
  */
-export const MANIFEST_FILE = '.openpencil-stories.json'
+export const MANIFEST_FILE = '.kalka-stories.json'
 
 /**
  * A story file or a design image directly under the output folder. The manifest is read

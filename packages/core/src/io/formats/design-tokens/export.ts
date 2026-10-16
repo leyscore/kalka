@@ -12,7 +12,7 @@ import type {
 import { fileSegment, placeTokens, tokenPath, tokenReference, tokenTree } from './paths'
 import { styleTokens, withOriginalName, type TokenReferences } from './styles'
 import {
-  OPENPENCIL_EXTENSION,
+  KALKA_EXTENSION,
   RESOLVER_VERSION,
   type DesignToken,
   type DesignTokenFile,
@@ -57,7 +57,7 @@ interface ExportContext {
 }
 
 /** Kalka's own token fields, which DTCG has no place for. */
-function openPencilFields(variable: Variable, modeId: string) {
+function kalkaFields(variable: Variable, modeId: string) {
   const fields = omitBy(
     {
       unit: variable.unit,
@@ -68,7 +68,7 @@ function openPencilFields(variable: Variable, modeId: string) {
     },
     (value) => value === undefined
   )
-  return isEmptyObject(fields) ? {} : { [OPENPENCIL_EXTENSION]: fields }
+  return isEmptyObject(fields) ? {} : { [KALKA_EXTENSION]: fields }
 }
 
 /**
@@ -107,7 +107,7 @@ function variableToken(
     $value = literalTokenValue(variable, value)
   }
   if (variable.type === 'BOOLEAN') figma['com.figma.type'] = 'boolean'
-  const $extensions = { ...figma, ...openPencilFields(variable, mode.modeId) }
+  const $extensions = { ...figma, ...kalkaFields(variable, mode.modeId) }
   const token: DesignToken = { $type: variableTokenType(variable), $value }
   if (variable.description) token.$description = variable.description
   if (!isEmptyObject($extensions)) token.$extensions = $extensions
@@ -117,7 +117,7 @@ function variableToken(
 /** What a mode file says about its collection and mode, for Kalka to read back. */
 function modeExtension(collection: VariableCollection, mode: VariableCollectionMode) {
   return {
-    [OPENPENCIL_EXTENSION]: omitBy(
+    [KALKA_EXTENSION]: omitBy(
       {
         collection: collection.name,
         mode: mode.name,
@@ -168,7 +168,7 @@ function resolverDocument(collections: readonly CollectionFiles[], stylesPath: s
  * The document's variables and styles as W3C design tokens: one file per collection mode, which
  * Figma imports as a mode, a file of typography and shadow tokens from text and effect styles,
  * and a resolver document that combines them. Kalka's own fields ride in
- * `$extensions["dev.openpencil"]`, so reading the export back loses nothing.
+ * `$extensions["design.kalka"]`, so reading the export back loses nothing.
  */
 export function exportDesignTokens(graph: SceneGraph): DesignTokenExport {
   const issues: DesignTokenIssue[] = []

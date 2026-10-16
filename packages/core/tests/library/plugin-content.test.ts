@@ -3,7 +3,7 @@ import { describe, expect, test } from 'bun:test'
 import { createLibraryRevision, materializeLibraryAsset } from '@kalka/core/library'
 import {
   emptyBehaviour,
-  OPEN_PENCIL_PLUGIN_DATA,
+  KALKA_PLUGIN_DATA,
   pluginDataEntry,
   readBehaviour,
   SceneGraph,
@@ -36,7 +36,7 @@ function switchLibrary(behaviour: Behaviour) {
       componentKey: `switch-${value}`,
       componentPropertyValues: { State: value }
     })
-  const stale = pluginDataEntry(OPEN_PENCIL_PLUGIN_DATA.librarySource, {
+  const stale = pluginDataEntry(KALKA_PLUGIN_DATA.librarySource, {
     identity: { libraryId: 'elsewhere', assetKey: 'switch', revisionId: 'old' },
     sourceNodeId: null,
     readOnly: true
@@ -67,7 +67,7 @@ describe('plugin content in libraries', () => {
     expect(readBehaviour(set)).toEqual(SWITCH)
     expect(set.pluginData).toContainEqual(OTHER_PLUGIN)
     expect(set.pluginData.map((entry) => entry.key)).not.toContain(
-      OPEN_PENCIL_PLUGIN_DATA.librarySource.key
+      KALKA_PLUGIN_DATA.librarySource.key
     )
   })
 

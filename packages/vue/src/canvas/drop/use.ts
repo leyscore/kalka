@@ -12,7 +12,7 @@ const RASTER_IMAGE_TYPES = new Set([
   'image/gif',
   'image/avif'
 ])
-const COMPONENT_MIME = 'application/x-openpencil-component'
+const COMPONENT_MIME = 'application/x-kalka-component'
 
 function hasComponentData(e: DragEvent): boolean {
   return e.dataTransfer?.types.includes(COMPONENT_MIME) ?? false

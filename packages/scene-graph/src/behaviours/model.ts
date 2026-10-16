@@ -1,6 +1,6 @@
 import type { SceneGraph } from '../index'
 import { readPluginData, withPluginData } from '../plugin-data/field'
-import { OPEN_PENCIL_PLUGIN_DATA } from '../plugin-data/fields'
+import { KALKA_PLUGIN_DATA } from '../plugin-data/fields'
 import type { ComponentPropertyDefinition, SceneNode } from '../types'
 import {
   behaviourContract,
@@ -80,7 +80,7 @@ export function behaviourOwner(graph: SceneGraph, node: SceneNode): SceneNode | 
 
 /** The behaviour a component or component set keeps, or null when it has none or it is unreadable. */
 export function readBehaviour(owner: SceneNode): Behaviour | null {
-  return readPluginData(owner.pluginData, OPEN_PENCIL_PLUGIN_DATA.behaviour) ?? null
+  return readPluginData(owner.pluginData, KALKA_PLUGIN_DATA.behaviour) ?? null
 }
 
 /** The owner's plugin data with the behaviour set, or removed when null. */
@@ -88,7 +88,7 @@ export function withBehaviour(
   owner: SceneNode,
   behaviour: Behaviour | null
 ): SceneNode['pluginData'] {
-  return withPluginData(owner.pluginData, OPEN_PENCIL_PLUGIN_DATA.behaviour, behaviour ?? undefined)
+  return withPluginData(owner.pluginData, KALKA_PLUGIN_DATA.behaviour, behaviour ?? undefined)
 }
 
 /** Component properties the behaviour can bind to: the owner's, and a set's variants' own. */

@@ -1,5 +1,5 @@
 // The queue the desktop shell fills before the editor exists: a double-clicked
-// document, an `Open With`, an argv path, or an `openpencil://` link. Rust tags each
+// document, an `Open With`, an argv path, or an `kalka://` link. Rust tags each
 // entry with its producer because the frontend cannot tell them apart from the path
 // alone — a link's path is repo-relative, but a canonicalized Windows path is verbatim
 // (`\\?\C:\…`) and an association path can be anything the filesystem allows.
@@ -12,7 +12,7 @@ import { openDeepLink } from '@/app/document/io/deep-link'
 import { openDesignFileBatch, openFileFromPath } from '@/app/shell/menu/files'
 
 export interface PendingOpenFile extends DeepLinkTarget {
-  /** True when a `openpencil://` link queued this entry, false for a file association. */
+  /** True when a `kalka://` link queued this entry, false for a file association. */
   deepLink: boolean
 }
 

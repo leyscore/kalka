@@ -21,6 +21,6 @@ export function provideToolbar(ctx: ToolbarContext) {
 
 export function useToolbar(): ToolbarContext {
   const ctx = inject(TOOLBAR_KEY)
-  if (!ctx) throw new Error('[open-pencil] useToolbar() called outside <ToolbarRoot>')
+  if (!ctx) throw new Error('[kalka] useToolbar() called outside <ToolbarRoot>')
   return ctx
 }

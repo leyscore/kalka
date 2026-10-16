@@ -23,7 +23,7 @@ async function dblclickCanvas(page: Page, x: number, y: number) {
 
 async function setupAutoLayoutFrame(page: Page) {
   return page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
 
     store.state.panX = 0
@@ -59,7 +59,7 @@ async function setupAutoLayoutFrame(page: Page) {
 
 async function framePaddingTop(page: Page, frameId: string) {
   return page.evaluate((id) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     return store.graph.getNode(id)?.paddingTop ?? null
   }, frameId)
@@ -128,7 +128,7 @@ test('auto-layout padding editor follows canvas pan while open', async ({ page }
   if (!before) throw new Error('Padding editor has no bounding box')
 
   await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     store.pan(40, 0)
   })

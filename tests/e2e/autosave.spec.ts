@@ -16,8 +16,8 @@ test('autosave triggers after scene changes with a file handle', async () => {
       createWritable: async () => mockWritable
     } as FileSystemFileHandle
 
-    window.openPencil ??= {}
-    window.openPencil.test = { writeCount: () => writes, mockHandle }
+    window.kalka ??= {}
+    window.kalka.test = { writeCount: () => writes, mockHandle }
 
     return writes
   })
@@ -49,7 +49,7 @@ test('autosave triggers after scene changes with a file handle', async () => {
 
   // Check that the scene version changed
   const versionAfterDraw = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     return store.state.sceneVersion
   })

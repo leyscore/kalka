@@ -24,7 +24,7 @@ test.afterAll(async () => {
 async function createRects() {
   await canvas.clearCanvas()
   await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     store.state.snappingPreferences = { geometry: true, objects: true, pixelGrid: false }
     store.createShape('RECTANGLE', 100, 100, 80, 80)
@@ -36,7 +36,7 @@ async function createRects() {
 
 async function selectedPosition(): Promise<Vector> {
   return page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const id = store.state.selectedIds.values().next().value
     const node = id ? store.graph.getNode(id) : undefined
@@ -46,7 +46,7 @@ async function selectedPosition(): Promise<Vector> {
 }
 
 async function snapGuides() {
-  return page.evaluate(() => window.openPencil?.getStore?.().state.snapGuides ?? [])
+  return page.evaluate(() => window.kalka?.getStore?.().state.snapGuides ?? [])
 }
 
 // Snap guide visual tests compare the canvas at a snap position vs a non-snap position
@@ -118,7 +118,7 @@ test('center snap guide: canvas differs at snap vs non-snap position', async () 
 test('pixel snapping preference controls fractional object movement', async () => {
   await canvas.clearCanvas()
   await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     store.state.snappingPreferences = { geometry: true, objects: false, pixelGrid: false }
     const id = store.createShape('RECTANGLE', 120.25, 100.25, 80, 80)
@@ -134,7 +134,7 @@ test('pixel snapping preference controls fractional object movement', async () =
   expect(await selectedPosition()).toEqual({ x: 126.25, y: 107.25 })
 
   await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     store.state.snappingPreferences.pixelGrid = true
   })
@@ -153,7 +153,7 @@ test('pixel snapping preference controls fractional object movement', async () =
 test('Control bypasses object and pixel snapping during a real pointer drag', async () => {
   await canvas.clearCanvas()
   await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     store.state.snappingPreferences = { geometry: true, objects: true, pixelGrid: true }
     store.createShape('RECTANGLE', 100, 100, 80, 80)

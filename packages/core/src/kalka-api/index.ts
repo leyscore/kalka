@@ -18,11 +18,11 @@ import {
 export { BehaviourHandle, type NodeRef } from './behaviours'
 
 /**
- * What Kalka adds to the Figma Plugin API for scripts, as the `openpencil` global next to
+ * What Kalka adds to the Figma Plugin API for scripts, as the `kalka` global next to
  * `figma`: features Figma has no API for, in the same style. It edits the same document as the
  * `figma` it is made for.
  */
-export class OpenPencilAPI {
+export class KalkaAPI {
   constructor(private readonly figma: FigmaAPI) {}
 
   /** The behaviour kinds, after Reka UI's primitives, with the values and parts each binds. */

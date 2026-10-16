@@ -367,14 +367,14 @@ describe('resize + export integration: real commit path clears stale raw payload
       ...text.source.fig.rawNodeFields,
       derivedTextData: {
         glyphs: seeds.map((g) => ({
-          commandsBlob: { __openPencilFigmaBlob: new Uint8Array(g.commandsBlob) },
+          commandsBlob: { __kalkaFigmaBlob: new Uint8Array(g.commandsBlob) },
           position: { x: g.x, y: g.y },
           fontSize: g.fontSize,
           rotation: g.rotation ?? 0
         }))
       },
       strokeGeometry: [
-        { windingRule: 'NONZERO', commandsBlob: { __openPencilFigmaBlob: squareGeometryBlob(256) } }
+        { windingRule: 'NONZERO', commandsBlob: { __kalkaFigmaBlob: squareGeometryBlob(256) } }
       ]
     }
 

@@ -1,4 +1,4 @@
-import { buildOpenPencilClipboardHTML } from '@kalka/core/clipboard'
+import { buildKalkaClipboardHTML } from '@kalka/core/clipboard'
 
 import { isDesignClipboardHTML } from './html'
 
@@ -23,5 +23,5 @@ export async function externalHTMLAsDesignClipboard(html: string): Promise<strin
   const graph = await browserHTMLToSceneGraph(html, { pageName: 'Pasted HTML' })
   const roots = graph.getPages().flatMap((page) => graph.getChildren(page.id))
   if (roots.length === 0) return null
-  return buildOpenPencilClipboardHTML(roots, graph)
+  return buildKalkaClipboardHTML(roots, graph)
 }

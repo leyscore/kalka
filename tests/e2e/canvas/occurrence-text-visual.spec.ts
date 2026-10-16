@@ -46,7 +46,7 @@ test('occurrence override renders new text rather than inherited source glyphs',
   )
   expect(props.derivedTextGlyphs).toHaveLength(0)
   await editor.page.evaluate((props) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Missing editor')
     const { nodeType, ...values } = props
     if (nodeType !== 'TEXT') throw new Error('Expected text')

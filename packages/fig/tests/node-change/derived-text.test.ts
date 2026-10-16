@@ -152,7 +152,7 @@ describe('derived text writer', () => {
 
 type DerivedTextData = NonNullable<NodeChange['derivedTextData']>
 
-function earlierOpenPencilData(characters: string, lineHeight: number): DerivedTextData {
+function earlierKalkaData(characters: string, lineHeight: number): DerivedTextData {
   return {
     baselines: [
       {
@@ -184,7 +184,7 @@ describe('derived text reader', () => {
 
   test("keeps a glyph's own advance through reading and saving", () => {
     const characters = 'Table item'
-    const data = earlierOpenPencilData(characters, 16)
+    const data = earlierKalkaData(characters, 16)
     // One offset per character, as Figma writes, so the reader keeps the glyphs.
     data.logicalIndexToCharacterOffsetMap = data.logicalIndexToCharacterOffsetMap?.slice(0, -1)
     for (const glyph of data.glyphs ?? []) glyph.advance = 0.5
@@ -205,13 +205,13 @@ describe('derived text reader', () => {
     const characters = 'A sentence long enough that it has to wrap onto a second line.'
 
     expect(
-      convertFigmaDerivedTextGlyphs(earlierOpenPencilData(characters, 16), blobs, characters)
+      convertFigmaDerivedTextGlyphs(earlierKalkaData(characters, 16), blobs, characters)
     ).toEqual([])
   })
 
   test('keeps Figma glyphs, whose offset map has one entry per character', () => {
     const characters = 'Table item'
-    const data = earlierOpenPencilData(characters, 16)
+    const data = earlierKalkaData(characters, 16)
     data.logicalIndexToCharacterOffsetMap = data.logicalIndexToCharacterOffsetMap?.slice(0, -1)
 
     expect(convertFigmaDerivedTextGlyphs(data, blobs, characters)).toHaveLength(characters.length)
@@ -219,7 +219,7 @@ describe('derived text reader', () => {
 
   test('keeps Figma glyphs an earlier Kalka carried over', () => {
     const characters = 'Table item'
-    const data = earlierOpenPencilData(characters, 20)
+    const data = earlierKalkaData(characters, 20)
     for (const glyph of data.glyphs ?? []) glyph.position.y = 15.09
 
     expect(convertFigmaDerivedTextGlyphs(data, blobs, characters)).toHaveLength(characters.length)

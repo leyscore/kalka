@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { createEditor, type Tool } from '@kalka/core/editor'
 import {
-  OpenPencilProvider,
+  KalkaProvider,
   CanvasRoot,
   CanvasSurface,
   LayerTree,
@@ -27,7 +27,7 @@ const TOOL_LIST: Tool[] = [
 </script>
 
 <template>
-  <OpenPencilProvider :editor="editor">
+  <KalkaProvider :editor="editor">
     <div class="layout">
       <ToolbarRoot>
         <div class="toolbar">
@@ -97,7 +97,7 @@ const TOOL_LIST: Tool[] = [
         </div>
       </div>
     </div>
-  </OpenPencilProvider>
+  </KalkaProvider>
 </template>
 
 <style>

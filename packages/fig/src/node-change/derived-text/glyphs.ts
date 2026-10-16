@@ -9,7 +9,7 @@ type DerivedTextData = NonNullable<NodeChange['derivedTextData']>
  * and later Kalka writers follow it, so that length together with every glyph on the one
  * written baseline identifies glyphs that were never laid out at the node's width (#914).
  */
-function isUnshapedOpenPencilText(derivedTextData: DerivedTextData, characters: string): boolean {
+function isUnshapedKalkaText(derivedTextData: DerivedTextData, characters: string): boolean {
   const baselines = derivedTextData.baselines ?? []
   if (derivedTextData.logicalIndexToCharacterOffsetMap?.length !== characters.length + 1) {
     return false
@@ -31,7 +31,7 @@ export function convertFigmaDerivedTextGlyphs(
   blobs: Uint8Array[],
   characters: string
 ): DerivedTextGlyph[] {
-  if (!derivedTextData || isUnshapedOpenPencilText(derivedTextData, characters)) return []
+  if (!derivedTextData || isUnshapedKalkaText(derivedTextData, characters)) return []
   const glyphs: DerivedTextGlyph[] = []
   for (const glyph of derivedTextData.glyphs ?? []) {
     const commandsBlob = glyph.commandsBlob === undefined ? undefined : blobs[glyph.commandsBlob]

@@ -5,7 +5,7 @@ const editor = useEditorSetup()
 
 function getPageChildCount() {
   return editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     return store.graph.getChildren(store.state.currentPageId).length
   })
@@ -13,7 +13,7 @@ function getPageChildCount() {
 
 function getSelectedCount() {
   return editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     return store.state.selectedIds.size
   })
@@ -26,7 +26,7 @@ test('copy + paste via store duplicates a shape', async () => {
   const countBefore = await getPageChildCount()
 
   await editor.page.evaluate(async () => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const { html } = await store.prepareCopy()
     if (html) await store.pasteFromHTML(html)
@@ -62,7 +62,7 @@ test('⌘D duplicates in place', async () => {
 test('duplicate preserves fills', async () => {
   // Set a custom fill on the selected node
   await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const id = [...store.state.selectedIds][0]
     store.updateNodeWithUndo(
@@ -98,7 +98,7 @@ test('cut removes original', async () => {
 
   // Cut via store
   await editor.page.evaluate(async () => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     await store.prepareCopy()
     store.deleteSelected()

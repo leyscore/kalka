@@ -9,7 +9,7 @@ type SceneName = 'createClickDepthCards' | 'createNestedBoard'
 export function clickDepthDriver(page: () => Page) {
   function build<Name extends SceneName>(name: Name) {
     return page().evaluate(async (scene) => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Kalka store not initialized')
       const fixtureURL = '/tests/helpers/canvas/click-depth.ts'
       const scenes: typeof ClickDepthScenes = await import(fixtureURL)
@@ -28,7 +28,7 @@ export function clickDepthDriver(page: () => Page) {
     at(id: string, dx: number, dy: number) {
       return page().evaluate(
         ({ id, dx, dy }) => {
-          const store = window.openPencil?.getStore?.()
+          const store = window.kalka?.getStore?.()
           if (!store) throw new Error('Kalka store not initialized')
           const abs = store.graph.getAbsolutePosition(id)
           const { zoom, panX, panY } = store.state
@@ -40,7 +40,7 @@ export function clickDepthDriver(page: () => Page) {
 
     state() {
       return page().evaluate(() => {
-        const store = window.openPencil?.getStore?.()
+        const store = window.kalka?.getStore?.()
         if (!store) throw new Error('Kalka store not initialized')
         return { selected: [...store.state.selectedIds], hovered: store.state.hoveredNodeId }
       })
@@ -48,14 +48,14 @@ export function clickDepthDriver(page: () => Page) {
 
     children(id: string) {
       return page().evaluate(
-        (nodeId) => window.openPencil?.getStore?.().graph.getNode(nodeId)?.childIds ?? [],
+        (nodeId) => window.kalka?.getStore?.().graph.getNode(nodeId)?.childIds ?? [],
         id
       )
     },
 
     position(id: string) {
       return page().evaluate((nodeId) => {
-        const node = window.openPencil?.getStore?.().graph.getNode(nodeId)
+        const node = window.kalka?.getStore?.().graph.getNode(nodeId)
         return node ? { x: node.x, y: node.y } : null
       }, id)
     }

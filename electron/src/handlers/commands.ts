@@ -21,13 +21,13 @@ const AGENT_EXECUTABLES = [
   'codex',
   'codex-acp',
   'gemini',
-  'openpencil-mcp-http',
-  'openpencil-harness',
+  'kalka-mcp-http',
+  'kalka-harness',
   'npm'
 ]
 const COMPANION_PACKAGES: [string, string][] = [
-  ['openpencil-mcp-http', '@kalka/mcp'],
-  ['openpencil-harness', '@kalka/harness']
+  ['kalka-mcp-http', '@kalka/mcp'],
+  ['kalka-harness', '@kalka/harness']
 ]
 
 /** Where npm, bun, Homebrew and version managers put global programs. */
@@ -173,7 +173,7 @@ const commands: Record<string, (args: never) => unknown> = {
     const bundled = await bundledMCPScript(BUNDLED_MCP_HTTP)
     if (bundled) return { available: true, path: bundled, searched: [] }
     const path = await searchPath()
-    const found = await which('openpencil-mcp-http', path)
+    const found = await which('kalka-mcp-http', path)
     const searched = [
       ...new Set([found ? found.slice(0, found.lastIndexOf(sep)) : null, ...path.split(delimiter)])
     ]

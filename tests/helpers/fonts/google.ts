@@ -4,10 +4,10 @@ import type { Page, Route } from '@playwright/test'
 export async function mockGoogleFonts(page: Page, families = ['Inter', 'Kalka Google Font']) {
   const counts = { metadata: 0, previews: 0 }
   const pattern =
-    /^https:\/\/(fonts\.openpencil\.test\/|fonts\.google\.com\/metadata\/fonts|fonts\.googleapis\.com\/css2)/
+    /^https:\/\/(fonts\.kalka\.test\/|fonts\.google\.com\/metadata\/fonts|fonts\.googleapis\.com\/css2)/
   async function handle(route: Route) {
     const url = new URL(route.request().url())
-    if (url.hostname === 'fonts.openpencil.test') {
+    if (url.hostname === 'fonts.kalka.test') {
       counts.previews++
       await route.fulfill({ status: 200, body: Buffer.alloc(8) })
     } else if (url.hostname === 'fonts.google.com') {
@@ -21,7 +21,7 @@ export async function mockGoogleFonts(page: Page, families = ['Inter', 'Kalka Go
       const family = url.searchParams.get('family')?.split(':')[0] ?? 'Inter'
       await route.fulfill({
         contentType: 'text/css',
-        body: `@font-face { font-family: '${family}'; font-style: normal; font-weight: 400; src: url(https://fonts.openpencil.test/${encodeURIComponent(family)}.ttf) format('truetype'); }`
+        body: `@font-face { font-family: '${family}'; font-style: normal; font-weight: 400; src: url(https://fonts.kalka.test/${encodeURIComponent(family)}.ttf) format('truetype'); }`
       })
     }
   }

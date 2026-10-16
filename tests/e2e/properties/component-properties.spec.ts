@@ -16,7 +16,7 @@ async function selectOption(label: string, option: string) {
 
 async function instanceState(id = instanceId) {
   return page.evaluate((nodeId) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const instance = store.graph.getNode(nodeId)
     if (!instance) return null
@@ -39,7 +39,7 @@ test.beforeAll(async ({ browser }) => {
   canvas = new CanvasHelper(page)
   await canvas.waitForInit()
   instanceId = await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
     const iconA = store.graph.createNode('COMPONENT', pageId, { name: 'Icon A' })
@@ -144,7 +144,7 @@ test('renders and applies all component property control types', async () => {
 
 test('batches compatible mixed selection and undo', async () => {
   const secondId = await page.evaluate((firstId) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const first = store.graph.getNode(firstId)
     if (!first?.componentId) throw new Error('Missing first instance')
@@ -184,7 +184,7 @@ test('batches compatible mixed selection and undo', async () => {
     .toEqual(originalLabels)
 
   await page.evaluate((id) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const rectangle = store.graph.createNode('RECTANGLE', store.state.currentPageId)
     store.select([id, rectangle.id])

@@ -59,7 +59,7 @@ describe('@kalka/dom-css runtime', () => {
     const html = String(bundle.files[0]?.content)
 
     expect(html).toContain('<!doctype html>')
-    expect(html).toContain('data-open-pencil-html="standalone"')
+    expect(html).toContain('data-kalka-html="standalone"')
     expect(html).toContain('Kalka')
     expect(html).not.toContain('@tailwindcss/browser@4')
   })

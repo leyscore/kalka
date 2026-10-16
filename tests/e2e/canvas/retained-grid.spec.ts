@@ -11,7 +11,7 @@ for (const dpr of [1.25, 1.5, 2]) {
       const canvas = new CanvasHelper(page)
       await canvas.waitForInit()
       await page.evaluate(() => {
-        const store = window.openPencil?.getStore?.()
+        const store = window.kalka?.getStore?.()
         if (!store) throw new Error('Editor unavailable')
         for (const x of [40, 60.25, 80.5, 100.75]) {
           store.graph.createNode('RECTANGLE', store.state.currentPageId, {
@@ -43,14 +43,14 @@ for (const dpr of [1.25, 1.5, 2]) {
         { pan: 0.3, zoom: 1.00001 }
       ]) {
         await page.evaluate(({ pan, zoom }) => {
-          const store = window.openPencil?.getStore?.()
+          const store = window.kalka?.getStore?.()
           if (!store) throw new Error('Editor unavailable')
           store.setZoomAroundPoint(zoom, 0, 0)
           store.pan(pan - store.state.panX, pan - store.state.panY)
         }, viewport)
-        await page.evaluate(() => window.openPencil?.test?.navigation?.waitForSettlement())
+        await page.evaluate(() => window.kalka?.test?.navigation?.waitForSettlement())
         const backingZoom = await page.evaluate(() => {
-          const renderer = window.openPencil
+          const renderer = window.kalka
             ?.getStore?.()
             .canvasRenderers.find((r) => r.tracksSceneSettlement)
           return renderer?.sceneBacking?.zoom
@@ -58,7 +58,7 @@ for (const dpr of [1.25, 1.5, 2]) {
         expect(backingZoom).toBe(viewport.zoom)
         const retained = await page.screenshot({ clip })
         const release = await page.evaluateHandle(() => {
-          const store = window.openPencil?.getStore?.()
+          const store = window.kalka?.getStore?.()
           if (!store) throw new Error('Editor unavailable')
           return store.beginInteractiveEdit()
         })

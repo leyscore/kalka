@@ -31,7 +31,7 @@ const APP_PACKAGES = [
   '@types/react'
 ]
 
-const output = await mkdtemp(join(tmpdir(), 'open-pencil-react-'))
+const output = await mkdtemp(join(tmpdir(), 'kalka-react-'))
 await mkdir(join(output, 'node_modules'))
 await mkdir(join(output, 'node_modules', '@iconify'))
 await mkdir(join(output, 'node_modules', '@types'))

@@ -76,7 +76,7 @@ function layerAttributes(node: SceneNode, element: DesignElement): Record<string
   if (node.internalOnly) attrs[ATTR.internal] = ''
   if (!node.visible) attrs.hidden = ''
   for (const [name, value] of Object.entries(element.attrs))
-    if (name !== 'data-open-pencil-node-id' && !(name in attrs)) attrs[name] = value
+    if (name !== 'data-kalka-node-id' && !(name in attrs)) attrs[name] = value
   const style = styleText(element.inlineStyle)
   if (style) attrs.style = style
   return attrs

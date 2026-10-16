@@ -12,7 +12,7 @@ test('dragging selected nested instance content reorders its auto-layout item', 
   await canvas.clearCanvas()
 
   const ids = await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
 
     store.state.panX = 0
@@ -76,7 +76,7 @@ test('dragging selected nested instance content reorders its auto-layout item', 
   await canvas.waitForRender()
 
   const childIds = await page.evaluate((frameId) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     return store.graph.getNode(frameId)?.childIds ?? []
   }, ids.frame)
@@ -95,7 +95,7 @@ test('auto-layout drag does not show an insert indicator before order changes', 
   await canvas.clearCanvas()
 
   const ids = await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
 
     const pageId = store.state.currentPageId
@@ -149,7 +149,7 @@ test('auto-layout drag does not show an insert indicator before order changes', 
   await canvas.waitForRender()
 
   const indicator = await page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     return store.state.layoutInsertIndicator
   })
@@ -158,7 +158,7 @@ test('auto-layout drag does not show an insert indicator before order changes', 
   expect(indicator).toBeNull()
 
   const childIds = await page.evaluate((frameId) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     return store.graph.getNode(frameId)?.childIds ?? []
   }, ids.frame)

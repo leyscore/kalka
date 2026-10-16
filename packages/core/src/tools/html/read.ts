@@ -8,7 +8,7 @@ const MAX_HTML_LENGTH = 16_000
 export const getHTML = defineTool({
   name: 'get_html',
   description:
-    'Get a layer and its children as HTML with CSS, the same code Kalka exports, each element marked with its layer id in data-open-pencil-node-id. style "inline" puts CSS on each element; "tailwind" uses Tailwind classes.',
+    'Get a layer and its children as HTML with CSS, the same code Kalka exports, each element marked with its layer id in data-kalka-node-id. style "inline" puts CSS on each element; "tailwind" uses Tailwind classes.',
   execution: { kind: 'async', mutation: 'none' },
   input: v.strictObject({
     id: nodeIdInput,

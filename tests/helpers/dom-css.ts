@@ -143,7 +143,7 @@ export const fixtureMatrixHTML = `
     <dialog class="dialog" open>
       <h2 class="dialog-title">Import from web</h2>
       <p class="dialog-description">Convert HTML and CSS into editable design layers.</p>
-      <input class="input" value="https://openpencil.dev" />
+      <input class="input" value="https://kalka.design" />
       <button class="primary-button">Create design</button>
     </dialog>
   </section>

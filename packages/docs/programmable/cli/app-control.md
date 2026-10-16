@@ -12,19 +12,19 @@ While the desktop app is running, the CLI drives it over the same automation bri
 Each open tab is a document with a stable ID. List them, then pass `--document-id` (and `--page-id`) to aim a command at a background tab without switching to it:
 
 ```sh
-openpencil documents list --json
-openpencil tree --document-id tab-123 --page-id 0:1
+kalka documents list --json
+kalka tree --document-id tab-123 --page-id 0:1
 ```
 
 Open, create, save, and close documents:
 
 ```sh
-openpencil documents open designs/landing.fig      # opens in a new tab
-openpencil documents new --path designs/draft.fig  # empty document, saved to the path
-openpencil documents save --document-id tab-123
-openpencil documents save --document-id tab-123 --path designs/copy.fig
-openpencil documents close --document-id tab-123
-openpencil documents close --document-id tab-123 --save      # or --discard
+kalka documents open designs/landing.fig      # opens in a new tab
+kalka documents new --path designs/draft.fig  # empty document, saved to the path
+kalka documents save --document-id tab-123
+kalka documents save --document-id tab-123 --path designs/copy.fig
+kalka documents close --document-id tab-123
+kalka documents close --document-id tab-123 --save      # or --discard
 ```
 
 Relative paths resolve against the shell's working directory. These commands never open a dialog in the app, because nobody may be there to answer it. Closing a document with unsaved changes fails unless you pass `--save` or `--discard`, and saving a document that has never been saved needs `--path`. Each command prints the document and page it acted on; with `--json` it prints `{ "result", "target" }`, so a script can read the new document's ID from `target.documentId`.
@@ -32,7 +32,7 @@ Relative paths resolve against the shell's working directory. These commands nev
 To bring a tab to the front, optionally on a specific page:
 
 ```sh
-openpencil documents activate tab-123 --page-id 0:4
+kalka documents activate tab-123 --page-id 0:4
 ```
 
 ## Undo and redo
@@ -40,8 +40,8 @@ openpencil documents activate tab-123 --page-id 0:4
 Step back through changes made through the CLI and MCP, like **Edit → Undo** and **Edit → Redo**:
 
 ```sh
-openpencil undo --document-id tab-123
-openpencil redo --document-id tab-123 --json
+kalka undo --document-id tab-123
+kalka redo --document-id tab-123 --json
 ```
 
 ```json
@@ -62,11 +62,11 @@ Each CLI or MCP command that edits the document is one undo step. An `eval` scri
 Read and change editor settings by dotted key:
 
 ```sh
-openpencil settings get
-openpencil settings get appearance.theme
-openpencil settings set appearance.theme light
-openpencil settings set editing.snapping.pixelGrid false
-openpencil settings set chat.maxAgentSteps 100
+kalka settings get
+kalka settings get appearance.theme
+kalka settings set appearance.theme light
+kalka settings set editing.snapping.pixelGrid false
+kalka settings set chat.maxAgentSteps 100
 ```
 
 Values are read as JSON when they parse (`false`, `100`, `"auto"`) and as plain strings otherwise. Invalid keys and values are rejected without changing anything.
@@ -86,7 +86,7 @@ Values are read as JSON when they parse (`false`, `100`, `"auto"`) and as plain 
 | `chat.changePreviewSize` | `off`, `small`, `medium`, `large` |
 | `designCheck.showOnCanvas` | `true`, `false` |
 | `designCheck.preset` | `recommended`, `strict`, `accessibility` |
-| `designCheck.disabledRules` | JSON array of rule IDs, e.g. `["no-default-names"]`; see `openpencil lint --list-rules` |
+| `designCheck.disabledRules` | JSON array of rule IDs, e.g. `["no-default-names"]`; see `kalka lint --list-rules` |
 
 Credentials, AI models, MCP connections, storage, and tool access are deliberately not available here: an automation client can't read secrets or grant itself access.
 
@@ -95,18 +95,18 @@ Credentials, AI models, MCP connections, storage, and tool access are deliberate
 Every editor tool the MCP server exposes is also available from the CLI. List them, inspect a tool's arguments as JSON Schema, and call it with a JSON object:
 
 ```sh
-openpencil tool list
-openpencil tool describe set_fill
-openpencil tool call set_fill --args '{"id":"0:5","color":"#2563eb"}'
-openpencil tool call set_fill --document-id tab-123 --args-file fill.json
-echo '{"name":"Icons"}' | openpencil tool call create_page --args-file -
+kalka tool list
+kalka tool describe set_fill
+kalka tool call set_fill --args '{"id":"0:5","color":"#2563eb"}'
+kalka tool call set_fill --document-id tab-123 --args-file fill.json
+echo '{"name":"Icons"}' | kalka tool call create_page --args-file -
 ```
 
 Pass a file to run a tool headlessly instead. Changes to a file are kept only with `--write` (back to the input) or `--output`:
 
 ```sh
-openpencil tool call create_page design.fig --args '{"name":"Icons"}' --write
-openpencil tool call get_page_tree design.fig --json
+kalka tool call create_page design.fig --args '{"name":"Icons"}' --write
+kalka tool call get_page_tree design.fig --json
 ```
 
 For multi-step edits, [`eval`](./scripting) runs a whole script against the same Figma-compatible API.

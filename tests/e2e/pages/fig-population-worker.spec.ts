@@ -7,18 +7,18 @@ test('populates a real lazy FIG page in the retained parse worker', async () => 
   await editor.page.evaluate(() => {
     const events: unknown[] = []
     Object.assign(window, { figPopulationWorkerEvents: events })
-    window.addEventListener('openpencil:fig-population-worker', (event) => {
+    window.addEventListener('kalka:fig-population-worker', (event) => {
       if (event instanceof CustomEvent) events.push(event.detail)
     })
   })
   const openFile = editor.page.evaluate(() =>
-    window.openPencil?.openFile?.('/tests/fixtures/material3.fig')
+    window.kalka?.openFile?.('/tests/fixtures/material3.fig')
   )
   await openFile
   await editor.canvas.waitForRender()
 
   const targetPageId = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     return store.graph.getPages(true).at(-1)?.id
   })
@@ -31,7 +31,7 @@ test('populates a real lazy FIG page in the retained parse worker', async () => 
       ).length
   )
   await editor.page.evaluate((pageId) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     return store.switchPage(pageId)
   }, targetPageId)
@@ -50,7 +50,7 @@ test('populates a real lazy FIG page in the retained parse worker', async () => 
     .toBe(true)
 
   const currentPage = await editor.page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     return {
       currentPageId: store.state.currentPageId,
@@ -67,7 +67,7 @@ test('populates a real lazy FIG page in the retained parse worker', async () => 
     expect.arrayContaining(['registered', 'populate'])
   )
 
-  await editor.page.evaluate(() => window.openPencil?.getStore?.()?.dispose())
+  await editor.page.evaluate(() => window.kalka?.getStore?.()?.dispose())
   await expect
     .poll(() =>
       editor.page.evaluate(

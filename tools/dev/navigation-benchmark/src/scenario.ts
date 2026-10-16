@@ -5,7 +5,7 @@ export type NavigationScenario = 'light' | 'large-flat' | 'raster-stress' | 'cur
 export async function setupScenario(page: Page, scenario: NavigationScenario): Promise<void> {
   if (scenario === 'current-document') return
   await page.evaluate((selectedScenario) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not available')
     const pageId = store.state.currentPageId
     const existing = store.graph.getNode(pageId)?.childIds ?? []

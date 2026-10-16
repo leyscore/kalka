@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { buildOpenPencilClipboardHTML } from '@kalka/core/clipboard'
+import { buildKalkaClipboardHTML } from '@kalka/core/clipboard'
 import { createEditor } from '@kalka/core/editor'
 import type { Editor } from '@kalka/core/editor'
 
@@ -14,7 +14,7 @@ function copiedRectangleHTML(name = 'Pasted') {
     width: 20,
     height: 20
   })
-  return buildOpenPencilClipboardHTML([pasted], source.graph)
+  return buildKalkaClipboardHTML([pasted], source.graph)
 }
 
 function copiedFrameHTML() {
@@ -34,7 +34,7 @@ function copiedFrameHTML() {
     width: 10,
     height: 12
   })
-  return buildOpenPencilClipboardHTML([frame], source.graph)
+  return buildKalkaClipboardHTML([frame], source.graph)
 }
 
 function createTarget(editor: Editor, parentId = editor.state.currentPageId) {

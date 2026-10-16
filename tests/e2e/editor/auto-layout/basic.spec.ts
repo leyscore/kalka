@@ -26,7 +26,7 @@ test.afterAll(async () => {
 async function selectFrame() {
   expect(frameId, 'frameId must be set — did the Shift+A test run?').toBeTruthy()
   await page.evaluate((id: string) => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     store.select([id])
   }, frameId)
@@ -226,7 +226,7 @@ test('editing a Hug width switches to Fixed in one reversible interaction', asyn
 test('editing a Fill height switches to Fixed in one undo step', async () => {
   const frame = expectDefined(await getNodeById(page, frameId), 'frame')
   const childId = expectDefined(frame.childIds[0], 'child')
-  await page.evaluate((id: string) => window.openPencil?.getStore?.()?.select([id]), childId)
+  await page.evaluate((id: string) => window.kalka?.getStore?.()?.select([id]), childId)
   await canvas.waitForRender()
   // Fill is stored on the child: grow along a column, stretch across a row.
   const fillsHeight = (node: { layoutGrow: number; layoutAlignSelf: string }) =>

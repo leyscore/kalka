@@ -21,7 +21,7 @@ test.afterAll(async () => {
 
 async function getSelectedNodeFlags() {
   return page.evaluate(() => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const id = [...store.state.selectedIds][0]
     if (!id) return null
@@ -77,7 +77,7 @@ test('multi-selection independent corners toggle is one undo step', async () => 
 
   const independentStates = () =>
     page.evaluate(() => {
-      const store = window.openPencil?.getStore?.()
+      const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Kalka store not initialized')
       return [...store.state.selectedIds].map(
         (id) => store.graph.getNode(id)?.independentCorners ?? null

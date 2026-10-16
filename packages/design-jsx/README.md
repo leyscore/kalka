@@ -1,6 +1,6 @@
 # @kalka/design-jsx
 
-OpenPencil design JSX: build editable scene trees with `<Frame>`, `<Text>`, and the other elements, style them with paint and effect helpers and design variables, and export scene nodes back to JSX.
+Kalka design JSX: build editable scene trees with `<Frame>`, `<Text>`, and the other elements, style them with paint and effect helpers and design variables, and export scene nodes back to JSX.
 
 Set the JSX import source in `tsconfig.json` (`"jsx": "react-jsx"`, `"jsxImportSource": "@kalka/design-jsx"`) or per file:
 

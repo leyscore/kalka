@@ -6,7 +6,7 @@ describe('native clipboard routing', () => {
   it('keeps copy and paste inside a focused editable field', async function () {
     if (process.platform !== 'win32') this.skip()
     await browser.waitUntil(
-      async () => browser.execute(() => Boolean(window.openPencil?.getStore?.())),
+      async () => browser.execute(() => Boolean(window.kalka?.getStore?.())),
       { timeout: 30_000, timeoutMsg: 'Kalka editor did not initialize' }
     )
     await browser.execute(() => {

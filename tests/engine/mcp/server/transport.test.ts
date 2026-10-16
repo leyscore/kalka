@@ -27,7 +27,7 @@ import {
 } from '#tests/helpers/mcp/server'
 
 const isUnix = process.platform !== 'win32'
-const SOCKET_DIR = join(tmpdir(), `openpencil-test-server-${process.pid}`)
+const SOCKET_DIR = join(tmpdir(), `kalka-test-server-${process.pid}`)
 const SOCKET_PATH = isUnix ? join(SOCKET_DIR, 'mcp.sock') : null
 const TEST_AUTH_TOKEN = 'test-auth-token'
 let testCounter = 0

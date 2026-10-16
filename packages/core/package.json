@@ -4,7 +4,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/open-pencil/open-pencil.git",
+    "url": "git+https://github.com/leyscore/kalka.git",
     "directory": "packages/core"
   },
   "files": [
@@ -47,10 +47,10 @@
       "import": "./dist/vector/index.js",
       "default": "./dist/vector/index.js"
     },
-    "./openpencil-api": {
-      "types": "./dist/openpencil-api/index.d.ts",
-      "import": "./dist/openpencil-api/index.js",
-      "default": "./dist/openpencil-api/index.js"
+    "./kalka-api": {
+      "types": "./dist/kalka-api/index.d.ts",
+      "import": "./dist/kalka-api/index.js",
+      "default": "./dist/kalka-api/index.js"
     },
     "./figma-api": {
       "types": "./dist/figma-api/index.d.ts",

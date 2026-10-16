@@ -10,7 +10,7 @@ async function expectCanvas(name: string) {
 
 test('complex text fills preserve native paragraph layout', async () => {
   await editor.page.evaluate(async () => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
 
@@ -79,7 +79,7 @@ test('complex text fills preserve native paragraph layout', async () => {
 
 test('text decoration styles and OpenType features', async () => {
   await editor.page.evaluate(async () => {
-    const store = window.openPencil?.getStore?.()
+    const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const pageId = store.state.currentPageId
 

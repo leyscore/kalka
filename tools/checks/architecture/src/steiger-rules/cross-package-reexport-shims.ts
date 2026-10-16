@@ -16,7 +16,7 @@ export function isCrossPackageReexportShim(sourceRel: string, content: string): 
 }
 
 export const noCrossPackageReexportShims: Rule = createTextRule(
-  'open-pencil/no-cross-package-reexport-shims',
+  'kalka/no-cross-package-reexport-shims',
   (sourceRel, content) =>
     isCrossPackageReexportShim(sourceRel, content)
       ? [

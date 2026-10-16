@@ -74,7 +74,9 @@ const status = computed(
       <p>{{ status }}</p>
       <p v-if="detail" class="mt-1 text-muted">{{ detail }}</p>
     </div>
-    <SettingsLink href="https://openpencil.dev/programmable/mcp-server#webmcp">
+    <SettingsLink
+      href="https://github.com/leyscore/kalka/blob/main/packages/docs/programmable/mcp-server.md#webmcp"
+    >
       {{ automation.webmcpSetup }}
     </SettingsLink>
   </SettingsSection>

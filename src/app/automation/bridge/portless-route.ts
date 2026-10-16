@@ -5,7 +5,7 @@ export interface DevAutomationRoute {
   runtimeId: string
 }
 
-const APP_NAME = 'open-pencil'
+const APP_NAME = 'kalka'
 const MCP_SERVICE_NAME = `mcp.${APP_NAME}`
 
 export function devAutomationRoute(

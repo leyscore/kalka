@@ -60,10 +60,10 @@ Connect Claude Code, Cursor, Windsurf, or any MCP-compatible client to Kalka. Th
 
 ## URL scheme
 
-The desktop app registers `openpencil://`, so a published page — a Storybook story, a design review, a README — can link straight to a layer:
+The desktop app registers `kalka://`, so a published page — a Storybook story, a design review, a README — can link straight to a layer:
 
 ```
-openpencil://open?file=web/design/hikyo.pen&node=Button/Large/Default
+kalka://open?file=web/design/hikyo.pen&node=Button/Large/Default
 ```
 
 `file` is a repository-relative path ending in `.pen` or `.fig`; absolute paths and `.` or `..` segments are refused. `node` is optional. Both values are URL-encoded — path separators may stay literal, but a literal `+` must be sent as `%2B` — and a repeated key takes its last value.

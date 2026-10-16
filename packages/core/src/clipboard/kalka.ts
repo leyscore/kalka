@@ -90,11 +90,12 @@ const SerializedClipboardNodeSchema: v.GenericSchema<unknown, SerializedClipboar
   })
 
 /** Clipboard HTML is writable by any application, so the payload is validated before paste. */
-const OpenPencilClipboardJSON = v.pipe(
+const KalkaClipboardJSON = v.pipe(
   v.string(),
   v.parseJson(),
   v.object({
-    format: v.literal('openpencil/v1'),
+    // `openpencil/v1` is the same format, copied before the app was renamed Kalka.
+    format: v.picklist(['kalka/v1', 'openpencil/v1']),
     nodes: v.array(SerializedClipboardNodeSchema),
     images: v.optional(v.record(v.string(), v.unknown()))
   })
@@ -102,21 +103,21 @@ const OpenPencilClipboardJSON = v.pipe(
 
 type ClipboardNode = SceneNode & { children?: ClipboardNode[] }
 
-export type OpenPencilClipboardData = Pick<ClipboardSnapshot, 'nodes' | 'images'>
+export type KalkaClipboardData = Pick<ClipboardSnapshot, 'nodes' | 'images'>
 
-export function parseOpenPencilClipboard(html: string): OpenPencilClipboardData | null {
-  const match = html.match(/<!--\(openpencil\)(.*?)\(\/openpencil\)-->/s)
+export function parseKalkaClipboard(html: string): KalkaClipboardData | null {
+  const match = html.match(/<!--\((kalka|openpencil)\)(.*?)\(\/\1\)-->/s)
   if (!match) return null
 
   try {
-    const raw = clipboardBytes(match[1])
+    const raw = clipboardBytes(match[2])
     let bytes: Uint8Array
     try {
       bytes = inflateSync(raw)
     } catch {
       bytes = raw
     }
-    const decoded = v.safeParse(OpenPencilClipboardJSON, new TextDecoder().decode(bytes))
+    const decoded = v.safeParse(KalkaClipboardJSON, new TextDecoder().decode(bytes))
     if (!decoded.success) {
       console.warn('Ignoring malformed Kalka clipboard data:', v.summarize(decoded.issues))
       return null
@@ -195,7 +196,7 @@ function collectImageHashes(nodes: SceneNode[], graph: SceneGraph): Set<string> 
   return hashes
 }
 
-export function buildOpenPencilClipboardHTML(
+export function buildKalkaClipboardHTML(
   nodes: SceneNode[],
   graph: SceneGraph,
   textPictureBuilder?: TextPictureBuilder
@@ -208,12 +209,12 @@ export function buildOpenPencilClipboardHTML(
     if (bytes) images[hash] = fromUint8Array(bytes)
   }
   const data = {
-    format: 'openpencil/v1',
+    format: 'kalka/v1',
     nodes: nodeTree,
     images
   }
   const compressed = deflateSync(new TextEncoder().encode(JSON.stringify(data)))
-  return `<!--(openpencil)${fromUint8Array(compressed)}(/openpencil)-->`
+  return `<!--(kalka)${fromUint8Array(compressed)}(/kalka)-->`
 }
 
 function collectNodeTree(

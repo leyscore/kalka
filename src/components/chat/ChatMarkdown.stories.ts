@@ -45,7 +45,7 @@ export const Prose: Story = {
   args: {
     content: `# Compact heading
 
-A paragraph with **bold text**, *emphasis*, and [a link](https://openpencil.dev).
+A paragraph with **bold text**, *emphasis*, and [a link](https://kalka.design).
 
 ## Smaller heading
 
@@ -110,7 +110,7 @@ export const TaskList: Story = {
     content: `- [x] Variants created
 - [ ] Checked in preview
 
-See [the guide](https://openpencil.dev/guide).`
+See [the guide](https://github.com/leyscore/kalka/blob/main/packages/docs/guide.md).`
   }
 }
 

@@ -21,7 +21,7 @@ Restart the MCP server, then reconnect stdio clients, to apply changes. For an e
 
 Turn on **Share only the selection** in **Settings → MCP → Local server** to let MCP clients read only the layers you select. Clients then get `get_selection`, `get_node`, `get_page_tree`, `describe`, and `export_image`, and no tools that edit, open files, list documents, or change settings. Every node a call names must be a selected layer or inside one; `describe` and `export_image` read the selection when given no IDs, and `get_page_tree` needs a `root_id` from the selection. `export_image` returns the image but cannot write it to a file. With nothing selected, calls fail and ask the user to select layers.
 
-The server enforces this on every call it sends to the app, including `POST /rpc` and stdio clients, so a client cannot widen it. Restart the MCP server to apply the change. For a server you start yourself, set `OPENPENCIL_MCP_SCOPE=selection`; a stdio client can also set it to limit itself while the server shares the whole document.
+The server enforces this on every call it sends to the app, including `POST /rpc` and stdio clients, so a client cannot widen it. Restart the MCP server to apply the change. For a server you start yourself, set `KALKA_MCP_SCOPE=selection`; a stdio client can also set it to limit itself while the server shares the whole document.
 
 ## Browser-native WebMCP (experimental) {#webmcp}
 
@@ -110,10 +110,10 @@ Security defaults:
 - TCP binds to `127.0.0.1` and uses port 7600 by default.
 - Authentication is enabled by default with a generated token stored in the private discovery file.
 - `eval` is disabled.
-- File operations are limited to `OPENPENCIL_MCP_ROOT` (defaults to the current working directory) and reject symlink escapes.
-- Only the desktop app's own origin (`kalka-app://app`) is allowed by default, so a server you start yourself works from the app without extra configuration. Set `OPENPENCIL_MCP_CORS_ORIGIN` to a comma-separated list to allow other origins, such as a worktree dev server.
+- File operations are limited to `KALKA_MCP_ROOT` (defaults to the current working directory) and reject symlink escapes.
+- Only the desktop app's own origin (`kalka-app://app`) is allowed by default, so a server you start yourself works from the app without extra configuration. Set `KALKA_MCP_CORS_ORIGIN` to a comma-separated list to allow other origins, such as a worktree dev server.
 
-Set `PORT=0` to disable TCP on macOS and Linux. Windows requires TCP. Set `OPENPENCIL_MCP_SOCKET` to override the Unix socket path, or `OPENPENCIL_MCP_DISCOVERY_PATH` to override the discovery file location. To provide a stable token, set `OPENPENCIL_MCP_AUTH_TOKEN`; an explicitly empty value disables authentication and should only be used with a trusted local socket.
+Set `PORT=0` to disable TCP on macOS and Linux. Windows requires TCP. Set `KALKA_MCP_SOCKET` to override the Unix socket path, or `KALKA_MCP_DISCOVERY_PATH` to override the discovery file location. To provide a stable token, set `KALKA_MCP_AUTH_TOKEN`; an explicitly empty value disables authentication and should only be used with a trusted local socket.
 
 Endpoints are available over both active transports:
 
@@ -140,7 +140,7 @@ Most tools accept optional `document_id` and `page_id` fields. Pass them explici
 
 ## AI Agent Skill
 
-Teach your AI coding agent to use Kalka tools with the skill in `skills/open-pencil/` of this repository: copy that folder into your agent's skills directory.
+Teach your AI coding agent to use Kalka tools with the skill in `skills/kalka/` of this repository: copy that folder into your agent's skills directory.
 
 It works with Claude Code, Cursor, Windsurf, Codex, and any agent that supports [skills](https://skills.sh). The skill covers the CLI, MCP tools, JSX rendering, eval, and the running app's automation bridge.
 

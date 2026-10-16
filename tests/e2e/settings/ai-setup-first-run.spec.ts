@@ -34,7 +34,7 @@ test.describe('an install past the welcome', () => {
             origin: new URL(baseURL).origin,
             localStorage: [
               {
-                name: 'open-pencil:preferences:v1',
+                name: 'kalka:preferences:v1',
                 value: JSON.stringify({ version: 1, onboarding: { welcome: 'done', tour: 'done' } })
               }
             ]
@@ -93,11 +93,11 @@ test.describe('an install with a configured model', () => {
             origin: new URL(baseURL).origin,
             localStorage: [
               {
-                name: 'open-pencil:ai-model-settings',
+                name: 'kalka:ai-model-settings',
                 value: JSON.stringify(CONFIGURED_MODEL_SETTINGS)
               },
               {
-                name: 'open-pencil:preferences:v1',
+                name: 'kalka:preferences:v1',
                 value: JSON.stringify({ version: 1, onboarding: { welcome: 'done', tour: 'done' } })
               }
             ]

@@ -78,7 +78,7 @@ export async function evaluateDesignJSX(
         value?: unknown
         error?: string
       }
-      if (message.type === 'open-pencil-design-jsx-ready') {
+      if (message.type === 'kalka-design-jsx-ready') {
         clearTimeout(timer)
         // eslint-disable-next-line promise/no-multiple-resolved -- finish has a settled guard
         timer = setTimeout(
@@ -86,12 +86,12 @@ export async function evaluateDesignJSX(
           timeoutMs
         )
         iframe.contentWindow?.postMessage(
-          { type: 'open-pencil-design-jsx-run', id, code: program.code },
+          { type: 'kalka-design-jsx-run', id, code: program.code },
           '*'
         )
         return
       }
-      if (message.type !== 'open-pencil-design-jsx-result' || message.id !== id) return
+      if (message.type !== 'kalka-design-jsx-result' || message.id !== id) return
       if (!message.ok) {
         finish({ ok: false, error: message.error ?? 'Design JSX execution failed.' })
         return
