@@ -16,12 +16,19 @@ function designDocument(
   nodeIds: string[],
   includeSourceIds: boolean
 ): DesignDocument {
+  const projected = nodeIds.map((id) =>
+    sceneNodeToDesignDocument(graph, id, { vectorElement, includeSourceIds })
+  )
+  // Each layer records the variables it references; the page defines all of them once.
+  const tokens = projected.find((layer) => layer.tokens)?.tokens
+  for (const layer of projected) {
+    for (const id of layer.tokens?.used ?? []) tokens?.used.add(id)
+  }
   return {
     type: 'document',
     sourceGraph: graph,
-    children: nodeIds.flatMap(
-      (id) => sceneNodeToDesignDocument(graph, id, { vectorElement, includeSourceIds }).children
-    )
+    tokens,
+    children: projected.flatMap((layer) => layer.children)
   }
 }
 

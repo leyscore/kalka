@@ -168,6 +168,7 @@
 
 ### Fixed
 
+- An HTML export of several layers defines the CSS variables its styles reference, in each mode, instead of referencing variables the page never declares.
 - An MCP client that crashes without closing its session no longer locks other clients out for 15 minutes once ten sessions are open: a new client takes the place of the session idle the longest, after a minute idle.
 - Opening a page with Chinese, Japanese or Korean text no longer exhausts memory: each installed fallback font, such as Hiragino Sans or PingFang, is read once instead of once per text.
 - A layer placed absolutely inside an auto layout frame stays in place on the canvas and in HTML exports instead of drifting far off its frame, and the layers beside it paint in layer order.
