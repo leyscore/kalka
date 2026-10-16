@@ -82,6 +82,26 @@ test('FIG export preserves the whole document by default', async () => {
   expect(graph.getPages().map((page) => page.name)).toContain('Second Page')
 })
 
+test('FIG export warns about the CSS Figma will not show', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'kalka-export-cli-'))
+  const figPath = join(dir, 'nav.fig')
+  const graph = makeSceneGraph('Export Page')
+  graph.createNode('FRAME', firstPageId(graph), { name: 'Menu', htmlTag: 'nav' })
+  await Bun.write(figPath, (await io.writeDocument('fig', graph)).data as Uint8Array)
+
+  const { stderr, exitCode } = await runKalkaCLI([
+    'export',
+    figPath,
+    '--format',
+    'fig',
+    '--output',
+    join(dir, 'out.fig')
+  ])
+
+  expect(exitCode).toBe(0)
+  expect(stderr).toContain('Figma will not show HTML element tags (1 use)')
+})
+
 test('PPTX export includes slides from every page by default', async () => {
   const { dir, figPath } = await createFigFixture()
   const output = join(dir, 'whole.pptx')

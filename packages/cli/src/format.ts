@@ -221,3 +221,8 @@ export function printError(error: unknown): void {
   const message = error instanceof Error ? error.message : String(error)
   console.error(fail(message))
 }
+
+/** What an export could not carry, on stderr so the written output stays clean. */
+export function printWarnings(warnings: readonly string[] = []): void {
+  for (const message of warnings) console.error(warn(message))
+}

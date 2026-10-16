@@ -26,6 +26,8 @@ type SaveActionsOptions = Omit<DocumentSourceAccess, 'getSavedVersion'> & {
   startWatchingFile: () => void
   onWriteSuccess?: (version: number) => void | Promise<void>
   onDownloadSuccess?: (version: number) => void | Promise<void>
+  /** After Save As writes a file, with the format it chose, to say what that format loses. */
+  onSavedAs?: (format: DocumentFileFormat) => void
 }
 
 export function createSaveActions({
@@ -46,7 +48,8 @@ export function createSaveActions({
   startWatchingFile,
   setSourceFormat,
   onWriteSuccess,
-  onDownloadSuccess
+  onDownloadSuccess,
+  onSavedAs
 }: SaveActionsOptions) {
   const writeFile = createDocumentWriter({
     state,
@@ -86,23 +89,27 @@ export function createSaveActions({
 
   /** The document as the chosen file's format saves it. */
   async function buildFor(name: string) {
-    setSourceFormat?.(fileFormatForName(name))
+    const format = fileFormatForName(name)
+    setSourceFormat?.(format)
     const built = await buildVersionedFigFile()
     if (!(built.data instanceof Uint8Array)) throw new Error('A file target needs one file')
-    return { data: built.data, version: built.version }
+    return { data: built.data, version: built.version, format }
   }
 
   async function saveFigFileAs() {
     if (IS_TAURI) {
       const path = await chooseTauriFigSavePath()
       if (!path) return false
-      const { data, version } = await buildFor(path)
+      const { data, version, format } = await buildFor(path)
       setStorageBinding(null)
       setFilePath(path)
       setFileHandle(null)
       state.documentName = documentNameFromFigPath(path)
       const wrote = await writeFile(data, version)
-      if (wrote) setSourceIdentity({ handle: null, path })
+      if (wrote) {
+        setSourceIdentity({ handle: null, path })
+        onSavedAs?.(format)
+      }
       startWatchingFile()
       return wrote
     }
@@ -110,25 +117,29 @@ export function createSaveActions({
     // The picker helper returns null when the browser has no File System Access API.
     const handle = await chooseBrowserFigSaveHandle()
     if (handle) {
-      const { data, version } = await buildFor(handle.name)
+      const { data, version, format } = await buildFor(handle.name)
       setStorageBinding(null)
       setFileHandle(handle)
       setFilePath(null)
       state.documentName = documentNameFromFigPath(handle.name)
       const wrote = await writeFile(data, version)
-      if (wrote) setSourceIdentity({ handle, path: null })
+      if (wrote) {
+        setSourceIdentity({ handle, path: null })
+        onSavedAs?.(format)
+      }
       startWatchingFile()
       return wrote
     }
 
     const filename = prompt(filesMessages.get().saveAsPrompt, getDownloadName() ?? 'Untitled.fig')
     if (!filename) return false
-    const { data, version } = await buildFor(filename)
+    const { data, version, format } = await buildFor(filename)
     setStorageBinding(null)
     setDownloadName(filename)
     state.documentName = documentNameFromFigPath(filename)
     downloadBlob(new Uint8Array(data), filename, 'application/octet-stream')
     await onDownloadSuccess?.(version)
+    onSavedAs?.(format)
     return true
   }
 

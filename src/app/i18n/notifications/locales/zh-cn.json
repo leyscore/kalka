@@ -9,6 +9,7 @@
   "importedDOMCSS": "已导入 DOM/CSS 文档。",
   "importDOMCSSFailed": "无法导入 DOM/CSS：{error}",
   "openDOMCSSFailed": "无法打开 DOM/CSS 文件：{error}",
+  "figmaLosses": "Figma 不会显示 {features}。Kalka 会将其保留在文件中。",
   "vectorizeCredentialRequired": "请在设置 → 媒体中添加 {provider} API 密钥。",
   "vectorizeImageMissing": "此图层缺少图像数据。",
   "vectorizingImage": "正在矢量化图像…",

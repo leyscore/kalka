@@ -1,3 +1,4 @@
+export { figmaLosses, type FigmaLoss, type FigmaLossKind } from './document/figma-losses'
 export { materializeFigFragment, type FragmentMaterializationOptions } from './document/fragment'
 export {
   materializeDocument,

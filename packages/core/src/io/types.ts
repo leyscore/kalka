@@ -112,6 +112,8 @@ export interface ExportResult {
   encoding?: IOTextEncoding
   /** Extra files the main file refers to, such as external images and fonts. */
   assets?: ExportAsset[]
+  /** What the written file cannot carry, or its reader will not show, for the user to know. */
+  warnings?: string[]
 }
 
 export interface HTMLExportOptions {

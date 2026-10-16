@@ -1,6 +1,7 @@
 import type { Editor, EditorState } from '@kalka/core/editor'
 import { exportFigFile } from '@kalka/core/io/formats/fig'
 import { writeKalkaArchive, writeKalkaFolder } from '@kalka/core/io/formats/kalka'
+import { figmaLosses } from '@kalka/fig'
 
 import { createAutosave } from '@/app/document/autosave'
 import { createDocumentChanges } from '@/app/document/io/changes'
@@ -20,7 +21,9 @@ import {
 } from '@/app/document/io/types'
 import { createDocumentRecovery } from '@/app/document/recovery'
 import { recoveryEnabled } from '@/app/document/recovery/preferences'
+import { notificationMessages } from '@/app/i18n/notifications'
 import type { StorageDocumentBinding, StorageProviderID } from '@/app/integrations/storage/types'
+import { toast } from '@/app/shell/ui'
 import { createCanvasId } from '@/app/storage/id'
 
 type DocumentSourceState = EditorState & {
@@ -29,6 +32,14 @@ type DocumentSourceState = EditorState & {
 }
 
 export { createDocumentSourceState }
+
+/** A `.fig` keeps Kalka's CSS for Kalka; Figma draws the layers without it. */
+function warnFigmaLosses(graph: Editor['graph']): void {
+  const losses = figmaLosses(graph)
+  if (losses.length === 0) return
+  const features = losses.map((loss) => loss.css).join(', ')
+  toast.warning(notificationMessages.get().figmaLosses({ features }))
+}
 
 type DocumentSourceOptions = DocumentSourceAccess & {
   editor: Editor
@@ -112,7 +123,10 @@ export function createDocumentSourceActions({
       void startWatchingFile()
     },
     onWriteSuccess: (version) => recovery.markProtectedVersion(version),
-    onDownloadSuccess: (version) => recovery.markProtectedVersion(version)
+    onDownloadSuccess: (version) => recovery.markProtectedVersion(version),
+    onSavedAs: (format) => {
+      if (format === 'fig') warnFigmaLosses(editor.graph)
+    }
   })
 
   const autosave = createAutosave({

@@ -9,7 +9,7 @@ import type { AutomationDocumentSummary } from '@kalka/core/rpc'
 
 import { isAppMode, requireFile, rpc } from '#cli/app/client'
 import { appTargetOptions, appTargetRPCArgs } from '#cli/app/target'
-import { ok, printError } from '#cli/format'
+import { ok, printError, printWarnings } from '#cli/format'
 import {
   loadDocument,
   populateDocumentPage,
@@ -171,6 +171,7 @@ async function writeExport(output: string, result: ExportResult) {
     await writeFile(assetPath, asset.content as string | Uint8Array)
   }
   if (assets.length > 0) console.log(ok(`Assets: ${assets.length} files`))
+  printWarnings(result.warnings)
 }
 
 function prepareGraphForExport(

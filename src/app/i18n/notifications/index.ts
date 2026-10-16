@@ -22,6 +22,7 @@ export const notificationMessageDefaults = {
   importedDOMCSS: 'Imported DOM/CSS document.',
   importDOMCSSFailed: params('Could not import DOM/CSS: {error}'),
   openDOMCSSFailed: params('Could not open DOM/CSS file: {error}'),
+  figmaLosses: params('Figma will not show {features}. Kalka keeps them in the file.'),
   vectorizeCredentialRequired: params('Add a {provider} API key in Settings → Media.'),
   vectorizeImageMissing: 'Image data is missing for this layer.',
   vectorizingImage: 'Vectorizing image…',

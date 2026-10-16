@@ -1,5 +1,7 @@
 import { sceneNodeToJSX, selectionToJSX } from '@kalka/design-jsx'
+import { figmaLosses } from '@kalka/fig'
 import { parsePenFile } from '@kalka/pen'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 import { exportFigFile, parseFigFile } from './formats/fig'
 import type { PPTXExportOptions } from './formats/pptx'
@@ -160,6 +162,18 @@ function rasterFormat<F extends RasterExportFormat>(format: F): IOFormatAdapter<
   }
 }
 
+/** CSS Figma will not show, which the file keeps for Kalka as plugin data. */
+function figmaWarnings(graph: SceneGraph): Pick<ExportResult, 'warnings'> {
+  const losses = figmaLosses(graph)
+  if (losses.length === 0) return {}
+  return {
+    warnings: losses.map(
+      (loss) =>
+        `Figma will not show ${loss.css} (${loss.count} ${loss.count === 1 ? 'use' : 'uses'}); Kalka keeps it in the file.`
+    )
+  }
+}
+
 export const figFormat: IOFormatAdapter<'fig'> = {
   id: 'fig',
   label: 'Kalka Document',
@@ -196,7 +210,8 @@ export const figFormat: IOFormatAdapter<'fig'> = {
       format: 'fig',
       mimeType: 'application/octet-stream',
       extension: 'fig',
-      data
+      data,
+      ...figmaWarnings(graph)
     }
   },
   async exportContent(request, options?: FigWriteOptions, context?: IOContext) {
@@ -212,7 +227,8 @@ export const figFormat: IOFormatAdapter<'fig'> = {
       format: 'fig',
       mimeType: 'application/octet-stream',
       extension: 'fig',
-      data
+      data,
+      ...figmaWarnings(extracted.graph)
     }
   }
 }

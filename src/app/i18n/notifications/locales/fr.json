@@ -9,6 +9,7 @@
   "importedDOMCSS": "Document DOM/CSS importé.",
   "importDOMCSSFailed": "Impossible d’importer le DOM/CSS : {error}",
   "openDOMCSSFailed": "Impossible d’ouvrir le fichier DOM/CSS : {error}",
+  "figmaLosses": "Figma n’affichera pas {features}. Kalka les conserve dans le fichier.",
   "vectorizeCredentialRequired": "Ajoutez une clé API {provider} dans Réglages → Médias.",
   "vectorizeImageMissing": "Les données d’image de ce calque sont manquantes.",
   "vectorizingImage": "Vectorisation de l’image…",

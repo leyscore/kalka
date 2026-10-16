@@ -7,7 +7,7 @@ import { BUILTIN_IO_FORMATS, IORegistry } from '@kalka/core/io'
 import { writeKalkaFolder } from '@kalka/core/io/formats/kalka'
 
 import { requireFile } from '#cli/app/client'
-import { ok, printError } from '#cli/format'
+import { ok, printError, printWarnings } from '#cli/format'
 import { loadDocument, populateWholeDocument, writeFolderFiles } from '#cli/headless'
 
 const io = new IORegistry(BUILTIN_IO_FORMATS)
@@ -62,6 +62,7 @@ export default defineCommand({
     } else {
       const result = await io.writeDocument(format, graph)
       await writeFile(output, result.data as Uint8Array)
+      printWarnings(result.warnings)
     }
     console.log(ok(`Converted ${file} → ${output}`))
   }

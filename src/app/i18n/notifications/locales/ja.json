@@ -9,6 +9,7 @@
   "importedDOMCSS": "DOM/CSS ドキュメントをインポートしました。",
   "importDOMCSSFailed": "DOM/CSS をインポートできませんでした: {error}",
   "openDOMCSSFailed": "DOM/CSS ファイルを開けませんでした: {error}",
+  "figmaLosses": "Figma では {features} は表示されません。Kalka はファイル内に保持します。",
   "vectorizeCredentialRequired": "設定 → メディアで {provider} の API キーを追加してください。",
   "vectorizeImageMissing": "このレイヤーの画像データがありません。",
   "vectorizingImage": "画像をベクター化しています…",
