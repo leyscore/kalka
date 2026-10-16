@@ -1,9 +1,9 @@
 import { isEqual } from 'es-toolkit'
 
 import type { CharacterStyleOverride, StyleRun } from '@kalka/scene-graph'
+import { clipsBackgroundToText, mergedStyle, pickStyle } from '@kalka/scene-graph/css-model'
 
 import type { DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
-import { mergedStyle, pickStyle } from './css-values'
 import { inheritedTextStyle } from './measured'
 import { characterStyleFromCSS, type TextContent } from './text-runs'
 
@@ -43,13 +43,6 @@ const INLINE_TAGS = new Set([
 ])
 
 const NONE = /^(?:none|0px|0|rgba\(0, 0, 0, 0\)|transparent)?$/
-
-/** `background-clip: text`: the background, a gradient most often, paints the letters. */
-export function clipsBackgroundToText(style: DesignStyleDeclaration): boolean {
-  return [pickStyle(style, 'background-clip'), pickStyle(style, '-webkit-background-clip')].some(
-    (value) => value?.trim() === 'text'
-  )
-}
 
 /** Whether an element paints a box of its own: a background, a border, padding or a shadow. */
 export function paintsBox(style: DesignStyleDeclaration): boolean {

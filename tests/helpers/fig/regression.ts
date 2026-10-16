@@ -28,6 +28,9 @@ const BaselineSchema = v.array(
 
 const BASELINES = testPath('integration/fig-import/baselines')
 
+/** The ids the reader's generator hands out, `0:12`. */
+const GENERATED_ID = /^\d+:\d+$/
+
 const sha = (text: string | Uint8Array) =>
   createHash('sha256').update(text).digest('hex').slice(0, 16)
 
@@ -43,12 +46,21 @@ function subtree(graph: SceneGraph, root: SceneNode): SceneNode[] {
 
 /**
  * Layer ids come from the graph's generator, so they differ between imports; every reference
- * to a layer becomes its place in the page's traversal order instead.
+ * to a layer, on its page or another one such as a component's, becomes its place in the
+ * document's traversal order instead.
  */
-function fieldsFingerprint(nodes: readonly SceneNode[]): string {
-  const order = new Map(nodes.map((node, index) => [node.id, `#${index}`]))
+function fieldsFingerprint(
+  nodes: readonly SceneNode[],
+  order: ReadonlyMap<string, string>
+): string {
+  // Ids the reader makes up for layers outside the document, such as a library's components.
+  const outside = new Map<string, string>()
   const json = JSON.stringify(nodes, (key, value: unknown) => {
     if (key === 'id') return undefined
+    if (typeof value === 'string' && GENERATED_ID.test(value) && !order.has(value)) {
+      if (!outside.has(value)) outside.set(value, `@${outside.size}`)
+      return outside.get(value)
+    }
     if (typeof value === 'string') return order.get(value) ?? value
     if (value instanceof Uint8Array) return sha(value)
     return value
@@ -64,13 +76,17 @@ export async function fingerprintFixture(file: string): Promise<PageFingerprint[
       populate: 'all'
     }
   )
+  const pages = graph.getPages(true)
+  const order = new Map(
+    pages.flatMap((page) => subtree(graph, page)).map((node, index) => [node.id, `#${index}`])
+  )
   return graph.getPages().map((page) => {
     const nodes = subtree(graph, page)
     const document = sceneGraphToDesignDocument(graph, { rootId: page.id, includeSourceIds: false })
     return {
       name: page.name,
       layers: nodes.length,
-      fields: fieldsFingerprint(nodes),
+      fields: fieldsFingerprint(nodes, order),
       html: sha(serializeHTML(document))
     }
   })

@@ -1,8 +1,13 @@
-import { layoutSizingInParent, type SceneNode } from '@kalka/scene-graph'
-
-import { pickStyle } from '../import/css-values'
-import type { DesignStyleDeclaration } from '../types'
-import { firstCSSNumber, laysOutChildren, px, type PropertyFamily } from './types'
+import { layoutSizingInParent } from '../layout-sizing'
+import type { SceneNode } from '../types'
+import { pickStyle } from './from-css'
+import {
+  type CSSDeclarations,
+  type PropertyFamily,
+  firstCSSNumber,
+  laysOutChildren,
+  px
+} from './types'
 
 type Axis = 'width' | 'height'
 
@@ -52,7 +57,7 @@ function aspectRatioFromCSS(value: string | undefined): number | null {
  */
 function readContentSizing(
   node: SceneNode,
-  style: DesignStyleDeclaration,
+  style: CSSDeclarations,
   parent: SceneNode | undefined
 ): void {
   const unsized = (axis: Axis) => !(axis in style) && !fillsAxis(node, parent, axis)

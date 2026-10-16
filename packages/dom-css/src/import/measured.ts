@@ -1,7 +1,7 @@
 import type { SceneNode } from '@kalka/scene-graph'
+import { mergedStyle, pickStyle } from '@kalka/scene-graph/css-model'
 
 import type { DesignElement, DesignNode, DesignStyleDeclaration, LayoutBox } from '../types'
-import { mergedStyle, pickStyle } from './css-values'
 
 /**
  * Import from a measured render: where a browser laid each element out is known, so layers the

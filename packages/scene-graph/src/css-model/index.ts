@@ -3,27 +3,25 @@
  * running each family's `write` in table order; import, the canvas's style edits and the
  * projection's own round trip read them back through the same families.
  */
-import type { SceneNode } from '@kalka/scene-graph'
-
-import { expandBorderShorthands } from '../import/paint'
-import type { DesignStyleDeclaration } from '../types'
+import type { SceneNode } from '../types'
 import { blendMode, clipsContent, cornerRadii, effects, opacity, textShadow } from './appearance'
 import { container, direction, layoutChild, textDirection } from './layout'
 import { fills, image, shaderFallback, textFills } from './paint'
+import { expandBorderShorthands } from './paint-from-css'
 import { position } from './position'
 import { contentSizing, size, sizeConstraints } from './size'
 import { stroke } from './stroke'
 import { font, textAlign, textDecoration, textWrap } from './text'
-import type { PropertyFamily, ReadContext, WriteContext } from './types'
+import type { CSSDeclarations, PropertyFamily, ReadContext, WriteContext } from './types'
 
-export type {
-  FieldCSS,
-  ImageSourceResolver,
-  PropertyFamily,
-  ReadContext,
-  WriteContext
-} from './types'
+export type { CSSDeclarations, FieldCSS, PropertyFamily, ReadContext, WriteContext } from './types'
 export { hugs } from './size'
+export { firstCSSNumber, laysOutChildren, px } from './types'
+export * from './to-css'
+export * from './from-css'
+export * from './gradient'
+export * from './grid'
+export * from './paint-from-css'
 
 /** Frames, shapes and every other layer that draws a box. */
 export const BOX_PROPERTIES: readonly PropertyFamily[] = [
@@ -70,15 +68,15 @@ export const MAPPED_CSS_PROPERTIES: ReadonlySet<string> = new Set(
   [...BOX_PROPERTIES, ...TEXT_PROPERTIES].flatMap((family) => family.properties)
 )
 
-export function writeLayerStyle(node: SceneNode, context: WriteContext): DesignStyleDeclaration {
-  const style: DesignStyleDeclaration = {}
+export function writeLayerStyle(node: SceneNode, context: WriteContext): CSSDeclarations {
+  const style: CSSDeclarations = {}
   for (const family of propertiesFor(node)) family.write?.(style, node, context)
   return style
 }
 
 export function readLayerStyle(
   node: SceneNode,
-  declared: DesignStyleDeclaration,
+  declared: CSSDeclarations,
   context: ReadContext
 ): void {
   const style = node.type === 'TEXT' ? declared : expandBorderShorthands(declared)

@@ -1,10 +1,14 @@
-import type { SceneNode, Stroke } from '@kalka/scene-graph'
-
-import { strokeColorToCSS } from '../export/css'
-import { colorToStrokeFromCSS, pickStyle } from '../import/css-values'
-import { outlineStroke } from '../import/paint'
-import type { DesignStyleDeclaration } from '../types'
-import { firstCSSNumber, px, type FieldCSS, type PropertyFamily } from './types'
+import type { SceneNode, Stroke } from '../types'
+import { colorToStrokeFromCSS, pickStyle } from './from-css'
+import { outlineStroke } from './paint-from-css'
+import { strokeColorToCSS } from './to-css'
+import {
+  type CSSDeclarations,
+  type FieldCSS,
+  type PropertyFamily,
+  firstCSSNumber,
+  px
+} from './types'
 
 const SIDES = ['top', 'right', 'bottom', 'left'] as const
 const SIDE_WEIGHTS = {
@@ -26,7 +30,7 @@ function outlineOffset(align: SceneNode['strokeAlign'], weight: number): number 
  * thick as its stroke, centered on it, which leaves layout alone; a dashed one is a top border.
  */
 function writeLineStroke(
-  style: DesignStyleDeclaration,
+  style: CSSDeclarations,
   weight: number,
   borderStyle: string,
   color: string,
@@ -39,7 +43,7 @@ function writeLineStroke(
   style['border-top'] = `${css('strokeWeight', px(weight))} ${borderStyle} ${color}`
 }
 
-function writeStroke(style: DesignStyleDeclaration, node: SceneNode, css: FieldCSS): void {
+function writeStroke(style: CSSDeclarations, node: SceneNode, css: FieldCSS): void {
   const stroke = node.strokes.at(0)
   const literalColor = strokeColorToCSS(stroke)
   if (!literalColor || !stroke) return
@@ -72,7 +76,7 @@ function writeStroke(style: DesignStyleDeclaration, node: SceneNode, css: FieldC
   }
 }
 
-function firstSideValue(style: DesignStyleDeclaration, part: 'color' | 'style') {
+function firstSideValue(style: CSSDeclarations, part: 'color' | 'style') {
   return (
     pickStyle(style, `border-${part}`) ??
     SIDES.map((side) => pickStyle(style, `border-${side}-${part}`)).find(
@@ -81,7 +85,7 @@ function firstSideValue(style: DesignStyleDeclaration, part: 'color' | 'style') 
   )
 }
 
-function strokeWeightFromStyle(style: DesignStyleDeclaration) {
+function strokeWeightFromStyle(style: CSSDeclarations) {
   const borderWidth = firstCSSNumber(style, 'border-width')
   if (borderWidth !== null) return borderWidth
   const sideWeights = SIDES.map((side) => firstCSSNumber(style, `border-${side}-width`)).filter(
@@ -91,20 +95,20 @@ function strokeWeightFromStyle(style: DesignStyleDeclaration) {
   return Math.max(...sideWeights)
 }
 
-function dashPatternFromCSS(style: DesignStyleDeclaration, strokeWeight: number): number[] {
+function dashPatternFromCSS(style: CSSDeclarations, strokeWeight: number): number[] {
   const borderStyle = firstSideValue(style, 'style')
   if (borderStyle === 'dashed') return [strokeWeight * 3, strokeWeight * 2]
   if (borderStyle === 'dotted') return [strokeWeight, strokeWeight]
   return []
 }
 
-function readBorderWeights(node: SceneNode, style: DesignStyleDeclaration, stroke: Stroke): void {
+function readBorderWeights(node: SceneNode, style: CSSDeclarations, stroke: Stroke): void {
   for (const side of SIDES)
     node[SIDE_WEIGHTS[side]] = firstCSSNumber(style, `border-${side}-width`) ?? stroke.weight
   node.independentStrokeWeights = SIDES.some((side) => node[SIDE_WEIGHTS[side]] !== stroke.weight)
 }
 
-function readStroke(style: DesignStyleDeclaration, node: SceneNode): void {
+function readStroke(style: CSSDeclarations, node: SceneNode): void {
   const strokes = colorToStrokeFromCSS(
     firstSideValue(style, 'color'),
     strokeWeightFromStyle(style)?.toString()

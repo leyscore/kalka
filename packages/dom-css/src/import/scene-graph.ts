@@ -1,11 +1,15 @@
 import { SceneGraph, type SceneNode, parseShaderLayer } from '@kalka/scene-graph'
+import {
+  colorToFillFromCSS,
+  firstCSSNumber,
+  mergedStyle,
+  pickStyle
+} from '@kalka/scene-graph/css-model'
 
-import { readLayerStyle } from '../model'
-import { firstCSSNumber } from '../model/types'
 import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
-import { colorToFillFromCSS, mergedStyle, pickStyle } from './css-values'
 import { hasBoxStyle, isTextLikeElement, textContent } from './element-kinds'
 import { applyHTMLElement } from './html-element'
+import { readElementStyle } from './image'
 import {
   inheritedTextStyle,
   isNotRendered,
@@ -24,7 +28,7 @@ export interface DesignDocumentToSceneGraphOptions {
   artboardName?: string
 }
 
-export type { ImageSourceResolver } from '../model'
+export type { ImageSourceResolver } from './image'
 
 /**
  * What CSS declarations change on a layer: the fields they set, and only those that differ, so
@@ -36,7 +40,7 @@ export function cssToNodeChanges(
   declarations: DesignStyleDeclaration
 ): Partial<SceneNode> {
   const draft = structuredClone(node)
-  readLayerStyle(draft, declarations, { graph })
+  readElementStyle(graph, draft, declarations)
   // The text mapping reads a missing font-style as upright; here it means "leave it".
   if (!('font-style' in declarations)) draft.italic = node.italic
   const changes: Partial<SceneNode> = {}
@@ -59,7 +63,7 @@ function createTextNode(
     width: Math.max(text.length * 8, 1),
     height: 20
   })
-  readLayerStyle(node, style, { graph })
+  readElementStyle(graph, node, style)
   return node
 }
 
@@ -116,7 +120,7 @@ function createFrameNode(
     // An exported shader layer comes back as one; its gradient was only the stand-in.
     shader: shaderJSON ? parseShaderLayer(shaderJSON) : null
   })
-  readLayerStyle(node, style, { graph, element })
+  readElementStyle(graph, node, style, { element })
   applyHTMLElement(node, element)
   if (pickStyle(style, 'visibility') === 'hidden') node.visible = false
   if (node.shader) {

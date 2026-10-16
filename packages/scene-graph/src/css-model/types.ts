@@ -1,14 +1,12 @@
-import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
-import { parseCSSNumber } from '@kalka/scene-graph/css'
+import { parseCSSNumber } from '../css'
+import type { SceneNode } from '../types'
+import { pickStyle } from './from-css'
 
-import { pickStyle } from '../import/css-values'
-import type { DesignElement, DesignStyleDeclaration } from '../types'
+/** A layer's CSS declarations, property to value, as an inline `style` holds them. */
+export type CSSDeclarations = Record<string, string>
 
 /** A field's CSS: its token reference where one is faithful, otherwise the literal value. */
 export type FieldCSS = (field: string, literal: string) => string
-
-/** The image hash an `<img src>` names in the graph, for sources that are not data URLs. */
-export type ImageSourceResolver = (source: string) => string | null
 
 export interface WriteContext {
   /** The layer's parent, whose layout decides how the child is sized and placed. */
@@ -17,10 +15,8 @@ export interface WriteContext {
 }
 
 export interface ReadContext {
-  graph: SceneGraph
-  /** The element the CSS is on, when there is one: an `<img>` carries its image in `src`. */
-  element?: DesignElement
-  resolveImage?: ImageSourceResolver
+  /** The box a browser laid the element out in, when it was measured; gradients scale to it. */
+  box?: { width: number; height: number }
   /**
    * Set when the CSS is what the projection wrote, so what it leaves out means something: an
    * unset size hugs or fills, and `position: absolute` is a free position in its parent.
@@ -36,16 +32,13 @@ export interface PropertyFamily {
   name: string
   /** Every CSS property the family writes or reads. */
   properties: readonly string[]
-  write?(style: DesignStyleDeclaration, node: SceneNode, context: WriteContext): void
-  read?(style: DesignStyleDeclaration, node: SceneNode, context: ReadContext): void
+  write?(style: CSSDeclarations, node: SceneNode, context: WriteContext): void
+  read?(style: CSSDeclarations, node: SceneNode, context: ReadContext): void
 }
 
 export const px = (value: number) => `${value}px`
 
-export function firstCSSNumber(
-  style: DesignStyleDeclaration,
-  ...properties: string[]
-): number | null {
+export function firstCSSNumber(style: CSSDeclarations, ...properties: string[]): number | null {
   for (const property of properties) {
     const parsed = parseCSSNumber(pickStyle(style, property))
     if (parsed !== null) return parsed

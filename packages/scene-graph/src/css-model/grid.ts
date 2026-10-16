@@ -1,6 +1,5 @@
-import type { GridTrack, SceneNode } from '@kalka/scene-graph'
-
-import type { DesignStyleDeclaration } from '../types'
+import type { GridTrack, SceneNode } from '../types'
+import type { CSSDeclarations } from './types'
 
 function trackToCSS(track: GridTrack): string {
   if (track.sizing === 'FR') return `${track.value}fr`
@@ -16,7 +15,7 @@ function tracksToCSS(tracks: GridTrack[]): string {
 }
 
 export function addGridContainer(
-  style: DesignStyleDeclaration,
+  style: CSSDeclarations,
   node: SceneNode,
   css: (field: string, literal: string) => string
 ): void {
@@ -30,7 +29,7 @@ export function addGridContainer(
 }
 
 /** A span sets the whole placement, so the start follows it. */
-export function addGridPlacement(style: DesignStyleDeclaration, node: SceneNode): void {
+export function addGridPlacement(style: CSSDeclarations, node: SceneNode): void {
   const position = node.gridPosition
   if (!position) return
   if (position.columnSpan > 1)

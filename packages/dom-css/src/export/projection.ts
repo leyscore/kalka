@@ -1,8 +1,8 @@
 import { fromUint8Array } from 'js-base64'
 
 import { readIcon, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
+import { writeLayerStyle, type FieldCSS } from '@kalka/scene-graph/css-model'
 
-import { writeLayerStyle, type FieldCSS } from '../model'
 import { DesignTokens, type CSSModes } from '../tokens/references'
 import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
 import {

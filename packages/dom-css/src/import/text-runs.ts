@@ -1,8 +1,8 @@
 import type { CharacterStyleOverride, StyleRun } from '@kalka/scene-graph'
 import { parseCSSColor, parseCSSNumber } from '@kalka/scene-graph/css'
+import { paintColor } from '@kalka/scene-graph/css-model'
 
 import type { DesignNode, DesignStyleDeclaration } from '../types'
-import { paintColor } from './paint'
 
 function decorationFromCSS(value: string): CharacterStyleOverride['textDecoration'] | undefined {
   if (value === 'underline') return 'UNDERLINE'

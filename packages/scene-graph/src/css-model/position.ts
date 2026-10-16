@@ -1,4 +1,4 @@
-import { pickStyle } from '../import/css-values'
+import { pickStyle } from './from-css'
 import { firstCSSNumber, laysOutChildren, type PropertyFamily } from './types'
 
 /**

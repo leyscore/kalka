@@ -19,6 +19,7 @@ export default defineConfig({
     'variant-properties': './src/variant-properties.ts',
     'vector-network': './src/vector-network.ts',
     types: './src/types.ts',
+    'css-model': './src/css-model/index.ts',
     primitives: './src/primitives.ts',
     constants: './src/constants.ts',
     coordinate: './src/coordinate.ts',

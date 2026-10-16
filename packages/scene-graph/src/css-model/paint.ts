@@ -1,17 +1,9 @@
-import { isValid, toUint8Array } from 'js-base64'
-
-import type { Fill, ImageScaleMode, SceneNode } from '@kalka/scene-graph'
-import { BLACK, TRANSPARENT } from '@kalka/scene-graph/constants'
-import { parseCSSNumber } from '@kalka/scene-graph/css'
-import { computeImageHash } from '@kalka/scene-graph/images'
-
-import { cssColor, fillToCSS, fillsToBackground } from '../export/css'
-import { DOM_CSS_PLUGIN_ID, IMAGE_SOURCE_URL_KEY } from '../export/tags'
-import { colorToFillFromCSS, pickStyle } from '../import/css-values'
-import { linearGradientFill } from '../import/gradient'
-import { clipsBackgroundToText } from '../import/phrasing'
-import type { DesignStyleDeclaration } from '../types'
-import type { PropertyFamily, ReadContext } from './types'
+import { BLACK } from '../constants'
+import { parseCSSNumber } from '../css'
+import { clipsBackgroundToText, colorToFillFromCSS, pickStyle } from './from-css'
+import { linearGradientFill } from './gradient'
+import { cssColor, fillToCSS, fillsToBackground } from './to-css'
+import type { PropertyFamily } from './types'
 
 const BACKGROUND = ['background-color', 'background-image', 'background-blend-mode']
 
@@ -28,74 +20,25 @@ export const fills: PropertyFamily = {
     const fill = fillToCSS(node.fills.at(0))
     if (fill) style['background-color'] = css('fills/0/color', fill)
   },
-  read(style, node, { element }) {
+  read(style, node, { box }) {
     const read = colorToFillFromCSS(pickStyle(style, 'background-color'))
     // A gradient clipped to the text paints the text, not the box (see `textFills`).
     const gradient = clipsBackgroundToText(style)
       ? null
       : linearGradientFill(
           pickStyle(style, 'background-image'),
-          element?.layoutBox?.width ?? parseCSSNumber(pickStyle(style, 'width')) ?? 0,
-          element?.layoutBox?.height ?? parseCSSNumber(pickStyle(style, 'height')) ?? 0
+          box?.width ?? parseCSSNumber(pickStyle(style, 'width')) ?? 0,
+          box?.height ?? parseCSSNumber(pickStyle(style, 'height')) ?? 0
         )
     if (gradient) read.push(gradient)
     if (read.length > 0) node.fills = read
   }
 }
 
-function imageScaleModeFromObjectFit(value: string | undefined): ImageScaleMode | null {
-  if (value === 'contain' || value === 'scale-down') return 'FIT'
-  if (value === 'cover') return 'FILL'
-  return null
-}
-
-function bytesFromDataURL(value: string | undefined): Uint8Array | null {
-  if (!value?.startsWith('data:')) return null
-  const commaIndex = value.indexOf(',')
-  if (commaIndex === -1) return null
-  const metadata = value.slice(0, commaIndex)
-  const body = value.slice(commaIndex + 1)
-  // Invalid Base64 in imported HTML drops that image instead of the whole import.
-  if (!metadata.endsWith(';base64') || !isValid(body)) return null
-  return toUint8Array(body)
-}
-
-function imageFill(hash: string, style: DesignStyleDeclaration): Fill {
-  return {
-    type: 'IMAGE',
-    imageHash: hash,
-    imageScaleMode: imageScaleModeFromObjectFit(pickStyle(style, 'object-fit')) ?? 'FILL',
-    color: TRANSPARENT,
-    opacity: 1,
-    visible: true
-  }
-}
-
-function readImage(style: DesignStyleDeclaration, node: SceneNode, context: ReadContext): void {
-  const { graph, element, resolveImage } = context
-  if (element?.tagName.toLowerCase() !== 'img') return
-  const source = element.attrs.src
-  const resolved = source && resolveImage ? resolveImage(source) : null
-  if (resolved) {
-    node.fills = [imageFill(resolved, style)]
-    return
-  }
-  const bytes = bytesFromDataURL(source)
-  if (!bytes) {
-    if (source)
-      node.pluginData.push({
-        pluginId: DOM_CSS_PLUGIN_ID,
-        key: IMAGE_SOURCE_URL_KEY,
-        value: source
-      })
-    return
-  }
-  const imageHash = computeImageHash(bytes)
-  graph.images.set(imageHash, bytes)
-  node.fills = [imageFill(imageHash, style)]
-}
-
-/** An image fill is an `<img>`: its source on the element, its scale mode as `object-fit`. */
+/**
+ * An image fill is an `<img>`: its scale mode as `object-fit`. Its source is the element's, which
+ * DOM/CSS reads (`packages/dom-css/src/import/image.ts`).
+ */
 export const image: PropertyFamily = {
   name: 'image',
   properties: ['aspect-ratio', 'object-fit'],
@@ -105,8 +48,7 @@ export const image: PropertyFamily = {
     if (node.width > 0 && node.height > 0) style['aspect-ratio'] = `${node.width} / ${node.height}`
     if (fill.imageScaleMode === 'FIT') style['object-fit'] = 'contain'
     if (fill.imageScaleMode === 'FILL') style['object-fit'] = 'cover'
-  },
-  read: readImage
+  }
 }
 
 /**

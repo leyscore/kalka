@@ -21,7 +21,7 @@ jobs:
   baselines:
     name: Write baselines
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
@@ -45,8 +45,10 @@ jobs:
           FIXTURES: ${{ inputs.fixtures }}
           UPDATE_FIG_BASELINES: '1'
         run: |
+          # One process per file, which exits once written: the reader keeps handles open.
           for file in ${FIXTURES//,/ }; do
-            bun -e "import { baselineFor, fingerprintFixture } from './tests/helpers/fig/regression.ts'; baselineFor('$file', await fingerprintFixture('$file'))"
+            echo "Writing $file"
+            timeout 15m bun -e "import { baselineFor, fingerprintFixture } from './tests/helpers/fig/regression.ts'; baselineFor('$file', await fingerprintFixture('$file')); console.log('Wrote $file'); process.exit(0)"
           done
 
       - name: Capture every page on the canvas

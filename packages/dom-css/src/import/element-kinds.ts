@@ -1,5 +1,6 @@
+import { pickStyle } from '@kalka/scene-graph/css-model'
+
 import type { DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
-import { pickStyle } from './css-values'
 
 /** What kind of layer an element becomes in an unmeasured import: text or a box. */
 

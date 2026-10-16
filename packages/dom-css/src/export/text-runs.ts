@@ -1,7 +1,7 @@
 import type { CharacterStyleOverride, SceneNode, StyleRun } from '@kalka/scene-graph'
+import { fillToCSS } from '@kalka/scene-graph/css-model'
 
 import type { DesignNode, DesignStyleDeclaration } from '../types'
-import { fillToCSS } from './css'
 
 const px = (value: number) => `${value}px`
 

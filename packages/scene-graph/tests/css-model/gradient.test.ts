@@ -1,7 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { fillLayerToCSS } from '#dom-css/export/css'
-import { linearGradientFill } from '#dom-css/import/gradient'
+import { fillLayerToCSS, linearGradientFill } from '@kalka/scene-graph/css-model'
 
 const PURPLE = 'rgb(139, 92, 246)'
 const PINK = 'rgb(236, 72, 153)'

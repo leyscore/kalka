@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 
-import { readLayerStyle, writeLayerStyle } from '#dom-css/model'
-
 import { SceneGraph, type SceneNode } from '@kalka/scene-graph'
+import { readLayerStyle, writeLayerStyle } from '@kalka/scene-graph/css-model'
 
 type NodeType = 'FRAME' | 'RECTANGLE' | 'TEXT'
 
@@ -208,7 +207,7 @@ function roundTrip({ type = 'FRAME', fields, parent: parentFields }: Sample) {
   const style = writeLayerStyle(node, { parent, css: (_field, literal) => literal })
 
   const read = graph.createNode(type, parent?.id ?? page.id, {})
-  readLayerStyle(read, style, { graph, projected: { parent } })
+  readLayerStyle(read, style, { projected: { parent } })
   return { style, read }
 }
 

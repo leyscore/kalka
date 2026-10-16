@@ -1,7 +1,6 @@
-import type { SceneNode } from '@kalka/scene-graph'
-import { parseCSSNumber } from '@kalka/scene-graph/css'
-
-import { pickStyle } from '../import/css-values'
+import { parseCSSNumber } from '../css'
+import type { SceneNode } from '../types'
+import { pickStyle } from './from-css'
 import { px, type PropertyFamily } from './types'
 
 export const font: PropertyFamily = {

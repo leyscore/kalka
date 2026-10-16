@@ -5,8 +5,8 @@ import type {
   VariableCollectionMode,
   VariableValue
 } from '@kalka/scene-graph'
+import { cssColor } from '@kalka/scene-graph/css-model'
 
-import { cssColor } from '../export/css'
 import { collectionVariables, tokenSlug, variableCSSNames, variableNamespace } from './names'
 import { createTokenValidator, parseWithBrowser, type TokenValidator } from './validate'
 import { tokenNumberToCSS, variableUnit } from './values'

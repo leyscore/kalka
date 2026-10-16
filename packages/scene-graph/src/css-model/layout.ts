@@ -1,12 +1,18 @@
-import { layoutSizingInParent, type SceneNode } from '@kalka/scene-graph'
-import { parseCSSNumber } from '@kalka/scene-graph/css'
-import { resolveNodeTextDirection } from '@kalka/scene-graph/text-direction'
-
-import { addGridContainer, addGridPlacement } from '../export/grid'
-import { pickStyle } from '../import/css-values'
-import { rotationFromCSS } from '../import/paint'
-import type { DesignStyleDeclaration } from '../types'
-import { firstCSSNumber, laysOutChildren, px, type FieldCSS, type PropertyFamily } from './types'
+import { parseCSSNumber } from '../css'
+import { layoutSizingInParent } from '../layout-sizing'
+import { resolveNodeTextDirection } from '../text-direction'
+import type { SceneNode } from '../types'
+import { pickStyle } from './from-css'
+import { addGridContainer, addGridPlacement } from './grid'
+import { rotationFromCSS } from './paint-from-css'
+import {
+  type CSSDeclarations,
+  type FieldCSS,
+  type PropertyFamily,
+  firstCSSNumber,
+  laysOutChildren,
+  px
+} from './types'
 
 /**
  * Cross-axis alignment of a container's children, or of one child. Auto layout starts children
@@ -135,7 +141,7 @@ export const textDirection: PropertyFamily = {
   }
 }
 
-function writeFlexGap(style: DesignStyleDeclaration, node: SceneNode, css: FieldCSS): void {
+function writeFlexGap(style: CSSDeclarations, node: SceneNode, css: FieldCSS): void {
   // Figma leaves the spacing between wrapped rows unset when it follows the item spacing.
   const counterSpacing = Number.isFinite(node.counterAxisSpacing)
     ? node.counterAxisSpacing
@@ -158,7 +164,7 @@ function writeFlexGap(style: DesignStyleDeclaration, node: SceneNode, css: Field
   style['column-gap'] = counter
 }
 
-function readFlexGap(style: DesignStyleDeclaration, node: SceneNode): void {
+function readFlexGap(style: CSSDeclarations, node: SceneNode): void {
   const gap = firstCSSNumber(style, 'gap')
   const rowGap = firstCSSNumber(style, 'row-gap')
   const columnGap = firstCSSNumber(style, 'column-gap')
@@ -172,7 +178,7 @@ function readFlexGap(style: DesignStyleDeclaration, node: SceneNode): void {
 const PADDING_FIELDS = ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'] as const
 
 /** Sides compare by their CSS, so a token and a literal of the same size stay separate. */
-function writePadding(style: DesignStyleDeclaration, node: SceneNode, css: FieldCSS): void {
+function writePadding(style: CSSDeclarations, node: SceneNode, css: FieldCSS): void {
   const [top, right, bottom, left] = PADDING_FIELDS.map((field) => css(field, px(node[field])))
   const zero = px(0)
   if ([top, right, bottom, left].every((value) => value === zero)) return
@@ -194,7 +200,7 @@ function writePadding(style: DesignStyleDeclaration, node: SceneNode, css: Field
   if (left !== zero) style['padding-left'] = left
 }
 
-function readPadding(style: DesignStyleDeclaration, node: SceneNode): void {
+function readPadding(style: CSSDeclarations, node: SceneNode): void {
   node.paddingTop = firstCSSNumber(style, 'padding-top', 'padding-block', 'padding') ?? 0
   node.paddingRight = firstCSSNumber(style, 'padding-right', 'padding-inline', 'padding') ?? 0
   node.paddingBottom = firstCSSNumber(style, 'padding-bottom', 'padding-block', 'padding') ?? 0

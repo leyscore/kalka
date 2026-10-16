@@ -1,9 +1,9 @@
 import { parseShaderLayer, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
+import { paintColor } from '@kalka/scene-graph/css-model'
 
-import { readLayerStyle, type ImageSourceResolver } from '../model'
 import type { DesignElement, DesignStyleDeclaration } from '../types'
 import { applyHTMLElement } from './html-element'
-import { paintColor } from './paint'
+import { readElementStyle, type ImageSourceResolver } from './image'
 import { textContentFromChildren } from './text-runs'
 
 export interface LayerStyleOptions {
@@ -39,7 +39,7 @@ export function applyLayerStyle(
   style: DesignStyleDeclaration,
   { parent, resolveImage }: LayerStyleOptions
 ): void {
-  readLayerStyle(node, style, { graph, element, resolveImage, projected: { parent } })
+  readElementStyle(graph, node, style, { element, resolveImage, projected: { parent } })
   // A shader layer's settings ride on its element; its gradient is only the stand-in.
   const shader = element.attrs['data-kalka-shader']
   if (shader && node.type !== 'TEXT') node.shader = parseShaderLayer(shader)

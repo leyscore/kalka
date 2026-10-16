@@ -1,9 +1,8 @@
-import type { BlendMode, Effect, Fill, Stroke } from '@kalka/scene-graph'
-import { colorToCSS, colorToHex } from '@kalka/scene-graph/color'
-import { CSS_BLEND_MODES } from '@kalka/scene-graph/css'
-import type { Color } from '@kalka/scene-graph/primitives'
-
-import type { DesignStyleDeclaration } from '../types'
+import { colorToCSS, colorToHex } from '../color'
+import { CSS_BLEND_MODES } from '../css'
+import type { Color } from '../primitives'
+import type { BlendMode, Effect, Fill, Stroke } from '../types'
+import type { CSSDeclarations } from './types'
 
 /** Opaque colors as hex, which Tailwind matches to its palette; translucent ones as `rgba()`. */
 export function cssColor(color: Color): string {
@@ -31,8 +30,8 @@ export function dropShadowToCSS(effect: Effect | undefined): string | undefined 
 }
 
 /** Every visible shadow, in order, plus layer and background blur. */
-export function effectsToCSS(effects: Effect[]): DesignStyleDeclaration {
-  const style: DesignStyleDeclaration = {}
+export function effectsToCSS(effects: Effect[]): CSSDeclarations {
+  const style: CSSDeclarations = {}
   const visible = effects.filter((effect) => effect.visible)
   const shadows = visible.filter(
     (effect) => effect.type === 'DROP_SHADOW' || effect.type === 'INNER_SHADOW'
@@ -145,7 +144,7 @@ export function fillsToBackground(
   fills: readonly Fill[],
   width: number,
   height: number
-): DesignStyleDeclaration | undefined {
+): CSSDeclarations | undefined {
   const visible = fills.filter((fill) => fill.visible && fill.type !== 'IMAGE')
   if (visible.length === 0) return undefined
   if (visible.length === 1 && visible[0].type === 'SOLID') return undefined
@@ -154,7 +153,7 @@ export function fillsToBackground(
     .filter((layer): layer is { fill: Fill; css: string } => layer.css !== undefined)
     .reverse()
   if (layers.length === 0) return undefined
-  const style: DesignStyleDeclaration = {
+  const style: CSSDeclarations = {
     'background-image': layers.map((layer) => layer.css).join(', ')
   }
   const blends = layers.map((layer) => blendModeToCSS(layer.fill.blendMode) ?? 'normal')

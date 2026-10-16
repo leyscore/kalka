@@ -1,11 +1,9 @@
-import type { SceneNode } from '@kalka/scene-graph'
-import { parseCSSNumber, parseCSSShadows } from '@kalka/scene-graph/css'
-
-import { blendModeToCSS, dropShadowToCSS, effectsToCSS } from '../export/css'
-import { pickStyle } from '../import/css-values'
-import { blendModeFromCSS, blurEffects } from '../import/paint'
-import type { DesignStyleDeclaration } from '../types'
-import { px, type PropertyFamily } from './types'
+import { parseCSSNumber, parseCSSShadows } from '../css'
+import type { SceneNode } from '../types'
+import { pickStyle } from './from-css'
+import { blendModeFromCSS, blurEffects } from './paint-from-css'
+import { blendModeToCSS, dropShadowToCSS, effectsToCSS } from './to-css'
+import { type CSSDeclarations, type PropertyFamily, px } from './types'
 
 export const effects: PropertyFamily = {
   name: 'effects',
@@ -69,7 +67,7 @@ const CORNERS = [
  * A corner radius in pixels. A percentage is of the box, as `border-radius: 50%` draws a circle;
  * an elliptical corner keeps its horizontal radius.
  */
-function cornerRadiusOf(node: SceneNode, style: DesignStyleDeclaration, property: string) {
+function cornerRadiusOf(node: SceneNode, style: CSSDeclarations, property: string) {
   const value = pickStyle(style, property)?.trim().split(/\s+/)[0]
   if (value?.endsWith('%')) {
     const percent = Number.parseFloat(value)

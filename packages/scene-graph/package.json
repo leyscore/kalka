@@ -197,6 +197,12 @@
       "import": "./dist/css.js",
       "default": "./dist/css.js"
     },
+    "./css-model": {
+      "types": "./dist/css-model.d.ts",
+      "bun": "./src/css-model/index.ts",
+      "import": "./dist/css-model.js",
+      "default": "./dist/css-model.js"
+    },
     "./text-direction": {
       "types": "./dist/text-direction.d.ts",
       "bun": "./src/text-direction.ts",

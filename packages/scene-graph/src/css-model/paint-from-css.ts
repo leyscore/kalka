@@ -1,9 +1,8 @@
-import type { BlendMode, Effect, Stroke } from '@kalka/scene-graph'
-import { TRANSPARENT } from '@kalka/scene-graph/constants'
-import { parseCSSColor, parseCSSNumber, splitCSSValue } from '@kalka/scene-graph/css'
-import type { Color } from '@kalka/scene-graph/primitives'
-
-import type { DesignStyleDeclaration } from '../types'
+import { TRANSPARENT } from '../constants'
+import { parseCSSColor, parseCSSNumber, splitCSSValue } from '../css'
+import type { Color } from '../primitives'
+import type { BlendMode, Effect, Stroke } from '../types'
+import type { CSSDeclarations } from './types'
 
 const LINE_STYLES = new Set([
   'none',
@@ -43,8 +42,8 @@ const BORDER_SIDES = ['top', 'right', 'bottom', 'left'] as const
  * Border longhands from the `border` and `border-<side>` shorthands, which a `style` attribute
  * keeps as written. Longhands the element sets itself win.
  */
-export function expandBorderShorthands(style: DesignStyleDeclaration): DesignStyleDeclaration {
-  const expanded: DesignStyleDeclaration = {}
+export function expandBorderShorthands(style: CSSDeclarations): CSSDeclarations {
+  const expanded: CSSDeclarations = {}
   const all = parseLineShorthand(style.border)
   if (all) {
     if (all.width) expanded['border-width'] = all.width
@@ -70,9 +69,7 @@ export function paintColor(color: Color): { color: Color; opacity: number } {
  * The stroke an `outline` draws: one that takes no room in auto layout, inside, centered on,
  * or outside the edge as `outline-offset` places it.
  */
-export function outlineStroke(
-  style: DesignStyleDeclaration
-): { stroke: Stroke; dashed: boolean } | null {
+export function outlineStroke(style: CSSDeclarations): { stroke: Stroke; dashed: boolean } | null {
   const line = parseLineShorthand(style.outline)
   const width = parseCSSNumber(style['outline-width'] ?? line?.width)
   const color = parseCSSColor(style['outline-color'] ?? line?.color)
@@ -107,7 +104,7 @@ function blurEffect(type: Effect['type'], radius: number): Effect {
 }
 
 /** Layer blur from `filter: blur()`, background blur from `backdrop-filter: blur()`. */
-export function blurEffects(style: DesignStyleDeclaration): Effect[] {
+export function blurEffects(style: CSSDeclarations): Effect[] {
   const effects: Effect[] = []
   const layer = blurRadius(style.filter)
   if (layer !== null) effects.push(blurEffect('LAYER_BLUR', layer))

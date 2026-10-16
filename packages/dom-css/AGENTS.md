@@ -4,7 +4,6 @@ DOM, CSS, HTML, JSX, and Tailwind projection between documents and SceneGraph, w
 
 - `src/import/` — HTML, CSS, JSX, and Tailwind to SceneGraph, including the `jsx-runtime` entries and CSS value parsing. `src/import/layers.ts` is the browser-safe `./import` entry: one element's CSS read back onto a layer the way the projection writes it, which Core's Kalka folder format reads pages with (`tests/import/layer.test.ts`).
 - `src/export/` — SceneGraph to HTML, Tailwind JSX, and Storybook: projection, CSS formatting, the HTML bundle, and printers. `src/export/index.ts` is the `./export` entry.
-- `src/model/` — the single mapping table between layer fields and CSS: one family per group of properties, each with the `write` export runs and the `read` import, style edits and the folder format run. `BOX_PROPERTIES` and `TEXT_PROPERTIES` fix the declaration order.
 - `src/behaviours/` — what a behaviour means in the DOM, shared by preview and export: controls and layer roles, story props, and state styles compiled from variants. Exported from `./export`.
 - `src/runtime/` — browser and headless CSS runtimes.
 - `src/tokens/` — variables as design tokens: CSS custom property names, Tailwind namespaces from `twirlwind`, and units. Shared by both directions and exported from `./export`.
@@ -14,5 +13,5 @@ Rules:
 - Depend only on `@kalka/scene-graph` and `@kalka/emit`. Engine services such as web-font resolution come in as options; Core registers the HTML and Tailwind JSX formats (`packages/core/AGENTS.md`).
 - Keep the `./export` entry browser-safe: load `node:*` modules and the headless CSS object model lazily inside the functions that need them, so the app never bundles them.
 - Build generated code as syntax trees with `@kalka/emit` (`es` for TypeScript modules, `jsx` for JSX, `vue` for single-file components), not string fragments.
-- Map a layer field to CSS only in `src/model/`, writing and reading it in the same family, and add a sample to the round trip (`tests/model/round-trip.test.ts`).
+- Layer fields map to CSS through the table in `@kalka/scene-graph/css-model` (`packages/scene-graph/AGENTS.md`); this package adds only what the DOM itself says, such as an `<img>`'s source (`src/import/image.ts`).
 - Imported documents are untrusted: check Base64 with `js-base64`'s `isValid` before decoding.
