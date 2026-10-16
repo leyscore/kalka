@@ -9,6 +9,8 @@ export interface UndoManagerOptions {
   limit?: number
   /** Called after recording, undoing, redoing, or clearing committed history. */
   onChange?: () => void
+  /** Completes an entry as it is recorded, such as with what the edit changed beside it. */
+  onRecord?: (entry: UndoEntry) => UndoEntry
 }
 
 interface UndoBatch {
@@ -25,11 +27,13 @@ export class UndoManager {
   private batches: UndoBatch[] = []
   private readonly limit: number
   private readonly onChange: (() => void) | undefined
+  private readonly onRecord: ((entry: UndoEntry) => UndoEntry) | undefined
   private replaying = 0
 
   constructor(options: UndoManagerOptions = {}) {
     this.limit = options.limit ?? DEFAULT_HISTORY_LIMIT
     this.onChange = options.onChange
+    this.onRecord = options.onRecord
   }
 
   apply(entry: UndoEntry): void {
@@ -45,7 +49,8 @@ export class UndoManager {
     this.record(entry)
   }
 
-  record(entry: UndoEntry): void {
+  record(recorded: UndoEntry): void {
+    const entry = this.onRecord?.(recorded) ?? recorded
     const batch = this.currentBatch
     if (batch) {
       batch.entries.push(entry)

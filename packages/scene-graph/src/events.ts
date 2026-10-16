@@ -10,6 +10,7 @@ export function bindNodeEvents(
     handlers.created ? emitter.on('node:created', handlers.created) : null,
     handlers.updated ? emitter.on('node:updated', handlers.updated) : null,
     handlers.previewUpdated ? emitter.on('node:previewUpdated', handlers.previewUpdated) : null,
+    handlers.styleGaveWay ? emitter.on('node:styleGaveWay', handlers.styleGaveWay) : null,
     handlers.deleted ? emitter.on('node:deleted', handlers.deleted) : null,
     handlers.reparented ? emitter.on('node:reparented', handlers.reparented) : null,
     handlers.reordered ? emitter.on('node:reordered', handlers.reordered) : null

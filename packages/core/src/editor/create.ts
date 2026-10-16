@@ -38,6 +38,7 @@ import { createDesignTokenActions } from './design-tokens'
 import { createGraphEventSubscription } from './graph-events'
 import { createGraphReadActions } from './graph-reads'
 import { createGuideActions } from './guides'
+import { createStyleJournal } from './history/style-journal'
 import { createIconActions } from './icons'
 import { createDesignIssueActions } from './issues'
 import { createNodeActions } from './nodes'
@@ -68,7 +69,11 @@ export { createDefaultEditorState } from './state'
 export function createEditor(options?: EditorOptions) {
   let _graph = options?.graph ?? new SceneGraph()
   const skipInitialGraphSetup = options?.skipInitialGraphSetup ?? false
-  const undo = new UndoManager({ onChange: () => emitEditorEvent('history:changed') })
+  const styleJournal = createStyleJournal()
+  const undo = new UndoManager({
+    onChange: () => emitEditorEvent('history:changed'),
+    onRecord: styleJournal.onRecord
+  })
   const _loadFont = options?.loadFont ?? fontManager.loadFont.bind(fontManager)
   const _getViewportSize =
     options?.getViewportSize ??
@@ -250,6 +255,7 @@ export function createEditor(options?: EditorOptions) {
     runMutationWithLayout,
     subscribeToGraph
   }
+  styleJournal.bind(ctx)
 
   // Assemble domain modules
   const viewport = createViewportActions(ctx)

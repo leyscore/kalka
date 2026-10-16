@@ -633,6 +633,17 @@ export class SceneGraph {
     if (node) this.applyNodeChanges(node, changes, absent)
   }
 
+  /**
+   * CSS kept as written gives way to the fields an edit sets after it. What layout measures is
+   * its result, not an edit written over the layer's CSS.
+   */
+  private styleGivingWay(node: SceneNode, changes: Partial<SceneNode>): Partial<SceneNode> {
+    if (this.isApplyingLayout || this.isApplyingDerivedLayout) return changes
+    const given = withStyleGivingWay(node, changes)
+    if (given !== changes) this.emitter.emit('node:styleGaveWay', node.id, node.style)
+    return given
+  }
+
   private applyNodeChanges(
     node: SceneNode,
     changes: Partial<SceneNode>,
@@ -671,7 +682,7 @@ export class SceneGraph {
     if (changes.vectorNetwork) {
       changes = { ...changes, vectorNetwork: normalizeVectorNetwork(changes.vectorNetwork) }
     }
-    changes = withStyleGivingWay(node, changes)
+    changes = this.styleGivingWay(node, changes)
     const previous: Partial<SceneNode> = {}
     for (const key of Object.keys(changes)) Reflect.set(previous, key, Reflect.get(node, key))
     Object.assign(node, changes)

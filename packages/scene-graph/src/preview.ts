@@ -9,6 +9,8 @@ type PreviewGraph = {
   nodes: Map<string, SceneNode>
   positionPreviewVersion: number
   clearAbsPosCache: () => void
+  readonly isApplyingLayout: boolean
+  readonly isApplyingDerivedLayout: boolean
 }
 
 const LAYOUT_AFFECTING_KEYS = new Set<string>([
@@ -66,7 +68,8 @@ export function updateNodePreview(
   if (affectsLayout) graph.clearAbsPosCache()
   let normalizedChanges = changes
   // CSS written as is for the families a gesture moves gives way, so the canvas follows it.
-  const style = 'style' in changes ? null : styleAfterFieldChanges(node, Object.keys(changes))
+  const writes = !graph.isApplyingLayout && !graph.isApplyingDerivedLayout && !('style' in changes)
+  const style = writes ? styleAfterFieldChanges(node, Object.keys(changes)) : null
   if (style) normalizedChanges = { ...normalizedChanges, style }
   if (node.type === 'TEXT') {
     normalizedChanges = { ...textCacheInvalidationChanges(node, changes), ...changes }

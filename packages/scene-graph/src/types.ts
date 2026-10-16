@@ -13,6 +13,11 @@ export interface SceneGraphEvents {
   /** `previous` holds what the changed fields were before, for listeners that compare. */
   'node:updated': (id: string, changes: Partial<SceneNode>, previous: Partial<SceneNode>) => void
   'node:previewUpdated': (id: string, changes: Partial<SceneNode>) => void
+  /**
+   * CSS kept as written gave way to fields set after it, as part of the change being made. An
+   * edit that records only its own fields can restore the CSS from this.
+   */
+  'node:styleGaveWay': (id: string, previous: CSSDeclarations) => void
   'node:deleted': (id: string, parentId: string | null) => void
   'node:reparented': (nodeId: string, oldParentId: string | null, newParentId: string) => void
   'node:reordered': (
@@ -27,6 +32,7 @@ export type SceneGraphEventHandlers = Partial<{
   created: (node: SceneNode) => void
   updated: (id: string, changes: Partial<SceneNode>, previous: Partial<SceneNode>) => void
   previewUpdated: (id: string, changes: Partial<SceneNode>) => void
+  styleGaveWay: (id: string, previous: CSSDeclarations) => void
   deleted: (id: string, parentId: string | null) => void
   reparented: (nodeId: string, oldParentId: string | null, newParentId: string) => void
   reordered: (

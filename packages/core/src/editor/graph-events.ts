@@ -142,6 +142,7 @@ export function createGraphEventSubscription(options: GraphEventOptions) {
     unbindGraphEvents = options.getGraph().onNodeEvents({
       updated: onNodeUpdated,
       previewUpdated: onNodePreviewUpdated,
+      styleGaveWay: (id, previous) => options.emitEditorEvent('node:styleGaveWay', id, previous),
       created: (node) => {
         options.emitEditorEvent('node:created', node)
         onNodeStructureChanged(node.id)

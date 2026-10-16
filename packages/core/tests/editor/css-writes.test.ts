@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
 import { createEditor, type CSSWriter } from '@kalka/core/editor'
+import { computeAllLayouts } from '@kalka/core/layout'
 import type { SceneNode } from '@kalka/scene-graph'
 import { cssWrite, layerCSS } from '@kalka/scene-graph/css-model'
 
@@ -113,6 +114,21 @@ describe('the properties panel writes CSS', () => {
     editor.undo.undo()
     expect(card.width).toBe(200)
     expect(card.style).toEqual({ width: '50%', cursor: 'pointer' })
+  })
+
+  test('layout measuring a layer keeps the CSS written for it', () => {
+    const { editor, page } = setup()
+    const row = editor.graph.createNode('FRAME', page.id, {
+      layoutMode: 'HORIZONTAL',
+      width: 400,
+      height: 100,
+      primaryAxisSizing: 'FIXED',
+      counterAxisSizing: 'FIXED'
+    })
+    const cell = editor.graph.createNode('FRAME', row.id, { width: 50, height: 50, layoutGrow: 1 })
+    editor.graph.updateNode(cell.id, { style: { width: '50%', 'flex-grow': '2' } })
+    computeAllLayouts(editor.graph, page.id)
+    expect(cell.style).toEqual({ width: '50%', 'flex-grow': '2' })
   })
 })
 
