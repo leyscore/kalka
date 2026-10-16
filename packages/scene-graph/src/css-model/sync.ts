@@ -1,4 +1,4 @@
-import { uniq } from 'es-toolkit'
+import { isEmptyObject, uniq } from 'es-toolkit'
 
 import { createDefaultNode } from '../node-defaults'
 import type { CSSDeclarations, SceneNode } from '../types'
@@ -61,6 +61,8 @@ export function styleAfterFieldChanges(
   node: SceneNode,
   fields: Iterable<string>
 ): CSSDeclarations | null {
+  // Most layers keep no CSS of their own; a gesture runs this every frame.
+  if (isEmptyObject(node.style)) return null
   const replaced = propertiesWrittenFrom(new Set(fields))
   const kept = Object.entries(node.style).filter(([property]) => !replaced.has(property))
   return kept.length === Object.keys(node.style).length ? null : Object.fromEntries(kept)

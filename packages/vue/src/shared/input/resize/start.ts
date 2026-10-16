@@ -32,6 +32,7 @@ export function tryStartResize(cx: number, cy: number, editor: Editor): DragResi
         origStrokes: snap.strokes,
         origTextPathData: snap.textPathData,
         origTextPathBox: snap.textPathBox,
+        origStyle: snap.style,
         origChildren: collectResizeDescendants(editor.graph, id),
         appliedRect: { x: node.x, y: node.y, width: node.width, height: node.height }
       }

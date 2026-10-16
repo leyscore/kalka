@@ -168,7 +168,11 @@ function hasMoved(d: DragMove, editor: Editor) {
 
 function restoreOriginalPositions(d: DragMove, editor: Editor) {
   for (const [id, orig] of d.originals) {
-    editor.graph.updateNodePositionPreview(id, orig.x, orig.y)
+    editor.graph.updateNodePreview(id, {
+      x: orig.x,
+      y: orig.y,
+      ...(orig.style && { style: { ...orig.style } })
+    })
   }
 }
 
@@ -185,7 +189,7 @@ function applyFinalPositions(d: DragMove, editor: Editor) {
     const position = { x: orig.x + d.appliedDx, y: orig.y + d.appliedDy }
     // Laying out now would snap the layer back into its slot before it leaves the frame.
     if (isLeavingAutoLayout(d, id, editor)) editor.graph.updateNode(id, position)
-    else editor.updateNode(id, position)
+    else editor.updateNode(id, position, 'drag')
   }
 }
 

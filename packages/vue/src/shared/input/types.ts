@@ -1,5 +1,6 @@
-import type { Tool } from '@kalka/core/editor'
+import type { MoveOriginal, Tool } from '@kalka/core/editor'
 import type {
+  CSSDeclarations,
   DerivedTextGlyph,
   GeometryPath,
   NodeType,
@@ -43,7 +44,7 @@ export interface DragMove {
   startScreenX: number
   startScreenY: number
   dragStarted: boolean
-  originals: Map<string, { x: number; y: number; parentId: string }>
+  originals: Map<string, MoveOriginal>
   duplicated?: boolean
   duplicatedPreviousSelection?: Set<string>
   autoLayoutParentId?: string
@@ -81,6 +82,8 @@ export interface DragResize {
   origStrokes: Stroke[]
   origTextPathData: TextPathData | null
   origTextPathBox: Rect | null
+  /** The layer's CSS before the resize, which the resize may let give way. */
+  origStyle: CSSDeclarations
   origChildren: Map<string, ResizeSnapshot> | null
   appliedRect?: Rect
 }

@@ -28,6 +28,7 @@ export type ResizeSnapshot = Pick<
   | 'strokes'
   | 'textPathData'
   | 'textPathBox'
+  | 'style'
 >
 
 interface ResizeGraph {
@@ -139,7 +140,8 @@ export function createResizeSnapshot(node: SceneNode): ResizeSnapshot {
     derivedTextGlyphs: copyDerivedGlyphs(node.derivedTextGlyphs),
     strokes: copyStrokes(node.strokes),
     textPathData: node.textPathData ? structuredClone(node.textPathData) : null,
-    textPathBox: node.textPathBox ? { ...node.textPathBox } : null
+    textPathBox: node.textPathBox ? { ...node.textPathBox } : null,
+    style: { ...node.style }
   }
 }
 

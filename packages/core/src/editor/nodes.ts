@@ -39,9 +39,11 @@ export function createNodeActions(ctx: EditorContext) {
     ctx.runLayoutForNode(id)
   }
 
-  function updateNode(id: string, changes: Partial<SceneNode>) {
+  function updateNode(id: string, fieldChanges: Partial<SceneNode>, writer?: CSSWriter) {
     const node = ctx.graph.getNode(id)
     if (!node) return
+    const changes =
+      writer && ctx.cssWrites.has(writer) ? changesAsCSS(node, fieldChanges) : fieldChanges
     // Path-edit last so its reflowed glyphs win over auto-resize's glyph clear
     // (path text is textAutoResize NONE so they don't collide today).
     const nextChanges = styleDetachmentChanges(node, {
@@ -67,9 +69,7 @@ export function createNodeActions(ctx: EditorContext) {
     const node = ctx.graph.getNode(id)
     if (!node) return
     const changes =
-      writer && ctx.cssWrites.has(writer)
-        ? changesAsCSS(ctx.graph, node, fieldChanges)
-        : fieldChanges
+      writer && ctx.cssWrites.has(writer) ? changesAsCSS(node, fieldChanges) : fieldChanges
     // Same ordering rationale as updateNode: reflowed path-text glyphs win.
     const nextChanges = styleDetachmentChanges(node, {
       ...changes,

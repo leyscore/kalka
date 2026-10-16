@@ -69,4 +69,50 @@ describe('the properties panel writes CSS', () => {
     expect(card.cornerRadius).toBe(6)
     expect(card.style).toEqual({})
   })
+
+  test('a move lets the CSS written for position give way, live, and undo brings it back', () => {
+    const { editor, page } = setup()
+    const box = editor.graph.createNode('FRAME', page.id, { width: 300, height: 200 })
+    const badge = editor.graph.createNode('FRAME', box.id, { x: 30, y: 10, width: 40, height: 20 })
+    const written = { left: '10%', top: '5%', width: '50%', cursor: 'pointer' }
+    editor.graph.updateNode(badge.id, { style: written })
+    const original = { x: badge.x, y: badge.y, parentId: box.id, style: badge.style }
+
+    // Each frame of the drag previews the position: the layer follows it on the canvas.
+    editor.graph.updateNodePreview(badge.id, { x: 80, y: 60 })
+    expect(badge.style).toEqual({ width: '50%', cursor: 'pointer' })
+    expect(layerCSS(badge, box)).toMatchObject({ left: '80px', top: '60px', width: '50%' })
+
+    // The drop goes back to where the drag began, then writes where it ended.
+    editor.graph.updateNodePreview(badge.id, { x: 30, y: 10, style: original.style })
+    editor.updateNode(badge.id, { x: 80, y: 60 }, 'drag')
+    editor.commitMoveWithReparent(new Map([[badge.id, original]]))
+    expect(badge.style).toEqual({ width: '50%', cursor: 'pointer' })
+
+    editor.undo.undo()
+    expect([badge.x, badge.y]).toEqual([30, 10])
+    expect(badge.style).toEqual(written)
+    editor.undo.redo()
+    expect(badge.style).toEqual({ width: '50%', cursor: 'pointer' })
+  })
+
+  test('a resize lets the CSS written for size give way, and undo brings it back', () => {
+    const { editor, page } = setup()
+    const card = editor.graph.createNode('FRAME', page.id, { width: 200, height: 100 })
+    editor.graph.updateNode(card.id, { style: { width: '50%', cursor: 'pointer' } })
+    const original = { x: 0, y: 0, width: 200, height: 100, style: card.style }
+
+    editor.graph.updateNodePreview(card.id, { width: 260, height: 120 })
+    expect(card.style).toEqual({ cursor: 'pointer' })
+
+    editor.graph.updateNodePreview(card.id, original)
+    editor.updateNode(card.id, { width: 260, height: 120 }, 'drag')
+    editor.commitResize(card.id, original)
+    expect(layerCSS(card, page).width).toBe('260px')
+
+    editor.undo.undo()
+    expect(card.width).toBe(200)
+    expect(card.style).toEqual({ width: '50%', cursor: 'pointer' })
+  })
 })
+

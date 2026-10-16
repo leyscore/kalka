@@ -15,6 +15,7 @@ export {
 export { createDefaultEditorState, createEditor } from './create'
 export { executeAtomicTool } from './history/atomic-tool'
 export type { PageChange } from './history/page-change'
+export type { MoveOriginal } from './undo'
 export { isEmptyPageChange } from './history/page-change'
 export type { PageSnapshot } from './history/snapshot'
 export { graphFromPageChange, graphFromPageSnapshot } from './history/snapshot-graph'

@@ -1,3 +1,4 @@
+import { styleAfterFieldChanges } from './css-model/sync'
 import { textCacheInvalidationChanges } from './text-picture'
 import type { SceneNode } from './types'
 import { normalizeVectorNetwork } from './vector-network'
@@ -64,6 +65,9 @@ export function updateNodePreview(
   const affectsLayout = Object.keys(changes).some((key) => LAYOUT_AFFECTING_KEYS.has(key))
   if (affectsLayout) graph.clearAbsPosCache()
   let normalizedChanges = changes
+  // CSS written as is for the families a gesture moves gives way, so the canvas follows it.
+  const style = 'style' in changes ? null : styleAfterFieldChanges(node, Object.keys(changes))
+  if (style) normalizedChanges = { ...normalizedChanges, style }
   if (node.type === 'TEXT') {
     normalizedChanges = { ...textCacheInvalidationChanges(node, changes), ...changes }
   }

@@ -1,7 +1,7 @@
 import { isEqual } from 'es-toolkit'
 import { pick } from 'es-toolkit/object'
 
-import type { SceneNode } from '@kalka/scene-graph'
+import type { CSSDeclarations, SceneNode } from '@kalka/scene-graph'
 import type { Rect, Vector } from '@kalka/scene-graph/primitives'
 import { createResizeSnapshot, type ResizeSnapshot } from '@kalka/scene-graph/resize'
 import type { UndoEntry } from '@kalka/scene-graph/undo'
@@ -22,6 +22,19 @@ import {
 import { textAutoResizeChanges } from './text/auto-resize'
 import type { EditorContext } from './types'
 
+/** Where a moved layer was, or ends up; its CSS when the move recorded it. */
+export interface MoveOriginal {
+  x: number
+  y: number
+  parentId: string
+  style?: CSSDeclarations
+}
+
+function movedTo({ x, y, style }: MoveOriginal): Partial<SceneNode> {
+  // A copy: the move's record may come from reactive state, which cannot be cloned.
+  return style ? { x, y, style: { ...style } } : { x, y }
+}
+
 type ResizeOriginal = Rect &
   Partial<
     Pick<
@@ -33,6 +46,7 @@ type ResizeOriginal = Rect &
       | 'strokes'
       | 'textPathData'
       | 'textPathBox'
+      | 'style'
     >
   >
 
@@ -78,28 +92,33 @@ export function createUndoActions(ctx: EditorContext) {
     pushPositionUndo(ctx, 'Move', originals, collectNodePositions(ctx, originals.keys()))
   }
 
-  function commitMoveWithReparent(
-    originals: Map<string, { x: number; y: number; parentId: string }>
-  ) {
+  /** `style` is the layer's CSS before the move, which the move may have let give way. */
+  function commitMoveWithReparent(originals: Map<string, MoveOriginal>) {
     for (const id of originals.keys()) assertNodeEditable(ctx.graph, id)
-    const finals = new Map<string, { x: number; y: number; parentId: string }>()
+    const finals = new Map<string, MoveOriginal>()
     for (const [id] of originals) {
       const n = ctx.graph.getNode(id)
-      if (n) finals.set(id, { x: n.x, y: n.y, parentId: n.parentId ?? ctx.state.currentPageId })
+      if (n)
+        finals.set(id, {
+          x: n.x,
+          y: n.y,
+          parentId: n.parentId ?? ctx.state.currentPageId,
+          style: { ...n.style }
+        })
     }
     ctx.undo.push({
       label: 'Move',
       forward: () => {
         for (const [id, pos] of finals) {
           ctx.graph.reparentNode(id, pos.parentId)
-          ctx.graph.updateNode(id, { x: pos.x, y: pos.y })
+          ctx.graph.updateNode(id, movedTo(pos))
           ctx.runLayoutForNode(id)
         }
       },
       inverse: () => {
         for (const [id, pos] of originals) {
           ctx.graph.reparentNode(id, pos.parentId)
-          ctx.graph.updateNode(id, { x: pos.x, y: pos.y })
+          ctx.graph.updateNode(id, movedTo(pos))
           ctx.runLayoutForNode(id)
         }
       }
@@ -126,7 +145,7 @@ export function createUndoActions(ctx: EditorContext) {
       'textPathBox' in original
     const final: ResizeOriginal = hasGeometry
       ? createResizeSnapshot(node)
-      : { x: node.x, y: node.y, width: node.width, height: node.height }
+      : { x: node.x, y: node.y, width: node.width, height: node.height, style: { ...node.style } }
     ctx.undo.push({
       label: 'Resize',
       forward: () => {
@@ -145,14 +164,20 @@ export function createUndoActions(ctx: EditorContext) {
 
   function commitGroupResize(
     nodeId: string,
-    origRect: Rect,
+    origRect: Rect & Partial<Pick<SceneNode, 'style'>>,
     origChildren: Map<string, ResizeSnapshot>
   ) {
     assertNodeEditable(ctx.graph, nodeId)
     for (const childId of origChildren.keys()) assertNodeEditable(ctx.graph, childId)
     const node = ctx.graph.getNode(nodeId)
     if (!node) return
-    const finalRect = { x: node.x, y: node.y, width: node.width, height: node.height }
+    const finalRect = {
+      x: node.x,
+      y: node.y,
+      width: node.width,
+      height: node.height,
+      style: { ...node.style }
+    }
     const finalChildren = new Map<string, ResizeSnapshot>()
     for (const [childId] of origChildren) {
       const child = ctx.graph.getNode(childId)

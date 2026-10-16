@@ -31,6 +31,7 @@ describe('section resize', () => {
         origStrokes: [],
         origTextPathData: null,
         origTextPathBox: null,
+        origStyle: {},
         origChildren: null
       }
 

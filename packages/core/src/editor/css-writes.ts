@@ -3,10 +3,8 @@ import { isEqual, pickBy } from 'es-toolkit'
 import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 import {
   cssWrite,
-  familyFields,
   fieldsOwning,
   layerCSS,
-  STYLE_FIELDS,
   styleAfterFieldChanges
 } from '@kalka/scene-graph/css-model'
 
@@ -17,7 +15,7 @@ import {
 export type CSSWriter = 'panel' | 'mcp' | 'import' | 'drag' | 'plugin' | 'fig'
 
 /** The writers already moved to CSS. */
-export const DEFAULT_CSS_WRITES: readonly CSSWriter[] = ['panel', 'mcp', 'import']
+export const DEFAULT_CSS_WRITES: readonly CSSWriter[] = ['panel', 'mcp', 'import', 'drag']
 
 /** The writers an editor moves to CSS: those its options name, or `DEFAULT_CSS_WRITES`. */
 export function cssWritesFor(options?: { cssWrites?: readonly CSSWriter[] }): Set<CSSWriter> {
@@ -25,39 +23,14 @@ export function cssWritesFor(options?: { cssWrites?: readonly CSSWriter[] }): Se
 }
 
 /**
- * Field changes as a write of the layer's CSS: the CSS the layer would have with them, read back
- * into fields and `style`. A field the CSS does not give back as set, a case the mapping does
- * not express, is set as given.
+ * Field changes as a write of the layer's CSS. A layer's CSS is the mapping applied to its fields
+ * plus its `style`, so setting fields writes their CSS; what is left is the CSS kept as written
+ * for their families, which gives way to them in the same change, so undo restores it.
  */
-export function changesAsCSS(
-  graph: SceneGraph,
-  node: SceneNode,
-  changes: Partial<SceneNode>
-): Partial<SceneNode> {
-  const keys = Object.keys(changes)
-  if (!keys.some((key) => STYLE_FIELDS.has(key)) || 'style' in changes) return changes
-  const parent = node.parentId ? graph.getNode(node.parentId) : undefined
-  const draft: SceneNode = {
-    ...node,
-    ...changes,
-    style: styleAfterFieldChanges(node, keys) ?? node.style
-  }
-  const { style, ...read } = cssWrite(node, parent, layerCSS(draft, parent))
-  // Only the families the change wrote read back: the others already hold what their CSS says,
-  // and reading a value no field can hold, such as `var(--x)`, would reset them.
-  const owned = familyFields(keys)
-  const fields = pickBy(read, (_value, field) => owned.has(field))
-  const result: Partial<SceneNode> = { ...changes, ...fields }
-  // The CSS rides along when it changed or gave fields beyond those asked for, so the graph
-  // keeps it rather than letting it give way to them.
-  const beyond = Object.keys(fields).some((field) => !(field in changes))
-  if (style && (beyond || !isEqual(style, node.style))) result.style = style
-  for (const key of keys) {
-    const field = key as keyof SceneNode
-    if (!isEqual(Reflect.get(result, field), changes[field]))
-      Reflect.set(result, field, changes[field])
-  }
-  return result
+export function changesAsCSS(node: SceneNode, changes: Partial<SceneNode>): Partial<SceneNode> {
+  if ('style' in changes) return changes
+  const style = styleAfterFieldChanges(node, Object.keys(changes))
+  return style ? { ...changes, style } : changes
 }
 
 /**

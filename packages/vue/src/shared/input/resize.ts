@@ -253,7 +253,7 @@ function commitResizeGeometry(d: DragResize, editor: Editor) {
       if (!child) continue
       finalChildren.set(childId, snapshotResizeFinal(child))
     }
-    editor.graph.updateNodePreview(d.nodeId, d.origRect)
+    editor.graph.updateNodePreview(d.nodeId, { ...d.origRect, style: { ...d.origStyle } })
     for (const [childId, orig] of d.origChildren) {
       editor.graph.updateNodePreview(childId, {
         x: orig.x,
@@ -266,30 +266,34 @@ function commitResizeGeometry(d: DragResize, editor: Editor) {
         derivedTextGlyphs: orig.derivedTextGlyphs,
         strokes: orig.strokes,
         textPathData: orig.textPathData,
-        textPathBox: orig.textPathBox
+        textPathBox: orig.textPathBox,
+        style: { ...orig.style }
       })
     }
     // Resize is geometric — the raw Figma import payload (vectorData,
     // textPathStart, effects, ...) must survive or path-text reflow works
     // exactly once and export fidelity degrades.
     editor.graph.preserveSourceMetadataDuring(() => {
-      editor.updateNode(d.nodeId, finalChanges)
+      editor.updateNode(d.nodeId, finalChanges, 'drag')
       for (const [childId, final] of finalChildren) {
-        editor.updateNode(childId, final)
+        editor.updateNode(childId, final, 'drag')
       }
     })
     clearResizedRawGeometry(editor, d.nodeId)
     for (const [childId] of finalChildren) clearResizedRawGeometry(editor, childId)
-    editor.commitGroupResize(d.nodeId, d.origRect, d.origChildren)
+    editor.commitGroupResize(d.nodeId, { ...d.origRect, style: { ...d.origStyle } }, d.origChildren)
     editor.requestRepaint()
   } else {
-    editor.graph.updateNodePreview(d.nodeId, d.origRect)
+    editor.graph.updateNodePreview(d.nodeId, { ...d.origRect, style: { ...d.origStyle } })
     // See the group branch — raw import payload survives geometric commits.
     editor.graph.preserveSourceMetadataDuring(() => {
-      editor.updateNode(d.nodeId, finalChanges)
+      editor.updateNode(d.nodeId, finalChanges, 'drag')
     })
     clearResizedRawGeometry(editor, d.nodeId)
-    const original: Parameters<typeof editor.commitResize>[1] = { ...d.origRect }
+    const original: Parameters<typeof editor.commitResize>[1] = {
+      ...d.origRect,
+      style: { ...d.origStyle }
+    }
     if (d.origVectorNetwork || node.vectorNetwork) original.vectorNetwork = d.origVectorNetwork
     if (d.origFillGeometry.length > 0) original.fillGeometry = d.origFillGeometry
     if (d.origStrokeGeometry.length > 0) original.strokeGeometry = d.origStrokeGeometry

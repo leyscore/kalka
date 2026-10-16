@@ -110,7 +110,8 @@ describe('group resize reflows path text instead of squashing it', () => {
       fills: [BLACK],
       strokes: [WHITE_STROKE],
       strokeGeometry: [{ windingRule: 'NONZERO', commandsBlob: squareGeometryBlob(256) }],
-      textPathBox: { ...box }
+      textPathBox: { ...box },
+      style: {}
     })
     text.textPathData = {
       network: circleNetwork(),
@@ -156,7 +157,8 @@ describe('group resize reflows path text instead of squashing it', () => {
       })),
       strokes: copyStrokes(text.strokes),
       textPathData: structuredClone(expectDefined(text.textPathData)),
-      textPathBox: { ...box }
+      textPathBox: { ...box },
+      style: {}
     }
 
     const drag: DragResize = {
@@ -173,6 +175,7 @@ describe('group resize reflows path text instead of squashing it', () => {
       origStrokes: [],
       origTextPathData: null,
       origTextPathBox: null,
+      origStyle: {},
       origChildren: new Map([[text.id, origChild]])
     }
 
@@ -228,7 +231,8 @@ describe('direct (non-group) resize reflows path text instead of squashing it', 
       fills: [BLACK],
       strokes: [WHITE_STROKE],
       strokeGeometry: [{ windingRule: 'NONZERO', commandsBlob: squareGeometryBlob(256) }],
-      textPathBox: { ...box }
+      textPathBox: { ...box },
+      style: {}
     })
     text.textPathData = {
       network: circleNetwork(),
@@ -277,6 +281,7 @@ describe('direct (non-group) resize reflows path text instead of squashing it', 
       origStrokes: copyStrokes(text.strokes),
       origTextPathData: structuredClone(expectDefined(text.textPathData)),
       origTextPathBox: { ...box },
+      origStyle: {},
       origChildren: null
     }
 
@@ -332,7 +337,8 @@ describe('resize + export integration: real commit path clears stale raw payload
       fills: [BLACK],
       strokes: [WHITE_STROKE],
       strokeGeometry: [{ windingRule: 'NONZERO', commandsBlob: squareGeometryBlob(256) }],
-      textPathBox: { ...box }
+      textPathBox: { ...box },
+      style: {}
     })
     // applyRawFigmaNodeFields only force-overwrites nc.derivedTextData from raw
     // when node.source.id is set — that's the imported-node marker a real .fig
@@ -404,6 +410,7 @@ describe('resize + export integration: real commit path clears stale raw payload
       origStrokes: copyStrokes(text.strokes),
       origTextPathData: structuredClone(expectDefined(text.textPathData)),
       origTextPathBox: { ...box },
+      origStyle: {},
       origChildren: null
     }
 
