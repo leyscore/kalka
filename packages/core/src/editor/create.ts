@@ -362,6 +362,7 @@ export function createEditor(options?: EditorOptions) {
       _externalTextEditor = editor
     },
     undo,
+    cssWrites: ctx.cssWrites,
     state,
 
     // Graph reads

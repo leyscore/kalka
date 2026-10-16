@@ -3,6 +3,7 @@ import {
   colorToFillFromCSS,
   firstCSSNumber,
   mergedStyle,
+  writeLayerStyle,
   pickStyle
 } from '@kalka/scene-graph/css-model'
 
@@ -26,6 +27,11 @@ export interface DesignDocumentToSceneGraphOptions {
   pageName?: string
   /** The artboard a measured page becomes; `Desktop` when left out. */
   artboardName?: string
+  /**
+   * Keep, as each layer's `style`, the inline CSS its author wrote that the layer's fields do not
+   * give back as written, such as `width: 50%`, `padding: 1rem` or `transition`.
+   */
+  keepAuthoredCSS?: boolean
 }
 
 export type { ImageSourceResolver } from './image'
@@ -121,6 +127,7 @@ function createFrameNode(
     shader: shaderJSON ? parseShaderLayer(shaderJSON) : null
   })
   readElementStyle(graph, node, style, { element })
+  node.style = { ...element.inlineStyle }
   applyHTMLElement(node, element)
   if (pickStyle(style, 'visibility') === 'hidden') node.visible = false
   if (node.shader) {
@@ -160,6 +167,7 @@ function createElementNode(
     element.children.every((child) => child.type === 'text')
   ) {
     const text = createTextNode(graph, parentId, textContent(element), style)
+    text.style = { ...element.inlineStyle }
     applyHTMLElement(text, element)
     if (placement?.byMeasure && element.layoutBox)
       placeAtMeasure(text, element.layoutBox, placement)
@@ -203,6 +211,22 @@ function createDesignNode(
   return createElementNode(graph, parentId, node, placement)
 }
 
+const sameValue = (a: string, b: string | undefined) =>
+  a.trim().toLowerCase() === b?.trim().toLowerCase()
+
+/**
+ * Of the CSS an import noted as the layer's author wrote it, what the layer's fields do not
+ * give back as written: the rest the fields hold already.
+ */
+function authoredOverrides(graph: SceneGraph, node: SceneNode): DesignStyleDeclaration {
+  const parent = node.parentId ? graph.getNode(node.parentId) : undefined
+  const written = writeLayerStyle(node, { parent, css: (_field, literal) => literal })
+  const kept: DesignStyleDeclaration = {}
+  for (const [property, value] of Object.entries(node.style))
+    if (!sameValue(value, written[property])) kept[property] = value
+  return kept
+}
+
 function fitPageToChildren(page: SceneNode, graph: SceneGraph): void {
   const children = graph.getChildren(page.id)
   if (children.length === 0) return
@@ -241,6 +265,8 @@ export function designDocumentToSceneGraph(
   }
 
   fitPageToChildren(page, graph)
+  for (const node of graph.getAllNodes())
+    node.style = options.keepAuthoredCSS ? authoredOverrides(graph, node) : {}
   return graph
 }
 

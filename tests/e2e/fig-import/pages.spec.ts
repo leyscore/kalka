@@ -19,6 +19,16 @@ const FIXTURES = [
 
 test.use({ viewport: { width: 1440, height: 900 } })
 
+// The first load compiles the app; on a cold CI runner that alone outlasts a test's wait.
+test.beforeAll(async ({ browser }) => {
+  const page = await browser.newPage()
+  await page.goto('/?test&no-chrome&no-rulers')
+  await page.getByTestId('canvas-element').and(page.locator('[data-ready="1"]')).waitFor({
+    timeout: 180_000
+  })
+  await page.close()
+})
+
 async function openFixture(page: Page, file: string): Promise<string[]> {
   await page.route(`**/__fixtures/${file}`, (route) =>
     route.fulfill({ path: testPath('fixtures', file), contentType: 'application/octet-stream' })

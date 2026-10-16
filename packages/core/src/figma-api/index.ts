@@ -19,6 +19,7 @@ import type { SkiaRenderer } from '#core/canvas'
 import { canMakeBooleanSourceNode, groupFitOptions } from '#core/canvas/boolean'
 import { flattenNodesToVectorProps } from '#core/canvas/flatten'
 import { IS_BROWSER, type InterfaceTheme } from '#core/constants'
+import { cssWritesFor, type CSSWriter } from '#core/editor/css-writes'
 import { newLayerDefaults } from '#core/editor/shapes/defaults'
 import { booleanOperationPaints, createBooleanOperation } from '#core/editor/structure/boolean'
 import { wrapNodes } from '#core/editor/structure/container-wrap'
@@ -96,6 +97,8 @@ export class FigmaAPI implements NodeProxyHost {
   theme: InterfaceTheme = 'light'
 
   readonly mixed = MIXED
+  /** Writers that write layers as CSS (`#core/editor/css-writes`): the editor's, in the app. */
+  cssWrites: Set<CSSWriter> = cssWritesFor()
 
   constructor(graph: SceneGraph) {
     this.graph = graph

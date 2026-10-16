@@ -1,5 +1,6 @@
 import * as v from 'valibot'
 
+import { declarationChanges } from '#core/editor/css-writes'
 import { findPageId } from '#core/io/subgraph'
 import { computeAllLayouts } from '#core/layout'
 import { nodeIdInput } from '#core/tools/input'
@@ -20,8 +21,9 @@ export const updateStyles = defineTool({
   execute: async (figma, { id, styles }) => {
     const node = figma.graph.getNode(id)
     if (!node) return { error: `Node "${id}" not found` }
-    const { cssToNodeChanges } = await import('@kalka/dom-css')
-    const changes = cssToNodeChanges(figma.graph, node, styles)
+    const changes = figma.cssWrites.has('mcp')
+      ? declarationChanges(figma.graph, node, styles)
+      : (await import('@kalka/dom-css')).cssToNodeChanges(figma.graph, node, styles)
     const changed = Object.keys(changes)
     if (changed.length > 0) {
       figma.graph.updateNode(id, changes)

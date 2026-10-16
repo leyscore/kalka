@@ -74,7 +74,11 @@ export const writeHTML = defineTool({
   }),
   execute: async (figma, args) => {
     const { htmlToSceneGraph } = await import('@kalka/dom-css')
-    const imported = await htmlToSceneGraph(args.html, { pageName: 'HTML' })
+    const imported = await htmlToSceneGraph(args.html, {
+      pageName: 'HTML',
+      // Written CSS the layers' fields cannot hold stays as written (`#core/editor/css-writes`).
+      keepAuthoredCSS: figma.cssWrites.has('mcp')
+    })
     const roots = imported.getPages().flatMap((page) => imported.getChildren(page.id))
     if (roots.length === 0) return { error: 'The HTML has no visible elements' }
     const graph = figma.graph

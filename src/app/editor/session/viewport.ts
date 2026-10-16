@@ -1,9 +1,5 @@
+import type { ViewportSize } from '@/app/document/io/types'
 import { IS_BROWSER } from '@/constants'
-
-export interface ViewportSize {
-  width: number
-  height: number
-}
 
 /** The canvas's size once it is measured; until then, the window's, or a desktop size. */
 export function viewportSizeReader(measured: ViewportSize): () => ViewportSize {

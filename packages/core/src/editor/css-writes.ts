@@ -17,7 +17,7 @@ import {
 export type CSSWriter = 'panel' | 'mcp' | 'import' | 'drag' | 'plugin' | 'fig'
 
 /** The writers already moved to CSS. */
-export const DEFAULT_CSS_WRITES: readonly CSSWriter[] = ['panel']
+export const DEFAULT_CSS_WRITES: readonly CSSWriter[] = ['panel', 'mcp']
 
 /** The writers an editor moves to CSS: those its options name, or `DEFAULT_CSS_WRITES`. */
 export function cssWritesFor(options?: { cssWrites?: readonly CSSWriter[] }): Set<CSSWriter> {
@@ -57,5 +57,26 @@ export function changesAsCSS(
     if (!isEqual(Reflect.get(result, field), changes[field]))
       Reflect.set(result, field, changes[field])
   }
+  return result
+}
+
+/**
+ * CSS declarations written onto a layer, such as `update_styles` sends: they join the layer's
+ * CSS and win over it; the families that own them read it back into fields, and what the fields
+ * cannot write back as written stays as written.
+ */
+export function declarationChanges(
+  graph: SceneGraph,
+  node: SceneNode,
+  declarations: Record<string, string>
+): Partial<SceneNode> {
+  const parent = node.parentId ? graph.getNode(node.parentId) : undefined
+  const { style, ...read } = cssWrite(node, parent, { ...layerCSS(node, parent), ...declarations })
+  const owned = new Set([
+    ...fieldsOwning(Object.keys(declarations)),
+    ...fieldsOwning(Object.keys(node.style))
+  ])
+  const result: Partial<SceneNode> = pickBy(read, (_value, field) => owned.has(field))
+  if (style && !isEqual(style, node.style)) result.style = style
   return result
 }
