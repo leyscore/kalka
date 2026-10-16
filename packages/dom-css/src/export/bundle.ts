@@ -81,49 +81,23 @@ function styleToCSS(style: DesignStyleDeclaration): string {
     .join('; ')
 }
 
-function cloneNode(node: DesignNode): DesignNode {
-  if (node.type === 'text') return { ...node }
+/**
+ * A root placed where it sits on the page, when several are exported side by side. Everything
+ * inside it keeps the layout the projection wrote: flex for auto layout, absolute positions only
+ * inside frames laid out freely.
+ */
+function placedRoot(node: DesignElement, origin: StandaloneBounds): DesignElement {
+  const source = node.sourceSceneNode
+  if (!source) return node
   return {
     ...node,
-    attrs: { ...node.attrs },
-    inlineStyle: node.inlineStyle ? { ...node.inlineStyle } : undefined,
-    children: node.children.map(cloneNode)
+    inlineStyle: {
+      ...node.inlineStyle,
+      position: 'absolute',
+      left: `${source.x - origin.minX}px`,
+      top: `${source.y - origin.minY}px`
+    }
   }
-}
-
-function standaloneStyleForNode(
-  node: DesignElement,
-  parent: DesignElement | undefined,
-  origin: StandaloneBounds
-): DesignStyleDeclaration {
-  const style = { ...node.inlineStyle }
-  const source = node.sourceSceneNode
-  if (!source) return style
-
-  style.position = 'absolute'
-  style.left = `${source.x - (parent ? 0 : origin.minX)}px`
-  style.top = `${source.y - (parent ? 0 : origin.minY)}px`
-  return style
-}
-
-function standaloneNode(
-  node: DesignNode,
-  origin: StandaloneBounds,
-  parent?: DesignElement
-): DesignNode {
-  if (node.type === 'text') return cloneNode(node)
-  // A page with breakpoints lays out as its CSS says, at any width, rather than at fixed places.
-  if (!parent && node.mediaStyles?.length) {
-    return { ...node, inlineStyle: { ...node.inlineStyle, position: 'relative' } }
-  }
-  const standalone: DesignElement = {
-    ...node,
-    attrs: { ...node.attrs },
-    inlineStyle: standaloneStyleForNode(node, parent, origin),
-    children: []
-  }
-  standalone.children = node.children.map((child) => standaloneNode(child, origin, node))
-  return standalone
 }
 
 function nodeBounds(node: DesignNode): StandaloneBounds | undefined {
@@ -147,15 +121,46 @@ function standaloneSize(document: DesignDocument): StandaloneBounds {
   return { minX, minY, width: Math.max(1, maxX - minX), height: Math.max(1, maxY - minY) }
 }
 
+/** Several roots keep their places on the page; a single root or a responsive page flows. */
 function standaloneDocument(document: DesignDocument, size: StandaloneBounds): DesignDocument {
+  if (document.children.length < 2 || isResponsiveDocument(document)) return document
   return {
     ...document,
-    children: document.children.map((node) => standaloneNode(node, size))
+    children: document.children.map((node) =>
+      node.type === 'element' ? placedRoot(node, size) : node
+    )
   }
 }
 
-function cssClassName(index: number): string {
-  return `op-${index.toString(36)}`
+function isResponsiveDocument(document: DesignDocument): boolean {
+  return document.children.some(
+    (node) => node.type === 'element' && (node.mediaStyles?.length ?? 0) > 0
+  )
+}
+
+/** A class name read from a layer's name: lowercase words joined by `-`, never starting with a digit. */
+function classNameFor(node: DesignElement): string {
+  const words = (node.sourceSceneNode?.name ?? node.tagName)
+    .normalize('NFKD')
+    .replaceAll(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replaceAll(/[^a-z0-9]+/g, '-')
+    .replaceAll(/^-+|-+$/g, '')
+  const base = words || node.tagName.toLowerCase()
+  return /^[0-9]/.test(base) ? `layer-${base}` : base
+}
+
+/** The class each style gets: named after its first layer, shared by layers styled the same. */
+interface ClassNaming {
+  used: Set<string>
+  byRule: Map<string, string>
+}
+
+function uniqueClassName(naming: ClassNaming, base: string): string {
+  let name = base
+  for (let index = 2; naming.used.has(name); index++) name = `${base}-${index}`
+  naming.used.add(name)
+  return name
 }
 
 function mediaRule(className: string, { maxWidth, style }: MediaStyle): MediaRule {
@@ -178,18 +183,23 @@ function mediaCSS(rules: readonly MediaRule[]): string {
 function extractInlineStyles(
   node: DesignNode,
   rules: string[],
-  nextIndex: { value: number },
+  naming: ClassNaming,
   media: MediaRule[]
 ): DesignNode {
   if (node.type === 'text') return node
-  const children = node.children.map((child) => extractInlineStyles(child, rules, nextIndex, media))
+  const children = node.children.map((child) => extractInlineStyles(child, rules, naming, media))
   const hasMedia = (node.mediaStyles?.length ?? 0) > 0
   if ((!node.inlineStyle || Object.keys(node.inlineStyle).length === 0) && !hasMedia)
     return { ...node, children }
 
-  const className = cssClassName(nextIndex.value)
-  nextIndex.value += 1
-  rules.push(`.${className}{${styleToCSS(node.inlineStyle ?? {})}}`)
+  const declarations = styleToCSS(node.inlineStyle ?? {})
+  // Layers with the same style share a class; one with breakpoint rules keeps its own.
+  let className = hasMedia ? undefined : naming.byRule.get(declarations)
+  if (!className) {
+    className = uniqueClassName(naming, classNameFor(node))
+    rules.push(`.${className}{${declarations}}`)
+    if (!hasMedia) naming.byRule.set(declarations, className)
+  }
   for (const style of node.mediaStyles ?? []) media.push(mediaRule(className, style))
   return {
     ...node,
@@ -378,12 +388,11 @@ async function exportStandaloneHTML(
 ): Promise<ExportHTMLBundle> {
   const size = standaloneSize(document)
   const doc = standaloneDocument(document, size)
-  const responsive = document.children.some(
-    (node) => node.type === 'element' && (node.mediaStyles?.length ?? 0) > 0
-  )
-  const stageCSS = responsive
-    ? '.op-stage{position:relative;width:100%;background:transparent}'
-    : `.op-stage{position:relative;width:${size.width}px;height:${size.height}px;overflow:hidden;background:transparent}`
+  // Several roots sit in a box of their bounds; a single root or a responsive page flows.
+  const placed = doc !== document
+  const stageCSS = placed
+    ? `.kalka-canvas{position:relative;width:${size.width}px;height:${size.height}px}`
+    : ''
   let body: string
   let css = `${RESET_CSS}${stageCSS}`
 
@@ -401,10 +410,13 @@ async function exportStandaloneHTML(
     if (graph) css += cssClassStylesheet(documentCSSClasses(graph), { compact: true })
     const rules: string[] = []
     const media: MediaRule[] = []
-    const index = { value: 0 }
+    const naming: ClassNaming = {
+      used: new Set(graph ? documentCSSClasses(graph).map((cssClass) => cssClass.name) : []),
+      byRule: new Map()
+    }
     const styledDocument: DesignDocument = {
       ...classed,
-      children: classed.children.map((node) => extractInlineStyles(node, rules, index, media))
+      children: classed.children.map((node) => extractInlineStyles(node, rules, naming, media))
     }
     body = serializeHTML(styledDocument)
     css += rules.join('') + mediaCSS(media)
@@ -417,7 +429,7 @@ async function exportStandaloneHTML(
     ])
     body = extracted.html
     const cssPath = `${options.assetBasePath}/kalka.css`
-    const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">${stylesheetLink(cssPath)}</head><body><main data-kalka-html="standalone" class="op-stage">${body}</main></body></html>`
+    const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">${stylesheetLink(cssPath)}</head><body>${placed ? `<div class="kalka-canvas">${body}</div>` : body}</body></html>`
     return {
       entrypoint: 'index.html',
       files: [
@@ -429,7 +441,7 @@ async function exportStandaloneHTML(
     }
   }
 
-  const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">${styleTag(css)}</head><body><main data-kalka-html="standalone" class="op-stage">${body}</main></body></html>`
+  const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">${styleTag(css)}</head><body>${placed ? `<div class="kalka-canvas">${body}</div>` : body}</body></html>`
   return { entrypoint: 'index.html', files: [{ path: 'index.html', content: html }] }
 }
 

@@ -33,10 +33,10 @@ describe('HTML export of a page with breakpoints', () => {
     graph.updateNode(copy(aside.id, phone).id, { visible: false })
 
     const { html } = await renderNodesToHTML(graph, [desktop.id], { html: 'standalone' })
-    expect(html).toContain('.op-stage{position:relative;width:100%;background:transparent}')
+    expect(html).not.toContain('.op-')
     expect(html).toContain('@media (max-width:1439px){')
-    expect(html).toMatch(/@media \(max-width:1439px\)\{\.op-\d+\{flex-direction: column\}\}/)
-    expect(html).toMatch(/@media \(max-width:809px\)\{\.op-\d+\{font-size: 40px\}\}/)
+    expect(html).toMatch(/@media \(max-width:1439px\)\{\.[a-z][\w-]*\{flex-direction: column\}\}/)
+    expect(html).toMatch(/@media \(max-width:809px\)\{\.[a-z][\w-]*\{font-size: 40px\}\}/)
     // The hidden aside is hidden once; its text needs no rule of its own.
     expect(html.match(/display: none/g)).toHaveLength(1)
     // The wider rules come first, so the phone's win below 810px.

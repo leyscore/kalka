@@ -90,7 +90,9 @@ describe('CSS classes as stylesheet rules', () => {
       '.btn{background-color:#121214;border-radius:999px;display:flex;align-items:flex-start;padding-block:14px;padding-inline:26px}'
     )
     // Each layer's own rule follows the class rules and holds only what differs from them.
-    const rules = [...html.matchAll(/\.op-[0-9a-z]+\{([^}]*)\}/g)].map((match) => match[1])
+    const rules = [...html.matchAll(/\.([a-z][\w-]*)\{([^}]*)\}/g)]
+      .filter((match) => match[1] !== 'btn')
+      .map((match) => match[2])
     expect(rules.some((rule) => rule.includes('border-radius: 4px'))).toBe(true)
     expect(rules.filter((rule) => rule.includes('background-color: #121214'))).toEqual([])
   })

@@ -224,9 +224,9 @@ test('export CLI can write standalone HTML', async () => {
 
   const html = await Bun.file(output).text()
   expect(html).toContain('<!doctype html>')
-  expect(html).toContain('data-kalka-html="standalone"')
-  expect(html).toContain('position:relative')
-  expect(html).toContain('position: absolute')
+  expect(html).not.toContain('data-kalka-html')
+  // A single exported layer flows; only what sits in a free layout is placed.
+  expect(html).not.toContain('.kalka-canvas')
   expect(html).not.toContain('@tailwindcss/browser@4')
 })
 
@@ -286,5 +286,5 @@ test('export CLI can write external standalone HTML assets', async () => {
   expect(html).toContain('<link rel="stylesheet" href="card-external.assets/kalka.css">')
   expect(html).not.toContain('<style>')
   expect(css).toContain('.flex')
-  expect(css).toContain('.op-stage')
+  expect(css).not.toContain('.op-')
 })
