@@ -18,7 +18,6 @@ import type { DesignIssueOverlay } from '#core/canvas/issues/types'
 import type { RulerTheme, SkiaRenderer } from '#core/canvas/renderer'
 import type { MeasurementMode, PresenceCursor, RenderOverlays } from '#core/canvas/renderer/types'
 import type { InterfaceTheme } from '#core/constants'
-import type { CSSWriter } from '#core/editor/css-writes'
 import type { PlayState } from '#core/editor/play/actions'
 import type { SnappingPreferences } from '#core/editor/preferences'
 import type { RotationPreview } from '#core/geometry'
@@ -173,8 +172,6 @@ export interface EditorOptions {
   /** Where icons are searched and fetched; defaults to Iconify. */
   icons?: IconProvider
   skipInitialGraphSetup?: boolean
-  /** Writers that write layers as CSS; `DEFAULT_CSS_WRITES` when left out. */
-  cssWrites?: readonly CSSWriter[]
 }
 
 /** What pointer input does to the text being edited: place, extend or widen the selection. */
@@ -201,8 +198,6 @@ export interface EditorContext {
   get graph(): SceneGraph
   set graph(g: SceneGraph)
   undo: UndoManager
-  /** Writers that write layers as CSS rather than fields (`#core/editor/css-writes`). */
-  cssWrites: Set<CSSWriter>
   state: EditorState
   loadFont: (
     family: string,

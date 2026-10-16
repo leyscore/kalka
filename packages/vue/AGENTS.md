@@ -28,7 +28,6 @@ The app's `DesignPanel` retains at most one selection-property subtree through `
 - Canvas menu structure lives in `packages/vue/src/editor/menu-model/canvas.ts`; the app's `CanvasMenu.vue` renders it.
 - `useEditorEvent(event, handler)` in `packages/vue/src/editor/events/use.ts` wraps the editor event bus.
 - i18n uses narrow product-domain catalogs under `packages/vue/src/i18n/messages/` with matching locale files. Inspect existing domains instead of adding generic UI/component namespaces; prefer narrow `use*Messages()` composables over aggregate `useI18n()`. `bun run check:i18n` enforces structure, placeholder parity, and reviewed translation baselines; remove stale baseline identities when fixing existing debt.
-- Property controls change layers through `writeFromPanel` (`src/controls/panel-write.ts`), never `updateNodeWithUndo` directly: it names the panel as the writer, so once the editor moved the panel to CSS its changes write the layer's CSS (`packages/core/tests/editor/css-writes.test.ts`).
 
 ## Documentation
 

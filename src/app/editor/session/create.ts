@@ -31,7 +31,6 @@ import { scopedStoreFactory } from '@/app/editor/session/scope'
 import { createInitialAppEditorState, type AppEditorState } from '@/app/editor/session/types'
 import { viewportSizeReader } from '@/app/editor/session/viewport'
 import { notificationMessages } from '@/app/i18n/notifications'
-import { appRuntimeConfig } from '@/app/runtime/config'
 import { createDeferred } from '@/app/runtime/deferred'
 import { toast } from '@/app/shell/ui'
 import { IS_TAURI } from '@/constants'
@@ -51,7 +50,6 @@ function buildEditorStore(initialGraph?: SceneGraph) {
     loadFont,
     resolveFigmaClipboardImages: IS_TAURI ? resolveFigmaClipboardImages : undefined,
     skipInitialGraphSetup: !!initialGraph,
-    cssWrites: appRuntimeConfig.fieldWrites ? [] : undefined,
     getViewportSize: viewportSizeReader(viewportSize)
   })
   const canvasReadiness = createDeferred<undefined>()

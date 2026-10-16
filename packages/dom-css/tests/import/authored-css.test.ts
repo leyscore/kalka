@@ -22,4 +22,5 @@ test('an import keeps the CSS its author wrote that the fields do not give back'
 
 test('without it, an import keeps fields only', async () => {
   expect((await importedRow(false)).style).toEqual({})
+  expect((await htmlToSceneGraph(HTML)).getPages().flatMap((page) => page.childIds)).toHaveLength(1)
 })

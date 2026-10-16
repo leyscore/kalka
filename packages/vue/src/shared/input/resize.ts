@@ -274,9 +274,9 @@ function commitResizeGeometry(d: DragResize, editor: Editor) {
     // textPathStart, effects, ...) must survive or path-text reflow works
     // exactly once and export fidelity degrades.
     editor.graph.preserveSourceMetadataDuring(() => {
-      editor.updateNode(d.nodeId, finalChanges, 'drag')
+      editor.updateNode(d.nodeId, finalChanges)
       for (const [childId, final] of finalChildren) {
-        editor.updateNode(childId, final, 'drag')
+        editor.updateNode(childId, final)
       }
     })
     clearResizedRawGeometry(editor, d.nodeId)
@@ -287,7 +287,7 @@ function commitResizeGeometry(d: DragResize, editor: Editor) {
     editor.graph.updateNodePreview(d.nodeId, { ...d.origRect, style: { ...d.origStyle } })
     // See the group branch — raw import payload survives geometric commits.
     editor.graph.preserveSourceMetadataDuring(() => {
-      editor.updateNode(d.nodeId, finalChanges, 'drag')
+      editor.updateNode(d.nodeId, finalChanges)
     })
     clearResizedRawGeometry(editor, d.nodeId)
     const original: Parameters<typeof editor.commitResize>[1] = {

@@ -10,7 +10,6 @@ import {
 
 import { reconcileVariableLayouts } from '#core/layout/variables'
 
-import { changesAsCSS, type CSSWriter } from './css-writes'
 import { createLayoutModeActions } from './layout-mode'
 import { createNodePreviewActions } from './node-preview'
 import { createNudgeActions } from './nudge'
@@ -39,11 +38,9 @@ export function createNodeActions(ctx: EditorContext) {
     ctx.runLayoutForNode(id)
   }
 
-  function updateNode(id: string, fieldChanges: Partial<SceneNode>, writer?: CSSWriter) {
+  function updateNode(id: string, changes: Partial<SceneNode>) {
     const node = ctx.graph.getNode(id)
     if (!node) return
-    const changes =
-      writer && ctx.cssWrites.has(writer) ? changesAsCSS(node, fieldChanges) : fieldChanges
     // Path-edit last so its reflowed glyphs win over auto-resize's glyph clear
     // (path text is textAutoResize NONE so they don't collide today).
     const nextChanges = styleDetachmentChanges(node, {
@@ -56,20 +53,9 @@ export function createNodeActions(ctx: EditorContext) {
     runChangedLayout(id, nextChanges)
   }
 
-  /**
-   * `writer` names who writes: one the editor has moved to CSS (`ctx.cssWrites`) writes the
-   * layer's CSS, which gives the fields (`#core/editor/css-writes`).
-   */
-  function updateNodeWithUndo(
-    id: string,
-    fieldChanges: Partial<SceneNode>,
-    label = 'Update',
-    writer?: CSSWriter
-  ) {
+  function updateNodeWithUndo(id: string, changes: Partial<SceneNode>, label = 'Update') {
     const node = ctx.graph.getNode(id)
     if (!node) return
-    const changes =
-      writer && ctx.cssWrites.has(writer) ? changesAsCSS(node, fieldChanges) : fieldChanges
     // Same ordering rationale as updateNode: reflowed path-text glyphs win.
     const nextChanges = styleDetachmentChanges(node, {
       ...changes,

@@ -31,7 +31,6 @@ function setup() {
   const ctx: EditorContext = {
     graph,
     undo,
-    cssWrites: new Set(),
     state,
     requestRender: () => {
       state.renderVersion++

@@ -9,7 +9,6 @@ import {
 } from '@kalka/scene-graph'
 
 import { useNodeProps } from '#vue/controls/node-props/use'
-import { writeFromPanel } from '#vue/controls/panel-write'
 import { sharedStyleDetachPatch, sharedStylePatch } from '#vue/controls/shared-style/model'
 import { useSceneComputed } from '#vue/internal/scene-computed/use'
 
@@ -42,7 +41,7 @@ export function useSharedStyleBinding(kind: SharedStyleKind) {
     if (!active.value) return
     const targets = nodes.value
     const run = () => {
-      for (const node of targets) writeFromPanel(store, node.id, apply(node), label)
+      for (const node of targets) store.updateNodeWithUndo(node.id, apply(node), label)
     }
     if (targets.length > 1) store.undo.runBatch(label, run)
     else run()

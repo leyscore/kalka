@@ -54,5 +54,3 @@ export type {
   TextCaretControl,
   Tool
 } from './types'
-export type { CSSWriter } from './css-writes'
-export { cssWritesFor, DEFAULT_CSS_WRITES } from './css-writes'

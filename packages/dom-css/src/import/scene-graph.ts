@@ -29,7 +29,7 @@ export interface DesignDocumentToSceneGraphOptions {
   artboardName?: string
   /**
    * Keep, as each layer's `style`, the inline CSS its author wrote that the layer's fields do not
-   * give back as written, such as `width: 50%`, `padding: 1rem` or `transition`.
+   * give back as written, such as `width: 50%`, `padding: 1rem` or `transition`. On by default.
    */
   keepAuthoredCSS?: boolean
 }
@@ -266,7 +266,7 @@ export function designDocumentToSceneGraph(
 
   fitPageToChildren(page, graph)
   for (const node of graph.getAllNodes())
-    node.style = options.keepAuthoredCSS ? authoredOverrides(graph, node) : {}
+    node.style = options.keepAuthoredCSS === false ? {} : authoredOverrides(graph, node)
   return graph
 }
 

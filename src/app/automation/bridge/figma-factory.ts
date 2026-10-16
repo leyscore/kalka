@@ -10,7 +10,6 @@ export function makeFigmaFromStore(
 ): FigmaAPI {
   const api = new FigmaAPI(store.graph)
   api.setRenderer(store.renderer ?? null)
-  api.cssWrites = store.cssWrites
   api.icons = store.iconProvider
   api.theme = store.state.theme ?? 'light'
   api.currentPage = api.wrapNode(pageId)

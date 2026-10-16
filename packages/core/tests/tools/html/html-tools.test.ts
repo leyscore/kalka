@@ -116,15 +116,6 @@ describe('HTML tools', () => {
     expect(updated.style.cursor).toBe('pointer')
   })
 
-  it('update_styles sets fields only when MCP is not moved to CSS', async () => {
-    const { graph, figma } = setup()
-    figma.cssWrites.delete('mcp')
-    const page = graph.getPages()[0].id
-    const card = graph.createNode('FRAME', page, { width: 200, height: 100 })
-    await tool('update_styles').execute(figma, { id: card.id, styles: { cursor: 'pointer' } })
-    expect(expectDefined(graph.getNode(card.id), 'card').style).toEqual({})
-  })
-
   it('get_html returns the layer as HTML with CSS', async () => {
     const { graph, figma } = setup()
     const page = graph.getPages()[0].id

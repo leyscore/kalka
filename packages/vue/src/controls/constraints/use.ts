@@ -10,7 +10,6 @@ import {
   type ConstraintValue
 } from '#vue/controls/constraints/model'
 import { MIXED, useNodeProps } from '#vue/controls/node-props/use'
-import { writeFromPanel } from '#vue/controls/panel-write'
 
 function mergedConstraint(
   nodes: readonly SceneNode[],
@@ -35,7 +34,7 @@ export function useConstraints() {
     const key = axis === 'horizontal' ? 'horizontalConstraint' : 'verticalConstraint'
     const apply = () => {
       for (const node of nodes.value) {
-        writeFromPanel(store, node.id, { [key]: value }, `Change ${axis} constraint`)
+        store.updateNodeWithUndo(node.id, { [key]: value }, `Change ${axis} constraint`)
       }
     }
     if (nodes.value.length > 1) store.undo.runBatch(`Change ${axis} constraint`, apply)
