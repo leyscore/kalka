@@ -1,0 +1,252 @@
+import { layoutSizingInParent, type SceneNode } from '@kalka/scene-graph'
+import { parseCSSNumber } from '@kalka/scene-graph/css'
+import { resolveNodeTextDirection } from '@kalka/scene-graph/text-direction'
+
+import { addGridContainer, addGridPlacement } from '../export/grid'
+import { pickStyle } from '../import/css-values'
+import { rotationFromCSS } from '../import/paint'
+import type { DesignStyleDeclaration } from '../types'
+import { firstCSSNumber, laysOutChildren, px, type FieldCSS, type PropertyFamily } from './types'
+
+/**
+ * Cross-axis alignment of a container's children, or of one child. Auto layout starts children
+ * at the start while flexbox stretches them, so start is written out: a child that hugs its
+ * content keeps its own size.
+ */
+function alignToCSS(
+  value: SceneNode['counterAxisAlign'] | SceneNode['layoutAlignSelf']
+): string | undefined {
+  if (value === 'MIN') return 'flex-start'
+  if (value === 'CENTER') return 'center'
+  if (value === 'MAX') return 'flex-end'
+  if (value === 'STRETCH') return 'stretch'
+  if (value === 'BASELINE') return 'baseline'
+  return undefined
+}
+
+function layoutAlignSelfFromCSS(value: string | undefined): SceneNode['layoutAlignSelf'] {
+  if (value === 'center') return 'CENTER'
+  if (value === 'end' || value === 'flex-end') return 'MAX'
+  if (value === 'stretch') return 'STRETCH'
+  if (value === 'baseline') return 'BASELINE'
+  if (value === 'start' || value === 'flex-start') return 'MIN'
+  return 'AUTO'
+}
+
+function justifyContentToCSS(value: SceneNode['primaryAxisAlign']): string | undefined {
+  if (value === 'CENTER') return 'center'
+  if (value === 'MAX') return 'flex-end'
+  if (value === 'SPACE_BETWEEN') return 'space-between'
+  return undefined
+}
+
+function primaryAxisAlignFromCSS(value: string | undefined): SceneNode['primaryAxisAlign'] {
+  if (value === 'center') return 'CENTER'
+  if (value === 'end' || value === 'flex-end') return 'MAX'
+  if (value === 'space-between') return 'SPACE_BETWEEN'
+  return 'MIN'
+}
+
+function counterAxisAlignFromCSS(value: string | undefined): SceneNode['counterAxisAlign'] {
+  if (value === 'center') return 'CENTER'
+  if (value === 'end' || value === 'flex-end') return 'MAX'
+  if (value === 'stretch') return 'STRETCH'
+  if (value === 'baseline') return 'BASELINE'
+  return 'MIN'
+}
+
+/** Whether a layer fills its flex parent's main axis, sharing the free space with its peers. */
+function growsAlongParent(node: SceneNode, parent: SceneNode | undefined): boolean {
+  if (!parent || (parent.layoutMode !== 'HORIZONTAL' && parent.layoutMode !== 'VERTICAL'))
+    return false
+  if (node.layoutPositioning === 'ABSOLUTE') return false
+  const axis = parent.layoutMode === 'HORIZONTAL' ? 'HORIZONTAL' : 'VERTICAL'
+  return node.layoutGrow > 0 || layoutSizingInParent(parent, node, axis) === 'FILL'
+}
+
+/**
+ * Styles a layer takes from its parent's layout, and its own rotation. Auto layout never
+ * squeezes a layer below its size; fill shares the free space equally, from nothing, and may go
+ * below its content as Figma's does. That zero minimum is the projection's, not the layer's.
+ */
+export const layoutChild: PropertyFamily = {
+  name: 'layout child',
+  properties: [
+    'align-self',
+    'flex-grow',
+    'flex-basis',
+    'flex-shrink',
+    'grid-column',
+    'grid-column-start',
+    'grid-row',
+    'grid-row-start',
+    'transform'
+  ],
+  write(style, node, { parent }) {
+    const alignSelf = alignToCSS(node.layoutAlignSelf)
+    if (alignSelf) style['align-self'] = alignSelf
+    if (parent?.layoutMode === 'GRID') addGridPlacement(style, node)
+    else if (parent && parent.layoutMode !== 'NONE' && node.layoutPositioning !== 'ABSOLUTE') {
+      if (growsAlongParent(node, parent)) {
+        style['flex-grow'] = '1'
+        style['flex-basis'] = '0px'
+        const minimum = parent.layoutMode === 'HORIZONTAL' ? 'min-width' : 'min-height'
+        style[minimum] ??= '0px'
+      } else style['flex-shrink'] = '0'
+    }
+    if (node.rotation !== 0) style.transform = `rotate(${node.rotation}deg)`
+  },
+  read(style, node, { projected }) {
+    const alignSelf = layoutAlignSelfFromCSS(pickStyle(style, 'align-self'))
+    if (alignSelf !== 'AUTO') node.layoutAlignSelf = alignSelf
+
+    const grow = parseCSSNumber(pickStyle(style, 'flex-grow'))
+    if (grow !== null && grow > 0) node.layoutGrow = grow
+
+    const rotation = rotationFromCSS(pickStyle(style, 'transform'))
+    if (rotation !== null) node.rotation = rotation
+
+    const parent = projected?.parent
+    if (!laysOutChildren(parent) || parent.layoutMode === 'GRID' || node.layoutGrow <= 0) return
+    const row = parent.layoutMode === 'HORIZONTAL'
+    if (style[row ? 'min-width' : 'min-height'] !== '0px') return
+    if (row) node.minWidth = null
+    else node.minHeight = null
+  }
+}
+
+export const direction: PropertyFamily = {
+  name: 'direction',
+  properties: ['direction'],
+  write(style, node) {
+    if (node.layoutDirection === 'RTL') style.direction = 'rtl'
+  },
+  read(style, node) {
+    if (pickStyle(style, 'direction') === 'rtl') node.layoutDirection = 'RTL'
+  }
+}
+
+/** Text runs in the direction its characters set unless the layer says otherwise. */
+export const textDirection: PropertyFamily = {
+  name: 'text direction',
+  properties: ['direction'],
+  write(style, node) {
+    if (resolveNodeTextDirection(node) === 'RTL') style.direction = 'rtl'
+  }
+}
+
+function writeFlexGap(style: DesignStyleDeclaration, node: SceneNode, css: FieldCSS): void {
+  // Figma leaves the spacing between wrapped rows unset when it follows the item spacing.
+  const counterSpacing = Number.isFinite(node.counterAxisSpacing)
+    ? node.counterAxisSpacing
+    : node.itemSpacing
+  if (node.itemSpacing <= 0 && counterSpacing <= 0) return
+  const item = css('itemSpacing', px(node.itemSpacing))
+  if (counterSpacing <= 0 || counterSpacing === node.itemSpacing) {
+    style.gap = item
+    return
+  }
+
+  const counter = css('counterAxisSpacing', px(counterSpacing))
+  if (node.layoutMode === 'HORIZONTAL') {
+    if (node.itemSpacing > 0) style['column-gap'] = item
+    style['row-gap'] = counter
+    return
+  }
+
+  if (node.itemSpacing > 0) style['row-gap'] = item
+  style['column-gap'] = counter
+}
+
+function readFlexGap(style: DesignStyleDeclaration, node: SceneNode): void {
+  const gap = firstCSSNumber(style, 'gap')
+  const rowGap = firstCSSNumber(style, 'row-gap')
+  const columnGap = firstCSSNumber(style, 'column-gap')
+  const isHorizontal = node.layoutMode === 'HORIZONTAL'
+  const isWrapped = node.layoutWrap === 'WRAP'
+
+  node.itemSpacing = (isHorizontal ? columnGap : rowGap) ?? gap ?? 0
+  node.counterAxisSpacing = (isHorizontal ? rowGap : columnGap) ?? (isWrapped ? (gap ?? 0) : 0)
+}
+
+const PADDING_FIELDS = ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'] as const
+
+/** Sides compare by their CSS, so a token and a literal of the same size stay separate. */
+function writePadding(style: DesignStyleDeclaration, node: SceneNode, css: FieldCSS): void {
+  const [top, right, bottom, left] = PADDING_FIELDS.map((field) => css(field, px(node[field])))
+  const zero = px(0)
+  if ([top, right, bottom, left].every((value) => value === zero)) return
+
+  if (top === right && right === bottom && bottom === left) {
+    style.padding = top
+    return
+  }
+
+  if (top === bottom && right === left) {
+    if (top !== zero) style['padding-block'] = top
+    if (right !== zero) style['padding-inline'] = right
+    return
+  }
+
+  if (top !== zero) style['padding-top'] = top
+  if (right !== zero) style['padding-right'] = right
+  if (bottom !== zero) style['padding-bottom'] = bottom
+  if (left !== zero) style['padding-left'] = left
+}
+
+function readPadding(style: DesignStyleDeclaration, node: SceneNode): void {
+  node.paddingTop = firstCSSNumber(style, 'padding-top', 'padding-block', 'padding') ?? 0
+  node.paddingRight = firstCSSNumber(style, 'padding-right', 'padding-inline', 'padding') ?? 0
+  node.paddingBottom = firstCSSNumber(style, 'padding-bottom', 'padding-block', 'padding') ?? 0
+  node.paddingLeft = firstCSSNumber(style, 'padding-left', 'padding-inline', 'padding') ?? 0
+}
+
+/** Auto layout is flexbox, grid layout is CSS grid; either way padding insets the children. */
+export const container: PropertyFamily = {
+  name: 'layout container',
+  properties: [
+    'display',
+    'flex-direction',
+    'justify-content',
+    'align-items',
+    'flex-wrap',
+    'gap',
+    'row-gap',
+    'column-gap',
+    'grid-template-columns',
+    'grid-template-rows',
+    'padding',
+    'padding-block',
+    'padding-inline',
+    'padding-top',
+    'padding-right',
+    'padding-bottom',
+    'padding-left'
+  ],
+  write(style, node, { css }) {
+    if (node.layoutMode === 'NONE') return
+    if (node.layoutMode === 'GRID') addGridContainer(style, node, css)
+    else {
+      style.display = 'flex'
+      // Row is the flexbox default.
+      if (node.layoutMode === 'VERTICAL') style['flex-direction'] = 'column'
+      const justifyContent = justifyContentToCSS(node.primaryAxisAlign)
+      const alignItems = alignToCSS(node.counterAxisAlign)
+      if (justifyContent) style['justify-content'] = justifyContent
+      if (alignItems) style['align-items'] = alignItems
+      if (node.layoutWrap === 'WRAP') style['flex-wrap'] = 'wrap'
+      writeFlexGap(style, node, css)
+    }
+    writePadding(style, node, css)
+  },
+  read(style, node) {
+    readPadding(style, node)
+    const display = pickStyle(style, 'display')
+    if (display !== 'flex' && display !== 'inline-flex') return
+    node.layoutMode = pickStyle(style, 'flex-direction') === 'column' ? 'VERTICAL' : 'HORIZONTAL'
+    node.primaryAxisAlign = primaryAxisAlignFromCSS(pickStyle(style, 'justify-content'))
+    node.counterAxisAlign = counterAxisAlignFromCSS(pickStyle(style, 'align-items'))
+    node.layoutWrap = pickStyle(style, 'flex-wrap') === 'wrap' ? 'WRAP' : 'NO_WRAP'
+    readFlexGap(style, node)
+  }
+}
