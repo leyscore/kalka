@@ -291,8 +291,8 @@ test('bound fill picker opens non-destructively and Escape rolls back color edit
     })
     const id = [...store.state.selectedIds][0]
     if (!id) throw new Error('Expected selected node')
-    store.graph.bindVariable(id, 'fills/0/color', variable.id)
-    store.state.sceneVersion++
+    // Bound as the editor binds, so the fill already shows the variable's color.
+    store.bindVariable(id, 'fills/0/color', variable.id)
     const node = store.getNode(id)
     return { color: node?.fills[0]?.color, binding: node?.boundVariables['fills/0/color'] }
   })
