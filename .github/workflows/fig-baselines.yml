@@ -1,0 +1,52 @@
+name: .fig baselines
+
+# Manual only: writes the .fig import regression baselines on CI, for fixtures too large to parse on
+# a laptop (nuxtui.fig). Download the artifact and commit it under
+# tests/engine/io/fig/heavy/regression/baselines.
+on:
+  workflow_dispatch:
+    inputs:
+      fixtures:
+        description: Fixture file names, comma-separated
+        default: nuxtui.fig
+
+permissions:
+  contents: read
+
+jobs:
+  baselines:
+    name: Write baselines
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Name the fixtures' LFS paths
+        id: paths
+        env:
+          FIXTURES: ${{ inputs.fixtures }}
+        run: echo "include=$(echo "$FIXTURES" | sed 's#\([^,]*\)#tests/fixtures/\1#g')" >> "$GITHUB_OUTPUT"
+
+      - uses: ./.github/actions/setup-bun
+        with:
+          lfs: 'true'
+          lfs-include: ${{ steps.paths.outputs.include }}
+
+      - name: Build packages
+        run: bun run build:packages
+
+      - name: Write the baselines
+        env:
+          FIXTURES: ${{ inputs.fixtures }}
+          UPDATE_FIG_BASELINES: '1'
+        run: |
+          for file in ${FIXTURES//,/ }; do
+            bun -e "import { baselineFor, fingerprintFixture } from './tests/helpers/fig/regression.ts'; baselineFor('$file', await fingerprintFixture('$file'))"
+          done
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: fig-baselines-${{ github.sha }}
+          path: tests/engine/io/fig/heavy/regression/baselines/*.json
+          if-no-files-found: error
+          retention-days: 7

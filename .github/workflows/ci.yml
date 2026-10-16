@@ -250,9 +250,51 @@ jobs:
       - name: Run ${{ matrix.group }} unit tests
         run: bun tools/dev/unit-tests/src/run.ts "${{ matrix.group }}"
 
+  # The CSS model's migration must leave every imported .fig page as it is (PLAN.md, section 12).
+  # The large fixtures come from a cache keyed on their LFS objects: LFS bandwidth is metered.
+  fig-regression:
+    needs: changes
+    if: needs.changes.outputs.scope == 'code'
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    name: .fig import regression
+    env:
+      LARGE_FIXTURES: tests/fixtures/positivus.fig,tests/fixtures/material3.fig,tests/fixtures/nuxtui.fig
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Name the large fixtures' LFS objects
+        id: fixtures
+        run: echo "key=$(git lfs ls-files -l -I "$LARGE_FIXTURES" | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore the large fixtures
+        id: cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: |
+            tests/fixtures/positivus.fig
+            tests/fixtures/material3.fig
+            tests/fixtures/nuxtui.fig
+          key: fig-fixtures-${{ steps.fixtures.outputs.key }}
+
+      - uses: ./.github/actions/setup-bun
+        with:
+          lfs: 'true'
+          lfs-include: ${{ steps.cache.outputs.cache-hit == 'true' && 'tests/fixtures/gold-preview.fig,tests/fixtures/circle-text.fig,tests/fixtures/slots.fig,tests/fixtures/variable-override-precedence.fig' || format('{0},tests/fixtures/gold-preview.fig,tests/fixtures/circle-text.fig,tests/fixtures/slots.fig,tests/fixtures/variable-override-precedence.fig', env.LARGE_FIXTURES) }}
+
+      - name: Build packages
+        run: bun run build:packages
+
+      # One process per file: a large corpus alone takes gigabytes.
+      - name: Compare imported pages with their baselines
+        run: |
+          for file in tests/engine/io/fig/heavy/regression/*.test.ts; do
+            bun test "$file" --timeout 300000
+          done
+
   result:
     name: CI result
-    needs: [changes, commit-messages, documentation, source-quality, package-quality, repository-quality, storybook, desktop, unit-tests]
+    needs: [changes, commit-messages, documentation, source-quality, package-quality, repository-quality, storybook, desktop, unit-tests, fig-regression]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 3
