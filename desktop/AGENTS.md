@@ -1,4 +1,6 @@
-# Desktop (Tauri v2)
+# Retired Tauri shell
+
+The desktop app is Electron now (`electron/AGENTS.md`). This folder keeps the Tauri v2 shell it replaced until it is removed; Electron still reads `desktop/generated/menu.json` and `desktop/capabilities/default.json` from it, and the rules below describe the Tauri build only.
 
 Check `desktop/Cargo.toml`, `desktop/capabilities/**`, and `desktop/tauri.conf.json` before adding desktop capabilities. Release versions are also set in `desktop/tauri.conf.json` and `desktop/Cargo.toml` (`tools/AGENTS.md`, Releases).
 

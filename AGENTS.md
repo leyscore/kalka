@@ -1,6 +1,6 @@
 # Kalka
 
-Vue 3 + CanvasKit (Skia WASM) + Yoga WASM design editor. Tauri v2 desktop, also runs in browser. Bun workspace monorepo.
+Kalka: a design editor whose canvas is real HTML and CSS. Vue 3 app; each artboard is a sandboxed iframe the browser lays out and paints; an SVG overlay draws the editor's feedback. CanvasKit (Skia WASM) remains for raster export, thumbnails and boolean geometry, and Yoga for graphs the canvas does not draw. Electron desktop app, also runs in the browser. Bun workspace monorepo. Forked from OpenPencil; `PLAN.md` holds the plan and milestones.
 
 This file holds the repository map and the rules that apply everywhere. Rules for one folder live in that folder's `AGENTS.md`. **Before changing files under a mapped path, read this file and that path's guide.** Paths in every guide are repository-relative. Process for humans (setup, PRs, commits) is in `CONTRIBUTING.md`; product direction and Figma gaps are in `packages/docs/development/roadmap.md`.
 
@@ -12,27 +12,28 @@ This file holds the repository map and the rules that apply everywhere. Rules fo
 | `packages/pen`         | Pencil.dev `.pen` model, parser, SceneGraph adapter                                                                                                                                               | —                                 |
 | `packages/kiwi`        | SceneGraph-independent Kiwi schema/runtime, codecs, containers, parse helpers                                                                                                                     | `packages/fig/AGENTS.md`          |
 | `packages/fig`         | `.fig` archives, SceneGraph conversion, metadata policy, component/instance interpretation, Figma clipboard                                                                                       | `packages/fig/AGENTS.md`          |
-| `packages/core`        | Renderer, layout, editor, Figma API, tools, clipboard, vector conversion, document I/O; depends on scene-graph and the format packages (pen, kiwi, fig, dom-css, design-jsx); no browser DOM      | `packages/core/AGENTS.md`         |
+| `packages/core` | Editor, layout runner (browser engine on the canvas, Yoga elsewhere), CanvasKit renderer for exports and thumbnails, Figma API, tools, clipboard, vector conversion, document I/O including the Kalka folder; depends on scene-graph and the format packages (pen, kiwi, fig, dom-css, design-jsx); no browser DOM | `packages/core/AGENTS.md` |
 | `packages/dom-css`     | DOM/CSS/HTML/JSX/Tailwind projection and browser/headless adapters; depends only on scene-graph and emit, and takes engine services such as web-font resolution as injected options               | `packages/dom-css/AGENTS.md`      |
 | `packages/emit`        | Source emission for exporters: ESTree and JSX builders, template filling, and esrap printing, with the literal rules that keep exported strings from being reinterpreted                          | —                                 |
 | `packages/design-jsx`  | Kalka design JSX: elements, paint/effect helpers, variables, schema and authoring reference, JSX export, and a renderer that takes icons, SVG, and layout as injected services               | `packages/design-jsx/AGENTS.md`   |
-| `packages/vue`         | Headless Vue 3 SDK primitives, composables, commands, i18n, menu model                                                                                                                            | `packages/vue/AGENTS.md`          |
+| `packages/vue` | Headless Vue 3 SDK primitives, composables, commands, i18n, menu model, and the DOM canvas (`canvas/dom-scene`) with its SVG overlay (`canvas/svg-overlay`) | `packages/vue/AGENTS.md` |
 | `packages/cli`         | Headless `.fig` inspection, export, linting, `eval`                                                                                                                                               | `packages/cli/AGENTS.md`          |
 | `packages/mcp`         | stdio and Hono HTTP MCP server reusing Core tools                                                                                                                                                 | `packages/mcp/AGENTS.md`          |
 | `packages/harness`     | Optional Node companion for HarnessAgent sessions                                                                                                                                                 | `packages/harness/AGENTS.md`      |
 | `packages/docs`        | Developer documentation (VitePress, English, not deployed)                                                                                                                                                                          | `packages/docs/AGENTS.md`         |
-| `src`                  | Tauri/Vite app: services and state in `src/app/**`, views in `src/views/**`, UI in `src/components/**`                                                                                            | `src/AGENTS.md`                   |
-| `desktop`              | Tauri v2 shell, capabilities, native credentials, menus                                                                                                                                           | `desktop/AGENTS.md`               |
+| `src` | Vue/Vite app: services and state in `src/app/**`, views in `src/views/**`, UI in `src/components/**`; desktop APIs come through `@tauri-apps/*` imports that `vite/aliases.ts` points at Electron implementations in `src/app/platform/tauri` | `src/AGENTS.md` |
+| `electron` | Electron shell: window and `kalka-app://` protocol, IPC handlers, bundled MCP server, packaging | `electron/AGENTS.md` |
+| `desktop` | Retired Tauri shell; Electron still reads its generated menu and shell command scopes | `desktop/AGENTS.md` |
 | `tests`                | Central app, integration, E2E, native, and Figma acceptance tests                                                                                                                                 | `tests/AGENTS.md`                 |
 | `tools`, `.github`     | Private repo tooling, CI classification, releases, brand generation                                                                                                                               | `tools/AGENTS.md`                 |
-| `skills/kalka`   | Installable agent skill                                                                                                                                                                           | `packages/core/AGENTS.md` (Tools) |
+| `skills/kalka` | Installable agent skill | `packages/core/AGENTS.md` (Tools) |
 | `assets/brand`         | Canonical brand artwork                                                                                                                                                                           | `assets/brand/README.md`          |
 
 ## Commands
 
 - `bun run dev:portless` — preferred browser server at `https://kalka.localhost`; worktrees get `https://<branch>.kalka.localhost` and a sibling `mcp.kalka` URL with isolated runtime discovery.
-- `bun run dev` — fixed `http://localhost:1420`; use only for Playwright, Tauri, and Dev Containers.
-- `bun run tauri dev` — desktop app with hot reload.
+- `bun run dev` — fixed `http://localhost:1420`; use only for Playwright, the desktop app and Dev Containers. The dev MCP server takes port 7600; set `KALKA_DEV_MCP_PORT` when a Kalka desktop app already holds it.
+- `bun run dev:desktop` — Electron desktop app on the dev server; `bun run package:desktop` builds installers (`electron/AGENTS.md`).
 - A fresh worktree needs `bun install` and `bun run build:packages` before docs, Storybook, or any workflow that resolves workspace subpath exports; without the package builds those resolve to missing `packages/*/dist` targets.
 - `bun run check` — complete build, lint, type, architecture, docs, package, dependency, security, tooling, and duplication gate.
 - `bun run format` — format and sort imports.
@@ -63,7 +64,7 @@ Before a PR run `bun run check`, `bun run format`, `bun run test:unit`, and `bun
 - Components must not hold module-level mutable state. Name repeated or cross-feature constants; app-wide values belong in `src/constants.ts`.
 - Window API augmentations belong to the owning compilation boundary: `src/global.d.ts` for the app, the package's `global.d.ts` for package DOM gaps, `tests/helpers/tauri/native-global.d.ts` for native tests. Never put `declare global` in specs or implementation modules; include canonical declarations through tsconfig. Keep app API contracts named and owned by their implementation domain; derive vendor API types from top-level type imports. Optional runtime globals stay optional and need a runtime guard.
 - Use `structuredClone` or typed copy helpers for nested mutable data. Self-review for duplication, named shared types, precise unions, and files approaching ~600 lines.
-- Detect desktop with `IS_TAURI`, never ad-hoc `__TAURI_INTERNALS__` checks.
+- Detect desktop with `IS_TAURI`, never ad-hoc `__TAURI_INTERNALS__` checks; the Electron preload defines that global, so `IS_TAURI` is true in the desktop app.
 
 ### Dependency documentation
 
@@ -74,7 +75,8 @@ Before using an unfamiliar dependency API or writing a replacement, inspect exis
 | Vue                          | https://vuejs.org/llms.txt                                                                     |
 | VueUse                       | https://vueuse.org/guide/ — follow individual composable documentation.                        |
 | Reka UI                      | https://reka-ui.com/llms.txt                                                                   |
-| Tauri v2                     | https://v2.tauri.app/llms.txt                                                                  |
+| Electron                     | https://www.electronjs.org/docs/latest                                                         |
+| Tauri v2 (API shapes only)   | https://v2.tauri.app/llms.txt — the `@tauri-apps/*` interfaces that `src/app/platform/tauri` implements on Electron. |
 | Tailwind CSS                 | https://tailwindcss.com/docs                                                                   |
 | Tailwind Variants            | https://www.tailwind-variants.org/llms.txt                                                     |
 | Motion (use the Vue section) | https://motion.dev/llms.txt                                                                    |
