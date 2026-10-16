@@ -188,6 +188,7 @@ Common node properties are readable/writable through the proxy, including:
 - `figma.createImage(data)`
 - `figma.loadFontAsync(fontName)` no-ops because Kalka does not gate text edits on plugin font loading
 - `figma.listAvailableFontsAsync()` returns host-provided fonts when available
+- `node.getCSSAsync()` resolves to the CSS the layer is drawn with, property to value, including CSS it keeps beside its fields such as `width: 50%` or `transition`; setting a field from a script replaces the CSS written for that field.
 - `figma.getNodeByIdAsync(id)` and `instance.getMainComponentAsync()` resolve to the same nodes as `figma.getNodeById(id)` and `instance.mainComponent`, for scripts written for Figma's dynamic-page mode
 - `figma.notify(message)` logs a warning in headless mode
 - `instance.swapComponent(component)` points an instance at another component

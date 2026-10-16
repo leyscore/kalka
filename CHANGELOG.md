@@ -43,6 +43,7 @@
 
 ### Added
 
+- Plugin scripts can read a layer's CSS with `node.getCSSAsync()`, as in Figma; it is the CSS the layer is drawn with, including CSS it keeps beside its fields.
 - Layers keep CSS a Figma-style layer has no field for, such as `width: 50%`, `padding: 1.5rem`, `transition` or `cursor`, when it comes from the MCP `update_styles` and `write_html` tools, an HTML import, `kalka import` or pasted HTML: the layer draws, exports, copies, saves in Kalka folders and returns it from `get_html` as written, and a later value for the same property, from the properties panel, a move or a resize, replaces it.
 - The desktop app checks for updates at launch and from Kalka › Check for Updates, downloads them in the Software Update window and installs them on restart. Installers exist for macOS (Apple silicon and Intel), Windows and Linux (AppImage).
 - Exported HTML files are indented with one CSS declaration per line, and render exactly as the compact output; `kalka export --no-pretty` keeps them compact. The base styles can go in a `reset.css` file of their own or be left to the project (`--reset file` or `--reset none`, `reset` in the export options).

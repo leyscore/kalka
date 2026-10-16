@@ -15,6 +15,7 @@ import {
   setNodeStrokeOkHCL
 } from '@kalka/scene-graph/color'
 import type { OkHCLColor, OkHCLPayload } from '@kalka/scene-graph/color'
+import { layerCSS } from '@kalka/scene-graph/css-model'
 import type { Rect } from '@kalka/scene-graph/primitives'
 
 import { assertNodeEditable } from '#core/editor/capabilities'
@@ -228,6 +229,16 @@ export class FigmaNodeProxy {
 
   set backgrounds(value: readonly Fill[]) {
     setPageBackgrounds(this[INTERNAL_GRAPH], this._raw(), value)
+  }
+
+  /**
+   * The layer's CSS, property to value, as Figma's `getCSSAsync` gives it. In Kalka it is the
+   * CSS the layer is drawn with: what its fields write, and the CSS kept as written beside them.
+   */
+  async getCSSAsync(): Promise<Record<string, string>> {
+    const node = this._raw()
+    const parent = node.parentId ? this[INTERNAL_GRAPH].getNode(node.parentId) : undefined
+    return layerCSS(node, parent)
   }
 
   /** The async form Figma requires in dynamic-page mode; same result as mainComponent. */
