@@ -288,7 +288,7 @@ jobs:
       # One process per file: a large corpus alone takes gigabytes.
       - name: Compare imported pages with their baselines
         run: |
-          for file in tests/engine/io/fig/heavy/regression/*.test.ts; do
+          for file in tests/integration/fig-import/*.test.ts; do
             bun test "$file" --timeout 300000
           done
 

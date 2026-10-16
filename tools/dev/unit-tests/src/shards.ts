@@ -86,6 +86,7 @@ export const LARGE_FIXTURES = ['material3.fig', 'nuxtui.fig'] as const
 export const HEAVY_UNIT_TEST_PATTERNS = [
   'tests/engine/clipboard/fixtures/',
   'tests/engine/io/fig/heavy/',
+  'tests/integration/fig-import/',
   'packages/core/tests/io/formats/fig/roundtrip/exhaustive.test.ts',
   'packages/core/tests/io/formats/fig/roundtrip/glyph-blob.test.ts',
   'packages/core/tests/io/formats/fig/roundtrip/variables.test.ts',

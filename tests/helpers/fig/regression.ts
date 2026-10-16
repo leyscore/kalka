@@ -26,7 +26,7 @@ const BaselineSchema = v.array(
   v.object({ name: v.string(), layers: v.number(), fields: v.string(), html: v.string() })
 )
 
-const BASELINES = testPath('engine/io/fig/heavy/regression/baselines')
+const BASELINES = testPath('integration/fig-import/baselines')
 
 const sha = (text: string | Uint8Array) =>
   createHash('sha256').update(text).digest('hex').slice(0, 16)

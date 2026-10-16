@@ -2,13 +2,17 @@ name: .fig baselines
 
 # Manual only: writes the .fig import regression baselines on CI, for fixtures too large to parse on
 # a laptop (nuxtui.fig). Download the artifact and commit it under
-# tests/engine/io/fig/heavy/regression/baselines.
+# tests/integration/fig-import/baselines.
 on:
   workflow_dispatch:
     inputs:
       fixtures:
         description: Fixture file names, comma-separated
         default: nuxtui.fig
+      pages:
+        description: Also capture every page on the Linux canvas (tests/e2e/fig-import)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -30,7 +34,8 @@ jobs:
       - uses: ./.github/actions/setup-bun
         with:
           lfs: 'true'
-          lfs-include: ${{ steps.paths.outputs.include }}
+          # Page captures open every fixture the spec lists.
+          lfs-include: ${{ inputs.pages && 'tests/fixtures/*.fig' || steps.paths.outputs.include }}
 
       - name: Build packages
         run: bun run build:packages
@@ -44,9 +49,19 @@ jobs:
             bun -e "import { baselineFor, fingerprintFixture } from './tests/helpers/fig/regression.ts'; baselineFor('$file', await fingerprintFixture('$file'))"
           done
 
+      - name: Capture every page on the canvas
+        if: inputs.pages
+        env:
+          KALKA_TEST_SERVER: app
+        run: |
+          bunx playwright install --with-deps chromium
+          bunx playwright test --project=kalka tests/e2e/fig-import --update-snapshots
+
       - uses: actions/upload-artifact@v7
         with:
           name: fig-baselines-${{ github.sha }}
-          path: tests/engine/io/fig/heavy/regression/baselines/*.json
+          path: |
+            tests/integration/fig-import/baselines/*.json
+            tests/e2e/fig-import/pages.spec.ts-snapshots/*-linux.png
           if-no-files-found: error
           retention-days: 7
