@@ -425,7 +425,8 @@ export const htmlFormat: IOFormatAdapter<'html'> = {
     const { html, assets } = await renderNodesToHTML(
       request.graph,
       target.nodeIds,
-      options,
+      // A file is for people to read: indented, unless the caller asks for compact output.
+      { ...options, pretty: options?.pretty ?? true },
       request.fileName
     )
     return {

@@ -66,7 +66,9 @@ export async function renderNodesToHTML(
         ? async (fonts, basePath) =>
             (await exportWebFontFaceAssets({ fonts, assetBasePath: basePath })).assets
         : 'none',
-    assetBasePath: assetBasePath(fileName)
+    assetBasePath: assetBasePath(fileName),
+    reset: options.reset,
+    pretty: options.pretty
   })
   const page = bundle.files.find((file) => file.path === bundle.entrypoint)
   if (typeof page?.content !== 'string') throw new Error('HTML export produced no page')

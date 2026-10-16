@@ -1,11 +1,14 @@
 import { twirl } from 'twirlwind'
 
 import type { DesignDocument, DesignElement, DesignNode, DesignText } from '../types'
+import { childIndent, indentsChildren } from './pretty'
 
 export interface SerializeHTMLOptions {
   style?: 'inline' | 'tailwind'
   /** Custom properties declared in `@theme`; a `var()` naming one becomes its utility. */
   themeVariables?: readonly string[]
+  /** One element per line, indented by depth, where whitespace leaves the rendering alone. */
+  pretty?: boolean
 }
 
 const VOID_ELEMENTS = new Set([
@@ -99,16 +102,31 @@ function serializeAttrs(node: DesignElement, options: SerializeHTMLOptions): str
   return ` ${serialized.join(' ')}`
 }
 
-function serializeElement(node: DesignElement, options: SerializeHTMLOptions): string {
+function serializeElement(
+  node: DesignElement,
+  options: SerializeHTMLOptions,
+  depth: number
+): string {
   // SVG names such as `linearGradient` keep their case, as an SVG parser needs them.
   const tagName = node.tagName
   const attrs = serializeAttrs(node, options)
   if (VOID_ELEMENTS.has(tagName.toLowerCase())) return `<${tagName}${attrs}>`
-  return `<${tagName}${attrs}>${node.children.map((child) => serializeNode(child, options)).join('')}</${tagName}>`
+  if (options.pretty && indentsChildren(node)) {
+    const children = node.children.map(
+      (child) => childIndent(depth + 1) + serializeNode(child, options, depth + 1)
+    )
+    return `<${tagName}${attrs}>${children.join('')}${childIndent(depth)}</${tagName}>`
+  }
+  const flat = { ...options, pretty: false }
+  return `<${tagName}${attrs}>${node.children.map((child) => serializeNode(child, flat)).join('')}</${tagName}>`
 }
 
-export function serializeNode(node: DesignNode, options: SerializeHTMLOptions = {}): string {
-  return node.type === 'text' ? serializeText(node) : serializeElement(node, options)
+export function serializeNode(
+  node: DesignNode,
+  options: SerializeHTMLOptions = {},
+  depth = 0
+): string {
+  return node.type === 'text' ? serializeText(node) : serializeElement(node, options, depth)
 }
 
 export function serializeHTML(
@@ -119,5 +137,7 @@ export function serializeHTML(
     ...options,
     themeVariables: options.themeVariables ?? document.tokens?.themeVariables()
   }
-  return document.children.map((node) => serializeNode(node, resolved)).join('')
+  return document.children
+    .map((node) => serializeNode(node, resolved))
+    .join(options.pretty ? '\n' : '')
 }

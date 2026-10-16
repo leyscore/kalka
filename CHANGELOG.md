@@ -42,6 +42,7 @@
 
 ### Added
 
+- Exported HTML files are indented with one CSS declaration per line, and render exactly as the compact output; `kalka export --no-pretty` keeps them compact. The base styles can go in a `reset.css` file of their own or be left to the project (`--reset file` or `--reset none`, `reset` in the export options).
 - Saving as `.fig` in the app, and `kalka export` or `kalka convert` to `.fig`, warn about the CSS Figma will not show: class rules, breakpoints, mode switches, `calc()` and `clamp()` values, shaders, HTML tags and right-to-left layout. The file keeps them, so Kalka reads them back.
 - Kalka saves and opens documents as a folder: one HTML page per page with inline CSS and `data-kalka-*` editor attributes, `styles.css`, the variables as W3C design tokens in `design-system/tokens.json` with their CSS variables in `design-system/tokens.css`, images under `assets/`, and `project.json` for page order, artboard positions, and what CSS cannot hold. Saving an unchanged document writes the same bytes, pages and tokens edited outside Kalka open with the edits, and the desktop app opens and saves folders from the File menu and Home. The same folder zipped is a `.kalka` file that the browser app opens and saves too, and `kalka convert` converts to and from both (`--format folder` or `kalka`).
 - MCP and the AI chat can work in HTML: `write_html` adds HTML and CSS to the design as editable layers, `get_html` reads a layer back as HTML, `update_styles` changes a layer with CSS declarations, and `get_screenshot` shows the result as an image.

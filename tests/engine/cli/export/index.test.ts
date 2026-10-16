@@ -250,6 +250,33 @@ test('export CLI can write standalone HTML', async () => {
   expect(html).not.toContain('@tailwindcss/browser@4')
 })
 
+test('export CLI indents standalone HTML and can write its reset as a file', async () => {
+  const { dir, figPath } = await createFigFixture()
+  const output = join(dir, 'card-reset.html')
+
+  const { stderr, exitCode } = await runKalkaCLI([
+    'export',
+    figPath,
+    '--format',
+    'html',
+    '--html',
+    'standalone',
+    '--reset',
+    'file',
+    '--output',
+    output
+  ])
+
+  expect(stderr).toBe('')
+  expect(exitCode).toBe(0)
+  const html = await Bun.file(output).text()
+  const reset = await Bun.file(join(dir, 'reset.css')).text()
+  expect(html).toStartWith('<!doctype html>\n<html>\n  <head>')
+  expect(html).toContain('<link rel="stylesheet" href="reset.css">')
+  expect(html).not.toContain('box-sizing')
+  expect(reset).toContain('  box-sizing: border-box;')
+})
+
 test('export CLI precompiles Tailwind CSS for standalone Tailwind HTML', async () => {
   const { dir, figPath } = await createFigFixture()
   const output = join(dir, 'card-standalone-tailwind.html')

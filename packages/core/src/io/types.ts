@@ -122,6 +122,10 @@ export interface HTMLExportOptions {
   assets?: 'inline' | 'external'
   /** `assets` ships web fonts with external assets. */
   fonts?: 'assets' | 'none'
+  /** The base styles in the page, in a `reset.css` file of their own, or left out. */
+  reset?: 'inline' | 'file' | 'none'
+  /** Indented HTML and one CSS declaration per line; exported files default to it. */
+  pretty?: boolean
   /**
    * Marks each element with the layer it came from, for tools that map the HTML back to the
    * document. Exported files leave it out: it is editor data, not part of the page.

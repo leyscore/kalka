@@ -34,6 +34,7 @@ const HTML_STYLES = new Set(['inline', 'tailwind'])
 const HTML_MODES = new Set(['fragment', 'standalone'])
 const HTML_ASSETS = new Set(['inline', 'external'])
 const HTML_FONTS = new Set(['assets', 'none'])
+const HTML_RESETS = new Set(['inline', 'file', 'none'])
 
 export interface ExportArgs {
   file?: string
@@ -48,6 +49,8 @@ export interface ExportArgs {
   css: string
   assets: string
   fonts: string
+  reset: string
+  pretty: boolean
   framework: string
   'design-images': boolean
   watch?: boolean
@@ -204,7 +207,14 @@ async function executeFileExport(
 function exportOptions(format: string, args: ExportArgs): unknown {
   if (format === 'FIG') return { renderThumbnail: true }
   if (format === 'HTML')
-    return { html: args.html, style: args.css, assets: args.assets, fonts: args.fonts }
+    return {
+      html: args.html,
+      style: args.css,
+      assets: args.assets,
+      fonts: args.fonts,
+      reset: args.reset,
+      pretty: args.pretty
+    }
   if (formatSupportsScale(format))
     return {
       format,
@@ -332,6 +342,16 @@ export default defineCommand({
       description: 'HTML font output: assets or none (default: none)',
       default: 'none'
     },
+    reset: {
+      type: 'string',
+      description: 'HTML base styles: inline, file (reset.css), or none (default: inline)',
+      default: 'inline'
+    },
+    pretty: {
+      type: 'boolean',
+      description: 'Indent HTML and CSS; --no-pretty writes them compact (default: true)',
+      default: true
+    },
     framework: {
       type: 'string',
       description: 'Storybook framework: react, vue, or html (default: react)',
@@ -389,6 +409,11 @@ export default defineCommand({
 
     if (format === 'HTML' && !HTML_FONTS.has(args.fonts)) {
       printError(`Invalid HTML font output "${args.fonts}". Use assets or none.`)
+      process.exit(1)
+    }
+
+    if (format === 'HTML' && !HTML_RESETS.has(args.reset)) {
+      printError(`Invalid HTML reset "${args.reset}". Use inline, file, or none.`)
       process.exit(1)
     }
 

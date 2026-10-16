@@ -14,6 +14,7 @@ import type {
 } from '../types'
 import { cssClassStylesheet, withClassRules } from './classes'
 import { mergeClassNames, serializeHTML, splitWhitespace } from './html'
+import { prettyCSS } from './pretty'
 import { hasBrowserDefaults, HTML_TAG_RESET_CSS, scopedTagResetCSS } from './tag-reset'
 
 /** A font face the exported text uses. */
@@ -49,6 +50,13 @@ export interface ExportHTMLBundleOptions {
   /** Resolves font files to include with external assets; `none` includes no fonts. */
   fonts?: 'none' | WebFontFaceResolver
   assetBasePath?: string
+  /**
+   * The base styles that make tags and boxes draw as designed: in the page (the default), in a
+   * `reset.css` file of their own, or left out for a project that brings its own reset.
+   */
+  reset?: 'inline' | 'file' | 'none'
+  /** Indented HTML and one CSS declaration per line, which renders the same. */
+  pretty?: boolean
 }
 
 export interface ExportHTMLFile {
@@ -73,6 +81,27 @@ type ParseParent = DefaultTreeAdapterTypes.ParentNode
 type ParseElement = DefaultTreeAdapterTypes.Element
 
 const RESET_CSS = `*,*::before,*::after{box-sizing:border-box}html,body{margin:0;padding:0}body{font-family:system-ui,sans-serif;background:#fff}${HTML_TAG_RESET_CSS}`
+const RESET_FILE = 'reset.css'
+
+function cssText(css: string, pretty: boolean): string {
+  return pretty && css ? prettyCSS(css) : css
+}
+
+/** A page around its body, the stylesheets its head names, each on its line when pretty. */
+function pageHTML(head: readonly string[], body: string, pretty: boolean): string {
+  const meta = [
+    '<meta charset="utf-8">',
+    '<meta name="viewport" content="width=device-width, initial-scale=1">'
+  ]
+  if (!pretty)
+    return `<!doctype html><html><head>${[...meta, ...head].join('')}</head><body>${body}</body></html>`
+  const indent = (lines: readonly string[]) => lines.map((line) => `    ${line}`).join('\n')
+  const bodyLines = body
+    .split('\n')
+    .map((line) => `    ${line}`)
+    .join('\n')
+  return `<!doctype html>\n<html>\n  <head>\n${indent([...meta, ...head])}\n  </head>\n  <body>\n${bodyLines}\n  </body>\n</html>\n`
+}
 
 function styleToCSS(style: DesignStyleDeclaration): string {
   return Object.entries(style)
@@ -394,10 +423,12 @@ async function exportStandaloneHTML(
     ? `.kalka-canvas{position:relative;width:${size.width}px;height:${size.height}px}`
     : ''
   let body: string
-  let css = `${RESET_CSS}${stageCSS}`
+  const reset = options.reset === 'inline' ? RESET_CSS : ''
+  let css = `${reset}${stageCSS}`
+  const serialize = { pretty: options.pretty }
 
   if (options.style === 'tailwind') {
-    body = serializeHTML(doc, { style: 'tailwind' })
+    body = serializeHTML(doc, { ...serialize, style: 'tailwind' })
     css += await compileTailwindClasses(
       classNamesFromHTML(body),
       await tokenCSS(document, 'tailwind')
@@ -418,31 +449,44 @@ async function exportStandaloneHTML(
       ...classed,
       children: classed.children.map((node) => extractInlineStyles(node, rules, naming, media))
     }
-    body = serializeHTML(styledDocument)
+    body = serializeHTML(styledDocument, serialize)
     css += rules.join('') + mediaCSS(media)
   }
+  if (placed)
+    body = options.pretty
+      ? `<div class="kalka-canvas">\n${body.replace(/^/gm, '  ')}\n</div>`
+      : `<div class="kalka-canvas">${body}</div>`
 
-  if (options.assets === 'external') {
+  const external = options.assets === 'external'
+  const resetPath = external ? `${options.assetBasePath}/${RESET_FILE}` : RESET_FILE
+  const resetFiles: ExportHTMLFile[] =
+    options.reset === 'file'
+      ? [{ path: resetPath, content: cssText(RESET_CSS, options.pretty) }]
+      : []
+  const resetLink = resetFiles.length > 0 ? [stylesheetLink(resetPath)] : []
+
+  if (external) {
     const [extracted, fonts] = await Promise.all([
       Promise.resolve(extractImageAssets(body, options.assetBasePath)),
       fontFaceAssets(document, options)
     ])
-    body = extracted.html
     const cssPath = `${options.assetBasePath}/kalka.css`
-    const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">${stylesheetLink(cssPath)}</head><body>${placed ? `<div class="kalka-canvas">${body}</div>` : body}</body></html>`
+    const html = pageHTML([...resetLink, stylesheetLink(cssPath)], extracted.html, options.pretty)
     return {
       entrypoint: 'index.html',
       files: [
         { path: 'index.html', content: html },
-        { path: cssPath, content: `${fonts.css}${css}` },
+        { path: cssPath, content: cssText(`${fonts.css}${css}`, options.pretty) },
+        ...resetFiles,
         ...fonts.files,
         ...extracted.files
       ]
     }
   }
 
-  const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">${styleTag(css)}</head><body>${placed ? `<div class="kalka-canvas">${body}</div>` : body}</body></html>`
-  return { entrypoint: 'index.html', files: [{ path: 'index.html', content: html }] }
+  const style = css ? [styleTag(cssText(css, options.pretty))] : []
+  const html = pageHTML([...resetLink, ...style], body, options.pretty)
+  return { entrypoint: 'index.html', files: [{ path: 'index.html', content: html }, ...resetFiles] }
 }
 
 export async function exportHTMLBundle(
@@ -454,15 +498,14 @@ export async function exportHTMLBundle(
     style: options.style ?? 'inline',
     assets: options.assets ?? 'inline',
     fonts: options.fonts ?? 'none',
-    assetBasePath: options.assetBasePath ?? 'assets'
+    assetBasePath: options.assetBasePath ?? 'assets',
+    reset: options.reset ?? 'inline',
+    pretty: options.pretty ?? false
   }
 
   if (resolvedOptions.html === 'standalone') return exportStandaloneHTML(document, resolvedOptions)
 
-  return {
-    entrypoint: 'index.html',
-    files: [{ path: 'index.html', content: fragmentHTML(document, resolvedOptions.style) }]
-  }
+  return fragmentBundle(document, resolvedOptions)
 }
 
 const FRAGMENT_ROOT_ATTRIBUTE = 'data-kalka-html'
@@ -474,10 +517,19 @@ function usesBrowserDefaults(node: DesignNode): boolean {
 
 /**
  * HTML to paste into another page. When it uses tags the browser styles, such as an `h1`, it
- * starts with the reset that keeps them as designed, scoped to its own marked roots.
+ * comes with the reset that keeps them as designed, scoped to its own marked roots: at its start,
+ * or in a `reset.css` file of its own.
  */
-function fragmentHTML(document: DesignDocument, style: 'inline' | 'tailwind'): string {
-  if (!document.children.some(usesBrowserDefaults)) return serializeHTML(document, { style })
+function fragmentBundle(
+  document: DesignDocument,
+  options: Required<ExportHTMLBundleOptions>
+): ExportHTMLBundle {
+  const serialize = { style: options.style, pretty: options.pretty }
+  if (options.reset === 'none' || !document.children.some(usesBrowserDefaults))
+    return {
+      entrypoint: 'index.html',
+      files: [{ path: 'index.html', content: serializeHTML(document, serialize) }]
+    }
   const marked: DesignDocument = {
     ...document,
     children: document.children.map((node) =>
@@ -486,5 +538,19 @@ function fragmentHTML(document: DesignDocument, style: 'inline' | 'tailwind'): s
         : node
     )
   }
-  return `${styleTag(scopedTagResetCSS(FRAGMENT_ROOT_ATTRIBUTE))}${serializeHTML(marked, { style })}`
+  const reset = cssText(scopedTagResetCSS(FRAGMENT_ROOT_ATTRIBUTE), options.pretty)
+  const html = serializeHTML(marked, serialize)
+  if (options.reset === 'file')
+    return {
+      entrypoint: 'index.html',
+      files: [
+        { path: 'index.html', content: html },
+        { path: RESET_FILE, content: reset }
+      ]
+    }
+  const separator = options.pretty ? '\n' : ''
+  return {
+    entrypoint: 'index.html',
+    files: [{ path: 'index.html', content: `${styleTag(reset)}${separator}${html}` }]
+  }
 }
