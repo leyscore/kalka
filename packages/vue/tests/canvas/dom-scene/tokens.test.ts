@@ -4,12 +4,6 @@ import { SceneGraph } from '@kalka/scene-graph'
 
 import { CanvasTokens } from '#vue/canvas/dom-scene/tokens'
 
-async function settled() {
-  await new Promise((resolve) => {
-    setTimeout(resolve, 0)
-  })
-}
-
 test('the canvas stylesheet follows variable values, and a rename re-projects layers', async () => {
   const graph = new SceneGraph()
   const brand = graph.createCollection('Brand')
@@ -22,23 +16,19 @@ test('the canvas stylesheet follows variable values, and a rename re-projects la
     () => renamed++
   )
 
-  tokens.sync()
-  await settled()
+  await tokens.sync()
   expect(sheets.at(-1)).toContain('--color-accent: #0000FF')
 
-  tokens.sync()
-  await settled()
+  await tokens.sync()
   expect(sheets).toHaveLength(1)
 
   accent.valuesByMode[brand.defaultModeId] = { r: 1, g: 0, b: 0, a: 1 }
-  tokens.sync()
-  await settled()
+  await tokens.sync()
   expect(sheets.at(-1)).toContain('--color-accent: #FF0000')
   expect(renamed).toBe(0)
 
   accent.name = 'brand/primary'
-  tokens.sync()
-  await settled()
+  await tokens.sync()
   expect(renamed).toBe(1)
   expect(tokens.references.names.get(accent.id)).toBe('color-brand-primary')
 })

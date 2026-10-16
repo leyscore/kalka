@@ -97,7 +97,7 @@ export function useDomScene(
     }
     const state = view()
     shaders?.sync(state.sceneVersion)
-    if (state.sceneVersion !== presentedScene) tokens?.sync()
+    if (state.sceneVersion !== presentedScene) void tokens?.sync()
     if (state.sceneVersion !== presentedScene) {
       presentedScene = state.sceneVersion
       options.onPresented?.({
@@ -129,7 +129,7 @@ export function useDomScene(
       () => p.reset()
     )
     tokens = canvasTokens
-    canvasTokens.sync()
+    void canvasTokens.sync()
     engine = new DomLayoutEngine(p, () => editor.graph)
     shaders = new ShaderLayers(p, () => editor.graph)
     // Text is edited in place, in the page, instead of by the canvas text engine.
@@ -146,11 +146,11 @@ export function useDomScene(
         p.structureChanged(parentId, previousParentId)
       ),
       editor.onEditorEvent('graph:replaced', () => {
-        canvasTokens.sync()
+        void canvasTokens.sync()
         p.reset()
       }),
       // Renaming a variable or changing a mode's condition changes no layer.
-      editor.onEditorEvent('history:changed', () => canvasTokens.sync()),
+      editor.onEditorEvent('history:changed', () => void canvasTokens.sync()),
       fontManager.onBrowserFace((face) => p.addFont(face)),
       installLayoutEngine(engine)
     )

@@ -26,18 +26,21 @@ export class CanvasTokens {
     this.references = new DesignTokens(getGraph())
   }
 
-  /** Rebuilds the references and the stylesheet when the variables changed. */
-  sync(): void {
+  /**
+   * Rebuilds the references at once and the stylesheet when the variables changed; the promise
+   * settles once that stylesheet is applied.
+   */
+  sync(): Promise<void> {
     const graph = this.getGraph()
     const fingerprint = variablesFingerprint(graph)
-    if (fingerprint === this.#fingerprint) return
+    if (fingerprint === this.#fingerprint) return Promise.resolve()
     this.#fingerprint = fingerprint
     this.references = new DesignTokens(graph)
     const names = JSON.stringify([...this.references.names])
     const renamed = this.#names !== '' && names !== this.#names
     this.#names = names
     if (renamed) this.onRenamed()
-    void this.#applyStylesheet(graph, ++this.#generation)
+    return this.#applyStylesheet(graph, ++this.#generation)
   }
 
   async #applyStylesheet(graph: SceneGraph, generation: number): Promise<void> {
