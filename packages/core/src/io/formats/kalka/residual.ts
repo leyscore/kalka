@@ -13,7 +13,9 @@ const STRUCTURAL_FIELDS = new Set<string>([
   'childIds',
   'visible',
   'locked',
-  'internalOnly'
+  'internalOnly',
+  // The `style` attribute.
+  'style'
 ])
 
 /**

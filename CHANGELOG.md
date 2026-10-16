@@ -4,6 +4,7 @@
 
 ### Breaking changes
 
+- `SceneNode` from `@kalka/scene-graph` has `style`, the layer's CSS declarations, which the scene graph keeps in step with the fields it maps and which also holds CSS no field can, so code that builds `SceneNode` objects itself must include it. The mapping between fields and CSS moved from `@kalka/dom-css` to `@kalka/scene-graph/css-model`.
 - The workspace packages are named `@kalka/*` instead of `@open-pencil/*`, such as `@kalka/core`, `@kalka/scene-graph` and `@kalka/vue`; update imports accordingly.
 - The commands are `kalka`, `kalka-mcp`, `kalka-mcp-http` and `kalka-harness` instead of their `openpencil` names, environment variables start with `KALKA_` instead of `OPENPENCIL_`, the browser API is `window.kalka`, and exported HTML and plugin data use `kalka` names. Settings, chats, recovery snapshots and libraries saved under the previous names move on first launch, and files, tokens and clipboard data written before still open. Reconnect MCP clients from Settings › MCP so their configuration uses the new commands.
 - `SceneNode` from `@kalka/scene-graph` has `htmlTag` and `htmlClasses`, the HTML tag and class names a layer is written with, `cssClasses`, the document's CSS classes on its root, `responsiveSource`, the primary layer a breakpoint copy mirrors, and `shader`, its live shader layer, so code that builds `SceneNode` objects itself must include them.

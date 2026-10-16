@@ -55,8 +55,12 @@ function fieldsFingerprint(
 ): string {
   // Ids the reader makes up for layers outside the document, such as a library's components.
   const outside = new Map<string, string>()
-  const json = JSON.stringify(nodes, (key, value: unknown) => {
+  const layers = new Set<object>(nodes)
+  const json = JSON.stringify(nodes, function (this: unknown, key, value: unknown) {
     if (key === 'id') return undefined
+    // A layer's CSS follows its fields; the HTML fingerprint covers what it draws.
+    if (key === 'style' && typeof this === 'object' && this !== null && layers.has(this))
+      return undefined
     if (typeof value === 'string' && GENERATED_ID.test(value) && !order.has(value)) {
       if (!outside.has(value)) outside.set(value, `@${outside.size}`)
       return outside.get(value)

@@ -424,6 +424,9 @@ export interface SourceLibraryPublication {
   catalogSource?: string
 }
 
+/** CSS declarations, property to value, as an inline `style` holds them. */
+export type CSSDeclarations = Record<string, string>
+
 export interface SceneNode {
   id: string
   type: NodeType
@@ -451,6 +454,12 @@ export interface SceneNode {
   htmlClasses: string[]
   /** The document's CSS classes, in stylesheet order; only the document's root holds any. */
   cssClasses: CSSClass[]
+  /**
+   * The layer's CSS declarations, literal values in the order export writes them. The graph keeps
+   * the fields it maps (`@kalka/scene-graph/css-model`) and this in step; declarations the
+   * fields cannot hold stay here as written. Replaced, never changed in place.
+   */
+  style: CSSDeclarations
   /** On a breakpoint copy, the primary artboard's layer it mirrors; null elsewhere. */
   responsiveSource: string | null
   layoutGrids: LayoutGrid[]

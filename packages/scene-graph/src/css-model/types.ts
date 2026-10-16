@@ -1,9 +1,8 @@
 import { parseCSSNumber } from '../css'
-import type { SceneNode } from '../types'
+import type { CSSDeclarations, SceneNode } from '../types'
 import { pickStyle } from './from-css'
 
-/** A layer's CSS declarations, property to value, as an inline `style` holds them. */
-export type CSSDeclarations = Record<string, string>
+export type { CSSDeclarations }
 
 /** A field's CSS: its token reference where one is faithful, otherwise the literal value. */
 export type FieldCSS = (field: string, literal: string) => string

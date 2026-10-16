@@ -1,7 +1,12 @@
 import { fromUint8Array } from 'js-base64'
 
 import { readIcon, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
-import { writeLayerStyle, type FieldCSS } from '@kalka/scene-graph/css-model'
+import {
+  extraDeclarations,
+  writeLayerStyle,
+  type FieldCSS,
+  type WriteContext
+} from '@kalka/scene-graph/css-model'
 
 import { DesignTokens, type CSSModes } from '../tokens/references'
 import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
@@ -53,6 +58,11 @@ export interface SceneGraphToDesignOptions {
 /** What a box draws itself, which the SVG of a vector layer draws instead. */
 const BOX_PAINT = /^(background|border|box-shadow|outline|filter)/
 
+/** A layer's CSS: what the table writes from its fields, then what only its CSS holds. */
+function layerCSS(node: SceneNode, context: WriteContext): DesignStyleDeclaration {
+  return { ...writeLayerStyle(node, context), ...extraDeclarations(node) }
+}
+
 function nodeChildren(graph: SceneGraph, node: SceneNode): SceneNode[] {
   return node.childIds
     .map((id) => graph.getNode(id))
@@ -86,7 +96,7 @@ function attrsForNode(
  */
 export function standaloneLayerStyle(node: SceneNode): DesignStyleDeclaration {
   const literal: FieldCSS = (_field, value) => value
-  return writeLayerStyle(node, { parent: undefined, css: literal })
+  return layerCSS(node, { parent: undefined, css: literal })
 }
 
 interface ProjectionContext {
@@ -159,7 +169,7 @@ function frameStyle(
 ): DesignStyleDeclaration {
   const style = withBlockDisplay(
     tagName,
-    writeLayerStyle(context.derivedSizes ? withDerivedSize(node) : node, { parent, css })
+    layerCSS(context.derivedSizes ? withDerivedSize(node) : node, { parent, css })
   )
   // An auto layout frame is where its absolutely placed children are measured from.
   if (!style.position && hasAbsoluteChild(context.graph, node)) style.position = 'relative'
@@ -190,7 +200,7 @@ function textDesignNode(
   parent: SceneNode | undefined,
   css: FieldCSS
 ): DesignNode {
-  const style = writeLayerStyle(node, { parent, css })
+  const style = layerCSS(node, { parent, css })
   stackInLayerOrder(context.graph, style, parent)
   // CSS cannot lay text along a curve; its saved glyph outlines draw it instead.
   if (node.textPathData !== null) {
@@ -227,7 +237,7 @@ function sceneNodeToDesignNode(
 
   // An icon is one drawing, however many paths it has.
   if (VECTOR_SHAPES.has(node.type) || readIcon(node)) {
-    const vector = vectorDesignNode(context, node, attrs, writeLayerStyle(node, { parent, css }))
+    const vector = vectorDesignNode(context, node, attrs, layerCSS(node, { parent, css }))
     if (vector) return vector
   }
 

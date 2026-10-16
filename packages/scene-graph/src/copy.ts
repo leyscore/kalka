@@ -241,6 +241,7 @@ export function cloneNodeProps(
       ...rest,
       ...(componentId !== null ? { componentId } : {}),
       source: createDefaultSourceMetadata(),
+      style: { ...src.style },
       boundVariables: { ...src.boundVariables },
       variableBindingScales: { ...src.variableBindingScales },
       variableAssignmentScales: { ...src.variableAssignmentScales },
@@ -254,6 +255,7 @@ export function cloneNodeProps(
   return {
     ...rest,
     ...(componentId !== null ? { componentId } : {}),
+    style: { ...src.style },
     boundVariables: { ...src.boundVariables },
     variableBindingScales: { ...src.variableBindingScales },
     variableAssignmentScales: { ...src.variableAssignmentScales },
