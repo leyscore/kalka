@@ -6,7 +6,7 @@ import { queryByXPath } from '#core/xpath'
 
 export const queryNodes = defineTool({
   name: 'query_nodes',
-  description: `Query nodes using XPath selectors. Node types are element names (FRAME, TEXT, RECTANGLE, ELLIPSE, etc.). Attributes: name, width, height, x, y, visible, opacity, cornerRadius, fontSize, fontFamily, fontWeight, layoutMode, itemSpacing, paddingTop/Right/Bottom/Left, strokeWeight, rotation, locked, blendMode, text, lineHeight, letterSpacing.
+  description: `Query nodes using XPath selectors. Returns id, name, and type, plus text for TEXT nodes. Node types are element names (FRAME, TEXT, RECTANGLE, ELLIPSE, etc.). Attributes: id, name, width, height, x, y, visible, opacity, cornerRadius, fontSize, fontFamily, fontWeight, layoutMode, itemSpacing, paddingTop/Right/Bottom/Left, strokeWeight, rotation, locked, blendMode, text, lineHeight, letterSpacing.
 
 Examples:
 //FRAME — all frames
@@ -15,7 +15,8 @@ Examples:
 //SECTION/FRAME — direct frame children of sections
 //SECTION//TEXT — all text nodes inside sections
 //*[@cornerRadius > 0] — any node with corner radius
-//TEXT[contains(@text, 'Hello')] — text nodes containing "Hello"`,
+//TEXT[contains(@text, 'Hello')] — text nodes containing "Hello"
+//*[@id='1:2']//TEXT[not(ancestor-or-self::*[@visible='false'])] — visible text inside a frame, in layer order`,
   execution: { kind: 'async', mutation: 'none' },
   exposure: { webmcp: false },
   input: v.strictObject({
@@ -31,7 +32,12 @@ Examples:
       })
       return {
         count: nodes.length,
-        nodes: nodes.map((node) => ({ id: node.id, name: node.name, type: node.type }))
+        nodes: nodes.map((node) => ({
+          id: node.id,
+          name: node.name,
+          type: node.type,
+          ...(node.type === 'TEXT' ? { text: node.text } : {})
+        }))
       }
     } catch (err) {
       return { error: `XPath error: ${err instanceof Error ? err.message : String(err)}` }

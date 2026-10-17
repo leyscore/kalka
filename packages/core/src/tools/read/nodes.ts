@@ -10,6 +10,7 @@ interface TreeEntry {
   name: string
   w: number
   h: number
+  text?: string
   children?: TreeEntry[]
 }
 
@@ -37,6 +38,7 @@ function nodeToTreeEntry(
     w: node.width,
     h: node.height
   }
+  if (node.type === 'TEXT') entry.text = node.characters
   if (children.length > 0) entry.children = children
   return entry
 }
@@ -44,7 +46,7 @@ function nodeToTreeEntry(
 export const getPageTree = defineTool({
   name: 'get_page_tree',
   description:
-    'Get the node tree of the current page. Returns lightweight hierarchy: id, type, name, size. Use depth, root_id, or node_types to keep large pages small. Use get_node for full properties of a specific node.',
+    'Get the node tree of the current page. Returns lightweight hierarchy: id, type, name, size, and text for TEXT nodes. Use depth, root_id, or node_types to keep large pages small. Use get_node for full properties of a specific node.',
   execution: { kind: 'sync', mutation: 'none' },
   input: v.strictObject({
     depth: v.optional(

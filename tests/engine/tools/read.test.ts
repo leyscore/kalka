@@ -107,6 +107,42 @@ describe('query_nodes', () => {
     expect(result.count).toBe(3)
   })
 
+  test('returns the text of visible TEXT nodes inside a frame in layer order', async () => {
+    const { figma } = setupToolTest()
+    const card = figma.createFrame()
+    const title = figma.createText()
+    title.characters = 'Balance'
+    const hiddenGroup = figma.createFrame()
+    hiddenGroup.visible = false
+    const hiddenText = figma.createText()
+    hiddenText.characters = 'Draft'
+    hiddenGroup.appendChild(hiddenText)
+    const amount = figma.createText()
+    amount.characters = '$12,450\nAvailable'
+    card.appendChild(title)
+    card.appendChild(hiddenGroup)
+    card.appendChild(amount)
+    figma.createText().characters = 'Outside'
+
+    const tool = getTool('query_nodes')
+    const result = (await tool.execute(figma, {
+      selector: `//*[@id='${card.id}']//TEXT[not(ancestor-or-self::*[@visible='false'])]`
+    })) as ToolResult
+    expect(result.nodes?.map((node) => [node.id, node.text])).toEqual([
+      [title.id, 'Balance'],
+      [amount.id, '$12,450\nAvailable']
+    ])
+  })
+
+  test('omits text for non-text nodes', async () => {
+    const { figma } = setupToolTest()
+    figma.createRectangle()
+
+    const tool = getTool('query_nodes')
+    const result = (await tool.execute(figma, { selector: '//RECTANGLE' })) as ToolResult
+    expect(expectDefined(result.nodes, 'queried nodes')[0]).not.toHaveProperty('text')
+  })
+
   test('returns empty array when nothing matches', async () => {
     const { figma } = setupToolTest()
     figma.createRectangle()
@@ -166,6 +202,24 @@ describe('get_node', () => {
     expect(result.name).toBe('Test Rect')
     expect(result.width).toBe(100)
     expect(result.height).toBe(50)
+  })
+})
+
+describe('get_page_tree', () => {
+  test('includes the text of TEXT nodes', () => {
+    const { figma } = setupToolTest()
+    const card = figma.createFrame()
+    const label = figma.createText()
+    label.characters = 'Saldo disponível'
+    card.appendChild(label)
+
+    const tool = getTool('get_page_tree')
+    const result = tool.execute(figma, { root_id: card.id, node_types: ['TEXT'] })
+    expect(result).toMatchObject({
+      root: card.id,
+      tree: { id: card.id, children: [{ id: label.id, text: 'Saldo disponível' }] }
+    })
+    expect(result).not.toHaveProperty('tree.text')
   })
 })
 

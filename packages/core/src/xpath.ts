@@ -10,6 +10,7 @@ const NODE_TYPES = {
 }
 
 const QUERYABLE_ATTRS = [
+  'id',
   'name',
   'width',
   'height',

@@ -10,7 +10,7 @@ export interface ToolResult {
   type?: string
   error?: string
   count?: number
-  nodes?: Array<{ id?: string; name: string; type: string }>
+  nodes?: Array<{ id?: string; name: string; type: string; text?: string }>
   [key: string]: unknown
 }
 
