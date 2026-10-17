@@ -27,14 +27,18 @@ function workingMarks(page: Page) {
 }
 
 /**
- * Samples, every frame from now on, how opaque the card's heading shows: its opacity times its
- * ancestors' in the artboard, and the artboard's own. Returns what each frame drew.
+ * Samples, every frame from now on until stopped, how opaque the card's heading shows: its
+ * opacity times its ancestors' in the artboard, and the artboard's own, however long the edit
+ * takes to arrive.
  */
 async function sampleHeadingOpacity(page: Page) {
-  await page.evaluate(() => {
-    const samples: number[] = []
-    Reflect.set(window, '__headingOpacity', samples)
+  const sampler = await page.evaluateHandle(() => {
+    const state = { samples: [] as number[], stopped: false }
     const sample = () => {
+      if (state.stopped) return
+      // The next frame is asked for first: reading an artboard that is still replacing its first,
+      // empty document can throw, and that must not end the sampling.
+      requestAnimationFrame(sample)
       for (const frame of document.querySelectorAll<HTMLIFrameElement>(
         'iframe[data-kalka-artboard]'
       )) {
@@ -47,17 +51,22 @@ async function sampleHeadingOpacity(page: Page) {
         let opacity = Number(getComputedStyle(frame).opacity)
         for (let element: Element | null = heading; element; element = element.parentElement)
           opacity *= Number(view.getComputedStyle(element).opacity)
-        samples.push(opacity)
+        state.samples.push(opacity)
       }
-      if (samples.length < 240) requestAnimationFrame(sample)
     }
     requestAnimationFrame(sample)
+    return state
   })
-  return () =>
-    page.evaluate(() => {
-      const samples: unknown = Reflect.get(window, '__headingOpacity')
-      return Array.isArray(samples) ? samples.map(Number) : []
-    })
+  return {
+    /** What each frame drew so far. */
+    read: () => sampler.evaluate((state) => [...state.samples]),
+    async stop() {
+      await sampler.evaluate((state) => {
+        state.stopped = true
+      })
+      await sampler.dispose()
+    }
+  }
 }
 
 /** What the canvas is replaying now: layers animating in and text still being typed. */
@@ -114,15 +123,16 @@ test('with reduced motion the edit shows at once', async ({ page }) => {
 test('new layers stay hidden until they animate in, instead of showing first', async ({ page }) => {
   await open(page)
   const samples = await sampleHeadingOpacity(page)
-  await renderAsAgent(page, 40)
-  const artboard = page.locator('iframe[data-kalka-artboard]').contentFrame()
-  await expect(artboard.getByText('Pro plan')).toBeVisible()
-  await expect.poll(() => replaying(page)).toEqual({ animations: 0, typing: 0 })
-  const drawn = await samples()
-  expect(drawn.length).toBeGreaterThan(0)
-  // The first frame that drew the heading drew it hidden or fading in, never whole.
-  expect(drawn[0]).toBeLessThan(1)
-  expect(drawn.at(-1)).toBe(1)
+  try {
+    await renderAsAgent(page, 40)
+    // A held layer is attached at no opacity before its reveal starts, so wait for the heading
+    // to show whole rather than for the replay to be idle.
+    await expect.poll(async () => (await samples.read()).at(-1)).toBe(1)
+    // The first frame that drew the heading drew it hidden or fading in, never whole.
+    expect((await samples.read())[0]).toBeLessThan(1)
+  } finally {
+    await samples.stop()
+  }
 })
 
 test("an agent's new layers keep its mark until it finishes working on them", async ({ page }) => {
