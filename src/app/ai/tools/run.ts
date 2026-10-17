@@ -1,4 +1,4 @@
-import type { PageSnapshot } from '@kalka/core/editor'
+import type { DocumentChange, PageSnapshot } from '@kalka/core/editor'
 import type { StepBudget } from '@kalka/core/tools'
 import type { UndoEntry } from '@kalka/scene-graph/undo'
 import type { AgentEdit } from '@kalka/vue'
@@ -159,6 +159,25 @@ export function markRunWork(store: EditorStore, nodeIds: string[]): void {
   const placement = agentPlacement(store, nodeIds, runPageId(store))
   if (!agent || !placement) return
   agent.update({ status: 'editing', ...placement })
+}
+
+/**
+ * Point the run's agent at the layers a call changed, on whichever page they are, for calls such
+ * as `eval` whose result names none. Only the outermost of them are outlined.
+ */
+export function markRunChange(store: EditorStore, change: DocumentChange): void {
+  const { graph } = store
+  const layers = new Set(
+    [...change.created.map((node) => node.id), ...change.updated.map((update) => update.id)].filter(
+      // Pages and the document root are where the agent works, not what it works on.
+      (id) => id !== graph.rootId && graph.getNode(id)?.type !== 'CANVAS'
+    )
+  )
+  const outermost = [...layers].filter((id) => {
+    const parentId = graph.getNode(id)?.parentId
+    return !parentId || !layers.has(parentId)
+  })
+  markRunWork(store, outermost)
 }
 
 /** Replay a tool's edit on the canvas, with the run's agent moving through what it touched. */

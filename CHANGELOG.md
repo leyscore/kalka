@@ -37,6 +37,7 @@
 - A text copy restyled in an instance keeps its own size through a component edit, a layer that fills its parent takes the size layout gives it rather than the component's, and frames that hug their layers paste and save into Figma at their size, stretched children included.
 - Path editing closes when its vector is deleted, by undo or a script, or another document opens, instead of staying open on a layer that no longer exists.
 - Undo takes back what the AI chat, an MCP client, or the CLI changed on other pages, to pages themselves, and to variables and collections, not only on the page the edit ran from, and the chat's change review shows a change made on another page or one that removed the page it ran on. A script's `null` result reaches the agent as `null`, and every script result is sent as the JSON MCP and the CLI print.
+- The AI chat's agent, its cursor, and its working note show on the page a call edited, such as a script that edits another page, while the chat keeps working on its own page and your view follows only when following agents is on.
 
 ## 0.1.0-beta.2 — 2026-10-17
 

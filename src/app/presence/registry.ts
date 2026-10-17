@@ -402,18 +402,23 @@ export function addAgent(store: EditorStore, kind: AgentKind, model?: string): A
 }
 
 /**
- * Where an agent shows it is working on `nodeIds`: its cursor at their top-left corner on
- * `pageId`, and their outlines. Null when none of them is in the document.
+ * Where an agent shows it is working on `nodeIds`: on the page they are on, whichever page the
+ * agent started from, with its cursor at their top-left corner and their outlines. Null when
+ * none of them is in the document.
  */
 export function agentPlacement(
   store: EditorStore,
   nodeIds: readonly string[],
-  pageId: string
-): Pick<AgentPresence, 'cursor' | 'selection' | 'outline'> | null {
+  fallbackPageId: string
+): Pick<AgentPresence, 'pageId' | 'cursor' | 'selection' | 'outline'> | null {
   const present = nodeIds.filter((id) => store.graph.getNode(id))
   const bounds = computeContentBounds(store.graph, present)
   if (!bounds) return null
+  const [first] = present
+  const pageId =
+    (first && store.graph.closest(first, (node) => node.type === 'CANVAS')?.id) ?? fallbackPageId
   return {
+    pageId,
     cursor: { x: bounds.minX, y: bounds.minY, pageId },
     selection: present,
     outline: undefined

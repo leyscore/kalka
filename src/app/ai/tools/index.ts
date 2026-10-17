@@ -28,6 +28,7 @@ import {
   aiUndoLabel,
   currentRun,
   finishRunWork,
+  markRunChange,
   markRunWork,
   moveRunToPage,
   recordRunBaseline,
@@ -163,6 +164,9 @@ export function createAITools(store: EditorStore, diagnosticContext?: AIDiagnost
           agentEditFromChange(change),
           change.updated.map((update) => update.id)
         )
+        // The agent shows where it edited, even on another page; layers the result names
+        // refine this once the call returns.
+        markRunChange(store, change)
       }
       try {
         // `switch_page` moves the run, and the user's view with it.

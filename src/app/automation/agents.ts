@@ -146,13 +146,6 @@ export interface AgentActivity {
   worked: readonly string[]
 }
 
-function pageOf(store: EditorStore, nodeId: string): string | undefined {
-  let node = store.graph.getNode(nodeId)
-  while (node && node.type !== 'CANVAS')
-    node = node.parentId ? store.graph.getNode(node.parentId) : undefined
-  return node?.id
-}
-
 /**
  * A session started a tool call on `pageId`: its agent shows it is at work there. Returns the
  * reply the call belongs to, for `agentFinished`.
@@ -184,12 +177,10 @@ export function agentFinished(
   // A call that was running when its chat's reply ended lands without bringing the agent back
   // or moving it away from what a later reply works on.
   if (work.reply !== agent.replies) return
-  const first = work.nodeIds[0]
-  const pageId = (first && pageOf(store, first)) || work.pageId
-  const placement = agentPlacement(store, work.nodeIds, pageId)
+  const placement = agentPlacement(store, work.nodeIds, work.pageId)
   agent.handle.update({
     status: work.edited ? 'editing' : 'thinking',
-    pageId,
+    pageId: work.pageId,
     ...placement
   })
   const { activity } = work
@@ -200,8 +191,10 @@ export function agentFinished(
   }
   keepWorking(store, agent.handle)
   // An edit replays on the canvas, the cursor moving through what it touched.
-  if (work.edit)
+  if (work.edit) {
+    const pageId = placement?.pageId ?? work.pageId
     showAgentEdit(store, work.edit, { agent: agent.handle, touched: work.nodeIds, pageId })
+  }
   restartTimers(store, session.session, agent)
 }
 
