@@ -19,7 +19,7 @@ Restart the MCP server, then reconnect stdio clients, to apply changes. For an e
 
 ## Share only the selection {#selection-scope}
 
-Turn on **Share only the selection** in **Settings → MCP → Local server** to let MCP clients read only the layers you select. Clients then get `get_selection`, `get_node`, `get_page_tree`, `get_metadata`, `get_variable_defs`, `describe`, and `export_image`, and no tools that edit, open files, list documents, or change settings. Every node a call names must be a selected layer or inside one; `describe`, `export_image`, `get_metadata`, and `get_variable_defs` read the selection when given no IDs, and `get_page_tree` needs a `root_id` from the selection. `export_image` returns the image but cannot write it to a file. With nothing selected, calls fail and ask the user to select layers.
+Turn on **Share only the selection** in **Settings → MCP → Local server** to let MCP clients read only the layers you select. Clients then get `get_selection`, `get_node`, `get_page_tree`, `get_metadata`, `get_variable_defs`, `find_nodes`, `describe`, and `export_image`, and no tools that edit, open files, list documents, or change settings. Every node a call names must be a selected layer or inside one; `describe`, `export_image`, `get_metadata`, and `get_variable_defs` read the selection when given no IDs, `find_nodes` searches only the selection unless its `root_id` names a layer inside it, and `get_page_tree` needs a `root_id` from the selection. `export_image` returns the image but cannot write it to a file. With nothing selected, calls fail and ask the user to select layers.
 
 The server enforces this on every call it sends to the app, including `POST /rpc` and stdio clients, so a client cannot widen it. Restart the MCP server to apply the change. For a server you start yourself, set `KALKA_MCP_SCOPE=selection`; a stdio client can also set it to limit itself while the server shares the whole document.
 
@@ -191,6 +191,24 @@ Three read tools share their names, arguments, and meaning with the tools of Fig
 
 Library variables and styles are found once the document holds them, as it does after using them; the library catalog lists components only.
 
+### Find by style or token {#find-nodes}
+
+`find_nodes` finds the layers to change before a bulk edit or a token migration. Its filters combine, and every one is optional:
+
+| Argument | Matches |
+|----------|---------|
+| `name`, `text` | Layer name, or a text layer's content: a case-insensitive substring, or a whole-value pattern with `*` and `?` (`Button*`, `Icon/2?`) |
+| `type` | Node type such as `FRAME`, `TEXT`, or `INSTANCE` |
+| `style` | `{ property, value }` against the CSS Kalka writes for the layer: its fields as CSS plus the CSS it keeps as written, the declarations `getCSSAsync` returns. A color matches in any notation (`#2F5BEA`, `rgb(47 91 234)`, `hsl()`, `oklch()`), alpha included, and also inside `border`, `box-shadow`, and gradients; a length matches in `px` or `rem`, and a longhand such as `padding-left` reads from `padding`. `*` and `?` match the whole value as text. Without `property` every declaration is tried; without `value` every layer declaring `property` matches |
+| `variable` | A variable's name (`color/primary`), ID, or CSS custom property (`--color-primary`). `variable_match: "bound"` (default) finds layers bound to it directly or through a variable that aliases it, in any mode. `"unbound"` finds layers that hold its value in one of its modes without binding a variable there: solid fill and stroke colors for a color, the fields its scopes allow for a number (corner radius, gap and padding, size, stroke weight, opacity, font size, line height, letter spacing), font family and text for a string. `"any"` returns both |
+| `tolerance` | How close values must be: Euclidean distance in 0–255 RGB for colors (default 1), pixels for lengths (default 0.01) |
+| `within`, `page`, `root_id` | Where to look: the current page (default), `selection`, or `document`; `page` names another page by name or ID; `root_id` searches one layer and its descendants |
+| `limit` | Most nodes returned, 1–1000 (default 100) |
+
+The result has `count`, every layer that matched, `truncated` when there are more than `limit`, and `nodes`, each with `id`, `name`, `type`, and `page` (`id` and `name`). A `style` filter adds `styles`: the matched `property` and declared `value`, and the `variables` bound to the fields it comes from. A `variable` filter adds `tokens`: the binding `field` (`fills/0/color`, `cornerRadius`), the CSS `properties` it gives the layer, the `value`, the `variable`, and `bound`; a bound match names the `mode` the layer reads it in and `throughAlias` when an alias is bound, and an unbound one lists the `modes` whose value it holds. Pass that `field` to `bind_variable` to migrate a layer to the token.
+
+For example, `{ "style": { "property": "background-color", "value": "#2F5BEA" }, "within": "document" }` lists every layer painted that blue and which of them a variable already drives, and `{ "variable": "color/primary", "variable_match": "unbound" }` lists the layers to bind to `color/primary`.
+
 ### Document
 
 | Tool | Description |
@@ -229,7 +247,7 @@ Settings tools never expose credentials, AI models, MCP connections, storage, or
 | `get_metadata` | XML outline of a node or the selection: ids, types, names, positions, and sizes; see [Figma-named tools](#figma-named-tools) |
 | `get_current_page` | Get the current page name and ID |
 | `get_node` | Get detailed properties of a node by ID |
-| `find_nodes` | Find nodes by name pattern and/or type |
+| `find_nodes` | Find layers by name, type, text, CSS value, or variable; see [Find by style or token](#find-nodes) |
 | `get_components` | List all components in the document |
 | `search_design_system` | Search components, variables, and styles of the document and its libraries by name |
 | `list_pages` | List all pages |

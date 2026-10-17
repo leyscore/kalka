@@ -15,6 +15,9 @@ const READ_SELECTION_THEMSELVES: ReadonlySet<string> = new Set([
   'get_variable_defs'
 ])
 
+/** Tools that search the selection, through their `within` argument, when a call names no node. */
+const SEARCH_WITHIN_SELECTION: ReadonlySet<string> = new Set(['find_nodes'])
+
 /** A node ID as the tools read it: the `1-2` form of Figma links means `1:2`. */
 const toNodeId = (id: string) => id.trim().replace(/^(\d+)-(\d+)$/, '$1:$2')
 
@@ -28,8 +31,9 @@ function namedIds(value: unknown): string[] {
 
 /**
  * A tool call's arguments limited to the user's selection, for an MCP server that shares only the
- * selection: every node the call names must be a selected layer or inside one, and `describe` and
- * `export_image` read the selection when they name none. Throws when the call reaches further.
+ * selection: every node the call names must be a selected layer or inside one, `describe` and
+ * `export_image` read the selection when they name none, and `find_nodes` then searches only it.
+ * Throws when the call reaches further.
  */
 export function limitToSelection(
   store: EditorStore,
@@ -52,6 +56,9 @@ export function limitToSelection(
     if (!selected.some((root) => store.graph.isDescendant(id, root))) {
       throw new Error(`${id} is outside the selection Kalka shares; use get_selection`)
     }
+  }
+  if (ids.length === 0 && SEARCH_WITHIN_SELECTION.has(toolName)) {
+    return { ...toolArgs, within: 'selection' }
   }
   if (ids.length > 0 || fields.length === 0 || READ_SELECTION_THEMSELVES.has(toolName)) {
     return toolArgs

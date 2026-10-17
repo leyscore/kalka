@@ -69,6 +69,18 @@ describe('limitToSelection', () => {
     )
   })
 
+  test('keeps find_nodes searching inside the selection', () => {
+    expect(limitToSelection(store, 'find_nodes', { name: 'Title', within: 'document' })).toEqual({
+      name: 'Title',
+      within: 'selection'
+    })
+    expect(limitToSelection(store, 'find_nodes', { root_id: ids.title, page: 'Page 1' })).toEqual({
+      root_id: ids.title,
+      page: 'Page 1'
+    })
+    expect(() => limitToSelection(store, 'find_nodes', { root_id: ids.other })).toThrow(/outside/)
+  })
+
   test('rejects writing an export to a file', () => {
     expect(() =>
       limitToSelection(store, 'export_image', { ids: [ids.card], path: 'card.png' })

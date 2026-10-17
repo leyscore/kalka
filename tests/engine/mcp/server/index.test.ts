@@ -373,6 +373,7 @@ describe('MCP server sharing only the selection', () => {
     expect(tools.map((tool) => tool.name).sort()).toEqual([
       'describe',
       'export_image',
+      'find_nodes',
       'get_metadata',
       'get_node',
       'get_page_tree',

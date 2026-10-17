@@ -16,6 +16,7 @@ export const SELECTION_SCOPE_TOOLS: Readonly<Record<string, readonly string[]>> 
   get_metadata: ['nodeId'],
   get_variable_defs: ['nodeId'],
   describe: ['id', 'ids'],
+  find_nodes: ['root_id'],
   export_image: ['ids']
 }
 

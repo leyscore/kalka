@@ -2,7 +2,7 @@ import * as v from 'valibot'
 
 import type { FigmaNodeProxy } from '#core/figma-api'
 import { toolNumber, nodeIdInput } from '#core/tools/input'
-import { defineTool, nodeSummary, nodeToResult } from '#core/tools/schema'
+import { defineTool, nodeToResult } from '#core/tools/schema'
 
 interface TreeEntry {
   id: string
@@ -113,44 +113,5 @@ export const getNode = defineTool({
     const node = figma.getNodeById(id)
     if (!node) return { error: `Node "${id}" not found` }
     return nodeToResult(node, depth)
-  }
-})
-
-export const findNodes = defineTool({
-  name: 'find_nodes',
-  description: 'Find nodes by name pattern and/or type.',
-  execution: { kind: 'sync', mutation: 'none' },
-  input: v.strictObject({
-    name: v.optional(
-      v.pipe(v.string(), v.description('Name substring to match (case-insensitive)'))
-    ),
-    type: v.optional(
-      v.pipe(
-        v.picklist([
-          'FRAME',
-          'RECTANGLE',
-          'ELLIPSE',
-          'TEXT',
-          'LINE',
-          'STAR',
-          'POLYGON',
-          'SECTION',
-          'GROUP',
-          'COMPONENT',
-          'INSTANCE',
-          'VECTOR'
-        ]),
-        v.description('Node type filter')
-      )
-    )
-  }),
-  execute: (figma, args) => {
-    const page = figma.currentPage
-    const matches = page.findAll((node) => {
-      if (args.type && node.type !== args.type) return false
-      if (args.name && !node.name.toLowerCase().includes(args.name.toLowerCase())) return false
-      return true
-    })
-    return { count: matches.length, nodes: matches.map(nodeSummary) }
   }
 })

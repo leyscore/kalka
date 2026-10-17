@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- `find_nodes` finds layers by CSS value or variable for bulk edits and token migrations: a color in any notation (hex, rgb, hsl, oklch, with alpha and a tolerance), lengths in px or rem, any declaration of a layer's CSS, the layers bound to a variable directly or through an alias, and the layers holding a variable's value without binding it, each with the field to bind. Names and text take `*` and `?` wildcards, searches cover the current page, another page, the selection, a layer, or the whole document, and results are capped with a total count. It also works while Kalka shares only the selection.
+
 ## 0.1.0-beta.2 — 2026-10-17
 
 ### Breaking changes
