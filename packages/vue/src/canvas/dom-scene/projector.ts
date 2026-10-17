@@ -1,14 +1,19 @@
 import {
+  LAYER_ID_ATTR,
+  artboardAttributes,
+  elementAttributes,
+  measureLayerBoxes,
   sceneNodeToDesignDocument,
   type DesignTokens,
   type DesignElement,
   type DesignNode,
+  type MeasuredGeometry,
   type VectorElementRenderer
 } from '@kalka/dom-css/export'
 import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 import { blendModeToCSS } from '@kalka/scene-graph/css-model'
 
-import { LAYER_ID_ATTR, buildNode, elementAttributes, patchAttributes } from './build'
+import { buildNode, patchAttributes } from './build'
 import {
   addArtboardFont,
   createArtboardFrame,
@@ -36,14 +41,6 @@ interface Artboard {
   /** Whether the DOM changed since its geometry was last read. */
   stale: boolean
   observer: ResizeObserver | null
-}
-
-/** A layer's geometry as the browser laid it out, relative to its parent's padding box. */
-export interface MeasuredGeometry {
-  x?: number
-  y?: number
-  width: number
-  height: number
 }
 
 export interface DomSceneProjectorOptions {
@@ -295,35 +292,13 @@ export class DomSceneProjector {
    * is not their position. The artboard's own position is the canvas's, never read here.
    */
   measureArtboard(artboardId: string): Map<string, MeasuredGeometry> {
-    const measured = new Map<string, MeasuredGeometry>()
     const artboard = this.artboards.get(artboardId)
     const root = this.elements.get(artboardId)
-    if (!artboard?.doc || !root) return measured
+    if (!artboard?.doc || !root) return new Map()
     artboard.stale = false
-    const rects = new Map<Element, DOMRect>()
-    const rectOf = (element: Element) => {
-      let rect = rects.get(element)
-      if (!rect) {
-        rect = element.getBoundingClientRect()
-        rects.set(element, rect)
-      }
-      return rect
-    }
-    const rotated = (element: Element) => element.closest('[style*="rotate("]') !== null
-    if (!rotated(root)) measured.set(artboardId, this.measuredSize(artboardId, root, rectOf(root)))
-    for (const element of root.querySelectorAll(`[${LAYER_ID_ATTR}]`)) {
-      const id = element.getAttribute(LAYER_ID_ATTR)
-      const parent = element.parentElement?.closest(`[${LAYER_ID_ATTR}]`)
-      if (!id || !parent || rotated(element)) continue
-      const rect = rectOf(element)
-      const box = rectOf(parent)
-      measured.set(id, {
-        x: rect.left - box.left - parent.clientLeft,
-        y: rect.top - box.top - parent.clientTop,
-        ...this.measuredSize(id, element, rect)
-      })
-    }
-    return measured
+    return measureLayerBoxes(root, artboardId, LAYER_ID_ATTR, (id, element, rect) =>
+      this.measuredSize(id, element, rect)
+    )
   }
 
   /**
@@ -510,18 +485,9 @@ export class DomSceneProjector {
     return artboardId
   }
 
-  /**
-   * An element's attributes. An artboard that hugs its content in width is `max-content`: as a
-   * block in its iframe it would otherwise take the iframe's width, the size it had before.
-   */
+  /** An element's attributes; an artboard's own element hugs its content as in its iframe. */
   private attributesFor(node: SceneNode, projected: DesignElement, isRoot: boolean) {
-    const attrs = elementAttributes(projected)
-    const hugsWidth =
-      node.type === 'TEXT' ? node.textAutoResize === 'WIDTH_AND_HEIGHT' : node.layoutMode !== 'NONE'
-    if (isRoot && !projected.inlineStyle?.width && hugsWidth) {
-      attrs.set('style', `${attrs.get('style') ?? ''}width:max-content;`)
-    }
-    return attrs
+    return isRoot ? artboardAttributes(node, projected) : elementAttributes(projected)
   }
 
   /** Whether an element can be patched in place instead of rebuilt. */

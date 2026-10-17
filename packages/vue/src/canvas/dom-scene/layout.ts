@@ -1,10 +1,7 @@
-import type { LayoutEngine } from '@kalka/core/layout'
-import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import { applyMeasuredLayout, type LayoutEngine } from '@kalka/core/layout'
+import type { SceneGraph } from '@kalka/scene-graph'
 
-import type { DomSceneProjector, MeasuredGeometry } from './projector'
-
-/** Below this, a measured value is the value the layer already has. */
-const EPSILON = 0.01
+import type { DomSceneProjector } from './projector'
 
 /**
  * Layout by the browser. The projector writes CSS, the browser lays it out, and this engine
@@ -27,7 +24,7 @@ export class DomLayoutEngine implements LayoutEngine {
     // A layout runs right after an edit: bring the DOM up to date first, synchronously.
     if (this.projector.needsFlush) this.projector.flush()
     for (const id of artboards) {
-      if (this.projector.isStale(id)) this.writeBack(graph, this.projector.measureArtboard(id))
+      if (this.projector.isStale(id)) applyMeasuredLayout(graph, this.projector.measureArtboard(id))
     }
     return true
   }
@@ -56,23 +53,7 @@ export class DomLayoutEngine implements LayoutEngine {
   refresh(artboardIds: Iterable<string>): void {
     const graph = this.getGraph()
     for (const id of artboardIds) {
-      if (this.projector.isStale(id)) this.writeBack(graph, this.projector.measureArtboard(id))
+      if (this.projector.isStale(id)) applyMeasuredLayout(graph, this.projector.measureArtboard(id))
     }
-  }
-
-  private writeBack(graph: SceneGraph, measured: Map<string, MeasuredGeometry>): void {
-    if (measured.size === 0) return
-    graph.withLayoutMutations(() => {
-      for (const [id, geometry] of measured) {
-        const node = graph.getNode(id)
-        if (!node) continue
-        const changes: Partial<Pick<SceneNode, 'x' | 'y' | 'width' | 'height'>> = {}
-        for (const key of ['x', 'y', 'width', 'height'] as const) {
-          const value = geometry[key]
-          if (value !== undefined && Math.abs(value - node[key]) > EPSILON) changes[key] = value
-        }
-        if (Object.keys(changes).length > 0) graph.updateNode(id, changes)
-      }
-    })
   }
 }

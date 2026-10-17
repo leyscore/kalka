@@ -23,7 +23,12 @@ import {
 import { usesDetachedDerivedLayout } from './layout/derived'
 import { applyEffectiveGeneratedTextLayout } from './layout/effective-generated-text'
 import { buildGridTree, createGridChildNode } from './layout/grid'
-export { getLayoutEngine, installLayoutEngine, type LayoutEngine } from './layout/engine'
+export {
+  applyMeasuredLayout,
+  getLayoutEngine,
+  installLayoutEngine,
+  type LayoutEngine
+} from './layout/engine'
 export {
   estimateTextSize,
   getTextMeasurer,

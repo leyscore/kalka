@@ -1,2 +1,1 @@
-export { characterStyleToCSS } from '@kalka/dom-css/export'
-export { styleText } from '#vue/canvas/dom-scene/build'
+export { characterStyleToCSS, styleText } from '@kalka/dom-css/export'

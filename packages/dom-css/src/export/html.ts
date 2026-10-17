@@ -11,7 +11,7 @@ export interface SerializeHTMLOptions {
   pretty?: boolean
 }
 
-const VOID_ELEMENTS = new Set([
+export const VOID_ELEMENTS = new Set([
   'area',
   'base',
   'br',
@@ -43,11 +43,11 @@ export function splitWhitespace(value: string): string[] {
   return parts
 }
 
-function escapeText(value: string): string {
+export function escapeText(value: string): string {
   return value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
 }
 
-function escapeAttr(value: string): string {
+export function escapeAttr(value: string): string {
   return escapeText(value).replaceAll('"', '&quot;')
 }
 

@@ -1,5 +1,5 @@
 import type { BrowserFontFace } from '@kalka/core/text'
-import { HTML_TAG_RESET_CSS } from '@kalka/dom-css/export'
+import { ARTBOARD_SANDBOX, artboardSrcdoc } from '@kalka/dom-css/export'
 import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 import { getNodeWorldBounds } from '@kalka/scene-graph/coordinate'
 import {
@@ -10,38 +10,6 @@ import {
   unionVisualBounds
 } from '@kalka/scene-graph/geometry'
 import type { Vector } from '@kalka/scene-graph/primitives'
-
-/**
- * An artboard document: one iframe per top-level layer, so its CSS is a real page of its own
- * (real `@media`, no leak into the editor or out of it) laid out and drawn by the browser.
- *
- * `allow-same-origin` without `allow-scripts`: the editor reads and measures the document, the
- * design itself never runs code. The CSP keeps pasted HTML off the network.
- */
-export const ARTBOARD_SANDBOX = 'allow-same-origin'
-
-export const ARTBOARD_CSP =
-  "default-src 'none'; style-src 'unsafe-inline'; img-src data: blob:; font-src data: blob:"
-
-/** The base stylesheet of every artboard document, which raster exports share. */
-export const ARTBOARD_CSS = [
-  'html,body{margin:0;padding:0;background:transparent;overflow:hidden}',
-  '*,*::before,*::after{box-sizing:border-box}',
-  // A layer written as an h1 or a button draws as its CSS says, not with browser defaults.
-  HTML_TAG_RESET_CSS,
-  // A layer's text keeps the font the projection writes; this is only the fallback.
-  'body{font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}',
-  'img{display:block}',
-  // Projected text is a span with a width; it lays out as a box.
-  '[data-kalka-text]{display:block}',
-  // A shader layer plays its drawing behind its own content (dom-scene/shaders.ts).
-  ':where([data-paper-shader]){isolation:isolate;position:relative}',
-  '[data-kalka-shader-video]{position:absolute;inset:0;z-index:-1;display:block;width:100%;height:100%;object-fit:fill;border-radius:inherit;pointer-events:none}'
-].join('')
-
-export function artboardSrcdoc(): string {
-  return `<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${ARTBOARD_CSP}"><style>${ARTBOARD_CSS}</style></head><body></body></html>`
-}
 
 export function createArtboardFrame(ownerDocument: Document, nodeId: string): HTMLIFrameElement {
   const frame = ownerDocument.createElement('iframe')

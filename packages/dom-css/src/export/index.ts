@@ -8,6 +8,25 @@ export {
 export { canTakeHTMLTag, defaultTagForNode, tagForNode } from './tags'
 export { exportHTMLBundle } from './bundle'
 export { HTML_TAG_RESET_CSS } from './tag-reset'
+export {
+  ARTBOARD_CSP,
+  ARTBOARD_CSS,
+  ARTBOARD_SANDBOX,
+  LAYER_ID_ATTR,
+  artboardAttributes,
+  artboardMarkup,
+  artboardSrcdoc,
+  elementAttributes,
+  styleText
+} from './canvas/markup'
+export { measureLayerBoxes, type MeasuredGeometry } from './canvas/measure'
+export {
+  createPageLayout,
+  type PageArtboard,
+  type PageFontFace,
+  type PageLayoutRequest,
+  type PageLayoutResult
+} from './canvas/page'
 export { isResponsiveRoot, withResponsiveStyles, type ArtboardProjector } from './responsive'
 export {
   classRuleStyle,

@@ -1,11 +1,16 @@
 import { fromUint8Array } from 'js-base64'
 
 import { computeContentBounds, vectorElement } from '@kalka/core/io'
-import { sceneNodeToDesignDocument } from '@kalka/dom-css/export'
+import {
+  ARTBOARD_CSP,
+  ARTBOARD_CSS,
+  artboardAttributes,
+  sceneNodeToDesignDocument
+} from '@kalka/dom-css/export'
 import type { SceneGraph } from '@kalka/scene-graph'
 
-import { buildNode, patchAttributes, elementAttributes } from './build'
-import { ARTBOARD_CSP, ARTBOARD_CSS, artboardOrigin, type ArtboardFontFace } from './frame'
+import { buildNode, patchAttributes } from './build'
+import { artboardOrigin, type ArtboardFontFace } from './frame'
 
 /** A standalone page that draws some layers exactly as their artboards do, for a raster export. */
 export interface RasterDocument {
@@ -50,11 +55,8 @@ export function rasterDocument(
     const built = buildNode(doc, projected)
     if (!(built instanceof Element)) continue
     // As in its artboard: a layer that hugs its content keeps its own width.
-    const attrs = elementAttributes(projected)
-    const hugsWidth =
-      node.type === 'TEXT' ? node.textAutoResize === 'WIDTH_AND_HEIGHT' : node.layoutMode !== 'NONE'
-    let style = attrs.get('style') ?? ''
-    if (!projected.inlineStyle?.width && hugsWidth) style += 'width:max-content;'
+    const attrs = artboardAttributes(node, projected)
+    const style = attrs.get('style') ?? ''
     // A nested layer is placed by its parent; here its box below places it instead.
     attrs.set('style', `${style}position:relative;left:0;top:0;right:auto;bottom:auto;margin:0;`)
     patchAttributes(built, attrs)
