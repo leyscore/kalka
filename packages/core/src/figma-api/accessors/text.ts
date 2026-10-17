@@ -26,6 +26,51 @@ function field<Field extends keyof SceneNode>(internals: NodeProxyInternals, nam
   }
 }
 
+/** Figma's `{ unit, value }` text metrics: pixels, or a percentage of the font size. */
+interface FigmaTextMetric {
+  unit: 'PIXELS' | 'PERCENT' | 'AUTO'
+  value?: number
+}
+
+function isTextMetric(value: unknown): value is FigmaTextMetric {
+  return !!value && typeof value === 'object' && typeof Reflect.get(value, 'unit') === 'string'
+}
+
+/**
+ * A text metric in pixels, as Kalka stores it. Figma's `{ unit, value }` form is accepted next to
+ * a bare number; a percentage is of the current font size and `AUTO` is null, the font's own.
+ */
+function metricPixels(
+  target: ProxyThis,
+  internals: NodeProxyInternals,
+  value: unknown,
+  name: 'lineHeight' | 'letterSpacing'
+): number | null {
+  if (typeof value === 'number' || (value === null && name === 'lineHeight')) return value
+  if (isTextMetric(value)) {
+    if (value.unit === 'AUTO' && name === 'lineHeight') return null
+    if (typeof value.value === 'number' && value.unit === 'PIXELS') return value.value
+    if (typeof value.value === 'number' && value.unit === 'PERCENT') {
+      return (value.value / 100) * raw(target, internals).fontSize
+    }
+  }
+  throw new Error(
+    `in set_${name}: Expected { unit, value } or a number, got ${JSON.stringify(value)}`
+  )
+}
+
+function metric(internals: NodeProxyInternals, name: 'lineHeight' | 'letterSpacing') {
+  return {
+    get(this: ProxyThis): number | null {
+      return raw(this, internals)[name]
+    },
+    set(this: ProxyThis, value: unknown) {
+      const pixels = metricPixels(this, internals, value, name)
+      updateNode(this, internals, { [name]: name === 'letterSpacing' ? (pixels ?? 0) : pixels })
+    }
+  }
+}
+
 export function installTextNodeProxyAccessors(
   prototype: object,
   internals: NodeProxyInternals
@@ -61,8 +106,8 @@ export function installTextNodeProxyAccessors(
     textAlignVertical: field(internals, 'textAlignVertical'),
     textDirection: field(internals, 'textDirection'),
     textAutoResize: field(internals, 'textAutoResize'),
-    letterSpacing: field(internals, 'letterSpacing'),
-    lineHeight: field(internals, 'lineHeight'),
+    letterSpacing: metric(internals, 'letterSpacing'),
+    lineHeight: metric(internals, 'lineHeight'),
     textCase: field(internals, 'textCase'),
     textDecoration: field(internals, 'textDecoration'),
     maxLines: field(internals, 'maxLines'),

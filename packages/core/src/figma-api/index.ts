@@ -10,14 +10,12 @@ import type {
   VariableType,
   VariableValue
 } from '@kalka/scene-graph'
-import { copyFills } from '@kalka/scene-graph/copy'
 import { computeBounds } from '@kalka/scene-graph/geometry'
 import { computeImageHash } from '@kalka/scene-graph/images'
 import type { Rect, Vector } from '@kalka/scene-graph/primitives'
 
 import type { SkiaRenderer } from '#core/canvas'
-import { canMakeBooleanSourceNode, groupFitOptions } from '#core/canvas/boolean'
-import { flattenNodesToVectorProps } from '#core/canvas/flatten'
+import { groupFitOptions } from '#core/canvas/boolean'
 import { IS_BROWSER, type InterfaceTheme } from '#core/constants'
 import { newLayerDefaults } from '#core/editor/shapes/defaults'
 import { booleanOperationPaints, createBooleanOperation } from '#core/editor/structure/boolean'
@@ -31,6 +29,7 @@ import { reconcileVariableLayouts } from '#core/layout/variables'
 import { documentFontStatus, type DocumentFontStatus } from '#core/text/font/status'
 
 import { combineComponentsAsVariants, componentFromNode, exposeInstanceSwap } from './components'
+import { flattenedVector } from './flatten'
 import type {
   FigmaBooleanOperationNode,
   FigmaComponentNode,
@@ -56,10 +55,12 @@ import {
   type NodeProxyHost
 } from './proxy'
 import type { ExportImageOptions } from './types'
+import { FigmaVariablesAPI } from './variables'
 
 const noop = () => undefined
 
 export { FigmaNodeProxy } from './proxy'
+export { UNSUPPORTED_PLUGIN_API, type UnsupportedPluginAPIMember } from './unsupported'
 export type { FigmaEffect } from './effects'
 export type { ExportImageOptions } from './types'
 export type {
@@ -80,6 +81,13 @@ export type {
   FigmaVectorNode
 } from './node-types'
 export type { FigmaFont, FigmaFontName } from './proxy'
+export type {
+  FigmaVariable,
+  FigmaVariableAlias,
+  FigmaVariableCollection,
+  FigmaVariablesAPI,
+  FigmaVariableValue
+} from './variables'
 
 export { computeImageHash }
 
@@ -96,6 +104,7 @@ export class FigmaAPI implements NodeProxyHost {
   theme: InterfaceTheme = 'light'
 
   readonly mixed = MIXED
+  readonly variables: FigmaVariablesAPI = new FigmaVariablesAPI(this)
 
   constructor(graph: SceneGraph) {
     this.graph = graph
@@ -152,6 +161,18 @@ export class FigmaAPI implements NodeProxyHost {
 
   set currentPage(page: FigmaNodeProxy) {
     this._currentPageId = page[INTERNAL_ID]
+  }
+
+  /** Every page is loaded in Kalka, so switching pages is immediate. */
+  async setCurrentPageAsync(page: FigmaNodeProxy): Promise<void> {
+    if (this.graph.getNode(page[INTERNAL_ID])?.type !== 'CANVAS') {
+      throw new Error('in setCurrentPageAsync: The node is not a page')
+    }
+    this.currentPage = page
+  }
+
+  async loadAllPagesAsync(): Promise<void> {
+    return undefined
   }
 
   getNodeById(id: string): FigmaNodeProxy | null {
@@ -459,38 +480,12 @@ export class FigmaAPI implements NodeProxyHost {
       if (!raw) throw new Error('Node not found')
       sourceNodes.push(raw)
     }
-    const vector = this._renderer
-      ? this._flattenWithRenderer(sourceNodes, parentId)
-      : this._flattenPlaceholder(sourceNodes, parentId)
+    const vector = flattenedVector(this.graph, this._renderer, sourceNodes, parentId)
     if (index != null) this.graph.reorderChild(vector.id, parentId, index)
     for (const node of nodes) {
       this.graph.deleteNode(this._nodeId(node))
     }
     return this.wrapNode(vector.id) as FigmaVectorNode
-  }
-
-  private _flattenPlaceholder(nodes: CoreSceneNode[], parentId: string): CoreSceneNode {
-    const first = nodes[0]
-    return this.graph.createNode('VECTOR', parentId, {
-      name: 'Flatten',
-      x: first.x,
-      y: first.y,
-      width: first.width,
-      height: first.height,
-      fills: copyFills(first.fills)
-    })
-  }
-
-  private _flattenWithRenderer(nodes: CoreSceneNode[], parentId: string): CoreSceneNode {
-    const renderer = this._renderer
-    if (!renderer) return this._flattenPlaceholder(nodes, parentId)
-    if (nodes.some((node) => !canMakeBooleanSourceNode(node, this.graph))) {
-      throw new Error('Cannot flatten unsupported node type')
-    }
-
-    const vectorProps = flattenNodesToVectorProps(renderer, this.graph, nodes)
-    if (!vectorProps) throw new Error('Cannot flatten empty node path')
-    return this.graph.createNode('VECTOR', parentId, vectorProps)
   }
 
   flattenNode(nodeIds: string[]): FigmaVectorNode {

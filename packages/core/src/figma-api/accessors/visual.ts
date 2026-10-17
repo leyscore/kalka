@@ -8,6 +8,11 @@ import {
   type NodeProxyInternals,
   type ProxyThis
 } from '#core/figma-api/accessor-utils'
+import {
+  applyPaintBindings,
+  paintsWithBindings,
+  withoutPaintBindings
+} from '#core/figma-api/accessors/variables'
 import { parseFigmaEffects, toFigmaEffect, type FigmaEffect } from '#core/figma-api/effects'
 
 function styleReference(
@@ -37,11 +42,14 @@ export function installVisualNodeProxyAccessors(
   Object.defineProperties(prototype, {
     fills: {
       get(this: ProxyThis): readonly Fill[] {
-        return Object.freeze(copyFills(raw(this, internals).fills))
+        const node = raw(this, internals)
+        return Object.freeze(
+          paintsWithBindings(copyFills(node.fills), node.boundVariables, 'fills')
+        )
       },
       set(this: ProxyThis, value: readonly Fill[]) {
         updateNode(this, internals, {
-          fills: value.map((fill) => ({
+          fills: withoutPaintBindings(value).map((fill) => ({
             ...fill,
             ...paintDefaults(fill),
             color: normalizeColor(fill.color),
@@ -51,11 +59,15 @@ export function installVisualNodeProxyAccessors(
             }))
           }))
         })
+        applyPaintBindings(this, internals, 'fills', value)
       }
     },
     strokes: {
       get(this: ProxyThis): readonly Stroke[] {
-        return Object.freeze(copyStrokes(raw(this, internals).strokes))
+        const node = raw(this, internals)
+        return Object.freeze(
+          paintsWithBindings(copyStrokes(node.strokes), node.boundVariables, 'strokes')
+        )
       },
       // Figma paints carry no geometry; a stroke takes the node's weight and alignment, which
       // outlast its strokes.
@@ -67,7 +79,7 @@ export function installVisualNodeProxyAccessors(
         const geometry = newStrokeGeometry(raw(this, internals))
         // The script keeps its paint objects; the node gets its own copies of every nested value.
         const strokes = copyStrokes(
-          value.map((stroke) => ({
+          withoutPaintBindings(value).map((stroke) => ({
             ...stroke,
             ...paintDefaults(stroke),
             weight: stroke.weight ?? geometry.weight,
@@ -85,6 +97,7 @@ export function installVisualNodeProxyAccessors(
           strokeWeight: kept.weight,
           strokeAlign: kept.align
         })
+        applyPaintBindings(this, internals, 'strokes', value)
       }
     },
     effects: {

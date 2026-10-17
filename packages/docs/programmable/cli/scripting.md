@@ -121,6 +121,7 @@ The API is intentionally close to Figma's Plugin API, but it maps to Kalka's sce
 - `figma.currentPage.selection`
 - `figma.getNodeById(id)`
 - `figma.createPage()`
+- `await figma.setCurrentPageAsync(page)` and `await figma.loadAllPagesAsync()`; every page is already loaded
 
 ### Node creation
 
@@ -171,6 +172,15 @@ The API is intentionally close to Figma's Plugin API, but it maps to Kalka's sce
 - `figma.bindVariable(nodeId, field, variableId)`
 - `figma.unbindVariable(nodeId, field)`
 
+`figma.variables` is Figma's variables API, for scripts written for Figma:
+
+- `createVariableCollection(name)`, `createVariable(name, collection, resolvedType)` for `COLOR`, `FLOAT`, `STRING`, and `BOOLEAN`
+- `getLocalVariablesAsync(type?)`, `getLocalVariableCollectionsAsync()`, `getVariableByIdAsync(id)`, `getVariableCollectionByIdAsync(id)` and their synchronous forms
+- `createVariableAlias(variable)`, `setBoundVariableForPaint(paint, 'color', variable)`
+- A variable has `name`, `description`, `resolvedType`, `variableCollectionId`, `valuesByMode` (aliases as `{ type: 'VARIABLE_ALIAS', id }`), `scopes`, `codeSyntax`, `setValueForMode(modeId, value)`, `resolveForConsumer(node)`, and `remove()`; a value of the wrong type is refused
+- A collection has `name`, `modes`, `defaultModeId`, `variableIds`, `addMode(name)`, `renameMode(modeId, name)`, `removeMode(modeId)`, and `remove()`
+- On layers: `node.setBoundVariable(field, variable | null)` with Figma's field names, `node.boundVariables` (paints as `fills` and `strokes` lists), `setExplicitVariableModeForCollection(collection, modeId)`, and `clearExplicitVariableModeForCollection(collection)`. Assigning paints that carry `boundVariables.color` binds them; plain paints unbind
+
 ### Properties
 
 Common node properties are readable/writable through the proxy, including:
@@ -178,7 +188,7 @@ Common node properties are readable/writable through the proxy, including:
 - Geometry: `x`, `y`, `width`, `height`, `rotation`, `resize(width, height)`
 - Appearance: `fills`, `strokes`, `effects`, `opacity`, `visible`, `locked`, `blendMode`, `clipsContent`
 - Radius: `cornerRadius`, `topLeftRadius`, `topRightRadius`, `bottomRightRadius`, `bottomLeftRadius`
-- Text: `characters`, `fontSize`, `fontName`, `fontWeight`, alignment, line height, letter spacing, style-run helpers
+- Text: `characters`, `fontSize`, `fontName`, `fontWeight`, alignment, line height, letter spacing, style-run helpers. `lineHeight` and `letterSpacing` take Figma's `{ unit, value }` as well as pixels (a percentage is of the current font size) and read back in pixels; `getStyledTextSegments(fields)` splits the text by `fontName`, `fontSize`, `fontWeight`, `fills`, `letterSpacing`, `lineHeight`, `textDecoration`, or `textCase`
 - Auto-layout: `layoutMode`, `primaryAxisAlignItems`, `counterAxisAlignItems`, `itemSpacing`, padding, sizing, and layout positioning fields
 - Stroke helpers: `strokeWeight`, `strokeAlign`, `dashPattern`
 
@@ -201,9 +211,8 @@ Common node properties are readable/writable through the proxy, including:
 These Figma APIs are not exposed as compatible helpers yet:
 
 - `node.exportAsync()`
-- `node.setBoundVariable(field, variable)`
-- `figma.combineAsVariants(components, parent)`
 - Figma style APIs such as `figma.createPaintStyle()` / `figma.createTextStyle()`
+- `figma.createNodeFromJSXAsync()`; Kalka's `render` tool takes Kalka design JSX instead
 - Full vector boolean operation parity
 
-Use Kalka CLI export commands, core tools, or direct scene-graph helpers where available.
+`UNSUPPORTED_PLUGIN_API` in `@kalka/core/figma-api` lists every Plugin API member of `figma` Kalka lacks, with the reason; the MCP `use_figma` tool throws it when a script reaches one. Use Kalka CLI export commands, core tools, or direct scene-graph helpers where available.

@@ -44,6 +44,7 @@ import * as TextProxy from './text'
 import { containerTransform, setContainerTransform } from './transform'
 import * as Traversal from './traversal'
 import type { FigmaTransform } from './types'
+import type { FigmaVariableAlias } from './variables'
 
 const MIXED = Symbol('mixed')
 
@@ -143,6 +144,17 @@ export class FigmaNodeProxy {
   declare handleMirroring: SceneNode['handleMirroring'] | typeof MIXED
   declare readonly explicitVariableModes: Readonly<Record<string, string>>
   declare readonly resolvedVariableModes: Readonly<Record<string, string>>
+  declare readonly boundVariables: Readonly<
+    Record<string, FigmaVariableAlias | readonly FigmaVariableAlias[]>
+  >
+  declare setBoundVariable: (field: string, variable: { readonly id: string } | null) => void
+  declare setExplicitVariableModeForCollection: (
+    collection: { readonly id: string } | string,
+    modeId: string
+  ) => void
+  declare clearExplicitVariableModeForCollection: (
+    collection: { readonly id: string } | string
+  ) => void
 
   declare strokeWeight: number
   declare strokeAlign: string
@@ -204,6 +216,14 @@ export class FigmaNodeProxy {
 
   deleteCharacters(start: number, end: number): void {
     TextProxy.deleteCharacters(this[INTERNAL_GRAPH], this._raw(), start, end)
+  }
+
+  getStyledTextSegments(
+    fields: readonly string[],
+    start?: number,
+    end?: number
+  ): TextProxy.StyledTextSegment[] {
+    return TextProxy.styledTextSegments(this._raw(), fields, start, end)
   }
 
   get isMask(): boolean {

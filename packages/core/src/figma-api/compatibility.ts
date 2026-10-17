@@ -8,6 +8,8 @@ import type {
   FigmaSlotNode
 } from './node-types'
 import type { FigmaNodeProxy } from './proxy'
+import type { UNSUPPORTED_PLUGIN_API, UnsupportedPluginAPIMember } from './unsupported'
+import type { FigmaVariable, FigmaVariableCollection, FigmaVariablesAPI } from './variables'
 
 type Expect<T extends true> = T
 
@@ -19,6 +21,7 @@ export type SupportedPluginAPI = Pick<
   PluginAPI,
   | 'base64Decode'
   | 'base64Encode'
+  | 'loadAllPagesAsync'
   | 'loadFontAsync'
   | 'notify'
   | 'createComponent'
@@ -110,3 +113,39 @@ const _cssMethodMatch: CSSMethodMatch = true
 // `Effect` here is Figma's plugin-typings union; Kalka reads and writes a subset of it.
 type EffectShapeMatch = Expect<Extends<FigmaNodeProxy['effects'][number], Effect>>
 const _effectShapeMatch: EffectShapeMatch = true
+
+// Variables and collections are handles on a subset of Figma's; the members checked below match.
+type VariablesAPIMembers = 'createVariableAlias' | 'createVariableAliasByIdAsync'
+type VariablesAPISurfaceMatch = Expect<
+  Extends<Pick<FigmaVariablesAPI, VariablesAPIMembers>, Pick<VariablesAPI, VariablesAPIMembers>>
+>
+const _variablesAPISurfaceMatch: VariablesAPISurfaceMatch = true
+
+type VariableFields = 'id' | 'name' | 'description' | 'variableCollectionId' | 'remote' | 'key'
+type VariableSurfaceMatch = Expect<
+  Extends<Pick<FigmaVariable, VariableFields>, Pick<Variable, VariableFields>>
+>
+const _variableSurfaceMatch: VariableSurfaceMatch = true
+
+type CollectionMembers =
+  | 'id'
+  | 'name'
+  | 'modes'
+  | 'defaultModeId'
+  | 'variableIds'
+  | 'addMode'
+  | 'renameMode'
+  | 'removeMode'
+type CollectionSurfaceMatch = Expect<
+  Extends<
+    Pick<FigmaVariableCollection, CollectionMembers>,
+    Pick<VariableCollection, CollectionMembers>
+  >
+>
+const _collectionSurfaceMatch: CollectionSurfaceMatch = true
+
+// `UNSUPPORTED_PLUGIN_API` names every member `FigmaAPI` lacks, and no member it has.
+type UnsupportedListMatch = Expect<
+  Equal<keyof typeof UNSUPPORTED_PLUGIN_API, UnsupportedPluginAPIMember>
+>
+const _unsupportedListMatch: UnsupportedListMatch = true
