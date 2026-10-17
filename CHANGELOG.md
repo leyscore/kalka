@@ -4,6 +4,7 @@
 
 ### Breaking changes
 
+- The app renders `render` JSX itself and no longer accepts the pre-rendered tree that earlier versions of `kalka-mcp` send, so an older `kalka-mcp` fails to render into this app version; update it with the app.
 - `exportFigFile` from `@kalka/core` takes one options object, `exportFigFile(graph, { ck, renderer, rasterize, pageId, renderHeadlessThumbnail, documentName })`, instead of positional CanvasKit, renderer, page, thumbnail, and rasterizer arguments.
 - `computeImageHash` from `@kalka/core` and `@kalka/scene-graph` returns the hex SHA-1 of the bytes, the name Figma gives an image, instead of a Kalka-only hash of the same length. New images are stored under that name, so `.fig` files and the Figma clipboard carry it as it is; images in documents saved before keep their names.
 - Every process mints new layer, variable, and collection IDs in a random session, as the editor already did, so `generateId()` no longer starts at `0:1` in the CLI, MCP, or scripts using `@kalka/scene-graph`. Layers that separate CLI or MCP runs add to copies of one `.fig` file are saved under their own GUIDs instead of the same `1:n` ones, while layers read from a file keep the same IDs on every run. Code that needs fixed IDs calls `setIdSession`, which now returns the previous session and takes only non-negative 31-bit sessions, or gives the `SceneGraph` its own generator (#770).
@@ -184,6 +185,7 @@
 
 ### Fixed
 
+- Keep design variable bindings and honor `replace_id` and `insert_index` when `render` runs through the stdio MCP server (`kalka-mcp`) against the desktop or web app, as it already did through the HTTP endpoint (#830).
 - People in a shared room see the overrides of instances in the shared document: text, slot content, and every other overridden field arrived empty, and editing such an instance could throw. Rooms opened by earlier builds do not meet rooms opened by this one.
 - Fill and stroke bindings to variables made in Kalka survive a paste into Figma, which keeps them as remote variables as it does for variables copied from another Figma file.
 - Instances pasted into Figma keep their names and no longer carry their component's library identity.

@@ -403,13 +403,12 @@
       "name": "@kalka/mcp",
       "version": "0.1.0-beta.1",
       "bin": {
-        "openpencil-mcp": "./dist/stdio.mjs",
-        "openpencil-mcp-http": "./dist/index.mjs",
+        "kalka-mcp": "./dist/stdio.mjs",
+        "kalka-mcp-http": "./dist/index.mjs",
       },
       "dependencies": {
         "@hono/node-server": "^1.19.17",
         "@kalka/core": "workspace:*",
-        "@kalka/design-jsx": "workspace:*",
         "@kalka/scene-graph": "workspace:*",
         "@modelcontextprotocol/server": "^2.0.0",
         "@valibot/to-json-schema": "^1.8.0",

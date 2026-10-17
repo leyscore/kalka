@@ -1,4 +1,3 @@
-import { renderTree } from '@kalka/core/design-jsx'
 import type { FigmaAPI } from '@kalka/core/figma-api'
 import {
   ALL_TOOLS,
@@ -59,39 +58,6 @@ function rewrittenTexts(
 }
 
 export function createAutomationToolHandler(makeFigma: FigmaFactory) {
-  async function handleToolRender(
-    target: AutomationTarget,
-    toolArgs: Record<string, unknown>,
-    onChange: (edit: AgentEdit) => void
-  ): Promise<{ id: string; name: string; type: string; children: string[] }> {
-    const store = target.store
-    const tree = toolArgs.tree as Parameters<typeof renderTree>[1]
-    const parentId = (toolArgs.parent_id as string | undefined) ?? target.pageId
-    // A parent on another page puts the new layers there, so that page's history records them.
-    const undoPageId = pageIdOf(store.graph, parentId) ?? target.pageId
-    const result = await executeWithPageUndo(
-      store,
-      undoPageId,
-      automationUndoLabel('render'),
-      () =>
-        store.runMutationWithLayout(
-          () =>
-            renderTree(store.graph, tree, {
-              parentId,
-              x: toolArgs.x as number | undefined,
-              y: toolArgs.y as number | undefined
-            }),
-          target.pageId,
-          async (node) => {
-            await ensureGraphFonts(store.graph, [node.id], store.renderer)
-          }
-        ),
-      (change) => onChange(agentEditFromChange(change))
-    )
-    store.requestRender()
-    return { id: result.id, name: result.name, type: result.type, children: result.childIds }
-  }
-
   return async function handleTool(target: AutomationTarget, args: unknown): Promise<unknown> {
     const toolName = (args as { name?: string }).name
     const requestedArgs = (args as { args?: Record<string, unknown> }).args ?? {}
@@ -128,16 +94,6 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
     fromAgent: boolean
   ): Promise<ToolResponse> {
     const store = target.store
-    if (toolName === 'render' && toolArgs.tree) {
-      let edit: AgentEdit | undefined
-      const result = await handleToolRender(target, toolArgs, (change) => {
-        edit = change
-      })
-      if (fromAgent) store.aiFlashDone([result.id])
-      else store.flashNodes([result.id])
-      return { result, edited: true, edit }
-    }
-
     const def = ALL_TOOLS.find((t) => t.name === toolName && isToolExposed(t, 'mcp'))
     if (!def) throw new Error(`Unknown tool: ${toolName}`)
     const libraryService = useLibraryService()
@@ -177,13 +133,13 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
       })
       edit = { created: [], written: rewrittenTexts(store, texts) }
     } else if (def.mutates) {
-      const pageId = figma.currentPageId
+      const pageId = writtenPageId(store.graph, toolArgs) ?? figma.currentPageId
       const mutate = () =>
         store.runMutationWithLayout(
           () => def.execute(figma, toolArgs),
-          figma.currentPageId,
+          pageId,
           async () => {
-            const pageNode = store.graph.getNode(figma.currentPageId)
+            const pageNode = store.graph.getNode(pageId)
             if (pageNode) await ensureGraphFonts(store.graph, pageNode.childIds, store.renderer)
           }
         )
@@ -206,6 +162,19 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
     if (def.mutates) store.requestRender()
     return { result, edited: def.mutates, edit }
   }
+}
+
+/**
+ * A parent or a replaced layer on another page puts the new layers there, so that page lays out,
+ * loads their fonts, and records the change in its history.
+ */
+function writtenPageId(
+  graph: AutomationTarget['store']['graph'],
+  args: Record<string, unknown>
+): string | null {
+  // As render places it: a replaced layer's parent wins over parent_id.
+  const nodeId = args.replace_id ?? args.parent_id
+  return typeof nodeId === 'string' ? pageIdOf(graph, nodeId) : null
 }
 
 function pageIdOf(graph: AutomationTarget['store']['graph'], nodeId: string): string | null {

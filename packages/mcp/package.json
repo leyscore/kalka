@@ -65,7 +65,6 @@
   "dependencies": {
     "@hono/node-server": "^1.19.17",
     "@kalka/core": "workspace:*",
-    "@kalka/design-jsx": "workspace:*",
     "@kalka/scene-graph": "workspace:*",
     "@modelcontextprotocol/server": "^2.0.0",
     "@valibot/to-json-schema": "^1.8.0",
