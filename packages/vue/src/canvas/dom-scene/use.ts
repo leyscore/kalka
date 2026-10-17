@@ -3,14 +3,11 @@ import { onScopeDispose, watch, type Ref } from 'vue'
 import type { Editor, EditorState } from '@kalka/core/editor'
 import { installLayoutEngine } from '@kalka/core/layout'
 import { fontManager } from '@kalka/core/text'
-import { regenerateFillGeometry } from '@kalka/core/vector'
 import type { VectorElementRenderer } from '@kalka/dom-css/export'
-import { transformVectorNetwork, type SceneNode } from '@kalka/scene-graph'
-import { getWorldMatrix } from '@kalka/scene-graph/coordinate'
-import Matrix from '@kalka/scene-graph/matrix'
 
 import { GhostLayer, type DomScenePreview } from './ghosts'
 import { DomLayoutEngine } from './layout'
+import { LiveEdits } from './live'
 import { DomSceneProjector } from './projector'
 import type { RevealStep } from './reveal/plan'
 import { RevealPlayer } from './reveal/play'
@@ -56,47 +53,10 @@ export function useDomScene(
   let frame = 0
   let lastTransform = ''
   let presentedScene = -1
-  let editState: EditorState['nodeEditState'] = null
-  let editVersion = -1
-  let rotationPreview: EditorState['rotationPreview'] = null
   /** The page agent work was last drawn on; held layers show once the view leaves it. */
   let workPage: string | null = null
 
-  /**
-   * A layer being turned is drawn at the angle the handle holds, and a path being edited from its
-   * live vertices; neither is in the graph until the gesture ends.
-   */
-  function livePatches(): ReadonlyMap<string, Partial<SceneNode>> {
-    const patches = new Map<string, Partial<SceneNode>>()
-    const path = pathEditPatch()
-    if (path) patches.set(path.id, path.patch)
-    const turn = view().rotationPreview
-    if (turn) patches.set(turn.nodeId, { ...patches.get(turn.nodeId), rotation: turn.angle })
-    return patches
-  }
-
-  /** A path being edited is drawn from its live vertices, mapped back into its own frame. */
-  function pathEditPatch(): { id: string; patch: Partial<SceneNode> } | null {
-    const edit = view().nodeEditState
-    if (!edit) return null
-    const id = edit.nodeId
-    const node = editor.graph.getNode(id)
-    const inverse = node ? Matrix.invert(getWorldMatrix(node, editor.graph)) : null
-    if (!node || !inverse) return null
-    const vectorNetwork = transformVectorNetwork(inverse, {
-      vertices: edit.vertices,
-      segments: edit.segments,
-      regions: edit.regions
-    })
-    return {
-      id,
-      patch: {
-        vectorNetwork,
-        fillGeometry: regenerateFillGeometry(vectorNetwork, node.fillGeometry),
-        strokeGeometry: []
-      }
-    }
-  }
+  const live = new LiveEdits(editor, view)
   const stops: (() => void)[] = []
 
   /** What agents are still writing, and the replay of what they just wrote. */
@@ -118,24 +78,7 @@ export function useDomScene(
       projector.world.style.transform = transform
       lastTransform = transform
     }
-    // Each step of a path edit redraws that path, and leaving the edit restores it. Vertices
-    // move in place, so any repaint while editing counts as a step.
-    const edit = view().nodeEditState ?? null
-    const version = view().renderVersion
-    if (edit !== editState || (edit && version !== editVersion)) {
-      if (editState && editState !== edit) projector.nodeUpdated(editState.nodeId, {})
-      if (edit) projector.nodeUpdated(edit.nodeId, {})
-      editState = edit
-      editVersion = version
-    }
-    // Each step of a turn redraws the layer at its new angle, and ending it restores the layer.
-    const turn = view().rotationPreview ?? null
-    if (turn !== rotationPreview) {
-      if (rotationPreview && rotationPreview.nodeId !== turn?.nodeId)
-        projector.nodeUpdated(rotationPreview.nodeId, {})
-      if (turn) projector.nodeUpdated(turn.nodeId, {})
-      rotationPreview = turn
-    }
+    live.sync(projector)
     if (projector.needsFlush) projector.flush()
     // Whatever changed the DOM this frame is read back before the next one draws.
     if (reflowed.size > 0) {
@@ -167,7 +110,7 @@ export function useDomScene(
         if (projector) options.onPatched?.(projector, ids)
       },
       onReflow: (id) => reflowed.add(id),
-      livePatches,
+      livePatches: () => live.patches(),
       tokens: () => canvasTokens.references
     })
     const p = projector
@@ -232,8 +175,6 @@ export function useDomScene(
     reflowed.clear()
     lastTransform = ''
     presentedScene = -1
-    editState = null
-    rotationPreview = null
     workPage = null
   }
 

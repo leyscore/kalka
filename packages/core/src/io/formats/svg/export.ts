@@ -418,6 +418,17 @@ function buildPaintedShapes(
 /** The paint CSS `color` sets, for a tinted icon path. */
 const CURRENT_COLOR = 'currentColor'
 
+/** A layer's children as drawn; a boolean drawn as one shape draws none of its operands. */
+function renderChildren(node: SceneNode, ctx: SVGExportContext): SVGNode[] {
+  if (drawsBooleanShape(node, ctx)) return []
+  const rendered: SVGNode[] = []
+  for (const child of ctx.graph.getChildren(node.id)) {
+    const drawn = renderNode(child, ctx)
+    if (drawn) rendered.push(drawn)
+  }
+  return rendered
+}
+
 function renderNode(node: SceneNode, ctx: SVGExportContext): SVGNode | null {
   if (!node.visible) return null
 
@@ -453,12 +464,7 @@ function renderNode(node: SceneNode, ctx: SVGExportContext): SVGNode | null {
     ctx
   )
 
-  const childNodes = drawsBooleanShape(node, ctx) ? [] : ctx.graph.getChildren(node.id)
-  const childContent: SVGNode[] = []
-  for (const child of childNodes) {
-    const rendered = renderNode(child, ctx)
-    if (rendered) childContent.push(rendered)
-  }
+  const childContent = renderChildren(node, ctx)
 
   if (clipId && childContent.length > 0) {
     children.push(svg('g', { 'clip-path': `url(#${clipId})` }, ...childContent))
