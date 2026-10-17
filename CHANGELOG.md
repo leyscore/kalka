@@ -181,6 +181,7 @@
 
 ### Fixed
 
+- Rounded points in a vector imported from a `.fig` file keep their own corner radius and join when the file is saved, and the plugin API reports their radius instead of 0.
 - `.fig` files whose text content is bound to a number or boolean variable, as Figma's UI binds one, open instead of failing with "Unsupported variable expression STRINGIFY". The text follows the variable as Figma writes it, a whole number as an integer and others with two decimals, and saving keeps the binding (#1110).
 - The thumbnail in a `.fig` file shows its page's own background between layers when CanvasKit draws it, as in files written from the CLI, which always showed light grey.
 - Saving an opened `.fig` file writes only what an edit changed in a layer or variable, and keeps the rest as Figma saved it. That includes data Kalka does not model, an instance's library link and saved overrides, and an edited text's letter spacing in percent and font names. Before, saving rewrote each edited layer whole. Importing design tokens or adding a mode also rewrote every layer and variable in the file that uses variable modes.
