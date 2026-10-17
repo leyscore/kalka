@@ -63,7 +63,7 @@ describe('fig-import: shared styles', () => {
 
     const target = [...graph.getAllNodes()].find((item) => item.name === 'Styled target')
     const styleId = (name: string) =>
-      [...graph.getAllNodes()].find((node) => node.name === name)?.id
+      [...graph.getAllNodes()].find((node) => node.name === name)?.source.id
     expect(target).toMatchObject({
       fillStyleId: styleId('Brand/Fill'),
       strokeStyleId: styleId('Brand/Fill'),

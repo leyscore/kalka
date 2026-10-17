@@ -122,10 +122,12 @@ function siblingPositions(graph: SceneGraph, records: Set<string>): Map<string, 
   const parents = new Set<string>()
   for (const id of records) {
     const node = graph.getNode(id)
-    if (node && node.type !== 'CANVAS' && node.parentId) parents.add(node.parentId)
+    if (node && node.type !== 'CANVAS' && node.sharedStyleType === null && node.parentId)
+      parents.add(node.parentId)
   }
   for (const parentId of parents) {
-    const siblings = graph.getChildren(parentId)
+    // Styles are records of the internal canvas, wherever the document keeps them.
+    const siblings = graph.getChildren(parentId).filter((child) => child.sharedStyleType === null)
     const keys = siblingOrderKeys(siblings.map((sibling) => sibling.source.orderKey))
     siblings.forEach((sibling, index) => {
       orderKeys.set(sibling.id, keys[index])
@@ -133,6 +135,27 @@ function siblingPositions(graph: SceneGraph, records: Set<string>): Map<string, 
     })
   }
   return orderKeys
+}
+
+/**
+ * Styles' positions on the internal canvas: the ones the archive saved, and new ones after the
+ * internal canvas's records.
+ */
+function stylePositions(graph: SceneGraph, records: Set<string>, orderKeys: Map<string, string>) {
+  const styles = [...records].flatMap((id) => {
+    const node = graph.getNode(id)
+    return node?.sharedStyleType ? [node] : []
+  })
+  for (const style of styles)
+    if (style.source.orderKey) orderKeys.set(style.id, style.source.orderKey)
+  const placed = styles.filter((style) => !style.source.orderKey)
+  if (placed.length === 0) return
+  const internal = graph.getPages(true).find((page) => page.internalOnly)
+  const saved = (internal ? graph.getChildren(internal.id) : [])
+    .filter((child) => !placed.includes(child))
+    .map((child) => child.source.orderKey)
+  const keys = siblingOrderKeys([...saved, ...placed.map(() => undefined)])
+  placed.forEach((style, index) => orderKeys.set(style.id, keys[saved.length + index]))
 }
 
 function planRecords(
@@ -151,6 +174,7 @@ function planRecords(
   const replaceVariables = changes.changedVariables.size > 0 || changes.collectionsChanged
   if (replaceVariables) addVariableUsers(graph, changes, add)
   const orderKeys = siblingPositions(graph, records)
+  stylePositions(graph, records, orderKeys)
   const removed: GUID[] = []
   for (const [guid, nodeId] of archived.byGuid)
     if (!graph.nodes.has(nodeId)) removed.push(stringToGuid(guid))
@@ -211,9 +235,29 @@ function writeRecords(setup: FigExportSetup, plan: RecordPlan): KiwiNodeChange[]
   // Parents first, so a new parent has its GUID before its children name it.
   const ordered = [...plan.records].toSorted((left, right) => depth(left) - depth(right))
   const written: KiwiNodeChange[] = []
+  const internal = setup.canvasEntries.find((entry) => entry.page.internalOnly)
+  let internalWritten = false
   for (const id of ordered) {
     const node = graph.getNode(id)
     if (!node) continue
+    // A style is a record of the internal canvas, which a document without one gains.
+    if (node.sharedStyleType !== null) {
+      if (!internal) return null
+      if (!internal.page.id && !internalWritten) written.push(internal.canvasNc)
+      internalWritten = true
+      written.push(
+        ...sceneNodeToKiwi(
+          node,
+          internal.canvasGuid,
+          0,
+          setup.localIdCounter,
+          graph,
+          setup.blobs,
+          options
+        )
+      )
+      continue
+    }
     if (node.type === 'CANVAS') {
       const entry = canvasGuids.get(node.id)
       if (entry) written.push(entry.canvasNc)
@@ -275,7 +319,10 @@ async function buildPatch(
   }
   if (plan.replaceVariables) {
     const internalPage = graph.getPages(true).find((page) => page.internalOnly)
-    for (const record of variableRecords(setup, !!internalPage)) records.push(record)
+    const internal = setup.canvasEntries.find((entry) => entry.page.internalOnly)
+    const canvasWritten = records.some((record) => record === internal?.canvasNc)
+    for (const record of variableRecords(setup, !!internalPage || canvasWritten))
+      records.push(record)
   }
   return {
     graph,

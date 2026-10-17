@@ -11,7 +11,10 @@ export const STYLE_REFERENCE_FIELDS = [
   'styleIdForGrid'
 ] as const
 
-/** Include available style definitions, including references declared on override paths. */
+/**
+ * Include available style definitions, including references declared on override paths and by
+ * ranges of text.
+ */
 export function styleDependencies(
   node: NodeChange,
   resolve: (reference: StyleReference) => string | undefined,
@@ -19,11 +22,14 @@ export function styleDependencies(
 ): Set<string> {
   const result = new Set<string>()
   forEachOverrideRecord(node, (source) => {
-    for (const field of STYLE_REFERENCE_FIELDS) {
-      const reference = source[field]
-      if (!reference) continue
-      const id = reference.guid ? guidToString(reference.guid) : resolve(reference)
-      if (id && available.has(id)) result.add(id)
+    // Ranges of a text name their styles in its style table, as the record names its own.
+    for (const record of [source, ...(source.textData?.styleOverrideTable ?? [])]) {
+      for (const field of STYLE_REFERENCE_FIELDS) {
+        const reference = record[field]
+        if (!reference) continue
+        const id = reference.guid ? guidToString(reference.guid) : resolve(reference)
+        if (id && available.has(id)) result.add(id)
+      }
     }
   })
   return result

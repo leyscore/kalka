@@ -1,6 +1,6 @@
 import { effectiveFigmaRawNodeFields } from '#fig/source-metadata'
 
-import type { NodeChange, Paint } from '@kalka/kiwi/fig/codec'
+import type { NodeChange, Paint, StyleReference } from '@kalka/kiwi/fig/codec'
 import { stringToGuid } from '@kalka/kiwi/fig/guid'
 import type {
   ComponentPropertyDefinition,
@@ -19,17 +19,11 @@ export interface KiwiSymbolOverridePayload {
   [key: string]: unknown
 }
 
-/** How a record names a shared style: a local GUID, or a published library asset. */
-export interface StyleReference {
-  guid?: GUID
-  assetRef?: { key: string; version?: string }
-}
-
-/** Published text styles by source id, built once with the rest of the context. */
+/** Library styles by source id, built once with the rest of the context. */
 export function buildStyleReferences(graph: SceneGraph): ReadonlyMap<string, StyleReference> {
   const references = new Map<string, StyleReference>()
   for (const node of graph.getAllNodes()) {
-    if (node.sharedStyleType !== 'TEXT' || !node.source.id) continue
+    if (node.sharedStyleType === null || !node.source.id) continue
     const raw = effectiveFigmaRawNodeFields(node)
     if (typeof raw.key !== 'string') continue
     references.set(node.source.id, {
@@ -42,8 +36,45 @@ export function buildStyleReferences(graph: SceneGraph): ReadonlyMap<string, Sty
   return references
 }
 
+/**
+ * The GUID a layer names a style with: the record written for the local style of that ID, or
+ * the GUID the ID spells. Styles made in Kalka, by token import or by pasting from another
+ * document, have IDs that spell no GUID, so only their records can name them.
+ */
+export function styleReferenceGuid(
+  context: Pick<SceneNodeToKiwiContext, 'graph' | 'nodeIdToGuid' | 'styleNodeIds'>,
+  id: string
+): GUID {
+  if (!context.styleNodeIds) {
+    const styleNodeIds = new Map<string, string>()
+    for (const node of context.graph.getAllNodes())
+      if (node.sharedStyleType !== null && node.source.id) styleNodeIds.set(node.source.id, node.id)
+    context.styleNodeIds = styleNodeIds
+  }
+  const styleNodeId = context.styleNodeIds.get(id)
+  const written = styleNodeId ? context.nodeIdToGuid?.get(styleNodeId) : undefined
+  return written ?? context.nodeIdToGuid?.get(id) ?? stringToGuid(id)
+}
+
+/**
+ * How a layer names a style, as Figma writes it: a library style by its key, which Figma
+ * resolves and keeps linked to the library, and a local one by its record.
+ */
+export function exportedStyleReference(
+  context: Pick<
+    SceneNodeToKiwiContext,
+    'graph' | 'nodeIdToGuid' | 'styleNodeIds' | 'styleReferences'
+  >,
+  id: string
+): StyleReference {
+  context.styleReferences ??= buildStyleReferences(context.graph)
+  return context.styleReferences.get(id) ?? { guid: styleReferenceGuid(context, id) }
+}
+
 export interface SceneNodeToKiwiContext {
   styleReferences?: ReadonlyMap<string, StyleReference>
+  /** Local styles' node IDs by the style IDs layers name them with, built on first use. */
+  styleNodeIds?: ReadonlyMap<string, string>
   graph: SceneGraph
   blobs: Uint8Array[]
   blobIndexByHex?: Map<string, number>

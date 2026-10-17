@@ -2,6 +2,7 @@ import { expect, test } from 'bun:test'
 
 import {
   applyGraphTransfer,
+  getSharedStyles,
   prepareGraphTransfer,
   SceneGraph,
   CommittedGraphEventError
@@ -90,4 +91,38 @@ test('observer failure reports committed transfer instead of rolling it back', (
   })
   expect(() => applyGraphTransfer(target, plan)).toThrow(CommittedGraphEventError)
   expect(target.getChildren(plan.rootIds[0])).toHaveLength(1)
+})
+
+test('a style named by an ID the target already uses for another style comes in under a new one', () => {
+  const source = new SceneGraph(),
+    target = new SceneGraph()
+  const style = (graph: SceneGraph, pageId: string, name: string) => {
+    const node = graph.createNode('RECTANGLE', pageId, {
+      name,
+      sharedStyleType: 'FILL',
+      internalOnly: true
+    })
+    node.source.id = '1:42'
+    return node
+  }
+  const library = source.addPage('Styles')
+  source.updateNode(library.id, { internalOnly: true })
+  style(source, library.id, 'Incoming')
+  const root = source.createNode('RECTANGLE', source.getPages()[0].id, { fillStyleId: '1:42' })
+  style(target, target.getPages()[0].id, 'Existing')
+  const plan = prepareGraphTransfer({
+    source,
+    target,
+    rootIds: [root.id],
+    dependencyPageIds: [library.id],
+    parentId: target.getPages()[0].id
+  })
+  applyGraphTransfer(target, plan)
+
+  const pasted = target.getNode(plan.rootIds[0])
+  const named = (id: string | null | undefined) =>
+    getSharedStyles(target, 'fill').find((candidate) => candidate.id === id)?.name
+  expect(pasted?.fillStyleId).not.toBe('1:42')
+  expect(named(pasted?.fillStyleId)).toBe('Incoming')
+  expect(named('1:42')).toBe('Existing')
 })

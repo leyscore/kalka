@@ -12,6 +12,18 @@ export interface GraphTransferInput {
   parentId: string
 }
 
+/** A transferred style's props under the ID the transfer gives it. */
+function withStyleId(
+  node: SceneNode,
+  props: Partial<SceneNode>,
+  styles: ReadonlyMap<string, string>
+): Partial<SceneNode> {
+  const id =
+    node.sharedStyleType !== null && node.source.id ? styles.get(node.source.id) : undefined
+  if (!id || id === node.source.id) return props
+  return { ...props, source: { ...(props.source ?? node.source), id } }
+}
+
 /** Preflight a self-contained fragment; allocation does not insert anything into the target. */
 export function prepareGraphTransfer(input: GraphTransferInput) {
   const { source, target, parentId } = input
@@ -59,6 +71,17 @@ export function prepareGraphTransfer(input: GraphTransferInput) {
       propertyTypes.set(definition.id, definition.type)
       if (!properties.has(definition.id)) properties.set(definition.id, allocate())
     }
+  // Layers name a style by the style's own ID, which a transferred style keeps unless the
+  // target already holds another style by it: IDs read from Figma are only unique in one file.
+  const targetStyleIds = new Set<string>()
+  for (const node of target.getAllNodes())
+    if (node.sharedStyleType !== null && node.source.id) targetStyleIds.add(node.source.id)
+  const styles = new Map<string, string>()
+  for (const node of ordered) {
+    const id = node.source.id
+    if (node.sharedStyleType === null || !id) continue
+    styles.set(id, targetStyleIds.has(id) ? allocate() : id)
+  }
   const references = {
     nodes,
     variables,
@@ -66,7 +89,7 @@ export function prepareGraphTransfer(input: GraphTransferInput) {
     modes,
     properties,
     propertyTypes,
-    styles: nodes
+    styles
   }
   const resources = prepareVariableTransfer(
     [...source.variables.values()],
@@ -93,7 +116,7 @@ export function prepareGraphTransfer(input: GraphTransferInput) {
       id: mapped(node.id),
       type: node.type,
       parentId: destinationParent(node),
-      props: prepareNodeTransfer(node, references)
+      props: withStyleId(node, prepareNodeTransfer(node, references), styles)
     })),
     ...resources,
     activeModes: new Map(

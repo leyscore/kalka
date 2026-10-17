@@ -2,8 +2,15 @@ import { describe, expect, test } from 'bun:test'
 
 import { materializeDocument } from '@kalka/fig'
 import type { NodeChange } from '@kalka/kiwi/fig/codec'
+import type { SceneGraph } from '@kalka/scene-graph'
 
 import { canvas, doc, node } from './helpers'
+
+/** The name of the style a layer's style ID names, found by the style's own ID as the panel does. */
+function styleNamed(graph: SceneGraph, id: string | null | undefined) {
+  return [...graph.getAllNodes()].find((style) => style.sharedStyleType && style.source.id === id)
+    ?.name
+}
 
 describe('fig-import: text properties', () => {
   test('text auto resize', () => {
@@ -122,7 +129,7 @@ describe('fig-import: text properties', () => {
       .getChildren(graph.getPages()[0].id)
       .find((node) => node.text === 'Styled text')
     expect(styled?.fontSize).toBe(16)
-    expect(graph.getNode(styled?.textStyleId ?? '')?.name).toBe('Body style')
+    expect(styleNamed(graph, styled?.textStyleId)).toBe('Body style')
     expect(styled?.fontWeight).toBe(400)
     expect(styled?.lineHeight).toBe(24)
     expect(styled?.textDecoration).toBe('NONE')
@@ -163,7 +170,7 @@ describe('fig-import: text properties', () => {
     const styled = graph
       .getChildren(graph.getPages()[0].id)
       .find((node) => node.name === 'ROUNDED_RECTANGLE_10')
-    expect(graph.getNode(styled?.fillStyleId ?? '')?.name).toBe('slate/900')
+    expect(styleNamed(graph, styled?.fillStyleId)).toBe('slate/900')
     expect(styled?.fills[0]?.color).toEqual({
       r: 0.05882352963089943,
       g: 0.09019608050584793,

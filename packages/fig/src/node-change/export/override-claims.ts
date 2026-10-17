@@ -1,6 +1,5 @@
 import { SCENE_OVERRIDE_FIELDS } from '#fig/instance-overrides/fields'
 
-import { stringToGuid } from '@kalka/kiwi/fig/guid'
 import {
   forEachInstanceOverride,
   ownsSlotContent,
@@ -12,25 +11,17 @@ import type { GUID, Vector } from '@kalka/scene-graph/primitives'
 import { instanceExportAddress } from '../instance/geometry'
 import { mergeVariableConsumptionMaps, overrideVariableBindingEntry } from '../variable/bindings'
 import {
-  buildStyleReferences,
   createFillPaints,
   createStrokePaints,
   getOrCreateNodeGuid,
+  exportedStyleReference,
   instanceGuidResolver,
   isDescendantOf,
   type KiwiSymbolOverridePayload,
-  type SceneNodeToKiwiContext,
-  type StyleReference
+  type SceneNodeToKiwiContext
 } from './context'
 import { fillsOwnSizingAxis } from './fill-sizing'
 import { exportedNode } from './resolved-bindings'
-
-function exportedTextStyleReference(context: SceneNodeToKiwiContext, id: string): StyleReference {
-  context.styleReferences ??= buildStyleReferences(context.graph)
-  const mapped = context.nodeIdToGuid?.get(id)
-  if (mapped) return { guid: mapped }
-  return context.styleReferences.get(id) ?? { guid: stringToGuid(id) }
-}
 
 function unscaledRootSize(instance: SceneNode, target: SceneNode): Vector {
   const scale = instance.componentScale
@@ -107,7 +98,7 @@ function registryClaim(
       return { textData: { characters: typeof value === 'string' ? value : target.text } }
     case 'text-style':
       return target.textStyleId
-        ? { styleIdForText: exportedTextStyleReference(context, target.textStyleId) }
+        ? { styleIdForText: exportedStyleReference(context, target.textStyleId) }
         : undefined
     case 'paint':
       return raw === 'fillPaints'

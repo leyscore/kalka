@@ -25,9 +25,14 @@ export function validateTransferReferences(target: SceneGraph, plan: GraphTransf
       propertyTypes.set(definition.id, definition.type)
     }
   const collections = new Map(plan.collections.map((collection) => [collection.id, collection]))
+  const styles = new Map(
+    [...nodes.values()].flatMap((node) =>
+      node.sharedStyleType !== null && node.source.id ? [[node.source.id, node.source.id]] : []
+    )
+  )
   const references = {
     nodes: identities,
-    styles: identities,
+    styles,
     properties,
     propertyTypes,
     ...variableIdentityReferences(plan.variables, plan.collections)

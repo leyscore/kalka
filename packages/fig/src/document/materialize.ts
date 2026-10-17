@@ -388,19 +388,8 @@ function materializeReaderInto(
   for (const page of pages) populateInstances(page)
   for (const instanceId of resync) graph.syncInstance(instanceId)
   if (resync.size > 0) restoreDerivedSizes(graph, derivedSizes)
-  for (const node of graph.getAllNodes()) {
-    if (existingNodeIds.has(node.id)) continue
-    for (const field of [
-      'fillStyleId',
-      'strokeStyleId',
-      'textStyleId',
-      'effectStyleId',
-      'gridStyleId'
-    ] as const) {
-      const id = node[field]
-      if (id && sources.has(id)) node[field] = sources.get(id) ?? id
-    }
-  }
+  // Layers name their styles by the styles' own IDs, which the records' GUIDs are, so they are
+  // not renamed to the layers this page added.
   // These passes apply to the nodes this page added, not to the whole graph.
   const materialized = [...graph.nodes.values()].filter((node) => !existingNodeIds.has(node.id))
   state.definitionTypes ??= seedDefinitionTypes(graph)

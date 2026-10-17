@@ -8,7 +8,7 @@ import { populateAllFigPages, populateFigPage } from '@kalka/core/io/formats/fig
 import { parseFigBuffer } from '@kalka/fig'
 import type { NodeChange } from '@kalka/kiwi/fig/codec'
 import { guidToString } from '@kalka/kiwi/fig/guid'
-import type { SceneNode } from '@kalka/scene-graph'
+import { getSharedStyles, type SceneNode } from '@kalka/scene-graph'
 import { cloneNodeProps } from '@kalka/scene-graph/copy'
 
 import { releaseFigArchive } from '#core/kiwi/fig/session/archive'
@@ -45,6 +45,38 @@ test('independent headless branches preserve distinct new GUIDs across patched s
   expect(hasPendingReaderPages(first)).toBe(true)
   const saved = recordsOf(savedLeft)
   expect([...recordsOf(bytes).keys()].filter((guid) => !saved.has(guid))).toEqual([])
+})
+
+test('styles added to an opened file are written on the internal canvas, not as layers', async () => {
+  const bytes = await fixtureBytes()
+  const graph = await open(bytes)
+  const page = graph.getPages()[0]
+  const style = graph.createNode('RECTANGLE', page.id, {
+    name: 'Brand',
+    sharedStyleType: 'FILL',
+    internalOnly: true
+  })
+  style.source.id = 'style:a1b2c3d4e5f6'
+  graph.updateNode(layerNamed(graph, 'A').id, { fillStyleId: style.source.id })
+
+  const saved = await exportFigFile(graph)
+  const records = [...recordsOf(saved).values()]
+  const internal = records.find((record) => record.type === 'CANVAS' && record.internalOnly)
+  const definition = records.find((record) => record.name === 'Brand')
+  expect(definition?.parentIndex?.guid).toEqual(expectDefined(internal?.guid))
+  // A style made in Kalka is saved under its own ID, as a new layer is.
+  expect(guidToString(expectDefined(definition?.guid))).toBe(style.id)
+  // The page's layers keep their records: the style takes no place among them.
+  const before = recordsOf(bytes)
+  for (const name of ['Frame', 'Dot']) {
+    const record = records.find((candidate) => candidate.name === name)
+    expect(record).toEqual(before.get(guidToString(expectDefined(record?.guid))))
+  }
+  const reopened = await open(saved)
+  const styled = layerNamed(reopened, 'A')
+  expect(getSharedStyles(reopened, 'fill').find((s) => s.id === styled.fillStyleId)?.name).toBe(
+    'Brand'
+  )
 })
 
 /** A document over three pages: a frame of layers, a component, and a page of its instances. */

@@ -180,6 +180,9 @@
 
 ### Fixed
 
+- The properties panel shows the shared styles layers use in opened `.fig` files, where it listed them as missing styles.
+- Styles made in Kalka, by importing design tokens or by pasting layers from another document, are saved in `.fig` files as styles, and layers reopen with them. Saving wrote their references empty, so reopening dropped the styles, and saving into an opened file made them layers of the page in Figma.
+- Layers that use a library style keep it in Figma after Kalka saves them, where Figma showed them with no style.
 - Layers made in the editor paste into Figma: about half the editor's sessions minted GUIDs above the signed 32-bit range Figma reads, and Figma dropped those layers from the paste.
 - Requests the app makes while web fonts load, such as storage reads and writes or AI chat calls, no longer go through the font proxy and fail: only requests to the font providers' own hosts are proxied.
 - Gradients from Figma files and Figma pastes draw as they do in Figma on the canvas, in thumbnails, and in HTML and SVG exports: they ran backwards or sat in the wrong place unless they were symmetric, because Figma's gradient transform was applied the wrong way round. SVG export and import keep a gradient exactly, and a new gradient starts as Figma's does, top to bottom from the fill colour to a darker shade, keeping its transform when switched between linear, radial, angular, and diamond.

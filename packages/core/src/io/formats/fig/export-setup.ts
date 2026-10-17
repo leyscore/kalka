@@ -6,6 +6,7 @@ import {
   buildComponentPropIndex,
   exportCanvasGuides,
   importCanvasGuides,
+  parseGuidOrNull,
   stringToGuid,
   type FigNodeChangeExportRuntime
 } from '@kalka/fig/node-change'
@@ -18,7 +19,8 @@ import {
   renameBehaviourProperties,
   withBehaviour,
   type PluginDataEntry,
-  type SceneGraph
+  type SceneGraph,
+  type SceneNode
 } from '@kalka/scene-graph'
 import { fractionalPosition } from '@kalka/scene-graph/order-keys'
 import type { GUID } from '@kalka/scene-graph/primitives'
@@ -142,6 +144,15 @@ function ownGuid(
   return sourceGuidValues.has(key) || assignedGuidValues.has(key) ? null : guid
 }
 
+/**
+ * Whether a layer was opened from a file. A style keeps an ID of its own in `source.id`, which
+ * only names a saved record when it spells a GUID; one made by token import or paste does not.
+ */
+function savedFromFile(node: SceneNode): boolean {
+  if (!node.source.id) return false
+  return node.sharedStyleType === null || parseGuidOrNull(node.source.id) !== null
+}
+
 function assignOwnLayerGuids(
   graph: SceneGraph,
   sourceGuidValues: ReadonlySet<string>,
@@ -149,7 +160,7 @@ function assignOwnLayerGuids(
   assignedGuidValues: Set<string>
 ): void {
   for (const node of graph.nodes.values()) {
-    if (node.source.id || node.id === graph.rootId || nodeIdToGuid.has(node.id)) continue
+    if (savedFromFile(node) || node.id === graph.rootId || nodeIdToGuid.has(node.id)) continue
     const guid = ownGuid(node.id, sourceGuidValues, assignedGuidValues)
     if (!guid) continue
     nodeIdToGuid.set(node.id, guid)
@@ -161,7 +172,7 @@ function assignOwnLayerGuids(
  * The first local ID the counter can mint in sessions 0 and 1: past every saved GUID and every
  * ID that layers, collections, modes, variables and component properties are saved under.
  */
-function firstUnclaimedLocalId(graph: SceneGraph, propertyIds: readonly string[]): number {
+export function firstUnclaimedLocalId(graph: SceneGraph, propertyIds: readonly string[]): number {
   const ids = [...propertyIds]
   for (const node of graph.nodes.values()) ids.push(node.source.id || node.id)
   for (const [collectionId, collection] of graph.variableCollections) {
@@ -177,7 +188,16 @@ function firstUnclaimedLocalId(graph: SceneGraph, propertyIds: readonly string[]
   return last + 1
 }
 
-function collectComponentPropertyIds(graph: SceneGraph): string[] {
+/** The GUIDs layers keep from the file they were read from, which variables must not take. */
+export function layerSourceGuids(graph: SceneGraph): Set<string> {
+  const guids = new Set<string>()
+  for (const node of graph.nodes.values()) {
+    if (node.source.id) guids.add(node.source.id)
+  }
+  return guids
+}
+
+export function collectComponentPropertyIds(graph: SceneGraph): string[] {
   const ids = new Set<string>()
   for (const node of graph.getAllNodes()) {
     for (const definition of node.componentPropertyDefinitions) ids.add(definition.id)
@@ -421,10 +441,7 @@ export async function prepareFigExport(
   const modeIdToGuid = new Map<string, GUID>()
   const propertyIdToGuid = new Map<string, GUID>()
 
-  const nodeSourceGuidValues = new Set<string>()
-  for (const node of graph.nodes.values()) {
-    if (node.source.id) nodeSourceGuidValues.add(node.source.id)
-  }
+  const nodeSourceGuidValues = layerSourceGuids(graph)
   const reservedLayerGuids = new Set([...nodeSourceGuidValues, ...(options.archiveRecordIds ?? [])])
   const propertyIds = collectComponentPropertyIds(graph)
   // Before any canvas, variable or layer takes a counter GUID, so none collides.
