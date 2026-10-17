@@ -166,6 +166,8 @@
   "stopFollowingAgents": "Dejar de seguir a los agentes mientras trabajan",
   "allChats": "Todos los chats",
   "renameChat": "Renombrar",
+  "saveChatTrace": "Guardar traza…",
+  "chatTraceFailed": "No se pudo guardar la traza del chat.",
   "deleteChat": "Eliminar",
   "chatTitle": "Título del chat",
   "saveChatTitle": "Guardar",

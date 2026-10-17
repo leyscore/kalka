@@ -40,9 +40,12 @@ import type { getActiveEditorStore } from '@/app/editor/active-store'
 import { EXTERNAL_MCP_TOOL_PREFIX, externalMCPTools } from '@/app/integrations/mcp/client'
 
 import { resumableTransport } from './history/continuation'
+import { createTraceStore } from './history/idb'
 import { updateMessage } from './metadata'
 import { maxAgentSteps } from './preferences'
 import { settleMessage } from './settle'
+import { createRunRecorder } from './trace/recorder'
+import type { RunRecorder, RunRecording } from './trace/recorder'
 
 type EditorStore = ReturnType<typeof getActiveEditorStore>
 
@@ -65,6 +68,8 @@ export type ToolLoopTransportOptions = {
   thinkingLevel: () => ThinkingLevel
   onError?: (error: unknown) => void
   diagnosticContext?: AIDiagnosticContext
+  /** Records each run so a saved trace can rebuild its requests. */
+  recorder?: RunRecorder
 }
 
 const ANTHROPIC_CACHE_CONTROL = {
@@ -114,7 +119,8 @@ export function createToolLoopTransport({
   maxOutputTokens,
   thinkingLevel,
   onError,
-  diagnosticContext = {}
+  diagnosticContext = {},
+  recorder
 }: ToolLoopTransportOptions) {
   const tools = createAITools(store, diagnosticContext)
   // The reply in progress; a transport sends one message at a time.
@@ -131,26 +137,31 @@ export function createToolLoopTransport({
   const cacheProviderOptions = supportsAnthropicCaching(providerID, effectiveModelID)
     ? ANTHROPIC_CACHE_CONTROL
     : undefined
+  let recording: RunRecording | undefined
   const agent = new ToolLoopAgent({
     model,
     instructions: SYSTEM_PROMPT,
     tools,
     maxOutputTokens,
+    // Kept only to fingerprint each step's request for its trace.
+    include: { requestMessages: recorder !== undefined },
     prepareCall: (options) => {
       const enabledNames = new Set(
         enabledAIToolDefinitions(aiToolOverrides.value).map((tool) => tool.name)
       )
       preview.clear()
+      // Keep the full catalog for validating history; offer only enabled tools to this request,
+      // and the tools of the outside servers connected in Settings › MCP.
+      const offered = Object.fromEntries(
+        Object.entries(tools).filter(
+          ([name]) => enabledNames.has(name) || name.startsWith(EXTERNAL_MCP_TOOL_PREFIX)
+        )
+      )
+      recording?.offer(offered)
       return {
         ...options,
         stopWhen: stepCountIs(currentRun(store).maxSteps),
-        // Keep the full catalog for validating history; offer only enabled tools to this request,
-        // and the tools of the outside servers connected in Settings › MCP.
-        tools: Object.fromEntries(
-          Object.entries(tools).filter(
-            ([name]) => enabledNames.has(name) || name.startsWith(EXTERNAL_MCP_TOOL_PREFIX)
-          )
-        ),
+        tools: offered,
         maxOutputTokens,
         ...callSettings(providerID, cacheProviderOptions, thinkingLevel())
       }
@@ -158,10 +169,13 @@ export function createToolLoopTransport({
     onFinish: () => {
       preview.clear()
       endRun(store, run)
+      recording?.end('completed')
     },
-    onStepFinish: ({ usage }) => {
+    onStepFinish: (step) => {
+      const { usage } = step
       preview.clear()
       recordStep(store)
+      recording?.step(step)
       recordModelStepCompleted(
         {
           provider: providerID,
@@ -179,6 +193,7 @@ export function createToolLoopTransport({
   function handleError(error: unknown): string {
     preview.clear()
     endRun(store, run)
+    recording?.fail(error)
     onError?.(error)
     return 'The provider rejected the request.'
   }
@@ -192,10 +207,32 @@ export function createToolLoopTransport({
       // The run starts as the message is sent, so a Stop before the model is reached ends it.
       const started = startRun(store, maxAgentSteps.value, effectiveModelID)
       run = started
+      const { sessionId, runId } = diagnosticContext
+      const startedRecording =
+        sessionId && runId
+          ? recorder?.start({
+              conversationId: sessionId,
+              runId,
+              model: { provider: providerID, id: effectiveModelID },
+              settings: {
+                maxOutputTokens,
+                maxSteps: started.maxSteps,
+                thinking: thinkingLevel(),
+                cache: cacheProviderOptions !== undefined
+              },
+              instructions: SYSTEM_PROMPT,
+              messages: options.messages
+            })
+          : undefined
+      recording = startedRecording
       // Stopping a reply ends the run without onFinish.
+      const stop = () => {
+        endRun(store, started)
+        startedRecording?.end('stopped')
+      }
       const { abortSignal } = options
-      if (abortSignal?.aborted) endRun(store, started)
-      else if (abortSignal) useEventListener(abortSignal, 'abort', () => endRun(store, started))
+      if (abortSignal?.aborted) stop()
+      else if (abortSignal) useEventListener(abortSignal, 'abort', stop)
       // Outside servers join the catalog before the request, so the agent can read from them.
       await externalMCPTools.sync(tools as Record<string, Tool>)
       // DirectChatTransport handles error chunks, but not a rejected underlying stream.
@@ -243,6 +280,7 @@ export function createChatSessionManager({
   let harnessTransportInstance: { stop(): Promise<void> } | null = null
   let overrideTransport: (() => ChatTransport<UIMessage>) | null = null
   let activeProviderError: unknown = null
+  const runRecorder = createRunRecorder(createTraceStore())
 
   function captureProviderError(error: unknown): void {
     activeProviderError ??= error
@@ -361,7 +399,8 @@ export function createChatSessionManager({
       maxOutputTokens: runtime.role.profile.maxOutputTokens,
       thinkingLevel: () => chatThinkingLevel.value,
       onError: captureProviderError,
-      diagnosticContext
+      diagnosticContext,
+      recorder: runRecorder
     })
   }
 

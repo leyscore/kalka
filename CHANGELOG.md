@@ -48,6 +48,8 @@
 
 ### Added
 
+- The conversation menu saves a chat's trace as a JSON file: every message, reasoning step, and tool call, and each run's model, settings, usage, timing, and errors, with enough to rebuild and check every request the model received.
+- Settings › Diagnostics saves the diagnostics report as a JSON file, next to Copy diagnostics.
 - Read what a frame says without rendering it: the `query_nodes` and `get_page_tree` AI and MCP tools return the text of text layers, and XPath selectors match `@id`, so `//*[@id='1:2']//TEXT[not(ancestor-or-self::*[@visible='false'])]` lists a frame's visible text in layer order with each layer's ID (#861).
 - Enter opens a selected vector's path for editing, as a double-click does, as in Figma.
 - `kalka export` draws PNG, JPG and PDF, and the thumbnail of `.fig` files, with Chromium, as the canvas does, when the desktop app is built beside it, and with CanvasKit otherwise or with `KALKA_RENDERER=canvaskit`.

@@ -166,6 +166,8 @@
   "stopFollowingAgents": "Przestań śledzić agentów podczas pracy",
   "allChats": "Wszystkie czaty",
   "renameChat": "Zmień nazwę",
+  "saveChatTrace": "Zapisz ślad…",
+  "chatTraceFailed": "Nie można zapisać śladu czatu.",
   "deleteChat": "Usuń",
   "chatTitle": "Tytuł czatu",
   "saveChatTitle": "Zapisz",

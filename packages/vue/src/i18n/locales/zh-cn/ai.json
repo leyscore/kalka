@@ -166,6 +166,8 @@
   "stopFollowingAgents": "停止在工作时跟随智能体",
   "allChats": "所有聊天",
   "renameChat": "重命名",
+  "saveChatTrace": "保存追踪记录…",
+  "chatTraceFailed": "无法保存聊天追踪记录。",
   "deleteChat": "删除",
   "chatTitle": "聊天标题",
   "saveChatTitle": "保存",

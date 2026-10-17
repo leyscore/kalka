@@ -11,6 +11,7 @@ import { takeQueuedChatPrompt } from '@/app/ai/chat/queued-prompt'
 import { useChatRunLocation } from '@/app/ai/chat/run-location'
 import type { ChatSubmission } from '@/app/ai/chat/submission/types'
 import { useChatSubmission } from '@/app/ai/chat/submission/use'
+import { saveChatTrace } from '@/app/ai/chat/trace/export'
 import { useAIChat } from '@/app/ai/chat/use'
 import { openAISetup } from '@/app/ai/models/settings/onboarding/dialog'
 import { didHitStepLimit } from '@/app/ai/tools'
@@ -123,6 +124,16 @@ async function renameConversation(id: string, title: string) {
   }
 }
 
+async function saveTrace(id: string) {
+  const conversation = history.current.value
+  if (conversation?.id !== id) return
+  try {
+    await saveChatTrace(conversation, messages.value)
+  } catch {
+    toast.error(ai.value.chatTraceFailed)
+  }
+}
+
 const failureMessage = computed(() => {
   switch (chatFailure.value?.reason) {
     case 'authentication':
@@ -228,6 +239,7 @@ function handleStop() {
       @create="historyAction(history.newChat)"
       @select="historyAction(() => history.open($event))"
       @rename="renameConversation"
+      @save-trace="saveTrace"
       @delete="historyAction(() => history.remove($event))"
     >
       <template #actions><FollowAgentsToggle /></template>

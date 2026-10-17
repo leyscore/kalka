@@ -66,11 +66,13 @@ export const diagnosticsMessageDefaults = {
   usageHistoryDescription: 'Keep local AI usage summaries.',
   eventCount: params('{count} events · {size} KB'),
   copy: 'Copy diagnostics',
+  save: 'Save diagnostics…',
   clear: 'Clear',
   clearDescription: 'This removes locally stored diagnostic events from this device.',
   cleared: 'Diagnostics cleared.',
   copied: 'Diagnostics copied to clipboard.',
-  copyFailed: 'Could not copy diagnostics to the clipboard.'
+  copyFailed: 'Could not copy diagnostics to the clipboard.',
+  saveFailed: 'Could not save diagnostics.'
 } as const
 
 export const diagnosticsMessages = i18n('diagnostics', diagnosticsMessageDefaults)

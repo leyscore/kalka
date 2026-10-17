@@ -161,12 +161,12 @@ export async function saveExportedFile(
   ext: string,
   mime: string,
   downloadBlob: DownloadBlob
-) {
+): Promise<boolean> {
   if (isTauri()) {
     const path = await chooseTauriExportPath(fileName, format, ext)
-    if (!path) return
+    if (!path) return false
     await writeTauriExportFile(path, data)
-    return
+    return true
   }
 
   if (supportsFileSystemAccess()) {
@@ -180,16 +180,16 @@ export async function saveExportedFile(
           }
         ]
       })
-      if (handle) {
-        const writable = await handle.createWritable()
-        await writable.write(new Uint8Array(data))
-        await writable.close()
-      }
-      return
+      if (!handle) return false
+      const writable = await handle.createWritable()
+      await writable.write(new Uint8Array(data))
+      await writable.close()
+      return true
     } catch (e) {
-      if ((e as Error).name === 'AbortError') return
+      if ((e as Error).name === 'AbortError') return false
     }
   }
 
   downloadBlob(data, fileName, mime)
+  return true
 }

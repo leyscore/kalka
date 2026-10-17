@@ -6,7 +6,7 @@ How the built-in AI chat turns a message into edits, how a reply ends, and how w
 
 `src/app/ai/chat/submission/use.ts` sends a message through the AI SDK's `Chat`. Before sending, it appends notes for the model to the text: the layers you referenced, and the edits you undid or redid since the model last heard (`context.ts`). The transcript shows only what you wrote; `stripModelNotes` removes the notes. Notes go on the newest message only. Earlier messages never change, so the provider can keep caching the conversation up to the new message.
 
-`history/continuation.ts` leaves tool calls without a result out of the request. They stay in the saved transcript.
+`history/continuation.ts` (`requestMessages`) leaves tool calls without a result out of the request. They stay in the saved transcript.
 
 ## A run
 
@@ -55,3 +55,11 @@ Edit → Undo and the chat's **Revert changes** therefore end in the same state:
 ## Saved conversations
 
 A reply's metadata (`chat/metadata.ts`) keeps whether you stopped it, and its edits with those undone and what the model was last told. Conversations save messages with `structuredClone`, so metadata is written from the plain message, never from the chat's reactive copy. Reopening a conversation settles any reply saved mid-way. The undo history does not survive closing a document, so a reopened reply keeps its marks but offers no Revert or Restore.
+
+## Traces
+
+Save trace… in the conversation menu writes a file to reproduce what the agent did (`chat/trace/export.ts`). It holds the conversation's messages, its runs, and its diagnostic events.
+
+A run is one message sent and every step the model took to answer it (`chat/trace/recorder.ts`). It records the model and settings, the last message sent, and per step the response's finish reason, usage, warnings, and duration; a failed run keeps the error, and the step that failed is the one after the last recorded. Instructions and the tools offered are stored once under their fingerprints and shared by every run that used them.
+
+A step's request is not stored. It is the conversation through the run's last message, as `requestMessages` prepared it, plus the reply's earlier steps; `chat/trace/rebuild.ts` rebuilds it and compares its fingerprint with the one recorded when the step ran, so a rebuild that no longer matches what was sent is reported instead of replayed. Runs live in the chat database beside their conversation and are deleted with it.

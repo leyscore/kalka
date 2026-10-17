@@ -1,3 +1,5 @@
+import { readFile } from 'node:fs/promises'
+
 import type { Page } from '@playwright/test'
 import * as v from 'valibot'
 
@@ -48,6 +50,24 @@ test('Settings exports correlated chat telemetry without conversation content', 
   expect(completed[1].runId).not.toBe(completed[0].runId)
   expect(text).not.toContain('Private conversation content')
   expect(text).not.toContain('A second request')
+})
+
+test('Settings saves the diagnostics report as a file', async ({ configuredChat: chat, page }) => {
+  // Without a save picker the browser downloads the file.
+  await page.evaluate(() => Reflect.deleteProperty(window, 'showSaveFilePicker'))
+  await chat.submit('A request to record')
+  await expect(chat.assistantMessage()).toBeVisible()
+  await openDiagnostics(page)
+
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('button', { name: 'Save diagnostics…', exact: true }).click()
+  ])
+
+  expect(download.suggestedFilename()).toMatch(/\.json$/)
+  const { environment, events } = v.parse(ReportJSON, await readFile(await download.path(), 'utf8'))
+  expect(environment).toMatchObject({ shell: 'browser' })
+  expect(events.map((event) => event.name)).toContain('chat.completed')
 })
 
 async function openDiagnostics(page: Page) {

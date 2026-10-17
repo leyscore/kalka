@@ -166,6 +166,8 @@
   "stopFollowingAgents": "Agenten bei der Arbeit nicht mehr folgen",
   "allChats": "Alle Chats",
   "renameChat": "Umbenennen",
+  "saveChatTrace": "Trace speichern…",
+  "chatTraceFailed": "Der Chat-Trace konnte nicht gespeichert werden.",
   "deleteChat": "Löschen",
   "chatTitle": "Chatname",
   "saveChatTitle": "Speichern",

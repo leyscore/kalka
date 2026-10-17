@@ -166,6 +166,8 @@
   "stopFollowingAgents": "作業中のエージェントの追従を停止",
   "allChats": "すべてのチャット",
   "renameChat": "名前を変更",
+  "saveChatTrace": "トレースを保存…",
+  "chatTraceFailed": "チャットのトレースを保存できませんでした。",
   "deleteChat": "削除",
   "chatTitle": "チャットのタイトル",
   "saveChatTitle": "保存",

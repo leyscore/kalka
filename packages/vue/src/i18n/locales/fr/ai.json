@@ -166,6 +166,8 @@
   "stopFollowingAgents": "Ne plus suivre les agents pendant qu’ils travaillent",
   "allChats": "Toutes les discussions",
   "renameChat": "Renommer",
+  "saveChatTrace": "Enregistrer la trace…",
+  "chatTraceFailed": "Impossible d’enregistrer la trace de la conversation.",
   "deleteChat": "Supprimer",
   "chatTitle": "Titre de la discussion",
   "saveChatTitle": "Enregistrer",

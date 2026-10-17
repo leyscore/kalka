@@ -27,6 +27,8 @@ export const aiMessageDefaults = {
   stopFollowingAgents: 'Stop following agents as they work',
   allChats: 'All chats',
   renameChat: 'Rename',
+  saveChatTrace: 'Save trace…',
+  chatTraceFailed: 'The chat trace could not be saved.',
   deleteChat: 'Delete',
   chatTitle: 'Conversation title',
   saveChatTitle: 'Save',

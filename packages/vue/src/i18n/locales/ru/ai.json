@@ -166,6 +166,8 @@
   "stopFollowingAgents": "Не следовать за агентами во время работы",
   "allChats": "Все чаты",
   "renameChat": "Переименовать",
+  "saveChatTrace": "Сохранить трассировку…",
+  "chatTraceFailed": "Не удалось сохранить трассировку чата.",
   "deleteChat": "Удалить",
   "chatTitle": "Название чата",
   "saveChatTitle": "Сохранить",

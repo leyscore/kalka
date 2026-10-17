@@ -1,8 +1,9 @@
 import 'fake-indexeddb/auto'
 import { describe, expect, test } from 'bun:test'
 
-import { createConversationStore } from '@/app/ai/chat/history/idb'
+import { createConversationStore, createTraceStore } from '@/app/ai/chat/history/idb'
 import type { Conversation } from '@/app/ai/chat/history/types'
+import type { RunTrace } from '@/app/ai/chat/trace/types'
 
 function conversation(): Conversation {
   return {
@@ -119,5 +120,41 @@ describe('conversation IndexedDB storage', () => {
     expect(await store.read(row.id)).toBeNull()
     expect(await store.getSelected(row.documentId)).toBeNull()
     expect((await store.list(row.documentId)).map((meta) => meta.id)).toEqual([other.id])
+  })
+
+  test('keeps a conversation’s runs until the conversation is deleted, and not after', async () => {
+    const store = createConversationStore()
+    const traces = createTraceStore()
+    const saved = conversation()
+    await store.write(saved)
+    const run = (runId: string, startedAt: string): RunTrace => ({
+      conversationId: saved.id,
+      runId,
+      startedAt,
+      model: { provider: 'openai', id: 'test' },
+      settings: { maxOutputTokens: 100, maxSteps: 5, thinking: 'default', cache: false },
+      instructions: 'sha256:instructions',
+      input: { through: 'user', messages: 1 },
+      steps: [],
+      outcome: 'completed'
+    })
+    await traces.putRun(run('second', '2026-01-01T00:02:00.000Z'))
+    await traces.putRun(run('first', '2026-01-01T00:01:00.000Z'))
+    await traces.putAsset('sha256:instructions', { kind: 'instructions', text: 'Design well.' })
+
+    expect((await traces.listRuns(saved.id)).map((entry) => entry.runId)).toEqual([
+      'first',
+      'second'
+    ])
+    expect(await traces.getAsset('sha256:instructions')).toEqual({
+      kind: 'instructions',
+      text: 'Design well.'
+    })
+
+    await store.remove(saved.id)
+    expect(await traces.listRuns(saved.id)).toEqual([])
+    // A run still streaming when its conversation was deleted does not bring it back.
+    await traces.putRun(run('late', '2026-01-01T00:03:00.000Z'))
+    expect(await traces.listRuns(saved.id)).toEqual([])
   })
 })
