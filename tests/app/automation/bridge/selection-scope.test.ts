@@ -60,6 +60,10 @@ describe('limitToSelection', () => {
       nodeId: ids.title
     })
     expect(() => limitToSelection(store, 'get_metadata', { nodeId: ids.other })).toThrow(/outside/)
+    const linkForm = ids.title.replace(':', '-')
+    expect(limitToSelection(store, 'get_metadata', { nodeId: linkForm })).toEqual({
+      nodeId: linkForm
+    })
     expect(() => limitToSelection(store, 'search_design_system', { query: 'x' })).toThrow(
       /unavailable/
     )

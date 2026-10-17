@@ -15,9 +15,14 @@ const READ_SELECTION_THEMSELVES: ReadonlySet<string> = new Set([
   'get_variable_defs'
 ])
 
+/** A node ID as the tools read it: the `1-2` form of Figma links means `1:2`. */
+const toNodeId = (id: string) => id.trim().replace(/^(\d+)-(\d+)$/, '$1:$2')
+
 function namedIds(value: unknown): string[] {
-  if (typeof value === 'string') return [value]
-  if (Array.isArray(value)) return value.filter((item): item is string => typeof item === 'string')
+  if (typeof value === 'string') return [toNodeId(value)]
+  if (Array.isArray(value)) {
+    return value.filter((item): item is string => typeof item === 'string').map(toNodeId)
+  }
   return []
 }
 
