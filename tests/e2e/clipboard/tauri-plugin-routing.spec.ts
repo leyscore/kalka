@@ -75,9 +75,7 @@ test('Tauri copy writes selected design HTML without requiring ClipboardEvent.cl
   await expect.poll(() => clipboard.snapshot()).toMatchObject({ text: 'Rectangle 1' })
   const snapshot = clipboard.snapshot()
   expect(snapshot.html).toContain('(figma)')
-  expect(snapshot.writes.some((entry) => entry.cmd === 'plugin:clipboard-manager|write_html')).toBe(
-    true
-  )
+  expect(snapshot.writes.some((entry) => entry.cmd === 'clipboard.writeHtml')).toBe(true)
   await expect(page.getByText('Clipboard access is blocked in this browser context')).toHaveCount(0)
   canvas.assertNoErrors()
 })
@@ -130,9 +128,7 @@ test('Tauri cut keeps the selection when the clipboard write fails', async ({ pa
   const snapshot = clipboard.snapshot()
   expect(snapshot.html).toBe('')
   expect(snapshot.text).toBe('')
-  expect(snapshot.writes.some((entry) => entry.cmd === 'plugin:clipboard-manager|write_html')).toBe(
-    true
-  )
+  expect(snapshot.writes.some((entry) => entry.cmd === 'clipboard.writeHtml')).toBe(true)
   canvas.assertNoErrors()
 })
 

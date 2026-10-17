@@ -16,25 +16,26 @@ export type TauriClipboardMock = {
   snapshot: () => TauriClipboardSnapshot
 }
 
-const IPC_BINDING = '__playwrightTauriIPC'
+const NATIVE_BINDING = '__playwrightKalkaNative'
 
 /**
- * What the desktop app's own commands return on a machine with no system fonts, no pending files
- * or rooms, and no stored credentials. Any other command fails the spec, so a new one is noticed.
+ * What the desktop app's main-process handlers return on a machine with no pending files or
+ * rooms and no stored credentials. Any other call fails the spec, so a new one is noticed.
  */
-const APP_COMMAND_RESULTS: Record<string, unknown> = {
-  list_system_fonts: [],
-  take_pending_open: [],
-  take_pending_rooms: [],
-  credential_status: 'missing',
-  load_system_font: null,
-  set_native_menu_checked: null,
-  'plugin:event|listen': null,
-  'plugin:event|unlisten': null,
-  'plugin:process|exit': null,
-  'plugin:process|restart': null
+const APP_CALL_RESULTS: Record<string, unknown> = {
+  'command.take_pending_open': [],
+  'command.take_pending_rooms': [],
+  'command.credential_status': 'missing',
+  'command.set_native_menu_checked': null,
+  'window.interceptClose': null,
+  'process.exit': null,
+  'process.relaunch': null
 }
 
+/**
+ * Stands in for the bridge Electron's preload exposes (`electron/src/preload.ts`), so the page
+ * runs as the desktop app and its clipboard goes through the main process, recorded here.
+ */
 export async function installTauriClipboardMock(page: Page): Promise<TauriClipboardMock> {
   const state: TauriClipboardSnapshot = {
     text: '',
@@ -43,25 +44,25 @@ export async function installTauriClipboardMock(page: Page): Promise<TauriClipbo
   }
   let rejectHTMLWrites = false
 
-  await page.exposeBinding(IPC_BINDING, (_, cmd: string, args?: Record<string, unknown>) => {
+  await page.exposeBinding(NATIVE_BINDING, (_, cmd: string, args: unknown[] = []) => {
     state.writes.push({ cmd, args })
     switch (cmd) {
-      case 'plugin:clipboard-manager|write_html': {
+      case 'clipboard.writeHtml': {
         if (rejectHTMLWrites) throw new Error('Clipboard write failed')
-        state.html = String(args?.html ?? '')
-        state.text = String(args?.altText ?? state.html)
+        state.html = String(args[0] ?? '')
+        state.text = String(args[1] || state.html)
         return null
       }
-      case 'plugin:clipboard-manager|write_text': {
-        state.text = String(args?.text ?? '')
+      case 'clipboard.writeText': {
+        state.text = String(args[0] ?? '')
         state.html = ''
         return null
       }
-      case 'plugin:clipboard-manager|read_text':
+      case 'clipboard.readText':
         return state.html || state.text
       default:
-        if (Object.hasOwn(APP_COMMAND_RESULTS, cmd)) return APP_COMMAND_RESULTS[cmd]
-        throw new Error(`Unexpected Tauri command: ${cmd}`)
+        if (Object.hasOwn(APP_CALL_RESULTS, cmd)) return APP_CALL_RESULTS[cmd]
+        throw new Error(`Unexpected desktop call: ${cmd}`)
     }
   })
 
@@ -69,32 +70,23 @@ export async function installTauriClipboardMock(page: Page): Promise<TauriClipbo
     const binding: unknown = Reflect.get(globalThis, bindingName)
     if (typeof binding !== 'function')
       throw new Error(`Playwright binding not found: ${bindingName}`)
-    const invoke = binding as (cmd: string, args?: Record<string, unknown>) => Promise<unknown>
-
-    let callbackId = 1
-    const callbacks = new Map<number, unknown>()
-    Object.defineProperty(window, '__TAURI_INTERNALS__', {
+    const call = binding as (cmd: string, args: unknown[]) => Promise<unknown>
+    Object.defineProperty(window, 'kalkaNative', {
       configurable: true,
       value: {
-        callbacks,
-        metadata: {
-          currentWindow: { label: 'main' },
-          currentWebview: { label: 'main' }
-        },
-        convertFileSrc: (filePath: string) => filePath,
-        invoke,
-        transformCallback: (callback: unknown) => {
-          const id = callbackId++
-          callbacks.set(id, callback)
-          return id
-        },
-        unregisterCallback: (id: number) => {
-          callbacks.delete(id)
-        },
-        runCallback: () => null
+        platform: 'darwin',
+        arch: 'arm64',
+        systemVersion: '15.0.0',
+        call: (name: string, ...args: unknown[]) => call(name, args),
+        on: () => () => undefined
       }
     })
-  }, IPC_BINDING)
+    // The app detects its desktop build by this global (`IS_TAURI`).
+    Object.defineProperty(window, '__TAURI_INTERNALS__', {
+      configurable: true,
+      value: { kalka: true }
+    })
+  }, NATIVE_BINDING)
 
   return {
     rejectHTMLWrites: () => {
