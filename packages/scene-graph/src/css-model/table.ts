@@ -11,7 +11,7 @@ import { expandBorderShorthands } from './paint-from-css'
 import { position } from './position'
 import { contentSizing, size, sizeConstraints } from './size'
 import { stroke } from './stroke'
-import { font, textAlign, textDecoration, textWrap } from './text'
+import { font, textAlign, textAlignVertical, textDecoration, textWrap } from './text'
 import type { CSSDeclarations, PropertyFamily, ReadContext, WriteContext } from './types'
 
 /** Frames, shapes and every other layer that draws a box. */
@@ -42,6 +42,7 @@ export const TEXT_PROPERTIES: readonly PropertyFamily[] = [
   textFills,
   font,
   textAlign,
+  textAlignVertical,
   opacity,
   blendMode,
   textShadow,

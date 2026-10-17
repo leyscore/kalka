@@ -162,6 +162,16 @@ export const SAMPLES: Sample[] = [
     }
   },
   {
+    name: 'text centered in its box',
+    type: 'TEXT',
+    fields: { width: 240, height: 120, textAutoResize: 'NONE', textAlignVertical: 'CENTER' }
+  },
+  {
+    name: 'text at the bottom of its box',
+    type: 'TEXT',
+    fields: { width: 240, height: 120, textAutoResize: 'NONE', textAlignVertical: 'BOTTOM' }
+  },
+  {
     name: 'auto-width text',
     type: 'TEXT',
     fields: { textAutoResize: 'WIDTH_AND_HEIGHT' }

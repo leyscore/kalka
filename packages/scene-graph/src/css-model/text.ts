@@ -56,6 +56,25 @@ export const textAlign: PropertyFamily = {
   }
 }
 
+/**
+ * Where the lines sit in a box taller than they are. A block's `align-content` does what Figma's
+ * vertical alignment does, and a box that hugs its text leaves it nothing to move.
+ */
+export const textAlignVertical: PropertyFamily = {
+  name: 'text vertical align',
+  fields: ['textAlignVertical'],
+  properties: ['align-content'],
+  write(style, node) {
+    if (node.textAlignVertical === 'CENTER') style['align-content'] = 'center'
+    else if (node.textAlignVertical === 'BOTTOM') style['align-content'] = 'end'
+  },
+  read(style, node) {
+    const value = pickStyle(style, 'align-content')
+    if (value === 'center') node.textAlignVertical = 'CENTER'
+    if (value === 'end' || value === 'flex-end') node.textAlignVertical = 'BOTTOM'
+  }
+}
+
 const TEXT_CASES = [
   ['UPPER', 'uppercase'],
   ['LOWER', 'lowercase'],
