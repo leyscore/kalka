@@ -1,11 +1,19 @@
 import { useEventListener } from '@vueuse/core'
-import type { Ref } from 'vue'
+import { computed, type Ref } from 'vue'
 
 import type { Editor } from '@kalka/core/editor'
 
 import { createRafScheduler } from '#vue/shared/input/raf-scheduler'
+import { PINCH_SCALE_EXPONENT } from '#vue/shared/input/wheel'
 
+/**
+ * Zooms on WebKit pinch gestures, which WebKit reports as gesture events instead of Ctrl+wheel.
+ * It listens on the canvas's container, so pinches over layers laid on the canvas, such as
+ * Preview's live controls and comment pins, zoom it too; they can forward wheel events, but not
+ * gestures.
+ */
 export function setupSafariGestureZoom(canvasRef: Ref<HTMLCanvasElement | null>, editor: Editor) {
+  const surface = computed(() => canvasRef.value?.parentElement ?? null)
   let gestureStartZoom = 1
   let pendingGesture: { scale: number; sx: number; sy: number } | null = null
 
@@ -14,13 +22,13 @@ export function setupSafariGestureZoom(canvasRef: Ref<HTMLCanvasElement | null>,
     editor.setHoveredNode(null)
     const { scale, sx, sy } = pendingGesture
     pendingGesture = null
-    editor.setZoomAroundPoint(gestureStartZoom * scale, sx, sy)
+    editor.setZoomAroundPoint(gestureStartZoom * scale ** PINCH_SCALE_EXPONENT, sx, sy)
   }
 
   const gestureScheduler = createRafScheduler(flushGesture)
 
   useEventListener(
-    canvasRef,
+    surface,
     'gesturestart' as keyof HTMLElementEventMap,
     (e: Event) => {
       e.preventDefault()
@@ -29,7 +37,7 @@ export function setupSafariGestureZoom(canvasRef: Ref<HTMLCanvasElement | null>,
     { passive: false }
   )
   useEventListener(
-    canvasRef,
+    surface,
     'gesturechange' as keyof HTMLElementEventMap,
     (e: Event) => {
       e.preventDefault()
@@ -47,7 +55,7 @@ export function setupSafariGestureZoom(canvasRef: Ref<HTMLCanvasElement | null>,
     { passive: false }
   )
   useEventListener(
-    canvasRef,
+    surface,
     'gestureend' as keyof HTMLElementEventMap,
     (e: Event) => {
       e.preventDefault()

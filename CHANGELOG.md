@@ -23,6 +23,7 @@
 - With nothing selected, a layer copied out of a frame or section pastes back into it, or onto the page in the middle of the view when that place is out of view, as in Figma.
 - In scripts, new frames and components hug along their main axis, which auto layout keeps when a script turns it on, a resize fixes a hugging auto layout frame's axes, and a grid fixes both, as in Figma. `instance.overrides` lists each layer edited in an instance with Figma's field names, `resetOverrides()` returns the instance to its component while keeping component property values, setting a field to the value it has no longer counts as an override, and `counterAxisAlignContent` is refused on a layer inside an instance.
 - Double-clicking an auto layout gap on the canvas edits it like a padding, as in Figma, in an editor over the gap's tick; padding and gap values show in pills as wide as their value in Figma's colors, and the value editor closes and keeps its value when the selection, page, or document changes or the frame is deleted.
+- Trackpads and mouse wheels pan and zoom the canvas as in Figma. A two-finger pan moves the canvas twice as far, up to 120 px per scroll event. A pinch zooms as far in the desktop app and Safari as in other browsers, where it zooms a little less than before, and in the desktop app and Safari a pinch over Preview's live controls now zooms the canvas, where it did nothing. On Windows each mouse wheel notch pans 16 px instead of 100 px, and notches less than 50 ms apart pan up to 120 px each.
 
 ### Fixed
 
