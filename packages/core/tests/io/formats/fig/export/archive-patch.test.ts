@@ -1,20 +1,51 @@
 import { describe, expect, setDefaultTimeout, test } from 'bun:test'
 
+import { expectDefined } from '#core-tests/helpers/assert'
 import { isEqual } from 'es-toolkit/predicate'
 
 import { exportFigFile, initCodec, parseFigFile, SceneGraph } from '@kalka/core'
-import { parseFigBuffer } from '@kalka/fig'
 import { populateAllFigPages, populateFigPage } from '@kalka/core/io/formats/fig'
+import { parseFigBuffer } from '@kalka/fig'
 import type { NodeChange } from '@kalka/kiwi/fig/codec'
 import { guidToString } from '@kalka/kiwi/fig/guid'
 import type { SceneNode } from '@kalka/scene-graph'
 import { cloneNodeProps } from '@kalka/scene-graph/copy'
 
 import { releaseFigArchive } from '#core/kiwi/fig/session/archive'
-import { expectDefined } from '#core-tests/helpers/assert'
-import { hasPendingReaderPages, populateFigInternalPages } from '#core/kiwi/fig/session/document-state'
+import {
+  hasPendingReaderPages,
+  populateFigInternalPages
+} from '#core/kiwi/fig/session/document-state'
 
 setDefaultTimeout(60_000)
+
+test('independent headless branches preserve distinct new GUIDs across patched saves', async () => {
+  const bytes = await fixtureBytes()
+  const first = await open(bytes)
+  const second = await open(bytes)
+  // Imported handles remain usable by headless scripts; only newly authored identities differ.
+  expect(layerNamed(first, 'A').id).toBe(layerNamed(second, 'A').id)
+  const left = first.createNode('RECTANGLE', first.getPages()[0].id, { name: 'Left branch' })
+  const right = second.createNode('RECTANGLE', second.getPages()[0].id, { name: 'Right branch' })
+  expect(left.id).not.toBe(right.id)
+  const savedLeft = await exportFigFile(first)
+  const savedRight = await exportFigFile(second)
+  const leftRecord = parseFigBuffer(Uint8Array.from(savedLeft).buffer).nodeChanges.find(
+    (record) => record.name === left.name
+  )
+  const rightRecord = parseFigBuffer(Uint8Array.from(savedRight).buffer).nodeChanges.find(
+    (record) => record.name === right.name
+  )
+  expect(guidToString(expectDefined(leftRecord?.guid))).toBe(left.id)
+  expect(guidToString(expectDefined(rightRecord?.guid))).toBe(right.id)
+  const reopened = await open(savedLeft)
+  expect(layerNamed(reopened, left.name).source.id).toBe(left.id)
+  // Saving wrote into the archive: the pages not opened stay unpopulated, and every record the
+  // file held, theirs included, is saved under its GUID.
+  expect(hasPendingReaderPages(first)).toBe(true)
+  const saved = recordsOf(savedLeft)
+  expect([...recordsOf(bytes).keys()].filter((guid) => !saved.has(guid))).toEqual([])
+})
 
 /** A document over three pages: a frame of layers, a component, and a page of its instances. */
 async function fixtureBytes(): Promise<Uint8Array> {
@@ -95,8 +126,7 @@ async function shapeOf(bytes: Uint8Array): Promise<Record<string, LayerShape[]>>
   )
 }
 
-const guidKey = (record: NodeChange) =>
-  record.guid ? guidToString(record.guid) : ''
+const guidKey = (record: NodeChange) => (record.guid ? guidToString(record.guid) : '')
 
 /** The records of an archive by GUID. */
 function recordsOf(bytes: Uint8Array) {

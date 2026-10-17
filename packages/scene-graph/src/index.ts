@@ -85,6 +85,7 @@ import * as Instances from './instances'
 import Matrix, { type Mat3 } from './matrix'
 import { CONTAINER_TYPES, createDefaultNode } from './node-defaults'
 import { updateNodePreview, type NodePreviewObserver } from './preview'
+import { randomIndex } from './random'
 import { styleDetachmentChanges } from './shared-styles'
 import { markSourceFieldsEdited } from './source-metadata'
 import { GLYPH_AFFECTING_KEYS, invalidateTextCaches, TEXT_PICTURE_KEYS } from './text-picture'
@@ -125,22 +126,33 @@ export {
   vectorNetworksEqual
 } from './vector-network'
 
-const MAX_ID_SESSION = 0xffffffff
+/** Figma reads both parts of a GUID as signed 32-bit integers and drops records beyond them. */
+const MAX_ID_SESSION = 0x7fffffff
 
-let idSession = 0
+/** Sessions 0 and 1 hold FIG's document and internal-resource records and counter GUIDs. */
+const FIRST_RANDOM_SESSION = 2
+
+/** A random session, as Yjs picks each document's `clientID`, so processes never share IDs. */
+function randomIdSession(): number {
+  return FIRST_RANDOM_SESSION + randomIndex(MAX_ID_SESSION - FIRST_RANDOM_SESSION + 1)
+}
+
+let idSession = randomIdSession()
 let nextLocalID = 1
 
 /**
  * Sets the session part of the IDs this process mints, as in Figma's `sessionID:localID` GUIDs.
- * Headless tools keep session 0, so a file's layers get the same IDs on every run. The editor
- * picks a random session at startup, as Yjs picks each document's `clientID`, so peers editing
- * one shared room never mint the same ID. Call it before creating any graph.
+ * Every process starts in a random session, so layers that the editor, the CLI, or MCP add to
+ * copies of one file never share IDs. Tests and fixtures that need the same IDs on every run
+ * set a fixed session or give the graph its own generator. Returns the previous session.
  */
-export function setIdSession(sessionId: number): void {
+export function setIdSession(sessionId: number): number {
   if (!Number.isInteger(sessionId) || sessionId < 0 || sessionId > MAX_ID_SESSION) {
-    throw new RangeError('sessionId must be an unsigned 32-bit integer')
+    throw new RangeError('sessionId must be a non-negative 31-bit integer')
   }
+  const previous = idSession
   idSession = sessionId
+  return previous
 }
 
 export function generateId(): string {
@@ -185,6 +197,7 @@ export class SceneGraph {
   private previewObservers: NodePreviewObserver[] = []
   private sourceMetadataPreservationDepth = 0
   private importedStateApplicationDepth = 0
+  private importedIdGenerator: (() => string) | undefined
   private layoutMutationDepth = 0
   private derivedLayoutDepth = 0
   positionPreviewVersion = 0
@@ -439,7 +452,7 @@ export class SceneGraph {
   private generateEntityId(issued?: Set<string>): string {
     let limit = Infinity
     for (let attempt = 0; attempt < limit; attempt++) {
-      const id = this.idGenerator()
+      const id = (this.importedIdGenerator ?? this.idGenerator)()
       if (this.isEntityIdTaken(id) || issued?.has(id)) {
         if (limit === Infinity) limit = this.entityIdCount() + (issued?.size ?? 0) + 1
         continue
@@ -548,10 +561,10 @@ export class SceneGraph {
       this.previewMutationDepth--
     }
   }
-  preserveSourceMetadataDuring(fn: () => void): void {
+  preserveSourceMetadataDuring<T>(fn: () => T): T {
     this.sourceMetadataPreservationDepth++
     try {
-      fn()
+      return fn()
     } finally {
       this.sourceMetadataPreservationDepth--
     }
@@ -560,12 +573,15 @@ export class SceneGraph {
     return this.sourceMetadataPreservationDepth > 0
   }
 
-  applyImportedStateDuring(fn: () => void): void {
+  applyImportedStateDuring<T>(fn: () => T, idGenerator?: () => string): T {
+    const previousGenerator = this.importedIdGenerator
+    this.importedIdGenerator = idGenerator ?? previousGenerator
     this.importedStateApplicationDepth++
     try {
-      this.preserveSourceMetadataDuring(fn)
+      return this.preserveSourceMetadataDuring(fn)
     } finally {
       this.importedStateApplicationDepth--
+      this.importedIdGenerator = previousGenerator
     }
   }
 

@@ -4,6 +4,7 @@
 
 ### Breaking changes
 
+- Every process mints new layer, variable, and collection IDs in a random session, as the editor already did, so `generateId()` no longer starts at `0:1` in the CLI, MCP, or scripts using `@kalka/scene-graph`. Layers that separate CLI or MCP runs add to copies of one `.fig` file are saved under their own GUIDs instead of the same `1:n` ones, while layers read from a file keep the same IDs on every run. Code that needs fixed IDs calls `setIdSession`, which now returns the previous session and takes only non-negative 31-bit sessions, or gives the `SceneGraph` its own generator (#770).
 - A paint's `gradientTransform` follows Figma's convention everywhere: it maps the layer's unit square onto gradient space, where a linear gradient runs from (0, 0.5) to (1, 0.5). Gradients made before this release, which used the inverse, draw differently; code that builds gradients by hand should use `linearGradientTransform` and `ellipticalGradientTransform` from the new `@kalka/scene-graph/gradient`, which also has Figma's default transform and stops.
 - `SceneNode` from `@kalka/scene-graph` has `style`, the layer's CSS declarations, which the scene graph keeps in step with the fields it maps and which also holds CSS no field can, so code that builds `SceneNode` objects itself must include it. The mapping between fields and CSS moved from `@kalka/dom-css` to `@kalka/scene-graph/css-model`.
 - The workspace packages are named `@kalka/*` instead of `@open-pencil/*`, such as `@kalka/core`, `@kalka/scene-graph` and `@kalka/vue`; update imports accordingly.
@@ -179,6 +180,7 @@
 
 ### Fixed
 
+- Layers made in the editor paste into Figma: about half the editor's sessions minted GUIDs above the signed 32-bit range Figma reads, and Figma dropped those layers from the paste.
 - Requests the app makes while web fonts load, such as storage reads and writes or AI chat calls, no longer go through the font proxy and fail: only requests to the font providers' own hosts are proxied.
 - Gradients from Figma files and Figma pastes draw as they do in Figma on the canvas, in thumbnails, and in HTML and SVG exports: they ran backwards or sat in the wrong place unless they were symmetric, because Figma's gradient transform was applied the wrong way round. SVG export and import keep a gradient exactly, and a new gradient starts as Figma's does, top to bottom from the fill colour to a darker shade, keeping its transform when switched between linear, radial, angular, and diamond.
 - Standalone HTML exports with external assets load their web fonts: the stylesheet named them from the wrong folder.

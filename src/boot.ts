@@ -1,8 +1,6 @@
 import { createHead } from '@unhead/vue/client'
 import { createApp, nextTick } from 'vue'
 
-import { setIdSession } from '@kalka/scene-graph'
-import { randomInt } from '@kalka/scene-graph/random'
 import { createRetainedScopePlugin } from '@kalka/vue'
 
 import './app.css'
@@ -23,8 +21,6 @@ import router from './router'
  * evaluates the app bundle and can still show the gate's guidance.
  */
 export async function boot(): Promise<void> {
-  // A session of its own, so layers this window creates never share IDs with a collaborator's.
-  setIdSession(randomInt() >>> 0)
   preloadFonts()
   const head = createHead()
   const app = createApp(App)

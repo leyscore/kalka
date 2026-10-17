@@ -10,6 +10,27 @@ function sequence(prefix: string): () => string {
 }
 
 describe('SceneGraph ID generator', () => {
+  test('scopes imported allocation through nested work and restores authoring after errors', () => {
+    const graph = new SceneGraph(sequence('7'))
+    const page = pageId(graph)
+    const imported = sequence('12')
+    expect(() =>
+      graph.applyImportedStateDuring(() => {
+        expect(graph.createNode('RECTANGLE', page).id).toBe('12:1')
+        graph.applyImportedStateDuring(() => {
+          expect(graph.createNode('RECTANGLE', page).id).toBe('12:2')
+        })
+        graph.applyImportedStateDuring(() => {
+          expect(graph.createNode('RECTANGLE', page).id).toBe('13:1')
+        }, sequence('13'))
+        expect(graph.createNode('RECTANGLE', page).id).toBe('12:3')
+        throw new Error('Interrupted import')
+      }, imported)
+    ).toThrow('Interrupted import')
+    expect(graph.isApplyingImportedState).toBe(false)
+    expect(graph.createNode('RECTANGLE', page).id).toBe('7:3')
+  })
+
   test('uses an injected generator for the root, pages, nodes, variables, and collections', () => {
     const graph = new SceneGraph(sequence('7'))
 
@@ -55,29 +76,30 @@ describe('SceneGraph ID generator', () => {
     expect(graph.createNode('RECTANGLE', pageId(graph)).id).toBe('7:6')
   })
 
-  test('the default generator keeps the shared session-zero scheme', () => {
-    const first = new SceneGraph()
-    const second = new SceneGraph()
-    const ids = [first.rootId, pageId(first), second.rootId, pageId(second)]
+  test('the default generator counts up in one random session outside the reserved sessions', () => {
+    const graph = new SceneGraph()
+    const [root, page] = [graph.rootId, pageId(graph)].map((id) => id.split(':').map(Number))
 
-    for (const id of ids) expect(id).toMatch(/^0:\d+$/)
-    expect(new Set(ids).size).toBe(ids.length)
+    expect(root[0]).toBeGreaterThanOrEqual(2)
+    expect(root[0]).toBeLessThan(2 ** 31)
+    expect(page).toEqual([root[0], root[1] + 1])
   })
 
   test('the ID session prefixes every ID minted afterwards', () => {
+    const previous = setIdSession(2_000_000_000)
     try {
-      setIdSession(4_000_000_000)
       const graph = new SceneGraph()
       const ids = [graph.rootId, pageId(graph), graph.createCollection('Colors').id]
-      for (const id of ids) expect(id).toMatch(/^4000000000:\d+$/)
+      for (const id of ids) expect(id).toMatch(/^2000000000:\d+$/)
     } finally {
-      setIdSession(0)
+      setIdSession(previous)
     }
-    expect(new SceneGraph().rootId).toMatch(/^0:\d+$/)
+    expect(new SceneGraph().rootId).toMatch(new RegExp(`^${previous}:\\d+$`))
   })
 
-  test('rejects an ID session that is not an unsigned 32-bit integer', () => {
-    for (const value of [-1, 1.5, 2 ** 32, Number.NaN]) {
+  // Figma reads GUID parts as signed 32-bit integers and drops a paste with larger ones.
+  test('rejects an ID session that is not a non-negative 31-bit integer', () => {
+    for (const value of [-1, 1.5, 2 ** 31, 2 ** 32, Number.NaN]) {
       expect(() => setIdSession(value)).toThrow(RangeError)
     }
   })

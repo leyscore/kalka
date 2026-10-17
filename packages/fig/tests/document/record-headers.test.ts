@@ -65,7 +65,7 @@ test('an archive reader with record headers builds the document records decoded 
   const parsed = parseFigBuffer(bytes.slice(0))
   const options = { derivedBounds: true, onUnresolvedProperty: () => undefined }
 
-  setIdSession(TEST_SESSION)
+  const previousSession = setIdSession(TEST_SESSION)
   try {
     const whole = materializeDocument(parsed.nodeChanges, parsed.blobs, {
       ...options,
@@ -75,7 +75,7 @@ test('an archive reader with record headers builds the document records decoded 
 
     expect(canonical(lazy.graph)).toBe(canonical(whole.graph))
   } finally {
-    setIdSession(0)
+    setIdSession(previousSession)
   }
 })
 
