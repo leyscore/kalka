@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.1.0-beta.2 — 2026-10-17
+
 ### Breaking changes
 
 - The app renders `render` JSX itself and no longer accepts the pre-rendered tree that earlier versions of `kalka-mcp` send, so an older `kalka-mcp` fails to render into this app version; update it with the app.
