@@ -319,7 +319,7 @@ test('assets insertion accounts for entered container coordinates', async ({ pag
 
 test('demo exposes component set assets', async ({ page }) => {
   const canvas = new CanvasHelper(page)
-  await page.goto('/demo')
+  await page.goto('/demo?fixture')
   await canvas.waitForInit()
 
   await page.getByTestId('left-panel-assets-tab').click()

@@ -73,15 +73,17 @@ function openFirstTab(): Tab {
 {
   const firstTab = activeTab.value ?? openFirstTab()
   if (createdInitialTab && route.meta.demo && !appRuntimeConfig.test) {
-    openDemoDocument(firstTab.store).catch((error: unknown) => {
-      console.error('[Demo] Could not open the demo document:', error)
-      toast.error(
-        notificationMessages.get().openFileFailed({
-          name: 'Demo',
-          error: error instanceof Error ? error.message : String(error)
-        })
-      )
-    })
+    openDemoDocument(firstTab.store, { fixture: 'fixture' in route.query }).catch(
+      (error: unknown) => {
+        console.error('[Demo] Could not open the demo document:', error)
+        toast.error(
+          notificationMessages.get().openFileFailed({
+            name: 'Demo',
+            error: error instanceof Error ? error.message : String(error)
+          })
+        )
+      }
+    )
   }
 }
 

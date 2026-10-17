@@ -86,7 +86,7 @@ test('stroke picker hsb saturation and brightness sliders update stroke color on
   page
 }) => {
   const canvas = new CanvasHelper(page)
-  await page.goto('/demo')
+  await page.goto('/demo?fixture')
   await canvas.waitForInit()
   await waitForDemo(page)
 

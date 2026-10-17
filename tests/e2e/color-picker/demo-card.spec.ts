@@ -18,7 +18,7 @@ async function dragSlider(page: Page, canvas: CanvasHelper, testId: string, rati
 }
 
 async function selectDemoCard(page: Page, canvas: CanvasHelper) {
-  await page.goto('/demo')
+  await page.goto('/demo?fixture')
   await canvas.waitForInit()
   await waitForDemo(page)
 

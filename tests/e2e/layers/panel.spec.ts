@@ -1,6 +1,6 @@
 import { expect, test, useEditorSetup } from '#tests/e2e/fixtures'
 
-const editor = useEditorSetup('/demo')
+const editor = useEditorSetup('/demo?fixture')
 
 function layerRows() {
   return editor.page.locator('[data-node-id]')

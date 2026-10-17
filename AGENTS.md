@@ -26,6 +26,7 @@ This file holds the repository map and the rules that apply everywhere. Rules fo
 | `tests`                | Central app, integration, E2E, native, and Figma acceptance tests                                                                                                                                 | `tests/AGENTS.md`                 |
 | `tools`, `.github`     | Private repo tooling, CI classification, releases, brand generation                                                                                                                               | `tools/AGENTS.md`                 |
 | `skills/kalka` | Installable agent skill | `packages/core/AGENTS.md` (Tools) |
+| `assets/demo`          | Kalka's landing page as a Kalka folder: the `/demo` document and a regression fixture                                                                                                             | `tools/AGENTS.md`                 |
 | `assets/brand`         | Canonical brand artwork                                                                                                                                                                           | `assets/brand/README.md`          |
 
 ## Commands

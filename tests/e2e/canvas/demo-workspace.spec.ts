@@ -5,7 +5,7 @@ import { waitForDemo } from '#tests/helpers/demo'
 
 async function openDemo(page: Page) {
   const canvas = new CanvasHelper(page)
-  await page.goto('/demo?no-chrome&no-rulers')
+  await page.goto('/demo?fixture&no-chrome&no-rulers')
   await canvas.waitForInit()
   await waitForDemo(page)
   return canvas
@@ -126,4 +126,35 @@ test('demo tokens and main-component edits survive undo', async ({ page }) => {
     'Open studio: bring your next idea'
   ])
   expect(result.restoredHeadlines).toEqual(['Open studio', 'Open studio'])
+})
+
+test('the demo is Kalka’s landing page, in every language it was drawn in', async ({ page }) => {
+  const canvas = new CanvasHelper(page)
+  await page.goto('/demo?no-chrome&no-rulers')
+  await canvas.waitForInit()
+  await page.waitForFunction(() => {
+    const store = window.kalka?.getStore?.()
+    return store?.state.documentName === 'Demo' && store.state.preparation === null
+  })
+  const opened = await page.evaluate(() => {
+    const store = window.kalka?.getStore?.()
+    if (!store) throw new Error('Editor unavailable')
+    return {
+      pages: store.graph.getPages().map((item) => item.name),
+      layers: store.graph.getChildren(store.state.currentPageId).length
+    }
+  })
+  expect(opened.pages).toEqual([
+    'English',
+    'Français',
+    'Deutsch',
+    'Español',
+    'Italiano',
+    '日本語',
+    'Polski',
+    'Русский',
+    '中文'
+  ])
+  expect(opened.layers).toBeGreaterThan(0)
+  canvas.assertNoErrors()
 })

@@ -52,7 +52,7 @@ export function createDocumentIOActions(
     getRenderer: () => editor.renderer,
     ...sourceState
   })
-  const { openFigFile } = createOpenActions({
+  const { openFigFile, openKalkaFile } = createOpenActions({
     editor,
     state,
     setDocumentSource: sourceActions.setDocumentSource,
@@ -92,6 +92,7 @@ export function createDocumentIOActions(
     startWatchingCurrentFile: sourceActions.startWatchingCurrentFile,
     disposeDocumentIO: sourceActions.disposeDocumentIO,
     openFigFile,
+    openKalkaFile,
     openDOMFile,
     importDOMText,
     hasUnsavedChanges: sourceActions.hasUnsavedChanges,

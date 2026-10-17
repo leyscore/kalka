@@ -10,6 +10,13 @@ import type { EditorPreparationController } from '@/app/editor/preparation/contr
 import { notificationMessages } from '@/app/i18n/notifications'
 import { toast } from '@/app/shell/ui'
 
+type DocumentReadFormat = 'fig' | 'kalka'
+
+async function readKalkaDocument(file: File) {
+  const { readKalkaArchive } = await import('@kalka/core/io/formats/kalka')
+  return readKalkaArchive(new Uint8Array(await file.arrayBuffer()))
+}
+
 type OpenDocumentState = EditorState & {
   documentName: string
 }
@@ -45,19 +52,28 @@ export function createOpenActions({
   fitCurrentPageToViewport,
   preparationController
 }: OpenFigFileOptions) {
-  async function openFigFile(file: File, handle?: FileSystemFileHandle, path?: string) {
+  /** Opens a `.fig` file, decoded off the main thread, or a `.kalka` archive, as `format` says. */
+  async function openDocument(
+    file: File,
+    format: DocumentReadFormat,
+    handle?: FileSystemFileHandle,
+    path?: string
+  ) {
     const load = preparationController.begin({ kind: 'document-open', subject: file.name })
     let succeeded = false
     try {
       load.update({ phase: 'reading', detail: file.name })
       await yieldToUI()
       load.update({ phase: 'decoding', detail: file.name })
-      const imported = await readFigDocument(file, load.signal)
+      const imported =
+        format === 'kalka'
+          ? await readKalkaDocument(file)
+          : await readFigDocument(file, load.signal)
       await yieldToUI()
       load.update({ phase: 'materializing', detail: file.name })
       await applyImportedDocument(editor, imported, load)
-      state.documentName = file.name.replace(/\.fig$/i, '')
-      setDocumentSource(file.name, 'fig', handle, path)
+      state.documentName = file.name.replace(/\.(?:fig|kalka)$/i, '')
+      setDocumentSource(file.name, format, handle, path)
       await fitCurrentPageToViewport()
       load.update({ phase: 'preparing-render', detail: state.documentName })
       editor.requestRender()
@@ -72,11 +88,11 @@ export function createOpenActions({
       })
       recordDocumentFailure({
         operation: 'open',
-        format: 'fig',
+        format,
         ...diagnostic,
         retryable: diagnostic.retryable
       })
-      console.error('Failed to open .fig file:', e)
+      console.error(`Failed to open .${format} file:`, e)
       toast.error(
         notificationMessages.get().openFileFailed({
           name: file.name,
@@ -88,7 +104,12 @@ export function createOpenActions({
     }
   }
 
-  return { openFigFile }
+  return {
+    openFigFile: (file: File, handle?: FileSystemFileHandle, path?: string) =>
+      openDocument(file, 'fig', handle, path),
+    /** A `.kalka` file: the files of a Kalka folder in one archive. */
+    openKalkaFile: (file: File) => openDocument(file, 'kalka')
+  }
 }
 
 export function createReloadActions({

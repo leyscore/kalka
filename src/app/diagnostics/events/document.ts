@@ -5,7 +5,7 @@ import type { DiagnosticEventInput } from '../types'
 
 const documentFailureSchema = v.object({
   operation: v.picklist(['open', 'save', 'import', 'export']),
-  format: v.picklist(['fig', 'pen', 'svg', 'dom-css', 'unknown']),
+  format: v.picklist(['fig', 'kalka', 'pen', 'svg', 'dom-css', 'unknown']),
   errorName: v.string(),
   errorCode: v.nullable(v.string()),
   retryable: v.nullable(v.boolean())

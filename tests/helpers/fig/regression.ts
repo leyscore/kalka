@@ -106,10 +106,15 @@ function folderFiles(root: string): Map<string, Uint8Array> {
   return files
 }
 
+/** A Kalka folder at `path`. */
+export function fingerprintKalkaFolder(path: string): PageFingerprint[] {
+  return fingerprintGraph(readKalkaFolder(folderFiles(path)))
+}
+
 /** A `.fig` file, or a Kalka folder, from `tests/fixtures`. */
 export async function fingerprintFixture(file: string): Promise<PageFingerprint[]> {
   const path = join(FIXTURES, file)
-  if (statSync(path).isDirectory()) return fingerprintGraph(readKalkaFolder(folderFiles(path)))
+  if (statSync(path).isDirectory()) return fingerprintKalkaFolder(path)
   const data = readFileSync(path)
   const graph = await parseFigFile(
     data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength),

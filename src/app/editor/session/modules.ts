@@ -77,6 +77,7 @@ export function createEditorStoreModules(
     ...pen,
     ...vectorEdit,
     openFigFile: documentIO.openFigFile,
+    openKalkaFile: documentIO.openKalkaFile,
     openDOMFile: documentIO.openDOMFile,
     importDOMText: documentIO.importDOMText,
     setViewportSize: documentIO.setViewportSize,

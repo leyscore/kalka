@@ -9,7 +9,7 @@ import Components from 'unplugin-vue-components/vite'
 import { defineConfig } from 'vite'
 
 import { ensureBrandAssets } from '@kalka/brand-tools'
-import { ensureDemoDocument } from '@kalka/demo-tools'
+import { demoFixturePlugin, ensureDemoDocument } from '@kalka/demo-tools'
 
 import packageJson from './package.json'
 import { viteBuildTarget } from './src/app/shell/support/baseline'
@@ -29,7 +29,10 @@ const host = process.env.TAURI_DEV_HOST
 const automationRoute = localAutomationRoute(host)
 
 export default defineConfig(async ({ command }) => {
-  await Promise.all([ensureBrandAssets(['web']), ensureDemoDocument()])
+  await Promise.all([
+    ensureBrandAssets(['web']),
+    ensureDemoDocument({ fixture: command === 'serve' })
+  ])
   return {
     resolve: {
       alias: createKalkaAliases(__dirname)
@@ -51,6 +54,7 @@ export default defineConfig(async ({ command }) => {
       Icons({ compiler: 'vue3', customCollections: { ai: aiIconCollection() } }),
       Components({ resolvers: [IconsResolver({ prefix: 'icon', customCollections: ['ai'] })] }),
       kalkaAutomationPlugin(command, host),
+      demoFixturePlugin(__dirname),
       vue(),
       kalkaPwaPlugin()
     ],
