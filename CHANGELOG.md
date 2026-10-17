@@ -40,6 +40,7 @@
 - The AI chat's agent, its cursor, and its working note show on the page a call edited, such as a script that edits another page, while the chat keeps working on its own page and your view follows only when following agents is on.
 - Crash recovery, chat history, diagnostics, local files, libraries, saved credentials, and the sync outbox keep saving after Safari suspends the tab. Safari closes their IndexedDB connections without telling the page, and every later write failed with "The database connection is closing" until the page was reloaded.
 - Undoing or redoing back to the last save shows the document as saved again, unless a collaborator or another change outside undo changed it since.
+- Tailwind exports keep corner radius: Tailwind JSX and HTML with Tailwind classes write radius from Tailwind's radius scale, such as `rounded-xl` for 12px, instead of classes like `rounded-3` that Tailwind v4 does not generate, and other values as `rounded-[20px]`.
 
 ## 0.1.0-beta.2 — 2026-10-17
 
@@ -310,6 +311,33 @@
 - An MCP client that crashes without closing its session no longer locks other clients out for 15 minutes once ten sessions are open: a new client takes the place of the session idle the longest, after a minute idle.
 - Opening a page with Chinese, Japanese or Korean text no longer exhausts memory: each installed fallback font, such as Hiragino Sans or PingFang, is read once instead of once per text.
 - A layer placed absolutely inside an auto layout frame stays in place on the canvas and in HTML exports instead of drifting far off its frame, and the layers beside it paint in layer order.
+- Tailwind exports keep corner radius: Tailwind JSX and HTML with Tailwind classes write radius from Tailwind's radius scale, such as `rounded-xl` for 12px, instead of classes like `rounded-3` that Tailwind v4 does not generate, and other values as `rounded-[20px]`.
+- ⌘Z right after arrow-key nudges undoes the nudges instead of the edit before them.
+- <kbd>⇧</kbd>-dragging a corner handle follows the side the pointer stretched most relative to the layer's size, as Figma does, instead of the side it moved more pixels along.
+- The AI provider list labels its "Your agents" and "Providers" groups in the app language instead of always in English.
+- Tooltips no longer appear when a popover such as the colour picker focuses its first control on open; they still show for keyboard focus. Moving the pointer along a row of buttons switches tooltips at once instead of blinking out, and tooltips centre on their control instead of sitting a few pixels off.
+- A layer that ignores auto layout follows its constraints when its auto layout frame resizes, as in Figma: a badge pinned to the right of a Hug button stays on its corner as the label grows or shrinks, a centred one stays centred, and one set to Left & right or Scale stretches with the frame, also inside a Fill frame and for the layers in a stretched overlay. Layers in a reopened `.fig` file keep the places the file saved until an edit resizes their frame.
+- Polygons and stars draw and export to SVG with their corner radius and smoothing as Figma rounds them, inner star corners included, and copy to and from Figma with their point count and a star's inner ratio; they were drawn with sharp corners, also from `.fig` files, and pasted into Figma as empty shapes.
+- The font picker opens at the current font instead of the top of the list.
+- Undo after adding, switching, or removing auto layout, or wrapping layers in it with <kbd>⇧</kbd><kbd>A</kbd>, puts back every layer the layout moved or resized, and the new frame takes the place of the topmost layer it wraps, as in Figma. Setting the layout a frame already has, or aligning layers that auto layout places, no longer records an undo step, and undoing a drag out of an auto layout frame puts the layer back in its slot.
+- A Fill child in a Hug frame keeps its size, as in Figma, instead of collapsing the frame: along the layout the frame hugs the child as it is, and across it the frame hugs the other children, keeping its size when every child fills. A Fill line stays a line, placed where its row aligns the other layers.
+- A frame in a reopened `.fig` file lays out again when you resize it, add auto layout, padding, or a gap to it, or add, move, or remove a layer in it or in an auto layout inside it, instead of keeping its layers where the file had them; a Fill layer fills a resized frame while you drag.
+- A Hug frame grows with its text while the text is typed, as in Figma, instead of only when editing ends.
+- `figma.currentPage.backgrounds` in the plugin API and `eval` scripts takes Figma paints, as `fills` does.
+- Cmd+Z and Shift+Cmd+Z undo and redo while a fill, stroke, or colour picker is open, as in Figma, and undo reverts the picker's latest change rather than the edit before it.
+- A frame's name reads on the section it sits in: on a dark page, frames in a white section had white names on white. Names now fade more on light backgrounds than on dark ones, as Figma's do.
+- `lineHeight` and `letterSpacing` in the plugin API and `eval` scripts read and write Figma's `{ unit, value }`, including percent of the font size and `{ unit: 'AUTO' }`; assigning those objects used to leave the text undrawn.
+- Gradients from Figma files and Figma pastes draw as they do in Figma: they ran backwards or sat in the wrong place unless they were symmetric, because the canvas applied Figma's gradient transform the wrong way round. SVG export and import keep a gradient exactly, and a new gradient starts as Figma's does, top to bottom from the fill colour to a darker shade, keeping its transform when switched between linear, radial, angular, and diamond.
+- Changing stroke position, per-side stroke weights, or an effect with several layers selected changes all of them, not only the first.
+- Draw layer blur, drop and inner shadows, and background blur with Figma's falloff. They spread about 15% too far, with a long faint edge Figma does not draw; SVG export keeps Figma's own `stdDeviation` of half the radius.
+- Load the fonts of SVG text before placing it from `import_svg`, so centred and right-aligned text sits where Figma puts it; `figma.loadFontAsync` in scripts now loads the font instead of doing nothing.
+- Gradient stops in the fill picker show their full position and opacity, such as 100%, instead of cutting them off; each stop's colour, hex, and opacity share one field as in the properties panel.
+- Keep design variable bindings and honor `replace_id` and `insert_index` when `render` runs through the stdio MCP server (`openpencil-mcp`) against the desktop or web app, as it already did through the HTTP endpoint (#830).
+- Draw layers masked by a group, such as Figma's clip path groups, instead of hiding them; a group used as a mask masks with what its layers draw.
+- Draw what a mask masks through the mask's opacity and layer blur, as Figma does, so a half-transparent or blurred mask fades or softens its layers instead of masking them fully. An outline mask ignores how opaque its fill is, and a luminance mask counts its opacity twice, as in Figma.
+- Import SVG files that start with an XML declaration or doctype, such as Illustrator and Inkscape exports, instead of reporting no supported elements.
+- Keep `fill-opacity` and `stroke-opacity` when importing SVG instead of drawing those paints opaque.
+- Use an API key saved in Settings for the open AI chat right away, including when asking again after a failed request, instead of only after reloading; the failure's notice closes once the request is sent again.
 - Renaming a section title on the canvas keeps the title's size, weight, and place. Section titles draw in Inter SemiBold rather than an emboldened regular weight, and labels that are not rotated sit on whole pixels, so they stay crisp.
 - Reject an argument an AI, MCP, CLI, or WebMCP tool does not take, such as `properties: { y: 500 }` for `update_node` or `font: { family }` for `set_font`, and name it, instead of reporting success without changing anything (#977).
 - Choose an instance's variant by its variant property in design JSX, such as `<Instance component="Button" State="Pressed" />`, without a warning that the property is unsupported.

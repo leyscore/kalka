@@ -37,6 +37,16 @@ describe('Tailwind JSX appearance classes', () => {
     expect(tw(graph, node.id)).toContain('rounded-lg')
   })
 
+  // Radius has no spacing scale: `rounded-3` or `rounded-4` would generate nothing.
+  test('border radius — on the 4px grid, from the radius scale', () => {
+    const graph = makeGraph()
+    const radius = (cornerRadius: number) =>
+      tw(graph, graph.createNode('RECTANGLE', pageId(graph), { cornerRadius }).id)
+    expect(radius(12)).toContain('rounded-xl')
+    expect(radius(16)).toContain('rounded-2xl')
+    expect(radius(20)).toContain('rounded-[20px]')
+  })
+
   test('border radius — default (4px) omits suffix', () => {
     const graph = makeGraph()
     const node = graph.createNode('RECTANGLE', pageId(graph), {
