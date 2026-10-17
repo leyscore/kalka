@@ -3,14 +3,40 @@ import { describe, expect, test } from 'bun:test'
 import { createAPI } from '../helpers'
 
 describe('auto-layout extras', () => {
-  test('primaryAxisSizingMode maps FIXED/AUTO', () => {
+  test('primaryAxisSizingMode maps FIXED/AUTO, and a new frame hugs along its main axis', () => {
+    // As in Figma desktop 126, a new frame's main axis hugs, which auto layout keeps.
     const api = createAPI()
     const frame = api.createFrame()
     frame.layoutMode = 'VERTICAL'
-    expect(frame.primaryAxisSizingMode).toBe('FIXED')
-    frame.primaryAxisSizingMode = 'AUTO'
     expect(frame.primaryAxisSizingMode).toBe('AUTO')
     expect(frame.layoutSizingVertical).toBe('HUG')
+    frame.primaryAxisSizingMode = 'FIXED'
+    expect(frame.primaryAxisSizingMode).toBe('FIXED')
+    expect(frame.layoutSizingVertical).toBe('FIXED')
+  })
+
+  test('a resize fixes hugging axes, and a grid starts fixed on both', () => {
+    // Repeats a Figma desktop 126 script: the frame hugs its layer until it is resized.
+    const api = createAPI()
+    const frame = api.createFrame()
+    const box = api.createRectangle()
+    box.resize(40, 20)
+    frame.appendChild(box)
+    frame.layoutMode = 'VERTICAL'
+    expect([frame.primaryAxisSizingMode, frame.counterAxisSizingMode, frame.height]).toEqual([
+      'AUTO',
+      'FIXED',
+      20
+    ])
+    frame.resize(200, 120)
+    expect([frame.primaryAxisSizingMode, frame.counterAxisSizingMode, frame.height]).toEqual([
+      'FIXED',
+      'FIXED',
+      120
+    ])
+    const grid = api.createFrame()
+    grid.layoutMode = 'GRID'
+    expect([grid.primaryAxisSizingMode, grid.counterAxisSizingMode]).toEqual(['FIXED', 'FIXED'])
   })
 
   test('counterAxisSizingMode maps FIXED/AUTO', () => {

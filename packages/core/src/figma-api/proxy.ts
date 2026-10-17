@@ -37,6 +37,7 @@ import { installVisualNodeProxyAccessors } from './accessors/visual'
 import { installComponentPropertyAccessors } from './components'
 import type { FigmaFontName } from './fonts'
 import type { FigmaFrameNode, FigmaInstanceNode } from './node-types'
+import { installInstanceOverrideAccessors, type FigmaInstanceOverride } from './overrides'
 import { getPageBackgrounds, setPageBackgrounds } from './page-backgrounds'
 import * as PluginData from './plugin-data'
 import { nodeProxyToJSON } from './serialization'
@@ -157,6 +158,8 @@ export class FigmaNodeProxy {
   declare clearExplicitVariableModeForCollection: (
     collection: { readonly id: string } | string
   ) => void
+  declare readonly overrides: FigmaInstanceOverride[] | undefined
+  declare resetOverrides: () => void
 
   declare strokeWeight: number
   declare strokeAlign: string
@@ -529,4 +532,5 @@ installTextNodeProxyAccessors(FigmaNodeProxy.prototype, proxyInternals)
 installLayoutNodeProxyAccessors(FigmaNodeProxy.prototype, proxyInternals)
 installVariableModeNodeProxyAccessors(FigmaNodeProxy.prototype, proxyInternals)
 installComponentPropertyAccessors(FigmaNodeProxy.prototype, proxyInternals)
+installInstanceOverrideAccessors(FigmaNodeProxy.prototype, proxyInternals)
 installSlotAccessors(FigmaNodeProxy.prototype, proxyInternals)

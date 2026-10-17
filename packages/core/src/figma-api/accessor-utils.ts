@@ -1,3 +1,5 @@
+import { isEqual } from 'es-toolkit/predicate'
+
 import {
   fitEnclosingGroups,
   FITTED_CONTAINER_TYPES,
@@ -56,6 +58,7 @@ export function prepareFollowedFieldEdit(
     | 'mask-type'
     | 'vector-data'
     | 'handle-mirroring'
+    | 'stack-counter-align-content'
 ): void {
   if (!node.parentId) return
   const scope = slotScope(scene, node.parentId)
@@ -110,8 +113,13 @@ export function updateNode(
   if (Object.keys(applied).length === 0) return
   // Auto-sizing text measures its new content, as the editor's updates do.
   Object.assign(applied, textAutoResizeChanges(g.getNode(id), applied))
+  const before = g.getNode(id)
+  // Figma overrides only what an edit changes, so setting a layer's own value claims nothing.
+  const changed = Object.keys(applied).filter(
+    (key) => !before || !isEqual(Reflect.get(applied, key), Reflect.get(before, key))
+  )
   g.updateNode(id, applied)
-  recordInstanceOverride(g, id, Object.keys(applied))
+  recordInstanceOverride(g, id, changed)
   if (Object.keys(applied).some((key) => GEOMETRY_FIELDS.has(key))) {
     fitGroupsAround(g, g.getNode(id)?.parentId, hostFitOptions(target, internals))
   }

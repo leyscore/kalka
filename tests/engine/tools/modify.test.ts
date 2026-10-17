@@ -149,7 +149,8 @@ describe('set_layout', () => {
 
     const rawBefore = getNodeOrThrow(graph, frame.id)
     expect(rawBefore.layoutMode).toBe('NONE')
-    expect(rawBefore.primaryAxisSizing).toBe('FIXED')
+    // A new frame hugs along its main axis, as in Figma.
+    expect(rawBefore.primaryAxisSizing).toBe('HUG')
     expect(rawBefore.counterAxisSizing).toBe('FIXED')
 
     const tool = getTool('set_layout')

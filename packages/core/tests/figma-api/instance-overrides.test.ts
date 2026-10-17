@@ -41,6 +41,9 @@ test('a layer inside an instance refuses the fields it always takes from its com
   )
   expect(() => (layer.isMask = true)).toThrow(refused('isMask', 'is-mask'))
   expect(() => (layer.maskType = 'LUMINANCE')).toThrow(refused('maskType', 'mask-type'))
+  expect(() => (layer.counterAxisAlignContent = 'SPACE_BETWEEN')).toThrow(
+    refused('counterAxisAlignContent', 'stack-counter-align-content')
+  )
 })
 
 test('a vector inside an instance refuses its path and handle mirroring', async () => {

@@ -49,7 +49,19 @@ export function installLayoutNodeProxyAccessors(
   internals: NodeProxyInternals
 ): void {
   Object.defineProperties(prototype, {
-    layoutMode: simpleAccessor(internals, 'layoutMode'),
+    layoutMode: {
+      get(this: ProxyThis): LayoutMode {
+        return raw(this, internals).layoutMode
+      },
+      set(this: ProxyThis, value: LayoutMode) {
+        // A grid sizes to its tracks, so Figma fixes both axes; a flow keeps the sizing it had.
+        const sizing =
+          value === 'GRID'
+            ? { primaryAxisSizing: 'FIXED' as const, counterAxisSizing: 'FIXED' as const }
+            : {}
+        updateNode(this, internals, { layoutMode: value, ...sizing })
+      }
+    },
     // Figma's grids, as a frame's Layout guide section shows them.
     layoutGrids: {
       get(this: ProxyThis): readonly LayoutGrid[] {
@@ -84,7 +96,20 @@ export function installLayoutNodeProxyAccessors(
     layoutWrap: mappedAccessor(internals, 'layoutWrap'),
     primaryAxisSizingMode: axisSizingModeAccessor(internals, 'primaryAxisSizing'),
     counterAxisSizingMode: axisSizingModeAccessor(internals, 'counterAxisSizing'),
-    counterAxisAlignContent: mappedAccessor(internals, 'counterAxisAlignContent'),
+    counterAxisAlignContent: {
+      get(this: ProxyThis): SceneNode['counterAxisAlignContent'] {
+        return raw(this, internals).counterAxisAlignContent
+      },
+      set(this: ProxyThis, value: SceneNode['counterAxisAlignContent']) {
+        prepareFollowedFieldEdit(
+          graph(this, internals),
+          raw(this, internals),
+          'counterAxisAlignContent',
+          'stack-counter-align-content'
+        )
+        updateNode(this, internals, { counterAxisAlignContent: value })
+      }
+    },
     itemReverseZIndex: simpleAccessor(internals, 'itemReverseZIndex'),
     strokesIncludedInLayout: simpleAccessor(internals, 'strokesIncludedInLayout'),
     layoutPositioning: mappedAccessor(internals, 'layoutPositioning'),

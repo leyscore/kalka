@@ -17,6 +17,7 @@
 - The Layout guide section follows Figma: each guide is a row with a summary such as "5 columns" or "Grid 10px" that switches between grid, columns, and rows, with its settings behind the row's icon, including Auto counts. With several frames selected it lists their guides while they match and edits every frame in one undo step, and offers Add, which gives each frame one new guide, while they differ; a new guide is Figma's 10 px grid.
 - A click up to 3.5 screen pixels outside a shape selects it, as in Figma, so hairlines and small dots are easy to pick; a frame's edge stays exact. A click on a section's empty area selects the section while a drag there still selects the layers inside it, and a right-click over the empty area of a frame with layers, or of a section, selects it for the menu.
 - With nothing selected, a layer copied out of a frame or section pastes back into it, or onto the page in the middle of the view when that place is out of view, as in Figma.
+- In scripts, new frames and components hug along their main axis, which auto layout keeps when a script turns it on, a resize fixes a hugging auto layout frame's axes, and a grid fixes both, as in Figma. `instance.overrides` lists each layer edited in an instance with Figma's field names, `resetOverrides()` returns the instance to its component while keeping component property values, setting a field to the value it has no longer counts as an override, and `counterAxisAlignContent` is refused on a layer inside an instance.
 
 ### Fixed
 

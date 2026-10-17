@@ -191,9 +191,10 @@ export class FigmaAPI implements NodeProxyHost {
   /** New layers start as the editor's tools make them, which is how Figma's plugin API makes them. */
   private _createNode(type: NodeType): FigmaNodeProxy {
     const defaults = newLayerDefaults(type, this.theme)
-    // Figma's plugin API makes a line 100 wide with no height, and a section 496 square.
+    // Figma's plugin API makes a line with no height, a 496 px section, and a hugging frame.
     if (type === 'LINE') defaults.height = 0
     if (type === 'SECTION') Object.assign(defaults, { width: 496, height: 496 })
+    if (type === 'FRAME' || type === 'COMPONENT') defaults.primaryAxisSizing = 'HUG'
     const node = this.graph.createNode(type, this._currentPageId, defaults)
     return this.wrapNode(node.id)
   }
