@@ -54,6 +54,8 @@ test('layout guide live numeric edits form one Undo record', async ({ page }) =>
   })
   const value = () =>
     page.evaluate((id) => window.kalka?.getStore?.().graph.getNode(id)?.layoutGrids[0].count, id)
+  // Layout guides are rows, as in Figma: their settings open from the row's icon.
+  await page.locator('[data-layout-guide] [data-property="layout-guide-settings"]').first().click()
   const field = page.getByRole('spinbutton', { name: 'Count', exact: true })
   await field.dblclick()
   await field.fill('12')
