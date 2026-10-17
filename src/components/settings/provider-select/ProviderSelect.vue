@@ -9,9 +9,11 @@ import {
   IS_TAURI,
   type AIProviderID
 } from '@kalka/core/constants'
+import { useAIMessages } from '@kalka/vue'
 
 import AppGroupedSelect from '@/components/ui/select/AppGroupedSelect.vue'
 
+const ai = useAIMessages()
 const mcpAvailable = ref(false)
 
 async function checkMCPHealth(retries = 3, delayMs = 1000) {
@@ -76,7 +78,7 @@ const groups = computed(() => {
 
   if (acpAgents.value.length) {
     result.push({
-      label: 'Your agents',
+      label: ai.value.providerGroupAgents,
       items: acpAgents.value.map((agent) => ({
         value: `acp:${agent.id}`,
         label: agent.name
@@ -85,7 +87,7 @@ const groups = computed(() => {
   }
 
   result.push({
-    label: acpAgents.value.length ? 'Providers' : undefined,
+    label: acpAgents.value.length ? ai.value.providerGroupProviders : undefined,
     items: [...AI_PROVIDERS]
       .sort((left, right) => left.name.localeCompare(right.name))
       .map((provider) => ({

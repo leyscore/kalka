@@ -41,6 +41,7 @@
 - Crash recovery, chat history, diagnostics, local files, libraries, saved credentials, and the sync outbox keep saving after Safari suspends the tab. Safari closes their IndexedDB connections without telling the page, and every later write failed with "The database connection is closing" until the page was reloaded.
 - Undoing or redoing back to the last save shows the document as saved again, unless a collaborator or another change outside undo changed it since.
 - Tailwind exports keep corner radius: Tailwind JSX and HTML with Tailwind classes write radius from Tailwind's radius scale, such as `rounded-xl` for 12px, instead of classes like `rounded-3` that Tailwind v4 does not generate, and other values as `rounded-[20px]`.
+- The AI provider list labels its "Your agents" and "Providers" groups in the app language instead of always in English.
 
 ## 0.1.0-beta.2 — 2026-10-17
 
