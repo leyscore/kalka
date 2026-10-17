@@ -104,7 +104,7 @@ describe('what an agent is working on', () => {
   test('is the outermost layers it created and the layers it named and changed', () => {
     const { frame, heading } = section()
     const card = store.graph.createNode('FRAME', pageId(), { name: 'Card' })
-    const finish = store.capturePageChange(pageId())
+    const finish = store.captureDocumentChange(pageId())
     const created = store.graph.createNode('FRAME', frame.id, { name: 'New' })
     store.graph.createNode('TEXT', created.id, { name: 'Inside', text: 'x' })
     store.graph.updateNode(card.id, { width: 300 })

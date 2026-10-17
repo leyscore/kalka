@@ -1,4 +1,4 @@
-import { executeAtomicTool, isEmptyPageChange, type PageChange } from '@kalka/core/editor'
+import { executeAtomicTool, isEmptyDocumentChange, type DocumentChange } from '@kalka/core/editor'
 import type { FigmaAPI } from '@kalka/core/figma-api'
 import type { ToolDef } from '@kalka/core/tools'
 
@@ -42,28 +42,29 @@ export async function executeAtomicEditorTool(
 }
 
 /**
- * Run a structural edit as one undo step by recording what it changes on its page, as the AI
- * chat does, so `undo` reverts what an automation client created, moved, or deleted.
+ * Run a structural edit as one undo step by recording what it changes in the document, as the
+ * AI chat does, so `undo` reverts what an automation client created, moved, or deleted on any
+ * page, and the variables it changed.
  */
-export async function executeWithPageUndo<T>(
+export async function executeWithDocumentUndo<T>(
   store: EditorStore,
   pageId: string,
   label: string,
   run: () => Promise<T>,
   /** Told what the edit changed, also when it failed, as soon as it is recorded. */
-  onChange?: (change: PageChange) => void
+  onChange?: (change: DocumentChange) => void
 ): Promise<T> {
-  const finishChange = store.capturePageChange(pageId)
+  const finishChange = store.captureDocumentChange(pageId)
   try {
     return await run()
   } finally {
     const change = finishChange()
     // Read-only scripts and no-op edits must not leave empty steps in the user's history.
-    if (!isEmptyPageChange(change)) {
-      store.pushUndoEntry({
+    if (!isEmptyDocumentChange(change)) {
+      store.pushUndoStep({
         label,
-        forward: () => store.restorePageChange(change, 'after'),
-        inverse: () => store.restorePageChange(change, 'before')
+        forward: () => store.restoreDocumentChange(change, 'after'),
+        inverse: () => store.restoreDocumentChange(change, 'before')
       })
     }
     onChange?.(change)

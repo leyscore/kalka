@@ -1,6 +1,6 @@
 import { uniq } from 'es-toolkit'
 
-import type { PageChange } from '@kalka/core/editor'
+import type { DocumentChange } from '@kalka/core/editor'
 import type { SceneGraph } from '@kalka/scene-graph'
 import type { AgentWorkMark } from '@kalka/vue'
 
@@ -109,7 +109,7 @@ export function outermostLayers(graph: SceneGraph, ids: readonly string[]): stri
 }
 
 /** Every layer an edit created or changed, for the record of what agents wrote. */
-export function writtenLayers(change: PageChange): string[] {
+export function writtenLayers(change: DocumentChange): string[] {
   return uniq([
     ...change.created.map((node) => node.id),
     ...change.updated.map((update) => update.id)
@@ -124,7 +124,7 @@ export function writtenLayers(change: PageChange): string[] {
  */
 export function workedLayers(
   graph: SceneGraph,
-  change: PageChange | null,
+  change: DocumentChange | null,
   targets: readonly string[]
 ): string[] {
   if (!change) return outermostLayers(graph, targets)

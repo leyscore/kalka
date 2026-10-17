@@ -30,6 +30,7 @@ export class UndoManager {
   private readonly onChange: (() => void) | undefined
   private readonly onRecord: ((entry: UndoEntry) => UndoEntry) | undefined
   private replaying = 0
+  private readonly settlers = new Set<() => void>()
 
   constructor(options: UndoManagerOptions = {}) {
     this.limit = options.limit ?? DEFAULT_HISTORY_LIMIT
@@ -65,6 +66,29 @@ export class UndoManager {
     return this.replaying > 0
   }
 
+  /**
+   * Records an entry as a step of its own, outside the batches being built, such as an agent's
+   * edit made while a colour picker is open. Batches settle first, so the step follows the
+   * changes they hold so far.
+   */
+  pushStep(recorded: UndoEntry): void {
+    this.settle()
+    this.pushUndoEntry(this.onRecord?.(recorded) ?? recorded)
+  }
+
+  /**
+   * Registers a hook that commits an edit still being coalesced, such as a run of picker changes.
+   * Undo and redo run every hook first, so they act on the newest change.
+   */
+  onBeforeHistory(settle: () => void): () => void {
+    this.settlers.add(settle)
+    return () => this.settlers.delete(settle)
+  }
+
+  private settle() {
+    for (const settle of this.settlers) settle()
+  }
+
   private replay(run: () => void): void {
     this.replaying++
     try {
@@ -75,6 +99,7 @@ export class UndoManager {
   }
 
   undo(): string | null {
+    this.settle()
     const entry = this.undoStack.pop()
     if (!entry) return null
     this.replay(() => entry.inverse())
@@ -84,6 +109,7 @@ export class UndoManager {
   }
 
   redo(): string | null {
+    this.settle()
     const entry = this.redoStack.pop()
     if (!entry) return null
     this.replay(() => entry.forward())
@@ -140,8 +166,10 @@ export class UndoManager {
     return this.batches.length > 0
   }
 
+  /** Committed history, or changes in an open batch that a settling hook commits first. */
   get canUndo(): boolean {
-    return this.undoStack.length > 0
+    if (this.undoStack.length > 0) return true
+    return this.settlers.size > 0 && this.batches.some((batch) => batch.entries.length > 0)
   }
 
   get canRedo(): boolean {

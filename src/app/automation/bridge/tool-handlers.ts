@@ -26,7 +26,7 @@ import {
   AUTOMATION_UNDO_LABEL,
   automationUndoLabel,
   executeAtomicEditorTool,
-  executeWithPageUndo
+  executeWithDocumentUndo
 } from '@/app/automation/execution/editor'
 import { ensureGraphFonts } from '@/app/editor/fonts'
 import { useLibraryService } from '@/app/libraries'
@@ -172,7 +172,7 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
         // An agent's new layers stay hidden until the edit's reveal plays them in.
         const hold = fromAgent ? holdAgentCreations(store) : null
         try {
-          result = await executeWithPageUndo(
+          result = await executeWithDocumentUndo(
             store,
             pageId,
             automationUndoLabel(def.name),

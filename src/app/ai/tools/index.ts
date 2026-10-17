@@ -1,7 +1,7 @@
 import { tool } from 'ai'
 import { isPlainObject } from 'es-toolkit'
 
-import { graphFromPageSnapshot, isEmptyPageChange } from '@kalka/core/editor'
+import { graphFromPageSnapshot, isEmptyDocumentChange } from '@kalka/core/editor'
 import type { FigmaAPI } from '@kalka/core/figma-api'
 import {
   registerComponentCatalog,
@@ -122,7 +122,7 @@ export function createAITools(store: EditorStore, diagnosticContext?: AIDiagnost
       recordRunBaseline(run, store.snapshotPage(pageId))
     }
     const undoBefore = store.undo.peekUndo()
-    const finishChange = store.capturePageChange(pageId)
+    const finishChange = store.captureDocumentChange(pageId)
     // The agent's new layers stay hidden until the edit's reveal plays them in.
     const hold = toolChangesDocument(def) ? holdAgentCreations(store) : null
     try {
@@ -133,13 +133,13 @@ export function createAITools(store: EditorStore, diagnosticContext?: AIDiagnost
     } finally {
       hold?.stop()
       const change = finishChange()
-      if (!isEmptyPageChange(change)) run.changedCalls.add(toolCallId)
+      if (!isEmptyDocumentChange(change)) run.changedCalls.add(toolCallId)
       // Atomic tools record their own undo entry; an edit that changed nothing records none.
-      if (!isAtomicTool(def) && !isEmptyPageChange(change)) {
-        store.pushUndoEntry({
+      if (!isAtomicTool(def) && !isEmptyDocumentChange(change)) {
+        store.pushUndoStep({
           label: aiUndoLabel(def.name),
-          forward: () => store.restorePageChange(change, 'after'),
-          inverse: () => store.restorePageChange(change, 'before')
+          forward: () => store.restoreDocumentChange(change, 'after'),
+          inverse: () => store.restoreDocumentChange(change, 'before')
         })
       }
       // Every entry the run pushes belongs to its turn; atomic and page edits both label

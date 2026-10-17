@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Breaking changes
+
+- `@kalka/core/editor` records an AI or automation edit as a `DocumentChange` instead of a `PageChange`: `isEmptyPageChange` and `graphFromPageChange` are now `isEmptyDocumentChange` and `graphFromDocumentChange`, the editor's `capturePageChange` and `restorePageChange` are `captureDocumentChange` and `restoreDocumentChange`, and `pushUndoStep` records such an edit as an undo step of its own.
+
 ### Added
 
 - `find_nodes` finds layers by CSS value or variable for bulk edits and token migrations: a color in any notation (hex, rgb, hsl, oklch, with alpha and a tolerance), lengths in px or rem, any declaration of a layer's CSS, the layers bound to a variable directly or through an alias, and the layers holding a variable's value without binding it, each with the field to bind. Names and text take `*` and `?` wildcards, searches cover the current page, another page, the selection, a layer, or the whole document, and results are capped with a total count. It also works while Kalka shares only the selection.
@@ -32,6 +36,7 @@
 - Resizing an instance by a handle no longer makes the size of every layer its constraints move an override, so a later component edit still resizes them.
 - A text copy restyled in an instance keeps its own size through a component edit, a layer that fills its parent takes the size layout gives it rather than the component's, and frames that hug their layers paste and save into Figma at their size, stretched children included.
 - Path editing closes when its vector is deleted, by undo or a script, or another document opens, instead of staying open on a layer that no longer exists.
+- Undo takes back what the AI chat, an MCP client, or the CLI changed on other pages, to pages themselves, and to variables and collections, not only on the page the edit ran from, and the chat's change review shows a change made on another page or one that removed the page it ran on. A script's `null` result reaches the agent as `null`, and every script result is sent as the JSON MCP and the CLI print.
 
 ## 0.1.0-beta.2 — 2026-10-17
 

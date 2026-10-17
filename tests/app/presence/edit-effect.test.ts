@@ -71,7 +71,7 @@ function editor() {
 /** Builds a card the way a tool would, and what the edit changed. */
 function cardEdit(store: ReturnType<typeof editor>['store'], pageId: string) {
   const heading = store.graph.createNode('TEXT', pageId, { name: 'Heading', text: 'Old' })
-  const finish = store.capturePageChange(pageId)
+  const finish = store.captureDocumentChange(pageId)
   const card = store.graph.createNode('FRAME', pageId, { name: 'Card', x: 40, y: 40 })
   const title = store.graph.createNode('TEXT', card.id, {
     name: 'Title',
@@ -151,7 +151,7 @@ describe("an agent's new layers wait for their reveal", () => {
 
   test('they show as the reveal plays them in', () => {
     const { store, pageId, held } = editor()
-    const finish = store.capturePageChange(pageId)
+    const finish = store.captureDocumentChange(pageId)
     const hold = holdAgentCreations(store)
     store.graph.createNode('FRAME', pageId, { name: 'Card' })
     hold.stop()
@@ -162,7 +162,7 @@ describe("an agent's new layers wait for their reveal", () => {
 
   test('layers past the reveal limit show at once instead of staying hidden', () => {
     const { store, pageId, shown, held } = editor()
-    const finish = store.capturePageChange(pageId)
+    const finish = store.captureDocumentChange(pageId)
     const hold = holdAgentCreations(store)
     for (let index = 0; index < MAX_REVEALED_LAYERS + 10; index++)
       store.graph.createNode('RECTANGLE', pageId, { name: `Tile ${index}`, x: index * 10 })
@@ -206,7 +206,7 @@ describe("an agent's new layers wait for their reveal", () => {
       },
       settled: true
     })
-    const finish = store.capturePageChange(pageId)
+    const finish = store.captureDocumentChange(pageId)
     const hold = holdAgentCreations(store)
     store.graph.createNode('FRAME', pageId, { name: 'Card' })
     hold.stop()

@@ -36,3 +36,63 @@ test('discarding nested batches preserves committed undo/redo without replay or 
   undo.commitBatch()
   expect(undo.redo()).toBe('Second')
 })
+
+// A picker coalesces its changes into one batch until it goes idle; ⌘Z pressed before that must
+// undo those changes, not the edit before them.
+test('undo commits an edit still being coalesced and undoes it first', () => {
+  const undo = new UndoManager()
+  const values: string[] = []
+  const entry = (label: string) => ({
+    label,
+    forward: () => values.push(`redo ${label}`),
+    inverse: () => values.push(`undo ${label}`)
+  })
+  undo.push(entry('Earlier'))
+  undo.beginBatch('Change fill')
+  undo.push(entry('Picker'))
+  const stop = undo.onBeforeHistory(() => {
+    if (undo.isBatching) undo.commitBatch()
+  })
+
+  expect(undo.undo()).toBe('Change fill')
+  expect(values).toEqual(['undo Picker'])
+  stop()
+  expect(undo.undo()).toBe('Earlier')
+})
+
+// The picker's first change in a document with no history yet must still be undoable.
+test('a pending batch that will settle counts as undoable', () => {
+  const undo = new UndoManager()
+  const noop = () => undefined
+  undo.beginBatch('Change fill')
+  undo.push({ label: 'Picker', forward: noop, inverse: noop })
+  expect(undo.canUndo).toBe(false)
+  undo.onBeforeHistory(() => {
+    if (undo.isBatching) undo.commitBatch()
+  })
+  expect(undo.canUndo).toBe(true)
+  expect(undo.undo()).toBe('Change fill')
+})
+
+// An agent's edit lands while a picker is still coalescing: it is a step of its own, after the
+// picker's changes so far, rather than part of the picker's step.
+test('a step pushed during a settling batch stays its own step, in order', () => {
+  const undo = new UndoManager()
+  const noop = () => undefined
+  const entry = (label: string) => ({ label, forward: noop, inverse: noop })
+  undo.beginBatch('Change fill')
+  undo.push(entry('Picker'))
+  undo.onBeforeHistory(() => {
+    if (!undo.isBatching) return
+    undo.commitBatch()
+    undo.beginBatch('Change fill')
+  })
+
+  undo.pushStep(entry('Agent: set_fill'))
+  undo.push(entry('Picker again'))
+
+  expect(undo.undo()).toBe('Change fill')
+  expect(undo.undo()).toBe('Agent: set_fill')
+  expect(undo.undo()).toBe('Change fill')
+  expect(undo.canUndo).toBe(false)
+})

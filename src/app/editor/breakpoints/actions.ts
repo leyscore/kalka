@@ -5,7 +5,7 @@ import {
   type SceneNode
 } from '@kalka/scene-graph'
 
-import { executeWithPageUndo } from '@/app/automation/execution/editor'
+import { executeWithDocumentUndo } from '@/app/automation/execution/editor'
 import type { EditorStore } from '@/app/editor/active-store'
 
 /** Breakpoints the Design panel offers, from Framer's and Webflow's common widths. */
@@ -26,7 +26,7 @@ export async function addBreakpoint(
   const pageId = store.graph.getNode(primaryId)?.parentId
   if (!pageId) return
   let created: SceneNode | undefined
-  await executeWithPageUndo(store, pageId, 'Add breakpoint', async () => {
+  await executeWithDocumentUndo(store, pageId, 'Add breakpoint', async () => {
     created = createBreakpoint(store.graph, primaryId, width, name)
     store.runLayoutForNode(pageId)
   })

@@ -1,4 +1,4 @@
-import type { PageChange } from '@kalka/core/editor'
+import type { DocumentChange } from '@kalka/core/editor'
 import { planReveal, type AgentEdit, type RevealStep } from '@kalka/vue'
 
 import type { EditorStore } from '@/app/editor/active-store'
@@ -15,7 +15,7 @@ export const CURSOR_STOP_MS = 150
 export const MAX_HELD_LAYERS = 64
 
 /** What an edit created and which text it wrote, from what it changed on its page. */
-export function agentEditFromChange(change: PageChange): AgentEdit {
+export function agentEditFromChange(change: DocumentChange): AgentEdit {
   return {
     // Parents first, which is also how a reveal chooses among many.
     created: change.created.map((node) => node.id),

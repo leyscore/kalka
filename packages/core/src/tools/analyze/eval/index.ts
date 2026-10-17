@@ -16,12 +16,15 @@ export const evalCode = defineTool({
   }),
 
   execute: async (figma, { code }) => {
-    const result = await compileScript(code)(figma)
-    if (result && typeof result === 'object') {
-      const toJSON = Reflect.get(result, 'toJSON')
-      if (typeof toJSON === 'function') return toJSON.call(result)
-    }
-    if (result !== undefined && result !== null) return result
-    return { ok: true, message: 'Code executed (no return value)' }
+    const result: unknown = await compileScript(code)(figma)
+    // `null` is a result, such as a lookup that found nothing; only nothing returned is not.
+    if (result === undefined) return { ok: true, message: 'Code executed (no return value)' }
+    // JSON has no text for these; their description is the closest.
+    if (typeof result === 'function' || typeof result === 'symbol') return String(result)
+    // Callers read a result as JSON: MCP and the CLI print it, and the AI chat's model takes
+    // nothing else. So a script gets back what printing shows: nodes, even inside objects, as
+    // their JSON, `NaN` as null, and a `Map` as `{}`.
+    const json = JSON.stringify(result)
+    return JSON.parse(json) as unknown
   }
 })
