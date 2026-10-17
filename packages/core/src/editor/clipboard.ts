@@ -16,7 +16,11 @@ import { createClipboardFontActions } from './clipboard/fonts'
 import { deleteIds, recreateSnapshots, restoreDeletedEntries } from './clipboard/history'
 import type { PasteHistoryOperation } from './clipboard/paste/replace'
 import { replaceTargetsWithCreated, selectedReplacementTargets } from './clipboard/paste/replace'
-import { pastedComponentIds, resolvePasteTarget } from './clipboard/paste/target'
+import {
+  pastedComponentIds,
+  requestedPasteTarget,
+  resolvePasteTarget
+} from './clipboard/paste/target'
 import { createClipboardPlacementActions } from './clipboard/placement'
 import { acceptsChildren, prepareSlotEdits } from './components/slots'
 import { collectSubtrees, restoreSubtree, snapshotSubtree } from './history/subtree'
@@ -209,6 +213,21 @@ export function createClipboardActions(ctx: EditorContext) {
     }
   }
 
+  /**
+   * Places pasted layers: centred on the cursor, back where they were in the frame they came out
+   * of, or by Figma's paste rules.
+   */
+  function placeKalkaPaste(
+    created: string[],
+    sourceParentId: string | undefined,
+    place: { pasteTarget: string; requestedTarget: string; returning: boolean; cursorPos?: Vector }
+  ) {
+    const { pasteTarget, requestedTarget, returning, cursorPos } = place
+    if (cursorPos) placementActions.centerNodesAtCanvasPoint(created, pasteTarget, cursorPos)
+    else if (returning) placementActions.placeReturned(created, pasteTarget)
+    else placementActions.placePasted(created, sourceParentId, pasteTarget, requestedTarget)
+  }
+
   function pasteKalkaNodes(
     nodes: Array<SceneNode & { children?: SceneNode[] }>,
     images: Map<string, Uint8Array>,
@@ -233,7 +252,12 @@ export function createClipboardActions(ctx: EditorContext) {
       return node.id
     }
 
-    const requestedTarget = replacementTargets[0]?.parentId ?? resolvePasteTarget(ctx)
+    const { requestedTarget, returningTo } = requestedPasteTarget(
+      ctx,
+      nodes.map((node) => node.parentId),
+      replacementTargets[0]?.parentId ?? null,
+      !!cursorPos
+    )
     const pasteTarget = cycleSafeParent(
       ctx.graph,
       requestedTarget,
@@ -274,14 +298,12 @@ export function createClipboardActions(ctx: EditorContext) {
       return created
     }
 
-    if (cursorPos) placementActions.centerNodesAtCanvasPoint(created, pasteTarget, cursorPos)
-    else
-      placementActions.placePasted(
-        created,
-        nodes[0]?.parentId ?? undefined,
-        pasteTarget,
-        requestedTarget
-      )
+    placeKalkaPaste(created, nodes[0]?.parentId ?? undefined, {
+      pasteTarget,
+      requestedTarget,
+      returning: returningTo === pasteTarget,
+      cursorPos
+    })
     computeAllLayouts(ctx.graph, ctx.state.currentPageId)
     ctx.setSelectedIds(new Set(created))
 

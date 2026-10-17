@@ -15,6 +15,8 @@
 - MCP clients get `use_figma`, also available to turn on for the built-in AI chat, which runs a Figma Plugin API script on the open document as Figma's tool of that name does, so scripts and skills written for it run locally. It returns the script's value with the layers it created, changed, and removed and its console output, records each call as one undo step, and names any Plugin API member Kalka lacks; like `eval`, MCP offers it with `KALKA_MCP_EVAL=1`. Scripts also get Figma's `figma.variables`, `node.setBoundVariable`, `node.boundVariables`, paints bound with `setBoundVariableForPaint`, explicit variable modes, `figma.setCurrentPageAsync`, `getStyledTextSegments`, and `{ unit, value }` line height and letter spacing.
 - In scripts, `setProperties` switches an instance's variant alongside its other properties, and fails without changing anything when no variant has the values or a swap is unknown, with Figma's messages; `resize` places a frame's layers by their constraints while `resizeWithoutConstraints` leaves them, and an instance's layers follow their constraints either way. `kalka eval -o` lays out a script's edits before saving, and `@kalka/core/figma-api` exports `flushPendingLayout` for hosts that save scripts' results.
 - The Layout guide section follows Figma: each guide is a row with a summary such as "5 columns" or "Grid 10px" that switches between grid, columns, and rows, with its settings behind the row's icon, including Auto counts. With several frames selected it lists their guides while they match and edits every frame in one undo step, and offers Add, which gives each frame one new guide, while they differ; a new guide is Figma's 10 px grid.
+- A click up to 3.5 screen pixels outside a shape selects it, as in Figma, so hairlines and small dots are easy to pick; a frame's edge stays exact. A click on a section's empty area selects the section while a drag there still selects the layers inside it, and a right-click over the empty area of a frame with layers, or of a section, selects it for the menu.
+- With nothing selected, a layer copied out of a frame or section pastes back into it, or onto the page in the middle of the view when that place is out of view, as in Figma.
 
 ### Fixed
 
@@ -25,6 +27,7 @@
 - A quick click or trackpad tap with the text tool on an empty part of the canvas opens the new text for typing, instead of leaving an empty layer that took no input.
 - A copy inside an instance that sizes itself to its own content, such as a badge's count or an auto layout frame that hugs layers the instance shows differently, keeps its size through a component edit and as a `.fig` file opens, and text an instance property sets is measured again. An instance that clears a fill, stroke, effect, or text style its component applies keeps it cleared after a `.fig` save.
 - Layout guides set in the panel or by a script save to `.fig` files, including Auto counts, and scripts read and set `layoutGrids` in Figma's shape whichever shape a file gave them.
+- Resizing an instance by a handle no longer makes the size of every layer its constraints move an override, so a later component edit still resizes them.
 
 ## 0.1.0-beta.2 — 2026-10-17
 

@@ -157,6 +157,25 @@ export function createClipboardPlacementActions(ctx: EditorContext) {
     }
   }
 
+  /**
+   * Places layers pasted back into the frame they were copied out of, where they were in it, as
+   * Figma does. Out of view, they go onto the page in the middle of the view instead.
+   */
+  function placeReturned(nodeIds: string[], parentId: string) {
+    const view = viewportRect()
+    const items = nodeIds.map((id) => ctx.graph.getNode(id)).filter(isNotNil)
+    if (!view || items.length === 0) return
+    const origin = ctx.graph.getAbsolutePosition(parentId)
+    const box = computeBounds(items)
+    if (overlaps({ ...box, x: box.x + origin.x, y: box.y + origin.y }, view)) return
+    const pageId = ctx.state.currentPageId
+    for (const id of nodeIds) ctx.graph.reparentNode(id, pageId)
+    centerNodesAtCanvasPoint(nodeIds, pageId, {
+      x: view.x + view.width / 2,
+      y: view.y + view.height / 2
+    })
+  }
+
   /** Centers layers of `parentId` on a canvas point, through the parent's rotation and flips. */
   function centerNodesAtCanvasPoint(nodeIds: string[], parentId: string, point: Vector) {
     const toParent = Matrix.invert(getParentWorldMatrix(ctx.graph.getNode(parentId), ctx.graph))
@@ -169,6 +188,7 @@ export function createClipboardPlacementActions(ctx: EditorContext) {
     centerNodesAtCanvasPoint,
     duplicatePosition,
     placeForeignPaste,
-    placePasted
+    placePasted,
+    placeReturned
   }
 }

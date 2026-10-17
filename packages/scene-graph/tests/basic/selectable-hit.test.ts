@@ -261,3 +261,63 @@ describe('unfilled frames inside a top-level frame', () => {
     expect(click(430, 700)).toBe('Empty in section')
   })
 })
+
+describe('a click just outside a shape', () => {
+  // Figma desktop 126 takes a click up to 3.5 screen pixels outside any shape, at every zoom,
+  // whatever its size; the caller gives that distance in canvas units.
+  test('selects the shape within the pad, and nothing beyond it', () => {
+    const graph = new SceneGraph()
+    const page = pageId(graph)
+    const dot = graph.createNode('RECTANGLE', page, {
+      x: 100,
+      y: 100,
+      width: 6,
+      height: 6,
+      fills: FILL
+    })
+    const line = graph.createNode('RECTANGLE', page, {
+      x: 100,
+      y: 200,
+      width: 100,
+      height: 1,
+      fills: FILL
+    })
+    const hit = (x: number, y: number, zoom: number) =>
+      graph.hitTestSelectable(x, y, page, new Set(), 3.5 / zoom)?.name ?? null
+    for (const zoom of [0.5, 1, 4]) {
+      const inside = 3.4 / zoom
+      const outside = 3.6 / zoom
+      expect([hit(106 + inside, 103, zoom), hit(106 + outside, 103, zoom)]).toEqual([
+        dot.name,
+        null
+      ])
+      expect([hit(150, 201 + inside, zoom), hit(150, 201 + outside, zoom)]).toEqual([
+        line.name,
+        null
+      ])
+    }
+  })
+
+  test('reaches a shape at its group’s edge, and the group only through its shapes', () => {
+    const graph = new SceneGraph()
+    const page = pageId(graph)
+    const group = graph.createNode('GROUP', page, {
+      name: 'Group',
+      x: 100,
+      y: 100,
+      width: 50,
+      height: 50
+    })
+    graph.createNode('RECTANGLE', group.id, { name: 'Box', width: 50, height: 50, fills: FILL })
+    expect(graph.hitTestSelectable(152, 120, page, new Set(), 3.5)?.name).toBe('Group')
+    expect(graph.hitTestDeep(152, 120, page, 3.5)?.name).toBe('Box')
+    expect(graph.hitTestSelectable(155, 120, page, new Set(), 3.5)).toBeNull()
+  })
+
+  test('leaves a frame’s edge exact, so the page around it starts a marquee', () => {
+    const graph = new SceneGraph()
+    const page = pageId(graph)
+    graph.createNode('FRAME', page, { name: 'Empty', width: 100, height: 100, fills: FILL })
+    expect(graph.hitTestSelectable(102, 50, page, new Set(), 3.5)).toBeNull()
+  })
+})

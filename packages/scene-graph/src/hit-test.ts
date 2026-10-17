@@ -49,20 +49,22 @@ function hasTransformedAncestor(
   return transformed
 }
 
+/** Whether the point lies in the node's box, grown by `pad` canvas units on every side. */
 function containsPoint(
   px: number,
   py: number,
   node: SceneNode,
   graph: SceneGraph,
-  transformCache: Map<string, boolean>
+  transformCache: Map<string, boolean>,
+  pad = 0
 ): boolean {
   if (!hasTransformedAncestor(node, graph, transformCache)) {
     const absolute = graph.getAbsolutePosition(node.id)
     return (
-      px >= absolute.x &&
-      px <= absolute.x + node.width &&
-      py >= absolute.y &&
-      py <= absolute.y + node.height
+      px >= absolute.x - pad &&
+      px <= absolute.x + node.width + pad &&
+      py >= absolute.y - pad &&
+      py <= absolute.y + node.height + pad
     )
   }
 
@@ -72,7 +74,9 @@ function containsPoint(
   if (!inv) return false
 
   const [localX, localY] = Matrix.mapPoints(inv, [px, py])
-  return localX >= 0 && localX <= node.width && localY >= 0 && localY <= node.height
+  return (
+    localX >= -pad && localX <= node.width + pad && localY >= -pad && localY <= node.height + pad
+  )
 }
 
 function hitTestOpaqueContainer(
@@ -82,10 +86,11 @@ function hitTestOpaqueContainer(
   child: SceneNode,
   childId: string,
   deep: boolean,
-  transformCache: Map<string, boolean>
+  transformCache: Map<string, boolean>,
+  pad: number
 ): SceneNode | null {
   if (!containsPoint(px, py, child, graph, transformCache)) return null
-  const childHit = hitTestChildren(graph, px, py, childId, deep, transformCache)
+  const childHit = hitTestChildren(graph, px, py, childId, deep, transformCache, pad)
   if (childHit) return child
   if (hasVisibleFillOrStroke(child)) return child
   return null
@@ -97,17 +102,18 @@ function hitTestTransparentContainer(
   child: SceneNode,
   childId: string,
   deep: boolean,
-  transformCache: Map<string, boolean>
+  transformCache: Map<string, boolean>,
+  pad: number
 ): SceneNode | null {
   if (child.type === 'GROUP') {
-    if (!containsPoint(px, py, child, graph, transformCache)) return null
-
-    if (deep) return hitTestChildren(graph, px, py, childId, deep, transformCache) ?? child
-
-    return child
+    // A group fits its layers, so a padded click on one at its edge falls just outside it.
+    if (!containsPoint(px, py, child, graph, transformCache, pad)) return null
+    const childHit = hitTestChildren(graph, px, py, childId, deep, transformCache, pad)
+    if (childHit) return deep ? childHit : child
+    return containsPoint(px, py, child, graph, transformCache) ? child : null
   }
 
-  const childHit = hitTestChildren(graph, px, py, childId, deep, transformCache)
+  const childHit = hitTestChildren(graph, px, py, childId, deep, transformCache, pad)
   if (childHit) {
     if (child.locked) return child
     return childHit
@@ -121,13 +127,18 @@ function hitTestTransparentContainer(
   return null
 }
 
+/**
+ * The topmost layer under the point among a container's children. `pad`, in canvas units, grows
+ * each leaf layer's box, as Figma takes a click a few screen pixels outside a shape.
+ */
 function hitTestChildren(
   graph: SceneGraph,
   px: number,
   py: number,
   parentId: string,
   deep = false,
-  transformCache = new Map<string, boolean>()
+  transformCache = new Map<string, boolean>(),
+  pad = 0
 ): SceneNode | null {
   const parent = graph.nodes.get(parentId)
   if (!parent) return null
@@ -142,17 +153,26 @@ function hitTestChildren(
     if (!child || child.internalOnly || !child.visible) continue
     if (CONTAINER_TYPES.has(child.type)) {
       if (OPAQUE_CONTAINER_TYPES.has(child.type) && !deep) {
-        const hit = hitTestOpaqueContainer(graph, px, py, child, childId, deep, transformCache)
+        const hit = hitTestOpaqueContainer(graph, px, py, child, childId, deep, transformCache, pad)
         if (hit) return hit
         continue
       }
 
-      const hit = hitTestTransparentContainer(graph, px, py, child, childId, deep, transformCache)
+      const hit = hitTestTransparentContainer(
+        graph,
+        px,
+        py,
+        child,
+        childId,
+        deep,
+        transformCache,
+        pad
+      )
       if (hit) return hit
       continue
     }
 
-    if (containsPoint(px, py, child, graph, transformCache)) return child
+    if (containsPoint(px, py, child, graph, transformCache, pad)) return child
   }
 
   return null
@@ -172,10 +192,11 @@ export function hitTestDeep(
   graph: SceneGraph,
   px: number,
   py: number,
-  scopeId?: string
+  scopeId?: string,
+  pad = 0
 ): SceneNode | null {
   const scope = scopeId ?? graph.rootId
-  return hitTestChildren(graph, px, py, scope, true)
+  return hitTestChildren(graph, px, py, scope, true, new Map(), pad)
 }
 
 /**
@@ -253,9 +274,10 @@ export function hitTestSelectable(
   px: number,
   py: number,
   scopeId: string,
-  selectedIds: ReadonlySet<string>
+  selectedIds: ReadonlySet<string>,
+  pad = 0
 ): SceneNode | null {
-  const deepest = hitTestChildren(graph, px, py, scopeId, true)
+  const deepest = hitTestChildren(graph, px, py, scopeId, true, new Map(), pad)
   if (!deepest) {
     const scope = graph.nodes.get(scopeId)
     return scope ? frameChildAt(graph, scope, px, py) : null

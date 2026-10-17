@@ -3,6 +3,7 @@ import { CONTAINER_TYPES } from '@kalka/scene-graph/node-defaults'
 
 import { acceptingParent } from '#core/editor/components/slots'
 import type { EditorContext } from '#core/editor/types'
+import { findPageId } from '#core/io/subgraph'
 
 /**
  * Where ordinary paste and file drops insert; replacement paste uses its target's parent.
@@ -20,6 +21,42 @@ function pasteTargetCandidate(ctx: Pick<EditorContext, 'graph' | 'state'>): stri
   if (!node) return ctx.state.currentPageId
   if (CONTAINER_TYPES.has(node.type) && node.type !== 'CANVAS') return node.id
   return node.parentId ?? ctx.state.currentPageId
+}
+
+/**
+ * Where a paste with nothing selected goes, as Figma pastes it: back into the frame or section
+ * the layers were copied out of, while it still exists on this page and takes layers. Null for
+ * top-level layers, layers from several places, or a parent that is gone.
+ */
+export function sourcePasteTarget(
+  ctx: Pick<EditorContext, 'graph' | 'state'>,
+  sourceIds: readonly (string | null)[]
+): string | null {
+  const [id, ...rest] = sourceIds
+  if (!id || rest.some((other) => other !== id)) return null
+  if (ctx.state.selectedIds.size > 0 || ctx.state.enteredContainerId) return null
+  const node = ctx.graph.getNode(id)
+  if (!node || node.type === 'CANVAS' || findPageId(ctx.graph, id) !== ctx.state.currentPageId) {
+    return null
+  }
+  return acceptingParent(ctx, id) === id ? id : null
+}
+
+/**
+ * Where a paste goes before cycles are checked: a replaced layer's parent, the frame a paste with
+ * nothing selected came from (`returningTo`), or the selection's paste target.
+ */
+export function requestedPasteTarget(
+  ctx: Pick<EditorContext, 'graph' | 'state'>,
+  sourceIds: readonly (string | null)[],
+  replacedParentId: string | null,
+  atCursor: boolean
+): { requestedTarget: string; returningTo: string | null } {
+  const returningTo = replacedParentId || atCursor ? null : sourcePasteTarget(ctx, sourceIds)
+  return {
+    requestedTarget: replacedParentId ?? returningTo ?? resolvePasteTarget(ctx),
+    returningTo
+  }
 }
 
 type PastedTree = SceneNode & { children?: PastedTree[] }

@@ -11,6 +11,7 @@ import { createCanvasPointer } from '#vue/canvas/pointer/use'
 import { createTextEditInput } from '#vue/canvas/text-edit/input'
 import { handleToolMouseDown } from '#vue/canvas/tools/input'
 import { createCanvasTransformInput } from '#vue/canvas/transform/input'
+import { finishMarquee } from '#vue/canvas/transform/marquee'
 import {
   handleBendHandleMove,
   handleNodeEditPointerUp,
@@ -409,7 +410,7 @@ export function useCanvasInput(
       }
       if (editor.state.rotationPreview === preview) editor.setRotationPreview(null)
     } else if (d.type === 'draw') d.commit()
-    else if (d.type === 'marquee') editor.setMarquee(null)
+    else if (d.type === 'marquee') finishMarquee(editor, d)
 
     drag.value = null
     cursorOverride.value = null

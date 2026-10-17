@@ -1,4 +1,4 @@
-import { CORNER_ROTATE_ZONE, HANDLE_HIT_RADIUS } from '@kalka/core/constants'
+import { CORNER_ROTATE_ZONE, HANDLE_HIT_RADIUS, LAYER_HIT_PAD } from '@kalka/core/constants'
 import type { Editor } from '@kalka/core/editor'
 import {
   createSceneGeometry,
@@ -49,18 +49,12 @@ export function hitTestInEditorScope(
 
   const renderer = editor.renderer
   if (!renderer) return null
-  if (scopeId) {
-    if (!editor.graph.getNode(scopeId)) {
-      editor.state.enteredContainerId = null
-    } else {
-      return deep
-        ? editor.graph.hitTestDeep(cx, cy, scopeId)
-        : editor.graph.hitTestSelectable(cx, cy, scopeId, editor.state.selectedIds)
-    }
-  }
+  const pad = LAYER_HIT_PAD / renderer.zoom
+  if (scopeId && !editor.graph.getNode(scopeId)) editor.state.enteredContainerId = null
+  const scope = editor.state.enteredContainerId ?? editor.state.currentPageId
   return deep
-    ? editor.graph.hitTestDeep(cx, cy, editor.state.currentPageId)
-    : editor.graph.hitTestSelectable(cx, cy, editor.state.currentPageId, editor.state.selectedIds)
+    ? editor.graph.hitTestDeep(cx, cy, scope, pad)
+    : editor.graph.hitTestSelectable(cx, cy, scope, editor.state.selectedIds, pad)
 }
 
 export function isInsideEditorContainerBounds(

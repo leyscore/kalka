@@ -217,3 +217,53 @@ describe('paste placement', () => {
     expect(selected()).toMatchObject({ parentId: holder.id, x: 80, y: 40 })
   })
 })
+
+// Repeats Figma desktop 126: a paste with nothing selected.
+describe('paste with nothing selected', () => {
+  function sourceSetup() {
+    const page = setup()
+    editor.state.zoom = 0.2
+    const frame = node('FRAME', page, { x: 1000, y: 100, width: 300, height: 200 })
+    const box = node('RECTANGLE', frame.id, { x: 40, y: 50, width: 60, height: 30 })
+    return { page, frame, box }
+  }
+
+  async function pasteWithNothingSelected(snapshot: Awaited<ReturnType<typeof copy>>) {
+    editor.select([])
+    await editor.pasteSnapshot(snapshot)
+    return selected()
+  }
+
+  test('a layer copied out of a frame or section goes back into it', async () => {
+    const { page, frame, box } = sourceSetup()
+    expect(await pasteWithNothingSelected(await copy(box.id))).toMatchObject({
+      parentId: frame.id,
+      x: 40,
+      y: 50
+    })
+    const section = node('SECTION', page, { x: 1400, y: 100, width: 400, height: 300 })
+    const inSection = node('RECTANGLE', section.id, { x: 30, y: 40 })
+    expect(await pasteWithNothingSelected(await copy(inSection.id))).toMatchObject({
+      parentId: section.id,
+      x: 30,
+      y: 40
+    })
+  })
+
+  test('out of view it goes onto the page, in the middle of the view', async () => {
+    const { page, box } = sourceSetup()
+    const snapshot = await copy(box.id)
+    editor.state.panX = -20000
+    editor.state.panY = -20000
+    const pasted = await pasteWithNothingSelected(snapshot)
+    expect(pasted.parentId).toBe(page)
+    expect(worldCenter(pasted)).toEqual({ x: 102000, y: 101500 })
+  })
+
+  test('a layer whose frame is gone goes onto the page', async () => {
+    const { page, frame, box } = sourceSetup()
+    const snapshot = await copy(box.id)
+    editor.graph.deleteNode(frame.id)
+    expect((await pasteWithNothingSelected(snapshot)).parentId).toBe(page)
+  })
+})

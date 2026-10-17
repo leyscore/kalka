@@ -2,6 +2,7 @@ import type { Editor } from '@kalka/core/editor'
 import { getAxisAlignedWorldBounds } from '@kalka/scene-graph/coordinate'
 import type { Rect } from '@kalka/scene-graph/primitives'
 
+import { isPastPointerDragThreshold } from '#vue/shared/input/drag-threshold'
 import type { DragMarquee } from '#vue/shared/input/types'
 
 function intersects(a: Rect, b: Rect) {
@@ -38,4 +39,15 @@ export function handleMarqueeMove(editor: Editor, d: DragMarquee, cx: number, cy
 
   editor.select(hits)
   editor.setMarquee(marquee)
+}
+
+/** Ends a marquee; a click on a section's empty area, without a drag, selects it, as in Figma. */
+export function finishMarquee(editor: Editor, d: DragMarquee) {
+  const container = d.containerId ? editor.graph.getNode(d.containerId) : undefined
+  const marquee = editor.state.marquee
+  const zoom = editor.state.zoom
+  const dragged =
+    !!marquee && isPastPointerDragThreshold(0, 0, marquee.width * zoom, marquee.height * zoom)
+  if (!dragged && container?.type === 'SECTION') editor.select([container.id])
+  editor.setMarquee(null)
 }
