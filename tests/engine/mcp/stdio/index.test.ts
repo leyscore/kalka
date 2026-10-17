@@ -14,101 +14,25 @@ import { startServer, type ServerHandle } from '#mcp/server'
 
 import { expectDefined, getNodeOrThrow } from '#tests/helpers/assert'
 import {
+  answerServerRequests,
+  clientCapabilities,
+  graphWithDefaultNames,
+  unsavedDocumentList,
+  type ClientAnswers,
+  type ClientRequests
+} from '#tests/helpers/mcp/interaction'
+import {
   connectMockBrowser,
   waitForBrowserRegistration,
   type MockBrowser
 } from '#tests/helpers/mcp/server'
+import { createStdioClient } from '#tests/helpers/mcp/stdio-client'
 
 const AUTH_TOKEN = 'test-stdio-token'
 const NO_DOCUMENT_AUTH_TOKEN = 'test-stdio-no-document-token'
 const isUnix = process.platform !== 'win32'
 const SOCKET_DIR = join(tmpdir(), `kalka-test-stdio-${process.pid}`)
 const SOCKET_PATH = isUnix ? join(SOCKET_DIR, 'mcp.sock') : null
-
-async function createStdioClient(socketPath: string, authToken: string | null) {
-  const { Client } = await import('@modelcontextprotocol/client')
-  const { StdioClientTransport } = await import('@modelcontextprotocol/client/stdio')
-  const env: Record<string, string> = {}
-  for (const [key, value] of Object.entries(process.env)) {
-    if (!key.startsWith('KALKA_MCP_') && value !== undefined) {
-      env[key] = value
-    }
-  }
-  if (process.env.KALKA_MCP_DISCOVERY_PATH) {
-    env.KALKA_MCP_DISCOVERY_PATH = process.env.KALKA_MCP_DISCOVERY_PATH
-  }
-  env.PATH = process.env.PATH ?? ''
-  // Only set KALKA_MCP_SOCKET when a socket path exists.
-  // An empty string on Windows would break the stdio bridge's transport
-  // discovery (it would try to connect to an empty socket path).
-  if (socketPath) {
-    env.KALKA_MCP_SOCKET = socketPath
-  }
-  if (authToken) {
-    env.KALKA_MCP_AUTH_TOKEN = authToken
-  }
-  const transport = new StdioClientTransport({
-    command: process.execPath,
-    args: ['packages/mcp/src/stdio.ts'],
-    env,
-    stderr: 'pipe'
-  })
-
-  const client = new Client({ name: 'test-stdio-client', version: '0.0.0' })
-
-  let stderrBuffer = ''
-
-  // The bridge must reach the MCP server before tool calls can be sent.
-  // Wait for the stderr readiness marker — this confirms server reachability
-  // and ready=true, but document/browser availability is still checked per
-  // tool call.
-  // Also reject on timeout or stream end so the test fails fast if the
-  // bridge never connects.
-  const BRIDGE_TIMEOUT = 10_000
-  const bridgeConnected = new Promise<void>((resolve, reject) => {
-    const timer = setTimeout(() => {
-      reject(new Error('Bridge did not connect within timeout'))
-    }, BRIDGE_TIMEOUT)
-
-    const stderr = transport.stderr
-    if (stderr && 'on' in stderr) {
-      const stream = stderr as NodeJS.ReadableStream
-      stream.on('data', (chunk: Buffer) => {
-        // Buffer stderr so the readiness marker is not missed if it
-        // straddles a chunk boundary.
-        stderrBuffer += chunk.toString()
-        if (stderrBuffer.includes('Connected to Kalka')) {
-          clearTimeout(timer)
-          resolve()
-        }
-      })
-      stream.on('end', () => {
-        clearTimeout(timer)
-        reject(new Error('Bridge stderr stream ended before connection'))
-      })
-      stream.on('error', (err: Error) => {
-        clearTimeout(timer)
-        reject(new Error(`Bridge stderr error: ${err.message}`))
-      })
-    } else {
-      clearTimeout(timer)
-      reject(new Error('No stderr stream available'))
-    }
-  })
-
-  // Start the MCP session and wait for the bridge to be ready in parallel.
-  // client.connect() handles the JSON-RPC initialize/handshake;
-  // bridgeConnected confirms the bridge can actually reach the server.
-  try {
-    await Promise.all([client.connect(transport), bridgeConnected])
-  } catch (err) {
-    await client.close().catch(() => undefined)
-    await transport.close().catch(() => undefined)
-    throw err
-  }
-
-  return { client, transport, stderrText: () => stderrBuffer }
-}
 
 function textContent(content: unknown): string {
   const items = content as { type: string; text: string }[]
@@ -393,4 +317,100 @@ describe('MCP stdio readiness without an open document', () => {
       if (isUnix) await rm(SOCKET_DIR, { recursive: true, force: true })
     }
   }, 30000)
+})
+
+describe('MCP stdio bridge asking its client', () => {
+  const ASKING_TOKEN = 'test-stdio-interaction-token'
+  const ASKING_SOCKET_DIR = join(tmpdir(), `kalka-test-stdio-interaction-${process.pid}`)
+  const ASKING_SOCKET_PATH = isUnix ? join(ASKING_SOCKET_DIR, 'mcp.sock') : null
+
+  const AskingResult = v.object({
+    content: v.tupleWithRest([v.object({ type: v.literal('text'), text: v.string() })], v.unknown())
+  })
+
+  interface AskingContext {
+    handle: ServerHandle
+    browser: MockBrowser
+    client: Client
+    transport: StdioClientTransport
+    asked: ClientRequests
+  }
+
+  let asking: AskingContext | null = null
+
+  afterEach(async () => {
+    await asking?.client.close().catch(() => undefined)
+    await asking?.transport.close().catch(() => undefined)
+    asking?.browser.close()
+    await asking?.handle.close()
+    if (isUnix) await rm(ASKING_SOCKET_DIR, { recursive: true, force: true })
+    asking = null
+  })
+
+  async function connectAsking(
+    answers: ClientAnswers,
+    graph = new SceneGraph()
+  ): Promise<AskingContext> {
+    if (isUnix) await mkdir(ASKING_SOCKET_DIR, { recursive: true })
+    const handle = await startServer({
+      httpPort: 0,
+      withTcp: true,
+      socketPath: ASKING_SOCKET_PATH,
+      authToken: ASKING_TOKEN,
+      mcpRoot: null
+    })
+    const browser = await connectMockBrowser(handle.httpPort, graph, ASKING_TOKEN)
+    await waitForBrowserRegistration(handle.httpPort)
+    let asked: ClientRequests = { forms: [], prompts: [] }
+    const { client, transport } = await createStdioClient(handle.socketPath ?? '', ASKING_TOKEN, {
+      capabilities: clientCapabilities(answers),
+      prepare: (created) => {
+        asked = answerServerRequests(created, answers)
+      }
+    })
+    asking = { handle, browser, client, transport, asked }
+    return asking
+  }
+
+  async function callAsking(client: Client, name: string, args: Record<string, unknown> = {}) {
+    const result = v.parse(AskingResult, await client.callTool({ name, arguments: args }))
+    return JSON.parse(result.content[0].text) as unknown
+  }
+
+  describe('asking through the stdio bridge', () => {
+    test('asks the user before closing a document with unsaved changes', async () => {
+      const { client, browser, asked } = await connectAsking({ form: { unsaved: 'save' } })
+      browser.commandResults.set('list_documents', unsavedDocumentList('/designs/mock.fig'))
+
+      expect(await callAsking(client, 'close_file')).toMatchObject({ closed: true })
+
+      expect(asked.forms).toHaveLength(1)
+      const closes = browser.requests.filter((request) => request.command === 'close_file')
+      expect(closes.map((request) => request.args)).toEqual([{ unsaved: 'save' }])
+    }, 20_000)
+
+    test('names layers with the model of a client that supports sampling', async () => {
+      const { graph, buttonId } = graphWithDefaultNames()
+      const { client, asked } = await connectAsking(
+        { model: JSON.stringify({ [buttonId]: 'Trial button' }) },
+        graph
+      )
+
+      expect(await callAsking(client, 'name_layers')).toMatchObject({ renamed: 1 })
+
+      expect(asked.prompts).toHaveLength(1)
+      expect(graph.getNode(buttonId)?.name).toBe('Trial button')
+    }, 20_000)
+
+    test('lists no naming tool and asks nothing of a client without either capability', async () => {
+      const { client, browser } = await connectAsking({})
+      browser.commandResults.set('list_documents', unsavedDocumentList('/designs/mock.fig'))
+
+      const { tools } = await client.listTools()
+      expect(tools.map((tool) => tool.name)).not.toContain('name_layers')
+      await callAsking(client, 'close_file')
+      const closes = browser.requests.filter((request) => request.command === 'close_file')
+      expect(closes.map((request) => request.args)).toEqual([{}])
+    }, 20_000)
+  })
 })

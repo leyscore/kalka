@@ -25,6 +25,7 @@ const DOCUMENT: AutomationDocumentSummary = {
   id: 'tab-1',
   name: 'Statements',
   active: true,
+  unsaved: false,
   current_page_id: '0:1',
   current_page_name: 'Dashboard',
   pages: [

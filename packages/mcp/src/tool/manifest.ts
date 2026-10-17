@@ -7,6 +7,7 @@ import type {
   ToolDescriptor,
   ToolEffect
 } from '#mcp/tool/metadata'
+import { NAME_LAYERS_DESCRIPTION, NAME_LAYERS_TOOL } from '#mcp/tool/naming'
 
 export function coreToolEffect(def: ToolDef): ToolEffect {
   return toolChangesDocument(def) ? 'write' : 'read'
@@ -129,6 +130,14 @@ export function createToolDescriptors(filesystemEnabled: boolean): ToolDescripto
       effect: 'write',
       availability: 'default',
       capabilities: ['settings:write'],
+      enabled: true
+    },
+    {
+      name: NAME_LAYERS_TOOL,
+      description: NAME_LAYERS_DESCRIPTION,
+      effect: 'write',
+      availability: 'default',
+      capabilities: ['document:read', 'document:write'],
       enabled: true
     },
     {

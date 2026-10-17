@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 import type {
   McpServer,
   RegisteredTool,
+  ServerContext,
   ToolCallback,
   ToolAnnotations
 } from '@modelcontextprotocol/server'
@@ -14,8 +15,16 @@ import { CODEGEN_PROMPT, returnsFile } from '@kalka/core/tools'
 
 import type { RPCJSONObject } from '#mcp/json'
 import { fail, ok } from '#mcp/result'
+import { confirmCoreTool, decideUnsaved, type DecisionSession } from '#mcp/tool/decisions'
+import { clientCan, type ClientRequestKind } from '#mcp/tool/interaction/client'
 import { createToolDescriptors, getMCPToolDefinitions } from '#mcp/tool/manifest'
 import type { ToolDescriptor, ToolEffect, ToolPolicy } from '#mcp/tool/metadata'
+import {
+  NAME_LAYERS_DESCRIPTION,
+  NAME_LAYERS_TOOL,
+  nameLayers,
+  nameLayersInput
+} from '#mcp/tool/naming'
 import { resolveSafePath, writeToolOutput } from '#mcp/tool/output'
 import { isToolEnabled } from '#mcp/tool/policy'
 import {
@@ -88,6 +97,12 @@ export interface RegisterToolsOptions {
   mcpRoot?: string | null
   sendRPC: RPCSender
   agentSession?: MCPAgentSession
+  /**
+   * Whether the transport can carry a request from the server while a tool call is open, which
+   * asking the user (elicitation) or the client's model (sampling) needs. Defaults to true; an HTTP
+   * session that answers with plain JSON cannot.
+   */
+  transportCarriesRequests?: boolean
 }
 
 function toolAnnotations(effect: ToolEffect): ToolAnnotations {
@@ -115,6 +130,13 @@ export function registerTools(
   options: RegisterToolsOptions
 ): ToolRegistration {
   const { sendRPC, agentSession } = options
+  const transportCarriesRequests = options.transportCarriesRequests ?? true
+  const decisionSession = (ctx: ServerContext): DecisionSession => ({
+    server: mcpServer,
+    ctx,
+    sendRPC,
+    transportCarriesRequests
+  })
   // Handlers read the policy when called, so a later `applyPolicy` reaches tools already listed.
   const current = { policy: options.policy }
   // Sent with each tool call: the session, and the client's name once it has introduced itself.
@@ -130,11 +152,20 @@ export function registerTools(
   const descriptors = descriptorByName(createToolDescriptors(resolvedRoot !== null))
   const entries = new Map<
     string,
-    { descriptor: ToolDescriptor; add: () => RegisteredTool; registered: RegisteredTool | null }
+    {
+      descriptor: ToolDescriptor
+      add: () => RegisteredTool
+      registered: RegisteredTool | null
+      requires?: ClientRequestKind
+    }
   >()
+  // A tool that needs something of the client is listed once the client has said it can.
+  const listed = (descriptor: ToolDescriptor, requires: ClientRequestKind | undefined) =>
+    isToolEnabled(descriptor, current.policy) &&
+    (!requires || clientCan(mcpServer, requires, transportCarriesRequests))
   const register = <InputArgs extends v.GenericSchema>(
     name: string,
-    toolOptions: { description?: string; inputSchema: InputArgs },
+    toolOptions: { description?: string; inputSchema: InputArgs; requires?: ClientRequestKind },
     handler: ToolCallback<ReturnType<typeof toStandardJSONSchema<InputArgs>>>
   ) => {
     const descriptor = descriptors.get(name)
@@ -153,7 +184,8 @@ export function registerTools(
     entries.set(name, {
       descriptor,
       add,
-      registered: isToolEnabled(descriptor, current.policy) ? add() : null
+      registered: listed(descriptor, toolOptions.requires) ? add() : null,
+      requires: toolOptions.requires
     })
   }
 
@@ -164,7 +196,7 @@ export function registerTools(
     register(
       def.name,
       { description: def.description, inputSchema: v.strictObject(entries) },
-      async (args: Record<string, unknown>) => {
+      async (args: Record<string, unknown>, ctx) => {
         try {
           const { delivery: requestedDelivery, ...callArgs } = args
           const delivery: FileDelivery = requestedDelivery === 'url' ? 'url' : 'inline'
@@ -172,6 +204,8 @@ export function registerTools(
           if (current.policy.scope === 'selection' && toolArgs.path !== undefined) {
             return fail(new Error(SELECTION_SCOPE_FILE_OUTPUT_ERROR))
           }
+          const stopped = await confirmCoreTool(def.name, decisionSession(ctx), target, toolArgs)
+          if (stopped) return stopped
           const result = await sendRPC({
             command: 'tool',
             args: {
@@ -364,20 +398,29 @@ export function registerTools(
           })
         : v.strictObject(closeEntries)
     },
-    async (args: {
-      unsaved?: 'error' | 'save' | 'discard'
-      path?: string
-      document_id?: string
-      page_id?: string
-    }) => {
+    async (
+      args: {
+        unsaved?: 'error' | 'save' | 'discard'
+        path?: string
+        document_id?: string
+        page_id?: string
+      },
+      ctx
+    ) => {
       try {
         const safePath =
           args.path !== undefined && resolvedRoot
             ? await resolveSafePath(args.path, resolvedRoot)
             : undefined
         const { target } = splitAutomationTarget(args)
+        let unsaved = args.unsaved
+        if (unsaved === undefined) {
+          const decision = await decideUnsaved(decisionSession(ctx), target, safePath !== undefined)
+          if (!decision.proceed) return decision.result
+          unsaved = decision.args.unsaved
+        }
         const rpcArgs: Record<string, unknown> = { ...target }
-        if (args.unsaved) rpcArgs.unsaved = args.unsaved
+        if (unsaved) rpcArgs.unsaved = unsaved
         if (safePath) rpcArgs.path = safePath.realPath
         const res = await sendCommand(sendRPC, 'close_file', rpcArgs)
         const closed = (res.result as { closed?: boolean } | undefined)?.closed === true
@@ -456,6 +499,32 @@ export function registerTools(
   )
 
   register(
+    NAME_LAYERS_TOOL,
+    {
+      description: NAME_LAYERS_DESCRIPTION,
+      inputSchema: v.strictObject({ ...nameLayersInput, ...automationTargetSchema }),
+      requires: 'sampling'
+    },
+    async (
+      args: { root_id?: string; apply?: boolean; document_id?: string; page_id?: string },
+      ctx
+    ) => {
+      try {
+        const { target, args: toolArgs } = splitAutomationTarget(args)
+        return await nameLayers({
+          session: decisionSession(ctx),
+          target,
+          args: toolArgs,
+          scope: current.policy.scope,
+          agent: agent()
+        })
+      } catch (e) {
+        return fail(e)
+      }
+    }
+  )
+
+  register(
     'get_codegen_prompt',
     {
       description:
@@ -465,17 +534,23 @@ export function registerTools(
     async () => ok({ prompt: CODEGEN_PROMPT })
   )
 
-  return {
-    applyPolicy(next) {
-      current.policy = next
-      for (const entry of entries.values()) {
-        const enabled = isToolEnabled(entry.descriptor, next)
-        if (enabled && !entry.registered) entry.registered = entry.add()
-        if (!enabled && entry.registered) {
-          entry.registered.remove()
-          entry.registered = null
-        }
+  const applyPolicy = (next: ToolPolicy) => {
+    current.policy = next
+    for (const entry of entries.values()) {
+      const enabled = listed(entry.descriptor, entry.requires)
+      if (enabled && !entry.registered) entry.registered = entry.add()
+      if (!enabled && entry.registered) {
+        entry.registered.remove()
+        entry.registered = null
       }
     }
   }
+  // The client names what it can do in its handshake, after the tools were first registered.
+  const initialized = mcpServer.server.oninitialized
+  mcpServer.server.oninitialized = () => {
+    initialized?.()
+    applyPolicy(current.policy)
+  }
+
+  return { applyPolicy }
 }

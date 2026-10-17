@@ -49,6 +49,8 @@ export interface MockBrowser {
   requests: MockBrowserRequest[]
   /** Results to answer a tool's calls with instead of running it, such as an image the mock cannot render. */
   toolResults: Map<string, unknown>
+  /** Results to answer other app commands with, such as a document with unsaved changes. */
+  commandResults: Map<string, unknown>
   close: () => void
 }
 
@@ -248,6 +250,7 @@ async function handleMockCommand(
           id: 'doc-1',
           name: 'Mock document',
           active: true,
+          unsaved: false,
           current_page_id: currentPage?.id ?? '',
           current_page_name: currentPage?.name ?? '',
           pages: pages.map((page) => ({ id: page.id, name: page.name }))
@@ -290,6 +293,7 @@ export function connectMockBrowser(
     const ws = new WebSocket(`ws://127.0.0.1:${port}`)
     const requests: MockBrowserRequest[] = []
     const toolResults = new Map<string, unknown>()
+    const commandResults = new Map<string, unknown>()
     const token = authToken ?? 'test-token-' + randomHex(8)
 
     let settled = false
@@ -311,10 +315,14 @@ export function connectMockBrowser(
         try {
           requests.push({ command: msg.command, args: msg.args })
           const name = (msg.args as { name?: unknown } | undefined)?.name
-          const result =
-            msg.command === 'tool' && typeof name === 'string' && toolResults.has(name)
-              ? toolResults.get(name)
-              : await handleMockCommand(graph, msg.command, msg.args)
+          let result: unknown
+          if (msg.command === 'tool' && typeof name === 'string' && toolResults.has(name)) {
+            result = toolResults.get(name)
+          } else if (commandResults.has(msg.command)) {
+            result = commandResults.get(msg.command)
+          } else {
+            result = await handleMockCommand(graph, msg.command, msg.args)
+          }
           // As the app does, a tool call reports the document and page it ran on.
           const target = msg.command === 'tool' ? mockTarget(graph) : undefined
           ws.send(JSON.stringify({ type: 'response', id: msg.id, ok: true, result, target }))
@@ -337,7 +345,7 @@ export function connectMockBrowser(
         // the browser as connected, causing race conditions.
         void waitForBrowserRegistration(port).then(
           () => {
-            resolve({ ws, graph, requests, toolResults, close: () => ws.close() })
+            resolve({ ws, graph, requests, toolResults, commandResults, close: () => ws.close() })
             return undefined
           },
           (err) => {

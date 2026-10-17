@@ -198,8 +198,9 @@ describe('MCP server', () => {
 
   test('lists all registered tools', async () => {
     const { tools } = await client.listTools()
+    // name_layers is listed only to clients that support sampling, which this one does not.
     const expectedNames = createToolDescriptors(false)
-      .filter((tool) => tool.availability === 'default')
+      .filter((tool) => tool.availability === 'default' && tool.name !== 'name_layers')
       .map((tool) => tool.name)
       .sort()
     expect(tools.map((tool) => tool.name).sort()).toEqual(expectedNames)

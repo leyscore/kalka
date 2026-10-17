@@ -8,24 +8,17 @@ import { resolveCommand } from 'package-manager-detector/commands'
 import { detect, getUserAgent } from 'package-manager-detector/detect'
 import { WebSocketServer, type WebSocket } from 'ws'
 
-import { MCP_AGENT_HEADER } from '@kalka/core/constants'
-
 import { bearerToken, isAuthorized, mcpRequestToken } from '#mcp/auth'
 import { createBrowserRPCBridge } from '#mcp/browser-rpc'
 import { MCP_CORS_HEADERS, MCP_CORS_METHODS, MCP_EXPOSED_HEADERS } from '#mcp/http-options'
 import type { RPCJSONObject } from '#mcp/json'
 import { ASSET_ROUTE, createAssetLinks, type AssetLinks } from '#mcp/server/assets'
 import { requestGuard, verifyWebSocketClient } from '#mcp/server/guard'
-import { createMCPSessionManager } from '#mcp/server/sessions'
+import { createMCPSessionManager, newSession } from '#mcp/server/sessions'
 import { createToolDescriptors } from '#mcp/tool/manifest'
 import type { ToolDescriptor, ToolPolicy } from '#mcp/tool/metadata'
 import { applyToolPolicy } from '#mcp/tool/policy'
-import {
-  MCP_AGENT_KINDS,
-  registerTools,
-  type MCPAgentKind,
-  type MCPAgentSession
-} from '#mcp/tool/registration'
+import { registerTools, type MCPAgentSession } from '#mcp/tool/registration'
 import { scopeRPC, type MCPToolScope } from '#mcp/tool/scope'
 
 import packageJSON from '../package.json' with { type: 'json' }
@@ -82,10 +75,6 @@ export {
 function allowedOrigins(corsOrigin: string | readonly string[] | null): readonly string[] {
   if (corsOrigin === null) return []
   return typeof corsOrigin === 'string' ? [corsOrigin] : corsOrigin
-}
-
-function agentKindFromHeader(value: string | undefined): MCPAgentKind {
-  return MCP_AGENT_KINDS.find((kind) => kind === value) ?? 'mcp'
 }
 
 export interface ServerOptions {
@@ -254,10 +243,7 @@ function createHonoApp(options: {
       mcpSessions.touch(sessionId, existing)
       return existing.handleRequest(c.req.raw)
     }
-    const transport = await mcpSessions.resolveTransport(
-      undefined,
-      agentKindFromHeader(c.req.header(MCP_AGENT_HEADER))
-    )
+    const transport = await mcpSessions.resolveTransport(undefined, await newSession(c.req.raw))
     if ('error' in transport) {
       if (transport.error === 'closed') {
         return c.json({ error: 'MCP server is shutting down' }, 503)
@@ -356,12 +342,13 @@ function buildServerContext(options: ServerOptions) {
 
   const mcpSessions = createMCPSessionManager({
     serverVersion: MCP_VERSION,
-    registerTools: (mcpServer: McpServer, agentSession: MCPAgentSession) =>
+    registerTools: (mcpServer: McpServer, agentSession: MCPAgentSession, streams: boolean) =>
       registerTools(mcpServer, {
         policy: toolPolicy,
         mcpRoot,
         sendRPC: sendToBrowser,
-        agentSession
+        agentSession,
+        transportCarriesRequests: streams
       }),
     onSessionClosed: (sessionId) => {
       // Best-effort: the app may be gone already, and then it shows no agents anyway.

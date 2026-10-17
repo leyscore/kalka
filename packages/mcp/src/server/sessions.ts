@@ -1,9 +1,12 @@
 import { randomUUID } from 'node:crypto'
 
 import { McpServer, WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/server'
+import * as v from 'valibot'
+
+import { MCP_AGENT_HEADER } from '@kalka/core/constants'
 
 import { createServerIdentity } from '#mcp/server/identity'
-import type { MCPAgentKind, MCPAgentSession } from '#mcp/tool/registration'
+import { MCP_AGENT_KINDS, type MCPAgentKind, type MCPAgentSession } from '#mcp/tool/registration'
 
 export type MCPTransport = {
   handleRequest: (request: Request) => Promise<Response>
@@ -18,9 +21,59 @@ type MCPSession = {
 
 type MCPSessionManagerOptions = {
   serverVersion: string
-  registerTools: (server: McpServer, session: MCPAgentSession) => void
+  /** `streams` says whether the session can carry requests from the server during a call. */
+  registerTools: (server: McpServer, session: MCPAgentSession, streams: boolean) => void
   /** Told when a session ends, so the app stops showing its agent. */
   onSessionClosed?: (sessionId: string) => void
+}
+
+/** The capabilities part of an `initialize` request, alone or in a batch. */
+const InitializeMessage = v.looseObject({
+  method: v.literal('initialize'),
+  params: v.looseObject({
+    capabilities: v.looseObject({
+      elicitation: v.optional(v.unknown()),
+      sampling: v.optional(v.unknown())
+    })
+  })
+})
+const InitializeBody = v.union([InitializeMessage, v.array(v.unknown())])
+
+/** What a new session is: who sends its calls, and whether its answers stream. */
+export interface NewSession {
+  kind: MCPAgentKind
+  /** Whether the client can answer the server's own requests, such as a form for the user. */
+  streams: boolean
+}
+
+/**
+ * Whether a session's first request comes from a client that can answer the server's own requests
+ * (elicitation or sampling), read from its `initialize` capabilities without consuming the body.
+ */
+async function answersServerRequests(request: Request): Promise<boolean> {
+  if (request.method !== 'POST') return false
+  const text = await request
+    .clone()
+    .text()
+    .catch(() => '')
+  const parsed = v.safeParse(v.pipe(v.string(), v.parseJson(), InitializeBody), text)
+  if (!parsed.success) return false
+  const messages = Array.isArray(parsed.output) ? parsed.output : [parsed.output]
+  return messages.some((message) => {
+    const initialize = v.safeParse(InitializeMessage, message)
+    if (!initialize.success) return false
+    const { elicitation, sampling } = initialize.output.params.capabilities
+    return elicitation !== undefined || sampling !== undefined
+  })
+}
+
+/** The session a request without a session ID opens, from its agent header and capabilities. */
+export async function newSession(request: Request): Promise<NewSession> {
+  const header = request.headers.get(MCP_AGENT_HEADER)
+  return {
+    kind: MCP_AGENT_KINDS.find((kind) => kind === header) ?? 'mcp',
+    streams: await answersServerRequests(request)
+  }
 }
 
 const MAX_MCP_SESSIONS = 10
@@ -119,18 +172,24 @@ export function createMCPSessionManager({
   const creating = new Map<string, Promise<MCPTransport>>()
   let closed = false
 
-  async function createSession(id: string, kind: MCPAgentKind): Promise<MCPTransport> {
+  async function createSession(
+    id: string,
+    kind: MCPAgentKind,
+    streams: boolean
+  ): Promise<MCPTransport> {
     if (closed) throw new Error('Session manager is closed')
     const inFlight = creating.get(id)
     if (inFlight) return inFlight
 
     const promise = (async () => {
       const server = new McpServer(...createServerIdentity(serverVersion))
-      registerTools(server, { id, kind })
+      registerTools(server, { id, kind }, streams)
 
+      // A plain JSON answer cannot carry the server's own requests, such as a form for the user,
+      // so a client that can answer them gets each tool call's answer as an event stream.
       const transport = new WebStandardStreamableHTTPServerTransport({
         sessionIdGenerator: () => id,
-        enableJsonResponse: true
+        enableJsonResponse: !streams
       })
       // Await the MCP handshake before storing/returning the transport so
       // handleRequest cannot race the SDK's initialization on a fresh
@@ -167,7 +226,7 @@ export function createMCPSessionManager({
 
   function resolveTransport(
     sessionId: string | undefined,
-    kind: MCPAgentKind = 'mcp'
+    session: NewSession = { kind: 'mcp', streams: false }
   ): Promise<MCPTransport | { error: 'too_many' | 'closed' }> {
     if (closed) return Promise.resolve({ error: 'closed' })
     cleanupExpired()
@@ -188,7 +247,7 @@ export function createMCPSessionManager({
     if (sessions.size + creating.size + closing.size >= MAX_MCP_SESSIONS && !evictIdlest()) {
       return Promise.resolve({ error: 'too_many' })
     }
-    return createSession(sessionId ?? randomUUID(), kind).catch((e) => {
+    return createSession(sessionId ?? randomUUID(), session.kind, session.streams).catch((e) => {
       // If the manager was closed during session creation, return the structured
       // error instead of letting the throw escape as a route-level 500.
       if (closed) return { error: 'closed' as const }

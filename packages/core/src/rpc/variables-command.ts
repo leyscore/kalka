@@ -1,4 +1,9 @@
-import type { SceneGraph, Variable, VariableType } from '@kalka/scene-graph'
+import {
+  layersUsingVariables,
+  type SceneGraph,
+  type Variable,
+  type VariableType
+} from '@kalka/scene-graph'
 import { colorToHex } from '@kalka/scene-graph/color'
 
 import { exportTokenStylesheet, type TokenExport } from '#core/tools/codegen/tokens'
@@ -125,5 +130,34 @@ export const tokensCommand: RPCCommand<TokensArgs, TokensResult> = {
       collection: args.collection,
       type: variableType(args.type)
     })
+  }
+}
+
+// ── collection_usage ──
+
+export interface CollectionUsageArgs {
+  id: string
+}
+
+export interface CollectionUsageResult {
+  id: string
+  name: string
+  variables: number
+  /** Layers bound to one of its variables, directly or through an alias. */
+  layers: number
+}
+
+/** How much a collection's deletion reaches: its variables and the layers bound to them. */
+export const collectionUsageCommand: RPCCommand<CollectionUsageArgs, CollectionUsageResult> = {
+  name: 'collection_usage',
+  execute: (graph, args) => {
+    const collection = graph.variableCollections.get(args.id)
+    if (!collection) throw new Error(`Collection "${args.id}" not found`)
+    return {
+      id: collection.id,
+      name: collection.name,
+      variables: collection.variableIds.length,
+      layers: layersUsingVariables(graph, collection.variableIds).length
+    }
   }
 }

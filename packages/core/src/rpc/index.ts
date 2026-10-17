@@ -1,4 +1,4 @@
-export { executeRPCCommand, ALL_RPC_COMMANDS } from './commands'
+export { executeRPCCommand, ALL_RPC_COMMANDS, LAYERS_TO_NAME_LIMIT } from './commands'
 export type {
   InfoResult,
   PageItem,
@@ -15,6 +15,11 @@ export type {
   VariablesResult,
   TokensArgs,
   TokensResult,
+  CollectionUsageArgs,
+  CollectionUsageResult,
+  LayersToNameArgs,
+  LayersToNameResult,
+  LayerToName,
   AnalyzeColorsArgs,
   AnalyzeColorsResult,
   AnalyzeTypographyArgs,

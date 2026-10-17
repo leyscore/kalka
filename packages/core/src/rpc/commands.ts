@@ -7,6 +7,7 @@ import {
   analyzeSpacingCommand,
   analyzeTypographyCommand
 } from './analyze-commands'
+import { layersToNameCommand } from './naming-command'
 import {
   findCommand,
   fontStatusCommand,
@@ -17,13 +18,15 @@ import {
   treeCommand
 } from './read-commands'
 import type { RPCCommand } from './types'
-import { tokensCommand, variablesCommand } from './variables-command'
+import { collectionUsageCommand, tokensCommand, variablesCommand } from './variables-command'
 
 export type AutomationDocumentSummary = {
   id: string
   name: string
   path?: string
   active: boolean
+  /** Whether the document has changes not saved to its file. */
+  unsaved: boolean
   current_page_id: string
   current_page_name: string
   pages: Array<{ id: string; name: string }>
@@ -33,6 +36,7 @@ export type { RPCCommand } from './types'
 export * from './read-commands'
 export * from './variables-command'
 export * from './analyze-commands'
+export * from './naming-command'
 
 export const ALL_RPC_COMMANDS = [
   infoCommand,
@@ -44,6 +48,8 @@ export const ALL_RPC_COMMANDS = [
   nodeCommand,
   variablesCommand,
   tokensCommand,
+  collectionUsageCommand,
+  layersToNameCommand,
   analyzeColorsCommand,
   analyzeTypographyCommand,
   analyzeSpacingCommand,

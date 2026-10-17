@@ -158,7 +158,7 @@ Endpoints are available over both active transports:
 5. **Modify** — `set_fill`, `set_stroke`, `set_layout`, `update_node`, `set_effects`
 6. **Structure** — `reparent_node`, `group_nodes`, `clone_node`, `delete_node`
 7. **Save** — `save_file` to write back to `.fig`
-8. **Close** — `close_file` to close an open document tab. With unsaved changes it fails unless `unsaved` is `"save"` or `"discard"`; it never prompts in the app.
+8. **Close** — `close_file` to close an open document tab. With unsaved changes and no `unsaved` choice it asks the user through the client when the client supports forms, and otherwise fails unless `unsaved` is `"save"` or `"discard"`; it never prompts in the app. See [Asking the user and the client's model](#client-requests).
 
 `undo` and `redo` step back through the agent's own changes, and `activate_document` brings a tab to the front when the user should see it.
 
@@ -191,6 +191,22 @@ Every tool call that runs on a document ends its result with one more text block
 Pass `delivery: "url"` to get only the link and the metadata. The response stays small, and files larger than the inline limit of about 900 KB of base64 still come back; with the default delivery such a file also comes back as a link only, with a note, instead of failing. An agent can fetch the URL with any HTTP client, such as `curl`, to save the file or hand it to code.
 
 The server keeps each file for 5 minutes, at most 32 files and 64 MB in all, the oldest going first. Links name the file by 128 random bits that only the client whose call returned it receives, and that name is what lets a request read it: no bearer token is needed, so the agent can hand the link to a program that does not have one. The `Origin` and `Host` checks above still apply, so web pages cannot read the files. Links point at the TCP listener (`http://127.0.0.1:<port>/assets/…`); a server started with `PORT=0` has none, and returns files inline only. The stdio bridge relays the links of the app's server.
+
+### Asking the user and the client's model {#client-requests}
+
+A few tools ask the client for something while a call runs, through two MCP features a client may support: a form for its user (elicitation, `elicitation/create`) and a completion from its own model (sampling, `sampling/createMessage`). Kalka asks only when the client declared the capability in its handshake; a client that did not gets the behavior described for each tool, so no call waits on a question nobody can answer.
+
+| Tool | Asks | When | Without the capability |
+|------|------|------|------------------------|
+| `close_file` | The user: save, discard, or keep the document open (no save for a document without a file, unless the call gives a `path`) | The document has unsaved changes and the call passed no `unsaved` | Fails with the unsaved-changes error, as before |
+| `delete_collection` | The user: delete or keep | Layers are bound to the collection's variables: they lose those bindings, and undo does not bring the variables back | Deletes, as before |
+| `name_layers` | The client's model, for names of default-named layers | Every call | Not listed |
+
+If the user keeps the document or the collection, or dismisses the form, the call succeeds with `closed: false` or `deleted: false` and a `reason`, and nothing changes. An answer that is not one of the offered options counts as dismissing the form.
+
+`name_layers` renames layers still called "Frame 12" or "Rectangle 3" under `root_id`, or under the current page. It sends the model only what naming needs: for at most 40 layers, each layer's id, type, current name, size, auto layout direction, child types, a parent's name that is not a default one, and the first three texts inside it, shortened. No file name, path, image, or other part of the document goes with it; the request asks the client to leave its own conversation out (`includeContext: "none"`), allows at most 2,000 tokens, and prefers a fast, inexpensive model. The texts are marked as design content, never instructions. The names that come back are checked: only layers in the request are renamed, each name is cut to one line of 48 characters, and a name that is itself a default name is dropped. The renames land as one `batch_update` call, one undo step; pass `apply: false` to get the proposed names without renaming. The result lists the names given and how many default-named layers remain. Clients show sampling requests to their user before running them, and a client that refuses makes the call fail without renaming anything.
+
+Over HTTP, a session whose `initialize` declares elicitation or sampling gets each tool call's answer as an event stream (`text/event-stream`), which can carry these requests; every other session keeps plain JSON answers. The stdio bridge asks its own client directly. Clients on protocol revisions before 2025-11-25 receive the options as `enum` with `enumNames`, later ones as titled `oneOf` options; clients on the 2026-07-28 revision receive the same questions as `input_required` results.
 
 ## AI Agent Skill
 
@@ -258,10 +274,10 @@ For example, `{ "style": { "property": "background-color", "value": "#2F5BEA" },
 | Tool | Description |
 |------|-------------|
 | `open_file` | Open a `.fig` file for editing |
-| `close_file` | Close an open document tab; `unsaved: "save"` or `"discard"` decides what happens to unsaved changes |
+| `close_file` | Close an open document tab; `unsaved: "save"` or `"discard"` decides what happens to unsaved changes, or the user does when the client [supports forms](#client-requests) |
 | `save_file` | Save the current document to a `.fig` file |
 | `new_document` | Create a new empty document |
-| `list_documents` | List open app documents/tabs and their pages |
+| `list_documents` | List open app documents/tabs, whether each has unsaved changes, and their pages |
 | `activate_document` | Bring a document tab to the front, optionally on a given page |
 
 ### History
@@ -359,6 +375,7 @@ Settings tools never expose credentials, AI models, MCP connections, storage, or
 | `delete_node` | Delete a node |
 | `clone_node` | Duplicate a node |
 | `rename_node` | Rename a node |
+| `name_layers` | Rename default-named layers with names the client's model suggests; only for clients that support [sampling](#client-requests) |
 | `reparent_node` | Move a node into a different parent |
 | `select_nodes` | Select nodes by ID |
 | `group_nodes` | Group nodes |
@@ -407,7 +424,7 @@ Settings tools never expose credentials, AI models, MCP connections, storage, or
 | `bind_variable` | Bind a variable to a node property |
 | `get_collection` | Get a variable collection by ID or name |
 | `create_collection` | Create a new variable collection |
-| `delete_collection` | Delete a variable collection |
+| `delete_collection` | Delete a variable collection; asks first when layers are bound to its variables and the client [supports forms](#client-requests) |
 
 ### Analyze
 

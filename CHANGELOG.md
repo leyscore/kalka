@@ -5,6 +5,7 @@
 ### Added
 
 - `find_nodes` finds layers by CSS value or variable for bulk edits and token migrations: a color in any notation (hex, rgb, hsl, oklch, with alpha and a tolerance), lengths in px or rem, any declaration of a layer's CSS, the layers bound to a variable directly or through an alias, and the layers holding a variable's value without binding it, each with the field to bind. Names and text take `*` and `?` wildcards, searches cover the current page, another page, the selection, a layer, or the whole document, and results are capped with a total count. It also works while Kalka shares only the selection.
+- MCP clients that support elicitation are asked for the user's decision where an agent should not guess: `close_file` on a document with unsaved changes offers save, discard, or keep open, and `delete_collection` asks before removing a collection whose variables layers are bound to, since undo does not bring them back. Clients that support sampling also get `name_layers`, which renames layers still called "Frame 12" or "Rectangle 3" with names the client's own model suggests, sending it only each layer's type, size, layout, child types, and first texts, in one undoable step. Clients without these capabilities keep the previous behavior. `list_documents` reports whether each document has unsaved changes.
 - Settings › MCP connects Antigravity, Kiro, and Zed in one click, and Claude Desktop can install Kalka as an extension from the `.mcpb` bundle the desktop app ships with.
 
 ### Changed

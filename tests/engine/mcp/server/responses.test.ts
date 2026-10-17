@@ -11,6 +11,15 @@ import { DOCUMENT_META_KEY } from '#mcp/tool/response'
 import type { MCPToolScope } from '#mcp/tool/scope'
 
 import {
+  answerServerRequests,
+  clientCapabilities,
+  graphWithBoundCollection,
+  graphWithDefaultNames,
+  unsavedDocumentList,
+  type ClientAnswers,
+  type ClientRequests
+} from '#tests/helpers/mcp/interaction'
+import {
   MOCK_DOCUMENT,
   connectMockBrowser,
   tcpRequest,
@@ -244,5 +253,271 @@ describe('files returned by tools', () => {
     expect(takesDelivery('get_screenshot')).toBe(true)
     expect(takesDelivery('export_image')).toBe(true)
     expect(takesDelivery('get_page_tree')).toBe(false)
+  })
+})
+
+describe('asking the client during a call', () => {
+  const ASKING_TOKEN = 'test-asking-token'
+
+  const AskingResult = v.object({
+    content: v.tupleWithRest(
+      [v.object({ type: v.literal('text'), text: v.string() })],
+      v.unknown()
+    ),
+    isError: v.optional(v.boolean())
+  })
+
+  interface AskingContext {
+    handle: ServerHandle
+    browser: MockBrowser
+    client: Client
+    asked: ClientRequests
+  }
+
+  let asking: AskingContext | null = null
+
+  afterEach(async () => {
+    await asking?.client.close().catch(() => undefined)
+    asking?.browser.close()
+    await asking?.handle.close()
+    asking = null
+  })
+
+  async function connectAsking(
+    answers: ClientAnswers,
+    graph = new SceneGraph(),
+    supportedProtocolVersions?: string[]
+  ): Promise<AskingContext> {
+    const handle = await startServer({
+      httpPort: 0,
+      withTcp: true,
+      socketPath: null,
+      authToken: ASKING_TOKEN,
+      mcpRoot: null
+    })
+    const browser = await connectMockBrowser(handle.httpPort, graph, ASKING_TOKEN)
+    await waitForBrowserRegistration(handle.httpPort)
+    const client = new Client(
+      { name: 'interaction-test', version: '0.0.0' },
+      { capabilities: clientCapabilities(answers), supportedProtocolVersions }
+    )
+    const asked = answerServerRequests(client, answers)
+    await client.connect(
+      new StreamableHTTPClientTransport(new URL(`http://127.0.0.1:${handle.httpPort}/mcp`), {
+        requestInit: { headers: { Authorization: `Bearer ${ASKING_TOKEN}` } }
+      })
+    )
+    asking = { handle, browser, client, asked }
+    return asking
+  }
+
+  async function callAsking(client: Client, name: string, args: Record<string, unknown> = {}) {
+    const result = v.parse(AskingResult, await client.callTool({ name, arguments: args }))
+    return { body: JSON.parse(result.content[0].text) as unknown, isError: result.isError === true }
+  }
+
+  function commandArgs(browser: MockBrowser, command: string): unknown[] {
+    return browser.requests.filter((request) => request.command === command).map((r) => r.args)
+  }
+
+  describe('closing a document with unsaved changes', () => {
+    test('asks the user and closes the way they chose', async () => {
+      const { client, browser, asked } = await connectAsking({ form: { unsaved: 'discard' } })
+      browser.commandResults.set('list_documents', unsavedDocumentList('/designs/mock.fig'))
+
+      const { body } = await callAsking(client, 'close_file')
+
+      expect(body).toMatchObject({ closed: true })
+      expect(commandArgs(browser, 'close_file')).toEqual([{ unsaved: 'discard' }])
+      expect(asked.forms).toHaveLength(1)
+      expect(asked.forms[0]?.message).toContain('“Mock document” has unsaved changes')
+      expect(asked.forms[0]?.requestedSchema).toMatchObject({
+        required: ['unsaved'],
+        properties: {
+          unsaved: {
+            oneOf: [
+              { const: 'save', title: 'Save, then close' },
+              { const: 'discard', title: 'Discard the changes and close' },
+              { const: 'keep', title: 'Keep the document open' }
+            ]
+          }
+        }
+      })
+    })
+
+    test('lists the options the way a client on an earlier revision reads them', async () => {
+      const { client, browser, asked } = await connectAsking(
+        { form: { unsaved: 'discard' } },
+        new SceneGraph(),
+        ['2025-06-18']
+      )
+      browser.commandResults.set('list_documents', unsavedDocumentList('/designs/mock.fig'))
+
+      await callAsking(client, 'close_file')
+
+      expect(asked.forms[0]?.requestedSchema).toMatchObject({
+        properties: {
+          unsaved: {
+            enum: ['save', 'discard', 'keep'],
+            enumNames: [
+              'Save, then close',
+              'Discard the changes and close',
+              'Keep the document open'
+            ]
+          }
+        }
+      })
+      expect(commandArgs(browser, 'close_file')).toEqual([{ unsaved: 'discard' }])
+    })
+
+    test('offers no save for a document without a file', async () => {
+      const { client, browser, asked } = await connectAsking({ form: { unsaved: 'keep' } })
+      browser.commandResults.set('list_documents', unsavedDocumentList())
+
+      const { body, isError } = await callAsking(client, 'close_file')
+
+      expect(isError).toBe(false)
+      expect(body).toEqual({ closed: false, reason: 'The user kept the document open.' })
+      expect(commandArgs(browser, 'close_file')).toEqual([])
+      expect(JSON.stringify(asked.forms[0]?.requestedSchema)).not.toContain('"save"')
+    })
+
+    test('keeps the document open when the user dismisses the form', async () => {
+      const { client, browser } = await connectAsking({ form: 'cancel' })
+      browser.commandResults.set('list_documents', unsavedDocumentList('/designs/mock.fig'))
+
+      const { body } = await callAsking(client, 'close_file')
+
+      expect(body).toMatchObject({ closed: false })
+      expect(commandArgs(browser, 'close_file')).toEqual([])
+    })
+
+    test('does not ask when the call already says what to do', async () => {
+      const { client, browser, asked } = await connectAsking({ form: { unsaved: 'keep' } })
+      browser.commandResults.set('list_documents', unsavedDocumentList('/designs/mock.fig'))
+
+      await callAsking(client, 'close_file', { unsaved: 'save' })
+
+      expect(asked.forms).toEqual([])
+      expect(commandArgs(browser, 'close_file')).toEqual([{ unsaved: 'save' }])
+    })
+
+    test('leaves the decision to the app for a client without forms', async () => {
+      const { client, browser } = await connectAsking({})
+      browser.commandResults.set('list_documents', unsavedDocumentList('/designs/mock.fig'))
+
+      await callAsking(client, 'close_file')
+
+      expect(commandArgs(browser, 'close_file')).toEqual([{}])
+      expect(commandArgs(browser, 'list_documents')).toEqual([])
+    })
+  })
+
+  describe('deleting a collection layers are bound to', () => {
+    test('asks first and keeps the collection when the user says so', async () => {
+      const { graph, collectionId } = graphWithBoundCollection()
+      const { client, asked } = await connectAsking({ form: { confirm: 'keep' } }, graph)
+
+      const { body } = await callAsking(client, 'delete_collection', { id: collectionId })
+
+      expect(body).toEqual({ deleted: false, reason: 'The user kept the collection.' })
+      expect(graph.variableCollections.has(collectionId)).toBe(true)
+      expect(asked.forms[0]?.message).toContain('“Brand” with 1 variable')
+      expect(asked.forms[0]?.message).toContain('1 layer bound to them')
+    })
+
+    test('deletes it once the user confirms', async () => {
+      const { graph, collectionId } = graphWithBoundCollection()
+      const { client } = await connectAsking({ form: { confirm: 'delete' } }, graph)
+
+      await callAsking(client, 'delete_collection', { id: collectionId })
+
+      expect(graph.variableCollections.has(collectionId)).toBe(false)
+    })
+
+    test('deletes an unused collection without asking', async () => {
+      const graph = new SceneGraph()
+      const collection = graph.createCollection('Scratch')
+      const { client, asked } = await connectAsking({ form: { confirm: 'keep' } }, graph)
+
+      await callAsking(client, 'delete_collection', { id: collection.id })
+
+      expect(asked.forms).toEqual([])
+      expect(graph.variableCollections.has(collection.id)).toBe(false)
+    })
+
+    test('deletes as before for a client without forms', async () => {
+      const { graph, collectionId } = graphWithBoundCollection()
+      const { client } = await connectAsking({}, graph)
+
+      await callAsking(client, 'delete_collection', { id: collectionId })
+
+      expect(graph.variableCollections.has(collectionId)).toBe(false)
+    })
+  })
+
+  describe('naming layers with the client model', () => {
+    test('is listed only to clients that support sampling', async () => {
+      const { client } = await connectAsking({})
+      const { tools } = await client.listTools()
+      expect(tools.map((tool) => tool.name)).not.toContain('name_layers')
+    })
+
+    test('renames default-named layers with the names the model suggests', async () => {
+      const { graph, buttonId, iconId } = graphWithDefaultNames()
+      const { client, asked } = await connectAsking(
+        {
+          model: () =>
+            'Here you go:\n```json\n' +
+            JSON.stringify({
+              [buttonId]: 'Trial button',
+              [iconId]: 'Rectangle 9',
+              unknown: 'Ghost'
+            }) +
+            '\n```'
+        },
+        graph
+      )
+      const { tools } = await client.listTools()
+      expect(tools.map((tool) => tool.name)).toContain('name_layers')
+
+      const { body } = await callAsking(client, 'name_layers')
+
+      expect(body).toMatchObject({
+        renamed: 1,
+        names: [{ id: buttonId, from: 'Frame 12', to: 'Trial button' }],
+        remaining: 1
+      })
+      expect(graph.getNode(buttonId)?.name).toBe('Trial button')
+      expect(graph.getNode(iconId)?.name).toBe('Rectangle 3')
+      expect(asked.prompts).toHaveLength(1)
+      const [request] = asked.prompts
+      expect(request?.prompt).toContain('Start free trial')
+      expect(request?.prompt).not.toContain('Mock document')
+      expect(request?.maxTokens).toBeLessThanOrEqual(2000)
+    })
+
+    test('only proposes names when asked not to apply them', async () => {
+      const { graph, buttonId } = graphWithDefaultNames()
+      const { client } = await connectAsking(
+        { model: JSON.stringify({ [buttonId]: 'Trial button' }) },
+        graph
+      )
+
+      const { body } = await callAsking(client, 'name_layers', { apply: false })
+
+      expect(body).toMatchObject({ renamed: 0, proposed: [{ id: buttonId, to: 'Trial button' }] })
+      expect(graph.getNode(buttonId)?.name).toBe('Frame 12')
+    })
+
+    test('fails cleanly when the model answers without names', async () => {
+      const { graph, buttonId } = graphWithDefaultNames()
+      const { client } = await connectAsking({ model: 'I cannot help with that.' }, graph)
+
+      const { isError } = await callAsking(client, 'name_layers')
+
+      expect(isError).toBe(true)
+      expect(graph.getNode(buttonId)?.name).toBe('Frame 12')
+    })
   })
 })

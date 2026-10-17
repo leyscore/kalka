@@ -65,6 +65,7 @@ export function listAutomationDocuments(activeStore: EditorStore): AutomationDoc
       name: tab.store.state.documentName,
       ...(path ? { path } : {}),
       active: tab.id === activeTab?.id,
+      unsaved: tab.store.hasUnsavedChanges(),
       current_page_id: tab.store.state.currentPageId,
       current_page_name: currentPage?.name ?? '',
       pages
