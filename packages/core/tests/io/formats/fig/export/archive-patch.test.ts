@@ -2,13 +2,14 @@ import { describe, expect, setDefaultTimeout, test } from 'bun:test'
 
 import { expectDefined } from '#core-tests/helpers/assert'
 import { isEqual } from 'es-toolkit/predicate'
+import { deflateSync } from 'fflate'
 
 import { exportFigFile, initCodec, parseFigFile, SceneGraph } from '@kalka/core'
 import { populateAllFigPages, populateFigPage } from '@kalka/core/io/formats/fig'
-import { parseFigBuffer } from '@kalka/fig'
-import type { NodeChange } from '@kalka/kiwi/fig/codec'
+import { compressFigDataSync, parseFigBuffer } from '@kalka/fig'
+import { getCompiledSchema, getSchemaBytes, type NodeChange } from '@kalka/kiwi/fig/codec'
 import { guidToString } from '@kalka/kiwi/fig/guid'
-import { getSharedStyles, type SceneNode } from '@kalka/scene-graph'
+import { computeImageHash, getSharedStyles, type SceneNode } from '@kalka/scene-graph'
 import { cloneNodeProps } from '@kalka/scene-graph/copy'
 
 import { releaseFigArchive } from '#core/kiwi/fig/session/archive'
@@ -80,6 +81,74 @@ test('styles added to an opened file are written on the internal canvas, not as 
 })
 
 /** A document over three pages: a frame of layers, a component, and a page of its instances. */
+test('an archive whose images Figma cannot read is written whole, every image by its SHA-1', async () => {
+  const graph = await open(await legacyImageArchive())
+  graph.updateNode(layerNamed(graph, 'Photo 0').id, { name: 'Edited' })
+
+  for (const saved of [
+    await exportFigFile(graph),
+    await exportFigFile(await open(await legacyImageArchive()))
+  ]) {
+    const photos = [...recordsOf(saved).values()].filter((record) => record.fillPaints?.length)
+    const parsed = parseFigBuffer(saved.slice().buffer as ArrayBuffer)
+    expect(photos.map((record) => paintImageName(record))).toEqual([PHOTO_NAME, PHOTO_NAME])
+    expect(parsed.images.map(([name]) => name)).toEqual([PHOTO_NAME])
+  }
+})
+
+const PHOTO = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 7, 7, 7])
+const PHOTO_NAME = computeImageHash(PHOTO)
+/** A name an image had before images were named by their SHA-1. */
+const LEGACY_NAME = '0123456789abcdef0123456789abcdef01234567'
+
+function paintImageName(record: NodeChange): string | undefined {
+  const hash = record.fillPaints?.[0]?.image?.hash
+  return hash instanceof Uint8Array ? Buffer.from(hash).toString('hex') : undefined
+}
+
+/** Two layers painted with one image that the archive holds under a legacy name. */
+async function legacyImageArchive(): Promise<Uint8Array> {
+  await initCodec()
+  const source = new SceneGraph()
+  source.images.set(PHOTO_NAME, PHOTO)
+  for (const index of [0, 1]) {
+    source.createNode('RECTANGLE', source.getPages()[0].id, {
+      name: `Photo ${index}`,
+      x: index * 50,
+      width: 40,
+      height: 40,
+      fills: [
+        {
+          type: 'IMAGE',
+          color: { r: 0, g: 0, b: 0, a: 1 },
+          opacity: 1,
+          visible: true,
+          imageHash: PHOTO_NAME,
+          imageScaleMode: 'FILL'
+        }
+      ]
+    })
+  }
+  const parsed = parseFigBuffer((await exportFigFile(source)).slice().buffer as ArrayBuffer)
+  for (const record of parsed.nodeChanges) {
+    const image = record.fillPaints?.[0]?.image
+    if (image) image.hash = Uint8Array.from(Buffer.from(LEGACY_NAME, 'hex'))
+  }
+  const kiwi = getCompiledSchema().encodeMessage({
+    type: 'NODE_CHANGES',
+    sessionID: 0,
+    ackID: 0,
+    nodeChanges: parsed.nodeChanges
+  })
+  return compressFigDataSync(
+    deflateSync(getSchemaBytes()),
+    kiwi,
+    expectDefined(parsed.thumbnailPNG, 'thumbnail'),
+    parsed.metaJSON ?? '{}',
+    [{ name: `images/${LEGACY_NAME}`, data: PHOTO }]
+  )
+}
+
 async function fixtureBytes(): Promise<Uint8Array> {
   await initCodec()
   const source = new SceneGraph()

@@ -1,7 +1,12 @@
 import { figCheckpointRecords, type FigArchiveRecordInfo, type FigRecordPatch } from '@kalka/fig'
-import type { FigNodeChangeExportRuntime } from '@kalka/fig/node-change'
+import { nameImagesForFigma, type FigNodeChangeExportRuntime } from '@kalka/fig/node-change'
 import { stringToGuid } from '@kalka/kiwi/fig/guid'
-import { ownsSlotContent, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
+import {
+  computeImageHash,
+  ownsSlotContent,
+  type SceneGraph,
+  type SceneNode
+} from '@kalka/scene-graph'
 import { siblingOrderKeys } from '@kalka/scene-graph/order-keys'
 import type { GUID } from '@kalka/scene-graph/primitives'
 
@@ -335,6 +340,31 @@ async function buildPatch(
   }
 }
 
+const archiveImagesChecked = new WeakMap<FigArchiveAccess, Promise<boolean>>()
+
+/**
+ * Whether every image the archive `graph` was opened from holds is stored under the SHA-1 of its
+ * bytes, the only name Figma reads. Archives Kalka wrote before image names were SHA-1 are
+ * not, and records a save leaves untouched point at those names, so such a document is written
+ * whole, which names every image as Figma needs, instead of reusing its archive. The archive
+ * does not change, so it is checked once; a document with no archive has nothing to check.
+ */
+export function archiveImagesNamedForFigma(graph: SceneGraph): Promise<boolean> {
+  const archive = figArchive(graph)
+  if (!archive) return Promise.resolve(true)
+  let checked = archiveImagesChecked.get(archive)
+  if (!checked) {
+    checked = archive.info().then(({ imageHashes }) =>
+      imageHashes.every((name) => {
+        const bytes = graph.images.get(name)
+        return !bytes || computeImageHash(bytes) === name
+      })
+    )
+    archiveImagesChecked.set(archive, checked)
+  }
+  return checked
+}
+
 /**
  * Write a document opened from a `.fig` as that archive with only its changed records
  * rewritten. The main thread serializes what changed; merging and compressing the rest happen
@@ -364,7 +394,13 @@ export async function writePatchedFigFile(
     throw error
   }
   if (!built) return null
-  const extras = await figFileExtras(built.graph, options.pageId, options.thumbnail ?? {})
+  const imageNames = nameImagesForFigma(built.patch.records, built.graph.images)
+  const extras = await figFileExtras(
+    built.graph,
+    imageNames,
+    options.pageId,
+    options.thumbnail ?? {}
+  )
   const archivedImages = new Set(info.imageHashes.map((hash) => `images/${hash}`))
   return archive.patch(built.patch, {
     thumbnailPNG: extras.thumbnailPNG,

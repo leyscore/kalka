@@ -197,7 +197,7 @@ async function writeFigmaClipboardHTML(
       units: source.lineHeight ? 'PIXELS' : 'PERCENT'
     }
   }
-  await embedClipboardImages(nodeChanges, blobs, graph.images)
+  embedClipboardImages(nodeChanges, blobs, graph.images)
   return encodeFigmaClipboard(nodeChanges, blobs, randomInt())
 }
 

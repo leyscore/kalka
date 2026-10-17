@@ -1,7 +1,11 @@
 import type { CanvasKit } from 'canvaskit-wasm'
 
 import { compressFigDataSync } from '@kalka/fig'
-import { placeSlotContent, type FigNodeChangeExportRuntime } from '@kalka/fig/node-change'
+import {
+  nameImagesForFigma,
+  placeSlotContent,
+  type FigNodeChangeExportRuntime
+} from '@kalka/fig/node-change'
 import { initCodec } from '@kalka/kiwi/fig/codec'
 import type { NodeChange } from '@kalka/kiwi/fig/codec'
 import type { SceneGraph } from '@kalka/scene-graph'
@@ -20,7 +24,7 @@ import {
   type FigThumbnailSources,
   type KiwiNodeChange
 } from '#core/io/formats/fig/export-setup'
-import { writePatchedFigFile } from '#core/io/formats/fig/patch-export'
+import { archiveImagesNamedForFigma, writePatchedFigFile } from '#core/io/formats/fig/patch-export'
 import type { NodeRasterizer } from '#core/io/types'
 import { sceneNodeToKiwi } from '#core/kiwi/fig/node-change/serialize'
 import { cloneSceneGraphForFigExport } from '#core/kiwi/fig/parse/transfer'
@@ -113,15 +117,18 @@ export async function exportFigFile(
   renderHeadlessThumbnail = false,
   rasterize?: NodeRasterizer
 ): Promise<Uint8Array> {
-  const originalArchive = await originalFigArchive(sourceGraph)
+  // An archive whose images Figma cannot read is written whole rather than reused.
+  const reuseArchive = await archiveImagesNamedForFigma(sourceGraph)
+  const originalArchive = reuseArchive ? await originalFigArchive(sourceGraph) : null
   if (originalArchive) return originalArchive.slice()
   const thumbnail = { ck, renderer, rasterize, renderHeadless: renderHeadlessThumbnail }
   return withFigExportRuntime(
     sourceGraph,
     ck,
     async (runtime) =>
-      (await writePatchedFigFile(sourceGraph, runtime, { pageId, thumbnail })) ??
-      writeFigFile(sourceGraph, runtime, pageId, thumbnail)
+      (reuseArchive
+        ? await writePatchedFigFile(sourceGraph, runtime, { pageId, thumbnail })
+        : null) ?? writeFigFile(sourceGraph, runtime, pageId, thumbnail)
   )
 }
 
@@ -190,8 +197,9 @@ async function writeFigFile(
     msg.blobs = blobs.map((bytes) => ({ bytes }))
   }
 
+  const imageNames = nameImagesForFigma(nodeChanges, graph.images)
   const kiwiData = compiled.encodeMessage(msg)
-  const extras = await figFileExtras(graph, pageId, thumbnail)
+  const extras = await figFileExtras(graph, imageNames, pageId, thumbnail)
 
   const version = graph.figKiwiVersion ?? undefined
 

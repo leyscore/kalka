@@ -1,5 +1,7 @@
 import * as v from 'valibot'
 
+import { computeImageHash } from '@kalka/scene-graph/images'
+
 import { tauriFetch } from '@/app/tauri/http'
 
 type ClipboardImageFetch = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
@@ -27,11 +29,6 @@ function imageURLsFromBatchResponse(value: unknown): FigmaImageURLs {
       (entry): entry is [string, string] => typeof entry[1] === 'string'
     )
   )
-}
-
-async function sha1Hex(bytes: Uint8Array): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-1', Uint8Array.from(bytes))
-  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('')
 }
 
 export async function resolveFigmaClipboardImages(
@@ -70,7 +67,7 @@ export async function resolveFigmaClipboardImages(
           const response = await fetcher(url, { signal: AbortSignal.timeout(timeoutMs) })
           if (!response.ok) throw new Error(`status ${response.status}`)
           const bytes = new Uint8Array(await response.arrayBuffer())
-          if ((await sha1Hex(bytes)) !== hash.toLowerCase()) {
+          if (computeImageHash(bytes) !== hash.toLowerCase()) {
             throw new Error('SHA-1 mismatch')
           }
           images.set(hash, bytes)

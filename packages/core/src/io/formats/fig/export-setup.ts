@@ -5,6 +5,7 @@ import { toUint8Array } from 'js-base64'
 import {
   buildComponentPropIndex,
   exportCanvasGuides,
+  figImageEntries,
   importCanvasGuides,
   parseGuidOrNull,
   stringToGuid,
@@ -55,14 +56,6 @@ export interface CanvasExportEntry {
   page: FigExportPage
   canvasGuid: GUID
   canvasNc: KiwiNodeChange
-}
-
-function collectImageEntries(graph: SceneGraph): Array<{ name: string; data: Uint8Array }> {
-  const entries: Array<{ name: string; data: Uint8Array }> = []
-  for (const [hash, data] of graph.images) {
-    entries.push({ name: `images/${hash}`, data })
-  }
-  return entries
 }
 
 const THUMBNAIL_WIDTH = 512
@@ -541,9 +534,13 @@ export interface FigFileExtras {
   images: Array<{ name: string; data: Uint8Array }>
 }
 
-/** The thumbnail, metadata and images a written `.fig` carries besides its records. */
+/**
+ * The thumbnail, metadata and images a written `.fig` carries besides its records, the images
+ * under the names `nameImagesForFigma` gave them in those records.
+ */
 export async function figFileExtras(
   graph: SceneGraph,
+  imageNames: ReadonlyMap<string, string>,
   pageId: string | undefined,
   thumbnail: FigThumbnailSources
 ): Promise<FigFileExtras> {
@@ -554,5 +551,5 @@ export async function figFileExtras(
     app: 'Kalka',
     createdAt: new Date().toISOString()
   })
-  return { thumbnailPNG, metaJSON, images: collectImageEntries(graph) }
+  return { thumbnailPNG, metaJSON, images: figImageEntries(graph.images, imageNames) }
 }

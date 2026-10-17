@@ -4,6 +4,7 @@
 
 ### Breaking changes
 
+- `computeImageHash` from `@kalka/core` and `@kalka/scene-graph` returns the hex SHA-1 of the bytes, the name Figma gives an image, instead of a Kalka-only hash of the same length. New images are stored under that name, so `.fig` files and the Figma clipboard carry it as it is; images in documents saved before keep their names.
 - Every process mints new layer, variable, and collection IDs in a random session, as the editor already did, so `generateId()` no longer starts at `0:1` in the CLI, MCP, or scripts using `@kalka/scene-graph`. Layers that separate CLI or MCP runs add to copies of one `.fig` file are saved under their own GUIDs instead of the same `1:n` ones, while layers read from a file keep the same IDs on every run. Code that needs fixed IDs calls `setIdSession`, which now returns the previous session and takes only non-negative 31-bit sessions, or gives the `SceneGraph` its own generator (#770).
 - A paint's `gradientTransform` follows Figma's convention everywhere: it maps the layer's unit square onto gradient space, where a linear gradient runs from (0, 0.5) to (1, 0.5). Gradients made before this release, which used the inverse, draw differently; code that builds gradients by hand should use `linearGradientTransform` and `ellipticalGradientTransform` from the new `@kalka/scene-graph/gradient`, which also has Figma's default transform and stops.
 - `SceneNode` from `@kalka/scene-graph` has `style`, the layer's CSS declarations, which the scene graph keeps in step with the fields it maps and which also holds CSS no field can, so code that builds `SceneNode` objects itself must include it. The mapping between fields and CSS moved from `@kalka/dom-css` to `@kalka/scene-graph/css-model`.
@@ -180,6 +181,7 @@
 
 ### Fixed
 
+- Figma shows images from older documents in `.fig` files Kalka writes: every image is stored under the SHA-1 of its bytes, the only name Figma reads, and an image stored under two names is written once.
 - The properties panel shows the shared styles layers use in opened `.fig` files, where it listed them as missing styles.
 - Styles made in Kalka, by importing design tokens or by pasting layers from another document, are saved in `.fig` files as styles, and layers reopen with them. Saving wrote their references empty, so reopening dropped the styles, and saving into an opened file made them layers of the page in Figma.
 - Layers that use a library style keep it in Figma after Kalka saves them, where Figma showed them with no style.
