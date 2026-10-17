@@ -61,6 +61,7 @@ const noop = () => undefined
 
 export { FigmaNodeProxy } from './proxy'
 export { UNSUPPORTED_PLUGIN_API, type UnsupportedPluginAPIMember } from './unsupported'
+export { flushPendingLayout } from './pending-layout'
 export type { FigmaEffect } from './effects'
 export type { ExportImageOptions } from './types'
 export type {

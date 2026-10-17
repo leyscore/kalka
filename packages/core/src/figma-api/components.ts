@@ -13,12 +13,22 @@ import {
   removeComponentProperty,
   createComponentPropertyId,
   exposedInstances,
-  instanceExposureIssue
+  instanceExposureIssue,
+  resolveComponentPropertyValue
 } from '@kalka/scene-graph'
 import { cloneNodeProps } from '@kalka/scene-graph/copy'
 
 import { becomesComponent, componentWrapProps } from '#core/editor/components/create'
+import {
+  measurePropertyText,
+  reapplyInstanceComponentProperties
+} from '#core/editor/components/properties'
 import { applyVariantProperties, variantSetProps } from '#core/editor/components/variant-set'
+import {
+  findExactVariant,
+  getComponentSet,
+  variantValues
+} from '#core/editor/components/variants/model'
 import { wrapNodes } from '#core/editor/structure/container-wrap'
 
 import type { NodeProxyInternals, ProxyThis } from './accessor-utils'
@@ -310,6 +320,34 @@ function propertyReferenceName(field: ComponentPropertyReferenceField): string {
   if (field === 'SLOT_CONTENT') return 'slotContentId'
   return field === 'TEXT' ? 'characters' : 'visible'
 }
+interface PropertyValue {
+  definition: ComponentPropertyDefinition
+  value: string | boolean
+}
+
+/**
+ * Switches an instance to the variant with the given values, the rest kept, as Figma's
+ * `setProperties` does; a combination no variant has fails without changing anything.
+ */
+function switchVariant(scene: SceneGraph, instance: SceneNode, values: PropertyValue[]): void {
+  const component = instance.componentId ? scene.getNode(instance.componentId) : undefined
+  const setId = component?.parentId
+  const target =
+    component && setId && getComponentSet(scene, setId)
+      ? findExactVariant(scene, setId, {
+          ...variantValues(scene, setId, component),
+          ...Object.fromEntries(
+            values.map(({ definition, value }) => [definition.name, String(value)])
+          )
+        })
+      : undefined
+  if (!target)
+    throw new Error('in setProperties: Unable to find a variant with those property values')
+  if (target.id === instance.componentId) return
+  scene.swapInstanceComponent(instance.id, target.id)
+  reapplyInstanceComponentProperties({ graph: scene }, instance.id)
+}
+
 function applyProperty(
   target: ProxyThis,
   internals: NodeProxyInternals,
@@ -317,16 +355,10 @@ function applyProperty(
   definition: ComponentPropertyDefinition,
   value: string | boolean
 ): void {
-  if (definition.type === 'VARIANT') {
-    throw new Error('setProperties() cannot set VARIANT properties through the adapter')
-  }
-  const result = applyComponentPropertyValue(
-    graph(target, internals),
-    node.id,
-    definition,
-    String(value)
-  )
+  const scene = graph(target, internals)
+  const result = applyComponentPropertyValue(scene, node.id, definition, String(value))
   if (!result) throw new Error(`Unable to apply component property: ${propertyName(definition)}`)
+  measurePropertyText({ graph: scene }, node.id, definition)
 }
 export function installComponentPropertyAccessors(
   prototype: object,
@@ -420,10 +452,29 @@ export function installComponentPropertyAccessors(
         const node = raw(this, internals)
         if (node.type !== 'INSTANCE')
           throw new Error('setProperties() can only be called on instances')
-        for (const [name, value] of Object.entries(properties)) {
+        // Figma checks every name and the variant they make before changing anything.
+        const values = Object.entries(properties).map(([name, value]) => {
           const definition = findDefinition(this, internals, name)
-          if (!definition) throw new Error(`Unknown component property: ${name}`)
-          applyProperty(this, internals, node, definition, value)
+          if (!definition)
+            throw new Error(
+              `in setProperties: Could not find a component property with name: '${name}'`
+            )
+          return { definition, value }
+        })
+        const scene = graph(this, internals)
+        const unresolved = values.find(
+          ({ definition, value }) =>
+            definition.type === 'INSTANCE_SWAP' &&
+            !resolveComponentPropertyValue(scene, String(value))
+        )
+        if (unresolved)
+          throw new Error(
+            `Unable to apply component property: ${propertyName(unresolved.definition)}`
+          )
+        const variant = values.filter(({ definition }) => definition.type === 'VARIANT')
+        if (variant.length > 0) switchVariant(scene, node, variant)
+        for (const { definition, value } of values) {
+          if (definition.type !== 'VARIANT') applyProperty(this, internals, node, definition, value)
         }
       }
     },

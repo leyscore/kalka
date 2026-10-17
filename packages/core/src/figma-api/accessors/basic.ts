@@ -12,6 +12,11 @@ import {
 } from '@kalka/scene-graph'
 import type { Mat3 } from '@kalka/scene-graph/matrix'
 import type { Rect } from '@kalka/scene-graph/primitives'
+import {
+  computeConstrainedResizeChanges,
+  createResizeSnapshot,
+  type ResizeSnapshot
+} from '@kalka/scene-graph/resize'
 
 import { assertNodeEditable } from '#core/editor/capabilities'
 import {
@@ -233,28 +238,10 @@ export function installBasicNodeProxyAccessors(
     // A resized node keeps its top-left corner, as Figma's does, though it turns about its center.
     // The groups around it refit once, after the corner is back in place.
     resize(this: ProxyThis, width: number, height: number): void {
-      assertEditable(this, internals)
-      const scene = graph(this, internals)
-      const node = raw(this, internals)
-      const before = containerTransform(node, scene)
-      // Text given a size stops sizing itself to its content, as in Figma.
-      const fixesText =
-        node.type === 'TEXT' &&
-        (node.textAutoResize === 'WIDTH_AND_HEIGHT' || node.textAutoResize === 'HEIGHT')
-      scene.updateNode(node.id, {
-        width,
-        height,
-        ...(fixesText ? { textAutoResize: 'NONE' as const } : {})
-      })
-      recordInstanceOverride(scene, node.id, [
-        'width',
-        'height',
-        ...(fixesText ? ['textAutoResize'] : [])
-      ])
-      setTransform(this, internals, () => before)
+      resizeNode(this, internals, width, height, true)
     },
     resizeWithoutConstraints(this: ProxyThis, width: number, height: number): void {
-      ;(this as { resize(width: number, height: number): void }).resize(width, height)
+      resizeNode(this, internals, width, height, false)
     },
     rescale(this: ProxyThis, scale: number): void {
       assertEditable(this, internals)
@@ -265,6 +252,55 @@ export function installBasicNodeProxyAccessors(
       rescaleNodeTree(scene, node.id, scale)
     }
   })
+}
+
+/** Every layer below a node, which a resize may place by its constraints. */
+function descendants(scene: SceneGraph, node: SceneNode): SceneNode[] {
+  return scene.getChildren(node.id).flatMap((child) => [child, ...descendants(scene, child)])
+}
+
+/**
+ * Resizes a node keeping its top-left corner, as Figma's does, though it turns about its center.
+ * `resize` places the layers inside by their constraints, as Figma's does, without making their
+ * sizes overrides; `resizeWithoutConstraints` leaves them be, except in an instance. The groups around the node refit
+ * once, after the corner is back in place.
+ */
+function resizeNode(
+  target: ProxyThis,
+  internals: NodeProxyInternals,
+  width: number,
+  height: number,
+  constrained: boolean
+): void {
+  assertEditable(target, internals)
+  const scene = graph(target, internals)
+  const node = raw(target, internals)
+  const before = containerTransform(node, scene)
+  const size = { width: node.width, height: node.height }
+  // An instance's layers follow its constraints however it is resized, as in Figma.
+  const placed =
+    constrained || node.type === 'INSTANCE'
+      ? new Map(descendants(scene, node).map((child) => [child.id, createResizeSnapshot(child)]))
+      : new Map<string, ResizeSnapshot>()
+  // Text given a size stops sizing itself to its content, as in Figma.
+  const fixesText =
+    node.type === 'TEXT' &&
+    (node.textAutoResize === 'WIDTH_AND_HEIGHT' || node.textAutoResize === 'HEIGHT')
+  scene.updateNode(node.id, {
+    width,
+    height,
+    ...(fixesText ? { textAutoResize: 'NONE' as const } : {})
+  })
+  if (placed.size > 0 && size.width > 0 && size.height > 0) {
+    const changes = computeConstrainedResizeChanges(scene, node.id, size, { width, height }, placed)
+    for (const [id, change] of changes) scene.updateNode(id, change)
+  }
+  recordInstanceOverride(scene, node.id, [
+    'width',
+    'height',
+    ...(fixesText ? ['textAutoResize'] : [])
+  ])
+  setTransform(target, internals, () => before)
 }
 
 export type { NodeProxyHost }
