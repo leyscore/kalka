@@ -195,7 +195,8 @@ export function appendVariableNodeChanges(
         })
       ),
       pluginData: collectionPluginDataNodeChange(collection, modeKey),
-      key: collection.key
+      key: collection.key,
+      version: collection.version
     })
     for (const id of collection.variableIds) {
       const variable = graph.variables.get(id)
@@ -208,7 +209,10 @@ export function appendVariableNodeChanges(
         phase: 'CREATED',
         strokeAlign: 'CENTER',
         strokeJoin: 'BEVEL',
-        variableSetID: { guid },
+        // A collection with a library key is named by it, as Figma names a library's.
+        variableSetID: collection.key
+          ? { assetRef: { key: collection.key, version: collection.version } }
+          : { guid },
         variableResolvedType: variable.type,
         variableDataValues: {
           entries: Object.entries(variable.valuesByMode).map(([mode, value]) => ({

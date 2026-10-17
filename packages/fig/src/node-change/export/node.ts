@@ -412,17 +412,20 @@ function applyRawFigmaNodeFields(
     // For paint arrays on imported nodes, the raw NC data preserves the
     // original opacity/color.a split (e.g. opacity=0 for invisible strokes).
     // The scene model may lose this distinction for instance children whose
-    // strokes are resolved from component overrides. Prefer the raw data.
+    // strokes are resolved from component overrides. Prefer the raw data,
+    // except for a bound color: Figma draws the color a paint saves, so it
+    // takes what its variable resolves to now.
     if ((key === 'fillPaints' || key === 'strokePaints') && node.source.id) {
       const paints = materialized[key]
-      nc[key] = paints?.map((paint, index) =>
-        applyColorVariableBinding(
-          context,
-          node,
-          paint,
-          `${key === 'fillPaints' ? 'fills' : 'strokes'}/${index}/color`
-        )
-      )
+      const current = key === 'fillPaints' ? node.fills : node.strokes
+      nc[key] = paints?.map((paint, index) => {
+        const field = `${key === 'fillPaints' ? 'fills' : 'strokes'}/${index}/color`
+        const bound = applyColorVariableBinding(context, node, paint, field)
+        const resolved = node.boundVariables[field] ? current[index] : undefined
+        return resolved
+          ? { ...bound, color: context.safeColor(resolved.color), opacity: resolved.opacity }
+          : bound
+      })
       continue
     }
     if (

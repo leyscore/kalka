@@ -795,6 +795,8 @@ export interface VariableCollection {
    * belongs to the library: Figma lists it with the library's, not the file's own.
    */
   key?: string
+  /** Published library version, which references by key carry with it. */
+  version?: string
 }
 
 /** Whether a collection is a library's copy, which takes no variables or modes of the file's. */

@@ -82,7 +82,8 @@ export function materializeVariableResources(
       variableIds: [],
       modeAttribute: readModeAttribute(resource),
       pluginData: pluginData.length > 0 ? pluginData : undefined,
-      key: typeof resource.key === 'string' ? resource.key : undefined
+      key: typeof resource.key === 'string' ? resource.key : undefined,
+      version: typeof resource.version === 'string' ? resource.version : undefined
     })
   }
   addVariables(graph, resources, report)

@@ -194,13 +194,21 @@ function subtreeNodes(graph: SceneGraph, roots: Iterable<string>): SceneNode[] {
   return nodes
 }
 
-function scopedNodes(graph: SceneGraph, scope: BindingScope | undefined): Iterable<SceneNode> {
-  if (!scope) return graph.getAllNodes()
-  if ('subtrees' in scope) return subtreeNodes(graph, scope.subtrees)
-  const variables = variablesResolvingThrough(graph, scope.variables)
+/**
+ * The layers a change to these variables reaches: those binding one of them, or a variable that
+ * aliases one, on the layer itself or on its characters.
+ */
+export function layersUsingVariables(graph: SceneGraph, ids: Iterable<string>): SceneNode[] {
+  const variables = variablesResolvingThrough(graph, ids)
   return [...graph.getAllNodes()].filter((node) =>
     Object.values(node.boundVariables).some((id) => variables.has(id))
   )
+}
+
+function scopedNodes(graph: SceneGraph, scope: BindingScope | undefined): Iterable<SceneNode> {
+  if (!scope) return graph.getAllNodes()
+  if ('subtrees' in scope) return subtreeNodes(graph, scope.subtrees)
+  return layersUsingVariables(graph, scope.variables)
 }
 
 /**

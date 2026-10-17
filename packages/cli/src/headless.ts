@@ -1,10 +1,11 @@
 import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises'
 import { dirname, join, relative, sep } from 'node:path'
 
+import { SkiaRenderer } from '@kalka/core/canvas'
 import { BUILTIN_IO_FORMATS, IORegistry, initCanvasKit } from '@kalka/core/io'
 import { populateAllFigPages, populateFigPage } from '@kalka/core/io/formats/fig'
 import { readKalkaFolder, type KalkaFile } from '@kalka/core/io/formats/kalka'
-import { computeAllLayouts } from '@kalka/core/layout'
+import { computeAllLayouts, installTextMeasurer } from '@kalka/core/layout'
 import type { SceneGraph } from '@kalka/scene-graph'
 
 import { printError } from '#cli/format'
@@ -43,6 +44,28 @@ export async function loadDocument(filePath: string): Promise<SceneGraph> {
   }
   computeAllLayouts(graph)
   return graph
+}
+
+let textMeasurer: Promise<void> | null = null
+
+/**
+ * Measure text a script or tool lays out with CanvasKit and the fonts it loads, as the app
+ * does, instead of the estimate that knows neither line breaks nor wrapping. The document as
+ * loaded keeps the layout its file gives it; only edits made afterwards are measured.
+ */
+export function measureTextHeadlessly(): Promise<void> {
+  textMeasurer ??= (async () => {
+    const ck = await initCanvasKit()
+    const surface = ck.MakeSurface(1, 1)
+    if (!surface) throw new Error('CanvasKit could not make a surface to measure text')
+    const renderer = new SkiaRenderer(ck, surface)
+    await renderer.loadFonts()
+    installTextMeasurer((node, maxWidth) => renderer.measureTextNode(node, maxWidth))
+  })().catch((error: unknown) => {
+    textMeasurer = null
+    throw error
+  })
+  return textMeasurer
 }
 
 /** `--write` and `--output` for commands that change a headless document. */

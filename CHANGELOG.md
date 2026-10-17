@@ -184,6 +184,10 @@
 
 ### Fixed
 
+- Fill and stroke bindings to variables made in Kalka survive a paste into Figma, which keeps them as remote variables as it does for variables copied from another Figma file.
+- Instances pasted into Figma keep their names and no longer carry their component's library identity.
+- Saving an opened `.fig` file writes a variable's new value into every layer that uses it, through an alias too, so Figma shows the edit. Before, layers bound through an alias, or any layer read from the file, kept the color Figma had saved.
+- CLI `eval` and the CLI tools measure text in the document they edit, so text with line breaks or a fixed width gets its real height.
 - Showing or hiding a layer of an instance that a boolean component property drives sets the property, as in Figma, so every layer it drives follows and Figma shows the instance as Kalka does. Before, only that layer changed, which Figma ignored.
 - In scripts, a vector inside an instance refuses `vectorPaths`, `vectorNetwork`, `setVectorNetworkAsync`, and `handleMirroring` with Figma's errors, such as `in set_vectorPaths: This property cannot be overridden in an instance: vector-data`, since its path always follows the component.
 - A path edited in a component reaches its instances, as in Figma, scaled with each copy where constraints or a resized instance changed its size; copies whose instance overrides their fill or stroke keep those. A vector inside an instance no longer opens for path editing, which would have been undone by the next component edit. Straight lines in resized instances of `.fig` files open at the length Figma draws them instead of their component's.

@@ -9,6 +9,7 @@ import { printError } from '#cli/format'
 import {
   documentWriteOptions,
   loadDocument,
+  measureTextHeadlessly,
   populateWholeDocument,
   writeFigDocument
 } from '#cli/headless'
@@ -70,6 +71,7 @@ export default defineCommand({
     const file = requireFile(args.file)
     const graph = await loadDocument(file)
     populateWholeDocument(graph)
+    await measureTextHeadlessly()
     const figma = new FigmaAPI(graph)
 
     let result: unknown

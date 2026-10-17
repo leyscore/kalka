@@ -3,6 +3,7 @@ import { nameImagesForFigma, type FigNodeChangeExportRuntime } from '@kalka/fig/
 import { stringToGuid } from '@kalka/kiwi/fig/guid'
 import {
   computeImageHash,
+  layersUsingVariables,
   ownsSlotContent,
   type SceneGraph,
   type SceneNode
@@ -102,19 +103,19 @@ function addComponentInstances(
   }
 }
 
-/** Records carry the values of the variables they use, and the modes they set. */
+/**
+ * Records carry the values of the variables they use, through aliases and on their characters
+ * too, and the modes they set. Figma draws those saved values until it resolves the binding again.
+ */
 function addVariableUsers(
   graph: SceneGraph,
   changes: ArchiveChangeSummary,
   add: (id: string) => unknown
 ): void {
-  for (const node of graph.nodes.values()) {
-    const usesChanged = Object.values(node.boundVariables).some((id) =>
-      changes.changedVariables.has(id)
-    )
-    const setsModes = changes.collectionsChanged && Object.keys(node.variableModes).length > 0
-    if (usesChanged || setsModes) add(node.id)
-  }
+  for (const node of layersUsingVariables(graph, changes.changedVariables)) add(node.id)
+  if (!changes.collectionsChanged) return
+  for (const node of graph.nodes.values())
+    if (Object.keys(node.variableModes).length > 0) add(node.id)
 }
 
 /** Siblings keep the positions the archive saved; one that cannot moves, and so is written. */

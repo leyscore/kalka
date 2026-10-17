@@ -1,0 +1,53 @@
+import { describe, expect, setDefaultTimeout, test } from 'bun:test'
+import { join } from 'node:path'
+
+import * as v from 'valibot'
+
+import { CLI_ENTRY, FIXTURES } from '#cli-tests/helpers/paths'
+
+setDefaultTimeout(120_000)
+
+async function cli(args: string[], stdin?: string) {
+  const proc = Bun.spawn([process.execPath, CLI_ENTRY, ...args], {
+    stdin: stdin === undefined ? 'ignore' : new TextEncoder().encode(stdin),
+    stdout: 'pipe',
+    stderr: 'pipe'
+  })
+  const [stdout, stderr] = await Promise.all([
+    new Response(proc.stdout).text(),
+    new Response(proc.stderr).text()
+  ])
+  return { stdout: stdout.trim(), stderr: stderr.trim(), exitCode: await proc.exited }
+}
+
+describe('eval CLI', () => {
+  test('measures the text a script writes, its line breaks and wrapping included', async () => {
+    const script = `
+      await figma.loadFontAsync({ family: 'Inter', style: 'Regular' })
+      const line = figma.createText()
+      line.characters = 'one'
+      const lines = figma.createText()
+      lines.characters = 'one\\ntwo\\nthree'
+      const paragraph = figma.createText()
+      paragraph.characters = 'A paragraph that wraps over several lines'
+      paragraph.resize(80, 20)
+      paragraph.textAutoResize = 'HEIGHT'
+      return { line: line.height, lines: lines.height, paragraph: paragraph.height }
+    `
+    const result = await cli(
+      ['eval', join(FIXTURES, 'circle-text.fig'), '--stdin', '--json'],
+      script
+    )
+    expect(result.exitCode).toBe(0)
+    const heights = v.parse(
+      v.pipe(
+        v.string(),
+        v.parseJson(),
+        v.object({ line: v.number(), lines: v.number(), paragraph: v.number() })
+      ),
+      result.stdout
+    )
+    expect(heights.lines).toBeGreaterThan(heights.line * 2)
+    expect(heights.paragraph).toBeGreaterThan(heights.line * 2)
+  })
+})

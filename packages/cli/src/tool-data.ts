@@ -9,7 +9,7 @@ import type { SceneGraph } from '@kalka/scene-graph'
 
 import { isAppMode, requireFile, rpc } from '#cli/app/client'
 import { appTargetRPCArgs, type AppTargetCLIArgs } from '#cli/app/target'
-import { loadDocument, populateWholeDocument } from '#cli/headless'
+import { loadDocument, measureTextHeadlessly, populateWholeDocument } from '#cli/headless'
 
 /** A Figma API over a headless document, with CanvasKit raster export and pixel decoding. */
 export async function createHeadlessFigma(graph: SceneGraph): Promise<FigmaAPI> {
@@ -38,6 +38,7 @@ export async function runToolData(
   if (!tool) throw new Error(`Unknown tool: ${name}`)
   const graph = await loadDocument(requireFile(file))
   populateWholeDocument(graph)
+  await measureTextHeadlessly()
   const figma = await createHeadlessFigma(graph)
   return { result: await tool.execute(figma, args), graph }
 }

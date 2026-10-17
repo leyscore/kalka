@@ -110,3 +110,31 @@ test('a mode added to a collection of library aliases keeps the file as Figma sa
     for (const entry of entries) expect(entry.variableData?.value?.alias?.guid).toBeUndefined()
   }
 })
+
+test('layers using an edited variable, through an alias too, save the color it resolves to', async () => {
+  const { bytes, graph } = await openGoldPreview()
+  const blue = expectDefined(
+    [...graph.variables.values()].find((variable) => variable.name === 'Colors/Blue/500')
+  )
+  const collection = expectDefined(graph.variableCollections.get(blue.collectionId))
+  const editor = createEditor({ graph })
+  for (const mode of collection.modes)
+    editor.updateVariableValue(blue.id, mode.modeId, { r: 1, g: 0, b: 0, a: 1 })
+
+  const saved = recordsOf(bytes)
+  const after = recordsOf(await exportFigFile(graph))
+  // Figma draws the color a paint saves until it resolves the binding again, so the file must
+  // carry the new one; this layer binds Theme/Default/Primary 500, which aliases the blue.
+  const vector = expectDefined([...after.values()].find((record) => record.name === 'Vector 2191'))
+  expect(vector.fillPaints?.[0]?.color).toEqual({ r: 1, g: 0, b: 0, a: 1 })
+  const changed = changes(saved, after)
+  // Kalka lays the page out again after the edit, which can move a position by float32 rounding.
+  for (const [guid, fields] of changed) {
+    if (!fields.includes('transform')) continue
+    const [was, now] = [saved.get(guid)?.transform, after.get(guid)?.transform]
+    expect(Math.abs((was?.m02 ?? 0) - (now?.m02 ?? 0))).toBeLessThan(1e-3)
+    expect(Math.abs((was?.m12 ?? 0) - (now?.m12 ?? 0))).toBeLessThan(1e-3)
+  }
+  const fields = uniq([...changed.values()].flat()).filter((field) => field !== 'transform')
+  expect(fields.toSorted()).toEqual(['fillPaints', 'variableDataValues'])
+})

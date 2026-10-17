@@ -1,3 +1,5 @@
+import { omit } from 'es-toolkit/object'
+
 import type { GUID, NodeChange } from '@kalka/kiwi/fig/codec'
 import { guidToString } from '@kalka/kiwi/fig/guid'
 
@@ -15,6 +17,7 @@ import {
   declareSourceVariableBindingUnits
 } from './bindings/variables'
 import { applyDerivedEntry } from './derived-symbol-data'
+import { COMPONENT_IDENTITY_FIELDS } from './fields'
 import {
   ownLayers,
   type AssignmentGroup,
@@ -531,7 +534,8 @@ function interpretRoot(
       overrideKey: readOverrideKey(source.overrideKey),
       // The record is the top layer of its own root: its fields are placed state.
       properties: {
-        ...base?.properties,
+        // The component's look carries over; its identity does not.
+        ...(base && omit(base.properties, COMPONENT_IDENTITY_FIELDS)),
         ...source,
         ...(effective && source.symbolData
           ? { symbolData: { ...source.symbolData, symbolID: effective } }
