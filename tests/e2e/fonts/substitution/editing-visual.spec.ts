@@ -12,7 +12,10 @@ test('first edit replaces baked missing-font glyphs with visible live substituti
   page
 }) => {
   await trackFontModuleResources(page)
-  await page.goto('/?test&no-chrome&no-rulers')
+  // A baked text picture and its first live edit are the CanvasKit renderer's; the DOM canvas
+  // draws text with the browser's fonts, so this runs on `?renderer=skia`, the comparison
+  // renderer, until it is removed.
+  await page.goto('/?test&no-chrome&no-rulers&renderer=skia')
   const editor = { page, canvas: new CanvasHelper(page) }
   await editor.canvas.waitForInit()
   await editor.canvas.clearCanvas()

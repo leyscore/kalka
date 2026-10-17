@@ -9,11 +9,11 @@ import { CanvasHelper } from '#tests/helpers/canvas'
 import { mockFontsource } from '#tests/helpers/fonts/fontsource'
 import { trackFontModuleResources } from '#tests/helpers/fonts/runtime'
 
-async function openEditor(page: Page): Promise<CanvasHelper> {
+async function openEditor(page: Page, renderer?: 'skia'): Promise<CanvasHelper> {
   await trackFontModuleResources(page)
   // These tests install fixture fonts explicitly; remote arrivals must not race those fixtures.
   await mockFontsource(page, [])
-  await page.goto('/?test&no-chrome&no-rulers')
+  await page.goto(`/?test&no-chrome&no-rulers${renderer ? `&renderer=${renderer}` : ''}`)
   const canvas = new CanvasHelper(page)
   await canvas.waitForInit()
   await page.evaluate(() => {
@@ -199,7 +199,9 @@ test('international text is correct on its first visible paint', async ({ page }
 })
 
 test('typed and tool-created text repaint with the same resolved fallbacks', async ({ page }) => {
-  const canvas = await openEditor(page)
+  // Typing goes through the CanvasKit text editor, which the DOM canvas replaces with the
+  // browser's own; this runs on `?renderer=skia`, the comparison renderer, until it is removed.
+  const canvas = await openEditor(page, 'skia')
 
   const ids = await page.evaluate(async () => {
     const store = window.kalka?.getStore?.()
