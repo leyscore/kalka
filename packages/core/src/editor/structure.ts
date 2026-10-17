@@ -1,5 +1,14 @@
-import { createsComponentCycle, type SceneNode } from '@kalka/scene-graph'
+import { pick } from 'es-toolkit/object'
 
+import {
+  createsComponentCycle,
+  fitEnclosingGroups,
+  redoGroupFit,
+  undoGroupFit,
+  type SceneNode
+} from '@kalka/scene-graph'
+
+import { groupFitOptions } from '#core/canvas/boolean'
 import { acceptingParent, acceptsChildren, prepareSlotEdits } from '#core/editor/components/slots'
 import { fitEnclosingGroupsWithUndo } from '#core/editor/structure/group-bounds'
 
@@ -22,6 +31,25 @@ import {
 import { createStructureReorderActions } from './structure/reorder'
 import { createStructureStateActions } from './structure/state'
 import type { EditorContext } from './types'
+
+/** What a frame has and a group does not, restored when the change to a group is undone. */
+const FRAME_ONLY_FIELDS = [
+  'type',
+  'fills',
+  'strokes',
+  'cornerRadius',
+  'topLeftRadius',
+  'topRightRadius',
+  'bottomRightRadius',
+  'bottomLeftRadius',
+  'independentCorners',
+  'layoutMode',
+  'clipsContent',
+  'layoutGrids',
+  'fillStyleId',
+  'strokeStyleId',
+  'gridStyleId'
+] as const
 
 export function createStructureActions(ctx: EditorContext) {
   const reorderActions = createStructureReorderActions(ctx)
@@ -79,20 +107,71 @@ export function createStructureActions(ctx: EditorContext) {
   }
 
   /**
-   * Turns a group into a frame in place. The layer keeps its id, children, bounds and look: a
-   * group has no fill and does not clip, and the frame starts the same way.
+   * Turns a group into a frame in place, as Figma's layer type menu does. The layer keeps its id,
+   * children, bounds and look: a group has no fill, and the frame clips to the bounds its
+   * children already fill.
    */
   function convertGroupToFrame(nodeId: string) {
     if (ctx.graph.getNode(nodeId)?.type !== 'GROUP') return
-    const apply = (type: 'GROUP' | 'FRAME') => {
-      ctx.graph.updateNode(nodeId, { type })
+    const apply = (changes: Partial<SceneNode>) => {
+      ctx.graph.updateNode(nodeId, changes)
       ctx.runLayoutForNode(nodeId)
     }
-    apply('FRAME')
+    const before = { type: 'GROUP' as const, clipsContent: ctx.graph.getNode(nodeId)?.clipsContent }
+    const after = { type: 'FRAME' as const, clipsContent: true }
+    apply(after)
     ctx.undo.push({
       label: 'Convert to frame',
-      forward: () => apply('FRAME'),
-      inverse: () => apply('GROUP')
+      forward: () => apply(after),
+      inverse: () => apply(before)
+    })
+  }
+
+  /**
+   * Turns a frame into a group in place, as Figma's layer type menu does: the layer keeps its id,
+   * children, effects and opacity, drops what a group cannot have (fill, stroke, corners, auto
+   * layout, guides), and fits its children, so one the frame clipped now widens it.
+   */
+  function convertFrameToGroup(nodeId: string) {
+    const frame = ctx.graph.getNode(nodeId)
+    if (frame?.type !== 'FRAME' || frame.childIds.length === 0) return
+    const before = structuredClone(pick(frame, FRAME_ONLY_FIELDS))
+    const after: Partial<SceneNode> = {
+      type: 'GROUP',
+      fills: [],
+      strokes: [],
+      cornerRadius: 0,
+      topLeftRadius: 0,
+      topRightRadius: 0,
+      bottomRightRadius: 0,
+      bottomLeftRadius: 0,
+      independentCorners: false,
+      layoutMode: 'NONE',
+      clipsContent: false,
+      layoutGrids: [],
+      fillStyleId: null,
+      strokeStyleId: null,
+      gridStyleId: null
+    }
+    ctx.graph.updateNode(nodeId, after)
+    const fit = fitEnclosingGroups(
+      ctx.graph,
+      [nodeId],
+      groupFitOptions(ctx.getRenderer(), ctx.graph)
+    )
+    ctx.runLayoutForNode(nodeId)
+    ctx.undo.push({
+      label: 'Convert to group',
+      forward: () => {
+        ctx.graph.updateNode(nodeId, after)
+        if (fit) redoGroupFit(ctx.graph, fit)
+        ctx.runLayoutForNode(nodeId)
+      },
+      inverse: () => {
+        if (fit) undoGroupFit(ctx.graph, fit)
+        ctx.graph.updateNode(nodeId, structuredClone(before))
+        ctx.runLayoutForNode(nodeId)
+      }
     })
   }
 
@@ -174,6 +253,7 @@ export function createStructureActions(ctx: EditorContext) {
     wrapInAutoLayout,
     groupSelected,
     frameSelection,
+    convertFrameToGroup,
     convertGroupToFrame,
     booleanOperationSelected,
     ungroupSelected,

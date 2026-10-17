@@ -25,12 +25,14 @@ interface AppSelectProps<TValue extends string | number> {
   label?: string
   options: { value: TValue; label: string; disabled?: boolean }[]
   placeholder?: string
+  /** Shown in the trigger instead of the chosen option, such as a summary of what it sets. */
+  displayLabel?: string
   ui?: ComponentUI<AppSelectTheme>
 }
 
 defineOptions({ inheritAttrs: false })
 
-const { options, label, placeholder, ui } = defineProps<AppSelectProps<T>>()
+const { options, label, placeholder, displayLabel, ui } = defineProps<AppSelectProps<T>>()
 const modelValue = defineModel<T>({ required: true })
 const styles = tv(theme)()
 const { open: popupOpen, portalActive } = useRetainedPopup()
@@ -51,7 +53,7 @@ const selectedLabel = computed(
       :aria-label="label"
     >
       <SelectValue :placeholder="placeholder" :class="styles.value({ class: ui?.value })">
-        {{ selectedLabel ?? placeholder }}
+        {{ displayLabel ?? selectedLabel ?? placeholder }}
       </SelectValue>
       <icon-lucide-chevron-down class="ml-1 size-3 shrink-0 text-muted" />
     </SelectTrigger>

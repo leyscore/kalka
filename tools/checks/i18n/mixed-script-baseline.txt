@@ -490,3 +490,5 @@ ja:panels.versionsUntracked
 ja:panels.breakpointOf
 zh-cn:panels.versionsUntracked
 zh-cn:panels.breakpointOf
+ja:panels.gridSummaryGrid
+zh-cn:panels.gridSummaryGrid

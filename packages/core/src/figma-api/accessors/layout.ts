@@ -2,11 +2,17 @@ import {
   layoutSizing,
   layoutSizingError,
   layoutSizingUpdates,
+  type LayoutGrid,
   type LayoutMode,
   type LayoutSizing,
   type LayoutSizingAxis,
   type SceneNode
 } from '@kalka/scene-graph'
+import {
+  AUTO_LAYOUT_GRID_COUNT,
+  isAutoGridCount,
+  layoutGridCount
+} from '@kalka/scene-graph/layout-guides'
 
 import {
   prepareFollowedFieldEdit,
@@ -17,12 +23,47 @@ import {
   type ProxyThis
 } from '#core/figma-api/accessor-utils'
 
+/** A guide in Figma's plugin shape, whether it was set that way or read from a file. */
+function figmaLayoutGrid(grid: LayoutGrid): Readonly<LayoutGrid> {
+  const visible = grid.visible ?? true
+  const color = { ...(grid.color ?? { r: 1, g: 0, b: 0, a: 0.1 }) }
+  if (grid.pattern === 'GRID')
+    return Object.freeze({ pattern: 'GRID', sectionSize: grid.sectionSize ?? 10, visible, color })
+  const rows = grid.pattern === 'ROWS' || (grid.pattern !== 'COLUMNS' && grid.axis === 'Y')
+  const alignment = grid.alignment ?? grid.type ?? 'STRETCH'
+  return Object.freeze({
+    pattern: rows ? 'ROWS' : 'COLUMNS',
+    alignment,
+    gutterSize: grid.gutterSize ?? 0,
+    count: layoutGridCount(grid) === AUTO_LAYOUT_GRID_COUNT ? null : layoutGridCount(grid),
+    // A stretched guide's sections fill the frame, so Figma reports no section size for it.
+    ...(alignment === 'STRETCH' ? {} : { sectionSize: grid.sectionSize ?? 0 }),
+    offset: grid.offset ?? 0,
+    visible,
+    color
+  })
+}
+
 export function installLayoutNodeProxyAccessors(
   prototype: object,
   internals: NodeProxyInternals
 ): void {
   Object.defineProperties(prototype, {
     layoutMode: simpleAccessor(internals, 'layoutMode'),
+    // Figma's grids, as a frame's Layout guide section shows them.
+    layoutGrids: {
+      get(this: ProxyThis): readonly LayoutGrid[] {
+        return Object.freeze(raw(this, internals).layoutGrids.map(figmaLayoutGrid))
+      },
+      set(this: ProxyThis, value: readonly LayoutGrid[]) {
+        if (!Array.isArray(value)) throw new TypeError('layoutGrids must be an array')
+        // An Auto count is stored as the archive stores it, so it survives copies and saves.
+        const grids = structuredClone([...value]).map((grid) =>
+          isAutoGridCount(grid.count) ? { ...grid, count: AUTO_LAYOUT_GRID_COUNT } : grid
+        )
+        updateNode(this, internals, { layoutGrids: grids })
+      }
+    },
     layoutDirection: {
       get(this: ProxyThis): string {
         const node = raw(this, internals)

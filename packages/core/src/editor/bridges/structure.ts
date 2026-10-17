@@ -14,6 +14,11 @@ export function createStructureBridge(structure: StructureActions, selection: Se
     flattenSelected: () => structure.flattenSelected(selection.getSelectedNodes()),
     outlineTextSelected: () => structure.outlineTextSelected(selection.getSelectedNodes()),
     outlineStrokeSelected: () => structure.outlineStrokeSelected(selection.getSelectedNodes()),
-    ungroupSelected: () => structure.ungroupSelected(selection.getSelectedNode())
+    ungroupSelected: () => structure.ungroupSelected(selection.getSelectedNode()),
+    /** Switches a frame or group to the other type in place, as Figma's layer type menu does. */
+    convertLayerType: (nodeId: string, type: 'FRAME' | 'GROUP') =>
+      type === 'GROUP'
+        ? structure.convertFrameToGroup(nodeId)
+        : structure.convertGroupToFrame(nodeId)
   }
 }

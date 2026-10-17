@@ -7,10 +7,21 @@ export interface LayoutGuideLine {
 
 const MAX_LAYOUT_GUIDE_LINES = 10_000
 
-function normalizedCount(grid: LayoutGrid): number {
-  const value = grid.count ?? grid.numSections ?? 1
-  if (!Number.isFinite(value)) return 0
-  return Math.min(MAX_LAYOUT_GUIDE_LINES, Math.max(0, Math.floor(value)))
+/** Figma's Auto count, as its archive stores it: as many sections as fit. */
+export const AUTO_LAYOUT_GRID_COUNT = 2_147_483_647
+
+/** Whether a guide's count is Auto: the archive's value, or the plugin API's `Infinity` or `null`. */
+export function isAutoGridCount(count: number | null | undefined): boolean {
+  return count === null || count === Infinity || (count ?? 0) >= AUTO_LAYOUT_GRID_COUNT
+}
+
+/**
+ * A guide's count, set in Figma's plugin shape (`count`) or read from a file (`numSections`); an
+ * edit's `count` wins over the count the file had. Auto is {@link AUTO_LAYOUT_GRID_COUNT}.
+ */
+export function layoutGridCount(grid: LayoutGrid): number {
+  const count = grid.count === undefined ? grid.numSections : grid.count
+  return isAutoGridCount(count) ? AUTO_LAYOUT_GRID_COUNT : (count ?? 1)
 }
 
 function pattern(grid: LayoutGrid): 'COLUMNS' | 'ROWS' | 'GRID' {
@@ -25,17 +36,35 @@ function alignment(grid: LayoutGrid): 'MIN' | 'CENTER' | 'MAX' | 'STRETCH' {
   return 'MIN'
 }
 
-function sectionSize(nodeSize: number, grid: LayoutGrid): number {
+/**
+ * How many sections a guide draws. Auto fits as many fixed sections as the frame holds, counting
+ * the offset once from the aligned edge, as Figma desktop 126 draws them.
+ */
+function sectionCount(nodeSize: number, grid: LayoutGrid): number {
+  const value = layoutGridCount(grid)
+  if (value === AUTO_LAYOUT_GRID_COUNT) {
+    const size = grid.sectionSize ?? 0
+    if (alignment(grid) === 'STRETCH' || size <= 0) return 0
+    const gutter = grid.gutterSize ?? 0
+    const offset = alignment(grid) === 'CENTER' ? 0 : (grid.offset ?? 0)
+    return Math.min(
+      MAX_LAYOUT_GUIDE_LINES,
+      Math.max(0, Math.floor((nodeSize - offset + gutter) / (size + gutter)))
+    )
+  }
+  if (!Number.isFinite(value)) return 0
+  return Math.min(MAX_LAYOUT_GUIDE_LINES, Math.max(0, Math.floor(value)))
+}
+
+function sectionSize(nodeSize: number, grid: LayoutGrid, count: number): number {
   const fixed = grid.sectionSize ?? 0
   if (alignment(grid) !== 'STRETCH') return fixed
-  const count = normalizedCount(grid)
   const gutter = grid.gutterSize ?? 0
   const offset = grid.offset ?? 0
   return (nodeSize - offset * 2 - Math.max(0, count - 1) * gutter) / count
 }
 
-function start(nodeSize: number, grid: LayoutGrid, size: number): number {
-  const count = normalizedCount(grid)
+function start(nodeSize: number, grid: LayoutGrid, size: number, count: number): number {
   const gutter = grid.gutterSize ?? 0
   const offset = grid.offset ?? 0
   const span = count * size + Math.max(0, count - 1) * gutter
@@ -57,10 +86,10 @@ export function layoutGuideSections(
   if (grid.visible === false || pattern(grid) === 'GRID') return []
   const axis = pattern(grid) === 'ROWS' ? 'y' : 'x'
   const nodeSize = axis === 'x' ? node.width : node.height
-  const size = sectionSize(nodeSize, grid)
-  const count = normalizedCount(grid)
+  const count = sectionCount(nodeSize, grid)
+  const size = sectionSize(nodeSize, grid, count)
   if (count <= 0 || size <= 0) return []
-  const first = start(nodeSize, grid, size)
+  const first = start(nodeSize, grid, size, count)
   const step = size + (grid.gutterSize ?? 0)
   return Array.from({ length: count }, (_, index) => {
     const sectionStart = first + index * step

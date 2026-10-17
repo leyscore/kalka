@@ -2,7 +2,7 @@ import type { Canvas } from 'canvaskit-wasm'
 
 import { readEffectiveFigmaRawField } from '@kalka/fig'
 import type { SceneNode } from '@kalka/scene-graph'
-import { layoutGuideSections } from '@kalka/scene-graph/layout-guides'
+import { layoutGridCount, layoutGuideSections } from '@kalka/scene-graph/layout-guides'
 import type { Color } from '@kalka/scene-graph/primitives'
 
 import { SELECTION_COLOR } from '#core/constants'
@@ -17,7 +17,7 @@ type RawLayoutGrid = SceneNode['layoutGrids'][number] & {
   type?: string
   alignment?: string
   numSections?: number
-  count?: number
+  count?: number | null
   offset?: number
   sectionSize?: number
   gutterSize?: number
@@ -58,10 +58,11 @@ function rawGridAlignment(grid: RawLayoutGrid): GridGeometry['alignment'] {
 
 function gridGeometry(grid: RawLayoutGrid): GridGeometry | null {
   if (grid.visible === false) return null
-  const count = grid.count ?? grid.numSections ?? 1
+  // An Auto count stays as it is: the sections drawn are as many as fit.
+  const count = layoutGridCount(grid)
   const sectionSize = grid.sectionSize ?? 0
   const alignment = rawGridAlignment(grid)
-  if (!Number.isFinite(count) || count <= 0) return null
+  if (count <= 0) return null
   if (rawGridPattern(grid) === 'GRID' && sectionSize <= 0) return null
   if (alignment !== 'STRETCH' && sectionSize <= 0) return null
   return {

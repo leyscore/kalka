@@ -206,12 +206,14 @@ export type MaskType = 'ALPHA' | 'VECTOR' | 'LUMINANCE'
 export interface LayoutGrid {
   visible?: boolean
   color?: Color
-  pattern?: 'COLUMNS' | 'ROWS' | 'GRID'
+  /** `STRIPES` is the archive's name for columns or rows, along `axis`. */
+  pattern?: 'COLUMNS' | 'ROWS' | 'GRID' | 'STRIPES'
   axis?: 'X' | 'Y'
   type?: 'MIN' | 'CENTER' | 'MAX' | 'STRETCH'
   alignment?: 'MIN' | 'CENTER' | 'MAX' | 'STRETCH'
   numSections?: number
-  count?: number
+  /** Figma's plugin API reports an Auto count as `null` and accepts `Infinity` for it. */
+  count?: number | null
   offset?: number
   sectionSize?: number
   gutterSize?: number
