@@ -127,9 +127,13 @@ function radioGroupGraph(): SceneGraph {
     if (!main) throw new Error('Expected the radio drawn on and off')
     const item = graph.createInstance(main.id, items.id, { name: 'Item', y: index * 25 })
     if (!item) throw new Error('Expected the item placed')
+    // The editor shows an assigned label in the instance's bound text layer, which is what an
+    // item exports.
     graph.updateNode(item.id, {
       componentPropertyAssignments: { ...item.componentPropertyAssignments, label }
     })
+    for (const child of graph.getChildren(item.id))
+      if (child.type === 'TEXT') graph.updateNode(child.id, { text: label })
   }
   graph.updateNode(group.id, {
     pluginData: withBehaviour(group, { ...emptyBehaviour('radioGroup'), parts: { items: 'items' } })
