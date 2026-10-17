@@ -70,10 +70,11 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
 
     // A call from an MCP session shows as that session's agent, working where the call works.
     const session = readAgentSession((args as { agent?: unknown }).agent)
-    if (session) agentStarted(target.store, session, target.pageId)
+    const reply = session ? agentStarted(target.store, session, target.pageId) : 0
     const response = await runTool(target, toolName, toolArgs, session !== null)
     if (session) {
       agentFinished(target.store, session, {
+        reply,
         pageId: target.pageId,
         nodeIds: touchedNodeIds(target.store, toolArgs, response.result),
         edited: response.edited,

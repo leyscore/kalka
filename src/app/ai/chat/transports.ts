@@ -27,6 +27,7 @@ import { createRunPreview } from '@/app/ai/preview/run'
 import { createAITools, currentRun, endRun, recordStep, startRun } from '@/app/ai/tools'
 import { enabledAIToolDefinitions } from '@/app/ai/tools/catalog'
 import { aiToolOverrides } from '@/app/ai/tools/preferences'
+import { restAgents } from '@/app/automation/agents'
 import { diagnosticErrorDetails } from '@/app/diagnostics'
 import {
   recordChatCompleted,
@@ -384,9 +385,17 @@ export function createChatSessionManager({
       const messages = initialMessages ?? currentChatMessages.get(store)
       const diagnosticContext: AIDiagnosticContext = { sessionId, runId: crypto.randomUUID() }
       let transport: ChatTransport<UIMessage>
-      if (isACPProvider.value) transport = await createActiveACPTransport()
-      else if (isHarnessProvider.value) transport = await createActiveHarnessTransport(sessionId)
-      else transport = await createTransport(store, diagnosticContext)
+      // An ACP or Pi chat's tool calls show as an agent of that kind (`src/app/automation/agents.ts`).
+      let agentKind: 'acp' | 'harness' | null = null
+      if (isACPProvider.value) {
+        agentKind = 'acp'
+        transport = await createActiveACPTransport()
+      } else if (isHarnessProvider.value) {
+        agentKind = 'harness'
+        transport = await createActiveHarnessTransport(sessionId)
+      } else {
+        transport = await createTransport(store, diagnosticContext)
+      }
       const created: Chat<UIMessage> = new Chat<UIMessage>({
         transport: {
           sendMessages: (options) => {
@@ -405,6 +414,8 @@ export function createChatSessionManager({
         },
         onFinish: (event) => {
           handleChatFinish(diagnosticContext, event)
+          // The reply is over, however it ended; its agent rests instead of waiting it out.
+          if (agentKind) restAgents(agentKind)
           if (event.isAbort || event.isDisconnect || event.isError) {
             void settleEndedReply(created, store, event.message.id, event.isAbort)
           }
