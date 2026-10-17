@@ -78,6 +78,7 @@ export class DomTextEditor implements ExternalTextEditor {
   private view: EditorView | null = null
   private nodeId: string | null = null
   private focusFrame = 0
+  private openFrame = 0
 
   constructor(
     private readonly editor: Editor,
@@ -86,10 +87,18 @@ export class DomTextEditor implements ExternalTextEditor {
 
   start(nodeId: string): void {
     this.stop()
+    this.open(nodeId)
+  }
+
+  private open(nodeId: string): void {
     const node = this.editor.graph.getNode(nodeId)
     const element = node ? this.projector.lock(nodeId) : undefined
     if (!node || !element) {
       this.projector.unlock(nodeId)
+      // A layer added just now, such as by a quick click of the text tool, has no element until
+      // its artboard loads; the edit opens once it does, unless it has ended meanwhile.
+      if (node && this.editor.state.editingTextId === nodeId)
+        this.openFrame = requestAnimationFrame(() => this.open(nodeId))
       return
     }
     this.nodeId = nodeId
@@ -176,6 +185,7 @@ export class DomTextEditor implements ExternalTextEditor {
   }
 
   stop(): void {
+    cancelAnimationFrame(this.openFrame)
     cancelAnimationFrame(this.focusFrame)
     const id = this.nodeId
     const frame = this.view?.dom.ownerDocument.defaultView?.frameElement

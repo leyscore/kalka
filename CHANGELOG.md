@@ -18,6 +18,7 @@
 - Pattern fills draw on the canvas, in HTML exports as a repeating background, and in SVG exports as an SVG pattern, instead of not at all, and the copies a hexagonal pattern offsets by half a tile draw whole instead of cut off where tiles meet.
 - Tiled image fills repeat on the canvas and in HTML and SVG exports at the image's own size times the paint's scale, as Figma's `scalingFactor` does, instead of stretching one copy over the layer on the canvas, one copy in SVG exports, or tiles sized by the image transform in PNG and PDF exports, which Figma uses only for cropped images.
 - Selecting text set on a path shows its curve, a band along the lettering, and a handle where the text starts, with the resize handles on the box the lettering fits, instead of a plain box around the layer.
+- A quick click or trackpad tap with the text tool on an empty part of the canvas opens the new text for typing, instead of leaving an empty layer that took no input.
 
 ## 0.1.0-beta.2 — 2026-10-17
 

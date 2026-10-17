@@ -46,6 +46,15 @@ export class CanvasHelper {
     await this.page.evaluate(() => new Promise(requestAnimationFrame))
   }
 
+  /** Waits until a text layer's own element in its artboard is the focused text editor. */
+  async waitForTextEditor() {
+    await this.page.waitForFunction(() =>
+      [...document.querySelectorAll<HTMLIFrameElement>('iframe[data-kalka-artboard]')].some(
+        (frame) => frame.contentDocument?.activeElement?.getAttribute('contenteditable') === 'true'
+      )
+    )
+  }
+
   async waitForInit() {
     await this.page
       .getByTestId('canvas-element')
