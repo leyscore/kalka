@@ -39,7 +39,30 @@ This surface does **not** expose structural creation/deletion, arbitrary JavaScr
 
 ## Connect a client
 
-The desktop app includes its MCP server and starts it itself; nothing needs installing. Open **Settings → MCP** and connect Claude Desktop, Claude Code, Cursor, VS Code, Windsurf, Codex, Gemini CLI, LM Studio or opencode in one click. For any other client, copy the configuration shown there. The server is registered as `kalka`.
+The desktop app includes its MCP server and starts it itself; nothing needs installing. Open **Settings → MCP** and connect Claude Desktop, Claude Code, Cursor, VS Code, Windsurf, Codex, Gemini CLI, Antigravity, Kiro, Zed, LM Studio or opencode in one click. For any other client, copy the configuration shown there. The server is registered as `kalka`.
+
+Connecting adds a `kalka` entry to the client's user configuration and changes nothing else in the file: other servers, settings and comments stay as they are, in JSON with comments (VS Code, Zed) as in Codex's TOML. Kalka copies the previous file beside it as `<file>.kalka-backup` before changing it, and connecting again when the entry is current writes nothing. Claude Code is connected through `claude mcp add --scope user` when the `claude` CLI is installed, and through `~/.claude.json` otherwise. Kalka finds CLIs on the `PATH` of your login shell, read once from `zsh` or `bash` when the app starts from the Dock or a launcher.
+
+| Client | File Kalka edits | Key |
+| --- | --- | --- |
+| Claude Desktop | `claude_desktop_config.json` in Claude's application support folder | `mcpServers` |
+| Claude Code | `~/.claude.json` (or `claude mcp add`) | `mcpServers` |
+| Cursor | `~/.cursor/mcp.json` | `mcpServers` |
+| VS Code | `User/mcp.json` in VS Code's settings folder | `servers` |
+| Windsurf | `~/.codeium/windsurf/mcp_config.json` | `mcpServers` |
+| Codex | `~/.codex/config.toml` | `[mcp_servers.kalka]` |
+| Gemini CLI | `~/.gemini/settings.json` | `mcpServers` |
+| [Antigravity](https://antigravity.google/docs/mcp) | `~/.gemini/config/mcp_config.json` | `mcpServers` |
+| [Kiro](https://kiro.dev/docs/mcp/configuration/) | `~/.kiro/settings/mcp.json` | `mcpServers` |
+| [Zed](https://zed.dev/docs/ai/mcp) | `~/.config/zed/settings.json`, `%APPDATA%\Zed\settings.json` on Windows | `context_servers` |
+| LM Studio | `~/.lmstudio/mcp.json` | `mcpServers` |
+| opencode | `~/.config/opencode/opencode.json` | `mcp` |
+
+Xcode's coding assistant is not in the list: Apple documents Xcode as an MCP server for external agents (`xcrun mcpbridge`), not where its own agents read third-party servers.
+
+### Claude Desktop extension
+
+Claude Desktop can also install Kalka as an extension. **Install extension** next to Claude Desktop opens `kalka.mcpb`, an [MCP Bundle](https://github.com/modelcontextprotocol/mcpb) the app ships with, and Claude Desktop asks you to confirm. The extension runs the stdio server with Claude Desktop's own Node and lets you pick the folder file tools may use. It is a copy of the server at the app's version: after updating Kalka, install the extension again, or use **Connect**, whose entry always runs the server inside the app.
 
 The stdio server discovers the running app automatically. It prefers the app's Unix domain socket on macOS and Linux and falls back to localhost TCP when needed. Keep the desktop app open with a document loaded.
 

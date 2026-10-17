@@ -51,6 +51,8 @@ export const automationMessageDefaults = {
   clientDetected: 'Found on this computer',
   clientsMore: params('{count} other clients'),
   clientRestartHint: params('Kalka was added. Restart {client} to load it.'),
+  clientInstallExtension: 'Install extension',
+  clientExtensionHint: params('{client} opened the Kalka extension. Confirm the install there.'),
   otherClientTitle: 'Any other MCP client',
   otherClientDescription:
     'Paste this server entry into its configuration. Clients that connect over HTTP use the local server address in Settings › MCP instead.',

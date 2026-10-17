@@ -39,7 +39,7 @@ bun run package:desktop   # DMG and ZIP on macOS, installer on Windows, AppImage
 
 ## Connect an agent
 
-The desktop app includes its MCP server and starts it itself. Open **Settings → MCP** to connect Claude Desktop, Claude Code, Cursor, VS Code, Windsurf, Codex, Gemini CLI, LM Studio or opencode in one click, or copy the configuration for any other client.
+The desktop app includes its MCP server and starts it itself. Open **Settings → MCP** to connect Claude Desktop, Claude Code, Cursor, VS Code, Windsurf, Codex, Gemini CLI, Antigravity, Kiro, Zed, LM Studio or opencode in one click, or copy the configuration for any other client.
 
 Agents start with `get_selection` or `get_page_tree`, build with `write_html`, adjust with `update_styles`, and check with `get_screenshot`. The server also asks them to bring in what the design depends on, such as specs, docs or real data, from the other servers the client has connected.
 

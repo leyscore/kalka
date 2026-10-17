@@ -8,6 +8,7 @@ Place a test with the source that owns its contract. Choose the runtime separate
 | --------------------------------------- | -------------------------------------------------------------- |
 | Package unit and in-process integration | `packages/<owner>/tests/<source-relative-domain>/**/*.test.ts` |
 | App services and state                  | `tests/app/<path-relative-to-src/app>/**/*.test.ts`            |
+| Desktop main process and build scripts  | `electron/tests/*.test.ts`                                     |
 | Cross-package/system integration        | `tests/integration/<contract>/`                                |
 | Application workflows and visuals       | `tests/e2e/<workflow>/**/*.spec.ts`                            |
 | Native WebView and shell delivery       | `tests/e2e/native/**/*.spec.ts`                                |

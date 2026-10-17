@@ -16,8 +16,10 @@ function bundledDir(): string {
 
 export const BUNDLED_MCP_HTTP = 'index.js'
 export const BUNDLED_MCP_STDIO = 'stdio.js'
+/** The stdio bridge packed as an MCP Bundle, which Claude Desktop installs as an extension. */
+export const BUNDLED_MCP_EXTENSION = 'kalka.mcpb'
 
-/** The bundled server script, or null when this build has none (it is built with the main process). */
+/** A bundled server file, or null when this build has none (it is built with the main process). */
 export async function bundledMCPScript(entry: string): Promise<string | null> {
   const path = join(bundledDir(), entry)
   try {

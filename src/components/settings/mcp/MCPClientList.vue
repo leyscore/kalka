@@ -14,7 +14,7 @@ import AppCopyField from '@/components/ui/input/AppCopyField.vue'
 
 const automation = useAutomationMessages()
 const common = useCommonMessages()
-const { clients, config, refresh, connect, stateOf, errorOf } = useMCPClients()
+const { clients, config, refresh, connect, installExtension, stateOf, errorOf } = useMCPClients()
 const showOthers = ref(false)
 
 // Clients found on this computer come first; the rest stay folded until asked for.
@@ -64,6 +64,16 @@ onMounted(refresh)
               <p class="text-[11px] text-muted">{{ statusOf(client) }}</p>
             </div>
             <AppButton
+              v-if="client.extension"
+              size="xs"
+              variant="ghost"
+              :loading="stateOf(client.id).state === 'opening'"
+              :data-test-id="`mcp-client-extension-${client.id}`"
+              @click="installExtension(client.id)"
+            >
+              {{ automation.clientInstallExtension }}
+            </AppButton>
+            <AppButton
               size="xs"
               :variant="client.connected ? 'ghost' : 'outline'"
               :loading="stateOf(client.id).state === 'connecting'"
@@ -77,6 +87,11 @@ onMounted(refresh)
             v-if="stateOf(client.id).state === 'done'"
             tone="success"
             :heading="automation.clientRestartHint({ client: client.name })"
+          />
+          <AppAlert
+            v-else-if="stateOf(client.id).state === 'extension-opened'"
+            tone="info"
+            :heading="automation.clientExtensionHint({ client: client.name })"
           />
           <AppAlert
             v-else-if="errorOf(client.id)"

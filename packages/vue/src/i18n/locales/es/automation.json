@@ -83,6 +83,8 @@
   "clientDetected": "Encontrado en este ordenador",
   "clientsMore": "{count} clientes más",
   "clientRestartHint": "Kalka se ha añadido. Reinicia {client} para cargarlo.",
+  "clientInstallExtension": "Instalar extensión",
+  "clientExtensionHint": "{client} ha abierto la extensión de Kalka. Confirma allí la instalación.",
   "otherClientTitle": "Cualquier otro cliente MCP",
   "otherClientDescription": "Pega esta entrada de servidor en su configuración. Los clientes que se conectan por HTTP usan en su lugar la dirección del servidor local, en Ajustes › MCP.",
   "webmcpDescription": "Permite a los agentes del navegador usar este documento directamente, sin servidor MCP local ni token de portador. La configuración del servidor local no se aplica aquí.",

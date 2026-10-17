@@ -56,7 +56,7 @@ Kalka reads only Pi's `settings.json` for the default model; your credentials st
 
 ## Troubleshooting
 
-- **Shown as not found after installing.** Apps started from the Dock or Start menu do not see every folder your terminal adds to `PATH`. Kalka also looks in common global folders for npm, Bun, Volta, mise, and Homebrew; if your package manager installs elsewhere, add that folder to your login shell's `PATH` and restart Kalka.
+- **Shown as not found after installing.** Apps started from the Dock or a launcher do not inherit your terminal's `PATH`. On macOS and Linux Kalka reads it once from your login shell (`zsh`, `bash` and other POSIX shells or `fish`, as an interactive login shell, for at most five seconds) and also looks in common global folders for npm, Bun, Volta, mise, and Homebrew. If your package manager installs elsewhere, add that folder to your login shell's `PATH` and restart Kalka; a profile that waits for input or takes longer than that is skipped.
 - **Shown as update needed.** The MCP server or Pi's companion does not match the app version. Press the update button, or run the command guided setup shows with the package manager that installed it, then press **Check again**. A chat that needs it says so and offers **Run guided setup**.
 - **The agent starts but cannot edit the canvas.** The MCP server is missing or not running. Install the matching `@kalka/mcp` version and restart Kalka.
 - **The agent asks you to sign in.** Sign in with the agent's own command-line tool as described above, then send your message again.

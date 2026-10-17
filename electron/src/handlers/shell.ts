@@ -1,8 +1,9 @@
-import { spawn, type ChildProcess, execFile } from 'node:child_process'
+import { spawn, type ChildProcess } from 'node:child_process'
 import { constants } from 'node:os'
 
 import capabilities from '../../capabilities/shell.json'
 import { emit, registerAll, type CallContext } from '../ipc'
+import { loginShellPath } from './login-env'
 import { BUNDLED_MCP_HTTP, bundledMCPCommand, bundledMCPScript } from './mcp/bundled'
 
 type ArgRule = string | { validator: string }
@@ -52,22 +53,6 @@ async function resolveProgram(
     return { cmd: bundled.command, args: bundled.args, env: bundled.env }
   }
   return { ...resolveAllowed(name, args), env: {} }
-}
-
-/**
- * Apps started from the Finder get a bare PATH. Read the login shell's once, so programs
- * installed with npm, Homebrew or bun are found as they are in a terminal.
- */
-let shellPath: Promise<string | null> | null = null
-export function loginShellPath(): Promise<string | null> {
-  if (process.platform === 'win32') return Promise.resolve(null)
-  shellPath ??= new Promise((resolve) => {
-    const shell = process.env.SHELL || '/bin/zsh'
-    execFile(shell, ['-ilc', 'printf "%s" "$PATH"'], { timeout: 5000 }, (error, stdout) =>
-      resolve(error ? null : stdout.trim().split('\n').pop() || null)
-    )
-  })
-  return shellPath
 }
 
 export async function inheritedEnv(extra: Record<string, string> = {}): Promise<NodeJS.ProcessEnv> {

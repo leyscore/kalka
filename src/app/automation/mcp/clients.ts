@@ -13,6 +13,8 @@ export interface MCPClientStatus {
   file: string
   installed: boolean
   connected: boolean
+  /** Whether Kalka can also be installed as an extension the client opens itself (`.mcpb`). */
+  extension?: boolean
 }
 
 /** How a client starts Kalka's stdio bridge. */
@@ -21,8 +23,14 @@ export type MCPBridgeCommand = StdioServerSpec
 type ClientState =
   | { state: 'idle' }
   | { state: 'connecting' }
+  | { state: 'opening' }
   | { state: 'done' }
+  | { state: 'extension-opened' }
   | { state: 'error'; message: string }
+
+function errorState(error: unknown): ClientState {
+  return { state: 'error', message: error instanceof Error ? error.message : String(error) }
+}
 
 /** Whether this build can write other apps' configuration: desktop only. */
 export const canConnectMCPClients = isTauri()
@@ -82,10 +90,18 @@ export function useMCPClients() {
       clients.value = clients.value.map((client) => (client.id === id ? status : client))
       states[id] = { state: 'done' }
     } catch (error) {
-      states[id] = {
-        state: 'error',
-        message: error instanceof Error ? error.message : String(error)
-      }
+      states[id] = errorState(error)
+    }
+  }
+
+  /** Hands Kalka's MCP bundle to the client, which asks the user to confirm the install. */
+  async function installExtension(id: string): Promise<void> {
+    states[id] = { state: 'opening' }
+    try {
+      await invoke<unknown>('install_mcp_extension', { id })
+      states[id] = { state: 'extension-opened' }
+    } catch (error) {
+      states[id] = errorState(error)
     }
   }
 
@@ -98,5 +114,5 @@ export function useMCPClients() {
     return state.state === 'error' ? state.message : null
   }
 
-  return { clients: sorted, config, loading, refresh, connect, stateOf, errorOf }
+  return { clients: sorted, config, loading, refresh, connect, installExtension, stateOf, errorOf }
 }

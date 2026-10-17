@@ -177,6 +177,8 @@
         "electron": "44.4.5",
         "electron-builder": "26.15.3",
         "electron-updater": "6.8.10",
+        "fflate": "^0.8.3",
+        "jsonc-parser": "3.3.1",
         "smol-toml": "1.9.0",
       },
     },

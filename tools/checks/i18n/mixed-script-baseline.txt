@@ -466,10 +466,12 @@ zh-cn:welcome.toolUpdateStyles
 zh-cn:welcome.toolGetHTML
 ja:automation.clientsDescription
 ja:automation.clientRestartHint
+ja:automation.clientExtensionHint
 ja:automation.otherClientTitle
 ja:automation.otherClientDescription
 zh-cn:automation.clientsDescription
 zh-cn:automation.clientRestartHint
+zh-cn:automation.clientExtensionHint
 zh-cn:automation.otherClientTitle
 zh-cn:automation.otherClientDescription
 ja:rendering.documentPageColorDescription

@@ -1,38 +1,33 @@
 import { execFile } from 'node:child_process'
-import { access, copyFile, mkdir, readFile, rename, writeFile } from 'node:fs/promises'
-import { homedir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { access } from 'node:fs/promises'
+import { dirname } from 'node:path'
 
-import { parse as parseTOML, stringify as stringifyTOML } from 'smol-toml'
-import * as v from 'valibot'
+import { shell } from 'electron'
 
 import { NativeError } from '../../ipc'
-import { BUNDLED_MCP_STDIO, bundledMCPCommand, bundledMCPScript } from './bundled'
+import {
+  BUNDLED_MCP_EXTENSION,
+  BUNDLED_MCP_STDIO,
+  bundledMCPCommand,
+  bundledMCPScript
+} from './bundled'
+import {
+  FORMATS,
+  localClientDefinitions,
+  MCP_CLIENT_IDS,
+  type BridgeCommand,
+  type ClientDefinition,
+  type MCPClientID
+} from './config/clients'
+import { ConfigFileError } from './config/edit'
+import { hasServer, writeServer } from './config/file'
+
+export { isMCPClientID } from './config/clients'
 
 /** The name Kalka's tools appear under in a client: `mcp__kalka__*`. */
 const MCP_SERVER_NAME = 'kalka'
 /** The stdio bridge of a global `@kalka/mcp` install, for builds without the bundled one. */
 const GLOBAL_MCP_BRIDGE = 'kalka-mcp'
-
-export const MCP_CLIENT_IDS = [
-  'claude-desktop',
-  'claude-code',
-  'cursor',
-  'vscode',
-  'windsurf',
-  'codex',
-  'gemini',
-  'lm-studio',
-  'opencode'
-] as const
-export type MCPClientID = (typeof MCP_CLIENT_IDS)[number]
-
-/** How a client starts Kalka's stdio bridge, which finds the running app through its discovery file. */
-export interface BridgeCommand {
-  command: string
-  args: string[]
-  env: Record<string, string>
-}
 
 type Locate = (command: string) => Promise<string | null>
 
@@ -54,178 +49,59 @@ export async function bridgeCommand(locate: Locate): Promise<BridgeCommand> {
   }
 }
 
-const home = homedir()
-const appData = process.env.APPDATA ?? join(home, 'AppData', 'Roaming')
-
-/** A per-platform folder for apps that follow each system's convention. */
-function appSupport(name: string): string {
-  if (process.platform === 'darwin') return join(home, 'Library', 'Application Support', name)
-  if (process.platform === 'win32') return join(appData, name)
-  return join(home, '.config', name)
+/** A CLI that adds servers itself; preferred over editing a file the client may rewrite. */
+interface ClientCLI {
+  command: string
+  add: (bridge: BridgeCommand) => string[]
+  remove: string[]
 }
 
-type Format = 'mcpServers' | 'mcpServersTyped' | 'vscode' | 'opencode' | 'codex'
-
-interface ClientDefinition {
-  name: string
-  /** The configuration file Kalka is added to. */
-  file: string
-  /** Folders whose presence means the client is installed. */
-  installed: string[]
-  format: Format
-  /** A CLI that adds servers itself; preferred over editing a file the client may rewrite. */
-  cli?: { command: string; add: (bridge: BridgeCommand) => string[]; remove: string[] }
-}
-
-const CLIENTS: Record<MCPClientID, ClientDefinition> = {
-  'claude-desktop': {
-    name: 'Claude Desktop',
-    file: join(appSupport('Claude'), 'claude_desktop_config.json'),
-    installed: [appSupport('Claude')],
-    format: 'mcpServers'
-  },
+const CLIS: Partial<Record<MCPClientID, ClientCLI>> = {
   'claude-code': {
-    name: 'Claude Code',
-    file: join(home, '.claude.json'),
-    installed: [join(home, '.claude')],
-    format: 'mcpServersTyped',
-    cli: {
-      command: 'claude',
-      add: (bridge) => [
-        'mcp',
-        'add',
-        '--scope',
-        'user',
-        ...Object.entries(bridge.env).flatMap(([key, value]) => ['-e', `${key}=${value}`]),
-        MCP_SERVER_NAME,
-        '--',
-        bridge.command,
-        ...bridge.args
-      ],
-      remove: ['mcp', 'remove', '--scope', 'user', MCP_SERVER_NAME]
-    }
-  },
-  cursor: {
-    name: 'Cursor',
-    file: join(home, '.cursor', 'mcp.json'),
-    installed: [join(home, '.cursor')],
-    format: 'mcpServers'
-  },
-  vscode: {
-    name: 'VS Code',
-    file: join(appSupport('Code'), 'User', 'mcp.json'),
-    installed: [join(appSupport('Code'), 'User')],
-    format: 'vscode'
-  },
-  windsurf: {
-    name: 'Windsurf',
-    file: join(home, '.codeium', 'windsurf', 'mcp_config.json'),
-    installed: [join(home, '.codeium', 'windsurf')],
-    format: 'mcpServers'
-  },
-  codex: {
-    name: 'Codex',
-    file: join(home, '.codex', 'config.toml'),
-    installed: [join(home, '.codex')],
-    format: 'codex'
-  },
-  gemini: {
-    name: 'Gemini CLI',
-    file: join(home, '.gemini', 'settings.json'),
-    installed: [join(home, '.gemini')],
-    format: 'mcpServers'
-  },
-  'lm-studio': {
-    name: 'LM Studio',
-    file: join(home, '.lmstudio', 'mcp.json'),
-    installed: [join(home, '.lmstudio')],
-    format: 'mcpServers'
-  },
-  opencode: {
-    name: 'opencode',
-    file: join(home, '.config', 'opencode', 'opencode.json'),
-    installed: [join(home, '.config', 'opencode')],
-    format: 'opencode'
+    command: 'claude',
+    add: (bridge) => [
+      'mcp',
+      'add',
+      '--scope',
+      'user',
+      ...Object.entries(bridge.env).flatMap(([key, value]) => ['-e', `${key}=${value}`]),
+      MCP_SERVER_NAME,
+      '--',
+      bridge.command,
+      ...bridge.args
+    ],
+    remove: ['mcp', 'remove', '--scope', 'user', MCP_SERVER_NAME]
   }
 }
 
-const ConfigJSON = v.pipe(v.string(), v.parseJson(), v.record(v.string(), v.unknown()))
-const Servers = v.record(v.string(), v.unknown())
+/** Clients that install Kalka as a bundle the app builds (`scripts/build-mcp.ts`). */
+const EXTENSION_CLIENTS: ReadonlySet<MCPClientID> = new Set(['claude-desktop'])
 
-/** The file's text, or null when there is no file yet. */
-async function readText(path: string): Promise<string | null> {
-  try {
-    return await readFile(path, 'utf8')
-  } catch {
-    return null
-  }
+let definitions: Record<MCPClientID, ClientDefinition> | null = null
+function clients(): Record<MCPClientID, ClientDefinition> {
+  definitions ??= localClientDefinitions()
+  return definitions
 }
 
-function parseConfig(client: ClientDefinition, text: string): Record<string, unknown> {
-  if (!text.trim()) return {}
-  if (client.format === 'codex') {
-    try {
-      return parseTOML(text)
-    } catch {
-      throw new NativeError(
-        `${client.name}'s configuration at ${client.file} is not valid TOML. Fix it, then connect again.`
-      )
-    }
-  }
-  const parsed = v.safeParse(ConfigJSON, text)
-  if (!parsed.success)
-    throw new NativeError(
-      `${client.name}'s configuration at ${client.file} is not valid JSON. Fix it, then connect again.`
-    )
-  return parsed.output
-}
-
-/** The key each format keeps its servers under, and Kalka's entry in that format. */
-function serverEntry(format: Format, bridge: BridgeCommand): { key: string; entry: unknown } {
-  const { command, args, env } = bridge
-  switch (format) {
-    case 'mcpServers':
-      return { key: 'mcpServers', entry: { command, args, env } }
-    case 'mcpServersTyped':
-      return { key: 'mcpServers', entry: { type: 'stdio', command, args, env } }
-    case 'vscode':
-      return { key: 'servers', entry: { type: 'stdio', command, args, env } }
-    case 'opencode':
-      return {
-        key: 'mcp',
-        entry: { type: 'local', command: [command, ...args], environment: env, enabled: true }
-      }
-    case 'codex':
-      return { key: 'mcp_servers', entry: { command, args, env } }
-  }
-}
-
-function serversKey(format: Format): string {
-  return serverEntry(format, { command: '', args: [], env: {} }).key
-}
-
-/**
- * Adds Kalka to a client's configuration and keeps every other setting. The previous file is kept
- * beside it as a backup, and the new one replaces it in a single rename. TOML comments do not
- * survive the rewrite; the backup keeps them.
- */
 async function writeClientConfig(client: ClientDefinition, bridge: BridgeCommand): Promise<void> {
-  const existing = await readText(client.file)
-  const config = existing === null ? {} : parseConfig(client, existing)
-  const { key, entry } = serverEntry(client.format, bridge)
-  const servers = v.safeParse(Servers, config[key] ?? {})
-  if (!servers.success)
+  const format = FORMATS[client.format]
+  try {
+    await writeServer(client.file, {
+      syntax: format.syntax,
+      path: format.path,
+      name: MCP_SERVER_NAME,
+      entry: format.entry(bridge)
+    })
+  } catch (error) {
+    if (!(error instanceof ConfigFileError)) throw error
+    const problem =
+      error.reason === 'syntax'
+        ? `is not valid ${format.syntax === 'toml' ? 'TOML' : 'JSON'}`
+        : `cannot hold Kalka's entry (${error.message})`
     throw new NativeError(
-      `"${key}" in ${client.file} is not an object. Fix it, then connect again.`
+      `${client.name}'s configuration at ${client.file} ${problem}. Fix it, then connect again.`
     )
-  const next = { ...config, [key]: { ...servers.output, [MCP_SERVER_NAME]: entry } }
-  const text =
-    client.format === 'codex' ? stringifyTOML(next) : JSON.stringify(next, null, 2)
-  await mkdir(dirname(client.file), { recursive: true })
-  if (existing !== null) await copyFile(client.file, `${client.file}.kalka-backup`)
-  const temporary = `${client.file}.kalka-${process.pid}`
-  await writeFile(temporary, `${text.trimEnd()}\n`, 'utf8')
-  await rename(temporary, client.file)
+  }
 }
 
 function run(command: string, args: string[], path: string): Promise<boolean> {
@@ -251,22 +127,21 @@ export interface MCPClientStatus {
   file: string
   installed: boolean
   connected: boolean
+  /** Whether Kalka can also be installed as a bundle the client opens itself. */
+  extension: boolean
 }
 
 async function clientStatus(id: MCPClientID): Promise<MCPClientStatus> {
-  const client = CLIENTS[id]
-  const installed = (await Promise.all(client.installed.map(exists))).some(Boolean)
-  let connected = false
-  const text = await readText(client.file)
-  if (text) {
-    try {
-      const servers = v.safeParse(Servers, parseConfig(client, text)[serversKey(client.format)])
-      connected = servers.success && MCP_SERVER_NAME in servers.output
-    } catch {
-      connected = false
-    }
-  }
-  return { id, name: client.name, file: client.file, installed, connected }
+  const client = clients()[id]
+  const format = FORMATS[client.format]
+  const [installed, connected, extension] = await Promise.all([
+    Promise.all(client.installed.map(exists)).then((found) => found.some(Boolean)),
+    hasServer(client.file, format.syntax, format.path, MCP_SERVER_NAME),
+    EXTENSION_CLIENTS.has(id)
+      ? bundledMCPScript(BUNDLED_MCP_EXTENSION).then(Boolean)
+      : Promise.resolve(false)
+  ])
+  return { id, name: client.name, file: client.file, installed, connected, extension }
 }
 
 /** Every client Kalka knows how to connect, whether it is installed, and whether Kalka is in it. */
@@ -280,12 +155,13 @@ export async function connectMCPClient(
   locate: Locate,
   path: string
 ): Promise<MCPClientStatus> {
-  const client = CLIENTS[id]
+  const client = clients()[id]
   const bridge = await bridgeCommand(locate)
-  const cli = client.cli && (await locate(client.cli.command))
-  if (client.cli && cli) {
-    await run(cli, client.cli.remove, path)
-    if (!(await run(cli, client.cli.add(bridge), path)))
+  const cli = CLIS[id]
+  const executable = cli && (await locate(cli.command))
+  if (cli && executable) {
+    await run(executable, cli.remove, path)
+    if (!(await run(executable, cli.add(bridge), path)))
       throw new NativeError(`${client.name} refused to add Kalka. Try again from a terminal.`)
   } else {
     await writeClientConfig(client, bridge)
@@ -293,6 +169,14 @@ export async function connectMCPClient(
   return clientStatus(id)
 }
 
-export function isMCPClientID(value: unknown): value is MCPClientID {
-  return typeof value === 'string' && (MCP_CLIENT_IDS as readonly string[]).includes(value)
+/**
+ * Opens Kalka's MCP bundle with the app registered for `.mcpb` files, Claude Desktop, which
+ * then asks the user to confirm the install.
+ */
+export async function installMCPExtension(id: MCPClientID): Promise<void> {
+  const bundle = EXTENSION_CLIENTS.has(id) ? await bundledMCPScript(BUNDLED_MCP_EXTENSION) : null
+  if (!bundle) throw new NativeError('This build of Kalka has no extension for that client.')
+  const failure = await shell.openPath(bundle)
+  if (failure)
+    throw new NativeError(`${clients()[id].name} could not open the extension: ${failure}`)
 }

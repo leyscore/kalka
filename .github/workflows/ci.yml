@@ -235,7 +235,7 @@ jobs:
       fail-fast: true
       matrix:
         shard:
-          - { name: app, groups: 'app cli mcp' }
+          - { name: app, groups: 'app cli mcp desktop' }
           - { name: engine, groups: 'core render fig' }
           - { name: packages, groups: 'dom scene-graph vue' }
     name: Unit tests — ${{ matrix.shard.name }}

@@ -83,6 +83,8 @@
   "clientDetected": "已在这台电脑上找到",
   "clientsMore": "其他 {count} 个客户端",
   "clientRestartHint": "已添加 Kalka。重启 {client} 以加载它。",
+  "clientInstallExtension": "安装扩展",
+  "clientExtensionHint": "{client} 已打开 Kalka 扩展。请在那里确认安装。",
   "otherClientTitle": "其他 MCP 客户端",
   "otherClientDescription": "将此服务器条目粘贴到其配置中。通过 HTTP 连接的客户端请改用“设置 › MCP”中的本地服务器地址。",
   "webmcpDescription": "允许浏览器代理直接使用此文档，无需本地 MCP 服务器或 Bearer 令牌。本地服务器设置不适用于此处。",

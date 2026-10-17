@@ -7,13 +7,19 @@ import { net } from 'electron'
 
 import { registerAll, type CallContext } from '../ipc'
 import { credentialCommands } from './credentials'
-import { BUNDLED_MCP_HTTP, bundledMCPScript } from './mcp/bundled'
-import { bridgeCommand, connectMCPClient, isMCPClientID, listMCPClients } from './mcp/clients'
 import { buildFigFile } from './fig'
+import { loginShellPath } from './login-env'
+import { BUNDLED_MCP_HTTP, bundledMCPScript } from './mcp/bundled'
+import {
+  bridgeCommand,
+  connectMCPClient,
+  installMCPExtension,
+  isMCPClientID,
+  listMCPClients
+} from './mcp/clients'
 import { setChecked, setRecentFiles } from './menu'
 import { takePendingOpen, takePendingRooms } from './pending'
 import { renderHTMLPage, type RenderHTMLRequest } from './raster'
-import { loginShellPath } from './shell'
 
 const AGENT_EXECUTABLES = [
   'claude',
@@ -203,6 +209,10 @@ const commands: Record<string, (args: never) => unknown> = {
     if (!isMCPClientID(id)) throw new Error('Unknown MCP client')
     const path = await searchPath()
     return connectMCPClient(id, (command) => which(command, path), path)
+  },
+  install_mcp_extension({ id }: { id: unknown }) {
+    if (!isMCPClientID(id)) throw new Error('Unknown MCP client')
+    return installMCPExtension(id)
   },
   proxy_http_request: ({ request }: { request: ProxyRequest }) => proxyHttpRequest(request),
   render_html_image: ({ request }: { request: RenderHTMLRequest }) =>

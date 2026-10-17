@@ -5,6 +5,11 @@
 ### Added
 
 - `find_nodes` finds layers by CSS value or variable for bulk edits and token migrations: a color in any notation (hex, rgb, hsl, oklch, with alpha and a tolerance), lengths in px or rem, any declaration of a layer's CSS, the layers bound to a variable directly or through an alias, and the layers holding a variable's value without binding it, each with the field to bind. Names and text take `*` and `?` wildcards, searches cover the current page, another page, the selection, a layer, or the whole document, and results are capped with a total count. It also works while Kalka shares only the selection.
+- Settings › MCP connects Antigravity, Kiro, and Zed in one click, and Claude Desktop can install Kalka as an extension from the `.mcpb` bundle the desktop app ships with.
+
+### Changed
+
+- Connecting an MCP client keeps the comments and layout of its configuration file, including Codex's TOML and JSON with comments, backs the file up before changing it, and writes nothing when Kalka's entry is already current. On macOS and Linux the desktop app reads the whole login-shell environment to find agent CLIs, so a banner printed by a shell profile no longer hides them.
 
 ## 0.1.0-beta.2 — 2026-10-17
 
