@@ -63,10 +63,10 @@ import type { Color } from '@kalka/scene-graph/primitives'
 
 /**
  * The collaboration namespace. It names the shared document format and how peers send it, so
- * builds that sync the layer tree differently, or encode what they send differently, never join
- * each other's rooms; change it with either.
+ * builds that sync the layer tree or variables differently, or encode what they send
+ * differently, never join each other's rooms; change it with either.
  */
-export const COLLAB_APP_ID = 'kalka/4'
+export const COLLAB_APP_ID = 'kalka/5'
 
 /**
  * The most a room message may decode to, compressed or not. A peer's update past it is dropped

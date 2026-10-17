@@ -64,7 +64,8 @@ export function createVariableActions(ctx: EditorContext) {
    * Re-resolves the layers a change to what variables resolve to can reach: those bound to the
    * changed variables or to variables aliasing them. Every other variable change, such as adding,
    * renaming, reordering, or a token field, changes nothing the canvas draws, so it only refreshes
-   * the views and leaves the canvas's recorded pictures in place.
+   * the views and leaves the canvas's recorded pictures in place. Records written into the graph
+   * without an editor action, such as a collaborator's, take effect through it.
    */
   function refreshVariables(scope: BindingScope) {
     reconcileVariableLayouts(ctx.graph, scope)
@@ -539,6 +540,7 @@ export function createVariableActions(ctx: EditorContext) {
   }
 
   return {
+    refreshVariables,
     updateVariableToken,
     setModeCondition,
     duplicateVariable,

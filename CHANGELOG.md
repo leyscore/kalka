@@ -43,6 +43,7 @@
 - Undoing or redoing back to the last save shows the document as saved again, unless a collaborator or another change outside undo changed it since.
 - Tailwind exports keep corner radius: Tailwind JSX and HTML with Tailwind classes write radius from Tailwind's radius scale, such as `rounded-xl` for 12px, instead of classes like `rounded-3` that Tailwind v4 does not generate, and other values as `rounded-[20px]`.
 - The AI provider list labels its "Your agents" and "Providers" groups in the app language instead of always in English.
+- People who join a shared room see and edit the document's variables: collections, modes, and values reach everyone in the room, layers bound to them follow, and two people editing different modes of one variable both keep their change. Which mode a collection shows stays each person's own.
 
 ### Performance
 

@@ -19,6 +19,7 @@ import {
 } from '@/app/collab/shared-tree/fields'
 import type { JoinCollabRoom } from '@/app/collab/transport'
 import type { RemotePeer } from '@/app/collab/types'
+import { bindVariableSync, type YRecords } from '@/app/collab/variables'
 import {
   bindCollabGraphEvents,
   createYjsGraphSync,
@@ -88,6 +89,8 @@ export function openRoomSession({
   const ynodes: YNodes = ydoc.getMap('nodes')
   const yimages = ydoc.getMap<Uint8Array>('images')
   const meta = ydoc.getMap<unknown>('meta')
+  const yvariables: YRecords = ydoc.getMap('variables')
+  const ycollections: YRecords = ydoc.getMap('collections')
   const persistence = openSavedCopy(roomId, ydoc)
 
   const peers = shallowRef<RemotePeer[]>([])
@@ -200,6 +203,7 @@ export function openRoomSession({
   })
   const stopAgentSync = publishLocalAgents(store, () => awareness, identity.color)
   const stopAgentPreviews = shareAgentPreviews(store, connection)
+  const variableSync = bindVariableSync({ store, ydoc, yvariables, ycollections })
   const unbindGraphEvents = bindCollabGraphEvents({
     store,
     getYdoc: () => (disposed ? null : ydoc),
@@ -223,6 +227,7 @@ export function openRoomSession({
     },
     shareDocument() {
       sync.syncAllNodesToYjs()
+      variableSync.share()
       writeRoomName(meta, store.state.documentName)
       refreshDocument()
     },
@@ -230,6 +235,7 @@ export function openRoomSession({
       if (disposed) return
       // Unbinding writes an edit still waiting to be sent, so it runs while the room is open.
       unbindGraphEvents()
+      variableSync.dispose()
       disposed = true
       connectionTimer.pause()
       stopNameWatch()
