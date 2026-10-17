@@ -1,5 +1,6 @@
 import { execFile } from 'node:child_process'
 import { createHash } from 'node:crypto'
+import { existsSync, readFileSync } from 'node:fs'
 import { mkdir, readdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -141,17 +142,16 @@ export function demoFixturePlugin(root: string): Plugin {
     name: 'kalka-demo-fixture',
     apply: 'serve',
     configureServer(server) {
+      // A small file, read whole on each request; the dev server is the only reader.
       server.middlewares.use('/demo-fixture.fig', (_request, response) => {
-        readFile(join(root, FIXTURE_OUTPUT)).then(
-          (bytes) => {
-            response.setHeader('Content-Type', 'application/octet-stream')
-            response.end(bytes)
-          },
-          () => {
-            response.statusCode = 404
-            response.end()
-          }
-        )
+        const path = join(root, FIXTURE_OUTPUT)
+        if (!existsSync(path)) {
+          response.statusCode = 404
+          response.end()
+          return
+        }
+        response.setHeader('Content-Type', 'application/octet-stream')
+        response.end(readFileSync(path))
       })
     }
   }
