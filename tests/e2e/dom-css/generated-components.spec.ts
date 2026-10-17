@@ -338,6 +338,9 @@ async function serveComponent(
   )
   const server = await createServer({
     root: folder,
+    // Vite's default cache is the repository's `node_modules/.vite`, which the app server under
+    // test also optimizes into; sharing it makes the app's modules outdated mid-run.
+    cacheDir: join(folder, '.vite'),
     configFile: false,
     logLevel: 'silent',
     plugins: [app.plugin()],
