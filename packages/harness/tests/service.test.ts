@@ -121,6 +121,22 @@ describe('HarnessSessionService', () => {
     expect(await service.createSession('session-1', configuration)).toEqual({ isResume: true })
   })
 
+  test('says whether a turn ended because it was cancelled', async () => {
+    const backend = new FakeBackend()
+    const service = new HarnessSessionService(new Map([[backend.id, backend]]), new MemoryStore())
+    await service.createSession('session', configuration)
+
+    for await (const event of service.runTurn('session', 'count')) {
+      if (event.type === 'text-delta') service.cancelTurn('session')
+    }
+    expect(service.lastTurnCancelled('session')).toBeTrue()
+
+    for await (const _event of service.runTurn('session', 'again')) {
+      // A turn that runs to its end.
+    }
+    expect(service.lastTurnCancelled('session')).toBeFalse()
+  })
+
   test('destroys a session and removes resumability', async () => {
     const backend = new FakeBackend('persistent')
     const store = new MemoryStore()

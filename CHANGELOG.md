@@ -187,6 +187,7 @@
 
 ### Fixed
 
+- Stopping a Pi reply in the desktop app cancels that turn and keeps the session. Pi remembers the conversation and its sandbox for your next message. Before, the stop raised an error, dropped the connection, and started a new Pi process, leaving the old one running.
 - `export_image` says why it returned no image: an ID that is not in the document, layers that are all hidden, a render that came back empty, or, in the app, a document that neither the canvas nor CanvasKit could draw, instead of always answering "No visible nodes to export".
 - Keep design variable bindings and honor `replace_id` and `insert_index` when `render` runs through the stdio MCP server (`kalka-mcp`) against the desktop or web app, as it already did through the HTTP endpoint (#830).
 - People in a shared room see the overrides of instances in the shared document: text, slot content, and every other overridden field arrived empty, and editing such an instance could throw. Rooms opened by earlier builds do not meet rooms opened by this one.
