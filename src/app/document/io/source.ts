@@ -4,6 +4,7 @@ import { writeKalkaArchive, writeKalkaFolder } from '@kalka/core/io/formats/kalk
 import { figmaLosses } from '@kalka/fig'
 
 import { createAutosave } from '@/app/document/autosave'
+import { domRasterize } from '@/app/document/export/dom-raster'
 import { createDocumentChanges } from '@/app/document/io/changes'
 import { folderName, isKalkaFolderPath } from '@/app/document/io/kalka-folder'
 import {
@@ -88,7 +89,15 @@ export function createDocumentSourceActions({
       return { kind: 'folder', files: await writeKalkaFolder(editor.graph) }
     if (format === 'kalka') return writeKalkaArchive(editor.graph)
     const renderer = getRenderer()
-    return exportFigFile(editor.graph, renderer?.ck, renderer ?? undefined, state.currentPageId)
+    // The desktop app draws the thumbnail with the browser, as the canvas; CanvasKit otherwise.
+    return exportFigFile(
+      editor.graph,
+      renderer?.ck,
+      renderer ?? undefined,
+      state.currentPageId,
+      false,
+      domRasterize
+    )
   }
 
   function buildRecoveryFigFile() {

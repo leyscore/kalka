@@ -2,6 +2,7 @@ import type { CanvasKit } from 'canvaskit-wasm'
 
 import type { SceneGraph } from '@kalka/scene-graph'
 import type { RenderColorSpace } from '@kalka/scene-graph/color'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import type { SkiaRenderer } from '#core/canvas'
 
@@ -67,6 +68,8 @@ export interface NodeRasterRequest {
   scale: number
   format: RasterExportFormat
   quality?: number
+  /** The color the layers are drawn on, such as a `.fig` thumbnail's page; transparent without. */
+  background?: Color
 }
 
 /**

@@ -15,7 +15,7 @@ import {
 const TOO_LARGE = 2
 const HOST_ENTRY = join('electron', 'dist', 'render-host.js')
 
-type PageRequest = Pick<NodeRasterRequest, 'graph' | 'nodeIds'> & {
+type PageRequest = Pick<NodeRasterRequest, 'graph' | 'nodeIds' | 'background'> & {
   scale: number
   format: 'PNG' | 'JPG' | 'PDF'
   quality?: number
@@ -96,7 +96,8 @@ async function renderWithElectron(request: PageRequest): Promise<Uint8Array | nu
         height: Math.max(1, Math.ceil(bounds.maxY - bounds.minY)),
         scale: request.scale,
         format: request.format,
-        quality: request.quality
+        quality: request.quality,
+        background: request.background
       })
     )
     const code = await runHost(executable, entry, requestPath)

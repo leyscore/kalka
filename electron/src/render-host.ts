@@ -23,7 +23,8 @@ const RequestSchema = v.object({
   height: v.pipe(v.number(), v.minValue(1)),
   scale: v.number(),
   format: v.picklist(['PNG', 'JPG', 'PDF']),
-  quality: v.optional(v.number())
+  quality: v.optional(v.number()),
+  background: v.optional(v.object({ r: v.number(), g: v.number(), b: v.number(), a: v.number() }))
 })
 
 export type RenderHostRequest = v.InferOutput<typeof RequestSchema>

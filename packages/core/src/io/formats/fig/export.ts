@@ -17,9 +17,11 @@ import {
   figFileExtras,
   prepareFigExport,
   type FigExportSetup,
+  type FigThumbnailSources,
   type KiwiNodeChange
 } from '#core/io/formats/fig/export-setup'
 import { writePatchedFigFile } from '#core/io/formats/fig/patch-export'
+import type { NodeRasterizer } from '#core/io/types'
 import { sceneNodeToKiwi } from '#core/kiwi/fig/node-change/serialize'
 import { cloneSceneGraphForFigExport } from '#core/kiwi/fig/parse/transfer'
 import {
@@ -99,35 +101,35 @@ function appendInternalResources(context: InternalResourceContext): void {
   }
 }
 
+/**
+ * Writes the document as a `.fig`. An unmodified file comes back byte for byte. The thumbnail is
+ * drawn by `rasterize`, the engine that draws the canvas, when it can, else by CanvasKit.
+ */
 export async function exportFigFile(
   sourceGraph: SceneGraph,
   ck?: CanvasKit,
   renderer?: SkiaRenderer,
   pageId?: string,
-  renderHeadlessThumbnail = false
+  renderHeadlessThumbnail = false,
+  rasterize?: NodeRasterizer
 ): Promise<Uint8Array> {
   const originalArchive = await originalFigArchive(sourceGraph)
   if (originalArchive) return originalArchive.slice()
+  const thumbnail = { ck, renderer, rasterize, renderHeadless: renderHeadlessThumbnail }
   return withFigExportRuntime(
     sourceGraph,
     ck,
     async (runtime) =>
-      (await writePatchedFigFile(sourceGraph, runtime, {
-        ck,
-        renderer,
-        pageId,
-        renderHeadlessThumbnail
-      })) ?? writeFigFile(sourceGraph, runtime, ck, renderer, pageId, renderHeadlessThumbnail)
+      (await writePatchedFigFile(sourceGraph, runtime, { pageId, thumbnail })) ??
+      writeFigFile(sourceGraph, runtime, pageId, thumbnail)
   )
 }
 
 async function writeFigFile(
   sourceGraph: SceneGraph,
   runtime: FigNodeChangeExportRuntime,
-  ck: CanvasKit | undefined,
-  renderer: SkiaRenderer | undefined,
   pageId: string | undefined,
-  renderHeadlessThumbnail: boolean
+  thumbnail: FigThumbnailSources
 ): Promise<Uint8Array> {
   await initCodec()
   populateFigInternalPages(sourceGraph)
@@ -189,7 +191,7 @@ async function writeFigFile(
   }
 
   const kiwiData = compiled.encodeMessage(msg)
-  const extras = await figFileExtras(graph, pageId, ck, renderer, renderHeadlessThumbnail)
+  const extras = await figFileExtras(graph, pageId, thumbnail)
 
   const version = graph.figKiwiVersion ?? undefined
 

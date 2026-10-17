@@ -204,7 +204,8 @@ export const figFormat: IOFormatAdapter<'fig'> = {
       context?.canvasKit,
       context?.renderer,
       options?.thumbnailPageId,
-      options?.renderThumbnail ?? false
+      options?.renderThumbnail ?? false,
+      context?.rasterize
     )
     return {
       format: 'fig',
@@ -221,7 +222,8 @@ export const figFormat: IOFormatAdapter<'fig'> = {
       context?.canvasKit,
       context?.renderer,
       options?.thumbnailPageId ?? extracted.pageId ?? undefined,
-      options?.renderThumbnail ?? false
+      options?.renderThumbnail ?? false,
+      context?.rasterize
     )
     return {
       format: 'fig',

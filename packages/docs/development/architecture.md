@@ -53,7 +53,7 @@ The browser is the layout engine. `DomLayoutEngine` (installed through `installL
 
 ### CanvasKit
 
-CanvasKit (Skia WASM) no longer draws the canvas. It renders raster exports where the browser cannot, thumbnails, boolean geometry and vector conversion. On desktop, PNG and JPG exports are captured from the browser instead (`render_html_image`), so they match the canvas.
+CanvasKit (Skia WASM) no longer draws the canvas. It renders raster exports where the browser cannot, thumbnails, boolean geometry and vector conversion. On desktop, PNG and JPG exports and the thumbnail saved in `.fig` files are captured from the browser instead (`render_html_image`), and PDF exports printed by it (`render_html_pdf`), so they match the canvas.
 
 ### HTML model
 

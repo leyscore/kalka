@@ -1,7 +1,7 @@
 import type { Editor, EditorState } from '@kalka/core/editor'
 import type { BuiltinIOFormatId, ExportRequest, IORegistry } from '@kalka/core/io'
 
-import { domRasterize } from '@/app/document/export/dom-raster'
+import { domPrintPDF, domRasterize } from '@/app/document/export/dom-raster'
 import {
   bundleExportFiles,
   createExportTargetActions,
@@ -41,13 +41,14 @@ export function createDocumentExportActions(
 
     const exportOptions = getExportOptions(format, options)
 
+    const browser = { rasterize: domRasterize, printPDF: domPrintPDF }
     const result = await io.exportContent(
       formatId,
       { graph: editor.graph, target },
       exportOptions,
       editor.renderer
-        ? { canvasKit: editor.renderer.ck, renderer: editor.renderer, rasterize: domRasterize }
-        : { rasterize: domRasterize }
+        ? { canvasKit: editor.renderer.ck, renderer: editor.renderer, ...browser }
+        : browser
     )
 
     const baseName = getExportBaseName(editor.graph, target)

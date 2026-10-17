@@ -25,9 +25,11 @@ import type { GUID } from '@kalka/scene-graph/primitives'
 
 import type { SkiaRenderer } from '#core/canvas'
 import { CANVAS_BG_COLOR, IS_BROWSER, IS_TAURI } from '#core/constants'
+import { getPageColor } from '#core/figma-api/page-backgrounds'
 import { applyDocumentPluginData } from '#core/io/formats/fig/library-metadata'
 import { findFigThumbnailPageId } from '#core/io/formats/fig/thumbnail-page'
-import { renderThumbnail } from '#core/io/formats/raster'
+import { computeContentBounds, renderThumbnail } from '#core/io/formats/raster'
+import type { NodeRasterizer } from '#core/io/types'
 import {
   makeCanvasNodeChange,
   makeDocumentNodeChange,
@@ -64,14 +66,52 @@ function collectImageEntries(graph: SceneGraph): Array<{ name: string; data: Uin
 const THUMBNAIL_WIDTH = 512
 const THUMBNAIL_HEIGHT = 512
 
+/**
+ * The thumbnail drawn by the engine that draws the canvas: the page's layers fitted into the
+ * thumbnail, on the page's color. Null when there is no such engine or it cannot draw them.
+ */
+async function rasterizeFigThumbnail(
+  graph: SceneGraph,
+  pageId: string,
+  rasterize: NodeRasterizer
+): Promise<Uint8Array | null> {
+  const page = graph.getNode(pageId)
+  if (!page || page.childIds.length === 0) return null
+  const bounds = computeContentBounds(graph, page.childIds)
+  if (!bounds) return null
+  const width = bounds.maxX - bounds.minX
+  const height = bounds.maxY - bounds.minY
+  if (width <= 0 || height <= 0) return null
+  try {
+    return await rasterize({
+      graph,
+      pageId,
+      nodeIds: page.childIds,
+      scale: Math.min(THUMBNAIL_WIDTH / width, THUMBNAIL_HEIGHT / height),
+      format: 'PNG',
+      background: { ...getPageColor(page), a: 1 }
+    })
+  } catch {
+    return null
+  }
+}
+
+/** Where a `.fig` write gets its thumbnail: the canvas's engine first, then CanvasKit. */
+export interface FigThumbnailSources {
+  ck?: CanvasKit
+  renderer?: SkiaRenderer
+  rasterize?: NodeRasterizer
+  renderHeadless?: boolean
+}
+
 async function renderFigThumbnail(
   graph: SceneGraph,
   pageId: string | undefined,
-  ck?: CanvasKit,
-  renderer?: SkiaRenderer,
-  renderHeadless = false
+  { ck, renderer, rasterize, renderHeadless = false }: FigThumbnailSources
 ): Promise<Uint8Array> {
   if (!pageId) return THUMBNAIL_1X1
+  const drawn = rasterize ? await rasterizeFigThumbnail(graph, pageId, rasterize) : null
+  if (drawn) return drawn
   if (ck && renderer) {
     return (
       renderThumbnail(ck, renderer, graph, pageId, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT) ??
@@ -484,18 +524,10 @@ export interface FigFileExtras {
 export async function figFileExtras(
   graph: SceneGraph,
   pageId: string | undefined,
-  ck: CanvasKit | undefined,
-  renderer: SkiaRenderer | undefined,
-  renderHeadlessThumbnail: boolean
+  thumbnail: FigThumbnailSources
 ): Promise<FigFileExtras> {
   const currentPageId = pageId ?? findFigThumbnailPageId(graph.getPages(true))
-  const thumbnailPNG = await renderFigThumbnail(
-    graph,
-    currentPageId,
-    ck,
-    renderer,
-    renderHeadlessThumbnail
-  )
+  const thumbnailPNG = await renderFigThumbnail(graph, currentPageId, thumbnail)
   const metaJSON = JSON.stringify({
     version: 1,
     app: 'Kalka',

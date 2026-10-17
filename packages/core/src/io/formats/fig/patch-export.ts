@@ -1,5 +1,3 @@
-import type { CanvasKit } from 'canvaskit-wasm'
-
 import { figCheckpointRecords, type FigArchiveRecordInfo, type FigRecordPatch } from '@kalka/fig'
 import type { FigNodeChangeExportRuntime } from '@kalka/fig/node-change'
 import { stringToGuid } from '@kalka/kiwi/fig/guid'
@@ -7,12 +5,12 @@ import { ownsSlotContent, type SceneGraph, type SceneNode } from '@kalka/scene-g
 import { siblingOrderKeys } from '@kalka/scene-graph/order-keys'
 import type { GUID } from '@kalka/scene-graph/primitives'
 
-import type { SkiaRenderer } from '#core/canvas'
 import {
   figExportRecordOptions,
   figFileExtras,
   prepareFigExport,
   type FigExportSetup,
+  type FigThumbnailSources,
   type KiwiNodeChange
 } from '#core/io/formats/fig/export-setup'
 import { sceneNodeToKiwi } from '#core/kiwi/fig/node-change/serialize'
@@ -27,10 +25,8 @@ import {
 import { appendVariableNodeChanges } from './variable-export'
 
 export interface PatchedFigFileOptions {
-  ck?: CanvasKit
-  renderer?: SkiaRenderer
   pageId?: string
-  renderHeadlessThumbnail?: boolean
+  thumbnail?: FigThumbnailSources
 }
 
 /** Slot content an instance writes as records of its own, which this path leaves alone. */
@@ -320,13 +316,7 @@ export async function writePatchedFigFile(
     throw error
   }
   if (!built) return null
-  const extras = await figFileExtras(
-    built.graph,
-    options.pageId,
-    options.ck,
-    options.renderer,
-    options.renderHeadlessThumbnail ?? false
-  )
+  const extras = await figFileExtras(built.graph, options.pageId, options.thumbnail ?? {})
   const archivedImages = new Set(info.imageHashes.map((hash) => `images/${hash}`))
   return archive.patch(built.patch, {
     thumbnailPNG: extras.thumbnailPNG,
