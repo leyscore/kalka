@@ -1,0 +1,121 @@
+{
+  "format": "kalka",
+  "version": 1,
+  "root": {
+    "id": "1266337655:3"
+  },
+  "pages": [
+    {
+      "id": "1266337655:564",
+      "name": "English",
+      "file": "pages/english.html",
+      "artboards": [
+        {
+          "id": "1266337655:565",
+          "x": 0,
+          "y": 0
+        }
+      ]
+    },
+    {
+      "id": "1266337655:1681",
+      "name": "Français",
+      "file": "pages/francais.html",
+      "artboards": [
+        {
+          "id": "1266337655:1682",
+          "x": 0,
+          "y": 0
+        }
+      ]
+    },
+    {
+      "id": "1266337655:2798",
+      "name": "Deutsch",
+      "file": "pages/deutsch.html",
+      "artboards": [
+        {
+          "id": "1266337655:2799",
+          "x": 0,
+          "y": 0
+        }
+      ]
+    },
+    {
+      "id": "1266337655:3915",
+      "name": "Español",
+      "file": "pages/espanol.html",
+      "artboards": [
+        {
+          "id": "1266337655:3916",
+          "x": 0,
+          "y": 0
+        }
+      ]
+    },
+    {
+      "id": "1266337655:5032",
+      "name": "Italiano",
+      "file": "pages/italiano.html",
+      "artboards": [
+        {
+          "id": "1266337655:5033",
+          "x": 0,
+          "y": 0
+        }
+      ]
+    },
+    {
+      "id": "1266337655:6149",
+      "name": "日本語",
+      "file": "pages/日本語.html",
+      "artboards": [
+        {
+          "id": "1266337655:6150",
+          "x": 0,
+          "y": 0
+        }
+      ]
+    },
+    {
+      "id": "1266337655:7266",
+      "name": "Polski",
+      "file": "pages/polski.html",
+      "artboards": [
+        {
+          "id": "1266337655:7267",
+          "x": 0,
+          "y": 0
+        }
+      ]
+    },
+    {
+      "id": "1266337655:8383",
+      "name": "Русский",
+      "file": "pages/русский.html",
+      "artboards": [
+        {
+          "id": "1266337655:8384",
+          "x": 0,
+          "y": 0
+        }
+      ]
+    },
+    {
+      "id": "1266337655:9500",
+      "name": "中文",
+      "file": "pages/中文.html",
+      "artboards": [
+        {
+          "id": "1266337655:9501",
+          "x": 0,
+          "y": 0
+        }
+      ]
+    }
+  ],
+  "settings": {
+    "colorSpace": "srgb",
+    "activeModes": {}
+  }
+}

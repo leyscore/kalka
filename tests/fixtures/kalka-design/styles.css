@@ -1,0 +1,61 @@
+/*
+ * Styles every page of this Kalka document shares: the document's classes, which layers name in
+ * their class attribute, after the rules below. A layer's own style stays inline.
+ */
+[hidden] {
+  display: none !important;
+}
+
+/* Layers written as an h1, a list or a button draw as their own CSS says. */
+:where(
+  section,
+  header,
+  footer,
+  main,
+  nav,
+  article,
+  aside,
+  figure,
+  figcaption,
+  form,
+  fieldset,
+  address,
+  hgroup,
+  ul,
+  ol,
+  li,
+  dl,
+  dt,
+  dd,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  blockquote,
+  pre,
+  a,
+  button,
+  label,
+  legend,
+  strong,
+  em,
+  small,
+  code,
+  mark,
+  time
+) {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  text-decoration: none;
+  list-style: none;
+  min-inline-size: 0;
+  appearance: none;
+}

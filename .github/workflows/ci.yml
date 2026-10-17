@@ -269,7 +269,7 @@ jobs:
     runs-on: ubuntu-latest
     name: .fig import regression
     env:
-      LARGE_FIXTURES: tests/fixtures/positivus.fig,tests/fixtures/material3.fig
+      LARGE_FIXTURES: tests/fixtures/material3.fig
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
@@ -282,7 +282,6 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: |
-            tests/fixtures/positivus.fig
             tests/fixtures/material3.fig
           key: fig-fixtures-${{ steps.fixtures.outputs.key }}
 

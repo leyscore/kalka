@@ -1,10 +1,11 @@
 import { createHash } from 'node:crypto'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import * as v from 'valibot'
 
 import { parseFigFile, type SceneGraph, type SceneNode } from '@kalka/core'
+import { readKalkaFolder } from '@kalka/core/io/formats/kalka'
 import { sceneGraphToDesignDocument, serializeHTML } from '@kalka/dom-css/export'
 
 import { testPath } from '../paths'
@@ -74,14 +75,7 @@ function fieldsFingerprint(
   return sha(json)
 }
 
-export async function fingerprintFixture(file: string): Promise<PageFingerprint[]> {
-  const data = readFileSync(join(FIXTURES, file))
-  const graph = await parseFigFile(
-    data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength),
-    {
-      populate: 'all'
-    }
-  )
+function fingerprintGraph(graph: SceneGraph): PageFingerprint[] {
   const pages = graph.getPages(true)
   const order = new Map(
     pages.flatMap((page) => subtree(graph, page)).map((node, index) => [node.id, `#${index}`])
@@ -96,6 +90,32 @@ export async function fingerprintFixture(file: string): Promise<PageFingerprint[
       html: sha(serializeHTML(document))
     }
   })
+}
+
+/** Every file of a Kalka folder, by its path inside the folder. */
+function folderFiles(root: string): Map<string, Uint8Array> {
+  const files = new Map<string, Uint8Array>()
+  const visit = (relative: string) => {
+    for (const entry of readdirSync(join(root, relative), { withFileTypes: true })) {
+      const path = relative ? `${relative}/${entry.name}` : entry.name
+      if (entry.isDirectory()) visit(path)
+      else files.set(path, new Uint8Array(readFileSync(join(root, path))))
+    }
+  }
+  visit('')
+  return files
+}
+
+/** A `.fig` file, or a Kalka folder, from `tests/fixtures`. */
+export async function fingerprintFixture(file: string): Promise<PageFingerprint[]> {
+  const path = join(FIXTURES, file)
+  if (statSync(path).isDirectory()) return fingerprintGraph(readKalkaFolder(folderFiles(path)))
+  const data = readFileSync(path)
+  const graph = await parseFigFile(
+    data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength),
+    { populate: 'all' }
+  )
+  return fingerprintGraph(graph)
 }
 
 /** The committed fingerprints; `UPDATE_FIG_BASELINES=1` writes them from the current import. */

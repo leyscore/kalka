@@ -1,0 +1,56 @@
+[
+  {
+    "name": "English",
+    "layers": 558,
+    "fields": "8a47b53a39334b6c",
+    "html": "d5ecd2604e5dd607"
+  },
+  {
+    "name": "Français",
+    "layers": 558,
+    "fields": "0b0b91dedadd1516",
+    "html": "2d729eddbdeed94a"
+  },
+  {
+    "name": "Deutsch",
+    "layers": 558,
+    "fields": "fd31dc518d511638",
+    "html": "73aeca829771b76c"
+  },
+  {
+    "name": "Español",
+    "layers": 558,
+    "fields": "2b76479612ed82fb",
+    "html": "bb1782adb8defaaf"
+  },
+  {
+    "name": "Italiano",
+    "layers": 558,
+    "fields": "c4df751dd66fc1c2",
+    "html": "b791750cf443c055"
+  },
+  {
+    "name": "日本語",
+    "layers": 558,
+    "fields": "c3f9c66744474937",
+    "html": "74df8e71399fa605"
+  },
+  {
+    "name": "Polski",
+    "layers": 558,
+    "fields": "42b3ec7559e0ad51",
+    "html": "20b39de6ecc4c3c4"
+  },
+  {
+    "name": "Русский",
+    "layers": 558,
+    "fields": "d6f44651929dd2ca",
+    "html": "0c1784d5333dda1a"
+  },
+  {
+    "name": "中文",
+    "layers": 558,
+    "fields": "43e6ec979d2eb5ff",
+    "html": "cdcc48d5bc3383c7"
+  }
+]

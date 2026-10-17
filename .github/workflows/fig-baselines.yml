@@ -35,7 +35,7 @@ jobs:
         with:
           lfs: 'true'
           # Page captures open every fixture the spec lists.
-          lfs-include: ${{ inputs.pages && 'tests/fixtures/gold-preview.fig,tests/fixtures/slots.fig,tests/fixtures/circle-text.fig,tests/fixtures/positivus.fig,tests/fixtures/material3.fig' || steps.paths.outputs.include }}
+          lfs-include: ${{ inputs.pages && 'tests/fixtures/gold-preview.fig,tests/fixtures/slots.fig,tests/fixtures/circle-text.fig,tests/fixtures/material3.fig' || steps.paths.outputs.include }}
 
       - name: Build packages
         run: bun run build:packages

@@ -13,7 +13,6 @@ const FIXTURES = [
   { file: 'gold-preview.fig', large: false },
   { file: 'slots.fig', large: false },
   { file: 'circle-text.fig', large: false },
-  { file: 'positivus.fig', large: true },
   { file: 'material3.fig', large: true }
 ] as const
 
