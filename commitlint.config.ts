@@ -24,7 +24,7 @@ export default {
   ignores: [
     (message) =>
       !hasAICoauthor(message) &&
-      (/^Release v\d+\.\d+\.\d+$/.test(message.split('\n')[0] ?? '') ||
+      (/^Release v\d+\.\d+\.\d+(?:-[0-9A-Za-z.]+)?$/.test(message.split('\n')[0] ?? '') ||
         (process.env.COMMITLINT_PR_TITLE !== '1' && isIgnored(message)))
   ],
   helpUrl: 'https://github.com/leyscore/kalka/blob/main/CONTRIBUTING.md#commit-messages'
