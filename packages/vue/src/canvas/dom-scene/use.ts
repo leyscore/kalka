@@ -66,17 +66,20 @@ export function useDomScene(
    * A layer being turned is drawn at the angle the handle holds, and a path being edited from its
    * live vertices; neither is in the graph until the gesture ends.
    */
-  function livePatch(id: string): Partial<SceneNode> | null {
-    const preview = view().rotationPreview
-    const turn = preview?.nodeId === id ? { rotation: preview.angle } : null
-    const path = pathEditPatch(id)
-    return turn || path ? { ...path, ...turn } : null
+  function livePatches(): ReadonlyMap<string, Partial<SceneNode>> {
+    const patches = new Map<string, Partial<SceneNode>>()
+    const path = pathEditPatch()
+    if (path) patches.set(path.id, path.patch)
+    const turn = view().rotationPreview
+    if (turn) patches.set(turn.nodeId, { ...patches.get(turn.nodeId), rotation: turn.angle })
+    return patches
   }
 
   /** A path being edited is drawn from its live vertices, mapped back into its own frame. */
-  function pathEditPatch(id: string): Partial<SceneNode> | null {
+  function pathEditPatch(): { id: string; patch: Partial<SceneNode> } | null {
     const edit = view().nodeEditState
-    if (edit?.nodeId !== id) return null
+    if (!edit) return null
+    const id = edit.nodeId
     const node = editor.graph.getNode(id)
     const inverse = node ? Matrix.invert(getWorldMatrix(node, editor.graph)) : null
     if (!node || !inverse) return null
@@ -86,9 +89,12 @@ export function useDomScene(
       regions: edit.regions
     })
     return {
-      vectorNetwork,
-      fillGeometry: regenerateFillGeometry(vectorNetwork, node.fillGeometry),
-      strokeGeometry: []
+      id,
+      patch: {
+        vectorNetwork,
+        fillGeometry: regenerateFillGeometry(vectorNetwork, node.fillGeometry),
+        strokeGeometry: []
+      }
     }
   }
   const stops: (() => void)[] = []
@@ -161,7 +167,7 @@ export function useDomScene(
         if (projector) options.onPatched?.(projector, ids)
       },
       onReflow: (id) => reflowed.add(id),
-      livePatch,
+      livePatches,
       tokens: () => canvasTokens.references
     })
     const p = projector

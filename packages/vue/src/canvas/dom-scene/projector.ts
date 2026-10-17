@@ -64,10 +64,11 @@ export interface DomSceneProjectorOptions {
    */
   onReflow?: (artboardId: string) => void
   /**
-   * Fields a layer is drawn with instead of its own while an edit previews them, such as the
-   * vertices of a path being edited or the angle of a turn. The graph is not changed.
+   * Fields layers are drawn with instead of their own while an edit previews them, such as the
+   * vertices of a path being edited or the angle of a turn, by layer id. They apply wherever the
+   * layer is drawn, also when its parent rebuilds it. The graph is not changed.
    */
-  livePatch?: (id: string) => Partial<SceneNode> | null
+  livePatches?: () => ReadonlyMap<string, Partial<SceneNode>>
   /** The variable references layers are projected with, as `var(--name)`. */
   tokens?: () => DesignTokens
 }
@@ -415,9 +416,7 @@ export class DomSceneProjector {
    */
   private placeArtboard(node: SceneNode, artboard: Artboard): void {
     // A turn being previewed changes how far the layer draws past its box.
-    this.withLivePatch(node.id, () =>
-      placeArtboardFrame(artboard.frame, artboard.doc, this.graph, node)
-    )
+    this.withLivePatches(() => placeArtboardFrame(artboard.frame, artboard.doc, this.graph, node))
     const style = artboard.frame.style
     const blend = blendModeToCSS(node.blendMode) ?? ''
     if (style.mixBlendMode !== blend) style.mixBlendMode = blend
@@ -436,22 +435,25 @@ export class DomSceneProjector {
   }
 
   private project(id: string, shallow: boolean): DesignNode | null {
-    return this.withLivePatch(id, () => this.projectStored(id, shallow))
+    return this.withLivePatches(() => this.projectStored(id, shallow))
   }
 
-  /** Runs `read` with the layer's previewed fields in place, then puts its own back. */
-  private withLivePatch<T>(id: string, read: () => T): T {
-    const patch = this.options.livePatch?.(id)
-    const node = patch ? this.graph.getNode(id) : undefined
-    if (!patch || !node) return read()
-    const stored = Object.fromEntries(
-      Object.keys(patch).map((key) => [key, node[key as keyof SceneNode]])
-    )
-    Object.assign(node, patch)
+  /** Runs `read` with the layers' previewed fields in place, then puts their own back. */
+  private withLivePatches<T>(read: () => T): T {
+    const restore: [SceneNode, Partial<SceneNode>][] = []
+    for (const [id, patch] of this.options.livePatches?.() ?? []) {
+      const node = this.graph.getNode(id)
+      if (!node) continue
+      restore.push([
+        node,
+        Object.fromEntries(Object.keys(patch).map((key) => [key, node[key as keyof SceneNode]]))
+      ])
+      Object.assign(node, patch)
+    }
     try {
       return read()
     } finally {
-      Object.assign(node, stored)
+      for (const [node, stored] of restore.reverse()) Object.assign(node, stored)
     }
   }
 
