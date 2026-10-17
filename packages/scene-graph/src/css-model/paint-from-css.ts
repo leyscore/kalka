@@ -139,10 +139,47 @@ export function blendModeFromCSS(value: string | undefined): BlendMode | undefin
   return mode === 'NORMAL' ? undefined : mode
 }
 
-/** The angle of `transform: rotate(12deg)`, in degrees; null for any other transform. */
-export function rotationFromCSS(value: string | undefined): number | null {
-  const match = value ? /^rotate\(\s*([-+0-9.e]+)deg\s*\)$/i.exec(value.trim()) : null
-  if (!match) return null
-  const angle = Number(match[1])
-  return Number.isFinite(angle) ? angle : null
+/** A layer's turn, in degrees, and its mirroring along each axis. */
+export interface LayerTransform {
+  rotation: number
+  flipX: boolean
+  flipY: boolean
+}
+
+const TRANSFORM_FUNCTION = /([a-z]+)\(([^)]*)\)/giy
+
+/**
+ * The turn and flips of a layer's `transform`, as `layoutChild` writes it: `scale(-1, 1)` to
+ * mirror and `rotate(12deg)` to turn, with the translations that move a line's flip to its center.
+ * Null for any other transform.
+ */
+export function layerTransformFromCSS(value: string | undefined): LayerTransform | null {
+  const text = value?.trim()
+  if (!text) return null
+  const result: LayerTransform = { rotation: 0, flipX: false, flipY: false }
+  TRANSFORM_FUNCTION.lastIndex = 0
+  let index = 0
+  while (index < text.length) {
+    TRANSFORM_FUNCTION.lastIndex = index
+    const match = TRANSFORM_FUNCTION.exec(text)
+    if (!match) return null
+    index = TRANSFORM_FUNCTION.lastIndex
+    while (text[index] === ' ') index++
+    const name = match[1].toLowerCase()
+    const args = match[2].split(',').map((arg) => arg.trim())
+    if (name === 'translate') continue
+    if (name === 'rotate') {
+      const angle = /^([-+0-9.e]+)deg$/i.exec(args[0] ?? '')
+      const rotation = angle ? Number(angle[1]) : Number.NaN
+      if (args.length !== 1 || !Number.isFinite(rotation)) return null
+      result.rotation = rotation
+      continue
+    }
+    if (name !== 'scale' || args.length !== 2) return null
+    const [x, y] = args.map(Number)
+    if (Math.abs(x) !== 1 || Math.abs(y) !== 1) return null
+    result.flipX = x < 0
+    result.flipY = y < 0
+  }
+  return result
 }

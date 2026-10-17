@@ -5,7 +5,7 @@ import { resolveNodeTextDirection } from '../text-direction'
 import type { SceneNode } from '../types'
 import { pickStyle } from './from-css'
 import { addGridContainer, addGridPlacement } from './grid'
-import { rotationFromCSS } from './paint-from-css'
+import { layerTransformFromCSS } from './paint-from-css'
 import {
   type CSSDeclarations,
   type FieldCSS,
@@ -72,7 +72,27 @@ function growsAlongParent(node: SceneNode, parent: SceneNode | undefined): boole
 }
 
 /**
- * Styles a layer takes from its parent's layout, and its own rotation. Auto layout never
+ * A layer's turn and flips as a CSS `transform`, in the order the canvas applies them
+ * (`getNodeLocalMatrix`): the layer turns about its center, or a line about where it starts, and
+ * then mirrors about its center.
+ */
+function layerTransformToCSS(node: SceneNode): string | undefined {
+  const turn = node.rotation !== 0 ? `rotate(${node.rotation}deg)` : undefined
+  if (!node.flipX && !node.flipY) return turn
+  const flip = `scale(${node.flipX ? -1 : 1}, ${node.flipY ? -1 : 1})`
+  const origin = getNodeRotationOrigin(node)
+  const dx = node.width / 2 - origin.x
+  const dy = node.height / 2 - origin.y
+  // A line's transform starts where it does, so its flip moves to its center and back.
+  const mirror =
+    dx === 0 && dy === 0
+      ? flip
+      : `translate(${dx}px, ${dy}px) ${flip} translate(${-dx}px, ${-dy}px)`
+  return turn ? `${mirror} ${turn}` : mirror
+}
+
+/**
+ * Styles a layer takes from its parent's layout, and its own rotation and flips. Auto layout never
  * squeezes a layer below its size; fill shares the free space equally, from nothing, and may go
  * below its content as Figma's does. That zero minimum is the projection's, not the layer's.
  */
@@ -85,6 +105,8 @@ export const layoutChild: PropertyFamily = {
     'layoutGrow',
     'gridPosition',
     'rotation',
+    'flipX',
+    'flipY',
     'type',
     'layoutMode',
     'minWidth',
@@ -114,8 +136,9 @@ export const layoutChild: PropertyFamily = {
         style[minimum] ??= '0px'
       } else style['flex-shrink'] = '0'
     }
-    if (node.rotation !== 0) {
-      style.transform = `rotate(${node.rotation}deg)`
+    const transform = layerTransformToCSS(node)
+    if (transform) {
+      style.transform = transform
       // CSS turns a box about its center, as the layers do, except a line, which turns about
       // where it starts.
       if (node.type === 'LINE') {
@@ -131,8 +154,12 @@ export const layoutChild: PropertyFamily = {
     const grow = parseCSSNumber(pickStyle(style, 'flex-grow'))
     if (grow !== null && grow > 0) node.layoutGrow = grow
 
-    const rotation = rotationFromCSS(pickStyle(style, 'transform'))
-    if (rotation !== null) node.rotation = rotation
+    const transform = layerTransformFromCSS(pickStyle(style, 'transform'))
+    if (transform) {
+      node.rotation = transform.rotation
+      node.flipX = transform.flipX
+      node.flipY = transform.flipY
+    }
 
     const parent = projected?.parent
     if (!laysOutChildren(parent) || parent.layoutMode === 'GRID' || node.layoutGrow <= 0) return

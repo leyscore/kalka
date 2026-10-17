@@ -556,8 +556,8 @@ export function renderNodesToSVG(
 
 /**
  * One layer as an `<svg>` element sized to its box, for inlining in HTML where the box already
- * places, rotates, and fades it: the drawing starts at the layer's origin without its rotation
- * or opacity, and keeps its flips.
+ * places, turns, mirrors, and fades it: the drawing starts at the layer's origin without its
+ * rotation, flips, or opacity.
  */
 export function renderNodeSVGElement(
   graph: SceneGraph,
@@ -582,7 +582,10 @@ export function renderNodeSVGElement(
     tint,
     booleanPath
   }
-  const drawn = renderNode({ ...node, x: 0, y: 0, rotation: 0, opacity: 1 }, ctx)
+  const drawn = renderNode(
+    { ...node, x: 0, y: 0, rotation: 0, flipX: false, flipY: false, opacity: 1 },
+    ctx
+  )
   if (!drawn) return null
   // A straight line has no height or width, but its stroke still needs a viewport to draw in.
   const width = Math.max(1, round(node.width))
