@@ -52,7 +52,7 @@ function request(command: string, args: Record<string, unknown> = {}) {
   return handleRequest(getActiveStore(), command, args) as Promise<{
     ok: boolean
     result: Record<string, unknown>
-    target?: { documentId: string; pageId: string }
+    target?: { documentId: string; documentName: string; pageId: string; tokensHash: string }
   }>
 }
 
@@ -91,6 +91,27 @@ describe('activate_document', () => {
     await expect(request('activate_document', { document_id: 'missing' })).rejects.toThrow(
       'Document "missing" not found'
     )
+  })
+})
+
+describe('document identity', () => {
+  test('every tool response names its document and page and fingerprints its tokens', async () => {
+    const tab = createTab()
+    const pageId = tab.store.state.currentPageId
+    const read = () => request('tool', { document_id: tab.id, name: 'get_page_tree', args: {} })
+
+    const before = await read()
+    expect(before.target).toMatchObject({
+      documentId: tab.id,
+      documentName: tab.store.state.documentName,
+      pageId
+    })
+    expect(before.target?.tokensHash).toMatch(/^[0-9a-f]{12}$/)
+
+    const collection = tab.store.graph.createCollection('Colors')
+    tab.store.graph.createVariable('brand', 'FLOAT', collection.id, 4)
+    const after = await read()
+    expect(after.target?.tokensHash).not.toBe(before.target?.tokensHash)
   })
 })
 

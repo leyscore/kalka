@@ -1,4 +1,5 @@
 import type { AutomationDocumentSummary } from '@kalka/core/rpc'
+import { tokensFingerprint } from '@kalka/scene-graph'
 
 import type { EditorStore } from '@/app/editor/active-store'
 import { getTabById, getTabForStore, getTabsSnapshot } from '@/app/tabs'
@@ -23,7 +24,8 @@ export type AutomationTarget = {
   pageName: string
 }
 
-export type AutomationTargetResult = Omit<AutomationTarget, 'store'>
+/** The document and page a command ran on, with a fingerprint of the document's tokens. */
+export type AutomationTargetResult = Omit<AutomationTarget, 'store'> & { tokensHash: string }
 
 export function stripAutomationTargetArgs(args: UnknownRecord): UnknownRecord {
   const { document_id: _documentId, page_id: _pageId, ...rest } = args
@@ -36,7 +38,8 @@ export function targetToResult(target: AutomationTarget): AutomationTargetResult
     documentName: target.documentName,
     ...(target.path ? { path: target.path } : {}),
     pageId: target.pageId,
-    pageName: target.pageName
+    pageName: target.pageName,
+    tokensHash: tokensFingerprint(target.store.graph)
   }
 }
 
