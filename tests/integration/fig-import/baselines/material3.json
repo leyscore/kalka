@@ -3,7 +3,7 @@
     "name": "Getting started",
     "layers": 101,
     "fields": "ff1a4dae407a95b4",
-    "html": "1249623e6a68c018"
+    "html": "0e22e3b37e5817ce"
   },
   {
     "name": "Table of contents",
@@ -15,13 +15,13 @@
     "name": "Avatars",
     "layers": 87,
     "fields": "921bbb66d4bbcb84",
-    "html": "af4c1ae13c0791d6"
+    "html": "c3cf61b3ec8ee822"
   },
   {
     "name": "Icons",
     "layers": 298,
     "fields": "77b4c4df73028db3",
-    "html": "c99262b466f9f52c"
+    "html": "aa44f05b4d0d4103"
   },
   {
     "name": "Examples",
@@ -45,7 +45,7 @@
     "name": "Utilities",
     "layers": 1212,
     "fields": "5391a1565bce9a90",
-    "html": "a61ece96d77f3710"
+    "html": "8c1bf30a1443c177"
   },
   {
     "name": "---",
@@ -99,7 +99,7 @@
     "name": "Date & time pickers",
     "layers": 3177,
     "fields": "87c8b1fd79805b78",
-    "html": "14346209a301137b"
+    "html": "95e61fd4364865de"
   },
   {
     "name": "Dialogs",
@@ -117,13 +117,13 @@
     "name": "Lists",
     "layers": 13885,
     "fields": "0321dcbc03cafd7b",
-    "html": "44e98486c7ff7624"
+    "html": "2890e02bdc3f0898"
   },
   {
     "name": "Loading & progress",
     "layers": 1052,
     "fields": "9db4be14f844ba8c",
-    "html": "5e49561a4167cc04"
+    "html": "455cc26788e08a96"
   },
   {
     "name": "Menu",
@@ -135,7 +135,7 @@
     "name": "Navigation",
     "layers": 3660,
     "fields": "a9d8b3a88da1e34b",
-    "html": "f158e16d7a4f30af"
+    "html": "1e512ac9d72e2ad0"
   },
   {
     "name": "Radio button",
@@ -147,7 +147,7 @@
     "name": "Search",
     "layers": 525,
     "fields": "62ffb90f84f23009",
-    "html": "f44a99b8b72009dc"
+    "html": "8c9df959e67459cc"
   },
   {
     "name": "Sheets",
