@@ -15,7 +15,7 @@ import {
   figFileExtras,
   prepareFigExport,
   type FigExportSetup,
-  type FigThumbnailSources,
+  type FigFileExtrasOptions,
   type KiwiNodeChange
 } from '#core/io/formats/fig/export-setup'
 import { appendVariableNodeChanges } from '#core/io/formats/fig/variable-export'
@@ -29,11 +29,6 @@ import {
 } from '#core/kiwi/fig/session/document-state'
 
 import { narrowToChangedFields, type RecordWriter } from './fields'
-
-export interface PatchedFigFileOptions {
-  pageId?: string
-  thumbnail?: FigThumbnailSources
-}
 
 /** Slot content an instance writes as records of its own, which this path leaves alone. */
 class UnpatchableChangeError extends Error {
@@ -407,7 +402,7 @@ export function archiveImagesNamedForFigma(graph: SceneGraph): Promise<boolean> 
 export async function writePatchedFigFile(
   source: SceneGraph,
   runtime: FigNodeChangeExportRuntime,
-  options: PatchedFigFileOptions = {}
+  options: FigFileExtrasOptions = {}
 ): Promise<Uint8Array | null> {
   const archive = figArchive(source)
   const changes = archiveChanges(source)
@@ -428,12 +423,7 @@ export async function writePatchedFigFile(
   }
   if (!built) return null
   const imageNames = nameImagesForFigma(built.patch.records, built.graph.images)
-  const extras = await figFileExtras(
-    built.graph,
-    imageNames,
-    options.pageId,
-    options.thumbnail ?? {}
-  )
+  const extras = await figFileExtras(built.graph, imageNames, options)
   const archivedImages = new Set(info.imageHashes.map((hash) => `images/${hash}`))
   return archive.patch(built.patch, {
     thumbnailPNG: extras.thumbnailPNG,

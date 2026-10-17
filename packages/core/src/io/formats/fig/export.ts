@@ -1,6 +1,4 @@
-import type { CanvasKit } from 'canvaskit-wasm'
-
-import { compressFigDataSync } from '@kalka/fig'
+import { compressFigDataSync, renameFigArchive } from '@kalka/fig'
 import {
   nameImagesForFigma,
   placeSlotContent,
@@ -12,7 +10,6 @@ import type { SceneGraph } from '@kalka/scene-graph'
 import { fractionalPosition } from '@kalka/scene-graph/order-keys'
 import type { GUID } from '@kalka/scene-graph/primitives'
 
-import type { SkiaRenderer } from '#core/canvas'
 import { withFigExportRuntime } from '#core/canvas/text/shape'
 import { IS_BROWSER, IS_TAURI } from '#core/constants'
 import {
@@ -21,11 +18,10 @@ import {
   figFileExtras,
   prepareFigExport,
   type FigExportSetup,
-  type FigThumbnailSources,
+  type FigFileExtrasOptions,
   type KiwiNodeChange
 } from '#core/io/formats/fig/export-setup'
 import { archiveImagesNamedForFigma, writePatchedFigFile } from '#core/io/formats/fig/patch/export'
-import type { NodeRasterizer } from '#core/io/types'
 import { sceneNodeToKiwi } from '#core/kiwi/fig/node-change/serialize'
 import { cloneSceneGraphForFigExport } from '#core/kiwi/fig/parse/transfer'
 import {
@@ -106,37 +102,36 @@ function appendInternalResources(context: InternalResourceContext): void {
 }
 
 /**
- * Writes the document as a `.fig`. An unmodified file comes back byte for byte. The thumbnail is
- * drawn by `rasterize`, the engine that draws the canvas, when it can, else by CanvasKit.
+ * Writes the document as a `.fig`. A document opened from an archive and left unchanged is that
+ * archive, with only its `meta.json` renamed when `documentName` differs from the name it
+ * records. The thumbnail is drawn by `rasterize`, the engine that draws the canvas, when it can,
+ * else by CanvasKit.
  */
 export async function exportFigFile(
   sourceGraph: SceneGraph,
-  ck?: CanvasKit,
-  renderer?: SkiaRenderer,
-  pageId?: string,
-  renderHeadlessThumbnail = false,
-  rasterize?: NodeRasterizer
+  options: FigFileExtrasOptions = {}
 ): Promise<Uint8Array> {
   // An archive whose images Figma cannot read is written whole rather than reused.
   const reuseArchive = await archiveImagesNamedForFigma(sourceGraph)
   const originalArchive = reuseArchive ? await originalFigArchive(sourceGraph) : null
-  if (originalArchive) return originalArchive.slice()
-  const thumbnail = { ck, renderer, rasterize, renderHeadless: renderHeadlessThumbnail }
+  const reused =
+    originalArchive && options.documentName
+      ? renameFigArchive(originalArchive, options.documentName)
+      : originalArchive
+  if (reused) return reused === originalArchive ? reused.slice() : reused
   return withFigExportRuntime(
     sourceGraph,
-    ck,
+    options.ck,
     async (runtime) =>
-      (reuseArchive
-        ? await writePatchedFigFile(sourceGraph, runtime, { pageId, thumbnail })
-        : null) ?? writeFigFile(sourceGraph, runtime, pageId, thumbnail)
+      (reuseArchive ? await writePatchedFigFile(sourceGraph, runtime, options) : null) ??
+      writeFigFile(sourceGraph, runtime, options)
   )
 }
 
 async function writeFigFile(
   sourceGraph: SceneGraph,
   runtime: FigNodeChangeExportRuntime,
-  pageId: string | undefined,
-  thumbnail: FigThumbnailSources
+  options: FigFileExtrasOptions
 ): Promise<Uint8Array> {
   await initCodec()
   populateFigInternalPages(sourceGraph)
@@ -199,7 +194,7 @@ async function writeFigFile(
 
   const imageNames = nameImagesForFigma(nodeChanges, graph.images)
   const kiwiData = compiled.encodeMessage(msg)
-  const extras = await figFileExtras(graph, imageNames, pageId, thumbnail)
+  const extras = await figFileExtras(graph, imageNames, options)
 
   const version = graph.figKiwiVersion ?? undefined
 
@@ -228,6 +223,7 @@ async function writeFigFile(
 }
 
 export { compressFigDataSync } from '@kalka/fig'
+export type { FigFileExtrasOptions }
 
 function canUseWorker(): boolean {
   return typeof Worker !== 'undefined' && IS_BROWSER

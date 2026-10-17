@@ -90,18 +90,20 @@ export function createDocumentSourceActions({
     if (format === 'kalka') return writeKalkaArchive(editor.graph)
     const renderer = getRenderer()
     // The desktop app draws the thumbnail with the browser, as the canvas; CanvasKit otherwise.
-    return exportFigFile(
-      editor.graph,
-      renderer?.ck,
-      renderer ?? undefined,
-      state.currentPageId,
-      false,
-      domRasterize
-    )
+    return exportFigFile(editor.graph, {
+      ck: renderer?.ck,
+      renderer: renderer ?? undefined,
+      rasterize: domRasterize,
+      pageId: state.currentPageId,
+      documentName: state.documentName
+    })
   }
 
   function buildRecoveryFigFile() {
-    return exportFigFile(editor.graph, undefined, undefined, state.currentPageId)
+    return exportFigFile(editor.graph, {
+      pageId: state.currentPageId,
+      documentName: state.documentName
+    })
   }
 
   const recovery = createDocumentRecovery({

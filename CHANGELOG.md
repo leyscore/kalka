@@ -4,6 +4,7 @@
 
 ### Breaking changes
 
+- `exportFigFile` from `@kalka/core` takes one options object, `exportFigFile(graph, { ck, renderer, rasterize, pageId, renderHeadlessThumbnail, documentName })`, instead of positional CanvasKit, renderer, page, thumbnail, and rasterizer arguments.
 - `computeImageHash` from `@kalka/core` and `@kalka/scene-graph` returns the hex SHA-1 of the bytes, the name Figma gives an image, instead of a Kalka-only hash of the same length. New images are stored under that name, so `.fig` files and the Figma clipboard carry it as it is; images in documents saved before keep their names.
 - Every process mints new layer, variable, and collection IDs in a random session, as the editor already did, so `generateId()` no longer starts at `0:1` in the CLI, MCP, or scripts using `@kalka/scene-graph`. Layers that separate CLI or MCP runs add to copies of one `.fig` file are saved under their own GUIDs instead of the same `1:n` ones, while layers read from a file keep the same IDs on every run. Code that needs fixed IDs calls `setIdSession`, which now returns the previous session and takes only non-negative 31-bit sessions, or gives the `SceneGraph` its own generator (#770).
 - A paint's `gradientTransform` follows Figma's convention everywhere: it maps the layer's unit square onto gradient space, where a linear gradient runs from (0, 0.5) to (1, 0.5). Gradients made before this release, which used the inverse, draw differently; code that builds gradients by hand should use `linearGradientTransform` and `ellipticalGradientTransform` from the new `@kalka/scene-graph/gradient`, which also has Figma's default transform and stops.
@@ -126,6 +127,7 @@
 
 ### Changed
 
+- `.fig` files Kalka writes carry the `meta.json` Figma writes: the document's name, the thumbnail page's background, and the thumbnail's size and the page area it shows, instead of a Kalka version, app name, and creation time. The name is the `documentName` write option, else the exported file's name, else Untitled; an opened file saved unchanged under another name keeps its archive and records the new name.
 - The `/demo` document is Kalka's own landing page, drawn in Kalka in nine languages, and opens as a `.kalka` file.
 - The canvas draws variable-bound values with real CSS variables, defined in every artboard for each mode, so editing or renaming a variable restyles every layer that uses it at once, as the exported page does.
 - Standalone HTML exports keep auto layout as flex instead of placing every layer at fixed coordinates, so only layers that are really fixed keep pixel sizes; classes are named after the layers, layers styled alike share one, and the page has no wrapper or editor attributes.

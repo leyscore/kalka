@@ -93,6 +93,8 @@ export interface IOContext {
 export interface FigWriteOptions {
   thumbnailPageId?: string
   renderThumbnail?: boolean
+  /** The name the file's `meta.json` records; the export's `fileName` without `.fig` otherwise. */
+  documentName?: string
 }
 
 export interface RasterExportOptions {

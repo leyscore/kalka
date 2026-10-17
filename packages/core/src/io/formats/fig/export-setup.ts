@@ -2,6 +2,7 @@ import type { CanvasKit } from 'canvaskit-wasm'
 import { deflateSync, inflateSync } from 'fflate'
 import { toUint8Array } from 'js-base64'
 
+import { figArchiveMetaJSON, pngSize } from '@kalka/fig'
 import {
   buildComponentPropIndex,
   exportCanvasGuides,
@@ -24,14 +25,14 @@ import {
   type SceneNode
 } from '@kalka/scene-graph'
 import { fractionalPosition } from '@kalka/scene-graph/order-keys'
-import type { GUID } from '@kalka/scene-graph/primitives'
+import type { GUID, Rect, Size } from '@kalka/scene-graph/primitives'
 
 import type { SkiaRenderer } from '#core/canvas'
 import { CANVAS_BG_COLOR, IS_BROWSER, IS_TAURI } from '#core/constants'
 import { getPageColor } from '#core/figma-api/page-backgrounds'
 import { applyDocumentPluginData } from '#core/io/formats/fig/library-metadata'
 import { findFigThumbnailPageId } from '#core/io/formats/fig/thumbnail-page'
-import { computeContentBounds, renderThumbnail } from '#core/io/formats/raster'
+import { renderThumbnail, thumbnailFrame, type ThumbnailFrame } from '#core/io/formats/raster'
 import type { NodeRasterizer } from '#core/io/types'
 import {
   makeCanvasNodeChange,
@@ -61,6 +62,24 @@ export interface CanvasExportEntry {
 const THUMBNAIL_WIDTH = 512
 const THUMBNAIL_HEIGHT = 512
 
+/** The name Figma gives a file it was not told the name of. */
+const UNTITLED_FILE_NAME = 'Untitled'
+
+interface FigThumbnail {
+  png: Uint8Array
+  size: Size
+  /** The page-space rectangle the thumbnail shows; empty for the 1×1 placeholder. */
+  region: Rect
+}
+
+function placeholderThumbnail(): FigThumbnail {
+  return {
+    png: THUMBNAIL_1X1,
+    size: { width: 1, height: 1 },
+    region: { x: 0, y: 0, width: 0, height: 0 }
+  }
+}
+
 /**
  * The thumbnail drawn by the engine that draws the canvas: the page's layers fitted into the
  * thumbnail, on the page's color. Null when there is no such engine or it cannot draw them.
@@ -68,21 +87,17 @@ const THUMBNAIL_HEIGHT = 512
 async function rasterizeFigThumbnail(
   graph: SceneGraph,
   pageId: string,
+  frame: ThumbnailFrame,
   rasterize: NodeRasterizer
 ): Promise<Uint8Array | null> {
   const page = graph.getNode(pageId)
-  if (!page || page.childIds.length === 0) return null
-  const bounds = computeContentBounds(graph, page.childIds)
-  if (!bounds) return null
-  const width = bounds.maxX - bounds.minX
-  const height = bounds.maxY - bounds.minY
-  if (width <= 0 || height <= 0) return null
+  if (!page) return null
   try {
     return await rasterize({
       graph,
       pageId,
       nodeIds: page.childIds,
-      scale: Math.min(THUMBNAIL_WIDTH / width, THUMBNAIL_HEIGHT / height),
+      scale: frame.scale,
       format: 'PNG',
       background: { ...getPageColor(page), a: 1 }
     })
@@ -99,26 +114,50 @@ export interface FigThumbnailSources {
   renderHeadless?: boolean
 }
 
+/** How a `.fig` is written besides its records. */
+export interface FigFileExtrasOptions {
+  ck?: CanvasKit
+  renderer?: SkiaRenderer
+  /** The engine that draws the canvas, which draws the thumbnail when it can. */
+  rasterize?: NodeRasterizer
+  /** The page the thumbnail shows; the cover page when absent. */
+  pageId?: string
+  renderHeadlessThumbnail?: boolean
+  /** The name `meta.json` records for the file. */
+  documentName?: string
+}
+
+async function renderFigThumbnailPNG(
+  graph: SceneGraph,
+  pageId: string,
+  frame: ThumbnailFrame,
+  { ck, renderer, rasterize, renderHeadless = false }: FigThumbnailSources
+): Promise<Uint8Array | null> {
+  const drawn = rasterize ? await rasterizeFigThumbnail(graph, pageId, frame, rasterize) : null
+  if (drawn) return drawn
+  if (ck && renderer)
+    return renderThumbnail(ck, renderer, graph, pageId, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT)
+  if (!renderHeadless || IS_BROWSER || IS_TAURI) return null
+  const { headlessRenderThumbnail } = await import('#core/io/formats/raster')
+  return headlessRenderThumbnail(graph, pageId, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT)
+}
+
 async function renderFigThumbnail(
   graph: SceneGraph,
   pageId: string | undefined,
-  { ck, renderer, rasterize, renderHeadless = false }: FigThumbnailSources
-): Promise<Uint8Array> {
-  if (!pageId) return THUMBNAIL_1X1
-  const drawn = rasterize ? await rasterizeFigThumbnail(graph, pageId, rasterize) : null
-  if (drawn) return drawn
-  if (ck && renderer) {
-    return (
-      renderThumbnail(ck, renderer, graph, pageId, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT) ??
-      THUMBNAIL_1X1
-    )
+  sources: FigThumbnailSources
+): Promise<FigThumbnail> {
+  const frame = pageId ? thumbnailFrame(graph, pageId, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT) : null
+  if (!pageId || !frame) return placeholderThumbnail()
+  const png = await renderFigThumbnailPNG(graph, pageId, frame, sources)
+  if (!png) return placeholderThumbnail()
+  const { minX, minY, maxX, maxY } = frame.bounds
+  return {
+    png,
+    // The engine that drew it may round the size its own way; the PNG says what it is.
+    size: pngSize(png) ?? { width: frame.width, height: frame.height },
+    region: { x: minX, y: minY, width: maxX - minX, height: maxY - minY }
   }
-  if (!renderHeadless || IS_BROWSER || IS_TAURI) return THUMBNAIL_1X1
-  const { headlessRenderThumbnail } = await import('#core/io/formats/raster')
-  return (
-    (await headlessRenderThumbnail(graph, pageId, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT)) ??
-    THUMBNAIL_1X1
-  )
 }
 
 /**
@@ -541,15 +580,21 @@ export interface FigFileExtras {
 export async function figFileExtras(
   graph: SceneGraph,
   imageNames: ReadonlyMap<string, string>,
-  pageId: string | undefined,
-  thumbnail: FigThumbnailSources
+  options: FigFileExtrasOptions
 ): Promise<FigFileExtras> {
-  const currentPageId = pageId ?? findFigThumbnailPageId(graph.getPages(true))
-  const thumbnailPNG = await renderFigThumbnail(graph, currentPageId, thumbnail)
-  const metaJSON = JSON.stringify({
-    version: 1,
-    app: 'Kalka',
-    createdAt: new Date().toISOString()
+  const thumbnailPageId = options.pageId ?? findFigThumbnailPageId(graph.getPages(true))
+  const drawn = await renderFigThumbnail(graph, thumbnailPageId, {
+    ck: options.ck,
+    renderer: options.renderer,
+    rasterize: options.rasterize,
+    renderHeadless: options.renderHeadlessThumbnail
   })
-  return { thumbnailPNG, metaJSON, images: figImageEntries(graph.images, imageNames) }
+  const metaJSON = figArchiveMetaJSON({
+    fileName: options.documentName || UNTITLED_FILE_NAME,
+    backgroundColor: getPageColor(thumbnailPageId ? graph.getNode(thumbnailPageId) : undefined),
+    thumbnailSize: drawn.size,
+    renderCoordinates: drawn.region,
+    exportedAt: new Date()
+  })
+  return { thumbnailPNG: drawn.png, metaJSON, images: figImageEntries(graph.images, imageNames) }
 }

@@ -199,14 +199,14 @@ export const figFormat: IOFormatAdapter<'fig'> = {
     return { graph, sourceFormat: 'fig' }
   },
   async writeDocument(graph, options?: FigWriteOptions, context?: IOContext) {
-    const data = await exportFigFile(
-      graph,
-      context?.canvasKit,
-      context?.renderer,
-      options?.thumbnailPageId,
-      options?.renderThumbnail ?? false,
-      context?.rasterize
-    )
+    const data = await exportFigFile(graph, {
+      ck: context?.canvasKit,
+      renderer: context?.renderer,
+      rasterize: context?.rasterize,
+      pageId: options?.thumbnailPageId,
+      renderHeadlessThumbnail: options?.renderThumbnail ?? false,
+      documentName: options?.documentName
+    })
     return {
       format: 'fig',
       mimeType: 'application/octet-stream',
@@ -217,14 +217,15 @@ export const figFormat: IOFormatAdapter<'fig'> = {
   },
   async exportContent(request, options?: FigWriteOptions, context?: IOContext) {
     const extracted = extractExportGraph(request.graph, request.target)
-    const data = await exportFigFile(
-      extracted.graph,
-      context?.canvasKit,
-      context?.renderer,
-      options?.thumbnailPageId ?? extracted.pageId ?? undefined,
-      options?.renderThumbnail ?? false,
-      context?.rasterize
-    )
+    const data = await exportFigFile(extracted.graph, {
+      ck: context?.canvasKit,
+      renderer: context?.renderer,
+      rasterize: context?.rasterize,
+      pageId: options?.thumbnailPageId ?? extracted.pageId ?? undefined,
+      renderHeadlessThumbnail: options?.renderThumbnail ?? false,
+      // Named as asked, or else after the file it is written to.
+      documentName: options?.documentName ?? request.fileName?.replace(/\.fig$/i, '')
+    })
     return {
       format: 'fig',
       mimeType: 'application/octet-stream',

@@ -199,7 +199,12 @@ async function executeFileExport(
   fileName: string
 ) {
   if (wholeDocument) {
-    if (formatId === 'fig') return io.writeDocument(formatId, graph, options)
+    // A whole .fig is written as the document is, named after the file it is written to.
+    if (formatId === 'fig')
+      return io.writeDocument(formatId, graph, {
+        documentName: fileName.replace(/\.fig$/i, ''),
+        ...(typeof options === 'object' ? options : {})
+      })
     return io.exportContent(
       formatId,
       { graph, target: { scope: 'document' }, fileName },

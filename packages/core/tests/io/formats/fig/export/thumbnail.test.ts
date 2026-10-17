@@ -38,7 +38,7 @@ describe('.fig thumbnails', () => {
     const { graph, page, frame } = wideCard()
     const { requests, rasterize } = recording(() => Promise.resolve(DRAWN))
 
-    const bytes = await exportFigFile(graph, undefined, undefined, page.id, false, rasterize)
+    const bytes = await exportFigFile(graph, { pageId: page.id, rasterize })
 
     expect(thumbnailOf(bytes)).toEqual(DRAWN)
     expect(requests).toHaveLength(1)
@@ -54,23 +54,15 @@ describe('.fig thumbnails', () => {
 
   test('fall back when the engine cannot draw them', async () => {
     const declined = wideCard()
-    const fallback = await exportFigFile(
-      declined.graph,
-      undefined,
-      undefined,
-      declined.page.id,
-      false,
-      () => Promise.resolve(null)
-    )
+    const fallback = await exportFigFile(declined.graph, {
+      pageId: declined.page.id,
+      rasterize: () => Promise.resolve(null)
+    })
     const failed = wideCard()
-    const afterError = await exportFigFile(
-      failed.graph,
-      undefined,
-      undefined,
-      failed.page.id,
-      false,
-      () => Promise.reject(new Error('no window'))
-    )
+    const afterError = await exportFigFile(failed.graph, {
+      pageId: failed.page.id,
+      rasterize: () => Promise.reject(new Error('no window'))
+    })
 
     for (const thumbnail of [thumbnailOf(fallback), thumbnailOf(afterError)]) {
       expect(thumbnail && Array.from(thumbnail.subarray(0, 8))).toEqual(PNG_SIGNATURE)
@@ -82,7 +74,7 @@ describe('.fig thumbnails', () => {
     const graph = new SceneGraph()
     const { requests, rasterize } = recording(() => Promise.resolve(DRAWN))
 
-    const bytes = await exportFigFile(graph, undefined, undefined, undefined, false, rasterize)
+    const bytes = await exportFigFile(graph, { rasterize })
 
     expect(requests).toHaveLength(0)
     expect(thumbnailOf(bytes)).not.toEqual(DRAWN)
@@ -94,7 +86,7 @@ describe('.fig thumbnails', () => {
     const graph = await parseFigFile(source.slice().buffer)
     const { requests, rasterize } = recording(() => Promise.resolve(DRAWN))
 
-    const bytes = await exportFigFile(graph, undefined, undefined, undefined, false, rasterize)
+    const bytes = await exportFigFile(graph, { rasterize })
 
     expect(bytes).toEqual(source)
     expect(requests).toHaveLength(0)

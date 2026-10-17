@@ -18,7 +18,7 @@ describe('demo controls', () => {
       computeAllLayouts(graph, page.id)
       return graph
     })
-    const bytes = await exportFigFile(built, ck, renderer)
+    const bytes = await exportFigFile(built, { ck, renderer })
     const graph = await readFigFile(new File([bytes.slice()], 'Demo.fig'))
     populateAllFigPages(graph)
 

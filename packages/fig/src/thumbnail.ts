@@ -1,5 +1,7 @@
 import { inflateSync } from 'fflate'
 
+import type { Size } from '@kalka/scene-graph/primitives'
+
 export interface FigRangeReader {
   readonly size: number
   read(start: number, endExclusive: number): Promise<Uint8Array>
@@ -49,10 +51,16 @@ export function hasPNGSignature(bytes: Uint8Array): boolean {
   return PNG_SIGNATURE.every((byte, index) => bytes[index] === byte)
 }
 
-function hasUsablePNGDimensions(bytes: Uint8Array): boolean {
-  if (bytes.byteLength < 24 || !hasPNGSignature(bytes)) return false
+/** A PNG's size in pixels, read from its IHDR chunk; null for bytes that are not a PNG. */
+export function pngSize(bytes: Uint8Array): Size | null {
+  if (bytes.byteLength < 24 || !hasPNGSignature(bytes)) return null
   const data = view(bytes)
-  return data.getUint32(16) > 1 && data.getUint32(20) > 1
+  return { width: data.getUint32(16), height: data.getUint32(20) }
+}
+
+function hasUsablePNGDimensions(bytes: Uint8Array): boolean {
+  const size = pngSize(bytes)
+  return size !== null && size.width > 1 && size.height > 1
 }
 
 function findThumbnailEntry(

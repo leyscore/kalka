@@ -76,5 +76,5 @@ function buildDemoGraph(renderer: SkiaRenderer): Promise<SceneGraph> {
 /** The demo document as `.fig` bytes, as `/demo` opens it. */
 export async function buildDemoDocument(): Promise<Uint8Array> {
   const { ck, renderer } = await measuringRenderer()
-  return exportFigFile(await buildDemoGraph(renderer), ck, renderer)
+  return exportFigFile(await buildDemoGraph(renderer), { ck, renderer })
 }
