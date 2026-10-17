@@ -152,8 +152,11 @@ test('preview islands move with the frames the canvas draws, not ahead of them',
   await expect(island(ids.islandId).getByRole('switch')).toBeVisible()
 
   const layer = editor.page.getByTestId('play-islands').locator(':scope > div')
+  // The DOM canvas's artboards, placed by the view of the frame it drew.
+  const world = editor.page.locator('[data-kalka-world]')
   const placed = await layer.evaluate((element) => element.style.transform)
-  // Hold the canvas's drawing, as a slow frame does, and move the view meanwhile.
+  expect(placed).toBe(await world.evaluate((element) => element.style.transform))
+  // Move the view while a document is being prepared, as a slow frame would hold a canvas.
   const held = await editor.page.evaluateHandle(() => {
     const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
@@ -171,11 +174,16 @@ test('preview islands move with the frames the canvas draws, not ahead of them',
           requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
         })
     )
-    expect(await layer.evaluate((element) => element.style.transform)).toBe(placed)
+    // The islands sit where the canvas drew the layers, never ahead of it or behind.
+    expect(await layer.evaluate((element) => element.style.transform)).toBe(
+      await world.evaluate((element) => element.style.transform)
+    )
 
-    // Drawing resumes: the islands follow the pan, which the canvas has now drawn.
     await held.evaluate((preparation) => preparation.complete())
     await expect.poll(() => layer.evaluate((element) => element.style.transform)).not.toBe(placed)
+    expect(await layer.evaluate((element) => element.style.transform)).toBe(
+      await world.evaluate((element) => element.style.transform)
+    )
   } finally {
     // Never leave the canvas held for later tests; completing again does nothing.
     await held.evaluate((preparation) => preparation.complete())
