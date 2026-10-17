@@ -28,6 +28,11 @@ export function symbolOverridesOf(record: NodeChange): readonly SymbolOverride[]
   return symbolDataOf(record)?.symbolOverrides ?? []
 }
 
+/** The values an instance's record derives for its layers, by layer path. */
+export function derivedSymbolDataOf(record: NodeChange): readonly DerivedSymbolOverride[] {
+  return (record.derivedSymbolData as DerivedSymbolOverride[] | undefined) ?? []
+}
+
 export function uniformScaleOf(record: NodeChange): number {
   return symbolDataOf(record)?.uniformScaleFactor ?? 1
 }

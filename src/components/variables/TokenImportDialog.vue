@@ -12,6 +12,7 @@ import {
   type ModeTarget,
   type TokenImportOptions
 } from '@kalka/core/io/formats/design-tokens'
+import { isLibraryCollection } from '@kalka/scene-graph'
 import { useI18n } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
@@ -74,7 +75,9 @@ const plan = computed(() => {
 })
 const existingCollections = computed(() => {
   void store.state.sceneVersion
-  return [...store.graph.variableCollections.values()]
+  return [...store.graph.variableCollections.values()].filter(
+    (collection) => !isLibraryCollection(collection)
+  )
 })
 const styleCount = computed(
   () =>

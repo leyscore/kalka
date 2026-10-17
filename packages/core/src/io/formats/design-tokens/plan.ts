@@ -1,14 +1,15 @@
 import { compact } from 'es-toolkit/array'
 
-import type {
-  CodeSyntaxPlatform,
-  SceneGraph,
-  TokenUnit,
-  Variable,
-  VariableCollection,
-  VariableScope,
-  VariableType,
-  VariableValue
+import {
+  isLibraryCollection,
+  type CodeSyntaxPlatform,
+  type SceneGraph,
+  type TokenUnit,
+  type Variable,
+  type VariableCollection,
+  type VariableScope,
+  type VariableType,
+  type VariableValue
 } from '@kalka/scene-graph'
 
 import {
@@ -118,7 +119,10 @@ export function defaultTokenImportOptions(
   graph: SceneGraph,
   bundle: DesignTokenBundle
 ): TokenImportOptions {
-  const existing = [...graph.variableCollections.values()]
+  // A library's collections belong to it, so tokens of the same name make one of the file's.
+  const existing = [...graph.variableCollections.values()].filter(
+    (collection) => !isLibraryCollection(collection)
+  )
   const claimed = new Set<string>()
   return {
     collections: bundle.collections.map((collection): CollectionImportChoice => {

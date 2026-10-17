@@ -344,7 +344,8 @@ describe('variable roundtrip', () => {
       codeSyntax: { WEB: 'var(--page-gutter)' },
       expressions: { '4:7': { css: 'clamp(1rem, 4vw, 2rem)', resolved: 16 } }
     })
-    expect(reimported.variableCollections.get('4:70')?.modes).toEqual([
+    // Modes also come back with the places the file saved for them.
+    expect(reimported.variableCollections.get('4:70')?.modes).toMatchObject([
       { modeId: '4:7', name: 'Light', condition: undefined },
       { modeId: '4:8', name: 'Dark', condition: '[data-theme="dark"]' }
     ])

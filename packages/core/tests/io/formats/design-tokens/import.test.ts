@@ -115,6 +115,25 @@ describe('reading token files', () => {
 })
 
 describe('planning an import', () => {
+  test("tokens named like a library's collection make one of the file's own", () => {
+    const graph = new SceneGraph()
+    const library = graph.createCollection('Tokens')
+    library.key = 'bf3948d3'
+    const own = graph.createCollection('Spacing')
+    const bundle = readDesignTokens(
+      files({
+        'Tokens/Default.tokens.json': { color: { $type: 'color', brand: { $value: '#2563eb' } } },
+        'Spacing/Default.tokens.json': {
+          gap: { $type: 'dimension', $value: { value: 4, unit: 'px' } }
+        }
+      })
+    )
+
+    const [tokens, spacing] = defaultTokenImportOptions(graph, bundle).collections
+    expect(tokens.target).toEqual({ kind: 'new', name: 'Tokens' })
+    expect(spacing.target).toEqual({ kind: 'existing', collectionId: own.id })
+  })
+
   test('values from other tools convert into canvas units and sRGB', () => {
     const { plan: result } = plan(
       files({

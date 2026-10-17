@@ -265,6 +265,23 @@ describe('writing an edited document into its archive', () => {
     expect(changed.map(([, record]) => record.name)).toEqual(['B renamed'])
   })
 
+  // Kalka keeps CSS no field maps in plugin data; writing only changed fields must carry it.
+  test('keeps the CSS an edit gives a layer, and the rest of its record', async () => {
+    const bytes = await fixtureBytes()
+    const graph = await open(bytes)
+    const layer = layerNamed(graph, 'B')
+    graph.updateNode(layer.id, { style: { ...layer.style, transition: 'opacity 0.2s' } })
+    const saved = await exportFigFile(graph)
+    const before = recordsOf(bytes)
+    const record = [...recordsOf(saved).values()].find((candidate) => candidate.name === 'B')
+    const original = before.get(guidToString(expectDefined(record?.guid)))
+    // Only the plugin data that holds the CSS differs from what the archive saved.
+    const fields = Object.keys({ ...original, ...record }) as (keyof NodeChange)[]
+    const differs = fields.filter((field) => !isEqual(original?.[field], record?.[field]))
+    expect(differs).toEqual(['pluginData'])
+    expect(layerNamed(await open(saved), 'B').style.transition).toBe('opacity 0.2s')
+  })
+
   test('still rewrites only the edited record once every page is loaded', async () => {
     const bytes = await fixtureBytes()
     const graph = await open(bytes)

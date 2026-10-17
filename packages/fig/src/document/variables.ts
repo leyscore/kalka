@@ -71,12 +71,18 @@ export function materializeVariableResources(
       name: resource.name ?? 'Variables',
       modes: modes.map((mode) => {
         const modeId = guidToString(mode.id)
-        return { modeId, name: mode.name, condition: conditions[modeId] }
+        return {
+          modeId,
+          name: mode.name,
+          condition: conditions[modeId],
+          ...(mode.sortPosition ? { sortPosition: mode.sortPosition } : {})
+        }
       }),
       defaultModeId: guidToString(modes[0].id),
       variableIds: [],
       modeAttribute: readModeAttribute(resource),
-      pluginData: pluginData.length > 0 ? pluginData : undefined
+      pluginData: pluginData.length > 0 ? pluginData : undefined,
+      key: typeof resource.key === 'string' ? resource.key : undefined
     })
   }
   addVariables(graph, resources, report)

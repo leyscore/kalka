@@ -24,7 +24,7 @@ import {
   type FigThumbnailSources,
   type KiwiNodeChange
 } from '#core/io/formats/fig/export-setup'
-import { archiveImagesNamedForFigma, writePatchedFigFile } from '#core/io/formats/fig/patch-export'
+import { archiveImagesNamedForFigma, writePatchedFigFile } from '#core/io/formats/fig/patch/export'
 import type { NodeRasterizer } from '#core/io/types'
 import { sceneNodeToKiwi } from '#core/kiwi/fig/node-change/serialize'
 import { cloneSceneGraphForFigExport } from '#core/kiwi/fig/parse/transfer'

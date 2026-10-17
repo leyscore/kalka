@@ -181,6 +181,9 @@
 
 ### Fixed
 
+- Saving an opened `.fig` file writes only what an edit changed in a layer or variable, and keeps the rest as Figma saved it. That includes data Kalka does not model, an instance's library link and saved overrides, and an edited text's letter spacing in percent and font names. Before, saving rewrote each edited layer whole. Importing design tokens or adding a mode also rewrote every layer and variable in the file that uses variable modes.
+- Variables that alias library variables still point at the library after a save, and a collection's modes keep their order in Figma.
+- Importing design tokens adds them to the file's own collections, never to a collection copied from a library, where Figma did not show them. A token collection named like a library's, such as Tokens in Preline UI files, becomes a new collection of the file.
 - Figma shows images from older documents in `.fig` files Kalka writes: every image is stored under the SHA-1 of its bytes, the only name Figma reads, and an image stored under two names is written once.
 - The properties panel shows the shared styles layers use in opened `.fig` files, where it listed them as missing styles.
 - Styles made in Kalka, by importing design tokens or by pasting layers from another document, are saved in `.fig` files as styles, and layers reopen with them. Saving wrote their references empty, so reopening dropped the styles, and saving into an opened file made them layers of the page in Figma.

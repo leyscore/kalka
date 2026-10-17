@@ -3,6 +3,7 @@ import type {
   TokenExpression,
   Variable,
   VariableCollection,
+  VariableCollectionMode,
   VariableType
 } from '@kalka/scene-graph'
 
@@ -42,6 +43,24 @@ interface PendingAlias {
   value: Extract<DecodedValue, { kind: 'alias' }>
 }
 
+type SavedMode = SavedCollection['modes'][number]
+
+/** A saved mode as the collection holds it; only the fields it has are set. */
+function collectionMode(saved: SavedMode): VariableCollectionMode {
+  const mode: VariableCollectionMode = { modeId: saved.id, name: saved.name }
+  if (saved.condition !== undefined) mode.condition = saved.condition
+  if (saved.sortPosition !== undefined) mode.sortPosition = saved.sortPosition
+  return mode
+}
+
+/** A collection's mode as `project.json` saves it; only the fields it has are written. */
+function savedMode(mode: VariableCollectionMode): SavedMode {
+  const saved: SavedMode = { id: mode.modeId, name: mode.name }
+  if (mode.condition !== undefined) saved.condition = mode.condition
+  if (mode.sortPosition !== undefined) saved.sortPosition = mode.sortPosition
+  return saved
+}
+
 function isDecoded(value: unknown): value is DecodedVariable {
   return typeof value === 'object' && value !== null
 }
@@ -68,11 +87,7 @@ class VariableReader {
     const collection: VariableCollection = {
       id: saved.id,
       name: saved.name,
-      modes: saved.modes.map((mode) =>
-        mode.condition === undefined
-          ? { modeId: mode.id, name: mode.name }
-          : { modeId: mode.id, name: mode.name, condition: mode.condition }
-      ),
+      modes: saved.modes.map(collectionMode),
       defaultModeId: saved.defaultMode,
       variableIds: []
     }
@@ -352,11 +367,7 @@ export function savedCollections(
         id: collection.id,
         name: collection.name,
         defaultMode: collection.defaultModeId,
-        modes: collection.modes.map((mode) =>
-          mode.condition === undefined
-            ? { id: mode.modeId, name: mode.name }
-            : { id: mode.modeId, name: mode.name, condition: mode.condition }
-        ),
+        modes: collection.modes.map(savedMode),
         variables: collection.variableIds.flatMap((id) => {
           const variable = graph.variables.get(id)
           return variable ? [{ id, name: variable.name }] : []

@@ -11,7 +11,7 @@ export { linkInstanceSourceChildren, mapInstanceSourceChildren } from './source-
 export type { MaterializedInstance } from './materialize-instance'
 
 /** The Kiwi codec types only `symbolID`, so the remaining symbol fields are read through these. */
-export { symbolDataOf, symbolOverridesOf } from './types'
+export { derivedSymbolDataOf, symbolDataOf, symbolOverridesOf } from './types'
 
 export type {
   ComponentPropAssignment,

@@ -21,7 +21,9 @@ const PageSchema = v.object({
 const ModeSchema = v.object({
   id: v.string(),
   name: v.string(),
-  condition: v.optional(v.string())
+  condition: v.optional(v.string()),
+  /** Where Figma lists the mode, kept from a `.fig` file. */
+  sortPosition: v.optional(v.string())
 })
 
 const SavedVariableSchema = v.object({

@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, test } from 'bun:test'
 
 import { guid } from '#fig-tests/helpers/guid'
-import { figComponentUsePages, patchFigMessage, patchFigRecords } from '#fig/record-patch'
+import { figComponentUsePages, patchFigMessage, patchFigRecords } from '#fig/record-patch/index'
 import { deflateSync } from 'fflate'
 
 import {
@@ -41,6 +41,31 @@ describe('patching archive records', () => {
     expect(ids(result)).toEqual([0, 1, 2, 3, 4, 5])
     expect(result[3]).toBe(renamed)
     expect(result[4]).toBe(archive[4])
+  })
+
+  test('merges the fields an edit changed into a record, keeping the rest of it', () => {
+    const saved = record(3, 2, { name: 'Saved', opacity: 0.5, editInfo: { userId: 'a' } })
+    const result = patchFigRecords([...archive.slice(0, 3), saved, ...archive.slice(4)], {
+      records: [],
+      fields: [{ guid: guid(3), set: { name: 'Renamed' }, unset: ['opacity'] }],
+      removed: [],
+      replaceVariables: false
+    })
+    expect(ids(result)).toEqual([0, 1, 2, 3, 4, 5])
+    expect(result[3]).toEqual(record(3, 2, { name: 'Renamed', editInfo: { userId: 'a' } }))
+  })
+
+  test('keeps a record whose patched fields move it out of a removed parent', () => {
+    const result = patchFigRecords(archive, {
+      records: [],
+      fields: [
+        { guid: guid(4), set: { parentIndex: { guid: guid(1), position: '9' } }, unset: [] },
+        { guid: guid(3), set: { name: 'Stays below' }, unset: [] }
+      ],
+      removed: [guid(2)],
+      replaceVariables: false
+    })
+    expect(ids(result)).toEqual([0, 1, 4, 5])
   })
 
   test('removes a record with those below it, but not one the patch moved out', () => {
@@ -123,6 +148,7 @@ describe('splicing an encoded message', () => {
     const data = codec.encodeMessage(message)
     const patch = {
       records: [record(4, 2, { name: 'Renamed again' }), record(9, 2, { name: 'Added' })],
+      fields: [{ guid: guid(2), set: { name: 'Frame renamed' }, unset: ['opacity'] }],
       blobs: [new Uint8Array([3])],
       removed: [guid(3)],
       replaceVariables: false
@@ -138,10 +164,11 @@ describe('splicing an encoded message', () => {
       })
     )
     expect(spliced).toEqual(merged as typeof message)
+    expect(spliced.nodeChanges[2].opacity).toBeUndefined()
     expect(spliced.nodeChanges.map((change) => change.name)).toEqual([
       'Document',
       'Page',
-      'Frame',
+      'Frame renamed',
       'Renamed again',
       'Added'
     ])

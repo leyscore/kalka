@@ -1,6 +1,6 @@
 import { isEqual } from 'es-toolkit/predicate'
 
-import type { SceneGraph } from '@kalka/scene-graph'
+import type { SceneGraph, SceneNode, Variable, VariableCollection } from '@kalka/scene-graph'
 
 /**
  * How a document opened from a `.fig` archive has diverged from it, for writing only what
@@ -10,11 +10,26 @@ import type { SceneGraph } from '@kalka/scene-graph'
  */
 interface ArchiveChanges {
   touched: Set<string>
+  /** Layers an edit changed, as they were before it: the archive's state of them. */
+  before: Map<string, SceneNode>
+  /** Layers added since the archive opened, which it does not hold. */
+  created: Set<string>
+  /**
+   * Layers loaded from the archive after an edit, so the edit may already show in them, as in
+   * instances of an edited component: their state before it is unknown.
+   */
+  loadedAfterEdits: Set<string>
   /** The variables, collections and modes the archive holds. */
   resourceIds: Set<string>
-  variables: Map<string, unknown>
-  collections: unknown
+  variables: Map<string, Variable>
+  collections: CollectionsSnapshot
   settings: unknown
+}
+
+/** The variable collections and the modes the document shows them in. */
+interface CollectionsSnapshot {
+  collections: Array<[string, VariableCollection]>
+  activeMode: Array<[string, string]>
 }
 
 const changes = new WeakMap<SceneGraph, ArchiveChanges>()
@@ -26,7 +41,7 @@ function settingsSnapshot(graph: SceneGraph): unknown {
   })
 }
 
-function collectionsSnapshot(graph: SceneGraph): unknown {
+function collectionsSnapshot(graph: SceneGraph): CollectionsSnapshot {
   return structuredClone({
     collections: [...graph.variableCollections],
     activeMode: [...graph.activeMode]
@@ -45,6 +60,9 @@ function resourceIdsOf(graph: SceneGraph): Set<string> {
 export function trackArchiveChanges(graph: SceneGraph): void {
   const entry: ArchiveChanges = {
     touched: new Set(),
+    before: new Map(),
+    created: new Set(),
+    loadedAfterEdits: new Set(),
     resourceIds: resourceIdsOf(graph),
     variables: new Map(
       [...graph.variables].map(([id, variable]) => [id, structuredClone(variable)])
@@ -55,6 +73,17 @@ export function trackArchiveChanges(graph: SceneGraph): void {
   const touch = (id: string) => {
     if (!graph.isApplyingImportedState && !graph.isApplyingDerivedLayout) entry.touched.add(id)
   }
+  const edits = () => !graph.isApplyingImportedState && !graph.isApplyingDerivedLayout
+  graph.observeNodeChanges({
+    before: (node) => {
+      if (!edits() || entry.created.has(node.id) || entry.before.has(node.id)) return
+      entry.before.set(node.id, structuredClone(node))
+    },
+    created: (node) => {
+      if (edits()) entry.created.add(node.id)
+      else if (entry.touched.size > 0) entry.loadedAfterEdits.add(node.id)
+    }
+  })
   graph.onNodeEvents({
     created: (node) => touch(node.id),
     updated: touch,
@@ -95,5 +124,29 @@ export function archiveChanges(graph: SceneGraph): ArchiveChangeSummary | undefi
     changedVariables,
     collectionsChanged: !isEqual(entry.collections, collectionsSnapshot(graph)),
     documentChanged: !isEqual(entry.settings, settingsSnapshot(graph))
+  }
+}
+
+/** The document as the archive holds it, for the layers that have loaded. */
+export interface ArchiveBaseline {
+  /** Layers edits changed, as they were before. */
+  before: ReadonlyMap<string, SceneNode>
+  /** Layers added since, which the archive does not hold. */
+  created: ReadonlySet<string>
+  /** Layers loaded after an edit, whose state before it is unknown. */
+  loadedAfterEdits: ReadonlySet<string>
+  variables: ReadonlyMap<string, Variable>
+  collections: CollectionsSnapshot
+}
+
+export function archiveBaseline(graph: SceneGraph): ArchiveBaseline | undefined {
+  const entry = changes.get(graph)
+  if (!entry) return undefined
+  return {
+    before: entry.before,
+    created: entry.created,
+    loadedAfterEdits: entry.loadedAfterEdits,
+    variables: entry.variables,
+    collections: entry.collections
   }
 }
