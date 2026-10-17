@@ -1,3 +1,5 @@
+import { fromUint8Array } from 'js-base64'
+
 import {
   patternSource,
   patternTileCopies,
@@ -7,6 +9,7 @@ import {
   type SceneNode
 } from '@kalka/scene-graph'
 import { blendModeToCSS, fillLayerToCSS } from '@kalka/scene-graph/css-model'
+import { imageTileSize } from '@kalka/scene-graph/images'
 
 import type { DesignElement, DesignStyleDeclaration } from '../types'
 import { serializeNode } from './html'
@@ -121,4 +124,28 @@ export function patternBackground(
     style['background-blend-mode'] = layers.map((layer) => layer.blend).join(', ')
   }
   return style
+}
+
+/**
+ * A tiled image fill as the background of its `<img>`: the image repeated at its own size times
+ * the paint's scale from the layer's corner. The element's own picture, which CSS cannot repeat,
+ * is moved out of its box. Undefined for a layer whose first fill is not a tiled image.
+ */
+export function tiledImageStyle(
+  graph: SceneGraph,
+  node: SceneNode
+): DesignStyleDeclaration | undefined {
+  const fill = node.fills.at(0)
+  if (fill?.type !== 'IMAGE' || fill.imageScaleMode !== 'TILE' || !fill.visible) return undefined
+  const bytes = fill.imageHash ? graph.images.get(fill.imageHash) : undefined
+  const size = bytes && imageTileSize(fill, bytes)
+  if (!bytes || !size) return undefined
+  return {
+    'background-image': `url("data:image/png;base64,${fromUint8Array(bytes)}")`,
+    'background-size': `${round(size.width)}px ${round(size.height)}px`,
+    'background-repeat': 'repeat',
+    'background-origin': 'border-box',
+    'object-fit': 'none',
+    'object-position': '-100000px 0'
+  }
 }

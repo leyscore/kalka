@@ -25,6 +25,7 @@ import {
   invertGradientTransform,
   isIdentityGradientTransform
 } from '@kalka/scene-graph/gradient'
+import { imageTileSize } from '@kalka/scene-graph/images'
 import type { Color } from '@kalka/scene-graph/primitives'
 
 import { svg, type SVGNode } from './node'
@@ -303,6 +304,19 @@ function createImagePattern(
   const id = nextDefId(ctx, 'img')
   const base64 = fromUint8Array(data)
   const mime = detectImageMime(data)
+  const tile = fill.imageScaleMode === 'TILE' ? imageTileSize(fill, data) : null
+  if (tile) {
+    const width = round(tile.width)
+    const height = round(tile.height)
+    return {
+      id,
+      node: svg(
+        'pattern',
+        { id, patternUnits: 'userSpaceOnUse', width, height },
+        svg('image', { href: `data:${mime};base64,${base64}`, width, height })
+      )
+    }
+  }
 
   return {
     id,

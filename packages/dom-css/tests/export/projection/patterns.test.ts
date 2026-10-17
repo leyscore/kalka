@@ -98,3 +98,51 @@ describe('pattern fill projection', () => {
     expect(project(graph, filled.id)['background-image']).toBeUndefined()
   })
 })
+
+/** A GIF header of 20 × 10 pixels, which is all the projection reads. */
+const GIF = new Uint8Array([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 20, 0, 10, 0, 0, 0])
+
+function tiled(fields: Partial<Fill>) {
+  const graph = new SceneGraph()
+  graph.images.set('gif', GIF)
+  const page = graph.getPages()[0]
+  const filled = graph.createNode('RECTANGLE', page.id, {
+    width: 200,
+    height: 100,
+    fills: [
+      {
+        type: 'IMAGE',
+        imageHash: 'gif',
+        imageScaleMode: 'TILE',
+        color: { r: 0, g: 0, b: 0, a: 1 },
+        opacity: 1,
+        visible: true,
+        ...fields
+      }
+    ]
+  })
+  return { graph, filled }
+}
+
+describe('tiled image projection', () => {
+  test('repeats the image at its size times its scale, ignoring the image transform', () => {
+    const { graph, filled } = tiled({
+      scale: 0.5,
+      imageTransform: { m00: 3, m01: 0, m02: 0, m10: 0, m11: 3, m12: 0 }
+    })
+    const projected = element(sceneNodeToDesignDocument(graph, filled.id).children[0])
+    const style = projected.inlineStyle ?? {}
+    expect(projected.tagName).toBe('img')
+    expect(style['background-image']).toStartWith('url("data:image/png;base64,')
+    expect(style['background-size']).toBe('10px 5px')
+    expect(style['background-repeat']).toBe('repeat')
+  })
+
+  test('is left to the saved fills where the format asks', () => {
+    const { graph, filled } = tiled({})
+    const projected = element(
+      sceneNodeToDesignDocument(graph, filled.id, { tiles: false }).children[0]
+    )
+    expect(projected.inlineStyle?.['background-image']).toBeUndefined()
+  })
+})

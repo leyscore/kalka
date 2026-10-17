@@ -50,3 +50,28 @@ describe('SVG export of pattern fills', () => {
     expect(renderNodesToSVG(graph, page, [filled.id]) ?? '').not.toContain('<pattern')
   })
 })
+
+describe('SVG export of tiled images', () => {
+  test('repeats the image at its size times its scale', () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0].id
+    graph.images.set('gif', new Uint8Array([0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 20, 0, 10, 0]))
+    const filled = graph.createNode('RECTANGLE', page, {
+      width: 200,
+      height: 100,
+      fills: [
+        {
+          type: 'IMAGE',
+          imageHash: 'gif',
+          imageScaleMode: 'TILE',
+          scale: 2,
+          color: { r: 0, g: 0, b: 0, a: 1 },
+          opacity: 1,
+          visible: true
+        }
+      ]
+    })
+    const svg = renderNodesToSVG(graph, page, [filled.id]) ?? ''
+    expect(svg).toContain('patternUnits="userSpaceOnUse" width="40" height="20"')
+  })
+})

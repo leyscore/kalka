@@ -99,7 +99,9 @@ class PageProjector {
       shown: this.context.hidden,
       internal: true,
       // Props keep which layers are masks; CSS drawn from them would read back as the layers' own.
-      masks: false
+      masks: false,
+      // Props keep the fills; a tile's CSS read back would stay on the layer as its own.
+      tiles: false
     })
     // `styles.css` holds the class rules; a layer's style keeps what is its own.
     const projected = withClassRules(this.graph, projectedDocument).children

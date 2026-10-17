@@ -7,7 +7,7 @@ import { writeLayerStyle, type FieldCSS, type WriteContext } from '@kalka/scene-
 import { DesignTokens, type CSSModes } from '../tokens/references'
 import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
 import { maskStyle } from './masks'
-import { patternBackground } from './patterns'
+import { patternBackground, tiledImageStyle } from './patterns'
 import {
   imageSourceURL,
   INTERACTIVE_TAGS,
@@ -56,6 +56,11 @@ export interface SceneGraphToDesignOptions {
    * Default true; a format that saves which layers are masks leaves the CSS they derive out.
    */
   masks?: boolean
+  /**
+   * Draw pattern fills and tiled images as repeating CSS backgrounds. Default true; a format that
+   * saves the fills themselves leaves the CSS they derive out.
+   */
+  tiles?: boolean
 }
 
 /** Shapes without children whose stroke the SVG export draws when CSS cannot. */
@@ -129,6 +134,7 @@ interface ProjectionContext {
   derivedSizes: boolean
   internal: boolean
   masks: boolean
+  tiles: boolean
   /** Inside an `a` or `button`, which HTML does not let another one sit in. */
   interactive: boolean
 }
@@ -192,8 +198,11 @@ function frameStyle(
     tagName,
     layerCSS(context.derivedSizes ? withDerivedSize(node) : node, { parent, css })
   )
-  // A pattern's tile draws another layer, which only the SVG export can.
-  Object.assign(style, patternBackground(context.graph, node, context.vectorElement))
+  if (context.tiles) {
+    // A pattern's tile draws another layer, which only the SVG export can.
+    Object.assign(style, patternBackground(context.graph, node, context.vectorElement))
+    Object.assign(style, tiledImageStyle(context.graph, node))
+  }
   // An auto layout frame is where its absolutely placed children are measured from.
   if (!style.position && hasAbsoluteChild(context.graph, node)) style.position = 'relative'
   stackInLayerOrder(context.graph, style, parent)
@@ -335,7 +344,8 @@ function projectionContext(
     shallow = false,
     derivedSizes = false,
     internal = false,
-    masks = true
+    masks = true,
+    tiles = true
   }: SceneGraphToDesignOptions
 ): ProjectionContext {
   return {
@@ -348,6 +358,7 @@ function projectionContext(
     derivedSizes,
     internal,
     masks,
+    tiles,
     interactive: false
   }
 }

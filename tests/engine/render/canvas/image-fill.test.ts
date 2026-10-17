@@ -54,25 +54,18 @@ describe('canvas image fills', () => {
     expect(renderer.ck.Matrix.scaled).not.toHaveBeenCalled()
   })
 
-  test('uses the full imported affine transform for patterned image fills', () => {
+  test('tiles at the image size times its scale, ignoring the image transform as Figma does', () => {
     const renderer = createRenderer()
-    const transform = { m00: 0.5, m01: 0.1, m02: 0.25, m10: -0.2, m11: 0.25, m12: 0.5 }
     const fill = {
       type: 'IMAGE',
       imageScaleMode: 'TILE',
-      imageTransform: transform
+      scale: 0.5,
+      imageTransform: { m00: 3, m01: 0, m02: 0, m10: 0, m11: 3, m12: 0 }
     } as Fill
 
     const matrix = makeImageFillLocalMatrix(renderer, fill, node, 40, 40)
 
-    expect(renderer.ck.Matrix.invert).toHaveBeenCalledWith([
-      0.5, 0.1, 0.25, -0.2, 0.25, 0.5, 0, 0, 1
-    ])
-    expect<unknown>(matrix).toEqual([
-      'multiply',
-      ['scaled', 120, 80],
-      ['invert', [0.5, 0.1, 0.25, -0.2, 0.25, 0.5, 0, 0, 1]],
-      ['scaled', 0.025, 0.025]
-    ])
+    expect<unknown>(matrix).toEqual(['scaled', 0.5, 0.5])
+    expect(renderer.ck.Matrix.invert).not.toHaveBeenCalled()
   })
 })

@@ -338,6 +338,11 @@ export function applyGradientFill(
   }
 }
 
+/** How much a tiled image is scaled: Figma's `scalingFactor`, 1 when unset. */
+function tileScale(fill: Fill): number {
+  return fill.scale && fill.scale > 0 ? fill.scale : 1
+}
+
 export function makeImageFillLocalMatrix(
   r: SkiaRenderer,
   fill: Fill,
@@ -346,9 +351,14 @@ export function makeImageFillLocalMatrix(
   imgH: number
 ) {
   const scaleMode = fill.imageScaleMode ?? 'FILL'
-  if (scaleMode === 'TILE' && !fill.imageTransform) return r.ck.Matrix.identity()
+  // As in Figma, tiles are the image at its own size times the paint's scale; a tiled image
+  // ignores `imageTransform`, which only a cropped one uses.
+  if (scaleMode === 'TILE') {
+    const scale = tileScale(fill)
+    return scale === 1 ? r.ck.Matrix.identity() : r.ck.Matrix.scaled(scale, scale)
+  }
 
-  if ((scaleMode === 'CROP' || scaleMode === 'TILE') && fill.imageTransform) {
+  if (scaleMode === 'CROP' && fill.imageTransform) {
     const t = fill.imageTransform
     const transform = [t.m00, t.m01, t.m02, t.m10, t.m11, t.m12, 0, 0, 1]
     const inverse = r.ck.Matrix.invert(transform)
@@ -416,10 +426,10 @@ export function applyImageFill(
     const imgH = img.height()
     const scaleMode = fill.imageScaleMode ?? 'FILL'
     const localMatrix =
-      scaleMode === 'TILE' && !fill.imageTransform && preview
+      scaleMode === 'TILE' && preview
         ? r.ck.Matrix.scaled(
-            preview.preview.originalWidth / imgW,
-            preview.preview.originalHeight / imgH
+            (preview.preview.originalWidth / imgW) * tileScale(fill),
+            (preview.preview.originalHeight / imgH) * tileScale(fill)
           )
         : makeImageFillLocalMatrix(r, fill, node, imgW, imgH)
     const tileMode = scaleMode === 'FIT' ? r.ck.TileMode.Decal : r.ck.TileMode.Clamp
