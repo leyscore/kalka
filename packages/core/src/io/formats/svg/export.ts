@@ -517,6 +517,7 @@ export function renderNodesToSVG(
     graph,
     colorSpace: options.colorSpace ?? 'srgb'
   }
+  ctx.drawLayer = (layer) => renderNode(layer, ctx)
 
   const contentNodes: SVGNode[] = []
 
@@ -588,6 +589,7 @@ export function renderNodeSVGElement(
     tint,
     booleanPath
   }
+  ctx.drawLayer = (layer) => renderNode(layer, ctx)
   const drawn = renderNode(
     { ...node, x: 0, y: 0, rotation: 0, flipX: false, flipY: false, opacity: 1 },
     ctx

@@ -1,12 +1,15 @@
 import { fromUint8Array } from 'js-base64'
 
-import type {
-  Effect,
-  Fill,
-  GradientStop,
-  GradientTransform,
-  SceneGraph,
-  SceneNode
+import {
+  patternSource,
+  patternTileCopies,
+  patternTileLayout,
+  type Effect,
+  type Fill,
+  type GradientStop,
+  type GradientTransform,
+  type SceneGraph,
+  type SceneNode
 } from '@kalka/scene-graph'
 import {
   colorToHex8,
@@ -43,6 +46,10 @@ export interface SVGExportContext {
   booleanPath?: BooleanPathResolver
   /** Outlines already resolved, by layer id, so a boolean's path operations run once. */
   booleanOutlines?: Map<string, SVGPathOutline | null>
+  /** Draws a layer, such as the source a pattern fill repeats, at its own origin. */
+  drawLayer?: (node: SceneNode) => SVGNode | null
+  /** The pattern sources being drawn, so a pattern that repeats itself stops. */
+  patternSources?: Set<string>
 }
 
 /** A closed outline as SVG path data and the fill rule that fills it. */
@@ -410,7 +417,71 @@ export function resolveFill(fill: Fill, node: SceneNode, ctx: SVGExportContext):
     }
   }
 
+  if (fill.type === 'PATTERN') {
+    const pattern = createSourcePattern(fill, node, ctx)
+    if (pattern) {
+      ctx.defs.push(pattern.node)
+      return `url(#${pattern.id})`
+    }
+  }
+
   return null
+}
+
+/**
+ * A pattern fill as an SVG pattern: one tile drawing its source layer at each copy, repeated
+ * from the layer's origin as the canvas repeats it.
+ */
+function createSourcePattern(
+  fill: Fill,
+  node: SceneNode,
+  ctx: SVGExportContext
+): { id: string; node: SVGNode } | null {
+  const source = patternSource(ctx.graph, node, fill)
+  const sources = (ctx.patternSources ??= new Set())
+  if (!source || !ctx.drawLayer || sources.has(source.id)) return null
+  sources.add(source.id)
+  let drawn: SVGNode | null
+  try {
+    // The source draws wherever a pattern repeats it, hidden or not.
+    drawn = ctx.drawLayer({
+      ...source,
+      x: 0,
+      y: 0,
+      rotation: 0,
+      flipX: false,
+      flipY: false,
+      opacity: 1,
+      visible: true
+    })
+  } finally {
+    sources.delete(source.id)
+  }
+  if (!drawn) return null
+  const layout = patternTileLayout(source, fill)
+  const id = nextDefId(ctx, 'pat')
+  const copies = patternTileCopies(source, layout).map((position) =>
+    svg(
+      'g',
+      {
+        transform: `translate(${round(position.x)} ${round(position.y)}) scale(${round(layout.scale)})`
+      },
+      drawn
+    )
+  )
+  return {
+    id,
+    node: svg(
+      'pattern',
+      {
+        id,
+        patternUnits: 'userSpaceOnUse',
+        width: round(layout.rect.width),
+        height: round(layout.rect.height)
+      },
+      svg('g', fill.opacity < 1 ? { opacity: round(fill.opacity) } : {}, ...copies)
+    )
+  }
 }
 
 export const SVG_STROKE_CAP: Record<string, string> = {

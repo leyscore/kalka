@@ -21,6 +21,7 @@ import {
   setArtboardTokens,
   type ArtboardFontFace
 } from './frame'
+import { PatternUsers } from './patterns'
 
 /** Changes to a layer that restyle its children too: their CSS depends on how it lays them out. */
 const CHILD_STYLE_KEYS = new Set<keyof SceneNode>([
@@ -91,6 +92,7 @@ export class DomSceneProjector {
   private readonly locked = new Set<string>()
   /** Layers holding a mask: the CSS of their other children depends on where it sits. */
   private readonly maskParents = new Set<string>()
+  private readonly patternUsers = new PatternUsers()
   private pageDirty = true
   private pageId: string | null = null
   private destroyed = false
@@ -182,6 +184,7 @@ export class DomSceneProjector {
     this.artboards.clear()
     this.elements.clear()
     this.maskParents.clear()
+    this.patternUsers.clear()
     this.dirty.clear()
     this.pageDirty = true
   }
@@ -199,6 +202,7 @@ export class DomSceneProjector {
       this.maskParents.add(node.parentId)
       this.restyleChildren(node.parentId)
     }
+    for (const userId of this.patternUsers.affectedBy(this.graph, node)) this.dirty.add(userId)
     if (node.parentId) {
       if ('visible' in changes || 'internalOnly' in changes) this.dirty.add(node.parentId)
       if (node.parentId === this.currentPageId()) this.pageDirty = true
@@ -224,11 +228,12 @@ export class DomSceneProjector {
       this.maskParents.delete(parentId)
   }
 
-  /** Records a layer's element as built, and its parent when the layer is a mask. */
+  /** Records a built element, its parent if it is a mask, and the patterns it repeats. */
   private register(id: string, element: Element): void {
     this.elements.set(id, element)
     const node = this.graph.getNode(id)
     if (node?.isMask && node.parentId) this.maskParents.add(node.parentId)
+    if (node) this.patternUsers.record(this.graph, node)
   }
 
   // ------------------------------------------------------------------ flush

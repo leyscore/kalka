@@ -9,9 +9,6 @@ async function expectCanvas(name: string) {
 }
 
 test('pattern fills from source nodes', async () => {
-  // The DOM canvas does not draw pattern fills yet: the layer shows only its stroke, where the
-  // Skia canvas tiled the source layer. The baseline is the Skia drawing, kept as the target.
-  test.fixme()
   await editor.page.evaluate(() => {
     const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
