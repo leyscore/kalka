@@ -48,6 +48,7 @@
 
 ### Added
 
+- MCP clients and the built-in AI chat get `get_metadata`, `get_variable_defs`, and `search_design_system`, named and answering like the tools of Figma's Dev Mode MCP server, so prompts and agent skills written for Figma work on Kalka: an XML outline of a layer or the selection, the variables and styles it uses with their values in each mode, and a search of the components, variables, and styles of the document and its libraries. The first two also work while Kalka shares only the selection.
 - The conversation menu saves a chat's trace as a JSON file: every message, reasoning step, and tool call, and each run's model, settings, usage, timing, and errors, with enough to rebuild and check every request the model received.
 - Settings › Diagnostics saves the diagnostics report as a JSON file, next to Copy diagnostics.
 - Read what a frame says without rendering it: the `query_nodes` and `get_page_tree` AI and MCP tools return the text of text layers, and XPath selectors match `@id`, so `//*[@id='1:2']//TEXT[not(ancestor-or-self::*[@visible='false'])]` lists a frame's visible text in layer order with each layer's ID (#861).

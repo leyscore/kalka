@@ -46,6 +46,7 @@ import {
   getComponents,
   getCurrentPage,
   getFontStatus,
+  getMetadata,
   getPageTree,
   insertLibraryComponent,
   listAvailableFonts,
@@ -54,6 +55,7 @@ import {
   listPages,
   pageBounds,
   queryNodes,
+  searchDesignSystem,
   selectNodes,
   switchPage
 } from './read'
@@ -83,6 +85,7 @@ import {
   findVariables,
   getCollection,
   getVariable,
+  getVariableDefs,
   listCollections,
   listVariables,
   setVariable,
@@ -112,6 +115,8 @@ import {
 export const EXTENDED_TOOLS: ToolDef[] = [
   // Read (advanced)
   getPageTree,
+  getMetadata,
+  searchDesignSystem,
   getCurrentPage,
   listPages,
   selectNodes,
@@ -170,6 +175,7 @@ export const EXTENDED_TOOLS: ToolDef[] = [
   nodeReplaceWith,
   arrangeNodes,
   // Variables
+  getVariableDefs,
   listVariables,
   listCollections,
   getVariable,

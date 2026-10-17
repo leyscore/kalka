@@ -54,6 +54,17 @@ describe('limitToSelection', () => {
     expect(() => limitToSelection(store, 'get_page_tree', {})).toThrow(/root_id/)
   })
 
+  test("lets Figma's tools read the selection themselves or a node inside it", () => {
+    expect(limitToSelection(store, 'get_metadata', {})).toEqual({})
+    expect(limitToSelection(store, 'get_variable_defs', { nodeId: ids.title })).toEqual({
+      nodeId: ids.title
+    })
+    expect(() => limitToSelection(store, 'get_metadata', { nodeId: ids.other })).toThrow(/outside/)
+    expect(() => limitToSelection(store, 'search_design_system', { query: 'x' })).toThrow(
+      /unavailable/
+    )
+  })
+
   test('rejects writing an export to a file', () => {
     expect(() =>
       limitToSelection(store, 'export_image', { ids: [ids.card], path: 'card.png' })

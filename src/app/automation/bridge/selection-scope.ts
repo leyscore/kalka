@@ -6,8 +6,14 @@ import {
 
 import type { EditorStore } from '@/app/editor/active-store'
 
-/** Tools that read the selection itself when a call names no nodes. */
+/** Tools the scope points at the selection when a call names no nodes. */
 const READS_SELECTION_BY_DEFAULT: ReadonlySet<string> = new Set(['describe', 'export_image'])
+
+/** Tools with Figma's `nodeId` that read the selection themselves when a call names no node. */
+const READ_SELECTION_THEMSELVES: ReadonlySet<string> = new Set([
+  'get_metadata',
+  'get_variable_defs'
+])
 
 function namedIds(value: unknown): string[] {
   if (typeof value === 'string') return [value]
@@ -42,7 +48,9 @@ export function limitToSelection(
       throw new Error(`${id} is outside the selection Kalka shares; use get_selection`)
     }
   }
-  if (ids.length > 0 || fields.length === 0) return toolArgs
+  if (ids.length > 0 || fields.length === 0 || READ_SELECTION_THEMSELVES.has(toolName)) {
+    return toolArgs
+  }
   if (READS_SELECTION_BY_DEFAULT.has(toolName)) return { ...toolArgs, ids: selected }
   throw new Error(`${toolName} needs ${fields.join(' or ')}: a node from get_selection`)
 }

@@ -1,10 +1,11 @@
 import * as v from 'valibot'
 
+import type { FigmaAPI } from '#core/figma-api'
 import { getComponentCatalog } from '#core/tools/component-catalog'
 import { toolNumber } from '#core/tools/input'
 import { defineTool } from '#core/tools/schema'
 
-interface DocumentComponentResult {
+export interface DocumentComponentResult {
   id: string
   name: string
   type: string
@@ -12,7 +13,7 @@ interface DocumentComponentResult {
   source: 'document'
 }
 
-interface LibraryComponentResult {
+export interface LibraryComponentResult {
   libraryId: string
   libraryName: string
   revisionId: string
@@ -23,6 +24,58 @@ interface LibraryComponentResult {
   source: 'library'
   enabled: boolean
   priority: number
+}
+
+/**
+ * The document's components and component sets on every page whose names `accept` takes, up to
+ * `limit`. Without `variants`, a component set stands for its variants, as Figma's assets list it.
+ */
+export function findDocumentComponents(
+  figma: FigmaAPI,
+  accept: (name: string) => boolean,
+  options: { limit: number; variants: boolean }
+): DocumentComponentResult[] {
+  const found: DocumentComponentResult[] = []
+  for (const page of figma.root.children) {
+    if (found.length >= options.limit) break
+    page.findAll((node) => {
+      if (found.length >= options.limit) return false
+      if (node.type !== 'COMPONENT' && node.type !== 'COMPONENT_SET') return false
+      if (!options.variants && node.parent?.type === 'COMPONENT_SET') return false
+      if (!accept(node.name)) return false
+      found.push({
+        id: node.id,
+        name: node.name,
+        type: node.type,
+        page: page.name,
+        source: 'document'
+      })
+      return false
+    })
+  }
+  return found
+}
+
+/** Components of the enabled libraries, when the document has a library catalog. */
+export async function findLibraryComponents(
+  figma: FigmaAPI,
+  filter: { name?: string; libraryId?: string }
+): Promise<LibraryComponentResult[]> {
+  const catalog = getComponentCatalog(figma.graph)
+  if (!catalog) return []
+  const assets = await catalog.listComponents({ ...filter, enabledOnly: true })
+  return assets.map(({ libraryId, libraryName, revisionId, enabled, priority, asset }) => ({
+    libraryId,
+    libraryName,
+    revisionId,
+    assetKey: asset.key,
+    name: asset.name,
+    type: asset.type,
+    description: asset.description,
+    source: 'library' as const,
+    enabled,
+    priority
+  }))
 }
 
 export const getComponents = defineTool({
@@ -51,50 +104,18 @@ export const getComponents = defineTool({
     const limit = args.limit ?? 50
     const source = args.source
     const nameFilter = args.name?.toLowerCase()
-    const documentComponents: DocumentComponentResult[] = []
-
-    if (source !== 'libraries') {
-      for (const page of figma.root.children) {
-        if (documentComponents.length >= limit) break
-        page.findAll((node) => {
-          if (documentComponents.length >= limit) return false
-          if (node.type !== 'COMPONENT' && node.type !== 'COMPONENT_SET') return false
-          if (nameFilter && !node.name.toLowerCase().includes(nameFilter)) return false
-          documentComponents.push({
-            id: node.id,
-            name: node.name,
-            type: node.type,
-            page: page.name,
-            source: 'document'
-          })
-          return false
-        })
-      }
-    }
-
-    const catalog = getComponentCatalog(figma.graph)
-    const libraryComponents: LibraryComponentResult[] = []
-    if (source !== 'document' && catalog) {
-      const assets = await catalog.listComponents({
-        name: args.name,
-        libraryId: args.library_id,
-        enabledOnly: true
-      })
-      libraryComponents.push(
-        ...assets.map(({ libraryId, libraryName, revisionId, enabled, priority, asset }) => ({
-          libraryId,
-          libraryName,
-          revisionId,
-          assetKey: asset.key,
-          name: asset.name,
-          type: asset.type,
-          description: asset.description,
-          source: 'library' as const,
-          enabled,
-          priority
-        }))
-      )
-    }
+    const documentComponents =
+      source === 'libraries'
+        ? []
+        : findDocumentComponents(
+            figma,
+            (name) => !nameFilter || name.toLowerCase().includes(nameFilter),
+            { limit, variants: true }
+          )
+    const libraryComponents =
+      source === 'document'
+        ? []
+        : await findLibraryComponents(figma, { name: args.name, libraryId: args.library_id })
 
     const components = [...libraryComponents, ...documentComponents]
       .sort((left, right) => {

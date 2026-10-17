@@ -208,6 +208,9 @@ describe('MCP stdio transport', () => {
     expect(names).toContain('save_file')
     expect(names).toContain('list_documents')
     expect(names).toContain('get_codegen_prompt')
+    expect(names).toEqual(
+      expect.arrayContaining(['get_metadata', 'get_variable_defs', 'search_design_system'])
+    )
     expect(names).not.toContain('rename_node')
     const createShape = expectDefined(
       tools.find((tool) => tool.name === 'create_shape'),

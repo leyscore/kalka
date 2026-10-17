@@ -13,6 +13,8 @@ export const SELECTION_SCOPE_TOOLS: Readonly<Record<string, readonly string[]>> 
   get_selection: [],
   get_node: ['id'],
   get_page_tree: ['root_id'],
+  get_metadata: ['nodeId'],
+  get_variable_defs: ['nodeId'],
   describe: ['id', 'ids'],
   export_image: ['ids']
 }

@@ -19,7 +19,7 @@ Restart the MCP server, then reconnect stdio clients, to apply changes. For an e
 
 ## Share only the selection {#selection-scope}
 
-Turn on **Share only the selection** in **Settings → MCP → Local server** to let MCP clients read only the layers you select. Clients then get `get_selection`, `get_node`, `get_page_tree`, `describe`, and `export_image`, and no tools that edit, open files, list documents, or change settings. Every node a call names must be a selected layer or inside one; `describe` and `export_image` read the selection when given no IDs, and `get_page_tree` needs a `root_id` from the selection. `export_image` returns the image but cannot write it to a file. With nothing selected, calls fail and ask the user to select layers.
+Turn on **Share only the selection** in **Settings → MCP → Local server** to let MCP clients read only the layers you select. Clients then get `get_selection`, `get_node`, `get_page_tree`, `get_metadata`, `get_variable_defs`, `describe`, and `export_image`, and no tools that edit, open files, list documents, or change settings. Every node a call names must be a selected layer or inside one; `describe`, `export_image`, `get_metadata`, and `get_variable_defs` read the selection when given no IDs, and `get_page_tree` needs a `root_id` from the selection. `export_image` returns the image but cannot write it to a file. With nothing selected, calls fail and ask the user to select layers.
 
 The server enforces this on every call it sends to the app, including `POST /rpc` and stdio clients, so a client cannot widen it. Restart the MCP server to apply the change. For a server you start yourself, set `KALKA_MCP_SCOPE=selection`; a stdio client can also set it to limit itself while the server shares the whole document.
 
@@ -148,6 +148,18 @@ It works with Claude Code, Cursor, Windsurf, Codex, and any agent that supports 
 
 Kalka currently registers 100+ shared design tools, plus MCP-only document and prompt operations when applicable.
 
+### Figma-named tools {#figma-named-tools}
+
+Three read tools share their names, arguments, and meaning with the tools of Figma's Dev Mode MCP server, so prompts and agent skills written for Figma work against Kalka. Each also takes Figma's `fileKey`, `clientLanguages`, and `clientFrameworks` and ignores them: Kalka reads the open document. Node IDs are Kalka IDs such as `0:12`; the `0-12` form that Figma links use is accepted too.
+
+| Tool | Arguments | Returns |
+|------|-----------|---------|
+| `get_metadata` | `nodeId` (optional), `depth` (optional, Kalka only) | `xml`: one element per layer, named after its type (`frame`, `text`, `component-set`), with `id`, `name`, `x` and `y` relative to the parent, `width`, `height`, and `hidden="true"` for hidden layers; children nest inside. Without `nodeId` it outlines the selection, or lists the pages when nothing is selected; a page ID outlines that page. Past `depth`, a layer carries a `children` count instead. An unknown ID returns an `error` with the page list. |
+| `get_variable_defs` | `nodeId` (optional) | `definitions`: each variable and style name the node, the selection, or (with neither) the current page uses, including descendants, mapped to its value in the mode the layers are in, with colors as hex and aliases resolved. `variables` adds each variable's collection, mode, and `valuesByMode`; `styles` lists the shared styles with their values. |
+| `search_design_system` | `query` (a string or a list of up to 10), `includeComponents`, `includeVariables`, `includeStyles` (all default `true`), `limit` (per kind and query, default 20) | `results`, one per query: matching `components` (document components and component sets, and components of enabled libraries), `variables` with their values by mode, and `styles`. Every word of a query must appear in the name, so `button primary` finds `Button/Primary`. |
+
+Library variables and styles are found once the document holds them, as it does after using them; the library catalog lists components only.
+
 ### Document
 
 | Tool | Description |
@@ -183,10 +195,12 @@ Settings tools never expose credentials, AI models, MCP connections, storage, or
 |------|-------------|
 | `get_selection` | Get the selected nodes, with their direct children by default; `depth` sets how many levels |
 | `get_page_tree` | Get the full node tree of the current page |
+| `get_metadata` | XML outline of a node or the selection: ids, types, names, positions, and sizes; see [Figma-named tools](#figma-named-tools) |
 | `get_current_page` | Get the current page name and ID |
 | `get_node` | Get detailed properties of a node by ID |
 | `find_nodes` | Find nodes by name pattern and/or type |
 | `get_components` | List all components in the document |
+| `search_design_system` | Search components, variables, and styles of the document and its libraries by name |
 | `list_pages` | List all pages |
 | `list_variables` | List design variables |
 | `list_collections` | List variable collections |
@@ -291,6 +305,7 @@ Settings tools never expose credentials, AI models, MCP connections, storage, or
 
 | Tool | Description |
 |------|-------------|
+| `get_variable_defs` | Variables and styles a node or the selection uses, with values in every mode |
 | `get_variable` | Get a variable by ID or name |
 | `find_variables` | Find variables by name pattern or type |
 | `create_variable` | Create a new variable in a collection |

@@ -51,7 +51,7 @@
   "version": "Версия",
   "authenticationDescription": "Защитите локальную конечную точку MCP с помощью Bearer-токена. Отключайте только на доверенном устройстве. Перезапустите сервер, чтобы применить изменения.",
   "selectionScope": "Открывать только выделение",
-  "selectionScopeDescription": "MCP-клиенты читают только выделенные вами слои, через get_selection, get_node, get_page_tree, describe и export_image, без других инструментов. Перезапустите сервер, чтобы применить изменения.",
+  "selectionScopeDescription": "MCP-клиенты читают только выделенные вами слои, через get_selection, get_node, get_page_tree, get_metadata, get_variable_defs, describe и export_image, без других инструментов. Перезапустите сервер, чтобы применить изменения.",
   "rootDirectory": "Корневой каталог MCP",
   "rootDirectoryDefault": "Каталог сервера по умолчанию",
   "chooseRootDirectory": "Выбрать папку",

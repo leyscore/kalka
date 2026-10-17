@@ -7,7 +7,10 @@ const defaultNames = new Set([
   ...CORE_TOOLS.map((tool) => tool.name),
   'get_components',
   'list_libraries',
-  'insert_library_component'
+  'insert_library_component',
+  'get_metadata',
+  'get_variable_defs',
+  'search_design_system'
 ])
 
 export const aiToolDefinitions = ALL_TOOLS.filter((tool) => isToolExposed(tool, 'ai'))

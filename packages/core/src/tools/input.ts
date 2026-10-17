@@ -33,3 +33,26 @@ export function toolNumber(schema: v.GenericSchema<number, number> = v.number())
     )
   ])
 }
+
+/** A node ID as Figma's MCP tools take it: `1:2`, or `1-2` as the `node-id` of Figma links. */
+export const figmaNodeIdInput = v.pipe(
+  v.string(),
+  v.transform((id) => id.trim().replace(/^(\d+)-(\d+)$/, '$1:$2')),
+  v.description('Node ID such as 1:2 (the 1-2 form of Figma links also works)')
+)
+
+/**
+ * Arguments Figma's MCP tools take that Kalka has no use for, accepted so that calls written for
+ * Figma run unchanged: Kalka reads the open document and does not tailor results to a stack.
+ */
+export const figmaClientInputs = {
+  fileKey: v.optional(
+    v.pipe(v.string(), v.description('Figma file key; ignored, Kalka reads the open document'))
+  ),
+  clientLanguages: v.optional(
+    v.pipe(v.string(), v.description('Languages of the client project; accepted and ignored'))
+  ),
+  clientFrameworks: v.optional(
+    v.pipe(v.string(), v.description('Frameworks of the client project; accepted and ignored'))
+  )
+}

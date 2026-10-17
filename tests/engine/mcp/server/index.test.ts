@@ -285,6 +285,22 @@ describe('MCP server', () => {
     expect(graph.getNode(id)?.y).toBe(0)
   })
 
+  test("lists and runs the tools named after Figma's", async () => {
+    const { tools } = await client.listTools()
+    const names = tools.map((tool) => tool.name)
+    expect(names).toEqual(
+      expect.arrayContaining(['get_metadata', 'get_variable_defs', 'search_design_system'])
+    )
+    const create = await client.callTool({
+      name: 'create_shape',
+      arguments: { type: 'FRAME', x: 0, y: 0, width: 100, height: 100, name: 'Outlined' }
+    })
+    const { id } = parseResult(create) as { id: string }
+    const result = await client.callTool({ name: 'get_metadata', arguments: { nodeId: id } })
+    expect(result.isError).not.toBe(true)
+    expect((parseResult(result) as { xml: string }).xml).toContain('name="Outlined"')
+  })
+
   test('get_page_tree returns page structure', async () => {
     await client.callTool({
       name: 'create_shape',
@@ -357,9 +373,11 @@ describe('MCP server sharing only the selection', () => {
     expect(tools.map((tool) => tool.name).sort()).toEqual([
       'describe',
       'export_image',
+      'get_metadata',
       'get_node',
       'get_page_tree',
-      'get_selection'
+      'get_selection',
+      'get_variable_defs'
     ])
   })
 
