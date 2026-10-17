@@ -42,3 +42,29 @@ test('opens a vector in a component but not its copy in an instance, as Figma do
   lifecycle.enterNodeEditMode(vector.id)
   expect(state.nodeEditState?.nodeId).toBe(vector.id)
 })
+
+test('closes the path when its layer is deleted or the document is replaced', () => {
+  const graph = new SceneGraph()
+  const pageId = expectDefined(graph.getPages()[0]).id
+  const open = (target: SceneGraph) =>
+    target.createNode('VECTOR', expectDefined(target.getPages()[0]).id, {
+      width: 100,
+      height: 50,
+      vectorNetwork: TRIANGLE
+    })
+  const vector = open(graph)
+  const state = { nodeEditState: null } as VectorEditState
+  const editor = createEditor({ graph })
+  const lifecycle = createVectorEditLifecycle(editor, state)
+
+  lifecycle.enterNodeEditMode(vector.id)
+  graph.deleteNode(graph.createNode('RECTANGLE', pageId).id)
+  expect(state.nodeEditState?.nodeId).toBe(vector.id)
+  graph.deleteNode(vector.id)
+  expect(state.nodeEditState).toBeNull()
+
+  const next = new SceneGraph()
+  lifecycle.enterNodeEditMode(open(graph).id)
+  editor.replaceGraph(next)
+  expect(state.nodeEditState).toBeNull()
+})

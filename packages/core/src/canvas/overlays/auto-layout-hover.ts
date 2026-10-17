@@ -15,6 +15,8 @@ import {
   AUTO_LAYOUT_HOVER_STROKE_WIDTH,
   AUTO_LAYOUT_HOVER_TICK_LENGTH,
   AUTO_LAYOUT_HOVER_VALUE_OFFSET,
+  AUTO_LAYOUT_HOVER_GAP_PILL,
+  AUTO_LAYOUT_HOVER_PADDING_PILL,
   AUTO_LAYOUT_HOVER_VALUE_PILL_HEIGHT,
   AUTO_LAYOUT_HOVER_VALUE_PILL_PADDING_X,
   AUTO_LAYOUT_HOVER_VALUE_PILL_RADIUS
@@ -104,25 +106,39 @@ function drawStripedRect(
   immutablePath.delete()
 }
 
-function drawValuePill(r: SkiaRenderer, canvas: Canvas, text: string, x: number, y: number) {
-  if (!r.labelFont) return
-  const width = Math.max(24, text.length * 8 + AUTO_LAYOUT_HOVER_VALUE_PILL_PADDING_X * 2)
+/** A value in a pill as wide as its text, its digits centred, as Figma draws padding and gaps. */
+function drawValuePill(
+  r: SkiaRenderer,
+  canvas: Canvas,
+  text: string,
+  x: number,
+  y: number,
+  color: Color
+) {
+  const font = r.valueFont ?? r.labelFont
+  if (!font) return
+  const glyphs = font.getGlyphIDs(text)
+  let advance = 0
+  for (const glyphWidth of font.getGlyphWidths(glyphs)) advance += glyphWidth
+  // The ink's top and bottom, so the digits sit in the middle whatever the font's metrics.
+  const bounds = font.getGlyphBounds(glyphs)
+  let top = 0
+  let bottom = 0
+  for (let i = 0; i < bounds.length; i += 4) {
+    top = Math.min(top, bounds[i + 1])
+    bottom = Math.max(bottom, bounds[i + 3])
+  }
+  const width = advance + AUTO_LAYOUT_HOVER_VALUE_PILL_PADDING_X * 2
   const height = AUTO_LAYOUT_HOVER_VALUE_PILL_HEIGHT
   const rect = r.ck.RRectXY(
     r.ck.LTRBRect(x - width / 2, y - height / 2, x + width / 2, y + height / 2),
     AUTO_LAYOUT_HOVER_VALUE_PILL_RADIUS,
     AUTO_LAYOUT_HOVER_VALUE_PILL_RADIUS
   )
-  r.auxFill.setColor(r.selColor())
+  r.auxFill.setColor(canvasColor(r, color))
   canvas.drawRRect(rect, r.auxFill)
   r.auxFill.setColor(r.ck.Color4f(1, 1, 1, 1))
-  canvas.drawText(
-    text,
-    x - width / 2 + AUTO_LAYOUT_HOVER_VALUE_PILL_PADDING_X,
-    y + 5,
-    r.auxFill,
-    r.labelFont
-  )
+  canvas.drawText(text, x - advance / 2, y - (top + bottom) / 2, r.auxFill, font)
 }
 
 function gapRects(node: SceneNode, graph: SceneGraph): RectTuple[] {
@@ -226,7 +242,8 @@ function drawSpacingHover(
     canvas,
     String(Math.round(node.itemSpacing)),
     (x + width / 2) * r.zoom + r.panX + AUTO_LAYOUT_HOVER_VALUE_OFFSET,
-    (y + height / 2) * r.zoom + r.panY - AUTO_LAYOUT_HOVER_VALUE_OFFSET
+    (y + height / 2) * r.zoom + r.panY - AUTO_LAYOUT_HOVER_VALUE_OFFSET,
+    AUTO_LAYOUT_HOVER_GAP_PILL
   )
 }
 
@@ -249,7 +266,8 @@ function drawPaddingHover(
     canvas,
     String(Math.round(value)),
     (x + width / 2) * r.zoom + r.panX + AUTO_LAYOUT_HOVER_VALUE_OFFSET,
-    (y + height / 2) * r.zoom + r.panY - AUTO_LAYOUT_HOVER_VALUE_OFFSET
+    (y + height / 2) * r.zoom + r.panY - AUTO_LAYOUT_HOVER_VALUE_OFFSET,
+    AUTO_LAYOUT_HOVER_PADDING_PILL
   )
 }
 

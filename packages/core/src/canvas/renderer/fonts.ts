@@ -9,7 +9,8 @@ import {
   SECTION_TITLE_FONT_FAMILY,
   SECTION_TITLE_FONT_SIZE,
   SECTION_TITLE_FONT_URL,
-  SIZE_FONT_SIZE
+  SIZE_FONT_SIZE,
+  VALUE_FONT_SIZE
 } from '#core/constants'
 import { withTextMeasurer } from '#core/layout/text-measurement'
 import { fontManager } from '#core/text/fonts'
@@ -95,6 +96,15 @@ export function getFontProvider(r: SkiaRenderer) {
 function registerSectionTitleFont(r: SkiaRenderer, data: ArrayBuffer) {
   r.fontProvider?.registerFont(data, SECTION_TITLE_FONT_FAMILY)
   fontManager.registerFontInBrowser(SECTION_TITLE_FONT_FAMILY, 'SemiBold', data)
+  const typeface = r.ck.Typeface.MakeFreeTypeFaceFromData(data)
+  if (!typeface) return
+  try {
+    r.valueFont?.delete()
+    r.valueFont = new r.ck.Font(typeface, VALUE_FONT_SIZE)
+  } finally {
+    // The font holds its own reference to the face.
+    typeface.delete()
+  }
 }
 
 export async function loadFonts(

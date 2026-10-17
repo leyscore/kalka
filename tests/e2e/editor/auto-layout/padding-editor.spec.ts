@@ -51,6 +51,14 @@ async function setupAutoLayoutFrame(page: Page) {
       width: 120,
       height: 40
     })
+    store.graph.createNode('RECTANGLE', frame.id, {
+      name: 'Second child',
+      x: 180,
+      y: 188,
+      width: 120,
+      height: 40
+    })
+    store.runLayoutForNode(frame.id)
     store.select([frame.id])
     store.requestRender()
     return frame.id
@@ -65,6 +73,13 @@ async function framePaddingTop(page: Page, frameId: string) {
   }, frameId)
 }
 
+async function frameGap(page: Page, frameId: string) {
+  return page.evaluate(
+    (id) => window.kalka?.getStore?.().graph.getNode(id)?.itemSpacing ?? null,
+    frameId
+  )
+}
+
 test('double-clicking an auto-layout padding handle opens a scrub editor', async ({ page }) => {
   await page.goto('/')
   const canvas = new CanvasHelper(page)
@@ -77,10 +92,10 @@ test('double-clicking an auto-layout padding handle opens a scrub editor', async
   await canvas.hover(300, 130)
   await dblclickCanvas(page, 300, 130)
 
-  const editor = page.getByTestId('auto-layout-padding-editor')
+  const editor = page.getByTestId('auto-layout-value-editor')
   await expect(editor).toBeVisible()
 
-  await canvas.dragNumberField(editor.getByTestId('auto-layout-padding-input'), 40)
+  await canvas.dragNumberField(editor.getByTestId('auto-layout-value-input'), 40)
 
   await expect(editor).toHaveCount(0)
   const changedPadding = await framePaddingTop(page, frameId)
@@ -103,7 +118,7 @@ test('clicking the canvas closes the auto-layout padding editor', async ({ page 
 
   await canvas.hover(300, 130)
   await dblclickCanvas(page, 300, 130)
-  const editor = page.getByTestId('auto-layout-padding-editor')
+  const editor = page.getByTestId('auto-layout-value-editor')
   await expect(editor).toBeVisible()
 
   await clickCanvas(page, 80, 80)
@@ -122,7 +137,7 @@ test('auto-layout padding editor follows canvas pan while open', async ({ page }
 
   await canvas.hover(300, 130)
   await dblclickCanvas(page, 300, 130)
-  const editor = page.getByTestId('auto-layout-padding-editor')
+  const editor = page.getByTestId('auto-layout-value-editor')
   await expect(editor).toBeVisible()
   const before = await editor.boundingBox()
   if (!before) throw new Error('Padding editor has no bounding box')
@@ -137,5 +152,78 @@ test('auto-layout padding editor follows canvas pan while open', async ({ page }
   const after = await editor.boundingBox()
   if (!after) throw new Error('Padding editor has no bounding box after pan')
   expect(after.x).toBeGreaterThan(before.x + 20)
+  canvas.assertNoErrors()
+})
+
+test('double-clicking an auto-layout gap edits it like a padding, as in Figma', async ({
+  page
+}) => {
+  await page.goto('/')
+  const canvas = new CanvasHelper(page)
+  await canvas.waitForInit()
+  await canvas.clearCanvas()
+
+  const frameId = await setupAutoLayoutFrame(page)
+  await canvas.waitForRender()
+
+  // The gap between the two children: the frame's padding top, a 40 px child, then 8 px.
+  await canvas.hover(300, 120 + 20 + 40 + 4)
+  await dblclickCanvas(page, 300, 120 + 20 + 40 + 4)
+  const editor = page.getByTestId('auto-layout-value-editor')
+  await expect(editor).toBeVisible()
+  await expect(editor.getByRole('spinbutton')).toHaveAttribute('aria-valuenow', '8')
+
+  await canvas.dragNumberField(editor.getByTestId('auto-layout-value-input'), 40)
+  await expect(editor).toHaveCount(0)
+  expect(await frameGap(page, frameId)).toBeGreaterThan(8)
+
+  await canvas.undo()
+  expect(await frameGap(page, frameId)).toBe(8)
+  canvas.assertNoErrors()
+})
+
+test('selecting another layer closes the value editor and keeps the value it had', async ({
+  page
+}) => {
+  await page.goto('/')
+  const canvas = new CanvasHelper(page)
+  await canvas.waitForInit()
+  await canvas.clearCanvas()
+
+  const frameId = await setupAutoLayoutFrame(page)
+  await canvas.waitForRender()
+
+  await canvas.hover(300, 130)
+  await dblclickCanvas(page, 300, 130)
+  const editor = page.getByTestId('auto-layout-value-editor')
+  await expect(editor).toBeVisible()
+  await canvas.dragNumberField(editor.getByTestId('auto-layout-value-input'), 40)
+  await canvas.hover(300, 130)
+  await dblclickCanvas(page, 300, 130)
+  await expect(editor).toBeVisible()
+  const committed = await framePaddingTop(page, frameId)
+
+  await page.evaluate(() => window.kalka?.getStore?.().clearSelection())
+  await expect(editor).toHaveCount(0)
+  expect(await framePaddingTop(page, frameId)).toBe(committed)
+  canvas.assertNoErrors()
+})
+
+test('deleting the frame closes its value editor', async ({ page }) => {
+  await page.goto('/')
+  const canvas = new CanvasHelper(page)
+  await canvas.waitForInit()
+  await canvas.clearCanvas()
+
+  const frameId = await setupAutoLayoutFrame(page)
+  await canvas.waitForRender()
+
+  await canvas.hover(300, 130)
+  await dblclickCanvas(page, 300, 130)
+  const editor = page.getByTestId('auto-layout-value-editor')
+  await expect(editor).toBeVisible()
+
+  await page.evaluate((id) => window.kalka?.getStore?.().graph.deleteNode(id), frameId)
+  await expect(editor).toHaveCount(0)
   canvas.assertNoErrors()
 })

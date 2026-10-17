@@ -34,6 +34,10 @@ export type { AgentEdit, RevealStep } from '#vue/canvas/dom-scene/reveal/plan'
 export { SVG_OVERLAY_LAYERS, useSVGOverlay } from '#vue/canvas/svg-overlay/use'
 export type { AgentWorkMark } from '#vue/canvas/svg-overlay/layers/agent-work'
 export { useCanvasInput } from '#vue/canvas/useCanvasInput'
+export {
+  autoLayoutValueAnchor,
+  type AutoLayoutValueField
+} from '#vue/shared/input/auto-layout-hover'
 export { useCanvasIssueMarkers } from '#vue/canvas/issues/use'
 export type { CanvasIssueMarkerOptions } from '#vue/canvas/issues/use'
 export type { CanvasLabelEdit, CanvasLabelKind } from '#vue/canvas/labels/edit'

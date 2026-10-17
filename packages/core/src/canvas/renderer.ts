@@ -103,6 +103,8 @@ export class SkiaRenderer {
   textFont: Font | null = null
   labelFont: Font | null = null
   sizeFont: Font | null = null
+  /** Inter SemiBold at 11 px, which Figma sets the padding and gap values on the canvas in. */
+  valueFont: Font | null = null
   sectionTitleFont: Font | null = null
   componentLabelFont: Font | null = null
   fontMgr: FontMgr | null = null

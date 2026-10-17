@@ -4,6 +4,7 @@ import { onScopeDispose, ref, watch, type Ref } from 'vue'
 import type { Editor } from '@kalka/core/editor'
 import type { SceneNode } from '@kalka/scene-graph'
 
+import { createAutoLayoutValueEdit } from '#vue/canvas/auto-layout/value-edit'
 import { createGuideInput, selectedTopLevelGuideFrameId } from '#vue/canvas/guides/input'
 import { createCanvasLabelEdit } from '#vue/canvas/labels/edit'
 import { handlePenDragMove, updatePenHover } from '#vue/canvas/pen/input'
@@ -55,12 +56,7 @@ export function useCanvasInput(
   const canvasLabelEdit = createCanvasLabelEdit(editor)
   const cursorOverride = ref<string | null>(null)
   /** Whether the primary button is held on a preview control, such as a slider thumb. */
-  const autoLayoutPaddingEdit = ref<{
-    nodeId: string
-    side: 'top' | 'right' | 'bottom' | 'left'
-    value: number
-    previous: number
-  } | null>(null)
+  const valueEdit = createAutoLayoutValueEdit(editor)
   const selectedIdsBeforeClickSequence = ref<ReadonlySet<string>>(new Set())
   const lastPointer = ref<{ cx: number; cy: number } | null>(null)
   const pointerInside = ref(false)
@@ -166,68 +162,14 @@ export function useCanvasInput(
     handleMarqueeMove
   } = createCanvasTransformInput(editor, setDrag)
 
-  function paddingValue(node: SceneNode, side: 'top' | 'right' | 'bottom' | 'left') {
-    if (side === 'top') return node.paddingTop
-    if (side === 'right') return node.paddingRight
-    if (side === 'bottom') return node.paddingBottom
-    return node.paddingLeft
-  }
-
-  function paddingKey(side: 'top' | 'right' | 'bottom' | 'left') {
-    if (side === 'top') return 'paddingTop' as const
-    if (side === 'right') return 'paddingRight' as const
-    if (side === 'bottom') return 'paddingBottom' as const
-    return 'paddingLeft' as const
-  }
-
-  function startAutoLayoutPaddingEdit(e: MouseEvent): boolean {
-    const { cx, cy } = getCoords(e)
-    const hover = resolveAutoLayoutHover(cx, cy, editor)
-    if (hover?.kind !== 'padding' && hover?.kind !== 'padding-value') return false
-    if (!hover.side) return false
-    const node = editor.graph.getNode(hover.nodeId)
-    if (!node) return false
-    const value = paddingValue(node, hover.side)
-    autoLayoutPaddingEdit.value = {
-      nodeId: node.id,
-      side: hover.side,
-      value,
-      previous: value
-    }
-    e.preventDefault()
-    e.stopPropagation()
-    return true
-  }
-
-  function updateAutoLayoutPaddingEdit(value: number) {
-    const edit = autoLayoutPaddingEdit.value
-    if (!edit || !Number.isFinite(value)) return
-    const next = Math.max(0, value)
-    autoLayoutPaddingEdit.value = { ...edit, value: next }
-    editor.updateNode(edit.nodeId, { [paddingKey(edit.side)]: next })
-  }
-
-  function commitAutoLayoutPaddingEdit(value: number) {
-    const edit = autoLayoutPaddingEdit.value
-    if (!edit || !Number.isFinite(value)) {
-      autoLayoutPaddingEdit.value = null
-      return
-    }
-    const next = Math.max(0, value)
-    editor.updateNode(edit.nodeId, { [paddingKey(edit.side)]: edit.previous })
-    editor.updateNodeWithUndo(edit.nodeId, { [paddingKey(edit.side)]: next }, 'Update padding')
-    autoLayoutPaddingEdit.value = null
-  }
-
-  function cancelAutoLayoutPaddingEdit() {
-    const edit = autoLayoutPaddingEdit.value
-    if (edit) editor.updateNode(edit.nodeId, { [paddingKey(edit.side)]: edit.previous })
-    autoLayoutPaddingEdit.value = null
-  }
-
   function onDblClick(e: MouseEvent) {
     if (editor.state.play) return
-    if (startAutoLayoutPaddingEdit(e)) return
+    const { cx, cy } = getCoords(e)
+    if (valueEdit.start(cx, cy)) {
+      e.preventDefault()
+      e.stopPropagation()
+      return
+    }
     onTextDblClick(e)
   }
 
@@ -240,10 +182,8 @@ export function useCanvasInput(
       return
     }
     editor.setMeasurementMode('off')
-    const paddingEdit = autoLayoutPaddingEdit.value
-    if (paddingEdit) {
-      commitAutoLayoutPaddingEdit(paddingEdit.value)
-    }
+    const openValueEdit = valueEdit.edit.value
+    if (openValueEdit) valueEdit.commit(openValueEdit.value)
     if (!editor.state.editingTextId) canvasRef.value?.focus()
     editor.setHoveredNode(null)
     const { sx, sy, cx, cy } = getCoords(e)
@@ -560,12 +500,12 @@ export function useCanvasInput(
     updateCanvasLabelEdit: canvasLabelEdit.update,
     commitCanvasLabelEdit: canvasLabelEdit.commit,
     cancelCanvasLabelEdit: canvasLabelEdit.cancel,
-    autoLayoutPaddingEdit,
-    updateAutoLayoutPaddingEdit,
-    commitAutoLayoutPaddingEdit,
-    cancelAutoLayoutPaddingEdit,
+    autoLayoutValueEdit: valueEdit.edit,
+    updateAutoLayoutValueEdit: valueEdit.update,
+    commitAutoLayoutValueEdit: valueEdit.commit,
+    cancelAutoLayoutValueEdit: valueEdit.cancel,
     cleanupInteractions() {
-      cancelAutoLayoutPaddingEdit()
+      valueEdit.cancel()
       cancelPointerInteraction()
       pointerInside.value = false
       resetMeasurementModifiers()

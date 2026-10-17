@@ -3,7 +3,7 @@ import { describe, expect, test } from 'bun:test'
 import type { Editor } from '@kalka/core/editor'
 import { createDefaultNode, type SceneNode } from '@kalka/scene-graph'
 
-import { resolveAutoLayoutHover } from '#vue/shared/input/auto-layout-hover'
+import { autoLayoutValueAnchor, resolveAutoLayoutHover } from '#vue/shared/input/auto-layout-hover'
 
 function frame(overrides: Partial<SceneNode> = {}): SceneNode {
   return createDefaultNode(() => 'frame', 'FRAME', {
@@ -45,9 +45,9 @@ function child(id: string, y: number, height: number): SceneNode {
   })
 }
 
-function editor() {
+function editor(frameOverrides: Partial<SceneNode> = {}) {
   const nodes = new Map<string, SceneNode>([
-    ['frame', frame()],
+    ['frame', frame(frameOverrides)],
     ['title', child('title', 20, 32)],
     ['body', child('body', 60, 48)],
     ['bar', child('bar', 116, 12)]
@@ -105,5 +105,15 @@ describe('auto-layout hover resolver', () => {
 
   test('falls back to frame hover inside empty selected areas', () => {
     expect(resolveAutoLayoutHover(240, 235, editor())).toMatchObject({ kind: 'frame' })
+  })
+
+  test("opens a gap's editor on the tick the hover draws, in the middle of the content box", () => {
+    const uneven = editor({ paddingLeft: 20, paddingRight: 60 })
+    const anchor = autoLayoutValueAnchor(uneven, 'frame', 'itemSpacing', 0)
+    expect(anchor).toEqual({ x: 220, y: 156 })
+    expect(resolveAutoLayoutHover(220, 156, uneven)).toMatchObject({
+      kind: 'spacing-value',
+      index: 0
+    })
   })
 })

@@ -18,6 +18,7 @@
 - A click up to 3.5 screen pixels outside a shape selects it, as in Figma, so hairlines and small dots are easy to pick; a frame's edge stays exact. A click on a section's empty area selects the section while a drag there still selects the layers inside it, and a right-click over the empty area of a frame with layers, or of a section, selects it for the menu.
 - With nothing selected, a layer copied out of a frame or section pastes back into it, or onto the page in the middle of the view when that place is out of view, as in Figma.
 - In scripts, new frames and components hug along their main axis, which auto layout keeps when a script turns it on, a resize fixes a hugging auto layout frame's axes, and a grid fixes both, as in Figma. `instance.overrides` lists each layer edited in an instance with Figma's field names, `resetOverrides()` returns the instance to its component while keeping component property values, setting a field to the value it has no longer counts as an override, and `counterAxisAlignContent` is refused on a layer inside an instance.
+- Double-clicking an auto layout gap on the canvas edits it like a padding, as in Figma, in an editor over the gap's tick; padding and gap values show in pills as wide as their value in Figma's colors, and the value editor closes and keeps its value when the selection, page, or document changes or the frame is deleted.
 
 ### Fixed
 
@@ -30,6 +31,7 @@
 - Layout guides set in the panel or by a script save to `.fig` files, including Auto counts, and scripts read and set `layoutGrids` in Figma's shape whichever shape a file gave them.
 - Resizing an instance by a handle no longer makes the size of every layer its constraints move an override, so a later component edit still resizes them.
 - A text copy restyled in an instance keeps its own size through a component edit, a layer that fills its parent takes the size layout gives it rather than the component's, and frames that hug their layers paste and save into Figma at their size, stretched children included.
+- Path editing closes when its vector is deleted, by undo or a script, or another document opens, instead of staying open on a layer that no longer exists.
 
 ## 0.1.0-beta.2 — 2026-10-17
 

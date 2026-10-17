@@ -8,6 +8,8 @@ import {
   PopoverRoot
 } from 'reka-ui'
 import { computed, onUnmounted, ref, shallowRef, useTemplateRef, watch, type Component } from 'vue'
+import IconLucideAlignHorizontalSpaceBetween from '~icons/lucide/align-horizontal-space-between'
+import IconLucideAlignVerticalSpaceBetween from '~icons/lucide/align-vertical-space-between'
 import IconLucidePanelBottom from '~icons/lucide/panel-bottom'
 import IconLucidePanelLeft from '~icons/lucide/panel-left'
 import IconLucidePanelRight from '~icons/lucide/panel-right'
@@ -25,6 +27,7 @@ import {
 import type { ViewportTransform } from '@kalka/core/geometry'
 import { colorToCSS } from '@kalka/scene-graph/color'
 import {
+  autoLayoutValueAnchor,
   PlayIslands,
   domSceneVectorElement,
   toolCursor,
@@ -37,7 +40,8 @@ import {
   useOffscreenCanvasKit,
   useSVGOverlay,
   useViewportSize,
-  useTextEdit
+  useTextEdit,
+  type AutoLayoutValueField
 } from '@kalka/vue'
 
 import { useAIChat } from '@/app/ai/chat/use'
@@ -182,10 +186,10 @@ const {
   updateCanvasLabelEdit,
   commitCanvasLabelEdit,
   cancelCanvasLabelEdit,
-  autoLayoutPaddingEdit,
-  updateAutoLayoutPaddingEdit,
-  commitAutoLayoutPaddingEdit,
-  cancelAutoLayoutPaddingEdit,
+  autoLayoutValueEdit,
+  updateAutoLayoutValueEdit,
+  commitAutoLayoutValueEdit,
+  cancelAutoLayoutValueEdit,
   cleanupInteractions
 } = useCanvasInput(
   canvasRef,
@@ -229,12 +233,12 @@ const { detailMarker: hoveredIssueMarker, cursor: issueMarkerCursor } = useCanva
 if (!domScene) useTextEdit(canvasRef, store, { isEnabled: () => isActivePane.value })
 const { isDraggingOver } = useCanvasDrop(canvasRef, store, activatePane)
 
-const paddingSideIcons = {
-  top: IconLucidePanelTop,
-  right: IconLucidePanelRight,
-  bottom: IconLucidePanelBottom,
-  left: IconLucidePanelLeft
-} satisfies Record<'top' | 'right' | 'bottom' | 'left', Component>
+const valueFieldIcons = {
+  paddingTop: IconLucidePanelTop,
+  paddingRight: IconLucidePanelRight,
+  paddingBottom: IconLucidePanelBottom,
+  paddingLeft: IconLucidePanelLeft
+} satisfies Record<Exclude<AutoLayoutValueField, 'itemSpacing'>, Component>
 
 const canvasLabelEditNode = computed(() => {
   const edit = canvasLabelEdit.value
@@ -270,23 +274,18 @@ const canvasLabelEditPresentation = computed(() =>
   canvasLabelPresentation(store, canvasLabelEditNode.value ?? null, canvasLabelEdit.value?.kind)
 )
 
-const paddingEditorAnchor = computed(() => {
-  const edit = autoLayoutPaddingEdit.value
-  if (!edit) return null
-  const node = store.graph.getNode(edit.nodeId)
-  if (!node) return null
-  const abs = store.graph.getAbsolutePosition(node.id)
-  if (edit.side === 'top') return { x: abs.x + node.width / 2, y: abs.y + node.paddingTop / 2 }
-  if (edit.side === 'bottom') {
-    return { x: abs.x + node.width / 2, y: abs.y + node.height - node.paddingBottom / 2 }
-  }
-  if (edit.side === 'left') return { x: abs.x + node.paddingLeft / 2, y: abs.y + node.height / 2 }
-  return { x: abs.x + node.width - node.paddingRight / 2, y: abs.y + node.height / 2 }
+const valueEditorAnchor = computed(() => {
+  const edit = autoLayoutValueEdit.value
+  return edit ? autoLayoutValueAnchor(store, edit.nodeId, edit.field, edit.gap) : null
 })
-const paddingEditorReference = useCanvasVirtualReference(canvasRef, store, paddingEditorAnchor)
-const paddingEditorIcon = computed(() => {
-  const edit = autoLayoutPaddingEdit.value
-  return edit ? paddingSideIcons[edit.side] : IconLucidePanelTop
+const valueEditorReference = useCanvasVirtualReference(canvasRef, store, valueEditorAnchor)
+const valueEditorIcon = computed(() => {
+  const edit = autoLayoutValueEdit.value
+  if (!edit) return IconLucidePanelTop
+  if (edit.field !== 'itemSpacing') return valueFieldIcons[edit.field]
+  return store.graph.getNode(edit.nodeId)?.layoutMode === 'VERTICAL'
+    ? IconLucideAlignVerticalSpaceBetween
+    : IconLucideAlignHorizontalSpaceBetween
 })
 
 const cursor = computed(() =>
@@ -351,37 +350,37 @@ const cursor = computed(() =>
           @commit="commitCanvasLabelEdit"
           @cancel="cancelCanvasLabelEdit"
         />
-        <PopoverRoot :open="!!autoLayoutPaddingEdit">
+        <PopoverRoot :open="!!autoLayoutValueEdit">
           <PopoverPortal>
             <PopoverContent
-              v-if="autoLayoutPaddingEdit && paddingEditorReference"
-              :reference="paddingEditorReference"
+              v-if="autoLayoutValueEdit && valueEditorReference"
+              :reference="valueEditorReference"
               side="top"
               align="center"
               :side-offset="AUTO_LAYOUT_PADDING_EDITOR_OFFSET_Y"
               :align-offset="AUTO_LAYOUT_PADDING_EDITOR_OFFSET_X"
               :collision-padding="8"
               :class="['z-50 w-20 p-1', floatingSurface, motionStyles.floating]"
-              data-test-id="auto-layout-padding-editor"
-              @keydown.escape.prevent="cancelAutoLayoutPaddingEdit"
+              data-test-id="auto-layout-value-editor"
+              @keydown.escape.prevent="cancelAutoLayoutValueEdit"
               @open-auto-focus.prevent
             >
               <NumberField
-                :model-value="autoLayoutPaddingEdit.value"
+                :model-value="autoLayoutValueEdit.value"
                 :min="0"
                 :step="1"
-                data-test-id="auto-layout-padding-input"
-                @update:model-value="updateAutoLayoutPaddingEdit"
-                @commit="(value: number) => commitAutoLayoutPaddingEdit(value)"
+                data-test-id="auto-layout-value-input"
+                @update:model-value="updateAutoLayoutValueEdit"
+                @commit="(value: number) => commitAutoLayoutValueEdit(value)"
                 @editing-change="
                   (editing: boolean) =>
                     !editing &&
-                    autoLayoutPaddingEdit &&
-                    commitAutoLayoutPaddingEdit(autoLayoutPaddingEdit.value)
+                    autoLayoutValueEdit &&
+                    commitAutoLayoutValueEdit(autoLayoutValueEdit.value)
                 "
               >
                 <template #icon>
-                  <component :is="paddingEditorIcon" class="size-3.5" />
+                  <component :is="valueEditorIcon" class="size-3.5" />
                 </template>
               </NumberField>
             </PopoverContent>

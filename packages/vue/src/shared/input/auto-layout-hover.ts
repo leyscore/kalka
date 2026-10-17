@@ -4,7 +4,7 @@ import {
   AUTO_LAYOUT_HOVER_TICK_HIT_TOLERANCE
 } from '@kalka/core/constants'
 import type { Editor } from '@kalka/core/editor'
-import type { SceneNode } from '@kalka/scene-graph'
+import type { SceneNode, Vector } from '@kalka/scene-graph'
 
 type AutoLayoutHover = NonNullable<Editor['state']['autoLayoutHover']>
 
@@ -155,4 +155,60 @@ export function resolveAutoLayoutHover(
     resolvePaddingHover(node, localX, localY) ??
     resolveChildrenHover(node, children, localX, localY) ?? { nodeId: node.id, kind: 'frame' }
   )
+}
+
+/** An auto layout frame's value the canvas edits in place: a padding or the gap. */
+export type AutoLayoutValueField =
+  | 'paddingTop'
+  | 'paddingRight'
+  | 'paddingBottom'
+  | 'paddingLeft'
+  | 'itemSpacing'
+
+const PADDING_FIELDS = {
+  top: 'paddingTop',
+  right: 'paddingRight',
+  bottom: 'paddingBottom',
+  left: 'paddingLeft'
+} as const satisfies Record<NonNullable<AutoLayoutHover['side']>, AutoLayoutValueField>
+
+/** The value a hover over a padding or a gap edits, as Figma opens it on a double-click. */
+export function autoLayoutValueField(hover: AutoLayoutHover): AutoLayoutValueField | null {
+  if ((hover.kind === 'padding' || hover.kind === 'padding-value') && hover.side)
+    return PADDING_FIELDS[hover.side]
+  if (hover.kind === 'spacing' || hover.kind === 'spacing-value') return 'itemSpacing'
+  return null
+}
+
+/**
+ * Where the editor for a value sits, in canvas coordinates: the middle of the padding, or of
+ * the gap a double-click opened, as the hover draws its tick.
+ */
+export function autoLayoutValueAnchor(
+  editor: Editor,
+  nodeId: string,
+  field: AutoLayoutValueField,
+  gap = 0
+): Vector | null {
+  const node = editor.graph.getNode(nodeId)
+  if (!node) return null
+  const abs = editor.graph.getAbsolutePosition(node.id)
+  const middle = { x: abs.x + node.width / 2, y: abs.y + node.height / 2 }
+  if (field === 'paddingTop') return { x: middle.x, y: abs.y + node.paddingTop / 2 }
+  if (field === 'paddingBottom')
+    return { x: middle.x, y: abs.y + node.height - node.paddingBottom / 2 }
+  if (field === 'paddingLeft') return { x: abs.x + node.paddingLeft / 2, y: middle.y }
+  if (field === 'paddingRight')
+    return { x: abs.x + node.width - node.paddingRight / 2, y: middle.y }
+  const children = visibleLayoutChildren(node, editor)
+  const prev = children.at(gap)
+  const next = children.at(gap + 1)
+  if (!prev || !next) return middle
+  // Across the flow, the middle of the content box, where the hover draws the gap's tick.
+  if (node.layoutMode === 'HORIZONTAL') {
+    const y = abs.y + (node.paddingTop + node.height - node.paddingBottom) / 2
+    return { x: abs.x + (prev.x + prev.width + next.x) / 2, y }
+  }
+  const x = abs.x + (node.paddingLeft + node.width - node.paddingRight) / 2
+  return { x, y: abs.y + (prev.y + prev.height + next.y) / 2 }
 }

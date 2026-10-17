@@ -47,6 +47,7 @@ export const DEFAULT_STROKE_MITER_LIMIT = 4
 /** Figma's stroke weight for a node that has not been given one. */
 export const LABEL_FONT_SIZE = 11
 export const SIZE_FONT_SIZE = 10
+export const VALUE_FONT_SIZE = 11
 
 export const HANDLE_HALF_SIZE = 3
 
@@ -73,9 +74,10 @@ export const AUTO_LAYOUT_HOVER_STROKE_WIDTH = 1.5
 export const LAYOUT_OUTLINE_DASH = 1.75
 export const LAYOUT_OUTLINE_GAP = 1.25
 export const AUTO_LAYOUT_HOVER_VALUE_OFFSET = 18
-export const AUTO_LAYOUT_HOVER_VALUE_PILL_HEIGHT = 22
-export const AUTO_LAYOUT_HOVER_VALUE_PILL_RADIUS = 5
-export const AUTO_LAYOUT_HOVER_VALUE_PILL_PADDING_X = 5
+// Measured on Figma desktop 126's padding and gap value pills.
+export const AUTO_LAYOUT_HOVER_VALUE_PILL_HEIGHT = 16.5
+export const AUTO_LAYOUT_HOVER_VALUE_PILL_RADIUS = 2.5
+export const AUTO_LAYOUT_HOVER_VALUE_PILL_PADDING_X = 4.5
 export const AUTO_LAYOUT_HOVER_GAP_REGION_TOLERANCE = 12
 export const AUTO_LAYOUT_HOVER_TICK_HIT_TOLERANCE = 8
 export const AUTO_LAYOUT_HOVER_PADDING_REGION_TOLERANCE = 20
@@ -85,6 +87,9 @@ export const AUTO_LAYOUT_HOVER_BLUE = { r: 0.294, g: 0.455, b: 0.941, a: 0.82 } 
 export const AUTO_LAYOUT_HOVER_BLUE_FILL = { r: 0.294, g: 0.455, b: 0.941, a: 0.1 } satisfies Color
 export const AUTO_LAYOUT_HOVER_MAGENTA = { r: 1, g: 0.32, b: 0.68, a: 0.78 } satisfies Color
 export const AUTO_LAYOUT_HOVER_MAGENTA_FILL = { r: 1, g: 0.32, b: 0.68, a: 0.1 } satisfies Color
+// The value pills over a gap and a padding, sampled from Figma desktop 126.
+export const AUTO_LAYOUT_HOVER_GAP_PILL = { r: 0.886, g: 0.271, b: 0.686, a: 1 } satisfies Color
+export const AUTO_LAYOUT_HOVER_PADDING_PILL = { r: 0.271, g: 0.592, b: 0.973, a: 1 } satisfies Color
 
 export const SECTION_TITLE_HEIGHT = 24
 export const SECTION_TITLE_PADDING_X = 6

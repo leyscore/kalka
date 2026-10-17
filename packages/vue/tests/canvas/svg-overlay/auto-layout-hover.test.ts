@@ -4,9 +4,9 @@ import type { RenderOverlays } from '@kalka/core/canvas'
 import {
   AUTO_LAYOUT_HOVER_BLUE,
   AUTO_LAYOUT_HOVER_BLUE_FILL,
+  AUTO_LAYOUT_HOVER_GAP_PILL,
   AUTO_LAYOUT_HOVER_MAGENTA,
-  AUTO_LAYOUT_HOVER_MAGENTA_FILL,
-  SELECTION_COLOR
+  AUTO_LAYOUT_HOVER_MAGENTA_FILL
 } from '@kalka/core/constants'
 import { SceneGraph } from '@kalka/scene-graph'
 
@@ -113,15 +113,15 @@ describe('auto layout hover overlay', () => {
     const { graph, frame } = setup()
     const shapes = autoLayoutHoverLayer(context(graph, { nodeId: frame.id, kind: 'spacing-value' }))
     const text = shapes.find((shape) => shape.type === 'text')
-    expect(text).toMatchObject({ text: '12', x: 400, y: 187, anchor: 'middle' })
+    expect(text).toMatchObject({ text: '12', x: 400, y: 186, anchor: 'middle' })
     const pill = shapes.find((shape) => shape.type === 'rect' && shape.rx !== undefined)
-    // Measured 12px + 5px padding each side, raised to the 24px minimum.
+    // As wide as the measured 12px value plus its padding, centred on the text, in the gap's color.
     expect(pill).toMatchObject({
-      x: 388,
-      y: 171,
-      width: 24,
-      height: 22,
-      fill: css(SELECTION_COLOR)
+      x: 389.5,
+      y: 173.75,
+      width: 21,
+      height: 16.5,
+      fill: css(AUTO_LAYOUT_HOVER_GAP_PILL)
     })
   })
 

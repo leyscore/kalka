@@ -23,6 +23,19 @@ export function createVectorEditLifecycle(editor: Editor, state: VectorEditState
     return state.nodeEditState
   }
 
+  // A path whose layer is gone, by undo, a script, or another document, has nothing to edit.
+  const close = () => {
+    state.nodeEditState = null
+    state.snapGuides = []
+    editor.requestRender()
+  }
+  editor.onEditorEvent('node:deleted', (id) => {
+    if (state.nodeEditState?.nodeId === id) close()
+  })
+  editor.onEditorEvent('graph:replaced', () => {
+    if (state.nodeEditState) close()
+  })
+
   function commitNodeEditChanges(es: NonNullable<typeof state.nodeEditState>) {
     const node = editor.graph.getNode(es.nodeId)
     if (node?.type !== 'VECTOR') return

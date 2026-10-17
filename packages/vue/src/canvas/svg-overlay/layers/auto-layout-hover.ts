@@ -2,8 +2,10 @@ import type { RenderOverlays } from '@kalka/core/canvas'
 import {
   AUTO_LAYOUT_HOVER_BLUE,
   AUTO_LAYOUT_HOVER_BLUE_FILL,
+  AUTO_LAYOUT_HOVER_GAP_PILL,
   AUTO_LAYOUT_HOVER_MAGENTA,
   AUTO_LAYOUT_HOVER_MAGENTA_FILL,
+  AUTO_LAYOUT_HOVER_PADDING_PILL,
   AUTO_LAYOUT_HOVER_STRIPE_GAP,
   AUTO_LAYOUT_HOVER_STRIPE_WIDTH,
   AUTO_LAYOUT_HOVER_STROKE_WIDTH,
@@ -12,10 +14,9 @@ import {
   AUTO_LAYOUT_HOVER_VALUE_PILL_HEIGHT,
   AUTO_LAYOUT_HOVER_VALUE_PILL_PADDING_X,
   AUTO_LAYOUT_HOVER_VALUE_PILL_RADIUS,
-  LABEL_FONT_SIZE,
   LAYOUT_OUTLINE_DASH,
   LAYOUT_OUTLINE_GAP,
-  SELECTION_COLOR
+  VALUE_FONT_SIZE
 } from '@kalka/core/constants'
 import { createSceneGeometry } from '@kalka/core/geometry'
 import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
@@ -29,10 +30,10 @@ type Hover = NonNullable<RenderOverlays['autoLayoutHover']>
 type RectTuple = [x: number, y: number, width: number, height: number]
 
 const WHITE = css({ r: 1, g: 1, b: 1, a: 1 })
-/** The narrowest a value pill gets, as in the Skia overlay. */
-const MIN_PILL_WIDTH = 24
-/** Baseline of the pill's label below the pill's center. */
-const PILL_TEXT_OFFSET_Y = 5
+/** Baseline of the pill's digits below the pill's center, which centres their ink in it. */
+const PILL_TEXT_OFFSET_Y = 4
+/** Figma's padding and gap values are Inter SemiBold. */
+const PILL_FONT_WEIGHT = 600
 
 function visibleLayoutChildren(node: SceneNode, graph: SceneGraph): SceneNode[] {
   return node.childIds
@@ -146,11 +147,16 @@ function stripedRect(
   ]
 }
 
-function valuePill(context: OverlayContext, text: string, x: number, y: number): OverlayShape[] {
-  const width = Math.max(
-    MIN_PILL_WIDTH,
-    context.measureText(text, LABEL_FONT_SIZE) + AUTO_LAYOUT_HOVER_VALUE_PILL_PADDING_X * 2
-  )
+/** A value in a pill as wide as its text, its digits centred, as Figma draws padding and gaps. */
+function valuePill(
+  context: OverlayContext,
+  text: string,
+  x: number,
+  y: number,
+  color: Color
+): OverlayShape[] {
+  const width =
+    context.measureText(text, VALUE_FONT_SIZE) + AUTO_LAYOUT_HOVER_VALUE_PILL_PADDING_X * 2
   const height = AUTO_LAYOUT_HOVER_VALUE_PILL_HEIGHT
   return [
     {
@@ -160,7 +166,7 @@ function valuePill(context: OverlayContext, text: string, x: number, y: number):
       width,
       height,
       rx: AUTO_LAYOUT_HOVER_VALUE_PILL_RADIUS,
-      fill: css(SELECTION_COLOR)
+      fill: css(color)
     },
     {
       type: 'text',
@@ -168,20 +174,27 @@ function valuePill(context: OverlayContext, text: string, x: number, y: number):
       y: y + PILL_TEXT_OFFSET_Y,
       text,
       fill: WHITE,
-      fontSize: LABEL_FONT_SIZE,
+      fontSize: VALUE_FONT_SIZE,
+      fontWeight: PILL_FONT_WEIGHT,
       anchor: 'middle'
     }
   ]
 }
 
 /** The pill sits up and right of a region's center, so it clears the tick there. */
-function pillAt(context: OverlayContext, [x, y, width, height]: RectTuple, value: number) {
+function pillAt(
+  context: OverlayContext,
+  [x, y, width, height]: RectTuple,
+  value: number,
+  color: Color
+) {
   const { panX, panY, zoom } = context.view
   return valuePill(
     context,
     String(Math.round(value)),
     (x + width / 2) * zoom + panX + AUTO_LAYOUT_HOVER_VALUE_OFFSET,
-    (y + height / 2) * zoom + panY - AUTO_LAYOUT_HOVER_VALUE_OFFSET
+    (y + height / 2) * zoom + panY - AUTO_LAYOUT_HOVER_VALUE_OFFSET,
+    color
   )
 }
 
@@ -271,7 +284,7 @@ export function autoLayoutHoverLayer(context: OverlayContext): OverlayShape[] {
       )
     }
     if (hover.kind === 'spacing-value' && rects.length > 0) {
-      shapes.push(...pillAt(context, rects[0], node.itemSpacing))
+      shapes.push(...pillAt(context, rects[0], node.itemSpacing, AUTO_LAYOUT_HOVER_GAP_PILL))
     }
   }
 
@@ -283,7 +296,7 @@ export function autoLayoutHoverLayer(context: OverlayContext): OverlayShape[] {
       )
       if (hover.kind === 'padding-value') {
         const value = hover.side === 'left' || hover.side === 'right' ? rect[2] : rect[3]
-        shapes.push(...pillAt(context, rect, value))
+        shapes.push(...pillAt(context, rect, value, AUTO_LAYOUT_HOVER_PADDING_PILL))
       }
     }
   }
