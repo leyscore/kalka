@@ -1,7 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
 import {
-  canCreateInstance,
   exposableInstances,
   exposedInstances,
   SceneGraph
@@ -48,27 +47,5 @@ describe('exposed nested instances', () => {
     graph.updateNode(badge.id, { isExposedInstance: true })
     graph.updateNode(action.id, { isExposedInstance: true })
     expect(exposedInstances(graph, instance).map((node) => node.name)).toEqual(['Action', 'Badge'])
-  })
-})
-
-describe('instance cycles', () => {
-  test('refuses an instance that would contain its own component', () => {
-    const { graph, icon, button, card } = setup()
-    expect(canCreateInstance(graph, icon.id, card.id)).toBe(true)
-    expect(canCreateInstance(graph, card.id, card.id)).toBe(false)
-    // Button holds Icon, so Icon cannot hold Button, directly or through a nested layer.
-    const frame = graph.createNode('FRAME', icon.id, { name: 'Holder' })
-    expect(canCreateInstance(graph, button.id, frame.id)).toBe(false)
-  })
-
-  test('counts the component of an instance the new one would sit in', () => {
-    const { graph, page, button, card } = setup()
-    const outer = graph.createInstance(card.id, page)
-    const action = outer && graph.getChildren(outer.id).find((node) => node.name === 'Footer')
-    const copy = action && graph.getChildren(action.id).find((node) => node.name === 'Action')
-    if (!copy) throw new Error('Expected the Action copy')
-    // A layer inside a Button, wherever it is shown, cannot become another Button.
-    expect(canCreateInstance(graph, button.id, copy.id)).toBe(false)
-    expect(canCreateInstance(graph, card.id, copy.id)).toBe(false)
   })
 })

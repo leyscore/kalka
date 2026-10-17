@@ -1,5 +1,5 @@
 import type { Editor } from '@kalka/core/editor'
-import type { NodeType, SceneNode } from '@kalka/scene-graph'
+import { cycleSafeParent, type NodeType, type SceneNode } from '@kalka/scene-graph'
 
 /** Parents a layer stays in while dragged until it lands on another frame. */
 const ENCLOSING_TYPES = new Set<NodeType>(['GROUP', 'BOOLEAN_OPERATION'])
@@ -34,7 +34,21 @@ export function findMoveDropTarget(
   if (movingSection && dropTarget && dropTarget.type !== 'SECTION') {
     dropTarget = null
   }
-  return acceptingTarget(dropTarget, editor)
+  return cycleSafeTarget(acceptingTarget(dropTarget, editor), [...excludeIds], editor)
+}
+
+/**
+ * The target, or its nearest ancestor these layers can go into without a component containing
+ * itself; null is the page.
+ */
+export function cycleSafeTarget(
+  target: SceneNode | null,
+  ids: readonly string[],
+  editor: Editor
+): SceneNode | null {
+  if (!target) return null
+  const safe = editor.graph.getNode(cycleSafeParent(editor.graph, target.id, ids))
+  return safe && safe.type !== 'CANVAS' ? safe : null
 }
 
 function takesDrawnLayer(target: SceneNode, type: NodeType) {

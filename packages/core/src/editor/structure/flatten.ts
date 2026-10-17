@@ -2,7 +2,7 @@ import type { SceneNode } from '@kalka/scene-graph'
 
 import { canMakeBooleanSourceNode, hasVisibleStrokeSourceNode } from '#core/canvas/boolean'
 import { flattenNodesToVectorProps, outlineStrokeNodesToVectorProps } from '#core/canvas/flatten'
-import { restoreSubtree, snapshotSubtree } from '#core/editor/clipboard/subtree-history'
+import { restoreSubtree, snapshotSubtree } from '#core/editor/history/subtree'
 import type { EditorContext } from '#core/editor/types'
 
 import { selectedNodesInSharedParent } from './selection'

@@ -2,7 +2,7 @@ import { readIcon, type SceneNode } from '@kalka/scene-graph'
 import { BLACK } from '@kalka/scene-graph/constants'
 import type { Color } from '@kalka/scene-graph/primitives'
 
-import { restoreSubtree, snapshotSubtree } from '#core/editor/clipboard/subtree-history'
+import { restoreSubtree, snapshotSubtree } from '#core/editor/history/subtree'
 import type { EditorContext } from '#core/editor/types'
 import { pushCreatedSubtreesUndo } from '#core/editor/undo'
 import { detachIcon, placeIcon, recolorIcon, swapIcon } from '#core/icons/render'

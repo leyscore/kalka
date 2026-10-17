@@ -9,7 +9,7 @@ import {
 import { copyFills } from '@kalka/scene-graph/copy'
 
 import { canMakeBooleanSourceNode, groupFitOptions } from '#core/canvas/boolean'
-import { restoreSubtree, snapshotSubtree } from '#core/editor/clipboard/subtree-history'
+import { restoreSubtree, snapshotSubtree } from '#core/editor/history/subtree'
 import { newLayerDefaults } from '#core/editor/shapes/defaults'
 import type { EditorContext } from '#core/editor/types'
 

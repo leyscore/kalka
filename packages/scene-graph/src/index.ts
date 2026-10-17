@@ -16,7 +16,7 @@ export * from './images'
 export * from './components/properties'
 export * from './slots/frames'
 export { instanceMainComponent } from './instances/main-component'
-export { canCreateInstance } from './instances/cycles'
+export { canCreateInstance, createsComponentCycle, cycleSafeParent } from './instances/cycles'
 export {
   exposableInstances,
   exposedInstances,

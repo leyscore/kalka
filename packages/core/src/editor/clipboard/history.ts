@@ -1,8 +1,7 @@
 import type { SceneNode } from '@kalka/scene-graph'
 
+import { restoreSubtree } from '#core/editor/history/subtree'
 import type { EditorContext } from '#core/editor/types'
-
-import { restoreSubtree } from './subtree-history'
 
 export type DeletedEntry = {
   id: string

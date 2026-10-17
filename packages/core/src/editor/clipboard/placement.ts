@@ -1,8 +1,13 @@
 import { isNotNil } from 'es-toolkit/predicate'
 
 import type { SceneNode } from '@kalka/scene-graph'
-import { getAxisAlignedBoundsInParent } from '@kalka/scene-graph/coordinate'
+import {
+  getAxisAlignedBoundsInParent,
+  getParentWorldMatrix,
+  getWorldMatrix
+} from '@kalka/scene-graph/coordinate'
 import { computeBounds } from '@kalka/scene-graph/geometry'
+import Matrix from '@kalka/scene-graph/matrix'
 import type { Rect, Vector } from '@kalka/scene-graph/primitives'
 
 import { DUPLICATE_FRAME_GAP } from '#core/constants'
@@ -98,11 +103,11 @@ export function createClipboardPlacementActions(ctx: EditorContext) {
   function centerOver(nodeIds: string[], parentId: string, overId: string) {
     const over = ctx.graph.getNode(overId)
     if (!over) return
-    const at = ctx.graph.getAbsolutePosition(over.id)
-    centerNodesAtCanvasPoint(nodeIds, parentId, {
-      x: at.x + over.width / 2,
-      y: at.y + over.height / 2
-    })
+    centerNodesAtCanvasPoint(
+      nodeIds,
+      parentId,
+      Matrix.mapPoint(getWorldMatrix(over, ctx.graph), { x: over.width / 2, y: over.height / 2 })
+    )
   }
 
   /**
@@ -152,12 +157,11 @@ export function createClipboardPlacementActions(ctx: EditorContext) {
     }
   }
 
-  /** Centers layers of `parentId` on a canvas point. */
+  /** Centers layers of `parentId` on a canvas point, through the parent's rotation and flips. */
   function centerNodesAtCanvasPoint(nodeIds: string[], parentId: string, point: Vector) {
-    const parent = ctx.graph.getNode(parentId)
-    const origin =
-      parent && parent.type !== 'CANVAS' ? ctx.graph.getAbsolutePosition(parentId) : { x: 0, y: 0 }
-    centerNodesAt(nodeIds, point.x - origin.x, point.y - origin.y)
+    const toParent = Matrix.invert(getParentWorldMatrix(ctx.graph.getNode(parentId), ctx.graph))
+    const local = toParent ? Matrix.mapPoint(toParent, point) : point
+    centerNodesAt(nodeIds, local.x, local.y)
   }
 
   return {

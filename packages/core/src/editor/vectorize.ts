@@ -1,7 +1,7 @@
 import type { SceneNode } from '@kalka/scene-graph'
 import { copyEffects, copyStrokes } from '@kalka/scene-graph/copy'
 
-import { restoreSubtree, snapshotSubtree } from '#core/editor/clipboard/subtree-history'
+import { restoreSubtree, snapshotSubtree } from '#core/editor/history/subtree'
 import type { EditorContext } from '#core/editor/types'
 import {
   createVectorFrameChildren,

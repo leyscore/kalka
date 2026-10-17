@@ -1,4 +1,4 @@
-import type { SceneNode } from '@kalka/scene-graph'
+import { createsComponentCycle, type SceneNode } from '@kalka/scene-graph'
 
 import { acceptingParent, acceptsChildren, prepareSlotEdits } from '#core/editor/components/slots'
 import { fitEnclosingGroupsWithUndo } from '#core/editor/structure/group-bounds'
@@ -31,16 +31,20 @@ export function createStructureActions(ctx: EditorContext) {
     return !parentId || parentId === ctx.graph.rootId || parentId === ctx.state.currentPageId
   }
 
-  /** Moves layers under a new parent; refuses the locked part of an instance. */
+  /**
+   * Moves layers under a new parent; refuses the locked part of an instance, and a layer that
+   * would make a component contain itself, as Figma does.
+   */
   function reparentNodes(nodeIds: string[], newParentId: string): boolean {
     const parent = ctx.graph.getNode(newParentId)
     // Sections only go into pages and other sections.
     const movable = nodeIds.filter(
       (id) =>
-        ctx.graph.getNode(id)?.type !== 'SECTION' ||
-        !parent ||
-        parent.type === 'CANVAS' ||
-        parent.type === 'SECTION'
+        (ctx.graph.getNode(id)?.type !== 'SECTION' ||
+          !parent ||
+          parent.type === 'CANVAS' ||
+          parent.type === 'SECTION') &&
+        !createsComponentCycle(ctx.graph, id, newParentId)
     )
     if (movable.length === 0) return true
     const parents = new Set([newParentId])

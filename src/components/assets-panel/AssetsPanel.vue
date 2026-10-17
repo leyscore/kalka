@@ -11,7 +11,7 @@ import {
 } from 'reka-ui'
 import { computed, onMounted, ref, shallowRef, watch } from 'vue'
 
-import type { SceneNode } from '@kalka/scene-graph'
+import { cycleSafeParent, type SceneNode } from '@kalka/scene-graph'
 import { createDefaultNode } from '@kalka/scene-graph/node-defaults'
 import { useI18n } from '@kalka/vue'
 
@@ -285,7 +285,11 @@ async function insertAsset(asset: LocalAsset) {
   if (!componentId) return
   const component = editor.graph.getNode(componentId)
   if (!component) return
-  const parentId = editor.state.enteredContainerId ?? editor.state.currentPageId
+  const parentId = cycleSafeParent(
+    editor.graph,
+    editor.state.enteredContainerId ?? editor.state.currentPageId,
+    [componentId]
+  )
   const point = insertionPoint(component, parentId)
   editor.createInstanceFromComponent(componentId, point.x, point.y, parentId)
   editor.requestRender()

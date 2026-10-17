@@ -3,7 +3,7 @@ import { describe, expect, test } from 'bun:test'
 import { expectDefined, getNodeOrThrow } from '#core-tests/helpers/assert'
 
 import { SceneGraph } from '@kalka/core'
-import { collectSubtrees } from '@kalka/core/editor/clipboard/subtree-history'
+import { collectSubtrees } from '#core/editor/history/subtree'
 import { createInstanceOverrideState } from '@kalka/scene-graph'
 
 function pageId(graph: SceneGraph): string {

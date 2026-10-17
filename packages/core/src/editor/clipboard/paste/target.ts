@@ -1,4 +1,4 @@
-import { canCreateInstance, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 import { CONTAINER_TYPES } from '@kalka/scene-graph/node-defaults'
 
 import { acceptingParent } from '#core/editor/components/slots'
@@ -35,19 +35,4 @@ export function pastedComponentIds(graph: SceneGraph, trees: readonly PastedTree
   }
   for (const tree of trees) visit(tree)
   return [...referenced].filter((id) => !copied.has(id) && graph.getNode(id)?.type === 'COMPONENT')
-}
-
-/**
- * `parentId`, or its nearest ancestor that can hold instances of these components without a
- * component containing itself: Figma pastes an instance next to its own main component, not in it.
- */
-export function instanceSafeParent(
-  graph: SceneGraph,
-  parentId: string,
-  componentIds: readonly string[]
-): string {
-  const safe = graph.closest(parentId, (node) =>
-    componentIds.every((id) => canCreateInstance(graph, id, node.id))
-  )
-  return safe?.id ?? parentId
 }

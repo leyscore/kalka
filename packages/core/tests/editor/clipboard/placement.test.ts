@@ -2,6 +2,8 @@ import { afterEach, describe, expect, test } from 'bun:test'
 
 import { createEditor, type Editor } from '@kalka/core/editor'
 import type { SceneNode } from '@kalka/scene-graph'
+import { getWorldMatrix } from '@kalka/scene-graph/coordinate'
+import Matrix from '@kalka/scene-graph/matrix'
 
 // Each case matches Cmd+D or Cmd+V observed in Figma desktop 126.
 
@@ -16,6 +18,15 @@ function setup() {
 
 function node(type: SceneNode['type'], parentId: string, props: Partial<SceneNode> = {}) {
   return editor.graph.createNode(type, parentId, { width: 40, height: 40, ...props })
+}
+
+/** Where a layer's centre is drawn on the canvas. */
+function worldCenter(layer: SceneNode) {
+  const center = Matrix.mapPoint(getWorldMatrix(layer, editor.graph), {
+    x: layer.width / 2,
+    y: layer.height / 2
+  })
+  return { x: Math.round(center.x), y: Math.round(center.y) }
 }
 
 function selected() {
@@ -159,6 +170,20 @@ describe('paste placement', () => {
     editor.select([target.id])
     await editor.pasteSnapshot(snapshot, { x: 400, y: 200 })
     expect(selected()).toMatchObject({ parentId: target.id, x: 80, y: 80 })
+  })
+
+  test('Paste here centers on the cursor inside a rotated or flipped frame', async () => {
+    const page = setup()
+    const box = node('RECTANGLE', page, { width: 50, height: 30 })
+    const target = node('FRAME', page, { x: 300, y: 100, width: 200, height: 200 })
+    const snapshot = await copy(box.id)
+    for (const transform of [{ rotation: 90 }, { rotation: 0, flipX: true }]) {
+      editor.graph.updateNode(target.id, transform)
+      editor.select([target.id])
+      await editor.pasteSnapshot(snapshot, { x: 420, y: 160 })
+      expect(selected().parentId).toBe(target.id)
+      expect(worldCenter(selected())).toEqual({ x: 420, y: 160 })
+    }
   })
 
   test('an instance pasted into its own main component lands over it in its parent', async () => {

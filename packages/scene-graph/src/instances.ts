@@ -11,6 +11,7 @@ import {
   groupCopyRemovals,
   removeLeftoverCopies
 } from './instances/copies'
+import { canCreateInstance } from './instances/cycles'
 import { INSTANCE_SYNC_FIELDS, INSTANCE_SYNC_PROPS } from './instances/fields'
 import {
   bindingProtection,
@@ -45,15 +46,16 @@ export function createInstance(
   overrides: Partial<SceneNode> = {}
 ): SceneNode | null {
   const component = graph.nodes.get(componentId)
-  if (component?.type !== 'COMPONENT') return null
+  if (component?.type !== 'COMPONENT' || !canCreateInstance(graph, componentId, parentId))
+    return null
 
   const props: Partial<SceneNode> = {
     ...copyInstanceComponentProps(component),
-    name: component.name,
-    componentId
+    name: component.name
   }
 
-  const instance = graph.createNode('INSTANCE', parentId, { ...props, ...overrides })
+  // The component checked above is the one the instance shows, whatever `overrides` holds.
+  const instance = graph.createNode('INSTANCE', parentId, { ...props, ...overrides, componentId })
 
   cloneChildrenWithMapping(graph, component.id, instance.id)
 
@@ -117,6 +119,7 @@ export function swapInstanceComponent(
   const instance = graph.nodes.get(instanceId)
   const component = graph.nodes.get(componentId)
   if (!instance || component?.type !== 'COMPONENT' || instance.type !== 'INSTANCE') return
+  if (instance.parentId && !canCreateInstance(graph, componentId, instance.parentId)) return
 
   const previousComponent = instance.componentId ? graph.nodes.get(instance.componentId) : undefined
   recordNestedSwap(graph, instance, componentId)

@@ -3,7 +3,7 @@ import { ref, type Ref } from 'vue'
 
 import type { Editor } from '@kalka/core/editor'
 
-import { findMoveDropTarget } from '#vue/shared/input/drop-target'
+import { cycleSafeTarget, findMoveDropTarget } from '#vue/shared/input/drop-target'
 
 const RASTER_IMAGE_TYPES = new Set([
   'image/png',
@@ -27,7 +27,9 @@ function componentDropPlacement(componentId: string, cx: number, cy: number, edi
   const component = editor.graph.getNode(componentId)
   if (component?.type !== 'COMPONENT') return null
 
-  const target = findMoveDropTarget(cx, cy, editor)
+  // An instance never lands inside its own component; Figma puts it in the nearest frame that can hold it.
+  const dragged = new Set([componentId])
+  const target = cycleSafeTarget(findMoveDropTarget(cx, cy, editor, dragged), [componentId], editor)
   const parentId = target?.id ?? editor.state.currentPageId
   const parentOffset =
     parentId === editor.state.currentPageId

@@ -6,7 +6,7 @@ import {
 } from '@kalka/core/editor'
 import { SceneGraph } from '@kalka/scene-graph'
 
-import { resolvePasteTarget } from '#core/editor/clipboard/paste-target'
+import { resolvePasteTarget } from '#core/editor/clipboard/paste/target'
 
 function setup() {
   const graph = new SceneGraph()

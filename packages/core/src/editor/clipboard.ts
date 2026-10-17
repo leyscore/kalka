@@ -1,4 +1,4 @@
-import { CommittedGraphEventError } from '@kalka/scene-graph'
+import { CommittedGraphEventError, cycleSafeParent } from '@kalka/scene-graph'
 import type { SceneNode } from '@kalka/scene-graph'
 import { getAxisAlignedBoundsInParent } from '@kalka/scene-graph/coordinate'
 import type { Rect, Vector } from '@kalka/scene-graph/primitives'
@@ -14,16 +14,12 @@ import { importClipboardDependencies } from './clipboard/dependencies'
 import { createClipboardExportActions } from './clipboard/export'
 import { createClipboardFontActions } from './clipboard/fonts'
 import { deleteIds, recreateSnapshots, restoreDeletedEntries } from './clipboard/history'
-import type { PasteHistoryOperation } from './clipboard/paste-replace'
-import { replaceTargetsWithCreated, selectedReplacementTargets } from './clipboard/paste-replace'
-import {
-  instanceSafeParent,
-  pastedComponentIds,
-  resolvePasteTarget
-} from './clipboard/paste-target'
+import type { PasteHistoryOperation } from './clipboard/paste/replace'
+import { replaceTargetsWithCreated, selectedReplacementTargets } from './clipboard/paste/replace'
+import { pastedComponentIds, resolvePasteTarget } from './clipboard/paste/target'
 import { createClipboardPlacementActions } from './clipboard/placement'
-import { collectSubtrees, restoreSubtree, snapshotSubtree } from './clipboard/subtree-history'
 import { acceptsChildren, prepareSlotEdits } from './components/slots'
+import { collectSubtrees, restoreSubtree, snapshotSubtree } from './history/subtree'
 import type { EditorContext } from './types'
 
 type PasteOptions = {
@@ -192,14 +188,7 @@ export function createClipboardActions(ctx: EditorContext) {
         if (created.length === 0) return null
 
         if (replacementTargets.length > 0) {
-          replaceTargetsWithCreated(
-            ctx,
-            placementActions.centerNodesAt,
-            created,
-            replacementTargets,
-            prevSelection,
-            operation
-          )
+          replaceTargetsWithCreated(ctx, created, replacementTargets, prevSelection, operation)
         } else {
           placementActions.placeForeignPaste(created, pasteTarget, cursorPos)
           computeAllLayouts(ctx.graph, ctx.state.currentPageId)
@@ -245,7 +234,7 @@ export function createClipboardActions(ctx: EditorContext) {
     }
 
     const requestedTarget = replacementTargets[0]?.parentId ?? resolvePasteTarget(ctx)
-    const pasteTarget = instanceSafeParent(
+    const pasteTarget = cycleSafeParent(
       ctx.graph,
       requestedTarget,
       pastedComponentIds(ctx.graph, [...nodes, ...dependencies])
@@ -281,13 +270,7 @@ export function createClipboardActions(ctx: EditorContext) {
     if (created.length === 0) return created
 
     if (replacementTargets.length > 0) {
-      replaceTargetsWithCreated(
-        ctx,
-        placementActions.centerNodesAt,
-        created,
-        replacementTargets,
-        prevSelection
-      )
+      replaceTargetsWithCreated(ctx, created, replacementTargets, prevSelection)
       return created
     }
 

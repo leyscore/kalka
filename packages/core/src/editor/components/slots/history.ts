@@ -1,6 +1,6 @@
 import type { SceneNode } from '@kalka/scene-graph'
 
-import { restoreSubtree, snapshotSubtree } from '#core/editor/clipboard/subtree-history'
+import { restoreSubtree, snapshotSubtree } from '#core/editor/history/subtree'
 import type { EditorContext } from '#core/editor/types'
 
 /** Put back a recorded subtree in place of the live one, at the same position. */

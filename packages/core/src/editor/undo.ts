@@ -7,7 +7,6 @@ import { createResizeSnapshot, type ResizeSnapshot } from '@kalka/scene-graph/re
 import type { UndoEntry } from '@kalka/scene-graph/undo'
 
 import { assertNodeEditable } from './capabilities'
-import { restoreSubtree, snapshotSubtree } from './clipboard/subtree-history'
 import {
   capturePageChange as startPageChange,
   restorePageChange as applyPageChangeToEditor,
@@ -19,6 +18,7 @@ import {
   snapshotPage as createPageSnapshot,
   type PageSnapshot
 } from './history/snapshot'
+import { restoreSubtree, snapshotSubtree } from './history/subtree'
 import { textAutoResizeChanges } from './text/auto-resize'
 import type { EditorContext } from './types'
 

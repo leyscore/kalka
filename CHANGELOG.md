@@ -183,6 +183,9 @@
 
 ### Fixed
 
+- Paste here and Paste to replace land where they should inside a frame that is offset, rotated, or flipped: Paste here centers on the cursor, and Paste to replace starts the replacement at the target's top-left corner, as in Figma, instead of centering it on canvas coordinates read as the frame's own.
+- Size auto-width and auto-height text, and the Hug frames around it, with its real font once the face loads; text laid out while its weight, style, or characters were still loading kept a fallback size.
+- Never let a component contain itself, as in Figma: an instance dragged, dropped or inserted into its own component, or into a component it shows, lands in the nearest frame that can hold it, and the plugin API's `appendChild` and `insertChild` throw Figma's cycle error.
 - Instances follow their component's structure as in Figma: wrapping a layer of the component in auto layout or a frame, or moving it into another frame of the component, moves the layer's copy in every instance with its overrides instead of adding a fresh copy beside the old one, and moving a layer out of the component or deleting it removes its copy from every instance, while undo brings the copies back with their overrides.
 - Rounded points in a vector imported from a `.fig` file keep their own corner radius and join when the file is saved, and the plugin API reports their radius instead of 0.
 - `.fig` files whose text content is bound to a number or boolean variable, as Figma's UI binds one, open instead of failing with "Unsupported variable expression STRINGIFY". The text follows the variable as Figma writes it, a whole number as an integer and others with two decimals, and saving keeps the binding (#1110).

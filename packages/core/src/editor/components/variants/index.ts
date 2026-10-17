@@ -2,8 +2,8 @@ import type { ComponentPropertyDefinition, ComponentPropertyType } from '@kalka/
 import { buildVariantName, parseVariantName } from '@kalka/scene-graph/variant-name'
 
 import { assertNodeEditable } from '#core/editor/capabilities'
-import { restoreSubtree, snapshotSubtree } from '#core/editor/clipboard/subtree-history'
 import { reapplyInstanceComponentProperties } from '#core/editor/components/properties'
+import { restoreSubtree, snapshotSubtree } from '#core/editor/history/subtree'
 import type { EditorContext } from '#core/editor/types'
 
 import { addVariant, appendVariant } from './add'
