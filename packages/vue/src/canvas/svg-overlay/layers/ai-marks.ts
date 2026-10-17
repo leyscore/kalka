@@ -34,9 +34,13 @@ export function aiMarksLayer(context: OverlayContext, marks: AIMarks, now: numbe
     const flash = marks.done[i]
     const elapsed = now - flash.startTime
     if (elapsed > AI_DONE_DURATION_MS) continue
-    const t = elapsed / AI_DONE_DURATION_MS
-    const opacity = marks.still ? 1 : t < 0.3 ? t / 0.3 : 1 - (t - 0.3) / 0.7
+    const opacity = marks.still ? 1 : glowOpacity(elapsed / AI_DONE_DURATION_MS)
     shapes.push(...highlightRing(context, flash.nodeId, css({ ...AI_DONE_COLOR, a: 1 }, opacity)))
   }
   return shapes
+}
+
+/** A finished layer's glow over its life `t` in 0–1: it rises over the first 30%, then fades. */
+function glowOpacity(t: number): number {
+  return t < 0.3 ? t / 0.3 : 1 - (t - 0.3) / 0.7
 }
