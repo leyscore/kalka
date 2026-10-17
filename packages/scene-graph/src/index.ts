@@ -71,7 +71,7 @@ export * from './font-style'
 export * from './shared-styles'
 export { default as TransformMatrix } from './matrix'
 export type { Mat3 } from './matrix'
-export { UndoManager, type UndoEntry, type UndoManagerOptions } from './undo'
+export { DEFAULT_HISTORY_LIMIT, UndoManager, type UndoEntry, type UndoManagerOptions } from './undo'
 
 import { removeStaleBindings } from './bindings'
 export { CommittedGraphEventError } from './buffered-events'
@@ -940,6 +940,10 @@ export class SceneGraph {
 
   syncInstances(componentId: string): void {
     Instances.syncInstances(this, componentId)
+  }
+
+  syncInstancesTogether(componentIds: Iterable<string>): void {
+    Instances.syncInstancesTogether(this, componentIds)
   }
 
   syncInstance(instanceId: string): void {

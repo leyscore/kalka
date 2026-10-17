@@ -6,6 +6,11 @@ import {
   hasInstanceOverride as hasNodeInstanceOverride,
   setInstanceOverride
 } from './instance-overrides'
+import {
+  createInstanceSyncContext,
+  groupCopyRemovals,
+  removeLeftoverCopies
+} from './instances/copies'
 import { INSTANCE_SYNC_FIELDS, INSTANCE_SYNC_PROPS } from './instances/fields'
 import {
   bindingProtection,
@@ -139,6 +144,16 @@ export function syncInstances(graph: SceneGraph, componentId: string): void {
   syncInstancesOf(graph, componentId, getInstances(graph, componentId))
 }
 
+/**
+ * Syncs each component's instances, in order, as one edit: the copies they remove stay
+ * restorable together for as long as undo keeps that edit.
+ */
+export function syncInstancesTogether(graph: SceneGraph, componentIds: Iterable<string>): void {
+  groupCopyRemovals(graph, () => {
+    for (const id of componentIds) syncInstances(graph, id)
+  })
+}
+
 /** Syncs one instance from its component, as `syncInstances` does for every instance. */
 export function syncInstance(graph: SceneGraph, instanceId: string): void {
   const instance = graph.nodes.get(instanceId)
@@ -161,21 +176,25 @@ function syncInstancesOf(
   if (syncing.has(componentId)) return
   syncing.add(componentId)
   try {
-    for (const instance of instances) {
-      const enclosing = enclosingInstanceOverrideFields(graph, instance)
-      enclosing.push(new Set(instance.instanceOverrides.self.keys()))
-      const protectedField = bindingProtection(enclosing)
-      const source = sourceInTargetCoordinates(component, instance.componentScale)
-      const updates: Partial<SceneNode> = {}
-      syncBindingFields(instance, source, updates, protectedField)
-      for (const key of INSTANCE_SYNC_PROPS) {
-        if (key === 'boundVariables') continue
-        if (isProtectedSyncField(instance, key, protectedField)) continue
-        copyProp(updates, source, key)
+    groupCopyRemovals(graph, (removals) => {
+      for (const instance of instances) {
+        const enclosing = enclosingInstanceOverrideFields(graph, instance)
+        enclosing.push(new Set(instance.instanceOverrides.self.keys()))
+        const protectedField = bindingProtection(enclosing)
+        const source = sourceInTargetCoordinates(component, instance.componentScale)
+        const updates: Partial<SceneNode> = {}
+        syncBindingFields(instance, source, updates, protectedField)
+        for (const key of INSTANCE_SYNC_PROPS) {
+          if (key === 'boundVariables') continue
+          if (isProtectedSyncField(instance, key, protectedField)) continue
+          copyProp(updates, source, key)
+        }
+        updateSyncedProps(graph, instance, updates)
+        const context = createInstanceSyncContext(instance.id, instance.instanceOverrides)
+        syncChildren(graph, component.id, instance.id, instance.instanceOverrides, context)
+        removeLeftoverCopies(graph, context, removals)
       }
-      updateSyncedProps(graph, instance, updates)
-      syncChildren(graph, component.id, instance.id, instance.instanceOverrides)
-    }
+    })
   } finally {
     syncing.delete(componentId)
   }

@@ -183,6 +183,7 @@
 
 ### Fixed
 
+- Instances follow their component's structure as in Figma: wrapping a layer of the component in auto layout or a frame, or moving it into another frame of the component, moves the layer's copy in every instance with its overrides instead of adding a fresh copy beside the old one, and moving a layer out of the component or deleting it removes its copy from every instance, while undo brings the copies back with their overrides.
 - Rounded points in a vector imported from a `.fig` file keep their own corner radius and join when the file is saved, and the plugin API reports their radius instead of 0.
 - `.fig` files whose text content is bound to a number or boolean variable, as Figma's UI binds one, open instead of failing with "Unsupported variable expression STRINGIFY". The text follows the variable as Figma writes it, a whole number as an integer and others with two decimals, and saving keeps the binding (#1110).
 - The thumbnail in a `.fig` file shows its page's own background between layers when CanvasKit draws it, as in files written from the CLI, which always showed light grey.

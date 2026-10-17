@@ -148,20 +148,27 @@ export function createGraphEventSubscription(options: GraphEventOptions) {
         onNodeStructureChanged(node.id)
         options.responsive?.onCreated(node)
       },
+      // A layer that leaves a component, deleted or moved out, changes the component it left;
+      // the parent it had finds that component when the sync runs.
       deleted: (id, parentId) => {
         options.emitEditorEvent('node:deleted', id, parentId)
         onNodeStructureChanged(id)
         options.responsive?.onDeleted(id, parentId)
+        if (parentId) options.scheduleComponentSync(parentId)
       },
       reparented: (nodeId, oldParentId, newParentId) => {
         options.emitEditorEvent('node:reparented', nodeId, oldParentId, newParentId)
         onNodeStructureChanged(nodeId)
         options.responsive?.onReparented(nodeId, oldParentId, newParentId)
+        if (oldParentId) options.scheduleComponentSync(oldParentId)
       },
       reordered: (nodeId, parentId, index, previousParentId) => {
         options.emitEditorEvent('node:reordered', nodeId, parentId, index, previousParentId)
         onNodeStructureChanged(nodeId)
         options.responsive?.onReordered(nodeId, parentId, index)
+        if (previousParentId && previousParentId !== parentId) {
+          options.scheduleComponentSync(previousParentId)
+        }
       }
     })
   }

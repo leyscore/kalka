@@ -83,9 +83,7 @@ export function createComponentSyncScheduler(
         const component = graph.closest(id, isComponent)
         if (component) componentIds.add(component.id)
       }
-      for (const compId of componentSyncOrder(graph, componentIds)) {
-        graph.syncInstances(compId)
-      }
+      graph.syncInstancesTogether(componentSyncOrder(graph, componentIds))
       if (componentIds.size > 0) {
         const pageIds = affectedPageIds(graph, ids, componentIds)
         if (pageIds.size === 0) computeLayouts(graph)
