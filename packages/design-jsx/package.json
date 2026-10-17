@@ -1,6 +1,6 @@
 {
   "name": "@kalka/design-jsx",
-  "version": "0.16.0-beta.1",
+  "version": "0.1.0-beta.1",
   "license": "MIT",
   "type": "module",
   "imports": {
