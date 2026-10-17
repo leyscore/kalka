@@ -151,7 +151,7 @@ test('bound stroke picker is non-destructive, rolls back Escape, and detaches in
   await propertySection(page, 'Stroke').getByRole('button', { name: 'Add stroke' }).click()
   await canvas.waitForRender()
 
-  const before = await page.evaluate(() => {
+  await page.evaluate(() => {
     const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const collection = store.graph.createCollection('Colors')
@@ -163,12 +163,19 @@ test('bound stroke picker is non-destructive, rolls back Escape, and detaches in
     })
     const id = [...store.state.selectedIds][0]
     if (!id) throw new Error('Expected selected node')
-    store.graph.bindVariable(id, 'strokes/0/color', variable.id)
+    store.bindVariable(id, 'strokes/0/color', variable.id)
     store.state.sceneVersion++
-    const node = store.getNode(id)
-    return { color: node?.strokes[0]?.color, binding: node?.boundVariables['strokes/0/color'] }
   })
   await canvas.waitForRender()
+  // Bound as the panel binds it, the stroke takes its variable's color.
+  const before = await page.evaluate(() => {
+    const store = window.kalka?.getStore?.()
+    if (!store) throw new Error('Kalka store not initialized')
+    const id = [...store.state.selectedIds][0]
+    const node = id ? store.getNode(id) : null
+    return { color: node?.strokes[0]?.color, binding: node?.boundVariables['strokes/0/color'] }
+  })
+  expect(before.color).toMatchObject({ r: 0.9, g: 0.1, b: 0.2 })
 
   await openStrokePicker(page)
   expect(
