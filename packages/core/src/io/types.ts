@@ -75,10 +75,16 @@ export interface NodeRasterRequest {
  */
 export type NodeRasterizer = (request: NodeRasterRequest) => Promise<Uint8Array | null>
 
+/** Prints layers to PDF with the engine that draws the canvas; null falls back to jsPDF. */
+export type NodePrinter = (
+  request: Pick<NodeRasterRequest, 'graph' | 'pageId' | 'nodeIds'>
+) => Promise<Uint8Array | null>
+
 export interface IOContext {
   canvasKit?: CanvasKit
   renderer?: SkiaRenderer
   rasterize?: NodeRasterizer
+  printPDF?: NodePrinter
 }
 
 export interface FigWriteOptions {

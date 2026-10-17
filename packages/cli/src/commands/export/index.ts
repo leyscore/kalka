@@ -16,6 +16,7 @@ import {
   populateWholeDocument,
   requirePage
 } from '#cli/headless'
+import { electronRenderContext } from '#cli/render/electron'
 
 import { applyExportFontPolicy, exportFontRoots, FONT_POLICIES } from './font-policy'
 import { exportStorybookFromFile } from './storybook'
@@ -199,9 +200,14 @@ async function executeFileExport(
 ) {
   if (wholeDocument) {
     if (formatId === 'fig') return io.writeDocument(formatId, graph, options)
-    return io.exportContent(formatId, { graph, target: { scope: 'document' }, fileName }, options)
+    return io.exportContent(
+      formatId,
+      { graph, target: { scope: 'document' }, fileName },
+      options,
+      electronRenderContext()
+    )
   }
-  return io.exportContent(formatId, { graph, target, fileName }, options)
+  return io.exportContent(formatId, { graph, target, fileName }, options, electronRenderContext())
 }
 
 function exportOptions(format: string, args: ExportArgs): unknown {

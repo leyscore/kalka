@@ -323,11 +323,12 @@ export const pdfFormat: IOFormatAdapter<'pdf'> = {
   mimeTypes: ['application/pdf'],
   support: EXPORT_EVERY_TARGET,
   exportOptions: FIXED_SIZE_EXPORT,
-  async exportContent(request) {
+  async exportContent(request, _options?: unknown, context?: IOContext) {
     const target = resolveExportNodes(request)
     if (!target) throw new Error('Nothing to export')
+    const printed = await context?.printPDF?.({ graph: request.graph, ...target })
     const { renderNodesToPDF } = await import('./formats/pdf')
-    const data = await renderNodesToPDF(request.graph, target.pageId, target.nodeIds)
+    const data = printed ?? (await renderNodesToPDF(request.graph, target.pageId, target.nodeIds))
     if (!data) throw new Error('Nothing to export')
     return {
       format: 'pdf',

@@ -60,6 +60,7 @@ export type {
   HTMLExportOptions,
   IOContext,
   NodeRasterRequest,
+  NodePrinter,
   NodeRasterizer,
   FigWriteOptions,
   RasterExportOptions,

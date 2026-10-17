@@ -43,6 +43,7 @@
 
 ### Added
 
+- `kalka export` draws PNG, JPG and PDF with Chromium, as the canvas does, when the desktop app is built beside it, and with CanvasKit otherwise or with `KALKA_RENDERER=canvaskit`.
 - Plugin scripts can read a layer's CSS with `node.getCSSAsync()`, as in Figma; it is the CSS the layer is drawn with, including CSS it keeps beside its fields.
 - Layers keep CSS a Figma-style layer has no field for, such as `width: 50%`, `padding: 1.5rem`, `transition` or `cursor`, when it comes from the MCP `update_styles` and `write_html` tools, an HTML import, `kalka import` or pasted HTML: the layer draws, exports, copies, saves in Kalka folders and `.fig` files and returns it from `get_html` as written, and a later value for the same property, from the properties panel, a move or a resize, replaces it.
 - The desktop app checks for updates at launch and from Kalka › Check for Updates, downloads them in the Software Update window and installs them on restart. Installers exist for macOS (Apple silicon and Intel), Windows and Linux (AppImage).
@@ -175,6 +176,7 @@
 
 ### Fixed
 
+- Standalone HTML exports with external assets load their web fonts: the stylesheet named them from the wrong folder.
 - An HTML export of several layers defines the CSS variables its styles reference, in each mode, instead of referencing variables the page never declares.
 - An MCP client that crashes without closing its session no longer locks other clients out for 15 minutes once ten sessions are open: a new client takes the place of the session idle the longest, after a minute idle.
 - Opening a page with Chinese, Japanese or Korean text no longer exhausts memory: each installed fallback font, such as Hiragino Sans or PingFang, is read once instead of once per text.

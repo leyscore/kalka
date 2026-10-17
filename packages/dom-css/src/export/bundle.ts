@@ -319,18 +319,25 @@ function serializeFontWeight(weight: string | number | [number, number]): string
   return Array.isArray(weight) ? weight.join(' ') : String(weight)
 }
 
-function fontSourceValue(asset: WebFontFaceAsset): string {
-  const url = new URL(asset.path, 'file:///')
+/** A font's URL from the stylesheet, which sits in the asset folder beside the font files. */
+function fontSourceValue(asset: WebFontFaceAsset, stylesheetFolder: string): string {
+  const prefix = `${stylesheetFolder}/`
+  const path = asset.path.startsWith(prefix) ? asset.path.slice(prefix.length) : asset.path
+  const url = new URL(path, 'file:///')
   const escapedPath = url.pathname.slice(1)
   return ['url(', JSON.stringify(escapedPath), ') format(', JSON.stringify(asset.format), ')'].join(
     ''
   )
 }
 
-function fontFaceCSS(FontFaceRule: typeof CSSFontFaceRule, asset: WebFontFaceAsset): string {
+function fontFaceCSS(
+  FontFaceRule: typeof CSSFontFaceRule,
+  asset: WebFontFaceAsset,
+  stylesheetFolder: string
+): string {
   const rule = new FontFaceRule()
   rule.style.setProperty('font-family', JSON.stringify(asset.family))
-  rule.style.setProperty('src', fontSourceValue(asset))
+  rule.style.setProperty('src', fontSourceValue(asset, stylesheetFolder))
   rule.style.setProperty('font-weight', serializeFontWeight(asset.weight))
   rule.style.setProperty('font-style', asset.style)
   rule.style.setProperty('font-display', asset.display ?? 'swap')
@@ -354,7 +361,9 @@ async function fontFaceAssets(
     import('@acemir/cssom')
   ])
   return {
-    css: assets.map((asset) => fontFaceCSS(cssom.CSSFontFaceRule, asset)).join(''),
+    css: assets
+      .map((asset) => fontFaceCSS(cssom.CSSFontFaceRule, asset, options.assetBasePath))
+      .join(''),
     files: assets
   }
 }
