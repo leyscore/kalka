@@ -219,9 +219,23 @@ export class BrowserLayoutEngine implements LayoutEngine {
       )
       const boxes = answer ? v.safeParse(ResultSchema, answer.result) : null
       if (!boxes?.success) return null
-      for (const [id, geometry] of boxes.output) measured.set(id, geometry)
+      for (const [id, geometry] of boxes.output) measured.set(id, keepThinSize(graph, id, geometry))
     }
     return measured
+  }
+}
+
+/**
+ * A layer thinner than a pixel, such as a line, keeps its own size: the SVG that draws it is at
+ * least a pixel on each side, as the canvas's projector also corrects.
+ */
+function keepThinSize(graph: SceneGraph, id: string, geometry: MeasuredGeometry): MeasuredGeometry {
+  const node = graph.getNode(id)
+  if (!node || (node.width >= 1 && node.height >= 1)) return geometry
+  return {
+    ...geometry,
+    width: node.width < 1 ? node.width : geometry.width,
+    height: node.height < 1 ? node.height : geometry.height
   }
 }
 
