@@ -152,9 +152,11 @@ export function createDocumentSourceActions({
     }
   })
 
+  /** The document as it is now is saved: nothing to autosave, and nothing to recover. */
   function markDocumentSaved() {
     changes.markSaved()
     setSavedVersion(changes.capture())
+    void recovery.markProtectedVersion(changes.capture())
   }
 
   function setDocumentSource(
@@ -177,7 +179,6 @@ export function createDocumentSourceActions({
     setDownloadName(figDownloadName(fileName, sourceFormat))
     setSourceIdentity({ handle: handle ?? null, path: path ?? null })
     markDocumentSaved()
-    void recovery.markProtectedVersion(changes.capture())
     // A folder has no single file to watch; it is read again when opened again.
     if (savesInPlace && !isFolder && (handle || path)) {
       void startWatchingFile()
@@ -195,7 +196,6 @@ export function createDocumentSourceActions({
     state.documentName = documentName
     state.autosaveEnabled = true
     markDocumentSaved()
-    void recovery.markProtectedVersion(changes.capture())
   }
 
   function setPlannedFilePath(path: string) {

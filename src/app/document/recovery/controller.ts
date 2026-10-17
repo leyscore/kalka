@@ -129,9 +129,11 @@ export function createDocumentRecovery({
     },
     persistNow,
     async markProtectedVersion(version) {
-      await invalidateActiveWrite()
+      // Protected at once, so a snapshot requested meanwhile does not write what is saved.
+      const invalidated = invalidateActiveWrite()
       protectedVersion = version
       requestedVersion = currentVersion()
+      await invalidated
       if (persistedVersion == null || persistedVersion <= version) {
         await store.remove(id)
         persistedVersion = null
