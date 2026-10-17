@@ -195,6 +195,7 @@
 
 ### Fixed
 
+- A rotated top-level layer draws at its place on the canvas, and in PNG and PDF exports drawn by Chromium, instead of shifted toward where its turned corner lands.
 - `import_svg` and SVG vectorizing accept files that start with an XML declaration, a doctype, or comments, as editors save them, instead of finding no shapes.
 - Drop shadows on text layers draw on the canvas and in HTML exports, every one of them, instead of being dropped as invalid CSS.
 - The canvas draws gradient strokes in their gradient instead of black, lines and arrowheads instead of nothing, a turned line about where it starts, strokes centered on or outside the edge and drop shadows past a top-level layer's box instead of cutting them off, and each stroke at its own alignment; HTML and SVG exports draw gradient strokes, arrowheads, inside and outside strokes, and angular and diamond gradients the same way.

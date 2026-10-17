@@ -5,7 +5,7 @@ import { sceneNodeToDesignDocument } from '@kalka/dom-css/export'
 import type { SceneGraph } from '@kalka/scene-graph'
 
 import { buildNode, patchAttributes, elementAttributes } from './build'
-import { ARTBOARD_CSP, ARTBOARD_CSS, type ArtboardFontFace } from './frame'
+import { ARTBOARD_CSP, ARTBOARD_CSS, artboardOrigin, type ArtboardFontFace } from './frame'
 
 /** A standalone page that draws some layers exactly as their artboards do, for a raster export. */
 export interface RasterDocument {
@@ -59,7 +59,7 @@ export function rasterDocument(
     attrs.set('style', `${style}position:relative;left:0;top:0;right:auto;bottom:auto;margin:0;`)
     patchAttributes(built, attrs)
     // The box its artboard iframe would be, placed relative to the export's bounds.
-    const position = graph.getAbsolutePosition(id)
+    const position = artboardOrigin(graph, node)
     const box = doc.createElement('div')
     box.setAttribute(
       'style',

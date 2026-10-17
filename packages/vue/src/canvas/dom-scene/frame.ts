@@ -9,6 +9,7 @@ import {
   strokeOverflow,
   unionVisualBounds
 } from '@kalka/scene-graph/geometry'
+import type { Vector } from '@kalka/scene-graph/primitives'
 
 /**
  * An artboard document: one iframe per top-level layer, so its CSS is a real page of its own
@@ -70,13 +71,23 @@ export interface ArtboardInk {
 const CLIPPING_TYPES = new Set<SceneNode['type']>(['FRAME', 'COMPONENT', 'INSTANCE'])
 
 /**
+ * Where a top-level layer's box sits before it turns, which is where its element is laid out:
+ * CSS turns the element about its center, or a line about its start, as the layer does. The
+ * absolute position is where the turned box's corner lands instead.
+ */
+export function artboardOrigin(graph: SceneGraph, node: SceneNode): Vector {
+  const parent = node.parentId ? graph.getAbsolutePosition(node.parentId) : { x: 0, y: 0 }
+  return { x: parent.x + node.x, y: parent.y + node.y }
+}
+
+/**
  * What a top-level layer draws outside its box: strokes centred on or outside the edge,
  * arrowheads, shadows and blurs, and the children of a layer that does not clip them. A frame
  * that clips is measured alone, without walking what it holds.
  */
 export function artboardInk(graph: SceneGraph, node: SceneNode): ArtboardInk {
-  const position = (id: string) => graph.getAbsolutePosition(id)
-  const origin = position(node.id)
+  const origin = artboardOrigin(graph, node)
+  const position = (id: string) => (id === node.id ? origin : graph.getAbsolutePosition(id))
   const drawn =
     CLIPPING_TYPES.has(node.type) && node.clipsContent
       ? nodeVisualBounds(node, position)
@@ -112,7 +123,7 @@ export function placeArtboardFrame(
   graph: SceneGraph,
   node: SceneNode
 ): void {
-  const position = graph.getAbsolutePosition(node.id)
+  const position = artboardOrigin(graph, node)
   const ink = artboardInk(graph, node)
   const style = frame.style
   const left = `${position.x - ink.left}px`

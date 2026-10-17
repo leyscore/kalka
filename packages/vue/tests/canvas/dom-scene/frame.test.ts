@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 
 import { SceneGraph, type Stroke } from '@kalka/scene-graph'
 
-import { artboardInk } from '#vue/canvas/dom-scene/frame'
+import { artboardInk, artboardOrigin } from '#vue/canvas/dom-scene/frame'
 
 const stroke = (weight: number, align: Stroke['align']): Stroke => ({
   type: 'SOLID',
@@ -66,6 +66,20 @@ describe('artboard ink', () => {
     })
     // Turned a quarter about its start, it runs down from it, not across its old center.
     expect(artboardInk(graph, line).bottom).toBeGreaterThanOrEqual(100)
+  })
+
+  test('a turned layer is laid out at its box before it turns, which CSS turns about its center', () => {
+    const { graph, pageId } = graphWithPage()
+    const board = graph.createNode('FRAME', pageId, {
+      x: 60,
+      y: 70,
+      width: 420,
+      height: 260,
+      rotation: 12
+    })
+    expect(artboardOrigin(graph, board)).toEqual({ x: 60, y: 70 })
+    // The turned box's corner, where the layer's absolute position lands, is elsewhere.
+    expect(graph.getAbsolutePosition(board.id)).not.toEqual({ x: 60, y: 70 })
   })
 
   test('an inside stroke stays in the box, and a clipping frame does not reach for its children', () => {
