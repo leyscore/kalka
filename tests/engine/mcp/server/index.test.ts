@@ -141,8 +141,8 @@ test('MCP exposure exclusions apply to both descriptors and registered tools', a
   }
 })
 
-test("runs Figma's use_figma scripts on the document once code execution is enabled", async () => {
-  const context = await createTestClient([], 'document', true)
+test("runs Figma's use_figma scripts on the document without enabling eval", async () => {
+  const context = await createTestClient([], 'document', false)
   try {
     const { tools } = await context.client.listTools()
     expect(tools.map((tool) => tool.name)).toContain('use_figma')
@@ -228,9 +228,9 @@ describe('MCP server', () => {
     expect(byName.get('eval')?.capabilities).toContain('code:execute')
   })
 
-  test("offers Figma's use_figma with eval, as it runs scripts too", () => {
-    const byName = new Map(createToolDescriptors(true).map((tool) => [tool.name, tool] as const))
-    expect(byName.get('use_figma')?.availability).toBe('eval')
+  test("offers Figma's use_figma by default, so Figma agents work without setup", () => {
+    const byName = new Map(createToolDescriptors(false).map((tool) => [tool.name, tool] as const))
+    expect(byName.get('use_figma')?.availability).toBe('default')
     expect(byName.get('use_figma')?.effect).toBe('write')
     expect(byName.get('use_figma')?.capabilities).toContain('code:execute')
   })

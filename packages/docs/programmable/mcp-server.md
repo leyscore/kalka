@@ -134,7 +134,7 @@ Security defaults:
 - Unix socket and discovery files are created with owner-only permissions on macOS and Linux.
 - TCP binds to `127.0.0.1` and uses port 7600 by default.
 - Authentication is enabled by default with a generated token stored in the private discovery file.
-- `eval` and `use_figma` are disabled unless `KALKA_MCP_EVAL=1` is set.
+- `eval` is disabled unless `KALKA_MCP_EVAL=1` is set. `use_figma` is on by default so Figma agents work unchanged; turn it off in Settings → MCP like any other tool.
 - File operations are limited to `KALKA_MCP_ROOT` (defaults to the current working directory) and reject symlink escapes.
 - Web pages cannot drive the server. A request, CORS preflight or WebSocket handshake that carries an `Origin` header is refused with `403` unless that origin is allowed; MCP clients and scripts send no `Origin` and are not affected. Only the desktop app's own origins (`kalka-app://app`, and the Tauri ones) are allowed by default, so a server you start yourself works from the app without extra configuration. Set `KALKA_MCP_CORS_ORIGIN` to a comma-separated list of exact origins to allow others, such as a worktree dev server; it replaces the default list.
 - Requests whose `Host` header is not `localhost`, `127.0.0.1`, `[::1]` or a `*.localhost` name are refused with `403`, which stops DNS rebinding.
@@ -232,7 +232,7 @@ Library variables and styles are found once the document holds them, as it does 
 
 #### Writing with `use_figma` {#use-figma}
 
-`use_figma` runs Figma Plugin API JavaScript on the open document, as the tool of the same name on Figma's remote MCP server does, so scripts and skills written for it (such as Figma's `figma-use`) run locally. It runs code, so it is enabled together with `eval`: set `KALKA_MCP_EVAL=1`.
+`use_figma` runs Figma Plugin API JavaScript on the open document, as the tool of the same name on Figma's remote MCP server does, so scripts and skills written for it (such as Figma's `figma-use`) run locally. It is on by default, so agents and skills written for Figma work without setup. Like `eval` it runs code in the app with the document's full access, scoped to the open document; turn it off in Settings → MCP if you don't want agents to run scripts.
 
 | Argument | Meaning |
 |----------|---------|
@@ -466,4 +466,4 @@ Settings tools never expose credentials, AI models, MCP connections, storage, or
 | `eval` | Execute JavaScript with full Figma Plugin API access |
 | `use_figma` | Run a Figma Plugin API script as Figma's `use_figma` does; see [Writing with `use_figma`](#use-figma) |
 
-Both run code in the app with the document's full access, so they are offered only when `KALKA_MCP_EVAL=1` is set.
+Both run code in the app with the document's full access. `eval` is offered only when `KALKA_MCP_EVAL=1` is set; `use_figma` is on by default and can be turned off in Settings → MCP.

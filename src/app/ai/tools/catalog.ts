@@ -10,7 +10,8 @@ const defaultNames = new Set([
   'insert_library_component',
   'get_metadata',
   'get_variable_defs',
-  'search_design_system'
+  'search_design_system',
+  'use_figma'
 ])
 
 export const aiToolDefinitions = ALL_TOOLS.filter((tool) => isToolExposed(tool, 'ai'))

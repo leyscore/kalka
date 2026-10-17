@@ -15,7 +15,6 @@ export const useFigma = defineTool({
     "Run Figma Plugin API JavaScript on the open document, as Figma's use_figma does. The code runs with top-level await and return; the `figma` global is the Plugin API (with `figma.variables`) and `kalka` adds what Figma has no API for. Return the IDs of the layers you create or change. The result has the JSON return value as `result`, plus `createdNodeIds`, `changedNodeIds`, `removedNodeIds`, and `logs` (console output). A Plugin API member Kalka lacks throws a TypeError naming it; a failed script reports `safeToRetryWithoutCanvasRead`. Each call is one undo step.",
   execution: { kind: 'async', mutation: 'document' },
   capabilities: ['document:read', 'document:write', 'code:execute'],
-  availability: 'eval',
   input: v.strictObject({
     code: v.pipe(
       v.string(),

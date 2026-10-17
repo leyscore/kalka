@@ -46,8 +46,8 @@ async function failure(figma: FigmaAPI, code: string): Promise<FigmaScriptError>
 }
 
 describe('use_figma', () => {
-  test('is gated like eval and declared as a document edit that runs code', () => {
-    expect(tool.availability).toBe('eval')
+  test('is offered by default and declared as a document edit that runs code', () => {
+    expect(tool.availability ?? 'default').toBe('default')
     expect(tool.capabilities).toContain('code:execute')
     expect(tool.mutates).toBe(true)
   })
