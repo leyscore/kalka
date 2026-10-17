@@ -14,6 +14,7 @@ import { bearerToken, isAuthorized, mcpRequestToken } from '#mcp/auth'
 import { createBrowserRPCBridge } from '#mcp/browser-rpc'
 import { MCP_CORS_HEADERS, MCP_CORS_METHODS, MCP_EXPOSED_HEADERS } from '#mcp/http-options'
 import type { RPCJSONObject } from '#mcp/json'
+import { requestGuard, verifyWebSocketClient } from '#mcp/server/guard'
 import { createMCPSessionManager } from '#mcp/server/sessions'
 import { createToolDescriptors } from '#mcp/tool/manifest'
 import type { ToolDescriptor, ToolPolicy } from '#mcp/tool/metadata'
@@ -73,6 +74,12 @@ export {
   type RegisterToolsOptions,
   type RPCSender
 } from '#mcp/tool/registration'
+
+/** The origins whose pages may call the server: the CORS allowlist, or none. */
+function allowedOrigins(corsOrigin: string | readonly string[] | null): readonly string[] {
+  if (corsOrigin === null) return []
+  return typeof corsOrigin === 'string' ? [corsOrigin] : corsOrigin
+}
 
 function agentKindFromHeader(value: string | undefined): MCPAgentKind {
   return MCP_AGENT_KINDS.find((kind) => kind === value) ?? 'mcp'
@@ -138,6 +145,8 @@ function createHonoApp(options: {
   const { authToken, corsOrigin, browserRPC, mcpSessions, sendToBrowser, toolDescriptors } = options
 
   const app = new Hono()
+
+  app.use('*', requestGuard(allowedOrigins(corsOrigin)))
 
   if (corsOrigin) {
     app.use(
@@ -369,7 +378,10 @@ function buildServerContext(options: ServerOptions) {
     sendToBrowser,
     toolDescriptors
   })
-  const wss = new WebSocketServer({ noServer: true })
+  const wss = new WebSocketServer({
+    noServer: true,
+    verifyClient: verifyWebSocketClient(allowedOrigins(corsOrigin))
+  })
 
   return {
     httpPort,

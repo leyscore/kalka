@@ -30,9 +30,11 @@ if (process.argv.includes('--help') || process.argv.includes('-h')) {
       `  KALKA_MCP_DISABLED_TOOLS Comma-separated tool names to omit\n` +
       `  KALKA_MCP_SCOPE         "selection" to let clients read only the selected layers\n` +
       `                               (default: "document")\n` +
-      `  KALKA_MCP_CORS_ORIGIN   Allowed CORS origins, comma-separated.\n` +
+      `  KALKA_MCP_CORS_ORIGIN   Exact origins allowed to call the server, comma-separated.\n` +
       `                               Defaults to the desktop app origin, since the app\n` +
       `                               webview is the only view that calls this server.\n` +
+      `                               Requests with any other Origin, and with a Host that\n` +
+      `                               is not a loopback name, are refused with 403.\n` +
       `  KALKA_MCP_APP_TIMEOUT_MS  If set, close the server and remove its discovery\n` +
       `                               file after no app is attached for this many ms. The\n` +
       `                               grace period starts at startup and after disconnects.\n` +

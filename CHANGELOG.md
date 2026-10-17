@@ -372,6 +372,7 @@
 - Validate component library revisions from shared storage and from CLI catalogs before reading them, and run the CLI's revisions through the same size, identity, and content-hash checks as the app, so a malformed or tampered revision is rejected instead of crashing or entering the document.
 - Validate MCP and automation WebSocket messages and the MCP discovery file, so a malformed message or a non-string auth token is rejected instead of being used unchecked.
 - List AI models when the models.dev catalog returns a malformed entry: the curated list is shown instead of model listing failing until the app restarts.
+- Refuse local MCP server requests, CORS preflights and WebSocket handshakes from web pages: an `Origin` other than the app's own, or a `Host` that is not a loopback name, gets `403`, so a site cannot drive the server or reach it through DNS rebinding even with authentication off. MCP clients and scripts, which send no `Origin`, are unaffected; `KALKA_MCP_CORS_ORIGIN` lists the exact origins to allow. OAuth discovery probes (`/.well-known/oauth-*`) get an empty `404`, so clients use the bearer token instead of starting an authorization flow.
 
 ## 0.15.1 — 2026-09-18
 

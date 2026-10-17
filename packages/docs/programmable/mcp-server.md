@@ -111,7 +111,9 @@ Security defaults:
 - Authentication is enabled by default with a generated token stored in the private discovery file.
 - `eval` is disabled.
 - File operations are limited to `KALKA_MCP_ROOT` (defaults to the current working directory) and reject symlink escapes.
-- Only the desktop app's own origin (`kalka-app://app`) is allowed by default, so a server you start yourself works from the app without extra configuration. Set `KALKA_MCP_CORS_ORIGIN` to a comma-separated list to allow other origins, such as a worktree dev server.
+- Web pages cannot drive the server. A request, CORS preflight or WebSocket handshake that carries an `Origin` header is refused with `403` unless that origin is allowed; MCP clients and scripts send no `Origin` and are not affected. Only the desktop app's own origins (`kalka-app://app`, and the Tauri ones) are allowed by default, so a server you start yourself works from the app without extra configuration. Set `KALKA_MCP_CORS_ORIGIN` to a comma-separated list of exact origins to allow others, such as a worktree dev server; it replaces the default list.
+- Requests whose `Host` header is not `localhost`, `127.0.0.1`, `[::1]` or a `*.localhost` name are refused with `403`, which stops DNS rebinding.
+- The server does not use OAuth: `/.well-known/oauth-*` probes get an empty `404`, so clients use the bearer token instead of starting an authorization flow.
 
 Set `PORT=0` to disable TCP on macOS and Linux. Windows requires TCP. Set `KALKA_MCP_SOCKET` to override the Unix socket path, or `KALKA_MCP_DISCOVERY_PATH` to override the discovery file location. To provide a stable token, set `KALKA_MCP_AUTH_TOKEN`; an explicitly empty value disables authentication and should only be used with a trusted local socket.
 

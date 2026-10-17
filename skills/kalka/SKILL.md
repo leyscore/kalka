@@ -259,7 +259,7 @@ kalka-mcp-http
 # or: bunx kalka-mcp-http
 ```
 
-Authentication is enabled by default with an automatically generated token. `KALKA_MCP_AUTH_TOKEN` can supply an explicit non-empty token; an empty value disables authentication. If browser access needs CORS, set `KALKA_MCP_CORS_ORIGIN` to a trusted origin. Never combine wildcard CORS (`*`) with disabled authentication.
+Authentication is enabled by default with an automatically generated token. `KALKA_MCP_AUTH_TOKEN` can supply an explicit non-empty token; an empty value disables authentication. Requests from web pages are refused unless their origin is allowed: if browser access is needed, set `KALKA_MCP_CORS_ORIGIN` to the exact trusted origins, comma-separated. Never allow untrusted origins with authentication disabled.
 
 The CLI defaults the filesystem root to the home directory on Windows and the current working directory elsewhere. Set `KALKA_MCP_ROOT` to an explicit narrow directory rather than relying on that default.
 

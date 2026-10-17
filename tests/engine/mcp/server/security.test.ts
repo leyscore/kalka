@@ -102,8 +102,9 @@ describe('MCP server CORS', () => {
         const response = await preflight(origin)
         expect(response.headers.get('access-control-allow-origin')).toBe(origin)
       }
-      // An unrelated site is not granted access.
+      // An unrelated site is refused outright.
       const foreign = await preflight('https://example.com')
+      expect(foreign.status).toBe(403)
       expect(foreign.headers.get('access-control-allow-origin')).toBeNull()
     } finally {
       await handle.close()
