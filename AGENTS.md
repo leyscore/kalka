@@ -1,6 +1,6 @@
 # Kalka
 
-Kalka: a design editor whose canvas is real HTML and CSS. Vue 3 app; each artboard is a sandboxed iframe the browser lays out and paints; an SVG overlay draws the editor's feedback. CanvasKit (Skia WASM) remains for raster export, thumbnails and boolean geometry, and Yoga for graphs the canvas does not draw. Electron desktop app, also runs in the browser. Bun workspace monorepo. Forked from OpenPencil; `PLAN.md` holds the plan and milestones.
+Kalka: a design editor whose canvas is real HTML and CSS. Vue 3 app; each artboard is a sandboxed iframe the browser lays out and paints; an SVG overlay draws the editor's feedback. CanvasKit (Skia WASM) remains for raster export, thumbnails and boolean geometry, and Yoga for graphs the canvas does not draw. Electron desktop app, also runs in the browser. Bun workspace monorepo. Forked from OpenPencil; the plan and milestones live in the ignored `scratch/PLAN.md`.
 
 This file holds the repository map and the rules that apply everywhere. Rules for one folder live in that folder's `AGENTS.md`. **Before changing files under a mapped path, read this file and that path's guide.** Paths in every guide are repository-relative. Process for humans (setup, PRs, commits) is in `CONTRIBUTING.md`; product direction and Figma gaps are in `packages/docs/development/roadmap.md`.
 
