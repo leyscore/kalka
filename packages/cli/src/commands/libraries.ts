@@ -51,7 +51,7 @@ const publish = defineCommand({
   },
   async run({ args }) {
     const graph = await loadDocument(resolve(args.file))
-    populateWholeDocument(graph)
+    await populateWholeDocument(graph)
     const revision = await new FileSystemLibraryCatalog(args.root).publishRevision({
       libraryId: args.id,
       name: args.name,

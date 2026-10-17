@@ -1,5 +1,3 @@
-import { spawn } from 'node:child_process'
-import { existsSync } from 'node:fs'
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -11,52 +9,15 @@ import {
   type NodeRasterRequest
 } from '@kalka/core/io'
 
-/** The exit code the render host gives when an image is too large to capture in one piece. */
-const TOO_LARGE = 2
-const HOST_ENTRY = join('electron', 'dist', 'render-host.js')
+import { renderHost } from './host/session'
+
+/** How long one image or PDF may take to draw before the export falls back to CanvasKit. */
+const RENDER_TIMEOUT = 120_000
 
 type PageRequest = Pick<NodeRasterRequest, 'graph' | 'nodeIds' | 'background'> & {
   scale: number
   format: 'PNG' | 'JPG' | 'PDF'
   quality?: number
-}
-
-/**
- * Electron's executable, from the `electron` package of the desktop app the render host belongs
- * to: its `path.txt` names the executable inside its `dist` folder.
- */
-async function electronExecutable(entry: string): Promise<string | null> {
-  const electronPackage = join(dirname(entry), '..', 'node_modules', 'electron')
-  try {
-    const relative = (await readFile(join(electronPackage, 'path.txt'), 'utf8')).trim()
-    const path = join(electronPackage, 'dist', relative)
-    return existsSync(path) ? path : null
-  } catch {
-    return null
-  }
-}
-
-/** The render host the desktop app builds, found from this file up to the repository. */
-function hostEntry(): string | null {
-  const configured = process.env.KALKA_RENDER_HOST
-  if (configured) return existsSync(configured) ? configured : null
-  let dir = import.meta.dirname
-  for (let depth = 0; depth < 8; depth++) {
-    const candidate = join(dir, HOST_ENTRY)
-    if (existsSync(candidate)) return candidate
-    dir = dirname(dir)
-  }
-  return null
-}
-
-function runHost(executable: string, entry: string, requestPath: string): Promise<number> {
-  return new Promise((resolve) => {
-    const env = { ...process.env }
-    delete env.ELECTRON_RUN_AS_NODE
-    const child = spawn(executable, [entry, requestPath], { env, stdio: 'ignore' })
-    child.on('error', () => resolve(1))
-    child.on('exit', (code) => resolve(code ?? 1))
-  })
 }
 
 /**
@@ -67,9 +28,8 @@ function runHost(executable: string, entry: string, requestPath: string): Promis
 async function renderWithElectron(request: PageRequest): Promise<Uint8Array | null> {
   if (process.env.KALKA_RENDERER === 'canvaskit') return null
   const bounds = computeContentBounds(request.graph, [...request.nodeIds])
-  const entry = hostEntry()
-  const executable = entry ? await electronExecutable(entry) : null
-  if (!bounds || !entry || !executable) return null
+  const host = renderHost()
+  if (!bounds || !host) return null
 
   const dir = await mkdtemp(join(tmpdir(), 'kalka-render-'))
   try {
@@ -86,10 +46,9 @@ async function renderWithElectron(request: PageRequest): Promise<Uint8Array | nu
       await writeFile(path, asset.content)
     }
     const output = join(dir, `out.${request.format.toLowerCase()}`)
-    const requestPath = join(dir, 'request.json')
-    await writeFile(
-      requestPath,
-      JSON.stringify({
+    const answer = host.request(
+      {
+        type: 'render',
         file: join(dir, 'page.html'),
         output,
         width: Math.max(1, Math.ceil(bounds.maxX - bounds.minX)),
@@ -98,10 +57,11 @@ async function renderWithElectron(request: PageRequest): Promise<Uint8Array | nu
         format: request.format,
         quality: request.quality,
         background: request.background
-      })
+      },
+      RENDER_TIMEOUT
     )
-    const code = await runHost(executable, entry, requestPath)
-    if (code === TOO_LARGE || code !== 0) return null
+    // `too-large` when the image cannot be captured in one piece.
+    if (answer?.result !== 'written') return null
     return new Uint8Array(await readFile(output))
   } catch {
     return null

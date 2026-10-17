@@ -13,6 +13,7 @@ import {
   populateWholeDocument,
   writeFigDocument
 } from '#cli/headless'
+import { useBrowserLayout } from '#cli/render/layout'
 
 function printResult(value: unknown, json: boolean) {
   if (json || !process.stdout.isTTY) {
@@ -69,8 +70,9 @@ export default defineCommand({
     }
 
     const file = requireFile(args.file)
+    useBrowserLayout()
     const graph = await loadDocument(file)
-    populateWholeDocument(graph)
+    await populateWholeDocument(graph)
     await measureTextHeadlessly()
     const figma = new FigmaAPI(graph)
 

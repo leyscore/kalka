@@ -9,6 +9,7 @@ import { computeAllLayouts, installTextMeasurer } from '@kalka/core/layout'
 import type { SceneGraph } from '@kalka/scene-graph'
 
 import { printError } from '#cli/format'
+import { prepareBrowserLayout } from '#cli/render/layout'
 
 export { initCanvasKit }
 
@@ -42,8 +43,14 @@ export async function loadDocument(filePath: string): Promise<SceneGraph> {
     const bytes = new Uint8Array(await readFile(filePath))
     graph = (await io.readDocument({ name: filePath, data: bytes })).graph
   }
-  computeAllLayouts(graph)
+  await layOutDocument(graph)
   return graph
+}
+
+/** Lays a document out, or one page of it, with its fonts when the browser lays it out. */
+async function layOutDocument(graph: SceneGraph, scopeId?: string): Promise<void> {
+  await prepareBrowserLayout(graph)
+  computeAllLayouts(graph, scopeId)
 }
 
 let textMeasurer: Promise<void> | null = null
@@ -80,15 +87,15 @@ export async function writeFigDocument(graph: SceneGraph, filePath: string): Pro
   await writeFile(filePath, result.data as Uint8Array)
 }
 
-export function populateDocumentPage(graph: SceneGraph, pageId: string): boolean {
+export async function populateDocumentPage(graph: SceneGraph, pageId: string): Promise<boolean> {
   const changed = populateFigPage(graph, pageId)
-  if (changed) computeAllLayouts(graph, pageId)
+  if (changed) await layOutDocument(graph, pageId)
   return changed
 }
 
-export function populateWholeDocument(graph: SceneGraph): boolean {
+export async function populateWholeDocument(graph: SceneGraph): Promise<boolean> {
   const changed = populateAllFigPages(graph)
-  if (changed) computeAllLayouts(graph)
+  if (changed) await layOutDocument(graph)
   return changed
 }
 
@@ -102,7 +109,12 @@ function stringArg(args: unknown, key: string): string | undefined {
 function populateRequestedPage(graph: SceneGraph, pageName?: string): void {
   const pages = graph.getPages()
   const page = pageName ? pages.find((candidate) => candidate.name === pageName) : pages[0]
-  if (page) populateDocumentPage(graph, page.id)
+  if (page && populateFigPage(graph, page.id)) computeAllLayouts(graph, page.id)
+}
+
+/** Every page of a `.fig`, for the read commands, which lay out with Yoga. */
+function populateAllPages(graph: SceneGraph): void {
+  if (populateAllFigPages(graph)) computeAllLayouts(graph)
 }
 
 export function prepareDocumentForRPC(graph: SceneGraph, command: string, args?: unknown): void {
@@ -116,10 +128,10 @@ export function prepareDocumentForRPC(graph: SceneGraph, command: string, args?:
   if (command === 'find' || command === 'query') {
     const pageName = stringArg(args, 'page')
     if (pageName) populateRequestedPage(graph, pageName)
-    else populateWholeDocument(graph)
+    else populateAllPages(graph)
     return
   }
-  populateWholeDocument(graph)
+  populateAllPages(graph)
 }
 
 export function requirePage(graph: SceneGraph, pageName?: string) {

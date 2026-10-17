@@ -17,6 +17,7 @@ import {
   requirePage
 } from '#cli/headless'
 import { electronRenderContext } from '#cli/render/electron'
+import { useBrowserLayout } from '#cli/render/layout'
 
 import { applyExportFontPolicy, exportFontRoots, FONT_POLICIES } from './font-policy'
 import { exportStorybookFromFile } from './storybook'
@@ -178,15 +179,15 @@ async function writeExport(output: string, result: ExportResult) {
   printWarnings(result.warnings)
 }
 
-function prepareGraphForExport(
+async function prepareGraphForExport(
   graph: Awaited<ReturnType<typeof loadDocument>>,
   pageId: string,
   format: string,
   args: ExportArgs
-): boolean {
+): Promise<boolean> {
   const wholeDocument = (format === 'FIG' || format === 'PPTX') && !args.page && !args.node
-  if (wholeDocument || args.node) populateWholeDocument(graph)
-  else populateDocumentPage(graph, pageId)
+  if (wholeDocument || args.node) await populateWholeDocument(graph)
+  else await populateDocumentPage(graph, pageId)
   return wholeDocument
 }
 
@@ -237,6 +238,7 @@ function exportOptions(format: string, args: ExportArgs): unknown {
 
 async function exportFromFile(format: string, args: ExportArgs) {
   const file = requireFile(args.file)
+  useBrowserLayout()
   const graph = await loadDocument(file)
   const pages = graph.getPages()
   const page = requirePage(graph, args.page)
@@ -248,7 +250,7 @@ async function exportFromFile(format: string, args: ExportArgs) {
     process.exit(1)
   }
 
-  const wholeDocument = prepareGraphForExport(graph, page.id, format, args)
+  const wholeDocument = await prepareGraphForExport(graph, page.id, format, args)
 
   const target = args.node
     ? { scope: 'node' as const, nodeId: args.node }

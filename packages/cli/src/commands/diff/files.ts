@@ -27,8 +27,8 @@ export default defineCommand({
     // when the original document is loaded again by `diff apply`.
     const before = await loadDocument(args.before)
     const after = await loadDocument(args.after)
-    populateWholeDocument(before)
-    populateWholeDocument(after)
+    await populateWholeDocument(before)
+    await populateWholeDocument(after)
     const result = diffDocuments(before, after, { page: args.page, depth })
     if (args.page && result.pages.length === 0) {
       printError(`Neither document has a page named "${args.page}"`)

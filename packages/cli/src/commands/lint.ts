@@ -17,6 +17,7 @@ import {
 
 import { bold, dim, fail, fmtList, ok, printError } from '#cli/format'
 import { loadDocument, populateWholeDocument } from '#cli/headless'
+import { useBrowserLayout } from '#cli/render/layout'
 
 function formatSeverity(severity: LintMessage['severity']) {
   if (severity === 'error') return fail('error')
@@ -89,9 +90,10 @@ export default defineCommand({
       process.exit(1)
     }
 
+    useBrowserLayout()
     const graph = await loadDocument(args.file)
     // Lazily imported pages hold layers too; lint the whole document, not only what was read.
-    populateWholeDocument(graph)
+    await populateWholeDocument(graph)
     const rules = args.rule ? (Array.isArray(args.rule) ? args.rule : [args.rule]) : undefined
     const linter = createLinter({ preset: args.preset, rules })
     let result = linter.lintGraph(graph)

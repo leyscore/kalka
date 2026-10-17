@@ -63,7 +63,8 @@ const SETTLE = `document.fonts.ready
   .then(() => Promise.all(Array.from(document.images, (image) => image.decode().catch(() => null))))
   .then(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))))`
 
-function hiddenWindow(width: number, height: number): BrowserWindow {
+/** A window that is never shown, in the session that loads nothing from the network. */
+export function hiddenWindow(width: number, height: number): BrowserWindow {
   return new BrowserWindow({
     show: false,
     width,

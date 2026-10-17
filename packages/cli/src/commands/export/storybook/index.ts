@@ -24,6 +24,7 @@ import { requireFile } from '#cli/app/client'
 import { applyExportFontPolicy } from '#cli/commands/export/font-policy'
 import { ok, printError } from '#cli/format'
 import { loadDocument, populateWholeDocument, requirePage } from '#cli/headless'
+import { useBrowserLayout } from '#cli/render/layout'
 
 import { readManifest, writeManifest, type StoryManifest, type StoryOwner } from './manifest'
 
@@ -143,9 +144,10 @@ async function writeStories(
   framework: StorybookFramework,
   outputDir: string
 ): Promise<number> {
+  useBrowserLayout()
   const graph = await loadDocument(file)
   const pageId = args.page ? requirePage(graph, args.page).id : undefined
-  populateWholeDocument(graph)
+  await populateWholeDocument(graph)
   if (args['design-images']) {
     const pageIds = pageId ? [pageId] : graph.getPages().map((page) => page.id)
     await applyExportFontPolicy(graph, pageIds, 'PNG', args['font-policy'])

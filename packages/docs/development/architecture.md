@@ -49,7 +49,9 @@ Selection, hover, guides, handles and other editor feedback are drawn by an SVG 
 
 ### Layout
 
-The browser is the layout engine. `DomLayoutEngine` (installed through `installLayoutEngine` from `@kalka/core/layout`) measures each box after the DOM is written and stores it back into the layers' `x`, `y`, `width` and `height`, which become a cache of what the browser computed. Graphs the canvas does not draw, such as other pages, headless CLI runs and export previews, still use Yoga WASM.
+The browser is the layout engine. `DomLayoutEngine` (installed through `installLayoutEngine` from `@kalka/core/layout`) measures each box after the DOM is written and stores it back into the layers' `x`, `y`, `width` and `height` (`applyMeasuredLayout`), which become a cache of what the browser computed. Graphs the canvas does not draw, such as other pages and export previews, still use Yoga WASM.
+
+The CLI lays out with a browser too when the desktop app is built beside it. Its `BrowserLayoutEngine` (`packages/cli/src/render/layout.ts`) projects each artboard to the markup the canvas builds (`artboardMarkup` from `@kalka/dom-css/export`), sends it to the render host, an Electron process with no window that the CLI starts once per run (`electron/src/render-host.ts`), and writes back the boxes it measures there with the canvas's own `measureLayerBoxes`. Layout is synchronous and the host is another process, so the CLI's main thread blocks on a worker thread that talks to the host, artboards go in batches, and only those an edit touched are laid out again. A host that fails or times out leaves the rest of the run to Yoga, as do runs without Electron, `KALKA_LAYOUT=yoga` and the unit tests. The MCP stdio bridge computes no layout: it relays tool calls to the app.
 
 ### CanvasKit
 

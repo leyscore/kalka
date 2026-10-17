@@ -9,6 +9,7 @@ import { writeKalkaFolder } from '@kalka/core/io/formats/kalka'
 import { requireFile } from '#cli/app/client'
 import { ok, printError, printWarnings } from '#cli/format'
 import { loadDocument, populateWholeDocument, writeFolderFiles } from '#cli/headless'
+import { useBrowserLayout } from '#cli/render/layout'
 
 const io = new IORegistry(BUILTIN_IO_FORMATS)
 
@@ -54,8 +55,9 @@ export default defineCommand({
     }
 
     const file = requireFile(args.file)
+    useBrowserLayout()
     const graph = await loadDocument(file)
-    populateWholeDocument(graph)
+    await populateWholeDocument(graph)
     const output = args.output ? resolve(args.output) : defaultOutput(file, format)
     if (format === FOLDER_FORMAT) {
       await writeFolderFiles(output, await writeKalkaFolder(graph))

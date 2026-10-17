@@ -4,7 +4,8 @@
   "type": "module",
   "main": "dist/main.js",
   "scripts": {
-    "build": "bun scripts/build-mcp.ts && bun build src/main.ts --target=node --format=esm --outfile=dist/main.js --external electron && bun build src/preload.ts --target=node --format=cjs --outfile=dist/preload.cjs --external electron && bun build src/render-host.ts --target=node --format=esm --outfile=dist/render-host.js --external electron",
+    "build": "bun scripts/build-mcp.ts && bun build src/main.ts --target=node --format=esm --outfile=dist/main.js --external electron && bun build src/preload.ts --target=node --format=cjs --outfile=dist/preload.cjs --external electron && bun run build:render-host",
+    "build:render-host": "bun build src/render-host.ts --target=node --format=esm --outfile=dist/render-host.js --external electron",
     "start": "bun run build && electron .",
     "dev": "bun scripts/dev.ts",
     "package": "bun run build && electron-builder --publish never",
