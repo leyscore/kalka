@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 
-import { useAutomationMessages, useCommonMessages } from '@kalka/vue'
+import { useAutomationMessages, useCommonMessages, vTestId } from '@kalka/vue'
 
 import {
   canConnectMCPClients,
@@ -51,7 +51,7 @@ onMounted(refresh)
           v-for="client in shown"
           :key="client.id"
           class="flex flex-col gap-2 px-3 py-2"
-          :data-test-id="`mcp-client-${client.id}`"
+          v-test-id="`mcp-client-${client.id}`"
         >
           <div class="flex items-center gap-3">
             <span

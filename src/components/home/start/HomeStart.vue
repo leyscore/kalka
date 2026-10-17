@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
-import { useI18n } from '@kalka/vue'
+import { useI18n, vTestId } from '@kalka/vue'
 
 import { FRAME_PRESETS, startBlank, startWithFrame, type FramePresetID } from '@/app/home/start'
 import { openFileDialog } from '@/app/shell/menu/use'
@@ -68,7 +68,7 @@ function runImport(choice: ImportChoice): void {
         :key="preset.id"
         type="button"
         :class="preset.styles.root()"
-        :data-test-id="`home-preset-${preset.id}`"
+        v-test-id="`home-preset-${preset.id}`"
         @click="startWithFrame(preset.name, preset.width, preset.height)"
       >
         <span :class="preset.styles.device()" aria-hidden="true">

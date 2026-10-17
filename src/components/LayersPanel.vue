@@ -3,7 +3,7 @@ import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'reka-ui'
 import { tv } from 'tailwind-variants'
 import { computed, ref } from 'vue'
 
-import { useI18n } from '@kalka/vue'
+import { useI18n, vTestId } from '@kalka/vue'
 
 import { isTauri } from '@/app/tauri/env'
 import AppMenu from '@/components/shell/AppMenu.vue'
@@ -60,7 +60,7 @@ const splitterStyles = tv(splitterTheme)({ direction: 'vertical' })
         :ui="panelTabsUI"
       >
         <template #option="{ option }">
-          <span :data-test-id="TAB_TEST_IDS[option.value]" class="truncate">
+          <span v-test-id="TAB_TEST_IDS[option.value]" class="truncate">
             {{ option.label }}
           </span>
         </template>

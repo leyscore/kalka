@@ -4,7 +4,7 @@ import { onMounted } from 'vue'
 
 import { WEB_FONT_PROVIDER_IDS, WEB_FONT_PROVIDER_LABELS } from '@kalka/core/text'
 import type { WebFontProviderId } from '@kalka/core/text'
-import { useI18n, useRetainedPopup } from '@kalka/vue'
+import { useI18n, useRetainedPopup, vTestId } from '@kalka/vue'
 
 import { isTauri } from '@/app/tauri/env'
 import AppButton from '@/components/ui/button/AppButton.vue'
@@ -195,7 +195,7 @@ onMounted(() => {
                     class="size-3 accent-accent disabled:opacity-50"
                     :checked="isProviderEnabled(provider)"
                     :disabled="busyAction !== null || !onlineFontsEnabled"
-                    :data-test-id="`font-settings-provider-${provider}`"
+                    v-test-id="`font-settings-provider-${provider}`"
                     @change="onProviderToggle(provider, $event)"
                   />
                 </label>

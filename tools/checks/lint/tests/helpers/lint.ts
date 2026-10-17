@@ -20,13 +20,30 @@ export async function lint(
   rules: Record<string, string>,
   relativePath = 'fixture.ts'
 ): Promise<Diagnostic[]> {
+  return lintFiles({ [relativePath]: source }, rules)
+}
+
+/**
+ * Lint several fixtures in one Oxlint run, by their path relative to a temporary directory;
+ * each diagnostic's `filename` ends with that path. One process instead of one per fixture
+ * keeps a table of cases quick under a busy test runner.
+ */
+export async function lintFiles(
+  sources: Record<string, string>,
+  rules: Record<string, string>
+): Promise<Diagnostic[]> {
   const root = await resolveWorkspaceRoot(import.meta.dir)
   const directory = await mkdtemp(join(tmpdir(), 'kalka-lint-'))
   try {
-    const sourcePath = join(directory, relativePath)
+    const sourcePaths = await Promise.all(
+      Object.entries(sources).map(async ([relativePath, source]) => {
+        const sourcePath = join(directory, relativePath)
+        await mkdir(dirname(sourcePath), { recursive: true })
+        await writeFile(sourcePath, source)
+        return sourcePath
+      })
+    )
     const configPath = join(directory, 'oxlint.json')
-    await mkdir(dirname(sourcePath), { recursive: true })
-    await writeFile(sourcePath, source)
     await writeFile(
       configPath,
       JSON.stringify({
@@ -36,7 +53,14 @@ export async function lint(
       })
     )
     const child = Bun.spawn(
-      [join(root, 'node_modules/.bin/oxlint'), '-c', configPath, '--format', 'json', sourcePath],
+      [
+        join(root, 'node_modules/.bin/oxlint'),
+        '-c',
+        configPath,
+        '--format',
+        'json',
+        ...sourcePaths
+      ],
       { stdout: 'pipe', stderr: 'pipe' }
     )
     const [stdout, stderr, code] = await Promise.all([

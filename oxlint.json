@@ -429,6 +429,12 @@
   },
   "overrides": [
     {
+      "files": ["src/components/onboarding/WelcomeArt.vue"],
+      "rules": {
+        "kalka/no-raw-svg-in-app-vue-templates": "off"
+      }
+    },
+    {
       "files": ["tools/ci/policy/src/**/*.ts"],
       "rules": {
         "kalka/prefer-es-toolkit": "off"
