@@ -315,10 +315,13 @@ tests/engine/mcp/browser-rpc.test.ts
 tests/engine/mcp/path-scoping.test.ts
 tests/engine/mcp/result.test.ts
 tests/engine/mcp/server/cleanup.test.ts
+tests/engine/mcp/server/guard.test.ts
 tests/engine/mcp/server/index.test.ts
+tests/engine/mcp/server/responses.test.ts
 tests/engine/mcp/server/security.test.ts
 tests/engine/mcp/server/transport.test.ts
 tests/engine/mcp/server/watchdog.test.ts
+tests/engine/mcp/stdio/app-closed.test.ts
 tests/engine/mcp/stdio/auth.test.ts
 tests/engine/mcp/stdio/index.test.ts
 tests/engine/mcp/stdio/reconnect.test.ts
