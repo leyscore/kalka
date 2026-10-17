@@ -28,6 +28,11 @@ paths = ['''packages/vue/src/editor/commands/registry\.ts''']
 regexes = ['''keybinding:\s*['\"][^'\"]+['\"]''']
 
 [[allowlists]]
+description = "A tokens fingerprint is a 12-hex digest of the document's variables, not a key"
+regexTarget = "line"
+regexes = ['''tokensHash"?\s*[:=]\s*"[0-9a-f]{12}"''']
+
+[[allowlists]]
 description = "Documented dummy OpenRouter test key"
 regexTarget = "line"
 paths = ['''tests/e2e/chat/panel\.spec\.ts''']
