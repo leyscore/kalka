@@ -1,7 +1,5 @@
 import { IS_BROWSER, IS_TAURI } from '@kalka/core/constants'
 
-import ACP_DESIGN_CONTEXT from '@/app/ai/acp/design-context.md'
-
 export {
   IS_BROWSER,
   IS_TAURI,
@@ -136,5 +134,3 @@ export const AUTO_LAYOUT_BREAK_THRESHOLD = 8
 export const HANDLE_HIT_RADIUS = 6
 
 export const ACP_PERMISSION_TIMEOUT_MS = 60_000
-
-export { ACP_DESIGN_CONTEXT }
