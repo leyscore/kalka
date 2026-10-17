@@ -174,6 +174,47 @@ describe('undo and redo', () => {
     expect(tab.store.graph.getNode(id)).toBeUndefined()
   })
 
+  test('a use_figma script is one undo step, however many layers it makes', async () => {
+    const tab = createTab()
+    const ran = await request('tool', {
+      document_id: tab.id,
+      name: 'use_figma',
+      args: {
+        code: `
+          const card = figma.createFrame()
+          card.layoutMode = 'VERTICAL'
+          const title = figma.createText()
+          title.characters = 'Title'
+          card.appendChild(title)
+          return { createdNodeIds: [card.id, title.id] }
+        `
+      }
+    })
+    const ids = ran.result.createdNodeIds as string[]
+    expect(ids).toHaveLength(2)
+    expect(ids.every((id) => tab.store.graph.getNode(id))).toBe(true)
+
+    const undone = await request('undo', { document_id: tab.id })
+    expect(undone.result).toMatchObject({ applied: true, label: 'Agent: use_figma' })
+    expect(ids.some((id) => tab.store.graph.getNode(id))).toBe(false)
+  })
+
+  test('a use_figma script that fails reports it, and undo reverts what it did', async () => {
+    const tab = createTab()
+    await expect(
+      request('tool', {
+        document_id: tab.id,
+        name: 'use_figma',
+        args: { code: `figma.createFrame().name = 'Partial'; figma.showUI('<p>')` }
+      })
+    ).rejects.toThrow('figma.showUI is not supported in Kalka')
+    const partial = tab.store.graph.getChildren(tab.store.state.currentPageId)
+    expect(partial.map((node) => node.name)).toEqual(['Partial'])
+
+    await request('undo', { document_id: tab.id })
+    expect(tab.store.graph.getChildren(tab.store.state.currentPageId)).toEqual([])
+  })
+
   test('undo and redo of a deletion leave the layers it did not touch alone', async () => {
     const tab = createTab()
     const graph = tab.store.graph

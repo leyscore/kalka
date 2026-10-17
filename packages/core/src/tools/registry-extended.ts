@@ -7,7 +7,8 @@ import {
   diffApply,
   diffShow,
   lint,
-  lintFix
+  lintFix,
+  useFigma
 } from './analyze'
 import { designToComponentMap, designToTokens, importDesignTokens } from './codegen'
 import {
@@ -213,6 +214,8 @@ export const EXTENDED_TOOLS: ToolDef[] = [
   analyzeOverlaps,
   diffShow,
   diffApply,
+  // Figma Plugin API scripts, as Figma's MCP server takes them
+  useFigma,
   // Codegen
   designToTokens,
   importDesignTokens,

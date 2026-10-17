@@ -33,7 +33,16 @@ export {
   compileScript,
   diffDocuments,
   diffPageLayersJSX,
+  FigmaScriptError,
+  runFigmaScript,
   wrapEvalCode
+} from './analyze'
+export type {
+  FigmaScriptResult,
+  ScriptChanges,
+  ScriptConsole,
+  ScriptLogEntry,
+  ScriptOptions
 } from './analyze'
 export type { DocumentDiff, DocumentDiffOptions, LayerJSXChange } from './analyze'
 export {

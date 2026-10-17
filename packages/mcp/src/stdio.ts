@@ -35,7 +35,7 @@ if (process.argv.includes('--help') || process.argv.includes('-h')) {
       `  KALKA_MCP_AUTH_TOKEN    Bearer token for RPC auth\n` +
       `  KALKA_MCP_ROOT          Allowed directory for file-scoped tools\n` +
       `                               (default: home directory on Windows, cwd elsewhere)\n` +
-      `  KALKA_MCP_EVAL          Set to 1 to enable the eval tool\n` +
+      `  KALKA_MCP_EVAL          Set to 1 to enable eval and use_figma\n` +
       `  KALKA_MCP_DISABLED_TOOLS Comma-separated tool names to omit; defaults to the app setting\n` +
       `  KALKA_MCP_SCOPE         "selection" to read only the selected layers; defaults to the app setting\n`
   )

@@ -10,6 +10,7 @@
 ### Changed
 
 - Connecting an MCP client keeps the comments and layout of its configuration file, including Codex's TOML and JSON with comments, backs the file up before changing it, and writes nothing when Kalka's entry is already current. On macOS and Linux the desktop app reads the whole login-shell environment to find agent CLIs, so a banner printed by a shell profile no longer hides them.
+- MCP clients get `use_figma`, also available to turn on for the built-in AI chat, which runs a Figma Plugin API script on the open document as Figma's tool of that name does, so scripts and skills written for it run locally. It returns the script's value with the layers it created, changed, and removed and its console output, records each call as one undo step, and names any Plugin API member Kalka lacks; like `eval`, MCP offers it with `KALKA_MCP_EVAL=1`. Scripts also get Figma's `figma.variables`, `node.setBoundVariable`, `node.boundVariables`, paints bound with `setBoundVariableForPaint`, explicit variable modes, `figma.setCurrentPageAsync`, `getStyledTextSegments`, and `{ unit, value }` line height and letter spacing.
 
 ## 0.1.0-beta.2 — 2026-10-17
 

@@ -26,7 +26,7 @@ if (process.argv.includes('--help') || process.argv.includes('-h')) {
       `  KALKA_MCP_TCP           Deprecated — TCP is controlled by PORT (>0 = on, 0 = off)\n` +
       `  KALKA_MCP_AUTH_TOKEN    Bearer token for MCP and RPC auth\n` +
       `  KALKA_MCP_ROOT          Allowed directory for file-scoped tools (default: home directory on Windows, current working directory elsewhere)\n` +
-      `  KALKA_MCP_EVAL           Set to 1 to enable the eval tool\n` +
+      `  KALKA_MCP_EVAL           Set to 1 to enable eval and use_figma\n` +
       `  KALKA_MCP_DISABLED_TOOLS Comma-separated tool names to omit\n` +
       `  KALKA_MCP_SCOPE         "selection" to let clients read only the selected layers\n` +
       `                               (default: "document")\n` +

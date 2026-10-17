@@ -231,6 +231,10 @@ function extractNodeIds(result: unknown): string[] {
   if (typeof obj.deleted === 'string') return []
   const ids: string[] = []
   if (typeof obj.id === 'string') ids.push(obj.id)
+  // A script run (`use_figma`) lists the layers it made and changed.
+  for (const list of [obj.createdNodeIds, obj.changedNodeIds]) {
+    if (Array.isArray(list)) ids.push(...list.filter((id): id is string => typeof id === 'string'))
+  }
   if (Array.isArray(obj.results)) {
     for (const item of obj.results) {
       if (item && typeof item === 'object' && typeof (item as JSONObject).id === 'string')

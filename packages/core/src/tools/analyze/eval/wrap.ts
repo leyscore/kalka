@@ -41,13 +41,29 @@ export function wrapEvalCode(code: string): string {
 
 type AsyncFunctionConstructor = new (...args: string[]) => (...args: unknown[]) => Promise<unknown>
 
+/** What a script's `console` writes to, when the runner keeps its output. */
+export type ScriptConsole = Pick<Console, 'log' | 'info' | 'warn' | 'error' | 'debug'>
+
+export interface ScriptOptions {
+  /** Replaces the `console` global the script sees. */
+  console?: ScriptConsole
+}
+
 /**
  * Compile a script for a document: it sees the `figma` global, the Figma Plugin API, and the
  * `kalka` global, what Kalka adds to it, both over the same document.
  */
-export function compileScript(code: string): (figma: FigmaAPI) => Promise<unknown> {
+export function compileScript(
+  code: string,
+  options: ScriptOptions = {}
+): (figma: FigmaAPI) => Promise<unknown> {
   const AsyncFunction = Object.getPrototypeOf(async () => undefined)
     .constructor as AsyncFunctionConstructor
-  const run = new AsyncFunction('figma', 'kalka', wrapEvalCode(code))
-  return (figma) => run(figma, new KalkaAPI(figma))
+  const scriptConsole = options.console
+  if (!scriptConsole) {
+    const run = new AsyncFunction('figma', 'kalka', wrapEvalCode(code))
+    return (figma) => run(figma, new KalkaAPI(figma))
+  }
+  const run = new AsyncFunction('figma', 'kalka', 'console', wrapEvalCode(code))
+  return (figma) => run(figma, new KalkaAPI(figma), scriptConsole)
 }

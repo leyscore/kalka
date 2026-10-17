@@ -134,7 +134,7 @@ Security defaults:
 - Unix socket and discovery files are created with owner-only permissions on macOS and Linux.
 - TCP binds to `127.0.0.1` and uses port 7600 by default.
 - Authentication is enabled by default with a generated token stored in the private discovery file.
-- `eval` is disabled.
+- `eval` and `use_figma` are disabled unless `KALKA_MCP_EVAL=1` is set.
 - File operations are limited to `KALKA_MCP_ROOT` (defaults to the current working directory) and reject symlink escapes.
 - Web pages cannot drive the server. A request, CORS preflight or WebSocket handshake that carries an `Origin` header is refused with `403` unless that origin is allowed; MCP clients and scripts send no `Origin` and are not affected. Only the desktop app's own origins (`kalka-app://app`, and the Tauri ones) are allowed by default, so a server you start yourself works from the app without extra configuration. Set `KALKA_MCP_CORS_ORIGIN` to a comma-separated list of exact origins to allow others, such as a worktree dev server; it replaces the default list.
 - Requests whose `Host` header is not `localhost`, `127.0.0.1`, `[::1]` or a `*.localhost` name are refused with `403`, which stops DNS rebinding.
@@ -204,7 +204,7 @@ Kalka currently registers 100+ shared design tools, plus MCP-only document and p
 
 ### Figma-named tools {#figma-named-tools}
 
-Three read tools share their names, arguments, and meaning with the tools of Figma's Dev Mode MCP server, so prompts and agent skills written for Figma work against Kalka. Each also takes Figma's `fileKey`, `clientLanguages`, and `clientFrameworks` and ignores them: Kalka reads the open document. Node IDs are Kalka IDs such as `0:12`; the `0-12` form that Figma links use is accepted too.
+Three read tools share their names, arguments, and meaning with the tools of Figma's Dev Mode MCP server, so prompts and agent skills written for Figma work against Kalka. Each also takes Figma's `fileKey`, `clientLanguages`, and `clientFrameworks` and ignores them: Kalka reads the open document. Node IDs are Kalka IDs such as `0:12`; the `0-12` form that Figma links use is accepted too. The [`use_figma`](#use-figma) write tool does the same for Plugin API scripts.
 
 | Tool | Arguments | Returns |
 |------|-----------|---------|
@@ -232,6 +232,27 @@ The result has `count`, every layer that matched, `truncated` when there are mor
 
 For example, `{ "style": { "property": "background-color", "value": "#2F5BEA" }, "within": "document" }` lists every layer painted that blue and which of them a variable already drives, and `{ "variable": "color/primary", "variable_match": "unbound" }` lists the layers to bind to `color/primary`.
 
+#### Writing with `use_figma` {#use-figma}
+
+`use_figma` runs Figma Plugin API JavaScript on the open document, as the tool of the same name on Figma's remote MCP server does, so scripts and skills written for it (such as Figma's `figma-use`) run locally. It runs code, so it is enabled together with `eval`: set `KALKA_MCP_EVAL=1`.
+
+| Argument | Meaning |
+|----------|---------|
+| `code` | The script. It runs in an async function: top-level `await` and `return` work, and a final bare expression is returned too. `figma` is the [Figma API](/programmable/cli/scripting#supported-api-surface), `kalka` what Kalka adds to it, and `console` is captured. |
+| `fileKey`, `description`, `skillNames` | Accepted and ignored; Kalka runs on the open document. |
+
+The result is an object:
+
+| Field | Contents |
+|-------|----------|
+| `result` | The return value as JSON. A returned layer becomes `{ id, type, name }`, `figma.mixed` the string `"figma.mixed"`, bytes Base64; functions and `undefined` are left out. |
+| `createdNodeIds`, `changedNodeIds`, `removedNodeIds` | The layers the script made, edited (including those its edits laid out again), and deleted. |
+| `logs` | `console` output and `figma.notify` messages, as `{ level, message }`. |
+
+A script that throws makes the call fail with `The script failed: <error>` and `safeToRetryWithoutCanvasRead`, as Figma reports it. When that is `false`, the script changed layers before it failed; the message lists them, and the changes stay until undone. A Plugin API member Kalka does not implement throws a `TypeError` that names it and says why, such as `figma.createPaintStyle is not supported in Kalka: …`; the list is `UNSUPPORTED_PLUGIN_API` in `@kalka/core/figma-api`.
+
+Each call is one undo step on the page it starts on. Unlike Figma, the script starts on the page the call targets rather than the first page, every page is loaded (`setCurrentPageAsync` switches at once), and setting `figma.currentPage.selection` does not change the person's selection. Fonts load after the script, so `loadFontAsync` resolves at once. Not available: shared style authoring (`createPaintStyle`, `getLocalTextStylesAsync`, …), `createNodeFromJSXAsync` (build layers with `figma.create*`, or use `render` with Kalka design JSX), team-library imports, plugin UI, and FigJam and Slides APIs; Figma's MCP-only helpers such as `node.query()` are not implemented either. Variable edits are not part of the undo step.
+
 ### Document
 
 | Tool | Description |
@@ -250,7 +271,7 @@ For example, `{ "style": { "property": "background-color", "value": "#2F5BEA" },
 | `undo` | Undo the newest change made through MCP or the CLI |
 | `redo` | Redo the newest change undone through MCP or the CLI |
 
-The history is shared with the person in the editor. `undo` and `redo` refuse when the newest step was made in the editor, so an agent never reverts the user's work. Each editing tool call is one undo step. An `eval` script is recorded against its target page, so edits it makes after switching `figma.currentPage` are not undoable.
+The history is shared with the person in the editor. `undo` and `redo` refuse when the newest step was made in the editor, so an agent never reverts the user's work. Each editing tool call is one undo step. An `eval` or `use_figma` script is recorded against its target page, so edits it makes after switching `figma.currentPage` are not undoable.
 
 ### Settings
 
@@ -426,5 +447,6 @@ Settings tools never expose credentials, AI models, MCP connections, storage, or
 | Tool | Description |
 |------|-------------|
 | `eval` | Execute JavaScript with full Figma Plugin API access |
+| `use_figma` | Run a Figma Plugin API script as Figma's `use_figma` does; see [Writing with `use_figma`](#use-figma) |
 
-Note: `eval` is available over stdio, but disabled in HTTP mode for security.
+Both run code in the app with the document's full access, so they are offered only when `KALKA_MCP_EVAL=1` is set.

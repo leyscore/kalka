@@ -39,7 +39,11 @@ function testSocketPath(): string | null {
   return join(SOCKET_DIR, `mcp-test-${process.pid}-${++testCounter}.sock`)
 }
 
-async function createTestClient(disabledTools: string[] = [], scope: MCPToolScope = 'document') {
+async function createTestClient(
+  disabledTools: string[] = [],
+  scope: MCPToolScope = 'document',
+  enableEval = false
+) {
   if (isUnix) await mkdir(SOCKET_DIR, { recursive: true })
   const authToken = TEST_CLIENT_AUTH_TOKEN
   const handle = await startServer({
@@ -49,7 +53,7 @@ async function createTestClient(disabledTools: string[] = [], scope: MCPToolScop
     authToken,
     disabledTools,
     scope,
-    enableEval: false,
+    enableEval,
     mcpRoot: null
   })
 
@@ -137,6 +141,30 @@ test('MCP exposure exclusions apply to both descriptors and registered tools', a
   }
 })
 
+test("runs Figma's use_figma scripts on the document once code execution is enabled", async () => {
+  const context = await createTestClient([], 'document', true)
+  try {
+    const { tools } = await context.client.listTools()
+    expect(tools.map((tool) => tool.name)).toContain('use_figma')
+    const call = await context.client.callTool({
+      name: 'use_figma',
+      arguments: {
+        fileKey: 'ignored',
+        code: "const frame = figma.createFrame(); frame.name = 'From Figma'; return { id: frame.id }"
+      }
+    })
+    expect(call.isError).not.toBe(true)
+    const result = parseResult(call as { content: { type: string; text?: string }[] })
+    const id = expectDefined(
+      (result as { result?: { id?: string } } | null)?.result?.id,
+      'created frame id'
+    )
+    expect(context.graph.getNode(id)?.name).toBe('From Figma')
+  } finally {
+    await context.close()
+  }
+})
+
 describe('startServer option validation', () => {
   test('rejects an app wait timeout that is not a safe non-negative integer', async () => {
     await expect(startServer({ appWaitTimeoutMs: -1 })).rejects.toThrow(RangeError)
@@ -197,6 +225,13 @@ describe('MCP server', () => {
     expect(byName.get('update_settings')?.capabilities).toEqual(['settings:write'])
     expect(byName.get('eval')?.availability).toBe('eval')
     expect(byName.get('eval')?.capabilities).toContain('code:execute')
+  })
+
+  test("offers Figma's use_figma with eval, as it runs scripts too", () => {
+    const byName = new Map(createToolDescriptors(true).map((tool) => [tool.name, tool] as const))
+    expect(byName.get('use_figma')?.availability).toBe('eval')
+    expect(byName.get('use_figma')?.effect).toBe('write')
+    expect(byName.get('use_figma')?.capabilities).toContain('code:execute')
   })
 
   test('omits tools disabled in the generic registration filter', async () => {

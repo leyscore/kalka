@@ -11,8 +11,21 @@ export {
 } from './analyze/diff'
 export type { DocumentDiff, DocumentDiffOptions, LayerJSXChange } from './analyze/diff'
 export { evalCode } from './analyze/eval'
+export { useFigma } from './analyze/eval/use-figma'
+export {
+  FigmaScriptError,
+  runFigmaScript,
+  type FigmaScriptResult,
+  type ScriptChanges,
+  type ScriptLogEntry
+} from './analyze/eval/figma-script'
 export { lint, lintFix } from './analyze/lint'
-export { compileScript, wrapEvalCode } from './analyze/eval/wrap'
+export {
+  compileScript,
+  wrapEvalCode,
+  type ScriptConsole,
+  type ScriptOptions
+} from './analyze/eval/wrap'
 export { analyzeOverlaps, computeOverlaps } from './analyze/overlaps'
 export type {
   AnalyzeOverlapsArgs,
