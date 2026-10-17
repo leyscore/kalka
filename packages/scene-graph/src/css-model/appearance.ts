@@ -2,7 +2,7 @@ import { parseCSSNumber, parseCSSShadows } from '../css'
 import type { SceneNode } from '../types'
 import { pickStyle } from './from-css'
 import { blendModeFromCSS, blurEffects } from './paint-from-css'
-import { blendModeToCSS, dropShadowToCSS, effectsToCSS } from './to-css'
+import { blendModeToCSS, effectsToCSS, textShadowToCSS } from './to-css'
 import { type CSSDeclarations, type PropertyFamily, px } from './types'
 
 export const effects: PropertyFamily = {
@@ -18,13 +18,13 @@ export const effects: PropertyFamily = {
   }
 }
 
-/** Text draws its first shadow on the letters. */
+/** Text draws its drop shadows on the letters. */
 export const textShadow: PropertyFamily = {
   name: 'text shadow',
   fields: ['effects'],
   properties: ['text-shadow'],
   write(style, node) {
-    const shadow = dropShadowToCSS(node.effects[0])
+    const shadow = textShadowToCSS(node.effects)
     if (shadow) style['text-shadow'] = shadow
   },
   read(style, node) {

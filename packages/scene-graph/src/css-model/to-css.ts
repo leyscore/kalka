@@ -47,6 +47,20 @@ export function dropShadowToCSS(effect: Effect | undefined): string | undefined 
   return shadowToCSS(effect)
 }
 
+/**
+ * A text layer's visible drop shadows as `text-shadow`, which follows the letters. It takes no
+ * spread: a fourth length makes the whole declaration invalid, and the browser drops it.
+ */
+export function textShadowToCSS(effects: readonly Effect[]): string | undefined {
+  const shadows = effects
+    .filter((effect) => effect.type === 'DROP_SHADOW' && effect.visible)
+    .map(
+      (effect) =>
+        `${effect.offset.x}px ${effect.offset.y}px ${effect.radius}px ${cssColor(effect.color)}`
+    )
+  return shadows.length > 0 ? shadows.join(', ') : undefined
+}
+
 /** Every visible shadow, in order, plus layer and background blur. */
 export function effectsToCSS(effects: Effect[]): CSSDeclarations {
   const style: CSSDeclarations = {}

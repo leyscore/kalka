@@ -195,6 +195,7 @@
 
 ### Fixed
 
+- Drop shadows on text layers draw on the canvas and in HTML exports, every one of them, instead of being dropped as invalid CSS.
 - The canvas draws gradient strokes in their gradient instead of black, lines and arrowheads instead of nothing, a turned line about where it starts, strokes centered on or outside the edge and drop shadows past a top-level layer's box instead of cutting them off, and each stroke at its own alignment; HTML and SVG exports draw gradient strokes, arrowheads, inside and outside strokes, and angular and diamond gradients the same way.
 - Turning Automatically preserve unsaved work on or off in Settings › General is saved instead of failing with an error.
 - The agent of a Pi or ACP chat in the desktop app leaves the canvas as soon as a reply finishes, is stopped, or fails, instead of staying at work for up to 20 seconds and keeping your view following it. A tool call already in progress still finishes, but no longer puts the agent back to work.
