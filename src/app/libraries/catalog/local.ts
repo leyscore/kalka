@@ -1,4 +1,4 @@
-import type { DBSchema, IDBPDatabase } from 'idb'
+import type { DBSchema } from 'idb'
 
 import type {
   ComponentLibraryRevision,
@@ -13,7 +13,12 @@ import {
   serializeLibraryRevision
 } from '@kalka/core/library'
 
-import { APP_DATABASE_NAMES, defineAppDatabase, openAppDatabase } from '@/app/storage/idb'
+import {
+  APP_DATABASE_NAMES,
+  connectAppDatabase,
+  defineAppDatabase,
+  type AppDatabase
+} from '@/app/storage/idb'
 
 const DATABASE_NAME = APP_DATABASE_NAMES.libraries
 
@@ -54,18 +59,18 @@ interface LocalLibraryDatabase extends DBSchema {
 }
 
 export class LocalLibraryCatalog implements LibraryCatalog {
-  readonly #database: Promise<IDBPDatabase<LocalLibraryDatabase>>
+  readonly #database: AppDatabase<LocalLibraryDatabase>
 
   constructor(databaseName = DATABASE_NAME) {
-    this.#database = openAppDatabase({ ...libraryDatabase, name: databaseName })
+    this.#database = connectAppDatabase({ ...libraryDatabase, name: databaseName })
   }
 
   async listLibraries(): Promise<LibrarySummary[]> {
-    return (await this.#database).getAll('latest')
+    return (await this.#database.open()).getAll('latest')
   }
 
   async getRevision(libraryId: string, revisionId?: string): Promise<ComponentLibraryRevision> {
-    const database = await this.#database
+    const database = await this.#database.open()
     const resolvedRevisionId =
       revisionId ?? (await database.get('latest', libraryId))?.latestRevisionId
     const stored = resolvedRevisionId
@@ -77,7 +82,7 @@ export class LocalLibraryCatalog implements LibraryCatalog {
   }
 
   async cacheRevision(revision: ComponentLibraryRevision, updateLatest = true): Promise<void> {
-    const database = await this.#database
+    const database = await this.#database.open()
     const transaction = database.transaction(['latest', 'revisions'], 'readwrite')
     const manifest = revision.manifest
     await transaction.objectStore('revisions').put({
@@ -103,7 +108,7 @@ export class LocalLibraryCatalog implements LibraryCatalog {
   async publishRevision(input: PublishLibraryInput): Promise<ComponentLibraryRevision> {
     const revision = await createLibraryRevision(input)
     const serializedRevision = serializeLibraryRevision(revision)
-    const database = await this.#database
+    const database = await this.#database.open()
     const transaction = database.transaction(['latest', 'revisions'], 'readwrite')
     const latest = await transaction.objectStore('latest').get(input.libraryId)
     if ((input.previousRevisionId ?? null) !== (latest?.latestRevisionId ?? null)) {

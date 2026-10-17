@@ -1,6 +1,6 @@
 import type { DBSchema } from 'idb'
 
-import { APP_DATABASE_NAMES, defineAppDatabase, openAppDatabase } from '@/app/storage/idb'
+import { APP_DATABASE_NAMES, defineAppDatabase, connectAppDatabase } from '@/app/storage/idb'
 
 import { getDiagnosticsRetention, type DiagnosticsRetention } from './settings'
 import type { DiagnosticCategory, DiagnosticEvent } from './types'
@@ -37,10 +37,10 @@ export type DiagnosticsStore = {
 }
 
 export function createIDBDiagnosticsStore(): DiagnosticsStore {
-  const database = openAppDatabase(diagnosticsDatabase)
+  const database = connectAppDatabase(diagnosticsDatabase)
 
   async function prune(retention: DiagnosticsRetention): Promise<void> {
-    const db = await database
+    const db = await database.open()
     const transaction = db.transaction('events', 'readwrite')
     const keys = await transaction.store.index('by-timestamp').getAllKeys()
     for (const key of keys.slice(0, Math.max(0, keys.length - retention))) {
@@ -51,18 +51,18 @@ export function createIDBDiagnosticsStore(): DiagnosticsStore {
 
   return {
     async record(event) {
-      const db = await database
+      const db = await database.open()
       const transaction = db.transaction('events', 'readwrite')
       await transaction.store.put(event)
       await transaction.done
       await prune(getDiagnosticsRetention())
     },
     async list() {
-      return (await (await database).getAllFromIndex('events', 'by-timestamp')).reverse()
+      return (await (await database.open()).getAllFromIndex('events', 'by-timestamp')).reverse()
     },
     prune,
     async clear() {
-      await (await database).clear('events')
+      await (await database.open()).clear('events')
     }
   }
 }

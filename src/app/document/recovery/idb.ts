@@ -10,7 +10,7 @@ import {
   APP_DATABASE_NAMES,
   binaryStorage,
   defineAppDatabase,
-  openAppDatabase,
+  connectAppDatabase,
   readStoredBinary,
   type StoredBinary
 } from '@/app/storage/idb'
@@ -39,16 +39,16 @@ interface RecoveryDatabase extends DBSchema {
 }
 
 export function createIdbRecoveryStore(): RecoveryStore {
-  const database = openAppDatabase(recoveryDatabase)
+  const database = connectAppDatabase(recoveryDatabase)
 
   return {
     async list() {
-      const rows = await (await database).getAll('meta')
+      const rows = await (await database.open()).getAll('meta')
       return rows.toSorted((left, right) => right.updatedAt.localeCompare(left.updatedAt))
     },
 
     async read(id: string) {
-      const db = await database
+      const db = await database.open()
       const transaction = db.transaction(['meta', 'fig'])
       const [metadata, stored] = await Promise.all([
         transaction.objectStore('meta').get(id),
@@ -60,7 +60,7 @@ export function createIdbRecoveryStore(): RecoveryStore {
     },
 
     async write(input: RecoverySnapshotInput) {
-      const db = await database
+      const db = await database.open()
       const storeBinary = await binaryStorage()
       const transaction = db.transaction(['meta', 'fig'], 'readwrite')
       const metadata: RecoverySnapshotMeta = {
@@ -79,7 +79,7 @@ export function createIdbRecoveryStore(): RecoveryStore {
     },
 
     async remove(id: string) {
-      const db = await database
+      const db = await database.open()
       const transaction = db.transaction(['meta', 'fig'], 'readwrite')
       await Promise.all([
         transaction.objectStore('meta').delete(id),
@@ -89,7 +89,7 @@ export function createIdbRecoveryStore(): RecoveryStore {
     },
 
     async clear() {
-      const db = await database
+      const db = await database.open()
       const transaction = db.transaction(['meta', 'fig'], 'readwrite')
       await Promise.all([
         transaction.objectStore('meta').clear(),

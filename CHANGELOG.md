@@ -38,6 +38,7 @@
 - Path editing closes when its vector is deleted, by undo or a script, or another document opens, instead of staying open on a layer that no longer exists.
 - Undo takes back what the AI chat, an MCP client, or the CLI changed on other pages, to pages themselves, and to variables and collections, not only on the page the edit ran from, and the chat's change review shows a change made on another page or one that removed the page it ran on. A script's `null` result reaches the agent as `null`, and every script result is sent as the JSON MCP and the CLI print.
 - The AI chat's agent, its cursor, and its working note show on the page a call edited, such as a script that edits another page, while the chat keeps working on its own page and your view follows only when following agents is on.
+- Crash recovery, chat history, diagnostics, local files, libraries, saved credentials, and the sync outbox keep saving after Safari suspends the tab. Safari closes their IndexedDB connections without telling the page, and every later write failed with "The database connection is closing" until the page was reloaded.
 
 ## 0.1.0-beta.2 — 2026-10-17
 

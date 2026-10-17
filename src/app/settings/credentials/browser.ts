@@ -8,7 +8,12 @@ import type {
   CredentialStoreAvailability
 } from '@/app/settings/credentials/types'
 import { CredentialStoreError } from '@/app/settings/credentials/types'
-import { APP_DATABASE_NAMES, defineAppDatabase, openAppDatabase } from '@/app/storage/idb'
+import {
+  APP_DATABASE_NAMES,
+  connectAppDatabase,
+  defineAppDatabase,
+  type AppDatabase
+} from '@/app/storage/idb'
 
 const credentialDatabase = defineAppDatabase<CredentialDatabase>({
   name: APP_DATABASE_NAMES.credentials,
@@ -52,16 +57,16 @@ interface CredentialDatabase extends DBSchema {
 
 export class BrowserCredentialStore implements CredentialStore {
   readonly backend = 'browser' as const
-  readonly #database: Promise<IDBPDatabase<CredentialDatabase>>
+  readonly #database: AppDatabase<CredentialDatabase>
   #masterKeyPromise?: Promise<CryptoKey>
 
   constructor() {
-    this.#database = openAppDatabase(credentialDatabase)
+    this.#database = connectAppDatabase(credentialDatabase)
   }
 
   async availability(): Promise<CredentialStoreAvailability> {
     try {
-      await this.#database
+      await this.#database.open()
       return 'available'
     } catch {
       return 'unavailable'
@@ -75,7 +80,7 @@ export class BrowserCredentialStore implements CredentialStore {
   async read(reference: CredentialRef): Promise<string | null> {
     const key = credentialKey(reference)
     try {
-      const database = await this.#database
+      const database = await this.#database.open()
       const record = await database.get('credentials', key)
       if (!record) return null
 
@@ -95,7 +100,7 @@ export class BrowserCredentialStore implements CredentialStore {
     validateCredentialValue(value)
     const key = credentialKey(reference)
     try {
-      const database = await this.#database
+      const database = await this.#database.open()
       const masterKey = await this.#masterKey(database)
       const iv = ownedBuffer(crypto.getRandomValues(new Uint8Array(IV_LENGTH)))
       const ciphertext = await crypto.subtle.encrypt(
@@ -111,7 +116,7 @@ export class BrowserCredentialStore implements CredentialStore {
 
   async remove(reference: CredentialRef): Promise<void> {
     try {
-      const database = await this.#database
+      const database = await this.#database.open()
       await database.delete('credentials', credentialKey(reference))
     } catch (error) {
       throw this.#normalizeError(error)

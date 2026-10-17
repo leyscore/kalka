@@ -1,10 +1,11 @@
-import type { DBSchema, IDBPDatabase } from 'idb'
+import type { DBSchema } from 'idb'
 
 import {
   APP_DATABASE_NAMES,
   binaryStorage,
+  connectAppDatabase,
   defineAppDatabase,
-  openAppDatabase,
+  type AppDatabase,
   readStoredBinary,
   type StoredBinary
 } from '@/app/storage/idb'
@@ -41,25 +42,25 @@ interface LocalCanvasDatabase extends DBSchema {
   }
 }
 
-function openDatabase(): Promise<IDBPDatabase<LocalCanvasDatabase>> {
-  return openAppDatabase(localCanvasDatabase)
+function connectDatabase(): AppDatabase<LocalCanvasDatabase> {
+  return connectAppDatabase(localCanvasDatabase)
 }
 
 /** IndexedDB-backed local canvas store (meta + fig/thumb blobs). */
 export function createIdbLocalCanvasStore(): LocalCanvasStore {
-  const database = openDatabase()
+  const database = connectDatabase()
 
   async function readBinary(storeName: 'fig' | 'thumb', id: string): Promise<Uint8Array | null> {
-    return readStoredBinary(await (await database).get(storeName, id))
+    return readStoredBinary(await (await database.open()).get(storeName, id))
   }
 
   return {
     async listMetas(includeTombstones = false) {
-      return sortAndFilterMetas(await (await database).getAll('meta'), includeTombstones)
+      return sortAndFilterMetas(await (await database.open()).getAll('meta'), includeTombstones)
     },
 
     async getMeta(id: string) {
-      return (await (await database).get('meta', id)) ?? null
+      return (await (await database.open()).get('meta', id)) ?? null
     },
 
     async readFig(id: string) {
@@ -72,7 +73,7 @@ export function createIdbLocalCanvasStore(): LocalCanvasStore {
 
     async writeCanvas(input: LocalCanvasWriteInput) {
       const storeBinary = await binaryStorage()
-      const transaction = (await database).transaction(['meta', 'fig', 'thumb'], 'readwrite')
+      const transaction = (await database.open()).transaction(['meta', 'fig', 'thumb'], 'readwrite')
       const figStore = transaction.objectStore('fig')
       const thumbStore = transaction.objectStore('thumb')
       const metaStore = transaction.objectStore('meta')
@@ -98,7 +99,7 @@ export function createIdbLocalCanvasStore(): LocalCanvasStore {
     },
 
     async upsertIndexMeta(input) {
-      const transaction = (await database).transaction('meta', 'readwrite')
+      const transaction = (await database.open()).transaction('meta', 'readwrite')
       const store = transaction.objectStore('meta')
       const existing = (await store.get(input.id)) ?? null
       const meta = buildIndexMeta(input, existing)
@@ -109,7 +110,7 @@ export function createIdbLocalCanvasStore(): LocalCanvasStore {
 
     async writeThumb(id: string, thumbBytes: Uint8Array) {
       const storeBinary = await binaryStorage()
-      const transaction = (await database).transaction(['meta', 'thumb'], 'readwrite')
+      const transaction = (await database.open()).transaction(['meta', 'thumb'], 'readwrite')
       const metaStore = transaction.objectStore('meta')
       const existing = await metaStore.get(id)
       if (!existing) {
@@ -126,7 +127,7 @@ export function createIdbLocalCanvasStore(): LocalCanvasStore {
     },
 
     async updateMeta(id: string, patch: Partial<LocalCanvasMeta>, options) {
-      const transaction = (await database).transaction('meta', 'readwrite')
+      const transaction = (await database.open()).transaction('meta', 'readwrite')
       const store = transaction.objectStore('meta')
       const existing = await store.get(id)
       if (
@@ -151,7 +152,7 @@ export function createIdbLocalCanvasStore(): LocalCanvasStore {
     },
 
     async clearFig(id: string) {
-      const transaction = (await database).transaction(['meta', 'fig'], 'readwrite')
+      const transaction = (await database.open()).transaction(['meta', 'fig'], 'readwrite')
       const metaStore = transaction.objectStore('meta')
       const existing = await metaStore.get(id)
       if (!existing) {
@@ -166,7 +167,7 @@ export function createIdbLocalCanvasStore(): LocalCanvasStore {
     },
 
     async remove(id: string) {
-      const transaction = (await database).transaction(['meta', 'fig', 'thumb'], 'readwrite')
+      const transaction = (await database.open()).transaction(['meta', 'fig', 'thumb'], 'readwrite')
       await Promise.all([
         transaction.objectStore('meta').delete(id),
         transaction.objectStore('fig').delete(id),
@@ -176,7 +177,7 @@ export function createIdbLocalCanvasStore(): LocalCanvasStore {
     },
 
     async clearAll() {
-      const transaction = (await database).transaction(['meta', 'fig', 'thumb'], 'readwrite')
+      const transaction = (await database.open()).transaction(['meta', 'fig', 'thumb'], 'readwrite')
       await Promise.all([
         transaction.objectStore('meta').clear(),
         transaction.objectStore('fig').clear(),

@@ -1,7 +1,7 @@
 import type { DBSchema } from 'idb'
 
 import type { RunTrace, TraceAsset, TraceStore } from '@/app/ai/chat/trace/types'
-import { APP_DATABASE_NAMES, defineAppDatabase, openAppDatabase } from '@/app/storage/idb'
+import { APP_DATABASE_NAMES, connectAppDatabase, defineAppDatabase } from '@/app/storage/idb'
 
 import { fromStorableBlobs, toStorableBlobs } from './blobs'
 import type { Conversation, ConversationMeta, ConversationStore } from './types'
@@ -45,8 +45,8 @@ const definition = defineAppDatabase<ChatDatabase>({
 
 /** Transcript snapshots and Blob previews are committed atomically with their list metadata. */
 export function createConversationStore(): ConversationStore {
-  let database: ReturnType<typeof openAppDatabase<ChatDatabase>> | undefined
-  const getDatabase = () => (database ??= openAppDatabase(definition))
+  const database = connectAppDatabase(definition)
+  const getDatabase = () => database.open()
   return {
     async list(documentId) {
       const db = await getDatabase()
@@ -178,8 +178,8 @@ export function createConversationStore(): ConversationStore {
 
 /** Run traces live in the chat database, beside the conversations they belong to. */
 export function createTraceStore(): TraceStore {
-  let database: ReturnType<typeof openAppDatabase<ChatDatabase>> | undefined
-  const getDatabase = () => (database ??= openAppDatabase(definition))
+  const database = connectAppDatabase(definition)
+  const getDatabase = () => database.open()
   return {
     async putRun(run) {
       const transaction = (await getDatabase()).transaction(['deleted', 'runs'], 'readwrite')

@@ -1,6 +1,6 @@
 import type { DBSchema } from 'idb'
 
-import { APP_DATABASE_NAMES, defineAppDatabase, openAppDatabase } from '@/app/storage/idb'
+import { APP_DATABASE_NAMES, defineAppDatabase, connectAppDatabase } from '@/app/storage/idb'
 import { makeJobId, supersedePutCanvasJobs, type OutboxJob } from '@/app/storage/sync/types'
 
 const STORE = 'jobs'
@@ -41,8 +41,8 @@ export type Outbox = {
   clear(): Promise<void>
 }
 
-function openDatabase() {
-  return openAppDatabase(outboxDatabase)
+function connectDatabase() {
+  return connectAppDatabase(outboxDatabase)
 }
 
 function buildJob(partial: OutboxEnqueueInput): OutboxJob {
@@ -98,11 +98,11 @@ export function createMemoryOutbox(): Outbox {
 }
 
 export function createIdbOutbox(): Outbox {
-  const database = openDatabase()
+  const database = connectDatabase()
 
   return {
     async list() {
-      const all = await (await database).getAll(STORE)
+      const all = await (await database.open()).getAll(STORE)
       return all.sort((left, right) => left.createdAt - right.createdAt)
     },
 
@@ -110,7 +110,7 @@ export function createIdbOutbox(): Outbox {
       const job = buildJob(partial)
       // Read and write in ONE transaction so concurrent enqueues can't compute
       // supersession from the same stale snapshot (duplicate/stale jobs).
-      const transaction = (await database).transaction(STORE, 'readwrite')
+      const transaction = (await database.open()).transaction(STORE, 'readwrite')
       const store = transaction.objectStore(STORE)
       const existing = await store.getAll()
       const next = withJobQueued(existing, job)
@@ -125,15 +125,15 @@ export function createIdbOutbox(): Outbox {
     },
 
     async update(job) {
-      await (await database).put(STORE, job)
+      await (await database.open()).put(STORE, job)
     },
 
     async remove(id) {
-      await (await database).delete(STORE, id)
+      await (await database.open()).delete(STORE, id)
     },
 
     async clear() {
-      await (await database).clear(STORE)
+      await (await database.open()).clear(STORE)
     }
   }
 }
