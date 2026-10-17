@@ -82,6 +82,11 @@ test('progressive tiled rendering preference persists and URL overrides take pre
   await canvas.waitForInit()
   await page.getByTestId('app-settings-trigger').click()
   await expect(tiled).toBeChecked()
+
+  // The preference sets how the CanvasKit renderer draws; the DOM canvas draws no tiles, so
+  // the renderer that applies it is the one `?renderer=skia` keeps for comparison.
+  await page.goto('/?test&renderer=skia')
+  await canvas.waitForInit()
   await expect(
     page.evaluate(() =>
       window.kalka

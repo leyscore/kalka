@@ -40,7 +40,8 @@ test('large layer trees stay virtualized and scrollable', async ({ page }) => {
     return startedAt
   }, NODE_COUNT)
 
-  await canvas.waitForRender()
+  // The layers panel is under test, not the canvas: 5,000 artboard documents need not load.
+  await page.evaluate(() => new Promise(requestAnimationFrame))
 
   const scroller = page.getByTestId('layers-scroll')
   const rows = page.getByTestId('layers-item')

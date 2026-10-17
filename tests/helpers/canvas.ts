@@ -23,18 +23,24 @@ export class CanvasHelper {
   }
 
   /**
-   * Waits for the next frame once every artboard's document has loaded: a layer added just
-   * before draws only when its new iframe has, and the projector fills it on that load.
+   * Waits for the next frame once the canvas has settled: every artboard's document has loaded
+   * (a layer added just before draws only when its new iframe has, and the projector fills it on
+   * that load), and the layers an agent added have finished animating in.
    */
   async waitForRender() {
     // The frame that applies pending edits creates the iframes of new top-level layers.
     await this.page.evaluate(() => new Promise(requestAnimationFrame))
     await this.page.waitForFunction(() =>
       [...document.querySelectorAll<HTMLIFrameElement>('iframe[data-kalka-artboard]')].every(
-        // Until its `srcdoc` loads, a new iframe holds an empty `about:blank` document.
-        (frame) =>
-          frame.contentDocument?.readyState === 'complete' &&
-          frame.contentDocument.querySelector('meta[http-equiv]') !== null
+        (frame) => {
+          const doc = frame.contentDocument
+          // Until its `srcdoc` loads, a new iframe holds an empty `about:blank` document.
+          if (doc?.readyState !== 'complete' || !doc.querySelector('meta[http-equiv]')) return false
+          // A design's own endless CSS animation never settles; a reveal ends.
+          return doc
+            .getAnimations()
+            .every((animation) => animation.effect?.getComputedTiming().endTime === Infinity)
+        }
       )
     )
     await this.page.evaluate(() => new Promise(requestAnimationFrame))
