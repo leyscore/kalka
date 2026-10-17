@@ -477,6 +477,7 @@ test.describe('@kalka/dom-css browser CSS runtime oracle', () => {
         height: 176px;
         padding: 24px;
       }
+      h1 { margin: 0; }
     `
     const card = await publicBrowserHTMLSceneGraph(
       page,
@@ -484,9 +485,12 @@ test.describe('@kalka/dom-css browser CSS runtime oracle', () => {
       css
     )
 
+    // Under the browser's default content-box sizing the padding adds to the declared size,
+    // and the layer takes the box the browser drew. The heading's margins are reset because a
+    // child with margins is placed where the browser put it rather than by auto layout.
     expect(card?.type).toBe('FRAME')
-    expect(card?.width).toBe(320)
-    expect(card?.height).toBe(176)
+    expect(card?.width).toBe(320 + 2 * 24)
+    expect(card?.height).toBe(176 + 2 * 24)
     expect(card?.layoutMode).toBe('VERTICAL')
     expect(card?.itemSpacing).toBe(12)
     expect(card?.paddingLeft).toBe(24)
@@ -500,6 +504,7 @@ test.describe('@kalka/dom-css browser CSS runtime oracle', () => {
         <head>
           <style>
             .card { display: flex; flex-direction: column; gap: 14px; width: 300px; height: 160px; padding: 22px; }
+            h1 { margin: 0; }
           </style>
         </head>
         <body><article class="card"><h1>Embedded CSS</h1></article></body>
@@ -507,8 +512,8 @@ test.describe('@kalka/dom-css browser CSS runtime oracle', () => {
     )
 
     expect(card?.type).toBe('FRAME')
-    expect(card?.width).toBe(300)
-    expect(card?.height).toBe(160)
+    expect(card?.width).toBe(300 + 2 * 22)
+    expect(card?.height).toBe(160 + 2 * 22)
     expect(card?.layoutMode).toBe('VERTICAL')
     expect(card?.itemSpacing).toBe(14)
     expect(card?.paddingLeft).toBe(22)
