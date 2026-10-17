@@ -44,6 +44,10 @@
 - Tailwind exports keep corner radius: Tailwind JSX and HTML with Tailwind classes write radius from Tailwind's radius scale, such as `rounded-xl` for 12px, instead of classes like `rounded-3` that Tailwind v4 does not generate, and other values as `rounded-[20px]`.
 - The AI provider list labels its "Your agents" and "Providers" groups in the app language instead of always in English.
 
+### Performance
+
+- Joining a shared room is faster: the document a person receives on joining is compressed, about a twelfth of its size before, and edits travel in Yjs's more compact encoding. Rooms of earlier builds and this one no longer meet.
+
 ## 0.1.0-beta.2 — 2026-10-17
 
 ### Breaking changes
