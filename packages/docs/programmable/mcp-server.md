@@ -214,24 +214,6 @@ Three read tools share their names, arguments, and meaning with the tools of Fig
 
 Library variables and styles are found once the document holds them, as it does after using them; the library catalog lists components only.
 
-### Find by style or token {#find-nodes}
-
-`find_nodes` finds the layers to change before a bulk edit or a token migration. Its filters combine, and every one is optional:
-
-| Argument | Matches |
-|----------|---------|
-| `name`, `text` | Layer name, or a text layer's content: a case-insensitive substring, or a whole-value pattern with `*` and `?` (`Button*`, `Icon/2?`) |
-| `type` | Node type such as `FRAME`, `TEXT`, or `INSTANCE` |
-| `style` | `{ property, value }` against the CSS Kalka writes for the layer: its fields as CSS plus the CSS it keeps as written, the declarations `getCSSAsync` returns. A color matches in any notation (`#2F5BEA`, `rgb(47 91 234)`, `hsl()`, `oklch()`), alpha included, and also inside `border`, `box-shadow`, and gradients; a length matches in `px` or `rem`, and a longhand such as `padding-left` reads from `padding`. `*` and `?` match the whole value as text. Without `property` every declaration is tried; without `value` every layer declaring `property` matches |
-| `variable` | A variable's name (`color/primary`), ID, or CSS custom property (`--color-primary`). `variable_match: "bound"` (default) finds layers bound to it directly or through a variable that aliases it, in any mode. `"unbound"` finds layers that hold its value in one of its modes without binding a variable there: solid fill and stroke colors for a color, the fields its scopes allow for a number (corner radius, gap and padding, size, stroke weight, opacity, font size, line height, letter spacing), font family and text for a string. `"any"` returns both |
-| `tolerance` | How close values must be: Euclidean distance in 0–255 RGB for colors (default 1), pixels for lengths (default 0.01) |
-| `within`, `page`, `root_id` | Where to look: the current page (default), `selection`, or `document`; `page` names another page by name or ID; `root_id` searches one layer and its descendants |
-| `limit` | Most nodes returned, 1–1000 (default 100) |
-
-The result has `count`, every layer that matched, `truncated` when there are more than `limit`, and `nodes`, each with `id`, `name`, `type`, and `page` (`id` and `name`). A `style` filter adds `styles`: the matched `property` and declared `value`, and the `variables` bound to the fields it comes from. A `variable` filter adds `tokens`: the binding `field` (`fills/0/color`, `cornerRadius`), the CSS `properties` it gives the layer, the `value`, the `variable`, and `bound`; a bound match names the `mode` the layer reads it in and `throughAlias` when an alias is bound, and an unbound one lists the `modes` whose value it holds. Pass that `field` to `bind_variable` to migrate a layer to the token.
-
-For example, `{ "style": { "property": "background-color", "value": "#2F5BEA" }, "within": "document" }` lists every layer painted that blue and which of them a variable already drives, and `{ "variable": "color/primary", "variable_match": "unbound" }` lists the layers to bind to `color/primary`.
-
 #### Writing with `use_figma` {#use-figma}
 
 `use_figma` runs Figma Plugin API JavaScript on the open document, as the tool of the same name on Figma's remote MCP server does, so scripts and skills written for it (such as Figma's `figma-use`) run locally. It runs code, so it is enabled together with `eval`: set `KALKA_MCP_EVAL=1`.
@@ -252,6 +234,24 @@ The result is an object:
 A script that throws makes the call fail with `The script failed: <error>` and `safeToRetryWithoutCanvasRead`, as Figma reports it. When that is `false`, the script changed layers before it failed; the message lists them, and the changes stay until undone. A Plugin API member Kalka does not implement throws a `TypeError` that names it and says why, such as `figma.createPaintStyle is not supported in Kalka: …`; the list is `UNSUPPORTED_PLUGIN_API` in `@kalka/core/figma-api`.
 
 Each call is one undo step on the page it starts on. Unlike Figma, the script starts on the page the call targets rather than the first page, every page is loaded (`setCurrentPageAsync` switches at once), and setting `figma.currentPage.selection` does not change the person's selection. Fonts load after the script, so `loadFontAsync` resolves at once. Not available: shared style authoring (`createPaintStyle`, `getLocalTextStylesAsync`, …), `createNodeFromJSXAsync` (build layers with `figma.create*`, or use `render` with Kalka design JSX), team-library imports, plugin UI, and FigJam and Slides APIs; Figma's MCP-only helpers such as `node.query()` are not implemented either. Variable edits are not part of the undo step.
+
+### Find by style or token {#find-nodes}
+
+`find_nodes` finds the layers to change before a bulk edit or a token migration. Its filters combine, and every one is optional:
+
+| Argument | Matches |
+|----------|---------|
+| `name`, `text` | Layer name, or a text layer's content: a case-insensitive substring, or a whole-value pattern with `*` and `?` (`Button*`, `Icon/2?`) |
+| `type` | Node type such as `FRAME`, `TEXT`, or `INSTANCE` |
+| `style` | `{ property, value }` against the CSS Kalka writes for the layer: its fields as CSS plus the CSS it keeps as written, the declarations `getCSSAsync` returns. A color matches in any notation (`#2F5BEA`, `rgb(47 91 234)`, `hsl()`, `oklch()`), alpha included, and also inside `border`, `box-shadow`, and gradients; a length matches in `px` or `rem`, and a longhand such as `padding-left` reads from `padding`. `*` and `?` match the whole value as text. Without `property` every declaration is tried; without `value` every layer declaring `property` matches |
+| `variable` | A variable's name (`color/primary`), ID, or CSS custom property (`--color-primary`). `variable_match: "bound"` (default) finds layers bound to it directly or through a variable that aliases it, in any mode. `"unbound"` finds layers that hold its value in one of its modes without binding a variable there: solid fill and stroke colors for a color, the fields its scopes allow for a number (corner radius, gap and padding, size, stroke weight, opacity, font size, line height, letter spacing), font family and text for a string. `"any"` returns both |
+| `tolerance` | How close values must be: Euclidean distance in 0–255 RGB for colors (default 1), pixels for lengths (default 0.01) |
+| `within`, `page`, `root_id` | Where to look: the current page (default), `selection`, or `document`; `page` names another page by name or ID; `root_id` searches one layer and its descendants |
+| `limit` | Most nodes returned, 1–1000 (default 100) |
+
+The result has `count`, every layer that matched, `truncated` when there are more than `limit`, and `nodes`, each with `id`, `name`, `type`, and `page` (`id` and `name`). A `style` filter adds `styles`: the matched `property` and declared `value`, and the `variables` bound to the fields it comes from. A `variable` filter adds `tokens`: the binding `field` (`fills/0/color`, `cornerRadius`), the CSS `properties` it gives the layer, the `value`, the `variable`, and `bound`; a bound match names the `mode` the layer reads it in and `throughAlias` when an alias is bound, and an unbound one lists the `modes` whose value it holds. Pass that `field` to `bind_variable` to migrate a layer to the token.
+
+For example, `{ "style": { "property": "background-color", "value": "#2F5BEA" }, "within": "document" }` lists every layer painted that blue and which of them a variable already drives, and `{ "variable": "color/primary", "variable_match": "unbound" }` lists the layers to bind to `color/primary`.
 
 ### Document
 
