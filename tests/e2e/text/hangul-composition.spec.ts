@@ -22,8 +22,9 @@ async function stubGoogleFonts(page: Page) {
   })
 }
 
-async function startEmptyTextEdit(page: Page) {
-  return await page.evaluate(() => {
+/** Adds an empty text layer and, once its artboard has drawn it, starts editing it. */
+async function startEmptyTextEdit(page: Page, canvas: CanvasHelper) {
+  const id = await page.evaluate(() => {
     const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
 
@@ -36,113 +37,76 @@ async function startEmptyTextEdit(page: Page) {
       fills: [{ type: 'SOLID', color: { r: 0, g: 0, b: 0, a: 1 }, visible: true, opacity: 1 }]
     })
     store.select([id])
-    store.startTextEditing(id)
     store.requestRender()
     return id
   })
+  // The editor works in the layer's own element, which its new artboard holds once loaded.
+  await canvas.waitForRender()
+  await page.evaluate((id) => window.kalka?.getStore?.()?.startTextEditing(id), id)
+  return id
 }
 
-test('Hangul text input commits without CanvasKit paragraph errors', async ({ page }) => {
-  const canvas = new CanvasHelper(page)
-  await stubGoogleFonts(page)
-  await page.goto('/?test&no-chrome&no-rulers')
-  await canvas.waitForInit()
-
-  const id = await startEmptyTextEdit(page)
-
-  await page.locator('textarea[aria-hidden="true"]').fill('환경설정')
-  await canvas.waitForRender()
-  await canvas.click(20, 20)
-  await canvas.waitForRender()
-
-  const result = await page.evaluate((nodeId) => {
+function readEdit(page: Page, nodeId: string) {
+  return page.evaluate((nodeId) => {
     const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Kalka store not initialized')
     const node = store.graph.getNode(nodeId)
-    if (!node || node.type !== 'TEXT') return null
     return {
       editingTextId: store.state.editingTextId,
-      height: node.height,
-      text: node.text
+      height: node?.height ?? 0,
+      text: node?.text ?? null
     }
-  }, id)
+  }, nodeId)
+}
 
-  expect(result).toMatchObject({
-    editingTextId: null,
-    text: '환경설정'
-  })
-  expect(result?.height).toBeGreaterThan(0)
-  canvas.assertNoErrors()
-})
-
-test('Hangul composition updates are visible before IME commit', async ({ page }) => {
+// The DOM canvas edits text in the layer's own element, so the browser's IME composes into it;
+// the Chrome DevTools Protocol drives that IME as a keyboard layout would.
+test('Hangul text input commits', async ({ page }) => {
   const canvas = new CanvasHelper(page)
   await stubGoogleFonts(page)
   await page.goto('/?test&no-chrome&no-rulers')
   await canvas.waitForInit()
 
-  const id = await startEmptyTextEdit(page)
+  const id = await startEmptyTextEdit(page, canvas)
+  await canvas.waitForTextEditor()
 
-  const composing = await page.evaluate((nodeId) => {
-    const store = window.kalka?.getStore?.()
-    const textarea = document.querySelector<HTMLTextAreaElement>('textarea[aria-hidden="true"]')
-    if (!store || !textarea) throw new Error('Text edit session was not initialized')
+  await page.keyboard.insertText('환경설정')
+  await canvas.waitForRender()
+  await canvas.click(20, 20)
+  await canvas.waitForRender()
 
-    const readText = () => {
-      const node = store.graph.getNode(nodeId)
-      return node?.type === 'TEXT' ? node.text : null
+  const result = await readEdit(page, id)
+  expect(result).toMatchObject({ editingTextId: null, text: '환경설정' })
+  expect(result.height).toBeGreaterThan(0)
+  canvas.assertNoErrors()
+})
+
+test('Hangul composition updates the layer before the IME commits', async ({ page }) => {
+  const canvas = new CanvasHelper(page)
+  await stubGoogleFonts(page)
+  await page.goto('/?test&no-chrome&no-rulers')
+  await canvas.waitForInit()
+
+  const id = await startEmptyTextEdit(page, canvas)
+  await canvas.waitForTextEditor()
+
+  const cdp = await page.context().newCDPSession(page)
+  try {
+    for (const text of ['ㅎ', '하', '한']) {
+      await cdp.send('Input.imeSetComposition', {
+        text,
+        selectionStart: text.length,
+        selectionEnd: text.length
+      })
+      await expect.poll(async () => (await readEdit(page, id)).text).toBe(text)
     }
-    const update = (text: string) => {
-      textarea.value = text
-      textarea.dispatchEvent(new CompositionEvent('compositionupdate', { data: text }))
-      textarea.dispatchEvent(
-        new InputEvent('input', {
-          data: text,
-          inputType: 'insertCompositionText',
-          isComposing: true
-        })
-      )
-      return readText()
-    }
-
-    textarea.dispatchEvent(new CompositionEvent('compositionstart'))
-    const steps = [update('ㅎ'), update('하'), update('한')]
-
-    textarea.dispatchEvent(new CompositionEvent('compositionend', { data: '한' }))
-    const afterEnd = readText()
-
-    textarea.value = '한'
-    textarea.dispatchEvent(new InputEvent('input', { data: '한', inputType: 'insertText' }))
-    const afterTrailingInput = readText()
-
-    return {
-      afterEnd,
-      afterTrailingInput,
-      editingTextId: store.state.editingTextId,
-      steps
-    }
-  }, id)
-
-  expect(composing).toEqual({
-    afterEnd: '한',
-    afterTrailingInput: '한',
-    editingTextId: id,
-    steps: ['ㅎ', '하', '한']
-  })
+    await cdp.send('Input.insertText', { text: '한' })
+  } finally {
+    await cdp.detach()
+  }
+  await expect.poll(() => readEdit(page, id)).toMatchObject({ editingTextId: id, text: '한' })
 
   await canvas.click(20, 20)
-  const committed = await page.evaluate((nodeId) => {
-    const store = window.kalka?.getStore?.()
-    if (!store) throw new Error('Kalka store not initialized')
-    return {
-      editingTextId: store.state.editingTextId,
-      text: store.graph.getNode(nodeId)?.text
-    }
-  }, id)
-
-  expect(committed).toEqual({
-    editingTextId: null,
-    text: '한'
-  })
+  await expect.poll(() => readEdit(page, id)).toMatchObject({ editingTextId: null, text: '한' })
   canvas.assertNoErrors()
 })
