@@ -51,6 +51,38 @@ describe('collab yjs-sync', () => {
     expect(decodeNodeFromYjs(ynode).textPicture).toBeNull()
   })
 
+  test('carries instance overrides to other peers', () => {
+    const graph = new SceneGraph()
+    const instance = graph.createNode('FRAME', firstPage(graph).id, { name: 'Player' })
+    instance.instanceOverrides = {
+      self: new Map<string, unknown>([['name', 'Night Shift']]),
+      descendants: new Map([['title', new Map<string, unknown>([['text', 'Side B']])]])
+    }
+    const local = new Y.Doc()
+    const ynode = new Y.Map<unknown>()
+    local.getMap<Y.Map<unknown>>('nodes').set(instance.id, ynode)
+    syncEncodedNodeToYMap(instance, ynode)
+
+    // Through Yjs's own update encoding, as a peer receives it.
+    const remote = new Y.Doc()
+    Y.applyUpdate(remote, Y.encodeStateAsUpdate(local))
+    const received = expectDefined(remote.getMap<Y.Map<unknown>>('nodes').get(instance.id), 'node')
+
+    expect(decodeNodeFromYjs(received).instanceOverrides).toEqual(instance.instanceOverrides)
+  })
+
+  test('reads overrides a room stored before they were serialized as none', () => {
+    const doc = new Y.Doc()
+    const ynode = new Y.Map<unknown>()
+    doc.getMap<Y.Map<unknown>>('nodes').set('legacy', ynode)
+    ynode.set('instanceOverrides', { self: {}, descendants: {} })
+
+    const { instanceOverrides } = decodeNodeFromYjs(ynode)
+
+    expect(instanceOverrides?.self).toEqual(new Map())
+    expect(instanceOverrides?.descendants).toEqual(new Map())
+  })
+
   test('normalizes malformed source metadata and geometry at the remote boundary', () => {
     const doc = new Y.Doc()
     const ynode = new Y.Map<unknown>()

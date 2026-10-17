@@ -184,6 +184,7 @@
 
 ### Fixed
 
+- People in a shared room see the overrides of instances in the shared document: text, slot content, and every other overridden field arrived empty, and editing such an instance could throw. Rooms opened by earlier builds do not meet rooms opened by this one.
 - Fill and stroke bindings to variables made in Kalka survive a paste into Figma, which keeps them as remote variables as it does for variables copied from another Figma file.
 - Instances pasted into Figma keep their names and no longer carry their component's library identity.
 - Saving an opened `.fig` file writes a variable's new value into every layer that uses it, through an alias too, so Figma shows the edit. Before, layers bound through an alias, or any layer read from the file, kept the color Figma had saved.

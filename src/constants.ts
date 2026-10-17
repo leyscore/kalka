@@ -67,7 +67,7 @@ import type { Color } from '@kalka/scene-graph/primitives'
  * The collaboration namespace. It names the shared document format, so builds that sync the layer
  * tree differently never join each other's rooms; change it with the format.
  */
-export const COLLAB_APP_ID = 'kalka/2'
+export const COLLAB_APP_ID = 'kalka/3'
 // 32 base36 characters provide roughly 165 bits of entropy. The room ID is a
 // bearer credential and must resist offline enumeration from public signaling topics.
 export const ROOM_ID_LENGTH = 32
