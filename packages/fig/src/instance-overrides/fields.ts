@@ -1,6 +1,10 @@
 import { groupBy } from 'es-toolkit'
 
+import { UNSET_GUID } from '@kalka/kiwi/fig/guid'
 import type { SceneNode } from '@kalka/scene-graph'
+
+/** The style reference Figma writes for a style an instance has cleared. */
+export const CLEARED_STYLE = { guid: { ...UNSET_GUID } }
 
 /**
  * How a claim on a raw Kiwi field maps onto SceneGraph. Materialization records the
@@ -93,9 +97,10 @@ export const OVERRIDE_FIELDS = {
   effects: { scene: ['effects'], kind: 'node', absent: [] },
   locked: { scene: ['locked'], kind: 'node', absent: false },
   layoutGrids: { scene: ['layoutGrids'], kind: 'node', absent: [] },
-  styleIdForFill: { scene: ['fillStyleId'], kind: 'node' },
-  styleIdForStrokeFill: { scene: ['strokeStyleId'], kind: 'node' },
-  styleIdForEffect: { scene: ['effectStyleId'], kind: 'node' },
+  // An instance that clears a style the component applies claims the unset GUID (desktop 126).
+  styleIdForFill: { scene: ['fillStyleId'], kind: 'node', absent: CLEARED_STYLE },
+  styleIdForStrokeFill: { scene: ['strokeStyleId'], kind: 'node', absent: CLEARED_STYLE },
+  styleIdForEffect: { scene: ['effectStyleId'], kind: 'node', absent: CLEARED_STYLE },
   stackPrimaryAlignItems: { scene: ['primaryAxisAlign'], kind: 'node' },
   stackCounterAlignItems: { scene: ['counterAxisAlign'], kind: 'node' },
   stackPositioning: { scene: ['layoutPositioning'], kind: 'node' },

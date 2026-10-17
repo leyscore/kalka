@@ -20,6 +20,7 @@
 - Selecting text set on a path shows its curve, a band along the lettering, and a handle where the text starts, with the resize handles on the box the lettering fits, instead of a plain box around the layer.
 - Text set to align to the middle or bottom of a fixed-height box draws there on the canvas, while editing, and in HTML exports, instead of at the top. Older browsers without `align-content` on blocks (before Chrome 123, Firefox 125 and Safari 17.4) still draw it at the top.
 - A quick click or trackpad tap with the text tool on an empty part of the canvas opens the new text for typing, instead of leaving an empty layer that took no input.
+- A copy inside an instance that sizes itself to its own content, such as a badge's count or an auto layout frame that hugs layers the instance shows differently, keeps its size through a component edit and as a `.fig` file opens, and text an instance property sets is measured again. An instance that clears a fill, stroke, effect, or text style its component applies keeps it cleared after a `.fig` save.
 
 ## 0.1.0-beta.2 — 2026-10-17
 

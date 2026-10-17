@@ -1,4 +1,8 @@
-import { type OverrideField, SCENE_OVERRIDE_FIELDS } from '#fig/instance-overrides/fields'
+import {
+  CLEARED_STYLE,
+  type OverrideField,
+  SCENE_OVERRIDE_FIELDS
+} from '#fig/instance-overrides/fields'
 import { compact } from 'es-toolkit'
 
 import {
@@ -138,9 +142,11 @@ function rawClaim(
       return { textData: { ...nodeFields().textData, characters } }
     }
     case 'text-style':
-      return target.textStyleId
-        ? { styleIdForText: exportedStyleReference(context, target.textStyleId) }
-        : undefined
+      return {
+        styleIdForText: target.textStyleId
+          ? exportedStyleReference(context, target.textStyleId)
+          : structuredClone(CLEARED_STYLE)
+      }
     case 'paint':
       return raw === 'fillPaints'
         ? { fillPaints: createFillPaints(context, target) }

@@ -27,7 +27,10 @@ test('instance style overrides come back as overrides after saving and reopening
 
   const reopened = await parseFigFile((await exportFigFile(graph)).slice().buffer)
   const nodes = [...reopened.getAllNodes()]
-  const copy = expectDefined(nodes.find((node) => node.type === 'INSTANCE'), 'reopened instance')
+  const copy = expectDefined(
+    nodes.find((node) => node.type === 'INSTANCE'),
+    'reopened instance'
+  )
   const component = expectDefined(nodes.find((node) => node.type === 'COMPONENT'))
   const [reopenedBar, reopenedLabel] = reopened.getChildren(copy.id)
   expect(reopenedBar.strokeWeight).toBe(6)
@@ -35,7 +38,11 @@ test('instance style overrides come back as overrides after saving and reopening
   expect(reopenedBar.cornerSmoothing).toBeCloseTo(0.6)
   expect(reopenedLabel.letterSpacing).toBe(2)
   expect(reopenedLabel.styleRuns).toEqual([
-    expect.objectContaining({ start: 0, length: 5, style: expect.objectContaining({ fontSize: 30 }) })
+    expect.objectContaining({
+      start: 0,
+      length: 5,
+      style: expect.objectContaining({ fontSize: 30 })
+    })
   ])
   for (const [layer, field] of [
     [reopenedBar, 'strokeWeight'],
@@ -52,4 +59,42 @@ test('instance style overrides come back as overrides after saving and reopening
   reopened.syncInstances(component.id)
   expect([reopenedBar.strokeWeight, reopenedBar.strokeAlign]).toEqual([6, 'OUTSIDE'])
   expect([reopenedLabel.letterSpacing, reopenedLabel.textCase]).toEqual([2, 'UPPER'])
+})
+
+test('an instance that clears its component’s fill style keeps it cleared after reopening', async () => {
+  // Figma desktop 126 claims the cleared style as the unset GUID, with the paints it keeps.
+  const graph = new SceneGraph()
+  const page = graph.getPages()[0].id
+  const red = {
+    type: 'SOLID' as const,
+    color: { r: 1, g: 0, b: 0, a: 1 },
+    opacity: 1,
+    visible: true
+  }
+  const style = graph.createNode('RECTANGLE', page, {
+    name: 'Red',
+    sharedStyleType: 'FILL',
+    fills: [red]
+  })
+  const card = graph.createNode('COMPONENT', page, { name: 'Card', width: 100, height: 100 })
+  graph.createNode('RECTANGLE', card.id, { name: 'Box', fills: [red], fillStyleId: style.id })
+  const instance = expectDefined(graph.createInstance(card.id, page))
+  const [box] = graph.getChildren(instance.id)
+  graph.updateNode(box.id, { fillStyleId: null })
+  recordInstanceOverride(graph, box.id, ['fillStyleId', 'fills'])
+
+  const reopened = await parseFigFile((await exportFigFile(graph)).slice().buffer)
+  const nodes = [...reopened.getAllNodes()]
+  const copy = expectDefined(nodes.find((node) => node.type === 'INSTANCE'))
+  const component = expectDefined(nodes.find((node) => node.type === 'COMPONENT'))
+  const [reopenedBox] = reopened.getChildren(copy.id)
+  const [componentBox] = reopened.getChildren(component.id)
+  expect(componentBox.fillStyleId).toBeTruthy()
+  expect(reopenedBox.fillStyleId).toBeFalsy()
+  expect(hasInstanceOverride(reopened, reopenedBox.id, 'fillStyleId')).toBe(true)
+  reopened.syncInstances(component.id)
+  expect(reopenedBox.fillStyleId).toBeFalsy()
+  expect(reopenedBox.fills).toEqual([
+    expect.objectContaining({ color: expect.objectContaining({ r: 1 }) })
+  ])
 })

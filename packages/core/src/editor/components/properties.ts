@@ -13,6 +13,7 @@ import type {
 } from '@kalka/scene-graph'
 
 import { assertNodeEditable } from '#core/editor/capabilities'
+import { textAutoResizeChanges } from '#core/editor/text/auto-resize'
 import type { EditorContext } from '#core/editor/types'
 
 function definitionsForInstance(
@@ -32,6 +33,21 @@ function targetValue(target: ComponentPropertyTarget | null): string {
   if (target.field === 'VISIBLE') return String(target.node.visible)
   return target.source.componentId ?? target.node.componentId ?? ''
 }
+/** Measures text a property gave new characters, when it sizes itself to them, as Figma does. */
+export function measurePropertyText(
+  ctx: Pick<EditorContext, 'graph'>,
+  instanceId: string,
+  definition: ComponentPropertyDefinition
+): void {
+  const instance = ctx.graph.getNode(instanceId)
+  if (definition.type !== 'TEXT' || !instance) return
+  for (const target of findComponentPropertyTargets(ctx.graph, instance, definition.id)) {
+    if (target.field !== 'TEXT') continue
+    const changes = textAutoResizeChanges(target.node, { text: target.node.text })
+    if (Object.keys(changes).length > 0) ctx.graph.updateNode(target.node.id, changes)
+  }
+}
+
 function applyPropertyValue(
   ctx: Pick<EditorContext, 'graph'>,
   instanceId: string,
@@ -39,6 +55,7 @@ function applyPropertyValue(
   value: string
 ): boolean {
   const result = applyComponentPropertyValue(ctx.graph, instanceId, definition, value)
+  measurePropertyText(ctx, instanceId, definition)
   return definition.type !== 'INSTANCE_SWAP' || result !== null
 }
 
@@ -126,10 +143,12 @@ export function createComponentPropertyActions(
     )
 
     if (!applyPropertyValue(ctx, instanceId, definition, value)) return
+    ctx.runLayoutForNode(instanceId)
     ctx.undo.push({
       label: `Change ${definition.name}`,
       forward: () => {
         applyPropertyValue(ctx, instanceId, definition, value)
+        ctx.runLayoutForNode(instanceId)
         ctx.requestRender()
       },
       inverse: () => {
@@ -143,6 +162,8 @@ export function createComponentPropertyActions(
           restoredTargets.forEach((target, index) =>
             restoreTarget(live, target, previousValues[index] ?? '')
           )
+          measurePropertyText(ctx, instanceId, definition)
+          ctx.runLayoutForNode(instanceId)
         }
         ctx.requestRender()
       }

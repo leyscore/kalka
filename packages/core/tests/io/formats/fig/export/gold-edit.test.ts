@@ -95,7 +95,9 @@ test('Gold document exposes effective Boolean assignments and supports editor un
       return avatar?.componentId ? restored.getNode(avatar.componentId)?.name : undefined
     })
   ).toEqual(originalComponents)
-  expect({ width: input.width, height: input.height }).toEqual(originalInputSize)
+  // Setting the property lays the instance out again, which may move the size by float error.
+  expect(input.width).toBeCloseTo(originalInputSize.width, 3)
+  expect(input.height).toBeCloseTo(originalInputSize.height, 3)
   expect(
     restoredContents.map((node) => {
       const avatar = restored

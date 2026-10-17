@@ -76,7 +76,13 @@ test('a component edit reaches every field its instances do not override, as in 
   const overridden = expectDefined(graph.createInstance(card.id, page))
   const overriddenBar = graph.getChildren(overridden.id)[1]
   graph.updateNode(overriddenBar.id, { strokeWeight: 6 })
-  setInstanceOverride(overridden.instanceOverrides, overridden.id, overriddenBar.id, 'strokeWeight', 6)
+  setInstanceOverride(
+    overridden.instanceOverrides,
+    overridden.id,
+    overriddenBar.id,
+    'strokeWeight',
+    6
+  )
 
   graph.updateNode(dot.id, { x: 150, y: 30, rotation: 30 })
   graph.updateNode(bar.id, { x: 40, strokeWeight: 3, strokeAlign: 'OUTSIDE', cornerSmoothing: 0.6 })
@@ -98,7 +104,11 @@ test('a component edit reaches every field its instances do not override, as in 
 test('a layer in an auto layout flow takes its place from the layout, not the component', () => {
   const graph = new SceneGraph()
   const page = graph.getPages()[0].id
-  const row = graph.createNode('COMPONENT', page, { layoutMode: 'HORIZONTAL', width: 100, height: 20 })
+  const row = graph.createNode('COMPONENT', page, {
+    layoutMode: 'HORIZONTAL',
+    width: 100,
+    height: 20
+  })
   const item = graph.createNode('RECTANGLE', row.id, { x: 0, y: 0, width: 20, height: 20 })
   const instance = expectDefined(graph.createInstance(row.id, page))
   const copy = graph.getChildren(instance.id)[0]
@@ -277,4 +287,92 @@ test('a component line, with no height, still reaches its instances', () => {
     [0, 0],
     [80, 0]
   ])
+})
+
+test('a copy that sizes itself to its own content keeps that size through a component edit', () => {
+  // A badge's count, as in gold-preview's lists: the instance's text is its own, the component's
+  // a longer placeholder, and Figma sizes the count and its hugging frame to the instance's text.
+  const graph = new SceneGraph()
+  const page = graph.getPages()[0].id
+  const badge = graph.createNode('COMPONENT', page, {
+    width: 76,
+    height: 18,
+    layoutMode: 'HORIZONTAL',
+    primaryAxisSizing: 'HUG',
+    counterAxisSizing: 'HUG'
+  })
+  const label = graph.createNode('FRAME', badge.id, {
+    width: 60,
+    height: 16,
+    layoutMode: 'HORIZONTAL',
+    primaryAxisSizing: 'HUG',
+    counterAxisSizing: 'HUG'
+  })
+  const text = graph.createNode('TEXT', label.id, {
+    text: 'Badge-sm',
+    width: 60,
+    height: 16,
+    textAutoResize: 'WIDTH_AND_HEIGHT'
+  })
+  const instance = expectDefined(graph.createInstance(badge.id, page))
+  const [copyLabel] = graph.getChildren(instance.id)
+  const [copyText] = graph.getChildren(copyLabel.id)
+  graph.updateNode(copyText.id, { text: '2', width: 8 })
+  graph.updateNode(copyLabel.id, { width: 8 })
+  graph.updateNode(instance.id, { width: 24 })
+  setInstanceOverride(instance.instanceOverrides, instance.id, copyText.id, 'text', true)
+
+  graph.updateNode(text.id, { width: 64, letterSpacing: 1 })
+  graph.updateNode(label.id, { width: 64 })
+  graph.syncInstances(badge.id)
+  expect([copyText.text, copyText.width, copyLabel.width, instance.width]).toEqual(['2', 8, 8, 24])
+  expect(copyText.letterSpacing).toBe(1)
+})
+
+test('a copy takes the component’s size once the component stops hugging its layers', () => {
+  const graph = new SceneGraph()
+  const page = graph.getPages()[0].id
+  const badge = graph.createNode('COMPONENT', page, { width: 76, height: 18 })
+  const label = graph.createNode('FRAME', badge.id, {
+    width: 60,
+    height: 16,
+    layoutMode: 'HORIZONTAL',
+    primaryAxisSizing: 'HUG',
+    counterAxisSizing: 'HUG'
+  })
+  const instance = expectDefined(graph.createInstance(badge.id, page))
+  const [copyLabel] = graph.getChildren(instance.id)
+  graph.updateNode(copyLabel.id, { width: 8 })
+
+  graph.updateNode(label.id, { primaryAxisSizing: 'FIXED', width: 64 })
+  graph.syncInstances(badge.id)
+  expect([copyLabel.primaryAxisSizing, copyLabel.width]).toEqual(['FIXED', 64])
+})
+
+test('text a property gives a copy when its layer is linked later drops the size saved for the old text', () => {
+  const graph = new SceneGraph()
+  const page = graph.getPages()[0].id
+  const button = graph.createNode('COMPONENT', page, {
+    width: 80,
+    height: 24,
+    componentPropertyDefinitions: [{ id: 'label', name: 'Label', type: 'TEXT', defaultValue: 'Go' }]
+  })
+  const text = graph.createNode('TEXT', button.id, {
+    text: 'Go',
+    width: 20,
+    height: 16,
+    textAutoResize: 'WIDTH_AND_HEIGHT',
+    derivedLayout: { width: 20, height: 16 }
+  })
+  const instance = expectDefined(graph.createInstance(button.id, page))
+  graph.updateNode(instance.id, { componentPropertyAssignments: { label: 'Checkout' } })
+  const [copy] = graph.getChildren(instance.id)
+  // The sizes Figma saved for the texts the component and the copy showed.
+  graph.updateNode(copy.id, { derivedLayout: { width: 22, height: 16 } })
+
+  graph.updateNode(text.id, {
+    componentPropertyReferences: [{ propertyId: 'label', field: 'TEXT' }]
+  })
+  graph.syncInstances(button.id)
+  expect([copy.text, copy.derivedLayout]).toEqual(['Checkout', null])
 })

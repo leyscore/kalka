@@ -36,7 +36,16 @@ describe('Figma shared style export', () => {
       styleIdForText: { guid: { sessionID: 1, localID: 12 } },
       styleIdForEffect: { guid: { sessionID: 1, localID: 13 } },
       styleIdForGrid: { guid: { sessionID: 1, localID: 14 } },
-      layoutGrids: [{ pattern: 'COLUMNS', count: 12, gutterSize: 16, visible: true }]
+      layoutGrids: [
+        {
+          pattern: 'STRIPES',
+          axis: 'X',
+          type: 'STRETCH',
+          numSections: 12,
+          gutterSize: 16,
+          visible: true
+        }
+      ]
     })
   })
 

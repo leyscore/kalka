@@ -6,6 +6,7 @@ import {
   hasInstanceOverride as hasNodeInstanceOverride,
   setInstanceOverride
 } from './instance-overrides'
+import { keepOwnContentSize } from './instances/content-size'
 import {
   createInstanceSyncContext,
   groupCopyRemovals,
@@ -194,6 +195,8 @@ function syncInstancesOf(
           if (isProtectedSyncField(instance, key, protectedField)) continue
           copyProp(updates, source, key)
         }
+        // An instance that hugs its layers sizes to what it shows, not to the component.
+        keepOwnContentSize(graph, updates, instance, source)
         updateSyncedProps(graph, instance, updates)
         const context = createInstanceSyncContext(instance.id, instance.instanceOverrides)
         syncChildren(graph, component.id, instance.id, instance.instanceOverrides, context)
