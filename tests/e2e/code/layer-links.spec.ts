@@ -66,8 +66,11 @@ test.beforeEach(async () => {
   await editor.canvas.waitForInit()
 })
 
+/** Opens the code on Design JSX, whose elements these links follow; the app starts on HTML/CSS. */
 async function openCode(page: Page) {
   await page.getByTestId('properties-tab-code').click()
+  await page.getByTestId('code-panel-source').click()
+  await page.getByRole('option', { name: 'Design JSX' }).click()
   await expect(codeLine(page, 'name="Swatch"')).toBeVisible()
 }
 

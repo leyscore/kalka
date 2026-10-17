@@ -17,7 +17,8 @@ test('mobile Code drawer mounts one live editor only while open', async () => {
   const panel = editor.page.getByTestId('code-panel-root')
   await expect(panel).toBeVisible()
   await expect(panel.locator('[data-slot="code-editor"]')).toHaveCount(1)
-  await expect(panel.locator('.cm-content')).toContainText('Frame')
+  // The selected frame's code, in whichever source the drawer opens on.
+  await expect(panel.locator('.cm-content')).toContainText('100px')
   await expect(panel.locator('.cm-lineNumbers')).toBeVisible()
 
   await editor.page.getByTestId('mobile-ribbon-code').click()

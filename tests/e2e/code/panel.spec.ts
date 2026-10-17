@@ -32,9 +32,13 @@ function codeEditor() {
   return editor.page.locator('[data-slot="code-editor"] .cm-content')
 }
 
-/** Opens the editor; with nothing selected that means choosing to write new Design JSX. */
+/**
+ * Opens the editor on Design JSX, which these specs exercise unless they pick another source;
+ * the app starts on HTML/CSS. With nothing selected that means choosing to write new Design JSX.
+ */
 async function openCodePanel() {
   await codeTab().click()
+  await selectSource('Design JSX')
   const writeJSX = codePanel().getByRole('button', { name: 'Write JSX' })
   await expect(codeEditor().or(writeJSX)).toBeVisible()
   if (await writeJSX.isVisible()) await writeJSX.click()
@@ -146,24 +150,27 @@ test('Reset restores generated source and original canvas state', async () => {
   await expect(codeEditor()).toContainText('Rectangle')
 })
 
+// With a selection, HTML/CSS shows the selection's HTML read-only; with none, it writes new layers.
 test('HTML/CSS live preview commits as one undoable session', async () => {
-  await editor.canvas.drawRect(80, 80, 120, 90)
-  const originalId = await getFirstSelectedNodeId(editor.page)
+  const shownText = async (text: string) =>
+    (await getCodeNodeSummaries(editor.page)).some((node) => node.text === text)
   await openCodePanel()
   await selectSource('HTML/CSS')
   await codeEditor().fill('<div style="width: 180px; height: 90px">First</div>')
-  await expect.poll(() => hasNode(editor.page, originalId)).toBe(false)
+  await expect.poll(() => shownText('First')).toBe(true)
   await codeEditor().fill('<div style="width: 220px; height: 110px">Final</div>')
   await expect(editor.page.getByTestId('code-panel-status')).toContainText('Updated live')
   await expect(editor.page.getByTestId('code-panel-status')).toHaveAttribute('data-tone', 'success')
+  await expect.poll(() => shownText('Final')).toBe(true)
+  expect(await shownText('First')).toBe(false)
 
   await designTab().click()
   await expect.poll(() => getUndoLabel(editor.page)).toBe('Edit HTML/CSS')
   await editor.page.keyboard.press('Meta+z')
-  await waitForNode(editor.page, originalId)
-  expect(await hasNode(editor.page, originalId)).toBe(true)
+  await expect.poll(() => shownText('Final')).toBe(false)
+  expect(await shownText('First')).toBe(false)
   await editor.page.keyboard.press('Meta+Shift+z')
-  await expect.poll(() => hasNode(editor.page, originalId)).toBe(false)
+  await expect.poll(() => shownText('Final')).toBe(true)
 })
 
 test('switching source formats commits the current live session', async () => {
@@ -173,7 +180,7 @@ test('switching source formats commits the current live session', async () => {
   await codeEditor().fill('<Frame name="Committed on switch" />')
   await waitForNodeNamed(editor.page, 'Committed on switch')
   await selectSource('HTML/CSS')
-  await expect(codeEditor()).toContainText('<style>')
+  await expect(codeEditor()).toHaveAttribute('aria-label', 'HTML and CSS')
   await expect.poll(() => getUndoLabel(editor.page)).toBe('Edit JSX')
   await editor.page.keyboard.press('Meta+z')
   await waitForNode(editor.page, originalId)
