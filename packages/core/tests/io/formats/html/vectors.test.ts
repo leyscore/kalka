@@ -6,6 +6,8 @@ import { parseColor } from '@kalka/scene-graph/color'
 import { placeIcon } from '#core/icons/render'
 import { buildIconData } from '#core/icons/svg'
 import { renderNodesToHTML } from '#core/io/formats/html'
+import { createVectorElement, vectorElement } from '#core/io/formats/html/vectors'
+import { regenerateFillGeometry } from '#core/vector/fill-geometry'
 
 const gradient: Fill = {
   type: 'GRADIENT_LINEAR',
@@ -113,5 +115,60 @@ describe('icons in HTML export', () => {
     })
     const { html } = await renderNodesToHTML(graph, [frame.id])
     expect(html).toContain('fill="#0000001A"')
+  })
+
+  describe('boolean operations', () => {
+    const blue: Fill = { type: 'SOLID', color: { r: 0, g: 0, b: 1, a: 1 }, opacity: 1, visible: true }
+
+    function booleanWithOperands() {
+      const graph = new SceneGraph()
+      const page = graph.getPages()[0].id
+      const node = graph.createNode('BOOLEAN_OPERATION', page, {
+        width: 150,
+        height: 100,
+        booleanOperation: 'UNION',
+        fills: [blue]
+      })
+      graph.createNode('RECTANGLE', node.id, { width: 100, height: 100, fills: [] })
+      graph.createNode('ELLIPSE', node.id, { x: 50, width: 100, height: 100, fills: [] })
+      return { graph, node }
+    }
+
+    function tagNames(element: ReturnType<typeof vectorElement>): string[] {
+      const html = JSON.stringify(element)
+      return [...html.matchAll(/"tagName":"(\w+)"/g)].map((match) => match[1])
+    }
+
+    test('draw the outline path operations compute, and not their operands', () => {
+      const { graph, node } = booleanWithOperands()
+      const outline = { d: 'M0 0L150 0L150 100L0 100Z', evenOdd: true }
+      const element = createVectorElement({ booleanPath: () => outline })(graph, node)
+      expect(tagNames(element)).toEqual(['svg', 'path'])
+      expect(JSON.stringify(element)).toContain(`"d":"${outline.d}"`)
+      expect(JSON.stringify(element)).toContain('"fill-rule":"evenodd"')
+      expect(JSON.stringify(element)).toContain('"fill":"#0000FF"')
+    })
+
+    test('draw the geometry their file saved while path operations are unavailable', () => {
+      const { graph, node } = booleanWithOperands()
+      const fillGeometry = regenerateFillGeometry(
+        {
+          vertices: [{ x: 0, y: 0 }, { x: 150, y: 0 }, { x: 0, y: 100 }],
+          segments: [
+            { start: 0, end: 1, tangentStart: { x: 0, y: 0 }, tangentEnd: { x: 0, y: 0 } },
+            { start: 1, end: 2, tangentStart: { x: 0, y: 0 }, tangentEnd: { x: 0, y: 0 } },
+            { start: 2, end: 0, tangentStart: { x: 0, y: 0 }, tangentEnd: { x: 0, y: 0 } }
+          ],
+          regions: [{ windingRule: 'NONZERO', loops: [[0, 1, 2]] }]
+        },
+        [{ windingRule: 'NONZERO', commandsBlob: new Uint8Array() }]
+      )
+      graph.updateNode(node.id, { fillGeometry })
+      const saved = graph.getNode(node.id)
+      if (!saved) throw new Error('Boolean missing')
+      const element = createVectorElement({ booleanPath: () => null })(graph, saved)
+      expect(tagNames(element)).toEqual(['svg', 'path'])
+      expect(vectorElement(graph, saved)).toEqual(element)
+    })
   })
 })

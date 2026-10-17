@@ -1,4 +1,5 @@
 export {
+  booleanOperationOutline,
   canMakeBooleanSourceNode,
   canMakeBooleanSourcePath,
   hasVisibleStrokeSourceNode,

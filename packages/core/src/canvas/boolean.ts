@@ -314,6 +314,26 @@ export function booleanResultBounds(
   }
 }
 
+/**
+ * The outline a boolean operation draws, in its own coordinates, as SVG path data: what the DOM
+ * canvas draws for it, since CSS and SVG have no path operations. Null when nothing combines.
+ */
+export function booleanOperationOutline(
+  r: SkiaRenderer,
+  node: SceneNode,
+  graph: SceneGraph
+): { d: string; evenOdd: boolean } | null {
+  const path = makeBooleanOperationPath(r, node, graph)
+  if (!path) return null
+  try {
+    const d = path.toSVGString()
+    if (!d) return null
+    return { d, evenOdd: path.getFillType() === r.ck.FillType.EvenOdd }
+  } finally {
+    path.delete()
+  }
+}
+
 /** Group refit options that size booleans to their result when a renderer can measure it. */
 export function groupFitOptions(r: SkiaRenderer | null, graph: SceneGraph): GroupFitOptions {
   return r ? { booleanBounds: booleanResultBounds(r, graph) } : {}

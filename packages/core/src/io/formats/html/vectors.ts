@@ -1,8 +1,15 @@
 import type { DesignElement, DesignNode, VectorElementRenderer } from '@kalka/dom-css/export'
-import { isIconModified, readIcon, readIconTint } from '@kalka/scene-graph'
+import {
+  isIconModified,
+  readIcon,
+  readIconTint,
+  type SceneGraph,
+  type SceneNode
+} from '@kalka/scene-graph'
 import { colorToHex } from '@kalka/scene-graph/color'
 
 import { iconColor } from '#core/icons/render'
+import type { BooleanPathResolver } from '#core/io/formats/svg/defs'
 import { renderNodeSVGElement } from '#core/io/formats/svg/export'
 import type { SVGNode } from '#core/io/formats/svg/node'
 
@@ -33,16 +40,30 @@ function idPart(id: string): string {
  * gradients, and shadows draw as they do there. An icon is one SVG whose tinted paths take
  * `currentColor`, so a page recolors it with CSS `color`, named by `data-icon` unless its paths
  * were edited. Def ids start with the layer's id, so several SVGs on one page never pick up each
- * other's gradients or filters.
+ * other's gradients or filters. A boolean operation draws the outline `booleanPath` computes
+ * for it, or else the geometry its file saved.
  */
-export const vectorElement: VectorElementRenderer = (graph, node) => {
+export function createVectorElement(
+  options: { booleanPath?: BooleanPathResolver } = {}
+): VectorElementRenderer {
+  return (graph, node) => drawVectorElement(graph, node, options.booleanPath)
+}
+
+export const vectorElement: VectorElementRenderer = createVectorElement()
+
+function drawVectorElement(
+  graph: SceneGraph,
+  node: SceneNode,
+  booleanPath: BooleanPathResolver | undefined
+): DesignElement | null {
   if (node.type === 'TEXT') return pathTextElement(node)
   const idPrefix = `${idPart(node.id)}-`
   const icon = readIcon(node)
   const drawn = renderNodeSVGElement(graph, node, {
     idPrefix,
     colorSpace: graph.documentColorSpace,
-    tint: icon ? readIconTint : undefined
+    tint: icon ? readIconTint : undefined,
+    booleanPath
   })
   const element = drawn && designNode(drawn)
   if (element?.type !== 'element') return null

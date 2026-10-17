@@ -37,7 +37,8 @@ export {
   type SVGImportOptions
 } from './formats/svg'
 export { renderNodesToHTML } from './formats/html'
-export { vectorElement } from './formats/html/vectors'
+export { createVectorElement, vectorElement } from './formats/html/vectors'
+export type { BooleanPathResolver, SVGPathOutline } from './formats/svg/defs'
 export {
   renderNodesToPPTX,
   type PPTXExportOptions,

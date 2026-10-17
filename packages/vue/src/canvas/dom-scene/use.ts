@@ -224,6 +224,13 @@ export function useDomScene(
     get projector() {
       return projector
     },
+    /** Redraws the page's boolean operations, once path operations can combine their operands. */
+    redrawBooleanOperations() {
+      if (!projector) return
+      for (const node of editor.graph.getAllNodes()) {
+        if (node.type === 'BOOLEAN_OPERATION') projector.nodeUpdated(node.id, {})
+      }
+    },
     /** Replays an agent edit on the layers drawn now; the steps come from `planReveal`. */
     reveal(steps: readonly RevealStep[]) {
       reveals?.play(steps)

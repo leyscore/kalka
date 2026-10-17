@@ -36,7 +36,22 @@ export interface SVGExportContext {
   idPrefix?: string
   /** Paints drawn in `currentColor`, such as an icon's tinted paths, so CSS `color` sets them. */
   tint?: (node: SceneNode) => readonly ('fill' | 'stroke')[]
+  /**
+   * The outline a boolean operation draws in its own coordinates, which only path operations can
+   * compute; null when they are unavailable, so the layer's saved geometry draws instead.
+   */
+  booleanPath?: BooleanPathResolver
+  /** Outlines already resolved, by layer id, so a boolean's path operations run once. */
+  booleanOutlines?: Map<string, SVGPathOutline | null>
 }
+
+/** A closed outline as SVG path data and the fill rule that fills it. */
+export interface SVGPathOutline {
+  d: string
+  evenOdd: boolean
+}
+
+export type BooleanPathResolver = (graph: SceneGraph, node: SceneNode) => SVGPathOutline | null
 
 export function nextDefId(ctx: SVGExportContext, prefix: string): string {
   return `${ctx.idPrefix ?? ''}${prefix}${ctx.defIdCounter++}`

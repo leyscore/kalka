@@ -3,7 +3,7 @@ import { describe, expect, test } from 'bun:test'
 import { createDefaultNode } from '@kalka/scene-graph'
 
 import { initCanvasKit } from '#cli/headless'
-import { makeBooleanOperationPath } from '#core/canvas/boolean'
+import { booleanOperationOutline, makeBooleanOperationPath } from '#core/canvas/boolean'
 import type { SkiaRenderer } from '#core/canvas/renderer'
 import { makeNodeShapePath, makePolygonPath, makeRRect } from '#core/canvas/shapes'
 import { BLACK } from '#core/constants'
@@ -88,6 +88,28 @@ describe('boolean operation paths', () => {
 
     expect(path?.getBounds()).toEqual(new Float32Array([0, 0, 150, 100]))
     path?.delete()
+  })
+
+  test("outlines a subtraction as SVG path data in the boolean's own space", async () => {
+    const r = await createRenderer()
+    const api = createAPI()
+    const first = api.createRectangle()
+    const second = api.createRectangle()
+    first.resize(100, 100)
+    second.resize(50, 100)
+    second.x = 50
+
+    const booleanNode = api.subtract([first, second], asPageNode(api.currentPage))
+    const node = api.graph.getNode(booleanNode.id)
+    if (!node) throw new Error('Boolean missing')
+    const outline = booleanOperationOutline(r, node, api.graph)
+    if (!outline) throw new Error('No outline')
+
+    // What is left of the first square: x from 0 to 50, nothing past it.
+    const xs = [...outline.d.matchAll(/[ML]\s*(-?[\d.]+)/g)].map((match) => Number(match[1]))
+    expect(xs.length).toBeGreaterThan(2)
+    expect(Math.min(...xs)).toBe(0)
+    expect(Math.max(...xs)).toBe(50)
   })
 
   test('intersect supports transformed children', async () => {

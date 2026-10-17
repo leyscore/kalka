@@ -19,7 +19,7 @@ export { geometryBlobToSVGPath, vectorNetworkToSVGPaths } from './paths'
 
 import type { SceneGraph, SceneNode, Fill, CharacterStyleOverride } from '@kalka/scene-graph'
 
-import type { SVGExportContext } from './defs'
+import type { BooleanPathResolver, SVGExportContext, SVGPathOutline } from './defs'
 import { svg, renderSVGNode } from './node'
 import type { SVGNode } from './node'
 import {
@@ -97,6 +97,44 @@ function vectorShapeElements(
     : [svg('rect', { width: round(node.width), height: round(node.height), ...common })]
 }
 
+function booleanOutline(node: SceneNode, ctx: SVGExportContext): SVGPathOutline | null {
+  if (!ctx.booleanPath) return null
+  ctx.booleanOutlines ??= new Map()
+  const cached = ctx.booleanOutlines.get(node.id)
+  if (cached !== undefined) return cached
+  const outline = ctx.booleanPath(ctx.graph, node)
+  ctx.booleanOutlines.set(node.id, outline)
+  return outline
+}
+
+/**
+ * A boolean operation draws the outline its operands combine into, or the geometry a file saved
+ * for it; its operands draw nothing of their own. Null when there is neither.
+ */
+function booleanShapeElements(
+  node: SceneNode,
+  common: SVGAttrs,
+  strokeAttrs: SVGAttrs,
+  ctx: SVGExportContext
+): SVGNode[] | null {
+  const outline = booleanOutline(node, ctx)
+  if (outline) {
+    return [
+      svg('path', { d: outline.d, 'fill-rule': outline.evenOdd ? 'evenodd' : undefined, ...common })
+    ]
+  }
+  if (node.fillGeometry.length > 0) return vectorShapeElements(node, common, strokeAttrs, ctx)
+  return null
+}
+
+/** Whether a boolean operation draws as one shape, so its operands are not drawn as layers. */
+function drawsBooleanShape(node: SceneNode, ctx: SVGExportContext): boolean {
+  return (
+    node.type === 'BOOLEAN_OPERATION' &&
+    (booleanOutline(node, ctx) !== null || node.fillGeometry.length > 0)
+  )
+}
+
 function nodeShapeElements(
   node: SceneNode,
   fillAttr: string | null,
@@ -106,6 +144,11 @@ function nodeShapeElements(
   const common: Record<string, string | number | undefined> = {
     fill: fillAttr ?? 'none',
     ...strokeAttrs
+  }
+
+  if (node.type === 'BOOLEAN_OPERATION') {
+    const drawn = booleanShapeElements(node, common, strokeAttrs, ctx)
+    if (drawn) return drawn
   }
 
   switch (node.type) {
@@ -410,7 +453,7 @@ function renderNode(node: SceneNode, ctx: SVGExportContext): SVGNode | null {
     ctx
   )
 
-  const childNodes = ctx.graph.getChildren(node.id)
+  const childNodes = drawsBooleanShape(node, ctx) ? [] : ctx.graph.getChildren(node.id)
   const childContent: SVGNode[] = []
   for (const child of childNodes) {
     const rendered = renderNode(child, ctx)
@@ -522,10 +565,23 @@ export function renderNodeSVGElement(
   {
     idPrefix,
     colorSpace = 'srgb',
-    tint
-  }: Pick<SVGExportContext, 'tint'> & { idPrefix: string; colorSpace?: RenderColorSpace }
+    tint,
+    booleanPath
+  }: Pick<SVGExportContext, 'tint'> & {
+    idPrefix: string
+    colorSpace?: RenderColorSpace
+    booleanPath?: BooleanPathResolver
+  }
 ): SVGNode | null {
-  const ctx: SVGExportContext = { defs: [], defIdCounter: 0, graph, colorSpace, idPrefix, tint }
+  const ctx: SVGExportContext = {
+    defs: [],
+    defIdCounter: 0,
+    graph,
+    colorSpace,
+    idPrefix,
+    tint,
+    booleanPath
+  }
   const drawn = renderNode({ ...node, x: 0, y: 0, rotation: 0, opacity: 1 }, ctx)
   if (!drawn) return null
   // A straight line has no height or width, but its stroke still needs a viewport to draw in.

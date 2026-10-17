@@ -23,10 +23,10 @@ import {
   SECTION_TITLE_HEIGHT
 } from '@kalka/core/constants'
 import type { ViewportTransform } from '@kalka/core/geometry'
-import { vectorElement } from '@kalka/core/io'
 import { colorToCSS } from '@kalka/scene-graph/color'
 import {
   PlayIslands,
+  domSceneVectorElement,
   toolCursor,
   useCanvas,
   useCanvasDrop,
@@ -110,20 +110,19 @@ const drawnView = shallowRef<ViewportTransform | null>(null)
 if (domScene) {
   const scene = useDomScene(domSceneRef, store, {
     getRenderState,
-    vectorElement,
+    vectorElement: domSceneVectorElement(store),
     onPresented: ({ sceneVersion }) =>
       store.preparationController.acknowledgePresentation(sceneVersion),
     // What agents are still writing draws over the document, in every pane.
     previews: () => scenePreviews(store)
   })
   onUnmounted(attachCanvasScene(store, scene))
-}
-
-// Over the DOM scene, nothing on screen is drawn by Skia: the canvas element only takes input,
-// and CanvasKit works offscreen for exports, previews and path operations.
-if (domScene) {
+  // Over the DOM scene, nothing on screen is drawn by Skia: the canvas element only takes input,
+  // and CanvasKit works offscreen for exports, previews and path operations.
   useOffscreenCanvasKit(store, {
     onReady: () => {
+      // Booleans drawn before CanvasKit loaded showed their saved geometry or their box.
+      scene.redrawBooleanOperations()
       store.markCanvasReady()
       // Tests and the navigation benchmark wait for this, as they did for the Skia surface.
       if (canvasRef.value) canvasRef.value.dataset.ready = '1'
