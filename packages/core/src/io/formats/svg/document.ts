@@ -14,8 +14,23 @@ function parseXML(source: string): Document | null {
   }
 }
 
+/**
+ * What an SVG file holds before its root element: a byte order mark, the XML declaration,
+ * processing instructions, a doctype (with its internal subset), and comments.
+ */
+const XML_PROLOG =
+  /^﻿?\s*(?:(?:<\?[\s\S]*?\?>|<!--[\s\S]*?-->|<!DOCTYPE[^[>]*(?:\[[\s\S]*?\])?\s*>)\s*)*/i
+
+/**
+ * SVG markup from its root element on. Files saved by editors start with an XML declaration or
+ * a doctype, which may not sit inside an element, where the importer parses a document's body.
+ */
+export function stripXMLProlog(source: string): string {
+  return source.replace(XML_PROLOG, '')
+}
+
 export function parseSVGDocument(source: string): Document | null {
-  const xmlDocument = parseXML(source)
+  const xmlDocument = parseXML(stripXMLProlog(source))
   return xmlDocument?.documentElement?.localName === 'svg' ? xmlDocument : null
 }
 

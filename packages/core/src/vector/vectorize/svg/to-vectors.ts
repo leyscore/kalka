@@ -17,6 +17,7 @@ import type { Rect, Size } from '@kalka/scene-graph/primitives'
 import { createPathStroke } from '#core/icons/path-style'
 import { extractPaths } from '#core/icons/svg'
 import type { IconPathInfo } from '#core/icons/types'
+import { stripXMLProlog } from '#core/io/formats/svg/document'
 import { parseSVGSize, parseSVGViewBox } from '#core/io/formats/svg/metadata'
 import { computeAccurateBounds } from '#core/vector/curve-math'
 
@@ -76,7 +77,8 @@ export function svgToVectorPaths(
   bounds: Size,
   options?: { defaultColor?: string; preserveAspectRatio?: boolean }
 ): SVGVectorizeResult | null {
-  const paths = extractPaths(svgText)
+  // The paths are read from the markup as a document's body, where a prolog may not stand.
+  const paths = extractPaths(stripXMLProlog(svgText))
   if (paths.length === 0) return null
 
   const space = parseSVGCoordinateSpace(svgText)

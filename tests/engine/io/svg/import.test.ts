@@ -138,14 +138,26 @@ describe('import_svg', () => {
         }
       ]
     })
-    const exported = expectDefined(
-      renderNodesToSVG(graph, page.id, [rect.id], { xmlDeclaration: false })
-    )
+    const exported = expectDefined(renderNodesToSVG(graph, page.id, [rect.id]))
     const result = (await importSVG.execute(figma, { svg: exported })) as { id: string }
     const imported = expectDefined(graph.getChildren(result.id)[0]?.fills[0]?.gradientTransform)
     const original = expectDefined(rect.fills[0]?.gradientTransform)
     for (const key of ['m00', 'm01', 'm02', 'm10', 'm11', 'm12'] as const)
       expect(imported[key]).toBeCloseTo(original[key], 4)
+  })
+
+  test('accepts a file that opens with an XML declaration, a doctype, and comments', async () => {
+    const shape = '<svg viewBox="0 0 40 20"><rect width="40" height="20"/></svg>'
+    for (const prolog of [
+      '<?xml version="1.0" encoding="UTF-8"?>\n',
+      '﻿<?xml version="1.0" standalone="no"?>\n<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n',
+      '<!-- Generator: an editor -->\n<!DOCTYPE svg [ <!ENTITY ns "http://www.w3.org/2000/svg"> ]>\n'
+    ]) {
+      const result = (await importSVG.execute(figma, { svg: prolog + shape })) as { id?: string }
+      const frame = getNodeOrThrow(graph, expectDefined(result.id))
+      expect(frame.width).toBe(40)
+      expect(graph.getChildren(frame.id)).toHaveLength(1)
+    }
   })
 
   test('respects viewBox dimensions', async () => {
