@@ -25,6 +25,8 @@
   "animations": "Animaciones",
   "animationsSystem": "Seguir al sistema",
   "animationsOff": "Desactivadas",
+  "reduceAgentAnimations": "Reducir las animaciones de agentes",
+  "reduceAgentAnimationsDescription": "Mostrar al instante las capas y los textos nuevos de los agentes en lugar de animarlos.",
   "discardChanges": "¿Descartar los cambios?",
   "discardChangesDescription": "Se perderán los cambios sin guardar.",
   "keepEditing": "Seguir editando",

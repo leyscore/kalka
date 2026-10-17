@@ -10,6 +10,8 @@ export const MAX_AGENTS_PER_PEER = 16
 const MAX_SELECTION = 256
 /** Outlines an agent draws around JSX it is still streaming. */
 export const MAX_OUTLINE = 32
+/** Layers one agent marks as working on at once. */
+export const MAX_WORKING = 64
 export const MAX_NAME_LENGTH = 40
 const MAX_ID = 64
 
@@ -42,7 +44,8 @@ const agent = v.object({
   pageId: lenient(id),
   cursor: lenient(point),
   selection: lenient(selection),
-  outline: lenient(outline)
+  outline: lenient(outline),
+  working: lenient(v.pipe(v.array(id), v.maxLength(MAX_WORKING)))
 })
 
 const peerState = v.object({

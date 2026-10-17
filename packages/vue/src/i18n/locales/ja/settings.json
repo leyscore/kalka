@@ -25,6 +25,8 @@
   "animations": "アニメーション",
   "animationsSystem": "システム設定に従う",
   "animationsOff": "オフ",
+  "reduceAgentAnimations": "エージェントのアニメーションを減らす",
+  "reduceAgentAnimationsDescription": "エージェントが追加したレイヤーとテキストを、アニメーションせずにすぐ表示します。",
   "discardChanges": "変更を破棄しますか？",
   "discardChangesDescription": "保存されていない変更は失われます。",
   "keepEditing": "編集を続ける",

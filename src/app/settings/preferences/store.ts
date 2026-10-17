@@ -51,7 +51,11 @@ export const CODE_SOURCES = ['design-jsx', 'tailwind-jsx', 'html-css'] as const
 export type DefaultCodeSource = (typeof CODE_SOURCES)[number]
 
 export interface AppPreferences {
-  appearance: { animations: AnimationPreference }
+  appearance: {
+    animations: AnimationPreference
+    /** Agents' edits show at once instead of animating in, whatever the rest of the app does. */
+    reduceAgentAnimations: boolean
+  }
   chat: {
     reasoningDisplay: ReasoningDisplay
     maxAgentSteps: number
@@ -83,7 +87,7 @@ export interface AppPreferences {
 }
 
 export const DEFAULT_APP_PREFERENCES: Readonly<AppPreferences> = {
-  appearance: { animations: 'system' },
+  appearance: { animations: 'system', reduceAgentAnimations: false },
   chat: {
     reasoningDisplay: 'collapsed',
     maxAgentSteps: DEFAULT_AGENT_STEPS,
@@ -115,7 +119,8 @@ const snapping = defaults.editing.snapping
 /** Stored preferences, read field by field so one bad value keeps the rest. */
 const appPreferencesSchema = section({
   appearance: section({
-    animations: v.fallback(v.picklist(ANIMATION_PREFERENCES), defaults.appearance.animations)
+    animations: v.fallback(v.picklist(ANIMATION_PREFERENCES), defaults.appearance.animations),
+    reduceAgentAnimations: v.fallback(v.boolean(), defaults.appearance.reduceAgentAnimations)
   }),
   chat: section({
     reasoningDisplay: v.fallback(v.picklist(REASONING_DISPLAYS), defaults.chat.reasoningDisplay),
@@ -206,6 +211,12 @@ export function editPreferences(edit: (draft: AppPreferences) => void): void {
 export function updateAnimationPreference(animations: AnimationPreference): void {
   editPreferences((draft) => {
     draft.appearance.animations = animations
+  })
+}
+
+export function updateReduceAgentAnimations(reduce: boolean): void {
+  editPreferences((draft) => {
+    draft.appearance.reduceAgentAnimations = reduce
   })
 }
 

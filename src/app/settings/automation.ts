@@ -28,6 +28,7 @@ export interface AutomationSettings {
     theme: AppTheme
     language: Locale
     animations: AppPreferences['appearance']['animations']
+    reduceAgentAnimations: boolean
   }
   editing: AppPreferences['editing']
   rendering: AppPreferences['rendering']
@@ -43,7 +44,8 @@ export const automationSettingsPatchSchema = v.strictObject({
     v.strictObject({
       theme: v.optional(v.picklist(APP_THEMES)),
       language: v.optional(v.picklist(AVAILABLE_LOCALES)),
-      animations: v.optional(v.picklist(ANIMATION_PREFERENCES))
+      animations: v.optional(v.picklist(ANIMATION_PREFERENCES)),
+      reduceAgentAnimations: optionalBoolean
     })
   ),
   editing: v.optional(
@@ -86,7 +88,8 @@ export function readAutomationSettings(): AutomationSettings {
     appearance: {
       theme: getAppTheme(),
       language: locale.get(),
-      animations: preferences.appearance.animations
+      animations: preferences.appearance.animations,
+      reduceAgentAnimations: preferences.appearance.reduceAgentAnimations
     },
     editing: { snapping: { ...preferences.editing.snapping } },
     rendering: { ...preferences.rendering },

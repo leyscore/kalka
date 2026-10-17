@@ -7,6 +7,10 @@ import type { EditorStore } from '@/app/editor/active-store'
 /** A DOM scene drawing this document, as `useDomScene` returns it. */
 export interface CanvasScene {
   reveal(steps: readonly RevealStep[]): void
+  /** Keeps new layers hidden until their reveal starts; each shows by itself after a while. */
+  hold(ids: readonly string[]): void
+  /** Shows held layers now. */
+  release(ids: readonly string[]): void
 }
 
 interface SceneEffects {
@@ -57,4 +61,16 @@ export function attachCanvasScene(store: EditorStore, scene: CanvasScene): () =>
 export function revealOnCanvas(store: EditorStore, steps: readonly RevealStep[]): void {
   if (steps.length === 0) return
   for (const scene of effectsOf(store).scenes) scene.reveal(steps)
+}
+
+/** Keeps an agent's new layers hidden in every pane until their reveal plays. */
+export function holdOnCanvas(store: EditorStore, ids: readonly string[]): void {
+  if (ids.length === 0) return
+  for (const scene of effectsOf(store).scenes) scene.hold(ids)
+}
+
+/** Shows held layers in every pane, as when their reveal will not play. */
+export function releaseOnCanvas(store: EditorStore, ids: readonly string[]): void {
+  if (ids.length === 0) return
+  for (const scene of effectsOf(store).scenes) scene.release(ids)
 }

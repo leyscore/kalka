@@ -25,6 +25,8 @@
   "animations": "Анимации",
   "animationsSystem": "Как в системе",
   "animationsOff": "Выключены",
+  "reduceAgentAnimations": "Меньше анимаций агентов",
+  "reduceAgentAnimationsDescription": "Показывать новые слои и текст агентов сразу, без анимации.",
   "discardChanges": "Отменить изменения?",
   "discardChangesDescription": "Несохранённые изменения будут потеряны.",
   "keepEditing": "Продолжить редактирование",

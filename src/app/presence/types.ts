@@ -38,4 +38,9 @@ export interface AgentPresence {
   selection?: string[]
   /** Outlines, in world coordinates on the cursor's page, of what is not a layer yet. */
   outline?: Rect[]
+  /**
+   * Layers the agent is building and has not released yet, the outermost of each group it
+   * wrote; the canvas marks them with its name until it finishes or goes quiet.
+   */
+  working?: string[]
 }

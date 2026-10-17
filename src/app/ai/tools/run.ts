@@ -8,6 +8,12 @@ import { DEFAULT_AGENT_STEPS, resolveAgentStepLimit } from '@/app/ai/chat/step-l
 import type { PreviewFocus } from '@/app/ai/preview/canvas'
 import { getActiveEditorStore } from '@/app/editor/active-store'
 import type { EditorStore } from '@/app/editor/active-store'
+import {
+  finishWorking,
+  keepWorking,
+  markWorking,
+  recordLayerActivity
+} from '@/app/presence/activity'
 import { showAgentEdit, stopCursorSweep } from '@/app/presence/edit-effect'
 import { addAgent, agentPlacement, type AgentHandle } from '@/app/presence/registry'
 
@@ -110,7 +116,11 @@ export function endRun(store: EditorStore, run = currentRun(store)): void {
   if (!run.active) return
   run.active = false
   if (state.run !== run) return
-  if (state.agent) stopCursorSweep(state.agent)
+  if (state.agent) {
+    stopCursorSweep(state.agent)
+    // The reply is over, so is its work: nothing stays marked as being built.
+    finishWorking(store, state.agent)
+  }
   state.agent?.update({
     status: 'idle',
     cursor: undefined,
@@ -154,6 +164,33 @@ export function markRunWork(store: EditorStore, nodeIds: string[]): void {
 /** Replay a tool's edit on the canvas, with the run's agent moving through what it touched. */
 export function showRunEdit(store: EditorStore, edit: AgentEdit, touched: readonly string[]): void {
   showAgentEdit(store, edit, { agent: getRunState(store).agent, touched, pageId: runPageId(store) })
+}
+
+/** The run's agent read these layers. */
+export function recordRunReads(store: EditorStore, nodeIds: readonly string[]): void {
+  const agent = agentAtWork(store)
+  if (!agent) return
+  recordLayerActivity(store, agent, 'read', nodeIds)
+  keepWorking(store, agent)
+}
+
+/** The run's agent wrote `written`, and builds `worked` until it finishes or its reply ends. */
+export function recordRunWrites(
+  store: EditorStore,
+  written: readonly string[],
+  worked: readonly string[]
+): void {
+  const agent = agentAtWork(store)
+  if (!agent) return
+  recordLayerActivity(store, agent, 'write', written)
+  markWorking(store, agent, worked)
+  keepWorking(store, agent)
+}
+
+/** The run's agent is done with `nodeIds`, or all it builds; returns what it let go of. */
+export function finishRunWork(store: EditorStore, nodeIds: readonly string[] | null): string[] {
+  const agent = getRunState(store).agent
+  return agent ? finishWorking(store, agent, nodeIds) : []
 }
 
 export function recordStep(store?: EditorStore): void {

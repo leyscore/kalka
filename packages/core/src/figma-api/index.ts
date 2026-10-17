@@ -580,4 +580,9 @@ export class FigmaAPI implements NodeProxyHost {
   rasterCodec?: RasterCodec
   /** The document as it was before the current AI run first edited `pageId`, or null if unedited. */
   changeBaseline?: (pageId: string) => SceneGraph | null
+  /**
+   * Lets go of layers the calling agent marked as being built, those named or all of them with
+   * null, and returns those it let go of. Absent in hosts that show no such marks.
+   */
+  finishWorking?: (nodeIds: string[] | null) => string[]
 }

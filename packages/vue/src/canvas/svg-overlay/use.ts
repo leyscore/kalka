@@ -14,6 +14,7 @@ import type { Color } from '@kalka/scene-graph'
 import type { Rect } from '@kalka/scene-graph/primitives'
 
 import { composeOverlay } from '#vue/canvas/svg-overlay/compose'
+import type { AgentWorkMark } from '#vue/canvas/svg-overlay/layers/agent-work'
 import { clearOverlay, renderOverlay } from '#vue/canvas/svg-overlay/render'
 import type { MeasureText } from '#vue/canvas/svg-overlay/shapes'
 
@@ -28,7 +29,15 @@ export interface UseSVGOverlayOptions {
   getOverlayObstacles?: () => readonly Rect[]
   /** The color behind the artboards, when the app shows its own instead of the page's. */
   getCanvasColor?: (pageColor: Color) => Color
+  /**
+   * Layers agents are building on `pageId`, marked with their names. Read every frame; return
+   * the same array while nothing changed.
+   */
+  getAgentWork?: (pageId: string) => readonly AgentWorkMark[]
 }
+
+/** The same empty list every frame, so a pane without agents never redraws for it. */
+const NO_AGENT_WORK: readonly AgentWorkMark[] = []
 
 /** Text widths as the overlay draws them, with the app's interface font. */
 function createMeasureText(): MeasureText {
@@ -78,6 +87,10 @@ export function useSVGOverlay(
     return options.getCanvasColor ? options.getCanvasColor(state.pageColor) : state.pageColor
   }
 
+  function agentWorkOn(pageId: string): readonly AgentWorkMark[] {
+    return options.getAgentWork?.(pageId) ?? NO_AGENT_WORK
+  }
+
   function tick() {
     frame = requestAnimationFrame(tick)
     const element = host.value
@@ -90,6 +103,7 @@ export function useSVGOverlay(
     const showRulers = options.showRulers?.() ?? false
     const obstacles = options.getOverlayObstacles?.() ?? []
     const canvasColor = canvasColorOf(state)
+    const agentWork = agentWorkOn(state.currentPageId)
     const width = element.clientWidth
     const height = element.clientHeight
     const key = [
@@ -103,6 +117,7 @@ export function useSVGOverlay(
       state.hoveredNodeId,
       state.designIssues,
       state.presenceCursors,
+      agentWork,
       state.guides,
       canvasColor,
       state.rulerTheme,
@@ -134,6 +149,7 @@ export function useSVGOverlay(
       obstacles,
       flashes,
       aiMarks,
+      agentWork,
       now: performance.now()
     })
     issueMarkers = composed.issueMarkers

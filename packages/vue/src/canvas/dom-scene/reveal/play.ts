@@ -3,6 +3,11 @@ import type { RevealStep } from '#vue/canvas/dom-scene/reveal/plan'
 
 /** A step whose layer is not drawn yet, such as a new artboard still loading, waits this long. */
 const PENDING_TIMEOUT_MS = 1000
+/**
+ * A new layer stays hidden at most this long waiting for its reveal. The hiding is an animation
+ * that ends by itself then, so nothing stays hidden whatever happens to the reveal.
+ */
+export const HOLD_TIMEOUT_MS = 4000
 /** The highlight that hides characters not typed yet, in each artboard document. */
 const UNWRITTEN_HIGHLIGHT = 'kalka-unwritten'
 const UNWRITTEN_STYLE_ATTR = 'data-kalka-unwritten'
@@ -22,6 +27,14 @@ interface Typing {
   highlight: Highlight
   start: number
   duration: number
+}
+
+/** A new layer kept hidden until its reveal starts. */
+interface Hold {
+  /** When it shows anyway, on the `performance.now()` clock. */
+  until: number
+  element: Element | null
+  animation: Animation | null
 }
 
 type HighlightScope = Window & typeof globalThis
@@ -57,23 +70,54 @@ function textNodes(element: Element): Text[] {
 export class RevealPlayer {
   private pending: Pending[] = []
   private readonly typing = new Set<Typing>()
+  private readonly held = new Map<string, Hold>()
 
   constructor(private readonly projector: DomSceneProjector) {}
 
   get busy(): boolean {
-    return this.pending.length > 0 || this.typing.size > 0
+    return this.pending.length > 0 || this.typing.size > 0 || this.held.size > 0
+  }
+
+  /** Layers kept hidden now, until their reveal starts or they are released. */
+  get holding(): ReadonlySet<string> {
+    return new Set(this.held.keys())
+  }
+
+  /**
+   * Keeps new layers hidden from the moment they are drawn, so an edit's layers do not show
+   * before their reveal plays them in. Each shows by itself after `HOLD_TIMEOUT_MS`.
+   */
+  hold(ids: Iterable<string>, now = performance.now()): void {
+    for (const id of ids) {
+      if (!this.held.has(id))
+        this.held.set(id, { until: now + HOLD_TIMEOUT_MS, element: null, animation: null })
+    }
+  }
+
+  /** Shows held layers now: those named, or all of them, as when the page changes. */
+  release(ids?: Iterable<string>): void {
+    for (const id of ids ?? [...this.held.keys()]) {
+      this.held.get(id)?.animation?.cancel()
+      this.held.delete(id)
+    }
   }
 
   play(steps: readonly RevealStep[], now = performance.now()): void {
     for (const step of steps) this.pending.push({ step, start: now + step.delay })
   }
 
-  /** Starts steps whose layers are drawn now and advances typing; call after each flush. */
+  /** Hides held layers, starts steps whose layers are drawn now and advances typing; call after each flush. */
   tick(now = performance.now()): void {
+    if (this.held.size > 0) this.keepHidden(now)
     if (this.pending.length > 0) {
       this.pending = this.pending.filter((entry) => {
         const element = this.projector.elementOf(entry.step.id)
-        if (!element?.isConnected) return now - entry.start < PENDING_TIMEOUT_MS
+        if (!element?.isConnected) {
+          if (now - entry.start < PENDING_TIMEOUT_MS) return true
+          // Never drawn in time, such as on a page nobody looks at: it simply shows.
+          this.release([entry.step.id])
+          return false
+        }
         this.begin(element, entry, now)
         return false
       })
@@ -84,9 +128,30 @@ export class RevealPlayer {
   destroy(): void {
     for (const typing of this.typing) this.finishTyping(typing)
     this.pending = []
+    this.release()
+  }
+
+  /** Hides each held layer as it is drawn, again when it is redrawn as a new element. */
+  private keepHidden(now: number): void {
+    for (const [id, hold] of this.held) {
+      if (now >= hold.until) {
+        this.release([id])
+        continue
+      }
+      const element = this.projector.elementOf(id)
+      if (!element?.isConnected || element === hold.element) continue
+      hold.animation?.cancel()
+      hold.element = element
+      // Without fill the hiding lasts only while it runs, so it ends by itself at `until`.
+      hold.animation = element.animate([{ opacity: 0 }, { opacity: 0 }], {
+        duration: hold.until - now
+      })
+    }
   }
 
   private begin(element: Element, { step, start }: Pending, now: number): void {
+    // Shown again before reading its style, so the reveal fades it to its real opacity.
+    this.release([step.id])
     const delay = Math.max(0, start - now)
     if (step.kind === 'type' && this.beginTyping(element, step, now + delay)) return
     this.appear(element, step, delay, step.kind === 'type')

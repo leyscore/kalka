@@ -25,6 +25,8 @@
   "animations": "Animations",
   "animationsSystem": "Suivre le système",
   "animationsOff": "Désactivées",
+  "reduceAgentAnimations": "Réduire les animations des agents",
+  "reduceAgentAnimationsDescription": "Afficher tout de suite les nouveaux calques et textes des agents au lieu de les animer.",
   "discardChanges": "Abandonner les modifications ?",
   "discardChangesDescription": "Vos modifications non enregistrées seront perdues.",
   "keepEditing": "Continuer à modifier",

@@ -2,15 +2,17 @@ import type { PageChange } from '@kalka/core/editor'
 import { planReveal, type AgentEdit, type RevealStep } from '@kalka/vue'
 
 import type { EditorStore } from '@/app/editor/active-store'
-import { animationsEnabled } from '@/app/shell/motion'
+import { agentAnimationsEnabled } from '@/app/shell/motion'
 
-import { revealOnCanvas } from './canvas-scene'
+import { holdOnCanvas, releaseOnCanvas, revealOnCanvas } from './canvas-scene'
 import { agentPlacement, type AgentHandle } from './registry'
 
 /** The agent's cursor visits at most this many layers per edit. */
 export const MAX_CURSOR_STOPS = 6
 /** Between two layers an edit changed without revealing anything, such as recolored ones. */
 export const CURSOR_STOP_MS = 150
+/** New layers one edit keeps hidden until its reveal; the outermost come first. */
+export const MAX_HELD_LAYERS = 64
 
 /** What an edit created and which text it wrote, from what it changed on its page. */
 export function agentEditFromChange(change: PageChange): AgentEdit {
@@ -89,14 +91,54 @@ export function showAgentEdit(
   options: { agent?: AgentHandle | null; touched?: readonly string[]; pageId: string }
 ): void {
   try {
-    const reducedMotion = !animationsEnabled.value
+    const reducedMotion = !agentAnimationsEnabled.value
     const steps = planReveal(store.graph, edit, { reducedMotion })
     revealOnCanvas(store, steps)
+    // New layers the reveal leaves out, past its limit or hidden, show now.
+    const revealed = new Set(steps.map((step) => step.id))
+    releaseOnCanvas(
+      store,
+      edit.created.filter((id) => !revealed.has(id))
+    )
     if (!options.agent) return
     const stops = cursorStops(steps, options.touched ?? [], { reducedMotion })
     sweepCursor(store, options.agent, stops, options.pageId)
   } catch (error) {
     // Showing the edit is decoration; it must never turn a finished edit into a failed call.
     console.warn('[Agent edit effect]', error)
+    releaseOnCanvas(store, edit.created)
+  }
+}
+
+/** New layers an agent's call is creating, kept hidden until `showAgentEdit` reveals them. */
+export interface CreationHold {
+  /** Stops holding layers created from now on; those held wait for their reveal. */
+  stop(): void
+  /** Shows every layer held, as when the call failed and nothing will be revealed. */
+  release(): void
+}
+
+/**
+ * Keeps the layers an agent's call creates hidden from the moment they exist, so they do not
+ * show while the call lays them out and loads their fonts and then disappear to animate in.
+ * Only the outermost new layers are held, since their children show with them. Nothing is
+ * held when agents' edits do not animate, and each held layer shows by itself after a while.
+ */
+export function holdAgentCreations(store: EditorStore): CreationHold {
+  if (!agentAnimationsEnabled.value) return { stop: () => undefined, release: () => undefined }
+  const created = new Set<string>()
+  const held: string[] = []
+  const stopListening = store.onEditorEvent('node:created', (node) => {
+    created.add(node.id)
+    if (held.length >= MAX_HELD_LAYERS || (node.parentId && created.has(node.parentId))) return
+    held.push(node.id)
+    holdOnCanvas(store, [node.id])
+  })
+  return {
+    stop: stopListening,
+    release: () => {
+      stopListening()
+      releaseOnCanvas(store, held)
+    }
   }
 }

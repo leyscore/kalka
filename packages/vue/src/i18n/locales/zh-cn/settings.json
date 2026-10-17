@@ -25,6 +25,8 @@
   "animations": "动画",
   "animationsSystem": "跟随系统",
   "animationsOff": "关闭",
+  "reduceAgentAnimations": "减少智能体动画",
+  "reduceAgentAnimationsDescription": "立即显示智能体新建的图层和文字，不播放动画。",
   "discardChanges": "放弃更改？",
   "discardChangesDescription": "未保存的更改将丢失。",
   "keepEditing": "继续编辑",

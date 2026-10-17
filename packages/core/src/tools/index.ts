@@ -47,3 +47,4 @@ export {
 export { setPexelsAPIKey, setUnsplashAccessKey } from './stock-photo'
 export { importSVG } from './create'
 export { editCSSClass, setHTMLElement } from './html'
+export { finishWorkingOnNodes } from './presence'

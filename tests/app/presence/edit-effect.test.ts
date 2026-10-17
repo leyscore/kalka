@@ -3,14 +3,16 @@ import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { toRaw } from 'vue'
 
 import { SceneGraph } from '@kalka/scene-graph'
-import type { RevealStep } from '@kalka/vue'
+import { MAX_REVEALED_LAYERS, type RevealStep } from '@kalka/vue'
 
 import { createEditorStore } from '@/app/editor/session'
 import { attachCanvasScene } from '@/app/presence/canvas-scene'
 import {
   agentEditFromChange,
   cursorStops,
+  holdAgentCreations,
   MAX_CURSOR_STOPS,
+  MAX_HELD_LAYERS,
   showAgentEdit
 } from '@/app/presence/edit-effect'
 import { addAgent, presenceOf } from '@/app/presence/registry'
@@ -28,7 +30,18 @@ afterEach(() => {
 
 /** Animations off in Settings, as reduced motion in the system does too. */
 function turnAnimationsOff() {
-  appPreferences.value = { ...savedPreferences, appearance: { animations: 'off' } }
+  appPreferences.value = {
+    ...savedPreferences,
+    appearance: { ...savedPreferences.appearance, animations: 'off' }
+  }
+}
+
+/** Reduce agent animations in Settings, with the app's other animations left on. */
+function reduceAgentAnimations() {
+  appPreferences.value = {
+    ...savedPreferences,
+    appearance: { animations: 'system', reduceAgentAnimations: true }
+  }
 }
 
 function editor() {
@@ -36,8 +49,22 @@ function editor() {
   stores.push(store)
   const pageId = store.state.currentPageId
   const shown: RevealStep[][] = []
-  const detach = attachCanvasScene(store, { reveal: (steps) => shown.push([...steps]) })
-  return { store, pageId, shown, detach }
+  /** Layers the pane keeps hidden now. */
+  const held = new Set<string>()
+  const detach = attachCanvasScene(store, {
+    reveal: (steps) => {
+      shown.push([...steps])
+      // A step's layer shows as its reveal starts.
+      for (const step of steps) held.delete(step.id)
+    },
+    hold: (ids) => {
+      for (const id of ids) held.add(id)
+    },
+    release: (ids) => {
+      for (const id of ids) held.delete(id)
+    }
+  })
+  return { store, pageId, shown, held, detach }
 }
 
 /** Builds a card the way a tool would, and what the edit changed. */
@@ -105,6 +132,98 @@ describe("showing an agent's edit", () => {
     const { change } = cardEdit(store, pageId)
     showAgentEdit(store, agentEditFromChange(change), { pageId })
     expect(shown).toEqual([])
+  })
+})
+
+describe("an agent's new layers wait for their reveal", () => {
+  test('the outermost new layers are hidden as they are created, their children with them', () => {
+    const { store, pageId, held } = editor()
+    const hold = holdAgentCreations(store)
+    const card = store.graph.createNode('FRAME', pageId, { name: 'Card' })
+    const title = store.graph.createNode('TEXT', card.id, { name: 'Title', text: 'Pro' })
+    hold.stop()
+    const later = store.graph.createNode('FRAME', pageId, { name: 'Later' })
+    expect([...held]).toEqual([card.id])
+    expect(held.has(title.id)).toBe(false)
+    expect(held.has(later.id)).toBe(false)
+  })
+
+  test('they show as the reveal plays them in', () => {
+    const { store, pageId, held } = editor()
+    const finish = store.capturePageChange(pageId)
+    const hold = holdAgentCreations(store)
+    store.graph.createNode('FRAME', pageId, { name: 'Card' })
+    hold.stop()
+    expect(held.size).toBe(1)
+    showAgentEdit(store, agentEditFromChange(finish()), { pageId })
+    expect(held.size).toBe(0)
+  })
+
+  test('layers past the reveal limit show at once instead of staying hidden', () => {
+    const { store, pageId, shown, held } = editor()
+    const finish = store.capturePageChange(pageId)
+    const hold = holdAgentCreations(store)
+    for (let index = 0; index < MAX_REVEALED_LAYERS + 10; index++)
+      store.graph.createNode('RECTANGLE', pageId, { name: `Tile ${index}`, x: index * 10 })
+    hold.stop()
+    expect(held.size).toBe(MAX_REVEALED_LAYERS + 10)
+    showAgentEdit(store, agentEditFromChange(finish()), { pageId })
+    expect(shown[0]).toHaveLength(MAX_REVEALED_LAYERS)
+    expect(held.size).toBe(0)
+  })
+
+  test('one call holds a bounded number of layers', () => {
+    const { store, pageId, held } = editor()
+    const hold = holdAgentCreations(store)
+    for (let index = 0; index < MAX_HELD_LAYERS + 5; index++)
+      store.graph.createNode('RECTANGLE', pageId, { name: `Tile ${index}` })
+    hold.stop()
+    expect(held.size).toBe(MAX_HELD_LAYERS)
+  })
+
+  test('a failed call shows everything it held', () => {
+    const { store, pageId, held } = editor()
+    const hold = holdAgentCreations(store)
+    store.graph.createNode('FRAME', pageId, { name: 'Half made' })
+    hold.release()
+    expect(held.size).toBe(0)
+  })
+
+  test('a reveal that fails shows the new layers anyway', () => {
+    const { store, pageId, detach } = editor()
+    detach()
+    const held = new Set<string>()
+    attachCanvasScene(store, {
+      reveal: () => {
+        throw new Error('pane gone')
+      },
+      hold: (ids) => {
+        for (const id of ids) held.add(id)
+      },
+      release: (ids) => {
+        for (const id of ids) held.delete(id)
+      }
+    })
+    const finish = store.capturePageChange(pageId)
+    const hold = holdAgentCreations(store)
+    store.graph.createNode('FRAME', pageId, { name: 'Card' })
+    hold.stop()
+    expect(held.size).toBe(1)
+    showAgentEdit(store, agentEditFromChange(finish()), { pageId })
+    expect(held.size).toBe(0)
+  })
+
+  test('with reduced motion, animations off, or Reduce agent animations, nothing is held', () => {
+    for (const turnOff of [turnAnimationsOff, reduceAgentAnimations]) {
+      turnOff()
+      const { store, pageId, shown, held } = editor()
+      const hold = holdAgentCreations(store)
+      const { change } = cardEdit(store, pageId)
+      hold.stop()
+      expect(held.size).toBe(0)
+      showAgentEdit(store, agentEditFromChange(change), { pageId })
+      expect(shown).toEqual([])
+    }
   })
 })
 

@@ -11,13 +11,15 @@ import {
   type ToolDef
 } from '@kalka/core/tools'
 
+import { targetNodeIds, touchedNodeIds } from '@/app/automation/agents'
 import { makeFigmaFromStore } from '@/app/automation/bridge/figma-factory'
 import { executeAtomicEditorTool } from '@/app/automation/execution/editor'
 import { recordToolCompleted, type AIDiagnosticContext } from '@/app/diagnostics/events/ai'
 import type { EditorStore } from '@/app/editor/active-store'
 import { ensureGraphFonts } from '@/app/editor/fonts'
 import { useLibraryService } from '@/app/libraries'
-import { agentEditFromChange } from '@/app/presence/edit-effect'
+import { workedLayers, writtenLayers } from '@/app/presence/activity'
+import { agentEditFromChange, holdAgentCreations } from '@/app/presence/edit-effect'
 
 import { aiToolDefinitions } from './catalog'
 import { recordToolChange } from './changes/capture'
@@ -25,10 +27,13 @@ import { createMutex } from './mutex'
 import {
   aiUndoLabel,
   currentRun,
+  finishRunWork,
   markRunWork,
   moveRunToPage,
   recordRunBaseline,
+  recordRunReads,
   recordRunUndoEntry,
+  recordRunWrites,
   runBaseline,
   runPageId,
   showRunEdit,
@@ -90,7 +95,18 @@ export function createAITools(store: EditorStore, diagnosticContext?: AIDiagnost
     { toolCallId }: { toolCallId: string }
   ): Promise<unknown> {
     const pageId = figma.currentPageId
-    if (!def.mutates) return def.execute(figma, args)
+    if (!def.mutates) {
+      // Set by the host hook, which TypeScript cannot see run.
+      const call = { released: false }
+      figma.finishWorking = (ids) => {
+        call.released = true
+        return finishRunWork(store, ids)
+      }
+      const result = await def.execute(figma, args)
+      // Letting go of layers is not reading them.
+      if (!call.released) recordRunReads(store, touchedNodeIds(store, args, result))
+      return result
+    }
     // The call belongs to the reply that made it, even if a later one starts meanwhile.
     const run = currentRun(store)
     // A step's calls may run concurrently; whole-page snapshots must not interleave.
@@ -107,9 +123,15 @@ export function createAITools(store: EditorStore, diagnosticContext?: AIDiagnost
     }
     const undoBefore = store.undo.peekUndo()
     const finishChange = store.capturePageChange(pageId)
+    // The agent's new layers stay hidden until the edit's reveal plays them in.
+    const hold = toolChangesDocument(def) ? holdAgentCreations(store) : null
     try {
       return await runTool(def, figma, args, pageId)
+    } catch (error) {
+      hold?.release()
+      throw error
     } finally {
+      hold?.stop()
       const change = finishChange()
       if (!isEmptyPageChange(change)) run.changedCalls.add(toolCallId)
       // Atomic tools record their own undo entry; an edit that changed nothing records none.
@@ -131,6 +153,11 @@ export function createAITools(store: EditorStore, diagnosticContext?: AIDiagnost
           // The change record is a review aid; the edit and its undo entry already stand.
           console.warn('Could not record AI tool change', error)
         }
+        recordRunWrites(
+          store,
+          writtenLayers(change),
+          workedLayers(store.graph, change, targetNodeIds(store, args))
+        )
         showRunEdit(
           store,
           agentEditFromChange(change),

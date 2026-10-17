@@ -4,6 +4,12 @@ import type { AgentEdit } from '@kalka/vue'
 
 import { isUnknownRecord } from '@/app/automation/bridge/target'
 import type { EditorStore } from '@/app/editor/active-store'
+import {
+  finishWorking,
+  keepWorking,
+  markWorking,
+  recordLayerActivity
+} from '@/app/presence/activity'
 import { showAgentEdit } from '@/app/presence/edit-effect'
 import { addAgent, agentPlacement, type AgentHandle } from '@/app/presence/registry'
 import { MAX_NAME_LENGTH } from '@/app/presence/schema'
@@ -15,6 +21,8 @@ export const MCP_AGENT_GONE_MS = 10 * 60_000
 const MAX_SESSION_ID = 128
 /** Argument and result fields that name the layers a tool works on. */
 const NODE_ID_FIELDS = ['id', 'ids', 'node_id', 'node_ids', 'parent_id', 'root_id', 'target_id']
+/** Argument fields that name the layers an editing tool changes, rather than where it puts them. */
+const TARGET_ID_FIELDS = ['id', 'ids', 'node_id', 'node_ids', 'target_id']
 const NODE_LIST_FIELDS = ['results', 'selection', 'nodes']
 
 const agentSessionSchema = v.object({
@@ -84,16 +92,21 @@ function restartTimers(store: EditorStore, sessionId: string, agent: SessionAgen
   agent.goneTimer = setTimeout(() => remove(sessionId, store), MCP_AGENT_GONE_MS)
 }
 
-function collectIds(value: unknown, ids: Set<string>): void {
+function collectIds(
+  value: unknown,
+  ids: Set<string>,
+  fields: readonly string[] = NODE_ID_FIELDS
+): void {
   if (!isUnknownRecord(value)) return
   const record = value
-  for (const field of NODE_ID_FIELDS) {
+  for (const field of fields) {
     const entry = record[field]
     if (typeof entry === 'string') ids.add(entry)
     else if (Array.isArray(entry)) {
       for (const item of entry) if (typeof item === 'string') ids.add(item)
     }
   }
+  if (fields !== NODE_ID_FIELDS) return
   for (const field of NODE_LIST_FIELDS) {
     const list = record[field]
     if (!Array.isArray(list)) continue
@@ -103,16 +116,34 @@ function collectIds(value: unknown, ids: Set<string>): void {
   }
 }
 
-/** The layers a tool call works on: what its arguments name, then what its result names. */
-export function touchedNodeIds(store: EditorStore, args: unknown, result: unknown): string[] {
-  const ids = new Set<string>()
-  collectIds(args, ids)
-  collectIds(result, ids)
+function layersOnly(store: EditorStore, ids: Iterable<string>): string[] {
   return [...ids].filter((id) => {
     const node = store.graph.getNode(id)
     // Pages and the document root are where the agent is, not what it works on.
     return node !== undefined && node.type !== 'CANVAS' && id !== store.graph.rootId
   })
+}
+
+/** The layers a tool call works on: what its arguments name, then what its result names. */
+export function touchedNodeIds(store: EditorStore, args: unknown, result: unknown): string[] {
+  const ids = new Set<string>()
+  collectIds(args, ids)
+  collectIds(result, ids)
+  return layersOnly(store, ids)
+}
+
+/** The layers an editing call's arguments say it changes, not the parent it writes into. */
+export function targetNodeIds(store: EditorStore, args: unknown): string[] {
+  const ids = new Set<string>()
+  collectIds(args, ids, TARGET_ID_FIELDS)
+  return layersOnly(store, ids)
+}
+
+/** What one agent call read, what it wrote, and the layers it builds from then on. */
+export interface AgentActivity {
+  read: readonly string[]
+  written: readonly string[]
+  worked: readonly string[]
 }
 
 function pageOf(store: EditorStore, nodeId: string): string | undefined {
@@ -145,6 +176,7 @@ export function agentFinished(
     nodeIds: readonly string[]
     edited: boolean
     edit?: AgentEdit
+    activity?: AgentActivity
     reply: number
   }
 ): void {
@@ -160,10 +192,30 @@ export function agentFinished(
     pageId,
     ...placement
   })
+  const { activity } = work
+  if (activity) {
+    recordLayerActivity(store, agent.handle, 'read', activity.read)
+    recordLayerActivity(store, agent.handle, 'write', activity.written)
+    markWorking(store, agent.handle, activity.worked)
+  }
+  keepWorking(store, agent.handle)
   // An edit replays on the canvas, the cursor moving through what it touched.
   if (work.edit)
     showAgentEdit(store, work.edit, { agent: agent.handle, touched: work.nodeIds, pageId })
   restartTimers(store, session.session, agent)
+}
+
+/**
+ * A session's agent says it is done with `nodeIds`, or with all it builds in this document, as
+ * `finish_working_on_nodes` does. Returns the layers it let go of.
+ */
+export function finishSessionWork(
+  store: EditorStore,
+  session: AgentSession,
+  nodeIds: readonly string[] | null
+): string[] {
+  const agent = sessions.get(session.session)?.get(store)
+  return agent ? finishWorking(store, agent.handle, nodeIds) : []
 }
 
 /**
@@ -173,11 +225,12 @@ export function agentFinished(
  */
 export function restAgents(kind: Exclude<AgentSession['kind'], 'mcp'>): void {
   for (const agents of sessions.values()) {
-    for (const agent of agents.values()) {
+    for (const [store, agent] of agents) {
       if (agent.kind !== kind) continue
       clearTimeout(agent.idleTimer)
       agent.replies++
       agent.handle.update({ status: 'idle', cursor: undefined, selection: undefined })
+      finishWorking(store, agent.handle)
     }
   }
 }

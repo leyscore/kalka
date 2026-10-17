@@ -5,7 +5,7 @@ import { type Locale, useI18n } from '@kalka/vue'
 
 import { recoveryEnabled, setRecoveryEnabled } from '@/app/document/recovery/preferences'
 import { setSnappingPreference } from '@/app/settings/preferences/apply'
-import { appPreferences } from '@/app/settings/preferences/store'
+import { appPreferences, updateReduceAgentAnimations } from '@/app/settings/preferences/store'
 import { animationPreference } from '@/app/shell/motion'
 import { useAppTheme } from '@/app/shell/theme'
 import CredentialSettingsSection from '@/components/settings/credentials/CredentialSettingsSection.vue'
@@ -34,6 +34,11 @@ const languageOptions = availableLocales.map((value) => ({
 const preserveUnsavedWork = computed({
   get: () => recoveryEnabled.value,
   set: setRecoveryEnabled
+})
+
+const reduceAgentAnimations = computed({
+  get: () => appPreferences.value.appearance.reduceAgentAnimations,
+  set: updateReduceAgentAnimations
 })
 
 const snapToGeometry = computed({
@@ -97,6 +102,19 @@ const snapToPixelGrid = computed({
               { value: 'off', label: settings.animationsOff }
             ]"
             :ui="selectUI"
+          />
+        </label>
+        <label class="flex min-h-11 items-center justify-between gap-4 px-3.5 py-2">
+          <span>
+            <span class="block text-xs text-surface">{{ settings.reduceAgentAnimations }}</span>
+            <span class="block text-[11px] text-muted">{{
+              settings.reduceAgentAnimationsDescription
+            }}</span>
+          </span>
+          <AppSwitch
+            v-model="reduceAgentAnimations"
+            :label="settings.reduceAgentAnimations"
+            data-test-id="settings-reduce-agent-animations"
           />
         </label>
       </SettingsGroup>

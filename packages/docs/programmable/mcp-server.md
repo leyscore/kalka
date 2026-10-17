@@ -141,6 +141,14 @@ Endpoints are available over both active transports:
 
 Each MCP session shows in the app as an agent with a callsign, like the built-in chat: its cursor and outline sit on the layers each tool reads or changes, it rests after a quiet spell and leaves when the session ends, and people can follow it from their avatar. Collaborators in a shared room see it too.
 
+### Working marks {#working-marks}
+
+While an agent builds, the layers it writes keep a dashed outline in its color with its callsign, so the user sees what is still in progress. The app also remembers, for each layer, which agent last read it and which last wrote it; this is presence, never saved in the document or its undo history. Only the outermost layers a call creates are marked, plus existing layers the call names and changes; a parent that only grows to fit new children is not.
+
+The marks go when the agent calls `finish_working_on_nodes`, after a minute without a tool call from it, when its session ends, and for the built-in chat when its reply ends. New layers an agent creates stay hidden until they animate in, so they never show and then vanish; with **Settings → General → Reduce agent animations**, animations turned off, or the system's reduced motion, they show at once.
+
+Agents work best in small visual groups: one `write_html` or `render` call per section (page shell, header, hero, each section, footer) rather than a whole page in one call, so the user watches the design take shape and can stop it early. The server's instructions ask agents to do this.
+
 Most tools accept optional `document_id` and `page_id` fields. Pass them explicitly for agent workflows instead of relying on the visible active tab/page. `create_page` only creates a page; call `switch_page` separately when the workflow should change the active page.
 
 ### Which document answered {#document-identity}
@@ -365,6 +373,12 @@ Settings tools never expose credentials, AI models, MCP connections, storage, or
 | Tool | Description |
 |------|-------------|
 | `switch_page` | Switch to a page by name or ID |
+
+### Presence
+
+| Tool | Description |
+|------|-------------|
+| `finish_working_on_nodes` | Release the [working marks](#working-marks) on the given `node_ids` and the layers inside them, or on everything the agent is working on when called without IDs. Returns `released`, the layers let go of |
 
 ### Escape Hatch
 

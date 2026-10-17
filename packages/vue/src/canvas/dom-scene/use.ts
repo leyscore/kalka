@@ -58,6 +58,8 @@ export function useDomScene(
   let presentedScene = -1
   let editState: EditorState['nodeEditState'] = null
   let editVersion = -1
+  /** The page agent work was last drawn on; held layers show once the view leaves it. */
+  let workPage: string | null = null
 
   /** A path being edited is drawn from its live vertices, mapped back into its own frame. */
   function livePatch(id: string): Partial<SceneNode> | null {
@@ -82,6 +84,10 @@ export function useDomScene(
   /** What agents are still writing, and the replay of what they just wrote. */
   function drawAgentWork(pageId: string) {
     ghosts?.sync(options.previews?.() ?? [], pageId)
+    if (workPage !== pageId) {
+      reveals?.release()
+      workPage = pageId
+    }
     if (reveals?.busy) reveals.tick()
   }
 
@@ -201,6 +207,7 @@ export function useDomScene(
     lastTransform = ''
     presentedScene = -1
     editState = null
+    workPage = null
   }
 
   watch(
@@ -220,6 +227,14 @@ export function useDomScene(
     /** Replays an agent edit on the layers drawn now; the steps come from `planReveal`. */
     reveal(steps: readonly RevealStep[]) {
       reveals?.play(steps)
+    },
+    /** Keeps an agent's new layers hidden until their reveal plays, at most `HOLD_TIMEOUT_MS`. */
+    hold(ids: readonly string[]) {
+      reveals?.hold(ids)
+    },
+    /** Shows held layers whose reveal will not play, such as those past the reveal's limit. */
+    release(ids: readonly string[]) {
+      reveals?.release(ids)
     }
   }
 }

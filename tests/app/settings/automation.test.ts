@@ -32,7 +32,8 @@ test('reads appearance from the theme and locale stores alongside app preference
   expect(settings.appearance).toEqual({
     theme: 'light',
     language: 'de',
-    animations: appPreferences.value.appearance.animations
+    animations: appPreferences.value.appearance.animations,
+    reduceAgentAnimations: appPreferences.value.appearance.reduceAgentAnimations
   })
   expect(settings.editing).toEqual(appPreferences.value.editing)
   expect(settings).not.toHaveProperty('version')

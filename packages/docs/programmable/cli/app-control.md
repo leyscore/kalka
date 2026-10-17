@@ -76,6 +76,7 @@ Values are read as JSON when they parse (`false`, `100`, `"auto"`) and as plain 
 | `appearance.theme` | `dark`, `light`, `auto` |
 | `appearance.language` | `en`, `de`, `es`, `fr`, `it`, `ja`, `pl`, `ru`, `zh-CN` |
 | `appearance.animations` | `system`, `off` |
+| `appearance.reduceAgentAnimations` | `true`, `false` (agents' edits show at once instead of animating in) |
 | `editing.snapping.geometry` | `true`, `false` |
 | `editing.snapping.objects` | `true`, `false` |
 | `editing.snapping.pixelGrid` | `true`, `false` |

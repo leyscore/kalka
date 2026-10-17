@@ -54,7 +54,7 @@ async function registerClasses(graph: SceneGraph, html: string, written: readonl
 export const writeHTML = defineTool({
   name: 'write_html',
   description:
-    'Write HTML and CSS into the design as editable layers: elements become frames and text, flex layouts become auto layout, inline styles and <style> rules are kept, and a rule for one class (.btn { ... }) becomes a document class its layers share. Scripts and event handlers are dropped. Use parent_id to write into a frame and replace_id to replace a placeholder.',
+    'Write HTML and CSS into the design as editable layers: elements become frames and text, flex layouts become auto layout, inline styles and <style> rules are kept, and a rule for one class (.btn { ... }) becomes a document class its layers share. Scripts and event handlers are dropped. Use parent_id to write into a frame and replace_id to replace a placeholder. Write one visual group per call, such as one section of a page into its parent, so the user watches the design build.',
   execution: { kind: 'async', mutation: 'document' },
   input: v.strictObject({
     html: v.pipe(

@@ -25,6 +25,7 @@ import {
   registerYjsObservers
 } from '@/app/collab/yjs-sync'
 import type { EditorStore } from '@/app/editor/active-store'
+import { recordPeerActivity } from '@/app/presence/activity'
 import { setPeers } from '@/app/presence/registry'
 import { ROOM_STATUS_TICK_MS, ROOM_UNREACHABLE_MS } from '@/constants'
 
@@ -142,6 +143,7 @@ export function openRoomSession({
     )
     peers.value = next
     setPeers(store, next)
+    recordPeerActivity(store, next)
   }
 
   function broadcastIdentity() {

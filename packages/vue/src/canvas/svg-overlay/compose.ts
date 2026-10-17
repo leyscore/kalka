@@ -2,6 +2,7 @@ import type { LabelCache, OverlayLayerId, PlacedIssueMarker, RulerTheme } from '
 import { RULER_SIZE } from '@kalka/core/constants'
 import type { Color, Rect } from '@kalka/scene-graph/primitives'
 
+import { agentWorkLayer, type AgentWorkMark } from '#vue/canvas/svg-overlay/layers/agent-work'
 import { aiMarksLayer, type AIMarks } from '#vue/canvas/svg-overlay/layers/ai-marks'
 import { autoLayoutHoverLayer } from '#vue/canvas/svg-overlay/layers/auto-layout-hover'
 import { flashesLayer, type Flash } from '#vue/canvas/svg-overlay/layers/flashes'
@@ -94,6 +95,8 @@ export interface ComposeInput extends OverlayContext {
   flashes: readonly Flash[]
   /** Layers an agent works on or just finished. */
   aiMarks: AIMarks
+  /** Layers agents are building and have not let go of yet. */
+  agentWork?: readonly AgentWorkMark[]
   now: number
 }
 
@@ -149,6 +152,7 @@ export function composeOverlay(input: ComposeInput): ComposedOverlay {
     ...selectionLayer(input),
     ...(isMeasuring ? measurementsLayer(input) : []),
     // Gesture feedback.
+    ...agentWorkLayer(input, input.agentWork ?? []),
     ...aiMarksLayer(input, input.aiMarks, input.now),
     ...flashesLayer(input, input.flashes, input.now),
     ...guideRedlineLayer(input),

@@ -25,6 +25,8 @@
   "animations": "Animationen",
   "animationsSystem": "Systemeinstellung",
   "animationsOff": "Aus",
+  "reduceAgentAnimations": "Agent-Animationen reduzieren",
+  "reduceAgentAnimationsDescription": "Neue Ebenen und Texte von Agenten sofort zeigen, statt sie einzublenden.",
   "discardChanges": "Änderungen verwerfen?",
   "discardChangesDescription": "Deine ungespeicherten Änderungen gehen verloren.",
   "keepEditing": "Weiter bearbeiten",

@@ -67,7 +67,8 @@ export function presenceOf(store: EditorStore): Presence {
   return presence
 }
 
-function localAgentColor(store: EditorStore): Color {
+/** The color our agents show in: ours in a room, else the AI color. */
+export function localAgentColor(store: EditorStore): Color {
   return presenceOf(store).ownerColor.value ?? SOLO_AGENT_COLOR
 }
 
@@ -357,6 +358,7 @@ export function setOwnerColor(store: EditorStore, color: Color | null): void {
 export interface AgentHandle {
   readonly id: string
   readonly name: string
+  readonly kind: AgentKind
   update: (patch: Partial<Omit<AgentPresence, 'id' | 'name' | 'kind'>>) => void
   remove: () => void
 }
@@ -386,6 +388,7 @@ export function addAgent(store: EditorStore, kind: AgentKind, model?: string): A
   }
   return {
     id: agent.id,
+    kind,
     // The owner may rename the agent.
     get name() {
       return current()?.name ?? agent.name

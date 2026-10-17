@@ -268,7 +268,7 @@ The CLI defaults the filesystem root to the home directory on Windows and the cu
 1. **Find or open a document** — `list_documents` for open tabs and their IDs; `open_file { path }` within the effective filesystem root, or `new_document {}`. Pass `document_id` and `page_id` explicitly instead of relying on the active tab; `activate_document { document_id }` brings a tab to the front when the user should see it.
 2. **Query** — `get_page_tree`, `find_nodes`, `query_nodes`, `get_node`, `list_pages`, `get_current_page`. Figma's Dev Mode tool names work too: `get_metadata { nodeId }` for an XML outline, `get_variable_defs { nodeId }` for the variables and styles a layer uses, and `search_design_system { query }` for components, variables, and styles; without `nodeId` they read the selection.
 3. **Inspect** — `get_jsx`, `diff_jsx`, `diff_create`, `diff_visual`, `describe`, `export_image`, `export_svg`, `export_pdf`.
-4. **Modify** — `render`, `batch_update`, `update_node`, `set_fill`, `set_layout`, `create_shape`, `import_svg`, etc.
+4. **Modify** — `render`, `batch_update`, `update_node`, `set_fill`, `set_layout`, `create_shape`, `import_svg`, etc. Build a design one visual group per `write_html` or `render` call (the page shell, then each section), so the user watches it take shape; call `finish_working_on_nodes` when a section or the design is done.
 5. **Save/export** — `save_file`, `export_image`, `export_svg`, `export_pdf`, or CLI `export`.
 6. **Close** — `close_file { document_id, unsaved }` closes a document tab after the workflow. With unsaved changes it fails unless `unsaved` is `"save"` or `"discard"`; automation never prompts in the app.
 
@@ -318,6 +318,7 @@ Use the `render` tool for JSX strings. Use only the APIs exposed by the installe
 - Export specific nodes with `--node` for faster visual checks.
 - Use `export_image` after changes to verify visual quality.
 - The running editor shows each MCP session as an agent at the layers its tools touch, and follows it while it works when the user has Follow agents on. Leave the user's selection and view alone unless they ask to be shown something.
+- Layers you write stay marked with your agent's name until you call `finish_working_on_nodes { node_ids }` (or with no IDs for everything), you stay quiet for a minute, or the session ends.
 - Use `analyze colors --similar` to find near-duplicate colors.
 - Use `kalka tool call` for MCP tools without a dedicated CLI command, and `eval` for Figma Plugin API operations not covered by any tool.
 - Use `--json` when piping CLI output to scripts.

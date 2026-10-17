@@ -25,6 +25,8 @@
   "animations": "Animacje",
   "animationsSystem": "Zgodnie z systemem",
   "animationsOff": "Wyłączone",
+  "reduceAgentAnimations": "Ogranicz animacje agentów",
+  "reduceAgentAnimationsDescription": "Pokazuj nowe warstwy i teksty agentów od razu, bez animacji.",
   "discardChanges": "Odrzucić zmiany?",
   "discardChangesDescription": "Niezapisane zmiany zostaną utracone.",
   "keepEditing": "Kontynuuj edycję",

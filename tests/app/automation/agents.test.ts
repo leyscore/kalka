@@ -8,12 +8,14 @@ import {
   agentFinished,
   agentStarted,
   endAgentSession,
+  finishSessionWork,
   readAgentSession,
   restAgents,
   touchedNodeIds,
   type AgentSession
 } from '@/app/automation/agents'
 import { createEditorStore, type EditorStore } from '@/app/editor/session'
+import { layerActivity, WORKING_RELEASE_MS } from '@/app/presence/activity'
 import { presenceOf } from '@/app/presence/registry'
 
 import { expectDefined } from '#tests/helpers/assert'
@@ -152,5 +154,63 @@ describe("the app's own ACP and Pi chats", () => {
     expect(status(pi)).toBe('thinking')
     agentFinished(store, pi, { pageId: pageId(), nodeIds: [card.id], edited: true, reply: next })
     expect(status(pi)).toBe('editing')
+  })
+})
+
+describe('what a session builds', () => {
+  const workingOf = (session: AgentSession) =>
+    agents().find((agent) => agent.kind === session.kind)?.working
+
+  function wroteCard(session: AgentSession) {
+    const card = store.graph.createNode('FRAME', pageId(), { width: 100, height: 80 })
+    const reply = agentStarted(store, session, pageId())
+    agentFinished(store, session, {
+      pageId: pageId(),
+      nodeIds: [card.id],
+      edited: true,
+      reply,
+      activity: { read: [], written: [card.id], worked: [card.id] }
+    })
+    return card
+  }
+
+  test('a call that wrote layers marks them until the agent finishes them', () => {
+    const card = wroteCard(claude)
+    expect(workingOf(claude)).toEqual([card.id])
+    expect(layerActivity(store, card.id)?.write?.kind).toBe('mcp')
+    expect(finishSessionWork(store, claude, null)).toEqual([card.id])
+    expect(workingOf(claude)).toBeUndefined()
+  })
+
+  test('a call that read layers records the read and marks nothing', () => {
+    const card = store.graph.createNode('FRAME', pageId(), {})
+    const reply = agentStarted(store, claude, pageId())
+    agentFinished(store, claude, {
+      pageId: pageId(),
+      nodeIds: [card.id],
+      edited: false,
+      reply,
+      activity: { read: [card.id], written: [], worked: [] }
+    })
+    expect(layerActivity(store, card.id)?.read?.kind).toBe('mcp')
+    expect(workingOf(claude)).toBeUndefined()
+  })
+
+  test("the marks go when the app's chat reply ends or the session ends", () => {
+    wroteCard(pi)
+    wroteCard(claude)
+    restAgents('harness')
+    expect(workingOf(pi)).toBeUndefined()
+    expect(workingOf(claude)).toHaveLength(1)
+    endAgentSession(claude.session)
+    expect(agents().some((agent) => agent.kind === 'mcp')).toBe(false)
+  })
+
+  test('the marks outlast the agent resting, until it stays quiet long enough', () => {
+    const card = wroteCard(claude)
+    jest.advanceTimersByTime(MCP_AGENT_IDLE_MS)
+    expect(workingOf(claude)).toEqual([card.id])
+    jest.advanceTimersByTime(WORKING_RELEASE_MS - MCP_AGENT_IDLE_MS)
+    expect(workingOf(claude)).toBeUndefined()
   })
 })

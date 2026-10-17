@@ -13,8 +13,12 @@ import type { AgentEdit } from '@kalka/vue'
 import {
   agentFinished,
   agentStarted,
+  finishSessionWork,
   readAgentSession,
-  touchedNodeIds
+  targetNodeIds,
+  touchedNodeIds,
+  type AgentActivity,
+  type AgentSession
 } from '@/app/automation/agents'
 import { limitToSelection } from '@/app/automation/bridge/selection-scope'
 import type { AutomationTarget } from '@/app/automation/bridge/target'
@@ -26,7 +30,8 @@ import {
 } from '@/app/automation/execution/editor'
 import { ensureGraphFonts } from '@/app/editor/fonts'
 import { useLibraryService } from '@/app/libraries'
-import { agentEditFromChange } from '@/app/presence/edit-effect'
+import { workedLayers, writtenLayers } from '@/app/presence/activity'
+import { agentEditFromChange, holdAgentCreations } from '@/app/presence/edit-effect'
 
 type FigmaFactory = (store: AutomationTarget['store'], pageId?: string) => FigmaAPI
 
@@ -35,6 +40,8 @@ interface ToolResponse {
   edited: boolean
   /** What the call created and wrote, for showing an agent's edit as it happens. */
   edit?: AgentEdit
+  /** What an agent's call read, wrote and builds, for the layers' agent activity. */
+  activity?: AgentActivity
 }
 
 /** Text a property edit may rewrite: the characters of the text layers its arguments name. */
@@ -71,14 +78,16 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
     // A call from an MCP session shows as that session's agent, working where the call works.
     const session = readAgentSession((args as { agent?: unknown }).agent)
     const reply = session ? agentStarted(target.store, session, target.pageId) : 0
-    const response = await runTool(target, toolName, toolArgs, session !== null)
+    const response = await runTool(target, toolName, toolArgs, session)
     if (session) {
+      const nodeIds = touchedNodeIds(target.store, toolArgs, response.result)
       agentFinished(target.store, session, {
         reply,
         pageId: target.pageId,
-        nodeIds: touchedNodeIds(target.store, toolArgs, response.result),
+        nodeIds,
         edited: response.edited,
-        edit: response.edit
+        edit: response.edit,
+        activity: response.activity ?? { read: nodeIds, written: [], worked: [] }
       })
     }
     return { ok: true, result: response.result }
@@ -92,19 +101,30 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
     target: AutomationTarget,
     toolName: string,
     toolArgs: Record<string, unknown>,
-    fromAgent: boolean
+    session: AgentSession | null
   ): Promise<ToolResponse> {
     const store = target.store
+    const fromAgent = session !== null
     const def = ALL_TOOLS.find((t) => t.name === toolName && isToolExposed(t, 'mcp'))
     if (!def) throw new Error(`Unknown tool: ${toolName}`)
     const libraryService = useLibraryService()
     libraryService.bindEditor(store)
     registerComponentCatalog(store.graph, libraryService)
     const figma = makeFigma(store, target.pageId)
+    // Set by the host hook, which TypeScript cannot see run.
+    const call = { released: false }
+    if (session) {
+      figma.finishWorking = (ids) => {
+        call.released = true
+        return finishSessionWork(store, session, ids)
+      }
+    }
     const pulsed = fromAgent && def.mutates ? touchedNodeIds(store, toolArgs, null) : []
     if (pulsed.length > 0) store.aiMarkActive(pulsed)
     try {
       const response = await executeTool(target, def, figma, toolArgs, fromAgent)
+      // Letting go of layers is not reading them.
+      if (call.released) response.activity = { read: [], written: [], worked: [] }
       if (def.mutates) {
         const changed = extractNodeIds(response.result)
         if (fromAgent) store.aiFlashDone(changed.filter((id) => !pulsed.includes(id)))
@@ -127,12 +147,15 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
     const store = target.store
     let result: unknown
     let edit: AgentEdit | undefined
+    let activity: AgentActivity | undefined
     if (isAtomicTool(def)) {
       const texts = fromAgent ? textsNamed(store, toolArgs) : new Map<string, string>()
       result = await executeAtomicEditorTool(store, figma, def, toolArgs, {
         label: AUTOMATION_UNDO_LABEL
       })
       edit = { created: [], written: rewrittenTexts(store, texts) }
+      const targets = targetNodeIds(store, toolArgs)
+      activity = { read: [], written: targets, worked: workedLayers(store.graph, null, targets) }
     } else if (def.mutates) {
       const pageId = writtenPageId(store.graph, toolArgs) ?? figma.currentPageId
       const mutate = () =>
@@ -145,23 +168,40 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
           }
         )
       // View tools (selection, viewport, pages) leave the document and its history alone.
-      result = toolChangesDocument(def)
-        ? await executeWithPageUndo(
+      if (toolChangesDocument(def)) {
+        // An agent's new layers stay hidden until the edit's reveal plays them in.
+        const hold = fromAgent ? holdAgentCreations(store) : null
+        try {
+          result = await executeWithPageUndo(
             store,
             pageId,
             automationUndoLabel(def.name),
             mutate,
             (change) => {
               edit = agentEditFromChange(change)
+              activity = {
+                read: [],
+                written: writtenLayers(change),
+                worked: workedLayers(store.graph, change, targetNodeIds(store, toolArgs))
+              }
             }
           )
-        : await mutate()
+        } catch (error) {
+          hold?.release()
+          throw error
+        } finally {
+          hold?.stop()
+        }
+      } else {
+        result = await mutate()
+        activity = { read: [], written: [], worked: [] }
+      }
     } else {
       result = await def.execute(figma, toolArgs)
     }
 
     if (def.mutates) store.requestRender()
-    return { result, edited: def.mutates, edit }
+    return { result, edited: def.mutates, edit, activity }
   }
 }
 

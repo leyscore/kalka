@@ -5,6 +5,9 @@ export const settingsMessageDefaults = {
   animations: 'Animations',
   animationsSystem: 'Follow system',
   animationsOff: 'Off',
+  reduceAgentAnimations: 'Reduce agent animations',
+  reduceAgentAnimationsDescription:
+    "Show agents' new layers and text at once instead of animating them in.",
   title: 'Settings',
   description: 'Manage integrations and app preferences.',
   general: 'General',
