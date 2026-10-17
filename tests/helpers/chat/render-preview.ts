@@ -18,10 +18,21 @@ export async function setupCanvas(page: Page) {
   })
 }
 
-/** Previews the canvas draws: those of the page on screen. */
+/**
+ * Previews the canvas draws: those of the page on screen. The DOM scene draws each call's
+ * preview in place, so its key changes with what the preview shows.
+ */
 export async function previewKey(page: Page) {
-  return page.evaluate(
-    () =>
+  return page.evaluate(() => {
+    const ghosts = [...document.querySelectorAll<HTMLIFrameElement>('iframe[data-kalka-ghost]')]
+    if (ghosts.length > 0) {
+      return ghosts
+        .map(
+          (frame) => `${frame.dataset.kalkaGhost}=${frame.contentDocument?.body.innerHTML ?? ''}`
+        )
+        .join(',')
+    }
+    return (
       window.kalka
         ?.getStore?.()
         .canvasRenderers.flatMap((renderer) =>
@@ -30,7 +41,8 @@ export async function previewKey(page: Page) {
             .map(([key]) => key)
         )
         .join(',') ?? ''
-  )
+    )
+  })
 }
 
 export function documentSnapshot(page: Page) {

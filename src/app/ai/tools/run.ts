@@ -1,11 +1,13 @@
 import type { PageSnapshot } from '@kalka/core/editor'
 import type { StepBudget } from '@kalka/core/tools'
 import type { UndoEntry } from '@kalka/scene-graph/undo'
+import type { AgentEdit } from '@kalka/vue'
 
 import { DEFAULT_AGENT_STEPS, resolveAgentStepLimit } from '@/app/ai/chat/step-limit'
 import type { PreviewFocus } from '@/app/ai/preview/canvas'
 import { getActiveEditorStore } from '@/app/editor/active-store'
 import type { EditorStore } from '@/app/editor/active-store'
+import { showAgentEdit, stopCursorSweep } from '@/app/presence/edit-effect'
 import { addAgent, agentPlacement, type AgentHandle } from '@/app/presence/registry'
 
 class RunState {
@@ -55,7 +57,9 @@ export function startRun(store: EditorStore, maxSteps: number, model?: string): 
 
 /** The reply finished, failed, or was stopped: the agent stays listed but leaves the canvas. */
 export function endRun(store: EditorStore): void {
-  getRunState(store).agent?.update({
+  const { agent } = getRunState(store)
+  if (agent) stopCursorSweep(agent)
+  agent?.update({
     status: 'idle',
     cursor: undefined,
     selection: undefined,
@@ -82,6 +86,11 @@ export function markRunWork(store: EditorStore, nodeIds: string[]): void {
   const placement = agentPlacement(store, nodeIds, runPageId(store))
   if (!run.agent || !placement) return
   run.agent.update({ status: 'editing', ...placement })
+}
+
+/** Replay a tool's edit on the canvas, with the run's agent moving through what it touched. */
+export function showRunEdit(store: EditorStore, edit: AgentEdit, touched: readonly string[]): void {
+  showAgentEdit(store, edit, { agent: getRunState(store).agent, touched, pageId: runPageId(store) })
 }
 
 export function recordStep(store?: EditorStore): void {

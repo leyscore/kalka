@@ -16,6 +16,7 @@ import { recordToolCompleted, type AIDiagnosticContext } from '@/app/diagnostics
 import type { EditorStore } from '@/app/editor/active-store'
 import { ensureGraphFonts } from '@/app/editor/fonts'
 import { useLibraryService } from '@/app/libraries'
+import { agentEditFromChange } from '@/app/presence/edit-effect'
 
 import { aiToolDefinitions } from './catalog'
 import { recordToolChange } from './changes/capture'
@@ -27,6 +28,7 @@ import {
   recordRunUndoEntry,
   runBaseline,
   runPageId,
+  showRunEdit,
   stepBudget
 } from './run'
 
@@ -111,6 +113,11 @@ export function createAITools(store: EditorStore, diagnosticContext?: AIDiagnost
               // The change record is a review aid; the edit and its undo entry already stand.
               console.warn('Could not record AI tool change', error)
             }
+            showRunEdit(
+              store,
+              agentEditFromChange(change),
+              change.updated.map((update) => update.id)
+            )
           }
           try {
             // `switch_page` moves the run, and the user's view with it.

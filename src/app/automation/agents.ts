@@ -1,7 +1,10 @@
 import * as v from 'valibot'
 
+import type { AgentEdit } from '@kalka/vue'
+
 import { isUnknownRecord } from '@/app/automation/bridge/target'
 import type { EditorStore } from '@/app/editor/active-store'
+import { showAgentEdit } from '@/app/presence/edit-effect'
 import { addAgent, agentPlacement, type AgentHandle } from '@/app/presence/registry'
 import { MAX_NAME_LENGTH } from '@/app/presence/schema'
 
@@ -126,7 +129,7 @@ export function agentStarted(store: EditorStore, session: AgentSession, pageId: 
 export function agentFinished(
   store: EditorStore,
   session: AgentSession,
-  work: { pageId: string; nodeIds: readonly string[]; edited: boolean }
+  work: { pageId: string; nodeIds: readonly string[]; edited: boolean; edit?: AgentEdit }
 ): void {
   const agent = sessionAgent(store, session)
   const first = work.nodeIds[0]
@@ -137,6 +140,9 @@ export function agentFinished(
     pageId,
     ...placement
   })
+  // An edit replays on the canvas, the cursor moving through what it touched.
+  if (work.edit)
+    showAgentEdit(store, work.edit, { agent: agent.handle, touched: work.nodeIds, pageId })
   restartTimers(store, session.session, agent)
 }
 

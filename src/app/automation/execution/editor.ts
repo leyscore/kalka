@@ -1,4 +1,4 @@
-import { executeAtomicTool, isEmptyPageChange } from '@kalka/core/editor'
+import { executeAtomicTool, isEmptyPageChange, type PageChange } from '@kalka/core/editor'
 import type { FigmaAPI } from '@kalka/core/figma-api'
 import type { ToolDef } from '@kalka/core/tools'
 
@@ -49,7 +49,9 @@ export async function executeWithPageUndo<T>(
   store: EditorStore,
   pageId: string,
   label: string,
-  run: () => Promise<T>
+  run: () => Promise<T>,
+  /** Told what the edit changed, also when it failed, as soon as it is recorded. */
+  onChange?: (change: PageChange) => void
 ): Promise<T> {
   const finishChange = store.capturePageChange(pageId)
   try {
@@ -64,5 +66,6 @@ export async function executeWithPageUndo<T>(
         inverse: () => store.restorePageChange(change, 'before')
       })
     }
+    onChange?.(change)
   }
 }

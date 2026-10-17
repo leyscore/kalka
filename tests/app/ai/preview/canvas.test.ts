@@ -1,8 +1,10 @@
-import { describe, expect, test } from 'bun:test'
+import { afterEach, describe, expect, test } from 'bun:test'
 
 import { SceneGraph } from '@kalka/scene-graph'
 
-import { previewFocus } from '@/app/ai/preview/canvas'
+import { createCanvasJSXPreview, previewFocus } from '@/app/ai/preview/canvas'
+import { createEditorStore } from '@/app/editor/session'
+import { scenePreviews } from '@/app/presence/canvas-scene'
 import { MAX_OUTLINE } from '@/app/presence/schema'
 
 import { expectDefined } from '#tests/helpers/assert'
@@ -47,3 +49,49 @@ describe('streamed JSX focus', () => {
     expect(previewFocus({ graph: new SceneGraph(), renderedIds: [] })).toBeNull()
   })
 })
+
+const stores: ReturnType<typeof createEditorStore>[] = []
+afterEach(() => {
+  for (const store of stores.splice(0)) store.preparationController.dispose()
+})
+
+describe('streamed JSX on the DOM scene', () => {
+  test('draws over the page without touching the document, and goes when the call ends', async () => {
+    const store = createEditorStore(new SceneGraph())
+    stores.push(store)
+    const pageId = store.state.currentPageId
+    const focused: unknown[] = []
+    const preview = createCanvasJSXPreview(store, () => pageId, {
+      activeTabOnly: false,
+      domScene: true,
+      onFocus: (focus) => focused.push(focus)
+    })
+
+    preview.start('call-1')
+    preview.delta('call-1', '{"x":40,"y":40,"jsx":"<Frame w={200} h={100}><Rect w={50} h={50}/>')
+    await expectPoll(() => scenePreviews(store).length === 1)
+    const [shown] = scenePreviews(store)
+    expect(shown?.pageId).toBe(pageId)
+    expect(shown?.nodeIds).toHaveLength(1)
+    expect(shown?.graph).not.toBe(store.graph)
+    expect(focused).toHaveLength(1)
+
+    // An update redraws under the same key, so the scene updates it in place.
+    preview.delta('call-1', '<Rect w={60} h={60}/>')
+    await expectPoll(() => scenePreviews(store)[0] !== shown)
+    expect(scenePreviews(store)[0]?.key).toBe(shown?.key)
+
+    expect(store.graph.getNode(pageId)?.childIds).toEqual([])
+    expect(store.undo.canUndo).toBe(false)
+    preview.finish('call-1')
+    expect(scenePreviews(store)).toEqual([])
+  })
+})
+
+async function expectPoll(condition: () => boolean, timeout = 2000): Promise<void> {
+  const start = performance.now()
+  while (!condition()) {
+    if (performance.now() - start > timeout) throw new Error('Timed out waiting for the preview')
+    await Bun.sleep(20)
+  }
+}

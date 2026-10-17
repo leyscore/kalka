@@ -46,6 +46,7 @@ import { canvasBackgroundColor, showsKalkaCanvas } from '@/app/editor/canvas/bac
 import { useCanvasCollaborationAwareness } from '@/app/editor/canvas/collaboration-awareness'
 import { createCanvasContextSelection } from '@/app/editor/canvas/context-selection'
 import { canvasOverlayObstacles } from '@/app/editor/canvas/obstacles'
+import { attachCanvasScene, scenePreviews } from '@/app/presence/canvas-scene'
 import { useFollowView } from '@/app/presence/follow-view'
 import { appRuntimeConfig } from '@/app/runtime/config'
 import IssueMarkerTooltip from '@/components/design-check/IssueMarkerTooltip.vue'
@@ -106,12 +107,15 @@ const shouldSuspendRender = () =>
 const drawnView = shallowRef<ViewportTransform | null>(null)
 
 if (domScene) {
-  useDomScene(domSceneRef, store, {
+  const scene = useDomScene(domSceneRef, store, {
     getRenderState,
     vectorElement,
     onPresented: ({ sceneVersion }) =>
-      store.preparationController.acknowledgePresentation(sceneVersion)
+      store.preparationController.acknowledgePresentation(sceneVersion),
+    // What agents are still writing draws over the document, in every pane.
+    previews: () => scenePreviews(store)
   })
+  onUnmounted(attachCanvasScene(store, scene))
 }
 
 // Over the DOM scene, nothing on screen is drawn by Skia: the canvas element only takes input,

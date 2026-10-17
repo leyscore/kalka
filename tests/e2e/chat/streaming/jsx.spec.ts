@@ -221,3 +221,54 @@ test("the chat's agent moves through the streamed elements and outlines them", a
     await stream.dispose()
   }
 })
+
+test('draws streamed JSX as page DOM in place of the layer it replaces, until it commits', async ({
+  configuredChat: chat
+}) => {
+  await setupCanvas(chat.page)
+  const originalId = await chat.page.evaluate(() => {
+    const store = window.kalka?.getStore?.()
+    if (!store) throw new Error('Editor unavailable')
+    const node = store.graph.createNode('FRAME', store.state.currentPageId, {
+      name: 'Placeholder',
+      x: 80,
+      y: 80,
+      width: 280,
+      height: 180
+    })
+    store.requestRender()
+    return node.id
+  })
+  const stream = await installRenderStream(chat.page, {
+    ...scenario,
+    placement: { replace_id: originalId, x: 80, y: 80 }
+  })
+  const preview = chat.page.locator('iframe[data-kalka-ghost]')
+  const original = chat.page.locator(`iframe[data-kalka-artboard="${originalId}"]`)
+  try {
+    await chat.submit('Replace the placeholder')
+    await expect.poll(() => stream.evaluate((s) => s.ready())).toBe(true)
+    await stream.evaluate((s) => s.advance())
+    // The browser draws what has streamed so far, through the projection layers use.
+    await expect(preview.contentFrame().getByText('Streaming')).toBeAttached()
+    await expect(original).toHaveCSS('visibility', 'hidden')
+    expect(await documentState(chat.page)).toEqual({ children: [originalId], undo: false })
+
+    await stream.evaluate((s) => s.advance())
+    await expect(preview.contentFrame().getByText('Streaming preview')).toBeAttached()
+
+    await stream.evaluate((s) => s.complete())
+    await expect(chat.assistantMessage()).toContainText('Rendered.')
+    await expect(preview).toHaveCount(0)
+    const [committed] = (await documentState(chat.page)).children
+    await expect(
+      chat.page
+        .locator(`iframe[data-kalka-artboard="${committed}"]`)
+        .contentFrame()
+        .getByText('Streaming preview')
+    ).toBeAttached()
+  } finally {
+    await stream.evaluate((s) => s.dispose())
+    await stream.dispose()
+  }
+})

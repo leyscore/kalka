@@ -13,7 +13,9 @@ import {
   useActiveEditorStoreRef,
   type EditorStore
 } from '@/app/editor/active-store'
+import { hideScenePreview, showScenePreview } from '@/app/presence/canvas-scene'
 import { MAX_OUTLINE } from '@/app/presence/schema'
+import { appRuntimeConfig } from '@/app/runtime/config'
 
 import { createJSXPreviewController, type PreviewArtifact } from './controller'
 import type { RenderPreviewInput } from './input'
@@ -86,6 +88,11 @@ export interface CanvasJSXPreviewOptions {
    * the document's canvas is drawn, which is also true of several documents on one page.
    */
   activeTabOnly?: boolean
+  /**
+   * Draw previews as DOM over the DOM scene rather than as Skia pictures. Defaults to what the
+   * editor draws with.
+   */
+  domScene?: boolean
 }
 
 /**
@@ -95,9 +102,15 @@ export interface CanvasJSXPreviewOptions {
 export function createCanvasJSXPreview(
   store: EditorStore,
   pageId: () => string,
-  { onFocus, activeTabOnly = true }: CanvasJSXPreviewOptions = {}
+  {
+    onFocus,
+    activeTabOnly = true,
+    domScene = appRuntimeConfig.domScene
+  }: CanvasJSXPreviewOptions = {}
 ) {
   let subscriptions: (() => void)[] = []
+  /** Several previewers can draw in one document, such as a room's peers' agents. */
+  const previewer = crypto.randomUUID()
 
   const isShown = () => !activeTabOnly || getActiveEditorStoreOrNull() === store
 
@@ -115,7 +128,8 @@ export function createCanvasJSXPreview(
   }
 
   function capture(): PreviewTarget | null {
-    if (!isShown() || !store.renderer) return null
+    // The DOM scene draws previews itself; Skia pictures need the canvas's renderer.
+    if (!isShown() || (!domScene && !store.renderer)) return null
     if (subscriptions.length === 0) {
       subscriptions = [
         store.onEditorEvent('graph:replaced', () => controller.clear()),
@@ -141,15 +155,45 @@ export function createCanvasJSXPreview(
     return { graph: store.graph, pageId: pageId() }
   }
 
+  /** The staged layers as DOM over the DOM scene, under one key per call so updates redraw in place. */
+  function domArtifact(
+    target: PreviewTarget,
+    staged: StagedJSXPreview,
+    callId: string
+  ): PreviewArtifact {
+    const focus = previewFocus(staged)
+    const preview = {
+      key: `${previewer}:${callId}`,
+      graph: staged.graph,
+      pageId: target.pageId,
+      nodeIds: staged.nodeIds,
+      replaceId: staged.replaceId
+    }
+    let disposed = false
+    return {
+      show() {
+        if (disposed || !isCurrent(target)) return
+        showScenePreview(store, preview)
+        if (focus) onFocus?.(focus)
+      },
+      dispose() {
+        disposed = true
+        hideScenePreview(store, preview)
+      }
+    }
+  }
+
   async function build(
     target: PreviewTarget,
     tree: JSXPreviewNode,
     input: RenderPreviewInput,
-    signal: AbortSignal
+    signal: AbortSignal,
+    callId: string
   ): Promise<PreviewArtifact | null> {
     if (countNodes(tree) > MAX_RENDERED_PREVIEW_NODES) return null
     const staged = await stageJSXPreview(target.graph, tree, input, target.pageId, signal)
     if (!staged) return null
+    if (domScene) return domArtifact(target, staged, callId)
     // Native Skia objects cannot cross CanvasKit instances, even within the same editor.
     const pictures = new Map<CanvasKit, SkPicture>()
     function deletePictures() {

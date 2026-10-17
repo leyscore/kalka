@@ -21,7 +21,9 @@ interface PreviewDependencies<Target> {
     target: Target,
     tree: JSXPreviewNode,
     input: RenderPreviewInput,
-    signal: AbortSignal
+    signal: AbortSignal,
+    /** The tool call previewed: each build of one call replaces the one before. */
+    callId: string
   ): Promise<PreviewArtifact | null>
 }
 
@@ -123,7 +125,7 @@ export function createJSXPreviewController<Target>(deps: PreviewDependencies<Tar
       const snapshot = call.parser.append(input.jsx.slice(call.jsx.length))
       call.jsx = input.jsx
       if (!snapshot.tree) return
-      const artifact = await deps.build(call.target, snapshot.tree, input, call.abort.signal)
+      const artifact = await deps.build(call.target, snapshot.tree, input, call.abort.signal, id)
       if (!artifact) return
       // A newer revision still shows this artifact; `finally` renders the newer one next.
       if (calls.get(id) !== call || call.abort.signal.aborted || !deps.isCurrent(call.target)) {

@@ -9,8 +9,11 @@ import { transformVectorNetwork, type SceneNode } from '@kalka/scene-graph'
 import { getWorldMatrix } from '@kalka/scene-graph/coordinate'
 import Matrix from '@kalka/scene-graph/matrix'
 
+import { GhostLayer, type DomScenePreview } from './ghosts'
 import { DomLayoutEngine } from './layout'
 import { DomSceneProjector } from './projector'
+import type { RevealStep } from './reveal/plan'
+import { RevealPlayer } from './reveal/play'
 import { ShaderLayers } from './shaders'
 import { DomTextEditor } from './text/editor'
 import { CanvasTokens } from './tokens'
@@ -26,6 +29,11 @@ export interface UseDomSceneOptions {
   onPresented?: (versions: { renderVersion: number; sceneVersion: number }) => void
   /** Called after each frame that changed the DOM, with the artboards it touched. */
   onPatched?: (projector: DomSceneProjector, artboardIds: ReadonlySet<string>) => void
+  /**
+   * Layers not in the document yet, drawn over it, such as JSX an agent is still writing. Read
+   * every frame; return the same array while nothing changed.
+   */
+  previews?: () => readonly DomScenePreview[]
 }
 
 /**
@@ -42,6 +50,8 @@ export function useDomScene(
   let engine: DomLayoutEngine | null = null
   let shaders: ShaderLayers | null = null
   let tokens: CanvasTokens | null = null
+  let ghosts: GhostLayer | null = null
+  let reveals: RevealPlayer | null = null
   const reflowed = new Set<string>()
   let frame = 0
   let lastTransform = ''
@@ -68,6 +78,12 @@ export function useDomScene(
     }
   }
   const stops: (() => void)[] = []
+
+  /** What agents are still writing, and the replay of what they just wrote. */
+  function drawAgentWork(pageId: string) {
+    ghosts?.sync(options.previews?.() ?? [], pageId)
+    if (reveals?.busy) reveals.tick()
+  }
 
   function tick() {
     frame = requestAnimationFrame(tick)
@@ -96,6 +112,7 @@ export function useDomScene(
       if (projector.needsFlush) projector.flush()
     }
     const state = view()
+    drawAgentWork(state.currentPageId)
     shaders?.sync(state.sceneVersion)
     if (state.sceneVersion !== presentedScene) void tokens?.sync()
     if (state.sceneVersion !== presentedScene) {
@@ -132,6 +149,12 @@ export function useDomScene(
     void canvasTokens.sync()
     engine = new DomLayoutEngine(p, () => editor.graph)
     shaders = new ShaderLayers(p, () => editor.graph)
+    ghosts = new GhostLayer(p, {
+      vectorElement: options.vectorElement,
+      fonts: () => fontManager.loadedBrowserFaces()
+    })
+    reveals = new RevealPlayer(p)
+    const ghostLayer = ghosts
     // Text is edited in place, in the page, instead of by the canvas text engine.
     editor.setExternalTextEditor(new DomTextEditor(editor, p))
     stops.push(
@@ -151,7 +174,10 @@ export function useDomScene(
       }),
       // Renaming a variable or changing a mode's condition changes no layer.
       editor.onEditorEvent('history:changed', () => void canvasTokens.sync()),
-      fontManager.onBrowserFace((face) => p.addFont(face)),
+      fontManager.onBrowserFace((face) => {
+        p.addFont(face)
+        ghostLayer.addFont(face)
+      }),
       installLayoutEngine(engine)
     )
     frame = requestAnimationFrame(tick)
@@ -163,6 +189,10 @@ export function useDomScene(
     if (projector) editor.setExternalTextEditor(null)
     shaders?.destroy()
     shaders = null
+    reveals?.destroy()
+    reveals = null
+    ghosts?.destroy()
+    ghosts = null
     tokens = null
     projector?.destroy()
     projector = null
@@ -186,6 +216,10 @@ export function useDomScene(
   return {
     get projector() {
       return projector
+    },
+    /** Replays an agent edit on the layers drawn now; the steps come from `planReveal`. */
+    reveal(steps: readonly RevealStep[]) {
+      reveals?.play(steps)
     }
   }
 }
