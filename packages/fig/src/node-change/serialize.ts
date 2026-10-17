@@ -220,8 +220,13 @@ function serializeSizeConstraints(node: SceneNode, nc: KiwiNodeChange): void {
   }
 }
 
+/**
+ * Hug as Figma desktop 126 writes it for its own frames, which counts the children stretched
+ * across the frame; the older `RESIZE_TO_FIT` leaves them out, so a row hugging a stretched
+ * column shrank to its other layers when pasted into Figma.
+ */
 function exportSizing(value: SceneNode['primaryAxisSizing']) {
-  return value === 'HUG' ? 'RESIZE_TO_FIT' : 'FIXED'
+  return value === 'HUG' ? 'RESIZE_TO_FIT_WITH_IMPLICIT_SIZE' : 'FIXED'
 }
 
 /** Layout fields whose edits decide whether a frame's own sizing still matches its fill. */

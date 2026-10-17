@@ -60,11 +60,11 @@ describe('own sizing of frames that fill their parent', () => {
     const change = await exported(graph)
     expect(change('Title row')).toMatchObject({
       stackPrimarySizing: 'FIXED',
-      stackCounterSizing: 'RESIZE_TO_FIT',
+      stackCounterSizing: 'RESIZE_TO_FIT_WITH_IMPLICIT_SIZE',
       stackChildAlignSelf: 'STRETCH'
     })
     expect(change('Column')).toMatchObject({
-      stackPrimarySizing: 'RESIZE_TO_FIT',
+      stackPrimarySizing: 'RESIZE_TO_FIT_WITH_IMPLICIT_SIZE',
       stackCounterSizing: 'FIXED',
       stackChildPrimaryGrow: 1
     })

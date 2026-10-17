@@ -1,5 +1,7 @@
+import { isEqual } from 'es-toolkit/predicate'
+
 import type { SceneGraph, SceneNode } from '../'
-import { TEXT_METRIC_FIELDS } from '../fields/text'
+import { TEXT_METRIC_FIELDS, TEXT_SHAPING_FIELDS } from '../fields/text'
 import { layoutSizing } from '../layout-sizing'
 
 const METRIC_FIELDS: ReadonlySet<string> = new Set(TEXT_METRIC_FIELDS)
@@ -15,21 +17,24 @@ function contentSizedAxes(
   updates: Partial<SceneNode>
 ): { width: boolean; height: boolean } {
   const copy: SceneNode = { ...current, ...updates }
-  // Text measures its own characters, set on the copy or by a property of an instance around it.
+  // Text measures its own characters and their style, set on the copy or by a property of an
+  // instance around it; a copy styled as its component takes the component's measure.
   if (copy.type === 'TEXT') {
-    if (copy.text === source.text) return { width: false, height: false }
+    if (TEXT_SHAPING_FIELDS.every((field) => isEqual(copy[field], source[field])))
+      return { width: false, height: false }
     const mode = copy.textAutoResize
     return {
       width: mode === 'WIDTH_AND_HEIGHT',
       height: mode === 'WIDTH_AND_HEIGHT' || mode === 'HEIGHT'
     }
   }
-  // Auto layout hugs the copy's own layers, which may show or size differently.
-  if (copy.layoutMode === 'NONE') return { width: false, height: false }
-  return {
-    width: layoutSizing(graph, copy, 'HORIZONTAL') === 'HUG',
-    height: layoutSizing(graph, copy, 'VERTICAL') === 'HUG'
+  // Auto layout hugs the copy's own layers, which may show or size differently, and a layer
+  // that fills its parent takes the size layout gives it there.
+  const laidOut = (axis: 'HORIZONTAL' | 'VERTICAL') => {
+    const sizing = layoutSizing(graph, copy, axis)
+    return sizing === 'FILL' || (sizing === 'HUG' && copy.layoutMode !== 'NONE')
   }
+  return { width: laidOut('HORIZONTAL'), height: laidOut('VERTICAL') }
 }
 
 /**

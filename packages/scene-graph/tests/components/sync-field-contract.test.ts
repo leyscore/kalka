@@ -376,3 +376,56 @@ test('text a property gives a copy when its layer is linked later drops the size
   graph.syncInstances(button.id)
   expect([copy.text, copy.derivedLayout]).toEqual(['Checkout', null])
 })
+
+test('a text copy styled on its own keeps the size it measured, as a badge label in gold-preview', () => {
+  const graph = new SceneGraph()
+  const page = graph.getPages()[0].id
+  const badge = graph.createNode('COMPONENT', page, { width: 60, height: 28 })
+  const label = graph.createNode('TEXT', badge.id, {
+    text: 'Badge',
+    fontSize: 12,
+    width: 37,
+    height: 16,
+    textAutoResize: 'WIDTH_AND_HEIGHT'
+  })
+  const instance = expectDefined(graph.createInstance(badge.id, page))
+  const [copy] = graph.getChildren(instance.id)
+  graph.updateNode(copy.id, { fontSize: 14, width: 43, height: 18 })
+  setInstanceOverride(instance.instanceOverrides, instance.id, copy.id, 'fontSize', true)
+
+  graph.updateNode(label.id, { width: 38 })
+  graph.syncInstances(badge.id)
+  expect([copy.fontSize, copy.width, copy.height]).toEqual([14, 43, 18])
+})
+
+test('a copy that fills its parent keeps the size layout gave it', () => {
+  // A stepper's icon column in gold-preview: the component shows a divider under the icon, the
+  // instance hides it, and the column fills the row's height, which hugs its layers.
+  const graph = new SceneGraph()
+  const page = graph.getPages()[0].id
+  const stepper = graph.createNode('COMPONENT', page, {
+    width: 150,
+    height: 44,
+    layoutMode: 'HORIZONTAL',
+    primaryAxisSizing: 'FIXED',
+    counterAxisSizing: 'HUG'
+  })
+  const column = graph.createNode('FRAME', stepper.id, {
+    width: 28,
+    height: 44,
+    layoutMode: 'VERTICAL',
+    layoutAlignSelf: 'STRETCH'
+  })
+  graph.createNode('FRAME', column.id, { width: 28, height: 28 })
+  graph.createNode('RECTANGLE', column.id, { width: 1, height: 11 })
+  const instance = expectDefined(graph.createInstance(stepper.id, page))
+  const [copyColumn] = graph.getChildren(instance.id)
+  const [, copyDivider] = graph.getChildren(copyColumn.id)
+  graph.updateNode(copyDivider.id, { visible: false })
+  setInstanceOverride(instance.instanceOverrides, instance.id, copyDivider.id, 'visible', true)
+  graph.updateNode(copyColumn.id, { height: 28 })
+
+  graph.updateNode(column.id, { itemSpacing: 5 })
+  graph.syncInstances(stepper.id)
+  expect(copyColumn.height).toBe(28)
+})

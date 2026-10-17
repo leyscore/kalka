@@ -29,6 +29,7 @@
 - A copy inside an instance that sizes itself to its own content, such as a badge's count or an auto layout frame that hugs layers the instance shows differently, keeps its size through a component edit and as a `.fig` file opens, and text an instance property sets is measured again. An instance that clears a fill, stroke, effect, or text style its component applies keeps it cleared after a `.fig` save.
 - Layout guides set in the panel or by a script save to `.fig` files, including Auto counts, and scripts read and set `layoutGrids` in Figma's shape whichever shape a file gave them.
 - Resizing an instance by a handle no longer makes the size of every layer its constraints move an override, so a later component edit still resizes them.
+- A text copy restyled in an instance keeps its own size through a component edit, a layer that fills its parent takes the size layout gives it rather than the component's, and frames that hug their layers paste and save into Figma at their size, stretched children included.
 
 ## 0.1.0-beta.2 — 2026-10-17
 
