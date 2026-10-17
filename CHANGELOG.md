@@ -179,6 +179,7 @@
 
 ### Fixed
 
+- Requests the app makes while web fonts load, such as storage reads and writes or AI chat calls, no longer go through the font proxy and fail: only requests to the font providers' own hosts are proxied.
 - Gradients from Figma files and Figma pastes draw as they do in Figma on the canvas, in thumbnails, and in HTML and SVG exports: they ran backwards or sat in the wrong place unless they were symmetric, because Figma's gradient transform was applied the wrong way round. SVG export and import keep a gradient exactly, and a new gradient starts as Figma's does, top to bottom from the fill colour to a darker shade, keeping its transform when switched between linear, radial, angular, and diamond.
 - Standalone HTML exports with external assets load their web fonts: the stylesheet named them from the wrong folder.
 - An HTML export of several layers defines the CSS variables its styles reference, in each mode, instead of referencing variables the page never declares.
