@@ -10,8 +10,11 @@ import { randomIndex } from '@kalka/scene-graph/random'
  * goes once no recorded parent is left; `parentId` and `childIds` are derived on each peer
  * (`src/app/collab/tree/layer-tree.ts`). The document-wide `meta` map holds the room's root and
  * name, the move clock, and the tree format.
+ *
+ * Format 4 also shares the document's variables and collections. A format 3 room has none to
+ * convert: it simply starts sharing them once a format 4 peer writes them.
  */
-export const TREE_FORMAT = 3
+export const TREE_FORMAT = 4
 export const PARENTS_FIELD = 'parents'
 export const ORDER_KEY_FIELD = 'orderKey'
 export const PAGE_FIELD = 'page'
