@@ -1,7 +1,9 @@
 import {
   fitEnclosingGroups,
   FITTED_CONTAINER_TYPES,
-  recordInstanceOverride
+  claimSlotContent,
+  recordInstanceOverride,
+  slotScope
 } from '@kalka/scene-graph'
 import type { GroupFitOptions, SceneGraph, SceneNode } from '@kalka/scene-graph'
 
@@ -34,6 +36,27 @@ export function raw(target: ProxyThis, internals: NodeProxyInternals): SceneNode
 
 export function assertProxyEditable(target: ProxyThis, internals: NodeProxyInternals): void {
   assertNodeEditable(graph(target, internals), nodeId(target, internals))
+}
+
+/**
+ * Readies an edit to a field a layer inside an instance always takes from its component. Figma
+ * refuses it there, naming the property it would have overridden (Figma desktop 126). Slot
+ * content is the instance's own and keeps the edit: a slot still showing the component's default
+ * content is claimed first, as Figma does on the first edit, so a later sync leaves it alone.
+ */
+export function prepareFollowedFieldEdit(
+  scene: SceneGraph,
+  node: SceneNode,
+  setter: string,
+  property: 'relative-transform' | 'vertical-constraint' | 'is-mask' | 'mask-type'
+): void {
+  if (!node.parentId) return
+  const scope = slotScope(scene, node.parentId)
+  if (scope.kind === 'locked')
+    throw new Error(
+      `in set_${setter}: This property cannot be overridden in an instance: ${property}`
+    )
+  if (scope.kind === 'slot') claimSlotContent(scene, scope)
 }
 
 /** Fields whose change can move a node's bounds, so the groups around it refit. */

@@ -496,7 +496,9 @@ function applyInstancePayload(
     }
     mergeOverrides(
       symbolOverrides,
-      serializeRuntimePropertyOverrides(context, node, localIdCounter)
+      serializeRuntimePropertyOverrides(context, node, localIdCounter, (target) =>
+        overridableNodeFields(context, target)
+      )
     )
     if (symbolOverrides.length > 0) symbolData.symbolOverrides = symbolOverrides
     if (!Number.isFinite(node.componentScale) || node.componentScale <= 0)
@@ -913,6 +915,43 @@ function exportedChildren(node: SceneNode, context: SceneNodeToKiwiContext): Sce
     .filter((child) => !child.internalOnly && child.sharedStyleType === null)
 }
 
+/** Stroke geometry and lock state, which a layer's record and its instance claims both write. */
+function applyNodeStateProps(node: SceneNode, nc: KiwiNodeChange): void {
+  // With strokes, their geometry is the node's. Without, the node keeps its own weight and
+  // alignment, written when set or when the source file carried them.
+  if (node.strokes.length > 0) {
+    nc.strokeWeight = node.strokes[0].weight
+    nc.strokeAlign = node.strokes[0].align
+  } else {
+    const rawNodeFields = effectiveFigmaRawNodeFields(node)
+    if (node.strokeWeight !== DEFAULT_STROKE_WEIGHT || 'strokeWeight' in rawNodeFields) {
+      nc.strokeWeight = node.strokeWeight
+    }
+    // Kiwi reads a missing alignment as centered.
+    if (node.strokeAlign !== 'CENTER' || 'strokeAlign' in rawNodeFields) {
+      nc.strokeAlign = node.strokeAlign
+    }
+  }
+  if (node.locked) nc.locked = true
+}
+
+/**
+ * The style fields of a layer as its own record writes them, for the instance override claims
+ * that carry them. Text is written without derived glyphs: a claim never carries them.
+ */
+export function overridableNodeFields(
+  context: SceneNodeToKiwiContext,
+  source: SceneNode
+): KiwiNodeChange {
+  const node = nodeToSerialize(context, source)
+  const nc: KiwiNodeChange = {}
+  if (node.blendMode !== 'PASS_THROUGH') nc.blendMode = node.blendMode
+  applyNodeStateProps(node, nc)
+  applyNodeVisualProps({ ...context, fontDigestMap: undefined }, node, nc)
+  context.serializeLayoutProps(node, nc)
+  return nc
+}
+
 export function sceneNodeToKiwiWithContext(
   source: SceneNode,
   parentGuid: GUID,
@@ -950,23 +989,7 @@ export function sceneNodeToKiwiWithContext(
   if (node.type === 'GROUP') {
     nc.resizeToFit = true
   }
-  // With strokes, their geometry is the node's. Without, the node keeps its own weight and
-  // alignment, written when set or when the source file carried them.
-  if (node.strokes.length > 0) {
-    nc.strokeWeight = node.strokes[0].weight
-    nc.strokeAlign = node.strokes[0].align
-  } else {
-    const rawNodeFields = effectiveFigmaRawNodeFields(node)
-    if (node.strokeWeight !== DEFAULT_STROKE_WEIGHT || 'strokeWeight' in rawNodeFields) {
-      nc.strokeWeight = node.strokeWeight
-    }
-    // Kiwi reads a missing alignment as centered.
-    if (node.strokeAlign !== 'CENTER' || 'strokeAlign' in rawNodeFields) {
-      nc.strokeAlign = node.strokeAlign
-    }
-  }
-  if (node.locked) nc.locked = true
-
+  applyNodeStateProps(node, nc)
   applyNodeVisualProps(context, node, nc)
   applyComponentMetadata(context, node, nc, localIdCounter)
   applyInstancePayload(context, node, nc, localIdCounter)

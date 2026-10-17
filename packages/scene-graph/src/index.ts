@@ -44,6 +44,8 @@ export {
   copyInstanceComponentProps,
   findInstanceAncestor,
   hasInstanceOverride,
+  INSTANCE_FOLLOWED_FIELDS,
+  INSTANCE_OVERRIDE_FIELDS,
   INSTANCE_SYNC_FIELDS,
   INSTANCE_SYNC_PROPS,
   INSTANCE_SYNC_TEXT_PROPS,

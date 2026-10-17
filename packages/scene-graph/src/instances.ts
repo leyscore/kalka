@@ -12,7 +12,7 @@ import {
   removeLeftoverCopies
 } from './instances/copies'
 import { canCreateInstance } from './instances/cycles'
-import { INSTANCE_SYNC_FIELDS, INSTANCE_SYNC_PROPS } from './instances/fields'
+import { INSTANCE_OVERRIDE_FIELDS, INSTANCE_SYNC_PROPS } from './instances/fields'
 import {
   bindingProtection,
   cloneChildrenWithMapping,
@@ -28,6 +28,8 @@ import { detachOwnedSlotContent, restoreOwnedSlotContent } from './slots/frames'
 
 export type { NodeCloneMode } from './copy'
 export {
+  INSTANCE_FOLLOWED_FIELDS,
+  INSTANCE_OVERRIDE_FIELDS,
   INSTANCE_SYNC_FIELDS,
   INSTANCE_SYNC_PROPS,
   INSTANCE_SYNC_TEXT_PROPS
@@ -259,7 +261,7 @@ export function recordInstanceOverride(
   if (!instance) return
 
   const relevant = [...fields].filter((field) =>
-    (INSTANCE_SYNC_FIELDS as readonly string[]).includes(field)
+    (INSTANCE_OVERRIDE_FIELDS as readonly string[]).includes(field)
   )
 
   if (relevant.length === 0) return

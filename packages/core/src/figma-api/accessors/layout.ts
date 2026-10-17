@@ -9,6 +9,7 @@ import {
 } from '@kalka/scene-graph'
 
 import {
+  prepareFollowedFieldEdit,
   graph,
   raw,
   updateNode,
@@ -65,6 +66,12 @@ export function installLayoutNodeProxyAccessors(
         return { horizontal: node.horizontalConstraint, vertical: node.verticalConstraint }
       },
       set(this: ProxyThis, value: { horizontal: string; vertical: string }) {
+        prepareFollowedFieldEdit(
+          graph(this, internals),
+          raw(this, internals),
+          'constraints',
+          'vertical-constraint'
+        )
         updateNode(this, internals, {
           horizontalConstraint: value.horizontal as SceneNode['horizontalConstraint'],
           verticalConstraint: value.vertical as SceneNode['verticalConstraint']

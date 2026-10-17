@@ -21,7 +21,7 @@ import type { Rect } from '@kalka/scene-graph/primitives'
 import { assertNodeEditable } from '#core/editor/capabilities'
 import type { FigmaEffect } from '#core/figma-api/effects'
 
-import { fitGroupsAround } from './accessor-utils'
+import { prepareFollowedFieldEdit, fitGroupsAround } from './accessor-utils'
 import { installBasicNodeProxyAccessors } from './accessors/basic'
 import { installLayoutNodeProxyAccessors } from './accessors/layout'
 import { installStrokeNodeProxyAccessors } from './accessors/strokes'
@@ -211,6 +211,7 @@ export class FigmaNodeProxy {
   }
 
   set isMask(v: boolean) {
+    prepareFollowedFieldEdit(this[INTERNAL_GRAPH], this._raw(), 'isMask', 'is-mask')
     this._update({ isMask: v })
   }
 
@@ -219,6 +220,7 @@ export class FigmaNodeProxy {
   }
 
   set maskType(v: string) {
+    prepareFollowedFieldEdit(this[INTERNAL_GRAPH], this._raw(), 'maskType', 'mask-type')
     this._update({ maskType: v as SceneNode['maskType'] })
   }
 
