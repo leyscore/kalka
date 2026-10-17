@@ -227,13 +227,18 @@ jobs:
   unit-tests:
     needs: changes
     if: needs.changes.outputs.scope == 'code'
-    timeout-minutes: 10
+    timeout-minutes: 20
     runs-on: ubuntu-latest
+    # Three runners, not one per group: each spends about a minute installing before it tests,
+    # and Actions minutes are counted per runner.
     strategy:
       fail-fast: true
       matrix:
-        group: [app, cli, core, dom, fig, mcp, render, scene-graph, vue]
-    name: Unit tests — ${{ matrix.group }}
+        shard:
+          - { name: app, groups: 'app cli mcp' }
+          - { name: engine, groups: 'core render fig' }
+          - { name: packages, groups: 'dom scene-graph vue' }
+    name: Unit tests — ${{ matrix.shard.name }}
     steps:
       # LFS objects come from this repository, which needs the checkout's token.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -247,8 +252,13 @@ jobs:
       - name: Build shared Core test dependency
         run: bun --filter @kalka/core build
 
-      - name: Run ${{ matrix.group }} unit tests
-        run: bun tools/dev/unit-tests/src/run.ts "${{ matrix.group }}"
+      - name: Run ${{ matrix.shard.groups }} unit tests
+        run: |
+          for group in ${{ matrix.shard.groups }}; do
+            echo "::group::$group"
+            bun tools/dev/unit-tests/src/run.ts "$group"
+            echo "::endgroup::"
+          done
 
   # The CSS model's migration must leave every imported .fig page as it is (PLAN.md, section 12).
   # The large fixtures come from a cache keyed on their LFS objects: LFS bandwidth is metered.
