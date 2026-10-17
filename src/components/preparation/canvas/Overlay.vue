@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ProgressRoot } from 'reka-ui'
 import { computed } from 'vue'
 
 import type { EditorPreparation } from '@/app/editor/preparation/types'
@@ -26,7 +27,10 @@ const progressValue = computed(() => preparationPercent(preparation.progress))
       class="absolute inset-0 z-50 flex items-center justify-center bg-design-canvas"
     >
       <div class="flex w-72 flex-col items-center gap-4 text-center">
-        <BrandLoader :progress="progressValue" />
+        <!-- The K fills as the document loads; assistive technology reads the same progress. -->
+        <ProgressRoot :model-value="progressValue" :aria-label="label">
+          <BrandLoader :progress="progressValue" />
+        </ProgressRoot>
         <div class="space-y-1">
           <p class="text-[13px] font-medium text-surface/85">{{ label }}</p>
           <p v-if="preparation.detail" class="truncate text-xs text-surface/45">

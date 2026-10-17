@@ -196,6 +196,7 @@
 
 ### Fixed
 
+- The document loading screen reports its progress to screen readers again, as a progress bar, instead of only filling the K.
 - The canvas preview of what an AI agent is still writing draws at the layer's place in the page's stacking order, such as behind a frame it goes under, instead of over every layer.
 - Dragging a layer's rotation handle turns the layer on the canvas as you drag, instead of only its selection box until you let go.
 - Boolean operations draw the shape their layers combine into on the canvas, instead of a filled box; HTML and SVG exports draw the shape a `.fig` file saved for them.
