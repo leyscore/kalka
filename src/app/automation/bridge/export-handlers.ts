@@ -5,6 +5,26 @@ import { selectionToJSX } from '@kalka/design-jsx'
 import { sceneNodesToTailwindJSX } from '@kalka/dom-css/export'
 
 import type { AutomationTarget } from '@/app/automation/bridge/target'
+import type { EditorStore } from '@/app/editor/active-store'
+
+/**
+ * Raster exports draw with the DOM canvas first and with the document's CanvasKit renderer when
+ * it cannot, which exists only once a WebGL surface was created; when neither draws, say so
+ * instead of returning an empty image.
+ */
+export async function renderAutomationImage(
+  store: EditorStore,
+  nodeIds: string[],
+  scale: number,
+  format: RasterExportFormat,
+  pageId?: string
+): Promise<Uint8Array | null> {
+  const data = await store.renderExportImage(nodeIds, scale, format, pageId)
+  if (data || store.renderer) return data
+  throw new Error(
+    'This document has no canvas renderer, so it cannot be exported as an image: the canvas could not draw these layers, and CanvasKit has not started or could not create a WebGL surface'
+  )
+}
 
 type ExportArgs = { nodeIds?: string[]; scope?: 'page'; scale?: number; format?: string }
 
@@ -21,12 +41,13 @@ export async function handleExport(target: AutomationTarget, args: unknown): Pro
   const exportArgs = args as ExportArgs | undefined
   const nodeIds = exportNodeIds(target, exportArgs)
   if (nodeIds.length === 0) throw new Error('No nodes to export')
-  const data = await store.renderExportImage(
+  const data = await renderAutomationImage(
+    store,
     nodeIds,
     exportArgs?.scale ?? 1,
     (exportArgs?.format ?? 'PNG') as RasterExportFormat
   )
-  if (!data) throw new Error('Export failed')
+  if (!data) throw new Error('The renderer returned no image for these layers')
   const base64 = fromUint8Array(data)
   return {
     ok: true,
