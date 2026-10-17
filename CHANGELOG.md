@@ -4,6 +4,7 @@
 
 ### Breaking changes
 
+- A paint's `gradientTransform` follows Figma's convention everywhere: it maps the layer's unit square onto gradient space, where a linear gradient runs from (0, 0.5) to (1, 0.5). Gradients made before this release, which used the inverse, draw differently; code that builds gradients by hand should use `linearGradientTransform` and `ellipticalGradientTransform` from the new `@kalka/scene-graph/gradient`, which also has Figma's default transform and stops.
 - `SceneNode` from `@kalka/scene-graph` has `style`, the layer's CSS declarations, which the scene graph keeps in step with the fields it maps and which also holds CSS no field can, so code that builds `SceneNode` objects itself must include it. The mapping between fields and CSS moved from `@kalka/dom-css` to `@kalka/scene-graph/css-model`.
 - The workspace packages are named `@kalka/*` instead of `@open-pencil/*`, such as `@kalka/core`, `@kalka/scene-graph` and `@kalka/vue`; update imports accordingly.
 - The commands are `kalka`, `kalka-mcp`, `kalka-mcp-http` and `kalka-harness` instead of their `openpencil` names, environment variables start with `KALKA_` instead of `OPENPENCIL_`, the browser API is `window.kalka`, and exported HTML and plugin data use `kalka` names. Settings, chats, recovery snapshots and libraries saved under the previous names move on first launch, and files, tokens and clipboard data written before still open. Reconnect MCP clients from Settings › MCP so their configuration uses the new commands.
@@ -178,6 +179,7 @@
 
 ### Fixed
 
+- Gradients from Figma files and Figma pastes draw as they do in Figma on the canvas, in thumbnails, and in HTML and SVG exports: they ran backwards or sat in the wrong place unless they were symmetric, because Figma's gradient transform was applied the wrong way round. SVG export and import keep a gradient exactly, and a new gradient starts as Figma's does, top to bottom from the fill colour to a darker shade, keeping its transform when switched between linear, radial, angular, and diamond.
 - Standalone HTML exports with external assets load their web fonts: the stylesheet named them from the wrong folder.
 - An HTML export of several layers defines the CSS variables its styles reference, in each mode, instead of referencing variables the page never declares.
 - An MCP client that crashes without closing its session no longer locks other clients out for 15 minutes once ten sessions are open: a new client takes the place of the session idle the longest, after a minute idle.

@@ -2,6 +2,7 @@ import valueParser, { type FunctionNode, type Node } from 'postcss-value-parser'
 
 import { TRANSPARENT } from '../constants'
 import { parseCSSColor } from '../css'
+import { linearGradientTransform } from '../gradient'
 import type { Fill, GradientStop } from '../types'
 
 /** `to <side>` directions as CSS angles: 0deg points up, 90deg right. */
@@ -87,7 +88,8 @@ function placeStops(
 /**
  * A layer fill for a CSS `linear-gradient()` on a box of this size, the inverse of the export:
  * the gradient line runs through the middle of the box at the CSS angle, long enough to reach its
- * corners, and the fill's transform maps that line onto the layer's unit square.
+ * corners, and the fill's transform maps the layer's unit square onto that line in Figma's
+ * convention, with its bands square to the line on screen as CSS draws them.
  */
 export function linearGradientFill(
   value: string | undefined,
@@ -107,20 +109,18 @@ export function linearGradientFill(
   const uy = -Math.cos(radians)
   const length = Math.abs(width * ux) + Math.abs(height * uy)
   const start = { x: width / 2 - (ux * length) / 2, y: height / 2 - (uy * length) / 2 }
-  const along = { x: ux * length, y: uy * length }
+  const end = { x: width / 2 + (ux * length) / 2, y: height / 2 + (uy * length) / 2 }
   return {
     type: 'GRADIENT_LINEAR',
     color: stops[0].color,
     opacity: 1,
     visible: true,
     gradientStops: stops,
-    gradientTransform: {
-      m00: along.x / width,
-      m01: -along.y / width,
-      m02: start.x / width,
-      m10: along.y / height,
-      m11: along.x / height,
-      m12: start.y / height
-    }
+    gradientTransform: linearGradientTransform(
+      { x: start.x / width, y: start.y / height },
+      { x: end.x / width, y: end.y / height },
+      width,
+      height
+    )
   }
 }

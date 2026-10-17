@@ -19,7 +19,7 @@ test('text with a gradient fill paints its letters with the gradient', () => {
           { color: { r: 0.55, g: 0.36, b: 0.96, a: 1 }, position: 0 },
           { color: { r: 0.93, g: 0.28, b: 0.6, a: 1 }, position: 1 }
         ],
-        gradientTransform: { m00: 1, m01: 0, m02: 0, m10: 0, m11: 1, m12: 0.5 }
+        gradientTransform: { m00: 1, m01: 0, m02: 0, m10: 0, m11: 1, m12: 0 }
       }
     ]
   })

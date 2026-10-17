@@ -104,15 +104,48 @@ describe('import_svg', () => {
     const vector = expectDefined(graph.getChildren(result.id)[0])
     const left = expectDefined(vector.fillGeometry[0]?.fills?.[0]?.gradientTransform)
     const right = expectDefined(vector.fillGeometry[1]?.fills?.[0]?.gradientTransform)
-    expect(left.m00).toBeCloseTo(0.5)
+    // Each half's gradient spans half the vector: x' = 2x on the left, 2x - 1 on the right.
+    expect(left.m00).toBeCloseTo(2)
     expect(left.m02).toBeCloseTo(0)
-    expect(right.m00).toBeCloseTo(0.5)
-    expect(right.m02).toBeCloseTo(0.5)
+    expect(right.m00).toBeCloseTo(2)
+    expect(right.m02).toBeCloseTo(-1)
 
     const page = expectDefined(graph.getPages()[0])
     const exported = expectDefined(renderNodesToSVG(graph, page.id, [result.id]))
     expect(exported.match(/<linearGradient/g)).toHaveLength(2)
     expect(exported.match(/fill="url\(#/g)).toHaveLength(2)
+  })
+
+  // Gradients export in Figma's convention with an exact gradientTransform, so a turned gradient on
+  // a stretched layer comes back with the transform it left with.
+  test('a turned linear gradient survives an SVG round trip', async () => {
+    const page = expectDefined(graph.getPages()[0])
+    const c = Math.SQRT1_2
+    const rect = graph.createNode('RECTANGLE', page.id, {
+      width: 200,
+      height: 120,
+      fills: [
+        {
+          type: 'GRADIENT_LINEAR',
+          color: { r: 1, g: 0, b: 0, a: 1 },
+          opacity: 1,
+          visible: true,
+          gradientStops: [
+            { position: 0, color: { r: 1, g: 0, b: 0, a: 1 } },
+            { position: 1, color: { r: 0, g: 0, b: 1, a: 1 } }
+          ],
+          gradientTransform: { m00: c, m01: c, m02: 0.5 - c, m10: -c, m11: c, m12: 0.5 }
+        }
+      ]
+    })
+    const exported = expectDefined(
+      renderNodesToSVG(graph, page.id, [rect.id], { xmlDeclaration: false })
+    )
+    const result = (await importSVG.execute(figma, { svg: exported })) as { id: string }
+    const imported = expectDefined(graph.getChildren(result.id)[0]?.fills[0]?.gradientTransform)
+    const original = expectDefined(rect.fills[0]?.gradientTransform)
+    for (const key of ['m00', 'm01', 'm02', 'm10', 'm11', 'm12'] as const)
+      expect(imported[key]).toBeCloseTo(original[key], 4)
   })
 
   test('respects viewBox dimensions', async () => {

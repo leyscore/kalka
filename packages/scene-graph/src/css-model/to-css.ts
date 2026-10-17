@@ -1,5 +1,6 @@
 import { colorToCSS, colorToHex } from '../color'
 import { CSS_BLEND_MODES } from '../css'
+import { IDENTITY_GRADIENT_TRANSFORM, gradientPoint } from '../gradient'
 import type { Color } from '../primitives'
 import type { BlendMode, Effect, Fill, Stroke } from '../types'
 import type { CSSDeclarations } from './types'
@@ -59,19 +60,26 @@ function gradientStopsToCSS(fill: Fill, position: (offset: number) => string): s
     .join(', ')
 }
 
+/** A point of gradient space in the layer's pixels. */
+function gradientPixel(fill: Fill, width: number, height: number, x: number, y: number) {
+  const unit = gradientPoint(fill.gradientTransform ?? IDENTITY_GRADIENT_TRANSFORM, { x, y })
+  return { x: unit.x * width, y: unit.y * height }
+}
+
 /**
- * A linear gradient as CSS. The fill's transform maps gradient space onto the layer's unit box:
- * the gradient runs from its image of (0, 0) to its image of (1, 0). CSS gradients run along an
- * angle through the box's center, so the stops are re-projected onto that line.
+ * A linear gradient as CSS. The fill's transform maps the layer's unit box onto gradient space,
+ * as Figma stores it, where the gradient runs from (0, 0.5) to (1, 0.5) and its bands follow the
+ * y axis. CSS gradients run along an angle through the box's center, so the stops are
+ * re-projected onto that line.
  */
 function linearGradientToCSS(fill: Fill, width: number, height: number): string | undefined {
-  const t = fill.gradientTransform
-  if (!t || width <= 0 || height <= 0) return undefined
-  const start = { x: t.m02 * width, y: t.m12 * height }
-  const end = { x: (t.m00 + t.m02) * width, y: (t.m10 + t.m12) * height }
+  if (!fill.gradientTransform || width <= 0 || height <= 0) return undefined
+  const start = gradientPixel(fill, width, height, 0, 0.5)
+  const end = gradientPixel(fill, width, height, 1, 0.5)
+  const bandEnd = gradientPixel(fill, width, height, 0, 1.5)
   const along = { x: end.x - start.x, y: end.y - start.y }
   // The direction CSS draws along is across the lines of equal color.
-  const iso = { x: t.m01 * width, y: t.m11 * height }
+  const iso = { x: bandEnd.x - start.x, y: bandEnd.y - start.y }
   let ux = along.x
   let uy = along.y
   if (Math.hypot(iso.x, iso.y) > 1e-9) {
@@ -97,23 +105,26 @@ function linearGradientToCSS(fill: Fill, width: number, height: number): string 
   return `linear-gradient(${round((angle + 360) % 360)}deg, ${stops})`
 }
 
-/** A radial gradient: a unit circle in gradient space, an ellipse on the layer. */
+/** A radial gradient: centred on (0.5, 0.5) of gradient space with radius 0.5, an ellipse on the layer. */
 function radialGradientToCSS(fill: Fill, width: number, height: number): string | undefined {
-  const t = fill.gradientTransform
-  if (!t || width <= 0 || height <= 0) return undefined
-  const rx = Math.hypot(t.m00 * width, t.m10 * height)
-  const ry = Math.hypot(t.m01 * width, t.m11 * height) || rx
+  if (!fill.gradientTransform || width <= 0 || height <= 0) return undefined
+  const center = gradientPixel(fill, width, height, 0.5, 0.5)
+  const edgeX = gradientPixel(fill, width, height, 1, 0.5)
+  const edgeY = gradientPixel(fill, width, height, 0.5, 1)
+  const rx = Math.hypot(edgeX.x - center.x, edgeX.y - center.y)
+  const ry = Math.hypot(edgeY.x - center.x, edgeY.y - center.y) || rx
   const stops = gradientStopsToCSS(fill, (offset) => `${round(offset * 100)}%`)
-  return `radial-gradient(${round((rx / width) * 100)}% ${round((ry / height) * 100)}% at ${round(t.m02 * 100)}% ${round(t.m12 * 100)}%, ${stops})`
+  return `radial-gradient(${round((rx / width) * 100)}% ${round((ry / height) * 100)}% at ${round((center.x / width) * 100)}% ${round((center.y / height) * 100)}%, ${stops})`
 }
 
 /** An angular gradient: CSS `conic-gradient`, starting along the gradient's x axis. */
 function angularGradientToCSS(fill: Fill, width: number, height: number): string | undefined {
-  const t = fill.gradientTransform
-  if (!t || width <= 0 || height <= 0) return undefined
-  const angle = (Math.atan2(t.m00 * width, -(t.m10 * height)) * 180) / Math.PI
+  if (!fill.gradientTransform || width <= 0 || height <= 0) return undefined
+  const center = gradientPixel(fill, width, height, 0.5, 0.5)
+  const edge = gradientPixel(fill, width, height, 1, 0.5)
+  const angle = (Math.atan2(edge.x - center.x, -(edge.y - center.y)) * 180) / Math.PI
   const stops = gradientStopsToCSS(fill, (offset) => `${round(offset * 100)}%`)
-  return `conic-gradient(from ${round((angle + 360) % 360)}deg at ${round(t.m02 * 100)}% ${round(t.m12 * 100)}%, ${stops})`
+  return `conic-gradient(from ${round((angle + 360) % 360)}deg at ${round((center.x / width) * 100)}% ${round((center.y / height) * 100)}%, ${stops})`
 }
 
 /** One fill as a CSS background layer; solid colors become a flat gradient so they can stack. */

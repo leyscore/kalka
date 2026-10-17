@@ -142,17 +142,21 @@ function remapFillsToBounds(fills: Fill[], source: Rect, target: Rect): Fill[] {
     ) {
       return fill
     }
-    const scaleX = source.width / target.width
-    const scaleY = source.height / target.height
+    // The transform maps the source box onto gradient space; the target box reaches it through
+    // the source box.
+    const ax = target.width / source.width
+    const ay = target.height / source.height
+    const bx = (target.x - source.x) / source.width
+    const by = (target.y - source.y) / source.height
     return {
       ...fill,
       gradientTransform: {
-        m00: transform.m00 * scaleX,
-        m01: transform.m01 * scaleX,
-        m02: (source.x - target.x) / target.width + transform.m02 * scaleX,
-        m10: transform.m10 * scaleY,
-        m11: transform.m11 * scaleY,
-        m12: (source.y - target.y) / target.height + transform.m12 * scaleY
+        m00: transform.m00 * ax,
+        m01: transform.m01 * ay,
+        m02: transform.m00 * bx + transform.m01 * by + transform.m02,
+        m10: transform.m10 * ax,
+        m11: transform.m11 * ay,
+        m12: transform.m10 * bx + transform.m11 * by + transform.m12
       }
     }
   })
