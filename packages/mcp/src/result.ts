@@ -3,8 +3,14 @@ import { Buffer } from 'node:buffer'
 export type MCPContent =
   | { type: 'text'; text: string }
   | { type: 'image'; data: string; mimeType: string }
+  | { type: 'resource_link'; uri: string; name: string; mimeType: string; description?: string }
+  | { type: 'resource'; resource: { uri: string; mimeType: string; blob: string } }
 
-export type MCPResult = { content: MCPContent[]; isError?: boolean }
+export type MCPResult = {
+  content: MCPContent[]
+  isError?: boolean
+  _meta?: Record<string, unknown>
+}
 
 export const MAX_RESULT_BYTES = 900_000
 

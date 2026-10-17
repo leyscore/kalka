@@ -1,4 +1,3 @@
-import { Buffer } from 'node:buffer'
 import { resolve } from 'node:path'
 
 import type {
@@ -11,14 +10,22 @@ import type {
 import { toStandardJsonSchema as toStandardJSONSchema } from '@valibot/to-json-schema'
 import * as v from 'valibot'
 
-import { CODEGEN_PROMPT } from '@kalka/core/tools'
+import { CODEGEN_PROMPT, returnsFile } from '@kalka/core/tools'
 
 import type { RPCJSONObject } from '#mcp/json'
-import { MAX_RESULT_BYTES, fail, ok, resultTooLargeMessage } from '#mcp/result'
+import { fail, ok } from '#mcp/result'
 import { createToolDescriptors, getMCPToolDefinitions } from '#mcp/tool/manifest'
 import type { ToolDescriptor, ToolEffect, ToolPolicy } from '#mcp/tool/metadata'
 import { resolveSafePath, writeToolOutput } from '#mcp/tool/output'
 import { isToolEnabled } from '#mcp/tool/policy'
+import {
+  documentTarget,
+  fileDeliveryInput,
+  fileResult,
+  isFileResult,
+  withDocument,
+  type FileDelivery
+} from '#mcp/tool/response'
 import { SELECTION_SCOPE_FILE_OUTPUT_ERROR } from '#mcp/tool/scope'
 
 export type RPCSender = (body: Record<string, unknown>) => Promise<unknown>
@@ -43,7 +50,14 @@ function splitAutomationTarget(args: Record<string, unknown>): {
   return { target, args: rest }
 }
 
-type RPCResponse = { ok?: boolean; result?: unknown; target?: unknown; error?: string }
+type RPCResponse = {
+  ok?: boolean
+  result?: unknown
+  target?: unknown
+  /** Where the server serves a file the call returned, when it keeps one. */
+  asset?: unknown
+  error?: string
+}
 
 async function sendCommand(
   sendRPC: RPCSender,
@@ -144,15 +158,17 @@ export function registerTools(
   }
 
   for (const def of getMCPToolDefinitions()) {
+    const entries: v.ObjectEntries = { ...def.input.entries, ...automationTargetSchema }
+    // A tool that returns a file lets the client choose between the file and a link to it.
+    if (returnsFile(def)) entries.delivery = fileDeliveryInput
     register(
       def.name,
-      {
-        description: def.description,
-        inputSchema: v.strictObject({ ...def.input.entries, ...automationTargetSchema })
-      },
+      { description: def.description, inputSchema: v.strictObject(entries) },
       async (args: Record<string, unknown>) => {
         try {
-          const { target, args: toolArgs } = splitAutomationTarget(args)
+          const { delivery: requestedDelivery, ...callArgs } = args
+          const delivery: FileDelivery = requestedDelivery === 'url' ? 'url' : 'inline'
+          const { target, args: toolArgs } = splitAutomationTarget(callArgs)
           if (current.policy.scope === 'selection' && toolArgs.path !== undefined) {
             return fail(new Error(SELECTION_SCOPE_FILE_OUTPUT_ERROR))
           }
@@ -167,39 +183,19 @@ export function registerTools(
               ...(current.policy.scope === 'selection' ? { scope: current.policy.scope } : {})
             }
           })
-          const res = result as { ok?: boolean; result?: unknown; error?: string }
+          const res = result as RPCResponse
           if (res.ok === false) return fail(new Error(res.error))
           const r = res.result as RPCJSONObject | undefined
+          const document = documentTarget(res.target, current.policy.scope)
           const filePath = typeof toolArgs.path === 'string' ? toolArgs.path : null
           if (r && filePath && resolvedRoot) {
             const written = await writeToolOutput(def.name, r, filePath, resolvedRoot)
-            if (written) return written
+            if (written) return withDocument(written, document)
           }
-          if (r && 'base64' in r && 'mimeType' in r) {
-            const base64 = String(r.base64)
-            const bytes = Buffer.byteLength(base64, 'utf8')
-            if (bytes > MAX_RESULT_BYTES) {
-              return fail(
-                new Error(
-                  resultTooLargeMessage(
-                    `Image from "${def.name}"`,
-                    bytes,
-                    'Export a smaller region or lower the scale/resolution.'
-                  )
-                )
-              )
-            }
-            return {
-              content: [
-                {
-                  type: 'image' as const,
-                  data: base64,
-                  mimeType: r.mimeType as string
-                }
-              ]
-            }
+          if (isFileResult(r)) {
+            return withDocument(fileResult(def.name, r, res.asset, delivery), document)
           }
-          return ok(r, def.name)
+          return withDocument(ok(r, def.name), document)
         } catch (e) {
           return fail(e)
         }

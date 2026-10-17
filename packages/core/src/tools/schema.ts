@@ -25,6 +25,12 @@ export type ToolExecution =
   | { kind: 'sync'; mutation: 'none' | 'view' | 'properties' | 'document' }
   | { kind: 'async'; mutation: 'none' | 'view' | 'document' }
 
+/**
+ * What a tool returns: a JSON value, or a file as `{ mimeType, base64, ...metadata }` (an image or
+ * a PDF), which adapters may hand over as an image or a link instead of JSON text.
+ */
+export type ToolOutput = 'json' | 'file'
+
 export type ToolInterface = 'mcp' | 'ai' | 'webmcp'
 export type ToolExposure = Partial<Record<ToolInterface, boolean>>
 
@@ -36,6 +42,8 @@ interface ToolMetadata {
   exposure: ToolExposure
   capabilities: readonly ToolCapability[]
   availability: 'default' | 'eval'
+  /** Absent means `json`. */
+  output?: ToolOutput
 }
 
 export interface ToolDef extends ToolMetadata {
@@ -87,6 +95,11 @@ export function parseToolArgs<S extends v.GenericSchema>(
 
 export function toolChangesDocument(def: Pick<ToolDef, 'execution'>): boolean {
   return def.execution.mutation === 'properties' || def.execution.mutation === 'document'
+}
+
+/** Whether a tool returns a file (`{ mimeType, base64 }`) rather than plain JSON. */
+export function returnsFile(def: Pick<ToolDef, 'output'>): boolean {
+  return def.output === 'file'
 }
 
 export function isToolExposed(def: Pick<ToolDef, 'exposure'>, target: ToolInterface): boolean {

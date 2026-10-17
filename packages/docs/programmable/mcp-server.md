@@ -124,6 +124,7 @@ Endpoints are available over both active transports:
 - `GET /health` — server and app connection status; never returns the auth token.
 - `POST /rpc` — authenticated live-app automation.
 - `POST /mcp` — MCP Streamable HTTP. Sessions use the `mcp-session-id` header.
+- `GET /assets/<id>.<ext>` — a file a tool call returned, such as a screenshot (see [Files tools return](#returned-files)). Only over TCP.
 
 ## Workflow
 
@@ -141,6 +142,24 @@ Endpoints are available over both active transports:
 Each MCP session shows in the app as an agent with a callsign, like the built-in chat: its cursor and outline sit on the layers each tool reads or changes, it rests after a quiet spell and leaves when the session ends, and people can follow it from their avatar. Collaborators in a shared room see it too.
 
 Most tools accept optional `document_id` and `page_id` fields. Pass them explicitly for agent workflows instead of relying on the visible active tab/page. `create_page` only creates a page; call `switch_page` separately when the workflow should change the active page.
+
+### Which document answered {#document-identity}
+
+Every tool call that runs on a document ends its result with one more text block naming where it ran, after the tool's own blocks, which stay as they were:
+
+```json
+{"target":{"documentId":"tab-2","documentName":"Checkout","path":"/designs/checkout.fig","pageId":"0:1","pageName":"Flows","tokensHash":"3f9a1c07b2de"}}
+```
+
+`documentId` is the `document_id` other calls take. `tokensHash` is a short fingerprint of the document's variables and collections: their names, types, modes and values. It changes whenever a token is added, removed, renamed or set to another value, so an agent that compares it with the one it saw when it last read the tokens knows whether to read them again. The same object is in the result's `_meta` under `kalka/document` for clients that read results as data. While [only the selection is shared](#selection-scope) the `path` is left out. `save_file`, `close_file`, `activate_document`, `undo` and `redo` keep reporting it as `target` in their own result.
+
+### Files tools return {#returned-files}
+
+`get_screenshot`, `export_image`, `export_pdf` and `diff_visual` return a file. By default it comes inline, an image as MCP image content that clients such as Claude Code show, and a PDF as an embedded resource, followed by a `resource_link` to a copy on the server and a text block with the metadata (`width`, `height`, `byteLength`, and the `url` and `expiresAt` of the copy).
+
+Pass `delivery: "url"` to get only the link and the metadata. The response stays small, and files larger than the inline limit of about 900 KB of base64 still come back; with the default delivery such a file also comes back as a link only, with a note, instead of failing. An agent can fetch the URL with any HTTP client, such as `curl`, to save the file or hand it to code.
+
+The server keeps each file for 5 minutes, at most 32 files and 64 MB in all, the oldest going first. Links name the file by 128 random bits that only the client whose call returned it receives, and that name is what lets a request read it: no bearer token is needed, so the agent can hand the link to a program that does not have one. The `Origin` and `Host` checks above still apply, so web pages cannot read the files. Links point at the TCP listener (`http://127.0.0.1:<port>/assets/…`); a server started with `PORT=0` has none, and returns files inline only. The stdio bridge relays the links of the app's server.
 
 ## AI Agent Skill
 
@@ -294,7 +313,7 @@ Settings tools never expose credentials, AI models, MCP connections, storage, or
 
 | Tool | Description |
 |------|-------------|
-| `export_image` | Export nodes as PNG, JPG, or WEBP. Returns base64-encoded image data |
+| `export_image` | Export nodes as PNG, JPG, or WEBP, returned inline or as a link ([Files tools return](#returned-files)) |
 | `export_svg` | Export nodes as SVG markup |
 
 ### Viewport

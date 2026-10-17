@@ -48,6 +48,8 @@
 
 ### Added
 
+- Every MCP tool result that runs on a document ends with the document it ran on, its page, and a short fingerprint of its tokens, as a text block and in `_meta` under `kalka/document`, so an agent notices when it works in the wrong file or when the variables changed since it last read them. The tool's own result is unchanged.
+- `get_screenshot`, `export_image`, `export_pdf`, and `diff_visual` over MCP also return a link to a copy of the file on the local server, `http://127.0.0.1:<port>/assets/<id>.<ext>`, kept for 5 minutes, with the image's size and other metadata as text. Images stay inline by default so clients such as Claude Code still show them; `delivery: "url"` returns only the link, and files too large to inline come back as a link instead of failing. PDFs come as an embedded file instead of as an image.
 - MCP clients and the built-in AI chat get `get_metadata`, `get_variable_defs`, and `search_design_system`, named and answering like the tools of Figma's Dev Mode MCP server, so prompts and agent skills written for Figma work on Kalka: an XML outline of a layer or the selection, the variables and styles it uses with their values in each mode, and a search of the components, variables, and styles of the document and its libraries. The first two also work while Kalka shares only the selection.
 - The conversation menu saves a chat's trace as a JSON file: every message, reasoning step, and tool call, and each run's model, settings, usage, timing, and errors, with enough to rebuild and check every request the model received.
 - Settings › Diagnostics saves the diagnostics report as a JSON file, next to Copy diagnostics.

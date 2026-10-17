@@ -387,3 +387,16 @@ export async function tryWriteDiscovery(
     throw err
   }
 }
+
+const MAX_TIMER_MS = 2_147_483_647
+
+/** Rejects a timeout option `setTimeout` cannot honour. */
+export function validateTimeoutOption(name: string, timeoutMs: number | undefined): void {
+  if (timeoutMs === undefined) return
+  if (!Number.isSafeInteger(timeoutMs)) {
+    throw new RangeError(`${name} must be a safe integer`)
+  }
+  if (timeoutMs < 0 || timeoutMs > MAX_TIMER_MS) {
+    throw new RangeError(`${name} must be in the range 0–${MAX_TIMER_MS}`)
+  }
+}

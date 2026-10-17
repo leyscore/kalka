@@ -86,6 +86,7 @@ export const exportPDF = defineTool({
   description:
     'Export nodes as a vector PDF document. Text remains selectable, paths stay sharp at any zoom. Returns base64-encoded PDF data.',
   execution: { kind: 'async', mutation: 'none' },
+  output: 'file',
   exposure: { webmcp: false },
   input: v.strictObject({ ...exportInputs }),
   execute: async (figma, args) => {
@@ -105,6 +106,7 @@ export const exportImage = defineTool({
   description:
     'Export nodes as a raster image (PNG, JPG, or WEBP). Returns base64-encoded image data. Use to visually verify designs.',
   execution: { kind: 'async', mutation: 'none' },
+  output: 'file',
   exposure: { webmcp: false },
   input: v.strictObject({
     ...exportInputs,

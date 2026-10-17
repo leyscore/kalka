@@ -14,6 +14,7 @@ import { bearerToken, isAuthorized, mcpRequestToken } from '#mcp/auth'
 import { createBrowserRPCBridge } from '#mcp/browser-rpc'
 import { MCP_CORS_HEADERS, MCP_CORS_METHODS, MCP_EXPOSED_HEADERS } from '#mcp/http-options'
 import type { RPCJSONObject } from '#mcp/json'
+import { ASSET_ROUTE, createAssetLinks, type AssetLinks } from '#mcp/server/assets'
 import { requestGuard, verifyWebSocketClient } from '#mcp/server/guard'
 import { createMCPSessionManager } from '#mcp/server/sessions'
 import { createToolDescriptors } from '#mcp/tool/manifest'
@@ -36,7 +37,8 @@ import {
   startSocketListener,
   teardownListeners,
   tryStartTcp,
-  tryWriteDiscovery
+  tryWriteDiscovery,
+  validateTimeoutOption
 } from './server/lifecycle'
 
 export const MCP_VERSION: string = packageJSON.version
@@ -134,7 +136,7 @@ export interface ServerHandle {
   close: () => Promise<void>
 }
 
-/** Set up Hono routes: /health, /rpc, /mcp */
+/** Set up Hono routes: /health, /rpc, /mcp, /assets */
 function createHonoApp(options: {
   authToken: string | null
   corsOrigin: string | readonly string[] | null
@@ -142,8 +144,10 @@ function createHonoApp(options: {
   mcpSessions: ReturnType<typeof createMCPSessionManager>
   sendToBrowser: (msg: RPCJSONObject) => Promise<unknown>
   toolDescriptors: ToolDescriptor[]
+  assets: AssetLinks
 }): Hono {
-  const { authToken, corsOrigin, browserRPC, mcpSessions, sendToBrowser, toolDescriptors } = options
+  const { authToken, corsOrigin, browserRPC, mcpSessions, sendToBrowser, toolDescriptors, assets } =
+    options
 
   const app = new Hono()
 
@@ -172,6 +176,10 @@ function createHonoApp(options: {
       ...(canInspectConfiguration ? { tools: toolDescriptors } : {})
     })
   })
+
+  // Files tool calls returned: past the guard, the 128-bit name given only to the client the call
+  // answered is the credential, so an agent can hand the link to a program without the token.
+  app.get(`${ASSET_ROUTE}/:file`, assets.serve)
 
   app.use('/rpc', async (c, next) => {
     // When authToken is null (operator explicitly disabled auth), skip token check —
@@ -367,8 +375,10 @@ function buildServerContext(options: ServerOptions) {
     onConnectionChange: mcpSessions.notifyToolsChanged,
     appWaitTimeoutMs: options.appWaitTimeoutMs
   })
-  // Every call into the app, from MCP sessions and /rpc alike, stays within the scope.
-  const sendToBrowser = scopeRPC(browserRPC.sendRPC, toolPolicy.scope)
+  const assets = createAssetLinks()
+  // Every call into the app, from MCP sessions and /rpc alike, stays within the scope, and the files
+  // it returns can be fetched from the server for a while.
+  const sendToBrowser = assets.wrap(scopeRPC(browserRPC.sendRPC, toolPolicy.scope))
   const toolDescriptors = applyToolPolicy(createToolDescriptors(mcpRoot !== null), toolPolicy)
 
   const app = createHonoApp({
@@ -377,7 +387,8 @@ function buildServerContext(options: ServerOptions) {
     browserRPC,
     mcpSessions,
     sendToBrowser,
-    toolDescriptors
+    toolDescriptors,
+    assets
   })
   const wss = new WebSocketServer({
     noServer: true,
@@ -394,7 +405,8 @@ function buildServerContext(options: ServerOptions) {
     wss,
     authToken,
     disabledTools: toolPolicy.disabledTools,
-    scope: toolPolicy.scope
+    scope: toolPolicy.scope,
+    assets
   }
 }
 
@@ -502,6 +514,7 @@ export async function startServer(options: ServerOptions = {}): Promise<ServerHa
     state.tcpResult = ctx.withTcp ? await tryStartTcp(ctx.app, ctx.wss, ctx.httpPort, state) : null
     const resolvedSocketPath = state.socketResult?.resolvedPath ?? null
     const actualHttpPort = state.tcpResult?.port ?? 0
+    ctx.assets.listenOn(actualHttpPort)
 
     if (!resolvedSocketPath && !actualHttpPort) {
       throw new Error(
@@ -544,18 +557,6 @@ export async function startServer(options: ServerOptions = {}): Promise<ServerHa
   armAppAttachWatchdog(options.appAttachTimeoutMs, ctx.browserRPC, handle)
 
   return handle
-}
-
-const MAX_TIMER_MS = 2_147_483_647
-
-function validateTimeoutOption(name: string, timeoutMs: number | undefined): void {
-  if (timeoutMs === undefined) return
-  if (!Number.isSafeInteger(timeoutMs)) {
-    throw new RangeError(`${name} must be a safe integer`)
-  }
-  if (timeoutMs < 0 || timeoutMs > MAX_TIMER_MS) {
-    throw new RangeError(`${name} must be in the range 0–${MAX_TIMER_MS}`)
-  }
 }
 
 /**

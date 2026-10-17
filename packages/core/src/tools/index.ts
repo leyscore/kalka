@@ -16,10 +16,11 @@ export {
   NodeNotFoundError,
   toolChangesDocument
 } from './schema'
-export type { ToolDef, ToolExecution, ToolCapability } from './schema'
+export type { ToolDef, ToolExecution, ToolCapability, ToolOutput } from './schema'
 export {
   isAtomicTool,
   isToolExposed,
+  returnsFile,
   parseToolArgs,
   type ToolInterface,
   type ToolExposure

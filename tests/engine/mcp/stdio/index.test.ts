@@ -5,6 +5,7 @@ import { join } from 'node:path'
 
 import type { Client } from '@modelcontextprotocol/client'
 import type { StdioClientTransport } from '@modelcontextprotocol/client/stdio'
+import { fromUint8Array } from 'js-base64'
 import * as v from 'valibot'
 
 import { SceneGraph } from '@kalka/scene-graph'
@@ -272,6 +273,34 @@ describe('MCP stdio transport', () => {
     expect(requestArgs?.args?.document_id).toBeUndefined()
     expect(requestArgs?.args?.page_id).toBeUndefined()
   })
+
+  test('relays document identity and links to returned files from the app server', async () => {
+    const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 1, 2, 3])
+    browser?.toolResults.set('get_screenshot', {
+      mimeType: 'image/png',
+      base64: fromUint8Array(png),
+      byteLength: png.length
+    })
+    const result = await requireClient().callTool({ name: 'get_screenshot', arguments: {} })
+    expect(result.isError).not.toBe(true)
+    const content = result.content as { type: string; uri?: string; text?: string }[]
+    expect(content[0]?.type).toBe('image')
+    const link = expectDefined(
+      content.find((item) => item.type === 'resource_link'),
+      'link to the file'
+    )
+    const response = await fetch(expectDefined(link.uri, 'link URL'))
+    expect(new Uint8Array(await response.arrayBuffer())).toEqual(png)
+    const identity = v.parse(
+      v.pipe(
+        v.string(),
+        v.parseJson(),
+        v.object({ target: v.looseObject({ documentId: v.string() }) })
+      ),
+      expectDefined(content.at(-1)?.text, 'identity block')
+    )
+    expect(identity.target.documentId).toBe('doc-1')
+  }, 10000)
 
   test('list_documents via stdio returns open documents', async () => {
     const result = await requireClient().callTool({ name: 'list_documents', arguments: {} })

@@ -11,6 +11,7 @@ import {
   executeRPCCommand
 } from '@kalka/core'
 import type { ToolDescriptor } from '@kalka/mcp/tools'
+import { tokensFingerprint } from '@kalka/scene-graph'
 import { randomHex } from '@kalka/scene-graph/random'
 
 const ToolDescriptorShape = v.looseObject({ name: v.string(), enabled: v.boolean() })
@@ -46,6 +47,8 @@ export interface MockBrowser {
   ws: WebSocket
   graph: SceneGraph
   requests: MockBrowserRequest[]
+  /** Results to answer a tool's calls with instead of running it, such as an image the mock cannot render. */
+  toolResults: Map<string, unknown>
   close: () => void
 }
 
@@ -264,6 +267,20 @@ async function handleMockCommand(
   return executeRPCCommand(graph, command, args ?? {})
 }
 
+/** The document the mock app runs every call on. */
+export const MOCK_DOCUMENT = { documentId: 'doc-1', documentName: 'Mock document' } as const
+
+function mockTarget(graph: SceneGraph) {
+  const page = graph.getPages()[0]
+  return {
+    ...MOCK_DOCUMENT,
+    path: '/designs/mock.fig',
+    pageId: page?.id ?? '',
+    pageName: page?.name ?? '',
+    tokensHash: tokensFingerprint(graph)
+  }
+}
+
 export function connectMockBrowser(
   port: number,
   graph: SceneGraph,
@@ -272,6 +289,7 @@ export function connectMockBrowser(
   return new Promise((resolve, reject) => {
     const ws = new WebSocket(`ws://127.0.0.1:${port}`)
     const requests: MockBrowserRequest[] = []
+    const toolResults = new Map<string, unknown>()
     const token = authToken ?? 'test-token-' + randomHex(8)
 
     let settled = false
@@ -292,8 +310,14 @@ export function connectMockBrowser(
 
         try {
           requests.push({ command: msg.command, args: msg.args })
-          const result = await handleMockCommand(graph, msg.command, msg.args)
-          ws.send(JSON.stringify({ type: 'response', id: msg.id, ok: true, result }))
+          const name = (msg.args as { name?: unknown } | undefined)?.name
+          const result =
+            msg.command === 'tool' && typeof name === 'string' && toolResults.has(name)
+              ? toolResults.get(name)
+              : await handleMockCommand(graph, msg.command, msg.args)
+          // As the app does, a tool call reports the document and page it ran on.
+          const target = msg.command === 'tool' ? mockTarget(graph) : undefined
+          ws.send(JSON.stringify({ type: 'response', id: msg.id, ok: true, result, target }))
         } catch (e) {
           ws.send(
             JSON.stringify({
@@ -313,7 +337,7 @@ export function connectMockBrowser(
         // the browser as connected, causing race conditions.
         void waitForBrowserRegistration(port).then(
           () => {
-            resolve({ ws, graph, requests, close: () => ws.close() })
+            resolve({ ws, graph, requests, toolResults, close: () => ws.close() })
             return undefined
           },
           (err) => {
