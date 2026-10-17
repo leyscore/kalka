@@ -23,7 +23,7 @@ test.describe('browser support gate', () => {
 
     const report = notice.getByRole('link', { name: 'Report a problem' })
     const href = new URL((await report.getAttribute('href')) ?? '')
-    expect(href.pathname).toBe('/kalka/kalka/issues/new')
+    expect(href.pathname).toBe('/leyscore/kalka/issues/new')
     expect(href.searchParams.get('template')).toBe('bug_report.yml')
     expect(href.searchParams.get('platform')).toBe('Web (kalka.design)')
     expect(href.searchParams.get('logs')).toContain('Missing: String.prototype.isWellFormed')
