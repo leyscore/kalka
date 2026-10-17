@@ -14,7 +14,8 @@ import { collapsibleContentMotion } from '@/theme/collapsible/collapsible'
 /** Runs up to this long stay expanded; longer ones fold all but the latest call. */
 const INLINE_CALLS = 3
 
-const { parts } = defineProps<{ parts: ToolCallPart[] }>()
+/** `undone`: the calls whose edit the user undid. */
+const { parts, undone } = defineProps<{ parts: ToolCallPart[]; undone?: ReadonlySet<string> }>()
 const { ai } = useI18n()
 const ui = chatToolTheme()
 
@@ -33,7 +34,12 @@ const label = computed(() => {
 
 <template>
   <div v-if="parts.length <= INLINE_CALLS" class="space-y-1.5">
-    <ToolCallCard v-for="part in parts" :key="part.toolCallId" :part="part" />
+    <ToolCallCard
+      v-for="part in parts"
+      :key="part.toolCallId"
+      :part="part"
+      :undone="undone?.has(part.toolCallId)"
+    />
   </div>
   <div v-else class="space-y-1.5">
     <CollapsibleRoot :class="ui.group()" data-slot="chat-tool-group">
@@ -48,10 +54,20 @@ const label = computed(() => {
       </CollapsibleTrigger>
       <CollapsibleContent :class="collapsibleContentMotion">
         <div :class="ui.groupItems()">
-          <ToolCallCard v-for="part in earlier" :key="part.toolCallId" :part="part" />
+          <ToolCallCard
+            v-for="part in earlier"
+            :key="part.toolCallId"
+            :part="part"
+            :undone="undone?.has(part.toolCallId)"
+          />
         </div>
       </CollapsibleContent>
     </CollapsibleRoot>
-    <ToolCallCard v-if="latest" :key="latest.toolCallId" :part="latest" />
+    <ToolCallCard
+      v-if="latest"
+      :key="latest.toolCallId"
+      :part="latest"
+      :undone="undone?.has(latest.toolCallId)"
+    />
   </div>
 </template>

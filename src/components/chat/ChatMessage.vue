@@ -8,11 +8,10 @@ import { useI18n, vTestId } from '@kalka/vue'
 
 import { attachmentsForMessage } from '@/app/ai/attachment/presentation/store'
 import type { AttachmentPresentation } from '@/app/ai/attachment/presentation/types'
+import { undoOf, wasStopped } from '@/app/ai/chat/metadata'
 import { reasoningDisplay } from '@/app/ai/chat/preferences'
 import { visibleUserMessageText } from '@/app/ai/chat/presentation'
-import { wasStopped } from '@/app/ai/chat/settle'
 import { groupMessageParts, type MessagePartGroup } from '@/app/ai/chat/tool-calls/display'
-import { revertOf } from '@/app/ai/chat/turns'
 import AttachmentList from '@/components/chat/attachment/AttachmentList.vue'
 import ChatMarkdown from '@/components/chat/ChatMarkdown.vue'
 import ReasoningBlock from '@/components/chat/ReasoningBlock.vue'
@@ -83,7 +82,14 @@ async function copyResponse(): Promise<void> {
 
 // The AI SDK updates parts in place and replaces only the message, so copy each part for
 // the cards' computed state to see the new values.
-const reverted = computed(() => revertOf(message) !== null)
+const undo = computed(() => undoOf(message))
+const undoneCalls = computed(() => new Set(undo.value?.undone))
+const reverted = computed(
+  () =>
+    !!undo.value &&
+    undo.value.edits.length > 0 &&
+    undoneCalls.value.size === undo.value.edits.length
+)
 const stopped = computed(() => wasStopped(message))
 // A request that failed once its reply had started leaves the reply without content.
 const empty = computed(() => message.parts.every((part) => part.type === 'step-start'))
@@ -115,6 +121,7 @@ function groupKey(group: MessagePartGroup): string {
             <ToolCallGroup
               v-if="group.kind === 'tools'"
               :parts="group.parts.map(({ part }) => part)"
+              :undone="undoneCalls"
             />
 
             <!-- Reasoning -->
@@ -158,6 +165,8 @@ function groupKey(group: MessagePartGroup): string {
           :empty="empty"
           :reverted="reverted"
           :stopped="stopped"
+          :undone="undoneCalls.size"
+          :edits="undo?.edits.length ?? 0"
           @regenerate="emit('regenerate')"
           @revert="emit('revert')"
           @restore="emit('restore')"

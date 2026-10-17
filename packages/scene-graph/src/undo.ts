@@ -183,6 +183,16 @@ export class UndoManager {
     return this.redoStack.at(-1 - depth)
   }
 
+  /**
+   * Whether `entry` is applied (on the undo stack) or undone (on the redo stack); null once it
+   * left the history, trimmed or dropped when an edit cleared Redo.
+   */
+  stateOf(entry: UndoEntry): 'applied' | 'undone' | null {
+    if (this.undoStack.includes(entry)) return 'applied'
+    if (this.redoStack.includes(entry)) return 'undone'
+    return null
+  }
+
   get undoLabel(): string | null {
     return this.undoStack.at(-1)?.label ?? null
   }

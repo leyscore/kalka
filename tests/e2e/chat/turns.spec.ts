@@ -37,9 +37,8 @@ test('reverting a reply undoes its edits, marks it, saves the chat, and tells th
   await expect(page.getByTestId('chat-message-assistant')).toHaveCount(2)
   await expect(chat.assistantMessage()).toContainText('Done')
   const request = await page.evaluate(() => document.documentElement.dataset.lastModelRequest)
-  expect(request).toContain(
-    'The user reverted every document edit from one of your earlier replies'
-  )
+  // The note names the undone call by its tool.
+  expect(request).toContain('- render (')
   // The note is for the model only.
   await expect(chat.userMessage()).toHaveText('Try something else')
   // The second reply's edits closed Redo, so the first reply is marked instead.
@@ -61,8 +60,8 @@ test('reverting a reply undoes its edits, marks it, saves the chat, and tells th
         const conversation = latest ? await store.read(latest.id) : null
         return (
           conversation?.messages.some(
-            (entry: { message: { metadata?: { reverted?: boolean } } }) =>
-              entry.message.metadata?.reverted === true
+            (entry: { message: { metadata?: { undo?: { undone?: string[] } } } }) =>
+              (entry.message.metadata?.undo?.undone?.length ?? 0) > 0
           ) ?? false
         )
       })

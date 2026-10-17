@@ -312,7 +312,7 @@ test('a tool still running at Stop finishes into its reply without bringing the 
     await run.settled()
     // The running call's edit lands and stays this reply's; the one waiting its turn never runs.
     expect(store.graph.getChildren(a)).toHaveLength(1)
-    expect(run.undoEntries).toHaveLength(1)
+    expect(run.undoCalls).toHaveLength(1)
     expect([...run.changedCalls]).toEqual(['first'])
     expect(agent()).toMatchObject({ status: 'idle', cursor: undefined, selection: undefined })
   })

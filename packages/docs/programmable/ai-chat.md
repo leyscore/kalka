@@ -82,7 +82,23 @@ The configurable tool catalog covers these categories; the tools offered to a mo
 
 ## Visual Verification
 
-The assistant can verify its work visually. When `export_image` is enabled, it can capture a screenshot after creating or modifying designs and checks the result against the original request. This catches layout issues, missing elements, and color mismatches that text-only responses would miss. `diff_visual`, enabled by default, compares an edited node with a reference copy and returns the changed pixels and region, so the assistant can confirm an edit stayed within its target.
+The assistant can verify its work visually. With `export_image`, on by default, it can capture a screenshot after creating or modifying designs and checks the result against the original request. This catches layout issues, missing elements, and color mismatches that text-only responses would miss. `diff_visual`, enabled by default, compares an edited node with a reference copy and returns the changed pixels and region, so the assistant can confirm an edit stayed within its target.
+
+## Stopping a reply
+
+**Stop** ends a reply at once. A tool call already running finishes, and its edit counts as part of the reply; calls still waiting for their turn change nothing. The reply is marked *Stopped*, its reasoning and any unfinished calls stop showing as running, and your next message tells the assistant whether those calls changed the document.
+
+## Undoing the assistant's edits
+
+Each tool call that changes the document is one step in Edit → Undo. Undoing it with <kbd>⌘</kbd><kbd>Z</kbd> marks the call *Undone* in the chat. A reply with only some edits undone says how many; one with all of them undone is dimmed and marked *Changes reverted*. Redo removes the marks. The marks are saved with the conversation.
+
+**Revert changes** on a reply undoes its edits while nothing has been edited since, and **Restore changes** brings undone edits back while Redo still can. **Regenerate** and editing your last message undo the replaced reply's edits first when they can.
+
+Your next message tells the assistant which of its edits you undid or redid, so it does not build on edits that are gone. If you undo the assistant's edits while it is still working, it hears about it with its next tool call.
+
+## Following the assistant
+
+With **Follow agents** on, the crosshair button at the top of the AI panel, your view follows the assistant while it works, including to another page when it edits layers there. Following ends when the reply finishes, is stopped, or fails. Clicking, scrolling, zooming, switching pages, or Escape stops following yourself.
 
 ## Example Prompts
 
@@ -101,6 +117,6 @@ The assistant can verify its work visually. When `export_image` is enabled, it c
 - Select nodes before asking — the assistant knows what's selected.
 - Be specific about colors, sizes, and positions for precise results.
 - The assistant can modify multiple nodes in one message.
-- You can browse other pages while a reply runs: the assistant keeps working on the page where the message started, and its previews show when you return. While you're away, the chat says which page it is working on, with **Go to page** to return. If the assistant switches pages itself, your view follows.
-- Use "undo" in the editor if you don't like the result — AI mutations support full undo.
+- You can browse other pages while a reply runs: the assistant keeps working on the page where the message started, and its previews show when you return. While you're away, the chat says which page it is working on, with **Go to page** to return.
+- Undo anything you don't like with Edit → Undo or **Revert changes**; the chat and the assistant both see it.
 - All layout is recomputed automatically after each tool execution.

@@ -2,7 +2,8 @@ import { tv } from 'tailwind-variants'
 
 export const chatToolTheme = tv({
   slots: {
-    root: 'rounded-[10px] border border-hairline bg-group',
+    // An undone call's text dims to the muted color, which still reads at 4.5:1.
+    root: 'rounded-[10px] border border-hairline bg-group data-[undone=true]:**:text-muted',
     trigger:
       'flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-left hover:bg-hover disabled:cursor-default disabled:hover:bg-transparent',
     status:
@@ -10,6 +11,8 @@ export const chatToolTheme = tv({
     statusIcon: 'size-3',
     name: 'shrink-0 text-[11px] font-medium text-surface',
     summary: 'min-w-0 flex-1 truncate font-mono text-[10px] text-muted',
+    undone: 'inline-flex shrink-0 items-center gap-1 text-[10px] text-muted',
+    undoneIcon: 'size-3',
     chevron:
       'ml-auto size-3 shrink-0 text-muted transition-transform motion-reduce:transition-none [[data-state=open]>&]:rotate-180',
     body: 'space-y-2 border-t border-border px-2 py-2 text-[10px]',

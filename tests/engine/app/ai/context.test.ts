@@ -6,7 +6,7 @@ import {
   appendReferencedNodeContext,
   MAX_REFERENCED_NODES,
   resolveReferencedNodes,
-  stripReferencedNodeContext
+  stripModelNotes
 } from '@/app/ai/chat/context'
 
 describe('AI chat node context', () => {
@@ -43,8 +43,8 @@ describe('AI chat node context', () => {
       { id: '1:2', type: 'FRAME', name: 'Hero' }
     ])
 
-    expect(stripReferencedNodeContext(modelText)).toBe('Visible request')
-    expect(stripReferencedNodeContext('No references')).toBe('No references')
+    expect(stripModelNotes(modelText)).toBe('Visible request')
+    expect(stripModelNotes('No references')).toBe('No references')
   })
 
   test('bounds the number of references', () => {

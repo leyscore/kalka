@@ -6,13 +6,14 @@ import { ref, shallowRef, toRaw } from 'vue'
 
 import { FigmaAPI } from '@kalka/core/figma-api'
 
-import { REVERTED_TURN_CONTEXT_MARKER } from '@/app/ai/chat/context'
+import { UNDONE_CALLS_CONTEXT_MARKER } from '@/app/ai/chat/context'
 import { snapshotMessages } from '@/app/ai/chat/history/messages'
+import { undoOf } from '@/app/ai/chat/metadata'
 import { changePreviewSize } from '@/app/ai/chat/preferences'
 import type { ChatInstance } from '@/app/ai/chat/submission/types'
 import { useChatSubmission } from '@/app/ai/chat/submission/use'
-import { clearTurns, revertOf, revertTurn, turnEdits } from '@/app/ai/chat/turns'
-import { createAITools, startRun } from '@/app/ai/tools'
+import { clearTurns, revertTurn, turnEdits, undoToReport } from '@/app/ai/chat/turns'
+import { createAITools, endRun, startRun } from '@/app/ai/tools'
 import * as figmaFactory from '@/app/automation/bridge/figma-factory'
 import { createEditorStore } from '@/app/editor/session/create'
 import { appPreferences } from '@/app/settings/preferences/store'
@@ -159,11 +160,11 @@ test('reverts a turn while its edits are the newest on the undo stack', async ()
   const { card, actions } = setup()
   await actions.submit({ modelText: 'Wider', displayText: 'Wider', images: [], nodes: [] })
   expect(width(card.id)).toBe(200)
-  expect(turnEdits('reply-1')).toEqual({ count: 1, revertable: true, restorable: false })
+  expect(turnEdits('reply-1')).toEqual({ count: 1, undone: 0, revertable: true, restorable: false })
 
   expect(revertTurn('reply-1')).toBe(true)
   expect(width(card.id)).toBe(100)
-  expect(turnEdits('reply-1')).toEqual({ count: 1, revertable: false, restorable: true })
+  expect(turnEdits('reply-1')).toEqual({ count: 1, undone: 1, revertable: false, restorable: true })
 })
 
 test('a turn that ends with a view change, such as zoom to fit, stays revertable', async () => {
@@ -183,7 +184,12 @@ test('an edit made after the turn closes the revert, so it never undoes other wo
   await actions.submit({ modelText: 'Wider', displayText: 'Wider', images: [], nodes: [] })
   store.pushUndoEntry({ label: 'User edit', forward: () => undefined, inverse: () => undefined })
 
-  expect(turnEdits('reply-1')).toEqual({ count: 1, revertable: false, restorable: false })
+  expect(turnEdits('reply-1')).toEqual({
+    count: 1,
+    undone: 0,
+    revertable: false,
+    restorable: false
+  })
   expect(revertTurn('reply-1')).toBe(false)
   expect(width(card.id)).toBe(200)
 })
@@ -284,9 +290,10 @@ test('resending an edited request replaces it and undoes the old reply first', a
 
 const send = (text: string) => ({ modelText: text, displayText: text, images: [], nodes: [] })
 
-function mark(chat: ReturnType<typeof fakeChat>, id: string) {
+/** The reply's undone calls, as its message keeps them. */
+function undone(chat: ReturnType<typeof fakeChat>, id: string) {
   const message = chat.messages.find((candidate) => candidate.id === id)
-  return message ? revertOf(message) : undefined
+  return message ? undoOf(message)?.undone : undefined
 }
 
 function lastRequest(chat: ReturnType<typeof fakeChat>): string {
@@ -294,89 +301,146 @@ function lastRequest(chat: ReturnType<typeof fakeChat>): string {
   return request?.parts.map((part) => (part.type === 'text' ? part.text : '')).join('') ?? ''
 }
 
-test('a reverted reply stays marked, and the next request tells the model once', async () => {
+test("undoing a reply's edit in the editor marks it, and the next request tells the model once", async () => {
   const { card, chat, actions } = setup()
   await actions.submit(send('Wider'))
-  await actions.revert('reply-1')
+  store.undoAction()
 
   expect(width(card.id)).toBe(100)
-  expect(mark(chat, 'reply-1')).toEqual({ reportedIn: undefined })
+  expect(undone(chat, 'reply-1')).toEqual(['call-1'])
 
   await actions.submit(send('Try again'))
-  expect(lastRequest(chat)).toContain(REVERTED_TURN_CONTEXT_MARKER)
   expect(lastRequest(chat)).toStartWith('Try again')
-  expect(mark(chat, 'reply-1')?.reportedIn).toBe(
-    chat.messages.findLast((message) => message.role === 'user')?.id
-  )
+  expect(lastRequest(chat)).toContain(UNDONE_CALLS_CONTEXT_MARKER)
+  expect(lastRequest(chat)).toContain('- node_resize (call-1)')
 
   await actions.submit(send('And once more'))
-  expect(lastRequest(chat)).not.toContain(REVERTED_TURN_CONTEXT_MARKER)
+  expect(lastRequest(chat)).not.toContain(UNDONE_CALLS_CONTEXT_MARKER)
 })
 
-test('redoing a reverted reply removes its mark, so nothing is reported', async () => {
+test('a reply with some edits undone marks only those, and can be restored or reverted', async () => {
+  const { card, chat, actions } = setup(async (tools) =>
+    tools.set_opacity.execute?.({ id: card.id, value: 0.5 }, call('fade'))
+  )
+  await actions.submit(send('Wider and fainter'))
+  store.undoAction()
+
+  expect(undone(chat, 'reply-1')).toEqual(['fade'])
+  expect(turnEdits('reply-1')).toEqual({ count: 2, undone: 1, revertable: true, restorable: true })
+  await actions.submit(send('Keep the width'))
+  expect(lastRequest(chat)).toContain('- set_opacity (fade)')
+  expect(lastRequest(chat)).not.toContain('node_resize')
+})
+
+test('redoing an undone edit removes its mark, so nothing is reported', async () => {
   const { card, chat, actions } = setup()
   await actions.submit(send('Wider'))
   await actions.revert('reply-1')
   store.redoAction()
 
   expect(width(card.id)).toBe(200)
-  expect(mark(chat, 'reply-1')).toBeNull()
+  expect(undone(chat, 'reply-1')).toEqual([])
   expect(turnEdits('reply-1')?.revertable).toBe(true)
 
   await actions.submit(send('Next'))
-  expect(lastRequest(chat)).not.toContain(REVERTED_TURN_CONTEXT_MARKER)
+  expect(lastRequest(chat)).not.toContain(UNDONE_CALLS_CONTEXT_MARKER)
 })
 
-test('sending a request again reports a revert from before it', async () => {
+test('an edit the model heard was undone, redone since, is reported as applying again', () => {
+  const reply: UIMessage = {
+    id: 'reply',
+    role: 'assistant',
+    parts: [],
+    metadata: {
+      undo: {
+        edits: [
+          { tool: 'node_resize', toolCallId: 'resize' },
+          { tool: 'set_opacity', toolCallId: 'fade' }
+        ],
+        undone: ['fade'],
+        reported: { undone: ['resize'], in: 'request' }
+      }
+    }
+  }
+  const request: UIMessage = { id: 'request', role: 'user', parts: [] }
+
+  expect(undoToReport([reply, request])).toEqual([
+    {
+      messageId: 'reply',
+      undone: ['fade'],
+      calls: {
+        undone: [{ tool: 'set_opacity', toolCallId: 'fade' }],
+        redone: [{ tool: 'node_resize', toolCallId: 'resize' }]
+      }
+    }
+  ])
+  // Without the request that carried the report, the model never heard of the undo.
+  expect(undoToReport([reply])[0]?.calls.redone).toEqual([])
+})
+
+test('sending a request again reports an undo from before it', async () => {
   const { chat, actions } = setup()
   await actions.submit(send('Wider'))
   await actions.revert('reply-1')
   await actions.submit(send('Taller'))
-  // The second request already reported the revert; editing it sends the note again.
+  // The second request already reported the undo; editing it sends the note again.
   const request = chat.messages.findLast((message) => message.role === 'user')?.id ?? ''
   await actions.resend(request, 'Much taller')
 
   expect(lastRequest(chat)).toStartWith('Much taller')
-  expect(lastRequest(chat)).toContain(REVERTED_TURN_CONTEXT_MARKER)
+  expect(lastRequest(chat)).toContain('- node_resize (call-1)')
 })
 
-test('an older reply reverted after later requests is still reported', async () => {
-  const { card, chat, actions } = setup()
-  await actions.submit(send('Wider'))
-  await actions.submit(send('Even wider'))
-  await actions.revert('reply-2')
-  await actions.submit(send('Smaller then'))
-  expect(lastRequest(chat)).toContain(REVERTED_TURN_CONTEXT_MARKER)
-
-  // The third reply's edit is undone too, which leaves the first reply's on top.
-  await actions.revert('reply-3')
-  await actions.revert('reply-1')
-  expect(width(card.id)).toBe(100)
-  await actions.submit(send('Start over'))
-  expect(lastRequest(chat)).toContain(
-    'The user reverted every document edit from 2 of your earlier replies.'
-  )
-})
-
-test('restoring a reverted reply redoes its edits and removes the mark', async () => {
+test('restoring a reverted reply redoes its edits and removes the marks', async () => {
   const { card, chat, actions } = setup()
   await actions.submit(send('Wider'))
   await actions.revert('reply-1')
   await actions.restore('reply-1')
 
   expect(width(card.id)).toBe(200)
-  expect(mark(chat, 'reply-1')).toBeNull()
-  expect(turnEdits('reply-1')).toEqual({ count: 1, revertable: true, restorable: false })
+  expect(undone(chat, 'reply-1')).toEqual([])
+  expect(turnEdits('reply-1')).toEqual({ count: 1, undone: 0, revertable: true, restorable: false })
 })
 
-test('an edit made after the revert closes the restore, and the reply stays marked', async () => {
+test('an edit made after an undo closes the restore, and the edit stays marked undone', async () => {
   const { card, chat, actions } = setup()
   await actions.submit(send('Wider'))
-  await actions.revert('reply-1')
+  store.undoAction()
   store.pushUndoEntry({ label: 'User edit', forward: () => undefined, inverse: () => undefined })
 
   expect(turnEdits('reply-1')?.restorable).toBe(false)
   await actions.restore('reply-1')
   expect(width(card.id)).toBe(100)
-  expect(mark(chat, 'reply-1')).toEqual({ reportedIn: undefined })
+  expect(undone(chat, 'reply-1')).toEqual(['call-1'])
+})
+
+test('an edit undone while the agent works is noted on its next tool result', async () => {
+  const card = store.graph.createNode('FRAME', store.state.currentPageId, { name: 'Card' })
+  const tools = createAITools(store)
+  startRun(store, 10)
+  await tools.node_resize.execute?.({ id: card.id, width: 200, height: 60 }, call('resize'))
+  store.undoAction()
+
+  const result = await tools.get_node.execute?.({ id: card.id }, call('read'))
+  expect(result).toMatchObject({ undoNote: expect.stringContaining('- node_resize (resize)') })
+  // Told once: the next result carries no note.
+  const again = await tools.get_node.execute?.({ id: card.id }, call('read-again'))
+  expect(again).not.toHaveProperty('undoNote')
+
+  store.redoAction()
+  const redone = await tools.get_node.execute?.({ id: card.id }, call('read-redone'))
+  expect(redone).toMatchObject({ undoNote: expect.stringContaining('The user redid') })
+  endRun(store)
+})
+
+test('an undo the agent heard about while it worked is not reported again', async () => {
+  const { card, chat, actions } = setup(async (tools) => {
+    store.undoAction()
+    return tools.get_node.execute?.({ id: card.id }, call('look'))
+  })
+  await actions.submit(send('Wider'))
+  expect(undone(chat, 'reply-1')).toEqual(['call-1'])
+
+  await actions.submit(send('Next'))
+  expect(lastRequest(chat)).not.toContain(UNDONE_CALLS_CONTEXT_MARKER)
 })

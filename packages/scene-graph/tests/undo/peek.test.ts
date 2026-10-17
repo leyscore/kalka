@@ -35,3 +35,20 @@ test('peeks entries from the top of the redo stack, the next Redo first', () => 
   undo.redo()
   expect(undo.peekRedo()).toBe(second)
 })
+
+test('stateOf says whether an entry is applied, undone, or gone from the history', () => {
+  const undo = new UndoManager()
+  const noop = () => undefined
+  const entry = (label: string) => ({ label, forward: noop, inverse: noop })
+  const first = entry('First')
+  const second = entry('Second')
+  undo.push(first)
+  undo.push(second)
+  undo.undo()
+  expect(undo.stateOf(first)).toBe('applied')
+  expect(undo.stateOf(second)).toBe('undone')
+
+  // A new edit clears Redo, so the undone entry leaves the history.
+  undo.push(entry('Third'))
+  expect(undo.stateOf(second)).toBeNull()
+})

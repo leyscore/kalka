@@ -1,13 +1,7 @@
 import { isReasoningUIPart, isTextUIPart, isToolUIPart, type UIMessage } from 'ai'
-import * as v from 'valibot'
 import { toRaw } from 'vue'
 
-/** A reply the user stopped is marked in its metadata, which conversations store. */
-const StoppedMetadata = v.object({ stopped: v.literal(true) })
-
-export function wasStopped(message: UIMessage): boolean {
-  return v.is(StoppedMetadata, message.metadata)
-}
+import { wasStopped, withMetadata } from '@/app/ai/chat/metadata'
 
 export interface SettleOptions {
   /** Whether the user stopped the reply, rather than it failing or being cut off. */
@@ -51,6 +45,6 @@ export function settleMessage(live: UIMessage, { stopped, changed }: SettleOptio
   })
   const unchanged = parts.every((part, index) => part === message.parts[index])
   if (unchanged && (!stopped || wasStopped(message))) return live
-  const metadata = v.is(v.record(v.string(), v.unknown()), message.metadata) ? message.metadata : {}
-  return { ...message, parts, metadata: stopped ? { ...metadata, stopped: true } : metadata }
+  const settled = { ...message, parts }
+  return stopped ? withMetadata(settled, { stopped: true }) : settled
 }

@@ -3,7 +3,8 @@ import { expect, test } from 'bun:test'
 import type { UIMessage } from 'ai'
 import { reactive, toRaw } from 'vue'
 
-import { settleMessage, wasStopped } from '@/app/ai/chat/settle'
+import { wasStopped } from '@/app/ai/chat/metadata'
+import { settleMessage } from '@/app/ai/chat/settle'
 
 function reply(parts: UIMessage['parts'], metadata?: unknown): UIMessage {
   return { id: 'reply', role: 'assistant', parts, metadata }

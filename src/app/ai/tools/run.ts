@@ -3,6 +3,7 @@ import type { StepBudget } from '@kalka/core/tools'
 import type { UndoEntry } from '@kalka/scene-graph/undo'
 import type { AgentEdit } from '@kalka/vue'
 
+import { describeUndoneCalls, type CallRef } from '@/app/ai/chat/context'
 import { DEFAULT_AGENT_STEPS, resolveAgentStepLimit } from '@/app/ai/chat/step-limit'
 import type { PreviewFocus } from '@/app/ai/preview/canvas'
 import { getActiveEditorStore } from '@/app/editor/active-store'
@@ -15,6 +16,16 @@ import { addAgent, agentPlacement, type AgentHandle } from '@/app/presence/regis
  * finished, stopped, or failed; a tool that was already running finishes into the run it
  * started in, even after that run ended, so its edit stays part of that reply.
  */
+/** An undo entry one of a run's tool calls pushed. */
+export interface RunUndoCall extends CallRef {
+  entry: UndoEntry
+}
+
+/** The label of an AI tool call's undo entry, which Edit → Undo shows. */
+export function aiUndoLabel(tool: string): string {
+  return `AI: ${tool}`
+}
+
 export class Run {
   currentSteps = 0
   /** Captured for the message in progress; settings changes apply to the next one. */
@@ -23,8 +34,10 @@ export class Run {
   pageId: string
   /** Each page as it was before the run first edited it, for `diff_changes`. */
   readonly baselines = new Map<string, PageSnapshot>()
-  /** Undo entries the run's edits pushed, oldest first, so its turn can be reverted. */
-  readonly undoEntries: UndoEntry[] = []
+  /** Undo entries the run's edits pushed, oldest first, with the calls that pushed them. */
+  readonly undoCalls: RunUndoCall[] = []
+  /** The run's own calls the model was told the user undid while the run went on. */
+  readonly reportedUndone = new Set<string>()
   /** Tool calls that changed the document, which a stopped reply's transcript reports. */
   readonly changedCalls = new Set<string>()
   /** False once the reply finished, was stopped, or failed; its agent no longer moves. */
@@ -195,15 +208,40 @@ export function runBaseline(store: EditorStore, pageId: string): PageSnapshot | 
 export function recordRunUndoEntry(
   store: EditorStore,
   run: Run,
-  label: string,
+  call: CallRef,
   previous: UndoEntry | undefined
 ): void {
   const entry = store.undo.peekUndo()
-  if (entry !== previous && entry?.label === label && !run.undoEntries.includes(entry)) {
-    run.undoEntries.push(entry)
+  if (
+    entry &&
+    entry !== previous &&
+    entry.label === aiUndoLabel(call.tool) &&
+    !run.undoCalls.some((recorded) => recorded.entry === entry)
+  ) {
+    run.undoCalls.push({ ...call, entry })
   }
 }
 
 export function runUndoEntries(store: EditorStore): readonly UndoEntry[] {
-  return getRunState(store).run.undoEntries
+  return getRunState(store).run.undoCalls.map(({ entry }) => entry)
+}
+
+/**
+ * A note for the run's next tool result when the user undid or redid some of the run's own
+ * edits since the model last heard; empty when nothing changed. Taking it counts as telling.
+ */
+export function takeRunUndoNote(store: EditorStore, run = currentRun(store)): string {
+  const undone: CallRef[] = []
+  const redone: CallRef[] = []
+  for (const { entry, tool, toolCallId } of run.undoCalls) {
+    const state = store.undo.stateOf(entry)
+    if (state === 'undone' && !run.reportedUndone.has(toolCallId)) {
+      undone.push({ tool, toolCallId })
+      run.reportedUndone.add(toolCallId)
+    } else if (state === 'applied' && run.reportedUndone.has(toolCallId)) {
+      redone.push({ tool, toolCallId })
+      run.reportedUndone.delete(toolCallId)
+    }
+  }
+  return describeUndoneCalls({ undone, redone })
 }

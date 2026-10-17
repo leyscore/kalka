@@ -26,7 +26,8 @@ import SegmentedControl from '@/components/ui/select/SegmentedControl.vue'
 import { chatToolTheme } from '@/theme/chat/tool'
 import { collapsibleContentMotion } from '@/theme/collapsible/collapsible'
 
-const { part } = defineProps<{ part: ToolCallPart }>()
+/** `undone`: the user undid the call's edit, by Undo or the chat's Revert. */
+const { part, undone = false } = defineProps<{ part: ToolCallPart; undone?: boolean }>()
 const { ai } = useI18n()
 const ui = chatToolTheme()
 
@@ -79,7 +80,12 @@ function json(value: unknown): string {
 </script>
 
 <template>
-  <CollapsibleRoot :class="ui.root()" :data-tool-state="state" data-slot="chat-tool-call">
+  <CollapsibleRoot
+    :class="ui.root()"
+    :data-tool-state="state"
+    :data-undone="undone"
+    data-slot="chat-tool-call"
+  >
     <!-- Start loading CodeMirror on hover, so it is ready by the time the call opens. -->
     <CollapsibleTrigger
       :class="ui.trigger()"
@@ -97,6 +103,10 @@ function json(value: unknown): string {
       </span>
       <span :class="ui.name()">{{ name }}</span>
       <span :class="ui.summary()">{{ summary }}</span>
+      <span v-if="undone" :class="ui.undone()" data-slot="chat-tool-undone">
+        <icon-lucide-undo-2 :class="ui.undoneIcon()" aria-hidden="true" />
+        {{ ai.toolUndone }}
+      </span>
       <icon-lucide-chevron-down v-if="expandable" :class="ui.chevron()" aria-hidden="true" />
     </CollapsibleTrigger>
     <CollapsibleContent :class="collapsibleContentMotion">
