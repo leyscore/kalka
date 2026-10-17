@@ -50,7 +50,7 @@ export interface ExportArgs {
   html: string
   css: string
   assets: string
-  fonts: string
+  fonts?: string
   reset: string
   pretty: boolean
   framework: string
@@ -223,7 +223,7 @@ function exportOptions(format: string, args: ExportArgs): unknown {
       html: args.html,
       style: args.css,
       assets: args.assets,
-      fonts: args.fonts,
+      fonts: args.fonts ?? 'none',
       reset: args.reset,
       pretty: args.pretty
     }
@@ -352,8 +352,8 @@ export default defineCommand({
     },
     fonts: {
       type: 'string',
-      description: 'HTML font output: assets or none (default: none)',
-      default: 'none'
+      description:
+        'HTML and Storybook font files: assets or none (default: none for HTML, assets for Storybook)'
     },
     reset: {
       type: 'string',
@@ -382,6 +382,11 @@ export default defineCommand({
     beside: {
       type: 'boolean',
       description: "Storybook: write each document's stories into the document's own folder"
+    },
+    rules: {
+      type: 'string',
+      description:
+        'Storybook: rules file for which stories each component gets and its title (default: kalka.stories.json when present)'
     },
     'font-policy': {
       type: 'string',
@@ -420,8 +425,8 @@ export default defineCommand({
       process.exit(1)
     }
 
-    if (format === 'HTML' && !HTML_FONTS.has(args.fonts)) {
-      printError(`Invalid HTML font output "${args.fonts}". Use assets or none.`)
+    if (args.fonts && !HTML_FONTS.has(args.fonts)) {
+      printError(`Invalid font output "${args.fonts}". Use assets or none.`)
       process.exit(1)
     }
 

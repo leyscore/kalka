@@ -9,6 +9,9 @@ import { runKalkaCLI } from '#tests/helpers/cli'
 import { cliSourcePath } from '#tests/helpers/paths'
 import { makeSceneGraph } from '#tests/helpers/scene'
 
+/** A Storybook export without font files, which come from the network these tests leave out. */
+const STORYBOOK = ['--format', 'storybook', '--fonts', 'none']
+
 setDefaultTimeout(30_000)
 
 const io = new IORegistry(BUILTIN_IO_FORMATS)
@@ -37,8 +40,7 @@ test('export CLI writes Storybook stories with design images', async () => {
   const { stdout, stderr, exitCode } = await runKalkaCLI([
     'export',
     figPath,
-    '--format',
-    'storybook',
+    ...STORYBOOK,
     '--framework',
     'vue',
     '--font-policy',
@@ -69,7 +71,7 @@ test('export CLI writes Storybook stories with design images', async () => {
 test('export CLI replaces stale generated stories and keeps hand-written ones', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'kalka-storybook-cli-'))
   const output = join(dir, 'stories')
-  const args = ['--format', 'storybook', '--no-design-images', '--output', output]
+  const args = [...STORYBOOK, '--no-design-images', '--output', output]
   const setup = await runKalkaCLI(['export', await writeComponentFixture(dir, ['Old']), ...args])
   expect(setup.exitCode).toBe(0)
   await Bun.write(join(output, 'Mine.stories.ts'), 'export default {}\n')
@@ -90,7 +92,7 @@ test('export CLI replaces stale generated stories and keeps hand-written ones', 
 test('export CLI keeps stories of other documents and refuses to overwrite them', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'kalka-storybook-cli-'))
   const output = join(dir, 'stories')
-  const args = ['--format', 'storybook', '--no-design-images', '--output', output]
+  const args = [...STORYBOOK, '--no-design-images', '--output', output]
   for (const [names, file] of [
     [['Card'], 'library.fig'],
     [['Chip'], 'b.fig']
@@ -129,7 +131,7 @@ test('export CLI --page replaces that page and keeps the stories of other pages'
     await Bun.write(figPath, result.data as Uint8Array)
   }
   const output = join(dir, 'stories')
-  const args = ['--format', 'storybook', '--no-design-images', '--output', output]
+  const args = [...STORYBOOK, '--no-design-images', '--output', output]
   await writeDocument('Old')
   expect((await runKalkaCLI(['export', figPath, ...args])).exitCode).toBe(0)
 
@@ -144,7 +146,7 @@ test('export CLI --page replaces that page and keeps the stories of other pages'
 test('export CLI tells apart documents that share a file name', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'kalka-storybook-cli-'))
   const output = join(dir, 'stories')
-  const args = ['--format', 'storybook', '--no-design-images', '--output', output]
+  const args = [...STORYBOOK, '--no-design-images', '--output', output]
   for (const [folder, name] of [
     ['a', 'Card'],
     ['b', 'Chip']
@@ -169,7 +171,7 @@ test('export CLI --page refuses to renumber stories of other pages', async () =>
     await Bun.write(figPath, result.data as Uint8Array)
   }
   const output = join(dir, 'stories')
-  const args = ['--format', 'storybook', '--no-design-images', '--output', output]
+  const args = [...STORYBOOK, '--no-design-images', '--output', output]
   await writeDocument('Card')
   expect((await runKalkaCLI(['export', figPath, ...args])).exitCode).toBe(0)
   expect(await outputEntries(output)).toEqual(['Card.stories.ts', 'Card2.stories.ts'])
@@ -195,8 +197,7 @@ test('export CLI refuses to overwrite a design image it did not generate', async
   const { stderr, exitCode } = await runKalkaCLI([
     'export',
     figPath,
-    '--format',
-    'storybook',
+    ...STORYBOOK,
     '--font-policy',
     'allow',
     '--output',
@@ -212,7 +213,7 @@ test('export CLI keeps files it did not generate in a design folder', async () =
   const dir = await mkdtemp(join(tmpdir(), 'kalka-storybook-cli-'))
   const figPath = await writeComponentFixture(dir, ['Badge'])
   const output = join(dir, 'stories')
-  const args = ['--format', 'storybook', '--font-policy', 'allow', '--output', output]
+  const args = [...STORYBOOK, '--font-policy', 'allow', '--output', output]
   expect((await runKalkaCLI(['export', figPath, ...args])).exitCode).toBe(0)
   await Bun.write(join(output, 'Badge.design/notes.txt'), 'mine')
 
@@ -224,7 +225,7 @@ test('export CLI keeps files it did not generate in a design folder', async () =
 test('export CLI removes the design folder of a deleted component', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'kalka-storybook-cli-'))
   const output = join(dir, 'stories')
-  const args = ['--format', 'storybook', '--font-policy', 'allow', '--output', output]
+  const args = [...STORYBOOK, '--font-policy', 'allow', '--output', output]
   const badge = await writeComponentFixture(dir, ['Badge'])
   expect((await runKalkaCLI(['export', badge, ...args])).exitCode).toBe(0)
 
@@ -238,7 +239,7 @@ test('export CLI refuses a design folder that links outside the output', async (
   const dir = await mkdtemp(join(tmpdir(), 'kalka-storybook-cli-'))
   const figPath = await writeComponentFixture(dir, ['Badge'])
   const output = join(dir, 'stories')
-  const args = ['--format', 'storybook', '--font-policy', 'allow', '--output', output]
+  const args = [...STORYBOOK, '--font-policy', 'allow', '--output', output]
   expect((await runKalkaCLI(['export', figPath, ...args])).exitCode).toBe(0)
   const outside = join(dir, 'outside')
   await mkdir(outside)
@@ -264,8 +265,7 @@ test('export CLI --beside writes the stories of every matched document next to i
   const { stdout, stderr, exitCode } = await runKalkaCLI([
     'export',
     join(dir, '**/*.fig'),
-    '--format',
-    'storybook',
+    ...STORYBOOK,
     '--no-design-images',
     '--beside'
   ])
@@ -291,8 +291,7 @@ test('export CLI expands an extglob pattern', async () => {
   const { stderr, exitCode } = await runKalkaCLI([
     'export',
     join(dir, '+(card|chip).fig'),
-    '--format',
-    'storybook',
+    ...STORYBOOK,
     '--no-design-images',
     '--beside'
   ])
@@ -316,8 +315,7 @@ test('export CLI opens a document whose name contains glob syntax', async () => 
   const { stderr, exitCode } = await runKalkaCLI([
     'export',
     file,
-    '--format',
-    'storybook',
+    ...STORYBOOK,
     '--no-design-images',
     '--beside'
   ])
@@ -341,8 +339,7 @@ test('export CLI --beside records documents that share a folder in one manifest'
     'export',
     card,
     chip,
-    '--format',
-    'storybook',
+    ...STORYBOOK,
     '--no-design-images',
     '--beside'
   ])
@@ -363,7 +360,7 @@ test('export CLI needs an output choice and one document for --page', async () =
   await writeComponentFixture(dir, ['Card'], 'card.fig')
   await writeComponentFixture(dir, ['Chip'], 'chip.fig')
   const pattern = join(dir, '*.fig')
-  const storybook = ['--format', 'storybook', '--no-design-images']
+  const storybook = [...STORYBOOK, '--no-design-images']
 
   const noOutput = await runKalkaCLI(['export', pattern, ...storybook])
   expect(noOutput.exitCode).toBe(1)
@@ -388,8 +385,7 @@ test('export CLI exports the other documents when one fails, then exits 1', asyn
   const { stderr, exitCode } = await runKalkaCLI([
     'export',
     join(dir, '*.fig'),
-    '--format',
-    'storybook',
+    ...STORYBOOK,
     '--no-design-images',
     '--beside'
   ])
@@ -448,8 +444,7 @@ test('export CLI rejects Storybook export of a document without components', asy
   const { stderr, exitCode } = await runKalkaCLI([
     'export',
     figPath,
-    '--format',
-    'storybook',
+    ...STORYBOOK,
     '--output',
     join(dir, 'stories')
   ])
@@ -474,8 +469,7 @@ test('export CLI refuses a manifest that lists files outside the output', async 
   const { stderr, exitCode } = await runKalkaCLI([
     'export',
     figPath,
-    '--format',
-    'storybook',
+    ...STORYBOOK,
     '--no-design-images',
     '--output',
     output
@@ -490,7 +484,7 @@ test('export CLI treats stories as foreign once the manifest is gone', async () 
   const dir = await mkdtemp(join(tmpdir(), 'kalka-storybook-cli-'))
   const figPath = await writeComponentFixture(dir, ['Badge'])
   const output = join(dir, 'stories')
-  const args = ['--format', 'storybook', '--no-design-images', '--output', output]
+  const args = [...STORYBOOK, '--no-design-images', '--output', output]
   expect((await runKalkaCLI(['export', figPath, ...args])).exitCode).toBe(0)
   await rm(join(output, MANIFEST))
 
