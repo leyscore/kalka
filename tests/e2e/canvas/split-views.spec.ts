@@ -22,7 +22,9 @@ test.describe('split canvas views', () => {
     const panes = page.locator('[data-active-pane]')
     await expect(panes).toHaveCount(2)
     await expect(panes.nth(1)).toHaveAttribute('data-active-pane', 'true')
-    await expect(page.locator('canvas[data-ready="1"]')).toHaveCount(4)
+    // Each view draws its own scene and takes its own input once its canvas is ready.
+    const readyCanvases = page.getByTestId('canvas-element').and(page.locator('[data-ready="1"]'))
+    await expect(readyCanvases).toHaveCount(2)
 
     const firstBox = await panes.nth(0).boundingBox()
     const secondBox = await panes.nth(1).boundingBox()
@@ -49,6 +51,6 @@ test.describe('split canvas views', () => {
     await headers.nth(0).getByRole('button', { name: 'Close view' }).click()
     await expect(panes).toHaveCount(1)
     await expect(headers).toHaveCount(0)
-    await expect(page.locator('canvas[data-ready="1"]')).toHaveCount(2)
+    await expect(readyCanvases).toHaveCount(1)
   })
 })
