@@ -196,6 +196,7 @@
 
 ### Fixed
 
+- Dragging a layer's rotation handle turns the layer on the canvas as you drag, instead of only its selection box until you let go.
 - Boolean operations draw the shape their layers combine into on the canvas, instead of a filled box; HTML and SVG exports draw the shape a `.fig` file saved for them.
 - A rotated top-level layer draws at its place on the canvas, and in PNG and PDF exports drawn by Chromium, instead of shifted toward where its turned corner lands.
 - `import_svg` and SVG vectorizing accept files that start with an XML declaration, a doctype, or comments, as editors save them, instead of finding no shapes.

@@ -58,11 +58,23 @@ export function useDomScene(
   let presentedScene = -1
   let editState: EditorState['nodeEditState'] = null
   let editVersion = -1
+  let rotationPreview: EditorState['rotationPreview'] = null
   /** The page agent work was last drawn on; held layers show once the view leaves it. */
   let workPage: string | null = null
 
-  /** A path being edited is drawn from its live vertices, mapped back into its own frame. */
+  /**
+   * A layer being turned is drawn at the angle the handle holds, and a path being edited from its
+   * live vertices; neither is in the graph until the gesture ends.
+   */
   function livePatch(id: string): Partial<SceneNode> | null {
+    const preview = view().rotationPreview
+    const turn = preview?.nodeId === id ? { rotation: preview.angle } : null
+    const path = pathEditPatch(id)
+    return turn || path ? { ...path, ...turn } : null
+  }
+
+  /** A path being edited is drawn from its live vertices, mapped back into its own frame. */
+  function pathEditPatch(id: string): Partial<SceneNode> | null {
     const edit = view().nodeEditState
     if (edit?.nodeId !== id) return null
     const node = editor.graph.getNode(id)
@@ -109,6 +121,14 @@ export function useDomScene(
       if (edit) projector.nodeUpdated(edit.nodeId, {})
       editState = edit
       editVersion = version
+    }
+    // Each step of a turn redraws the layer at its new angle, and ending it restores the layer.
+    const turn = view().rotationPreview ?? null
+    if (turn !== rotationPreview) {
+      if (rotationPreview && rotationPreview.nodeId !== turn?.nodeId)
+        projector.nodeUpdated(rotationPreview.nodeId, {})
+      if (turn) projector.nodeUpdated(turn.nodeId, {})
+      rotationPreview = turn
     }
     if (projector.needsFlush) projector.flush()
     // Whatever changed the DOM this frame is read back before the next one draws.
@@ -207,6 +227,7 @@ export function useDomScene(
     lastTransform = ''
     presentedScene = -1
     editState = null
+    rotationPreview = null
     workPage = null
   }
 

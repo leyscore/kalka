@@ -60,7 +60,7 @@ export interface DomSceneProjectorOptions {
   onReflow?: (artboardId: string) => void
   /**
    * Fields a layer is drawn with instead of its own while an edit previews them, such as the
-   * vertices of a path being edited. The graph is not changed.
+   * vertices of a path being edited or the angle of a turn. The graph is not changed.
    */
   livePatch?: (id: string) => Partial<SceneNode> | null
   /** The variable references layers are projected with, as `var(--name)`. */
@@ -394,7 +394,10 @@ export class DomSceneProjector {
    * layer's blend mode: inside its own document the layer has nothing below it to blend with.
    */
   private placeArtboard(node: SceneNode, artboard: Artboard): void {
-    placeArtboardFrame(artboard.frame, artboard.doc, this.graph, node)
+    // A turn being previewed changes how far the layer draws past its box.
+    this.withLivePatch(node.id, () =>
+      placeArtboardFrame(artboard.frame, artboard.doc, this.graph, node)
+    )
     const style = artboard.frame.style
     const blend = blendModeToCSS(node.blendMode) ?? ''
     if (style.mixBlendMode !== blend) style.mixBlendMode = blend
@@ -413,16 +416,20 @@ export class DomSceneProjector {
   }
 
   private project(id: string, shallow: boolean): DesignNode | null {
+    return this.withLivePatch(id, () => this.projectStored(id, shallow))
+  }
+
+  /** Runs `read` with the layer's previewed fields in place, then puts its own back. */
+  private withLivePatch<T>(id: string, read: () => T): T {
     const patch = this.options.livePatch?.(id)
     const node = patch ? this.graph.getNode(id) : undefined
-    if (!patch || !node) return this.projectStored(id, shallow)
-    // Drawn with the previewed fields for this projection only, as the Skia overlay did.
+    if (!patch || !node) return read()
     const stored = Object.fromEntries(
       Object.keys(patch).map((key) => [key, node[key as keyof SceneNode]])
     )
     Object.assign(node, patch)
     try {
-      return this.projectStored(id, shallow)
+      return read()
     } finally {
       Object.assign(node, stored)
     }
