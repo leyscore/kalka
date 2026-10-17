@@ -1,3 +1,4 @@
+import { TRANSPARENT } from './constants'
 import type { Color, Vector } from './primitives'
 import type { Fill, GradientStop, GradientTransform } from './types'
 
@@ -163,4 +164,28 @@ export function ellipticalGradientTransform(
     m11: yAxis.y,
     m12: center.y - (xAxis.y + yAxis.y) / 2
   })
+}
+
+/**
+ * A gradient's color at `t` along its stops, mixed linearly between the two around it; before
+ * the first stop and after the last, theirs.
+ */
+export function gradientColorAt(stops: readonly GradientStop[], t: number): Color {
+  const first = stops.at(0)
+  const last = stops.at(-1)
+  if (!first || !last) return { ...TRANSPARENT }
+  if (t <= first.position) return first.color
+  if (t >= last.position) return last.color
+  const after = stops.findIndex((stop) => stop.position >= t)
+  const from = stops[after - 1]
+  const to = stops[after]
+  const span = to.position - from.position
+  const k = span > 0 ? (t - from.position) / span : 0
+  const mix = (a: number, b: number) => a + (b - a) * k
+  return {
+    r: mix(from.color.r, to.color.r),
+    g: mix(from.color.g, to.color.g),
+    b: mix(from.color.b, to.color.b),
+    a: mix(from.color.a, to.color.a)
+  }
 }

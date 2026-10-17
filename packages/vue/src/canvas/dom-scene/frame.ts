@@ -1,5 +1,14 @@
 import type { BrowserFontFace } from '@kalka/core/text'
 import { HTML_TAG_RESET_CSS } from '@kalka/dom-css/export'
+import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import { getNodeWorldBounds } from '@kalka/scene-graph/coordinate'
+import {
+  computeDescendantVisualBounds,
+  effectOverflow,
+  nodeVisualBounds,
+  strokeOverflow,
+  unionVisualBounds
+} from '@kalka/scene-graph/geometry'
 
 /**
  * An artboard document: one iframe per top-level layer, so its CSS is a real page of its own
@@ -49,6 +58,76 @@ export function createArtboardFrame(ownerDocument: Document, nodeId: string): HT
 }
 
 export type ArtboardFontFace = BrowserFontFace
+
+/** How far, in whole pixels, a layer draws past each side of its box. */
+export interface ArtboardInk {
+  top: number
+  right: number
+  bottom: number
+  left: number
+}
+
+const CLIPPING_TYPES = new Set<SceneNode['type']>(['FRAME', 'COMPONENT', 'INSTANCE'])
+
+/**
+ * What a top-level layer draws outside its box: strokes centred on or outside the edge,
+ * arrowheads, shadows and blurs, and the children of a layer that does not clip them. A frame
+ * that clips is measured alone, without walking what it holds.
+ */
+export function artboardInk(graph: SceneGraph, node: SceneNode): ArtboardInk {
+  const position = (id: string) => graph.getAbsolutePosition(id)
+  const origin = position(node.id)
+  const drawn =
+    CLIPPING_TYPES.has(node.type) && node.clipsContent
+      ? nodeVisualBounds(node, position)
+      : computeDescendantVisualBounds([node.id], (id) => graph.getNode(id), position)
+  // Visual bounds turn every layer about its center; a line turns about where it starts.
+  const box = getNodeWorldBounds({ ...node, ...origin })
+  const effects = effectOverflow(node.effects)
+  const stroke = strokeOverflow(node.strokes, node.strokeCap, node.vectorNetwork)
+  const bounds = unionVisualBounds(drawn, {
+    minX: box.x - stroke - effects.left,
+    minY: box.y - stroke - effects.top,
+    maxX: box.x + box.width + stroke + effects.right,
+    maxY: box.y + box.height + stroke + effects.bottom
+  })
+  if (!bounds) return { top: 0, right: 0, bottom: 0, left: 0 }
+  const reach = (value: number) => Math.max(0, Math.ceil(value - 1e-6))
+  return {
+    top: reach(origin.y - bounds.minY),
+    right: reach(bounds.maxX - origin.x - node.width),
+    bottom: reach(bounds.maxY - origin.y - node.height),
+    left: reach(origin.x - bounds.minX)
+  }
+}
+
+/**
+ * Sizes and places an artboard's iframe from the layer's geometry. The iframe reaches past the
+ * layer's box as far as the layer draws, and its body is padded by as much, so the layer still
+ * sits at its own position: a document clips what lies outside it.
+ */
+export function placeArtboardFrame(
+  frame: HTMLIFrameElement,
+  doc: Document | null,
+  graph: SceneGraph,
+  node: SceneNode
+): void {
+  const position = graph.getAbsolutePosition(node.id)
+  const ink = artboardInk(graph, node)
+  const style = frame.style
+  const left = `${position.x - ink.left}px`
+  const top = `${position.y - ink.top}px`
+  const width = `${Math.max(1, node.width) + ink.left + ink.right}px`
+  const height = `${Math.max(1, node.height) + ink.top + ink.bottom}px`
+  if (style.left !== left) style.left = left
+  if (style.top !== top) style.top = top
+  if (style.width !== width) style.width = width
+  if (style.height !== height) style.height = height
+  const body = doc?.body
+  if (!body) return
+  const padding = `${ink.top}px ${ink.right}px ${ink.bottom}px ${ink.left}px`
+  if (body.style.padding !== padding) body.style.padding = padding
+}
 
 /**
  * Adds a font to an artboard's own font set. Each iframe is a document of its own: fonts the

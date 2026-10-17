@@ -1,6 +1,13 @@
 import { fromUint8Array } from 'js-base64'
 
-import type { Effect, Fill, SceneGraph, SceneNode } from '@kalka/scene-graph'
+import type {
+  Effect,
+  Fill,
+  GradientStop,
+  GradientTransform,
+  SceneGraph,
+  SceneNode
+} from '@kalka/scene-graph'
 import {
   colorToHex8,
   colorToDisplayCSS,
@@ -9,7 +16,9 @@ import {
 } from '@kalka/scene-graph/color'
 import { CSS_BLEND_MODES } from '@kalka/scene-graph/css'
 import {
-  gradientPoint,
+  applyGradientTransform,
+  gradientColorAt,
+  IDENTITY_GRADIENT_TRANSFORM,
   invertGradientTransform,
   isIdentityGradientTransform
 } from '@kalka/scene-graph/gradient'
@@ -46,10 +55,172 @@ export function formatColor(
   return colorToHex8(alphaColor)
 }
 
-function createGradientDef(
+/** Where a gradient's unit square lands: the shape's bounding box, or the layer's own box. */
+export type GradientSpace = 'bbox' | 'layer'
+
+function svgMatrix(t: GradientTransform): string {
+  return `matrix(${[t.m00, t.m10, t.m01, t.m11, t.m02, t.m12].map((v) => round(v, 6)).join(' ')})`
+}
+
+/**
+ * Gradient space mapped onto the layer's pixels. A line has no height, and an SVG paint in
+ * bounding-box units does not draw on a shape without area, so its box is at least a pixel.
+ */
+function gradientToLayerPixels(node: SceneNode, toLayer: GradientTransform) {
+  const width = Math.max(1, node.width)
+  const height = Math.max(1, node.height)
+  return {
+    m00: toLayer.m00 * width,
+    m01: toLayer.m01 * width,
+    m02: toLayer.m02 * width,
+    m10: toLayer.m10 * height,
+    m11: toLayer.m11 * height,
+    m12: toLayer.m12 * height
+  } satisfies GradientTransform
+}
+
+/**
+ * How far from the centre of gradient space a paint must reach to cover the layer and `margin`
+ * pixels around it, measured along gradient space's axes.
+ */
+function gradientReach(fill: Fill, node: SceneNode, margin: number): number {
+  const t = fill.gradientTransform ?? IDENTITY_GRADIENT_TRANSFORM
+  const width = Math.max(1, node.width)
+  const height = Math.max(1, node.height)
+  let reach = 0.5
+  for (const x of [-margin, node.width + margin]) {
+    for (const y of [-margin, node.height + margin]) {
+      const point = applyGradientTransform(t, { x: x / width, y: y / height })
+      reach = Math.max(reach, Math.abs(point.x - 0.5), Math.abs(point.y - 0.5))
+    }
+  }
+  return reach * 1.05
+}
+
+/** How many wedges an angular gradient is drawn with: enough that no band shows. */
+const ANGULAR_WEDGES = 256
+
+/**
+ * An angular gradient as wedges of color around the centre of gradient space, starting along +x
+ * and turning clockwise. SVG has no conic gradient; the wedges overlap their next neighbour a
+ * little so no seam shows between them.
+ */
+function angularWedges(stops: readonly GradientStop[], reach: number, ctx: SVGExportContext) {
+  const radius = reach * Math.SQRT2
+  const step = (2 * Math.PI) / ANGULAR_WEDGES
+  const point = (angle: number) =>
+    `${round(0.5 + radius * Math.cos(angle), 6)} ${round(0.5 + radius * Math.sin(angle), 6)}`
+  return Array.from({ length: ANGULAR_WEDGES }, (_, index) => {
+    const start = index * step
+    const end = index === ANGULAR_WEDGES - 1 ? 2 * Math.PI : start + step * 1.5
+    return svg('path', {
+      d: `M0.5 0.5L${point(start)}L${point(end)}Z`,
+      fill: formatColor(gradientColorAt(stops, (index + 0.5) / ANGULAR_WEDGES), 1, ctx.colorSpace)
+    })
+  })
+}
+
+/**
+ * A diamond gradient as four quadrants of gradient space, each a linear gradient running from
+ * the centre to its corner: the distance a diamond measures is linear inside each quadrant.
+ */
+function diamondQuadrants(
+  stopNodes: SVGNode[],
+  reach: number,
+  idBase: string
+): { defs: SVGNode[]; shapes: SVGNode[] } {
+  const defs: SVGNode[] = []
+  const shapes: SVGNode[] = []
+  for (const [index, [sx, sy]] of [
+    [1, 1],
+    [-1, 1],
+    [-1, -1],
+    [1, -1]
+  ].entries()) {
+    const id = `${idBase}q${index}`
+    defs.push(
+      svg(
+        'linearGradient',
+        {
+          id,
+          x1: 0.5,
+          y1: 0.5,
+          x2: 0.5 + sx * 0.25,
+          y2: 0.5 + sy * 0.25,
+          gradientUnits: 'userSpaceOnUse'
+        },
+        ...stopNodes
+      )
+    )
+    const corner = (dx: number, dy: number) =>
+      `${round(0.5 + dx * reach, 6)} ${round(0.5 + dy * reach, 6)}`
+    shapes.push(
+      svg('path', {
+        d: `M0.5 0.5L${corner(sx, 0)}L${corner(sx, sy)}L${corner(0, sy)}Z`,
+        fill: `url(#${id})`
+      })
+    )
+  }
+  return { defs, shapes }
+}
+
+/**
+ * Angular and diamond gradients, which SVG has no gradient for, as a pattern drawn in gradient
+ * space and mapped onto the layer, so fills and strokes both paint with it.
+ */
+function createGradientPattern(
   fill: Fill,
   node: SceneNode,
-  ctx: SVGExportContext
+  ctx: SVGExportContext,
+  stopNodes: SVGNode[],
+  margin: number
+): { id: string; node: SVGNode } | null {
+  const stops = fill.gradientStops
+  const t = fill.gradientTransform
+  if (!stops?.length || !t) return null
+  const id = nextDefId(ctx, 'grad')
+  // The tile covers the layer and the margin in its pixels; its drawing is in gradient space.
+  const pad = margin + 1
+  const reach = gradientReach(fill, node, pad)
+  const toPixels = gradientToLayerPixels(node, invertGradientTransform(t))
+  const tile = {
+    x: round(-pad),
+    y: round(-pad),
+    width: round(Math.max(1, node.width) + pad * 2),
+    height: round(Math.max(1, node.height) + pad * 2)
+  }
+  let content: SVGNode[]
+  if (fill.type === 'GRADIENT_ANGULAR') content = angularWedges(stops, reach, ctx)
+  else {
+    const quadrants = diamondQuadrants(stopNodes, reach, id)
+    content = [svg('defs', {}, ...quadrants.defs), ...quadrants.shapes]
+  }
+  return {
+    id,
+    node: svg(
+      'pattern',
+      { id, patternUnits: 'userSpaceOnUse', ...tile },
+      // A pattern draws from its tile's corner, so the drawing moves back by as much.
+      svg(
+        'g',
+        { transform: `translate(${round(pad)} ${round(pad)}) ${svgMatrix(toPixels)}` },
+        ...content
+      )
+    )
+  }
+}
+
+/**
+ * A gradient paint server. `space` places its unit square: on the shape's bounding box, as fills
+ * have always exported, or on the layer's box, which a stroke needs because a line's bounding
+ * box has no area. `margin` is how far past the layer the paint must reach, such as a stroke's.
+ */
+export function createGradientDef(
+  fill: Fill,
+  node: SceneNode,
+  ctx: SVGExportContext,
+  space: GradientSpace = 'bbox',
+  margin = 0
 ): { id: string; node: SVGNode } | null {
   const stops = fill.gradientStops
   const t = fill.gradientTransform
@@ -63,61 +234,35 @@ function createGradientDef(
     })
   )
 
+  if (fill.type === 'GRADIENT_ANGULAR' || fill.type === 'GRADIENT_DIAMOND')
+    return createGradientPattern(fill, node, ctx, stopNodes, margin)
+
   const id = nextDefId(ctx, 'grad')
 
   // Gradient space in bounding-box units, mapped onto the layer as the canvas draws it.
   const toLayer = invertGradientTransform(t)
-  const transform = isIdentityGradientTransform(toLayer)
-    ? undefined
-    : `matrix(${[toLayer.m00, toLayer.m10, toLayer.m01, toLayer.m11, toLayer.m02, toLayer.m12].map((v) => round(v, 6)).join(' ')})`
+  let units: Record<string, string>
+  if (space === 'layer') {
+    units = {
+      gradientUnits: 'userSpaceOnUse',
+      gradientTransform: svgMatrix(gradientToLayerPixels(node, toLayer))
+    }
+  } else {
+    units = { gradientUnits: 'objectBoundingBox' }
+    if (!isIdentityGradientTransform(toLayer)) units.gradientTransform = svgMatrix(toLayer)
+  }
 
   if (fill.type === 'GRADIENT_LINEAR') {
     return {
       id,
-      node: svg(
-        'linearGradient',
-        {
-          id,
-          x1: 0,
-          y1: 0.5,
-          x2: 1,
-          y2: 0.5,
-          gradientUnits: 'objectBoundingBox',
-          gradientTransform: transform
-        },
-        ...stopNodes
-      )
+      node: svg('linearGradient', { id, x1: 0, y1: 0.5, x2: 1, y2: 0.5, ...units }, ...stopNodes)
     }
   }
 
-  // SVG has no diamond gradient, so a diamond exports as the radial one it is closest to.
-  if (fill.type === 'GRADIENT_RADIAL' || fill.type === 'GRADIENT_DIAMOND') {
+  if (fill.type === 'GRADIENT_RADIAL') {
     return {
       id,
-      node: svg(
-        'radialGradient',
-        {
-          id,
-          cx: 0.5,
-          cy: 0.5,
-          r: 0.5,
-          gradientUnits: 'objectBoundingBox',
-          gradientTransform: transform
-        },
-        ...stopNodes
-      )
-    }
-  }
-
-  // Nor an angular one: it exports as a radial gradient around its centre.
-  if (fill.type === 'GRADIENT_ANGULAR') {
-    const center = gradientPoint(t, { x: 0.5, y: 0.5 })
-    const cx = round(center.x * node.width)
-    const cy = round(center.y * node.height)
-    const r = Math.max(node.width, node.height)
-    return {
-      id,
-      node: svg('radialGradient', { id, cx, cy, r, gradientUnits: 'userSpaceOnUse' }, ...stopNodes)
+      node: svg('radialGradient', { id, cx: 0.5, cy: 0.5, r: 0.5, ...units }, ...stopNodes)
     }
   }
 

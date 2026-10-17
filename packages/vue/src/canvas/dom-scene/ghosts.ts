@@ -2,7 +2,12 @@ import { sceneNodeToDesignDocument, type VectorElementRenderer } from '@kalka/do
 import type { SceneGraph } from '@kalka/scene-graph'
 
 import { buildNode } from './build'
-import { addArtboardFont, createArtboardFrame, type ArtboardFontFace } from './frame'
+import {
+  addArtboardFont,
+  createArtboardFrame,
+  placeArtboardFrame,
+  type ArtboardFontFace
+} from './frame'
 import type { DomSceneProjector } from './projector'
 
 /** How opaque a preview draws: enough to read, still visibly not part of the document yet. */
@@ -147,12 +152,7 @@ export class GhostLayer {
     const { graph, nodeId, doc } = slot
     const node = nodeId ? graph?.getNode(nodeId) : undefined
     if (!graph || !node) return
-    const position = graph.getAbsolutePosition(node.id)
-    const style = slot.frame.style
-    style.left = `${position.x}px`
-    style.top = `${position.y}px`
-    style.width = `${Math.max(1, node.width)}px`
-    style.height = `${Math.max(1, node.height)}px`
+    placeArtboardFrame(slot.frame, doc, graph, node)
     if (!doc) return
     const projected = sceneNodeToDesignDocument(graph, node.id, {
       includeSourceIds: false,

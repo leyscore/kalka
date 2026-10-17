@@ -1,17 +1,10 @@
 import type { RenderColorSpace } from '@kalka/scene-graph/color'
+import { getNodeRotationOrigin } from '@kalka/scene-graph/coordinate'
 import { resolveNodeTextDirection } from '@kalka/scene-graph/text-direction'
 
 import { computeContentBounds } from '#core/io/formats/raster'
 
-import {
-  nextDefId,
-  formatColor,
-  createFilterDef,
-  resolveFill,
-  SVG_STROKE_CAP,
-  SVG_STROKE_JOIN,
-  SVG_BLEND_MODE
-} from './defs'
+import { nextDefId, formatColor, createFilterDef, resolveFill, SVG_BLEND_MODE } from './defs'
 import {
   round,
   geometryBlobToSVGPath,
@@ -24,17 +17,18 @@ import {
 
 export { geometryBlobToSVGPath, vectorNetworkToSVGPaths } from './paths'
 
-import type {
-  SceneGraph,
-  SceneNode,
-  Fill,
-  Stroke,
-  CharacterStyleOverride
-} from '@kalka/scene-graph'
+import type { SceneGraph, SceneNode, Fill, CharacterStyleOverride } from '@kalka/scene-graph'
 
 import type { SVGExportContext } from './defs'
 import { svg, renderSVGNode } from './node'
 import type { SVGNode } from './node'
+import {
+  alignedStrokeElements,
+  arrowHeadElements,
+  buildSVGStrokeAttrs,
+  hasAlignedStroke,
+  type SVGAttrs
+} from './strokes'
 
 // --- Node rendering ---
 
@@ -260,9 +254,8 @@ function buildTransformAttr(node: SceneNode): string | undefined {
   const transforms: string[] = []
   if (node.x !== 0 || node.y !== 0) transforms.push(`translate(${round(node.x)}, ${round(node.y)})`)
   if (node.rotation !== 0) {
-    transforms.push(
-      `rotate(${round(node.rotation)}, ${round(node.width / 2)}, ${round(node.height / 2)})`
-    )
+    const pivot = getNodeRotationOrigin(node)
+    transforms.push(`rotate(${round(node.rotation)}, ${round(pivot.x)}, ${round(pivot.y)})`)
   }
   if (node.flipX || node.flipY) {
     const tx = node.flipX ? node.width : 0
@@ -311,29 +304,6 @@ function buildGroupAttrs(
   return { attrs, clipId }
 }
 
-function buildSVGStrokeAttrs(
-  visibleStrokes: Stroke[],
-  colorSpace: 'srgb' | 'display-p3'
-): Record<string, string | number | undefined> {
-  if (visibleStrokes.length === 0) return {}
-  const stroke = visibleStrokes[0]
-  const attrs: Record<string, string | number | undefined> = {
-    stroke: formatColor(stroke.color, 1, colorSpace),
-    'stroke-width': round(stroke.weight)
-  }
-  if (stroke.opacity < 1) attrs['stroke-opacity'] = round(stroke.opacity)
-  if (stroke.cap && stroke.cap !== 'NONE') {
-    attrs['stroke-linecap'] = SVG_STROKE_CAP[stroke.cap] ?? 'butt'
-  }
-  if (stroke.join && stroke.join !== 'MITER') {
-    attrs['stroke-linejoin'] = SVG_STROKE_JOIN[stroke.join] ?? 'miter'
-  }
-  if (stroke.dashPattern && stroke.dashPattern.length > 0) {
-    attrs['stroke-dasharray'] = stroke.dashPattern.map((n) => round(n)).join(' ')
-  }
-  return attrs
-}
-
 function hasPathLevelFills(node: SceneNode): boolean {
   return node.type === 'VECTOR' && node.fillGeometry.some((geometry) => geometry.fills?.length)
 }
@@ -342,7 +312,27 @@ function buildShapeChildren(
   node: SceneNode,
   visibleFills: Fill[],
   fillAttr: string | null,
-  strokeAttrs: Record<string, string | number | undefined>,
+  strokeAttrs: SVGAttrs,
+  visibleStrokeCount: number,
+  ctx: SVGExportContext
+): SVGNode[] {
+  const stroke = node.strokes.find((s) => s.visible)
+  if (hasAlignedStroke(node, stroke, strokeAttrs)) {
+    const fills = buildShapeChildren(node, visibleFills, fillAttr, {}, 0, ctx)
+    const shape = (attrs: SVGAttrs) => nodeShapeElements(node, null, attrs, ctx)
+    return [...fills, ...alignedStrokeElements(node, stroke, strokeAttrs, shape, ctx)]
+  }
+  return [
+    ...buildPaintedShapes(node, visibleFills, fillAttr, strokeAttrs, visibleStrokeCount, ctx),
+    ...arrowHeadElements(node, stroke, strokeAttrs)
+  ]
+}
+
+function buildPaintedShapes(
+  node: SceneNode,
+  visibleFills: Fill[],
+  fillAttr: string | null,
+  strokeAttrs: SVGAttrs,
   visibleStrokeCount: number,
   ctx: SVGExportContext
 ): SVGNode[] {
@@ -405,7 +395,7 @@ function renderNode(node: SceneNode, ctx: SVGExportContext): SVGNode | null {
       ? resolveFill(visibleFills[0], node, ctx)
       : null
   const fillAttr = ownFill && tint.includes('fill') ? CURRENT_COLOR : ownFill
-  const ownStrokes = buildSVGStrokeAttrs(visibleStrokes, ctx.colorSpace)
+  const ownStrokes = buildSVGStrokeAttrs(node, visibleStrokes, ctx)
   const strokeAttrs =
     ownStrokes.stroke && tint.includes('stroke')
       ? { ...ownStrokes, stroke: CURRENT_COLOR }

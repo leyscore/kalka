@@ -19,7 +19,7 @@ const SIDE_WEIGHTS = {
 } as const
 
 /** Where an outline sits so it draws a stroke inside, centered on, or outside the edge. */
-function outlineOffset(align: SceneNode['strokeAlign'], weight: number): number {
+function outlineOffset(align: Stroke['align'], weight: number): number {
   if (align === 'INSIDE') return -weight
   if (align === 'CENTER') return -weight / 2
   return 0
@@ -58,7 +58,8 @@ function writeStroke(style: CSSDeclarations, node: SceneNode, css: FieldCSS): vo
   if (!node.independentStrokeWeights && !node.strokesIncludedInLayout) {
     const weight = stroke.weight
     style.outline = `${css('strokeWeight', px(weight))} ${borderStyle} ${color}`
-    const offset = outlineOffset(node.strokeAlign, weight)
+    // The stroke's own alignment draws it, as on the canvas; the layer's is for new strokes.
+    const offset = outlineOffset(stroke.align, weight)
     if (offset !== 0) style['outline-offset'] = px(offset)
     return
   }

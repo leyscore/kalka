@@ -57,6 +57,23 @@ export interface SceneGraphToDesignOptions {
   masks?: boolean
 }
 
+/** Shapes without children whose stroke the SVG export draws when CSS cannot. */
+const STROKED_SHAPES = new Set<SceneNode['type']>(['RECTANGLE', 'ELLIPSE', 'LINE'])
+
+/**
+ * Whether a shape's stroke is one CSS cannot draw: an outline or a shadow paints a single color,
+ * so a gradient or image stroke would draw in its fallback color, and a line's box cannot end in
+ * round caps or arrowheads. Such a shape draws as SVG, unless it asks for an HTML tag of its own.
+ */
+function strokeNeedsVector(node: SceneNode): boolean {
+  if (!STROKED_SHAPES.has(node.type) || node.htmlTag || node.childIds.length > 0) return false
+  const stroke = node.strokes.find((paint) => paint.visible)
+  if (!stroke) return false
+  if (stroke.type !== 'SOLID') return true
+  const cap = stroke.cap ?? node.strokeCap
+  return node.type === 'LINE' && cap !== 'NONE' && cap !== 'SQUARE'
+}
+
 /** What a box draws itself, which the SVG of a vector layer draws instead. */
 const BOX_PAINT = /^(background|border|box-shadow|outline|filter)/
 
@@ -252,7 +269,7 @@ function layerDesignNode(
   if (node.type === 'TEXT') return textDesignNode(context, node, attrs, parent, css)
 
   // An icon is one drawing, however many paths it has.
-  if (VECTOR_SHAPES.has(node.type) || readIcon(node)) {
+  if (VECTOR_SHAPES.has(node.type) || readIcon(node) || strokeNeedsVector(node)) {
     const vector = vectorDesignNode(context, node, attrs, layerCSS(node, { parent, css }))
     if (vector) return vector
   }

@@ -1,6 +1,11 @@
 import { colorToCSS, colorToHex } from '../color'
 import { CSS_BLEND_MODES } from '../css'
-import { IDENTITY_GRADIENT_TRANSFORM, gradientPoint } from '../gradient'
+import {
+  IDENTITY_GRADIENT_TRANSFORM,
+  gradientColorAt,
+  gradientPoint,
+  isGradientFill
+} from '../gradient'
 import type { Color } from '../primitives'
 import type { BlendMode, Effect, Fill, Stroke } from '../types'
 import type { CSSDeclarations } from './types'
@@ -20,8 +25,15 @@ export function fillToCSS(fill: Fill | undefined): string | undefined {
   return paintToCSS(fill)
 }
 
+/**
+ * The one color a stroke draws in as an outline or a border. A gradient stroke, which those
+ * cannot paint, takes its gradient's middle color rather than the paint's unused solid color.
+ */
 export function strokeColorToCSS(stroke: Stroke | undefined): string | undefined {
   if (!stroke?.visible) return undefined
+  const stops = stroke.gradientStops
+  if (isGradientFill(stroke.type) && stops && stops.length > 0)
+    return paintToCSS({ ...stroke, color: gradientColorAt(stops, 0.5) })
   return paintToCSS(stroke)
 }
 

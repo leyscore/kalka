@@ -22,7 +22,21 @@ export class CanvasHelper {
     }
   }
 
+  /**
+   * Waits for the next frame once every artboard's document has loaded: a layer added just
+   * before draws only when its new iframe has, and the projector fills it on that load.
+   */
   async waitForRender() {
+    // The frame that applies pending edits creates the iframes of new top-level layers.
+    await this.page.evaluate(() => new Promise(requestAnimationFrame))
+    await this.page.waitForFunction(() =>
+      [...document.querySelectorAll<HTMLIFrameElement>('iframe[data-kalka-artboard]')].every(
+        // Until its `srcdoc` loads, a new iframe holds an empty `about:blank` document.
+        (frame) =>
+          frame.contentDocument?.readyState === 'complete' &&
+          frame.contentDocument.querySelector('meta[http-equiv]') !== null
+      )
+    )
     await this.page.evaluate(() => new Promise(requestAnimationFrame))
   }
 

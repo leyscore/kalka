@@ -108,6 +108,30 @@ test('gradient strokes', async () => {
       })
     }
 
+    // A line has no height: its stroke and arrowheads draw entirely outside its box.
+    for (const [index, cap] of (['ARROW_LINES', 'NONE'] as const).entries()) {
+      store.graph.createNode('LINE', pageId, {
+        name: `line stroke ${index}`,
+        x: 640,
+        y: 300 + index * 70,
+        width: 200,
+        height: 0,
+        strokeCap: cap,
+        strokes: [
+          index === 0
+            ? {
+                type: 'SOLID',
+                color: { r: 0.13, g: 0.72, b: 0.33, a: 1 },
+                weight: 8,
+                visible: true,
+                opacity: 1,
+                align: 'CENTER'
+              }
+            : vectorStroke({ weight: 12 })
+        ]
+      })
+    }
+
     store.clearSelection()
     store.requestRender()
   })

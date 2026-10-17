@@ -1,3 +1,4 @@
+import { getNodeRotationOrigin } from '../coordinate'
 import { parseCSSNumber } from '../css'
 import { layoutSizingInParent } from '../layout-sizing'
 import { resolveNodeTextDirection } from '../text-direction'
@@ -98,7 +99,8 @@ export const layoutChild: PropertyFamily = {
     'grid-column-start',
     'grid-row',
     'grid-row-start',
-    'transform'
+    'transform',
+    'transform-origin'
   ],
   write(style, node, { parent }) {
     const alignSelf = alignToCSS(node.layoutAlignSelf)
@@ -112,7 +114,15 @@ export const layoutChild: PropertyFamily = {
         style[minimum] ??= '0px'
       } else style['flex-shrink'] = '0'
     }
-    if (node.rotation !== 0) style.transform = `rotate(${node.rotation}deg)`
+    if (node.rotation !== 0) {
+      style.transform = `rotate(${node.rotation}deg)`
+      // CSS turns a box about its center, as the layers do, except a line, which turns about
+      // where it starts.
+      if (node.type === 'LINE') {
+        const origin = getNodeRotationOrigin(node)
+        style['transform-origin'] = `${origin.x}px ${origin.y}px`
+      }
+    }
   },
   read(style, node, { projected }) {
     const alignSelf = layoutAlignSelfFromCSS(pickStyle(style, 'align-self'))

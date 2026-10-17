@@ -46,7 +46,16 @@ export const vectorElement: VectorElementRenderer = (graph, node) => {
   })
   const element = drawn && designNode(drawn)
   if (element?.type !== 'element') return null
+  // Strokes and shadows can reach past the layer's box, which an inline SVG would clip. As a
+  // block it sits at the top of its box: inline, a drawing shorter than a line of text would
+  // drop to the text's baseline, as a horizontal line does.
+  const inlineStyle: Record<string, string> = { display: 'block', overflow: 'visible' }
+  // An SVG of no height or width draws nothing, so a line's drawing is a pixel tall; a negative
+  // margin gives the pixel back, so the line takes no room in a layout.
+  if (node.width < 1) inlineStyle['margin-right'] = '-1px'
+  if (node.height < 1) inlineStyle['margin-bottom'] = '-1px'
   const color = icon ? iconColor(graph, node) : null
+  if (color) inlineStyle.color = colorToHex(color)
   return {
     ...element,
     // An icon whose paths were edited no longer draws the named icon, so it goes unnamed.
@@ -54,7 +63,6 @@ export const vectorElement: VectorElementRenderer = (graph, node) => {
       icon && !isIconModified(graph, node)
         ? { ...element.attrs, 'data-icon': icon.name }
         : element.attrs,
-    // Strokes and shadows can reach past the layer's box, which an inline SVG would clip.
-    inlineStyle: { overflow: 'visible', ...(color ? { color: colorToHex(color) } : {}) }
+    inlineStyle
   } satisfies DesignElement
 }

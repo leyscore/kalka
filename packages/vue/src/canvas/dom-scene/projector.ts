@@ -12,6 +12,7 @@ import { LAYER_ID_ATTR, buildNode, elementAttributes, patchAttributes } from './
 import {
   addArtboardFont,
   createArtboardFrame,
+  placeArtboardFrame,
   setArtboardTokens,
   type ArtboardFontFace
 } from './frame'
@@ -254,7 +255,11 @@ export class DomSceneProjector {
     }
     for (const id of touched) {
       const artboard = this.artboards.get(id)
-      if (artboard) artboard.stale = true
+      const node = this.graph.getNode(id)
+      if (!artboard) continue
+      artboard.stale = true
+      // What a layer draws past its box can change with any layer inside it.
+      if (node) this.placeArtboard(node, artboard)
     }
     if (touched.size > 0) this.options.onPatched?.(touched)
   }
@@ -305,10 +310,7 @@ export class DomSceneProjector {
       return rect
     }
     const rotated = (element: Element) => element.closest('[style*="rotate("]') !== null
-    if (!rotated(root)) {
-      const rect = rectOf(root)
-      measured.set(artboardId, { width: rect.width, height: rect.height })
-    }
+    if (!rotated(root)) measured.set(artboardId, this.measuredSize(artboardId, root, rectOf(root)))
     for (const element of root.querySelectorAll(`[${LAYER_ID_ATTR}]`)) {
       const id = element.getAttribute(LAYER_ID_ATTR)
       const parent = element.parentElement?.closest(`[${LAYER_ID_ATTR}]`)
@@ -318,11 +320,22 @@ export class DomSceneProjector {
       measured.set(id, {
         x: rect.left - box.left - parent.clientLeft,
         y: rect.top - box.top - parent.clientTop,
-        width: rect.width,
-        height: rect.height
+        ...this.measuredSize(id, element, rect)
       })
     }
     return measured
+  }
+
+  /**
+   * A layer's laid-out size. An SVG of no width or height draws nothing, so a vector drawing is
+   * at least a pixel on each side; a layer thinner than that, such as a line, keeps its own size.
+   */
+  private measuredSize(id: string, element: Element, rect: DOMRect) {
+    const node = element.localName === 'svg' ? this.graph.getNode(id) : undefined
+    return {
+      width: node && node.width < 1 ? node.width : rect.width,
+      height: node && node.height < 1 ? node.height : rect.height
+    }
   }
 
   destroy(): void {
@@ -406,17 +419,9 @@ export class DomSceneProjector {
    * layer's blend mode: inside its own document the layer has nothing below it to blend with.
    */
   private placeArtboard(node: SceneNode, artboard: Artboard): void {
-    const position = this.graph.getAbsolutePosition(node.id)
+    placeArtboardFrame(artboard.frame, artboard.doc, this.graph, node)
     const style = artboard.frame.style
-    const left = `${position.x}px`
-    const top = `${position.y}px`
-    const width = `${Math.max(1, node.width)}px`
-    const height = `${Math.max(1, node.height)}px`
     const blend = blendModeToCSS(node.blendMode) ?? ''
-    if (style.left !== left) style.left = left
-    if (style.top !== top) style.top = top
-    if (style.width !== width) style.width = width
-    if (style.height !== height) style.height = height
     if (style.mixBlendMode !== blend) style.mixBlendMode = blend
   }
 
@@ -470,7 +475,6 @@ export class DomSceneProjector {
     if (!artboardId) return null
     const artboard = this.artboards.get(artboardId)
     if (!artboard?.doc) return null
-    if (id === artboardId) this.placeArtboard(node, artboard)
 
     const current = this.elements.get(id)
     const isRoot = id === artboardId
