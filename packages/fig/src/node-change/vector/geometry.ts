@@ -56,9 +56,10 @@ export function resolveVectorNetwork(nc: NodeChange, blobs: Uint8Array[]): Vecto
     const ns = vectorData.normalizedSize
     const nodeW = nc.size?.x ?? 0
     const nodeH = nc.size?.y ?? 0
-    if (ns && nodeW > 0 && nodeH > 0 && (ns.x !== nodeW || ns.y !== nodeH)) {
-      const sx = nodeW / ns.x
-      const sy = nodeH / ns.y
+    // Each axis scales on its own: a straight line has no extent across it to scale.
+    const sx = ns && ns.x > 0 && nodeW > 0 ? nodeW / ns.x : 1
+    const sy = ns && ns.y > 0 && nodeH > 0 ? nodeH / ns.y : 1
+    if (sx !== 1 || sy !== 1) {
       for (const v of network.vertices) {
         v.x *= sx
         v.y *= sy

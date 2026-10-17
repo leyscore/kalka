@@ -47,6 +47,7 @@
 
 ### Added
 
+- Enter opens a selected vector's path for editing, as a double-click does, as in Figma.
 - `kalka export` draws PNG, JPG and PDF, and the thumbnail of `.fig` files, with Chromium, as the canvas does, when the desktop app is built beside it, and with CanvasKit otherwise or with `KALKA_RENDERER=canvaskit`.
 - The desktop app exports PDF drawn by Chromium, as the canvas draws it, and saves `.fig` files with a thumbnail drawn the same way; the web app keeps jsPDF and CanvasKit.
 - Plugin scripts can read a layer's CSS with `node.getCSSAsync()`, as in Figma; it is the CSS the layer is drawn with, including CSS it keeps beside its fields.
@@ -183,6 +184,8 @@
 
 ### Fixed
 
+- In scripts, a vector inside an instance refuses `vectorPaths`, `vectorNetwork`, `setVectorNetworkAsync`, and `handleMirroring` with Figma's errors, such as `in set_vectorPaths: This property cannot be overridden in an instance: vector-data`, since its path always follows the component.
+- A path edited in a component reaches its instances, as in Figma, scaled with each copy where constraints or a resized instance changed its size; copies whose instance overrides their fill or stroke keep those. A vector inside an instance no longer opens for path editing, which would have been undone by the next component edit. Straight lines in resized instances of `.fig` files open at the length Figma draws them instead of their component's.
 - The plugin API refuses to move, rotate, constrain, or mask a layer an instance takes from its component, with Figma's errors, such as `in set_x: This property cannot be overridden in an instance: relative-transform`. Those fields always follow the component. Slot content stays editable, and editing a slot's default content makes the instance own it, as in Figma.
 - Instances opened from a `.fig` file keep the style overrides Figma gives them, such as corner radius, stroke weight and alignment, line height, letter spacing, font, effects, and fill, stroke, and effect styles. Editing their component used to overwrite them on the canvas while the saved file kept them, and a later edit to one of these fields in the instance was not saved. Text edited in an instance is saved with its styled ranges, as Figma writes it; saving kept only its characters.
 - A component edit reaches every field its instances do not override, as in Figma: stroke weight, alignment, caps, joins, and dashes, corner smoothing, blend mode, layout grids, letter spacing, line height, text case, decoration, alignment, truncation, styled ranges, and the position, rotation, and flips of layers outside auto layout. Such a layer is placed by its constraints when the instance has another size than its component.

@@ -38,7 +38,7 @@ export function createKeyboardActions({
     runCommand('selection.delete')
   }
 
-  function confirmOrEnterText() {
+  function confirmOrEditSelection() {
     if (store.state.nodeEditState) {
       store.exitNodeEditMode(true)
       return
@@ -48,6 +48,11 @@ export function createKeyboardActions({
       return
     }
     const node = store.selectedNode.value
+    // Figma opens a selected vector's path, as a double-click does.
+    if (node?.type === 'VECTOR') {
+      store.enterNodeEditMode(node.id)
+      return
+    }
     if (node?.type === 'TEXT') {
       requestAnimationFrame(() => {
         store.startTextEditing(node.id)
@@ -144,7 +149,7 @@ export function createKeyboardActions({
 
   return {
     smartDelete,
-    confirmOrEnterText,
+    confirmOrEditSelection,
     escapeOrDeselect,
     toggleAutoLayout,
     toggleUI,

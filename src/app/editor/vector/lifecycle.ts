@@ -1,7 +1,12 @@
 import type { Editor } from '@kalka/core/editor'
 import { computeAccurateBounds, regenerateFillGeometry } from '@kalka/core/vector'
-import { cloneVectorNetwork, transformVectorNetwork, vectorNetworksEqual } from '@kalka/scene-graph'
-import type { VectorNetwork } from '@kalka/scene-graph'
+import {
+  cloneVectorNetwork,
+  slotScope,
+  transformVectorNetwork,
+  vectorNetworksEqual,
+  type VectorNetwork
+} from '@kalka/scene-graph'
 import { getNodeLocalMatrix, getWorldMatrix } from '@kalka/scene-graph/coordinate'
 import Matrix from '@kalka/scene-graph/matrix'
 
@@ -89,6 +94,8 @@ export function createVectorEditLifecycle(editor: Editor, state: VectorEditState
   function enterNodeEditMode(nodeId: string) {
     const node = editor.graph.getNode(nodeId)
     if (node?.type !== 'VECTOR' || !node.vectorNetwork) return
+    // A vector inside an instance draws its component's path, so Figma does not open it.
+    if (node.parentId && slotScope(editor.graph, node.parentId).kind === 'locked') return
 
     const world = getWorldMatrix(node, editor.graph)
     const absNetwork = transformVectorNetwork(world, node.vectorNetwork)

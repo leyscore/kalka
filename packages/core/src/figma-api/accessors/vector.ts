@@ -17,6 +17,8 @@ import { copyFills } from '@kalka/scene-graph/copy'
 import { parsePluginVectorPath } from '@kalka/scene-graph/parse-path'
 
 import {
+  graph,
+  prepareFollowedFieldEdit,
   raw,
   updateNode,
   type NodeProxyInternals,
@@ -144,16 +146,29 @@ function setGeometry(
   })
 }
 
+/** A vector inside an instance draws its component's path, which Figma refuses to override. */
+function prepareVectorDataEdit(
+  target: ProxyThis,
+  internals: NodeProxyInternals,
+  setter: string | null
+): void {
+  prepareFollowedFieldEdit(graph(target, internals), raw(target, internals), setter, 'vector-data')
+}
+
+/** Checks the network before readying the edit, so a rejected one leaves a slot unclaimed. */
 function assignVectorNetwork(
   target: ProxyThis,
   internals: NodeProxyInternals,
-  value: FigmaVectorNetwork
+  value: FigmaVectorNetwork,
+  setter: string | null
 ): void {
   const errors = validateVectorNetwork(value)
   if (errors.length > 0) throw new TypeError(`Invalid vectorNetwork: ${errors.join('; ')}`)
   validateRegionPaintMetadata(value.regions ?? [])
   const network = normalizeInputNetwork(value)
-  setGeometry(target, internals, network, geometryForRegions(value.regions ?? []))
+  const fillGeometry = geometryForRegions(value.regions ?? [])
+  prepareVectorDataEdit(target, internals, setter)
+  setGeometry(target, internals, network, fillGeometry)
 }
 
 function vectorPathsForNetwork(network: SceneVectorNetwork): FigmaVectorPath[] {
@@ -266,7 +281,9 @@ export function installVectorNodeProxyAccessors(
       },
       set(this: ProxyThis, value: readonly FigmaVectorPath[]) {
         if (!Array.isArray(value)) throw new TypeError('vectorPaths must be an array')
-        setGeometry(this, internals, networkFromVectorPaths(value), [])
+        const network = networkFromVectorPaths(value)
+        prepareVectorDataEdit(this, internals, 'vectorPaths')
+        setGeometry(this, internals, network, [])
       },
       enumerable: true,
       configurable: true
@@ -276,14 +293,19 @@ export function installVectorNodeProxyAccessors(
         return readVectorNetwork(this, internals)
       },
       set(this: ProxyThis, value: FigmaVectorNetwork) {
-        assignVectorNetwork(this, internals, value)
+        assignVectorNetwork(this, internals, value, 'vectorNetwork')
       },
       enumerable: true,
       configurable: true
     },
     setVectorNetworkAsync: {
       value(this: ProxyThis, value: FigmaVectorNetwork): Promise<void> {
-        return Promise.resolve().then(() => assignVectorNetwork(this, internals, value))
+        try {
+          assignVectorNetwork(this, internals, value, null)
+          return Promise.resolve()
+        } catch (error) {
+          return Promise.reject(error instanceof Error ? error : new Error(String(error)))
+        }
       },
       enumerable: true,
       configurable: true
@@ -297,6 +319,12 @@ export function installVectorNodeProxyAccessors(
           throw new TypeError(`Invalid handleMirroring: ${String(value)}`)
         }
         const node = raw(this, internals)
+        prepareFollowedFieldEdit(
+          graph(this, internals),
+          node,
+          'handleMirroring',
+          'handle-mirroring'
+        )
         updateNode(this, internals, {
           handleMirroring: value,
           vectorNetwork: node.vectorNetwork

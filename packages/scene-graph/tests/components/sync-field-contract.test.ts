@@ -125,3 +125,156 @@ test('restyled ranges reach instances, except one that overrides its text', () =
   expect(graph.getChildren(plain.id)[0].styleRuns).toEqual(italic)
   expect(copy.styleRuns).toEqual(runs)
 })
+
+/** A closed polygon through the points, as a vector network. */
+function polygon(points: Array<[number, number]>): NonNullable<SceneNode['vectorNetwork']> {
+  return {
+    vertices: points.map(([x, y]) => ({ x, y })),
+    segments: points.map((_, index) => ({
+      start: index,
+      end: (index + 1) % points.length,
+      tangentStart: { x: 0, y: 0 },
+      tangentEnd: { x: 0, y: 0 }
+    })),
+    regions: [{ windingRule: 'NONZERO', loops: [points.map((_, index) => index)] }]
+  }
+}
+
+const corners = (network: SceneNode['vectorNetwork']) => network?.vertices.map(({ x, y }) => [x, y])
+
+test('a path edited in a component reaches its instances, drawn at their size', () => {
+  // Repeats a Figma desktop 126 script: an instance cannot override a vector's path
+  // ("vector-data"), so every edit of the component's path reaches it, scaled with the layer.
+  const graph = new SceneGraph()
+  const page = graph.getPages()[0].id
+  const card = graph.createNode('COMPONENT', page, { width: 200, height: 120 })
+  const shape = graph.createNode('VECTOR', card.id, {
+    x: 20,
+    y: 20,
+    width: 100,
+    height: 80,
+    vectorNetwork: polygon([
+      [0, 0],
+      [100, 0],
+      [50, 80]
+    ]),
+    horizontalConstraint: 'SCALE',
+    verticalConstraint: 'SCALE'
+  })
+  const plain = expectDefined(graph.createInstance(card.id, page))
+  const doubled = expectDefined(graph.createInstance(card.id, page))
+  // Resized as Figma's resize records it, as the instance's own size.
+  graph.updateNode(doubled.id, { width: 400, height: 240 })
+  for (const field of ['width', 'height'])
+    setInstanceOverride(doubled.instanceOverrides, doubled.id, doubled.id, field, true)
+  const copyIn = (instance: SceneNode) => graph.getChildren(instance.id)[0]
+
+  graph.updateNode(shape.id, {
+    width: 120,
+    height: 90,
+    vectorNetwork: polygon([
+      [0, 0],
+      [120, 0],
+      [60, 90]
+    ])
+  })
+  graph.syncInstances(card.id)
+  expect(corners(copyIn(plain).vectorNetwork)).toEqual([
+    [0, 0],
+    [120, 0],
+    [60, 90]
+  ])
+  expect([copyIn(doubled).width, copyIn(doubled).height]).toEqual([240, 180])
+  expect(corners(copyIn(doubled).vectorNetwork)).toEqual([
+    [0, 0],
+    [240, 0],
+    [120, 180]
+  ])
+})
+
+test('a copy keeps its own outlines while its path matches, and drops a stale stroke outline', () => {
+  // As in Figma files, a copy whose instance overrides its fill or stroke weight has outlines of
+  // its own; only a changed path replaces them.
+  const graph = new SceneGraph()
+  const page = graph.getPages()[0].id
+  const card = graph.createNode('COMPONENT', page, { width: 40, height: 40 })
+  const outline = (byte: number) => [
+    { windingRule: 'NONZERO' as const, commandsBlob: new Uint8Array([byte]) }
+  ]
+  const shape = graph.createNode('VECTOR', card.id, {
+    width: 20,
+    height: 20,
+    vectorNetwork: polygon([
+      [0, 0],
+      [20, 0],
+      [10, 20]
+    ]),
+    strokeGeometry: outline(1)
+  })
+  const instance = expectDefined(graph.createInstance(card.id, page))
+  const copy = graph.getChildren(instance.id)[0]
+  graph.updateNode(copy.id, {
+    strokeWeight: 4,
+    fillGeometry: outline(7),
+    strokeGeometry: outline(8)
+  })
+  setInstanceOverride(instance.instanceOverrides, instance.id, copy.id, 'strokeWeight', true)
+
+  graph.syncInstances(card.id)
+  expect([...copy.fillGeometry[0].commandsBlob, ...copy.strokeGeometry[0].commandsBlob]).toEqual([
+    7, 8
+  ])
+
+  graph.updateNode(shape.id, {
+    vectorNetwork: polygon([
+      [0, 0],
+      [20, 0],
+      [20, 20]
+    ])
+  })
+  graph.syncInstances(card.id)
+  expect(corners(copy.vectorNetwork)).toEqual([
+    [0, 0],
+    [20, 0],
+    [20, 20]
+  ])
+  expect(copy.fillGeometry).toEqual([])
+  expect(copy.strokeGeometry).toEqual([])
+})
+
+test('a component line, with no height, still reaches its instances', () => {
+  const graph = new SceneGraph()
+  const page = graph.getPages()[0].id
+  const card = graph.createNode('COMPONENT', page, { width: 100, height: 40 })
+  const line = graph.createNode('VECTOR', card.id, {
+    y: 20,
+    width: 60,
+    height: 0,
+    vectorNetwork: {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 60, y: 0 }
+      ],
+      segments: [{ start: 0, end: 1, tangentStart: { x: 0, y: 0 }, tangentEnd: { x: 0, y: 0 } }],
+      regions: []
+    }
+  })
+  const instance = expectDefined(graph.createInstance(card.id, page))
+  const copy = graph.getChildren(instance.id)[0]
+  graph.updateNode(line.id, {
+    width: 80,
+    vectorNetwork: {
+      vertices: [
+        { x: 0, y: 0 },
+        { x: 80, y: 0 }
+      ],
+      segments: [{ start: 0, end: 1, tangentStart: { x: 0, y: 0 }, tangentEnd: { x: 0, y: 0 } }],
+      regions: []
+    }
+  })
+  graph.syncInstances(card.id)
+  expect(corners(copy.vectorNetwork)).toEqual([
+    [0, 0],
+    [80, 0]
+  ])
+})

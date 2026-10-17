@@ -3,7 +3,11 @@ import { expect, test } from 'bun:test'
 import { expectDefined } from '#core-tests/helpers/assert'
 
 import { FigmaAPI, type FigmaNodeProxy } from '@kalka/core/figma-api'
-import { createComponentPropertyId, hasInstanceOverride, SceneGraph } from '@kalka/scene-graph'
+import {
+  createComponentPropertyId,
+  hasInstanceOverride,
+  SceneGraph
+} from '@kalka/scene-graph'
 
 // Recorded with the same script in Figma desktop 126.
 
@@ -25,14 +29,54 @@ test('a layer inside an instance refuses the fields it always takes from its com
   expect(() => (layer.x = 5)).toThrow(refused('x', 'relative-transform'))
   expect(() => (layer.y = 5)).toThrow(refused('y', 'relative-transform'))
   expect(() => (layer.rotation = 10)).toThrow(refused('rotation', 'relative-transform'))
-  expect(() => (layer.relativeTransform = [[1, 0, 3], [0, 1, 3]])).toThrow(
-    refused('relativeTransform', 'relative-transform')
-  )
+  expect(
+    () =>
+      (layer.relativeTransform = [
+        [1, 0, 3],
+        [0, 1, 3]
+      ])
+  ).toThrow(refused('relativeTransform', 'relative-transform'))
   expect(() => (layer.constraints = { horizontal: 'MAX', vertical: 'MIN' })).toThrow(
     refused('constraints', 'vertical-constraint')
   )
   expect(() => (layer.isMask = true)).toThrow(refused('isMask', 'is-mask'))
   expect(() => (layer.maskType = 'LUMINANCE')).toThrow(refused('maskType', 'mask-type'))
+})
+
+test('a vector inside an instance refuses its path and handle mirroring', async () => {
+  const graph = new SceneGraph()
+  const figma = new FigmaAPI(graph)
+  const component = figma.createComponent()
+  component.resize(200, 120)
+  const shape = figma.createVector()
+  component.appendChild(shape)
+  shape.vectorPaths = [{ windingRule: 'NONZERO', data: 'M 0 0 L 100 0 L 50 80 Z' }]
+  const instance = component.createInstance()
+  const [copy] = instance.children as FigmaNodeProxy[]
+  const message = (property: string) =>
+    `This property cannot be overridden in an instance: ${property}`
+  const network = {
+    vertices: [
+      { x: 0, y: 0 },
+      { x: 60, y: 0 }
+    ],
+    segments: [{ start: 0, end: 1 }]
+  }
+  expect(() => (copy.vectorPaths = [{ windingRule: 'NONE', data: 'M 0 0 L 10 0' }])).toThrow(
+    `in set_vectorPaths: ${message('vector-data')}`
+  )
+  expect(() => (copy.vectorNetwork = network)).toThrow(
+    `in set_vectorNetwork: ${message('vector-data')}`
+  )
+  // Figma rejects the async edit with the bare message.
+  await expect(copy.setVectorNetworkAsync(network)).rejects.toThrow(
+    new RegExp(`^${message('vector-data')}$`)
+  )
+  expect(() => (copy.handleMirroring = 'ANGLE')).toThrow(
+    `in set_handleMirroring: ${message('handle-mirroring')}`
+  )
+  // The copy still draws the component's path.
+  expect(copy.vectorPaths).toEqual(shape.vectorPaths)
 })
 
 test('a layer inside an instance can be locked and restyled, each recorded as an override', () => {
@@ -66,6 +110,36 @@ function slotSetup() {
   const slot = expectDefined(figma.getNodeById(graph.getChildren(instance.id)[0].id))
   return { graph, figma, card, note, slot }
 }
+
+test('a path rejected for a slot’s vector leaves the slot following its component', () => {
+  const { graph, figma, card, slot } = slotSetup()
+  const shape = figma.createVector()
+  const host = expectDefined(figma.getNodeById(graph.getChildren(card.id)[0].id))
+  host.appendChild(shape)
+  shape.vectorPaths = [{ windingRule: 'NONZERO', data: 'M 0 0 L 10 0 L 5 10 Z' }]
+  graph.syncInstances(card.id)
+  const copy = expectDefined(
+    (slot.children as FigmaNodeProxy[]).find((child) => child.type === 'VECTOR')
+  )
+  const broken = {
+    vertices: [
+      { x: 0, y: 0 },
+      { x: 10, y: 0 },
+      { x: 5, y: 10 }
+    ],
+    segments: [
+      { start: 0, end: 1 },
+      { start: 1, end: 2 },
+      { start: 2, end: 0 }
+    ],
+    regions: [{ windingRule: 'NONZERO' as const, loops: [[0, 1, 2]], fills: [null] }]
+  }
+  expect(() => (copy.vectorNetwork = broken as never)).toThrow()
+  // Unclaimed, the slot's default content still takes the component's next edit.
+  shape.vectorPaths = [{ windingRule: 'NONZERO', data: 'M 0 0 L 20 0 L 10 20 Z' }]
+  graph.syncInstances(card.id)
+  expect(copy.vectorPaths).toEqual(shape.vectorPaths)
+})
 
 test('slot content is the instance’s own and keeps its position and constraints', () => {
   const { figma, slot } = slotSetup()
