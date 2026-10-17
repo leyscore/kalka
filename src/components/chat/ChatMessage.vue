@@ -10,6 +10,7 @@ import { attachmentsForMessage } from '@/app/ai/attachment/presentation/store'
 import type { AttachmentPresentation } from '@/app/ai/attachment/presentation/types'
 import { reasoningDisplay } from '@/app/ai/chat/preferences'
 import { visibleUserMessageText } from '@/app/ai/chat/presentation'
+import { wasStopped } from '@/app/ai/chat/settle'
 import { groupMessageParts, type MessagePartGroup } from '@/app/ai/chat/tool-calls/display'
 import { revertOf } from '@/app/ai/chat/turns'
 import AttachmentList from '@/components/chat/attachment/AttachmentList.vue'
@@ -83,6 +84,7 @@ async function copyResponse(): Promise<void> {
 // The AI SDK updates parts in place and replaces only the message, so copy each part for
 // the cards' computed state to see the new values.
 const reverted = computed(() => revertOf(message) !== null)
+const stopped = computed(() => wasStopped(message))
 // A request that failed once its reply had started leaves the reply without content.
 const empty = computed(() => message.parts.every((part) => part.type === 'step-start'))
 const groups = computed(() => groupMessageParts(message.parts.map((part) => ({ ...part }))))
@@ -120,7 +122,7 @@ function groupKey(group: MessagePartGroup): string {
               v-else-if="isReasoningUIPart(group.part) && group.part.text"
               :text="group.part.text"
               :display="reasoningDisplay"
-              :streaming="group.part.state === 'streaming'"
+              :streaming="streaming && group.part.state === 'streaming'"
               :thinking-label="ai.thinking"
               :reasoning-label="ai.reasoning"
               :duration-label="(seconds) => ai.thoughtFor({ seconds })"
@@ -155,6 +157,7 @@ function groupKey(group: MessagePartGroup): string {
           :can-regenerate="canRegenerate"
           :empty="empty"
           :reverted="reverted"
+          :stopped="stopped"
           @regenerate="emit('regenerate')"
           @revert="emit('revert')"
           @restore="emit('restore')"

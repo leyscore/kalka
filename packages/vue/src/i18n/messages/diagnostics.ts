@@ -14,6 +14,7 @@ export const diagnosticsMessageDefaults = {
   usageCacheNote: 'Cache values are shown only when the provider reports them.',
   title: 'Diagnostics',
   chatCompleted: 'AI chat completed',
+  chatStopped: 'AI chat stopped',
   chatFailed: 'AI chat failed',
   storageFailed: 'Storage operation failed',
   documentFailed: 'Document operation failed',

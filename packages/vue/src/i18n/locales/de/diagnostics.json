@@ -14,6 +14,7 @@
   "usageHistoryDescription": "Lokale Zusammenfassungen der AI-Nutzung speichern.",
   "title": "Diagnose",
   "chatCompleted": "KI-Chat abgeschlossen",
+  "chatStopped": "KI-Chat gestoppt",
   "chatFailed": "KI-Chat fehlgeschlagen",
   "storageFailed": "Speichervorgang fehlgeschlagen",
   "documentFailed": "Dokumentvorgang fehlgeschlagen",

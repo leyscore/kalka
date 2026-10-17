@@ -14,6 +14,7 @@
   "usageHistoryDescription": "Conserva i riepiloghi locali dell’utilizzo dell’AI.",
   "title": "Diagnostica",
   "chatCompleted": "Chat AI completata",
+  "chatStopped": "Chat AI interrotta",
   "chatFailed": "Chat AI non riuscita",
   "storageFailed": "Operazione di archiviazione non riuscita",
   "documentFailed": "Operazione sul documento non riuscita",

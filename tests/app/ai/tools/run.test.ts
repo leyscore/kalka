@@ -8,7 +8,7 @@ import { toRaw } from 'vue'
 import { FigmaAPI } from '@kalka/core/figma-api'
 
 import { createToolLoopTransport } from '@/app/ai/chat/transports'
-import { endRun, markRunPreview, runPageId, startRun } from '@/app/ai/tools'
+import { currentRun, endRun, markRunPreview, runPageId, startRun } from '@/app/ai/tools'
 import { aiToolOverrides } from '@/app/ai/tools/preferences'
 import { markRunWork, runUndoEntries } from '@/app/ai/tools/run'
 import * as figmaFactory from '@/app/automation/bridge/figma-factory'
@@ -219,4 +219,112 @@ test('the agent moves through streamed JSX, then onto the layers the tool made',
   } finally {
     store.preparationController.dispose()
   }
+})
+
+const rectangleCall = (toolCallId: string, x: number): StreamChunk => ({
+  type: 'tool-call',
+  toolCallId,
+  toolName: 'create_shape',
+  input: JSON.stringify({ type: 'RECTANGLE', x, y: 0, width: 10, height: 10 })
+})
+
+/** Start one message whose model calls `calls` in one step, and read it in the background. */
+async function startMessage(store: EditorStore, calls: StreamChunk[], signal: AbortSignal) {
+  const model = new MockLanguageModelV4({
+    doStream: async () => ({
+      stream: simulateReadableStream<StreamChunk>({
+        initialDelayInMs: null,
+        chunkDelayInMs: null,
+        chunks: [
+          ...calls,
+          {
+            type: 'finish',
+            finishReason: { unified: 'tool-calls', raw: undefined },
+            usage: MOCK_USAGE
+          }
+        ]
+      })
+    })
+  })
+  const transport = createToolLoopTransport({
+    store,
+    providerID: 'openai',
+    model,
+    effectiveModelID: 'test',
+    maxOutputTokens: 100,
+    thinkingLevel: () => 'default'
+  })
+  const stream = await transport.sendMessages({
+    trigger: 'submit-message',
+    chatId: 'stop',
+    messageId: undefined,
+    abortSignal: signal,
+    messages: [{ id: 'user', role: 'user', parts: [{ type: 'text', text: 'Draw' }] }]
+  })
+  const reader = stream.getReader()
+  async function drain() {
+    while (!(await reader.read()).done);
+  }
+  // Cancelling the reader on Stop rejects the read in progress; the read just ends.
+  const reading = drain().catch(() => undefined)
+  return { reader, reading }
+}
+
+/** Hold every layout mutation until `release`, reporting when the first one starts. */
+function holdMutations(store: EditorStore) {
+  let release: () => void = () => undefined
+  const gate = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  let markStarted: () => void = () => undefined
+  const started = new Promise<void>((resolve) => {
+    markStarted = resolve
+  })
+  const run = store.runMutationWithLayout.bind(store)
+  spyOn(store, 'runMutationWithLayout').mockImplementation(async (...args) => {
+    markStarted()
+    await gate
+    return run(...args)
+  })
+  return { started, release }
+}
+
+test('a tool still running at Stop finishes into its reply without bringing the agent back', async () => {
+  await withStore(async (store, { a }) => {
+    const held = holdMutations(store)
+    const controller = new AbortController()
+    const { reader, reading } = await startMessage(
+      store,
+      [rectangleCall('first', 0), rectangleCall('second', 40)],
+      controller.signal
+    )
+    await held.started
+    const run = currentRun(store)
+
+    controller.abort()
+    void reader.cancel()
+    await reading
+    const agent = () => expectDefined(presenceOf(store).agents.value[0], 'agent')
+    expect(agent()).toMatchObject({ status: 'idle', cursor: undefined })
+    expect(presenceOf(store).following.value).toBeNull()
+
+    held.release()
+    await run.settled()
+    // The running call's edit lands and stays this reply's; the one waiting its turn never runs.
+    expect(store.graph.getChildren(a)).toHaveLength(1)
+    expect(run.undoEntries).toHaveLength(1)
+    expect([...run.changedCalls]).toEqual(['first'])
+    expect(agent()).toMatchObject({ status: 'idle', cursor: undefined, selection: undefined })
+  })
+})
+
+test('a reply stopped before it reaches the model leaves the agent at rest', async () => {
+  await withStore(async (store) => {
+    const controller = new AbortController()
+    controller.abort()
+    const { reading } = await startMessage(store, [rectangleCall('late', 0)], controller.signal)
+    await reading
+    expect(presenceOf(store).agents.value[0]?.status).toBe('idle')
+    expect(currentRun(store).active).toBe(false)
+  })
 })

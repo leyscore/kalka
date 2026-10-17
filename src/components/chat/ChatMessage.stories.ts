@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import type { UIMessage } from 'ai'
+import { expect, within } from 'storybook/test'
 
 import ChatMessage from './ChatMessage.vue'
 
@@ -29,6 +30,23 @@ const reasoningMessage: UIMessage = {
   ]
 }
 
+/** A reply stopped mid-call, as the chat settles it: nothing reads as running any more. */
+const stoppedMessage: UIMessage = {
+  id: 'stopped-message',
+  role: 'assistant',
+  metadata: { stopped: true },
+  parts: [
+    { type: 'reasoning', text: 'Laying out a month grid.', state: 'done' },
+    {
+      type: 'tool-render',
+      toolCallId: 'stopped-call',
+      state: 'output-error',
+      input: { jsx: '<Frame name="Calendar" />' },
+      errorText: 'The reply ended before this call finished. It did not change the document.'
+    }
+  ]
+}
+
 type ChatMessageStoryArgs = {
   message: UIMessage
   streaming?: boolean
@@ -53,3 +71,12 @@ export const User: Story = { args: { message: userMessage } }
 export const Assistant: Story = { args: { message: assistantMessage } }
 export const Reasoning: Story = { args: { message: reasoningMessage } }
 export const Streaming: Story = { args: { message: assistantMessage, streaming: true } }
+
+export const Stopped: Story = {
+  args: { message: stoppedMessage },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('Stopped')).toBeVisible()
+    await expect(canvas.queryByText('Thinking…')).toBeNull()
+  }
+}

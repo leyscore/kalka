@@ -6,6 +6,7 @@ import {
   setMessageAttachments
 } from '@/app/ai/attachment/presentation/store'
 import { visibleMessageText, setVisibleMessageText } from '@/app/ai/chat/presentation'
+import { settleMessage } from '@/app/ai/chat/settle'
 import { readToolChange, setToolChange } from '@/app/ai/tools/changes/store'
 
 import type { ConversationMessage } from './types'
@@ -36,7 +37,8 @@ export function restoreMessages(messages: ConversationMessage[]): UIMessage[] {
     setMessageAttachments(row.message.id, row.attachments)
     for (const change of row.toolChanges ?? []) setToolChange(change)
   }
-  return messages.map((row) => structuredClone(row.message))
+  // Nothing runs in a reopened conversation; a reply saved mid-way no longer reads as running.
+  return messages.map((row) => settleMessage(structuredClone(row.message), { stopped: false }))
 }
 
 export function fallbackTitle(messages: UIMessage[]): string {

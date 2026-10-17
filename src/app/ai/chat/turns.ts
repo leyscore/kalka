@@ -4,6 +4,7 @@ import { shallowReactive, shallowRef, type ShallowRef } from 'vue'
 
 import type { UndoEntry } from '@kalka/scene-graph/undo'
 
+import { currentRun } from '@/app/ai/tools'
 import type { EditorStore } from '@/app/editor/active-store'
 
 interface TurnRecord {
@@ -67,6 +68,16 @@ export function recordTurn(
 ): void {
   if (entries.length === 0) turns.delete(messageId)
   else turns.set(messageId, { store, entries: [...entries], reverted: false })
+}
+
+/**
+ * Records a reply's turn from its run once the run's last edit landed, so an edit a stopped
+ * reply's tool finishes afterwards still belongs to it.
+ */
+export async function recordReplyTurn(messageId: string, store: EditorStore): Promise<void> {
+  const run = currentRun(store)
+  await run.settled()
+  recordTurn(messageId, store, run.undoEntries)
 }
 
 export interface TurnEdits {

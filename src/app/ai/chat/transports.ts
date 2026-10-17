@@ -24,13 +24,14 @@ import { chatThinkingLevel } from '@/app/ai/chat/thinking'
 import { createAIModelRuntime, resolveModelConnectionAPIKey } from '@/app/ai/models'
 import type { ThinkingLevel } from '@/app/ai/models/types'
 import { createRunPreview } from '@/app/ai/preview/run'
-import { createAITools, endRun, recordStep, startRun } from '@/app/ai/tools'
+import { createAITools, currentRun, endRun, recordStep, startRun } from '@/app/ai/tools'
 import { enabledAIToolDefinitions } from '@/app/ai/tools/catalog'
 import { aiToolOverrides } from '@/app/ai/tools/preferences'
 import { diagnosticErrorDetails } from '@/app/diagnostics'
 import {
   recordChatCompleted,
   recordChatFailed,
+  recordChatStopped,
   recordModelStepCompleted
 } from '@/app/diagnostics/events'
 import type { AIDiagnosticContext } from '@/app/diagnostics/events/ai'
@@ -39,6 +40,7 @@ import { EXTERNAL_MCP_TOOL_PREFIX, externalMCPTools } from '@/app/integrations/m
 
 import { resumableTransport } from './history/continuation'
 import { maxAgentSteps } from './preferences'
+import { settleMessage } from './settle'
 
 type EditorStore = ReturnType<typeof getActiveEditorStore>
 
@@ -113,6 +115,8 @@ export function createToolLoopTransport({
   diagnosticContext = {}
 }: ToolLoopTransportOptions) {
   const tools = createAITools(store, diagnosticContext)
+  // The reply in progress; a transport sends one message at a time.
+  let run = currentRun(store)
   // While JSX streams, the chat's agent moves through the elements as they appear, here and
   // on the screens of everyone else in the room.
   const preview = createRunPreview(store)
@@ -131,15 +135,13 @@ export function createToolLoopTransport({
     tools,
     maxOutputTokens,
     prepareCall: (options) => {
-      const stepLimit = maxAgentSteps.value
       const enabledNames = new Set(
         enabledAIToolDefinitions(aiToolOverrides.value).map((tool) => tool.name)
       )
       preview.clear()
-      startRun(store, stepLimit, effectiveModelID)
       return {
         ...options,
-        stopWhen: stepCountIs(stepLimit),
+        stopWhen: stepCountIs(currentRun(store).maxSteps),
         // Keep the full catalog for validating history; offer only enabled tools to this request,
         // and the tools of the outside servers connected in Settings › MCP.
         tools: Object.fromEntries(
@@ -153,7 +155,7 @@ export function createToolLoopTransport({
     },
     onFinish: () => {
       preview.clear()
-      endRun(store)
+      endRun(store, run)
     },
     onStepFinish: ({ usage }) => {
       preview.clear()
@@ -174,7 +176,7 @@ export function createToolLoopTransport({
 
   function handleError(error: unknown): string {
     preview.clear()
-    endRun(store)
+    endRun(store, run)
     onError?.(error)
     return 'The provider rejected the request.'
   }
@@ -185,8 +187,13 @@ export function createToolLoopTransport({
   return resumableTransport({
     reconnectToStream: (options) => transport.reconnectToStream(options),
     async sendMessages(options) {
+      // The run starts as the message is sent, so a Stop before the model is reached ends it.
+      const started = startRun(store, maxAgentSteps.value, effectiveModelID)
+      run = started
       // Stopping a reply ends the run without onFinish.
-      if (options.abortSignal) useEventListener(options.abortSignal, 'abort', () => endRun(store))
+      const { abortSignal } = options
+      if (abortSignal?.aborted) endRun(store, started)
+      else if (abortSignal) useEventListener(abortSignal, 'abort', () => endRun(store, started))
       // Outside servers join the catalog before the request, so the agent can read from them.
       await externalMCPTools.sync(tools as Record<string, Tool>)
       // DirectChatTransport handles error chunks, but not a rejected underlying stream.
@@ -198,6 +205,28 @@ export function createToolLoopTransport({
       })
     }
   })
+}
+
+/**
+ * A reply that ended unfinished is settled once its last edit landed, so it no longer reads as
+ * running and the model learns which of its calls changed the document.
+ */
+async function settleEndedReply(
+  chat: Chat<UIMessage>,
+  store: EditorStore,
+  messageId: string,
+  stopped: boolean
+): Promise<void> {
+  const run = currentRun(store)
+  await run.settled()
+  chat.messages = chat.messages.map((message) =>
+    message.id === messageId
+      ? settleMessage(message, {
+          stopped,
+          changed: (toolCallId) => run.changedCalls.has(toolCallId)
+        })
+      : message
+  )
 }
 
 export function createChatSessionManager({
@@ -236,7 +265,8 @@ export function createChatSessionManager({
       isError: boolean
     }
   ): void {
-    if (!isAbort && !isDisconnect && !isError) {
+    if (isAbort) recordChatStopped(context)
+    else if (!isDisconnect && !isError) {
       recordChatCompleted({ finishReason: finishReason ?? null }, context)
     }
   }
@@ -357,7 +387,7 @@ export function createChatSessionManager({
       if (isACPProvider.value) transport = await createActiveACPTransport()
       else if (isHarnessProvider.value) transport = await createActiveHarnessTransport(sessionId)
       else transport = await createTransport(store, diagnosticContext)
-      chat = new Chat<UIMessage>({
+      const created: Chat<UIMessage> = new Chat<UIMessage>({
         transport: {
           sendMessages: (options) => {
             diagnosticContext.runId = crypto.randomUUID()
@@ -373,8 +403,14 @@ export function createChatSessionManager({
           const { errorName, errorCode, message, stack } = diagnosticErrorDetails(reportedError)
           recordChatFailed({ errorName, errorCode, message, stack }, diagnosticContext)
         },
-        onFinish: (event) => handleChatFinish(diagnosticContext, event)
+        onFinish: (event) => {
+          handleChatFinish(diagnosticContext, event)
+          if (event.isAbort || event.isDisconnect || event.isError) {
+            void settleEndedReply(created, store, event.message.id, event.isAbort)
+          }
+        }
       })
+      chat = created
       currentChatStore = store
       transportDirty = false
     }

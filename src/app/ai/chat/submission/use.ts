@@ -17,8 +17,7 @@ import { prepareSubmittedImages } from '@/app/ai/chat/submission/images'
 import { chatToResend } from '@/app/ai/chat/submission/resend'
 import { useRevertRecords } from '@/app/ai/chat/submission/reverts'
 import type { ChatInstance, ChatSubmission } from '@/app/ai/chat/submission/types'
-import { recordTurn, restoreTurn, revertTurn } from '@/app/ai/chat/turns'
-import { runUndoEntries } from '@/app/ai/tools'
+import { recordReplyTurn, restoreTurn, revertTurn } from '@/app/ai/chat/turns'
 import type { EditorStore } from '@/app/editor/active-store'
 
 interface SubmissionOptions extends SubmissionErrorOptions {
@@ -57,9 +56,7 @@ export function useChatSubmission(options: SubmissionOptions) {
     const previous = lastAssistantId(chat)
     await send()
     const reply = lastAssistantId(chat)
-    if (!reply || reply === previous) return
-    const editor = options.getEditor()
-    recordTurn(reply, editor, runUndoEntries(editor))
+    if (reply && reply !== previous) await recordReplyTurn(reply, options.getEditor())
   }
 
   async function sendText(

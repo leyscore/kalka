@@ -14,6 +14,7 @@
   "usageHistoryDescription": "AIの使用状況の概要を端末に保存します。",
   "title": "診断",
   "chatCompleted": "AIチャット完了",
+  "chatStopped": "AIチャット停止",
   "chatFailed": "AIチャット失敗",
   "storageFailed": "ストレージ操作失敗",
   "documentFailed": "ドキュメント操作失敗",

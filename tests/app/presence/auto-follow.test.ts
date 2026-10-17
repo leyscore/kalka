@@ -84,3 +84,24 @@ test('with Follow agents off, agents are followed only by clicking Follow', () =
   followWorkingAgents(store)
   expect(following(store)).toEqual({ kind: 'agent', agentId: agent.id })
 })
+
+test('following that Follow agents started ends when the agent rests', () => {
+  const { store, pageId } = setup()
+  const agent = addAgent(store, 'chat')
+  agent.update({ status: 'editing', cursor: { x: 10, y: 10, pageId } })
+  expect(following(store)).toEqual({ kind: 'agent', agentId: agent.id })
+
+  // A reply finishing, stopping, or failing all put the agent to rest.
+  agent.update({ status: 'idle', cursor: undefined })
+  expect(following(store)).toBeNull()
+})
+
+test('an agent the person picked to follow keeps its followers while it rests', () => {
+  const { store, pageId } = setup()
+  const agent = addAgent(store, 'chat')
+  agent.update({ status: 'editing', cursor: { x: 10, y: 10, pageId } })
+  follow(store, { kind: 'agent', agentId: agent.id })
+
+  agent.update({ status: 'idle', cursor: undefined })
+  expect(following(store)).toEqual({ kind: 'agent', agentId: agent.id })
+})

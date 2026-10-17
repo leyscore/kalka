@@ -14,6 +14,7 @@
   "usageHistoryDescription": "保留本地 AI 使用摘要。",
   "title": "诊断",
   "chatCompleted": "AI 聊天已完成",
+  "chatStopped": "AI 聊天已停止",
   "chatFailed": "AI 聊天失败",
   "storageFailed": "存储操作失败",
   "documentFailed": "文档操作失败",

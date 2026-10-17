@@ -23,6 +23,7 @@ export type DiagnosticEventSummary = {
 /** The diagnostics messages a summary reads; the app's `diagnostics` i18n namespace has them. */
 export interface DiagnosticLabels {
   chatCompleted: string
+  chatStopped: string
   chatFailed: string
   storageFailed: string
   documentFailed: string
@@ -126,6 +127,7 @@ const DESCRIBE: Record<DiagnosticEventName, Describe> = {
     return [label, text(attributes.message) ? errorDetail(attributes) : duration]
   },
   'chat.completed': (attributes, labels) => [labels.chatCompleted, text(attributes.finishReason)],
+  'chat.stopped': (_attributes, labels) => [labels.chatStopped, null],
   'chat.failed': (attributes, labels) => [labels.chatFailed, errorDetail(attributes)],
   'runtime.error': (attributes, labels) => [
     labels.runtimeError({ name: text(attributes.errorName) ?? 'Error' }),

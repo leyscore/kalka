@@ -34,6 +34,8 @@ interface Presence {
   moving: boolean
   /** Our agents the person stopped following mid-work; following them again waits until they rest. */
   declined: Set<string>
+  /** The agent Follow agents started following, which ends when it rests; null for one picked. */
+  autoFollowed: string | null
 }
 
 const presences = new WeakMap<EditorStore, Presence>()
@@ -49,7 +51,8 @@ export function presenceOf(store: EditorStore): Presence {
     followPage: null,
     switching: null,
     moving: false,
-    declined: new Set()
+    declined: new Set(),
+    autoFollowed: null
   }
   presences.set(store, presence)
   store.onEditorEvent('page:changed', () => {
@@ -170,7 +173,9 @@ function isWorking(agent: AgentPresence): boolean {
  * With Follow agents on, the view follows our agents while they work: whichever starts first
  * when nobody is followed, and the next one at work once the followed agent rests. Following
  * starts with the run, so leaving the page or moving the view while the agent thinks counts as
- * stopping, and an agent the person stopped following is left alone until it rests.
+ * stopping, and an agent the person stopped following is left alone until it rests. When the
+ * last one rests, as its reply finishes, stops, or fails, following ends; an agent the person
+ * picked to follow keeps its followers while it rests.
  */
 function autoFollow(store: EditorStore): void {
   const presence = presenceOf(store)
@@ -178,16 +183,24 @@ function autoFollow(store: EditorStore): void {
   for (const id of presence.declined) {
     if (!working.some((agent) => agent.id === id)) presence.declined.delete(id)
   }
-  if (!appPreferences.value.chat.followAgents) return
   const target = presence.following.value
+  if (target?.kind !== 'agent' || target.agentId !== presence.autoFollowed) {
+    presence.autoFollowed = null
+  }
+  if (!appPreferences.value.chat.followAgents) return
   if (target?.kind === 'person') return
   if (target && working.some((agent) => agent.id === target.agentId)) return
   // A followed agent of someone else's is theirs to stop; only a resting one of ours hands over.
   if (target && !presence.agents.value.some((agent) => agent.id === target.agentId)) return
   const next = working.find((agent) => !presence.declined.has(agent.id))
-  if (!next) return
-  presence.following.value = { kind: 'agent', agentId: next.id }
-  presence.followPage = store.state.currentPageId
+  if (next) {
+    presence.following.value = { kind: 'agent', agentId: next.id }
+    presence.autoFollowed = next.id
+    presence.followPage = store.state.currentPageId
+  } else if (presence.autoFollowed !== null && target?.agentId === presence.autoFollowed) {
+    presence.autoFollowed = null
+    stopFollowing(store, false)
+  }
 }
 
 /** Starts following our agents at work right away, for when Follow agents is turned on. */
@@ -314,6 +327,8 @@ export function follow(store: EditorStore, target: FollowTarget | null): void {
   }
   const presence = presenceOf(store)
   presence.following.value = target
+  // Picked by the person, so it keeps following an agent that rests.
+  presence.autoFollowed = null
   presence.followPage = store.state.currentPageId
   keepFollowing(store)
 }

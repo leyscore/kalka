@@ -129,6 +129,7 @@ ja:designCheck.ruleTouchTargetSizeHelp
 ja:diagnostics.acpFailed
 ja:diagnostics.chatCompleted
 ja:diagnostics.chatFailed
+ja:diagnostics.chatStopped
 ja:diagnostics.description
 ja:diagnostics.eventCount
 ja:diagnostics.mcpFailed
@@ -323,6 +324,7 @@ zh-cn:designCheck.ruleTouchTargetSizeHelp
 zh-cn:diagnostics.acpFailed
 zh-cn:diagnostics.chatCompleted
 zh-cn:diagnostics.chatFailed
+zh-cn:diagnostics.chatStopped
 zh-cn:diagnostics.description
 zh-cn:diagnostics.eventCount
 zh-cn:diagnostics.mcpFailed

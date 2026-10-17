@@ -19,6 +19,7 @@ export type DiagnosticAttributes = Readonly<Record<string, DiagnosticValue>>
 export type DiagnosticEventName =
   | 'model.step.completed'
   | 'chat.completed'
+  | 'chat.stopped'
   | 'chat.failed'
   | 'tool.completed'
   | 'runtime.error'

@@ -10,7 +10,8 @@ const {
   messageId,
   canRegenerate = false,
   empty = false,
-  reverted = false
+  reverted = false,
+  stopped = false
 } = defineProps<{
   messageId: string
   canRegenerate?: boolean
@@ -18,6 +19,8 @@ const {
   empty?: boolean
   /** The reply's edits were reverted; it stays in the chat, marked. */
   reverted?: boolean
+  /** The user stopped the reply before it finished. */
+  stopped?: boolean
 }>()
 const emit = defineEmits<{ regenerate: []; revert: []; restore: [] }>()
 const { ai } = useI18n()
@@ -29,10 +32,18 @@ const restorable = computed(() => edits.value?.restorable === true)
 
 <template>
   <div
-    v-if="revertable || reverted || canRegenerate"
+    v-if="stopped || revertable || reverted || canRegenerate"
     class="flex flex-wrap items-center gap-1"
     data-slot="chat-turn-actions"
   >
+    <span
+      v-if="stopped"
+      class="inline-flex items-center gap-1 px-2 text-[11px] text-muted"
+      data-slot="chat-turn-stopped"
+    >
+      <icon-lucide-circle-stop class="size-3" aria-hidden="true" />
+      {{ ai.turnStopped }}
+    </span>
     <AppButton
       v-if="reverted && restorable"
       size="xs"

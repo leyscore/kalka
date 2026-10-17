@@ -14,6 +14,7 @@
   "usageHistoryDescription": "Conserver les résumés locaux de l’utilisation de l’IA.",
   "title": "Diagnostics",
   "chatCompleted": "Chat IA terminé",
+  "chatStopped": "Chat IA arrêté",
   "chatFailed": "Échec du chat IA",
   "storageFailed": "Échec de l’opération de stockage",
   "documentFailed": "Échec de l’opération sur le document",

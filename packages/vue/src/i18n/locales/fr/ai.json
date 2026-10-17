@@ -35,6 +35,7 @@
   "copyResponse": "Copier la réponse",
   "revertTurn": "Annuler les modifications",
   "turnReverted": "Modifications annulées",
+  "turnStopped": "Arrêtée",
   "restoreTurn": "Rétablir les modifications",
   "regenerate": "Régénérer",
   "revertAndRegenerate": "Annuler et régénérer",
