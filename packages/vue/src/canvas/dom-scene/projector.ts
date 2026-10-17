@@ -33,6 +33,11 @@ const CHILD_STYLE_KEYS = new Set<keyof SceneNode>([
   'gridTemplateRows'
 ])
 
+/** The stacking order of the artboard of the `index`th shown page child; odd orders lie between. */
+function artboardStackOrder(index: number): number {
+  return 2 * index + 2
+}
+
 interface Artboard {
   id: string
   frame: HTMLIFrameElement
@@ -282,6 +287,18 @@ export class DomSceneProjector {
     return this.artboards.get(artboardId)?.doc ? [artboardId] : null
   }
 
+  /**
+   * The stacking order of something drawn at page child `index` of the current page: above the
+   * artboards of the layers before it and below the rest.
+   */
+  stackOrderAt(index: number): number {
+    const page = this.graph.getNode(this.currentPageId())
+    const before = page
+      ? this.visibleChildren({ ...page, childIds: page.childIds.slice(0, index) })
+      : []
+    return artboardStackOrder(before.length) - 1
+  }
+
   isStale(artboardId: string): boolean {
     return this.artboards.get(artboardId)?.stale ?? false
   }
@@ -345,9 +362,10 @@ export class DomSceneProjector {
       this.artboards.delete(id)
     }
 
-    // Later layers draw above earlier ones, as on the canvas.
+    // Later layers draw above earlier ones, as on the canvas. The stacking order says so too,
+    // so a preview can draw between two artboards without moving their frames.
     let previous: HTMLIFrameElement | null = null
-    for (const node of wanted) {
+    for (const [index, node] of wanted.entries()) {
       let artboard = this.artboards.get(node.id)
       if (!artboard) {
         artboard = this.createArtboard(node.id)
@@ -355,6 +373,8 @@ export class DomSceneProjector {
       }
       const expected: ChildNode | null = previous ? previous.nextSibling : this.world.firstChild
       if (expected !== artboard.frame) this.world.insertBefore(artboard.frame, expected)
+      const order = String(artboardStackOrder(index))
+      if (artboard.frame.style.zIndex !== order) artboard.frame.style.zIndex = order
       this.placeArtboard(node, artboard)
       previous = artboard.frame
     }

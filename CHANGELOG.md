@@ -196,6 +196,7 @@
 
 ### Fixed
 
+- The canvas preview of what an AI agent is still writing draws at the layer's place in the page's stacking order, such as behind a frame it goes under, instead of over every layer.
 - Dragging a layer's rotation handle turns the layer on the canvas as you drag, instead of only its selection box until you let go.
 - Boolean operations draw the shape their layers combine into on the canvas, instead of a filled box; HTML and SVG exports draw the shape a `.fig` file saved for them.
 - A rotated top-level layer draws at its place on the canvas, and in PNG and PDF exports drawn by Chromium, instead of shifted toward where its turned corner lands.

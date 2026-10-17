@@ -27,6 +27,11 @@ export interface DomScenePreview {
   nodeIds: readonly string[]
   /** A page child of the document the preview stands in for, hidden while the preview shows. */
   replaceId?: string
+  /**
+   * Where among the page's children new top-level layers go, so the preview stacks there; on
+   * top of every layer when absent. A replacement stacks where the layer it replaces does.
+   */
+  insertIndex?: number
 }
 
 /** One drawn page child of a preview, in an artboard document of its own. */
@@ -41,6 +46,8 @@ interface GhostFrame {
 
 interface Ghost {
   preview: DomScenePreview
+  /** Holds the preview's frames at its place among the artboards, faded as one. */
+  container: HTMLElement
   frames: GhostFrame[]
 }
 
@@ -50,12 +57,11 @@ export interface GhostLayerOptions {
 }
 
 /**
- * Draws previews as real DOM above the page's artboards, through the same projection as the
- * layers they will become. Nothing here is interactive or read back by layout: the document,
- * its history, and what collaborators receive stay as they are.
+ * Draws previews as real DOM among the page's artboards, at the place in their stacking order the
+ * layers they will become take, through the same projection. Nothing here is interactive or read
+ * back by layout: the document, its history, and what collaborators receive stay as they are.
  */
 export class GhostLayer {
-  private readonly container: HTMLElement
   private readonly ghosts = new Map<string, Ghost>()
   /** The previews last synced, so an unchanged list costs nothing. */
   private synced: readonly DomScenePreview[] = []
@@ -66,14 +72,7 @@ export class GhostLayer {
   constructor(
     private readonly projector: DomSceneProjector,
     private readonly options: GhostLayerOptions = {}
-  ) {
-    const doc = projector.world.ownerDocument
-    this.container = doc.createElement('div')
-    this.container.dataset.kalkaGhosts = ''
-    this.container.style.cssText = `position:absolute;left:0;top:0;pointer-events:none;opacity:${GHOST_OPACITY}`
-    // After the artboards: the projector keeps inserting its frames before it.
-    projector.world.append(this.container)
-  }
+  ) {}
 
   /** The keys of the previews on screen. */
   get keys(): string[] {
@@ -89,7 +88,7 @@ export class GhostLayer {
       const keys = new Set(shown.map((preview) => preview.key))
       for (const [key, ghost] of this.ghosts) {
         if (keys.has(key)) continue
-        for (const slot of ghost.frames) slot.frame.remove()
+        ghost.container.remove()
         this.ghosts.delete(key)
       }
       for (const preview of shown) this.draw(preview)
@@ -107,19 +106,21 @@ export class GhostLayer {
   destroy(): void {
     for (const frame of this.hidden) frame.style.visibility = ''
     this.hidden.clear()
+    for (const ghost of this.ghosts.values()) ghost.container.remove()
     this.ghosts.clear()
-    this.container.remove()
   }
 
   private draw(preview: DomScenePreview): void {
-    const ghost = this.ghosts.get(preview.key) ?? { preview, frames: [] }
+    const ghost = this.ghosts.get(preview.key) ?? this.createGhost(preview)
     this.ghosts.set(preview.key, ghost)
     ghost.preview = preview
+    const order = String(this.projector.stackOrderAt(this.pageIndex(preview)))
+    if (ghost.container.style.zIndex !== order) ghost.container.style.zIndex = order
     const frames = ghost.frames
     // Page children keep their slot by position: a restaged preview gives them new ids.
     while (frames.length > preview.nodeIds.length) frames.pop()?.frame.remove()
     preview.nodeIds.forEach((nodeId, index) => {
-      const slot = frames[index] ?? this.createFrame(preview.key, index)
+      const slot = frames[index] ?? this.createFrame(ghost, index)
       frames[index] = slot
       slot.nodeId = nodeId
       slot.graph = preview.graph
@@ -127,9 +128,27 @@ export class GhostLayer {
     })
   }
 
-  private createFrame(key: string, index: number): GhostFrame {
-    const doc = this.container.ownerDocument
-    const frame = createArtboardFrame(doc, key)
+  /** The page child index the preview draws at, as the canvas will once it is written. */
+  private pageIndex(preview: DomScenePreview): number {
+    const children = this.projector.graph.getNode(preview.pageId)?.childIds ?? []
+    const replaced = preview.replaceId ? children.indexOf(preview.replaceId) : -1
+    if (replaced >= 0) return replaced
+    return Math.min(preview.insertIndex ?? children.length, children.length)
+  }
+
+  private createGhost(preview: DomScenePreview): Ghost {
+    const container = this.projector.world.ownerDocument.createElement('div')
+    container.dataset.kalkaGhosts = ''
+    container.style.cssText = `position:absolute;left:0;top:0;pointer-events:none;opacity:${GHOST_OPACITY}`
+    // After the artboards, so the projector, which inserts its frames before the ones that
+    // follow, never moves it; its stacking order places it between them.
+    this.projector.world.append(container)
+    return { preview, container, frames: [] }
+  }
+
+  private createFrame(ghost: Ghost, index: number): GhostFrame {
+    const key = ghost.preview.key
+    const frame = createArtboardFrame(ghost.container.ownerDocument, key)
     delete frame.dataset.kalkaArtboard
     frame.dataset.kalkaGhost = `${key}:${index}`
     const slot: GhostFrame = { frame, doc: null, nodeId: null, graph: null }
@@ -144,7 +163,7 @@ export class GhostLayer {
       },
       { once: true }
     )
-    this.container.append(frame)
+    ghost.container.append(frame)
     return slot
   }
 

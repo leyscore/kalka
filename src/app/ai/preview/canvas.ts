@@ -167,7 +167,8 @@ export function createCanvasJSXPreview(
       graph: staged.graph,
       pageId: target.pageId,
       nodeIds: staged.nodeIds,
-      replaceId: staged.replaceId
+      replaceId: staged.replaceId,
+      insertIndex: staged.insertIndex
     }
     let disposed = false
     return {
