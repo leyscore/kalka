@@ -134,3 +134,55 @@ test('an override that only binds a variable supplies the text', () => {
   if (!instance) throw new Error('Missing instance')
   expect(graph.getChildren(instance.id)[0].text).toBe('9+')
 })
+
+test('reads a layer whose text is a number variable, as Figma binds one through STRINGIFY', () => {
+  // As the ChatGPT 5 Web UI kit binds its size labels (#1110).
+  const changes = [
+    { guid: collection, type: 'VARIABLE_SET', variableSetModes: [{ id: mode, name: 'Default' }] },
+    {
+      guid: variable,
+      type: 'VARIABLE',
+      variableResolvedType: 'FLOAT',
+      variableSetID: { guid: collection },
+      variableDataValues: {
+        entries: [
+          { modeID: mode, variableData: { dataType: 'FLOAT', value: { floatValue: 12.5 } } }
+        ]
+      }
+    },
+    { guid: page, type: 'CANVAS' },
+    {
+      guid: label,
+      type: 'TEXT',
+      name: 'Size',
+      parentIndex: { guid: page, position: '!' },
+      textData: { characters: '16' },
+      variableConsumptionMap: {
+        entries: [
+          {
+            variableField: 'TEXT_DATA',
+            variableData: {
+              dataType: 'EXPRESSION',
+              resolvedDataType: 'STRING',
+              value: {
+                expressionValue: {
+                  expressionFunction: 'STRINGIFY',
+                  expressionArguments: [
+                    {
+                      dataType: 'ALIAS',
+                      resolvedDataType: 'FLOAT',
+                      value: { alias: { guid: variable } }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ] as NodeChange[]
+  const { graph } = materializeDocument(changes)
+  const node = [...graph.getAllNodes()].find((candidate) => candidate.name === 'Size')
+  expect([node?.text, node?.boundVariables.text]).toEqual(['12.50', '1:12'])
+})

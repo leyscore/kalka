@@ -138,6 +138,19 @@ export function variableBindingEntry(
     resolvedDataType: variable.type,
     value: { alias: variableAlias(graph, variableId, ids) }
   }
+  // Text content takes a number or boolean as its text, which Figma writes as STRINGIFY.
+  if (variableField === 'TEXT_DATA' && variable.type !== 'STRING') {
+    return {
+      variableField,
+      variableData: {
+        dataType: 'EXPRESSION',
+        resolvedDataType: 'STRING',
+        value: {
+          expressionValue: { expressionFunction: 'STRINGIFY', expressionArguments: [alias] }
+        }
+      }
+    }
+  }
   if (variable.type !== 'FLOAT' || (!expression && multiplier === 1))
     return { variableField, variableData: alias }
   return {
