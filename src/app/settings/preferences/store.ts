@@ -1,6 +1,7 @@
 import { useLocalStorage } from '@vueuse/core'
 import { uniq } from 'es-toolkit'
 import * as v from 'valibot'
+import { toRaw } from 'vue'
 
 import { DEFAULT_SNAPPING_PREFERENCES, type SnappingPreferences } from '@kalka/core/editor'
 
@@ -192,14 +193,26 @@ export const appPreferences = useLocalStorage<AppPreferences>(
   }
 )
 
+/**
+ * Changes stored preferences on a plain copy. The stored value is reactive: spreading it would
+ * put its reactive proxies into what is stored, which `structuredClone` then cannot copy.
+ */
+export function editPreferences(edit: (draft: AppPreferences) => void): void {
+  const draft = parseAppPreferences(toRaw(appPreferences.value))
+  edit(draft)
+  appPreferences.value = draft
+}
+
 export function updateAnimationPreference(animations: AnimationPreference): void {
-  appPreferences.value = { ...appPreferences.value, appearance: { animations } }
+  editPreferences((draft) => {
+    draft.appearance.animations = animations
+  })
 }
 
 export function updateRecoveryEnabled(enabled: boolean): void {
-  const preferences = structuredClone(appPreferences.value)
-  preferences.recovery.enabled = enabled
-  appPreferences.value = preferences
+  editPreferences((draft) => {
+    draft.recovery.enabled = enabled
+  })
 }
 
 export function updateAISetupState(aiSetup: AISetupState): void {
@@ -207,46 +220,39 @@ export function updateAISetupState(aiSetup: AISetupState): void {
 }
 
 export function updateOnboarding(changes: Partial<AppPreferences['onboarding']>): void {
-  appPreferences.value = {
-    ...appPreferences.value,
-    onboarding: { ...appPreferences.value.onboarding, ...changes }
-  }
+  editPreferences((draft) => {
+    Object.assign(draft.onboarding, changes)
+  })
 }
 
 export function updateDefaultCodeSource(defaultSource: DefaultCodeSource): void {
-  appPreferences.value = { ...appPreferences.value, code: { defaultSource } }
+  editPreferences((draft) => {
+    draft.code.defaultSource = defaultSource
+  })
 }
 
 export function updateCanvasRenderingMode(canvasMode: CanvasRenderingMode): void {
-  appPreferences.value = {
-    ...appPreferences.value,
-    rendering: { ...appPreferences.value.rendering, canvasMode }
-  }
+  editPreferences((draft) => {
+    draft.rendering.canvasMode = canvasMode
+  })
 }
 
 export function updateCanvasBackground(canvasBackground: CanvasBackground): void {
-  appPreferences.value = {
-    ...appPreferences.value,
-    rendering: { ...appPreferences.value.rendering, canvasBackground }
-  }
+  editPreferences((draft) => {
+    draft.rendering.canvasBackground = canvasBackground
+  })
 }
 
 export function updateSnappingPreferences(changes: Partial<SnappingPreferences>): void {
-  appPreferences.value = {
-    ...appPreferences.value,
-    editing: {
-      ...appPreferences.value.editing,
-      snapping: {
-        ...appPreferences.value.editing.snapping,
-        ...changes
-      }
-    }
-  }
+  editPreferences((draft) => {
+    Object.assign(draft.editing.snapping, changes)
+  })
 }
 
 export function updateDesignCheckPreferences(changes: Partial<DesignCheckPreferences>): void {
-  appPreferences.value = {
-    ...appPreferences.value,
-    designCheck: { ...appPreferences.value.designCheck, ...changes }
-  }
+  editPreferences((draft) => {
+    const { disabledRules, ...rest } = changes
+    Object.assign(draft.designCheck, rest)
+    if (disabledRules) draft.designCheck.disabledRules = [...disabledRules]
+  })
 }

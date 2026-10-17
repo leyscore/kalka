@@ -193,6 +193,7 @@
 
 ### Fixed
 
+- Turning Automatically preserve unsaved work on or off in Settings › General is saved instead of failing with an error.
 - The agent of a Pi or ACP chat in the desktop app leaves the canvas as soon as a reply finishes, is stopped, or fails, instead of staying at work for up to 20 seconds and keeping your view following it. A tool call already in progress still finishes, but no longer puts the agent back to work.
 - Stopping an AI chat reply ends it cleanly. The reply is marked *Stopped*, its reasoning stops showing *Thinking…*, and a tool call that never reported back stops spinning and tells the AI on your next message whether it changed the document, also in conversations saved mid-reply. A tool already running finishes, and calls still waiting for their turn change nothing.
 - Use an API key saved in Settings for the open AI chat right away, including when asking again after a failed request, instead of only after reloading; the failure's notice closes once the request is sent again.

@@ -11,6 +11,7 @@ import {
   CANVAS_RENDERING_MODES,
   CHANGE_PREVIEW_SIZES,
   DESIGN_CHECK_PRESETS,
+  editPreferences,
   REASONING_DISPLAYS,
   updateDesignCheckPreferences,
   type AppPreferences
@@ -112,14 +113,12 @@ export function updateAutomationSettings(input: unknown): AutomationSettings {
   if (theme) setAppTheme(theme)
   if (language) setLocale(language)
 
-  const current = appPreferences.value
-  appPreferences.value = {
-    ...current,
-    appearance: { ...current.appearance, ...appearance },
-    rendering: { ...current.rendering, ...patch.rendering },
-    recovery: { ...current.recovery, ...patch.recovery },
-    chat: { ...current.chat, ...patch.chat }
-  }
+  editPreferences((draft) => {
+    Object.assign(draft.appearance, appearance)
+    Object.assign(draft.rendering, patch.rendering)
+    Object.assign(draft.recovery, patch.recovery)
+    Object.assign(draft.chat, patch.chat)
+  })
   if (patch.editing?.snapping) applySnappingPreferences(patch.editing.snapping)
   const { showOnCanvas, ...designCheck } = patch.designCheck ?? {}
   if (Object.keys(designCheck).length > 0) updateDesignCheckPreferences(designCheck)

@@ -1,6 +1,17 @@
-import { describe, expect, test } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 
-import { DEFAULT_APP_PREFERENCES, parseAppPreferences } from '@/app/settings/preferences/store'
+import { toRaw } from 'vue'
+
+import {
+  appPreferences,
+  DEFAULT_APP_PREFERENCES,
+  parseAppPreferences,
+  updateAnimationPreference,
+  updateCanvasBackground,
+  updateDesignCheckPreferences,
+  updateRecoveryEnabled,
+  updateSnappingPreferences
+} from '@/app/settings/preferences/store'
 
 describe('parseAppPreferences', () => {
   test('starts from the defaults when nothing usable is stored', () => {
@@ -59,5 +70,32 @@ describe('parseAppPreferences', () => {
     })
     expect(invalid.onboarding.role).toBeNull()
     expect(invalid.code.defaultSource).toBe(DEFAULT_APP_PREFERENCES.code.defaultSource)
+  })
+})
+
+describe('changing preferences', () => {
+  let saved: typeof appPreferences.value
+  beforeEach(() => {
+    saved = parseAppPreferences(toRaw(appPreferences.value))
+  })
+  afterEach(() => {
+    appPreferences.value = saved
+  })
+
+  test('each change keeps the stored value plain, so the next one can copy it', () => {
+    updateAnimationPreference('off')
+    updateRecoveryEnabled(false)
+    updateSnappingPreferences({ pixelGrid: false })
+    updateDesignCheckPreferences({ disabledRules: ['contrast'] })
+    updateCanvasBackground('document')
+    const stored = toRaw(appPreferences.value)
+    expect(() => structuredClone(stored)).not.toThrow()
+    expect(stored).toMatchObject({
+      appearance: { animations: 'off' },
+      recovery: { enabled: false },
+      editing: { snapping: { pixelGrid: false } },
+      designCheck: { disabledRules: ['contrast'] },
+      rendering: { canvasBackground: 'document' }
+    })
   })
 })
