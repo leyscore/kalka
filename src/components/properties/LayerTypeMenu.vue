@@ -10,6 +10,7 @@ import type { Component } from 'vue'
 import IconCheck from '~icons/lucide/check'
 import IconChevronDown from '~icons/lucide/chevron-down'
 
+import { layerTypeOptions, type LayerType } from '@kalka/core/editor'
 import type { SceneNode } from '@kalka/scene-graph'
 import { useI18n, useRetainedPopup } from '@kalka/vue'
 
@@ -18,20 +19,21 @@ import { NODE_ICONS } from '@/app/editor/icons'
 import { menuItem, useMenuUI } from '@/components/ui/menu/menu'
 import Tip from '@/components/ui/overlay/Tip.vue'
 
-// Figma's layer type menu: a frame and a group switch to each other in place.
+// Figma's layer type menu: a frame, a group, and a section switch to one another in place.
 const { node, icon } = defineProps<{ node: SceneNode; icon: Component | undefined }>()
 
 const store = useEditorStore()
-const { panels } = useI18n()
+const { panels, tools } = useI18n()
 const { open: popupOpen, portalActive } = useRetainedPopup()
 
 const types = [
+  { type: 'SECTION', icon: NODE_ICONS.SECTION, label: () => tools.value.section },
   { type: 'FRAME', icon: NODE_ICONS.FRAME, label: () => panels.value.frame },
   { type: 'GROUP', icon: NODE_ICONS.GROUP, label: () => panels.value.group }
 ] as const
 
-// A frame without layers has nothing to group.
-const disabled = (type: 'FRAME' | 'GROUP') => type === 'GROUP' && node.childIds.length === 0
+// Read when the menu renders, so it reflects where the layer sits now.
+const disabled = (type: LayerType) => !layerTypeOptions(store.graph, node)[type]
 
 const menuCls = useMenuUI({ content: 'min-w-36' })
 const itemCls = menuItem({ justify: 'between' })

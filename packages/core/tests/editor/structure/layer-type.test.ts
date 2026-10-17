@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { createEditor } from '@kalka/core/editor'
+import { createEditor, layerTypeOptions } from '@kalka/core/editor'
 import { getAxisAlignedWorldBounds } from '@kalka/scene-graph/coordinate'
 
 // Each case repeats the layer type menu in Figma desktop 126's properties panel.
@@ -132,5 +132,106 @@ describe('layer type menu', () => {
     })
     editor.convertLayerType(frame.id, 'GROUP')
     expect(editor.graph.getNode(frame.id)?.type).toBe('FRAME')
+  })
+
+  test('a frame on the page becomes a section that keeps its look but what a section lacks', () => {
+    const { editor, frame, dot } = setup()
+    editor.graph.updateNode(frame.id, {
+      strokes: [{ ...frame.strokes[0], weight: 2 }],
+      strokeWeight: 2
+    })
+    const dotBefore = canvasBox(editor, dot.id)
+    editor.convertLayerType(frame.id, 'SECTION')
+    expect(editor.graph.getNode(frame.id)).toMatchObject({
+      type: 'SECTION',
+      cornerRadius: 8,
+      opacity: 1,
+      effects: [],
+      clipsContent: false,
+      strokeWeight: 1
+    })
+    expect(editor.graph.getNode(frame.id)?.fills).toHaveLength(1)
+    expect(editor.graph.getNode(frame.id)?.strokes.map((stroke) => stroke.weight)).toEqual([1])
+    expect(canvasBox(editor, frame.id)).toEqual([9000, 100, 200, 150])
+    expect(canvasBox(editor, dot.id)).toEqual(dotBefore)
+
+    editor.undo.undo()
+    expect(editor.graph.getNode(frame.id)).toMatchObject({
+      type: 'FRAME',
+      opacity: 0.8,
+      clipsContent: true,
+      strokeWeight: 2
+    })
+    expect(editor.graph.getNode(frame.id)?.effects).toHaveLength(1)
+
+    editor.undo.redo()
+    editor.convertLayerType(frame.id, 'FRAME')
+    expect(editor.graph.getNode(frame.id)).toMatchObject({
+      type: 'FRAME',
+      clipsContent: true,
+      cornerRadius: 8,
+      opacity: 1
+    })
+    expect(editor.graph.getNode(frame.id)?.fills).toHaveLength(1)
+  })
+
+  test('an auto layout frame becomes a section with its layers where layout put them', () => {
+    const editor = createEditor()
+    const frame = editor.graph.createNode('FRAME', editor.state.currentPageId, {
+      width: 200,
+      height: 100,
+      layoutMode: 'VERTICAL',
+      paddingLeft: 8
+    })
+    const child = editor.graph.createNode('RECTANGLE', frame.id, { width: 100, height: 40 })
+    editor.runLayoutForNode(frame.id)
+    const placed = canvasBox(editor, child.id)
+    editor.convertLayerType(frame.id, 'SECTION')
+    expect(editor.graph.getNode(frame.id)?.layoutMode).toBe('NONE')
+    expect(canvasBox(editor, child.id)).toEqual(placed)
+  })
+
+  test('a group becomes a section of its bounds, with no fill', () => {
+    const { editor, frame, box } = setup()
+    editor.convertLayerType(frame.id, 'GROUP')
+    const boxBefore = canvasBox(editor, box.id)
+    editor.convertLayerType(frame.id, 'SECTION')
+    expect(editor.graph.getNode(frame.id)).toMatchObject({ type: 'SECTION', fills: [], opacity: 1 })
+    expect(canvasBox(editor, frame.id)).toEqual([9020, 130, 220, 150])
+    expect(canvasBox(editor, box.id)).toEqual(boxBefore)
+  })
+
+  test('offers a section on the page or in a section, a group of layers, and no group of a section', () => {
+    const editor = createEditor()
+    const page = editor.state.currentPageId
+    const section = editor.graph.createNode('SECTION', page, { width: 400, height: 300 })
+    const inSection = editor.graph.createNode('FRAME', section.id, { width: 100, height: 80 })
+    const outer = editor.graph.createNode('FRAME', page, { width: 300, height: 250 })
+    const nested = editor.graph.createNode('FRAME', outer.id, { width: 100, height: 80 })
+    editor.graph.createNode('RECTANGLE', section.id, { width: 10, height: 10 })
+    const options = (id: string) => {
+      const node = editor.graph.getNode(id)
+      if (!node) throw new Error(`Missing ${id}`)
+      return layerTypeOptions(editor.graph, node)
+    }
+    expect(options(inSection.id)).toEqual({ FRAME: true, GROUP: false, SECTION: true })
+    expect(options(nested.id)).toEqual({ FRAME: true, GROUP: false, SECTION: false })
+    expect(options(section.id)).toEqual({ FRAME: true, GROUP: false, SECTION: true })
+    editor.convertLayerType(nested.id, 'SECTION')
+    expect(editor.graph.getNode(nested.id)?.type).toBe('FRAME')
+  })
+
+  test('a section holding a section stays one, as a frame cannot hold it', () => {
+    const editor = createEditor()
+    const outer = editor.graph.createNode('SECTION', editor.state.currentPageId, {
+      width: 600,
+      height: 400
+    })
+    editor.graph.createNode('SECTION', outer.id, { width: 200, height: 150 })
+    const node = editor.graph.getNode(outer.id)
+    if (!node) throw new Error('Missing section')
+    expect(layerTypeOptions(editor.graph, node).FRAME).toBe(false)
+    editor.convertLayerType(outer.id, 'FRAME')
+    expect(editor.graph.getNode(outer.id)?.type).toBe('SECTION')
   })
 })

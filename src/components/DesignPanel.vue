@@ -133,7 +133,7 @@ const { panels } = useI18n()
       <PanelHeader :component="isComponentType">
         <template #icon>
           <LayerTypeMenu
-            v-if="node.type === 'FRAME' || node.type === 'GROUP'"
+            v-if="node.type === 'FRAME' || node.type === 'GROUP' || node.type === 'SECTION'"
             :node="node"
             :icon="selectedIcon"
           />

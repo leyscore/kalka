@@ -1,5 +1,6 @@
 import type { createSelectionActions } from '#core/editor/selection'
 import type { createStructureActions } from '#core/editor/structure'
+import type { LayerType } from '#core/editor/structure/layer-type'
 
 type SelectionActions = ReturnType<typeof createSelectionActions>
 type StructureActions = ReturnType<typeof createStructureActions>
@@ -15,10 +16,7 @@ export function createStructureBridge(structure: StructureActions, selection: Se
     outlineTextSelected: () => structure.outlineTextSelected(selection.getSelectedNodes()),
     outlineStrokeSelected: () => structure.outlineStrokeSelected(selection.getSelectedNodes()),
     ungroupSelected: () => structure.ungroupSelected(selection.getSelectedNode()),
-    /** Switches a frame or group to the other type in place, as Figma's layer type menu does. */
-    convertLayerType: (nodeId: string, type: 'FRAME' | 'GROUP') =>
-      type === 'GROUP'
-        ? structure.convertFrameToGroup(nodeId)
-        : structure.convertGroupToFrame(nodeId)
+    /** Switches a layer to another type in place, as Figma's layer type menu does. */
+    convertLayerType: (nodeId: string, type: LayerType) => structure.convertLayerType(nodeId, type)
   }
 }

@@ -22,7 +22,7 @@ export function createLintFixBridge(
           graph: ctx.graph,
           updateNode: (id, changes) => nodes.updateNodeWithUndo(id, changes, 'Fix design issue'),
           bindVariable: nodes.bindVariable,
-          convertToFrame: structure.convertGroupToFrame,
+          convertToFrame: (id) => structure.convertLayerType(id, 'FRAME'),
           deleteNodes: (ids) => clipboard.deleteNodes(ids)
         },
         requests
