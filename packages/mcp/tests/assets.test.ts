@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { ASSET_TTL_MS, createAssetStore } from '#mcp/server/assets'
+import { ASSET_TTL_MS, createAssetStore } from '../src/server/assets'
 
 function clock(start = 0) {
   const state = { time: start }
