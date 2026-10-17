@@ -1,6 +1,7 @@
 import type { EditorStore } from '@/app/editor/session/create'
 import type { NavigationRecording, NavigationRecorder } from '@/app/performance/navigation/recorder'
 import { startNavigationRecorder } from '@/app/performance/navigation/recorder'
+import { canvasScenesSettled } from '@/app/presence/canvas-scene'
 
 export interface NavigationBenchmarkHooks {
   startRecording: (name: string) => void
@@ -9,6 +10,31 @@ export interface NavigationBenchmarkHooks {
 }
 
 let recorder: NavigationRecorder | null = null
+
+/** The Skia renderers drawing a page whose settlement they track. */
+function skiaRenderers(store: EditorStore) {
+  return store.canvasRenderers.filter(
+    (renderer) => renderer.tracksSceneSettlement && renderer.pageId !== null
+  )
+}
+
+/**
+ * Whether the canvas shows the current view at full quality: on the DOM canvas, every pane's
+ * scene with nothing left to apply; on Skia, every renderer's tiles covered or its backing crisp.
+ */
+function rendererSettled(store: EditorStore): boolean {
+  const scenes = canvasScenesSettled(store)
+  if (scenes !== null) return scenes
+  const renderers = skiaRenderers(store)
+  return (
+    renderers.length > 0 &&
+    renderers.every((renderer) =>
+      renderer.tiledSceneEnabled
+        ? renderer.tiledSceneCovered && !renderer.tiledScenePending
+        : !renderer.sceneBackingNeedsCrispRender
+    )
+  )
+}
 
 export function createNavigationBenchmarkHooks(store: EditorStore): NavigationBenchmarkHooks {
   return {
@@ -44,36 +70,25 @@ export function createNavigationBenchmarkHooks(store: EditorStore): NavigationBe
           else reject(error ?? new Error('Navigation settlement failed'))
         }
         const timeout = setTimeout(() => {
-          const state = store.canvasRenderers
-            .filter((renderer) => renderer.tracksSceneSettlement && renderer.pageId !== null)
-            .map((renderer) => ({
-              tiled: renderer.tiledSceneEnabled,
-              covered: renderer.tiledSceneCovered,
-              pending: renderer.tiledScenePending,
-              backingCrisp: !renderer.sceneBackingNeedsCrispRender
-            }))
+          const state = skiaRenderers(store).map((renderer) => ({
+            tiled: renderer.tiledSceneEnabled,
+            covered: renderer.tiledSceneCovered,
+            pending: renderer.tiledScenePending,
+            backingCrisp: !renderer.sceneBackingNeedsCrispRender
+          }))
           finish(
             'reject',
             new Error(
               `Navigation renderer did not settle within ${timeoutMs} ms: ${JSON.stringify({
                 navigationPhase: store.state.navigation.phase,
+                domScene: canvasScenesSettled(store),
                 renderers: state
               })}`
             )
           )
         }, timeoutMs)
         const check = () => {
-          const renderers = store.canvasRenderers.filter(
-            (renderer) => renderer.tracksSceneSettlement && renderer.pageId !== null
-          )
-          const settled =
-            store.state.navigation.phase === 'idle' &&
-            renderers.length > 0 &&
-            renderers.every((renderer) =>
-              renderer.tiledSceneEnabled
-                ? renderer.tiledSceneCovered && !renderer.tiledScenePending
-                : !renderer.sceneBackingNeedsCrispRender
-            )
+          const settled = store.state.navigation.phase === 'idle' && rendererSettled(store)
           if (settled) {
             finish('resolve')
             return

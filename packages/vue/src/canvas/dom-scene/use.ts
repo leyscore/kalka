@@ -192,6 +192,19 @@ export function useDomScene(
     get projector() {
       return projector
     },
+    /**
+     * Whether the DOM shows the page as the graph has it: every artboard's document loaded with
+     * its fonts, no edit left to patch, no layout left to read back, and no reveal playing.
+     */
+    get settled() {
+      if (!projector || projector.needsFlush || reflowed.size > 0 || reveals?.busy) return false
+      for (const id of projector.artboardIds) {
+        const doc = projector.artboardOf(id)?.doc
+        if (doc?.readyState !== 'complete' || doc.fonts.status === 'loading') return false
+        if (projector.isStale(id)) return false
+      }
+      return true
+    },
     /** Redraws the page's boolean operations, once path operations can combine their operands. */
     redrawBooleanOperations() {
       if (!projector) return

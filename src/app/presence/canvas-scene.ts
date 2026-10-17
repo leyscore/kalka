@@ -11,6 +11,8 @@ export interface CanvasScene {
   hold(ids: readonly string[]): void
   /** Shows held layers now. */
   release(ids: readonly string[]): void
+  /** Whether the scene shows the page as the graph has it, with nothing left to apply. */
+  readonly settled: boolean
 }
 
 interface SceneEffects {
@@ -55,6 +57,16 @@ export function attachCanvasScene(store: EditorStore, scene: CanvasScene): () =>
   const { scenes } = effectsOf(store)
   scenes.add(scene)
   return () => scenes.delete(scene)
+}
+
+/**
+ * Whether every pane's DOM scene shows this document as its graph has it, or null when no DOM
+ * scene draws it, as when the canvas draws with Skia.
+ */
+export function canvasScenesSettled(store: EditorStore): boolean | null {
+  const { scenes } = effectsOf(store)
+  if (scenes.size === 0) return null
+  return [...scenes].every((scene) => scene.settled)
 }
 
 /** Replays an edit in every pane drawing this document. */

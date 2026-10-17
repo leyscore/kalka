@@ -119,7 +119,7 @@ The report includes:
 - Final input to exact active-renderer settlement: crisp retained backing for the existing renderer or exact visible tile coverage for tiled mode.
 - Tiled scheduler frame count, maximum jobs per frame, maximum measured job submission, over-budget jobs, deadline overrun, and cancelled obsolete jobs.
 
-The runner contains no warmup or settlement sleeps. `waitForSettlement()` requires an idle navigation lifecycle and renderer-owned exact coverage; its timeout rejects the benchmark and reports renderer state.
+The runner contains no warmup or settlement sleeps. `waitForSettlement()` requires an idle navigation lifecycle and renderer-owned exact coverage: on the DOM canvas, every artboard document loaded with its fonts, no projection left to patch, no layout left to read back, and no reveal playing; on Skia, a crisp backing or exact tile coverage. Its timeout rejects the benchmark and reports renderer state.
 
 ### Benchmark content mutation and cancellation
 

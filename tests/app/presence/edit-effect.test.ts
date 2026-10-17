@@ -62,7 +62,8 @@ function editor() {
     },
     release: (ids) => {
       for (const id of ids) held.delete(id)
-    }
+    },
+    settled: true
   })
   return { store, pageId, shown, held, detach }
 }
@@ -202,7 +203,8 @@ describe("an agent's new layers wait for their reveal", () => {
       },
       release: (ids) => {
         for (const id of ids) held.delete(id)
-      }
+      },
+      settled: true
     })
     const finish = store.capturePageChange(pageId)
     const hold = holdAgentCreations(store)
