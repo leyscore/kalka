@@ -114,4 +114,41 @@ describe('SVG overlay', () => {
       )
     ).toEqual([])
   })
+
+  test('text set on a path draws its curve, band, crosshair and start handle in a dashed box', () => {
+    const graph = new SceneGraph()
+    const text = graph.createNode('TEXT', graph.getPages()[0].id, {
+      text: 'AB',
+      width: 200,
+      height: 100,
+      textPathBox: { x: 0, y: 0, width: 200, height: 100 },
+      textPathData: {
+        network: {
+          vertices: [
+            { x: 0, y: 50 },
+            { x: 200, y: 50 }
+          ],
+          segments: [
+            { start: 0, end: 1, tangentStart: { x: 0, y: 0 }, tangentEnd: { x: 0, y: 0 } }
+          ],
+          regions: []
+        },
+        normalizedSize: { x: 200, y: 100 },
+        tValue: 0.5,
+        forward: true
+      },
+      derivedTextGlyphs: [
+        { commandsBlob: new Uint8Array(), x: 40, y: 50, fontSize: 20, rotation: 0 },
+        { commandsBlob: new Uint8Array(), x: 60, y: 50, fontSize: 20, rotation: 0 }
+      ]
+    })
+    const flat = flatten(composeOverlay(context(graph, { selectedIds: new Set([text.id]) })))
+    expect(flat.some((shape) => shape.type === 'polygon' && shape.fill)).toBe(true)
+    const curve = flat.find((shape) => shape.type === 'path')
+    expect(curve?.type === 'path' && curve.d.split('L').length).toBeGreaterThan(64)
+    expect(flat.some((shape) => shape.type === 'rect' && shape.dash !== undefined)).toBe(true)
+    // The box's eight handles, its rotation handle, and where the text starts on the curve.
+    const handles = flat.filter((shape) => shape.type === 'rect' && shape.fill === WHITE)
+    expect(handles).toHaveLength(10)
+  })
 })

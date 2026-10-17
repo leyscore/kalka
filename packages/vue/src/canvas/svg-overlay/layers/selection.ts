@@ -24,6 +24,7 @@ import {
 import {
   createSceneGeometry,
   rotationHandleLayout,
+  selectionPath,
   viewportMatrix,
   type ViewportTransform
 } from '@kalka/core/geometry'
@@ -38,6 +39,8 @@ import {
   type OverlayShape,
   type Paint
 } from '#vue/canvas/svg-overlay/shapes'
+
+import { textPathSelectionShapes } from './text-path'
 
 export interface OverlayContext {
   graph: SceneGraph
@@ -218,20 +221,31 @@ function singleSelection(context: OverlayContext, node: SceneNode): OverlayShape
   )
   const { zoom } = context.view
   const half = HANDLE_HALF_SIZE / zoom
-  const [x1, y1, x2, y2] = [0, 0, node.width, node.height]
+  // Text set on a path is framed by the box its lettering fits, under its curve and band.
+  const textPath = selectionPath(node)
+  const box = textPath?.box ?? { x: 0, y: 0, width: node.width, height: node.height }
+  const [x1, y1, x2, y2] = [box.x, box.y, box.x + box.width, box.y + box.height]
   const midX = (x1 + x2) / 2
   const midY = (y1 + y2) / 2
-  const stalk = rotationHandleLayout(node, geometry, zoom, {
-    x: x1,
-    y: y1,
-    width: x2 - x1,
-    height: y2 - y1
-  })
+  const stalk = rotationHandleLayout(node, geometry, zoom, box)
+  const handleAt = (x: number, y: number) => handle(x, y, half, stroke)
+  const outline: OverlayShape = textPath
+    ? {
+        ...box,
+        type: 'rect',
+        stroke: css(color, SELECTION_DASH_ALPHA),
+        strokeWidth: 1,
+        dash: [4, 4]
+      }
+    : { ...box, type: 'rect', stroke, strokeWidth: 1 }
   const placed: OverlayShape = {
     type: 'group',
     matrix: Matrix.multiply(viewportMatrix(context.view), geometry.worldMatrix(node)),
     children: [
-      { type: 'rect', x: x1, y: y1, width: x2 - x1, height: y2 - y1, stroke, strokeWidth: 1 },
+      ...(textPath
+        ? textPathSelectionShapes(node, textPath, { color, handle: handleAt, half })
+        : []),
+      outline,
       {
         type: 'line',
         x1: stalk.edge.x,
@@ -251,7 +265,7 @@ function singleSelection(context: OverlayContext, node: SceneNode): OverlayShape
         [midX, y2],
         [x1, midY],
         [x2, midY]
-      ].map(([x, y]) => handle(x, y, half, stroke))
+      ].map(([x, y]) => handleAt(x, y))
     ]
   }
   const label = frameLabelPlacement(node, context.graph, context.overlays.rotationPreview, {

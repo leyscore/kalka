@@ -3,10 +3,6 @@ import { expect, test, useEditorSetup } from '#tests/e2e/fixtures'
 const editor = useEditorSetup('/?test&no-chrome&no-rulers')
 
 test('renders imported text on a path with its selection overlay', async () => {
-  // The SVG overlay does not draw a selected text path's curve and glyph band yet, only its box,
-  // and places the handles on the layer's box where the Skia overlay put them on the path's. The
-  // text itself draws on the DOM canvas; the baseline is the Skia drawing, kept as the target.
-  test.fixme()
   test.setTimeout(90_000)
   await editor.page.evaluate(() => window.kalka?.openFile?.('/tests/fixtures/circle-text.fig'))
   await editor.canvas.waitForRender()
