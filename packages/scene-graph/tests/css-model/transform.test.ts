@@ -4,11 +4,12 @@ import { SceneGraph, type SceneNode } from '@kalka/scene-graph'
 import { getNodeLocalMatrix } from '@kalka/scene-graph/coordinate'
 import { readLayerStyle, writeLayerStyle } from '@kalka/scene-graph/css-model'
 import Matrix, { type Mat3 } from '@kalka/scene-graph/matrix'
+import type { Vector } from '@kalka/scene-graph/primitives'
 
 const FUNCTION = /([a-z]+)\(([^)]*)\)/g
 
 /** What a browser does with a `transform` about a `transform-origin`, as a matrix. */
-function cssTransformMatrix(transform: string, origin: { x: number; y: number }): Mat3 {
+function cssTransformMatrix(transform: string, origin: Vector): Mat3 {
   const steps = [...transform.matchAll(FUNCTION)].map(([, name, args]) => {
     const values = args.split(',').map((value) => Number.parseFloat(value))
     if (name === 'translate') return Matrix.translated(values[0], values[1])
@@ -23,7 +24,7 @@ function cssTransformMatrix(transform: string, origin: { x: number; y: number })
   )
 }
 
-function cssOrigin(style: Record<string, string>, node: SceneNode) {
+function cssOrigin(style: Record<string, string>, node: SceneNode): Vector {
   const origin = style['transform-origin']
   if (!origin) return { x: node.width / 2, y: node.height / 2 }
   const [x, y] = origin.split(' ').map((value) => Number.parseFloat(value))
@@ -42,7 +43,7 @@ describe('layer transforms in CSS', () => {
     it(`place the corners of ${name} where the canvas does`, () => {
       const graph = new SceneGraph()
       const node = graph.createNode(type, graph.getPages()[0].id, { width: 120, height: 60, ...fields })
-      const style = writeLayerStyle(node, { css: (_field, literal) => literal })
+      const style = writeLayerStyle(node, { parent: undefined, css: (_field, literal) => literal })
       const corners = [0, 0, node.width, 0, node.width, node.height, 0, node.height]
       const drawn = Matrix.mapPoints(cssTransformMatrix(style.transform, cssOrigin(style, node)), corners)
       const expected = Matrix.mapPoints(getNodeLocalMatrix(node, { x: 0, y: 0 }), corners)
@@ -53,9 +54,9 @@ describe('layer transforms in CSS', () => {
       const graph = new SceneGraph()
       const page = graph.getPages()[0].id
       const node = graph.createNode(type, page, { width: 120, height: 60, ...fields })
-      const style = writeLayerStyle(node, { css: (_field, literal) => literal })
+      const style = writeLayerStyle(node, { parent: undefined, css: (_field, literal) => literal })
       const read = graph.createNode(type, page, {})
-      readLayerStyle(read, style, { projected: {} })
+      readLayerStyle(read, style, { projected: { parent: undefined } })
       expect({ rotation: read.rotation, flipX: read.flipX, flipY: read.flipY }).toEqual({
         rotation: node.rotation,
         flipX: node.flipX,
