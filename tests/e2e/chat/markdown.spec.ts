@@ -13,11 +13,24 @@ test('completed responses release streaming parser history', async ({ configured
 test('code blocks follow light and dark themes', async ({ configuredChat: chat }) => {
   await chat.submit('Show a code block')
   const code = chat.assistantMessage().locator('.shiki').first()
-  await expect(code).toHaveCSS('background-color', 'rgb(30, 30, 30)')
-  await expect(code.locator('span').filter({ hasText: 'const' }).first()).not.toHaveCSS(
-    'color',
-    'rgb(240, 240, 240)'
-  )
+  const keyword = code.locator('span').filter({ hasText: 'const' }).first()
+  /** The app's field color in the current theme, which code blocks sit on instead of Shiki's. */
+  const fieldColor = () =>
+    chat.page.evaluate(() => {
+      const probe = document.createElement('div')
+      probe.style.backgroundColor = 'var(--color-input)'
+      document.body.append(probe)
+      const color = getComputedStyle(probe).backgroundColor
+      probe.remove()
+      return color
+    })
+  const colors = async () => ({
+    background: await code.evaluate((element) => getComputedStyle(element).backgroundColor),
+    keyword: await keyword.evaluate((element) => getComputedStyle(element).color)
+  })
+
+  await expect(code).toHaveCSS('background-color', await fieldColor())
+  const dark = await colors()
 
   await chat.page.evaluate(async () => {
     const themeModulePath = '/src/app/shell/theme.ts'
@@ -28,7 +41,10 @@ test('code blocks follow light and dark themes', async ({ configuredChat: chat }
   await expect(
     chat.page.locator('[data-slot="chat-markdown"] .markdown-content').last()
   ).toHaveClass(/light/)
-  await expect(code).toHaveCSS('background-color', 'rgb(255, 255, 255)')
+  await expect(code).toHaveCSS('background-color', await fieldColor())
+  const light = await colors()
+  expect(light.background).not.toBe(dark.background)
+  expect(light.keyword).not.toBe(dark.keyword)
 })
 
 test('Markdown blocks unsafe links and cross-origin images', async ({ configuredChat: chat }) => {
