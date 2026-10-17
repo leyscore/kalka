@@ -34,4 +34,17 @@ describe('AI activity marks', () => {
     expect(aiMarksLayer(context, { active: [], done }, AI_DONE_DURATION_MS / 2)).toHaveLength(1)
     expect(aiMarksLayer(context, { active: [], done }, AI_DONE_DURATION_MS + 1)).toHaveLength(0)
   })
+
+  test('with reduced motion, a working layer holds steady and a finished one does not fade', () => {
+    const { box, context } = setup()
+    const at = (now: number) =>
+      aiMarksLayer(context, { active: [box.id], done: [], still: true }, now)
+    const low = at((AI_PULSE_PERIOD_MS * 3) / 4)
+    const high = at(AI_PULSE_PERIOD_MS / 4)
+    expect(low[0].type === 'rect' && high[0].type === 'rect' && low[0].stroke === high[0].stroke).toBe(true)
+    const done = [{ nodeId: box.id, startTime: 0 }]
+    const early = aiMarksLayer(context, { active: [], done, still: true }, 1)
+    const late = aiMarksLayer(context, { active: [], done, still: true }, AI_DONE_DURATION_MS - 1)
+    expect(early[0].type === 'rect' && late[0].type === 'rect' && early[0].stroke === late[0].stroke).toBe(true)
+  })
 })

@@ -1,3 +1,4 @@
+import { usePreferredReducedMotion } from '@vueuse/core'
 import { onScopeDispose, watch, type Ref } from 'vue'
 
 import {
@@ -68,6 +69,7 @@ export function useSVGOverlay(
 ) {
   const measureText = createMeasureText()
   const labels = new LabelCache()
+  const reducedMotion = usePreferredReducedMotion()
   let frame = 0
   let drawn: unknown[] = []
   let issueMarkers: PlacedIssueMarker[] = []
@@ -98,7 +100,11 @@ export function useSVGOverlay(
     const state = options.getRenderState?.() ?? editor.state
     const renderer = editor.renderer
     const flashes = renderer?._flashes ?? []
-    const aiMarks = { active: renderer?._aiActiveNodes ?? [], done: renderer?._aiDoneFlashes ?? [] }
+    const aiMarks = {
+      active: renderer?._aiActiveNodes ?? [],
+      done: renderer?._aiDoneFlashes ?? [],
+      still: reducedMotion.value === 'reduce'
+    }
     const animating = flashes.length > 0 || aiMarks.done.length > 0 || renderer?._aiActiveNodes.size
     const showRulers = options.showRulers?.() ?? false
     const obstacles = options.getOverlayObstacles?.() ?? []
