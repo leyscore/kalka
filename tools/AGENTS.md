@@ -23,6 +23,7 @@ Private tooling lives under `tools/<role>/<domain>/{src,tests}`; Steiger enforce
 - `tools/ci/policy` runs right after Bun is set up, before any install, so it imports only Node built-ins; `oxlint.json` switches `kalka/prefer-es-toolkit` off there. Other CI tools install their workspace first, through `.github/actions/setup-bun`.
 - Required checks must also run on `merge_group`, the merge queue's event; read base and head from `merge_group.base_sha`/`head_sha` there (`ci.yml`, `pr-title.yml`).
 - A passing pull request run records the tree it tested as the `CI verified tree` status on the PR head; a merge queue commit with that exact tree is classified `verified` and runs only the always-on checks. Any other tree, including a group with other PRs ahead, gets the full run (`tools/ci/policy/src/verified-tree/`).
+- `e2e-baselines.yml` and `fig-baselines.yml` are manual `workflow_dispatch` writers, not gates: the first reruns the given Playwright specs on Linux (`kalka`, `kalka-webkit`, or both) with `--update-snapshots=changed` and uploads the rewritten `*-linux.png` files, the second writes `.fig` import baselines and the `fig-import` page captures that need `material3.fig`. Their artifacts unpack at the repository root and last one day; review and commit them by hand (`tests/AGENTS.md`, Browser runs).
 - LFS objects live in this private repository: jobs that pull them keep the checkout's credentials, and `.github/actions/setup-bun` caches them by pointer so the metered LFS bandwidth is spent only when a fixture changes.
 
 ## Releases

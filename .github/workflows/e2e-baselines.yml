@@ -1,0 +1,151 @@
+name: E2E baselines
+
+# Manual only: rewrites Playwright snapshots on Linux (Chromium and WebKit) after their darwin
+# twins were refreshed on a laptop. Download the artifact at the repository root and commit the
+# `*-linux.png` files it holds. `.fig` page captures need material3.fig: use `.fig baselines`.
+on:
+  workflow_dispatch:
+    inputs:
+      specs:
+        description: Space-separated spec files or folders under tests/e2e
+        default: >-
+          tests/e2e/canvas/boolean-visual.spec.ts
+          tests/e2e/canvas/color-space.webkit.spec.ts
+          tests/e2e/canvas/component-overlays.spec.ts
+          tests/e2e/canvas/demo-workspace.spec.ts
+          tests/e2e/canvas/dense-text-preview.spec.ts
+          tests/e2e/canvas/distance-measurement.spec.ts
+          tests/e2e/canvas/distance-measurement-edge-cases.spec.ts
+          tests/e2e/canvas/document-loading.spec.ts
+          tests/e2e/canvas/frame-overlays.spec.ts
+          tests/e2e/canvas/instance-sizing.spec.ts
+          tests/e2e/canvas/label-anatomy.spec.ts
+          tests/e2e/canvas/labels/component.spec.ts
+          tests/e2e/canvas/layout-outlines.spec.ts
+          tests/e2e/canvas/live-editing.spec.ts
+          tests/e2e/canvas/nested-transform-interaction.spec.ts
+          tests/e2e/canvas/pattern-mask-visual.spec.ts
+          tests/e2e/canvas/pixel-grid.spec.ts
+          tests/e2e/canvas/scene-picture-freshness.spec.ts
+          tests/e2e/canvas/slot-overlays.spec.ts
+          tests/e2e/canvas/stroke-paint-visual.spec.ts
+          tests/e2e/canvas/text/path-visual.spec.ts
+          tests/e2e/canvas/tiled-large-blur-visual.spec.ts
+          tests/e2e/chat/streaming/placement.spec.ts
+          tests/e2e/design-check/design-check.spec.ts
+          tests/e2e/design/panel.spec.ts
+          tests/e2e/editor/auto-layout/composition.spec.ts
+          tests/e2e/panels/visual.spec.ts
+          tests/e2e/properties/effects.spec.ts
+          tests/e2e/snap/guides.spec.ts
+      project:
+        description: Playwright project
+        type: choice
+        options:
+          - kalka
+          - kalka-webkit
+          - both
+        default: both
+      update:
+        description: Rewrite the snapshots that differ; off only compares them
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  baselines:
+    name: Snapshots — ${{ matrix.project }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        project: ${{ fromJSON(inputs.project == 'both' && '["kalka","kalka-webkit"]' || format('["{0}"]', inputs.project)) }}
+    env:
+      BROWSER: ${{ matrix.project == 'kalka-webkit' && 'webkit' || 'chromium' }}
+    steps:
+      # LFS objects come from this repository, which needs the checkout's token.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - uses: ./.github/actions/setup-bun
+        with:
+          lfs: 'true'
+          # The small fixtures the canvas specs open; never the large .fig corpora.
+          lfs-include: tests/fixtures/gold-preview.fig,tests/fixtures/circle-text.fig,tests/fixtures/slots.fig,tests/fixtures/variable-override-precedence.fig,tests/fixtures/fonts/*
+
+      - name: Check the spec paths
+        env:
+          SPECS: ${{ inputs.specs }}
+        run: |
+          for spec in $SPECS; do
+            if [[ ! "$spec" =~ ^tests/e2e/[A-Za-z0-9_./-]+$ || "$spec" == *..* || ! -e "$spec" ]]; then
+              echo "::error::Not a spec or folder under tests/e2e: $spec"
+              exit 1
+            fi
+          done
+
+      - name: Key the Playwright browser
+        id: browser
+        run: echo "version=$(bunx playwright --version | cut -d' ' -f2)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        id: browser-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ env.BROWSER }}-${{ runner.os }}-${{ steps.browser.outputs.version }}
+
+      - name: Install the browser
+        env:
+          CACHED: ${{ steps.browser-cache.outputs.cache-hit }}
+        run: |
+          if [ "$CACHED" = true ]; then
+            bunx playwright install-deps "$BROWSER"
+          else
+            bunx playwright install --with-deps "$BROWSER"
+          fi
+
+      - name: Build packages
+        run: bun run build:packages
+
+      - name: Run the specs
+        env:
+          SPECS: ${{ inputs.specs }}
+          PROJECT: ${{ matrix.project }}
+          UPDATE: ${{ inputs.update }}
+          KALKA_TEST_SERVER: app
+          PLAYWRIGHT_HTML_OPEN: never
+        run: |
+          args=(--project="$PROJECT" --workers=2 --reporter=list,html --pass-with-no-tests)
+          if [ "$UPDATE" = true ]; then args+=(--update-snapshots=changed); fi
+          # The WebKit project matches only its own specs, so the others are filtered out there.
+          bunx playwright test "${args[@]}" $SPECS
+
+      - name: Collect the rewritten snapshots
+        if: always() && inputs.update
+        run: |
+          mkdir -p "$RUNNER_TEMP/snapshots"
+          git ls-files --modified --others --exclude-standard -- '*-linux.png' > "$RUNNER_TEMP/changed.txt"
+          echo "$(wc -l < "$RUNNER_TEMP/changed.txt") snapshots changed"
+          cat "$RUNNER_TEMP/changed.txt"
+          # Paths stay repository-relative, so the artifact unpacks at the root.
+          rsync -R --files-from="$RUNNER_TEMP/changed.txt" . "$RUNNER_TEMP/snapshots"
+
+      - uses: actions/upload-artifact@v7
+        if: always() && inputs.update
+        with:
+          name: e2e-baselines-${{ matrix.project }}-${{ github.sha }}
+          path: ${{ runner.temp }}/snapshots
+          if-no-files-found: warn
+          retention-days: 1
+
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: playwright-report-${{ matrix.project }}-${{ github.sha }}
+          path: |
+            playwright-report
+            test-results
+          if-no-files-found: ignore
+          retention-days: 1
