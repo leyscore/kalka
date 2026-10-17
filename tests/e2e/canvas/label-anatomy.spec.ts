@@ -9,6 +9,8 @@ import { mockFontsource } from '#tests/helpers/fonts/fontsource'
 
 test.use({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 2 })
 
+// The Skia renderer's own label paragraph cache; the DOM canvas has none, so this runs on
+// `?renderer=skia`, the comparison renderer, until it is removed.
 test('reused Unicode section labels match fresh paragraphs across zoom reversals', async ({
   page
 }) => {
@@ -26,7 +28,7 @@ test('reused Unicode section labels match fresh paragraphs across zoom reversals
     }
   ])
   try {
-    await page.goto('/?test&no-rulers&navigation-benchmark')
+    await page.goto('/?test&no-rulers&navigation-benchmark&renderer=skia')
     const canvas = new CanvasHelper(page)
     await canvas.waitForInit()
     await page.evaluate(() => {

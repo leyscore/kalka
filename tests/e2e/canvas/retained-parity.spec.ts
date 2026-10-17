@@ -3,13 +3,15 @@ import { writeFile } from 'node:fs/promises'
 import { expect, test } from '#tests/e2e/fixtures'
 import { CanvasHelper } from '#tests/helpers/canvas'
 
+// The Skia renderer's retained scene backing; the DOM canvas keeps none, so this runs on
+// `?renderer=retained`, the Skia comparison renderer in that mode, until it is removed.
 for (const dpr of [1, 1.25, 1.5, 2]) {
   test.describe(`retained raster parity at DPR ${dpr}`, () => {
     test.use({ viewport: { width: 1111, height: 999 }, deviceScaleFactor: dpr })
     test('rounded geometry matches direct rendering after odd and even device pans', async ({
       page
     }) => {
-      await page.goto('/?test&no-chrome&no-rulers&navigation-benchmark')
+      await page.goto('/?test&no-chrome&no-rulers&navigation-benchmark&renderer=retained')
       const canvas = new CanvasHelper(page)
       await canvas.waitForInit()
       await page.evaluate(() => {

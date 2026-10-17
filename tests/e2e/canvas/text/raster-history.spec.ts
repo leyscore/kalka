@@ -6,6 +6,8 @@ import { toUint8Array } from 'js-base64'
 import { expect, test } from '#tests/e2e/fixtures'
 import { CanvasHelper } from '#tests/helpers/canvas'
 
+// The Skia renderer's own scene backing and paragraph shaping; the DOM canvas has none, so this
+// runs on `?renderer=skia`, the comparison renderer, until it is removed.
 async function captureText(
   browser: Browser,
   baseURL: string | undefined,
@@ -23,7 +25,7 @@ async function captureText(
     await cdp.send('Emulation.setEmulatedMedia', {
       features: [{ name: 'color-gamut', value: gamut }]
     })
-    await page.goto('/?test&no-chrome&no-rulers')
+    await page.goto('/?test&no-chrome&no-rulers&renderer=skia')
     const canvas = new CanvasHelper(page)
     await canvas.waitForInit()
     await canvas.clearCanvas()

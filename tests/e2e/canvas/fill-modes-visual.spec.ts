@@ -1,7 +1,6 @@
 import { readFile } from 'node:fs/promises'
 
 import { expect, test, useEditorSetupWithClear } from '#tests/e2e/fixtures'
-import { readScenePixels } from '#tests/helpers/canvas/pixels'
 
 const editor = useEditorSetupWithClear('/?test&no-chrome&no-rulers')
 
@@ -194,15 +193,6 @@ test('gradients and image fill modes', async () => {
     store.clearSelection()
     store.requestRender()
   })
-  await editor.canvas.waitForRender()
-  const gradientPixels = await readScenePixels(
-    editor.page,
-    [0, 1, 2, 3].map((index) => ({ x: 130 + index * 116, y: 120 }))
-  )
-  for (const [r, g, b, a] of gradientPixels) {
-    expect(a).toBe(255)
-    expect(Math.min(r, g, b)).toBeLessThan(200)
-  }
   await editor.canvas.waitForRender()
   await expectCanvas('gradients-and-image-fill-modes')
 })

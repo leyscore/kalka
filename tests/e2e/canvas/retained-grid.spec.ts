@@ -2,12 +2,14 @@ import { expect, test } from '#tests/e2e/fixtures'
 import { expectDefined } from '#tests/helpers/assert'
 import { CanvasHelper } from '#tests/helpers/canvas'
 
+// The Skia renderer's retained scene backing; the DOM canvas keeps none, so this runs on
+// `?renderer=retained`, the Skia comparison renderer in that mode, until it is removed.
 for (const dpr of [1.25, 1.5, 2]) {
   test.describe(`retained device grid at DPR ${dpr}`, () => {
     test.use({ viewport: { width: 1110, height: 1000 }, deviceScaleFactor: dpr })
 
     test('settled fractional pans and tiny zoom changes match direct pixels', async ({ page }) => {
-      await page.goto('/?test&no-chrome&no-rulers&navigation-benchmark')
+      await page.goto('/?test&no-chrome&no-rulers&navigation-benchmark&renderer=retained')
       const canvas = new CanvasHelper(page)
       await canvas.waitForInit()
       await page.evaluate(() => {

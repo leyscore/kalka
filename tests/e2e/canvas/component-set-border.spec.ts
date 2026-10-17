@@ -51,8 +51,10 @@ function borderThickness({ setId, zoom }: { setId: string; zoom: number }) {
   return thickest / dpr
 }
 
+// The Skia renderer's own component set border, read back from its WebGL surface; the DOM canvas
+// has none, so this runs on `?renderer=skia`, the comparison renderer, until it is removed.
 test('a component set border stays one pixel wide on screen at every zoom', async ({ page }) => {
-  await page.goto('/?test&no-rulers')
+  await page.goto('/?test&no-rulers&renderer=skia')
   const canvas = new CanvasHelper(page)
   await canvas.waitForInit()
   const setId = await page.evaluate(() => {

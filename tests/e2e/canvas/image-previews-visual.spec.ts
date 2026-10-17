@@ -1,7 +1,9 @@
 import { expect, test, useEditorSetupWithClear } from '#tests/e2e/fixtures'
 import { createImagePreviewScene, imagePreviewState } from '#tests/helpers/canvas/image-previews'
 
-const editor = useEditorSetupWithClear('/?test&no-chrome&no-rulers')
+// The Skia renderer's own image preview cache for large documents; the DOM canvas has none, so this
+// runs on `?renderer=skia`, the comparison renderer, until it is removed.
+const editor = useEditorSetupWithClear('/?test&no-chrome&no-rulers&renderer=skia')
 
 test('large-document previews preserve image fill modes and strokes across zoom', async () => {
   await createImagePreviewScene(editor.page)

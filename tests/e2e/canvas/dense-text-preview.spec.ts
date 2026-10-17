@@ -1,7 +1,9 @@
 import { expect, test, useEditorSetupWithClear } from '#tests/e2e/fixtures'
 import { probeParagraphBuilds } from '#tests/helpers/canvas/text-preparation'
 
-const editor = useEditorSetupWithClear('/?test&no-rulers&navigation-benchmark')
+// The Skia renderer's own paragraph cache; the DOM canvas has none, so this runs on
+// `?renderer=skia`, the comparison renderer, until it is removed.
+const editor = useEditorSetupWithClear('/?test&no-rulers&navigation-benchmark&renderer=skia')
 
 test('dense text keeps exact pixels without reshaping unchanged labels during previews', async () => {
   const interaction = await editor.page.evaluateHandle(() => {

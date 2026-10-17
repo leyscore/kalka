@@ -2,11 +2,13 @@ import { expect, test } from '#tests/e2e/fixtures'
 import { CanvasHelper } from '#tests/helpers/canvas'
 import { readScenePixels } from '#tests/helpers/canvas/pixels'
 
+// The Skia renderer's own color management of bitmaps, read back from its WebGL surface; the DOM
+// canvas has none, so this runs on `?renderer=skia`, the comparison renderer, until it is removed.
 for (const colorSpace of ['srgb', 'display-p3'] as const) {
   test(`sRGB bitmap colors survive a ${colorSpace} document on an sRGB display`, async ({
     page
   }) => {
-    await page.goto('/?test&no-chrome&no-rulers')
+    await page.goto('/?test&no-chrome&no-rulers&renderer=skia')
     const canvas = new CanvasHelper(page)
     await canvas.waitForInit()
     await canvas.clearCanvas()
