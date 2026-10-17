@@ -163,15 +163,21 @@ test('Cmd+I toggles italic', async () => {
   const nodeId = expectDefined(await getSelectedNode(page), 'selected text node').id
 
   await canvas.dblclick(275, 215)
-  await expect.poll(() => getEditingTextId(page), { timeout: 5000 }).toBeTruthy()
+  await canvas.waitForTextEditor()
 
-  await page.keyboard.press('End')
+  // With only a caret, Cmd+I would style what is typed next; the whole text is selected first.
+  await page.keyboard.press('Meta+a')
   await page.keyboard.press('Meta+i')
   await canvas.pressKey('Escape')
   await canvas.waitForRender()
 
-  const node = await getNodeById(page, nodeId)
-  expect(node?.italic).toBe(true)
+  const text = expectDefined(await getSelectedNode(page), 'edited text node').text ?? ''
+  const node = expectDefined(await getNodeById(page, nodeId), 'edited text node')
+  const runsItalic =
+    node.styleRuns.length > 0 &&
+    node.styleRuns.every((run) => run.style.italic === true) &&
+    node.styleRuns.reduce((total, run) => total + run.length, 0) === text.length
+  expect(node.italic || runsItalic).toBe(true)
   canvas.assertNoErrors()
 })
 
