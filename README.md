@@ -4,7 +4,7 @@
 
 Kalka is an open source design tool, an alternative to Figma, where every layer is real HTML and CSS. What you draw is already a web page: no export step, no rebuild in code.
 
-> **Status:** Pre-release. The desktop app is tested on macOS; Windows and Linux builds are on the way. Follow the build on [kalka.design](https://kalka.design) and on X, [@bedleybuilds](https://x.com/bedleybuilds).
+> **Status:** Beta. Tester builds for macOS, Windows and Linux are on the [Releases](https://github.com/leyscore/kalka/releases) page; macOS is the most tested. Follow the build on [kalka.design](https://kalka.design) and on X, [@bedleybuilds](https://x.com/bedleybuilds).
 
 ![Kalka editor with a desktop artboard and its phone breakpoint](assets/screenshots/editor.png)
 
@@ -15,13 +15,22 @@ Kalka is an open source design tool, an alternative to Figma, where every layer 
 - **Breakpoints.** Give an artboard a tablet or phone breakpoint that shares its layers; what you change there is exported as `@media` rules.
 - **Your agent drafts, you finish by hand.** Kalka ships its own MCP server: Claude Code, Codex, Cursor or any MCP client writes HTML onto the canvas as editable layers, reads it back, and checks its work with screenshots.
 - **Files you own.** A Kalka document is a folder: one HTML page per page, `styles.css`, design tokens and assets. Open it in a code editor, and keep its versions with Git from the Versions tab.
+- **CSS as written.** A layer keeps the CSS you, an import or an agent gave it, such as `width: 50%` or `padding: 1rem`, while the panel edits what it can show; the CSS a layer keeps survives `.fig` round trips.
 - **Bring existing work.** Open Figma `.fig` and Pencil `.pen` files, paste HTML from a web page or a code editor, or open a file from a URL.
 - **Familiar tools.** Components and variants, variables, auto layout, live shaders, icon search, real-time collaboration, and a built-in AI chat with your own API key.
-- **Export.** Standalone HTML, Tailwind JSX, Storybook stories, PNG, JPG, SVG and PDF.
+- **Export.** Standalone HTML, Tailwind JSX, Storybook stories, PNG, JPG, SVG and PDF, drawn by the same browser engine as the canvas, from the app or the `kalka` command line.
 
 ## Install
 
-There is no public release yet. Build the desktop app from source:
+Download the latest build from [Releases](https://github.com/leyscore/kalka/releases): the `.dmg` on macOS, the `.exe` installer on Windows, the `.AppImage` on Linux. The app updates itself from the same page.
+
+Beta builds are not signed yet, so the system warns before the first launch:
+
+- **macOS:** right-click Kalka in Applications and choose **Open**, then **Open** again. If macOS says the app is damaged, run `xattr -dr com.apple.quarantine /Applications/Kalka.app` in Terminal.
+- **Windows:** in the SmartScreen window, choose **More info**, then **Run anyway**.
+- **Linux:** make the file executable (`chmod +x Kalka-*.AppImage`) and run it.
+
+Open the sample document on the home screen to start from Kalka's own landing page. To build the app from source instead:
 
 ```sh
 bun install

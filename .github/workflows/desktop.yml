@@ -5,12 +5,13 @@ on:
   workflow_dispatch:
     inputs:
       publish:
-        description: Publish the installers as a release on the update feed (needs RELEASES_TOKEN)
+        description: Upload the installers to a draft GitHub release of this repository, the update feed
         type: boolean
         default: false
 
+# Publishing uploads to a draft release of this repository with the workflow's own token.
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: desktop-${{ github.ref }}
@@ -65,7 +66,7 @@ jobs:
           if [ "$RUNNER_OS" = "Linux" ]; then xvfb-run --auto-servernum bun run smoke; else bun run smoke; fi
 
       # Signs and notarizes on macOS when the Apple secrets exist; unsigned builds open with
-      # right-click, Open. Publishing needs a token for the release feed repository.
+      # right-click, Open. Publishing adds the installers to the draft release for this version.
       - name: Package the installers
         shell: bash
         env:
@@ -74,7 +75,7 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+          GH_TOKEN: ${{ inputs.publish && github.token || '' }}
           PUBLISH: ${{ inputs.publish && 'always' || 'never' }}
         run: |
           # Secrets that are not set arrive empty, which electron-builder reads as values.
