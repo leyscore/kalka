@@ -3,14 +3,13 @@ import { randomUUID } from 'node:crypto'
 
 import { McpServer } from '@modelcontextprotocol/server'
 import { StdioServerTransport } from '@modelcontextprotocol/server/stdio'
+import { isEqual } from 'es-toolkit'
 
 import { resolveMCPRoot } from '#mcp/root'
-import { MCP_VERSION, registerTools } from '#mcp/server'
+import { MCP_VERSION, registerTools, type ToolRegistration } from '#mcp/server'
 import { createServerIdentity } from '#mcp/server/identity'
 import { createStdioRPCBridge } from '#mcp/stdio/bridge'
-import type { ToolPolicy } from '#mcp/tool/metadata'
-import { parseDisabledTools } from '#mcp/tool/policy'
-import { narrowestScope, parseToolScope } from '#mcp/tool/scope'
+import { stdioToolPolicy } from '#mcp/stdio/policy'
 import { readDiscoveryFile } from '#mcp/transport/discovery'
 
 if (process.argv.includes('--version')) {
@@ -25,7 +24,9 @@ if (process.argv.includes('--help') || process.argv.includes('-h')) {
       `Connects to the MCP server via Unix domain socket on macOS/Linux ` +
       `(with TCP fallback) or via TCP on Windows.\n` +
       `The MCP server is started by the Kalka\n` +
-      `desktop app; this bridge only forwards stdio JSON-RPC to it.\n\n` +
+      `desktop app; this bridge only forwards stdio JSON-RPC to it. While Kalka is\n` +
+      `closed, the bridge still lists its tools and answers each call with a message\n` +
+      `asking the user to open Kalka; calls go through as soon as the app is running.\n\n` +
       `Options:\n` +
       `  --help, -h    Show this help message\n` +
       `  --version     Print the version\n\n` +
@@ -41,17 +42,7 @@ if (process.argv.includes('--help') || process.argv.includes('-h')) {
   process.exit(0)
 }
 
-const discovery = await readDiscoveryFile()
-const toolPolicy: ToolPolicy = {
-  allowEval: process.env.KALKA_MCP_EVAL === '1',
-  disabledTools:
-    process.env.KALKA_MCP_DISABLED_TOOLS === undefined
-      ? (discovery?.disabledTools ?? [])
-      : parseDisabledTools(process.env.KALKA_MCP_DISABLED_TOOLS),
-  // The server enforces its own scope on every call; this keeps the tool list in step with it,
-  // and lets the client limit itself further.
-  scope: narrowestScope(discovery?.scope ?? 'document', parseToolScope(process.env.KALKA_MCP_SCOPE))
-}
+let toolPolicy = stdioToolPolicy(await readDiscoveryFile())
 const mcpRoot = resolveMCPRoot(process.env.KALKA_MCP_ROOT)
 // Auth token: undefined → auto-discover from discovery file, empty string →
 // disable auth, whitespace-only → reject (same fail-fast as index.ts to catch
@@ -75,8 +66,17 @@ const authToken = resolveAuthToken(rawAuthToken)
 // field records the override) via auto-discovery. Treating the env var as an
 // explicit pin would prevent the bridge from following discovery updates after
 // a server restart.
+let tools: ToolRegistration | null = null
 const bridge = createStdioRPCBridge({
   authToken,
+  // Started while Kalka was closed, the bridge lists the tools it ships with; when the app comes up,
+  // the list follows the app's settings and the client hears that it changed.
+  onDiscovery: (info) => {
+    const next = stdioToolPolicy(info)
+    if (isEqual(next, toolPolicy)) return
+    toolPolicy = next
+    tools?.applyPolicy(next)
+  },
   onReady: () => {
     process.stderr.write(
       'Connected to Kalka MCP server; document availability is checked per tool call\n'
@@ -91,7 +91,7 @@ const bridge = createStdioRPCBridge({
 
 const mcpServer = new McpServer(...createServerIdentity(MCP_VERSION))
 // One client per process: its tool calls show as one agent in the app.
-registerTools(mcpServer, {
+tools = registerTools(mcpServer, {
   policy: toolPolicy,
   mcpRoot,
   sendRPC: bridge.sendRPC,

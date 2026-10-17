@@ -1,7 +1,12 @@
 import { Buffer } from 'node:buffer'
 import { resolve } from 'node:path'
 
-import type { McpServer, ToolCallback, ToolAnnotations } from '@modelcontextprotocol/server'
+import type {
+  McpServer,
+  RegisteredTool,
+  ToolCallback,
+  ToolAnnotations
+} from '@modelcontextprotocol/server'
 // eslint-disable-next-line kalka/no-mixed-case-acronym-identifiers -- Upstream export spelling.
 import { toStandardJsonSchema as toStandardJSONSchema } from '@valibot/to-json-schema'
 import * as v from 'valibot'
@@ -82,8 +87,22 @@ function descriptorByName(descriptors: readonly ToolDescriptor[]): Map<string, T
   return new Map(descriptors.map((descriptor) => [descriptor.name, descriptor]))
 }
 
-export function registerTools(mcpServer: McpServer, options: RegisterToolsOptions): void {
-  const { policy, sendRPC, agentSession } = options
+/** The tools registered on one MCP server, which can follow a later change of policy. */
+export interface ToolRegistration {
+  /**
+   * Lists and serves the tools `policy` enables, adding and removing only the ones that change; the
+   * server then tells a connected client that its tool list changed.
+   */
+  applyPolicy: (policy: ToolPolicy) => void
+}
+
+export function registerTools(
+  mcpServer: McpServer,
+  options: RegisterToolsOptions
+): ToolRegistration {
+  const { sendRPC, agentSession } = options
+  // Handlers read the policy when called, so a later `applyPolicy` reaches tools already listed.
+  const current = { policy: options.policy }
   // Sent with each tool call: the session, and the client's name once it has introduced itself.
   const agent = () =>
     agentSession
@@ -95,6 +114,10 @@ export function registerTools(mcpServer: McpServer, options: RegisterToolsOption
       : undefined
   const resolvedRoot = options.mcpRoot ? resolve(options.mcpRoot) : null
   const descriptors = descriptorByName(createToolDescriptors(resolvedRoot !== null))
+  const entries = new Map<
+    string,
+    { descriptor: ToolDescriptor; add: () => RegisteredTool; registered: RegisteredTool | null }
+  >()
   const register = <InputArgs extends v.GenericSchema>(
     name: string,
     toolOptions: { description?: string; inputSchema: InputArgs },
@@ -102,17 +125,22 @@ export function registerTools(mcpServer: McpServer, options: RegisterToolsOption
   ) => {
     const descriptor = descriptors.get(name)
     if (!descriptor) throw new Error(`Missing MCP tool descriptor for "${name}"`)
-    if (!isToolEnabled(descriptor, policy)) return
-    mcpServer.registerTool(
-      name,
-      {
-        description: toolOptions.description ?? descriptor.description,
-        inputSchema: toStandardJSONSchema(toolOptions.inputSchema),
-        annotations: toolAnnotations(descriptor.effect),
-        _meta: { 'kalka/capabilities': descriptor.capabilities }
-      },
-      handler
-    )
+    const add = () =>
+      mcpServer.registerTool(
+        name,
+        {
+          description: toolOptions.description ?? descriptor.description,
+          inputSchema: toStandardJSONSchema(toolOptions.inputSchema),
+          annotations: toolAnnotations(descriptor.effect),
+          _meta: { 'kalka/capabilities': descriptor.capabilities }
+        },
+        handler
+      )
+    entries.set(name, {
+      descriptor,
+      add,
+      registered: isToolEnabled(descriptor, current.policy) ? add() : null
+    })
   }
 
   for (const def of getMCPToolDefinitions()) {
@@ -125,7 +153,7 @@ export function registerTools(mcpServer: McpServer, options: RegisterToolsOption
       async (args: Record<string, unknown>) => {
         try {
           const { target, args: toolArgs } = splitAutomationTarget(args)
-          if (policy.scope === 'selection' && toolArgs.path !== undefined) {
+          if (current.policy.scope === 'selection' && toolArgs.path !== undefined) {
             return fail(new Error(SELECTION_SCOPE_FILE_OUTPUT_ERROR))
           }
           const result = await sendRPC({
@@ -136,7 +164,7 @@ export function registerTools(mcpServer: McpServer, options: RegisterToolsOption
               args: toolArgs,
               agent: agent(),
               // A client limited to the selection says so, whatever the server's own scope.
-              ...(policy.scope === 'selection' ? { scope: policy.scope } : {})
+              ...(current.policy.scope === 'selection' ? { scope: current.policy.scope } : {})
             }
           })
           const res = result as { ok?: boolean; result?: unknown; error?: string }
@@ -440,4 +468,18 @@ export function registerTools(mcpServer: McpServer, options: RegisterToolsOption
     },
     async () => ok({ prompt: CODEGEN_PROMPT })
   )
+
+  return {
+    applyPolicy(next) {
+      current.policy = next
+      for (const entry of entries.values()) {
+        const enabled = isToolEnabled(entry.descriptor, next)
+        if (enabled && !entry.registered) entry.registered = entry.add()
+        if (!enabled && entry.registered) {
+          entry.registered.remove()
+          entry.registered = null
+        }
+      }
+    }
+  }
 }

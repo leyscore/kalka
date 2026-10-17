@@ -72,6 +72,7 @@ export {
   type MCPAgentKind,
   type MCPAgentSession,
   type RegisterToolsOptions,
+  type ToolRegistration,
   type RPCSender
 } from '#mcp/tool/registration'
 

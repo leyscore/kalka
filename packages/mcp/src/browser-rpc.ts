@@ -3,15 +3,13 @@ import { randomUUID } from 'node:crypto'
 import * as v from 'valibot'
 import type { WebSocket } from 'ws'
 
+import { APP_NOT_CONNECTED_MESSAGE } from '#mcp/app-status'
 import { isAuthorized } from '#mcp/auth'
 import type { RPCJSONObject } from '#mcp/json'
 import type { PendingRequest } from '#mcp/rpc-types'
 
 const RPC_TIMEOUT = 20_000
 const APP_WAIT_TIMEOUT = 10_000
-
-const APP_NOT_CONNECTED_MESSAGE =
-  'Kalka app is not connected. STOP and tell the user: "The Kalka desktop app is not running, no document is open, or the desktop app is connected to a different MCP server. Please start Kalka, open a document, and try again." Do NOT attempt to start the app yourself or retry automatically.'
 
 type BrowserRPCBridgeOptions = {
   authToken: string | null

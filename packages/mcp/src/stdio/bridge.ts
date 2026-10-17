@@ -1,7 +1,8 @@
 import { request } from 'node:http'
 import type { ClientRequest, RequestOptions } from 'node:http'
 
-import { readDiscoveryFile } from '#mcp/transport/discovery'
+import { APP_NOT_RUNNING_MESSAGE } from '#mcp/app-status'
+import { type DiscoveryInfo, readDiscoveryFile } from '#mcp/transport/discovery'
 import { getSocketPath, platformHasUnixSockets } from '#mcp/transport/paths'
 
 type StdioRPCBridgeOptions = {
@@ -12,15 +13,15 @@ type StdioRPCBridgeOptions = {
   reconnectDelayMs?: number
   onReady?: () => void
   onReconnect?: () => void
+  /** Called with each discovery file the bridge reads, so the tool list can follow the app's settings. */
+  onDiscovery?: (info: DiscoveryInfo) => void
 }
 
 // 35s gives a 5s margin over the worst case (10s app wait + 20s RPC timeout = 30s)
 const RPC_TIMEOUT = 35_000
-const DISCONNECTED_MESSAGE =
-  'Kalka app is not connected. ' +
-  'STOP and tell the user: "The Kalka desktop app is not running or no document is open. ' +
-  'Please start the app and open a document, then try again." ' +
-  'Do NOT attempt to start the app yourself or retry automatically.'
+// A health probe answers at once from a live server; waiting longer only delays telling the agent
+// that Kalka is closed.
+const HEALTH_TIMEOUT = 5_000
 
 type TransportMode = 'socket' | 'tcp'
 
@@ -36,7 +37,8 @@ export function createStdioRPCBridge({
   authToken,
   reconnectDelayMs = 2000,
   onReady,
-  onReconnect
+  onReconnect,
+  onDiscovery
 }: StdioRPCBridgeOptions) {
   let resolvedSocketPath: string | null = socketPathOverride ?? null
   let resolvedHttpPort: number | null = null
@@ -73,12 +75,18 @@ export function createStdioRPCBridge({
     return resolvedAuthToken
   }
 
+  async function readDiscovery(): Promise<DiscoveryInfo | null> {
+    const info = await readDiscoveryFile()
+    if (info) onDiscovery?.(info)
+    return info
+  }
+
   async function resolveTransport(): Promise<void> {
     // Already resolved
     if (transportMode) return
 
     // Try reading the discovery file
-    const info = await readDiscoveryFile()
+    const info = await readDiscovery()
 
     // When the auth token was not explicitly provided, pick it up from the
     // discovery file whenever we re-read transport info. This ensures the
@@ -136,7 +144,8 @@ export function createStdioRPCBridge({
   function httpRequest(
     method: string,
     path: string,
-    body?: Record<string, unknown>
+    body?: Record<string, unknown>,
+    timeoutMs = RPC_TIMEOUT - 5_000
   ): Promise<{ status: number; data: unknown; req: ClientRequest }> {
     return new Promise((resolve, reject) => {
       const bodyJSON = body ? JSON.stringify(body) : undefined
@@ -152,7 +161,7 @@ export function createStdioRPCBridge({
       }
 
       if (!reqOpts) {
-        reject(new Error(DISCONNECTED_MESSAGE))
+        reject(new Error(APP_NOT_RUNNING_MESSAGE))
         return
       }
 
@@ -179,7 +188,7 @@ export function createStdioRPCBridge({
       // unreachable" signal rather than racing with the outer timer.
       // If the outer sendRPC timer already rejected, the error handler
       // is a no-op (settled guard in attempt()).
-      req.setTimeout(RPC_TIMEOUT - 5_000, () => {
+      req.setTimeout(timeoutMs, () => {
         req.destroy(new Error('Socket timeout'))
       })
       if (bodyJSON) req.write(bodyJSON)
@@ -196,7 +205,7 @@ export function createStdioRPCBridge({
     authFailed: boolean
   }> {
     try {
-      const { status, data } = await httpRequest('GET', '/health')
+      const { status, data } = await httpRequest('GET', '/health', undefined, HEALTH_TIMEOUT)
       if (status === 401) return { reachable: true, appConnected: false, authFailed: true }
       if (status !== 200) return { reachable: false, appConnected: false, authFailed: false }
       const health = data as { status?: string }
@@ -309,9 +318,15 @@ export function createStdioRPCBridge({
     // bridge may still be resolving transport. Only reject after that
     // completes and we're still not ready.
     const awaitReady = async (): Promise<void> => {
+      // Between reconnect attempts, try at once: a call made just after the user opens Kalka goes
+      // through instead of failing until the next scheduled attempt.
+      if (!ready && !connectPromise && !closed) {
+        clearTimeout(reconnectTimer)
+        connectPromise = connect()
+      }
       if (!ready && connectPromise) await connectPromise
       if (authFailure) throw new Error('Unauthorized: check KALKA_MCP_AUTH_TOKEN')
-      if (!ready) throw new Error(DISCONNECTED_MESSAGE)
+      if (!ready) throw new Error(APP_NOT_RUNNING_MESSAGE)
     }
 
     return awaitReady().then(
@@ -349,7 +364,8 @@ export function createStdioRPCBridge({
                     // IMPORTANT: Do NOT clear the timer here — the retry must
                     // still be protected by the overall 35-second timeout.
                     resolvedAuthToken = null
-                    void readDiscoveryFile()
+                    // A new token means a restarted server, which may share other tools.
+                    void readDiscovery()
                       .then((info) => {
                         if (settled) return undefined
                         if (info?.authToken) {
@@ -382,7 +398,7 @@ export function createStdioRPCBridge({
                         ready = false
                         settled = true
                         scheduleReconnect()
-                        reject(new Error(DISCONNECTED_MESSAGE))
+                        reject(new Error(APP_NOT_RUNNING_MESSAGE))
                       })
                     return undefined
                   }
@@ -432,7 +448,7 @@ export function createStdioRPCBridge({
                 ready = false
                 settled = true
                 scheduleReconnect()
-                reject(new Error(DISCONNECTED_MESSAGE))
+                reject(new Error(APP_NOT_RUNNING_MESSAGE))
               })
           }
 

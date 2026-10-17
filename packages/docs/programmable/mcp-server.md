@@ -43,6 +43,8 @@ The desktop app includes its MCP server and starts it itself; nothing needs inst
 
 The stdio server discovers the running app automatically. It prefers the app's Unix domain socket on macOS and Linux and falls back to localhost TCP when needed. Keep the desktop app open with a document loaded.
 
+A client can start the stdio server while Kalka is closed. It still lists the tools it ships with, and each call returns an error that tells the agent to ask the user to open Kalka and a document, then call again; it does not fail to start or hang. Once the app is running, the next call goes through without restarting the client, and the tool list follows the app's tool access and selection settings, announced to the client as a tool list change.
+
 ### Claude Code
 
 After connecting Claude Code from Settings, check the connection:
