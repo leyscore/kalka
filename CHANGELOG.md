@@ -130,6 +130,7 @@
 
 ### Changed
 
+- The design JSX reference, which the AI chat, MCP clients, and the agent skill read, says to build repeated content such as a calendar's days with JavaScript inside `{}`, `{days.map(…)}` or `Array.from(…)`, instead of writing each item out. When JSX with several top-level elements uses an undefined name, the error now adds that a statement such as `const` before the JSX does not run, and how to compute the value inside it, instead of only `days is not defined`.
 - `.fig` files Kalka writes carry the `meta.json` Figma writes: the document's name, the thumbnail page's background, and the thumbnail's size and the page area it shows, instead of a Kalka version, app name, and creation time. The name is the `documentName` write option, else the exported file's name, else Untitled; an opened file saved unchanged under another name keeps its archive and records the new name.
 - The `/demo` document is Kalka's own landing page, drawn in Kalka in nine languages, and opens as a `.kalka` file.
 - The canvas draws variable-bound values with real CSS variables, defined in every artboard for each mode, so editing or renaming a variable restyles every layer that uses it at once, as the exported page does.
