@@ -137,25 +137,30 @@ async function updateAll() {
   }
 }
 
-watch(request, (value, previous) => {
-  if (!value) {
-    if (previous) void restoreOrigin()
-    return
-  }
-  origin = {
-    pageId: editor.state.currentPageId,
-    selectedIds: [...editor.state.selectedIds],
-    panX: editor.state.panX,
-    panY: editor.state.panY,
-    zoom: editor.state.zoom
-  }
-  accepted = false
-  applying.value = false
-  instanceIndex.value = Math.max(0, value.instanceIds.indexOf(value.initialInstanceId))
-  mode.value = 'side-by-side'
-  opacity.value = [50]
-  preview.value = null
-})
+watch(
+  request,
+  (value, previous) => {
+    if (!value) {
+      if (previous) void restoreOrigin()
+      return
+    }
+    origin = {
+      pageId: editor.state.currentPageId,
+      selectedIds: [...editor.state.selectedIds],
+      panX: editor.state.panX,
+      panY: editor.state.panY,
+      zoom: editor.state.zoom
+    }
+    accepted = false
+    applying.value = false
+    instanceIndex.value = Math.max(0, value.instanceIds.indexOf(value.initialInstanceId))
+    mode.value = 'side-by-side'
+    opacity.value = [50]
+    preview.value = null
+    // The dialog mounts when its first review opens, already open.
+  },
+  { immediate: true }
+)
 watch([request, currentInstanceId], () => void loadPreview(), { immediate: true })
 </script>
 

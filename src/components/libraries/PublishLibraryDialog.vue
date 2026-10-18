@@ -50,43 +50,48 @@ const selectionState = computed<boolean | 'indeterminate'>(() => {
   return selectedVisible === visibleKeys.length ? true : 'indeterminate'
 })
 
-watch(publishLibraryDialogOpen, async (open) => {
-  if (!open) return
-  error.value = ''
-  query.value = ''
-  loading.value = true
-  const existing = publication.value
-  libraryId.value = existing?.libraryId ?? libraryId.value
-  libraryName.value = existing?.name ?? editor.graph.getNode(editor.graph.rootId)?.name ?? ''
-  try {
-    if (existing) {
-      const discovered = await service.discoverPublicationChanges(editor)
-      changes.value = discovered.changes
-    } else {
-      const roots = publishableLibraryRoots(editor.graph)
-      ensureLibraryAssetKeys(
-        editor.graph,
-        roots.map((node) => node.id)
-      )
-      changes.value = roots.map((node) => ({
-        kind: 'added' as const,
-        asset: {
-          key: node.componentKey ?? node.id,
-          name: node.name,
-          description: '',
-          type: node.type,
-          sourceNodeId: node.id,
-          contentHash: ''
-        }
-      }))
+watch(
+  publishLibraryDialogOpen,
+  async (open) => {
+    if (!open) return
+    error.value = ''
+    query.value = ''
+    loading.value = true
+    const existing = publication.value
+    libraryId.value = existing?.libraryId ?? libraryId.value
+    libraryName.value = existing?.name ?? editor.graph.getNode(editor.graph.rootId)?.name ?? ''
+    try {
+      if (existing) {
+        const discovered = await service.discoverPublicationChanges(editor)
+        changes.value = discovered.changes
+      } else {
+        const roots = publishableLibraryRoots(editor.graph)
+        ensureLibraryAssetKeys(
+          editor.graph,
+          roots.map((node) => node.id)
+        )
+        changes.value = roots.map((node) => ({
+          kind: 'added' as const,
+          asset: {
+            key: node.componentKey ?? node.id,
+            name: node.name,
+            description: '',
+            type: node.type,
+            sourceNodeId: node.id,
+            contentHash: ''
+          }
+        }))
+      }
+      selectedKeys.value = new Set(changes.value.map((change) => change.asset.key))
+    } catch (cause) {
+      error.value = cause instanceof Error ? cause.message : panels.value.libraryPublishFailed
+    } finally {
+      loading.value = false
     }
-    selectedKeys.value = new Set(changes.value.map((change) => change.asset.key))
-  } catch (cause) {
-    error.value = cause instanceof Error ? cause.message : panels.value.libraryPublishFailed
-  } finally {
-    loading.value = false
-  }
-})
+  },
+  // The dialog mounts when it first opens, already open.
+  { immediate: true }
+)
 
 function toggleAll(value: boolean) {
   const visibleKeys = visibleChanges.value.map((change) => change.asset.key)
