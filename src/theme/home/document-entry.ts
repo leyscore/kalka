@@ -6,7 +6,7 @@ export const documentEntry = tv({
     trigger:
       'min-w-0 w-full cursor-pointer rounded-[14px] text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 disabled:opacity-50',
     preview:
-      'flex h-[124px] items-center justify-center overflow-hidden rounded-[14px] bg-card transition-[translate,box-shadow] duration-200 ease-out group-hover:-translate-y-0.5 group-hover:shadow-[0_10px_28px_-14px_var(--color-backdrop-a)] motion-reduce:group-hover:translate-y-0',
+      'flex h-[124px] items-center justify-center overflow-hidden rounded-[14px] bg-card transition-[translate] duration-200 ease-out group-hover:-translate-y-0.5 motion-reduce:group-hover:translate-y-0',
     image: 'size-full object-cover transition-transform duration-300 group-hover:scale-[1.02]',
     fallback: 'size-8 text-muted/40',
     icon: 'size-4 shrink-0 text-primary',

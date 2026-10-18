@@ -49,7 +49,7 @@ export const presetCard = tv({
   variants: {
     kind: {
       size: {
-        root: 'bg-card hover:bg-card-hover hover:shadow-[0_6px_20px_-12px_var(--color-backdrop-a)]',
+        root: 'bg-card hover:bg-card-hover',
         detail: 'font-mono tabular-nums'
       },
       custom: {
