@@ -1,9 +1,10 @@
-import type { ProgrammableLabels, SidebarLabels } from './labels.ts'
 import type { DefaultTheme } from 'vitepress'
+
+import type { ProgrammableLabels, SidebarLabels } from './labels.ts'
 
 export const programmableSidebar = (
   prefix: string,
-  labels: ProgrammableLabels,
+  labels: ProgrammableLabels
 ): DefaultTheme.SidebarItem[] => [
   {
     text: labels.overview,
@@ -26,19 +27,19 @@ export const programmableSidebar = (
             { text: 'Coding agents', link: '/programmable/coding-agents' },
             {
               text: 'BYOK Compatibility',
-              link: '/programmable/byok-provider-compatibility',
-            },
+              link: '/programmable/byok-provider-compatibility'
+            }
           ]
         : []),
-      { text: labels.collaboration, link: `${prefix}/programmable/collaboration` },
-    ],
-  },
+      { text: labels.collaboration, link: `${prefix}/programmable/collaboration` }
+    ]
+  }
 ]
 
 export const referenceSidebar = (
   prefix: string,
   label: string,
-  labels: SidebarLabels,
+  labels: SidebarLabels
 ): DefaultTheme.SidebarItem[] => [
   {
     text: label,
@@ -49,15 +50,15 @@ export const referenceSidebar = (
       { text: 'Scene Graph', link: '/reference/scene-graph' },
       { text: labels.figmaMatrix, link: `${prefix}/reference/figma-compatibility` },
       ...(!prefix ? [{ text: 'DOM/CSS Mapping', link: '/reference/dom-css-mapping' }] : []),
-      { text: 'File Format', link: '/reference/file-format' },
-    ],
-  },
+      { text: 'File Format', link: '/reference/file-format' }
+    ]
+  }
 ]
 
 export const developmentSidebar = (
   prefix: string,
   label: string,
-  labels: SidebarLabels,
+  labels: SidebarLabels
 ): DefaultTheme.SidebarItem[] => [
   {
     text: label,
@@ -71,13 +72,14 @@ export const developmentSidebar = (
         ? [
             { text: 'Roadmap', link: '/development/roadmap' },
             { text: 'AI Chat Replies', link: '/development/ai-chat' },
+            { text: 'App Benchmark', link: '/development/app-benchmark' },
             { text: 'Behaviours and Preview', link: '/development/behaviours-and-preview' },
             { text: 'Navigation Performance', link: '/development/navigation-performance' },
             { text: 'Renderer Lifecycle', link: '/development/renderer-lifecycle' },
             { text: 'Renderer Profiler', link: '/development/renderer-profiler' },
-            { text: 'Vector Conversion', link: '/development/vector-conversion' },
+            { text: 'Vector Conversion', link: '/development/vector-conversion' }
           ]
-        : []),
-    ],
-  },
+        : [])
+    ]
+  }
 ]
