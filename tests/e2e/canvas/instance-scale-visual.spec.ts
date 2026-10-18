@@ -16,8 +16,17 @@ import bindingFixture from '#tests/fixtures/nested-binding-ownership-records.jso
 import fixture from '#tests/fixtures/nested-layout-scale.json' with { type: 'json' }
 import { absoluteConstraintRecords } from '#tests/helpers/fig/absolute-constraints'
 import { inheritedNestedBindingRecords } from '#tests/helpers/fig/nested-binding'
+import { installHostLayout } from '#tests/helpers/layout/host'
 
 const editor = useEditorSetupWithClear('/?test&no-chrome&no-rulers')
+
+// The graphs these tests build live in the test process, so they lay out in a render host of
+// their own, as unit tests do, and the page draws the boxes it computed.
+let hostLayout: ReturnType<typeof installHostLayout> | undefined
+test.beforeAll(() => {
+  hostLayout = installHostLayout()
+})
+test.afterAll(() => hostLayout?.close())
 const fields = [
   'type',
   'x',
