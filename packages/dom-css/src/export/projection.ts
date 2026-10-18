@@ -8,7 +8,7 @@ import { DesignTokens, type CSSModes } from '../tokens/references'
 import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
 import { maskStyle } from './masks'
 import { croppedImageStyle, patternBackground, tiledImageStyle } from './patterns'
-import { flowMargins, withoutOverflowingPadding, withUnhuggableAxisFixed } from './sizing'
+import { asAutoLayoutSizes, flowMargins } from './sizing'
 import {
   imageSourceURL,
   INTERACTIVE_TAGS,
@@ -198,9 +198,7 @@ function frameStyle(
   const style = withBlockDisplay(
     tagName,
     layerCSS(
-      withoutOverflowingPadding(
-        withUnhuggableAxisFixed(context.graph, context.derivedSizes ? withDerivedSize(node) : node)
-      ),
+      asAutoLayoutSizes(context.graph, context.derivedSizes ? withDerivedSize(node) : node),
       { parent, css }
     )
   )

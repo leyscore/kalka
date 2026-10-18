@@ -15,6 +15,7 @@
 - Images set to Crop in an imported `.fig` file show the part of the picture Figma shows instead of the whole picture squeezed into the layer, and save back as Crop.
 - A rotated layer in auto layout takes the space of its rotated bounds, as in Figma, so tilted cards in imported files no longer squeeze or overlap their row.
 - Imported `.fig` text keeps the line height it sets where Figma laid it out with it, instead of the font's own taller line, so headings no longer grow and push the content below them down.
+- Auto layout set to Auto spacing ignores the item spacing it keeps, as Figma does, instead of adding it and pushing the last layer out of the frame.
 
 ## 0.1.0-beta.3 — 2026-10-18
 

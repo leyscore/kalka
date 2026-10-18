@@ -30,13 +30,27 @@ function isStack(node: SceneNode): boolean {
  * fill, where CSS would shrink it to the children's content, to nothing for frames that place
  * their own children.
  */
-export function withUnhuggableAxisFixed(graph: SceneGraph, node: SceneNode): SceneNode {
+function withUnhuggableAxisFixed(graph: SceneGraph, node: SceneNode): SceneNode {
   if (!isStack(node) || node.counterAxisSizing !== 'HUG') return node
   const across = node.layoutMode === 'HORIZONTAL' ? 'VERTICAL' : 'HORIZONTAL'
   const flow = inFlow(graph, node)
   const fills = (child: SceneNode) => layoutSizingInParent(node, child, across) === 'FILL'
   if (flow.length === 0 || !flow.every(fills)) return node
   return { ...node, counterAxisSizing: 'FIXED' }
+}
+
+/**
+ * A frame spacing its children Auto shares the free space between them and keeps its item spacing
+ * only to restore it; flexbox would add the gap to the shares and push the last child out. Rows
+ * that wrap keep the spacing between them.
+ */
+function withoutAutoSpacingGap(node: SceneNode): SceneNode {
+  if (!isStack(node) || node.primaryAxisAlign !== 'SPACE_BETWEEN' || node.itemSpacing === 0)
+    return node
+  const counterAxisSpacing = Number.isFinite(node.counterAxisSpacing)
+    ? node.counterAxisSpacing
+    : node.itemSpacing
+  return { ...node, itemSpacing: 0, counterAxisSpacing }
 }
 
 interface OverflowingPadding {
@@ -60,7 +74,7 @@ function overflowingPadding(node: SceneNode): OverflowingPadding | null {
  * margin, unlike padding, does not grow a box of fixed size, and places the children where the
  * padding would have.
  */
-export function withoutOverflowingPadding(node: SceneNode): SceneNode {
+function withoutOverflowingPadding(node: SceneNode): SceneNode {
   const overflowing = overflowingPadding(node)
   if (!overflowing) return node
   return {
@@ -138,4 +152,9 @@ export function flowMargins(graph: SceneGraph, node: SceneNode): DesignStyleDecl
     if (value !== 0) style[`margin-${side}`] = `${value}px`
   }
   return style
+}
+
+/** A frame as flexbox should lay it out to size and place its children as auto layout does. */
+export function asAutoLayoutSizes(graph: SceneGraph, node: SceneNode): SceneNode {
+  return withoutAutoSpacingGap(withoutOverflowingPadding(withUnhuggableAxisFixed(graph, node)))
 }
