@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- The sample document's headings and paragraphs draw as designed instead of with stray indents, lines pushed down, and text hidden under the next section.
+
 ## 0.1.0-beta.3 — 2026-10-18
 
 ### Breaking changes
