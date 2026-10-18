@@ -92,7 +92,9 @@ export default defineConfig({
       ],
       use: {
         ...appDefaults.use,
-        browserName: 'webkit'
+        browserName: 'webkit',
+        // SwiftShader is a Chromium switch; WebKit on Linux exits on an option it does not know.
+        launchOptions: {}
       }
     },
     {
