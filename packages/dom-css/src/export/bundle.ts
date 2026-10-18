@@ -1,6 +1,5 @@
 import type { CSSFontFaceRule } from '@acemir/cssom'
-import { isValid, toUint8Array } from 'js-base64'
-import { parseFragment, serialize, type DefaultTreeAdapterTypes } from 'parse5'
+import { parseFragment, type DefaultTreeAdapterTypes } from 'parse5'
 
 import { documentCSSClasses, normalizeFontFamily } from '@kalka/scene-graph'
 
@@ -8,6 +7,7 @@ import { tokenStylesheet, type TokenStylesheetFormat } from '../tokens/styleshee
 import type { DesignDocument, DesignElement, DesignNode } from '../types'
 import { cssClassStylesheet, withClassRules } from './classes'
 import { mergeClassNames, serializeHTML, splitWhitespace } from './html'
+import { imageFileCollector, relativeURL, replaceDataImages, replaceHTMLDataImages } from './images'
 import { childIndent, prettyCSS } from './pretty'
 import { mediaCSS, shareStyles } from './sharing'
 import { hasBrowserDefaults, HTML_TAG_RESET_CSS, scopedTagResetCSS } from './tag-reset'
@@ -42,6 +42,11 @@ export type WebFontFaceResolver = (
 export interface ExportHTMLBundleOptions {
   html?: 'fragment' | 'standalone'
   style?: 'inline' | 'tailwind'
+  /**
+   * Images embedded in the page as Base64 (the default), or linked as files under
+   * `<assetBasePath>/images/`, named by their content. SVG written as text, such as pattern tiles
+   * and masks, stays in the page either way.
+   */
   assets?: 'inline' | 'external'
   /** Resolves font files to include with external assets; `none` includes no fonts. */
   fonts?: 'none' | WebFontFaceResolver
@@ -311,52 +316,8 @@ async function fontFaceAssets(
   }
 }
 
-function dataImageParts(value: string): { mime: string; base64: string } | undefined {
-  if (!value.startsWith('data:image/')) return undefined
-  const marker = ';base64,'
-  const markerIndex = value.indexOf(marker)
-  if (markerIndex === -1) return undefined
-  const base64 = value.slice(markerIndex + marker.length)
-  // Documents can come from parsed HTML; an invalid payload stays inline rather than decoding to other bytes.
-  if (!isValid(base64)) return undefined
-  return { mime: value.slice('data:'.length, markerIndex), base64 }
-}
-
-function extensionForMime(mime: string): string {
-  if (mime === 'image/jpeg') return 'jpg'
-  if (mime === 'image/webp') return 'webp'
-  if (mime === 'image/gif') return 'gif'
-  if (mime === 'image/svg+xml') return 'svg'
-  return 'png'
-}
-
-function extractImageAssets(
-  html: string,
-  assetBasePath: string
-): { html: string; files: ExportHTMLFile[] } {
-  const fragment = parseFragment(html)
-  const files: ExportHTMLFile[] = []
-  const sources = new Map<string, string>()
-  walkParseTree(fragment, (element) => {
-    const src = element.attrs.find((attr) => attr.name === 'src')
-    if (!src) return
-    const parts = dataImageParts(src.value)
-    if (!parts) return
-    const cachedPath = sources.get(src.value)
-    if (cachedPath) {
-      src.value = cachedPath
-      return
-    }
-    const path = `${assetBasePath}/images/image-${sources.size + 1}.${extensionForMime(parts.mime)}`
-    sources.set(src.value, path)
-    files.push({ path, content: toUint8Array(parts.base64) })
-    src.value = path
-  })
-  return { html: serialize(fragment), files }
-}
-
 function stylesheetLink(path: string): string {
-  return `<link rel="stylesheet" href="${path}">`
+  return `<link rel="stylesheet" href="${relativeURL(path)}">`
 }
 
 function styleTag(css: string): string {
@@ -418,20 +379,21 @@ async function exportStandaloneHTML(
   const resetLink = resetFiles.length > 0 ? [stylesheetLink(resetPath)] : []
 
   if (external) {
-    const [extracted, fonts] = await Promise.all([
-      Promise.resolve(extractImageAssets(body, options.assetBasePath)),
-      fontFaceAssets(document, options)
-    ])
+    const fonts = await fontFaceAssets(document, options)
+    const images = imageFileCollector(options.assetBasePath)
+    const pageBody = replaceHTMLDataImages(body, images.linkFrom(''))
+    // The stylesheet sits in the asset folder, so its images are linked from there.
+    const pageCSS = replaceDataImages(css, images.linkFrom(options.assetBasePath))
     const cssPath = `${options.assetBasePath}/kalka.css`
-    const html = pageHTML([...resetLink, stylesheetLink(cssPath)], extracted.html, options.pretty)
+    const html = pageHTML([...resetLink, stylesheetLink(cssPath)], pageBody, options.pretty)
     return {
       entrypoint: 'index.html',
       files: [
         { path: 'index.html', content: html },
-        { path: cssPath, content: cssText(`${fonts.css}${css}`, options.pretty) },
+        { path: cssPath, content: cssText(`${fonts.css}${pageCSS}`, options.pretty) },
         ...resetFiles,
         ...fonts.files,
-        ...extracted.files
+        ...images.files()
       ]
     }
   }
@@ -511,9 +473,15 @@ function fragmentBundle(
   const resetFile = reset && options.reset === 'file'
   const pageCSS = cssText(`${resetFile ? '' : reset}${shared.css}`, options.pretty)
   const separator = options.pretty ? '\n' : ''
+  const page = pageCSS ? `${styleTag(pageCSS)}${separator}${html}` : html
+  const images = imageFileCollector(options.assetBasePath)
   const files: ExportHTMLFile[] = [
-    { path: 'index.html', content: pageCSS ? `${styleTag(pageCSS)}${separator}${html}` : html }
+    {
+      path: 'index.html',
+      content:
+        options.assets === 'external' ? replaceHTMLDataImages(page, images.linkFrom('')) : page
+    }
   ]
   if (resetFile) files.push({ path: RESET_FILE, content: cssText(reset, options.pretty) })
-  return { entrypoint: 'index.html', files }
+  return { entrypoint: 'index.html', files: [...files, ...images.files()] }
 }

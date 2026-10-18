@@ -7,6 +7,12 @@ export {
 } from './projection'
 export { canTakeHTMLTag, defaultTagForNode, tagForNode } from './tags'
 export { exportHTMLBundle } from './bundle'
+export {
+  replaceDataImages,
+  replaceHTMLDataImages,
+  rewriteHTMLImageSources,
+  type DataImageReplacer
+} from './images'
 export { HTML_TAG_RESET_CSS } from './tag-reset'
 export {
   ARTBOARD_CSP,
