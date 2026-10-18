@@ -54,6 +54,8 @@ interface Ghost {
 export interface GhostLayerOptions {
   vectorElement?: VectorElementRenderer
   fonts?: () => readonly ArtboardFontFace[]
+  /** Families text falls back to for characters its font lacks, as the projector lists them. */
+  fontFallbacks?: () => readonly string[]
 }
 
 /**
@@ -176,7 +178,8 @@ export class GhostLayer {
     const projected = sceneNodeToDesignDocument(graph, node.id, {
       includeSourceIds: false,
       vectorElement: this.options.vectorElement,
-      derivedSizes: true
+      derivedSizes: true,
+      fontFallbacks: this.options.fontFallbacks?.()
     }).children.at(0)
     if (!projected) {
       doc.body.replaceChildren()

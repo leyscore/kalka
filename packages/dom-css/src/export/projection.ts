@@ -1,3 +1,4 @@
+import { uniq } from 'es-toolkit/array'
 import { isEmptyObject } from 'es-toolkit/predicate'
 import { fromUint8Array } from 'js-base64'
 
@@ -62,6 +63,12 @@ export interface SceneGraphToDesignOptions {
    * saves the fills themselves leaves the CSS they derive out.
    */
   tiles?: boolean
+  /**
+   * Families the engine draws the characters a text's own font lacks with, in order, such as
+   * symbols most text fonts leave out. The canvas and its layout list them after each text's
+   * font, as its CanvasKit renderer does, so the browser does not pick a system font of its own.
+   */
+  fontFallbacks?: readonly string[]
 }
 
 /** Shapes without children whose stroke the SVG export draws when CSS cannot. */
@@ -136,6 +143,7 @@ interface ProjectionContext {
   internal: boolean
   masks: boolean
   tiles: boolean
+  fontFallbacks: readonly string[]
   /** Inside an `a` or `button`, which HTML does not let another one sit in. */
   interactive: boolean
 }
@@ -248,12 +256,33 @@ function textDesignNode(
     type: 'element',
     tagName: nestedTag(context.graph, node, context),
     attrs,
-    inlineStyle: style,
+    inlineStyle: withFontFallbacks(style, context.fontFallbacks),
     sourceSceneNodeId: node.id,
     sourceSceneNode: node,
-    children: textRunChildren(node)
+    children: textRunChildren(node).map((child) =>
+      child.type === 'element'
+        ? { ...child, inlineStyle: withFontFallbacks(child.inlineStyle, context.fontFallbacks) }
+        : child
+    )
   }
 }
+
+/** A `font-family` with the fallback families after the families it names. */
+function withFontFallbacks(
+  style: DesignStyleDeclaration | undefined,
+  fallbacks: readonly string[]
+): DesignStyleDeclaration | undefined {
+  const family = style?.['font-family']
+  if (!style || !family || fallbacks.length === 0) return style
+  const named = family.split(',').map((name) => name.trim().replace(/^(["'])(.*)\1$/, '$2'))
+  const families = uniq([...named, ...fallbacks]).map((name) =>
+    GENERIC_FONT_FAMILY.test(name) ? name : JSON.stringify(name)
+  )
+  return { ...style, 'font-family': families.join(', ') }
+}
+
+const GENERIC_FONT_FAMILY =
+  /^(serif|sans-serif|monospace|cursive|fantasy|system-ui|math|emoji|fangsong|ui-[a-z-]+)$/
 
 function sceneNodeToDesignNode(
   context: ProjectionContext,
@@ -351,7 +380,8 @@ function projectionContext(
     derivedSizes = false,
     internal = false,
     masks = true,
-    tiles = true
+    tiles = true,
+    fontFallbacks = []
   }: SceneGraphToDesignOptions
 ): ProjectionContext {
   return {
@@ -365,6 +395,7 @@ function projectionContext(
     internal,
     masks,
     tiles,
+    fontFallbacks,
     interactive: false
   }
 }

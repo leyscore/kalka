@@ -25,6 +25,7 @@
 - Auto layout set to Auto spacing ignores the item spacing it keeps, as Figma does, instead of adding it and pushing the last layer out of the frame.
 - PNG, JPG and PDF exports of a layer whose content reaches past it no longer show scrollbars.
 - PNG exports from the desktop app and the CLI are transparent where the layers draw nothing, as in Figma, instead of white.
+- Symbols a text's font lacks, such as ✕, ◆ or ⚙, draw in Noto Sans Symbols 2 as in Figma, on the canvas, in its layout and in image exports, instead of in a system font of another width that moved the text after them.
 - Pages laid out out of view, exports, and the CLI measure text with its web font for every character, instead of a fallback for characters the text loaded first did not use, which set some text narrower and moved the layers beside it.
 - Images in `.fig` files saved by older versions of Figma, which keep them inside the document itself, show instead of an empty layer.
 - Imported `.fig` text with Auto or a percentage line height sets its lines whole pixels apart, as Figma does, so a 12.5px text is 16px a line instead of 16.25px and lists no longer drift down.

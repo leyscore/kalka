@@ -2,7 +2,11 @@ import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 import { DEFAULT_FONT_FAMILY } from '#core/constants'
 import { transformTextCase } from '#core/text/case'
-import { cjkFallbackScriptForLanguage, type FontFallbackScript } from '#core/text/fallbacks'
+import {
+  cjkFallbackScriptForLanguage,
+  SYMBOL_CHAR_RE,
+  type FontFallbackScript
+} from '#core/text/fallbacks'
 import { weightToStyle } from '#core/text/font/style'
 
 export function collectNodeFontFaces(node: SceneNode): Array<{ family: string; style: string }> {
@@ -49,6 +53,7 @@ function fallbackScriptForCharacter(
   if (/\p{Script=Hangul}/u.test(character)) return 'cjk-kr'
   if (/[\p{Script=Hiragana}\p{Script=Katakana}]/u.test(character)) return 'cjk-jp'
   if (/\p{Script=Han}/u.test(character)) return cjkFallbackScriptForLanguage(language) ?? 'cjk-sc'
+  if (SYMBOL_CHAR_RE.test(character)) return 'symbols'
   return null
 }
 

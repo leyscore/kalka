@@ -2,22 +2,26 @@ import {
   exportHTMLBundle,
   sceneNodeToDesignDocument,
   withResponsiveStyles,
-  type DesignDocument
+  type DesignDocument,
+  type WebFontFaceResolver
 } from '@kalka/dom-css/export'
 import type { SceneGraph } from '@kalka/scene-graph'
 
 import type { ExportAsset, HTMLExportOptions } from '#core/io/types'
+import { fontManager } from '#core/text/fonts'
 import { exportWebFontFaceAssets } from '#core/text/web-font/assets'
 
+import { loadedFontFaceAssets } from './fonts'
 import { vectorElement } from './vectors'
 
 function designDocument(
   graph: SceneGraph,
   nodeIds: string[],
-  includeSourceIds: boolean
+  includeSourceIds: boolean,
+  fontFallbacks: readonly string[]
 ): DesignDocument {
   const projected = nodeIds.map((id) =>
-    sceneNodeToDesignDocument(graph, id, { vectorElement, includeSourceIds })
+    sceneNodeToDesignDocument(graph, id, { vectorElement, includeSourceIds, fontFallbacks })
   )
   // Each layer records the variables it references; the page defines all of them once.
   const tokens = projected.find((layer) => layer.tokens)?.tokens
@@ -30,6 +34,13 @@ function designDocument(
     tokens,
     children: projected.flatMap((layer) => layer.children)
   }
+}
+
+function fontResolver(fonts: HTMLExportOptions['fonts']): WebFontFaceResolver | 'none' {
+  if (fonts === 'loaded') return loadedFontFaceAssets
+  if (fonts !== 'assets') return 'none'
+  return async (requests, basePath) =>
+    (await exportWebFontFaceAssets({ fonts: requests, assetBasePath: basePath })).assets
 }
 
 /** `card.html` keeps its external files in `card.assets/` next to it, whatever the path style. */
@@ -47,25 +58,22 @@ export async function renderNodesToHTML(
   options: HTMLExportOptions = {},
   fileName?: string
 ): Promise<{ html: string; assets: ExportAsset[] }> {
-  const projected = designDocument(graph, nodeIds, !!options.sourceIds)
+  const fontFallbacks = options.fonts === 'loaded' ? fontManager.fallbackFamilies() : []
+  const projected = designDocument(graph, nodeIds, !!options.sourceIds, fontFallbacks)
   // A page's breakpoints become media rules, which only a stylesheet can hold.
   const exported =
     options.html === 'standalone' && options.style !== 'tailwind'
       ? withResponsiveStyles(
           graph,
           projected,
-          (id) => designDocument(graph, [id], !!options.sourceIds).children[0]
+          (id) => designDocument(graph, [id], !!options.sourceIds, fontFallbacks).children[0]
         )
       : projected
   const bundle = await exportHTMLBundle(exported, {
     html: options.html,
     style: options.style,
     assets: options.assets,
-    fonts:
-      options.fonts === 'assets'
-        ? async (fonts, basePath) =>
-            (await exportWebFontFaceAssets({ fonts, assetBasePath: basePath })).assets
-        : 'none',
+    fonts: fontResolver(options.fonts),
     assetBasePath: assetBasePath(fileName),
     reset: options.reset,
     pretty: options.pretty,

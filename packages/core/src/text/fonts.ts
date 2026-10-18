@@ -78,6 +78,7 @@ export class FontManager {
   private cjkFallbackPromise: Promise<string[]> | null = null
   private arabicFallbackFamilies: string[] = []
   private arabicFallbackPromise: Promise<string[]> | null = null
+  private symbolFallbackFamilies: string[] = []
 
   attachProvider(canvasKit: CanvasKit, provider: TypefaceFontProvider): void {
     this.fontProviders.add(provider)
@@ -456,7 +457,7 @@ export class FontManager {
     await Promise.all(
       scripts.map(async (script) => {
         signal?.throwIfAborted()
-        const target = script === 'arabic' ? this.arabicFallbackFamilies : this.cjkFallbackFamilies
+        const target = this.fallbackFamiliesFor(script)
         if (signal) {
           result[script] = await this.ensureFallbackFamilies(
             script,
@@ -482,6 +483,29 @@ export class FontManager {
     return this.arabicFallbackFamilies
   }
 
+  /** The faces symbols a text's own font lacks are drawn with, as Figma draws them. */
+  getSymbolFallbackFamilies(): string[] {
+    return this.symbolFallbackFamilies
+  }
+
+  /**
+   * Every fallback family loaded, in the order the renderer tries them after a text's own font:
+   * Arabic, then CJK, then symbols.
+   */
+  fallbackFamilies(): string[] {
+    return [
+      ...this.arabicFallbackFamilies,
+      ...this.cjkFallbackFamilies,
+      ...this.symbolFallbackFamilies
+    ]
+  }
+
+  private fallbackFamiliesFor(script: FontFallbackScript): string[] {
+    if (script === 'arabic') return this.arabicFallbackFamilies
+    if (script === 'symbols') return this.symbolFallbackFamilies
+    return this.cjkFallbackFamilies
+  }
+
   setArabicFallbackFamily(family: string): void {
     if (!this.arabicFallbackFamilies.includes(family)) {
       this.arabicFallbackFamilies.push(family)
@@ -500,10 +524,12 @@ export class FontManager {
 
     for (const family of manifest.localFamilies) {
       signal?.throwIfAborted()
+      // A face loaded before, installed or downloaded, keeps the source it was loaded from.
+      const loaded = this.loadedFamilies.has(`${family}|Regular`)
       const buffer = await this.localFallbackFont(family, options.allowVariableLocalFonts)
       if (
         buffer &&
-        this.registerAndCache(family, 'Regular', buffer, 'fallback') &&
+        (loaded || this.registerAndCache(family, 'Regular', buffer, 'fallback')) &&
         !targetFamilies.includes(family)
       ) {
         targetFamilies.push(family)

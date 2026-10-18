@@ -111,7 +111,8 @@ export function useDomScene(
       },
       onReflow: (id) => reflowed.add(id),
       livePatches: () => live.patches(),
-      tokens: () => canvasTokens.references
+      tokens: () => canvasTokens.references,
+      fontFallbacks: () => fontManager.fallbackFamilies()
     })
     const p = projector
     const canvasTokens = new CanvasTokens(
@@ -126,7 +127,8 @@ export function useDomScene(
     shaders = new ShaderLayers(p, () => editor.graph)
     ghosts = new GhostLayer(p, {
       vectorElement: options.vectorElement,
-      fonts: () => fontManager.loadedBrowserFaces()
+      fonts: () => fontManager.loadedBrowserFaces(),
+      fontFallbacks: () => fontManager.fallbackFamilies()
     })
     reveals = new RevealPlayer(p)
     const ghostLayer = ghosts

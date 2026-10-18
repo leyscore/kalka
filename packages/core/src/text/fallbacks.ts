@@ -5,7 +5,23 @@ import {
   CJK_GOOGLE_FONTS
 } from '#core/constants'
 
-export type FontFallbackScript = 'cjk' | 'cjk-sc' | 'cjk-tc' | 'cjk-jp' | 'cjk-kr' | 'arabic'
+export type FontFallbackScript =
+  | 'cjk'
+  | 'cjk-sc'
+  | 'cjk-tc'
+  | 'cjk-jp'
+  | 'cjk-kr'
+  | 'arabic'
+  | 'symbols'
+
+/**
+ * Arrows, technical and geometric symbols, dingbats and box drawing, which text fonts often
+ * lack. Figma draws them in Noto Sans Symbols 2 (a ◆ at 1.109 em, a ✕ at 0.864 em), so Kalka falls
+ * back to it as well. Emoji are drawn as emoji, not here.
+ */
+export const SYMBOL_CHAR_RE = /[\u2190-\u21ff\u2300-\u23ff\u2500-\u27bf\u27f0-\u297f\u2b00-\u2bff]/u
+
+export const SYMBOL_FALLBACK_FAMILIES = ['Noto Sans Symbols 2']
 
 export function cjkFallbackScriptForLanguage(
   language: string | null | undefined
@@ -132,6 +148,11 @@ export function fontFallbackManifest(
       script: 'arabic',
       localFamilies: [...ARABIC_LOCAL_FALLBACK_FAMILIES],
       remoteFamilies: [...ARABIC_REMOTE_FALLBACK_FAMILIES]
+    },
+    symbols: {
+      script: 'symbols',
+      localFamilies: [...SYMBOL_FALLBACK_FAMILIES],
+      remoteFamilies: [...SYMBOL_FALLBACK_FAMILIES]
     }
   }
 }

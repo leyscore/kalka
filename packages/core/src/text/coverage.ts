@@ -1,7 +1,11 @@
 import type { SceneNode } from '@kalka/scene-graph'
 
 import { DEFAULT_FONT_FAMILY } from '#core/constants'
-import { cjkFallbackScriptForLanguage, type FontFallbackScript } from '#core/text/fallbacks'
+import {
+  cjkFallbackScriptForLanguage,
+  SYMBOL_CHAR_RE,
+  type FontFallbackScript
+} from '#core/text/fallbacks'
 import { weightToStyle } from '#core/text/font/style'
 import { fontGlyphCoverageSync } from '#core/text/opentype'
 
@@ -19,6 +23,8 @@ function scriptCharRegex(script: FontFallbackScript): RegExp {
   switch (script) {
     case 'arabic':
       return ARABIC_CHAR_RE
+    case 'symbols':
+      return SYMBOL_CHAR_RE
     case 'cjk-jp':
       return CJK_HIRAGANA_KATAKANA_RE
     case 'cjk-kr':
@@ -31,7 +37,7 @@ function scriptCharRegex(script: FontFallbackScript): RegExp {
 }
 
 export function textHasFallbackScript(text: string): boolean {
-  return ARABIC_CHAR_RE.test(text) || CJK_CHAR_RE.test(text)
+  return ARABIC_CHAR_RE.test(text) || CJK_CHAR_RE.test(text) || SYMBOL_CHAR_RE.test(text)
 }
 
 export function fontFallbackScriptForCharacter(
@@ -45,6 +51,7 @@ export function fontFallbackScriptForCharacter(
   if (languageScript && CJK_IDEOGRAPH_CHAR_RE.test(char)) return languageScript
   if (TRADITIONAL_CJK_CHAR_RE.test(char)) return 'cjk-tc'
   if (CJK_IDEOGRAPH_CHAR_RE.test(char)) return 'cjk-sc'
+  if (SYMBOL_CHAR_RE.test(char)) return 'symbols'
   return null
 }
 
@@ -105,6 +112,7 @@ export function textFallbackScriptsWithoutCoverage(node: SceneNode): FontFallbac
 export function textNeededFallbackScripts(node: SceneNode): FontFallbackScript[] {
   const scripts = new Set<FontFallbackScript>()
   if (textNeedsFallbackScript(node, 'arabic')) scripts.add('arabic')
+  if (textNeedsFallbackScript(node, 'symbols')) scripts.add('symbols')
 
   let missingIdeograph = false
   let missingTraditionalIdeograph = false

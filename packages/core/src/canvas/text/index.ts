@@ -512,7 +512,8 @@ export function buildParagraph(
       primary,
       weightToStyle(weight, italic),
       arabicFallbacks,
-      cjkFallbacks
+      cjkFallbacks,
+      fontManager.getSymbolFallbackFamilies()
     )
 
   const baseTextStyle = {

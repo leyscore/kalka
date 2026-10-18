@@ -21,9 +21,9 @@ type PageRequest = Pick<NodeRasterRequest, 'graph' | 'nodeIds' | 'background'> &
 }
 
 /**
- * Draws layers as the canvas draws them: the standalone HTML export of the layers, its fonts as
- * files beside it, painted by Chromium in Kalka's render host, an Electron process that shows no
- * window. Null when there is no Electron, or the render fails, so the export uses CanvasKit.
+ * Draws layers as the canvas draws them: the standalone HTML export of the layers, with the font
+ * files the canvas draws with beside it, painted by Chromium in Kalka's render host, an Electron
+ * process that shows no window. Null when there is no Electron, or the render fails, so the export uses CanvasKit.
  */
 async function renderWithElectron(request: PageRequest): Promise<Uint8Array | null> {
   if (process.env.KALKA_RENDERER === 'canvaskit') return null
@@ -36,7 +36,7 @@ async function renderWithElectron(request: PageRequest): Promise<Uint8Array | nu
     const { html, assets } = await renderNodesToHTML(
       request.graph,
       [...request.nodeIds],
-      { html: 'standalone', assets: 'external', fonts: 'assets', pretty: false },
+      { html: 'standalone', assets: 'external', fonts: 'loaded', pretty: false },
       'page.html'
     )
     await writeFile(join(dir, 'page.html'), html)

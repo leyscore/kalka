@@ -131,8 +131,12 @@ export interface HTMLExportOptions {
   html?: 'fragment' | 'standalone'
   style?: 'inline' | 'tailwind'
   assets?: 'inline' | 'external'
-  /** `assets` ships web fonts with external assets. */
-  fonts?: 'assets' | 'none'
+  /**
+   * `assets` ships web fonts with external assets. `loaded` ships the files Kalka draws the
+   * canvas with instead, and lists the fallback families after each text's fonts, as the canvas
+   * does: for pages drawn as images, not for pages someone keeps.
+   */
+  fonts?: 'assets' | 'loaded' | 'none'
   /** The base styles in the page, in a `reset.css` file of their own, or left out. */
   reset?: 'inline' | 'file' | 'none'
   /** Indented HTML and one CSS declaration per line; exported files default to it. */

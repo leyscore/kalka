@@ -230,7 +230,10 @@ interface LaidOutFace extends FontFaceName {
   data: ArrayBuffer | null
 }
 
-/** The faces the text in `id` and everything inside it names, each once. */
+/**
+ * The faces the text in `id` and everything inside it names, each once, and the fallback faces
+ * the projection lists after them.
+ */
 function namedFaces(graph: SceneGraph, id: string): FontFaceName[] {
   const named: FontFaceName[] = []
   const collect = (nodeId: string) => {
@@ -240,6 +243,11 @@ function namedFaces(graph: SceneGraph, id: string): FontFaceName[] {
     node.childIds.forEach(collect)
   }
   collect(id)
+  // An installed fallback the page finds by its name; a downloaded one it is sent.
+  if (named.length > 0)
+    for (const family of fontManager.fallbackFamilies())
+      if (fontManager.loadedFontSource(family, 'Regular') !== 'fallback')
+        named.push({ family, style: 'Regular' })
   return uniqBy(named, ({ family, style }) => `${family}\0${style}`)
 }
 
@@ -261,7 +269,8 @@ function projectArtboard(graph: SceneGraph, id: string): PageArtboard | null {
     tokens: false,
     vectorElement,
     derivedSizes: true,
-    shown: new Set([id])
+    shown: new Set([id]),
+    fontFallbacks: fontManager.fallbackFamilies()
   }).children.at(0)
   if (projected?.type !== 'element') return null
   return { id, width: node.width, height: node.height, html: artboardMarkup(node, projected) }

@@ -38,7 +38,7 @@ function fontAssetFormat(source: RemoteFontSource): WebFontFaceAsset['format'] {
   return 'truetype'
 }
 
-function slugFontFamily(family: string): string {
+export function slugFontFamily(family: string): string {
   let slug = ''
   let previousDash = false
   for (const char of family.toLowerCase()) {

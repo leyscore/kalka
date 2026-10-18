@@ -86,6 +86,11 @@ export interface DomSceneProjectorOptions {
   livePatches?: () => ReadonlyMap<string, Partial<SceneNode>>
   /** The variable references layers are projected with, as `var(--name)`. */
   tokens?: () => DesignTokens
+  /**
+   * Families text falls back to for characters its font lacks, listed after its font. Every
+   * artboard is projected again when the list changes, as when a fallback font arrives.
+   */
+  fontFallbacks?: () => readonly string[]
 }
 
 /**
@@ -127,7 +132,16 @@ export class DomSceneProjector {
 
   get needsFlush(): boolean {
     // A switch to an empty page changes nothing else, yet must clear the previous page's artboards.
-    return this.pageDirty || this.dirty.size > 0 || this.currentPageId() !== this.pageId
+    return this.pageDirty || this.dirty.size > 0 || this.projectionChanged()
+  }
+
+  /** The fallback families as text was last projected with them. */
+  private projectedFallbacks = ''
+
+  private fallbacksKey = () => (this.options.fontFallbacks?.() ?? []).join('\0')
+
+  private projectionChanged(): boolean {
+    return this.currentPageId() !== this.pageId || this.fallbacksKey() !== this.projectedFallbacks
   }
 
   /** The element drawing a layer, if it is on the current page. */
@@ -259,10 +273,10 @@ export class DomSceneProjector {
   /** Applies every pending change to the DOM. */
   flush(): void {
     if (this.destroyed) return
-    const pageId = this.currentPageId()
-    if (pageId !== this.pageId) {
+    if (this.projectionChanged()) {
       this.reset()
-      this.pageId = pageId
+      this.pageId = this.currentPageId()
+      this.projectedFallbacks = this.fallbacksKey()
     }
     const touched = new Set<string>()
     if (this.pageDirty) {
@@ -487,7 +501,8 @@ export class DomSceneProjector {
       tokens: this.options.tokens?.() ?? false,
       vectorElement: this.options.vectorElement,
       shallow,
-      derivedSizes: true
+      derivedSizes: true,
+      fontFallbacks: this.options.fontFallbacks?.()
     })
     return doc.children[0] ?? null
   }
