@@ -4,6 +4,7 @@
   "clipboardMissingDesignData": "剪贴板中没有设计数据。",
   "clipboardAccessBlocked": "当前浏览器环境阻止了剪贴板访问。",
   "copiedAs": "已复制为 {format}。",
+  "copiedProperties": "已复制属性。",
   "pngClipboardUnavailable": "此浏览器不支持将 PNG 导出到剪贴板。",
   "openFileFailed": "无法打开“{name}”：{error}",
   "importedDOMCSS": "已导入 DOM/CSS 文档。",

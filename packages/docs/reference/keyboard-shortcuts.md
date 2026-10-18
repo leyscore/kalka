@@ -59,8 +59,8 @@ Full Figma-compatible shortcut map. ✅ = implemented.
 | <kbd>⌘</kbd><kbd>A</kbd> | Select All | ✅ |
 | <kbd>⇧</kbd><kbd>⌘</kbd><kbd>A</kbd> | Select Inverse | ✅ |
 | <kbd>⇧</kbd><kbd>⌘</kbd><kbd>C</kbd> | Copy as PNG | ✅ |
-| <kbd>⌥</kbd><kbd>⌘</kbd><kbd>C</kbd> | Copy Properties | 🔲 |
-| <kbd>⌥</kbd><kbd>⌘</kbd><kbd>V</kbd> | Paste Properties | 🔲 |
+| <kbd>⌥</kbd><kbd>⌘</kbd><kbd>C</kbd> | Copy Properties | ✅ |
+| <kbd>⌥</kbd><kbd>⌘</kbd><kbd>V</kbd> | Paste Properties | ✅ |
 
 ## View
 

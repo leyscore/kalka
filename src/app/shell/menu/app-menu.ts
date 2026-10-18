@@ -111,6 +111,8 @@ export function useAppMenu() {
     cut: 'cut',
     paste: 'paste',
     'paste-to-replace': 'pasteToReplace',
+    'copy-properties': 'copyProperties',
+    'paste-properties': 'pasteProperties',
     'selection.rename': 'renameSelection',
     'selection.moveToPage': 'moveToPage',
     language: 'language',

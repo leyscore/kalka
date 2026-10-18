@@ -4,6 +4,7 @@
   "clipboardMissingDesignData": "Gli appunti non contengono dati di design.",
   "clipboardAccessBlocked": "L’accesso agli appunti è bloccato in questo contesto del browser.",
   "copiedAs": "Copiato come {format}.",
+  "copiedProperties": "Proprietà copiate.",
   "pngClipboardUnavailable": "L’esportazione PNG negli appunti non è disponibile in questo browser.",
   "openFileFailed": "Impossibile aprire «{name}»: {error}",
   "importedDOMCSS": "Documento DOM/CSS importato.",

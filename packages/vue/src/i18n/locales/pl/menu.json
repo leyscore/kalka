@@ -40,6 +40,8 @@
   "underline": "Podkreślenie",
   "pasteHere": "Wklej tutaj",
   "pasteToReplace": "Wklej, aby zastąpić",
+  "copyProperties": "Kopiuj właściwości",
+  "pasteProperties": "Wklej właściwości",
   "copyPasteAs": "Kopiuj/Wklej jako",
   "copyAsText": "Kopiuj jako tekst",
   "copyAsSVG": "Kopiuj jako SVG",

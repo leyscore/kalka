@@ -4,6 +4,7 @@
   "clipboardMissingDesignData": "Die Zwischenablage enthält keine Designdaten.",
   "clipboardAccessBlocked": "Der Zugriff auf die Zwischenablage ist in diesem Browserkontext blockiert.",
   "copiedAs": "Als {format} kopiert.",
+  "copiedProperties": "Eigenschaften kopiert.",
   "pngClipboardUnavailable": "Der PNG-Export in die Zwischenablage ist in diesem Browser nicht verfügbar.",
   "openFileFailed": "„{name}“ konnte nicht geöffnet werden: {error}",
   "importedDOMCSS": "DOM/CSS-Dokument importiert.",

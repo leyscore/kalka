@@ -123,6 +123,16 @@
         "accelerator": "CmdOrCtrl+Shift+R"
       },
       {
+        "id": "copy-properties",
+        "label": "Copy properties",
+        "accelerator": "CmdOrCtrl+Alt+C"
+      },
+      {
+        "id": "paste-properties",
+        "label": "Paste properties",
+        "accelerator": "CmdOrCtrl+Alt+V"
+      },
+      {
         "id": "selection.duplicate",
         "label": "Duplicate",
         "accelerator": "CmdOrCtrl+D"

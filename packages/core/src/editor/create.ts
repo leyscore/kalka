@@ -30,6 +30,7 @@ import { createLintFixBridge } from './bridges/lint'
 import { createStructureBridge } from './bridges/structure'
 import { createUndoBridge } from './bridges/undo'
 import { createClipboardActions } from './clipboard'
+import { createClipboardPropertiesActions } from './clipboard/paste/properties'
 import { createColorSpaceActions } from './color-space'
 import { createComponentSyncScheduler } from './component-sync'
 import { createComponentActions } from './components'
@@ -276,6 +277,11 @@ export function createEditor(options?: EditorOptions) {
   const undoActions = createUndoActions(ctx)
   const text = createTextActions(ctx)
   const nodes = createNodeActions(ctx)
+  const clipboardProperties = createClipboardPropertiesActions(
+    ctx,
+    nodes.updateNodeWithUndo,
+    clipboard.loadFontsForNodes
+  )
   const variables = createVariableActions(ctx)
   const designTokens = createDesignTokenActions(ctx, variables, nodes)
   const vectorize = createVectorizeActions(ctx)
@@ -444,6 +450,9 @@ export function createEditor(options?: EditorOptions) {
 
     // Clipboard — bridge functions that need selectedNodes
     ...clipboardBridge,
+
+    // Paste properties: the look of a copied layer, onto the selection
+    ...clipboardProperties,
 
     // Components — bridge functions
     ...componentBridge,

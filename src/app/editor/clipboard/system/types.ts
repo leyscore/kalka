@@ -1,11 +1,11 @@
-import type { ClipboardPayload } from '@kalka/core/editor'
+import type { ClipboardPayload, CopyOptions } from '@kalka/core/editor'
 import type { Vector } from '@kalka/scene-graph/primitives'
 
 import type { EditorStore } from '@/app/editor/active-store'
 export type { ClipboardPayload } from '@kalka/core/editor'
 
 export interface SystemClipboard {
-  copy(store: EditorStore): Promise<boolean>
+  copy(store: EditorStore, options?: CopyOptions): Promise<boolean>
   paste(store: EditorStore, cursorPos?: Vector): Promise<boolean>
 }
 

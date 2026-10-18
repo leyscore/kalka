@@ -1,3 +1,4 @@
+import type { CopyOptions } from '@kalka/core/editor'
 import type { Vector } from '@kalka/scene-graph/primitives'
 
 import type { EditorStore } from '@/app/editor/active-store'
@@ -16,10 +17,10 @@ import {
 } from '@/app/tauri/clipboard'
 import { isTauri } from '@/app/tauri/env'
 
-async function copySelection(store: EditorStore): Promise<boolean> {
+async function copySelection(store: EditorStore, options?: CopyOptions): Promise<boolean> {
   if (!isTauri()) return false
   try {
-    const payload = await store.prepareCopy()
+    const payload = await store.prepareCopy(options)
     const { html, plainText } = payload
     if (!html && !plainText) return false
     if (html) {

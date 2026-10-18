@@ -4,6 +4,7 @@
   "clipboardMissingDesignData": "В буфере обмена нет данных дизайна.",
   "clipboardAccessBlocked": "Доступ к буферу обмена заблокирован в этом контексте браузера.",
   "copiedAs": "Скопировано как {format}.",
+  "copiedProperties": "Свойства скопированы.",
   "pngClipboardUnavailable": "Экспорт PNG в буфер обмена недоступен в этом браузере.",
   "openFileFailed": "Не удалось открыть «{name}»: {error}",
   "importedDOMCSS": "Документ DOM/CSS импортирован.",

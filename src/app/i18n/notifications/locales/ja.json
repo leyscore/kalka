@@ -4,6 +4,7 @@
   "clipboardMissingDesignData": "クリップボードにデザインデータがありません。",
   "clipboardAccessBlocked": "このブラウザー環境ではクリップボードへのアクセスがブロックされています。",
   "copiedAs": "{format} としてコピーしました。",
+  "copiedProperties": "プロパティをコピーしました。",
   "pngClipboardUnavailable": "このブラウザーでは PNG をクリップボードに書き出せません。",
   "openFileFailed": "「{name}」を開けませんでした: {error}",
   "importedDOMCSS": "DOM/CSS ドキュメントをインポートしました。",

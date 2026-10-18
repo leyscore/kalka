@@ -28,3 +28,28 @@ export const TEXT_LAYOUT_FIELDS = [
   'textAutoResize',
   'maxLines'
 ] as const satisfies readonly (keyof SceneNode)[]
+
+export const TEXT_DECORATION_FIELDS = [
+  'textDecoration',
+  'textDecorationStyle',
+  'textDecorationThickness',
+  'textUnderlineOffset',
+  'textDecorationFills',
+  'textDecorationSkipInk'
+] as const satisfies readonly (keyof SceneNode)[]
+
+/** How text is styled, apart from its content and how its box sizes. */
+export const TEXT_STYLE_FIELDS = [
+  'fontFamily',
+  'fontSize',
+  'fontWeight',
+  'italic',
+  'lineHeight',
+  'letterSpacing',
+  'textAlignHorizontal',
+  'textAlignVertical',
+  'textCase',
+  ...TEXT_DECORATION_FIELDS,
+  'fontFeatures',
+  'fontVariations'
+] as const satisfies readonly (keyof SceneNode)[]

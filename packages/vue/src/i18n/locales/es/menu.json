@@ -39,6 +39,8 @@
   "strikethrough": "Tachado",
   "pasteHere": "Pegar aquí",
   "pasteToReplace": "Pegar y reemplazar",
+  "copyProperties": "Copiar propiedades",
+  "pasteProperties": "Pegar propiedades",
   "copyPasteAs": "Copiar/Pegar como",
   "copyAsText": "Copiar como texto",
   "copyAsSVG": "Copiar como SVG",

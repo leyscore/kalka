@@ -39,6 +39,8 @@
   "strikethrough": "打ち消し線",
   "pasteHere": "ここに貼り付け",
   "pasteToReplace": "貼り付けて置換",
+  "copyProperties": "プロパティをコピー",
+  "pasteProperties": "プロパティを貼り付け",
   "copyPasteAs": "形式を選択してコピー/貼り付け",
   "copyAsText": "テキストとしてコピー",
   "copyAsSVG": "SVGとしてコピー",

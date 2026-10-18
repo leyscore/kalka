@@ -4,6 +4,7 @@
   "clipboardMissingDesignData": "Le presse-papiers ne contient aucune donnée de design.",
   "clipboardAccessBlocked": "L’accès au presse-papiers est bloqué dans ce contexte de navigateur.",
   "copiedAs": "Copié au format {format}.",
+  "copiedProperties": "Propriétés copiées.",
   "pngClipboardUnavailable": "L’export PNG vers le presse-papiers n’est pas disponible dans ce navigateur.",
   "openFileFailed": "Impossible d’ouvrir « {name} » : {error}",
   "importedDOMCSS": "Document DOM/CSS importé.",

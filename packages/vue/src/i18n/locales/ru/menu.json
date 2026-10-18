@@ -40,6 +40,8 @@
   "underline": "Подчёркнутый",
   "pasteHere": "Вставить сюда",
   "pasteToReplace": "Вставить для замены",
+  "copyProperties": "Копировать свойства",
+  "pasteProperties": "Вставить свойства",
   "copyPasteAs": "Копировать/Вставить как",
   "copyAsText": "Копировать как текст",
   "copyAsSVG": "Копировать как SVG",

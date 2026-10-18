@@ -18,6 +18,7 @@
 - With `--framework vue` or `--framework react`, Storybook export makes every component set or component a Vue or React component, also without a behaviour: variant properties are `data-*` props, boolean properties show or hide their layers, and slot properties are a named `<slot>` or a `ReactNode` prop; a rule's `"generate": false` keeps static stories. A set whose file records no default variant rests at its top-left variant, and exporting again into a folder holding generated components works.
 - Paste SVG markup copied as text, such as from a code editor or Figma's Copy as SVG, as layers.
 - Import SVG markup with `figma.createNodeFromSvg(svg)` in the plugin API, as in Figma: it builds the same layers as pasting the SVG, on the current page at its origin.
+- Copy properties and Paste properties (<kbd>⌥</kbd><kbd>⌘</kbd><kbd>C</kbd>, <kbd>⌥</kbd><kbd>⌘</kbd><kbd>V</kbd>, in the Edit menu and under Copy/Paste as in the canvas menu) carry the look of one layer to the selected layers through the system clipboard, to and from Figma, as in Figma: fills, strokes, effects, opacity, blend mode, corners, linked styles and variables, auto layout between frames, and text style between text layers, plus the CSS the layer keeps as written, apart from what places it such as margins, its live shader, and its HTML classes. Position, size, rotation, content, and the HTML tag stay.
 
 ### Changed
 

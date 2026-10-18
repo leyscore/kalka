@@ -5,6 +5,10 @@ import { onScopeDispose } from 'vue'
 import { editorCommandMetadata } from '@kalka/vue'
 import type { EditorCommandId } from '@kalka/vue'
 
+import {
+  copySelectionProperties,
+  pasteClipboardProperties
+} from '@/app/editor/clipboard/properties'
 import { requestRenameSelection } from '@/app/editor/selection/rename-dialog'
 import { TOOL_SHORTCUTS } from '@/app/editor/session'
 import { openSettingsDialog } from '@/app/settings/dialog'
@@ -135,6 +139,16 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
       'selection.flipHorizontal',
       'selection.flipVertical'
     ),
+    {
+      id: 'copy-properties',
+      keys: appMenuTinykeysShortcut('copy-properties') ?? '$mod+Alt+KeyC',
+      run: ({ store }) => void copySelectionProperties(store)
+    },
+    {
+      id: 'paste-properties',
+      keys: appMenuTinykeysShortcut('paste-properties') ?? '$mod+Alt+KeyV',
+      run: ({ store }) => void pasteClipboardProperties(store)
+    },
     {
       id: 'export-selection-png',
       keys: appMenuTinykeysShortcut('export-selection') ?? '$mod+Shift+KeyE',

@@ -1,6 +1,14 @@
-import { embedClipboardImages, encodeFigmaClipboard } from '@kalka/fig/clipboard'
+import {
+  embedClipboardImages,
+  encodeFigmaClipboard,
+  type FigmaClipboardAssetType
+} from '@kalka/fig/clipboard'
 import { randomInt } from '@kalka/scene-graph/random'
-export { parseFigmaClipboard, figmaNodesBounds } from '@kalka/fig/clipboard'
+export {
+  parseFigmaClipboard,
+  figmaNodesBounds,
+  type FigmaClipboardAssetType
+} from '@kalka/fig/clipboard'
 import { placeSlotContent, type FigNodeChangeExportRuntime } from '@kalka/fig/node-change'
 import { initCodec } from '@kalka/kiwi/fig/codec'
 import type { GUID, NodeChange as KiwiNodeChange } from '@kalka/kiwi/fig/codec'
@@ -100,18 +108,20 @@ function clipboardGraph(graph: SceneGraph): SceneGraph {
 
 export function buildFigmaClipboardHTML(
   nodes: SceneNode[],
-  graph: SceneGraph
+  graph: SceneGraph,
+  assetType: FigmaClipboardAssetType = 'UNKNOWN'
 ): Promise<string | null> {
   const written = clipboardGraph(graph)
   return withFigExportRuntime(written, undefined, (runtime) =>
-    writeFigmaClipboardHTML(nodes, written, runtime)
+    writeFigmaClipboardHTML(nodes, written, runtime, assetType)
   )
 }
 
 async function writeFigmaClipboardHTML(
   nodes: SceneNode[],
   graph: SceneGraph,
-  runtime: FigNodeChangeExportRuntime
+  runtime: FigNodeChangeExportRuntime,
+  assetType: FigmaClipboardAssetType
 ): Promise<string | null> {
   const fontDigestMap = await buildFontDigestMap(graph)
 
@@ -246,7 +256,7 @@ async function writeFigmaClipboardHTML(
     }
   }
   embedClipboardImages(nodeChanges, blobs, graph.images)
-  return encodeFigmaClipboard(nodeChanges, blobs, randomInt())
+  return encodeFigmaClipboard(nodeChanges, blobs, randomInt(), assetType)
 }
 
 export {

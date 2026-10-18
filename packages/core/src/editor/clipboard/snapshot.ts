@@ -11,6 +11,8 @@ export interface ClipboardSnapshot {
   variableDependencies: ClipboardVariables
   nodes: ClipboardNodeTree[]
   images: Map<string, Uint8Array>
+  /** Written by Copy properties: Paste skips it and Paste properties reads it, as in Figma. */
+  properties?: boolean
 }
 
 function referencedStyleIds(nodes: SceneNode[]): Set<string> {

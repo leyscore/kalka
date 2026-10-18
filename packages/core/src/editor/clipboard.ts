@@ -10,7 +10,7 @@ import { computeAllLayouts } from '#core/layout'
 import { createClipboardAssetActions } from './clipboard/assets'
 import type { ClipboardSnapshot } from './clipboard/copy'
 import { createClipboardCopyActions } from './clipboard/copy'
-import { importClipboardDependencies } from './clipboard/dependencies'
+import { importClipboardDependenciesWithUndo } from './clipboard/dependencies'
 import { createClipboardExportActions } from './clipboard/export'
 import { createClipboardFontActions } from './clipboard/fonts'
 import { deleteIds, recreateSnapshots, restoreDeletedEntries } from './clipboard/history'
@@ -125,31 +125,11 @@ export function createClipboardActions(ctx: EditorContext) {
     cursorPos?: Vector,
     options: PasteOptions = {}
   ) {
+    // Copy properties writes layers for Paste properties only, as in Figma.
+    if (snapshot.properties) return
     let created: string[] = []
     ctx.undo.runBatch('Paste', () => {
-      const dependencies = importClipboardDependencies(ctx, snapshot)
-      if (dependencies.styleSnapshots.length > 0) {
-        ctx.undo.push({
-          label: 'Import clipboard styles',
-          forward: () => {
-            for (const style of dependencies.styleSnapshots) {
-              ctx.graph.preserveSourceMetadataDuring(() =>
-                ctx.graph.createNode(style.type, ctx.state.currentPageId, style)
-              )
-            }
-          },
-          inverse: () => {
-            for (const style of dependencies.styleSnapshots) ctx.graph.deleteNode(style.id)
-          }
-        })
-      }
-      if (dependencies.applyVariables && dependencies.revertVariables) {
-        ctx.undo.push({
-          label: 'Import clipboard variables',
-          forward: dependencies.applyVariables,
-          inverse: dependencies.revertVariables
-        })
-      }
+      const dependencies = importClipboardDependenciesWithUndo(ctx, snapshot)
       created = pasteKalkaNodes(
         dependencies.nodes,
         snapshot.images,
@@ -173,6 +153,7 @@ export function createClipboardActions(ctx: EditorContext) {
     }
 
     const figma = await parseFigmaClipboard(html)
+    if (figma?.assetType === 'STYLE_PROPERTIES') return
     if (figma) {
       // One undo step for the paste and any slot it claims.
       const pasted = ctx.undo.runBatch('Paste', () => {

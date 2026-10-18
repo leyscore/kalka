@@ -6,11 +6,15 @@ import type { NodeChange } from '@kalka/kiwi/fig/codec'
 
 import { buildFigKiwi } from '../node-change'
 
+/** What a clipboard payload is for: layers to paste, or Copy properties' look for Paste properties. */
+export type FigmaClipboardAssetType = 'UNKNOWN' | 'STYLE_PROPERTIES'
+
 /** Encode prepared node changes; runtime shaping and font loading belong to the caller. */
 export function encodeFigmaClipboard(
   nodeChanges: NodeChange[],
   blobs: Uint8Array[],
-  pasteID: number
+  pasteID: number,
+  assetType: FigmaClipboardAssetType = 'UNKNOWN'
 ): string {
   const message = {
     type: 'NODE_CHANGES',
@@ -18,6 +22,7 @@ export function encodeFigmaClipboard(
     ackID: 0,
     pasteID,
     pasteFileKey: 'kalka',
+    pasteAssetType: assetType,
     nodeChanges,
     blobs: blobs.map((bytes) => ({ bytes }))
   }

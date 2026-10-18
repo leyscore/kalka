@@ -16,9 +16,15 @@ const FigmaClipboardMetaJSON = v.pipe(
 
 type FigmaClipboardMeta = v.InferOutput<typeof FigmaClipboardMetaJSON>
 
-export async function parseFigmaClipboard(
-  html: string
-): Promise<{ nodes: KiwiNodeChange[]; meta: FigmaClipboardMeta; blobs: Uint8Array[] } | null> {
+export interface ParsedFigmaClipboard {
+  nodes: KiwiNodeChange[]
+  meta: FigmaClipboardMeta
+  blobs: Uint8Array[]
+  /** `STYLE_PROPERTIES` for Copy properties, which Paste skips and Paste properties reads. */
+  assetType: string
+}
+
+export async function parseFigmaClipboard(html: string): Promise<ParsedFigmaClipboard | null> {
   const metaMatch = html.match(/\(figmeta\)(.*?)\(\/figmeta\)/)
   const bufMatch = html.match(/\(figma\)(.*?)\(\/figma\)/s)
   if (!metaMatch || !bufMatch) return null
@@ -42,13 +48,14 @@ export async function parseFigmaClipboard(
     const msg = compiled.decodeMessage(dataRaw) as {
       nodeChanges?: KiwiNodeChange[]
       blobs?: Array<{ bytes: Uint8Array | Record<string, number> }>
+      pasteAssetType?: string
     }
 
     const blobs: Uint8Array[] = (msg.blobs ?? []).map((b) =>
       b.bytes instanceof Uint8Array ? b.bytes : new Uint8Array(Object.values(b.bytes))
     )
 
-    return { nodes: msg.nodeChanges ?? [], meta, blobs }
+    return { nodes: msg.nodeChanges ?? [], meta, blobs, assetType: msg.pasteAssetType ?? 'UNKNOWN' }
   } catch {
     return null
   }

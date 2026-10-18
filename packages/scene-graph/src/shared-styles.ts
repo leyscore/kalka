@@ -8,6 +8,9 @@ const STYLE_REF_KEYS = {
   grid: 'gridStyleId'
 } as const satisfies Record<SharedStyleKind, keyof SceneNode>
 
+/** The fields that link a layer to its shared styles. */
+export const STYLE_LINK_FIELDS = Object.values(STYLE_REF_KEYS)
+
 const STYLE_TYPES = {
   fill: 'FILL',
   stroke: 'FILL',

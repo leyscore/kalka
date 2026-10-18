@@ -40,6 +40,8 @@
   "underline": "Unterstrichen",
   "pasteHere": "Hier einfügen",
   "pasteToReplace": "Zum Ersetzen einfügen",
+  "copyProperties": "Eigenschaften kopieren",
+  "pasteProperties": "Eigenschaften einfügen",
   "copyPasteAs": "Kopieren/Einfügen als",
   "copyAsText": "Als Text kopieren",
   "copyAsSVG": "Als SVG kopieren",
