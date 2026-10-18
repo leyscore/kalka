@@ -86,54 +86,8 @@ function dropIdleAspectRatio(
   return omit(style, ['aspect-ratio'])
 }
 
-/** Block boxes by default, which stay block boxes without `display: flex`. */
-const BLOCK_TAGS: ReadonlySet<string> = new Set([
-  'article',
-  'aside',
-  'div',
-  'figure',
-  'footer',
-  'form',
-  'header',
-  'main',
-  'nav',
-  'section'
-])
-
-/** What only a flex container's children read. */
-const FLEX_CONTAINER_PROPERTIES = [
-  'display',
-  'flex-direction',
-  'justify-content',
-  'align-items',
-  'flex-wrap',
-  'align-content',
-  'gap',
-  'row-gap',
-  'column-gap'
-]
-
-/**
- * An auto layout frame with nothing inside draws as the box it is: its flex layout has no
- * children to place. The box stays a block, and its margins could only collapse in a parent
- * without flex layout, or a baseline line asks for its first line, which only stays when the
- * box keeps flex layout.
- */
-function dropEmptyFlexLayout(
-  style: DesignStyleDeclaration,
-  tagName: string,
-  parent: DesignStyleDeclaration
-): DesignStyleDeclaration {
-  if (style.display !== 'flex' || !BLOCK_TAGS.has(tagName)) return style
-  if (!placedOutOfFlow(style) && !isFlex(parent.display) && !isGrid(parent.display)) return style
-  if (parent['align-items'] === 'baseline' || style['align-self'] === 'baseline') return style
-  return omit(style, FLEX_CONTAINER_PROPERTIES)
-}
-
 export interface DeclarationContext {
   tagName: string
-  /** Whether the element has no children, text included. */
-  empty: boolean
   /** Whether the element has class rules of its own, which its declarations may be overriding. */
   classed: boolean
   parent: ParentLayout
@@ -149,15 +103,13 @@ export interface DeclarationContext {
  */
 export function tidyDeclarations(
   style: DesignStyleDeclaration,
-  { tagName, empty, classed, parent, responsive, shorthands }: DeclarationContext
+  { tagName, classed, parent, responsive, shorthands }: DeclarationContext
 ): DesignStyleDeclaration {
   const tag = tagName.toLowerCase()
   // A class rule may set what a declaration here overrides, or a shorthand would.
   if (responsive || classed) return { ...style }
-  let tidy = style
-  if (parent.style) {
-    tidy = dropIdleAspectRatio(dropDefaultMinimums(tidy, tag, parent.style), parent.style)
-    if (empty) tidy = dropEmptyFlexLayout(tidy, tag, parent.style)
-  }
+  const tidy = parent.style
+    ? dropIdleAspectRatio(dropDefaultMinimums(style, tag, parent.style), parent.style)
+    : style
   return shorthands ? combineShorthands(tidy, tag) : { ...tidy }
 }
