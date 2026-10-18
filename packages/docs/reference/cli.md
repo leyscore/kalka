@@ -123,7 +123,7 @@ kalka export [file] [options]
 | `--style` | | JSX style: `kalka` (default), `tailwind` (same as `-f tailwind-jsx`) |
 | `--html` | | HTML mode: `fragment` (default), `standalone` |
 | `--css` | | HTML CSS output: `inline` (default), `tailwind` |
-| `--assets` | | Standalone HTML assets: `inline` (default), `external` |
+| `--assets` | | HTML assets: `external` (default) links images, and a standalone page's CSS, as files in `<name>.assets/`; `inline` writes one file with images embedded |
 | `--fonts` | | Standalone HTML font output: `assets`, `none` (default) |
 | `--framework` | | Storybook framework: `react` (default), `vue`, `html` |
 | `--design-images` | | Storybook: render a PNG per variant for the Design panel (default: on; `--no-design-images` to skip) |

@@ -81,12 +81,14 @@ Use `--html standalone` for a browser-openable HTML document with reset styles a
 ```sh
 kalka export design.fig -f html --html standalone --css inline
 kalka export design.fig -f html --html standalone --css tailwind
-kalka export design.fig -f html --html standalone --css tailwind --assets external
+kalka export design.fig -f html --html standalone --assets inline   # one self-contained file
 ```
+
+Images are files, not data URLs. `card.html` links them from `card.assets/images/`, each named by the SHA-1 of its bytes with the extension its format calls for, so an image used several times is one file and exporting again writes the same names; the links are relative, so the page opens from disk or any folder it is copied to with its `.assets` folder. A standalone page also links its CSS from `card.assets/kalka.css`. SVG written as text, such as the tiles of pattern fills and the shapes of masks, stays in the CSS as small `data:image/svg+xml` URLs. Pass `--assets inline` for one file with images embedded as Base64 and, for a standalone page, its CSS in a `<style>`.
 
 The CSS reads as written by hand and draws as the canvas does. Declarations several layers repeat become class rules named after those layers, or after their text style (`text-14-semibold`) or what they are (`row`, `link`), in a `<style>` at the start of a fragment; each layer keeps its own size and place inline, or in a class of its own on a standalone page. Measured lengths keep at most two decimals, only where the browser lays them out at the same place; declarations the browser applies anyway are left out; and children of a frame without auto layout that already sit in a row or a column are laid out with flex. The editor's `data-kalka-*` attributes stay out of exports; a shader layer's settings travel in `data-shader`, which importing the HTML reads back.
 
-Standalone Tailwind output is compiled during export; it does not depend on the Tailwind browser runtime. Use `--assets external` to write CSS and extracted image assets next to the HTML file. Use `--fonts assets` with external assets to resolve detected SceneGraph text fonts through Kalka's configured web-font providers and emit local `@font-face` files.
+Standalone Tailwind output is compiled during export; it does not depend on the Tailwind browser runtime. Use `--fonts assets` with external assets to resolve detected SceneGraph text fonts through Kalka's configured web-font providers and emit local `@font-face` files.
 
 HTML export is available in file mode.
 

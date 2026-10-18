@@ -4,8 +4,10 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 import { unzipSync } from 'fflate'
+import { toUint8Array } from 'js-base64'
 
 import { BUILTIN_IO_FORMATS, IORegistry } from '@kalka/core/io'
+import { computeImageHash } from '@kalka/scene-graph/images'
 
 import { runKalkaCLI } from '#tests/helpers/cli'
 import { createRect, firstPageId, makeSceneGraph } from '#tests/helpers/scene'
@@ -270,9 +272,9 @@ test('export CLI indents standalone HTML and can write its reset as a file', asy
   expect(stderr).toBe('')
   expect(exitCode).toBe(0)
   const html = await Bun.file(output).text()
-  const reset = await Bun.file(join(dir, 'reset.css')).text()
+  const reset = await Bun.file(join(dir, 'card-reset.assets', 'reset.css')).text()
   expect(html).toStartWith('<!doctype html>\n<html>\n  <head>')
-  expect(html).toContain('<link rel="stylesheet" href="reset.css">')
+  expect(html).toContain('<link rel="stylesheet" href="card-reset.assets/reset.css">')
   expect(html).not.toContain('box-sizing')
   expect(reset).toContain('  box-sizing: border-box;')
 })
@@ -290,6 +292,8 @@ test('export CLI precompiles Tailwind CSS for standalone Tailwind HTML', async (
     'standalone',
     '--css',
     'tailwind',
+    '--assets',
+    'inline',
     '--output',
     output
   ])
@@ -334,4 +338,67 @@ test('export CLI can write external standalone HTML assets', async () => {
   expect(html).not.toContain('<style>')
   expect(css).toContain('.flex')
   expect(css).not.toContain('.op-')
+})
+
+/** A 1 × 1 PNG. */
+const PIXEL = toUint8Array(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
+)
+
+async function createPhotoFixture() {
+  const dir = await mkdtemp(join(tmpdir(), 'kalka-export-cli-'))
+  const figPath = join(dir, 'photo.fig')
+  const graph = makeSceneGraph('Export Page')
+  const hash = computeImageHash(PIXEL)
+  graph.images.set(hash, PIXEL)
+  const photo = createRect(graph, firstPageId(graph), { name: 'Photo', width: 40, height: 40 })
+  photo.fills = [
+    {
+      type: 'IMAGE',
+      imageHash: hash,
+      imageScaleMode: 'FILL',
+      color: { r: 0, g: 0, b: 0, a: 1 },
+      opacity: 1,
+      visible: true
+    }
+  ]
+  const result = await io.writeDocument('fig', graph)
+  await Bun.write(figPath, result.data as Uint8Array)
+  return { dir, figPath, hash }
+}
+
+test('export CLI links HTML images as files by default', async () => {
+  const { dir, figPath, hash } = await createPhotoFixture()
+  const output = join(dir, 'photo.html')
+
+  const { stderr, exitCode } = await runKalkaCLI(['export', figPath, '-f', 'html', '-o', output])
+
+  expect(stderr).toBe('')
+  expect(exitCode).toBe(0)
+  const html = await Bun.file(output).text()
+  expect(html).not.toContain('data:image/png;base64')
+  expect(html).toContain(`src="photo.assets/images/${hash}.png"`)
+  const image = await Bun.file(join(dir, 'photo.assets', 'images', `${hash}.png`)).bytes()
+  expect([...image]).toEqual([...PIXEL])
+})
+
+test('export CLI embeds HTML images with --assets inline', async () => {
+  const { dir, figPath } = await createPhotoFixture()
+  const output = join(dir, 'photo-inline.html')
+
+  const { stderr, exitCode } = await runKalkaCLI([
+    'export',
+    figPath,
+    '-f',
+    'html',
+    '--assets',
+    'inline',
+    '-o',
+    output
+  ])
+
+  expect(stderr).toBe('')
+  expect(exitCode).toBe(0)
+  expect(await Bun.file(output).text()).toContain('src="data:image/png;base64,')
+  expect(await Bun.file(join(dir, 'photo-inline.assets', 'images')).exists()).toBe(false)
 })

@@ -347,8 +347,9 @@ export default defineCommand({
     },
     assets: {
       type: 'string',
-      description: 'HTML asset output: inline or external (default: inline)',
-      default: 'inline'
+      description:
+        'HTML assets: external writes images, and the CSS of a standalone page, as files in <name>.assets/; inline writes one file with images embedded (default: external)',
+      default: 'external'
     },
     fonts: {
       type: 'string',
