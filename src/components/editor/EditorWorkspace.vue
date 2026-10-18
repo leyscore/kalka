@@ -8,13 +8,13 @@ import { formatShortcut, useI18n, useViewportKind } from '@kalka/vue'
 
 import { provideTabEditorStore } from '@/app/editor/active-store'
 import { appRuntimeConfig } from '@/app/runtime/config'
+import { latch } from '@/app/shell/latch'
 import {
   SIDE_PANEL_MIN_WIDTH,
   loadEditorLayout,
   saveEditorLayout,
   sidePanelSizeLimits
 } from '@/app/shell/layout-storage'
-import { latch } from '@/app/shell/latch'
 import { appMenuShortcut } from '@/app/shell/menu/shortcut'
 import type { Tab } from '@/app/tabs'
 import CanvasSplitRoot from '@/components/canvas/CanvasSplitRoot.vue'
