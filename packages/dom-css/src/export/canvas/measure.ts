@@ -8,8 +8,8 @@ export interface MeasuredGeometry {
 
 /**
  * Reads every layer's box in an artboard's element, as the browser laid it out: one forced
- * layout at most. Rotated layers, and layers inside them, keep the geometry they have, since a
- * bounding box is not their position; the artboard's own position is the canvas's, never read.
+ * layout at most. Rotated or flipped layers, and layers inside them, keep the geometry they have,
+ * since a bounding box is not their position; the artboard's own position is the canvas's, never read.
  *
  * `sizeOf` lets a caller that knows the layers correct a size the browser cannot express, such as
  * a line's zero height under an SVG that draws at least a pixel.
@@ -36,7 +36,9 @@ export function measureLayerBoxes(
     }
     return rect
   }
-  const rotated = (element: Element) => element.closest('[style*="rotate("]') !== null
+  // A flip mirrors the box as a turn does: neither box is the layer's position.
+  const rotated = (element: Element) =>
+    element.closest('[style*="rotate("], [style*="scale("]') !== null
   if (!rotated(root)) {
     measured.set(artboardId, sizeOf(artboardId, root, rectOf(root)))
   }

@@ -53,3 +53,14 @@ export function firstCSSNumber(style: CSSDeclarations, ...properties: string[]):
 export function laysOutChildren(parent: SceneNode | undefined): parent is SceneNode {
   return parent !== undefined && parent.type !== 'CANVAS' && parent.layoutMode !== 'NONE'
 }
+
+/**
+ * Whether the parent hugs its content along its own axis: it has no space to share, so a child
+ * set to fill along that axis takes its own size, as Figma lays it out.
+ */
+export function hugsAlongItsAxis(parent: SceneNode): boolean {
+  return (
+    (parent.layoutMode === 'HORIZONTAL' || parent.layoutMode === 'VERTICAL') &&
+    parent.primaryAxisSizing === 'HUG'
+  )
+}

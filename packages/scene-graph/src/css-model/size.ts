@@ -5,6 +5,7 @@ import {
   type CSSDeclarations,
   type PropertyFamily,
   firstCSSNumber,
+  hugsAlongItsAxis,
   laysOutChildren,
   px
 } from './types'
@@ -29,7 +30,9 @@ export function hugs(node: SceneNode, axis: Axis): boolean {
  */
 function stretches(node: SceneNode, parent: SceneNode | undefined, axis: Axis): boolean {
   const sizing = layoutSizingInParent(parent, node, axis === 'width' ? 'HORIZONTAL' : 'VERTICAL')
-  return sizing === 'FILL' && parent !== undefined
+  if (sizing !== 'FILL' || parent === undefined) return false
+  const along = (parent.layoutMode === 'HORIZONTAL') === (axis === 'width')
+  return !(along && hugsAlongItsAxis(parent))
 }
 
 /** Whether the layer fills its parent along an axis, which leaves the CSS size unset. */

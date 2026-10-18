@@ -11,6 +11,7 @@ import {
   type FieldCSS,
   type PropertyFamily,
   firstCSSNumber,
+  hugsAlongItsAxis,
   laysOutChildren,
   px
 } from './types'
@@ -129,12 +130,17 @@ export const layoutChild: PropertyFamily = {
     if (alignSelf) style['align-self'] = alignSelf
     if (parent?.layoutMode === 'GRID') addGridPlacement(style, node)
     else if (parent && parent.layoutMode !== 'NONE' && node.layoutPositioning !== 'ABSOLUTE') {
-      if (growsAlongParent(node, parent)) {
+      if (!growsAlongParent(node, parent)) style['flex-shrink'] = '0'
+      else if (hugsAlongItsAxis(parent)) {
+        // A parent that hugs has no space to share: the child keeps its own size.
+        style['flex-grow'] = '1'
+        style['flex-shrink'] = '0'
+      } else {
         style['flex-grow'] = '1'
         style['flex-basis'] = '0px'
         const minimum = parent.layoutMode === 'HORIZONTAL' ? 'min-width' : 'min-height'
         style[minimum] ??= '0px'
-      } else style['flex-shrink'] = '0'
+      }
     }
     const transform = layerTransformToCSS(node)
     if (transform) {
@@ -199,20 +205,21 @@ function writeFlexGap(style: CSSDeclarations, node: SceneNode, css: FieldCSS): v
     : node.itemSpacing
   if (node.itemSpacing <= 0 && counterSpacing <= 0) return
   const item = css('itemSpacing', px(node.itemSpacing))
-  if (counterSpacing <= 0 || counterSpacing === node.itemSpacing) {
+  // Without wrapping there is one line, so the spacing across it does not matter.
+  const sameSpacing =
+    counterSpacing === node.itemSpacing || (counterSpacing <= 0 && node.layoutWrap !== 'WRAP')
+  if (sameSpacing) {
     style.gap = item
     return
   }
 
-  const counter = css('counterAxisSpacing', px(counterSpacing))
-  if (node.layoutMode === 'HORIZONTAL') {
-    if (node.itemSpacing > 0) style['column-gap'] = item
-    style['row-gap'] = counter
-    return
-  }
-
-  if (node.itemSpacing > 0) style['row-gap'] = item
-  style['column-gap'] = counter
+  const counter = counterSpacing > 0 ? css('counterAxisSpacing', px(counterSpacing)) : null
+  const [itemGap, counterGap] =
+    node.layoutMode === 'HORIZONTAL'
+      ? (['column-gap', 'row-gap'] as const)
+      : (['row-gap', 'column-gap'] as const)
+  if (node.itemSpacing > 0) style[itemGap] = item
+  if (counter) style[counterGap] = counter
 }
 
 function readFlexGap(style: CSSDeclarations, node: SceneNode): void {
@@ -266,6 +273,7 @@ export const container: PropertyFamily = {
     'primaryAxisAlign',
     'counterAxisAlign',
     'layoutWrap',
+    'counterAxisAlignContent',
     'itemSpacing',
     'counterAxisSpacing',
     'paddingTop',
@@ -283,6 +291,7 @@ export const container: PropertyFamily = {
     'justify-content',
     'align-items',
     'flex-wrap',
+    'align-content',
     'gap',
     'row-gap',
     'column-gap',
@@ -307,7 +316,12 @@ export const container: PropertyFamily = {
       const alignItems = alignToCSS(node.counterAxisAlign)
       if (justifyContent) style['justify-content'] = justifyContent
       if (alignItems) style['align-items'] = alignItems
-      if (node.layoutWrap === 'WRAP') style['flex-wrap'] = 'wrap'
+      if (node.layoutWrap === 'WRAP') {
+        style['flex-wrap'] = 'wrap'
+        // Figma packs wrapped rows at the start; flexbox would spread them over a taller box.
+        style['align-content'] =
+          node.counterAxisAlignContent === 'SPACE_BETWEEN' ? 'space-between' : 'flex-start'
+      }
       writeFlexGap(style, node, css)
     }
     writePadding(style, node, css)
@@ -320,6 +334,8 @@ export const container: PropertyFamily = {
     node.primaryAxisAlign = primaryAxisAlignFromCSS(pickStyle(style, 'justify-content'))
     node.counterAxisAlign = counterAxisAlignFromCSS(pickStyle(style, 'align-items'))
     node.layoutWrap = pickStyle(style, 'flex-wrap') === 'wrap' ? 'WRAP' : 'NO_WRAP'
+    node.counterAxisAlignContent =
+      pickStyle(style, 'align-content') === 'space-between' ? 'SPACE_BETWEEN' : 'AUTO'
     readFlexGap(style, node)
   }
 }

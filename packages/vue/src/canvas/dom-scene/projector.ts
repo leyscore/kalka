@@ -316,7 +316,7 @@ export class DomSceneProjector {
 
   /**
    * Reads every layer's box in an artboard, as the browser laid it out. One forced layout at
-   * most. Rotated layers, and layers inside them, keep the geometry they have: a bounding box
+   * most. Rotated or flipped layers, and layers inside them, keep the geometry they have: a box
    * is not their position. The artboard's own position is the canvas's, never read here.
    */
   measureArtboard(artboardId: string): Map<string, MeasuredGeometry> {

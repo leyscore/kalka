@@ -145,6 +145,10 @@ export const SAMPLES: Sample[] = [
     }
   },
   {
+    name: 'wrapped rows spread apart',
+    fields: { ...row, layoutWrap: 'WRAP', counterAxisAlignContent: 'SPACE_BETWEEN' }
+  },
+  {
     name: 'text style',
     type: 'TEXT',
     fields: {
