@@ -19,6 +19,7 @@ import type { ComponentReferences } from '../components/references'
 import { vueComponent } from '../components/vue'
 import { serializeHTML, serializeNode } from '../html'
 import { sceneNodeToDesignDocument, type VectorElementRenderer } from '../projection'
+import { tidyDesignDocument } from '../tidy'
 import { printComponentStories } from './component'
 import { collectGroups, type StoryGroup } from './groups'
 import {
@@ -186,10 +187,12 @@ function storyModule(group: StoryGroup, context: ModuleContext): string {
       values: variant.values,
       html: serializeHTML(
         standalone(
-          sceneNodeToDesignDocument(context.graph, variant.node.id, {
-            includeSourceIds: false,
-            vectorElement: context.vectorElement
-          })
+          tidyDesignDocument(
+            sceneNodeToDesignDocument(context.graph, variant.node.id, {
+              includeSourceIds: false,
+              vectorElement: context.vectorElement
+            })
+          )
         )
       )
     })),

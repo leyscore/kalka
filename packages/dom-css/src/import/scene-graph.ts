@@ -7,6 +7,7 @@ import {
   pickStyle
 } from '@kalka/scene-graph/css-model'
 
+import { shaderSettings } from '../export/tidy/attributes'
 import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
 import { hasBoxStyle, isTextLikeElement, textContent } from './element-kinds'
 import { applyHTMLElement } from './html-element'
@@ -119,7 +120,7 @@ function createFrameNode(
   style: DesignStyleDeclaration,
   placement?: Placement
 ): SceneNode {
-  const shaderJSON = element.attrs['data-kalka-shader']
+  const shaderJSON = shaderSettings(element.attrs)
   const node = graph.createNode('FRAME', parentId, {
     name: element.attrs.id || element.attrs.class || element.tagName,
     clipsContent: false,

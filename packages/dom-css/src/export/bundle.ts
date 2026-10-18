@@ -16,6 +16,7 @@ import { cssClassStylesheet, withClassRules } from './classes'
 import { mergeClassNames, serializeHTML, splitWhitespace } from './html'
 import { prettyCSS } from './pretty'
 import { hasBrowserDefaults, HTML_TAG_RESET_CSS, scopedTagResetCSS } from './tag-reset'
+import { tidyDesignDocument } from './tidy'
 
 /** A font face the exported text uses. */
 export interface WebFontFaceRequest {
@@ -530,12 +531,14 @@ export async function exportHTMLBundle(
     pretty: options.pretty ?? false
   }
 
-  if (resolvedOptions.html === 'standalone') return exportStandaloneHTML(document, resolvedOptions)
+  const tidy = tidyDesignDocument(document)
+  if (resolvedOptions.html === 'standalone') return exportStandaloneHTML(tidy, resolvedOptions)
 
-  return fragmentBundle(document, resolvedOptions)
+  return fragmentBundle(tidy, resolvedOptions)
 }
 
-const FRAGMENT_ROOT_ATTRIBUTE = 'data-kalka-html'
+/** The class that marks a fragment's roots, which its scoped reset reaches below. */
+const FRAGMENT_ROOT_CLASS = 'kalka-reset'
 
 function usesBrowserDefaults(node: DesignNode): boolean {
   if (node.type === 'text') return false
@@ -561,11 +564,17 @@ function fragmentBundle(
     ...document,
     children: document.children.map((node) =>
       node.type === 'element'
-        ? { ...node, attrs: { ...node.attrs, [FRAGMENT_ROOT_ATTRIBUTE]: 'fragment' } }
+        ? {
+            ...node,
+            attrs: {
+              ...node.attrs,
+              class: mergeClassNames(FRAGMENT_ROOT_CLASS, node.attrs.class) ?? FRAGMENT_ROOT_CLASS
+            }
+          }
         : node
     )
   }
-  const reset = cssText(scopedTagResetCSS(FRAGMENT_ROOT_ATTRIBUTE), options.pretty)
+  const reset = cssText(scopedTagResetCSS(`.${FRAGMENT_ROOT_CLASS}`), options.pretty)
   const html = serializeHTML(marked, serialize)
   if (options.reset === 'file')
     return {

@@ -22,6 +22,7 @@ import {
 
 import type { SceneGraphToDesignOptions } from '../projection'
 import { claimName, identifierName } from '../storybook/names'
+import { exportAttributes } from '../tidy/attributes'
 import {
   blockRoot,
   freePlacedParts,
@@ -217,7 +218,7 @@ function componentTree(
     ...(repeated ? { value: repeated.value } : {}),
     tag: node.tagName,
     className: labels.classes.get(node) ?? '',
-    attrs: node.attrs,
+    attrs: exportAttributes(node.attrs),
     bindings: part === 'root' ? bindings : [],
     shownBy: labels.shownBy.get(node),
     slot: labels.slotOf.get(node),

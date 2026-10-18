@@ -4,6 +4,7 @@ import type { SceneGraph } from '@kalka/scene-graph'
 import type { DesignDocument, DesignElement, DesignNode } from '../types'
 import { mergeClassNames, serializeTailwindClasses } from './html'
 import { sceneNodeToDesignDocument, type SceneGraphToDesignOptions } from './projection'
+import { tidyDesignDocument } from './tidy'
 
 /** Engine services the projection takes, such as drawing vector layers as SVG. */
 type ProjectionServices = Pick<SceneGraphToDesignOptions, 'vectorElement'>
@@ -63,8 +64,8 @@ function jsxNode(node: DesignNode, depth: number, themeVariables: readonly strin
 /** Print a design document as Tailwind JSX, one top-level element per block. */
 export function designDocumentToTailwindJSX(document: DesignDocument): string {
   const themeVariables = document.tokens?.themeVariables() ?? []
-  return document.children
-    .map((node) => jsx.printJSX(jsxNode(node, 0, themeVariables)))
+  return tidyDesignDocument(document)
+    .children.map((node) => jsx.printJSX(jsxNode(node, 0, themeVariables)))
     .join('\n\n')
 }
 
