@@ -28,6 +28,7 @@ export type SupportedPluginAPI = Pick<
   | 'createEllipse'
   | 'createFrame'
   | 'createLine'
+  | 'createNodeFromSvg'
   | 'createPolygon'
   | 'createRectangle'
   | 'createSection'

@@ -1,5 +1,6 @@
 import { useEventListener } from '@vueuse/core'
 
+import { isSVGMarkup } from '@kalka/core/io'
 import { extractImageFilesFromClipboard } from '@kalka/vue'
 
 import type { EditorStore } from '@/app/editor/active-store'
@@ -86,7 +87,10 @@ export function bindEditorClipboard(store: EditorStore) {
     }
 
     const text = e.clipboardData?.getData('text/plain') ?? ''
-    if (pasteSVGText(store, text, cursorPos)) return
+    if (isSVGMarkup(text)) {
+      void pasteSVGText(store, text, cursorPos)
+      return
+    }
 
     if (html) {
       void pasteClipboardHTML(store, html)

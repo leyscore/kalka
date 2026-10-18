@@ -39,7 +39,6 @@ export const UNSUPPORTED_PLUGIN_API = {
   createLinkPreviewAsync: NOT_DESIGN,
   createNodeFromJSXAsync:
     "Widget JSX is not available: build layers with figma.create* calls, or use Kalka's render tool, which takes Kalka design JSX",
-  createNodeFromSvg: "Use Kalka's import_svg tool to add SVG markup as layers",
   createPageDivider: NOT_YET,
   createPaintStyle: NO_STYLE_AUTHORING,
   createShapeWithText: NOT_DESIGN,
