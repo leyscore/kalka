@@ -21,6 +21,7 @@ import {
   setArtboardTokens,
   type ArtboardFontFace
 } from './frame'
+import { maskedParentsAround } from './masks'
 import { PatternUsers } from './patterns'
 
 /** Changes to a layer that restyle its children too: their CSS depends on how it lays them out. */
@@ -202,11 +203,13 @@ export class DomSceneProjector {
       this.maskParents.add(node.parentId)
       this.restyleChildren(node.parentId)
     }
-    this.restyleMaskedBy(node.parentId)
+    const pageId = this.currentPageId()
+    for (const masked of maskedParentsAround(this.graph, node.parentId, pageId))
+      this.restyleChildren(masked)
     for (const userId of this.patternUsers.affectedBy(this.graph, node)) this.dirty.add(userId)
     if (node.parentId) {
       if ('visible' in changes || 'internalOnly' in changes) this.dirty.add(node.parentId)
-      if (node.parentId === this.currentPageId()) this.pageDirty = true
+      if (node.parentId === pageId) this.pageDirty = true
     }
   }
 
@@ -218,18 +221,7 @@ export class DomSceneProjector {
       else this.dirty.add(id)
       // Masks added, removed, or reordered change which layers they mask.
       if (this.maskParents.has(id)) this.restyleChildren(id)
-      this.restyleMaskedBy(id)
-    }
-  }
-
-  /** A group used as a mask masks with its layers, so a change inside it restyles what it masks. */
-  private restyleMaskedBy(id: string | null): void {
-    const pageId = this.currentPageId()
-    for (let at = id; at && at !== pageId;) {
-      const ancestor = this.graph.getNode(at)
-      if (!ancestor) return
-      if (ancestor.isMask && ancestor.parentId) this.restyleChildren(ancestor.parentId)
-      at = ancestor.parentId
+      for (const masked of maskedParentsAround(this.graph, id, pageId)) this.restyleChildren(masked)
     }
   }
 
