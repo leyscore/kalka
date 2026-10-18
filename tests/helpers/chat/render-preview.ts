@@ -28,7 +28,7 @@ export async function previewKey(page: Page) {
     if (ghosts.length > 0) {
       return ghosts
         .map(
-          (frame) => `${frame.dataset.kalkaGhost}=${frame.contentDocument?.body.innerHTML ?? ''}`
+          (frame) => `${frame.dataset.kalkaGhost}=${frame.contentDocument?.body?.innerHTML ?? ''}`
         )
         .join(',')
     }

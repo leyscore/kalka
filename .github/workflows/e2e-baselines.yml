@@ -117,7 +117,7 @@ jobs:
           KALKA_TEST_SERVER: app
           PLAYWRIGHT_HTML_OPEN: never
         run: |
-          args=(--project="$PROJECT" --workers=2 --reporter=list,html --pass-with-no-tests)
+          args=(--project="$PROJECT" --workers=2 --reporter=list,html --trace=retain-on-failure --pass-with-no-tests)
           if [ "$UPDATE" = true ]; then args+=(--update-snapshots=changed); fi
           # The WebKit project matches only its own specs, so the others are filtered out there.
           bunx playwright test "${args[@]}" $SPECS

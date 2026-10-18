@@ -178,21 +178,21 @@ export class CanvasHelper {
   }
 
   async undo() {
-    await this.pressKey('Meta+z')
+    await this.pressKey('ControlOrMeta+z')
     await this.waitForRender()
   }
 
   async redo() {
-    await this.pressKey('Meta+Shift+z')
+    await this.pressKey('ControlOrMeta+Shift+z')
     await this.waitForRender()
   }
 
   async selectAll() {
-    await this.pressKey('Meta+a')
+    await this.pressKey('ControlOrMeta+a')
   }
 
   async duplicate() {
-    await this.pressKey('Meta+d')
+    await this.pressKey('ControlOrMeta+d')
     await this.waitForRender()
   }
 
