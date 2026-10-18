@@ -60,6 +60,8 @@ export async function vectorizeImageNode(store: EditorStore, nodeId: string): Pr
     }
 
     toast.info(notificationMessages.get().vectorizingImage)
+    // The image is scaled and encoded with Skia, loaded the first time it is needed.
+    await store.loadCanvasKit()
     const preprocessed = preprocessForVectorize(imageBytes, () => store.renderer?.ck ?? null)
     if (!preprocessed) throw new Error('Could not prepare this image for vectorization')
 

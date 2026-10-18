@@ -67,14 +67,34 @@ export function createClipboardAssetActions(
     return hash
   }
 
-  function decodeImageDimensions(bytes: Uint8Array): { width: number; height: number } | null {
+  /** The image's size from CanvasKit when it is loaded, else from the browser's decoder. */
+  async function decodedSize(bytes: Uint8Array): Promise<{ width: number; height: number } | null> {
     const ck = ctx.getCk()
-    if (!ck) return null
-    const skImg = ck.MakeImageFromEncoded(bytes)
-    if (!skImg) return null
-    let width = skImg.width()
-    let height = skImg.height()
-    skImg.delete()
+    if (ck) {
+      const skImg = ck.MakeImageFromEncoded(bytes)
+      if (!skImg) return null
+      const size = { width: skImg.width(), height: skImg.height() }
+      skImg.delete()
+      return size
+    }
+    if (typeof createImageBitmap !== 'function') return null
+    try {
+      const bitmap = await createImageBitmap(new Blob([bytes.slice()]))
+      const size = { width: bitmap.width, height: bitmap.height }
+      bitmap.close()
+      return size
+      // oxlint-disable-next-line kalka/no-silent-catch -- An image the browser cannot decode is skipped, as CanvasKit skips it.
+    } catch {
+      return null
+    }
+  }
+
+  async function decodeImageDimensions(
+    bytes: Uint8Array
+  ): Promise<{ width: number; height: number } | null> {
+    const size = await decodedSize(bytes)
+    if (!size) return null
+    let { width, height } = size
     if (width > IMAGE_MAX_DIMENSION || height > IMAGE_MAX_DIMENSION) {
       const ratio = Math.min(IMAGE_MAX_DIMENSION / width, IMAGE_MAX_DIMENSION / height)
       width = Math.round(width * ratio)
@@ -98,7 +118,7 @@ export function createClipboardAssetActions(
     }
     if (!RASTER_IMAGE_TYPES.has(file.type)) return null
     const bytes = new Uint8Array(await file.arrayBuffer())
-    const dimensions = decodeImageDimensions(bytes)
+    const dimensions = await decodeImageDimensions(bytes)
     return dimensions ? { kind: 'raster', bytes, name: file.name, ...dimensions } : null
   }
 

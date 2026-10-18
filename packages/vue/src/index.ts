@@ -21,7 +21,14 @@ export { provideEditor, useEditor, EDITOR_KEY } from '#vue/editor/context'
 export { supportsWideGamutPresentation } from '#vue/canvas/surface/color-space'
 export type { PresentationColorSpace } from '#vue/canvas/surface/color-space'
 export { useCanvas } from '#vue/canvas/surface/use'
-export { useOffscreenCanvasKit, useViewportSize } from '#vue/canvas/surface/offscreen'
+export {
+  createOffscreenCanvasKit,
+  loadCanvasKit,
+  useOffscreenCanvasKit,
+  useViewportSize,
+  withCanvasKit,
+  type OffscreenCanvasKit
+} from '#vue/canvas/surface/offscreen'
 export type { UseCanvasOptions } from '#vue/canvas/surface/use'
 export { useDomScene } from '#vue/canvas/dom-scene/use'
 export { domSceneVectorElement } from '#vue/canvas/dom-scene/vectors'

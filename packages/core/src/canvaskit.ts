@@ -3,7 +3,7 @@ import CanvasKitInit, { type CanvasKit } from 'canvaskit-wasm'
 
 import { IS_BROWSER } from './constants'
 
-let instance: CanvasKit | null = null
+let instance: Promise<CanvasKit> | null = null
 
 /**
  * The file path a `file:` URL names, without Node's `url` module: on Windows the URL's path is
@@ -17,9 +17,11 @@ export interface CanvasKitOptions {
   locateFile?: (file: string) => string
 }
 
-export async function getCanvasKit(options?: CanvasKitOptions): Promise<CanvasKit> {
-  if (instance) return instance
-
+/**
+ * The one CanvasKit of this page or process, loaded by the first caller. Callers that ask while it
+ * loads share that load, so the WebAssembly module is compiled and its heap allocated once.
+ */
+export function getCanvasKit(options?: CanvasKitOptions): Promise<CanvasKit> {
   const defaultLocate = (file: string) => {
     if (!IS_BROWSER) {
       const ckPath = import.meta.resolve('canvaskit-wasm')
@@ -30,9 +32,12 @@ export async function getCanvasKit(options?: CanvasKitOptions): Promise<CanvasKi
     return `${prefix}/${file}`
   }
 
-  instance = await CanvasKitInit({
+  instance ??= CanvasKitInit({
     locateFile: options?.locateFile ?? defaultLocate
+  }).catch((error: unknown) => {
+    // A failed load is not kept: the next caller tries again.
+    instance = null
+    throw error
   })
-
   return instance
 }

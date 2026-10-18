@@ -23,7 +23,7 @@ import { createFrameRequest } from '#vue/canvas/frame-request'
 import { composeOverlay } from '#vue/canvas/svg-overlay/compose'
 import type { AgentWorkMark } from '#vue/canvas/svg-overlay/layers/agent-work'
 import { clearOverlay, renderOverlay } from '#vue/canvas/svg-overlay/render'
-import type { MeasureText } from '#vue/canvas/svg-overlay/shapes'
+import { createMeasureText, loadLabelFont } from '#vue/canvas/svg-overlay/text'
 
 export { SVG_OVERLAY_LAYERS } from '#vue/canvas/svg-overlay/compose'
 
@@ -46,23 +46,6 @@ export interface UseSVGOverlayOptions {
 /** The same empty list every frame, so a pane without agents never redraws for it. */
 const NO_AGENT_WORK: readonly AgentWorkMark[] = []
 
-/** Text widths as the overlay draws them, with the app's interface font. */
-function createMeasureText(): MeasureText {
-  const context = new OffscreenCanvas(1, 1).getContext('2d')
-  const cache = new Map<string, number>()
-  return (text, fontSize, fontWeight = 400) => {
-    const key = `${fontWeight}:${fontSize}:${text}`
-    const known = cache.get(key)
-    if (known !== undefined) return known
-    if (!context) return text.length * fontSize * 0.6
-    context.font = `${fontWeight} ${fontSize}px Inter, system-ui, sans-serif`
-    const width = context.measureText(text).width
-    if (cache.size > 2000) cache.clear()
-    cache.set(key, width)
-    return width
-  }
-}
-
 /**
  * Editor chrome over the DOM scene, drawn as SVG: labels, selection, guides, rulers. It draws a
  * frame only when something it shows changed: the editor's versions, the view, its size, or a
@@ -73,7 +56,7 @@ export function useSVGOverlay(
   editor: Editor,
   options: UseSVGOverlayOptions = {}
 ) {
-  const measureText = createMeasureText()
+  let measureText = createMeasureText()
   const labels = new LabelCache()
   const reducedMotion = usePreferredReducedMotion()
   const { pixelRatio } = useDevicePixelRatio()
@@ -171,6 +154,14 @@ export function useSVGOverlay(
 
   const frames = createFrameRequest(tick)
 
+  // Names are measured again once the labels' font has loaded, and the overlay redraws with it.
+  const fontsReady = loadLabelFont().then(() => {
+    measureText = createMeasureText()
+    drawn = []
+    frames.request()
+    return undefined
+  })
+
   // What the overlay shows comes from reactive state; each change draws one frame. Flashes and
   // AI marks bump the render version while they animate.
   watch(
@@ -243,6 +234,8 @@ export function useSVGOverlay(
   }
 
   return {
+    /** Settles once the labels' font has loaded; the overlay draws with it on the next frame. */
+    fontsReady,
     /** The issue markers as last drawn, in the host's CSS pixels, for pointer hit testing. */
     issueMarkers: () => issueMarkers,
     hitTestFrameTitle: labelHits(hitTestFrameTitle),

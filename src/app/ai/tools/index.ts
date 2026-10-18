@@ -12,7 +12,7 @@ import {
 } from '@kalka/core/tools'
 
 import { targetNodeIds, touchedNodeIds } from '@/app/automation/agents'
-import { makeFigmaFromStore } from '@/app/automation/bridge/figma-factory'
+import { attachCanvasKit, makeFigmaFromStore } from '@/app/automation/bridge/figma-factory'
 import { executeAtomicEditorTool } from '@/app/automation/execution/editor'
 import { recordToolCompleted, type AIDiagnosticContext } from '@/app/diagnostics/events/ai'
 import type { EditorStore } from '@/app/editor/active-store'
@@ -191,8 +191,10 @@ export function createAITools(store: EditorStore, diagnosticContext?: AIDiagnost
         }
         return figma
       },
-      executeTool: async (def, figma, args, options) =>
-        withUndoNote(await executeCall(def, figma, args, options), takeRunUndoNote(store)),
+      executeTool: async (def, figma, args, options) => {
+        await attachCanvasKit(store, figma)
+        return withUndoNote(await executeCall(def, figma, args, options), takeRunUndoNote(store))
+      },
       onAfterExecute: (def) => {
         if (def.mutates && !isAtomicTool(def)) store.requestRender()
       },

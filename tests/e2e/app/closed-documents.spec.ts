@@ -22,6 +22,10 @@ async function openFixtureInNewTab(page: Page) {
       })
     )
     .toBe(true)
+  // CanvasKit loads on demand; the document must release it too.
+  await page.evaluate(async () => {
+    await window.kalka?.getStore?.().loadCanvasKit()
+  })
 }
 
 function activeTabRenderers(page: Page) {

@@ -44,6 +44,7 @@ export function startWebMCP(getStore: () => EditorStore): () => void {
         execute: async (def, args, signal) => {
           signal.throwIfAborted()
           const { makeFigmaFromStore, executeAtomicEditorTool, handleTool } = await loadToolCode()
+          await target.store.loadCanvasKit()
           signal.throwIfAborted()
           if (def.mutates) {
             return {

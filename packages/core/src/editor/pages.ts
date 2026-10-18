@@ -13,7 +13,7 @@ import {
   createFigPopulationWorker
 } from '#core/kiwi/fig/population/client'
 import { isReaderPagePending, recoverReaderPage } from '#core/kiwi/fig/session/document-state'
-import { computeAllLayouts } from '#core/layout'
+import { computeAllLayouts, getLayoutEngine } from '#core/layout'
 import { fontManager } from '#core/text/fonts'
 import { cssFontFamily } from '#core/text/inter'
 import { collectGraphFontRequirements } from '#core/text/requirements'
@@ -175,7 +175,9 @@ export function createPageActions(ctx: EditorContext) {
     await resolvePageFonts(pageId, page.name, options)
     throwIfAborted(options.signal)
     if (generation !== pageSwitchGeneration) return null
-    if (ctx.getRenderer() || populated) {
+    // A page shown on a canvas is laid out each time it is shown; CanvasKit may not have loaded
+    // behind a DOM canvas, whose layout engine is installed. Headless, only a new page is.
+    if (ctx.getRenderer() || getLayoutEngine() || populated) {
       options.onProgress?.({ phase: 'layout', detail: page.name })
       ctx.graph.applyDerivedLayoutDuring(() => computeAllLayouts(ctx.graph, pageId))
     }

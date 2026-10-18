@@ -11,6 +11,7 @@ import {
 } from '@kalka/core/io'
 import { renderNodesToImage } from '@kalka/core/io/formats/raster'
 import type { SceneGraph } from '@kalka/scene-graph'
+import { loadCanvasKit } from '@kalka/vue'
 
 import { domRasterize } from '@/app/document/export/dom-raster'
 import type { ExportOptions } from '@/app/document/export/types'
@@ -143,7 +144,8 @@ export function createExportTargetActions(editor: Editor, state: EditorState, io
       format
     })
     if (drawn) return drawn
-    const renderer = editor.renderer
+    // Where the canvas cannot draw these layers itself, Skia does, loaded for it.
+    const renderer = await loadCanvasKit(editor)
     if (!renderer) return null
     return renderNodesToImage(renderer.ck, renderer, editor.graph, ownerPageId, ids, {
       scale,

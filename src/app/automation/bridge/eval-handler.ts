@@ -11,6 +11,7 @@ export function createAutomationEvalHandler(makeFigma: FigmaFactory) {
   return async function handleEval(target: AutomationTarget, args: unknown): Promise<unknown> {
     const code = (args as { code?: string }).code
     if (!code) throw new Error('Missing "code" in args')
+    await target.store.loadCanvasKit()
     const figma = makeFigma(target.store, target.pageId)
     const run = compileScript(code)
     const result = await executeWithDocumentUndo(

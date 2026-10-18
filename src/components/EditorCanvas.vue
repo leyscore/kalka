@@ -37,7 +37,6 @@ import {
   useCanvasIssueMarkers,
   useCanvasVirtualReference,
   useDomScene,
-  useOffscreenCanvasKit,
   useSVGOverlay,
   useViewportSize,
   useTextEdit,
@@ -47,6 +46,7 @@ import {
 import { useAIChat } from '@/app/ai/chat/use'
 import { useEditorStore } from '@/app/editor/active-store'
 import { canvasBackgroundColor, showsKalkaCanvas } from '@/app/editor/canvas/background'
+import { useBooleanOperationsCanvasKit } from '@/app/editor/canvas/booleans'
 import { useCanvasCollaborationAwareness } from '@/app/editor/canvas/collaboration-awareness'
 import { createCanvasContextSelection } from '@/app/editor/canvas/context-selection'
 import { canvasOverlayObstacles } from '@/app/editor/canvas/obstacles'
@@ -112,26 +112,31 @@ const shouldSuspendRender = () =>
 const drawnView = shallowRef<ViewportTransform | null>(null)
 
 if (domScene) {
+  let presented = false
   const scene = useDomScene(domSceneRef, store, {
     getRenderState,
     vectorElement: domSceneVectorElement(store),
-    onPresented: ({ sceneVersion }) =>
-      store.preparationController.acknowledgePresentation(sceneVersion),
+    onPresented: ({ sceneVersion }) => {
+      store.preparationController.acknowledgePresentation(sceneVersion)
+      if (presented) return
+      presented = true
+      // Ready once the page shows and the overlay's labels have their font.
+      void svgOverlay?.fontsReady.then(() => {
+        store.markCanvasReady()
+        // Tests and the navigation benchmark wait for this, as they did for the Skia surface.
+        if (canvasRef.value) canvasRef.value.dataset.ready = '1'
+        return undefined
+      })
+    },
     // What agents are still writing draws over the document, in every pane.
     previews: () => scenePreviews(store)
   })
   onUnmounted(attachCanvasScene(store, scene))
-  // Over the DOM scene, nothing on screen is drawn by Skia: the canvas element only takes input,
-  // and CanvasKit works offscreen for exports, previews and path operations.
-  useOffscreenCanvasKit(store, {
-    onReady: () => {
-      // Booleans drawn before CanvasKit loaded showed their saved geometry or their box.
-      scene.redrawBooleanOperations()
-      store.markCanvasReady()
-      // Tests and the navigation benchmark wait for this, as they did for the Skia surface.
-      if (canvasRef.value) canvasRef.value.dataset.ready = '1'
-    }
-  })
+  // Over the DOM scene, nothing on screen is drawn by Skia: the canvas element only takes input.
+  // CanvasKit loads when a feature needs it, such as a boolean operation, which draws its saved
+  // geometry until then and its computed outline once it has loaded.
+  onUnmounted(store.onCanvasKitReady(() => scene.redrawBooleanOperations()))
+  useBooleanOperationsCanvasKit(store)
   useViewportSize(canvasRef, onViewportResize)
 } else {
   useCanvas(sceneCanvasRef, store, {

@@ -63,7 +63,7 @@ export async function renderToolChangeImages(
 ): Promise<ToolChangeImages | null> {
   // Let the tool result reach the model before rendering.
   await promiseTimeout(0)
-  const renderer = store.renderer
+  const renderer = await store.loadCanvasKit()
   if (!renderer) return null
   const bounds = unionRegion([regionOf(beforeGraph, nodeIds), regionOf(afterGraph, nodeIds)])
   if (!bounds) return null

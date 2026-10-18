@@ -75,6 +75,8 @@ export function useChatSubmission(options: SubmissionOptions) {
   ): Promise<void> {
     const messageId = crypto.randomUUID()
     const editor = options.getEditor()
+    // Layer attachments are pictured with Skia, loaded the first time a message carries one.
+    if (submission.nodes.length > 0) await editor.loadCanvasKit()
     const nodeAttachments = submission.nodes
       .map((node) => snapshotNode(editor, messageId, node))
       .filter((attachment) => attachment !== null)

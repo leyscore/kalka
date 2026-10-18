@@ -4,6 +4,7 @@ import { shallowRef, watch } from 'vue'
 
 import type { Editor } from '@kalka/core/editor'
 import { renderNodesToImage } from '@kalka/core/io'
+import { loadCanvasKit } from '@kalka/vue'
 
 import type { ReferencedNode } from '@/app/ai/chat/context'
 
@@ -16,7 +17,9 @@ watch(
   () => node.id,
   async () => {
     const request = ++requestId
-    const renderer = editor.renderer
+    // The thumbnail is drawn with Skia, loaded the first time a preview needs it.
+    const renderer = await loadCanvasKit(editor)
+    if (request !== requestId) return
     const liveNode = editor.graph.getNode(node.id)
     if (!renderer || !liveNode) return
     const maxDimension = Math.max(liveNode.width, liveNode.height, 1)

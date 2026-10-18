@@ -173,17 +173,18 @@ describe('automation export of a page that is not on screen', () => {
 })
 
 describe('automation export without a canvas renderer', () => {
-  test('export_image says the document has no renderer', async () => {
+  test('export_image loads CanvasKit to draw what no canvas shows', async () => {
     const store = createEditorStore()
     stores.push(store)
     const pageId = store.state.currentPageId
     const frame = store.graph.createNode('FRAME', pageId, { width: 40, height: 30, fills: [RED] })
 
-    const response = handleTargetCommand(target(store, pageId), 'tool', {
+    const response = await handleTargetCommand(target(store, pageId), 'tool', {
       name: 'export_image',
       args: { ids: [frame.id] }
     })
 
-    await expect(response).rejects.toThrow('This document has no canvas renderer')
+    expect(store.renderer).not.toBeNull()
+    expect(pngSize(resultBytes(response))).toEqual({ width: 40, height: 30 })
   })
 })

@@ -1,5 +1,6 @@
 import type { Editor, EditorState } from '@kalka/core/editor'
 import type { BuiltinIOFormatId, ExportRequest, IORegistry } from '@kalka/core/io'
+import { loadCanvasKit } from '@kalka/vue'
 
 import { domPrintPDF, domRasterize } from '@/app/document/export/dom-raster'
 import {
@@ -15,6 +16,18 @@ import {
   type ExportedFile
 } from '@/app/document/export/files'
 import type { ExportOptions } from '@/app/document/export/types'
+import { IS_TAURI } from '@/constants'
+
+/** Formats written as text, which never draw with Skia. */
+const TEXT_FORMATS = new Set(['svg', 'html', 'jsx', 'tailwind-jsx', 'kalka', 'pen'])
+/** Formats the desktop app draws and prints from an offscreen window rather than with Skia. */
+const DESKTOP_DRAWN_FORMATS = new Set(['png', 'jpg', 'pdf'])
+
+/** Whether exporting `formatId` draws with CanvasKit, which then loads first. */
+function exportNeedsCanvasKit(formatId: string): boolean {
+  if (TEXT_FORMATS.has(formatId)) return false
+  return !(IS_TAURI && DESKTOP_DRAWN_FORMATS.has(formatId))
+}
 
 type DownloadBlob = (data: Uint8Array, filename: string, mime: string) => void
 
@@ -50,6 +63,7 @@ export function createDocumentExportActions(
         : undefined
 
     const browser = { rasterize: domRasterize, printPDF: domPrintPDF }
+    if (exportNeedsCanvasKit(format.id)) await loadCanvasKit(editor)
     const result = await io.exportContent(
       formatId,
       { graph: editor.graph, target, fileName },

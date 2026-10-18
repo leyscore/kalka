@@ -80,10 +80,12 @@ test('text case vertical alignment and ending truncation', async () => {
   expect(await editor.canvas.screenshotCanvasRegion()).toMatchSnapshot('typography-depth.png')
 
   // Compare cold and warm text on the same direct-render path, not retained vs direct rasterization.
-  await editor.page.evaluate((id) => {
+  await editor.page.evaluate(async (id) => {
     const store = window.kalka?.getStore?.()
-    if (!store?.renderer) throw new Error('Renderer unavailable')
-    store.renderer.textPreparationCache.clear()
+    // CanvasKit loads on demand behind the DOM canvas.
+    const renderer = await store?.loadCanvasKit()
+    if (!store || !renderer) throw new Error('Renderer unavailable')
+    renderer.textPreparationCache.clear()
     store.graph.updateNodePreview(id, { x: -10004 })
     store.requestRepaint()
   }, previewId)

@@ -6,12 +6,26 @@ import { renderAutomationImage } from '@/app/automation/bridge/export-handlers'
 import type { EditorStore } from '@/app/editor/active-store'
 import { listFamilies, listFonts, loadFont } from '@/app/editor/fonts'
 
+function useRenderer(api: FigmaAPI, store: EditorStore): void {
+  api.setRenderer(store.renderer ?? null)
+  if (store.renderer) api.rasterCodec = createCanvasKitRasterCodec(store.renderer.ck)
+}
+
+/**
+ * Loads CanvasKit for a tool call and gives it to `api`: grouping, booleans, flattening and
+ * comparing images compute with Skia. Tools are where agents work, so the first call loads it.
+ */
+export async function attachCanvasKit(store: EditorStore, api: FigmaAPI): Promise<void> {
+  await store.loadCanvasKit()
+  useRenderer(api, store)
+}
+
 export function makeFigmaFromStore(
   store: EditorStore,
   pageId = store.state.currentPageId
 ): FigmaAPI {
   const api = new FigmaAPI(store.graph)
-  api.setRenderer(store.renderer ?? null)
+  useRenderer(api, store)
   api.icons = store.iconProvider
   api.theme = store.state.theme ?? 'light'
   api.currentPage = api.wrapNode(pageId)
@@ -37,7 +51,6 @@ export function makeFigmaFromStore(
       opts.format ?? 'PNG',
       opts.pageId ?? pageId
     )
-  if (store.renderer) api.rasterCodec = createCanvasKitRasterCodec(store.renderer.ck)
   api.loadFontAsync = async ({ family, style }) => {
     await loadDocumentFont(store.graph, family, style, loadFont).catch(() => null)
   }

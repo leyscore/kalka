@@ -6,6 +6,7 @@ import { useEditorEvent } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import { loadFont, requestLocalFontAccess } from '@/app/editor/fonts'
+import { appRuntimeConfig } from '@/app/runtime/config'
 
 export function useDocumentFontStatus() {
   const editor = useEditorStore()
@@ -51,7 +52,8 @@ export function useDocumentFontStatus() {
       computeAllLayouts(editor.graph, editor.state.currentPageId)
       preparation.update({ phase: 'preparing-render' })
       editor.requestRender()
-      if (editor.renderer) {
+      // A canvas presents the page, whether it draws it with Skia or as DOM.
+      if (editor.renderer || appRuntimeConfig.domScene) {
         await editor.preparationController.waitForPresentation(
           preparation.id,
           editor.state.sceneVersion

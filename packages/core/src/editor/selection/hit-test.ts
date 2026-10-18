@@ -9,8 +9,6 @@ export function createSelectionHitTestActions(
   clearSelection: () => void
 ) {
   function hitTestAtPoint(cx: number, cy: number, deep = false): SceneNode | null {
-    const renderer = ctx.getRenderer()
-    if (!renderer) return null
     const pad = LAYER_HIT_PAD / ctx.state.zoom
     const scopeId = ctx.state.enteredContainerId
     if (scopeId && !ctx.graph.getNode(scopeId)) ctx.state.enteredContainerId = null

@@ -73,24 +73,19 @@ export async function documentFootprint(page: Page, cdp: CDPSession): Promise<Do
     let wasmBytes = 0
     let held = false
     try {
-      // The editor keeps CanvasKit behind `getCk`, which its public type does not list.
+      // CanvasKit loads on demand; once it has, the editor holds it through its renderer.
       const store: unknown = window.kalka?.getStore?.()
-      if (
-        store &&
-        typeof store === 'object' &&
-        'getCk' in store &&
-        typeof store.getCk === 'function'
-      ) {
-        const ck: unknown = store.getCk()
-        held = !!ck
-        if (ck && typeof ck === 'object' && 'HEAPU8' in ck && ck.HEAPU8 instanceof Uint8Array)
-          wasmBytes = ck.HEAPU8.buffer.byteLength
-      }
+      const renderer: unknown =
+        store && typeof store === 'object' && 'renderer' in store ? store.renderer : null
+      const ck: unknown =
+        renderer && typeof renderer === 'object' && 'ck' in renderer ? renderer.ck : null
+      held = !!ck
+      if (ck && typeof ck === 'object' && 'HEAPU8' in ck && ck.HEAPU8 instanceof Uint8Array)
+        wasmBytes = ck.HEAPU8.buffer.byteLength
       // oxlint-disable-next-line kalka/no-silent-catch -- The home screen has no editor to ask.
     } catch {}
     const canvasKit =
       held ||
-      document.querySelector('[data-test-id="canvas-element"][data-ready="1"]') !== null ||
       performance
         .getEntriesByType('resource')
         .some((entry) => /canvaskit[^/]*\.wasm/.test(entry.name))

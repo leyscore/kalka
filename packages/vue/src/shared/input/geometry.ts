@@ -47,9 +47,9 @@ export function hitTestInEditorScope(
 ): SceneNode | null {
   const scopeId = editor.state.enteredContainerId
 
-  const renderer = editor.renderer
-  if (!renderer) return null
-  const pad = LAYER_HIT_PAD / renderer.zoom
+  // Hit testing is the graph's; CanvasKit may not have loaded. The offscreen renderer behind the
+  // DOM scene keeps a zoom of 1, so the pad stays the same whether it has loaded or not.
+  const pad = LAYER_HIT_PAD / (editor.renderer?.zoom ?? 1)
   if (scopeId && !editor.graph.getNode(scopeId)) editor.state.enteredContainerId = null
   const scope = editor.state.enteredContainerId ?? editor.state.currentPageId
   return deep

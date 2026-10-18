@@ -22,6 +22,7 @@ import {
   type EditorPreparationEvents
 } from '@/app/editor/preparation/events'
 import type { EditorPreparationHandle } from '@/app/editor/preparation/types'
+import { createStoreCanvasKit } from '@/app/editor/session/canvaskit'
 import {
   createEditorComputedRefs,
   createEditorStoreModules,
@@ -205,10 +206,12 @@ function buildEditorStore(initialGraph?: SceneGraph) {
     }
   }
 
+  const canvasKit = createStoreCanvasKit()
   const store = {
     ...editor,
     state,
     preparationController,
+    ...canvasKit.methods,
     canvasReady: canvasReadiness.promise,
     markCanvasReady: () => canvasReadiness.resolve(undefined),
     onPreparationEvent<Event extends EditorPreparationEventName>(
@@ -236,6 +239,7 @@ function buildEditorStore(initialGraph?: SceneGraph) {
     // App-specific overrides and additions
     ...modules,
     dispose() {
+      canvasKit.dispose()
       stopColorSpaceSync()
       recentPages.dispose()
       disposeSelection()
@@ -244,6 +248,7 @@ function buildEditorStore(initialGraph?: SceneGraph) {
   }
 
   defineEditorStoreAccessors(store, editor)
+  canvasKit.attach(store, editor)
 
   return store
 }

@@ -13,10 +13,9 @@ function setupGlobals() {
   globalThis.window = asDouble<Window & typeof globalThis>({
     innerWidth: 1024,
     innerHeight: 768,
-    requestAnimationFrame: (callback: FrameRequestCallback) => {
-      callback(0)
-      return 0
-    },
+    // Frames never come: an agent's flashes, which animate while frames do, would otherwise
+    // re-request themselves without end now that tool calls load CanvasKit.
+    requestAnimationFrame: () => 0,
     cancelAnimationFrame: vi.fn(),
     kalka: {},
     location: { href: 'http://localhost/' } as Location,

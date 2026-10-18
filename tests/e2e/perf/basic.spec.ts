@@ -86,10 +86,11 @@ test.describe('Render performance', () => {
   })
 
   test('benchmark: synchronous render throughput', async () => {
-    const results = await helper.page.evaluate((iterations: number) => {
+    const results = await helper.page.evaluate(async (iterations: number) => {
       const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Kalka store not initialized')
-      const renderer = store.renderer
+      // CanvasKit loads on demand behind the DOM canvas.
+      const renderer = await store.loadCanvasKit()
       if (!renderer) throw new Error('Kalka renderer not initialized')
 
       const setupRenderer = () => {
@@ -179,10 +180,11 @@ test.describe('Render performance', () => {
     const SHADOW_ITERS = 100
 
     const results = await helper.page.evaluate(
-      ({ count, iterations }) => {
+      async ({ count, iterations }) => {
         const store = window.kalka?.getStore?.()
         if (!store) throw new Error('Kalka store not initialized')
-        const renderer = store.renderer
+        // CanvasKit loads on demand behind the DOM canvas.
+        const renderer = await store.loadCanvasKit()
         if (!renderer) throw new Error('Kalka renderer not initialized')
         const graph = store.graph
         const pageId = store.state.currentPageId

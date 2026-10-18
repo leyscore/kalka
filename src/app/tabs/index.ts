@@ -1,4 +1,3 @@
-import { promiseTimeout } from '@vueuse/core'
 import { shallowRef, computed, triggerRef } from 'vue'
 
 import { BUILTIN_IO_FORMATS, IORegistry } from '@kalka/core/io'
@@ -252,10 +251,8 @@ async function cacheOpenedFigCover(path: string, store: EditorStore): Promise<vo
   if (await loadCachedRecentFileThumbnail(path)) return
   const coverPageId = findFigThumbnailPageId(store.graph.getPages())
   if (!coverPageId) return
-  for (let attempt = 0; attempt < 240 && !store.renderer; attempt++) {
-    await promiseTimeout(250)
-  }
-  const renderer = store.renderer
+  // The cover is drawn with Skia, which this loads unless something already did.
+  const renderer = await store.loadCanvasKit()
   if (!renderer) {
     console.warn('[Recent files] Cover thumbnail skipped because the renderer was unavailable')
     return

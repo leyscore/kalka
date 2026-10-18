@@ -17,7 +17,9 @@ watch(
   () => [graph, nodeId] as const,
   async () => {
     const request = ++requestId
-    const renderer = editor.renderer
+    // The comparison is drawn with Skia, loaded the first time a preview needs it.
+    const renderer = await editor.loadCanvasKit()
+    if (request !== requestId) return
     const node = graph.getNode(nodeId)
     const page = graph.getPages()[0]
     if (!renderer || !node || !page) return

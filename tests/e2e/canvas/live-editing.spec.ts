@@ -104,9 +104,11 @@ for (const imported of [false, true]) {
     const box = expectDefined(await area.boundingBox(), 'color area')
     await canvas.waitForRender()
 
-    const trace = await page.evaluateHandle(() => {
+    const trace = await page.evaluateHandle(async () => {
       const store = window.kalka?.getStore?.()
       if (!store) throw new Error('Editor unavailable')
+      // CanvasKit loads on demand behind the DOM canvas.
+      await store.loadCanvasKit()
       const renderer = [...store.canvasRenderers].find((r) => r.tracksSceneSettlement)
       if (!renderer) throw new Error('Scene renderer unavailable')
       const surface = renderer.surface

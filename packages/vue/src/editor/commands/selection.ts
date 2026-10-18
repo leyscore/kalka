@@ -1,5 +1,7 @@
 import { readIcon, type SceneNode } from '@kalka/scene-graph'
 
+import { withCanvasKit } from '#vue/canvas/surface/offscreen'
+
 import type { EditorCommandMapOptions } from './context'
 import type { EditorCommand, EditorCommandId } from './types'
 
@@ -264,7 +266,7 @@ export function createSelectionCommands({
         return t.value.unionSelection
       },
       enabled: capabilities.canBooleanOperation,
-      run: () => editor.booleanOperationSelected('UNION')
+      run: () => void withCanvasKit(editor, () => editor.booleanOperationSelected('UNION'))
     },
     'selection.booleanSubtract': {
       id: 'selection.booleanSubtract',
@@ -272,7 +274,7 @@ export function createSelectionCommands({
         return t.value.subtractSelection
       },
       enabled: capabilities.canBooleanOperation,
-      run: () => editor.booleanOperationSelected('SUBTRACT')
+      run: () => void withCanvasKit(editor, () => editor.booleanOperationSelected('SUBTRACT'))
     },
     'selection.booleanIntersect': {
       id: 'selection.booleanIntersect',
@@ -280,7 +282,7 @@ export function createSelectionCommands({
         return t.value.intersectSelection
       },
       enabled: capabilities.canBooleanOperation,
-      run: () => editor.booleanOperationSelected('INTERSECT')
+      run: () => void withCanvasKit(editor, () => editor.booleanOperationSelected('INTERSECT'))
     },
     'selection.booleanExclude': {
       id: 'selection.booleanExclude',
@@ -288,7 +290,7 @@ export function createSelectionCommands({
         return t.value.excludeSelection
       },
       enabled: capabilities.canBooleanOperation,
-      run: () => editor.booleanOperationSelected('EXCLUDE')
+      run: () => void withCanvasKit(editor, () => editor.booleanOperationSelected('EXCLUDE'))
     },
     'selection.flatten': {
       id: 'selection.flatten',
@@ -296,7 +298,7 @@ export function createSelectionCommands({
         return t.value.flattenSelection
       },
       enabled: capabilities.canFlatten,
-      run: () => editor.flattenSelected()
+      run: () => void withCanvasKit(editor, () => editor.flattenSelected())
     },
     'selection.outlineText': {
       id: 'selection.outlineText',
@@ -304,7 +306,7 @@ export function createSelectionCommands({
         return t.value.outlineText
       },
       enabled: capabilities.canOutlineText,
-      run: () => editor.outlineTextSelected()
+      run: () => void withCanvasKit(editor, () => editor.outlineTextSelected())
     },
     'selection.outlineStroke': {
       id: 'selection.outlineStroke',
@@ -312,7 +314,7 @@ export function createSelectionCommands({
         return t.value.outlineStroke
       },
       enabled: capabilities.canOutlineStroke,
-      run: () => editor.outlineStrokeSelected()
+      run: () => void withCanvasKit(editor, () => editor.outlineStrokeSelected())
     },
     'selection.moveToPage': {
       id: 'selection.moveToPage',

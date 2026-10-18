@@ -13,14 +13,19 @@ const { handleTargetCommand } = createAutomationCommandHandlers(makeFigmaFromSto
 let stores: EditorStore[] = []
 
 beforeEach(() => {
-  // The automation FigmaAPI reads the viewport size from the window.
-  Object.assign(globalThis, { window: { innerWidth: 1024, innerHeight: 768 } })
+  // The automation FigmaAPI reads the viewport size from the window. A tool call's flashes ask
+  // for frames, which never come here.
+  Object.assign(globalThis, {
+    window: { innerWidth: 1024, innerHeight: 768 },
+    requestAnimationFrame: () => 0
+  })
 })
 
 afterEach(() => {
   for (const store of stores) store.dispose()
   stores = []
   Reflect.deleteProperty(globalThis, 'window')
+  Reflect.deleteProperty(globalThis, 'requestAnimationFrame')
 })
 
 /** A `.fig` opened like the app does: only the first page has its layers. */

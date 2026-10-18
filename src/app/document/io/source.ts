@@ -2,6 +2,7 @@ import type { Editor, EditorState } from '@kalka/core/editor'
 import { exportFigFile } from '@kalka/core/io/formats/fig'
 import { writeKalkaArchive, writeKalkaFolder } from '@kalka/core/io/formats/kalka'
 import { figmaLosses } from '@kalka/fig'
+import { loadCanvasKit } from '@kalka/vue'
 
 import { createAutosave } from '@/app/document/autosave'
 import { domRasterize } from '@/app/document/export/dom-raster'
@@ -26,6 +27,7 @@ import { notificationMessages } from '@/app/i18n/notifications'
 import type { StorageDocumentBinding, StorageProviderID } from '@/app/integrations/storage/types'
 import { toast } from '@/app/shell/ui'
 import { createCanvasId } from '@/app/storage/id'
+import { IS_TAURI } from '@/constants'
 
 type DocumentSourceState = EditorState & {
   documentName: string
@@ -88,8 +90,9 @@ export function createDocumentSourceActions({
     if (format === 'kalka-folder')
       return { kind: 'folder', files: await writeKalkaFolder(editor.graph) }
     if (format === 'kalka') return writeKalkaArchive(editor.graph)
-    const renderer = getRenderer()
-    // The desktop app draws the thumbnail with the browser, as the canvas; CanvasKit otherwise.
+    // The desktop app draws the thumbnail with the browser, as the canvas; CanvasKit otherwise,
+    // loaded for it.
+    const renderer = IS_TAURI ? getRenderer() : await loadCanvasKit(editor)
     return exportFigFile(editor.graph, {
       ck: renderer?.ck,
       renderer: renderer ?? undefined,

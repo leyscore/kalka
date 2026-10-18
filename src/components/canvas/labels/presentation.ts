@@ -1,4 +1,4 @@
-import { canvasLabelForeground } from '@kalka/core/canvas'
+import { canvasLabelForeground, resolveFillColor } from '@kalka/core/canvas'
 import type { Editor } from '@kalka/core/editor'
 import type { Color, SceneNode } from '@kalka/scene-graph'
 import type { CanvasLabelKind } from '@kalka/vue'
@@ -27,7 +27,9 @@ export function canvasLabelPresentation(
   const fill = node?.fills[0]
   const background =
     node && fill?.visible
-      ? (editor.renderer?.resolveFillColor(fill, 0, node, editor.graph) ?? fill.color)
+      ? // As the canvas presents it; behind the DOM scene, in sRGB, loaded CanvasKit or not.
+        (editor.renderer?.resolveFillColor(fill, 0, node, editor.graph) ??
+        resolveFillColor(fill, 0, node, editor.graph, 'srgb'))
       : DEFAULT_LABEL_BACKGROUND
   const foreground = canvasLabelForeground(
     background,

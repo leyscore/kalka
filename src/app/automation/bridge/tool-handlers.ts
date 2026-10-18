@@ -110,6 +110,8 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
     const libraryService = useLibraryService()
     libraryService.bindEditor(store)
     registerComponentCatalog(store.graph, libraryService)
+    // Agents' calls compute with Skia (grouping, booleans, images); it loads with the first one.
+    await store.loadCanvasKit()
     const figma = makeFigma(store, target.pageId)
     // Set by the host hook, which TypeScript cannot see run.
     const call = { released: false }
