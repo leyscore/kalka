@@ -6,6 +6,7 @@ import { createRetainedScopePlugin } from '@kalka/vue'
 import './app.css'
 import { recordRuntimeError } from '@/app/diagnostics'
 import { preloadFonts } from '@/app/editor/fonts'
+import { installOffscreenLayout } from '@/app/editor/layout/offscreen'
 import { appRuntimeConfig } from '@/app/runtime/config'
 import { observeBootErrors } from '@/app/shell/support/boot'
 import { reportBootFailure } from '@/app/shell/support/gate'
@@ -22,6 +23,7 @@ import router from './router'
  */
 export async function boot(): Promise<void> {
   preloadFonts()
+  installOffscreenLayout()
   const head = createHead()
   const app = createApp(App)
   const bootErrors = observeBootErrors(app)

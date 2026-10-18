@@ -2,7 +2,7 @@
 
 Feature-by-feature comparison of Figma Design capabilities with Kalka's current implementation status.
 
-The implementation notes predate the DOM canvas. Where they name CanvasKit or Yoga, the canvas now uses the browser's own CSS rendering and layout, and the note describes the export and off-screen path.
+The implementation notes predate the DOM canvas. Where they name CanvasKit, the canvas now uses the browser's own CSS rendering, and the note describes the export path; layout is the browser's everywhere.
 
 ::: tip Status Legend
 ✅ Supported — feature works end-to-end · 🟡 Partial — core behavior exists, some sub-features missing · 🔲 Not yet implemented
@@ -142,7 +142,7 @@ The implementation notes predate the DOM canvas. Where they name CanvasKit or Yo
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| Horizontal & vertical flow | ✅ | Yoga WASM flexbox engine |
+| Horizontal & vertical flow | ✅ | CSS flexbox, laid out by the browser |
 | Toggle auto layout (<kbd>⇧</kbd><kbd>A</kbd>) | ✅ | Toggle on frame or wrap selection |
 | Gap (spacing between children) | ✅ | Configurable in properties panel |
 | Padding (uniform & per-side) | ✅ | All four sides independently |
@@ -150,7 +150,7 @@ The implementation notes predate the DOM canvas. Where they name CanvasKit or Yo
 | Align items | ✅ | Start, center, end, stretch |
 | Child sizing (fixed, fill, hug) | ✅ | Per-child sizing modes |
 | Wrap | ✅ | Flex wrap for multi-line layout |
-| Grid auto layout flow | ✅ | CSS Grid via Yoga fork — column/row tracks, gaps, spans |
+| Grid auto layout flow | ✅ | CSS Grid — column/row tracks, gaps, spans |
 | Combined flows (nested) | ✅ | Nested auto-layout frames with different directions |
 | Drag reorder within auto layout | ✅ | Visual insertion indicator |
 | Min/max width and height | 🔲 | Figma supports min/max constraints on auto-layout children |

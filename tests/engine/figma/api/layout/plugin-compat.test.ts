@@ -14,7 +14,7 @@ function setup() {
 
 describe('Figma Plugin API layout compatibility', () => {
   test('rescale scales geometry, visual properties, and descendants from the root top-left', () => {
-    const { api, graph } = setup()
+    const { api } = setup()
     const frame: FigmaNodeProxy = api.createFrame()
     frame.x = 30
     frame.y = 40
@@ -46,7 +46,7 @@ describe('Figma Plugin API layout compatibility', () => {
     frame.appendChild(text)
     text.x = 11
     text.y = 13
-    const textWidth = graph.getNode(text.id)?.width ?? 0
+    const textWidth = text.width
     expect(textWidth).toBeGreaterThan(0)
 
     frame.rescale(2)
@@ -72,7 +72,8 @@ describe('Figma Plugin API layout compatibility', () => {
     expect(text.fontSize).toBe(20)
     expect(text.letterSpacing).toBe(4)
     expect(text.lineHeight).toBe(28)
-    expect(graph.getNode(text.id)?.width).toBe(textWidth * 2)
+    // The browser lays glyphs out per size, so text twice as large is about twice as wide.
+    expect(Math.abs(text.width - textWidth * 2)).toBeLessThanOrEqual(1)
   })
 
   test('rescale rejects occurrence descendants without mutation but permits definition children', () => {

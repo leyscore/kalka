@@ -23,6 +23,7 @@
 - A stand-in for an interface a test cannot build (CanvasKit, `EditorStore`) goes through `asDouble` from `#tests/helpers/doubles`, which is the one sanctioned widening; `kalka/no-broad-double-cast` rejects the `as unknown as` spelling.
 - In Bun tests prefer injected dependencies or scoped spies with explicit cleanup. `mock.restore()` restores spies but does not undo `mock.module()` overrides; do not assume module mocks are isolated by cleanup hooks. Read the installed runner's lifecycle and mocking docs before adding global or module-level instrumentation.
 - Press editor shortcuts with `ControlOrMeta`, never `Meta`: the app's modifier is Control off macOS, so a `Meta` shortcut silently does nothing on Linux (`tests/helpers/canvas.ts`).
+- Unit tests lay out in the desktop app's render host through the `bun test` preload `tests/helpers/layout/browser.ts`, so a checkout builds it before testing and Linux runs under `xvfb-run`; a test of what happens before layout installs `keepStoredLayout()` from `#core-tests/helpers/layout` (`packages/docs/development/testing.md`).
 - Make flaky tests deterministic; raising a timeout is never the fix. Keep package-manager invocations out of `bun test` suites; their cold start is not bounded.
 
 ## Browser runs

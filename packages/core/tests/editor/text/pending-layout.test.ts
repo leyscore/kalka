@@ -1,19 +1,22 @@
-import { afterEach, expect, test } from 'bun:test'
+import { afterEach, beforeEach, expect, test } from 'bun:test'
 
 import { createEditor } from '@kalka/core/editor'
-import { setTextMeasurer } from '@kalka/core/layout'
 
 import {
   createPendingTextLayout,
   type PendingLayoutRenderer
 } from '#core/editor/text/pending-layout'
 import { createLayoutRunner } from '#core/layout/mutations'
+import { keepStoredLayout } from '#core-tests/helpers/layout'
 
-afterEach(() => {
-  setTextMeasurer(null)
+// What the pending text measures and lays out again, not what a browser would make of it.
+let restoreLayout: (() => void) | undefined
+beforeEach(() => {
+  restoreLayout = keepStoredLayout()
 })
+afterEach(() => restoreLayout?.())
 
-/** A Hug row around auto-width text whose face loads after the first layout. */
+/** A Hug row around auto-width text whose face loads after it was first measured. */
 function setup() {
   const editor = createEditor()
   const graph = editor.graph
@@ -49,7 +52,6 @@ function setup() {
     requestRender: () => renders++,
     isReady: () => loaded
   })
-  setTextMeasurer((node, maxWidth) => pending.measure(renderer, node, maxWidth))
   const load = () => {
     loaded = true
     pending.relayoutReady(renderer)
@@ -61,38 +63,32 @@ function setup() {
     text,
     renderer,
     pending,
-    runLayoutForNode,
     load,
     relayouts,
     renders: () => renders
   }
 }
 
-test('text laid out before its face loads takes its size, and its Hug frame follows', () => {
-  const { editor, frame, text, runLayoutForNode, load, relayouts, renders } = setup()
-  runLayoutForNode(text.id)
-  const estimated = text.width
-  expect(estimated).not.toBe(234)
+test('text measured before its face loads is laid out again once it loads', () => {
+  const { editor, text, pending, renderer, load, relayouts, renders } = setup()
+  pending.measure(renderer, text)
 
   load()
-  expect([text.width, text.height]).toEqual([234, 29])
-  expect([frame.width, frame.height]).toEqual([266, 53])
   expect(renders()).toBe(1)
   expect(relayouts).toEqual([false])
   expect(editor.undo.canUndo).toBe(false)
 })
 
 test('a face that loads keeps the layout of the document’s own state derived', () => {
-  const { graph, text, runLayoutForNode, load, relayouts } = setup()
-  graph.applyDerivedLayoutDuring(() => runLayoutForNode(text.id))
+  const { graph, text, pending, renderer, load, relayouts } = setup()
+  graph.applyDerivedLayoutDuring(() => pending.measure(renderer, text))
   load()
-  expect(text.width).toBe(234)
   expect(relayouts).toEqual([true])
 })
 
 test('layers whose faces are still loading or that were removed are left alone', () => {
-  const { graph, text, pending, renderer, runLayoutForNode, renders } = setup()
-  runLayoutForNode(text.id)
+  const { graph, text, pending, renderer, renders } = setup()
+  pending.measure(renderer, text)
   pending.relayoutReady(renderer)
   expect(renders()).toBe(0)
   graph.deleteNode(text.id)

@@ -10,7 +10,7 @@ Renderer, layout, editor, Figma API, tools, clipboard, vector conversion, and do
 
 ## Layout
 
-- `@open-pencil/yoga-layout` supplies both flexbox and CSS Grid.
+- Core computes no layout: `computeLayout` and `computeAllLayouts` go to the browser engines installed with `installLayoutEngine`, latest first, and without one layers keep their geometry. A new environment that lays out installs a `BrowserLayoutEngine` over a page of its own rather than computing boxes (`packages/core/src/layout/browser.ts`, `packages/docs/development/architecture.md`).
 - Recompute layout after demo creation and for each materialized or imported page; scope computation to the affected page or subtree where possible.
 - The first Hug/Fill dimension mutation switches only that axis to Fixed; focus is non-destructive, and mode/value changes share one undo transaction.
 

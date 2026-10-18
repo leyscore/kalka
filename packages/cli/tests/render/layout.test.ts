@@ -11,7 +11,7 @@ import { SceneGraph } from '@kalka/scene-graph'
 
 import { writeFolderFiles } from '#cli/headless'
 import { RenderHost } from '#cli/render/host/session'
-import { BrowserLayoutEngine } from '#cli/render/layout'
+import { hostLayoutEngine } from '#cli/render/layout'
 import { CLI_ENTRY, workspaceRoot } from '#cli-tests/helpers/paths'
 
 const HOST = join(workspaceRoot(), 'electron', 'dist', 'render-host.js')
@@ -19,8 +19,8 @@ const HOST = join(workspaceRoot(), 'electron', 'dist', 'render-host.js')
 const canRender = existsSync(HOST) && (process.platform !== 'linux' || !!process.env.DISPLAY)
 
 /**
- * A row whose layout Yoga and the browser disagree on: a child sized by the CSS its layer keeps
- * as written, half its parent, which Yoga does not read, and a wrapping row of fixed tiles.
+ * A row only a browser lays out as the canvas does: a child sized by the CSS its layer keeps as
+ * written, half its parent, and a wrapping row of fixed tiles.
  */
 function document() {
   const graph = new SceneGraph()
@@ -78,14 +78,14 @@ async function evalHalfWidth(env: Record<string, string> = {}): Promise<string> 
 }
 
 describe('layout without the render host', () => {
-  test('is Yoga, which keeps the size the layer stores', () => {
+  test('keeps the size the layer stores', () => {
     const { graph, half } = document()
     computeAllLayouts(graph)
     expect(graph.getNode(half.id)?.width).toBe(100)
   })
 
-  test('is what the CLI uses when told to', async () => {
-    expect(await evalHalfWidth({ KALKA_LAYOUT: 'yoga' })).toBe('100')
+  test('is what the CLI does when told to', async () => {
+    expect(await evalHalfWidth({ KALKA_LAYOUT: 'stored' })).toBe('100')
   }, 60_000)
 })
 
@@ -95,7 +95,7 @@ describe.skipIf(!canRender)('the CLI lays out with Chromium', () => {
 
   function withBrowser(run: () => void) {
     if (!host) throw new Error('No render host')
-    const uninstall = installLayoutEngine(new BrowserLayoutEngine(host))
+    const uninstall = installLayoutEngine(hostLayoutEngine(host))
     try {
       run()
     } finally {
@@ -130,12 +130,12 @@ describe.skipIf(!canRender)('the CLI lays out with Chromium', () => {
     expect(await evalHalfWidth()).toBe('200')
   }, 60_000)
 
-  test('falls back to Yoga once the host is gone', () => {
+  test('keeps the stored geometry once the host is gone', () => {
     const own = RenderHost.start()
     if (!own) throw new Error('No render host')
     own.close()
     const { graph, half } = document()
-    const uninstall = installLayoutEngine(new BrowserLayoutEngine(own))
+    const uninstall = installLayoutEngine(hostLayoutEngine(own))
     try {
       computeAllLayouts(graph)
     } finally {

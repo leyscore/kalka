@@ -8,8 +8,9 @@ import type { DomSceneProjector } from './projector'
  * reads every box back into the layers' `x`, `y`, `width` and `height`, which become a cache of
  * what the browser computed. It never computes a position itself.
  *
- * Layers the DOM scene does not draw (other pages, graphs used for export or previews) are left
- * to Yoga.
+ * Layers the DOM scene does not draw (other pages, graphs used for export or previews, artboards
+ * whose iframe is still loading) go to the engine installed before it, which lays them out in
+ * hidden iframes.
  */
 export class DomLayoutEngine implements LayoutEngine {
   constructor(

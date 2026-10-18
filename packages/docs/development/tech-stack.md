@@ -10,7 +10,7 @@
 | **UI Framework** | Vue 3 + VueUse | Reactive composition API, excellent TypeScript support |
 | **Components** | Reka UI | Headless, accessible UI primitives (tree, slider, etc.) |
 | **Styling** | Tailwind CSS 4 | Utility-first, fast iteration, dark theme |
-| **Layout** | The browser; Yoga WASM off screen | The browser lays the canvas out; Yoga serves headless runs and graphs the canvas does not draw |
+| **Layout** | The browser | The canvas's own iframes, hidden iframes for what it does not show, and the desktop app's render host for the CLI and tests |
 | **Text editing** | ProseMirror | Rich text edited in place inside the artboard's page |
 | **File formats** | Kalka folder (HTML, CSS, JSON); Kiwi binary + Zstd | Folders open in any code editor and diff in Git; `.fig` for Figma files |
 | **Collaboration** | Trystero + Yjs | P2P WebRTC via MQTT signaling, CRDT sync, y-indexeddb persistence |
@@ -41,10 +41,9 @@ The project migrated from React to Vue 3 early in development. Vue's reactivity 
 
 ### Why not a custom layout engine?
 
-The browser already implements CSS layout completely, so the canvas uses it. Off screen, Yoga is maintained by Meta and implements the CSS flexbox spec; building a custom engine would take months to reach the same correctness.
+The browser already implements CSS layout completely, so the canvas uses it, and so does everything off screen: a second engine would disagree with what the canvas draws.
 
 ## Additional Technologies
 
 | Technology | Purpose | Status |
 |-----------|---------|--------|
-| CSS Grid in Yoga | Grid-based auto layout | Shipped via [Yoga fork](https://github.com/open-pencil/yoga/tree/grid) (`@open-pencil/yoga-layout`) |

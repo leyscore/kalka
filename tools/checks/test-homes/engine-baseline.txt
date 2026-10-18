@@ -282,7 +282,6 @@ tests/engine/kiwi/serialize-fixes/frame/mask.test.ts
 tests/engine/kiwi/serialize-fixes/integration.test.ts
 tests/engine/kiwi/serialize-fixes/line/height.test.ts
 tests/engine/layout/absolute-position/cache.test.ts
-tests/engine/layout/auto-layout/absolute/children-in-yoga-tree.test.ts
 tests/engine/layout/auto-layout/absolute/positioning.test.ts
 tests/engine/layout/auto-layout/alignment/counter-axis.test.ts
 tests/engine/layout/auto-layout/alignment/primary-axis.test.ts
@@ -294,7 +293,6 @@ tests/engine/layout/auto-layout/gap/mapping-correctness.test.ts
 tests/engine/layout/auto-layout/hidden-children/basic.test.ts
 tests/engine/layout/auto-layout/hidden-children/preserve-dimensions.test.ts
 tests/engine/layout/auto-layout/horizontal/basic.test.ts
-tests/engine/layout/auto-layout/imported-derived-layout/effective-generated-text.test.ts
 tests/engine/layout/auto-layout/layout-align-self/extended-values.test.ts
 tests/engine/layout/auto-layout/layout/imported-derived.test.ts
 tests/engine/layout/auto-layout/layout/mode-none.test.ts

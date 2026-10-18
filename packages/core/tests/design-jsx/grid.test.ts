@@ -13,10 +13,11 @@ test('a repeat() grid places its cells in equal columns, not collapsed ones', as
     `<Frame grid columns="repeat(7, 1fr)" gap={4} w={280}>${cells.join('')}</Frame>`
   )
 
+  // The browser lays boxes out in sixty-fourths of a pixel.
   const column = (280 - 6 * 4) / 7
   const children = getNodeOrThrow(graph, root.id).childIds.map((id) => getNodeOrThrow(graph, id))
   for (const [index, cell] of children.entries()) {
-    expect(cell.x).toBeCloseTo((index % 7) * (column + 4), 3)
+    expect(cell.x).toBeCloseTo((index % 7) * (column + 4), 1)
     expect(cell.y).toBe(Math.floor(index / 7) * 40)
     expect(cell.height).toBe(36)
   }

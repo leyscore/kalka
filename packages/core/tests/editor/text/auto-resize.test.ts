@@ -1,11 +1,18 @@
-import { afterEach, describe, expect, test } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 
 import { createEditor } from '@kalka/core/editor'
 import { setTextMeasurer } from '@kalka/core/layout'
 
 import { getNodeOrThrow } from '#core-tests/helpers/assert'
+import { keepStoredLayout } from '#core-tests/helpers/layout'
 
+// The sizes text gives itself from the measurer, before any browser lays it out again.
+let restoreLayout: (() => void) | undefined
+beforeEach(() => {
+  restoreLayout = keepStoredLayout()
+})
 afterEach(() => {
+  restoreLayout?.()
   setTextMeasurer(null)
 })
 

@@ -25,6 +25,7 @@ const ENTRY_DATE = new Date(Date.UTC(2026, 0, 1))
 /** Everything the demo's bytes depend on: its own sources and the engine that writes them. */
 const INPUT_DIRECTORIES = [
   'tools/generate/demo/src',
+  'packages/cli/src/render',
   'packages/scene-graph/src',
   'packages/core/src',
   'packages/design-jsx/src',
@@ -33,7 +34,12 @@ const INPUT_DIRECTORIES = [
   'packages/fig/src',
   'packages/kiwi/src'
 ]
-const INPUT_FILES = ['tools/generate/demo/package.json', 'package.json', 'bun.lock']
+const INPUT_FILES = [
+  'tools/generate/demo/package.json',
+  'package.json',
+  'bun.lock',
+  'electron/src/render-host.ts'
+]
 
 async function filesIn(root: string, directory: string): Promise<string[]> {
   const result: string[] = []

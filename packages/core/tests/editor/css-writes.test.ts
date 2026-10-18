@@ -66,7 +66,9 @@ describe('editing a layer’s fields writes its CSS', () => {
 
   test('a resize lets the CSS written for size give way, and undo brings it back', () => {
     const { editor, page } = setup()
-    const card = editor.graph.createNode('FRAME', page.id, { width: 200, height: 100 })
+    // Half of a 400px parent, which the browser lays out as 200.
+    const parent = editor.graph.createNode('FRAME', page.id, { width: 400, height: 200 })
+    const card = editor.graph.createNode('FRAME', parent.id, { width: 200, height: 100 })
     editor.graph.updateNode(card.id, { style: { width: '50%', cursor: 'pointer' } })
     const original = { x: 0, y: 0, width: 200, height: 100, style: card.style }
 
@@ -76,7 +78,7 @@ describe('editing a layer’s fields writes its CSS', () => {
     editor.graph.updateNodePreview(card.id, original)
     editor.updateNode(card.id, { width: 260, height: 120 })
     editor.commitResize(card.id, original)
-    expect(layerCSS(card, page).width).toBe('260px')
+    expect(layerCSS(card, parent).width).toBe('260px')
 
     editor.undo.undo()
     expect(card.width).toBe(200)

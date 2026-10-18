@@ -109,6 +109,13 @@ jobs:
       - name: Build packages
         run: bun run build:packages
 
+      # The engine showcase the specs open is laid out by Chromium in the desktop app's render
+      # host when the dev server builds it (tools/generate/demo/src/write.ts).
+      - name: Build the render host
+        run: |
+          node electron/node_modules/electron/install.js
+          bun run --cwd electron build:render-host
+
       - name: Run the specs
         env:
           SPECS: ${{ inputs.specs }}
@@ -122,7 +129,7 @@ jobs:
           args=(--project="$PROJECT" --workers=1 --reporter=list,html --pass-with-no-tests)
           if [ "$UPDATE" = true ]; then args+=(--update-snapshots=changed); fi
           # The WebKit project matches only its own specs, so the others are filtered out there.
-          bunx playwright test "${args[@]}" $SPECS
+          xvfb-run --auto-servernum bunx playwright test "${args[@]}" $SPECS
 
       - name: Collect the rewritten snapshots
         if: always() && inputs.update

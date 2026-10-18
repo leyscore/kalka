@@ -63,20 +63,22 @@ Before applying any change, affected fields are snapshotted. The snapshot become
 
 ## Layout Engine
 
-On the canvas the browser lays layers out from their CSS, and the measured boxes are written back to `x`, `y`, `width` and `height`. Graphs the canvas does not draw use Yoga, where Figma's auto-layout properties map to Yoga flexbox:
+The browser lays layers out from their CSS, on the canvas and off it, and the measured boxes are written back to `x`, `y`, `width` and `height`. Figma's auto-layout properties map to CSS flexbox and grid through the CSS model (`@kalka/scene-graph/css-model`):
 
-| Figma Property | Yoga Equivalent |
+| Figma Property | CSS |
 |---|---|
-| `stackMode: HORIZONTAL` | `flexDirection: row` |
-| `stackMode: VERTICAL` | `flexDirection: column` |
+| `stackMode: HORIZONTAL` | `flex-direction: row` |
+| `stackMode: VERTICAL` | `flex-direction: column` |
 | `stackSpacing` | `gap` |
 | `stackPadding` | `padding` |
-| `stackJustify: MIN/CENTER/MAX/SPACE_BETWEEN` | `justifyContent` |
-| `stackCounterAlign` | `alignItems` |
-| `stackPrimarySizing: FIXED/HUG/FILL` | width/height + flex-grow |
-| `stackChildPrimaryGrow` | `flexGrow` |
-| `stackChildAlignSelf` | `alignSelf` |
+| `stackJustify: MIN/CENTER/MAX/SPACE_BETWEEN` | `justify-content` |
+| `stackCounterAlign` | `align-items` |
+| `stackPrimarySizing: FIXED/HUG/FILL` | `width`/`height` + `flex-grow` |
+| `stackChildPrimaryGrow` | `flex-grow` |
+| `stackChildAlignSelf` | `align-self` |
 | `stackPositioning: ABSOLUTE` | `position: absolute` |
+
+See [Architecture](/development/architecture#layout) for the engines that lay layers out.
 
 ## Hit Testing
 

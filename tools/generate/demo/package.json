@@ -12,6 +12,7 @@
     "test": "bun test tests"
   },
   "dependencies": {
+    "@kalka/cli": "workspace:*",
     "@kalka/core": "workspace:*",
     "@kalka/design-jsx": "workspace:*",
     "@kalka/package-artifacts-tools": "workspace:*",

@@ -1,4 +1,14 @@
+import { installLayoutEngine } from '@kalka/core/layout'
 import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+
+/**
+ * Lays nothing out until the returned function is called: layers keep the geometry they have,
+ * as they do without a browser. For tests of what happens before layout, such as text sizing
+ * itself from a text measurer, which the browser would otherwise measure again.
+ */
+export function keepStoredLayout(): () => void {
+  return installLayoutEngine({ layout: () => true })
+}
 
 export function autoFrame(
   graph: SceneGraph,

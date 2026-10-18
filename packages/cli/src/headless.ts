@@ -112,7 +112,7 @@ function populateRequestedPage(graph: SceneGraph, pageName?: string): void {
   if (page && populateFigPage(graph, page.id)) computeAllLayouts(graph, page.id)
 }
 
-/** Every page of a `.fig`, for the read commands, which lay out with Yoga. */
+/** Every page of a `.fig`, for the read commands, which keep the geometry the file saved. */
 function populateAllPages(graph: SceneGraph): void {
   if (populateAllFigPages(graph)) computeAllLayouts(graph)
 }

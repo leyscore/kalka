@@ -95,9 +95,10 @@ test('Gold document exposes effective Boolean assignments and supports editor un
       return avatar?.componentId ? restored.getNode(avatar.componentId)?.name : undefined
     })
   ).toEqual(originalComponents)
-  // Setting the property lays the instance out again, which may move the size by float error.
-  expect(input.width).toBeCloseTo(originalInputSize.width, 3)
-  expect(input.height).toBeCloseTo(originalInputSize.height, 3)
+  // Setting the property lays the instance out again in the browser, which lays boxes out in
+  // sixty-fourths of a pixel.
+  expect(input.width).toBeCloseTo(originalInputSize.width, 1)
+  expect(input.height).toBeCloseTo(originalInputSize.height, 1)
   expect(
     restoredContents.map((node) => {
       const avatar = restored

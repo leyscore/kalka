@@ -42,8 +42,8 @@ export interface SceneGraphToDesignOptions {
   shallow?: boolean
   /**
    * Size auto layout frames that hug from the sizes their file saved, where it saved them, as the
-   * Yoga engine does for imported documents. For a canvas showing a file as its author laid it
-   * out; exports leave hugging frames to their content.
+   * author's tool computed them. For a canvas showing a file as its author laid it out; exports
+   * leave hugging frames to their content.
    */
   derivedSizes?: boolean
   /**

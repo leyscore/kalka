@@ -4,31 +4,6 @@ import { computeAllLayouts, SceneGraph } from '@kalka/core'
 import { getAbsolutePositionFull } from '@kalka/scene-graph'
 
 describe('imported auto-layout bounds', () => {
-  test('preserves direct imported line geometry inside imported parents', () => {
-    const graph = new SceneGraph()
-    const page = graph.getPages()[0]
-    const frame = graph.createNode('FRAME', page.id, {
-      width: 320,
-      height: 1,
-      layoutMode: 'VERTICAL',
-      primaryAxisSizing: 'FIXED',
-      counterAxisSizing: 'FIXED',
-      source: { ...page.source, format: 'fig', id: '1:1' }
-    })
-    const line = graph.createNode('LINE', frame.id, {
-      x: 0,
-      y: 1,
-      width: 320,
-      height: 0,
-      layoutAlignSelf: 'STRETCH',
-      source: { ...page.source, format: 'fig', id: '1:2' }
-    })
-
-    computeAllLayouts(graph)
-
-    expect(graph.getNode(line.id)).toMatchObject({ x: 0, y: 1, width: 320, height: 0 })
-  })
-
   test('centres content within the width a stretching parent gives a hug frame with a saved size', () => {
     const graph = new SceneGraph()
     const page = graph.getPages()[0]
@@ -162,43 +137,6 @@ describe('imported auto-layout bounds', () => {
     expect(graph.getNode(field.id)).toMatchObject({ x: 0, y: 0, width: 276, height: 40 })
   })
 
-  test('uses imported HUG dimensions when positioning following siblings', () => {
-    const graph = new SceneGraph()
-    const page = graph.getPages()[0]
-    const column = graph.createNode('FRAME', page.id, {
-      width: 200,
-      height: 100,
-      layoutMode: 'VERTICAL',
-      primaryAxisSizing: 'FIXED',
-      counterAxisSizing: 'FIXED'
-    })
-    graph.createNode('FRAME', column.id, {
-      width: 200,
-      height: 1,
-      layoutMode: 'HORIZONTAL',
-      primaryAxisSizing: 'FIXED',
-      counterAxisSizing: 'HUG',
-      paddingTop: 4,
-      paddingBottom: 4,
-      strokes: [
-        {
-          type: 'SOLID',
-          color: { r: 0, g: 0, b: 0, a: 1 },
-          weight: 1,
-          opacity: 1,
-          visible: true,
-          align: 'CENTER'
-        }
-      ],
-      derivedLayout: { x: 0, y: 0, width: 200, height: 1 }
-    })
-    const following = graph.createNode('RECTANGLE', column.id, { width: 200, height: 20 })
-
-    computeAllLayouts(graph)
-
-    expect(graph.getNode(following.id)?.y).toBe(1)
-  })
-
   test('positions generated fill children from exact imported dimensions and gaps', () => {
     const graph = new SceneGraph()
     const page = graph.getPages()[0]
@@ -230,71 +168,6 @@ describe('imported auto-layout bounds', () => {
 
     expect(graph.getNode(first.id)).toMatchObject({ x: 0, width: 136 })
     expect(graph.getNode(second.id)).toMatchObject({ x: 152, width: 136 })
-  })
-
-  test('uses exact imported dimensions with space-between despite stored spacing', () => {
-    const graph = new SceneGraph()
-    const page = graph.getPages()[0]
-    const row = graph.createNode('FRAME', page.id, {
-      width: 288,
-      height: 40,
-      layoutMode: 'HORIZONTAL',
-      primaryAxisSizing: 'FIXED',
-      counterAxisSizing: 'FIXED',
-      primaryAxisAlign: 'SPACE_BETWEEN',
-      itemSpacing: 16
-    })
-    const first = graph.createNode('INSTANCE', row.id, {
-      width: 136,
-      height: 40,
-      layoutMode: 'HORIZONTAL',
-      layoutGrow: 1,
-      derivedLayout: { width: 136, height: 40 }
-    })
-    const second = graph.createNode('INSTANCE', row.id, {
-      width: 152,
-      height: 40,
-      layoutMode: 'HORIZONTAL',
-      layoutGrow: 1,
-      derivedLayout: { width: 152, height: 40 }
-    })
-
-    computeAllLayouts(graph)
-
-    expect(graph.getNode(first.id)).toMatchObject({ x: 0, width: 136 })
-    expect(graph.getNode(second.id)).toMatchObject({ x: 136, width: 152 })
-  })
-
-  test('keeps normal flex sizing when imported dimensions do not fit the parent', () => {
-    const graph = new SceneGraph()
-    const page = graph.getPages()[0]
-    const row = graph.createNode('FRAME', page.id, {
-      width: 320,
-      height: 40,
-      layoutMode: 'HORIZONTAL',
-      primaryAxisSizing: 'FIXED',
-      counterAxisSizing: 'FIXED',
-      itemSpacing: 16
-    })
-    const first = graph.createNode('INSTANCE', row.id, {
-      width: 136,
-      height: 14,
-      layoutMode: 'HORIZONTAL',
-      layoutGrow: 1,
-      derivedLayout: { width: 136, height: 14 }
-    })
-    const second = graph.createNode('INSTANCE', row.id, {
-      width: 136,
-      height: 40,
-      layoutMode: 'HORIZONTAL',
-      layoutGrow: 1,
-      derivedLayout: { width: 136, height: 40 }
-    })
-
-    computeAllLayouts(graph)
-
-    expect(graph.getNode(first.id)).toMatchObject({ x: 0, width: 136 })
-    expect(graph.getNode(second.id)).toMatchObject({ x: 168, width: 136 })
   })
 
   test('stretches generated children inside authoritative imported bounds', () => {
@@ -410,7 +283,7 @@ describe('imported auto-layout bounds', () => {
     expect(graph.getNode(chevron.id)?.x).toBe(200)
   })
 
-  test('lets live Yoga resize imported text when stored and derived sizes agree', () => {
+  test('lets layout resize imported text when stored and derived sizes agree', () => {
     const graph = new SceneGraph()
     const page = graph.getPages()[0]
     const frame = graph.createNode('FRAME', page.id, {
@@ -435,64 +308,6 @@ describe('imported auto-layout bounds', () => {
     computeAllLayouts(graph)
 
     expect(graph.getNode(text.id)).toMatchObject({ width: 160, height: 40 })
-  })
-
-  test('preserves imported HUG cross size backed by stretched derived children', () => {
-    const graph = new SceneGraph()
-    const page = graph.getPages()[0]
-    const frame = graph.createNode('FRAME', page.id, {
-      width: 381,
-      height: 102,
-      layoutMode: 'VERTICAL',
-      primaryAxisSizing: 'FIXED',
-      counterAxisSizing: 'HUG',
-      paddingTop: 24,
-      paddingRight: 24,
-      paddingBottom: 24,
-      paddingLeft: 24
-    })
-    graph.updateNode(frame.id, { source: { ...frame.source, format: 'fig' } })
-    graph.createNode('TEXT', frame.id, {
-      width: 333,
-      height: 30,
-      text: 'Bar Chart',
-      textAutoResize: 'HEIGHT',
-      layoutAlignSelf: 'STRETCH',
-      derivedLayout: { width: 333, height: 30 }
-    })
-
-    computeAllLayouts(graph)
-
-    expect(graph.getNode(frame.id)?.width).toBe(381)
-  })
-
-  test('preserves direct imported frame geometry inside imported parents', () => {
-    const graph = new SceneGraph()
-    const page = graph.getPages()[0]
-    const parent = graph.createNode('FRAME', page.id, {
-      width: 768,
-      height: 454,
-      layoutMode: 'VERTICAL',
-      primaryAxisSizing: 'FIXED',
-      counterAxisSizing: 'FIXED',
-      counterAxisAlign: 'CENTER'
-    })
-    const child = graph.createNode('FRAME', parent.id, {
-      x: 192,
-      y: 40,
-      width: 384,
-      height: 414,
-      layoutMode: 'VERTICAL',
-      primaryAxisSizing: 'FIXED',
-      counterAxisSizing: 'FIXED',
-      layoutAlignSelf: 'STRETCH'
-    })
-    graph.updateNode(parent.id, { source: { ...parent.source, format: 'fig' } })
-    graph.updateNode(child.id, { source: { ...child.source, format: 'fig' } })
-
-    computeAllLayouts(graph)
-
-    expect(graph.getNode(child.id)).toMatchObject({ x: 192, y: 40, width: 384, height: 414 })
   })
 
   test('preserves transformed bounds for rotated imported flow children', () => {
@@ -531,7 +346,7 @@ describe('imported auto-layout bounds', () => {
     })
   })
 
-  test('uses Yoga positions for imported instances while preserving imported size', () => {
+  test('lays out imported instances while preserving their imported size', () => {
     const graph = new SceneGraph()
     const page = graph.getPages()[0]
     const row = graph.createNode('FRAME', page.id, {

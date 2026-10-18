@@ -39,7 +39,8 @@ test('Gold imported binding units survive token edits and undo/redo', async () =
   expect(tags.variableBindingScales.paddingLeft).toBeCloseTo(0.8908441662788391, 6)
   editor.updateVariableValue(variableId, mode, 16)
   expect(tags.paddingLeft).toBeCloseTo(14.253506660461426, 6)
-  expect(graph.getChildren(tags.id)[0].x).toBeCloseTo(tags.paddingLeft, 6)
+  // The browser places the child in sixty-fourths of a pixel.
+  expect(graph.getChildren(tags.id)[0].x).toBeCloseTo(tags.paddingLeft, 1)
   editor.undo.undo()
   expect(tags.paddingLeft).toBeCloseTo(7.126753330230713, 6)
   editor.undo.redo()

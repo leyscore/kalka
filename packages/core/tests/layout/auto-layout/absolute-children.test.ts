@@ -1,11 +1,13 @@
 import { describe, expect, test } from 'bun:test'
 
+import { getNodeOrThrow } from '#core-tests/helpers/assert'
+import { autoFrame, rect } from '#core-tests/helpers/layout'
+
 import { computeLayout, SceneGraph } from '@kalka/core'
 
-import { getNodeOrThrow } from '#tests/helpers/assert'
-import { autoFrame, pageId, rect } from '#tests/helpers/layout'
+const pageId = (graph: SceneGraph) => graph.getPages()[0].id
 
-describe('absolute children in Yoga tree', () => {
+describe('absolute children in auto layout', () => {
   test('absolute children do not affect auto-layout flow', () => {
     const graph = new SceneGraph()
     const frame = autoFrame(graph, pageId(graph), {

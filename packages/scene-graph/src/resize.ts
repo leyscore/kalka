@@ -299,7 +299,7 @@ export function computeConstrainedResizeChanges(
         ...scaledGeometryChanges(original, original.width, original.height, rect.width, rect.height)
       }
       changes.set(childId, childChanges)
-      // The final pass sees layout containers after Yoga has resolved HUG/FILL sizing.
+      // The final pass sees layout containers after layout has resolved HUG/FILL sizing.
       compute(childId, original, child.layoutMode === 'NONE' ? rect : child)
     }
   }

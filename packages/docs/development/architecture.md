@@ -15,7 +15,7 @@ graph TB
                 Overlay["SVG overlay<br/>selection · guides · handles"]
             end
             subgraph Core["Core engine (TS)"]
-                SG[SceneGraph] --- Layout["Layout<br/>browser measurement · Yoga off screen"]
+                SG[SceneGraph] --- Layout["Layout<br/>browser measurement"]
                 SG --- Selection
                 Undo[Undo/Redo] --- HitTest[Hit testing]
             end
@@ -49,9 +49,28 @@ Selection, hover, guides, handles and other editor feedback are drawn by an SVG 
 
 ### Layout
 
-The browser is the layout engine. `DomLayoutEngine` (installed through `installLayoutEngine` from `@kalka/core/layout`) measures each box after the DOM is written and stores it back into the layers' `x`, `y`, `width` and `height` (`applyMeasuredLayout`), which become a cache of what the browser computed. Graphs the canvas does not draw, such as other pages and export previews, still use Yoga WASM.
+The browser is the only layout engine; Core computes no layout itself. `computeLayout` and `computeAllLayouts` from `@kalka/core/layout` hand a layer to the engines installed with `installLayoutEngine`, latest first: an engine that does not draw the layer leaves it to the one installed before. Each engine projects artboards to the HTML and CSS the canvas builds (`artboardMarkup` from `@kalka/dom-css/export`), lets a browser lay them out, and writes every box back into the layers' `x`, `y`, `width` and `height` with the canvas's own `measureLayerBoxes` and `applyMeasuredLayout`; the fields become a cache of what the browser computed. Without an engine that draws a layer, nothing is laid out again and layers keep the geometry they have.
 
-The CLI lays out with a browser too when the desktop app is built beside it. Its `BrowserLayoutEngine` (`packages/cli/src/render/layout.ts`) projects each artboard to the markup the canvas builds (`artboardMarkup` from `@kalka/dom-css/export`), sends it to the render host, an Electron process with no window that the CLI starts once per run (`electron/src/render-host.ts`), and writes back the boxes it measures there with the canvas's own `measureLayerBoxes`. Layout is synchronous and the host is another process, so the CLI's main thread blocks on a worker thread that talks to the host, artboards go in batches, and only those an edit touched are laid out again. A host that fails or times out leaves the rest of the run to Yoga, as do runs without Electron, `KALKA_LAYOUT=yoga` and the unit tests. The MCP stdio bridge computes no layout: it relays tool calls to the app.
+| Where | Engine | Browser |
+|---|---|---|
+| App, current page | `DomLayoutEngine` (`packages/vue/src/canvas/dom-scene/layout.ts`) | the canvas's own artboard iframes |
+| App, everything else: other pages, export copies, previews, artboards whose iframe is loading | `BrowserLayoutEngine` with `createDocumentLayout` (`src/app/editor/layout/offscreen.ts`) | hidden blank iframes of the editor's page, written and measured synchronously |
+| CLI, `@kalka/cli/layout` | `BrowserLayoutEngine` with `scriptLayoutPage` (`packages/cli/src/render/layout.ts`) | the render host, an Electron process with no window (`electron/src/render-host.ts`) |
+| Unit tests | the same, through one host per test process (`tests/helpers/layout/browser.ts`) | the render host |
+
+`BrowserLayoutEngine` (`packages/core/src/layout/browser.ts`) lays out whole artboards, hidden ones as if shown, sends them in batches and lays one out again only once an edit or a preview touched it. For the CLI, layout is synchronous and the host is another process, so the main thread blocks on a worker thread that talks to the host (`packages/cli/src/render/host/session.ts`). The MCP stdio bridge computes no layout: it relays tool calls to the app.
+
+#### Without a browser
+
+The CLI installed from npm has no browser: Electron is about 300 MB unpacked and Playwright's Chromium about 340 MB (190 MB for its headless shell), against a CLI of a few megabytes, so neither is a dependency. Commands that lay out (`export`, `eval`, `convert`, `lint`, `tool`) call `useBrowserLayout()`, which uses the render host when the desktop app is built beside the CLI and otherwise says once, on stderr, that layers keep their saved layout. A document then keeps the geometry its file stores, which for a `.fig` is Figma's own layout; edits that move layers inside auto layout are not reflowed until the document is opened where a browser lays it out. `KALKA_LAYOUT=stored` asks for this behaviour with the host present. The read-only commands (`tree`, `node`, `query`, `info`) never start the host and read the stored geometry.
+
+#### Cost
+
+Measured on an Apple M-series laptop: the host starts with the first layout in about 230 ms; a layout request for a small artboard then takes 0.2 ms at the median (0.4 ms at the 95th percentile), and an artboard of 421 layers 5 ms. The quick unit suite (`bun tools/dev/unit-tests/src/run.ts all`), one process and so one host, ran in 78 s with Yoga and runs in 95 s with the browser. On Linux CI every unit shard installs Electron and runs under `xvfb-run`. With `--isolate`, each test file gets a host of its own, closed with it.
+
+#### What the browser does not do as Figma does
+
+Yoga also carried heuristics that kept geometry a `.fig` saved where its own layout disagreed; the browser lays the page out as the canvas draws it instead. Text is measured with the fonts the browser has, so an imported label can differ from Figma's box by up to a few pixels, and text the browser sizes differently is shaped again when the file is saved. Boxes come back in sixty-fourths of a pixel. A fixed-size text box stretched across a hugging parent does not count towards the hug, a hugging child of a grid stretches across its cell, empty text has no height, and padding larger than a fixed box grows it. Tests that record Figma's behaviour for these are marked `test.failing` until the projected CSS matches it.
 
 ### CanvasKit
 
@@ -68,19 +87,6 @@ Flat `Map<string, Node>` keyed by GUID strings. Tree structure via `parentIndex`
 The graph emits typed events via nanoevents: `node:created`, `node:updated`, `node:deleted`, `node:reparented`, `node:reordered`. Subsystems subscribe to these instead of manual call-site wiring — the editor uses them for render invalidation and microtask-batched component instance sync, while the collab system uses them for Yjs propagation.
 
 See [Scene Graph Reference](/reference/scene-graph) for internals.
-
-### Off-screen layout (Yoga WASM)
-
-Where the browser does not lay a graph out, Meta's Yoga computes flexbox and grid through a [fork](https://github.com/open-pencil/yoga/tree/grid) with CSS Grid support. A thin adapter maps Figma property names to Yoga equivalents:
-
-| Figma Property | Yoga Equivalent |
-|---|---|
-| `stackMode: HORIZONTAL` | `flexDirection: row` |
-| `stackMode: VERTICAL` | `flexDirection: column` |
-| `stackSpacing` | `gap` |
-| `stackPadding` | `padding` |
-| `stackJustify` | `justifyContent` |
-| `stackChildPrimaryGrow` | `flexGrow` |
 
 ### File formats
 

@@ -94,7 +94,6 @@
         "y-indexeddb": "^9.0.12",
         "y-protocols": "^1.0.7",
         "yjs": "^13.6.32",
-        "yoga-layout": "npm:@open-pencil/yoga-layout@3.3.0-grid.3",
         "zod": "^4.6.5",
       },
       "devDependencies": {
@@ -186,7 +185,7 @@
       "name": "@kalka/cli",
       "version": "0.1.0-beta.2",
       "bin": {
-        "openpencil": "./bin/openpencil.js",
+        "kalka": "./bin/kalka.js",
       },
       "dependencies": {
         "@kalka/core": "workspace:*",
@@ -247,7 +246,6 @@
         "twirlwind": "^0.4.1",
         "unifont": "0.7.4",
         "valibot": "^1.5.0",
-        "yoga-layout": "npm:@open-pencil/yoga-layout@3.3.0-grid.3",
       },
       "devDependencies": {
         "@types/bun": "^1.3.14",
@@ -612,6 +610,7 @@
     "tools/generate/demo": {
       "name": "@kalka/demo-tools",
       "dependencies": {
+        "@kalka/cli": "workspace:*",
         "@kalka/core": "workspace:*",
         "@kalka/design-jsx": "workspace:*",
         "@kalka/package-artifacts-tools": "workspace:*",
@@ -4982,8 +4981,6 @@
     "yjs": ["yjs@13.6.32", "", { "dependencies": { "lib0": "^0.2.99" } }, "sha512-lfiJIIC4Xayt5ItynE407ehlE03pCjeOc4hkR4yxxvvNJ4kuiN25B0g+Qp8XagYz361LLL7DCzR5bvFJ81QKtQ=="],
 
     "yocto-queue": ["yocto-queue@0.1.0", "", {}, "sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q=="],
-
-    "yoga-layout": ["@open-pencil/yoga-layout@3.3.0-grid.3", "", {}, "sha512-L1mWkFxQIGFYULih376hVel5lLU+E8UYIaX/5VR1cBbtk7oeF4HDpfGttZ5BSH9ofnOpxeOh2V5yv2ZgOKc5Yw=="],
 
     "yuku-ast": ["yuku-ast@0.8.7", "", { "dependencies": { "@yuku-toolchain/types": "^0.8.7" } }, "sha512-h6+4bDfyootiMB9vckk5uKo5r5j0GHrkr17FQTDNfEsFT3DWlN9uu1HJwQwc64pgmLCI945fWM3lbTIqxjT3GQ=="],
 

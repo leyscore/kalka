@@ -8,8 +8,8 @@ import type { Variable } from '@kalka/scene-graph'
  * Regression test for kalka/kalka#201
  *
  * Design token variables ($--spacing-lg etc.) in padding and gap fields
- * must be resolved to numeric values before reaching yoga-layout.
- * Without the fix, yoga-layout crashes with:
+ * must be resolved to numeric values before reaching layout.
+ * Without the fix, the layout engine of the time crashed with:
  *   "Invalid value $--spacing-lg for setPadding"
  */
 

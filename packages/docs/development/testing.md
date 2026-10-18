@@ -88,6 +88,8 @@ Current commands:
 | Figma acceptance               | `bun run test:figma`         |
 | Desktop app smoke              | `bun run --cwd electron smoke` |
 
+Unit tests lay layers out in Chromium, as the canvas does: the `bun test` preload `tests/helpers/layout/browser.ts` routes layout to the desktop app's render host, one per test process, started by the first layout and closed after the run (or after each file with `--isolate`). Build it once per checkout with `node electron/node_modules/electron/install.js` and `bun run --cwd electron build:render-host`; on Linux run the tests under `xvfb-run`. Without it every test that lays out fails and names those commands. Text lays out in the Inter the app bundles, so sizes match the canvas on every platform. A test of what happens before layout, such as text sizing itself from a measurer, installs `keepStoredLayout()` from `#core-tests/helpers/layout`; a test that only reads geometry a fixture saved needs no layout at all.
+
 During implementation, run the affected unit files or one representative browser scenario. Inspect discovery changes without executing the whole suite when reorganizing files. Use the final CI gate after integration; do not rerun full suites for each edit. Report commands actually run, and distinguish focused coverage from full acceptance.
 
 Visual changes require inspection and committed coverage. Update only a justified affected snapshot, then rerun that test without update mode. Never relax tolerances or regenerate unrelated baselines to turn a failed run green. Browser GPU parity and real glyph coverage complement CPU rendering tests; they are not redundant merely because both compare pixels.

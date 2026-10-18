@@ -1,131 +1,13 @@
 import { describe, expect, test } from 'bun:test'
 
-import { computeAllLayouts, SceneGraph, setTextMeasurer } from '@kalka/core'
+import { computeAllLayouts, SceneGraph } from '@kalka/core'
 import { createEditor } from '@kalka/core/editor'
 
 import { getNodeOrThrow } from '#tests/helpers/assert'
-import { autoFrame, loadFixtureGraph, pageId, rect } from '#tests/helpers/layout'
+import { autoFrame, loadFixtureGraph, pageId } from '#tests/helpers/layout'
 import { HEAVY_TEST_TIMEOUT_MS } from '#tests/helpers/test-utils'
 
 describe('text measurement', () => {
-  test('derived text layout preserves imported auto-layout text bounds during measurement', () => {
-    const graph = new SceneGraph()
-    const page = pageId(graph)
-    const tabs = autoFrame(graph, page, {
-      width: 180,
-      height: 42,
-      primaryAxisSizing: 'FIXED',
-      counterAxisSizing: 'HUG',
-      paddingTop: 5,
-      paddingBottom: 5,
-      paddingLeft: 5,
-      paddingRight: 5
-    })
-    const tab = autoFrame(graph, tabs.id, {
-      width: 80,
-      height: 32,
-      primaryAxisSizing: 'FIXED',
-      counterAxisSizing: 'HUG',
-      paddingTop: 6,
-      paddingBottom: 6,
-      paddingLeft: 12,
-      paddingRight: 12
-    })
-    graph.createNode('TEXT', tab.id, {
-      text: 'Account',
-      width: 56,
-      height: 20,
-      textAutoResize: 'WIDTH_AND_HEIGHT',
-      derivedLayout: { width: 56, height: 20 }
-    })
-
-    setTextMeasurer(() => ({ width: 56, height: 40 }))
-    computeAllLayouts(graph, page)
-    setTextMeasurer(null)
-
-    expect(graph.getNode(tab.id)?.height).toBe(32)
-    expect(graph.getNode(tabs.id)?.height).toBe(42)
-  })
-
-  test('direct imported text keeps its NodeChange bounds over glyph layout metadata', () => {
-    const graph = new SceneGraph()
-    const page = pageId(graph)
-    const frame = autoFrame(graph, page, {
-      width: 424,
-      height: 100,
-      primaryAxisSizing: 'FIXED',
-      counterAxisSizing: 'FIXED'
-    })
-    const text = graph.createNode('TEXT', frame.id, {
-      text: 'Truncated preview',
-      width: 424,
-      height: 40,
-      textAutoResize: 'HEIGHT',
-      derivedLayout: { width: 424, height: 120 },
-      source: {
-        format: 'fig',
-        id: '1:2',
-        orderKey: '!',
-        editedFields: [],
-        fig: {
-          rawNodeFields: {},
-          rawTransform: null,
-          rawSize: null,
-          layout: null,
-          derivedSymbolDataLayoutVersion: null,
-          derivedSymbolData: [],
-          symbolOverrides: [],
-          componentPropAssignments: [],
-          uniformScaleFactor: null
-        }
-      }
-    })
-
-    setTextMeasurer(() => ({ width: 424, height: 120 }))
-    computeAllLayouts(graph, page)
-    setTextMeasurer(null)
-
-    expect(graph.getNode(text.id)?.height).toBe(40)
-  })
-
-  test('live text without derived glyphs still uses CanvasKit measurement', () => {
-    const graph = new SceneGraph()
-    const page = pageId(graph)
-    const tabs = autoFrame(graph, page, {
-      width: 180,
-      height: 42,
-      primaryAxisSizing: 'FIXED',
-      counterAxisSizing: 'HUG',
-      paddingTop: 5,
-      paddingBottom: 5,
-      paddingLeft: 5,
-      paddingRight: 5
-    })
-    const tab = autoFrame(graph, tabs.id, {
-      width: 80,
-      height: 32,
-      primaryAxisSizing: 'FIXED',
-      counterAxisSizing: 'HUG',
-      paddingTop: 6,
-      paddingBottom: 6,
-      paddingLeft: 12,
-      paddingRight: 12
-    })
-    graph.createNode('TEXT', tab.id, {
-      text: 'Account',
-      width: 56,
-      height: 20,
-      textAutoResize: 'WIDTH_AND_HEIGHT'
-    })
-
-    setTextMeasurer(() => ({ width: 56, height: 40 }))
-    computeAllLayouts(graph, page)
-    setTextMeasurer(null)
-
-    expect(graph.getNode(tab.id)?.height).toBe(52)
-    expect(graph.getNode(tabs.id)?.height).toBe(62)
-  })
-
   test(
     'opening imported fig keeps stored text bounds before CanvasKit measurement',
     async () => {
@@ -203,7 +85,6 @@ describe('text measurement', () => {
       // an older layout implementation. Post-layout, left-aligned HUG content retains x=8.
       expect(visibleToolbar.x).toBe(8)
 
-      setTextMeasurer(null)
       computeAllLayouts(graph, graph.getPages()[0].id)
 
       expect(graph.getNode(visibleToolbar.id)?.x).toBe(8)
@@ -212,87 +93,7 @@ describe('text measurement', () => {
     { timeout: HEAVY_TEST_TIMEOUT_MS }
   )
 
-  test('WIDTH_AND_HEIGHT text uses measured width in centered layout', () => {
-    const graph = new SceneGraph()
-    const pid = pageId(graph)
-
-    const frame = autoFrame(graph, pid, {
-      width: 300,
-      height: 40,
-      layoutMode: 'HORIZONTAL',
-      primaryAxisSizing: 'FIXED',
-      counterAxisSizing: 'FIXED',
-      primaryAxisAlign: 'CENTER',
-      paddingLeft: 10,
-      paddingRight: 10,
-      itemSpacing: 10
-    })
-
-    const arrow1 = graph.createNode('FRAME', frame.id, { width: 20, height: 20 })
-    const text = graph.createNode('TEXT', frame.id, {
-      width: 200,
-      height: 20,
-      text: 'Test',
-      fontSize: 14,
-      textAutoResize: 'WIDTH_AND_HEIGHT' as const
-    })
-    const arrow2 = graph.createNode('FRAME', frame.id, { width: 20, height: 20 })
-
-    setTextMeasurer((node) => {
-      if (node.type === 'TEXT' && node.textAutoResize === 'WIDTH_AND_HEIGHT') {
-        return { width: 60, height: 20 }
-      }
-      return null
-    })
-
-    computeAllLayouts(graph)
-
-    setTextMeasurer(null)
-
-    const updatedText = getNodeOrThrow(graph, text.id)
-    const updatedArrow1 = getNodeOrThrow(graph, arrow1.id)
-    const updatedArrow2 = getNodeOrThrow(graph, arrow2.id)
-
-    expect(updatedText.width).toBe(60)
-
-    // Total content: 10 + 20 + 10 + 60 + 10 + 20 + 10 = 140
-    // Free space: 300 - 140 = 160, centered offset = 80
-    expect(updatedArrow1.x).toBe(90)
-    expect(updatedText.x).toBe(120)
-    expect(updatedArrow2.x).toBe(190)
-  })
-
-  test('without measurer, text preserves stored dimensions from .fig import', () => {
-    const graph = new SceneGraph()
-    const pid = pageId(graph)
-
-    const frame = autoFrame(graph, pid, {
-      width: 300,
-      height: 40,
-      layoutMode: 'HORIZONTAL',
-      primaryAxisSizing: 'FIXED',
-      counterAxisSizing: 'FIXED',
-      primaryAxisAlign: 'CENTER'
-    })
-
-    graph.createNode('TEXT', frame.id, {
-      width: 200,
-      height: 20,
-      text: 'Test',
-      fontSize: 14,
-      textAutoResize: 'WIDTH_AND_HEIGHT' as const
-    })
-
-    setTextMeasurer(null)
-    computeAllLayouts(graph)
-
-    const children = graph.getChildren(frame.id)
-    const updatedText = children[0]
-    expect(updatedText.width).toBe(200)
-    expect(updatedText.height).toBe(20)
-  })
-
-  test('without measurer, text with 100x100 default falls back to estimate', () => {
+  test('auto-sized text with the 100x100 default box takes the size of its text', () => {
     const graph = new SceneGraph()
     const pid = pageId(graph)
 
@@ -313,7 +114,6 @@ describe('text measurement', () => {
       textAutoResize: 'WIDTH_AND_HEIGHT' as const
     })
 
-    setTextMeasurer(null)
     computeAllLayouts(graph)
 
     const children = graph.getChildren(frame.id)
@@ -324,7 +124,7 @@ describe('text measurement', () => {
     expect(updatedText.height).toBeGreaterThan(0)
   })
 
-  test('without measurer, HEIGHT text preserves stored height from .fig import', () => {
+  test('auto-height text keeps the height its lines take', () => {
     const graph = new SceneGraph()
     const pid = pageId(graph)
 
@@ -345,7 +145,6 @@ describe('text measurement', () => {
       textAutoResize: 'HEIGHT' as const
     })
 
-    setTextMeasurer(null)
     computeAllLayouts(graph)
 
     const children = graph.getChildren(frame.id)
@@ -354,7 +153,7 @@ describe('text measurement', () => {
     expect(updatedText.width).toBe(269)
   })
 
-  test('without measurer, HEIGHT text with 100x100 default falls back to estimate', () => {
+  test('auto-height text with the 100x100 default box wraps to its width', () => {
     const graph = new SceneGraph()
     const pid = pageId(graph)
 
@@ -375,53 +174,11 @@ describe('text measurement', () => {
       textAutoResize: 'HEIGHT' as const
     })
 
-    setTextMeasurer(null)
     computeAllLayouts(graph)
 
     const children = graph.getChildren(frame.id)
     const updatedText = children[0]
     expect(updatedText.height).toBeGreaterThan(22)
-  })
-
-  test('resizing vertical typography frames reflows fill-width auto-height text', () => {
-    const graph = new SceneGraph()
-    const pid = pageId(graph)
-
-    const frame = autoFrame(graph, pid, {
-      width: 300,
-      height: 200,
-      layoutMode: 'VERTICAL',
-      primaryAxisSizing: 'FIXED',
-      counterAxisSizing: 'FIXED',
-      paddingLeft: 20,
-      paddingRight: 20
-    })
-
-    const text = graph.createNode('TEXT', frame.id, {
-      width: 260,
-      height: 20,
-      text: 'Body text — The quick brown fox jumps and wraps.',
-      fontSize: 14,
-      textAutoResize: 'HEIGHT' as const,
-      layoutAlignSelf: 'STRETCH' as const
-    })
-
-    setTextMeasurer((_node, maxWidth) => {
-      const w = maxWidth ?? 260
-      return { width: w, height: w <= 160 ? 60 : 20 }
-    })
-
-    computeAllLayouts(graph)
-    expect(getNodeOrThrow(graph, text.id).width).toBe(260)
-    expect(getNodeOrThrow(graph, text.id).height).toBe(20)
-
-    graph.updateNode(frame.id, { width: 200 })
-    computeAllLayouts(graph)
-    setTextMeasurer(null)
-
-    const updatedText = getNodeOrThrow(graph, text.id)
-    expect(updatedText.width).toBe(160)
-    expect(updatedText.height).toBe(60)
   })
 
   test('text with w="fill" in flex="col" stretches to parent width', () => {
@@ -447,94 +204,14 @@ describe('text measurement', () => {
       layoutAlignSelf: 'STRETCH' as const
     })
 
-    setTextMeasurer((_node, maxWidth) => {
-      const w = maxWidth ?? 260
-      return { width: w, height: 20 }
-    })
-
     computeAllLayouts(graph)
-    setTextMeasurer(null)
 
     const updatedText = getNodeOrThrow(graph, text.id)
     // Should stretch to 300 - 20 - 20 = 260, NOT stay at 100
     expect(updatedText.width).toBe(260)
   })
 
-  test('HEIGHT auto-resize text wraps via MeasureFunc when filling parent', () => {
-    const graph = new SceneGraph()
-    const pid = pageId(graph)
-
-    const frame = autoFrame(graph, pid, {
-      width: 300,
-      height: 200,
-      layoutMode: 'VERTICAL',
-      primaryAxisSizing: 'FIXED',
-      counterAxisSizing: 'FIXED'
-    })
-
-    const text = graph.createNode('TEXT', frame.id, {
-      width: 300,
-      height: 20,
-      text: 'Long text that should wrap within the available width',
-      fontSize: 14,
-      textAutoResize: 'HEIGHT' as const
-    })
-
-    setTextMeasurer((_node, maxWidth) => {
-      const w = maxWidth ?? 1e6
-      if (w >= 300) return { width: 300, height: 20 }
-      return { width: w, height: 60 }
-    })
-
-    computeAllLayouts(graph)
-    setTextMeasurer(null)
-
-    const updatedText = getNodeOrThrow(graph, text.id)
-    expect(updatedText.width).toBe(300)
-    expect(updatedText.height).toBe(20)
-  })
-
-  test('MeasureFunc receives constraint width from flex layout', () => {
-    const graph = new SceneGraph()
-    const pid = pageId(graph)
-
-    const frame = autoFrame(graph, pid, {
-      width: 400,
-      height: 200,
-      layoutMode: 'HORIZONTAL',
-      primaryAxisSizing: 'FIXED',
-      counterAxisSizing: 'FIXED',
-      itemSpacing: 10
-    })
-
-    rect(graph, frame.id, 100, 50)
-
-    const text = graph.createNode('TEXT', frame.id, {
-      width: 500,
-      height: 20,
-      text: 'Wide text',
-      fontSize: 14,
-      textAutoResize: 'WIDTH_AND_HEIGHT' as const,
-      layoutGrow: 1
-    })
-
-    const receivedWidths: number[] = []
-    setTextMeasurer((_node, maxWidth) => {
-      if (maxWidth !== undefined) receivedWidths.push(Math.round(maxWidth))
-      const w = maxWidth ?? 500
-      return { width: Math.min(200, w), height: w < 200 ? 40 : 20 }
-    })
-
-    computeAllLayouts(graph)
-    setTextMeasurer(null)
-
-    // 400 - 100 - 10 = 290 available for the fill text
-    expect(receivedWidths.length).toBeGreaterThan(0)
-    const updatedText = getNodeOrThrow(graph, text.id)
-    expect(updatedText.width).toBe(290)
-  })
-
-  test('textAutoResize NONE skips MeasureFunc', () => {
+  test('fixed-size text keeps its box', () => {
     const graph = new SceneGraph()
     const pid = pageId(graph)
 
@@ -554,16 +231,8 @@ describe('text measurement', () => {
       textAutoResize: 'NONE' as const
     })
 
-    let measureCalled = false
-    setTextMeasurer(() => {
-      measureCalled = true
-      return { width: 80, height: 20 }
-    })
-
     computeAllLayouts(graph)
-    setTextMeasurer(null)
 
-    expect(measureCalled).toBe(false)
     const updatedText = getNodeOrThrow(graph, text.id)
     expect(updatedText.width).toBe(150)
     expect(updatedText.height).toBe(40)

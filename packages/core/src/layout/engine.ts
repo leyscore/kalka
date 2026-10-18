@@ -5,13 +5,14 @@ import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 const EPSILON = 0.01
 
 /**
- * Lays out layers somewhere other than Yoga, such as a browser that renders the page as DOM:
- * it lays out a layer's subtree and writes the resulting geometry back into the graph.
+ * Lays out layers in a browser, which renders them as DOM: it lays out a layer's subtree and
+ * writes the resulting geometry back into the graph. Core computes no layout itself.
  */
 export interface LayoutEngine {
   /**
    * Lays out `nodeId` and everything inside it, writing `x`, `y`, `width` and `height`.
-   * Returns false to leave the layer to Yoga, for graphs or pages the engine does not draw.
+   * Returns false when it did not, for graphs or pages the engine does not draw: the engine
+   * installed before it gets the layer, and without one the layers keep the geometry they have.
    */
   layout(graph: SceneGraph, nodeId: string): boolean
   /**
@@ -25,18 +26,44 @@ export interface LayoutEngine {
   ): Record<string, string> | null
 }
 
-let installed: LayoutEngine | null = null
+/** Installed engines, the latest last: uninstalling one gives layout back to the one before. */
+const installed: LayoutEngine[] = []
 
 /** Routes layout through `engine` until the returned function uninstalls it. */
 export function installLayoutEngine(engine: LayoutEngine): () => void {
-  installed = engine
+  installed.push(engine)
   return () => {
-    if (installed === engine) installed = null
+    const index = installed.lastIndexOf(engine)
+    if (index !== -1) installed.splice(index, 1)
   }
 }
 
 export function getLayoutEngine(): LayoutEngine | null {
-  return installed
+  return installed.at(-1) ?? null
+}
+
+/**
+ * Lays out `nodeId` with the latest engine that draws it: one that leaves it gives it to the one
+ * installed before, such as the canvas to an off-screen page. False when none laid it out.
+ */
+export function layOutWithEngines(graph: SceneGraph, nodeId: string): boolean {
+  for (let index = installed.length - 1; index >= 0; index--) {
+    if (installed[index].layout(graph, nodeId)) return true
+  }
+  return false
+}
+
+/** The computed CSS of a layer from the latest engine that draws it, or null when none does. */
+export function computedStyleWithEngines(
+  graph: SceneGraph,
+  nodeId: string,
+  properties: readonly string[]
+): Record<string, string> | null {
+  for (let index = installed.length - 1; index >= 0; index--) {
+    const styles = installed[index].computedStyle?.(graph, nodeId, properties)
+    if (styles) return styles
+  }
+  return null
 }
 
 /**

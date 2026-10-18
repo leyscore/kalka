@@ -1,6 +1,6 @@
 # @kalka/core
 
-Editor engine for [Kalka](https://kalka.design): the CanvasKit (Skia WASM) renderer, Yoga layout, the framework-agnostic editor with undo and selection, the Figma Plugin API compatibility layer, the AI/MCP tool definitions, clipboard and vector conversion, and format-neutral document I/O.
+Editor engine for [Kalka](https://kalka.design): the CanvasKit (Skia WASM) renderer, the layout runner that hands layers to a browser, the framework-agnostic editor with undo and selection, the Figma Plugin API compatibility layer, the AI/MCP tool definitions, clipboard and vector conversion, and format-neutral document I/O.
 
 It depends on `@kalka/scene-graph`, `@kalka/pen`, `@kalka/kiwi`, and `@kalka/fig`, and keeps browser DOM out so it runs in the app, the CLI, the MCP server, and headless scripts alike.
 

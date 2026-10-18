@@ -21,6 +21,7 @@ export {
 } from './canvas/markup'
 export { measureLayerBoxes, type MeasuredGeometry } from './canvas/measure'
 export {
+  createDocumentLayout,
   createPageLayout,
   type PageArtboard,
   type PageFontFace,

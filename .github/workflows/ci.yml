@@ -252,23 +252,19 @@ jobs:
       - name: Build shared Core test dependency
         run: bun --filter @kalka/core build
 
-      # The CLI lays out, draws and prints with Chromium through the desktop app's render host.
-      - name: Build the CLI's render host
-        if: contains(matrix.shard.groups, 'cli')
+      # Layout is the browser's: every shard lays out with Chromium in the desktop app's render
+      # host (tests/helpers/layout/browser.ts), as the CLI also draws and prints with it.
+      - name: Build the render host
         run: |
           node electron/node_modules/electron/install.js
           bun run --cwd electron build:render-host
 
-      # Electron needs a display on Linux, which xvfb gives the CLI's tests.
+      # Electron needs a display on Linux, which xvfb gives the tests.
       - name: Run ${{ matrix.shard.groups }} unit tests
         run: |
           for group in ${{ matrix.shard.groups }}; do
             echo "::group::$group"
-            if [ "$group" = cli ]; then
-              xvfb-run --auto-servernum bun tools/dev/unit-tests/src/run.ts "$group"
-            else
-              bun tools/dev/unit-tests/src/run.ts "$group"
-            fi
+            xvfb-run --auto-servernum bun tools/dev/unit-tests/src/run.ts "$group"
             echo "::endgroup::"
           done
 

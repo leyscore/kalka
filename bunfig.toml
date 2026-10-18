@@ -4,4 +4,4 @@
 # (which would break a running Kalka desktop app). See
 # tests/helpers/mcp/discovery-isolation.ts for the rationale.
 [test]
-preload = ["./tests/helpers/mcp/discovery-isolation.ts"]
+preload = ["./tests/helpers/mcp/discovery-isolation.ts", "./tests/helpers/layout/browser.ts"]

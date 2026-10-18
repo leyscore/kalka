@@ -23,12 +23,18 @@ jobs:
       - name: Build packages
         run: bun run build:packages
 
+      # Tests lay out with Chromium in the desktop app's render host, which needs a display.
+      - name: Build the render host
+        run: |
+          node electron/node_modules/electron/install.js
+          bun run --cwd electron build:render-host
+
       - name: Heavy fixture unit tests
-        run: bun run test:unit:heavy
+        run: xvfb-run --auto-servernum bun run test:unit:heavy
 
       # Fresh global object per file: a suite that only passes because an
       # earlier file initialized a codec, loaded a font or left a database
       # open fails here instead of flaking in a PR shard.
       - name: Quick unit tests with per-file isolation
         if: ${{ !cancelled() }}
-        run: bun run test:unit:isolated
+        run: xvfb-run --auto-servernum bun run test:unit:isolated

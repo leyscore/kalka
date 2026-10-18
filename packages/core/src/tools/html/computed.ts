@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 
-import { getLayoutEngine } from '#core/layout/engine'
+import { computedStyleWithEngines } from '#core/layout/engine'
 import { nodeIdInput } from '#core/tools/input'
 import { defineTool } from '#core/tools/schema'
 
@@ -64,8 +64,7 @@ export const getComputedStyles = defineTool({
   execute: (figma, { id, properties }) => {
     const node = figma.getNodeById(id)
     if (!node) return { error: `Node "${id}" not found` }
-    const engine = getLayoutEngine()
-    const styles = engine?.computedStyle?.(figma.graph, id, properties ?? DEFAULT_PROPERTIES)
+    const styles = computedStyleWithEngines(figma.graph, id, properties ?? DEFAULT_PROPERTIES)
     if (!styles) {
       return {
         error: `Layer "${id}" is not drawn on the canvas right now; show its page first`

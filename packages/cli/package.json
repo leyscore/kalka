@@ -11,6 +11,12 @@
     "kalka": "./bin/kalka.js"
   },
   "exports": {
+    "./layout": {
+      "types": "./dist/render/layout.d.mts",
+      "bun": "./src/render/layout.ts",
+      "import": "./dist/render/layout.mjs",
+      "default": "./dist/render/layout.mjs"
+    },
     "./library": {
       "types": "./dist/library/index.d.mts",
       "bun": "./src/library/index.ts",

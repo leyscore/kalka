@@ -37,7 +37,8 @@ function hasDisplay(): boolean {
  * The CLI's one render host: an Electron process started on the first request and kept until
  * the CLI exits, which closes its input. Requests are synchronous, as layout is: the caller
  * waits on a worker thread that talks to the host. A request that fails or outlasts its timeout
- * stops the host for the rest of the run, and callers fall back to Yoga and CanvasKit.
+ * stops the host for the rest of the run: layers keep their geometry and exports fall back to
+ * CanvasKit.
  */
 export class RenderHost {
   #nextId = 1
