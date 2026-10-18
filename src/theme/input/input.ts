@@ -10,7 +10,8 @@ export const inputAdornment = {
 }
 
 export default {
-  base: 'w-full tabular-nums',
+  // A placeholder or value wider than a narrow panel ends in an ellipsis rather than a cut letter.
+  base: 'w-full text-ellipsis tabular-nums',
   variants: {
     tone: {
       default: defaultInputBase,

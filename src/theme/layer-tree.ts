@@ -46,10 +46,11 @@ const layerTreeTheme = {
       true: { disclosure: 'rotate-90' },
       false: { disclosure: 'rotate-0' }
     },
+    // Hidden actions take no room, so a narrow panel spends its width on the layer's name.
     actionsVisible: {
       true: {},
       false: {
-        actions: 'opacity-0 group-hover/row:opacity-100 group-focus-within/row:opacity-100'
+        actions: 'hidden group-hover/row:flex group-focus-within/row:flex'
       }
     },
     actionActive: {

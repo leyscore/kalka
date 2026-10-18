@@ -57,6 +57,7 @@
 - SVG markup that starts with a byte-order mark imports instead of reporting no supported elements.
 - `figma.loadFontAsync` in scripts and `use_figma` loads the font, so text measures with it, instead of doing nothing; a font that cannot load is skipped rather than failing the script.
 - Editing a layer of a damaged file whose layers name each other as parents no longer freezes the editor.
+- On laptop screens the layers and properties panels keep a readable width, 216 and 240 pixels at least, instead of shrinking with the window to where labels were cut off and spilled over each other, including when a layout saved on a wider screen opens. Layer names use the room a row's lock and visibility buttons left empty until the row is hovered, and the File and Assets switch and search fields end long translated labels in an ellipsis.
 
 ### Performance
 

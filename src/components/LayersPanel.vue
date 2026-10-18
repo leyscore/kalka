@@ -33,9 +33,11 @@ const panelOptions = computed(() => [
   { value: 'assets', label: panels.value.assets },
   ...(hasVersions ? [{ value: 'versions', label: panels.value.versions }] : [])
 ])
-const panelTabsUI = hasVersions
-  ? { root: 'grid w-full grid-cols-3' }
-  : { root: 'grid w-full grid-cols-2' }
+// Equal columns that truncate a long label, such as a translated Assets, instead of overflowing.
+const panelTabsUI = {
+  root: hasVersions ? 'grid w-full grid-cols-3' : 'grid w-full grid-cols-2',
+  item: 'min-w-0'
+}
 const TAB_TEST_IDS: Record<string, string> = {
   file: 'left-panel-layers-tab',
   assets: 'left-panel-assets-tab',

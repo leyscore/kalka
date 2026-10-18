@@ -1,13 +1,19 @@
 <script setup lang="ts">
+import { useElementSize } from '@vueuse/core'
 import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'reka-ui'
 import { tv } from 'tailwind-variants'
-import { computed } from 'vue'
+import { computed, useTemplateRef } from 'vue'
 
 import { formatShortcut, useI18n, useViewportKind } from '@kalka/vue'
 
 import { provideTabEditorStore } from '@/app/editor/active-store'
 import { appRuntimeConfig } from '@/app/runtime/config'
-import { loadEditorLayout, saveEditorLayout } from '@/app/shell/layout-storage'
+import {
+  SIDE_PANEL_MIN_WIDTH,
+  loadEditorLayout,
+  saveEditorLayout,
+  sidePanelSizeLimits
+} from '@/app/shell/layout-storage'
 import { appMenuShortcut } from '@/app/shell/menu/shortcut'
 import type { Tab } from '@/app/tabs'
 import CanvasSplitRoot from '@/components/canvas/CanvasSplitRoot.vue'
@@ -37,6 +43,15 @@ const store = tab.store
 provideTabEditorStore(store)
 const { isMobile } = useViewportKind()
 const initialEditorLayout = loadEditorLayout()
+// Side panels keep a usable width in pixels however narrow the window, while still scaling with it.
+const panels = useTemplateRef<{ $el: HTMLElement }>('panels')
+const { width: panelsWidth } = useElementSize(computed(() => panels.value?.$el ?? null))
+const layersLimits = computed(() =>
+  sidePanelSizeLimits(SIDE_PANEL_MIN_WIDTH.layers, panelsWidth.value)
+)
+const propertiesLimits = computed(() =>
+  sidePanelSizeLimits(SIDE_PANEL_MIN_WIDTH.properties, panelsWidth.value)
+)
 const horizontalSplitterStyles = tv(splitterTheme)({ direction: 'horizontal', gutter: true })
 /** One canvas previewing takes the whole window, in the canvas-only layout; split view keeps panels. */
 const playingAlone = computed(() => store.state.play !== null && store.visiblePaneCount.value <= 1)
@@ -52,6 +67,7 @@ const { pending: roomPending } = useRoomActions()
 
   <SplitterGroup
     v-else-if="!isMobile && showChrome && store.state.showUI && !playingAlone"
+    ref="panels"
     :key="tab.id"
     direction="horizontal"
     class="flex-1 overflow-hidden px-2 pb-2"
@@ -60,8 +76,8 @@ const { pending: roomPending } = useRoomActions()
     <SplitterPanel
       id="layers"
       :default-size="initialEditorLayout[0]"
-      :min-size="10"
-      :max-size="30"
+      :min-size="layersLimits.minSize"
+      :max-size="layersLimits.maxSize"
       class="flex panel-float overflow-hidden"
     >
       <LayersPanel />
@@ -90,8 +106,8 @@ const { pending: roomPending } = useRoomActions()
     <SplitterPanel
       id="properties"
       :default-size="initialEditorLayout[2]"
-      :min-size="10"
-      :max-size="30"
+      :min-size="propertiesLimits.minSize"
+      :max-size="propertiesLimits.maxSize"
       class="flex flex-col panel-float overflow-hidden"
     >
       <div class="flex shrink-0 items-center gap-1 pt-2.5 pr-2.5 pb-2 pl-3">
