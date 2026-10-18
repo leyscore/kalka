@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { diagnosticErrorDetails } from '@/app/diagnostics/error'
+import { describeDiagnosticError, diagnosticErrorDetails } from '@/app/diagnostics/error'
 
 function errorWith(message: string, stack: string, name = 'TypeError'): Error {
   const error = new Error(message)
@@ -62,5 +62,29 @@ describe('diagnostic error details', () => {
       message: 'plain failure',
       stack: null
     })
+  })
+
+  test('keeps the code and message of an ACP agent’s JSON-RPC error', () => {
+    const rpc = { code: -32000, message: 'Authentication required' }
+    expect(describeDiagnosticError(rpc)).toEqual({
+      errorName: 'JSONRPCError',
+      errorCode: '-32000',
+      retryable: false
+    })
+    expect(diagnosticErrorDetails(rpc)).toMatchObject({
+      message: 'Authentication required',
+      stack: null
+    })
+  })
+
+  test('reads the code and message of an Error’s object cause', () => {
+    const error = new Error('The agent did not start', {
+      cause: { code: -32603, message: 'Internal error' }
+    })
+    expect(describeDiagnosticError(error)).toMatchObject({
+      errorName: 'Error',
+      errorCode: '-32603'
+    })
+    expect(diagnosticErrorDetails(error).message).toBe('The agent did not start: Internal error')
   })
 })

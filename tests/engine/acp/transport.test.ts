@@ -214,6 +214,14 @@ describe('formatConnectionError', () => {
     const msg = formatConnectionError('raw string error')
     expect(msg).toBe('raw string error')
   })
+
+  test('a JSON-RPC error object from the agent keeps its message', () => {
+    const msg = formatConnectionError({
+      code: -32000,
+      message: 'Failed to authenticate: OAuth session expired and could not be refreshed'
+    })
+    expect(msg).toBe('Failed to authenticate: OAuth session expired and could not be refreshed')
+  })
 })
 
 describe('buildCrashChunks', () => {

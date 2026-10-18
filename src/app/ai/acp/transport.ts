@@ -1,7 +1,7 @@
 import { ClientSideConnection, ndJsonStream, PROTOCOL_VERSION } from '@agentclientprotocol/sdk'
 import type {
   Client,
-  Agent,
+  InitializeResponse,
   SessionNotification,
   RequestPermissionRequest,
   RequestPermissionResponse
@@ -13,6 +13,7 @@ import type { ACPAgentDef } from '@kalka/core/constants'
 import SYSTEM_PROMPT from '@/app/ai/chat/system-prompt'
 import { describeDiagnosticError, recordACPTransportFailure } from '@/app/diagnostics'
 import { buildACPMCPServers } from '@/app/integrations/mcp'
+import { errorSummary } from '@/app/runtime/error'
 
 import { mapUpdate } from './map-update'
 import { spawnACPProcess } from './process'
@@ -40,8 +41,12 @@ function missingCommandMessage(agentDef?: ACPAgentDef): string {
   return `"${agentDef.command}" is not installed. Install it with: ${agentDef.installCommand}`
 }
 
+/**
+ * A readable message for a failure to reach or run the agent. Agents reject with JSON-RPC
+ * error objects, so the message is read from the object, never `String()` of it.
+ */
 export function formatConnectionError(e: unknown, agentDef?: ACPAgentDef): string {
-  const msg = e instanceof Error ? e.message : String(e)
+  const msg = errorSummary(e)
   if (
     msg.includes('ECONNREFUSED') ||
     msg.includes('fetch failed') ||
@@ -58,9 +63,57 @@ export function formatConnectionError(e: unknown, agentDef?: ACPAgentDef): strin
   return msg
 }
 
+/** Keeps the agent's own error as the cause, so its code still classifies the failure. */
 function startupError(error: unknown, agentDef: ACPAgentDef): Error {
   recordACPTransportFailure({ operation: 'start', ...describeDiagnosticError(error) })
-  return new Error(formatConnectionError(error, agentDef))
+  return new Error(formatConnectionError(error, agentDef), { cause: error })
+}
+
+/** An agent process that answered `initialize`. */
+export interface ACPConnection {
+  connection: ClientSideConnection
+  child: TauriChild
+  initialized: InitializeResponse
+}
+
+interface ACPConnectionOptions {
+  agentDef: ACPAgentDef
+  client: Client
+  destroying: () => boolean
+  onUnexpectedClose: () => void
+}
+
+/** Starts the agent and initializes it; a failure stops the process and records why. */
+export async function openACPConnection({
+  agentDef,
+  client,
+  destroying,
+  onUnexpectedClose
+}: ACPConnectionOptions): Promise<ACPConnection> {
+  let process: Awaited<ReturnType<typeof spawnACPProcess>>
+  try {
+    process = await spawnACPProcess({
+      command: agentDef.command,
+      args: agentDef.args,
+      logId: agentDef.id,
+      destroying,
+      onUnexpectedClose
+    })
+  } catch (e) {
+    throw startupError(e, agentDef)
+  }
+  const { child, input, output } = process
+  const connection = new ClientSideConnection(() => client, ndJsonStream(input, output))
+  try {
+    const initialized = await connection.initialize({
+      protocolVersion: PROTOCOL_VERSION,
+      clientCapabilities: {}
+    })
+    return { connection, child, initialized }
+  } catch (e) {
+    await child.kill().catch(() => undefined)
+    throw startupError(e, agentDef)
+  }
 }
 
 export function buildCrashChunks(
@@ -77,16 +130,28 @@ export function buildCrashChunks(
   return { chunks, shouldNullSession: true }
 }
 
+export interface ACPChatTransportOptions {
+  agentDef: ACPAgentDef
+  cwd?: string
+  /**
+   * Receives the agent's own error when a prompt fails. The chat only sees the error chunk's
+   * text, so this is how the JSON-RPC code reaches classification and diagnostics.
+   */
+  onError?: (error: unknown) => void
+}
+
 export class ACPChatTransport implements ChatTransport<UIMessage> {
   private session: ACPSession | null = null
   private agentDef: ACPAgentDef
   private cwd: string
+  private onError: ((error: unknown) => void) | undefined
   private sentContext = false
   private destroying = false
 
-  constructor(options: { agentDef: ACPAgentDef; cwd?: string }) {
+  constructor(options: ACPChatTransportOptions) {
     this.agentDef = options.agentDef
     this.cwd = options.cwd ?? '.'
+    this.onError = options.onError
   }
 
   async sendMessages({
@@ -156,11 +221,12 @@ export class ACPChatTransport implements ChatTransport<UIMessage> {
             sessionId,
             prompt: [{ type: 'text', text: promptText }]
           })
-          .catch((e) => {
+          .catch((e: unknown) => {
             recordACPTransportFailure({
               operation: 'message',
               ...describeDiagnosticError(e)
             })
+            this.onError?.(e)
             finish('error', formatConnectionError(e, this.agentDef))
           })
       }
@@ -180,28 +246,16 @@ export class ACPChatTransport implements ChatTransport<UIMessage> {
   }
 
   private async spawnAgent(): Promise<ACPSession> {
-    let process: Awaited<ReturnType<typeof spawnACPProcess>>
+    const { getAutomationAuthToken } = await import('@/app/automation/mcp/spawn')
+    let automationAuthToken: string | null
     try {
-      process = await spawnACPProcess({
-        command: this.agentDef.command,
-        args: this.agentDef.args,
-        logId: this.agentDef.id,
-        destroying: () => this.destroying,
-        onUnexpectedClose: () => {
-          if (!this.session) return
-          this.session.dead = true
-          this.session = null
-        }
-      })
+      automationAuthToken = await getAutomationAuthToken()
     } catch (e) {
-      recordACPTransportFailure({ operation: 'start', ...describeDiagnosticError(e) })
-      throw new Error(formatConnectionError(e, this.agentDef))
+      throw startupError(e, this.agentDef)
     }
-    const { child, input, output } = process
-    const stream = ndJsonStream(input, output)
-    let onUpdate: ACPSession['onUpdate'] = null
 
-    const clientImpl: Client = {
+    let onUpdate: ACPSession['onUpdate'] = null
+    const client: Client = {
       async requestPermission(
         params: RequestPermissionRequest
       ): Promise<RequestPermissionResponse> {
@@ -214,25 +268,16 @@ export class ACPChatTransport implements ChatTransport<UIMessage> {
       }
     }
 
-    const connection = new ClientSideConnection((_agent: Agent) => clientImpl, stream)
-    const { getAutomationAuthToken } = await import('@/app/automation/mcp/spawn')
-    let automationAuthToken: string | null
-    try {
-      automationAuthToken = await getAutomationAuthToken()
-    } catch (e) {
-      await child.kill().catch(() => undefined)
-      throw startupError(e, this.agentDef)
-    }
-
-    try {
-      await connection.initialize({
-        protocolVersion: PROTOCOL_VERSION,
-        clientCapabilities: {}
-      })
-    } catch (e) {
-      await child.kill().catch(() => undefined)
-      throw startupError(e, this.agentDef)
-    }
+    const { connection, child } = await openACPConnection({
+      agentDef: this.agentDef,
+      client,
+      destroying: () => this.destroying,
+      onUnexpectedClose: () => {
+        if (!this.session) return
+        this.session.dead = true
+        this.session = null
+      }
+    })
 
     let sessionResult
     try {

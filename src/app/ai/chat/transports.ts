@@ -101,14 +101,17 @@ function callSettings(
   return { reasoning, providerOptions: mergeProviderOptions(cacheOptions, providerOptions) }
 }
 
-export async function createACPTransport(providerID: AIProviderID) {
+export async function createACPTransport(
+  providerID: AIProviderID,
+  onError?: (error: unknown) => void
+) {
   const agentId = providerID.replace('acp:', '') as ACPAgentID
   const agentDef = ACP_AGENTS.find((a) => a.id === agentId)
   if (!agentDef) throw new Error(`Unknown ACP agent: ${agentId}`)
 
   const { ACPChatTransport } = await import('@/app/ai/acp/transport')
   const { homeDir } = await import('@tauri-apps/api/path')
-  return new ACPChatTransport({ agentDef, cwd: await homeDir() })
+  return new ACPChatTransport({ agentDef, cwd: await homeDir(), onError })
 }
 
 export function createToolLoopTransport({
@@ -330,7 +333,7 @@ export function createChatSessionManager({
   async function createActiveACPTransport() {
     await destroyAgentTransports()
     await assertAgentReady('acp')
-    const transport = await createACPTransport(providerID.value)
+    const transport = await createACPTransport(providerID.value, captureProviderError)
     acpTransportInstance = transport
     return transport as ChatTransport<UIMessage>
   }

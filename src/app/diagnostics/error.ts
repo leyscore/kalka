@@ -1,3 +1,5 @@
+import { errorFacts, JSONRPC_AUTH_REQUIRED_CODE, type ErrorFacts } from '@/app/runtime/error'
+
 import { REDACTED, scrubDiagnosticText } from './scrub'
 
 export type DiagnosticErrorInfo = {
@@ -6,7 +8,9 @@ export type DiagnosticErrorInfo = {
   retryable: boolean | null
 }
 
-function isRetryableError(error: unknown): boolean | null {
+function isRetryableError(error: unknown, facts: ErrorFacts): boolean | null {
+  // An agent that needs signing in again fails the same way until someone does.
+  if (facts.code === JSONRPC_AUTH_REQUIRED_CODE) return false
   if (!(error instanceof Error)) return null
   if (error.name === 'AbortError') return false
   if ('status' in error && typeof error.status === 'number') {
@@ -15,12 +19,17 @@ function isRetryableError(error: unknown): boolean | null {
   return null
 }
 
+/**
+ * The name, code, and whether retrying can help, for an Error, a JSON-RPC error object such as
+ * an ACP agent's, or an Error wrapping one as its `cause`.
+ */
 export function describeDiagnosticError(error: unknown): DiagnosticErrorInfo {
-  if (!(error instanceof Error)) {
-    return { errorName: 'UnknownError', errorCode: null, retryable: null }
+  const facts = errorFacts(error)
+  return {
+    errorName: facts.name,
+    errorCode: facts.code === null ? null : String(facts.code),
+    retryable: isRetryableError(error, facts)
   }
-  const code = 'code' in error && typeof error.code === 'string' ? error.code : null
-  return { errorName: error.name || 'Error', errorCode: code, retryable: isRetryableError(error) }
 }
 
 export type DiagnosticErrorDetails = DiagnosticErrorInfo & {
@@ -58,17 +67,13 @@ export function isInternalError(error: unknown): error is Error {
  */
 export function diagnosticErrorDetails(error: unknown): DiagnosticErrorDetails {
   const info = describeDiagnosticError(error)
-  if (!(error instanceof Error)) {
-    return {
-      ...info,
-      message: typeof error === 'string' ? storedMessage(error) : null,
-      stack: null
-    }
-  }
+  const facts = errorFacts(error)
+  const message = facts.messages.length ? storedMessage(facts.summary) : null
+  if (!(error instanceof Error)) return { ...info, message, stack: null }
   if (!mayQuoteContent(error)) {
     return {
       ...info,
-      message: storedMessage(error.message),
+      message,
       stack: error.stack ? storedStack(error.stack) : null
     }
   }
