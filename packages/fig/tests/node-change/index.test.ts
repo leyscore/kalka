@@ -176,6 +176,14 @@ describe('@kalka/fig NodeChange policy', () => {
     expect(stroke.imageScaleMode).toBe('FIT')
   })
 
+  // The file names Figma's Crop STRETCH; the scene graph and the Plugin API call it CROP.
+  test('reads a stretched image as cropped', () => {
+    const paint: Paint = { type: 'IMAGE', image: { hash: 'abc123' }, imageScaleMode: 'STRETCH' }
+    const [stroke] = convertStrokes([paint], 1, 'INSIDE')
+
+    expect(stroke.imageScaleMode).toBe('CROP')
+  })
+
   test('uses vector-region winding rules for rendered geometry', () => {
     const network = {
       vertices: [

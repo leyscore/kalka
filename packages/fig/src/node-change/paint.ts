@@ -16,6 +16,20 @@ import type { Color, Matrix } from '@kalka/scene-graph/primitives'
 
 import { hexToBytes } from './bytes'
 
+/**
+ * Figma's Crop is `STRETCH` in the file: the image stretched over the part of the layer its
+ * transform selects. The scene graph and the Plugin API call it `CROP`.
+ */
+function sceneScaleMode(mode: string | undefined): ImageScaleMode {
+  if (mode === 'STRETCH') return 'CROP'
+  if (mode === 'FIT' || mode === 'TILE') return mode
+  return 'FILL'
+}
+
+function kiwiScaleMode(mode: ImageScaleMode): string {
+  return mode === 'CROP' ? 'STRETCH' : mode
+}
+
 export function safeColor(color: Color | Omit<Color, 'a'>): Color {
   return { r: color.r, g: color.g, b: color.b, a: 'a' in color ? color.a : 1 }
 }
@@ -36,7 +50,7 @@ export function fillToKiwiPaint(fill: Fill): Paint {
   }
   if (fill.gradientTransform) paint.transform = fill.gradientTransform
   if (fill.imageHash) paint.image = { hash: hexToBytes(fill.imageHash) }
-  if (fill.imageScaleMode) paint.imageScaleMode = fill.imageScaleMode
+  if (fill.imageScaleMode) paint.imageScaleMode = kiwiScaleMode(fill.imageScaleMode)
   if (fill.imageTransform) paint.transform = fill.imageTransform
   if (fill.sourceNodeId) paint.sourceNodeId = stringToGuid(fill.sourceNodeId)
   if (fill.scale) paint.scale = fill.scale
@@ -124,7 +138,7 @@ function applyImagePaintFields(fill: Fill, p: Paint): void {
       fill.imageHash = img.hash
     }
   }
-  fill.imageScaleMode = (p.imageScaleMode ?? 'FILL') as ImageScaleMode
+  fill.imageScaleMode = sceneScaleMode(p.imageScaleMode)
   if (p.transform) fill.imageTransform = convertGradientTransform(p.transform)
 }
 
