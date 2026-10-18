@@ -29,7 +29,7 @@ try {
     })
     const tab = await context.newPage()
     await tab.goto(page)
-    await tab.evaluate(() => document.fonts.ready)
+    await tab.evaluate('document.fonts.ready')
     const file = join(dir, scale === 1 ? 'background.png' : 'background@2x.png')
     await tab.screenshot({ path: file })
     files.push(file)
