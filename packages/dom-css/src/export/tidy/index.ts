@@ -1,6 +1,7 @@
 import type { DesignDocument, DesignElement, DesignNode } from '../../types'
 import { exportAttributes } from './attributes'
 import { tidyDeclarations } from './declarations'
+import { asFlexLayout } from './flow'
 import { tidyLengths } from './lengths'
 
 function hasMedia(element: DesignElement | undefined): boolean {
@@ -18,33 +19,35 @@ function tidyNode(
   options: Required<TidyOptions>
 ): DesignNode {
   if (node.type === 'text') return node
+  const element = asFlexLayout(node, parent?.inlineStyle)
   const inlineStyle =
-    node.inlineStyle &&
-    tidyDeclarations(tidyLengths(node.inlineStyle), {
-      tagName: node.tagName,
-      empty: node.children.length === 0,
-      classed: (node.sourceSceneNode?.htmlClasses.length ?? 0) > 0,
+    element.inlineStyle &&
+    tidyDeclarations(tidyLengths(element.inlineStyle), {
+      tagName: element.tagName,
+      empty: element.children.length === 0,
+      classed: (element.sourceSceneNode?.htmlClasses.length ?? 0) > 0,
       parent: { style: parent?.inlineStyle },
-      responsive: hasMedia(node) || hasMedia(parent),
+      responsive: hasMedia(element) || hasMedia(parent),
       shorthands: options.shorthands
     })
-  const mediaStyles = node.mediaStyles?.map((media) => ({
+  const mediaStyles = element.mediaStyles?.map((media) => ({
     ...media,
     style: tidyLengths(media.style)
   }))
   return {
-    ...node,
-    attrs: exportAttributes(node.attrs),
+    ...element,
+    attrs: exportAttributes(element.attrs),
     ...(inlineStyle ? { inlineStyle } : {}),
     ...(mediaStyles ? { mediaStyles } : {}),
-    children: node.children.map((child) => tidyNode(child, node, options))
+    children: element.children.map((child) => tidyNode(child, element, options))
   }
 }
 
 /**
  * A projected document as exports write it: the markup a developer would keep, drawing exactly
  * as the projection does. The editor's own attributes stay behind, lengths keep the decimals
- * layout resolves, and declarations that restate the browser's defaults go.
+ * layout resolves, declarations that restate the browser's defaults go, and children placed in
+ * a row or a column are laid out as one.
  */
 export function tidyDesignDocument(
   document: DesignDocument,

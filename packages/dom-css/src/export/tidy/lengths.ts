@@ -43,7 +43,7 @@ const PIXEL_LIST = /^-?\d*\.?\d+(?:e[+-]?\d+)?px(?:\s+-?\d*\.?\d+(?:e[+-]?\d+)?p
  * The sixty-fourths of a pixel a length lays out at: Chromium reads it as a 32-bit float and
  * truncates toward zero, so `52.28px` lays out as 52.265625.
  */
-function layoutUnits(value: number): number {
+export function layoutUnits(value: number): number {
   return Math.trunc(Math.fround(Math.fround(value) * LAYOUT_UNITS_PER_PX))
 }
 
