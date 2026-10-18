@@ -32,6 +32,14 @@
 - Text in `.fig` files saved by older versions of Figma keeps the line height Figma laid it out with, also in instances that set another font, instead of shrinking to its font size and pulling the layers below it up.
 - Inter text in documents imported from `.fig` files or pasted from Figma uses Inter 3.19, the version Figma lays text out with, on the canvas, in its layout and in exports, so words no longer run together and headings no longer wrap where Figma keeps them on one line; Kalka folders save the choice, and documents made in Kalka keep Inter 4.
 
+### Performance
+
+- The desktop app's home screen can be used after about 0.7 s instead of 1.9 s on a recent Mac, and 1.2 s instead of 2.1 s on a machine four times slower without a GPU: the boot splash fades for 160 ms as soon as the first screen is painted instead of staying at least 1.3 s, and the home screen loads 4.1 MiB of JavaScript instead of 8.4 MiB, since the editor, the AI chat and its model SDKs, collaboration, CodeMirror and the settings, setup and library dialogs load when they are first used. A document opened at launch shows in place of the splash.
+- The MCP server starts once the app is idle after its first screen, at most 3 s later, instead of before the files passed at launch open; clients still find it on the same port while Kalka is open, and **Settings → MCP** or an ACP agent starts it at once if it is still waiting.
+- CanvasKit, 7 MiB of WebAssembly, loads only when a feature needs it, such as a boolean operation, flattening, a raster export or thumbnail drawn with Skia, an agent's tool call, a layer attached to a chat message, or the recovery snapshot of an unsaved document with text, instead of with every document: an empty document's page holds about 30 MiB less, and about 50 MiB less without a GPU.
+- An idle editor no longer redraws its canvas and overlay every frame: idle CPU stays near 0.1 % whatever the document's size, down from 1.1 % on documents of 2,000 to 20,000 layers.
+- Without hardware acceleration, or with the system's reduced transparency, panels and menus drop their background blur and turn nearly opaque, and the backdrop's lights become gradients instead of blurred discs: on a machine that draws in software the page holds about 100 MiB less on the home screen and every repaint costs less.
+
 ## 0.1.0-beta.3 — 2026-10-18
 
 ### Breaking changes
