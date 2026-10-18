@@ -2,7 +2,7 @@ import { execFile } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync } from 'node:fs'
 import { mkdir, readdir, readFile, rename, writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import { join, relative, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { promisify } from 'node:util'
 
@@ -49,7 +49,8 @@ async function filesIn(root: string, directory: string): Promise<string[]> {
 async function zipDemo(root: string): Promise<void> {
   const entries: Zippable = {}
   for (const path of (await filesIn(root, DEMO_SOURCE)).sort()) {
-    const name = path.slice(DEMO_SOURCE.length + 1)
+    // Zip entries name paths with `/` on every system; `filesIn` joins with the system's separator.
+    const name = relative(DEMO_SOURCE, path).split(sep).join('/')
     if (!name.split('/').some((part) => part.startsWith('.')))
       entries[name] = [await readFile(join(root, path)), { mtime: ENTRY_DATE }]
   }

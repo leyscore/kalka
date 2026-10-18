@@ -22,6 +22,7 @@
 
 ### Changed
 
+- On Windows and Linux the desktop app shows Kalka's own menu in the sidebar, as on the web, instead of the native menu bar across the window; its keyboard shortcuts still work.
 - The macOS installer window is titled Kalka and shows Kalka's own design: the mark, an arrow from the app to Applications, and how to open an unsigned beta the first time.
 - With the system set to reduce motion, the outline of a layer an AI agent is working on holds steady instead of pulsing, and a finished layer's glow shows without fading, like the agent's other animations.
 - Connecting an MCP client keeps the comments and layout of its configuration file, including Codex's TOML and JSON with comments, backs the file up before changing it, and writes nothing when Kalka's entry is already current. On macOS and Linux the desktop app reads the whole login-shell environment to find agent CLIs, so a banner printed by a shell profile no longer hides them.
@@ -37,6 +38,7 @@
 
 ### Fixed
 
+- The sample document opens in the Windows desktop app instead of failing with "A page is missing: pages/english.html": the bundled archive named its files with Windows separators.
 - Pattern fills draw on the canvas, in HTML exports as a repeating background, and in SVG exports as an SVG pattern, instead of not at all, and the copies a hexagonal pattern offsets by half a tile draw whole instead of cut off where tiles meet.
 - Tiled image fills repeat on the canvas and in HTML and SVG exports at the image's own size times the paint's scale, as Figma's `scalingFactor` does, instead of stretching one copy over the layer on the canvas, one copy in SVG exports, or tiles sized by the image transform in PNG and PDF exports, which Figma uses only for cropped images.
 - Selecting text set on a path shows its curve, a band along the lettering, and a handle where the text starts, with the resize handles on the box the lettering fits, instead of a plain box around the layer.
