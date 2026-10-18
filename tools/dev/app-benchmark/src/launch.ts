@@ -136,7 +136,7 @@ export async function waitForHomeRendered(page: Page): Promise<void> {
     .waitFor({ timeout: TIMEOUT_MS })
 }
 
-/** The boot splash, which stays at least 900 ms and fades for 420 ms, is gone. */
+/** The boot splash, which fades once the first screen is painted, is gone. */
 export async function waitForSplashGone(page: Page): Promise<void> {
   await page.locator('#boot-splash').waitFor({ state: 'detached', timeout: TIMEOUT_MS })
 }

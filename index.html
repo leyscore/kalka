@@ -45,9 +45,9 @@
           radial-gradient(60rem 36rem at -10% -15%, rgba(47, 91, 234, var(--splash-glow)), transparent 60%),
           radial-gradient(52rem 32rem at 110% 115%, rgba(157, 183, 245, var(--splash-glow)), transparent 60%),
           var(--loader-bg);
-        transition: opacity 420ms ease, transform 420ms cubic-bezier(0.2, 0.8, 0.2, 1), filter 420ms ease;
+        transition: opacity 160ms ease, transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
       }
-      #boot-splash[data-leaving] { opacity: 0; transform: scale(1.04); filter: blur(6px); }
+      #boot-splash[data-leaving] { opacity: 0; transform: scale(1.02); pointer-events: none; }
       #boot-splash .blob {
         position: absolute;
         width: 34vmax;

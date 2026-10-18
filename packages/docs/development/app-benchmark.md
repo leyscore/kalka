@@ -56,7 +56,7 @@ Measured from the moment Playwright launches the binary:
 - **First window**: the window exists.
 - **App mounted**: Vue mounted the app into `#app`.
 - **Home rendered**: the home screen's New design button is in the page, under the splash.
-- **Splash gone**: the boot splash left. It stays at least 900 ms after navigation and fades for 420 ms (`src/app/shell/support/splash.ts`), so this is when a person can use the home screen.
+- **Splash gone**: the boot splash left. It fades for 160 ms once the first screen is painted with its fonts (`src/app/shell/support/splash.ts`), so this is when a person can use the home screen.
 - **Empty document ready**: from clicking New design to an editor whose canvas settled.
 - **Launch with a document**: launching with `gold-preview.fig` as an argument, as the Finder does, until its canvas settled.
 

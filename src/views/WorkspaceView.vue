@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useHead } from '@unhead/vue'
-import { useEventListener } from '@vueuse/core'
+import { until, useEventListener } from '@vueuse/core'
 import { onMounted, onUnmounted, provide, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -23,9 +23,11 @@ import { startBlank } from '@/app/home/start'
 import { notificationMessages } from '@/app/i18n/notifications'
 import { offerWelcomeOnFirstRun } from '@/app/onboarding/welcome'
 import { appRuntimeConfig } from '@/app/runtime/config'
+import { createDeferred } from '@/app/runtime/deferred'
 import { useDocumentDrop } from '@/app/shell/document-drop'
 import { useKeyboard } from '@/app/shell/keyboard/use'
 import { useEditorMenu } from '@/app/shell/menu/use'
+import { holdBootSplash } from '@/app/shell/support/splash'
 import { toast } from '@/app/shell/ui'
 import {
   activeTab,
@@ -155,9 +157,21 @@ async function selectNodeByName(name: string): Promise<boolean> {
   return (await focusNodesByName(getActiveStore(), name)) !== 'missing'
 }
 
+/**
+ * Settles once the first screen is known: no file was waiting at launch, or the tab of the first
+ * one opened, so the boot splash gives way to that document instead of flashing the home screen.
+ */
+const launchScreen = createDeferred<undefined>()
+holdBootSplash(launchScreen.promise)
+
 async function openPendingAssociatedFiles(): Promise<void> {
   const { invoke } = await import('@tauri-apps/api/core')
   const files = await invoke<PendingOpenFile[]>('take_pending_open')
+  if (files.length === 0) launchScreen.resolve(undefined)
+  else
+    void until(activeTab)
+      .toMatch((tab) => tab?.kind !== 'home')
+      .then(() => launchScreen.resolve(undefined))
   await openPendingFiles(files, {
     openPaths: openDocumentPaths,
     selectByName: selectNodeByName,
@@ -170,12 +184,18 @@ async function openPendingAssociatedFiles(): Promise<void> {
 let pendingOpenDrain: Promise<void> = Promise.resolve()
 
 function drainPendingOpens(): Promise<void> {
-  pendingOpenDrain = pendingOpenDrain.then(openPendingAssociatedFiles).catch(reportOpenFailure)
+  pendingOpenDrain = pendingOpenDrain
+    .then(openPendingAssociatedFiles)
+    .catch(reportOpenFailure)
+    .finally(() => launchScreen.resolve(undefined))
   return pendingOpenDrain
 }
 
 async function bindAssociatedFileOpen(): Promise<void> {
-  if (!isTauri()) return
+  if (!isTauri()) {
+    launchScreen.resolve(undefined)
+    return
+  }
   const { listen } = await import('@tauri-apps/api/event')
   fileAssociationCleanup.value = await listen('open-associated-files', () => {
     void drainPendingOpens()

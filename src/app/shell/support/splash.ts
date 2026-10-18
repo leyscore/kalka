@@ -1,7 +1,10 @@
 const SPLASH_ID = 'boot-splash'
-/** Long enough for the K to fill once, so a fast start still reads as an entrance. */
-const MINIMUM_SHOWN_MS = 900
-const FADE_MS = 420
+/** Matches the `#boot-splash` transition in `index.html`. */
+const FADE_MS = 160
+/** The longest the splash waits for the first screen's fonts or a document opened at launch. */
+const MAXIMUM_HOLD_MS = 1500
+
+const holds: Promise<unknown>[] = []
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => {
@@ -9,9 +12,24 @@ function delay(ms: number): Promise<void> {
   })
 }
 
+function nextFrame(): Promise<void> {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => resolve())
+  })
+}
+
 /**
- * Fades the boot splash out once the app has mounted, then removes it. Test runs remove it at
- * once, since every page load would otherwise wait for it.
+ * Keeps the splash up until `ready` settles, so the first screen shows instead of the home
+ * screen flashing before it, such as a document opened from the Finder. The splash never waits
+ * longer than `MAXIMUM_HOLD_MS` for holds.
+ */
+export function holdBootSplash(ready: Promise<unknown>, doc: Document = document): void {
+  if (doc.getElementById(SPLASH_ID)) holds.push(ready.catch(() => undefined))
+}
+
+/**
+ * Fades the boot splash out as soon as the first screen is painted with its fonts, then removes
+ * it. Test runs remove it at once, since every page load would otherwise wait for it.
  */
 export async function releaseBootSplash(
   options: { immediate?: boolean } = {},
@@ -23,8 +41,10 @@ export async function releaseBootSplash(
     splash.remove()
     return
   }
-  const wait = MINIMUM_SHOWN_MS - performance.now()
-  if (wait > 0) await delay(wait)
+  // The interface font swapping in after the splash left would read as a flash of unstyled text.
+  await Promise.race([Promise.all([doc.fonts.ready, ...holds]), delay(MAXIMUM_HOLD_MS)])
+  holds.length = 0
+  await nextFrame()
   splash.dataset.leaving = ''
   await delay(FADE_MS)
   splash.remove()
