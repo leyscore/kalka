@@ -1,6 +1,13 @@
 import { isDeepStrictEqual } from 'node:util'
 
-import { applyEdits, modify, parse as parseJSONC, type ParseError } from 'jsonc-parser'
+// The package's `main` is a UMD build whose `require('./impl/…')` calls Bun cannot bundle, so the
+// packaged app failed to start; its ES module build bundles.
+import {
+  applyEdits,
+  modify,
+  parse as parseJSONC,
+  type ParseError
+} from 'jsonc-parser/lib/esm/main.js'
 import { parse as parseTOML, stringify as stringifyTOML } from 'smol-toml'
 
 /**
