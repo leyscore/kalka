@@ -1,4 +1,9 @@
-import { BrowserLayoutEngine, installLayoutEngine, scriptLayoutPage } from '@kalka/core/layout'
+import {
+  BrowserLayoutEngine,
+  installLayoutEngine,
+  scriptLayoutPage,
+  type LayoutPage
+} from '@kalka/core/layout'
 import { prepareGraphFonts } from '@kalka/core/text'
 import type { SceneGraph } from '@kalka/scene-graph'
 
@@ -13,9 +18,36 @@ const LAYOUT_TIMEOUT = 60_000
  * the app's DOM layout engine does.
  */
 export function hostLayoutEngine(host: RenderHost): BrowserLayoutEngine {
-  return new BrowserLayoutEngine(
-    scriptLayoutPage((script) => host.request({ type: 'evaluate', script }, LAYOUT_TIMEOUT))
-  )
+  return new BrowserLayoutEngine(hostLayoutPage(host))
+}
+
+function hostLayoutPage(host: RenderHost): LayoutPage {
+  return scriptLayoutPage((script) => host.request({ type: 'evaluate', script }, LAYOUT_TIMEOUT))
+}
+
+let page: LayoutPage | null | undefined
+
+/**
+ * The render host's page for the rest of the run, or null without the host or with
+ * `KALKA_LAYOUT=stored`, which the CLI says once. The host starts on the first layout, not here.
+ *
+ * A tool that builds documents with Core's sources, such as `tools/generate/demo`, installs a
+ * `BrowserLayoutEngine` of its own over this page: this package resolves `@kalka/core` to its
+ * build, a module whose installed engines and loaded fonts are not the tool's.
+ */
+export function browserLayoutPage(): LayoutPage | null {
+  if (page !== undefined) return page
+  page = null
+  if (process.env.KALKA_LAYOUT === 'stored') return page
+  const host = renderHost()
+  if (!host) {
+    console.warn(
+      'Kalka: no render host, so layers keep their saved layout. Build the desktop app (`bun run --cwd electron build:render-host`) to lay out with Chromium.'
+    )
+    return page
+  }
+  page = hostLayoutPage(host)
+  return page
 }
 
 let installed: boolean | undefined
@@ -24,22 +56,14 @@ let installed: boolean | undefined
  * Lays out with the browser for the rest of the run when the render host is there, and says
  * whether it does. Without it, or with `KALKA_LAYOUT=stored`, nothing is laid out again: layers
  * keep the geometry the document saved, and edits that move layers inside auto layout do not
- * reflow it, which the CLI says once. The host starts on the first layout, not here.
+ * reflow it.
  */
 export function useBrowserLayout(): boolean {
   if (installed !== undefined) return installed
-  installed = false
-  if (process.env.KALKA_LAYOUT === 'stored') return false
-  const host = renderHost()
-  if (!host) {
-    console.warn(
-      'Kalka: no render host, so layers keep their saved layout. Build the desktop app (`bun run --cwd electron build:render-host`) to lay out with Chromium.'
-    )
-    return false
-  }
-  installLayoutEngine(hostLayoutEngine(host))
-  installed = true
-  return true
+  const layoutPage = browserLayoutPage()
+  installed = layoutPage !== null
+  if (layoutPage) installLayoutEngine(new BrowserLayoutEngine(layoutPage))
+  return installed
 }
 
 /**
