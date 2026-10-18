@@ -138,6 +138,9 @@ export function useDomScene(
       onPatched: (ids) => {
         for (const id of ids) reflowed.add(id)
         if (projector) options.onPatched?.(projector, ids)
+        // A held layer drawn outside a frame, as when its artboard's document loads, is hidden
+        // at once rather than on the frame this asks for.
+        if (reveals?.busy) reveals.tick()
         redraw()
       },
       onReflow: (id) => {
