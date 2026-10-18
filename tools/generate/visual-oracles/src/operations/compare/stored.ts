@@ -89,10 +89,9 @@ return JSON.stringify({ layers: out, origin: Number.isFinite(left) ? { x: left, 
 const STORED_ENV = { ...process.env, KALKA_LAYOUT: 'stored', KALKA_RENDERER: 'canvaskit' }
 
 async function readLayers(rootId: string, stored: boolean): Promise<Capture> {
-  const result =
-    await $`bun kalka eval ${filePath} --json -c ${layerScript(rootId)}`
-      .env(stored ? STORED_ENV : process.env)
-      .quiet()
+  const result = await $`bun kalka eval ${filePath} --json -c ${layerScript(rootId)}`
+    .env(stored ? STORED_ENV : process.env)
+    .quiet()
   const text = v.safeParse(v.pipe(v.string(), v.parseJson(), v.string()), result.stdout.toString())
   if (!text.success) throw new Error(`kalka eval returned no layer list for ${rootId}`)
   const layers = v.safeParse(CaptureSchema, text.output)
@@ -169,9 +168,10 @@ async function compareImages(directory: string, stored: Capture, laidOut: Captur
   const oracleSize = await imageSize(oracle)
   const kalkaSize = await imageSize(kalka)
   await $`magick ${kalka} -background black -gravity northwest -extent ${oracleSize} ${normalized}`.quiet()
-  const difference = await $`magick compare -metric AE -fuzz ${values.fuzz} ${oracle} ${normalized} null:`
-    .quiet()
-    .nothrow()
+  const difference =
+    await $`magick compare -metric AE -fuzz ${values.fuzz} ${oracle} ${normalized} null:`
+      .quiet()
+      .nothrow()
   const changed = Number.parseFloat(difference.stderr.toString().trim()) || 0
   const [width = 1, height = 1] = oracleSize.split('x').map(Number)
   await $`magick compare -fuzz ${values.fuzz} -highlight-color red -lowlight-color '#FFFFFF22' ${oracle} ${normalized} ${directory}/diff.png`
