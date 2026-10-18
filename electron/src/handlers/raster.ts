@@ -34,6 +34,8 @@ export interface RenderPageRequest {
 /** The app's exports: a standalone page as one HTML string. */
 export type RenderHTMLRequest = Omit<RenderPageRequest, 'file'> & { html: string }
 
+const TRANSPARENT: PageBackground = { r: 0, g: 0, b: 0, a: 0 }
+
 let rasterSession: Electron.Session | null = null
 
 /** A session of its own that loads nothing but the page file and the data it inlines. */
@@ -106,7 +108,10 @@ export async function renderPage(request: RenderPageRequest): Promise<Uint8Array
     await window.webContents.insertCSS('html{scrollbar-width:none}')
     // The page scales itself, so it lays out at its own size and paints at the export's.
     if (scale !== 1) await window.webContents.insertCSS(`html{zoom:${scale}}`)
-    if (request.background) await window.webContents.insertCSS(backgroundCSS(request.background))
+    // A PNG of layers is transparent where they draw nothing, as in Figma, whatever background
+    // the page's reset gives its body; a JPG has no transparency, so it keeps the page's white.
+    const background = request.background ?? (request.format === 'PNG' ? TRANSPARENT : undefined)
+    if (background) await window.webContents.insertCSS(backgroundCSS(background))
     await window.webContents.executeJavaScript(SETTLE)
     if (request.format === 'PDF') {
       const pdf = await window.webContents.printToPDF({

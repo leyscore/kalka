@@ -24,6 +24,7 @@
 - Imported `.fig` text keeps the line height it sets where Figma laid it out with it, instead of the font's own taller line, so headings no longer grow and push the content below them down.
 - Auto layout set to Auto spacing ignores the item spacing it keeps, as Figma does, instead of adding it and pushing the last layer out of the frame.
 - PNG, JPG and PDF exports of a layer whose content reaches past it no longer show scrollbars.
+- PNG exports from the desktop app and the CLI are transparent where the layers draw nothing, as in Figma, instead of white.
 - Pages laid out out of view, exports, and the CLI measure text with its web font for every character, instead of a fallback for characters the text loaded first did not use, which set some text narrower and moved the layers beside it.
 - Images in `.fig` files saved by older versions of Figma, which keep them inside the document itself, show instead of an empty layer.
 - Text in `.fig` files saved by older versions of Figma keeps the line height Figma laid it out with, also in instances that set another font, instead of shrinking to its font size and pulling the layers below it up.
