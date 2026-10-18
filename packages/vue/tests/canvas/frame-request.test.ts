@@ -7,12 +7,12 @@ function manualFrames() {
   const queued = new Map<number, () => void>()
   let next = 1
   const frames: FrameScheduler = {
-    request(callback) {
+    onNextFrame(callback) {
       const handle = next++
       queued.set(handle, callback)
       return handle
     },
-    cancel(handle) {
+    cancelFrame(handle) {
       queued.delete(handle)
     }
   }

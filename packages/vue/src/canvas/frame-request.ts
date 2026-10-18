@@ -1,12 +1,12 @@
 /** What `createFrameRequest` needs from the page: the browser's frame callbacks by default. */
 export interface FrameScheduler {
-  request: (callback: () => void) => number
-  cancel: (handle: number) => void
+  onNextFrame: (callback: () => void) => number
+  cancelFrame: (handle: number) => void
 }
 
 const animationFrames: FrameScheduler = {
-  request: (callback) => requestAnimationFrame(callback),
-  cancel: (handle) => cancelAnimationFrame(handle)
+  onNextFrame: (callback) => requestAnimationFrame(callback),
+  cancelFrame: (handle) => cancelAnimationFrame(handle)
 }
 
 export interface FrameRequest {
@@ -37,13 +37,13 @@ export function createFrameRequest(
   function request() {
     if (pending) return
     pending = true
-    handle = display.request(run)
+    handle = display.onNextFrame(run)
   }
 
   return {
     request,
     cancel() {
-      if (pending) display.cancel(handle)
+      if (pending) display.cancelFrame(handle)
       pending = false
       handle = 0
     }
