@@ -64,7 +64,7 @@ function jsxNode(node: DesignNode, depth: number, themeVariables: readonly strin
 /** Print a design document as Tailwind JSX, one top-level element per block. */
 export function designDocumentToTailwindJSX(document: DesignDocument): string {
   const themeVariables = document.tokens?.themeVariables() ?? []
-  return tidyDesignDocument(document)
+  return tidyDesignDocument(document, { shorthands: false })
     .children.map((node) => jsx.printJSX(jsxNode(node, 0, themeVariables)))
     .join('\n\n')
 }

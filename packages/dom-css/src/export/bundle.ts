@@ -456,7 +456,10 @@ async function exportStandaloneHTML(
   const serialize = { pretty: options.pretty }
 
   if (options.style === 'tailwind') {
-    body = serializeHTML(doc, { ...serialize, style: 'tailwind' })
+    body = serializeHTML(tidyDesignDocument(doc, { shorthands: false }), {
+      ...serialize,
+      style: 'tailwind'
+    })
     css += await compileTailwindClasses(
       classNamesFromHTML(body),
       await tokenCSS(document, 'tailwind')
@@ -465,7 +468,7 @@ async function exportStandaloneHTML(
     css += await tokenCSS(document, 'css')
     // The document's classes are rules of their own; each layer's rule then adds what is its own.
     const graph = document.sourceGraph
-    const classed = graph ? withClassRules(graph, doc) : doc
+    const classed = tidyDesignDocument(graph ? withClassRules(graph, doc) : doc)
     if (graph) css += cssClassStylesheet(documentCSSClasses(graph), { compact: true })
     const rules: string[] = []
     const media: MediaRule[] = []
@@ -531,10 +534,12 @@ export async function exportHTMLBundle(
     pretty: options.pretty ?? false
   }
 
-  const tidy = tidyDesignDocument(document)
-  if (resolvedOptions.html === 'standalone') return exportStandaloneHTML(tidy, resolvedOptions)
+  if (resolvedOptions.html === 'standalone') return exportStandaloneHTML(document, resolvedOptions)
 
-  return fragmentBundle(tidy, resolvedOptions)
+  return fragmentBundle(
+    tidyDesignDocument(document, { shorthands: resolvedOptions.style !== 'tailwind' }),
+    resolvedOptions
+  )
 }
 
 /** The class that marks a fragment's roots, which its scoped reset reaches below. */
