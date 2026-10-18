@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 
 import { exportHTMLBundle, sceneNodeToDesignDocument } from '#dom-css/export/index'
 import { createHeadlessCSSRuntime } from '#dom-css/index'
+import { compact } from 'es-toolkit/array'
 
 import { SceneGraph, type SceneNode } from '@kalka/scene-graph'
 
@@ -61,7 +62,7 @@ function appliedStyles(html: string): Array<Record<string, string>> {
   const visit = (node: (typeof parsed.children)[number]) => {
     if (node.type === 'text') return
     if (node.tagName !== 'style') {
-      const classes = (node.attrs.class ?? '').split(' ').filter(Boolean)
+      const classes = compact((node.attrs.class ?? '').split(' '))
       styles.push(Object.assign({}, ...classes.map((name) => rules.get(name)), node.inlineStyle))
     }
     node.children.forEach(visit)

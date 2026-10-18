@@ -1,8 +1,9 @@
 import { cssName } from '#dom-css/behaviours/states/names'
+import type { DesignDocument, DesignElement, DesignNode } from '#dom-css/types'
 
 import type { SceneNode } from '@kalka/scene-graph'
+import { pickStyle } from '@kalka/scene-graph/css-model'
 
-import type { DesignDocument, DesignElement, DesignNode } from '../../types'
 import { splitWhitespace } from '../html'
 import { claimName } from '../storybook/names'
 
@@ -14,12 +15,12 @@ const DEFAULT_LAYER_NAME =
 const GENERIC_TAGS: ReadonlySet<string> = new Set(['div', 'span'])
 
 /** What an element is, for a layer whose name does not say: `link`, `image`, `row`. */
-const TAG_ROLES: Readonly<Record<string, string>> = {
-  a: 'link',
-  img: 'image',
-  svg: 'icon',
-  p: 'text'
-}
+const TAG_ROLES: ReadonlyMap<string, string> = new Map([
+  ['a', 'link'],
+  ['img', 'image'],
+  ['svg', 'icon'],
+  ['p', 'text']
+])
 
 /** How many words of a name or a text a class takes. */
 const CLASS_WORDS = 4
@@ -65,7 +66,7 @@ function boxRole(element: DesignElement): string {
 function role(element: DesignElement): string {
   const tag = element.tagName.toLowerCase()
   if (element.sourceSceneNode?.type === 'TEXT') return tag === 'span' || tag === 'p' ? 'text' : tag
-  const tagRole = TAG_ROLES[tag]
+  const tagRole = TAG_ROLES.get(tag)
   if (tagRole) return tagRole
   if (tag === 'div' || tag === 'span') return boxRole(element)
   return tag
@@ -84,20 +85,20 @@ function textClass(element: DesignElement): string | undefined {
 }
 
 /** Weight names as type scales call them; the regular weight goes unsaid. */
-const WEIGHT_NAMES: Readonly<Record<number, string>> = {
-  100: 'thin',
-  200: 'extralight',
-  300: 'light',
-  500: 'medium',
-  600: 'semibold',
-  700: 'bold',
-  800: 'extrabold',
-  900: 'black'
-}
+const WEIGHT_NAMES: ReadonlyMap<number, string> = new Map([
+  [100, 'thin'],
+  [200, 'extralight'],
+  [300, 'light'],
+  [500, 'medium'],
+  [600, 'semibold'],
+  [700, 'bold'],
+  [800, 'extrabold'],
+  [900, 'black']
+])
 
 /** A text style by its size and weight, `text-21-semibold`, as type scales name them. */
 function textStyleClass(node: SceneNode): string {
-  const weight = WEIGHT_NAMES[node.fontWeight]
+  const weight = WEIGHT_NAMES.get(node.fontWeight)
   return cssName(['text', String(Math.round(node.fontSize)), weight ?? ''].join(' '), 'text')
 }
 
@@ -111,15 +112,14 @@ function namedAfterText(node: SceneNode): boolean {
  * A class for a style several layers share: the name they all have, or what the first one is.
  * Text named after its own words is named after its type, which the others share with it.
  */
-export function sharedClassBase(elements: readonly DesignElement[]): string {
-  const names = new Set(elements.map(nameClass))
-  const [first] = elements
+export function sharedClassBase(first: DesignElement, all: readonly DesignElement[]): string {
+  const names = new Set(all.map(nameClass))
   const [name] = names
   if (names.size === 1 && name) return name
-  const node = first?.sourceSceneNode
-  if (first && node?.type === 'TEXT' && (namedAfterText(node) || !meaningfulName(first)))
+  const node = first.sourceSceneNode
+  if (node?.type === 'TEXT' && (namedAfterText(node) || !meaningfulName(first)))
     return textStyleClass(node)
-  return first ? (nameClass(first) ?? role(first)) : 'shared'
+  return nameClass(first) ?? role(first)
 }
 
 /** A class for one layer's own declarations: its name, its first words, or what it is. */
@@ -129,7 +129,7 @@ export function ownClassBase(element: DesignElement): string {
 
 function collectClasses(node: DesignNode, names: Set<string>): void {
   if (node.type === 'text') return
-  for (const name of splitWhitespace(node.attrs.class ?? '')) names.add(name)
+  for (const name of splitWhitespace(pickStyle(node.attrs, 'class') ?? '')) names.add(name)
   for (const child of node.children) collectClasses(child, names)
 }
 

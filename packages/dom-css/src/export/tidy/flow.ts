@@ -1,6 +1,6 @@
+import type { DesignElement, DesignNode, DesignStyleDeclaration } from '#dom-css/types'
 import { omit } from 'es-toolkit/object'
 
-import type { DesignElement, DesignNode, DesignStyleDeclaration } from '../../types'
 import { layoutLength, layoutUnits, pixelValue } from './lengths'
 
 /** Tags that are blocks by default, which stay blocks as flex containers. */
@@ -57,17 +57,51 @@ function placedBox(child: DesignNode): Box | null {
  */
 function lineGap(boxes: readonly Box[], start: 'left' | 'top', across: 'left' | 'top') {
   const size = start === 'left' ? 'width' : 'height'
-  const [first, second] = boxes
+  const first = boxes.at(0)
+  const second = boxes.at(1)
   if (!first || !second || first[start] !== 0) return null
   const gap = second[start] - first[start] - first[size]
   if (gap < 0) return null
-  for (let index = 0; index < boxes.length; index++) {
-    const box = boxes[index]
-    const previous = boxes[index - 1]
-    if (!box || box[across] !== 0) return null
-    if (previous && box[start] !== previous[start] + previous[size] + gap) return null
+  let end = -gap
+  for (const box of boxes) {
+    if (box[across] !== 0 || box[start] !== end + gap) return null
+    end = box[start] + box[size]
   }
   return gap
+}
+
+interface FlexLine {
+  direction: 'row' | 'column'
+  /** The gap between boxes, in sixty-fourths of a pixel. */
+  gap: number
+}
+
+/** The row or column the boxes sit in within a frame of that size, or null. */
+function flexLine(boxes: readonly Box[], width: number, height: number): FlexLine | null {
+  const rowGap = lineGap(boxes, 'left', 'top')
+  const gap = rowGap ?? lineGap(boxes, 'top', 'left')
+  if (gap === null) return null
+  const direction = rowGap === null ? 'column' : 'row'
+  const last = boxes.at(-1)
+  const end = last ? (direction === 'row' ? last.left + last.width : last.top + last.height) : 0
+  // A line longer than the frame would shrink its items, where free children overflow.
+  if (end > layoutUnits(direction === 'row' ? width : height)) return null
+  return { direction, gap }
+}
+
+/**
+ * Whether a frame could lay its children out as one flex line: it places them itself, has more
+ * than one, no padding that would offset them, and nothing that styles it beyond its own CSS.
+ */
+function holdsLine(
+  element: DesignElement,
+  style: DesignStyleDeclaration,
+  parent: DesignStyleDeclaration | undefined
+): boolean {
+  if (element.children.length < 2 || style.display || element.mediaStyles?.length) return false
+  if ((element.sourceSceneNode?.htmlClasses.length ?? 0) > 0) return false
+  if (Object.keys(style).some((name) => name.startsWith('padding'))) return false
+  return blockLevel(element, style, parent)
 }
 
 /** Whether the element lays out as a block box, as a flex container it does too. */
@@ -84,10 +118,13 @@ function blockLevel(
 
 /** A child as the flex item it becomes: positioned still, so it paints where it did. */
 function flexItem(child: DesignElement): DesignElement {
-  const style = omit(child.inlineStyle ?? {}, PLACEMENT)
-  for (const minimum of ['min-width', 'min-height'])
-    if (style[minimum] === '0' || style[minimum] === '0px') delete style[minimum]
-  return { ...child, inlineStyle: { position: 'relative', ...style } }
+  const style = child.inlineStyle ?? {}
+  // Zero minimums were free placement's `auto`; the line has room, so nothing shrinks.
+  const zero = ['min-width', 'min-height'].filter((name) => /^0(px)?$/.test(style[name] ?? ''))
+  return {
+    ...child,
+    inlineStyle: { position: 'relative', ...omit(style, [...PLACEMENT, ...zero]) }
+  }
 }
 
 /**
@@ -101,29 +138,17 @@ export function asFlexLayout(
   parent: DesignStyleDeclaration | undefined
 ): DesignElement {
   const style = element.inlineStyle ?? {}
-  if (element.children.length < 2 || style.display || element.mediaStyles?.length) return element
-  if ((element.sourceSceneNode?.htmlClasses.length ?? 0) > 0) return element
-  if (Object.keys(style).some((name) => name.startsWith('padding'))) return element
-  if (!blockLevel(element, style, parent)) return element
   const width = pixelValue(style.width)
   const height = pixelValue(style.height)
-  if (width === null || height === null) return element
+  if (!holdsLine(element, style, parent) || width === null || height === null) return element
   const boxes = element.children.map(placedBox)
-  if (boxes.some((box) => box === null)) return element
   const placed = boxes.filter((box): box is Box => box !== null)
-
-  const rowGap = lineGap(placed, 'left', 'top')
-  const columnGap = rowGap === null ? lineGap(placed, 'top', 'left') : null
-  const gap = rowGap ?? columnGap
-  if (gap === null) return element
-  const last = placed.at(-1)
-  const end = last ? (rowGap !== null ? last.left + last.width : last.top + last.height) : 0
-  // A line longer than the frame would shrink its items, where free children overflow.
-  if (end > layoutUnits(rowGap !== null ? width : height)) return element
-
+  if (placed.length !== boxes.length) return element
+  const line = flexLine(placed, width, height)
+  if (!line) return element
   const container: DesignStyleDeclaration = { ...style, display: 'flex' }
-  if (rowGap === null) container['flex-direction'] = 'column'
-  if (gap > 0) container.gap = `${layoutLength(gap / 64)}px`
+  if (line.direction === 'column') container['flex-direction'] = 'column'
+  if (line.gap > 0) container.gap = `${layoutLength(line.gap / 64)}px`
   const children = element.children.map((child) =>
     child.type === 'element' ? flexItem(child) : child
   )

@@ -1,4 +1,8 @@
-import type { DesignStyleDeclaration } from '../../types'
+import type { DesignStyleDeclaration } from '#dom-css/types'
+import { omit } from 'es-toolkit/object'
+
+import { pickStyle } from '@kalka/scene-graph/css-model'
+
 import { pixelValue } from './lengths'
 import { combineShorthands, ZERO } from './shorthands'
 
@@ -54,27 +58,32 @@ function dropDefaultMinimums(
   style: DesignStyleDeclaration,
   tagName: string,
   parent: DesignStyleDeclaration
-): void {
-  if (BROWSER_MINIMUM_TAGS.has(tagName)) return
-  for (const axis of ['width', 'height'] as const) {
-    const property = `min-${axis}`
-    const value = style[property]
-    if (value !== undefined && ZERO.has(value) && zeroMinimumIsDefault(style, axis, parent))
-      delete style[property]
-  }
+): DesignStyleDeclaration {
+  if (BROWSER_MINIMUM_TAGS.has(tagName)) return style
+  const defaults = (['width', 'height'] as const).filter((axis) => {
+    const value = pickStyle(style, `min-${axis}`)
+    return value !== undefined && ZERO.has(value) && zeroMinimumIsDefault(style, axis, parent)
+  })
+  return omit(
+    style,
+    defaults.map((axis) => `min-${axis}`)
+  )
 }
 
 /**
  * `aspect-ratio` says nothing once both sizes are set and nothing can change either: no size
  * limits, and no flex line that may shrink the box.
  */
-function dropIdleAspectRatio(style: DesignStyleDeclaration, parent: DesignStyleDeclaration): void {
-  if (!('aspect-ratio' in style)) return
-  if (pixelValue(style.width) === null || pixelValue(style.height) === null) return
-  if (Object.keys(style).some((name) => /^(min|max)-(width|height)$/.test(name))) return
+function dropIdleAspectRatio(
+  style: DesignStyleDeclaration,
+  parent: DesignStyleDeclaration
+): DesignStyleDeclaration {
+  if (!('aspect-ratio' in style)) return style
+  if (pixelValue(style.width) === null || pixelValue(style.height) === null) return style
+  if (Object.keys(style).some((name) => /^(min|max)-(width|height)$/.test(name))) return style
   const flexItem = isFlex(parent.display) && !placedOutOfFlow(style)
-  if (flexItem && !keepsMainSize(style, mainSize(parent))) return
-  delete style['aspect-ratio']
+  if (flexItem && !keepsMainSize(style, mainSize(parent))) return style
+  return omit(style, ['aspect-ratio'])
 }
 
 /** Block boxes by default, which stay block boxes without `display: flex`. */
@@ -114,11 +123,11 @@ function dropEmptyFlexLayout(
   style: DesignStyleDeclaration,
   tagName: string,
   parent: DesignStyleDeclaration
-): void {
-  if (style.display !== 'flex' || !BLOCK_TAGS.has(tagName)) return
-  if (!placedOutOfFlow(style) && !isFlex(parent.display) && !isGrid(parent.display)) return
-  if (parent['align-items'] === 'baseline' || style['align-self'] === 'baseline') return
-  for (const property of FLEX_CONTAINER_PROPERTIES) delete style[property]
+): DesignStyleDeclaration {
+  if (style.display !== 'flex' || !BLOCK_TAGS.has(tagName)) return style
+  if (!placedOutOfFlow(style) && !isFlex(parent.display) && !isGrid(parent.display)) return style
+  if (parent['align-items'] === 'baseline' || style['align-self'] === 'baseline') return style
+  return omit(style, FLEX_CONTAINER_PROPERTIES)
 }
 
 export interface DeclarationContext {
@@ -142,14 +151,13 @@ export function tidyDeclarations(
   style: DesignStyleDeclaration,
   { tagName, empty, classed, parent, responsive, shorthands }: DeclarationContext
 ): DesignStyleDeclaration {
-  const tidy = { ...style }
   const tag = tagName.toLowerCase()
   // A class rule may set what a declaration here overrides, or a shorthand would.
-  if (responsive || classed) return tidy
+  if (responsive || classed) return { ...style }
+  let tidy = style
   if (parent.style) {
-    dropDefaultMinimums(tidy, tag, parent.style)
-    dropIdleAspectRatio(tidy, parent.style)
-    if (empty) dropEmptyFlexLayout(tidy, tag, parent.style)
+    tidy = dropIdleAspectRatio(dropDefaultMinimums(tidy, tag, parent.style), parent.style)
+    if (empty) tidy = dropEmptyFlexLayout(tidy, tag, parent.style)
   }
-  return shorthands ? combineShorthands(tidy, tag) : tidy
+  return shorthands ? combineShorthands(tidy, tag) : { ...tidy }
 }

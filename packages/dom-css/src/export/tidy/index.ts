@@ -1,4 +1,5 @@
-import type { DesignDocument, DesignElement, DesignNode } from '../../types'
+import type { DesignDocument, DesignElement, DesignNode } from '#dom-css/types'
+
 import { exportAttributes } from './attributes'
 import { tidyDeclarations } from './declarations'
 import { asFlexLayout } from './flow'
@@ -30,17 +31,18 @@ function tidyNode(
       responsive: hasMedia(element) || hasMedia(parent),
       shorthands: options.shorthands
     })
-  const mediaStyles = element.mediaStyles?.map((media) => ({
-    ...media,
-    style: tidyLengths(media.style)
-  }))
-  return {
+  const tidy: DesignElement = {
     ...element,
     attrs: exportAttributes(element.attrs),
-    ...(inlineStyle ? { inlineStyle } : {}),
-    ...(mediaStyles ? { mediaStyles } : {}),
     children: element.children.map((child) => tidyNode(child, element, options))
   }
+  if (inlineStyle) tidy.inlineStyle = inlineStyle
+  if (element.mediaStyles)
+    tidy.mediaStyles = element.mediaStyles.map((media) => ({
+      ...media,
+      style: tidyLengths(media.style)
+    }))
+  return tidy
 }
 
 /**

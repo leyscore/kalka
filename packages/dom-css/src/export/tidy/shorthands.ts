@@ -1,4 +1,6 @@
-import type { DesignStyleDeclaration } from '../../types'
+import type { DesignStyleDeclaration } from '#dom-css/types'
+
+import { pickStyle } from '@kalka/scene-graph/css-model'
 
 export const ZERO: ReadonlySet<string> = new Set(['0', '0px'])
 
@@ -60,7 +62,8 @@ function combinePadding(style: DesignStyleDeclaration, tagName: string): DesignS
   if (Object.keys(style).some((name) => name.startsWith('writing-mode'))) return style
   const names = Object.keys(style).filter((name) => name.startsWith('padding-'))
   if (names.length === 0) return style
-  const side = (longhand: string, logical: string) => style[longhand] ?? style[logical] ?? '0'
+  const side = (longhand: string, logical: string) =>
+    pickStyle(style, longhand) ?? pickStyle(style, logical) ?? '0'
   const [top, right, bottom, left] = PADDING_SIDES.map((longhand) =>
     side(
       longhand,
@@ -77,8 +80,8 @@ function combinePadding(style: DesignStyleDeclaration, tagName: string): DesignS
  * shrink factor being its initial one unless the layer set its own.
  */
 function combineFlex(style: DesignStyleDeclaration): DesignStyleDeclaration {
-  const grow = style['flex-grow']
-  const basis = style['flex-basis']
+  const grow = pickStyle(style, 'flex-grow')
+  const basis = pickStyle(style, 'flex-basis')
   if (grow === undefined || basis === undefined || 'flex' in style) return style
   const shrink = style['flex-shrink'] ?? '1'
   const names = ['flex-grow', 'flex-shrink', 'flex-basis'].filter((name) => name in style)
@@ -138,14 +141,14 @@ function hasOtherBorder(style: DesignStyleDeclaration): boolean {
  * `border` when every side has the same width, or as the one side that has any.
  */
 function combineBorder(style: DesignStyleDeclaration, tagName: string): DesignStyleDeclaration {
-  const borderStyle = style['border-style']
-  const color = style['border-color']
+  const borderStyle = pickStyle(style, 'border-style')
+  const color = pickStyle(style, 'border-color')
   if (borderStyle === undefined || color === undefined || hasOtherBorder(style)) return style
   if (!singleToken(borderStyle) || !singleToken(color)) return style
-  const widths = BORDER_SIDES.map((side) => style[`border-${side}-width`] ?? '')
+  const widths = BORDER_SIDES.map((side) => pickStyle(style, `border-${side}-width`) ?? '')
   if (widths.includes('')) return style
   const drawn = BORDER_SIDES.filter((_, index) => !ZERO.has(widths[index] ?? '0'))
-  const width = widths[BORDER_SIDES.findIndex((side) => side === drawn[0])]
+  const width = drawn[0] ? widths[BORDER_SIDES.indexOf(drawn[0])] : undefined
   if (!width) return style
   const value = `${width} ${borderStyle} ${color}`
   if (drawn.length === 4 && widths.every((side) => side === width))

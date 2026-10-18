@@ -1,4 +1,4 @@
-import type { DesignStyleDeclaration } from '../../types'
+import type { DesignStyleDeclaration } from '#dom-css/types'
 
 /** Browsers lay boxes out in sixty-fourths of a pixel. */
 const LAYOUT_UNITS_PER_PX = 64

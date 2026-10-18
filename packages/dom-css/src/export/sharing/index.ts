@@ -4,7 +4,8 @@ import type {
   DesignNode,
   DesignStyleDeclaration,
   MediaStyle
-} from '../../types'
+} from '#dom-css/types'
+
 import { mergeClassNames } from '../html'
 import { claimClassName, ownClassBase, sharedClassBase, takenClassNames } from './names'
 
@@ -123,8 +124,9 @@ class StyleSharing {
         if (key) alike.set(key, [...(alike.get(key) ?? []), element])
       })
     for (const [key, elements] of alike) {
-      if (elements.length < 2) continue
-      const className = claimClassName(sharedClassBase(elements), this.taken)
+      const first = elements.at(0)
+      if (!first || elements.length < 2) continue
+      const className = claimClassName(sharedClassBase(first, elements), this.taken)
       this.sharedClasses.set(key, className)
       this.sharedRules.push(`.${className}{${key}}`)
     }
