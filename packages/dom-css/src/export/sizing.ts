@@ -70,30 +70,72 @@ export function withoutOverflowingPadding(node: SceneNode): SceneNode {
   }
 }
 
+interface Margins {
+  top: number
+  right: number
+  bottom: number
+  left: number
+}
+
 /** The margins a child takes over from its parent's overflowing padding (`withoutOverflowingPadding`). */
-export function overflowingPaddingMargins(
+function addOverflowingPadding(
   graph: SceneGraph,
-  node: SceneNode
-): DesignStyleDeclaration {
-  const parent = node.parentId ? graph.getNode(node.parentId) : undefined
-  if (!parent || !node.visible || node.layoutPositioning === 'ABSOLUTE') return {}
+  node: SceneNode,
+  parent: SceneNode,
+  margins: Margins
+): void {
   const overflowing = overflowingPadding(parent)
-  if (!overflowing) return {}
+  if (!overflowing) return
   const flow = inFlow(graph, parent)
   const first = flow.at(0)?.id === node.id
   const last = flow.at(-1)?.id === node.id
   const row = parent.layoutMode === 'HORIZONTAL'
-  const margins: DesignStyleDeclaration = {}
-  const set = (property: string, value: number, applies: boolean) => {
-    if (applies && value !== 0) margins[property] = `${value}px`
-  }
   if (overflowing.horizontal) {
-    set('margin-left', parent.paddingLeft, !row || first)
-    set('margin-right', parent.paddingRight, !row || last)
+    if (!row || first) margins.left += parent.paddingLeft
+    if (!row || last) margins.right += parent.paddingRight
   }
   if (overflowing.vertical) {
-    set('margin-top', parent.paddingTop, row || first)
-    set('margin-bottom', parent.paddingBottom, row || last)
+    if (row || first) margins.top += parent.paddingTop
+    if (row || last) margins.bottom += parent.paddingBottom
   }
-  return margins
+}
+
+/**
+ * Auto layout places a turned layer by the box around it, as it is drawn; a CSS transform leaves
+ * the layer's space as it was. Margins grow that space to the turned box, which stays centered on
+ * the layer as the layer turns about its center.
+ */
+function addTurnedBox(node: SceneNode, margins: Margins): void {
+  if (node.rotation === 0 || node.type === 'LINE') return
+  const angle = (node.rotation * Math.PI) / 180
+  const cos = Math.abs(Math.cos(angle))
+  const sin = Math.abs(Math.sin(angle))
+  const horizontal = (node.width * cos + node.height * sin - node.width) / 2
+  const vertical = (node.width * sin + node.height * cos - node.height) / 2
+  margins.left += horizontal
+  margins.right += horizontal
+  margins.top += vertical
+  margins.bottom += vertical
+}
+
+function round(value: number): number {
+  return Math.round(value * 1000) / 1000
+}
+
+/**
+ * The margins a layer in its parent's flow takes where auto layout places it differently from
+ * flexbox: its parent's overflowing padding, and the box it turns into.
+ */
+export function flowMargins(graph: SceneGraph, node: SceneNode): DesignStyleDeclaration {
+  const parent = node.parentId ? graph.getNode(node.parentId) : undefined
+  if (!parent || !isStack(parent) || node.layoutPositioning === 'ABSOLUTE') return {}
+  const margins: Margins = { top: 0, right: 0, bottom: 0, left: 0 }
+  addOverflowingPadding(graph, node, parent, margins)
+  addTurnedBox(node, margins)
+  const style: DesignStyleDeclaration = {}
+  for (const side of ['top', 'right', 'bottom', 'left'] as const) {
+    const value = round(margins[side])
+    if (value !== 0) style[`margin-${side}`] = `${value}px`
+  }
+  return style
 }

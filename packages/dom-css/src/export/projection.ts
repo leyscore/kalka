@@ -8,11 +8,7 @@ import { DesignTokens, type CSSModes } from '../tokens/references'
 import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
 import { maskStyle } from './masks'
 import { croppedImageStyle, patternBackground, tiledImageStyle } from './patterns'
-import {
-  overflowingPaddingMargins,
-  withoutOverflowingPadding,
-  withUnhuggableAxisFixed
-} from './sizing'
+import { flowMargins, withoutOverflowingPadding, withUnhuggableAxisFixed } from './sizing'
 import {
   imageSourceURL,
   INTERACTIVE_TAGS,
@@ -269,7 +265,7 @@ function sceneNodeToDesignNode(
 ): DesignNode | null {
   const projected = layerDesignNode(context, node, inherited, root)
   if (projected?.type !== 'element') return projected
-  const margins = overflowingPaddingMargins(context.graph, node)
+  const margins = flowMargins(context.graph, node)
   const masked = context.masks ? maskStyle(context.graph, node, context.vectorElement) : {}
   if (isEmptyObject(masked) && isEmptyObject(margins)) return projected
   return { ...projected, inlineStyle: { ...projected.inlineStyle, ...margins, ...masked } }

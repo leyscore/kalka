@@ -13,6 +13,7 @@
 - An imported `.fig` frame set to hug whose layers all fill it keeps its size, as in Figma, instead of collapsing and emptying galleries and image grids.
 - An imported `.fig` frame with more padding than size, as captured scrolling tickers have, keeps its size and shows its content where Figma does instead of growing and pushing the content out of view.
 - Images set to Crop in an imported `.fig` file show the part of the picture Figma shows instead of the whole picture squeezed into the layer, and save back as Crop.
+- A rotated layer in auto layout takes the space of its rotated bounds, as in Figma, so tilted cards in imported files no longer squeeze or overlap their row.
 
 ## 0.1.0-beta.3 — 2026-10-18
 
