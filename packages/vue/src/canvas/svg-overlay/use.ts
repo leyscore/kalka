@@ -1,4 +1,9 @@
-import { usePreferredReducedMotion } from '@vueuse/core'
+import {
+  useDevicePixelRatio,
+  useEventListener,
+  usePreferredReducedMotion,
+  useResizeObserver
+} from '@vueuse/core'
 import { onScopeDispose, watch, type Ref } from 'vue'
 
 import {
@@ -14,6 +19,7 @@ import type { Editor, EditorState } from '@kalka/core/editor'
 import type { Color } from '@kalka/scene-graph'
 import type { Rect } from '@kalka/scene-graph/primitives'
 
+import { createFrameRequest } from '#vue/canvas/frame-request'
 import { composeOverlay } from '#vue/canvas/svg-overlay/compose'
 import type { AgentWorkMark } from '#vue/canvas/svg-overlay/layers/agent-work'
 import { clearOverlay, renderOverlay } from '#vue/canvas/svg-overlay/render'
@@ -24,15 +30,15 @@ export { SVG_OVERLAY_LAYERS } from '#vue/canvas/svg-overlay/compose'
 export interface UseSVGOverlayOptions {
   /** The view this pane draws. Defaults to `editor.state`. */
   getRenderState?: () => EditorState
-  /** Whether the rulers show; read every frame. */
+  /** Whether the rulers show; reactive, so the overlay redraws when it changes. */
   showRulers?: () => boolean
   /** UI floating over the canvas, in its CSS pixels, which edge-pinned markers keep clear of. */
   getOverlayObstacles?: () => readonly Rect[]
   /** The color behind the artboards, when the app shows its own instead of the page's. */
   getCanvasColor?: (pageColor: Color) => Color
   /**
-   * Layers agents are building on `pageId`, marked with their names. Read every frame; return
-   * the same array while nothing changed.
+   * Layers agents are building on `pageId`, marked with their names. Reactive, so the overlay
+   * redraws when they change; return the same array while nothing changed.
    */
   getAgentWork?: (pageId: string) => readonly AgentWorkMark[]
 }
@@ -58,9 +64,9 @@ function createMeasureText(): MeasureText {
 }
 
 /**
- * Editor chrome over the DOM scene, drawn as SVG: labels, selection, guides, rulers. It redraws
- * on the frames where something it shows changed: the editor's versions, the view, or the
- * transient state the canvas renderer reads every frame.
+ * Editor chrome over the DOM scene, drawn as SVG: labels, selection, guides, rulers. It draws a
+ * frame only when something it shows changed: the editor's versions, the view, its size, or a
+ * flash or AI mark still animating.
  */
 export function useSVGOverlay(
   host: Ref<HTMLElement | null>,
@@ -70,7 +76,7 @@ export function useSVGOverlay(
   const measureText = createMeasureText()
   const labels = new LabelCache()
   const reducedMotion = usePreferredReducedMotion()
-  let frame = 0
+  const { pixelRatio } = useDevicePixelRatio()
   let drawn: unknown[] = []
   let issueMarkers: PlacedIssueMarker[] = []
 
@@ -93,10 +99,10 @@ export function useSVGOverlay(
     return options.getAgentWork?.(pageId) ?? NO_AGENT_WORK
   }
 
-  function tick() {
-    frame = requestAnimationFrame(tick)
+  /** Draws one requested frame; true while flashes or AI marks animate and need the next. */
+  function tick(): boolean {
     const element = host.value
-    if (!element) return
+    if (!element) return false
     const state = options.getRenderState?.() ?? editor.state
     const renderer = editor.renderer
     const flashes = renderer?._flashes ?? []
@@ -135,7 +141,7 @@ export function useSVGOverlay(
       // Flashes and AI marks animate: redraw every frame while one runs.
       animating ? performance.now() : 0
     ]
-    if (!changed(key)) return
+    if (!changed(key)) return !!animating
     labels.update(editor.graph, state.currentPageId, state.sceneVersion)
     const overlays = overlaysFromEditorState(state, editor.graph, editor.textEditor)
     const composed = composeOverlay({
@@ -160,20 +166,55 @@ export function useSVGOverlay(
     })
     issueMarkers = composed.issueMarkers
     renderOverlay(element, composed.shapes)
+    return !!animating
   }
+
+  const frames = createFrameRequest(tick)
+
+  // What the overlay shows comes from reactive state; each change draws one frame. Flashes and
+  // AI marks bump the render version while they animate.
+  watch(
+    () => {
+      const state = options.getRenderState?.() ?? editor.state
+      return [
+        state.renderVersion,
+        state.sceneVersion,
+        state.panX,
+        state.panY,
+        state.zoom,
+        state.currentPageId,
+        state.selectedIds,
+        state.hoveredNodeId,
+        state.designIssues,
+        state.presenceCursors,
+        state.guides,
+        state.rulerTheme,
+        canvasColorOf(state),
+        agentWorkOn(state.currentPageId),
+        options.showRulers?.(),
+        reducedMotion.value,
+        pixelRatio.value
+      ]
+    },
+    frames.request,
+    { flush: 'sync' }
+  )
+  // The overlay's size and the UI floating over it are read when a frame draws.
+  useResizeObserver(host, frames.request)
+  useEventListener(window, 'resize', frames.request, { passive: true })
 
   watch(
     host,
     (element, previous) => {
       if (previous) clearOverlay(previous)
       drawn = []
-      cancelAnimationFrame(frame)
-      if (element) frame = requestAnimationFrame(tick)
+      frames.cancel()
+      if (element) frames.request()
     },
     { immediate: true, flush: 'post' }
   )
   onScopeDispose(() => {
-    cancelAnimationFrame(frame)
+    frames.cancel()
     if (host.value) clearOverlay(host.value)
   })
 

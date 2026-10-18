@@ -2,9 +2,12 @@ import { onScopeDispose, watch, type Ref } from 'vue'
 
 import type { Editor, EditorState } from '@kalka/core/editor'
 import { installLayoutEngine } from '@kalka/core/layout'
-import { browserFaceFor, fontManager } from '@kalka/core/text'
+import { fontManager } from '@kalka/core/text'
 import type { VectorElementRenderer } from '@kalka/dom-css/export'
 
+import { createFrameRequest } from '#vue/canvas/frame-request'
+
+import { bindSceneEvents, redrawAfter } from './events'
 import { GhostLayer, type DomScenePreview } from './ghosts'
 import { DomLayoutEngine } from './layout'
 import { LiveEdits } from './live'
@@ -50,7 +53,6 @@ export function useDomScene(
   let ghosts: GhostLayer | null = null
   let reveals: RevealPlayer | null = null
   const reflowed = new Set<string>()
-  let frame = 0
   let lastTransform = ''
   let presentedScene = -1
   /** The page agent work was last drawn on; held layers show once the view leaves it. */
@@ -69,9 +71,12 @@ export function useDomScene(
     if (reveals?.busy) reveals.tick()
   }
 
-  function tick() {
-    frame = requestAnimationFrame(tick)
-    if (!projector) return
+  /**
+   * Draws one frame, requested by whatever changed: the view, the graph, a gesture, a font, a
+   * preview. True while work is left for the next frame, such as a reveal still playing.
+   */
+  function tick(): boolean {
+    if (!projector) return false
     const { panX, panY, zoom } = view()
     const transform = `translate(${panX}px, ${panY}px) scale(${zoom})`
     if (transform !== lastTransform) {
@@ -97,7 +102,32 @@ export function useDomScene(
         sceneVersion: state.sceneVersion
       })
     }
+    return projector.needsFlush || reflowed.size > 0 || (reveals?.busy ?? false)
   }
+
+  const frames = createFrameRequest(tick)
+  const redraw = () => frames.request()
+
+  // What the view shows: its pan, zoom and page, the graph's versions, a gesture's preview, and
+  // what agents are still writing. Each change draws one frame; nothing does while none comes.
+  watch(
+    () => {
+      const state = view()
+      return [
+        state.panX,
+        state.panY,
+        state.zoom,
+        state.currentPageId,
+        state.sceneVersion,
+        state.renderVersion,
+        state.nodeEditState,
+        state.rotationPreview,
+        options.previews?.()
+      ]
+    },
+    redraw,
+    { flush: 'sync' }
+  )
 
   function start(element: HTMLElement) {
     projector = new DomSceneProjector(element, {
@@ -108,8 +138,12 @@ export function useDomScene(
       onPatched: (ids) => {
         for (const id of ids) reflowed.add(id)
         if (projector) options.onPatched?.(projector, ids)
+        redraw()
       },
-      onReflow: (id) => reflowed.add(id),
+      onReflow: (id) => {
+        reflowed.add(id)
+        redraw()
+      },
       livePatches: () => live.patches(),
       tokens: () => canvasTokens.references,
       fontFallbacks: () => fontManager.fallbackFamilies()
@@ -117,9 +151,9 @@ export function useDomScene(
     const p = projector
     const canvasTokens = new CanvasTokens(
       () => editor.graph,
-      (css) => p.setTokensCSS(css),
+      redrawAfter((css: string) => p.setTokensCSS(css), redraw),
       // Every layer naming a renamed variable is rebuilt with its new name.
-      () => p.reset()
+      redrawAfter(() => p.reset(), redraw)
     )
     tokens = canvasTokens
     void canvasTokens.sync()
@@ -135,36 +169,14 @@ export function useDomScene(
     // Text is edited in place, in the page, instead of by the canvas text engine.
     editor.setExternalTextEditor(new DomTextEditor(editor, p))
     stops.push(
-      editor.onEditorEvent('node:updated', (id, changes) => p.nodeUpdated(id, changes)),
-      editor.onEditorEvent('node:previewUpdated', (id, changes) => p.nodeUpdated(id, changes)),
-      editor.onEditorEvent('node:created', (node) => p.structureChanged(node.parentId)),
-      editor.onEditorEvent('node:deleted', (_id, parentId) => p.structureChanged(parentId)),
-      editor.onEditorEvent('node:reparented', (id, oldParentId, newParentId) =>
-        p.structureChanged(oldParentId, newParentId, id)
-      ),
-      editor.onEditorEvent('node:reordered', (_id, parentId, _index, previousParentId) =>
-        p.structureChanged(parentId, previousParentId)
-      ),
-      editor.onEditorEvent('graph:replaced', () => {
-        void canvasTokens.sync()
-        p.reset()
-      }),
-      // Renaming a variable or changing a mode's condition changes no layer.
-      editor.onEditorEvent('history:changed', () => void canvasTokens.sync()),
-      fontManager.onBrowserFace((loaded) => {
-        // Artboards name the document's Inter `Inter` and get only that one.
-        const face = browserFaceFor(loaded, editor.graph.interVersion)
-        if (!face) return
-        p.addFont(face)
-        ghostLayer.addFont(face)
-      }),
+      ...bindSceneEvents(editor, p, canvasTokens, ghostLayer, redraw),
       installLayoutEngine(engine)
     )
-    frame = requestAnimationFrame(tick)
+    redraw()
   }
 
   function stop() {
-    cancelAnimationFrame(frame)
+    frames.cancel()
     for (const unsubscribe of stops.splice(0)) unsubscribe()
     if (projector) editor.setExternalTextEditor(null)
     shaders?.destroy()
@@ -216,18 +228,22 @@ export function useDomScene(
       for (const node of editor.graph.getAllNodes()) {
         if (node.type === 'BOOLEAN_OPERATION') projector.nodeUpdated(node.id, {})
       }
+      redraw()
     },
     /** Replays an agent edit on the layers drawn now; the steps come from `planReveal`. */
     reveal(steps: readonly RevealStep[]) {
       reveals?.play(steps)
+      redraw()
     },
     /** Keeps an agent's new layers hidden until their reveal plays, at most `HOLD_TIMEOUT_MS`. */
     hold(ids: readonly string[]) {
       reveals?.hold(ids)
+      redraw()
     },
     /** Shows held layers whose reveal will not play, such as those past the reveal's limit. */
     release(ids: readonly string[]) {
       reveals?.release(ids)
+      redraw()
     }
   }
 }
