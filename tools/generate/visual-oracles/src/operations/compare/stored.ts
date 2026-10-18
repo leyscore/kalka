@@ -158,8 +158,10 @@ async function exportOrigins(ids: readonly string[]): Promise<Map<string, Vector
 }
 
 /**
- * Crops both images to the root layer, on white as Kalka's page paints them: the oracle's root
- * sits where its export starts (`exportOrigins`), and Kalka's page puts the root at its origin.
+ * Crops both images to the root layer: the oracle's root sits where its export starts
+ * (`exportOrigins`), and Kalka's page puts the root at its origin. Both exports are transparent
+ * where nothing draws, so they are compared with their alpha rather than on a background, which
+ * would hide whatever matches it, such as dark content missing on black.
  */
 async function compareImages(
   directory: string,
@@ -177,11 +179,11 @@ async function compareImages(
   const oracle = `${directory}/oracle-root.png`
   const kalka = `${directory}/kalka-root.png`
   const normalized = `${directory}/kalka-normalized.png`
-  await $`magick ${directory}/oracle.png -crop ${crop(storedRoot, left, top)} +repage -background white -flatten ${oracle}`.quiet()
-  await $`magick ${directory}/kalka.png -crop ${crop(laidOutRoot, 0, 0)} +repage -background white -flatten ${kalka}`.quiet()
+  await $`magick ${directory}/oracle.png -crop ${crop(storedRoot, left, top)} +repage -alpha set ${oracle}`.quiet()
+  await $`magick ${directory}/kalka.png -crop ${crop(laidOutRoot, 0, 0)} +repage -alpha set ${kalka}`.quiet()
   const oracleSize = await imageSize(oracle)
   const kalkaSize = await imageSize(kalka)
-  await $`magick ${kalka} -background black -gravity northwest -extent ${oracleSize} ${normalized}`.quiet()
+  await $`magick ${kalka} -background none -gravity northwest -extent ${oracleSize} ${normalized}`.quiet()
   const difference =
     await $`magick compare -metric AE -fuzz ${values.fuzz} ${oracle} ${normalized} null:`
       .quiet()
@@ -191,7 +193,8 @@ async function compareImages(
   await $`magick compare -fuzz ${values.fuzz} -highlight-color red -lowlight-color '#FFFFFF22' ${oracle} ${normalized} ${directory}/diff.png`
     .quiet()
     .nothrow()
-  await $`magick ${oracle} ${kalka} -background '#808080' -splice 8x0 +append ${directory}/side.png`.quiet()
+  // Side by side on mid grey, where transparent areas and both light and dark content show.
+  await $`magick ${oracle} ${kalka} -background none -splice 8x0 +append -background '#808080' -flatten ${directory}/side.png`.quiet()
   return { oracleSize, kalkaSize, differentPercent: (changed / (width * height)) * 100 }
 }
 
