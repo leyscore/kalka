@@ -1,5 +1,6 @@
 import type { DesignStyleDeclaration } from '../../types'
 import { pixelValue } from './lengths'
+import { combineShorthands, ZERO } from './shorthands'
 
 /** How the parent lays an element out, which decides what some declarations do. */
 export interface ParentLayout {
@@ -7,30 +8,8 @@ export interface ParentLayout {
   style: DesignStyleDeclaration | undefined
 }
 
-/** Tags with browser padding of their own, which a side left out of `padding` keeps. */
-const BROWSER_PADDING_TAGS: ReadonlySet<string> = new Set([
-  'button',
-  'details',
-  'dialog',
-  'dir',
-  'fieldset',
-  'input',
-  'legend',
-  'menu',
-  'ol',
-  'optgroup',
-  'option',
-  'select',
-  'td',
-  'textarea',
-  'th',
-  'ul'
-])
-
 /** Tags whose minimum size is not `auto`, such as a fieldset's content width. */
 const BROWSER_MINIMUM_TAGS: ReadonlySet<string> = new Set(['fieldset'])
-
-const ZERO = new Set(['0', '0px'])
 
 const isFlex = (display: string | undefined) => display === 'flex' || display === 'inline-flex'
 const isGrid = (display: string | undefined) => display === 'grid' || display === 'inline-grid'
@@ -98,76 +77,54 @@ function dropIdleAspectRatio(style: DesignStyleDeclaration, parent: DesignStyleD
   delete style['aspect-ratio']
 }
 
-/** Entries in their order with `replaced` written where the first of `names` was. */
-function replaceDeclarations(
+/** Block boxes by default, which stay block boxes without `display: flex`. */
+const BLOCK_TAGS: ReadonlySet<string> = new Set([
+  'article',
+  'aside',
+  'div',
+  'figure',
+  'footer',
+  'form',
+  'header',
+  'main',
+  'nav',
+  'section'
+])
+
+/** What only a flex container's children read. */
+const FLEX_CONTAINER_PROPERTIES = [
+  'display',
+  'flex-direction',
+  'justify-content',
+  'align-items',
+  'flex-wrap',
+  'align-content',
+  'gap',
+  'row-gap',
+  'column-gap'
+]
+
+/**
+ * An auto layout frame with nothing inside draws as the box it is: its flex layout has no
+ * children to place. The box stays a block, and its margins could only collapse in a parent
+ * without flex layout, or a baseline line asks for its first line, which only stays when the
+ * box keeps flex layout.
+ */
+function dropEmptyFlexLayout(
   style: DesignStyleDeclaration,
-  names: readonly string[],
-  property: string,
-  value: string
-): DesignStyleDeclaration {
-  const result: DesignStyleDeclaration = {}
-  let written = false
-  for (const [name, current] of Object.entries(style)) {
-    if (!names.includes(name)) result[name] = current
-    else if (!written) {
-      result[property] = value
-      written = true
-    }
-  }
-  return result
-}
-
-const PADDING_SIDES = ['padding-top', 'padding-right', 'padding-bottom', 'padding-left'] as const
-
-/** `padding` with its sides as few as say the same: `18px 20px 0` rather than three longhands. */
-function paddingShorthand(top: string, right: string, bottom: string, left: string): string {
-  if (top === right && right === bottom && bottom === left) return top
-  if (top === bottom && right === left) return `${top} ${right}`
-  if (right === left) return `${top} ${right} ${bottom}`
-  return `${top} ${right} ${bottom} ${left}`
-}
-
-/**
- * The padding longhands as one `padding`. A side the projection leaves out is zero, as it is on
- * every tag without browser padding.
- */
-function combinePadding(style: DesignStyleDeclaration, tagName: string): DesignStyleDeclaration {
-  if (BROWSER_PADDING_TAGS.has(tagName) || 'padding' in style) return style
-  if (Object.keys(style).some((name) => name.startsWith('writing-mode'))) return style
-  const names = Object.keys(style).filter((name) => name.startsWith('padding-'))
-  if (names.length === 0) return style
-  const side = (longhand: string, logical: string) => style[longhand] ?? style[logical] ?? '0'
-  const [top, right, bottom, left] = PADDING_SIDES.map((longhand) =>
-    side(
-      longhand,
-      longhand === 'padding-top' || longhand === 'padding-bottom'
-        ? 'padding-block'
-        : 'padding-inline'
-    )
-  ).map((value) => (ZERO.has(value) ? '0' : value))
-  return replaceDeclarations(style, names, 'padding', paddingShorthand(top, right, bottom, left))
-}
-
-/**
- * Growing from a zero basis as one `flex`: `flex: 1 1 0` is `flex-grow: 1; flex-basis: 0`, the
- * shrink factor being its initial one unless the layer set its own.
- */
-function combineFlex(style: DesignStyleDeclaration): DesignStyleDeclaration {
-  const grow = style['flex-grow']
-  const basis = style['flex-basis']
-  if (grow === undefined || basis === undefined || 'flex' in style) return style
-  const shrink = style['flex-shrink'] ?? '1'
-  const names = ['flex-grow', 'flex-shrink', 'flex-basis'].filter((name) => name in style)
-  return replaceDeclarations(
-    style,
-    names,
-    'flex',
-    `${grow} ${shrink} ${ZERO.has(basis) ? '0' : basis}`
-  )
+  tagName: string,
+  parent: DesignStyleDeclaration
+): void {
+  if (style.display !== 'flex' || !BLOCK_TAGS.has(tagName)) return
+  if (!placedOutOfFlow(style) && !isFlex(parent.display) && !isGrid(parent.display)) return
+  if (parent['align-items'] === 'baseline' || style['align-self'] === 'baseline') return
+  for (const property of FLEX_CONTAINER_PROPERTIES) delete style[property]
 }
 
 export interface DeclarationContext {
   tagName: string
+  /** Whether the element has no children, text included. */
+  empty: boolean
   /** Whether the element has class rules of its own, which its declarations may be overriding. */
   classed: boolean
   parent: ParentLayout
@@ -183,7 +140,7 @@ export interface DeclarationContext {
  */
 export function tidyDeclarations(
   style: DesignStyleDeclaration,
-  { tagName, classed, parent, responsive, shorthands }: DeclarationContext
+  { tagName, empty, classed, parent, responsive, shorthands }: DeclarationContext
 ): DesignStyleDeclaration {
   const tidy = { ...style }
   const tag = tagName.toLowerCase()
@@ -192,6 +149,7 @@ export function tidyDeclarations(
   if (parent.style) {
     dropDefaultMinimums(tidy, tag, parent.style)
     dropIdleAspectRatio(tidy, parent.style)
+    if (empty) dropEmptyFlexLayout(tidy, tag, parent.style)
   }
-  return shorthands ? combineFlex(combinePadding(tidy, tag)) : tidy
+  return shorthands ? combineShorthands(tidy, tag) : tidy
 }

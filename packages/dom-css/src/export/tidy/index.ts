@@ -22,6 +22,7 @@ function tidyNode(
     node.inlineStyle &&
     tidyDeclarations(tidyLengths(node.inlineStyle), {
       tagName: node.tagName,
+      empty: node.children.length === 0,
       classed: (node.sourceSceneNode?.htmlClasses.length ?? 0) > 0,
       parent: { style: parent?.inlineStyle },
       responsive: hasMedia(node) || hasMedia(parent),

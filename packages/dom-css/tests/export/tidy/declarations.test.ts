@@ -13,6 +13,7 @@ function tidy(
 ) {
   return tidyDeclarations(style, {
     tagName: 'div',
+    empty: false,
     classed: false,
     parent: { style: parent },
     responsive: false,
@@ -82,5 +83,35 @@ describe('shorthands', () => {
   test('growing from nothing is `flex`', () => {
     expect(tidy({ 'flex-grow': '1', 'flex-basis': '0' }, row)).toEqual({ flex: '1 1 0' })
     expect(tidy({ 'flex-grow': '1' }, row)).toEqual({ 'flex-grow': '1' })
+  })
+
+  test('a border on its sides is one border, or the one side drawn', () => {
+    const sides = (top: string, bottom: string) => ({
+      'border-style': 'solid',
+      'border-color': 'rgba(0, 0, 0, 0.5)',
+      'border-top-width': top,
+      'border-right-width': '0px',
+      'border-bottom-width': bottom,
+      'border-left-width': '0px'
+    })
+    expect(tidy(sides('0px', '1px'), undefined)).toEqual({
+      'border-bottom': '1px solid rgba(0, 0, 0, 0.5)'
+    })
+    expect(tidy(sides('2px', '1px'), undefined)).toEqual(sides('2px', '1px'))
+    expect(tidy(sides('0px', '1px'), undefined, { tagName: 'input' })).toEqual(sides('0px', '1px'))
+  })
+})
+
+describe('auto layout without children', () => {
+  const box = { width: '20px', height: '20px', display: 'flex', 'align-items': 'center' }
+
+  test('draws as a plain box where nothing else reads its layout', () => {
+    expect(tidy(box, row, { empty: true })).toEqual({ width: '20px', height: '20px' })
+  })
+
+  test('keeps flex layout with children, in a block parent, or on a baseline', () => {
+    expect(tidy(box, row)).toEqual(box)
+    expect(tidy(box, { position: 'relative' }, { empty: true })).toEqual(box)
+    expect(tidy(box, { ...row, 'align-items': 'baseline' }, { empty: true })).toEqual(box)
   })
 })
