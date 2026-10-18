@@ -66,7 +66,7 @@ The CLI installed from npm has no browser: Electron is about 300 MB unpacked and
 
 #### Cost
 
-Measured on an Apple M-series laptop: the host starts with the first layout in about 230 ms; a layout request for a small artboard then takes 0.2 ms at the median (0.4 ms at the 95th percentile), and an artboard of 421 layers 5 ms. The quick unit suite (`bun tools/dev/unit-tests/src/run.ts all`), one process and so one host, ran in 78 s with Yoga and runs in 95 s with the browser. On Linux CI every unit shard installs Electron and runs under `xvfb-run`. With `--isolate`, each test file gets a host of its own, closed with it.
+Measured on an Apple M-series laptop: the host starts with the first layout in about 230 ms; a layout request for a small artboard then takes 0.2 ms at the median (0.4 ms at the 95th percentile), and an artboard of 421 layers 5 ms. The quick unit suite (`bun tools/dev/unit-tests/src/run.ts all`), one process and so one host, took 84 s with Yoga and takes 85 s with the browser; the CLI's group, which starts the CLI in processes of its own, is most of either. On Linux CI every unit shard installs Electron and runs under `xvfb-run`. With `--isolate`, each test file gets a host of its own, closed with it.
 
 #### What the browser does not do as Figma does
 
