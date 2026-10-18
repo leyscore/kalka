@@ -247,8 +247,11 @@ export class ACPChatTransport implements ChatTransport<UIMessage> {
 
   private async spawnAgent(): Promise<ACPSession> {
     const { getAutomationAuthToken } = await import('@/app/automation/mcp/spawn')
+    const { ensureMCPRuntime } = await import('@/app/automation/mcp/runtime')
     let automationAuthToken: string | null
     try {
+      // The agent reaches the canvas through the MCP server, which may not have started yet.
+      await ensureMCPRuntime()
       automationAuthToken = await getAutomationAuthToken()
     } catch (e) {
       throw startupError(e, this.agentDef)

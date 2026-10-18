@@ -29,13 +29,20 @@ async function externalPiMCPServer(
   }
 }
 
+/** The built-in server's token, once the server that may still wait for an idle app started. */
+async function startedAutomationAuthToken(): Promise<string | null> {
+  const { ensureMCPRuntime } = await import('@/app/automation/mcp/runtime')
+  await ensureMCPRuntime()
+  return getAutomationAuthToken()
+}
+
 export async function buildPiMCPServers(options?: {
   authorizationToken?: string | null
 }): Promise<Record<string, PiMCPServer>> {
   const authorizationToken =
     options && 'authorizationToken' in options
       ? options.authorizationToken
-      : await getAutomationAuthToken()
+      : await startedAutomationAuthToken()
   const entries = await Promise.all(
     // The Pi harness reaches servers by URL; stdio servers stay with Kalka and ACP agents.
     enabledMCPConnections.value

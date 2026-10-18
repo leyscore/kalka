@@ -2,6 +2,7 @@ import { reactive } from 'vue'
 
 import { connectAutomation } from '@/app/automation/bridge/server'
 import type { EditorStore } from '@/app/editor/active-store'
+import { whenIdle } from '@/app/runtime/idle'
 import { isTauri } from '@/app/tauri/env'
 
 import { mcpFailure, type MCPFailure } from './failure'
@@ -15,6 +16,9 @@ import {
   getMCPServerURL,
   spawnMCPIfNeeded
 } from './spawn'
+
+/** The longest a scheduled start waits for the app to be idle. */
+const MCP_START_IDLE_TIMEOUT_MS = 3000
 
 export type MCPRuntimeStatus = 'idle' | 'starting' | 'running' | 'stopped' | 'error'
 
@@ -183,16 +187,54 @@ export function createMCPRuntimeService(dependencies: MCPRuntimeDependencies) {
     return disconnectError ? { ok: false, error: disconnectError } : { ok: true }
   }
 
+  /** The latest start or restart, which callers that need the server wait for. */
+  let started: Promise<MCPRuntimeResult> | null = null
+  let cancelScheduled: (() => void) | null = null
+
+  function cancelSchedule(): void {
+    cancelScheduled?.()
+    cancelScheduled = null
+  }
+
+  function start(getStore: () => EditorStore): Promise<MCPRuntimeResult> {
+    cancelSchedule()
+    activeStore = getStore
+    started = enqueue(startOperation)
+    return started
+  }
+
   return {
     state,
     refresh: () => enqueue(refreshOperation),
-    start(getStore: () => EditorStore): Promise<MCPRuntimeResult> {
+    start,
+    /**
+     * Starts the server once `defer` runs its task, such as when the app is idle after its first
+     * screen, so it never delays opening files or painting. `ensure` starts it sooner.
+     */
+    schedule(getStore: () => EditorStore, defer: (task: () => void) => () => void): void {
       activeStore = getStore
-      return enqueue(startOperation)
+      if (started || cancelScheduled) return
+      cancelScheduled = defer(() => {
+        cancelScheduled = null
+        if (!started && activeStore) void start(activeStore)
+      })
     },
-    stop: () => enqueue(() => stopOperation(true)),
-    restart: () =>
-      enqueue(async () => {
+    /** Starts a scheduled server now, or waits for the start already under way. */
+    ensure(): Promise<MCPRuntimeResult> {
+      if (started) return started
+      if (!activeStore) {
+        return Promise.resolve({ ok: false, error: new Error('Editor is not ready') })
+      }
+      return start(activeStore)
+    },
+    stop: () => {
+      cancelSchedule()
+      started = null
+      return enqueue(() => stopOperation(true))
+    },
+    restart: () => {
+      cancelSchedule()
+      started = enqueue(async () => {
         const stopResult = await stopOperation(false)
         if (!stopResult.ok) return stopResult
         if (!activeStore) {
@@ -203,6 +245,8 @@ export function createMCPRuntimeService(dependencies: MCPRuntimeDependencies) {
         }
         return startOperation()
       })
+      return started
+    }
   }
 }
 
@@ -220,4 +264,9 @@ export const mcpRuntime = appMCPRuntime.state
 export const refreshMCPRuntime = appMCPRuntime.refresh
 export const restartMCPRuntime = () => appMCPRuntime.restart()
 export const startMCPRuntime = (getStore: () => EditorStore) => appMCPRuntime.start(getStore)
+/** Starts the server when the app is next idle; see `whenIdle`. */
+export const scheduleMCPRuntime = (getStore: () => EditorStore) =>
+  appMCPRuntime.schedule(getStore, (task) => whenIdle(task, MCP_START_IDLE_TIMEOUT_MS))
+/** Starts the server now if it is still waiting for the app to be idle, and waits for it. */
+export const ensureMCPRuntime = () => appMCPRuntime.ensure()
 export const stopMCPRuntime = () => appMCPRuntime.stop()

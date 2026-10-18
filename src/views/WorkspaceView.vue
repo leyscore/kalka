@@ -7,7 +7,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from '@kalka/vue'
 
 import { exposeAutomationTestRequests } from '@/app/automation/bridge/test-hooks'
-import { startMCPRuntime, stopMCPRuntime } from '@/app/automation/mcp/runtime'
+import { scheduleMCPRuntime, stopMCPRuntime } from '@/app/automation/mcp/runtime'
 import { startWebMCP } from '@/app/automation/webmcp/runtime'
 import { exposeCollaborationActions } from '@/app/browser-bridge'
 import { useJoinRoom } from '@/app/collab/join'
@@ -207,7 +207,8 @@ let stopWebMCP: (() => void) | undefined
 
 onMounted(async () => {
   stopWebMCP = startWebMCP(getActiveStore)
-  await startMCPRuntime(getActiveStore)
+  // The server only answers agents: it starts once the first screen is up, never before files open.
+  scheduleMCPRuntime(getActiveStore)
 
   try {
     await bindAssociatedFileOpen()

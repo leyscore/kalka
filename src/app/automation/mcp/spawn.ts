@@ -75,7 +75,8 @@ export interface MCPStartupTiming {
   /** Delay before each of the health polls after spawning. */
   healthPollMs: number
 }
-const DEFAULT_STARTUP_TIMING: MCPStartupTiming = { earlyExitMs: 250, healthPollMs: 1000 }
+// Frequent polls find the server as soon as it listens; fifty make five seconds at this rate.
+const DEFAULT_STARTUP_TIMING: MCPStartupTiming = { earlyExitMs: 100, healthPollMs: 100 }
 
 let runtimeAutomationAuthToken: string | null = DEV_AUTOMATION_AUTH_TOKEN
 let runtimeAutomationStartupError: Error | null = null
@@ -524,7 +525,7 @@ async function startMCPIfNeeded(timing: MCPStartupTiming): Promise<AutomationSer
       )
     )
   }
-  const health = await pollHealth(5, timing.healthPollMs, authToken)
+  const health = await pollHealth(50, timing.healthPollMs, authToken)
 
   if (health) {
     try {

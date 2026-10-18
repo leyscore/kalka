@@ -9,6 +9,8 @@ Kalka includes an MCP (Model Context Protocol) server that lets AI coding tools 
 
 Two transports: **stdio** for MCP clients, and **Streamable HTTP** for browser extensions and scripts. On macOS and Linux, local clients prefer a private Unix domain socket; Windows and unavailable sockets fall back to localhost TCP.
 
+The desktop app starts its server once its first screen is up and the app is idle, at most three seconds later, so the server never delays opening the app or a document. Opening **Settings → MCP** or starting an ACP agent starts it at once if it is still waiting.
+
 Tool definitions own native Valibot input schemas, execution/mutation metadata, capabilities, and optional interface exposure exclusions. Tools are included by default; `exposure: { mcp: false, ai: false, webmcp: false }` can exclude them independently from each adapter. Exposure does not bypass execution support or user permissions: WebMCP still requires supported execution and explicit Off, Inspect, or Edit access. AI and MCP consume the same schema through Standard Schema; WebMCP derives its JSON Schema from that input. Numeric strings are accepted consistently across adapters, while non-finite values are rejected. Programmatic integrations use MCP SDK v2; custom tools replace the former `params`/`ParamDef` contract with `input` and execution metadata.
 
 ## Tool access settings

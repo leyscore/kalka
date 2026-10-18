@@ -1,12 +1,17 @@
 import { onMounted } from 'vue'
 
 import { mcpRootDirectory } from '@/app/automation/mcp/preferences'
-import { refreshMCPRuntime, restartMCPRuntime } from '@/app/automation/mcp/runtime'
+import {
+  ensureMCPRuntime,
+  refreshMCPRuntime,
+  restartMCPRuntime
+} from '@/app/automation/mcp/runtime'
 import { isTauri } from '@/app/tauri/env'
 
 export function useMCPSettings() {
   onMounted(() => {
-    void refreshMCPRuntime()
+    // A server still waiting for the app to be idle starts now, so its status is real.
+    void ensureMCPRuntime().then(() => refreshMCPRuntime())
   })
 
   function restart(): void {

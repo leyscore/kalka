@@ -175,4 +175,62 @@ describe('MCP runtime service', () => {
     expect(service.state.status).toBe('running')
     expect(calls).toEqual(['connect', 'disconnect-bridge', 'disconnect-server', 'connect'])
   })
+
+  test('a scheduled server starts only when its deferred task runs', async () => {
+    let spawnCalls = 0
+    let task: (() => void) | null = null
+    const { service } = setup({
+      spawn: async () => {
+        spawnCalls++
+        return { authToken: null, managed: true, disconnect: () => undefined }
+      }
+    })
+
+    service.schedule(getStore, (run) => {
+      task = run
+      return () => undefined
+    })
+    expect(spawnCalls).toBe(0)
+    expect(service.state.status).toBe('idle')
+
+    task?.()
+    expect(await service.ensure()).toEqual({ ok: true })
+    expect(spawnCalls).toBe(1)
+    expect(service.state.status).toBe('running')
+  })
+
+  test('ensure starts a scheduled server at once and cancels the deferred start', async () => {
+    let spawnCalls = 0
+    let cancelled = false
+    let task: (() => void) | null = null
+    const { service } = setup({
+      spawn: async () => {
+        spawnCalls++
+        return { authToken: null, managed: true, disconnect: () => undefined }
+      }
+    })
+    service.schedule(getStore, (run) => {
+      task = run
+      return () => {
+        cancelled = true
+      }
+    })
+
+    const [first, second] = await Promise.all([service.ensure(), service.ensure()])
+    task?.()
+
+    expect(first).toEqual({ ok: true })
+    expect(second).toEqual({ ok: true })
+    expect(cancelled).toBe(true)
+    expect(spawnCalls).toBe(1)
+  })
+
+  test('ensure without an editor reports that it cannot start', async () => {
+    const { service } = setup()
+
+    const result = await service.ensure()
+
+    expect(result.ok).toBe(false)
+    expect(service.state.status).toBe('idle')
+  })
 })
