@@ -116,12 +116,15 @@ function trackFreshArtboards(graph: SceneGraph): Set<string> {
  * Layout by a browser page the canvas does not show: each artboard is projected to the HTML and
  * CSS the DOM canvas builds, laid out by the page, and every box is read back into the layers, as
  * the canvas's own layout does. Artboards are sent in batches and laid out again only once an
- * edit touched them. A hidden artboard is laid out as if shown, so it is ready when it is.
+ * edit touched them, or a face their text names arrived after they were laid out. A hidden
+ * artboard is laid out as if shown, so it is ready when it is.
  *
  * Once the page fails to answer, the engine stops asking it: layers keep the geometry they have.
  */
 export class BrowserLayoutEngine implements LayoutEngine {
   readonly #fresh = new WeakMap<SceneGraph, Set<string>>()
+  /** Per graph, the faces an artboard's text named that were not loaded when it was laid out. */
+  readonly #missingFonts = new WeakMap<SceneGraph, Map<string, FontFaceName[]>>()
   readonly #sentFonts = new Set<string>()
   #failed = false
 
@@ -141,7 +144,16 @@ export class BrowserLayoutEngine implements LayoutEngine {
       fresh = trackFreshArtboards(graph)
       this.#fresh.set(graph, fresh)
     }
-    const pending = artboards.filter((id) => !fresh.has(id))
+    let missing = this.#missingFonts.get(graph)
+    if (!missing) {
+      missing = new Map()
+      this.#missingFonts.set(graph, missing)
+    }
+    // Text laid out before its face loaded took a fallback's size: once the face is there, the
+    // artboard is laid out again, as the canvas does when a font arrives in its iframe.
+    const pending = artboards.filter(
+      (id) => !fresh.has(id) || (missing.get(id)?.some(isLoadedFace) ?? false)
+    )
     if (pending.length === 0) return true
 
     const projected = pending.flatMap((id) => projectArtboard(graph, id) ?? [])
@@ -151,20 +163,18 @@ export class BrowserLayoutEngine implements LayoutEngine {
       return false
     }
     applyMeasuredLayout(graph, measured)
-    for (const { id } of projected) fresh.add(id)
+    for (const { id } of projected) {
+      fresh.add(id)
+      const absent = namedFaces(graph, id).filter((face) => !isLoadedFace(face))
+      if (absent.length > 0) missing.set(id, absent)
+      else missing.delete(id)
+    }
     return true
   }
 
   /** The faces the artboards' text names that the page does not have yet, as loaded. */
   #fontsFor(graph: SceneGraph, artboards: readonly PageArtboard[]): PageFontFace[] {
-    const named: Array<{ family: string; style: string }> = []
-    const collect = (id: string) => {
-      const node = graph.getNode(id)
-      if (!node) return
-      named.push(...collectNodeFontFaces(node))
-      node.childIds.forEach(collect)
-    }
-    for (const { id } of artboards) collect(id)
+    const named = artboards.flatMap(({ id }) => namedFaces(graph, id))
     const faces: PageFontFace[] = []
     for (const { family, style } of named) {
       const key = `${family}\0${style}`
@@ -201,6 +211,28 @@ export class BrowserLayoutEngine implements LayoutEngine {
     }
     return measured
   }
+}
+
+interface FontFaceName {
+  family: string
+  style: string
+}
+
+/** The faces the text in `id` and everything inside it names. */
+function namedFaces(graph: SceneGraph, id: string): FontFaceName[] {
+  const named: FontFaceName[] = []
+  const collect = (nodeId: string) => {
+    const node = graph.getNode(nodeId)
+    if (!node) return
+    named.push(...collectNodeFontFaces(node))
+    node.childIds.forEach(collect)
+  }
+  collect(id)
+  return named
+}
+
+function isLoadedFace({ family, style }: FontFaceName): boolean {
+  return fontManager.loadedData(family, style) !== null
 }
 
 /** An artboard as the canvas builds it, shown even when hidden. */
