@@ -22,6 +22,8 @@ test('variable fonts render each style at its named instance', async ({ page }) 
 
   const result = await page.evaluate(async () => {
     const store = window.kalka?.getStore?.()
+    // CanvasKit loads on demand behind the DOM canvas.
+    await store?.loadCanvasKit()
     if (!store?.renderer) throw new Error('Kalka renderer not initialized')
     const fontModuleURL = performance
       .getEntriesByType('resource')

@@ -88,8 +88,10 @@ test.describe('SkPicture scene caching', () => {
   }
 
   test('stale scene picture is invalidated after font load', async () => {
-    await helper.page.evaluate(() => {
+    await helper.page.evaluate(async () => {
       const store = window.kalka?.getStore?.()
+      // CanvasKit loads on demand behind the DOM canvas.
+      await store?.loadCanvasKit()
       if (!store?.renderer) throw new Error('Renderer not initialized')
       store.renderer.invalidateScenePicture()
       store.requestRender()

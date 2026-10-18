@@ -13,6 +13,8 @@ test('the pixel grid adds no CPU time to panning frames', async ({ page }) => {
   await new CanvasHelper(page).waitForInit()
   const cost = await page.evaluate(async () => {
     const found = window.kalka?.getStore?.()
+    // CanvasKit loads on demand behind the DOM canvas.
+    await found?.loadCanvasKit()
     if (!found?.renderer) throw new Error('Kalka renderer not initialized')
     const store = found
     const profiler = found.renderer.profiler

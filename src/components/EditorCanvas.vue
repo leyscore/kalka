@@ -137,6 +137,9 @@ if (domScene) {
   // geometry until then and its computed outline once it has loaded.
   onUnmounted(store.onCanvasKitReady(() => scene.redrawBooleanOperations()))
   useBooleanOperationsCanvasKit(store)
+  // Browser tests load it with the canvas, as every editor did before it loaded on demand: the
+  // headless test browser crashes now and then when it reloads a page that never loaded it.
+  if (appRuntimeConfig.test) void store.loadCanvasKit()
   useViewportSize(canvasRef, onViewportResize)
 } else {
   useCanvas(sceneCanvasRef, store, {

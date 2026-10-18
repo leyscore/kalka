@@ -55,6 +55,8 @@ test('international text is correct on its first visible paint', async ({ page }
 
   const result = await page.evaluate(async () => {
     const store = window.kalka?.getStore?.()
+    // CanvasKit loads on demand behind the DOM canvas.
+    await store?.loadCanvasKit()
     if (!store?.renderer) throw new Error('Kalka renderer not initialized')
     const fontModuleURL = performance
       .getEntriesByType('resource')
@@ -273,8 +275,10 @@ test('typed and tool-created text repaint with the same resolved fallbacks', asy
   })
 
   await page.locator('textarea[aria-hidden="true"]').fill('Kalka · 你好 · مرحبا')
-  await page.evaluate(() => {
+  await page.evaluate(async () => {
     const store = window.kalka?.getStore?.()
+    // CanvasKit loads on demand behind the DOM canvas.
+    await store?.loadCanvasKit()
     if (!store?.renderer) throw new Error('Kalka renderer not initialized')
     store.renderer.invalidateAllPictures()
     store.renderer.renderFromEditorState(
@@ -304,6 +308,8 @@ test('typed and tool-created text repaint with the same resolved fallbacks', asy
 
   const resolved = await page.evaluate(async ({ nodeIds, toolId, typedId }) => {
     const store = window.kalka?.getStore?.()
+    // CanvasKit loads on demand behind the DOM canvas.
+    await store?.loadCanvasKit()
     if (!store?.renderer) throw new Error('Kalka renderer not initialized')
     const fontModuleURL = performance
       .getEntriesByType('resource')
@@ -369,6 +375,8 @@ test('substituted fonts still request fallbacks for CJK text', async ({ page }) 
 
   const result = await page.evaluate(async () => {
     const store = window.kalka?.getStore?.()
+    // CanvasKit loads on demand behind the DOM canvas.
+    await store?.loadCanvasKit()
     if (!store?.renderer) throw new Error('Kalka renderer not initialized')
     const fontModuleURL = performance
       .getEntriesByType('resource')

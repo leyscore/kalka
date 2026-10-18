@@ -41,10 +41,11 @@ test.describe.serial('large-document performance', () => {
         })
       })
 
-      const result = await page.evaluate((profile): TimingSummary => {
+      const result = await page.evaluate(async (profile): Promise<TimingSummary> => {
         const store = window.kalka?.getStore?.()
         if (!store) throw new Error('Kalka store not initialized')
-        const renderer = store.renderer
+        // CanvasKit loads on demand behind the DOM canvas.
+        const renderer = await store.loadCanvasKit()
         if (!renderer) throw new Error('Kalka renderer not initialized')
         const graph = store.graph
         const iterations = 50

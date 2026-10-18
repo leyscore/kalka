@@ -19,8 +19,10 @@ test('first edit replaces baked missing-font glyphs with visible live substituti
   const editor = { page, canvas: new CanvasHelper(page) }
   await editor.canvas.waitForInit()
   await editor.canvas.clearCanvas()
-  const textId = await editor.page.evaluate(() => {
+  const textId = await editor.page.evaluate(async () => {
     const store = window.kalka?.getStore?.()
+    // CanvasKit loads on demand behind the DOM canvas.
+    await store?.loadCanvasKit()
     if (!store?.renderer) throw new Error('Kalka renderer not initialized')
     const pageId = store.state.currentPageId
     const node = store.graph.createNode('TEXT', pageId, {
