@@ -286,5 +286,19 @@
   "aiSetupAgentMCPStartFailed": "Der MCP-Server ist installiert, startet aber nicht. Starte Kalka neu und prüfe dann erneut.",
   "aiSetupAgentLookupFailed": "Dieser Computer konnte nicht geprüft werden. Versuche es erneut.",
   "chatAgentWorkingOn": "{agent} arbeitet an „{page}“",
-  "chatGoToPage": "Zur Seite"
+  "chatGoToPage": "Zur Seite",
+  "reconnect": "Neu verbinden",
+  "reconnecting": "Wird neu verbunden…",
+  "chatAgentSignInExpired": "{agent} möchte, dass du dich erneut anmeldest. Verbinde neu, um fortzufahren.",
+  "chatOpenRouterSignInExpired": "Deine OpenRouter-Anmeldung funktioniert nicht mehr. Verbinde neu, um dich erneut anzumelden.",
+  "chatReconnectedHeading": "Neu verbunden",
+  "chatReconnectedDescription": "Deine letzte Nachricht erneut senden?",
+  "chatResend": "Nachricht erneut senden",
+  "chatReconnectTerminalHeading": "Bei {agent} in einem Terminal anmelden",
+  "chatReconnectTerminalCommand": "Führe diesen Befehl in einem Terminal aus und sende deine Nachricht dann erneut.",
+  "chatReconnectTerminalPrompt": "Führe diesen Befehl in einem Terminal aus, gib {prompt} ein und sende deine Nachricht dann erneut.",
+  "chatReconnectTerminalUnknown": "{agent} meldet sich über die eigene Befehlszeile an. Melde dich dort an und sende deine Nachricht dann erneut.",
+  "chatReconnectFailed": "Kalka konnte nicht neu verbinden. Prüfe die Einrichtung des Agenten oder Anbieters und versuche es erneut.",
+  "modelReconnectHeading": "Gespeicherten Schlüssel ersetzen",
+  "modelReconnectDescription": "Der Anbieter hat den Schlüssel dieses Modells abgelehnt. Füge einen neuen ein, speichere und sende deine Nachricht dann im Chat erneut."
 }

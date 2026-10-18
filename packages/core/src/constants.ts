@@ -171,6 +171,11 @@ export interface ACPAgentDef {
   /** The vendor's installation guide for the agent itself. */
   setupURL?: string
   installCommand?: string
+  /**
+   * How to sign in to the agent in a terminal, for agents whose ACP `authenticate` cannot do it:
+   * the command to run and, when sign-in is a command inside it, the one to type there.
+   */
+  terminalSignIn?: { command: string; prompt?: string }
 }
 
 export const ACP_AGENTS: ACPAgentDef[] = [
@@ -182,7 +187,8 @@ export const ACP_AGENTS: ACPAgentDef[] = [
     cliCommand: 'claude',
     adapterPackage: '@agentclientprotocol/claude-agent-acp',
     setupURL: 'https://code.claude.com/docs/en/setup',
-    installCommand: 'npm i -g @agentclientprotocol/claude-agent-acp'
+    installCommand: 'npm i -g @agentclientprotocol/claude-agent-acp',
+    terminalSignIn: { command: 'claude', prompt: '/login' }
   },
   {
     id: 'codex',
@@ -192,7 +198,8 @@ export const ACP_AGENTS: ACPAgentDef[] = [
     cliCommand: 'codex',
     adapterPackage: '@agentclientprotocol/codex-acp',
     setupURL: 'https://developers.openai.com/codex/cli',
-    installCommand: 'npm i -g @agentclientprotocol/codex-acp'
+    installCommand: 'npm i -g @agentclientprotocol/codex-acp',
+    terminalSignIn: { command: 'codex login' }
   },
   {
     id: 'gemini-cli',
@@ -200,7 +207,8 @@ export const ACP_AGENTS: ACPAgentDef[] = [
     command: 'gemini',
     args: ['--acp'],
     setupURL: 'https://geminicli.com/docs/get-started/installation/',
-    installCommand: 'npm i -g @google/gemini-cli'
+    installCommand: 'npm i -g @google/gemini-cli',
+    terminalSignIn: { command: 'gemini', prompt: '/auth' }
   }
 ]
 

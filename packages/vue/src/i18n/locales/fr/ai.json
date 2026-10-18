@@ -286,5 +286,19 @@
   "aiSetupAgentMCPStartFailed": "Le serveur MCP est installé mais n’a pas démarré. Redémarrez Kalka, puis vérifiez à nouveau.",
   "aiSetupAgentLookupFailed": "Impossible de vérifier cet ordinateur. Réessayez.",
   "chatAgentWorkingOn": "{agent} travaille sur « {page} »",
-  "chatGoToPage": "Aller à la page"
+  "chatGoToPage": "Aller à la page",
+  "reconnect": "Se reconnecter",
+  "reconnecting": "Reconnexion…",
+  "chatAgentSignInExpired": "{agent} vous demande de vous reconnecter. Reconnectez-vous pour continuer.",
+  "chatOpenRouterSignInExpired": "Votre connexion à OpenRouter ne fonctionne plus. Reconnectez-vous pour vous identifier à nouveau.",
+  "chatReconnectedHeading": "Reconnecté",
+  "chatReconnectedDescription": "Renvoyer votre dernier message ?",
+  "chatResend": "Renvoyer le message",
+  "chatReconnectTerminalHeading": "Connectez-vous à {agent} dans un terminal",
+  "chatReconnectTerminalCommand": "Lancez cette commande dans un terminal, puis renvoyez votre message.",
+  "chatReconnectTerminalPrompt": "Lancez cette commande dans un terminal et tapez {prompt}, puis renvoyez votre message.",
+  "chatReconnectTerminalUnknown": "{agent} se connecte depuis sa propre ligne de commande. Connectez-vous-y, puis renvoyez votre message.",
+  "chatReconnectFailed": "Kalka n’a pas pu se reconnecter. Vérifiez la configuration de l’agent ou du fournisseur, puis réessayez.",
+  "modelReconnectHeading": "Remplacer la clé enregistrée",
+  "modelReconnectDescription": "Le fournisseur a refusé la clé de ce modèle. Collez-en une nouvelle et enregistrez, puis renvoyez votre message depuis le chat."
 }

@@ -89,6 +89,8 @@ export function useAIChat() {
     ensureChat: history.ensureChat,
     resetChat: history.newChat,
     chatFailure: chatSession.failure,
-    clearChatFailure: chatSession.clearFailure
+    clearChatFailure: chatSession.clearFailure,
+    /** The next message rebuilds the transport, restarting an agent with its new sign-in. */
+    markTransportDirty: chatSession.markTransportDirty
   }
 }

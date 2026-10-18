@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import type { UIMessage } from 'ai'
-import { expect } from 'storybook/test'
+import { expect, fn, userEvent } from 'storybook/test'
 
 import ChatMessage from './ChatMessage.vue'
 
@@ -79,9 +79,28 @@ const partlyUndoneMessage: UIMessage = {
   ]
 }
 
+/** A coding agent that reports its sign-in expired, as Claude Code does over ACP. */
+const signInExpiredMessage: UIMessage = {
+  id: 'sign-in-expired-message',
+  role: 'assistant',
+  parts: [
+    { type: 'step-start' },
+    {
+      type: 'text',
+      text: 'Failed to authenticate: OAuth session expired and could not be refreshed'
+    }
+  ]
+}
+
 type ChatMessageStoryArgs = {
   message: UIMessage
   streaming?: boolean
+  canRegenerate?: boolean
+  canRetry?: boolean
+  reconnect?: boolean
+  reconnecting?: boolean
+  onRegenerate?: () => void
+  onReconnect?: () => void
 }
 
 const meta = {
@@ -123,5 +142,42 @@ export const PartlyUndone: Story = {
       '[data-slot="chat-tool-call"][data-undone="true"]'
     )
     await expect(undone).toHaveLength(1)
+  }
+}
+
+/** Asking again cannot fix an expired sign-in, so the reply offers Reconnect instead. */
+export const SignInExpired: Story = {
+  args: {
+    message: signInExpiredMessage,
+    canRegenerate: true,
+    reconnect: true,
+    onRegenerate: fn(),
+    onReconnect: fn()
+  },
+  play: async ({ canvasElement, args }) => {
+    await expect(canvasElement.querySelector('[data-test-id="chat-regenerate"]')).toBeNull()
+    const reconnect = canvasElement.querySelector('[data-test-id="chat-reconnect"]')
+    await expect(reconnect).toBeVisible()
+    if (reconnect) await userEvent.click(reconnect)
+    await expect(args.onReconnect).toHaveBeenCalledOnce()
+    await expect(args.onRegenerate).not.toHaveBeenCalled()
+  }
+}
+
+/** A request that failed on an expired sign-in before any reply. */
+export const RequestSignInExpired: Story = {
+  args: { message: userMessage, canRetry: true, reconnect: true, onReconnect: fn() },
+  play: async ({ canvasElement, args }) => {
+    await expect(canvasElement.querySelector('[data-test-id="chat-retry"]')).toBeNull()
+    const reconnect = canvasElement.querySelector('[data-test-id="chat-reconnect"]')
+    if (reconnect) await userEvent.click(reconnect)
+    await expect(args.onReconnect).toHaveBeenCalledOnce()
+  }
+}
+
+export const Reconnecting: Story = {
+  args: { message: signInExpiredMessage, canRegenerate: true, reconnect: true, reconnecting: true },
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelector('[data-test-id="chat-reconnect"]')).toBeDisabled()
   }
 }

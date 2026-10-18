@@ -286,5 +286,19 @@
   "aiSetupAgentMCPStartFailed": "MCP サーバーはインストール済みですが起動しませんでした。Kalka を再起動してから、もう一度確認してください。",
   "aiSetupAgentLookupFailed": "このコンピューターを確認できませんでした。もう一度お試しください。",
   "chatAgentWorkingOn": "{agent}が「{page}」で作業中",
-  "chatGoToPage": "ページへ移動"
+  "chatGoToPage": "ページへ移動",
+  "reconnect": "再接続",
+  "reconnecting": "再接続中…",
+  "chatAgentSignInExpired": "{agent} に再度サインインする必要があります。再接続して続けてください。",
+  "chatOpenRouterSignInExpired": "OpenRouter のサインインが無効になりました。再接続してもう一度サインインしてください。",
+  "chatReconnectedHeading": "再接続しました",
+  "chatReconnectedDescription": "最後のメッセージをもう一度送信しますか？",
+  "chatResend": "メッセージを再送信",
+  "chatReconnectTerminalHeading": "ターミナルで {agent} にサインイン",
+  "chatReconnectTerminalCommand": "ターミナルでこのコマンドを実行してから、メッセージを再送信してください。",
+  "chatReconnectTerminalPrompt": "ターミナルでこのコマンドを実行して {prompt} と入力してから、メッセージを再送信してください。",
+  "chatReconnectTerminalUnknown": "{agent} は独自のコマンドラインからサインインします。そこでサインインしてから、メッセージを再送信してください。",
+  "chatReconnectFailed": "Kalka は再接続できませんでした。エージェントまたはプロバイダーの設定を確認して、もう一度お試しください。",
+  "modelReconnectHeading": "保存したキーを置き換える",
+  "modelReconnectDescription": "プロバイダーがこのモデルのキーを拒否しました。新しいキーを貼り付けて保存し、チャットからメッセージを再送信してください。"
 }

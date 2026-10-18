@@ -286,5 +286,19 @@
   "aiSetupAgentMCPStartFailed": "MCP 服务器已安装但未能启动。请重启 Kalka，然后重新检查。",
   "aiSetupAgentLookupFailed": "无法检查这台电脑，请重试。",
   "chatAgentWorkingOn": "{agent} 正在处理“{page}”",
-  "chatGoToPage": "转到页面"
+  "chatGoToPage": "转到页面",
+  "reconnect": "重新连接",
+  "reconnecting": "正在重新连接…",
+  "chatAgentSignInExpired": "{agent} 需要你重新登录。重新连接以继续。",
+  "chatOpenRouterSignInExpired": "你的 OpenRouter 登录已失效。重新连接以再次登录。",
+  "chatReconnectedHeading": "已重新连接",
+  "chatReconnectedDescription": "要重新发送上一条消息吗？",
+  "chatResend": "重新发送消息",
+  "chatReconnectTerminalHeading": "在终端中登录 {agent}",
+  "chatReconnectTerminalCommand": "在终端中运行此命令，然后重新发送消息。",
+  "chatReconnectTerminalPrompt": "在终端中运行此命令并输入 {prompt}，然后重新发送消息。",
+  "chatReconnectTerminalUnknown": "{agent} 通过自己的命令行登录。在那里登录后，重新发送消息。",
+  "chatReconnectFailed": "Kalka 无法重新连接。请检查智能体或提供商的设置，然后重试。",
+  "modelReconnectHeading": "替换已保存的密钥",
+  "modelReconnectDescription": "提供商拒绝了此模型的密钥。粘贴新密钥并保存，然后在聊天中重新发送消息。"
 }

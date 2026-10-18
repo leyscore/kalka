@@ -8,6 +8,7 @@ import { useI18n } from '@kalka/vue'
 import type { AISetupEntry } from '@/app/ai/models/settings/onboarding/dialog'
 import type { OnboardingAccess } from '@/app/ai/models/settings/onboarding/plan'
 import { AI_SETUP_STEPS, useAIOnboarding } from '@/app/ai/models/settings/onboarding/use'
+import { OPENROUTER_KEY_LABEL } from '@/app/ai/providers/openrouter/sign-in'
 import SettingsSaveFeedback from '@/components/settings/layout/SettingsSaveFeedback.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import { AppDialogBody, AppDialogFooter, AppDialogHeader } from '@/components/ui/dialog'
@@ -73,7 +74,7 @@ const header = computed(() => {
 
 /** Runs in the click handler, so the browser allows the sign-in popup. */
 function signIn(providerID: OnboardingAccess): void {
-  onboarding.signIn(providerID, { keyLabel: 'Kalka' })
+  onboarding.signIn(providerID, { keyLabel: OPENROUTER_KEY_LABEL })
 }
 
 function back(): void {

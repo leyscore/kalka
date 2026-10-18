@@ -13,7 +13,9 @@ const {
   reverted = false,
   stopped = false,
   undone = 0,
-  edits = 0
+  edits = 0,
+  reconnect = false,
+  reconnecting = false
 } = defineProps<{
   messageId: string
   canRegenerate?: boolean
@@ -26,8 +28,11 @@ const {
   edits?: number
   /** The user stopped the reply before it finished. */
   stopped?: boolean
+  /** The reply failed on a sign-in that expired, which asking again cannot fix. */
+  reconnect?: boolean
+  reconnecting?: boolean
 }>()
-const emit = defineEmits<{ regenerate: []; revert: []; restore: [] }>()
+const emit = defineEmits<{ regenerate: []; revert: []; restore: []; reconnect: [] }>()
 const { ai } = useI18n()
 
 const turn = computed(() => turnEdits(messageId))
@@ -88,7 +93,18 @@ const partlyUndone = computed(() => undone > 0 && undone < edits)
       {{ ai.revertTurn }}
     </AppButton>
     <AppButton
-      v-if="canRegenerate"
+      v-if="canRegenerate && reconnect"
+      size="xs"
+      variant="ghost"
+      data-test-id="chat-reconnect"
+      :loading="reconnecting"
+      @click="emit('reconnect')"
+    >
+      <template #leading><icon-lucide-key-round aria-hidden="true" /></template>
+      {{ reconnecting ? ai.reconnecting : ai.reconnect }}
+    </AppButton>
+    <AppButton
+      v-else-if="canRegenerate"
       size="xs"
       variant="ghost"
       data-test-id="chat-regenerate"

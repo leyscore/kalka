@@ -286,5 +286,19 @@
   "aiSetupAgentMCPStartFailed": "MCP-сервер установлен, но не запустился. Перезапустите Kalka и проверьте снова.",
   "aiSetupAgentLookupFailed": "Не удалось проверить этот компьютер. Попробуйте снова.",
   "chatAgentWorkingOn": "{agent} работает над «{page}»",
-  "chatGoToPage": "Перейти к странице"
+  "chatGoToPage": "Перейти к странице",
+  "reconnect": "Переподключиться",
+  "reconnecting": "Переподключение…",
+  "chatAgentSignInExpired": "{agent} просит войти снова. Переподключитесь, чтобы продолжить.",
+  "chatOpenRouterSignInExpired": "Вход в OpenRouter больше не действует. Переподключитесь, чтобы войти снова.",
+  "chatReconnectedHeading": "Подключение восстановлено",
+  "chatReconnectedDescription": "Отправить последнее сообщение ещё раз?",
+  "chatResend": "Отправить ещё раз",
+  "chatReconnectTerminalHeading": "Войдите в {agent} в терминале",
+  "chatReconnectTerminalCommand": "Выполните эту команду в терминале, затем отправьте сообщение ещё раз.",
+  "chatReconnectTerminalPrompt": "Выполните эту команду в терминале и введите {prompt}, затем отправьте сообщение ещё раз.",
+  "chatReconnectTerminalUnknown": "{agent} входит через свою командную строку. Войдите там, затем отправьте сообщение ещё раз.",
+  "chatReconnectFailed": "Kalka не удалось переподключиться. Проверьте настройку агента или провайдера и попробуйте снова.",
+  "modelReconnectHeading": "Замените сохранённый ключ",
+  "modelReconnectDescription": "Провайдер отклонил ключ этой модели. Вставьте новый и сохраните, затем отправьте сообщение ещё раз из чата."
 }

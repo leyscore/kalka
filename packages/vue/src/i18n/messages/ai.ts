@@ -203,6 +203,27 @@ export const aiMessageDefaults = {
   chatRateLimited: 'The provider rate limit was reached. Wait a moment and try again.',
   chatRequestFailed: 'The model request failed. Check the provider settings and try again.',
   openProviderSettingsAction: 'Open settings',
+  reconnect: 'Reconnect',
+  reconnecting: 'Reconnecting…',
+  chatAgentSignInExpired: params('{agent} needs you to sign in again. Reconnect to continue.'),
+  chatOpenRouterSignInExpired:
+    'Your OpenRouter sign-in no longer works. Reconnect to sign in again.',
+  chatReconnectedHeading: 'Reconnected',
+  chatReconnectedDescription: 'Send your last message again?',
+  chatResend: 'Resend message',
+  chatReconnectTerminalHeading: params('Sign in to {agent} in a terminal'),
+  chatReconnectTerminalCommand: 'Run this command in a terminal, then resend your message.',
+  chatReconnectTerminalPrompt: params(
+    'Run this command in a terminal and type {prompt}, then resend your message.'
+  ),
+  chatReconnectTerminalUnknown: params(
+    '{agent} signs in from its own command line. Sign in there, then resend your message.'
+  ),
+  chatReconnectFailed:
+    'Kalka could not reconnect. Check the agent or provider setup, then try again.',
+  modelReconnectHeading: 'Replace the saved key',
+  modelReconnectDescription:
+    'The provider rejected this model’s key. Paste a new one and save, then resend your message from the chat.',
   visionModelUnavailable: 'Choose a Vision model in Settings before attaching images.',
   chatPiCompanionMissing: 'Pi needs the Harness companion. Run guided setup to install it.',
   chatPiCompanionOutdated:

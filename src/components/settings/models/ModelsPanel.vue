@@ -1,10 +1,15 @@
 <script setup lang="ts">
-import { ref, onUnmounted, useTemplateRef } from 'vue'
+import { ref, onUnmounted, useTemplateRef, watch } from 'vue'
 
 import { HARNESS_PROVIDER_ID } from '@kalka/core/constants'
 import { useI18n } from '@kalka/vue'
 
 import { openAISetup } from '@/app/ai/models/settings/onboarding/dialog'
+import {
+  modelSettingsRequest,
+  takeModelSettingsRequest,
+  type ModelSettingsReason
+} from '@/app/ai/models/settings/request'
 import { useModelSettings } from '@/app/ai/models/settings/use'
 import SettingsPage from '@/components/settings/layout/SettingsPage.vue'
 import SettingsSection from '@/components/settings/layout/SettingsSection.vue'
@@ -17,6 +22,7 @@ import PanelDrillIn from '@/components/ui/panel/PanelDrillIn.vue'
 const { ai, collaboration, common } = useI18n()
 const editing = defineModel<boolean>('editing', { default: false })
 const editingProfileId = ref<string>()
+const editingReason = ref<ModelSettingsReason>()
 const editor = useTemplateRef('editor')
 
 /** The editor opens on its name field rather than the back control. */
@@ -31,13 +37,26 @@ onUnmounted(() => {
 
 function addModel(): void {
   editingProfileId.value = undefined
+  editingReason.value = undefined
   editing.value = true
 }
 
-function editModel(profileId: string): void {
+function editModel(profileId: string, reason?: ModelSettingsReason): void {
   editingProfileId.value = profileId
+  editingReason.value = reason
   editing.value = true
 }
+
+// The chat's Reconnect opens Settings on the model whose key the provider rejected.
+watch(
+  modelSettingsRequest,
+  (request) => {
+    if (!request) return
+    takeModelSettingsRequest()
+    editModel(request.profileId, request.reason)
+  },
+  { immediate: true }
+)
 
 function statusLabel(connectionId: string, providerID: string): string {
   const status = statusByConnection.value[connectionId]
@@ -72,6 +91,7 @@ const { profiles, statusByConnection, refreshStatuses } = useModelSettings()
         ref="editor"
         :key="editingProfileId ?? 'new'"
         :profile-id="editingProfileId"
+        :reason="editingReason"
         @done="closeEditor"
         @deleted="closeEditor"
       />

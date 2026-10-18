@@ -7,7 +7,6 @@ tests/engine/acp/transport.test.ts
 tests/engine/app/ai/attachment/image.test.ts
 tests/engine/app/ai/catalog.test.ts
 tests/engine/app/ai/context.test.ts
-tests/engine/app/ai/failure.test.ts
 tests/engine/app/ai/markdown.test.ts
 tests/engine/app/ai/model-roles.test.ts
 tests/engine/app/ai/model-settings.test.ts

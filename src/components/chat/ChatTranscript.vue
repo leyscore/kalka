@@ -21,7 +21,9 @@ const {
   showContinue = false,
   presentations,
   interactive = false,
-  nodesLive = true
+  nodesLive = true,
+  reconnect = false,
+  reconnecting = false
 } = defineProps<{
   messages: UIMessage[]
   status: ChatStatus
@@ -31,6 +33,9 @@ const {
   interactive?: boolean
   /** False for a conversation from another document: its layer IDs are not this document's. */
   nodesLive?: boolean
+  /** The last message failed on an expired sign-in, so it offers Reconnect instead of Retry. */
+  reconnect?: boolean
+  reconnecting?: boolean
 }>()
 const emit = defineEmits<{
   continue: []
@@ -38,6 +43,7 @@ const emit = defineEmits<{
   revert: [messageId: string]
   restore: [messageId: string]
   edit: [messageId: string, text: string]
+  reconnect: []
 }>()
 const { ai } = useI18n()
 provide(
@@ -100,7 +106,10 @@ const { arrivedState, resumeFollowing } = useScrollFollowing(
           :can-regenerate="idle && msg.id === lastMessage?.id && msg.role === 'assistant'"
           :can-retry="idle && msg.id === lastMessage?.id && msg.role === 'user'"
           :can-edit="idle && msg.id === editableRequestId"
+          :reconnect="reconnect && msg.id === lastMessage?.id"
+          :reconnecting="reconnecting"
           @regenerate="emit('regenerate')"
+          @reconnect="emit('reconnect')"
           @revert="emit('revert', msg.id)"
           @restore="emit('restore', msg.id)"
           @edit="(text) => emit('edit', msg.id, text)"

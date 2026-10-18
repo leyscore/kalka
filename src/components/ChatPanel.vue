@@ -3,32 +3,46 @@ import type { Chat } from '@ai-sdk/vue'
 import type { UIMessage } from 'ai'
 import { computed, shallowRef, useTemplateRef, watch } from 'vue'
 
+import { ACP_AGENTS } from '@kalka/core/constants'
 import { useI18n } from '@kalka/vue'
 
 import { revokeImagePreviewURL } from '@/app/ai/attachment/image/prepare'
+import { needsReconnect } from '@/app/ai/chat/failure'
 import { chatDocumentId } from '@/app/ai/chat/history/document'
 import { takeQueuedChatPrompt } from '@/app/ai/chat/queued-prompt'
+import { chatReconnectRoute, useChatReconnect } from '@/app/ai/chat/reconnect'
 import { useChatRunLocation } from '@/app/ai/chat/run-location'
 import type { ChatSubmission } from '@/app/ai/chat/submission/types'
 import { useChatSubmission } from '@/app/ai/chat/submission/use'
 import { saveChatTrace } from '@/app/ai/chat/trace/export'
 import { useAIChat } from '@/app/ai/chat/use'
+import { designModelProfile } from '@/app/ai/models'
 import { openAISetup } from '@/app/ai/models/settings/onboarding/dialog'
+import { openModelProfileSettings } from '@/app/ai/models/settings/request'
 import { didHitStepLimit } from '@/app/ai/tools'
 import { getActiveEditorStore } from '@/app/editor/active-store'
 import { openSettingsDialog } from '@/app/settings/dialog'
-import { toast } from '@/app/shell/ui'
+import { toast, type ToastAction } from '@/app/shell/ui'
 import { activeTab } from '@/app/tabs'
 import ACPPermissionDialog from '@/components/chat/ACPPermissionDialog.vue'
 import ChatHistory from '@/components/chat/ChatHistory.vue'
 import ChatInput from '@/components/chat/ChatInput.vue'
+import ChatReconnectNotice from '@/components/chat/ChatReconnectNotice.vue'
 import ChatRunLocation from '@/components/chat/ChatRunLocation.vue'
 import ChatTranscript from '@/components/chat/ChatTranscript.vue'
 import FollowAgentsToggle from '@/components/chat/FollowAgentsToggle.vue'
 import { useImageDrop } from '@/components/chat/input/useImageDrop'
 import ProviderSetup from '@/components/chat/ProviderSetup.vue'
 
-const { isConfigured, ensureChat, history, chatFailure, clearChatFailure } = useAIChat()
+const {
+  isConfigured,
+  ensureChat,
+  history,
+  chatFailure,
+  clearChatFailure,
+  providerID,
+  markTransportDirty
+} = useAIChat()
 const { ai } = useI18n()
 const runLocation = useChatRunLocation()
 
@@ -134,10 +148,42 @@ async function saveTrace(id: string) {
   }
 }
 
+/** Asking again cannot fix an expired sign-in, so the failure offers Reconnect instead. */
+const reconnectNeeded = computed(() => needsReconnect(chatFailure.value))
+const reconnect = useChatReconnect({
+  providerID: () => providerID.value,
+  markTransportDirty,
+  clearFailure: clearChatFailure,
+  openSettings: () => {
+    const profile = designModelProfile.value
+    if (profile) openModelProfileSettings(profile.id, 'reconnect')
+    else openSettingsDialog('ai')
+  }
+})
+function startReconnect(): void {
+  if (failureToast !== null) toast.remove(failureToast)
+  failureToast = null
+  void reconnect.reconnect()
+}
+async function resendAfterReconnect(): Promise<void> {
+  reconnect.dismiss()
+  await submission.regenerate()
+}
+
+function authenticationMessage(): string {
+  const route = chatReconnectRoute(providerID.value)
+  if (route === 'agent') {
+    const agent = ACP_AGENTS.find((definition) => `acp:${definition.id}` === providerID.value)
+    if (agent) return ai.value.chatAgentSignInExpired({ agent: agent.name })
+  }
+  if (route === 'sign-in') return ai.value.chatOpenRouterSignInExpired
+  return ai.value.chatAuthenticationFailed
+}
+
 const failureMessage = computed(() => {
   switch (chatFailure.value?.reason) {
     case 'authentication':
-      return ai.value.chatAuthenticationFailed
+      return authenticationMessage()
     case 'forbidden':
       return ai.value.chatForbidden
     case 'insufficient-credit':
@@ -156,9 +202,7 @@ const failureMessage = computed(() => {
       return null
   }
 })
-const failureHasSettingsAction = computed(() =>
-  ['authentication', 'forbidden', 'model-not-found'].includes(chatFailure.value?.reason ?? '')
-)
+const failureHasSettingsAction = computed(() => chatFailure.value?.reason === 'model-not-found')
 const status = computed(() => chat.value?.status ?? 'ready')
 const showContinue = computed(() => {
   if (history.readOnly.value || agentHistoryReadOnly.value) return false
@@ -181,17 +225,18 @@ watch(
     failureToast = null
     if (!reason) return
     const failedId = chat.value?.messages.at(-1)?.id
-    failureToast = toast.error(
-      failureMessage.value ?? ai.value.chatRequestFailed,
-      failureHasSettingsAction.value
-        ? {
-            label: ai.value.openProviderSettingsAction,
-            run: () => openSettingsDialog('ai')
-          }
-        : { label: ai.value.retryRequest, run: () => retryFailed(failedId) }
-    )
+    let action: ToastAction = { label: ai.value.retryRequest, run: () => retryFailed(failedId) }
+    if (reconnectNeeded.value) action = { label: ai.value.reconnect, run: startReconnect }
+    else if (failureHasSettingsAction.value) {
+      action = { label: ai.value.openProviderSettingsAction, run: () => openSettingsDialog('ai') }
+    }
+    failureToast = toast.error(failureMessage.value ?? ai.value.chatRequestFailed, action)
   }
 )
+// Asking again, however it is asked, answers the offer to resend.
+watch(status, (value) => {
+  if (value === 'submitted' || value === 'streaming') reconnect.dismiss()
+})
 watch(
   () => [activeTab.value?.id, activeTab.value?.store.state.preparation] as const,
   async ([tabId, preparation], [previousTabId]) => {
@@ -263,7 +308,10 @@ function handleStop() {
         :show-continue="showContinue"
         :nodes-live="!history.readOnly.value"
         :interactive="chat !== null && !submission.busy.value"
+        :reconnect="reconnectNeeded"
+        :reconnecting="reconnect.busy.value"
         @regenerate="submission.regenerate()"
+        @reconnect="startReconnect"
         @revert="(messageId) => submission.revert(messageId)"
         @restore="(messageId) => submission.restore(messageId)"
         @edit="(messageId, text) => submission.resend(messageId, text)"
@@ -283,6 +331,14 @@ function handleStop() {
       <p v-if="history.readOnly.value" role="status" class="px-3 py-2 text-xs text-muted">
         {{ ai.chatReadOnly }}
       </p>
+      <ChatReconnectNotice
+        v-if="reconnect.notice.value"
+        :notice="reconnect.notice.value"
+        :busy="reconnect.busy.value || submission.busy.value"
+        @resend="resendAfterReconnect"
+        @reconnect="startReconnect"
+        @dismiss="reconnect.dismiss()"
+      />
       <ChatRunLocation
         v-if="runLocation"
         :agent="runLocation.agent"

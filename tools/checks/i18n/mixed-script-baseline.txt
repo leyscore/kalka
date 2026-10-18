@@ -67,6 +67,8 @@ ja:ai.chatPiCompanionOutdated
 ja:ai.chatMCPOutdated
 ja:ai.chatPiSignIn
 ja:ai.chatPiModel
+ja:ai.chatOpenRouterSignInExpired
+ja:ai.chatReconnectFailed
 ja:ai.piModelHint
 ja:ai.changePreviewHint
 ja:automation.addServerConnection
@@ -262,6 +264,8 @@ zh-cn:ai.chatPiCompanionOutdated
 zh-cn:ai.chatMCPOutdated
 zh-cn:ai.chatPiSignIn
 zh-cn:ai.chatPiModel
+zh-cn:ai.chatOpenRouterSignInExpired
+zh-cn:ai.chatReconnectFailed
 zh-cn:ai.piModelHint
 zh-cn:ai.changePreviewHint
 zh-cn:automation.addServerConnection

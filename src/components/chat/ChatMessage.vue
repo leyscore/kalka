@@ -27,7 +27,9 @@ const {
   presentation,
   canRegenerate = false,
   canRetry = false,
-  canEdit = false
+  canEdit = false,
+  reconnect = false,
+  reconnecting = false
 } = defineProps<{
   message: UIMessage
   streaming?: boolean
@@ -38,8 +40,17 @@ const {
   canRetry?: boolean
   /** The last user message without attachments, when the chat is idle. */
   canEdit?: boolean
+  /** The message failed on an expired sign-in: Reconnect replaces Retry. */
+  reconnect?: boolean
+  reconnecting?: boolean
 }>()
-const emit = defineEmits<{ regenerate: []; revert: []; restore: []; edit: [text: string] }>()
+const emit = defineEmits<{
+  regenerate: []
+  revert: []
+  restore: []
+  edit: [text: string]
+  reconnect: []
+}>()
 const editing = ref(false)
 const { ai } = useI18n()
 const markdownMode = computed(() => (streaming ? 'streaming' : 'static'))
@@ -167,7 +178,10 @@ function groupKey(group: MessagePartGroup): string {
           :stopped="stopped"
           :undone="undoneCalls.size"
           :edits="undo?.edits.length ?? 0"
+          :reconnect="reconnect"
+          :reconnecting="reconnecting"
           @regenerate="emit('regenerate')"
+          @reconnect="emit('reconnect')"
           @revert="emit('revert')"
           @restore="emit('restore')"
         />
@@ -202,6 +216,18 @@ function groupKey(group: MessagePartGroup): string {
         </div>
         <div v-if="canRetry && !editing" class="flex justify-end">
           <AppButton
+            v-if="reconnect"
+            size="xs"
+            variant="ghost"
+            data-test-id="chat-reconnect"
+            :loading="reconnecting"
+            @click="emit('reconnect')"
+          >
+            <template #leading><icon-lucide-key-round aria-hidden="true" /></template>
+            {{ reconnecting ? ai.reconnecting : ai.reconnect }}
+          </AppButton>
+          <AppButton
+            v-else
             size="xs"
             variant="ghost"
             data-test-id="chat-retry"

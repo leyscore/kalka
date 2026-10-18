@@ -286,5 +286,19 @@
   "aiSetupAgentMCPStartFailed": "Serwer MCP jest zainstalowany, ale się nie uruchomił. Uruchom ponownie Kalka i sprawdź jeszcze raz.",
   "aiSetupAgentLookupFailed": "Nie udało się sprawdzić tego komputera. Spróbuj ponownie.",
   "chatAgentWorkingOn": "{agent} pracuje nad „{page}”",
-  "chatGoToPage": "Przejdź do strony"
+  "chatGoToPage": "Przejdź do strony",
+  "reconnect": "Połącz ponownie",
+  "reconnecting": "Ponowne łączenie…",
+  "chatAgentSignInExpired": "{agent} wymaga ponownego zalogowania. Połącz ponownie, aby kontynuować.",
+  "chatOpenRouterSignInExpired": "Logowanie do OpenRouter przestało działać. Połącz ponownie, aby zalogować się jeszcze raz.",
+  "chatReconnectedHeading": "Połączono ponownie",
+  "chatReconnectedDescription": "Wysłać ponownie ostatnią wiadomość?",
+  "chatResend": "Wyślij ponownie",
+  "chatReconnectTerminalHeading": "Zaloguj się do {agent} w terminalu",
+  "chatReconnectTerminalCommand": "Uruchom to polecenie w terminalu, a potem wyślij wiadomość ponownie.",
+  "chatReconnectTerminalPrompt": "Uruchom to polecenie w terminalu i wpisz {prompt}, a potem wyślij wiadomość ponownie.",
+  "chatReconnectTerminalUnknown": "{agent} loguje się z własnego wiersza poleceń. Zaloguj się tam, a potem wyślij wiadomość ponownie.",
+  "chatReconnectFailed": "Kalka nie może połączyć się ponownie. Sprawdź konfigurację agenta lub dostawcy i spróbuj jeszcze raz.",
+  "modelReconnectHeading": "Zastąp zapisany klucz",
+  "modelReconnectDescription": "Dostawca odrzucił klucz tego modelu. Wklej nowy i zapisz, a potem wyślij wiadomość ponownie z czatu."
 }

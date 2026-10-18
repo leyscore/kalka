@@ -7,6 +7,7 @@ import { useI18n } from '@kalka/vue'
 import { usePiSetup } from '@/app/ai/agents/setup'
 import { useModelProfileFeedback } from '@/app/ai/models/settings/profile-editor/feedback'
 import { useModelProfileEditor } from '@/app/ai/models/settings/profile-editor/use'
+import type { ModelSettingsReason } from '@/app/ai/models/settings/request'
 import { thinkingLevelOptions as buildThinkingLevelOptions } from '@/app/ai/models/thinking'
 import { useSettingsFormGuard } from '@/app/settings/navigation/use'
 import PiSetup from '@/components/settings/agents/PiSetup.vue'
@@ -22,11 +23,16 @@ import ProviderSettingsKeyField from '@/components/settings/provider/ProviderSet
 import AppButton from '@/components/ui/button/AppButton.vue'
 import AppCollapsible from '@/components/ui/collapsible/AppCollapsible.vue'
 import { AppConfirmationDialog } from '@/components/ui/dialog'
+import AppAlert from '@/components/ui/feedback/AppAlert.vue'
 import AppInput from '@/components/ui/input/AppInput.vue'
 import AppCombobox from '@/components/ui/select/AppCombobox.vue'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
 import AppSwitch from '@/components/ui/toggle/AppSwitch.vue'
-const { profileId } = defineProps<{ profileId?: string }>()
+const { profileId, reason } = defineProps<{
+  profileId?: string
+  /** Why it opened: Reconnect in the chat, after the provider rejected the saved key. */
+  reason?: ModelSettingsReason
+}>()
 const emit = defineEmits<{ done: []; deleted: [] }>()
 const { ai, common, credentials, settings } = useI18n()
 const formElement = useTemplateRef<HTMLFormElement>('formElement')
@@ -115,6 +121,13 @@ async function remove() {
       <SettingsSection>
         <template #title>{{ profileId ? ai.editModel : ai.addModel }}</template>
         <template #description>{{ ai.modelEditorDescription }}</template>
+        <AppAlert
+          v-if="reason === 'reconnect'"
+          tone="warning"
+          :heading="ai.modelReconnectHeading"
+          :description="ai.modelReconnectDescription"
+          data-test-id="settings-model-reconnect"
+        />
         <fieldset :disabled="busy" class="flex min-w-0 flex-col gap-3">
           <ProviderSettingsField
             v-slot="{ control }"

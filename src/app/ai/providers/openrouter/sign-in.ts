@@ -23,6 +23,8 @@ export const OPENROUTER_DESKTOP_CALLBACK_PATH = '/oauth/openrouter-desktop.html'
 /** Emitted by the desktop shell for an `kalka://oauth/<provider>?…` link. */
 const OAUTH_CALLBACK_EVENT = 'oauth-callback'
 const POPUP_NAME = 'kalka-openrouter'
+/** The name OpenRouter gives the key it creates for this app. */
+export const OPENROUTER_KEY_LABEL = 'Kalka'
 const POPUP_FEATURES = 'popup,width=520,height=720'
 
 export type OpenRouterSignInFailure = 'cancelled' | 'blocked' | 'expired' | 'failed'

@@ -42,6 +42,18 @@ When the chat's own `onFinish` reports a reply that was stopped, failed, or cut 
 
 Diagnostics record `chat.completed`, `chat.stopped`, or `chat.failed`.
 
+## A reply fails
+
+`chat/failure.ts` classifies the error the provider or agent reported, which the transport hands to the session before the AI SDK reduces it to text: a direct model's through `DirectChatTransport`'s `onError`, an ACP agent's through `ACPChatTransport`'s `onError`. ACP agents reject with plain JSON-RPC objects (`{ code, message, data }`), so every message, code, and cause is read with `errorFacts` (`src/app/runtime/error.ts`), never `String()`; diagnostics use the same reading for `chat.failed` and `acp.transport.failed`.
+
+A 401, the ACP code -32000 (`RequestError.authRequired`), or a message that says a key, token, or sign-in no longer works (`Failed to authenticate`, `OAuth session expired`, `invalid x-api-key`, `Please run /login`) is an authentication failure. Asking again cannot fix it or a 403, so the reply and the failure notice offer **Reconnect** instead of Retry (`chat/reconnect.ts`):
+
+- an ACP agent starts on its own and signs in with ACP `authenticate`, using the method it advertises in `initialize` (`acp/auth.ts`). Claude Code's adapter signs in only from a terminal, so the chat shows the command from the agent's `terminalSignIn`;
+- OpenRouter runs its OAuth sign-in again and saves the new key;
+- a provider with a pasted key opens Settings › AI & agents on the Design model, explaining that the key was rejected.
+
+Afterwards the chat offers to resend the last message. The transport is rebuilt for it, so an agent restarts with its new sign-in.
+
 `submission/undone.ts` records the reply's turn (`turns.ts`) once the run settles, so an edit landing after Stop belongs to the reply.
 
 ## Undo and the model
