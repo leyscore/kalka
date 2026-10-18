@@ -23,6 +23,7 @@
 
 ### Changed
 
+- Size cards and recent documents on the home screen no longer cast a blue shadow on hover.
 - On Windows and Linux the desktop app shows Kalka's own menu in the sidebar, as on the web, instead of the native menu bar across the window; its keyboard shortcuts still work.
 - The macOS installer window is titled Kalka and shows Kalka's own design: the mark, an arrow from the app to Applications, and how to open an unsigned beta the first time.
 - Pages other than the one in view, export copies, previews and artboards still loading are laid out by the browser in hidden frames, as the canvas lays out the page in view, instead of by a second engine that could place layers differently.
@@ -68,6 +69,7 @@
 
 ### Performance
 
+- Desktop installers are less than half the size: the macOS DMG is about 140 MB instead of 330 MB, and the installed app about 330 MB instead of 1 GB, because the app no longer carries the repository's `node_modules` next to the code it already bundles.
 - Joining a shared room is faster: the document a person receives on joining is compressed, about a twelfth of its size before, and edits travel in Yjs's more compact encoding. Rooms of earlier builds and this one no longer meet.
 
 ## 0.1.0-beta.2 — 2026-10-17
