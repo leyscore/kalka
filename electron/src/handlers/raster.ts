@@ -101,6 +101,9 @@ export async function renderPage(request: RenderPageRequest): Promise<Uint8Array
   try {
     window.setContentSize(width, height)
     await window.loadFile(request.file)
+    // Layers drawn past the page, such as a frame's unclipped content, must not bring scrollbars
+    // into the image.
+    await window.webContents.insertCSS('html{scrollbar-width:none}')
     // The page scales itself, so it lays out at its own size and paints at the export's.
     if (scale !== 1) await window.webContents.insertCSS(`html{zoom:${scale}}`)
     if (request.background) await window.webContents.insertCSS(backgroundCSS(request.background))
