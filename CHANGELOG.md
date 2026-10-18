@@ -27,6 +27,7 @@
 - PNG exports from the desktop app and the CLI are transparent where the layers draw nothing, as in Figma, instead of white.
 - Pages laid out out of view, exports, and the CLI measure text with its web font for every character, instead of a fallback for characters the text loaded first did not use, which set some text narrower and moved the layers beside it.
 - Images in `.fig` files saved by older versions of Figma, which keep them inside the document itself, show instead of an empty layer.
+- Imported `.fig` text with Auto or a percentage line height sets its lines whole pixels apart, as Figma does, so a 12.5px text is 16px a line instead of 16.25px and lists no longer drift down.
 - Text in `.fig` files saved by older versions of Figma keeps the line height Figma laid it out with, also in instances that set another font, instead of shrinking to its font size and pulling the layers below it up.
 
 ## 0.1.0-beta.3 — 2026-10-18

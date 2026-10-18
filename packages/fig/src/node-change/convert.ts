@@ -310,11 +310,19 @@ function laidOutWithLineHeight(nc: NodeChange, lineHeight: number): boolean {
  * The text's line height as Figma laid it out: the one it sets where the saved layout confirms
  * it, otherwise the one its saved lines report, which a style set later than the layout or a
  * percentage of the font's own height can leave the set value out of step with.
+ *
+ * A percentage, Figma's Auto (100%) included, is of the font's own line height, which the saved
+ * lines report already applied; Figma spaces the lines that far apart rounded to whole pixels, so
+ * a 12.5px face 1.3 em tall sets lines 16px apart, not 16.25.
  */
 function importedTextLineHeight(nc: NodeChange): number | null {
+  const derivedLineHeight = savedTextLayout(nc)?.baselines?.[0]?.lineHeight
+  // Seen on text in a box; text set on a path keeps the height its line reports.
+  const fontRelative = nc.type === 'TEXT' && (nc.lineHeight?.units ?? 'PERCENT') === 'PERCENT'
+  if (fontRelative && derivedLineHeight !== undefined && Number.isFinite(derivedLineHeight))
+    return Math.round(derivedLineHeight)
   const declared = convertLineHeight(nc.lineHeight, nc.fontSize)
   if (declared !== null && laidOutWithLineHeight(nc, declared)) return declared
-  const derivedLineHeight = savedTextLayout(nc)?.baselines?.[0]?.lineHeight
   if (derivedLineHeight !== undefined && Number.isFinite(derivedLineHeight))
     return derivedLineHeight
   return declared
