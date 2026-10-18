@@ -6,7 +6,6 @@ import { colorToFill } from '@kalka/scene-graph/color'
 import { withResolvableLinks } from '#core/editor/clipboard/paste/properties'
 import { getNodeOrThrow } from '#core-tests/helpers/assert'
 
-const LINK = { type: 'URL', value: 'https://example.com/' } as const
 const RED = colorToFill('#ff0000')
 const GREEN = colorToFill('#00ff00')
 
@@ -215,15 +214,15 @@ describe('paste properties on text', () => {
       text: 'Plain text',
       fontSize: 12,
       styleRuns: [
-        { start: 0, length: 5, style: { fontSize: 40, hyperlink: LINK } },
-        { start: 5, length: 5, style: { fills: [GREEN], fillStyleId: 'style-a' } }
+        { start: 0, length: 5, style: { fontSize: 40, textLanguage: 'fr' } },
+        { start: 5, length: 5, style: { fills: [GREEN] } }
       ]
     })
     const shape = editor.graph.createNode('RECTANGLE', pageId, { cornerRadius: 4 })
     return { editor, pageId, styled, plain, shape }
   }
 
-  test('a text style covers every character run and keeps their links', async () => {
+  test('a text style covers every character run and keeps what it does not set', async () => {
     const { editor, styled, plain } = textSetup()
     const { snapshot } = await copyProperties(editor, [styled.id])
     editor.select([plain.id])
@@ -232,7 +231,7 @@ describe('paste properties on text', () => {
     const pasted = getNodeOrThrow(editor.graph, plain.id)
     expect([pasted.fontSize, pasted.fontWeight, pasted.letterSpacing]).toEqual([32, 700, 2])
     expect(pasted.fills[0]?.color).toEqual(RED.color)
-    expect(pasted.styleRuns).toEqual([{ start: 0, length: 5, style: { hyperlink: LINK } }])
+    expect(pasted.styleRuns).toEqual([{ start: 0, length: 5, style: { textLanguage: 'fr' } }])
   })
 
   test('mixed character styles of the copied text are not pasted', async () => {
