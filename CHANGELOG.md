@@ -42,7 +42,7 @@
 
 - The sample document opens in the Windows desktop app instead of failing with "A page is missing: pages/english.html": the bundled archive named its files with Windows separators.
 - Wrapped auto layout rows stay packed at the top of a taller frame, as in Figma, instead of spreading over it on the canvas and in HTML exports, and rows a frame wraps keep no gap between them unless one is set.
-- A layer set to fill along a frame that hugs that axis keeps its own size, as in Figma, instead of collapsing to nothing on the canvas, as some layers of imported `.fig` files did.
+- A layer set to fill along a frame that hugs that axis keeps its own size, as in Figma, instead of collapsing to nothing on the canvas, as some layers of imported `.fig` files did, and shrinks to the space left when that frame is itself stretched or grown by its parent.
 - Layers inside a flipped frame keep their place when the canvas lays the frame out, instead of moving to their mirrored position.
 - Pattern fills draw on the canvas, in HTML exports as a repeating background, and in SVG exports as an SVG pattern, instead of not at all, and the copies a hexagonal pattern offsets by half a tile draw whole instead of cut off where tiles meet.
 - Tiled image fills repeat on the canvas and in HTML and SVG exports at the image's own size times the paint's scale, as Figma's `scalingFactor` does, instead of stretching one copy over the layer on the canvas, one copy in SVG exports, or tiles sized by the image transform in PNG and PDF exports, which Figma uses only for cropped images.

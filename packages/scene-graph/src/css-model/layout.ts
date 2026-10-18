@@ -130,15 +130,17 @@ export const layoutChild: PropertyFamily = {
     if (alignSelf) style['align-self'] = alignSelf
     if (parent?.layoutMode === 'GRID') addGridPlacement(style, node)
     else if (parent && parent.layoutMode !== 'NONE' && node.layoutPositioning !== 'ABSOLUTE') {
+      const minimum = parent.layoutMode === 'HORIZONTAL' ? 'min-width' : 'min-height'
       if (!growsAlongParent(node, parent)) style['flex-shrink'] = '0'
       else if (hugsAlongItsAxis(parent)) {
-        // A parent that hugs has no space to share: the child keeps its own size.
+        // A parent that hugs has no space to share: the child keeps its own size. One that is
+        // also stretched or grown by its own parent, which wins over hugging as in Figma, is
+        // narrower than its content, and the child shrinks to what is left.
         style['flex-grow'] = '1'
-        style['flex-shrink'] = '0'
+        style[minimum] ??= '0px'
       } else {
         style['flex-grow'] = '1'
         style['flex-basis'] = '0px'
-        const minimum = parent.layoutMode === 'HORIZONTAL' ? 'min-width' : 'min-height'
         style[minimum] ??= '0px'
       }
     }
