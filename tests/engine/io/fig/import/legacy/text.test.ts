@@ -106,6 +106,36 @@ describe('fig-import: text properties', () => {
     expect(n.lineHeight).toBe(16.94)
   })
 
+  // Each saved line reports the font's own height; the line Figma laid out is the one the text
+  // sets, as tall as the layout.
+  test('keeps the line height the saved layout confirms', () => {
+    const graph = materializeDocument([
+      doc(),
+      canvas(),
+      node('TEXT', 10, 1, {
+        textData: { characters: 'Client Reviews' },
+        fontSize: 40.2,
+        lineHeight: { value: 44, units: 'PIXELS' },
+        derivedTextData: {
+          layoutSize: { x: 354, y: 44 },
+          baselines: [
+            {
+              firstCharacter: 0,
+              endCharacter: 14,
+              position: { x: 0, y: 36.62 },
+              width: 278.34,
+              lineY: 0,
+              lineHeight: 48.65,
+              lineAscent: 38
+            }
+          ]
+        }
+      } as Partial<NodeChange>)
+    ]).graph
+    const n = graph.getChildren(graph.getPages()[0].id)[0]
+    expect(n.lineHeight).toBe(44)
+  })
+
   test('applies shared text style refs', () => {
     const graph = materializeDocument([
       doc(),

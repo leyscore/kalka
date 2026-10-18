@@ -14,6 +14,7 @@
 - An imported `.fig` frame with more padding than size, as captured scrolling tickers have, keeps its size and shows its content where Figma does instead of growing and pushing the content out of view.
 - Images set to Crop in an imported `.fig` file show the part of the picture Figma shows instead of the whole picture squeezed into the layer, and save back as Crop.
 - A rotated layer in auto layout takes the space of its rotated bounds, as in Figma, so tilted cards in imported files no longer squeeze or overlap their row.
+- Imported `.fig` text keeps the line height it sets where Figma laid it out with it, instead of the font's own taller line, so headings no longer grow and push the content below them down.
 
 ## 0.1.0-beta.3 — 2026-10-18
 

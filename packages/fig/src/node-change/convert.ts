@@ -292,11 +292,30 @@ function convertCornerProps(
   }
 }
 
+/**
+ * Whether Figma laid the text out with this line height: lines that far apart, or one line that
+ * tall. The line height each saved line reports is the font's own, whatever the text sets.
+ */
+function laidOutWithLineHeight(nc: NodeChange, lineHeight: number): boolean {
+  const lines = nc.derivedTextData?.baselines ?? []
+  const close = (value: number | undefined) =>
+    value !== undefined && Math.abs(value - lineHeight) < 0.5
+  if (lines.length > 1) return close((lines[1].lineY ?? 0) - (lines[0].lineY ?? 0))
+  return lines.length === 1 && close(nc.derivedTextData?.layoutSize?.y)
+}
+
+/**
+ * The text's line height as Figma laid it out: the one it sets where the saved layout confirms
+ * it, otherwise the one its saved lines report, which a style set later than the layout or a
+ * percentage of the font's own height can leave the set value out of step with.
+ */
 function importedTextLineHeight(nc: NodeChange): number | null {
+  const declared = convertLineHeight(nc.lineHeight, nc.fontSize)
+  if (declared !== null && laidOutWithLineHeight(nc, declared)) return declared
   const derivedLineHeight = nc.derivedTextData?.baselines?.[0]?.lineHeight
   if (derivedLineHeight !== undefined && Number.isFinite(derivedLineHeight))
     return derivedLineHeight
-  return convertLineHeight(nc.lineHeight, nc.fontSize)
+  return declared
 }
 
 type TextProps = Pick<
