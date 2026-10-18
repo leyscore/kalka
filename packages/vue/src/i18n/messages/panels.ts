@@ -467,6 +467,7 @@ export const panelMessageDefaults = {
   exportFormat: 'Export format',
   exportPreview: 'Preview',
   exportRenderingPreview: 'Rendering preview…',
+  exportHTMLEmbedImages: 'Single file, images embedded',
   create: 'Create',
   add: 'Add',
   createVariable: 'Create variable',

@@ -1,6 +1,11 @@
+import { readFile } from 'node:fs/promises'
+
 import { test, expect, type Page } from '@playwright/test'
+import { strFromU8, unzipSync } from 'fflate'
+import { toUint8Array } from 'js-base64'
 
 import type { ExportSetting } from '@kalka/scene-graph'
+import { computeImageHash } from '@kalka/scene-graph/images'
 
 import { expectInViewport } from '#tests/e2e/fixtures'
 import { CanvasHelper } from '#tests/helpers/canvas'
@@ -227,6 +232,73 @@ test('a PPTX export setting downloads a PowerPoint file', async () => {
   await expect(exportItems().first().getByRole('textbox', { name: 'Export scale' })).toHaveCount(0)
   const [download] = await Promise.all([page.waitForEvent('download'), exportButton().click()])
   expect(download.suggestedFilename()).toBe('Export rect 1.pptx')
+  canvas.assertNoErrors()
+})
+
+/** A 1 × 1 PNG. */
+const PIXEL = toUint8Array(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
+)
+
+async function createPhoto(settings: ExportSetting[]) {
+  const hash = computeImageHash(PIXEL)
+  await page.evaluate(
+    ({ nodeSettings, bytes, imageHash }) => {
+      const store = window.kalka?.getStore?.()
+      if (!store) throw new Error('Kalka store not initialized')
+      for (const node of store.graph.getChildren(store.state.currentPageId)) {
+        store.graph.deleteNode(node.id)
+      }
+      store.graph.images.set(imageHash, new Uint8Array(bytes))
+      const id = store.createShape('RECTANGLE', 100, 100, 100, 100)
+      store.graph.updateNode(id, {
+        name: 'Photo',
+        exportSettings: nodeSettings,
+        fills: [
+          {
+            type: 'IMAGE',
+            imageHash,
+            imageScaleMode: 'FILL',
+            color: { r: 0, g: 0, b: 0, a: 1 },
+            opacity: 1,
+            visible: true
+          }
+        ]
+      })
+      store.select([id])
+      store.requestRender()
+    },
+    { nodeSettings: settings, bytes: Array.from(PIXEL), imageHash: hash }
+  )
+  await canvas.waitForRender()
+  return hash
+}
+
+test('an HTML export downloads the page and its images as a zip', async () => {
+  const hash = await createPhoto([{ scale: 1, format: 'html' }])
+  await forceBlobDownload()
+
+  const [download] = await Promise.all([page.waitForEvent('download'), exportButton().click()])
+  expect(download.suggestedFilename()).toBe('Photo.zip')
+  const entries = unzipSync(new Uint8Array(await readFile(await download.path())))
+  expect(entries[`Photo.assets/images/${hash}.png`]).toEqual(PIXEL)
+  const html = strFromU8(entries['Photo.html'])
+  expect(html).toContain(`src="Photo.assets/images/${hash}.png"`)
+  expect(html).not.toContain('data:image/png;base64')
+  canvas.assertNoErrors()
+})
+
+test('an HTML export can be one file with its images embedded', async () => {
+  await createPhoto([{ scale: 1, format: 'html' }])
+  await forceBlobDownload()
+
+  await propertySection(page, 'Export')
+    .getByRole('checkbox', { name: 'Single file, images embedded' })
+    .click()
+  const [download] = await Promise.all([page.waitForEvent('download'), exportButton().click()])
+  expect(download.suggestedFilename()).toBe('Photo.html')
+  const html = await readFile(await download.path(), 'utf8')
+  expect(html).toContain('src="data:image/png;base64,')
   canvas.assertNoErrors()
 })
 

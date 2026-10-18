@@ -241,6 +241,7 @@
   "strokeAlignOutside": "Zewnętrzny",
   "exportPreview": "Podgląd",
   "exportRenderingPreview": "Renderowanie podglądu…",
+  "exportHTMLEmbedImages": "Jeden plik, obrazy osadzone",
   "createVariable": "Utwórz zmienną",
   "createColorVariable": "Utwórz zmienną koloru z {value}",
   "variableName": "Nazwa zmiennej",

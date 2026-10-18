@@ -239,6 +239,7 @@
   "strokeAlignOutside": "Außen",
   "exportPreview": "Vorschau",
   "exportRenderingPreview": "Vorschau wird gerendert…",
+  "exportHTMLEmbedImages": "Eine Datei, Bilder eingebettet",
   "createVariable": "Variable erstellen",
   "createColorVariable": "Farbvariable aus {value} erstellen",
   "variableName": "Variablenname",

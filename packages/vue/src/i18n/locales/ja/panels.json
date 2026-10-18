@@ -253,6 +253,7 @@
   "exportFormat": "エクスポート形式",
   "exportPreview": "プレビュー",
   "exportRenderingPreview": "プレビューをレンダリング中…",
+  "exportHTMLEmbedImages": "単一ファイル（画像を埋め込み）",
   "createVariable": "変数を作成",
   "createColorVariable": "{value} からカラー変数を作成",
   "variableName": "変数名",

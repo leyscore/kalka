@@ -3,6 +3,7 @@ import { zipSync, type Zippable } from 'fflate'
 import type { Editor, EditorState } from '@kalka/core/editor'
 import {
   findPageId,
+  type ExportAsset,
   type ExportRequest,
   type IOFormatAdapter,
   type IORegistry,
@@ -26,12 +27,14 @@ export interface ExportedFile {
   format: string
   ext: string
   mime: string
+  /** Files the main one links to, at paths relative to it, such as an HTML page's images. */
+  assets?: ExportAsset[]
 }
 
 // Layer/page names flow into zip entry keys; flatten them to a single safe
 // segment so separators, parent refs (`..`), or control chars can't escape the
 // archive or corrupt it.
-function sanitizeZipEntryName(name: string): string {
+export function sanitizeZipEntryName(name: string): string {
   const withoutControl = Array.from(name)
     .filter((ch) => {
       const code = ch.charCodeAt(0)
@@ -63,8 +66,20 @@ export function bundleExportFiles(files: ExportedFile[]): Uint8Array {
     }
     used.add(name)
     entries[name] = file.bytes
+    // Asset files are named by their content, so a path two exports share holds the same file.
+    for (const asset of file.assets ?? []) {
+      const path = asset.path.split('/').map(sanitizeZipEntryName).join('/')
+      if (used.has(path)) continue
+      used.add(path)
+      entries[path] = getExportBytes(asset.content)
+    }
   }
   return zipSync(entries)
+}
+
+/** An export that links files of its own: saved as one zip of the file and what it links. */
+export function hasExportAssets(file: ExportedFile): boolean {
+  return (file.assets?.length ?? 0) > 0
 }
 
 export function getExportBaseName(graph: SceneGraph, target: ExportRequest['target']): string {
@@ -77,6 +92,14 @@ export function getExportBaseName(graph: SceneGraph, target: ExportRequest['targ
 }
 
 export function getExportOptions(format: IOFormatAdapter, options?: ExportOptions): unknown {
+  // A page to open from disk, which links its images as files unless one self-contained file
+  // is asked for.
+  if (format.id === 'html') {
+    return {
+      html: 'standalone',
+      assets: options?.htmlImages === 'embedded' ? 'inline' : 'external'
+    }
+  }
   if (format.exportOptions?.scale) {
     return { scale: options?.scale ?? 1, quality: options?.quality }
   }

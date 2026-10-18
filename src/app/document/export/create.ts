@@ -9,6 +9,8 @@ import {
   getExportBytes,
   getExportFileName,
   getExportOptions,
+  hasExportAssets,
+  sanitizeZipEntryName,
   saveExportedFile,
   type ExportedFile
 } from '@/app/document/export/files'
@@ -40,28 +42,52 @@ export function createDocumentExportActions(
     if (!format) throw new Error(`Unknown export format: ${formatId}`)
 
     const exportOptions = getExportOptions(format, options)
+    const baseName = getExportBaseName(editor.graph, target)
+    // A page is told the name it is saved under, which names the folder of the files it links.
+    const fileName =
+      format.id === 'html'
+        ? sanitizeZipEntryName(getExportFileName(baseName, format, 'html', options))
+        : undefined
 
     const browser = { rasterize: domRasterize, printPDF: domPrintPDF }
     const result = await io.exportContent(
       formatId,
-      { graph: editor.graph, target },
+      { graph: editor.graph, target, fileName },
       exportOptions,
       editor.renderer
         ? { canvasKit: editor.renderer.ck, renderer: editor.renderer, ...browser }
         : browser
     )
 
-    const baseName = getExportBaseName(editor.graph, target)
     return {
       bytes: getExportBytes(result.data),
-      fileName: getExportFileName(baseName, format, result.extension, options),
+      fileName: sanitizeZipEntryName(
+        getExportFileName(baseName, format, result.extension, options)
+      ),
       format: format.label,
       ext: `.${result.extension}`,
-      mime: result.mimeType
+      mime: result.mimeType,
+      assets: result.assets
     }
   }
 
+  async function saveZip(files: ExportedFile[], baseName: string) {
+    await saveExportedFile(
+      bundleExportFiles(files),
+      `${baseName}.zip`,
+      'ZIP',
+      '.zip',
+      'application/zip',
+      downloadBlob
+    )
+  }
+
   async function saveExportFile(file: ExportedFile) {
+    // A page and the images it links travel together, so opening it from disk shows them.
+    if (hasExportAssets(file)) {
+      await saveZip([file], file.fileName.replace(/\.[^.]*$/, ''))
+      return
+    }
     await saveExportedFile(
       file.bytes,
       file.fileName,
@@ -80,8 +106,8 @@ export function createDocumentExportActions(
     await saveExportFile(await renderExportFile(target, formatId, options))
   }
 
-  // Export a batch of targets. A single file downloads directly; multiple files
-  // are bundled into one zip so the user gets a single download.
+  // Export a batch of targets. A single file downloads directly; multiple files, or a
+  // page with the images it links, are bundled into one zip so the user gets a single download.
   async function exportTargets(requests: ExportTargetRequest[]) {
     if (requests.length === 0) return
 
@@ -97,14 +123,7 @@ export function createDocumentExportActions(
 
     const baseNames = new Set(requests.map((r) => getExportBaseName(editor.graph, r.target)))
     const zipBaseName = baseNames.size === 1 ? [...baseNames][0] : 'export'
-    await saveExportedFile(
-      bundleExportFiles(files),
-      `${zipBaseName}.zip`,
-      'ZIP',
-      '.zip',
-      'application/zip',
-      downloadBlob
-    )
+    await saveZip(files, sanitizeZipEntryName(zipBaseName))
   }
 
   async function exportSelection(scale: number, formatId: BuiltinIOFormatId) {

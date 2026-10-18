@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { tryOnScopeDispose, useObjectUrl } from '@vueuse/core'
-import { computed, onActivated, onDeactivated, ref, shallowRef, watch } from 'vue'
+import { computed, onActivated, onDeactivated, ref, shallowRef, useId, watch } from 'vue'
 
 import { useExport, useI18n, useRetainedActivity } from '@kalka/vue'
 
+import type { ExportOptions } from '@/app/document/export/types'
 import { useEditorStore } from '@/app/editor/active-store'
 import ExportScaleInput from '@/components/properties/ExportScaleInput.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
@@ -12,6 +13,7 @@ import Tip from '@/components/ui/overlay/Tip.vue'
 import PanelItemRow from '@/components/ui/panel/PanelItemRow.vue'
 import PanelSection from '@/components/ui/panel/PanelSection.vue'
 import AppSelect from '@/components/ui/select/AppSelect.vue'
+import AppCheckbox from '@/components/ui/toggle/AppCheckbox.vue'
 import { CHECKERBOARD_BACKGROUND } from '@/theme/paint/checkerboard'
 
 const editorStore = useEditorStore()
@@ -52,6 +54,13 @@ onActivated(() => {
 
 const PREVIEW_WIDTH = 480
 
+/** HTML pages link their images as files beside them, in one zip, unless one file is asked for. */
+const embedHTMLImages = ref(false)
+const exportsHTML = computed(() =>
+  activeSettings.value.some((setting) => setting.format === 'html')
+)
+const embedHTMLImagesLabel = useId()
+
 async function doExport() {
   exporting.value = true
   try {
@@ -67,7 +76,12 @@ async function doExport() {
           ? ({ scope: 'page', pageId: id } as const)
           : ({ scope: 'node', nodeId: id } as const)
       for (const setting of activeSettings.value) {
-        requests.push({ target, formatId: setting.format, options: { scale: setting.scale } })
+        const htmlImages: ExportOptions['htmlImages'] = embedHTMLImages.value ? 'embedded' : 'files'
+        requests.push({
+          target,
+          formatId: setting.format,
+          options: { scale: setting.scale, htmlImages }
+        })
       }
     }
     // A single file downloads directly; multiple files bundle into one zip.
@@ -163,6 +177,18 @@ watch(previewKey, updatePreview, { flush: 'post' })
         </IconButton>
       </template>
     </PanelItemRow>
+
+    <label
+      v-if="exportsHTML"
+      class="mt-1 flex cursor-pointer items-center gap-2 py-1 text-[11px] text-muted"
+    >
+      <AppCheckbox
+        v-model="embedHTMLImages"
+        :ariaLabelledby="embedHTMLImagesLabel"
+        data-property="export-html-embed-images"
+      />
+      <span :id="embedHTMLImagesLabel">{{ panels.exportHTMLEmbedImages }}</span>
+    </label>
 
     <AppButton
       v-if="activeSettings.length > 0"
