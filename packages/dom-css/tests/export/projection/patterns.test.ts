@@ -146,3 +146,28 @@ describe('tiled image projection', () => {
     expect(projected.inlineStyle?.['background-image']).toBeUndefined()
   })
 })
+
+describe('cropped image projection', () => {
+  test('shows the part of the image the transform selects, scaled to the layer', () => {
+    // The layer shows a quarter of the image's width from 40% across, and its full height.
+    const { graph, filled } = tiled({
+      imageScaleMode: 'CROP',
+      imageTransform: { m00: 0.25, m01: 0, m02: 0.4, m10: 0, m11: 1, m12: 0 }
+    })
+    const projected = element(sceneNodeToDesignDocument(graph, filled.id).children[0])
+    const style = projected.inlineStyle ?? {}
+    expect(projected.tagName).toBe('img')
+    expect(style['background-size']).toBe('800px 100px')
+    expect(style['background-position']).toBe('-320px 0px')
+    expect(style['background-repeat']).toBe('no-repeat')
+  })
+
+  test('leaves a rotated crop to the picture', () => {
+    const { graph, filled } = tiled({
+      imageScaleMode: 'CROP',
+      imageTransform: { m00: 0, m01: 1, m02: 0, m10: -1, m11: 0, m12: 1 }
+    })
+    const projected = element(sceneNodeToDesignDocument(graph, filled.id).children[0])
+    expect(projected.inlineStyle?.['background-image']).toBeUndefined()
+  })
+})

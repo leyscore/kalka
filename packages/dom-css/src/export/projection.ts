@@ -7,7 +7,7 @@ import { writeLayerStyle, type FieldCSS, type WriteContext } from '@kalka/scene-
 import { DesignTokens, type CSSModes } from '../tokens/references'
 import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
 import { maskStyle } from './masks'
-import { patternBackground, tiledImageStyle } from './patterns'
+import { croppedImageStyle, patternBackground, tiledImageStyle } from './patterns'
 import {
   overflowingPaddingMargins,
   withoutOverflowingPadding,
@@ -212,6 +212,7 @@ function frameStyle(
     // A pattern's tile draws another layer, which only the SVG export can.
     Object.assign(style, patternBackground(context.graph, node, context.vectorElement))
     Object.assign(style, tiledImageStyle(context.graph, node))
+    Object.assign(style, croppedImageStyle(context.graph, node))
   }
   // An auto layout frame is where its absolutely placed children are measured from.
   if (!style.position && hasAbsoluteChild(context.graph, node)) style.position = 'relative'

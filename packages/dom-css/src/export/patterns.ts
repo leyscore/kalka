@@ -149,3 +149,32 @@ export function tiledImageStyle(
     'object-position': '-100000px 0'
   }
 }
+
+/**
+ * A cropped image fill as the background of its `<img>`, which `object-fit` cannot crop: the
+ * paint's transform maps the layer onto the part of the image it shows, so the whole image is the
+ * layer's size divided by that part, moved to put the part in place. A rotated crop keeps its
+ * stretched picture. Undefined for a layer whose first fill is not a cropped image.
+ */
+export function croppedImageStyle(
+  graph: SceneGraph,
+  node: SceneNode
+): DesignStyleDeclaration | undefined {
+  const fill = node.fills.at(0)
+  if (fill?.type !== 'IMAGE' || fill.imageScaleMode !== 'CROP' || !fill.visible) return undefined
+  const transform = fill.imageTransform
+  const bytes = fill.imageHash ? graph.images.get(fill.imageHash) : undefined
+  if (!transform || !bytes || transform.m00 <= 0 || transform.m11 <= 0) return undefined
+  if (Math.abs(transform.m01) > 1e-6 || Math.abs(transform.m10) > 1e-6) return undefined
+  const width = node.width / transform.m00
+  const height = node.height / transform.m11
+  return {
+    'background-image': `url("data:image/png;base64,${fromUint8Array(bytes)}")`,
+    'background-size': `${round(width)}px ${round(height)}px`,
+    'background-position': `${round(-transform.m02 * width)}px ${round(-transform.m12 * height)}px`,
+    'background-repeat': 'no-repeat',
+    'background-origin': 'border-box',
+    'object-fit': 'none',
+    'object-position': '-100000px 0'
+  }
+}
