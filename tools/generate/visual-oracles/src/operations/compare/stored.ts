@@ -21,6 +21,7 @@ import { parseArgs } from 'node:util'
 import { $ } from 'bun'
 import * as v from 'valibot'
 
+import type { Vector } from '@kalka/scene-graph'
 import { BUILTIN_IO_FORMATS, computeContentBounds, IORegistry } from '@kalka/core/io'
 import { populateAllFigPages } from '@kalka/core/io/formats/fig'
 
@@ -142,15 +143,13 @@ async function imageSize(path: string): Promise<string> {
  * Where an export of each node starts, with the geometry the file saved: the image holds every
  * layer inside the node, clipped or not, so the node sits inside it.
  */
-async function exportOrigins(
-  ids: readonly string[]
-): Promise<Map<string, { x: number; y: number }>> {
+async function exportOrigins(ids: readonly string[]): Promise<Map<string, Vector>> {
   const read = await new IORegistry(BUILTIN_IO_FORMATS).readDocument({
     name: filePath,
     data: new Uint8Array(await readFile(filePath))
   })
   populateAllFigPages(read.graph)
-  const origins = new Map<string, { x: number; y: number }>()
+  const origins = new Map<string, Vector>()
   for (const id of ids) {
     const bounds = computeContentBounds(read.graph, [id])
     if (bounds) origins.set(id, { x: bounds.minX, y: bounds.minY })
@@ -164,7 +163,7 @@ async function exportOrigins(
  */
 async function compareImages(
   directory: string,
-  origin: { x: number; y: number } | undefined,
+  origin: Vector | undefined,
   stored: Layer[],
   laidOut: Layer[]
 ) {
