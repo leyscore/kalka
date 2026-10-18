@@ -21,9 +21,9 @@ import { parseArgs } from 'node:util'
 import { $ } from 'bun'
 import * as v from 'valibot'
 
-import type { Vector } from '@kalka/scene-graph'
 import { BUILTIN_IO_FORMATS, computeContentBounds, IORegistry } from '@kalka/core/io'
 import { populateAllFigPages } from '@kalka/core/io/formats/fig'
+import type { Vector } from '@kalka/scene-graph'
 
 const { values } = parseArgs({
   options: {
