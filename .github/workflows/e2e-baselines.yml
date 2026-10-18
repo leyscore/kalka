@@ -117,7 +117,9 @@ jobs:
           KALKA_TEST_SERVER: app
           PLAYWRIGHT_HTML_OPEN: never
         run: |
-          args=(--project="$PROJECT" --workers=2 --reporter=list,html --trace=retain-on-failure --pass-with-no-tests)
+          # One worker: SwiftShader rasterizes on the CPU, and a second browser starves the first
+          # until its canvas specs time out.
+          args=(--project="$PROJECT" --workers=1 --reporter=list,html --trace=retain-on-failure --pass-with-no-tests)
           if [ "$UPDATE" = true ]; then args+=(--update-snapshots=changed); fi
           # The WebKit project matches only its own specs, so the others are filtered out there.
           bunx playwright test "${args[@]}" $SPECS
