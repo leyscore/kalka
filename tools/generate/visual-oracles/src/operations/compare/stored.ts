@@ -3,7 +3,7 @@
  * Compares Kalka's layout and paint of a `.fig` frame with the geometry Figma saved in the file.
  *
  *   bun tools/generate/visual-oracles/src/cli.ts compare stored --file design.fig --node 0:6 [--node 0:7]
- *     [--output /tmp/kalka-stored-oracle] [--top 25] [--skip-oracle]
+ *     [--output /tmp/kalka-stored-oracle] [--top 25] [--skip-oracle] [--skip-render]
  *
  * For each node it writes, under `<output>/<node>/`:
  *   oracle.png — the saved positions and sizes drawn with CanvasKit (`KALKA_LAYOUT=stored`)
@@ -14,11 +14,15 @@
  */
 
 import { mkdirSync } from 'node:fs'
+import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 
 import { $ } from 'bun'
 import * as v from 'valibot'
+
+import { BUILTIN_IO_FORMATS, computeContentBounds, IORegistry } from '@kalka/core/io'
+import { populateAllFigPages } from '@kalka/core/io/formats/fig'
 
 const { values } = parseArgs({
   options: {
@@ -27,7 +31,8 @@ const { values } = parseArgs({
     output: { type: 'string', short: 'o', default: '/tmp/kalka-stored-oracle' },
     top: { type: 'string', default: '25' },
     fuzz: { type: 'string', default: '10%' },
-    'skip-oracle': { type: 'boolean', default: false }
+    'skip-oracle': { type: 'boolean', default: false },
+    'skip-render': { type: 'boolean', default: false }
   }
 })
 
@@ -54,47 +59,33 @@ const LayerSchema = v.object({
   height: v.number()
 })
 type Layer = v.InferOutput<typeof LayerSchema>
-const PointSchema = v.object({ x: v.number(), y: v.number() })
-const CaptureSchema = v.pipe(
-  v.string(),
-  v.parseJson(),
-  v.object({ layers: v.array(LayerSchema), origin: v.nullable(PointSchema) })
-)
-type Capture = v.InferOutput<typeof CaptureSchema>
+const LayersSchema = v.pipe(v.string(), v.parseJson(), v.array(LayerSchema))
 
 /** Lists the root and its visible descendants with their absolute bounds, through `kalka eval`. */
 function layerScript(rootId: string): string {
   return `
 const out = []
-let left = Infinity
-let top = Infinity
 const visit = (node, parent) => {
   if (node.visible === false) return
-  const drawn = node.absoluteRenderBounds
-  if (drawn) {
-    left = Math.min(left, drawn.x)
-    top = Math.min(top, drawn.y)
-  }
   const box = node.absoluteBoundingBox
   if (box) out.push({ id: node.id, name: node.name, type: node.type, parent, x: box.x, y: box.y, width: box.width, height: box.height })
   for (const child of node.children ?? []) visit(child, node.id)
 }
 const root = figma.getNodeById(${JSON.stringify(rootId)})
 if (root) visit(root, null)
-// An export draws every layer inside the root, clipped or not, so its image starts here.
-return JSON.stringify({ layers: out, origin: Number.isFinite(left) ? { x: left, y: top } : null })
+return JSON.stringify(out)
 `
 }
 
 const STORED_ENV = { ...process.env, KALKA_LAYOUT: 'stored', KALKA_RENDERER: 'canvaskit' }
 
-async function readLayers(rootId: string, stored: boolean): Promise<Capture> {
+async function readLayers(rootId: string, stored: boolean): Promise<Layer[]> {
   const result = await $`bun kalka eval ${filePath} --json -c ${layerScript(rootId)}`
     .env(stored ? STORED_ENV : process.env)
     .quiet()
   const text = v.safeParse(v.pipe(v.string(), v.parseJson(), v.string()), result.stdout.toString())
   if (!text.success) throw new Error(`kalka eval returned no layer list for ${rootId}`)
-  const layers = v.safeParse(CaptureSchema, text.output)
+  const layers = v.safeParse(LayersSchema, text.output)
   if (!layers.success) throw new Error(`kalka eval returned malformed layers for ${rootId}`)
   return layers.output
 }
@@ -148,23 +139,47 @@ async function imageSize(path: string): Promise<string> {
 }
 
 /**
- * Crops both images to the root layer. The oracle's image holds every layer inside the root,
- * clipped or not, so the root sits where the first drawn layer starts; Kalka's page puts the root
- * at its origin.
+ * Where an export of each node starts, with the geometry the file saved: the image holds every
+ * layer inside the node, clipped or not, so the node sits inside it.
  */
-async function compareImages(directory: string, stored: Capture, laidOut: Capture) {
-  const [storedRoot] = stored.layers
-  const [laidOutRoot] = laidOut.layers
+async function exportOrigins(
+  ids: readonly string[]
+): Promise<Map<string, { x: number; y: number }>> {
+  const read = await new IORegistry(BUILTIN_IO_FORMATS).readDocument({
+    name: filePath,
+    data: new Uint8Array(await readFile(filePath))
+  })
+  populateAllFigPages(read.graph)
+  const origins = new Map<string, { x: number; y: number }>()
+  for (const id of ids) {
+    const bounds = computeContentBounds(read.graph, [id])
+    if (bounds) origins.set(id, { x: bounds.minX, y: bounds.minY })
+  }
+  return origins
+}
+
+/**
+ * Crops both images to the root layer, on white as Kalka's page paints them: the oracle's root
+ * sits where its export starts (`exportOrigins`), and Kalka's page puts the root at its origin.
+ */
+async function compareImages(
+  directory: string,
+  origin: { x: number; y: number } | undefined,
+  stored: Layer[],
+  laidOut: Layer[]
+) {
+  const [storedRoot] = stored
+  const [laidOutRoot] = laidOut
   if (!storedRoot || !laidOutRoot) throw new Error('The root layer is missing')
-  const left = Math.round(storedRoot.x - Math.min(stored.origin?.x ?? storedRoot.x, storedRoot.x))
-  const top = Math.round(storedRoot.y - Math.min(stored.origin?.y ?? storedRoot.y, storedRoot.y))
+  const left = Math.max(0, Math.round(storedRoot.x - (origin?.x ?? storedRoot.x)))
+  const top = Math.max(0, Math.round(storedRoot.y - (origin?.y ?? storedRoot.y)))
   const crop = (layer: Layer, x: number, y: number) =>
     `${Math.round(layer.width)}x${Math.round(layer.height)}+${x}+${y}`
   const oracle = `${directory}/oracle-root.png`
   const kalka = `${directory}/kalka-root.png`
   const normalized = `${directory}/kalka-normalized.png`
-  await $`magick ${directory}/oracle.png -crop ${crop(storedRoot, left, top)} +repage ${oracle}`.quiet()
-  await $`magick ${directory}/kalka.png -crop ${crop(laidOutRoot, 0, 0)} +repage ${kalka}`.quiet()
+  await $`magick ${directory}/oracle.png -crop ${crop(storedRoot, left, top)} +repage -background white -flatten ${oracle}`.quiet()
+  await $`magick ${directory}/kalka.png -crop ${crop(laidOutRoot, 0, 0)} +repage -background white -flatten ${kalka}`.quiet()
   const oracleSize = await imageSize(oracle)
   const kalkaSize = await imageSize(kalka)
   await $`magick ${kalka} -background black -gravity northwest -extent ${oracleSize} ${normalized}`.quiet()
@@ -183,19 +198,22 @@ async function compareImages(directory: string, stored: Capture, laidOut: Captur
 
 mkdirSync(outputDir, { recursive: true })
 const summary = []
+const origins = await exportOrigins(nodes)
 for (const node of nodes) {
   const directory = `${outputDir}/${node.replaceAll(/[^0-9A-Za-z]+/g, '_')}`
   mkdirSync(directory, { recursive: true })
-  if (!values['skip-oracle']) {
+  if (!values['skip-oracle'] && !values['skip-render']) {
     await $`bun kalka export ${filePath} --node ${node} -f png -o ${directory}/oracle.png`
       .env(STORED_ENV)
       .quiet()
   }
-  await $`bun kalka export ${filePath} --node ${node} -f png -o ${directory}/kalka.png`.quiet()
+  if (!values['skip-render']) {
+    await $`bun kalka export ${filePath} --node ${node} -f png -o ${directory}/kalka.png`.quiet()
+  }
   const stored = await readLayers(node, true)
   const laidOut = await readLayers(node, false)
-  const images = await compareImages(directory, stored, laidOut)
-  const differences = compareLayers(stored.layers, laidOut.layers)
+  const images = await compareImages(directory, origins.get(node), stored, laidOut)
+  const differences = compareLayers(stored, laidOut)
   await Bun.write(`${directory}/layers.json`, `${JSON.stringify(differences, null, 2)}\n`)
   summary.push({ node, ...images, movedLayers: differences.length })
   console.log(
