@@ -5,6 +5,7 @@
 ### Breaking changes
 
 - `@kalka/core/editor` records an AI or automation edit as a `DocumentChange` instead of a `PageChange`: `isEmptyPageChange` and `graphFromPageChange` are now `isEmptyDocumentChange` and `graphFromDocumentChange`, the editor's `capturePageChange` and `restorePageChange` are `captureDocumentChange` and `restoreDocumentChange`, and `pushUndoStep` records such an edit as an undo step of its own.
+- `VectorizedPath` from `@kalka/core/vector` replaces `clipNetworks` with `clips`, each the clip path's `id` and one network per clip shape, and adds `elements`, the groups and shape a path was drawn from. `SVGImportData` from `@kalka/core/io` adds the root `name` and whether the SVG is `sized`.
 
 ### Added
 
@@ -15,6 +16,7 @@
 - `kalka export -f storybook --framework vue` or `react` also generates Slider, Progress, Number field, Text field, and Textarea components: number controls bind their value within the range the behaviour sets, with a range control and a story at each end, and text fields draw a native `input` or `textarea` whose empty design is the placeholder.
 - Storybook export opens each story file with a `Default` story and tags the other stories `variant` and the file `kalka` and its page, so Storybook's tag filter can show one story per component or hide a page; a rules file (`kalka.stories.json`, or `--rules`) leaves components out, keeps `Default` alone, lays a set out as a gallery, or renames titles, matched by page and component name. Stories ship the fonts their text uses and the document's design variables as custom properties, in `kalka/<document>/` (`--fonts none` ships no font files), and static variants draw as they stand alone.
 - With `--framework vue` or `--framework react`, Storybook export makes every component set or component a Vue or React component, also without a behaviour: variant properties are `data-*` props, boolean properties show or hide their layers, and slot properties are a named `<slot>` or a `ReactNode` prop; a rule's `"generate": false` keeps static stories. A set whose file records no default variant rests at its top-left variant, and exporting again into a folder holding generated components works.
+- Paste SVG markup copied as text, such as from a code editor or Figma's Copy as SVG, as layers.
 
 ### Changed
 
@@ -29,6 +31,7 @@
 - In scripts, new frames and components hug along their main axis, which auto layout keeps when a script turns it on, a resize fixes a hugging auto layout frame's axes, and a grid fixes both, as in Figma. `instance.overrides` lists each layer edited in an instance with Figma's field names, `resetOverrides()` returns the instance to its component while keeping component property values, setting a field to the value it has no longer counts as an override, and `counterAxisAlignContent` is refused on a layer inside an instance.
 - Double-clicking an auto layout gap on the canvas edits it like a padding, as in Figma, in an editor over the gap's tick; padding and gap values show in pills as wide as their value in Figma's colors, and the value editor closes and keeps its value when the selection, page, or document changes or the frame is deleted.
 - Trackpads and mouse wheels pan and zoom the canvas as in Figma. A two-finger pan moves the canvas twice as far, up to 120 px per scroll event. A pinch zooms as far in the desktop app and Safari as in other browsers, where it zooms a little less than before, and in the desktop app and Safari a pinch over Preview's live controls now zooms the canvas, where it did nothing. On Windows each mouse wheel notch pans 16 px instead of 100 px, and notches less than 50 ms apart pan up to 120 px each.
+- Import SVG as editable layers, as pasting it into Figma does, from `import_svg`, dropped files, and pasted markup ([#734](https://github.com/open-pencil/open-pencil/issues/734)). Each `<g>` becomes a group and each shape its own vector, named after its `id`, element opacity is kept, and clipped content sits in a clip path group whose mask is drawn from the clip's shapes, on the canvas and in HTML exports. The imported frame is white, clips its content, and is named after the root `<svg>` `id`; an SVG without a size imports as a group. Shapes are no longer merged into one multi-color vector, and a group with a mask spans the mask and the layers below it, not the masked layers.
 
 ### Fixed
 

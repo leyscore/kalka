@@ -2,7 +2,7 @@ import type { Element } from '@xmldom/xmldom'
 
 import type { Rect, Size } from '@kalka/scene-graph/primitives'
 
-import { parseSVGDocument } from './document'
+import { parseSVGDocument, stripXMLProlog } from './document'
 
 function rootElement(svg: string): Element | null {
   return parseSVGDocument(svg)?.documentElement ?? null
@@ -39,4 +39,15 @@ export function parseSVGSize(svg: string, fallback: Size = { width: 24, height: 
   if (width && height) return { width, height }
   if (viewBox) return { width: viewBox.width, height: viewBox.height }
   return fallback
+}
+
+/** The root `<svg>` element's `id`. */
+export function svgRootId(svg: string): string | null {
+  return rootElement(svg)?.getAttribute('id') || null
+}
+
+/** Whether text is an SVG document, such as markup copied from a code editor or Figma's Copy as SVG. */
+export function isSVGMarkup(text: string): boolean {
+  if (!/^<svg[\s>]/i.test(stripXMLProlog(text))) return false
+  return (rootElement(text)?.localName ?? '') === 'svg'
 }

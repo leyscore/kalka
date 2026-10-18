@@ -37,5 +37,5 @@ export function parseSVGDocument(source: string): Document | null {
 }
 
 export function parseSVGFragment(source: string): Document | null {
-  return parseXML(`<svg xmlns="${SVG_NAMESPACE}">${source}</svg>`)
+  return parseXML(`<svg xmlns="${SVG_NAMESPACE}">${stripXMLProlog(source)}</svg>`)
 }

@@ -8,7 +8,6 @@
 import svgpath from 'svgpath'
 
 import type { Fill, Stroke, VectorNetwork, WindingRule } from '@kalka/scene-graph'
-import { mergeVectorNetworks } from '@kalka/scene-graph'
 import { parseColor } from '@kalka/scene-graph/color'
 import { computeBounds } from '@kalka/scene-graph/geometry'
 import { parseSVGPath } from '@kalka/scene-graph/parse-path'
@@ -16,7 +15,7 @@ import type { Rect, Size } from '@kalka/scene-graph/primitives'
 
 import { createPathStroke } from '#core/icons/path-style'
 import { extractPaths } from '#core/icons/svg'
-import type { IconPathInfo } from '#core/icons/types'
+import type { IconPathInfo, SVGElementLayer } from '#core/icons/types'
 import { stripXMLProlog } from '#core/io/formats/svg/document'
 import { parseSVGSize, parseSVGViewBox } from '#core/io/formats/svg/metadata'
 import { computeAccurateBounds } from '#core/vector/curve-math'
@@ -45,7 +44,7 @@ function unionPathBounds(paths: VectorizedPath[]): Rect {
 function resolveFill(path: IconPathInfo, defaultColor: string): Fill[] {
   if (path.fill && path.fill !== 'none') {
     const color = path.fill === 'currentColor' ? parseColor(defaultColor) : parseColor(path.fill)
-    return [{ type: 'SOLID', color, opacity: 1, visible: true }]
+    return [{ type: 'SOLID', color, opacity: path.fillOpacity, visible: true }]
   }
   if (path.fill === null && !path.stroke) {
     return [{ type: 'SOLID', color: parseColor(defaultColor), opacity: 1, visible: true }]
@@ -56,14 +55,29 @@ function resolveFill(path: IconPathInfo, defaultColor: string): Fill[] {
 function resolveStrokes(path: IconPathInfo, defaultColor: string, strokeScale = 1): Stroke[] {
   if (!path.stroke || path.stroke === 'none') return []
   const color = path.stroke === 'currentColor' ? parseColor(defaultColor) : parseColor(path.stroke)
-  return [createPathStroke(color, path.strokeWidth * strokeScale, path.strokeCap, path.strokeJoin)]
+  const stroke = createPathStroke(
+    color,
+    path.strokeWidth * strokeScale,
+    path.strokeCap,
+    path.strokeJoin
+  )
+  return [{ ...stroke, opacity: path.strokeOpacity }]
+}
+
+export interface VectorizedClip {
+  /** The `<clipPath>` element's `id`. */
+  id: string
+  /** One network per clip shape. */
+  shapes: VectorNetwork[]
 }
 
 export interface VectorizedPath {
   vectorNetwork: VectorNetwork
   fills: Fill[]
   strokes: Stroke[]
-  clipNetworks?: VectorNetwork[]
+  /** The clip regions around the path, ordered like `IconPathInfo.clipPaths`. */
+  clips?: VectorizedClip[]
+  elements: SVGElementLayer[]
 }
 
 export interface SVGVectorizeResult {
@@ -95,7 +109,7 @@ export function svgToVectorPaths(
   const strokeScale = Math.min(viewport.scaleX, viewport.scaleY)
 
   const vectorized: VectorizedPath[] = []
-  const clipCache = new WeakMap<NonNullable<IconPathInfo['clipPaths']>, VectorNetwork[]>()
+  const clipCache = new WeakMap<NonNullable<IconPathInfo['clipPaths']>, VectorizedClip[]>()
   for (const path of paths) {
     const fillRule: WindingRule = path.fillRule
     const transform = path.transform ?? null
@@ -118,38 +132,38 @@ export function svgToVectorPaths(
             computeAccurateBounds(network)
           )
         : null
-    let clipNetworks: VectorNetwork[] | undefined
+    let clips: VectorizedClip[] | undefined
     if (path.clipPaths) {
       const hasObjectBoundingBoxClip = path.clipPaths.some(
         ({ units }) => units === 'objectBoundingBox'
       )
-      clipNetworks = hasObjectBoundingBoxClip ? undefined : clipCache.get(path.clipPaths)
-      if (!clipNetworks) {
-        clipNetworks = path.clipPaths.map((clipRegion) =>
-          mergeVectorNetworks(
-            clipRegion.paths.map((clipPath) => {
-              let clipData = applySVGTransformToPath(clipPath.d, clipPath.transform ?? null)
-              if (clipRegion.units === 'objectBoundingBox') {
-                clipData = svgpath(clipData)
-                  .scale(pathBounds.width, pathBounds.height)
-                  .translate(pathBounds.x, pathBounds.y)
-                  .toString()
-                return parseSVGPath(clipData, clipPath.fillRule, { includeOpenRegions: true })
-              }
-              return parseSVGPath(mapSVGPathToViewport(clipData, viewport), clipPath.fillRule, {
-                includeOpenRegions: true
-              })
+      clips = hasObjectBoundingBoxClip ? undefined : clipCache.get(path.clipPaths)
+      if (!clips) {
+        clips = path.clipPaths.map((clipRegion) => ({
+          id: clipRegion.id,
+          shapes: clipRegion.paths.map((clipPath) => {
+            let clipData = applySVGTransformToPath(clipPath.d, clipPath.transform ?? null)
+            if (clipRegion.units === 'objectBoundingBox') {
+              clipData = svgpath(clipData)
+                .scale(pathBounds.width, pathBounds.height)
+                .translate(pathBounds.x, pathBounds.y)
+                .toString()
+              return parseSVGPath(clipData, clipPath.fillRule, { includeOpenRegions: true })
+            }
+            return parseSVGPath(mapSVGPathToViewport(clipData, viewport), clipPath.fillRule, {
+              includeOpenRegions: true
             })
-          )
-        )
-        if (!hasObjectBoundingBoxClip) clipCache.set(path.clipPaths, clipNetworks)
+          })
+        }))
+        if (!hasObjectBoundingBoxClip) clipCache.set(path.clipPaths, clips)
       }
     }
     vectorized.push({
       vectorNetwork: network,
-      fills: gradientFill ? [gradientFill] : solidFills,
+      fills: gradientFill ? [{ ...gradientFill, opacity: path.fillOpacity }] : solidFills,
       strokes,
-      clipNetworks
+      clips,
+      elements: path.elements
     })
   }
 
