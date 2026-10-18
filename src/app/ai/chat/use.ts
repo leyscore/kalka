@@ -2,6 +2,7 @@ import { ref } from 'vue'
 
 import { IS_BROWSER } from '@kalka/core/constants'
 
+import type { AIChatFailure } from '@/app/ai/chat/failure'
 import { createConversationHistory } from '@/app/ai/chat/history/controller'
 import {
   apiKeyStatus,
@@ -21,7 +22,7 @@ import {
   resolveAPIKey,
   setAPIKey
 } from '@/app/ai/chat/storage'
-import { createChatSessionManager } from '@/app/ai/chat/transports'
+import type { ChatSessionManager } from '@/app/ai/chat/transports'
 import { designModelProfile } from '@/app/ai/models'
 import { exposeChatTransportOverride } from '@/app/browser-bridge'
 import { getActiveEditorStore } from '@/app/editor/active-store'
@@ -37,14 +38,47 @@ export type PropertiesTab = 'design' | 'code' | 'ai' | 'lint'
 
 const activeTab = ref<PropertiesTab>('design')
 
-const chatSession = createChatSessionManager({
-  isConfigured,
-  isACPProvider,
-  isHarnessProvider,
-  providerID,
-  credentialsReady,
-  getActiveEditorStore
-})
+const chatFailure = ref<AIChatFailure | null>(null)
+let chatOverride: Parameters<ChatSessionManager['setOverrideTransport']>[0] = null
+let loadedSession: Promise<ChatSessionManager> | null = null
+
+/**
+ * The session's model SDKs, tools and agent transports load with the first chat, not with the
+ * app: the home screen and an empty document never need them.
+ */
+function loadChatSession(): Promise<ChatSessionManager> {
+  loadedSession ??= import('@/app/ai/chat/transports').then(({ createChatSessionManager }) => {
+    const session = createChatSessionManager({
+      isConfigured,
+      isACPProvider,
+      isHarnessProvider,
+      providerID,
+      credentialsReady,
+      getActiveEditorStore,
+      failure: chatFailure
+    })
+    if (chatOverride) session.setOverrideTransport(chatOverride)
+    return session
+  })
+  return loadedSession
+}
+
+const chatSession = {
+  ensureChat: async (...args: Parameters<ChatSessionManager['ensureChat']>) =>
+    (await loadChatSession()).ensureChat(...args),
+  // Before the first chat there is no transport to reset or rebuild.
+  resetChat: async () => (loadedSession ? (await loadedSession).resetChat() : undefined),
+  markTransportDirty: () => void loadedSession?.then((session) => session.markTransportDirty()),
+  setOverrideTransport: (factory: typeof chatOverride) => {
+    chatOverride = factory
+    void loadedSession?.then((session) => session.setOverrideTransport(factory))
+  },
+  failure: chatFailure,
+  clearFailure: () => {
+    chatFailure.value = null
+    void loadedSession?.then((session) => session.clearFailure())
+  }
+}
 
 const history = createConversationHistory({
   profileId: () => designModelProfile.value?.id ?? null,

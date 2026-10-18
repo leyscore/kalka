@@ -72,10 +72,9 @@ const MCP_APP_ATTACH_TIMEOUT_MS = 30_000
 export interface MCPStartupTiming {
   /** How long to watch for the child exiting before polling its health. */
   earlyExitMs: number
-  /** Delay before each of the health polls after spawning. */
+  /** Delay before each of the fifty health polls after spawning; short, to find it at once. */
   healthPollMs: number
 }
-// Frequent polls find the server as soon as it listens; fifty make five seconds at this rate.
 const DEFAULT_STARTUP_TIMING: MCPStartupTiming = { earlyExitMs: 100, healthPollMs: 100 }
 
 let runtimeAutomationAuthToken: string | null = DEV_AUTOMATION_AUTH_TOKEN

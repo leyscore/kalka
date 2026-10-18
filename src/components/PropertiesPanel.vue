@@ -1,23 +1,26 @@
 <script setup lang="ts">
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from 'reka-ui'
-import { computed, useTemplateRef } from 'vue'
+import { computed, defineAsyncComponent, useTemplateRef } from 'vue'
 
 import { useDesignCheckMessages, useI18n } from '@kalka/vue'
 
 import { useAIChat } from '@/app/ai/chat/use'
 import { useEditorStore } from '@/app/editor/active-store'
+import { latch } from '@/app/shell/latch'
 import { countIssues } from '@/app/editor/design-check/issues'
 import { useGlide } from '@/components/ui/motion/useGlide'
 import { glidePills } from '@/theme/motion/glide'
 import { propertiesTabs } from '@/theme/panel/properties-tabs'
 
-import ChatPanel from './ChatPanel.vue'
 import CodePanel from './CodePanel.vue'
 import DesignCheckPanel from './design-check/DesignCheckPanel.vue'
 import DesignPanel from './DesignPanel.vue'
 import ZoomDropdown from './editor/ZoomDropdown.vue'
 
+// The chat, its model SDKs and markdown load when the AI tab first opens, then stay mounted.
+const ChatPanel = defineAsyncComponent(() => import('./ChatPanel.vue'))
 const { activeTab } = useAIChat()
+const chatUsed = latch(() => activeTab.value === 'ai')
 const { panels } = useI18n()
 const checkMessages = useDesignCheckMessages()
 const store = useEditorStore()
@@ -119,7 +122,7 @@ const problemCount = computed(() => {
         :force-mount="true"
         :hidden="activeTab !== 'ai'"
       >
-        <ChatPanel />
+        <ChatPanel v-if="chatUsed" />
       </TabsContent>
     </TabsRoot>
   </aside>

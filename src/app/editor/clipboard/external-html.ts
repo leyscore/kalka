@@ -1,5 +1,3 @@
-import { buildKalkaClipboardHTML } from '@kalka/core/clipboard'
-
 import { isDesignClipboardHTML } from './html'
 
 /** Markup a person copied from a page or a code editor, rather than Kalka's or Figma's layers. */
@@ -19,7 +17,11 @@ export function isHTMLSource(text: string): boolean {
  * that keeps nothing able to run.
  */
 export async function externalHTMLAsDesignClipboard(html: string): Promise<string | null> {
-  const { browserHTMLToSceneGraph } = await import('@kalka/dom-css/browser')
+  const [{ browserHTMLToSceneGraph }, { buildKalkaClipboardHTML }] = await Promise.all([
+    import('@kalka/dom-css/browser'),
+    // Kalka's clipboard format carries the `.fig` codec, which only a paste needs.
+    import('@kalka/core/clipboard')
+  ])
   const graph = await browserHTMLToSceneGraph(html, { pageName: 'Pasted HTML' })
   const roots = graph.getPages().flatMap((page) => graph.getChildren(page.id))
   if (roots.length === 0) return null

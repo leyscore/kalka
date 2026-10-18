@@ -56,6 +56,8 @@ type ChatSessionOptions = {
   providerID: Ref<AIProviderID>
   credentialsReady: Promise<void>
   getActiveEditorStore: () => EditorStore
+  /** Where the latest reply's failure shows; the caller may own it before this module loads. */
+  failure?: Ref<AIChatFailure | null>
 }
 
 export type ToolLoopTransportOptions = {
@@ -266,15 +268,17 @@ async function settleEndedReply(
   )
 }
 
+export type ChatSessionManager = ReturnType<typeof createChatSessionManager>
+
 export function createChatSessionManager({
   isConfigured,
   isACPProvider,
   isHarnessProvider,
   providerID,
   credentialsReady,
-  getActiveEditorStore
+  getActiveEditorStore,
+  failure = ref<AIChatFailure | null>(null)
 }: ChatSessionOptions) {
-  const failure = ref<AIChatFailure | null>(null)
   let transportDirty = false
   let currentChatStore: EditorStore | null = null
   const currentChatMessages = new WeakMap<EditorStore, UIMessage[]>()

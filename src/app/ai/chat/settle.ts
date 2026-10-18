@@ -1,7 +1,8 @@
-import { isReasoningUIPart, isTextUIPart, isToolUIPart, type UIMessage } from 'ai'
+import type { UIMessage } from 'ai'
 import { toRaw } from 'vue'
 
 import { wasStopped, withMetadata } from '@/app/ai/chat/metadata'
+import { isReasoningUIPart, isTextUIPart, isToolUIPart } from '@/app/ai/chat/parts'
 
 export interface SettleOptions {
   /** Whether the user stopped the reply, rather than it failing or being cut off. */

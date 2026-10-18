@@ -1,7 +1,6 @@
 import type { LanguageModel } from 'ai'
 import { ref } from 'vue'
 
-import { createLanguageModel } from '@/app/ai/chat/model'
 import { modelConnection, resolveAIModelRole } from '@/app/ai/models/store'
 import type { AIModelConnection, AIModelRole, ResolvedAIModelRole } from '@/app/ai/models/types'
 import { appCredentialServices } from '@/app/settings/credentials/app'
@@ -88,6 +87,8 @@ export async function createAIModelRuntime(role: AIModelRole): Promise<AIModelRu
 
   const apiKey = await resolveModelConnectionAPIKey(resolved.connection.id)
   if (!apiKey) throw new Error(`Credential is unavailable for the ${role} model role`)
+  // Provider SDKs load with the first model the app talks to.
+  const { createLanguageModel } = await import('@/app/ai/chat/model')
   return {
     kind: 'direct',
     role: resolved,

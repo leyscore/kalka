@@ -1,7 +1,4 @@
-import { makeFigmaFromStore } from '@/app/automation/bridge/figma-factory'
 import { resolveAutomationTarget } from '@/app/automation/bridge/target'
-import { createAutomationToolHandler } from '@/app/automation/bridge/tool-handlers'
-import { executeAtomicEditorTool } from '@/app/automation/execution/editor'
 import type { EditorStore } from '@/app/editor/active-store'
 import { getTabById } from '@/app/tabs'
 
@@ -11,9 +8,30 @@ import { createWebMCPRuntimeService } from './service'
 const service = createWebMCPRuntimeService()
 export const webmcpRuntime = service.state
 
+function importToolCode() {
+  return Promise.all([
+    import('@/app/automation/bridge/figma-factory'),
+    import('@/app/automation/bridge/tool-handlers'),
+    import('@/app/automation/execution/editor')
+  ]).then(
+    ([{ makeFigmaFromStore }, { createAutomationToolHandler }, { executeAtomicEditorTool }]) => ({
+      makeFigmaFromStore,
+      executeAtomicEditorTool,
+      handleTool: createAutomationToolHandler(makeFigmaFromStore)
+    })
+  )
+}
+
+let toolCode: ReturnType<typeof importToolCode> | null = null
+
+/** The tool handlers, which load with the first call: most browsers never make one. */
+function loadToolCode() {
+  toolCode ??= importToolCode()
+  return toolCode
+}
+
 /** Browser-native tools reuse the same editor targeting and handlers as remote MCP. */
 export function startWebMCP(getStore: () => EditorStore): () => void {
-  const handleTool = createAutomationToolHandler(makeFigmaFromStore)
   return service.start(
     typeof document === 'undefined' ? undefined : document.modelContext,
     webmcpMode,
@@ -24,6 +42,8 @@ export function startWebMCP(getStore: () => EditorStore): () => void {
       }
       return {
         execute: async (def, args, signal) => {
+          signal.throwIfAborted()
+          const { makeFigmaFromStore, executeAtomicEditorTool, handleTool } = await loadToolCode()
           signal.throwIfAborted()
           if (def.mutates) {
             return {

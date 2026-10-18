@@ -3,7 +3,7 @@ import { useElementSize, useWindowSize } from '@vueuse/core'
 import { motion } from 'motion-v'
 import type { PanInfo } from 'motion-v'
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from 'reka-ui'
-import { computed, ref } from 'vue'
+import { computed, defineAsyncComponent, ref } from 'vue'
 
 import { useI18n } from '@kalka/vue'
 
@@ -18,7 +18,6 @@ import {
   SWIPE_VELOCITY_THRESHOLD
 } from '@/constants'
 
-import ChatPanel from './ChatPanel.vue'
 import CodePanel from './CodePanel.vue'
 import DesignPanel from './DesignPanel.vue'
 import LayerTree from './LayerTree/LayerTree.vue'
@@ -27,6 +26,8 @@ import PagesPanel from './PagesPanel.vue'
 type Snap = 'closed' | 'half' | 'full'
 type DrawerTab = 'layers' | 'design' | 'code' | 'ai'
 
+// The chat loads with the AI tab, its only place in the drawer.
+const ChatPanel = defineAsyncComponent(() => import('./ChatPanel.vue'))
 const store = useEditorStore()
 const { settings } = useI18n()
 

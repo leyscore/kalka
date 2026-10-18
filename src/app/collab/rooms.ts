@@ -2,7 +2,7 @@ import { computed, shallowRef, watch } from 'vue'
 
 import { generateRoomId } from '@/app/collab/awareness'
 import { isRoomId } from '@/app/collab/room/id'
-import { openRoomSession, type RoomSession } from '@/app/collab/session'
+import type { RoomSession, RoomSessionOptions } from '@/app/collab/session'
 import type { JoinCollabRoom } from '@/app/collab/transport'
 import type { EditorStore } from '@/app/editor/active-store'
 import { activeTab, allTabs, closeTab, createTab, getTabForStore, switchTab } from '@/app/tabs'
@@ -33,6 +33,44 @@ export function roomForStore(store: EditorStore): RoomSession | undefined {
 
 export function roomById(roomId: string): RoomSession | undefined {
   return sessions.value.find((session) => session.roomId === roomId)
+}
+
+/**
+ * A room's session, whose Yjs document and peer transports load with the first room rather than
+ * with the app. Until they do, the room reads as connecting and cursor updates are dropped; the
+ * calls that change the room wait for it.
+ */
+function openRoomSession(options: RoomSessionOptions): RoomSession {
+  const opened = shallowRef<RoomSession | null>(null)
+  const pending: ((session: RoomSession) => void)[] = []
+  let disposed = false
+  void import('@/app/collab/session').then(({ openRoomSession: open }) => {
+    if (disposed) return undefined
+    const session = open(options)
+    opened.value = session
+    for (const run of pending.splice(0)) run(session)
+    return undefined
+  })
+  const whenOpen = (run: (session: RoomSession) => void) => {
+    if (opened.value) run(opened.value)
+    else pending.push(run)
+  }
+  return {
+    roomId: options.roomId,
+    store: options.store,
+    origin: options.origin,
+    peers: computed(() => opened.value?.peers.value ?? []),
+    status: computed(() => opened.value?.status.value ?? 'connecting'),
+    hasDocument: computed(() => opened.value?.hasDocument.value ?? false),
+    updateCursor: (x, y, pageId) => opened.value?.updateCursor(x, y, pageId),
+    updateSelection: (ids) => opened.value?.updateSelection(ids),
+    shareDocument: () => whenOpen((session) => session.shareDocument()),
+    dispose: () => {
+      disposed = true
+      pending.length = 0
+      opened.value?.dispose()
+    }
+  }
 }
 
 function addSession(session: RoomSession) {

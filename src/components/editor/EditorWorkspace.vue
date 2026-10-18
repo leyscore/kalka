@@ -2,7 +2,7 @@
 import { useElementSize } from '@vueuse/core'
 import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'reka-ui'
 import { tv } from 'tailwind-variants'
-import { computed, useTemplateRef } from 'vue'
+import { computed, defineAsyncComponent, useTemplateRef } from 'vue'
 
 import { formatShortcut, useI18n, useViewportKind } from '@kalka/vue'
 
@@ -14,6 +14,7 @@ import {
   saveEditorLayout,
   sidePanelSizeLimits
 } from '@/app/shell/layout-storage'
+import { latch } from '@/app/shell/latch'
 import { appMenuShortcut } from '@/app/shell/menu/shortcut'
 import type { Tab } from '@/app/tabs'
 import CanvasSplitRoot from '@/components/canvas/CanvasSplitRoot.vue'
@@ -27,7 +28,6 @@ import MobileHud from '@/components/MobileHud/MobileHud.vue'
 import PropertiesPanel from '@/components/PropertiesPanel.vue'
 import Toolbar from '@/components/Toolbar/Toolbar.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
-import VariablesDialog from '@/components/variables/VariablesDialog.vue'
 import splitterTheme from '@/theme/splitter'
 
 import WorkspacePill from './WorkspacePill.vue'
@@ -41,6 +41,11 @@ const showChrome = appRuntimeConfig.showChrome
 const { tab } = defineProps<{ tab: Tab }>()
 const store = tab.store
 provideTabEditorStore(store)
+// Variables and their code views load the first time the dialog opens.
+const VariablesDialog = defineAsyncComponent(
+  () => import('@/components/variables/VariablesDialog.vue')
+)
+const variablesUsed = latch(() => store.state.variablesOpen)
 const { isMobile } = useViewportKind()
 const initialEditorLayout = loadEditorLayout()
 // Side panels keep a usable width in pixels however narrow the window, while still scaling with it.
@@ -172,5 +177,5 @@ const { pending: roomPending } = useRoomActions()
     </div>
   </div>
 
-  <VariablesDialog />
+  <VariablesDialog v-if="variablesUsed" />
 </template>

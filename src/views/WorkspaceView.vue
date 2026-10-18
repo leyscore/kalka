@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useHead } from '@unhead/vue'
 import { until, useEventListener } from '@vueuse/core'
-import { onMounted, onUnmounted, provide, ref } from 'vue'
+import { defineAsyncComponent, onMounted, onUnmounted, provide, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { useI18n } from '@kalka/vue'
@@ -41,14 +41,18 @@ import {
 import { isTauri } from '@/app/tauri/env'
 import ColorSpaceBanner from '@/components/canvas/ColorSpaceBanner.vue'
 import CommandPalette from '@/components/commands/CommandPalette.vue'
-import EditorWorkspace from '@/components/editor/EditorWorkspace.vue'
 import FileApiBanner from '@/components/FileApiBanner.vue'
 import FontStatusBanner from '@/components/font-status/FontStatusBanner.vue'
 import HomeWorkspace from '@/components/home/HomeWorkspace.vue'
-import EditorTour from '@/components/onboarding/EditorTour.vue'
 import RenameSelectionDialog from '@/components/selection/RenameSelectionDialog.vue'
 import TabBar from '@/components/TabBar.vue'
 import { IS_BROWSER } from '@/constants'
+
+// The editor's code loads apart from the home screen's, so the home screen shows sooner; it is
+// fetched once the app is idle, before a document is likely to open.
+const loadEditorWorkspace = () => import('@/components/editor/EditorWorkspace.vue')
+const EditorWorkspace = defineAsyncComponent(loadEditorWorkspace)
+const EditorTour = defineAsyncComponent(() => import('@/components/onboarding/EditorTour.vue'))
 
 const route = useRoute()
 const router = useRouter()

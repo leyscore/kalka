@@ -1,10 +1,11 @@
-import { isToolUIPart, type UIMessage } from 'ai'
+import type { UIMessage } from 'ai'
 import { toRaw } from 'vue'
 
 import {
   attachmentsForMessage,
   setMessageAttachments
 } from '@/app/ai/attachment/presentation/store'
+import { isToolUIPart } from '@/app/ai/chat/parts'
 import { visibleMessageText, setVisibleMessageText } from '@/app/ai/chat/presentation'
 import { settleMessage } from '@/app/ai/chat/settle'
 import { readToolChange, setToolChange } from '@/app/ai/tools/changes/store'

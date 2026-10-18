@@ -2,7 +2,7 @@ import { AI_PROVIDERS } from '@kalka/core/constants'
 
 import { aiModelSettings, modelConnectionCredentialRef } from '@/app/ai/models'
 import { VECTORIZE_CREDENTIAL_REFS } from '@/app/editor/vectorize/credentials'
-import { mcpConnectionSettings, mcpConnectionCredentialRef } from '@/app/integrations/mcp'
+import { mcpConnectionSettings, mcpConnectionCredentialRef } from '@/app/integrations/mcp/store'
 import { storageCredentialRefs, storageProviderRegistry } from '@/app/integrations/storage'
 import {
   PEXELS_CREDENTIAL,

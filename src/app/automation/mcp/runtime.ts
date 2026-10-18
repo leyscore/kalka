@@ -1,6 +1,5 @@
 import { reactive } from 'vue'
 
-import { connectAutomation } from '@/app/automation/bridge/server'
 import type { EditorStore } from '@/app/editor/active-store'
 import { whenIdle } from '@/app/runtime/idle'
 import { isTauri } from '@/app/tauri/env'
@@ -250,8 +249,25 @@ export function createMCPRuntimeService(dependencies: MCPRuntimeDependencies) {
   }
 }
 
+/**
+ * Connects the page to the server. The bridge carries every tool handler, so its code loads with
+ * the first connection rather than with the app.
+ */
+function connectBridge(getStore: () => EditorStore, authToken: string | null): () => void {
+  let disconnect: (() => void) | null = null
+  let closed = false
+  void import('@/app/automation/bridge/server').then(({ connectAutomation }) => {
+    if (!closed) disconnect = connectAutomation(getStore, authToken).disconnect
+    return undefined
+  })
+  return () => {
+    closed = true
+    disconnect?.()
+  }
+}
+
 const appMCPRuntime = createMCPRuntimeService({
-  connect: (getStore, authToken) => connectAutomation(getStore, authToken).disconnect,
+  connect: connectBridge,
   canConnect: () => import.meta.env.DEV || isTauri(),
   readHealth: readAutomationHealth,
   setToolDescriptors: setMCPToolDescriptors,
