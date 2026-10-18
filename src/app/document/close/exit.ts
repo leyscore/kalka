@@ -1,4 +1,5 @@
 import { prepareForClose } from '@/app/tabs'
+import { IS_TAURI } from '@/constants'
 
 /** Shared approval so the window close handler and the Quit item cannot prompt twice. */
 export function createExitApproval(confirmDocuments: () => Promise<boolean>) {
@@ -35,6 +36,11 @@ export function confirmAppExit(): Promise<boolean> {
 
 /** Shared by the native Quit item and the platform exit request. */
 export async function requestAppExit(): Promise<void> {
+  if (IS_TAURI) {
+    // A Quit from the main process waits for this before falling back to a native box.
+    const { call } = await import('@/app/platform/tauri/bridge')
+    void call('window.acknowledgeClose')
+  }
   if (!(await confirmAppExit())) return
   const { exit } = await import('@tauri-apps/plugin-process')
   await exit(0)

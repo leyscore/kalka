@@ -23,6 +23,7 @@
 
 ### Changed
 
+- The desktop app asks whether to save changes before closing a tab, the window or the app in Kalka's own dialog instead of the system's message box: <kbd>Return</kbd> saves and <kbd>Esc</kbd> cancels, and quitting with several unsaved documents asks once, listing them, with Save All, Review (each in turn) and Discard All. If the editor stops responding, the system box offers to close anyway.
 - Size cards and recent documents on the home screen no longer cast a blue shadow on hover.
 - On Windows and Linux the desktop app shows Kalka's own menu in the sidebar, as on the web, instead of the native menu bar across the window; its keyboard shortcuts still work.
 - The macOS installer window is titled Kalka and shows Kalka's own design: the mark, an arrow from the app to Applications, and how to open an unsigned beta the first time.

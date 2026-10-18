@@ -90,7 +90,8 @@ function appMenu(): MenuItemConstructorOptions {
       { role: 'hideOthers' },
       { role: 'unhide' },
       { type: 'separator' },
-      { label: spec.quit?.label, accelerator: spec.quit?.accelerator, click: () => send('quit') }
+      // Quitting goes through the quit guard, which asks the editor or, failing that, natively.
+      { label: spec.quit?.label, accelerator: spec.quit?.accelerator, click: () => app.quit() }
     ]
   }
 }

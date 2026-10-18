@@ -1,6 +1,13 @@
-import { app, BrowserWindow, type WebContents } from 'electron'
+import { app, BrowserWindow, dialog, type WebContents } from 'electron'
+import * as v from 'valibot'
 
 import { emit, registerAll, type CallContext } from '../ipc'
+import {
+  CloseFallbackText,
+  createPageCloseAsks,
+  DEFAULT_CLOSE_FALLBACK_TEXT,
+  type PageCloseRequest
+} from './close-ask'
 
 export interface WindowHost {
   createWindow(): BrowserWindow
@@ -12,6 +19,10 @@ export interface WindowHost {
 const labels = new Map<string, BrowserWindow>()
 const intercepted = new WeakSet<BrowserWindow>()
 const destroying = new WeakSet<BrowserWindow>()
+/** Pages that cannot answer a close request: crashed, or busy past Electron's patience. */
+const unanswerable = new WeakSet<BrowserWindow>()
+const fallbackText = new WeakMap<BrowserWindow, CloseFallbackText>()
+const closeAsks = createPageCloseAsks<BrowserWindow>()
 let exiting = false
 
 export function windowByLabel(label: string): BrowserWindow | null {
@@ -41,11 +52,55 @@ export function track(window: BrowserWindow, label: string): void {
   window.on('close', (event) => {
     if (exiting || destroying.has(window) || !intercepted.has(window)) return
     event.preventDefault()
-    emit(window.webContents, 'tauri://close-requested')
+    askPage(window, 'tauri://close-requested', undefined, () => {
+      destroying.add(window)
+      window.destroy()
+    })
   })
+  window.webContents.on('render-process-gone', () => unanswerable.add(window))
+  window.on('unresponsive', () => unanswerable.add(window))
+  window.on('responsive', () => unanswerable.delete(window))
+  window.webContents.on('did-start-loading', () => unanswerable.delete(window))
   window.on('closed', () => {
     if (labels.get(label) === window) labels.delete(label)
     broadcast(`tauri://destroyed:${label}`)
+  })
+}
+
+/** The native box for a page that cannot draw its own unsaved-changes dialog. */
+async function closeWithoutPage(window: BrowserWindow): Promise<boolean> {
+  if (window.isDestroyed()) return true
+  const text = fallbackText.get(window) ?? DEFAULT_CLOSE_FALLBACK_TEXT
+  const { response } = await dialog.showMessageBox(window, {
+    type: 'warning',
+    message: text.title,
+    detail: text.description,
+    buttons: [text.closeAnyway, text.cancel],
+    defaultId: 1,
+    cancelId: 1,
+    noLink: true
+  })
+  return response === 0
+}
+
+/**
+ * Sends a close or quit request to the page, which answers with its own dialog. A page that
+ * does not acknowledge it in time gets the native box instead (`./close-ask`).
+ */
+function askPage(
+  window: BrowserWindow,
+  event: string,
+  payload: unknown,
+  proceed: PageCloseRequest['proceed']
+): void {
+  closeAsks.ask(window, {
+    send: () => {
+      if (unanswerable.has(window) || window.webContents.isDestroyed()) return false
+      emit(window.webContents, event, payload)
+      return true
+    },
+    fallback: () => closeWithoutPage(window),
+    proceed
   })
 }
 
@@ -60,7 +115,10 @@ export function installQuitGuard(): void {
     const main = windowByLabel('main')
     if (!main || !intercepted.has(main)) return
     event.preventDefault()
-    emit(main.webContents, 'menu-event', 'quit')
+    askPage(main, 'menu-event', 'quit', () => {
+      markExiting()
+      app.quit()
+    })
   })
 }
 
@@ -74,6 +132,16 @@ export function windowHandlers(host: WindowHost) {
       if (!context.window) return
       if (on) intercepted.add(context.window)
       else intercepted.delete(context.window)
+    },
+    /** The page received a close or quit request and is asking the person itself. */
+    acknowledgeClose(context: CallContext) {
+      if (context.window) closeAsks.acknowledge(context.window)
+    },
+    /** The page's words for the native box shown when it cannot answer a close request. */
+    setCloseFallback(context: CallContext, text: unknown) {
+      const parsed = v.safeParse(CloseFallbackText, text)
+      if (!parsed.success) throw new Error('Malformed close fallback text')
+      if (context.window) fallbackText.set(context.window, parsed.output)
     },
     close(context: CallContext) {
       context.window?.close()

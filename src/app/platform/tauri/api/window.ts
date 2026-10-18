@@ -18,6 +18,9 @@ class CurrentWindow {
   ): Promise<UnlistenFn> {
     await call('window.interceptClose', true)
     const stop = native().on('tauri://close-requested', () => {
+      // Tells the main process the page is alive and asking, so it does not fall back to its
+      // native box (`electron/src/handlers/close-ask.ts`).
+      void call('window.acknowledgeClose')
       let prevented = false
       const event: CloseRequestedEvent = {
         preventDefault: () => {
