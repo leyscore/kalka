@@ -8,6 +8,7 @@ import { DesignTokens, type CSSModes } from '../tokens/references'
 import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
 import { maskStyle } from './masks'
 import { patternBackground, tiledImageStyle } from './patterns'
+import { withUnhuggableAxisFixed } from './sizing'
 import {
   imageSourceURL,
   INTERACTIVE_TAGS,
@@ -196,7 +197,10 @@ function frameStyle(
 ): DesignStyleDeclaration {
   const style = withBlockDisplay(
     tagName,
-    layerCSS(context.derivedSizes ? withDerivedSize(node) : node, { parent, css })
+    layerCSS(
+      withUnhuggableAxisFixed(context.graph, context.derivedSizes ? withDerivedSize(node) : node),
+      { parent, css }
+    )
   )
   if (context.tiles) {
     // A pattern's tile draws another layer, which only the SVG export can.

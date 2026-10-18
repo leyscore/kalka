@@ -35,6 +35,15 @@ const CHILD_STYLE_KEYS = new Set<keyof SceneNode>([
   'gridTemplateRows'
 ])
 
+/** Changes to a layer that restyle its parent: whether it fills decides what the parent hugs. */
+const PARENT_STYLE_KEYS = new Set<keyof SceneNode>([
+  'visible',
+  'internalOnly',
+  'layoutGrow',
+  'layoutAlignSelf',
+  'layoutPositioning'
+])
+
 /** The stacking order of the artboard of the `index`th shown page child; odd orders lie between. */
 function artboardStackOrder(index: number): number {
   return 2 * index + 2
@@ -208,7 +217,7 @@ export class DomSceneProjector {
       this.restyleChildren(masked)
     for (const userId of this.patternUsers.affectedBy(this.graph, node)) this.dirty.add(userId)
     if (node.parentId) {
-      if ('visible' in changes || 'internalOnly' in changes) this.dirty.add(node.parentId)
+      if (keys.some((key) => PARENT_STYLE_KEYS.has(key))) this.dirty.add(node.parentId)
       if (node.parentId === pageId) this.pageDirty = true
     }
   }

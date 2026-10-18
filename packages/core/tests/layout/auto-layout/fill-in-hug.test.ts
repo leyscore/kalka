@@ -45,3 +45,45 @@ describe('a child that fills a row hugging its width', () => {
     expect(fill.width).toBe(150)
   })
 })
+
+// A frame whose every child fills across it has nothing to hug: Figma keeps its width, as it
+// turns such a frame Fixed, where CSS would shrink it to children that place their own content.
+describe('a column hugging its width whose every child fills it', () => {
+  test('keeps its width', () => {
+    const graph = new SceneGraph()
+    const column = graph.createNode('FRAME', graph.getPages()[0].id, {
+      layoutMode: 'VERTICAL',
+      width: 400,
+      height: 100,
+      primaryAxisSizing: 'HUG',
+      counterAxisSizing: 'HUG'
+    })
+    const free = graph.createNode('FRAME', column.id, {
+      width: 400,
+      height: 100,
+      layoutAlignSelf: 'STRETCH'
+    })
+    graph.createNode('FRAME', free.id, { x: 10, y: 10, width: 120, height: 80 })
+
+    computeAllLayouts(graph)
+
+    expect(column.width).toBe(400)
+    expect(free.width).toBe(400)
+  })
+
+  test('still hugs a child that does not fill', () => {
+    const graph = new SceneGraph()
+    const column = graph.createNode('FRAME', graph.getPages()[0].id, {
+      layoutMode: 'VERTICAL',
+      width: 400,
+      primaryAxisSizing: 'HUG',
+      counterAxisSizing: 'HUG'
+    })
+    graph.createNode('FRAME', column.id, { width: 400, height: 20, layoutAlignSelf: 'STRETCH' })
+    graph.createNode('FRAME', column.id, { width: 150, height: 20 })
+
+    computeAllLayouts(graph)
+
+    expect(column.width).toBe(150)
+  })
+})
