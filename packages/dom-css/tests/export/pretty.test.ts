@@ -93,6 +93,14 @@ describe('pretty export', () => {
     expect(String(pretty.content)).toMatch(/>Pay yearly and <span[^>]*>save<\/span><\/span>\n/)
   })
 
+  test('leaves the lines of text that keeps its whitespace as written', async () => {
+    const graph = new SceneGraph()
+    const note = graph.createNode('TEXT', graph.getPages()[0].id, { text: 'One\nTwo' })
+    const document = sceneNodeToDesignDocument(graph, note.id, { includeSourceIds: false })
+    const { files } = await exportHTMLBundle(document, { html: 'standalone', pretty: true })
+    expect(String(files[0]?.content)).toContain('>One\nTwo</span>')
+  })
+
   test('writes one declaration per line and leaves data URLs whole', () => {
     expect(
       prettyCSS('@media (max-width: 600px){.a{color:red;background:url(data:a;base64,b)}}')

@@ -8,7 +8,7 @@ import { tokenStylesheet, type TokenStylesheetFormat } from '../tokens/styleshee
 import type { DesignDocument, DesignElement, DesignNode } from '../types'
 import { cssClassStylesheet, withClassRules } from './classes'
 import { mergeClassNames, serializeHTML, splitWhitespace } from './html'
-import { prettyCSS } from './pretty'
+import { childIndent, prettyCSS } from './pretty'
 import { mediaCSS, shareStyles } from './sharing'
 import { hasBrowserDefaults, HTML_TAG_RESET_CSS, scopedTagResetCSS } from './tag-reset'
 import { tidyDesignDocument } from './tidy'
@@ -84,6 +84,8 @@ type ParseElement = DefaultTreeAdapterTypes.Element
 
 const RESET_CSS = `*,*::before,*::after{box-sizing:border-box}html,body{margin:0;padding:0}body{font-family:system-ui,sans-serif;background:#fff}${HTML_TAG_RESET_CSS}`
 const RESET_FILE = 'reset.css'
+/** How deep a page's body content sits: in `<html>`, then `<body>`. */
+const BODY_DEPTH = 2
 /** The box several exported roots sit in, each where it is on the page. */
 const STAGE_CLASS = 'kalka-canvas'
 
@@ -100,11 +102,8 @@ function pageHTML(head: readonly string[], body: string, pretty: boolean): strin
   if (!pretty)
     return `<!doctype html><html><head>${[...meta, ...head].join('')}</head><body>${body}</body></html>`
   const indent = (lines: readonly string[]) => lines.map((line) => `    ${line}`).join('\n')
-  const bodyLines = body
-    .split('\n')
-    .map((line) => `    ${line}`)
-    .join('\n')
-  return `<!doctype html>\n<html>\n  <head>\n${indent([...meta, ...head])}\n  </head>\n  <body>\n${bodyLines}\n  </body>\n</html>\n`
+  // The body comes indented to its depth: indenting its lines again would move text it wraps.
+  return `<!doctype html>\n<html>\n  <head>\n${indent([...meta, ...head])}\n  </head>\n  <body>${childIndent(BODY_DEPTH)}${body}\n  </body>\n</html>\n`
 }
 
 /**
@@ -378,7 +377,7 @@ async function exportStandaloneHTML(
   let body: string
   const reset = options.reset === 'inline' ? RESET_CSS : ''
   let css = `${reset}${stageCSS}`
-  const serialize = { pretty: options.pretty }
+  const serialize = { pretty: options.pretty, depth: placed ? BODY_DEPTH + 1 : BODY_DEPTH }
 
   if (options.style === 'tailwind') {
     body = serializeHTML(tidyDesignDocument(doc, { shorthands: false }), {
@@ -407,7 +406,7 @@ async function exportStandaloneHTML(
   }
   if (placed)
     body = options.pretty
-      ? `<div class="${STAGE_CLASS}">\n${body.replace(/^/gm, '  ')}\n</div>`
+      ? `<div class="${STAGE_CLASS}">${childIndent(BODY_DEPTH + 1)}${body}${childIndent(BODY_DEPTH)}</div>`
       : `<div class="${STAGE_CLASS}">${body}</div>`
 
   const external = options.assets === 'external'

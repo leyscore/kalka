@@ -9,6 +9,8 @@ export interface SerializeHTMLOptions {
   themeVariables?: readonly string[]
   /** One element per line, indented by depth, where whitespace leaves the rendering alone. */
   pretty?: boolean
+  /** How deep the document's top elements sit when pretty, for a page that wraps them. */
+  depth?: number
 }
 
 export const VOID_ELEMENTS = new Set([
@@ -137,7 +139,8 @@ export function serializeHTML(
     ...options,
     themeVariables: options.themeVariables ?? document.tokens?.themeVariables()
   }
+  const depth = options.depth ?? 0
   return document.children
-    .map((node) => serializeNode(node, resolved))
-    .join(options.pretty ? '\n' : '')
+    .map((node) => serializeNode(node, resolved, depth))
+    .join(options.pretty ? childIndent(depth) : '')
 }
