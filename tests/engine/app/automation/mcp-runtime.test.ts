@@ -178,7 +178,7 @@ describe('MCP runtime service', () => {
 
   test('a scheduled server starts only when its deferred task runs', async () => {
     let spawnCalls = 0
-    let task: (() => void) | null = null
+    const deferred: { run?: () => void } = {}
     const { service } = setup({
       spawn: async () => {
         spawnCalls++
@@ -187,13 +187,13 @@ describe('MCP runtime service', () => {
     })
 
     service.schedule(getStore, (run) => {
-      task = run
+      deferred.run = run
       return () => undefined
     })
     expect(spawnCalls).toBe(0)
     expect(service.state.status).toBe('idle')
 
-    task?.()
+    deferred.run?.()
     expect(await service.ensure()).toEqual({ ok: true })
     expect(spawnCalls).toBe(1)
     expect(service.state.status).toBe('running')
@@ -202,7 +202,7 @@ describe('MCP runtime service', () => {
   test('ensure starts a scheduled server at once and cancels the deferred start', async () => {
     let spawnCalls = 0
     let cancelled = false
-    let task: (() => void) | null = null
+    const deferred: { run?: () => void } = {}
     const { service } = setup({
       spawn: async () => {
         spawnCalls++
@@ -210,14 +210,14 @@ describe('MCP runtime service', () => {
       }
     })
     service.schedule(getStore, (run) => {
-      task = run
+      deferred.run = run
       return () => {
         cancelled = true
       }
     })
 
     const [first, second] = await Promise.all([service.ensure(), service.ensure()])
-    task?.()
+    deferred.run?.()
 
     expect(first).toEqual({ ok: true })
     expect(second).toEqual({ ok: true })
