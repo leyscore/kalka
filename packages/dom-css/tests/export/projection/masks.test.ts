@@ -149,6 +149,30 @@ describe('mask projection', () => {
     expect(svg).toContain('<path d="M0 0H100">')
   })
 
+  test('a group used as a mask masks with what its layers draw', () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    const frame = graph.createNode('FRAME', page.id, { name: 'Frame', width: 200, height: 200 })
+    const group = graph.createNode('GROUP', frame.id, {
+      name: 'Clip',
+      x: 10,
+      y: 10,
+      width: 100,
+      height: 80,
+      isMask: true,
+      maskType: 'VECTOR'
+    })
+    graph.createNode('ELLIPSE', group.id, { name: 'Circle', width: 40, height: 40 })
+    graph.createNode('RECTANGLE', group.id, { name: 'Bar', x: 60, y: 20, width: 40, height: 60 })
+    graph.createNode('RECTANGLE', group.id, { name: 'Hidden', width: 5, height: 5, visible: false })
+    graph.createNode('RECTANGLE', frame.id, { name: 'Above', width: 200, height: 200 })
+    const [svg] = maskImages(projectChildren(graph, frame).get('Above')?.['mask-image'])
+    expect(svg).toContain('<ellipse')
+    expect(svg).toContain('matrix(1 0 0 1 60 20)')
+    expect(svg).toContain('width="40" height="60"')
+    expect(svg).not.toContain('width="5"')
+  })
+
   test('a format that saves masks as fields can leave their CSS out', () => {
     const { graph, frame } = maskedFrame()
     graph.createNode('RECTANGLE', frame.id, { name: 'Above', width: 10, height: 10 })

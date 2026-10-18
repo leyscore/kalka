@@ -51,6 +51,7 @@ function maskShape(
 ): DesignNode {
   const drawn = vectorElement?.(graph, mask)
   if (drawn?.tagName === 'svg') return drawn
+  if (mask.type === 'GROUP') return groupMaskShape(graph, mask, vectorElement)
   const fill = '#fff'
   if (mask.type === 'ELLIPSE') {
     const rx = String(mask.width / 2)
@@ -74,6 +75,31 @@ function maskShape(
     },
     children: []
   }
+}
+
+/**
+ * A group used as a mask masks with what its layers draw, as in Figma, where an SVG clip path
+ * becomes such a group: each shown layer's drawing placed in the group's box.
+ */
+function groupMaskShape(
+  graph: SceneGraph,
+  group: SceneNode,
+  vectorElement: VectorElementRenderer | undefined
+): DesignElement {
+  const children = graph
+    .getChildren(group.id)
+    .filter((child) => child.visible)
+    .map((child): DesignNode => {
+      const m = boxMatrix(child)
+      const transform = [m[0], m[3], m[1], m[4], m[2], m[5]].map(round)
+      return {
+        type: 'element',
+        tagName: 'g',
+        attrs: { transform: `matrix(${transform.join(' ')})` },
+        children: [maskShape(graph, child, vectorElement)]
+      }
+    })
+  return { type: 'element', tagName: 'g', attrs: {}, children }
 }
 
 interface MaskLayer {

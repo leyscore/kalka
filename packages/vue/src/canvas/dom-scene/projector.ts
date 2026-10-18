@@ -202,6 +202,7 @@ export class DomSceneProjector {
       this.maskParents.add(node.parentId)
       this.restyleChildren(node.parentId)
     }
+    this.restyleMaskedBy(node.parentId)
     for (const userId of this.patternUsers.affectedBy(this.graph, node)) this.dirty.add(userId)
     if (node.parentId) {
       if ('visible' in changes || 'internalOnly' in changes) this.dirty.add(node.parentId)
@@ -217,6 +218,18 @@ export class DomSceneProjector {
       else this.dirty.add(id)
       // Masks added, removed, or reordered change which layers they mask.
       if (this.maskParents.has(id)) this.restyleChildren(id)
+      this.restyleMaskedBy(id)
+    }
+  }
+
+  /** A group used as a mask masks with its layers, so a change inside it restyles what it masks. */
+  private restyleMaskedBy(id: string | null): void {
+    const pageId = this.currentPageId()
+    for (let at = id; at && at !== pageId;) {
+      const ancestor = this.graph.getNode(at)
+      if (!ancestor) return
+      if (ancestor.isMask && ancestor.parentId) this.restyleChildren(ancestor.parentId)
+      at = ancestor.parentId
     }
   }
 
