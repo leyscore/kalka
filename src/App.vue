@@ -15,6 +15,7 @@ import { publishLibraryDialogOpen } from '@/app/libraries/publish/dialog'
 import { libraryReviewRequest } from '@/app/libraries/review'
 import { welcomeOpen } from '@/app/onboarding/welcome'
 import { settingsDialogOpen } from '@/app/settings/dialog'
+import { reducedEffects, watchRenderingCapability } from '@/app/shell/effects'
 import { latch } from '@/app/shell/latch'
 import { animationsEnabled } from '@/app/shell/motion'
 import { installMenuGlide } from '@/app/shell/motion/menu-glide'
@@ -57,7 +58,8 @@ useHead({
   titleTemplate: (title) => (title ? `${title} — Kalka` : 'Kalka'),
   htmlAttrs: {
     lang: locale,
-    'data-motion': computed(() => (animationsEnabled.value ? 'full' : 'off'))
+    'data-motion': computed(() => (animationsEnabled.value ? 'full' : 'off')),
+    'data-effects': computed(() => (reducedEffects.value ? 'reduced' : 'full'))
   }
 })
 
@@ -72,6 +74,7 @@ useEventListener(window, 'pagehide', () => {
 
 let stopMenuGlide: (() => void) | null = null
 onScopeDispose(() => stopMenuGlide?.())
+onScopeDispose(watchRenderingCapability())
 onMounted(() => {
   stopMenuGlide = installMenuGlide()
   toast.setupGlobalErrorHandler()

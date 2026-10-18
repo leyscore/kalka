@@ -378,6 +378,36 @@ html[data-theme='light'] {
   --color-ruler-label: rgb(255 255 255);
 }
 
+/*
+ * Reduced effects (`src/app/shell/effects/`): without a GPU, or when the system asks for less
+ * transparency, nothing blurs what lies behind it. Glass turns nearly opaque so text stays as
+ * readable, and the backdrop's lights become plain gradients instead of blurred discs.
+ */
+:root[data-effects='reduced'] {
+  --color-glass: rgb(24 25 33 / 0.74);
+  --color-glass-strong: rgb(30 31 40 / 0.94);
+  --color-float: rgb(32 33 42 / 0.97);
+}
+
+html[data-theme='light'][data-effects='reduced'] {
+  --color-glass: rgb(250 250 248 / 0.72);
+  --color-glass-strong: rgb(255 255 255 / 0.92);
+  --color-float: rgb(250 250 248 / 0.97);
+}
+
+:root[data-effects='reduced'] *,
+:root[data-effects='reduced'] *::before,
+:root[data-effects='reduced'] *::after {
+  backdrop-filter: none;
+}
+
+:root[data-effects='reduced'] [data-backdrop-light] {
+  filter: none;
+  /* A blurred disc glows past its box; the gradient spreads as far by drawing larger. */
+  scale: 1.5;
+  background: radial-gradient(closest-side, var(--backdrop-light) 25%, transparent);
+}
+
 html,
 body,
 #app {
