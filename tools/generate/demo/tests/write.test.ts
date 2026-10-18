@@ -13,10 +13,9 @@ afterAll(() => rmSync(directory, { recursive: true, force: true }))
 describe('demo fixture', () => {
   test('is written laid out by the browser', async () => {
     const output = join(directory, 'fixture.fig')
-    const run = Bun.spawnSync(
-      ['bun', fileURLToPath(import.meta.resolve('#demo/write')), output],
-      { stderr: 'pipe' }
-    )
+    const run = Bun.spawnSync(['bun', fileURLToPath(import.meta.resolve('#demo/write')), output], {
+      stderr: 'pipe'
+    })
     expect(run.exitCode).toBe(0)
     const graph = await readFigFile(new File([readFileSync(output)], 'Demo.fig'))
     populateAllFigPages(graph)
