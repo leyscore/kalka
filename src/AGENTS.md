@@ -6,6 +6,7 @@ Root Tauri/Vite app. Services and state live under `src/app/**`, views under `sr
 
 - `src/app/editor/session/create.ts` wraps Core: it creates reactive state, calls `createEditor()`, and assembles document I/O, autosave, export, vector edit, pen resume, flashes, profiler, and mobile clipboard. Tabs live in `src/app/tabs/`; active editor access in `src/app/editor/active-store/`.
 - Use editor actions (`clearSelection()`, `select()`, `setTool()`), never direct state assignments (`packages/core/AGENTS.md`, Editor).
+- CanvasKit loads on demand behind the DOM canvas: code that draws or computes with Skia awaits `store.loadCanvasKit()` (or `loadCanvasKit(editor)` from `@kalka/vue`) instead of reading `store.renderer`, which stays null until a feature asked for it (`packages/vue/src/canvas/surface/offscreen.ts`, `src/app/editor/canvas/booleans.ts`).
 - File System Access APIs are browser APIs, not Tauri-only. Keep the Safari download fallback and defer `revokeObjectURL`.
 - Vectorize provider clients, preferences, and lazy credential resolution live under `src/app/editor/vectorize/`; conversion itself is in Core.
 
@@ -42,6 +43,7 @@ The supported browser baseline lives in `src/app/shell/support/baseline.ts` and 
 
 - Browser and native menus share `src/app/shell/menu/schema.ts`; handle IDs in `use.ts` or editor commands, and regenerate `electron/generated/menu.json` with `bun run generate:tauri-menu`.
 - Motion policy lives in `src/app/shell/motion/`: resolve the persisted System/Off preference and OS reduction once. The root `data-motion` attribute and the Tailwind `motion-safe`/`motion-reduce` variants represent the effective policy, including portalled content. Use the policy-aware Motion adapters rather than repeating preference conditionals in components.
+- Effects policy lives in `src/app/shell/effects/`: without a GPU or with the system's reduced transparency the root takes `data-effects="reduced"`, and `src/app.css` drops backdrop blur and makes glass nearly opaque; new blurred surfaces need no rule of their own, but never animate a blur or put one over moving content (`tests/app/shell/effects/detect.test.ts`).
 - Canvas shortcuts stop while a dialog, menu, or listbox is open. A dialog that edits the document listens for undo and redo on its own content with `useDocumentShortcuts`, so keys in menus it portals never reach it; there is one history, the editor's (`src/app/shell/keyboard/document.ts`, `src/components/variables/VariablesDialog.vue`).
 - Keep the app manifest in `vite/pwa.ts`; use `BrandMark` for in-app branding; never symlink web assets to desktop icons (`tools/AGENTS.md`, Brand assets).
 
