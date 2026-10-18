@@ -1,4 +1,4 @@
-import { computeImageHash } from '@kalka/scene-graph/images'
+import { computeImageHash, imageExtension } from '@kalka/scene-graph/images'
 
 import { IMAGES_DIR } from './constants'
 
@@ -13,24 +13,6 @@ function fromFileSafe(name: string): string {
   return name.replaceAll(/_([0-9a-f]+)_/g, (_, code: string) =>
     String.fromCodePoint(Number.parseInt(code, 16))
   )
-}
-
-function startsWith(bytes: Uint8Array, signature: readonly number[], offset = 0): boolean {
-  return signature.every((byte, index) => bytes[offset + index] === byte)
-}
-
-const ASCII = (text: string) => Array.from(new TextEncoder().encode(text))
-
-/** The extension an image's bytes call for, so the file opens in other tools. */
-export function imageExtension(bytes: Uint8Array): string {
-  if (startsWith(bytes, [0x89, 0x50, 0x4e, 0x47])) return 'png'
-  if (startsWith(bytes, [0xff, 0xd8, 0xff])) return 'jpg'
-  if (startsWith(bytes, ASCII('GIF8'))) return 'gif'
-  if (startsWith(bytes, ASCII('RIFF')) && startsWith(bytes, ASCII('WEBP'), 8)) return 'webp'
-  if (startsWith(bytes, ASCII('ftypavif'), 4)) return 'avif'
-  const head = new TextDecoder().decode(bytes.subarray(0, 256)).trimStart()
-  if (head.startsWith('<svg') || (head.startsWith('<?xml') && head.includes('<svg'))) return 'svg'
-  return 'bin'
 }
 
 /** Where an image is saved in the folder: named by its hash, so saving twice writes the same. */

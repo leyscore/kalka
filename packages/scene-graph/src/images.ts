@@ -12,6 +12,27 @@ export function computeImageHash(data: Uint8Array): string {
   return bytesToHex(sha1(data))
 }
 
+function startsWith(bytes: Uint8Array, signature: readonly number[], offset = 0): boolean {
+  return signature.every((byte, index) => bytes[offset + index] === byte)
+}
+
+const ASCII = (text: string) => Array.from(new TextEncoder().encode(text))
+
+/**
+ * The extension an image's bytes call for, so a file of them opens in other tools: `bin` for
+ * bytes no image format recognises.
+ */
+export function imageExtension(bytes: Uint8Array): string {
+  if (startsWith(bytes, [0x89, 0x50, 0x4e, 0x47])) return 'png'
+  if (startsWith(bytes, [0xff, 0xd8, 0xff])) return 'jpg'
+  if (startsWith(bytes, ASCII('GIF8'))) return 'gif'
+  if (startsWith(bytes, ASCII('RIFF')) && startsWith(bytes, ASCII('WEBP'), 8)) return 'webp'
+  if (startsWith(bytes, ASCII('ftypavif'), 4)) return 'avif'
+  const head = new TextDecoder().decode(bytes.subarray(0, 256)).trimStart()
+  if (head.startsWith('<svg') || (head.startsWith('<?xml') && head.includes('<svg'))) return 'svg'
+  return 'bin'
+}
+
 /** An image's size in pixels. */
 export interface ImageDimensions {
   width: number
