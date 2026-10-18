@@ -32,4 +32,26 @@ describe('browser layout engine', () => {
     engine.layout(graph, frame.id)
     expect(requests).toEqual([[], [`${family} 700`]])
   })
+
+  // A web font is fetched with the characters the text loaded so far holds; text loaded later
+  // fetches a file with more of them, which replaces the first.
+  test('sends a face again and lays out again once its file covers more characters', () => {
+    const family = 'Browser Layout Growing Face'
+    const graph = new SceneGraph()
+    const frame = graph.createNode('FRAME', graph.getPages()[0].id, { width: 200, height: 100 })
+    graph.createNode('TEXT', frame.id, { text: 'loading (now)', fontFamily: family })
+    graph.createNode('TEXT', frame.id, { text: 'more', fontFamily: family })
+    const { page, requests } = recordingPage()
+    const engine = new BrowserLayoutEngine(page)
+
+    fontManager.markLoaded(family, 'Regular', new Uint8Array(8).buffer)
+    engine.layout(graph, frame.id)
+    engine.layout(graph, frame.id)
+    expect(requests).toEqual([[`${family} 400`]])
+
+    fontManager.markLoaded(family, 'Regular', new Uint8Array(16).buffer)
+    engine.layout(graph, frame.id)
+    engine.layout(graph, frame.id)
+    expect(requests).toEqual([[`${family} 400`], [`${family} 400`]])
+  })
 })
