@@ -3,7 +3,7 @@ import { createCanvasKitRasterCodec } from '@kalka/core/io/formats/raster'
 
 import { renderAutomationImage } from '@/app/automation/bridge/export-handlers'
 import type { EditorStore } from '@/app/editor/active-store'
-import { listFamilies, listFonts } from '@/app/editor/fonts'
+import { listFamilies, listFonts, loadFont } from '@/app/editor/fonts'
 
 export function makeFigmaFromStore(
   store: EditorStore,
@@ -37,6 +37,9 @@ export function makeFigmaFromStore(
       opts.pageId ?? pageId
     )
   if (store.renderer) api.rasterCodec = createCanvasKitRasterCodec(store.renderer.ck)
+  api.loadFontAsync = async ({ family, style }) => {
+    await loadFont(family, style).catch(() => null)
+  }
   api.listAvailableFontsAsync = async () => {
     const [systemFonts, familyOptions] = await Promise.all([listFonts(), listFamilies()])
     const fonts = systemFonts.flatMap(({ family, styles }) =>

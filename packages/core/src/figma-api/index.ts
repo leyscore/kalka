@@ -28,6 +28,7 @@ import type { RasterCodec } from '#core/io/formats/raster'
 import { createSVGNodes } from '#core/io/formats/svg'
 import { reconcileVariableLayouts } from '#core/layout/variables'
 import { documentFontStatus, type DocumentFontStatus } from '#core/text/font/status'
+import { fontManager } from '#core/text/fonts'
 
 import { combineComponentsAsVariants, componentFromNode, exposeInstanceSwap } from './components'
 import { flattenedVector } from './flatten'
@@ -544,8 +545,12 @@ export class FigmaAPI implements NodeProxyHost {
 
   // --- Stubs ---
 
-  async loadFontAsync(_fontName: FigmaFontName): Promise<void> {
-    // No-op: we don't gate text editing on font loading
+  /**
+   * Loads the font so text measures and draws with it from then on. Hosts with their own font
+   * sources replace this; a font that cannot load is skipped, where Figma would reject.
+   */
+  async loadFontAsync(fontName: FigmaFontName): Promise<void> {
+    await fontManager.loadFont(fontName.family, fontName.style).catch(() => null)
   }
 
   async listAvailableFontsAsync(): Promise<FigmaFont[]> {
