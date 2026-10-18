@@ -51,6 +51,23 @@ function referenceName(image: ImageReference): string | null {
 }
 
 /**
+ * Images the records carry in the message's own blobs, by the name their paints use: Figma's
+ * clipboard does this, and so do documents saved before Figma kept images beside the message.
+ */
+export function embeddedImages(
+  changes: readonly NodeChange[],
+  blobs: readonly Uint8Array[]
+): Map<string, Uint8Array> {
+  const images = new Map<string, Uint8Array>()
+  walk(changes, (image) => {
+    const name = referenceName(image)
+    const bytes = image.dataBlob === undefined ? undefined : blobs[image.dataBlob]
+    if (name && bytes && !images.has(name)) images.set(name, bytes)
+  })
+  return images
+}
+
+/**
  * Figma reads an image only under the SHA-1 of its bytes, and documents saved before images were
  * named by their SHA-1 hold them under other names. Points every image reference in `changes` at
  * its SHA-1. Returns the new name of every image renamed; references to images `images` lacks

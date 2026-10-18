@@ -17,6 +17,7 @@ import {
   type MaterializedComponentOccurrence
 } from '../instance-overrides/source-children'
 import { nodeChangeToProps } from '../node-change'
+import { embeddedImages } from '../node-change/images'
 import { figArchiveRecordInfo, type FigArchiveRecordInfo } from '../record-patch'
 import { applyDocumentLayoutBindings } from './bindings/layout'
 import { applyDocumentPaintBindings } from './bindings/paint'
@@ -290,6 +291,22 @@ function materializeReader(
   )
 }
 
+/** Adds the images `occurrence` and its layers carry in the message's blobs, by their paints' names. */
+function addEmbeddedImages(
+  graph: SceneGraph,
+  occurrence: InstanceOccurrence,
+  blobs: readonly Uint8Array[]
+): void {
+  const records: NodeChange[] = []
+  const collect = (current: InstanceOccurrence): void => {
+    records.push(current.properties)
+    current.children.forEach(collect)
+  }
+  collect(occurrence)
+  for (const [name, bytes] of embeddedImages(records, blobs))
+    if (!graph.images.has(name)) graph.images.set(name, bytes.slice())
+}
+
 function materializeReaderInto(
   pages: InstanceOccurrence[],
   plan: ComponentConstruction[],
@@ -326,6 +343,8 @@ function materializeReaderInto(
     if (node.type === 'COMPONENT') componentIds.set(occurrence.sourceId, node.id)
     for (const child of occurrence.children) createShells(child, node.id)
   }
+  for (const occurrence of [...pages, ...plan.map((item) => item.occurrence)])
+    addEmbeddedImages(graph, occurrence, blobs)
   for (const page of pages) createShells(page, graph.rootId)
   for (const item of plan) {
     if (components.has(item.sourceId)) continue
