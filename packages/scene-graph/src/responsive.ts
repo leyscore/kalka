@@ -54,14 +54,13 @@ export interface Breakpoint {
   width: number
 }
 
+/** The artboard a layer sits in; `closest` bounds the walk, so a parent cycle ends it. */
 function topLevel(graph: SceneGraph, node: SceneNode): SceneNode | undefined {
-  let current = node
-  while (current.parentId) {
+  return graph.closest(node.id, (current) => {
+    if (!current.parentId) return false
     const parent = graph.getNode(current.parentId)
-    if (!parent || parent.type === 'CANVAS') return current
-    current = parent
-  }
-  return undefined
+    return !parent || parent.type === 'CANVAS'
+  })
 }
 
 function isArtboard(graph: SceneGraph, node: SceneNode): boolean {

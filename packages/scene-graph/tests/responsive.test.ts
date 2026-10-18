@@ -39,6 +39,16 @@ function edit(graph: SceneGraph, id: string, changes: Partial<SceneNode>) {
 }
 
 describe('breakpoints', () => {
+  test('a change ends on a parent cycle in bad data', () => {
+    const { graph, desktop, title } = page()
+    // Nothing in the graph's API makes a cycle; a damaged file can.
+    const loose = graph.getNode(desktop.id)
+    if (!loose) throw new Error('No desktop')
+    loose.parentId = title.id
+    edit(graph, title.id, { text: 'Changed' })
+    expect(graph.getNode(title.id)?.text).toBe('Changed')
+  })
+
   test('a breakpoint is a linked copy at its width, after the primary', () => {
     const { graph, desktop, title } = page()
     const tablet = createBreakpoint(graph, desktop.id, 810, 'Tablet')

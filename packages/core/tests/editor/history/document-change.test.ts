@@ -47,6 +47,15 @@ function roundTrip(editor: Editor, edit: () => void) {
 }
 
 describe('document changes', () => {
+  test('a parent cycle in bad data does not hang an edit or its recording', () => {
+    const { editor, pageId, card, title } = setup()
+    // Nothing in the graph's API makes a cycle; a damaged file can.
+    expectDefined(editor.graph.getNode(card.id), 'card').parentId = title.id
+    const finish = editor.captureDocumentChange(pageId)
+    editor.graph.updateNode(title.id, { text: 'Changed' })
+    expect(isEmptyDocumentChange(finish())).toBe(false)
+  })
+
   test('undo and redo restore created, edited, and deleted layers', () => {
     const { editor, card, title, badge } = setup()
     roundTrip(editor, () => {

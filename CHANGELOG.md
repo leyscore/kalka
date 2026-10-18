@@ -56,6 +56,7 @@
 - People who join a shared room see and edit the document's variables: collections, modes, and values reach everyone in the room, layers bound to them follow, and two people editing different modes of one variable both keep their change. Which mode a collection shows stays each person's own.
 - SVG markup that starts with a byte-order mark imports instead of reporting no supported elements.
 - `figma.loadFontAsync` in scripts and `use_figma` loads the font, so text measures with it, instead of doing nothing; a font that cannot load is skipped rather than failing the script.
+- Editing a layer of a damaged file whose layers name each other as parents no longer freezes the editor.
 
 ### Performance
 
