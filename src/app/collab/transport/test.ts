@@ -1,7 +1,12 @@
 import { appRuntimeConfig } from '@/app/runtime/config'
 import { COLLAB_APP_ID, IS_BROWSER } from '@/constants'
 
-import type { CollabAction, CollabActionReceiver, CollabRoomTransport } from './types'
+import {
+  MAX_ACTION_NAME_BYTES,
+  type CollabAction,
+  type CollabActionReceiver,
+  type CollabRoomTransport
+} from './types'
 
 const MAX_TEST_MESSAGE_BYTES = 8 * 1024 * 1024
 /** The relay introduces peers as soon as they say hello. */
@@ -118,6 +123,10 @@ export function joinTestCollabRoom(roomId: string): CollabRoomTransport {
 
   return {
     makeAction(namespace): CollabAction {
+      // As Trystero does, so a name that would fail in a real room fails in tests too.
+      if (new TextEncoder().encode(namespace).length > MAX_ACTION_NAME_BYTES) {
+        throw new Error(`Action name "${namespace}" exceeds ${MAX_ACTION_NAME_BYTES} bytes`)
+      }
       return [
         (data, targetId) => {
           post({

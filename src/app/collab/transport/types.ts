@@ -5,6 +5,7 @@ export type CollabAction = [
 ]
 
 export interface CollabRoomTransport {
+  /** `namespace` is at most `MAX_ACTION_NAME_BYTES` bytes: Trystero refuses longer names. */
   makeAction(namespace: string): CollabAction
   onPeerJoin(handler: (peerId: string) => void): void
   onPeerLeave(handler: (peerId: string) => void): void
@@ -19,3 +20,6 @@ export interface CollabRoomTransport {
 }
 
 export type JoinCollabRoom = (roomId: string) => CollabRoomTransport
+
+/** The longest action name Trystero accepts, in UTF-8 bytes. */
+export const MAX_ACTION_NAME_BYTES = 12

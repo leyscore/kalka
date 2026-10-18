@@ -120,7 +120,7 @@ export function connectCollabRoom({
   const [sendAwareness, getAwareness] = room.makeAction('awareness')
   const [sendSyncStep1, getSyncStep1] = room.makeAction('sync-step1')
   const [sendSyncReply, getSyncReply] = room.makeAction('sync-reply')
-  const agentPreview = room.makeAction('agent-preview')
+  const agentPreview = room.makeAction('agent-prev')
   // A transport keeps one leave handler, so the connection shares it with its users.
   const leaveHandlers = new Set<(peerId: string) => void>()
 

@@ -41,6 +41,7 @@
 
 ### Fixed
 
+- Sharing a document for collaboration works again: starting a room failed with "action type string \"agent-preview\" exceeds byte limit", because the channel for agents' previews had a name longer than the peer-to-peer library accepts.
 - The sample document opens in the Windows desktop app instead of failing with "A page is missing: pages/english.html": the bundled archive named its files with Windows separators.
 - Wrapped auto layout rows stay packed at the top of a taller frame, as in Figma, instead of spreading over it on the canvas and in HTML exports, and rows a frame wraps keep no gap between them unless one is set.
 - A layer set to fill along a frame that hugs that axis keeps its own size, as in Figma, instead of collapsing to nothing on the canvas, as some layers of imported `.fig` files did, and shrinks to the space left when that frame is itself stretched or grown by its parent.
