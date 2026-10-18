@@ -3,6 +3,7 @@ import { omit } from 'es-toolkit/object'
 import { tokenStylesheet } from '@kalka/dom-css/export'
 import {
   createDefaultNode,
+  DEFAULT_INTER_VERSION,
   generateId,
   SceneGraph,
   type EnabledLibraryBinding,
@@ -104,6 +105,7 @@ function settings(graph: SceneGraph): NonNullable<Project['settings']> {
     activeModes: Object.fromEntries(graph.activeMode)
   }
   if (graph.enabledLibraries.size > 0) saved.libraries = encodeValue(graph.enabledLibraries)
+  if (graph.interVersion !== DEFAULT_INTER_VERSION) saved.interVersion = graph.interVersion
   return saved
 }
 
@@ -158,6 +160,7 @@ export async function writeKalkaFolder(graph: SceneGraph): Promise<KalkaFile[]> 
 function applySettings(graph: SceneGraph, saved: Project['settings']): void {
   if (!saved) return
   if (saved.colorSpace) graph.documentColorSpace = saved.colorSpace
+  if (saved.interVersion) graph.interVersion = saved.interVersion
   for (const [collectionId, modeId] of Object.entries(saved.activeModes ?? {}))
     if (graph.variableCollections.has(collectionId)) graph.activeMode.set(collectionId, modeId)
   const libraries = saved.libraries === undefined ? undefined : decodeValue(saved.libraries)

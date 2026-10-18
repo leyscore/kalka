@@ -14,6 +14,10 @@ Renderer, layout, editor, Figma API, tools, clipboard, vector conversion, and do
 - Recompute layout after demo creation and for each materialized or imported page; scope computation to the affected page or subtree where possible.
 - The first Hug/Fill dimension mutation switches only that axis to Fixed; focus is non-destructive, and mode/value changes share one undo transaction.
 
+## Fonts
+
+- A document's `interVersion` picks its Inter: `3.19` for documents and pastes from Figma, which lays text out with it, `4` otherwise. Look a text's faces up through `fontFamilyKey(family, graph.interVersion)` or `collectNodeFontFaces(node, graph.interVersion)`, and name them in pages and files with `cssFontFamily`, so every Inter is `Inter` there and only the document's own reaches its pages (`packages/core/src/text/inter.ts`, `packages/core/tests/text/inter.test.ts`).
+
 ## Components and instances
 
 - Component types use `#9747ff`.

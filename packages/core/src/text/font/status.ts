@@ -3,6 +3,7 @@ import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 import { DEFAULT_FONT_FAMILY } from '#core/constants'
 import type { FontLoadedSource, FontUnavailableReason } from '#core/text/font/sources'
 import { fontManager, type FontManager } from '#core/text/fonts'
+import { cssFontFamily } from '#core/text/inter'
 import { collectNodeFontFaces } from '#core/text/requirements'
 
 export type FontFaceStatus = 'available' | 'substituted' | 'unresolved'
@@ -26,7 +27,10 @@ export interface DocumentFontStatus {
 }
 
 interface MutableFontFaceUse {
+  /** The family the text names. */
   family: string
+  /** The family Kalka loads it under. */
+  loadedFamily: string
   style: string
   nodeIds: Set<string>
   nodeNames: Set<string>
@@ -45,10 +49,11 @@ function rootTextNodes(graph: SceneGraph, rootIds: readonly string[]): SceneNode
 function collectFaceUses(graph: SceneGraph, rootIds: readonly string[]): MutableFontFaceUse[] {
   const uses = new Map<string, MutableFontFaceUse>()
   for (const node of rootTextNodes(graph, rootIds)) {
-    for (const { family, style } of collectNodeFontFaces(node)) {
-      const key = faceKey(family, style)
+    for (const { family: loadedFamily, style } of collectNodeFontFaces(node, graph.interVersion)) {
+      const key = faceKey(loadedFamily, style)
       const use = uses.get(key) ?? {
-        family,
+        family: cssFontFamily(loadedFamily),
+        loadedFamily,
         style,
         nodeIds: new Set<string>(),
         nodeNames: new Set<string>()
@@ -62,7 +67,7 @@ function collectFaceUses(graph: SceneGraph, rootIds: readonly string[]): Mutable
 }
 
 function faceStatus(use: MutableFontFaceUse, manager: FontManager): DocumentFontFaceStatus {
-  const exactSource = manager.loadedFontSource(use.family, use.style)
+  const exactSource = manager.loadedFontSource(use.loadedFamily, use.style)
   if (exactSource) {
     return {
       family: use.family,
@@ -76,14 +81,14 @@ function faceStatus(use: MutableFontFaceUse, manager: FontManager): DocumentFont
     }
   }
 
-  if (manager.isLoaded(use.family)) {
+  if (manager.isLoaded(use.loadedFamily)) {
     return {
       family: use.family,
       style: use.style,
       status: 'substituted',
       source: null,
       substituteFamily: use.family,
-      reason: manager.unavailableReason(use.family, use.style),
+      reason: manager.unavailableReason(use.loadedFamily, use.style),
       nodeIds: [...use.nodeIds],
       nodeNames: [...use.nodeNames]
     }
@@ -96,7 +101,7 @@ function faceStatus(use: MutableFontFaceUse, manager: FontManager): DocumentFont
     status: defaultSource ? 'substituted' : 'unresolved',
     source: null,
     substituteFamily: defaultSource ? DEFAULT_FONT_FAMILY : null,
-    reason: manager.unavailableReason(use.family, use.style),
+    reason: manager.unavailableReason(use.loadedFamily, use.style),
     nodeIds: [...use.nodeIds],
     nodeNames: [...use.nodeNames]
   }

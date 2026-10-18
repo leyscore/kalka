@@ -1,7 +1,7 @@
 import { toUint8Array } from 'js-base64'
 
-import { slotPropertyId } from '@kalka/scene-graph'
-import type { SceneNode, SceneGraph, Fill, Stroke } from '@kalka/scene-graph'
+import { DEFAULT_INTER_VERSION, slotPropertyId } from '@kalka/scene-graph'
+import type { SceneNode, SceneGraph, Fill, Stroke, InterVersion } from '@kalka/scene-graph'
 import type { RenderColorSpace, ResolvedRenderColor } from '@kalka/scene-graph/color'
 import type { Color, Rect, Vector } from '@kalka/scene-graph/primitives'
 import type { SnapGuide } from '@kalka/scene-graph/snap'
@@ -150,6 +150,8 @@ export class SkiaRenderer {
   tracksSceneSettlement = true
   /** Colour space this renderer's surface presents; colours convert into it when painting. */
   presentationColorSpace: RenderColorSpace = 'srgb'
+  /** The Inter of the document drawn last, which its text's `Inter` names. */
+  interVersion: InterVersion = DEFAULT_INTER_VERSION
   tiledScenePending = false
   tiledSceneCovered = false
   lastSceneViewport: { panX: number; panY: number; zoom: number } | null = null
@@ -540,6 +542,13 @@ export class SkiaRenderer {
 
   invalidateAllPictures(): void {
     RendererState.invalidateAllPictures(this)
+  }
+
+  /** Draws text with `graph`'s Inter from now on; text drawn with the other is drawn again. */
+  useDocumentFonts(graph: SceneGraph): void {
+    if (graph.interVersion === this.interVersion) return
+    this.interVersion = graph.interVersion
+    this.invalidateAllPictures()
   }
 
   /** Drops `nodeId`'s cached drawing; `changedKeys`, when known, lets text keep its glyph coverage. */

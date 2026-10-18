@@ -15,6 +15,7 @@ import {
 import { isReaderPagePending, recoverReaderPage } from '#core/kiwi/fig/session/document-state'
 import { computeAllLayouts } from '#core/layout'
 import { fontManager } from '#core/text/fonts'
+import { cssFontFamily } from '#core/text/inter'
 import { collectGraphFontRequirements } from '#core/text/requirements'
 import { missingGraphFontScripts } from '#core/text/resolved-requirements'
 
@@ -118,7 +119,7 @@ export function createPageActions(ctx: EditorContext) {
         completedFaces++
         options.onProgress?.({
           phase: 'resolving-fonts',
-          detail: `${family} ${style}`,
+          detail: `${cssFontFamily(family)} ${style}`,
           completed: completedFaces,
           total: toLoad.length
         })

@@ -20,6 +20,7 @@ import { styleToWeight, type SceneGraph, type SceneNode } from '@kalka/scene-gra
 
 import { vectorElement } from '#core/io/formats/html/vectors'
 import { fontManager } from '#core/text/fonts'
+import { cssFontFamily } from '#core/text/inter'
 import { collectNodeFontFaces } from '#core/text/requirements'
 
 import { applyMeasuredLayout, type LayoutEngine } from './engine'
@@ -184,7 +185,9 @@ export class BrowserLayoutEngine implements LayoutEngine {
     const named = artboards.flatMap(({ id }) => namedFaces(graph, id))
     const faces: PageFontFace[] = []
     for (const face of named) {
-      const { family, style } = face
+      // The page names Inter 3.19 `Inter` too: a document's text names the one it uses.
+      const family = cssFontFamily(face.family)
+      const { style } = face
       const key = `${family}\0${style}`
       const data = loadedFace(face)
       if (!data || this.#sentFonts.get(key) === data) continue
@@ -239,7 +242,7 @@ function namedFaces(graph: SceneGraph, id: string): FontFaceName[] {
   const collect = (nodeId: string) => {
     const node = graph.getNode(nodeId)
     if (!node) return
-    named.push(...collectNodeFontFaces(node))
+    named.push(...collectNodeFontFaces(node, graph.interVersion))
     node.childIds.forEach(collect)
   }
   collect(id)

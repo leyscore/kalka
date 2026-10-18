@@ -25,6 +25,7 @@ export interface ClipboardPayload {
 function graphForSnapshot(ctx: EditorContext, snapshot: ClipboardSnapshot): SceneGraph {
   const graph = new SceneGraph()
   graph.documentColorSpace = ctx.graph.documentColorSpace
+  graph.interVersion = ctx.graph.interVersion
   graph.images = snapshot.images
   function index(node: SceneNode & { children?: SceneNode[] }) {
     graph.nodes.set(node.id, node)

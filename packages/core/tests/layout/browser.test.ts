@@ -1,7 +1,9 @@
 import { describe, expect, test } from 'bun:test'
+import { fromUint8Array } from 'js-base64'
 
 import { BrowserLayoutEngine, type LayoutPage } from '@kalka/core/layout'
-import { fontManager } from '@kalka/core/text'
+import { fontManager, INTER_3_FAMILY } from '@kalka/core/text'
+import type { PageFontFace } from '@kalka/dom-css/export'
 import { SceneGraph } from '@kalka/scene-graph'
 
 /** A page that lays nothing out and records the faces each request sent. */
@@ -53,5 +55,23 @@ describe('browser layout engine', () => {
     engine.layout(graph, frame.id)
     engine.layout(graph, frame.id)
     expect(requests).toEqual([[`${family} 400`], [`${family} 400`]])
+  })
+
+  test("sends a document from Figma its Inter 3.19 file, named Inter", async () => {
+    const graph = new SceneGraph()
+    graph.interVersion = '3.19'
+    const frame = graph.createNode('FRAME', graph.getPages()[0].id, { width: 200, height: 100 })
+    graph.createNode('TEXT', frame.id, { text: 'Working', fontFamily: 'Inter', fontWeight: 300 })
+    const sent: PageFontFace[] = []
+    const engine = new BrowserLayoutEngine((request) => {
+      sent.push(...request.fonts)
+      return []
+    })
+
+    const inter3 = await fontManager.loadFont(INTER_3_FAMILY, 'Light')
+    engine.layout(graph, frame.id)
+
+    expect(sent.map((face) => `${face.family} ${face.weight}`)).toEqual(['Inter 300'])
+    expect(sent[0]?.data).toBe(fromUint8Array(new Uint8Array(inter3 ?? new ArrayBuffer(0))))
   })
 })

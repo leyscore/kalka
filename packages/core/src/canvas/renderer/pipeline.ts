@@ -14,11 +14,15 @@ import { renderSceneBacking, updateSceneBackingPreviewState } from './retained-b
 import { hasTransientPreviews, renderPageWithPreviews } from './transient-previews'
 
 export function renderSceneToCanvas(
-  r: Pick<SkiaRenderer, 'worldViewport' | 'viewportImageRendering' | 'renderNode'>,
+  r: Pick<
+    SkiaRenderer,
+    'worldViewport' | 'viewportImageRendering' | 'renderNode' | 'useDocumentFonts'
+  >,
   canvas: Canvas,
   graph: SceneGraph,
   pageId: string
 ): void {
+  r.useDocumentFonts(graph)
   const prevViewport = r.worldViewport
   const previewMode = r.viewportImageRendering
   r.viewportImageRendering = false
@@ -201,6 +205,7 @@ export function render(
     zoom: r.zoom
   })
   r.syncFontGeneration()
+  r.useDocumentFonts(graph)
   const p = r.profiler
   p.beginFrame()
   p.setScenePictureDrawTime(0)

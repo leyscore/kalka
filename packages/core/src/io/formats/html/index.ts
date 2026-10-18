@@ -5,7 +5,7 @@ import {
   type DesignDocument,
   type WebFontFaceResolver
 } from '@kalka/dom-css/export'
-import type { SceneGraph } from '@kalka/scene-graph'
+import type { InterVersion, SceneGraph } from '@kalka/scene-graph'
 
 import type { ExportAsset, HTMLExportOptions } from '#core/io/types'
 import { fontManager } from '#core/text/fonts'
@@ -36,11 +36,15 @@ function designDocument(
   }
 }
 
-function fontResolver(fonts: HTMLExportOptions['fonts']): WebFontFaceResolver | 'none' {
-  if (fonts === 'loaded') return loadedFontFaceAssets
+function fontResolver(
+  fonts: HTMLExportOptions['fonts'],
+  interVersion: InterVersion
+): WebFontFaceResolver | 'none' {
+  if (fonts === 'loaded') return loadedFontFaceAssets(interVersion)
   if (fonts !== 'assets') return 'none'
   return async (requests, basePath) =>
-    (await exportWebFontFaceAssets({ fonts: requests, assetBasePath: basePath })).assets
+    (await exportWebFontFaceAssets({ fonts: requests, assetBasePath: basePath, interVersion }))
+      .assets
 }
 
 /** `card.html` keeps its external files in `card.assets/` next to it, whatever the path style. */
@@ -73,7 +77,7 @@ export async function renderNodesToHTML(
     html: options.html,
     style: options.style,
     assets: options.assets,
-    fonts: fontResolver(options.fonts),
+    fonts: fontResolver(options.fonts, graph.interVersion),
     assetBasePath: assetBasePath(fileName),
     reset: options.reset,
     pretty: options.pretty,

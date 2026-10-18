@@ -17,7 +17,7 @@ async function drawInDesktop(
   if (!isTauri()) return null
   const { graph, nodeIds, ...options } = request
   try {
-    const page = rasterDocument(graph, nodeIds, fontManager.loadedBrowserFaces())
+    const page = rasterDocument(graph, nodeIds, fontManager.browserFacesFor(graph.interVersion))
     if (!page) return null
     const { invoke } = await import('@tauri-apps/api/core')
     const bytes = await invoke<Uint8Array | number[] | null>(command, {

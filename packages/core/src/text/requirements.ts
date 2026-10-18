@@ -1,4 +1,5 @@
-import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import { DEFAULT_INTER_VERSION } from '@kalka/scene-graph'
+import type { InterVersion, SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 import { DEFAULT_FONT_FAMILY } from '#core/constants'
 import { transformTextCase } from '#core/text/case'
@@ -8,12 +9,21 @@ import {
   type FontFallbackScript
 } from '#core/text/fallbacks'
 import { weightToStyle } from '#core/text/font/style'
+import { fontFamilyKey } from '#core/text/inter'
 
-export function collectNodeFontFaces(node: SceneNode): Array<{ family: string; style: string }> {
+/**
+ * The faces a text names, each once, by the family Kalka loads it under: in a document using
+ * Figma's Inter 3.19, Inter is `INTER_3_FAMILY`.
+ */
+export function collectNodeFontFaces(
+  node: SceneNode,
+  interVersion: InterVersion = DEFAULT_INTER_VERSION
+): Array<{ family: string; style: string }> {
   if (node.type !== 'TEXT') return []
   const family = node.fontFamily || DEFAULT_FONT_FAMILY
   const faces = new Map<string, { family: string; style: string }>()
-  const add = (faceFamily: string, style: string) => {
+  const add = (nodeFamily: string, style: string) => {
+    const faceFamily = fontFamilyKey(nodeFamily, interVersion)
     faces.set(`${faceFamily}\0${style}`, { family: faceFamily, style })
   }
   add(family, weightToStyle(node.fontWeight || 400, node.italic))
@@ -35,7 +45,7 @@ export function collectGraphFontKeys(
     const node = graph.getNode(nodeId)
     if (!node) return
     if (node.type === 'TEXT') {
-      for (const { family, style } of collectNodeFontFaces(node)) {
+      for (const { family, style } of collectNodeFontFaces(node, graph.interVersion)) {
         fontKeys.add(`${family}\0${style}`)
       }
     }

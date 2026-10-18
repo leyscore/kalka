@@ -91,6 +91,7 @@ export { DEFAULT_HISTORY_LIMIT, UndoManager, type UndoEntry, type UndoManagerOpt
 import { removeStaleBindings } from './bindings'
 export { CommittedGraphEventError } from './buffered-events'
 import { BufferedSceneEmitter } from './buffered-events'
+import { DEFAULT_INTER_VERSION } from './constants'
 import { cloneNodeProps } from './copy'
 import { styleAfterFieldChanges } from './css-model/sync'
 import { bindNodeEvents } from './events'
@@ -122,6 +123,7 @@ import type { Color, Rect, Vector } from './primitives'
 import type {
   DocumentColorSpace,
   EnabledLibraryBinding,
+  InterVersion,
   NodeType,
   NodeChangeObserver,
   SceneGraphEventHandlers,
@@ -206,6 +208,7 @@ export class SceneGraph {
   /** Deflated kiwi schema bytes from the original .fig file, preserved for roundtrip fidelity. */
   figSchemaDeflated: Uint8Array | null = null
   documentColorSpace: DocumentColorSpace = 'srgb'
+  interVersion: InterVersion = DEFAULT_INTER_VERSION
   enabledLibraries = new Map<string, EnabledLibraryBinding>()
   readonly emitter = new BufferedSceneEmitter()
   private absPosCache = new Map<string, Vector>()

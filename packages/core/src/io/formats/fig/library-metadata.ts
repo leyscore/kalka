@@ -1,6 +1,7 @@
 import { mergePluginData } from '@kalka/fig/node-change'
 import type { KiwiNodeChange } from '@kalka/fig/node-change'
 import {
+  FIGMA_INTER_VERSION,
   isPluginDataEntry,
   KALKA_PLUGIN_DATA,
   withoutPluginData,
@@ -8,9 +9,12 @@ import {
   type SceneGraph
 } from '@kalka/scene-graph'
 
-const { cssClasses, enabledLibraries } = KALKA_PLUGIN_DATA
+const { cssClasses, enabledLibraries, interVersion } = KALKA_PLUGIN_DATA
 
-/** The document record's plugin data: its CSS classes and the libraries it has enabled. */
+/**
+ * The document record's plugin data: its CSS classes, the libraries it has enabled, and Inter 4
+ * when its text uses it rather than Figma's Inter 3.19.
+ */
 export function applyDocumentPluginData(
   documentNodeChange: KiwiNodeChange,
   graph: SceneGraph
@@ -18,9 +22,9 @@ export function applyDocumentPluginData(
   const root = graph.getNode(graph.rootId)
   const classes = root?.cssClasses ?? []
   const rootPluginData = withPluginData(
-    root?.pluginData ?? [],
-    cssClasses,
-    classes.length > 0 ? classes : undefined
+    withPluginData(root?.pluginData ?? [], cssClasses, classes.length > 0 ? classes : undefined),
+    interVersion,
+    graph.interVersion === FIGMA_INTER_VERSION ? undefined : graph.interVersion
   )
   const bindings = [...graph.enabledLibraries.values()]
   // With no libraries enabled, the entry the document was opened with is kept as it was.

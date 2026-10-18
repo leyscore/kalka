@@ -48,6 +48,10 @@ describe('raster export', () => {
     const renderer = {
       viewportImageRendering: true,
       worldViewport: viewport,
+      interVersion: '4',
+      useDocumentFonts(graph: SceneGraph) {
+        this.interVersion = graph.interVersion
+      },
       renderNode() {
         expect(this.viewportImageRendering).toBe(false)
         throw new Error('drawing failed')

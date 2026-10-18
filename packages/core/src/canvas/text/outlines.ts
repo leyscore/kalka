@@ -44,7 +44,7 @@ function appendOutlineCommand(
 }
 
 export function textNodeToOutlinePath(r: SkiaRenderer, node: SceneNode): Path | null {
-  const layout = textNodeToOutlineLayout(node)
+  const layout = textNodeToOutlineLayout(node, r.interVersion)
   if (!layout) return null
 
   const path = new r.ck.PathBuilder()

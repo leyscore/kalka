@@ -161,6 +161,7 @@ export async function prepareForExport(
   const { computeAllLayouts } = await import('#core/layout')
   await prepareGraphFonts(graph, nodeIds)
   syncFontGeneration(r)
+  r.useDocumentFonts(graph)
   withTextMeasurer(
     (node, maxWidth) => r.measureTextNode(node, maxWidth),
     () => graph.applyDerivedLayoutDuring(() => computeAllLayouts(graph, pageId))

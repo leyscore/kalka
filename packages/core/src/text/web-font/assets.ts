@@ -1,7 +1,15 @@
 import type { RemoteFontSource, ResolveFontResult } from 'unifont'
 
 import type { WebFontFaceAsset, WebFontFaceRequest } from '@kalka/dom-css/export'
+import {
+  DEFAULT_FONT_FAMILY,
+  FIGMA_INTER_VERSION,
+  weightToStyle,
+  type InterVersion
+} from '@kalka/scene-graph'
 
+import { fontManager } from '#core/text/fonts'
+import { inter3FontURL } from '#core/text/inter'
 import {
   createProviderUnifont,
   isRemoteFontSource,
@@ -18,6 +26,11 @@ export interface ExportWebFontFaceAssetsOptions {
   providers?: WebFontProviderId[]
   assetBasePath?: string
   fetcher?: WebFontFetch
+  /**
+   * The Inter of the document the fonts are for: a document keeping Figma's Inter 3.19 ships
+   * Kalka's own files of it as `Inter`, since the providers serve a later Inter.
+   */
+  interVersion?: InterVersion
 }
 
 export interface ExportWebFontFaceAssetsResult {
@@ -80,11 +93,33 @@ async function resolveRemoteFontSource(
   return undefined
 }
 
+/** Kalka's own Inter 3.19 file for a face, or null when the face is another. */
+async function bundledInter3Asset(
+  request: WebFontFaceRequest,
+  assetBasePath: string,
+  interVersion: InterVersion | undefined
+): Promise<WebFontFaceAsset | null> {
+  if (interVersion !== FIGMA_INTER_VERSION || request.family !== DEFAULT_FONT_FAMILY) return null
+  const style = request.style ?? 'normal'
+  const url = inter3FontURL(weightToStyle(request.weight, style === 'italic'))
+  const data = await fontManager.fetchBundledFont(url).catch(() => null)
+  if (!data) return null
+  return {
+    family: request.family,
+    weight: request.weight,
+    style,
+    format: 'woff',
+    path: `${assetBasePath}/${slugFontFamily(request.family)}-${request.weight}-${style}.woff`,
+    content: new Uint8Array(data)
+  }
+}
+
 export async function exportWebFontFaceAssets({
   fonts,
   providers = WEB_FONT_PROVIDER_IDS.slice(),
   assetBasePath = 'assets/fonts',
-  fetcher = fetch
+  fetcher = fetch,
+  interVersion
 }: ExportWebFontFaceAssetsOptions): Promise<ExportWebFontFaceAssetsResult> {
   const assets: WebFontFaceAsset[] = []
   const seen = new Set<string>()
@@ -95,6 +130,12 @@ export async function exportWebFontFaceAssets({
     const key = `${family}|${request.weight}|${requestStyle}`
     if (seen.has(key)) continue
     seen.add(key)
+
+    const bundled = await bundledInter3Asset(request, assetBasePath, interVersion)
+    if (bundled) {
+      assets.push(bundled)
+      continue
+    }
 
     for (const provider of providers) {
       try {

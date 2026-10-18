@@ -1,6 +1,7 @@
-import type { SceneGraph } from '@kalka/scene-graph'
+import type { InterVersion, SceneGraph } from '@kalka/scene-graph'
 
 import { fontManager, weightToStyle } from '#core/text/fonts'
+import { fontFamilyKey } from '#core/text/inter'
 
 const fontDigestCache = new Map<string, Uint8Array>()
 
@@ -42,17 +43,19 @@ function documentFontKeys(graph: SceneGraph): Set<string> {
 
 export async function buildFontDigestMap(graph: SceneGraph): Promise<Map<string, Uint8Array>> {
   const result = new Map<string, Uint8Array>()
-  await addFontDigests(result, documentFontKeys(graph))
+  await addFontDigests(result, documentFontKeys(graph), graph.interVersion)
   return result
 }
 
+/** Digests by the family text names, of the file the document's Inter (`interVersion`) loads. */
 async function addFontDigests(
   digests: Map<string, Uint8Array>,
-  keys: Iterable<string>
+  keys: Iterable<string>,
+  interVersion: InterVersion
 ): Promise<void> {
   for (const key of keys) {
     const [family, style] = key.split('|')
-    const digest = await getFontDigest(family, style)
+    const digest = await getFontDigest(fontFamilyKey(family, interVersion), style)
     if (digest) digests.set(key, digest)
   }
 }
@@ -71,6 +74,6 @@ export async function settleFontDigestMap(graph: SceneGraph): Promise<Map<string
     const missing = [...documentFontKeys(graph)].filter((key) => !looked.has(key))
     if (missing.length === 0) return digests
     for (const key of missing) looked.add(key)
-    await addFontDigests(digests, missing)
+    await addFontDigests(digests, missing, graph.interVersion)
   }
 }

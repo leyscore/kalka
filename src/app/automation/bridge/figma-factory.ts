@@ -1,5 +1,6 @@
 import { FigmaAPI } from '@kalka/core/figma-api'
 import { createCanvasKitRasterCodec } from '@kalka/core/io/formats/raster'
+import { loadDocumentFont } from '@kalka/core/text'
 
 import { renderAutomationImage } from '@/app/automation/bridge/export-handlers'
 import type { EditorStore } from '@/app/editor/active-store'
@@ -38,7 +39,7 @@ export function makeFigmaFromStore(
     )
   if (store.renderer) api.rasterCodec = createCanvasKitRasterCodec(store.renderer.ck)
   api.loadFontAsync = async ({ family, style }) => {
-    await loadFont(family, style).catch(() => null)
+    await loadDocumentFont(store.graph, family, style, loadFont).catch(() => null)
   }
   api.listAvailableFontsAsync = async () => {
     const [systemFonts, familyOptions] = await Promise.all([listFonts(), listFamilies()])

@@ -1,8 +1,10 @@
 import { prepareWithSegments, layoutWithLines } from '@chenglou/pretext'
 
-import type { CharacterStyleOverride, SceneNode } from '@kalka/scene-graph'
+import { DEFAULT_INTER_VERSION } from '@kalka/scene-graph'
+import type { CharacterStyleOverride, InterVersion, SceneNode } from '@kalka/scene-graph'
 
 import { fontManager, weightToStyle } from '#core/text/fonts'
+import { withFontFamilyKeys } from '#core/text/inter'
 import {
   fontHasGlyphSync,
   getGlyphOutlineMetricsSync,
@@ -106,7 +108,12 @@ function textStyles(node: SceneNode): TextStyle[] {
   return [...styles.values()]
 }
 
-export function getTextOutlineSupport(node: SceneNode): TextOutlineSupport {
+/** Whether the text can become outlines, drawn with its document's Inter (`interVersion`). */
+export function getTextOutlineSupport(
+  textNode: SceneNode,
+  interVersion: InterVersion = DEFAULT_INTER_VERSION
+): TextOutlineSupport {
+  const node = withFontFamilyKeys(textNode, interVersion)
   if (node.type !== 'TEXT') return { supported: false, reason: 'not-text' }
   if (!node.text) return { supported: false, reason: 'empty-text' }
   if (COMPLEX_SCRIPT_PATTERN.test(node.text)) return { supported: false, reason: 'complex-script' }
@@ -274,7 +281,11 @@ function lineGlyphs(
   return { glyphs, width: cursorX - xOffset }
 }
 
-export function textNodeToOutlineLayout(node: SceneNode): TextOutlineLayout | null {
+export function textNodeToOutlineLayout(
+  textNode: SceneNode,
+  interVersion: InterVersion = DEFAULT_INTER_VERSION
+): TextOutlineLayout | null {
+  const node = withFontFamilyKeys(textNode, interVersion)
   if (!getTextOutlineSupport(node).supported) return null
 
   const lines = textLines(node)

@@ -11,6 +11,7 @@ test.each(['first-page', 'none'] as const)(
   async (populate) => {
     await initCodec()
     const graph = new SceneGraph()
+    graph.interVersion = '3.19'
     graph.createNode('TEXT', graph.getPages()[0].id, { text: 'First' })
     graph.createNode('TEXT', graph.addPage('Second').id, { text: 'Second' })
     const bytes = await exportFigFile(graph)
@@ -54,6 +55,8 @@ test.each(['first-page', 'none'] as const)(
       if (opened.type !== 'graph' || !opened.graph) throw new Error('Missing worker graph')
       const { deserializeSceneGraph } = await import('#core/kiwi/fig/parse/transfer')
       const received = deserializeSceneGraph(opened.graph)
+      // The document's Inter comes across with it.
+      expect(received.interVersion).toBe('3.19')
       expect(received.getChildren(received.getPages()[0].id)).toHaveLength(
         populate === 'none' ? 0 : 1
       )

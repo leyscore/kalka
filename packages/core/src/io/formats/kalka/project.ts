@@ -51,7 +51,12 @@ const SettingsSchema = v.object({
   /** The mode each collection shows in the editor. */
   activeModes: v.optional(v.record(v.string(), v.string())),
   /** Libraries the document uses, as saved props. */
-  libraries: v.optional(v.unknown())
+  libraries: v.optional(v.unknown()),
+  /**
+   * The Inter the text uses: `3.19` for a document from Figma, which lays text out with it.
+   * Absent means Inter 4, which every folder written before the field used.
+   */
+  interVersion: v.optional(v.picklist(['3.19', '4']))
 })
 
 export const ProjectSchema = v.object({

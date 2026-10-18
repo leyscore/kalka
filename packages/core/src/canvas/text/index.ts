@@ -8,13 +8,14 @@ import type {
   TypefaceFontProvider
 } from 'canvaskit-wasm'
 
-import type { SceneNode } from '@kalka/scene-graph'
+import { DEFAULT_INTER_VERSION, type InterVersion, type SceneNode } from '@kalka/scene-graph'
 import { resolveRGBAForPreview } from '@kalka/scene-graph/color'
 import { resolveNodeTextDirection } from '@kalka/scene-graph/text-direction'
 
 import { DEFAULT_FONT_FAMILY, DEFAULT_FONT_SIZE } from '#core/constants'
 import { transformTextCase } from '#core/text/case'
 import { fontManager, weightToStyle } from '#core/text/fonts'
+import { fontFamilyKey } from '#core/text/inter'
 import {
   fontCoverageDemand,
   fontFaceDemand,
@@ -25,7 +26,7 @@ import {
   type FontResolutionSettled
 } from '#core/text/resolver'
 
-import { resolveParagraphFontFamilies } from './font-families'
+import { paragraphFontFamilyResolver } from './font-families'
 import { pushParagraphStyle, type ParagraphPaintStyle, type ParagraphBuildOptions } from './paint'
 import { withPreparedText } from './prepared'
 export { withTextParagraph } from './prepared'
@@ -40,6 +41,8 @@ interface FontReadinessRenderer {
   fontsLoaded?: boolean
   onFontResolutionSettled?: FontResolutionSettled
   trackFontDemand?: (node: SceneNode, key: string) => void
+  /** The Inter of the document being drawn, which its text's `Inter` names. */
+  interVersion?: InterVersion
 }
 
 interface TextRenderer extends FontReadinessRenderer {
@@ -61,10 +64,16 @@ function demandFace(
   return false
 }
 
-function requiredNodeFaces(node: SceneNode): Array<{ family: string; style: string }> {
+function requiredNodeFaces(
+  r: FontReadinessRenderer,
+  node: SceneNode
+): Array<{ family: string; style: string }> {
   const baseFamily = node.fontFamily || DEFAULT_FONT_FAMILY
   const faces = new Map<string, { family: string; style: string }>()
-  const add = (family: string, style: string) => faces.set(`${family}\0${style}`, { family, style })
+  const add = (nodeFamily: string, style: string) => {
+    const family = fontFamilyKey(nodeFamily, r.interVersion ?? DEFAULT_INTER_VERSION)
+    faces.set(`${family}\0${style}`, { family, style })
+  }
   add(baseFamily, weightToStyle(node.fontWeight, node.italic))
   for (const run of node.styleRuns) {
     const family = run.style.fontFamily ?? baseFamily
@@ -99,7 +108,7 @@ export type NodeFontReadiness = 'ready' | 'substituted' | 'pending' | 'exhausted
 function requiredFacesReadiness(r: FontReadinessRenderer, node: SceneNode): NodeFontReadiness {
   let pending = false
   let exhausted = false
-  for (const { family, style } of requiredNodeFaces(node)) {
+  for (const { family, style } of requiredNodeFaces(r, node)) {
     if (fontManager.isStyleLoaded(family, style)) continue
     const demand = fontFaceDemand(family, style, node.text)
     const state = fontResolver.state(demand).state
@@ -119,7 +128,7 @@ function requiredFacesReadiness(r: FontReadinessRenderer, node: SceneNode): Node
 }
 
 function demandRemoteCoverage(r: TextRenderer, node: SceneNode, characters: string[]): boolean {
-  for (const { family, style } of requiredNodeFaces(node)) {
+  for (const { family, style } of requiredNodeFaces(r, node)) {
     if (!fontManager.remoteStyleNeedsCoverage(family, style, characters)) continue
     const demand = fontRemoteCoverageDemand(family, style, characters)
     const state = fontResolver.state(demand).state
@@ -501,20 +510,10 @@ export function buildParagraph(
   const ck = r.ck
   const baseColor = color ?? ck.BLACK
   const baseFontSize = node.fontSize || DEFAULT_FONT_SIZE
-  const cjkFallbacks = fontManager.getCJKFallbackFamilies()
-  const arabicFallbacks = fontManager.getArabicFallbackFamilies()
   const textDirection = resolveNodeTextDirection(node)
 
   const truncateOpts = buildTruncateOpts(node, baseFontSize)
-
-  const fontFamilies = (primary: string, weight: number, italic = false) =>
-    resolveParagraphFontFamilies(
-      primary,
-      weightToStyle(weight, italic),
-      arabicFallbacks,
-      cjkFallbacks,
-      fontManager.getSymbolFallbackFamilies()
-    )
+  const fontFamilies = paragraphFontFamilyResolver(r.interVersion)
 
   const baseTextStyle = {
     color: baseColor,

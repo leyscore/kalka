@@ -53,6 +53,13 @@ export interface NodeChangeObserver {
 
 export type DocumentColorSpace = 'srgb' | 'display-p3'
 
+/**
+ * Which Inter a document's text is laid out and drawn with: Figma lays text out with Inter 3.19,
+ * so documents from Figma keep it; Kalka's own documents use Inter 4. Either way the family is
+ * named `Inter`.
+ */
+export type InterVersion = '3.19' | '4'
+
 export interface FigmaSourcePayload {
   rawSize: Vector | null
   rawTransform: Matrix | null

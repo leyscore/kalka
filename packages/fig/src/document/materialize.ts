@@ -1,5 +1,5 @@
 import type { NodeChange } from '@kalka/kiwi/fig/codec'
-import { generateId, SceneGraph, type SceneNode } from '@kalka/scene-graph'
+import { FIGMA_INTER_VERSION, generateId, SceneGraph, type SceneNode } from '@kalka/scene-graph'
 
 import {
   reconcileLiveComponentEdits,
@@ -211,6 +211,8 @@ function createAssemblyState(
     initializing ? `0:${nextImportedId++}` : generateId()
   )
   initializing = false
+  // Figma lays text out with Inter 3.19, so a document or a paste from it keeps that Inter.
+  graph.interVersion = FIGMA_INTER_VERSION
   applyDocumentMetadata(graph, reader.documentRecord)
   for (const [hash, bytes] of options.images ?? []) graph.images.set(hash, bytes.slice())
   graph.applyImportedStateDuring(

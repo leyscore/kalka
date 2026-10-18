@@ -1,5 +1,6 @@
 import type {
   DocumentColorSpace,
+  InterVersion,
   SceneNode,
   Variable,
   VariableCollection
@@ -13,4 +14,5 @@ export interface PortableSceneGraphData {
   variableCollections: Array<[string, VariableCollection]>
   activeMode: Array<[string, string]>
   documentColorSpace: DocumentColorSpace
+  interVersion?: InterVersion
 }

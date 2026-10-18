@@ -156,6 +156,20 @@ describe('Kalka folder', () => {
     expect(graph.getChildren(about?.id ?? '').map((node) => node.text)).toEqual(['About us'])
   })
 
+  test("keeps a document from Figma on Figma's Inter", async () => {
+    const graph = new SceneGraph()
+    graph.interVersion = '3.19'
+    const files = await writeKalkaFolder(graph)
+    expect(text(files, 'project.json')).toContain('"interVersion": "3.19"')
+    expect(readKalkaFolder(asMap(files)).interVersion).toBe('3.19')
+  })
+
+  test('opens a folder that names no Inter, as every folder written before, with Inter 4', async () => {
+    const files = await writeKalkaFolder(new SceneGraph())
+    expect(text(files, 'project.json')).not.toContain('interVersion')
+    expect(readKalkaFolder(asMap(files)).interVersion).toBe('4')
+  })
+
   test('refuses a folder from a newer version', async () => {
     const files = asMap(await writeKalkaFolder(new SceneGraph()))
     const project = new TextDecoder().decode(files.get('project.json'))

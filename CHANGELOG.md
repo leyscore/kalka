@@ -30,6 +30,7 @@
 - Images in `.fig` files saved by older versions of Figma, which keep them inside the document itself, show instead of an empty layer.
 - Imported `.fig` text with Auto or a percentage line height sets its lines whole pixels apart, as Figma does, so a 12.5px text is 16px a line instead of 16.25px and lists no longer drift down.
 - Text in `.fig` files saved by older versions of Figma keeps the line height Figma laid it out with, also in instances that set another font, instead of shrinking to its font size and pulling the layers below it up.
+- Inter text in documents imported from `.fig` files or pasted from Figma uses Inter 3.19, the version Figma lays text out with, on the canvas, in its layout and in exports, so words no longer run together and headings no longer wrap where Figma keeps them on one line; Kalka folders save the choice, and documents made in Kalka keep Inter 4.
 
 ## 0.1.0-beta.3 — 2026-10-18
 

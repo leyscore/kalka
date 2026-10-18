@@ -2,7 +2,7 @@ import { onScopeDispose, watch, type Ref } from 'vue'
 
 import type { Editor, EditorState } from '@kalka/core/editor'
 import { installLayoutEngine } from '@kalka/core/layout'
-import { fontManager } from '@kalka/core/text'
+import { browserFaceFor, fontManager } from '@kalka/core/text'
 import type { VectorElementRenderer } from '@kalka/dom-css/export'
 
 import { GhostLayer, type DomScenePreview } from './ghosts'
@@ -104,7 +104,7 @@ export function useDomScene(
       getGraph: () => editor.graph,
       getPageId: () => view().currentPageId,
       vectorElement: options.vectorElement,
-      fonts: () => fontManager.loadedBrowserFaces(),
+      fonts: () => fontManager.browserFacesFor(editor.graph.interVersion),
       onPatched: (ids) => {
         for (const id of ids) reflowed.add(id)
         if (projector) options.onPatched?.(projector, ids)
@@ -127,7 +127,7 @@ export function useDomScene(
     shaders = new ShaderLayers(p, () => editor.graph)
     ghosts = new GhostLayer(p, {
       vectorElement: options.vectorElement,
-      fonts: () => fontManager.loadedBrowserFaces(),
+      fonts: () => fontManager.browserFacesFor(editor.graph.interVersion),
       fontFallbacks: () => fontManager.fallbackFamilies()
     })
     reveals = new RevealPlayer(p)
@@ -151,7 +151,10 @@ export function useDomScene(
       }),
       // Renaming a variable or changing a mode's condition changes no layer.
       editor.onEditorEvent('history:changed', () => void canvasTokens.sync()),
-      fontManager.onBrowserFace((face) => {
+      fontManager.onBrowserFace((loaded) => {
+        // Artboards name the document's Inter `Inter` and get only that one.
+        const face = browserFaceFor(loaded, editor.graph.interVersion)
+        if (!face) return
         p.addFont(face)
         ghostLayer.addFont(face)
       }),

@@ -2,7 +2,7 @@
 
 import type { CanvasKit, TypefaceFontProvider } from 'canvaskit-wasm'
 
-import type { FontVariation, SceneGraph } from '@kalka/scene-graph'
+import type { FontVariation, InterVersion, SceneGraph } from '@kalka/scene-graph'
 
 import { DEFAULT_FONT_FAMILY, IS_BROWSER } from '#core/constants'
 import {
@@ -28,6 +28,12 @@ import type {
   HostFontLoader,
   LocalFontAccessState
 } from '#core/text/font/sources'
+import {
+  cssFontFamily,
+  fontFamilyServesInter,
+  INTER_3_FAMILY,
+  inter3FontURL
+} from '#core/text/inter'
 import { collectGraphFontKeys } from '#core/text/requirements'
 import { normalizedCoverageText, WebFontResolver } from '#core/text/web-fonts'
 import type { WebFontFetch, WebFontProviderId } from '#core/text/web-fonts'
@@ -177,6 +183,7 @@ export class FontManager {
     style = 'Regular',
     characters = ''
   ): Promise<ArrayBuffer | null> {
+    if (family === INTER_3_FAMILY) return null
     const cached = await this.readDownloadedFont(family, style, characters)
     if (!cached) return null
     const key = `${family}|${style}`
@@ -269,12 +276,15 @@ export class FontManager {
       return loaded
     }
 
-    const hostBuffer = await this.loadHostFont(family, style)
-    if (hostBuffer) return this.registerAndCache(family, style, hostBuffer, 'local')
-    const localBuffer = await this.findLocalFont(family, style)
-    if (localBuffer) return this.registerAndCache(family, style, localBuffer, 'local')
+    // Figma's Inter comes only from Kalka's own files: an installed Inter is another version.
+    if (family !== INTER_3_FAMILY) {
+      const hostBuffer = await this.loadHostFont(family, style)
+      if (hostBuffer) return this.registerAndCache(family, style, hostBuffer, 'local')
+      const localBuffer = await this.findLocalFont(family, style)
+      if (localBuffer) return this.registerAndCache(family, style, localBuffer, 'local')
+    }
 
-    const bundledURL = BUNDLED_FONTS[cacheKey]
+    const bundledURL = family === INTER_3_FAMILY ? inter3FontURL(style) : BUNDLED_FONTS[cacheKey]
     if (!bundledURL) return null
     try {
       const buffer = await this.fetchBundledFont(bundledURL)
@@ -294,7 +304,7 @@ export class FontManager {
     signal?: AbortSignal
   ): Promise<ArrayBuffer | null> {
     signal?.throwIfAborted()
-    if (typeof fetch === 'undefined') return null
+    if (typeof fetch === 'undefined' || family === INTER_3_FAMILY) return null
     const coverage = this.remoteCoverage.get(`${family}|${style}`)
     if (
       characters &&
@@ -715,6 +725,14 @@ export class FontManager {
     return this.browserFaces
   }
 
+  /**
+   * The faces handed to the browser that belong on a page of a document using `interVersion`,
+   * under the families the page names: its Inter is `Inter`, and the other Inter is left out.
+   */
+  browserFacesFor(interVersion: InterVersion): BrowserFontFace[] {
+    return this.browserFaces.flatMap((face) => browserFaceFor(face, interVersion) ?? [])
+  }
+
   /** Calls `listener` for each face handed to the browser from now on. */
   onBrowserFace(listener: (face: BrowserFontFace) => void): () => void {
     this.browserFaceListeners.add(listener)
@@ -742,6 +760,19 @@ export class FontManager {
         console.warn(`Failed to load font "${family}" (${style})`)
       })
   }
+}
+
+/**
+ * A face handed to the browser as a page of a document using `interVersion` names it, or null
+ * when it is the Inter that document does not use.
+ */
+export function browserFaceFor(
+  face: BrowserFontFace,
+  interVersion: InterVersion
+): BrowserFontFace | null {
+  if (!fontFamilyServesInter(face.family, interVersion)) return null
+  const family = cssFontFamily(face.family)
+  return family === face.family ? face : { ...face, family }
 }
 
 export const fontManager = new FontManager()

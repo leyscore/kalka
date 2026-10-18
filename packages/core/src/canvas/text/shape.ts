@@ -6,20 +6,26 @@ import {
   type ShapedText,
   type ShapedTextGlyph
 } from '@kalka/fig/node-change'
-import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
+import { DEFAULT_INTER_VERSION } from '@kalka/scene-graph'
+import type { InterVersion, SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 import { buildParagraph, textVerticalOffset } from '#core/canvas/text'
 import { getCanvasKit } from '#core/canvaskit'
 import { transformTextCase } from '#core/text/case'
 import { fontManager, weightToStyle } from '#core/text/fonts'
+import { fontFamilyKey } from '#core/text/inter'
 import { glyphOutlineSourceSync, type GlyphOutlineSource } from '#core/text/opentype'
 
 type GlyphRun = ReturnType<Paragraph['getShapedLines']>[number]['runs'][number]
 
-function fontStyleAt(node: SceneNode, index: number): { family: string; style: string } {
+function fontStyleAt(
+  node: SceneNode,
+  index: number,
+  interVersion: InterVersion
+): { family: string; style: string } {
   const run = node.styleRuns.find((item) => index >= item.start && index < item.start + item.length)
   return {
-    family: run?.style.fontFamily ?? node.fontFamily,
+    family: fontFamilyKey(run?.style.fontFamily ?? node.fontFamily, interVersion),
     style: weightToStyle(run?.style.fontWeight ?? node.fontWeight, run?.style.italic ?? node.italic)
   }
 }
@@ -29,12 +35,17 @@ function fontStyleAt(node: SceneNode, index: number): { family: string; style: s
  * glyph IDs are trusted only when the style's own font covers every character of the run and
  * so the paragraph had no reason to fall back to another font.
  */
-function runOutlineSource(node: SceneNode, text: string, run: GlyphRun): GlyphOutlineSource | null {
+function runOutlineSource(
+  node: SceneNode,
+  text: string,
+  run: GlyphRun,
+  interVersion: InterVersion
+): GlyphOutlineSource | null {
   if (run.fakeBold || run.fakeItalic || run.glyphs.length === 0) return null
   const offsets = Array.from(run.offsets)
   const start = Math.min(...offsets)
   const end = Math.max(...offsets)
-  const { family, style } = fontStyleAt(node, start)
+  const { family, style } = fontStyleAt(node, start, interVersion)
   const source = glyphOutlineSourceSync(family, style)
   const characters = text.slice(start, end).replace(/\s/g, '')
   return source?.covers(characters) ? source : null
@@ -105,14 +116,14 @@ function completeCharacterOffsets(offsets: Array<number | undefined>): number[] 
 export function shapeText(
   ck: CanvasKit,
   fontProvider: TypefaceFontProvider,
-  node: SceneNode
+  node: SceneNode,
+  interVersion: InterVersion = DEFAULT_INTER_VERSION
 ): ShapedText | null {
   const text = transformTextCase(node.text, node.textCase)
   if (!canShape(node, text)) return null
 
-  const paragraph = buildParagraph({ ck, fontProvider, fontsLoaded: true }, node, undefined, {
-    halfLeading: true
-  })
+  const renderer = { ck, fontProvider, fontsLoaded: true, interVersion }
+  const paragraph = buildParagraph(renderer, node, undefined, { halfLeading: true })
   try {
     const lines = paragraph.getShapedLines()
     const metrics = paragraph.getLineMetrics()
@@ -126,7 +137,7 @@ export function shapeText(
         glyphs.push(
           ...shapedRunGlyphs(
             run,
-            runOutlineSource(node, text, run),
+            runOutlineSource(node, text, run, interVersion),
             { left: metrics[lineIndex].left, baseline: metrics[lineIndex].baseline + offsetY },
             characterOffsets
           )
@@ -177,7 +188,9 @@ export async function withFigExportRuntime<T>(
   const provider = reusable ?? canvasKit.TypefaceFontProvider.Make()
   if (!reusable) fontManager.attachProvider(canvasKit, provider)
   try {
-    return await write({ shapeText: (node) => shapeText(canvasKit, provider, node) })
+    return await write({
+      shapeText: (node) => shapeText(canvasKit, provider, node, graph.interVersion)
+    })
   } finally {
     if (!reusable) {
       fontManager.detachProvider(provider)

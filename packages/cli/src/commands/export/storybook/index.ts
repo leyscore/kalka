@@ -166,7 +166,7 @@ async function writeStories(
     framework,
     pageId,
     plan: rules ? storyPlan(rules) : undefined,
-    fonts: args.fonts === 'none' ? undefined : storyFonts,
+    fonts: args.fonts === 'none' ? undefined : storyFonts(graph.interVersion),
     folder: documentFolder(source, args.page),
     // Titled by the document, so stories of documents exported together stay apart.
     document: basename(file, extname(file)),

@@ -162,6 +162,11 @@ export const KALKA_PLUGIN_DATA = {
   textPathBox: jsonPluginDataField('textPathBox', 'format', textPathBox),
   /** The library asset a node was inserted from. */
   librarySource: jsonPluginDataField('librarySource', 'bookkeeping', librarySource),
+  /**
+   * The Inter a document made in Kalka uses, on the DOCUMENT node; a `.fig` without it is from
+   * Figma and keeps Figma's Inter 3.19.
+   */
+  interVersion: textPluginDataField('interVersion', 'format', ['4'] as const),
   /** Libraries enabled for the document, on the DOCUMENT node. */
   enabledLibraries: jsonPluginDataField('enabledLibraries', 'bookkeeping', enabledLibraries),
   /** The library this document publishes as, on the DOCUMENT node. */

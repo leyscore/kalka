@@ -22,6 +22,7 @@ export function serializeSceneGraph(graph: SceneGraph): SerializedSceneGraph {
     figKiwiVersion: graph.figKiwiVersion,
     figSchemaDeflated: graph.figSchemaDeflated,
     documentColorSpace: graph.documentColorSpace,
+    interVersion: graph.interVersion,
     enabledLibraries: [...graph.enabledLibraries]
   }
 }
@@ -71,6 +72,7 @@ export function cloneSceneGraphForFigExport(graph: SceneGraph): SceneGraph {
   cloned.figKiwiVersion = graph.figKiwiVersion
   cloned.figSchemaDeflated = graph.figSchemaDeflated
   cloned.documentColorSpace = graph.documentColorSpace
+  cloned.interVersion = graph.interVersion
   cloned.enabledLibraries = new Map(graph.enabledLibraries)
 
   return cloned
@@ -100,6 +102,7 @@ export function deserializeSceneGraph(data: SerializedSceneGraph): SceneGraph {
   graph.figKiwiVersion = data.figKiwiVersion
   graph.figSchemaDeflated = data.figSchemaDeflated
   graph.documentColorSpace = data.documentColorSpace
+  if (data.interVersion) graph.interVersion = data.interVersion
   graph.enabledLibraries = data.enabledLibraries ? new Map(data.enabledLibraries) : new Map()
 
   return graph
