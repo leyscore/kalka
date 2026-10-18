@@ -11,6 +11,7 @@ import { parseVariantName } from '@kalka/scene-graph/variant-name'
 /* eslint-disable max-lines -- kiwi↔scene conversion helpers are tightly coupled */
 
 import { importCanvasGuides } from './canvas-guides'
+import { savedTextLayout } from './derived-text/data'
 import { convertFigmaDerivedTextGlyphs } from './derived-text/glyphs'
 import { convertFontFeatures } from './font/features'
 import { convertFontVariations } from './font/variations'
@@ -297,11 +298,12 @@ function convertCornerProps(
  * tall. The line height each saved line reports is the font's own, whatever the text sets.
  */
 function laidOutWithLineHeight(nc: NodeChange, lineHeight: number): boolean {
-  const lines = nc.derivedTextData?.baselines ?? []
+  const layout = savedTextLayout(nc)
+  const lines = layout?.baselines ?? []
   const close = (value: number | undefined) =>
     value !== undefined && Math.abs(value - lineHeight) < 0.5
   if (lines.length > 1) return close((lines[1].lineY ?? 0) - (lines[0].lineY ?? 0))
-  return lines.length === 1 && close(nc.derivedTextData?.layoutSize?.y)
+  return lines.length === 1 && close(layout?.layoutSize?.y)
 }
 
 /**
@@ -312,7 +314,7 @@ function laidOutWithLineHeight(nc: NodeChange, lineHeight: number): boolean {
 function importedTextLineHeight(nc: NodeChange): number | null {
   const declared = convertLineHeight(nc.lineHeight, nc.fontSize)
   if (declared !== null && laidOutWithLineHeight(nc, declared)) return declared
-  const derivedLineHeight = nc.derivedTextData?.baselines?.[0]?.lineHeight
+  const derivedLineHeight = savedTextLayout(nc)?.baselines?.[0]?.lineHeight
   if (derivedLineHeight !== undefined && Number.isFinite(derivedLineHeight))
     return derivedLineHeight
   return declared
@@ -400,14 +402,11 @@ function convertDerivedText(
   nc: NodeChange,
   blobs: Uint8Array[]
 ): Pick<SceneNode, 'derivedLayout' | 'derivedTextGlyphs'> {
-  const layoutSize = nc.derivedTextData?.layoutSize
+  const layout = savedTextLayout(nc)
+  const layoutSize = layout?.layoutSize
   return {
     derivedLayout: layoutSize ? { width: layoutSize.x, height: layoutSize.y } : null,
-    derivedTextGlyphs: convertFigmaDerivedTextGlyphs(
-      nc.derivedTextData,
-      blobs,
-      nc.textData?.characters ?? ''
-    )
+    derivedTextGlyphs: convertFigmaDerivedTextGlyphs(layout, blobs, nc.textData?.characters ?? '')
   }
 }
 

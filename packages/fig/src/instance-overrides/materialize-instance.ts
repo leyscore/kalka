@@ -237,6 +237,20 @@ function recordPaintBindingClaims(
   if (declared) setInstanceOverride(owner.instanceOverrides, owner.id, target.id, 'boundVariables')
 }
 
+/**
+ * Scene fields whose pixel value a claim on `raw` changes without naming them: a line height
+ * Figma keeps relative to the font (the font's own height, or a multiple of its size) follows a
+ * claimed font or size, so the instance's line height differs from the component's.
+ */
+function followingScene(raw: RawOverrideField, target: InstanceOccurrence): (keyof SceneNode)[] {
+  if (target.properties.type !== 'TEXT') return []
+  const units = target.properties.lineHeight?.units ?? 'PERCENT'
+  const follows =
+    (raw === 'fontName' && units === 'PERCENT') ||
+    (raw === 'fontSize' && (units === 'PERCENT' || units === 'RAW'))
+  return follows ? ['lineHeight'] : []
+}
+
 function recordPropertyClaims(nodes: ReadonlyMap<InstanceOccurrence, SceneNode>): void {
   for (const [ownerOccurrence, owner] of nodes) {
     if (owner.type !== 'INSTANCE') continue
@@ -248,7 +262,7 @@ function recordPropertyClaims(nodes: ReadonlyMap<InstanceOccurrence, SceneNode>)
         if (!(raw in claim.properties)) continue
         const field = OVERRIDE_FIELDS[raw]
         if (!claimApplies(field, claim.properties[raw], target)) continue
-        for (const scene of field.scene) {
+        for (const scene of [...field.scene, ...followingScene(raw, targetOccurrence)]) {
           const value = target[scene]
           setInstanceOverride(
             owner.instanceOverrides,

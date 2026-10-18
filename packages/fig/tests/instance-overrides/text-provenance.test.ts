@@ -35,3 +35,25 @@ test('preserves caches for identical shaping, paint-only patches and explicit re
     expect(source.derivedTextData?.layoutSize).toEqual({ x: 40, y: 20 })
   }
 })
+
+test('forgets the layout older files keep in textData when the font changes', () => {
+  const source: NodeChange = {
+    textData: {
+      characters: 'Same',
+      layoutSize: { x: 40, y: 18 },
+      baselines: [
+        {
+          firstCharacter: 0,
+          endCharacter: 4,
+          position: { x: 0, y: 13 },
+          width: 39,
+          lineHeight: 18,
+          lineAscent: 11
+        }
+      ]
+    },
+    fontSize: 14
+  }
+  invalidateInheritedTextData(source, { fontName: { family: 'Other', style: 'Regular' } })
+  expect(source.textData).toEqual({ characters: 'Same' })
+})

@@ -1,4 +1,5 @@
 import { cloneRecord } from '#fig/node-change/clone'
+import { dropSavedTextLayout } from '#fig/node-change/derived-text/data'
 
 import type { GUID, NodeChange } from '@kalka/kiwi/fig/codec'
 
@@ -116,7 +117,7 @@ export function bindSourceProperties(
           ? value.textValue
           : (value.textValue?.characters ?? value.textDataValue?.characters)
       if (text !== undefined) {
-        if (text !== result.textData?.characters) result.derivedTextData = undefined
+        if (text !== result.textData?.characters) dropSavedTextLayout(result)
         result.textData = { ...result.textData, characters: text }
         claim('textData')
       }

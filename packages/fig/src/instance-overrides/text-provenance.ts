@@ -1,3 +1,4 @@
+import { dropSavedTextLayout } from '#fig/node-change/derived-text/data'
 import { isEqual } from 'es-toolkit/predicate'
 
 import type { NodeChange } from '@kalka/kiwi/fig/codec'
@@ -34,6 +35,6 @@ export function invalidateInheritedTextData(
     changedText ||
     SHAPING_FIELDS.some((field) => field in patch && !isEqual(source[field], patch[field]))
   ) {
-    source.derivedTextData = undefined
+    dropSavedTextLayout(source)
   }
 }

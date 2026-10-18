@@ -1,10 +1,13 @@
+import { savedTextLayout } from '#fig/node-change/derived-text/data'
+
 import type { InstanceOccurrence } from './occurrence/types'
 import type { DerivedSymbolOverride } from './types'
 
 /** Copy one saved occurrence-derived record onto its target; a cache, not a claim. */
 export function applyDerivedEntry(target: InstanceOccurrence, entry: DerivedSymbolOverride): void {
   const props = target.properties
-  if (entry.derivedTextData) props.derivedTextData = structuredClone(entry.derivedTextData)
+  const layout = savedTextLayout(entry)
+  if (layout) props.derivedTextData = structuredClone(layout)
   if (entry.fontSize !== undefined) props.fontSize = entry.fontSize
   if (entry.lineHeight !== undefined) props.lineHeight = structuredClone(entry.lineHeight)
   if (entry.letterSpacing !== undefined) props.letterSpacing = structuredClone(entry.letterSpacing)

@@ -221,6 +221,43 @@ export interface AssetRef {
 
 export type StyleReference = { guid: GUID; assetRef?: never } | { guid?: never; assetRef: AssetRef }
 
+/**
+ * The text layout Figma saved: in `derivedTextData`, or in `textData` in files written before
+ * Figma moved it there.
+ */
+export interface FigTextLayout {
+  layoutSize?: Vector
+  baselines?: Array<{
+    firstCharacter: number
+    endCharacter: number
+    position: Vector
+    width: number
+    lineY?: number
+    lineHeight: number
+    lineAscent: number
+  }>
+  glyphs?: Array<{
+    commandsBlob?: number
+    position: Vector
+    fontSize: number
+    firstCharacter: number
+    advance: number
+    /** Radians along the text path; kiwi omits the field for axis-aligned text. */
+    rotation?: number
+  }>
+  fontMetaData?: Array<{
+    key: { family: string; style: string; postscript?: string }
+    fontLineHeight: number
+    fontDigest?: Uint8Array | Record<string, number>
+    fontStyle?: string
+    fontWeight?: number
+  }>
+  logicalIndexToCharacterOffsetMap?: number[]
+  derivedLines?: Array<{ directionality: 'LTR' | 'RTL' }>
+  truncationStartIndex?: number
+  truncatedHeight?: number
+}
+
 export interface NodeChange {
   [key: string]: unknown
   guid?: GUID
@@ -291,39 +328,8 @@ export interface NodeChange {
     lines?: Array<{ lineType?: string; styleId?: number; indentationLevel?: number }>
     characterStyleIDs?: number[]
     styleOverrideTable?: NodeChange[]
-  }
-  derivedTextData?: {
-    layoutSize?: Vector
-    baselines?: Array<{
-      firstCharacter: number
-      endCharacter: number
-      position: Vector
-      width: number
-      lineY?: number
-      lineHeight: number
-      lineAscent: number
-    }>
-    glyphs?: Array<{
-      commandsBlob?: number
-      position: Vector
-      fontSize: number
-      firstCharacter: number
-      advance: number
-      /** Radians along the text path; kiwi omits the field for axis-aligned text. */
-      rotation?: number
-    }>
-    fontMetaData?: Array<{
-      key: { family: string; style: string; postscript?: string }
-      fontLineHeight: number
-      fontDigest?: Uint8Array | Record<string, number>
-      fontStyle?: string
-      fontWeight?: number
-    }>
-    logicalIndexToCharacterOffsetMap?: number[]
-    derivedLines?: Array<{ directionality: 'LTR' | 'RTL' }>
-    truncationStartIndex?: number
-    truncatedHeight?: number
-  }
+  } & FigTextLayout
+  derivedTextData?: FigTextLayout
   styleType?: string
   styleIdForText?: StyleReference
   styleIdForFill?: StyleReference

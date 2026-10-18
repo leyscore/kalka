@@ -97,6 +97,8 @@ export interface DerivedSymbolOverride {
   letterSpacing?: NodeChange['letterSpacing']
   strokeWeight?: number
   derivedTextData?: NodeChange['derivedTextData']
+  /** Files written before `derivedTextData` existed keep the occurrence's text layout here. */
+  textData?: NodeChange['textData']
   vectorData?: NodeChange['vectorData']
   fillGeometry?: NodeChange['fillGeometry']
   strokeGeometry?: NodeChange['strokeGeometry']
