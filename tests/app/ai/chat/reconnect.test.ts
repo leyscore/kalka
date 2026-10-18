@@ -87,12 +87,17 @@ describe('reconnecting a chat', () => {
   })
 })
 
-function reconnectFor(providerID: AIProviderID, fake: ChatReconnectServices) {
+function reconnectFor(
+  providerID: AIProviderID,
+  fake: ChatReconnectServices,
+  failureNeedsReconnect = false
+) {
   const state = { dirty: 0, cleared: 0, settings: 0 }
   const reconnect = useChatReconnect({
     providerID: () => providerID,
     markTransportDirty: () => state.dirty++,
     clearFailure: () => state.cleared++,
+    failureNeedsReconnect: () => failureNeedsReconnect,
     openSettings: () => state.settings++,
     services: fake
   })
@@ -131,6 +136,22 @@ describe('the chat after reconnecting', () => {
     await nextTick()
     expect(reconnect.notice.value).toEqual({ kind: 'resend' })
     expect(state.cleared).toBe(1)
+  })
+
+  test('offers to resend when a key is saved in Settings without Reconnect', async () => {
+    const { reconnect, state } = reconnectFor('openrouter', services().services, true)
+    modelCredentialRevision.value++
+    await nextTick()
+    expect(reconnect.notice.value).toEqual({ kind: 'resend' })
+    expect(state.cleared).toBe(1)
+  })
+
+  test('ignores a saved key when no sign-in failed', async () => {
+    const { reconnect, state } = reconnectFor('openrouter', services().services)
+    modelCredentialRevision.value++
+    await nextTick()
+    expect(reconnect.notice.value).toBeNull()
+    expect(state.cleared).toBe(0)
   })
 
   test('says when reconnecting failed', async () => {

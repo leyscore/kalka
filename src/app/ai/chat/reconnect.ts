@@ -96,6 +96,8 @@ interface ChatReconnectOptions {
   markTransportDirty: () => void
   /** A renewed sign-in ends the failure, so the reply offers Retry again. */
   clearFailure: () => void
+  /** Whether the current failure is one Reconnect answers; a key saved anywhere then ends it. */
+  failureNeedsReconnect?: () => boolean
   openSettings: () => void
   services?: Partial<ChatReconnectServices>
 }
@@ -129,9 +131,9 @@ export function useChatReconnect(options: ChatReconnectOptions) {
 
   tryOnScopeDispose(() => controller?.abort())
 
-  // A key saved in Settings after Reconnect sent the person there.
+  // A key saved in Settings, whether Reconnect sent the person there or they went on their own.
   watch(modelCredentialRevision, () => {
-    if (!awaitingKey) return
+    if (!awaitingKey && !options.failureNeedsReconnect?.()) return
     awaitingKey = false
     options.clearFailure()
     notice.value = { kind: 'resend' }

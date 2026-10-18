@@ -154,6 +154,7 @@ const reconnect = useChatReconnect({
   providerID: () => providerID.value,
   markTransportDirty,
   clearFailure: clearChatFailure,
+  failureNeedsReconnect: () => reconnectNeeded.value,
   openSettings: () => {
     const profile = designModelProfile.value
     if (profile) openModelProfileSettings(profile.id, 'reconnect')

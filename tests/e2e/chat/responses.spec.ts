@@ -56,18 +56,19 @@ test('opening a tool call at the bottom keeps it in place instead of following',
   }
 })
 
-test('authentication errors explain the cause and link to Settings', async ({
+test('authentication errors explain the cause and offer Reconnect', async ({
   configuredChat: chat
 }) => {
   await chat.submit('Trigger expired key error')
 
   const toast = chat.page.locator('[data-slot="toast"]').filter({
-    hasText: 'Your provider API key is invalid or expired. Replace it in Settings.'
+    hasText: 'Your OpenRouter sign-in no longer works. Reconnect to sign in again.'
   })
   await expect(toast).toBeVisible()
   await expect(chat.page.locator('[data-slot="toast"]')).toHaveCount(1)
-  await toast.getByRole('button', { name: 'Open settings' }).click()
-  await expect(chat.page.getByTestId('app-settings-dialog')).toBeVisible()
+  // Asking again cannot fix an expired sign-in, so the toast offers Reconnect, not Retry.
+  await expect(toast.getByRole('button', { name: 'Reconnect' })).toBeVisible()
+  await expect(toast.getByRole('button', { name: 'Retry' })).toHaveCount(0)
 })
 
 test('transport errors show a safe localized toast', async ({ configuredChat: chat }) => {

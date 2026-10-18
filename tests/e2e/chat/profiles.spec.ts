@@ -84,7 +84,8 @@ test('a key replaced in Settings is used when asking again', async ({ page }) =>
 
   await chat.submit('Say hello')
   const toast = page.locator('[data-slot="toast"]')
-  await toast.getByRole('button', { name: 'Open settings' }).click()
+  await expect(toast.getByRole('button', { name: 'Reconnect' })).toBeVisible()
+  await page.getByTestId('provider-settings-trigger').click()
   await page.locator('[data-model-id]').first().click()
   await chat.apiKeyInput.fill('sk-or-valid')
   await page.getByRole('button', { name: 'Save model' }).click()
