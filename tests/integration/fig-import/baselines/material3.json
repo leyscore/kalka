@@ -2,8 +2,8 @@
   {
     "name": "Getting started",
     "layers": 101,
-    "fields": "ff1a4dae407a95b4",
-    "html": "0e22e3b37e5817ce"
+    "fields": "7af9e253547980f1",
+    "html": "78a6f5605212e2bb"
   },
   {
     "name": "Table of contents",
@@ -27,7 +27,7 @@
     "name": "Examples",
     "layers": 2692,
     "fields": "684ea998652b41b7",
-    "html": "127774fd6eb5d048"
+    "html": "61a3746613203d3c"
   },
   {
     "name": "Shape",
@@ -38,14 +38,14 @@
   {
     "name": "Styles",
     "layers": 1243,
-    "fields": "9f579373fed0299b",
-    "html": "343c9057312b9bb3"
+    "fields": "98b98a06b03f6296",
+    "html": "9ef1985ff89a475f"
   },
   {
     "name": "Utilities",
     "layers": 1212,
-    "fields": "898cdb842fd8075a",
-    "html": "1548738d4778e416"
+    "fields": "a332b593a3e1999f",
+    "html": "8072953b867fd64e"
   },
   {
     "name": "---",
@@ -57,7 +57,7 @@
     "name": "App bars",
     "layers": 737,
     "fields": "818b3d073bea4c2d",
-    "html": "c2ccef2f50a4b36c"
+    "html": "d8e257debe13293d"
   },
   {
     "name": "Badges",
@@ -69,13 +69,13 @@
     "name": "Buttons",
     "layers": 24738,
     "fields": "81b8a1fdfd92e129",
-    "html": "3ed1b226119d8cf6"
+    "html": "db6bcf37d25a60e0"
   },
   {
     "name": "Cards",
     "layers": 279,
     "fields": "d26dcbd28614785f",
-    "html": "ec44bfd962c7bdc9"
+    "html": "517c9213c42585b3"
   },
   {
     "name": "Carousel",
@@ -92,14 +92,14 @@
   {
     "name": "Chips",
     "layers": 1855,
-    "fields": "513c0a4277d1f050",
-    "html": "7c5d936403fa10e4"
+    "fields": "2d2913b342686739",
+    "html": "9dfa83cbbba3e05c"
   },
   {
     "name": "Date & time pickers",
     "layers": 3177,
-    "fields": "07b0e4cf5ebe8de3",
-    "html": "3776adfcd4d4de89"
+    "fields": "6d5607fa4f68dc7e",
+    "html": "a0e6a4949b30c8a7"
   },
   {
     "name": "Dialogs",
@@ -117,7 +117,7 @@
     "name": "Lists",
     "layers": 13885,
     "fields": "a077f2762788cc5d",
-    "html": "537e94c206bbfd1f"
+    "html": "f78627859e7c644a"
   },
   {
     "name": "Loading & progress",
@@ -129,13 +129,13 @@
     "name": "Menu",
     "layers": 3890,
     "fields": "7b916210f79d7e47",
-    "html": "0ca9155eed65af52"
+    "html": "1a27b263130ec660"
   },
   {
     "name": "Navigation",
     "layers": 3660,
     "fields": "bd61cb430fac1bd0",
-    "html": "d1d74b39aafd127d"
+    "html": "da5133ec5def6bad"
   },
   {
     "name": "Radio button",
@@ -159,7 +159,7 @@
     "name": "Sliders",
     "layers": 10747,
     "fields": "1aecd0d96304e1d3",
-    "html": "87556f636c20625e"
+    "html": "dab16abbdeea5c80"
   },
   {
     "name": "Snackbar",
@@ -177,7 +177,7 @@
     "name": "Tabs",
     "layers": 1082,
     "fields": "dd80b760068864fb",
-    "html": "dc45f3de5c4ee873"
+    "html": "fee3155f7c7c7a30"
   },
   {
     "name": "Text fields",
@@ -189,7 +189,7 @@
     "name": "Toolbars",
     "layers": 1973,
     "fields": "06441fc0b260dba9",
-    "html": "059c390a0b383cba"
+    "html": "9c1005481c371feb"
   },
   {
     "name": "Tooltips",
