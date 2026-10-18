@@ -13,7 +13,7 @@ test('browser menu copy writes rich and plain Kalka clipboard formats', async ()
   await editor.canvas.waitForRender()
 
   const copyMenu = await openAppMenu(editor.page, 'Edit')
-  await copyMenu.getByRole('menuitem', { name: /^Copy/ }).click()
+  await copyMenu.getByRole('menuitem', { name: /^Copy\s+(?:⌘|Ctrl)/ }).click()
 
   // Copy writes once the document is encoded; until then the clipboard is empty, and a read that
   // overlaps the write fails because the data changed under it.
