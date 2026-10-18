@@ -192,6 +192,10 @@ Pass `delivery: "url"` to get only the link and the metadata. The response stays
 
 The server keeps each file for 5 minutes, at most 32 files and 64 MB in all, the oldest going first. Links name the file by 128 random bits that only the client whose call returned it receives, and that name is what lets a request read it: no bearer token is needed, so the agent can hand the link to a program that does not have one. The `Origin` and `Host` checks above still apply, so web pages cannot read the files. Links point at the TCP listener (`http://127.0.0.1:<port>/assets/…`); a server started with `PORT=0` has none, and returns files inline only. The stdio bridge relays the links of the app's server.
 
+### Images in HTML {#html-images}
+
+`get_html` does not embed images. Each `src` or CSS `url()` of a document image reads `kalka-image:<hash>`, and the result lists those references under `images` with their `mimeType`, pixel `width` and `height`, and `byteLength`, so the HTML stays small and readable. To see an image, call `export_image` with the `data-kalka-node-id` of the element that shows it. `write_html` takes a `kalka-image:<hash>` reference back as the image the document holds under that hash, so HTML read with `get_html` can be edited and written back without losing its pictures.
+
 ### Asking the user and the client's model {#client-requests}
 
 A few tools ask the client for something while a call runs, through two MCP features a client may support: a form for its user (elicitation, `elicitation/create`) and a completion from its own model (sampling, `sampling/createMessage`). Kalka asks only when the client declared the capability in its handshake; a client that did not gets the behavior described for each tool, so no call waits on a question nobody can answer.

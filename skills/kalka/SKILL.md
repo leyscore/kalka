@@ -116,6 +116,7 @@ kalka export design.pen -f storybook -o src/stories --watch  # stories + design 
 kalka export 'src/**/*.pen' -f storybook --beside  # stories next to each design file
 kalka export design.fig --thumbnail --width 1920 --height 1080
 kalka export --page "Components" -o components.png
+kalka export design.fig -f html --html standalone -o page.html  # images in page.assets/; --assets inline for one file
 
 kalka convert design.fig -o design.pen
 kalka convert design.fig -f folder -o design   # Kalka folder of HTML pages, tokens, assets
@@ -272,7 +273,7 @@ The CLI defaults the filesystem root to the home directory on Windows and the cu
 5. **Save/export** — `save_file`, `export_image`, `export_svg`, `export_pdf`, or CLI `export`.
 6. **Close** — `close_file { document_id, unsaved }` closes a document tab after the workflow. With unsaved changes and no `unsaved`, a client that supports MCP elicitation asks its user; otherwise the call fails unless `unsaved` is `"save"` or `"discard"`. Automation never prompts in the app. Omit `unsaved` when the user should decide; `list_documents` shows which documents have unsaved changes.
 
-Each result that ran on a document ends with a `{"target": {...}}` block: its `documentId`, `documentName`, page, and `tokensHash`, a fingerprint of the variables. Check that it names the document you meant, and read the tokens again when `tokensHash` differs from the one you saw last. `get_screenshot`, `export_image`, `export_pdf`, and `diff_visual` return the file inline plus a short-lived `http://127.0.0.1:<port>/assets/...` link; pass `delivery: "url"` to get only the link, which keeps the response small and can be fetched with `curl` without a token.
+Each result that ran on a document ends with a `{"target": {...}}` block: its `documentId`, `documentName`, page, and `tokensHash`, a fingerprint of the variables. Check that it names the document you meant, and read the tokens again when `tokensHash` differs from the one you saw last. `get_screenshot`, `export_image`, `export_pdf`, and `diff_visual` return the file inline plus a short-lived `http://127.0.0.1:<port>/assets/...` link; pass `delivery: "url"` to get only the link, which keeps the response small and can be fetched with `curl` without a token. `get_html` names images `kalka-image:<hash>` instead of embedding them and lists their type and size under `images`; `export_image` on the element's `data-kalka-node-id` shows one, and `write_html` accepts the reference back as the same image.
 
 Use `undo` / `redo { document_id }` to step back your own changes. They refuse when the newest step was made by the user in the editor; never work around that. `get_settings` and `update_settings { settings }` read and change editor preferences such as theme, language, and snapping; they never expose credentials, models, or tool access.
 

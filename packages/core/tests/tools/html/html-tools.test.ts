@@ -3,8 +3,16 @@ import { describe, expect, it } from 'bun:test'
 import { FigmaAPI } from '@kalka/core/figma-api'
 import { ALL_TOOLS } from '@kalka/core/tools'
 import { SceneGraph } from '@kalka/scene-graph'
+import { computeImageHash } from '@kalka/scene-graph/images'
+
+import type { HTMLImageReference } from '#core/tools/html/images'
 
 import { expectDefined } from '#core-tests/helpers/assert'
+
+interface HTMLWithImages {
+  html: string
+  images: HTMLImageReference[]
+}
 
 function setup() {
   const graph = new SceneGraph()
@@ -124,5 +132,46 @@ describe('HTML tools', () => {
     const result = (await tool('get_html').execute(figma, { id: card.id })) as { html: string }
     expect(result.html).toContain('Hello Kalka')
     expect(result.html).toContain('<')
+  })
+
+  it('get_html names images instead of embedding them, and write_html takes the names back', async () => {
+    const { graph, figma } = setup()
+    const page = graph.getPages()[0].id
+    // A PNG header of 3 × 2 pixels, which is all the export reads.
+    const png = new Uint8Array([
+      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52, 0, 0, 0,
+      3, 0, 0, 0, 2
+    ])
+    const hash = computeImageHash(png)
+    graph.images.set(hash, png)
+    const photo = graph.createNode('RECTANGLE', page, {
+      name: 'Photo',
+      width: 30,
+      height: 20,
+      fills: [
+        {
+          type: 'IMAGE',
+          imageHash: hash,
+          imageScaleMode: 'FILL',
+          color: { r: 0, g: 0, b: 0, a: 1 },
+          opacity: 1,
+          visible: true
+        }
+      ]
+    })
+
+    const result = (await tool('get_html').execute(figma, { id: photo.id })) as HTMLWithImages
+    expect(result.html).not.toContain('data:image/')
+    expect(result.html).toContain(`src="kalka-image:${hash}"`)
+    expect(result.images).toEqual([
+      { src: `kalka-image:${hash}`, mimeType: 'image/png', width: 3, height: 2, byteLength: 24 }
+    ])
+
+    const written = (await tool('write_html').execute(figma, {
+      parent_id: page,
+      html: result.html
+    })) as { layers: { id: string }[] }
+    const copy = expectDefined(graph.getNode(written.layers[0].id), 'copy')
+    expect(copy.fills[0]).toMatchObject({ type: 'IMAGE', imageHash: hash })
   })
 })
