@@ -1,4 +1,7 @@
-import type { Page, Locator } from '@playwright/test'
+import { test, type Page, type Locator } from '@playwright/test'
+
+/** How long the editor may take to boot, on top of the spec's own budget. */
+const BOOT_TIMEOUT = 30_000
 
 export class CanvasHelper {
   readonly page: Page
@@ -55,13 +58,18 @@ export class CanvasHelper {
     )
   }
 
+  /**
+   * Waits for the editor to boot. The first page a fresh dev server serves compiles the whole app,
+   * which on a CI runner takes longer than a spec's budget, so booting gets a budget of its own.
+   */
   async waitForInit() {
+    test.info().setTimeout(test.info().timeout + BOOT_TIMEOUT)
     await this.page
       .getByTestId('canvas-element')
       .and(this.page.locator('[data-ready="1"]'))
-      .waitFor({ timeout: 30000 })
-    await this.page.getByTestId('canvas-loading').waitFor({ state: 'hidden', timeout: 30000 })
-    await this.page.locator('#boot-splash').waitFor({ state: 'detached', timeout: 30000 })
+      .waitFor({ timeout: BOOT_TIMEOUT })
+    await this.page.getByTestId('canvas-loading').waitFor({ state: 'hidden', timeout: BOOT_TIMEOUT })
+    await this.page.locator('#boot-splash').waitFor({ state: 'detached', timeout: BOOT_TIMEOUT })
     await this.useLightPage()
   }
 
