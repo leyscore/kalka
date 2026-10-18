@@ -11,6 +11,7 @@
 
 - The sample document's headings and paragraphs draw as designed instead of with stray indents, lines pushed down, and text hidden under the next section.
 - An imported `.fig` frame set to hug whose layers all fill it keeps its size, as in Figma, instead of collapsing and emptying galleries and image grids.
+- An imported `.fig` frame with more padding than size, as captured scrolling tickers have, keeps its size and shows its content where Figma does instead of growing and pushing the content out of view.
 
 ## 0.1.0-beta.3 — 2026-10-18
 

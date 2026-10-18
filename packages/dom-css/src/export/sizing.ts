@@ -1,4 +1,7 @@
 import { layoutSizingInParent, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
+import { hugs } from '@kalka/scene-graph/css-model'
+
+import type { DesignStyleDeclaration } from '../types'
 
 /**
  * Where Figma's auto layout and CSS flexbox size a frame differently, the frame as the browser
@@ -34,4 +37,63 @@ export function withUnhuggableAxisFixed(graph: SceneGraph, node: SceneNode): Sce
   const fills = (child: SceneNode) => layoutSizingInParent(node, child, across) === 'FILL'
   if (flow.length === 0 || !flow.every(fills)) return node
   return { ...node, counterAxisSizing: 'FIXED' }
+}
+
+interface OverflowingPadding {
+  horizontal: boolean
+  vertical: boolean
+}
+
+/**
+ * The axes on which a frame of fixed size has more padding than size. Figma keeps the size and
+ * lets the content overflow; a browser grows the box to hold its padding.
+ */
+function overflowingPadding(node: SceneNode): OverflowingPadding | null {
+  if (!isStack(node) || node.layoutWrap === 'WRAP' || node.layoutDirection === 'RTL') return null
+  const horizontal = !hugs(node, 'width') && node.paddingLeft + node.paddingRight > node.width + 0.5
+  const vertical = !hugs(node, 'height') && node.paddingTop + node.paddingBottom > node.height + 0.5
+  return horizontal || vertical ? { horizontal, vertical } : null
+}
+
+/**
+ * A frame without the padding it cannot hold, which its children carry as margins instead: a
+ * margin, unlike padding, does not grow a box of fixed size, and places the children where the
+ * padding would have.
+ */
+export function withoutOverflowingPadding(node: SceneNode): SceneNode {
+  const overflowing = overflowingPadding(node)
+  if (!overflowing) return node
+  return {
+    ...node,
+    ...(overflowing.horizontal ? { paddingLeft: 0, paddingRight: 0 } : {}),
+    ...(overflowing.vertical ? { paddingTop: 0, paddingBottom: 0 } : {})
+  }
+}
+
+/** The margins a child takes over from its parent's overflowing padding (`withoutOverflowingPadding`). */
+export function overflowingPaddingMargins(
+  graph: SceneGraph,
+  node: SceneNode
+): DesignStyleDeclaration {
+  const parent = node.parentId ? graph.getNode(node.parentId) : undefined
+  if (!parent || !node.visible || node.layoutPositioning === 'ABSOLUTE') return {}
+  const overflowing = overflowingPadding(parent)
+  if (!overflowing) return {}
+  const flow = inFlow(graph, parent)
+  const first = flow.at(0)?.id === node.id
+  const last = flow.at(-1)?.id === node.id
+  const row = parent.layoutMode === 'HORIZONTAL'
+  const margins: DesignStyleDeclaration = {}
+  const set = (property: string, value: number, applies: boolean) => {
+    if (applies && value !== 0) margins[property] = `${value}px`
+  }
+  if (overflowing.horizontal) {
+    set('margin-left', parent.paddingLeft, !row || first)
+    set('margin-right', parent.paddingRight, !row || last)
+  }
+  if (overflowing.vertical) {
+    set('margin-top', parent.paddingTop, row || first)
+    set('margin-bottom', parent.paddingBottom, row || last)
+  }
+  return margins
 }

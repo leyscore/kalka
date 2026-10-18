@@ -8,7 +8,11 @@ import { DesignTokens, type CSSModes } from '../tokens/references'
 import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
 import { maskStyle } from './masks'
 import { patternBackground, tiledImageStyle } from './patterns'
-import { withUnhuggableAxisFixed } from './sizing'
+import {
+  overflowingPaddingMargins,
+  withoutOverflowingPadding,
+  withUnhuggableAxisFixed
+} from './sizing'
 import {
   imageSourceURL,
   INTERACTIVE_TAGS,
@@ -198,7 +202,9 @@ function frameStyle(
   const style = withBlockDisplay(
     tagName,
     layerCSS(
-      withUnhuggableAxisFixed(context.graph, context.derivedSizes ? withDerivedSize(node) : node),
+      withoutOverflowingPadding(
+        withUnhuggableAxisFixed(context.graph, context.derivedSizes ? withDerivedSize(node) : node)
+      ),
       { parent, css }
     )
   )
@@ -261,10 +267,11 @@ function sceneNodeToDesignNode(
   root: boolean
 ): DesignNode | null {
   const projected = layerDesignNode(context, node, inherited, root)
-  if (projected?.type !== 'element' || !context.masks) return projected
-  const masked = maskStyle(context.graph, node, context.vectorElement)
-  if (isEmptyObject(masked)) return projected
-  return { ...projected, inlineStyle: { ...projected.inlineStyle, ...masked } }
+  if (projected?.type !== 'element') return projected
+  const margins = overflowingPaddingMargins(context.graph, node)
+  const masked = context.masks ? maskStyle(context.graph, node, context.vectorElement) : {}
+  if (isEmptyObject(masked) && isEmptyObject(margins)) return projected
+  return { ...projected, inlineStyle: { ...projected.inlineStyle, ...margins, ...masked } }
 }
 
 function layerDesignNode(

@@ -32,7 +32,11 @@ const CHILD_STYLE_KEYS = new Set<keyof SceneNode>([
   'primaryAxisSizing',
   'counterAxisSizing',
   'gridTemplateColumns',
-  'gridTemplateRows'
+  'gridTemplateRows',
+  'paddingTop',
+  'paddingRight',
+  'paddingBottom',
+  'paddingLeft'
 ])
 
 /** Changes to a layer that restyle its parent: whether it fills decides what the parent hugs. */
