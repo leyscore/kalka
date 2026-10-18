@@ -5,16 +5,11 @@ import { parseFragment, serialize, type DefaultTreeAdapterTypes } from 'parse5'
 import { documentCSSClasses, normalizeFontFamily } from '@kalka/scene-graph'
 
 import { tokenStylesheet, type TokenStylesheetFormat } from '../tokens/stylesheet'
-import type {
-  DesignDocument,
-  DesignElement,
-  DesignNode,
-  DesignStyleDeclaration,
-  MediaStyle
-} from '../types'
+import type { DesignDocument, DesignElement, DesignNode } from '../types'
 import { cssClassStylesheet, withClassRules } from './classes'
 import { mergeClassNames, serializeHTML, splitWhitespace } from './html'
 import { prettyCSS } from './pretty'
+import { mediaCSS, shareStyles } from './sharing'
 import { hasBrowserDefaults, HTML_TAG_RESET_CSS, scopedTagResetCSS } from './tag-reset'
 import { tidyDesignDocument } from './tidy'
 
@@ -58,6 +53,12 @@ export interface ExportHTMLBundleOptions {
   reset?: 'inline' | 'file' | 'none'
   /** Indented HTML and one CSS declaration per line, which renders the same. */
   pretty?: boolean
+  /**
+   * Move the styles several layers repeat into class rules, which a fragment's `<style>` holds;
+   * what is each layer's own stays inline. Default true; false keeps every declaration on its
+   * element, for tools that read the HTML layer by layer.
+   */
+  shareStyles?: boolean
 }
 
 export interface ExportHTMLFile {
@@ -83,6 +84,8 @@ type ParseElement = DefaultTreeAdapterTypes.Element
 
 const RESET_CSS = `*,*::before,*::after{box-sizing:border-box}html,body{margin:0;padding:0}body{font-family:system-ui,sans-serif;background:#fff}${HTML_TAG_RESET_CSS}`
 const RESET_FILE = 'reset.css'
+/** The box several exported roots sit in, each where it is on the page. */
+const STAGE_CLASS = 'kalka-canvas'
 
 function cssText(css: string, pretty: boolean): string {
   return pretty && css ? prettyCSS(css) : css
@@ -102,13 +105,6 @@ function pageHTML(head: readonly string[], body: string, pretty: boolean): strin
     .map((line) => `    ${line}`)
     .join('\n')
   return `<!doctype html>\n<html>\n  <head>\n${indent([...meta, ...head])}\n  </head>\n  <body>\n${bodyLines}\n  </body>\n</html>\n`
-}
-
-function styleToCSS(style: DesignStyleDeclaration): string {
-  return Object.entries(style)
-    .filter(([, value]) => value !== '')
-    .map(([property, value]) => `${property}: ${value}`)
-    .join('; ')
 }
 
 /**
@@ -166,77 +162,6 @@ function isResponsiveDocument(document: DesignDocument): boolean {
   return document.children.some(
     (node) => node.type === 'element' && (node.mediaStyles?.length ?? 0) > 0
   )
-}
-
-/** A class name read from a layer's name: lowercase words joined by `-`, never starting with a digit. */
-function classNameFor(node: DesignElement): string {
-  const words = (node.sourceSceneNode?.name ?? node.tagName)
-    .normalize('NFKD')
-    .replaceAll(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replaceAll(/[^a-z0-9]+/g, '-')
-    .replaceAll(/^-+|-+$/g, '')
-  const base = words || node.tagName.toLowerCase()
-  return /^[0-9]/.test(base) ? `layer-${base}` : base
-}
-
-/** The class each style gets: named after its first layer, shared by layers styled the same. */
-interface ClassNaming {
-  used: Set<string>
-  byRule: Map<string, string>
-}
-
-function uniqueClassName(naming: ClassNaming, base: string): string {
-  let name = base
-  for (let index = 2; naming.used.has(name); index++) name = `${base}-${index}`
-  naming.used.add(name)
-  return name
-}
-
-function mediaRule(className: string, { maxWidth, style }: MediaStyle): MediaRule {
-  return { maxWidth, css: `@media (max-width:${maxWidth}px){.${className}{${styleToCSS(style)}}}` }
-}
-
-interface MediaRule {
-  maxWidth: number
-  css: string
-}
-
-/** The media rules of a page, widest first, so a narrower breakpoint's rules win below it. */
-function mediaCSS(rules: readonly MediaRule[]): string {
-  return [...rules]
-    .sort((a, b) => b.maxWidth - a.maxWidth)
-    .map((rule) => rule.css)
-    .join('')
-}
-
-function extractInlineStyles(
-  node: DesignNode,
-  rules: string[],
-  naming: ClassNaming,
-  media: MediaRule[]
-): DesignNode {
-  if (node.type === 'text') return node
-  const children = node.children.map((child) => extractInlineStyles(child, rules, naming, media))
-  const hasMedia = (node.mediaStyles?.length ?? 0) > 0
-  if ((!node.inlineStyle || Object.keys(node.inlineStyle).length === 0) && !hasMedia)
-    return { ...node, children }
-
-  const declarations = styleToCSS(node.inlineStyle ?? {})
-  // Layers with the same style share a class; one with breakpoint rules keeps its own.
-  let className = hasMedia ? undefined : naming.byRule.get(declarations)
-  if (!className) {
-    className = uniqueClassName(naming, classNameFor(node))
-    rules.push(`.${className}{${declarations}}`)
-    if (!hasMedia) naming.byRule.set(declarations, className)
-  }
-  for (const style of node.mediaStyles ?? []) media.push(mediaRule(className, style))
-  return {
-    ...node,
-    attrs: { ...node.attrs, class: mergeClassNames(node.attrs.class, className) ?? className },
-    inlineStyle: undefined,
-    children
-  }
 }
 
 function isElement(node: ParseNode): node is ParseElement {
@@ -448,7 +373,7 @@ async function exportStandaloneHTML(
   // Several roots sit in a box of their bounds; a single root or a responsive page flows.
   const placed = doc !== document
   const stageCSS = placed
-    ? `.kalka-canvas{position:relative;width:${size.width}px;height:${size.height}px}`
+    ? `.${STAGE_CLASS}{position:relative;width:${size.width}px;height:${size.height}px}`
     : ''
   let body: string
   const reset = options.reset === 'inline' ? RESET_CSS : ''
@@ -470,23 +395,20 @@ async function exportStandaloneHTML(
     const graph = document.sourceGraph
     const classed = tidyDesignDocument(graph ? withClassRules(graph, doc) : doc)
     if (graph) css += cssClassStylesheet(documentCSSClasses(graph), { compact: true })
-    const rules: string[] = []
-    const media: MediaRule[] = []
-    const naming: ClassNaming = {
-      used: new Set(graph ? documentCSSClasses(graph).map((cssClass) => cssClass.name) : []),
-      byRule: new Map()
-    }
-    const styledDocument: DesignDocument = {
-      ...classed,
-      children: classed.children.map((node) => extractInlineStyles(node, rules, naming, media))
-    }
-    body = serializeHTML(styledDocument, serialize)
-    css += rules.join('') + mediaCSS(media)
+    const shared = shareStyles(classed, {
+      own: 'classes',
+      reserved: [
+        STAGE_CLASS,
+        ...(graph ? documentCSSClasses(graph).map((cssClass) => cssClass.name) : [])
+      ]
+    })
+    body = serializeHTML(shared.document, serialize)
+    css += shared.css + mediaCSS(shared.media)
   }
   if (placed)
     body = options.pretty
-      ? `<div class="kalka-canvas">\n${body.replace(/^/gm, '  ')}\n</div>`
-      : `<div class="kalka-canvas">${body}</div>`
+      ? `<div class="${STAGE_CLASS}">\n${body.replace(/^/gm, '  ')}\n</div>`
+      : `<div class="${STAGE_CLASS}">${body}</div>`
 
   const external = options.assets === 'external'
   const resetPath = external ? `${options.assetBasePath}/${RESET_FILE}` : RESET_FILE
@@ -531,7 +453,8 @@ export async function exportHTMLBundle(
     fonts: options.fonts ?? 'none',
     assetBasePath: options.assetBasePath ?? 'assets',
     reset: options.reset ?? 'inline',
-    pretty: options.pretty ?? false
+    pretty: options.pretty ?? false,
+    shareStyles: options.shareStyles ?? true
   }
 
   if (resolvedOptions.html === 'standalone') return exportStandaloneHTML(document, resolvedOptions)
@@ -550,22 +473,9 @@ function usesBrowserDefaults(node: DesignNode): boolean {
   return hasBrowserDefaults(node.tagName) || node.children.some(usesBrowserDefaults)
 }
 
-/**
- * HTML to paste into another page. When it uses tags the browser styles, such as an `h1`, it
- * comes with the reset that keeps them as designed, scoped to its own marked roots: at its start,
- * or in a `reset.css` file of its own.
- */
-function fragmentBundle(
-  document: DesignDocument,
-  options: Required<ExportHTMLBundleOptions>
-): ExportHTMLBundle {
-  const serialize = { style: options.style, pretty: options.pretty }
-  if (options.reset === 'none' || !document.children.some(usesBrowserDefaults))
-    return {
-      entrypoint: 'index.html',
-      files: [{ path: 'index.html', content: serializeHTML(document, serialize) }]
-    }
-  const marked: DesignDocument = {
+/** The roots of a fragment marked for its scoped reset. */
+function markedRoots(document: DesignDocument): DesignDocument {
+  return {
     ...document,
     children: document.children.map((node) =>
       node.type === 'element'
@@ -579,19 +489,32 @@ function fragmentBundle(
         : node
     )
   }
-  const reset = cssText(scopedTagResetCSS(`.${FRAGMENT_ROOT_CLASS}`), options.pretty)
-  const html = serializeHTML(marked, serialize)
-  if (options.reset === 'file')
-    return {
-      entrypoint: 'index.html',
-      files: [
-        { path: 'index.html', content: html },
-        { path: RESET_FILE, content: reset }
-      ]
-    }
+}
+
+/**
+ * HTML to paste into another page. Styles several layers repeat are class rules in a `<style>`
+ * at its start. When it uses tags the browser styles, such as an `h1`, it comes with the reset
+ * that keeps them as designed, scoped to its own marked roots: in that `<style>`, or in a
+ * `reset.css` file of its own.
+ */
+function fragmentBundle(
+  document: DesignDocument,
+  options: Required<ExportHTMLBundleOptions>
+): ExportHTMLBundle {
+  const serialize = { style: options.style, pretty: options.pretty }
+  const shared =
+    options.style === 'inline' && options.shareStyles
+      ? shareStyles(document, { own: 'inline', reserved: [FRAGMENT_ROOT_CLASS] })
+      : { document, css: '' }
+  const resets = options.reset !== 'none' && shared.document.children.some(usesBrowserDefaults)
+  const html = serializeHTML(resets ? markedRoots(shared.document) : shared.document, serialize)
+  const reset = resets ? scopedTagResetCSS(`.${FRAGMENT_ROOT_CLASS}`) : ''
+  const resetFile = reset && options.reset === 'file'
+  const pageCSS = cssText(`${resetFile ? '' : reset}${shared.css}`, options.pretty)
   const separator = options.pretty ? '\n' : ''
-  return {
-    entrypoint: 'index.html',
-    files: [{ path: 'index.html', content: `${styleTag(reset)}${separator}${html}` }]
-  }
+  const files: ExportHTMLFile[] = [
+    { path: 'index.html', content: pageCSS ? `${styleTag(pageCSS)}${separator}${html}` : html }
+  ]
+  if (resetFile) files.push({ path: RESET_FILE, content: cssText(reset, options.pretty) })
+  return { entrypoint: 'index.html', files }
 }

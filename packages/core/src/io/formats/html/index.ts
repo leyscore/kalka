@@ -68,7 +68,9 @@ export async function renderNodesToHTML(
         : 'none',
     assetBasePath: assetBasePath(fileName),
     reset: options.reset,
-    pretty: options.pretty
+    pretty: options.pretty,
+    // Tools that map elements back to layers read every declaration on its element.
+    shareStyles: !options.sourceIds
   })
   const page = bundle.files.find((file) => file.path === bundle.entrypoint)
   if (typeof page?.content !== 'string') throw new Error('HTML export produced no page')
