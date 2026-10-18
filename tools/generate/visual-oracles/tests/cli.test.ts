@@ -11,5 +11,6 @@ describe('visual oracle CLI', () => {
     expect(usage).toContain('node')
     expect(usage).toContain('document')
     expect(usage).toContain('digest')
+    expect(usage).toContain('stored')
   })
 })

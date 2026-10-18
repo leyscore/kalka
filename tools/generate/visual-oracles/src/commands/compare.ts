@@ -20,6 +20,11 @@ export default defineCommand({
       'Capture every page a reader produces, and diff it against an earlier capture',
       'tools/generate/visual-oracles/src/operations/compare/digest.ts'
     ),
+    stored: operationCommand(
+      'stored',
+      'Compare the browser layout and paint of .fig frames with the geometry the file saved',
+      'tools/generate/visual-oracles/src/operations/compare/stored.ts'
+    ),
     'interpreted-document': operationCommand(
       'interpreted-document',
       'Compare an interpreted archive with the same document opened in Figma',
