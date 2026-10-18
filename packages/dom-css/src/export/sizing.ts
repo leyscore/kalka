@@ -77,11 +77,16 @@ function overflowingPadding(node: SceneNode): OverflowingPadding | null {
 function withoutOverflowingPadding(node: SceneNode): SceneNode {
   const overflowing = overflowingPadding(node)
   if (!overflowing) return node
-  return {
-    ...node,
-    ...(overflowing.horizontal ? { paddingLeft: 0, paddingRight: 0 } : {}),
-    ...(overflowing.vertical ? { paddingTop: 0, paddingBottom: 0 } : {})
+  const unpadded = { ...node }
+  if (overflowing.horizontal) {
+    unpadded.paddingLeft = 0
+    unpadded.paddingRight = 0
   }
+  if (overflowing.vertical) {
+    unpadded.paddingTop = 0
+    unpadded.paddingBottom = 0
+  }
+  return unpadded
 }
 
 interface Margins {
