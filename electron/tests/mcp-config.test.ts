@@ -1,14 +1,27 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
-import { mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
+import { chmod, mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 import { parse as parseJSONC } from 'jsonc-parser'
 import { parse as parseTOML } from 'smol-toml'
 
-import { clientDefinitions, FORMATS } from '../src/handlers/mcp/config/clients'
+import {
+  cliCommandLine,
+  quoteWindowsArgument,
+  runCLI,
+  withPath,
+  type CLIResult
+} from '../src/handlers/mcp/cli'
+import { clientDefinitions, FORMATS, type BridgeCommand } from '../src/handlers/mcp/config/clients'
 import { ConfigFileError, setServer, type ServerEdit } from '../src/handlers/mcp/config/edit'
 import { BACKUP_SUFFIX, hasServer, writeServer } from '../src/handlers/mcp/config/file'
+import {
+  CLAUDE_CODE_CLI,
+  connectClient,
+  MCPClientError,
+  type MCPClientFailure
+} from '../src/handlers/mcp/connect'
 
 const bridge = { command: '/Applications/Kalka.app/kalka', args: ['/x/stdio.js'], env: { A: '1' } }
 
@@ -195,5 +208,284 @@ describe('client locations', () => {
     expect(clients.zed.file).toBe('C:\\Users\\u\\AppData\\Roaming\\Zed\\settings.json')
     expect(clients.kiro.file).toBe('C:\\Users\\u\\.kiro\\settings\\mcp.json')
     expect(clients.antigravity.file).toBe('C:\\Users\\u\\.gemini\\config\\mcp_config.json')
+  })
+})
+
+/** The bundled bridge as an installed Windows app starts it. */
+const windowsBridge: BridgeCommand = {
+  command: 'C:\\Users\\Jane Doe\\AppData\\Local\\Programs\\Kalka\\Kalka.exe',
+  args: [
+    'C:\\Users\\Jane Doe\\AppData\\Local\\Programs\\Kalka\\resources\\app.asar.unpacked\\dist\\mcp\\stdio.js'
+  ],
+  env: { ELECTRON_RUN_AS_NODE: '1' }
+}
+
+/** `CommandLineToArgvW`: how a Windows program, Node among them, splits its command line. */
+function parseArgv(line: string): string[] {
+  const args: string[] = []
+  let current = ''
+  let quoted = false
+  let started = false
+  for (let index = 0; index < line.length; index++) {
+    let backslashes = 0
+    while (line[index] === '\\') {
+      backslashes++
+      index++
+    }
+    const char = line[index]
+    if (char === '"') {
+      current += '\\'.repeat(Math.floor(backslashes / 2))
+      if (backslashes % 2 === 1) current += '"'
+      else quoted = !quoted
+      started = true
+      continue
+    }
+    current += '\\'.repeat(backslashes)
+    if (char === undefined) break
+    if ((char === ' ' || char === '\t') && !quoted) {
+      if (started) args.push(current)
+      current = ''
+      started = false
+      continue
+    }
+    current += char
+    started = true
+  }
+  if (started) args.push(current)
+  return args
+}
+
+/**
+ * One `cmd.exe` parse of a line: carets outside quotes escape the next character, and an
+ * unescaped operator outside quotes would end the command there.
+ */
+function cmdParse(line: string): string {
+  let out = ''
+  let quoted = false
+  for (let index = 0; index < line.length; index++) {
+    const char = line[index]
+    if (char === '^' && !quoted) {
+      out += line[++index] ?? ''
+      continue
+    }
+    if (char === '"') quoted = !quoted
+    else if (!quoted && '&|<>'.includes(char)) throw new Error(`cmd.exe would split at ${char}`)
+    out += char
+  }
+  return out
+}
+
+describe('Windows command lines', () => {
+  test('quotes arguments the way Windows programs split them back', () => {
+    for (const argument of [
+      '',
+      'plain',
+      'with space',
+      'C:\\path with\\trailing\\',
+      'say "hi"',
+      'back\\"slash',
+      JSON.stringify(FORMATS.mcpServersTyped.entry(windowsBridge))
+    ]) {
+      expect(parseArgv(quoteWindowsArgument(argument))).toEqual([argument])
+    }
+  })
+
+  test('runs programs directly outside Windows and executables on Windows', () => {
+    expect(cliCommandLine('/usr/local/bin/claude', ['mcp', 'list'], 'darwin')).toEqual({
+      command: '/usr/local/bin/claude',
+      args: ['mcp', 'list']
+    })
+    const exe = 'C:\\Users\\Jane Doe\\.local\\bin\\claude.exe'
+    expect(cliCommandLine(exe, ['mcp', 'list'], 'win32')).toEqual({
+      command: exe,
+      args: ['mcp', 'list']
+    })
+  })
+
+  test('runs an npm shim through cmd.exe with arguments that survive both parses', () => {
+    const shim = 'C:\\Users\\Jane Doe\\AppData\\Roaming\\npm\\claude.CMD'
+    const args = CLAUDE_CODE_CLI.add(windowsBridge)
+    const line = cliCommandLine(shim, args, 'win32', 'C:\\Windows\\system32\\cmd.exe')
+    expect(line?.command).toBe('C:\\Windows\\system32\\cmd.exe')
+    expect(line?.windowsVerbatimArguments).toBe(true)
+    expect(line?.args.slice(0, 3)).toEqual(['/d', '/s', '/c'])
+    const quoted = line?.args[3] ?? ''
+    // `/s` strips the outer quotes; cmd.exe then parses the line once to start the shim.
+    expect(quoted.startsWith('"') && quoted.endsWith('"')).toBe(true)
+    const first = cmdParse(quoted.slice(1, -1))
+    const program = 'C:\\Users\\Jane Doe\\AppData\\Roaming\\npm\\claude.CMD'
+    expect(first.startsWith(`${program} `)).toBe(true)
+    // The shim hands `%*` on, which cmd.exe parses again before Node reads it.
+    const forwarded = cmdParse(first.slice(program.length + 1))
+    expect(parseArgv(forwarded)).toEqual(args)
+  })
+
+  test('keeps metacharacters literal through cmd.exe', () => {
+    const args = ['a&b', 'c|d', '(e)', '<f>', 'g^h', 'semi;colon,comma', 'say "x"', 'x"&"y']
+    const line = cliCommandLine('C:\\npm\\tool.bat', args, 'win32', 'cmd.exe')
+    const first = cmdParse((line?.args[3] ?? '').slice(1, -1))
+    expect(first.startsWith('C:\\npm\\tool.bat ')).toBe(true)
+    expect(parseArgv(cmdParse(first.slice('C:\\npm\\tool.bat '.length)))).toEqual(args)
+  })
+
+  test('refuses arguments cmd.exe would expand', () => {
+    expect(cliCommandLine('C:\\npm\\claude.cmd', ['%APPDATA%'], 'win32')).toBeNull()
+    expect(cliCommandLine('C:\\npm\\claude.cmd', ['wow!'], 'win32')).toBeNull()
+    expect(cliCommandLine('C:\\npm\\claude.cmd', ['two\nlines'], 'win32')).toBeNull()
+  })
+
+  test('replaces every spelling of PATH', () => {
+    const env = withPath({ Path: 'C:\\old', HOME: 'h' }, 'C:\\new')
+    expect(env).toEqual({ PATH: 'C:\\new', HOME: 'h' })
+  })
+})
+
+describe('Claude Code CLI', () => {
+  test('adds the entry as one JSON argument at user scope', () => {
+    const args = CLAUDE_CODE_CLI.add(windowsBridge)
+    expect(args.slice(0, 5)).toEqual(['mcp', 'add-json', '--scope', 'user', 'kalka'])
+    expect(JSON.parse(args[5] ?? '')).toEqual({
+      type: 'stdio',
+      command: windowsBridge.command,
+      args: windowsBridge.args,
+      env: { ELECTRON_RUN_AS_NODE: '1' }
+    })
+    expect(CLAUDE_CODE_CLI.remove).toEqual(['mcp', 'remove', '--scope', 'user', 'kalka'])
+  })
+})
+
+describe('connecting a client', () => {
+  let home: string
+  beforeEach(async () => {
+    home = await mkdtemp(join(tmpdir(), 'kalka-mcp-connect-'))
+  })
+  afterEach(async () => {
+    await rm(home, { recursive: true, force: true })
+  })
+
+  const claudeCode = () => clientDefinitions({ home, platform: process.platform })['claude-code']
+
+  function recorder(results: CLIResult[]) {
+    const calls: string[][] = []
+    const run = (_executable: string, args: string[]) => {
+      calls.push(args)
+      return Promise.resolve(results[calls.length - 1] ?? { ok: true, output: '' })
+    }
+    return { calls, run }
+  }
+
+  async function readServers(file: string): Promise<unknown> {
+    const parsed: unknown = parseJSONC(await readFile(file, 'utf8'))
+    return parsed
+  }
+
+  test('replaces the entry through the CLI and leaves the file to it', async () => {
+    const { calls, run } = recorder([
+      { ok: false, output: 'No MCP server found with name: kalka' },
+      { ok: true, output: 'Added stdio MCP server kalka' }
+    ])
+    const route = await connectClient({
+      client: claudeCode(),
+      bridge: windowsBridge,
+      cli: { definition: CLAUDE_CODE_CLI, executable: 'claude' },
+      path: '',
+      run
+    })
+    expect(route).toEqual({ via: 'cli' })
+    expect(calls).toEqual([CLAUDE_CODE_CLI.remove, CLAUDE_CODE_CLI.add(windowsBridge)])
+    expect(await Bun.file(claudeCode().file).exists()).toBe(false)
+  })
+
+  test('edits the file when the CLI fails, keeping its output and the other settings', async () => {
+    const client = claudeCode()
+    await writeFile(
+      client.file,
+      JSON.stringify({ numStartups: 3, mcpServers: { docs: { command: 'docs-mcp' } } }, null, 2)
+    )
+    const { run } = recorder([
+      { ok: true, output: '' },
+      { ok: false, output: 'Error: spawn EINVAL' }
+    ])
+    const route = await connectClient({
+      client,
+      bridge: windowsBridge,
+      cli: { definition: CLAUDE_CODE_CLI, executable: 'claude.cmd' },
+      path: '',
+      run
+    })
+    expect(route).toEqual({ via: 'file', cliOutput: 'Error: spawn EINVAL' })
+    expect(await readServers(client.file)).toEqual({
+      numStartups: 3,
+      mcpServers: {
+        docs: { command: 'docs-mcp' },
+        kalka: FORMATS.mcpServersTyped.entry(windowsBridge)
+      }
+    })
+  })
+
+  test('reports a file it cannot fix with the CLI output as details', async () => {
+    const client = claudeCode()
+    await writeFile(client.file, '{ "mcpServers": ')
+    const { run } = recorder([
+      { ok: true, output: '' },
+      { ok: false, output: 'Claude Code on Windows requires git-bash' }
+    ])
+    const failure = await connectClient({
+      client,
+      bridge: windowsBridge,
+      cli: { definition: CLAUDE_CODE_CLI, executable: 'claude.cmd' },
+      path: '',
+      run
+    }).then(
+      () => null,
+      (error: unknown) => (error instanceof MCPClientError ? error.failure : null)
+    )
+    expect(failure).toMatchObject({
+      code: 'config-invalid',
+      client: 'Claude Code',
+      file: client.file,
+      syntax: 'JSON'
+    } satisfies Partial<MCPClientFailure>)
+    expect(failure && 'details' in failure ? failure.details : '').toContain('requires git-bash')
+  })
+
+  test('writes the file directly for a client without a CLI', async () => {
+    const { calls, run } = recorder([])
+    const client = claudeCode()
+    expect(await connectClient({ client, bridge: windowsBridge, path: '', run })).toEqual({
+      via: 'file'
+    })
+    expect(calls).toEqual([])
+    expect(await readServers(client.file)).toEqual({
+      mcpServers: { kalka: FORMATS.mcpServersTyped.entry(windowsBridge) }
+    })
+  })
+})
+
+describe.skipIf(process.platform === 'win32')('running a CLI', () => {
+  let dir: string
+  beforeEach(async () => {
+    dir = await mkdtemp(join(tmpdir(), 'kalka-mcp-cli-'))
+  })
+  afterEach(async () => {
+    await rm(dir, { recursive: true, force: true })
+  })
+
+  test('keeps what a failing command printed', async () => {
+    const script = join(dir, 'claude')
+    await writeFile(script, '#!/bin/sh\necho "kalka already exists" >&2\nexit 1\n')
+    await chmod(script, 0o755)
+    const result = await runCLI(script, ['mcp', 'add-json'], '/usr/bin:/bin')
+    expect(result.ok).toBe(false)
+    expect(result.output).toContain('kalka already exists')
+  })
+
+  test('passes arguments through unchanged', async () => {
+    const script = join(dir, 'claude')
+    await writeFile(script, '#!/bin/sh\nfor a in "$@"; do printf "%s\\n" "$a"; done\n')
+    await chmod(script, 0o755)
+    const json = JSON.stringify(FORMATS.mcpServersTyped.entry(windowsBridge))
+    const result = await runCLI(script, ['add-json', json], '/usr/bin:/bin')
+    expect(result).toEqual({ ok: true, output: `add-json\n${json}` })
   })
 })

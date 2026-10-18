@@ -9,12 +9,13 @@ import {
   type MCPClientStatus
 } from '@/app/automation/mcp/clients'
 import AppButton from '@/components/ui/button/AppButton.vue'
-import AppAlert from '@/components/ui/feedback/AppAlert.vue'
 import AppCopyField from '@/components/ui/input/AppCopyField.vue'
+
+import MCPClientFeedback from './MCPClientFeedback.vue'
 
 const automation = useAutomationMessages()
 const common = useCommonMessages()
-const { clients, config, refresh, connect, installExtension, stateOf, errorOf } = useMCPClients()
+const { clients, config, refresh, connect, installExtension, stateOf } = useMCPClients()
 const showOthers = ref(false)
 
 // Clients found on this computer come first; the rest stay folded until asked for.
@@ -83,21 +84,7 @@ onMounted(refresh)
               {{ client.connected ? automation.clientReconnect : automation.clientConnect }}
             </AppButton>
           </div>
-          <AppAlert
-            v-if="stateOf(client.id).state === 'done'"
-            tone="success"
-            :heading="automation.clientRestartHint({ client: client.name })"
-          />
-          <AppAlert
-            v-else-if="stateOf(client.id).state === 'extension-opened'"
-            tone="info"
-            :heading="automation.clientExtensionHint({ client: client.name })"
-          />
-          <AppAlert
-            v-else-if="errorOf(client.id)"
-            tone="error"
-            :heading="errorOf(client.id) ?? ''"
-          />
+          <MCPClientFeedback :client="client" :state="stateOf(client.id)" />
         </li>
       </ul>
       <button

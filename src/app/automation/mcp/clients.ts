@@ -1,3 +1,4 @@
+import * as v from 'valibot'
 import { computed, reactive, ref } from 'vue'
 
 import type { StdioServerSpec } from '@/app/integrations/mcp/stdio'
@@ -15,21 +16,57 @@ export interface MCPClientStatus {
   connected: boolean
   /** Whether Kalka can also be installed as an extension the client opens itself (`.mcpb`). */
   extension?: boolean
+  /** Set when the client's CLI failed and the desktop app edited its file instead. */
+  cliOutput?: string
+}
+
+const ClientFile = { client: v.string(), file: v.string(), details: v.string() }
+
+/**
+ * Why the desktop app could not connect a client, as the main process reports it
+ * (`electron/src/handlers/mcp/connect.ts`). Codes stay in the domain so Settings words them
+ * in the user's language; `details` is diagnostic output, never translated.
+ */
+const MCPClientFailureSchema = v.variant('code', [
+  v.object({ code: v.literal('bridge-missing'), bridge: v.string() }),
+  v.object({
+    code: v.literal('config-invalid'),
+    ...ClientFile,
+    syntax: v.picklist(['JSON', 'TOML'])
+  }),
+  v.object({ code: v.literal('config-unusable'), ...ClientFile }),
+  v.object({ code: v.literal('config-unwritable'), ...ClientFile }),
+  v.object({ code: v.literal('extension-missing') }),
+  v.object({ code: v.literal('extension-failed'), client: v.string(), details: v.string() })
+])
+export type MCPClientFailure = v.InferOutput<typeof MCPClientFailureSchema>
+
+/** A failure the page can word, or the raw text of one it cannot (an older main process). */
+export type MCPClientError = { failure: MCPClientFailure } | { failure: null; message: string }
+
+export function mcpClientError(error: unknown): MCPClientError {
+  const parsed = v.safeParse(MCPClientFailureSchema, error)
+  if (parsed.success) return { failure: parsed.output }
+  if (typeof error === 'string') return { failure: null, message: error }
+  if (error instanceof Error) return { failure: null, message: error.message }
+  const message =
+    typeof error === 'object' && error !== null ? JSON.stringify(error) : String(error)
+  return { failure: null, message }
 }
 
 /** How a client starts Kalka's stdio bridge. */
 export type MCPBridgeCommand = StdioServerSpec
 
-type ClientState =
+export type MCPClientState =
   | { state: 'idle' }
   | { state: 'connecting' }
   | { state: 'opening' }
-  | { state: 'done' }
+  | { state: 'done'; cliOutput?: string }
   | { state: 'extension-opened' }
-  | { state: 'error'; message: string }
+  | { state: 'error'; error: MCPClientError }
 
-function errorState(error: unknown): ClientState {
-  return { state: 'error', message: error instanceof Error ? error.message : String(error) }
+function errorState(error: unknown): MCPClientState {
+  return { state: 'error', error: mcpClientError(error) }
 }
 
 /** Whether this build can write other apps' configuration: desktop only. */
@@ -57,7 +94,7 @@ export function mcpClientConfig(bridge: MCPBridgeCommand | null): string {
 export function useMCPClients() {
   const clients = ref<MCPClientStatus[]>([])
   const bridge = ref<MCPBridgeCommand | null>(null)
-  const states = reactive<Record<string, ClientState>>({})
+  const states = reactive<Record<string, MCPClientState>>({})
   const loading = ref(false)
 
   const sorted = computed(() =>
@@ -88,7 +125,7 @@ export function useMCPClients() {
     try {
       const status = await invoke<MCPClientStatus>('connect_mcp_client', { id })
       clients.value = clients.value.map((client) => (client.id === id ? status : client))
-      states[id] = { state: 'done' }
+      states[id] = { state: 'done', cliOutput: status.cliOutput }
     } catch (error) {
       states[id] = errorState(error)
     }
@@ -105,14 +142,9 @@ export function useMCPClients() {
     }
   }
 
-  function stateOf(id: string): ClientState {
+  function stateOf(id: string): MCPClientState {
     return states[id] ?? { state: 'idle' }
   }
 
-  function errorOf(id: string): string | null {
-    const state = stateOf(id)
-    return state.state === 'error' ? state.message : null
-  }
-
-  return { clients: sorted, config, loading, refresh, connect, installExtension, stateOf, errorOf }
+  return { clients: sorted, config, loading, refresh, connect, installExtension, stateOf }
 }

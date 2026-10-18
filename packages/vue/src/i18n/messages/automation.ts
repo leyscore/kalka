@@ -53,6 +53,22 @@ export const automationMessageDefaults = {
   clientRestartHint: params('Kalka was added. Restart {client} to load it.'),
   clientInstallExtension: 'Install extension',
   clientExtensionHint: params('{client} opened the Kalka extension. Confirm the install there.'),
+  clientFileFallback: params('The {client} command failed, so Kalka edited {file} directly.'),
+  clientFailureBridgeMissing: params(
+    '{bridge} is not installed. Install @kalka/mcp globally, then connect again.'
+  ),
+  clientFailureConfigInvalid: params(
+    "{client}'s configuration at {file} is not valid {syntax}. Fix it, then connect again."
+  ),
+  clientFailureConfigUnusable: params(
+    "{client}'s configuration at {file} cannot hold Kalka's entry. Fix it, then connect again."
+  ),
+  clientFailureConfigUnwritable: params(
+    "Kalka could not write {client}'s configuration at {file}."
+  ),
+  clientFailureExtensionMissing: 'This build of Kalka has no extension for that client.',
+  clientFailureExtensionFailed: params('{client} could not open the Kalka extension.'),
+  clientFailureUnknown: params('Kalka could not be added to {client}.'),
   otherClientTitle: 'Any other MCP client',
   otherClientDescription:
     'Paste this server entry into its configuration. Clients that connect over HTTP use the local server address in Settings › MCP instead.',

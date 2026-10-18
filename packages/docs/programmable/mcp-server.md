@@ -41,12 +41,12 @@ This surface does **not** expose structural creation/deletion, arbitrary JavaScr
 
 The desktop app includes its MCP server and starts it itself; nothing needs installing. Open **Settings → MCP** and connect Claude Desktop, Claude Code, Cursor, VS Code, Windsurf, Codex, Gemini CLI, Antigravity, Kiro, Zed, LM Studio or opencode in one click. For any other client, copy the configuration shown there. The server is registered as `kalka`.
 
-Connecting adds a `kalka` entry to the client's user configuration and changes nothing else in the file: other servers, settings and comments stay as they are, in JSON with comments (VS Code, Zed) as in Codex's TOML. Kalka copies the previous file beside it as `<file>.kalka-backup` before changing it, and connecting again when the entry is current writes nothing. Claude Code is connected through `claude mcp add --scope user` when the `claude` CLI is installed, and through `~/.claude.json` otherwise. Kalka finds CLIs on the `PATH` of your login shell, read once from `zsh` or `bash` when the app starts from the Dock or a launcher.
+Connecting adds a `kalka` entry to the client's user configuration and changes nothing else in the file: other servers, settings and comments stay as they are, in JSON with comments (VS Code, Zed) as in Codex's TOML. Kalka copies the previous file beside it as `<file>.kalka-backup` before changing it, and connecting again when the entry is current writes nothing. Claude Code is connected through `claude mcp add-json --scope user` when the `claude` CLI is installed, replacing an earlier `kalka` entry, and through `~/.claude.json` otherwise or when the CLI fails; the CLI's output then shows under Details. On Windows an npm install of the CLI (`claude.cmd`) runs through `cmd.exe`. Kalka finds CLIs on the `PATH` of your login shell, read once from `zsh` or `bash` when the app starts from the Dock or a launcher.
 
 | Client | File Kalka edits | Key |
 | --- | --- | --- |
 | Claude Desktop | `claude_desktop_config.json` in Claude's application support folder | `mcpServers` |
-| Claude Code | `~/.claude.json` (or `claude mcp add`) | `mcpServers` |
+| Claude Code | `~/.claude.json` (or `claude mcp add-json`) | `mcpServers` |
 | Cursor | `~/.cursor/mcp.json` | `mcpServers` |
 | VS Code | `User/mcp.json` in VS Code's settings folder | `servers` |
 | Windsurf | `~/.codeium/windsurf/mcp_config.json` | `mcpServers` |

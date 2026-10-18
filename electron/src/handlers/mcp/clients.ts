@@ -1,4 +1,3 @@
-import { execFile } from 'node:child_process'
 import { access } from 'node:fs/promises'
 import { dirname } from 'node:path'
 
@@ -19,26 +18,38 @@ import {
   type ClientDefinition,
   type MCPClientID
 } from './config/clients'
-import { ConfigFileError } from './config/edit'
-import { hasServer, writeServer } from './config/file'
+import { hasServer } from './config/file'
+import {
+  CLAUDE_CODE_CLI,
+  connectClient,
+  MCP_SERVER_NAME,
+  MCPClientError,
+  type ClientCLI,
+  type MCPClientFailure
+} from './connect'
 
 export { isMCPClientID } from './config/clients'
 
-/** The name Kalka's tools appear under in a client: `mcp__kalka__*`. */
-const MCP_SERVER_NAME = 'kalka'
 /** The stdio bridge of a global `@kalka/mcp` install, for builds without the bundled one. */
 const GLOBAL_MCP_BRIDGE = 'kalka-mcp'
 
 type Locate = (command: string) => Promise<string | null>
 
-export async function bridgeCommand(locate: Locate): Promise<BridgeCommand> {
+/** Hands a failure to the page as `{code, ...}`, which it words in the user's language. */
+async function reporting<T>(action: () => Promise<T>): Promise<T> {
+  try {
+    return await action()
+  } catch (error) {
+    if (error instanceof MCPClientError) throw new NativeError(error.failure)
+    throw error
+  }
+}
+
+async function bridgeCommand(locate: Locate): Promise<BridgeCommand> {
   const script = await bundledMCPScript(BUNDLED_MCP_STDIO)
   if (script) return bundledMCPCommand(script)
   const bridge = await locate(GLOBAL_MCP_BRIDGE)
-  if (!bridge)
-    throw new NativeError(
-      `${GLOBAL_MCP_BRIDGE} is not installed. Install @kalka/mcp globally, then connect again.`
-    )
+  if (!bridge) throw new MCPClientError({ code: 'bridge-missing', bridge: GLOBAL_MCP_BRIDGE })
   // Clients start servers without a login shell: name the bridge by its full path and put its
   // folder, where Node usually sits too, on the PATH it runs with.
   const pathEntries = [dirname(bridge), '/usr/local/bin', '/opt/homebrew/bin', '/usr/bin', '/bin']
@@ -49,30 +60,12 @@ export async function bridgeCommand(locate: Locate): Promise<BridgeCommand> {
   }
 }
 
-/** A CLI that adds servers itself; preferred over editing a file the client may rewrite. */
-interface ClientCLI {
-  command: string
-  add: (bridge: BridgeCommand) => string[]
-  remove: string[]
+/** The bridge command for the page, with a missing bridge reported as a code. */
+export function reportedBridgeCommand(locate: Locate): Promise<BridgeCommand> {
+  return reporting(() => bridgeCommand(locate))
 }
 
-const CLIS: Partial<Record<MCPClientID, ClientCLI>> = {
-  'claude-code': {
-    command: 'claude',
-    add: (bridge) => [
-      'mcp',
-      'add',
-      '--scope',
-      'user',
-      ...Object.entries(bridge.env).flatMap(([key, value]) => ['-e', `${key}=${value}`]),
-      MCP_SERVER_NAME,
-      '--',
-      bridge.command,
-      ...bridge.args
-    ],
-    remove: ['mcp', 'remove', '--scope', 'user', MCP_SERVER_NAME]
-  }
-}
+const CLIS: Partial<Record<MCPClientID, ClientCLI>> = { 'claude-code': CLAUDE_CODE_CLI }
 
 /** Clients that install Kalka as a bundle the app builds (`scripts/build-mcp.ts`). */
 const EXTENSION_CLIENTS: ReadonlySet<MCPClientID> = new Set(['claude-desktop'])
@@ -81,35 +74,6 @@ let definitions: Record<MCPClientID, ClientDefinition> | null = null
 function clients(): Record<MCPClientID, ClientDefinition> {
   definitions ??= localClientDefinitions()
   return definitions
-}
-
-async function writeClientConfig(client: ClientDefinition, bridge: BridgeCommand): Promise<void> {
-  const format = FORMATS[client.format]
-  try {
-    await writeServer(client.file, {
-      syntax: format.syntax,
-      path: format.path,
-      name: MCP_SERVER_NAME,
-      entry: format.entry(bridge)
-    })
-  } catch (error) {
-    if (!(error instanceof ConfigFileError)) throw error
-    const problem =
-      error.reason === 'syntax'
-        ? `is not valid ${format.syntax === 'toml' ? 'TOML' : 'JSON'}`
-        : `cannot hold Kalka's entry (${error.message})`
-    throw new NativeError(
-      `${client.name}'s configuration at ${client.file} ${problem}. Fix it, then connect again.`
-    )
-  }
-}
-
-function run(command: string, args: string[], path: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    execFile(command, args, { timeout: 15_000, env: { ...process.env, PATH: path } }, (error) =>
-      resolve(!error)
-    )
-  })
 }
 
 async function exists(path: string): Promise<boolean> {
@@ -129,6 +93,8 @@ export interface MCPClientStatus {
   connected: boolean
   /** Whether Kalka can also be installed as a bundle the client opens itself. */
   extension: boolean
+  /** Set when the client's CLI failed and Kalka edited its file instead: what the CLI printed. */
+  cliOutput?: string
 }
 
 async function clientStatus(id: MCPClientID): Promise<MCPClientStatus> {
@@ -150,23 +116,27 @@ export function listMCPClients(): Promise<MCPClientStatus[]> {
 }
 
 /** Adds Kalka to one client: through its own CLI when it has one on the PATH, else its file. */
-export async function connectMCPClient(
+export function connectMCPClient(
   id: MCPClientID,
   locate: Locate,
   path: string
 ): Promise<MCPClientStatus> {
-  const client = clients()[id]
-  const bridge = await bridgeCommand(locate)
-  const cli = CLIS[id]
-  const executable = cli && (await locate(cli.command))
-  if (cli && executable) {
-    await run(executable, cli.remove, path)
-    if (!(await run(executable, cli.add(bridge), path)))
-      throw new NativeError(`${client.name} refused to add Kalka. Try again from a terminal.`)
-  } else {
-    await writeClientConfig(client, bridge)
-  }
-  return clientStatus(id)
+  return reporting(async () => {
+    const client = clients()[id]
+    const bridge = await bridgeCommand(locate)
+    const definition = CLIS[id]
+    const executable = definition && (await locate(definition.command))
+    const route = await connectClient({
+      client,
+      bridge,
+      cli: definition && executable ? { definition, executable } : undefined,
+      path
+    })
+    const status = await clientStatus(id)
+    return route.via === 'file' && route.cliOutput !== undefined
+      ? { ...status, cliOutput: route.cliOutput }
+      : status
+  })
 }
 
 /**
@@ -175,8 +145,12 @@ export async function connectMCPClient(
  */
 export async function installMCPExtension(id: MCPClientID): Promise<void> {
   const bundle = EXTENSION_CLIENTS.has(id) ? await bundledMCPScript(BUNDLED_MCP_EXTENSION) : null
-  if (!bundle) throw new NativeError('This build of Kalka has no extension for that client.')
+  if (!bundle) throw new NativeError({ code: 'extension-missing' } satisfies MCPClientFailure)
   const failure = await shell.openPath(bundle)
   if (failure)
-    throw new NativeError(`${clients()[id].name} could not open the extension: ${failure}`)
+    throw new NativeError({
+      code: 'extension-failed',
+      client: clients()[id].name,
+      details: failure
+    } satisfies MCPClientFailure)
 }

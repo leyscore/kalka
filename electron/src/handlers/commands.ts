@@ -11,11 +11,11 @@ import { buildFigFile } from './fig'
 import { loginShellPath } from './login-env'
 import { BUNDLED_MCP_HTTP, bundledMCPScript } from './mcp/bundled'
 import {
-  bridgeCommand,
   connectMCPClient,
   installMCPExtension,
   isMCPClientID,
-  listMCPClients
+  listMCPClients,
+  reportedBridgeCommand
 } from './mcp/clients'
 import { setChecked, setRecentFiles } from './menu'
 import { takePendingOpen, takePendingRooms } from './pending'
@@ -203,7 +203,7 @@ const commands: Record<string, (args: never) => unknown> = {
   mcp_clients: () => listMCPClients(),
   async mcp_bridge_command() {
     const path = await searchPath()
-    return bridgeCommand((command) => which(command, path))
+    return reportedBridgeCommand((command) => which(command, path))
   },
   async connect_mcp_client({ id }: { id: unknown }) {
     if (!isMCPClientID(id)) throw new Error('Unknown MCP client')
