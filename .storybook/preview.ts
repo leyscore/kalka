@@ -57,6 +57,7 @@ const preview: Preview = {
             'Collaboration',
             'Settings',
             'Home',
+            'Document',
             'Shell',
             'Brand'
           ],

@@ -11,7 +11,7 @@ import { setKalkaStore } from '@/app/browser-bridge'
 import { describeDiagnosticError, recordStorageFailure } from '@/app/diagnostics'
 import { confirmAllDocuments } from '@/app/document/close/all'
 import { confirmDocumentClose } from '@/app/document/close/controller'
-import { requestDocumentClose } from '@/app/document/close/prompt'
+import { requestDocumentClose, requestDocumentsClose } from '@/app/document/close/prompt'
 import { readFigDocument } from '@/app/document/io/fig'
 import { applyImportedDocument } from '@/app/document/io/imported-document'
 import type { DocumentSourceIdentity } from '@/app/document/io/types'
@@ -559,8 +559,17 @@ export async function restoreRecoverySnapshot(id: string): Promise<void> {
 }
 
 export function prepareForClose(): Promise<boolean> {
-  return confirmAllDocuments(() =>
-    tabsRef.value.filter((tab) => tab.kind === 'document').map((tab) => tab.store)
+  return confirmAllDocuments(
+    () => tabsRef.value.filter((tab) => tab.kind === 'document').map((tab) => tab.store),
+    {
+      confirm: requestDocumentClose,
+      chooseMany: requestDocumentsClose,
+      // Reviewing goes through the documents one tab at a time, showing each as it asks.
+      reveal: (store) => {
+        const tab = tabsRef.value.find((candidate) => candidate.store === store)
+        if (tab && tab.id !== activeTabId.value) activateTab(tab)
+      }
+    }
   )
 }
 

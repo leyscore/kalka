@@ -7,6 +7,7 @@ import { computed, onMounted, onScopeDispose } from 'vue'
 
 import { provideEditor, useI18n } from '@kalka/vue'
 
+import { answerClosePrompt, closePrompt } from '@/app/document/close/prompt'
 import { useDocumentCloseProtection } from '@/app/document/close/use'
 import { useFollowingEditorStore } from '@/app/editor/active-store'
 import { animationsEnabled } from '@/app/shell/motion'
@@ -66,7 +67,7 @@ onMounted(() => {
       <SettingsDialog />
       <AISetupDialog />
       <RecoveryDialog />
-      <UnsavedChangesDialog />
+      <UnsavedChangesDialog :prompt="closePrompt" @answer="answerClosePrompt" />
       <PublishLibraryDialog />
       <LibraryUpdateReviewDialog />
       <WelcomeFlow />

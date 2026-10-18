@@ -16,6 +16,16 @@ export const filesMessageDefaults = {
   saveBeforeClosing: params('Save changes to “{name}”?'),
   saveBeforeClosingDescription: 'Your changes will be discarded if you close without saving.',
   discard: 'Don’t Save',
+  saveAllBeforeClosing: params('{count} documents have unsaved changes'),
+  saveAllBeforeClosingDescription:
+    'Save them all, review each one, or discard every change before closing.',
+  saveAll: 'Save All',
+  reviewChanges: 'Review…',
+  discardAll: 'Discard All',
+  unsavedDocuments: 'Unsaved documents',
+  notRespondingTitle: 'Kalka is not responding',
+  notRespondingDescription: 'Close anyway? Changes you have not saved may be lost.',
+  closeAnyway: 'Close Anyway',
   clipboardImageUnavailableWeb:
     'Pasted design includes 1 image that cannot be loaded in the web app. Use the desktop app to include it.',
   clipboardImagesUnavailableWeb: params(

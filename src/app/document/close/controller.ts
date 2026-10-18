@@ -16,3 +16,6 @@ export async function confirmDocumentClose(
   const saved = await document.saveFigFile()
   return saved && !document.hasUnsavedChanges() ? 'saved' : 'cancel'
 }
+
+/** The answer when several documents have unsaved changes at once, as on Quit. */
+export type DocumentsCloseChoice = 'save-all' | 'review' | 'discard-all' | 'cancel'

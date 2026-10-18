@@ -44,7 +44,6 @@ tests/engine/app/diagnostics/transport.test.ts
 tests/engine/app/document/autosave/create.test.ts
 tests/engine/app/document/close/controller.test.ts
 tests/engine/app/document/close/exit.test.ts
-tests/engine/app/document/close/native.test.ts
 tests/engine/app/document/io/browser.test.ts
 tests/engine/app/document/io/changes.test.ts
 tests/engine/app/document/io/deep-link.test.ts
