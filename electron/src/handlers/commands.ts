@@ -10,6 +10,7 @@ import { credentialCommands } from './credentials'
 import { buildFigFile } from './fig'
 import { loginShellPath } from './login-env'
 import { BUNDLED_MCP_HTTP, bundledMCPScript } from './mcp/bundled'
+import { cliCommandLine, withPath } from './mcp/cli'
 import {
   connectMCPClient,
   installMCPExtension,
@@ -82,15 +83,23 @@ async function which(command: string, path: string): Promise<string | null> {
 
 /** A companion package's version: the first line of `--version`, if it is semver. */
 function companionVersion(executable: string, path: string): Promise<string | null> {
+  // An npm shim on Windows is a .cmd file, which Node only starts through cmd.exe.
+  const line = cliCommandLine(executable, ['--version', '--help'])
+  if (!line) return Promise.resolve(null)
   return new Promise((resolve) => {
     execFile(
-      executable,
-      ['--version', '--help'],
-      { timeout: 5000, env: { ...process.env, PATH: path } },
+      line.command,
+      line.args,
+      {
+        timeout: 5000,
+        windowsHide: true,
+        windowsVerbatimArguments: line.windowsVerbatimArguments,
+        env: withPath(process.env, path)
+      },
       (error, stdout) => {
         if (error) return resolve(null)
-        const line = stdout.split('\n')[0]?.trim() ?? ''
-        resolve(/^\d+\.\d+\.\d+(?:[-+].*)?$/.test(line) ? line : null)
+        const first = stdout.split('\n')[0]?.trim() ?? ''
+        resolve(/^\d+\.\d+\.\d+(?:[-+].*)?$/.test(first) ? first : null)
       }
     )
   })
