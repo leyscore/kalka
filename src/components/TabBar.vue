@@ -10,6 +10,7 @@ import { useTabsStore, createHomeTab } from '@/app/tabs'
 import PreparationIndicator from '@/components/preparation/tab/Indicator.vue'
 import { useScrollOverflow } from '@/components/shell/useScrollOverflow'
 import Tip from '@/components/ui/overlay/Tip.vue'
+import { IS_TAURI } from '@/constants'
 import tabBarTheme from '@/theme/tab-bar'
 
 const { files } = useI18n()
@@ -65,6 +66,7 @@ function onClose(e: MouseEvent, tabId: string) {
     v-if="tabs.length > 0"
     v-model="modelValue"
     data-slot="tab-bar"
+    :data-title-bar="IS_TAURI || undefined"
     activation-mode="automatic"
     :class="baseStyles.root()"
   >

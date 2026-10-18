@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, type WebContents } from 'electron'
+import { app, BrowserWindow, dialog, nativeTheme, type WebContents } from 'electron'
 import * as v from 'valibot'
 
 import { emit, registerAll, type CallContext } from '../ipc'
@@ -8,6 +8,7 @@ import {
   DEFAULT_CLOSE_FALLBACK_TEXT,
   type PageCloseRequest
 } from './close-ask'
+import { applyTitleBarTheme, TitleBarTheme } from './title-bar'
 
 export interface WindowHost {
   createWindow(): BrowserWindow
@@ -143,6 +144,14 @@ export function windowHandlers(host: WindowHost) {
       if (!parsed.success) throw new Error('Malformed close fallback text')
       if (context.window) fallbackText.set(context.window, parsed.output)
     },
+    /** Tauri's `setTheme`: the app's light or dark theme, or `null` for the system's. */
+    setTheme(context: CallContext, theme: unknown) {
+      const parsed = v.safeParse(TitleBarTheme, theme ?? null)
+      if (!parsed.success) throw new Error('Unknown window theme')
+      if (!context.window) return
+      const resolved = parsed.output ?? (nativeTheme.shouldUseDarkColors ? 'dark' : 'light')
+      applyTitleBarTheme(context.window, resolved)
+    },
     close(context: CallContext) {
       context.window?.close()
     },
@@ -185,6 +194,8 @@ export function windowHandlers(host: WindowHost) {
       }
     ) {
       if (windowByLabel(label)) throw new Error(`A window labelled ${label} already exists`)
+      // Secondary windows (Software Update) have no tab bar to stand in for a title bar, so
+      // they keep the native frame (`./title-bar`).
       const window = new BrowserWindow({
         title: options.title,
         width: options.width,

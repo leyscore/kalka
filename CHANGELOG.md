@@ -5,6 +5,7 @@
 ### Changed
 
 - HTML, Tailwind JSX, and Storybook exports read like hand-written code and draw the same in Chromium: styles several layers repeat become named classes (in a `<style>` at the start of an HTML fragment) while each layer keeps its own size and place inline; measured lengths keep two decimals at most, only where the browser lays them out at the same place (`7482.765625px` becomes `7482.77px`); declarations the browser applies anyway, such as `min-width: 0` outside flex lines, go; padding, borders, and growth become their shorthands; children of a free-layout frame that already sit in a row or a column are laid out with flex; and the editor's `data-kalka-*` attributes are left out, a shader layer's settings now travel in `data-shader`. Generated class names no longer take a class the markup already uses, which restyled other layers on standalone pages, and pretty standalone pages no longer re-indent multi-line text.
+- The desktop app draws its tab bar up to the top of the window, where it acts as the title bar: drag it to move the window or double-click it as you would a title bar. The macOS traffic lights sit inside it, and on Windows and Linux the minimize, maximize, and close buttons are drawn over its right end in the app's light or dark theme.
 
 ### Fixed
 

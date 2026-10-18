@@ -5,7 +5,15 @@ import { fileURLToPath } from 'node:url'
 
 import { app, BrowserWindow, protocol, session, shell, type WebContents } from 'electron'
 
-import { handleLink, LINK_SCHEME, queueOpenPaths, registerHandlers, track } from './handlers'
+import {
+  handleLink,
+  LINK_SCHEME,
+  queueOpenPaths,
+  registerHandlers,
+  titleBarOptions,
+  track,
+  trackTitleBar
+} from './handlers'
 import { installIPC } from './ipc'
 
 app.setName('Kalka')
@@ -131,6 +139,8 @@ function createWindow(): BrowserWindow {
     height: 800,
     show: false,
     backgroundColor: '#121214',
+    // The tab bar is the title bar (`./handlers/title-bar`).
+    ...titleBarOptions(),
     webPreferences: {
       preload: PRELOAD,
       contextIsolation: true,
@@ -143,6 +153,7 @@ function createWindow(): BrowserWindow {
   // its accelerators.
   if (process.platform !== 'darwin') window.setMenuBarVisibility(false)
   track(window, 'main')
+  trackTitleBar(window)
   lockDown(window.webContents)
   window.once('ready-to-show', () => window.show())
   void window.loadURL(pageURL(''))

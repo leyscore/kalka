@@ -14,6 +14,7 @@ import { registerUpdaterHandlers } from './updater'
 import { installQuitGuard, mainContents, registerWindowHandlers, type WindowHost } from './windows'
 
 export { handleLink, LINK_SCHEME, queueOpenPaths, takePendingOpen } from './pending'
+export { titleBarOptions, trackTitleBar } from './title-bar'
 export { track } from './windows'
 
 export function registerHandlers(host: WindowHost): void {

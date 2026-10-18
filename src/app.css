@@ -181,6 +181,34 @@
   }
 }
 
+/*
+ * The desktop tab bar is the window's title bar (`electron/src/handlers/title-bar.ts`): it moves
+ * the window, and it pads itself clear of the window controls Electron reports through the
+ * Window Controls Overlay variables, the traffic lights on the left on macOS and the caption
+ * buttons on the right on Windows and Linux. Where there are none (macOS full screen) the
+ * variables fall back to the bar's own padding.
+ */
+@utility title-bar {
+  -webkit-app-region: drag;
+  padding-left: max(0.5rem, env(titlebar-area-x, 0px));
+  padding-right: max(
+    0.5rem,
+    calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw))
+  );
+}
+
+/* What takes clicks inside a title bar: tabs, buttons and menus. */
+@utility no-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* Popovers, menus and dialogs float over the title bar and take their own clicks. */
+[data-reka-popper-content-wrapper],
+[role='dialog'],
+[role='alertdialog'] {
+  -webkit-app-region: no-drag;
+}
+
 /* A glide pill sits under the items of its container, above the container's background. */
 [data-glide] {
   isolation: isolate;

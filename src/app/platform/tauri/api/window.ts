@@ -47,6 +47,14 @@ class CurrentWindow {
     return call('window.destroy')
   }
 
+  /**
+   * The theme of the window's own controls: the caption buttons Windows and Linux draw over
+   * the tab bar. `null` follows the system, as in Tauri.
+   */
+  setTheme(theme?: 'light' | 'dark' | null): Promise<void> {
+    return call('window.setTheme', theme ?? null)
+  }
+
   setFocus(): Promise<void> {
     return call('window.focus')
   }
