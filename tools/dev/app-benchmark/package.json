@@ -1,0 +1,22 @@
+{
+  "name": "@kalka/app-benchmark-tools",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#bench/*": "./src/*.ts"
+  },
+  "scripts": {
+    "test": "bun test tests"
+  },
+  "dependencies": {
+    "@kalka/core": "workspace:*",
+    "@kalka/package-artifacts-tools": "workspace:*",
+    "@kalka/scene-graph": "workspace:*",
+    "valibot": "^1.5.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/bun": "^1.3.14",
+    "@types/node": "^25.9.9"
+  }
+}
