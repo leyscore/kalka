@@ -68,7 +68,9 @@ export class CanvasHelper {
       .getByTestId('canvas-element')
       .and(this.page.locator('[data-ready="1"]'))
       .waitFor({ timeout: BOOT_TIMEOUT })
-    await this.page.getByTestId('canvas-loading').waitFor({ state: 'hidden', timeout: BOOT_TIMEOUT })
+    await this.page
+      .getByTestId('canvas-loading')
+      .waitFor({ state: 'hidden', timeout: BOOT_TIMEOUT })
     await this.page.locator('#boot-splash').waitFor({ state: 'detached', timeout: BOOT_TIMEOUT })
     await this.useLightPage()
   }
