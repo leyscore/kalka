@@ -15,7 +15,7 @@
     "name": "Avatars",
     "layers": 87,
     "fields": "4e64ba540cca22f3",
-    "html": "7f97ed7f9913a2d6"
+    "html": "d4664b32626824a4"
   },
   {
     "name": "Icons",
@@ -27,13 +27,13 @@
     "name": "Examples",
     "layers": 2692,
     "fields": "684ea998652b41b7",
-    "html": "9e4658636f6a2cab"
+    "html": "127774fd6eb5d048"
   },
   {
     "name": "Shape",
     "layers": 188,
     "fields": "8dcd2e1275856486",
-    "html": "7e8cb8d40b8862c6"
+    "html": "e3d89266477d105e"
   },
   {
     "name": "Styles",
@@ -63,7 +63,7 @@
     "name": "Badges",
     "layers": 21,
     "fields": "b0922f07188ec078",
-    "html": "798138d76dac3670"
+    "html": "22c14c8f72488df4"
   },
   {
     "name": "Buttons",
@@ -81,7 +81,7 @@
     "name": "Carousel",
     "layers": 260,
     "fields": "646bc5d3f6685eb6",
-    "html": "a0c2612921f59280"
+    "html": "cad6d1e16663c872"
   },
   {
     "name": "Checkboxes",
@@ -93,19 +93,19 @@
     "name": "Chips",
     "layers": 1855,
     "fields": "513c0a4277d1f050",
-    "html": "e1ae7f747219c3af"
+    "html": "7c5d936403fa10e4"
   },
   {
     "name": "Date & time pickers",
     "layers": 3177,
     "fields": "07b0e4cf5ebe8de3",
-    "html": "cf7e2e6fd98e50b0"
+    "html": "3776adfcd4d4de89"
   },
   {
     "name": "Dialogs",
     "layers": 1156,
     "fields": "7db888b3f06c7314",
-    "html": "d2b2fc487aec9db3"
+    "html": "541db050388e8973"
   },
   {
     "name": "Dividers",
@@ -123,19 +123,19 @@
     "name": "Loading & progress",
     "layers": 1052,
     "fields": "5d49f67769965d86",
-    "html": "455cc26788e08a96"
+    "html": "d421861b4875fd9f"
   },
   {
     "name": "Menu",
     "layers": 3890,
     "fields": "7b916210f79d7e47",
-    "html": "a076a76985658528"
+    "html": "0ca9155eed65af52"
   },
   {
     "name": "Navigation",
     "layers": 3660,
     "fields": "bd61cb430fac1bd0",
-    "html": "b4b20454025ee6f0"
+    "html": "d1d74b39aafd127d"
   },
   {
     "name": "Radio button",
@@ -147,7 +147,7 @@
     "name": "Search",
     "layers": 525,
     "fields": "53f55d57a2202455",
-    "html": "8cb9e7a3eb3c4cb6"
+    "html": "cb205aa271e6ebbe"
   },
   {
     "name": "Sheets",
@@ -171,7 +171,7 @@
     "name": "Switch",
     "layers": 161,
     "fields": "9cb8206f72f780a8",
-    "html": "5c4cb8313a3eba66"
+    "html": "7c8990dd3af5a7d2"
   },
   {
     "name": "Tabs",
