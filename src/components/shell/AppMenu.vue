@@ -17,7 +17,7 @@ import {
 import { useTemplateRef, watch } from 'vue'
 import IconChevronRight from '~icons/lucide/chevron-right'
 
-import { vTestId, useI18n } from '@kalka/vue'
+import { shortcutPlatform, vTestId, useI18n } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import { openSettingsDialog } from '@/app/settings/dialog'
@@ -43,6 +43,9 @@ import IconButton from '@/components/ui/button/IconButton.vue'
 import AppShortcutText from '@/components/ui/menu/AppShortcutText.vue'
 import { useMenuUI } from '@/components/ui/menu/menu'
 import { IS_TAURI } from '@/constants'
+
+/** The macOS desktop app keeps its menu in the system menu bar; everywhere else Kalka draws it. */
+const showMenubar = !IS_TAURI || shortcutPlatform() !== 'mac'
 
 const store = useEditorStore()
 
@@ -107,7 +110,7 @@ const { overflowStart, overflowEnd, scrollTowardHidden } = useScrollOverflow(men
         <icon-lucide-panel-left class="size-[15px]" />
       </IconButton>
     </div>
-    <div v-if="!IS_TAURI" class="-mt-1 flex items-center px-2 pb-2.5">
+    <div v-if="showMenubar" class="-mt-1 flex items-center px-2 pb-2.5">
       <div
         ref="menubar"
         class="scrollbar-none min-w-0 flex-1 overflow-x-auto data-overflow-end:mask-r-from-[calc(100%-2rem)] data-overflow-start:mask-l-from-[calc(100%-2rem)]"

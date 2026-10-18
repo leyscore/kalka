@@ -139,6 +139,9 @@ function createWindow(): BrowserWindow {
       spellcheck: false
     }
   })
+  // Off macOS the app draws its own menu, as on the web; the native bar stays hidden but keeps
+  // its accelerators.
+  if (process.platform !== 'darwin') window.setMenuBarVisibility(false)
   track(window, 'main')
   lockDown(window.webContents)
   window.once('ready-to-show', () => window.show())

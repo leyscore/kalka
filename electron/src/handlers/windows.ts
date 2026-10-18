@@ -134,6 +134,7 @@ export function windowHandlers(host: WindowHost) {
           nodeIntegration: false
         }
       })
+      if (process.platform !== 'darwin') window.setMenuBarVisibility(false)
       track(window, label)
       void window.loadURL(host.pageURL(options.url ?? ''))
       if (options.focus ?? true) window.focus()
