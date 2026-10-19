@@ -1,4 +1,4 @@
-import { applyMeasuredLayout, type LayoutEngine } from '@kalka/core/layout'
+import { applyMeasuredLayout, computeLayout, type LayoutEngine } from '@kalka/core/layout'
 import type { SceneGraph } from '@kalka/scene-graph'
 
 import type { DomSceneProjector } from './projector'
@@ -9,8 +9,8 @@ import type { DomSceneProjector } from './projector'
  * what the browser computed. It never computes a position itself.
  *
  * Layers the DOM scene does not draw (other pages, graphs used for export or previews, artboards
- * whose iframe is still loading) go to the engine installed before it, which lays them out in
- * hidden iframes.
+ * that sleep or whose iframe is still loading) go to the engine installed before it, which lays
+ * them out in hidden iframes.
  */
 export class DomLayoutEngine implements LayoutEngine {
   constructor(
@@ -20,11 +20,13 @@ export class DomLayoutEngine implements LayoutEngine {
 
   layout(graph: SceneGraph, nodeId: string): boolean {
     if (graph !== this.getGraph()) return false
-    const artboards = this.projector.artboardsFor(nodeId)
-    if (!artboards) return false
+    const plan = this.projector.layoutPlan(nodeId)
+    if (!plan) return false
     // A layout runs right after an edit: bring the DOM up to date first, synchronously.
     if (this.projector.needsFlush) this.projector.flush()
-    for (const id of artboards) this.read(graph, id)
+    for (const id of plan.live) this.read(graph, id)
+    // Each artboard without a live document goes to the engines below, which this one declines.
+    for (const id of plan.elsewhere) computeLayout(graph, id)
     return true
   }
 
@@ -51,6 +53,13 @@ export class DomLayoutEngine implements LayoutEngine {
       if (value) values[name] = value
     }
     return values
+  }
+
+  /** Wakes the artboard drawing a layer of the page shown, so its computed style can be read. */
+  async drawLayer(graph: SceneGraph, nodeId: string): Promise<boolean> {
+    if (graph !== this.getGraph()) return false
+    const artboardId = this.projector.artboardIdOf(nodeId)
+    return artboardId ? this.projector.whenLive(artboardId) : false
   }
 
   /** Re-reads artboards whose layout changed on its own, such as when a font arrives. */

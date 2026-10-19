@@ -1,4 +1,5 @@
 import { CanvasHelper } from '#tests/helpers/canvas'
+import { artboardDrawing } from '#tests/helpers/canvas/artboard-tiers'
 import { expect, test } from '#tests/helpers/chat/fixture'
 import {
   addPage,
@@ -267,6 +268,51 @@ test('draws streamed JSX as page DOM in place of the layer it replaces, until it
         .contentFrame()
         .getByText('Streaming preview')
     ).toBeAttached()
+  } finally {
+    await stream.evaluate((s) => s.dispose())
+    await stream.dispose()
+  }
+})
+
+test('draws a preview in place of an artboard that sleeps far from the view', async ({
+  configuredChat: chat
+}) => {
+  await setupCanvas(chat.page)
+  const originalId = await chat.page.evaluate(() => {
+    const store = window.kalka?.getStore?.()
+    if (!store) throw new Error('Editor unavailable')
+    const node = store.graph.createNode('FRAME', store.state.currentPageId, {
+      name: 'Far placeholder',
+      x: 9000,
+      y: 80,
+      width: 280,
+      height: 180
+    })
+    store.requestRender()
+    return node.id
+  })
+  // Far from the view, it has no iframe: a placeholder stands in for it.
+  await expect.poll(async () => (await artboardDrawing(chat.page, originalId)).standIn).toBe('div')
+  const stream = await installRenderStream(chat.page, {
+    ...scenario,
+    placement: { replace_id: originalId, x: 80, y: 80 }
+  })
+  const preview = chat.page.locator('iframe[data-kalka-ghost]')
+  try {
+    await chat.submit('Replace the far placeholder')
+    await expect.poll(() => stream.evaluate((s) => s.ready())).toBe(true)
+    await stream.evaluate((s) => s.advance())
+    await expect(preview.contentFrame().getByText('Streaming')).toBeAttached()
+    // Whatever draws the original, iframe or stand-in, hides while the preview stands in for it.
+    await expect.poll(async () => (await artboardDrawing(chat.page, originalId)).hidden).toBe(true)
+
+    await stream.evaluate((s) => s.complete())
+    await expect(chat.assistantMessage()).toContainText('Rendered.')
+    await expect(preview).toHaveCount(0)
+    const [committed] = (await documentState(chat.page)).children
+    await expect
+      .poll(async () => (await artboardDrawing(chat.page, committed)).text)
+      .toContain('Streaming preview')
   } finally {
     await stream.evaluate((s) => s.dispose())
     await stream.dispose()

@@ -80,32 +80,63 @@ export function artboardInk(graph: SceneGraph, node: SceneNode): ArtboardInk {
   }
 }
 
+/** Where an artboard's iframe sits, in canvas units, and how far it reaches past the layer. */
+export interface ArtboardFrameBox {
+  x: number
+  y: number
+  width: number
+  height: number
+  ink: ArtboardInk
+}
+
 /**
- * Sizes and places an artboard's iframe from the layer's geometry. The iframe reaches past the
- * layer's box as far as the layer draws, and its body is padded by as much, so the layer still
- * sits at its own position: a document clips what lies outside it.
+ * The box an artboard's iframe takes: the layer's box, grown by as far as the layer draws past
+ * it. Its snapshot and placeholder take the same box.
  */
-export function placeArtboardFrame(
-  frame: HTMLIFrameElement,
-  doc: Document | null,
-  graph: SceneGraph,
-  node: SceneNode
-): void {
+export function artboardFrameBox(graph: SceneGraph, node: SceneNode): ArtboardFrameBox {
   const position = artboardOrigin(graph, node)
   const ink = artboardInk(graph, node)
-  const style = frame.style
-  const left = `${position.x - ink.left}px`
-  const top = `${position.y - ink.top}px`
-  const width = `${Math.max(1, node.width) + ink.left + ink.right}px`
-  const height = `${Math.max(1, node.height) + ink.top + ink.bottom}px`
+  return {
+    x: position.x - ink.left,
+    y: position.y - ink.top,
+    width: Math.max(1, node.width) + ink.left + ink.right,
+    height: Math.max(1, node.height) + ink.top + ink.bottom,
+    ink
+  }
+}
+
+/** Places an element absolutely over `box`, touching only what differs. */
+export function placeBox(element: HTMLElement, box: ArtboardFrameBox): void {
+  const style = element.style
+  const left = `${box.x}px`
+  const top = `${box.y}px`
+  const width = `${box.width}px`
+  const height = `${box.height}px`
   if (style.left !== left) style.left = left
   if (style.top !== top) style.top = top
   if (style.width !== width) style.width = width
   if (style.height !== height) style.height = height
+}
+
+/**
+ * Sizes and places an artboard's iframe from the layer's geometry. The iframe reaches past the
+ * layer's box as far as the layer draws, and its body is padded by as much, so the layer still
+ * sits at its own position: a document clips what lies outside it. Returns the box.
+ */
+export function placeArtboardFrame(
+  frame: HTMLIFrameElement | null,
+  doc: Document | null,
+  graph: SceneGraph,
+  node: SceneNode
+): ArtboardFrameBox {
+  const box = artboardFrameBox(graph, node)
+  if (frame) placeBox(frame, box)
   const body = doc?.body
-  if (!body) return
+  if (!body) return box
+  const { ink } = box
   const padding = `${ink.top}px ${ink.right}px ${ink.bottom}px ${ink.left}px`
   if (body.style.padding !== padding) body.style.padding = padding
+  return box
 }
 
 /**

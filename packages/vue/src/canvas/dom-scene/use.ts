@@ -16,6 +16,7 @@ import type { RevealStep } from './reveal/plan'
 import { RevealPlayer } from './reveal/play'
 import { ShaderLayers } from './shaders'
 import { DomTextEditor } from './text/editor'
+import { ArtboardTierWork, activeLayers } from './tier-work'
 import { CanvasTokens } from './tokens'
 
 export interface UseDomSceneOptions {
@@ -52,8 +53,8 @@ export function useDomScene(
   let tokens: CanvasTokens | null = null
   let ghosts: GhostLayer | null = null
   let reveals: RevealPlayer | null = null
+  let tiers: ArtboardTierWork | null = null
   const reflowed = new Set<string>()
-  let lastTransform = ''
   let presentedScene = -1
   /** The page agent work was last drawn on; held layers show once the view leaves it. */
   let workPage: string | null = null
@@ -77,12 +78,8 @@ export function useDomScene(
    */
   function tick(): boolean {
     if (!projector) return false
-    const { panX, panY, zoom } = view()
-    const transform = `translate(${panX}px, ${panY}px) scale(${zoom})`
-    if (transform !== lastTransform) {
-      projector.world.style.transform = transform
-      lastTransform = transform
-    }
+    // The world moves to the view; artboards take their tiers from it.
+    tiers?.follow(view())
     live.sync(projector)
     if (projector.needsFlush) projector.flush()
     // Whatever changed the DOM this frame is read back before the next one draws.
@@ -91,6 +88,8 @@ export function useDomScene(
       reflowed.clear()
       if (projector.needsFlush) projector.flush()
     }
+    // Artboards wake near the screen and sleep far from it.
+    const tiersLeft = tiers?.apply() ?? false
     const state = view()
     drawAgentWork(state.currentPageId)
     shaders?.sync(state.sceneVersion)
@@ -102,7 +101,7 @@ export function useDomScene(
         sceneVersion: state.sceneVersion
       })
     }
-    return projector.needsFlush || reflowed.size > 0 || (reveals?.busy ?? false)
+    return projector.needsFlush || reflowed.size > 0 || (reveals?.busy ?? false) || tiersLeft
   }
 
   const frames = createFrameRequest(tick)
@@ -149,9 +148,13 @@ export function useDomScene(
       },
       livePatches: () => live.patches(),
       tokens: () => canvasTokens.references,
-      fontFallbacks: () => fontManager.fallbackFamilies()
+      fontFallbacks: () => fontManager.fallbackFamilies(),
+      onTiersChanged: () => redraw(),
+      activeLayers: () => activeLayers(view())
     })
     const p = projector
+    tiers = new ArtboardTierWork(p, () => editor.graph, redraw)
+    tiers.observe(element)
     const canvasTokens = new CanvasTokens(
       () => editor.graph,
       redrawAfter((css: string) => p.setTokensCSS(css), redraw),
@@ -188,12 +191,13 @@ export function useDomScene(
     reveals = null
     ghosts?.destroy()
     ghosts = null
+    tiers?.destroy()
+    tiers = null
     tokens = null
     projector?.destroy()
     projector = null
     engine = null
     reflowed.clear()
-    lastTransform = ''
     presentedScene = -1
     workPage = null
   }
@@ -213,17 +217,12 @@ export function useDomScene(
       return projector
     },
     /**
-     * Whether the DOM shows the page as the graph has it: every artboard's document loaded with
+     * Whether the DOM shows the page as the graph has it: every artboard held live loaded with
      * its fonts, no edit left to patch, no layout left to read back, and no reveal playing.
      */
     get settled() {
       if (!projector || projector.needsFlush || reflowed.size > 0 || reveals?.busy) return false
-      for (const id of projector.artboardIds) {
-        const doc = projector.artboardOf(id)?.doc
-        if (doc?.readyState !== 'complete' || doc.fonts.status === 'loading') return false
-        if (projector.isStale(id)) return false
-      }
-      return true
+      return projector.settled
     },
     /** Redraws the page's boolean operations, once path operations can combine their operands. */
     redrawBooleanOperations() {

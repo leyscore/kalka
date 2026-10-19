@@ -16,7 +16,6 @@ import { blendModeToCSS } from '@kalka/scene-graph/css-model'
 import { buildNode, patchAttributes } from './build'
 import {
   addArtboardFont,
-  createArtboardFrame,
   placeArtboardFrame,
   setArtboardTokens,
   type ArtboardFontFace
@@ -24,6 +23,11 @@ import {
 import { maskedParentsAround } from './masks'
 import { measureScopes } from './measure-scope'
 import { PatternUsers } from './patterns'
+import { ArtboardSlot } from './slot'
+import { ArtboardSlots, type ArtboardSlotsHost, type ProjectorView } from './slots'
+import { isLive, type ArtboardTier } from './tiers'
+
+export type { ProjectorView } from './slots'
 
 /** Changes to a layer that restyle its children too: their CSS depends on how it lays them out. */
 const CHILD_STYLE_KEYS = new Set<keyof SceneNode>([
@@ -54,26 +58,6 @@ function artboardStackOrder(index: number): number {
   return 2 * index + 2
 }
 
-interface Artboard {
-  id: string
-  frame: HTMLIFrameElement
-  /** Null until the iframe's document has loaded. */
-  doc: Document | null
-  /** Whether the DOM changed since its geometry was last read. */
-  stale: boolean
-  /**
-   * The layers patched since its geometry was last read, which bound what can have moved; null
-   * when anything can have, as after it loads or its fonts or size change.
-   */
-  patched: Set<string> | null
-  /**
-   * Whether what changed since the last reading derives from the document rather than an edit:
-   * the artboard loaded, or a font arrived in it.
-   */
-  derived: boolean
-  observer: ResizeObserver | null
-}
-
 export interface DomSceneProjectorOptions {
   getGraph: () => SceneGraph
   /** The layer whose children are drawn, the current page. */
@@ -102,6 +86,16 @@ export interface DomSceneProjectorOptions {
    * artboard is projected again when the list changes, as when a fallback font arrives.
    */
   fontFallbacks?: () => readonly string[]
+  /**
+   * Called when an artboard's tier has work to do outside a view change: a feature asked for it
+   * live, or its iframe took over from its stand-in.
+   */
+  onTiersChanged?: () => void
+  /**
+   * The layers the user works on, such as the selection or a path being edited: their artboards
+   * stay live where they would be pictured, so a gesture on them draws as it goes.
+   */
+  activeLayers?: () => Iterable<string>
 }
 
 /**
@@ -109,17 +103,23 @@ export interface DomSceneProjectorOptions {
  * element per layer inside it. Graph events mark layers dirty; {@link flush} patches only those
  * elements, so an edit costs what it touches, not what the page holds.
  *
+ * Each artboard is held at a tier from how far it lies from the screen ({@link ArtboardTier}):
+ * only those on screen or about to be have a live iframe, the others a snapshot or a placeholder.
+ * The projector alone moves artboards between tiers. Nothing may assume an artboard has a live
+ * document: {@link retain}, {@link whenLive} and {@link withLiveArtboard} wake one for a feature
+ * that reads or edits its DOM, and layout goes to the offscreen engine for those without one.
+ *
  * The browser lays out and draws; this class never computes a position itself.
  */
 export class DomSceneProjector {
   readonly world: HTMLElement
-  private readonly artboards = new Map<string, Artboard>()
+  private readonly artboards: ArtboardSlots
   private readonly elements = new Map<string, Element>()
   private readonly dirty = new Set<string>()
   /** What each text element was last built from, so unchanged text is left alone. */
   private readonly textContent = new WeakMap<Element, string>()
-  /** Layers edited in place, such as text under the in-page editor: not patched meanwhile. */
-  private readonly locked = new Set<string>()
+  /** Layers edited in place, such as text under the in-page editor, with their artboards. */
+  private readonly locked = new Map<string, string | null>()
   /** Layers holding a mask: the CSS of their other children depends on where it sits. */
   private readonly maskParents = new Set<string>()
   private readonly patternUsers = new PatternUsers()
@@ -141,6 +141,7 @@ export class DomSceneProjector {
     this.world.style.cssText =
       'position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform'
     host.append(this.world)
+    this.artboards = new ArtboardSlots(this.slotsHost())
   }
 
   get graph(): SceneGraph {
@@ -161,32 +162,170 @@ export class DomSceneProjector {
     return this.currentPageId() !== this.pageId || this.fallbacksKey() !== this.projectedFallbacks
   }
 
-  /** The element drawing a layer, if it is on the current page. */
+  /** The element drawing a layer, if it is on the current page and its artboard is live. */
   elementOf(id: string): Element | undefined {
     return this.elements.get(id)
   }
 
-  artboardOf(id: string): { frame: HTMLIFrameElement; doc: Document | null } | undefined {
-    return this.artboards.get(id)
-  }
-
+  /** The page's artboards, by the id of their layer. */
   get artboardIds(): IterableIterator<string> {
     return this.artboards.keys()
+  }
+
+  /** The tier an artboard is held at, or undefined when it is not on the page drawn. */
+  tierOf(artboardId: string): ArtboardTier | undefined {
+    return this.artboards.get(artboardId)?.tier
+  }
+
+  /** The artboard drawing a layer of the page shown: its top-level ancestor, or itself. */
+  artboardIdOf(nodeId: string): string | null {
+    const node = this.graph.getNode(nodeId)
+    return node ? this.topLevelOf(node) : null
+  }
+
+  // ------------------------------------------------------------------ tiers
+
+  /**
+   * The view each artboard's tier is reckoned from. Until a view is given, every artboard is
+   * held live, as a canvas that is not on screen yet lays out the page it will show.
+   */
+  setView(view: ProjectorView): void {
+    this.artboards.setView(view)
+  }
+
+  /**
+   * Keeps an artboard live, woken now if it sleeps, until the returned release: for features
+   * that read or edit its DOM, such as the text editor.
+   */
+  retain(artboardId: string): () => void {
+    return this.artboards.retain(artboardId)
+  }
+
+  /**
+   * Resolves once an artboard has a live document that shows the graph, waking it if it sleeps;
+   * false when it left the page first. Hold it with {@link retain} to keep it live after.
+   */
+  whenLive(artboardId: string): Promise<boolean> {
+    return this.artboards.whenLive(artboardId)
+  }
+
+  /** Runs `read` on a layer's artboard document once it is live; null when it is not drawn. */
+  async withLiveArtboard<T>(nodeId: string, read: (doc: Document) => T): Promise<T | null> {
+    const artboardId = this.artboardIdOf(nodeId)
+    if (!artboardId) return null
+    const release = this.retain(artboardId)
+    try {
+      if (!(await this.whenLive(artboardId))) return null
+      if (this.needsFlush) this.flush()
+      const doc = this.artboards.get(artboardId)?.doc
+      return doc ? read(doc) : null
+    } finally {
+      release()
+    }
+  }
+
+  /** Hides the artboards of the page children previews stand in for, and shows the others. */
+  setReplaced(ids: ReadonlySet<string>): void {
+    this.artboards.setReplaced(ids)
+  }
+
+  /**
+   * Moves artboards to the tiers the view asks for. Painting stops and starts at once; waking
+   * and sleeping wait for the view to rest, a few artboards a frame. True while some are left.
+   */
+  applyTiers(): boolean {
+    return this.artboards.apply()
+  }
+
+  /** Whether a snapshot is due: an artboard that sleeps in the far tier shows an old one or none. */
+  get needsCapture(): boolean {
+    return this.artboards.needsCapture
+  }
+
+  /**
+   * Takes the snapshot due next, the nearest first, off the gesture path: one at a time, as the
+   * canvas's idle work. Resolves with whether one was shown.
+   */
+  captureNext(): Promise<boolean> {
+    return this.artboards.captureNext()
+  }
+
+  /**
+   * An artboard placed on the page but never laid out, which sleeps: its layers keep the geometry
+   * the file gave them until the offscreen engine lays it out, as the canvas's idle work.
+   */
+  nextUnmeasured(): string | null {
+    return this.artboards.nextUnmeasured()
+  }
+
+  /** Records that the offscreen engine laid a sleeping artboard out. */
+  markMeasured(artboardId: string): void {
+    const slot = this.artboards.get(artboardId)
+    if (slot) slot.measured = true
+  }
+
+  private holdsLock(artboardId: string): boolean {
+    for (const owner of this.locked.values()) if (owner === artboardId) return true
+    return false
+  }
+
+  private isActive(artboardId: string): boolean {
+    for (const id of this.options.activeLayers?.() ?? []) {
+      if (this.artboardIdOf(id) === artboardId) return true
+    }
+    return false
+  }
+
+  private wake(slot: ArtboardSlot): void {
+    slot.wake((loaded) => this.loaded(loaded))
+  }
+
+  private sleep(slot: ArtboardSlot): void {
+    this.unregisterSubtree(slot.doc?.body)
+    slot.sleep(this.graph.getNode(slot.id))
+    slot.stale = false
+    slot.patched = null
+  }
+
+  /** What the artboards' tiers ask of the projector. */
+  private slotsHost(): ArtboardSlotsHost {
+    return {
+      graph: () => this.graph,
+      destroyed: () => this.destroyed,
+      ownerDocument: this.world.ownerDocument,
+      wake: (slot) => this.wake(slot),
+      sleep: (slot) => this.sleep(slot),
+      holdsLock: (id) => this.holdsLock(id),
+      isActive: (id) => this.isActive(id),
+      reflow: (id) => this.options.onReflow?.(id),
+      changed: () => this.options.onTiersChanged?.(),
+      snapshotSource: (id) => ({
+        graph: this.graph,
+        nodeId: id,
+        fonts: this.options.fonts?.() ?? [],
+        vectorElement: this.options.vectorElement,
+        fontFallbacks: this.options.fontFallbacks?.()
+      })
+    }
   }
 
   // ------------------------------------------------------------------ invalidation
 
   /**
    * Hands a layer's element to another owner, such as the text editor: the projector leaves
-   * it untouched until `unlock`, which rebuilds it from the graph.
+   * it untouched until `unlock`, which rebuilds it from the graph. Its artboard stays live
+   * meanwhile, woken if it slept: the element is there once it has loaded.
    */
   lock(id: string): Element | undefined {
-    this.locked.add(id)
+    const artboardId = this.artboardIdOf(id)
+    this.locked.set(id, artboardId)
+    if (artboardId && !this.artboards.get(artboardId)?.live) this.options.onTiersChanged?.()
     return this.elements.get(id)
   }
 
   unlock(id: string): void {
-    if (!this.locked.delete(id)) return
+    if (!this.locked.has(id)) return
+    this.locked.delete(id)
     const element = this.elements.get(id)
     const node = this.graph.getNode(id)
     if (element) this.removeElement(element)
@@ -201,17 +340,19 @@ export class DomSceneProjector {
   /** The variables stylesheet every artboard carries, now and when it opens. */
   setTokensCSS(css: string): void {
     this.#tokensCSS = css
-    for (const artboard of this.artboards.values()) {
-      if (artboard.doc) setArtboardTokens(artboard.doc, css)
+    for (const slot of this.artboards.values()) {
+      slot.version++
+      if (slot.doc) setArtboardTokens(slot.doc, css)
     }
     // Values moved, so layouts can too.
-    for (const id of this.artboards.keys()) this.options.onReflow?.(id)
+    for (const slot of this.artboards.values()) if (slot.live) this.options.onReflow?.(slot.id)
   }
 
   /** A font loaded after the artboards opened: every artboard gets it. */
   addFont(face: ArtboardFontFace): void {
-    for (const artboard of this.artboards.values()) {
-      if (artboard.doc) addArtboardFont(artboard.doc, face)
+    for (const slot of this.artboards.values()) {
+      slot.version++
+      if (slot.doc) addArtboardFont(slot.doc, face)
     }
   }
 
@@ -222,10 +363,6 @@ export class DomSceneProjector {
 
   /** The page changed or the graph was replaced: every artboard is rebuilt. */
   reset(): void {
-    for (const artboard of this.artboards.values()) {
-      artboard.observer?.disconnect()
-      artboard.frame.remove()
-    }
     this.artboards.clear()
     this.elements.clear()
     this.maskParents.clear()
@@ -300,48 +437,72 @@ export class DomSceneProjector {
       this.pageDirty = false
       this.reconcileArtboards(touched)
     }
-    if (this.dirty.size === 0) {
-      if (touched.size > 0) this.options.onPatched?.(touched)
-      return
-    }
+    if (this.dirty.size > 0) this.patchDirty(touched)
+    if (touched.size > 0) this.options.onPatched?.(touched)
+  }
+
+  /** Patches the dirty layers of live artboards; those of sleeping ones only date their stand-ins. */
+  private patchDirty(touched: Set<string>): void {
     const ids = [...this.dirty]
     this.dirty.clear()
+    /** Artboards without a live document whose layers changed: built whole once it loads. */
+    const asleep = new Set<string>()
     for (const id of ids) {
-      const artboardId = this.patchLayer(id)
-      if (!artboardId) continue
-      touched.add(artboardId)
-      this.artboards.get(artboardId)?.patched?.add(id)
-    }
-    for (const id of touched) {
-      const artboard = this.artboards.get(id)
       const node = this.graph.getNode(id)
-      if (!artboard) continue
-      artboard.stale = true
-      // What a layer draws past its box can change with any layer inside it.
-      if (node) this.placeArtboard(node, artboard)
+      const artboardId = node ? this.topLevelOf(node) : null
+      const slot = artboardId ? this.artboards.get(artboardId) : undefined
+      if (!node || !artboardId || !slot) continue
+      if (!slot.doc) asleep.add(artboardId)
+      else if (this.patchLayer(id, node, artboardId, slot.doc)) {
+        touched.add(artboardId)
+        slot.patched?.add(id)
+      }
     }
-    if (touched.size > 0) this.options.onPatched?.(touched)
+    for (const id of touched) this.placeChanged(id, true)
+    for (const id of asleep) this.placeChanged(id, false)
+  }
+
+  /** Places an artboard whose layers changed: what it draws past its box can change with them. */
+  private placeChanged(id: string, live: boolean): void {
+    const slot = this.artboards.get(id)
+    const node = this.graph.getNode(id)
+    if (!slot || !node) return
+    slot.version++
+    if (live) slot.stale = true
+    this.placeArtboard(node, slot)
+    if (!live) slot.updatePlaceholder(node)
   }
 
   // ------------------------------------------------------------------ measurement
 
   /**
-   * The artboards that draw `nodeId` and everything inside it, or null when some of them cannot
-   * be read yet (not on this page, or still loading), so another engine lays it out instead.
+   * The artboards that draw `nodeId` and everything inside it whose documents can be read now,
+   * and those that cannot (asleep, or still loading), which another engine lays out; null when
+   * none can be read or the layer is not on the page drawn, so another engine lays it all out.
    */
-  artboardsFor(nodeId: string): string[] | null {
+  layoutPlan(nodeId: string): { live: string[]; elsewhere: string[] } | null {
     const graph = this.graph
     const pageId = this.currentPageId()
+    if (this.pageId !== pageId) return null
+    let ids: string[]
     if (nodeId === pageId) {
       const page = graph.getNode(pageId)
-      if (!page || this.pageId !== pageId) return null
-      const ids = this.visibleChildren(page).map((node) => node.id)
-      return ids.every((id) => this.artboards.get(id)?.doc) ? ids : null
+      if (!page) return null
+      ids = this.visibleChildren(page).map((node) => node.id)
+    } else {
+      const node = graph.getNode(nodeId)
+      const artboardId = node ? this.topLevelOf(node) : null
+      if (!artboardId) return null
+      ids = [artboardId]
     }
-    const node = graph.getNode(nodeId)
-    const artboardId = node ? this.topLevelOf(node) : null
-    if (!artboardId || this.pageId !== pageId) return null
-    return this.artboards.get(artboardId)?.doc ? [artboardId] : null
+    const live = ids.filter((id) => this.readable(id))
+    if (live.length === 0) return null
+    return { live, elsewhere: ids.filter((id) => !this.readable(id)) }
+  }
+
+  /** Whether an artboard's document is loaded and built, so its layout can be read. */
+  private readable(artboardId: string): boolean {
+    return !!this.artboards.get(artboardId)?.doc && this.elements.has(artboardId)
   }
 
   /**
@@ -356,8 +517,10 @@ export class DomSceneProjector {
     return artboardStackOrder(before.length) - 1
   }
 
+  /** Whether a live artboard's DOM changed since its geometry was last read. */
   isStale(artboardId: string): boolean {
-    return this.artboards.get(artboardId)?.stale ?? false
+    const slot = this.artboards.get(artboardId)
+    return !!slot?.doc && slot.stale
   }
 
   /**
@@ -374,20 +537,36 @@ export class DomSceneProjector {
   }
 
   /**
+   * Whether every artboard the view holds live shows the graph: loaded with its fonts, built,
+   * and its layout read. Artboards that sleep draw their stand-ins and wait for nothing.
+   */
+  get settled(): boolean {
+    for (const slot of this.artboards.values()) {
+      if (!isLive(slot.target)) continue
+      const doc = slot.doc
+      if (!slot.ready || doc?.readyState !== 'complete' || doc.fonts.status === 'loading')
+        return false
+      if (slot.stale) return false
+    }
+    return true
+  }
+
+  /**
    * Reads every layer's box in an artboard, as the browser laid it out. One forced layout at
    * most. Rotated or flipped layers, and layers inside them, keep the geometry they have: a box
    * is not their position. The artboard's own position is the canvas's, never read here.
    */
   measureArtboard(artboardId: string): Map<string, MeasuredGeometry> {
-    const artboard = this.artboards.get(artboardId)
+    const slot = this.artboards.get(artboardId)
     const root = this.elements.get(artboardId)
-    if (!artboard?.doc || !root) return new Map()
-    const scopes = artboard.patched
-      ? measureScopes(root, artboard.patched, (id) => this.drawnElementFor(id), LAYER_ID_ATTR)
+    if (!slot?.doc || !root) return new Map()
+    const scopes = slot.patched
+      ? measureScopes(root, slot.patched, (id) => this.drawnElementFor(id), LAYER_ID_ATTR)
       : null
-    artboard.stale = false
-    artboard.patched = new Set()
-    artboard.derived = false
+    slot.stale = false
+    slot.patched = new Set()
+    slot.derived = false
+    slot.measured = true
     return measureLayerBoxes(
       root,
       artboardId,
@@ -443,83 +622,97 @@ export class DomSceneProjector {
     const wanted = page ? this.visibleChildren(page) : []
     const wantedIds = new Set(wanted.map((node) => node.id))
 
-    for (const [id, artboard] of this.artboards) {
+    for (const [id, slot] of this.artboards.entries()) {
       if (wantedIds.has(id)) continue
-      this.unregisterSubtree(artboard.doc?.body)
-      artboard.observer?.disconnect()
-      artboard.frame.remove()
+      this.unregisterSubtree(slot.doc?.body)
+      slot.destroy()
       this.artboards.delete(id)
     }
 
     // Later layers draw above earlier ones, as on the canvas. The stacking order says so too,
     // so a preview can draw between two artboards without moving their frames.
-    let previous: HTMLIFrameElement | null = null
+    let previous: Element | null = null
     for (const [index, node] of wanted.entries()) {
-      let artboard = this.artboards.get(node.id)
-      if (!artboard) {
-        artboard = this.createArtboard(node.id)
+      let slot = this.artboards.get(node.id)
+      if (!slot) {
+        slot = this.createArtboard(node)
         touched.add(node.id)
+      } else {
+        this.placeArtboard(node, slot)
       }
-      const expected: ChildNode | null = previous ? previous.nextSibling : this.world.firstChild
-      if (expected !== artboard.frame) this.world.insertBefore(artboard.frame, expected)
-      const order = String(artboardStackOrder(index))
-      if (artboard.frame.style.zIndex !== order) artboard.frame.style.zIndex = order
-      this.placeArtboard(node, artboard)
-      previous = artboard.frame
+      for (const element of slot.elements) {
+        const expected: ChildNode | null = previous ? previous.nextSibling : this.world.firstChild
+        if (expected !== element) this.world.insertBefore(element, expected)
+        previous = element
+      }
+      slot.setOrder(String(artboardStackOrder(index)))
     }
-  }
-
-  private createArtboard(id: string): Artboard {
-    const frame = createArtboardFrame(this.world.ownerDocument, id)
-    const artboard: Artboard = {
-      id,
-      frame,
-      doc: null,
-      stale: true,
-      patched: null,
-      derived: true,
-      observer: null
-    }
-    frame.addEventListener(
-      'load',
-      () => {
-        if (this.destroyed || this.artboards.get(id) !== artboard) return
-        const doc = frame.contentDocument
-        artboard.doc = doc
-        if (doc) {
-          for (const face of this.options.fonts?.() ?? []) addArtboardFont(doc, face)
-          setArtboardTokens(doc, this.#tokensCSS)
-          const reflowed = () => {
-            artboard.stale = true
-            artboard.patched = null
-            this.options.onReflow?.(id)
-          }
-          doc.fonts.addEventListener('loadingdone', () => {
-            artboard.derived = true
-            reflowed()
-          })
-          artboard.observer = new ResizeObserver(reflowed)
-          artboard.observer.observe(doc.body)
-        }
-        this.dirty.add(id)
-        this.flush()
-      },
-      { once: true }
-    )
-    this.artboards.set(id, artboard)
-    return artboard
   }
 
   /**
-   * Sizes and places an artboard's iframe from the layer's geometry. The iframe carries the
-   * layer's blend mode: inside its own document the layer has nothing below it to blend with.
+   * A new artboard on the page: live at once when the view holds it near, as when a page opens,
+   * otherwise a placeholder until it comes near.
    */
-  private placeArtboard(node: SceneNode, artboard: Artboard): void {
+  private createArtboard(node: SceneNode): ArtboardSlot {
+    const slot = new ArtboardSlot(node.id, this.world, 'dormant')
+    slot.replaced = this.artboards.replaced.has(node.id)
+    this.artboards.set(slot)
+    this.placeArtboard(node, slot)
+    const tier = this.artboards.targetTier(slot)
+    slot.tier = tier
+    slot.target = tier
+    if (isLive(tier)) this.wake(slot)
+    else slot.showPlaceholder(node)
+    return slot
+  }
+
+  /** An artboard's iframe loaded its document: it gets its fonts and tokens and is built. */
+  private loaded(slot: ArtboardSlot): void {
+    if (this.destroyed || this.artboards.get(slot.id) !== slot) return
+    const doc = slot.doc
+    if (doc) {
+      for (const face of this.options.fonts?.() ?? []) addArtboardFont(doc, face)
+      setArtboardTokens(doc, this.#tokensCSS)
+      const reflowed = () => {
+        if (slot.doc !== doc) return
+        slot.stale = true
+        slot.patched = null
+        slot.version++
+        this.options.onReflow?.(slot.id)
+      }
+      doc.fonts.addEventListener('loadingdone', () => {
+        if (slot.doc !== doc) return
+        slot.derived = true
+        reflowed()
+      })
+      slot.observer = new ResizeObserver(reflowed)
+      slot.observer.observe(doc.body)
+      const node = this.graph.getNode(slot.id)
+      if (node) placeArtboardFrame(slot.frame, doc, this.graph, node)
+    }
+    this.dirty.add(slot.id)
+    this.flush()
+    // It takes over from its stand-in once its text has the fonts it is laid out with.
+    const ready = () => {
+      if (this.destroyed || this.artboards.get(slot.id) !== slot || slot.doc !== doc) return
+      slot.markReady()
+      this.options.onTiersChanged?.()
+    }
+    if (doc) void doc.fonts.ready.then(ready, ready)
+    else ready()
+  }
+
+  /**
+   * Sizes and places an artboard's iframe, or what stands in for it, from the layer's geometry.
+   * It carries the layer's blend mode: inside its own document the layer has nothing below it
+   * to blend with.
+   */
+  private placeArtboard(node: SceneNode, slot: ArtboardSlot): void {
     // A turn being previewed changes how far the layer draws past its box.
-    this.withLivePatches(() => placeArtboardFrame(artboard.frame, artboard.doc, this.graph, node))
-    const style = artboard.frame.style
-    const blend = blendModeToCSS(node.blendMode) ?? ''
-    if (style.mixBlendMode !== blend) style.mixBlendMode = blend
+    const box = this.withLivePatches(() =>
+      placeArtboardFrame(slot.frame, slot.doc, this.graph, node)
+    )
+    slot.place(box, blendModeToCSS(node.blendMode) ?? '')
   }
 
   // ------------------------------------------------------------------ layers
@@ -570,34 +763,27 @@ export class DomSceneProjector {
     return doc.children[0] ?? null
   }
 
-  /** Re-renders one layer's element and reconciles its children. Returns its artboard. */
-  private patchLayer(id: string): string | null {
-    const graph = this.graph
-    const node = graph.getNode(id)
-    if (!node) return null
-    if (this.locked.has(id)) return this.topLevelOf(node)
-    const artboardId = this.topLevelOf(node)
-    if (!artboardId) return null
-    const artboard = this.artboards.get(artboardId)
-    if (!artboard?.doc) return null
+  /** Re-renders one layer's element and reconciles its children. False when it is not drawn. */
+  private patchLayer(id: string, node: SceneNode, artboardId: string, doc: Document): boolean {
+    if (this.locked.has(id)) return true
 
     const current = this.elements.get(id)
     const isRoot = id === artboardId
     if (!current && !isRoot) {
       // A layer not drawn yet: its parent creates it when it reconciles.
       if (node.parentId) this.dirty.add(node.parentId)
-      return artboardId
+      return true
     }
 
     const projected = this.project(id, true)
     if (projected?.type !== 'element') {
       if (current) this.removeElement(current)
-      return artboardId
+      return true
     }
 
     if (!current || !this.canPatch(current, projected)) {
-      this.replaceSubtree(artboard.doc, id, current, isRoot)
-      return artboardId
+      this.replaceSubtree(doc, id, current, isRoot)
+      return true
     }
 
     patchAttributes(current, this.attributesFor(node, projected, isRoot))
@@ -605,14 +791,13 @@ export class DomSceneProjector {
       // Characters and their style runs: rebuilt only when they changed.
       const content = JSON.stringify(projected.children)
       if (this.textContent.get(current) !== content) {
-        const doc = artboard.doc
         current.replaceChildren(...projected.children.map((child) => buildNode(doc, child)))
         this.textContent.set(current, content)
       }
     } else {
-      this.reconcileChildren(artboard.doc, node, current)
+      this.reconcileChildren(doc, node, current)
     }
-    return artboardId
+    return true
   }
 
   /** An element's attributes; an artboard's own element hugs its content as in its iframe. */

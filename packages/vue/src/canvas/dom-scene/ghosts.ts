@@ -68,8 +68,8 @@ export class GhostLayer {
   /** The previews last synced, so an unchanged list costs nothing. */
   private synced: readonly DomScenePreview[] = []
   private syncedPage: string | null = null
-  /** Document artboards hidden because a preview stands in for them. */
-  private readonly hidden = new Set<HTMLIFrameElement>()
+  /** Page children hidden because a preview stands in for them. */
+  private hidden: ReadonlySet<string> = new Set()
 
   constructor(
     private readonly projector: DomSceneProjector,
@@ -106,8 +106,8 @@ export class GhostLayer {
   }
 
   destroy(): void {
-    for (const frame of this.hidden) frame.style.visibility = ''
-    this.hidden.clear()
+    if (this.hidden.size > 0) this.projector.setReplaced(new Set())
+    this.hidden = new Set()
     for (const ghost of this.ghosts.values()) ghost.container.remove()
     this.ghosts.clear()
   }
@@ -190,23 +190,15 @@ export class GhostLayer {
 
   /**
    * Hides the artboards previews stand in for once the previews can be seen, so the swap never
-   * shows an empty spot. Runs every frame: the projector may rebuild an artboard's frame.
+   * shows an empty spot. The projector hides whatever draws them, iframe or stand-in.
    */
   private hideReplaced(): void {
-    const wanted = new Set<HTMLIFrameElement>()
+    const wanted = new Set<string>()
     for (const { preview, frames } of this.ghosts.values()) {
-      if (!preview.replaceId || !frames.every((slot) => slot.doc)) continue
-      const frame = this.projector.artboardOf(preview.replaceId)?.frame
-      if (frame) wanted.add(frame)
+      if (preview.replaceId && frames.every((slot) => slot.doc)) wanted.add(preview.replaceId)
     }
-    for (const frame of this.hidden) {
-      if (wanted.has(frame)) continue
-      frame.style.visibility = ''
-      this.hidden.delete(frame)
-    }
-    for (const frame of wanted) {
-      if (frame.style.visibility !== 'hidden') frame.style.visibility = 'hidden'
-      this.hidden.add(frame)
-    }
+    if (wanted.size === this.hidden.size && [...wanted].every((id) => this.hidden.has(id))) return
+    this.hidden = wanted
+    this.projector.setReplaced(wanted)
   }
 }

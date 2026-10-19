@@ -22,6 +22,10 @@ The app's `DesignPanel` retains at most one selection-property subtree through `
 - The concept, the pipeline from state to DOM, and how to add a kind are in `packages/docs/development/behaviours-and-preview.md`.
 - Variants draw control states: Core's `resolvePlayState` shows instances in a state on a private graph, and controls are keyed by layer path so a variant switch keeps their DOM, including a focused input. The document is never changed (`packages/core/tests/editor/play/states.test.ts`, `tests/e2e/components/behaviours.spec.ts`).
 
+## DOM canvas
+
+- `DomSceneProjector` alone moves artboards between tiers (`packages/vue/src/canvas/dom-scene/tiers.ts`): only those on screen or near it have a live iframe; pictured, far and dormant ones draw a snapshot or a placeholder. Never assume an artboard has a live document: wake one through `retain`, `whenLive` or `withLiveArtboard`, and leave layout of sleeping artboards to the offscreen engine (`tests/e2e/canvas/artboard-tiers.spec.ts`).
+
 ## Commands, menus, i18n
 
 - Commands use `packages/vue/src/editor/commands/registry.ts` for shortcuts, bindings, and menu IDs. Store portable tokens (`MOD+D`) and format them at render time; labels and translations never contain shortcuts.

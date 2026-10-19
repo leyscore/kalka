@@ -20,7 +20,8 @@ export interface RasterDocument {
   height: number
 }
 
-function fontFaceCSS(face: ArtboardFontFace): string {
+/** A face as a `@font-face` rule that carries its file, for a page that loads nothing. */
+export function fontFaceCSS(face: ArtboardFontFace): string {
   const data = fromUint8Array(new Uint8Array(face.data))
   return `@font-face{font-family:${JSON.stringify(face.family)};src:url(data:font/ttf;base64,${data});font-weight:${face.weight};font-style:${face.style}}`
 }
