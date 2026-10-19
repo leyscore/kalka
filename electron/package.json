@@ -24,6 +24,7 @@
   "version": "0.1.0-beta.5",
   "description": "Design like you do in Figma. Every layer is real HTML and CSS.",
   "build": {
+    "afterPack": "scripts/adhoc-sign.cjs",
     "appId": "design.kalka.app",
     "productName": "Kalka",
     "copyright": "Kalka contributors",
@@ -101,10 +102,6 @@
       "background": "build/background.tiff",
       "iconSize": 112,
       "iconTextSize": 13,
-      "window": {
-        "width": 660,
-        "height": 420
-      },
       "contents": [
         {
           "x": 180,
