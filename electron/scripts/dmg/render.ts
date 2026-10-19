@@ -16,7 +16,7 @@ const here = fileURLToPath(new URL('.', import.meta.url))
 const page = pathToFileURL(join(here, 'background.html')).href
 const output = join(here, '..', '..', 'build', 'background.tiff')
 const WIDTH = 660
-const HEIGHT = 420
+const HEIGHT = 448
 
 const dir = mkdtempSync(join(tmpdir(), 'kalka-dmg-'))
 const browser = await chromium.launch()

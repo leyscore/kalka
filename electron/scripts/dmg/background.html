@@ -24,7 +24,7 @@
   html, body {
     margin: 0;
     width: 660px;
-    height: 420px;
+    height: 448px;
     overflow: hidden;
     background: var(--paper);
     font-family: 'Geist', 'Helvetica Neue', sans-serif;
@@ -75,7 +75,8 @@
     color: var(--muted);
   }
   .lead strong { color: var(--ink); font-weight: 560; }
-  /* Finder draws the two icons centered at (180, 222) and (480, 222), 112 px wide. */
+  /* Finder draws the two icons centered at (180, 222) and (480, 222), 112 px wide. Finder's
+     title bar takes the image's last 28 px, so nothing is drawn there. */
   .arrow {
     position: absolute;
     left: 252px;
@@ -97,7 +98,7 @@
     position: absolute;
     left: 32px;
     right: 32px;
-    bottom: 22px;
+    bottom: 50px;
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
@@ -111,7 +112,7 @@
 </head>
 <body>
   <div class="glow"></div>
-  <svg class="grain" width="660" height="420" aria-hidden="true">
+  <svg class="grain" width="660" height="448" aria-hidden="true">
     <filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
     <rect width="100%" height="100%" filter="url(#noise)"/>
   </svg>
@@ -138,14 +139,14 @@
         <stop offset="1" stop-color="#2f5bea"/>
       </linearGradient>
     </defs>
-    <path d="M8 44 C 48 12, 104 12, 140 38" fill="none" stroke="url(#stroke)" stroke-width="3.2" stroke-linecap="round" stroke-dasharray="1 9"/>
-    <path d="M128 26 L142 39 L124 44" fill="none" stroke="#2f5bea" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M8.0 44.0 C 48.0 12.0, 104.0 12.0, 144.0 40.0" fill="none" stroke="url(#stroke)" stroke-width="3.2" stroke-linecap="round" stroke-dasharray="1 9"/>
+    <path d="M138.9 28.0 L144.0 40.0 L131.0 39.3" fill="none" stroke="#2f5bea" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
 
   <footer>
     <div>
       <strong>Beta builds are not signed yet.</strong><br>
-      The first time, right-click Kalka in Applications and choose Open.
+      If macOS blocks the first launch, open System Settings › Privacy &amp; Security and click Open Anyway.
     </div>
     <div class="site">kalka.design</div>
   </footer>
