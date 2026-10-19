@@ -7,6 +7,7 @@ export {
   computedStyleWithEngines,
   getLayoutEngine,
   installLayoutEngine,
+  presentsPages,
   type LayoutEngine
 } from './layout/engine'
 export { BrowserLayoutEngine, scriptLayoutPage, type LayoutPage } from './layout/browser'

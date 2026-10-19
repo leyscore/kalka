@@ -12,7 +12,10 @@ import { confirmAllDocuments } from '@/app/document/close/all'
 import { confirmDocumentClose } from '@/app/document/close/controller'
 import { requestDocumentClose, requestDocumentsClose } from '@/app/document/close/prompt'
 import { readFigDocument } from '@/app/document/io/fig'
-import { applyImportedDocument } from '@/app/document/io/imported-document'
+import {
+  applyImportedDocument,
+  type ApplyImportedDocumentOptions
+} from '@/app/document/io/imported-document'
 import type { DocumentSourceIdentity } from '@/app/document/io/types'
 import { getRecoveryStore, type RecoverySnapshotMeta } from '@/app/document/recovery'
 import { setActiveEditorStore } from '@/app/editor/active-store'
@@ -30,6 +33,7 @@ import {
   loadCachedRecentFileThumbnail,
   rememberRecentStorageDocument
 } from '@/app/recent-files'
+import { appRuntimeConfig } from '@/app/runtime/config'
 import { createDeferred } from '@/app/runtime/deferred'
 import { toast } from '@/app/shell/ui'
 import { getLocalCanvasStore } from '@/app/storage/local-store'
@@ -214,16 +218,20 @@ function reusableTabStore(): { store: EditorStore; created: boolean } {
   return { store: createTab().store, created: true }
 }
 
+/** A `.fig` file holds its layers' geometry, so its first page is laid out as the canvas shows it. */
+function figOnCanvas(): ApplyImportedDocumentOptions {
+  return { laidOutOnCanvas: appRuntimeConfig.domScene }
+}
+
 async function readFigForTab(file: File, signal?: AbortSignal): Promise<SceneGraph> {
   const imported = await readFigDocument(file, signal)
+  // The first page is laid out as it is shown, once its fonts are resolved: by the canvas that
+  // draws it, or before the switch to it. Only the cover, drawn off screen, is laid out here.
   const firstPageId = imported.getPages()[0]?.id
-  const layOut = (pageId: string) =>
-    imported.applyDerivedLayoutDuring(() => computeAllLayouts(imported, pageId))
-  if (firstPageId) layOut(firstPageId)
   const coverPageId = findFigThumbnailPageId(imported.getPages())
   if (coverPageId && coverPageId !== firstPageId) {
     populateFigPage(imported, coverPageId)
-    layOut(coverPageId)
+    imported.applyDerivedLayoutDuring(() => computeAllLayouts(imported, coverPageId))
   }
   return imported
 }
@@ -232,10 +240,11 @@ async function showImportedGraph(
   store: EditorStore,
   graph: SceneGraph,
   prepare?: () => void | Promise<void>,
-  load?: DocumentLoadSession
+  load?: DocumentLoadSession,
+  options: ApplyImportedDocumentOptions = {}
 ): Promise<void> {
   load?.update({ phase: 'materializing', detail: store.state.documentName })
-  await applyImportedDocument(store, graph, load)
+  await applyImportedDocument(store, graph, load, options)
   load?.signal.throwIfAborted()
   await prepare?.()
   load?.signal.throwIfAborted()
@@ -370,7 +379,8 @@ export async function openStorageDocumentInNewTab(document: StorageDocument): Pr
       store,
       imported,
       () => store.setStorageDocumentSource({ providerId, documentId: document.id }, document.name),
-      load
+      load,
+      figOnCanvas()
     )
     rememberRecentStorageDocument(providerId, document.id, document.name)
     succeeded = true
@@ -487,7 +497,8 @@ export async function openFileInNewTab(
         store.setDocumentSource(file.name, sourceFormat, handle, path)
         if (isFig && path) watchOpenedFigCover(path, store)
       },
-      load
+      load,
+      isFig ? figOnCanvas() : {}
     )
     if (isFig && path) {
       void cacheOpenedFigCover(path, store).catch((error) => {

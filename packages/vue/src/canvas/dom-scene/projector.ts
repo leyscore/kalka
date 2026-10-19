@@ -65,6 +65,11 @@ interface Artboard {
    * when anything can have, as after it loads or its fonts or size change.
    */
   patched: Set<string> | null
+  /**
+   * Whether what changed since the last reading derives from the document rather than an edit:
+   * the artboard loaded, or a font arrived in it.
+   */
+  derived: boolean
   observer: ResizeObserver | null
 }
 
@@ -355,6 +360,19 @@ export class DomSceneProjector {
   }
 
   /**
+   * Whether the artboard's next reading lays out what the document already holds, as after it
+   * loaded or a font arrived, rather than the result of an edit.
+   */
+  readsDerivedLayout(artboardId: string): boolean {
+    return this.artboards.get(artboardId)?.derived ?? false
+  }
+
+  /** Whether the canvas is on screen, so a page it is given lays out as it loads. */
+  get shown(): boolean {
+    return this.world.isConnected && this.world.getClientRects().length > 0
+  }
+
+  /**
    * Reads every layer's box in an artboard, as the browser laid it out. One forced layout at
    * most. Rotated or flipped layers, and layers inside them, keep the geometry they have: a box
    * is not their position. The artboard's own position is the canvas's, never read here.
@@ -366,6 +384,7 @@ export class DomSceneProjector {
     const scopes = artboard.patched ? this.measureScopes(root, artboard.patched) : null
     artboard.stale = false
     artboard.patched = new Set()
+    artboard.derived = false
     return measureLayerBoxes(
       root,
       artboardId,
@@ -475,7 +494,15 @@ export class DomSceneProjector {
 
   private createArtboard(id: string): Artboard {
     const frame = createArtboardFrame(this.world.ownerDocument, id)
-    const artboard: Artboard = { id, frame, doc: null, stale: true, patched: null, observer: null }
+    const artboard: Artboard = {
+      id,
+      frame,
+      doc: null,
+      stale: true,
+      patched: null,
+      derived: true,
+      observer: null
+    }
     frame.addEventListener(
       'load',
       () => {
@@ -490,7 +517,10 @@ export class DomSceneProjector {
             artboard.patched = null
             this.options.onReflow?.(id)
           }
-          doc.fonts.addEventListener('loadingdone', reflowed)
+          doc.fonts.addEventListener('loadingdone', () => {
+            artboard.derived = true
+            reflowed()
+          })
           artboard.observer = new ResizeObserver(reflowed)
           artboard.observer.observe(doc.body)
         }

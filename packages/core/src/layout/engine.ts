@@ -24,6 +24,11 @@ export interface LayoutEngine {
     nodeId: string,
     properties: readonly string[]
   ): Record<string, string> | null
+  /**
+   * Whether the engine lays out the page of `graph` it shows next as it shows it, as a canvas on
+   * screen drawing the graph does, so laying the page out before is wasted.
+   */
+  presentsPages?(graph: SceneGraph): boolean
 }
 
 /** Installed engines, the latest last: uninstalling one gives layout back to the one before. */
@@ -51,6 +56,11 @@ export function layOutWithEngines(graph: SceneGraph, nodeId: string): boolean {
     if (installed[index].layout(graph, nodeId)) return true
   }
   return false
+}
+
+/** Whether an installed engine lays out the page of `graph` it shows next, as it shows it. */
+export function presentsPages(graph: SceneGraph): boolean {
+  return installed.some((engine) => engine.presentsPages?.(graph) ?? false)
 }
 
 /** The computed CSS of a layer from the latest engine that draws it, or null when none does. */

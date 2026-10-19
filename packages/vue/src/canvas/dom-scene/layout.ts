@@ -24,10 +24,13 @@ export class DomLayoutEngine implements LayoutEngine {
     if (!artboards) return false
     // A layout runs right after an edit: bring the DOM up to date first, synchronously.
     if (this.projector.needsFlush) this.projector.flush()
-    for (const id of artboards) {
-      if (this.projector.isStale(id)) applyMeasuredLayout(graph, this.projector.measureArtboard(id))
-    }
+    for (const id of artboards) this.read(graph, id)
     return true
+  }
+
+  /** The canvas on screen lays the page it shows out as its artboards load. */
+  presentsPages(graph: SceneGraph): boolean {
+    return graph === this.getGraph() && this.projector.shown
   }
 
   computedStyle(
@@ -53,8 +56,18 @@ export class DomLayoutEngine implements LayoutEngine {
   /** Re-reads artboards whose layout changed on its own, such as when a font arrives. */
   refresh(artboardIds: Iterable<string>): void {
     const graph = this.getGraph()
-    for (const id of artboardIds) {
-      if (this.projector.isStale(id)) applyMeasuredLayout(graph, this.projector.measureArtboard(id))
-    }
+    for (const id of artboardIds) this.read(graph, id)
+  }
+
+  /**
+   * Reads an artboard's boxes back if its DOM changed. What a load or a font arriving changes is
+   * layout derived from the document, not an edit, as the document's own layout pass is.
+   */
+  private read(graph: SceneGraph, id: string): void {
+    if (!this.projector.isStale(id)) return
+    const derived = this.projector.readsDerivedLayout(id)
+    const measured = this.projector.measureArtboard(id)
+    if (derived) graph.applyDerivedLayoutDuring(() => applyMeasuredLayout(graph, measured))
+    else applyMeasuredLayout(graph, measured)
   }
 }

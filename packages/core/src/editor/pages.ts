@@ -13,7 +13,7 @@ import {
   createFigPopulationWorker
 } from '#core/kiwi/fig/population/client'
 import { isReaderPagePending, recoverReaderPage } from '#core/kiwi/fig/session/document-state'
-import { computeAllLayouts, getLayoutEngine } from '#core/layout'
+import { computeAllLayouts, getLayoutEngine, presentsPages } from '#core/layout'
 import { fontManager } from '#core/text/fonts'
 import { cssFontFamily } from '#core/text/inter'
 import { collectGraphFontRequirements } from '#core/text/requirements'
@@ -32,6 +32,11 @@ export interface PageSwitchProgress {
 export interface PreparePageOptions {
   onProgress?: (progress: PageSwitchProgress) => void
   signal?: AbortSignal
+  /**
+   * The canvas the page is shown on lays it out as its layers load, as the DOM canvas does with
+   * each page it shows, so the page needs no layout first.
+   */
+  laidOutOnCanvas?: boolean
 }
 
 export interface PreparedPage {
@@ -176,8 +181,10 @@ export function createPageActions(ctx: EditorContext) {
     throwIfAborted(options.signal)
     if (generation !== pageSwitchGeneration) return null
     // A page shown on a canvas is laid out each time it is shown; CanvasKit may not have loaded
-    // behind a DOM canvas, whose layout engine is installed. Headless, only a new page is.
-    if (ctx.getRenderer() || getLayoutEngine() || populated) {
+    // behind a DOM canvas, whose layout engine is installed. Headless, only a new page is. A
+    // canvas that lays the page out as it shows it needs no layout before.
+    const laidOutOnCanvas = options.laidOutOnCanvas || presentsPages(ctx.graph)
+    if ((ctx.getRenderer() || getLayoutEngine() || populated) && !laidOutOnCanvas) {
       options.onProgress?.({ phase: 'layout', detail: page.name })
       ctx.graph.applyDerivedLayoutDuring(() => computeAllLayouts(ctx.graph, pageId))
     }
