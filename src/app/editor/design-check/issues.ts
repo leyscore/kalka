@@ -1,3 +1,5 @@
+import { isEqual } from 'es-toolkit/predicate'
+
 import {
   issueSeverityRank,
   type DesignIssueHighlight,
@@ -37,14 +39,22 @@ export function compareIssueSeverity(
 /**
  * Identifies each finding by rule, layer and its position among that rule's findings on the
  * layer, so a row keeps its hover and focus state when an unrelated edit re-runs the check.
+ * A finding unchanged since `previous` keeps its object, so views built from it stay as they are.
  */
-export function toDesignIssues(messages: readonly LintMessage[], pageId: string): DesignIssue[] {
+export function toDesignIssues(
+  messages: readonly LintMessage[],
+  pageId: string,
+  previous: readonly DesignIssue[] = []
+): DesignIssue[] {
   const seen = new Map<string, number>()
+  const before = new Map(previous.map((issue) => [issue.id, issue]))
   return messages.map((message) => {
     const base = `${message.ruleId}:${message.nodeId}`
     const index = seen.get(base) ?? 0
     seen.set(base, index + 1)
-    return { ...message, id: `${base}:${index}`, pageId }
+    const issue = { ...message, id: `${base}:${index}`, pageId }
+    const kept = before.get(issue.id)
+    return kept && isEqual(kept, issue) ? kept : issue
   })
 }
 

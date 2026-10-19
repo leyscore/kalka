@@ -18,12 +18,6 @@ import { getNodePath } from './utils'
 export class Linter {
   private rules = new Map<string, Rule>()
   private ruleConfigs = new Map<string, { severity: Severity; options?: Record<string, unknown> }>()
-  private messages: LintMessage[] = []
-  private nodes = new Map<string, LintNode>()
-  private variables: LintVariables = {
-    counts: { COLOR: 0, FLOAT: 0, STRING: 0, BOOLEAN: 0 },
-    colorsByHex: new Map()
-  }
 
   constructor(options: { config?: LintConfig; preset?: string; rules?: string[] } = {}) {
     let baseConfig: Record<
@@ -50,30 +44,40 @@ export class Linter {
   }
 
   lintGraph(graph: SceneGraph, rootIds?: string[]): LintResult {
-    this.messages = []
-    this.nodes.clear()
-    this.variables = describeVariables(graph)
     const roots = rootIds && rootIds.length > 0 ? rootIds : graph.getPages().map((p) => p.id)
-    for (const id of roots) this.capture(graph, id, undefined)
-    for (const id of roots) this.lintNode(id)
-    return {
-      messages: this.messages,
-      errorCount: this.messages.filter((m) => m.severity === 'error').length,
-      warningCount: this.messages.filter((m) => m.severity === 'warning').length,
-      infoCount: this.messages.filter((m) => m.severity === 'info').length
+    const tree: LintTree = {
+      nodes: new Map(),
+      variables: describeVariables(graph)
     }
+    for (const id of roots) this.capture(graph, tree, id, undefined)
+    const messages: LintMessage[] = []
+    for (const id of roots) this.lintTree(tree, id, (_id, found) => messages.push(...found))
+    return lintResult(messages)
   }
 
-  private capture(graph: SceneGraph, id: string, parent?: LintNode) {
+  /**
+   * Lints one page and keeps what it found, so that a check after an edit re-checks only the
+   * layers the edit touched, the layers inside them and their parents.
+   */
+  lintPage(graph: SceneGraph, pageId: string): PageLint {
+    return new PageLint(this, graph, pageId)
+  }
+
+  /** Captures `id` and everything inside it into `tree`, reusing the objects already there. */
+  capture(graph: SceneGraph, tree: LintTree, id: string, parent?: LintNode) {
     const raw = graph.getNode(id)
     if (!raw) return
-    const node = this.toLintNode(graph, raw)
-    node.parent = parent
-    this.nodes.set(id, node)
-    for (const childId of raw.childIds) this.capture(graph, childId, node)
+    const fresh = this.toLintNode(graph, raw)
+    fresh.parent = parent
+    // Layers inside keep pointing at their parent's object, so it is updated in place.
+    const existing = tree.nodes.get(id)
+    const node = existing ? Object.assign(existing, fresh) : fresh
+    tree.nodes.set(id, node)
+    for (const childId of raw.childIds) this.capture(graph, tree, childId, node)
   }
 
-  private toLintNode(graph: SceneGraph, raw: SceneNode): LintNode {
+  /** The layer as rules see it, without its parent. */
+  toLintNode(graph: SceneGraph, raw: SceneNode): LintNode {
     // Rules see the color a paint renders with, including a bound variable in this node's mode.
     const paintColor = (
       field: 'fills' | 'strokes',
@@ -132,23 +136,34 @@ export class Linter {
     }
   }
 
-  private lintNode(id: string) {
-    const node = this.nodes.get(id)
+  /** Lints `id` and the layers inside it, reporting each layer's findings, empty ones too. */
+  lintTree(tree: LintTree, id: string, found: (id: string, messages: LintMessage[]) => void) {
+    const node = tree.nodes.get(id)
     if (!node) return
+    found(id, this.lintNode(tree, node))
+    // Instance sublayers mirror their main component: issues there are fixed once in the
+    // component, so reporting every placed copy only multiplies the same finding.
+    if (node.type === 'INSTANCE') return
+    for (const childId of node.childIds) this.lintTree(tree, childId, found)
+  }
+
+  /** The findings of the rules on one layer. */
+  lintNode(tree: LintTree, node: LintNode): LintMessage[] {
+    const messages: LintMessage[] = []
     for (const [ruleId, rule] of this.rules) {
       if (rule.match && !rule.match.includes(node.type)) continue
       const config = this.ruleConfigs.get(ruleId)
       if (!config || config.severity === 'off') continue
       const context: RuleContext = {
-        variables: this.variables,
+        variables: tree.variables,
         report: ({ node, message, suggest, data, fix, suggestions }) => {
-          this.messages.push({
+          messages.push({
             ruleId,
             severity: config.severity as Exclude<Severity, 'off'>,
             message,
             nodeId: node.id,
             nodeName: node.name,
-            nodePath: getNodePath(this.nodes.get(node.id) ?? node),
+            nodePath: getNodePath(tree.nodes.get(node.id) ?? node),
             suggest,
             data,
             fix,
@@ -156,18 +171,208 @@ export class Linter {
           })
         },
         getConfig: () => config.options,
-        getParent: (node) => this.nodes.get(node.id)?.parent ?? null,
+        getParent: (node) => tree.nodes.get(node.id)?.parent ?? null,
         getChildren: (node) =>
           node.childIds
-            .map((childId) => this.nodes.get(childId))
+            .map((childId) => tree.nodes.get(childId))
             .filter((child): child is LintNode => !!child)
       }
       rule.check(node, context)
     }
-    // Instance sublayers mirror their main component: issues there are fixed once in the
-    // component, so reporting every placed copy only multiplies the same finding.
-    if (node.type === 'INSTANCE') return
-    for (const childId of node.childIds) this.lintNode(childId)
+    return messages
+  }
+}
+
+/** Layers as rules see them, linked to their parents, and the document's variables. */
+export interface LintTree {
+  nodes: Map<string, LintNode>
+  variables: LintVariables
+}
+
+function lintResult(messages: LintMessage[]): LintResult {
+  return {
+    messages,
+    errorCount: messages.filter((m) => m.severity === 'error').length,
+    warningCount: messages.filter((m) => m.severity === 'warning').length,
+    infoCount: messages.filter((m) => m.severity === 'info').length
+  }
+}
+
+/** What the rules may read of the variables: their values, kinds and modes. */
+function variablesKey(graph: SceneGraph): string {
+  return JSON.stringify([
+    [...graph.variables.values()].map((variable) => [
+      variable.id,
+      variable.name,
+      variable.type,
+      variable.valuesByMode
+    ]),
+    [...graph.variableCollections.values()].map((collection) => [
+      collection.id,
+      collection.modes,
+      collection.defaultModeId
+    ])
+  ])
+}
+
+/**
+ * One page linted, kept up to date by {@link touch}ing the layers edits change. A check re-reads
+ * each touched layer with what is inside it, and re-checks its parent, whose rules read the
+ * layers inside; a change to the variables checks the page again. Gives what
+ * {@link Linter.lintGraph} gives for the page.
+ */
+export class PageLint {
+  private readonly tree: LintTree = {
+    nodes: new Map(),
+    variables: {
+      counts: { COLOR: 0, FLOAT: 0, STRING: 0, BOOLEAN: 0 },
+      colorsByHex: new Map()
+    }
+  }
+  private readonly found = new Map<string, LintMessage[]>()
+  private readonly touched = new Set<string>()
+  private variables: string | null = null
+  private messages: LintMessage[] | null = null
+
+  constructor(
+    private readonly linter: Linter,
+    private readonly graph: SceneGraph,
+    readonly pageId: string
+  ) {}
+
+  /** Marks a layer as created, changed, moved or deleted since the last check. */
+  touch(id: string): void {
+    this.touched.add(id)
+  }
+
+  check(): LintResult {
+    const variables = variablesKey(this.graph)
+    if (variables !== this.variables) {
+      this.variables = variables
+      this.tree.variables = describeVariables(this.graph)
+      this.touched.clear()
+      this.tree.nodes.clear()
+      this.found.clear()
+      this.linter.capture(this.graph, this.tree, this.pageId)
+      this.lint(this.pageId)
+      this.messages = null
+    } else if (this.touched.size > 0) {
+      this.update()
+    }
+    this.messages ??= this.collect()
+    return lintResult(this.messages)
+  }
+
+  private update(): void {
+    const roots = new Set<string>()
+    const parents = new Set<string>()
+    for (const id of this.touched) {
+      const before = this.tree.nodes.get(id)
+      if (before?.parent) parents.add(before.parent.id)
+      const raw = this.graph.getNode(id)
+      if (!raw || !this.isOnPage(raw.id)) {
+        this.forget(id)
+        continue
+      }
+      roots.add(id)
+      if (raw.parentId) parents.add(raw.parentId)
+    }
+    this.touched.clear()
+    const outermost = [...roots].filter((id) => !this.hasAncestorIn(id, roots))
+    for (const id of outermost) {
+      const parentId = this.graph.getNode(id)?.parentId
+      this.linter.capture(
+        this.graph,
+        this.tree,
+        id,
+        parentId ? this.tree.nodes.get(parentId) : undefined
+      )
+    }
+    for (const id of outermost) this.lint(id)
+    for (const id of parents) {
+      if (roots.has(id) || this.hasAncestorIn(id, roots)) continue
+      const raw = this.graph.getNode(id)
+      const node = this.tree.nodes.get(id)
+      if (!raw || !node) continue
+      Object.assign(node, {
+        ...this.linter.toLintNode(this.graph, raw),
+        parent: node.parent
+      })
+      if (!this.insideInstance(node)) this.found.set(id, this.linter.lintNode(this.tree, node))
+    }
+    this.messages = null
+  }
+
+  /** Lints a captured layer and what is inside it, unless an instance holds it. */
+  private lint(id: string): void {
+    const node = this.tree.nodes.get(id)
+    if (!node) return
+    if (this.insideInstance(node)) {
+      this.forgetFindings(id)
+      return
+    }
+    this.linter.lintTree(this.tree, id, (nodeId, messages) => {
+      if (messages.length > 0) this.found.set(nodeId, messages)
+      else this.found.delete(nodeId)
+    })
+  }
+
+  /** The findings in page order, as a full lint lists them. */
+  private collect(): LintMessage[] {
+    const messages: LintMessage[] = []
+    const visit = (id: string) => {
+      const node = this.tree.nodes.get(id)
+      if (!node) return
+      const found = this.found.get(id)
+      if (found) messages.push(...found)
+      if (node.type === 'INSTANCE') return
+      for (const childId of node.childIds) visit(childId)
+    }
+    visit(this.pageId)
+    return messages
+  }
+
+  private forget(id: string): void {
+    const node = this.tree.nodes.get(id)
+    this.tree.nodes.delete(id)
+    this.found.delete(id)
+    for (const childId of node?.childIds ?? []) {
+      if (this.tree.nodes.get(childId)?.parent === node) this.forget(childId)
+    }
+  }
+
+  private forgetFindings(id: string): void {
+    this.found.delete(id)
+    for (const childId of this.tree.nodes.get(id)?.childIds ?? []) this.forgetFindings(childId)
+  }
+
+  private insideInstance(node: LintNode): boolean {
+    for (let current = node.parent; current; current = current.parent) {
+      if (current.type === 'INSTANCE') return true
+    }
+    return false
+  }
+
+  private isOnPage(id: string): boolean {
+    for (
+      let node = this.graph.getNode(id);
+      node;
+      node = node.parentId ? this.graph.getNode(node.parentId) : undefined
+    ) {
+      if (node.id === this.pageId) return true
+    }
+    return false
+  }
+
+  private hasAncestorIn(id: string, ids: ReadonlySet<string>): boolean {
+    for (
+      let parentId = this.graph.getNode(id)?.parentId;
+      parentId;
+      parentId = this.graph.getNode(parentId)?.parentId
+    ) {
+      if (ids.has(parentId)) return true
+    }
+    return false
   }
 }
 

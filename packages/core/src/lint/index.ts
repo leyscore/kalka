@@ -1,4 +1,4 @@
-export { Linter, createLinter } from './linter'
+export { Linter, PageLint, createLinter } from './linter'
 export { defineRule } from './rule'
 export { applyLintFixes, graphFixTarget, safeFixes } from './fixes'
 export type { LintFixRequest, LintFixTarget } from './fixes'

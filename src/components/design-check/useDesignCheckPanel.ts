@@ -1,7 +1,16 @@
-import { computed, nextTick, onBeforeUnmount, reactive, ref, watch, type Ref } from 'vue'
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  reactive,
+  ref,
+  shallowRef,
+  watch,
+  type Ref
+} from 'vue'
 
 import type { SceneGraph } from '@kalka/scene-graph'
-import { useDesignCheckMessages } from '@kalka/vue'
+import { useDesignCheckMessages, useEditorEvent } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import {
@@ -31,6 +40,23 @@ export type DesignCheckEmptyState =
   | { kind: 'no-selection'; label: string; description: string }
   | { kind: 'filtered'; label: string }
   | { kind: 'clean'; label: string; description: string }
+
+interface CachedRow {
+  row: IssueRowView
+  messages: unknown
+  pageId: string
+}
+
+/** Whether two views of a group show the same: the same rows, in order, and the same labels. */
+function sameGroup(a: IssueGroupView, b: IssueGroupView): boolean {
+  return (
+    a.severity === b.severity &&
+    a.title === b.title &&
+    a.help === b.help &&
+    a.rows.length === b.rows.length &&
+    a.rows.every((row, index) => row === b.rows[index])
+  )
+}
 
 function isHidden(graph: SceneGraph, nodeId: string): boolean {
   let node = graph.getNode(nodeId)
@@ -88,8 +114,40 @@ export function useDesignCheckPanel(options: {
     () => visibleSeverities.value.length < DESIGN_ISSUE_SEVERITIES.length
   )
 
-  function rowView(issue: DesignIssue): IssueRowView {
-    void store.state.sceneVersion
+  /**
+   * Rows as last built, by issue. A row is rebuilt only when its issue, its layer, the selection
+   * of that layer or the messages change, so an edit costs the rows of the layers it touched.
+   */
+  const rows = new Map<string, CachedRow>()
+  /** Layers with a row, so changes to any other layer leave the list alone. */
+  const listedNodes = new Set<string>()
+  /** Listed layers changed since the rows were built. */
+  const staleNodes = new Set<string>()
+  const rowRevision = shallowRef(0)
+
+  function invalidateRows() {
+    rows.clear()
+    staleNodes.clear()
+    rowRevision.value++
+  }
+
+  function invalidateNode(id: string) {
+    if (!listedNodes.has(id)) return
+    staleNodes.add(id)
+    rowRevision.value++
+  }
+
+  useEditorEvent('node:updated', (id, changes) => {
+    // A layer's visibility hides the rows inside it, and a page's name shows in its rows.
+    if ('visible' in changes || store.graph.getNode(id)?.type === 'CANVAS') invalidateRows()
+    else invalidateNode(id)
+  })
+  useEditorEvent('node:created', (node) => invalidateNode(node.id))
+  useEditorEvent('node:deleted', (id) => invalidateNode(id))
+  useEditorEvent('node:reparented', invalidateRows)
+  useEditorEvent('graph:replaced', invalidateRows)
+
+  function buildRow(issue: DesignIssue): IssueRowView {
     const node = store.graph.getNode(issue.nodeId)
     return {
       issue,
@@ -108,25 +166,54 @@ export function useDesignCheckPanel(options: {
     }
   }
 
-  const groups = computed<IssueGroupView[]>(() =>
-    groupIssuesByRule(
-      scopedIssues.value.filter((issue) => visibleSeverities.value.includes(issue.severity))
-    ).map((group) => {
-      const rows = group.issues.map(rowView)
-      const fixes = rows.flatMap(({ issue, missing }) =>
+  function rowView(issue: DesignIssue): IssueRowView {
+    const cached = rows.get(issue.id)
+    if (
+      cached &&
+      cached.row.issue === issue &&
+      cached.row.selected === selectedIds.value.has(issue.nodeId) &&
+      cached.messages === messages.value &&
+      cached.pageId === store.state.currentPageId &&
+      !staleNodes.has(issue.nodeId)
+    )
+      return cached.row
+    const row = buildRow(issue)
+    rows.set(issue.id, { row, messages: messages.value, pageId: store.state.currentPageId })
+    return row
+  }
+
+  const groups = computed<IssueGroupView[]>((previous) => {
+    // A hidden panel keeps what it showed and lists again once shown.
+    if (!options.active() && previous) return previous
+    void rowRevision.value
+    const listed = scopedIssues.value.filter((issue) =>
+      visibleSeverities.value.includes(issue.severity)
+    )
+    const next = groupIssuesByRule(listed).map((group) => {
+      const groupRows = group.issues.map(rowView)
+      const fixes = groupRows.flatMap(({ issue, missing }) =>
         issue.fix && !missing ? [{ nodeId: issue.nodeId, fix: issue.fix }] : []
       )
-      return {
+      const view: IssueGroupView = {
         ruleId: group.ruleId,
         severity: group.severity,
         title: ruleTitle(group.ruleId, messages.value),
         help: ruleHelp(group.ruleId, messages.value),
-        rows,
+        rows: groupRows,
         fixes,
         bindsOnly: fixes.every(({ fix }) => fix.kind === 'bind-variable')
       }
+      // An unchanged group keeps its object, so its rows are not patched again.
+      const before = previous?.find((candidate) => candidate.ruleId === group.ruleId)
+      return before && sameGroup(before, view) ? before : view
     })
-  )
+    const listedIds = new Set(listed.map((issue) => issue.id))
+    for (const id of rows.keys()) if (!listedIds.has(id)) rows.delete(id)
+    listedNodes.clear()
+    for (const issue of listed) listedNodes.add(issue.nodeId)
+    staleNodes.clear()
+    return next
+  })
 
   /** Pages still waiting for their background check, while the document is listed. */
   const checkingDocument = computed(

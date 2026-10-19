@@ -3,7 +3,7 @@ import { computed, effectScope, ref, shallowRef, watch } from 'vue'
 
 import type { Editor } from '@kalka/core/editor'
 import { isFigPagePending } from '@kalka/core/io/formats/fig'
-import { createLinter, type LintConfig, type LintFixRequest } from '@kalka/core/lint'
+import { createLinter, type LintConfig, type LintFixRequest, type PageLint } from '@kalka/core/lint'
 
 import type { AppEditorState } from '@/app/editor/session/types'
 import { appPreferences, type DesignCheckPreset } from '@/app/settings/preferences/store'
@@ -55,8 +55,28 @@ export function createDesignCheck(editor: Editor, state: AppEditorState) {
     })
   )
 
+  /**
+   * The current page's lint, kept across checks so a check after an edit re-checks only the
+   * layers it touched. Other pages are checked whole, in the background.
+   */
+  let pageLint: PageLint | null = null
+  let pageLintGraph: Editor['graph'] | null = null
+  function currentPageLint(pageId: string): PageLint {
+    if (pageLint?.pageId !== pageId || pageLintGraph !== editor.graph) {
+      pageLint = linter.value.lintPage(editor.graph, pageId)
+      pageLintGraph = editor.graph
+    }
+    return pageLint
+  }
   function checkPage(pageId: string): DesignIssue[] {
-    return toDesignIssues(linter.value.lintGraph(editor.graph, [pageId]).messages, pageId)
+    const current = snapshot.value
+    const previous =
+      current?.pageId === pageId ? current.issues : (pages.results.value.get(pageId) ?? [])
+    const messages =
+      pageId === state.currentPageId
+        ? currentPageLint(pageId).check().messages
+        : linter.value.lintGraph(editor.graph, [pageId]).messages
+    return toDesignIssues(messages, pageId, previous)
   }
 
   /** Set while the Lint panel lists the whole document, which needs every page checked. */
@@ -78,17 +98,29 @@ export function createDesignCheck(editor: Editor, state: AppEditorState) {
   function watchGraph() {
     const graph = editor.graph
     const touch = (nodeId: string | null | undefined) => pages.invalidate(pageOf(graph, nodeId))
+    const edit = (nodeId: string) => pageLint?.touch(nodeId)
     return graph.onNodeEvents({
-      created: (node) => touch(node.id),
-      updated: (id) => touch(id),
-      deleted: (_id, parentId) => touch(parentId),
-      reparented: (_id, oldParentId, newParentId) => {
+      created: (node) => {
+        touch(node.id)
+        edit(node.id)
+      },
+      updated: (id) => {
+        touch(id)
+        edit(id)
+      },
+      deleted: (id, parentId) => {
+        touch(parentId)
+        edit(id)
+      },
+      reparented: (id, oldParentId, newParentId) => {
         touch(oldParentId)
         touch(newParentId)
+        edit(id)
       },
-      reordered: (_id, parentId, _index, previousParentId) => {
+      reordered: (id, parentId, _index, previousParentId) => {
         touch(parentId)
         touch(previousParentId)
+        edit(id)
       }
     })
   }
@@ -139,6 +171,7 @@ export function createDesignCheck(editor: Editor, state: AppEditorState) {
       { immediate: true }
     )
     watch(linter, () => {
+      pageLint = null
       if (enabled.value) run()
       if (pagesNeeded.value) pages.invalidateAll()
     })
@@ -161,6 +194,7 @@ export function createDesignCheck(editor: Editor, state: AppEditorState) {
 
   const unsubscribeGraph = editor.onEditorEvent('graph:replaced', () => {
     snapshot.value = null
+    pageLint = null
     unwatchGraph()
     unwatchGraph = watchGraph()
     if (pagesNeeded.value) pages.invalidateAll()
