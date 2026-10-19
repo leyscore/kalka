@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Changed
+
+- On Windows and Linux the minimize, maximize, and close buttons sit on the app's own backdrop instead of a band of solid color.
+
+### Fixed
+
+- Parts of the canvas, such as whole blocks of a large imported page or the page's own background, no longer go missing at low zoom on some graphics cards: the canvas becomes a single compositor layer only while it pans or zooms.
+
 ## 0.1.0-beta.4 — 2026-10-19
 
 ### Added

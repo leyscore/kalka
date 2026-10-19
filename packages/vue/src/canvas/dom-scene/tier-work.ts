@@ -61,10 +61,19 @@ export class ArtboardTierWork {
    */
   follow(view: ViewportTransform): void {
     const transform = `translate(${view.panX}px, ${view.panY}px) scale(${view.zoom})`
+    const world = this.projector.world.style
     if (transform !== this.transform) {
-      this.projector.world.style.transform = transform
+      // While the view moves, the world is one compositor layer, so a pan or zoom only moves
+      // that layer. At rest it goes back to normal layers: one huge layer kept at every zoom
+      // costs GPU tiles that weaker GPUs drop, leaving parts of the page undrawn.
+      world.willChange = 'transform'
+      world.transform = transform
       this.transform = transform
       this.moved()
+      this.redrawAtRest()
+    } else if (world.willChange) {
+      if (this.resting) world.willChange = ''
+      else this.redrawAtRest()
     }
     const window = this.projector.world.ownerDocument.defaultView
     this.projector.setView({

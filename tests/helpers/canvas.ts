@@ -46,6 +46,13 @@ export class CanvasHelper {
         }
       )
     )
+    // The world is its own compositor layer only while the view moves; it draws as at rest once
+    // that ends.
+    await this.page.waitForFunction(() =>
+      [...document.querySelectorAll<HTMLElement>('[data-kalka-world]')].every(
+        (world) => world.style.willChange === ''
+      )
+    )
     await this.page.evaluate(() => new Promise(requestAnimationFrame))
   }
 
