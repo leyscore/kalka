@@ -122,7 +122,13 @@ export class DomSceneProjector {
   ) {
     this.world = host.ownerDocument.createElement('div')
     this.world.dataset.kalkaWorld = ''
-    this.world.style.cssText = 'position:absolute;left:0;top:0;transform-origin:0 0'
+    // The world is a compositor layer of its own. Panning and zooming then change one transform
+    // on the compositor, and an edit inside an artboard repaints that artboard, instead of
+    // every frame laying out the layers of every artboard into compositor layers again, which
+    // costs as much as the page holds. The browser draws the layer again at the new zoom once
+    // the view rests.
+    this.world.style.cssText =
+      'position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform'
     host.append(this.world)
   }
 
