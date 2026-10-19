@@ -31,6 +31,9 @@ export interface PageLayoutRequest {
 /** Every layer's box, by layer id, for each artboard of the request. */
 export type PageLayoutResult = Array<[string, MeasuredGeometry]>
 
+/** Hidden layout iframes kept between requests, ready with their fonts; more are made as needed. */
+const KEPT_LAYOUT_FRAMES = 4
+
 /**
  * Lays artboards out in hidden iframes of `owner`, the page the editor runs in, synchronously, as
  * layout runs: for graphs the canvas does not show, such as other pages and export copies. Each
@@ -97,9 +100,11 @@ export function createDocumentLayout(
       doc.body.innerHTML = artboard.html
       const root = doc.body.firstElementChild
       if (root) boxes.push(...measure(root, artboard.id, request.layerAttr))
+      // Read, the layers are let go: the pool keeps documents and their fonts, not designs.
+      doc.body.replaceChildren()
     }
-    // Iframes this request does not use let go of what they held.
-    for (const { doc } of frames.slice(request.artboards.length)) doc.body.innerHTML = ''
+    // A request of many artboards does not leave as many documents behind.
+    for (const { frame } of frames.splice(KEPT_LAYOUT_FRAMES)) frame.remove()
     return boxes
   }
 }

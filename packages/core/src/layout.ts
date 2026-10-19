@@ -5,6 +5,7 @@ import { layOutWithEngines } from './layout/engine'
 export {
   applyMeasuredLayout,
   computedStyleWithEngines,
+  drawLayerWithEngines,
   getLayoutEngine,
   installLayoutEngine,
   presentsPages,

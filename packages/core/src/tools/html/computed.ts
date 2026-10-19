@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 
-import { computedStyleWithEngines } from '#core/layout/engine'
+import { computedStyleWithEngines, drawLayerWithEngines } from '#core/layout/engine'
 import { nodeIdInput } from '#core/tools/input'
 import { defineTool } from '#core/tools/schema'
 
@@ -61,9 +61,11 @@ export const getComputedStyles = defineTool({
       )
     )
   }),
-  execute: (figma, { id, properties }) => {
+  execute: async (figma, { id, properties }) => {
     const node = figma.getNodeById(id)
     if (!node) return { error: `Node "${id}" not found` }
+    // An artboard the canvas holds asleep, far from the view, is woken to be read.
+    await drawLayerWithEngines(figma.graph, id)
     const styles = computedStyleWithEngines(figma.graph, id, properties ?? DEFAULT_PROPERTIES)
     if (!styles) {
       return {

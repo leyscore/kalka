@@ -25,6 +25,11 @@ export interface LayoutEngine {
     properties: readonly string[]
   ): Record<string, string> | null
   /**
+   * Makes the engine draw a layer where {@link computedStyle} can read it, as a canvas wakes an
+   * artboard it holds asleep. Resolves with whether it does now.
+   */
+  drawLayer?(graph: SceneGraph, nodeId: string): Promise<boolean>
+  /**
    * Whether the engine lays out the page of `graph` it shows next as it shows it, as a canvas on
    * screen drawing the graph does, so laying the page out before is wasted.
    */
@@ -74,6 +79,14 @@ export function computedStyleWithEngines(
     if (styles) return styles
   }
   return null
+}
+
+/** Asks the latest engine that can draw a layer to draw it, so its computed CSS can be read. */
+export async function drawLayerWithEngines(graph: SceneGraph, nodeId: string): Promise<boolean> {
+  for (let index = installed.length - 1; index >= 0; index--) {
+    if (await installed[index].drawLayer?.(graph, nodeId)) return true
+  }
+  return false
 }
 
 /**

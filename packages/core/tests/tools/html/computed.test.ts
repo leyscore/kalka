@@ -40,6 +40,27 @@ describe('get_computed_styles', () => {
     }
   })
 
+  it('asks the engine to draw a layer it holds asleep before reading it', async () => {
+    const graph = new SceneGraph()
+    const frame = graph.createNode('FRAME', graph.getPages()[0].id, { name: 'Card' })
+    let awake = false
+    const engine: LayoutEngine = {
+      layout: () => true,
+      computedStyle: (_graph, id) => (awake && id === frame.id ? { width: '320px' } : null),
+      drawLayer: async (_graph, id) => {
+        awake = id === frame.id
+        return awake
+      }
+    }
+    const uninstall = installLayoutEngine(engine)
+    try {
+      const result = await tool.execute(new FigmaAPI(graph), { id: frame.id, properties: ['width'] })
+      expect(result).toEqual({ id: frame.id, name: 'Card', styles: { width: '320px' } })
+    } finally {
+      uninstall()
+    }
+  })
+
   it('explains when the layer is not drawn', async () => {
     const graph = new SceneGraph()
     const frame = graph.createNode('FRAME', graph.getPages()[0].id, { name: 'Card' })
