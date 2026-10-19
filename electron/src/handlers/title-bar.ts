@@ -8,12 +8,12 @@ import * as v from 'valibot'
 export const TITLE_BAR_HEIGHT = 40
 
 /**
- * The caption buttons Windows and Linux draw over the tab bar, in the colors of the backdrop
- * behind it and of its text (`--color-canvas` and `--color-surface` in `src/app.css`).
+ * The caption buttons Windows and Linux draw over the tab bar: on a transparent background, so
+ * the app's backdrop shows behind them, with symbols in the color of its text.
  */
 const OVERLAY_COLORS = {
-  dark: { color: '#0f0f12', symbolColor: '#ededf0' },
-  light: { color: '#e2e3df', symbolColor: '#121214' }
+  dark: { color: '#00000000', symbolColor: '#ededf0' },
+  light: { color: '#00000000', symbolColor: '#121214' }
 } as const
 
 export const TitleBarTheme = v.nullable(v.picklist(['dark', 'light']))

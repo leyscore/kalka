@@ -34,7 +34,7 @@ describe('title bar', () => {
       expect(options.trafficLightPosition).toBeUndefined()
       expect(options.titleBarOverlay).toEqual({
         height: TITLE_BAR_HEIGHT,
-        color: '#0f0f12',
+        color: '#00000000',
         symbolColor: '#ededf0'
       })
     }
@@ -47,8 +47,8 @@ describe('title bar', () => {
     applyTitleBarTheme(window, 'dark', 'linux')
     applyTitleBarTheme(window, 'light', 'darwin')
     expect(window.overlays).toEqual([
-      { height: TITLE_BAR_HEIGHT, color: '#e2e3df', symbolColor: '#121214' },
-      { height: TITLE_BAR_HEIGHT, color: '#0f0f12', symbolColor: '#ededf0' }
+      { height: TITLE_BAR_HEIGHT, color: '#00000000', symbolColor: '#121214' },
+      { height: TITLE_BAR_HEIGHT, color: '#00000000', symbolColor: '#ededf0' }
     ])
   })
 
