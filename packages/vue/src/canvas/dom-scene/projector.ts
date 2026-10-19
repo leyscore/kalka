@@ -60,6 +60,11 @@ interface Artboard {
   doc: Document | null
   /** Whether the DOM changed since its geometry was last read. */
   stale: boolean
+  /**
+   * The layers patched since its geometry was last read, which bound what can have moved; null
+   * when anything can have, as after it loads or its fonts or size change.
+   */
+  patched: Set<string> | null
   observer: ResizeObserver | null
 }
 
@@ -297,7 +302,9 @@ export class DomSceneProjector {
     this.dirty.clear()
     for (const id of ids) {
       const artboardId = this.patchLayer(id)
-      if (artboardId) touched.add(artboardId)
+      if (!artboardId) continue
+      touched.add(artboardId)
+      this.artboards.get(artboardId)?.patched?.add(id)
     }
     for (const id of touched) {
       const artboard = this.artboards.get(id)
@@ -356,10 +363,52 @@ export class DomSceneProjector {
     const artboard = this.artboards.get(artboardId)
     const root = this.elements.get(artboardId)
     if (!artboard?.doc || !root) return new Map()
+    const scopes = artboard.patched ? this.measureScopes(root, artboard.patched) : null
     artboard.stale = false
-    return measureLayerBoxes(root, artboardId, LAYER_ID_ATTR, (id, element, rect) =>
-      this.measuredSize(id, element, rect)
+    artboard.patched = new Set()
+    return measureLayerBoxes(
+      root,
+      artboardId,
+      LAYER_ID_ATTR,
+      (id, element, rect) => this.measuredSize(id, element, rect),
+      scopes ?? undefined
     )
+  }
+
+  /**
+   * The layers whose boxes the patched ones can have moved: each patched layer and what is
+   * inside it, widened to its parent while it sits in its parent's flow, as in auto layout, where
+   * it pushes its siblings and sizes its parent. A layer placed absolutely moves nothing outside
+   * itself. Null when that reaches the artboard, which is then read whole.
+   */
+  private measureScopes(root: Element, patched: ReadonlySet<string>): Element[] | null {
+    const scopes = new Set<Element>()
+    for (const id of patched) {
+      let element = this.drawnElementFor(id)
+      if (!element) return null
+      while (element !== root && isInFlow(element)) {
+        const parent: Element | null | undefined = element.parentElement?.closest(
+          `[${LAYER_ID_ATTR}]`
+        )
+        if (!parent) return null
+        element = parent
+      }
+      if (element === root) return null
+      scopes.add(element)
+    }
+    return [...scopes].filter(
+      (scope) => ![...scopes].some((other) => other !== scope && other.contains(scope))
+    )
+  }
+
+  /** A layer's element, or that of its closest drawn parent when it has none now. */
+  private drawnElementFor(id: string): Element | null {
+    for (let node = this.graph.getNode(id); node;) {
+      const element = this.elements.get(node.id)
+      if (element?.isConnected) return element
+      node = node.parentId ? this.graph.getNode(node.parentId) : undefined
+    }
+    return null
   }
 
   /**
@@ -426,7 +475,7 @@ export class DomSceneProjector {
 
   private createArtboard(id: string): Artboard {
     const frame = createArtboardFrame(this.world.ownerDocument, id)
-    const artboard: Artboard = { id, frame, doc: null, stale: true, observer: null }
+    const artboard: Artboard = { id, frame, doc: null, stale: true, patched: null, observer: null }
     frame.addEventListener(
       'load',
       () => {
@@ -438,6 +487,7 @@ export class DomSceneProjector {
           setArtboardTokens(doc, this.#tokensCSS)
           const reflowed = () => {
             artboard.stale = true
+            artboard.patched = null
             this.options.onReflow?.(id)
           }
           doc.fonts.addEventListener('loadingdone', reflowed)
@@ -635,4 +685,10 @@ export class DomSceneProjector {
       if (id && this.elements.get(id) === element) this.elements.delete(id)
     }
   }
+}
+
+/** Whether an element takes part in its parent's flow, so that its box moves its siblings'. */
+function isInFlow(element: Element): boolean {
+  const position = element.ownerDocument.defaultView?.getComputedStyle(element).position
+  return position !== 'absolute' && position !== 'fixed'
 }
