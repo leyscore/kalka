@@ -1,4 +1,4 @@
-import { computed } from 'vue'
+import { computed, shallowRef } from 'vue'
 
 import {
   getSharedStyles,
@@ -10,7 +10,7 @@ import {
 
 import { useNodeProps } from '#vue/controls/node-props/use'
 import { sharedStyleDetachPatch, sharedStylePatch } from '#vue/controls/shared-style/model'
-import { useSceneComputed } from '#vue/internal/scene-computed/use'
+import { useEditorEvent } from '#vue/editor/events/use'
 
 function supportsStyle(node: SceneNode, kind: SharedStyleKind): boolean {
   if (kind === 'text') return node.type === 'TEXT'
@@ -32,9 +32,24 @@ export function useSharedStyleBinding(kind: SharedStyleKind) {
     () => nodes.value.length > 0 && nodes.value.every((node) => supportsStyle(node, kind))
   )
   const styleId = computed(() => merged(refKey))
-  const styles = useSceneComputed(() => {
-    void store.state.sceneVersion
+  // The document's styles are a walk of every layer: it runs again only after an edit to a style
+  // layer, not after every edit, such as each keystroke in a text.
+  const stylesRevision = shallowRef(0)
+  const styles = computed(() => {
+    void stylesRevision.value
     return getSharedStyles(store.graph, kind)
+  })
+  const isStyle = (id: string) => styles.value.some((style) => style.nodeId === id)
+  const refresh = () => stylesRevision.value++
+  useEditorEvent('graph:replaced', refresh)
+  useEditorEvent('node:created', (node) => {
+    if (node.sharedStyleType) refresh()
+  })
+  useEditorEvent('node:deleted', (id) => {
+    if (isStyle(id)) refresh()
+  })
+  useEditorEvent('node:updated', (id, changes) => {
+    if ('sharedStyleType' in changes || 'source' in changes || isStyle(id)) refresh()
   })
 
   function update(label: string, apply: (node: SceneNode) => Partial<SceneNode>) {
