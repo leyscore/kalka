@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.1.0-beta.6 — 2026-10-19
+
 ### Fixed
 
 - The macOS app downloaded from the website opens instead of being reported as damaged: builds without an Apple certificate are now signed ad hoc as a whole, so macOS asks once to allow an unidentified developer, in System Settings › Privacy & Security › Open Anyway.

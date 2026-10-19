@@ -21,7 +21,7 @@
     "smol-toml": "1.9.0"
   },
   "productName": "Kalka",
-  "version": "0.1.0-beta.5",
+  "version": "0.1.0-beta.6",
   "description": "Design like you do in Figma. Every layer is real HTML and CSS.",
   "build": {
     "afterPack": "scripts/adhoc-sign.cjs",
