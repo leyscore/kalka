@@ -75,7 +75,15 @@ export function nodeIcon(node: {
   return NODE_ICONS[node.type] ?? IconSquare
 }
 
-/** `nodeIcon` for a scene node, which carries slot and icon identity in its data. */
+/**
+ * `nodeIcon` for a scene node, which carries slot and icon identity in its data. Reads only the
+ * fields the glyph depends on, so a reactive copy of a layer moving under a drag leaves it alone.
+ */
 export function sceneNodeIcon(node: SceneNode) {
-  return nodeIcon({ ...node, slot: !!slotPropertyId(node), icon: !!readIcon(node) })
+  return nodeIcon({
+    type: node.type,
+    layoutMode: node.layoutMode,
+    slot: !!slotPropertyId(node),
+    icon: !!readIcon(node)
+  })
 }
