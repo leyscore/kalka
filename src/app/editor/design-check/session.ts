@@ -219,7 +219,8 @@ export function createDesignCheck(editor: Editor, state: AppEditorState) {
     unwatchGraph()
     unwatchGraph = watchGraph()
     if (pagesNeeded.value) pages.invalidateAll()
-    if (enabled.value) schedule(0)
+    // A document that just opened draws first: its check waits out the same quiet period.
+    if (enabled.value) schedule()
   })
 
   function highlightIssue(issue: DesignIssue | null) {
