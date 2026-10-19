@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { TreeRoot } from 'reka-ui'
-import { computed, nextTick, onScopeDispose, ref } from 'vue'
+import { computed, nextTick, onScopeDispose, reactive, ref } from 'vue'
 
 import type { SceneNode } from '@kalka/scene-graph'
 
@@ -96,7 +96,9 @@ function patchTreeNode(id: string, changes: Partial<SceneNode>) {
   }
   const target = nodesById.get(id)
   const source = editor.graph.getNode(id)
-  if (target && source) patchLayerNode(target, source)
+  // The rows render the reactive copy of the item, so the patch goes through it: a rename shows
+  // at once rather than when something else redraws the row.
+  if (target && source) patchLayerNode(reactive(target), source)
 }
 
 const rowRefs = new Map<string, HTMLElement>()
