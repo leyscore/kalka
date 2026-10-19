@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.1.0-beta.5 — 2026-10-19
+
 ### Changed
 
 - On Windows and Linux the minimize, maximize, and close buttons sit on the app's own backdrop instead of a band of solid color.
