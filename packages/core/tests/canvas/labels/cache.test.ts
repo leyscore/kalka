@@ -12,7 +12,7 @@ test('icons on the page go untitled, while frames beside them keep their names',
   graph.updateNode(icon.id, { pluginData: withIcon(icon, { name: 'mdi:cat' }) })
 
   const cache = new LabelCache()
-  cache.update(graph, pageId, 1)
+  cache.update(graph, pageId)
 
   expect(cache.getAllFrames().map(({ nodeId }) => nodeId)).toEqual([frame.id])
 })

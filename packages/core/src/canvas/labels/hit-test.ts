@@ -58,7 +58,9 @@ function hitLabel(
 function catalog(graph: SceneGraph, pageId: string, existing?: LabelCache): LabelCache {
   if (existing) return existing
   const cache = new LabelCache()
-  cache.update(graph, pageId, 0)
+  cache.update(graph, pageId)
+  // A one-off read: the labels as they are now, without following later edits.
+  cache.dispose()
   return cache
 }
 

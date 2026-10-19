@@ -22,6 +22,7 @@ import type { Rect } from '@kalka/scene-graph/primitives'
 import { createFrameRequest } from '#vue/canvas/frame-request'
 import { composeOverlay } from '#vue/canvas/svg-overlay/compose'
 import type { AgentWorkMark } from '#vue/canvas/svg-overlay/layers/agent-work'
+import { createGridFrames } from '#vue/canvas/svg-overlay/layers/layout-grids'
 import { clearOverlay, renderOverlay } from '#vue/canvas/svg-overlay/render'
 import { createMeasureText, loadLabelFont } from '#vue/canvas/svg-overlay/text'
 
@@ -58,6 +59,7 @@ export function useSVGOverlay(
 ) {
   let measureText = createMeasureText()
   const labels = new LabelCache()
+  const gridFrames = createGridFrames()
   const reducedMotion = usePreferredReducedMotion()
   const { pixelRatio } = useDevicePixelRatio()
   let drawn: unknown[] = []
@@ -125,7 +127,7 @@ export function useSVGOverlay(
       animating ? performance.now() : 0
     ]
     if (!changed(key)) return !!animating
-    labels.update(editor.graph, state.currentPageId, state.sceneVersion)
+    labels.update(editor.graph, state.currentPageId)
     const overlays = overlaysFromEditorState(state, editor.graph, editor.textEditor)
     const composed = composeOverlay({
       graph: editor.graph,
@@ -134,11 +136,11 @@ export function useSVGOverlay(
       selectedIds: overlays.playing ? new Set() : state.selectedIds,
       measureText,
       pageId: state.currentPageId,
-      sceneVersion: state.sceneVersion,
       viewportSize: { width, height },
       dpr: window.devicePixelRatio,
       pageColor: canvasColor,
       labels,
+      gridFrames,
       showRulers,
       rulerTheme: state.rulerTheme,
       obstacles,
@@ -206,6 +208,8 @@ export function useSVGOverlay(
   )
   onScopeDispose(() => {
     frames.cancel()
+    labels.dispose()
+    gridFrames.dispose()
     if (host.value) clearOverlay(host.value)
   })
 
@@ -215,7 +219,7 @@ export function useSVGOverlay(
       const state = options.getRenderState?.() ?? editor.state
       const element = host.value
       const { panX, panY, zoom } = state
-      labels.update(editor.graph, state.currentPageId, state.sceneVersion)
+      labels.update(editor.graph, state.currentPageId)
       const hitOptions: LabelHitOptions = {
         preview: state.rotationPreview,
         viewport: {

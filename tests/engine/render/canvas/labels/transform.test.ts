@@ -93,7 +93,7 @@ test('readability thresholds use identical edges during preview and after commit
 test('section culling uses preview world bounds rather than cached unrotated coordinates', () => {
   const { graph, page, section } = fixture()
   const cache = new LabelCache()
-  cache.update(graph, page.id, 1)
+  cache.update(graph, page.id)
   const viewport = { x: 215, y: 65, w: 10, h: 10 }
   expect(cache.getSections(graph, viewport)).toHaveLength(0)
   expect(
@@ -105,7 +105,7 @@ test('section and nested frame hit targets follow their rendered title transform
   const { graph, page, section, frame } = fixture()
   graph.updateNode(section.id, { rotation: 90 })
   const cache = new LabelCache()
-  cache.update(graph, page.id, 1)
+  cache.update(graph, page.id)
   // Section title local point (4, -10), transformed through its top-left (250, 50).
   for (const catalog of [undefined, cache]) {
     expect(hitTestSectionTitle(graph, 260, 54, 1, page.id, font, catalog)?.id).toBe(section.id)

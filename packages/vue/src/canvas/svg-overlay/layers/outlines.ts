@@ -1,3 +1,4 @@
+import type { LabelCache } from '@kalka/core/canvas'
 import {
   CODE_FOCUS_FILL_ALPHA,
   COMPONENT_COLOR,
@@ -48,24 +49,15 @@ function box(node: SceneNode, paint: Paint): OverlayShape {
 
 // ------------------------------------------------------------------ component sets
 
-/** Visible component sets on the page, wherever they are nested, as the label cache finds them. */
-function componentSets(graph: SceneGraph, parentId: string, sets: SceneNode[] = []): SceneNode[] {
-  const parent = graph.getNode(parentId)
-  if (!parent) return sets
-  for (const childId of parent.childIds) {
-    const child = graph.getNode(childId)
-    if (!child || !child.visible) continue
-    if (child.type === 'COMPONENT_SET') sets.push(child)
-    if (child.childIds.length > 0) componentSets(graph, child.id, sets)
-  }
-  return sets
-}
-
 /** The dashed editing border of each component set on `pageId` without a stroke of its own. */
-export function componentSetBordersLayer(context: OverlayContext, pageId: string): OverlayShape[] {
-  const sets = componentSets(context.graph, pageId).filter(
-    (node) => !node.strokes.some((stroke) => stroke.visible)
-  )
+export function componentSetBordersLayer(
+  context: OverlayContext,
+  labels: Pick<LabelCache, 'getAllComponentSets'>
+): OverlayShape[] {
+  const sets = labels
+    .getAllComponentSets()
+    .flatMap(({ nodeId }) => context.graph.getNode(nodeId) ?? [])
+    .filter((node) => !node.strokes.some((stroke) => stroke.visible))
   const paint: Paint = {
     stroke: css(COMPONENT_COLOR),
     strokeWidth: COMPONENT_SET_BORDER_WIDTH,

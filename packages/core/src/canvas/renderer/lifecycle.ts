@@ -30,6 +30,7 @@ export function destroyRenderer(r: SkiaRenderer): void {
   if (r.destroyed) return
   r.destroyed = true
   r.transientPreviews.clear()
+  r.labelCache.dispose()
 
   r.onImagePreviewReady = null
   r.imagePreviews.destroy()

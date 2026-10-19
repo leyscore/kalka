@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
+import { LabelCache } from '@kalka/core/canvas'
 import { COMPONENT_COLOR, SELECTION_COLOR, SLOT_COLOR } from '@kalka/core/constants'
 import { SceneGraph } from '@kalka/scene-graph'
 
@@ -24,6 +25,14 @@ function context(graph: SceneGraph, patch: Partial<OverlayContext> = {}): Overla
     measureText: (text) => text.length * 6,
     ...patch
   }
+}
+
+/** The page's labels as read once, which the component set borders come from. */
+function labelsOf(graph: SceneGraph, pageId: string): LabelCache {
+  const labels = new LabelCache()
+  labels.update(graph, pageId)
+  labels.dispose()
+  return labels
 }
 
 function flatten(shapes: OverlayShape[]): OverlayShape[] {
@@ -104,7 +113,7 @@ describe('component set borders', () => {
     const page = graph.getPages()[0].id
     const section = graph.createNode('SECTION', page, { width: 500, height: 500 })
     graph.createNode('COMPONENT_SET', section.id, { width: 100, height: 60 })
-    const [border] = flatten(componentSetBordersLayer(context(graph), page))
+    const [border] = flatten(componentSetBordersLayer(context(graph), labelsOf(graph, page)))
     expect(border).toMatchObject({
       type: 'rect',
       width: 100,
@@ -134,7 +143,7 @@ describe('component set borders', () => {
       ]
     })
     graph.createNode('COMPONENT_SET', page, { width: 100, height: 60, visible: false })
-    expect(componentSetBordersLayer(context(graph), page)).toEqual([])
+    expect(componentSetBordersLayer(context(graph), labelsOf(graph, page))).toEqual([])
   })
 })
 

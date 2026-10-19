@@ -4,6 +4,7 @@ import { LabelCache } from '@kalka/core/canvas'
 import { SceneGraph } from '@kalka/scene-graph'
 
 import { composeOverlay as compose, type ComposeInput } from '#vue/canvas/svg-overlay/compose'
+import { createGridFrames } from '#vue/canvas/svg-overlay/layers/layout-grids'
 import type { OverlayContext } from '#vue/canvas/svg-overlay/layers/selection'
 import { css, type OverlayShape } from '#vue/canvas/svg-overlay/shapes'
 
@@ -17,11 +18,11 @@ function context(graph: SceneGraph, patch: Partial<OverlayContext> = {}): Compos
     selectedIds: new Set(),
     measureText: (text) => text.length * 6,
     pageId: graph.getPages()[0].id,
-    sceneVersion: 0,
     viewportSize: { width: 1000, height: 800 },
     dpr: 1,
     pageColor: { r: 1, g: 1, b: 1, a: 1 },
     labels: new LabelCache(),
+    gridFrames: createGridFrames(),
     showRulers: false,
     obstacles: [],
     flashes: [],

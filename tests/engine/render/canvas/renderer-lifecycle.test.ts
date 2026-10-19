@@ -4,6 +4,7 @@ import type { Font, Paint, Surface } from 'canvaskit-wasm'
 
 import { createImageCache } from '#core/canvas/images/cache'
 import { ImagePreviewCache } from '#core/canvas/images/previews'
+import { LabelCache } from '#core/canvas/labels/cache'
 import type { SkiaRenderer } from '#core/canvas/renderer'
 import { EffectRasterCache } from '#core/canvas/renderer/effect-raster-cache'
 import { destroyRenderer } from '#core/canvas/renderer/lifecycle'
@@ -68,6 +69,7 @@ function createRenderer() {
     sceneBackingBuild: null,
     tiledScene: asDouble<SkiaRenderer['tiledScene']>({ destroy: mock() }),
     labelParagraphCache: asDouble<SkiaRenderer['labelParagraphCache']>({ clear: mock() }),
+    labelCache: new LabelCache(),
     _flashPaint: null,
     profiler: { destroy: mock() } as Partial<SkiaRenderer['profiler']> as SkiaRenderer['profiler'],
     surface: deletable<Surface>()

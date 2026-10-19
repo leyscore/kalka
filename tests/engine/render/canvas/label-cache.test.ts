@@ -54,20 +54,47 @@ describe('LabelCache', () => {
     const { g, pageId } = buildGraph()
     const cache = new LabelCache()
 
-    cache.update(g, pageId, 1)
+    cache.update(g, pageId)
     const sections = cache.getSections(g, { x: -1000, y: -1000, w: 3000, h: 3000 })
     expect(sections.length).toBe(2)
     expect(sections.map((s) => s.node.name).sort()).toEqual(['Nested Section', 'Section 1'])
+  })
+
+  it('follows edits that add, hide or retype layers, and no others', () => {
+    const { g, pageId, sectionId } = buildGraph()
+    const cache = new LabelCache()
+    const everywhere = { x: -1000, y: -1000, w: 3000, h: 3000 }
+
+    cache.update(g, pageId)
+    const section = g.createNode('SECTION', pageId, {
+      name: 'Added',
+      x: 800,
+      width: 50,
+      height: 50
+    })
+    cache.update(g, pageId)
+    expect(cache.getSections(g, everywhere).length).toBe(3)
+
+    g.updateNode(sectionId, { visible: false })
+    cache.update(g, pageId)
+    expect(cache.getSections(g, everywhere).map((s) => s.node.id)).toEqual([section.id])
+
+    g.updateNode(section.id, { x: 900, name: 'Moved' })
+    cache.update(g, pageId)
+    const [moved] = cache.getSections(g, everywhere)
+    expect(moved?.absX).toBe(900)
+    expect(moved?.node.name).toBe('Moved')
+    cache.dispose()
   })
 
   it('returns cached data when sceneVersion unchanged', () => {
     const { g, pageId } = buildGraph()
     const cache = new LabelCache()
 
-    cache.update(g, pageId, 1)
+    cache.update(g, pageId)
     const first = cache.getSections(g, { x: -1000, y: -1000, w: 3000, h: 3000 })
 
-    cache.update(g, pageId, 1)
+    cache.update(g, pageId)
     const second = cache.getSections(g, { x: -1000, y: -1000, w: 3000, h: 3000 })
 
     expect(first.length).toBe(second.length)
@@ -78,7 +105,7 @@ describe('LabelCache', () => {
     const { g, pageId } = buildGraph()
     const cache = new LabelCache()
 
-    cache.update(g, pageId, 1)
+    cache.update(g, pageId)
     const before = cache.getSections(g, { x: -1000, y: -1000, w: 3000, h: 3000 })
 
     g.createNode('SECTION', pageId, {
@@ -88,7 +115,7 @@ describe('LabelCache', () => {
       width: 100,
       height: 100
     })
-    cache.update(g, pageId, 2)
+    cache.update(g, pageId)
     const after = cache.getSections(g, { x: -1000, y: -1000, w: 3000, h: 3000 })
 
     expect(after.length).toBe(before.length + 1)
@@ -98,11 +125,11 @@ describe('LabelCache', () => {
     const { g, pageId } = buildGraph()
     const cache = new LabelCache()
 
-    cache.update(g, pageId, 1)
+    cache.update(g, pageId)
     expect(cache.getSections(g, { x: -1000, y: -1000, w: 3000, h: 3000 }).length).toBe(2)
 
     const page2 = g.addPage('Page 2')
-    cache.update(g, page2.id, 1)
+    cache.update(g, page2.id)
     expect(cache.getSections(g, { x: -1000, y: -1000, w: 3000, h: 3000 }).length).toBe(0)
   })
 
@@ -110,7 +137,7 @@ describe('LabelCache', () => {
     const { g, pageId } = buildGraph()
     const cache = new LabelCache()
 
-    cache.update(g, pageId, 1)
+    cache.update(g, pageId)
 
     const all = cache.getSections(g, { x: -1000, y: -1000, w: 3000, h: 3000 })
     expect(all.length).toBe(2)
@@ -126,7 +153,7 @@ describe('LabelCache', () => {
     const { g, pageId } = buildGraph()
     const cache = new LabelCache()
 
-    cache.update(g, pageId, 1)
+    cache.update(g, pageId)
     const sections = cache.getSections(g, { x: -1000, y: -1000, w: 3000, h: 3000 })
 
     const topLevel = sections.find((s) => s.node.name === 'Section 1')
@@ -140,7 +167,7 @@ describe('LabelCache', () => {
     const { g, pageId } = buildGraph()
     const cache = new LabelCache()
 
-    cache.update(g, pageId, 1)
+    cache.update(g, pageId)
     const components = cache.getComponents(g, { x: -1000, y: -1000, w: 3000, h: 3000 })
 
     expect(components.length).toBe(3)
@@ -157,7 +184,7 @@ describe('LabelCache', () => {
     })
     const cache = new LabelCache()
 
-    cache.update(g, pageId, 1)
+    cache.update(g, pageId)
     const components = cache.getComponents(g, { x: -1000, y: -1000, w: 3000, h: 3000 })
 
     expect(components.find((c) => c.node.name === 'Button Set')).toBeDefined()
@@ -171,7 +198,7 @@ describe('LabelCache', () => {
     const cache = new LabelCache()
 
     g.updateNode(sectionId, { visible: false })
-    cache.update(g, pageId, 1)
+    cache.update(g, pageId)
 
     const sections = cache.getSections(g, { x: -1000, y: -1000, w: 3000, h: 3000 })
     const names = sections.map((s) => s.node.name)
@@ -184,33 +211,26 @@ describe('LabelCache', () => {
     const pageId = g.getPages()[0].id
     const cache = new LabelCache()
 
-    cache.update(g, pageId, 0)
+    cache.update(g, pageId)
     expect(cache.getSections(g, { x: 0, y: 0, w: 1000, h: 1000 })).toEqual([])
     expect(cache.getComponents(g, { x: 0, y: 0, w: 1000, h: 1000 })).toEqual([])
   })
 
-  it('explicit invalidate() forces recollection', () => {
+  it('keeps the labels last read once disposed', () => {
     const { g, pageId } = buildGraph()
     const cache = new LabelCache()
 
-    cache.update(g, pageId, 1)
+    cache.update(g, pageId)
+    cache.dispose()
+    g.createNode('SECTION', pageId, { name: 'Later', x: 800, y: 0, width: 50, height: 50 })
     expect(cache.getSections(g, { x: -1000, y: -1000, w: 3000, h: 3000 }).length).toBe(2)
-
-    g.createNode('SECTION', pageId, { name: 'Sneaky', x: 800, y: 0, width: 50, height: 50 })
-
-    cache.update(g, pageId, 1)
-    expect(cache.getSections(g, { x: -1000, y: -1000, w: 3000, h: 3000 }).length).toBe(2)
-
-    cache.invalidate()
-    cache.update(g, pageId, 1)
-    expect(cache.getSections(g, { x: -1000, y: -1000, w: 3000, h: 3000 }).length).toBe(3)
   })
 
   it('computes correct absolute positions for nested nodes', () => {
     const { g, pageId } = buildGraph()
     const cache = new LabelCache()
 
-    cache.update(g, pageId, 1)
+    cache.update(g, pageId)
     const sections = cache.getSections(g, { x: -1000, y: -1000, w: 3000, h: 3000 })
 
     const nested = sections.find((s) => s.node.name === 'Nested Section')

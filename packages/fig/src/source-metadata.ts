@@ -122,6 +122,9 @@ export function effectiveFigmaSourcePayload(node: FigmaSourceCarrier): FigmaSour
 }
 
 export function readEffectiveFigmaRawField(node: FigmaSourceCarrier, field: string): unknown {
+  const value = node.source.fig.rawNodeFields[field]
+  // Most layers lack most fields; only a field they have can have been made stale by an edit.
+  if (value === undefined) return undefined
   if (staleFigmaRawFields(node.source.editedFields ?? []).has(field)) return undefined
-  return node.source.fig.rawNodeFields[field]
+  return value
 }

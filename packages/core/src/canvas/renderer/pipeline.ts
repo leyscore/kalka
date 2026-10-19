@@ -172,12 +172,11 @@ function drawAboveScene(
   canvas: Canvas,
   graph: SceneGraph,
   selectedIds: Set<string>,
-  overlays: RenderOverlays,
-  sceneVersion: number
+  overlays: RenderOverlays
 ): void {
   canvas.save()
   canvas.scale(r.dpr, r.dpr)
-  r.labelCache.update(graph, r.pageId, sceneVersion, graph.positionPreviewVersion)
+  r.labelCache.update(graph, r.pageId)
   if (!overlays.playing) drawLabelPass(r, canvas, graph, selectedIds, overlays)
   canvas.restore()
 
@@ -297,7 +296,7 @@ export function render(
     canvas.restore()
   }
 
-  if (layer !== 'scene') drawAboveScene(r, canvas, graph, selectedIds, overlays, sceneVersion)
+  if (layer !== 'scene') drawAboveScene(r, canvas, graph, selectedIds, overlays)
 
   p.beginPhase('render:flush')
   const { duration: flushDuration } = measure(() => r.surface.flush())

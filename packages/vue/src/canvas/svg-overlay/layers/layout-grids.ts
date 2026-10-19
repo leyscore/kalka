@@ -1,45 +1,56 @@
-import { hasLayoutGrids, layoutGridPaints } from '@kalka/core/canvas'
+import { hasLayoutGrids, layoutGridPaints, PageIndex } from '@kalka/core/canvas'
 import { createSceneGeometry } from '@kalka/core/geometry'
 import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 
 import type { OverlayContext } from '#vue/canvas/svg-overlay/layers/selection'
 import { css, type OverlayShape } from '#vue/canvas/svg-overlay/shapes'
 
-interface GridFrames {
-  graph: SceneGraph
-  pageId: string
-  sceneVersion: number
-  ids: string[]
+/** Fields that hide a layer and its frames from the walk, which takes it again. */
+const WALK_FIELDS = new Set<string>(['visible', 'internalOnly', 'type'])
+/** Fields a frame's grids are read from. */
+const GRID_FIELDS = new Set<string>(['layoutGrids', 'source'])
+
+function findGridFrames(graph: SceneGraph, pageId: string): Set<string> {
+  const ids = new Set<string>()
+  const visit = (id: string) => {
+    const node = graph.getNode(id)
+    if (!node || !node.visible || node.internalOnly) return
+    if (node.type !== 'CANVAS' && hasLayoutGrids(node)) ids.add(id)
+    for (const child of node.childIds) visit(child)
+  }
+  visit(pageId)
+  return ids
 }
 
-/** The page's frames with layout grids, found once per scene version rather than every frame. */
-let cached: GridFrames | null = null
-
-function gridFrames(graph: SceneGraph, pageId: string, sceneVersion: number): SceneNode[] {
-  if (cached?.graph !== graph || cached.pageId !== pageId || cached.sceneVersion !== sceneVersion) {
-    const ids: string[] = []
-    const visit = (id: string) => {
-      const node = graph.getNode(id)
-      if (!node || !node.visible || node.internalOnly) return
-      if (node.type !== 'CANVAS' && hasLayoutGrids(node)) ids.push(id)
-      for (const child of node.childIds) visit(child)
+/**
+ * The page's frames with layout grids, found by walking the page once and again only after an
+ * edit that adds, removes, hides or moves a layer, or gives a layer grids or takes them away.
+ */
+export function createGridFrames(): PageIndex<Set<string>> {
+  return new PageIndex({
+    build: findGridFrames,
+    affects: (change, ids, graph) => {
+      if (change.kind === 'structure') return true
+      const keys = Object.keys(change.changes)
+      if (keys.some((key) => WALK_FIELDS.has(key))) return true
+      if (!keys.some((key) => GRID_FIELDS.has(key))) return false
+      const node = graph.getNode(change.id)
+      return !!node && hasLayoutGrids(node) !== ids.has(change.id)
     }
-    visit(pageId)
-    cached = { graph, pageId, sceneVersion, ids }
-  }
-  return cached.ids
-    .map((id) => graph.getNode(id))
-    .filter((node): node is SceneNode => node !== undefined)
+  })
 }
 
 /** Frames' layout grids, column, row, and square, over their content as Figma shows them. */
 export function layoutGridsLayer(
   context: OverlayContext,
   pageId: string,
-  sceneVersion: number
+  gridFrames: PageIndex<Set<string>>
 ): OverlayShape[] {
-  const frames = gridFrames(context.graph, pageId, sceneVersion)
-  if (frames.length === 0) return []
+  const ids = gridFrames.get(context.graph, pageId)
+  if (ids.size === 0) return []
+  const frames = [...ids]
+    .map((id) => context.graph.getNode(id))
+    .filter((node): node is SceneNode => node !== undefined)
   const geometry = createSceneGeometry(context.graph, context.overlays.rotationPreview)
   return frames.map((node) => ({
     type: 'group',

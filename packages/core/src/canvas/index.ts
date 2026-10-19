@@ -31,6 +31,7 @@ export {
 export { overlaysFromEditorState } from './renderer/state-overlays'
 export { frameLabelPlacement, labelScreenMatrix, labelTransform } from './labels/transform'
 export { LabelCache } from './labels/cache'
+export { PageIndex, type PageIndexChange, type PageIndexOptions } from './page-index'
 export {
   hitTestComponentLabel,
   hitTestFrameTitle,

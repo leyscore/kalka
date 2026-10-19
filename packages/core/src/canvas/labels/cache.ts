@@ -1,5 +1,6 @@
 import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 
+import { PageIndex } from '#core/canvas/page-index'
 import type { RenderOverlays } from '#core/canvas/renderer'
 import { createSceneGeometry } from '#core/geometry'
 
@@ -7,24 +8,31 @@ import { hasFrameTitle } from './layout'
 
 export interface CachedSection {
   nodeId: string
-  absX: number
-  absY: number
   nested: boolean
 }
 
 /** A frame on the page or in a section, which shows its name above it. */
 export interface CachedFrame {
   nodeId: string
-  absX: number
-  absY: number
 }
 
 export interface CachedComponent {
   nodeId: string
-  absX: number
-  absY: number
   parentType: string
 }
+
+/** The layers of a page that show a label, in the order they draw. */
+interface PageLabels {
+  sections: CachedSection[]
+  components: CachedComponent[]
+  frames: CachedFrame[]
+  componentSets: CachedFrame[]
+}
+
+const NO_LABELS: PageLabels = { sections: [], components: [], frames: [], componentSets: [] }
+
+/** Fields that decide whether a layer shows a label: its kind, visibility and icon. */
+const LABEL_FIELDS = new Set<string>(['type', 'visible', 'pluginData'])
 
 interface Viewport {
   x: number
@@ -40,10 +48,7 @@ function isInViewport(absX: number, absY: number, w: number, h: number, vp: View
   return absX + w >= vp.x && absY + h >= vp.y && absX <= vp.x + vp.w && absY <= vp.y + vp.h
 }
 
-function collectVisibleLabels<
-  T extends { nodeId: string; absX: number; absY: number },
-  U extends object
->(
+function collectVisibleLabels<T extends { nodeId: string }, U extends object>(
   graph: SceneGraph,
   viewport: Viewport,
   cachedItems: T[],
@@ -63,42 +68,33 @@ function collectVisibleLabels<
   return result
 }
 
+/**
+ * The page's sections, components, component sets and titled frames. They are found by walking
+ * the page once and again only after an edit that adds, removes, moves, hides or retypes a
+ * layer, so moving or editing layers costs nothing here.
+ */
 export class LabelCache {
-  private sections: CachedSection[] = []
-  private components: CachedComponent[] = []
-  private frames: CachedFrame[] = []
-  private componentSets: CachedFrame[] = []
-  private cachedSceneVersion = -1
-  private cachedPositionPreviewVersion = -1
-  private cachedPageId: string | null = null
+  private readonly index = new PageIndex<PageLabels>({
+    build: buildLabels,
+    affects: (change) =>
+      change.kind === 'structure' ||
+      Object.keys(change.changes).some((key) => LABEL_FIELDS.has(key))
+  })
+  private labels: PageLabels = NO_LABELS
 
-  update(
-    graph: SceneGraph,
-    pageId: string | null,
-    sceneVersion: number,
-    positionPreviewVersion = graph.positionPreviewVersion
-  ): void {
-    if (
-      sceneVersion === this.cachedSceneVersion &&
-      positionPreviewVersion === this.cachedPositionPreviewVersion &&
-      pageId === this.cachedPageId
-    ) {
-      return
-    }
-    this.rebuild(graph, pageId)
-    this.cachedSceneVersion = sceneVersion
-    this.cachedPositionPreviewVersion = positionPreviewVersion
-    this.cachedPageId = pageId
+  /** Reads the labels of `pageId`, walking it again only if an edit since could change them. */
+  update(graph: SceneGraph, pageId: string | null): void {
+    this.labels = this.index.get(graph, pageId ?? graph.rootId)
   }
 
   invalidate(): void {
-    this.cachedSceneVersion = -1
-    this.cachedPositionPreviewVersion = -1
-    this.cachedPageId = null
-    this.sections = []
-    this.components = []
-    this.frames = []
-    this.componentSets = []
+    this.index.invalidate()
+    this.labels = NO_LABELS
+  }
+
+  /** Stops following the graph; the labels last read stay. */
+  dispose(): void {
+    this.index.dispose()
   }
 
   getSections(
@@ -109,7 +105,7 @@ export class LabelCache {
     return collectVisibleLabels(
       graph,
       viewport,
-      this.sections,
+      this.labels.sections,
       (cached) => ({
         nested: cached.nested
       }),
@@ -125,7 +121,7 @@ export class LabelCache {
     return collectVisibleLabels(
       graph,
       viewport,
-      this.components,
+      this.labels.components,
       () => ({
         inside: false
       }),
@@ -138,7 +134,7 @@ export class LabelCache {
     viewport: Viewport,
     preview?: RenderOverlays['rotationPreview']
   ): Array<{ node: SceneNode; absX: number; absY: number }> {
-    return collectVisibleLabels(graph, viewport, this.frames, () => ({}), preview)
+    return collectVisibleLabels(graph, viewport, this.labels.frames, () => ({}), preview)
   }
 
   /** Every visible component set on the page in the viewport, wherever it is nested. */
@@ -147,70 +143,59 @@ export class LabelCache {
     viewport: Viewport,
     preview?: RenderOverlays['rotationPreview']
   ): Array<{ node: SceneNode; absX: number; absY: number }> {
-    return collectVisibleLabels(graph, viewport, this.componentSets, () => ({}), preview)
+    return collectVisibleLabels(graph, viewport, this.labels.componentSets, () => ({}), preview)
   }
 
   getAllFrames(): readonly CachedFrame[] {
-    return this.frames
+    return this.labels.frames
   }
 
   getAllSections(): readonly CachedSection[] {
-    return this.sections
+    return this.labels.sections
   }
 
   getAllComponents(): readonly CachedComponent[] {
-    return this.components
+    return this.labels.components
   }
 
-  private rebuild(graph: SceneGraph, pageId: string | null): void {
-    this.sections = []
-    this.components = []
-    this.frames = []
-    this.componentSets = []
-
-    const pageNode = graph.getNode(pageId ?? graph.rootId)
-    if (!pageNode) return
-
-    this.walkChildren(graph, pageNode.id, false)
+  /** Every visible component set on the page, wherever it is nested. */
+  getAllComponentSets(): readonly CachedFrame[] {
+    return this.labels.componentSets
   }
+}
 
-  private walkChildren(graph: SceneGraph, parentId: string, insideSection: boolean): void {
-    const parent = graph.getNode(parentId)
-    if (!parent) return
-    const parentType = parent.type
+function buildLabels(graph: SceneGraph, pageId: string): PageLabels {
+  const labels: PageLabels = { sections: [], components: [], frames: [], componentSets: [] }
+  if (graph.getNode(pageId)) walkChildren(graph, labels, pageId, false)
+  return labels
+}
 
-    for (const childId of parent.childIds) {
-      const child = graph.getNode(childId)
-      if (!child || !child.visible) continue
+function walkChildren(
+  graph: SceneGraph,
+  labels: PageLabels,
+  parentId: string,
+  insideSection: boolean
+): void {
+  const parent = graph.getNode(parentId)
+  if (!parent) return
+  const parentType = parent.type
 
-      if (child.type === 'SECTION') {
-        const origin = graph.getAbsolutePosition(childId)
-        this.sections.push({
-          nodeId: childId,
-          absX: origin.x,
-          absY: origin.y,
-          nested: insideSection
-        })
-        this.walkChildren(graph, childId, true)
-      } else if (LABEL_TYPES.has(child.type)) {
-        if (child.type === 'COMPONENT_SET') {
-          const origin = graph.getAbsolutePosition(childId)
-          this.componentSets.push({ nodeId: childId, absX: origin.x, absY: origin.y })
-        }
-        if (COMPONENT_LABEL_PARENT_TYPES.has(parentType)) {
-          const origin = graph.getAbsolutePosition(childId)
-          this.components.push({ nodeId: childId, absX: origin.x, absY: origin.y, parentType })
-        }
-        if (child.childIds.length > 0) {
-          this.walkChildren(graph, childId, insideSection)
-        }
-      } else {
-        if (hasFrameTitle(child, parentType)) {
-          const origin = graph.getAbsolutePosition(childId)
-          this.frames.push({ nodeId: childId, absX: origin.x, absY: origin.y })
-        }
-        if (child.childIds.length > 0) this.walkChildren(graph, childId, insideSection)
+  for (const childId of parent.childIds) {
+    const child = graph.getNode(childId)
+    if (!child || !child.visible) continue
+
+    if (child.type === 'SECTION') {
+      labels.sections.push({ nodeId: childId, nested: insideSection })
+      walkChildren(graph, labels, childId, true)
+    } else if (LABEL_TYPES.has(child.type)) {
+      if (child.type === 'COMPONENT_SET') labels.componentSets.push({ nodeId: childId })
+      if (COMPONENT_LABEL_PARENT_TYPES.has(parentType)) {
+        labels.components.push({ nodeId: childId, parentType })
       }
+      if (child.childIds.length > 0) walkChildren(graph, labels, childId, insideSection)
+    } else {
+      if (hasFrameTitle(child, parentType)) labels.frames.push({ nodeId: childId })
+      if (child.childIds.length > 0) walkChildren(graph, labels, childId, insideSection)
     }
   }
 }

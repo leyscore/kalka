@@ -1,4 +1,10 @@
-import type { LabelCache, OverlayLayerId, PlacedIssueMarker, RulerTheme } from '@kalka/core/canvas'
+import type {
+  LabelCache,
+  OverlayLayerId,
+  PageIndex,
+  PlacedIssueMarker,
+  RulerTheme
+} from '@kalka/core/canvas'
 import { RULER_SIZE } from '@kalka/core/constants'
 import type { Color, Rect } from '@kalka/scene-graph/primitives'
 
@@ -82,12 +88,12 @@ export const SVG_OVERLAY_LAYERS: ReadonlySet<OverlayLayerId> = new Set<OverlayLa
 /** Everything a frame of the overlay depends on beyond the shared overlay context. */
 export interface ComposeInput extends OverlayContext {
   pageId: string
-  /** The document's version, which caches what only changes with the document. */
-  sceneVersion: number
   viewportSize: { width: number; height: number }
   dpr: number
   pageColor: Color
   labels: LabelCache
+  /** The page's frames with layout grids. */
+  gridFrames: PageIndex<Set<string>>
   showRulers: boolean
   rulerTheme?: RulerTheme | null
   /** UI floating over the canvas that edge-pinned markers keep clear of. */
@@ -139,9 +145,9 @@ export function composeOverlay(input: ComposeInput): ComposedOverlay {
     ...sectionTitlesLayer(input),
     ...componentLabelsLayer(input),
     // Structure, over the design and under every editing outline.
-    ...layoutGridsLayer(input, input.pageId, input.sceneVersion),
+    ...layoutGridsLayer(input, input.pageId, input.gridFrames),
     ...pixelGridLayer(input, { ...input.viewportSize, dpr: input.dpr, pageColor: input.pageColor }),
-    ...componentSetBordersLayer(input, input.pageId),
+    ...componentSetBordersLayer(input, input.labels),
     ...codeFocusLayer(input),
     ...(isMeasuring ? [] : slotOutlinesLayer(input, hovered)),
     ...(isMeasuring ? [] : layoutOutlinesLayer(input, hovered)),

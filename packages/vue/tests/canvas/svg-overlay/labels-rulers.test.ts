@@ -25,7 +25,7 @@ function texts(shapes: OverlayShape[]): string[] {
 
 function context(graph: SceneGraph, patch: Partial<LabelContext> = {}): LabelContext {
   const labels = new LabelCache()
-  labels.update(graph, graph.getPages()[0].id, 1)
+  labels.update(graph, graph.getPages()[0].id)
   return {
     graph,
     view: { panX: 0, panY: 0, zoom: 1 },
@@ -129,7 +129,7 @@ describe('label hit testing without Skia fonts', () => {
       height: 200
     })
     const labels = new LabelCache()
-    labels.update(graph, page, 1)
+    labels.update(graph, page)
     const measure = (node: { name: string }, layout: { fontSize: number }) => ({
       width: measureText(node.name),
       height: layout.fontSize
