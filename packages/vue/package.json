@@ -1,6 +1,6 @@
 {
   "name": "@kalka/vue",
-  "version": "0.1.0-beta.6",
+  "version": "0.1.0-beta.5",
   "license": "MIT",
   "type": "module",
   "exports": {

@@ -171,7 +171,7 @@
     },
     "electron": {
       "name": "@kalka/electron",
-      "version": "0.1.0-beta.6",
+      "version": "0.1.0-beta.5",
       "devDependencies": {
         "electron": "44.4.5",
         "electron-builder": "26.15.3",
@@ -183,7 +183,7 @@
     },
     "packages/cli": {
       "name": "@kalka/cli",
-      "version": "0.1.0-beta.6",
+      "version": "0.1.0-beta.5",
       "bin": {
         "kalka": "./bin/kalka.js",
       },
@@ -206,7 +206,7 @@
     },
     "packages/core": {
       "name": "@kalka/core",
-      "version": "0.1.0-beta.6",
+      "version": "0.1.0-beta.5",
       "dependencies": {
         "@chenglou/pretext": "^0.0.7",
         "@iconify/utils": "^3.1.4",
@@ -259,7 +259,7 @@
     },
     "packages/design-jsx": {
       "name": "@kalka/design-jsx",
-      "version": "0.1.0-beta.6",
+      "version": "0.1.0-beta.5",
       "dependencies": {
         "@kalka/emit": "workspace:*",
         "@lezer/common": "^1.5.2",
@@ -299,7 +299,7 @@
     },
     "packages/dom-css": {
       "name": "@kalka/dom-css",
-      "version": "0.1.0-beta.6",
+      "version": "0.1.0-beta.5",
       "dependencies": {
         "@acemir/cssom": "^0.9.31",
         "@kalka/emit": "workspace:*",
@@ -336,7 +336,7 @@
     },
     "packages/emit": {
       "name": "@kalka/emit",
-      "version": "0.1.0-beta.6",
+      "version": "0.1.0-beta.5",
       "dependencies": {
         "@sveltejs/acorn-typescript": "^1.0.13",
         "acorn": "^8.18.0",
@@ -352,7 +352,7 @@
     },
     "packages/fig": {
       "name": "@kalka/fig",
-      "version": "0.1.0-beta.6",
+      "version": "0.1.0-beta.5",
       "dependencies": {
         "es-toolkit": "^1.52.0",
         "fflate": "^0.8.3",
@@ -371,7 +371,7 @@
     },
     "packages/harness": {
       "name": "@kalka/harness",
-      "version": "0.1.0-beta.6",
+      "version": "0.1.0-beta.5",
       "bin": {
         "openpencil-harness": "./dist/stdio.mjs",
       },
@@ -388,7 +388,7 @@
     },
     "packages/kiwi": {
       "name": "@kalka/kiwi",
-      "version": "0.1.0-beta.6",
+      "version": "0.1.0-beta.5",
       "dependencies": {
         "fflate": "^0.8.3",
         "fzstd": "^0.1.1",
@@ -401,7 +401,7 @@
     },
     "packages/mcp": {
       "name": "@kalka/mcp",
-      "version": "0.1.0-beta.6",
+      "version": "0.1.0-beta.5",
       "bin": {
         "kalka-mcp": "./dist/stdio.mjs",
         "kalka-mcp-http": "./dist/index.mjs",
@@ -426,7 +426,7 @@
     },
     "packages/pen": {
       "name": "@kalka/pen",
-      "version": "0.1.0-beta.6",
+      "version": "0.1.0-beta.5",
       "devDependencies": {
         "@types/bun": "^1.3.14",
         "tsdown": "^0.22.14",
@@ -438,7 +438,7 @@
     },
     "packages/scene-graph": {
       "name": "@kalka/scene-graph",
-      "version": "0.1.0-beta.6",
+      "version": "0.1.0-beta.5",
       "dependencies": {
         "@noble/hashes": "^2.3.0",
         "culori": "^4.0.2",
@@ -457,7 +457,7 @@
     },
     "packages/vue": {
       "name": "@kalka/vue",
-      "version": "0.1.0-beta.6",
+      "version": "0.1.0-beta.5",
       "dependencies": {
         "@atlaskit/pragmatic-drag-and-drop": "^1.8.1",
         "@atlaskit/pragmatic-drag-and-drop-hitbox": "^1.2.0",

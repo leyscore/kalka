@@ -2,13 +2,6 @@
 
 ## Unreleased
 
-## 0.1.0-beta.6 — 2026-10-19
-
-### Fixed
-
-- The macOS app downloaded from the website opens instead of being reported as damaged: builds without an Apple certificate are now signed ad hoc as a whole, so macOS asks once to allow an unidentified developer, in System Settings › Privacy & Security › Open Anyway.
-- The macOS installer window shows its whole footer instead of cutting it under the window's bottom edge, and tells how to allow the first launch on current macOS.
-
 ## 0.1.0-beta.5 — 2026-10-19
 
 ### Changed
@@ -17,6 +10,8 @@
 
 ### Fixed
 
+- The macOS app downloaded from the website opens instead of being reported as damaged: builds without an Apple certificate are now signed ad hoc as a whole, so macOS asks once to allow an unidentified developer, in System Settings › Privacy & Security › Open Anyway.
+- The macOS installer window shows its whole footer instead of cutting it under the window's bottom edge, and tells how to allow the first launch on current macOS.
 - Parts of the canvas, such as whole blocks of a large imported page or the page's own background, no longer go missing at low zoom on some graphics cards: the canvas becomes a single compositor layer only while it pans or zooms.
 
 ## 0.1.0-beta.4 — 2026-10-19
