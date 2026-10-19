@@ -1,7 +1,8 @@
 import { computed, ref } from 'vue'
 
 import { computeAllLayouts } from '@kalka/core/layout'
-import { documentFontStatus, fontManager, fontResolver } from '@kalka/core/text'
+import { fontManager, fontResolver, PageFontUses } from '@kalka/core/text'
+import type { SceneGraph } from '@kalka/scene-graph'
 import { useEditorEvent } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
@@ -17,16 +18,43 @@ export function useDocumentFontStatus() {
     revision.value++
   }
 
+  // The page's text faces, kept current layer by layer; an edit that changes no face or name
+  // leaves the status as it is.
+  let uses: PageFontUses | null = null
+  let usesGraph: SceneGraph | null = null
+  const pageUses = () => {
+    const pageId = editor.state.currentPageId
+    if (uses?.pageId !== pageId || usesGraph !== editor.graph) {
+      uses = new PageFontUses(editor.graph, pageId)
+      usesGraph = editor.graph
+    }
+    return uses
+  }
+  const rebuild = () => {
+    uses = null
+    refresh()
+  }
+  const updateNode = (id: string) => {
+    if (uses?.update(id)) refresh()
+  }
+  const updateSubtree = (id: string) => {
+    if (!uses) return
+    let changed = uses.update(id)
+    for (const { node } of editor.graph.flattenTree(id)) changed = uses.update(node.id) || changed
+    if (changed) refresh()
+  }
+
   useEditorEvent('font:resolution-changed', refresh)
-  useEditorEvent('graph:replaced', refresh)
-  useEditorEvent('page:changed', refresh)
-  useEditorEvent('node:created', refresh)
-  useEditorEvent('node:updated', refresh)
-  useEditorEvent('node:deleted', refresh)
+  useEditorEvent('graph:replaced', rebuild)
+  useEditorEvent('page:changed', rebuild)
+  useEditorEvent('node:created', (node) => updateNode(node.id))
+  useEditorEvent('node:updated', updateNode)
+  useEditorEvent('node:deleted', updateNode)
+  useEditorEvent('node:reparented', updateSubtree)
 
   const status = computed(() => {
     void revision.value
-    return documentFontStatus(editor.graph, editor.state.currentPageId)
+    return pageUses().status()
   })
 
   async function retry() {
@@ -59,7 +87,7 @@ export function useDocumentFontStatus() {
           editor.state.sceneVersion
         )
       }
-      refresh()
+      rebuild()
       succeeded = true
     } catch (error) {
       if (!preparation.signal.aborted) {

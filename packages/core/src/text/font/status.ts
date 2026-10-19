@@ -46,10 +46,26 @@ function rootTextNodes(graph: SceneGraph, rootIds: readonly string[]): SceneNode
   )
 }
 
-function collectFaceUses(graph: SceneGraph, rootIds: readonly string[]): MutableFontFaceUse[] {
+/** The faces one text layer uses, as Kalka loads them, keyed so a layer's set compares cheaply. */
+interface NodeFaces {
+  name: string
+  faces: { family: string; style: string }[]
+  key: string
+}
+
+function nodeFaces(node: SceneNode, interVersion: SceneGraph['interVersion']): NodeFaces {
+  const faces = collectNodeFontFaces(node, interVersion)
+  return {
+    name: node.name,
+    faces,
+    key: faces.map(({ family, style }) => faceKey(family, style)).join('\n')
+  }
+}
+
+function faceUses(byNode: Iterable<[string, NodeFaces]>): MutableFontFaceUse[] {
   const uses = new Map<string, MutableFontFaceUse>()
-  for (const node of rootTextNodes(graph, rootIds)) {
-    for (const { family: loadedFamily, style } of collectNodeFontFaces(node, graph.interVersion)) {
+  for (const [nodeId, { name, faces }] of byNode) {
+    for (const { family: loadedFamily, style } of faces) {
       const key = faceKey(loadedFamily, style)
       const use = uses.get(key) ?? {
         family: cssFontFamily(loadedFamily),
@@ -58,12 +74,18 @@ function collectFaceUses(graph: SceneGraph, rootIds: readonly string[]): Mutable
         nodeIds: new Set<string>(),
         nodeNames: new Set<string>()
       }
-      use.nodeIds.add(node.id)
-      use.nodeNames.add(node.name)
+      use.nodeIds.add(nodeId)
+      use.nodeNames.add(name)
       uses.set(key, use)
     }
   }
   return [...uses.values()]
+}
+
+function collectFaceUses(graph: SceneGraph, rootIds: readonly string[]): MutableFontFaceUse[] {
+  return faceUses(
+    rootTextNodes(graph, rootIds).map((node) => [node.id, nodeFaces(node, graph.interVersion)])
+  )
 }
 
 function faceStatus(use: MutableFontFaceUse, manager: FontManager): DocumentFontFaceStatus {
@@ -107,15 +129,63 @@ function faceStatus(use: MutableFontFaceUse, manager: FontManager): DocumentFont
   }
 }
 
+function statusOfUses(uses: MutableFontFaceUse[], manager: FontManager): DocumentFontStatus {
+  const faces = uses
+    .map((use) => faceStatus(use, manager))
+    .sort((a, b) => a.family.localeCompare(b.family) || a.style.localeCompare(b.style))
+  const issues = faces.filter((face) => face.status !== 'available')
+  return { faithful: issues.length === 0, faces, issues }
+}
+
 export function documentFontStatus(
   graph: SceneGraph,
   rootIds: string | readonly string[],
   manager: FontManager = fontManager
 ): DocumentFontStatus {
   const roots = typeof rootIds === 'string' ? [rootIds] : rootIds
-  const faces = collectFaceUses(graph, roots)
-    .map((use) => faceStatus(use, manager))
-    .sort((a, b) => a.family.localeCompare(b.family) || a.style.localeCompare(b.style))
-  const issues = faces.filter((face) => face.status !== 'available')
-  return { faithful: issues.length === 0, faces, issues }
+  return statusOfUses(collectFaceUses(graph, roots), manager)
+}
+
+/**
+ * The faces a page's text uses, kept current one layer at a time, so an edit to one text costs
+ * that text rather than a walk of the page. Gives the same status as {@link documentFontStatus}.
+ */
+export class PageFontUses {
+  private readonly byNode = new Map<string, NodeFaces>()
+
+  constructor(
+    private readonly graph: SceneGraph,
+    readonly pageId: string
+  ) {
+    for (const node of rootTextNodes(graph, [pageId]))
+      this.byNode.set(node.id, nodeFaces(node, graph.interVersion))
+  }
+
+  /**
+   * Reads one layer again, after it was created, changed or deleted. True when what it adds to
+   * the status changed: its faces, its name, or whether it is on the page at all.
+   */
+  update(nodeId: string): boolean {
+    const node = this.graph.getNode(nodeId)
+    const before = this.byNode.get(nodeId)
+    if (node?.type !== 'TEXT' || !this.isOnPage(node)) {
+      return this.byNode.delete(nodeId)
+    }
+    const after = nodeFaces(node, this.graph.interVersion)
+    this.byNode.set(nodeId, after)
+    return before?.key !== after.key || before.name !== after.name
+  }
+
+  status(manager: FontManager = fontManager): DocumentFontStatus {
+    return statusOfUses(faceUses(this.byNode), manager)
+  }
+
+  private isOnPage(node: SceneNode): boolean {
+    let current: SceneNode | undefined = node
+    while (current?.parentId) {
+      if (current.parentId === this.pageId) return true
+      current = this.graph.getNode(current.parentId)
+    }
+    return false
+  }
 }
