@@ -1,3 +1,5 @@
+import { isEqual } from 'es-toolkit/predicate'
+
 import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 import { colorToHex } from '@kalka/scene-graph/color'
 
@@ -298,9 +300,20 @@ export class PageLint {
         ...this.linter.toLintNode(this.graph, raw),
         parent: node.parent
       })
-      if (!this.insideInstance(node)) this.found.set(id, this.linter.lintNode(this.tree, node))
+      if (!this.insideInstance(node)) this.setFound(id, this.linter.lintNode(this.tree, node))
     }
-    this.messages = null
+  }
+
+  /** Records a layer's findings; the page's list is collected again only if they changed. */
+  private setFound(id: string, messages: LintMessage[]): void {
+    const before = this.found.get(id) ?? []
+    if (messages.length > 0) this.found.set(id, messages)
+    else this.found.delete(id)
+    if (!isEqual(before, messages)) this.messages = null
+  }
+
+  private dropFound(id: string): void {
+    if (this.found.delete(id)) this.messages = null
   }
 
   /** Lints a captured layer and what is inside it, unless an instance holds it. */
@@ -311,10 +324,7 @@ export class PageLint {
       this.forgetFindings(id)
       return
     }
-    this.linter.lintTree(this.tree, id, (nodeId, messages) => {
-      if (messages.length > 0) this.found.set(nodeId, messages)
-      else this.found.delete(nodeId)
-    })
+    this.linter.lintTree(this.tree, id, (nodeId, messages) => this.setFound(nodeId, messages))
   }
 
   /** The findings in page order, as a full lint lists them. */
@@ -335,14 +345,14 @@ export class PageLint {
   private forget(id: string): void {
     const node = this.tree.nodes.get(id)
     this.tree.nodes.delete(id)
-    this.found.delete(id)
+    this.dropFound(id)
     for (const childId of node?.childIds ?? []) {
       if (this.tree.nodes.get(childId)?.parent === node) this.forget(childId)
     }
   }
 
   private forgetFindings(id: string): void {
-    this.found.delete(id)
+    this.dropFound(id)
     for (const childId of this.tree.nodes.get(id)?.childIds ?? []) this.forgetFindings(childId)
   }
 

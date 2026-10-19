@@ -3,7 +3,13 @@ import { computed, effectScope, ref, shallowRef, watch } from 'vue'
 
 import type { Editor } from '@kalka/core/editor'
 import { isFigPagePending } from '@kalka/core/io/formats/fig'
-import { createLinter, type LintConfig, type LintFixRequest, type PageLint } from '@kalka/core/lint'
+import {
+  createLinter,
+  type LintConfig,
+  type LintFixRequest,
+  type LintMessage,
+  type PageLint
+} from '@kalka/core/lint'
 
 import type { AppEditorState } from '@/app/editor/session/types'
 import { appPreferences, type DesignCheckPreset } from '@/app/settings/preferences/store'
@@ -68,15 +74,27 @@ export function createDesignCheck(editor: Editor, state: AppEditorState) {
     }
     return pageLint
   }
+  /** The current page's findings as last turned into issues, which an unchanged check reuses. */
+  let lastFindings: { messages: readonly LintMessage[]; issues: DesignIssue[] } | null = null
+
   function checkPage(pageId: string): DesignIssue[] {
     const current = snapshot.value
     const previous =
       current?.pageId === pageId ? current.issues : (pages.results.value.get(pageId) ?? [])
-    const messages =
-      pageId === state.currentPageId
-        ? currentPageLint(pageId).check().messages
-        : linter.value.lintGraph(editor.graph, [pageId]).messages
-    return toDesignIssues(messages, pageId, previous)
+    if (pageId !== state.currentPageId) {
+      return toDesignIssues(
+        linter.value.lintGraph(editor.graph, [pageId]).messages,
+        pageId,
+        previous
+      )
+    }
+    const { messages } = currentPageLint(pageId).check()
+    if (lastFindings?.messages === messages && previous === lastFindings.issues) {
+      return lastFindings.issues
+    }
+    const issues = toDesignIssues(messages, pageId, previous)
+    lastFindings = { messages, issues }
+    return issues
   }
 
   /** Set while the Lint panel lists the whole document, which needs every page checked. */
@@ -141,7 +159,10 @@ export function createDesignCheck(editor: Editor, state: AppEditorState) {
       return
     }
     const pageId = state.currentPageId
-    snapshot.value = { pageId, issues: checkPage(pageId) }
+    const issues = checkPage(pageId)
+    // An edit that changed no finding leaves the panel and the markers as they are.
+    if (snapshot.value?.pageId === pageId && snapshot.value.issues === issues) return
+    snapshot.value = { pageId, issues }
   }
 
   function schedule(wait = CHECK_DELAY_MS) {
