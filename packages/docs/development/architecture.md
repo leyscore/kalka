@@ -47,6 +47,18 @@ Every top-level layer (an artboard) is drawn as its own page in a sandboxed ifra
 
 Selection, hover, guides, handles and other editor feedback are drawn by an SVG overlay above the iframes (`packages/vue/src/canvas/svg-overlay/`).
 
+Only artboards on screen or about to be have a live iframe. The projector holds each at a tier from where it lies against the view (`tiers.ts`), with margins that keep one on a boundary from flapping during a pan:
+
+| Tier | When | Drawn by |
+|---|---|---|
+| visible | on screen | a live iframe that paints |
+| pictured | on screen, the view zoomed out to 25 % or less, where a snapshot of a mebibyte at most shows every pixel it draws | a snapshot; the artboard holding the selection or an edit stays visible |
+| near | within a screen of it | a live iframe that does not paint, so it shows at once |
+| far | within three screens | a snapshot taken at the zoom, up to a mebibyte each and 32 MiB together; the iframe and its document are freed |
+| dormant | farther, or never approached | a placeholder of its fill |
+
+Iframes wake and go to sleep once the view rests, a few a frame; snapshots are taken while the canvas idles, by drawing the artboard's projection as an SVG `foreignObject` image with its fonts embedded, which costs a few milliseconds on a recent Mac. While an iframe loads, the stand-in stays until its document is built with its fonts. Layout of an artboard without a live document goes to the offscreen engine: an edit lays it out at once, and one never laid out since the page opened is laid out while the canvas idles. A feature that reads or edits an artboard's DOM wakes it with `retain`, `whenLive` or `withLiveArtboard`; the text editor does, and `get_computed_styles` through `drawLayerWithEngines`. Exports, thumbnails, hit testing, the overlay and agent previews read the graph, not the iframes.
+
 ### Layout
 
 The browser is the only layout engine; Core computes no layout itself. `computeLayout` and `computeAllLayouts` from `@kalka/core/layout` hand a layer to the engines installed with `installLayoutEngine`, latest first: an engine that does not draw the layer leaves it to the one installed before. Each engine projects artboards to the HTML and CSS the canvas builds (`artboardMarkup` from `@kalka/dom-css/export`), lets a browser lay them out, and writes every box back into the layers' `x`, `y`, `width` and `height` with the canvas's own `measureLayerBoxes` and `applyMeasuredLayout`; the fields become a cache of what the browser computed. Without an engine that draws a layer, nothing is laid out again and layers keep the geometry they have.
@@ -54,7 +66,7 @@ The browser is the only layout engine; Core computes no layout itself. `computeL
 | Where | Engine | Browser |
 |---|---|---|
 | App, current page | `DomLayoutEngine` (`packages/vue/src/canvas/dom-scene/layout.ts`) | the canvas's own artboard iframes |
-| App, everything else: other pages, export copies, previews, artboards whose iframe is loading | `BrowserLayoutEngine` with `createDocumentLayout` (`src/app/editor/layout/offscreen.ts`) | hidden blank iframes of the editor's page, written and measured synchronously |
+| App, everything else: other pages, export copies, previews, artboards that sleep or whose iframe is loading | `BrowserLayoutEngine` with `createDocumentLayout` (`src/app/editor/layout/offscreen.ts`) | hidden blank iframes of the editor's page, written and measured synchronously |
 | CLI, `@kalka/cli/layout` | `BrowserLayoutEngine` with `scriptLayoutPage` (`packages/cli/src/render/layout.ts`) | the render host, an Electron process with no window (`electron/src/render-host.ts`) |
 | Unit tests | the same, through one host per test process (`tests/helpers/layout/browser.ts`) | the render host |
 
