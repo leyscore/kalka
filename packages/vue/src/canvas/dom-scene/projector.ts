@@ -22,6 +22,7 @@ import {
   type ArtboardFontFace
 } from './frame'
 import { maskedParentsAround } from './masks'
+import { measureScopes } from './measure-scope'
 import { PatternUsers } from './patterns'
 
 /** Changes to a layer that restyle its children too: their CSS depends on how it lays them out. */
@@ -381,7 +382,9 @@ export class DomSceneProjector {
     const artboard = this.artboards.get(artboardId)
     const root = this.elements.get(artboardId)
     if (!artboard?.doc || !root) return new Map()
-    const scopes = artboard.patched ? this.measureScopes(root, artboard.patched) : null
+    const scopes = artboard.patched
+      ? measureScopes(root, artboard.patched, (id) => this.drawnElementFor(id), LAYER_ID_ATTR)
+      : null
     artboard.stale = false
     artboard.patched = new Set()
     artboard.derived = false
@@ -391,32 +394,6 @@ export class DomSceneProjector {
       LAYER_ID_ATTR,
       (id, element, rect) => this.measuredSize(id, element, rect),
       scopes ?? undefined
-    )
-  }
-
-  /**
-   * The layers whose boxes the patched ones can have moved: each patched layer and what is
-   * inside it, widened to its parent while it sits in its parent's flow, as in auto layout, where
-   * it pushes its siblings and sizes its parent. A layer placed absolutely moves nothing outside
-   * itself. Null when that reaches the artboard, which is then read whole.
-   */
-  private measureScopes(root: Element, patched: ReadonlySet<string>): Element[] | null {
-    const scopes = new Set<Element>()
-    for (const id of patched) {
-      let element = this.drawnElementFor(id)
-      if (!element) return null
-      while (element !== root && isInFlow(element)) {
-        const parent: Element | null | undefined = element.parentElement?.closest(
-          `[${LAYER_ID_ATTR}]`
-        )
-        if (!parent) return null
-        element = parent
-      }
-      if (element === root) return null
-      scopes.add(element)
-    }
-    return [...scopes].filter(
-      (scope) => ![...scopes].some((other) => other !== scope && other.contains(scope))
     )
   }
 
@@ -715,10 +692,4 @@ export class DomSceneProjector {
       if (id && this.elements.get(id) === element) this.elements.delete(id)
     }
   }
-}
-
-/** Whether an element takes part in its parent's flow, so that its box moves its siblings'. */
-function isInFlow(element: Element): boolean {
-  const position = element.ownerDocument.defaultView?.getComputedStyle(element).position
-  return position !== 'absolute' && position !== 'fixed'
 }
