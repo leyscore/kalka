@@ -108,23 +108,49 @@ function namedAfterText(node: SceneNode): boolean {
   return name.length > 0 && node.text.trim().startsWith(name)
 }
 
+/** A class named after the one declaration it holds, `flex-shrink-0`, or undefined for several. */
+function declarationClass(declarations: string): string | undefined {
+  const parts = declarations.split(';').filter((part) => part.trim())
+  const [only] = parts
+  if (parts.length !== 1 || !only) return undefined
+  const [property = '', value = ''] = only.split(':')
+  return cssName(`${property} ${value}`, 'shared')
+}
+
 /**
- * A class for a style several layers share: the name they all have, or what the first one is.
- * Text named after its own words is named after its type, which the others share with it.
+ * A class for a style several layers share: the name they all have, or for text named after
+ * its own words its type, which the others share with it. Layers named differently share a
+ * name for what they all are, or for the one declaration they share, never the first one's
+ * name, which would call the others after it.
  */
-export function sharedClassBase(first: DesignElement, all: readonly DesignElement[]): string {
+export function sharedClassBase(
+  first: DesignElement,
+  all: readonly DesignElement[],
+  declarations = ''
+): string {
   const names = new Set(all.map(nameClass))
   const [name] = names
   if (names.size === 1 && name) return name
   const node = first.sourceSceneNode
   if (node?.type === 'TEXT' && (namedAfterText(node) || !meaningfulName(first)))
     return textStyleClass(node)
-  return nameClass(first) ?? role(first)
+  if (names.size === 1) return role(first)
+  const roles = new Set(all.map(role))
+  const [shared] = roles
+  if (roles.size === 1 && shared) return shared
+  return declarationClass(declarations) ?? 'shared'
 }
 
-/** A class for one layer's own declarations: its name, its first words, or what it is. */
+/**
+ * A class for one layer's own declarations: its name, its first words, or what it is. A name the
+ * element already carries as a class, as layers imported from HTML do, takes what the element is
+ * after it (`logo-link`), so the two read apart instead of as `logo` and `logo-2`.
+ */
 export function ownClassBase(element: DesignElement): string {
-  return nameClass(element) ?? textClass(element) ?? role(element)
+  const base = nameClass(element) ?? textClass(element) ?? role(element)
+  const classes = 'class' in element.attrs ? element.attrs.class.split(/\s+/) : []
+  const what = role(element)
+  return classes.includes(base) && what !== base ? `${base}-${what}` : base
 }
 
 function collectClasses(node: DesignNode, names: Set<string>): void {

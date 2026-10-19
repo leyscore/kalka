@@ -126,7 +126,7 @@ class StyleSharing {
     for (const [key, elements] of alike) {
       const first = elements.at(0)
       if (!first || elements.length < 2) continue
-      const className = claimClassName(sharedClassBase(first, elements), this.taken)
+      const className = claimClassName(sharedClassBase(first, elements, key), this.taken)
       this.sharedClasses.set(key, className)
       this.sharedRules.push(`.${className}{${key}}`)
     }

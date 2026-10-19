@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+
+- Classes HTML export shares between layers named differently are named after what the layers are, such as `row` or `box`, or the one declaration they share, such as `flex-shrink-0`, instead of after the first layer, and a layer's own class reads apart from a class it already carries (`logo-link` beside `logo` instead of `logo-2`).
+
 ## 0.1.0-beta.5 — 2026-10-19
 
 ### Changed

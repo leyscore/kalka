@@ -100,4 +100,39 @@ describe('styles layers share', () => {
     expect(html).toContain('<div class="button-2 button-3">')
     expect(html).toContain('<div class="button-2 button-4">')
   })
+
+  test('layers named apart share a class named after what they share, not after the first', async () => {
+    const graph = new SceneGraph()
+    const row = graph.createNode('FRAME', graph.getPages()[0].id, {
+      name: 'Header',
+      width: 400,
+      height: 40,
+      layoutMode: 'HORIZONTAL',
+      primaryAxisSizing: 'FIXED',
+      counterAxisSizing: 'FIXED'
+    })
+    graph.createNode('FRAME', row.id, {
+      name: 'Logo',
+      width: 40,
+      height: 40,
+      fills: INK,
+      cornerRadius: 6,
+      htmlClasses: ['logo']
+    })
+    graph.createNode('FRAME', row.id, {
+      name: 'Menu',
+      width: 80,
+      height: 40,
+      fills: INK,
+      cornerRadius: 6
+    })
+    const document = sceneNodeToDesignDocument(graph, row.id, { includeSourceIds: false })
+    const { files } = await exportHTMLBundle(document, { html: 'standalone' })
+    const html = String(files[0]?.content)
+    // Both are boxes: the class they share says so, and the logo's own class reads apart from
+    // the class it already carries.
+    expect(html).toContain('<div class="logo box logo-box">')
+    expect(html).toContain('<div class="box menu">')
+    expect(html).not.toContain('logo-2')
+  })
 })
