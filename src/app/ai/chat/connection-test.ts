@@ -1,5 +1,7 @@
 import { generateText } from 'ai'
 
+import { isAPIKeyOptional } from '@kalka/core/constants'
+
 import { isInsufficientCreditError, providerErrorStatus } from '@/app/ai/chat/failure'
 import { createLanguageModel, resolveLanguageModelID, type ModelConfig } from '@/app/ai/chat/model'
 import { isTauri } from '@/app/tauri/env'
@@ -21,12 +23,14 @@ export type ProviderConnectionTestFailureReason =
   | 'network'
   | 'unknown'
 
+const CONNECTION_TEST_TIMEOUT_MS = 60_000
+
 function isCompatibleProvider(providerID: ModelConfig['providerID']): boolean {
   return providerID === 'openai-compatible' || providerID === 'anthropic-compatible'
 }
 
 function validateConfig(config: ModelConfig): ProviderConnectionTestFailureReason | null {
-  if (!config.apiKey.trim()) return 'missing-api-key'
+  if (!config.apiKey.trim() && !isAPIKeyOptional(config.providerID)) return 'missing-api-key'
   if (isCompatibleProvider(config.providerID)) {
     if (!config.customBaseURL.trim()) return 'missing-base-url'
     try {
@@ -100,7 +104,8 @@ export async function testProviderConnection(
       model: createLanguageModel(config),
       prompt: 'Reply with OK.',
       maxOutputTokens: 1,
-      abortSignal: AbortSignal.timeout(15_000)
+      // A local server may load the model into memory on the first request.
+      abortSignal: AbortSignal.timeout(CONNECTION_TEST_TIMEOUT_MS)
     })
     return { ok: true }
   } catch (error) {

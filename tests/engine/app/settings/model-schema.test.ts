@@ -16,6 +16,7 @@ const context: ModelProfileValidationContext = {
   customModel: false,
   providerKind: 'api',
   supportsCustomBaseURL: false,
+  optionalAPIKey: false,
   design: true,
   intent: 'save'
 }
@@ -61,4 +62,9 @@ test('Pi may leave the model empty to use the default model set in Pi', () => {
   expect(errors({ providerKind: 'harness', intent: 'test' }, { ...values, modelID: '' })).toEqual(
     {}
   )
+})
+
+test('a test needs a key only when the provider requires one', () => {
+  expect(errors({ intent: 'test' })).toEqual({ credential: ['Required'] })
+  expect(errors({ intent: 'test', optionalAPIKey: true })).toEqual({})
 })

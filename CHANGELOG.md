@@ -6,6 +6,10 @@
 
 - Classes HTML export shares between layers named differently are named after what the layers are, such as `row` or `box`, or the one declaration they share, such as `flex-shrink-0`, instead of after the first layer, and a layer's own class reads apart from a class it already carries (`logo-link` beside `logo` instead of `logo-2`).
 
+### Fixed
+
+- OpenAI- and Anthropic-compatible servers on your own machine or network, such as LM Studio, Ollama, and llama.cpp, connect without an API key, and a base URL without a path, such as `http://localhost:1234`, uses its `/v1` API. In the desktop app, replies from any model stream in as they are written instead of being cut off after 30 seconds, so slow local models finish; a request ends only when the server sends nothing for five minutes (#1).
+
 ## 0.1.0-beta.5 — 2026-10-19
 
 ### Changed

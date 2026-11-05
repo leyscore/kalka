@@ -306,4 +306,30 @@ describe('AI model profiles and role assignments', () => {
       await setModelConnectionAPIKey('connection-anthropic', '')
     }
   })
+
+  test('runs a local OpenAI-compatible server without a key, and a cloud provider only with one', async () => {
+    const settings = settingsFixture()
+    settings.connections.push({
+      id: 'connection-local',
+      providerID: 'openai-compatible',
+      customBaseURL: 'http://localhost:1234',
+      customAPIType: 'completions',
+      credentialProfileId: 'local-main'
+    })
+    settings.models.push({
+      id: 'model-local',
+      name: 'Local model',
+      connectionId: 'connection-local',
+      modelID: '',
+      customModelID: 'qwen3-coder',
+      maxOutputTokens: 16_384,
+      thinkingLevel: 'default',
+      capabilities: ['tools']
+    })
+    settings.assignments.fast = 'model-local'
+    replaceAIModelSettings(settings)
+
+    expect((await createAIModelRuntime('fast'))?.kind).toBe('direct')
+    await expect(createAIModelRuntime('review')).rejects.toThrow('Credential is unavailable')
+  })
 })

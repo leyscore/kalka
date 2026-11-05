@@ -219,7 +219,7 @@ async function remove() {
               v-if="providerDef.supportsCustomBaseURL"
               v-slot="{ control }"
               :label="ai.baseURL"
-              :hint="settings.baseURLHint"
+              :hint="ai.compatibleBaseURLHint"
               :error="fieldErrors.baseURL"
               @blur="feedback.blur('baseURL')"
             >

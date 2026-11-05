@@ -512,3 +512,5 @@ zh-cn:panels.versionsUntracked
 zh-cn:panels.breakpointOf
 ja:panels.gridSummaryGrid
 zh-cn:panels.gridSummaryGrid
+ja:ai.compatibleBaseURLHint
+zh-cn:ai.compatibleBaseURLHint

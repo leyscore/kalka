@@ -5,6 +5,7 @@ import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 import type { AIProviderID } from '@kalka/core/constants'
 
 import {
+  compatibleBaseURL,
   createAnthropicCompatibleAdapter,
   createOpenAICompatibleAdapter
 } from '@/app/ai/providers/compatible'
@@ -43,11 +44,11 @@ const MODEL_PROVIDER_ADAPTERS = {
   zai: createAnthropicCompatibleAdapter({ baseURL: 'https://api.z.ai/api/anthropic' }),
   minimax: createOpenAICompatibleAdapter({ baseURL: 'https://api.minimax.io/v1', mode: 'chat' }),
   'openai-compatible': createOpenAICompatibleAdapter({
-    baseURL: (config) => config.customBaseURL,
+    baseURL: (config) => compatibleBaseURL(config.customBaseURL),
     mode: 'configurable'
   }),
   'anthropic-compatible': createAnthropicCompatibleAdapter({
-    baseURL: (config) => config.customBaseURL
+    baseURL: (config) => compatibleBaseURL(config.customBaseURL)
   })
 } satisfies Record<DirectProviderID, ModelProviderAdapter>
 

@@ -1,7 +1,7 @@
 import { isEqual } from 'es-toolkit'
 import { computed, ref, watch } from 'vue'
 
-import { IS_TAURI } from '@kalka/core/constants'
+import { IS_TAURI, isAPIKeyOptional } from '@kalka/core/constants'
 
 import {
   designCustomAPIType,
@@ -45,7 +45,10 @@ export const isConfigured = computed(() => {
   if (isACPProvider.value) return IS_TAURI
   // Pi can use the CLI's own sign-in, so a key is optional.
   if (isHarnessProvider.value) return IS_TAURI
-  if (apiKeyStatus.value !== 'configured') return false
+  const keyReady =
+    apiKeyStatus.value === 'configured' ||
+    (apiKeyStatus.value === 'missing' && isAPIKeyOptional(providerID.value))
+  if (!keyReady) return false
   const needsBaseURL =
     providerID.value === 'openai-compatible' || providerID.value === 'anthropic-compatible'
   return !needsBaseURL || Boolean(customBaseURL.value)

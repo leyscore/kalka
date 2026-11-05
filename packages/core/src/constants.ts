@@ -244,6 +244,8 @@ export interface AIProviderDef {
   defaultModel: string
   supportsCustomBaseURL?: boolean
   supportsCustomModel?: boolean
+  /** Servers on your own machine or network, such as LM Studio or llama.cpp, often need no key. */
+  optionalAPIKey?: boolean
 }
 
 export const HARNESS_PROVIDER_ID = 'harness:pi' as const
@@ -462,7 +464,8 @@ export const AI_PROVIDERS: AIProviderDef[] = [
     defaultModel: '',
     models: [],
     supportsCustomBaseURL: true,
-    supportsCustomModel: true
+    supportsCustomModel: true,
+    optionalAPIKey: true
   },
   {
     id: 'anthropic-compatible',
@@ -472,9 +475,15 @@ export const AI_PROVIDERS: AIProviderDef[] = [
     defaultModel: '',
     models: [],
     supportsCustomBaseURL: true,
-    supportsCustomModel: true
+    supportsCustomModel: true,
+    optionalAPIKey: true
   }
 ]
+
+/** Whether a provider can be used without an API key. */
+export function isAPIKeyOptional(providerID: AIProviderID): boolean {
+  return AI_PROVIDERS.some((provider) => provider.id === providerID && provider.optionalAPIKey)
+}
 
 export const DEFAULT_AI_PROVIDER: AIProviderID = 'openai-compatible'
 export const DEFAULT_AI_MODEL =

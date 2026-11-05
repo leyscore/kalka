@@ -34,6 +34,7 @@ export function useModelProfileFeedback(
         intent: testing.value ? 'test' : 'save',
         providerKind: providerKind.value,
         supportsCustomBaseURL: Boolean(profile.providerDef.value.supportsCustomBaseURL),
+        optionalAPIKey: Boolean(profile.providerDef.value.optionalAPIKey),
         design: profile.draft.profileId === aiModelSettings.value.assignments.design
       },
       messages.value

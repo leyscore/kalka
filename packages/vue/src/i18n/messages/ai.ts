@@ -178,6 +178,8 @@ export const aiMessageDefaults = {
   apiKey: 'API Key',
   apiType: 'API Type',
   baseURL: 'Base URL',
+  compatibleBaseURLHint:
+    'The server’s API address. An address without a path, such as http://localhost:1234, uses /v1.',
   modelID: 'Model ID',
   selectModel: 'Select a model',
   searchModels: 'Search models…',
@@ -318,7 +320,7 @@ export const aiMessageDefaults = {
   aiSetupSavedTitle: 'AI is ready',
   aiSetupSavedDescription: 'You can change models and roles anytime in Settings.',
   aiSetupRun: 'Run guided setup',
-  aiSetupServerKeyHint: 'If your server does not check keys, enter any value.',
+  aiSetupServerKeyHint: 'Leave this empty if your server does not check keys.',
   aiSetupGapDesign: 'Nothing you selected can create and edit designs.',
   aiSetupGapVision: 'Nothing you selected can review images, so visual review would stay off.',
   aiSetupGapContinue: 'You can continue without it and add it later in Settings.',
