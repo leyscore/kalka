@@ -4,11 +4,11 @@
 
 Kalka is an open source design tool, an alternative to Figma, where every layer is real HTML and CSS. What you draw is already a web page: no export step, no rebuild in code.
 
-![An agent drafts a landing page on the Kalka canvas, the layers are edited by hand, and the Code tab shows the HTML](assets/screenshots/demo.gif)
+<p align="center"><img src="assets/screenshots/demo.gif" width="480" alt="An agent drafts a landing page on the Kalka canvas, the layers are edited by hand, and the Code tab shows the HTML"></p>
 
 > **Status:** Beta. Tester builds for macOS, Windows and Linux are on the [Releases](https://github.com/leyscore/kalka/releases) page; macOS is the most tested. Follow the build on [kalka.design](https://kalka.design) and on X, [@bedleybuilds](https://x.com/bedleybuilds).
 
-![Kalka editor with a desktop artboard and its phone breakpoint](assets/screenshots/editor.png)
+<p align="center"><img src="assets/screenshots/editor.gif" width="960" alt="The Kalka editor: the layers panel on the left, a landing page on the canvas with its heading selected, and its typography in the panel on the right"></p>
 
 ## What it does
 
