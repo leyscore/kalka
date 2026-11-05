@@ -10,6 +10,7 @@ export interface ModelProfileValidationContext {
   customModel: boolean
   providerKind: 'api' | 'acp' | 'harness'
   supportsCustomBaseURL: boolean
+  optionalAPIKey: boolean
   design: boolean
   intent: 'save' | 'test'
 }
@@ -38,7 +39,7 @@ export function modelProfileSchema(
       baseURL:
         requiresAPI && context.supportsCustomBaseURL ? requiredSettingsURL(messages) : v.string(),
       credential:
-        requiresAPI && context.intent === 'test'
+        requiresAPI && !context.optionalAPIKey && context.intent === 'test'
           ? v.pipe(
               v.boolean(),
               v.check((value: boolean) => value, messages.requiredField)

@@ -1,6 +1,8 @@
 import type { LanguageModel } from 'ai'
 import { ref } from 'vue'
 
+import { isAPIKeyOptional } from '@kalka/core/constants'
+
 import { modelConnection, resolveAIModelRole } from '@/app/ai/models/store'
 import type { AIModelConnection, AIModelRole, ResolvedAIModelRole } from '@/app/ai/models/types'
 import { appCredentialServices } from '@/app/settings/credentials/app'
@@ -86,7 +88,9 @@ export async function createAIModelRuntime(role: AIModelRole): Promise<AIModelRu
   }
 
   const apiKey = await resolveModelConnectionAPIKey(resolved.connection.id)
-  if (!apiKey) throw new Error(`Credential is unavailable for the ${role} model role`)
+  if (!apiKey && !isAPIKeyOptional(resolved.connection.providerID)) {
+    throw new Error(`Credential is unavailable for the ${role} model role`)
+  }
   // Provider SDKs load with the first model the app talks to.
   const { createLanguageModel } = await import('@/app/ai/chat/model')
   return {
@@ -94,7 +98,7 @@ export async function createAIModelRuntime(role: AIModelRole): Promise<AIModelRu
     role: resolved,
     model: createLanguageModel({
       providerID: resolved.connection.providerID,
-      apiKey,
+      apiKey: apiKey ?? '',
       modelID: resolved.profile.modelID,
       customModelID: resolved.profile.customModelID,
       customBaseURL: resolved.connection.customBaseURL,

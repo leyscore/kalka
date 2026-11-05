@@ -54,10 +54,12 @@ In the Chat settings beside the model overview, choose whether reasoning is **Co
 | **Google AI**            | Gemini 3.1 Pro, Gemini 3 Flash                  | API key from [aistudio.google.dev](https://aistudio.google.dev)                                             |
 | **Z.ai**                 | GLM-5.1, GLM-5, GLM-4.7, GLM-4.5 family         | API key from [docs.z.ai](https://docs.z.ai/devpack/quick-start)                                             |
 | **MiniMax**              | MiniMax M3, M2.7, M2.7-highspeed, M2.5, M2.1    | API key from [platform.minimax.io](https://platform.minimax.io/user-center/basic-information/interface-key) |
-| **OpenAI-compatible**    | Any endpoint with OpenAI API format             | Custom base URL + key. Supports Completions and Responses API toggle.                                       |
-| **Anthropic-compatible** | Any endpoint with Anthropic API format          | Custom base URL + key                                                                                       |
+| **OpenAI-compatible**    | Any endpoint with OpenAI API format             | Custom base URL; key optional for local servers. Supports Completions and Responses API toggle.            |
+| **Anthropic-compatible** | Any endpoint with Anthropic API format          | Custom base URL; key optional for local servers                                                             |
 
 No backend, no subscription — your key talks directly to the provider. Browser requests are subject to each provider's CORS policy, and model deployments vary in how reliably they stream tool calls. See [BYOK provider and model compatibility](./byok-provider-compatibility) for measured results and reproduction steps.
+
+Servers on your own machine or network, such as LM Studio, Ollama, or llama.cpp, need no key unless you configured one. A base URL without a path, such as `http://localhost:1234`, uses the server's `/v1` API; enter any other path in full. In the desktop app replies stream as the model writes them, so a slow local model can take as long as it needs; a request ends only when the server sends nothing for five minutes. A finish reason of `length` means the server stopped at its own output limit, such as LM Studio's response length limit or llama.cpp's `--n-predict`.
 
 ## External MCP connections
 

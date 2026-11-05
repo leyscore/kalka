@@ -8,6 +8,7 @@ import { net } from 'electron'
 import { registerAll, type CallContext } from '../ipc'
 import { credentialCommands } from './credentials'
 import { buildFigFile } from './fig'
+import { createHttpStreams, type HttpStreamRequest } from './http-stream'
 import { loginShellPath } from './login-env'
 import { BUNDLED_MCP_HTTP, bundledMCPScript } from './mcp/bundled'
 import { cliCommandLine, withPath } from './mcp/cli'
@@ -172,6 +173,8 @@ async function proxyHttpRequest(request: ProxyRequest) {
   }
 }
 
+const httpStreams = createHttpStreams((url, init) => net.fetch(url, init))
+
 /** Tauri's custom commands, by name; arguments arrive as the object `invoke` was given. */
 const commands: Record<string, (args: never) => unknown> = {
   ...credentialCommands,
@@ -224,6 +227,10 @@ const commands: Record<string, (args: never) => unknown> = {
     return installMCPExtension(id)
   },
   proxy_http_request: ({ request }: { request: ProxyRequest }) => proxyHttpRequest(request),
+  proxy_http_stream_open: ({ request }: { request: HttpStreamRequest }) =>
+    httpStreams.open(request),
+  proxy_http_stream_read: ({ id }: { id: string }) => httpStreams.read(id),
+  proxy_http_stream_cancel: ({ id }: { id: string }) => httpStreams.cancel(id),
   render_html_image: ({ request }: { request: RenderHTMLRequest }) =>
     renderHTMLPage({ ...request, format: request.format === 'JPG' ? 'JPG' : 'PNG' }),
   render_html_pdf: ({ request }: { request: Omit<RenderHTMLRequest, 'format' | 'scale'> }) =>

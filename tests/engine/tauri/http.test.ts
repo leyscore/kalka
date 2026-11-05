@@ -1,10 +1,13 @@
 import { afterEach, describe, expect, test } from 'bun:test'
 
+import { createDeferred } from '@/app/runtime/deferred'
 import {
   createTauriFetch,
   tauriFetch,
   type ProxyHttpRequest,
-  type ProxyHttpResponse
+  type ProxyHttpResponse,
+  type ProxyHttpStreamRead,
+  type ProxyHttpStreamRequest
 } from '@/app/tauri/http'
 
 import { clearTauriMocks, mockTauriIPC } from '#tests/helpers/tauri/mocks'
@@ -222,5 +225,85 @@ describe('tauriFetch', () => {
     await expect(request).rejects.toHaveProperty('name', 'AbortError')
     expect(calls).toBe(1)
     expect(resolvePendingResponse).toBeTypeOf('function')
+  })
+})
+
+describe('streaming desktop fetch', () => {
+  const encoder = new TextEncoder()
+
+  function streamServer(chunks: string[]) {
+    const calls: string[] = []
+    let request: ProxyHttpStreamRequest | null = null
+    let reads = 0
+    const pendingRead = createDeferred<ProxyHttpStreamRead>()
+    return {
+      calls,
+      get request() {
+        return request
+      },
+      pendingRead,
+      async handler(command: string, args: unknown) {
+        calls.push(command)
+        if (command === 'proxy_http_stream_open') {
+          request = (args as { request: ProxyHttpStreamRequest }).request
+          return {
+            status: 200,
+            headers: [{ name: 'content-type', value: 'text/event-stream' }],
+            url: request.url
+          }
+        }
+        if (command === 'proxy_http_stream_read') {
+          const chunk = chunks[reads++]
+          if (chunk === undefined) return pendingRead.promise
+          return { done: false, chunk: [...encoder.encode(chunk)] }
+        }
+        return null
+      }
+    }
+  }
+
+  test('hands chunks to the page as the server writes them', async () => {
+    const server = streamServer(['data: one\n\n', 'data: two\n\n'])
+    await mockTauriIPC((command, args) => server.handler(command, args))
+
+    const response = await createTauriFetch({ stream: true, timeoutMs: 300_000 })(
+      'http://localhost:1234/v1/chat/completions',
+      { method: 'POST', body: '{"stream":true}' }
+    )
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-type')).toBe('text/event-stream')
+    expect(server.request?.idle_timeout_ms).toBe(300_000)
+    expect(server.request).not.toHaveProperty('timeout_ms')
+
+    const reader = response.body?.getReader()
+    if (!reader) throw new Error('Expected a body')
+    const decoder = new TextDecoder()
+    expect(decoder.decode((await reader.read()).value)).toBe('data: one\n\n')
+    expect(decoder.decode((await reader.read()).value)).toBe('data: two\n\n')
+    // The server is still writing: nothing ends the response yet.
+    const third = reader.read()
+    server.pendingRead.resolve({ done: true })
+    expect((await third).done).toBe(true)
+    expect(server.calls).not.toContain('proxy_http_stream_cancel')
+  })
+
+  test('closes the stream in the main process when the request is aborted', async () => {
+    const server = streamServer(['data: one\n\n'])
+    await mockTauriIPC((command, args) => server.handler(command, args))
+    const controller = new AbortController()
+
+    const response = await createTauriFetch({ stream: true })('http://localhost:1234/v1', {
+      signal: controller.signal
+    })
+    const reader = response.body?.getReader()
+    if (!reader) throw new Error('Expected a body')
+    await reader.read()
+    const waiting = reader.read()
+    const reason = new Error('stopped')
+    controller.abort(reason)
+
+    await expect(waiting).rejects.toBe(reason)
+    await Bun.sleep(0)
+    expect(server.calls.filter((call) => call === 'proxy_http_stream_cancel')).toHaveLength(1)
   })
 })
