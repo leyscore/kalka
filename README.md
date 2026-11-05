@@ -28,7 +28,7 @@ Download the latest build from [Releases](https://github.com/leyscore/kalka/rele
 
 Beta builds are not signed yet, so the system warns before the first launch:
 
-- **macOS:** right-click Kalka in Applications and choose **Open**, then **Open** again. If macOS says the app is damaged, run `xattr -dr com.apple.quarantine /Applications/Kalka.app` in Terminal.
+- **macOS:** open Kalka once; when macOS blocks it, open **System Settings › Privacy & Security**, click **Open Anyway** next to the message about Kalka, and confirm. If macOS says the app is damaged, run `xattr -dr com.apple.quarantine /Applications/Kalka.app` in Terminal.
 - **Windows:** in the SmartScreen window, choose **More info**, then **Run anyway**.
 - **Linux:** make the file executable (`chmod +x Kalka-*.AppImage`) and run it.
 
