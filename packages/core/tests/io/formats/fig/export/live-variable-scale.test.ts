@@ -21,6 +21,8 @@ function tagsInInput(graph: SceneGraph, rootId: string): SceneNode {
   return found[0]
 }
 
+// A full .fig round trip of a 550 KB file, laid out in the render host after every edit:
+// about 2 s on a laptop, more than the default 5 s on CI runners, like the archive tests.
 test('Gold imported binding units survive token edits and undo/redo', async () => {
   const parsed = parseFigBuffer(readFixtureArrayBuffer('gold-preview.fig'))
   const { graph, sources } = materializeDocument(parsed.nodeChanges, parsed.blobs, {
@@ -62,4 +64,4 @@ test('Gold imported binding units survive token edits and undo/redo', async () =
     tags.variableBindingScales.paddingLeft ?? 1,
     6
   )
-})
+}, 20000)
