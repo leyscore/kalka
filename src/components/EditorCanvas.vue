@@ -8,12 +8,12 @@ import {
   PopoverRoot
 } from 'reka-ui'
 import { computed, onUnmounted, ref, shallowRef, useTemplateRef, watch, type Component } from 'vue'
-import IconLucideAlignHorizontalSpaceBetween from '~icons/lucide/align-horizontal-space-between'
-import IconLucideAlignVerticalSpaceBetween from '~icons/lucide/align-vertical-space-between'
-import IconLucidePanelBottom from '~icons/lucide/panel-bottom'
-import IconLucidePanelLeft from '~icons/lucide/panel-left'
-import IconLucidePanelRight from '~icons/lucide/panel-right'
-import IconLucidePanelTop from '~icons/lucide/panel-top'
+import IconLucideAlignHorizontalSpaceBetween from '~icons/hugeicons/align-horizontal-space-between'
+import IconLucideAlignVerticalSpaceBetween from '~icons/hugeicons/align-vertical-space-between'
+import IconLucidePanelBottom from '~icons/hugeicons/panel-bottom'
+import IconLucidePanelLeft from '~icons/hugeicons/panel-left'
+import IconLucidePanelRight from '~icons/hugeicons/panel-right'
+import IconLucidePanelTop from '~icons/hugeicons/panel-top'
 
 import { hitTestIssueMarkers } from '@kalka/core/canvas'
 import {

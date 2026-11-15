@@ -103,7 +103,7 @@ const { panels } = useI18n()
   >
     <PanelHeader>
       <template #icon>
-        <icon-lucide-layers-3 class="size-3.5" aria-hidden="true" />
+        <icon-hugeicons-layers-01 class="size-3.5" aria-hidden="true" />
       </template>
       <span role="heading" aria-level="2">
         {{ panels.layersCount({ count: String(multiCount) }) }}
@@ -156,7 +156,7 @@ const { panels } = useI18n()
             :disabled="!canAddVariant"
             @click="store.addVariant(node.id)"
           >
-            <icon-lucide-diamond-plus class="size-3.5" />
+            <icon-hugeicons-diamond-plus class="size-3.5" />
           </IconButton>
           <PropertyBindButton v-if="node.type === 'INSTANCE'" field="INSTANCE_SWAP" />
           <InstanceUpdateAction
@@ -173,14 +173,14 @@ const { panels } = useI18n()
               data-test-id="instance-go-to-main"
               @click="goToMainComponent.run()"
             >
-              <icon-lucide-crosshair class="size-3.5" />
+              <icon-hugeicons-crosshair class="size-3.5" />
             </IconButton>
             <IconButton
               :label="detachInstance.label"
               data-test-id="instance-detach"
               @click="detachInstance.run()"
             >
-              <icon-lucide-unlink class="size-3.5" />
+              <icon-hugeicons-unlink-01 class="size-3.5" />
             </IconButton>
           </template>
         </template>

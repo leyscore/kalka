@@ -13,8 +13,8 @@ import IconOllama from '~icons/ai/ollama'
 import IconOpenAI from '~icons/ai/openai'
 import IconOpenRouter from '~icons/ai/openrouter'
 import IconZai from '~icons/ai/zai'
-import IconBot from '~icons/lucide/bot'
-import IconServer from '~icons/lucide/server'
+import IconBot from '~icons/hugeicons/bot'
+import IconServer from '~icons/hugeicons/server'
 
 /** A provider, agent, or server preset such as `ollama`. */
 const { provider } = defineProps<{ provider: string }>()

@@ -83,7 +83,7 @@ onMounted(async () => {
           :key="snapshot.id"
           class="flex items-center gap-3 rounded-[10px] border border-hairline bg-group p-3"
         >
-          <icon-lucide-file-clock class="size-4 shrink-0 text-muted" />
+          <icon-hugeicons-file-clock class="size-4 shrink-0 text-muted" />
           <div class="min-w-0 flex-1">
             <p class="truncate text-xs font-medium text-surface">{{ snapshot.documentName }}</p>
             <p class="text-[11px] text-muted">

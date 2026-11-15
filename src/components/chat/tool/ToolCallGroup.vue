@@ -44,13 +44,13 @@ const label = computed(() => {
   <div v-else class="space-y-1.5">
     <CollapsibleRoot :class="ui.group()" data-slot="chat-tool-group">
       <CollapsibleTrigger :class="ui.groupTrigger()" :aria-label="label">
-        <icon-lucide-list-checks :class="ui.groupIcon()" aria-hidden="true" />
+        <icon-hugeicons-list-checks :class="ui.groupIcon()" aria-hidden="true" />
         <span :class="ui.groupNames()" aria-hidden="true">{{ names }}</span>
         <AppBadge v-if="failed" :ui="{ base: ui.groupFailed() }" aria-hidden="true">
           {{ ai.toolStepsFailed({ count: failed }) }}
         </AppBadge>
         <AppBadge aria-hidden="true">{{ earlier.length }}</AppBadge>
-        <icon-lucide-chevron-down :class="ui.chevron()" aria-hidden="true" />
+        <icon-hugeicons-chevron-down :class="ui.chevron()" aria-hidden="true" />
       </CollapsibleTrigger>
       <CollapsibleContent :class="collapsibleContentMotion">
         <div :class="ui.groupItems()">

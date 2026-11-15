@@ -33,8 +33,8 @@ const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>()
     @update:model-value="(value) => emit('update:modelValue', value === true)"
   >
     <CheckboxIndicator class="flex items-center justify-center">
-      <icon-lucide-minus v-if="modelValue === 'indeterminate'" class="size-3" />
-      <icon-lucide-check v-else class="size-3" />
+      <icon-hugeicons-minus v-if="modelValue === 'indeterminate'" class="size-3" />
+      <icon-hugeicons-check v-else class="size-3" />
     </CheckboxIndicator>
   </CheckboxRoot>
 </template>

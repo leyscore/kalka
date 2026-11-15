@@ -58,9 +58,13 @@ const styles = computed(() => {
       }
     "
   >
-    <icon-lucide-loader-2 v-if="state !== 'none'" :class="styles.icon" aria-hidden="true" />
-    <icon-lucide-check v-else-if="variant === 'default'" :class="styles.icon" aria-hidden="true" />
-    <icon-lucide-triangle-alert v-else :class="styles.icon" aria-hidden="true" />
+    <icon-hugeicons-loading-03 v-if="state !== 'none'" :class="styles.icon" aria-hidden="true" />
+    <icon-hugeicons-check
+      v-else-if="variant === 'default'"
+      :class="styles.icon"
+      aria-hidden="true"
+    />
+    <icon-hugeicons-triangle-alert v-else :class="styles.icon" aria-hidden="true" />
     <div :class="styles.content" data-slot="toast-content">
       <ToastDescription :class="styles.message">
         {{ message }}<span v-if="count > 1" :class="styles.count">×{{ count }}</span>
@@ -87,12 +91,12 @@ const styles = computed(() => {
           :aria-label="copied ? copiedLabel : copyLabel"
           @click="copy(message)"
         >
-          <icon-lucide-check v-if="copied" class="size-3" aria-hidden="true" />
-          <icon-lucide-copy v-else class="size-3" aria-hidden="true" />
+          <icon-hugeicons-check v-if="copied" class="size-3" aria-hidden="true" />
+          <icon-hugeicons-copy v-else class="size-3" aria-hidden="true" />
         </button>
       </Tip>
       <ToastClose data-slot="toast-close" :class="styles.control" :aria-label="closeLabel">
-        <icon-lucide-x class="size-3" aria-hidden="true" />
+        <icon-hugeicons-x class="size-3" aria-hidden="true" />
       </ToastClose>
     </template>
   </ToastRoot>

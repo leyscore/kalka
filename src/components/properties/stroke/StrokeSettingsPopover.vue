@@ -25,7 +25,7 @@ const styles = usePopoverUI({
   <PopoverRoot v-model:open="popupOpen">
     <PopoverTrigger as-child>
       <AppButton :aria-label="panels.strokeSettings" data-property="stroke-settings">
-        <icon-lucide-sliders-horizontal class="size-3.5" />
+        <icon-hugeicons-sliders-horizontal class="size-3.5" />
       </AppButton>
     </PopoverTrigger>
     <PopoverPortal v-if="portalActive">
@@ -39,7 +39,7 @@ const styles = usePopoverUI({
         <div :class="styles.header">
           <h3 class="text-xs font-semibold text-surface">{{ panels.strokeSettings }}</h3>
           <PopoverClose as-child
-            ><AppButton :aria-label="common.close"><icon-lucide-x class="size-3.5" /></AppButton
+            ><AppButton :aria-label="common.close"><icon-hugeicons-x class="size-3.5" /></AppButton
           ></PopoverClose>
         </div>
         <div :class="styles.body">

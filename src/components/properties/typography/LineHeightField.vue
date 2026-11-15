@@ -47,7 +47,7 @@ function setMode(mode: string) {
     @update:model-value="emit('update', $event)"
     @commit="(current, previous) => emit('commit', current, previous)"
   >
-    <template #icon><icon-lucide-baseline class="size-3" /></template>
+    <template #icon><icon-hugeicons-baseline class="size-3" /></template>
     <template v-if="automatic" #display
       ><span class="min-w-0 flex-1 truncate text-surface">{{ panels.auto }}</span></template
     >
@@ -61,7 +61,7 @@ function setMode(mode: string) {
           :aria-label="panels.lineHeightMode"
           class="flex shrink-0 items-center self-stretch px-1 text-muted"
           @pointerdown.stop
-          ><icon-lucide-chevron-down class="size-3"
+          ><icon-hugeicons-chevron-down class="size-3"
         /></SelectTrigger>
         <SelectPortal v-if="portalActive">
           <SelectContent position="popper" :side-offset="4" :class="menu.content">

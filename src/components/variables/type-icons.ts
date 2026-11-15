@@ -1,8 +1,8 @@
 import type { Component } from 'vue'
-import IconHash from '~icons/lucide/hash'
-import IconPalette from '~icons/lucide/palette'
-import IconToggleLeft from '~icons/lucide/toggle-left'
-import IconType from '~icons/lucide/type'
+import IconHash from '~icons/hugeicons/hash'
+import IconPalette from '~icons/hugeicons/palette'
+import IconToggleLeft from '~icons/hugeicons/toggle-left'
+import IconType from '~icons/hugeicons/type'
 
 import type { VariableType } from '@kalka/scene-graph'
 

@@ -204,7 +204,7 @@ function formattedDate(updatedAt: string): string {
                 data-test-id="recent-files-clear"
                 @click="clearRecentFiles"
               >
-                <icon-lucide-trash-2 class="size-3.5" />
+                <icon-hugeicons-delete-02 class="size-3.5" />
               </IconButton>
               <SegmentedControl
                 v-model="view"
@@ -217,8 +217,8 @@ function formattedDate(updatedAt: string): string {
                 ]"
               >
                 <template #option="{ option }">
-                  <icon-lucide-layout-grid v-if="option.value === 'grid'" class="size-3.5" />
-                  <icon-lucide-list v-else class="size-3.5" />
+                  <icon-hugeicons-layout-grid v-if="option.value === 'grid'" class="size-3.5" />
+                  <icon-hugeicons-list v-else class="size-3.5" />
                 </template>
               </SegmentedControl>
               <HomeSearchField v-model="query" class="min-w-0 flex-1 sm:w-[244px] sm:flex-none" />
@@ -287,14 +287,14 @@ function formattedDate(updatedAt: string): string {
                 class="size-10 sm:size-8"
                 @click="storageWorkspace.refresh"
               >
-                <icon-lucide-refresh-cw class="size-3.5" />
+                <icon-hugeicons-refresh-cw class="size-3.5" />
               </IconButton>
               <IconButton
                 :label="settings.title"
                 class="size-10 sm:size-8"
                 @click="openSettingsDialog('storage')"
               >
-                <icon-lucide-settings-2 class="size-3.5" />
+                <icon-hugeicons-settings-02 class="size-3.5" />
               </IconButton>
             </div>
           </div>

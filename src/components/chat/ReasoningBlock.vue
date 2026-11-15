@@ -86,14 +86,14 @@ function updateOpen(value: boolean): void {
       :data-streaming="streaming || undefined"
       class="flex w-full cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-left text-[11px] text-muted hover:bg-hover hover:text-surface"
     >
-      <icon-lucide-brain class="size-3.5 shrink-0 text-primary" aria-hidden="true" />
+      <icon-hugeicons-brain class="size-3.5 shrink-0 text-primary" aria-hidden="true" />
       <span class="flex-1">{{ streaming ? thinkingLabel : finishedLabel }}</span>
-      <icon-lucide-loader-circle
+      <icon-hugeicons-loader-circle
         v-if="streaming"
         class="size-3 animate-spin motion-reduce:animate-none"
         aria-hidden="true"
       />
-      <icon-lucide-chevron-down
+      <icon-hugeicons-chevron-down
         v-else
         class="size-3 transition-transform motion-reduce:transition-none [[data-state=open]>&]:rotate-180"
         aria-hidden="true"

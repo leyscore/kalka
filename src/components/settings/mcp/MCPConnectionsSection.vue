@@ -109,7 +109,7 @@ async function remove() {
         <template #title>{{ automation.connections }}</template>
         <template #description>{{ automation.connectionsDescription }}</template>
         <AppButton class="self-start" variant="outline" :loading="busy" @click="startAdd">
-          <template #leading><icon-lucide-plus class="size-3.5" /></template>
+          <template #leading><icon-hugeicons-plus class="size-3.5" /></template>
           {{ automation.addConnection }}
         </AppButton>
         <div v-if="mcpConnectionSettings.connections.length" class="flex flex-col gap-1.5">
@@ -119,14 +119,14 @@ async function remove() {
             :disabled="busy"
             @click="startEdit(item.id)"
           >
-            <template #leading><icon-lucide-plug class="size-3.5" /></template>
+            <template #leading><icon-hugeicons-plug class="size-3.5" /></template>
             {{ item.name }}
             <template #description>{{
               item.transport.type === 'stdio' ? item.transport.command : item.transport.url
             }}</template>
             <template #trailing>
               <span class="text-xs">{{ item.enabled ? common.enabled : common.disabled }}</span>
-              <icon-lucide-chevron-right class="size-3.5" />
+              <icon-hugeicons-chevron-right class="size-3.5" />
             </template>
           </AppActionRow>
         </div>

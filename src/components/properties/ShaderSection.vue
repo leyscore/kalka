@@ -151,7 +151,7 @@ function removeColor(index: number): void {
         data-test-id="shader-add"
         @click="commit(createShaderLayer(), 'Add shader')"
       >
-        <icon-lucide-plus class="size-3.5" />
+        <icon-hugeicons-plus class="size-3.5" />
       </IconButton>
       <IconButton
         v-else
@@ -159,7 +159,7 @@ function removeColor(index: number): void {
         data-test-id="shader-remove"
         @click="commit(null, 'Remove shader')"
       >
-        <icon-lucide-minus class="size-3.5" />
+        <icon-hugeicons-minus class="size-3.5" />
       </IconButton>
     </template>
 
@@ -190,7 +190,7 @@ function removeColor(index: number): void {
               :label="panels.removeShaderColor"
               @click="removeColor(index)"
             >
-              <icon-lucide-minus class="size-3.5" />
+              <icon-hugeicons-minus class="size-3.5" />
             </IconButton>
           </div>
           <IconButton
@@ -199,7 +199,7 @@ function removeColor(index: number): void {
             :label="panels.addShaderColor"
             @click="addColor"
           >
-            <icon-lucide-plus class="size-3.5" />
+            <icon-hugeicons-plus class="size-3.5" />
           </IconButton>
         </div>
       </PanelFieldGroup>

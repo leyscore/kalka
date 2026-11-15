@@ -47,7 +47,7 @@ const styles = computed(() => collapsible())
         :class="styles.trigger({ class: ui?.trigger })"
         data-slot="trigger"
       >
-        <icon-lucide-chevron-right
+        <icon-hugeicons-chevron-right
           :class="styles.icon({ class: ui?.icon })"
           data-slot="icon"
           aria-hidden="true"

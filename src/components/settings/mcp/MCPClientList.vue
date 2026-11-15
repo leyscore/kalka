@@ -94,7 +94,7 @@ onMounted(refresh)
         :aria-expanded="showOthers"
         @click="showOthers = !showOthers"
       >
-        <icon-lucide-chevron-right
+        <icon-hugeicons-chevron-right
           class="size-3 transition-transform group-aria-expanded:rotate-90"
         />
         {{ automation.clientsMore({ count: others.length }) }}

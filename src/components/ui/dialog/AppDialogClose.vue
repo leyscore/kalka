@@ -14,7 +14,7 @@ const cls = useDialogUI({ close: className })
 <template>
   <DialogClose as-child>
     <button type="button" data-slot="dialog-close" :class="cls.close" :aria-label="ariaLabel">
-      <slot><icon-lucide-x class="size-4" /></slot>
+      <slot><icon-hugeicons-x class="size-4" /></slot>
     </button>
   </DialogClose>
 </template>

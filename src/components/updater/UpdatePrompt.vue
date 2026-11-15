@@ -118,7 +118,7 @@ function openNotesLink(event: MouseEvent) {
         <BrandMark variant="app-icon" decorative class="size-full" />
       </template>
       <template v-if="state.status === 'checking'">
-        <icon-lucide-loader-circle :class="ui.spinner" aria-hidden="true" />
+        <icon-hugeicons-loader-circle :class="ui.spinner" aria-hidden="true" />
         <p>{{ t.checking }}</p>
       </template>
       <AppAlert v-else-if="failure" tone="error" :heading="failure" class="w-full text-start" />

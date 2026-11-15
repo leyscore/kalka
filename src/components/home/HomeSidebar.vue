@@ -41,7 +41,7 @@ function reveal(id: string): void {
         :aria-current="activeSection === 'home-top'"
         @click="reveal('home-top')"
       >
-        <icon-lucide-house :class="homeNav.icon" />{{ welcome.navHome }}
+        <icon-hugeicons-house-01 :class="homeNav.icon" />{{ welcome.navHome }}
       </button>
       <button
         type="button"
@@ -49,7 +49,7 @@ function reveal(id: string): void {
         :aria-current="activeSection === 'home-learn'"
         @click="reveal('home-learn')"
       >
-        <icon-lucide-book-open :class="homeNav.icon" />{{ welcome.navLearn }}
+        <icon-hugeicons-book-open-01 :class="homeNav.icon" />{{ welcome.navLearn }}
       </button>
       <button
         type="button"
@@ -57,10 +57,10 @@ function reveal(id: string): void {
         :aria-current="activeSection === 'home-files'"
         @click="reveal('home-files')"
       >
-        <icon-lucide-folder :class="homeNav.icon" />{{ welcome.navFiles }}
+        <icon-hugeicons-folder-01 :class="homeNav.icon" />{{ welcome.navFiles }}
       </button>
       <button type="button" :class="[homeNav.item, 'mt-auto']" @click="openSettingsDialog()">
-        <icon-lucide-settings :class="homeNav.icon" />{{ settings.title }}
+        <icon-hugeicons-settings-01 :class="homeNav.icon" />{{ settings.title }}
       </button>
     </div>
   </nav>

@@ -71,12 +71,12 @@ function followLabel(name: string, target: FollowTarget): string {
           :active="isFollowing(following, { kind: 'person', clientId: person.clientId })"
           @click="toggle({ kind: 'person', clientId: person.clientId })"
         >
-          <icon-lucide-locate-fixed class="size-3.5" />
+          <icon-hugeicons-locate-fixed class="size-3.5" />
         </IconButton>
       </div>
       <ul v-if="person.agents.length > 0">
         <li v-for="agent in person.agents" :key="agent.id" data-slot="agent" :class="ui.agent()">
-          <icon-lucide-sparkle
+          <icon-hugeicons-sparkle
             :class="ui.agentIcon()"
             :style="{ color: colorToCSS(person.color) }"
           />
@@ -106,7 +106,7 @@ function followLabel(name: string, target: FollowTarget): string {
             :active="isFollowing(following, { kind: 'agent', agentId: agent.id })"
             @click="toggle({ kind: 'agent', agentId: agent.id })"
           >
-            <icon-lucide-locate-fixed class="size-3.5" />
+            <icon-hugeicons-locate-fixed class="size-3.5" />
           </IconButton>
         </li>
       </ul>

@@ -55,7 +55,7 @@ const rail = panelRail()
         :class="rail.item()"
         @click="show('file')"
       >
-        <icon-lucide-layers :class="rail.icon()" />
+        <icon-hugeicons-layers-01 :class="rail.icon()" />
       </button>
     </Tip>
     <Tip :label="panels.assets" side="right">
@@ -70,7 +70,7 @@ const rail = panelRail()
         :class="rail.item()"
         @click="show('assets')"
       >
-        <icon-lucide-component :class="rail.icon()" />
+        <icon-hugeicons-component :class="rail.icon()" />
       </button>
     </Tip>
     <!-- Variables open as a dialog over the editor, so this is a button, not one of the panel's tabs. -->
@@ -82,7 +82,7 @@ const rail = panelRail()
         :class="rail.item()"
         @click="openVariablesDialog(store)"
       >
-        <icon-lucide-swatch-book :class="rail.icon()" />
+        <icon-hugeicons-swatch-book :class="rail.icon()" />
       </button>
     </Tip>
     <div aria-hidden="true" :class="rail.divider()" />
@@ -98,7 +98,7 @@ const rail = panelRail()
         :class="rail.item()"
         @click="show('code')"
       >
-        <icon-lucide-code :class="rail.icon()" />
+        <icon-hugeicons-code :class="rail.icon()" />
       </button>
     </Tip>
     <Tip v-if="hasVersions" :label="panels.versions" side="right">
@@ -113,7 +113,7 @@ const rail = panelRail()
         :class="rail.item()"
         @click="show('versions')"
       >
-        <icon-lucide-git-branch :class="rail.icon()" />
+        <icon-hugeicons-git-branch :class="rail.icon()" />
       </button>
     </Tip>
     <Tip :label="checkLabel" side="right">
@@ -128,7 +128,7 @@ const rail = panelRail()
         :class="rail.item()"
         @click="show('lint')"
       >
-        <icon-lucide-list-checks :class="rail.icon()" />
+        <icon-hugeicons-list-checks :class="rail.icon()" />
         <span
           v-if="problemCount?.total"
           aria-hidden="true"
@@ -148,7 +148,7 @@ const rail = panelRail()
         :class="rail.item()"
         @click="openSettingsDialog()"
       >
-        <icon-lucide-settings :class="rail.icon()" />
+        <icon-hugeicons-settings-01 :class="rail.icon()" />
       </button>
     </Tip>
   </div>

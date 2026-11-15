@@ -156,7 +156,10 @@ watch(open, (v) => {
           :class="itemCls"
           @select="store.zoomToLevel(preset.level)"
         >
-          <icon-lucide-check v-if="isActivePreset(preset.level)" class="absolute left-2 size-3.5" />
+          <icon-hugeicons-check
+            v-if="isActivePreset(preset.level)"
+            class="absolute left-2 size-3.5"
+          />
           <span class="flex-1">{{ preset.label() }}</span>
           <AppShortcutText v-if="preset.shortcut">{{ preset.shortcut }}</AppShortcutText>
         </DropdownMenuItem>
@@ -164,7 +167,7 @@ watch(open, (v) => {
         <DropdownMenuSeparator :class="menuCls.separator" />
 
         <DropdownMenuItem :class="itemCls" @select.prevent="togglePixelGrid">
-          <icon-lucide-check
+          <icon-hugeicons-check
             v-if="store.state.showPixelGrid !== false"
             class="absolute left-2 size-3.5"
           />
@@ -177,7 +180,7 @@ watch(open, (v) => {
             setSnappingPreference('pixelGrid', !store.state.snappingPreferences.pixelGrid)
           "
         >
-          <icon-lucide-check
+          <icon-hugeicons-check
             v-if="store.state.snappingPreferences.pixelGrid"
             class="absolute left-2 size-3.5"
           />
@@ -185,12 +188,12 @@ watch(open, (v) => {
           <AppShortcutText>{{ appMenuShortcutLabel('snap-pixel-grid') }}</AppShortcutText>
         </DropdownMenuItem>
         <DropdownMenuItem :class="itemCls" @select.prevent="toggleRulers">
-          <icon-lucide-check v-if="store.state.showRulers" class="absolute left-2 size-3.5" />
+          <icon-hugeicons-check v-if="store.state.showRulers" class="absolute left-2 size-3.5" />
           <span class="flex-1">{{ panels.rulers }}</span>
           <AppShortcutText>{{ appMenuShortcutLabel('view-rulers') }}</AppShortcutText>
         </DropdownMenuItem>
         <DropdownMenuItem :class="itemCls" @select.prevent="toggleRemoteCursors">
-          <icon-lucide-check
+          <icon-hugeicons-check
             v-if="store.state.showRemoteCursors"
             class="absolute left-2 size-3.5"
           />
@@ -201,7 +204,7 @@ watch(open, (v) => {
           :class="itemCls"
           @select.prevent="setDesignIssuesOnCanvas(!appPreferences.designCheck.showOnCanvas)"
         >
-          <icon-lucide-check
+          <icon-hugeicons-check
             v-if="appPreferences.designCheck.showOnCanvas"
             class="absolute left-2 size-3.5"
           />

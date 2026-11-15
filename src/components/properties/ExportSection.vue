@@ -136,7 +136,7 @@ watch(previewKey, updatePreview, { flush: 'post' })
   <PanelSection :label="panels.export" :empty="activeSettings.length === 0">
     <template #actions>
       <IconButton :label="panels.addExport" @click="addSetting">
-        <icon-lucide-plus class="size-3.5" />
+        <icon-hugeicons-plus class="size-3.5" />
       </IconButton>
     </template>
     <p v-if="mixed" class="text-[11px] text-muted">
@@ -173,7 +173,7 @@ watch(previewKey, updatePreview, { flush: 'post' })
           :class="[removeClass, 'shrink-0']"
           @click="removeSetting(index)"
         >
-          <icon-lucide-minus class="size-3.5" />
+          <icon-hugeicons-minus class="size-3.5" />
         </IconButton>
       </template>
     </PanelItemRow>
@@ -208,8 +208,8 @@ watch(previewKey, updatePreview, { flush: 'post' })
         class="mt-1 flex w-full cursor-pointer items-center gap-1 rounded border-none bg-transparent px-0 py-1 text-[11px] text-muted hover:text-surface"
         @click="showPreview = !showPreview"
       >
-        <icon-lucide-chevron-down v-if="showPreview" class="size-3" />
-        <icon-lucide-chevron-right v-else class="size-3" />
+        <icon-hugeicons-chevron-down v-if="showPreview" class="size-3" />
+        <icon-hugeicons-chevron-right v-else class="size-3" />
         {{ panels.exportPreview }}
       </button>
     </Tip>

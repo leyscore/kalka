@@ -32,8 +32,8 @@ const { menu: t } = useI18n()
         @pointerdown.stop
         @click.stop="emit('toggleLock')"
       >
-        <icon-lucide-lock v-if="node.locked" data-slot="action-icon" :class="ui.lockIcon" />
-        <icon-lucide-unlock v-else data-slot="action-icon" :class="ui.lockIcon" />
+        <icon-hugeicons-lock v-if="node.locked" data-slot="action-icon" :class="ui.lockIcon" />
+        <icon-hugeicons-square-unlock-01 v-else data-slot="action-icon" :class="ui.lockIcon" />
       </button>
     </Tip>
     <Tip :label="node.visible ? t.hide : t.show">
@@ -45,12 +45,12 @@ const { menu: t } = useI18n()
         @pointerdown.stop
         @click.stop="emit('toggleVisibility')"
       >
-        <icon-lucide-eye-off
+        <icon-hugeicons-eye-off
           v-if="!node.visible"
           data-slot="action-icon"
           :class="ui.visibilityIcon"
         />
-        <icon-lucide-eye v-else data-slot="action-icon" :class="ui.visibilityIcon" />
+        <icon-hugeicons-eye v-else data-slot="action-icon" :class="ui.visibilityIcon" />
       </button>
     </Tip>
   </span>

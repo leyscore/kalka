@@ -31,6 +31,6 @@ function navigate(event: MouseEvent) {
 <template>
   <a :href="href" target="_blank" rel="noopener noreferrer" :class="styles.base" @click="navigate">
     <slot />
-    <icon-lucide-external-link :class="styles.icon" aria-hidden="true" />
+    <icon-hugeicons-external-link :class="styles.icon" aria-hidden="true" />
   </a>
 </template>

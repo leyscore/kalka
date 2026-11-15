@@ -55,7 +55,7 @@ const selectedLabel = computed(
       <SelectValue :placeholder="placeholder" :class="styles.value({ class: ui?.value })">
         {{ displayLabel ?? selectedLabel ?? placeholder }}
       </SelectValue>
-      <icon-lucide-chevron-down class="ml-1 size-3 shrink-0 text-muted" />
+      <icon-hugeicons-chevron-down class="ml-1 size-3 shrink-0 text-muted" />
     </SelectTrigger>
     <SelectPortal v-if="portalActive">
       <SelectContent
@@ -64,7 +64,7 @@ const selectedLabel = computed(
         :class="styles.content({ class: ui?.content })"
       >
         <SelectScrollUpButton class="flex items-center justify-center py-0.5 text-muted">
-          <icon-lucide-chevron-up class="size-3.5" />
+          <icon-hugeicons-chevron-up class="size-3.5" />
         </SelectScrollUpButton>
         <SelectViewport :class="styles.viewport({ class: ui?.viewport })">
           <SelectItem
@@ -75,14 +75,14 @@ const selectedLabel = computed(
             :class="styles.item({ class: ui?.item })"
           >
             <SelectItemIndicator :class="styles.indicator({ class: ui?.indicator })">
-              <icon-lucide-check class="size-3 text-primary" />
+              <icon-hugeicons-check class="size-3 text-primary" />
             </SelectItemIndicator>
             <SelectItemText>{{ opt.label }}</SelectItemText>
             <slot name="option-end" :option="opt" />
           </SelectItem>
         </SelectViewport>
         <SelectScrollDownButton class="flex items-center justify-center py-0.5 text-muted">
-          <icon-lucide-chevron-down class="size-3.5" />
+          <icon-hugeicons-chevron-down class="size-3.5" />
         </SelectScrollDownButton>
       </SelectContent>
     </SelectPortal>

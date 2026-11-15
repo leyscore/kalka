@@ -58,7 +58,7 @@ function agentState(): string {
 
   <template v-if="setup.supported">
     <p v-if="setup.scanning && !setup.checked" role="status" :class="styles.status()">
-      <icon-lucide-loader-2 :class="styles.spinner()" aria-hidden="true" />
+      <icon-hugeicons-loading-03 :class="styles.spinner()" aria-hidden="true" />
       {{ ai.aiSetupAgentChecking }}
     </p>
     <ul v-else-if="detected" :class="styles.list()">
@@ -113,7 +113,7 @@ function agentState(): string {
   <p :class="styles.help()">{{ ai.aiSetupAgentPromptHint({ agent: agent.name }) }}</p>
   <div :class="styles.actions()">
     <AppButton size="xs" variant="outline" @click="copy(prompt)">
-      <template #leading><icon-lucide-clipboard-copy class="size-3" /></template>
+      <template #leading><icon-hugeicons-clipboard-copy class="size-3" /></template>
       {{ copied ? common.copied : ai.aiSetupAgentCopyPrompt }}
     </AppButton>
     <AppButton

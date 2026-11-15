@@ -83,11 +83,11 @@ function reviewUpdate(group: (typeof visibleUpdateGroups.value)[number]) {
     <AppTabsRoot v-model="section" :orientation="isMobile ? 'horizontal' : 'vertical'">
       <AppTabsList :label="panels.manageLibraries">
         <AppTabsTrigger value="browse">
-          <template #leading><icon-lucide-library class="size-3.5" /></template>
+          <template #leading><icon-hugeicons-library class="size-3.5" /></template>
           {{ panels.browseLibraries }}
         </AppTabsTrigger>
         <AppTabsTrigger value="updates">
-          <template #leading><icon-lucide-refresh-cw class="size-3.5" /></template>
+          <template #leading><icon-hugeicons-refresh-cw class="size-3.5" /></template>
           {{ panels.libraryUpdates }}
           <template v-if="visibleUpdateGroups.length" #trailing>
             <span class="rounded-full bg-accent px-1.5 text-[10px] text-white">{{
@@ -114,7 +114,7 @@ function reviewUpdate(group: (typeof visibleUpdateGroups.value)[number]) {
             :key="library.libraryId"
             class="flex items-center gap-3 border-b border-border py-3"
           >
-            <icon-lucide-library class="size-4 text-component" />
+            <icon-hugeicons-library class="size-4 text-component" />
             <div class="min-w-0 flex-1">
               <p class="truncate text-xs text-surface">{{ library.name }}</p>
               <p class="text-[10px] text-muted">
@@ -126,7 +126,7 @@ function reviewUpdate(group: (typeof visibleUpdateGroups.value)[number]) {
               :label="panels.preferLibrary"
               @click="preferLibrary(library.libraryId)"
             >
-              <icon-lucide-star class="size-4" />
+              <icon-hugeicons-star class="size-4" />
             </IconButton>
             <AppButton variant="outline" @click="toggleLibrary(library.libraryId)">
               {{
@@ -151,7 +151,7 @@ function reviewUpdate(group: (typeof visibleUpdateGroups.value)[number]) {
             :key="`${asset.libraryId}:${asset.assetKey}`"
             class="flex items-center gap-3 border-b border-border py-3"
           >
-            <icon-lucide-component class="size-4 text-component" />
+            <icon-hugeicons-component class="size-4 text-component" />
             <div class="min-w-0 flex-1">
               <button type="button" class="block w-full text-left" @click="reviewUpdate(asset)">
                 <p class="truncate text-xs text-surface">{{ asset.name }}</p>

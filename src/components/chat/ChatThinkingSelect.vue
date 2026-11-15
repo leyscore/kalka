@@ -28,7 +28,7 @@ const selectedLabel = computed(() => thinkingLevelLabel(chatThinkingLevel.value,
       <button type="button" :class="ui.trigger({ class: thinking.trigger() })">
         <ThinkingMeter :level="chatThinkingLevel" />
         <span :class="thinking.label()">{{ selectedLabel }}</span>
-        <icon-lucide-chevron-down :class="ui.triggerChevron()" aria-hidden="true" />
+        <icon-hugeicons-chevron-down :class="ui.triggerChevron()" aria-hidden="true" />
       </button>
     </template>
     <template #option-end="{ option }">

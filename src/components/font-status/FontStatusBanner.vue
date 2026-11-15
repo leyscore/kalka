@@ -19,7 +19,7 @@ const issues = computed(() => status.value.issues)
     class="mx-2 mt-2 overflow-hidden rounded-[10px] border border-warning-border bg-warning-bg text-xs text-warning-text backdrop-blur-[28px]"
   >
     <div class="flex items-center gap-2 px-3 py-1.5">
-      <icon-lucide-triangle-alert class="size-3.5 shrink-0" />
+      <icon-hugeicons-triangle-alert class="size-3.5 shrink-0" />
       <button
         type="button"
         data-test-id="font-status-toggle"
@@ -51,8 +51,8 @@ const issues = computed(() => status.value.issues)
         class="flex size-5 shrink-0 items-center justify-center rounded-md hover:bg-amber-500/20"
         @click="expanded = !expanded"
       >
-        <icon-lucide-chevron-up v-if="expanded" class="size-3.5" />
-        <icon-lucide-chevron-down v-else class="size-3.5" />
+        <icon-hugeicons-chevron-up v-if="expanded" class="size-3.5" />
+        <icon-hugeicons-chevron-down v-else class="size-3.5" />
       </button>
     </div>
 

@@ -44,7 +44,7 @@ async function seeCode(): Promise<void> {
       </button>
       <button type="button" :class="code.root()" @click="seeCode">
         <span :class="code.mark()" aria-hidden="true">
-          <icon-lucide-code-xml class="size-[18px]" />
+          <icon-hugeicons-code-xml class="size-[18px]" />
         </span>
         <span :class="code.body()">
           <span :class="code.title()">{{ welcome.learnCode }}</span>
@@ -53,7 +53,7 @@ async function seeCode(): Promise<void> {
       </button>
       <button type="button" :class="agent.root()" @click="openWelcome('claude')">
         <span :class="agent.mark()" aria-hidden="true">
-          <icon-lucide-sparkle class="size-5" />
+          <icon-hugeicons-sparkle class="size-5" />
         </span>
         <span :class="agent.body()">
           <span :class="agent.title()">{{ welcome.learnClaude }}</span>

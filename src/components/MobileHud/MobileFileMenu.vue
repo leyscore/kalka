@@ -25,7 +25,7 @@ const menuCls = useMenuUI({
   <DropdownMenuRoot>
     <DropdownMenuTrigger as-child>
       <HudButton icon-only :label="menuMessages.file">
-        <icon-lucide-menu class="size-3.5" />
+        <icon-hugeicons-menu class="size-3.5" />
       </HudButton>
     </DropdownMenuTrigger>
     <DropdownMenuPortal>

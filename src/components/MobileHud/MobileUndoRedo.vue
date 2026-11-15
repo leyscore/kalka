@@ -12,10 +12,10 @@ const hud = useMobileHudContext()
 <template>
   <div class="flex gap-1.5">
     <HudButton icon-only :label="commands.undo" @click="hud.undo">
-      <icon-lucide-undo-2 class="size-3.5" />
+      <icon-hugeicons-undo-02 class="size-3.5" />
     </HudButton>
     <HudButton icon-only :label="commands.redo" @click="hud.redo">
-      <icon-lucide-redo-2 class="size-3.5" />
+      <icon-hugeicons-redo-02 class="size-3.5" />
     </HudButton>
   </div>
 </template>

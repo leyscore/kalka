@@ -77,7 +77,7 @@ onMounted(() => {
         :aria-label="fonts.settingsTitle"
         :class="trigger"
       >
-        <icon-lucide-settings class="size-3.5" />
+        <icon-hugeicons-settings-01 class="size-3.5" />
       </PopoverTrigger>
     </Tip>
 
@@ -96,7 +96,7 @@ onMounted(() => {
             <div
               class="flex size-8 shrink-0 items-center justify-center rounded bg-input text-muted"
             >
-              <icon-lucide-type class="size-4" />
+              <icon-hugeicons-type class="size-4" />
             </div>
             <div>
               <h3 class="text-[11px] font-semibold text-surface">{{ fonts.settingsTitle }}</h3>

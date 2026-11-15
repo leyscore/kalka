@@ -44,7 +44,7 @@ function actionLabel(
   <p :class="styles.help()">{{ ai.aiSetupPiDescription }}</p>
 
   <p v-if="setup.scanning && !setup.checked" role="status" :class="styles.status()">
-    <icon-lucide-loader-2 :class="styles.spinner()" aria-hidden="true" />
+    <icon-hugeicons-loading-03 :class="styles.spinner()" aria-hidden="true" />
     {{ ai.aiSetupAgentChecking }}
   </p>
   <ul v-else :class="styles.list()">

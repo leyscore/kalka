@@ -83,7 +83,7 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
             ctx.missingFonts.value.join(', ')
           "
         >
-          <icon-lucide-alert-triangle
+          <icon-hugeicons-alert-02
             role="img"
             :aria-label="
               'Missing font' +
@@ -138,7 +138,7 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
             @commit="(v: number, p: number) => ctx.actions.commitProp('letterSpacing', v, p)"
           >
             <template #icon>
-              <icon-lucide-a-large-small class="size-3" />
+              <icon-hugeicons-a-large-small class="size-3" />
             </template>
           </VariableNumberField>
         </PanelFieldGroup>
@@ -166,10 +166,13 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
             @change="ctx.actions.align($event as 'LEFT' | 'CENTER' | 'RIGHT' | 'JUSTIFIED')"
           >
             <template #option="{ option }">
-              <icon-lucide-align-left v-if="option.value === 'LEFT'" class="size-3.5" />
-              <icon-lucide-align-center v-else-if="option.value === 'CENTER'" class="size-3.5" />
-              <icon-lucide-align-right v-else-if="option.value === 'RIGHT'" class="size-3.5" />
-              <icon-lucide-align-justify v-else class="size-3.5" />
+              <icon-hugeicons-align-left v-if="option.value === 'LEFT'" class="size-3.5" />
+              <icon-hugeicons-text-align-center
+                v-else-if="option.value === 'CENTER'"
+                class="size-3.5"
+              />
+              <icon-hugeicons-align-right v-else-if="option.value === 'RIGHT'" class="size-3.5" />
+              <icon-hugeicons-text-align-justify-center v-else class="size-3.5" />
             </template>
           </SegmentedControl>
         </PanelFieldGroup>
@@ -182,15 +185,15 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
             @change="ctx.actions.setVerticalAlign($event as 'TOP' | 'CENTER' | 'BOTTOM')"
           >
             <template #option="{ option }">
-              <icon-lucide-align-vertical-justify-start
+              <icon-hugeicons-align-vertical-justify-start
                 v-if="option.value === 'TOP'"
                 class="size-3.5"
               />
-              <icon-lucide-align-vertical-justify-center
+              <icon-hugeicons-align-vertical-justify-center
                 v-else-if="option.value === 'CENTER'"
                 class="size-3.5"
               />
-              <icon-lucide-align-vertical-justify-end v-else class="size-3.5" />
+              <icon-hugeicons-align-vertical-justify-end v-else class="size-3.5" />
             </template>
           </SegmentedControl>
         </PanelFieldGroup>
@@ -213,7 +216,7 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
               :active="ctx.activeFormatting.value.includes('bold')"
               @click="ctx.actions.toggleBold"
             >
-              <icon-lucide-bold class="size-3.5" />
+              <icon-hugeicons-bold class="size-3.5" />
             </IconButton>
             <IconButton
               :label="`${menu.italic} (${appMenuShortcutLabel('text.italic')})`"
@@ -221,7 +224,7 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
               :active="ctx.activeFormatting.value.includes('italic')"
               @click="ctx.actions.toggleItalic"
             >
-              <icon-lucide-italic class="size-3.5" />
+              <icon-hugeicons-italic class="size-3.5" />
             </IconButton>
             <IconButton
               :label="`${menu.underline} (${appMenuShortcutLabel('text.underline')})`"
@@ -229,7 +232,7 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
               :active="ctx.activeFormatting.value.includes('underline')"
               @click="ctx.actions.toggleDecoration('UNDERLINE')"
             >
-              <icon-lucide-underline class="size-3.5" />
+              <icon-hugeicons-underline class="size-3.5" />
             </IconButton>
             <IconButton
               :label="menu.strikethrough"
@@ -237,7 +240,7 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
               :active="ctx.activeFormatting.value.includes('strikethrough')"
               @click="ctx.actions.toggleDecoration('STRIKETHROUGH')"
             >
-              <icon-lucide-strikethrough class="size-3.5" />
+              <icon-hugeicons-strikethrough class="size-3.5" />
             </IconButton>
           </div>
         </PanelFieldGroup>

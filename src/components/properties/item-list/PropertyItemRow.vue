@@ -61,8 +61,8 @@ defineSlots<{
             class="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded border-none bg-transparent p-0 text-muted hover:bg-hover hover:text-surface"
             @toggle="emit('toggleVisibility', $event)"
           >
-            <icon-lucide-eye v-if="!item.hidden" class="size-3.5" />
-            <icon-lucide-eye-off v-else class="size-3.5" />
+            <icon-hugeicons-eye v-if="!item.hidden" class="size-3.5" />
+            <icon-hugeicons-eye-off v-else class="size-3.5" />
           </PropertyListVisibility>
         </Tip>
         <Tip :label="removeLabel">
@@ -76,7 +76,7 @@ defineSlots<{
             ]"
             @remove="emit('remove', $event)"
           >
-            <icon-lucide-minus class="size-3.5" />
+            <icon-hugeicons-minus class="size-3.5" />
           </PropertyListRemove>
         </Tip>
       </template>

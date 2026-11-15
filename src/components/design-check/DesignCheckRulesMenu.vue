@@ -46,7 +46,7 @@ const presetModel = computed({
   <DropdownMenuRoot :modal="false">
     <DropdownMenuTrigger as-child>
       <IconButton size="xs" :label="messages.rules">
-        <icon-lucide-settings-2 class="size-3.5" />
+        <icon-hugeicons-settings-02 class="size-3.5" />
       </IconButton>
     </DropdownMenuTrigger>
     <DropdownMenuPortal>
@@ -60,7 +60,7 @@ const presetModel = computed({
             :class="itemCls"
           >
             <DropdownMenuItemIndicator class="absolute left-2">
-              <icon-lucide-check class="size-3.5" />
+              <icon-hugeicons-check class="size-3.5" />
             </DropdownMenuItemIndicator>
             {{ presetLabels[preset] }}
           </DropdownMenuRadioItem>
@@ -78,7 +78,7 @@ const presetModel = computed({
           @update:model-value="setDesignIssuesOnCanvas"
         >
           <DropdownMenuItemIndicator class="absolute left-2">
-            <icon-lucide-check class="size-3.5" />
+            <icon-hugeicons-check class="size-3.5" />
           </DropdownMenuItemIndicator>
           {{ messages.showOnCanvas }}
         </DropdownMenuCheckboxItem>

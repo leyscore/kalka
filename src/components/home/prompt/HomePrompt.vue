@@ -31,7 +31,7 @@ function generate(): void {
 
 <template>
   <form :class="styles.root()" @submit.prevent="generate">
-    <icon-lucide-sparkle :class="styles.icon()" aria-hidden="true" />
+    <icon-hugeicons-sparkle :class="styles.icon()" aria-hidden="true" />
     <input
       ref="input"
       v-model="prompt"

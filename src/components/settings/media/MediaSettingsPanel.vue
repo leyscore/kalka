@@ -46,7 +46,7 @@ const vectorProvider = computed(() =>
               service.status === 'configured' ? settings.configured : settings.notConfigured
             }}</template>
             <template #trailing
-              >{{ settings.edit }}<icon-lucide-chevron-right class="size-3.5"
+              >{{ settings.edit }}<icon-hugeicons-chevron-right class="size-3.5"
             /></template>
           </AppActionRow>
         </SettingsSection>
@@ -56,7 +56,7 @@ const vectorProvider = computed(() =>
           <AppActionRow data-vectorize-settings @click="editing = 'vectorize'">
             {{ vectorProvider?.name }}
             <template #trailing
-              >{{ settings.edit }}<icon-lucide-chevron-right class="size-3.5"
+              >{{ settings.edit }}<icon-hugeicons-chevron-right class="size-3.5"
             /></template>
           </AppActionRow>
         </SettingsSection>

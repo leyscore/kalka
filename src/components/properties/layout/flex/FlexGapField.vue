@@ -47,8 +47,8 @@ function setMode(value: string) {
         class="flex h-[26px] items-center rounded border border-border bg-input focus-within:border-panel-focus"
       >
         <span class="px-[5px] text-muted">
-          <icon-lucide-align-horizontal-space-between v-if="horizontal" class="size-3.5" />
-          <icon-lucide-align-vertical-space-between v-else class="size-3.5" />
+          <icon-hugeicons-align-horizontal-space-between v-if="horizontal" class="size-3.5" />
+          <icon-hugeicons-align-vertical-space-between v-else class="size-3.5" />
         </span>
         <span class="min-w-0 flex-1 truncate text-xs text-surface">{{ panels.auto }}</span>
         <SelectTrigger
@@ -58,7 +58,7 @@ function setMode(value: string) {
           class="flex shrink-0 items-center self-stretch px-1 text-muted"
           @pointerdown.stop
         >
-          <icon-lucide-chevron-down class="size-3" />
+          <icon-hugeicons-chevron-down class="size-3" />
         </SelectTrigger>
       </div>
       <VariableNumberField
@@ -74,8 +74,8 @@ function setMode(value: string) {
         @cancel="ctx.cancelPreview"
       >
         <template #icon>
-          <icon-lucide-align-horizontal-space-between v-if="horizontal" class="size-3.5" />
-          <icon-lucide-align-vertical-space-between v-else class="size-3.5" />
+          <icon-hugeicons-align-horizontal-space-between v-if="horizontal" class="size-3.5" />
+          <icon-hugeicons-align-vertical-space-between v-else class="size-3.5" />
         </template>
         <template v-if="allowAuto" #after-variable>
           <SelectTrigger
@@ -85,7 +85,7 @@ function setMode(value: string) {
             class="flex shrink-0 items-center self-stretch px-1 text-muted"
             @pointerdown.stop
           >
-            <icon-lucide-chevron-down class="size-3" />
+            <icon-hugeicons-chevron-down class="size-3" />
           </SelectTrigger>
         </template>
       </VariableNumberField>
@@ -100,7 +100,7 @@ function setMode(value: string) {
             :class="menu.item"
           >
             <SelectItemIndicator class="absolute left-1.5 inline-flex items-center justify-center"
-              ><icon-lucide-check class="size-3 text-primary"
+              ><icon-hugeicons-check class="size-3 text-primary"
             /></SelectItemIndicator>
             <SelectItemText>{{
               mode === 'AUTO' ? panels.auto : Math.round(ctx.node.itemSpacing)

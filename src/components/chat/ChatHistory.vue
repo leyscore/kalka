@@ -107,7 +107,7 @@ function closeMenu(event: Event) {
       <PopoverRoot v-model:open="open">
         <PopoverTrigger :class="styles.trigger()" :disabled="disabled" :aria-label="ai.chatHistory">
           <span :class="styles.title()">{{ selected?.title || ai.newChat }}</span>
-          <icon-lucide-chevron-down :class="styles.icon()" />
+          <icon-hugeicons-chevron-down :class="styles.icon()" />
         </PopoverTrigger>
         <PopoverPortal>
           <PopoverContent
@@ -154,7 +154,7 @@ function closeMenu(event: Event) {
                   ><span :class="styles.label()">{{ chat.title || ai.newChat }}</span
                   ><span v-if="all" :class="styles.detail()">{{ chat.documentName }}</span></span
                 >
-                <icon-lucide-check v-if="chat.id === selectedId" :class="styles.icon()" />
+                <icon-hugeicons-check v-if="chat.id === selectedId" :class="styles.icon()" />
               </button>
               <p v-if="!results.length" :class="styles.empty()">{{ ai.noChatsFound }}</p>
             </div>
@@ -163,7 +163,7 @@ function closeMenu(event: Event) {
       </PopoverRoot>
       <slot name="actions" />
       <IconButton :label="ai.newChat" :disabled="disabled" size="sm" @click="emit('create')"
-        ><icon-lucide-plus :class="styles.icon()"
+        ><icon-hugeicons-plus :class="styles.icon()"
       /></IconButton>
       <DropdownMenuRoot v-if="saved">
         <Tip :label="ai.chatActions">
@@ -172,7 +172,7 @@ function closeMenu(event: Event) {
             :aria-label="ai.chatActions"
             :disabled="disabled"
           >
-            <icon-lucide-ellipsis :class="styles.icon()" />
+            <icon-hugeicons-ellipsis :class="styles.icon()" />
           </DropdownMenuTrigger>
         </Tip>
         <DropdownMenuPortal>

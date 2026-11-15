@@ -39,11 +39,11 @@ function add(value: string) {
   >
     <template #trigger>
       <IconButton :label="panels.addBehaviour" data-property="add-behaviour">
-        <icon-lucide-plus class="size-3.5" />
+        <icon-hugeicons-plus class="size-3.5" />
       </IconButton>
     </template>
     <template #leading>
-      <icon-lucide-mouse-pointer-click class="size-3.5 text-component" />
+      <icon-hugeicons-mouse-pointer-click class="size-3.5 text-component" />
     </template>
   </AppPicker>
 </template>

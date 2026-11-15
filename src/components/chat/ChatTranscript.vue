@@ -91,7 +91,7 @@ const { arrivedState, resumeFollowing } = useScrollFollowing(
         :ui="{ root: 'h-full' }"
       >
         <template #icon>
-          <icon-lucide-message-circle class="size-5" />
+          <icon-hugeicons-message-circle class="size-5" />
         </template>
       </AppPlaceholder>
 
@@ -140,7 +140,7 @@ const { arrivedState, resumeFollowing } = useScrollFollowing(
         <!-- Continue button when step limit reached -->
         <div v-if="showContinue" class="flex justify-center py-2">
           <AppButton color="primary" variant="soft" shape="pill" @click="emit('continue')">
-            <template #leading><icon-lucide-play class="size-3" /></template>
+            <template #leading><icon-hugeicons-play class="size-3" /></template>
             {{ ai.continueChat }}
           </AppButton>
         </div>
@@ -154,7 +154,7 @@ const { arrivedState, resumeFollowing } = useScrollFollowing(
       :label="ai.jumpToLatest"
       class="absolute right-3 bottom-3 border border-float-border bg-float shadow-(--float-shadow) backdrop-blur-[28px]"
       @click="resumeFollowing"
-      ><icon-lucide-arrow-down class="size-4"
+      ><icon-hugeicons-arrow-down-01 class="size-4"
     /></IconButton>
   </ScrollAreaRoot>
 </template>

@@ -51,10 +51,13 @@ function setLayoutMode(mode: string) {
         <template #option="{ option }">
           <Tip :label="option.label">
             <span class="flex items-center justify-center">
-              <icon-lucide-move v-if="option.value === 'NONE'" class="size-3.5" />
-              <icon-lucide-rows-2 v-else-if="option.value === 'VERTICAL'" class="size-3.5" />
-              <icon-lucide-columns-2 v-else-if="option.value === 'HORIZONTAL'" class="size-3.5" />
-              <icon-lucide-layout-grid v-else class="size-3.5" />
+              <icon-hugeicons-move v-if="option.value === 'NONE'" class="size-3.5" />
+              <icon-hugeicons-rows-2 v-else-if="option.value === 'VERTICAL'" class="size-3.5" />
+              <icon-hugeicons-layout-2-column
+                v-else-if="option.value === 'HORIZONTAL'"
+                class="size-3.5"
+              />
+              <icon-hugeicons-layout-grid v-else class="size-3.5" />
             </span>
           </Tip>
         </template>
@@ -67,7 +70,7 @@ function setLayoutMode(mode: string) {
         :active="ctx.node.layoutWrap === 'WRAP'"
         @click="toggleWrap"
       >
-        <icon-lucide-wrap-text class="size-3.5" />
+        <icon-hugeicons-text-wrap class="size-3.5" />
       </IconButton>
     </div>
   </div>

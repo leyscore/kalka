@@ -326,7 +326,7 @@ const groupOptions = computed(() => groupEntries.value.map((entry) => entry.path
       </div>
       <AppPlaceholder :label="messages.noVariableCollections">
         <template #icon>
-          <icon-lucide-folder class="size-5" />
+          <icon-hugeicons-folder-01 class="size-5" />
         </template>
         <template #action>
           <AppButton
@@ -394,7 +394,7 @@ const groupOptions = computed(() => groupEntries.value.map((entry) => entry.path
             data-test-id="variables-add-collection"
             @click="ctx.addCollection"
           >
-            <icon-lucide-folder-plus class="size-4" />
+            <icon-hugeicons-folder-plus class="size-4" />
           </IconButton>
           <slot name="actions" />
         </div>
@@ -421,10 +421,10 @@ const groupOptions = computed(() => groupEntries.value.map((entry) => entry.path
             data-test-id="variables-collection-settings"
             @click="openDetail({ kind: 'collection' })"
           >
-            <icon-lucide-settings-2 class="size-4" />
+            <icon-hugeicons-settings-02 class="size-4" />
           </IconButton>
           <IconButton :label="messages.stylesheet" @click="openDetail({ kind: 'stylesheet' })">
-            <icon-lucide-braces class="size-4" />
+            <icon-hugeicons-braces class="size-4" />
           </IconButton>
         </div>
       </div>
@@ -471,7 +471,7 @@ const groupOptions = computed(() => groupEntries.value.map((entry) => entry.path
           data-test-id="variables-add-collection"
           @click="ctx.addCollection"
         >
-          <icon-lucide-folder-plus class="size-4" />
+          <icon-hugeicons-folder-plus class="size-4" />
         </IconButton>
         <TokenAddMenu :labelled="wide" @add="addToken" />
         <slot name="actions" />

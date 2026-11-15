@@ -62,7 +62,7 @@ const statusStyles = computed(() => tv(statusTheme)({ tone: resultTone.value }))
       :disabled="disabled"
       @click="emit('test')"
     >
-      <template #leading><icon-lucide-plug-zap class="size-3" /></template>
+      <template #leading><icon-hugeicons-plug-zap class="size-3" /></template>
       {{ isTesting ? common.testingConnection : common.testConnection }}
     </AppButton>
 

@@ -44,7 +44,7 @@ const canOpenFolder = isTauri()
       data-test-id="home-new-document"
       @click="emit('new-document')"
     >
-      <template #leading><icon-lucide-plus class="size-3.5" /></template>
+      <template #leading><icon-hugeicons-plus class="size-3.5" /></template>
       {{ files.newDesign }}
     </AppButton>
   </div>

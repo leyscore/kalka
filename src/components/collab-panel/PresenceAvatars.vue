@@ -162,7 +162,7 @@ function toggleFollow(clientId: number) {
             :class="ui.overflow()"
           >
             <template v-if="hidden > 0">+{{ hidden }}</template>
-            <icon-lucide-chevron-down v-else :class="ui.chevron()" />
+            <icon-hugeicons-chevron-down v-else :class="ui.chevron()" />
           </button>
         </PopoverTrigger>
         <PopoverPortal>

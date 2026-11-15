@@ -109,7 +109,7 @@ const { profiles, statusByConnection, refreshStatuses } = useModelSettings()
               data-test-id="settings-add-model"
               @click="addModel"
             >
-              <template #leading><icon-lucide-plus class="size-3" /></template>
+              <template #leading><icon-hugeicons-plus class="size-3" /></template>
               {{ ai.addModel }}
             </AppButton>
           </template>
@@ -129,7 +129,7 @@ const { profiles, statusByConnection, refreshStatuses } = useModelSettings()
             >
               <template #leading>
                 <span class="flex size-8 items-center justify-center rounded-[7px] bg-panel-field"
-                  ><icon-lucide-bot class="size-4"
+                  ><icon-hugeicons-bot class="size-4"
                 /></span>
               </template>
               {{ profile.name }}
@@ -167,7 +167,7 @@ const { profiles, statusByConnection, refreshStatuses } = useModelSettings()
                       : ai.modelCapabilityVisionShort
                   }}
                 </span>
-                <icon-lucide-chevron-right class="size-3.5 shrink-0 text-muted" />
+                <icon-hugeicons-chevron-right class="size-3.5 shrink-0 text-muted" />
               </template>
             </AppActionRow>
           </div>
@@ -179,7 +179,7 @@ const { profiles, statusByConnection, refreshStatuses } = useModelSettings()
             data-test-id="settings-run-ai-setup"
             @click="openAISetup()"
           >
-            <template #leading><icon-lucide-sparkles class="size-3" /></template>
+            <template #leading><icon-hugeicons-sparkles class="size-3" /></template>
             {{ ai.aiSetupRun }}
           </AppButton>
         </SettingsSection>

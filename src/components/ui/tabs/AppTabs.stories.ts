@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import { ref } from 'vue'
-import IconImage from '~icons/lucide/image'
-import IconSettings from '~icons/lucide/settings'
+import IconImage from '~icons/hugeicons/image-01'
+import IconSettings from '~icons/hugeicons/settings-01'
 
 import AppTabsContent from './AppTabsContent.vue'
 import AppTabsList from './AppTabsList.vue'

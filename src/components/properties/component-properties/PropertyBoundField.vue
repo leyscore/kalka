@@ -50,7 +50,7 @@ const chip =
     <DropdownMenuPortal>
       <DropdownMenuContent side="bottom" align="end" :side-offset="4" :class="menu.content">
         <DropdownMenuItem :class="item" @select="binding.goToProperty()">
-          <icon-lucide-crosshair :class="menu.icon" />
+          <icon-hugeicons-crosshair :class="menu.icon" />
           {{ panels.goToComponentProperty }}
         </DropdownMenuItem>
         <DropdownMenuItem
@@ -58,7 +58,7 @@ const chip =
           :disabled="!binding.editable.value"
           @select="binding.bind(null)"
         >
-          <icon-lucide-unlink :class="menu.icon" />
+          <icon-hugeicons-unlink-01 :class="menu.icon" />
           {{ panels.detachComponentProperty }}
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -75,14 +75,14 @@ const chip =
         <span class="truncate">{{ binding.definition.value.name }}</span>
       </span>
       <IconButton :label="panels.goToComponentProperty" @click="binding.goToProperty()">
-        <icon-lucide-crosshair class="size-3.5" />
+        <icon-hugeicons-crosshair class="size-3.5" />
       </IconButton>
       <IconButton
         :label="panels.detachComponentProperty"
         :disabled="!binding.editable.value"
         @click="binding.bind(null)"
       >
-        <icon-lucide-unlink class="size-3.5" />
+        <icon-hugeicons-unlink-01 class="size-3.5" />
       </IconButton>
     </div>
   </PanelFieldGroup>

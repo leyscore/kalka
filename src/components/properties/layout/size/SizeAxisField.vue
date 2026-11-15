@@ -100,7 +100,7 @@ function handleSelect(value: SizeSelectValue) {
             @pointerdown.stop
           >
             <span v-if="sizingLabel()">{{ sizingLabel() }}</span>
-            <icon-lucide-chevron-down class="size-3" />
+            <icon-hugeicons-chevron-down class="size-3" />
           </SelectTrigger>
           <SelectPortal v-if="portalActive">
             <SelectContent
@@ -119,7 +119,7 @@ function handleSelect(value: SizeSelectValue) {
                   <SelectItemIndicator
                     class="absolute left-1.5 inline-flex items-center justify-center"
                   >
-                    <icon-lucide-check class="size-3 text-primary" />
+                    <icon-hugeicons-check class="size-3 text-primary" />
                   </SelectItemIndicator>
                   <SelectItemText>{{ option.label }}</SelectItemText>
                 </SelectItem>

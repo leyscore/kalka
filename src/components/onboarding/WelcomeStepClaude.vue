@@ -46,7 +46,7 @@ const TOOLS = [
       <p
         class="mt-5 flex items-start gap-2 border-t border-hairline pt-4 text-xs leading-relaxed text-muted"
       >
-        <icon-lucide-lock class="mt-0.5 size-3.5 shrink-0" />
+        <icon-hugeicons-lock class="mt-0.5 size-3.5 shrink-0" />
         {{ welcome.privacy }}
       </p>
     </aside>

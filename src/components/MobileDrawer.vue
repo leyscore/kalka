@@ -140,7 +140,7 @@ const drawerTransition = useMotionTransition({
             class="flex h-full cursor-pointer items-center justify-center gap-1.5 px-4 text-xs transition-colors outline-none select-none data-[state=active]:text-primary"
             @click="toggleTab('layers')"
           >
-            <icon-lucide-layers class="size-4" />
+            <icon-hugeicons-layers-01 class="size-4" />
           </TabsTrigger>
 
           <TabsTrigger
@@ -149,7 +149,7 @@ const drawerTransition = useMotionTransition({
             class="flex h-full cursor-pointer items-center justify-center gap-1.5 px-4 text-xs transition-colors outline-none select-none data-[state=active]:text-primary"
             @click="toggleTab('design')"
           >
-            <icon-lucide-sliders-horizontal class="size-4" />
+            <icon-hugeicons-sliders-horizontal class="size-4" />
           </TabsTrigger>
 
           <div class="flex-1" />
@@ -160,7 +160,7 @@ const drawerTransition = useMotionTransition({
             class="flex h-full cursor-pointer items-center justify-center px-3 transition-colors outline-none select-none data-[state=active]:text-primary"
             @click="toggleTab('code')"
           >
-            <icon-lucide-code class="size-4" />
+            <icon-hugeicons-code class="size-4" />
           </TabsTrigger>
 
           <TabsTrigger
@@ -169,7 +169,7 @@ const drawerTransition = useMotionTransition({
             class="flex h-full cursor-pointer items-center justify-center px-3 transition-colors outline-none select-none data-[state=active]:text-primary"
             @click="toggleTab('ai')"
           >
-            <icon-lucide-sparkles class="size-4" />
+            <icon-hugeicons-sparkles class="size-4" />
           </TabsTrigger>
         </TabsList>
       </nav>

@@ -391,8 +391,8 @@ watch(
           data-test-id="code-panel-copy-ref"
           @click="copyReference(JSX_REFERENCE)"
         >
-          <icon-lucide-check v-if="copiedReference" class="size-3 text-[var(--color-success)]" />
-          <icon-lucide-book-open v-else class="size-3" />
+          <icon-hugeicons-check v-if="copiedReference" class="size-3 text-[var(--color-success)]" />
+          <icon-hugeicons-book-open-01 v-else class="size-3" />
         </AppButton>
       </Tip>
     </header>
@@ -408,11 +408,11 @@ watch(
       data-test-id="code-panel-empty"
     >
       <template #icon>
-        <icon-lucide-code class="size-4" />
+        <icon-hugeicons-code class="size-4" />
       </template>
       <template v-if="source === 'design-jsx'" #action>
         <AppButton color="neutral" variant="soft" size="xs" @click="writeJSX">
-          <icon-lucide-pencil class="size-3" />
+          <icon-hugeicons-pencil class="size-3" />
           {{ code.writeJSX }}
         </AppButton>
       </template>
@@ -465,7 +465,7 @@ watch(
           data-test-id="code-panel-reset"
           @click="resetDraft"
         >
-          <icon-lucide-rotate-ccw class="size-3" />
+          <icon-hugeicons-rotate-ccw class="size-3" />
           {{ code.reset }}
         </AppButton>
         <AppButton
@@ -475,8 +475,8 @@ watch(
           data-test-id="code-panel-copy"
           @click="copy(draft)"
         >
-          <icon-lucide-check v-if="copied" class="size-3 text-[var(--color-success)]" />
-          <icon-lucide-copy v-else class="size-3" />
+          <icon-hugeicons-check v-if="copied" class="size-3 text-[var(--color-success)]" />
+          <icon-hugeicons-copy v-else class="size-3" />
           {{ copied ? common.copied : common.copy }}
         </AppButton>
       </div>

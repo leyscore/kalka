@@ -59,7 +59,7 @@ const stylesheet = computedAsync(async () => {
       <DropdownMenuRoot>
         <DropdownMenuTrigger as-child>
           <IconButton :label="variables.copyStylesheet" data-test-id="variables-copy-stylesheet">
-            <icon-lucide-copy class="size-3.5" />
+            <icon-hugeicons-copy class="size-3.5" />
           </IconButton>
         </DropdownMenuTrigger>
         <DropdownMenuPortal>
@@ -69,7 +69,7 @@ const stylesheet = computedAsync(async () => {
               data-test-id="variables-copy-css"
               @select="emit('copy', 'css')"
             >
-              <icon-lucide-braces :class="menu.icon" />
+              <icon-hugeicons-braces :class="menu.icon" />
               {{ variables.copyAsCSS }}
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -77,7 +77,7 @@ const stylesheet = computedAsync(async () => {
               data-test-id="variables-copy-tailwind"
               @select="emit('copy', 'tailwind')"
             >
-              <icon-lucide-wind :class="menu.icon" />
+              <icon-hugeicons-wind :class="menu.icon" />
               {{ variables.copyAsTailwindTheme }}
             </DropdownMenuItem>
             <DropdownMenuSeparator :class="menu.separator" />
@@ -86,7 +86,7 @@ const stylesheet = computedAsync(async () => {
               data-test-id="variables-export-tokens"
               @select="emit('export')"
             >
-              <icon-lucide-file-archive :class="menu.icon" />
+              <icon-hugeicons-file-archive :class="menu.icon" />
               {{ variables.exportDesignTokens }}
             </DropdownMenuItem>
           </DropdownMenuContent>

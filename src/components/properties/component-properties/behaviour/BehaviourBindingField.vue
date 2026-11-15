@@ -61,7 +61,7 @@ const items = computed(() => options.map((option) => ({ value: option.id, label:
           }
         "
       >
-        <template #leading><icon-lucide-plus class="size-3" /></template>
+        <template #leading><icon-hugeicons-plus class="size-3" /></template>
         {{ createLabel }}
       </AppButton>
     </template>
@@ -74,7 +74,7 @@ const items = computed(() => options.map((option) => ({ value: option.id, label:
     v-bind="$attrs"
     @click="emit('create')"
   >
-    <icon-lucide-plus class="size-3 shrink-0" />
+    <icon-hugeicons-plus class="size-3 shrink-0" />
     <span class="min-w-0 truncate">{{ createLabel }}</span>
   </button>
 </template>

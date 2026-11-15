@@ -97,7 +97,7 @@ const shownValue = computed(() => {
           <h3 class="truncate text-xs font-semibold text-surface">{{ name }}</h3>
           <PopoverClose as-child>
             <AppButton :aria-label="common.close" class="ml-auto">
-              <icon-lucide-x class="size-3.5" />
+              <icon-hugeicons-x class="size-3.5" />
             </AppButton>
           </PopoverClose>
         </div>
@@ -148,7 +148,7 @@ const shownValue = computed(() => {
             class="text-issue-error"
             @click="emit('remove')"
           >
-            <icon-lucide-trash-2 class="size-3.5" />
+            <icon-hugeicons-delete-02 class="size-3.5" />
             {{ panels.deleteComponentProperty }}
           </AppButton>
         </div>

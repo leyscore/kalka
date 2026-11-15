@@ -79,7 +79,7 @@ defineExpose({ restoreDraft })
               data-test-id="provider-settings-trigger"
               @click="emit('settings')"
             >
-              <icon-lucide-settings class="size-3.5" />
+              <icon-hugeicons-settings-01 class="size-3.5" />
             </IconButton>
             <IconButton
               v-if="isStreaming"
@@ -89,7 +89,7 @@ defineExpose({ restoreDraft })
               class="border border-border"
               @click="emit('stop')"
             >
-              <icon-lucide-square class="size-3" />
+              <icon-hugeicons-square class="size-3" />
             </IconButton>
             <IconButton
               v-else
@@ -100,7 +100,7 @@ defineExpose({ restoreDraft })
               class="bg-accent text-white hover:bg-accent/90 hover:text-white"
               :disabled="!input.trim()"
             >
-              <icon-lucide-send class="size-3.5" />
+              <icon-hugeicons-send class="size-3.5" />
             </IconButton>
           </template>
         </InputGroup>

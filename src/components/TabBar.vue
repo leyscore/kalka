@@ -92,7 +92,7 @@ function onClose(e: MouseEvent, tabId: string) {
             :data-active="tab.isActive || undefined"
             :data-dirty="tab.isDirty || undefined"
           >
-            <icon-lucide-house v-if="tab.isHome" :class="baseStyles.icon()" />
+            <icon-hugeicons-house-01 v-if="tab.isHome" :class="baseStyles.icon()" />
             <PreparationIndicator v-else-if="tab.isPreparing" :progress="tab.preparationProgress" />
             <span :class="baseStyles.label()">{{ tab.isHome ? files.newTab : tab.name }}</span>
             <Tip v-if="tab.isDirty" :label="files.unsavedChanges" side="bottom">
@@ -113,7 +113,7 @@ function onClose(e: MouseEvent, tabId: string) {
               tabindex="-1"
               @click="onClose($event, tab.id)"
             >
-              <icon-lucide-x :class="baseStyles.closeIcon()" />
+              <icon-hugeicons-x :class="baseStyles.closeIcon()" />
             </button>
           </Tip>
         </div>
@@ -131,8 +131,8 @@ function onClose(e: MouseEvent, tabId: string) {
       :data-start="!overflowEnd || undefined"
       @click="scrollTowardHidden"
     >
-      <icon-lucide-chevron-right v-if="overflowEnd" :class="baseStyles.scrollIcon()" />
-      <icon-lucide-chevron-left v-else :class="baseStyles.scrollIcon()" />
+      <icon-hugeicons-chevron-right v-if="overflowEnd" :class="baseStyles.scrollIcon()" />
+      <icon-hugeicons-chevron-left v-else :class="baseStyles.scrollIcon()" />
     </button>
     <Tip :label="files.newTab" side="bottom">
       <button
@@ -142,7 +142,7 @@ function onClose(e: MouseEvent, tabId: string) {
         :class="baseStyles.newTab()"
         @click="createNewTab"
       >
-        <icon-lucide-plus :class="baseStyles.newIcon()" />
+        <icon-hugeicons-plus :class="baseStyles.newIcon()" />
       </button>
     </Tip>
   </TabsRoot>

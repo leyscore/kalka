@@ -35,7 +35,7 @@ function label(limit: SlotLimit): string {
       class="flex h-5 shrink-0 cursor-pointer items-center gap-1 rounded bg-panel-field px-1.5 text-[10px] text-muted outline-none hover:bg-hover hover:text-surface focus-visible:ring-1 focus-visible:ring-panel-focus data-issues:bg-issue-warning/15 data-issues:text-issue-warning"
     >
       <SeverityIcon v-if="issues" severity="warning" />
-      <icon-lucide-check v-else class="size-3 text-success" />
+      <icon-hugeicons-check v-else class="size-3 text-success" />
       {{ panels.slotLimitCount(limits.length) }}
     </PopoverTrigger>
     <PopoverPortal v-if="portalActive">
@@ -53,7 +53,7 @@ function label(limit: SlotLimit): string {
           </span>
           <PopoverClose as-child>
             <AppButton :aria-label="common.close" class="ml-auto">
-              <icon-lucide-x class="size-3.5" />
+              <icon-hugeicons-x class="size-3.5" />
             </AppButton>
           </PopoverClose>
         </div>
@@ -63,7 +63,7 @@ function label(limit: SlotLimit): string {
             :key="limit.kind"
             class="grid grid-cols-[14px_minmax(0,1fr)] gap-x-2 text-xs text-surface"
           >
-            <icon-lucide-check v-if="limit.met" class="mt-px size-3.5 text-success" />
+            <icon-hugeicons-check v-if="limit.met" class="mt-px size-3.5 text-success" />
             <SeverityIcon v-else severity="warning" class="mt-px size-3.5" />
             <span>{{ label(limit) }}</span>
             <template v-if="limit.kind === 'preferred' && !limit.met">

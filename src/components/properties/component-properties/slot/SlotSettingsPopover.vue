@@ -73,7 +73,7 @@ const candidates = computed<AppPickerItem[]>(() =>
   <PopoverRoot v-model:open="popupOpen">
     <PopoverTrigger as-child>
       <IconButton :label="panels.slotSettings" data-property="slot-settings">
-        <icon-lucide-sliders-horizontal class="size-3.5" />
+        <icon-hugeicons-sliders-horizontal class="size-3.5" />
       </IconButton>
     </PopoverTrigger>
     <PopoverPortal v-if="portalActive">
@@ -86,11 +86,11 @@ const candidates = computed<AppPickerItem[]>(() =>
         @focus-outside.prevent
       >
         <div :class="styles.header">
-          <icon-lucide-square-dashed class="size-3.5 text-slot" />
+          <icon-hugeicons-square-dashed class="size-3.5 text-slot" />
           <h3 class="truncate text-xs font-semibold text-surface">{{ slot.name }}</h3>
           <PopoverClose as-child>
             <AppButton :aria-label="common.close" class="ml-auto">
-              <icon-lucide-x class="size-3.5" />
+              <icon-hugeicons-x class="size-3.5" />
             </AppButton>
           </PopoverClose>
         </div>
@@ -138,13 +138,13 @@ const candidates = computed<AppPickerItem[]>(() =>
                 :key="option.id"
                 class="flex h-7 items-center gap-1.5 rounded px-1 text-xs text-surface hover:bg-hover"
               >
-                <icon-lucide-diamond class="size-3.5 shrink-0 text-component" />
+                <icon-hugeicons-diamond class="size-3.5 shrink-0 text-component" />
                 <span class="min-w-0 flex-1 truncate">{{ option.name }}</span>
                 <IconButton
                   :label="panels.removePreferredInstance"
                   @click="emit('setPreferred', option.id, false)"
                 >
-                  <icon-lucide-minus class="size-3.5" />
+                  <icon-hugeicons-minus class="size-3.5" />
                 </IconButton>
               </li>
             </ul>
@@ -158,13 +158,13 @@ const candidates = computed<AppPickerItem[]>(() =>
             >
               <template #trigger>
                 <AppButton variant="soft" class="self-start" data-property="slot-add-preferred">
-                  <icon-lucide-plus class="size-3.5" />
+                  <icon-hugeicons-plus class="size-3.5" />
                   {{ panels.addPreferredInstances }}
                 </AppButton>
               </template>
               <template #leading="{ item }">
                 <slot name="thumbnail" :id="item.value">
-                  <icon-lucide-component class="size-3.5" />
+                  <icon-hugeicons-component class="size-3.5" />
                 </slot>
               </template>
             </AppPicker>

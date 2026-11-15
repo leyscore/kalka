@@ -121,7 +121,7 @@ function valueLabel(type: ComponentPropertyType, value: string) {
                 :disabled="!editable"
                 data-property="create-property"
               >
-                <icon-lucide-plus class="size-3.5" />
+                <icon-hugeicons-plus class="size-3.5" />
               </IconButton>
             </DropdownMenuTrigger>
             <DropdownMenuPortal>
@@ -158,7 +158,7 @@ function valueLabel(type: ComponentPropertyType, value: string) {
                     data-property-type="nested"
                     @select="nestedRequested = true"
                   >
-                    <icon-lucide-component :class="menu.icon" />
+                    <icon-hugeicons-component :class="menu.icon" />
                     {{ panels.nestedInstances }}…
                   </DropdownMenuItem>
                 </template>
@@ -173,7 +173,7 @@ function valueLabel(type: ComponentPropertyType, value: string) {
           role="alert"
           class="flex items-start gap-1.5 rounded bg-issue-warning/10 px-2 py-1.5 text-[11px] leading-4 text-issue-warning"
         >
-          <icon-lucide-triangle-alert class="mt-0.5 size-3 shrink-0" aria-hidden="true" />
+          <icon-hugeicons-triangle-alert class="mt-0.5 size-3 shrink-0" aria-hidden="true" />
           <span class="min-w-0 flex-1">
             {{
               panels.variantsShareValues({
@@ -270,7 +270,7 @@ function valueLabel(type: ComponentPropertyType, value: string) {
                 class="flex min-w-0 flex-1 items-center gap-1.5 text-left"
                 @click="authoring.select(node.id)"
               >
-                <icon-lucide-component class="size-3.5 shrink-0 text-component" />
+                <icon-hugeicons-component class="size-3.5 shrink-0 text-component" />
                 <span class="truncate text-surface">{{ node.name }}</span>
               </button>
               <IconButton
@@ -279,7 +279,7 @@ function valueLabel(type: ComponentPropertyType, value: string) {
                 class="opacity-0 group-hover/nested:opacity-100 focus-visible:opacity-100"
                 @click="authoring.setExposed(node.id, false)"
               >
-                <icon-lucide-minus class="size-3.5" />
+                <icon-hugeicons-minus class="size-3.5" />
               </IconButton>
             </div>
           </div>
@@ -297,7 +297,7 @@ function valueLabel(type: ComponentPropertyType, value: string) {
         <div :class="nestedStyles.header">
           <h3 class="text-xs font-semibold text-surface">{{ panels.nestedInstances }}</h3>
           <AppButton :aria-label="common.close" class="ml-auto" @click="nestedOpen = false">
-            <icon-lucide-x class="size-3.5" />
+            <icon-hugeicons-x class="size-3.5" />
           </AppButton>
         </div>
         <div :class="nestedStyles.body">
@@ -317,7 +317,7 @@ function valueLabel(type: ComponentPropertyType, value: string) {
                 :ariaLabel="node.name"
                 @update:model-value="authoring.setExposed(node.id, $event)"
               />
-              <icon-lucide-component class="size-3.5 shrink-0 text-component" />
+              <icon-hugeicons-component class="size-3.5 shrink-0 text-component" />
               <span class="truncate">{{ node.name }}</span>
             </label>
           </Tip>

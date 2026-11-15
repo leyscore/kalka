@@ -60,17 +60,17 @@ function split(direction: SplitDirection) {
       <DropdownMenuRoot>
         <DropdownMenuTrigger as-child>
           <IconButton :label="`${menuText.splitRight} / ${menuText.splitDown}`" size="xs">
-            <icon-lucide-panels-top-left :class="headerCls.icon()" />
+            <icon-hugeicons-panels-top-left :class="headerCls.icon()" />
           </IconButton>
         </DropdownMenuTrigger>
         <DropdownMenuPortal>
           <DropdownMenuContent side="bottom" align="end" :side-offset="3" :class="menuCls.content">
             <DropdownMenuItem :disabled="!canSplit" :class="itemCls" @select="split('horizontal')">
-              <icon-lucide-columns-2 :class="menuCls.icon" />
+              <icon-hugeicons-layout-2-column :class="menuCls.icon" />
               <span>{{ menuText.splitRight }}</span>
             </DropdownMenuItem>
             <DropdownMenuItem :disabled="!canSplit" :class="itemCls" @select="split('vertical')">
-              <icon-lucide-rows-2 :class="menuCls.icon" />
+              <icon-hugeicons-rows-2 :class="menuCls.icon" />
               <span>{{ menuText.splitDown }}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -84,7 +84,7 @@ function split(direction: SplitDirection) {
         :disabled="!canClose"
         @click="store.closePane(paneId)"
       >
-        <icon-lucide-x :class="headerCls.icon()" />
+        <icon-hugeicons-x :class="headerCls.icon()" />
       </IconButton>
     </div>
   </div>

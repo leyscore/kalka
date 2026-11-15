@@ -214,7 +214,7 @@ function importTokens() {
         >
           <div class="grid grid-cols-[minmax(0,1fr)_auto_10rem] items-center gap-2 px-3 py-1">
             <span class="truncate font-medium text-surface">{{ collection.name }}</span>
-            <icon-lucide-arrow-right class="size-3 text-muted" aria-hidden="true" />
+            <icon-hugeicons-arrow-right-01 class="size-3 text-muted" aria-hidden="true" />
             <AppSelect
               :model-value="targetValue(options.collections[index].target)"
               :options="collectionOptions()"
@@ -229,7 +229,7 @@ function importTokens() {
               class="grid grid-cols-[minmax(0,1fr)_auto_10rem] items-center gap-2 py-1 pr-3 pl-6"
             >
               <span class="truncate text-muted">{{ mode.name }}</span>
-              <icon-lucide-arrow-right class="size-3 text-muted" aria-hidden="true" />
+              <icon-hugeicons-arrow-right-01 class="size-3 text-muted" aria-hidden="true" />
               <AppSelect
                 :model-value="targetValue(options.collections[index].modes[modeIndex])"
                 :options="modeOptions(index)"

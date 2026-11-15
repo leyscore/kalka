@@ -24,12 +24,12 @@ const { controls, setValue, setTextValue, flush } = useComponentProperties(() =>
       class="flex h-7 w-full items-center gap-1 text-left text-xs text-surface"
       :data-exposed-instance="name"
     >
-      <icon-lucide-chevron-right
+      <icon-hugeicons-chevron-right
         class="size-3 shrink-0 text-muted transition-transform data-[open]:rotate-90 motion-reduce:transition-none"
         :data-open="open || undefined"
         aria-hidden="true"
       />
-      <icon-lucide-component class="size-3.5 shrink-0 text-component" aria-hidden="true" />
+      <icon-hugeicons-component class="size-3.5 shrink-0 text-component" aria-hidden="true" />
       <span class="truncate">{{ name }}</span>
     </CollapsibleTrigger>
     <CollapsibleContent :class="collapsibleContentMotion">

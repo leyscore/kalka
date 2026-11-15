@@ -33,7 +33,7 @@ const CONTAINER_TYPES = ['FRAME', 'COMPONENT', 'COMPONENT_SET', 'INSTANCE']
               )
             "
           >
-            <icon-lucide-layout-panel-top class="size-3.5" />
+            <icon-hugeicons-layout-panel-top class="size-3.5" />
           </IconButton>
         </template>
 

@@ -63,8 +63,8 @@ defineOptions({ inheritAttrs: false })
     data-slot="trigger"
   >
     <slot>
-      <icon-lucide-diamond v-if="state === 'bound'" class="size-3" />
-      <icon-lucide-diamond-plus v-else class="size-3" />
+      <icon-hugeicons-diamond v-if="state === 'bound'" class="size-3" />
+      <icon-hugeicons-diamond-plus v-else class="size-3" />
     </slot>
   </Primitive>
 </template>

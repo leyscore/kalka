@@ -11,7 +11,7 @@ import {
 } from 'reka-ui'
 import { tv } from 'tailwind-variants'
 import { computed } from 'vue'
-import IconChevronDown from '~icons/lucide/chevron-down'
+import IconChevronDown from '~icons/hugeicons/chevron-down'
 
 import type { EditorToolDef } from '@kalka/core/editor'
 import {
@@ -119,7 +119,7 @@ function flyoutItemClass() {
                 aria-hidden="true"
               >
                 <DropdownMenuItemIndicator>
-                  <icon-lucide-check class="size-3.5" />
+                  <icon-hugeicons-check class="size-3.5" />
                 </DropdownMenuItemIndicator>
               </span>
               <component

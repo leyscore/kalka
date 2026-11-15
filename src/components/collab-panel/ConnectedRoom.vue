@@ -42,8 +42,8 @@ const statusText = computed(() =>
       @click="collab.copyLink"
     >
       <template #leading>
-        <icon-lucide-check v-if="collab.copied" class="size-3" />
-        <icon-lucide-copy v-else class="size-3" />
+        <icon-hugeicons-check v-if="collab.copied" class="size-3" />
+        <icon-hugeicons-copy v-else class="size-3" />
       </template>
       {{ collab.copied ? collab.messages.linkCopied : collab.messages.copyLink }}
     </AppButton>

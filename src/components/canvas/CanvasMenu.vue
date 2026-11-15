@@ -9,7 +9,7 @@ import {
   ContextMenuPortal
 } from 'reka-ui'
 import { computed } from 'vue'
-import IconChevronRight from '~icons/lucide/chevron-right'
+import IconChevronRight from '~icons/hugeicons/chevron-right'
 
 import {
   vTestId,

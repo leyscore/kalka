@@ -1,7 +1,7 @@
 import { compact, difference, keyBy, take, without } from 'es-toolkit'
 import { computed } from 'vue'
-import IconFile from '~icons/lucide/file'
-import IconFiles from '~icons/lucide/files'
+import IconFile from '~icons/hugeicons/file-01'
+import IconFiles from '~icons/hugeicons/files-01'
 
 import type { SceneNode } from '@kalka/scene-graph'
 import {

@@ -7,8 +7,8 @@ import {
   DropdownMenuTrigger
 } from 'reka-ui'
 import type { Component } from 'vue'
-import IconCheck from '~icons/lucide/check'
-import IconChevronDown from '~icons/lucide/chevron-down'
+import IconCheck from '~icons/hugeicons/check'
+import IconChevronDown from '~icons/hugeicons/chevron-down'
 
 import { layerTypeOptions, type LayerType } from '@kalka/core/editor'
 import type { SceneNode } from '@kalka/scene-graph'

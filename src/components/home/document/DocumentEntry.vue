@@ -33,9 +33,9 @@ const styles = computed(() => documentEntry({ view }))
     >
       <span v-if="view === 'grid'" data-slot="preview" :class="styles.preview()">
         <img v-if="previewURL" :src="previewURL" alt="" :class="styles.image()" />
-        <icon-lucide-file-image v-else :class="styles.fallback()" />
+        <icon-hugeicons-file-image v-else :class="styles.fallback()" />
       </span>
-      <icon-lucide-file-image v-else :class="styles.icon()" />
+      <icon-hugeicons-file-image v-else :class="styles.icon()" />
       <span data-slot="body" :class="styles.body()">
         <span data-slot="name" :class="styles.name()">{{ name }}</span>
         <span data-slot="metadata" :class="styles.metadata()">{{ metadata }}</span>

@@ -2,8 +2,8 @@
 import { AnimatePresence, motion } from 'motion-v'
 import { ToolbarRoot } from 'reka-ui'
 import { tv } from 'tailwind-variants'
-import IconChevronLeft from '~icons/lucide/chevron-left'
-import IconChevronRight from '~icons/lucide/chevron-right'
+import IconChevronLeft from '~icons/hugeicons/chevron-left'
+import IconChevronRight from '~icons/hugeicons/chevron-right'
 
 import type { EditorToolDef } from '@kalka/core/editor'
 import { getToolbarToolSelection, toolbarToolTestId, ToolbarItem } from '@kalka/vue'

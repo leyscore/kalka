@@ -36,7 +36,7 @@ const ui = tv(tokensPanelTheme)()
           data-test-id="variables-add-collection"
           @click="emit('addCollection')"
         >
-          <icon-lucide-plus class="size-3.5" />
+          <icon-hugeicons-plus class="size-3.5" />
         </IconButton>
       </div>
       <button

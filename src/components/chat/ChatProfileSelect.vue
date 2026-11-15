@@ -68,9 +68,9 @@ function manageModels(): void {
       :aria-label="ai.selectDesignModel"
       :class="selectCls.trigger"
     >
-      <icon-lucide-bot :class="ui.triggerIcon()" />
+      <icon-hugeicons-bot :class="ui.triggerIcon()" />
       <span :class="ui.triggerValue()"><slot name="value" /></span>
-      <icon-lucide-chevron-down :class="ui.triggerChevron()" />
+      <icon-hugeicons-chevron-down :class="ui.triggerChevron()" />
     </SelectTrigger>
     <SelectPortal>
       <SelectContent
@@ -95,7 +95,7 @@ function manageModels(): void {
               :class="selectCls.item"
             >
               <SelectItemIndicator :class="ui.indicator()">
-                <icon-lucide-check :class="ui.indicatorIcon()" />
+                <icon-hugeicons-check :class="ui.indicatorIcon()" />
               </SelectItemIndicator>
               <span v-if="profile.id !== selectedProfileId" :class="ui.indicator()" />
               <SelectItemText as-child>
@@ -104,7 +104,7 @@ function manageModels(): void {
             </SelectItem>
           </SelectGroup>
           <AppButton class="w-full justify-start" @click="manageModels">
-            <template #leading><icon-lucide-settings :class="ui.footerIcon()" /></template>
+            <template #leading><icon-hugeicons-settings-01 :class="ui.footerIcon()" /></template>
             {{ ai.manageModelsAndRoles }}
           </AppButton>
         </SelectViewport>

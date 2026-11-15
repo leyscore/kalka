@@ -21,6 +21,6 @@ const percent = computed(() => preparationPercent(progress))
     aria-label="Preparing document"
     class="relative flex size-3 shrink-0 items-center justify-center text-primary"
   >
-    <icon-lucide-loader-circle class="size-3" :class="motionStyles.spinner" />
+    <icon-hugeicons-loader-circle class="size-3" :class="motionStyles.spinner" />
   </span>
 </template>

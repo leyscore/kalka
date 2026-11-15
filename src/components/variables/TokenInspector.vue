@@ -420,7 +420,7 @@ function cssNameDone(event: KeyboardEvent) {
         data-test-id="variables-delete-variable"
         @click="emit('remove')"
       >
-        <template #leading><icon-lucide-trash-2 class="size-3.5" /></template>
+        <template #leading><icon-hugeicons-delete-02 class="size-3.5" /></template>
         {{ variables.deleteVariable }}
       </AppButton>
     </section>

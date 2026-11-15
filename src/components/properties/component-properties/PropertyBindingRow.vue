@@ -30,7 +30,7 @@ const panels = usePanelMessages()
       :disabled="disabled"
       @click="$emit('unbind', binding)"
     >
-      <icon-lucide-unlink class="size-3.5" />
+      <icon-hugeicons-unlink-01 class="size-3.5" />
     </IconButton>
   </div>
 </template>

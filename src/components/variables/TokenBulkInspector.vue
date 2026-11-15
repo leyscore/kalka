@@ -71,7 +71,7 @@ function move() {
     </section>
     <section :class="ui.section()">
       <AppButton variant="ghost" size="sm" class="self-start" @click="emit('duplicate')">
-        <template #leading><icon-lucide-copy class="size-3.5" /></template>
+        <template #leading><icon-hugeicons-copy class="size-3.5" /></template>
         {{ variables.duplicate }}
       </AppButton>
       <AppButton
@@ -82,7 +82,7 @@ function move() {
         data-test-id="variables-delete-selected"
         @click="emit('remove')"
       >
-        <template #leading><icon-lucide-trash-2 class="size-3.5" /></template>
+        <template #leading><icon-hugeicons-delete-02 class="size-3.5" /></template>
         {{ variables.deleteVariables }}
       </AppButton>
     </section>

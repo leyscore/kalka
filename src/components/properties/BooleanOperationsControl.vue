@@ -6,12 +6,12 @@ import {
   DropdownMenuRoot,
   DropdownMenuTrigger
 } from 'reka-ui'
-import IconChevronDown from '~icons/lucide/chevron-down'
-import IconCombine from '~icons/lucide/combine'
-import IconCopyMinus from '~icons/lucide/copy-minus'
-import IconCopyX from '~icons/lucide/copy-x'
-import IconListCollapse from '~icons/lucide/list-collapse'
-import IconSquaresIntersect from '~icons/lucide/squares-intersect'
+import IconChevronDown from '~icons/hugeicons/chevron-down'
+import IconCombine from '~icons/hugeicons/combine'
+import IconCopyMinus from '~icons/hugeicons/copy-minus'
+import IconCopyX from '~icons/hugeicons/copy-x'
+import IconListCollapse from '~icons/hugeicons/list-collapse'
+import IconSquaresIntersect from '~icons/hugeicons/squares-intersect'
 
 import {
   editorCommandMetadata,

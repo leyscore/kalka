@@ -114,7 +114,7 @@ async function testConnection() {
             configured ? settings.configured : settings.notConfigured
           }}</template>
           <template #trailing
-            >{{ settings.edit }}<icon-lucide-chevron-right class="size-3.5"
+            >{{ settings.edit }}<icon-hugeicons-chevron-right class="size-3.5"
           /></template>
         </AppActionRow>
         <AppButton
@@ -190,7 +190,7 @@ async function testConnection() {
           data-test-id="settings-storage-test"
           @click="testConnection"
         >
-          <template #leading><icon-lucide-plug-zap aria-hidden="true" /></template>
+          <template #leading><icon-hugeicons-plug-zap aria-hidden="true" /></template>
           {{ testing ? common.testingConnection : common.testConnection }}
         </AppButton>
         <AppAlert

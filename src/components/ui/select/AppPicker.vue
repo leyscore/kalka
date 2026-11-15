@@ -197,7 +197,7 @@ function select(value: AcceptableValue) {
           <h3 :class="styles.title({ class: ui?.title })">{{ heading }}</h3>
           <PopoverClose as-child>
             <IconButton :label="closeLabel">
-              <icon-lucide-x class="size-3.5" />
+              <icon-hugeicons-x class="size-3.5" />
             </IconButton>
           </PopoverClose>
         </div>
@@ -211,7 +211,7 @@ function select(value: AcceptableValue) {
           @keydown="moveRow"
         >
           <div :class="styles.search({ class: ui?.search })">
-            <icon-lucide-search :class="styles.searchIcon({ class: ui?.searchIcon })" />
+            <icon-hugeicons-search-01 :class="styles.searchIcon({ class: ui?.searchIcon })" />
             <ListboxFilter
               v-model="query"
               auto-focus
@@ -269,7 +269,7 @@ function select(value: AcceptableValue) {
                     {{ item.description }}
                   </span>
                 </span>
-                <icon-lucide-check
+                <icon-hugeicons-check
                   v-if="item.value === selected"
                   :class="styles.check({ class: ui?.check })"
                 />

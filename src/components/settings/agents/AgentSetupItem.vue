@@ -24,8 +24,8 @@ const styles = tv(theme)()
 
 <template>
   <li :class="styles.item()" :data-status="ready ? 'available' : 'missing'">
-    <icon-lucide-circle-check v-if="ready" :class="styles.readyIcon()" aria-hidden="true" />
-    <icon-lucide-circle-dashed v-else :class="styles.missingIcon()" aria-hidden="true" />
+    <icon-hugeicons-circle-check v-if="ready" :class="styles.readyIcon()" aria-hidden="true" />
+    <icon-hugeicons-circle-dashed v-else :class="styles.missingIcon()" aria-hidden="true" />
     <span class="flex-1"><slot /></span>
     <slot name="action">
       <AppButton

@@ -89,7 +89,7 @@ function isActive(scale: number) {
             :aria-label="label"
             class="flex shrink-0 cursor-pointer items-center border-l border-border px-1.5 text-surface hover:bg-hover"
           >
-            <icon-lucide-chevron-down class="size-3 text-muted" />
+            <icon-hugeicons-chevron-down class="size-3 text-muted" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuPortal v-if="portalActive">
@@ -101,7 +101,7 @@ function isActive(scale: number) {
               @select="pick(scale)"
             >
               <span>{{ scale }}x</span>
-              <icon-lucide-check v-if="isActive(scale)" class="size-3 text-primary" />
+              <icon-hugeicons-check v-if="isActive(scale)" class="size-3 text-primary" />
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenuPortal>

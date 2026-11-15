@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import { ref } from 'vue'
-import IconSearch from '~icons/lucide/search'
-import IconX from '~icons/lucide/x'
+import IconSearch from '~icons/hugeicons/search-01'
+import IconX from '~icons/hugeicons/x'
 
 import AppButton from '../button/AppButton.vue'
 import IconButton from '../button/IconButton.vue'

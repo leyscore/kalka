@@ -74,7 +74,7 @@ function loadPreviewFont(family: string, source: string) {
         :class="selectCls.trigger"
       >
         <span class="truncate">{{ modelValue }}</span>
-        <icon-lucide-chevron-down class="size-3 shrink-0 text-muted" />
+        <icon-hugeicons-chevron-down class="size-3 shrink-0 text-muted" />
       </button>
     </template>
 
@@ -84,7 +84,7 @@ function loadPreviewFont(family: string, source: string) {
         class="flex min-w-0 flex-1 items-center gap-2"
         @vue:mounted="loadPreviewFont(family, source)"
       >
-        <icon-lucide-check v-if="selected" class="size-3 shrink-0 text-primary" />
+        <icon-hugeicons-check v-if="selected" class="size-3 shrink-0 text-primary" />
         <span v-else class="size-3 shrink-0" />
         <span class="truncate" :style="{ fontFamily: `'${family}', sans-serif` }">{{
           family

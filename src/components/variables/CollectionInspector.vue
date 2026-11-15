@@ -201,7 +201,7 @@ function attributeDone(event: KeyboardEvent) {
               :label="variables.collectionActions"
               data-test-id="variables-collection-menu"
             >
-              <icon-lucide-ellipsis class="size-3.5" />
+              <icon-hugeicons-ellipsis class="size-3.5" />
             </IconButton>
           </DropdownMenuTrigger>
           <DropdownMenuPortal>
@@ -211,7 +211,7 @@ function attributeDone(event: KeyboardEvent) {
                 data-test-id="variables-delete-collection"
                 @select="emit('remove')"
               >
-                <icon-lucide-trash-2 :class="menu.icon" />
+                <icon-hugeicons-delete-02 :class="menu.icon" />
                 {{ variables.deleteCollection }}
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -249,7 +249,7 @@ function attributeDone(event: KeyboardEvent) {
           data-test-id="variables-add-mode"
           @click="emit('addMode')"
         >
-          <icon-lucide-plus class="size-3.5" />
+          <icon-hugeicons-plus class="size-3.5" />
         </IconButton>
       </div>
       <div
@@ -273,13 +273,13 @@ function attributeDone(event: KeyboardEvent) {
           <DropdownMenuRoot>
             <DropdownMenuTrigger as-child>
               <IconButton :label="variables.modeActions({ mode: item.name })">
-                <icon-lucide-ellipsis class="size-3.5" />
+                <icon-hugeicons-ellipsis class="size-3.5" />
               </IconButton>
             </DropdownMenuTrigger>
             <DropdownMenuPortal>
               <DropdownMenuContent side="bottom" :side-offset="4" align="end" :class="menu.content">
                 <DropdownMenuItem :class="menu.item" @select="emit('duplicateMode', item.modeId)">
-                  <icon-lucide-copy :class="menu.icon" />
+                  <icon-hugeicons-copy :class="menu.icon" />
                   {{ variables.duplicateMode }}
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -287,7 +287,7 @@ function attributeDone(event: KeyboardEvent) {
                   :class="menu.item"
                   @select="emit('setDefaultMode', item.modeId)"
                 >
-                  <icon-lucide-pin :class="menu.icon" />
+                  <icon-hugeicons-pin :class="menu.icon" />
                   {{ variables.setDefaultMode }}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator :class="menu.separator" />
@@ -296,7 +296,7 @@ function attributeDone(event: KeyboardEvent) {
                   :disabled="collection.modes.length <= 1"
                   @select="emit('removeMode', item.modeId)"
                 >
-                  <icon-lucide-trash-2 :class="menu.icon" />
+                  <icon-hugeicons-delete-02 :class="menu.icon" />
                   {{ variables.deleteMode }}
                 </DropdownMenuItem>
               </DropdownMenuContent>

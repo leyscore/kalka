@@ -72,7 +72,7 @@ const command = computed(() => (notice.kind === 'terminal' ? notice.signIn?.comm
           data-test-id="chat-resend"
           @click="emit('resend')"
         >
-          <template #leading><icon-lucide-send aria-hidden="true" /></template>
+          <template #leading><icon-hugeicons-send aria-hidden="true" /></template>
           {{ ai.chatResend }}
         </AppButton>
         <AppButton size="xs" variant="ghost" @click="emit('dismiss')">

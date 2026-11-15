@@ -54,7 +54,7 @@ const item = menuItem({ justify: 'start' })
         :class="[panelFieldBase, 'flex flex-1 items-center gap-1.5 px-2 text-xs']"
         :data-modified="modified || undefined"
       >
-        <icon-lucide-square-dashed class="size-3.5 shrink-0 text-slot" />
+        <icon-hugeicons-square-dashed class="size-3.5 shrink-0 text-slot" />
         <span class="truncate" :class="modified ? 'text-surface' : 'text-muted'">
           {{ modified ? panels.slotModified : panels.slotDefault }}
         </span>
@@ -74,13 +74,13 @@ const item = menuItem({ justify: 'start' })
       <DropdownMenuRoot>
         <DropdownMenuTrigger as-child>
           <IconButton :label="panels.slotActions({ name })">
-            <icon-lucide-ellipsis class="size-3.5" />
+            <icon-hugeicons-ellipsis class="size-3.5" />
           </IconButton>
         </DropdownMenuTrigger>
         <DropdownMenuPortal>
           <DropdownMenuContent side="bottom" align="end" :side-offset="4" :class="menu.content">
             <DropdownMenuItem :class="item" :disabled="!modified" @select="emit('reset')">
-              <icon-lucide-rotate-ccw :class="menu.icon" />
+              <icon-hugeicons-rotate-ccw :class="menu.icon" />
               {{ panels.resetSlot }}
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -88,7 +88,7 @@ const item = menuItem({ justify: 'start' })
               :disabled="itemCount === 0"
               @select="emit('deleteContents')"
             >
-              <icon-lucide-trash-2 :class="menu.icon" />
+              <icon-hugeicons-delete-02 :class="menu.icon" />
               {{ panels.deleteSlotContents }}
             </DropdownMenuItem>
           </DropdownMenuContent>

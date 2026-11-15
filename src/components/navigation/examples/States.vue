@@ -72,22 +72,22 @@ const pageStates = [
             :class="tabStyles({ active: true }).trigger()"
             data-active
           >
-            <icon-lucide-file :class="tabStyles().icon()" />
+            <icon-hugeicons-file-01 :class="tabStyles().icon()" />
             <span :class="tabStyles().label()">Active</span>
             <span :class="tabStyles({ active: true }).close()" data-active>
-              <icon-lucide-x :class="tabStyles().closeIcon()" />
+              <icon-hugeicons-x :class="tabStyles().closeIcon()" />
             </span>
           </button>
           <button aria-label="Inactive tab" :class="tabStyles({ active: false }).trigger()">
-            <icon-lucide-file :class="tabStyles().icon()" />
+            <icon-hugeicons-file-01 :class="tabStyles().icon()" />
             <span :class="tabStyles().label()">Inactive</span>
             <span :class="tabStyles({ active: false }).close()">
-              <icon-lucide-x :class="tabStyles().closeIcon()" />
+              <icon-hugeicons-x :class="tabStyles().closeIcon()" />
             </span>
           </button>
         </div>
         <button aria-label="New tab" :class="tabStyles().newTab()">
-          <icon-lucide-plus :class="tabStyles().newIcon()" />
+          <icon-hugeicons-plus :class="tabStyles().newIcon()" />
         </button>
       </div>
     </section>

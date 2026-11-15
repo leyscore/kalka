@@ -163,8 +163,8 @@ function groupKey(group: MessagePartGroup): string {
                 class="absolute right-1 bottom-1 opacity-0 focus-visible:opacity-100 group-hover/response:opacity-100"
                 @click="copyResponse"
               >
-                <icon-lucide-check v-if="copied" class="size-3 text-green-400" />
-                <icon-lucide-copy v-else class="size-3" />
+                <icon-hugeicons-check v-if="copied" class="size-3 text-green-400" />
+                <icon-hugeicons-copy v-else class="size-3" />
               </IconButton>
             </div>
           </template>
@@ -211,7 +211,7 @@ function groupKey(group: MessagePartGroup): string {
             class="absolute top-1/2 -left-7 -translate-y-1/2 opacity-0 focus-visible:opacity-100 group-hover/request:opacity-100"
             @click="editing = true"
           >
-            <icon-lucide-pencil class="size-3" />
+            <icon-hugeicons-pencil class="size-3" />
           </IconButton>
         </div>
         <div v-if="canRetry && !editing" class="flex justify-end">
@@ -223,7 +223,7 @@ function groupKey(group: MessagePartGroup): string {
             :loading="reconnecting"
             @click="emit('reconnect')"
           >
-            <template #leading><icon-lucide-key-round aria-hidden="true" /></template>
+            <template #leading><icon-hugeicons-key-round aria-hidden="true" /></template>
             {{ reconnecting ? ai.reconnecting : ai.reconnect }}
           </AppButton>
           <AppButton
@@ -233,7 +233,7 @@ function groupKey(group: MessagePartGroup): string {
             data-test-id="chat-retry"
             @click="emit('regenerate')"
           >
-            <template #leading><icon-lucide-refresh-cw aria-hidden="true" /></template>
+            <template #leading><icon-hugeicons-refresh-cw aria-hidden="true" /></template>
             {{ ai.retryRequest }}
           </AppButton>
         </div>

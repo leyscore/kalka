@@ -33,13 +33,13 @@ const item = menuItem({ justify: 'start' })
         :disabled="!binding.editable.value"
         :data-property-bind="field"
       >
-        <icon-lucide-link class="size-3.5" />
+        <icon-hugeicons-link class="size-3.5" />
       </IconButton>
     </DropdownMenuTrigger>
     <DropdownMenuPortal>
       <DropdownMenuContent side="bottom" align="end" :side-offset="4" :class="menu.content">
         <DropdownMenuItem :class="item" @select="binding.create()">
-          <icon-lucide-plus :class="menu.icon" />
+          <icon-hugeicons-plus :class="menu.icon" />
           {{ panels.createComponentProperty }}
         </DropdownMenuItem>
         <template v-if="binding.compatible.value.length">

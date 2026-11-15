@@ -84,7 +84,7 @@ function cancelFromEscape(event: KeyboardEvent) {
                 data-test-id="fill-picker-tab-solid"
                 @click="root.actions.toSolid"
               >
-                <icon-lucide-square class="size-3.5" />
+                <icon-hugeicons-square class="size-3.5" />
               </button>
             </Tip>
             <Tip :label="panels.linearGradient">
@@ -94,7 +94,7 @@ function cancelFromEscape(event: KeyboardEvent) {
                 data-test-id="fill-picker-tab-gradient"
                 @click="root.actions.toGradient"
               >
-                <icon-lucide-blend class="size-3.5" />
+                <icon-hugeicons-blend class="size-3.5" />
               </button>
             </Tip>
             <Tip :label="panels.image">
@@ -104,7 +104,7 @@ function cancelFromEscape(event: KeyboardEvent) {
                 data-test-id="fill-picker-tab-image"
                 @click="root.actions.toImage"
               >
-                <icon-lucide-image class="size-3.5" />
+                <icon-hugeicons-image-01 class="size-3.5" />
               </button>
             </Tip>
           </div>

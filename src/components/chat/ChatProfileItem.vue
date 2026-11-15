@@ -20,7 +20,7 @@ const ui = chatProfileTheme()
       :class="ui.capability()"
       :aria-label="profile.capabilities.includes('vision') ? 'Supports image input' : undefined"
     >
-      <icon-lucide-eye
+      <icon-hugeicons-eye
         v-if="profile.capabilities.includes('vision')"
         class="size-full"
         aria-hidden="true"

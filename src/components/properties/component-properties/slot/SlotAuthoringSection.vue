@@ -51,7 +51,7 @@ function blurInput(event: KeyboardEvent) {
         data-property="create-slot"
         @click="authoring.create()"
       >
-        <icon-lucide-square-dashed class="size-3.5 text-slot" />
+        <icon-hugeicons-square-dashed class="size-3.5 text-slot" />
         {{ panels.createSlot }}
       </AppButton>
       <div
@@ -82,7 +82,7 @@ function blurInput(event: KeyboardEvent) {
           </template>
         </SlotSettingsPopover>
         <IconButton :label="panels.removeSlot" @click="authoring.remove(slot.id)">
-          <icon-lucide-minus class="size-3.5" />
+          <icon-hugeicons-minus class="size-3.5" />
         </IconButton>
       </div>
     </div>

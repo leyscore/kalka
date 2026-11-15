@@ -20,7 +20,7 @@ const maskCommand = getCommand('selection.toggleMask')
       data-test-id="selection-toggle-mask"
       @click="runCommand('selection.toggleMask')"
     >
-      <icon-lucide-shapes class="size-3.5" />
+      <icon-hugeicons-shapes class="size-3.5" />
     </IconButton>
     <BooleanOperationsControl v-if="showBooleanOperations" />
   </div>

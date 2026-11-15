@@ -69,6 +69,6 @@ watch(
       class="max-h-full max-w-full object-contain"
       draggable="false"
     />
-    <icon-lucide-component v-else class="size-4 text-component" aria-hidden="true" />
+    <icon-hugeicons-component v-else class="size-4 text-component" aria-hidden="true" />
   </div>
 </template>

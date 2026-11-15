@@ -10,17 +10,17 @@ const { severity, class: className } = defineProps<{
 </script>
 
 <template>
-  <icon-lucide-circle-alert
+  <icon-hugeicons-alert-circle
     v-if="severity === 'error'"
     aria-hidden="true"
     :class="severityIcon({ severity, class: className })"
   />
-  <icon-lucide-triangle-alert
+  <icon-hugeicons-triangle-alert
     v-else-if="severity === 'warning'"
     aria-hidden="true"
     :class="severityIcon({ severity, class: className })"
   />
-  <icon-lucide-lightbulb
+  <icon-hugeicons-lightbulb
     v-else
     aria-hidden="true"
     :class="severityIcon({ severity, class: className })"

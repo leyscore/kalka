@@ -93,7 +93,7 @@ function replace(value: string, replacement: string) {
         :class="drag.instruction.value?.operation === 'reorder-before' ? '-top-0.5' : '-bottom-0.5'"
       />
       <div class="flex items-center gap-1">
-        <icon-lucide-grip-vertical
+        <icon-hugeicons-grip-vertical
           class="size-3.5 shrink-0 cursor-grab text-muted opacity-0 group-hover/value:opacity-100"
           aria-hidden="true"
         />
@@ -112,7 +112,7 @@ function replace(value: string, replacement: string) {
           :disabled="disabled || values.length < 2"
           @click="startRemove(value)"
         >
-          <icon-lucide-minus class="size-3.5" />
+          <icon-hugeicons-minus class="size-3.5" />
         </IconButton>
       </div>
       <div v-if="replacing === value" class="flex flex-col gap-1 pl-5">
@@ -149,7 +149,7 @@ function replace(value: string, replacement: string) {
         aria-hidden="true"
         tabindex="-1"
       >
-        <icon-lucide-minus class="size-3.5" />
+        <icon-hugeicons-minus class="size-3.5" />
       </IconButton>
     </div>
   </div>

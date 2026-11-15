@@ -86,7 +86,7 @@ function runImport(choice: ImportChoice): void {
         @click="startBlank"
       >
         <span :class="custom.device()" aria-hidden="true">
-          <icon-lucide-plus class="size-[22px]" />
+          <icon-hugeicons-plus class="size-[22px]" />
         </span>
         <span :class="custom.body()">
           <span :class="custom.name()">{{ welcome.presetCustom }}</span>

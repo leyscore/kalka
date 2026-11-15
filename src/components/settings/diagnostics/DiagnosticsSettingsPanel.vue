@@ -129,11 +129,11 @@ async function saveDiagnostics() {
       }}</span>
       <div class="flex items-center gap-1.5">
         <AppButton size="xs" color="neutral" variant="ghost" @click="exportDiagnostics"
-          ><template #leading><icon-lucide-copy /></template
+          ><template #leading><icon-hugeicons-copy /></template
           >{{ diagnosticMessages.copy }}</AppButton
         >
         <AppButton size="xs" color="neutral" variant="ghost" @click="saveDiagnostics"
-          ><template #leading><icon-lucide-download /></template
+          ><template #leading><icon-hugeicons-download-01 /></template
           >{{ diagnosticMessages.save }}</AppButton
         >
         <AppButton
@@ -142,7 +142,7 @@ async function saveDiagnostics() {
           variant="ghost"
           :disabled="diagnosticsCount === 0"
           @click="clearOpen = true"
-          ><template #leading><icon-lucide-trash-2 /></template
+          ><template #leading><icon-hugeicons-delete-02 /></template
           >{{ diagnosticMessages.clear }}</AppButton
         >
       </div>

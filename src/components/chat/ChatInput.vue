@@ -145,7 +145,7 @@ const selectedProfileName = computed(
             size="xs"
             @click="removeReferencedNode(node.id)"
           >
-            <icon-lucide-x class="size-3" />
+            <icon-hugeicons-x class="size-3" />
           </IconButton>
         </div>
         <div
@@ -168,7 +168,7 @@ const selectedProfileName = computed(
             size="xs"
             @click="removeImage(index)"
           >
-            <icon-lucide-x class="size-3" />
+            <icon-hugeicons-x class="size-3" />
           </IconButton>
         </div>
       </div>
@@ -190,7 +190,7 @@ const selectedProfileName = computed(
         data-slot="chat-add-selection-context"
         @click="toggleCurrentSelection"
       >
-        <icon-lucide-mouse-pointer-2 class="size-4" />
+        <icon-hugeicons-cursor-02 class="size-4" />
       </IconButton>
       <IconButton
         :label="ai.attachImages"
@@ -198,14 +198,14 @@ const selectedProfileName = computed(
         :disabled="isStreaming || images.length >= MAX_IMAGE_ATTACHMENTS"
         @click="openImageDialog()"
       >
-        <icon-lucide-image-plus class="size-4" />
+        <icon-hugeicons-image-plus class="size-4" />
       </IconButton>
     </template>
     <template #model>
       <div class="@container flex min-w-0 items-center">
         <template v-if="isAgentProvider">
           <div class="flex min-w-0 items-center gap-1 px-1.5 text-[10px] text-muted">
-            <icon-lucide-bot class="size-3 shrink-0" />
+            <icon-hugeicons-bot class="size-3 shrink-0" />
             <span class="truncate">{{ agentName }}</span>
           </div>
         </template>

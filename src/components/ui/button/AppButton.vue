@@ -58,7 +58,7 @@ const isDisabled = computed(() => disabled || loading)
     :class="styles.base"
   >
     <span v-if="loading" data-slot="loading-icon" :class="styles.icon">
-      <icon-lucide-loader-2 :class="motionStyles.spinner" />
+      <icon-hugeicons-loading-03 :class="motionStyles.spinner" />
     </span>
     <span v-else-if="$slots.leading" data-slot="leading-icon" :class="styles.icon">
       <slot name="leading" />

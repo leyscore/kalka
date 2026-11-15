@@ -21,7 +21,7 @@ const { nodes, show } = useToolNodes(() => ids)
       :aria-label="ai.showNodeOnCanvas({ name: node.label })"
       @click="void show(node.id)"
     >
-      <icon-lucide-crosshair :class="ui.nodeIcon()" aria-hidden="true" />
+      <icon-hugeicons-crosshair :class="ui.nodeIcon()" aria-hidden="true" />
       <span :class="ui.nodeLabel()">{{ node.label }}</span>
     </button>
   </div>

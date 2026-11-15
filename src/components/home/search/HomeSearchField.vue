@@ -49,6 +49,6 @@ watch(
     :aria-label="files.searchFiles"
     :ui="isMobile ? undefined : homeSearch"
   >
-    <template #leading><icon-lucide-search class="size-3.5" /></template>
+    <template #leading><icon-hugeicons-search-01 class="size-3.5" /></template>
   </AppInput>
 </template>

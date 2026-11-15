@@ -23,7 +23,7 @@ const meta = {
       <div class="flex h-72 w-full bg-app text-surface">
         <AppPlaceholder v-bind="args">
           <template #icon>
-            <icon-lucide-files class="size-5" />
+            <icon-hugeicons-files-01 class="size-5" />
           </template>
           <template #action>
             <button type="button" class="rounded bg-accent px-3 py-1.5 text-xs font-medium text-white">

@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import IconCircle from '~icons/lucide/circle'
-import IconFrame from '~icons/lucide/frame'
-import IconSquare from '~icons/lucide/square'
-import IconType from '~icons/lucide/type'
+import IconCircle from '~icons/hugeicons/circle'
+import IconFrame from '~icons/hugeicons/frame'
+import IconSquare from '~icons/hugeicons/square'
+import IconType from '~icons/hugeicons/type'
 
 import type { LintFix } from '@kalka/core/lint'
 

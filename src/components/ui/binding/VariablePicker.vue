@@ -113,7 +113,7 @@ defineOptions({ inheritAttrs: false })
           }"
           :ui="{ root: 'size-3.5 shrink-0 rounded-sm' }"
         />
-        <icon-lucide-diamond v-else class="size-3.5 text-component" />
+        <icon-hugeicons-diamond v-else class="size-3.5 text-component" />
       </template>
       <template #footer>
         <AppButton
@@ -123,7 +123,7 @@ defineOptions({ inheritAttrs: false })
           data-slot="action"
           @click="detach"
         >
-          <template #leading><icon-lucide-unlink class="size-3" /></template>
+          <template #leading><icon-hugeicons-unlink-01 class="size-3" /></template>
           {{ detachLabel }}
         </AppButton>
         <form
@@ -157,7 +157,7 @@ defineOptions({ inheritAttrs: false })
           data-slot="action"
           @click="startCreate"
         >
-          <template #leading><icon-lucide-plus class="size-3" /></template>
+          <template #leading><icon-hugeicons-plus class="size-3" /></template>
           <span class="min-w-0 flex-1 truncate text-left">{{ createLabel }}</span>
         </AppButton>
       </template>

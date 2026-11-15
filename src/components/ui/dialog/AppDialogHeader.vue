@@ -44,7 +44,7 @@ const cls = useDialogUI(ui)
     <slot name="actions" />
     <DialogClose v-if="showClose" as-child>
       <button type="button" data-slot="dialog-close" :class="cls.close" :aria-label="closeLabel">
-        <slot name="close-icon"><icon-lucide-x class="size-4" /></slot>
+        <slot name="close-icon"><icon-hugeicons-x class="size-4" /></slot>
       </button>
     </DialogClose>
   </header>

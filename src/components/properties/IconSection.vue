@@ -58,10 +58,10 @@ function confirmSwap() {
         {{ panels.iconModified }}
       </span>
       <IconButton v-if="modified" :label="panels.resetIcon" @click="reset">
-        <icon-lucide-rotate-ccw class="size-3.5" />
+        <icon-hugeicons-rotate-ccw class="size-3.5" />
       </IconButton>
       <IconButton :label="panels.detachIcon" @click="detach">
-        <icon-lucide-unlink class="size-3.5" />
+        <icon-hugeicons-unlink-01 class="size-3.5" />
       </IconButton>
     </template>
     <PanelFieldGroup :label="panels.swapIcon">
@@ -84,7 +84,7 @@ function confirmSwap() {
               {{ iconLayerName(name) }}
               <span class="text-muted">{{ setName ?? name.slice(0, name.indexOf(':')) }}</span>
             </span>
-            <icon-lucide-chevron-down class="ml-1 size-3 shrink-0 text-muted" />
+            <icon-hugeicons-chevron-down class="ml-1 size-3 shrink-0 text-muted" />
           </button>
         </template>
       </IconPicker>

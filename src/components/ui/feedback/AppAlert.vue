@@ -29,18 +29,18 @@ const styles = computed(() => {
     :aria-labelledby="`${id}-heading`"
     aria-atomic="true"
   >
-    <icon-lucide-circle-alert v-if="tone === 'error'" :class="styles.icon" aria-hidden="true" />
-    <icon-lucide-triangle-alert
+    <icon-hugeicons-alert-circle v-if="tone === 'error'" :class="styles.icon" aria-hidden="true" />
+    <icon-hugeicons-triangle-alert
       v-else-if="tone === 'warning'"
       :class="styles.icon"
       aria-hidden="true"
     />
-    <icon-lucide-circle-check
+    <icon-hugeicons-circle-check
       v-else-if="tone === 'success'"
       :class="styles.icon"
       aria-hidden="true"
     />
-    <icon-lucide-info v-else :class="styles.icon" aria-hidden="true" />
+    <icon-hugeicons-info v-else :class="styles.icon" aria-hidden="true" />
     <div :class="styles.content">
       <p :id="`${id}-heading`" :class="styles.heading" data-slot="alert-heading">{{ heading }}</p>
       <div

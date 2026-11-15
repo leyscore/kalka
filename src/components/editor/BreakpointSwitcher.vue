@@ -119,9 +119,12 @@ function add(preset: BreakpointPreset): void {
         :class="styles.item()"
         @click="show(screen.id)"
       >
-        <icon-lucide-smartphone v-if="kind(screen.width) === 'phone'" :class="styles.icon()" />
-        <icon-lucide-tablet v-else-if="kind(screen.width) === 'tablet'" :class="styles.icon()" />
-        <icon-lucide-monitor v-else :class="styles.icon()" />
+        <icon-hugeicons-smartphone v-if="kind(screen.width) === 'phone'" :class="styles.icon()" />
+        <icon-hugeicons-tablet-01
+          v-else-if="kind(screen.width) === 'tablet'"
+          :class="styles.icon()"
+        />
+        <icon-hugeicons-monitor v-else :class="styles.icon()" />
       </button>
     </Tip>
     <template v-if="missingPresets.length > 0">
@@ -132,7 +135,7 @@ function add(preset: BreakpointPreset): void {
           data-test-id="canvas-breakpoints-add"
           :class="styles.item()"
         >
-          <icon-lucide-plus :class="styles.icon()" />
+          <icon-hugeicons-plus :class="styles.icon()" />
         </DropdownMenuTrigger>
         <DropdownMenuPortal>
           <DropdownMenuContent :side-offset="6" align="center" :class="menuCls.content">
@@ -143,8 +146,8 @@ function add(preset: BreakpointPreset): void {
               :class="menuCls.item"
               @select="add(preset)"
             >
-              <icon-lucide-smartphone v-if="preset.key === 'phone'" class="size-3.5" />
-              <icon-lucide-tablet v-else class="size-3.5" />
+              <icon-hugeicons-smartphone v-if="preset.key === 'phone'" class="size-3.5" />
+              <icon-hugeicons-tablet-01 v-else class="size-3.5" />
               <span class="flex-1">{{ presetNames[preset.key] }}</span>
               <span class="text-muted tabular-nums">{{ preset.width }}px</span>
             </DropdownMenuItem>

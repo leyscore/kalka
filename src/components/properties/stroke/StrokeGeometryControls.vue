@@ -29,11 +29,14 @@ function setJoin(value: string) {
       >
         <template #option="{ option }">
           <Tip :label="option.label">
-            <icon-lucide-minus v-if="option.value === 'NONE'" class="size-3" />
-            <icon-lucide-circle v-else-if="option.value === 'ROUND'" class="size-2.5" />
-            <icon-lucide-square v-else-if="option.value === 'SQUARE'" class="size-2.5" />
-            <icon-lucide-arrow-right v-else-if="option.value === 'ARROW_LINES'" class="size-3" />
-            <icon-lucide-triangle v-else class="size-2.5" />
+            <icon-hugeicons-minus v-if="option.value === 'NONE'" class="size-3" />
+            <icon-hugeicons-circle v-else-if="option.value === 'ROUND'" class="size-2.5" />
+            <icon-hugeicons-square v-else-if="option.value === 'SQUARE'" class="size-2.5" />
+            <icon-hugeicons-arrow-right-01
+              v-else-if="option.value === 'ARROW_LINES'"
+              class="size-3"
+            />
+            <icon-hugeicons-triangle v-else class="size-2.5" />
           </Tip>
         </template>
       </SegmentedControl>
@@ -48,9 +51,9 @@ function setJoin(value: string) {
       >
         <template #option="{ option }">
           <Tip :label="option.label">
-            <icon-lucide-corner-up-right v-if="option.value === 'MITER'" class="size-3" />
-            <icon-lucide-triangle v-else-if="option.value === 'BEVEL'" class="size-2.5" />
-            <icon-lucide-circle v-else class="size-2.5" />
+            <icon-hugeicons-corner-up-right v-if="option.value === 'MITER'" class="size-3" />
+            <icon-hugeicons-triangle v-else-if="option.value === 'BEVEL'" class="size-2.5" />
+            <icon-hugeicons-circle v-else class="size-2.5" />
           </Tip>
         </template>
       </SegmentedControl>
@@ -64,7 +67,7 @@ function setJoin(value: string) {
         @update:model-value="controls.updateMiterLimit"
         @commit="controls.commitMiterLimit"
       >
-        <template #icon><icon-lucide-triangle-right class="size-3" /></template>
+        <template #icon><icon-hugeicons-triangle-right class="size-3" /></template>
       </NumberField>
     </PanelFieldGroup>
   </div>

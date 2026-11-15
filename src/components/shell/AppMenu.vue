@@ -15,7 +15,7 @@ import {
   MenubarTrigger
 } from 'reka-ui'
 import { useTemplateRef, watch } from 'vue'
-import IconChevronRight from '~icons/lucide/chevron-right'
+import IconChevronRight from '~icons/hugeicons/chevron-right'
 
 import { shortcutPlatform, useEditorCommands, vTestId } from '@kalka/vue'
 
@@ -101,7 +101,7 @@ const { overflowStart, overflowEnd, scrollTowardHidden } = useScrollOverflow(men
         :disabled="!undo.enabled.value"
         @click="undo.run()"
       >
-        <icon-lucide-undo-2 class="size-[15px]" />
+        <icon-hugeicons-undo-02 class="size-[15px]" />
       </IconButton>
       <IconButton
         :label="`${redo.label} (${appMenuShortcutLabel('redo')})`"
@@ -110,7 +110,7 @@ const { overflowStart, overflowEnd, scrollTowardHidden } = useScrollOverflow(men
         :disabled="!redo.enabled.value"
         @click="redo.run()"
       >
-        <icon-lucide-redo-2 class="size-[15px]" />
+        <icon-hugeicons-redo-02 class="size-[15px]" />
       </IconButton>
     </div>
     <div v-if="showMenubar" class="flex min-w-0 flex-1 items-center">
@@ -153,7 +153,7 @@ const { overflowStart, overflowEnd, scrollTowardHidden } = useScrollOverflow(men
                           >
                             <span class="flex-1">{{ menuLabel(sub) }}</span>
                             <MenubarItemIndicator class="text-surface">
-                              <icon-lucide-check class="size-3.5" />
+                              <icon-hugeicons-check class="size-3.5" />
                             </MenubarItemIndicator>
                           </MenubarCheckboxItem>
                           <MenubarItem
@@ -179,7 +179,7 @@ const { overflowStart, overflowEnd, scrollTowardHidden } = useScrollOverflow(men
                   >
                     <span class="flex-1">{{ menuLabel(item) }}</span>
                     <MenubarItemIndicator class="text-surface">
-                      <icon-lucide-check class="size-3.5" />
+                      <icon-hugeicons-check class="size-3.5" />
                     </MenubarItemIndicator>
                   </MenubarCheckboxItem>
                   <MenubarItem
@@ -211,8 +211,8 @@ const { overflowStart, overflowEnd, scrollTowardHidden } = useScrollOverflow(men
         :data-start="!overflowEnd || undefined"
         @click="scrollTowardHidden"
       >
-        <icon-lucide-chevron-right v-if="overflowEnd" class="size-3.5" />
-        <icon-lucide-chevron-left v-else class="size-3.5" />
+        <icon-hugeicons-chevron-right v-if="overflowEnd" class="size-3.5" />
+        <icon-hugeicons-chevron-left v-else class="size-3.5" />
       </button>
     </div>
   </div>

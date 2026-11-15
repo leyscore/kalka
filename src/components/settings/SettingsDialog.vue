@@ -100,35 +100,35 @@ function onOpenChange(open: boolean): void {
       </div>
       <AppTabsList v-show="!isMobile" :label="settings.title">
         <AppTabsTrigger value="general" data-test-id="settings-section-general">
-          <template #leading><icon-lucide-settings class="size-4" /></template>
+          <template #leading><icon-hugeicons-settings-01 class="size-4" /></template>
           {{ settings.general }}
         </AppTabsTrigger>
         <AppTabsTrigger value="ai" data-test-id="settings-section-ai">
-          <template #leading><icon-lucide-sparkles class="size-4" /></template>
+          <template #leading><icon-hugeicons-sparkles class="size-4" /></template>
           {{ settings.aiAndAgents }}
         </AppTabsTrigger>
         <AppTabsTrigger value="usage" data-test-id="settings-section-usage">
-          <template #leading><icon-lucide-chart-no-axes-combined class="size-4" /></template>
+          <template #leading><icon-hugeicons-chart-no-axes-combined class="size-4" /></template>
           {{ settings.usage }}
         </AppTabsTrigger>
         <AppTabsTrigger value="diagnostics" data-test-id="settings-section-diagnostics">
-          <template #leading><icon-lucide-activity class="size-4" /></template>
+          <template #leading><icon-hugeicons-activity-01 class="size-4" /></template>
           {{ settings.diagnostics }}
         </AppTabsTrigger>
         <AppTabsTrigger value="mcp" data-test-id="settings-section-mcp">
-          <template #leading><icon-lucide-plug class="size-4" /></template>
+          <template #leading><icon-hugeicons-plug class="size-4" /></template>
           {{ settings.mcp }}
         </AppTabsTrigger>
         <AppTabsTrigger value="tools" data-test-id="settings-section-tools">
-          <template #leading><icon-lucide-sliders-horizontal class="size-4" /></template>
+          <template #leading><icon-hugeicons-sliders-horizontal class="size-4" /></template>
           {{ settings.toolAccess }}
         </AppTabsTrigger>
         <AppTabsTrigger value="media" data-test-id="settings-section-media">
-          <template #leading><icon-lucide-image class="size-4" /></template>
+          <template #leading><icon-hugeicons-image-01 class="size-4" /></template>
           {{ settings.media }}
         </AppTabsTrigger>
         <AppTabsTrigger value="storage" data-test-id="settings-section-storage">
-          <template #leading><icon-lucide-cloud class="size-4" /></template>
+          <template #leading><icon-hugeicons-cloud class="size-4" /></template>
           {{ settings.storage }}
         </AppTabsTrigger>
       </AppTabsList>

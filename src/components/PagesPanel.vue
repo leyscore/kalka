@@ -118,7 +118,7 @@ useGlide(pageList, { items: '[data-slot="page-item"]', hover: true, pillClass: g
       <div :class="baseStyles.header()">
         <span data-test-id="pages-header" :class="baseStyles.title()">{{ panels.pages }}</span>
         <IconButton :label="panels.addPage" data-test-id="pages-add" @click="actions.add()">
-          <icon-lucide-plus class="size-3.5" />
+          <icon-hugeicons-plus class="size-3.5" />
         </IconButton>
       </div>
       <div :class="baseStyles.body()">
@@ -191,7 +191,7 @@ useGlide(pageList, { items: '[data-slot="page-item"]', hover: true, pillClass: g
                   :class="menuCls.item"
                   @select="startRename(pg, actions.rename)"
                 >
-                  <icon-lucide-pencil :class="menuCls.icon" />
+                  <icon-hugeicons-pencil :class="menuCls.icon" />
                   <span>{{ pageMessages.rename }}</span>
                 </ContextMenuItem>
                 <ContextMenuItem
@@ -200,7 +200,7 @@ useGlide(pageList, { items: '[data-slot="page-item"]', hover: true, pillClass: g
                   :disabled="pages.length <= 1"
                   @select="actions.delete(pg.id)"
                 >
-                  <icon-lucide-trash-2 :class="menuCls.icon" />
+                  <icon-hugeicons-delete-02 :class="menuCls.icon" />
                   <span>{{ pageMessages.delete }}</span>
                 </ContextMenuItem>
               </ContextMenuContent>

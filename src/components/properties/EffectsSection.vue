@@ -55,14 +55,14 @@ function effectPreview(effect: Effect): Fill {
         >
           <template #trigger
             ><IconButton :label="panels.effectStyle" data-property="effect-style"
-              ><icon-lucide-layout-grid class="size-3.5" /></IconButton
+              ><icon-hugeicons-layout-grid class="size-3.5" /></IconButton
           ></template>
         </AppSelect>
         <IconButton
           :label="panels.addEffect"
           @click="actions.add(effectsCtx.createDefaultEffect())"
         >
-          <icon-lucide-plus class="size-3.5" />
+          <icon-hugeicons-plus class="size-3.5" />
         </IconButton>
       </template>
 
@@ -118,7 +118,7 @@ function effectPreview(effect: Effect): Fill {
                     :fill="effectPreview(effect)"
                     class="size-full border-0"
                   />
-                  <icon-lucide-blend v-else class="size-3 text-muted" />
+                  <icon-hugeicons-blend v-else class="size-3 text-muted" />
                 </button>
               </Tip>
 

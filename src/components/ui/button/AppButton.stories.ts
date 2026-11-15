@@ -30,12 +30,12 @@ const meta = {
     template: `
       <div class="flex min-h-40 flex-wrap items-center gap-3 bg-app p-6 text-surface">
         <AppButton v-bind="args">
-          <template #leading><icon-lucide-copy /></template>
+          <template #leading><icon-hugeicons-copy /></template>
           Copy diagnostics
         </AppButton>
         <AppButton v-bind="args" variant="solid" color="primary">Primary action</AppButton>
         <AppButton v-bind="args" color="error">
-          <template #leading><icon-lucide-trash-2 /></template>
+          <template #leading><icon-hugeicons-delete-02 /></template>
           Clear
         </AppButton>
       </div>

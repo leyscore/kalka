@@ -90,12 +90,12 @@ function updateSolidColor(
         >
           <template #trigger>
             <IconButton :label="panels.fillStyle" data-property="fill-style"
-              ><icon-lucide-layout-grid class="size-3.5"
+              ><icon-hugeicons-layout-grid class="size-3.5"
             /></IconButton>
           </template>
         </AppSelect>
         <IconButton :label="panels.addFill" @click="actions.add({ ...fillCtx.defaultFill })">
-          <icon-lucide-plus class="size-3.5" />
+          <icon-hugeicons-plus class="size-3.5" />
         </IconButton>
       </template>
 

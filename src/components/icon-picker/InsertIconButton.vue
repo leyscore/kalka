@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import IconSmilePlus from '~icons/lucide/smile-plus'
+import IconSmilePlus from '~icons/hugeicons/smile-plus'
 
 import { usePanelMessages } from '@kalka/vue'
 

@@ -53,7 +53,7 @@ function handleSelect(value: string) {
             class="flex shrink-0 cursor-pointer items-center self-stretch border-none bg-transparent px-1 text-muted outline-none data-[state=open]:text-foreground"
             @pointerdown.stop
           >
-            <icon-lucide-chevron-down class="size-3" />
+            <icon-hugeicons-chevron-down class="size-3" />
           </SelectTrigger>
           <SelectPortal v-if="portalActive">
             <SelectContent

@@ -27,7 +27,7 @@ function toggle(): void {
       :class="styles.field()"
       @click="toggle"
     >
-      <icon-lucide-bot :class="styles.fieldIcon()" aria-hidden="true" />
+      <icon-hugeicons-bot :class="styles.fieldIcon()" aria-hidden="true" />
       <span :class="styles.fieldLabel()">{{ ai.describeChange }}</span>
     </button>
   </div>

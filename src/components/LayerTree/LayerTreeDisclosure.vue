@@ -20,7 +20,7 @@ const emit = defineEmits<{ toggle: [] }>()
     :class="ui.disclosure"
     @click.stop="emit('toggle')"
   >
-    <icon-lucide-chevron-right class="size-3" />
+    <icon-hugeicons-chevron-right class="size-3" />
   </button>
   <span v-else data-slot="disclosure-placeholder" :class="ui.placeholder" />
 </template>

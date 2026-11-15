@@ -1,11 +1,11 @@
 import { useClipboard } from '@vueuse/core'
 import { computed, inject, provide, proxyRefs } from 'vue'
 import type { InjectionKey, ShallowUnwrapRef } from 'vue'
-import IconFilePlus from '~icons/lucide/file-plus'
-import IconFolderOpen from '~icons/lucide/folder-open'
-import IconImageDown from '~icons/lucide/image-down'
-import IconSave from '~icons/lucide/save'
-import IconZoomIn from '~icons/lucide/zoom-in'
+import IconFilePlus from '~icons/hugeicons/file-plus'
+import IconFolderOpen from '~icons/hugeicons/folder-open'
+import IconImageDown from '~icons/hugeicons/image-down'
+import IconSave from '~icons/hugeicons/save'
+import IconZoomIn from '~icons/hugeicons/zoom-in'
 
 import { useEditorCommands, useI18n } from '@kalka/vue'
 

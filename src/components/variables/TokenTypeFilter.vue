@@ -43,7 +43,7 @@ function toggle(type: VariableType, on: boolean) {
         :active="types.length > 0"
         data-test-id="variables-type-filter"
       >
-        <icon-lucide-list-filter class="size-4" />
+        <icon-hugeicons-list-filter class="size-4" />
       </IconButton>
     </DropdownMenuTrigger>
     <DropdownMenuPortal>
@@ -59,7 +59,7 @@ function toggle(type: VariableType, on: boolean) {
           <component :is="VARIABLE_TYPE_ICONS[type]" :class="menu.icon" />
           <span class="flex-1">{{ labels[type] }}</span>
           <DropdownMenuItemIndicator>
-            <icon-lucide-check :class="menu.icon" />
+            <icon-hugeicons-check :class="menu.icon" />
           </DropdownMenuItemIndicator>
         </DropdownMenuCheckboxItem>
       </DropdownMenuContent>

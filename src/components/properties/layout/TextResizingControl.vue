@@ -50,9 +50,9 @@ function setMode(value: TextResizeMode) {
       <template #option="{ option }">
         <Tip :label="option.label">
           <span class="flex items-center justify-center">
-            <icon-lucide-move-horizontal v-if="option.value === 'AUTO_WIDTH'" class="size-3.5" />
-            <icon-lucide-wrap-text v-else-if="option.value === 'AUTO_HEIGHT'" class="size-3.5" />
-            <icon-lucide-lock v-else class="size-3.5" />
+            <icon-hugeicons-move-horizontal v-if="option.value === 'AUTO_WIDTH'" class="size-3.5" />
+            <icon-hugeicons-text-wrap v-else-if="option.value === 'AUTO_HEIGHT'" class="size-3.5" />
+            <icon-hugeicons-lock v-else class="size-3.5" />
           </span>
         </Tip>
       </template>

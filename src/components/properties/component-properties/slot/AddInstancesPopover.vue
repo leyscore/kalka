@@ -48,12 +48,12 @@ const items = computed<AppPickerItem[]>(() => {
   >
     <template #trigger>
       <IconButton :label="panels.addInstances" data-property="slot-add-instances">
-        <icon-lucide-plus class="size-3.5" />
+        <icon-hugeicons-plus class="size-3.5" />
       </IconButton>
     </template>
     <template #leading="{ item }">
       <slot name="thumbnail" :id="item.value">
-        <icon-lucide-component class="size-3.5" />
+        <icon-hugeicons-component class="size-3.5" />
       </slot>
     </template>
   </AppPicker>

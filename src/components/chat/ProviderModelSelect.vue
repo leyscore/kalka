@@ -32,7 +32,7 @@ const options = computed(() => modelPickerOptions(models.value, providerDef.valu
   >
     <template #value="{ option }">
       <div class="flex min-w-0 flex-1 items-center gap-1">
-        <icon-lucide-bot class="size-3 shrink-0" />
+        <icon-hugeicons-bot class="size-3 shrink-0" />
         <slot name="value">
           <span class="truncate">{{ option?.label }}</span>
         </slot>

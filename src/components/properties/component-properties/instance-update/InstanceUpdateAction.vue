@@ -44,7 +44,7 @@ const { available, updating, updateSelectedInstance } = useInstanceUpdate(
           :disabled="updating"
           :aria-label="panels.updateSelectedInstance"
         >
-          <icon-lucide-refresh-cw
+          <icon-hugeicons-refresh-cw
             :data-loading="updating"
             class="size-3.5 data-[loading=true]:animate-spin motion-reduce:data-[loading=true]:animate-none"
           />

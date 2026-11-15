@@ -34,7 +34,7 @@ const paddingSides: Array<{ prop: PaddingProp; icon: string }> = [
           @cancel="ctx.cancelPreview"
         >
           <template #icon>
-            <icon-lucide-separator-vertical class="size-3.5" />
+            <icon-hugeicons-separator-vertical class="size-3.5" />
           </template>
         </VariableNumberField>
         <VariableNumberField
@@ -48,7 +48,7 @@ const paddingSides: Array<{ prop: PaddingProp; icon: string }> = [
           @cancel="ctx.cancelPreview"
         >
           <template #icon>
-            <icon-lucide-separator-horizontal class="size-3.5" />
+            <icon-hugeicons-separator-horizontal class="size-3.5" />
           </template>
         </VariableNumberField>
       </div>
@@ -66,10 +66,10 @@ const paddingSides: Array<{ prop: PaddingProp; icon: string }> = [
           @cancel="ctx.cancelPreview"
         >
           <template #icon>
-            <icon-lucide-panel-top v-if="side.icon === 'top'" class="size-3.5" />
-            <icon-lucide-panel-right v-else-if="side.icon === 'right'" class="size-3.5" />
-            <icon-lucide-panel-bottom v-else-if="side.icon === 'bottom'" class="size-3.5" />
-            <icon-lucide-panel-left v-else class="size-3.5" />
+            <icon-hugeicons-panel-top v-if="side.icon === 'top'" class="size-3.5" />
+            <icon-hugeicons-panel-right v-else-if="side.icon === 'right'" class="size-3.5" />
+            <icon-hugeicons-panel-bottom v-else-if="side.icon === 'bottom'" class="size-3.5" />
+            <icon-hugeicons-panel-left v-else class="size-3.5" />
           </template>
         </VariableNumberField>
       </div>
@@ -81,7 +81,7 @@ const paddingSides: Array<{ prop: PaddingProp; icon: string }> = [
       class="mt-1.5"
       @click="ctx.toggleIndividualPadding"
     >
-      <icon-lucide-scan class="size-3.5" />
+      <icon-hugeicons-scan class="size-3.5" />
     </IconButton>
   </div>
 </template>

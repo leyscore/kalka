@@ -35,7 +35,7 @@ const ui = avatarStack()
       {{ initials(name) }}
     </span>
     <span v-if="agentCount > 0" :class="ui.badge()" :style="{ color: colorToCSS(color) }">
-      <icon-lucide-sparkle :class="ui.badgeIcon()" />{{ agentCount }}
+      <icon-hugeicons-sparkle :class="ui.badgeIcon()" />{{ agentCount }}
     </span>
   </span>
 </template>

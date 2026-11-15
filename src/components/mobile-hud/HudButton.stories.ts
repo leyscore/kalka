@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
-import IconShare from '~icons/lucide/share-2'
-import IconUndo from '~icons/lucide/undo-2'
+import IconShare from '~icons/hugeicons/share-01'
+import IconUndo from '~icons/hugeicons/undo-02'
 
 import HudButton from './HudButton.vue'
 

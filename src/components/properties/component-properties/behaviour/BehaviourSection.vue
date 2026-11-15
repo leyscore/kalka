@@ -114,19 +114,19 @@ const nextStep = computed(() => {
     <template #actions>
       <AddBehaviourPicker v-if="!behaviour" @add="emit('add', $event)" />
       <IconButton v-else :label="panels.removeBehaviour" @click="emit('remove')">
-        <icon-lucide-minus class="size-3.5" />
+        <icon-hugeicons-minus class="size-3.5" />
       </IconButton>
     </template>
 
     <div v-if="behaviour && kind" class="flex flex-col gap-2" data-property="behaviour">
       <div class="flex items-center gap-1.5 text-xs text-surface">
-        <icon-lucide-mouse-pointer-click class="size-3.5 shrink-0 text-component" />
+        <icon-hugeicons-mouse-pointer-click class="size-3.5 shrink-0 text-component" />
         <span class="min-w-0 flex-1 truncate font-medium">{{ kind.label }}</span>
         <span
           v-if="!behaviour.missing.length"
           class="flex h-5 shrink-0 items-center gap-1 rounded bg-panel-field px-1.5 text-[10px] text-muted"
         >
-          <icon-lucide-check class="size-3 text-success" />
+          <icon-hugeicons-check class="size-3 text-success" />
           {{ panels.behaviourComplete }}
         </span>
       </div>

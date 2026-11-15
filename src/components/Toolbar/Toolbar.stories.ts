@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite'
 import { ToolbarRoot } from 'reka-ui'
 import { ref } from 'vue'
-import IconMousePointer from '~icons/lucide/mouse-pointer-2'
-import IconSquare from '~icons/lucide/square'
-import IconType from '~icons/lucide/type'
+import IconMousePointer from '~icons/hugeicons/cursor-02'
+import IconSquare from '~icons/hugeicons/square'
+import IconType from '~icons/hugeicons/type'
 
 import ToolButton from './ToolButton.vue'
 

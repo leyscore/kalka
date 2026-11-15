@@ -188,7 +188,7 @@ function gridPattern(grid: LayoutGrid): GridPattern {
     <SharedStyleField v-if="targets.length === 1" kind="grid" :label="panels.gridStyle" />
     <template #actions>
       <IconButton :label="panels.addLayoutGrid" @click="add">
-        <icon-lucide-plus class="size-3.5" />
+        <icon-hugeicons-plus class="size-3.5" />
       </IconButton>
     </template>
 
@@ -203,9 +203,12 @@ function gridPattern(grid: LayoutGrid): GridPattern {
               data-property="layout-guide-settings"
               @click="toggleExpanded(index)"
             >
-              <icon-lucide-columns-3 v-if="gridPattern(grid) === 'COLUMNS'" class="size-3.5" />
-              <icon-lucide-rows-3 v-else-if="gridPattern(grid) === 'ROWS'" class="size-3.5" />
-              <icon-lucide-layout-grid v-else class="size-3.5" />
+              <icon-hugeicons-layout-3-column
+                v-if="gridPattern(grid) === 'COLUMNS'"
+                class="size-3.5"
+              />
+              <icon-hugeicons-rows-3 v-else-if="gridPattern(grid) === 'ROWS'" class="size-3.5" />
+              <icon-hugeicons-layout-grid v-else class="size-3.5" />
             </IconButton>
           </Tip>
           <AppSelect
@@ -224,11 +227,11 @@ function gridPattern(grid: LayoutGrid): GridPattern {
             :active="grid.visible === false"
             @click="patch(index, { visible: grid.visible === false }, 'Toggle layout guide')"
           >
-            <icon-lucide-eye-off v-if="grid.visible === false" class="size-3.5" />
-            <icon-lucide-eye v-else class="size-3.5" />
+            <icon-hugeicons-eye-off v-if="grid.visible === false" class="size-3.5" />
+            <icon-hugeicons-eye v-else class="size-3.5" />
           </IconButton>
           <IconButton :label="panels.removeLayoutGrid" @click="remove(index)">
-            <icon-lucide-minus class="size-3.5" />
+            <icon-hugeicons-minus class="size-3.5" />
           </IconButton>
         </template>
       </PanelItemRow>
@@ -248,7 +251,7 @@ function gridPattern(grid: LayoutGrid): GridPattern {
               @update:model-value="updateNumber(index, 'count', $event)"
               @commit="(_value, previous) => commitNumber(index, 'count', previous)"
             >
-              <template #icon><icon-lucide-hash class="size-3" /></template>
+              <template #icon><icon-hugeicons-hash class="size-3" /></template>
             </NumberField>
           </PanelFieldGroup>
           <PanelFieldGroup :label="panels.gridType">
@@ -273,8 +276,8 @@ function gridPattern(grid: LayoutGrid): GridPattern {
               @commit="(_value, previous) => commitNumber(index, 'sectionSize', previous)"
             >
               <template #icon>
-                <icon-lucide-move-vertical v-if="gridPattern(grid) === 'ROWS'" class="size-3" />
-                <icon-lucide-move-horizontal v-else class="size-3" />
+                <icon-hugeicons-move-vertical v-if="gridPattern(grid) === 'ROWS'" class="size-3" />
+                <icon-hugeicons-move-horizontal v-else class="size-3" />
               </template>
             </NumberField>
           </PanelFieldGroup>
@@ -288,11 +291,11 @@ function gridPattern(grid: LayoutGrid): GridPattern {
               @commit="(_value, previous) => commitNumber(index, 'offset', previous)"
             >
               <template #icon>
-                <icon-lucide-arrow-down-to-line
+                <icon-hugeicons-arrow-down-to-line
                   v-if="gridPattern(grid) === 'ROWS'"
                   class="size-3"
                 />
-                <icon-lucide-arrow-right-to-line v-else class="size-3" />
+                <icon-hugeicons-arrow-right-to-line v-else class="size-3" />
               </template>
             </NumberField>
           </PanelFieldGroup>
@@ -305,11 +308,11 @@ function gridPattern(grid: LayoutGrid): GridPattern {
               @commit="(_value, previous) => commitNumber(index, 'gutterSize', previous)"
             >
               <template #icon>
-                <icon-lucide-separator-horizontal
+                <icon-hugeicons-separator-horizontal
                   v-if="gridPattern(grid) === 'ROWS'"
                   class="size-3"
                 />
-                <icon-lucide-separator-vertical v-else class="size-3" />
+                <icon-hugeicons-separator-vertical v-else class="size-3" />
               </template>
             </NumberField>
           </PanelFieldGroup>
@@ -323,7 +326,7 @@ function gridPattern(grid: LayoutGrid): GridPattern {
               @update:model-value="updateNumber(index, 'sectionSize', $event)"
               @commit="(_value, previous) => commitNumber(index, 'sectionSize', previous)"
             >
-              <template #icon><icon-lucide-layout-grid class="size-3" /></template>
+              <template #icon><icon-hugeicons-layout-grid class="size-3" /></template>
             </NumberField>
           </PanelFieldGroup>
         </PanelGrid>

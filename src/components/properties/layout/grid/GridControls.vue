@@ -30,7 +30,7 @@ function defaultTrackValue(sizing: GridTrackSizing): number {
           :label="trackProp === 'gridTemplateColumns' ? panels.addGridColumn : panels.addGridRow"
           @click="ctx.addTrack(trackProp)"
         >
-          <icon-lucide-plus class="size-3.5" />
+          <icon-hugeicons-plus class="size-3.5" />
         </IconButton>
       </div>
       <div class="flex flex-col gap-1">
@@ -62,7 +62,7 @@ function defaultTrackValue(sizing: GridTrackSizing): number {
             "
             @click="ctx.removeTrack(trackProp, i)"
           >
-            <icon-lucide-minus class="size-3.5" />
+            <icon-hugeicons-minus class="size-3.5" />
           </IconButton>
         </div>
       </div>
@@ -78,7 +78,7 @@ function defaultTrackValue(sizing: GridTrackSizing): number {
       @cancel="ctx.cancelPreview"
     >
       <template #icon>
-        <icon-lucide-move-horizontal class="size-3" />
+        <icon-hugeicons-move-horizontal class="size-3" />
       </template>
     </NumberField>
     <NumberField
@@ -89,7 +89,7 @@ function defaultTrackValue(sizing: GridTrackSizing): number {
       @cancel="ctx.cancelPreview"
     >
       <template #icon>
-        <icon-lucide-move-vertical class="size-3" />
+        <icon-hugeicons-move-vertical class="size-3" />
       </template>
     </NumberField>
   </div>

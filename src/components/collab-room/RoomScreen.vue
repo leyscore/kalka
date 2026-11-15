@@ -73,7 +73,7 @@ const progress = computed(() => {
       :ui="{ label: ui.title(), description: ui.description() }"
     >
       <template #icon>
-        <icon-lucide-loader-circle :class="ui.spinner()" />
+        <icon-hugeicons-loader-circle :class="ui.spinner()" />
       </template>
       <template #action>
         <AppButton
@@ -96,7 +96,7 @@ const progress = computed(() => {
       :ui="{ label: ui.title(), description: ui.description() }"
     >
       <template #icon>
-        <icon-lucide-wifi-off class="size-5" />
+        <icon-hugeicons-wifi-off-01 class="size-5" />
       </template>
       <template #action>
         <AppButton
@@ -119,7 +119,7 @@ const progress = computed(() => {
       :ui="{ label: ui.title(), description: ui.description() }"
     >
       <template #icon>
-        <icon-lucide-users class="size-5" />
+        <icon-hugeicons-users class="size-5" />
       </template>
       <ul :class="ui.steps()">
         <li>{{ messages.waitingAskSharer }}</li>
@@ -138,8 +138,8 @@ const progress = computed(() => {
               @click="emit('copyLink')"
             >
               <template #leading>
-                <icon-lucide-check v-if="copied" class="size-3" />
-                <icon-lucide-copy v-else class="size-3" />
+                <icon-hugeicons-check v-if="copied" class="size-3" />
+                <icon-hugeicons-copy v-else class="size-3" />
               </template>
               {{ copied ? messages.linkCopied : messages.copyLink }}
             </AppButton>

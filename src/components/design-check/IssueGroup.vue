@@ -77,13 +77,13 @@ const hiddenCount = computed(() => group.rows.length - visibleRows.value.length)
       <DropdownMenuRoot v-model:open="menuOpen" :modal="false">
         <DropdownMenuTrigger as-child>
           <IconButton size="xs" :label="messages.ruleActions">
-            <icon-lucide-ellipsis class="size-3.5" />
+            <icon-hugeicons-ellipsis class="size-3.5" />
           </IconButton>
         </DropdownMenuTrigger>
         <DropdownMenuPortal>
           <DropdownMenuContent side="bottom" align="end" :side-offset="4" :class="menuCls.content">
             <DropdownMenuItem :class="itemCls" @select="emit('turnOff')">
-              <icon-lucide-eye-off class="size-3.5 text-muted" aria-hidden="true" />
+              <icon-hugeicons-eye-off class="size-3.5 text-muted" aria-hidden="true" />
               {{ messages.turnOffRule }}
             </DropdownMenuItem>
           </DropdownMenuContent>

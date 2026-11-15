@@ -70,22 +70,22 @@ const styles = designCheck()
         :class="styles.rowAction()"
         @click="emit('fix')"
       >
-        <icon-lucide-link
+        <icon-hugeicons-link
           v-if="row.action.kind === 'bind-variable'"
           class="size-3"
           aria-hidden="true"
         />
-        <icon-lucide-frame
+        <icon-hugeicons-frame
           v-else-if="row.action.kind === 'convert-to-frame'"
           class="size-3"
           aria-hidden="true"
         />
-        <icon-lucide-trash-2
+        <icon-hugeicons-delete-02
           v-else-if="row.action.kind === 'delete'"
           class="size-3"
           aria-hidden="true"
         />
-        <icon-lucide-wand-sparkles v-else class="size-3" aria-hidden="true" />
+        <icon-hugeicons-wand-sparkles v-else class="size-3" aria-hidden="true" />
       </button>
     </Tip>
   </li>

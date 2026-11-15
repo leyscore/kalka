@@ -94,20 +94,20 @@ function json(value: unknown): string {
       @focus="loadCodeViewer"
     >
       <span :class="ui.status()" :data-state="state" :aria-label="stateLabel" role="img">
-        <icon-lucide-loader-circle
+        <icon-hugeicons-loader-circle
           v-if="state === 'pending'"
           :class="[ui.statusIcon(), 'animate-spin motion-reduce:animate-none']"
         />
-        <icon-lucide-check v-else-if="state === 'done'" :class="ui.statusIcon()" />
-        <icon-lucide-triangle-alert v-else :class="ui.statusIcon()" />
+        <icon-hugeicons-check v-else-if="state === 'done'" :class="ui.statusIcon()" />
+        <icon-hugeicons-triangle-alert v-else :class="ui.statusIcon()" />
       </span>
       <span :class="ui.name()">{{ name }}</span>
       <span :class="ui.summary()">{{ summary }}</span>
       <span v-if="undone" :class="ui.undone()" data-slot="chat-tool-undone">
-        <icon-lucide-undo-2 :class="ui.undoneIcon()" aria-hidden="true" />
+        <icon-hugeicons-undo-02 :class="ui.undoneIcon()" aria-hidden="true" />
         {{ ai.toolUndone }}
       </span>
-      <icon-lucide-chevron-down v-if="expandable" :class="ui.chevron()" aria-hidden="true" />
+      <icon-hugeicons-chevron-down v-if="expandable" :class="ui.chevron()" aria-hidden="true" />
     </CollapsibleTrigger>
     <CollapsibleContent :class="collapsibleContentMotion">
       <div :class="ui.body()">

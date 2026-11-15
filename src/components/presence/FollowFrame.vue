@@ -33,7 +33,7 @@ useEventListener(window, 'keydown', (event: KeyboardEvent) => {
 <template>
   <div data-test-id="follow-frame" :class="ui.root()" :style="{ borderColor: color }">
     <div role="status" :class="ui.bar()" :style="{ background: color, color: foreground }">
-      <icon-lucide-sparkle v-if="followed.kind === 'agent'" :class="ui.icon()" />
+      <icon-hugeicons-sparkle v-if="followed.kind === 'agent'" :class="ui.icon()" />
       <span :class="ui.label()">{{ text }}</span>
       <button type="button" data-test-id="follow-stop" :class="ui.stop()" @click="emit('stop')">
         {{ messages.stopFollowingShort }}

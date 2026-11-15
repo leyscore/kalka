@@ -67,7 +67,7 @@ function updateOpen(open: boolean) {
         :key="index"
         :class="documentCloseListStyles.item()"
       >
-        <icon-lucide-file class="size-3.5 shrink-0 text-muted" aria-hidden="true" />
+        <icon-hugeicons-file-01 class="size-3.5 shrink-0 text-muted" aria-hidden="true" />
         <span class="truncate">{{ name }}</span>
       </li>
     </ul>

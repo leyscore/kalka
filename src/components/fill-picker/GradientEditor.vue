@@ -77,7 +77,7 @@ function listStopClass(active: boolean) {
             data-test-id="fill-picker-add-stop"
             @click="root.actions.addStop"
           >
-            <icon-lucide-plus class="size-3" />
+            <icon-hugeicons-plus class="size-3" />
           </IconButton>
         </div>
         <GradientEditorStop
@@ -131,7 +131,7 @@ function listStopClass(active: boolean) {
             :label="editor.removeGradientStop"
             @click.stop="s.actions.remove"
           >
-            <icon-lucide-minus class="size-3" />
+            <icon-hugeicons-minus class="size-3" />
           </IconButton>
         </GradientEditorStop>
       </div>

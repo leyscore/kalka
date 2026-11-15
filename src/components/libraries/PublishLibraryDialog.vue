@@ -184,14 +184,14 @@ async function publish() {
           :label="panels.noLibraryAssetChanges"
           size="compact"
         >
-          <template #icon><icon-lucide-package-check /></template>
+          <template #icon><icon-hugeicons-package-check /></template>
         </AppPlaceholder>
         <AppPlaceholder
           v-else-if="visibleChanges.length === 0"
           :label="panels.noLibraryChangesFound"
           size="compact"
         >
-          <template #icon><icon-lucide-search-x /></template>
+          <template #icon><icon-hugeicons-search-x /></template>
         </AppPlaceholder>
         <div v-else class="min-h-0 overflow-y-auto">
           <label
@@ -207,11 +207,11 @@ async function publish() {
             <div
               class="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-canvas text-muted"
             >
-              <icon-lucide-layout-template
+              <icon-hugeicons-layout-template
                 v-if="change.asset.type === 'COMPONENT_SET'"
                 class="size-4"
               />
-              <icon-lucide-component v-else class="size-4" />
+              <icon-hugeicons-component v-else class="size-4" />
             </div>
             <span class="min-w-0 flex-1 truncate text-xs">{{ change.asset.name }}</span>
             <span class="text-[10px] text-muted">{{ changeLabels[change.kind] }}</span>

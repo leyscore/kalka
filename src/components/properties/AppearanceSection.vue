@@ -51,9 +51,9 @@ function blendModeOptions(value: BlendMode | typeof MIXED) {
           :active="visibilityState === 'hidden'"
           @click="actions.toggleVisibility"
         >
-          <icon-lucide-eye v-if="visibilityState === 'visible'" class="size-3.5" />
-          <icon-lucide-eye-off v-else-if="visibilityState === 'hidden'" class="size-3.5" />
-          <icon-lucide-eye v-else class="size-3.5 opacity-50" />
+          <icon-hugeicons-eye v-if="visibilityState === 'visible'" class="size-3.5" />
+          <icon-hugeicons-eye-off v-else-if="visibilityState === 'hidden'" class="size-3.5" />
+          <icon-hugeicons-eye v-else class="size-3.5 opacity-50" />
         </IconButton>
       </template>
       <PropertyBoundField field="VISIBLE" />
@@ -85,7 +85,7 @@ function blendModeOptions(value: BlendMode | typeof MIXED) {
             @commit="(v: number, p: number) => actions.commitProp('opacity', v / 100, p / 100)"
           >
             <template #icon>
-              <icon-lucide-blend class="size-3" />
+              <icon-hugeicons-blend class="size-3" />
             </template>
           </VariableNumberField>
           <NumberField
@@ -100,7 +100,7 @@ function blendModeOptions(value: BlendMode | typeof MIXED) {
             @commit="(v: number, p: number) => actions.commitProp('opacity', v / 100, p / 100)"
           >
             <template #icon>
-              <icon-lucide-blend class="size-3" />
+              <icon-hugeicons-blend class="size-3" />
             </template>
           </NumberField>
         </PanelFieldGroup>
@@ -120,7 +120,7 @@ function blendModeOptions(value: BlendMode | typeof MIXED) {
             @commit="actions.commitUniformRadius"
           >
             <template #icon>
-              <icon-lucide-square-round-corner class="size-3" />
+              <icon-hugeicons-square-round-corner class="size-3" />
             </template>
           </VariableNumberField>
           <NumberField
@@ -133,7 +133,7 @@ function blendModeOptions(value: BlendMode | typeof MIXED) {
             @commit="actions.commitUniformRadius"
           >
             <template #icon>
-              <icon-lucide-square-round-corner class="size-3" />
+              <icon-hugeicons-square-round-corner class="size-3" />
             </template>
           </NumberField>
         </PanelFieldGroup>
@@ -144,7 +144,7 @@ function blendModeOptions(value: BlendMode | typeof MIXED) {
             :active="showIndependentCorners"
             @click="actions.toggleIndependentCorners"
           >
-            <icon-lucide-square-round-corner class="size-3" />
+            <icon-hugeicons-square-round-corner class="size-3" />
           </IconButton>
         </div>
       </PanelGrid>
@@ -198,7 +198,7 @@ function blendModeOptions(value: BlendMode | typeof MIXED) {
             active
             @click="actions.toggleIndependentCorners"
           >
-            <icon-lucide-square-round-corner class="size-3" />
+            <icon-hugeicons-square-round-corner class="size-3" />
           </IconButton>
         </template>
       </PanelGrid>
@@ -219,7 +219,7 @@ function blendModeOptions(value: BlendMode | typeof MIXED) {
             "
           >
             <template #icon>
-              <icon-lucide-squircle class="size-3" />
+              <icon-hugeicons-squircle class="size-3" />
             </template>
           </NumberField>
         </PanelFieldGroup>

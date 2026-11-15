@@ -111,12 +111,12 @@ function onToggleSides(activeNode: SceneNode | null) {
         >
           <template #trigger>
             <IconButton :label="panels.strokeStyle" data-property="stroke-style"
-              ><icon-lucide-layout-grid class="size-3.5"
+              ><icon-hugeicons-layout-grid class="size-3.5"
             /></IconButton>
           </template>
         </AppSelect>
         <IconButton :label="panels.addStroke" @click="actions.add(strokeCtx.defaultStroke)">
-          <icon-lucide-plus class="size-3.5" />
+          <icon-hugeicons-plus class="size-3.5" />
         </IconButton>
       </template>
 
@@ -239,7 +239,7 @@ function onToggleSides(activeNode: SceneNode | null) {
           data-property="stroke-sides"
           @click="onToggleSides(activeNode)"
         >
-          <icon-lucide-layout-grid class="size-3.5" />
+          <icon-hugeicons-layout-grid class="size-3.5" />
         </IconButton>
       </div>
 

@@ -46,7 +46,7 @@ function toggleAgent(): void {
         :class="styles.action({ class: 'relative' })"
         @click="toggleAgent"
       >
-        <icon-lucide-bot class="size-4" />
+        <icon-hugeicons-bot class="size-4" />
         <span
           aria-hidden="true"
           :data-connected="isConfigured || undefined"
@@ -64,7 +64,7 @@ function toggleAgent(): void {
         :class="styles.action()"
         @click="store.state.showUI = !store.state.showUI"
       >
-        <icon-lucide-panel-left class="size-[15px]" />
+        <icon-hugeicons-panel-left class="size-[15px]" />
       </IconButton>
       <IconButton
         :label="
@@ -77,7 +77,7 @@ function toggleAgent(): void {
         :class="styles.action()"
         @click="store.startPlay()"
       >
-        <icon-lucide-play class="size-3.5" />
+        <icon-hugeicons-play class="size-3.5" />
       </IconButton>
       <!-- Sized by its content: on its own the panel stretches to push Share to the far edge. -->
       <div class="flex shrink-0">

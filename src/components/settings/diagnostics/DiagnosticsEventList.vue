@@ -76,15 +76,15 @@ const categoryOptions = computed(() => [
           class="flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-2 text-left text-[11px] hover:bg-panel-field"
         >
           <span class="flex min-w-0 items-center gap-2">
-            <icon-lucide-circle-alert
+            <icon-hugeicons-alert-circle
               v-if="event.level === 'error'"
               class="size-3.5 shrink-0 text-error"
             />
-            <icon-lucide-triangle-alert
+            <icon-hugeicons-triangle-alert
               v-else-if="event.level === 'warning'"
               class="size-3.5 shrink-0 text-warning"
             />
-            <icon-lucide-info v-else class="size-3.5 shrink-0 text-muted" />
+            <icon-hugeicons-info v-else class="size-3.5 shrink-0 text-muted" />
             <span class="min-w-0">
               <span class="block truncate text-surface">{{ event.label }}</span>
               <span v-if="event.detail" class="block truncate text-[11px] text-muted">{{

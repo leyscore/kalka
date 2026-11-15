@@ -52,7 +52,7 @@ const partlyUndone = computed(() => undone > 0 && undone < edits)
       class="inline-flex items-center gap-1 px-2 text-[11px] text-muted"
       data-slot="chat-turn-stopped"
     >
-      <icon-lucide-circle-stop class="size-3" aria-hidden="true" />
+      <icon-hugeicons-stop-circle class="size-3" aria-hidden="true" />
       {{ ai.turnStopped }}
     </span>
     <!-- What is undone shows whether or not Redo can still bring it back. -->
@@ -61,7 +61,7 @@ const partlyUndone = computed(() => undone > 0 && undone < edits)
       class="inline-flex items-center gap-1 px-2 text-[11px] text-muted"
       data-slot="chat-turn-undone"
     >
-      <icon-lucide-undo-2 class="size-3" aria-hidden="true" />
+      <icon-hugeicons-undo-02 class="size-3" aria-hidden="true" />
       {{ ai.turnPartlyUndone({ undone, total: edits }) }}
     </span>
     <span
@@ -69,7 +69,7 @@ const partlyUndone = computed(() => undone > 0 && undone < edits)
       class="inline-flex items-center gap-1 px-2 text-[11px] text-muted"
       data-slot="chat-turn-reverted"
     >
-      <icon-lucide-undo-2 class="size-3" aria-hidden="true" />
+      <icon-hugeicons-undo-02 class="size-3" aria-hidden="true" />
       {{ ai.turnReverted }}
     </span>
     <AppButton
@@ -79,7 +79,7 @@ const partlyUndone = computed(() => undone > 0 && undone < edits)
       data-test-id="chat-restore-turn"
       @click="emit('restore')"
     >
-      <template #leading><icon-lucide-redo-2 aria-hidden="true" /></template>
+      <template #leading><icon-hugeicons-redo-02 aria-hidden="true" /></template>
       {{ ai.restoreTurn }}
     </AppButton>
     <AppButton
@@ -89,7 +89,7 @@ const partlyUndone = computed(() => undone > 0 && undone < edits)
       data-test-id="chat-revert-turn"
       @click="emit('revert')"
     >
-      <template #leading><icon-lucide-undo-2 aria-hidden="true" /></template>
+      <template #leading><icon-hugeicons-undo-02 aria-hidden="true" /></template>
       {{ ai.revertTurn }}
     </AppButton>
     <AppButton
@@ -100,7 +100,7 @@ const partlyUndone = computed(() => undone > 0 && undone < edits)
       :loading="reconnecting"
       @click="emit('reconnect')"
     >
-      <template #leading><icon-lucide-key-round aria-hidden="true" /></template>
+      <template #leading><icon-hugeicons-key-round aria-hidden="true" /></template>
       {{ reconnecting ? ai.reconnecting : ai.reconnect }}
     </AppButton>
     <AppButton
@@ -110,7 +110,7 @@ const partlyUndone = computed(() => undone > 0 && undone < edits)
       data-test-id="chat-regenerate"
       @click="emit('regenerate')"
     >
-      <template #leading><icon-lucide-refresh-cw aria-hidden="true" /></template>
+      <template #leading><icon-hugeicons-refresh-cw aria-hidden="true" /></template>
       {{ empty ? ai.retryRequest : revertable ? ai.revertAndRegenerate : ai.regenerate }}
     </AppButton>
   </div>

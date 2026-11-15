@@ -25,6 +25,6 @@ function toggle() {
     data-test-id="chat-follow-agents"
     @click="toggle"
   >
-    <icon-lucide-locate-fixed class="size-3.5" />
+    <icon-hugeicons-locate-fixed class="size-3.5" />
   </IconButton>
 </template>

@@ -342,7 +342,7 @@ async function insertSelectedAsset() {
         :aria-label="libraryUpdateCount > 0 ? panels.reviewLibraryUpdates : panels.manageLibraries"
         @click="openLibraries"
       >
-        <icon-lucide-library class="size-3.5" />
+        <icon-hugeicons-library class="size-3.5" />
         <span
           v-if="libraryUpdateCount > 0"
           class="absolute top-0.5 right-0.5 min-w-2.5 rounded-full bg-accent px-0.5 text-center text-[8px] leading-2.5 text-white"
@@ -358,8 +358,8 @@ async function insertSelectedAsset() {
         :ui="viewUI"
       >
         <template #option="{ option }">
-          <icon-lucide-layout-grid v-if="option.value === 'grid'" class="size-3" />
-          <icon-lucide-list v-else class="size-3" />
+          <icon-hugeicons-layout-grid v-if="option.value === 'grid'" class="size-3" />
+          <icon-hugeicons-list v-else class="size-3" />
         </template>
       </SegmentedControl>
     </div>
@@ -449,7 +449,7 @@ async function insertSelectedAsset() {
                       @pointerdown.stop
                       @click.stop="asset.docsURL ? openExternalLink(asset.docsURL) : undefined"
                     >
-                      <icon-lucide-book-open class="size-3" />
+                      <icon-hugeicons-book-open-01 class="size-3" />
                     </AppButton>
                   </Tip>
                   <Tip :label="commands.createInstance">
@@ -460,7 +460,7 @@ async function insertSelectedAsset() {
                       @pointerdown.stop
                       @click.stop="insertAsset(asset)"
                     >
-                      <icon-lucide-plus class="size-3" />
+                      <icon-hugeicons-plus class="size-3" />
                     </AppButton>
                   </Tip>
                 </div>
@@ -496,7 +496,7 @@ async function insertSelectedAsset() {
         size="compact"
       >
         <template #icon>
-          <icon-lucide-component class="size-4" />
+          <icon-hugeicons-component class="size-4" />
         </template>
       </AppPlaceholder>
     </div>
@@ -530,7 +530,7 @@ async function insertSelectedAsset() {
           data-test-id="asset-details-close"
           class="flex size-7 cursor-pointer items-center justify-center rounded border-none bg-transparent text-muted hover:bg-hover hover:text-surface"
         >
-          <icon-lucide-x class="size-4" />
+          <icon-hugeicons-x class="size-4" />
         </DialogClose>
       </div>
 
@@ -548,7 +548,7 @@ async function insertSelectedAsset() {
               class="max-h-[120px] max-w-[210px] object-contain"
             />
             <div v-else class="text-center">
-              <icon-lucide-loader-2
+              <icon-hugeicons-loading-03
                 v-if="previewLoading"
                 class="mx-auto size-5 animate-spin motion-reduce:animate-none text-muted"
               />
@@ -603,7 +603,7 @@ async function insertSelectedAsset() {
               class="mt-1"
               @click="selectedAsset.docsURL ? openExternalLink(selectedAsset.docsURL) : undefined"
             >
-              <icon-lucide-book-open class="size-3" />
+              <icon-hugeicons-book-open-01 class="size-3" />
               {{ panels.openDocs }}
             </AppButton>
           </section>

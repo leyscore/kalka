@@ -49,7 +49,7 @@ const { open: popupOpen, portalActive } = useRetainedPopup()
   <SelectRoot v-model="modelValue" v-model:open="popupOpen">
     <SelectTrigger v-bind="$attrs" :class="styles.trigger({ class: ui?.trigger })">
       <slot name="value">{{ displayValue }}</slot>
-      <icon-lucide-chevron-down class="size-2.5 shrink-0 text-muted" />
+      <icon-hugeicons-chevron-down class="size-2.5 shrink-0 text-muted" />
     </SelectTrigger>
     <SelectPortal v-if="portalActive">
       <SelectContent

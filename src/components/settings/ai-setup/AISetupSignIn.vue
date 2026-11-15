@@ -37,7 +37,7 @@ const failure = computed(() => {
   <template v-if="account">
     <div :class="styles.signIn()" data-slot="signed-in">
       <p role="status" :class="styles.signInStatus()">
-        <icon-lucide-circle-check :class="styles.signedInIcon()" aria-hidden="true" />
+        <icon-hugeicons-circle-check :class="styles.signedInIcon()" aria-hidden="true" />
         <span>
           {{ ai.aiSetupOpenRouterSignedInTitle }}
           <span v-if="account.label" :class="styles.signInDetail()">
@@ -52,7 +52,7 @@ const failure = computed(() => {
   <template v-else>
     <div v-if="status === 'waiting' || status === 'verifying'" :class="styles.signIn()">
       <p role="status" :class="styles.signInStatus()">
-        <icon-lucide-loader-2 :class="styles.spinner()" aria-hidden="true" />
+        <icon-hugeicons-loading-03 :class="styles.spinner()" aria-hidden="true" />
         {{ status === 'waiting' ? ai.aiSetupOpenRouterWaiting : ai.aiSetupOpenRouterVerifying }}
       </p>
       <div :class="styles.signInActions()">

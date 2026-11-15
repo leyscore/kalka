@@ -23,7 +23,7 @@ const panels = usePanelMessages()
     <CollapsibleRoot v-if="group.bindings.length > 1" v-slot="{ open }">
       <CollapsibleTrigger as-child>
         <AppButton size="xs" variant="ghost" class="w-full justify-start gap-1">
-          <icon-lucide-chevron-right
+          <icon-hugeicons-chevron-right
             class="size-3.5 shrink-0 transition-transform data-[open]:rotate-90 motion-reduce:transition-none"
             :data-open="open || undefined"
           />

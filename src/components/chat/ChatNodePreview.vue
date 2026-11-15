@@ -48,6 +48,6 @@ watch(
     v-else
     class="flex size-10 shrink-0 items-center justify-center rounded-[7px] border border-hairline bg-panel-field"
   >
-    <icon-lucide-box class="size-4 text-muted" aria-hidden="true" />
+    <icon-hugeicons-box class="size-4 text-muted" aria-hidden="true" />
   </div>
 </template>

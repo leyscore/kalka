@@ -34,17 +34,17 @@ const { editor } = useI18n()
       class="ml-1"
       @click="emit('showUi')"
     >
-      <icon-lucide-sidebar class="size-3.5" />
+      <icon-hugeicons-sidebar-left class="size-3.5" />
     </IconButton>
     <template v-else>
       <span
         class="ml-1 flex h-5 items-center gap-1 rounded bg-accent/15 px-1.5 text-[10px] font-medium text-primary"
       >
-        <icon-lucide-play class="size-3" />
+        <icon-hugeicons-play class="size-3" />
         {{ editor.previewing }}
       </span>
       <AppButton size="xs" variant="soft" data-property="preview-reset" @click="emit('reset')">
-        <icon-lucide-rotate-ccw class="size-3" />
+        <icon-hugeicons-rotate-ccw class="size-3" />
         {{ editor.resetPreview }}
       </AppButton>
       <IconButton
@@ -52,7 +52,7 @@ const { editor } = useI18n()
         data-property="preview-leave"
         @click="emit('leave')"
       >
-        <icon-lucide-x class="size-3.5" />
+        <icon-hugeicons-x class="size-3.5" />
       </IconButton>
     </template>
   </div>

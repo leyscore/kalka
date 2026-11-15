@@ -2,8 +2,8 @@
 import { useEventListener } from '@vueuse/core'
 import { DialogDescription, DialogTitle, VisuallyHidden } from 'reka-ui'
 import { computed } from 'vue'
-import Search from '~icons/lucide/search'
-import X from '~icons/lucide/x'
+import Search from '~icons/hugeicons/search-01'
+import X from '~icons/hugeicons/x'
 
 import {
   CommandPaletteRoot,

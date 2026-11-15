@@ -116,7 +116,7 @@ function updateOpen(value: boolean): void {
             {{ selectedOption?.label ?? (modelValue || placeholder) }}
           </span>
         </slot>
-        <icon-lucide-chevron-down :class="styles.chevron({ class: ui?.chevron })" />
+        <icon-hugeicons-chevron-down :class="styles.chevron({ class: ui?.chevron })" />
       </ComboboxTrigger>
     </ComboboxAnchor>
 
@@ -128,7 +128,7 @@ function updateOpen(value: boolean): void {
         :class="styles.content({ class: ui?.content })"
       >
         <div :class="styles.search({ class: ui?.search })">
-          <icon-lucide-search :class="styles.searchIcon({ class: ui?.searchIcon })" />
+          <icon-hugeicons-search-01 :class="styles.searchIcon({ class: ui?.searchIcon })" />
           <ComboboxInput
             v-model="searchTerm"
             :aria-label="searchPlaceholder ?? label"
@@ -162,7 +162,7 @@ function updateOpen(value: boolean): void {
               :class="styles.item({ class: ui?.item })"
             >
               <ComboboxItemIndicator :class="styles.indicator({ class: ui?.indicator })">
-                <icon-lucide-check class="size-3 text-primary" />
+                <icon-hugeicons-check class="size-3 text-primary" />
               </ComboboxItemIndicator>
               <slot name="option" :option="option">
                 <div class="min-w-0 flex-1">

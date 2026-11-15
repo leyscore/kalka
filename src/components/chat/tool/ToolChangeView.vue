@@ -51,7 +51,7 @@ const aspectRatio = computed(() =>
           data-slot="chat-tool-change-highlight"
           @click="highlight = !highlight"
         >
-          <icon-lucide-highlighter class="size-3.5" />
+          <icon-hugeicons-highlighter class="size-3.5" />
         </IconButton>
       </div>
       <div

@@ -115,7 +115,7 @@ function reset(): void {
             :data-test-id="`breakpoint-add-${preset.key}`"
             @click="add(preset)"
           >
-            <icon-lucide-plus class="size-3" />
+            <icon-hugeicons-plus class="size-3" />
             {{ presetNames[preset.key] }}
           </AppButton>
         </div>

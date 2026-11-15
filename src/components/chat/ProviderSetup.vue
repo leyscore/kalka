@@ -11,7 +11,7 @@ const { ai } = useI18n()
 <template>
   <AppPlaceholder data-test-id="provider-setup" :label="ai.connectProvider">
     <template #icon>
-      <icon-lucide-sparkles class="size-5" />
+      <icon-hugeicons-sparkles class="size-5" />
     </template>
     <template #action>
       <AppButton

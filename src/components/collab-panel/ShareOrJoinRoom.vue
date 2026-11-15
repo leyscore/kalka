@@ -29,7 +29,7 @@ const JOIN_ERROR_ID = 'collab-join-error'
     data-test-id="collab-share-file"
     @click="collab.share"
   >
-    <template #leading><icon-lucide-share-2 class="size-3.5" /></template>
+    <template #leading><icon-hugeicons-share-01 class="size-3.5" /></template>
     {{ collab.messages.shareThisFile }}
   </AppButton>
 

@@ -73,9 +73,12 @@ const scopeModel = computed({
       data-test-id="design-check-empty"
     >
       <template #icon>
-        <icon-lucide-circle-check v-if="emptyState.kind === 'clean'" class="size-4 text-success" />
-        <icon-lucide-list-filter v-else-if="emptyState.kind === 'filtered'" class="size-4" />
-        <icon-lucide-mouse-pointer-2 v-else class="size-4" />
+        <icon-hugeicons-circle-check
+          v-if="emptyState.kind === 'clean'"
+          class="size-4 text-success"
+        />
+        <icon-hugeicons-list-filter v-else-if="emptyState.kind === 'filtered'" class="size-4" />
+        <icon-hugeicons-cursor-02 v-else class="size-4" />
       </template>
       <template v-if="emptyState.kind === 'filtered'" #action>
         <AppButton color="primary" size="xs" @click="clearFilters">

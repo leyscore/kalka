@@ -85,15 +85,15 @@ function exportTokens() {
           data-test-id="variables-import-tokens"
           @click="tokenFiles.open()"
         >
-          <icon-lucide-file-input class="size-3.5" />
+          <icon-hugeicons-file-input class="size-3.5" />
         </IconButton>
         <IconButton
           :label="expanded ? variables.collapse : variables.expand"
           data-test-id="variables-expand"
           @click="expanded = !expanded"
         >
-          <icon-lucide-minimize-2 v-if="expanded" class="size-3.5" />
-          <icon-lucide-maximize-2 v-else class="size-3.5" />
+          <icon-hugeicons-minimize-02 v-if="expanded" class="size-3.5" />
+          <icon-hugeicons-maximize-02 v-else class="size-3.5" />
         </IconButton>
         <AppDialogClose :ariaLabel="common.close" />
       </template>

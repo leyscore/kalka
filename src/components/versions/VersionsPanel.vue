@@ -46,7 +46,7 @@ function changeKind(code: string): { letter: string; kind: string } {
 
     <template v-else-if="state === 'tracked' && status">
       <header class="flex shrink-0 items-center gap-2 px-4 pt-1 pb-2 text-xs">
-        <icon-lucide-git-branch class="size-3.5 shrink-0 text-muted" />
+        <icon-hugeicons-git-branch class="size-3.5 shrink-0 text-muted" />
         <span class="min-w-0 flex-1 truncate font-medium text-surface">
           {{ status.branch ?? panels.versionsDetached }}
         </span>
