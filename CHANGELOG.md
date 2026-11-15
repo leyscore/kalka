@@ -4,7 +4,7 @@
 
 ### Changed
 
-- The editor has a top bar: the document's name with undo and redo, the menus, the screens of the page in the middle with a plus to add a tablet or phone breakpoint, then the agent, zoom, preview, and sharing.
+- The editor has a top bar: the document's name with undo and redo, the menus, the screens of the page in the middle with a plus to add a tablet or phone breakpoint, then the agent, zoom, preview, and sharing. The agent button opens guided setup until an agent is connected, then the conversation, and shows a green dot once one is.
 - An icon rail at the left edge switches the left panel between Layers and Assets, then Code, Versions, and the design check with its problem count. Code and the design check open there instead of in the right panel, which keeps Design and AI.
 - The editor is neutral: no colored light behind the canvas and opaque panels, so the app's own colors never tint the design. Home keeps the brand backdrop.
 
