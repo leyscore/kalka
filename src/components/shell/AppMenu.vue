@@ -33,7 +33,6 @@ import {
   runMenuAction,
   updateMenuChecked
 } from '@/app/shell/menu/entry'
-import { appMenuShortcutLabel } from '@/app/shell/menu/shortcut'
 import { resolvedAppTheme } from '@/app/shell/theme'
 import BrandMark from '@/components/brand/BrandMark.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
@@ -61,6 +60,16 @@ const { topMenus } = useAppMenu()
 const { getCommand } = useEditorCommands()
 const undo = getCommand('edit.undo')
 const redo = getCommand('edit.redo')
+
+/** A command's name with the shortcut its menu entry shows, for the button's tip. */
+function tip(label: string): string {
+  for (const menu of topMenus.value) {
+    const entry = menu.items.find((item) => menuLabel(item) === label)
+    const shortcut = entry ? menuShortcut(entry) : undefined
+    if (shortcut) return `${label} (${shortcut})`
+  }
+  return label
+}
 const menuCls = useMenuUI()
 const mainMenuCls = useMenuUI({ content: 'min-w-52' })
 const subMenuCls = useMenuUI({ content: 'min-w-44' })
@@ -70,7 +79,8 @@ const { menu: menuMessages } = useI18n()
 <template>
   <div class="flex min-w-0 items-center gap-2">
     <div class="flex min-w-0 items-center gap-1">
-      <DropdownMenuRoot v-if="showMenubar">
+      <!-- Not modal: an entry may open a dialog, which must own the page as soon as the menu closes. -->
+      <DropdownMenuRoot v-if="showMenubar" :modal="false">
         <DropdownMenuTrigger
           data-test-id="app-menu-trigger"
           :aria-label="menuMessages.mainMenu"
@@ -79,15 +89,16 @@ const { menu: menuMessages } = useI18n()
           <BrandMark
             data-test-id="app-logo"
             variant="app-icon"
-            decorative
             :appearance="resolvedAppTheme"
             class="size-6 rounded-md"
           />
           <icon-hugeicons-chevron-down class="size-3" />
         </DropdownMenuTrigger>
         <DropdownMenuPortal>
+          <!-- An entry may open a dialog: focus stays where the dialog put it, not back on the logo. -->
           <DropdownMenuContent
             data-test-id="app-menu"
+            @close-auto-focus.prevent
             :side-offset="6"
             align="start"
             :class="mainMenuCls.content"
@@ -198,7 +209,7 @@ const { menu: menuMessages } = useI18n()
         >{{ store.state.documentName }}</span
       >
       <IconButton
-        :label="`${undo.label} (${appMenuShortcutLabel('undo')})`"
+        :label="tip(undo.label)"
         data-test-id="app-undo"
         class="size-7 rounded-[7px]"
         :disabled="!undo.enabled.value"
@@ -207,7 +218,7 @@ const { menu: menuMessages } = useI18n()
         <icon-hugeicons-undo-02 class="size-[15px]" />
       </IconButton>
       <IconButton
-        :label="`${redo.label} (${appMenuShortcutLabel('redo')})`"
+        :label="tip(redo.label)"
         data-test-id="app-redo"
         class="size-7 rounded-[7px]"
         :disabled="!redo.enabled.value"
