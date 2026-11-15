@@ -14,6 +14,7 @@
 
 ### Fixed
 
+- On a demo site such as demo.kalka.design, the root opens the demo document and no welcome, AI setup, or recovery dialog appears, including on later visits answered from the browser's cache.
 - The two center pins of the constraints diagram cross in the middle of the box instead of sitting side by side.
 
 ## 0.1.0-beta.6 — 2026-11-06

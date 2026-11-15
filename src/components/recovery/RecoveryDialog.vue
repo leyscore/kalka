@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router'
 
 import { useI18n } from '@kalka/vue'
 
+import { IS_DEMO_SITE } from '@/app/demo/site'
 import type { RecoverySnapshotMeta } from '@/app/document/recovery'
 import { recoveryEnabled } from '@/app/document/recovery/preferences'
 import { useNotificationMessages } from '@/app/i18n/notifications'
@@ -56,7 +57,7 @@ async function discard(snapshot: RecoverySnapshotMeta): Promise<void> {
 }
 
 onMounted(async () => {
-  if (route.path !== '/' || !recoveryEnabled.value) return
+  if (IS_DEMO_SITE || route.path !== '/' || !recoveryEnabled.value) return
   try {
     snapshots.value = await listRecoverySnapshots()
     open.value = snapshots.value.length > 0
