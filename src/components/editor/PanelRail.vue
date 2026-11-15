@@ -142,7 +142,7 @@ const rail = panelRail()
         :class="rail.item()"
         @click="show('history')"
       >
-        <icon-hugeicons-transaction-history :class="rail.icon()" />
+        <icon-hugeicons-git-branch :class="rail.icon()" />
       </button>
     </Tip>
     <Tip :label="checkLabel" side="right">

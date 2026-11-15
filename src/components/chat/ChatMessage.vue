@@ -146,11 +146,11 @@ function groupKey(group: MessagePartGroup): string {
               :duration-label="(seconds) => ai.thoughtFor({ seconds })"
             />
 
-            <!-- Text -->
+            <!-- Text: the agent's words sit on the panel itself; only your requests are bubbles. -->
             <div
               v-else-if="isTextUIPart(group.part) && group.part.text"
               data-test-id="chat-text-bubble"
-              class="group/response relative rounded-xl rounded-tl-md bg-hover px-3 py-2 text-xs leading-relaxed text-surface"
+              class="group/response relative px-1 py-0.5 text-[13px] leading-relaxed text-surface"
             >
               <ChatMarkdown :content="group.part.text" :mode="markdownMode" />
               <IconButton

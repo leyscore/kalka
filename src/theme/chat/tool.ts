@@ -3,19 +3,20 @@ import { tv } from 'tailwind-variants'
 export const chatToolTheme = tv({
   slots: {
     // An undone call's text dims to the muted color, which still reads at 4.5:1.
-    root: 'rounded-[10px] border border-hairline bg-group data-[undone=true]:**:text-muted',
+    // A quiet line of the agent's activity, not a card: the conversation stays about the design.
+    root: 'rounded-lg data-[undone=true]:**:text-muted data-[state=open]:bg-group',
     trigger:
-      'flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-left hover:bg-hover disabled:cursor-default disabled:hover:bg-transparent',
+      'flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-lg px-1.5 py-1 text-left hover:bg-hover disabled:cursor-default disabled:hover:bg-transparent',
     status:
       'flex size-4 shrink-0 items-center justify-center rounded-full data-[state=done]:bg-success/20 data-[state=done]:text-success data-[state=error]:bg-error/15 data-[state=error]:text-error data-[state=pending]:bg-accent/20 data-[state=pending]:text-primary',
     statusIcon: 'size-3',
-    name: 'shrink-0 text-[11px] font-medium text-surface',
+    name: 'shrink-0 text-[11px] font-medium text-label',
     summary: 'min-w-0 flex-1 truncate font-mono text-[10px] text-muted',
     undone: 'inline-flex shrink-0 items-center gap-1 text-[10px] text-muted',
     undoneIcon: 'size-3',
     chevron:
       'ml-auto size-3 shrink-0 text-muted transition-transform motion-reduce:transition-none [[data-state=open]>&]:rotate-180',
-    body: 'space-y-2 border-t border-border px-2 py-2 text-[10px]',
+    body: 'space-y-2 px-2 pt-1 pb-2 text-[10px]',
     nodes: 'flex flex-wrap gap-1',
     node: 'inline-flex max-w-40 cursor-pointer items-center gap-1 rounded border border-border bg-input px-1.5 py-0.5 text-[10px] text-surface hover:border-accent hover:text-primary disabled:cursor-default disabled:opacity-50 disabled:hover:border-border disabled:hover:text-surface',
     nodeIcon: 'size-3 shrink-0 text-muted',
@@ -33,9 +34,9 @@ export const chatToolTheme = tv({
     compareDivider: 'bg-accent shadow-[0_0_0_1px_rgb(0_0_0/0.25)]',
     compareLabel:
       'pointer-events-none absolute top-1 rounded bg-black/55 px-1 py-px text-[9px] font-medium text-white',
-    group: 'rounded-lg border border-dashed border-border',
+    group: 'rounded-lg data-[state=open]:bg-group/60',
     groupTrigger:
-      'flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[11px] text-muted hover:bg-hover hover:text-surface',
+      'flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-lg px-1.5 py-1 text-left text-[11px] text-muted hover:bg-hover hover:text-surface',
     groupIcon: 'size-3.5 shrink-0 text-primary',
     groupNames: 'min-w-0 flex-1 truncate',
     groupFailed: 'bg-error/15 text-error',
