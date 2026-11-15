@@ -68,7 +68,7 @@ function manageModels(): void {
       :aria-label="ai.selectDesignModel"
       :class="selectCls.trigger"
     >
-      <icon-hugeicons-bot :class="ui.triggerIcon()" />
+      <icon-hugeicons-sparkle :class="ui.triggerIcon()" />
       <span :class="ui.triggerValue()"><slot name="value" /></span>
       <icon-hugeicons-chevron-down :class="ui.triggerChevron()" />
     </SelectTrigger>

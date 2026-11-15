@@ -129,7 +129,7 @@ const { profiles, statusByConnection, refreshStatuses } = useModelSettings()
             >
               <template #leading>
                 <span class="flex size-8 items-center justify-center rounded-[7px] bg-panel-field"
-                  ><icon-hugeicons-bot class="size-4"
+                  ><icon-hugeicons-sparkle class="size-4"
                 /></span>
               </template>
               {{ profile.name }}

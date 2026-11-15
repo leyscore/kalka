@@ -21,7 +21,7 @@ const styles = agentField()
       :class="styles.field()"
       @click="show('ai')"
     >
-      <icon-hugeicons-bot :class="styles.icon()" aria-hidden="true" />
+      <icon-hugeicons-sparkle :class="styles.icon()" aria-hidden="true" />
       <span :class="styles.label()">{{ ai.describeChange }}</span>
     </button>
   </Tip>

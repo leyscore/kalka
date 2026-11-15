@@ -205,7 +205,7 @@ const selectedProfileName = computed(
       <div class="@container flex min-w-0 items-center">
         <template v-if="isAgentProvider">
           <div class="flex min-w-0 items-center gap-1 px-1.5 text-[10px] text-muted">
-            <icon-hugeicons-bot class="size-3 shrink-0" />
+            <icon-hugeicons-sparkle class="size-3 shrink-0" />
             <span class="truncate">{{ agentName }}</span>
           </div>
         </template>

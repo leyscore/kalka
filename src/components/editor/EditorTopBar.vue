@@ -50,7 +50,7 @@ function toggleAgent(): void {
         :class="styles.action({ class: 'relative' })"
         @click="toggleAgent"
       >
-        <icon-hugeicons-bot class="size-4" />
+        <icon-hugeicons-sparkle class="size-4" />
         <span
           aria-hidden="true"
           :data-connected="isConfigured || undefined"

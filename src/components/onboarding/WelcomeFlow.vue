@@ -121,7 +121,7 @@ function onOpenChange(open: boolean): void {
                 :class="styles.primary()"
                 data-test-id="welcome-continue"
               >
-                <template #leading><icon-hugeicons-bot class="size-4" /></template>
+                <template #leading><icon-hugeicons-sparkle class="size-4" /></template>
                 {{ welcome.connectAgent }}
               </AppButton>
               <AppButton
