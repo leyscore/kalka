@@ -35,10 +35,22 @@ export function useDocumentFolder(store: EditorStore, versions: DocumentVersions
   const loaded = ref(false)
   const error = ref('')
   const collapsed = ref(new Set<string>(COLLAPSED_AT_FIRST))
-  const folder = computed(() => {
+  // A path is a folder only when the disk says so: a `.fig` or an `.html` beside other files is not.
+  const folder = ref<string | null>(null)
+  async function findFolder(): Promise<void> {
     const path = versions?.path.value ?? null
-    return isTauri() && isKalkaFolderPath(path) ? path : null
-  })
+    if (!path || !isTauri() || !isKalkaFolderPath(path)) {
+      folder.value = null
+      return
+    }
+    try {
+      const { stat } = await import('@tauri-apps/plugin-fs')
+      const info = await stat(path)
+      if (path === versions?.path.value) folder.value = info.isDirectory ? path : null
+    } catch {
+      folder.value = null
+    }
+  }
   const source = computed<FolderSource>(() => (folder.value ? 'disk' : 'document'))
 
   const changes = computed(() => {
@@ -100,8 +112,10 @@ export function useDocumentFolder(store: EditorStore, versions: DocumentVersions
     collapsed.value = next
   }
 
-  watch(folder, () => void refresh(), { immediate: true })
+  watch(folder, () => void refresh())
+  void findFolder().then(refresh)
   if (versions) {
+    watch(versions.path, () => void findFolder())
     // A save rewrites the folder; Git's own answer arrives with the same refresh of the versions.
     watch(versions.status, () => void refresh())
     useEventListener(window, 'focus', () => {

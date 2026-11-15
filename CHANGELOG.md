@@ -11,7 +11,7 @@
 - The agent's conversation opens in the left panel, from the first icon of the rail, the robot in the top bar, or a field at the end of the toolbar. The right panel is Design alone.
 - Connecting an AI takes one choice instead of four steps: in the agent's panel, pick an agent already on this computer (Claude Code, Codex, Gemini CLI, Pi) and it connects, or pick a provider, paste its key, test it, and start. The same choice is in Settings › AI, on Home, and after the welcome; guided setup stays in Settings for several models and roles.
 - An icon rail at the left edge switches the left panel between Layers and Assets, then Code, Folder, and the design check with its problem count. Code and the design check open there instead of in the right panel.
-- The Folder panel lists a document's files as a tree and opens one in place of the canvas when clicked: code with line numbers, or the picture. A page opens on its clean HTML, as exported, with the file as saved one press away. While a file is open, the top bar shows its path and the way back in place of the screens, zoom, and preview. In the desktop app it is the folder the document is saved in, with what Git says changed and the document's versions below; in a browser, or for a document not saved as a folder, it is the folder Kalka would write.
+- The Folder panel lists a document's files as a tree and opens one in place of the canvas when clicked: code with line numbers, or the picture. A page opens on its clean HTML, as exported, with the file as saved one press away. While a file is open, the top bar shows its path and the way back in place of the screens, zoom, and preview. In the desktop app it is the folder the document is saved in, with what Git says changed and the document's versions below; in a browser, or for a document not saved as a folder, it is the folder Kalka would write. In the desktop app, **Save As Folder…** there writes that folder to the computer, which is how an imported `.fig` becomes a Kalka folder.
 - In the desktop app, a folder's versions can be published online from Kalka: paste the address of an empty GitHub repository (or any `https://` or `git@` Git address) to connect it, then **Publish** sends the versions and follows that repository. When Git has no name and e-mail to sign versions with, the panel asks for them and keeps them in the folder. Signing in uses the Git already set up on the computer.
 - The editor is neutral: no colored light behind the canvas and opaque panels, so the app's own colors never tint the design. Home keeps the brand backdrop.
 - Home opens on the Kalka mark, the greeting, and the request to the agent centered on the backdrop, with joining a room, opening a file, and a new blank design under it. Its sidebar is the same icon rail as the editor's.
@@ -19,6 +19,7 @@
 
 ### Fixed
 
+- Following an agent survives a click on the canvas and zooming, so you can select and edit beside it; scrolling the view away still stops following.
 - On a demo site such as demo.kalka.design, the root opens the demo document and no welcome, AI setup, or recovery dialog appears, including on later visits answered from the browser's cache.
 - The two center pins of the constraints diagram cross in the middle of the box instead of sitting side by side.
 

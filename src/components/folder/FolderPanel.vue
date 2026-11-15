@@ -9,7 +9,9 @@ import { useDocumentFolder } from '@/app/document/folder/use'
 import { openFolderFile } from '@/app/document/folder/view'
 import { useDocumentVersions } from '@/app/document/versions/use'
 import { useEditorStore } from '@/app/editor/active-store'
+import { saveAsFolderDialog } from '@/app/shell/menu/files'
 import { isTauri } from '@/app/tauri/env'
+import AppButton from '@/components/ui/button/AppButton.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import AppAlert from '@/components/ui/feedback/AppAlert.vue'
 import VersionsPanel from '@/components/versions/VersionsPanel.vue'
@@ -18,7 +20,7 @@ import splitterTheme from '@/theme/splitter'
 
 const LETTERS = { added: 'A', conflict: '!', deleted: 'D', modified: 'M' } as const
 
-const { common, panels } = useI18n()
+const { common, menu, panels } = useI18n()
 const store = useEditorStore()
 // Git runs on this computer: one reading of the repository for the tree's marks and the versions
 // below it in the desktop app, none in a browser.
@@ -29,6 +31,12 @@ const splitterStyles = tv(splitterTheme)({ direction: 'vertical' })
 
 function indent(row: FolderRow): string {
   return FOLDER_INDENT[Math.min(row.depth, FOLDER_INDENT.length - 1)] ?? ''
+}
+
+/** Writes the folder shown here to the computer; the document then lives in it, with its versions. */
+async function saveAsFolder(): Promise<void> {
+  await saveAsFolderDialog(store)
+  await versions?.refresh()
 }
 
 /** A folder opens and closes; a file takes the canvas's place, as in a code editor. */
@@ -60,7 +68,19 @@ async function open(row: FolderRow): Promise<void> {
             <icon-hugeicons-refresh class="size-3" />
           </IconButton>
         </h3>
-        <p v-if="source === 'document'" :class="styles.note()">{{ panels.folderGenerated }}</p>
+        <div v-if="source === 'document'" :class="styles.note()">
+          <p>{{ panels.folderGenerated }}</p>
+          <AppButton
+            v-if="versions"
+            size="sm"
+            variant="outline"
+            class="mt-2"
+            data-test-id="folder-save-as"
+            @click="saveAsFolder"
+          >
+            {{ menu.saveAsFolder }}
+          </AppButton>
+        </div>
         <ul :class="styles.tree()" data-test-id="folder-tree">
           <li v-for="row in rows" :key="row.path">
             <button
