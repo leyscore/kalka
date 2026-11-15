@@ -16,8 +16,8 @@ const { welcome } = useI18n()
 const { theme, setTheme } = useAppTheme()
 
 type Look = { panel: string; canvas: string; frame: string }
-const DARK: Look = { panel: '#18181b', canvas: '#121214', frame: '#efefec' }
-const LIGHT: Look = { panel: '#efefec', canvas: '#e4e4df', frame: '#ffffff' }
+const DARK: Look = { panel: '#1b1b1b', canvas: '#101010', frame: '#f0f0f0' }
+const LIGHT: Look = { panel: '#f0f0f0', canvas: '#e3e3e3', frame: '#ffffff' }
 
 const themes = computed(() => [
   { value: 'dark', label: welcome.value.themeDark, looks: [DARK] },

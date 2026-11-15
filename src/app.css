@@ -231,9 +231,9 @@
   --color-brand-sky: #9db7f5;
   --color-brand-ink: #121214;
   --color-brand-paper: #efefec;
-  --color-glass: rgb(24 25 33 / 0.55);
+  --color-glass: rgb(26 26 26 / 0.55);
   --color-glass-border: rgb(255 255 255 / 0.09);
-  --color-glass-strong: rgb(30 31 40 / 0.8);
+  --color-glass-strong: rgb(32 32 32 / 0.8);
   --color-glass-strong-border: rgb(255 255 255 / 0.1);
   --color-tab-active: rgb(255 255 255 / 0.08);
   --color-track: rgb(255 255 255 / 0.05);
@@ -244,33 +244,33 @@
   --color-row-selected-text: #dce4fc;
   --color-backdrop-a: #2f5bea;
   --color-backdrop-b: #7c8bb8;
-  --color-label: #d4d6e0;
-  --color-subtle: #c4c6d2;
-  --color-faint: #8a8c9a;
+  --color-label: #d6d6d6;
+  --color-subtle: #c4c4c4;
+  --color-faint: #8c8c8c;
   --color-link: #9db7f5;
   --color-highlight: #9db7f5;
   --color-link-hover: #c9d7fa;
   --color-card: rgb(255 255 255 / 0.05);
   --color-card-hover: rgb(255 255 255 / 0.08);
   --color-dash: rgb(255 255 255 / 0.2);
-  --color-panel: #18181b;
-  --color-panel-secondary: #141416;
+  --color-panel: #1b1b1b;
+  --color-panel-secondary: #151515;
   --color-panel-field: rgb(255 255 255 / 0.06);
   --color-panel-field-hover: rgb(255 255 255 / 0.09);
   --color-panel-focus: #4b74f0;
   --color-panel-selected: #2f5bea;
   --color-panel-selected-muted: #1e2540;
-  --color-canvas: #0f0f12;
+  --color-canvas: #101010;
   /* Behind the artboards, unless the person shows the document's own page color. */
-  --color-design-canvas: #1a1b20;
+  --color-design-canvas: #1c1c1c;
   --color-border: rgb(255 255 255 / 0.1);
   --color-hover: rgb(255 255 255 / 0.06);
   --color-accent: #2f5bea;
-  --color-surface: #ededf0;
-  --color-muted: #a6a8b6;
+  --color-surface: #ededed;
+  --color-muted: #a8a8a8;
   --color-input: rgb(255 255 255 / 0.05);
-  --color-scrim: rgb(6 7 12 / 0.5);
-  --color-float: rgb(32 33 42 / 0.86);
+  --color-scrim: rgb(8 8 8 / 0.5);
+  --color-float: rgb(34 34 34 / 0.86);
   --color-float-border: rgb(255 255 255 / 0.1);
   --color-group: rgb(255 255 255 / 0.035);
   --color-code-bg: rgb(0 0 0 / 0.28);
@@ -296,8 +296,8 @@
   --color-code-string: #86efac;
   --color-code-number: #fca5a5;
   --color-code-punctuation: #888888;
-  --color-checkerboard: #2a2a30;
-  --color-checkerboard-muted: #38383f;
+  --color-checkerboard: #2a2a2a;
+  --color-checkerboard-muted: #383838;
   --color-ruler-bg: rgb(30 30 30);
   --color-ruler-tick: rgb(255 255 255 / 0.12);
   --color-ruler-text: rgb(110 112 128);
@@ -307,7 +307,7 @@
 html[data-theme='light'] {
   --loader-tile-border: rgb(255 255 255 / 0.6);
   --pill-active-bg: color-mix(in srgb, white 92%, transparent);
-  --pill-active-shadow: 0 1px 2px rgb(20 20 40 / 0.08);
+  --pill-active-shadow: 0 1px 2px rgb(20 20 20 / 0.08);
   --pill-hover-bg: color-mix(in srgb, white 45%, transparent);
   --backdrop-glow-a: 0.4;
   --backdrop-glow-b: 0.5;
@@ -320,45 +320,45 @@ html[data-theme='light'] {
   --color-glass-strong: rgb(255 255 255 / 0.75);
   --color-glass-strong-border: rgb(255 255 255 / 0.95);
   --color-tab-active: rgb(255 255 255 / 0.6);
-  --color-track: rgb(20 20 40 / 0.06);
-  --color-hairline: rgb(20 20 40 / 0.07);
-  --color-separator: rgb(20 20 40 / 0.12);
+  --color-track: rgb(20 20 20 / 0.06);
+  --color-hairline: rgb(20 20 20 / 0.07);
+  --color-separator: rgb(20 20 20 / 0.12);
   --color-canvas-edge: rgb(255 255 255 / 0.7);
   --color-row-selected: #dce4fc;
   --color-row-selected-text: #1e3fb8;
   --color-backdrop-a: #6f8cec;
   --color-backdrop-b: #a9bef2;
-  --color-label: #2a2a33;
-  --color-subtle: #3a3a45;
-  --color-faint: #696975;
+  --color-label: #2b2b2b;
+  --color-subtle: #3b3b3b;
+  --color-faint: #6b6b6b;
   --color-link: #1e3fb8;
   --color-highlight: #2f5bea;
   --color-link-hover: #2f5bea;
   --color-card: rgb(255 255 255 / 0.45);
   --color-card-hover: rgb(255 255 255 / 0.7);
-  --color-dash: rgb(42 42 51 / 0.3);
-  --color-panel: #efefec;
-  --color-panel-secondary: #e8e8e4;
-  --color-panel-field: rgb(20 20 40 / 0.05);
-  --color-panel-field-hover: rgb(20 20 40 / 0.08);
+  --color-dash: rgb(42 42 42 / 0.3);
+  --color-panel: #f0f0f0;
+  --color-panel-secondary: #e8e8e8;
+  --color-panel-field: rgb(20 20 20 / 0.05);
+  --color-panel-field-hover: rgb(20 20 20 / 0.08);
   --color-panel-focus: #2f5bea;
   --color-panel-selected: #2f5bea;
   --color-panel-selected-muted: #dde3f5;
-  --color-canvas: #e2e3df;
-  --color-design-canvas: #ececee;
-  --color-border: rgb(20 20 40 / 0.11);
-  --color-hover: rgb(20 20 40 / 0.04);
+  --color-canvas: #e3e3e3;
+  --color-design-canvas: #ececec;
+  --color-border: rgb(20 20 20 / 0.11);
+  --color-hover: rgb(20 20 20 / 0.04);
   --color-accent: #2f5bea;
   --color-primary: #2448c4;
-  --color-inverted: #efefec;
-  --color-surface: #121214;
-  --color-muted: #5a5a66;
-  --color-input: rgb(20 20 40 / 0.04);
-  --color-scrim: rgb(30 40 80 / 0.16);
-  --color-float: rgb(250 250 248 / 0.88);
-  --color-float-border: rgb(20 20 40 / 0.1);
+  --color-inverted: #f0f0f0;
+  --color-surface: #141414;
+  --color-muted: #5c5c5c;
+  --color-input: rgb(20 20 20 / 0.04);
+  --color-scrim: rgb(20 20 20 / 0.18);
+  --color-float: rgb(250 250 250 / 0.88);
+  --color-float-border: rgb(20 20 20 / 0.1);
   --color-group: rgb(255 255 255 / 0.5);
-  --color-code-bg: rgb(20 20 40 / 0.04);
+  --color-code-bg: rgb(20 20 20 / 0.04);
   --color-component: #7c3aed;
   --color-slot: #db2777;
   --color-warning-bg: rgb(245 158 11 / 0.14);
@@ -382,7 +382,7 @@ html[data-theme='light'] {
   --color-checkerboard: #d6d6d0;
   --color-checkerboard-muted: #e3e3de;
   --color-ruler-bg: rgb(245 245 245);
-  --color-ruler-tick: rgb(20 20 40 / 0.12);
+  --color-ruler-tick: rgb(20 20 20 / 0.12);
   --color-ruler-text: rgb(154 154 164);
   --color-ruler-label: rgb(255 255 255);
 }
@@ -393,15 +393,15 @@ html[data-theme='light'] {
  * readable, and the backdrop's lights become plain gradients instead of blurred discs.
  */
 :root[data-effects='reduced'] {
-  --color-glass: rgb(24 25 33 / 0.74);
-  --color-glass-strong: rgb(30 31 40 / 0.94);
-  --color-float: rgb(32 33 42 / 0.97);
+  --color-glass: rgb(26 26 26 / 0.74);
+  --color-glass-strong: rgb(32 32 32 / 0.94);
+  --color-float: rgb(34 34 34 / 0.97);
 }
 
 html[data-theme='light'][data-effects='reduced'] {
-  --color-glass: rgb(250 250 248 / 0.72);
+  --color-glass: rgb(250 250 250 / 0.72);
   --color-glass-strong: rgb(255 255 255 / 0.92);
-  --color-float: rgb(250 250 248 / 0.97);
+  --color-float: rgb(250 250 250 / 0.97);
 }
 
 :root[data-effects='reduced'] *,

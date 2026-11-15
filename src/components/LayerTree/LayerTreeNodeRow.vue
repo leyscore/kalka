@@ -4,6 +4,7 @@ import { computed } from 'vue'
 
 import type { LayerNode } from '@kalka/vue'
 
+import { useEditorStore } from '@/app/editor/active-store'
 import type { LayerIssueMark as LayerIssueMarkData } from '@/app/editor/design-check/layers'
 import { COMPONENT_TYPES, nodeIcon } from '@/app/editor/icons'
 import LayerIssueMark from '@/components/design-check/LayerIssueMark.vue'
@@ -33,6 +34,22 @@ const { node, level, hasChildren, selected, padLeft, expanded, actions, chrome, 
 const emit = defineEmits<{
   renameStart: [id: string, name: string]
 }>()
+
+const store = useEditorStore()
+/**
+ * What the layer is in the page's HTML, when its name does not already say it: its first class,
+ * else its tag. A quiet reminder that layers are elements, without renaming anything.
+ */
+const htmlMark = computed(() => {
+  // The graph is not reactive; the scene version tells when it changed.
+  void store.state.sceneVersion
+  const source = store.graph.getNode(node.id)
+  if (!source) return null
+  const [first] = source.htmlClasses
+  if (first && first !== node.name) return { kind: 'class', text: `.${first}` }
+  if (source.htmlTag && source.htmlTag !== node.name) return { kind: 'tag', text: source.htmlTag }
+  return null
+})
 
 const ui = useLayerTreeUI()
 const layerTree = tv(layerTreeTheme)
@@ -82,6 +99,14 @@ const styles = computed(() =>
 
     <component :is="nodeIcon(node)" data-slot="icon" :class="styles.icon({ class: ui?.icon })" />
     <span data-slot="label" :class="styles.label({ class: ui?.label })">{{ node.name }}</span>
+    <span
+      v-if="htmlMark"
+      data-slot="html-mark"
+      :data-kind="htmlMark.kind"
+      :class="styles.htmlMark()"
+    >
+      {{ htmlMark.text }}
+    </span>
     <LayerIssueMark v-if="issue && (issue.own || !expanded)" :mark="issue" />
 
     <LayerTreeActions

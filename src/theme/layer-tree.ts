@@ -7,6 +7,8 @@ const layerTreeTheme = {
     disclosurePlaceholder: 'w-4 shrink-0',
     icon: 'size-[13px] shrink-0',
     label: 'min-w-0 flex-1 truncate',
+    htmlMark:
+      'max-w-[45%] shrink-0 truncate rounded bg-track px-1 font-mono text-[10px] leading-4 font-normal text-faint data-[kind=class]:text-link group-data-selected/row:text-current',
     actions: 'flex shrink-0 items-center gap-0.5',
     action:
       'flex size-4 items-center justify-center rounded text-current outline-none hover:bg-surface/10 focus-visible:ring-1 focus-visible:ring-panel-focus',
