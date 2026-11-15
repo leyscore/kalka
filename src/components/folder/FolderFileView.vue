@@ -1,24 +1,27 @@
 <script setup lang="ts">
 import { onKeyStroke, useObjectUrl } from '@vueuse/core'
-import { computed, defineAsyncComponent, onScopeDispose, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, onScopeDispose, watch } from 'vue'
 
 import { useI18n } from '@kalka/vue'
 
-import { imageType, openFolderFile } from '@/app/document/folder/view'
+import {
+  closeFolderFile,
+  folderFileMode,
+  imageType,
+  openFolderFile
+} from '@/app/document/folder/view'
 import { useLeftPanel } from '@/app/shell/left-panel/use'
-import IconButton from '@/components/ui/button/IconButton.vue'
-import SegmentedControl from '@/components/ui/select/SegmentedControl.vue'
 import { folderFileView } from '@/theme/panel/folder'
 
 const CodeEditor = defineAsyncComponent(() => import('@/components/code-editor/CodeEditor.vue'))
 const decoder = new TextDecoder()
 
-const { common, panels } = useI18n()
+const { panels } = useI18n()
 const styles = folderFileView()
 const file = openFolderFile
 
-/** A page opens on its clean HTML; the file as saved, with the editor's attributes, is one press away. */
-const view = ref<'clean' | 'saved'>('clean')
+// Its path, the choice between clean and saved HTML, and the way out are in the top bar.
+const view = folderFileMode
 const text = computed(() => {
   if (!file.value || (file.value.kind !== 'html' && file.value.kind !== 'text')) return null
   if (view.value === 'clean' && file.value.clean !== undefined) return file.value.clean
@@ -32,9 +35,7 @@ const picture = useObjectUrl(
   )
 )
 
-function close(): void {
-  file.value = null
-}
+const close = closeFolderFile
 // The file belongs to the folder panel: leaving it for layers, code or the agent gives the canvas
 // back, and so does leaving this document.
 const { activePanel } = useLeftPanel()
@@ -55,43 +56,17 @@ onKeyStroke('Escape', () => {
     data-canvas-obstacle
     :class="styles.root()"
   >
-    <header :class="styles.header()">
-      <icon-hugeicons-file-01 class="size-3.5 shrink-0 text-muted" />
-      <span :class="styles.path()">{{ file.path }}</span>
-      <SegmentedControl
-        v-if="file.clean !== undefined"
-        v-model="view"
-        required
-        size="md"
-        :label="file.path"
-        data-test-id="folder-file-mode"
-        :options="[
-          { value: 'clean', label: panels.folderViewClean },
-          { value: 'saved', label: panels.folderViewSaved }
-        ]"
-      />
-      <IconButton
-        :label="common.close"
-        data-test-id="folder-file-close"
-        :class="styles.action()"
-        @click="close"
-      >
-        <icon-hugeicons-x class="size-3.5" />
-      </IconButton>
-    </header>
-    <div :class="styles.body()">
-      <CodeEditor
-        v-if="text !== null"
-        :key="`${file.path}:${view}`"
-        :model-value="text"
-        language="html-css"
-        read-only
-        :label="file.path"
-      />
-      <div v-else-if="picture" :class="styles.picture()">
-        <img :src="picture" :alt="file.name" :class="styles.image()" />
-      </div>
-      <p v-else :class="styles.note()">{{ panels.folderNoPreview }}</p>
+    <CodeEditor
+      v-if="text !== null"
+      :key="`${file.path}:${view}`"
+      :model-value="text"
+      language="html-css"
+      read-only
+      :label="file.path"
+    />
+    <div v-else-if="picture" :class="styles.picture()">
+      <img :src="picture" :alt="file.name" :class="styles.image()" />
     </div>
+    <p v-else :class="styles.note()">{{ panels.folderNoPreview }}</p>
   </section>
 </template>

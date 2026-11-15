@@ -56,3 +56,11 @@ export function pageOfFile(project: string, path: string): string | null {
   if (!parsed.success) return null
   return parsed.output.pages.find((page) => page.file === path)?.id ?? null
 }
+
+/** A page opens on its clean HTML; the file as saved, with the editor's attributes, is one press away. */
+export type FolderFileMode = 'clean' | 'saved'
+export const folderFileMode = shallowRef<FolderFileMode>('clean')
+
+export function closeFolderFile(): void {
+  openFolderFile.value = null
+}

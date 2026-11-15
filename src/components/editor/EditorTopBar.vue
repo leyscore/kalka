@@ -3,10 +3,12 @@ import { formatShortcut, useI18n } from '@kalka/vue'
 
 import { useAIChat } from '@/app/ai/chat/use'
 import { openAISetup } from '@/app/ai/models/settings/onboarding/dialog'
+import { openFolderFile } from '@/app/document/folder/view'
 import { useEditorStore } from '@/app/editor/active-store'
 import { useLeftPanel } from '@/app/shell/left-panel/use'
 import { appMenuShortcut, appMenuShortcutLabel } from '@/app/shell/menu/shortcut'
 import CollabPanel from '@/components/collab-panel/CollabPanel.vue'
+import FolderFileBar from '@/components/folder/FolderFileBar.vue'
 import AppMenu from '@/components/shell/AppMenu.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import { editorTopBar } from '@/theme/editor-top-bar'
@@ -38,8 +40,10 @@ function toggleAgent(): void {
     <div :class="styles.start()">
       <AppMenu />
     </div>
+    <!-- The middle says what has the canvas's place: the design's screens, or a file of the folder. -->
     <div :class="styles.middle()">
-      <BreakpointSwitcher />
+      <FolderFileBar v-if="openFolderFile" />
+      <BreakpointSwitcher v-else />
     </div>
     <div :class="styles.end()">
       <IconButton
@@ -58,7 +62,7 @@ function toggleAgent(): void {
         />
       </IconButton>
       <!-- The dropdown pushes itself to the end of a tab row; here its neighbours set its place. -->
-      <div class="flex shrink-0">
+      <div v-if="!openFolderFile" class="flex shrink-0">
         <ZoomDropdown />
       </div>
       <IconButton
@@ -71,6 +75,7 @@ function toggleAgent(): void {
         <icon-hugeicons-panel-left class="size-[15px]" />
       </IconButton>
       <IconButton
+        v-if="!openFolderFile"
         :label="
           editor.startPreview({
             shortcut: formatShortcut(appMenuShortcut('toggle-preview')) ?? ''
