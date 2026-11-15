@@ -31,7 +31,7 @@ function indent(row: FolderRow): string {
   return FOLDER_INDENT[Math.min(row.depth, FOLDER_INDENT.length - 1)] ?? ''
 }
 
-/** A folder opens and closes; a file opens over the canvas, as in a code editor. */
+/** A folder opens and closes; a file takes the canvas's place, as in a code editor. */
 async function open(row: FolderRow): Promise<void> {
   if (row.kind === 'folder') {
     toggle(row.path)

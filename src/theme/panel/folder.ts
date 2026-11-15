@@ -24,10 +24,10 @@ export const folderPanel = tv({
 /** Each level of the tree steps in by this much. */
 export const FOLDER_INDENT = ['pl-2', 'pl-5', 'pl-8', 'pl-11', 'pl-14', 'pl-[68px]'] as const
 
-/** A file of the folder open over the canvas: its path above its code or its picture. */
+/** A file of the folder open in place of the canvas: its path above its code or its picture. */
 export const folderFileView = tv({
   slots: {
-    root: 'absolute inset-3 bottom-[76px] z-20 flex flex-col overflow-hidden rounded-[14px] border border-border bg-panel shadow-(--toolbar-shadow)',
+    root: 'absolute inset-0 z-20 flex flex-col overflow-hidden bg-panel',
     header: 'flex h-10 shrink-0 items-center gap-2 border-b border-hairline pr-1.5 pl-4',
     path: 'min-w-0 flex-1 truncate font-mono text-xs text-surface',
     action: 'size-7 rounded-md',

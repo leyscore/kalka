@@ -6,6 +6,7 @@ import { computed, defineAsyncComponent, useTemplateRef } from 'vue'
 
 import { formatShortcut, useViewportKind } from '@kalka/vue'
 
+import { openFolderFile } from '@/app/document/folder/view'
 import { provideTabEditorStore } from '@/app/editor/active-store'
 import { appRuntimeConfig } from '@/app/runtime/config'
 import { latch } from '@/app/shell/latch'
@@ -109,8 +110,9 @@ const { pending: roomPending } = useRoomActions()
           <div class="@container/canvas relative flex min-w-0 flex-1">
             <CanvasSplitRoot />
             <ActiveRoomOverlay />
+            <!-- A file of the folder takes the canvas's place, tools included, until it is closed. -->
             <FolderFileView />
-            <Toolbar />
+            <Toolbar v-if="!openFolderFile" />
           </div>
         </SplitterPanel>
         <SplitterResizeHandle :class="horizontalSplitterStyles.handle()">

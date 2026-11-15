@@ -43,7 +43,7 @@ export function imageType(name: string): string {
   return IMAGE_TYPES[extension(name)] ?? 'application/octet-stream'
 }
 
-/** The file open over the canvas, chosen in the folder panel; null when none is. */
+/** The file shown in place of the canvas, chosen in the folder panel; null when none is. */
 export const openFolderFile = shallowRef<FolderFile | null>(null)
 
 const ProjectPages = v.object({
