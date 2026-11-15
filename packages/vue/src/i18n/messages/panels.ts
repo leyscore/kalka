@@ -37,6 +37,10 @@ export const panelMessageDefaults = {
     many: '{count} values of its own here'
   }),
   breakpointReset: 'Reset',
+  folder: 'Folder',
+  folderUnsaved: 'Save the document on this computer to see its folder.',
+  folderArchive: 'This document is a single .kalka file. Save it as a folder to see its files.',
+  folderReveal: params('Show {name} on the computer'),
   versions: 'Versions',
   versionsUnsaved: 'Save the document on this computer to keep its versions.',
   versionsUntracked:

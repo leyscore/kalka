@@ -16,8 +16,8 @@ const { panels, settings } = useI18n()
 const checkMessages = useDesignCheckMessages()
 const store = useEditorStore()
 const { activePanel, show, toggleAgent } = useLeftPanel()
-// Versions use the git on this computer, so only the desktop app offers them.
-const hasVersions = isTauri()
+// The folder and its versions are read from this computer, so only the desktop app offers them.
+const hasFolder = isTauri()
 
 /** Errors and warnings on the current page; suggestions do not earn an indicator. */
 const problemCount = computed(() => {
@@ -118,19 +118,19 @@ const rail = panelRail()
         <icon-hugeicons-code :class="rail.icon()" />
       </button>
     </Tip>
-    <Tip v-if="hasVersions" :label="panels.versions" side="right">
+    <Tip v-if="hasFolder" :label="panels.folder" side="right">
       <button
         type="button"
         role="tab"
-        data-test-id="left-panel-versions-tab"
-        :aria-label="panels.versions"
-        :aria-selected="activePanel === 'versions'"
-        :data-state="activePanel === 'versions' ? 'active' : 'inactive'"
-        :data-active="activePanel === 'versions' || undefined"
+        data-test-id="left-panel-folder-tab"
+        :aria-label="panels.folder"
+        :aria-selected="activePanel === 'folder'"
+        :data-state="activePanel === 'folder' ? 'active' : 'inactive'"
+        :data-active="activePanel === 'folder' || undefined"
         :class="rail.item()"
-        @click="show('versions')"
+        @click="show('folder')"
       >
-        <icon-hugeicons-git-branch :class="rail.icon()" />
+        <icon-hugeicons-folder-01 :class="rail.icon()" />
       </button>
     </Tip>
     <Tip :label="checkLabel" side="right">

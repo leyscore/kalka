@@ -15,6 +15,7 @@ import {
   type GitStatus
 } from './git'
 
+export type DocumentVersions = ReturnType<typeof useDocumentVersions>
 export type VersionsState = 'unsaved' | 'untracked' | 'tracked' | 'loading'
 type Operation = 'commit' | 'init' | 'pull' | 'push'
 
@@ -101,6 +102,7 @@ export function useDocumentVersions(store: EditorStore) {
   void refresh()
 
   return {
+    path,
     state,
     status,
     changes,

@@ -36,6 +36,10 @@
     "many": "{count} valori propri qui"
   },
   "breakpointReset": "Ripristina",
+  "folder": "Cartella",
+  "folderUnsaved": "Salva il documento su questo computer per vedere la sua cartella.",
+  "folderArchive": "Questo documento è un singolo file .kalka. Salvalo come cartella per vedere i suoi file.",
+  "folderReveal": "Mostra {name} sul computer",
   "versions": "Versioni",
   "versionsUnsaved": "Salva il documento su questo computer per conservarne le versioni.",
   "versionsUntracked": "Questa cartella non conserva ancora versioni. Kalka usa Git: la cronologia resta nella cartella e funziona con GitHub o qualsiasi strumento Git.",

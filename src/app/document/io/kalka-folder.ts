@@ -3,7 +3,8 @@ import { zipKalkaFiles, type KalkaFile } from '@kalka/core/io/formats/kalka'
 /** Folders a Kalka document owns and rewrites on every save; files in them that are no longer saved go. */
 const OWNED_FOLDERS = ['pages', 'assets/images']
 
-function join(folder: string, path: string): string {
+/** A path inside a folder, with the separators the folder's own path uses. */
+export function joinFolderPath(folder: string, path: string): string {
   const separator = folder.includes('\\') && !folder.includes('/') ? '\\' : '/'
   return [folder.replace(/[\\/]+$/, ''), ...path.split('/')].join(separator)
 }
@@ -22,14 +23,15 @@ export function isKalkaFolderPath(path: string | null): boolean {
   return !!path && !path.toLowerCase().endsWith('.kalka')
 }
 
-async function listFiles(folder: string, prefix = ''): Promise<string[]> {
+/** Every file of a folder, as paths relative to it with `/` between their parts. */
+export async function listFolderFiles(folder: string, prefix = ''): Promise<string[]> {
   const { readDir } = await import('@tauri-apps/plugin-fs')
   const paths: string[] = []
-  for (const entry of await readDir(join(folder, prefix))) {
+  for (const entry of await readDir(joinFolderPath(folder, prefix))) {
     // Git's own files, and anything hidden, are not the document's.
     if (entry.name.startsWith('.')) continue
     const path = prefix ? `${prefix}/${entry.name}` : entry.name
-    if (entry.isDirectory) paths.push(...(await listFiles(folder, path)))
+    if (entry.isDirectory) paths.push(...(await listFolderFiles(folder, path)))
     else if (entry.isFile) paths.push(path)
   }
   return paths
@@ -42,8 +44,8 @@ async function listFiles(folder: string, prefix = ''): Promise<string[]> {
 export async function readKalkaFolderAsFile(folder: string): Promise<File> {
   const { readFile } = await import('@tauri-apps/plugin-fs')
   const files: KalkaFile[] = []
-  for (const path of await listFiles(folder))
-    files.push({ path, content: await readFile(join(folder, path)) })
+  for (const path of await listFolderFiles(folder))
+    files.push({ path, content: await readFile(joinFolderPath(folder, path)) })
   const archive = zipKalkaFiles(files, { level: 0 })
   return new File([archive.slice().buffer], `${folderName(folder)}.kalka`, {
     type: 'application/zip'
@@ -63,12 +65,13 @@ export async function writeKalkaFolderFiles(
   const written = new Set(files.map((file) => file.path))
   const folders = new Set(files.map((file) => file.path.split('/').slice(0, -1).join('/')))
   await mkdir(folder, { recursive: true })
-  for (const path of folders) if (path) await mkdir(join(folder, path), { recursive: true })
-  for (const file of files) await writeFile(join(folder, file.path), file.content)
+  for (const path of folders)
+    if (path) await mkdir(joinFolderPath(folder, path), { recursive: true })
+  for (const file of files) await writeFile(joinFolderPath(folder, file.path), file.content)
   for (const owned of OWNED_FOLDERS) {
-    if (!(await exists(join(folder, owned)))) continue
-    for (const path of await listFiles(folder, owned))
-      if (!written.has(path)) await remove(join(folder, path))
+    if (!(await exists(joinFolderPath(folder, owned)))) continue
+    for (const path of await listFolderFiles(folder, owned))
+      if (!written.has(path)) await remove(joinFolderPath(folder, path))
   }
 }
 

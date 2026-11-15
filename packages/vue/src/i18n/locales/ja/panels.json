@@ -34,6 +34,10 @@
     "many": "ここだけの値 {count} 件"
   },
   "breakpointReset": "リセット",
+  "folder": "フォルダ",
+  "folderUnsaved": "このコンピュータにドキュメントを保存すると、フォルダが表示されます。",
+  "folderArchive": "このドキュメントは単一の .kalka ファイルです。フォルダとして保存すると、ファイルが表示されます。",
+  "folderReveal": "{name} をコンピュータ上で表示",
   "versions": "バージョン",
   "versionsUnsaved": "バージョンを残すには、このコンピューターに書類を保存してください。",
   "versionsUntracked": "このフォルダーはまだバージョンを残していません。Kalka は Git を使います。履歴はフォルダー内に残り、GitHub などの Git ツールで使えます。",

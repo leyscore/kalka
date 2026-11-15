@@ -2,7 +2,8 @@ import { computed, ref } from 'vue'
 
 import { useAIChat } from '@/app/ai/chat/use'
 
-export type DocumentPanel = 'file' | 'assets' | 'versions'
+/** `file` is the layers of the document; `folder` is its files on the computer and their versions. */
+export type DocumentPanel = 'file' | 'assets' | 'folder'
 /** The panels the shared properties tab asks for: code, the design check and the agent. */
 const REQUESTED = ['code', 'lint', 'ai'] as const
 type RequestedPanel = (typeof REQUESTED)[number]

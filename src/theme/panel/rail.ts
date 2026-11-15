@@ -2,7 +2,7 @@ import { tv } from 'tailwind-variants'
 
 /**
  * The icon rail at the editor's left edge: what the document holds (layers, assets) above a divider,
- * what ships it (code, versions, the design check) below. Icons alone; each names itself in a tip.
+ * what ships it (code, its folder and versions, the design check) below. Icons alone; each names itself in a tip.
  */
 export const panelRail = tv({
   slots: {

@@ -246,6 +246,7 @@ pl:panels.colorFormatHsl
 pl:panels.colorFormatOkhcl
 pl:panels.colorFormatRgb
 pl:panels.design
+pl:panels.folder
 pl:panels.framePresetCategoryFigmaCommunity
 pl:panels.framePresetCategoryTablet
 pl:panels.kerning

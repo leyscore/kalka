@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { useI18n } from '@kalka/vue'
 
-import { useDocumentVersions } from '@/app/document/versions/use'
+import { changeKind } from '@/app/document/versions/git'
+import { useDocumentVersions, type DocumentVersions } from '@/app/document/versions/use'
 import { useEditorStore } from '@/app/editor/active-store'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import AppAlert from '@/components/ui/feedback/AppAlert.vue'
@@ -9,20 +10,12 @@ import AppInput from '@/components/ui/input/AppInput.vue'
 
 const { panels } = useI18n()
 const store = useEditorStore()
-const versions = useDocumentVersions(store)
+/** The folder panel reads the same repository and passes its own, so Git is asked once. */
+const { versions: shared } = defineProps<{ versions?: DocumentVersions }>()
+const versions = shared ?? useDocumentVersions(store)
 const { state, status, changes, history, unsaved, running, error, message, canCommit } = versions
 
 const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' })
-
-/** A porcelain status as a single letter and the kind of change it is. */
-function changeKind(code: string): { letter: string; kind: string } {
-  if (code === '??') return { letter: 'N', kind: 'added' }
-  if (code.includes('U')) return { letter: '!', kind: 'conflict' }
-  if (code.includes('D')) return { letter: 'D', kind: 'deleted' }
-  if (code.includes('A')) return { letter: 'A', kind: 'added' }
-  if (code.includes('R')) return { letter: 'R', kind: 'modified' }
-  return { letter: 'M', kind: 'modified' }
-}
 </script>
 
 <template>

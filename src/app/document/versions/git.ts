@@ -65,3 +65,15 @@ export function sortChanges(
   const rank = (change: GitFileChange) => (change.path === own ? 0 : 1)
   return [...files].sort((a, b) => rank(a) - rank(b) || a.path.localeCompare(b.path))
 }
+
+export type GitChangeKind = 'added' | 'conflict' | 'deleted' | 'modified'
+
+/** A porcelain status as a single letter and the kind of change it is. */
+export function changeKind(code: string): { letter: string; kind: GitChangeKind } {
+  if (code === '??') return { letter: 'N', kind: 'added' }
+  if (code.includes('U')) return { letter: '!', kind: 'conflict' }
+  if (code.includes('D')) return { letter: 'D', kind: 'deleted' }
+  if (code.includes('A')) return { letter: 'A', kind: 'added' }
+  if (code.includes('R')) return { letter: 'R', kind: 'modified' }
+  return { letter: 'M', kind: 'modified' }
+}

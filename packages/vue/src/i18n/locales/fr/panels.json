@@ -36,6 +36,10 @@
     "many": "{count} valeurs propres ici"
   },
   "breakpointReset": "Réinitialiser",
+  "folder": "Dossier",
+  "folderUnsaved": "Enregistrez le document sur cet ordinateur pour voir son dossier.",
+  "folderArchive": "Ce document est un seul fichier .kalka. Enregistrez-le comme dossier pour voir ses fichiers.",
+  "folderReveal": "Afficher {name} sur l’ordinateur",
   "versions": "Versions",
   "versionsUnsaved": "Enregistrez le document sur cet ordinateur pour garder ses versions.",
   "versionsUntracked": "Ce dossier ne garde pas encore de versions. Kalka utilise Git : l’historique reste dans le dossier et fonctionne avec GitHub ou tout outil Git.",
