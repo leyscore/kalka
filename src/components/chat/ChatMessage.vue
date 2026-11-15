@@ -8,6 +8,8 @@ import { useI18n, vTestId } from '@kalka/vue'
 
 import { attachmentsForMessage } from '@/app/ai/attachment/presentation/store'
 import type { AttachmentPresentation } from '@/app/ai/attachment/presentation/types'
+import { projectInstructionsOf } from '@/app/ai/chat/context'
+import { countInstructionSections } from '@/app/ai/chat/instructions'
 import { undoOf, wasStopped } from '@/app/ai/chat/metadata'
 import { reasoningDisplay } from '@/app/ai/chat/preferences'
 import { visibleUserMessageText } from '@/app/ai/chat/presentation'
@@ -61,6 +63,17 @@ const assistantText = computed(() =>
     .filter(isTextUIPart)
     .map((part) => part.text)
     .join('')
+)
+/** How many of the folder's instructions went to the agent with this request. */
+const instructionsRead = computed(() =>
+  countInstructionSections(
+    projectInstructionsOf(
+      message.parts
+        .filter(isTextUIPart)
+        .map((part) => part.text)
+        .join('')
+    )
+  )
 )
 const userText = computed(
   () =>
@@ -214,6 +227,14 @@ function groupKey(group: MessagePartGroup): string {
             <icon-hugeicons-pencil class="size-3" />
           </IconButton>
         </div>
+        <p
+          v-if="instructionsRead > 0"
+          data-test-id="chat-instructions-read"
+          class="flex items-center justify-end gap-1 pe-1 text-[10px] text-muted"
+        >
+          <icon-hugeicons-book-open-01 class="size-3" aria-hidden="true" />
+          {{ ai.instructionsRead({ count: instructionsRead }) }}
+        </p>
         <div v-if="canRetry && !editing" class="flex justify-end">
           <AppButton
             v-if="reconnect"

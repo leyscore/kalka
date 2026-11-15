@@ -6,6 +6,7 @@ import { useI18n } from '@kalka/vue'
 
 import {
   closeFolderFile,
+  folderFileDraft,
   folderFileMode,
   imageType,
   openFolderFile
@@ -36,6 +37,10 @@ const picture = useObjectUrl(
 )
 
 const close = closeFolderFile
+
+function onEdit(event: Event): void {
+  if (event.target instanceof HTMLTextAreaElement) folderFileDraft.value = event.target.value
+}
 // The file belongs to the folder panel: leaving it for layers, code or the agent gives the canvas
 // back, and so does leaving this document.
 const { activePanel } = useLeftPanel()
@@ -56,8 +61,18 @@ onKeyStroke('Escape', () => {
     data-canvas-obstacle
     :class="styles.root()"
   >
+    <!-- The folder's instructions are the person's to write, here, as plain text. -->
+    <textarea
+      v-if="text !== null && file.editablePath"
+      :value="folderFileDraft ?? text"
+      :aria-label="file.path"
+      spellcheck="false"
+      data-test-id="folder-file-editor"
+      :class="styles.editor()"
+      @input="onEdit"
+    />
     <CodeEditor
-      v-if="text !== null"
+      v-else-if="text !== null"
       :key="`${file.path}:${view}`"
       :model-value="text"
       language="html-css"

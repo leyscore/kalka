@@ -1,7 +1,16 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+
 import { useI18n } from '@kalka/vue'
 
-import { closeFolderFile, folderFileMode, openFolderFile } from '@/app/document/folder/view'
+import {
+  closeFolderFile,
+  folderFileDraft,
+  folderFileMode,
+  openFolderFile,
+  saveFolderFile
+} from '@/app/document/folder/view'
+import AppButton from '@/components/ui/button/AppButton.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import SegmentedControl from '@/components/ui/select/SegmentedControl.vue'
 import { folderFileBar } from '@/theme/panel/folder'
@@ -9,6 +18,16 @@ import { folderFileBar } from '@/theme/panel/folder'
 /** What the top bar shows of the file that has the canvas's place: its path, how it is read, and the way out. */
 const { common, panels } = useI18n()
 const styles = folderFileBar()
+const saving = ref(false)
+
+async function save(): Promise<void> {
+  saving.value = true
+  try {
+    await saveFolderFile()
+  } finally {
+    saving.value = false
+  }
+}
 </script>
 
 <template>
@@ -27,6 +46,18 @@ const styles = folderFileBar()
         { value: 'saved', label: panels.folderViewSaved }
       ]"
     />
+    <AppButton
+      v-if="openFolderFile.editablePath"
+      size="xs"
+      color="primary"
+      variant="solid"
+      data-test-id="folder-file-save"
+      :disabled="folderFileDraft === null"
+      :loading="saving"
+      @click="save"
+    >
+      {{ common.save }}
+    </AppButton>
     <IconButton
       :label="common.close"
       side="bottom"

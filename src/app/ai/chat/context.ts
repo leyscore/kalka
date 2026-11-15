@@ -110,3 +110,9 @@ export function stripModelNotes(text: string): string {
   )
   return starts.length === 0 ? text : text.slice(0, Math.min(...starts))
 }
+
+/** The instructions note a request carried for the model, or empty when it carried none. */
+export function projectInstructionsOf(text: string): string {
+  const start = text.indexOf(PROJECT_INSTRUCTIONS_MARKER)
+  return start === -1 ? '' : text.slice(start + PROJECT_INSTRUCTIONS_MARKER.length)
+}

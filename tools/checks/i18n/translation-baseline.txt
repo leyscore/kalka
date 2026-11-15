@@ -5,6 +5,7 @@ de:ai.modelCapabilityVisionShort
 de:ai.modelName
 de:ai.modelRoleVision
 de:ai.responses
+de:ai.suggestSkills
 de:ai.thinkingMinimal
 de:automation.mcpFailureDetails
 de:automation.port
@@ -67,6 +68,7 @@ de:variableTypes.text
 es:ai.chatSettings
 es:ai.completions
 es:ai.responses
+es:ai.suggestSkills
 es:ai.toolError
 es:automation.statusError
 es:code.editorDesignLabel
@@ -104,6 +106,8 @@ fr:ai.modelAgentConnection
 fr:ai.modelCapabilityVisionShort
 fr:ai.modelRoleVision
 fr:ai.responses
+fr:ai.suggestDocuments
+fr:ai.suggestSkills
 fr:ai.thinkingMinimal
 fr:automation.port
 fr:automation.version

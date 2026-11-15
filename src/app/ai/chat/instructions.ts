@@ -4,8 +4,10 @@ import {
   readInstructionCatalog,
   readSkill,
   readStandingInstructions,
-  type InstructionFile
+  hasInstructions
 } from '@/app/document/instructions/read'
+import { isStarterText, STARTER_CATALOG } from '@/app/document/instructions/starter'
+import { STARTER_SKILLS } from '@/app/document/instructions/starter-skills'
 import type { EditorStore } from '@/app/editor/active-store'
 import { isTauri } from '@/app/tauri/env'
 
@@ -53,38 +55,37 @@ export function describeCatalog(catalog: InstructionCatalog): string {
   return lines.join('\n')
 }
 
-function standingTitle(file: InstructionFile): string {
-  return file.name
-}
-
 /**
  * What the document's folder tells its agent for one request. A conversation's first request
  * carries the summary, the rules and the list of what can be asked for; every request carries
- * the skills it names with `/` and the documents it names with `@`. Read on this computer only,
- * and empty for a document not saved as a folder.
+ * the skills it names with `/` and the documents it names with `@`. A document without an
+ * instructions folder, in a browser or not saved as a folder, has the starter skills alone.
  */
 export async function readProjectInstructions(
   store: EditorStore,
   request: string,
   first: boolean
 ): Promise<string> {
-  const folder = store.getDocumentFilePath()
-  if (!folder || !isTauri()) return ''
+  const path = store.getDocumentFilePath()
+  // A document not saved as a folder still has the skills every folder starts with.
+  const folder = path && isTauri() && (await hasInstructions(path)) ? path : null
   try {
-    const catalog = await readInstructionCatalog(folder)
+    const catalog = folder ? await readInstructionCatalog(folder) : STARTER_CATALOG
     const sections: InstructionSection[] = []
-    if (first) {
+    if (folder && first) {
       for (const file of await readStandingInstructions(folder)) {
-        sections.push({ title: standingTitle(file), text: file.text })
+        // A file still as Kalka wrote it is a form nobody filled in: it says nothing yet.
+        if (isStarterText(file.text)) continue
+        sections.push({ title: file.name, text: file.text })
       }
     }
     const asked = findInvocations(request, catalog)
     for (const name of asked.skills) {
-      const skill = await readSkill(folder, name)
-      if (skill) sections.push({ title: `Skill /${name}`, text: skill.text })
+      const text = folder ? (await readSkill(folder, name))?.text : STARTER_SKILLS[name]
+      if (text) sections.push({ title: `Skill /${name}`, text })
     }
-    for (const name of asked.documents) {
-      const document = await readDocument(folder, name)
+    for (const name of folder ? asked.documents : []) {
+      const document = await readDocument(folder ?? '', name)
       if (document) sections.push({ title: `Document ${name}`, text: document.text })
     }
     if (first) sections.push({ title: 'Available on request', text: describeCatalog(catalog) })

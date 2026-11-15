@@ -66,3 +66,13 @@ export async function readSkill(folder: string, name: string): Promise<Instructi
 export function readDocument(folder: string, name: string): Promise<InstructionFile | null> {
   return read(joinFolderPath(joinFolderPath(folder, INSTRUCTIONS_DIR), DOCUMENTS_DIR), name)
 }
+
+/** Whether a path is a folder that has instructions; false for a file and for a folder without. */
+export async function hasInstructions(path: string): Promise<boolean> {
+  try {
+    const { exists } = await import('@tauri-apps/plugin-fs')
+    return await exists(joinFolderPath(path, INSTRUCTIONS_DIR))
+  } catch {
+    return false
+  }
+}

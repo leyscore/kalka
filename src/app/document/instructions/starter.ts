@@ -1,5 +1,6 @@
 import { joinFolderPath } from '@/app/document/io/kalka-folder'
 
+import type { InstructionCatalog } from './invoke'
 import { DOCUMENTS_DIR, INSTRUCTIONS_DIR, RULES_FILE, SKILLS_DIR, SUMMARY_FILE } from './layout'
 import { STARTER_SKILLS } from './starter-skills'
 
@@ -39,6 +40,19 @@ export const STARTER_INSTRUCTIONS: ReadonlyMap<string, string> = new Map([
   ),
   [`${INSTRUCTIONS_DIR}/${DOCUMENTS_DIR}/README.md`, DOCUMENTS]
 ])
+
+/** What a document offers before it has a folder: the starter skills, and no documents. */
+export const STARTER_CATALOG: InstructionCatalog = {
+  skills: Object.keys(STARTER_SKILLS),
+  documents: []
+}
+
+const STARTER_TEXTS = new Set([...STARTER_INSTRUCTIONS.values()].map((text) => text.trim()))
+
+/** Whether a file still holds exactly what Kalka wrote in it. */
+export function isStarterText(text: string): boolean {
+  return STARTER_TEXTS.has(text.trim())
+}
 
 /**
  * Gives a folder its instructions the first time: nothing is written once the folder has an

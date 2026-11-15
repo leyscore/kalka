@@ -9,6 +9,8 @@ import { MAX_IMAGE_ATTACHMENTS } from '@/app/ai/attachment/image/types'
 import type { ChatSubmission } from '@/app/ai/chat/submission/types'
 import { useAIChat } from '@/app/ai/chat/use'
 import { designModelProfile } from '@/app/ai/models'
+import { useInstructionCatalog } from '@/app/document/instructions/catalog'
+import { useEditorStore } from '@/app/editor/active-store'
 import { openSettingsDialog } from '@/app/settings/dialog'
 import ChatNodePreview from '@/components/chat/ChatNodePreview.vue'
 import ChatProfileSelect from '@/components/chat/ChatProfileSelect.vue'
@@ -21,6 +23,7 @@ import ChatComposer from './ChatComposer.vue'
 
 const { providerID, providerDef, modelID, customModelID } = useAIChat()
 const { editor, selectedIds } = useSelectionState()
+const store = useEditorStore()
 const { ai } = useI18n()
 
 const {
@@ -59,6 +62,9 @@ const {
   takeSubmission,
   restoreSubmission
 } = attachments
+
+// What the folder's instructions offer after a slash and an at sign.
+const { catalog, refresh: refreshCatalog } = useInstructionCatalog(() => store)
 
 const composer = useTemplateRef<{ restoreDraft: (text: string) => boolean }>('composer')
 
@@ -123,6 +129,8 @@ const selectedProfileName = computed(
     ref="composer"
     :status="status"
     :disabled="disabled"
+    :catalog="catalog"
+    @suggest="refreshCatalog"
     @submit="emit('submit', takeSubmission($event))"
     @stop="emit('stop')"
     @paste="handlePaste"

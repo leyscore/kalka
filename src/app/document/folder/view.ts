@@ -13,6 +13,11 @@ export interface FolderFile {
    * editor's `data-kalka-*` attributes. The saved file keeps those to open again as it was.
    */
   clean?: string
+  /**
+   * Where the file is on this computer, when the person may write it in Kalka: the folder's
+   * instructions. Everything else is written by saving the document.
+   */
+  editablePath?: string
 }
 
 const IMAGE_TYPES: Record<string, string> = {
@@ -63,4 +68,19 @@ export const folderFileMode = shallowRef<FolderFileMode>('clean')
 
 export function closeFolderFile(): void {
   openFolderFile.value = null
+  folderFileDraft.value = null
+}
+
+/** What the person has typed in an editable file since it opened; null while nothing changed. */
+export const folderFileDraft = shallowRef<string | null>(null)
+
+/** Writes the draft to the file and makes it the file's content. */
+export async function saveFolderFile(): Promise<void> {
+  const file = openFolderFile.value
+  const draft = folderFileDraft.value
+  if (!file?.editablePath || draft === null) return
+  const { writeTextFile } = await import('@tauri-apps/plugin-fs')
+  await writeTextFile(file.editablePath, draft)
+  openFolderFile.value = { ...file, bytes: new TextEncoder().encode(draft) }
+  folderFileDraft.value = null
 }

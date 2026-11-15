@@ -28,6 +28,8 @@ export const FOLDER_INDENT = ['pl-2', 'pl-5', 'pl-8', 'pl-11', 'pl-14', 'pl-[68p
 export const folderFileView = tv({
   slots: {
     root: 'absolute inset-0 z-20 flex flex-col overflow-hidden bg-panel',
+    editor:
+      'min-h-0 flex-1 resize-none bg-transparent p-5 font-mono text-[13px] leading-relaxed text-surface outline-none',
     picture: 'grid min-h-0 flex-1 place-items-center overflow-auto p-6',
     image: 'max-h-full max-w-full object-contain',
     note: 'm-auto px-6 text-center text-xs text-muted'

@@ -4,6 +4,7 @@ import { computed, ref, shallowRef, watch } from 'vue'
 import { KALKA_PROJECT_FILE, writeKalkaFolder } from '@kalka/core/io/formats/kalka'
 
 import { pageHTMLCode } from '@/app/code/generated'
+import { isInstructionPath } from '@/app/document/instructions/layout'
 import { STARTER_INSTRUCTIONS } from '@/app/document/instructions/starter'
 import { isKalkaFolderPath, joinFolderPath, listFolderFiles } from '@/app/document/io/kalka-folder'
 import { changeKind, type GitChangeKind } from '@/app/document/versions/git'
@@ -112,7 +113,9 @@ export function useDocumentFolder(store: EditorStore, versions: DocumentVersions
     const bytes = await bytesOf(path)
     if (!bytes) throw new Error(`No such file: ${path}`)
     const clean = kind === 'html' ? await cleanPage(path) : undefined
-    return { path, name, kind, bytes, clean }
+    const editablePath =
+      folder.value && isInstructionPath(path) ? joinFolderPath(folder.value, path) : undefined
+    return { path, name, kind, bytes, clean, editablePath }
   }
 
   function toggle(path: string): void {
