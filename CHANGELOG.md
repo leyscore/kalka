@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+
+- The browser demo opens on the first screen of Kalka's landing page instead of the whole page at 11%, and keeps design-check markers off its canvas until you open another document.
+
 ## 0.1.0-beta.6 — 2026-11-06
 
 ### Changed

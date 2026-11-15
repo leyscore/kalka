@@ -1,6 +1,6 @@
 import type { EditorStore } from '@/app/editor/session'
 
-import { fitDemoPagesOnFirstVisit } from './viewport'
+import { fitDemoFirstScreen, fitDemoPagesOnFirstVisit } from './viewport'
 
 /**
  * Kalka's own landing page, zipped from `assets/demo` by `tools/generate/demo` before the app is
@@ -15,7 +15,9 @@ const FIXTURE = { url: '/demo-fixture.fig', name: 'Demo.fig' }
 
 /**
  * Opens the bundled demo document like any file: behind the canvas loader, with pages
- * materialized as they are visited. Each page is fitted to the viewport on its first visit.
+ * materialized as they are visited. Each page opens on its first screen on its first visit, and
+ * design-check markers stay off the canvas until another document opens, so visitors see the
+ * design rather than the lint of a page that ships as it is.
  * `fixture` opens the engine showcase instead, on the dev server only.
  */
 export async function openDemoDocument(
@@ -36,6 +38,8 @@ export async function openDemoDocument(
     store.graph.getChildren(store.state.currentPageId).length === 0
   if (!untouched) return
   await (fixture ? store.openFigFile(file) : store.openKalkaFile(file))
+  store.designCheck.muteMarkers()
+  fitDemoFirstScreen(store)
   const [, ...later] = store.graph.getPages()
   fitDemoPagesOnFirstVisit(
     store,

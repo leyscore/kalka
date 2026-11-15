@@ -51,7 +51,10 @@ export function createDesignCheck(editor: Editor, state: AppEditorState) {
   const focusedIssueId = ref<string | null>(null)
 
   const preferences = computed(() => appPreferences.value.designCheck)
-  const enabled = computed(() => panelVisible.value || preferences.value.showOnCanvas)
+  /** Set while a document shows without markers whatever the preference, such as the demo. */
+  const markersMuted = ref(false)
+  const showOnCanvas = computed(() => preferences.value.showOnCanvas && !markersMuted.value)
+  const enabled = computed(() => panelVisible.value || showOnCanvas.value)
   // Primitive keys keep unrelated preference changes, like toggling markers, from rebuilding rules.
   const preset = computed(() => preferences.value.preset)
   const disabledRules = computed(() => preferences.value.disabledRules.join('\n'))
@@ -100,9 +103,7 @@ export function createDesignCheck(editor: Editor, state: AppEditorState) {
   /** Set while the Lint panel lists the whole document, which needs every page checked. */
   const documentScope = ref(false)
   // Pages beyond the current one are checked for the page list and the Document scope.
-  const pagesNeeded = computed(
-    () => enabled.value && (preferences.value.showOnCanvas || documentScope.value)
-  )
+  const pagesNeeded = computed(() => enabled.value && (showOnCanvas.value || documentScope.value))
   // Stopped in dispose, so it needs no effect scope of its own.
   const pages = createPageChecks({
     graph: () => editor.graph,
@@ -172,8 +173,7 @@ export function createDesignCheck(editor: Editor, state: AppEditorState) {
 
   function publishMarkers() {
     const current = snapshot.value
-    const show =
-      preferences.value.showOnCanvas && current !== null && current.pageId === state.currentPageId
+    const show = showOnCanvas.value && current !== null && current.pageId === state.currentPageId
     editor.setDesignIssueMarkers(show ? markersForIssues(current.issues) : [])
   }
 
@@ -210,10 +210,12 @@ export function createDesignCheck(editor: Editor, state: AppEditorState) {
       () => state.sceneVersion,
       () => enabled.value && schedule()
     )
-    watch([snapshot, () => preferences.value.showOnCanvas], publishMarkers)
+    watch([snapshot, showOnCanvas], publishMarkers)
   })
 
   const unsubscribeGraph = editor.onEditorEvent('graph:replaced', () => {
+    // The next document shows its markers as the preference says.
+    markersMuted.value = false
     snapshot.value = null
     pageLint = null
     unwatchGraph()
@@ -264,6 +266,11 @@ export function createDesignCheck(editor: Editor, state: AppEditorState) {
     if (editor.applyLintFixes(requests) > 0) run()
   }
 
+  /** Keeps markers off the canvas for the open document; opening another one brings them back. */
+  function muteMarkers() {
+    markersMuted.value = true
+  }
+
   function dispose() {
     cancel()
     unsubscribeGraph()
@@ -285,6 +292,7 @@ export function createDesignCheck(editor: Editor, state: AppEditorState) {
     openIssue,
     openMarker,
     applyFixes,
+    muteMarkers,
     dispose
   }
 }

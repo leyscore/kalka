@@ -3,14 +3,14 @@ import { expect, spyOn, test } from 'bun:test'
 import { createEditor } from '@kalka/core/editor'
 import { SceneGraph } from '@kalka/scene-graph'
 
-import { fitDemoPagesOnFirstVisit } from '@/app/demo/viewport'
+import { fitDemoFirstScreen, fitDemoPagesOnFirstVisit } from '@/app/demo/viewport'
 
 test('fits only the first visit and preserves a custom viewport on return', async () => {
   const editor = createEditor()
   const originalPage = editor.state.currentPageId
   const next = editor.graph.addPage('Next')
   editor.graph.createNode('FRAME', next.id, { x: 1000, y: 1000, width: 100, height: 100 })
-  const fit = spyOn(editor, 'zoomToFit')
+  const fit = spyOn(editor, 'zoomToBounds')
   const stop = fitDemoPagesOnFirstVisit(editor, [next.id])
   try {
     await editor.switchPage(next.id)
@@ -34,7 +34,7 @@ test('stops fitting after the demo graph is replaced', async () => {
   const editor = createEditor()
   const replacement = new SceneGraph()
   const nextReplacement = replacement.addPage('User document')
-  const fit = spyOn(editor, 'zoomToFit')
+  const fit = spyOn(editor, 'zoomToBounds')
   const stop = fitDemoPagesOnFirstVisit(editor, [nextReplacement.id])
   try {
     editor.replaceGraph(replacement)
@@ -42,6 +42,24 @@ test('stops fitting after the demo graph is replaced', async () => {
     expect(fit).not.toHaveBeenCalled()
   } finally {
     stop()
+    fit.mockRestore()
+    editor.dispose()
+  }
+})
+
+test('frames the first screen of a long page instead of the whole page', () => {
+  const editor = createEditor()
+  editor.graph.createNode('FRAME', editor.state.currentPageId, {
+    x: 40,
+    y: 60,
+    width: 1440,
+    height: 7200
+  })
+  const fit = spyOn(editor, 'zoomToBounds')
+  try {
+    fitDemoFirstScreen(editor)
+    expect(fit).toHaveBeenCalledWith(40, 60, 1480, 960)
+  } finally {
     fit.mockRestore()
     editor.dispose()
   }
