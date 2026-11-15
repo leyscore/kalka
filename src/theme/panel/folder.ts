@@ -43,3 +43,15 @@ export const folderFileBar = tv({
     close: 'size-7 shrink-0 rounded-md'
   }
 })
+
+/** The versions as a timeline: a point for each on one line, the latest filled. */
+export const versionTimeline = tv({
+  slots: {
+    list: 'flex flex-col px-4 pb-4',
+    item: 'relative pb-3 pl-5 before:absolute before:top-2 before:bottom-[-6px] before:left-[4.5px] before:w-px before:bg-hairline last:pb-0 last:before:hidden',
+    point:
+      'absolute top-1 left-0 size-2.5 rounded-full border-[1.5px] border-accent bg-panel data-latest:bg-accent',
+    subject: 'truncate text-xs text-surface',
+    detail: 'truncate text-[11px] text-muted'
+  }
+})

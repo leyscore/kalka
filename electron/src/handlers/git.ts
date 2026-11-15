@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process'
-import { stat } from 'node:fs/promises'
-import { dirname, isAbsolute, relative, sep } from 'node:path'
+import { stat, writeFile } from 'node:fs/promises'
+import { dirname, isAbsolute, join, relative, sep } from 'node:path'
 
 import * as v from 'valibot'
 
@@ -17,6 +17,8 @@ const TIMEOUT_MS = 30_000
 const NETWORK_TIMEOUT_MS = 120_000
 const MAX_OUTPUT = 8 * 1024 * 1024
 const MAX_LOG = 200
+/** What a repository Kalka starts leaves out: the files macOS and Windows scatter in folders. */
+const IGNORED_AT_START = '.DS_Store\nThumbs.db\n'
 /** The one remote Kalka sets up and publishes to. */
 const REMOTE = 'origin'
 
@@ -56,6 +58,15 @@ async function configValue(cwd: string, key: string): Promise<string | null> {
     return (await git(cwd, ['config', '--get', key])).trim() || null
   } catch {
     return null
+  }
+}
+
+async function exists(path: string): Promise<boolean> {
+  try {
+    await stat(path)
+    return true
+  } catch {
+    return false
   }
 }
 
@@ -207,6 +218,9 @@ export const gitHandlers = {
   async init(_context: CallContext, documentPath: unknown): Promise<string> {
     const folder = await folderOf(v.parse(AbsolutePath, documentPath))
     await git(folder, ['init'])
+    // The files a computer leaves beside a design are not part of it.
+    const ignore = join(folder, '.gitignore')
+    if (!(await exists(ignore))) await writeFile(ignore, IGNORED_AT_START)
     return folder
   },
   /** Records the given changes, or all of the document's folder, as one commit. */

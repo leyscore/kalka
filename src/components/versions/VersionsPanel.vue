@@ -9,6 +9,7 @@ import { useEditorStore } from '@/app/editor/active-store'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import AppAlert from '@/components/ui/feedback/AppAlert.vue'
 import AppInput from '@/components/ui/input/AppInput.vue'
+import { versionTimeline } from '@/theme/panel/folder'
 
 const { panels } = useI18n()
 const store = useEditorStore()
@@ -29,6 +30,7 @@ const {
   canCommit
 } = versions
 
+const timeline = versionTimeline()
 const remoteURL = ref('')
 const identityName = ref('')
 const identityEmail = ref('')
@@ -208,10 +210,12 @@ const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', tim
         <h3 class="px-4 pt-1 pb-1.5 text-[11px] font-semibold text-muted">
           {{ panels.versionsHistory }}
         </h3>
-        <ol v-if="history.length" class="flex flex-col px-2 pb-4" data-test-id="versions-history">
-          <li v-for="commit in history" :key="commit.hash" class="rounded-md px-2 py-1.5">
-            <p class="truncate text-xs text-surface">{{ commit.subject }}</p>
-            <p class="truncate text-[11px] text-muted">
+        <!-- A timeline: each version a point on one line, the latest on top. -->
+        <ol v-if="history.length" :class="timeline.list()" data-test-id="versions-history">
+          <li v-for="(commit, index) in history" :key="commit.hash" :class="timeline.item()">
+            <span :class="timeline.point()" :data-latest="index === 0 || undefined" />
+            <p :class="timeline.subject()">{{ commit.subject }}</p>
+            <p :class="timeline.detail()">
               {{ commit.author }} · {{ dateFormat.format(commit.time * 1000) }}
             </p>
           </li>

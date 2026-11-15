@@ -27,7 +27,8 @@ type Operation = 'commit' | 'connect' | 'identity' | 'init' | 'pull' | 'push'
 /**
  * The versions panel's workflow for one document: whether its file is in a repository, what
  * changed, its history, and recording, fetching or publishing versions. Recording a version
- * saves the document first, so the version holds what is on screen.
+ * saves the document first, so the version holds what is on screen, and publishes it when the
+ * folder is connected to a remote.
  */
 export function useDocumentVersions(store: EditorStore) {
   const status = ref<GitStatus | null>(null)
@@ -107,6 +108,8 @@ export function useDocumentVersions(store: EditorStore) {
       if (store.hasUnsavedChanges()) await store.saveFigFile()
       await commitVersion(documentPath, message.value)
       message.value = ''
+      // Once the folder is connected online, a recorded version goes there too: nothing to remember.
+      if (remote.value) await pushVersions(documentPath)
     })
 
   // A save changes the file on disk: what changed is read again.

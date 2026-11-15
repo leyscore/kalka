@@ -14,7 +14,7 @@ const available = isTauri()
 
 <template>
   <div :class="styles.root()" data-test-id="history-panel">
-    <h3 :class="styles.heading()">{{ panels.versionsHistory }}</h3>
+    <h3 :class="styles.heading()">{{ panels.versions }}</h3>
     <VersionsPanel v-if="available" />
     <p v-else :class="styles.note()" data-test-id="folder-versions-desktop">
       {{ panels.folderVersionsDesktop }}
