@@ -7,7 +7,7 @@ import { tv } from 'tailwind-variants'
 export const panelRail = tv({
   slots: {
     root: 'flex w-11 shrink-0 flex-col items-center gap-1 py-2',
-    item: 'relative flex size-8 items-center justify-center rounded-lg text-muted outline-none transition-colors duration-150 hover:bg-hover hover:text-surface focus-visible:ring-1 focus-visible:ring-panel-focus data-active:bg-row-selected data-active:text-row-selected-text',
+    item: 'relative flex size-8 items-center justify-center rounded-lg text-muted outline-none transition-colors duration-150 hover:text-surface focus-visible:ring-1 focus-visible:ring-panel-focus data-active:text-row-selected-text',
     icon: 'size-4',
     divider: 'my-1 h-px w-5 bg-hairline',
     badge:

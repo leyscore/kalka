@@ -16,6 +16,10 @@ export const glidePills = {
   navActive: `rounded-[9px] bg-(--pill-active-bg) shadow-(--pill-active-shadow) ${glideMotion}`,
   /** The hover highlight in that navigation. */
   navHover: `rounded-[9px] bg-(--pill-hover-bg) ${glideMotion}`,
+  /** The open panel in the editor's rail and the open row of a panel's list: the selection color. */
+  selected: `rounded-lg bg-row-selected ${glideMotion}`,
+  /** The hover highlight beside it. */
+  selectedHover: `rounded-lg bg-hover ${glideMotion}`,
   /** The accent pill behind the active tool. */
   accent: `rounded-[9px] bg-accent ${glideMotion}`
 } as const

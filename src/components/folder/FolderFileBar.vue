@@ -6,7 +6,10 @@ import { useI18n } from '@kalka/vue'
 import {
   closeFolderFile,
   folderFileDraft,
+  folderFileMarkdown,
   folderFileMode,
+  isEditableFile,
+  isMarkdownFile,
   openFolderFile,
   saveFolderFile
 } from '@/app/document/folder/view'
@@ -46,8 +49,23 @@ async function save(): Promise<void> {
         { value: 'saved', label: panels.folderViewSaved }
       ]"
     />
+    <SegmentedControl
+      v-if="isMarkdownFile(openFolderFile)"
+      v-model="folderFileMarkdown"
+      required
+      size="md"
+      :label="openFolderFile.path"
+      data-test-id="folder-file-markdown"
+      :options="[
+        { value: 'preview', label: panels.folderViewPreview },
+        {
+          value: 'text',
+          label: isEditableFile(openFolderFile) ? panels.folderViewEdit : panels.folderViewSource
+        }
+      ]"
+    />
     <AppButton
-      v-if="openFolderFile.editablePath"
+      v-if="isEditableFile(openFolderFile)"
       size="xs"
       color="primary"
       variant="solid"

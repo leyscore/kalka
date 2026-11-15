@@ -18,6 +18,8 @@ export interface FolderFile {
    * instructions. Everything else is written by saving the document.
    */
   editablePath?: string
+  /** Keeps what the person wrote when the file is not one on this computer, such as their own skill. */
+  save?: (text: string) => void | Promise<void>
 }
 
 const IMAGE_TYPES: Record<string, string> = {
@@ -74,13 +76,30 @@ export function closeFolderFile(): void {
 /** What the person has typed in an editable file since it opened; null while nothing changed. */
 export const folderFileDraft = shallowRef<string | null>(null)
 
-/** Writes the draft to the file and makes it the file's content. */
+/** Whether the person may write this file in Kalka. */
+export function isEditableFile(file: FolderFile | null): boolean {
+  return Boolean(file?.editablePath || file?.save)
+}
+
+/** Whether a file is Markdown, which reads better drawn than as its source. */
+export function isMarkdownFile(file: FolderFile | null): boolean {
+  return Boolean(file && /\.md$/i.test(file.name))
+}
+
+/** A Markdown file opens as it reads; its text, to write it, is one press away. */
+export type MarkdownView = 'preview' | 'text'
+export const folderFileMarkdown = shallowRef<MarkdownView>('preview')
+
+/** Writes the draft where the file is kept and makes it the file's content. */
 export async function saveFolderFile(): Promise<void> {
   const file = openFolderFile.value
   const draft = folderFileDraft.value
-  if (!file?.editablePath || draft === null) return
-  const { writeTextFile } = await import('@tauri-apps/plugin-fs')
-  await writeTextFile(file.editablePath, draft)
+  if (!file || draft === null) return
+  if (file.save) await file.save(draft)
+  else if (file.editablePath) {
+    const { writeTextFile } = await import('@tauri-apps/plugin-fs')
+    await writeTextFile(file.editablePath, draft)
+  } else return
   openFolderFile.value = { ...file, bytes: new TextEncoder().encode(draft) }
   folderFileDraft.value = null
 }

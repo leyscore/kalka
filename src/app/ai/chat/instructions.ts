@@ -1,5 +1,6 @@
-import { withBuiltIn } from '@/app/document/instructions/catalog'
+import { withLibrary } from '@/app/document/instructions/catalog'
 import { findInvocations, type InstructionCatalog } from '@/app/document/instructions/invoke'
+import { libraryCatalog, librarySkills, skillLibrary } from '@/app/document/instructions/library'
 import {
   readDocument,
   readInstructionCatalog,
@@ -7,8 +8,8 @@ import {
   readStandingInstructions,
   hasInstructions
 } from '@/app/document/instructions/read'
-import { BUILT_IN_CATALOG, isStarterText } from '@/app/document/instructions/starter'
-import { BUILT_IN_SKILLS, skillBody, usedSkills } from '@/app/document/instructions/starter-skills'
+import { isStarterText } from '@/app/document/instructions/starter'
+import { skillBody, usedSkills } from '@/app/document/instructions/starter-skills'
 import type { EditorStore } from '@/app/editor/active-store'
 import { isTauri } from '@/app/tauri/env'
 
@@ -74,7 +75,10 @@ export async function readProjectInstructions(
     const path = store.getDocumentFilePath()
     // A document without an instructions folder still has the skills Kalka comes with.
     const folder = path && isTauri() && (await hasInstructions(path)) ? path : null
-    const catalog = folder ? withBuiltIn(await readInstructionCatalog(folder)) : BUILT_IN_CATALOG
+    const library = librarySkills(skillLibrary.value)
+    const catalog = folder
+      ? withLibrary(libraryCatalog.value, await readInstructionCatalog(folder))
+      : libraryCatalog.value
     const sections: InstructionSection[] = []
     if (folder && first) {
       for (const file of await readStandingInstructions(folder)) {
@@ -83,9 +87,9 @@ export async function readProjectInstructions(
         sections.push({ title: file.name, text: file.text })
       }
     }
-    /** A folder's own skill stands for Kalka's of the same name. */
+    /** A folder's own skill stands for the library's of the same name. */
     const skillText = async (name: string): Promise<string | undefined> =>
-      (folder ? (await readSkill(folder, name))?.text : undefined) ?? BUILT_IN_SKILLS[name]
+      (folder ? (await readSkill(folder, name))?.text : undefined) ?? library[name]
     const asked = findInvocations(request, catalog)
     // A skill brings the skills it relies on, each once, after the ones that were asked for.
     const wanted = [...asked.skills]

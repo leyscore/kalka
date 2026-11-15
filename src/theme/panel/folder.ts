@@ -11,13 +11,13 @@ export const folderPanel = tv({
     refresh: '-my-1 ms-auto size-6 rounded-md',
     note: 'px-4 pb-3 text-xs leading-relaxed text-muted',
     tree: 'flex min-h-0 flex-1 flex-col overflow-y-auto px-2 pb-2',
-    row: 'flex h-7 w-full shrink-0 cursor-pointer items-center gap-1.5 rounded-md pr-2 text-left text-xs text-surface outline-none transition-colors hover:bg-hover focus-visible:ring-1 focus-visible:ring-panel-focus',
+    row: 'flex h-7 w-full shrink-0 cursor-pointer items-center gap-1.5 rounded-md pr-2 text-left text-xs text-surface outline-none focus-visible:ring-1 focus-visible:ring-panel-focus',
     chevron: 'size-3 shrink-0 text-muted transition-transform duration-150 data-open:rotate-90',
     icon: 'size-3.5 shrink-0',
     name: 'min-w-0 flex-1 truncate data-[change=added]:text-success data-[change=conflict]:text-error data-[change=deleted]:text-error data-[change=modified]:text-primary',
     mark: 'w-3 shrink-0 text-center font-mono text-[11px] font-semibold data-[change=added]:text-success data-[change=conflict]:text-error data-[change=deleted]:text-error data-[change=modified]:text-primary',
     dot: 'size-1.5 shrink-0 rounded-full bg-primary',
-    selected: 'bg-row-selected text-row-selected-text hover:bg-row-selected'
+    selected: 'text-row-selected-text'
   },
   variants: {
     /**
@@ -53,6 +53,8 @@ export const folderFileView = tv({
     root: 'absolute inset-0 z-20 flex flex-col overflow-hidden bg-panel',
     editor:
       'min-h-0 flex-1 resize-none bg-transparent p-5 font-mono text-[13px] leading-relaxed text-surface outline-none',
+    preview:
+      'min-h-0 flex-1 overflow-y-auto px-8 py-6 text-[13px] leading-relaxed text-surface *:mx-auto *:max-w-[720px]',
     picture: 'grid min-h-0 flex-1 place-items-center overflow-auto p-6',
     image: 'max-h-full max-w-full object-contain',
     note: 'm-auto px-6 text-center text-xs text-muted'

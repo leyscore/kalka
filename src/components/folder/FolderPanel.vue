@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useTemplateRef } from 'vue'
+
 import { useI18n } from '@kalka/vue'
 
 import type { FolderRow } from '@/app/document/folder/tree'
@@ -12,6 +14,8 @@ import FolderEntryIcon from '@/components/folder/FolderEntryIcon.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import AppAlert from '@/components/ui/feedback/AppAlert.vue'
+import { useGlide } from '@/components/ui/motion/useGlide'
+import { glidePills } from '@/theme/motion/glide'
 import { FOLDER_INDENT, folderPanel } from '@/theme/panel/folder'
 
 const LETTERS = { added: 'A', conflict: '!', deleted: 'D', modified: 'M' } as const
@@ -23,6 +27,15 @@ const store = useEditorStore()
 const versions = isTauri() ? useDocumentVersions(store) : null
 const { source, rows, collapsed, error, toggle, refresh, read } = useDocumentFolder(store, versions)
 const styles = folderPanel()
+
+// The open file's pill slides to the one chosen; a soft one follows the pointer.
+const tree = useTemplateRef<HTMLElement>('tree')
+useGlide(tree, {
+  items: '[data-slot="row"]',
+  active: '[data-slot="row"][data-active]',
+  pillClass: glidePills.selected
+})
+useGlide(tree, { items: '[data-slot="row"]', hover: true, pillClass: glidePills.selectedHover })
 
 function indent(row: FolderRow): string {
   return FOLDER_INDENT[Math.min(row.depth, FOLDER_INDENT.length - 1)] ?? ''
@@ -74,7 +87,7 @@ async function open(row: FolderRow): Promise<void> {
         {{ menu.saveAsFolder }}
       </AppButton>
     </div>
-    <ul :class="styles.tree()" data-test-id="folder-tree">
+    <ul ref="tree" :class="styles.tree()" data-test-id="folder-tree">
       <li v-for="row in rows" :key="row.path">
         <button
           type="button"
@@ -83,6 +96,8 @@ async function open(row: FolderRow): Promise<void> {
             indent(row),
             openFolderFile?.path === row.path && styles.selected()
           ]"
+          data-slot="row"
+          :data-active="openFolderFile?.path === row.path || undefined"
           :data-kind="row.kind"
           :aria-expanded="row.kind === 'folder' ? !collapsed.has(row.path) : undefined"
           :aria-label="row.name"

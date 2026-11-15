@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 
-import { withBuiltIn } from '@/app/document/instructions/catalog'
+import { withLibrary } from '@/app/document/instructions/catalog'
 import { findInvocations, matchSuggestions, suggestionAt } from '@/app/document/instructions/invoke'
+import { librarySkills, parseSkillLibrary, skillSlug } from '@/app/document/instructions/library'
 import { BUILT_IN_SKILLS, skillBody, usedSkills } from '@/app/document/instructions/starter-skills'
 
 const catalog = { skills: ['critique', 'landing-page'], documents: ['brief.md', 'offers.md'] }
@@ -53,12 +54,38 @@ describe('built-in skills', () => {
     expect(usedSkills('# Page\n\nDraw it.')).toEqual([])
   })
 
-  test("a folder adds its skills to Kalka's and may replace one by name", () => {
+  test('a folder adds its skills to those of the library and may replace one by name', () => {
+    const library = { skills: ['direction', 'critique'], documents: [] }
     const own = { skills: ['critique', 'pricing-page'], documents: ['brief.md'] }
-    const merged = withBuiltIn(own)
-    expect(merged.skills.filter((name) => name === 'critique')).toHaveLength(1)
-    expect(merged.skills).toContain('pricing-page')
-    expect(merged.skills).toContain('direction')
-    expect(merged.documents).toEqual(['brief.md'])
+    expect(withLibrary(library, own)).toEqual({
+      skills: ['direction', 'critique', 'pricing-page'],
+      documents: ['brief.md']
+    })
+  })
+})
+
+describe('skill library', () => {
+  test('a skill turned off is not on offer, and an own skill stands for one of the same name', () => {
+    const skills = librarySkills({
+      own: { critique: 'Mine.', pricing: 'Prices.' },
+      disabled: ['polish']
+    })
+    expect(skills.polish).toBeUndefined()
+    expect(skills.critique).toBe('Mine.')
+    expect(skills.pricing).toBe('Prices.')
+    expect(skills.direction).toBe(BUILT_IN_SKILLS.direction)
+  })
+
+  test('a stored library that does not read starts over empty', () => {
+    expect(parseSkillLibrary('not json')).toEqual({ own: {}, disabled: [] })
+    expect(parseSkillLibrary('{"own":{"a":"b"},"disabled":["polish"]}')).toEqual({
+      own: { a: 'b' },
+      disabled: ['polish']
+    })
+  })
+
+  test('a name becomes what is typed after a slash', () => {
+    expect(skillSlug('  Pricing Page! ')).toBe('pricing-page')
+    expect(skillSlug('---')).toBe('')
   })
 })

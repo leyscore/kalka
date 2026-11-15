@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, useTemplateRef } from 'vue'
 
 import { useDesignCheckMessages, useI18n } from '@kalka/vue'
 
@@ -8,7 +8,9 @@ import { countIssues } from '@/app/editor/design-check/issues'
 import { openVariablesDialog } from '@/app/editor/tokens/dialog'
 import { openSettingsDialog } from '@/app/settings/dialog'
 import { useLeftPanel } from '@/app/shell/left-panel/use'
+import { useGlide } from '@/components/ui/motion/useGlide'
 import Tip from '@/components/ui/overlay/Tip.vue'
+import { glidePills } from '@/theme/motion/glide'
 import { panelRail } from '@/theme/panel/rail'
 
 const { panels, settings } = useI18n()
@@ -30,10 +32,16 @@ const checkLabel = computed(() =>
 )
 
 const rail = panelRail()
+
+// The open panel's pill slides to the one chosen; a soft one follows the pointer.
+const root = useTemplateRef<HTMLElement>('root')
+useGlide(root, { items: 'button', active: 'button[data-active]', pillClass: glidePills.selected })
+useGlide(root, { items: 'button', hover: true, pillClass: glidePills.selectedHover })
 </script>
 
 <template>
   <div
+    ref="root"
     role="tablist"
     aria-orientation="vertical"
     :aria-label="panels.layers"

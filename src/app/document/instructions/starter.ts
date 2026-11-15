@@ -1,6 +1,5 @@
 import { joinFolderPath } from '@/app/document/io/kalka-folder'
 
-import type { InstructionCatalog } from './invoke'
 import { INSTRUCTIONS_DIR, RULES_FILE, SUMMARY_FILE } from './layout'
 import { BUILT_IN_SKILLS } from './starter-skills'
 
@@ -85,12 +84,6 @@ export const STARTER_INSTRUCTIONS: ReadonlyMap<string, string> = new Map([
   [`${INSTRUCTIONS_DIR}/${SUMMARY_FILE}`, SUMMARY],
   [`${INSTRUCTIONS_DIR}/${RULES_FILE}`, RULES]
 ])
-
-/** What every document offers: the skills Kalka comes with, and no documents of its own yet. */
-export const BUILT_IN_CATALOG: InstructionCatalog = {
-  skills: Object.keys(BUILT_IN_SKILLS),
-  documents: []
-}
 
 const STARTER_TEXTS = new Set([...STARTER_INSTRUCTIONS.values()].map((text) => text.trim()))
 

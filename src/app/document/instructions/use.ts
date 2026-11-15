@@ -1,12 +1,13 @@
 import { useEventListener } from '@vueuse/core'
 import { computed, ref, shallowRef } from 'vue'
 
-import { openFolderFile, type FolderFile } from '@/app/document/folder/view'
+import { folderFileMarkdown, openFolderFile, type FolderFile } from '@/app/document/folder/view'
 import { joinFolderPath } from '@/app/document/io/kalka-folder'
 import type { EditorStore } from '@/app/editor/active-store'
 import { isTauri } from '@/app/tauri/env'
 
-import { DOCUMENTS_DIR, INSTRUCTIONS_DIR, SKILLS_DIR } from './layout'
+import { DOCUMENTS_DIR, INSTRUCTIONS_DIR } from './layout'
+import { removeOwnSkill, saveOwnSkill, setSkillEnabled, skillLibrary, skillSlug } from './library'
 import { hasInstructions, listInstructions, type InstructionListing } from './read'
 import { startInstructions } from './starter'
 import { BUILT_IN_SKILLS, skillBody } from './starter-skills'
@@ -29,7 +30,15 @@ export function useInstructions(store: EditorStore) {
   const state = ref<InstructionsState>('none')
   const listing = shallowRef<InstructionListing>(NOTHING)
   const error = ref('')
-  const builtIn = Object.keys(BUILT_IN_SKILLS)
+  /** Kalka's skills, each with whether the person left it on. */
+  const kalka = computed(() =>
+    Object.keys(BUILT_IN_SKILLS).map((name) => ({
+      name,
+      enabled: !skillLibrary.value.disabled.includes(name)
+    }))
+  )
+  /** The person's own skills, the same in every document. */
+  const own = computed(() => Object.keys(skillLibrary.value.own).toSorted())
   /** Kalka's skills a file of the folder stands for, by name. */
   const replaced = computed(
     () => new Set(listing.value.skills.map((file) => file.replace(/\.(md|txt)$/i, '')))
@@ -74,6 +83,34 @@ export function useInstructions(store: EditorStore) {
     openFolderFile.value = file
   }
 
+  /** Opens one of the person's own skills, to read and to write; it is kept in the app. */
+  function openOwn(name: string): void {
+    const text = skillLibrary.value.own[name]
+    if (text === undefined) return
+    openFolderFile.value = {
+      path: `/${name}`,
+      name: `${name}.md`,
+      kind: 'text',
+      bytes: encoder.encode(text),
+      save: (next) => saveOwnSkill(name, next)
+    }
+  }
+
+  /** Starts a skill of the person's own and opens it ready to write. Returns whether it did. */
+  function addOwn(title: string): boolean {
+    const name = skillSlug(title)
+    if (!name) return false
+    if (skillLibrary.value.own[name] === undefined) saveOwnSkill(name, `# ${title.trim()}\n\n`)
+    openOwn(name)
+    folderFileMarkdown.value = 'text'
+    return true
+  }
+
+  function removeOwn(name: string): void {
+    if (openFolderFile.value?.path === `/${name}`) openFolderFile.value = null
+    removeOwnSkill(name)
+  }
+
   /** Opens a file of the folder's instructions, to read and to write. */
   async function open(relative: string): Promise<void> {
     if (!folder.value) return
@@ -104,23 +141,19 @@ export function useInstructions(store: EditorStore) {
     }
   }
 
-  /** Adds an empty file to the project's own skills or documents, and opens it. */
-  async function add(kind: 'skill' | 'document', name: string): Promise<void> {
-    const clean = name
-      .trim()
-      .toLowerCase()
-      .replaceAll(/[^a-z0-9-]+/g, '-')
-      .replaceAll(/^-+|-+$/g, '')
-    if (!folder.value || !clean) return
-    const directory = kind === 'skill' ? SKILLS_DIR : DOCUMENTS_DIR
+  /** Adds an empty document to the project and opens it ready to write. */
+  async function addDocument(title: string): Promise<void> {
+    const name = skillSlug(title)
+    if (!folder.value || !name) return
     try {
       const { exists, mkdir, writeTextFile } = await import('@tauri-apps/plugin-fs')
-      const root = joinFolderPath(folder.value, `${INSTRUCTIONS_DIR}/${directory}`)
+      const root = joinFolderPath(folder.value, `${INSTRUCTIONS_DIR}/${DOCUMENTS_DIR}`)
       await mkdir(root, { recursive: true })
-      const file = joinFolderPath(root, `${clean}.md`)
-      if (!(await exists(file))) await writeTextFile(file, `# ${name.trim()}\n\n`)
+      const file = joinFolderPath(root, `${name}.md`)
+      if (!(await exists(file))) await writeTextFile(file, `# ${title.trim()}\n\n`)
       await refresh()
-      await open(`${directory}/${clean}.md`)
+      await open(`${DOCUMENTS_DIR}/${name}.md`)
+      folderFileMarkdown.value = 'text'
     } catch (cause) {
       error.value = cause instanceof Error ? cause.message : String(cause)
     }
@@ -129,5 +162,21 @@ export function useInstructions(store: EditorStore) {
   useEventListener(window, 'focus', () => void refresh())
   void refresh()
 
-  return { state, listing, builtIn, replaced, error, refresh, openBuiltIn, open, start, add }
+  return {
+    state,
+    listing,
+    kalka,
+    own,
+    replaced,
+    error,
+    refresh,
+    openBuiltIn,
+    openOwn,
+    addOwn,
+    removeOwn,
+    setSkillEnabled,
+    open,
+    start,
+    addDocument
+  }
 }

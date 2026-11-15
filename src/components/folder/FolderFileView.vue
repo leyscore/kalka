@@ -7,11 +7,15 @@ import { useI18n } from '@kalka/vue'
 import {
   closeFolderFile,
   folderFileDraft,
+  folderFileMarkdown,
   folderFileMode,
+  isEditableFile,
+  isMarkdownFile,
   imageType,
   openFolderFile
 } from '@/app/document/folder/view'
 import { useLeftPanel } from '@/app/shell/left-panel/use'
+import ChatMarkdown from '@/components/chat/ChatMarkdown.vue'
 import { folderFileView } from '@/theme/panel/folder'
 
 const CodeEditor = defineAsyncComponent(() => import('@/components/code-editor/CodeEditor.vue'))
@@ -61,9 +65,17 @@ onKeyStroke('Escape', () => {
     data-canvas-obstacle
     :class="styles.root()"
   >
-    <!-- The folder's instructions are the person's to write, here, as plain text. -->
+    <!-- Markdown shows as it reads; its text is for writing it. -->
+    <div
+      v-if="text !== null && isMarkdownFile(file) && folderFileMarkdown === 'preview'"
+      data-test-id="folder-file-preview"
+      :class="styles.preview()"
+    >
+      <ChatMarkdown :content="folderFileDraft ?? text" />
+    </div>
+    <!-- The person's own files are theirs to write, here, as plain text. -->
     <textarea
-      v-if="text !== null && file.editablePath"
+      v-else-if="text !== null && isEditableFile(file)"
       :value="folderFileDraft ?? text"
       :aria-label="file.path"
       spellcheck="false"

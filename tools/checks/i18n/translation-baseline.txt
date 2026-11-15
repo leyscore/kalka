@@ -145,6 +145,7 @@ fr:panels.dimensions
 fr:panels.direction
 fr:panels.documentation
 fr:panels.export
+fr:panels.folderViewSource
 fr:panels.framePresetCategoryFigmaCommunity
 fr:panels.image
 fr:panels.instructions
