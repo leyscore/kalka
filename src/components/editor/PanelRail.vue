@@ -8,7 +8,6 @@ import { countIssues } from '@/app/editor/design-check/issues'
 import { openVariablesDialog } from '@/app/editor/tokens/dialog'
 import { openSettingsDialog } from '@/app/settings/dialog'
 import { useLeftPanel } from '@/app/shell/left-panel/use'
-import { isTauri } from '@/app/tauri/env'
 import Tip from '@/components/ui/overlay/Tip.vue'
 import { panelRail } from '@/theme/panel/rail'
 
@@ -16,8 +15,6 @@ const { panels, settings } = useI18n()
 const checkMessages = useDesignCheckMessages()
 const store = useEditorStore()
 const { activePanel, show, toggleAgent } = useLeftPanel()
-// The folder and its versions are read from this computer, so only the desktop app offers them.
-const hasFolder = isTauri()
 
 /** Errors and warnings on the current page; suggestions do not earn an indicator. */
 const problemCount = computed(() => {
@@ -56,7 +53,7 @@ const rail = panelRail()
         :class="rail.item()"
         @click="toggleAgent"
       >
-        <icon-hugeicons-bot :class="rail.icon()" />
+        <icon-hugeicons-sparkle :class="rail.icon()" />
       </button>
     </Tip>
     <div aria-hidden="true" :class="rail.divider()" />
@@ -118,7 +115,7 @@ const rail = panelRail()
         <icon-hugeicons-code :class="rail.icon()" />
       </button>
     </Tip>
-    <Tip v-if="hasFolder" :label="panels.folder" side="right">
+    <Tip :label="panels.folder" side="right">
       <button
         type="button"
         role="tab"

@@ -21,6 +21,7 @@ import CanvasSplitRoot from '@/components/canvas/CanvasSplitRoot.vue'
 import ActiveRoomOverlay from '@/components/collab-room/ActiveRoomOverlay.vue'
 import { useRoomActions } from '@/components/collab-room/useRoomActions'
 import EditorCanvas from '@/components/EditorCanvas.vue'
+import FolderFileView from '@/components/folder/FolderFileView.vue'
 import LayersPanel from '@/components/LayersPanel.vue'
 import MobileDrawer from '@/components/MobileDrawer.vue'
 import MobileHud from '@/components/MobileHud/MobileHud.vue'
@@ -108,6 +109,7 @@ const { pending: roomPending } = useRoomActions()
           <div class="@container/canvas relative flex min-w-0 flex-1">
             <CanvasSplitRoot />
             <ActiveRoomOverlay />
+            <FolderFileView />
             <Toolbar />
           </div>
         </SplitterPanel>

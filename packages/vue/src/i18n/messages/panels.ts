@@ -38,9 +38,10 @@ export const panelMessageDefaults = {
   }),
   breakpointReset: 'Reset',
   folder: 'Folder',
-  folderUnsaved: 'Save the document on this computer to see its folder.',
-  folderArchive: 'This document is a single .kalka file. Save it as a folder to see its files.',
-  folderReveal: params('Show {name} on the computer'),
+  folderGenerated: 'The folder Kalka writes when this document is saved as one.',
+  folderVersionsDesktop:
+    'Versions use Git on your computer. Open this document in the desktop app to keep and publish them.',
+  folderNoPreview: 'This file has no preview.',
   versions: 'Versions',
   versionsUnsaved: 'Save the document on this computer to keep its versions.',
   versionsUntracked:

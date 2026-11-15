@@ -169,7 +169,8 @@ ja:panels.behaviourAddVariants
 ja:panels.colorHintHsb
 ja:panels.colorHintHsl
 ja:panels.colorHintOkhcl
-ja:panels.folderArchive
+ja:panels.folderGenerated
+ja:panels.folderVersionsDesktop
 ja:panels.libraryId
 ja:panels.localFontsAccessHint
 ja:panels.sizingFillFr
@@ -368,7 +369,8 @@ zh-cn:panels.behaviourAddVariants
 zh-cn:panels.colorHintHsb
 zh-cn:panels.colorHintHsl
 zh-cn:panels.colorHintOkhcl
-zh-cn:panels.folderArchive
+zh-cn:panels.folderGenerated
+zh-cn:panels.folderVersionsDesktop
 zh-cn:panels.libraryId
 zh-cn:panels.localFontsAccessHint
 zh-cn:panels.sizingFillFr
