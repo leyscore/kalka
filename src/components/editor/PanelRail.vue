@@ -130,6 +130,21 @@ const rail = panelRail()
         <icon-hugeicons-folder-01 :class="rail.icon()" />
       </button>
     </Tip>
+    <Tip :label="panels.versionsHistory" side="right">
+      <button
+        type="button"
+        role="tab"
+        data-test-id="left-panel-history-tab"
+        :aria-label="panels.versionsHistory"
+        :aria-selected="activePanel === 'history'"
+        :data-state="activePanel === 'history' ? 'active' : 'inactive'"
+        :data-active="activePanel === 'history' || undefined"
+        :class="rail.item()"
+        @click="show('history')"
+      >
+        <icon-hugeicons-transaction-history :class="rail.icon()" />
+      </button>
+    </Tip>
     <Tip :label="checkLabel" side="right">
       <button
         type="button"

@@ -1,8 +1,8 @@
 import { tv } from 'tailwind-variants'
 
 /**
- * The folder panel: the document's files as a tree, each row marked with what Git says changed,
- * above the versions the folder keeps.
+ * The folder panel: the document's files as a tree, each row marked with what Git says changed.
+ * The history panel beside it shares its heading and notes.
  */
 export const folderPanel = tv({
   slots: {

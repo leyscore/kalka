@@ -15,6 +15,7 @@ import DesignCheckPanel from './design-check/DesignCheckPanel.vue'
 import FolderPanel from './folder/FolderPanel.vue'
 import LayerTree from './LayerTree/LayerTree.vue'
 import PagesPanel from './PagesPanel.vue'
+import HistoryPanel from './versions/HistoryPanel.vue'
 
 const { panels } = useI18n()
 const { activePanel } = useLeftPanel()
@@ -33,6 +34,7 @@ const splitterStyles = tv(splitterTheme)({ direction: 'vertical' })
     <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
       <AssetsPanel v-if="activePanel === 'assets'" />
       <FolderPanel v-else-if="activePanel === 'folder'" />
+      <HistoryPanel v-else-if="activePanel === 'history'" />
       <SplitterGroup
         v-else-if="activePanel === 'file'"
         direction="vertical"
