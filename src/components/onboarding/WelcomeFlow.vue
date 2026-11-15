@@ -8,147 +8,130 @@ import { useCollabIdentity } from '@/app/collab/identity'
 import {
   closeWelcome,
   closeWelcomeForAIChat,
-  WELCOME_STEPS,
   welcomeOpen,
   welcomeStep
 } from '@/app/onboarding/welcome'
-import {
-  appPreferences,
-  updateOnboarding,
-  type OnboardingRole
-} from '@/app/settings/preferences/store'
 import BrandMark from '@/components/brand/BrandMark.vue'
 import AppBackdrop from '@/components/shell/AppBackdrop.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
+import { welcomeScreen } from '@/theme/onboarding'
 
-import WelcomeArt from './WelcomeArt.vue'
 import WelcomeStepClaude from './WelcomeStepClaude.vue'
-import WelcomeStepPreferences from './WelcomeStepPreferences.vue'
-import WelcomeStepRole from './WelcomeStepRole.vue'
 
 const { welcome } = useI18n()
-const role = ref<OnboardingRole>(appPreferences.value.onboarding.role ?? 'design')
 const identity = useCollabIdentity()
 const name = ref(identity.hasChosenName.value ? identity.name.value : '')
+const styles = computed(() => welcomeScreen({ step: welcomeStep.value }))
 
-const index = computed(() => WELCOME_STEPS.indexOf(welcomeStep.value))
-const heading = computed(() => {
-  const w = welcome.value
-  return { role: w.title, preferences: w.preferencesTitle, claude: w.claudeTitle }[
-    welcomeStep.value
-  ]
-})
-const intro = computed(() => {
-  const w = welcome.value
-  return { role: w.intro, preferences: w.preferencesIntro, claude: w.claudeIntro }[
-    welcomeStep.value
-  ]
-})
-const width = computed(
-  () =>
-    ({ role: 'max-w-[520px]', preferences: 'max-w-[880px]', claude: 'max-w-[1180px]' })[
-      welcomeStep.value
-    ]
-)
+/** The name is the one collaborators see, kept on this computer like the rest. */
+function keepName(): void {
+  if (name.value.trim()) identity.setName(name.value)
+}
 
-function go(offset: number): void {
-  if (welcomeStep.value === 'role') {
-    updateOnboarding({ role: role.value })
-    // The name is the one collaborators see, kept on this computer like the rest.
-    if (name.value.trim()) identity.setName(name.value)
-  }
-  const next = WELCOME_STEPS[index.value + offset]
-  if (next) welcomeStep.value = next
-  else closeWelcome()
+function connectAgent(): void {
+  keepName()
+  closeWelcomeForAIChat()
+}
+
+function finish(): void {
+  keepName()
+  closeWelcome()
+}
+
+function showMCP(): void {
+  keepName()
+  welcomeStep.value = 'claude'
 }
 
 function onOpenChange(open: boolean): void {
-  if (!open) closeWelcome()
+  if (!open) finish()
 }
 </script>
 
 <template>
   <DialogRoot :open="welcomeOpen" @update:open="onOpenChange">
     <DialogPortal>
-      <DialogContent
-        class="fixed inset-0 z-[45] isolate flex overflow-y-auto text-surface outline-none animate-in fade-in duration-300"
-        data-test-id="welcome"
-      >
-        <AppBackdrop drift />
-        <div
-          v-if="welcomeStep === 'role'"
-          class="sticky top-0 hidden h-dvh w-1/2 shrink-0 items-center justify-center bg-brand-blue p-[8%] lg:flex"
+      <DialogContent :class="styles.root()" data-test-id="welcome">
+        <AppBackdrop drift lights="home" />
+        <AppButton
+          size="lg"
+          variant="link"
+          :class="styles.skip()"
+          data-test-id="welcome-skip"
+          @click="finish"
         >
-          <WelcomeArt class="max-w-[480px] animate-in fade-in zoom-in-95 duration-700" />
-        </div>
+          {{ welcome.skipSetup }}
+        </AppButton>
+        <form
+          v-if="welcomeStep === 'start'"
+          :class="styles.column()"
+          @submit.prevent="connectAgent"
+        >
+          <BrandMark variant="app-icon" decorative :class="styles.mark()" />
+          <DialogTitle :class="styles.title()">{{ welcome.title }}</DialogTitle>
+          <DialogDescription :class="styles.intro()">{{ welcome.intro }}</DialogDescription>
 
-        <div class="flex min-h-dvh flex-1 flex-col px-6 py-10 sm:px-12 lg:px-16">
-          <div
-            :key="welcomeStep"
-            class="mx-auto flex w-full flex-1 flex-col justify-center animate-in fade-in slide-in-from-bottom-2 duration-300"
-            :class="width"
-          >
-            <BrandMark
-              v-if="welcomeStep === 'role'"
-              variant="app-icon"
-              decorative
-              class="mb-8 size-12"
+          <label :class="styles.field()">
+            <span :class="styles.label()">{{ welcome.nameLabel }}</span>
+            <input
+              v-model="name"
+              type="text"
+              name="given-name"
+              autocomplete="given-name"
+              maxlength="40"
+              :placeholder="welcome.namePlaceholder"
+              :class="styles.input()"
+              data-test-id="welcome-name"
             />
-            <p class="mb-3 text-[11px] font-semibold tracking-[0.08em] text-primary uppercase">
-              {{ welcome.stepOf({ current: index + 1, total: WELCOME_STEPS.length }) }}
-            </p>
-            <DialogTitle
-              class="font-display text-[clamp(32px,4vw,46px)] leading-[1.05] font-semibold tracking-[-0.035em] text-balance text-surface"
-            >
-              {{ heading }}
-            </DialogTitle>
-            <DialogDescription
-              class="mt-4 max-w-[60ch] text-[15px] leading-relaxed text-pretty text-muted"
-            >
-              {{ intro }}
-            </DialogDescription>
+            <span :class="styles.hint()">{{ welcome.nameHint }}</span>
+          </label>
 
-            <div class="mt-9">
-              <WelcomeStepRole v-if="welcomeStep === 'role'" v-model="role" v-model:name="name" />
-              <WelcomeStepPreferences v-else-if="welcomeStep === 'preferences'" />
-              <WelcomeStepClaude v-else />
-            </div>
-
-            <footer class="mt-10 flex items-center gap-3">
-              <AppButton v-if="index > 0" size="lg" variant="link" @click="go(-1)">
-                {{ welcome.back }}
-              </AppButton>
-              <div class="flex flex-1 items-center gap-1.5" :class="index > 0 && 'justify-center'">
-                <span
-                  v-for="(step, dot) in WELCOME_STEPS"
-                  :key="step"
-                  class="h-1.5 rounded-full transition-all duration-300"
-                  :class="dot === index ? 'w-6 bg-accent' : 'w-1.5 bg-border'"
-                />
-              </div>
+          <div :class="styles.actions()">
+            <div :class="styles.buttons()">
               <AppButton
-                v-if="welcomeStep === 'claude'"
-                size="lg"
-                variant="link"
-                @click="closeWelcomeForAIChat"
-              >
-                {{ welcome.setUpChat }}
-              </AppButton>
-              <AppButton size="lg" variant="link" data-test-id="welcome-skip" @click="closeWelcome">
-                {{ welcomeStep === 'claude' ? welcome.skipForNow : welcome.skipSetup }}
-              </AppButton>
-              <AppButton
+                type="submit"
                 size="lg"
                 color="primary"
                 variant="solid"
-                class="h-10 rounded-[9px] px-5 text-[13px] font-semibold"
+                :class="styles.primary()"
                 data-test-id="welcome-continue"
-                @click="go(1)"
               >
-                {{ welcomeStep === 'claude' ? welcome.startDesigning : welcome.continue }}
+                <template #leading><icon-hugeicons-bot class="size-4" /></template>
+                {{ welcome.connectAgent }}
               </AppButton>
-            </footer>
+              <AppButton
+                size="lg"
+                variant="outline"
+                :class="styles.secondary()"
+                data-test-id="welcome-mcp"
+                @click="showMCP"
+              >
+                {{ welcome.connectMCP }}
+              </AppButton>
+            </div>
+            <p :class="styles.hint()">{{ welcome.connectAgentHint }}</p>
           </div>
+        </form>
+
+        <div v-else :class="styles.column()">
+          <DialogTitle :class="styles.title()">{{ welcome.claudeTitle }}</DialogTitle>
+          <DialogDescription :class="styles.intro()">{{ welcome.claudeIntro }}</DialogDescription>
+          <WelcomeStepClaude class="mt-4" />
+          <footer :class="styles.footer()">
+            <AppButton size="lg" variant="link" @click="welcomeStep = 'start'">
+              {{ welcome.back }}
+            </AppButton>
+            <div class="flex-1" />
+            <AppButton
+              size="lg"
+              color="primary"
+              variant="solid"
+              class="h-10 rounded-[9px] px-5 text-[13px] font-semibold"
+              @click="finish"
+            >
+              {{ welcome.startDesigning }}
+            </AppButton>
+          </footer>
         </div>
       </DialogContent>
     </DialogPortal>

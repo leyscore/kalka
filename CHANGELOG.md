@@ -12,6 +12,7 @@
 - An icon rail at the left edge switches the left panel between Layers and Assets, then Code, Versions, and the design check with its problem count. Code and the design check open there instead of in the right panel.
 - The editor is neutral: no colored light behind the canvas and opaque panels, so the app's own colors never tint the design. Home keeps the brand backdrop.
 - Home opens on the Kalka mark, the greeting, and the request to the agent centered on the backdrop, with joining a room, opening a file, and a new blank design under it. Its sidebar is the same icon rail as the editor's.
+- The welcome is one screen instead of three steps: your name and one button that connects the agent already on your computer, with driving Kalka over MCP beside it and skipping in the corner. Theme and code format stay in Settings.
 
 ### Fixed
 

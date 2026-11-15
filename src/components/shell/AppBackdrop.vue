@@ -8,14 +8,20 @@ import { activeTab } from '@/app/tabs'
  * grain. Panels are frosted glass over it. On Home the lights sit toward the middle of the page;
  * in the editor they move to the edges, behind the side panels. It drifts only where asked:
  * glass over moving light is recomputed every frame. With reduced effects the lights are plain
- * gradients, without the blur that costs most without a GPU (`src/app/shell/effects/`).
+ * gradients, without the blur that costs most without a GPU (`src/app/shell/effects/`). A full
+ * screen such as the welcome asks for Home's lights whatever tab is behind it.
  */
-const { drift = false, fill = 'fixed' } = defineProps<{
+const {
+  drift = false,
+  fill = 'fixed',
+  lights
+} = defineProps<{
   drift?: boolean
   fill?: 'fixed' | 'absolute'
+  lights?: 'home' | 'editor'
 }>()
 
-const layout = computed(() => (activeTab.value?.kind === 'home' ? 'home' : 'editor'))
+const layout = computed(() => lights ?? (activeTab.value?.kind === 'home' ? 'home' : 'editor'))
 </script>
 
 <template>
