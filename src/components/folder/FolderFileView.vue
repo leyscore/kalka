@@ -41,11 +41,11 @@ const close = closeFolderFile
 function onEdit(event: Event): void {
   if (event.target instanceof HTMLTextAreaElement) folderFileDraft.value = event.target.value
 }
-// The file belongs to the folder panel: leaving it for layers, code or the agent gives the canvas
-// back, and so does leaving this document.
+// The file belongs to the folder and instructions panels: leaving them for layers, code or the
+// agent gives the canvas back, and so does leaving this document.
 const { activePanel } = useLeftPanel()
 watch(activePanel, (panel) => {
-  if (panel !== 'folder') close()
+  if (panel !== 'folder' && panel !== 'instructions') close()
 })
 onScopeDispose(close)
 onKeyStroke('Escape', () => {

@@ -44,7 +44,7 @@ describe('parseAppPreferences', () => {
       designCheck: { preset: 'strict', disabledRules: ['contrast', 7, 'contrast', 'spacing'] }
     })
     expect(designCheck).toEqual({
-      showOnCanvas: true,
+      showOnCanvas: DEFAULT_APP_PREFERENCES.designCheck.showOnCanvas,
       preset: 'strict',
       disabledRules: ['contrast', 'spacing']
     })

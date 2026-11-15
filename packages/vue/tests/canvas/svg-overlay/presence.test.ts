@@ -32,12 +32,12 @@ describe('presence overlay', () => {
     expect(outline.type === 'polygon' && outline.stroke).toBe(WHITE)
     expect(fill.type === 'polygon' && fill.fill).toBe(css(RED))
     expect(pill.type === 'rect' && [pill.x, pill.y, pill.width, pill.height]).toEqual([
-      28, 40, 26, 14
+      30, 43, 32, 19
     ])
     expect(text.type === 'text' && [text.text, text.fill]).toEqual(['Ada', WHITE])
   })
 
-  test('an agent pill is outlined with a sparkle; peers outline their selection', () => {
+  test('an agent tag is filled, with a sparkle before the name; peers outline their selection', () => {
     const graph = new SceneGraph()
     const page = graph.getPages()[0].id
     const frame = graph.createNode('FRAME', page, { x: 0, y: 0, width: 10, height: 10 })
@@ -59,12 +59,12 @@ describe('presence overlay', () => {
       12, 22, 4
     ])
     expect(selected.type === 'polygon' && selected.points).toEqual([10, 20, 30, 20, 30, 40, 10, 40])
-    const pill = shapes.find((shape) => shape.type === 'rect' && shape.rx === 4)
-    expect(pill?.type === 'rect' && [pill.fill, pill.stroke]).toEqual([WHITE, css(RED)])
-    // Name + sparkle badge (11) + padding.
-    expect(pill?.type === 'rect' && pill.width).toBe(18 + 11 + 8)
+    const pill = shapes.find((shape) => shape.type === 'rect' && shape.rx === 7)
+    expect(pill?.type === 'rect' && [pill.fill, pill.stroke]).toEqual([css(RED), undefined])
+    // Name + sparkle badge (12) + padding.
+    expect(pill?.type === 'rect' && pill.width).toBe(18 + 12 + 14)
     const text = shapes.find((shape) => shape.type === 'text')
-    expect(text?.type === 'text' && text.fill).toBe(css(RED))
+    expect(text?.type === 'text' && text.fill).toBe(WHITE)
   })
 
   test('long names end with an ellipsis within the maximum width', () => {

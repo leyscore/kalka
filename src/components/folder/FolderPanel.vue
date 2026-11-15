@@ -1,17 +1,14 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-
 import { useI18n } from '@kalka/vue'
 
 import type { FolderRow } from '@/app/document/folder/tree'
 import { useDocumentFolder } from '@/app/document/folder/use'
-import { openFolderFile } from '@/app/document/folder/view'
-import { INSTRUCTIONS_DIR } from '@/app/document/instructions/layout'
-import { startInstructions as writeStarterInstructions } from '@/app/document/instructions/starter'
+import { folderEntryType, openFolderFile } from '@/app/document/folder/view'
 import { useDocumentVersions } from '@/app/document/versions/use'
 import { useEditorStore } from '@/app/editor/active-store'
 import { saveAsFolderDialog } from '@/app/shell/menu/files'
 import { isTauri } from '@/app/tauri/env'
+import FolderEntryIcon from '@/components/folder/FolderEntryIcon.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import AppAlert from '@/components/ui/feedback/AppAlert.vue'
@@ -24,10 +21,7 @@ const store = useEditorStore()
 // Git runs on this computer: the desktop app reads the repository for the tree's marks, a browser
 // does not.
 const versions = isTauri() ? useDocumentVersions(store) : null
-const { source, folder, rows, collapsed, error, toggle, refresh, read } = useDocumentFolder(
-  store,
-  versions
-)
+const { source, rows, collapsed, error, toggle, refresh, read } = useDocumentFolder(store, versions)
 const styles = folderPanel()
 
 function indent(row: FolderRow): string {
@@ -38,19 +32,6 @@ function indent(row: FolderRow): string {
 async function saveAsFolder(): Promise<void> {
   await saveAsFolderDialog(store)
   await versions?.refresh()
-}
-
-const hasInstructions = computed(() => rows.value.some((row) => row.path === INSTRUCTIONS_DIR))
-
-/** Gives a folder saved before instructions existed the ones every new folder starts with. */
-async function startInstructions(): Promise<void> {
-  if (!folder.value) return
-  try {
-    await writeStarterInstructions(folder.value)
-    await refresh()
-  } catch (cause) {
-    error.value = cause instanceof Error ? cause.message : String(cause)
-  }
 }
 
 /** A folder opens and closes; a file takes the canvas's place, as in a code editor. */
@@ -112,9 +93,11 @@ async function open(row: FolderRow): Promise<void> {
               :class="styles.chevron()"
               :data-open="!collapsed.has(row.path) || undefined"
             />
-            <icon-hugeicons-folder-01 :class="styles.icon()" />
+            <FolderEntryIcon :type="folderEntryType(row.path, row.kind)" />
           </template>
-          <icon-hugeicons-file-01 v-else :class="[styles.icon(), 'ml-[18px]']" />
+          <span v-else class="ml-[18px] flex shrink-0">
+            <FolderEntryIcon :type="folderEntryType(row.path, row.kind)" />
+          </span>
           <span :class="styles.name()" :data-change="row.change ?? undefined">
             {{ row.name }}
           </span>
@@ -125,16 +108,6 @@ async function open(row: FolderRow): Promise<void> {
         </button>
       </li>
     </ul>
-    <div
-      v-if="source === 'disk' && !hasInstructions"
-      :class="styles.note()"
-      data-test-id="folder-instructions"
-    >
-      <p>{{ panels.folderInstructionsHint }}</p>
-      <AppButton size="sm" variant="outline" class="mt-2" @click="startInstructions">
-        {{ panels.folderInstructionsCreate }}
-      </AppButton>
-    </div>
     <AppAlert v-if="error" tone="error" :heading="error" class="mx-4 mb-3" />
   </div>
 </template>

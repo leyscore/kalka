@@ -100,7 +100,8 @@ export const DEFAULT_APP_PREFERENCES: Readonly<AppPreferences> = {
     snapping: { ...DEFAULT_SNAPPING_PREFERENCES }
   },
   rendering: { canvasMode: 'retained', canvasBackground: 'kalka' },
-  designCheck: { showOnCanvas: true, preset: 'recommended', disabledRules: [] },
+  // Markers on the canvas are the person's choice, from the View menu: off until they ask.
+  designCheck: { showOnCanvas: false, preset: 'recommended', disabledRules: [] },
   onboarding: { aiSetup: 'pending', welcome: 'pending', tour: 'pending', role: null },
   code: { defaultSource: 'html-css' }
 }

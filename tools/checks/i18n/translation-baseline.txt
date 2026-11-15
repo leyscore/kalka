@@ -37,6 +37,7 @@ de:panels.frame
 de:panels.framePresetCategoryDesktop
 de:panels.framePresetCategoryFigmaCommunity
 de:panels.framePresetCategoryTablet
+de:panels.instructionsSkills
 de:panels.kerning
 de:panels.layout
 de:panels.linearGradient
@@ -87,6 +88,7 @@ es:panels.colorFormatHsl
 es:panels.colorFormatOkhcl
 es:panels.colorFormatRgb
 es:panels.framePresetCategoryFigmaCommunity
+es:panels.instructionsSkills
 es:panels.kerning
 es:panels.localLibraries
 es:panels.radialGradient
@@ -145,6 +147,9 @@ fr:panels.documentation
 fr:panels.export
 fr:panels.framePresetCategoryFigmaCommunity
 fr:panels.image
+fr:panels.instructions
+fr:panels.instructionsDocuments
+fr:panels.instructionsSkills
 fr:panels.libraryDestination
 fr:panels.maskTypeAlpha
 fr:panels.maskTypeLuminance

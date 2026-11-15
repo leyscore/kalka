@@ -8,7 +8,12 @@ import type { OverlayContext } from '#vue/canvas/svg-overlay/layers/selection'
 
 function setup() {
   const graph = new SceneGraph()
-  const box = graph.createNode('FRAME', graph.getPages()[0].id, { x: 10, y: 10, width: 100, height: 50 })
+  const box = graph.createNode('FRAME', graph.getPages()[0].id, {
+    x: 10,
+    y: 10,
+    width: 100,
+    height: 50
+  })
   const context: OverlayContext = {
     graph,
     view: { panX: 0, panY: 0, zoom: 1 },
@@ -25,7 +30,9 @@ describe('AI activity marks', () => {
     const low = aiMarksLayer(context, { active: [box.id], done: [] }, (AI_PULSE_PERIOD_MS * 3) / 4)
     const high = aiMarksLayer(context, { active: [box.id], done: [] }, AI_PULSE_PERIOD_MS / 4)
     expect(low).toHaveLength(1)
-    expect(low[0].type === 'rect' && high[0].type === 'rect' && low[0].stroke !== high[0].stroke).toBe(true)
+    expect(
+      low[0].type === 'rect' && high[0].type === 'rect' && low[0].stroke !== high[0].stroke
+    ).toBe(true)
   })
 
   test('a finished layer glows once, then the mark is gone', () => {
@@ -41,10 +48,14 @@ describe('AI activity marks', () => {
       aiMarksLayer(context, { active: [box.id], done: [], still: true }, now)
     const low = at((AI_PULSE_PERIOD_MS * 3) / 4)
     const high = at(AI_PULSE_PERIOD_MS / 4)
-    expect(low[0].type === 'rect' && high[0].type === 'rect' && low[0].stroke === high[0].stroke).toBe(true)
+    expect(
+      low[0].type === 'rect' && high[0].type === 'rect' && low[0].stroke === high[0].stroke
+    ).toBe(true)
     const done = [{ nodeId: box.id, startTime: 0 }]
     const early = aiMarksLayer(context, { active: [], done, still: true }, 1)
     const late = aiMarksLayer(context, { active: [], done, still: true }, AI_DONE_DURATION_MS - 1)
-    expect(early[0].type === 'rect' && late[0].type === 'rect' && early[0].stroke === late[0].stroke).toBe(true)
+    expect(
+      early[0].type === 'rect' && late[0].type === 'rect' && early[0].stroke === late[0].stroke
+    ).toBe(true)
   })
 })

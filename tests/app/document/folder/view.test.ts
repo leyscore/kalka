@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { fileKind, imageType, pageOfFile } from '@/app/document/folder/view'
+import { fileKind, folderEntryType, imageType, pageOfFile } from '@/app/document/folder/view'
 
 describe('fileKind', () => {
   test('tells pages, other code, pictures and the rest apart', () => {
@@ -36,5 +36,25 @@ describe('pageOfFile', () => {
     expect(pageOfFile(project, 'styles.css')).toBeNull()
     expect(pageOfFile('not json', 'pages/home.html')).toBeNull()
     expect(pageOfFile('{"pages":"none"}', 'pages/home.html')).toBeNull()
+  })
+})
+
+describe('folderEntryType', () => {
+  test('a folder takes the kind of its part of the document, at any depth', () => {
+    expect(folderEntryType('pages', 'folder')).toBe('pages')
+    expect(folderEntryType('assets/images', 'folder')).toBe('assets')
+    expect(folderEntryType('instructions/skills', 'folder')).toBe('instructions')
+    expect(folderEntryType('notes', 'folder')).toBe('folder')
+  })
+
+  test('a file is told by what it holds, and a skill from another instruction', () => {
+    expect(folderEntryType('pages/home.html', 'file')).toBe('page')
+    expect(folderEntryType('styles.css', 'file')).toBe('style')
+    expect(folderEntryType('design-system/tokens.json', 'file')).toBe('data')
+    expect(folderEntryType('assets/images/a1.png', 'file')).toBe('image')
+    expect(folderEntryType('instructions/skills/critique.md', 'file')).toBe('skill')
+    expect(folderEntryType('instructions/rules.md', 'file')).toBe('instruction')
+    expect(folderEntryType('NOTES.md', 'file')).toBe('text')
+    expect(folderEntryType('font.woff2', 'file')).toBe('file')
   })
 })

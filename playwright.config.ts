@@ -49,7 +49,9 @@ const appDefaults = {
               value: JSON.stringify({
                 version: 1,
                 onboarding: { aiSetup: 'done', welcome: 'done', tour: 'done' },
-                rendering: { canvasMode: 'retained', canvasBackground: 'document' }
+                rendering: { canvasMode: 'retained', canvasBackground: 'document' },
+                // Markers are off for a new install; the specs that read them need them shown.
+                designCheck: { showOnCanvas: true }
               })
             }
           ]

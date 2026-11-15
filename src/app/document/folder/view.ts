@@ -84,3 +84,40 @@ export async function saveFolderFile(): Promise<void> {
   openFolderFile.value = { ...file, bytes: new TextEncoder().encode(draft) }
   folderFileDraft.value = null
 }
+
+/** What an entry of the folder is, for the icon and color that let it be told at a glance. */
+export type FolderEntryType =
+  | 'pages'
+  | 'design'
+  | 'assets'
+  | 'instructions'
+  | 'folder'
+  | 'page'
+  | 'style'
+  | 'data'
+  | 'image'
+  | 'skill'
+  | 'instruction'
+  | 'text'
+  | 'file'
+
+const TOP_FOLDERS: Record<string, FolderEntryType> = {
+  pages: 'pages',
+  'design-system': 'design',
+  assets: 'assets',
+  instructions: 'instructions'
+}
+
+/** A folder takes the kind of the part of the document it belongs to; a file, of what it holds. */
+export function folderEntryType(path: string, kind: 'folder' | 'file'): FolderEntryType {
+  const top = path.split('/')[0] ?? ''
+  if (kind === 'folder') return TOP_FOLDERS[top] ?? 'folder'
+  const ext = extension(path)
+  if (ext in IMAGE_TYPES) return 'image'
+  if (ext === 'html' || ext === 'htm') return 'page'
+  if (ext === 'css') return 'style'
+  if (ext === 'json') return 'data'
+  if (path.startsWith('instructions/skills/')) return 'skill'
+  if (top === 'instructions') return 'instruction'
+  return TEXT_EXTENSIONS.has(ext) ? 'text' : 'file'
+}

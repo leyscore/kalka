@@ -1,3 +1,4 @@
+import { withBuiltIn } from '@/app/document/instructions/catalog'
 import { findInvocations, type InstructionCatalog } from '@/app/document/instructions/invoke'
 import {
   readDocument,
@@ -6,13 +7,16 @@ import {
   readStandingInstructions,
   hasInstructions
 } from '@/app/document/instructions/read'
-import { isStarterText, STARTER_CATALOG } from '@/app/document/instructions/starter'
-import { STARTER_SKILLS } from '@/app/document/instructions/starter-skills'
+import { BUILT_IN_CATALOG, isStarterText } from '@/app/document/instructions/starter'
+import { BUILT_IN_SKILLS, skillBody, usedSkills } from '@/app/document/instructions/starter-skills'
 import type { EditorStore } from '@/app/editor/active-store'
 import { isTauri } from '@/app/tauri/env'
 
-/** Enough for a brand guide, a skill and a brief without crowding the conversation. */
-export const MAX_INSTRUCTIONS_BYTES = 32 * 1024
+/** Enough for the rules, two skills with the catalogue they rely on, and a brief. */
+export const MAX_INSTRUCTIONS_BYTES = 64 * 1024
+
+/** The section that lists what can be asked for; it is a menu, not an instruction that was read. */
+const CATALOG_TITLE = 'Available on request'
 
 export interface InstructionSection {
   /** What the section is, for the model: `Rules`, `Skill /critique`, `Document brief.md`. */
@@ -59,18 +63,18 @@ export function describeCatalog(catalog: InstructionCatalog): string {
  * What the document's folder tells its agent for one request. A conversation's first request
  * carries the summary, the rules and the list of what can be asked for; every request carries
  * the skills it names with `/` and the documents it names with `@`. A document without an
- * instructions folder, in a browser or not saved as a folder, has the starter skills alone.
+ * instructions folder, in a browser or not saved as a folder, has the skills Kalka comes with.
  */
 export async function readProjectInstructions(
   store: EditorStore,
   request: string,
   first: boolean
 ): Promise<string> {
-  const path = store.getDocumentFilePath()
-  // A document not saved as a folder still has the skills every folder starts with.
-  const folder = path && isTauri() && (await hasInstructions(path)) ? path : null
   try {
-    const catalog = folder ? await readInstructionCatalog(folder) : STARTER_CATALOG
+    const path = store.getDocumentFilePath()
+    // A document without an instructions folder still has the skills Kalka comes with.
+    const folder = path && isTauri() && (await hasInstructions(path)) ? path : null
+    const catalog = folder ? withBuiltIn(await readInstructionCatalog(folder)) : BUILT_IN_CATALOG
     const sections: InstructionSection[] = []
     if (folder && first) {
       for (const file of await readStandingInstructions(folder)) {
@@ -79,16 +83,27 @@ export async function readProjectInstructions(
         sections.push({ title: file.name, text: file.text })
       }
     }
+    /** A folder's own skill stands for Kalka's of the same name. */
+    const skillText = async (name: string): Promise<string | undefined> =>
+      (folder ? (await readSkill(folder, name))?.text : undefined) ?? BUILT_IN_SKILLS[name]
     const asked = findInvocations(request, catalog)
-    for (const name of asked.skills) {
-      const text = folder ? (await readSkill(folder, name))?.text : STARTER_SKILLS[name]
-      if (text) sections.push({ title: `Skill /${name}`, text })
+    // A skill brings the skills it relies on, each once, after the ones that were asked for.
+    const wanted = [...asked.skills]
+    const seen = new Set<string>()
+    while (wanted.length > 0) {
+      const name = wanted.shift()
+      if (!name || seen.has(name)) continue
+      seen.add(name)
+      const text = await skillText(name)
+      if (!text) continue
+      sections.push({ title: `Skill /${name}`, text: skillBody(text) })
+      wanted.push(...usedSkills(text))
     }
     for (const name of folder ? asked.documents : []) {
       const document = await readDocument(folder ?? '', name)
       if (document) sections.push({ title: `Document ${name}`, text: document.text })
     }
-    if (first) sections.push({ title: 'Available on request', text: describeCatalog(catalog) })
+    if (first) sections.push({ title: CATALOG_TITLE, text: describeCatalog(catalog) })
     return formatProjectInstructions(sections)
   } catch {
     // Instructions are a help, never a reason for a request to fail.
@@ -98,5 +113,7 @@ export async function readProjectInstructions(
 
 /** How many instruction sections a request carried, for the line that says so under it. */
 export function countInstructionSections(note: string): number {
-  return note.split('\n').filter((line) => line.startsWith('### ')).length
+  return note
+    .split('\n')
+    .filter((line) => line.startsWith('### ') && line !== `### ${CATALOG_TITLE}`).length
 }

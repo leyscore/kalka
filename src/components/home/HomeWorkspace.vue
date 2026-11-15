@@ -171,7 +171,7 @@ function formattedDate(updatedAt: string): string {
     <IconButton
       :label="settings.title"
       side="left"
-      data-test-id="app-settings-trigger"
+      data-test-id="home-settings"
       :class="homeHero.settings"
       @click="openSettingsDialog()"
     >

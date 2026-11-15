@@ -4,9 +4,9 @@ import { useAIChat } from '@/app/ai/chat/use'
 
 /**
  * `file` is the layers of the document; `folder` is its files on the computer; `history` is the
- * versions it keeps in Git.
+ * versions it keeps in Git; `instructions` is what its agents are told.
  */
-export type DocumentPanel = 'file' | 'assets' | 'folder' | 'history'
+export type DocumentPanel = 'file' | 'assets' | 'folder' | 'history' | 'instructions'
 /** The panels the shared properties tab asks for: code, the design check and the agent. */
 const REQUESTED = ['code', 'lint', 'ai'] as const
 type RequestedPanel = (typeof REQUESTED)[number]

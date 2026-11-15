@@ -13,12 +13,35 @@ export const folderPanel = tv({
     tree: 'flex min-h-0 flex-1 flex-col overflow-y-auto px-2 pb-2',
     row: 'flex h-7 w-full shrink-0 cursor-pointer items-center gap-1.5 rounded-md pr-2 text-left text-xs text-surface outline-none transition-colors hover:bg-hover focus-visible:ring-1 focus-visible:ring-panel-focus',
     chevron: 'size-3 shrink-0 text-muted transition-transform duration-150 data-open:rotate-90',
-    icon: 'size-3.5 shrink-0 text-muted',
+    icon: 'size-3.5 shrink-0',
     name: 'min-w-0 flex-1 truncate data-[change=added]:text-success data-[change=conflict]:text-error data-[change=deleted]:text-error data-[change=modified]:text-primary',
     mark: 'w-3 shrink-0 text-center font-mono text-[11px] font-semibold data-[change=added]:text-success data-[change=conflict]:text-error data-[change=deleted]:text-error data-[change=modified]:text-primary',
     dot: 'size-1.5 shrink-0 rounded-full bg-primary',
     selected: 'bg-row-selected text-row-selected-text hover:bg-row-selected'
-  }
+  },
+  variants: {
+    /**
+     * One color per part of the document, on the icon alone: the name keeps the color of what
+     * Git says changed. Pages are the app's blue, the design system violet, pictures green,
+     * what agents read their orange.
+     */
+    type: {
+      pages: { icon: 'text-primary' },
+      page: { icon: 'text-primary' },
+      design: { icon: 'text-[#a78bfa]' },
+      style: { icon: 'text-[#a78bfa]' },
+      data: { icon: 'text-[#a78bfa]' },
+      assets: { icon: 'text-success' },
+      image: { icon: 'text-success' },
+      instructions: { icon: 'text-[#d97757]' },
+      skill: { icon: 'text-[#d97757]' },
+      instruction: { icon: 'text-[#d97757]' },
+      folder: { icon: 'text-muted' },
+      text: { icon: 'text-muted' },
+      file: { icon: 'text-muted' }
+    }
+  },
+  defaultVariants: { type: 'file' }
 })
 
 /** Each level of the tree steps in by this much. */
@@ -40,7 +63,7 @@ export const folderFileView = tv({
 export const folderFileBar = tv({
   slots: {
     root: 'flex max-w-[min(560px,44vw)] min-w-0 items-center gap-2',
-    icon: 'size-3.5 shrink-0 text-muted',
+    icon: 'size-3.5 shrink-0',
     path: 'min-w-0 truncate font-mono text-xs text-surface',
     close: 'size-7 shrink-0 rounded-md'
   }

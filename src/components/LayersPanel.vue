@@ -13,6 +13,7 @@ import AssetsPanel from './assets-panel/AssetsPanel.vue'
 import CodePanel from './CodePanel.vue'
 import DesignCheckPanel from './design-check/DesignCheckPanel.vue'
 import FolderPanel from './folder/FolderPanel.vue'
+import InstructionsPanel from './instructions/InstructionsPanel.vue'
 import LayerTree from './LayerTree/LayerTree.vue'
 import PagesPanel from './PagesPanel.vue'
 import HistoryPanel from './versions/HistoryPanel.vue'
@@ -35,6 +36,7 @@ const splitterStyles = tv(splitterTheme)({ direction: 'vertical' })
       <AssetsPanel v-if="activePanel === 'assets'" />
       <FolderPanel v-else-if="activePanel === 'folder'" />
       <HistoryPanel v-else-if="activePanel === 'history'" />
+      <InstructionsPanel v-else-if="activePanel === 'instructions'" />
       <SplitterGroup
         v-else-if="activePanel === 'file'"
         direction="vertical"

@@ -56,6 +56,22 @@ const rail = panelRail()
         <icon-hugeicons-sparkle :class="rail.icon()" />
       </button>
     </Tip>
+    <!-- What the agent is told: under it, in the same group. -->
+    <Tip :label="panels.instructions" side="right">
+      <button
+        type="button"
+        role="tab"
+        data-test-id="left-panel-instructions-tab"
+        :aria-label="panels.instructions"
+        :aria-selected="activePanel === 'instructions'"
+        :data-state="activePanel === 'instructions' ? 'active' : 'inactive'"
+        :data-active="activePanel === 'instructions' || undefined"
+        :class="rail.item()"
+        @click="show('instructions')"
+      >
+        <icon-hugeicons-book-open-01 :class="rail.icon()" />
+      </button>
+    </Tip>
     <div aria-hidden="true" :class="rail.divider()" />
     <Tip :label="panels.layers" side="right">
       <button

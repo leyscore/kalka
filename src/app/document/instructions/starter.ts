@@ -1,8 +1,8 @@
 import { joinFolderPath } from '@/app/document/io/kalka-folder'
 
 import type { InstructionCatalog } from './invoke'
-import { DOCUMENTS_DIR, INSTRUCTIONS_DIR, RULES_FILE, SKILLS_DIR, SUMMARY_FILE } from './layout'
-import { STARTER_SKILLS } from './starter-skills'
+import { INSTRUCTIONS_DIR, RULES_FILE, SUMMARY_FILE } from './layout'
+import { BUILT_IN_SKILLS } from './starter-skills'
 
 const SUMMARY = `# Summary
 
@@ -23,27 +23,72 @@ What an agent must respect whenever it draws here. Keep it short: every line is 
 - Never:
 `
 
-const DOCUMENTS = `# Documents
+const README = `# Instructions
 
-Put reference content here: a brief, the offers, real texts. One file per subject.
+What the agents working on this project should know. This file is for you: it is not sent to
+the agent.
 
-An agent reads a document when you cite it in the conversation with an at sign, such as
-@brief.md.
+## What is here
+
+- **summary.md**: the project in a few lines. Read at the start of every conversation.
+- **rules.md**: what an agent must always respect here. Read at the start of every
+  conversation.
+
+Both are empty forms. Fill them in; an example is at the end of this file.
+
+## Skills
+
+Kalka comes with these skills. They are part of the app, the same in every project and kept
+up to date with it, so they are not copied here. Ask for one in the conversation with a slash:
+
+${Object.keys(BUILT_IN_SKILLS)
+  .map((name) => `- \`/${name}\``)
+  .join('\n')}
+
+A good order for a new page: \`/direction\`, \`/landing-page\`, \`/responsive\`,
+\`/polish\`. Use \`/critique\` for a second opinion and \`/copy\` on any text.
+
+To add a skill of your own, create a \`skills\` folder here and put a Markdown file in it:
+\`skills/pricing-page.md\` becomes \`/pricing-page\`. To replace one of Kalka's for this
+project, give your file the same name.
+
+## Documents
+
+Reference content, such as a brief, the offers or real texts, goes in a \`documents\` folder
+here, one file per subject. An agent reads a document when you cite it with an at sign:
+\`@brief.md\`.
+
+## What filled in looks like
+
+A summary that helps:
+
+> Booking software for independent bike repair shops. Mechanics use it at the counter, on a
+> tablet with greasy hands, to book a repair in under a minute. It should feel like the shop's
+> own job board: blunt, practical, nothing decorative.
+
+Rules that help:
+
+> - Voice: plain and direct, the way a mechanic talks to a customer. No exclamation marks.
+> - Colors and type come from the variables. The red is the tool-chest red, used only for
+>   what needs action today.
+> - Always show real repairs with real prices. Never a placeholder.
+> - Never say "seamless", never promise a time we do not measure.
 `
 
-/** The instructions a folder starts with, by path inside it. */
+/**
+ * The instructions a folder starts with, by path inside it: one README and two forms. Skills
+ * come with the app, and the folders for a project's own skills and documents appear when the
+ * person adds one.
+ */
 export const STARTER_INSTRUCTIONS: ReadonlyMap<string, string> = new Map([
+  [`${INSTRUCTIONS_DIR}/README.md`, README],
   [`${INSTRUCTIONS_DIR}/${SUMMARY_FILE}`, SUMMARY],
-  [`${INSTRUCTIONS_DIR}/${RULES_FILE}`, RULES],
-  ...Object.entries(STARTER_SKILLS).map(
-    ([name, text]) => [`${INSTRUCTIONS_DIR}/${SKILLS_DIR}/${name}.md`, text] as const
-  ),
-  [`${INSTRUCTIONS_DIR}/${DOCUMENTS_DIR}/README.md`, DOCUMENTS]
+  [`${INSTRUCTIONS_DIR}/${RULES_FILE}`, RULES]
 ])
 
-/** What a document offers before it has a folder: the starter skills, and no documents. */
-export const STARTER_CATALOG: InstructionCatalog = {
-  skills: Object.keys(STARTER_SKILLS),
+/** What every document offers: the skills Kalka comes with, and no documents of its own yet. */
+export const BUILT_IN_CATALOG: InstructionCatalog = {
+  skills: Object.keys(BUILT_IN_SKILLS),
   documents: []
 }
 

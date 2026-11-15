@@ -16,12 +16,14 @@ export interface InstructionFile {
   text: string
 }
 
+/** A folder's instruction files. A README explains the folder to the person and is left out. */
 async function names(directory: string): Promise<string[]> {
   const { exists, readDir } = await import('@tauri-apps/plugin-fs')
   if (!(await exists(directory))) return []
   const entries = await readDir(directory)
   return entries
     .filter((entry) => entry.isFile && isReadableInstruction(entry.name))
+    .filter((entry) => entry.name.toLowerCase() !== 'readme.md')
     .map((entry) => entry.name)
     .toSorted((a, b) => a.localeCompare(b))
 }
@@ -75,4 +77,23 @@ export async function hasInstructions(path: string): Promise<boolean> {
   } catch {
     return false
   }
+}
+
+export interface InstructionListing {
+  /** The summary, the rules and any other note beside them, by file name. */
+  standing: string[]
+  /** The project's own skills, by file name. */
+  skills: string[]
+  documents: string[]
+}
+
+/** What a folder's instructions hold, for the panel that lists them. */
+export async function listInstructions(folder: string): Promise<InstructionListing> {
+  const root = joinFolderPath(folder, INSTRUCTIONS_DIR)
+  const [standing, skills, documents] = await Promise.all([
+    names(root),
+    names(joinFolderPath(root, SKILLS_DIR)),
+    names(joinFolderPath(root, DOCUMENTS_DIR))
+  ])
+  return { standing, skills, documents }
 }

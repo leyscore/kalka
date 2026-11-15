@@ -42,9 +42,20 @@ export const panelMessageDefaults = {
   folderVersionsDesktop:
     'Versions use Git on your computer. Open this document in the desktop app to keep and publish them.',
   folderNoPreview: 'This file has no preview.',
-  folderInstructionsHint:
-    'Agents read the .md files of an “instructions” folder before they draw: brand rules, tone, content.',
   folderInstructionsCreate: 'Add instructions',
+  instructions: 'Instructions',
+  instructionsSkills: 'Skills',
+  instructionsRules: 'Rules',
+  instructionsDocuments: 'Documents',
+  instructionsSkillsHint: 'Ask for one in the conversation with a slash.',
+  instructionsRulesEmpty:
+    'This folder has no rules yet. Add a summary and rules for agents to read with every conversation.',
+  instructionsRulesNone:
+    'Save this document as a folder, in the desktop app, to give it a summary and rules.',
+  instructionsDocumentsEmpty:
+    'A brief or real texts. Agents read one when you cite it with an at sign.',
+  instructionsAddSkill: 'Add a skill',
+  instructionsAddDocument: 'Add a document',
   folderViewClean: 'Clean HTML',
   folderViewSaved: 'Saved file',
   versions: 'Versions',
