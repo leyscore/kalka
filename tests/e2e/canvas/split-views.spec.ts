@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 import { CanvasHelper } from '#tests/helpers/canvas'
+import { openAppMenu } from '#tests/helpers/menu'
 
 test.describe('split canvas views', () => {
   test('splits, resizes, activates, and closes independent canvas views', async ({ page }) => {
@@ -10,7 +11,7 @@ test.describe('split canvas views', () => {
     await expect(page.locator('[data-slot="canvas-pane-header"]')).toHaveCount(0)
     await canvas.drawRect(140, 180, 180, 120)
 
-    await page.getByRole('menuitem', { name: 'View', exact: true }).click()
+    await openAppMenu(page, 'View')
     await page.getByRole('menuitem', { name: 'Split right' }).click()
 
     const headers = page.locator('[data-slot="canvas-pane-header"]')

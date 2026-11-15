@@ -1,34 +1,28 @@
 <script setup lang="ts">
 import { useI18n } from '@kalka/vue'
 
-import { useAIChat } from '@/app/ai/chat/use'
-import { agentDock } from '@/theme/agent-dock'
+import { useLeftPanel } from '@/app/shell/left-panel/use'
+import Tip from '@/components/ui/overlay/Tip.vue'
+import { agentField } from '@/theme/agent-field'
 
-const { ai, panels } = useI18n()
-const { activeTab } = useAIChat()
-const styles = agentDock()
-
-// The panel offers its own provider setup while no agent is connected.
-function toggle(): void {
-  activeTab.value = activeTab.value === 'ai' ? 'design' : 'ai'
-}
+const { ai } = useI18n()
+const { activePanel, show } = useLeftPanel()
+const styles = agentField()
 </script>
 
 <template>
-  <!-- A tab of its own: it opens the conversation panel above the toolbar and closes it again. -->
-  <div role="tablist" :aria-label="panels.ai" :class="styles.tablist()">
+  <!-- A shortcut from where the hand already is: it opens the agent's conversation in the left panel. -->
+  <Tip :label="ai.describeChange" side="top">
     <button
       type="button"
-      role="tab"
-      data-test-id="properties-tab-ai"
-      :aria-label="panels.ai"
-      :aria-selected="activeTab === 'ai'"
-      :data-state="activeTab === 'ai' ? 'active' : 'inactive'"
+      data-test-id="agent-field"
+      :aria-label="ai.describeChange"
+      :data-active="activePanel === 'ai' || undefined"
       :class="styles.field()"
-      @click="toggle"
+      @click="show('ai')"
     >
-      <icon-hugeicons-bot :class="styles.fieldIcon()" aria-hidden="true" />
-      <span :class="styles.fieldLabel()">{{ ai.describeChange }}</span>
+      <icon-hugeicons-bot :class="styles.icon()" aria-hidden="true" />
+      <span :class="styles.label()">{{ ai.describeChange }}</span>
     </button>
-  </div>
+  </Tip>
 </template>

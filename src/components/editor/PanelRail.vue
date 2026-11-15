@@ -15,7 +15,7 @@ import { panelRail } from '@/theme/panel/rail'
 const { panels, settings } = useI18n()
 const checkMessages = useDesignCheckMessages()
 const store = useEditorStore()
-const { activePanel, show } = useLeftPanel()
+const { activePanel, show, toggleAgent } = useLeftPanel()
 // Versions use the git on this computer, so only the desktop app offers them.
 const hasVersions = isTauri()
 
@@ -43,6 +43,23 @@ const rail = panelRail()
     data-test-id="panel-rail"
     :class="rail.root()"
   >
+    <!-- The agent's conversation: one more press closes it and gives the panel back to the document. -->
+    <Tip :label="panels.ai" side="right">
+      <button
+        type="button"
+        role="tab"
+        data-test-id="properties-tab-ai"
+        :aria-label="panels.ai"
+        :aria-selected="activePanel === 'ai'"
+        :data-state="activePanel === 'ai' ? 'active' : 'inactive'"
+        :data-active="activePanel === 'ai' || undefined"
+        :class="rail.item()"
+        @click="toggleAgent"
+      >
+        <icon-hugeicons-bot :class="rail.icon()" />
+      </button>
+    </Tip>
+    <div aria-hidden="true" :class="rail.divider()" />
     <Tip :label="panels.layers" side="right">
       <button
         type="button"

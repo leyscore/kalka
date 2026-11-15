@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'reka-ui'
 import { tv } from 'tailwind-variants'
+import { defineAsyncComponent } from 'vue'
 
 import { useI18n } from '@kalka/vue'
 
+import { latch } from '@/app/shell/latch'
 import { useLeftPanel } from '@/app/shell/left-panel/use'
 import splitterTheme from '@/theme/splitter'
 
@@ -16,6 +18,9 @@ import VersionsPanel from './versions/VersionsPanel.vue'
 
 const { panels } = useI18n()
 const { activePanel } = useLeftPanel()
+// The chat, its model SDKs and markdown load when the agent first opens, then stay mounted.
+const ChatPanel = defineAsyncComponent(() => import('./ChatPanel.vue'))
+const chatUsed = latch(() => activePanel.value === 'ai')
 const splitterStyles = tv(splitterTheme)({ direction: 'vertical' })
 </script>
 
@@ -62,6 +67,16 @@ const splitterStyles = tv(splitterTheme)({ direction: 'vertical' })
       <div v-show="activePanel === 'lint'" class="flex min-h-0 flex-1 flex-col">
         <DesignCheckPanel :active="activePanel === 'lint'" />
       </div>
+      <section
+        v-if="chatUsed"
+        v-show="activePanel === 'ai'"
+        role="tabpanel"
+        :aria-label="panels.ai"
+        data-test-id="agent-panel"
+        class="flex min-h-0 flex-1 flex-col"
+      >
+        <ChatPanel />
+      </section>
     </div>
   </aside>
 </template>

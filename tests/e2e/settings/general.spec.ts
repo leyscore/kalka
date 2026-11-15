@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 
 import { CanvasHelper } from '#tests/helpers/canvas'
+import { openAppMenu } from '#tests/helpers/menu'
 
 test('language can be changed from General settings and persists', async ({ page }) => {
   await page.goto('/?test')
@@ -122,7 +123,7 @@ test('Preferences menu snapping controls use the same preferences', async ({ pag
   const canvas = new CanvasHelper(page)
   await canvas.waitForInit()
 
-  await page.getByTestId('menubar-view').click()
+  await openAppMenu(page, 'View')
   await page.getByRole('menuitem', { name: 'Preferences' }).hover()
   const geometry = page.getByRole('menuitemcheckbox', { name: 'Snap to geometry' })
   const objects = page.getByRole('menuitemcheckbox', { name: 'Snap to objects' })

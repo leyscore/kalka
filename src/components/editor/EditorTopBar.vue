@@ -4,6 +4,7 @@ import { formatShortcut, useI18n } from '@kalka/vue'
 import { useAIChat } from '@/app/ai/chat/use'
 import { openAISetup } from '@/app/ai/models/settings/onboarding/dialog'
 import { useEditorStore } from '@/app/editor/active-store'
+import { useLeftPanel } from '@/app/shell/left-panel/use'
 import { appMenuShortcut, appMenuShortcutLabel } from '@/app/shell/menu/shortcut'
 import CollabPanel from '@/components/collab-panel/CollabPanel.vue'
 import AppMenu from '@/components/shell/AppMenu.vue'
@@ -16,6 +17,7 @@ import ZoomDropdown from './ZoomDropdown.vue'
 const store = useEditorStore()
 const { editor, menu, panels } = useI18n()
 const { activeTab, isConfigured } = useAIChat()
+const { toggleAgent: toggleAgentPanel } = useLeftPanel()
 const styles = editorTopBar()
 
 /**
@@ -27,7 +29,7 @@ function toggleAgent(): void {
     openAISetup()
     return
   }
-  activeTab.value = activeTab.value === 'ai' ? 'design' : 'ai'
+  toggleAgentPanel()
 }
 </script>
 
