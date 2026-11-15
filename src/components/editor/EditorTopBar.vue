@@ -36,7 +36,9 @@ function toggleAgent(): void {
     <div :class="styles.start()">
       <AppMenu />
     </div>
-    <BreakpointSwitcher />
+    <div :class="styles.middle()">
+      <BreakpointSwitcher />
+    </div>
     <div :class="styles.end()">
       <IconButton
         :label="panels.ai"
