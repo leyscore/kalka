@@ -17,7 +17,7 @@ import {
 import { useTemplateRef, watch } from 'vue'
 import IconChevronRight from '~icons/lucide/chevron-right'
 
-import { shortcutPlatform, vTestId, useI18n } from '@kalka/vue'
+import { shortcutPlatform, useEditorCommands, vTestId, useI18n } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import { openSettingsDialog } from '@/app/settings/dialog'
@@ -59,6 +59,10 @@ watch(nameInput, (input) => {
 const { menu: t, settings } = useI18n()
 
 const { topMenus } = useAppMenu()
+// Undo and redo sit by the document's name, where people look for them first.
+const { getCommand } = useEditorCommands()
+const undo = getCommand('edit.undo')
+const redo = getCommand('edit.redo')
 const menuCls = useMenuUI()
 const mainMenuCls = useMenuUI({ content: 'min-w-52' })
 const subMenuCls = useMenuUI({ content: 'min-w-44' })
@@ -93,6 +97,24 @@ const { overflowStart, overflowEnd, scrollTowardHidden } = useScrollOverflow(men
         @dblclick="startRename"
         >{{ store.state.documentName }}</span
       >
+      <IconButton
+        :label="`${undo.label} (${appMenuShortcutLabel('undo')})`"
+        data-test-id="app-undo"
+        class="size-7 rounded-[7px]"
+        :disabled="!undo.enabled.value"
+        @click="undo.run()"
+      >
+        <icon-lucide-undo-2 class="size-[15px]" />
+      </IconButton>
+      <IconButton
+        :label="`${redo.label} (${appMenuShortcutLabel('redo')})`"
+        data-test-id="app-redo"
+        class="size-7 rounded-[7px]"
+        :disabled="!redo.enabled.value"
+        @click="redo.run()"
+      >
+        <icon-lucide-redo-2 class="size-[15px]" />
+      </IconButton>
       <IconButton
         :label="settings.title"
         data-test-id="app-settings-trigger"

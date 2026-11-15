@@ -30,6 +30,7 @@ import Toolbar from '@/components/Toolbar/Toolbar.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import splitterTheme from '@/theme/splitter'
 
+import BreakpointSwitcher from './BreakpointSwitcher.vue'
 import WorkspacePill from './WorkspacePill.vue'
 
 const showChrome = appRuntimeConfig.showChrome
@@ -102,6 +103,7 @@ const { pending: roomPending } = useRoomActions()
       <div class="relative flex min-w-0 flex-1">
         <CanvasSplitRoot />
         <ActiveRoomOverlay />
+        <BreakpointSwitcher />
         <Toolbar />
       </div>
     </SplitterPanel>
