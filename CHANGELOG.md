@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Changed
+
+- The left panel has an icon rail: Layers and Assets, then Code, Versions, and the design check with its problem count. Code and the design check open there instead of in the right panel, which keeps Design and AI.
+- The editor is neutral: no colored light behind the canvas and opaque panels, so the app's own colors never tint the design. Home keeps the brand backdrop.
+
 ## 0.1.0-beta.6 — 2026-11-06
 
 ### Changed

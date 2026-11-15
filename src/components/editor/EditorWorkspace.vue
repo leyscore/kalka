@@ -75,7 +75,7 @@ const { pending: roomPending } = useRoomActions()
     ref="panels"
     :key="tab.id"
     direction="horizontal"
-    class="flex-1 overflow-hidden px-2 pb-2"
+    class="flex-1 overflow-hidden px-2 pb-2 [--color-glass-border:var(--color-border)] [--color-glass:var(--color-panel)]"
     @layout="saveEditorLayout"
   >
     <SplitterPanel

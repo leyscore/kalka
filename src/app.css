@@ -154,6 +154,15 @@
   animation: kalka-liquid-fill 1.8s cubic-bezier(0.45, 0, 0.2, 1) infinite;
 }
 
+/*
+ * The editor is neutral: no light behind the canvas and opaque panels, so the app's own colors
+ * never tint the design being judged. Home keeps the brand backdrop.
+ */
+[data-layout='editor'] {
+  --backdrop-glow-a: 0;
+  --backdrop-glow-b: 0;
+}
+
 /* Frosted glass for the app's panels and bars over the backdrop. */
 @utility glass {
   background-color: var(--color-glass);

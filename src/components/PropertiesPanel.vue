@@ -2,18 +2,14 @@
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from 'reka-ui'
 import { computed, defineAsyncComponent, useTemplateRef } from 'vue'
 
-import { useDesignCheckMessages, useI18n } from '@kalka/vue'
+import { useI18n } from '@kalka/vue'
 
 import { useAIChat } from '@/app/ai/chat/use'
-import { useEditorStore } from '@/app/editor/active-store'
-import { countIssues } from '@/app/editor/design-check/issues'
 import { latch } from '@/app/shell/latch'
 import { useGlide } from '@/components/ui/motion/useGlide'
 import { glidePills } from '@/theme/motion/glide'
 import { propertiesTabs } from '@/theme/panel/properties-tabs'
 
-import CodePanel from './CodePanel.vue'
-import DesignCheckPanel from './design-check/DesignCheckPanel.vue'
 import DesignPanel from './DesignPanel.vue'
 import ZoomDropdown from './editor/ZoomDropdown.vue'
 
@@ -22,8 +18,13 @@ const ChatPanel = defineAsyncComponent(() => import('./ChatPanel.vue'))
 const { activeTab } = useAIChat()
 const chatUsed = latch(() => activeTab.value === 'ai')
 const { panels } = useI18n()
-const checkMessages = useDesignCheckMessages()
-const store = useEditorStore()
+// Code and the design check live in the left panel; while one is open, this panel stays on Design.
+const rightTab = computed({
+  get: () => (activeTab.value === 'ai' ? 'ai' : 'design'),
+  set: (tab: string) => {
+    activeTab.value = tab === 'ai' ? 'ai' : 'design'
+  }
+})
 
 const tabStyles = propertiesTabs()
 
@@ -35,14 +36,6 @@ useGlide(tabListElement, {
   pillClass: glidePills.active
 })
 useGlide(tabListElement, { items: '[role="tab"]', hover: true, pillClass: glidePills.hover })
-
-/** Errors and warnings on the current page; suggestions do not earn an indicator. */
-const problemCount = computed(() => {
-  const snapshot = store.designCheck.snapshot.value
-  if (!snapshot || snapshot.pageId !== store.state.currentPageId) return null
-  const counts = countIssues(snapshot.issues)
-  return { total: counts.error + counts.warning, severity: counts.error > 0 ? 'error' : 'warning' }
-})
 </script>
 
 <template>
@@ -51,7 +44,7 @@ const problemCount = computed(() => {
     class="flex min-w-0 flex-1 flex-col overflow-hidden"
     style="contain: paint layout style"
   >
-    <TabsRoot v-model="activeTab" class="flex min-h-0 flex-1 flex-col">
+    <TabsRoot v-model="rightTab" class="flex min-h-0 flex-1 flex-col">
       <TabsList ref="tabList" :class="tabStyles.list()">
         <TabsTrigger
           value="design"
@@ -60,60 +53,20 @@ const problemCount = computed(() => {
         >
           {{ panels.design }}
         </TabsTrigger>
-        <TabsTrigger value="code" data-test-id="properties-tab-code" :class="tabStyles.trigger()">
-          <icon-lucide-code :class="tabStyles.icon()" aria-hidden="true" />
-          <span :class="tabStyles.label()">{{ panels.code }}</span>
-        </TabsTrigger>
         <TabsTrigger value="ai" data-test-id="properties-tab-ai" :class="tabStyles.trigger()">
-          <icon-lucide-sparkles :class="tabStyles.icon()" aria-hidden="true" />
+          <icon-lucide-bot :class="tabStyles.icon()" aria-hidden="true" />
           <span :class="tabStyles.label()">{{ panels.ai }}</span>
         </TabsTrigger>
-        <TabsTrigger
-          value="lint"
-          data-test-id="properties-tab-lint"
-          :aria-label="
-            problemCount?.total
-              ? `${checkMessages.tab}, ${checkMessages.tabCount({ count: problemCount.total })}`
-              : checkMessages.tab
-          "
-          :class="tabStyles.trigger()"
-        >
-          <!-- Errors and warnings tint the icon, which costs no room in a full row. -->
-          <icon-lucide-list-checks
-            :data-severity="problemCount?.total ? problemCount.severity : undefined"
-            :class="tabStyles.icon()"
-            aria-hidden="true"
-          />
-          <span :class="tabStyles.label()">{{ checkMessages.tab }}</span>
-        </TabsTrigger>
-        <ZoomDropdown v-if="activeTab === 'design'" />
+        <ZoomDropdown v-if="activeTab !== 'ai'" />
       </TabsList>
 
       <TabsContent
         value="design"
         class="flex min-h-0 flex-1 flex-col"
         :force-mount="true"
-        :hidden="activeTab !== 'design'"
+        :hidden="activeTab === 'ai'"
       >
         <DesignPanel />
-      </TabsContent>
-
-      <TabsContent
-        value="code"
-        class="flex min-h-0 flex-1 flex-col"
-        :force-mount="true"
-        :hidden="activeTab !== 'code'"
-      >
-        <CodePanel :active="activeTab === 'code'" />
-      </TabsContent>
-
-      <TabsContent
-        value="lint"
-        class="flex min-h-0 flex-1 flex-col"
-        :force-mount="true"
-        :hidden="activeTab !== 'lint'"
-      >
-        <DesignCheckPanel :active="activeTab === 'lint'" />
       </TabsContent>
 
       <TabsContent

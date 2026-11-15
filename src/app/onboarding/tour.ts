@@ -12,7 +12,7 @@ export interface TourStop {
 }
 
 export const TOUR_STOPS: readonly TourStop[] = [
-  { id: 'code', anchor: 'properties-tab-code', side: 'left', panelTab: 'code' },
+  { id: 'code', anchor: 'properties-tab-code', side: 'right', panelTab: 'code' },
   { id: 'layers', anchor: 'layers-tree', side: 'right', panelTab: 'design' },
   { id: 'toolbar', anchor: 'toolbar', side: 'top' },
   { id: 'ai', anchor: 'properties-tab-ai', side: 'left', panelTab: 'ai' }
