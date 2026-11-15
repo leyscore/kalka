@@ -155,6 +155,119 @@
 }
 
 /*
+ * The welcome's selected word: an agent's cursor drafts the frame, then yours comes and drags its
+ * corner. One ten second loop shared by the cursors, the frame and its size badge.
+ */
+@keyframes kalka-frame-agent {
+  0% {
+    transform: translate(-340px, -150px);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  26%,
+  54%,
+  88% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  40% {
+    transform: translate(6px, -4px);
+  }
+  70% {
+    transform: translate(4px, 6px);
+  }
+  100% {
+    transform: translate(-120px, -60px);
+    opacity: 0;
+  }
+}
+
+@keyframes kalka-frame-you {
+  0%,
+  30% {
+    transform: translate(260px, 140px);
+    opacity: 0;
+  }
+  38% {
+    opacity: 1;
+  }
+  52% {
+    transform: translate(0, 0);
+  }
+  60% {
+    transform: translate(0, 0) scale(0.92);
+  }
+  74% {
+    transform: translate(14px, 10px) scale(0.92);
+  }
+  80% {
+    transform: translate(14px, 10px);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(90px, 60px);
+    opacity: 0;
+  }
+}
+
+@keyframes kalka-frame-grow {
+  0%,
+  60% {
+    right: -0.075em;
+    bottom: -0.05em;
+  }
+  74%,
+  100% {
+    right: calc(-0.075em - 14px);
+    bottom: calc(-0.05em - 10px);
+  }
+}
+
+@keyframes kalka-frame-size-rest {
+  0%,
+  61% {
+    opacity: 1;
+  }
+  62%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes kalka-frame-size-grown {
+  0%,
+  61% {
+    opacity: 0;
+  }
+  62%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@utility animate-frame-agent {
+  animation: kalka-frame-agent 10s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+}
+
+@utility animate-frame-you {
+  animation: kalka-frame-you 10s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+}
+
+@utility animate-frame-grow {
+  animation: kalka-frame-grow 10s cubic-bezier(0.3, 0, 0.2, 1) infinite;
+}
+
+@utility animate-frame-size-rest {
+  animation: kalka-frame-size-rest 10s steps(1) infinite;
+}
+
+@utility animate-frame-size-grown {
+  animation: kalka-frame-size-grown 10s steps(1) infinite;
+}
+
+/*
  * The editor is neutral: no light behind the canvas and opaque panels, so the app's own colors
  * never tint the design being judged. Home keeps the brand backdrop.
  */

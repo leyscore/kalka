@@ -29,7 +29,10 @@ export const welcomeScreen = tv({
   },
   variants: {
     step: {
-      start: { column: 'max-w-[520px] items-center gap-6 text-center' },
+      start: {
+        column:
+          'max-w-[520px] items-center gap-6 text-center [&_h2]:mt-2 [&_h2]:mb-7 sm:[&_h2]:whitespace-nowrap'
+      },
       claude: { column: 'max-w-[1180px] gap-5' }
     }
   }

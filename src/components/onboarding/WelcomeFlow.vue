@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { DialogContent, DialogDescription, DialogPortal, DialogRoot, DialogTitle } from 'reka-ui'
-import { computed, ref } from 'vue'
+import { computed, ref, useTemplateRef } from 'vue'
 
 import { useI18n } from '@kalka/vue'
 
@@ -12,6 +12,7 @@ import {
   welcomeStep
 } from '@/app/onboarding/welcome'
 import BrandMark from '@/components/brand/BrandMark.vue'
+import SelectedWord from '@/components/brand/SelectedWord.vue'
 import AppBackdrop from '@/components/shell/AppBackdrop.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import Tip from '@/components/ui/overlay/Tip.vue'
@@ -21,7 +22,13 @@ import WelcomeStepClaude from './WelcomeStepClaude.vue'
 
 const { welcome } = useI18n()
 const identity = useCollabIdentity()
+const nameInput = useTemplateRef<HTMLInputElement>('nameInput')
 const name = ref(identity.hasChosenName.value ? identity.name.value : '')
+/** The greeting around the product's name, which is drawn as a selected layer. */
+const title = computed(() => {
+  const [before = '', ...rest] = welcome.value.title.split('Kalka')
+  return { before, after: rest.join('Kalka') }
+})
 const styles = computed(() => welcomeScreen({ step: welcomeStep.value }))
 
 /** The name is the one collaborators see, kept on this computer like the rest. */
@@ -44,6 +51,13 @@ function showMCP(): void {
   welcomeStep.value = 'claude'
 }
 
+/** The name is the first thing to fill in, not the skip link that comes first in the page. */
+function focusName(event: Event): void {
+  if (!nameInput.value) return
+  event.preventDefault()
+  nameInput.value.focus()
+}
+
 function onOpenChange(open: boolean): void {
   if (!open) finish()
 }
@@ -52,7 +66,7 @@ function onOpenChange(open: boolean): void {
 <template>
   <DialogRoot :open="welcomeOpen" @update:open="onOpenChange">
     <DialogPortal>
-      <DialogContent :class="styles.root()" data-test-id="welcome">
+      <DialogContent :class="styles.root()" data-test-id="welcome" @open-auto-focus="focusName">
         <AppBackdrop drift lights="home" />
         <AppButton
           size="lg"
@@ -69,8 +83,10 @@ function onOpenChange(open: boolean): void {
           @submit.prevent="connectAgent"
         >
           <BrandMark variant="app-icon" decorative :class="styles.mark()" />
-          <DialogTitle :class="styles.title()">{{ welcome.title }}</DialogTitle>
-          <DialogDescription :class="styles.intro()">{{ welcome.intro }}</DialogDescription>
+          <DialogTitle :class="styles.title()">
+            {{ title.before }}<SelectedWord>Kalka</SelectedWord>{{ title.after }}
+          </DialogTitle>
+          <DialogDescription class="sr-only">{{ welcome.intro }}</DialogDescription>
 
           <div :class="styles.field()">
             <div :class="styles.labelRow()">
@@ -83,6 +99,7 @@ function onOpenChange(open: boolean): void {
             </div>
             <input
               id="welcome-name"
+              ref="nameInput"
               v-model="name"
               type="text"
               name="given-name"
