@@ -11,6 +11,7 @@ import {
   type ModelSettingsReason
 } from '@/app/ai/models/settings/request'
 import { useModelSettings } from '@/app/ai/models/settings/use'
+import ConnectAgent from '@/components/chat/connect/ConnectAgent.vue'
 import SettingsPage from '@/components/settings/layout/SettingsPage.vue'
 import SettingsSection from '@/components/settings/layout/SettingsSection.vue'
 import ProfileEditor from '@/components/settings/models/ProfileEditor.vue'
@@ -171,6 +172,8 @@ const { profiles, statusByConnection, refreshStatuses } = useModelSettings()
               </template>
             </AppActionRow>
           </div>
+          <!-- The short way to one more agent or provider; guided setup below plans several models. -->
+          <ConnectAgent placement="settings" data-test-id="settings-connect" />
           <AppButton
             color="primary"
             variant="link"

@@ -26,7 +26,7 @@ export function closeWelcome(): void {
 /** Leaves the welcome for the guided setup that connects the agent already on this computer. */
 export function closeWelcomeForAIChat(): void {
   closeWelcome()
-  openAISetup('guided')
+  openAISetup('connect')
 }
 
 /** A fresh install sees the welcome; someone who already went through it may still get the AI offer. */

@@ -22,7 +22,7 @@ function generate(): void {
     return
   }
   if (startWithPrompt(prompt.value) === 'needs-setup') {
-    openAISetup()
+    openAISetup('connect')
     return
   }
   prompt.value = ''

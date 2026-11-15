@@ -5,6 +5,7 @@ import {
   closeAISetup
 } from '@/app/ai/models/settings/onboarding/dialog'
 import { openSettingsDialog } from '@/app/settings/dialog'
+import ConnectAgent from '@/components/chat/connect/ConnectAgent.vue'
 import { AppDialogRoot } from '@/components/ui/dialog'
 
 import AISetupFlow from './AISetupFlow.vue'
@@ -26,6 +27,17 @@ function openAdvancedSettings(): void {
     data-test-id="ai-setup-dialog"
     @update:open="onOpenChange"
   >
-    <AISetupFlow :entry="aiSetupEntry" @close="closeAISetup" @advanced="openAdvancedSettings" />
+    <ConnectAgent
+      v-if="aiSetupEntry === 'connect'"
+      placement="dialog"
+      @connected="closeAISetup"
+      @advanced="openAdvancedSettings"
+    />
+    <AISetupFlow
+      v-else
+      :entry="aiSetupEntry"
+      @close="closeAISetup"
+      @advanced="openAdvancedSettings"
+    />
   </AppDialogRoot>
 </template>

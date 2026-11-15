@@ -5,8 +5,11 @@ import { appPreferences, updateAISetupState } from '@/app/settings/preferences/s
 
 import { isUnconfiguredModelSettings } from './apply'
 
-/** `welcome` introduces Kalka first; `guided` starts at the setup questions. */
-export type AISetupEntry = 'welcome' | 'guided'
+/**
+ * `connect` is the short way: an agent on this computer or a provider's key, then start.
+ * `welcome` introduces Kalka first and `guided` starts at the setup questions, for several models.
+ */
+export type AISetupEntry = 'connect' | 'welcome' | 'guided'
 
 export const aiSetupDialogOpen = ref(false)
 export const aiSetupEntry = ref<AISetupEntry>('guided')

@@ -2,7 +2,6 @@
 import { formatShortcut, useI18n } from '@kalka/vue'
 
 import { useAIChat } from '@/app/ai/chat/use'
-import { openAISetup } from '@/app/ai/models/settings/onboarding/dialog'
 import { openFolderFile } from '@/app/document/folder/view'
 import { useEditorStore } from '@/app/editor/active-store'
 import { useLeftPanel } from '@/app/shell/left-panel/use'
@@ -19,20 +18,10 @@ import ZoomDropdown from './ZoomDropdown.vue'
 const store = useEditorStore()
 const { editor, menu, panels } = useI18n()
 const { activeTab, isConfigured } = useAIChat()
-const { toggleAgent: toggleAgentPanel } = useLeftPanel()
 const styles = editorTopBar()
 
-/**
- * The agent button is the one way in: without an agent it opens guided setup, where an installed
- * Claude Code, Codex or Gemini CLI connects in one click; with one it opens the conversation.
- */
-function toggleAgent(): void {
-  if (!isConfigured.value) {
-    openAISetup()
-    return
-  }
-  toggleAgentPanel()
-}
+// Without an agent the panel itself offers to connect one, so the button only opens it.
+const { toggleAgent } = useLeftPanel()
 </script>
 
 <template>

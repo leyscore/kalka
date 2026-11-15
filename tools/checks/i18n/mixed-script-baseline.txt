@@ -45,6 +45,7 @@ ja:ai.baseURLPlaceholder
 ja:ai.chatAuthenticationFailed
 ja:ai.chatForbidden
 ja:ai.chatNetworkFailed
+ja:ai.connectAPIDescription
 ja:ai.connectProvider
 ja:ai.connectionTestAPITypeMismatch
 ja:ai.connectionTestAuthFailed
@@ -248,6 +249,7 @@ zh-cn:ai.baseURLPlaceholder
 zh-cn:ai.chatAuthenticationFailed
 zh-cn:ai.chatForbidden
 zh-cn:ai.chatNetworkFailed
+zh-cn:ai.connectAPIDescription
 zh-cn:ai.connectProvider
 zh-cn:ai.connectionTestAPITypeMismatch
 zh-cn:ai.connectionTestAuthFailed

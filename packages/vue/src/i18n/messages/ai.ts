@@ -45,6 +45,10 @@ export const aiMessageDefaults = {
   chatAgentWorkingOn: params('{agent} is working on “{page}”'),
   chatGoToPage: 'Go to page',
   connectProvider: 'Connect an AI provider to start chatting.',
+  connectAPIDescription:
+    'Paste a key from Anthropic, OpenAI, Google, OpenRouter, or the address of your own server.',
+  connectStart: 'Start',
+  connectFailed: 'Couldn’t save this connection. Try again.',
   connectionTestSuccess: 'Connected successfully. Model is reachable.',
   connectionTestMissingAPIKey: 'Enter an API key before testing.',
   connectionTestMissingBaseURL: 'Enter a base URL before testing.',

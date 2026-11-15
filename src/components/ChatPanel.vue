@@ -30,9 +30,9 @@ import ChatInput from '@/components/chat/ChatInput.vue'
 import ChatReconnectNotice from '@/components/chat/ChatReconnectNotice.vue'
 import ChatRunLocation from '@/components/chat/ChatRunLocation.vue'
 import ChatTranscript from '@/components/chat/ChatTranscript.vue'
+import ConnectAgent from '@/components/chat/connect/ConnectAgent.vue'
 import FollowAgentsToggle from '@/components/chat/FollowAgentsToggle.vue'
 import { useImageDrop } from '@/components/chat/input/useImageDrop'
-import ProviderSetup from '@/components/chat/ProviderSetup.vue'
 
 const {
   isConfigured,
@@ -293,7 +293,7 @@ function handleStop() {
     <p v-if="history.storageError.value" role="alert" class="px-3 py-2 text-xs text-red-400">
       {{ ai.chatStorageFailed }}
     </p>
-    <ProviderSetup v-if="!isConfigured" />
+    <ConnectAgent v-if="!isConfigured" />
 
     <template v-if="isConfigured || messages.length">
       <p
