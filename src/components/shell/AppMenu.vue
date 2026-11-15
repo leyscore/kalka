@@ -17,10 +17,9 @@ import {
 import { useTemplateRef, watch } from 'vue'
 import IconChevronRight from '~icons/lucide/chevron-right'
 
-import { shortcutPlatform, useEditorCommands, vTestId, useI18n } from '@kalka/vue'
+import { shortcutPlatform, useEditorCommands, vTestId } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
-import { openSettingsDialog } from '@/app/settings/dialog'
 import { useAppMenu } from '@/app/shell/menu/app-menu'
 import { useDocumentNameRename } from '@/app/shell/menu/document-name'
 import {
@@ -56,7 +55,6 @@ watch(nameInput, (input) => {
   if (input) void rename.focusInput(input)
 })
 
-const { menu: t, settings } = useI18n()
 
 const { topMenus } = useAppMenu()
 // Undo and redo sit by the document's name, where people look for them first.
@@ -73,8 +71,8 @@ const { overflowStart, overflowEnd, scrollTowardHidden } = useScrollOverflow(men
 </script>
 
 <template>
-  <div class="shrink-0">
-    <div class="flex items-center gap-1 pt-3 pr-3 pb-2.5 pl-3">
+  <div class="flex min-w-0 items-center gap-2">
+    <div class="flex min-w-0 items-center gap-1">
       <BrandMark
         data-test-id="app-logo"
         variant="app-icon"
@@ -85,7 +83,7 @@ const { overflowStart, overflowEnd, scrollTowardHidden } = useScrollOverflow(men
         v-if="editingName"
         ref="nameInput"
         data-test-id="app-document-name-input"
-        class="min-w-0 flex-1 rounded-md border border-accent bg-input px-1 py-0.5 text-[13px] font-semibold text-surface outline-none"
+        class="w-40 min-w-0 rounded-md border border-accent bg-input px-1 py-0.5 text-[13px] font-semibold text-surface outline-none"
         :value="store.state.documentName"
         @blur="commitRename($event)"
         @keydown="rename.onKeydown"
@@ -93,7 +91,7 @@ const { overflowStart, overflowEnd, scrollTowardHidden } = useScrollOverflow(men
       <span
         v-else
         data-test-id="app-document-name"
-        class="min-w-0 flex-1 cursor-default truncate rounded-md px-1 py-0.5 text-[13px] font-semibold text-surface transition-colors hover:bg-(--pill-hover-bg)"
+        class="max-w-40 min-w-0 cursor-default truncate rounded-md px-1 py-0.5 text-[13px] font-semibold text-surface transition-colors hover:bg-(--pill-hover-bg)"
         @dblclick="startRename"
         >{{ store.state.documentName }}</span
       >
@@ -115,24 +113,8 @@ const { overflowStart, overflowEnd, scrollTowardHidden } = useScrollOverflow(men
       >
         <icon-lucide-redo-2 class="size-[15px]" />
       </IconButton>
-      <IconButton
-        :label="settings.title"
-        data-test-id="app-settings-trigger"
-        class="size-7 rounded-[7px]"
-        @click="openSettingsDialog()"
-      >
-        <icon-lucide-settings class="size-[15px]" />
-      </IconButton>
-      <IconButton
-        :label="`${t.toggleUI} (${appMenuShortcutLabel('toggle-ui')})`"
-        data-test-id="app-toggle-ui"
-        class="size-7 rounded-[7px]"
-        @click="store.state.showUI = !store.state.showUI"
-      >
-        <icon-lucide-panel-left class="size-[15px]" />
-      </IconButton>
     </div>
-    <div v-if="showMenubar" class="-mt-1 flex items-center px-2 pb-2.5">
+    <div v-if="showMenubar" class="flex min-w-0 flex-1 items-center">
       <div
         ref="menubar"
         class="scrollbar-none min-w-0 flex-1 overflow-x-auto data-overflow-end:mask-r-from-[calc(100%-2rem)] data-overflow-start:mask-l-from-[calc(100%-2rem)]"

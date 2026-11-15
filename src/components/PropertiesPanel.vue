@@ -11,7 +11,6 @@ import { glidePills } from '@/theme/motion/glide'
 import { propertiesTabs } from '@/theme/panel/properties-tabs'
 
 import DesignPanel from './DesignPanel.vue'
-import ZoomDropdown from './editor/ZoomDropdown.vue'
 
 // The chat, its model SDKs and markdown load when the AI tab first opens, then stay mounted.
 const ChatPanel = defineAsyncComponent(() => import('./ChatPanel.vue'))
@@ -57,7 +56,6 @@ useGlide(tabListElement, { items: '[role="tab"]', hover: true, pillClass: glideP
           <icon-lucide-bot :class="tabStyles.icon()" aria-hidden="true" />
           <span :class="tabStyles.label()">{{ panels.ai }}</span>
         </TabsTrigger>
-        <ZoomDropdown v-if="activeTab !== 'ai'" />
       </TabsList>
 
       <TabsContent

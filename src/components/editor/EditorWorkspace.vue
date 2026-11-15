@@ -4,7 +4,7 @@ import { SplitterGroup, SplitterPanel, SplitterResizeHandle } from 'reka-ui'
 import { tv } from 'tailwind-variants'
 import { computed, defineAsyncComponent, useTemplateRef } from 'vue'
 
-import { formatShortcut, useI18n, useViewportKind } from '@kalka/vue'
+import { formatShortcut, useViewportKind } from '@kalka/vue'
 
 import { provideTabEditorStore } from '@/app/editor/active-store'
 import { appRuntimeConfig } from '@/app/runtime/config'
@@ -18,7 +18,6 @@ import {
 import { appMenuShortcut } from '@/app/shell/menu/shortcut'
 import type { Tab } from '@/app/tabs'
 import CanvasSplitRoot from '@/components/canvas/CanvasSplitRoot.vue'
-import CollabPanel from '@/components/collab-panel/CollabPanel.vue'
 import ActiveRoomOverlay from '@/components/collab-room/ActiveRoomOverlay.vue'
 import { useRoomActions } from '@/components/collab-room/useRoomActions'
 import EditorCanvas from '@/components/EditorCanvas.vue'
@@ -27,10 +26,10 @@ import MobileDrawer from '@/components/MobileDrawer.vue'
 import MobileHud from '@/components/MobileHud/MobileHud.vue'
 import PropertiesPanel from '@/components/PropertiesPanel.vue'
 import Toolbar from '@/components/Toolbar/Toolbar.vue'
-import IconButton from '@/components/ui/button/IconButton.vue'
 import splitterTheme from '@/theme/splitter'
 
-import BreakpointSwitcher from './BreakpointSwitcher.vue'
+import EditorTopBar from './EditorTopBar.vue'
+import PanelRail from './PanelRail.vue'
 import WorkspacePill from './WorkspacePill.vue'
 
 const showChrome = appRuntimeConfig.showChrome
@@ -61,7 +60,6 @@ const propertiesLimits = computed(() =>
 const horizontalSplitterStyles = tv(splitterTheme)({ direction: 'horizontal', gutter: true })
 /** One canvas previewing takes the whole window, in the canvas-only layout; split view keeps panels. */
 const playingAlone = computed(() => store.state.play !== null && store.visiblePaneCount.value <= 1)
-const { editor } = useI18n()
 // Until a room's document arrives there is nothing to edit, so its screen replaces the editor.
 const { pending: roomPending } = useRoomActions()
 </script>
@@ -71,70 +69,62 @@ const { pending: roomPending } = useRoomActions()
     <ActiveRoomOverlay />
   </div>
 
-  <SplitterGroup
+  <div
     v-else-if="!isMobile && showChrome && store.state.showUI && !playingAlone"
-    ref="panels"
     :key="tab.id"
-    direction="horizontal"
-    class="flex-1 overflow-hidden px-2 pb-2 [--color-glass-border:var(--color-border)] [--color-glass:var(--color-panel)]"
-    @layout="saveEditorLayout"
+    class="flex flex-1 flex-col gap-2 overflow-hidden px-2 pb-2 [--color-glass-border:var(--color-border)] [--color-glass:var(--color-panel)]"
   >
-    <SplitterPanel
-      id="layers"
-      :default-size="initialEditorLayout[0]"
-      :min-size="layersLimits.minSize"
-      :max-size="layersLimits.maxSize"
-      class="flex panel-float overflow-hidden"
-    >
-      <LayersPanel />
-    </SplitterPanel>
-    <SplitterResizeHandle
-      data-test-id="left-splitter-handle"
-      :class="horizontalSplitterStyles.handle()"
-    >
-      <div :class="horizontalSplitterStyles.divider()" />
-    </SplitterResizeHandle>
-    <SplitterPanel
-      id="canvas"
-      :default-size="initialEditorLayout[1]"
-      :min-size="30"
-      class="flex overflow-hidden rounded-[14px] border border-canvas-edge"
-    >
-      <div class="relative flex min-w-0 flex-1">
-        <CanvasSplitRoot />
-        <ActiveRoomOverlay />
-        <BreakpointSwitcher />
-        <Toolbar />
-      </div>
-    </SplitterPanel>
-    <SplitterResizeHandle :class="horizontalSplitterStyles.handle()">
-      <div :class="horizontalSplitterStyles.divider()" />
-    </SplitterResizeHandle>
-    <SplitterPanel
-      id="properties"
-      :default-size="initialEditorLayout[2]"
-      :min-size="propertiesLimits.minSize"
-      :max-size="propertiesLimits.maxSize"
-      class="flex flex-col panel-float overflow-hidden"
-    >
-      <div class="flex shrink-0 items-center gap-1 pt-2.5 pr-2.5 pb-2 pl-3">
-        <CollabPanel class="min-w-0 flex-1" />
-        <IconButton
-          :label="
-            editor.startPreview({
-              shortcut: formatShortcut(appMenuShortcut('toggle-preview')) ?? ''
-            })
-          "
-          data-test-id="editor-start-preview"
-          class="size-[30px] rounded-lg text-label"
-          @click="store.startPlay()"
+    <EditorTopBar />
+    <div class="flex min-h-0 flex-1 gap-2">
+      <PanelRail class="panel-float" />
+      <SplitterGroup
+        ref="panels"
+        direction="horizontal"
+        class="min-w-0 flex-1 overflow-hidden"
+        @layout="saveEditorLayout"
+      >
+        <SplitterPanel
+          id="layers"
+          :default-size="initialEditorLayout[0]"
+          :min-size="layersLimits.minSize"
+          :max-size="layersLimits.maxSize"
+          class="flex panel-float overflow-hidden"
         >
-          <icon-lucide-play class="size-3.5" />
-        </IconButton>
-      </div>
-      <PropertiesPanel />
-    </SplitterPanel>
-  </SplitterGroup>
+          <LayersPanel />
+        </SplitterPanel>
+        <SplitterResizeHandle
+          data-test-id="left-splitter-handle"
+          :class="horizontalSplitterStyles.handle()"
+        >
+          <div :class="horizontalSplitterStyles.divider()" />
+        </SplitterResizeHandle>
+        <SplitterPanel
+          id="canvas"
+          :default-size="initialEditorLayout[1]"
+          :min-size="30"
+          class="flex overflow-hidden rounded-[14px] border border-canvas-edge"
+        >
+          <div class="relative flex min-w-0 flex-1">
+            <CanvasSplitRoot />
+            <ActiveRoomOverlay />
+            <Toolbar />
+          </div>
+        </SplitterPanel>
+        <SplitterResizeHandle :class="horizontalSplitterStyles.handle()">
+          <div :class="horizontalSplitterStyles.divider()" />
+        </SplitterResizeHandle>
+        <SplitterPanel
+          id="properties"
+          :default-size="initialEditorLayout[2]"
+          :min-size="propertiesLimits.minSize"
+          :max-size="propertiesLimits.maxSize"
+          class="flex flex-col panel-float overflow-hidden"
+        >
+          <PropertiesPanel />
+        </SplitterPanel>
+      </SplitterGroup>
+    </div>
+  </div>
 
   <div
     v-else-if="isMobile && showChrome && store.state.showUI"
