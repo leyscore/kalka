@@ -6,9 +6,9 @@ import { useActiveEditorStoreRef } from '@/app/editor/active-store'
 import { follow, followedLabel, presenceOf } from './registry'
 
 /**
- * Who the active document's view follows, for a canvas pane's frame and banner. Your own
- * input on the canvas — a click, scrolling or zooming — stops following; the frame also
- * stops it on Escape.
+ * Who the active document's view follows, for a canvas pane's frame and banner. Scrolling the
+ * canvas away stops following; a click to select or edit a layer and zooming do not, so the
+ * person can work beside the agent they watch. The frame also stops it on Escape.
  */
 export function useFollowView(area: MaybeRefOrGetter<HTMLElement | null>) {
   // Presence belongs to the store object itself, not the forwarding proxy components get.
@@ -20,7 +20,11 @@ export function useFollowView(area: MaybeRefOrGetter<HTMLElement | null>) {
     if (store && presenceOf(store).following.value) follow(store, null)
   }
 
-  useEventListener(area, ['pointerdown', 'wheel'], stop, { capture: true, passive: true })
+  // A pinch or a wheel with Control or Command zooms; any other wheel scrolls the view away.
+  const onWheel = (event: WheelEvent) => {
+    if (!event.ctrlKey && !event.metaKey) stop()
+  }
+  useEventListener(area, 'wheel', onWheel, { capture: true, passive: true })
 
   return { label, stop }
 }

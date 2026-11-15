@@ -59,10 +59,16 @@ export function presenceOf(store: EditorStore): Presence {
     stopIfLeftFollowedPage(store)
     refreshCursors(store)
   })
-  // Zooming or fitting the view yourself, by any shortcut or menu, ends following. A page
-  // switch restores that page's viewport without this event, so only centering is ours.
-  store.onEditorEvent('viewport:changed', () => {
-    if (presence.following.value && !presence.moving) stopFollowing(store, true)
+  // Moving the view yourself ends following; zooming on an agent does not, so you can look closer
+  // at what it draws and keep being taken along. A page switch restores that page's viewport without
+  // this event, so only centering is ours.
+  store.onEditorEvent('viewport:changed', (viewport, previous) => {
+    const target = presence.following.value
+    if (!target || presence.moving) return
+    // A person's zoom is part of what is followed, and a page still loading must not land later.
+    const zoomed = viewport.zoom !== previous.zoom
+    if (zoomed && target.kind === 'agent' && !presence.switching) return
+    stopFollowing(store, true)
   })
   return presence
 }

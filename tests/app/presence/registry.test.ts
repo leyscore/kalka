@@ -189,6 +189,17 @@ test('zooming yourself stops following', () => {
   expect(presenceOf(store).following.value).toBeNull()
 })
 
+test('zooming on an agent you follow keeps following; moving the view away stops', () => {
+  const { store, pageId } = setup()
+  const agent = addAgent(store, 'chat')
+  agent.update({ status: 'editing', cursor: { x: 10, y: 10, pageId } })
+  follow(store, { kind: 'agent', agentId: agent.id })
+  store.applyZoom(-100, 960, 540)
+  expect(presenceOf(store).following.value).toEqual({ kind: 'agent', agentId: agent.id })
+  store.pan(120, 0)
+  expect(presenceOf(store).following.value).toBeNull()
+})
+
 test('cursor updates while heading to a page do not restart the switch', async () => {
   const { store, other } = setup()
   store.preparationController.acknowledgePresentation(Number.MAX_SAFE_INTEGER)
