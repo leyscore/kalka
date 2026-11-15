@@ -4,7 +4,7 @@ import { i18n } from '#vue/i18n/create'
 
 export const welcomeMessageDefaults = {
   title: 'Welcome to Kalka',
-  intro: 'Design like you do in Figma. Every layer you draw is real HTML and CSS.',
+  intro: 'Every layer you draw is real HTML and CSS.',
   nameLabel: 'What should we call you?',
   namePlaceholder: 'Your first name',
   nameHint: 'Kept on this computer. People you share a file with see it next to your cursor.',

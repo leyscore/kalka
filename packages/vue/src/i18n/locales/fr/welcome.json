@@ -1,6 +1,6 @@
 {
   "title": "Bienvenue dans Kalka",
-  "intro": "Dessinez comme dans Figma. Chaque calque que vous tracez est du vrai HTML et du vrai CSS.",
+  "intro": "Chaque calque que vous tracez est du vrai HTML et du vrai CSS.",
   "nameLabel": "Comment doit-on vous appeler ?",
   "namePlaceholder": "Votre prénom",
   "nameHint": "Gardé sur cet ordinateur. Les personnes avec qui vous partagez un fichier le voient à côté de votre curseur.",

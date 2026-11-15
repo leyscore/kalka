@@ -14,6 +14,7 @@ import {
 import BrandMark from '@/components/brand/BrandMark.vue'
 import AppBackdrop from '@/components/shell/AppBackdrop.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
+import Tip from '@/components/ui/overlay/Tip.vue'
 import { welcomeScreen } from '@/theme/onboarding'
 
 import WelcomeStepClaude from './WelcomeStepClaude.vue'
@@ -71,9 +72,17 @@ function onOpenChange(open: boolean): void {
           <DialogTitle :class="styles.title()">{{ welcome.title }}</DialogTitle>
           <DialogDescription :class="styles.intro()">{{ welcome.intro }}</DialogDescription>
 
-          <label :class="styles.field()">
-            <span :class="styles.label()">{{ welcome.nameLabel }}</span>
+          <div :class="styles.field()">
+            <div :class="styles.labelRow()">
+              <label for="welcome-name" :class="styles.label()">{{ welcome.nameLabel }}</label>
+              <Tip :label="welcome.nameHint" side="right">
+                <button type="button" :aria-label="welcome.nameHint" :class="styles.info()">
+                  <icon-hugeicons-information-circle class="size-3.5" />
+                </button>
+              </Tip>
+            </div>
             <input
+              id="welcome-name"
               v-model="name"
               type="text"
               name="given-name"
@@ -83,8 +92,7 @@ function onOpenChange(open: boolean): void {
               :class="styles.input()"
               data-test-id="welcome-name"
             />
-            <span :class="styles.hint()">{{ welcome.nameHint }}</span>
-          </label>
+          </div>
 
           <div :class="styles.actions()">
             <div :class="styles.buttons()">
@@ -106,6 +114,7 @@ function onOpenChange(open: boolean): void {
                 data-test-id="welcome-mcp"
                 @click="showMCP"
               >
+                <template #leading><icon-hugeicons-plug class="size-4" /></template>
                 {{ welcome.connectMCP }}
               </AppButton>
             </div>
