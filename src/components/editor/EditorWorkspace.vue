@@ -105,7 +105,8 @@ const { pending: roomPending } = useRoomActions()
           :min-size="30"
           class="flex overflow-hidden rounded-[14px] border border-canvas-edge"
         >
-          <div class="relative flex min-w-0 flex-1">
+          <!-- A container, so the toolbar can shorten its agent field when the canvas is narrow. -->
+          <div class="@container/canvas relative flex min-w-0 flex-1">
             <CanvasSplitRoot />
             <ActiveRoomOverlay />
             <AgentDock />
