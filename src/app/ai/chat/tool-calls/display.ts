@@ -136,6 +136,8 @@ export function groupMessageParts(parts: readonly ChatMessagePart[]): MessagePar
   parts.forEach((part, index) => {
     // Step boundaries are not rendered, so they must not split a run of calls.
     if (part.type === 'step-start') return
+    // Nor is text or reasoning that says nothing, which agents send between two calls.
+    if ((part.type === 'text' || part.type === 'reasoning') && !part.text.trim()) return
     if (!isToolUIPart(part)) {
       groups.push({ kind: 'part', part, index })
       return

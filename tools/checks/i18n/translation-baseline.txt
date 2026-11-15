@@ -109,6 +109,7 @@ fr:ai.responses
 fr:ai.suggestDocuments
 fr:ai.suggestSkills
 fr:ai.thinkingMinimal
+fr:ai.toolActions
 fr:automation.port
 fr:automation.version
 fr:code.editorDesignLabel

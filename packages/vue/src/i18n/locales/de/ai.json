@@ -52,7 +52,7 @@
   "toolInput": "Eingabe",
   "toolOutput": "Ausgabe",
   "toolDetails": "Details des Werkzeugaufrufs",
-  "toolSteps": "Frühere Schritte: {count}",
+  "toolActions": "{count} Aktionen",
   "toolStepsFailed": "fehlgeschlagen: {count}",
   "showNodeOnCanvas": "{name} auf der Arbeitsfläche zeigen",
   "toolChanges": "Änderungen",

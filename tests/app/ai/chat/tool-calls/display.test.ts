@@ -131,6 +131,21 @@ describe('tool call display', () => {
     ).toEqual([0, [1, 2], 3, [4]])
   })
 
+  test('keeps a run of calls together across text and reasoning that say nothing', () => {
+    const parts: ChatMessagePart[] = [
+      call({ type: 'tool-get_selection' }),
+      { type: 'text', text: '' },
+      call({ type: 'tool-render' }),
+      { type: 'reasoning', text: '  ' },
+      call({ type: 'tool-render', toolCallId: 'again' })
+    ]
+    expect(
+      groupMessageParts(parts).map((group) =>
+        group.kind === 'tools' ? group.parts.map(({ index }) => index) : group.index
+      )
+    ).toEqual([[0, 2, 4]])
+  })
+
   test('keeps a run of calls together across the unrendered step boundaries between them', () => {
     const parts: ChatMessagePart[] = [
       call({ type: 'tool-get_selection' }),

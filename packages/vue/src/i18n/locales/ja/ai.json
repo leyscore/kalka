@@ -52,7 +52,7 @@
   "toolInput": "入力",
   "toolOutput": "出力",
   "toolDetails": "ツール呼び出しの詳細",
-  "toolSteps": "以前のステップ: {count}",
+  "toolActions": "{count} 件の操作",
   "toolStepsFailed": "失敗: {count}",
   "showNodeOnCanvas": "{name} をキャンバスに表示",
   "toolChanges": "変更",

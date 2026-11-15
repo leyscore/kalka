@@ -55,3 +55,14 @@ export const selectedWord = tv({
     }
   }
 })
+
+/** The loader at the size of a line of text: the K filling with blue while something is at work. */
+export const brandSpinner = tv({
+  slots: {
+    root: 'relative size-3.5 shrink-0',
+    shell: 'absolute inset-0 bg-surface/20 mask-brand-k',
+    vessel: 'absolute inset-0 overflow-hidden mask-brand-k',
+    liquid:
+      'absolute inset-x-0 bottom-0 h-full animate-liquid-fill bg-accent motion-reduce:animate-none'
+  }
+})

@@ -52,7 +52,7 @@
   "toolInput": "Entrée",
   "toolOutput": "Sortie",
   "toolDetails": "Détails de l’appel d’outil",
-  "toolSteps": "Étapes précédentes : {count}",
+  "toolActions": "{count} actions",
   "toolStepsFailed": "en échec : {count}",
   "showNodeOnCanvas": "Afficher {name} sur le canevas",
   "toolChanges": "Modifications",

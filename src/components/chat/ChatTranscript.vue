@@ -7,6 +7,7 @@ import { useI18n } from '@kalka/vue'
 
 import { attachmentsForMessage } from '@/app/ai/attachment/presentation/store'
 import type { AttachmentPresentation } from '@/app/ai/attachment/presentation/types'
+import BrandSpinner from '@/components/brand/BrandSpinner.vue'
 import { CHAT_NODES_LIVE } from '@/components/chat/tool/context'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
@@ -116,25 +117,13 @@ const { arrivedState, resumeFollowing } = useScrollFollowing(
         />
 
         <!-- Thinking indicator: shown when AI is working but no visible activity -->
-        <div v-if="isThinking" data-test-id="chat-typing-indicator" class="flex gap-2">
-          <div
-            class="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted/20 text-[10px] font-bold text-muted"
-          >
-            AI
-          </div>
-          <div class="flex items-center gap-1 py-2">
-            <span
-              class="size-1.5 animate-bounce motion-reduce:animate-none rounded-full bg-muted"
-            />
-            <span
-              class="size-1.5 animate-bounce motion-reduce:animate-none rounded-full bg-muted"
-              :style="{ animationDelay: '150ms' }"
-            />
-            <span
-              class="size-1.5 animate-bounce motion-reduce:animate-none rounded-full bg-muted"
-              :style="{ animationDelay: '300ms' }"
-            />
-          </div>
+        <div
+          v-if="isThinking"
+          data-test-id="chat-typing-indicator"
+          class="flex items-center gap-2 px-1.5 py-1 text-[11px] text-muted"
+        >
+          <BrandSpinner />
+          {{ ai.thinking }}
         </div>
 
         <!-- Continue button when step limit reached -->

@@ -1,6 +1,5 @@
 import { shallowRef, type ShallowRef } from 'vue'
 
-import { AI_ACTIVE_COLOR } from '@kalka/core/constants'
 import { computeContentBounds } from '@kalka/core/io'
 import type { Color } from '@kalka/scene-graph/primitives'
 import { randomHex } from '@kalka/scene-graph/random'
@@ -14,8 +13,11 @@ import { glideViewTo, showCursors, stopViewGlide, type TrackedCursor } from './c
 import { MAX_NAME_LENGTH } from './schema'
 import type { AgentKind, AgentPresence, FollowTarget, PersonPoint } from './types'
 
-/** Agents' color outside a room, where there is no collaborator color to inherit. */
-const SOLO_AGENT_COLOR: Color = { ...AI_ACTIVE_COLOR, a: 1 }
+/**
+ * Agents' color outside a room, where there is no collaborator color to inherit: the warm orange of
+ * the agent on kalka.design, so its cursor never reads as yours, which is the app's blue.
+ */
+const SOLO_AGENT_COLOR: Color = { r: 0.851, g: 0.467, b: 0.341, a: 1 }
 
 interface Presence {
   /** Agents running in this app for the document. */

@@ -52,7 +52,7 @@
   "toolInput": "输入",
   "toolOutput": "输出",
   "toolDetails": "工具调用详情",
-  "toolSteps": "之前的步骤：{count}",
+  "toolActions": "{count} 个操作",
   "toolStepsFailed": "失败：{count}",
   "showNodeOnCanvas": "在画布上显示 {name}",
   "toolChanges": "更改",

@@ -52,7 +52,7 @@
   "toolInput": "Вход",
   "toolOutput": "Результат",
   "toolDetails": "Подробности вызова инструмента",
-  "toolSteps": "Предыдущие шаги: {count}",
+  "toolActions": "Действий: {count}",
   "toolStepsFailed": "с ошибкой: {count}",
   "showNodeOnCanvas": "Показать {name} на холсте",
   "toolChanges": "Изменения",

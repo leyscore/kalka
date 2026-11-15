@@ -38,6 +38,7 @@ export const chatToolTheme = tv({
     groupTrigger:
       'flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-lg px-1.5 py-1 text-left text-[11px] text-muted hover:bg-hover hover:text-surface',
     groupIcon: 'size-3.5 shrink-0 text-primary',
+    groupNow: 'shrink-0 font-medium text-surface',
     groupNames: 'min-w-0 flex-1 truncate',
     groupFailed: 'bg-error/15 text-error',
     groupItems: 'space-y-1.5 px-1.5 pb-1.5'

@@ -5,21 +5,23 @@ import Matrix from '@kalka/scene-graph/matrix'
 import type { OverlayContext } from '#vue/canvas/svg-overlay/layers/selection'
 import { css, type MeasureText, type OverlayShape } from '#vue/canvas/svg-overlay/shapes'
 
-const CURSOR_SIZE = 9
-const LABEL_PADDING_X = 4
-const LABEL_PADDING_Y = 2
-const LABEL_FONT_SIZE = 10
-const LABEL_OFFSET_X = 12
-const LABEL_OFFSET_Y = 20
-const LABEL_RADIUS = 4
-/** Baseline below the pill's vertical center for 10px Inter. */
-const LABEL_TEXT_BASELINE = 3.5
+/** The pointer of kalka.design's hero: a plain arrow, its tip on the point it shows. */
+const ARROW = [0, 0, 15, 7.5, 8.4, 9.2, 5.3, 15.5]
+const ARROW_SCALE = 0.95
+const LABEL_PADDING_X = 7
+const LABEL_PADDING_Y = 4
+const LABEL_FONT_SIZE = 11
+const LABEL_OFFSET_X = 17
+const LABEL_OFFSET_Y = 26
+const LABEL_RADIUS = 7
+/** Baseline below the pill's vertical center for 11px Inter. */
+const LABEL_TEXT_BASELINE = 4
 /** Longer names end with an ellipsis. */
 const LABEL_MAX_WIDTH = 160
 const ELLIPSIS = '…'
 /** The sparkle that marks an agent's name. */
 const LABEL_SPARKLE_RADIUS = 4
-const LABEL_SPARKLE_GAP = 3
+const LABEL_SPARKLE_GAP = 4
 const SELECTION_ALPHA = 0.6
 const SELECTION_STROKE_WIDTH = 1.5
 
@@ -71,23 +73,7 @@ function selectionOutlines(context: OverlayContext, cursor: PresenceCursor): Ove
 }
 
 function arrowPoints(x: number, y: number): number[] {
-  const S = CURSOR_SIZE
-  return [
-    x,
-    y,
-    x,
-    y + S * 1.35,
-    x + S * 0.38,
-    y + S * 1.0,
-    x + S * 0.72,
-    y + S * 1.5,
-    x + S * 0.92,
-    y + S * 1.38,
-    x + S * 0.58,
-    y + S * 0.88,
-    x + S * 1.0,
-    y + S * 0.82
-  ]
+  return ARROW.map((value, index) => (index % 2 === 0 ? x : y) + value * ARROW_SCALE)
 }
 
 /** A four-point sparkle of radius `R` centered on `cx`, `cy`. */
@@ -135,18 +121,18 @@ export function fitLabel(
   return { text: cut, width: Math.min(measureText(cut, fontSize), maxWidth) }
 }
 
-/** The pointer, filled with a person's color, or for an agent its owner's, outlined in white. */
+/** The pointer, filled with a person's color or an agent's, outlined in white to read on any page. */
 function arrow(x: number, y: number, cursor: PresenceCursor): OverlayShape[] {
   const points = arrowPoints(x, y)
   return [
-    { type: 'polygon', points, stroke: WHITE, strokeWidth: 2 },
+    { type: 'polygon', points, stroke: WHITE, strokeWidth: 2.5 },
     { type: 'polygon', points, fill: css(cursor.color, 1) }
   ]
 }
 
 /**
- * A name pill: filled for people; for agents outlined in the owner's color, with a sparkle
- * before the name.
+ * A name tag filled with the cursor's color, white on it; an agent's has a sparkle before the
+ * name.
  */
 function label(
   context: OverlayContext,
@@ -170,9 +156,7 @@ function label(
       width: badge + fitted.width + LABEL_PADDING_X * 2,
       height: pillHeight,
       rx: LABEL_RADIUS,
-      fill: agent ? WHITE : color,
-      stroke: agent ? color : undefined,
-      strokeWidth: agent ? 1 : undefined
+      fill: color
     }
   ]
   if (agent) {
@@ -183,7 +167,7 @@ function label(
         pillY + pillHeight / 2,
         LABEL_SPARKLE_RADIUS
       ),
-      fill: color
+      fill: WHITE
     })
   }
   shapes.push({
@@ -191,7 +175,7 @@ function label(
     x: pillX + LABEL_PADDING_X + badge,
     y: pillY + pillHeight / 2 + LABEL_TEXT_BASELINE,
     text: fitted.text,
-    fill: agent ? color : WHITE,
+    fill: WHITE,
     fontSize: LABEL_FONT_SIZE
   })
   return shapes
