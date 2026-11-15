@@ -38,8 +38,7 @@ const canOpenFolder = isTauri()
     </AppButton>
     <AppButton
       size="lg"
-      color="primary"
-      variant="solid"
+      variant="outline"
       :class="homeAction.primary"
       data-test-id="home-new-document"
       @click="emit('new-document')"

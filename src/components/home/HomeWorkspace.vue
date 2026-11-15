@@ -23,6 +23,7 @@ import { openSettingsDialog } from '@/app/settings/dialog'
 import { openFileFromPath } from '@/app/shell/menu/use'
 import { createStorageWorkspaceSource } from '@/app/storage/workspace/source'
 import { openStorageDocumentInNewTab } from '@/app/tabs'
+import BrandMark from '@/components/brand/BrandMark.vue'
 import DocumentEntry from '@/components/home/document/DocumentEntry.vue'
 import SampleDocumentEntry from '@/components/home/document/SampleDocumentEntry.vue'
 import HomeSidebar from '@/components/home/HomeSidebar.vue'
@@ -34,7 +35,7 @@ import HomeStart from '@/components/home/start/HomeStart.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import SegmentedControl from '@/components/ui/select/SegmentedControl.vue'
-import { homeHeading } from '@/theme/home/start'
+import { homeHeading, homeHero } from '@/theme/home/start'
 
 const emit = defineEmits<{ 'new-document': [] }>()
 const { panels, locale, storage, files, common, settings, welcome } = useI18n()
@@ -173,22 +174,19 @@ function formattedDate(updatedAt: string): string {
       data-test-id="recent-files-home"
     >
       <div
-        class="mx-auto flex w-full max-w-[1044px] flex-col gap-12 pt-8 pr-[max(1rem,env(safe-area-inset-right))] pb-12 pl-[max(1rem,env(safe-area-inset-left))] sm:px-8 sm:pt-14"
+        class="mx-auto flex w-full max-w-[1044px] flex-col gap-12 pt-4 pr-[max(1rem,env(safe-area-inset-right))] pb-12 pl-[max(1rem,env(safe-area-inset-left))] sm:px-8 sm:pt-6"
       >
-        <section id="home-top" class="flex scroll-mt-14 flex-col gap-6">
-          <header class="flex flex-wrap items-end justify-between gap-5">
-            <h1
-              class="font-display text-[clamp(30px,3.4vw,44px)] leading-none font-semibold tracking-[-0.035em] text-balance text-surface"
-            >
-              {{
-                identity.hasChosenName.value
-                  ? welcome.greeting({ name: identity.name.value })
-                  : welcome.homeTitle
-              }}
-            </h1>
-            <HomeSearchActions @new-document="emit('new-document')" />
-          </header>
-          <HomePrompt />
+        <section id="home-top" :class="homeHero.root">
+          <BrandMark variant="app-icon" decorative :class="homeHero.mark" />
+          <h1 :class="homeHero.title">
+            {{
+              identity.hasChosenName.value
+                ? welcome.greeting({ name: identity.name.value })
+                : welcome.homeTitle
+            }}
+          </h1>
+          <HomePrompt :class="homeHero.prompt" />
+          <HomeSearchActions :class="homeHero.actions" @new-document="emit('new-document')" />
         </section>
 
         <HomeStart />

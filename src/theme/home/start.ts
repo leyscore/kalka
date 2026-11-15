@@ -9,19 +9,28 @@ const cardFocus = 'outline-none focus-visible:ring-2 focus-visible:ring-accent/5
 /** The headings above each part of Home. */
 export const homeHeading = 'text-sm font-semibold text-label'
 
-/** Home's sidebar: a floating panel with the brand above the page's sections. */
+/** Home's rail: the same narrow floating strip of icons as the editor's, one per part of the page. */
 export const homeNav = {
-  root: 'panel-float hidden w-[200px] shrink-0 flex-col px-2.5 pt-[18px] pb-3 md:flex',
-  brand: 'flex items-center gap-2.5 px-2 pb-6',
-  name: 'font-display text-[19px] font-semibold tracking-[-0.02em] text-surface',
-  item: 'flex min-h-[38px] w-full cursor-pointer items-center gap-[11px] rounded-[9px] px-2.5 text-sm text-subtle transition-colors duration-150 outline-none hover:text-surface focus-visible:ring-2 focus-visible:ring-accent/50 aria-[current=true]:font-semibold aria-[current=true]:text-surface',
+  root: 'panel-float hidden w-11 shrink-0 flex-col py-2 md:flex',
+  list: 'flex flex-1 flex-col items-center gap-1',
+  item: 'flex size-8 cursor-pointer items-center justify-center rounded-lg text-muted transition-colors duration-150 outline-none hover:text-surface focus-visible:ring-2 focus-visible:ring-accent/50 aria-[current=true]:text-surface',
   icon: 'size-4 shrink-0'
 } as const
 
-/** The actions beside the greeting: quiet text buttons, then the one primary action. */
+/** The top of Home: the mark, the greeting and the request, centered on the backdrop. */
+export const homeHero = {
+  root: 'flex min-h-[min(54vh,480px)] scroll-mt-14 flex-col items-center justify-center gap-7 text-center',
+  mark: 'size-14 overflow-hidden rounded-[14px] shadow-[0_12px_40px_-12px_color-mix(in_srgb,var(--color-accent)_70%,transparent)]',
+  title:
+    'font-display text-[clamp(28px,3.2vw,40px)] leading-none font-semibold tracking-[-0.035em] text-balance text-surface',
+  prompt: 'w-full max-w-[640px]',
+  actions: 'justify-center'
+} as const
+
+/** The actions under the request: quiet text buttons, then a new blank design. */
 export const homeAction = {
   quiet: 'h-[38px] rounded-[9px] px-3 text-[13px] text-label hover:bg-(--pill-hover-bg)',
-  primary: 'ms-1.5 h-[38px] gap-[7px] rounded-[9px] px-[15px] text-[13px] font-semibold shadow-none'
+  primary: 'ms-1.5 h-[38px] gap-[7px] rounded-[9px] px-[15px] text-[13px] font-semibold'
 } as const
 
 /** The file search: a quiet field on the backdrop, as soft as the cards around it. */
@@ -101,11 +110,11 @@ export const learnCard = tv({
 /** The prompt that asks the AI agent for a page: one frosted field with its send button. */
 export const homePrompt = tv({
   slots: {
-    root: 'flex items-center gap-3 rounded-[14px] border border-glass-border bg-glass py-[7px] pr-[7px] pl-4 backdrop-blur-[24px] transition-[border-color,box-shadow] duration-200 focus-within:border-accent/50 focus-within:shadow-[0_0_0_4px_color-mix(in_srgb,var(--color-accent)_14%,transparent)]',
+    root: 'flex items-center gap-3 rounded-[18px] border border-glass-border bg-glass py-2.5 pr-2.5 pl-5 text-left backdrop-blur-[24px] transition-[border-color,box-shadow] duration-200 focus-within:border-accent/50 focus-within:shadow-[0_0_0_4px_color-mix(in_srgb,var(--color-accent)_14%,transparent)]',
     icon: 'size-[17px] shrink-0 text-highlight',
     input:
-      'min-w-0 flex-1 border-0 bg-transparent text-[15px] text-surface outline-none placeholder:text-muted',
+      'h-10 min-w-0 flex-1 border-0 bg-transparent text-base text-surface outline-none placeholder:text-muted',
     submit:
-      'h-[38px] shrink-0 cursor-pointer rounded-[9px] bg-surface px-[15px] text-[13px] font-semibold text-inverted transition-[opacity,scale] duration-150 outline-none hover:opacity-90 focus-visible:ring-2 focus-visible:ring-accent/50 active:scale-[0.97] disabled:cursor-default disabled:opacity-60 motion-reduce:active:scale-100'
+      'h-10 shrink-0 cursor-pointer rounded-[11px] bg-accent px-4 text-[13px] font-semibold text-white transition-[opacity,scale] duration-150 outline-none hover:opacity-90 focus-visible:ring-2 focus-visible:ring-accent/50 active:scale-[0.97] disabled:cursor-default disabled:opacity-60 motion-reduce:active:scale-100'
   }
 })
