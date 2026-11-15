@@ -88,8 +88,20 @@ export function appendUndoneCallsContext(text: string, calls: UndoneCalls): stri
   return description ? `${text}${UNDONE_CALLS_CONTEXT_MARKER}${description}` : text
 }
 
+export const PROJECT_INSTRUCTIONS_MARKER =
+  "\n\n[Project instructions — from the document's instructions folder, written by its owner]\n"
+
+/** Adds what the document's folder says its agents should know; nothing when it says nothing. */
+export function appendProjectInstructions(text: string, instructions: string): string {
+  return instructions ? `${text}${PROJECT_INSTRUCTIONS_MARKER}${instructions}` : text
+}
+
 /** Each note the chat adds to a request for the model only starts with one of these. */
-const MODEL_NOTE_MARKERS = [REFERENCED_NODE_CONTEXT_MARKER, UNDONE_CALLS_CONTEXT_MARKER]
+const MODEL_NOTE_MARKERS = [
+  REFERENCED_NODE_CONTEXT_MARKER,
+  UNDONE_CALLS_CONTEXT_MARKER,
+  PROJECT_INSTRUCTIONS_MARKER
+]
 
 /** What the person wrote, without the notes the chat added for the model after it. */
 export function stripModelNotes(text: string): string {

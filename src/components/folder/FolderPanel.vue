@@ -1,9 +1,13 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+
 import { useI18n } from '@kalka/vue'
 
+import { INSTRUCTIONS_DIR } from '@/app/ai/chat/instructions'
 import type { FolderRow } from '@/app/document/folder/tree'
 import { useDocumentFolder } from '@/app/document/folder/use'
 import { openFolderFile } from '@/app/document/folder/view'
+import { joinFolderPath } from '@/app/document/io/kalka-folder'
 import { useDocumentVersions } from '@/app/document/versions/use'
 import { useEditorStore } from '@/app/editor/active-store'
 import { saveAsFolderDialog } from '@/app/shell/menu/files'
@@ -20,7 +24,10 @@ const store = useEditorStore()
 // Git runs on this computer: the desktop app reads the repository for the tree's marks, a browser
 // does not.
 const versions = isTauri() ? useDocumentVersions(store) : null
-const { source, rows, collapsed, error, toggle, refresh, read } = useDocumentFolder(store, versions)
+const { source, folder, rows, collapsed, error, toggle, refresh, read } = useDocumentFolder(
+  store,
+  versions
+)
 const styles = folderPanel()
 
 function indent(row: FolderRow): string {
@@ -31,6 +38,27 @@ function indent(row: FolderRow): string {
 async function saveAsFolder(): Promise<void> {
   await saveAsFolderDialog(store)
   await versions?.refresh()
+}
+
+const hasInstructions = computed(() => rows.value.some((row) => row.path === INSTRUCTIONS_DIR))
+
+/** Starts the folder agents read before they draw, with a first file to fill in, and shows it. */
+async function startInstructions(): Promise<void> {
+  if (!folder.value) return
+  try {
+    const { mkdir, writeTextFile } = await import('@tauri-apps/plugin-fs')
+    const directory = joinFolderPath(folder.value, INSTRUCTIONS_DIR)
+    await mkdir(directory, { recursive: true })
+    await writeTextFile(
+      joinFolderPath(directory, 'rules.md'),
+      panels.value.folderInstructionsStarter
+    )
+    await refresh()
+    const { revealItemInDir } = await import('@tauri-apps/plugin-opener')
+    await revealItemInDir(joinFolderPath(directory, 'rules.md'))
+  } catch (cause) {
+    error.value = cause instanceof Error ? cause.message : String(cause)
+  }
 }
 
 /** A folder opens and closes; a file takes the canvas's place, as in a code editor. */
@@ -105,6 +133,16 @@ async function open(row: FolderRow): Promise<void> {
         </button>
       </li>
     </ul>
+    <div
+      v-if="source === 'disk' && !hasInstructions"
+      :class="styles.note()"
+      data-test-id="folder-instructions"
+    >
+      <p>{{ panels.folderInstructionsHint }}</p>
+      <AppButton size="sm" variant="outline" class="mt-2" @click="startInstructions">
+        {{ panels.folderInstructionsCreate }}
+      </AppButton>
+    </div>
     <AppAlert v-if="error" tone="error" :heading="error" class="mx-4 mb-3" />
   </div>
 </template>

@@ -11,6 +11,8 @@ import {
   deleteMessageAttachments,
   setMessageAttachments
 } from '@/app/ai/attachment/presentation/store'
+import { appendProjectInstructions } from '@/app/ai/chat/context'
+import { readProjectInstructions } from '@/app/ai/chat/instructions'
 import { setVisibleMessageText } from '@/app/ai/chat/presentation'
 import { reportSubmissionError, type SubmissionErrorOptions } from '@/app/ai/chat/submission/errors'
 import { prepareSubmittedImages } from '@/app/ai/chat/submission/images'
@@ -161,7 +163,13 @@ export function useChatSubmission(options: SubmissionOptions) {
         return false
       }
       const note = undone.note(submission.modelText, currentChat.messages)
-      const noted = { ...submission, modelText: note.text }
+      // A conversation's first request carries what the document's folder tells its agents.
+      const instructions =
+        currentChat.messages.length === 0 ? await readProjectInstructions(options.getEditor()) : ''
+      const noted = {
+        ...submission,
+        modelText: appendProjectInstructions(note.text, instructions)
+      }
       const previousIds = new Set(currentChat.messages.map((message) => message.id))
       if (submission.images.length === 0 && submission.nodes.length === 0) {
         await sendText(currentChat, noted, dispatch)
