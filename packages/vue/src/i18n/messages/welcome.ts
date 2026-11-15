@@ -72,25 +72,31 @@ export const welcomeMessageDefaults = {
   learnCodeHint: 'The HTML and CSS of your drawings',
   learnClaude: 'Design with an AI agent',
   learnClaudeHint: 'Connect your agent to the canvas',
-  navHome: 'Home',
-  navLearn: 'Learn',
-  navFiles: 'Your files',
   tourStep: params('{current} of {total}'),
   tourNext: 'Next',
   tourDone: 'Done',
   tourSkip: 'Skip tour',
-  tourCodeTitle: 'This is real code',
-  tourCodeBody:
-    'Every layer is an HTML element. The Code tab shows its HTML and CSS, the same code you get when you export.',
+  tourToolbarTitle: 'The tools you know',
+  tourToolbarBody:
+    'Frames, shapes, text and pen, with the shortcuts you already use. Select layers and press Shift+A for auto layout: here it is real flexbox.',
   tourLayersTitle: 'Layers are elements',
   tourLayersBody:
-    'Frames are boxes and text is text. Nesting a layer here nests the element in the code.',
-  tourToolbarTitle: 'Draw like in Figma',
-  tourToolbarBody:
-    'Frames, shapes, text and the pen. Select layers and press Shift+A for auto layout: it is flexbox.',
-  tourAITitle: 'Claude works here too',
+    'A frame is a box, text is text. The tag or class beside a name is what the layer is in the page. Nest a layer here and it nests in the code.',
+  tourCodeTitle: 'The code is live',
+  tourCodeBody:
+    'Select a layer to see its HTML and CSS. Change the code and the canvas follows. There is nothing to export: this is the page.',
+  tourScreensTitle: 'One page, every screen',
+  tourScreensBody:
+    'Each icon is a screen of this page. Press + to add tablet or phone, then adapt the layout for it. The content stays the same.',
+  tourAITitle: 'An agent draws with you',
   tourAIBody:
-    'Chat with an AI model here, or connect Claude through MCP and watch it draw on the canvas.'
+    'Connect the agent you already have in one click. It draws on the canvas while you edit beside it. Type / to give it a skill, such as /critique.',
+  tourFolderTitle: 'Your design is a folder',
+  tourFolderBody:
+    'Pages in HTML, a stylesheet, design tokens, images, and instructions for your agents. Open a file to read it. It stays yours, with or without Kalka.',
+  tourHistoryTitle: 'Go back in time',
+  tourHistoryBody:
+    'Record a version when something works. Connect GitHub once and every version is kept online too.'
 } as const
 
 export const welcomeMessages = i18n('welcome', welcomeMessageDefaults)

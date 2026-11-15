@@ -9,14 +9,6 @@ const cardFocus = 'outline-none focus-visible:ring-2 focus-visible:ring-accent/5
 /** The headings above each part of Home. */
 export const homeHeading = 'text-sm font-semibold text-label'
 
-/** Home's rail: the same narrow floating strip of icons as the editor's, one per part of the page. */
-export const homeNav = {
-  root: 'panel-float hidden w-11 shrink-0 flex-col py-2 md:flex',
-  list: 'flex flex-1 flex-col items-center gap-1',
-  item: 'flex size-8 cursor-pointer items-center justify-center rounded-lg text-muted transition-colors duration-150 outline-none hover:text-surface focus-visible:ring-2 focus-visible:ring-accent/50 aria-[current=true]:text-surface',
-  icon: 'size-4 shrink-0'
-} as const
-
 /** The top of Home: the mark, the greeting and the request, centered on the backdrop. */
 export const homeHero = {
   root: 'flex min-h-[min(54vh,480px)] scroll-mt-14 flex-col items-center justify-center gap-7 text-center',
@@ -24,7 +16,8 @@ export const homeHero = {
   title:
     'font-display text-[clamp(28px,3.2vw,40px)] leading-none font-semibold tracking-[-0.035em] text-balance text-surface',
   prompt: 'w-full max-w-[640px]',
-  actions: 'justify-center'
+  actions: 'justify-center',
+  settings: 'absolute top-2 right-4 z-10 size-9 rounded-lg text-muted hover:text-surface'
 } as const
 
 /** The actions under the request: quiet text buttons, then a new blank design. */

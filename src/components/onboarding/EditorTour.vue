@@ -5,7 +5,6 @@ import { computed, shallowRef, watch } from 'vue'
 
 import { useI18n } from '@kalka/vue'
 
-import { useAIChat } from '@/app/ai/chat/use'
 import {
   endTour,
   nextTourStop,
@@ -14,6 +13,7 @@ import {
   tourIndex,
   tourStop
 } from '@/app/onboarding/tour'
+import { useLeftPanel } from '@/app/shell/left-panel/use'
 import AppButton from '@/components/ui/button/AppButton.vue'
 
 /** How long a stop waits for its element to appear before the tour moves past it. */
@@ -21,18 +21,14 @@ const ANCHOR_TIMEOUT_MS = 2000
 const SPOTLIGHT_PADDING = 4
 
 const { welcome } = useI18n()
-const { activeTab: panelTab } = useAIChat()
+const { show: showPanel } = useLeftPanel()
 const anchor = shallowRef<HTMLElement | null>(null)
 const rect = shallowRef<DOMRect | null>(null)
 let searchingSince = 0
 
 const text = computed(() => {
-  const w = welcome.value
-  const id = tourStop.value?.id
-  if (id === 'code') return { title: w.tourCodeTitle, body: w.tourCodeBody }
-  if (id === 'layers') return { title: w.tourLayersTitle, body: w.tourLayersBody }
-  if (id === 'toolbar') return { title: w.tourToolbarTitle, body: w.tourToolbarBody }
-  return { title: w.tourAITitle, body: w.tourAIBody }
+  const id = tourStop.value?.id ?? 'Toolbar'
+  return { title: welcome.value[`tour${id}Title`], body: welcome.value[`tour${id}Body`] }
 })
 const isLast = computed(() => tourIndex.value === TOUR_STOPS.length - 1)
 
@@ -40,7 +36,7 @@ watch(tourStop, (stop) => {
   anchor.value = null
   rect.value = null
   searchingSince = performance.now()
-  if (stop?.panelTab) panelTab.value = stop.panelTab
+  if (stop?.panel) showPanel(stop.panel)
 })
 
 // The stop's element can mount late (a panel opening) and move (a resize), so it is followed
@@ -74,7 +70,7 @@ watch(
   (open) => {
     if (open) {
       searchingSince = performance.now()
-      if (tourStop.value?.panelTab) panelTab.value = tourStop.value.panelTab
+      if (tourStop.value?.panel) showPanel(tourStop.value.panel)
       resume()
     } else pause()
   },

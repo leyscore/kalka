@@ -1,21 +1,29 @@
 import { computed, ref } from 'vue'
 
 import { appPreferences, updateOnboarding } from '@/app/settings/preferences/store'
+import type { RailPanel } from '@/app/shell/left-panel/use'
 
-/** One stop of the editor tour, anchored to the element with this `data-test-id`. */
+/**
+ * One stop of the editor tour, anchored to the element with this `data-test-id`. The tour goes
+ * from what a designer already knows to what is new here: the tools, then layers as elements, the
+ * live code, screens, the agent, the folder and its history.
+ */
 export interface TourStop {
-  id: 'code' | 'layers' | 'toolbar' | 'ai'
+  id: 'Toolbar' | 'Layers' | 'Code' | 'Screens' | 'AI' | 'Folder' | 'History'
   anchor: string
   side: 'top' | 'right' | 'bottom' | 'left'
-  /** The properties panel tab the stop shows, if any. */
-  panelTab?: 'design' | 'code' | 'ai'
+  /** The left panel the stop shows, if it needs one open. */
+  panel?: RailPanel
 }
 
 export const TOUR_STOPS: readonly TourStop[] = [
-  { id: 'code', anchor: 'properties-tab-code', side: 'right', panelTab: 'code' },
-  { id: 'layers', anchor: 'layers-tree', side: 'right', panelTab: 'design' },
-  { id: 'toolbar', anchor: 'toolbar', side: 'top' },
-  { id: 'ai', anchor: 'properties-tab-ai', side: 'right', panelTab: 'ai' }
+  { id: 'Toolbar', anchor: 'toolbar', side: 'top', panel: 'file' },
+  { id: 'Layers', anchor: 'layers-tree', side: 'right', panel: 'file' },
+  { id: 'Code', anchor: 'properties-tab-code', side: 'right', panel: 'code' },
+  { id: 'Screens', anchor: 'canvas-breakpoints', side: 'bottom', panel: 'file' },
+  { id: 'AI', anchor: 'properties-tab-ai', side: 'right', panel: 'ai' },
+  { id: 'Folder', anchor: 'left-panel-folder-tab', side: 'right', panel: 'folder' },
+  { id: 'History', anchor: 'left-panel-history-tab', side: 'right', panel: 'history' }
 ]
 
 /** The index of the stop on show, or null while the tour is closed. */

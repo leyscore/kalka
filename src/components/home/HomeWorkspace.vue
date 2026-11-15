@@ -26,7 +26,6 @@ import { openStorageDocumentInNewTab } from '@/app/tabs'
 import BrandMark from '@/components/brand/BrandMark.vue'
 import DocumentEntry from '@/components/home/document/DocumentEntry.vue'
 import SampleDocumentEntry from '@/components/home/document/SampleDocumentEntry.vue'
-import HomeSidebar from '@/components/home/HomeSidebar.vue'
 import HomeLearn from '@/components/home/learn/HomeLearn.vue'
 import HomePrompt from '@/components/home/prompt/HomePrompt.vue'
 import HomeSearchActions from '@/components/home/search/HomeSearchActions.vue'
@@ -168,7 +167,16 @@ function formattedDate(updatedAt: string): string {
 
 <template>
   <div class="relative flex min-h-0 flex-1 gap-2 text-surface md:px-2 md:pb-2">
-    <HomeSidebar />
+    <!-- Home is one page: its only way elsewhere is to the settings. -->
+    <IconButton
+      :label="settings.title"
+      side="left"
+      data-test-id="app-settings-trigger"
+      :class="homeHero.settings"
+      @click="openSettingsDialog()"
+    >
+      <icon-hugeicons-settings-01 class="size-4" />
+    </IconButton>
     <main
       class="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto"
       data-test-id="recent-files-home"
