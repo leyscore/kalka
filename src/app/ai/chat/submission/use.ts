@@ -163,9 +163,13 @@ export function useChatSubmission(options: SubmissionOptions) {
         return false
       }
       const note = undone.note(submission.modelText, currentChat.messages)
-      // A conversation's first request carries what the document's folder tells its agents.
-      const instructions =
-        currentChat.messages.length === 0 ? await readProjectInstructions(options.getEditor()) : ''
+      // What the document's folder tells its agent: its rules with the first request, and the
+      // skills and documents this request names.
+      const instructions = await readProjectInstructions(
+        options.getEditor(),
+        submission.displayText,
+        currentChat.messages.length === 0
+      )
       const noted = {
         ...submission,
         modelText: appendProjectInstructions(note.text, instructions)

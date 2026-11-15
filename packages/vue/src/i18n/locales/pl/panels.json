@@ -44,7 +44,6 @@
   "folderNoPreview": "Ten plik nie ma podglądu.",
   "folderInstructionsHint": "Agenci czytają pliki .md z folderu „instructions”, zanim zaczną rysować: zasady marki, ton, treści.",
   "folderInstructionsCreate": "Dodaj instrukcje",
-  "folderInstructionsStarter": "# Zasady\n\nNapisz tutaj, co agent powinien wiedzieć, zanim zacznie rysować: głos marki, jej kolory, co robić, a czego unikać.\n",
   "folderViewClean": "Czysty HTML",
   "folderViewSaved": "Zapisany plik",
   "versions": "Wersje",

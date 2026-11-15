@@ -54,7 +54,7 @@ export async function readKalkaFolderAsFile(folder: string): Promise<File> {
 
 /**
  * Saves a document into its folder: every file it writes, then the pages and images an earlier
- * save left that this one no longer has. Other files in the folder, such as a README or `.git`,
+ * save left that this one no longer has, and the instructions folder when there is none yet. Other files in the folder, such as a README or `.git`,
  * stay as they are.
  */
 export async function writeKalkaFolderFiles(
@@ -73,6 +73,9 @@ export async function writeKalkaFolderFiles(
     for (const path of await listFolderFiles(folder, owned))
       if (!written.has(path)) await remove(joinFolderPath(folder, path))
   }
+  // A folder starts with instructions for its agents; later saves leave them to the person.
+  const { startInstructions } = await import('@/app/document/instructions/starter')
+  await startInstructions(folder)
 }
 
 /** Asks for a folder to open or save a Kalka document in. */

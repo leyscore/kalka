@@ -40,7 +40,6 @@
   "folderNoPreview": "此文件没有预览。",
   "folderInstructionsHint": "智能体在绘制前会读取“instructions”文件夹中的 .md 文件：品牌规则、语气、内容。",
   "folderInstructionsCreate": "添加说明",
-  "folderInstructionsStarter": "# 规则\n\n在这里写下智能体绘制前应了解的内容：品牌的语气、颜色、该做什么和该避免什么。\n",
   "folderViewClean": "干净的 HTML",
   "folderViewSaved": "已保存的文件",
   "versions": "版本",

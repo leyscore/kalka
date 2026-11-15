@@ -5,30 +5,47 @@ import {
   PROJECT_INSTRUCTIONS_MARKER,
   stripModelNotes
 } from '@/app/ai/chat/context'
-import { formatProjectInstructions, MAX_INSTRUCTIONS_BYTES } from '@/app/ai/chat/instructions'
+import {
+  countInstructionSections,
+  describeCatalog,
+  formatProjectInstructions,
+  MAX_INSTRUCTIONS_BYTES
+} from '@/app/ai/chat/instructions'
 
 describe('formatProjectInstructions', () => {
-  test('lists the files in name order under their names and skips empty ones', () => {
+  test('keeps the sections in the order given and skips empty ones', () => {
     const note = formatProjectInstructions([
-      { name: 'tone.md', text: 'Friendly.\n' },
-      { name: 'empty.md', text: '  \n' },
-      { name: 'brand.md', text: 'Blue only.' }
+      { title: 'summary.md', text: 'A bakery site.\n' },
+      { title: 'empty.md', text: '  \n' },
+      { title: 'Skill /critique', text: 'Look at hierarchy first.' }
     ])
-    expect(note).toBe('### brand.md\nBlue only.\n\n### tone.md\nFriendly.')
+    expect(note).toBe(
+      '### summary.md\nA bakery site.\n\n### Skill /critique\nLook at hierarchy first.'
+    )
+    expect(countInstructionSections(note)).toBe(2)
   })
 
-  test('is empty when no file says anything', () => {
+  test('is empty when nothing says anything', () => {
     expect(formatProjectInstructions([])).toBe('')
-    expect(formatProjectInstructions([{ name: 'a.md', text: '' }])).toBe('')
+    expect(formatProjectInstructions([{ title: 'a.md', text: '' }])).toBe('')
   })
 
-  test('cuts what goes past the size limit and leaves out the files after it', () => {
+  test('cuts what goes past the size limit and leaves out what comes after it', () => {
     const note = formatProjectInstructions([
-      { name: 'a.md', text: 'x'.repeat(MAX_INSTRUCTIONS_BYTES + 50) },
-      { name: 'b.md', text: 'never reached' }
+      { title: 'a.md', text: 'x'.repeat(MAX_INSTRUCTIONS_BYTES + 50) },
+      { title: 'b.md', text: 'never reached' }
     ])
     expect(note.endsWith('[cut]')).toBe(true)
     expect(note).not.toContain('b.md')
+  })
+})
+
+describe('describeCatalog', () => {
+  test('names what can be asked for, each with its sign', () => {
+    expect(describeCatalog({ skills: ['critique'], documents: ['brief.md'] })).toBe(
+      'Skills the person can give you with a slash: /critique\nDocuments the person can give you with an at sign: @brief.md'
+    )
+    expect(describeCatalog({ skills: [], documents: [] })).toBe('')
   })
 })
 

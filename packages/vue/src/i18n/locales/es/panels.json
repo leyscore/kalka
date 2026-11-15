@@ -42,7 +42,6 @@
   "folderNoPreview": "Este archivo no tiene vista previa.",
   "folderInstructionsHint": "Los agentes leen los archivos .md de una carpeta «instructions» antes de dibujar: reglas de marca, tono, contenidos.",
   "folderInstructionsCreate": "Añadir instrucciones",
-  "folderInstructionsStarter": "# Reglas\n\nEscribe aquí lo que un agente debe saber antes de dibujar: la voz de la marca, sus colores, qué hacer y qué evitar.\n",
   "folderViewClean": "HTML limpio",
   "folderViewSaved": "Archivo guardado",
   "versions": "Versiones",

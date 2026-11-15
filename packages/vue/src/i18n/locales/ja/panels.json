@@ -40,7 +40,6 @@
   "folderNoPreview": "このファイルにはプレビューがありません。",
   "folderInstructionsHint": "エージェントは描く前に「instructions」フォルダの .md ファイルを読みます。ブランドのルール、トーン、コンテンツなどです。",
   "folderInstructionsCreate": "指示を追加",
-  "folderInstructionsStarter": "# ルール\n\nエージェントが描く前に知っておくべきことを書いてください。ブランドの語り口、色、すべきこと、避けるべきことなどです。\n",
   "folderViewClean": "クリーンな HTML",
   "folderViewSaved": "保存されたファイル",
   "versions": "バージョン",

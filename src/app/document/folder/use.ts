@@ -4,6 +4,7 @@ import { computed, ref, shallowRef, watch } from 'vue'
 import { KALKA_PROJECT_FILE, writeKalkaFolder } from '@kalka/core/io/formats/kalka'
 
 import { pageHTMLCode } from '@/app/code/generated'
+import { STARTER_INSTRUCTIONS } from '@/app/document/instructions/starter'
 import { isKalkaFolderPath, joinFolderPath, listFolderFiles } from '@/app/document/io/kalka-folder'
 import { changeKind, type GitChangeKind } from '@/app/document/versions/git'
 import type { DocumentVersions } from '@/app/document/versions/use'
@@ -20,6 +21,7 @@ import { fileKind, pageOfFile, type FolderFile } from './view'
 export type FolderSource = 'disk' | 'document'
 
 const decoder = new TextDecoder()
+const encoder = new TextEncoder()
 
 /** Folders with too many rows to be worth opening before they are asked for. */
 const COLLAPSED_AT_FIRST = ['assets']
@@ -70,8 +72,15 @@ export function useDocumentFolder(store: EditorStore, versions: DocumentVersions
       } else {
         const written = await writeKalkaFolder(store.graph)
         if (folder.value) return
-        generated.value = new Map(written.map((file) => [file.path, file.content]))
-        files.value = written.map((file) => file.path)
+        // The instructions a saved folder starts with are part of what Kalka would write.
+        const starters = [...STARTER_INSTRUCTIONS].map(
+          ([path, text]) => [path, encoder.encode(text)] as const
+        )
+        generated.value = new Map([
+          ...written.map((file) => [file.path, file.content] as const),
+          ...starters
+        ])
+        files.value = [...generated.value.keys()]
       }
       error.value = ''
     } catch (cause) {

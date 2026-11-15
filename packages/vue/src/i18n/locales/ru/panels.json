@@ -44,7 +44,6 @@
   "folderNoPreview": "Для этого файла нет предпросмотра.",
   "folderInstructionsHint": "Агенты читают файлы .md из папки «instructions», прежде чем рисовать: правила бренда, тон, содержание.",
   "folderInstructionsCreate": "Добавить инструкции",
-  "folderInstructionsStarter": "# Правила\n\nНапишите здесь, что агент должен знать, прежде чем рисовать: голос бренда, его цвета, что делать и чего избегать.\n",
   "folderViewClean": "Чистый HTML",
   "folderViewSaved": "Сохранённый файл",
   "versions": "Версии",

@@ -3,11 +3,11 @@ import { computed } from 'vue'
 
 import { useI18n } from '@kalka/vue'
 
-import { INSTRUCTIONS_DIR } from '@/app/ai/chat/instructions'
 import type { FolderRow } from '@/app/document/folder/tree'
 import { useDocumentFolder } from '@/app/document/folder/use'
 import { openFolderFile } from '@/app/document/folder/view'
-import { joinFolderPath } from '@/app/document/io/kalka-folder'
+import { INSTRUCTIONS_DIR } from '@/app/document/instructions/layout'
+import { startInstructions as writeStarterInstructions } from '@/app/document/instructions/starter'
 import { useDocumentVersions } from '@/app/document/versions/use'
 import { useEditorStore } from '@/app/editor/active-store'
 import { saveAsFolderDialog } from '@/app/shell/menu/files'
@@ -42,20 +42,12 @@ async function saveAsFolder(): Promise<void> {
 
 const hasInstructions = computed(() => rows.value.some((row) => row.path === INSTRUCTIONS_DIR))
 
-/** Starts the folder agents read before they draw, with a first file to fill in, and shows it. */
+/** Gives a folder saved before instructions existed the ones every new folder starts with. */
 async function startInstructions(): Promise<void> {
   if (!folder.value) return
   try {
-    const { mkdir, writeTextFile } = await import('@tauri-apps/plugin-fs')
-    const directory = joinFolderPath(folder.value, INSTRUCTIONS_DIR)
-    await mkdir(directory, { recursive: true })
-    await writeTextFile(
-      joinFolderPath(directory, 'rules.md'),
-      panels.value.folderInstructionsStarter
-    )
+    await writeStarterInstructions(folder.value)
     await refresh()
-    const { revealItemInDir } = await import('@tauri-apps/plugin-opener')
-    await revealItemInDir(joinFolderPath(directory, 'rules.md'))
   } catch (cause) {
     error.value = cause instanceof Error ? cause.message : String(cause)
   }

@@ -42,7 +42,6 @@
   "folderNoPreview": "Für diese Datei gibt es keine Vorschau.",
   "folderInstructionsHint": "Agenten lesen die .md-Dateien eines Ordners „instructions“, bevor sie zeichnen: Markenregeln, Tonalität, Inhalte.",
   "folderInstructionsCreate": "Anweisungen hinzufügen",
-  "folderInstructionsStarter": "# Regeln\n\nSchreiben Sie hier, was ein Agent vor dem Zeichnen wissen sollte: die Stimme der Marke, ihre Farben, was zu tun und was zu vermeiden ist.\n",
   "folderViewClean": "Sauberes HTML",
   "folderViewSaved": "Gespeicherte Datei",
   "versions": "Versionen",

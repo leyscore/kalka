@@ -45,8 +45,6 @@ export const panelMessageDefaults = {
   folderInstructionsHint:
     'Agents read the .md files of an “instructions” folder before they draw: brand rules, tone, content.',
   folderInstructionsCreate: 'Add instructions',
-  folderInstructionsStarter:
-    "# Rules\n\nWrite here what an agent should know before it draws: the brand's voice, its colors, what to do and what to avoid.\n",
   folderViewClean: 'Clean HTML',
   folderViewSaved: 'Saved file',
   versions: 'Versions',
