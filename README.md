@@ -204,7 +204,28 @@ Builds are not signed, macOS is the most tested platform, and complex <code>.fig
 
 ## Credits
 
-Kalka is a fork of [OpenPencil](https://github.com/open-pencil/open-pencil) by Danila Poyarkov and its contributors, whose editor, `.fig` support, tools and MCP server it builds on.
+Kalka is a fork of [OpenPencil](https://github.com/open-pencil/open-pencil) by Danila Poyarkov and its contributors, taken on 9 October 2026. Most of the code in this repository is theirs. Here is what each side brought.
+
+**From OpenPencil**
+
+- The editor: tools, selection, undo, layers and properties panels, components, variables, auto layout.
+- The scene graph and the file formats: `.fig` reading and writing with the Kiwi codec, the Figma clipboard, `.pen`.
+- The CanvasKit renderer, which Kalka still uses for image export and thumbnails.
+- The HTML, CSS, JSX and Tailwind projection of a design, and Design JSX.
+- The CLI, the MCP server and its tools, the AI chat with local coding agents, and real-time collaboration.
+- The Vue SDK, the test suites and the repository's tooling.
+
+**Added or changed in Kalka**
+
+- The canvas is the web page: each artboard is real HTML and CSS that the browser lays out and paints, in place of a canvas drawn with CanvasKit. OpenPencil could export a design to HTML; Kalka edits the HTML itself.
+- Layers have an HTML tag and class names, styles are shared through CSS classes, and artboards have breakpoints.
+- Documents are saved as a folder of HTML pages, a stylesheet, design tokens and images, or as one `.kalka` file.
+- HTML export reads as written by hand, with images as files, and the Code tab shows a selection's HTML and CSS.
+- A folder panel with the document's files and its versions in Git.
+- The desktop app runs on Electron instead of Tauri.
+- The interface: top bar, icon rail, Home, welcome, and the Kalka name and brand.
+
+Thank you to everyone who built OpenPencil.
 
 ## License
 
