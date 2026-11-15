@@ -15,7 +15,7 @@ export const TOUR_STOPS: readonly TourStop[] = [
   { id: 'code', anchor: 'properties-tab-code', side: 'right', panelTab: 'code' },
   { id: 'layers', anchor: 'layers-tree', side: 'right', panelTab: 'design' },
   { id: 'toolbar', anchor: 'toolbar', side: 'top' },
-  { id: 'ai', anchor: 'properties-tab-ai', side: 'left', panelTab: 'ai' }
+  { id: 'ai', anchor: 'properties-tab-ai', side: 'top', panelTab: 'ai' }
 ]
 
 /** The index of the stop on show, or null while the tour is closed. */

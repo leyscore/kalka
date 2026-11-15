@@ -28,6 +28,7 @@ import PropertiesPanel from '@/components/PropertiesPanel.vue'
 import Toolbar from '@/components/Toolbar/Toolbar.vue'
 import splitterTheme from '@/theme/splitter'
 
+import AgentDock from './AgentDock.vue'
 import EditorTopBar from './EditorTopBar.vue'
 import PanelRail from './PanelRail.vue'
 import WorkspacePill from './WorkspacePill.vue'
@@ -107,6 +108,7 @@ const { pending: roomPending } = useRoomActions()
           <div class="relative flex min-w-0 flex-1">
             <CanvasSplitRoot />
             <ActiveRoomOverlay />
+            <AgentDock />
             <Toolbar />
           </div>
         </SplitterPanel>

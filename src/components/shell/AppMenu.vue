@@ -55,7 +55,6 @@ watch(nameInput, (input) => {
   if (input) void rename.focusInput(input)
 })
 
-
 const { topMenus } = useAppMenu()
 // Undo and redo sit by the document's name, where people look for them first.
 const { getCommand } = useEditorCommands()
