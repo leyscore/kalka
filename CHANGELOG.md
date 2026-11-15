@@ -12,6 +12,10 @@
 - An icon rail at the left edge switches the left panel between Layers and Assets, then Code, Versions, and the design check with its problem count. Code and the design check open there instead of in the right panel.
 - The editor is neutral: no colored light behind the canvas and opaque panels, so the app's own colors never tint the design. Home keeps the brand backdrop.
 
+### Fixed
+
+- The two center pins of the constraints diagram cross in the middle of the box instead of sitting side by side.
+
 ## 0.1.0-beta.6 — 2026-11-06
 
 ### Changed

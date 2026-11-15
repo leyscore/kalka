@@ -22,8 +22,15 @@ const constraintsTheme = {
       horizontalTrailing: { pin: 'top-1/2 right-1 h-7 w-4 -translate-y-1/2', pinMark: 'h-5 w-0.5' },
       verticalLeading: { pin: 'top-1 left-1/2 h-4 w-7 -translate-x-1/2', pinMark: 'h-0.5 w-5' },
       verticalTrailing: { pin: 'bottom-1 left-1/2 h-4 w-7 -translate-x-1/2', pinMark: 'h-0.5 w-5' },
-      horizontalCenter: { pin: 'top-[21px] left-[27px] h-6 w-4', pinMark: 'h-4 w-0.5' },
-      verticalCenter: { pin: 'top-[25px] left-[33px] h-4 w-6', pinMark: 'h-0.5 w-4' }
+      // The two center pins cross in the middle of the box; each keeps its own arms to click.
+      horizontalCenter: {
+        pin: 'top-1/2 left-1/2 h-6 w-4 -translate-x-1/2 -translate-y-1/2',
+        pinMark: 'h-4 w-0.5'
+      },
+      verticalCenter: {
+        pin: 'top-1/2 left-1/2 h-4 w-6 -translate-x-1/2 -translate-y-1/2',
+        pinMark: 'h-0.5 w-4'
+      }
     }
   },
   defaultVariants: {
