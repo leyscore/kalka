@@ -164,8 +164,11 @@ test('Control bypasses object and pixel snapping during a real pointer drag', as
     const id = store.createShape('RECTANGLE', 300, 100, 80, 80)
     store.select([id])
   })
-  const box = await page.getByTestId('canvas-element').boundingBox()
-  if (!box) throw new Error('No canvas')
+  const canvasBox = await page.getByTestId('canvas-element').boundingBox()
+  if (!canvasBox) throw new Error('No canvas')
+  // The panels beside the canvas are sized in percent, so it can start on a fraction of a pixel.
+  // The browser reports the pointer in whole pixels: measure the drag from a whole one.
+  const box = { x: Math.ceil(canvasBox.x), y: Math.ceil(canvasBox.y) }
 
   await page.mouse.move(box.x + 340, box.y + 140)
   await page.mouse.down()
