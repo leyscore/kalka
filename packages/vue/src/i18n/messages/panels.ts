@@ -58,6 +58,16 @@ export const panelMessageDefaults = {
   versionsPush: 'Publish',
   versionsDetached: 'No branch',
   versionsSync: params('{ahead} to publish · {behind} to get'),
+  versionsIdentityHint:
+    'Git signs each version with a name and an e-mail. They are kept in this folder.',
+  versionsIdentityName: 'Your name',
+  versionsIdentityEmail: 'Your e-mail',
+  versionsIdentitySave: 'Save',
+  versionsRemote: 'Publish online',
+  versionsRemoteHint:
+    'Create an empty repository on GitHub and paste its address. Kalka uses the Git sign-in already on this computer.',
+  versionsRemoteAddress: 'Repository address',
+  versionsRemoteConnect: 'Connect',
   untitled: 'Untitled',
   individualPadding: 'Individual padding',
   layers: 'Layers',

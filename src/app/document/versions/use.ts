@@ -5,19 +5,24 @@ import type { EditorStore } from '@/app/editor/active-store'
 
 import {
   commitVersion,
+  connectGitRemote,
   pullVersions,
   pushVersions,
   readGitHistory,
+  readGitIdentity,
+  readGitRemote,
   readGitStatus,
+  saveGitIdentity,
   sortChanges,
   startGitRepository,
   type GitCommit,
+  type GitIdentity,
   type GitStatus
 } from './git'
 
 export type DocumentVersions = ReturnType<typeof useDocumentVersions>
 export type VersionsState = 'unsaved' | 'untracked' | 'tracked' | 'loading'
-type Operation = 'commit' | 'init' | 'pull' | 'push'
+type Operation = 'commit' | 'connect' | 'identity' | 'init' | 'pull' | 'push'
 
 /**
  * The versions panel's workflow for one document: whether its file is in a repository, what
@@ -27,6 +32,8 @@ type Operation = 'commit' | 'init' | 'pull' | 'push'
 export function useDocumentVersions(store: EditorStore) {
   const status = ref<GitStatus | null>(null)
   const history = ref<GitCommit[]>([])
+  const remote = ref<string | null>(null)
+  const identity = ref<GitIdentity | null>(null)
   const loaded = ref(false)
   const running = ref<Operation | null>(null)
   const error = ref('')
@@ -42,9 +49,14 @@ export function useDocumentVersions(store: EditorStore) {
     status.value && path.value ? sortChanges(status.value.files, status.value.root, path.value) : []
   )
   const unsaved = computed(() => store.hasUnsavedChanges())
+  /** Git refuses to record a version it cannot sign with a name and an e-mail. */
+  const needsIdentity = computed(
+    () => identity.value !== null && !(identity.value.name && identity.value.email)
+  )
   const canCommit = computed(
     () =>
       running.value === null &&
+      !needsIdentity.value &&
       message.value.trim().length > 0 &&
       (changes.value.length > 0 || unsaved.value)
   )
@@ -56,6 +68,8 @@ export function useDocumentVersions(store: EditorStore) {
       loaded.value = true
       status.value = null
       history.value = []
+      remote.value = null
+      identity.value = null
       return
     }
     try {
@@ -63,6 +77,8 @@ export function useDocumentVersions(store: EditorStore) {
       if (current !== path.value) return
       status.value = next
       history.value = next ? await readGitHistory(current) : []
+      remote.value = next ? await readGitRemote(current) : null
+      identity.value = next ? await readGitIdentity(current) : null
       error.value = ''
     } catch (cause) {
       error.value = cause instanceof Error ? cause.message : String(cause)
@@ -107,6 +123,9 @@ export function useDocumentVersions(store: EditorStore) {
     status,
     changes,
     history,
+    remote,
+    identity,
+    needsIdentity,
     unsaved,
     running,
     error,
@@ -116,6 +135,9 @@ export function useDocumentVersions(store: EditorStore) {
     commit,
     start: () => run('init', startGitRepository),
     pull: () => run('pull', pullVersions),
-    push: () => run('push', pushVersions)
+    push: () => run('push', pushVersions),
+    connect: (url: string) => run('connect', (documentPath) => connectGitRemote(documentPath, url)),
+    saveIdentity: (name: string, email: string) =>
+      run('identity', (documentPath) => saveGitIdentity(documentPath, name, email))
   }
 }

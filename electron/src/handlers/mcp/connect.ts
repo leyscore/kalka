@@ -12,7 +12,13 @@ export const MCP_SERVER_NAME = 'kalka'
  */
 export type MCPClientFailure =
   | { code: 'bridge-missing'; bridge: string }
-  | { code: 'config-invalid'; client: string; file: string; syntax: 'JSON' | 'TOML'; details: string }
+  | {
+      code: 'config-invalid'
+      client: string
+      file: string
+      syntax: 'JSON' | 'TOML'
+      details: string
+    }
   | { code: 'config-unusable'; client: string; file: string; details: string }
   | { code: 'config-unwritable'; client: string; file: string; details: string }
   | { code: 'extension-missing' }

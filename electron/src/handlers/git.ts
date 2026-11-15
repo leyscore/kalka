@@ -5,6 +5,7 @@ import { dirname, isAbsolute, relative, sep } from 'node:path'
 import * as v from 'valibot'
 
 import { registerAll, type CallContext } from '../ipc'
+import { RemoteURL } from './git-remote'
 import { inheritedEnv } from './shell'
 
 /**
@@ -16,6 +17,8 @@ const TIMEOUT_MS = 30_000
 const NETWORK_TIMEOUT_MS = 120_000
 const MAX_OUTPUT = 8 * 1024 * 1024
 const MAX_LOG = 200
+/** The one remote Kalka sets up and publishes to. */
+const REMOTE = 'origin'
 
 class GitError extends Error {}
 
@@ -39,6 +42,22 @@ const AbsolutePath = v.pipe(
   v.string(),
   v.check((path) => isAbsolute(path), 'Expected an absolute path')
 )
+
+const IdentityPart = v.pipe(v.string(), v.trim(), v.minLength(1), v.maxLength(200))
+
+export interface GitIdentity {
+  name: string | null
+  email: string | null
+}
+
+/** A configuration value, or null when it is not set. */
+async function configValue(cwd: string, key: string): Promise<string | null> {
+  try {
+    return (await git(cwd, ['config', '--get', key])).trim() || null
+  } catch {
+    return null
+  }
+}
 
 /** The folder a path stands for: itself when it is one, else the folder holding the file. */
 async function folderOf(path: string): Promise<string> {
@@ -173,11 +192,12 @@ export const gitHandlers = {
   },
   async log(_context: CallContext, documentPath: unknown, limit: unknown): Promise<GitCommit[]> {
     const root = await requireRepository(documentPath)
-    const count = v.parse(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(MAX_LOG)), limit)
+    const count = v.parse(
+      v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(MAX_LOG)),
+      limit
+    )
     try {
-      return parseLog(
-        await git(root, ['log', `-n${count}`, '--format=%H%x1f%an%x1f%at%x1f%s%x1e'])
-      )
+      return parseLog(await git(root, ['log', `-n${count}`, '--format=%H%x1f%an%x1f%at%x1f%s%x1e']))
     } catch {
       // A repository without commits has no history yet.
       return []
@@ -212,9 +232,53 @@ export const gitHandlers = {
     const root = await requireRepository(documentPath)
     await git(root, ['pull', '--ff-only'], NETWORK_TIMEOUT_MS)
   },
+  /** Publishes the branch; the first time, to the remote it then follows. */
   async push(_context: CallContext, documentPath: unknown): Promise<void> {
     const root = await requireRepository(documentPath)
-    await git(root, ['push'], NETWORK_TIMEOUT_MS)
+    let follows = true
+    try {
+      await git(root, ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{upstream}'])
+    } catch {
+      follows = false
+    }
+    const args = follows ? ['push'] : ['push', '--set-upstream', REMOTE, 'HEAD']
+    await git(root, args, NETWORK_TIMEOUT_MS)
+  },
+  /** The address versions are published to, or null when the repository has none yet. */
+  async remote(_context: CallContext, documentPath: unknown): Promise<string | null> {
+    const root = await requireRepository(documentPath)
+    return configValue(root, `remote.${REMOTE}.url`)
+  },
+  /** Sets where versions are published, replacing an earlier address. */
+  async connect(_context: CallContext, documentPath: unknown, url: unknown): Promise<void> {
+    const root = await requireRepository(documentPath)
+    const address = v.parse(RemoteURL, url)
+    const known = await configValue(root, `remote.${REMOTE}.url`)
+    await git(root, ['remote', known ? 'set-url' : 'add', REMOTE, address])
+  },
+  /** Who signs the versions: the repository's own name and e-mail, else the computer's. */
+  async identity(_context: CallContext, documentPath: unknown): Promise<GitIdentity> {
+    const folder = await folderOf(v.parse(AbsolutePath, documentPath))
+    return {
+      name: await configValue(folder, 'user.name'),
+      email: await configValue(folder, 'user.email')
+    }
+  },
+  /** Keeps a name and e-mail in this repository alone, leaving the computer's settings as they are. */
+  async setIdentity(
+    _context: CallContext,
+    documentPath: unknown,
+    name: unknown,
+    email: unknown
+  ): Promise<void> {
+    const root = await requireRepository(documentPath)
+    await git(root, ['config', '--local', 'user.name', v.parse(IdentityPart, name)])
+    await git(root, [
+      'config',
+      '--local',
+      'user.email',
+      v.parse(v.pipe(IdentityPart, v.email()), email)
+    ])
   }
 }
 

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+
 import { useI18n } from '@kalka/vue'
 
 import { changeKind } from '@/app/document/versions/git'
@@ -13,7 +15,28 @@ const store = useEditorStore()
 /** The folder panel reads the same repository and passes its own, so Git is asked once. */
 const { versions: shared } = defineProps<{ versions?: DocumentVersions }>()
 const versions = shared ?? useDocumentVersions(store)
-const { state, status, changes, history, unsaved, running, error, message, canCommit } = versions
+const {
+  state,
+  status,
+  changes,
+  history,
+  remote,
+  needsIdentity,
+  unsaved,
+  running,
+  error,
+  message,
+  canCommit
+} = versions
+
+const remoteURL = ref('')
+const identityName = ref('')
+const identityEmail = ref('')
+
+async function connect(): Promise<void> {
+  await versions.connect(remoteURL.value)
+  if (!versions.error.value) remoteURL.value = ''
+}
 
 const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' })
 </script>
@@ -53,11 +76,12 @@ const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', tim
           {{ panels.versionsPull }}
         </AppButton>
         <AppButton
-          v-if="status.upstream"
+          v-if="remote"
           size="xs"
           variant="ghost"
+          data-test-id="versions-push"
           :loading="running === 'push'"
-          :disabled="status.ahead === 0"
+          :disabled="Boolean(status.upstream) && status.ahead === 0"
           @click="versions.push"
         >
           {{ panels.versionsPush }}
@@ -93,6 +117,39 @@ const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', tim
           {{ panels.versionsUnsavedChanges }}
         </p>
 
+        <form
+          v-if="needsIdentity"
+          class="flex flex-col gap-2 px-4 pt-3"
+          data-test-id="versions-identity"
+          @submit.prevent="versions.saveIdentity(identityName, identityEmail)"
+        >
+          <p class="text-[11px] leading-relaxed text-muted">{{ panels.versionsIdentityHint }}</p>
+          <AppInput
+            v-model="identityName"
+            tone="panel"
+            autocomplete="name"
+            :aria-label="panels.versionsIdentityName"
+            :placeholder="panels.versionsIdentityName"
+          />
+          <AppInput
+            v-model="identityEmail"
+            tone="panel"
+            autocomplete="email"
+            inputmode="email"
+            :aria-label="panels.versionsIdentityEmail"
+            :placeholder="panels.versionsIdentityEmail"
+          />
+          <AppButton
+            type="submit"
+            variant="outline"
+            size="sm"
+            :disabled="!identityName.trim() || !identityEmail.trim()"
+            :loading="running === 'identity'"
+          >
+            {{ panels.versionsIdentitySave }}
+          </AppButton>
+        </form>
+
         <form class="flex flex-col gap-2 px-4 pt-3 pb-4" @submit.prevent="versions.commit">
           <AppInput
             v-model="message"
@@ -113,6 +170,40 @@ const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', tim
             {{ panels.versionsCommit }}
           </AppButton>
         </form>
+
+        <form
+          v-if="!remote"
+          class="flex flex-col gap-2 px-4 pb-4"
+          data-test-id="versions-connect"
+          @submit.prevent="connect"
+        >
+          <h3 class="text-[11px] font-semibold text-muted">{{ panels.versionsRemote }}</h3>
+          <p class="text-[11px] leading-relaxed text-muted">{{ panels.versionsRemoteHint }}</p>
+          <AppInput
+            v-model="remoteURL"
+            tone="panel"
+            name="repository-url"
+            autocomplete="off"
+            :aria-label="panels.versionsRemoteAddress"
+            placeholder="https://github.com/…/….git"
+          />
+          <AppButton
+            type="submit"
+            variant="outline"
+            size="sm"
+            :disabled="!remoteURL.trim()"
+            :loading="running === 'connect'"
+          >
+            {{ panels.versionsRemoteConnect }}
+          </AppButton>
+        </form>
+        <p
+          v-else
+          class="truncate px-4 pb-3 font-mono text-[11px] text-muted"
+          data-test-id="versions-remote"
+        >
+          {{ remote }}
+        </p>
 
         <h3 class="px-4 pt-1 pb-1.5 text-[11px] font-semibold text-muted">
           {{ panels.versionsHistory }}

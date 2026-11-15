@@ -24,6 +24,9 @@ const CommitSchema = v.object({
   subject: v.string()
 })
 
+const IdentitySchema = v.object({ name: v.nullable(v.string()), email: v.nullable(v.string()) })
+
+export type GitIdentity = v.InferOutput<typeof IdentitySchema>
 export type GitFileChange = v.InferOutput<typeof FileChangeSchema>
 export type GitStatus = NonNullable<v.InferOutput<typeof StatusSchema>>
 export type GitCommit = v.InferOutput<typeof CommitSchema>
@@ -53,6 +56,27 @@ export async function pullVersions(documentPath: string): Promise<void> {
 
 export async function pushVersions(documentPath: string): Promise<void> {
   await call('git.push', documentPath)
+}
+
+/** The address versions are published to, such as a GitHub repository; null when none is set. */
+export async function readGitRemote(documentPath: string): Promise<string | null> {
+  return v.parse(v.nullable(v.string()), await call('git.remote', documentPath))
+}
+
+export async function connectGitRemote(documentPath: string, url: string): Promise<void> {
+  await call('git.connect', documentPath, url)
+}
+
+export async function readGitIdentity(documentPath: string): Promise<GitIdentity> {
+  return v.parse(IdentitySchema, await call('git.identity', documentPath))
+}
+
+export async function saveGitIdentity(
+  documentPath: string,
+  name: string,
+  email: string
+): Promise<void> {
+  await call('git.setIdentity', documentPath, name, email)
 }
 
 /** Paths relative to the repository read better than absolute ones; the file's own comes first. */

@@ -75,7 +75,10 @@ function lines(send: (line: string) => void) {
   }
 }
 
-const ApproveRequest = v.object({ command: StartRequest.entries.command, args: StartRequest.entries.args })
+const ApproveRequest = v.object({
+  command: StartRequest.entries.command,
+  args: StartRequest.entries.args
+})
 
 export const mcpStdioHandlers = {
   /** Asks to allow a command line an agent will start itself, as `start` does for Kalka. */
