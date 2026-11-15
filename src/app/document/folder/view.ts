@@ -1,3 +1,4 @@
+import * as v from 'valibot'
 import { shallowRef } from 'vue'
 
 export type FolderFileKind = 'html' | 'text' | 'image' | 'binary'
@@ -7,6 +8,11 @@ export interface FolderFile {
   name: string
   kind: FolderFileKind
   bytes: Uint8Array
+  /**
+   * A page as Kalka exports it: classes instead of repeated inline styles and none of the
+   * editor's `data-kalka-*` attributes. The saved file keeps those to open again as it was.
+   */
+  clean?: string
 }
 
 const IMAGE_TYPES: Record<string, string> = {
@@ -39,3 +45,14 @@ export function imageType(name: string): string {
 
 /** The file open over the canvas, chosen in the folder panel; null when none is. */
 export const openFolderFile = shallowRef<FolderFile | null>(null)
+
+const ProjectPages = v.object({
+  pages: v.array(v.object({ id: v.string(), file: v.string() }))
+})
+
+/** The page a file of the folder holds, from the folder's `project.json`; null when it holds none. */
+export function pageOfFile(project: string, path: string): string | null {
+  const parsed = v.safeParse(v.pipe(v.string(), v.parseJson(), ProjectPages), project)
+  if (!parsed.success) return null
+  return parsed.output.pages.find((page) => page.file === path)?.id ?? null
+}

@@ -38,6 +38,8 @@
   "folderGenerated": "将此文档另存为文件夹时 Kalka 写出的文件夹。",
   "folderVersionsDesktop": "版本使用你电脑上的 Git。请在桌面应用中打开此文档以保存和发布版本。",
   "folderNoPreview": "此文件没有预览。",
+  "folderViewClean": "干净的 HTML",
+  "folderViewSaved": "已保存的文件",
   "versions": "版本",
   "versionsUnsaved": "请将文档保存到这台电脑上以保留其版本。",
   "versionsUntracked": "此文件夹尚未保留版本。Kalka 使用 Git：历史记录保存在文件夹中，可用于 GitHub 或任何 Git 工具。",

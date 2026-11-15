@@ -40,6 +40,8 @@
   "folderGenerated": "Der Ordner, den Kalka schreibt, wenn dieses Dokument als Ordner gespeichert wird.",
   "folderVersionsDesktop": "Versionen nutzen Git auf Ihrem Computer. Öffnen Sie dieses Dokument in der Desktop-App, um sie zu behalten und zu veröffentlichen.",
   "folderNoPreview": "Für diese Datei gibt es keine Vorschau.",
+  "folderViewClean": "Sauberes HTML",
+  "folderViewSaved": "Gespeicherte Datei",
   "versions": "Versionen",
   "versionsUnsaved": "Speichern Sie das Dokument auf diesem Computer, um seine Versionen zu behalten.",
   "versionsUntracked": "Dieser Ordner speichert noch keine Versionen. Kalka nutzt Git: Der Verlauf bleibt im Ordner und funktioniert mit GitHub oder jedem Git-Werkzeug.",

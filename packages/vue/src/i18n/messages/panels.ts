@@ -42,6 +42,8 @@ export const panelMessageDefaults = {
   folderVersionsDesktop:
     'Versions use Git on your computer. Open this document in the desktop app to keep and publish them.',
   folderNoPreview: 'This file has no preview.',
+  folderViewClean: 'Clean HTML',
+  folderViewSaved: 'Saved file',
   versions: 'Versions',
   versionsUnsaved: 'Save the document on this computer to keep its versions.',
   versionsUntracked:

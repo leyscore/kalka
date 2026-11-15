@@ -35,3 +35,15 @@ export async function selectionHTMLCode(
   const { html } = await renderNodesToHTML(graph, nodeIds, { html: 'fragment', assets: 'external' })
   return { code: formatHTML(html), layerIds: [] }
 }
+
+/**
+ * Whole layers of a page as the standalone HTML page Kalka exports: classes for what layers
+ * share, and none of the editor's attributes. Images stay external, as in the selection's code.
+ */
+export async function pageHTMLCode(graph: SceneGraph, nodeIds: string[]): Promise<GeneratedCode> {
+  const { html } = await renderNodesToHTML(graph, nodeIds, {
+    html: 'standalone',
+    assets: 'external'
+  })
+  return { code: formatHTML(html), layerIds: [] }
+}

@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { onKeyStroke, useObjectUrl } from '@vueuse/core'
-import { computed, defineAsyncComponent } from 'vue'
+import { computed, defineAsyncComponent, ref } from 'vue'
 
 import { useI18n } from '@kalka/vue'
 
 import { imageType, openFolderFile } from '@/app/document/folder/view'
 import IconButton from '@/components/ui/button/IconButton.vue'
+import SegmentedControl from '@/components/ui/select/SegmentedControl.vue'
 import { folderFileView } from '@/theme/panel/folder'
 
 const CodeEditor = defineAsyncComponent(() => import('@/components/code-editor/CodeEditor.vue'))
@@ -15,11 +16,13 @@ const { common, panels } = useI18n()
 const styles = folderFileView()
 const file = openFolderFile
 
-const text = computed(() =>
-  file.value && (file.value.kind === 'html' || file.value.kind === 'text')
-    ? decoder.decode(file.value.bytes)
-    : null
-)
+/** A page opens on its clean HTML; the file as saved, with the editor's attributes, is one press away. */
+const view = ref<'clean' | 'saved'>('clean')
+const text = computed(() => {
+  if (!file.value || (file.value.kind !== 'html' && file.value.kind !== 'text')) return null
+  if (view.value === 'clean' && file.value.clean !== undefined) return file.value.clean
+  return decoder.decode(file.value.bytes)
+})
 const picture = useObjectUrl(
   computed(() =>
     file.value?.kind === 'image'
@@ -47,6 +50,18 @@ onKeyStroke('Escape', () => {
     <header :class="styles.header()">
       <icon-hugeicons-file-01 class="size-3.5 shrink-0 text-muted" />
       <span :class="styles.path()">{{ file.path }}</span>
+      <SegmentedControl
+        v-if="file.clean !== undefined"
+        v-model="view"
+        required
+        size="md"
+        :label="file.path"
+        data-test-id="folder-file-mode"
+        :options="[
+          { value: 'clean', label: panels.folderViewClean },
+          { value: 'saved', label: panels.folderViewSaved }
+        ]"
+      />
       <IconButton
         :label="common.close"
         data-test-id="folder-file-close"
@@ -59,7 +74,7 @@ onKeyStroke('Escape', () => {
     <div :class="styles.body()">
       <CodeEditor
         v-if="text !== null"
-        :key="file.path"
+        :key="`${file.path}:${view}`"
         :model-value="text"
         language="html-css"
         read-only

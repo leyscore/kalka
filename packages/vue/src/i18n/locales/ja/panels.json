@@ -38,6 +38,8 @@
   "folderGenerated": "このドキュメントをフォルダとして保存したときに Kalka が書き出すフォルダです。",
   "folderVersionsDesktop": "バージョンにはお使いのコンピュータの Git を使います。保存や公開をするには、このドキュメントをデスクトップアプリで開いてください。",
   "folderNoPreview": "このファイルにはプレビューがありません。",
+  "folderViewClean": "クリーンな HTML",
+  "folderViewSaved": "保存されたファイル",
   "versions": "バージョン",
   "versionsUnsaved": "バージョンを残すには、このコンピューターに書類を保存してください。",
   "versionsUntracked": "このフォルダーはまだバージョンを残していません。Kalka は Git を使います。履歴はフォルダー内に残り、GitHub などの Git ツールで使えます。",

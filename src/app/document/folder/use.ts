@@ -1,8 +1,9 @@
 import { useEventListener } from '@vueuse/core'
 import { computed, ref, shallowRef, watch } from 'vue'
 
-import { writeKalkaFolder } from '@kalka/core/io/formats/kalka'
+import { KALKA_PROJECT_FILE, writeKalkaFolder } from '@kalka/core/io/formats/kalka'
 
+import { pageHTMLCode } from '@/app/code/generated'
 import { isKalkaFolderPath, joinFolderPath, listFolderFiles } from '@/app/document/io/kalka-folder'
 import { changeKind, type GitChangeKind } from '@/app/document/versions/git'
 import type { DocumentVersions } from '@/app/document/versions/use'
@@ -10,13 +11,15 @@ import type { EditorStore } from '@/app/editor/active-store'
 import { isTauri } from '@/app/tauri/env'
 
 import { folderChanges, folderRows } from './tree'
-import { fileKind, type FolderFile } from './view'
+import { fileKind, pageOfFile, type FolderFile } from './view'
 
 /**
  * `disk` is the folder the document is saved in, on this computer. `document` is the folder
  * Kalka would write for it: what a browser, an unsaved document or a `.kalka` file can show.
  */
 export type FolderSource = 'disk' | 'document'
+
+const decoder = new TextDecoder()
 
 /** Folders with too many rows to be worth opening before they are asked for. */
 const COLLAPSED_AT_FIRST = ['assets']
@@ -66,17 +69,29 @@ export function useDocumentFolder(store: EditorStore, versions: DocumentVersions
     }
   }
 
+  async function bytesOf(path: string): Promise<Uint8Array | null> {
+    if (!folder.value) return generated.value.get(path) ?? null
+    const { readFile } = await import('@tauri-apps/plugin-fs')
+    return readFile(joinFolderPath(folder.value, path))
+  }
+
+  /** The clean HTML of the page a file holds, when the document still has that page. */
+  async function cleanPage(path: string): Promise<string | undefined> {
+    const project = await bytesOf(KALKA_PROJECT_FILE)
+    const pageId = project ? pageOfFile(decoder.decode(project), path) : null
+    const page = pageId ? store.graph.getNode(pageId) : null
+    if (!page || page.childIds.length === 0) return undefined
+    return (await pageHTMLCode(store.graph, page.childIds)).code
+  }
+
   /** A file's content, read where the tree was read from. */
   async function read(path: string): Promise<FolderFile> {
     const name = path.split('/').pop() ?? path
     const kind = fileKind(name)
-    let bytes = generated.value.get(path)
-    if (folder.value) {
-      const { readFile } = await import('@tauri-apps/plugin-fs')
-      bytes = await readFile(joinFolderPath(folder.value, path))
-    }
+    const bytes = await bytesOf(path)
     if (!bytes) throw new Error(`No such file: ${path}`)
-    return { path, name, kind, bytes }
+    const clean = kind === 'html' ? await cleanPage(path) : undefined
+    return { path, name, kind, bytes, clean }
   }
 
   function toggle(path: string): void {

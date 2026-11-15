@@ -42,6 +42,8 @@
   "folderGenerated": "Folder, który Kalka zapisuje, gdy ten dokument jest zapisywany jako folder.",
   "folderVersionsDesktop": "Wersje korzystają z Gita na Twoim komputerze. Otwórz ten dokument w aplikacji na komputer, aby je zachowywać i publikować.",
   "folderNoPreview": "Ten plik nie ma podglądu.",
+  "folderViewClean": "Czysty HTML",
+  "folderViewSaved": "Zapisany plik",
   "versions": "Wersje",
   "versionsUnsaved": "Zapisz dokument na tym komputerze, aby zachowywać jego wersje.",
   "versionsUntracked": "Ten folder nie przechowuje jeszcze wersji. Kalka używa Gita: historia zostaje w folderze i działa z GitHubem lub dowolnym narzędziem Git.",
