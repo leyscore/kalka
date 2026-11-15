@@ -171,7 +171,7 @@ test('effect settings expand semantically and row remove stays visible', async (
 
   const remove = effectItem.getByRole('button', { name: 'Remove effect' })
   await expect(remove).toHaveCSS('opacity', '1')
-  await editor.page.getByRole('tab', { name: 'Design' }).focus()
+  await editor.page.getByRole('tab', { name: 'Layers' }).focus()
   await editor.page.mouse.move(0, 0)
   await expect(remove).toHaveCSS('opacity', '1')
 })

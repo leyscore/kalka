@@ -5,6 +5,7 @@ import { useDesignCheckMessages, useI18n } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import { countIssues } from '@/app/editor/design-check/issues'
+import { openVariablesDialog } from '@/app/editor/tokens/dialog'
 import { openSettingsDialog } from '@/app/settings/dialog'
 import { useLeftPanel } from '@/app/shell/left-panel/use'
 import { isTauri } from '@/app/tauri/env'
@@ -49,6 +50,7 @@ const rail = panelRail()
         data-test-id="left-panel-layers-tab"
         :aria-label="panels.layers"
         :aria-selected="activePanel === 'file'"
+        :data-state="activePanel === 'file' ? 'active' : 'inactive'"
         :data-active="activePanel === 'file' || undefined"
         :class="rail.item()"
         @click="show('file')"
@@ -63,11 +65,24 @@ const rail = panelRail()
         data-test-id="left-panel-assets-tab"
         :aria-label="panels.assets"
         :aria-selected="activePanel === 'assets'"
+        :data-state="activePanel === 'assets' ? 'active' : 'inactive'"
         :data-active="activePanel === 'assets' || undefined"
         :class="rail.item()"
         @click="show('assets')"
       >
-        <icon-lucide-image :class="rail.icon()" />
+        <icon-lucide-component :class="rail.icon()" />
+      </button>
+    </Tip>
+    <!-- Variables open as a dialog over the editor, so this is a button, not one of the panel's tabs. -->
+    <Tip :label="panels.variables" side="right">
+      <button
+        type="button"
+        data-test-id="panel-rail-variables"
+        :aria-label="panels.variables"
+        :class="rail.item()"
+        @click="openVariablesDialog(store)"
+      >
+        <icon-lucide-swatch-book :class="rail.icon()" />
       </button>
     </Tip>
     <div aria-hidden="true" :class="rail.divider()" />
@@ -78,6 +93,7 @@ const rail = panelRail()
         data-test-id="properties-tab-code"
         :aria-label="panels.code"
         :aria-selected="activePanel === 'code'"
+        :data-state="activePanel === 'code' ? 'active' : 'inactive'"
         :data-active="activePanel === 'code' || undefined"
         :class="rail.item()"
         @click="show('code')"
@@ -92,6 +108,7 @@ const rail = panelRail()
         data-test-id="left-panel-versions-tab"
         :aria-label="panels.versions"
         :aria-selected="activePanel === 'versions'"
+        :data-state="activePanel === 'versions' ? 'active' : 'inactive'"
         :data-active="activePanel === 'versions' || undefined"
         :class="rail.item()"
         @click="show('versions')"
@@ -106,6 +123,7 @@ const rail = panelRail()
         data-test-id="properties-tab-lint"
         :aria-label="checkLabel"
         :aria-selected="activePanel === 'lint'"
+        :data-state="activePanel === 'lint' ? 'active' : 'inactive'"
         :data-active="activePanel === 'lint' || undefined"
         :class="rail.item()"
         @click="show('lint')"

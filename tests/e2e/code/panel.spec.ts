@@ -21,7 +21,7 @@ function codeTab() {
 }
 
 function designTab() {
-  return editor.page.getByTestId('properties-tab-design')
+  return editor.page.getByTestId('left-panel-layers-tab')
 }
 
 function codePanel() {

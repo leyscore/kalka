@@ -11,10 +11,6 @@ export class ChatHarness {
     return this.page.getByRole('tab', { name: 'AI' })
   }
 
-  get designTab() {
-    return this.page.getByRole('tab', { name: 'Design' })
-  }
-
   get apiKeyInput() {
     return this.page.getByTestId('provider-settings-api-key')
   }

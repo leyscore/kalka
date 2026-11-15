@@ -138,7 +138,7 @@ function selectedIds(page: Page) {
 }
 
 test.afterEach(async () => {
-  await editor.page.getByRole('tab', { name: 'Design' }).click()
+  await editor.page.getByRole('tab', { name: 'Layers' }).click()
 })
 
 test('Lint lists issues by rule and connects rows to the canvas', async () => {
