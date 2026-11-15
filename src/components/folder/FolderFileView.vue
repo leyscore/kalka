@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { onKeyStroke, useObjectUrl } from '@vueuse/core'
-import { computed, defineAsyncComponent, ref } from 'vue'
+import { computed, defineAsyncComponent, onScopeDispose, ref, watch } from 'vue'
 
 import { useI18n } from '@kalka/vue'
 
 import { imageType, openFolderFile } from '@/app/document/folder/view'
+import { useLeftPanel } from '@/app/shell/left-panel/use'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import SegmentedControl from '@/components/ui/select/SegmentedControl.vue'
 import { folderFileView } from '@/theme/panel/folder'
@@ -34,6 +35,13 @@ const picture = useObjectUrl(
 function close(): void {
   file.value = null
 }
+// The file belongs to the folder panel: leaving it for layers, code or the agent gives the canvas
+// back, and so does leaving this document.
+const { activePanel } = useLeftPanel()
+watch(activePanel, (panel) => {
+  if (panel !== 'folder') close()
+})
+onScopeDispose(close)
 onKeyStroke('Escape', () => {
   if (file.value) close()
 })
