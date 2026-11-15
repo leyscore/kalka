@@ -4,11 +4,11 @@
 
 ### Changed
 
-- The editor has a top bar: the document's name with undo and redo, the menus, the screens of the page in the middle with a plus to add a tablet or phone breakpoint, then the agent, zoom, preview, and sharing. The agent button opens guided setup until an agent is connected, then the conversation, and shows a green dot once one is.
+- The editor has a top bar: the logo, which opens the File, Edit, View, Object, Text, and Arrange menus outside the macOS desktop app, the document's name with undo and redo, the screens of the page in the middle with a plus to add a tablet or phone breakpoint, then the agent, zoom, preview, and sharing. The agent button opens guided setup until an agent is connected, then the conversation, and shows a green dot once one is.
 - The app's icons come from Hugeicons instead of Lucide.
 - The app's greys are neutral in both themes instead of blue-tinted.
 - A layer whose name differs from its HTML shows its first class, or its tag, beside its name in the layers panel.
-- The agent lives in the toolbar: a field at its end opens the conversation in a panel above it, so the canvas stays in view. The right panel is Design alone.
+- The agent's conversation opens in the left panel, from the first icon of the rail, the robot in the top bar, or a field at the end of the toolbar. The right panel is Design alone.
 - An icon rail at the left edge switches the left panel between Layers and Assets, then Code, Versions, and the design check with its problem count. Code and the design check open there instead of in the right panel.
 - The editor is neutral: no colored light behind the canvas and opaque panels, so the app's own colors never tint the design. Home keeps the brand backdrop.
 - Home opens on the Kalka mark, the greeting, and the request to the agent centered on the backdrop, with joining a room, opening a file, and a new blank design under it. Its sidebar is the same icon rail as the editor's.

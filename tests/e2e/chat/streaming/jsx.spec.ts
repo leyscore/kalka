@@ -127,12 +127,15 @@ test('keeps the run and its preview on their page while the user views another',
     // Away from the run's page: the chat says where it works, and the page list marks it.
     const location = chat.page.getByTestId('chat-run-location')
     await expect(location).toContainText('is working on “Page 1”')
+    // The conversation and the page list share the left panel.
+    await chat.page.getByTestId('left-panel-layers-tab').click()
     await expect(
       chat.page
         .getByTestId('pages-row')
         .filter({ hasText: 'Page 1' })
         .getByTestId('presence-markers')
     ).toBeVisible()
+    await chat.chatTab.click()
 
     await location.getByRole('button', { name: 'Go to page' }).click()
     await expect.poll(() => previewKey(chat.page)).not.toBe('')
