@@ -6,7 +6,11 @@ import {
   setMessageAttachments
 } from '@/app/ai/attachment/presentation/store'
 import { isToolUIPart } from '@/app/ai/chat/parts'
-import { visibleMessageText, setVisibleMessageText } from '@/app/ai/chat/presentation'
+import {
+  setVisibleMessageText,
+  visibleMessageText,
+  visibleUserMessageText
+} from '@/app/ai/chat/presentation'
 import { settleMessage } from '@/app/ai/chat/settle'
 import { readToolChange, setToolChange } from '@/app/ai/tools/changes/store'
 
@@ -20,7 +24,10 @@ export function snapshotMessages(messages: UIMessage[]): ConversationMessage[] {
       .join('')
     return {
       message: structuredClone(toRaw(message)),
-      displayText: visibleMessageText(message.id, text),
+      displayText:
+        message.role === 'user'
+          ? visibleUserMessageText(message.id, text)
+          : visibleMessageText(message.id, text),
       attachments: attachmentsForMessage(message.id).value.map((attachment) =>
         structuredClone(toRaw(attachment))
       ),
@@ -49,5 +56,5 @@ export function fallbackTitle(messages: UIMessage[]): string {
     .filter((part) => part.type === 'text')
     .map((part) => part.text)
     .join(' ')
-  return visibleMessageText(first.id, text).replace(/\s+/g, ' ').trim().slice(0, 120)
+  return visibleUserMessageText(first.id, text).replace(/\s+/g, ' ').trim().slice(0, 120)
 }
