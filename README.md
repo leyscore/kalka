@@ -49,7 +49,7 @@
 
 <p align="center">Every layer is an element the browser lays out and paints,<br />so flexbox, grid, fonts, shadows and blurs look on the canvas exactly as they will in production.</p>
 
-<p align="center"><img src="assets/screenshots/editor.gif" width="100%" alt="The Kalka editor: a landing page on the canvas with its heading selected, its HTML and CSS in the Code panel, and the design skills agents work with"></p>
+<p align="center"><img src="assets/screenshots/editor.gif" width="100%" alt="The Kalka editor on Learn the basics: a layer dragged on the canvas, its HTML and CSS in the Code panel, and the design skills agents work with"></p>
 
 <table>
   <tr>
@@ -121,7 +121,7 @@ Beta builds are not signed yet, so the system warns before the first launch:
 - **Windows:** in the SmartScreen window, choose **More info**, then **Run anyway**.
 - **Linux:** make the file executable (`chmod +x Kalka-*.AppImage`) and run it.
 
-Open the sample document on the home screen to start from Kalka's own landing page. To build the app from source instead:
+Open the sample document on the home screen to learn the basics on a page of real layers. To build the app from source instead:
 
 ```sh
 bun install
