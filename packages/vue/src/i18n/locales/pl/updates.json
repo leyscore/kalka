@@ -16,6 +16,8 @@
   "installing": "Instalowanie…",
   "installed": "Zainstalowano Kalka {version}",
   "restartToFinish": "Uruchom ponownie Kalka, aby korzystać z nowej wersji.",
+  "manualInstall": "Ta kopia Kalki nie jest podpisana, więc macOS nie pozwala jej zaktualizować się samodzielnie. Pobierz nową wersję i zastąp Kalkę w folderze Aplikacje.",
+  "download": "Pobierz",
   "restartNow": "Uruchom ponownie teraz",
   "downloadFailed": "Nie udało się pobrać aktualizacji: {error}",
   "installFailed": "Nie udało się zainstalować aktualizacji: {error}",

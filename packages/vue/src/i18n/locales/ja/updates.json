@@ -16,6 +16,8 @@
   "installing": "インストールしています…",
   "installed": "Kalka {version} をインストールしました",
   "restartToFinish": "新しいバージョンを使うには Kalka を再起動してください。",
+  "manualInstall": "この Kalka は署名されていないため、macOS では自動で更新できません。新しいバージョンをダウンロードし、アプリケーションフォルダの Kalka を置き換えてください。",
+  "download": "ダウンロード",
   "restartNow": "今すぐ再起動",
   "downloadFailed": "アップデートをダウンロードできませんでした: {error}",
   "installFailed": "アップデートをインストールできませんでした: {error}",

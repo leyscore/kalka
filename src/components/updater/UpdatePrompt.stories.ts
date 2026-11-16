@@ -29,7 +29,8 @@ const release: ReleaseInfo = {
 ### Performance
 
 - Reduce editor pauses while generating recovery snapshots and exporting text-heavy \`.fig\` documents.
-- Recompute layout only for the pages an edit affects, instead of every page.`
+- Recompute layout only for the pages an edit affects, instead of every page.`,
+  manual: false
 }
 
 type Args = { state: UpdaterState; currentVersion: string; installQuitsApp?: boolean }
@@ -53,6 +54,11 @@ export default meta
 
 export const Available: Story = {
   args: { state: { status: 'available', release } }
+}
+
+/** An unsigned macOS copy, which cannot replace itself: the update is downloaded again. */
+export const DownloadByHand: Story = {
+  args: { state: { status: 'available', release: { ...release, manual: true } } }
 }
 
 export const WithoutNotes: Story = {

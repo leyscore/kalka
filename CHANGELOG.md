@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- On macOS, a copy of Kalka that cannot install updates because it is not signed offers to download the new version instead of a Restart Now button that did nothing, and a refused update is reported when restarting.
+
 ## 0.2.0-beta.1 — 2026-11-16
 
 ### Added

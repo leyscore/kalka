@@ -12,7 +12,7 @@ import {
 const NOTES = '### Fixed\n\n- Keep the update prompt on screen.\n'
 
 /** An update whose downloads the test finishes by hand. */
-function fakeUpdate(options: { failInstall?: string } = {}) {
+function fakeUpdate(options: { failInstall?: string; manual?: boolean } = {}) {
   const calls: string[] = []
   const downloads: Array<{
     emit: (event: DownloadEvent) => void
@@ -23,6 +23,7 @@ function fakeUpdate(options: { failInstall?: string } = {}) {
     version: '0.16.0',
     currentVersion: '0.15.1',
     body: NOTES,
+    manual: options.manual,
     download(onEvent) {
       calls.push('download')
       const done = createDeferred<undefined>()
@@ -81,8 +82,24 @@ describe('createUpdaterSession', () => {
 
     expect(session.state.value).toEqual({
       status: 'available',
-      release: { version: '0.16.0', currentVersion: '0.15.1', notes: NOTES.trim() }
+      release: {
+        version: '0.16.0',
+        currentVersion: '0.15.1',
+        notes: NOTES.trim(),
+        manual: false
+      }
     })
+  })
+
+  test('never downloads an update this copy cannot install', async () => {
+    const { update, calls } = fakeUpdate({ manual: true })
+    const session = createUpdaterSession(fakeBackend(async () => update).backend)
+
+    await session.check()
+    await session.install()
+
+    expect(session.state.value).toMatchObject({ status: 'available', release: { manual: true } })
+    expect(calls).toEqual([])
   })
 
   test('reports when there is nothing to install', async () => {

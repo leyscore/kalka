@@ -15,13 +15,20 @@ export interface Update {
   version: string
   currentVersion: string
   body?: string
+  /** Kalka's own: this copy cannot install updates and must be downloaded again. */
+  manual?: boolean
   download(onEvent?: (event: DownloadEvent) => void): Promise<void>
   install(): Promise<void>
   close(): Promise<void>
 }
 
 const ReleaseSchema = v.nullable(
-  v.object({ version: v.string(), currentVersion: v.string(), body: v.optional(v.string()) })
+  v.object({
+    version: v.string(),
+    currentVersion: v.string(),
+    body: v.optional(v.string()),
+    manual: v.optional(v.boolean())
+  })
 )
 const ProgressSchema = v.object({ total: v.number(), delta: v.number() })
 

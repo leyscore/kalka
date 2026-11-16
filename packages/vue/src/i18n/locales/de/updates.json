@@ -16,6 +16,8 @@
   "installing": "Wird installiert …",
   "installed": "Kalka {version} ist installiert",
   "restartToFinish": "Starte Kalka neu, um die neue Version zu verwenden.",
+  "manualInstall": "Diese Kalka-Kopie ist nicht signiert, daher lässt macOS sie sich nicht selbst aktualisieren. Lade die neue Version herunter und ersetze Kalka im Ordner „Programme“.",
+  "download": "Herunterladen",
   "restartNow": "Jetzt neu starten",
   "downloadFailed": "Das Update konnte nicht heruntergeladen werden: {error}",
   "installFailed": "Das Update konnte nicht installiert werden: {error}",

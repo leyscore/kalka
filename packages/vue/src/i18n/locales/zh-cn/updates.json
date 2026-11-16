@@ -16,6 +16,8 @@
   "installing": "正在安装…",
   "installed": "Kalka {version} 已安装",
   "restartToFinish": "重新启动 Kalka 以开始使用新版本。",
+  "manualInstall": "此 Kalka 副本未签名，macOS 不允许它自动更新。请下载新版本并替换“应用程序”中的 Kalka。",
+  "download": "下载",
   "restartNow": "立即重新启动",
   "downloadFailed": "无法下载更新：{error}",
   "installFailed": "无法安装更新：{error}",

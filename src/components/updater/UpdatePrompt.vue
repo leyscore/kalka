@@ -15,7 +15,7 @@ import AppButton from '@/components/ui/button/AppButton.vue'
 import AppAlert from '@/components/ui/feedback/AppAlert.vue'
 import AppPlaceholder from '@/components/ui/feedback/AppPlaceholder.vue'
 import AppProgress from '@/components/ui/feedback/AppProgress.vue'
-import { releaseNotesURL } from '@/constants'
+import { DESKTOP_DOWNLOAD_URL, releaseNotesURL } from '@/constants'
 import { motionStyles } from '@/theme/motion/styles'
 import { updatePromptTheme, updateStatusUI } from '@/theme/updater'
 
@@ -90,6 +90,7 @@ function openNotesLink(event: MouseEvent) {
         <template v-else>
           <h1 :class="ui.title">{{ t.available({ version: release.version }) }}</h1>
           <p :class="ui.subtitle">{{ t.currentVersion({ version: release.currentVersion }) }}</p>
+          <p v-if="release.manual" :class="ui.subtitle">{{ t.manualInstall }}</p>
         </template>
 
         <div :class="ui.notesHeader">
@@ -161,6 +162,14 @@ function openNotesLink(event: MouseEvent) {
             @click="emit('restart')"
           >
             {{ t.restartNow }}
+          </AppButton>
+          <AppButton
+            v-else-if="release?.manual"
+            color="primary"
+            variant="solid"
+            @click="openExternalLink(DESKTOP_DOWNLOAD_URL)"
+          >
+            {{ t.download }}
           </AppButton>
           <AppButton
             v-else-if="state.status === 'available'"

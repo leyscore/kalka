@@ -196,6 +196,7 @@ ja:storage.copyCors
 ja:storage.providerS3
 ja:updates.available
 ja:updates.installed
+ja:updates.manualInstall
 ja:updates.restartFailed
 ja:updates.restartToFinish
 ja:updates.unavailable
@@ -397,6 +398,7 @@ zh-cn:storage.copyCors
 zh-cn:storage.providerS3
 zh-cn:updates.available
 zh-cn:updates.installed
+zh-cn:updates.manualInstall
 zh-cn:updates.restartFailed
 zh-cn:updates.restartToFinish
 zh-cn:updates.unavailable

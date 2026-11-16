@@ -21,6 +21,9 @@ export const updatesMessageDefaults = {
   installed: params('Kalka {version} is installed'),
   restartToFinish: 'Restart Kalka to start using the new version.',
   restartNow: 'Restart Now',
+  manualInstall:
+    'This copy of Kalka is not signed, so macOS will not let it update itself. Download the new version and replace Kalka in Applications.',
+  download: 'Download',
   downloadFailed: params('Could not download the update: {error}'),
   installFailed: params('Could not install the update: {error}'),
   restartFailed: params('Could not restart Kalka: {error}'),

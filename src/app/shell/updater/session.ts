@@ -10,6 +10,8 @@ export interface ReleaseInfo {
   currentVersion: string
   /** The release's `CHANGELOG.md` section, as Markdown. */
   notes: string
+  /** This copy cannot install updates (an unsigned macOS build): it is downloaded again instead. */
+  manual: boolean
 }
 
 export type UpdaterState =
@@ -22,11 +24,11 @@ export type UpdaterState =
   | { status: 'installed'; release: ReleaseInfo }
   | { status: 'failed'; step: UpdateFailureStep; release?: ReleaseInfo; error: string }
 
-/** The slice of a Tauri `Update` the window uses. */
+/** The slice of a Tauri `Update` the window uses, and whether it must be installed by hand. */
 export type PendingUpdate = Pick<
   Update,
   'version' | 'currentVersion' | 'body' | 'download' | 'install' | 'close'
->
+> & { manual?: boolean }
 
 export interface UpdaterBackend {
   check(): Promise<PendingUpdate | null>
@@ -112,7 +114,8 @@ export function createUpdaterSession(backend: UpdaterBackend): UpdaterSession {
   async function install() {
     const update = pending
     const current = state.value
-    if (!update || (current.status !== 'available' && current.status !== 'failed')) return
+    if (!update || update.manual) return
+    if (current.status !== 'available' && current.status !== 'failed') return
     const info = releaseInfo(update)
 
     download ??= startDownload(update)
@@ -226,7 +229,8 @@ function releaseInfo(update: PendingUpdate): ReleaseInfo {
   return {
     version: update.version,
     currentVersion: update.currentVersion,
-    notes: update.body?.trim() ?? ''
+    notes: update.body?.trim() ?? '',
+    manual: update.manual ?? false
   }
 }
 
