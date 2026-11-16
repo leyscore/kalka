@@ -65,6 +65,35 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY=false bun run package:dir
           if [ "$RUNNER_OS" = "Linux" ]; then xvfb-run --auto-servernum bun run smoke; else bun run smoke; fi
 
+      # Without an Apple certificate, macOS builds are signed with one self-signed certificate kept
+      # as a secret, so each release meets the previous one's designated requirement and
+      # Squirrel.Mac installs it (electron/scripts/mac-sign.cjs). The runner is thrown away, so
+      # trusting the certificate here touches no one's machine.
+      - name: Load the self-signed certificate
+        if: runner.os == 'macOS'
+        shell: bash
+        env:
+          CSC_LINK: ${{ secrets.MAC_CERTIFICATE_P12_BASE64 }}
+          SELF_SIGN_P12: ${{ secrets.MAC_SELF_SIGN_P12_BASE64 }}
+          SELF_SIGN_PASSWORD: ${{ secrets.MAC_SELF_SIGN_PASSWORD }}
+        run: |
+          if [ -n "$CSC_LINK" ] || [ -z "$SELF_SIGN_P12" ]; then exit 0; fi
+          keychain="$RUNNER_TEMP/kalka-sign.keychain-db"
+          password="$(openssl rand -hex 16)"
+          echo "$SELF_SIGN_P12" | base64 --decode > "$RUNNER_TEMP/self-sign.p12"
+          security create-keychain -p "$password" "$keychain"
+          security set-keychain-settings "$keychain"
+          security unlock-keychain -p "$password" "$keychain"
+          security import "$RUNNER_TEMP/self-sign.p12" -k "$keychain" -P "$SELF_SIGN_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$password" "$keychain"
+          security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
+          openssl pkcs12 -in "$RUNNER_TEMP/self-sign.p12" -passin env:SELF_SIGN_PASSWORD -nokeys -clcerts -out "$RUNNER_TEMP/self-sign.pem"
+          sudo security add-trusted-cert -d -r trustRoot -p codeSign -k "$keychain" "$RUNNER_TEMP/self-sign.pem"
+          rm "$RUNNER_TEMP/self-sign.p12"
+          identity="$(openssl x509 -in "$RUNNER_TEMP/self-sign.pem" -noout -fingerprint -sha1 | cut -d= -f2 | tr -d :)"
+          echo "KALKA_MAC_SIGN_IDENTITY=$identity" >> "$GITHUB_ENV"
+          echo "KALKA_MAC_SIGN_KEYCHAIN=$keychain" >> "$GITHUB_ENV"
+
       # Signs and notarizes on macOS when the Apple secrets exist; unsigned builds open with
       # right-click, Open. Publishing adds the installers to the draft release for this version.
       - name: Package the installers

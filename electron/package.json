@@ -24,7 +24,7 @@
   "version": "0.2.0-beta.1",
   "description": "Design like you do in Figma. Every layer is real HTML and CSS.",
   "build": {
-    "afterPack": "scripts/adhoc-sign.cjs",
+    "afterPack": "scripts/mac-sign.cjs",
     "appId": "design.kalka.app",
     "productName": "Kalka",
     "copyright": "Kalka contributors",
