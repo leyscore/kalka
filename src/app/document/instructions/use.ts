@@ -85,8 +85,8 @@ export function useInstructions(store: EditorStore) {
 
   /** Opens one of the person's own skills, to read and to write; it is kept in the app. */
   function openOwn(name: string): void {
-    const text = skillLibrary.value.own[name]
-    if (text === undefined) return
+    if (!Object.hasOwn(skillLibrary.value.own, name)) return
+    const text = skillLibrary.value.own[name] ?? ''
     openFolderFile.value = {
       path: `/${name}`,
       name: `${name}.md`,
@@ -100,7 +100,7 @@ export function useInstructions(store: EditorStore) {
   function addOwn(title: string): boolean {
     const name = skillSlug(title)
     if (!name) return false
-    if (skillLibrary.value.own[name] === undefined) saveOwnSkill(name, `# ${title.trim()}\n\n`)
+    if (!Object.hasOwn(skillLibrary.value.own, name)) saveOwnSkill(name, `# ${title.trim()}\n\n`)
     openOwn(name)
     folderFileMarkdown.value = 'text'
     return true
