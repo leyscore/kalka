@@ -49,7 +49,7 @@
 
 <p align="center">Every layer is an element the browser lays out and paints,<br />so flexbox, grid, fonts, shadows and blurs look on the canvas exactly as they will in production.</p>
 
-<p align="center"><img src="assets/screenshots/editor.gif" width="100%" alt="The Kalka editor: the layers panel on the left, a landing page on the canvas with its heading selected, and its typography in the panel on the right"></p>
+<p align="center"><img src="assets/screenshots/editor.gif" width="100%" alt="The Kalka editor: a landing page on the canvas with its heading selected, its HTML and CSS in the Code panel, and the design skills agents work with"></p>
 
 <table>
   <tr>
@@ -76,7 +76,8 @@
 - **One click to connect.** Settings → MCP connects Claude Desktop, Claude Code, Cursor, VS Code, Windsurf, Codex, Gemini CLI, Antigravity, Kiro, Zed, LM Studio or opencode, or copies the configuration for any other client.
 - **Tools agents already understand.** They start with `get_selection` or `get_page_tree`, build with `write_html`, adjust with `update_styles`, and check with `get_screenshot`.
 - **Real content, not placeholders.** The server asks agents to bring in specs, docs or data from the other servers the client has connected.
-- **A built-in AI chat too,** with your own API key, including local models through LM Studio, Ollama or llama.cpp.
+- **Design skills built in.** Seven skills steer agents away from generic, AI-looking pages: `/direction`, `/landing-page`, `/copy`, `/critique`, `/responsive`, `/polish` and `/anti-slop`. Add your own, and give each project its rules and reference documents.
+- **An agent beside the canvas,** in Kalka's own panel: the coding agent already on your computer (Claude Code, Codex, Gemini CLI, Pi) in one click, or your own API key, including local models through LM Studio, Ollama or llama.cpp.
 
 <br />
 
@@ -94,7 +95,7 @@
   </picture>
 </p>
 
-<p align="center">A Kalka document is a folder: one HTML page per page, <code>styles.css</code>, design tokens and assets.<br />Open it in a code editor, and keep its versions with Git from the Versions tab.</p>
+<p align="center">A Kalka document is a folder: one HTML page per page, <code>styles.css</code>, design tokens and assets.<br />Open it in a code editor, or from the Folder panel, and keep its versions with Git from the History panel.</p>
 
 <br />
 
@@ -220,7 +221,7 @@ Kalka is a fork of [OpenPencil](https://github.com/open-pencil/open-pencil) by D
 - The canvas is the web page: each artboard is real HTML and CSS that the browser lays out and paints, in place of a canvas drawn with CanvasKit. OpenPencil could export a design to HTML; Kalka edits the HTML itself.
 - Layers have an HTML tag and class names, styles are shared through CSS classes, and artboards have breakpoints.
 - Documents are saved as a folder of HTML pages, a stylesheet, design tokens and images, or as one `.kalka` file.
-- HTML export reads as written by hand, with images as files, and the Code tab shows a selection's HTML and CSS.
+- HTML export reads as written by hand, with images as files, and the Code panel shows a selection's HTML and CSS.
 - A folder panel with the document's files and its versions in Git.
 - The desktop app runs on Electron instead of Tauri.
 - The interface: top bar, icon rail, Home, welcome, and the Kalka name and brand.
