@@ -2,10 +2,6 @@
 
 ## Unreleased
 
-### Fixed
-
-- On macOS, a copy of Kalka that cannot install updates because it is not signed offers to download the new version instead of a Restart Now button that did nothing, and a refused update is reported when restarting.
-
 ## 0.2.0-beta.1 — 2026-11-16
 
 ### Added
@@ -30,6 +26,7 @@
 
 ### Fixed
 
+- On macOS, a copy of Kalka that cannot install updates because it is not signed offers to download the new version instead of a Restart Now button that did nothing, and a refused update is reported when restarting.
 - Following an agent survives a click on the canvas and zooming, so you can select and edit beside it; scrolling the view away still stops following.
 - On a demo site such as demo.kalka.design, the root opens the demo document and no welcome, AI setup, or recovery dialog appears, including on later visits answered from the browser's cache. The demo opens on the first screen of Kalka's landing page instead of the whole page at 11%.
 - The two center pins of the constraints diagram cross in the middle of the box instead of sitting side by side.
