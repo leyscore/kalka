@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.2.0-beta.2 — 2026-11-16
+
 ### Fixed
 
 - A coding agent such as Claude Code ends its turn in the conversation when it has replied, so you can write the next message instead of waiting on a reply that never finished.
