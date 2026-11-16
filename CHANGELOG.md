@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Fixed
+
+- A coding agent such as Claude Code ends its turn in the conversation when it has replied, so you can write the next message instead of waiting on a reply that never finished.
+- A conversation is named after what you wrote, and reopens showing it, without the project instructions sent along with it.
+
 ## 0.2.0-beta.1 — 2026-11-16
 
 ### Added

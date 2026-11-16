@@ -130,6 +130,69 @@ export function buildCrashChunks(
   return { chunks, shouldNullSession: true }
 }
 
+/** What a prompt needs from a session: the connection to the agent and where its updates go. */
+export interface ACPPromptSession {
+  connection: Pick<ClientSideConnection, 'prompt' | 'cancel'>
+  sessionId: string
+  onUpdate: ACPSession['onUpdate']
+}
+
+/**
+ * Streams one prompt's reply. The stream ends when the agent ends its turn, when the prompt
+ * fails, or when the chat stops it; until then the chat stays busy and takes no new message.
+ */
+export function promptStream(
+  session: ACPPromptSession,
+  promptText: string,
+  abortSignal: AbortSignal | undefined,
+  describeFailure: (error: unknown) => string
+): ReadableStream<UIMessageChunk> {
+  const { connection, sessionId } = session
+  return new ReadableStream<UIMessageChunk>({
+    start: (controller) => {
+      const textId = `text-${Date.now()}`
+      let textStarted = false
+      let closed = false
+
+      function finish(reason: 'stop' | 'other' | 'error', errorText?: string) {
+        if (closed) return
+        closed = true
+        if (errorText) controller.enqueue({ type: 'error', errorText })
+        if (textStarted) controller.enqueue({ type: 'text-end', id: textId })
+        controller.enqueue({ type: 'finish-step' })
+        controller.enqueue({ type: 'finish', finishReason: reason })
+        session.onUpdate = null
+        controller.close()
+      }
+
+      session.onUpdate = (params) => {
+        if (closed) return
+        const result = mapUpdate(params.update, textId, textStarted)
+        for (const chunk of result.chunks) {
+          controller.enqueue(chunk)
+        }
+        textStarted = result.textStarted
+      }
+
+      abortSignal?.addEventListener('abort', () => {
+        void connection.cancel({ sessionId })
+        finish('stop')
+      })
+
+      controller.enqueue({ type: 'start' })
+      controller.enqueue({ type: 'start-step' })
+
+      connection
+        .prompt({ sessionId, prompt: [{ type: 'text', text: promptText }] })
+        .then((result) => finish(result.stopReason === 'end_turn' ? 'stop' : 'other'))
+        .catch((e: unknown) => {
+          recordACPTransportFailure({ operation: 'message', ...describeDiagnosticError(e) })
+          finish('error', describeFailure(e))
+        })
+    }
+  })
+}
+
 export interface ACPChatTransportOptions {
   agentDef: ACPAgentDef
   cwd?: string
@@ -179,57 +242,9 @@ export class ACPChatTransport implements ChatTransport<UIMessage> {
     const promptText = this.sentContext ? text : `${SYSTEM_PROMPT}\n\n${text}`
     this.sentContext = true
 
-    const { connection, sessionId } = this.session
-    const session = this.session
-
-    return new ReadableStream<UIMessageChunk>({
-      start: (controller) => {
-        const textId = `text-${Date.now()}`
-        let textStarted = false
-        let closed = false
-
-        function finish(reason: 'stop' | 'other' | 'error', errorText?: string) {
-          if (closed) return
-          closed = true
-          if (errorText) controller.enqueue({ type: 'error', errorText })
-          if (textStarted) controller.enqueue({ type: 'text-end', id: textId })
-          controller.enqueue({ type: 'finish-step' })
-          controller.enqueue({ type: 'finish', finishReason: reason })
-          session.onUpdate = null
-          controller.close()
-        }
-
-        session.onUpdate = (params) => {
-          if (closed) return
-          const result = mapUpdate(params.update, textId, textStarted)
-          for (const chunk of result.chunks) {
-            controller.enqueue(chunk)
-          }
-          textStarted = result.textStarted
-        }
-
-        abortSignal?.addEventListener('abort', () => {
-          void connection.cancel({ sessionId })
-          finish('stop')
-        })
-
-        controller.enqueue({ type: 'start' })
-        controller.enqueue({ type: 'start-step' })
-
-        connection
-          .prompt({
-            sessionId,
-            prompt: [{ type: 'text', text: promptText }]
-          })
-          .catch((e: unknown) => {
-            recordACPTransportFailure({
-              operation: 'message',
-              ...describeDiagnosticError(e)
-            })
-            this.onError?.(e)
-            finish('error', formatConnectionError(e, this.agentDef))
-          })
-      }
+    return promptStream(this.session, promptText, abortSignal, (e) => {
+      this.onError?.(e)
+      return formatConnectionError(e, this.agentDef)
     })
   }
 
