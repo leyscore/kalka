@@ -1,7 +1,10 @@
 import { afterEach, describe, expect, spyOn, test } from 'bun:test'
 
+import { SceneGraph } from '@kalka/scene-graph'
+
 import { openDemoDocument } from '@/app/demo/document'
 import { createEditorStore } from '@/app/editor/session'
+import { appPreferences } from '@/app/settings/preferences/store'
 
 const originalFetch = globalThis.fetch
 
@@ -28,6 +31,22 @@ describe('opening the demo', () => {
     await openDemoDocument(store)
     expect(open).toHaveBeenCalledTimes(1)
     expect(open.mock.calls[0]?.[0].name).toBe('Demo.kalka')
+  })
+
+  test('keeps design-check markers off the demo until another document opens', async () => {
+    const store = createEditorStore()
+    spyOn(store, 'openKalkaFile').mockResolvedValue(undefined)
+    const previous = appPreferences.value.designCheck.showOnCanvas
+    appPreferences.value.designCheck.showOnCanvas = true
+    try {
+      stubDemoFetch()
+      await openDemoDocument(store)
+      expect(store.designCheck.enabled.value).toBe(false)
+      store.replaceGraph(new SceneGraph())
+      expect(store.designCheck.enabled.value).toBe(true)
+    } finally {
+      appPreferences.value.designCheck.showOnCanvas = previous
+    }
   })
 
   test('leaves a tab alone once something was drawn while the demo loaded', async () => {

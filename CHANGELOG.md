@@ -29,6 +29,7 @@
 - Following an agent survives a click on the canvas and zooming, so you can select and edit beside it; scrolling the view away still stops following.
 - On a demo site such as demo.kalka.design, the root opens the demo document and no welcome, AI setup, or recovery dialog appears, including on later visits answered from the browser's cache.
 - The two center pins of the constraints diagram cross in the middle of the box instead of sitting side by side.
+- The browser demo opens on the first screen of Kalka's landing page instead of the whole page at 11%, and keeps design-check markers off its canvas until you open another document.
 
 ## 0.1.0-beta.6 — 2026-11-06
 
