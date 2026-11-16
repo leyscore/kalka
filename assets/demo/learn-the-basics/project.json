@@ -1,0 +1,500 @@
+{
+  "format": "kalka",
+  "version": 1,
+  "root": {
+    "id": "0:1",
+    "props": {
+      "cssClasses": [
+        {
+          "kind": "box",
+          "name": "board",
+          "style": {
+            "itemSpacing": 56,
+            "layoutMode": "VERTICAL"
+          }
+        },
+        {
+          "kind": "box",
+          "name": "top",
+          "style": {
+            "counterAxisAlign": "CENTER",
+            "layoutMode": "HORIZONTAL",
+            "primaryAxisAlign": "SPACE_BETWEEN"
+          }
+        },
+        {
+          "kind": "box",
+          "name": "brand",
+          "style": {
+            "counterAxisAlign": "CENTER",
+            "itemSpacing": 10,
+            "layoutMode": "HORIZONTAL"
+          }
+        },
+        {
+          "kind": "box",
+          "name": "k",
+          "style": {
+            "cornerRadius": 8,
+            "counterAxisAlign": "CENTER",
+            "layoutMode": "HORIZONTAL",
+            "primaryAxisAlign": "CENTER"
+          }
+        },
+        {
+          "kind": "text",
+          "name": "meta",
+          "style": {
+            "fills": [
+              {
+                "color": {
+                  "a": 1,
+                  "b": 0.3333333333333333,
+                  "g": 0.2901960784313726,
+                  "r": 0.2901960784313726
+                },
+                "opacity": 1,
+                "type": "SOLID",
+                "visible": true
+              }
+            ],
+            "fontFamily": "'Geist Mono'",
+            "fontSize": 13
+          }
+        },
+        {
+          "kind": "box",
+          "name": "hero",
+          "style": {
+            "itemSpacing": 22,
+            "layoutMode": "VERTICAL"
+          }
+        },
+        {
+          "kind": "text",
+          "name": "eyebrow",
+          "style": {
+            "fills": [
+              {
+                "color": {
+                  "a": 1,
+                  "b": 0.9176470588235294,
+                  "g": 0.3568627450980392,
+                  "r": 0.1843137254901961
+                },
+                "opacity": 1,
+                "type": "SOLID",
+                "visible": true
+              }
+            ],
+            "fontFamily": "'Geist Mono'",
+            "fontSize": 13,
+            "textCase": "UPPER"
+          }
+        },
+        {
+          "kind": "box",
+          "name": "title",
+          "style": {
+            "counterAxisAlign": "MAX",
+            "itemSpacing": 22,
+            "layoutMode": "HORIZONTAL"
+          }
+        },
+        {
+          "kind": "box",
+          "name": "word",
+          "style": {
+            "strokeWeight": 2,
+            "strokes": [
+              {
+                "align": "INSIDE",
+                "color": {
+                  "a": 1,
+                  "b": 0.9176470588235294,
+                  "g": 0.3568627450980392,
+                  "r": 0.1843137254901961
+                },
+                "opacity": 1,
+                "type": "SOLID",
+                "visible": true,
+                "weight": 2
+              }
+            ]
+          }
+        },
+        {
+          "kind": "text",
+          "name": "lede",
+          "style": {
+            "fills": [
+              {
+                "color": {
+                  "a": 1,
+                  "b": 0.27058823529411763,
+                  "g": 0.22745098039215686,
+                  "r": 0.22745098039215686
+                },
+                "opacity": 1,
+                "type": "SOLID",
+                "visible": true
+              }
+            ],
+            "fontSize": 20,
+            "lineHeight": 1.5
+          }
+        },
+        {
+          "kind": "box",
+          "name": "badge",
+          "style": {
+            "cornerRadius": 5
+          }
+        },
+        {
+          "kind": "text",
+          "name": "nw",
+          "style": {}
+        },
+        {
+          "kind": "box",
+          "name": "h",
+          "style": {
+            "strokeWeight": 2,
+            "strokes": [
+              {
+                "align": "INSIDE",
+                "color": {
+                  "a": 1,
+                  "b": 0.9176470588235294,
+                  "g": 0.3568627450980392,
+                  "r": 0.1843137254901961
+                },
+                "opacity": 1,
+                "type": "SOLID",
+                "visible": true,
+                "weight": 2
+              }
+            ]
+          }
+        },
+        {
+          "kind": "box",
+          "name": "h1",
+          "style": {}
+        },
+        {
+          "kind": "box",
+          "name": "h2",
+          "style": {}
+        },
+        {
+          "kind": "box",
+          "name": "h3",
+          "style": {}
+        },
+        {
+          "kind": "box",
+          "name": "h4",
+          "style": {}
+        },
+        {
+          "kind": "box",
+          "name": "row",
+          "style": {
+            "itemSpacing": 24,
+            "layoutMode": "HORIZONTAL"
+          }
+        },
+        {
+          "kind": "box",
+          "name": "card",
+          "style": {
+            "cornerRadius": 24,
+            "layoutMode": "VERTICAL",
+            "paddingBottom": 8,
+            "paddingLeft": 8,
+            "paddingRight": 8,
+            "paddingTop": 8
+          }
+        },
+        {
+          "kind": "box",
+          "name": "play",
+          "style": {
+            "cornerRadius": 18
+          }
+        },
+        {
+          "kind": "box",
+          "name": "copy",
+          "style": {
+            "itemSpacing": 10,
+            "layoutMode": "VERTICAL"
+          }
+        },
+        {
+          "kind": "text",
+          "name": "step",
+          "style": {
+            "fills": [
+              {
+                "color": {
+                  "a": 1,
+                  "b": 0.9176470588235294,
+                  "g": 0.3568627450980392,
+                  "r": 0.1843137254901961
+                },
+                "opacity": 1,
+                "type": "SOLID",
+                "visible": true
+              }
+            ],
+            "fontFamily": "'Geist Mono'",
+            "fontSize": 12
+          }
+        },
+        {
+          "kind": "text",
+          "name": "ct",
+          "style": {
+            "fills": [
+              {
+                "color": {
+                  "a": 1,
+                  "b": 0.0784313725490196,
+                  "g": 0.07058823529411765,
+                  "r": 0.07058823529411765
+                },
+                "opacity": 1,
+                "type": "SOLID",
+                "visible": true
+              }
+            ],
+            "fontFamily": "'Bricolage Grotesque'",
+            "fontSize": 26,
+            "fontWeight": 600
+          }
+        },
+        {
+          "kind": "text",
+          "name": "cb",
+          "style": {
+            "fills": [
+              {
+                "color": {
+                  "a": 1,
+                  "b": 0.3333333333333333,
+                  "g": 0.2901960784313726,
+                  "r": 0.2901960784313726
+                },
+                "opacity": 1,
+                "type": "SOLID",
+                "visible": true
+              }
+            ],
+            "fontFamily": "Geist",
+            "fontSize": 15,
+            "lineHeight": 1.5
+          }
+        },
+        {
+          "kind": "box",
+          "name": "keys",
+          "style": {
+            "itemSpacing": 6,
+            "layoutMode": "HORIZONTAL",
+            "paddingTop": 6
+          }
+        },
+        {
+          "kind": "box",
+          "name": "kbd",
+          "style": {
+            "cornerRadius": 6,
+            "strokes": [
+              {
+                "align": "INSIDE",
+                "color": {
+                  "a": 1,
+                  "b": 0.8392156862745098,
+                  "g": 0.8627450980392157,
+                  "r": 0.8627450980392157
+                },
+                "opacity": 1,
+                "type": "SOLID",
+                "visible": true,
+                "weight": 1
+              }
+            ]
+          }
+        },
+        {
+          "kind": "box",
+          "name": "sel",
+          "style": {
+            "strokeWeight": 2,
+            "strokes": [
+              {
+                "align": "INSIDE",
+                "color": {
+                  "a": 1,
+                  "b": 0.9176470588235294,
+                  "g": 0.3568627450980392,
+                  "r": 0.1843137254901961
+                },
+                "opacity": 1,
+                "type": "SOLID",
+                "visible": true,
+                "weight": 2
+              }
+            ]
+          }
+        },
+        {
+          "kind": "box",
+          "name": "hd",
+          "style": {
+            "strokeWeight": 2,
+            "strokes": [
+              {
+                "align": "INSIDE",
+                "color": {
+                  "a": 1,
+                  "b": 0.9176470588235294,
+                  "g": 0.3568627450980392,
+                  "r": 0.1843137254901961
+                },
+                "opacity": 1,
+                "type": "SOLID",
+                "visible": true,
+                "weight": 2
+              }
+            ]
+          }
+        },
+        {
+          "kind": "box",
+          "name": "size",
+          "style": {
+            "cornerRadius": 5
+          }
+        },
+        {
+          "kind": "box",
+          "name": "strip",
+          "style": {
+            "cornerRadius": 20,
+            "counterAxisAlign": "CENTER",
+            "layoutMode": "HORIZONTAL",
+            "primaryAxisAlign": "SPACE_BETWEEN"
+          }
+        },
+        {
+          "kind": "text",
+          "name": "sl",
+          "style": {
+            "fills": [
+              {
+                "color": {
+                  "a": 1,
+                  "b": 1,
+                  "g": 1,
+                  "r": 1
+                },
+                "opacity": 1,
+                "type": "SOLID",
+                "visible": true
+              }
+            ],
+            "fontFamily": "'Bricolage Grotesque'",
+            "fontSize": 20,
+            "fontWeight": 600
+          }
+        },
+        {
+          "kind": "box",
+          "name": "ks",
+          "style": {
+            "itemSpacing": 8,
+            "layoutMode": "HORIZONTAL"
+          }
+        },
+        {
+          "kind": "box",
+          "name": "k2",
+          "style": {
+            "cornerRadius": 10,
+            "counterAxisAlign": "CENTER",
+            "itemSpacing": 8,
+            "layoutMode": "HORIZONTAL"
+          }
+        },
+        {
+          "kind": "box",
+          "name": "kk",
+          "style": {
+            "cornerRadius": 5
+          }
+        },
+        {
+          "kind": "text",
+          "name": "kl",
+          "style": {
+            "fills": [
+              {
+                "color": {
+                  "a": 1,
+                  "b": 0.8235294117647058,
+                  "g": 0.7764705882352941,
+                  "r": 0.7686274509803922
+                },
+                "opacity": 1,
+                "type": "SOLID",
+                "visible": true
+              }
+            ],
+            "fontFamily": "Geist",
+            "fontSize": 13
+          }
+        }
+      ],
+      "pluginData": [
+        {
+          "key": "cssClasses",
+          "pluginId": "kalka",
+          "value": "[{\"name\":\"board\",\"kind\":\"box\",\"style\":{\"layoutMode\":\"VERTICAL\",\"itemSpacing\":56}},{\"name\":\"top\",\"kind\":\"box\",\"style\":{\"layoutMode\":\"HORIZONTAL\",\"primaryAxisAlign\":\"SPACE_BETWEEN\",\"counterAxisAlign\":\"CENTER\"}},{\"name\":\"brand\",\"kind\":\"box\",\"style\":{\"layoutMode\":\"HORIZONTAL\",\"counterAxisAlign\":\"CENTER\",\"itemSpacing\":10}},{\"name\":\"k\",\"kind\":\"box\",\"style\":{\"cornerRadius\":8,\"layoutMode\":\"HORIZONTAL\",\"primaryAxisAlign\":\"CENTER\",\"counterAxisAlign\":\"CENTER\"}},{\"name\":\"meta\",\"kind\":\"text\",\"style\":{\"fills\":[{\"type\":\"SOLID\",\"color\":{\"r\":0.2901960784313726,\"g\":0.2901960784313726,\"b\":0.3333333333333333,\"a\":1},\"opacity\":1,\"visible\":true}],\"fontFamily\":\"'Geist Mono'\",\"fontSize\":13}},{\"name\":\"hero\",\"kind\":\"box\",\"style\":{\"layoutMode\":\"VERTICAL\",\"itemSpacing\":22}},{\"name\":\"eyebrow\",\"kind\":\"text\",\"style\":{\"fills\":[{\"type\":\"SOLID\",\"color\":{\"r\":0.1843137254901961,\"g\":0.3568627450980392,\"b\":0.9176470588235294,\"a\":1},\"opacity\":1,\"visible\":true}],\"fontFamily\":\"'Geist Mono'\",\"fontSize\":13,\"textCase\":\"UPPER\"}},{\"name\":\"title\",\"kind\":\"box\",\"style\":{\"layoutMode\":\"HORIZONTAL\",\"counterAxisAlign\":\"MAX\",\"itemSpacing\":22}},{\"name\":\"word\",\"kind\":\"box\",\"style\":{\"strokes\":[{\"type\":\"SOLID\",\"color\":{\"r\":0.1843137254901961,\"g\":0.3568627450980392,\"b\":0.9176470588235294,\"a\":1},\"opacity\":1,\"weight\":2,\"visible\":true,\"align\":\"INSIDE\"}],\"strokeWeight\":2}},{\"name\":\"lede\",\"kind\":\"text\",\"style\":{\"fills\":[{\"type\":\"SOLID\",\"color\":{\"r\":0.22745098039215686,\"g\":0.22745098039215686,\"b\":0.27058823529411763,\"a\":1},\"opacity\":1,\"visible\":true}],\"fontSize\":20,\"lineHeight\":1.5}},{\"name\":\"badge\",\"kind\":\"box\",\"style\":{\"cornerRadius\":5}},{\"name\":\"nw\",\"kind\":\"text\",\"style\":{}},{\"name\":\"h\",\"kind\":\"box\",\"style\":{\"strokes\":[{\"type\":\"SOLID\",\"color\":{\"r\":0.1843137254901961,\"g\":0.3568627450980392,\"b\":0.9176470588235294,\"a\":1},\"opacity\":1,\"weight\":2,\"visible\":true,\"align\":\"INSIDE\"}],\"strokeWeight\":2}},{\"name\":\"h1\",\"kind\":\"box\",\"style\":{}},{\"name\":\"h2\",\"kind\":\"box\",\"style\":{}},{\"name\":\"h3\",\"kind\":\"box\",\"style\":{}},{\"name\":\"h4\",\"kind\":\"box\",\"style\":{}},{\"name\":\"row\",\"kind\":\"box\",\"style\":{\"layoutMode\":\"HORIZONTAL\",\"itemSpacing\":24}},{\"name\":\"card\",\"kind\":\"box\",\"style\":{\"cornerRadius\":24,\"layoutMode\":\"VERTICAL\",\"paddingTop\":8,\"paddingRight\":8,\"paddingBottom\":8,\"paddingLeft\":8}},{\"name\":\"play\",\"kind\":\"box\",\"style\":{\"cornerRadius\":18}},{\"name\":\"copy\",\"kind\":\"box\",\"style\":{\"layoutMode\":\"VERTICAL\",\"itemSpacing\":10}},{\"name\":\"step\",\"kind\":\"text\",\"style\":{\"fills\":[{\"type\":\"SOLID\",\"color\":{\"r\":0.1843137254901961,\"g\":0.3568627450980392,\"b\":0.9176470588235294,\"a\":1},\"opacity\":1,\"visible\":true}],\"fontFamily\":\"'Geist Mono'\",\"fontSize\":12}},{\"name\":\"ct\",\"kind\":\"text\",\"style\":{\"fills\":[{\"type\":\"SOLID\",\"color\":{\"r\":0.07058823529411765,\"g\":0.07058823529411765,\"b\":0.0784313725490196,\"a\":1},\"opacity\":1,\"visible\":true}],\"fontFamily\":\"'Bricolage Grotesque'\",\"fontWeight\":600,\"fontSize\":26}},{\"name\":\"cb\",\"kind\":\"text\",\"style\":{\"fills\":[{\"type\":\"SOLID\",\"color\":{\"r\":0.2901960784313726,\"g\":0.2901960784313726,\"b\":0.3333333333333333,\"a\":1},\"opacity\":1,\"visible\":true}],\"fontFamily\":\"Geist\",\"fontSize\":15,\"lineHeight\":1.5}},{\"name\":\"keys\",\"kind\":\"box\",\"style\":{\"layoutMode\":\"HORIZONTAL\",\"itemSpacing\":6,\"paddingTop\":6}},{\"name\":\"kbd\",\"kind\":\"box\",\"style\":{\"strokes\":[{\"type\":\"SOLID\",\"color\":{\"r\":0.8627450980392157,\"g\":0.8627450980392157,\"b\":0.8392156862745098,\"a\":1},\"opacity\":1,\"weight\":1,\"visible\":true,\"align\":\"INSIDE\"}],\"cornerRadius\":6}},{\"name\":\"sel\",\"kind\":\"box\",\"style\":{\"strokes\":[{\"type\":\"SOLID\",\"color\":{\"r\":0.1843137254901961,\"g\":0.3568627450980392,\"b\":0.9176470588235294,\"a\":1},\"opacity\":1,\"weight\":2,\"visible\":true,\"align\":\"INSIDE\"}],\"strokeWeight\":2}},{\"name\":\"hd\",\"kind\":\"box\",\"style\":{\"strokes\":[{\"type\":\"SOLID\",\"color\":{\"r\":0.1843137254901961,\"g\":0.3568627450980392,\"b\":0.9176470588235294,\"a\":1},\"opacity\":1,\"weight\":2,\"visible\":true,\"align\":\"INSIDE\"}],\"strokeWeight\":2}},{\"name\":\"size\",\"kind\":\"box\",\"style\":{\"cornerRadius\":5}},{\"name\":\"strip\",\"kind\":\"box\",\"style\":{\"cornerRadius\":20,\"layoutMode\":\"HORIZONTAL\",\"primaryAxisAlign\":\"SPACE_BETWEEN\",\"counterAxisAlign\":\"CENTER\"}},{\"name\":\"sl\",\"kind\":\"text\",\"style\":{\"fills\":[{\"type\":\"SOLID\",\"color\":{\"r\":1,\"g\":1,\"b\":1,\"a\":1},\"opacity\":1,\"visible\":true}],\"fontFamily\":\"'Bricolage Grotesque'\",\"fontWeight\":600,\"fontSize\":20}},{\"name\":\"ks\",\"kind\":\"box\",\"style\":{\"layoutMode\":\"HORIZONTAL\",\"itemSpacing\":8}},{\"name\":\"k2\",\"kind\":\"box\",\"style\":{\"cornerRadius\":10,\"layoutMode\":\"HORIZONTAL\",\"counterAxisAlign\":\"CENTER\",\"itemSpacing\":8}},{\"name\":\"kk\",\"kind\":\"box\",\"style\":{\"cornerRadius\":5}},{\"name\":\"kl\",\"kind\":\"text\",\"style\":{\"fills\":[{\"type\":\"SOLID\",\"color\":{\"r\":0.7686274509803922,\"g\":0.7764705882352941,\"b\":0.8235294117647058,\"a\":1},\"opacity\":1,\"visible\":true}],\"fontFamily\":\"Geist\",\"fontSize\":13}}]"
+        },
+        {
+          "key": "interVersion",
+          "pluginId": "kalka",
+          "value": "4"
+        }
+      ]
+    }
+  },
+  "pages": [
+    {
+      "id": "0:3",
+      "name": "Learn the basics",
+      "file": "pages/learn-the-basics.html",
+      "artboards": [
+        {
+          "id": "0:4",
+          "x": 0,
+          "y": 0
+        }
+      ],
+      "props": {
+        "componentId": "",
+        "height": 100,
+        "strokeAlign": "CENTER",
+        "width": 100
+      }
+    }
+  ],
+  "settings": {
+    "colorSpace": "srgb",
+    "activeModes": {}
+  }
+}

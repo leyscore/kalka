@@ -1,0 +1,211 @@
+/*
+ * Styles every page of this Kalka document shares: the document's classes, which layers name in
+ * their class attribute, after the rules below. A layer's own style stays inline.
+ */
+[hidden] {
+  display: none !important;
+}
+
+/* Layers written as an h1, a list or a button draw as their own CSS says. */
+:where(section,header,footer,main,nav,article,aside,figure,figcaption,form,fieldset,address,hgroup,ul,ol,li,dl,dt,dd,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,button,label,legend,strong,em,small,code,mark,time){margin:0;padding:0;border:0;background:none;font:inherit;color:inherit;text-align:inherit;text-decoration:none;list-style:none;min-inline-size:0;appearance:none}
+
+.board {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 56px;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.k {
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.meta {
+  color: #4A4A55;
+  font-family: 'Geist Mono';
+  font-size: 13px;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 22px;
+}
+
+.eyebrow {
+  color: #2F5BEA;
+  font-family: 'Geist Mono';
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.title {
+  display: flex;
+  align-items: flex-end;
+  gap: 22px;
+}
+
+.word {
+  outline: 2px solid #2F5BEA;
+  outline-offset: -2px;
+}
+
+.lede {
+  color: #3A3A45;
+  font-size: 20px;
+  line-height: 1.5px;
+}
+
+.badge {
+  border-radius: 5px;
+}
+
+.nw {
+
+}
+
+.h {
+  outline: 2px solid #2F5BEA;
+  outline-offset: -2px;
+}
+
+.h1 {
+
+}
+
+.h2 {
+
+}
+
+.h3 {
+
+}
+
+.h4 {
+
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.card {
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 8px;
+}
+
+.play {
+  border-radius: 18px;
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.step {
+  color: #2F5BEA;
+  font-family: 'Geist Mono';
+  font-size: 12px;
+}
+
+.ct {
+  color: #121214;
+  font-family: 'Bricolage Grotesque';
+  font-size: 26px;
+  font-weight: 600;
+}
+
+.cb {
+  color: #4A4A55;
+  font-family: Geist;
+  font-size: 15px;
+  line-height: 1.5px;
+}
+
+.keys {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding-top: 6px;
+}
+
+.kbd {
+  outline: 1px solid #DCDCD6;
+  outline-offset: -1px;
+  border-radius: 6px;
+}
+
+.sel {
+  outline: 2px solid #2F5BEA;
+  outline-offset: -2px;
+}
+
+.hd {
+  outline: 2px solid #2F5BEA;
+  outline-offset: -2px;
+}
+
+.size {
+  border-radius: 5px;
+}
+
+.strip {
+  border-radius: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sl {
+  color: #FFFFFF;
+  font-family: 'Bricolage Grotesque';
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.ks {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.k2 {
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kk {
+  border-radius: 5px;
+}
+
+.kl {
+  color: #C4C6D2;
+  font-family: Geist;
+  font-size: 13px;
+}

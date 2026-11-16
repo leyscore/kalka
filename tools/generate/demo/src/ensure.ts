@@ -12,8 +12,8 @@ import type { Plugin } from 'vite'
 
 import { resolveWorkspaceRoot } from '@kalka/package-artifacts-tools/workspace'
 
-/** The landing page `/demo` opens, as a Kalka folder, relative to the repository root. */
-const DEMO_SOURCE = 'assets/demo/kalka-design'
+/** The lesson `/demo` opens, Learn the basics, as a Kalka folder relative to the repository root. */
+const DEMO_SOURCE = 'assets/demo/learn-the-basics'
 /** Where the app serves the demo from. */
 const DEMO_OUTPUT = 'public/demo.kalka'
 const CACHE = '.cache/demo'

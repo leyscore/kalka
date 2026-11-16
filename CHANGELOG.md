@@ -12,6 +12,7 @@
 
 ### Changed
 
+- The sample document, opened from the home screen and on demo.kalka.design, is now Learn the basics: one page of six lessons drawn on real layers, from selecting and moving to the agent and the folder, with the shortcuts to keep. Kalka's landing page is no longer the sample.
 - The editor has a new shell. A top bar holds the logo, which opens the File, Edit, View, Object, Text, and Arrange menus outside the macOS desktop app, the document's name with undo and redo, the screens of the page in the middle with a plus to add a tablet or phone breakpoint, then the agent, zoom, preview, and sharing. An icon rail at the left edge switches the left panel between the agent, Instructions, Layers, Assets, Code, Folder, History, and the design check with its problem count; the right panel is Design alone. The highlight glides to the entry chosen in the rail and its lists, as in the page list.
 - The editor is neutral: no colored light behind the canvas, opaque panels, and greys without a blue tint in both themes, so the app's own colors never tint the design. Its icons come from Hugeicons instead of Lucide.
 - The agent's conversation opens in the left panel, from the rail, the sparkle in the top bar, or a field at the end of the toolbar. It reads calmer: the agent's replies sit on the panel as plain text, and a run of tool calls is one line, with Kalka's loader and what the agent is doing while it works, then the number of actions; the calls open on a click.

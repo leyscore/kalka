@@ -101,8 +101,8 @@ const generated = Object.fromEntries(
 const goldPreview = lfsFixture(join(root, 'tests', 'fixtures', 'gold-preview.fig'))
 const documents: (OpenDocument & { gestures: boolean })[] = [
   {
-    name: 'demo (Kalka folder)',
-    path: join(root, 'assets', 'demo', 'kalka-design'),
+    name: 'kalka-design (Kalka folder)',
+    path: join(root, 'tests', 'fixtures', 'kalka-design'),
     artboards: 1,
     gestures: false
   },

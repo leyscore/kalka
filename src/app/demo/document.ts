@@ -3,8 +3,8 @@ import type { EditorStore } from '@/app/editor/session'
 import { fitDemoFirstScreen, fitDemoPagesOnFirstVisit } from './viewport'
 
 /**
- * Kalka's own landing page, zipped from `assets/demo` by `tools/generate/demo` before the app is
- * served or bundled.
+ * Learn the basics, a page of lessons drawn on real layers, zipped from `assets/demo` by
+ * `tools/generate/demo` before the app is served or bundled.
  */
 const DEMO = { url: '/demo.kalka', name: 'Demo.kalka' }
 /**

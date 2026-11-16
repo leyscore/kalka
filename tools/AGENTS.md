@@ -36,7 +36,7 @@ Private tooling lives under `tools/<role>/<domain>/{src,tests}`; Steiger enforce
 
 ## Demo document
 
-The `/demo` document is Kalka's landing page, the Kalka folder `assets/demo/kalka-design`, zipped into the ignored `public/demo.kalka` and opened like any `.kalka` file. The engine showcase the browser tests open at `/demo?fixture` is built from `tools/generate/demo/src/document/` into `.cache/demo/fixture.fig`, which only the dev server serves (`demoFixturePlugin`), so installers never carry it. `ensureDemoDocument` runs from `vite.config.ts`, rebuilds each output only when its inputs' fingerprint changes, and runs the fixture build in Bun; `bun run generate:demo` forces both. A section that needs something new from the engine adds that package's `src` to the fingerprint in `tools/generate/demo/src/ensure.ts`.
+The `/demo` document is Learn the basics, a page of six lessons drawn on real layers, the Kalka folder `assets/demo/learn-the-basics`, written by hand and zipped into the ignored `public/demo.kalka` and opened like any `.kalka` file. The engine showcase the browser tests open at `/demo?fixture` is built from `tools/generate/demo/src/document/` into `.cache/demo/fixture.fig`, which only the dev server serves (`demoFixturePlugin`), so installers never carry it. Kalka's landing page, drawn in nine languages, stays a regression fixture in `tests/fixtures/kalka-design`. `ensureDemoDocument` runs from `vite.config.ts`, rebuilds each output only when its inputs' fingerprint changes, and runs the fixture build in Bun; `bun run generate:demo` forces both. A section that needs something new from the engine adds that package's `src` to the fingerprint in `tools/generate/demo/src/ensure.ts`.
 
 ## Brand assets
 

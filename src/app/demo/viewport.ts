@@ -7,7 +7,7 @@ const FIRST_SCREEN_RATIO = 16 / 10
 
 /**
  * Frames the first screen of the page's first frame, the way a visitor lands on the page, instead
- * of shrinking a long landing page until nothing in it reads.
+ * of shrinking a long page until nothing in it reads.
  */
 export function fitDemoFirstScreen(
   editor: Pick<DemoViewportEditor, 'zoomToBounds' | 'graph' | 'state'>

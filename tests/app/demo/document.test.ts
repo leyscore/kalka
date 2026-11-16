@@ -24,7 +24,7 @@ afterEach(() => {
 })
 
 describe('opening the demo', () => {
-  test('opens the bundled landing page in a tab that is still blank', async () => {
+  test('opens the bundled lesson in a tab that is still blank', async () => {
     const store = createEditorStore()
     const open = spyOn(store, 'openKalkaFile').mockResolvedValue(undefined)
     stubDemoFetch()

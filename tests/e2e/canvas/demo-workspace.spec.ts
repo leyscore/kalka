@@ -128,7 +128,7 @@ test('demo tokens and main-component edits survive undo', async ({ page }) => {
   expect(result.restoredHeadlines).toEqual(['Open studio', 'Open studio'])
 })
 
-test('the demo is Kalka’s landing page, in every language it was drawn in', async ({ page }) => {
+test('the demo is Learn the basics, one page of lessons', async ({ page }) => {
   const canvas = new CanvasHelper(page)
   await page.goto('/demo?no-chrome&no-rulers')
   await canvas.waitForInit()
@@ -139,22 +139,30 @@ test('the demo is Kalka’s landing page, in every language it was drawn in', as
   const opened = await page.evaluate(() => {
     const store = window.kalka?.getStore?.()
     if (!store) throw new Error('Editor unavailable')
+    const [board] = store.graph.getChildren(store.state.currentPageId)
     return {
       pages: store.graph.getPages().map((item) => item.name),
-      layers: store.graph.getChildren(store.state.currentPageId).length
+      board: board?.name,
+      lessons: board
+        ? store.graph
+            .getChildren(board.id)
+            .flatMap((row) => store.graph.getChildren(row.id))
+            .filter((node) => /^0\d /.test(node.name))
+            .map((node) => node.name)
+        : []
     }
   })
-  expect(opened.pages).toEqual([
-    'English',
-    'Français',
-    'Deutsch',
-    'Español',
-    'Italiano',
-    '日本語',
-    'Polski',
-    'Русский',
-    '中文'
-  ])
-  expect(opened.layers).toBeGreaterThan(0)
+  expect(opened).toEqual({
+    pages: ['Learn the basics'],
+    board: 'Learn the basics',
+    lessons: [
+      '01 Select and move',
+      '02 Write text',
+      '03 Stack with auto layout',
+      '04 Read the code',
+      '05 Draw with an agent',
+      '06 Keep it in a folder'
+    ]
+  })
   canvas.assertNoErrors()
 })
