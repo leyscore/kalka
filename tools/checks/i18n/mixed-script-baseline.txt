@@ -122,6 +122,7 @@ ja:collaboration.invalidRoomLink
 ja:collaboration.joinRoomDescription
 ja:collaboration.pasteRoomLinkOrId
 ja:collaboration.unreachableDescription
+ja:comments.empty
 ja:commands.paletteDescription
 ja:credentials.apiKey
 ja:credentials.getAPIKey
@@ -327,6 +328,7 @@ zh-cn:collaboration.invalidRoomLink
 zh-cn:collaboration.joinRoomDescription
 zh-cn:collaboration.pasteRoomLinkOrId
 zh-cn:collaboration.unreachableDescription
+zh-cn:comments.empty
 zh-cn:commands.paletteDescription
 zh-cn:credentials.apiKey
 zh-cn:credentials.getAPIKey

@@ -226,7 +226,9 @@ export function workingMarks(store: EditorStore, pageId: string): readonly Agent
   const marks: AgentWorkMark[] = []
   const add = (agent: AgentPresence, color: AgentWorkMark['color']) => {
     for (const nodeId of agent.working ?? []) {
-      if (pageOf(store.graph, nodeId) === pageId) marks.push({ nodeId, name: agent.name, color })
+      // The mark reads what the agent says it is doing, from set_status, after its name.
+      const name = agent.note ? `${agent.name} · ${agent.note}` : agent.name
+      if (pageOf(store.graph, nodeId) === pageId) marks.push({ nodeId, name, color })
     }
   }
   for (const agent of presence.agents.value) add(agent, own)

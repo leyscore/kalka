@@ -2,6 +2,7 @@ import type { DocumentChange } from '@kalka/core/editor'
 import { planReveal, type AgentEdit, type RevealStep } from '@kalka/vue'
 
 import type { EditorStore } from '@/app/editor/active-store'
+import { flyToCreation } from '@/app/presence/fly-to-work'
 import { agentAnimationsEnabled } from '@/app/shell/motion'
 
 import { holdOnCanvas, releaseOnCanvas, revealOnCanvas } from './canvas-scene'
@@ -91,6 +92,7 @@ export function showAgentEdit(
   options: { agent?: AgentHandle | null; touched?: readonly string[]; pageId: string }
 ): void {
   try {
+    flyToCreation(store, edit.created)
     const reducedMotion = !agentAnimationsEnabled.value
     const steps = planReveal(store.graph, edit, { reducedMotion })
     revealOnCanvas(store, steps)

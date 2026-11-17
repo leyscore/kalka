@@ -16,6 +16,8 @@ export function applyDocumentMetadata(graph: SceneGraph, document: NodeChange | 
   root.source.fig.rawNodeFields.strokeJoin = document.strokeJoin
   root.source.fig.rawNodeFields.strokeWeight = document.strokeWeight
   root.cssClasses = readNodeChangePluginData(document, KALKA_PLUGIN_DATA.cssClasses) ?? []
+  root.comments = readNodeChangePluginData(document, KALKA_PLUGIN_DATA.comments) ?? []
+  root.frameReviews = readNodeChangePluginData(document, KALKA_PLUGIN_DATA.frameReviews) ?? []
   // A file Kalka wrote says when its text uses Inter 4; Figma's files keep Figma's Inter.
   const interVersion = readNodeChangePluginData(document, KALKA_PLUGIN_DATA.interVersion)
   if (interVersion) graph.interVersion = interVersion

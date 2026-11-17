@@ -9,11 +9,11 @@ import {
   type SceneGraph
 } from '@kalka/scene-graph'
 
-const { cssClasses, enabledLibraries, interVersion } = KALKA_PLUGIN_DATA
+const { comments, cssClasses, enabledLibraries, frameReviews, interVersion } = KALKA_PLUGIN_DATA
 
 /**
- * The document record's plugin data: its CSS classes, the libraries it has enabled, and Inter 4
- * when its text uses it rather than Figma's Inter 3.19.
+ * The document record's plugin data: its CSS classes, comments and frame reviews, the libraries it
+ * has enabled, and Inter 4 when its text uses it rather than Figma's Inter 3.19.
  */
 export function applyDocumentPluginData(
   documentNodeChange: KiwiNodeChange,
@@ -21,8 +21,25 @@ export function applyDocumentPluginData(
 ): void {
   const root = graph.getNode(graph.rootId)
   const classes = root?.cssClasses ?? []
-  const rootPluginData = withPluginData(
-    withPluginData(root?.pluginData ?? [], cssClasses, classes.length > 0 ? classes : undefined),
+  const threads = root?.comments ?? []
+  const reviews = root?.frameReviews ?? []
+  let rootPluginData = withPluginData(
+    root?.pluginData ?? [],
+    cssClasses,
+    classes.length > 0 ? classes : undefined
+  )
+  rootPluginData = withPluginData(
+    rootPluginData,
+    comments,
+    threads.length > 0 ? threads : undefined
+  )
+  rootPluginData = withPluginData(
+    rootPluginData,
+    frameReviews,
+    reviews.length > 0 ? reviews : undefined
+  )
+  rootPluginData = withPluginData(
+    rootPluginData,
     interVersion,
     graph.interVersion === FIGMA_INTER_VERSION ? undefined : graph.interVersion
   )

@@ -23,17 +23,29 @@ export const createComponent = defineTool({
 export const createInstance = defineTool({
   name: 'create_instance',
 
-  description: 'Create an instance of a component.',
+  description:
+    "Create an instance of a component: a copy that follows its main, so changing the main changes every instance. Put it in a frame with parent_id (at insert_index among its children) to compose a section from the system's components.",
   execution: { kind: 'sync', mutation: 'document' },
   input: v.strictObject({
     component_id: v.pipe(v.string(), v.description('Component node ID')),
+    parent_id: v.optional(v.pipe(v.string(), v.description('Frame or page to put it in'))),
+    insert_index: v.optional(
+      toolNumber(v.pipe(v.number(), v.description('Position among siblings (0 = first)')))
+    ),
     x: v.optional(toolNumber(v.pipe(v.number(), v.description('X position')))),
     y: v.optional(toolNumber(v.pipe(v.number(), v.description('Y position'))))
   }),
   execute: (figma, args) => {
     const component = figma.getNodeById(args.component_id)
     if (!component) return { error: `Component "${args.component_id}" not found` }
+    if (args.parent_id && !figma.graph.getNode(args.parent_id))
+      return { error: `Parent "${args.parent_id}" not found` }
     const instance = component.createInstance()
+    if (args.parent_id) {
+      figma.graph.reparentNode(instance.id, args.parent_id)
+      if (args.insert_index !== undefined)
+        figma.graph.insertChildAt(instance.id, args.parent_id, args.insert_index)
+    }
     if (args.x !== undefined) instance.x = args.x
     if (args.y !== undefined) instance.y = args.y
     return nodeSummary(instance)

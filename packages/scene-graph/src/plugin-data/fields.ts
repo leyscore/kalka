@@ -3,8 +3,10 @@ import * as v from 'valibot'
 import { behaviourSchema } from '../behaviours/schema'
 import { cssClassesSchema } from '../class-styles'
 import type { OkHCLPayload } from '../color/okhcl'
+import { commentThreadsSchema } from '../comments'
 import { isExportFormatId, type ExportFormatId } from '../export-format'
 import { clampExportScale } from '../export-scale'
+import { frameReviewsSchema } from '../frame-reviews'
 import { HTML_TAGS, htmlClassesSchema } from '../html-element'
 import { iconSchema, iconTintSchema } from '../icons/schema'
 import type { Rect } from '../primitives'
@@ -158,6 +160,10 @@ export const KALKA_PLUGIN_DATA = {
   style: jsonPluginDataField('style', 'format', v.record(v.string(), v.string())),
   /** The document's CSS classes, on its root, which Figma has no notion of. */
   cssClasses: jsonPluginDataField('cssClasses', 'format', cssClassesSchema),
+  /** The document's comment threads, on its root; Figma's own comments live outside the file. */
+  comments: jsonPluginDataField('comments', 'bookkeeping', commentThreadsSchema),
+  /** Which of the document's frames are ready for development, on its root. */
+  frameReviews: jsonPluginDataField('frameReviews', 'bookkeeping', frameReviewsSchema),
   /** The node-local rect a TEXT_PATH layout maps onto, which Kiwi has no field for. */
   textPathBox: jsonPluginDataField('textPathBox', 'format', textPathBox),
   /** The library asset a node was inserted from. */

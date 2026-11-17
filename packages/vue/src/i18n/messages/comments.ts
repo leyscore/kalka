@@ -1,0 +1,53 @@
+import { params } from '@nanostores/i18n'
+
+import { i18n } from '#vue/i18n/create'
+
+export const commentsMessageDefaults = {
+  tool: 'Comment',
+  commentOnLayer: 'Comment',
+  askAgent: 'Ask the agent about this',
+  title: 'Comments',
+  showPins: 'Show comments',
+  hidePins: 'Hide comments',
+  open: 'Open',
+  resolved: 'Resolved',
+  empty: 'No comments yet. Press C and click the design to leave one.',
+  emptyResolved: 'No resolved comments.',
+  placeHint: 'Click a layer or a spot to comment',
+  placeholder: 'Add a comment…',
+  replyPlaceholder: 'Reply…',
+  post: 'Post',
+  cancel: 'Cancel',
+  resolve: 'Resolve',
+  reopen: 'Reopen',
+  delete: 'Delete thread',
+  close: 'Close',
+  ask: params('Ask @{name}'),
+  willPickUp: params('@{name} will pick this up'),
+  waiting: params('Waiting for {name}'),
+  working: params('{name} is on it'),
+  answered: params('{name} answered'),
+  failed: params('{name} stopped'),
+  retry: 'Retry',
+  layerDeleted: 'Layer deleted',
+  pageLabel: params('On {page}'),
+  openCount: params('{count} open'),
+  pin: params('Comment by {name}: {text}'),
+  tasks: 'Agents',
+  noTasks: 'Nothing yet. What agents say they work on shows here, newest first.',
+  taskRunning: 'Working',
+  taskDone: 'Done',
+  designing: params('{name} is designing…'),
+  markReady: 'Mark ready for dev',
+  moveToDraft: 'Move to draft',
+  ready: params('Ready for dev · {name}'),
+  needsReview: 'Changed since approval: needs review',
+  changes: 'Changes',
+  noChanges: 'No agent changes yet. Each agent change can be put back from here.',
+  changeLabel: params('{name} changed {page}'),
+  edits: params('{count} edits'),
+  restoreBefore: 'Restore before this',
+  restoreUndo: 'Restore before an agent change'
+} as const
+
+export const commentsMessages = i18n('comments', commentsMessageDefaults)

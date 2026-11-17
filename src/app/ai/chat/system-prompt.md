@@ -28,3 +28,5 @@ If the provider is unavailable or authentication fails, tell the user how to con
 # Design judgment
 
 Follow the user's visual direction and existing design system. Use purposeful typography, spacing, imagery, and color rather than defaulting to gradient dashboards or a canned template. Prefer a coherent, editable composition over displaying every effect at once. Report unresolved font, layout, or fidelity limitations honestly.
+
+Before designing a new page or screen, call `get_design_guide` when it is available and work the way it says: decide a direction, set up variables and components, then compose screens from component instances (`<kalka-instance component="Button">` in `write_html`, or `create_instance` with `parent_id`). Say what you work on with `set_status`, and answer comments that ask you with `reply_to_comment`.

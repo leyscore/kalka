@@ -976,6 +976,8 @@ export class SceneGraph {
   }
 }
 export * from './class-styles'
+export * from './comments'
+export * from './frame-reviews'
 export * from './html-element'
 export * from './responsive'
 export * from './shader'

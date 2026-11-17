@@ -3,6 +3,7 @@ import { isPlainObject } from 'es-toolkit'
 import type { FigmaAPI } from '@kalka/core/figma-api'
 import {
   ALL_TOOLS,
+  claimWaitingComments,
   registerComponentCatalog,
   isAtomicTool,
   isToolExposed,
@@ -16,6 +17,7 @@ import {
   agentFinished,
   agentStarted,
   finishSessionWork,
+  sessionAgentName,
   setSessionStatus,
   readAgentSession,
   targetNodeIds,
@@ -38,6 +40,7 @@ import {
   reviewReminder,
   statusReminder
 } from '@/app/automation/review'
+import { noteAgentEdit } from '@/app/document/versions/bursts'
 import { ensureGraphFonts } from '@/app/editor/fonts'
 import { useLibraryService } from '@/app/libraries'
 import { workedLayers, writtenLayers } from '@/app/presence/activity'
@@ -94,6 +97,18 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
       const graph = target.store.graph
       noteAgentLook(graph, session.session, toolName, toolArgs, target.pageId)
       noteAgentStatus(session.session, toolName, toolArgs)
+      // People's requests reach the agent in its next result: MCP gives a server no way to call it.
+      if (toolName !== 'get_comments' && isPlainObject(result)) {
+        const asked = claimWaitingComments(graph)
+        if (asked.length > 0)
+          result = {
+            ...result,
+            comments_for_you: {
+              note: 'People asked you in comments. Act on each, then answer with reply_to_comment (or ask your question there).',
+              threads: asked
+            }
+          }
+      }
       const tool = ALL_TOOLS.find((candidate) => candidate.name === toolName)
       if (tool && toolChangesDocument(tool) && isPlainObject(result)) {
         noteAgentWrites(graph, session.session, [
@@ -148,11 +163,12 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
         return finishSessionWork(store, session, ids)
       }
       figma.setAgentStatus = (text) => setSessionStatus(store, session, text)
+      figma.commentAuthorName = sessionAgentName(store, session)
     }
     const pulsed = fromAgent && def.mutates ? touchedNodeIds(store, toolArgs, null) : []
     if (pulsed.length > 0) store.aiMarkActive(pulsed)
     try {
-      const response = await executeTool(target, def, figma, toolArgs, fromAgent)
+      const response = await executeTool(target, def, figma, toolArgs, figma.commentAuthorName)
       // Letting go of layers is not reading them.
       if (call.released) response.activity = { read: [], written: [], worked: [] }
       if (def.mutates) {
@@ -172,8 +188,10 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
     def: ToolDef,
     figma: FigmaAPI,
     toolArgs: Record<string, unknown>,
-    fromAgent: boolean
+    /** The calling agent's name; undefined for a call that is not an agent's. */
+    agentName: string | undefined
   ): Promise<ToolResponse> {
+    const fromAgent = agentName !== undefined
     const store = target.store
     let result: unknown
     let edit: AgentEdit | undefined
@@ -199,6 +217,8 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
         )
       // View tools (selection, viewport, pages) leave the document and its history alone.
       if (toolChangesDocument(def)) {
+        // An agent's change keeps the page as it was, so it can be put back from its list.
+        if (agentName) noteAgentEdit(store, agentName, pageId)
         // An agent's new layers stay hidden until the edit's reveal plays them in.
         const hold = fromAgent ? holdAgentCreations(store) : null
         try {

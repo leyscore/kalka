@@ -5,6 +5,8 @@ import { onScopeDispose } from 'vue'
 import { editorCommandMetadata } from '@kalka/vue'
 import type { EditorCommandId } from '@kalka/vue'
 
+import { askAboutSelection } from '@/app/ai/chat/ask-selection'
+import { leaveComments, toggleCommentPins, toggleCommentPlacing } from '@/app/comments/service'
 import {
   copySelectionProperties,
   pasteClipboardProperties
@@ -169,6 +171,21 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
       preview: true
     },
     {
+      id: 'ask-about-selection',
+      keys: 'Slash',
+      run: () => askAboutSelection()
+    },
+    {
+      id: 'toggle-comment-mode',
+      keys: 'KeyC',
+      run: ({ store }) => toggleCommentPlacing(store)
+    },
+    {
+      id: 'toggle-comment-pins',
+      keys: 'Shift+KeyC',
+      run: ({ store }) => toggleCommentPins(store)
+    },
+    {
       id: 'toggle-rulers',
       keys: 'Shift+KeyR',
       run: ({ store }) => {
@@ -291,7 +308,10 @@ export function registerKeyboardShortcuts(options: KeyboardShortcutOptions) {
     {
       id: 'escape',
       keys: 'Escape',
-      run: ({ actions }) => actions.escapeOrDeselect(),
+      // Comment mode and an open thread close before the selection does.
+      run: ({ actions, store }) => {
+        if (!leaveComments(store)) actions.escapeOrDeselect()
+      },
       preview: true
     },
     ...opacityBindings()

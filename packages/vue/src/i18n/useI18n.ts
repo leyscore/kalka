@@ -25,6 +25,7 @@ import {
   welcomeMessages,
   renderingMessages,
   renameMessages,
+  commentsMessages,
   settingsMessages,
   storageMessages,
   toolMessages,
@@ -57,6 +58,7 @@ export const useRecoveryMessages = () => useI18nNamespace(recoveryMessages)
 export const useWelcomeMessages = () => useI18nNamespace(welcomeMessages)
 export const useRenderingMessages = () => useI18nNamespace(renderingMessages)
 export const useRenameMessages = () => useI18nNamespace(renameMessages)
+export const useCommentsMessages = () => useI18nNamespace(commentsMessages)
 export const useSettingsMessages = () => useI18nNamespace(settingsMessages)
 export const useStorageMessages = () => useI18nNamespace(storageMessages)
 export const useToolMessages = () => useI18nNamespace(toolMessages)

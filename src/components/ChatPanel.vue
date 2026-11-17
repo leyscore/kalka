@@ -9,7 +9,7 @@ import { useI18n } from '@kalka/vue'
 import { revokeImagePreviewURL } from '@/app/ai/attachment/image/prepare'
 import { needsReconnect } from '@/app/ai/chat/failure'
 import { chatDocumentId } from '@/app/ai/chat/history/document'
-import { takeQueuedChatPrompt } from '@/app/ai/chat/queued-prompt'
+import { queuedChatPrompt, takeQueuedChatPrompt } from '@/app/ai/chat/queued-prompt'
 import { chatReconnectRoute, useChatReconnect } from '@/app/ai/chat/reconnect'
 import { useChatRunLocation } from '@/app/ai/chat/run-location'
 import type { ChatSubmission } from '@/app/ai/chat/submission/types'
@@ -21,6 +21,7 @@ import { openAISetup } from '@/app/ai/models/settings/onboarding/dialog'
 import { openModelProfileSettings } from '@/app/ai/models/settings/request'
 import { didHitStepLimit } from '@/app/ai/tools'
 import { getActiveEditorStore } from '@/app/editor/active-store'
+import { flyToNextCreation } from '@/app/presence/fly-to-work'
 import { openSettingsDialog } from '@/app/settings/dialog'
 import { toast, type ToastAction } from '@/app/shell/ui'
 import { activeTab } from '@/app/tabs'
@@ -86,6 +87,8 @@ let viewGeneration = 0
 /** Puts an unsent message back only in the conversation it was written in. */
 async function submitMessage(message: ChatSubmission) {
   const generation = viewGeneration
+  // What the agent makes for this request comes into view as it lands.
+  flyToNextCreation(getActiveEditorStore())
   if (await submission.submit(message)) return
   if (generation === viewGeneration) chatInput.value?.restoreDraft(message)
   else for (const image of message.images) revokeImagePreviewURL(image.previewURL)
@@ -93,16 +96,32 @@ async function submitMessage(message: ChatSubmission) {
 /** Sends the prompt the document was started with, such as one from Home, once its canvas is up. */
 async function sendQueuedPrompt() {
   const store = getActiveEditorStore()
-  const text = takeQueuedChatPrompt(store)
-  if (!text) return
+  const prompt = takeQueuedChatPrompt(store)
+  if (!prompt) return
   await store.canvasReady
-  await submitMessage({ modelText: text, displayText: text, images: [], nodes: [] })
+  await submitMessage({
+    modelText: prompt.text,
+    displayText: prompt.displayText ?? prompt.text,
+    images: [],
+    nodes: prompt.nodes ?? []
+  })
 }
 
-// Restoring local history must not open a provider connection or read credentials.
-void history.initialize().then(sendQueuedPrompt, () => {
-  toast.error(ai.value.chatHistoryFailed)
+let historyReady = false
+// A comment that asks the agent, or a request about the selection, can arrive while it is open.
+watch(queuedChatPrompt(), (prompt) => {
+  if (prompt && historyReady) void sendQueuedPrompt()
 })
+// Restoring local history must not open a provider connection or read credentials.
+void history.initialize().then(
+  () => {
+    historyReady = true
+    return sendQueuedPrompt()
+  },
+  () => {
+    toast.error(ai.value.chatHistoryFailed)
+  }
+)
 
 const messages = computed(() => chat.value?.messages ?? history.messages.value)
 const historyOptions = computed(() => {

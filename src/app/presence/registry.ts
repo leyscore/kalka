@@ -6,6 +6,7 @@ import { randomHex } from '@kalka/scene-graph/random'
 
 import type { RemotePeer } from '@/app/collab/types'
 import type { EditorStore } from '@/app/editor/active-store'
+import { trackAgentTask } from '@/app/presence/tasks'
 import { appPreferences } from '@/app/settings/preferences/store'
 
 import { pickCallsign } from './callsigns'
@@ -403,7 +404,10 @@ export function addAgent(store: EditorStore, kind: AgentKind, model?: string): A
     },
     update: (patch) => {
       const entry = current()
-      if (entry) replace({ ...entry, ...patch })
+      if (!entry) return
+      const next = { ...entry, ...patch }
+      trackAgentTask(store.graph, entry, next)
+      replace(next)
     },
     remove: () => replace(null)
   }

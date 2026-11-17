@@ -15,6 +15,7 @@ import { targetNodeIds, touchedNodeIds } from '@/app/automation/agents'
 import { attachCanvasKit, makeFigmaFromStore } from '@/app/automation/bridge/figma-factory'
 import { executeAtomicEditorTool } from '@/app/automation/execution/editor'
 import { recordToolCompleted, type AIDiagnosticContext } from '@/app/diagnostics/events/ai'
+import { noteAgentEdit } from '@/app/document/versions/bursts'
 import type { EditorStore } from '@/app/editor/active-store'
 import { ensureGraphFonts } from '@/app/editor/fonts'
 import { useLibraryService } from '@/app/libraries'
@@ -28,6 +29,7 @@ import {
   aiUndoLabel,
   currentRun,
   finishRunWork,
+  runAgentName,
   setRunStatus,
   markRunChange,
   markRunWork,
@@ -105,6 +107,7 @@ export function createAITools(store: EditorStore, diagnosticContext?: AIDiagnost
         return finishRunWork(store, ids)
       }
       figma.setAgentStatus = (text) => setRunStatus(store, text)
+      figma.commentAuthorName = runAgentName(store)
       const result = await def.execute(figma, args)
       // Letting go of layers is not reading them.
       if (!call.released) recordRunReads(store, touchedNodeIds(store, args, result))
@@ -124,6 +127,8 @@ export function createAITools(store: EditorStore, diagnosticContext?: AIDiagnost
     if (toolChangesDocument(def) && !run.baselines.has(pageId)) {
       recordRunBaseline(run, store.snapshotPage(pageId))
     }
+    // The agent's change keeps the page as it was, so it can be put back from its list.
+    if (toolChangesDocument(def)) noteAgentEdit(store, runAgentName(store) ?? 'Agent', pageId)
     const undoBefore = store.undo.peekUndo()
     const finishChange = store.captureDocumentChange(pageId)
     // The agent's new layers stay hidden until the edit's reveal plays them in.

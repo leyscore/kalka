@@ -124,7 +124,7 @@ function restoreDraft(text: string): boolean {
   triggerResize()
   return true
 }
-defineExpose({ restoreDraft })
+defineExpose({ restoreDraft, focus: () => textarea.value?.focus() })
 </script>
 <template>
   <TooltipProvider>

@@ -28,6 +28,7 @@ import { createAITools, currentRun, endRun, recordStep, startRun } from '@/app/a
 import { enabledAIToolDefinitions } from '@/app/ai/tools/catalog'
 import { aiToolOverrides } from '@/app/ai/tools/preferences'
 import { restAgents } from '@/app/automation/agents'
+import { settleAgentComments } from '@/app/comments/agent-run'
 import { diagnosticErrorDetails } from '@/app/diagnostics'
 import {
   recordChatCompleted,
@@ -456,6 +457,14 @@ export function createChatSessionManager({
         },
         onFinish: (event) => {
           handleChatFinish(diagnosticContext, event)
+          // Comments this reply worked on get its answer, or show that it stopped.
+          if (
+            settleAgentComments(store.graph, {
+              failed: event.isAbort || event.isDisconnect || event.isError,
+              message: event.message
+            }).length > 0
+          )
+            store.requestRender()
           // The reply is over, however it ended; its agent rests instead of waiting it out.
           if (agentKind) restAgents(agentKind)
           if (event.isAbort || event.isDisconnect || event.isError) {

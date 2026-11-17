@@ -6,6 +6,7 @@ import {
   collaborationMessages
 } from '#vue/i18n/messages/collaboration'
 import { commandMessageDefaults, commandMessages } from '#vue/i18n/messages/commands'
+import { commentsMessageDefaults, commentsMessages } from '#vue/i18n/messages/comments'
 import { commonMessageDefaults, commonMessages } from '#vue/i18n/messages/common'
 import { credentialsMessageDefaults, credentialsMessages } from '#vue/i18n/messages/credentials'
 import { designCheckMessageDefaults, designCheckMessages } from '#vue/i18n/messages/design-check'
@@ -52,6 +53,7 @@ export {
   welcomeMessages,
   renderingMessages,
   renameMessages,
+  commentsMessages,
   settingsMessages,
   storageMessages,
   toolMessages,
@@ -80,6 +82,7 @@ export const messageDefaults = {
   recovery: recoveryMessageDefaults,
   rendering: renderingMessageDefaults,
   rename: renameMessageDefaults,
+  comments: commentsMessageDefaults,
   settings: settingsMessageDefaults,
   storage: storageMessageDefaults,
   tools: toolMessageDefaults,

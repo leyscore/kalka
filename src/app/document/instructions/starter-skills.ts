@@ -1,6 +1,7 @@
 import antiSlop from './skills/anti-slop.md?raw'
 import copy from './skills/copy.md?raw'
 import critique from './skills/critique.md?raw'
+import designSystem from './skills/design-system.md?raw'
 import direction from './skills/direction.md?raw'
 import landingPage from './skills/landing-page.md?raw'
 import polish from './skills/polish.md?raw'
@@ -17,6 +18,7 @@ import responsive from './skills/responsive.md?raw'
  */
 export const BUILT_IN_SKILLS: Readonly<Record<string, string>> = {
   direction,
+  'design-system': designSystem,
   'landing-page': landingPage,
   copy,
   critique,

@@ -17,6 +17,7 @@ import {
   rememberClassCSS
 } from '#core/tools/html/class-css'
 import { ESCAPED_HTML_NOTE, unescapedHTML } from '#core/tools/html/escaped'
+import { instancePlaceholders, swapInstancePlaceholders } from '#core/tools/html/instances'
 import { toolNumber } from '#core/tools/input'
 import { defineTool } from '#core/tools/schema'
 
@@ -74,7 +75,7 @@ async function registerClasses(
 export const writeHTML = defineTool({
   name: 'write_html',
   description:
-    'Write HTML and CSS into the design as editable layers: elements become frames and text, flex layouts become auto layout, inline styles and <style> rules are kept, and a rule for one class (.btn { ... }) becomes a document class its layers share. Scripts and event handlers are dropped; a kalka-image:<hash> source from get_html is the document image it names. Use parent_id to write into a frame and replace_id to replace a placeholder. Write one visual group per call, such as one section of a page into its parent, so the user watches the design build.',
+    'Write HTML and CSS into the design as editable layers: elements become frames and text, flex layouts become auto layout, inline styles and <style> rules are kept, and a rule for one class (.btn { ... }) becomes a document class its layers share. Scripts and event handlers are dropped; a kalka-image:<hash> source from get_html is the document image it names. <kalka-instance component="Button"></kalka-instance>, with a component name or id, places an instance of it, so sections are composed from the design system components. Use parent_id to write into a frame and replace_id to replace a placeholder. Write one visual group per call, such as one section of a page into its parent, so the user watches the design build.',
   execution: { kind: 'async', mutation: 'document' },
   input: v.strictObject({
     html: v.pipe(
@@ -99,7 +100,8 @@ export const writeHTML = defineTool({
     ])
     // Images `get_html` named by reference come back as the document's own.
     const written = unescapedHTML(args.html)
-    const html = resolveHTMLImageReferences(figma.graph, written.html)
+    const placeholders = instancePlaceholders(figma.graph, written.html)
+    const html = resolveHTMLImageReferences(figma.graph, placeholders.html)
     // Classes written earlier style this HTML as they will on the canvas; its own rules win.
     const classSheet = await documentClassSheet(figma.graph)
     const imported = await htmlToSceneGraph(
@@ -118,6 +120,11 @@ export const writeHTML = defineTool({
       }
       return { id: created.id, name: created.name, type: created.type, childIds: created.childIds }
     })
+    swapInstancePlaceholders(
+      graph,
+      results.map((result) => result.id),
+      placeholders.components
+    )
     finishRenderPlacement(graph, results, placement)
     const ignored = await registerClasses(
       graph,
@@ -128,9 +135,11 @@ export const writeHTML = defineTool({
       layers: { id: string; name: string; type: string }[]
       class_css_not_kept?: Record<string, Record<string, string>>
       note?: string
+      missing_components?: string[]
     } = { layers: results.map(({ id, name, type }) => ({ id, name, type })) }
     if (Object.keys(ignored).length > 0) reply.class_css_not_kept = ignored
     if (written.decoded) reply.note = ESCAPED_HTML_NOTE
+    if (placeholders.missing.length > 0) reply.missing_components = placeholders.missing
     return reply
   }
 })

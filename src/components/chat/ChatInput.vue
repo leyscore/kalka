@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed, useTemplateRef } from 'vue'
+import { computed, nextTick, useTemplateRef, watch } from 'vue'
 
 import { ACP_AGENTS } from '@kalka/core/constants'
 import { useI18n, useSelectionState } from '@kalka/vue'
 
 import { revokeImagePreviewURL } from '@/app/ai/attachment/image/prepare'
 import { MAX_IMAGE_ATTACHMENTS } from '@/app/ai/attachment/image/types'
+import { selectionAskPending, takeSelectionAsk } from '@/app/ai/chat/ask-selection'
 import type { ChatSubmission } from '@/app/ai/chat/submission/types'
 import { useAIChat } from '@/app/ai/chat/use'
 import { designModelProfile } from '@/app/ai/models'
@@ -66,7 +67,22 @@ const {
 // What the folder's instructions offer after a slash and an at sign.
 const { catalog, refresh: refreshCatalog } = useInstructionCatalog(() => store)
 
-const composer = useTemplateRef<{ restoreDraft: (text: string) => boolean }>('composer')
+const composer = useTemplateRef<{ restoreDraft: (text: string) => boolean; focus: () => void }>(
+  'composer'
+)
+
+// Asking about the selection from the canvas attaches it, once, and puts the caret in the field.
+watch(
+  selectionAskPending(),
+  async (pending) => {
+    if (!pending) return
+    await nextTick()
+    if (!takeSelectionAsk()) return
+    if (canAddSelection.value && !selectionContextActive.value) toggleCurrentSelection()
+    composer.value?.focus()
+  },
+  { immediate: true }
+)
 
 /** Puts back an unsent message with its attachments; releases them if newer text replaced it. */
 function restoreDraft(submission: ChatSubmission): void {

@@ -1,5 +1,12 @@
 import { diffChanges, diffCreate, diffVisual, evalCode } from './analyze'
 import { calc } from './calc'
+import {
+  getComments,
+  getFrameReviews,
+  replyToComment,
+  resolveComment,
+  setFrameReview
+} from './comments'
 import { render } from './create'
 import { describe } from './describe'
 import {
@@ -25,7 +32,7 @@ import {
   setTextProperties,
   updateNode
 } from './modify'
-import { finishWorkingOnNodes, setStatus } from './presence'
+import { finishWorkingOnNodes, getDesignGuide, setStatus } from './presence'
 import { diffJSX, findNodes, getJSX, getNode, getSelection } from './read'
 import type { ToolDef } from './schema'
 import { stockPhoto } from './stock-photo'
@@ -82,5 +89,12 @@ export const CORE_TOOLS: ToolDef[] = [
   viewportZoomToFit,
   // Presence
   finishWorkingOnNodes,
-  setStatus
+  setStatus,
+  getDesignGuide,
+  // Comments
+  getComments,
+  replyToComment,
+  resolveComment,
+  getFrameReviews,
+  setFrameReview
 ]

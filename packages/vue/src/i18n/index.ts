@@ -20,6 +20,7 @@ export {
   useRecoveryMessages,
   useRenderingMessages,
   useRenameMessages,
+  useCommentsMessages,
   useSettingsMessages,
   useStorageMessages,
   useToolMessages,

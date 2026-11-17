@@ -235,4 +235,33 @@ describe('HTML tools', () => {
     const texts = [...graph.nodes.values()].filter((node) => node.type === 'TEXT').map((node) => node.text)
     expect(texts).toEqual(['Order today', 'Learn more', 'Learn more'])
   })
+
+  it('write_html composes with components: a kalka-instance tag is an instance of the component', async () => {
+    const { graph, figma } = setup()
+    const page = graph.getPages()[0].id
+    const button = (await tool('write_html').execute(figma, {
+      parent_id: page,
+      html: '<a style="display: flex; padding: 12px 24px; background: #F0B429">Get started</a>'
+    })) as { layers: { id: string }[] }
+    const component = (await tool('create_component').execute(figma, {
+      id: button.layers[0].id
+    })) as { id: string }
+    graph.updateNode(component.id, { name: 'Button' })
+
+    const section = (await tool('write_html').execute(figma, {
+      parent_id: page,
+      html: '<section style="display: flex; gap: 16px"><h2>Hero</h2><kalka-instance component="button"></kalka-instance><kalka-instance component="Missing"/></section>'
+    })) as { layers: { id: string }[]; missing_components?: string[] }
+    const children = graph.getChildren(section.layers[0].id)
+    expect(children.map((child) => child.type)).toEqual(['TEXT', 'INSTANCE'])
+    expect(children[1].componentId).toBe(component.id)
+    expect(section.missing_components).toEqual(['Missing'])
+
+    const placed = (await tool('create_instance').execute(figma, {
+      component_id: component.id,
+      parent_id: section.layers[0].id,
+      insert_index: 0
+    })) as { id: string }
+    expect(graph.getChildren(section.layers[0].id)[0].id).toBe(placed.id)
+  })
 })

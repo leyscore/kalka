@@ -207,6 +207,11 @@ export function recordRunWrites(
   keepWorking(store, agent)
 }
 
+/** The name the run's agent goes by, which its comment replies carry. */
+export function runAgentName(store: EditorStore): string | undefined {
+  return getRunState(store).agent?.name
+}
+
 /** The run's agent says what it is doing now, shown by its name; an empty text clears it. */
 export function setRunStatus(store: EditorStore, text: string): void {
   getRunState(store).agent?.update({ note: text || undefined })

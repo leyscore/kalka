@@ -1,7 +1,9 @@
 /* eslint-disable max-lines -- scene node contracts are kept together as the public graph type surface */
 
 import type { CSSClass } from './class-styles'
+import type { CommentThread } from './comments'
 import type { ExportFormatId } from './export-format'
+import type { FrameReview } from './frame-reviews'
 import type { CanvasGuide } from './guides'
 import type { HTMLTag } from './html-element'
 import type { InstanceOverrideState } from './instance-overrides'
@@ -477,6 +479,10 @@ export interface SceneNode {
   htmlClasses: string[]
   /** The document's CSS classes, in stylesheet order; only the document's root holds any. */
   cssClasses: CSSClass[]
+  /** The document's comment threads; only the document's root holds any. */
+  comments: CommentThread[]
+  /** Where the document's top-level frames stand in review; only the document's root holds any. */
+  frameReviews: FrameReview[]
   /**
    * The layer's CSS declarations, literal values in the order export writes them. The graph keeps
    * the fields it maps (`@kalka/scene-graph/css-model`) and this in step; declarations the

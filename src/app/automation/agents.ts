@@ -207,6 +207,11 @@ export function agentFinished(
  * A session's agent says it is done with `nodeIds`, or with all it builds in this document, as
  * `finish_working_on_nodes` does. Returns the layers it let go of.
  */
+/** The name a session's agent goes by in this document, which its comment replies carry. */
+export function sessionAgentName(store: EditorStore, session: AgentSession): string {
+  return sessionAgent(store, session).handle.name
+}
+
 /** A session's agent says what it is doing now, shown by its name; an empty text clears it. */
 export function setSessionStatus(store: EditorStore, session: AgentSession, text: string): void {
   sessions

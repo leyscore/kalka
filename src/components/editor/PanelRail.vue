@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, useTemplateRef } from 'vue'
 
-import { useDesignCheckMessages, useI18n } from '@kalka/vue'
+import { useCommentsMessages, useDesignCheckMessages, useI18n } from '@kalka/vue'
 
+import { useComments } from '@/app/comments/service'
 import { useEditorStore } from '@/app/editor/active-store'
 import { countIssues } from '@/app/editor/design-check/issues'
 import { openVariablesDialog } from '@/app/editor/tokens/dialog'
@@ -17,6 +18,13 @@ const { panels, settings } = useI18n()
 const checkMessages = useDesignCheckMessages()
 const store = useEditorStore()
 const { activePanel, show, toggleAgent } = useLeftPanel()
+const commentMessages = useCommentsMessages()
+const comments = useComments(store)
+const commentsLabel = computed(() =>
+  comments.openCount.value > 0
+    ? `${commentMessages.value.title}, ${commentMessages.value.openCount({ count: comments.openCount.value })}`
+    : commentMessages.value.title
+)
 
 /** Errors and warnings on the current page; suggestions do not earn an indicator. */
 const problemCount = computed(() => {
@@ -167,6 +175,21 @@ useGlide(root, { items: 'button', hover: true, pillClass: glidePills.selectedHov
         @click="show('history')"
       >
         <icon-hugeicons-git-branch :class="rail.icon()" />
+      </button>
+    </Tip>
+    <Tip :label="commentsLabel" side="right">
+      <button
+        type="button"
+        role="tab"
+        data-test-id="left-panel-comments-tab"
+        :aria-label="commentsLabel"
+        :aria-selected="activePanel === 'comments'"
+        :data-state="activePanel === 'comments' ? 'active' : 'inactive'"
+        :data-active="activePanel === 'comments' || undefined"
+        :class="rail.item()"
+        @click="show('comments')"
+      >
+        <icon-hugeicons-comment-01 :class="rail.icon()" />
       </button>
     </Tip>
     <Tip :label="checkLabel" side="right">

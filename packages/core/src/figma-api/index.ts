@@ -601,4 +601,6 @@ export class FigmaAPI implements NodeProxyHost {
    * an empty text. Absent in hosts that show no agents.
    */
   setAgentStatus?: (text: string) => void
+  /** The name the calling agent's comment replies carry, when the host knows it. */
+  commentAuthorName?: string
 }

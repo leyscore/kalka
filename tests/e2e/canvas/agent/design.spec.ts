@@ -184,3 +184,72 @@ test('writes finish while the window draws no frames, as when it is hidden', asy
   )
   expect(written.layers).toHaveLength(1)
 })
+
+test('an agent sets up variables and components, then composes a screen from instances', async ({
+  page
+}) => {
+  await open(page)
+  // Variables first.
+  const collection = v.parse(
+    v.looseObject({ id: v.string(), modes: v.array(v.looseObject({ modeId: v.string() })) }),
+    await callAsAgent(page, 'create_collection', { name: 'Explore' })
+  )
+  const accent = v.parse(
+    v.object({ id: v.string() }),
+    await callAsAgent(page, 'create_variable', {
+      name: 'color/accent',
+      type: 'COLOR',
+      collection_id: collection.id,
+      value: '#F0B429'
+    })
+  )
+
+  // A Button component, its fill bound to the accent.
+  const drawn = v.parse(
+    Layers,
+    await callAsAgent(page, 'write_html', {
+      html: '<a style="display: flex; padding: 12px 24px; background: #F0B429; border-radius: 12px">Get started</a>',
+      x: 0,
+      y: 0
+    })
+  )
+  const button = v.parse(
+    v.object({ id: v.string() }),
+    await callAsAgent(page, 'create_component', { id: drawn.layers[0].id })
+  )
+  await callAsAgent(page, 'rename_node', { id: button.id, name: 'Button' })
+  await callAsAgent(page, 'bind_variable', {
+    node_id: button.id,
+    field: 'fills/0/color',
+    variable_id: accent.id
+  })
+
+  // The screen uses the component by name.
+  const hero = v.parse(
+    Layers,
+    await callAsAgent(page, 'write_html', {
+      html: '<section style="display: flex; gap: 16px; padding: 32px; width: 640px"><h1 style="margin: 0">Explore your English</h1><kalka-instance component="Button"></kalka-instance></section>',
+      x: 0,
+      y: 200
+    })
+  )
+  const children = v.parse(
+    v.object({ children: v.array(v.object({ id: v.string(), type: v.string() })) }),
+    await callAsAgent(page, 'node_children', { id: hero.layers[0].id })
+  )
+  const instance = children.children.find((child) => child.type === 'INSTANCE')
+  expect(instance).toBeDefined()
+
+  // Changing the system changes the screen: the variable restyles the instance.
+  await callAsAgent(page, 'set_variable', {
+    id: accent.id,
+    mode: collection.modes[0].modeId,
+    value: '#107E6D'
+  })
+  const fill = await page.evaluate((id) => {
+    const node = window.kalka?.getStore?.()?.graph.getNode(id)
+    const paint = node?.fills[0]
+    return paint?.type === 'SOLID' ? paint.color : null
+  }, instance?.id ?? '')
+  expect(fill).toMatchObject({ r: expect.closeTo(0.063, 2), g: expect.closeTo(0.494, 2) })
+})

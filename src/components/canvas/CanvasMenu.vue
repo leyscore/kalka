@@ -11,9 +11,11 @@ import {
 import { computed } from 'vue'
 import IconChevronRight from '~icons/hugeicons/chevron-right'
 
+import { frameReview, reviewedFrameOf, setFrameReady } from '@kalka/scene-graph'
 import {
   vTestId,
   useEditorCommands,
+  useCommentsMessages,
   useI18n,
   useMenuModel,
   useSelectionState,
@@ -22,6 +24,8 @@ import {
 } from '@kalka/vue'
 import type { EditorCommandId } from '@kalka/vue'
 
+import { askAboutSelection } from '@/app/ai/chat/ask-selection'
+import { currentPersonName, startCommentOn } from '@/app/comments/service'
 import { useEditorStore } from '@/app/editor/active-store'
 import { createCanvasMenuActions } from '@/app/editor/canvas/menu/actions'
 import { useCanvasContextMenu } from '@/app/editor/canvas/menu/context'
@@ -42,6 +46,30 @@ const { execCommand } = canvasMenuActions
 const contextMenu = useCanvasContextMenu(canvasMenu, hasSelection, editor, canvasMenuActions, t)
 
 const selectedGuide = computed(() => store.state.guides.selected)
+const commentMessages = useCommentsMessages()
+
+/** The top-level frame holding the selection, which can be marked ready for development. */
+const reviewTarget = computed(() => {
+  void store.state.sceneVersion
+  const [first] = selectedIds.value
+  const frame = first ? reviewedFrameOf(store.graph, first) : null
+  if (!frame || [...selectedIds.value].some((id) => reviewedFrameOf(store.graph, id) !== frame))
+    return null
+  return { id: frame, ready: frameReview(store.graph, frame)?.status === 'ready' }
+})
+
+function toggleReady() {
+  const target = reviewTarget.value
+  if (!target) return
+  setFrameReady(store.graph, target.id, target.ready ? null : currentPersonName())
+  store.requestRefresh()
+}
+
+/** Opens a new comment on the first selected layer, at its top-right corner. */
+function commentOnSelection() {
+  const [id] = selectedIds.value
+  if (id) startCommentOn(store, id)
+}
 
 function removeSelectedGuide() {
   const guide = selectedGuide.value
@@ -132,6 +160,34 @@ function contextCommandTestId(id: EditorCommandId | undefined): string | undefin
       >
         <span>{{ getCommand('selection.delete').label }}</span
         ><AppShortcutText>{{ editorCommandMetadata('selection.delete').shortcut }}</AppShortcutText>
+      </ContextMenuItem>
+      <ContextMenuSeparator :class="cls.sep" />
+      <ContextMenuItem
+        data-test-id="context-comment"
+        :class="cls.item"
+        :disabled="!hasSelection"
+        @select="commentOnSelection"
+      >
+        <span>{{ commentMessages.commentOnLayer }}</span
+        ><AppShortcutText>C</AppShortcutText>
+      </ContextMenuItem>
+      <ContextMenuItem
+        v-if="reviewTarget"
+        data-test-id="context-frame-review"
+        :class="cls.item"
+        @select="toggleReady"
+      >
+        <span>{{
+          reviewTarget.ready ? commentMessages.moveToDraft : commentMessages.markReady
+        }}</span>
+      </ContextMenuItem>
+      <ContextMenuItem
+        data-test-id="context-ask-agent"
+        :class="cls.item"
+        @select="askAboutSelection()"
+      >
+        <span>{{ commentMessages.askAgent }}</span
+        ><AppShortcutText>/</AppShortcutText>
       </ContextMenuItem>
 
       <template v-for="(item, i) in contextMenu" :key="`menu-${i}`">

@@ -64,7 +64,10 @@ import { floatingSurface } from '@/theme/overlay'
 import CanvasMenu from './canvas/CanvasMenu.vue'
 import CanvasLabelEditor from './canvas/labels/CanvasLabelEditor.vue'
 import { canvasLabelPresentation } from './canvas/labels/presentation'
+import CommentLayer from './comments/CommentLayer.vue'
+import FrameReviewBadges from './comments/FrameReviewBadges.vue'
 import NumberField from './inputs/NumberField.vue'
+import AgentGhostFrames from './presence/AgentGhostFrames.vue'
 
 const { paneId } = defineProps<{
   paneId?: string
@@ -348,6 +351,9 @@ const cursor = computed(() =>
           class="absolute inset-0 block size-full touch-none outline-none"
         />
         <PlayIslands :view="paneView" :drawn="drawnView" :canvas="canvasRef" />
+        <AgentGhostFrames v-if="!paneView.play" :view="paneView" :drawn="drawnView" />
+        <FrameReviewBadges v-if="!paneView.play" :view="paneView" :drawn="drawnView" />
+        <CommentLayer v-if="!paneView.play" :view="paneView" :drawn="drawnView" />
         <AppDropOverlay :visible="isDraggingOver" />
         <IssueMarkerTooltip :marker="hoveredIssueMarker" :canvas="canvasRef" />
         <CanvasLabelEditor

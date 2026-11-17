@@ -300,6 +300,8 @@ export function cloneNodeProps(
     gridPosition: src.gridPosition ? { ...src.gridPosition } : null,
     shader: src.shader ? structuredClone(src.shader) : null,
     htmlClasses: [...src.htmlClasses],
-    cssClasses: structuredClone(src.cssClasses)
+    cssClasses: structuredClone(src.cssClasses),
+    comments: structuredClone(src.comments),
+    frameReviews: structuredClone(src.frameReviews)
   }
 }

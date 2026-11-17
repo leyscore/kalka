@@ -1,5 +1,6 @@
 import * as v from 'valibot'
 
+import { DESIGN_GUIDE } from './prompts'
 import { defineTool } from './schema'
 
 /**
@@ -46,4 +47,13 @@ export const setStatus = defineTool({
     figma.setAgentStatus(status)
     return { status }
   }
+})
+
+export const getDesignGuide = defineTool({
+  name: 'get_design_guide',
+  description:
+    'Read how to design in Kalka: decide on a direction, set up variables and components, compose screens from them, and review your work. Call it once before you design a page or screen, and again if the conversation got long.',
+  execution: { kind: 'sync', mutation: 'none' },
+  input: v.strictObject({}),
+  execute: () => ({ guide: DESIGN_GUIDE })
 })
