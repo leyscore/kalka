@@ -7,6 +7,7 @@ import type {
   RequestPermissionResponse
 } from '@agentclientprotocol/sdk'
 import type { ChatTransport, UIMessage, UIMessageChunk } from 'ai'
+import { compact } from 'es-toolkit'
 
 import type { ACPAgentDef } from '@kalka/core/constants'
 
@@ -203,6 +204,41 @@ export interface ACPChatTransportOptions {
   onError?: (error: unknown) => void
 }
 
+/** How much of an earlier conversation a new agent session is given, from its end. */
+const TRANSCRIPT_MAX_CHARS = 16_000
+
+function messageText(message: UIMessage): string {
+  return message.parts
+    .filter((part): part is { type: 'text'; text: string } => part.type === 'text')
+    .map((part) => part.text)
+    .join('\n')
+    .trim()
+}
+
+/**
+ * The conversation before the last user message, as text, for an agent session that starts in
+ * a conversation it did not take part in: one reopened from history, or after a restart. Null
+ * when there is none. A long one keeps its end, where the work in progress is.
+ */
+export function earlierConversation(messages: readonly UIMessage[]): string | null {
+  const lastUser = messages.findLastIndex((message) => message.role === 'user')
+  const lines = messages.slice(0, Math.max(lastUser, 0)).flatMap((message) => {
+    const text = messageText(message)
+    if (!text || message.role === 'system') return []
+    return [`${message.role === 'user' ? 'User' : 'Assistant'}: ${text}`]
+  })
+  if (lines.length === 0) return null
+  let transcript = lines.join('\n\n')
+  if (transcript.length > TRANSCRIPT_MAX_CHARS)
+    transcript = `[…]\n${transcript.slice(-TRANSCRIPT_MAX_CHARS)}`
+  return [
+    'Earlier in this conversation, in a session that has ended (the document may have changed since; inspect it before editing):',
+    '<conversation>',
+    transcript,
+    '</conversation>'
+  ].join('\n')
+}
+
 export class ACPChatTransport implements ChatTransport<UIMessage> {
   private session: ACPSession | null = null
   private agentDef: ACPAgentDef
@@ -239,7 +275,10 @@ export class ACPChatTransport implements ChatTransport<UIMessage> {
       this.sentContext = false
     }
 
-    const promptText = this.sentContext ? text : `${SYSTEM_PROMPT}\n\n${text}`
+    // A new session hears the conversation so far, so a reopened one continues where it was.
+    const promptText = this.sentContext
+      ? text
+      : compact([SYSTEM_PROMPT, earlierConversation(messages), text]).join('\n\n')
     this.sentContext = true
 
     return promptStream(this.session, promptText, abortSignal, (e) => {

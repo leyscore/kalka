@@ -30,4 +30,9 @@ export interface DesignJSXServices<Artwork> {
   createArtwork(graph: SceneGraph, artwork: Artwork, placement: ArtworkPlacement): SceneNode
   /** Lay out the graph once rendered nodes are in place. */
   layout(graph: SceneGraph): void
+  /**
+   * Runs a Design JSX string to its root elements where the engine cannot evaluate code itself,
+   * such as a page whose policy forbids `eval`. Null leaves it to the built-in evaluator.
+   */
+  evaluate?(jsx: string): Promise<TreeNode[] | null>
 }

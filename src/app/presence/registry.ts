@@ -137,7 +137,7 @@ function agentCursor(agent: AgentPresence, color: Color, pageId: string): Tracke
     {
       id: `agent:${agent.id}`,
       kind: 'agent',
-      name: agent.name,
+      name: agent.note ? `${agent.name} · ${agent.note}` : agent.name,
       color,
       x,
       y,

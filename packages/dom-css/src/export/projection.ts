@@ -91,9 +91,21 @@ function strokeNeedsVector(node: SceneNode): boolean {
 /** What a box draws itself, which the SVG of a vector layer draws instead. */
 const BOX_PAINT = /^(background|border|box-shadow|outline|filter)/
 
-/** A layer's CSS: what the table writes from its fields, then what its CSS says otherwise. */
+const MARGIN = /^margin(?:-|$)/
+
+/**
+ * A layer's CSS: what the table writes from its fields, then what its CSS says otherwise. A layer
+ * placed at `left`/`top` is at its own x and y, which already include any margin it had where it
+ * was measured; its margin would move it again, and every layout that reads the box back would
+ * add it once more.
+ */
 function layerCSS(node: SceneNode, context: WriteContext): DesignStyleDeclaration {
-  return { ...writeLayerStyle(node, context), ...node.style }
+  const style = { ...writeLayerStyle(node, context), ...node.style }
+  const placed =
+    (style.position === 'absolute' || style.position === 'fixed') &&
+    ('left' in style || 'top' in style)
+  if (!placed) return style
+  return Object.fromEntries(Object.entries(style).filter(([name]) => !MARGIN.test(name)))
 }
 
 function nodeChildren(graph: SceneGraph, node: SceneNode): SceneNode[] {

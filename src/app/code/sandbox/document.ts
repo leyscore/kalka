@@ -1,6 +1,12 @@
-import type { DesignJSXValidationLimits } from '@/app/code/sandbox/types'
+/**
+ * The Design JSX sandbox: a page of its own (`public/sandbox/design-jsx.html`), loaded in an
+ * opaque-origin iframe with its own content policy. A `srcdoc` document would inherit the
+ * editor's policy, which forbids inline scripts and `eval` in the desktop app. The page runs each
+ * program in a worker made from `SANDBOX_WORKER_SOURCE`, which the editor sends with the run.
+ */
+export const SANDBOX_PATH = '/sandbox/design-jsx.html'
 
-const workerSource = String.raw`
+export const SANDBOX_WORKER_SOURCE = String.raw`
 self.onmessage = ({ data }) => {
   const { id, code, elements, helpers: helperNames, limits } = data
   const blocked = () => { throw new Error('Network access is unavailable in Design JSX.') }
@@ -92,38 +98,3 @@ self.onmessage = ({ data }) => {
   }
 }
 `
-
-export type SandboxDocumentOptions = {
-  elements: Record<string, string>
-  helpers: string[]
-  limits: DesignJSXValidationLimits
-}
-
-export function sandboxDocument({ elements, helpers, limits }: SandboxDocumentOptions): string {
-  const escapedWorkerSource = JSON.stringify(workerSource)
-  const escapedElements = JSON.stringify(elements)
-  const escapedHelpers = JSON.stringify(helpers)
-  const escapedLimits = JSON.stringify(limits)
-  return `<!doctype html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval'; connect-src 'none'; img-src 'none'; media-src 'none'; font-src 'none'; style-src 'none'; object-src 'none'; frame-src 'none'; worker-src blob:; base-uri 'none'; form-action 'none'"></head><body><script>
-  const workerURL = URL.createObjectURL(new Blob([${escapedWorkerSource}], { type: 'text/javascript' }))
-  const workers = new Map()
-  addEventListener('message', (event) => {
-    const message = event.data
-    if (!message || message.type !== 'kalka-design-jsx-run') return
-    const worker = new Worker(workerURL)
-    workers.set(message.id, worker)
-    worker.onmessage = ({ data }) => {
-      parent.postMessage({ type: 'kalka-design-jsx-result', ...data }, '*')
-      worker.terminate()
-      workers.delete(message.id)
-    }
-    worker.onerror = () => {
-      parent.postMessage({ type: 'kalka-design-jsx-result', id: message.id, ok: false, error: 'Design JSX execution failed.' }, '*')
-      worker.terminate()
-      workers.delete(message.id)
-    }
-    worker.postMessage({ id: message.id, code: message.code, elements: ${escapedElements}, helpers: ${escapedHelpers}, limits: ${escapedLimits} })
-  })
-  parent.postMessage({ type: 'kalka-design-jsx-ready' }, '*')
-  </script></body></html>`
-}

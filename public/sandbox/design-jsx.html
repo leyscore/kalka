@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' blob:; connect-src 'none'; img-src 'none'; media-src 'none'; font-src 'none'; style-src 'none'; object-src 'none'; frame-src 'none'; worker-src blob:; base-uri 'none'; form-action 'none'"
+    />
+  </head>
+  <body>
+    <script>
+      // Kalka's Design JSX sandbox (src/app/code/sandbox/document.ts). Each run brings the worker
+      // source and its settings from the editor, so this page stays the same across versions.
+      addEventListener('message', (event) => {
+        if (event.source !== parent) return
+        const message = event.data
+        if (!message || message.type !== 'kalka-design-jsx-run') return
+        const url = URL.createObjectURL(
+          new Blob([message.workerSource], { type: 'text/javascript' })
+        )
+        const worker = new Worker(url)
+        const done = (data) => {
+          parent.postMessage({ type: 'kalka-design-jsx-result', ...data }, '*')
+          worker.terminate()
+          URL.revokeObjectURL(url)
+        }
+        worker.onmessage = ({ data }) => done(data)
+        worker.onerror = () =>
+          done({ id: message.id, ok: false, error: 'Design JSX execution failed.' })
+        worker.postMessage({
+          id: message.id,
+          code: message.code,
+          elements: message.elements,
+          helpers: message.helpers,
+          limits: message.limits
+        })
+      })
+      parent.postMessage({ type: 'kalka-design-jsx-ready' }, '*')
+    </script>
+  </body>
+</html>

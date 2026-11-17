@@ -10,6 +10,13 @@ import {
 } from '@kalka/scene-graph'
 
 import { finishRenderPlacement, resolveRenderPlacement } from '#core/design-jsx/placement'
+import {
+  cssClassFromDeclarations,
+  documentClassSheet,
+  inferredClassKind,
+  rememberClassCSS
+} from '#core/tools/html/class-css'
+import { ESCAPED_HTML_NOTE, unescapedHTML } from '#core/tools/html/escaped'
 import { toolNumber } from '#core/tools/input'
 import { defineTool } from '#core/tools/schema'
 
@@ -36,19 +43,32 @@ function styleSheets(html: string): string {
 
 /**
  * Keeps the class rules of written HTML as document classes, so the layers that name them share
- * one style; a class the document already has is left as it is.
+ * one style, also in HTML written later; a class the document already has is left as it is. A
+ * class no written layer uses yet takes the kind its declarations style.
  */
-async function registerClasses(graph: SceneGraph, html: string, written: readonly SceneNode[]) {
-  const { cssClassFromRule, parseClassRules } = await import('@kalka/dom-css/import')
+async function registerClasses(
+  graph: SceneGraph,
+  html: string,
+  written: readonly SceneNode[]
+): Promise<Record<string, Record<string, string>>> {
+  const { parseClassRules } = await import('@kalka/dom-css/import')
   const nodes = written.flatMap((root) => [
     root,
     ...graph.flattenTree(root.id).map((entry) => entry.node)
   ])
+  const ignored: Record<string, Record<string, string>> = {}
   for (const rule of parseClassRules(styleSheets(html))) {
+    rememberClassCSS(graph, rule.name, rule.declarations)
     if (findCSSClass(graph, rule.name)) continue
     const user = nodes.find((node) => node.htmlClasses.includes(rule.name))
-    if (user) setCSSClass(graph, cssClassFromRule(rule, cssClassKind(user)))
+    const kind = user ? cssClassKind(user) : inferredClassKind(rule.declarations)
+    const made = await cssClassFromDeclarations(rule.name, kind, rule.declarations)
+    setCSSClass(graph, made.cssClass)
+    // What the browser inherits from the rule, such as a button's font for its label, the
+    // layers already have; only a later layer naming the class relies on the class itself.
+    if (Object.keys(made.ignored).length > 0) ignored[rule.name] = made.ignored
   }
+  return ignored
 }
 
 export const writeHTML = defineTool({
@@ -78,8 +98,14 @@ export const writeHTML = defineTool({
       import('#core/tools/html/images')
     ])
     // Images `get_html` named by reference come back as the document's own.
-    const html = resolveHTMLImageReferences(figma.graph, args.html)
-    const imported = await htmlToSceneGraph(html, { pageName: 'HTML' })
+    const written = unescapedHTML(args.html)
+    const html = resolveHTMLImageReferences(figma.graph, written.html)
+    // Classes written earlier style this HTML as they will on the canvas; its own rules win.
+    const classSheet = await documentClassSheet(figma.graph)
+    const imported = await htmlToSceneGraph(
+      classSheet ? `<style>${classSheet}</style>${html}` : html,
+      { pageName: 'HTML' }
+    )
     const roots = imported.getPages().flatMap((page) => imported.getChildren(page.id))
     if (roots.length === 0) return { error: 'The HTML has no visible elements' }
     const graph = figma.graph
@@ -93,13 +119,18 @@ export const writeHTML = defineTool({
       return { id: created.id, name: created.name, type: created.type, childIds: created.childIds }
     })
     finishRenderPlacement(graph, results, placement)
-    await registerClasses(
+    const ignored = await registerClasses(
       graph,
       html,
       results.flatMap((result) => graph.getNode(result.id) ?? [])
     )
-    return {
-      layers: results.map(({ id, name, type }) => ({ id, name, type }))
-    }
+    const reply: {
+      layers: { id: string; name: string; type: string }[]
+      class_css_not_kept?: Record<string, Record<string, string>>
+      note?: string
+    } = { layers: results.map(({ id, name, type }) => ({ id, name, type })) }
+    if (Object.keys(ignored).length > 0) reply.class_css_not_kept = ignored
+    if (written.decoded) reply.note = ESCAPED_HTML_NOTE
+    return reply
   }
 })

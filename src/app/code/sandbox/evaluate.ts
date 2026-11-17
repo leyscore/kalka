@@ -6,7 +6,7 @@ import {
   type DesignJSXProgram
 } from '@kalka/design-jsx'
 
-import { sandboxDocument } from '@/app/code/sandbox/document'
+import { SANDBOX_PATH, SANDBOX_WORKER_SOURCE } from '@/app/code/sandbox/document'
 import {
   DESIGN_JSX_DEFAULT_READY_TIMEOUT_MS,
   DESIGN_JSX_DEFAULT_TIMEOUT_MS,
@@ -44,13 +44,7 @@ export async function evaluateDesignJSX(
   const iframe = document.createElement('iframe')
   iframe.hidden = true
   iframe.setAttribute('sandbox', 'allow-scripts')
-  iframe.srcdoc = sandboxDocument({
-    elements: Object.fromEntries(
-      DESIGN_JSX_ELEMENTS.map(({ name, runtimeType }) => [name, runtimeType])
-    ),
-    helpers: DESIGN_JSX_HELPERS.map(({ name }) => name),
-    limits: validationLimits
-  })
+  iframe.src = new URL(SANDBOX_PATH, window.location.origin).href
   document.body.append(iframe)
 
   return new Promise((resolve) => {
@@ -86,7 +80,17 @@ export async function evaluateDesignJSX(
           timeoutMs
         )
         iframe.contentWindow?.postMessage(
-          { type: 'kalka-design-jsx-run', id, code: program.code },
+          {
+            type: 'kalka-design-jsx-run',
+            id,
+            code: program.code,
+            workerSource: SANDBOX_WORKER_SOURCE,
+            elements: Object.fromEntries(
+              DESIGN_JSX_ELEMENTS.map(({ name, runtimeType }) => [name, runtimeType])
+            ),
+            helpers: DESIGN_JSX_HELPERS.map(({ name }) => name),
+            limits: validationLimits
+          },
           '*'
         )
         return

@@ -133,11 +133,12 @@ export function createConversationHistory<TChat extends HistoryChat>(
     return serialize(async () => {
       if (readOnly.value && owner?.deref() === runtime.getEditor()) return null
       await loadDocument()
-      // A restored transcript does not restore an external agent session.
+      // A restored transcript continues in a new session: an ACP agent is given the conversation
+      // so far. Pi's harness keeps its own session state, which a transcript does not restore.
       if (
         current.value?.messages.length &&
         !session.chat &&
-        (runtime.backend() !== 'direct' || current.value.backend !== 'direct')
+        (runtime.backend() === 'harness' || current.value.backend === 'harness')
       )
         return null
       const editor = runtime.getEditor()

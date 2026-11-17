@@ -1,3 +1,5 @@
+import { isPlainObject } from 'es-toolkit'
+
 import type { FigmaAPI } from '@kalka/core/figma-api'
 import {
   ALL_TOOLS,
@@ -14,6 +16,7 @@ import {
   agentFinished,
   agentStarted,
   finishSessionWork,
+  setSessionStatus,
   readAgentSession,
   targetNodeIds,
   touchedNodeIds,
@@ -28,6 +31,13 @@ import {
   executeAtomicEditorTool,
   executeWithDocumentUndo
 } from '@/app/automation/execution/editor'
+import {
+  noteAgentLook,
+  noteAgentStatus,
+  noteAgentWrites,
+  reviewReminder,
+  statusReminder
+} from '@/app/automation/review'
 import { ensureGraphFonts } from '@/app/editor/fonts'
 import { useLibraryService } from '@/app/libraries'
 import { workedLayers, writtenLayers } from '@/app/presence/activity'
@@ -79,7 +89,24 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
     const session = readAgentSession((args as { agent?: unknown }).agent)
     const reply = session ? agentStarted(target.store, session, target.pageId) : 0
     const response = await runTool(target, toolName, toolArgs, session)
+    let result = response.result
     if (session) {
+      const graph = target.store.graph
+      noteAgentLook(graph, session.session, toolName, toolArgs, target.pageId)
+      noteAgentStatus(session.session, toolName, toolArgs)
+      const tool = ALL_TOOLS.find((candidate) => candidate.name === toolName)
+      if (tool && toolChangesDocument(tool) && isPlainObject(result)) {
+        noteAgentWrites(graph, session.session, [
+          ...(response.activity?.written ?? []),
+          ...extractNodeIds(response.result)
+        ])
+        const review = reviewReminder(graph, session.session)
+        const status = statusReminder(session.session)
+        const notes: Record<string, string> = {}
+        if (review) notes.review = review
+        if (status) notes.status_note = status
+        result = { ...result, ...notes }
+      }
       const nodeIds = touchedNodeIds(target.store, toolArgs, response.result)
       agentFinished(target.store, session, {
         reply,
@@ -90,7 +117,7 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
         activity: response.activity ?? { read: nodeIds, written: [], worked: [] }
       })
     }
-    return { ok: true, result: response.result }
+    return { ok: true, result }
   }
 
   /**
@@ -120,6 +147,7 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
         call.released = true
         return finishSessionWork(store, session, ids)
       }
+      figma.setAgentStatus = (text) => setSessionStatus(store, session, text)
     }
     const pulsed = fromAgent && def.mutates ? touchedNodeIds(store, toolArgs, null) : []
     if (pulsed.length > 0) store.aiMarkActive(pulsed)

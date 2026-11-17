@@ -27,3 +27,23 @@ export const finishWorkingOnNodes = defineTool({
     return { released: figma.finishWorking(ids) }
   }
 })
+
+/** How long a status line may be; longer ones are cut, as the canvas has room for a few words. */
+export const AGENT_STATUS_MAX_LENGTH = 80
+
+export const setStatus = defineTool({
+  name: 'set_status',
+  description:
+    'Tell the user what you are doing now, in a few words such as "Composing the hero" or "Checking the phone layout"; the canvas shows it next to your name while you work. Call it when you start each step of a larger design. An empty text clears it.',
+  execution: { kind: 'sync', mutation: 'none' },
+  exposure: { webmcp: false },
+  input: v.strictObject({
+    text: v.pipe(v.string(), v.description('What you are doing now, a few words'))
+  }),
+  execute: (figma, { text }) => {
+    const status = text.trim().replaceAll(/\s+/g, ' ').slice(0, AGENT_STATUS_MAX_LENGTH)
+    if (!figma.setAgentStatus) return { status, note: 'This host shows no agent status.' }
+    figma.setAgentStatus(status)
+    return { status }
+  }
+})

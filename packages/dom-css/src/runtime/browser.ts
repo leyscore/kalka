@@ -183,11 +183,22 @@ function computedStyleToRecord(
   return entries
 }
 
+/**
+ * How long to wait for a frame before measuring anyway. A hidden or occluded window draws no
+ * frames, so an agent working while the user looks elsewhere would otherwise wait forever; the
+ * measures read below force layout themselves, so they are right without the frame.
+ */
+const FRAME_WAIT_MS = 100
+
 function requestFrame(browserDocument: Document): Promise<void> {
-  const requestAnimationFrame = browserDocument.defaultView?.requestAnimationFrame
-  if (!requestAnimationFrame) return Promise.resolve()
+  const view = browserDocument.defaultView
+  if (!view?.requestAnimationFrame) return Promise.resolve()
   return new Promise((resolve) => {
-    requestAnimationFrame(() => resolve())
+    const timer = view.setTimeout(resolve, FRAME_WAIT_MS)
+    view.requestAnimationFrame(() => {
+      view.clearTimeout(timer)
+      resolve()
+    })
   })
 }
 

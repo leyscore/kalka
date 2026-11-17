@@ -2,7 +2,6 @@ import * as v from 'valibot'
 
 import {
   CSS_CLASS_KINDS,
-  createDefaultNode,
   cssClassKind,
   deleteCSSClass,
   documentCSSClasses,
@@ -17,6 +16,7 @@ import {
 
 import { assertNodeEditable } from '#core/editor/capabilities'
 import { computeAllLayouts } from '#core/layout'
+import { cssClassFromDeclarations, rememberClassCSS } from '#core/tools/html/class-css'
 import { nodeIdInput } from '#core/tools/input'
 import { defineTool, nodeNotFound } from '#core/tools/schema'
 
@@ -63,19 +63,28 @@ export const updateCSSClass = defineTool({
     kind: v.optional(v.pipe(v.picklist(CSS_CLASS_KINDS), v.description('For a new class')), 'box')
   }),
   execute: async (figma, { name, styles, kind }) => {
-    const { cssToNodeChanges } = await import('@kalka/dom-css')
     const { cssClassDeclarations } = await import('@kalka/dom-css/export')
     const graph = figma.graph
     const current = findCSSClass(graph, name) ?? { name, kind, style: {} }
-    const template = {
-      ...createDefaultNode(() => '', current.kind === 'text' ? 'TEXT' : 'FRAME'),
-      ...structuredClone(current.style)
-    }
-    const changes = cssToNodeChanges(graph, template, styles)
+    // A relative line height reads against the class's own font size when it has one.
+    const context: Record<string, string> =
+      current.kind === 'text' && current.style.fontSize !== undefined && !('font-size' in styles)
+        ? { 'font-size': `${current.style.fontSize}px` }
+        : {}
+    const made = await cssClassFromDeclarations(name, current.kind, { ...context, ...styles })
+    const changes = Object.fromEntries(
+      Object.entries(made.cssClass.style).filter(
+        ([field]) => !(field === 'fontSize' && 'font-size' in context)
+      )
+    )
     setCSSClass(graph, { ...current, style: { ...current.style, ...changes } })
+    rememberClassCSS(graph, name, styles)
     for (const page of graph.getPages()) computeAllLayouts(graph, page.id)
     const updated = findCSSClass(graph, name)
-    return updated ? { name, kind: updated.kind, css: cssClassDeclarations(updated) } : { name }
+    const notKept = Object.keys(made.ignored).length > 0 ? { not_kept: made.ignored } : {}
+    return updated
+      ? { name, kind: updated.kind, css: cssClassDeclarations(updated), ...notKept }
+      : { name, ...notKept }
   }
 })
 

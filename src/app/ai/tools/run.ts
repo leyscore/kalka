@@ -123,6 +123,7 @@ export function endRun(store: EditorStore, run = currentRun(store)): void {
   }
   state.agent?.update({
     status: 'idle',
+    note: undefined,
     cursor: undefined,
     selection: undefined,
     outline: undefined
@@ -204,6 +205,11 @@ export function recordRunWrites(
   recordLayerActivity(store, agent, 'write', written)
   markWorking(store, agent, worked)
   keepWorking(store, agent)
+}
+
+/** The run's agent says what it is doing now, shown by its name; an empty text clears it. */
+export function setRunStatus(store: EditorStore, text: string): void {
+  getRunState(store).agent?.update({ note: text || undefined })
 }
 
 /** The run's agent is done with `nodeIds`, or all it builds; returns what it let go of. */

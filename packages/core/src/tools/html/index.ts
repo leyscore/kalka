@@ -1,6 +1,7 @@
 export { getHTML } from './read'
 export { updateStyles } from './styles'
 export { writeHTML } from './write'
+export { editHTML } from './edit'
 export { getScreenshot } from './screenshot'
 export { getComputedStyles } from './computed'
 export { setHTMLElement } from './element'

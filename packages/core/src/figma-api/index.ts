@@ -596,4 +596,9 @@ export class FigmaAPI implements NodeProxyHost {
    * null, and returns those it let go of. Absent in hosts that show no such marks.
    */
   finishWorking?: (nodeIds: string[] | null) => string[]
+  /**
+   * Shows what the calling agent is doing now next to its name on the canvas, or clears it with
+   * an empty text. Absent in hosts that show no agents.
+   */
+  setAgentStatus?: (text: string) => void
 }

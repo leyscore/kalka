@@ -146,9 +146,10 @@ async function renderJSX<Artwork>(
   options?: RenderJSXOptions
 ): Promise<RenderResult[]> {
   const helperWarnings: string[] = []
-  const Component = buildComponent(jsxString, helperWarnings)
-  const element = React.createElement(Component, null)
-  const tree = resolveToTree(element)
+  const evaluated = services.evaluate ? await services.evaluate(jsxString) : null
+  const tree = evaluated
+    ? ({ type: '', props: {}, children: evaluated } satisfies TreeNode)
+    : resolveToTree(React.createElement(buildComponent(jsxString, helperWarnings), null))
 
   if (!tree) {
     throw new Error('JSX must return a Figma element (Frame, Text, etc)')

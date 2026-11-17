@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 
 import { FigmaAPI } from '@kalka/core/figma-api'
 import { ALL_TOOLS } from '@kalka/core/tools'
-import { SceneGraph } from '@kalka/scene-graph'
+import { findCSSClass, SceneGraph } from '@kalka/scene-graph'
 
 import { expectDefined } from '#core-tests/helpers/assert'
 
@@ -79,5 +79,44 @@ describe('write_html and classes', () => {
         }
       ]
     })
+  })
+
+  test('a class reads CSS shorthands and resolves type against its own font size', async () => {
+    const graph = new SceneGraph()
+    const figma = new FigmaAPI(graph)
+    const button = (await tool('update_css_class').execute(figma, {
+      name: 'btn',
+      styles: { padding: '0 28px', background: '#F0B429', 'border-radius': '16px' }
+    })) as { css: Record<string, string>; not_kept?: Record<string, string> }
+    expect(button.css['background-color']).toBe('#F0B429')
+    expect(findCSSClass(graph, 'btn')?.style).toMatchObject({ paddingLeft: 28, paddingRight: 28 })
+    expect(button.not_kept).toBeUndefined()
+
+    await tool('update_css_class').execute(figma, {
+      name: 'title',
+      kind: 'text',
+      styles: { 'font-size': '72px', 'line-height': '1.05', 'letter-spacing': '0.1em' }
+    })
+    expect(findCSSClass(graph, 'title')?.style).toMatchObject({ fontSize: 72 })
+    expect(findCSSClass(graph, 'title')?.style.lineHeight).toBeCloseTo(75.6)
+    expect(findCSSClass(graph, 'title')?.style.letterSpacing).toBeCloseTo(7.2)
+  })
+
+  test('a class reports the CSS it cannot hold instead of dropping it silently', async () => {
+    const graph = new SceneGraph()
+    const figma = new FigmaAPI(graph)
+    const box = (await tool('update_css_class').execute(figma, {
+      name: 'card',
+      styles: { width: '292px', 'font-family': 'Montserrat', 'background-color': '#F4EFE6' }
+    })) as { not_kept?: Record<string, string> }
+    expect(Object.keys(box.not_kept ?? {}).sort()).toEqual(['font-family', 'width'])
+
+    const text = (await tool('update_css_class').execute(figma, {
+      name: 'lead',
+      kind: 'text',
+      styles: { 'line-height': '1.6' }
+    })) as { not_kept?: Record<string, string> }
+    expect(Object.keys(text.not_kept ?? {})).toEqual(['line-height'])
+    expect(findCSSClass(graph, 'lead')?.style.lineHeight).toBeUndefined()
   })
 })

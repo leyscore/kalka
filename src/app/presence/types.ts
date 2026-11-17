@@ -31,6 +31,11 @@ export interface AgentPresence {
   kind: AgentKind
   model?: string
   status: AgentStatus
+  /**
+   * What the agent says it is doing now, such as "Composing the hero", from `set_status`; shown
+   * after its name while it works, and cleared when it rests.
+   */
+  note?: string
   /** The page the agent works on, known before its first edit. */
   pageId?: string
   /** Where the agent last worked, derived from the nodes it touched. */

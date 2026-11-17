@@ -5,6 +5,7 @@ import { describe } from './describe'
 import {
   addBreakpoint,
   editCSSClass,
+  editHTML,
   getComputedStyles,
   getCSSClasses,
   getHTML,
@@ -24,7 +25,7 @@ import {
   setTextProperties,
   updateNode
 } from './modify'
-import { finishWorkingOnNodes } from './presence'
+import { finishWorkingOnNodes, setStatus } from './presence'
 import { diffJSX, findNodes, getJSX, getNode, getSelection } from './read'
 import type { ToolDef } from './schema'
 import { stockPhoto } from './stock-photo'
@@ -47,6 +48,7 @@ export const CORE_TOOLS: ToolDef[] = [
   // Create
   render,
   writeHTML,
+  editHTML,
   // Modify
   updateNode,
   updateStyles,
@@ -79,5 +81,6 @@ export const CORE_TOOLS: ToolDef[] = [
   evalCode,
   viewportZoomToFit,
   // Presence
-  finishWorkingOnNodes
+  finishWorkingOnNodes,
+  setStatus
 ]

@@ -28,6 +28,7 @@ import {
   aiUndoLabel,
   currentRun,
   finishRunWork,
+  setRunStatus,
   markRunChange,
   markRunWork,
   moveRunToPage,
@@ -103,6 +104,7 @@ export function createAITools(store: EditorStore, diagnosticContext?: AIDiagnost
         call.released = true
         return finishRunWork(store, ids)
       }
+      figma.setAgentStatus = (text) => setRunStatus(store, text)
       const result = await def.execute(figma, args)
       // Letting go of layers is not reading them.
       if (!call.released) recordRunReads(store, touchedNodeIds(store, args, result))

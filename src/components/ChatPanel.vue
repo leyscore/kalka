@@ -115,7 +115,7 @@ const historyOptions = computed(() => {
   }))
 })
 const agentHistoryReadOnly = computed(
-  () => !chat.value && messages.value.length > 0 && history.current.value?.backend !== 'direct'
+  () => !chat.value && messages.value.length > 0 && history.current.value?.backend === 'harness'
 )
 async function historyAction(action: () => Promise<unknown>) {
   const generation = ++viewGeneration

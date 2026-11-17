@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+### Added
+
+- Agents say what they are doing with `set_status`, shown after their name on the canvas while they work, and are reminded to until they do.
+- Agents change part of a layer with `edit_html`, an exact find and replace in its HTML, instead of rewriting the whole section.
+- After an agent writes, its tool results name the artboards it changed and has not looked at yet, with what to check (fit, spacing, hierarchy, contrast, alignment, real content), until it takes a screenshot of each.
+
+### Changed
+
+- A conversation with Claude Code, Codex or Gemini CLI reopened from history continues: the new session is given the conversation so far, instead of the conversation being read-only.
+
+### Fixed
+
+- In the desktop app, agents' JSX (`render`, `node_replace_with`) and the Code panel's live preview run again; the app's content policy blocked them.
+- Agents' writes no longer stall until they time out when the Kalka window is hidden or behind other windows.
+- An element with a margin in a flex column written by an agent stays in place, instead of moving further down with every layout.
+- Classes in a `<style>` block written by an agent are all kept, also those its first HTML does not use yet, and style HTML written in later calls.
+- `update_css_class` reads shorthands such as `padding: 0 28px` and `background`, and line heights and letter spacing relative to the font size; what a class cannot hold, such as a width on a box class, is reported to the agent instead of dropped silently. HTML that arrives with its tags escaped is decoded instead of drawing its source.
+
 ## 0.2.0-beta.2 — 2026-11-16
 
 ### Fixed

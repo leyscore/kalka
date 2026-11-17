@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test'
 
 import { FigmaAPI } from '@kalka/core/figma-api'
 import { ALL_TOOLS } from '@kalka/core/tools'
-import { SceneGraph } from '@kalka/scene-graph'
+import { findCSSClass, SceneGraph } from '@kalka/scene-graph'
 import { computeImageHash } from '@kalka/scene-graph/images'
 
 import type { HTMLImageReference } from '#core/tools/html/images'
@@ -173,5 +173,66 @@ describe('HTML tools', () => {
     })) as { layers: { id: string }[] }
     const copy = expectDefined(graph.getNode(written.layers[0].id), 'copy')
     expect(copy.fills[0]).toMatchObject({ type: 'IMAGE', imageHash: hash })
+  })
+
+  it('write_html keeps every class of its stylesheet, and later HTML naming one is styled by it', async () => {
+    const { graph, figma } = setup()
+    const page = graph.getPages()[0].id
+    await tool('write_html').execute(figma, {
+      parent_id: page,
+      html: '<style>.card { background-color: #F4EFE6; padding: 16px; } .title { font-size: 40px; color: #3F2D10; }</style><div id="shell"></div>'
+    })
+    expect(findCSSClass(graph, 'card')?.kind).toBe('box')
+    expect(findCSSClass(graph, 'title')?.kind).toBe('text')
+
+    const result = (await tool('write_html').execute(figma, {
+      parent_id: page,
+      html: '<div class="card"><h2 class="title">Later</h2></div>'
+    })) as { layers: { id: string }[] }
+    const card = expectDefined(graph.getNode(result.layers[0].id), 'card')
+    expect(card.paddingTop).toBe(16)
+    const heading = expectDefined(
+      [...graph.nodes.values()].find((node) => node.type === 'TEXT' && node.text === 'Later'),
+      'heading'
+    )
+    expect(heading.fontSize).toBe(40)
+  })
+
+  it('write_html decodes HTML whose tags all arrived escaped, and says so', async () => {
+    const { graph, figma } = setup()
+    const result = (await tool('write_html').execute(figma, {
+      parent_id: graph.getPages()[0].id,
+      html: '&lt;div style="padding: 8px"&gt;&lt;p&gt;Fish &amp;amp; chips&lt;/p&gt;&lt;/div&gt;'
+    })) as { layers: { id: string }[]; note?: string }
+    expect(result.note).toBeDefined()
+    const texts = [...graph.nodes.values()].filter((node) => node.type === 'TEXT')
+    expect(texts.map((node) => node.text)).toEqual(['Fish & chips'])
+  })
+
+  it('edit_html changes one exact match in a layer and refuses an ambiguous one', async () => {
+    const { graph, figma } = setup()
+    const written = (await tool('write_html').execute(figma, {
+      parent_id: graph.getPages()[0].id,
+      html: '<div style="display: flex; gap: 8px"><p>Buy now</p><p>Learn more</p><p>Learn more</p></div>'
+    })) as { layers: { id: string }[] }
+    const id = written.layers[0].id
+
+    expect(await tool('edit_html').execute(figma, { id, find: 'Learn more', replace: 'Read' })).toMatchObject({
+      error: expect.stringContaining('2 times')
+    })
+    expect(await tool('edit_html').execute(figma, { id, find: 'Sold out', replace: 'x' })).toMatchObject({
+      error: expect.stringContaining('get_html')
+    })
+
+    const edited = (await tool('edit_html').execute(figma, {
+      id,
+      find: 'Buy now',
+      replace: 'Order today'
+    })) as { layers: { id: string }[] }
+    const row = expectDefined(graph.getNode(edited.layers[0].id), 'row')
+    expect(row.layoutMode).toBe('HORIZONTAL')
+    expect(graph.getNode(id)).toBeUndefined()
+    const texts = [...graph.nodes.values()].filter((node) => node.type === 'TEXT').map((node) => node.text)
+    expect(texts).toEqual(['Order today', 'Learn more', 'Learn more'])
   })
 })

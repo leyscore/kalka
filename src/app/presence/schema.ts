@@ -28,6 +28,8 @@ const personPoint = v.object({
   ...point.entries,
   zoom: lenient(v.pipe(finite, v.minValue(0.02), v.maxValue(256)))
 })
+/** How long an agent's `set_status` line may be. */
+export const MAX_AGENT_NOTE_LENGTH = 80
 const selection = v.pipe(v.array(id), v.maxLength(MAX_SELECTION))
 const extent = v.pipe(finite, v.minValue(0))
 const outline = v.pipe(
@@ -41,6 +43,7 @@ const agent = v.object({
   kind: v.picklist(AGENT_KINDS),
   model: lenient(v.pipe(v.string(), v.maxLength(MAX_NAME_LENGTH))),
   status: v.picklist(AGENT_STATUSES),
+  note: lenient(v.pipe(v.string(), v.maxLength(MAX_AGENT_NOTE_LENGTH))),
   pageId: lenient(id),
   cursor: lenient(point),
   selection: lenient(selection),

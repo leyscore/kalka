@@ -1,4 +1,10 @@
-export { designJSXRenderer, renderJSX, renderTree } from './renderer'
+export {
+  designJSXRenderer,
+  installDesignJSXEvaluator,
+  renderJSX,
+  renderTree,
+  type DesignJSXEvaluator
+} from './renderer'
 export {
   finishRenderPlacement,
   resolveRenderPlacement,

@@ -4,6 +4,7 @@ import { createApp, nextTick } from 'vue'
 import { createRetainedScopePlugin } from '@kalka/vue'
 
 import './app.css'
+import { installDesignJSXSandbox } from '@/app/code/sandbox/install'
 import { recordRuntimeError } from '@/app/diagnostics'
 import { preloadFonts } from '@/app/editor/fonts'
 import { installOffscreenLayout } from '@/app/editor/layout/offscreen'
@@ -24,6 +25,7 @@ import router from './router'
 export async function boot(): Promise<void> {
   preloadFonts()
   installOffscreenLayout()
+  installDesignJSXSandbox()
   const head = createHead()
   const app = createApp(App)
   const bootErrors = observeBootErrors(app)

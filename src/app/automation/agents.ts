@@ -87,7 +87,12 @@ function restartTimers(store: EditorStore, sessionId: string, agent: SessionAgen
   clearTimeout(agent.idleTimer)
   clearTimeout(agent.goneTimer)
   agent.idleTimer = setTimeout(() => {
-    agent.handle.update({ status: 'idle', cursor: undefined, selection: undefined })
+    agent.handle.update({
+      status: 'idle',
+      note: undefined,
+      cursor: undefined,
+      selection: undefined
+    })
   }, MCP_AGENT_IDLE_MS)
   agent.goneTimer = setTimeout(() => remove(sessionId, store), MCP_AGENT_GONE_MS)
 }
@@ -202,6 +207,14 @@ export function agentFinished(
  * A session's agent says it is done with `nodeIds`, or with all it builds in this document, as
  * `finish_working_on_nodes` does. Returns the layers it let go of.
  */
+/** A session's agent says what it is doing now, shown by its name; an empty text clears it. */
+export function setSessionStatus(store: EditorStore, session: AgentSession, text: string): void {
+  sessions
+    .get(session.session)
+    ?.get(store)
+    ?.handle.update({ note: text || undefined })
+}
+
 export function finishSessionWork(
   store: EditorStore,
   session: AgentSession,
@@ -222,7 +235,12 @@ export function restAgents(kind: Exclude<AgentSession['kind'], 'mcp'>): void {
       if (agent.kind !== kind) continue
       clearTimeout(agent.idleTimer)
       agent.replies++
-      agent.handle.update({ status: 'idle', cursor: undefined, selection: undefined })
+      agent.handle.update({
+        status: 'idle',
+        note: undefined,
+        cursor: undefined,
+        selection: undefined
+      })
       finishWorking(store, agent.handle)
     }
   }

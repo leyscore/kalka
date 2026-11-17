@@ -14,6 +14,11 @@ import {
   track,
   trackTitleBar
 } from './handlers'
+import {
+  CONTENT_SECURITY_POLICY,
+  SANDBOX_CONTENT_SECURITY_POLICY,
+  SANDBOX_PATH
+} from './csp'
 import { installIPC } from './ipc'
 
 app.setName('Kalka')
@@ -28,25 +33,7 @@ const APP_ORIGIN = `${APP_SCHEME}://app`
 const DIST = app.isPackaged
   ? normalize(join(process.resourcesPath, 'renderer'))
   : normalize(join(here, '..', '..', 'dist'))
-/**
- * What the editor's pages may load and run: their own files, CanvasKit's WebAssembly, images and
- * fonts from data, blobs and HTTPS, and requests to HTTPS services and the local MCP server.
- * Artboards add their own, stricter policy.
- */
-const CONTENT_SECURITY_POLICY = [
-  "default-src 'self'",
-  "script-src 'self' 'wasm-unsafe-eval'",
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https:",
-  "font-src 'self' data: blob: https:",
-  "connect-src 'self' data: blob: https: http://127.0.0.1:* ws://127.0.0.1:*",
-  "media-src 'self' data: blob: https:",
-  "worker-src 'self' blob:",
-  "frame-src 'self' about: blob: data:",
-  "object-src 'none'",
-  "base-uri 'none'",
-  "form-action 'none'"
-].join('; ')
+
 /** The brand kit's app icon; a packaged app takes its icon from the bundle instead. */
 const ICON = join(here, '..', 'build', 'icon.png')
 
@@ -82,7 +69,8 @@ const MIME: Record<string, string> = {
 /** Serves the built app, falling back to index.html for client-side routes. */
 function serveApp(): void {
   protocol.handle(APP_SCHEME, async (request) => {
-    const file = normalize(join(DIST, decodeURIComponent(new URL(request.url).pathname)))
+    const path = decodeURIComponent(new URL(request.url).pathname)
+    const file = normalize(join(DIST, path))
     if (file !== DIST && !file.startsWith(DIST + sep))
       return new Response('Forbidden', { status: 403 })
     const extension = extname(file)
@@ -90,7 +78,9 @@ function serveApp(): void {
       const body = await readFile(extension ? file : join(DIST, 'index.html'))
       const type = MIME[extension] ?? (extension ? 'application/octet-stream' : 'text/html')
       const headers: Record<string, string> = { 'content-type': type }
-      if (type === 'text/html') headers['content-security-policy'] = CONTENT_SECURITY_POLICY
+      if (type === 'text/html')
+        headers['content-security-policy'] =
+          path === SANDBOX_PATH ? SANDBOX_CONTENT_SECURITY_POLICY : CONTENT_SECURITY_POLICY
       return new Response(body, { headers })
     } catch {
       return new Response('Not found', { status: 404 })
@@ -146,7 +136,10 @@ function createWindow(): BrowserWindow {
       contextIsolation: true,
       sandbox: true,
       nodeIntegration: false,
-      spellcheck: false
+      spellcheck: false,
+      // Agents edit through the MCP server while the window is hidden or behind others; throttled
+      // timers there would stall their tool calls past the server's timeout.
+      backgroundThrottling: false
     }
   })
   // Off macOS the app draws its own menu, as on the web; the native bar stays hidden but keeps

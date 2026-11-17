@@ -1,4 +1,4 @@
-import { createDesignJSXRenderer, type SVGSource } from '@kalka/design-jsx'
+import { createDesignJSXRenderer, type SVGSource, type TreeNode } from '@kalka/design-jsx'
 
 import { iconify, placeIcon, type IconProvider } from '#core/icons'
 import { extractPaths, extractPathsFromElements, scalePathInfos } from '#core/icons/svg'
@@ -37,6 +37,22 @@ function svgIconData({ body, elements, props }: SVGSource, size: number): IconDa
   }
 }
 
+/** Runs Design JSX to its root elements outside the page, where the page may not run code. */
+export type DesignJSXEvaluator = (jsx: string) => Promise<TreeNode[]>
+
+let evaluator: DesignJSXEvaluator | null = null
+
+/**
+ * Has `render` and the other Design JSX tools run their code with `evaluate` instead of in the
+ * page, such as in the app's sandbox, whose page policy forbids `eval`. Returns the uninstall.
+ */
+export function installDesignJSXEvaluator(evaluate: DesignJSXEvaluator): () => void {
+  evaluator = evaluate
+  return () => {
+    if (evaluator === evaluate) evaluator = null
+  }
+}
+
 function createRenderer(icons: IconProvider) {
   return createDesignJSXRenderer<IconData>({
     async icon(name, size) {
@@ -52,7 +68,8 @@ function createRenderer(icons: IconProvider) {
         // Inline SVG is artwork, not an icon from a set.
         identity: icon.prefix !== INLINE_SVG
       }),
-    layout: computeAllLayouts
+    layout: computeAllLayouts,
+    evaluate: (jsx) => (evaluator ? evaluator(jsx) : Promise.resolve(null))
   })
 }
 
