@@ -186,7 +186,7 @@ It does: what the agent writes is HTML and CSS. Kalka adds a canvas where you se
 <details>
 <summary><strong>Is my work locked in?</strong></summary>
 <br />
-No. A document is a folder of HTML, CSS and JSON on your disk, which any code editor opens and Git versions.
+No. A document is a folder of HTML, CSS and JSON on your disk, which any code editor opens and Git versions. You can also keep documents in your own S3-compatible bucket: AWS S3, Cloudflare R2, Backblaze B2 or a self-hosted MinIO.
 </details>
 
 <details>
