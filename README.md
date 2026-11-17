@@ -9,7 +9,7 @@
 
 <p align="center">
   <strong>An open source design tool, an alternative to Figma, where every layer is real HTML and CSS.</strong><br />
-  What you draw is already a web page: no export step, no rebuild in code.
+  AI thinks in code, not pixels: your agent drafts in the HTML and CSS it already knows, you refine by hand, and nothing gets redrawn in code.
 </p>
 
 <p align="center">
