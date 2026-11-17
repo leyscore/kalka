@@ -36,7 +36,7 @@
   <img alt="Status: beta" src="https://img.shields.io/badge/status-beta-2F5BEA?style=flat-square&labelColor=121214">
 </p>
 
-<p align="center"><img src="assets/screenshots/demo.gif" width="480" alt="An agent drafts a landing page on the Kalka canvas, the layers are edited by hand, and the Code tab shows the HTML"></p>
+<p align="center"><img src="assets/screenshots/demo.gif" width="100%" alt="The Kalka editor: the layers panel, a canvas made of real HTML and the properties panel, editing the Learn the basics page"></p>
 
 <br />
 
