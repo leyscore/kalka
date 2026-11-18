@@ -112,7 +112,7 @@ export function useChatSubmission(options: SubmissionOptions) {
       deleteMessageAttachments(messageId)
       throw error
     })
-    const { prepared: preparedImages, findings } = images
+    const { prepared: preparedImages, findings, files } = images
     if (version !== operationVersion || options.chat.value !== currentChat) return
 
     const normalizedImages = preparedImagePresentations(
@@ -122,17 +122,16 @@ export function useChatSubmission(options: SubmissionOptions) {
     )
     setMessageAttachments(messageId, [...nodeAttachments, ...normalizedImages])
     send()
-    await withTurn(currentChat, () =>
-      currentChat
-        .sendMessage({
-          messageId,
-          text: designMessageWithImageFindings(
+    const text =
+      findings === null
+        ? submission.modelText
+        : designMessageWithImageFindings(
             submission.modelText,
             submission.images.map((image) => image.file.name),
             findings
           )
-        })
-        .catch(() => undefined)
+    await withTurn(currentChat, () =>
+      currentChat.sendMessage({ messageId, text, files }).catch(() => undefined)
     )
   }
 

@@ -6,6 +6,7 @@
 
 - The comment tool and C now work in a document opened after the editor started, such as the web demo.
 - A comment that asks the document's agent by the name it answers under, such as `@Wren`, reaches it instead of waiting forever, and threads offer that agent once instead of as both `@agent` and `@Wren`.
+- Images attached in the chat reach Claude Code and other coding agents that read images, instead of being refused for want of a Vision model.
 
 ## 0.2.0-beta.3 — 2026-11-18
 
