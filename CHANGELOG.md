@@ -9,6 +9,7 @@
 ### Fixed
 
 - The comment tool and C now work in a document opened after the editor started, such as the web demo.
+- A comment that asks the document's agent by the name it answers under, such as `@Wren`, reaches it instead of waiting forever, and threads offer that agent once instead of as both `@agent` and `@Wren`.
 
 ## 0.2.0-beta.3 — 2026-11-18
 

@@ -29,6 +29,7 @@ import { enabledAIToolDefinitions } from '@/app/ai/tools/catalog'
 import { aiToolOverrides } from '@/app/ai/tools/preferences'
 import { restAgents } from '@/app/automation/agents'
 import { settleAgentComments } from '@/app/comments/agent-run'
+import { builtInAgentName } from '@/app/comments/service'
 import { diagnosticErrorDetails } from '@/app/diagnostics'
 import {
   recordChatCompleted,
@@ -461,7 +462,8 @@ export function createChatSessionManager({
           if (
             settleAgentComments(store.graph, {
               failed: event.isAbort || event.isDisconnect || event.isError,
-              message: event.message
+              message: event.message,
+              agentName: builtInAgentName(store)
             }).length > 0
           )
             store.requestRender()
