@@ -3,7 +3,12 @@ import { describe, expect, test } from 'bun:test'
 import type { PromptResponse } from '@agentclientprotocol/sdk'
 import type { UIMessage, UIMessageChunk } from 'ai'
 
-import { earlierConversation, promptStream, type ACPPromptSession } from '@/app/ai/acp/transport'
+import {
+  earlierConversation,
+  imageBlocks,
+  promptStream,
+  type ACPPromptSession
+} from '@/app/ai/acp/transport'
 
 function fakeSession(reply: Promise<PromptResponse>): ACPPromptSession {
   return {
@@ -65,5 +70,27 @@ describe('earlierConversation', () => {
     ])
     expect(long).toContain('latest state')
     expect(long).not.toContain('start ')
+  })
+})
+
+describe('imageBlocks', () => {
+  test("turns a message's attached images into prompt images", () => {
+    const blocks = imageBlocks({
+      id: '1',
+      role: 'user',
+      parts: [
+        { type: 'text', text: 'Make it look like this' },
+        { type: 'file', mediaType: 'image/png', url: 'data:image/png;base64,iVBORw0KGgo=' },
+        { type: 'file', mediaType: 'application/pdf', url: 'data:application/pdf;base64,JVBERg==' }
+      ]
+    })
+    expect(blocks).toEqual([{ type: 'image', mimeType: 'image/png', data: 'iVBORw0KGgo=' }])
+  })
+
+  test('is empty without a message or images', () => {
+    expect(imageBlocks(undefined)).toEqual([])
+    expect(imageBlocks({ id: '1', role: 'user', parts: [{ type: 'text', text: 'Hi' }] })).toEqual(
+      []
+    )
   })
 })

@@ -1,13 +1,15 @@
 import { ClientSideConnection, ndJsonStream, PROTOCOL_VERSION } from '@agentclientprotocol/sdk'
 import type {
   Client,
+  ContentBlock,
   InitializeResponse,
   SessionNotification,
   RequestPermissionRequest,
   RequestPermissionResponse
 } from '@agentclientprotocol/sdk'
-import type { ChatTransport, UIMessage, UIMessageChunk } from 'ai'
+import type { ChatTransport, FileUIPart, UIMessage, UIMessageChunk } from 'ai'
 import { compact } from 'es-toolkit'
+import { isValid } from 'js-base64'
 
 import type { ACPAgentDef } from '@kalka/core/constants'
 
@@ -27,6 +29,8 @@ interface ACPSession {
   child: TauriChild
   onUpdate: ((params: SessionNotification) => void) | null
   dead: boolean
+  /** Whether the agent said it reads images in a prompt. */
+  readsImages: boolean
 }
 
 function isMissingCommandError(message: string): boolean {
@@ -144,7 +148,7 @@ export interface ACPPromptSession {
  */
 export function promptStream(
   session: ACPPromptSession,
-  promptText: string,
+  prompt: string | ContentBlock[],
   abortSignal: AbortSignal | undefined,
   describeFailure: (error: unknown) => string
 ): ReadableStream<UIMessageChunk> {
@@ -184,7 +188,10 @@ export function promptStream(
       controller.enqueue({ type: 'start-step' })
 
       connection
-        .prompt({ sessionId, prompt: [{ type: 'text', text: promptText }] })
+        .prompt({
+          sessionId,
+          prompt: typeof prompt === 'string' ? [{ type: 'text', text: prompt }] : prompt
+        })
         .then((result) => finish(result.stopReason === 'end_turn' ? 'stop' : 'other'))
         .catch((e: unknown) => {
           recordACPTransportFailure({ operation: 'message', ...describeDiagnosticError(e) })
@@ -239,6 +246,20 @@ export function earlierConversation(messages: readonly UIMessage[]): string | nu
   ].join('\n')
 }
 
+const IMAGE_DATA_URL = /^data:(image\/[\w.+-]+);base64,(.+)$/
+
+/** A message's images as prompt blocks, from the data URLs the chat stores them as. */
+export function imageBlocks(message: UIMessage | undefined): ContentBlock[] {
+  if (!message) return []
+  return message.parts
+    .filter((part): part is FileUIPart => part.type === 'file')
+    .flatMap((part) => {
+      const match = IMAGE_DATA_URL.exec(part.url)
+      if (!match?.[1] || !match[2] || !isValid(match[2])) return []
+      return [{ type: 'image' as const, mimeType: match[1], data: match[2] }]
+    })
+}
+
 export class ACPChatTransport implements ChatTransport<UIMessage> {
   private session: ACPSession | null = null
   private agentDef: ACPAgentDef
@@ -280,8 +301,11 @@ export class ACPChatTransport implements ChatTransport<UIMessage> {
       ? text
       : compact([SYSTEM_PROMPT, earlierConversation(messages), text]).join('\n\n')
     this.sentContext = true
+    // An agent that reads images gets them as they are; one that does not still gets the text.
+    const images = this.session.readsImages ? imageBlocks(lastUserMessage) : []
+    const prompt: ContentBlock[] = [{ type: 'text', text: promptText }, ...images]
 
-    return promptStream(this.session, promptText, abortSignal, (e) => {
+    return promptStream(this.session, prompt, abortSignal, (e) => {
       this.onError?.(e)
       return formatConnectionError(e, this.agentDef)
     })
@@ -325,7 +349,7 @@ export class ACPChatTransport implements ChatTransport<UIMessage> {
       }
     }
 
-    const { connection, child } = await openACPConnection({
+    const { connection, child, initialized } = await openACPConnection({
       agentDef: this.agentDef,
       client,
       destroying: () => this.destroying,
@@ -352,6 +376,7 @@ export class ACPChatTransport implements ChatTransport<UIMessage> {
       sessionId: sessionResult.sessionId,
       child,
       dead: false,
+      readsImages: initialized.agentCapabilities?.promptCapabilities?.image === true,
       get onUpdate() {
         return onUpdate
       },
