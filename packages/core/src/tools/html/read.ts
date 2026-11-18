@@ -1,9 +1,27 @@
 import * as v from 'valibot'
 
+import type { FigmaAPI } from '#core/figma-api'
 import { nodeIdInput } from '#core/tools/input'
 import { defineTool } from '#core/tools/schema'
 
 const MAX_HTML_LENGTH = 16_000
+
+/**
+ * A layer and its children as the HTML agents read and edit: each element marked with its layer
+ * id, images named by reference rather than embedded.
+ */
+export async function layerHTML(figma: FigmaAPI, id: string, style: 'inline' | 'tailwind') {
+  const [{ renderNodesToHTML }, { referenceHTMLImages }] = await Promise.all([
+    import('#core/io/formats/html'),
+    import('#core/tools/html/images')
+  ])
+  const rendered = await renderNodesToHTML(figma.graph, [id], {
+    html: 'fragment',
+    style,
+    sourceIds: true
+  })
+  return referenceHTMLImages(figma.graph, rendered.html)
+}
 
 export const getHTML = defineTool({
   name: 'get_html',
@@ -20,16 +38,7 @@ export const getHTML = defineTool({
   execute: async (figma, { id, style }) => {
     const node = figma.getNodeById(id)
     if (!node) return { error: `Node "${id}" not found` }
-    const [{ renderNodesToHTML }, { referenceHTMLImages }] = await Promise.all([
-      import('#core/io/formats/html'),
-      import('#core/tools/html/images')
-    ])
-    const rendered = await renderNodesToHTML(figma.graph, [id], {
-      html: 'fragment',
-      style,
-      sourceIds: true
-    })
-    const { html, images } = referenceHTMLImages(figma.graph, rendered.html)
+    const { html, images } = await layerHTML(figma, id, style)
     const imageList = images.length > 0 ? { images } : {}
     if (html.length > MAX_HTML_LENGTH) {
       return {

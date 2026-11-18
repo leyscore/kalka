@@ -32,8 +32,8 @@ export const createInstance = defineTool({
     insert_index: v.optional(
       toolNumber(v.pipe(v.number(), v.description('Position among siblings (0 = first)')))
     ),
-    x: v.optional(toolNumber(v.pipe(v.number(), v.description('X position')))),
-    y: v.optional(toolNumber(v.pipe(v.number(), v.description('Y position'))))
+    x: v.optional(toolNumber(v.pipe(v.number(), v.description('Left edge, in its parent')))),
+    y: v.optional(toolNumber(v.pipe(v.number(), v.description('Top edge, in its parent'))))
   }),
   execute: (figma, args) => {
     const component = figma.getNodeById(args.component_id)

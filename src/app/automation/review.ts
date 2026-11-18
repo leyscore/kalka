@@ -1,4 +1,4 @@
-import type { SceneGraph } from '@kalka/scene-graph'
+import { reviewedFrameOf, type SceneGraph } from '@kalka/scene-graph'
 
 /**
  * Visual review for agents: the artboards an agent changed and has not looked at since. Agents
@@ -26,18 +26,6 @@ function unseenOf(graph: SceneGraph, session: string): Set<string> {
   return ids
 }
 
-/** The top-level layer of a page that holds `id`, or null for a page or a missing layer. */
-function artboardOf(graph: SceneGraph, id: string): string | null {
-  let node = graph.getNode(id)
-  while (node?.parentId) {
-    const parent = graph.getNode(node.parentId)
-    if (!parent) return null
-    if (parent.type === 'CANVAS') return node.id
-    node = parent
-  }
-  return null
-}
-
 /** The agent of `session` changed `nodeIds`, so their artboards need another look. */
 export function noteAgentWrites(
   graph: SceneGraph,
@@ -46,7 +34,7 @@ export function noteAgentWrites(
 ): void {
   const ids = unseenOf(graph, session)
   for (const id of nodeIds) {
-    const artboard = artboardOf(graph, id)
+    const artboard = reviewedFrameOf(graph, id)
     if (artboard) ids.add(artboard)
   }
 }
@@ -79,7 +67,7 @@ export function noteAgentLook(
       for (const child of node.childIds) ids.delete(child)
       continue
     }
-    const artboard = artboardOf(graph, target)
+    const artboard = reviewedFrameOf(graph, target)
     if (artboard) ids.delete(artboard)
   }
 }

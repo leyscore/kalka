@@ -3,6 +3,7 @@ import * as v from 'valibot'
 import { nodeIdInput } from '#core/tools/input'
 import { defineTool } from '#core/tools/schema'
 
+import { layerHTML } from './read'
 import { writeHTML } from './write'
 
 /** How often `find` occurs in `text`, without overlaps. */
@@ -28,16 +29,7 @@ export const editHTML = defineTool({
   execute: async (figma, { id, find, replace }) => {
     const node = figma.getNodeById(id)
     if (!node) return { error: `Node "${id}" not found` }
-    const [{ renderNodesToHTML }, { referenceHTMLImages }] = await Promise.all([
-      import('#core/io/formats/html'),
-      import('#core/tools/html/images')
-    ])
-    const rendered = await renderNodesToHTML(figma.graph, [id], {
-      html: 'fragment',
-      style: 'inline',
-      sourceIds: true
-    })
-    const { html } = referenceHTMLImages(figma.graph, rendered.html)
+    const { html } = await layerHTML(figma, id, 'inline')
     const count = occurrences(html, find)
     if (count === 0)
       return { error: 'find does not occur in the layer’s HTML. Call get_html to see it as it is.' }
