@@ -223,6 +223,7 @@ describe('MCP server', () => {
     expect(byName.get('undo')?.capabilities).toEqual(['document:write'])
     expect(byName.get('redo')?.effect).toBe('write')
     expect(byName.get('get_settings')?.capabilities).toEqual(['settings:read'])
+    expect(byName.get('list_settings')?.capabilities).toEqual(['settings:read'])
     expect(byName.get('update_settings')?.capabilities).toEqual(['settings:write'])
     expect(byName.get('eval')?.availability).toBe('eval')
     expect(byName.get('eval')?.capabilities).toContain('code:execute')
@@ -601,6 +602,15 @@ describe('MCP server with mcpRoot', () => {
         settings
       })
       expect(JSON.stringify(result.content)).toContain('light')
+    })
+  })
+
+  test('lists settings through the app', async () => {
+    await withMCPRootServer(TEST_MCP_ROOT, async (client, browser) => {
+      const result = await client.callTool({ name: 'list_settings', arguments: {} })
+      expect(result.isError).not.toBe(true)
+      expect(browser.requests.map((item) => item.command)).toContain('list_settings')
+      expect(JSON.stringify(result.content)).toContain('appearance.theme')
     })
   })
 

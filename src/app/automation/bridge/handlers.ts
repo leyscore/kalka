@@ -4,6 +4,7 @@ import { endAgentSession } from '@/app/automation/agents'
 import {
   handleActivateDocument,
   handleGetSettings,
+  handleListSettings,
   handleRedo,
   handleUndo,
   handleUpdateSettings
@@ -83,6 +84,7 @@ export function createAutomationCommandHandlers(makeFigma: FigmaFactory) {
       return { ok: true, result: null }
     }
     if (command === 'get_settings') return handleGetSettings()
+    if (command === 'list_settings') return handleListSettings()
     if (command === 'update_settings') return handleUpdateSettings(args)
 
     if (command === 'open_file' || command === 'new_document') {

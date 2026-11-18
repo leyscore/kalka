@@ -64,7 +64,7 @@ Common commands:
 - `tool` — list, describe, and call any MCP tool from the shell, in app or headless mode
 - `documents` — list, open, create, save, close, and activate documents in the running app
 - `undo` / `redo` — step back through your own (automation) changes in the running app
-- `settings` — read and change editor settings in the running app
+- `settings` — list, read, and change app settings (theme, snapping, Follow agents, AI model, thinking level, …) live in the running app
 
 ### Inspect
 
@@ -206,8 +206,11 @@ kalka documents activate tab-123 --page-id 0:4    # bring a tab to the front
 kalka documents save --document-id tab-123
 kalka documents close --document-id tab-123 --save   # or --discard; fails on unsaved changes otherwise
 kalka undo --document-id tab-123                  # also: redo
+kalka settings list                               # every key, its value, accepted values
 kalka settings get --json
 kalka settings set editing.snapping.pixelGrid false
+kalka settings set chat.followAgents false
+kalka settings set ai.thinkingLevel high
 ```
 
 `tool` exposes every MCP tool, so the CLI is never limited to its dedicated commands:
@@ -275,7 +278,7 @@ The CLI defaults the filesystem root to the home directory on Windows and the cu
 
 Each result that ran on a document ends with a `{"target": {...}}` block: its `documentId`, `documentName`, page, and `tokensHash`, a fingerprint of the variables. Check that it names the document you meant, and read the tokens again when `tokensHash` differs from the one you saw last. `get_screenshot`, `export_image`, `export_pdf`, and `diff_visual` return the file inline plus a short-lived `http://127.0.0.1:<port>/assets/...` link; pass `delivery: "url"` to get only the link, which keeps the response small and can be fetched with `curl` without a token. `get_html` names images `kalka-image:<hash>` instead of embedding them and lists their type and size under `images`; `export_image` on the element's `data-kalka-node-id` shows one, and `write_html` accepts the reference back as the same image.
 
-Use `undo` / `redo { document_id }` to step back your own changes. They refuse when the newest step was made by the user in the editor; never work around that. `get_settings` and `update_settings { settings }` read and change editor preferences such as theme, language, and snapping; they never expose credentials, models, or tool access.
+Use `undo` / `redo { document_id }` to step back your own changes. They refuse when the newest step was made by the user in the editor; never work around that. `list_settings`, `get_settings`, and `update_settings { settings }` list, read, and change app preferences live, such as theme, language, snapping, Follow agents, the chat's model profile (`ai.designModel`) and thinking level (`ai.thinkingLevel`); they never expose credentials, model connections, or tool access.
 
 ### Browser-native WebMCP (experimental)
 

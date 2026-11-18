@@ -299,10 +299,11 @@ The history is shared with the person in the editor. `undo` and `redo` refuse wh
 
 | Tool | Description |
 |------|-------------|
-| `get_settings` | Read editor settings: appearance, snapping, canvas rendering, recovery, AI chat, and design check preferences |
+| `get_settings` | Read app settings: appearance, snapping, canvas rendering, recovery, AI chat, AI model and thinking level, Code panel, and design check preferences |
+| `list_settings` | List every key `update_settings` accepts with its current value and accepted values |
 | `update_settings` | Change settings with a partial object shaped like `get_settings` output; invalid keys and values are rejected |
 
-Settings tools never expose credentials, AI models, MCP connections, storage, or tool access. The available keys are listed in [Controlling the App](/programmable/cli/app-control#settings).
+Changes apply live in the open app. Settings tools never expose credentials, model connections, MCP connections, storage, or tool access; `ai.designModel` only picks among configured model profiles. The available keys are listed in [Controlling the App](/programmable/cli/app-control#settings).
 
 ### Read
 

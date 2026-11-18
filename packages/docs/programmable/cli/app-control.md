@@ -59,17 +59,20 @@ Each CLI or MCP command that edits the document is one undo step. An `eval` scri
 
 ## Settings
 
-Read and change editor settings by dotted key:
+Read and change app settings by dotted key while the app is running. Changes apply at once in the open app, as if made in **Settings**:
 
 ```sh
+kalka settings list
 kalka settings get
 kalka settings get appearance.theme
 kalka settings set appearance.theme light
 kalka settings set editing.snapping.pixelGrid false
 kalka settings set chat.maxAgentSteps 100
+kalka settings set chat.followAgents false
+kalka settings set ai.thinkingLevel high
 ```
 
-Values are read as JSON when they parse (`false`, `100`, `"auto"`) and as plain strings otherwise. Invalid keys and values are rejected without changing anything.
+`settings list` prints every key you can change with its current value and the values it accepts; `--json` gives the same as an array of `{ key, value, type, values }`. Values are read as JSON when they parse (`false`, `100`, `"auto"`) and as plain strings otherwise. Invalid keys and values are rejected without changing anything.
 
 | Key | Values |
 |-----|--------|
@@ -81,15 +84,20 @@ Values are read as JSON when they parse (`false`, `100`, `"auto"`) and as plain 
 | `editing.snapping.objects` | `true`, `false` |
 | `editing.snapping.pixelGrid` | `true`, `false` |
 | `rendering.canvasMode` | `retained`, `tiled` (applies after a reload) |
+| `rendering.canvasBackground` | `kalka`, `document` (Kalka's canvas color or the page color the document saved) |
 | `recovery.enabled` | `true`, `false` |
 | `chat.reasoningDisplay` | `collapsed`, `while-thinking`, `expanded` |
 | `chat.maxAgentSteps` | integer 1–1000 |
 | `chat.changePreviewSize` | `off`, `small`, `medium`, `large` |
+| `chat.followAgents` | `true`, `false` (the view follows agents while they work) |
+| `ai.designModel` | ID or name of a model profile that can design, from `settings list`; switches the model the AI chat uses |
+| `ai.thinkingLevel` | `default`, `off`, `minimal`, `low`, `medium`, `high`, `xhigh`; sets the Design profile's level and the chat's next message (not for ACP agents, which choose their own) |
+| `code.defaultSource` | `design-jsx`, `tailwind-jsx`, `html-css` (what the Code panel shows first) |
 | `designCheck.showOnCanvas` | `true`, `false` |
 | `designCheck.preset` | `recommended`, `strict`, `accessibility` |
 | `designCheck.disabledRules` | JSON array of rule IDs, e.g. `["no-default-names"]`; see `kalka lint --list-rules` |
 
-Credentials, AI models, MCP connections, storage, and tool access are deliberately not available here: an automation client can't read secrets or grant itself access.
+Credentials and API keys, model connections and base URLs, MCP connections, storage, and tool access are deliberately not available here: an automation client can't read secrets or grant itself access. `ai.designModel` only chooses among model profiles you already set up in **Settings → Models**.
 
 ## Calling tools
 
