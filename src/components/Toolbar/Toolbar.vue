@@ -14,7 +14,6 @@ import { useEditorStore } from '@/app/editor/active-store'
 import { toolIcons } from '@/app/editor/icons'
 import { useActionToast } from '@/app/shell/toast/action'
 import CommentToolButton from '@/components/comments/CommentToolButton.vue'
-import AgentField from '@/components/editor/AgentField.vue'
 import InsertIconButton from '@/components/icon-picker/InsertIconButton.vue'
 import { useToolbarActions } from '@/components/Toolbar/actions'
 import DesktopToolbar from '@/components/Toolbar/DesktopToolbar.vue'
@@ -84,8 +83,6 @@ function onActionTap(item: ToolbarActionItem) {
       <template #end>
         <InsertIconButton :ui="toolbarUI" />
         <CommentToolButton :ui="toolbarUI" />
-        <span aria-hidden="true" class="mx-1 h-5 w-px shrink-0 bg-separator" />
-        <AgentField />
       </template>
     </DesktopToolbar>
 
