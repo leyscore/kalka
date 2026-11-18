@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+
+- The agent in Kalka's own panel follows an explicit design process: it reads the document, names its references, writes a brief, sets up variables, shared classes and components, lays out the page skeleton, builds and checks one section at a time, then adapts the phone layout. Agents over MCP read the same process with `get_design_guide`, and the chat now has the variable, page and component tools it needs on by default.
+
 ### Fixed
 
 - The comment tool and C now work in a document opened after the editor started, such as the web demo.

@@ -11,7 +11,15 @@ const defaultNames = new Set([
   'get_metadata',
   'get_variable_defs',
   'search_design_system',
-  'use_figma'
+  'use_figma',
+  // The design process sets up variables and components before composing screens.
+  'list_variables',
+  'create_collection',
+  'create_variable',
+  'create_page',
+  'create_component',
+  'create_instance',
+  'combine_as_variants'
 ])
 
 export const aiToolDefinitions = ALL_TOOLS.filter((tool) => isToolExposed(tool, 'ai'))
