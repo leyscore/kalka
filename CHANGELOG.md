@@ -2,16 +2,17 @@
 
 ## Unreleased
 
+## 0.2.0-beta.3 — 2026-11-18
+
 ### Added
 
 - Comments: press C (or the comment button in the toolbar) and click a layer or a spot to pin a thread; it moves with its layer, answers and resolves in place, and the Comments panel in the rail lists threads open and resolved. Mentioning `@agent` asks the document's agent, whose answer lands in the thread; with no agent set up in the app, the request waits on its pin for an agent connected over MCP, which receives it in its next tool result. Shift+C shows or hides pins, and comments are saved with the document.
 - Press / to ask the agent about the selection: its conversation opens with the selection attached and the field ready. The canvas context menu offers the same, and Comment.
-- Watching agents work: a dashed frame shows where an agent's work will land until it starts, its working marks and the Agents tab show what it says it is doing, and after a request the view goes to the first thing it makes when that lands out of view.
+- Watching agents work: agents say what they are doing with `set_status`, shown after their name on the canvas and listed in the Agents tab, and are reminded to until they do; a dashed frame shows where an agent's work will land until it starts, and after a request the view goes to the first thing it makes when that lands out of view.
 - In the desktop app, the History panel restores a version in one click: what the folder holds now is recorded as a version first, so nothing is lost, and the document reopens as it was. Versions name the agents whose changes they hold, and the history groups them in stretches of work by person, with those agents.
 - The Changes tab lists each agent's changes, a burst per agent and page, and puts a page back to before one in a step undo takes back.
 - A top-level frame can be marked ready for development from its context menu; a badge shows who approved it, and it goes back to needing review as soon as anything in it changes. Agents read it with `get_frame_reviews`.
 - A `/design-system` skill and a design guide every agent can read (`get_design_guide`) have agents decide a direction, set up variables and components, and compose screens from instances; `write_html` places a component with `<kalka-instance component="Button">`, and `create_instance` takes a parent.
-- Agents say what they are doing with `set_status`, shown after their name on the canvas while they work, and are reminded to until they do.
 - Agents change part of a layer with `edit_html`, an exact find and replace in its HTML, instead of rewriting the whole section.
 - After an agent writes, its tool results name the artboards it changed and has not looked at yet, with what to check (fit, spacing, hierarchy, contrast, alignment, real content), until it takes a screenshot of each.
 
