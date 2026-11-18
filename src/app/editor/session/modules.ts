@@ -87,6 +87,7 @@ export function createEditorStoreModules(
     markDocumentSaved: documentIO.markDocumentSaved,
     saveFigFile: documentIO.saveFigFile,
     saveFigFileAs: documentIO.saveFigFileAs,
+    reloadFromDisk: documentIO.reloadFromDisk,
     getDocumentFilePath: documentIO.getDocumentFilePath,
     hasWritableSource: documentIO.hasWritableSource,
     getSourceIdentity: documentIO.getSourceIdentity,

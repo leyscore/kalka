@@ -370,5 +370,6 @@ es:panels.gridColor
 es:panels.gridAuto
 fr:panels.gridType
 fr:panels.gridAuto
+fr:panels.versionsBurst
 it:panels.gridAuto
 pl:panels.gridAuto

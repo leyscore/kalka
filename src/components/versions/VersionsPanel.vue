@@ -3,7 +3,7 @@ import { ref } from 'vue'
 
 import { useI18n } from '@kalka/vue'
 
-import { changeKind } from '@/app/document/versions/git'
+import { changeKind, type GitCommit } from '@/app/document/versions/git'
 import { useDocumentVersions, type DocumentVersions } from '@/app/document/versions/use'
 import { useEditorStore } from '@/app/editor/active-store'
 import AppButton from '@/components/ui/button/AppButton.vue'
@@ -27,8 +27,17 @@ const {
   running,
   error,
   message,
-  canCommit
+  canCommit,
+  bursts
 } = versions
+
+/** Restores a version, recording what is there now first, as the history says it does. */
+function restore(commit: GitCommit): void {
+  void versions.restore(commit, {
+    before: panels.value.versionsBeforeRestore({ subject: commit.subject }),
+    restored: panels.value.versionsRestored({ subject: commit.subject })
+  })
+}
 
 const timeline = versionTimeline()
 const remoteURL = ref('')
@@ -211,15 +220,61 @@ const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', tim
           {{ panels.versionsHistory }}
         </h3>
         <!-- A timeline: each version a point on one line, the latest on top. -->
-        <ol v-if="history.length" :class="timeline.list()" data-test-id="versions-history">
-          <li v-for="(commit, index) in history" :key="commit.hash" :class="timeline.item()">
-            <span :class="timeline.point()" :data-latest="index === 0 || undefined" />
-            <p :class="timeline.subject()">{{ commit.subject }}</p>
-            <p :class="timeline.detail()">
-              {{ commit.author }} · {{ dateFormat.format(commit.time * 1000) }}
+        <!-- Versions in bursts: one stretch of work by a person, with the agents that helped. -->
+        <div v-if="history.length" data-test-id="versions-history">
+          <section
+            v-for="burst in bursts"
+            :key="burst.commits[0].hash"
+            data-slot="version-burst"
+            :data-agents="burst.agents.length > 0 || undefined"
+          >
+            <p class="flex items-center gap-1 px-4 pt-1 pb-1 text-[11px] text-muted">
+              <span class="truncate font-medium text-surface">{{ burst.author }}</span>
+              <template v-if="burst.agents.length">
+                <icon-hugeicons-ai-magic class="size-3 shrink-0" />
+                <span class="truncate">{{
+                  panels.versionsWithAgents({ names: burst.agents.join(', ') })
+                }}</span>
+              </template>
+              <span class="flex-1" />
+              <span v-if="burst.commits.length > 1" class="shrink-0">{{
+                panels.versionsBurst({ count: burst.commits.length })
+              }}</span>
             </p>
-          </li>
-        </ol>
+            <ol :class="timeline.list()">
+              <li
+                v-for="commit in burst.commits"
+                :key="commit.hash"
+                :class="timeline.item()"
+                class="group"
+                data-slot="version"
+              >
+                <span
+                  :class="timeline.point()"
+                  :data-latest="commit.hash === history[0]?.hash || undefined"
+                />
+                <div class="flex items-start gap-2">
+                  <div class="min-w-0 flex-1">
+                    <p :class="timeline.subject()">{{ commit.subject }}</p>
+                    <p :class="timeline.detail()">{{ dateFormat.format(commit.time * 1000) }}</p>
+                  </div>
+                  <AppButton
+                    v-if="commit.hash !== history[0]?.hash"
+                    size="xs"
+                    variant="ghost"
+                    class="shrink-0 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+                    data-slot="version-restore"
+                    :aria-label="panels.versionsRestoreLabel({ subject: commit.subject })"
+                    :disabled="running !== null"
+                    @click="restore(commit)"
+                  >
+                    {{ panels.versionsRestore }}
+                  </AppButton>
+                </div>
+              </li>
+            </ol>
+          </section>
+        </div>
         <p v-else class="px-4 pb-4 text-xs text-muted">{{ panels.versionsNoHistory }}</p>
       </div>
     </template>

@@ -98,6 +98,8 @@ export function createDocumentIOActions(
     hasUnsavedChanges: sourceActions.hasUnsavedChanges,
     markDocumentSaved: () => sourceActions.markDocumentSaved(),
     saveFigFile: sourceActions.saveFigFile,
+    /** Reads the document again from where it is saved, such as after a version was restored. */
+    reloadFromDisk,
     saveFigFileAs: sourceActions.saveFigFileAs
   }
 }

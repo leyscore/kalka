@@ -1,3 +1,4 @@
+import { compact, uniq } from 'es-toolkit'
 import * as v from 'valibot'
 
 import { call } from '@/app/platform/tauri/bridge'
@@ -21,7 +22,9 @@ const CommitSchema = v.object({
   hash: v.string(),
   author: v.string(),
   time: v.number(),
-  subject: v.string()
+  subject: v.string(),
+  /** Agents whose changes the version holds; older app builds do not send it. */
+  agents: v.optional(v.array(v.string()), [])
 })
 
 const IdentitySchema = v.object({ name: v.nullable(v.string()), email: v.nullable(v.string()) })
@@ -48,6 +51,58 @@ export async function startGitRepository(documentPath: string): Promise<void> {
 /** Records every change in the repository as one version. */
 export async function commitVersion(documentPath: string, message: string): Promise<void> {
   await call('git.commit', documentPath, message)
+}
+
+/** The trailer a version names an agent with, one line per agent. */
+export const AGENT_TRAILER = 'Kalka-Agent'
+
+/** A version's message with a trailer for each agent whose changes it holds. */
+export function versionMessage(message: string, agents: readonly string[]): string {
+  const names = compact(uniq(agents.map((name) => name.replaceAll(/[\r\n,]/g, ' ').trim())))
+  if (names.length === 0) return message
+  return `${message.trimEnd()}\n\n${names.map((name) => `${AGENT_TRAILER}: ${name}`).join('\n')}`
+}
+
+/** Puts the document's folder back to a version; recording the result is the caller's. */
+export async function restoreVersion(documentPath: string, hash: string): Promise<void> {
+  await call('git.restore', documentPath, hash)
+}
+
+/**
+ * Versions in bursts: consecutive versions by the same person with the same agents, each within
+ * `gap` of the next, read as one stretch of work.
+ */
+export interface VersionBurst {
+  author: string
+  agents: string[]
+  commits: GitCommit[]
+}
+
+export const BURST_GAP_SECONDS = 30 * 60
+
+export function versionBursts(
+  history: readonly GitCommit[],
+  gap = BURST_GAP_SECONDS
+): VersionBurst[] {
+  const bursts: VersionBurst[] = []
+  for (const commit of history) {
+    const last = bursts.at(-1)
+    const previous = last?.commits.at(-1)
+    const sameAgents =
+      last !== undefined &&
+      last.agents.length === commit.agents.length &&
+      last.agents.every((name) => commit.agents.includes(name))
+    if (
+      last &&
+      previous &&
+      last.author === commit.author &&
+      sameAgents &&
+      previous.time - commit.time <= gap
+    )
+      last.commits.push(commit)
+    else bursts.push({ author: commit.author, agents: [...commit.agents], commits: [commit] })
+  }
+  return bursts
 }
 
 export async function pullVersions(documentPath: string): Promise<void> {

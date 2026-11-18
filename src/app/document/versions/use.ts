@@ -1,6 +1,7 @@
 import { useEventListener } from '@vueuse/core'
 import { computed, ref, watch } from 'vue'
 
+import { agentChanges } from '@/app/document/versions/bursts'
 import type { EditorStore } from '@/app/editor/active-store'
 
 import {
@@ -12,17 +13,20 @@ import {
   readGitIdentity,
   readGitRemote,
   readGitStatus,
+  restoreVersion,
   saveGitIdentity,
   sortChanges,
   startGitRepository,
   type GitCommit,
   type GitIdentity,
-  type GitStatus
+  type GitStatus,
+  versionBursts,
+  versionMessage
 } from './git'
 
 export type DocumentVersions = ReturnType<typeof useDocumentVersions>
 export type VersionsState = 'unsaved' | 'untracked' | 'tracked' | 'loading'
-type Operation = 'commit' | 'connect' | 'identity' | 'init' | 'pull' | 'push'
+type Operation = 'commit' | 'connect' | 'identity' | 'init' | 'pull' | 'push' | 'restore'
 
 /**
  * The versions panel's workflow for one document: whether its file is in a repository, what
@@ -103,12 +107,40 @@ export function useDocumentVersions(store: EditorStore) {
     }
   }
 
+  /** Agents that changed the document since its latest version, which the next one credits. */
+  function agentsSinceLastVersion(): string[] {
+    const since = (history.value[0]?.time ?? 0) * 1000
+    return agentChanges(store.graph)
+      .value.filter((change) => change.lastAt > since)
+      .map((change) => change.agentName)
+  }
+
+  async function record(documentPath: string, text: string): Promise<void> {
+    if (store.hasUnsavedChanges()) await store.saveFigFile()
+    await commitVersion(documentPath, versionMessage(text, agentsSinceLastVersion()))
+  }
+
   const commit = () =>
     run('commit', async (documentPath) => {
-      if (store.hasUnsavedChanges()) await store.saveFigFile()
-      await commitVersion(documentPath, message.value)
+      await record(documentPath, message.value)
       message.value = ''
       // Once the folder is connected online, a recorded version goes there too: nothing to remember.
+      if (remote.value) await pushVersions(documentPath)
+    })
+
+  /**
+   * Puts the document back to a version. What is there now is recorded first, so the restore
+   * loses nothing and is itself a version that can be undone by restoring the one before it.
+   */
+  const restore = (version: GitCommit, labels: { before: string; restored: string }) =>
+    run('restore', async (documentPath) => {
+      if (store.hasUnsavedChanges()) await store.saveFigFile()
+      const before = await readGitStatus(documentPath)
+      if (before && before.files.length > 0) await record(documentPath, labels.before)
+      await restoreVersion(documentPath, version.hash)
+      const after = await readGitStatus(documentPath)
+      if (after && after.files.length > 0) await commitVersion(documentPath, labels.restored)
+      await store.reloadFromDisk()
       if (remote.value) await pushVersions(documentPath)
     })
 
@@ -136,6 +168,8 @@ export function useDocumentVersions(store: EditorStore) {
     canCommit,
     refresh,
     commit,
+    restore,
+    bursts: computed(() => versionBursts(history.value)),
     start: () => run('init', startGitRepository),
     pull: () => run('pull', pullVersions),
     push: () => run('push', pushVersions),
