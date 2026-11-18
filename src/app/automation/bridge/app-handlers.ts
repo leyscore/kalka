@@ -1,6 +1,10 @@
 import type { AutomationTarget } from '@/app/automation/bridge/target'
 import { isAutomationUndoLabel } from '@/app/automation/execution/editor'
-import { readAutomationSettings, updateAutomationSettings } from '@/app/settings/automation'
+import {
+  listAutomationSettings,
+  readAutomationSettings,
+  updateAutomationSettings
+} from '@/app/settings/automation'
 import { switchTab } from '@/app/tabs'
 
 export async function handleActivateDocument(
@@ -47,6 +51,10 @@ export async function handleRedo(target: AutomationTarget, _args: unknown): Prom
 
 export function handleGetSettings(): unknown {
   return { ok: true, result: { settings: readAutomationSettings() } }
+}
+
+export function handleListSettings(): unknown {
+  return { ok: true, result: { settings: listAutomationSettings() } }
 }
 
 export function handleUpdateSettings(args: unknown): unknown {

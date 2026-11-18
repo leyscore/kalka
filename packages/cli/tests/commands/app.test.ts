@@ -146,6 +146,29 @@ describe('settings CLI', () => {
     ])
   })
 
+  test('lists settable keys with their accepted values', async () => {
+    responses.set('list_settings', {
+      settings: [
+        { key: 'chat.followAgents', value: true, type: 'boolean', values: [true, false] },
+        {
+          key: 'ai.designModel',
+          value: 'model-a',
+          type: 'choice',
+          values: ['model-a'],
+          labels: { 'model-a': 'Sonnet' }
+        }
+      ]
+    })
+    const listed = await cli(['settings', 'list'])
+    expect(listed.exitCode).toBe(0)
+    expect(listed.stdout).toContain('chat.followAgents')
+    expect(listed.stdout).toContain('model-a (Sonnet)')
+    expect(requests).toEqual([{ command: 'list_settings', args: {} }])
+
+    const json = await cli(['settings', 'list', '--json'])
+    expect(JSON.parse(json.stdout)).toHaveLength(2)
+  })
+
   test('reads one setting by dotted key and rejects unknown keys', async () => {
     responses.set('get_settings', { settings: { appearance: { theme: 'auto' } } })
     const theme = await cli(['settings', 'get', 'appearance.theme'])

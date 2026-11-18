@@ -262,6 +262,9 @@ async function handleMockCommand(
   const fixed = FIXED_MOCK_RESULTS[command]
   if (fixed) return fixed
 
+  if (command === 'list_settings') {
+    return { settings: [{ key: 'appearance.theme', value: 'dark', type: 'choice' }] }
+  }
   if (command === 'get_settings' || command === 'update_settings') {
     const settings = (rawArgs as { settings?: unknown } | undefined)?.settings
     return { settings: settings ?? { appearance: { theme: 'dark' } } }

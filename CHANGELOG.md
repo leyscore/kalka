@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- Agents manage Kalka's settings while they design: `kalka settings list` and the `list_settings` MCP tool show every setting they can change with its accepted values, and `kalka settings set` and `update_settings` now also switch Follow agents, the canvas background, the Code panel's first view, the AI chat's model profile (among those already set up) and its thinking level, applied at once in the open app. API keys, connections, and tool access stay out of reach.
+
 ### Changed
 
 - The agent in Kalka's own panel follows an explicit design process: it reads the document, names its references, writes a brief, sets up variables, shared classes and components, lays out the page skeleton, builds and checks one section at a time, then adapts the phone layout. Agents over MCP read the same process with `get_design_guide`, and the chat now has the variable, page and component tools it needs on by default.

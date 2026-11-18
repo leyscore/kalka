@@ -117,7 +117,16 @@ export function createToolDescriptors(filesystemEnabled: boolean): ToolDescripto
     {
       name: 'get_settings',
       description:
-        'Read editor settings: appearance (theme, language, animations), snapping, canvas rendering, recovery, AI chat, and design check preferences.',
+        'Read app settings: appearance (theme, language, animations), snapping, canvas rendering, recovery, AI chat (follow agents, reasoning display, step limit), AI model and thinking level, Code panel, and design check preferences.',
+      effect: 'read',
+      availability: 'default',
+      capabilities: ['settings:read'],
+      enabled: true
+    },
+    {
+      name: 'list_settings',
+      description:
+        'List every setting update_settings accepts, by dotted key, with its current value and accepted values (model profiles by ID with their names).',
       effect: 'read',
       availability: 'default',
       capabilities: ['settings:read'],
@@ -126,7 +135,7 @@ export function createToolDescriptors(filesystemEnabled: boolean): ToolDescripto
     {
       name: 'update_settings',
       description:
-        'Change editor settings with a partial object shaped like get_settings output. Returns the applied patch. Credentials, models, MCP connections, storage, and tool access are not exposed.',
+        'Change app settings live with a partial object shaped like get_settings output. Returns the applied patch. ai.designModel picks one of the configured model profiles; credentials, model connections, MCP connections, storage, and tool access are not exposed.',
       effect: 'write',
       availability: 'default',
       capabilities: ['settings:write'],

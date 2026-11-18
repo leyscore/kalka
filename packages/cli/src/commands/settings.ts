@@ -2,9 +2,20 @@ import { defineCommand } from 'citty'
 import { flattenObject } from 'es-toolkit'
 
 import { rpc } from '#cli/app/client'
-import { bold, kv, ok, printError } from '#cli/format'
+import { bold, dim, kv, ok, printError } from '#cli/format'
 
 type Settings = Record<string, unknown>
+
+/** One settable key, as the app's `list_settings` describes it. */
+interface SettingEntry {
+  key: string
+  value: unknown
+  type: string
+  values?: unknown[]
+  labels?: Record<string, string>
+  min?: number
+  max?: number
+}
 
 const json = { type: 'boolean', description: 'Output as JSON' } as const
 
@@ -65,6 +76,37 @@ const get = defineCommand({
   }
 })
 
+function describeValues(entry: SettingEntry): string {
+  if (entry.type === 'integer') return `integer ${entry.min ?? ''}–${entry.max ?? ''}`
+  const values = (entry.values ?? []).map((value) => {
+    const label = typeof value === 'string' ? entry.labels?.[value] : undefined
+    return label ? `${String(value)} (${label})` : String(value)
+  })
+  if (values.length === 0) return 'none available'
+  return entry.type === 'choices' ? `list of: ${values.join(', ')}` : values.join(' | ')
+}
+
+const list = defineCommand({
+  meta: { description: 'List every setting you can change, with its value and accepted values' },
+  args: { json },
+  async run({ args }) {
+    try {
+      const { settings } = await rpc<{ settings: SettingEntry[] }>('list_settings')
+      if (args.json) {
+        console.log(JSON.stringify(settings, null, 2))
+        return
+      }
+      for (const entry of settings) {
+        console.log(kv(entry.key, JSON.stringify(entry.value)))
+        console.log(dim(`    ${describeValues(entry)}`))
+      }
+    } catch (error) {
+      printError(error)
+      process.exit(1)
+    }
+  }
+})
+
 const set = defineCommand({
   meta: { description: 'Change one editor setting by dotted key' },
   args: {
@@ -98,6 +140,6 @@ const set = defineCommand({
 })
 
 export default defineCommand({
-  meta: { description: 'Read and change editor settings in the running app' },
-  subCommands: { get, set }
+  meta: { description: 'Read and change app settings in the running app' },
+  subCommands: { list, get, set }
 })

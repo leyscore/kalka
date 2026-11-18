@@ -475,6 +475,15 @@ export function registerTools(
     }
   })
 
+  register('list_settings', { inputSchema: v.strictObject({}) }, async () => {
+    try {
+      const res = await sendCommand(sendRPC, 'list_settings', {})
+      return ok(res.result ?? {})
+    } catch (e) {
+      return fail(e)
+    }
+  })
+
   register(
     'update_settings',
     {
@@ -482,7 +491,7 @@ export function registerTools(
         settings: v.pipe(
           v.record(v.string(), v.unknown()),
           v.description(
-            'Partial settings, e.g. {"appearance":{"theme":"light"},"editing":{"snapping":{"pixelGrid":false}}}. Unknown keys and invalid values are rejected.'
+            'Partial settings, e.g. {"appearance":{"theme":"light"},"chat":{"followAgents":false},"ai":{"thinkingLevel":"high"}}. Unknown keys and invalid values are rejected.'
           )
         )
       })
