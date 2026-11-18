@@ -1,7 +1,7 @@
 import { useEventListener } from '@vueuse/core'
 
 import { createCanvasJSXPreview } from '@/app/ai/preview/canvas'
-import { markRunPreview, runAgentId, runPageId } from '@/app/ai/tools/run'
+import { LEAD_LANE, markRunPreview, runAgentId, runPageId } from '@/app/ai/tools/run'
 import type { EditorStore } from '@/app/editor/active-store'
 import { publishAgentPreview } from '@/app/presence/preview-stream'
 
@@ -9,9 +9,9 @@ import { publishAgentPreview } from '@/app/presence/preview-stream'
  * The chat run's preview of streamed `render` input: drawn on this canvas, with the run's agent
  * pointing at what it builds, and published so a room shows it to everyone else as it streams.
  */
-export function createRunPreview(store: EditorStore) {
-  const preview = createCanvasJSXPreview(store, () => runPageId(store), {
-    onFocus: (focus) => markRunPreview(store, focus)
+export function createRunPreview(store: EditorStore, lane = LEAD_LANE) {
+  const preview = createCanvasJSXPreview(store, () => runPageId(store, lane), {
+    onFocus: (focus) => markRunPreview(store, focus, lane)
   })
 
   /** Stops each call's abort listener; the request's signal outlives the calls it covers. */
@@ -25,9 +25,9 @@ export function createRunPreview(store: EditorStore) {
   return {
     start(callId: string, signal?: AbortSignal): void {
       preview.start(callId, signal)
-      const agentId = runAgentId(store)
+      const agentId = runAgentId(store, lane)
       if (!agentId) return
-      publishAgentPreview(store, { type: 'start', agentId, callId, pageId: runPageId(store) })
+      publishAgentPreview(store, { type: 'start', agentId, callId, pageId: runPageId(store, lane) })
       // A stopped call ends its preview here, so it ends everywhere else too.
       if (signal) {
         stopAbortListener(callId)
@@ -47,20 +47,20 @@ export function createRunPreview(store: EditorStore) {
     },
     delta(callId: string, text: string): void {
       preview.delta(callId, text)
-      const agentId = runAgentId(store)
+      const agentId = runAgentId(store, lane)
       if (agentId) publishAgentPreview(store, { type: 'delta', agentId, callId, text })
     },
     finish(callId: string): void {
       stopAbortListener(callId)
       preview.finish(callId)
-      const agentId = runAgentId(store)
+      const agentId = runAgentId(store, lane)
       if (agentId) publishAgentPreview(store, { type: 'finish', agentId, callId })
     },
     clear(): void {
       for (const stop of stopAbortListeners.values()) stop()
       stopAbortListeners.clear()
       preview.clear()
-      const agentId = runAgentId(store)
+      const agentId = runAgentId(store, lane)
       if (agentId) publishAgentPreview(store, { type: 'clear', agentId })
     }
   }

@@ -24,7 +24,7 @@ import { chatThinkingLevel } from '@/app/ai/chat/thinking'
 import { createAIModelRuntime, resolveModelConnectionAPIKey } from '@/app/ai/models'
 import type { ThinkingLevel } from '@/app/ai/models/types'
 import { createRunPreview } from '@/app/ai/preview/run'
-import { createAITools, currentRun, endRun, recordStep, startRun } from '@/app/ai/tools'
+import { createAITools, currentRun, endRun, LEAD_LANE, recordStep, startRun } from '@/app/ai/tools'
 import { enabledAIToolDefinitions } from '@/app/ai/tools/catalog'
 import { aiToolOverrides } from '@/app/ai/tools/preferences'
 import { restAgents } from '@/app/automation/agents'
@@ -74,6 +74,10 @@ export type ToolLoopTransportOptions = {
   diagnosticContext?: AIDiagnosticContext
   /** Records each run so a saved trace can rebuild its requests. */
   recorder?: RunRecorder
+  /** The agent's run lane: the main chat's unless a named agent is talking. */
+  lane?: string
+  /** The system prompt; a named agent's adds who it is and who else is at work. */
+  instructions?: string
 }
 
 const ANTHROPIC_CACHE_CONTROL = {
@@ -127,14 +131,16 @@ export function createToolLoopTransport({
   thinkingLevel,
   onError,
   diagnosticContext = {},
-  recorder
+  recorder,
+  lane = LEAD_LANE,
+  instructions = SYSTEM_PROMPT
 }: ToolLoopTransportOptions) {
-  const tools = createAITools(store, diagnosticContext)
+  const tools = createAITools(store, diagnosticContext, lane)
   // The reply in progress; a transport sends one message at a time.
-  let run = currentRun(store)
+  let run = currentRun(store, lane)
   // While JSX streams, the chat's agent moves through the elements as they appear, here and
   // on the screens of everyone else in the room.
-  const preview = createRunPreview(store)
+  const preview = createRunPreview(store, lane)
   const renderTool = tools.render
   renderTool.onInputStart = ({ toolCallId, abortSignal }) => preview.start(toolCallId, abortSignal)
   renderTool.onInputDelta = ({ toolCallId, inputTextDelta }) =>
@@ -147,7 +153,7 @@ export function createToolLoopTransport({
   let recording: RunRecording | undefined
   const agent = new ToolLoopAgent({
     model,
-    instructions: SYSTEM_PROMPT,
+    instructions,
     tools,
     maxOutputTokens,
     // Kept only to fingerprint each step's request for its trace.
@@ -167,7 +173,7 @@ export function createToolLoopTransport({
       recording?.offer(offered)
       return {
         ...options,
-        stopWhen: stepCountIs(currentRun(store).maxSteps),
+        stopWhen: stepCountIs(currentRun(store, lane).maxSteps),
         tools: offered,
         maxOutputTokens,
         ...callSettings(providerID, cacheProviderOptions, thinkingLevel())
@@ -175,13 +181,13 @@ export function createToolLoopTransport({
     },
     onFinish: () => {
       preview.clear()
-      endRun(store, run)
+      endRun(store, run, lane)
       recording?.end('completed')
     },
     onStepFinish: (step) => {
       const { usage } = step
       preview.clear()
-      recordStep(store)
+      recordStep(store, lane)
       recording?.step(step)
       recordModelStepCompleted(
         {
@@ -199,7 +205,7 @@ export function createToolLoopTransport({
 
   function handleError(error: unknown): string {
     preview.clear()
-    endRun(store, run)
+    endRun(store, run, lane)
     recording?.fail(error)
     onError?.(error)
     return 'The provider rejected the request.'
@@ -212,7 +218,7 @@ export function createToolLoopTransport({
     reconnectToStream: (options) => transport.reconnectToStream(options),
     async sendMessages(options) {
       // The run starts as the message is sent, so a Stop before the model is reached ends it.
-      const started = startRun(store, maxAgentSteps.value, effectiveModelID)
+      const started = startRun(store, maxAgentSteps.value, effectiveModelID, lane)
       run = started
       const { sessionId, runId } = diagnosticContext
       const startedRecording =
@@ -227,14 +233,14 @@ export function createToolLoopTransport({
                 thinking: thinkingLevel(),
                 cache: cacheProviderOptions !== undefined
               },
-              instructions: SYSTEM_PROMPT,
+              instructions,
               messages: options.messages
             })
           : undefined
       recording = startedRecording
       // Stopping a reply ends the run without onFinish.
       const stop = () => {
-        endRun(store, started)
+        endRun(store, started, lane)
         startedRecording?.end('stopped')
       }
       const { abortSignal } = options
@@ -257,13 +263,14 @@ export function createToolLoopTransport({
  * A reply that ended unfinished is settled once its last edit landed, so it no longer reads as
  * running and the model learns which of its calls changed the document.
  */
-async function settleEndedReply(
+export async function settleEndedReply(
   chat: Chat<UIMessage>,
   store: EditorStore,
   messageId: string,
-  stopped: boolean
+  stopped: boolean,
+  lane = LEAD_LANE
 ): Promise<void> {
-  const run = currentRun(store)
+  const run = currentRun(store, lane)
   await run.settled()
   updateMessage(chat, messageId, (message) =>
     settleMessage(message, { stopped, changed: (toolCallId) => run.changedCalls.has(toolCallId) })

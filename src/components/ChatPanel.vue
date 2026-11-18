@@ -9,23 +9,35 @@ import { useI18n } from '@kalka/vue'
 import { revokeImagePreviewURL } from '@/app/ai/attachment/image/prepare'
 import { needsReconnect } from '@/app/ai/chat/failure'
 import { chatDocumentId } from '@/app/ai/chat/history/document'
+import { setVisibleMessageText } from '@/app/ai/chat/presentation'
 import { queuedChatPrompt, takeQueuedChatPrompt } from '@/app/ai/chat/queued-prompt'
 import { chatReconnectRoute, useChatReconnect } from '@/app/ai/chat/reconnect'
 import { useChatRunLocation } from '@/app/ai/chat/run-location'
 import type { ChatSubmission } from '@/app/ai/chat/submission/types'
 import { useChatSubmission } from '@/app/ai/chat/submission/use'
+import {
+  findTeamAgent,
+  joinTeam,
+  leadingMention,
+  leaveTeam,
+  MAX_AGENTS,
+  namesLeadAgent,
+  teamOf
+} from '@/app/ai/chat/team'
 import { saveChatTrace } from '@/app/ai/chat/trace/export'
 import { useAIChat } from '@/app/ai/chat/use'
 import { designModelProfile } from '@/app/ai/models'
 import { openAISetup } from '@/app/ai/models/settings/onboarding/dialog'
 import { openModelProfileSettings } from '@/app/ai/models/settings/request'
 import { didHitStepLimit } from '@/app/ai/tools'
+import { runAgentName } from '@/app/ai/tools/run'
 import { getActiveEditorStore } from '@/app/editor/active-store'
 import { flyToNextCreation } from '@/app/presence/fly-to-work'
 import { openSettingsDialog } from '@/app/settings/dialog'
 import { toast, type ToastAction } from '@/app/shell/ui'
 import { activeTab } from '@/app/tabs'
 import ACPPermissionDialog from '@/components/chat/ACPPermissionDialog.vue'
+import AgentTabs, { type AgentTab } from '@/components/chat/AgentTabs.vue'
 import ChatHistory from '@/components/chat/ChatHistory.vue'
 import ChatInput from '@/components/chat/ChatInput.vue'
 import ChatReconnectNotice from '@/components/chat/ChatReconnectNotice.vue'
@@ -84,8 +96,92 @@ const { dragging: draggingImages } = useImageDrop(panel, {
 })
 let viewGeneration = 0
 
+/** The named agents of the open document, and the one whose conversation is on screen. */
+const team = computed(() => {
+  const tab = activeTab.value
+  return tab && tab.kind !== 'home' ? teamOf(tab.store).value : []
+})
+const selectedAgent = shallowRef<string | null>(null)
+const teamAgent = computed(() =>
+  selectedAgent.value === null
+    ? undefined
+    : team.value.find((agent) => agent.name === selectedAgent.value)
+)
+const agentTabs = computed<AgentTab[]>(() => {
+  if (team.value.length === 0) return []
+  const tab = activeTab.value
+  const leadName = tab && tab.kind !== 'home' ? runAgentName(tab.store) : undefined
+  const busy = (value: string) => value === 'submitted' || value === 'streaming'
+  return [
+    { name: null, label: leadName ?? ai.value.mainAgent, working: busy(chat.value?.status ?? '') },
+    ...team.value.map((agent) => ({
+      name: agent.name,
+      label: agent.name,
+      working: busy(agent.chat.status)
+    }))
+  ]
+})
+
+async function closeAgent(name: string) {
+  if (selectedAgent.value === name) selectedAgent.value = null
+  await leaveTeam(getActiveEditorStore(), name)
+}
+
+/**
+ * Sends to a named agent, adding it to the document the first time it is named. Returns false
+ * when it could not be sent, so the composer keeps the draft.
+ */
+async function sendToAgent(name: string, message: ChatSubmission): Promise<boolean> {
+  const store = getActiveEditorStore()
+  const joined = await joinTeam(store, name, {
+    onError: () => toast.error(ai.value.chatRequestFailed)
+  })
+  if ('error' in joined) {
+    toast.error(
+      joined.error === 'full'
+        ? ai.value.agentsFull({ max: MAX_AGENTS, name })
+        : ai.value.agentsNeedDirectModel
+    )
+    return false
+  }
+  const { chat: agentChat, name: agentName } = joined.agent
+  selectedAgent.value = agentName
+  flyToNextCreation(store)
+  const before = new Set(agentChat.messages.map((entry) => entry.id))
+  const sent = agentChat.sendMessage({ text: message.modelText })
+  const shown = agentChat.messages.find((entry) => entry.role === 'user' && !before.has(entry.id))
+  if (shown) setVisibleMessageText(shown.id, message.displayText)
+  for (const image of message.images) revokeImagePreviewURL(image.previewURL)
+  await sent.catch(() => undefined)
+  return true
+}
+
+/**
+ * Starting with @Name talks to that agent, adding it beside the main chat if it is new;
+ * without a name, the message goes to the agent whose tab is open.
+ */
+async function routeMessage(message: ChatSubmission): Promise<'sent' | 'failed' | 'main'> {
+  const name = leadingMention(message.displayText)
+  const store = getActiveEditorStore()
+  let target: string | null = null
+  if (name && !namesLeadAgent(name, runAgentName(store))) {
+    target = findTeamAgent(store, name)?.name ?? name
+  } else if (!name && teamAgent.value) target = teamAgent.value.name
+  if (target === null) {
+    selectedAgent.value = null
+    return 'main'
+  }
+  return (await sendToAgent(target, message)) ? 'sent' : 'failed'
+}
+
 /** Puts an unsent message back only in the conversation it was written in. */
 async function submitMessage(message: ChatSubmission) {
+  const route = await routeMessage(message)
+  if (route === 'sent') return
+  if (route === 'failed') {
+    chatInput.value?.restoreDraft(message)
+    return
+  }
   const generation = viewGeneration
   // What the agent makes for this request comes into view as it lands.
   flyToNextCreation(getActiveEditorStore())
@@ -123,7 +219,9 @@ void history.initialize().then(
   }
 )
 
-const messages = computed(() => chat.value?.messages ?? history.messages.value)
+const messages = computed(
+  () => teamAgent.value?.chat.messages ?? chat.value?.messages ?? history.messages.value
+)
 const historyOptions = computed(() => {
   const current = history.current.value
   const rows = [...history.conversations.value]
@@ -223,9 +321,9 @@ const failureMessage = computed(() => {
   }
 })
 const failureHasSettingsAction = computed(() => chatFailure.value?.reason === 'model-not-found')
-const status = computed(() => chat.value?.status ?? 'ready')
+const status = computed(() => (teamAgent.value?.chat ?? chat.value)?.status ?? 'ready')
 const showContinue = computed(() => {
-  if (history.readOnly.value || agentHistoryReadOnly.value) return false
+  if (teamAgent.value || history.readOnly.value || agentHistoryReadOnly.value) return false
   if (status.value !== 'ready') return false
   if (messages.value.length === 0) return false
   const last = messages.value[messages.value.length - 1]
@@ -268,7 +366,10 @@ watch(
     const generation = ++viewGeneration
     const conversationId = history.current.value?.id
     submission.cancel()
-    if (tabId !== previousTabId) chat.value = null
+    if (tabId !== previousTabId) {
+      chat.value = null
+      selectedAgent.value = null
+    }
     try {
       await history.initialize()
     } catch {
@@ -286,7 +387,8 @@ watch(
 )
 
 function handleStop() {
-  submission.stop()
+  if (teamAgent.value) void teamAgent.value.chat.stop()
+  else submission.stop()
 }
 </script>
 
@@ -314,6 +416,13 @@ function handleStop() {
     </p>
     <ConnectAgent v-if="!isConfigured" />
 
+    <AgentTabs
+      v-if="agentTabs.length > 0"
+      :tabs="agentTabs"
+      :selected="teamAgent ? teamAgent.name : null"
+      @select="selectedAgent = $event"
+      @close="closeAgent"
+    />
     <template v-if="isConfigured || messages.length">
       <p
         v-if="history.current.value?.interrupted && status === 'ready'"
@@ -327,7 +436,7 @@ function handleStop() {
         :status="status"
         :show-continue="showContinue"
         :nodes-live="!history.readOnly.value"
-        :interactive="chat !== null && !submission.busy.value"
+        :interactive="!teamAgent && chat !== null && !submission.busy.value"
         :reconnect="reconnectNeeded"
         :reconnecting="reconnect.busy.value"
         @regenerate="submission.regenerate()"

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- Named agents: start a chat message with `@Name`, such as `@Fern build the pricing section`, to add an agent that works at the same time as the main chat, in a tab of its own, with up to three agents per document. Each works under its name on the canvas, and an agent that tries to edit a frame another one is building is told who holds it and works elsewhere or waits. Named agents use the Design model through a direct connection (an API key or a gateway), and their conversations last until the document is closed.
+
 ### Changed
 
 - The agent in Kalka's own panel follows an explicit design process: it reads the document, names its references, writes a brief, sets up variables, shared classes and components, lays out the page skeleton, builds and checks one section at a time, then adapts the phone layout. Agents over MCP read the same process with `get_design_guide`, and the chat now has the variable, page and component tools it needs on by default.

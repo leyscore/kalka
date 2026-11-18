@@ -372,8 +372,16 @@ export interface AgentHandle {
   remove: () => void
 }
 
-/** Announce an agent working in this document under a callsign unique among visible agents. */
-export function addAgent(store: EditorStore, kind: AgentKind, model?: string): AgentHandle {
+/**
+ * Announce an agent working in this document under a callsign unique among visible agents, or
+ * under `name` when the person named it.
+ */
+export function addAgent(
+  store: EditorStore,
+  kind: AgentKind,
+  model?: string,
+  name?: string
+): AgentHandle {
   const presence = presenceOf(store)
   const taken = new Set([
     ...presence.agents.value.map((agent) => agent.name),
@@ -381,7 +389,7 @@ export function addAgent(store: EditorStore, kind: AgentKind, model?: string): A
   ])
   const agent: AgentPresence = {
     id: randomHex(8),
-    name: pickCallsign(taken),
+    name: name?.trim().slice(0, MAX_NAME_LENGTH) || pickCallsign(taken),
     kind,
     model,
     status: 'idle'

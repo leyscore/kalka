@@ -8,12 +8,13 @@ import { toRaw } from 'vue'
 import { FigmaAPI } from '@kalka/core/figma-api'
 
 import { createToolLoopTransport } from '@/app/ai/chat/transports'
-import { currentRun, endRun, markRunPreview, runPageId, startRun } from '@/app/ai/tools'
+import { currentRun, dropLane, endRun, markRunPreview, runPageId, startRun } from '@/app/ai/tools'
 import { aiToolOverrides } from '@/app/ai/tools/preferences'
 import { markRunWork, runUndoEntries } from '@/app/ai/tools/run'
 import * as figmaFactory from '@/app/automation/bridge/figma-factory'
 import { createEditorStore } from '@/app/editor/session/create'
-import { presenceOf } from '@/app/presence/registry'
+import { markWorking } from '@/app/presence/activity'
+import { addAgent, presenceOf } from '@/app/presence/registry'
 import { appPreferences } from '@/app/settings/preferences/store'
 
 import { expectDefined } from '#tests/helpers/assert'
@@ -26,8 +27,11 @@ type StreamChunk =
     : never
 type Step = { toolName: string; input: unknown } | ((store: EditorStore) => Promise<void>)
 
-/** Run one message whose model calls `steps` in order: a tool call, or a user action first. */
-async function runMessage(store: EditorStore, steps: Step[]) {
+/**
+ * Run one message whose model calls `steps` in order: a tool call, or a user action first. A
+ * `lane` runs it as that named agent instead of the main chat.
+ */
+async function runMessage(store: EditorStore, steps: Step[], lane?: string) {
   let call = 0
   const model = new MockLanguageModelV4({
     doStream: async () => {
@@ -72,7 +76,8 @@ async function runMessage(store: EditorStore, steps: Step[]) {
     model,
     effectiveModelID: 'test',
     maxOutputTokens: 100,
-    thinkingLevel: () => 'default'
+    thinkingLevel: () => 'default',
+    lane
   })
   const stream = await transport.sendMessages({
     trigger: 'submit-message',
@@ -360,5 +365,37 @@ test('a reply stopped before it reaches the model leaves the agent at rest', asy
     await reading
     expect(presenceOf(store).agents.value[0]?.status).toBe('idle')
     expect(currentRun(store).active).toBe(false)
+  })
+})
+
+test('a named agent runs in its own lane, under its own name', async () => {
+  await withStore(async (store) => {
+    await runMessage(store, [rectangle])
+    await runMessage(store, [rectangle], 'Fern')
+
+    const names = presenceOf(store).agents.value.map((agent) => agent.name)
+    expect(names).toHaveLength(2)
+    expect(names).toContain('Fern')
+    expect(currentRun(store, 'Fern')).not.toBe(currentRun(store))
+    expect(currentRun(store, 'Fern').changedCalls.size).toBe(1)
+
+    dropLane(store, 'Fern')
+    expect(presenceOf(store).agents.value.map((agent) => agent.name)).not.toContain('Fern')
+  })
+})
+
+test('an agent leaves a frame another agent is building', async () => {
+  await withStore(async (store, { a }) => {
+    aiToolOverrides.value = { ...aiToolOverrides.value, delete_node: true }
+    const hero = store.graph.createNode('FRAME', a, { name: 'Hero', width: 400, height: 200 })
+    const heading = store.graph.createNode('TEXT', hero.id, { name: 'Heading', text: 'Hi' })
+    const lead = addAgent(store, 'chat', undefined, 'Wren')
+    lead.update({ status: 'editing' })
+    markWorking(store, lead, [hero.id])
+
+    await runMessage(store, [{ toolName: 'delete_node', input: { id: heading.id } }], 'Fern')
+
+    expect(store.graph.getNode(heading.id)).toBeDefined()
+    expect(currentRun(store, 'Fern').changedCalls.size).toBe(0)
   })
 })

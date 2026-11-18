@@ -82,27 +82,46 @@ export class Run {
 
 class RunState {
   run = new Run(DEFAULT_AGENT_STEPS, '')
-  /** The built-in chat as other people see it; one per document, kept between replies. */
+  /** The chat's agent as other people see it; one per lane, kept between replies. */
   agent: AgentHandle | null = null
 }
 
-const runStates = new WeakMap<EditorStore, RunState>()
+/**
+ * The lane of the document's main chat. Named agents the person adds each run in a lane of
+ * their own, named after them, so their runs, steps and edits never mix with the main chat's.
+ */
+export const LEAD_LANE = 'lead'
 
-function getRunState(store?: EditorStore): RunState {
+const runStates = new WeakMap<EditorStore, Map<string, RunState>>()
+
+function getRunState(store?: EditorStore, lane = LEAD_LANE): RunState {
   const target = store ?? getActiveEditorStore()
-  const existing = runStates.get(target)
+  let lanes = runStates.get(target)
+  if (!lanes) {
+    lanes = new Map()
+    runStates.set(target, lanes)
+  }
+  const existing = lanes.get(lane)
   if (existing) return existing
   const created = new RunState()
-  runStates.set(target, created)
+  lanes.set(lane, created)
   return created
 }
 
-/** Begin a run on the page the user is viewing, as a message is sent. */
-export function startRun(store: EditorStore, maxSteps: number, model?: string): Run {
-  const state = getRunState(store)
+/**
+ * Begin a run on the page the user is viewing, as a message is sent. A named lane's agent goes
+ * by the lane's name; the main chat's picks a callsign.
+ */
+export function startRun(
+  store: EditorStore,
+  maxSteps: number,
+  model?: string,
+  lane = LEAD_LANE
+): Run {
+  const state = getRunState(store, lane)
   const pageId = store.state.currentPageId
   state.run = new Run(maxSteps, pageId)
-  state.agent ??= addAgent(store, 'chat', model)
+  state.agent ??= addAgent(store, 'chat', model, lane === LEAD_LANE ? undefined : lane)
   state.agent.update({ status: 'thinking', model, pageId })
   return state.run
 }
@@ -111,8 +130,9 @@ export function startRun(store: EditorStore, maxSteps: number, model?: string): 
  * The reply finished, failed, or was stopped: the agent stays listed but leaves the canvas.
  * Only the first call counts, and a later run is not ended by an earlier one's late call.
  */
-export function endRun(store: EditorStore, run = currentRun(store)): void {
-  const state = getRunState(store)
+export function endRun(store: EditorStore, run?: Run, lane = LEAD_LANE): void {
+  const state = getRunState(store, lane)
+  run ??= state.run
   if (!run.active) return
   run.active = false
   if (state.run !== run) return
@@ -131,13 +151,23 @@ export function endRun(store: EditorStore, run = currentRun(store)): void {
 }
 
 /** The run of the reply in progress, or of the last one. */
-export function currentRun(store: EditorStore): Run {
-  return getRunState(store).run
+export function currentRun(store: EditorStore, lane = LEAD_LANE): Run {
+  return getRunState(store, lane).run
+}
+
+/** A named agent leaves: its reply ends and it leaves the canvas and the presence list. */
+export function dropLane(store: EditorStore, lane: string): void {
+  if (lane === LEAD_LANE) return
+  const state = runStates.get(store)?.get(lane)
+  if (!state) return
+  endRun(store, state.run, lane)
+  state.agent?.remove()
+  runStates.get(store)?.delete(lane)
 }
 
 /** Whether the agent may still show where it works: its run is the latest and still going. */
-function agentAtWork(store: EditorStore): AgentHandle | null {
-  const { agent, run } = getRunState(store)
+function agentAtWork(store: EditorStore, lane: string): AgentHandle | null {
+  const { agent, run } = getRunState(store, lane)
   return run.active ? agent : null
 }
 
@@ -145,19 +175,19 @@ function agentAtWork(store: EditorStore): AgentHandle | null {
  * Point the run's agent at JSX it is still streaming: the element that appeared last, with
  * outlines of what it builds, until the tool runs and `markRunWork` names the real layers.
  */
-export function markRunPreview(store: EditorStore, focus: PreviewFocus): void {
-  agentAtWork(store)?.update({
+export function markRunPreview(store: EditorStore, focus: PreviewFocus, lane = LEAD_LANE): void {
+  agentAtWork(store, lane)?.update({
     status: 'editing',
-    cursor: { ...focus.cursor, pageId: runPageId(store) },
+    cursor: { ...focus.cursor, pageId: runPageId(store, lane) },
     selection: undefined,
     outline: focus.outline
   })
 }
 
 /** Point the run's agent at nodes a tool just created or changed. */
-export function markRunWork(store: EditorStore, nodeIds: string[]): void {
-  const agent = agentAtWork(store)
-  const placement = agentPlacement(store, nodeIds, runPageId(store))
+export function markRunWork(store: EditorStore, nodeIds: string[], lane = LEAD_LANE): void {
+  const agent = agentAtWork(store, lane)
+  const placement = agentPlacement(store, nodeIds, runPageId(store, lane))
   if (!agent || !placement) return
   agent.update({ status: 'editing', ...placement })
 }
@@ -166,7 +196,7 @@ export function markRunWork(store: EditorStore, nodeIds: string[]): void {
  * Point the run's agent at the layers a call changed, on whichever page they are, for calls such
  * as `eval` whose result names none. Only the outermost of them are outlined.
  */
-export function markRunChange(store: EditorStore, change: DocumentChange): void {
+export function markRunChange(store: EditorStore, change: DocumentChange, lane = LEAD_LANE): void {
   const { graph } = store
   const layers = new Set(
     [...change.created.map((node) => node.id), ...change.updated.map((update) => update.id)].filter(
@@ -178,17 +208,30 @@ export function markRunChange(store: EditorStore, change: DocumentChange): void 
     const parentId = graph.getNode(id)?.parentId
     return !parentId || !layers.has(parentId)
   })
-  markRunWork(store, outermost)
+  markRunWork(store, outermost, lane)
 }
 
 /** Replay a tool's edit on the canvas, with the run's agent moving through what it touched. */
-export function showRunEdit(store: EditorStore, edit: AgentEdit, touched: readonly string[]): void {
-  showAgentEdit(store, edit, { agent: getRunState(store).agent, touched, pageId: runPageId(store) })
+export function showRunEdit(
+  store: EditorStore,
+  edit: AgentEdit,
+  touched: readonly string[],
+  lane = LEAD_LANE
+): void {
+  showAgentEdit(store, edit, {
+    agent: getRunState(store, lane).agent,
+    touched,
+    pageId: runPageId(store, lane)
+  })
 }
 
 /** The run's agent read these layers. */
-export function recordRunReads(store: EditorStore, nodeIds: readonly string[]): void {
-  const agent = agentAtWork(store)
+export function recordRunReads(
+  store: EditorStore,
+  nodeIds: readonly string[],
+  lane = LEAD_LANE
+): void {
+  const agent = agentAtWork(store, lane)
   if (!agent) return
   recordLayerActivity(store, agent, 'read', nodeIds)
   keepWorking(store, agent)
@@ -198,9 +241,10 @@ export function recordRunReads(store: EditorStore, nodeIds: readonly string[]): 
 export function recordRunWrites(
   store: EditorStore,
   written: readonly string[],
-  worked: readonly string[]
+  worked: readonly string[],
+  lane = LEAD_LANE
 ): void {
-  const agent = agentAtWork(store)
+  const agent = agentAtWork(store, lane)
   if (!agent) return
   recordLayerActivity(store, agent, 'write', written)
   markWorking(store, agent, worked)
@@ -208,54 +252,63 @@ export function recordRunWrites(
 }
 
 /** The name the run's agent goes by, which its comment replies carry. */
-export function runAgentName(store: EditorStore): string | undefined {
-  return getRunState(store).agent?.name
+export function runAgentName(store: EditorStore, lane = LEAD_LANE): string | undefined {
+  return getRunState(store, lane).agent?.name
 }
 
 /** The run's agent says what it is doing now, shown by its name; an empty text clears it. */
-export function setRunStatus(store: EditorStore, text: string): void {
-  getRunState(store).agent?.update({ note: text || undefined })
+export function setRunStatus(store: EditorStore, text: string, lane = LEAD_LANE): void {
+  getRunState(store, lane).agent?.update({ note: text || undefined })
 }
 
 /** The run's agent is done with `nodeIds`, or all it builds; returns what it let go of. */
-export function finishRunWork(store: EditorStore, nodeIds: readonly string[] | null): string[] {
-  const agent = getRunState(store).agent
+export function finishRunWork(
+  store: EditorStore,
+  nodeIds: readonly string[] | null,
+  lane = LEAD_LANE
+): string[] {
+  const agent = getRunState(store, lane).agent
   return agent ? finishWorking(store, agent, nodeIds) : []
 }
 
-export function recordStep(store?: EditorStore): void {
-  getRunState(store).run.currentSteps++
+export function recordStep(store?: EditorStore, lane = LEAD_LANE): void {
+  getRunState(store, lane).run.currentSteps++
 }
 
-export function stepBudget(store: EditorStore): StepBudget {
-  const { currentSteps, maxSteps } = getRunState(store).run
+export function stepBudget(store: EditorStore, lane = LEAD_LANE): StepBudget {
+  const { currentSteps, maxSteps } = getRunState(store, lane).run
   return { current: currentSteps, max: maxSteps }
 }
 
-export function didHitStepLimit(store?: EditorStore): boolean {
-  return getRunState(store).run.hitLimit()
+export function didHitStepLimit(store?: EditorStore, lane = LEAD_LANE): boolean {
+  return getRunState(store, lane).run.hitLimit()
 }
 
 /** The run's page, or the viewed page when no run has started or its page was deleted. */
-export function runPageId(store: EditorStore): string {
-  const { pageId } = getRunState(store).run
+export function runPageId(store: EditorStore, lane = LEAD_LANE): string {
+  const { pageId } = getRunState(store, lane).run
   return pageId && store.graph.getNode(pageId)?.type === 'CANVAS'
     ? pageId
     : store.state.currentPageId
 }
 
 /** Move the run to `pageId`, and the user's view with it, as the agent's `switch_page` does. */
-export async function moveRunToPage(store: EditorStore, run: Run, pageId: string): Promise<void> {
+export async function moveRunToPage(
+  store: EditorStore,
+  run: Run,
+  pageId: string,
+  lane = LEAD_LANE
+): Promise<void> {
   // A stopped reply's late `switch_page` no longer takes the view anywhere.
   if (!run.active) return
   run.pageId = pageId
-  getRunState(store).agent?.update({ pageId })
+  getRunState(store, lane).agent?.update({ pageId })
   if (store.state.currentPageId !== pageId) await store.switchPage(pageId)
 }
 
 /** The built-in chat's agent in this document, once it has replied. */
-export function runAgentId(store: EditorStore): string | undefined {
-  return getRunState(store).agent?.id
+export function runAgentId(store: EditorStore, lane = LEAD_LANE): string | undefined {
+  return getRunState(store, lane).agent?.id
 }
 
 /** Keep `snapshot` as the run's starting state of its page unless the run already edited it. */
@@ -264,8 +317,12 @@ export function recordRunBaseline(run: Run, snapshot: PageSnapshot): void {
   if (pageId && !run.baselines.has(pageId)) run.baselines.set(pageId, snapshot)
 }
 
-export function runBaseline(store: EditorStore, pageId: string): PageSnapshot | null {
-  return getRunState(store).run.baselines.get(pageId) ?? null
+export function runBaseline(
+  store: EditorStore,
+  pageId: string,
+  lane = LEAD_LANE
+): PageSnapshot | null {
+  return getRunState(store, lane).run.baselines.get(pageId) ?? null
 }
 
 /**
@@ -289,8 +346,8 @@ export function recordRunUndoEntry(
   }
 }
 
-export function runUndoEntries(store: EditorStore): readonly UndoEntry[] {
-  return getRunState(store).run.undoCalls.map(({ entry }) => entry)
+export function runUndoEntries(store: EditorStore, lane = LEAD_LANE): readonly UndoEntry[] {
+  return getRunState(store, lane).run.undoCalls.map(({ entry }) => entry)
 }
 
 /**
