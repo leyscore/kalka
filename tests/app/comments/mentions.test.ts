@@ -38,7 +38,7 @@ test('once it has a callsign, the document agent is offered and asked by it, onc
 test('a reply asked by callsign is answered under that name', () => {
   const store = setup()
   const chat = addAgent(store, 'chat')
-  const anchor = { pageId: store.state.currentPageId, x: 0, y: 0 }
+  const anchor = { pageId: store.state.currentPageId, nodeId: null, x: 0, y: 0 }
   const thread = addCommentThread(store.graph, anchor, { kind: 'person', name: 'Ada' }, 'hi', {
     agent: chat.name
   })
