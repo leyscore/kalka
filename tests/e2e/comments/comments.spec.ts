@@ -151,3 +151,19 @@ test('the panel lists threads open and resolved, and resolving one moves it', as
   await panel.locator('[data-slot="comments-panel-thread"]').click()
   await expect(thread).toContainText('First note')
 })
+
+test('comments work in a document opened after the editor started', async ({ page }) => {
+  // Opening a document replaces the editor's graph; comment mode must follow it.
+  await page.goto('/demo?test')
+  await new CanvasHelper(page).waitForInit()
+  await expect(page.locator('[data-slot="comment-tool"]')).toBeVisible()
+  await page.locator('[data-slot="comment-tool"]').click()
+  await expect(page.locator('[data-slot="comment-placement"]')).toBeVisible()
+  const canvas = await page.getByTestId('canvas-element').boundingBox()
+  if (!canvas) throw new Error('No canvas')
+  await page.mouse.click(canvas.x + canvas.width / 2, canvas.y + canvas.height / 2)
+  const thread = page.locator('[data-slot="comment-thread"]')
+  await thread.getByRole('textbox').fill('Works on the demo')
+  await thread.getByRole('textbox').press('ControlOrMeta+Enter')
+  await expect(pins(page)).toHaveCount(1)
+})
