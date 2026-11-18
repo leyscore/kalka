@@ -29,7 +29,9 @@ export function settleAgentComments(
   const working = documentComments(graph).filter(
     (thread) =>
       !thread.resolved &&
-      thread.agent?.name === BUILT_IN_AGENT_MENTION &&
+      thread.agent !== undefined &&
+      // Asked as @agent or by the callsign the agent answers under, such as @Wren.
+      (thread.agent.name === BUILT_IN_AGENT_MENTION || thread.agent.name === outcome.agentName) &&
       thread.agent.state === 'working'
   )
   for (const thread of working) {

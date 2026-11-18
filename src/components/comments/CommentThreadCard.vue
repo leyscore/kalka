@@ -4,7 +4,11 @@ import { computed, ref } from 'vue'
 import { mentionedAgent, type CommentThread } from '@kalka/scene-graph'
 import { useCommentsMessages } from '@kalka/vue'
 
-import { mentionableAgents, type CommentsController } from '@/app/comments/service'
+import {
+  mentionableAgents,
+  mentionSuggestions,
+  type CommentsController
+} from '@/app/comments/service'
 import { useEditorStore } from '@/app/editor/active-store'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
@@ -25,6 +29,7 @@ const field = ref<HTMLTextAreaElement | null>(null)
 
 const agents = computed(() => mentionableAgents(store))
 const asked = computed(() => mentionedAgent(text.value, agents.value))
+const suggestions = computed(() => mentionSuggestions(store))
 const layerGone = computed(
   () => !!thread?.anchor.nodeId && !store.graph.getNode(thread.anchor.nodeId)
 )
@@ -139,11 +144,11 @@ defineExpose({ focus: () => field.value?.focus() })
     <div class="flex flex-wrap items-center gap-1">
       <template v-if="!asked">
         <AppButton
-          v-for="name in agents"
+          v-for="name in suggestions"
           :key="name"
           size="xs"
           variant="soft"
-          data-slot="comment-mention"
+          :data-mention="name"
           @click="mention(name)"
         >
           {{ messages.ask({ name }) }}

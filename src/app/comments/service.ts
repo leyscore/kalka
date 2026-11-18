@@ -145,10 +145,30 @@ export function leaveComments(store: EditorStore): boolean {
   return true
 }
 
+/** The callsign the document's own agent has taken once it worked here, such as Wren. */
+export function builtInAgentName(store: EditorStore): string | undefined {
+  return presenceOf(store).agents.value.find((agent) => agent.kind === 'chat')?.name
+}
+
+/** Whether a mention asks the document's own agent: @agent, or the callsign it answers under. */
+export function asksBuiltInAgent(store: EditorStore, name: string): boolean {
+  return name === BUILT_IN_AGENT_MENTION || name === builtInAgentName(store)
+}
+
 /** The agents a comment can ask: the document's own, and the agents working in it now. */
 export function mentionableAgents(store: EditorStore): string[] {
   const present = presenceOf(store).agents.value.map((agent) => agent.name)
   return [BUILT_IN_AGENT_MENTION, ...present.filter((name) => name !== BUILT_IN_AGENT_MENTION)]
+}
+
+/**
+ * The mentions a thread offers, one per agent: the document's own under its callsign once it has
+ * one, so it is not offered twice as @agent and @Wren.
+ */
+export function mentionSuggestions(store: EditorStore): string[] {
+  const own = builtInAgentName(store)
+  if (!own) return mentionableAgents(store)
+  return mentionableAgents(store).filter((name) => name !== BUILT_IN_AGENT_MENTION)
 }
 
 /**
@@ -234,7 +254,7 @@ export function useComments(store: EditorStore) {
     if (thread?.agent?.state === 'waiting') flyToNextCreation(store)
     if (
       thread?.agent?.state === 'waiting' &&
-      thread.agent.name === BUILT_IN_AGENT_MENTION &&
+      asksBuiltInAgent(store, thread.agent.name) &&
       isConfigured.value
     )
       askBuiltInAgent(thread)
