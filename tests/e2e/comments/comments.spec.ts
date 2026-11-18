@@ -142,6 +142,9 @@ test('the panel lists threads open and resolved, and resolving one moves it', as
   const thread = page.locator('[data-slot="comment-thread"]')
   await thread.locator('button').first().click()
   await expect(panel.locator('[data-slot="comments-panel-thread"]')).toHaveCount(1)
+  // A resolved thread closes and its pin leaves the canvas.
+  await expect(thread).toHaveCount(0)
+  await expect(pins(page)).toHaveCount(1)
   await panel.getByRole('tab').nth(1).click()
   await expect(panel.locator('[data-slot="comments-panel-thread"]')).toContainText('Second note')
 

@@ -300,8 +300,12 @@ export function useComments(store: EditorStore) {
       changed()
       dispatch(thread)
     },
+    /** A resolved thread closes, so its pin leaves the canvas at once. */
     resolve(id: string, resolved: boolean) {
       setCommentResolved(store.graph, id, resolved, author().name)
+      if (resolved && state.value.openThreadId === id) {
+        state.value = { ...state.value, openThreadId: null }
+      }
       changed()
     },
     /** Asks the agent again after it stopped. */
