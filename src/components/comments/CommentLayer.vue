@@ -165,7 +165,7 @@ watch(
       v-for="pin in pins"
       :key="pin.thread.id"
       type="button"
-      class="pointer-events-auto absolute flex size-7 -translate-y-full items-center justify-center rounded-full rounded-bl-none border-2 border-white bg-accent text-xs font-semibold text-white shadow-md transition-transform hover:scale-110 data-[state=answered]:bg-success data-[state=failed]:bg-error data-[state=resolved]:bg-muted data-[state=waiting]:animate-pulse data-[state=working]:bg-component"
+      class="group pointer-events-auto absolute flex size-4 -translate-y-full items-center justify-center rounded-full rounded-bl-none border-2 border-white bg-accent text-xs font-semibold text-white shadow-md transition-[width,height] hover:size-7 data-[open]:size-7 data-[state=answered]:bg-success data-[state=failed]:bg-error data-[state=resolved]:bg-muted data-[state=waiting]:animate-pulse data-[state=working]:bg-component"
       data-slot="comment-pin"
       :data-state="stateOf(pin.thread)"
       :data-open="comments.state.value.openThreadId === pin.thread.id || undefined"
@@ -180,8 +180,14 @@ watch(
       @pointermove="pinMove"
       @pointerup="pinUp"
     >
-      <icon-hugeicons-ai-magic v-if="pin.thread.agent" class="size-3.5" />
-      <span v-else>{{ initial(pin.thread) }}</span>
+      <!-- A pin at rest is a small dot that leaves the design in view; it grows when pointed at or open. -->
+      <icon-hugeicons-ai-magic
+        v-if="pin.thread.agent"
+        class="hidden size-3.5 group-hover:block group-data-[open]:block"
+      />
+      <span v-else class="hidden group-hover:inline group-data-[open]:inline">
+        {{ initial(pin.thread) }}
+      </span>
     </button>
     <span
       v-if="draftPosition"
