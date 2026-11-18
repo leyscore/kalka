@@ -171,8 +171,20 @@ export function agentRequestPrompt(store: EditorStore, thread: CommentThread): s
 }
 
 export function useComments(store: EditorStore) {
-  const state = stateOf(store)
-  watchFrameReviews(store.graph)
+  /**
+   * The state of the document open now. Opening a file replaces the editor's graph, so the state
+   * is looked up again rather than kept from when this view was made.
+   */
+  const state = computed<CommentsState>({
+    get: () => {
+      void store.state.sceneVersion
+      watchFrameReviews(store.graph)
+      return stateOf(store).value
+    },
+    set: (next) => {
+      stateOf(store).value = next
+    }
+  })
   const identity = useCollabIdentity()
   const { show } = useLeftPanel()
   const threads = computed(() => {

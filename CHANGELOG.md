@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- The comment tool and C now work in a document opened after the editor started, such as the web demo.
+
 ## 0.2.0-beta.3 — 2026-11-18
 
 ### Added
