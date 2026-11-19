@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- `kalka export` to PNG, JPG or PDF draws a layer whose shadow, outer stroke or overflowing children reach above or left of it in its place, instead of drawing it too high or too far left and cutting that part off.
 - A group fits its layers again after one of them is resized with its handles, rotated, or given a new size or position in the properties panel, as in Figma, in the same undo step; undoing a rotation also lays its auto layout parent out again.
 - Undoing the removal of the variable mode the document was showing shows that mode again, so layers bound to its variables take back its values.
 - Showing, hiding, locking, unlocking and renaming layers, from the layers panel or with their shortcuts, can be undone, as in Figma; hiding or locking several layers at once is one step.
