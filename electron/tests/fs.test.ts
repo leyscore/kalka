@@ -2,6 +2,7 @@ import { afterEach, describe, expect, test } from 'bun:test'
 import { mkdtempSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { setTimeout as sleep } from 'node:timers/promises'
 
 import { watchFileChanges, type FileChange } from '../src/handlers/file-watch'
 
@@ -21,7 +22,7 @@ function folder(): string {
 async function watchFile(file: string): Promise<FileChange[]> {
   const events: FileChange[] = []
   stops.push(watchFileChanges(file, 50, (change) => events.push(change)))
-  await new Promise((resolve) => setTimeout(resolve, 400))
+  await sleep(400)
   events.length = 0
   return events
 }
@@ -30,7 +31,7 @@ async function until(condition: () => boolean, timeoutMs = 3000): Promise<void> 
   const start = Date.now()
   while (!condition()) {
     if (Date.now() - start > timeoutMs) throw new Error('Timed out')
-    await new Promise((resolve) => setTimeout(resolve, 20))
+    await sleep(20)
   }
 }
 
@@ -63,7 +64,7 @@ describe('watching a document file', () => {
     const events = await watchFile(file)
 
     writeFileSync(join(dir, 'notes.txt'), 'other')
-    await new Promise((resolve) => setTimeout(resolve, 300))
+    await sleep(300)
     expect(events).toHaveLength(0)
 
     writeFileSync(file, 'two')

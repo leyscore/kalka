@@ -146,6 +146,17 @@ export function createDocumentSourceActions({
     }
   })
 
+  /** The file is behind now: what it lacks is kept for recovery until a save succeeds. */
+  function reportAutosaveFailure(failure: unknown) {
+    toast.error(
+      notificationMessages.get().autosaveFailed({
+        name: state.documentName || 'Untitled',
+        error: failure instanceof Error ? failure.message : String(failure)
+      })
+    )
+    recovery.persistNow().catch((cause) => console.warn('[Recovery] Snapshot failed:', cause))
+  }
+
   const autosave = createAutosave({
     state,
     version: changes.capture,
@@ -156,18 +167,7 @@ export function createDocumentSourceActions({
       const data = await buildDocumentFile()
       if (await writeFile(data, version)) changes.markSaved(revision)
     },
-    onFailure: (error) => {
-      toast.error(
-        notificationMessages.get().autosaveFailed({
-          name: state.documentName || 'Untitled',
-          error: error instanceof Error ? error.message : String(error)
-        })
-      )
-      // The file is behind now: what it lacks is kept for recovery until a save succeeds.
-      void recovery
-        .persistNow()
-        .catch((cause) => console.warn('[Recovery] Snapshot failed:', cause))
-    }
+    onFailure: reportAutosaveFailure
   })
 
   /** The document as it is now is saved: nothing to autosave, and nothing to recover. */
