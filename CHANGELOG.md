@@ -2,10 +2,6 @@
 
 ## Unreleased
 
-### Performance
-
-- Typing and other edits no longer rebuild the app menu and command palette on every change, and the properties panel re-renders only the fields an edit changed instead of every field, and dragging or resizing a layer no longer forces a layout of the whole editor on every frame, so typing, gestures and agents editing other layers stay smoother on slower computers.
-
 ### Fixed
 
 - When several agents edit the same document at once, such as named agents in the chat and agents over MCP, undoing one agent's edit no longer also undoes what another agent changed while it ran.
@@ -42,6 +38,10 @@
 - Duplicating a frame that holds a component and its instances keeps the copied instances on the copied component, and `appendChild` on a layer's own child moves it to the end, as in Figma.
 - Component sets from `.fig` files that save no variant values, such as older community kits, list their variant options in Figma's order, and a variant property's default is the top-left variant's value, as in Figma.
 - Component sets saved to `.fig` open in Figma as component sets with their variant values in order, and variants renamed or given a new property no longer leave Figma reporting the set as broken.
+
+### Performance
+
+- Typing and other edits no longer rebuild the app menu and command palette on every change, and the properties panel re-renders only the fields an edit changed instead of every field, and dragging or resizing a layer no longer forces a layout of the whole editor on every frame, so typing, gestures and agents editing other layers stay smoother on slower computers.
 
 ## 0.2.0-beta.3.2 — 2026-11-19
 
