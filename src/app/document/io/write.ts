@@ -27,6 +27,8 @@ export function createDocumentWriter({
   onWriteSuccess
 }: DocumentWriterOptions) {
   async function finishWrite(version: number): Promise<true> {
+    // The file watch ignores changes just after a write; a slow write ends long after it began.
+    setLastWriteTime(Date.now())
     setSavedVersion(version)
     try {
       await onWriteSuccess?.(version)

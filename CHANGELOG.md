@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- Saving a large document in the desktop app or a browser with file access no longer reloads it as if another app had changed the file, which cleared the undo history and dropped edits made while it was being written.
 - Saving in the desktop app can no longer leave a damaged or empty file: a document, a Kalka folder's files and the app's own data are written beside the file and swapped in whole, so a crash, a full disk or a failed write keeps the file as it was.
 - In the desktop app, a document open from a file reloads when the file is changed by an app that replaces it, such as git or many editors, every time instead of only the first time.
 - A document saved to a file with autosave off is protected from a crash again: its unsaved changes are kept for recovery, where only unsaved new documents used to be.
