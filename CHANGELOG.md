@@ -6,6 +6,7 @@
 
 - Named agents: start a chat message with `@Name`, such as `@Fern build the pricing section`, to add an agent that works at the same time as the main chat, in a tab of its own, with up to three agents per document. Each works under its name on the canvas, and an agent that tries to edit a frame another one is building is told who holds it and works elsewhere or waits. Named agents use the Design model through a direct connection (an API key or a gateway), and their conversations last until the document is closed.
 - Agents manage Kalka's settings while they design: `kalka settings list` and the `list_settings` MCP tool show every setting they can change with its accepted values, and `kalka settings set` and `update_settings` now also switch Follow agents, the canvas background, the Code panel's first view, the AI chat's model profile (among those already set up) and its thinking level, applied at once in the open app. API keys, connections, and tool access stay out of reach.
+- Kalka on the web opens a `.fig` file handed over by the free tools on kalka.design: choose a file there, press Open in Kalka, and it opens in a new tab without being uploaded.
 
 ### Changed
 

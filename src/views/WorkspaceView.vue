@@ -25,6 +25,7 @@ import { offerWelcomeOnFirstRun } from '@/app/onboarding/welcome'
 import { appRuntimeConfig } from '@/app/runtime/config'
 import { createDeferred } from '@/app/runtime/deferred'
 import { useDocumentDrop } from '@/app/shell/document-drop'
+import { useDocumentHandoff } from '@/app/shell/document-handoff'
 import { useKeyboard } from '@/app/shell/keyboard/use'
 import { useEditorMenu } from '@/app/shell/menu/use'
 import { holdBootSplash } from '@/app/shell/support/splash'
@@ -101,6 +102,7 @@ useHead({ title: route.meta.demo ? 'Demo' : undefined })
 useKeyboard()
 useEditorMenu()
 useDocumentDrop()
+useDocumentHandoff()
 
 const collab = useCollab()
 provide(COLLAB_KEY, collab)
