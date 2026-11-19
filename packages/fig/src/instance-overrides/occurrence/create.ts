@@ -16,6 +16,8 @@ export interface RootResolution {
   effective: GUID | undefined
   /** Components superseded on the way to `effective`, innermost decision first. */
   replaced: GUID[]
+  /** The owner whose swap layer chose `effective`, when one did. */
+  swappedBy?: { id: string; rank: number }
   groups: AssignmentGroup[]
   descendant: StructuralLayer[]
 }

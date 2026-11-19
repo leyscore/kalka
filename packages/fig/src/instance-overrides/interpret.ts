@@ -1,3 +1,5 @@
+import { compact } from 'es-toolkit/array'
+
 import type { GUID, NodeChange } from '@kalka/kiwi/fig/codec'
 import { guidToString } from '@kalka/kiwi/fig/guid'
 
@@ -90,6 +92,20 @@ export function createIndexedOccurrenceInterpreter(index: SourceIndex) {
   }
 }
 
+/** The record whose layer or assignment chose a component, and its rank in the read. */
+interface Choice {
+  id: string
+  rank: number
+}
+
+/** Unwinds a read to the instance whose choice closed a component loop, which it leaves out. */
+class LoopCutError extends Error {
+  override name = 'LoopCutError'
+  constructor(readonly ownerId: string) {
+    super(`Component loop entered by ${ownerId}`)
+  }
+}
+
 function interpretRoot(
   index: SourceIndex,
   rootId: string,
@@ -97,7 +113,8 @@ function interpretRoot(
   options: InterpretInstanceOptions
 ): InstanceOccurrence {
   const { sources, children } = index
-  const expanding = new Set<string>()
+  /** The components being expanded, outermost first; one recurs where a swap repeats it. */
+  const entries: Array<{ componentId: string; rank: number; chosenAt: number }> = []
   const claimContext = createClaimContext(index, options)
 
   /** A layer written against a component that an outer decision replaced is stale, not wrong. */
@@ -176,13 +193,19 @@ function interpretRoot(
     ]
     const isKey = (guid: GUID): boolean => keys.some((key) => sameGuid(key, guid))
     const groups: AssignmentGroup[] = [
-      { assignments: (source.componentPropAssignments ?? []) as ComponentPropAssignment[], rank }
+      {
+        assignments: (source.componentPropAssignments ?? []) as ComponentPropAssignment[],
+        rank,
+        ownerId: idOf(raw) ?? ''
+      }
     ]
     const descendant: StructuralLayer[] = []
-    const swapRoot = (swap: GUID): void => {
+    let swappedBy: { id: string; rank: number } | undefined
+    const swapRoot = (swap: GUID, swapOwner: Owner): void => {
       if (!effective) throw new Error('Swap target is not an instance')
       if (!sameGuid(effective, swap)) replaced.push(effective)
       effective = swap
+      swappedBy = { id: swapOwner.id, rank: swapOwner.rank }
       // Later layers may address the root through the replacement's identity.
       for (const key of componentKeys(index, effective)) if (!isKey(key)) keys.push(key)
     }
@@ -192,11 +215,15 @@ function interpretRoot(
         descendant.push(addressesRoot ? { ...layer, path: layer.path.slice(1) } : layer)
         continue
       }
-      if (layer.swap) swapRoot(layer.swap)
+      if (layer.swap) swapRoot(layer.swap, layer.owner)
       if (layer.assignments.length)
-        groups.push({ assignments: layer.assignments, rank: layer.owner.rank })
+        groups.push({
+          assignments: layer.assignments,
+          rank: layer.owner.rank,
+          ownerId: layer.owner.id
+        })
     }
-    return { effective, replaced, groups, descendant }
+    return { effective, replaced, swappedBy, groups, descendant }
   }
 
   /** Bind the record's fields from the enclosing component scope, recording provenance. */
@@ -208,6 +235,8 @@ function interpretRoot(
     claims: BoundPropertyClaim[]
     /** Fields set by an owner's assignment, by that owner's rank. */
     bound: Map<string, number>
+    /** The owner whose assignment chose the component the record expands. */
+    symbolOwner: Choice | undefined
     /** Swap values earlier owners assigned before a later one replaced them. */
     superseded: GUID[]
     /** The content frame an assignment put in this slot frame. */
@@ -217,10 +246,13 @@ function interpretRoot(
     const bound = new Map<string, number>()
     const superseded: GUID[] = []
     let slotContent: string | undefined
+    let symbolOwner: Choice | undefined
     const source = bindSourceProperties(raw, bindings, (claim, binding) => {
       claims.push(claim)
       if (binding.origin === 'assignment' && binding.rank !== undefined)
         bound.set(claim.field, binding.rank)
+      if (claim.field === 'symbolData' && binding.rank !== undefined && binding.ownerId)
+        symbolOwner = { id: binding.ownerId, rank: binding.rank }
       if (claim.field === 'symbolData')
         for (const value of binding.superseded ?? [])
           if (value.guidValue) superseded.push(value.guidValue)
@@ -234,35 +266,66 @@ function interpretRoot(
       options.onMissingSlotContent({ slotId: idOf(raw) ?? '', slotContentId: slotContent })
       slotContent = undefined
     }
-    return { source, claims, bound, superseded, slotContent }
+    return { source, claims, bound, symbolOwner, superseded, slotContent }
+  }
+
+  /**
+   * A component expanding inside its own expansion is a loop only when every choice since it
+   * was entered came from inside that expansion: its definition then holds it at every depth.
+   * A swap or swap property value from further out applies at its own path only, so Figma
+   * expands the component once more with its defaults, and so does this read.
+   */
+  const closesLoop = (componentId: string, chosenAt: number): boolean => {
+    let entry = entries.length - 1
+    while (entry >= 0 && entries[entry].componentId !== componentId) entry--
+    if (entry < 0) return false
+    const { rank } = entries[entry]
+    if (chosenAt < rank) return false
+    return entries.slice(entry + 1).every((later) => later.chosenAt >= rank)
+  }
+
+  /**
+   * Whether the record leaves out the instance it would expand, its component closing a loop.
+   * The instance whose choice entered the loop goes, as Figma's repair deletes it from its
+   * definition; a choice made further in unwinds the read to that instance.
+   */
+  const leavesOut = (id: string, effective: GUID | undefined, choice: Choice): boolean => {
+    if (!effective || !closesLoop(guidToString(effective), choice.rank)) return false
+    if (choice.id !== id) throw new LoopCutError(choice.id)
+    options.onCyclicComponent?.({ instanceId: id })
+    return true
   }
 
   /**
    * Expand one source record. `layers` are structural layers addressed relative to this
    * expansion: an empty path configures this record itself, a longer path a descendant.
+   * Returns null for an instance left out because its component would contain itself.
    */
   const expand = (
     id: string,
     bindings: readonly PropertyBinding[],
     layers: readonly StructuralLayer[],
-    rank: number
-  ): InstanceOccurrence => {
-    if (expanding.has(id)) throw new Error(`Cyclic component expansion at ${id}`)
+    rank: number,
+    /** The rank of the owner whose choice made this record an instance's base. */
+    chosenAt?: number
+  ): InstanceOccurrence | null => {
     const raw = sources.get(id)
     if (!raw) throw new Error(`Missing source node ${id}`)
     const record = bindRecord(raw, bindings)
     const { source } = record
-    expanding.add(id)
+    const entered = raw.type === 'SYMBOL' || chosenAt !== undefined
+    if (entered) entries.push({ componentId: id, rank, chosenAt: chosenAt ?? rank })
     try {
       const owner: Owner = { id, rank, mainComponentId: null, unresolved: [] }
       const own = ownLayers(source, owner)
       const structural = [...own.structural, ...layers].sort((a, b) => b.owner.rank - a.owner.rank)
       const root = resolveRoot(raw, source, record.superseded, structural, rank)
-      let subtree: Subtree
-      if (root.effective) subtree = expandBase(owner, { ...root, effective: root.effective }, rank)
-      else if (record.slotContent)
-        subtree = expandSlotContent(record.slotContent, root.descendant, rank)
-      else subtree = expandChildren(id, source, bindings, root.groups, root.descendant, rank)
+      const choice = root.swappedBy ?? record.symbolOwner ?? { id, rank }
+      if (leavesOut(id, root.effective, choice)) return null
+      const subtree = expandSubtree(id, owner, source, bindings, root, record.slotContent, {
+        rank,
+        chosenAt: choice.rank
+      })
       const occurrence = createOccurrence(index, id, raw, source, root, subtree, record.claims)
       if (record.slotContent) occurrence.slotContentId = record.slotContent
       claimContext.assignedFields.set(occurrence, record.bound)
@@ -279,9 +342,29 @@ function interpretRoot(
           mainComponentId: occurrence.mainComponentId
         })
       return occurrence
+    } catch (error) {
+      if (!(error instanceof LoopCutError) || error.ownerId !== id) throw error
+      options.onCyclicComponent?.({ instanceId: id })
+      return null
     } finally {
-      expanding.delete(id)
+      if (entered) entries.pop()
     }
+  }
+
+  /** What a record expands beneath itself: its component, its slot content, or its children. */
+  const expandSubtree = (
+    id: string,
+    owner: Owner,
+    source: NodeChange,
+    bindings: readonly PropertyBinding[],
+    root: RootResolution,
+    slotContent: string | undefined,
+    { rank, chosenAt }: { rank: number; chosenAt: number }
+  ): Subtree => {
+    if (root.effective)
+      return expandBase(owner, { ...root, effective: root.effective }, rank, chosenAt)
+    if (slotContent) return expandSlotContent(slotContent, root.descendant, rank)
+    return expandChildren(id, source, bindings, root.groups, root.descendant, rank)
   }
 
   /**
@@ -291,7 +374,8 @@ function interpretRoot(
   const expandBase = (
     owner: Owner,
     { effective, replaced, groups, descendant }: RootResolution & { effective: GUID },
-    rank: number
+    rank: number,
+    chosenAt: number
   ): Subtree => {
     const componentId = guidToString(effective)
     if (!sources.has(componentId)) {
@@ -307,12 +391,20 @@ function interpretRoot(
     const rootLayers = groups
       .filter((group) => group.assignments.length)
       .map((group): StructuralLayer => ({
-        owner: { ...owner, rank: group.rank },
+        owner: { ...owner, id: group.ownerId, rank: group.rank },
         declaredPath: [],
         path: [],
         assignments: group.assignments
       }))
-    const base = expand(guidToString(effective), [], [...rootLayers, ...crossing], rank + 1)
+    const base = expand(
+      guidToString(effective),
+      [],
+      [...rootLayers, ...crossing],
+      rank + 1,
+      chosenAt
+    )
+    // An instance of itself stands in for a component it can never show: it reads as empty.
+    if (!base) return { base: null, children: [], dangling: true }
     return { base, children: base.children }
   }
 
@@ -328,7 +420,8 @@ function interpretRoot(
     const scoped =
       source.type === 'SYMBOL'
         ? groups.reduce(
-            (result, group) => instanceBindings(result, group.assignments, group.rank),
+            (result, group) =>
+              instanceBindings(result, group.assignments, group.rank, group.ownerId),
             componentBindings(source)
           )
         : bindings
@@ -338,7 +431,7 @@ function interpretRoot(
       const childId = guidToString(child.guid)
       return expand(childId, scoped, routed.get(childId) ?? [], rank + 1)
     })
-    return { base: null, children: expanded }
+    return { base: null, children: compact(expanded) }
   }
 
   /**
@@ -356,7 +449,7 @@ function interpretRoot(
       const childId = guidToString(child.guid)
       return expand(childId, [], routed.get(childId) ?? [], rank + 1)
     })
-    return { base: null, children: expanded }
+    return { base: null, children: compact(expanded) }
   }
 
   /** Apply this owner's property layers, then its placed geometry and saved caches. */
@@ -380,5 +473,7 @@ function interpretRoot(
     const kind = { INSTANCE: 'an instance', SYMBOL: 'a component', CANVAS: 'a page' }[expectedType]
     throw new Error(`Expected ${kind} source`)
   }
-  return expand(rootId, [], [], 0)
+  const root = expand(rootId, [], [], 0)
+  if (!root) throw new Error(`Cyclic component expansion at ${rootId}`)
+  return root
 }

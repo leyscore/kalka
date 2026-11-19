@@ -39,6 +39,7 @@
 - Video fills from a `.fig` draw their poster frame, as Figma does, on the canvas and in image and SVG exports, instead of nothing; saving keeps the clip and the poster.
 - SVG export draws a background blur as Figma does, blurring what lies behind the layer within its outline, instead of blurring the layer itself.
 - Instance texts in an imported `.fig` that keep their component's text style draw the style's size, font, line height, letter spacing, decoration and case and its variables, as Figma does, instead of values an override saved beside the style.
+- A `.fig` whose components lead back into themselves opens instead of failing: a swap that points a nested instance at its enclosing component expands that component once more with its defaults, as Figma does, and an instance whose component would contain itself is left out.
 
 ## 0.2.0-beta.3.1 — 2026-11-19
 

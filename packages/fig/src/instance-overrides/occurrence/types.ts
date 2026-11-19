@@ -79,4 +79,11 @@ export interface InterpretInstanceOptions {
   onMissingComponent?: (diagnostic: MissingComponentDiagnostic) => void
   /** Keep the component's own slot content where the assigned content frame is gone. */
   onMissingSlotContent?: (diagnostic: MissingSlotContentDiagnostic) => void
+  /** Told of an instance left out because its component would contain itself. */
+  onCyclicComponent?: (diagnostic: CyclicComponentDiagnostic) => void
+}
+
+/** An instance a read left out: expanding it would repeat its own component without end. */
+export interface CyclicComponentDiagnostic {
+  instanceId: string
 }
