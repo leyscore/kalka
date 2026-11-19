@@ -323,6 +323,7 @@ export function createVariableActions(ctx: EditorContext) {
     const modeIndex = collection.modes.indexOf(removedMode)
     const savedMode = structuredClone(removedMode)
     const wasDefault = collection.defaultModeId === modeId
+    const wasActive = ctx.graph.activeMode.get(collectionId) === modeId
     const valueSnapshots = new Map<string, VariableValue>()
     for (const varId of collection.variableIds) {
       const v = ctx.graph.variables.get(varId)
@@ -350,6 +351,8 @@ export function createVariableActions(ctx: EditorContext) {
           if (v) v.valuesByMode[modeId] = structuredClone(value)
         }
         if (wasDefault) ctx.graph.setDefaultMode(collectionId, modeId)
+        // The document shows the mode again if it was showing it.
+        if (wasActive) ctx.graph.setActiveMode(collectionId, modeId)
         refreshVariables(collectionScope(collectionId))
       }
     })
