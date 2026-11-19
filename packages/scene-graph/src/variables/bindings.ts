@@ -70,6 +70,20 @@ export function variableText(value: VariableValue | undefined): string | undefin
   return undefined
 }
 
+/** Text Figma reads as false besides the empty string, ignoring case and surrounding spaces. */
+const FALSE_WORDS = new Set(['false', 'no', 'off'])
+
+/**
+ * Whether Figma reads a value as true, as a visibility binding does: a number other than 0, and
+ * text other than "", "false", "no" or "off".
+ */
+export function variableTruthy(value: VariableValue | undefined): boolean | undefined {
+  if (typeof value === 'boolean') return value
+  if (typeof value === 'number') return value !== 0
+  if (typeof value === 'string') return value !== '' && !FALSE_WORDS.has(value.trim().toLowerCase())
+  return undefined
+}
+
 const INT32_MIN = -2_147_483_648
 const INT32_MAX = 2_147_483_647
 
@@ -114,8 +128,9 @@ export function resolvedValueBindings(
   }
   const text = node.type === 'TEXT' ? variableText(resolve('text')) : undefined
   if (text !== undefined && text !== node.text) updates.text = text
-  const visible = resolve('visible')
-  if (typeof visible === 'boolean' && visible !== node.visible) updates.visible = visible
+  // Figma binds visibility to text too, and shows the layer when the text reads as true.
+  const visible = variableTruthy(resolve('visible'))
+  if (visible !== undefined && visible !== node.visible) updates.visible = visible
   return updates
 }
 

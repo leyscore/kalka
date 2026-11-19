@@ -31,6 +31,7 @@
 - Removing, adding or reordering a fill, stroke or effect in the properties panel keeps each variable binding on its own item instead of moving it to the next one.
 - `save_file`, `new_document` and `close_file` refuse a path that does not end in `.fig` or `.kalka`, and name the `.fig` path to use, instead of writing a `.fig` file under another extension that could not be opened again.
 - A layer pasted from Figma to replace one inside a rotated or flipped frame keeps the angle it was drawn at instead of turning with the frame.
+- A `.fig` whose layer visibility is bound to a boolean or text variable opens instead of failing on Figma's `IS_TRUTHY`, the layer shows or hides as the variable says (text other than empty, "false", "no" or "off" shows it), and saving writes the binding as Figma does.
 
 ## 0.2.0-beta.3.1 — 2026-11-19
 
