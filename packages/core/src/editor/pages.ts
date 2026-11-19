@@ -19,6 +19,7 @@ import { cssFontFamily } from '#core/text/inter'
 import { collectGraphFontRequirements } from '#core/text/requirements'
 import { missingGraphFontScripts } from '#core/text/resolved-requirements'
 
+import { restoreSubtree, snapshotSubtree } from './history/subtree'
 import { createPageViewportStore } from './page-viewports'
 import type { EditorContext } from './types'
 
@@ -273,26 +274,67 @@ export function createPageActions(ctx: EditorContext) {
     pageViewportStore.clearPageViewports()
   }
 
+  /** Puts a page back from its snapshot at its place among the pages. */
+  function restorePage(pageId: string, index: number, subtree: Map<string, SceneNode>) {
+    const page = subtree.get(pageId)
+    if (!page) return
+    restoreSubtree(ctx.graph, page, ctx.graph.rootId, subtree)
+    ctx.graph.reorderChild(pageId, ctx.graph.rootId, index)
+  }
+
+  /** Removes a page, showing the one that takes its place when it was shown. */
+  function removePage(pageId: string) {
+    const index = ctx.graph.getPages().findIndex((page) => page.id === pageId)
+    if (index === -1) return
+    ctx.graph.deleteNode(pageId)
+    pageViewportStore.deletePageViewport(pageId)
+    if (ctx.state.currentPageId === pageId) {
+      const remaining = ctx.graph.getPages()
+      void switchPage(remaining[Math.min(index, remaining.length - 1)].id)
+    }
+  }
+
   function addPage(name?: string) {
     const pages = ctx.graph.getPages()
     const pageName = name ?? `Page ${pages.length + 1}`
+    const previousPageId = ctx.state.currentPageId
     const page = ctx.graph.addPage(pageName)
     setDefaultPageBackground(ctx.graph, page, ctx.state.theme)
+    const index = ctx.graph.getPages().findIndex((candidate) => candidate.id === page.id)
+    const subtree = snapshotSubtree(ctx.graph, page.id)
+    ctx.undo.push({
+      label: 'Add page',
+      forward: () => {
+        restorePage(page.id, index, subtree)
+        void switchPage(page.id)
+      },
+      inverse: () => {
+        if (ctx.state.currentPageId === page.id && ctx.graph.getNode(previousPageId))
+          void switchPage(previousPageId)
+        removePage(page.id)
+      }
+    })
     void switchPage(page.id)
     return page.id
   }
 
+  /** Deletes a page and its layers as one undo step, which brings both back where they were. */
   function deletePage(pageId: string) {
     const pages = ctx.graph.getPages()
     if (pages.length <= 1) return
-    const idx = pages.findIndex((p) => p.id === pageId)
-    ctx.graph.deleteNode(pageId)
-    pageViewportStore.deletePageViewport(pageId)
-    if (ctx.state.currentPageId === pageId) {
-      const newIdx = Math.min(idx, pages.length - 2)
-      const remaining = ctx.graph.getPages()
-      void switchPage(remaining[newIdx].id)
-    }
+    const index = pages.findIndex((page) => page.id === pageId)
+    if (index === -1) return
+    const subtree = snapshotSubtree(ctx.graph, pageId)
+    const wasShown = ctx.state.currentPageId === pageId
+    removePage(pageId)
+    ctx.undo.push({
+      label: 'Delete page',
+      forward: () => removePage(pageId),
+      inverse: () => {
+        restorePage(pageId, index, subtree)
+        if (wasShown) void switchPage(pageId)
+      }
+    })
   }
 
   function movePage(pageId: string, index: number) {
@@ -304,10 +346,22 @@ export function createPageActions(ctx: EditorContext) {
     if (nextIndex === currentIndex) return
 
     ctx.graph.insertChildAt(pageId, ctx.graph.rootId, nextIndex)
+    ctx.undo.push({
+      label: 'Move page',
+      forward: () => ctx.graph.insertChildAt(pageId, ctx.graph.rootId, nextIndex),
+      inverse: () => ctx.graph.insertChildAt(pageId, ctx.graph.rootId, currentIndex)
+    })
   }
 
   function renamePage(pageId: string, name: string) {
+    const previous = ctx.graph.getNode(pageId)?.name
+    if (previous === undefined || previous === name) return
     ctx.graph.updateNode(pageId, { name })
+    ctx.undo.push({
+      label: 'Rename page',
+      forward: () => ctx.graph.updateNode(pageId, { name }),
+      inverse: () => ctx.graph.updateNode(pageId, { name: previous })
+    })
   }
 
   function setPageColor(color: Color) {
