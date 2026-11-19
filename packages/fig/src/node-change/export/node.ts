@@ -8,12 +8,14 @@ import type {
   ComponentPropertyReferenceField,
   LayoutGrid,
   SceneGraph,
-  SceneNode
+  SceneNode,
+  VariantPropSpec
 } from '@kalka/scene-graph'
 import {
   DEFAULT_STROKE_MITER_LIMIT,
   DEFAULT_STROKE_WEIGHT,
   KALKA_PLUGIN_DATA,
+  variantOptions,
   withPluginData
 } from '@kalka/scene-graph'
 import { layoutGridCount } from '@kalka/scene-graph/layout-guides'
@@ -623,6 +625,44 @@ function mergeParameterBindings(nc: KiwiNodeChange): void {
   }
 }
 
+/**
+ * What makes Figma read a frame as a component set (it reads one without the flag as a plain
+ * frame of loose components), and the order it lists each variant property's values in, which it
+ * takes from here rather than from the properties' preferred values.
+ */
+function applyStateGroup(context: SceneNodeToKiwiContext, set: SceneNode, nc: KiwiNodeChange) {
+  nc.isStateGroup = true
+  const orders = set.componentPropertyDefinitions.flatMap((definition) =>
+    definition.type === 'VARIANT'
+      ? [{ property: definition.name, values: variantOptions(context.graph, set, definition) }]
+      : []
+  )
+  if (shouldSerializeRawBackedField(set, 'stateGroupPropertyValueOrders', orders.length > 0))
+    nc.stateGroupPropertyValueOrders = orders
+}
+
+/**
+ * A variant's values as Figma saves them, by its set's variant properties: the values the
+ * variant has now, which renaming it or its set's properties changes. Specs it was read with
+ * that still say the same are kept in their order, as Figma saved them.
+ */
+function variantSpecs(context: SceneNodeToKiwiContext, node: SceneNode): VariantPropSpec[] {
+  const set = node.parentId ? context.graph.getNode(node.parentId) : undefined
+  if (node.type !== 'COMPONENT' || set?.type !== 'COMPONENT_SET') return node.variantPropSpecs
+  const current = set.componentPropertyDefinitions.flatMap((definition) =>
+    definition.type === 'VARIANT' && Object.hasOwn(node.componentPropertyValues, definition.name)
+      ? [{ propDefId: definition.id, value: node.componentPropertyValues[definition.name] }]
+      : []
+  )
+  const stored = node.variantPropSpecs
+  const unchanged =
+    stored.length === current.length &&
+    current.every((spec) =>
+      stored.some((saved) => saved.propDefId === spec.propDefId && saved.value === spec.value)
+    )
+  return unchanged ? stored : current
+}
+
 function applyParameterReferences(nc: KiwiNodeChange, refs: ExportedPropertyReference[]): void {
   if (!refs.length) return
   const existing = nc.parameterConsumptionMap as { entries?: ExportedParameterEntry[] } | undefined
@@ -741,7 +781,7 @@ function applyComponentMetadata(
     nc.componentPropAssignments = componentPropAssignments
   }
 
-  const variantPropSpecs = node.variantPropSpecs.map((spec) => ({
+  const variantPropSpecs = variantSpecs(context, node).map((spec) => ({
     propDefId: getOrCreatePropertyGuid(context, spec.propDefId, localIdCounter),
     value: spec.value
   }))
@@ -1028,8 +1068,10 @@ export function sceneNodeToKiwiWithContext(
   applyNodeVisualProps(context, node, nc)
   applyComponentMetadata(context, node, nc, localIdCounter)
   applyInstancePayload(context, node, nc, localIdCounter)
-  if (node.type === 'COMPONENT_SET')
+  if (node.type === 'COMPONENT_SET') {
     node.pluginData = withPluginData(node.pluginData, KALKA_PLUGIN_DATA.nodeType, node.type)
+    applyStateGroup(context, node, nc)
+  }
   node.pluginData = withPluginData(
     node.pluginData,
     KALKA_PLUGIN_DATA.shader,

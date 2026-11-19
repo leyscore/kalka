@@ -9,6 +9,7 @@
 - A multicolour vector pasted from Figma keeps each region's colour instead of coming in all one colour.
 - Duplicating a frame that holds a component and its instances keeps the copied instances on the copied component, and `appendChild` on a layer's own child moves it to the end, as in Figma.
 - Component sets from `.fig` files that save no variant values, such as older community kits, list their variant options in Figma's order, and a variant property's default is the top-left variant's value, as in Figma.
+- Component sets saved to `.fig` open in Figma as component sets with their variant values in order, and variants renamed or given a new property no longer leave Figma reporting the set as broken.
 
 ## 0.2.0-beta.3.2 — 2026-11-19
 
