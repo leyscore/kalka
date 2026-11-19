@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- Pressing Delete while the selection holds a page or the document itself, as an agent can select them, deletes nothing instead of recording a step whose undo froze the app.
 - Deleting a page can be undone, bringing the page back with its layers where it was, and adding, renaming and reordering pages are undo steps too, as in Figma; a page deleted by mistake used to be lost.
 - Undoing the deletion of several layers puts them back in their stacking order, also when they were selected from bottom to top, as in Figma; replacing a selection by pasting undoes the same way.
 - An autosave that ends after a manual save started later no longer writes the older document back over the file, and no longer marks the document unsaved.

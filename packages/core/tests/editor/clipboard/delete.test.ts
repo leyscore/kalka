@@ -60,4 +60,17 @@ describe('deleteSelected', () => {
     expect(getNodeOrThrow(editor.graph, page).childIds).toEqual([card.id, after.id])
     expect(getNodeOrThrow(editor.graph, card.id).childIds).toEqual([title.id])
   })
+
+  test('deleting the document or a page as a selected layer changes nothing and records no step', () => {
+    const editor = createEditor()
+    const page = editor.state.currentPageId
+    const card = editor.graph.createNode('FRAME', page, { name: 'Card' })
+    for (const id of [editor.graph.rootId, page]) {
+      editor.select([id])
+      editor.deleteSelected()
+      expect(editor.undo.canUndo).toBe(false)
+      expect(editor.graph.getNode(page)?.childIds).toEqual([card.id])
+      expect(editor.graph.getNode(editor.graph.rootId)?.childIds).toEqual([page])
+    }
+  })
 })
