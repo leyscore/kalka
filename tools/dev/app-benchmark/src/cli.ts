@@ -119,7 +119,8 @@ const documents: (OpenDocument & { gestures: readonly GestureName[] })[] = [
   ...Object.values(GENERATED_DOCUMENTS).map((spec) => ({
     name: spec.name,
     path: generated[spec.name],
-    artboards: spec.artboards,
+    // The canvas opens on the first page, which holds its share of the artboards.
+    artboards: Math.ceil(spec.artboards / Math.max(1, 'pages' in spec ? spec.pages : 1)),
     gestures: specGestures(spec)
   }))
 ]

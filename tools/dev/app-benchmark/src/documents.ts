@@ -20,7 +20,7 @@ export interface GeneratedDocumentSpec {
   /** Artboards stack their cards in a vertical auto layout instead of placing them freely. */
   autoLayout?: boolean
   /** Gestures played on it; every gesture for a document with layers when left out. */
-  gestures?: readonly ('pan' | 'zoom' | 'drag' | 'resize' | 'type')[]
+  gestures?: readonly ('pan' | 'zoom' | 'drag' | 'resize' | 'type' | 'reorder')[]
 }
 
 export const GENERATED_DOCUMENTS = {
@@ -36,7 +36,7 @@ export const GENERATED_DOCUMENTS = {
     leaves: 2_000,
     artboards: 20,
     autoLayout: true,
-    gestures: ['drag']
+    gestures: ['reorder']
   }
 } satisfies Record<string, GeneratedDocumentSpec>
 
