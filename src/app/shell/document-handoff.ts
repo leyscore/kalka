@@ -30,8 +30,11 @@ export function handoffFile(event: MessageEvent, opener: unknown): File | null {
 
 /** The window that may hand a file over: the tab that opened this one, else the page embedding it. */
 export function handoffSender(self: Pick<Window, 'opener' | 'parent'>): Window | null {
+  // A tab opened by another site sees its opener as a cross-origin window, which is no
+  // `instanceof Object` in this realm: check its shape instead.
   const opener: unknown = self.opener
-  if (opener instanceof Object && 'postMessage' in opener) return opener as Window
+  if (typeof opener === 'object' && opener !== null && 'postMessage' in opener)
+    return opener as Window
   return self.parent !== self ? self.parent : null
 }
 

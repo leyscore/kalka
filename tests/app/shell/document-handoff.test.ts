@@ -35,6 +35,16 @@ describe('handoffSender', () => {
     expect(handoffSender(asDouble<Window>({ ...self, parent: self }))).toBe(tab)
   })
 
+  test('is the tab that opened this one from another site', () => {
+    // A cross-origin opener is no `instanceof Object` here; a prototype-less object behaves alike.
+    const tab = asDouble<Window>(
+      Object.assign(Object.create(null), { postMessage: () => undefined })
+    )
+    const self = asDouble<Window>({ opener: tab })
+    Object.assign(self, { parent: self })
+    expect(handoffSender(self)).toBe(tab)
+  })
+
   test('is the page embedding this one when no tab opened it', () => {
     const page = asDouble<Window>({ postMessage: () => undefined })
     expect(handoffSender(asDouble<Window>({ opener: null, parent: page }))).toBe(page)
