@@ -48,7 +48,7 @@ export const VARIABLE_BINDING_FIELDS_INVERSE: Record<string, string> = Object.fr
   Object.entries(VARIABLE_BINDING_FIELDS).map(([field, kiwiField]) => [kiwiField, field])
 )
 
-interface VariableConsumptionSource extends Record<string, unknown> {
+export interface VariableConsumptionSource extends Record<string, unknown> {
   variableConsumptionMap?: { entries?: VariableConsumptionEntry[] }
   parameterConsumptionMap?: unknown
 }
