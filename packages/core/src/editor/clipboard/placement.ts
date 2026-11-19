@@ -4,10 +4,11 @@ import type { SceneNode } from '@kalka/scene-graph'
 import {
   getAxisAlignedBoundsInParent,
   getParentWorldMatrix,
-  getWorldMatrix
+  getWorldMatrix,
+  localTransformFromWorld
 } from '@kalka/scene-graph/coordinate'
 import { computeBounds } from '@kalka/scene-graph/geometry'
-import Matrix from '@kalka/scene-graph/matrix'
+import Matrix, { type Mat3 } from '@kalka/scene-graph/matrix'
 import type { Rect, Vector } from '@kalka/scene-graph/primitives'
 
 import { DUPLICATE_FRAME_GAP } from '#core/constants'
@@ -79,6 +80,18 @@ export function createClipboardPlacementActions(ctx: EditorContext) {
       fitsX ? 0 : (parent.width - box.width) / 2 - box.x,
       fitsY ? 0 : (parent.height - box.height) / 2 - box.y
     )
+  }
+
+  /** Turns and flips pasted layers back to how they were drawn when copied, as Figma keeps them. */
+  function keepCanvasTransforms(nodeIds: readonly string[], transforms: readonly Mat3[]) {
+    for (const [index, world] of transforms.entries()) {
+      const id = nodeIds.at(index)
+      const node = id ? ctx.graph.getNode(id) : undefined
+      if (!id || !node) continue
+      const parent = node.parentId ? ctx.graph.getNode(node.parentId) : undefined
+      const local = localTransformFromWorld(node, world, getParentWorldMatrix(parent, ctx.graph))
+      if (local) ctx.graph.updateNode(id, local)
+    }
   }
 
   /**
@@ -187,6 +200,7 @@ export function createClipboardPlacementActions(ctx: EditorContext) {
     centerNodesAt,
     centerNodesAtCanvasPoint,
     duplicatePosition,
+    keepCanvasTransforms,
     placeForeignPaste,
     placePasted,
     placeReturned

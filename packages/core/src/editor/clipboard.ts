@@ -1,6 +1,6 @@
 import { CommittedGraphEventError, cycleSafeParent } from '@kalka/scene-graph'
 import type { SceneNode } from '@kalka/scene-graph'
-import { getAxisAlignedBoundsInParent } from '@kalka/scene-graph/coordinate'
+import { getAxisAlignedBoundsInParent, getNodeLocalMatrix } from '@kalka/scene-graph/coordinate'
 import type { Rect, Vector } from '@kalka/scene-graph/primitives'
 
 import { parseFigmaClipboard, parseKalkaClipboard } from '#core/clipboard'
@@ -173,6 +173,13 @@ export function createClipboardActions(ctx: EditorContext) {
         if (created.length === 0) return null
 
         if (replacementTargets.length > 0) {
+          // The clipboard holds each layer as drawn on its canvas, and the import keeps that as
+          // the layer's transform in the target's frame: turn it back, as Figma does.
+          const copied = created.flatMap((id) => {
+            const node = ctx.graph.getNode(id)
+            return node ? [getNodeLocalMatrix(node)] : []
+          })
+          placementActions.keepCanvasTransforms(created, copied)
           replaceTargetsWithCreated(ctx, created, replacementTargets, prevSelection, operation)
         } else {
           placementActions.placeForeignPaste(created, pasteTarget, cursorPos)

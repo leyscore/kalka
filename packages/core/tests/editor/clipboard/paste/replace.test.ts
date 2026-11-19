@@ -1,8 +1,13 @@
 import { describe, expect, test } from 'bun:test'
 
-import { buildKalkaClipboardHTML } from '@kalka/core/clipboard'
+import { expectDefined } from '#core-tests/helpers/assert'
+
+import { buildFigmaClipboardHTML, buildKalkaClipboardHTML } from '@kalka/core/clipboard'
 import { createEditor } from '@kalka/core/editor'
 import type { Editor } from '@kalka/core/editor'
+import { initCodec } from '@kalka/kiwi/fig/codec'
+import { SceneGraph } from '@kalka/scene-graph'
+import { getWorldMatrix } from '@kalka/scene-graph/coordinate'
 
 function copiedRectangleHTML(name = 'Pasted') {
   const source = createEditor()
@@ -192,11 +197,60 @@ describe('paste to replace', () => {
     }
   })
 
+  test('keeps a replacement pasted from Figma as it was drawn, inside a rotated or flipped frame', async () => {
+    await initCodec()
+    const source = new SceneGraph()
+    const rectangle = source.createNode('RECTANGLE', source.getPages()[0].id, {
+      name: 'Pasted',
+      width: 20,
+      height: 20,
+      rotation: 30
+    })
+    const html = expectDefined(
+      await buildFigmaClipboardHTML([rectangle], source),
+      'Figma clipboard HTML'
+    )
+    const axes = (matrix: ReturnType<typeof getWorldMatrix>) => {
+      const [a, c, , b, d] = matrix
+      return [a, b, c, d].map((value) => Math.round(value * 100) / 100 + 0)
+    }
+    const copiedAxes = axes(getWorldMatrix(rectangle, source))
+    const editor = createEditor()
+    const frame = editor.graph.createNode('FRAME', editor.state.currentPageId, {
+      x: 50,
+      y: 50,
+      width: 300,
+      height: 300
+    })
+    const target = createTarget(editor, frame.id)
+    for (const transform of [{ rotation: 90 }, { rotation: -45 }, { rotation: 0, flipY: true }]) {
+      editor.graph.updateNode(frame.id, transform)
+      editor.select([target.id])
+      await editor.pasteFromHTML(html, undefined, { replaceSelection: true })
+      const created = expectDefined(
+        editor.graph.getNode([...editor.state.selectedIds][0]),
+        'replacement'
+      )
+      // Figma keeps the copied layer's canvas angle (desktop 126).
+      expect(created.parentId).toBe(frame.id)
+      expect(axes(getWorldMatrix(created, editor.graph))).toEqual(copiedAxes)
+      editor.undo.undo()
+    }
+  })
+
   test('an instance replacing a layer inside its own component stays out of it', async () => {
     const editor = createEditor()
     const page = editor.state.currentPageId
-    const card = editor.graph.createNode('COMPONENT', page, { name: 'Card', width: 200, height: 200 })
-    const inner = editor.graph.createNode('FRAME', card.id, { name: 'Inner', width: 100, height: 100 })
+    const card = editor.graph.createNode('COMPONENT', page, {
+      name: 'Card',
+      width: 200,
+      height: 200
+    })
+    const inner = editor.graph.createNode('FRAME', card.id, {
+      name: 'Inner',
+      width: 100,
+      height: 100
+    })
     const target = createTarget(editor, inner.id)
     const instance = editor.graph.createInstance(card.id, page, { x: 400 })
     if (!instance) throw new Error('Expected an instance')
