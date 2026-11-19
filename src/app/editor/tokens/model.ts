@@ -15,7 +15,8 @@ import {
   type SceneGraph,
   type Variable,
   type VariableCollection,
-  type VariableValue
+  type VariableValue,
+  isUnsupportedVariableValue
 } from '@kalka/scene-graph'
 import { colorToHex } from '@kalka/scene-graph/color'
 import { fuzzyFilter } from '@kalka/vue'
@@ -59,6 +60,7 @@ function modeValue(
     const color = typeof resolved === 'object' && 'r' in resolved ? resolved : undefined
     return { modeId, css: target?.name ?? value.aliasId, alias: target?.name, color, expression }
   }
+  if (isUnsupportedVariableValue(value)) return { modeId, css: `${value.function}(…)`, expression }
   if (typeof value === 'object') return { modeId, css: colorToHex(value), color: value, expression }
   if (typeof value === 'number')
     return { modeId, css: tokenNumberToCSS(value, variableUnit(variable)), expression }

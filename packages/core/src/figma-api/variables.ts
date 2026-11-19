@@ -8,6 +8,7 @@ import type {
   VariableType,
   VariableValue as GraphVariableValue
 } from '@kalka/scene-graph'
+import { isUnsupportedVariableValue } from '@kalka/scene-graph'
 
 import { reconcileVariableLayouts } from '#core/layout/variables'
 
@@ -24,6 +25,13 @@ export type FigmaVariableValue =
   | number
   | (Omit<Color, 'a'> & Partial<Pick<Color, 'a'>>)
   | FigmaVariableAlias
+  | FigmaVariableExpression
+
+/** An imported expression Kalka keeps without evaluating, named by its function. */
+export interface FigmaVariableExpression {
+  type: 'EXPRESSION'
+  expressionFunction: string
+}
 
 /** Paints a variable can be bound to: a solid paint, as `setBoundVariableForPaint` takes. */
 export interface FigmaBindablePaint {
@@ -78,6 +86,8 @@ function isScalarOf(
 }
 
 function toFigmaValue(value: GraphVariableValue): FigmaVariableValue {
+  if (isUnsupportedVariableValue(value))
+    return { type: 'EXPRESSION', expressionFunction: value.function }
   if (typeof value === 'object' && 'aliasId' in value) return variableAlias(value.aliasId)
   if (typeof value === 'object') return { ...value }
   return value

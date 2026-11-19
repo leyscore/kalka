@@ -20,6 +20,7 @@ import {
   assignVariableBindingUnits
 } from './variables/bindings'
 import { BOOLEAN_BINDING_FIELDS, STRING_BINDING_FIELDS } from './variables/fields'
+import { isUnsupportedVariableValue } from './variables/unsupported'
 
 export function addVariable(graph: SceneGraph, variable: Variable): void {
   graph.variables.set(variable.id, variable)
@@ -275,6 +276,8 @@ export function resolveVariable(
     value = variable.valuesByMode[fallbackModeId]
   }
   value ??= Object.values(variable.valuesByMode)[0]
+  // A kept expression has no value Kalka can compute: layers keep the values the file saved.
+  if (isUnsupportedVariableValue(value)) return undefined
   if (value && typeof value === 'object' && 'aliasId' in value) {
     const seen = visited ?? new Set<string>()
     seen.add(variableId)

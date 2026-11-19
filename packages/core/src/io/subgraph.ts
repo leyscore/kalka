@@ -1,4 +1,4 @@
-import { SceneGraph } from '@kalka/scene-graph'
+import { SceneGraph, variableValueReferences } from '@kalka/scene-graph'
 
 import type { ExportTarget } from './types'
 
@@ -153,11 +153,9 @@ function collectVariableClosure(source: SceneGraph, variableId: string, out: Set
   const variable = source.variables.get(variableId)
   if (!variable) return
   out.add(variableId)
-  for (const value of Object.values(variable.valuesByMode)) {
-    if (typeof value === 'object' && 'aliasId' in value) {
-      collectVariableClosure(source, value.aliasId, out)
-    }
-  }
+  for (const value of Object.values(variable.valuesByMode))
+    for (const reference of variableValueReferences(value))
+      collectVariableClosure(source, reference, out)
 }
 
 function depthOf(source: SceneGraph, node: ReturnType<SceneGraph['getNode']>): number {

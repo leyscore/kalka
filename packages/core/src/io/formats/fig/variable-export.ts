@@ -1,12 +1,15 @@
 import {
   collectionPluginDataNodeChange,
+  mapUnsupportedExpressionReferences,
   parseGuidOrNull,
+  unsupportedExpressionData,
   variableAlias,
   variableMetadataNodeChange
 } from '@kalka/fig/node-change'
 import type { GUID, NodeChange, VariableDataEntry } from '@kalka/kiwi/fig/codec'
 import { guidToString, stringToGuid } from '@kalka/kiwi/fig/guid'
 import {
+  isUnsupportedVariableValue,
   modesDefaultFirst,
   type SceneGraph,
   type SceneNode,
@@ -137,8 +140,21 @@ function variableValueToKiwi(
   graph: SceneGraph,
   value: VariableValue,
   type: string,
-  ids: Map<string, GUID>
+  ids: Map<string, GUID>,
+  modes?: ReadonlyMap<string, GUID>
 ): VariableDataEntry {
+  if (isUnsupportedVariableValue(value)) {
+    const data = unsupportedExpressionData(value.value)
+    mapUnsupportedExpressionReferences(
+      data,
+      (_, index) => {
+        const id = value.references[index]
+        return id && graph.variables.has(id) ? variableAlias(graph, id, ids) : undefined
+      },
+      (guid, index) => modes?.get(value.modes[index] ?? '') ?? guid
+    )
+    return data
+  }
   if (typeof value === 'object' && 'aliasId' in value)
     return {
       value: { alias: variableAlias(graph, value.aliasId, ids) },
@@ -217,7 +233,7 @@ export function appendVariableNodeChanges(
         variableDataValues: {
           entries: Object.entries(variable.valuesByMode).map(([mode, value]) => ({
             modeID: modes.get(mode) ?? stringToGuid(mode),
-            variableData: variableValueToKiwi(graph, value, variable.type, ids)
+            variableData: variableValueToKiwi(graph, value, variable.type, ids, modes)
           }))
         },
         ...variableMetadataNodeChange(variable, modeKey),

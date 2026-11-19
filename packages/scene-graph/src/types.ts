@@ -702,7 +702,27 @@ export interface ComponentPropertyDefinition {
 }
 
 export type VariableType = 'COLOR' | 'FLOAT' | 'STRING' | 'BOOLEAN'
-export type VariableValue = Color | number | string | boolean | { aliasId: string }
+/**
+ * An imported expression Kalka cannot evaluate, such as Figma's `VAR_MODE_LOOKUP`, kept as the
+ * file wrote it so saving writes it back. `references` holds one entry per alias in `value`, in
+ * the order the format walks them, and `null` where the alias names a variable this document does
+ * not have. `modes` holds the mode id of each mode key in `value`, in the same walk order.
+ */
+export interface VariableUnsupportedExpression {
+  expression: 'UNSUPPORTED'
+  /** The function name the file gives, such as `VAR_MODE_LOOKUP`. */
+  function: string
+  value: Record<string, unknown>
+  references: (string | null)[]
+  modes: string[]
+}
+export type VariableValue =
+  | Color
+  | number
+  | string
+  | boolean
+  | { aliasId: string }
+  | VariableUnsupportedExpression
 export type VariableModeMap = Record<string, string>
 
 /** Property pickers a variable is offered in, as Figma names them. */

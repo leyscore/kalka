@@ -12,6 +12,10 @@ import {
   readVariableToken,
   withoutTokenPluginData
 } from '../node-change/variable/token'
+import {
+  mapUnsupportedExpressionReferences,
+  unsupportedExpressionData
+} from '../node-change/variable/unsupported'
 import { createResourceResolver } from './resource-reference'
 
 function valueOf(
@@ -20,6 +24,7 @@ function valueOf(
 ): VariableValue {
   const { value, dataType, resolvedDataType } = entry.variableData
   if (!value) throw new Error('Missing variable value')
+  if (dataType === 'EXPRESSION') return keptExpression(entry, resolve)
   const type = dataType ?? resolvedDataType
   if (type === 'ALIAS') {
     const aliasId = resolve(value.alias)
@@ -31,6 +36,38 @@ function valueOf(
   if (type === 'STRING' && value.textValue !== undefined) return value.textValue
   if (type === 'FLOAT' && value.floatValue !== undefined) return value.floatValue
   throw new Error(`Unsupported variable value ${type}`)
+}
+
+/**
+ * An expression Kalka does not evaluate, such as Figma's `VAR_MODE_LOOKUP`, kept as the file wrote
+ * it: the variable resolves to nothing, so layers keep the values the file saved, and a save
+ * writes the expression back.
+ */
+function keptExpression(
+  entry: VariableDataValuesEntry,
+  resolve: ReturnType<typeof createResourceResolver>
+): VariableValue {
+  const data = unsupportedExpressionData(entry.variableData)
+  const references: (string | null)[] = []
+  const modes: string[] = []
+  mapUnsupportedExpressionReferences(
+    data,
+    (reference) => {
+      references.push(resolve(reference) ?? null)
+      return undefined
+    },
+    (guid) => {
+      modes.push(guidToString(guid))
+      return guid
+    }
+  )
+  return {
+    expression: 'UNSUPPORTED',
+    function: data.value?.expressionValue?.expressionFunction ?? '',
+    value: { ...data },
+    references,
+    modes
+  }
 }
 
 function modeValues(

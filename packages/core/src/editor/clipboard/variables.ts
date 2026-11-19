@@ -1,4 +1,5 @@
 import type { SceneGraph, SceneNode, Variable, VariableCollection } from '@kalka/scene-graph'
+import { mapVariableValueReferences, variableValueReferences } from '@kalka/scene-graph'
 
 export interface ClipboardVariables {
   activeModes: Array<[string, string]>
@@ -19,9 +20,8 @@ export function captureClipboardVariables(
     variables.set(id, structuredClone(variable))
     const collection = graph.variableCollections.get(variable.collectionId)
     if (collection) collections.set(collection.id, structuredClone(collection))
-    for (const value of Object.values(variable.valuesByMode)) {
-      if (typeof value === 'object' && 'aliasId' in value) visit(value.aliasId)
-    }
+    for (const value of Object.values(variable.valuesByMode))
+      for (const reference of variableValueReferences(value)) visit(reference)
   }
   for (const node of nodes) for (const id of Object.values(node.boundVariables)) visit(id)
   const activeModes: Array<[string, string]> = []
@@ -64,9 +64,11 @@ export function importClipboardVariables(graph: SceneGraph, dependencies: Clipbo
     valuesByMode: Object.fromEntries(
       Object.entries(variable.valuesByMode).map(([mode, value]) => [
         modeIds.get(mode) ?? mode,
-        typeof value === 'object' && 'aliasId' in value
-          ? { aliasId: variableIds.get(value.aliasId) ?? value.aliasId }
-          : structuredClone(value)
+        mapVariableValueReferences(
+          value,
+          (id) => variableIds.get(id) ?? id,
+          (id) => modeIds.get(id) ?? id
+        )
       ])
     )
   }))

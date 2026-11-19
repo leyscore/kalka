@@ -8,6 +8,7 @@ import type {
   VariableCollection,
   VariableCollectionMode
 } from '@kalka/scene-graph'
+import { isUnsupportedVariableValue } from '@kalka/scene-graph'
 
 import { fileSegment, placeTokens, tokenPath, tokenReference, tokenTree } from './paths'
 import { styleTokens, withOriginalName, type TokenReferences } from './styles'
@@ -87,6 +88,10 @@ function variableToken(
     return undefined
   }
   const value = variable.valuesByMode[mode.modeId]
+  if (isUnsupportedVariableValue(value)) {
+    context.issues.push({ kind: 'unsupported-expression', ...where })
+    return undefined
+  }
   const figma: Record<string, unknown> = {}
   let $value: unknown
   if (typeof value === 'object' && 'aliasId' in value) {

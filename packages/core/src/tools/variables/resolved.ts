@@ -9,7 +9,8 @@ import {
   type SharedStyleKind,
   type SharedStyleType,
   type Variable,
-  type VariableValue
+  type VariableValue,
+  isUnsupportedVariableValue
 } from '@kalka/scene-graph'
 import { colorToHex8 } from '@kalka/scene-graph/color'
 
@@ -24,6 +25,7 @@ function round(value: number): number {
 
 export function formatVariableValue(value: VariableValue | undefined): string {
   if (value === undefined) return ''
+  if (isUnsupportedVariableValue(value)) return `${value.function}(…)`
   if (typeof value === 'object') return 'aliasId' in value ? '' : colorToHex8(value)
   return typeof value === 'number' ? String(round(value)) : String(value)
 }

@@ -5,6 +5,7 @@ import type {
   VariableCollectionMode,
   VariableValue
 } from '@kalka/scene-graph'
+import { isUnsupportedVariableValue } from '@kalka/scene-graph'
 import { cssColor } from '@kalka/scene-graph/css-model'
 
 import { collectionVariables, tokenSlug, variableCSSNames, variableNamespace } from './names'
@@ -109,6 +110,8 @@ function modeValue(
     const target = names.get(value.aliasId)
     return target ? `var(--${target})` : { issue: 'aliases a variable that does not exist' }
   }
+  if (isUnsupportedVariableValue(value))
+    return { issue: `uses a ${value.function} expression Kalka cannot compute` }
   if (variable.type === 'COLOR' && typeof value === 'object') return cssColor(value)
   if (variable.type === 'FLOAT' && typeof value === 'number')
     return tokenNumberToCSS(value, variableUnit(variable))
