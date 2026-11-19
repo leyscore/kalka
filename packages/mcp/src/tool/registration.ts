@@ -206,7 +206,7 @@ export function registerTools(
           const delivery: FileDelivery = requestedDelivery === 'url' ? 'url' : 'inline'
           const { target, args: targetArgs } = splitAutomationTarget(callArgs)
           const toolArgs = resolvedRoot ? targetArgs : withoutOutputPath(def.name, targetArgs)
-          if (current.policy.scope === 'selection' && toolArgs.path !== undefined) {
+          if (current.policy.scope === 'selection' && targetArgs.path !== undefined) {
             return fail(new Error(SELECTION_SCOPE_FILE_OUTPUT_ERROR))
           }
           const stopped = await confirmCoreTool(def.name, decisionSession(ctx), target, toolArgs)
