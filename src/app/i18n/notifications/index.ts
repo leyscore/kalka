@@ -20,6 +20,9 @@ export const notificationMessageDefaults = {
   xPaths: 'XPaths',
   pngClipboardUnavailable: 'PNG clipboard export is not available in this browser.',
   openFileFailed: params('Could not open “{name}”: {error}'),
+  folderHoldsOtherFiles: params(
+    '“{name}” already holds other files. Save the document under a new folder name.'
+  ),
   importedDOMCSS: 'Imported DOM/CSS document.',
   importDOMCSSFailed: params('Could not import DOM/CSS: {error}'),
   openDOMCSSFailed: params('Could not open DOM/CSS file: {error}'),

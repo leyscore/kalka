@@ -3,7 +3,11 @@ import { afterEach, describe, expect, test } from 'bun:test'
 import { readKalkaArchive, writeKalkaFolder } from '@kalka/core/io/formats/kalka'
 import { SceneGraph } from '@kalka/scene-graph'
 
-import { readKalkaFolderAsFile, writeKalkaFolderFiles } from '@/app/document/io/kalka-folder'
+import {
+  canHoldKalkaFolder,
+  readKalkaFolderAsFile,
+  writeKalkaFolderFiles
+} from '@/app/document/io/kalka-folder'
 
 import { clearTauriMocks, mockTauriIPC } from '#tests/helpers/tauri/mocks'
 
@@ -81,5 +85,27 @@ describe('Kalka folders on desktop', () => {
     expect(file.name).toBe('doc.kalka')
     const opened = readKalkaArchive(new Uint8Array(await file.arrayBuffer()))
     expect([...opened.getAllNodes()].map((node) => node.name)).toContain('Artboard')
+  })
+})
+
+describe('canHoldKalkaFolder', () => {
+  test('takes a folder that does not exist yet', async () => {
+    await memoryFileSystem({ '/home/Downloads/photo.png': 'x' })
+    expect(await canHoldKalkaFolder('/home/Downloads/Landing')).toBe(true)
+  })
+
+  test('takes a folder that already holds a Kalka document', async () => {
+    await memoryFileSystem({ '/home/Landing/project.json': '{}', '/home/Landing/pages/a.html': '' })
+    expect(await canHoldKalkaFolder('/home/Landing')).toBe(true)
+  })
+
+  test('takes a folder whose only files are hidden', async () => {
+    await memoryFileSystem({ '/home/Landing/.DS_Store': '' })
+    expect(await canHoldKalkaFolder('/home/Landing')).toBe(true)
+  })
+
+  test('refuses a folder holding other files, such as Downloads', async () => {
+    await memoryFileSystem({ '/home/Downloads/photo.png': 'x', '/home/Downloads/app.dmg': 'x' })
+    expect(await canHoldKalkaFolder('/home/Downloads')).toBe(false)
   })
 })
