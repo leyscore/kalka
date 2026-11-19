@@ -131,3 +131,10 @@ export function terminalComponent(index: SourceIndex, id: string): string {
   }
   return current
 }
+
+/** A component and its override key both address the root of an instance's expansion. */
+export function componentKeys(index: SourceIndex, guid: GUID | undefined): GUID[] {
+  if (!guid) return []
+  const key = readOverrideKey(index.sources.get(guidToString(guid))?.overrideKey)
+  return key ? [guid, key] : [guid]
+}
