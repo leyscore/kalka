@@ -51,7 +51,7 @@ export function createToolDescriptors(filesystemEnabled: boolean): ToolDescripto
     {
       name: 'save_file',
       description:
-        'Save the current document to disk. An optional path must stay inside the configured MCP root.',
+        'Save the current document to disk as a .fig file, or a .kalka file for a path ending in .kalka. An optional path must stay inside the configured MCP root.',
       effect: 'write',
       availability: 'default',
       capabilities: ['document:read', 'filesystem:write'],

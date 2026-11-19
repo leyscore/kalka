@@ -391,6 +391,24 @@ describe('close_file and save_file never prompt', () => {
     return tab
   }
 
+  test('a save to a path that is not .fig or .kalka writes nothing and names the .fig', async () => {
+    const tab = dirtyTab()
+    await expect(
+      request('save_file', { document_id: tab.id, path: '/tmp/nested/never-written.pen' })
+    ).rejects.toThrow('"/tmp/nested/never-written.fig"')
+    expect(tab.store.getDocumentFilePath()).toBeNull()
+    expect(tab.store.hasUnsavedChanges()).toBe(true)
+  })
+
+  test('closing with save to an extensionless path writes nothing and keeps the tab', async () => {
+    const tab = dirtyTab()
+    await expect(
+      request('close_file', { document_id: tab.id, unsaved: 'save', path: '/tmp/notes' })
+    ).rejects.toThrow('"/tmp/notes.fig"')
+    expect(getTabById(tab.id)).toBeDefined()
+    expect(tab.store.hasUnsavedChanges()).toBe(true)
+  })
+
   test('closing unsaved changes fails unless the caller chooses', async () => {
     const tab = dirtyTab()
     await expect(request('close_file', { document_id: tab.id })).rejects.toThrow(

@@ -272,8 +272,8 @@ export function registerTools(
     'save_file',
     {
       description: resolvedRoot
-        ? 'Save the current document to disk. If path is provided, it must be inside the configured MCP root.'
-        : 'Save the current document to disk. Uses the existing file path if available, otherwise prompts for a location.',
+        ? 'Save the current document to disk as a .fig file, or a .kalka file for a path ending in .kalka. If path is provided, it must be inside the configured MCP root.'
+        : 'Save the current document to disk as a .fig file, or a .kalka file for a path ending in .kalka. Uses the existing file path if available, otherwise prompts for a location.',
       inputSchema: resolvedRoot
         ? v.strictObject({
             path: v.optional(

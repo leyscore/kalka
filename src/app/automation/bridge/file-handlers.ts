@@ -20,12 +20,29 @@ const closeArgsSchema = v.object({
   unsaved: v.optional(v.picklist(['error', 'save', 'discard']), 'error')
 })
 
+const SAVED_EXTENSIONS = ['.fig', '.kalka']
+
+/**
+ * A save writes a `.fig` file, or a `.kalka` one for a path ending in it. `open_file` reads any
+ * other extension, such as `.pen`, as another format, so a save there is refused before a byte is
+ * written, and the error names the path to retry with.
+ */
+function assertSaveDestination(path: string): void {
+  const lower = path.toLowerCase()
+  if (SAVED_EXTENSIONS.some((extension) => lower.endsWith(extension))) return
+  const figPath = path.replace(/(\.[^./\\]*)?$/, '.fig')
+  throw new Error(
+    `Cannot save to "${path}": only .fig and .kalka files can be saved. Save to "${figPath}" instead.`
+  )
+}
+
 // Automation never opens the Save dialog: nobody may be there to answer it.
 async function saveWithoutPrompt(store: AutomationTarget['store'], path?: string): Promise<void> {
   const name = store.state.documentName
   if (!path && !store.hasWritableSource()) {
     throw new Error(`"${name}" has not been saved to a file yet; pass a path to save it`)
   }
+  if (path) assertSaveDestination(path)
   if (path) await ensureTauriParentDirectory(path)
   // A failed save to a new path leaves the document with the source it had.
   const saved = path ? await store.saveFigFileToPath(path) : await store.saveFigFile()

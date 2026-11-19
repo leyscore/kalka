@@ -28,6 +28,7 @@
 - Saving a `.fig` after editing a component no longer moves the component above the other layers on its page, and loading pages no longer reorders the layers on the pages they read components from.
 - A dashed stroke set in the properties panel keeps its dash pattern when a `.fig` is saved and reopened.
 - Removing, adding or reordering a fill, stroke or effect in the properties panel keeps each variable binding on its own item instead of moving it to the next one.
+- `save_file`, `new_document` and `close_file` refuse a path that does not end in `.fig` or `.kalka`, and name the `.fig` path to use, instead of writing a `.fig` file under another extension that could not be opened again.
 
 ## 0.2.0-beta.3.1 — 2026-11-19
 
