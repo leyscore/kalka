@@ -9,7 +9,7 @@ import type { Editor } from '#core/editor/create'
 import type { FigmaAPI } from '#core/figma-api'
 import { isAtomicTool, type ToolDef } from '#core/tools/schema'
 
-import { diffFields, type FieldChanges } from './diff'
+import { diffFields, OUTSIDE_HISTORY_FIELDS, type FieldChanges } from './diff'
 
 // Capture property changes across pages. Component synchronization remains editor-owned.
 const MAX_TRANSACTION_NODES = 10_000
@@ -24,7 +24,7 @@ function changes<T extends object>(
   for (const [id, previous] of before) {
     const current = after.get(id)
     if (!current) throw new Error('Atomic tools must not remove nodes or variables')
-    const change = diffFields(id, previous, current)
+    const change = diffFields(id, previous, current, OUTSIDE_HISTORY_FIELDS)
     if (change) result.push(change)
   }
   if (before.size !== after.size) throw new Error('Atomic tools must not create nodes or variables')

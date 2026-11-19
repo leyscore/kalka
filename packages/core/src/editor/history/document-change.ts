@@ -15,7 +15,7 @@ import {
 import type { EditorContext } from '#core/editor/types'
 import { computeAllLayouts } from '#core/layout'
 
-import { diffFields, type FieldChanges } from './diff'
+import { diffFields, OUTSIDE_HISTORY_FIELDS, type FieldChanges } from './diff'
 
 type Side = 'before' | 'after'
 
@@ -69,7 +69,13 @@ export interface DocumentChange {
 /** Layers by id: the live graph's, or those captured before the edit. */
 type Lookup = Pick<ReadonlyMap<string, SceneNode>, 'get' | 'size'>
 
-const NESTED_FIELDS: ReadonlySet<keyof SceneNode> = new Set(['childIds', 'parentId', 'source'])
+/** Fields compared on their own, or never: child lists, source metadata, comments and reviews. */
+const NESTED_FIELDS: ReadonlySet<PropertyKey> = new Set<PropertyKey>([
+  'childIds',
+  'parentId',
+  'source',
+  ...OUTSIDE_HISTORY_FIELDS
+])
 const SOURCE_PAYLOAD: ReadonlySet<keyof SourceMetadata> = new Set(['fig'])
 
 function diffLayer(id: string, previous: SceneNode, current: SceneNode): LayerUpdate | null {

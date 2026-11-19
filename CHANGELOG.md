@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- Undoing an agent's edit no longer deletes or brings back comments and frame reviews written while it ran, the agent's own included; comments stay outside the undo history.
 - Recording or restoring a version stops when the document cannot be saved first, instead of recording what was on disk or reloading over the unsaved edits.
 - The Versions panel shows why recording, restoring, fetching or publishing a version failed, such as a push the remote rejected, instead of clearing the message as soon as it appeared.
 - Versions of a `.fig` or `.kalka` file kept in a Git repository record and restore that file only; recording a version used to commit every changed file in its folder, and restoring one put the whole folder back, discarding work in progress beside the document.

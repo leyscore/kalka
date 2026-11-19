@@ -3,6 +3,7 @@ import { describe, expect, test } from 'bun:test'
 import { expectDefined } from '#core-tests/helpers/assert'
 
 import { createEditor } from '@kalka/core/editor'
+import { addCommentThread, documentComments } from '@kalka/scene-graph'
 
 /** An agent's edit recorded as the chat records it: what the page changed while the call ran. */
 function setup() {
@@ -39,5 +40,28 @@ describe('an agent edit with the user editing meanwhile', () => {
     editor.redoAction()
     expect(node(card.id).x).toBe(300)
     expect(node(title.id).text).toBe('Written by the agent')
+  })
+
+  test('undoing the agent step keeps a comment written while the agent worked', () => {
+    const { editor, pageId, title, node } = setup()
+    const finish = editor.captureDocumentChange(pageId)
+    editor.graph.updateNode(title.id, { text: 'Written by the agent' })
+    // Comments live outside the undo history, whoever writes them and whenever.
+    addCommentThread(
+      editor.graph,
+      { pageId, nodeId: null, x: 10, y: 10 },
+      { kind: 'person', name: 'Ada' },
+      'Looks good'
+    )
+    const change = finish()
+    editor.pushUndoStep({
+      label: 'Agent: set_text',
+      forward: () => editor.restoreDocumentChange(change, 'after'),
+      inverse: () => editor.restoreDocumentChange(change, 'before')
+    })
+
+    editor.undoAction()
+    expect(node(title.id).text).toBe('Hello')
+    expect(documentComments(editor.graph)).toHaveLength(1)
   })
 })
