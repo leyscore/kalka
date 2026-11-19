@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Overlap</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+.sky{position:relative;height:260px;background:linear-gradient(180deg,#071B6B,#2F5BEA)}
+.paper{background-color:#E7E7E3;background-image:radial-gradient(circle,rgba(20,20,20,.2) 0 1px,transparent 1.5px);background-size:12px 12px;padding:0 60px 40px}
+</style>
+</helmet>
+<main style="width: 720px; height: 480px; overflow: hidden; font-family: system-ui, sans-serif; color: #141414; background: #F4F5F8;">
+  <section class="sky"><h1 style="margin: 0; padding: 40px 60px; color: #FFFFFF; font-size: 40px;">The sky</h1></section>
+  <section class="paper">
+    <article style="position: relative; margin: -120px auto 0; height: 260px; border-radius: 20px; background: #FFFFFF; padding: 32px; box-sizing: border-box;">
+      <h2 style="margin: 0; font-size: 26px;">A sheet over the sky</h2>
+      <p style="margin: 12px 0 0; font-size: 15px; line-height: 1.5;">Pulled up by a negative margin: the paper's background stays under the sky, the sheet above it.</p>
+    </article>
+  </section>
+</main>
+</x-dc>
+</body>
+</html>

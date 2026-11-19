@@ -51,7 +51,7 @@ test('imported Claude Design boards draw as their pages do', async ({ page, brow
       .map((node) => ({ id: node.id, name: node.name, width: node.width, height: node.height }))
   })
 
-  for (const name of ['Shapes', 'Cards']) {
+  for (const name of ['Shapes', 'Cards', 'Overlap']) {
     const artboard = artboards.find((candidate) => candidate.name === name)
     expect(artboard, name).toBeDefined()
     if (!artboard) continue

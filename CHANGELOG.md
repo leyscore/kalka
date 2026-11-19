@@ -8,7 +8,7 @@
 
 ### Fixed
 
-- Pasted or imported HTML draws as the page does: what its stylesheets say that a layer cannot, such as tiled dot patterns, masks, gradients with many stops and text filled by its background, is kept as CSS; inline SVG icons keep their drawing; an open `<details>` stays open and a closed one's content stays hidden; text for screen readers only is a hidden layer; and words wrap and sit where the page put them.
+- Pasted or imported HTML draws as the page does: what its stylesheets say that a layer cannot, such as tiled dot patterns, masks, gradients with many stops and text filled by its background, is kept as CSS; inline SVG icons keep their drawing; a block pulled over a positioned one by a negative margin keeps its background under it, as CSS paints it; an open `<details>` stays open and a closed one's content stays hidden; text for screen readers only is a hidden layer; and words wrap and sit where the page put them.
 - Pasted or imported HTML no longer moves blocks: one centered with `margin: 0 auto` drifted further off its artboard on every layout, a scaled or translated box was transformed twice, and a child of a box with a border sat a border's width off.
 - In the web app, fonts with an optical size axis, such as Bricolage Grotesque or Fraunces, draw at the optical size of each text, as they do on the web, instead of one size drawn for small text.
 

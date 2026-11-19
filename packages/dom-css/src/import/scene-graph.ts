@@ -215,6 +215,77 @@ function createFrameNode(
   return node
 }
 
+/** CSS that paints an element's background, which `lowerOverlappedBackgrounds` moves. */
+const BACKGROUND_PROPERTY = /^(background|border-radius|border-(top|bottom)-(left|right)-radius)/
+
+function isPositioned(node: DesignNode): boolean {
+  if (node.type === 'text') return false
+  const position = pickStyle(mergedStyle(node), 'position')
+  return position !== undefined && position !== 'static'
+}
+
+/** A positioned box that paints over blocks: one with a negative z-index paints under them. */
+function paintsOverBlocks(node: DesignNode): boolean {
+  if (node.type === 'text' || !isPositioned(node)) return false
+  const zIndex = Number.parseInt(pickStyle(mergedStyle(node), 'z-index') ?? '', 10)
+  return !(zIndex < 0)
+}
+
+function overlaps(a: LayoutBox, b: LayoutBox): boolean {
+  return a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height
+}
+
+/**
+ * CSS paints a block's background under every positioned box beside it, wherever the block
+ * comes, and its positioned content over them. A layer is one depth, so a block whose
+ * background a positioned sibling before it overlaps, such as a sheet pulled up over a hero by
+ * a negative margin, gets its background as a layer of its own under that sibling.
+ */
+function lowerOverlappedBackgrounds(
+  graph: SceneGraph,
+  parent: SceneNode,
+  placed: ReadonlyArray<[DesignNode, SceneNode]>
+): void {
+  for (const [index, [child, layer]] of placed.entries()) {
+    if (child.type !== 'element' || isPositioned(child) || !child.layoutBox) continue
+    const box = child.layoutBox
+    const below = placed
+      .slice(0, index)
+      .find(
+        ([sibling]) =>
+          sibling.type === 'element' &&
+          paintsOverBlocks(sibling) &&
+          !!sibling.layoutBox &&
+          overlaps(sibling.layoutBox, box)
+      )
+    const background = Object.entries(layer.style).filter(([property]) =>
+      BACKGROUND_PROPERTY.test(property)
+    )
+    if (!below || layer.type !== 'FRAME' || (layer.fills.length === 0 && background.length === 0))
+      continue
+    const backdrop = graph.createNode('FRAME', parent.id, {
+      name: `${layer.name} background`,
+      x: layer.x,
+      y: layer.y,
+      width: layer.width,
+      height: layer.height,
+      fills: layer.fills,
+      cornerRadius: layer.cornerRadius,
+      topLeftRadius: layer.topLeftRadius,
+      topRightRadius: layer.topRightRadius,
+      bottomRightRadius: layer.bottomRightRadius,
+      bottomLeftRadius: layer.bottomLeftRadius,
+      independentCorners: layer.independentCorners,
+      style: Object.fromEntries(background)
+    })
+    graph.reorderChild(backdrop.id, parent.id, parent.childIds.indexOf(below[1].id))
+    layer.fills = []
+    layer.style = Object.fromEntries(
+      Object.entries(layer.style).filter(([property]) => !BACKGROUND_PROPERTY.test(property))
+    )
+  }
+}
+
 function createElementNode(
   graph: SceneGraph,
   parentId: string,
@@ -247,9 +318,18 @@ function createElementNode(
   }
 
   const node = createFrameNode(graph, parentId, element, style, placement)
+  const placed: Array<[DesignNode, SceneNode]> = []
   for (const child of paintOrder(element.children)) {
-    createDesignNode(graph, node.id, child, style, placementOf(node, element.layoutBox, child))
+    const layer = createDesignNode(
+      graph,
+      node.id,
+      child,
+      style,
+      placementOf(node, element.layoutBox, child)
+    )
+    if (layer) placed.push([child, layer])
   }
+  if (node.layoutMode === 'NONE') lowerOverlappedBackgrounds(graph, node, placed)
   return node
 }
 
