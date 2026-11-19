@@ -168,8 +168,15 @@ export function createStructureActions(ctx: EditorContext) {
   function renameNode(id: string, name: string) {
     const node = ctx.graph.getNode(id)
     if (!node) return
-    const trimmedName = name.trim()
-    ctx.graph.updateNode(id, { name: trimmedName || defaultNodeName(node.type) })
+    const previous = node.name
+    const next = name.trim() || defaultNodeName(node.type)
+    if (next === previous) return
+    ctx.graph.updateNode(id, { name: next })
+    ctx.undo.push({
+      label: 'Rename',
+      forward: () => ctx.graph.updateNode(id, { name: next }),
+      inverse: () => ctx.graph.updateNode(id, { name: previous })
+    })
   }
 
   return {

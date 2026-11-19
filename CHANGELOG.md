@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- Showing, hiding, locking, unlocking and renaming layers, from the layers panel or with their shortcuts, can be undone, as in Figma; hiding or locking several layers at once is one step.
 - Move to page can be undone, putting the layers back on their page in their place.
 - Wrapping layers in auto layout puts the new frame where the topmost of them was in the stack instead of on top of everything, undo puts the layers back in their order, and redo lays them out in the same order as the first time.
 - Undoing the binding of a colour variable to a fill or stroke gives the layer back its own colour instead of keeping the variable's.

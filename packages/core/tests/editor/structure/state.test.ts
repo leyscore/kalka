@@ -44,3 +44,40 @@ describe('structure state actions', () => {
     expect(getNodeOrThrow(editor.graph, bottom.id).y).toBe(40)
   })
 })
+
+describe('layer state from the layers panel is undoable, as in Figma', () => {
+  test('rename layer undo', () => {
+    const e = createEditor()
+    const n = e.graph.createNode('RECTANGLE', e.state.currentPageId, { name: 'A' })
+    e.renameNode(n.id, 'B')
+    e.undoAction()
+    expect(getNodeOrThrow(e.graph, n.id).name).toBe('A')
+  })
+  test('lock undo', () => {
+    const e = createEditor()
+    const n = e.graph.createNode('RECTANGLE', e.state.currentPageId, { name: 'A' })
+    e.toggleNodeLock(n.id)
+    e.undoAction()
+    expect(getNodeOrThrow(e.graph, n.id).locked).toBe(false)
+  })
+  test('visibility undo', () => {
+    const e = createEditor()
+    const n = e.graph.createNode('RECTANGLE', e.state.currentPageId, { name: 'A' })
+    e.toggleNodeVisibility(n.id)
+    e.undoAction()
+    expect(getNodeOrThrow(e.graph, n.id).visible).toBe(true)
+  })
+
+  test('hiding several selected layers is one undo step', () => {
+    const e = createEditor()
+    const page = e.state.currentPageId
+    const a = e.graph.createNode('RECTANGLE', page, { name: 'A' })
+    const b = e.graph.createNode('RECTANGLE', page, { name: 'B' })
+    e.select([a.id, b.id])
+    e.toggleVisibility()
+    e.undoAction()
+    expect(getNodeOrThrow(e.graph, a.id).visible).toBe(true)
+    expect(getNodeOrThrow(e.graph, b.id).visible).toBe(true)
+    expect(e.undo.canUndo).toBe(false)
+  })
+})
