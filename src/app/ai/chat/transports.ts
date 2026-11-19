@@ -21,7 +21,11 @@ import { resolveLanguageModelID } from '@/app/ai/chat/model'
 import { reasoningCallSettings, type AIProviderOptions } from '@/app/ai/chat/reasoning'
 import SYSTEM_PROMPT from '@/app/ai/chat/system-prompt'
 import { chatThinkingLevel } from '@/app/ai/chat/thinking'
-import { createAIModelRuntime, resolveModelConnectionAPIKey } from '@/app/ai/models'
+import {
+  createAIModelRuntime,
+  type DirectAIModelRuntime,
+  resolveModelConnectionAPIKey
+} from '@/app/ai/models'
 import type { ThinkingLevel } from '@/app/ai/models/types'
 import { createRunPreview } from '@/app/ai/preview/run'
 import { createAITools, currentRun, endRun, LEAD_LANE, recordStep, startRun } from '@/app/ai/tools'
@@ -120,6 +124,22 @@ export async function createACPTransport(
   const { ACPChatTransport } = await import('@/app/ai/acp/transport')
   const { homeDir } = await import('@tauri-apps/api/path')
   return new ACPChatTransport({ agentDef, cwd: await homeDir(), onError })
+}
+
+/** What a tool-loop transport takes from a Design model reached through a direct connection. */
+export function directModelOptions(runtime: DirectAIModelRuntime) {
+  const { connection, profile } = runtime.role
+  return {
+    providerID: connection.providerID,
+    model: runtime.model,
+    effectiveModelID: resolveLanguageModelID({
+      providerID: connection.providerID,
+      modelID: profile.modelID,
+      customModelID: profile.customModelID
+    }),
+    maxOutputTokens: profile.maxOutputTokens,
+    thinkingLevel: () => chatThinkingLevel.value
+  }
 }
 
 export function createToolLoopTransport({
@@ -405,15 +425,7 @@ export function createChatSessionManager({
     }
     return createToolLoopTransport({
       store,
-      providerID: runtime.role.connection.providerID,
-      model: runtime.model,
-      effectiveModelID: resolveLanguageModelID({
-        providerID: runtime.role.connection.providerID,
-        modelID: runtime.role.profile.modelID,
-        customModelID: runtime.role.profile.customModelID
-      }),
-      maxOutputTokens: runtime.role.profile.maxOutputTokens,
-      thinkingLevel: () => chatThinkingLevel.value,
+      ...directModelOptions(runtime),
       onError: captureProviderError,
       diagnosticContext,
       recorder: runRecorder

@@ -70,18 +70,14 @@ export async function joinTeam(
   const team = teamOf(store)
   if (team.value.length + 1 >= MAX_AGENTS) return { error: 'full' }
 
-  const [{ Chat }, { createAIModelRuntime }, { resolveLanguageModelID }, transports, comments] =
+  const [{ Chat }, { createAIModelRuntime }, transports, comments, { default: systemPrompt }] =
     await Promise.all([
       import('@ai-sdk/vue'),
       import('@/app/ai/models'),
-      import('@/app/ai/chat/model'),
       import('@/app/ai/chat/transports'),
-      import('@/app/comments/agent-run')
+      import('@/app/comments/agent-run'),
+      import('@/app/ai/chat/system-prompt')
     ])
-  const [{ chatThinkingLevel }, { default: systemPrompt }] = await Promise.all([
-    import('@/app/ai/chat/thinking'),
-    import('@/app/ai/chat/system-prompt')
-  ])
   const runtime = await createAIModelRuntime('design')
   if (runtime?.kind !== 'direct') return { error: 'unsupported' }
   // Another call may have added the same agent while the model loaded.
@@ -91,15 +87,7 @@ export async function joinTeam(
 
   const transport = transports.createToolLoopTransport({
     store,
-    providerID: runtime.role.connection.providerID,
-    model: runtime.model,
-    effectiveModelID: resolveLanguageModelID({
-      providerID: runtime.role.connection.providerID,
-      modelID: runtime.role.profile.modelID,
-      customModelID: runtime.role.profile.customModelID
-    }),
-    maxOutputTokens: runtime.role.profile.maxOutputTokens,
-    thinkingLevel: () => chatThinkingLevel.value,
+    ...transports.directModelOptions(runtime),
     onError,
     lane: name,
     instructions: teamInstructions(systemPrompt, name)
