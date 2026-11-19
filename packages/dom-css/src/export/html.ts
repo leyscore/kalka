@@ -49,6 +49,19 @@ export function escapeText(value: string): string {
   return value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
 }
 
+/** Attributes that mean something by being there, such as an open `<details>`. */
+const BOOLEAN_ATTRIBUTES = new Set([
+  'open',
+  'hidden',
+  'disabled',
+  'checked',
+  'selected',
+  'readonly',
+  'required',
+  'multiple',
+  'inert'
+])
+
 export function escapeAttr(value: string): string {
   return escapeText(value).replaceAll('"', '&quot;')
 }
@@ -97,8 +110,11 @@ function serializeAttrs(node: DesignElement, options: SerializeHTMLOptions): str
   if (tailwindClass) attrs.class = mergeClassNames(node.attrs.class, tailwindClass)
   if (style && options.style !== 'tailwind') attrs.style = style
   const serialized = Object.entries(attrs)
-    .filter((entry): entry is [string, string] => typeof entry[1] === 'string' && entry[1] !== '')
-    .map(([name, value]) => `${name}="${escapeAttr(value)}"`)
+    .filter(
+      (entry): entry is [string, string] =>
+        typeof entry[1] === 'string' && (entry[1] !== '' || BOOLEAN_ATTRIBUTES.has(entry[0]))
+    )
+    .map(([name, value]) => (value === '' ? name : `${name}="${escapeAttr(value)}"`))
 
   if (serialized.length === 0) return ''
   return ` ${serialized.join(' ')}`

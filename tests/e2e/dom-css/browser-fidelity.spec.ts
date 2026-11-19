@@ -40,4 +40,50 @@ test.describe('HTML import draws as the page does', () => {
     expect(label?.y).toBeGreaterThan(10)
     expect(label?.y).toBeLessThan(20)
   })
+
+  test('keeps an open details element open, and leaves out what a closed one hides', async ({
+    page
+  }) => {
+    const layers = await publicBrowserHTMLLayers(
+      page,
+      `<details open><summary>Shown question</summary><p>Shown answer</p></details>
+       <details><summary>Closed question</summary><p>Hidden answer</p></details>`
+    )
+    const texts = layers.filter((layer) => layer.type === 'TEXT').map((layer) => layer.text)
+    expect(texts).toEqual(
+      expect.arrayContaining(['Shown question', 'Shown answer', 'Closed question'])
+    )
+    expect(texts).not.toContain('Hidden answer')
+  })
+
+  test('keeps text for screen readers only as a hidden layer', async ({ page }) => {
+    const layers = await publicBrowserHTMLLayers(
+      page,
+      `<div style="position:relative;padding:20px"><span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Feature</span>Shown</div>`
+    )
+    expect(layers.find((layer) => layer.text === 'Feature')?.visible).toBe(false)
+  })
+
+  test('measures a scaled container before its scale, which it keeps', async ({ page }) => {
+    const layers = await publicBrowserHTMLLayers(
+      page,
+      `<div style="position:relative;width:400px;height:200px"><div class="zoomed" style="position:absolute;left:0;top:0;width:200px;height:100px;transform:scale(2);transform-origin:0 0"><div class="inner" style="position:absolute;left:10px;top:10px;width:50px;height:20px;background:#000"></div></div></div>`
+    )
+    const zoomed = layers.find((layer) => layer.name === 'zoomed')
+    expect(zoomed).toMatchObject({ width: 200, height: 100 })
+    expect(zoomed?.style.transform).toBe('scale(2)')
+    expect(layers.find((layer) => layer.name === 'inner')).toMatchObject({
+      x: 10,
+      y: 10,
+      width: 50
+    })
+  })
+
+  test('places a child of a bordered box from inside its border, as CSS does', async ({ page }) => {
+    const layers = await publicBrowserHTMLLayers(
+      page,
+      `<div class="card" style="position:relative;width:300px;height:200px;border:4px solid #000"><div class="badge" style="position:absolute;left:20px;top:30px;width:40px;height:20px;background:#f00"></div></div>`
+    )
+    expect(layers.find((layer) => layer.name === 'badge')).toMatchObject({ x: 20, y: 30 })
+  })
 })

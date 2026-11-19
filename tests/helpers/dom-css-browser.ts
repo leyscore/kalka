@@ -239,6 +239,8 @@ export async function publicBrowserHTMLLayers(page: Page, html: string) {
         x: number
         y: number
         height: number
+        width: number
+        visible: boolean
         style: Record<string, string>
         fills: string[]
       }> = []
@@ -252,6 +254,8 @@ export async function publicBrowserHTMLLayers(page: Page, html: string) {
           x: node.x,
           y: node.y,
           height: node.height,
+          width: node.width,
+          visible: node.visible,
           style: { ...node.style },
           fills: node.fills.map((fill: { type: string }) => fill.type)
         })

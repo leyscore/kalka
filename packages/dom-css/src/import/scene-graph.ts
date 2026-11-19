@@ -147,10 +147,10 @@ function createPhrasingNode(
     // Where the browser drew the words: a button taller than its line centers them.
     const drawn = textBounds(element)
     // One line (a badge, a button) keeps the width of its words, so slightly wider font metrics
-    // cannot wrap its last word; a paragraph wraps where the browser wrapped it, with a little room.
+    // cannot wrap its last word; a paragraph wraps where the browser wrapped it.
     const oneLine = (drawn?.height ?? box.height - top - bottom) < lineHeight * 1.5
     const width = Math.max(1, box.width - left - right)
-    label.width = oneLine ? width : Math.ceil(width * 1.01) + 1
+    label.width = width
     label.textAutoResize = oneLine || frame.layoutMode !== 'NONE' ? 'WIDTH_AND_HEIGHT' : 'HEIGHT'
     label.x = left
     label.y = drawn && frame.layoutMode === 'NONE' ? drawn.y - box.y : top
@@ -261,7 +261,28 @@ function createDesignNode(
     return text
   }
 
-  return createElementNode(graph, parentId, node, placement)
+  const layer = createElementNode(graph, parentId, node, placement)
+  if (isVisuallyHidden(node)) layer.visible = false
+  return layer
+}
+
+/**
+ * Text for screen readers only: a box of a pixel or less with its content clipped away. It
+ * stays in the design, hidden, as the page keeps it.
+ */
+function isVisuallyHidden(element: DesignElement): boolean {
+  const box = element.layoutBox
+  if (!box || box.width > 1 || box.height > 1) return false
+  const style = mergedStyle(element)
+  const clip = pickStyle(style, 'clip')?.replace(/\s+/g, '')
+  const clipPath = pickStyle(style, 'clip-path')?.replace(/\s+/g, '')
+  return (
+    clip === 'rect(0000)' ||
+    clip === 'rect(0,0,0,0)' ||
+    clip === 'rect(0px,0px,0px,0px)' ||
+    clipPath === 'inset(50%)' ||
+    pickStyle(style, 'overflow') === 'hidden'
+  )
 }
 
 const sameValue = (a: string, b: string | undefined) =>
