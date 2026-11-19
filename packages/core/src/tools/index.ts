@@ -20,6 +20,7 @@ export type { ToolDef, ToolExecution, ToolCapability, ToolOutput } from './schem
 export {
   isAtomicTool,
   isToolExposed,
+  toolInputFor,
   returnsFile,
   parseToolArgs,
   type ToolInterface,

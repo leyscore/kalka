@@ -5,6 +5,7 @@
  * Adapters consume these contracts rather than maintaining transport-specific schemas.
  */
 
+import { omit } from 'es-toolkit/object'
 import * as v from 'valibot'
 
 import type { SceneNode } from '@kalka/scene-graph'
@@ -40,6 +41,8 @@ interface ToolMetadata {
   execution: ToolExecution
   /** Interface inclusion defaults to true; execution support and user permissions remain separate. */
   exposure: ToolExposure
+  /** Arguments an interface leaves out of the tool's input; inclusion defaults to true. */
+  inputExposure: Readonly<Partial<Record<string, ToolExposure>>>
   capabilities: readonly ToolCapability[]
   availability: 'default' | 'eval'
   /** Absent means `json`. */
@@ -53,12 +56,16 @@ export interface ToolDef extends ToolMetadata {
   execute: (figma: FigmaAPI, args: Record<string, unknown>) => unknown
 }
 
-type ToolDefinitionMetadata = Omit<ToolMetadata, 'exposure' | 'capabilities' | 'availability'> &
+type ToolDefinitionMetadata = Omit<
+  ToolMetadata,
+  'exposure' | 'inputExposure' | 'capabilities' | 'availability'
+> &
   Partial<Pick<ToolMetadata, 'exposure' | 'capabilities' | 'availability'>>
 
 export function defineTool<P extends v.ObjectEntries, R>(
   def: ToolDefinitionMetadata & {
     input: v.StrictObjectSchema<P, undefined>
+    inputExposure?: Partial<Record<keyof P & string, ToolExposure>>
     execution: ToolExecution & (R extends PromiseLike<unknown> ? { kind: 'async' } : unknown)
     execute: (figma: FigmaAPI, args: v.InferOutput<v.StrictObjectSchema<P, undefined>>) => R
   }
@@ -66,6 +73,7 @@ export function defineTool<P extends v.ObjectEntries, R>(
   return {
     ...def,
     exposure: def.exposure ?? {},
+    inputExposure: def.inputExposure ?? {},
     capabilities: def.capabilities ?? [
       toolChangesDocument(def) ? 'document:write' : 'document:read'
     ],
@@ -104,6 +112,17 @@ export function returnsFile(def: Pick<ToolDef, 'output'>): boolean {
 
 export function isToolExposed(def: Pick<ToolDef, 'exposure'>, target: ToolInterface): boolean {
   return def.exposure[target] !== false
+}
+
+/** The tool's input as an interface offers it, without the arguments it leaves out. */
+export function toolInputFor(
+  def: Pick<ToolDef, 'input' | 'inputExposure'>,
+  target: ToolInterface
+): v.StrictObjectSchema<v.ObjectEntries, undefined> {
+  const hidden = Object.keys(def.inputExposure).filter(
+    (name) => def.inputExposure[name]?.[target] === false
+  )
+  return hidden.length === 0 ? def.input : v.strictObject(omit(def.input.entries, hidden))
 }
 
 export function isAtomicTool(def: ToolDef): boolean {

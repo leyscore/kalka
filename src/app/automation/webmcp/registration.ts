@@ -2,7 +2,7 @@
 import { toJsonSchema as toJSONSchema } from '@valibot/to-json-schema'
 import type { WebMCP } from 'webmcp-types'
 
-import { parseToolArgs, type ToolDef } from '@kalka/core/tools'
+import { parseToolArgs, toolInputFor, type ToolDef } from '@kalka/core/tools'
 
 import { getWebMCPTools, type WebMCPMode } from './policy'
 
@@ -30,7 +30,7 @@ export function registerWebMCPTools(
     try {
       for (const def of getWebMCPTools(mode)) {
         lifetime.signal.throwIfAborted()
-        const schema = def.input
+        const schema = toolInputFor(def, 'webmcp')
         await context.registerTool(
           {
             name: def.name,

@@ -6,36 +6,43 @@ import { jsxPatch } from '#core/tools/analyze/diff/jsx'
 import { nodeIdInput, nodeComparisonInput } from '#core/tools/input'
 import { defineTool } from '#core/tools/schema'
 
-const MAX_JSX_LENGTH = 12_000
+const MAX_INLINE_JSX_LENGTH = 12_000
 
 export const getJSX = defineTool({
   name: 'get_jsx',
   description:
-    'Get JSX representation of a node and its children. Compact round-trip format — same syntax as the render tool.',
+    'Get JSX representation of a node and its children. Compact round-trip format — same syntax as the render tool. ' +
+    `JSX longer than ${MAX_INLINE_JSX_LENGTH} characters is cut, and the result says so.`,
   execution: { kind: 'sync', mutation: 'none' },
   input: v.strictObject({
     id: nodeIdInput,
     path: v.optional(
       v.pipe(
         v.string(),
-        v.description('Write JSX to this path instead of returning it (requires KALKA_MCP_ROOT)')
+        v.minLength(1),
+        v.description(
+          'Write the complete JSX to this path instead of returning it (requires KALKA_MCP_ROOT)'
+        )
       )
     )
   }),
-  execute: (figma, { id }) => {
+  // Only the MCP server with a root writes files; elsewhere a path would return all the JSX inline.
+  inputExposure: { path: { ai: false, webmcp: false } },
+  execute: (figma, { id, path }) => {
     const node = figma.getNodeById(id)
     if (!node) return { error: `Node "${id}" not found` }
     const jsx = sceneNodeToJSX(id, figma.graph)
-    if (jsx.length > MAX_JSX_LENGTH) {
-      return {
-        id,
-        name: node.name,
-        jsx: jsx.slice(0, MAX_JSX_LENGTH),
-        truncated: true,
-        totalLength: jsx.length
-      }
+    if (path !== undefined || jsx.length <= MAX_INLINE_JSX_LENGTH) {
+      return { id, name: node.name, jsx }
     }
-    return { id, name: node.name, jsx }
+    return {
+      id,
+      name: node.name,
+      jsx: jsx.slice(0, MAX_INLINE_JSX_LENGTH),
+      truncated: true,
+      totalLength: jsx.length,
+      note: `JSX cut at ${MAX_INLINE_JSX_LENGTH} of ${jsx.length} characters.`
+    }
   }
 })
 

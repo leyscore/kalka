@@ -10,7 +10,7 @@ import type { JSONValue, ToolResultPart, ToolSet, tool as createTool } from 'ai'
 
 import type { FigmaAPI } from '#core/figma-api'
 
-import { isToolExposed, type ToolDef } from './schema'
+import { isToolExposed, toolInputFor, type ToolDef } from './schema'
 
 export interface ToolLogEntry {
   tool: string
@@ -178,7 +178,7 @@ export function toolsToAI(
     if (!isToolExposed(def, 'ai')) continue
     const toolOpts: Record<string, unknown> = {
       description: def.description,
-      inputSchema: toStandardJSONSchema(def.input),
+      inputSchema: toStandardJSONSchema(toolInputFor(def, 'ai')),
       execute: async (args: Record<string, unknown>, { toolCallId }: { toolCallId: string }) => {
         const startTime = Date.now()
         const figma = options.getFigma()

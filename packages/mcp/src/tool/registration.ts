@@ -11,7 +11,7 @@ import type {
 import { toStandardJsonSchema as toStandardJSONSchema } from '@valibot/to-json-schema'
 import * as v from 'valibot'
 
-import { CODEGEN_PROMPT, returnsFile } from '@kalka/core/tools'
+import { CODEGEN_PROMPT, returnsFile, toolInputFor } from '@kalka/core/tools'
 
 import type { RPCJSONObject } from '#mcp/json'
 import { fail, ok } from '#mcp/result'
@@ -25,7 +25,12 @@ import {
   nameLayers,
   nameLayersInput
 } from '#mcp/tool/naming'
-import { resolveSafePath, writeToolOutput } from '#mcp/tool/output'
+import {
+  resolveSafePath,
+  withFileOutputHint,
+  withoutOutputPath,
+  writeToolOutput
+} from '#mcp/tool/output'
 import { isToolEnabled } from '#mcp/tool/policy'
 import {
   documentTarget,
@@ -190,7 +195,10 @@ export function registerTools(
   }
 
   for (const def of getMCPToolDefinitions()) {
-    const entries: v.ObjectEntries = { ...def.input.entries, ...automationTargetSchema }
+    const entries: v.ObjectEntries = {
+      ...toolInputFor(def, 'mcp').entries,
+      ...automationTargetSchema
+    }
     // A tool that returns a file lets the client choose between the file and a link to it.
     if (returnsFile(def)) entries.delivery = fileDeliveryInput
     register(
@@ -200,7 +208,8 @@ export function registerTools(
         try {
           const { delivery: requestedDelivery, ...callArgs } = args
           const delivery: FileDelivery = requestedDelivery === 'url' ? 'url' : 'inline'
-          const { target, args: toolArgs } = splitAutomationTarget(callArgs)
+          const { target, args: targetArgs } = splitAutomationTarget(callArgs)
+          const toolArgs = resolvedRoot ? targetArgs : withoutOutputPath(def.name, targetArgs)
           if (current.policy.scope === 'selection' && toolArgs.path !== undefined) {
             return fail(new Error(SELECTION_SCOPE_FILE_OUTPUT_ERROR))
           }
@@ -229,7 +238,10 @@ export function registerTools(
           if (isFileResult(r)) {
             return withDocument(fileResult(def.name, r, res.asset, delivery), document)
           }
-          return withDocument(ok(r, def.name), document)
+          return withDocument(
+            ok(withFileOutputHint(def.name, r, resolvedRoot !== null), def.name),
+            document
+          )
         } catch (e) {
           return fail(e)
         }
