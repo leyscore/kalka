@@ -27,6 +27,7 @@
 - A `.fig` saves again after a layer of one of its components is deleted, instead of failing with "Missing checkpoint occurrence", and a page whose instance encloses a layer deleted inside a frame of its component loads.
 - Saving a `.fig` after editing a component no longer moves the component above the other layers on its page, and loading pages no longer reorders the layers on the pages they read components from.
 - A dashed stroke set in the properties panel keeps its dash pattern when a `.fig` is saved and reopened.
+- Removing, adding or reordering a fill, stroke or effect in the properties panel keeps each variable binding on its own item instead of moving it to the next one.
 
 ## 0.2.0-beta.3.1 — 2026-11-19
 
