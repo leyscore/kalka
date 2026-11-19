@@ -62,7 +62,7 @@ describe('writing a document to its file', () => {
 
   test('writes a new place whatever was saved elsewhere', async () => {
     const writes: string[] = []
-    await mockTauriIPC((cmd, args, options) => {
+    await mockTauriIPC((cmd, _args, options) => {
       const headers: unknown =
         typeof options === 'object' && options !== null ? Reflect.get(options, 'headers') : null
       const path: unknown =
