@@ -32,5 +32,6 @@
   "openQueuedFilesFailed": "Die an Kalka übergebenen Dateien konnten nicht geöffnet werden: {error}",
   "tokensLeftOut": "Nicht im Stylesheet enthalten: {names}.",
   "designTokensLeftOut": "Nicht in den Design-Tokens enthalten: {names}.",
-  "designTokensImported": "{count} Design-Tokens importiert."
+  "designTokensImported": "{count} Design-Tokens importiert.",
+  "folderNotEmpty": "„{name}“ enthält bereits andere Dateien. Wähle einen leeren Ordner oder einen Kalka-Ordner, den du ersetzen möchtest."
 }

@@ -32,5 +32,6 @@
   "openQueuedFilesFailed": "Impossible d’ouvrir les fichiers transmis à Kalka : {error}",
   "tokensLeftOut": "Non inclus dans la feuille de style : {names}.",
   "designTokensLeftOut": "Exclus des design tokens : {names}.",
-  "designTokensImported": "{count} design tokens importés."
+  "designTokensImported": "{count} design tokens importés.",
+  "folderNotEmpty": "« {name} » contient déjà d’autres fichiers. Choisissez un dossier vide, ou un dossier Kalka à remplacer."
 }

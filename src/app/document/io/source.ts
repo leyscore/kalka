@@ -7,7 +7,7 @@ import { loadCanvasKit } from '@kalka/vue'
 import { createAutosave } from '@/app/document/autosave'
 import { domRasterize } from '@/app/document/export/dom-raster'
 import { createDocumentChanges } from '@/app/document/io/changes'
-import { folderName, isKalkaFolderPath } from '@/app/document/io/kalka-folder'
+import { canHoldKalkaFolder, folderName, isKalkaFolderPath } from '@/app/document/io/kalka-folder'
 import {
   documentNameFromFigPath,
   downloadNameFromPath,
@@ -291,6 +291,11 @@ export function createDocumentSourceActions({
 
   /** Save the document as a Kalka folder and keep editing it there. */
   async function saveKalkaFolderToPath(folder: string): Promise<boolean> {
+    // Saving again into the folder the document already lives in needs no check.
+    if (folder !== getFilePath() && !(await canHoldKalkaFolder(folder))) {
+      toast.error(notificationMessages.get().folderNotEmpty({ name: folderName(folder) }))
+      return false
+    }
     const saved = await saveToNewTarget(() => {
       stopWatchingFile()
       setStorageBinding(null)

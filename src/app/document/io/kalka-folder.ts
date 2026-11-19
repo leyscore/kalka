@@ -1,4 +1,4 @@
-import { zipKalkaFiles, type KalkaFile } from '@kalka/core/io/formats/kalka'
+import { KALKA_PROJECT_FILE, zipKalkaFiles, type KalkaFile } from '@kalka/core/io/formats/kalka'
 
 /** Folders a Kalka document owns and rewrites on every save; files in them that are no longer saved go. */
 const OWNED_FOLDERS = ['pages', 'assets/images']
@@ -21,6 +21,21 @@ export function folderName(path: string): string {
 /** Whether a Kalka document's path is its folder rather than a `.kalka` file. */
 export function isKalkaFolderPath(path: string | null): boolean {
   return !!path && !path.toLowerCase().endsWith('.kalka')
+}
+
+/**
+ * Whether a document may be saved into a folder as a Kalka folder: an empty one, or a Kalka
+ * folder already. Saving rewrites `pages/` and `assets/images/` and removes what it did not
+ * write there, so a folder holding other files, such as a website project, is refused. Hidden
+ * files, such as `.git`, do not count.
+ */
+export async function canHoldKalkaFolder(folder: string): Promise<boolean> {
+  const { exists, readDir } = await import('@tauri-apps/plugin-fs')
+  if (!(await exists(folder))) return true
+  const names = (await readDir(folder))
+    .map((entry) => entry.name)
+    .filter((name) => !name.startsWith('.'))
+  return names.length === 0 || names.includes(KALKA_PROJECT_FILE)
 }
 
 /** Every file of a folder, as paths relative to it with `/` between their parts. */
