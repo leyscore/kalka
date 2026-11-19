@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Performance
+
+- Typing and other edits no longer rebuild the app menu and command palette on every change, and the properties panel re-renders only the fields an edit changed instead of every field, so typing in a text layer and agents editing other layers stay smoother on slower computers.
+
 ### Fixed
 
 - When several agents edit the same document at once, such as named agents in the chat and agents over MCP, undoing one agent's edit no longer also undoes what another agent changed while it ran.
