@@ -79,7 +79,9 @@ function next(): void {
     data-test-id="agent-questions"
     :aria-label="heading"
   >
-    <header class="flex items-baseline justify-between gap-2 text-[11px] text-muted">
+    <header
+      class="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5 text-[11px] text-muted"
+    >
       <span class="font-semibold">{{ heading }}</span>
       <span v-if="questions.length > 1">
         {{ ai.questionStep({ current: step + 1, total: questions.length }) }}
@@ -104,10 +106,11 @@ function next(): void {
       v-model="ownAnswer"
       :placeholder="question.placeholder || ai.questionOwnAnswer"
       :aria-label="ai.questionOwnAnswer"
+      :ui="{ root: 'w-full min-w-0' }"
       data-test-id="agent-question-own-answer"
       @keydown.enter.prevent="next"
     />
-    <footer class="flex items-center justify-between gap-2">
+    <footer class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
       <AppButton
         size="xs"
         variant="ghost"
@@ -116,7 +119,7 @@ function next(): void {
       >
         {{ ai.questionSkip }}
       </AppButton>
-      <div class="flex gap-1.5">
+      <div class="ml-auto flex gap-1.5">
         <AppButton v-if="step > 0" size="xs" variant="ghost" @click="step -= 1">
           {{ ai.questionBack }}
         </AppButton>
