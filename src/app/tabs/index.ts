@@ -203,6 +203,11 @@ function isDOMImportFile(file: File): boolean {
   return /\.(html?|xhtml)$/i.test(file.name)
 }
 
+/** An exported Claude Design project, which opens as a new document rather than in place. */
+function isClaudeDesignFile(file: File): boolean {
+  return /\.zip$/i.test(file.name)
+}
+
 function reusableTabStore(): { store: EditorStore; created: boolean } {
   const current = activeTab.value
   if (current?.kind === 'home') {
@@ -442,7 +447,7 @@ export async function openFileInNewTab(
     const { store, created } = reusableTabStore()
     store.state.documentName = file.name.replace(/\.[^.]+$/i, '')
     const load = store.preparationController.begin({
-      kind: isDOMImportFile(file) ? 'dom-import' : 'document-open',
+      kind: isDOMImportFile(file) || isClaudeDesignFile(file) ? 'dom-import' : 'document-open',
       subject: file.name
     })
 
@@ -462,6 +467,13 @@ export async function openFileInNewTab(
   const { completion, pendingOpen, store, created, load } = decision
   let succeeded = false
   try {
+    if (isClaudeDesignFile(file)) {
+      await store.openClaudeDesign(file, file.name, load)
+      completion.resolve(undefined)
+      succeeded = true
+      return
+    }
+
     if (isDOMImportFile(file)) {
       await store.openDOMFile(file, { handle, path, preparation: load })
       completion.resolve(undefined)

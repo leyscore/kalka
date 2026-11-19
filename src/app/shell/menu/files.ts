@@ -1,7 +1,9 @@
 import { useFileDialog } from '@vueuse/core'
 import { uniq } from 'es-toolkit/array'
+import { zipSync } from 'fflate'
 
 import { BUILTIN_IO_FORMATS, IORegistry } from '@kalka/core/io'
+import { isClaudeDesignProject } from '@kalka/core/io/formats/claude-design'
 import { menuMessages } from '@kalka/vue'
 
 import { setKalkaOpenFileHandler } from '@/app/browser-bridge'
@@ -10,7 +12,13 @@ import {
   MAX_REMOTE_DOCUMENT_BYTES,
   readBoundedBody
 } from '@/app/document/io/browser'
-import { chooseKalkaFolder, readKalkaFolderAsFile } from '@/app/document/io/kalka-folder'
+import {
+  chooseKalkaFolder,
+  folderName,
+  joinFolderPath,
+  listFolderFiles,
+  readKalkaFolderAsFile
+} from '@/app/document/io/kalka-folder'
 import type { EditorStore } from '@/app/editor/active-store'
 import { notificationMessages } from '@/app/i18n/notifications'
 import { rememberRecentFile } from '@/app/recent-files'
@@ -22,9 +30,12 @@ import { IS_BROWSER } from '@/constants'
 
 const io = new IORegistry(BUILTIN_IO_FORMATS)
 const DOM_DOCUMENT_EXTENSIONS = ['html', 'htm', 'xhtml'] as const
+/** An exported Claude Design project. */
+const CLAUDE_DESIGN_EXTENSION = 'zip'
 const READABLE_DOCUMENT_EXTENSIONS = uniq([
   ...io.listReadableFormats().flatMap((format) => format.extensions),
-  ...DOM_DOCUMENT_EXTENSIONS
+  ...DOM_DOCUMENT_EXTENSIONS,
+  CLAUDE_DESIGN_EXTENSION
 ])
 const DESIGN_FILE_ACCEPT = READABLE_DOCUMENT_EXTENSIONS.map((extension) => `.${extension}`).join(
   ','
@@ -42,6 +53,21 @@ fileDialog.onChange((files) => {
     files,
     (file) => file.name,
     (file) => openDesignFile(file)
+  )
+})
+
+const claudeDesignDialog = useFileDialog({
+  accept: `.${CLAUDE_DESIGN_EXTENSION}`,
+  multiple: false,
+  reset: true
+})
+
+claudeDesignDialog.onChange((files) => {
+  if (!files) return
+  void openDesignFileBatch(
+    files,
+    (file) => file.name,
+    (file) => openFileInNewTab(file)
   )
 })
 
@@ -87,6 +113,7 @@ function isSupportedDesignFile(fileName: string): boolean {
   const lowerName = fileName.toLowerCase()
   return (
     io.findReader(fileName) !== null ||
+    lowerName.endsWith(`.${CLAUDE_DESIGN_EXTENSION}`) ||
     DOM_DOCUMENT_EXTENSIONS.some((extension) => lowerName.endsWith(`.${extension}`))
   )
 }
@@ -144,9 +171,31 @@ export async function openFileFromPath(path: string) {
   rememberRecentFile(path)
 }
 
-/** Opens a Kalka folder in a new tab; saving writes back into the folder. Desktop only. */
+/**
+ * A folder exported from Claude Design, as one archive, or null for any other folder. A Kalka
+ * folder has its own `project.json`; the export's index is `canvas.json`.
+ */
+async function readClaudeDesignFolderAsFile(path: string): Promise<File | null> {
+  const paths = await listFolderFiles(path)
+  if (paths.includes('project.json') || !isClaudeDesignProject(paths)) return null
+  const { readFile } = await import('@tauri-apps/plugin-fs')
+  const files: Record<string, Uint8Array> = {}
+  for (const file of paths) files[file] = await readFile(joinFolderPath(path, file))
+  const archive = zipSync(files, { level: 0 })
+  return new File([archive.slice().buffer], `${folderName(path)}.zip`, { type: 'application/zip' })
+}
+
+/**
+ * Opens a Kalka folder in a new tab; saving writes back into the folder. A Claude Design
+ * project's folder is imported as a new document instead. Desktop only.
+ */
 export async function openFolderFromPath(path: string) {
   if (!isTauri()) return
+  const claudeDesign = await readClaudeDesignFolderAsFile(path)
+  if (claudeDesign) {
+    await openFileInNewTab(claudeDesign)
+    return
+  }
   const file = await readKalkaFolderAsFile(path)
   await openFileInNewTab(file, undefined, path)
   rememberRecentFile(path)
@@ -197,11 +246,11 @@ export async function openFileDialog() {
             description: 'Design file',
             accept: {
               'application/octet-stream': ['.fig'],
-              'application/zip': ['.kalka'],
               'application/json': ['.pen'],
               'text/html': ['.html', '.htm'],
               'application/xhtml+xml': ['.xhtml'],
-              'text/plain': ['.pen']
+              'text/plain': ['.pen'],
+              'application/zip': ['.kalka', '.zip']
             }
           }
         ]
@@ -226,4 +275,26 @@ export async function openFileDialog() {
 
 export async function importFileDialog() {
   await openFileDialog()
+}
+
+/**
+ * Imports a Claude Design project from the `.zip` it exports to. The desktop app opens an
+ * unpacked project's folder through Open Folder.
+ */
+export async function importClaudeDesignDialog() {
+  if (isTauri()) {
+    const { open } = await import('@tauri-apps/plugin-dialog')
+    const picked = await open({
+      filters: [{ name: 'Claude Design project', extensions: [CLAUDE_DESIGN_EXTENSION] }],
+      multiple: false
+    })
+    if (typeof picked !== 'string') return
+    await openDesignFileBatch(
+      [picked],
+      (item) => item.split(/[/\\]/).pop() ?? item,
+      openFileFromPath
+    )
+    return
+  }
+  claudeDesignDialog.open()
 }

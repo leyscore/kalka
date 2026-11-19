@@ -4,7 +4,7 @@ import { computed, ref } from 'vue'
 import { useI18n, vTestId } from '@kalka/vue'
 
 import { FRAME_PRESETS, startBlank, startWithFrame, type FramePresetID } from '@/app/home/start'
-import { openFileDialog } from '@/app/shell/menu/use'
+import { importClaudeDesignDialog, openFileDialog } from '@/app/shell/menu/use'
 import { homeHeading, inlineLink, presetCard } from '@/theme/home/start'
 
 import HomeOpenURLDialog from './HomeOpenURLDialog.vue'
@@ -31,14 +31,19 @@ const presets = computed(() => {
 })
 const custom = presetCard({ kind: 'custom' })
 
-type ImportChoice = 'file' | 'html' | 'url'
-const IMPORT_CHOICES = ['file', 'html', 'url'] as const
+const IMPORT_CHOICES = ['file', 'html', 'url', 'claude'] as const
+type ImportChoice = (typeof IMPORT_CHOICES)[number]
 
-/** The import sentence, split around its three choices so each one can be a link. */
+/** The import sentence, split around its choices so each one can be a link. */
 const importParts = computed(() => {
-  const sentence = welcome.value.importSentence({ file: '{file}', html: '{html}', url: '{url}' })
+  const sentence = welcome.value.importSentence({
+    file: '{file}',
+    html: '{html}',
+    url: '{url}',
+    claude: '{claude}'
+  })
   return sentence
-    .split(/(\{file\}|\{html\}|\{url\})/)
+    .split(/(\{file\}|\{html\}|\{url\}|\{claude\})/)
     .filter((part) => part !== '')
     .map((part) => {
       const choice = IMPORT_CHOICES.find((candidate) => part === `{${candidate}}`)
@@ -49,12 +54,14 @@ const importParts = computed(() => {
 function importLabel(choice: ImportChoice): string {
   if (choice === 'file') return welcome.value.importFile
   if (choice === 'html') return welcome.value.importHTML
+  if (choice === 'claude') return welcome.value.importClaudeDesign
   return welcome.value.importURL
 }
 
 function runImport(choice: ImportChoice): void {
-  if (choice === 'file') openFileDialog()
+  if (choice === 'file') void openFileDialog()
   else if (choice === 'html') pasteOpen.value = true
+  else if (choice === 'claude') void importClaudeDesignDialog()
   else urlOpen.value = true
 }
 </script>

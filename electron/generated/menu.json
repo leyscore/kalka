@@ -25,6 +25,10 @@
         "label": "Open Storage Workspace…"
       },
       {
+        "id": "import-claude-design",
+        "label": "Import Claude Design Project…"
+      },
+      {
         "type": "separator"
       },
       {

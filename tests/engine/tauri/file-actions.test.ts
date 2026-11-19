@@ -18,7 +18,10 @@ describe('Tauri file actions', () => {
       expect(args).toEqual({
         options: {
           filters: [
-            { name: 'Design file', extensions: ['fig', 'kalka', 'pen', 'html', 'htm', 'xhtml'] }
+            {
+              name: 'Design file',
+              extensions: ['fig', 'kalka', 'pen', 'html', 'htm', 'xhtml', 'zip']
+            }
           ],
           multiple: true
         }

@@ -26,6 +26,28 @@ export function getPageChildren(page: Page) {
   })
 }
 
+/** The current page's top-level layers with the words and image fills inside each. */
+export function getArtboardContents(page: Page) {
+  return page.evaluate(() => {
+    const store = window.kalka?.getStore?.()
+    if (!store) throw new Error('Kalka store not initialized')
+    return store.graph.getChildren(store.state.currentPageId).map((artboard) => {
+      const texts: string[] = []
+      let images = 0
+      const visit = (id: string) => {
+        const node = store.graph.getNode(id)
+        if (!node) return
+        if (node.type === 'TEXT') texts.push(node.text)
+        images += node.fills.filter((fill) => fill.type === 'IMAGE').length
+        node.childIds.forEach(visit)
+      }
+      visit(artboard.id)
+      const { name, type, x, y, width, height } = artboard
+      return { name, type, x, y, width, height, texts, images }
+    })
+  })
+}
+
 export function getSelectedNode(page: Page) {
   return page.evaluate(() => {
     const store = window.kalka?.getStore?.()

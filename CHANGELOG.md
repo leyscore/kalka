@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Added
+
+- Import a Claude Design project: drop its exported `.zip` on Kalka, choose File → Import Claude Design project…, or click "a Claude Design project" on the home screen; the desktop app also imports an unpacked project's folder through Open Folder. Each board becomes an artboard where the canvas had it, on its page, with its title; holes, loops, conditions and imported components are filled from the board's own logic, run in a sandbox and settled after its animations, or from its defaults when that logic cannot run. Uploaded images and fonts come along, design system tokens become variables, and canvas titles and sticky notes become text.
+
+### Fixed
+
+- Pasted or imported HTML whose positioned blocks are centered with `margin: 0 auto` no longer drifts further off its artboard on every layout.
+
 ## 0.2.0-beta.3.2 — 2026-11-19
 
 ### Added

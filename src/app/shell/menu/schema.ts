@@ -71,6 +71,7 @@ export const APP_MENU_SCHEMA = [
       { id: 'open-folder', label: 'Open Folder…', target: 'native' },
       { id: 'open-recent', label: 'Open Recent', target: 'native' },
       { id: 'open-storage-workspace', label: 'Open Storage Workspace…', handler: 'shell' },
+      { id: 'import-claude-design', label: 'Import Claude Design Project…' },
       { type: 'separator' },
       { id: 'save', label: 'Save', shortcut: 'MOD+S' },
       { id: 'save-as', label: 'Save As…', shortcut: 'MOD+SHIFT+S' },

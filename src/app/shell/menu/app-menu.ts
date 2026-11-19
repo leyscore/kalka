@@ -36,7 +36,7 @@ import type {
 import { APP_MENU_SCHEMA } from '@/app/shell/menu/schema'
 import { createSelectionMenuActions } from '@/app/shell/menu/selection-actions'
 import { appMenuShortcutLabel } from '@/app/shell/menu/shortcut'
-import { openFileDialog } from '@/app/shell/menu/use'
+import { importClaudeDesignDialog, openFileDialog } from '@/app/shell/menu/use'
 import { useAppTheme } from '@/app/shell/theme'
 import { saveDocumentToStorage } from '@/app/storage/workspace/save'
 import { closeTab, activeTab } from '@/app/tabs'
@@ -99,6 +99,7 @@ export function useAppMenu() {
     new: 'new',
     open: 'open',
     'open-folder': 'openFolder',
+    'import-claude-design': 'importClaudeDesign',
     'save-as-folder': 'saveAsFolder',
     'open-storage-workspace': 'openStorageWorkspace',
     save: 'save',
@@ -168,6 +169,7 @@ export function useAppMenu() {
       void import('@/app/tabs').then((m) => m.createTab())
     },
     open: () => void openFileDialog(),
+    'import-claude-design': () => void importClaudeDesignDialog(),
     'open-storage-workspace': () => openStorageWorkspace(router),
     save: () => void store.saveFigFile(),
     'save-as': () => void store.saveFigFileAs(),

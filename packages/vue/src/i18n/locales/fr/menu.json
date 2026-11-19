@@ -11,6 +11,7 @@
   "save": "Enregistrer",
   "saveAs": "Enregistrer sous…",
   "openFolder": "Ouvrir un dossier…",
+  "importClaudeDesign": "Importer un projet Claude Design…",
   "saveAsFolder": "Enregistrer comme dossier…",
   "saveToStorage": "Enregistrer dans l’espace de stockage…",
   "exportSelection": "Exporter la sélection…",

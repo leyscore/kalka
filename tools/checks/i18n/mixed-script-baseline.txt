@@ -185,6 +185,7 @@ ja:menu.exportSelectionAsFig
 ja:menu.exportSelectionAsPNG
 ja:menu.exportSelectionAsPPTX
 ja:menu.exportSelectionAsSVG
+ja:menu.importClaudeDesign
 ja:menu.toggleUI
 ja:panels.behaviourAddVariants
 ja:panels.breakpointOf
@@ -236,6 +237,7 @@ ja:welcome.claudeIntro
 ja:welcome.connectAgentHint
 ja:welcome.connectMCP
 ja:welcome.homeTitle
+ja:welcome.importClaudeDesign
 ja:welcome.importFile
 ja:welcome.importHTML
 ja:welcome.installTitle
@@ -450,6 +452,7 @@ zh-cn:menu.exportSelectionAsFig
 zh-cn:menu.exportSelectionAsPNG
 zh-cn:menu.exportSelectionAsPPTX
 zh-cn:menu.exportSelectionAsSVG
+zh-cn:menu.importClaudeDesign
 zh-cn:panels.behaviourAddVariants
 zh-cn:panels.breakpointOf
 zh-cn:panels.colorHintHsb
@@ -499,6 +502,7 @@ zh-cn:welcome.claudeIntro
 zh-cn:welcome.connectAgentHint
 zh-cn:welcome.connectMCP
 zh-cn:welcome.homeTitle
+zh-cn:welcome.importClaudeDesign
 zh-cn:welcome.importFile
 zh-cn:welcome.importHTML
 zh-cn:welcome.installTitle

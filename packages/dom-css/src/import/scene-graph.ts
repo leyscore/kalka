@@ -33,6 +33,20 @@ export interface DesignDocumentToSceneGraphOptions {
    * give back as written, such as `width: 50%`, `padding: 1rem` or `transition`. On by default.
    */
   keepAuthoredCSS?: boolean
+  /**
+   * Build the measured page's artboard into this graph's page instead of a new graph, at `x`, `y`
+   * there, `height` tall when given rather than as tall as its content.
+   */
+  into?: ArtboardTarget
+}
+
+/** Where an imported page's artboard goes in a graph that already exists. */
+export interface ArtboardTarget {
+  graph: SceneGraph
+  pageId: string
+  x?: number
+  y?: number
+  height?: number
 }
 
 export type { ImageSourceResolver } from './image'
@@ -215,6 +229,9 @@ function createDesignNode(
 const sameValue = (a: string, b: string | undefined) =>
   a.trim().toLowerCase() === b?.trim().toLowerCase()
 
+/** What places a layer; where its parent places it by its coordinates, those are its place. */
+const PLACEMENT_PROPERTIES = new Set(['position', 'left', 'top', 'right', 'bottom', 'inset'])
+
 /**
  * Of the CSS an import noted as the layer's author wrote it, what the layer's fields do not
  * give back as written: the rest the fields hold already.
@@ -223,8 +240,13 @@ function authoredOverrides(graph: SceneGraph, node: SceneNode): DesignStyleDecla
   const parent = node.parentId ? graph.getNode(node.parentId) : undefined
   const written = writeLayerStyle(node, { parent, css: (_field, literal) => literal })
   const kept: DesignStyleDeclaration = {}
-  for (const [property, value] of Object.entries(node.style))
+  // An authored `position: relative` kept over the placement would offset the layer from where
+  // the page put it by its own coordinates, again on every layout.
+  const placed = written.position === 'absolute'
+  for (const [property, value] of Object.entries(node.style)) {
+    if (placed && PLACEMENT_PROPERTIES.has(property)) continue
     if (!sameValue(value, written[property])) kept[property] = value
+  }
   return kept
 }
 
@@ -235,39 +257,70 @@ function fitPageToChildren(page: SceneNode, graph: SceneGraph): void {
   page.height = Math.max(...children.map((child) => child.y + child.height))
 }
 
+/** The page an import builds on: the target's, or the first page of a new graph. */
+function importPage(graph: SceneGraph, options: DesignDocumentToSceneGraphOptions): SceneNode {
+  const into = options.into
+  if (into) {
+    const page = graph.getNode(into.pageId)
+    if (!page) throw new Error(`Page "${into.pageId}" not found`)
+    return page
+  }
+  const page = graph.getPages().find((node) => node.type === 'CANVAS') ?? graph.addPage('DesignDOM')
+  page.name = options.pageName ?? 'DesignDOM'
+  return page
+}
+
+function createDesignNodes(
+  graph: SceneGraph,
+  page: SceneNode,
+  document: DesignDocument,
+  options: DesignDocumentToSceneGraphOptions
+): void {
+  const viewport = document.viewport
+  if (!viewport) {
+    for (const child of document.children) createDesignNode(graph, page.id, child)
+    return
+  }
+  const into = options.into
+  // A measured page becomes one artboard of the width it was rendered at.
+  const artboard = graph.createNode('FRAME', page.id, {
+    name: options.artboardName ?? 'Desktop',
+    x: into?.x ?? 0,
+    y: into?.y ?? 0,
+    width: viewport.width,
+    height: into?.height ?? Math.ceil(viewport.height),
+    clipsContent: true
+  })
+  const background = colorToFillFromCSS(pickStyle(viewport.bodyStyle, 'background-color'))
+  artboard.fills = background.length > 0 ? background : colorToFillFromCSS('#ffffff')
+  const placement: Placement = {
+    parentBox: { x: 0, y: 0, width: viewport.width, height: viewport.height },
+    byMeasure: true
+  }
+  for (const child of document.children)
+    createDesignNode(graph, artboard.id, child, viewport.bodyStyle, placement)
+}
+
 export function designDocumentToSceneGraph(
   document: DesignDocument,
   options: DesignDocumentToSceneGraphOptions = {}
 ): SceneGraph {
-  const graph = new SceneGraph()
-  const page = graph.getPages().find((node) => node.type === 'CANVAS') ?? graph.addPage('DesignDOM')
+  const graph = options.into?.graph ?? new SceneGraph()
+  const page = importPage(graph, options)
 
-  page.name = options.pageName ?? 'DesignDOM'
-
-  const viewport = document.viewport
-  if (viewport) {
-    // A measured page becomes one artboard of the width it was rendered at.
-    const artboard = graph.createNode('FRAME', page.id, {
-      name: options.artboardName ?? 'Desktop',
-      width: viewport.width,
-      height: Math.ceil(viewport.height),
-      clipsContent: true
-    })
-    const background = colorToFillFromCSS(pickStyle(viewport.bodyStyle, 'background-color'))
-    artboard.fills = background.length > 0 ? background : colorToFillFromCSS('#ffffff')
-    const placement: Placement = {
-      parentBox: { x: 0, y: 0, width: viewport.width, height: viewport.height },
-      byMeasure: true
-    }
-    for (const child of document.children)
-      createDesignNode(graph, artboard.id, child, viewport.bodyStyle, placement)
-  } else {
-    for (const child of document.children) createDesignNode(graph, page.id, child)
+  const created = new Set<string>()
+  const stopTracking = graph.onNodeEvents({ created: (node) => created.add(node.id) })
+  try {
+    createDesignNodes(graph, page, document, options)
+  } finally {
+    stopTracking()
   }
 
-  fitPageToChildren(page, graph)
-  for (const node of graph.getAllNodes())
-    node.style = options.keepAuthoredCSS === false ? {} : authoredOverrides(graph, node)
+  if (!options.into) fitPageToChildren(page, graph)
+  for (const id of created) {
+    const node = graph.getNode(id)
+    if (node) node.style = options.keepAuthoredCSS === false ? {} : authoredOverrides(graph, node)
+  }
   return graph
 }
 

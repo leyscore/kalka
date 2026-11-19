@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Offer card</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>body{margin:0}</style>
+</helmet>
+<article style="width: 320px; height: 200px; box-sizing: border-box; padding: 20px; border-radius: 16px; background: #3F6B4E; color: #FFFFFF; font-family: system-ui, sans-serif;">
+  <b style="font-size: 20px;">{{title}}</b>
+</article>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":320,"height":200},"label":{"editor":"text","default":"Weekly bread"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { title: this.props.label };
+  }
+}
+</script>
+</body>
+</html>
