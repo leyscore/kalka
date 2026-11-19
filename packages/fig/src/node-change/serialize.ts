@@ -16,7 +16,8 @@ import { weightToFigmaStyle } from './font/style'
 import { fillToKiwiPaint, safeColor } from './paint'
 import {
   exportedVariableConsumptionEntries,
-  mergeVariableConsumptionMaps
+  mergeVariableConsumptionMaps,
+  variableConsumptionEntries
 } from './variable/bindings'
 import {
   buildStyleOverrideTable,
@@ -430,13 +431,20 @@ function serializeVariableBindings(
     Object.keys(roundtripBindings).length > 0 ? roundtripBindings : undefined
   )
   if (entries.length > 0) {
+    // Component property references already written to the map stay beside the variables.
+    const propertyReferences = variableConsumptionEntries({
+      parameterConsumptionMap: nc.parameterConsumptionMap
+    })
+    const base = {
+      parameterConsumptionMap: {
+        entries: [
+          ...variableConsumptionEntries(effectiveFigmaRawNodeFields(node)),
+          ...propertyReferences
+        ]
+      }
+    }
     nc.variableConsumptionMap = { entries }
-    Object.assign(
-      nc,
-      mergeVariableConsumptionMaps(effectiveFigmaRawNodeFields(node), {
-        parameterConsumptionMap: { entries }
-      })
-    )
+    Object.assign(nc, mergeVariableConsumptionMaps(base, { parameterConsumptionMap: { entries } }))
   }
 }
 
