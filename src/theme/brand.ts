@@ -70,7 +70,7 @@ export const brandSpinner = tv({
 /**
  * The pixel sky of kalka.design behind a full screen such as the welcome: a deep blue that lightens
  * toward the bottom, a fine grain, and clouds drawn in dots that sway slowly. It is the brand's
- * own picture, the same in light and dark themes. Inside the clouds a few dots at a time brighten and
+ * own picture, the same in light and dark themes. Inside the clouds a few dots at a time double their brightness, at their own size, and
  * fade, so the sky feels alive; reduced motion holds the clouds still and the dots unlit.
  */
 export const pixelSky = tv({
@@ -81,6 +81,6 @@ export const pixelSky = tv({
     clouds:
       'absolute inset-y-0 -inset-x-40 bg-[radial-gradient(circle,rgb(255_255_255/0.5)_0_2.6px,transparent_3.1px)] bg-size-[9px_9px] [mask-image:radial-gradient(ellipse_20%_12%_at_14%_84%,#000_15%,transparent_70%),radial-gradient(ellipse_26%_12%_at_54%_96%,#000_15%,transparent_70%),radial-gradient(ellipse_18%_10%_at_88%_80%,#000_15%,transparent_70%),radial-gradient(ellipse_9%_5%_at_82%_22%,#000_15%,transparent_70%),radial-gradient(ellipse_8%_4%_at_16%_20%,#000_15%,transparent_70%)] motion-safe:animate-sky-drift',
     spark:
-      'absolute bg-[radial-gradient(circle,#fff_0_3px,transparent_3.4px)] bg-size-[9px_9px] opacity-0 motion-safe:animate-sky-twinkle'
+      'absolute bg-[radial-gradient(circle,rgb(255_255_255/0.5)_0_2.6px,transparent_3.1px)] bg-size-[9px_9px] opacity-0 motion-safe:animate-sky-twinkle'
   }
 })
