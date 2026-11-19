@@ -1,5 +1,10 @@
 import type { RenderColorSpace } from '@kalka/scene-graph/color'
-import { getNodeRotationOrigin } from '@kalka/scene-graph/coordinate'
+import {
+  getNodeRotationOrigin,
+  getWorldMatrix,
+  localTransformFromWorld
+} from '@kalka/scene-graph/coordinate'
+import Matrix from '@kalka/scene-graph/matrix'
 import { resolveNodeTextDirection } from '@kalka/scene-graph/text-direction'
 
 import { computeContentBounds } from '#core/io/formats/raster'
@@ -298,16 +303,17 @@ function renderTextNode(
 function buildTransformAttr(node: SceneNode): string | undefined {
   const transforms: string[] = []
   if (node.x !== 0 || node.y !== 0) transforms.push(`translate(${round(node.x)}, ${round(node.y)})`)
-  if (node.rotation !== 0) {
-    const pivot = getNodeRotationOrigin(node)
-    transforms.push(`rotate(${round(node.rotation)}, ${round(pivot.x)}, ${round(pivot.y)})`)
-  }
   if (node.flipX || node.flipY) {
     const tx = node.flipX ? node.width : 0
     const ty = node.flipY ? node.height : 0
     const sx = node.flipX ? -1 : 1
     const sy = node.flipY ? -1 : 1
     transforms.push(`translate(${round(tx)}, ${round(ty)}) scale(${sx}, ${sy})`)
+  }
+  // The canvas flips a layer, then turns it about its rotation origin.
+  if (node.rotation !== 0) {
+    const pivot = getNodeRotationOrigin(node)
+    transforms.push(`rotate(${round(node.rotation)}, ${round(pivot.x)}, ${round(pivot.y)})`)
   }
   return transforms.length > 0 ? transforms.join(' ') : undefined
 }
@@ -516,19 +522,19 @@ export function renderNodesToSVG(
   ctx.drawLayer = (layer) => renderNode(layer, ctx)
 
   const contentNodes: SVGNode[] = []
+  const drawingOrigin = Matrix.translated(minX, minY)
 
   for (const id of nodeIds) {
     const node = graph.getNode(id)
     if (!node?.visible) continue
 
-    const abs = graph.getAbsolutePosition(id)
-    const offsetX = abs.x - minX
-    const offsetY = abs.y - minY
-
-    const needsOffset = offsetX !== node.x || offsetY !== node.y
-    const clone = needsOffset ? { ...node, x: round(offsetX), y: round(offsetY) } : node
-
-    const rendered = renderNode(clone, ctx)
+    // A flipped or rotated layer's position is its transformed origin: place it by its world
+    // matrix relative to the export's corner, so it lands where the canvas draws it.
+    const placed = {
+      ...node,
+      ...localTransformFromWorld(node, getWorldMatrix(node, graph), drawingOrigin)
+    }
+    const rendered = renderNode(placed, ctx)
     if (rendered) contentNodes.push(rendered)
   }
 
