@@ -21,6 +21,7 @@ describe('wrapping layers in auto layout', () => {
     const { editor, page, ids } = setup()
     editor.select([ids[1], ids[2]])
     const frame = editor.wrapInAutoLayout()
+    if (!frame) throw new Error('No frame')
     expect(getNodeOrThrow(editor.graph, page).childIds).toEqual([ids[0], frame, ids[3]])
   })
 
