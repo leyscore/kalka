@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- In the desktop app, a document open from a file reloads when the file is changed by an app that replaces it, such as git or many editors, every time instead of only the first time.
 - A document saved to a file with autosave off is protected from a crash again: its unsaved changes are kept for recovery, where only unsaved new documents used to be.
 - A variable mode an outer instance in a `.fig` sets on a nested layer for one collection keeps the modes that layer has in its other collections, and an override that clears a collection's mode lets the layer take its parent's mode again.
 - A multicolour vector saved to `.fig` keeps each region's colour when it is edited in Figma, instead of Figma refilling every region with the layer's fill.

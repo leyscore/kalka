@@ -1,10 +1,10 @@
-import { watch as watchFile, type FSWatcher } from 'node:fs'
 import * as fs from 'node:fs/promises'
 import { isAbsolute, join, normalize, sep } from 'node:path'
 
 import { app } from 'electron'
 
 import { emit, registerAll, type CallContext } from '../ipc'
+import { watchFileChanges } from './file-watch'
 
 /** Tauri's `BaseDirectory.AppLocalData`, the only base directory the app uses. */
 const APP_LOCAL_DATA = 15
@@ -30,7 +30,7 @@ const toInfo = (stats: import('node:fs').Stats) => ({
 })
 
 const handles = new Map<number, fs.FileHandle>()
-const watchers = new Map<number, { watchers: FSWatcher[]; timer: NodeJS.Timeout | null }>()
+const watchers = new Map<number, (() => void)[]>()
 let nextId = 1
 
 export const fsHandlers = {
@@ -92,29 +92,21 @@ export const fsHandlers = {
     await handles.get(id)?.close()
     handles.delete(id)
   },
-  /** Reports changes to the files, at most once per `delayMs`, as Tauri's modify events. */
+  /** Reports changes to the files, at most once per `delayMs`, as Tauri's modify and remove events. */
   watch(context: CallContext, paths: string[], delayMs: number) {
     const id = nextId++
-    const entry: { watchers: FSWatcher[]; timer: NodeJS.Timeout | null } = {
-      watchers: [],
-      timer: null
-    }
     const sender = context.sender
-    for (const path of paths) {
-      const resolved = resolvePath(path, null)
-      entry.watchers.push(
-        watchFile(resolved, (kind) => {
-          if (entry.timer) clearTimeout(entry.timer)
-          entry.timer = setTimeout(() => {
-            entry.timer = null
-            const type =
-              kind === 'rename' ? { remove: { kind: 'any' } } : { modify: { kind: 'any' } }
-            emit(sender, `fs:watch:${id}`, { type, paths: [resolved], attrs: {} })
-          }, delayMs)
+    watchers.set(
+      id,
+      paths.map((path) => {
+        const resolved = resolvePath(path, null)
+        return watchFileChanges(resolved, delayMs, (change) => {
+          const type =
+            change === 'remove' ? { remove: { kind: 'any' } } : { modify: { kind: 'any' } }
+          emit(sender, `fs:watch:${id}`, { type, paths: [resolved], attrs: {} })
         })
-      )
-    }
-    watchers.set(id, entry)
+      })
+    )
     sender.once('destroyed', () => unwatch(id))
     return id
   },
@@ -124,10 +116,7 @@ export const fsHandlers = {
 }
 
 function unwatch(id: number): void {
-  const entry = watchers.get(id)
-  if (!entry) return
-  if (entry.timer) clearTimeout(entry.timer)
-  for (const watcher of entry.watchers) watcher.close()
+  for (const stop of watchers.get(id) ?? []) stop()
   watchers.delete(id)
 }
 
