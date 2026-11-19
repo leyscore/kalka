@@ -9,11 +9,13 @@ import {
   type SceneGraph
 } from '@kalka/scene-graph'
 
-const { comments, cssClasses, enabledLibraries, frameReviews, interVersion } = KALKA_PLUGIN_DATA
+const { comments, cssClasses, documentId, enabledLibraries, frameReviews, interVersion } =
+  KALKA_PLUGIN_DATA
 
 /**
  * The document record's plugin data: its CSS classes, comments and frame reviews, the libraries it
- * has enabled, and Inter 4 when its text uses it rather than Figma's Inter 3.19.
+ * has enabled, Inter 4 when its text uses it rather than Figma's Inter 3.19, and the root's id,
+ * which a reopen restores since Figma saves the record itself as `0:0`.
  */
 export function applyDocumentPluginData(
   documentNodeChange: KiwiNodeChange,
@@ -46,9 +48,11 @@ export function applyDocumentPluginData(
   const bindings = [...graph.enabledLibraries.values()]
   // With no libraries enabled, the entry the document was opened with is kept as it was.
   const opened = rootPluginData.find((entry) => isPluginDataEntry(entry, enabledLibraries))
-  documentNodeChange.pluginData = mergePluginData(
+  const withLibraries =
     bindings.length > 0
       ? withPluginData(rootPluginData, enabledLibraries, bindings)
       : [...withoutPluginData(rootPluginData, [enabledLibraries]), ...(opened ? [opened] : [])]
+  documentNodeChange.pluginData = mergePluginData(
+    withPluginData(withLibraries, documentId, graph.rootId)
   )
 }

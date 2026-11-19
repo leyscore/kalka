@@ -173,6 +173,15 @@ export const KALKA_PLUGIN_DATA = {
    * Figma and keeps Figma's Inter 3.19.
    */
   interVersion: textPluginDataField('interVersion', 'format', ['4'] as const),
+  /**
+   * The document root's id, on the DOCUMENT node, whose own GUID is always Figma's `0:0`; the
+   * root keeps it across a save as every layer keeps its GUID.
+   */
+  documentId: jsonPluginDataField(
+    'documentId',
+    'bookkeeping',
+    v.pipe(v.string(), v.nonEmpty(), v.maxLength(64))
+  ),
   /** Libraries enabled for the document, on the DOCUMENT node. */
   enabledLibraries: jsonPluginDataField('enabledLibraries', 'bookkeeping', enabledLibraries),
   /** The library this document publishes as, on the DOCUMENT node. */

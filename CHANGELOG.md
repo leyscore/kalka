@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Breaking changes
+
+- Layers opened from a `.fig` file keep the GUIDs the file saved them under as their IDs, instead of `0:1`, `0:2`, and so on in reading order, so an ID stays the same after a save and reopen. IDs printed by `kalka tree` or MCP before this release no longer find their layers.
+
 ### Fixed
 
 - A variable mode an outer instance in a `.fig` sets on a nested layer for one collection keeps the modes that layer has in its other collections, and an override that clears a collection's mode lets the layer take its parent's mode again.

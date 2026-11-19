@@ -8,7 +8,6 @@ import {
   exportCanvasGuides,
   figImageEntries,
   importCanvasGuides,
-  parseGuidOrNull,
   stringToGuid,
   type FigNodeChangeExportRuntime
 } from '@kalka/fig/node-change'
@@ -21,8 +20,7 @@ import {
   renameBehaviourProperties,
   withBehaviour,
   type PluginDataEntry,
-  type SceneGraph,
-  type SceneNode
+  type SceneGraph
 } from '@kalka/scene-graph'
 import { fractionalPosition } from '@kalka/scene-graph/order-keys'
 import type { GUID, Rect, Size } from '@kalka/scene-graph/primitives'
@@ -30,7 +28,8 @@ import type { GUID, Rect, Size } from '@kalka/scene-graph/primitives'
 import type { SkiaRenderer } from '#core/canvas'
 import { CANVAS_BG_COLOR, IS_BROWSER, IS_TAURI } from '#core/constants'
 import { getPageColor } from '#core/figma-api/page-backgrounds'
-import { applyDocumentPluginData } from '#core/io/formats/fig/library-metadata'
+import { applyDocumentPluginData } from '#core/io/formats/fig/document-metadata'
+import { assignOwnLayerGuids, layerSourceOwners, ownGuid } from '#core/io/formats/fig/layer-guids'
 import { findFigThumbnailPageId } from '#core/io/formats/fig/thumbnail-page'
 import { renderThumbnail, thumbnailFrame, type ThumbnailFrame } from '#core/io/formats/raster'
 import type { NodeRasterizer } from '#core/io/types'
@@ -161,46 +160,6 @@ async function renderFigThumbnail(
 }
 
 /**
- * The GUID a layer that was never opened from a file is saved under: its graph ID, which has
- * Figma's `sessionID:localID` shape and never changes, so later saves keep it. Saved GUIDs of
- * opened layers and GUIDs already written win over it.
- */
-function ownGuid(
-  id: string,
-  sourceGuidValues: ReadonlySet<string>,
-  assignedGuidValues: ReadonlySet<string>
-): GUID | null {
-  if (!/^\d+:\d+$/.test(id)) return null
-  const guid = stringToGuid(id)
-  const key = `${guid.sessionID}:${guid.localID}`
-  return sourceGuidValues.has(key) || assignedGuidValues.has(key) ? null : guid
-}
-
-/**
- * Whether a layer was opened from a file. A style keeps an ID of its own in `source.id`, which
- * only names a saved record when it spells a GUID; one made by token import or paste does not.
- */
-function savedFromFile(node: SceneNode): boolean {
-  if (!node.source.id) return false
-  return node.sharedStyleType === null || parseGuidOrNull(node.source.id) !== null
-}
-
-function assignOwnLayerGuids(
-  graph: SceneGraph,
-  sourceGuidValues: ReadonlySet<string>,
-  nodeIdToGuid: Map<string, GUID>,
-  assignedGuidValues: Set<string>
-): void {
-  for (const node of graph.nodes.values()) {
-    if (savedFromFile(node) || node.id === graph.rootId || nodeIdToGuid.has(node.id)) continue
-    const guid = ownGuid(node.id, sourceGuidValues, assignedGuidValues)
-    if (!guid) continue
-    nodeIdToGuid.set(node.id, guid)
-    assignedGuidValues.add(`${guid.sessionID}:${guid.localID}`)
-  }
-}
-
-/**
  * The first local ID the counter can mint in sessions 0 and 1: past every saved GUID and every
  * ID that layers, collections, modes, variables and component properties are saved under.
  */
@@ -311,7 +270,7 @@ function buildCanvasEntries(
   localIdCounter: { value: number },
   nodeIdToGuid: Map<string, GUID>,
   assignedGuidValues: Set<string>,
-  sourceGuidValues: ReadonlySet<string>,
+  sourceOwners: ReadonlyMap<string, string>,
   ownGuids = true
 ): { canvasEntries: CanvasExportEntry[]; internalCanvasGuid: GUID | null } {
   const canvasEntries: CanvasExportEntry[] = []
@@ -321,7 +280,7 @@ function buildCanvasEntries(
     const canvasGuid = (() => {
       if (!page.source.id) {
         return (
-          (ownGuids ? ownGuid(page.id, sourceGuidValues, assignedGuidValues) : null) ?? {
+          (ownGuids ? ownGuid(page.id, sourceOwners, assignedGuidValues) : null) ?? {
             sessionID: 0,
             localID: localIdCounter.value++
           }
@@ -429,7 +388,7 @@ export interface FigExportSetup {
 }
 
 export interface FigExportSetupOptions {
-  /** Saved identities on pages that may not be loaded; new layer IDs must not claim them. */
+  /** Saved identities on pages that may not be loaded; new variable IDs must not claim them. */
   archiveRecordIds?: readonly string[]
   /** The first local ID a new GUID may take, above every GUID the target archive holds. */
   nextLocalId?: number
@@ -474,7 +433,8 @@ export async function prepareFigExport(
   const propertyIdToGuid = new Map<string, GUID>()
 
   const nodeSourceGuidValues = layerSourceGuids(graph)
-  const reservedLayerGuids = new Set([...nodeSourceGuidValues, ...(options.archiveRecordIds ?? [])])
+  const sourceOwners = layerSourceOwners(graph)
+  const archiveRecordIds = new Set(options.archiveRecordIds)
   const propertyIds = collectComponentPropertyIds(graph)
   // Before any canvas, variable or layer takes a counter GUID, so none collides.
   localIdCounter.value = Math.max(
@@ -490,7 +450,7 @@ export async function prepareFigExport(
     localIdCounter,
     nodeIdToGuid,
     assignedGuidValues,
-    reservedLayerGuids,
+    sourceOwners,
     true
   )
   // Archive records keep their GUIDs: claim them before any copy that kept one can.
@@ -511,7 +471,9 @@ export async function prepareFigExport(
     assignedGuidValues,
     nodeSourceGuidValues,
     archived
-      ? (id) => archived.has(id) || ownGuid(id, reservedLayerGuids, assignedGuidValues) !== null
+      ? (id) =>
+          archived.has(id) ||
+          (!archiveRecordIds.has(id) && ownGuid(id, sourceOwners, assignedGuidValues) !== null)
       : undefined
   )
 
@@ -523,7 +485,7 @@ export async function prepareFigExport(
     nodeSourceGuidValues
   )
   const pluginDataOverrides = renamedBehaviourPluginData(graph, propertyIdToGuid)
-  assignOwnLayerGuids(graph, reservedLayerGuids, nodeIdToGuid, assignedGuidValues)
+  assignOwnLayerGuids(graph, sourceOwners, nodeIdToGuid, assignedGuidValues)
 
   return {
     graph,
