@@ -10,6 +10,12 @@ export {
   type ExpandedComponent,
   type ExpandOptions
 } from './expand'
+export {
+  loadedFaceWeights,
+  matchedWeight,
+  matchLoadedFontWeights,
+  type LoadedFaceWeights
+} from './fonts'
 export { createClaudeDesignGraph, type ClaudeDesignGraph } from './graph'
 export {
   claudeDesignFilesFromZip,

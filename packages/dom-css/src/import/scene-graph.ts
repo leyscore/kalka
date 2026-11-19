@@ -1,5 +1,6 @@
 import { SceneGraph, type SceneNode, parseShaderLayer } from '@kalka/scene-graph'
 import {
+  clipsBackgroundToText,
   colorToFillFromCSS,
   firstCSSNumber,
   mergedStyle,
@@ -94,6 +95,22 @@ function createTextNode(
   return node
 }
 
+/**
+ * Text that auto layout places keeps the size it was measured at: one line takes the width of its
+ * words, and several keep the width they wrapped at, rounded up so the widest line still fits.
+ */
+function sizeFlowText(node: SceneNode, box: LayoutBox): void {
+  const lineHeight = node.lineHeight ?? node.fontSize * 1.3
+  node.height = box.height
+  if (box.height < lineHeight * 1.5) {
+    node.width = Math.ceil(box.width) + 1
+    node.textAutoResize = 'WIDTH_AND_HEIGHT'
+    return
+  }
+  node.width = Math.ceil(box.width) + 1
+  node.textAutoResize = 'HEIGHT'
+}
+
 /** The box an element's words take, from their measured lines; none when they were not measured. */
 function textBounds(element: DesignElement): LayoutBox | undefined {
   const boxes: LayoutBox[] = []
@@ -133,6 +150,7 @@ function createPhrasingNode(
     node.textAutoResize = 'HEIGHT'
     applyHTMLElement(node, element)
     if (placement?.byMeasure && box) placeAtMeasure(node, box, placement)
+    else if (box) sizeFlowText(node, box)
     return node
   }
   const frame = createFrameNode(graph, parentId, element, style, placement)
@@ -150,7 +168,7 @@ function createPhrasingNode(
     // cannot wrap its last word; a paragraph wraps where the browser wrapped it.
     const oneLine = (drawn?.height ?? box.height - top - bottom) < lineHeight * 1.5
     const width = Math.max(1, box.width - left - right)
-    label.width = width
+    label.width = oneLine ? width : Math.ceil(width) + 1
     label.textAutoResize = oneLine || frame.layoutMode !== 'NONE' ? 'WIDTH_AND_HEIGHT' : 'HEIGHT'
     label.x = left
     label.y = drawn && frame.layoutMode === 'NONE' ? drawn.y - box.y : top
@@ -224,6 +242,7 @@ function createElementNode(
     applyHTMLElement(text, element)
     if (placement?.byMeasure && element.layoutBox)
       placeAtMeasure(text, element.layoutBox, placement)
+    else if (element.layoutBox) sizeFlowText(text, element.layoutBox)
     return text
   }
 
@@ -302,8 +321,11 @@ function authoredOverrides(graph: SceneGraph, node: SceneNode): DesignStyleDecla
   // An authored `position: relative` kept over the placement would offset the layer from where
   // the page put it by its own coordinates, again on every layout.
   const placed = written.position === 'absolute'
+  // The `background` shorthand resets the clip the fields write for text filled by its background.
+  const clippedToText = clipsBackgroundToText(written)
   for (const [property, value] of Object.entries(node.style)) {
     if (placed && PLACEMENT_PROPERTIES.has(property)) continue
+    if (clippedToText && property === 'background') continue
     if (!sameValue(value, written[property])) kept[property] = value
   }
   return kept

@@ -78,8 +78,10 @@ export function placeAtMeasure(node: SceneNode, box: LayoutBox, placement: Place
       return
     }
     // A block's text wraps where the browser wrapped it: on one line with a little room, so a
-    // slightly wider font cannot wrap its last word; over several at its width, so it wraps there.
-    node.width = box.height < lineHeight * 1.5 ? Math.ceil(box.width * 1.01) + 1 : box.width
+    // slightly wider font cannot wrap its last word; over several at its width, rounded up, so
+    // it wraps there and a fraction of a pixel cannot wrap its widest line.
+    node.width =
+      box.height < lineHeight * 1.5 ? Math.ceil(box.width * 1.01) + 1 : Math.ceil(box.width) + 1
     node.height = box.height
     node.textAutoResize = 'HEIGHT'
     return

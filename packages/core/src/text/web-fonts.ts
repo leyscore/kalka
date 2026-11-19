@@ -2,7 +2,11 @@ import type { FontFaceData, RemoteFontSource, ResolveFontResult } from 'unifont'
 
 import { IS_BROWSER } from '#core/constants'
 import { parseFontStyle } from '#core/text/face'
-import { loadGoogleOpticalSizes, type AxisRange } from '#core/text/web-font/google-axes'
+import {
+  knownOpticalSizes,
+  loadGoogleOpticalSizes,
+  type AxisRange
+} from '#core/text/web-font/google-axes'
 import {
   createProviderUnifont,
   isRemoteFontSource,
@@ -288,9 +292,13 @@ export class WebFontResolver {
 
   /** Google's optical size ranges, read once; none when the metadata cannot be read. */
   private googleOpticalSizes(): Promise<Map<string, AxisRange>> {
-    this.opticalSizes ??= loadGoogleOpticalSizes((url) => this.fetchRemote(url)).catch(
-      () => new Map<string, AxisRange>()
-    )
+    // A page cannot read Google's metadata across origins: it takes the families known to have
+    // the axis instead of logging a refused request.
+    this.opticalSizes ??= IS_BROWSER
+      ? Promise.resolve(knownOpticalSizes())
+      : loadGoogleOpticalSizes((url) => this.fetchRemote(url)).catch(
+          () => new Map<string, AxisRange>()
+        )
     return this.opticalSizes
   }
 

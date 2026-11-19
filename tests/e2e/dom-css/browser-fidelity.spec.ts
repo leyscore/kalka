@@ -86,4 +86,16 @@ test.describe('HTML import draws as the page does', () => {
     )
     expect(layers.find((layer) => layer.name === 'badge')).toMatchObject({ x: 20, y: 30 })
   })
+
+  test('places a translated layer where the layout put it, keeping its translation', async ({
+    page
+  }) => {
+    const layers = await publicBrowserHTMLLayers(
+      page,
+      `<div style="position:relative;width:400px;height:200px"><div class="bar" style="position:absolute;left:50%;bottom:20px;transform:translateX(-50%);width:100px;height:40px;background:#000"></div></div>`
+    )
+    const bar = layers.find((layer) => layer.name === 'bar')
+    expect(bar).toMatchObject({ x: 200, y: 140 })
+    expect(bar?.style.transform).toBe('translateX(-50%)')
+  })
 })

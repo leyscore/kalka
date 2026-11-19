@@ -53,6 +53,11 @@ const KNOWN_OPTICAL_SIZES: ReadonlyArray<[string, AxisRange]> = [
   ['Truculenta', ['12', '72']]
 ]
 
+/** The families known to have an optical size axis, and its range. */
+export function knownOpticalSizes(): Map<string, AxisRange> {
+  return new Map(KNOWN_OPTICAL_SIZES)
+}
+
 /**
  * The optical size range of each Google Fonts family that has one. Requested with that range,
  * a family comes as a variable font, and browsers pick the optical size for each font size, as
@@ -62,7 +67,7 @@ const KNOWN_OPTICAL_SIZES: ReadonlyArray<[string, AxisRange]> = [
 export async function loadGoogleOpticalSizes(
   fetcher: (url: string) => Promise<Response>
 ): Promise<Map<string, AxisRange>> {
-  const known = () => new Map(KNOWN_OPTICAL_SIZES)
+  const known = knownOpticalSizes
   const response = await fetcher(GOOGLE_FONTS_METADATA_URL).catch(() => null)
   if (!response?.ok) return known()
   const parsed = v.safeParse(MetadataSchema, await response.json())

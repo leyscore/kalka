@@ -4,6 +4,8 @@ import {
   claudeDesignBoardDocument,
   createClaudeDesignGraph,
   expandDesignComponent,
+  loadedFaceWeights,
+  matchLoadedFontWeights,
   type ClaudeDesignProject,
   type DesignComponent,
   type DesignValues
@@ -119,9 +121,10 @@ export async function claudeDesignToSceneGraph(
           height: board.fill ? undefined : board.height
         }
       })
-      if (board.radius !== null) {
-        const artboard = graph.getChildren(pageOf(board.pageId)).at(-1)
-        if (artboard) graph.updateNode(artboard.id, { cornerRadius: board.radius })
+      const artboard = graph.getChildren(pageOf(board.pageId)).at(-1)
+      if (artboard) {
+        matchLoadedFontWeights(graph, artboard.id, loadedFaceWeights(cssText))
+        if (board.radius !== null) graph.updateNode(artboard.id, { cornerRadius: board.radius })
       }
     }
   } finally {
