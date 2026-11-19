@@ -10,7 +10,6 @@ import { agentChanges, restoreBeforeChange } from '@/app/document/versions/burst
 import { useEditorStore } from '@/app/editor/active-store'
 import { agentTasks, type AgentTask } from '@/app/presence/tasks'
 import AppButton from '@/components/ui/button/AppButton.vue'
-import PanelHeader from '@/components/ui/panel/PanelHeader.vue'
 
 /**
  * Comments and agents' work: the document's threads, open or resolved, and what its agents said
@@ -66,7 +65,9 @@ async function revealTask(task: AgentTask) {
     data-slot="comments-panel"
     :aria-label="messages.title"
   >
-    <PanelHeader>{{ messages.title }}</PanelHeader>
+    <h3 class="shrink-0 px-4 pt-3 pb-2 text-[11px] font-semibold text-muted">
+      {{ messages.title }}
+    </h3>
     <div role="tablist" class="flex flex-wrap gap-1 px-3 pb-2">
       <button
         v-for="name in tabs"
