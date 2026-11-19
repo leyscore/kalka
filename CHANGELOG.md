@@ -18,6 +18,7 @@
 - A `.fig` with a NaN or infinite number in a layer's size, position, stroke weight or other field opens with that field at its default instead of breaking the bounds of its page; wrapped auto layout lines saved as following the item spacing keep that spacing.
 - Text ranges in an imported `.fig` are drawn in the paints of the fill style they name, also when an instance overrides the range.
 - Saving a `.fig` after moving a component that has an instance in slot content no longer writes the component twice, so the file opens again.
+- Layers in an imported `.fig` follow only the component property bindings Figma applies, from their parameter map, so a stale legacy reference no longer hides or retexts a layer that Figma draws.
 
 ## 0.2.0-beta.3.1 — 2026-11-19
 
