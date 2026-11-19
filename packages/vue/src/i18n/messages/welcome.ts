@@ -36,6 +36,7 @@ export const welcomeMessageDefaults = {
   startDesigning: 'Start designing',
   homeTitle: 'Welcome to Kalka',
   startWithSize: 'Start with a size',
+  orStartWithSize: 'Or start with a size',
   presetDesktop: 'Desktop',
   presetLaptop: 'Laptop',
   presetTablet: 'Tablet',

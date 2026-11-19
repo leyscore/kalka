@@ -1,113 +1,88 @@
 import { tv } from 'tailwind-variants'
 
-/** Lift on hover and a press that gives, shared by the cards on Home. */
-const cardMotion =
-  'transition-[background-color,translate,box-shadow,scale] duration-200 ease-out hover:-translate-y-0.5 active:scale-[0.98] motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100'
-
-const cardFocus = 'outline-none focus-visible:ring-2 focus-visible:ring-accent/50'
-
-/** The headings above each part of Home. */
-export const homeHeading = 'text-sm font-semibold text-label'
-
-/** The top of Home: the mark, the greeting and the request, centered on the backdrop. */
+/**
+ * The top of Home: the kalka.design pixel sky as a band, with the mark, the greeting, the request
+ * to the agent, the sizes to start from and the ways to bring a file in. The sky is the same in
+ * both themes, so everything on it is white.
+ */
 export const homeHero = {
-  root: 'flex min-h-[min(54vh,480px)] scroll-mt-14 flex-col items-center justify-center gap-7 text-center',
-  mark: 'size-14 overflow-hidden rounded-[14px] shadow-[0_12px_40px_-12px_color-mix(in_srgb,var(--color-accent)_70%,transparent)]',
+  root: 'relative isolate mx-0 flex shrink-0 scroll-mt-14 flex-col items-center gap-6 overflow-hidden px-4 pt-16 pb-24 text-center text-white sm:mx-2 sm:rounded-b-[28px] sm:pt-[72px] sm:pb-28',
+  mark: 'size-[52px] overflow-hidden rounded-[13px]',
   title:
-    'font-display text-[clamp(28px,3.2vw,40px)] leading-none font-semibold tracking-[-0.035em] text-balance text-surface',
+    'font-display text-[clamp(40px,5.4vw,64px)] leading-none font-semibold tracking-[-0.045em] text-balance',
   prompt: 'w-full max-w-[640px]',
-  actions: 'justify-center',
-  settings: 'absolute top-2 right-4 z-10 size-9 rounded-lg text-muted hover:text-surface'
+  corner: 'absolute top-3 right-3 z-10 flex gap-2 sm:top-[18px] sm:right-[18px]',
+  cornerButton:
+    'size-[38px] rounded-[11px] border border-white/30 bg-white/12 text-white hover:bg-white/22 hover:text-white'
 } as const
 
-/** The actions under the request: quiet text buttons, then a new blank design. */
-export const homeAction = {
-  quiet: 'h-[38px] rounded-[9px] px-3 text-[13px] text-label hover:bg-(--pill-hover-bg)',
-  primary: 'ms-1.5 h-[38px] gap-[7px] rounded-[9px] px-[15px] text-[13px] font-semibold'
-} as const
+/** The request to the agent: a frosted field on the sky with a white send button. */
+export const homePrompt = tv({
+  slots: {
+    root: 'flex items-center gap-1.5 rounded-[16px] border border-white/30 bg-white/12 py-1.5 pr-1.5 pl-4 text-left backdrop-blur-[14px] transition-[border-color,background-color] duration-200 focus-within:border-white/55 focus-within:bg-white/16',
+    icon: 'size-5 shrink-0 text-[#DCE6FF]',
+    input:
+      'h-11 min-w-0 flex-1 border-0 bg-transparent text-base text-white outline-none placeholder:text-[#B9C9F8]',
+    submit:
+      'h-11 shrink-0 cursor-pointer rounded-[11px] bg-white px-5 text-[15px] font-semibold text-[#0E1222] transition-[background-color,scale] duration-150 outline-none hover:bg-[#DCE6FF] focus-visible:ring-2 focus-visible:ring-white/70 active:scale-[0.97] disabled:cursor-default disabled:opacity-60 motion-reduce:active:scale-100'
+  }
+})
 
-/** The file search: a quiet field on the backdrop, as soft as the cards around it. */
+/** The sizes under the request: frosted chips, each with its frame drawn to its proportions. */
+export const sizeChip = tv({
+  slots: {
+    root: 'flex h-[52px] cursor-pointer items-center gap-2.5 rounded-[13px] border border-white/25 bg-white/10 ps-2.5 pe-3.5 text-[#DCE6FF] transition-[background-color,border-color,color] duration-200 outline-none hover:border-white/45 hover:bg-white/20 hover:text-white focus-visible:ring-2 focus-visible:ring-white/70',
+    device: 'flex size-[26px] shrink-0 items-center justify-center',
+    outline: 'rounded-[2px] border-[1.5px] border-current',
+    body: 'flex flex-col items-start gap-px text-left',
+    name: 'text-[13px] font-semibold text-white',
+    detail: 'font-mono text-[11px] text-[#B9C9F8] tabular-nums'
+  },
+  variants: {
+    custom: {
+      true: {
+        device: 'rounded-[4px] border-[1.5px] border-dashed border-current',
+        detail: 'font-sans'
+      }
+    }
+  }
+})
+
+/** The ways to bring something in, as quiet text buttons on the sky. */
+export const homeAction =
+  'inline-flex h-10 cursor-pointer items-center gap-2 rounded-[11px] px-3.5 text-sm font-medium text-[#DCE6FF] transition-colors outline-none hover:bg-white/12 hover:text-white focus-visible:ring-2 focus-visible:ring-white/70'
+
+/** Recent and Storage: two words set like headings, the one shown in full ink. */
+export const filesTab = tv({
+  base: 'cursor-pointer font-display text-2xl font-semibold tracking-[-0.03em] transition-colors outline-none focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-accent/50',
+  variants: {
+    selected: { true: 'text-surface', false: 'text-muted/70 hover:text-muted' }
+  }
+})
+
+/** The storage provider and bucket next to the tabs, with a dot for a configured workspace. */
+export const storageChip =
+  'inline-flex h-[26px] min-w-0 items-center gap-1.5 self-center rounded-full bg-card px-2.5 text-xs text-muted'
+
+/** The file search: a quiet field, as soft as the files around it. */
 export const homeSearch = {
   input:
-    'h-[34px] rounded-[9px] border-transparent bg-card pl-[34px] text-[13px] placeholder:text-muted hover:border-transparent hover:bg-card-hover focus:bg-card-hover',
+    'h-[36px] rounded-[11px] border-transparent bg-card pl-[34px] text-[13px] placeholder:text-muted hover:border-transparent hover:bg-card-hover focus:bg-card-hover',
   leading: 'left-3'
 }
 
-/** A size to start a design with: the device drawn in outline above its name and dimensions. */
-export const presetCard = tv({
-  slots: {
-    root: [
-      'group flex flex-col items-center gap-3.5 rounded-[14px] px-3 pt-[22px] pb-3.5 text-surface',
-      cardMotion,
-      cardFocus
-    ],
-    device: 'flex h-[46px] items-center justify-center',
-    outline:
-      'rounded-[4px] border-[1.5px] border-label transition-colors duration-200 group-hover:border-accent',
-    body: 'flex flex-col items-center gap-0.5',
-    name: 'text-[13px] font-semibold',
-    detail: 'text-[11px] text-muted'
-  },
-  variants: {
-    kind: {
-      size: {
-        root: 'bg-card hover:bg-card-hover',
-        detail: 'font-mono tabular-nums'
-      },
-      custom: {
-        root: 'border border-dashed border-dash hover:border-accent/60 hover:bg-card',
-        outline: 'hidden',
-        device: 'text-label transition-colors duration-200 group-hover:text-accent'
-      }
-    },
-    /** Each device's outline, drawn to its proportions rather than to scale. */
-    device: {
-      desktop: { outline: 'h-[46px] w-[74px]' },
-      laptop: { outline: 'mt-1 h-[42px] w-[66px]' },
-      tablet: { outline: 'h-[46px] w-[34px] rounded-[5px]' },
-      mobile: { outline: 'h-[46px] w-[22px] rounded-[6px]' },
-      social: { outline: 'h-[46px] w-[37px]' }
-    }
-  },
-  defaultVariants: { kind: 'size' }
-})
-
-/** An inline action inside a sentence, such as the import choices under the sizes. */
-export const inlineLink =
-  'cursor-pointer rounded-sm font-medium text-link transition-colors hover:text-link-hover focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none'
-
-/** A row card with a square mark beside a title and a hint, as in Learn the basics. */
-export const learnCard = tv({
-  slots: {
-    root: [
-      'group flex min-w-0 items-center gap-[13px] rounded-[14px] bg-card p-3 text-left text-surface hover:bg-card-hover',
-      cardMotion,
-      cardFocus
-    ],
-    mark: 'grid size-10 shrink-0 place-items-center overflow-hidden rounded-[10px]',
-    body: 'flex min-w-0 flex-col gap-0.5',
-    title: 'truncate text-sm font-semibold',
-    hint: 'truncate text-xs text-muted'
-  },
-  variants: {
-    mark: {
-      tour: { mark: 'grid-cols-2 place-items-stretch bg-brand-blue' },
-      code: {
-        mark: 'bg-brand-ink font-mono text-[13px] text-brand-sky ring-1 ring-white/10 ring-inset'
-      },
-      agent: { mark: 'bg-brand-sky text-brand-ink' }
-    }
-  }
-})
-
-/** The prompt that asks the AI agent for a page: one frosted field with its send button. */
-export const homePrompt = tv({
-  slots: {
-    root: 'flex items-center gap-3 rounded-[18px] border border-glass-border bg-glass py-2.5 pr-2.5 pl-5 text-left backdrop-blur-[24px] transition-[border-color,box-shadow] duration-200 focus-within:border-accent/50 focus-within:shadow-[0_0_0_4px_color-mix(in_srgb,var(--color-accent)_14%,transparent)]',
-    icon: 'size-[17px] shrink-0 text-highlight',
-    input:
-      'h-10 min-w-0 flex-1 border-0 bg-transparent text-base text-surface outline-none placeholder:text-muted',
-    submit:
-      'h-10 shrink-0 cursor-pointer rounded-[11px] bg-accent px-4 text-[13px] font-semibold text-white transition-[opacity,scale] duration-150 outline-none hover:opacity-90 focus-visible:ring-2 focus-visible:ring-accent/50 active:scale-[0.97] disabled:cursor-default disabled:opacity-60 motion-reduce:active:scale-100'
-  }
-})
+/**
+ * The sample file among the recent files: the brand's blue with its quarter shapes, listing the
+ * first steps to take on it.
+ */
+export const sampleTile = {
+  root: 'flex min-w-0 flex-col gap-[7px]',
+  label:
+    'flex cursor-pointer items-baseline gap-2 rounded-sm px-px text-left outline-none focus-visible:ring-2 focus-visible:ring-accent/50',
+  name: 'min-w-0 flex-1 truncate text-[13px] font-medium text-surface',
+  metadata: 'shrink-0 font-mono text-[11px] text-muted',
+  panel:
+    'relative flex aspect-[16/10] flex-col justify-end gap-px overflow-hidden rounded-[4px] bg-brand-blue p-2.5',
+  shapes: 'absolute top-4 right-4 grid size-[54px] grid-cols-2 grid-rows-2 gap-[3px]',
+  step: 'flex h-7 cursor-pointer items-center gap-2 rounded-[8px] px-2 text-left text-[13px] font-medium text-white transition-colors outline-none hover:bg-white/16 focus-visible:ring-2 focus-visible:ring-white/70'
+} as const

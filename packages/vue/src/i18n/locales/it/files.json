@@ -26,6 +26,8 @@
   "clipboardImageFetchFailed": "Impossibile recuperare 1 immagine da Figma. Controlla che il file sorgente sia accessibile e riprova.",
   "clipboardImagesFetchFailed": "Impossibile recuperare {count} immagini da Figma. Controlla che il file sorgente sia accessibile e riprova.",
   "recentFiles": "File recenti",
+  "recentTab": "Recenti",
+  "continueFile": "Continua",
   "recentFilesDescription": "Continua a lavorare su un progetto o iniziane uno nuovo.",
   "noRecentFiles": "Nessun file recente",
   "noRecentFilesDescription": "I file aperti nell’app desktop appariranno qui.",

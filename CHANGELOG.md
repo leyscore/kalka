@@ -9,6 +9,7 @@
 ### Changed
 
 - The welcome screen matches kalka.design: the pixel sky with drifting dot clouds whose dots twinkle on and off, the agent's cursor named Pebble and yours named as you type, and the name and agent buttons in a framed card, in light and dark themes.
+- Home opens on the kalka.design pixel sky: the greeting and the request to the agent, the sizes to start a design with as chips drawn to their proportions, and Join room, Open, Open folder, Paste HTML and Open from a URL under them. Below, Recent and Storage tabs show files like frames on the canvas, with the last file opened in a double tile to continue it and the sample file listing the tour, the code view and the AI agent.
 - Kalka's agent is called Pebble: the first agent working in a document always answers to Pebble, in its cursor label, comments (`@Pebble`) and version history, and agents beside it keep a callsign such as Fern.
 - The agent avoids the look that reads as machine-made: it checks its brief against a list of generated-design habits, such as a cream ground with a serif display and a terracotta accent, purple gradients, reflex fonts, identical icon cards and an eyebrow above every heading, and picks again when its palette or type matches one.
 

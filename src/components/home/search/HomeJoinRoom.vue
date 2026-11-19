@@ -34,9 +34,9 @@ function join() {
 <template>
   <PopoverRoot v-model:open="open">
     <PopoverTrigger as-child>
-      <AppButton size="lg" variant="ghost" :class="homeAction.quiet" data-test-id="home-join-room">
-        {{ messages.joinRoomEllipsis }}
-      </AppButton>
+      <button type="button" :class="homeAction" data-test-id="home-join-room">
+        <icon-hugeicons-user-group class="size-4" />{{ messages.joinRoomEllipsis }}
+      </button>
     </PopoverTrigger>
     <PopoverPortal>
       <PopoverContent
