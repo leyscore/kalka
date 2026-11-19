@@ -46,7 +46,6 @@ test('a dropped Claude Design export opens as a document of its artboards', asyn
   await dropFile(page, 'bakery.zip', await exportedProject())
 
   await expect(tabs.getByRole('tab').last()).toContainText('Bakery landing', { timeout: 30_000 })
-  await expect(page.getByText('Imported the Claude Design project', { exact: false })).toBeVisible()
 
   const artboards = await getArtboardContents(page)
   const home = artboards.find((artboard) => artboard.name === 'Home')

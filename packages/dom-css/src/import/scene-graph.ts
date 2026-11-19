@@ -8,7 +8,13 @@ import {
 } from '@kalka/scene-graph/css-model'
 
 import { shaderSettings } from '../export/tidy/attributes'
-import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
+import type {
+  DesignDocument,
+  DesignElement,
+  DesignNode,
+  DesignStyleDeclaration,
+  LayoutBox
+} from '../types'
 import { hasBoxStyle, isTextLikeElement, textContent } from './element-kinds'
 import { applyHTMLElement } from './html-element'
 import { readElementStyle, svgImageFill } from './image'
@@ -88,6 +94,28 @@ function createTextNode(
   return node
 }
 
+/** The box an element's words take, from their measured lines; none when they were not measured. */
+function textBounds(element: DesignElement): LayoutBox | undefined {
+  const boxes: LayoutBox[] = []
+  const visit = (nodes: readonly DesignNode[]) => {
+    for (const node of nodes) {
+      if (node.type === 'text') {
+        if (node.layoutBox && node.text.trim()) boxes.push(node.layoutBox)
+      } else visit(node.children)
+    }
+  }
+  visit(element.children)
+  if (boxes.length === 0) return undefined
+  const top = Math.min(...boxes.map((box) => box.y))
+  const left = Math.min(...boxes.map((box) => box.x))
+  return {
+    x: left,
+    y: top,
+    width: Math.max(...boxes.map((box) => box.x + box.width)) - left,
+    height: Math.max(...boxes.map((box) => box.y + box.height)) - top
+  }
+}
+
 /** A block of text and inline elements as one text layer, inside its box when it paints one. */
 function createPhrasingNode(
   graph: SceneGraph,
@@ -100,6 +128,7 @@ function createPhrasingNode(
   const box = element.layoutBox
   if (!paintsBox(style)) {
     const node = createTextNode(graph, parentId, text, style)
+    node.style = { ...element.inlineStyle }
     node.styleRuns = styleRuns
     node.textAutoResize = 'HEIGHT'
     applyHTMLElement(node, element)
@@ -115,14 +144,16 @@ function createPhrasingNode(
     const top = firstCSSNumber(style, 'padding-top') ?? 0
     const bottom = firstCSSNumber(style, 'padding-bottom') ?? 0
     const lineHeight = label.lineHeight ?? label.fontSize * 1.3
+    // Where the browser drew the words: a button taller than its line centers them.
+    const drawn = textBounds(element)
     // One line (a badge, a button) keeps the width of its words, so slightly wider font metrics
     // cannot wrap its last word; a paragraph wraps where the browser wrapped it, with a little room.
-    const oneLine = box.height - top - bottom < lineHeight * 1.5
+    const oneLine = (drawn?.height ?? box.height - top - bottom) < lineHeight * 1.5
     const width = Math.max(1, box.width - left - right)
     label.width = oneLine ? width : Math.ceil(width * 1.01) + 1
     label.textAutoResize = oneLine || frame.layoutMode !== 'NONE' ? 'WIDTH_AND_HEIGHT' : 'HEIGHT'
     label.x = left
-    label.y = top
+    label.y = drawn && frame.layoutMode === 'NONE' ? drawn.y - box.y : top
   }
   return frame
 }

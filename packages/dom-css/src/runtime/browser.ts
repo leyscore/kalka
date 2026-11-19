@@ -205,6 +205,8 @@ function requestFrame(browserDocument: Document): Promise<void> {
 const DEFAULT_VIEWPORT_WIDTH = 1000
 
 const AT_REST_CSS = '*,*::before,*::after{animation:none!important;transition:none!important}'
+/** Marks the measuring page's own stylesheet, which is not the author's. */
+const AT_REST_ATTRIBUTE = 'data-kalka-at-rest'
 
 /** How long measuring waits for the page's web fonts before it goes ahead without them. */
 const FONT_WAIT_MS = 4000
@@ -291,8 +293,11 @@ async function computeStylesInIframe(
     iframeDocument.close()
 
     const style = iframeDocument.createElement('style')
-    style.textContent = `${cssText}\n${AT_REST_CSS}`
-    iframeDocument.head.append(style)
+    style.textContent = cssText
+    const atRest = iframeDocument.createElement('style')
+    atRest.setAttribute(AT_REST_ATTRIBUTE, '')
+    atRest.textContent = AT_REST_CSS
+    iframeDocument.head.append(style, atRest)
 
     const content = iframeDocument.createElement('div')
     const { marked, elements } = markedForMeasure(designDocument)
@@ -353,6 +358,68 @@ function textBox(node: Node, origin: DOMRect): LayoutBox | undefined {
   range.selectNodeContents(node)
   const rect = range.getBoundingClientRect()
   return rect.width > 0 || rect.height > 0 ? boxOf(rect, origin) : undefined
+}
+
+/** Motion is not part of a design at rest. */
+const UNKEPT_RULE_PROPERTY = /^(animation|transition)(-|$)/
+
+/** A stylesheet's rules; none for one from another origin, whose result is still computed. */
+function readableRules(sheet: CSSStyleSheet): CSSRuleList | null {
+  try {
+    return sheet.cssRules
+  } catch {
+    return null
+  }
+}
+
+/** The page's style rules that apply in its window, in the order the cascade reads them. */
+function activeStyleRules(root: Document | ShadowRoot, view: Window & typeof globalThis) {
+  const rules: CSSStyleRule[] = []
+  const collect = (list: CSSRuleList) => {
+    for (const rule of Array.from(list)) {
+      if (rule instanceof view.CSSStyleRule) rules.push(rule)
+      else if (rule instanceof view.CSSMediaRule) {
+        if (view.matchMedia(rule.conditionText).matches) collect(rule.cssRules)
+      } else if (rule instanceof view.CSSSupportsRule) {
+        if (view.CSS.supports(rule.conditionText)) collect(rule.cssRules)
+      }
+    }
+  }
+  for (const sheet of Array.from(root.styleSheets)) {
+    const owner = sheet.ownerNode
+    if (owner instanceof view.Element && owner.hasAttribute(AT_REST_ATTRIBUTE)) continue
+    const sheetRules = readableRules(sheet)
+    if (sheetRules) collect(sheetRules)
+  }
+  return rules
+}
+
+/**
+ * What the page's stylesheets declare for an element, as its author wrote it: the import keeps
+ * what a layer's fields cannot say, such as a tiled dot pattern or a mask. A value that uses a
+ * variable is taken as computed, since the variable stays behind with the page.
+ */
+function ruleDeclarations(
+  element: Element,
+  rules: readonly CSSStyleRule[],
+  computed: CSSStyleDeclaration
+): Record<string, string> {
+  const declared: Record<string, string> = {}
+  for (const rule of rules) {
+    let matches = false
+    try {
+      matches = element.matches(rule.selectorText)
+    } catch {
+      continue
+    }
+    if (!matches) continue
+    for (const property of Array.from(rule.style)) {
+      if (UNKEPT_RULE_PROPERTY.test(property)) continue
+      const value = rule.style.getPropertyValue(property)
+      declared[property] = value.includes('var(') ? computed.getPropertyValue(property) : value
+    }
+  }
+  return declared
 }
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg'
@@ -420,11 +487,22 @@ function copyComputedStyles(
     rendered.set(element.getAttribute(MEASURE_ATTRIBUTE) ?? '', element)
 
   const origin = content.getBoundingClientRect()
+  const root = content.getRootNode()
+  const rules =
+    root instanceof view.Document || root instanceof view.ShadowRoot
+      ? activeStyleRules(root, view)
+      : []
   for (const [index, designElement] of elements.entries()) {
     Reflect.deleteProperty(designElement.attrs, MEASURE_ATTRIBUTE)
     const domElement = rendered.get(String(index))
     if (!domElement) continue
-    designElement.computedStyle = computedStyleToRecord(view.getComputedStyle(domElement), options)
+    const computed = view.getComputedStyle(domElement)
+    designElement.computedStyle = computedStyleToRecord(computed, options)
+    if (rules.length > 0) {
+      const declared = ruleDeclarations(domElement, rules, computed)
+      if (Object.keys(declared).length > 0)
+        designElement.inlineStyle = { ...declared, ...designElement.inlineStyle }
+    }
     designElement.layoutBox = layoutBoxOf(domElement, origin)
     if (domElement.namespaceURI === SVG_NAMESPACE && domElement.localName === 'svg') {
       const markup = drawnSVG(domElement, designElement.layoutBox)

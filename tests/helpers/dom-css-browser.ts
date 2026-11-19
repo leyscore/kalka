@@ -222,3 +222,44 @@ export async function computedStyleProperties(
     )
   }, properties)
 }
+
+/** Every layer a page imports as, measured at a desktop width, in tree order. */
+export async function publicBrowserHTMLLayers(page: Page, html: string) {
+  await ensureAppPage(page)
+  await page.setContent('<main></main>')
+
+  return page.evaluate(
+    async ({ sourceHTML, modulePath }) => {
+      const { browserHTMLToSceneGraph } = await import(modulePath)
+      const graph = await browserHTMLToSceneGraph(sourceHTML, { compute: { viewportWidth: 800 } })
+      const layers: Array<{
+        name: string
+        type: string
+        text: string
+        x: number
+        y: number
+        height: number
+        style: Record<string, string>
+        fills: string[]
+      }> = []
+      const visit = (id: string) => {
+        const node = graph.getNode(id)
+        if (!node) return
+        layers.push({
+          name: node.name,
+          type: node.type,
+          text: node.text,
+          x: node.x,
+          y: node.y,
+          height: node.height,
+          style: { ...node.style },
+          fills: node.fills.map((fill: { type: string }) => fill.type)
+        })
+        node.childIds.forEach(visit)
+      }
+      for (const pageNode of graph.getPages()) pageNode.childIds.forEach(visit)
+      return layers
+    },
+    { sourceHTML: html, modulePath: DOM_CSS_BROWSER_MODULE }
+  )
+}

@@ -1,3 +1,5 @@
+import { compact } from 'es-toolkit/array'
+
 import {
   claudeDesignBoardDocument,
   createClaudeDesignGraph,
@@ -10,6 +12,36 @@ import { browserHTMLToSceneGraph } from '@kalka/dom-css/browser'
 import type { SceneGraph } from '@kalka/scene-graph'
 
 import { openDesignLogicSandbox } from '@/app/document/io/claude-design/sandbox'
+
+/** Where web font stylesheets come from; the only links the import reads. */
+const WEB_FONT_STYLESHEET_HOST = 'fonts.googleapis.com'
+
+/**
+ * The web font stylesheets a board links, as text for the page the import measures in: it reads
+ * only the page's own styles, and text measured in a fallback font sizes boxes as the design
+ * never does. A stylesheet that cannot be read is left out.
+ */
+function webFontCSS(links: readonly string[], cache: Map<string, Promise<string>>) {
+  return Promise.all(
+    links.map((href) => {
+      let url: URL
+      try {
+        url = new URL(href)
+      } catch {
+        return ''
+      }
+      if (url.protocol !== 'https:' || url.hostname !== WEB_FONT_STYLESHEET_HOST) return ''
+      let css = cache.get(url.href)
+      if (!css) {
+        css = fetch(url.href, { credentials: 'omit' })
+          .then((response) => (response.ok ? response.text() : ''))
+          .catch(() => '')
+        cache.set(url.href, css)
+      }
+      return css
+    })
+  ).then((sheets) => compact(sheets).join('\n'))
+}
 
 export interface ClaudeDesignImportProgress {
   board: string
@@ -47,6 +79,7 @@ export async function claudeDesignToSceneGraph(
   const missingBlobs = new Set<string>()
   // The same component with the same props renders the same, wherever it is imported.
   const cache = new Map<string, Promise<DesignValues | null>>()
+  const fontSheets = new Map<string, Promise<string>>()
 
   const values = (name: string, component: DesignComponent, props: DesignValues) => {
     if (!component.script) return Promise.resolve(null)
@@ -72,7 +105,9 @@ export async function claudeDesignToSceneGraph(
       })
       const document = claudeDesignBoardDocument(project, board, expanded)
       for (const id of document.missingBlobs) missingBlobs.add(id)
+      const cssText = await webFontCSS(expanded.links, fontSheets)
       await browserHTMLToSceneGraph(document.html, {
+        cssText: cssText || undefined,
         compute: { viewportWidth: board.width },
         artboardName: board.title,
         signal: options.signal,
