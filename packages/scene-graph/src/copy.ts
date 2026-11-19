@@ -19,12 +19,13 @@ import type {
   LayoutGrid,
   SceneNode,
   Stroke,
-  StyleRun
+  StyleRun,
+  VectorNetwork,
+  VectorRegion
 } from './'
 import { geometryCommandCoordCount } from './geometry'
 import { cloneInstanceOverrideState } from './instance-overrides'
 import { createDefaultSourceMetadata } from './node-defaults'
-import { cloneVectorNetwork } from './vector-network'
 
 // --- Individual copy functions ---
 
@@ -305,5 +306,28 @@ export function cloneNodeProps(
     cssClasses: structuredClone(src.cssClasses),
     comments: structuredClone(src.comments),
     frameReviews: structuredClone(src.frameReviews)
+  }
+}
+
+/** A vector region's copy, with its own paints when it has them. */
+export function copyVectorRegion(region: VectorRegion): VectorRegion {
+  const copy: VectorRegion = {
+    windingRule: region.windingRule,
+    loops: region.loops.map((loop) => [...loop])
+  }
+  if (region.fills) copy.fills = copyFills(region.fills)
+  return copy
+}
+
+/** Deep-copy a VectorNetwork, stripping any Vue Proxy wrappers. */
+export function cloneVectorNetwork(vn: VectorNetwork): VectorNetwork {
+  return {
+    vertices: vn.vertices.map((v) => ({ ...v })),
+    segments: vn.segments.map((s) => ({
+      ...s,
+      tangentStart: { ...s.tangentStart },
+      tangentEnd: { ...s.tangentEnd }
+    })),
+    regions: vn.regions.map(copyVectorRegion)
   }
 }

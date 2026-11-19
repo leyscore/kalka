@@ -1,8 +1,11 @@
 import { isEqual } from 'es-toolkit/predicate'
 
+import { cloneVectorNetwork, copyVectorRegion } from './copy'
 import type { Mat3 } from './matrix'
 import type { Vector } from './primitives'
-import type { VectorNetwork, VectorRegion, VectorSegment } from './types'
+import type { VectorNetwork, VectorSegment } from './types'
+
+export { cloneVectorNetwork }
 
 /** Concatenate vector networks while preserving independent geometry. */
 export function mergeVectorNetworks(networks: readonly VectorNetwork[]): VectorNetwork {
@@ -60,18 +63,8 @@ export function transformVectorNetwork(m: Mat3, vn: VectorNetwork): VectorNetwor
       tangentStart: mapVector(s.tangentStart),
       tangentEnd: mapVector(s.tangentEnd)
     })),
-    regions: vn.regions.map(copyRegion)
+    regions: vn.regions.map(copyVectorRegion)
   }
-}
-
-/** A region's copy, with its own paints when it has them. */
-function copyRegion(region: VectorRegion): VectorRegion {
-  const copy: VectorRegion = {
-    windingRule: region.windingRule,
-    loops: region.loops.map((loop) => [...loop])
-  }
-  if (region.fills) copy.fills = structuredClone(region.fills)
-  return copy
 }
 
 /** Structural equality of two VectorNetworks (order-sensitive, exact values). */
@@ -81,19 +74,6 @@ export function vectorNetworksEqual(a: VectorNetwork, b: VectorNetwork): boolean
     isEqual(a.segments, b.segments) &&
     isEqual(a.regions, b.regions)
   )
-}
-
-/** Deep-copy a VectorNetwork, stripping any Vue Proxy wrappers. */
-export function cloneVectorNetwork(vn: VectorNetwork): VectorNetwork {
-  return {
-    vertices: vn.vertices.map((v) => ({ ...v })),
-    segments: vn.segments.map((s) => ({
-      ...s,
-      tangentStart: { ...s.tangentStart },
-      tangentEnd: { ...s.tangentEnd }
-    })),
-    regions: vn.regions.map(copyRegion)
-  }
 }
 
 /**
