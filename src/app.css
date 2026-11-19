@@ -143,6 +143,23 @@
   animation: kalka-sky-drift 26s ease-in-out infinite alternate;
 }
 
+/* A few dots of a pixel cloud brighten, then fade, each at its own pace. */
+@keyframes kalka-sky-twinkle {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  45%,
+  55% {
+    opacity: 1;
+  }
+}
+
+@utility animate-sky-twinkle {
+  animation: kalka-sky-twinkle var(--twinkle-duration, 4s) ease-in-out var(--twinkle-delay, 0s)
+    infinite;
+}
+
 /*
  * Brand loader: Kalka's K, cut out of a glass tile, filling with blue liquid as at boot
  * (index.html). The K is a mask of the mono mark, so the shape stays the brand asset.
