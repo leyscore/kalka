@@ -147,6 +147,7 @@ export function createFigDocumentSession(
   state.graph.figKiwiVersion = archive.figKiwiVersion
   state.graph.figSchemaDeflated = archive.figSchemaDeflated
   const loaded = new Set<string>(resume?.checkpoint.loadedPageIds)
+  const edits = watchGraphEdits(state.graph, resume !== undefined)
   let recordInfo: FigArchiveRecordInfo | undefined
   return {
     checkpoint(): FigSessionCheckpoint {
@@ -182,12 +183,34 @@ export function createFigDocumentSession(
       if (loaded.has(id)) return
       const reader = archive.reader.selectPages(new Set([id]))
       loadPageTransaction(state, reader.dependencyClosure, () => {
-        materializeReader(reader, archive.blobs, sessionOptions, state)
+        materializeReader(reader, archive.blobs, sessionOptions, state, edits.edited)
         loaded.add(id)
       })
     },
     get loadedPageIds(): ReadonlySet<string> {
       return new Set(loaded)
+    }
+  }
+}
+
+/**
+ * Whether the graph may hold edits made since the file loaded, which a page load has to
+ * reconcile its new instances with. A resumed session's graph may; a fresh one's does once a
+ * layer changes outside page loads and derived layout, the edits the archive tracker counts.
+ */
+function watchGraphEdits(graph: SceneGraph, resumed: boolean): { readonly edited: boolean } {
+  let edited = resumed
+  if (edited) return { edited }
+  const isEdit = () => !graph.isApplyingImportedState && !graph.isApplyingDerivedLayout
+  const markEdited = () => {
+    if (!isEdit()) return
+    edited = true
+    stop()
+  }
+  const stop = graph.observeNodeChanges({ before: markEdited, created: markEdited })
+  return {
+    get edited() {
+      return edited
     }
   }
 }
@@ -279,7 +302,9 @@ function materializeReader(
   reader: ReturnType<typeof createDocumentReader>,
   blobs: Uint8Array[],
   options: DocumentAssemblyOptions,
-  previous?: AssemblyState
+  previous?: AssemblyState,
+  /** The graph may hold edits made since the file loaded, which new instances must take. */
+  edited = false
 ): AssemblyState {
   for (const diagnostic of reader.bindingDiagnostics) {
     if (!options.onUnresolvedBinding)
@@ -290,7 +315,7 @@ function materializeReader(
   const plan = reader.planComponents(pages, options)
   const state = previous ?? createAssemblyState(reader, options)
   return state.graph.applyImportedStateDuring(
-    () => materializeReaderInto(pages, plan, blobs, state, previous !== undefined),
+    () => materializeReaderInto(pages, plan, blobs, state, edited),
     () => `0:${state.nextImportedId++}`
   )
 }
@@ -379,7 +404,8 @@ function materializeReaderInto(
   plan: ComponentConstruction[],
   blobs: Uint8Array[],
   state: AssemblyState,
-  resumed: boolean
+  /** The graph may hold edits made since the file loaded, which new instances must take. */
+  edited: boolean
 ): AssemblyState {
   const { graph, sources, components, savedSizeNodes, componentIds } = state
   const existingNodeIds = new Set(graph.nodes.keys())
@@ -450,7 +476,7 @@ function materializeReaderInto(
     sources.set(item.sourceId, materialized.root.id)
   }
   /**
-   * Instances a resumed load must sync with their components, which may have changed live since
+   * Instances a load into an edited graph must sync with their components, which may have changed live since
    * the file loaded. Only this page's new instances: syncing a whole component would copy its
    * sizes over the sizes Figma derived for instances earlier pages already placed.
    */
@@ -461,7 +487,7 @@ function materializeReaderInto(
     if (!parentId) throw new Error(`Missing source container ${occurrence.sourceId}`)
     const ordered: string[] = []
     for (const child of occurrence.children) {
-      if (resumed) reconcileOccurrenceStructure(child, graph, components)
+      if (edited) reconcileOccurrenceStructure(child, graph, components)
       if (child.mainComponentId !== null && !sources.has(child.sourceId)) {
         const materialized = materializeInstance(graph, parentId, child, componentIds, {
           blobs,
@@ -469,7 +495,7 @@ function materializeReaderInto(
         })
         rememberDerivedSizes(materialized.nodes)
         linkInstanceSourceChildren(child, materialized, components)
-        if (resumed) {
+        if (edited) {
           reconcileLiveComponentEdits(graph, materialized)
           if (materialized.root.componentId) resync.add(materialized.root.id)
         }

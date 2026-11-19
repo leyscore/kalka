@@ -69,12 +69,7 @@ test('loading a later page keeps a live edit to a nested instance layer over its
   expect(session.graph.getChildren(loadedPlaced.id)[0].width).toBe(120)
 })
 
-/**
- * Syncing a whole component visits every instance of it in the graph, including those earlier
- * pages placed, whose sizes Figma derived. A resumed page syncs only the instances it places,
- * each once.
- */
-test('a resumed page load syncs each instance it places once, never a whole component', async () => {
+async function sessionWithPlacedInstances() {
   await initCodec()
   const source = new SceneGraph()
   const library = source.getPages()[0]
@@ -97,16 +92,61 @@ test('a resumed page load syncs each instance it places once, never a whole comp
     wholeComponents.push(componentId)
     return syncInstances(componentId)
   }
-  const placed = session.pages.find((candidate) => candidate.name === 'Placed')
-  if (!placed) throw new Error('Missing placed page')
-  session.loadPage(placed.id)
+  const pageNamed = (name: string) => {
+    const found = session.pages.find((candidate) => candidate.name === name)
+    if (!found) throw new Error(`Missing page ${name}`)
+    return found
+  }
+  const loadPlaced = () => {
+    const placed = pageNamed('Placed')
+    session.loadPage(placed.id)
+    const pageId = session.graphPageId(placed.id)
+    if (!pageId) throw new Error('Missing materialized page')
+    return session.graph.getChildren(pageId)
+  }
+  return { session, synced, wholeComponents, pageNamed, loadPlaced }
+}
 
-  const pageId = session.graphPageId(placed.id)
-  if (!pageId) throw new Error('Missing materialized page')
-  const instances = session.graph.getChildren(pageId)
+/**
+ * Syncing a whole component visits every instance of it in the graph, including those earlier
+ * pages placed, whose sizes Figma derived. A page loaded into an edited graph syncs only the
+ * instances it places, each once.
+ */
+test('a page load into an edited graph syncs each instance it places once, never a whole component', async () => {
+  const { session, synced, wholeComponents, pageNamed, loadPlaced } =
+    await sessionWithPlacedInstances()
+  session.loadPage(pageNamed('Page 1').id)
+  const libraryId = session.graphPageId(pageNamed('Page 1').id) ?? ''
+  const component = session.graph.getChildren(libraryId)[0]
+  session.graph.updateNode(component.id, { name: 'Badge 2' })
+
+  const instances = loadPlaced()
   expect(instances).toHaveLength(8)
   expect(wholeComponents).toEqual([])
   expect(synced.toSorted()).toEqual(instances.map((instance) => instance.id).toSorted())
+  for (const instance of instances)
+    expect(session.graph.getChildren(instance.id)[0].text).toBe('Badge')
+})
+
+/**
+ * Nothing in a graph only page loads and their layout wrote can differ from the file, so a
+ * page load has nothing to reconcile its instances with; on a design kit that sync was most
+ * of the time a large page took to load.
+ */
+test('a page load into a graph only loads and derived layout wrote syncs no instances', async () => {
+  const { session, synced, wholeComponents, pageNamed, loadPlaced } =
+    await sessionWithPlacedInstances()
+  session.loadPage(pageNamed('Page 1').id)
+  const libraryId = session.graphPageId(pageNamed('Page 1').id) ?? ''
+  const component = session.graph.getChildren(libraryId)[0]
+  session.graph.applyDerivedLayoutDuring(() =>
+    session.graph.updateNode(component.id, { height: component.height + 1 })
+  )
+
+  const instances = loadPlaced()
+  expect(instances).toHaveLength(8)
+  expect(synced).toEqual([])
+  expect(wholeComponents).toEqual([])
   for (const instance of instances)
     expect(session.graph.getChildren(instance.id)[0].text).toBe('Badge')
 })
