@@ -11,9 +11,10 @@ import {
   welcomeOpen,
   welcomeStep
 } from '@/app/onboarding/welcome'
+import { DEFAULT_CALLSIGN } from '@/app/presence/callsigns'
 import BrandMark from '@/components/brand/BrandMark.vue'
+import PixelSky from '@/components/brand/PixelSky.vue'
 import SelectedWord from '@/components/brand/SelectedWord.vue'
-import AppBackdrop from '@/components/shell/AppBackdrop.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import Tip from '@/components/ui/overlay/Tip.vue'
 import { welcomeScreen } from '@/theme/onboarding'
@@ -67,7 +68,7 @@ function onOpenChange(open: boolean): void {
   <DialogRoot :open="welcomeOpen" @update:open="onOpenChange">
     <DialogPortal>
       <DialogContent :class="styles.root()" data-test-id="welcome" @open-auto-focus="focusName">
-        <AppBackdrop drift lights="home" />
+        <PixelSky />
         <AppButton
           size="lg"
           variant="link"
@@ -84,65 +85,74 @@ function onOpenChange(open: boolean): void {
         >
           <BrandMark variant="app-icon" decorative :class="styles.mark()" />
           <DialogTitle :class="styles.title()">
-            {{ title.before }}<SelectedWord>Kalka</SelectedWord>{{ title.after }}
+            {{ title.before
+            }}<SelectedWord :agent="DEFAULT_CALLSIGN" :you="name.trim() || undefined"
+              >Kalka</SelectedWord
+            >{{ title.after }}
           </DialogTitle>
-          <DialogDescription class="sr-only">{{ welcome.intro }}</DialogDescription>
+          <DialogDescription :class="styles.intro()">{{ welcome.intro }}</DialogDescription>
 
-          <div :class="styles.field()">
-            <div :class="styles.labelRow()">
-              <label for="welcome-name" :class="styles.label()">{{ welcome.nameLabel }}</label>
-              <Tip :label="welcome.nameHint" side="right">
-                <button type="button" :aria-label="welcome.nameHint" :class="styles.info()">
-                  <icon-hugeicons-information-circle class="size-3.5" />
-                </button>
-              </Tip>
-            </div>
-            <input
-              id="welcome-name"
-              ref="nameInput"
-              v-model="name"
-              type="text"
-              name="given-name"
-              autocomplete="given-name"
-              maxlength="40"
-              :placeholder="welcome.namePlaceholder"
-              :class="styles.input()"
-              data-test-id="welcome-name"
-            />
-          </div>
+          <div :class="styles.frame()">
+            <div :class="styles.card()">
+              <div :class="styles.field()">
+                <div :class="styles.labelRow()">
+                  <label for="welcome-name" :class="styles.label()">{{ welcome.nameLabel }}</label>
+                  <Tip :label="welcome.nameHint" side="right">
+                    <button type="button" :aria-label="welcome.nameHint" :class="styles.info()">
+                      <icon-hugeicons-information-circle class="size-3.5" />
+                    </button>
+                  </Tip>
+                </div>
+                <input
+                  id="welcome-name"
+                  ref="nameInput"
+                  v-model="name"
+                  type="text"
+                  name="given-name"
+                  autocomplete="given-name"
+                  maxlength="40"
+                  :placeholder="welcome.namePlaceholder"
+                  :class="styles.input()"
+                  data-test-id="welcome-name"
+                />
+              </div>
 
-          <div :class="styles.actions()">
-            <div :class="styles.buttons()">
-              <AppButton
-                type="submit"
-                size="lg"
-                color="primary"
-                variant="solid"
-                :class="styles.primary()"
-                data-test-id="welcome-continue"
-              >
-                <template #leading><icon-hugeicons-ai-magic class="size-4" /></template>
-                {{ welcome.connectAgent }}
-              </AppButton>
-              <AppButton
-                size="lg"
-                variant="outline"
-                :class="styles.secondary()"
-                data-test-id="welcome-mcp"
-                @click="showMCP"
-              >
-                <template #leading><icon-hugeicons-mcp-server class="size-4" /></template>
-                {{ welcome.connectMCP }}
-              </AppButton>
+              <div :class="styles.actions()">
+                <div :class="styles.buttons()">
+                  <AppButton
+                    type="submit"
+                    size="lg"
+                    color="primary"
+                    variant="solid"
+                    :class="styles.primary()"
+                    data-test-id="welcome-continue"
+                  >
+                    <template #leading><icon-hugeicons-ai-magic class="size-4" /></template>
+                    {{ welcome.connectAgent }}
+                  </AppButton>
+                  <AppButton
+                    size="lg"
+                    variant="outline"
+                    :class="styles.secondary()"
+                    data-test-id="welcome-mcp"
+                    @click="showMCP"
+                  >
+                    <template #leading><icon-hugeicons-mcp-server class="size-4" /></template>
+                    {{ welcome.connectMCP }}
+                  </AppButton>
+                </div>
+                <p :class="styles.hint()">{{ welcome.connectAgentHint }}</p>
+              </div>
             </div>
-            <p :class="styles.hint()">{{ welcome.connectAgentHint }}</p>
           </div>
         </form>
 
         <div v-else :class="styles.column()">
           <DialogTitle :class="styles.title()">{{ welcome.claudeTitle }}</DialogTitle>
           <DialogDescription :class="styles.intro()">{{ welcome.claudeIntro }}</DialogDescription>
-          <WelcomeStepClaude class="mt-4" />
+          <div :class="styles.frame()">
+            <div :class="styles.card()"><WelcomeStepClaude /></div>
+          </div>
           <footer :class="styles.footer()">
             <AppButton size="lg" variant="link" @click="welcomeStep = 'start'">
               {{ welcome.back }}

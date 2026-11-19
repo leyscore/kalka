@@ -10,6 +10,9 @@ import { selectedWord } from '@/theme/brand'
 const GROW = { width: 14, height: 10 }
 const CORNERS = ['tl', 'tr', 'bl', 'br'] as const
 
+/** The names on the two cursors: the agent's callsign and the person's name, when known. */
+const { agent, you } = defineProps<{ agent?: string; you?: string }>()
+
 const { ai, common } = useI18n()
 const root = useTemplateRef<HTMLElement>('root')
 const { width, height } = useElementSize(root)
@@ -35,11 +38,11 @@ const frame = selectedWord()
     </span>
     <span :class="frame.cursor({ who: 'agent' })" aria-hidden="true">
       <icon-hugeicons-cursor-02 :class="frame.arrow({ who: 'agent' })" />
-      <span :class="frame.tag({ who: 'agent' })">{{ ai.modelAgentConnection }}</span>
+      <span :class="frame.tag({ who: 'agent' })">{{ agent || ai.modelAgentConnection }}</span>
     </span>
     <span :class="frame.cursor({ who: 'you' })" aria-hidden="true">
       <icon-hugeicons-cursor-02 :class="frame.arrow({ who: 'you' })" />
-      <span :class="frame.tag({ who: 'you' })">{{ common.you }}</span>
+      <span :class="frame.tag({ who: 'you' })">{{ you || common.you }}</span>
     </span>
   </span>
 </template>

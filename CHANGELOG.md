@@ -8,6 +8,7 @@
 
 ### Changed
 
+- The welcome screen matches kalka.design: the pixel sky with drifting dot clouds, the agent's cursor named Pebble and yours named as you type, and the name and agent buttons in a framed card, in light and dark themes.
 - Kalka's agent is called Pebble: the first agent working in a document always answers to Pebble, in its cursor label, comments (`@Pebble`) and version history, and agents beside it keep a callsign such as Fern.
 - The agent avoids the look that reads as machine-made: it checks its brief against a list of generated-design habits, such as a cream ground with a serif display and a terracotta accent, purple gradients, reflex fonts, identical icon cards and an eyebrow above every heading, and picks again when its palette or type matches one.
 

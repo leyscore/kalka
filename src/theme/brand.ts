@@ -16,15 +16,15 @@ export const brandLoader = tv({
 })
 
 /**
- * A word drawn as a selected layer, as on kalka.design: a selection frame with handles and a size
+ * A word drawn as a selected layer on the pixel sky, as on kalka.design: a selection frame with handles and a size
  * badge, an agent's cursor drafting it and yours resizing it. Still with reduced motion.
  */
 export const selectedWord = tv({
   slots: {
-    root: 'relative mx-[0.14em] inline-block text-surface',
-    box: 'pointer-events-none absolute top-[0.05em] -right-[0.075em] bottom-[-0.05em] -left-[0.075em] border-2 border-accent motion-safe:animate-frame-grow',
-    handle: 'absolute size-2.5 border-2 border-accent bg-white',
-    size: 'absolute bottom-[-34px] left-1/2 -translate-x-1/2 rounded-[5px] bg-accent px-[9px] py-1.5 font-mono text-xs leading-none font-medium tracking-normal whitespace-nowrap text-white',
+    root: 'relative mx-[0.14em] inline-block text-current',
+    box: 'pointer-events-none absolute top-[0.05em] -right-[0.075em] bottom-[-0.05em] -left-[0.075em] border-2 border-white motion-safe:animate-frame-grow',
+    handle: 'absolute size-2.5 border-2 border-white bg-accent',
+    size: 'absolute bottom-[-34px] left-1/2 -translate-x-1/2 rounded-[5px] bg-white px-[9px] py-1.5 font-mono text-xs leading-none font-medium tracking-normal whitespace-nowrap text-[#1236B8]',
     cursor:
       'pointer-events-none absolute hidden font-sans text-[13px] leading-none font-medium tracking-normal motion-safe:block',
     arrow: 'block size-[22px] [&_path]:fill-current',
@@ -49,8 +49,8 @@ export const selectedWord = tv({
       },
       you: {
         cursor: '-right-[30px] -bottom-[26px] z-[3] animate-frame-you',
-        arrow: 'text-accent',
-        tag: 'bg-accent'
+        arrow: 'text-[#0E1222] [&_path]:stroke-white',
+        tag: 'bg-white text-[#0E1222]'
       }
     }
   }
@@ -64,5 +64,20 @@ export const brandSpinner = tv({
     vessel: 'absolute inset-0 overflow-hidden mask-brand-k',
     liquid:
       'absolute inset-x-0 bottom-0 h-full animate-liquid-fill bg-accent motion-reduce:animate-none'
+  }
+})
+
+/**
+ * The pixel sky of kalka.design behind a full screen such as the welcome: a deep blue that lightens
+ * toward the bottom, a fine grain, and clouds drawn in dots that sway slowly. It is the brand's
+ * own picture, the same in light and dark themes; reduced motion holds the clouds still.
+ */
+export const pixelSky = tv({
+  slots: {
+    root: 'pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[linear-gradient(180deg,#071B6B_0%,#1236B8_30%,#2F5BEA_58%,#7FA2F5_82%,#CFDCFC_100%)]',
+    grain:
+      'absolute inset-0 bg-[radial-gradient(circle,rgb(255_255_255/0.1)_0_1px,transparent_1.4px)] bg-size-[6px_6px]',
+    clouds:
+      'absolute inset-y-0 -inset-x-40 bg-[radial-gradient(circle,#fff_0_2.6px,transparent_3.1px)] bg-size-[9px_9px] [mask-image:radial-gradient(ellipse_20%_12%_at_14%_84%,#000_15%,transparent_70%),radial-gradient(ellipse_26%_12%_at_54%_96%,#000_15%,transparent_70%),radial-gradient(ellipse_18%_10%_at_88%_80%,#000_15%,transparent_70%),radial-gradient(ellipse_9%_5%_at_82%_22%,#000_15%,transparent_70%),radial-gradient(ellipse_8%_4%_at_16%_20%,#000_15%,transparent_70%)] motion-safe:animate-sky-drift'
   }
 })
