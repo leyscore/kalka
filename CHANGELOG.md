@@ -11,6 +11,7 @@
 
 - The canvas toolbar no longer has a "Describe a change…" field, which only opened the AI panel: press / to ask the agent about the selection, C to comment, or open the AI panel from the rail.
 - The agent in Kalka's own panel follows an explicit design process: it reads the document, names its references, writes a brief, sets up variables, shared classes and components, lays out the page skeleton, builds and checks one section at a time, then adapts the phone layout. Agents over MCP read the same process with `get_design_guide`, and the chat now has the variable, page and component tools it needs on by default.
+- `batch_update` applies all of its operations or none, as one undo step: a missing layer, a wrong value, or an unknown prop fails the whole call and leaves the document unchanged, where it used to apply the rest, write a wrong value as 0 or an empty name, and list errors.
 
 ### Fixed
 
