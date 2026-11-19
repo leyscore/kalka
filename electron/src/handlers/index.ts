@@ -1,5 +1,6 @@
-import { BrowserWindow } from 'electron'
+import { app } from 'electron'
 
+import { emit } from '../ipc'
 import { registerCommandHandlers } from './commands'
 import { registerDialogHandlers } from './dialog'
 import { registerFsHandlers } from './fs'
@@ -28,7 +29,19 @@ export function registerHandlers(host: WindowHost): void {
   registerOAuthHandlers()
   registerGitHandlers()
   registerUpdaterHandlers()
-  setOpenTarget(() => mainContents() ?? BrowserWindow.getAllWindows()[0]?.webContents ?? null)
+  // Only the editor takes documents and links; another window, such as Software Update, would
+  // drop them.
+  setOpenTarget({
+    notify: (event, payload) => {
+      const editor = mainContents()
+      if (!editor) return false
+      emit(editor, event, payload)
+      return true
+    },
+    openEditor: () => {
+      if (app.isReady() && !mainContents()) host.createWindow()
+    }
+  })
   installQuitGuard()
   buildMenu()
 }

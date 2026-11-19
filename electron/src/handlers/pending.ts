@@ -1,10 +1,6 @@
 import { realpath, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 
-import type { WebContents } from 'electron'
-
-import { emit } from '../ipc'
-
 /** The URL scheme of desktop links: kalka://open, kalka://join, kalka://oauth. */
 export const LINK_SCHEME = 'kalka'
 
@@ -16,10 +12,27 @@ interface PendingOpenFile {
 
 let pendingOpen: PendingOpenFile[] = []
 let pendingRooms: string[] = []
-let target: () => WebContents | null = () => null
+/** Where documents and links handed to the app go. */
+export interface OpenTarget {
+  /** Tells the editor window that something waits for it; false when no editor is open. */
+  notify(event: string, payload?: unknown): boolean
+  /** Opens an editor window, which takes what waits for it as it starts. */
+  openEditor(): void
+}
 
-export function setOpenTarget(resolve: () => WebContents | null): void {
-  target = resolve
+let target: OpenTarget | null = null
+
+export function setOpenTarget(next: OpenTarget): void {
+  target = next
+}
+
+/**
+ * Tells the editor something waits for it. With no editor open, as on macOS once the last
+ * window closed, one opens: a file from the Finder or a link must not wait unseen.
+ */
+function deliver(event: string, payload?: unknown): void {
+  if (!target) return
+  if (!target.notify(event, payload)) target.openEditor()
 }
 
 export function takePendingOpen(): PendingOpenFile[] {
@@ -49,17 +62,13 @@ async function designFile(path: string): Promise<string | null> {
 }
 
 /** Files from the command line, a second launch or the Finder; the editor takes them. */
-export async function queueOpenPaths(
-  paths: string[],
-  contents: WebContents | null = null
-): Promise<void> {
+export async function queueOpenPaths(paths: string[]): Promise<void> {
   const files = (await Promise.all(paths.map(designFile))).filter(
     (path): path is string => path !== null
   )
   if (files.length === 0) return
   pendingOpen.push(...files.map((path) => ({ path, deepLink: false })))
-  const receiver = contents ?? target()
-  if (receiver) emit(receiver, 'open-associated-files')
+  deliver('open-associated-files')
 }
 
 /** `kalka://open?file=…&node=…`, `kalka://join?room=…`, `kalka://oauth/<provider>?…`. */
@@ -71,7 +80,6 @@ export function handleLink(url: string): void {
     return
   }
   if (link.protocol !== `${LINK_SCHEME}:`) return
-  const receiver = target()
   if (link.hostname === 'open') {
     const file = link.searchParams.get('file')
     if (
@@ -86,15 +94,16 @@ export function handleLink(url: string): void {
       node: link.searchParams.get('node') ?? undefined,
       deepLink: true
     })
-    if (receiver) emit(receiver, 'open-associated-files')
+    deliver('open-associated-files')
   } else if (link.hostname === 'join') {
     const room = link.searchParams.get('room')
     if (!room || !/^[a-z0-9]{32}$/.test(room)) return
     pendingRooms.push(room)
-    if (receiver) emit(receiver, 'open-room-links')
+    deliver('open-room-links')
   } else if (link.hostname === 'oauth') {
     const provider = link.pathname.replace(/^\//, '')
-    if (!/^[a-z]+$/.test(provider) || !receiver) return
-    emit(receiver, 'oauth-callback', { provider, query: link.search })
+    // A sign-in answers the editor that asked for it; with none open, there is nobody to answer.
+    if (!/^[a-z]+$/.test(provider)) return
+    target?.notify('oauth-callback', { provider, query: link.search })
   }
 }

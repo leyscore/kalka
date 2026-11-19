@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- On macOS, opening a document from the Finder, a `kalka://` link or the command line while Kalka has no window open opens an editor window with it, instead of keeping it waiting unseen; documents are never handed to the Software Update window.
 - When several agents edit the same document at once, such as named agents in the chat and agents over MCP, undoing one agent's edit no longer also undoes what another agent changed while it ran.
 - Save as folder refuses a folder that already holds other files, such as a website project, instead of saving into it and deleting files of its own under `pages/` and `assets/images/`; an empty folder or a Kalka folder still works.
 - Undoing an agent's edit no longer deletes or brings back comments and frame reviews written while it ran, the agent's own included; comments stay outside the undo history.
