@@ -22,7 +22,9 @@ describe('Google Fonts optical sizes', () => {
       async () => new Response('', { status: 500 }),
       async () => new Response('{"fonts":[]}'),
       // A browser cannot read Google's metadata across origins.
-      async () => Promise.reject(new TypeError('Failed to fetch'))
+      async () => {
+        throw new TypeError('Failed to fetch')
+      }
     ]
     for (const fetcher of unreadable) {
       const ranges = await loadGoogleOpticalSizes(fetcher)

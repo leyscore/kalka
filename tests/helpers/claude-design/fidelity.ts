@@ -1,4 +1,5 @@
 import type { Browser, Page } from '@playwright/test'
+import { fromUint8Array, toUint8Array } from 'js-base64'
 
 /** How far a channel may differ before a pixel counts as different: anti-aliasing stays under it. */
 const CHANNEL_TOLERANCE = 48
@@ -64,9 +65,9 @@ export async function comparePixels(page: Page, a: Buffer, b: Buffer): Promise<P
         diff: url.slice(url.indexOf(',') + 1)
       }
     },
-    { first: a.toString('base64'), second: b.toString('base64'), tolerance: CHANNEL_TOLERANCE }
+    { first: fromUint8Array(a), second: fromUint8Array(b), tolerance: CHANNEL_TOLERANCE }
   )
-  return { mismatch: result.mismatch, diff: Buffer.from(result.diff, 'base64') }
+  return { mismatch: result.mismatch, diff: Buffer.from(toUint8Array(result.diff)) }
 }
 
 /** The app's own modules, so the font manager is the one that loaded the document's fonts. */
