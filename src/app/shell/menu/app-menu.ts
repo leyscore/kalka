@@ -25,6 +25,7 @@ import { openVariablesDialog } from '@/app/editor/tokens/dialog'
 import { openSettingsDialog } from '@/app/settings/dialog'
 import { setDesignIssuesOnCanvas, setSnappingPreference } from '@/app/settings/preferences/apply'
 import { appPreferences } from '@/app/settings/preferences/store'
+import { appMenuChecked } from '@/app/shell/menu/checked'
 import { createSharedEditorMenuActions } from '@/app/shell/menu/editor-actions'
 import { openStorageWorkspace } from '@/app/shell/menu/navigation'
 import type {
@@ -194,34 +195,12 @@ export function useAppMenu() {
   }
 
   function checked(item: AppMenuActionItem): boolean | undefined {
-    switch (item.id) {
-      case 'autosave':
-        return store.state.autosaveEnabled
-      case 'profiler':
-        return store.renderer?.profiler.hudVisible ?? false
-      case 'view-rulers':
-        return store.state.showRulers
-      case 'view-pixel-grid':
-        return store.state.showPixelGrid !== false
-      case 'view-multiplayer-cursors':
-        return store.state.showRemoteCursors
-      case 'view-design-issues':
-        return appPreferences.value.designCheck.showOnCanvas
-      case 'snap-geometry':
-        return store.state.snappingPreferences.geometry
-      case 'snap-objects':
-        return store.state.snappingPreferences.objects
-      case 'snap-pixel-grid':
-        return store.state.snappingPreferences.pixelGrid
-      case 'theme-light':
-        return theme.value === 'light'
-      case 'theme-dark':
-        return theme.value === 'dark'
-      case 'theme-auto':
-        return theme.value === 'auto'
-      default:
-        return undefined
-    }
+    return appMenuChecked(item.id, {
+      state: store.state,
+      theme: theme.value,
+      designIssuesOnCanvas: appPreferences.value.designCheck.showOnCanvas,
+      profilerVisible: store.renderer?.profiler.hudVisible ?? false
+    })
   }
 
   function onCheckedChange(item: AppMenuActionItem): ((checked: boolean) => void) | undefined {
