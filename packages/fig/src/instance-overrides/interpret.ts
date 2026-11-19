@@ -1,6 +1,7 @@
 import type { GUID, NodeChange } from '@kalka/kiwi/fig/codec'
 import { guidToString } from '@kalka/kiwi/fig/guid'
 
+import { assetIdsByKey, createTextStyleLookup } from '../node-change/style/lookup'
 import {
   bindSourceProperties,
   componentBindings,
@@ -68,7 +69,13 @@ export function interpretComponent(
 
 /** One source index per document; evaluation state remains local to each call. */
 export function createOccurrenceInterpreter(changes: readonly NodeChange[]) {
-  return createIndexedOccurrenceInterpreter(createSourceIndex(changes))
+  // Removed records are gone, as the document reader drops them.
+  const active = changes.filter((change) => change.phase !== 'REMOVED')
+  const index = createSourceIndex(active)
+  return createIndexedOccurrenceInterpreter({
+    ...index,
+    textStyle: createTextStyleLookup(index.sources, assetIdsByKey(active))
+  })
 }
 
 /** An interpreter over an index built elsewhere, such as one that decodes records as read. */

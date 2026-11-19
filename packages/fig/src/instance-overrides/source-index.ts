@@ -2,12 +2,15 @@ import type { GUID, NodeChange } from '@kalka/kiwi/fig/codec'
 import { guidToString, isUnsetGuid } from '@kalka/kiwi/fig/guid'
 import { compareOrderKeys } from '@kalka/scene-graph/order-keys'
 
+import type { TextStyleLookup } from '../node-change/style/lookup'
 import { findWithinBoundary, type TreeShape } from './tree'
 
 /** Archive records indexed by GUID, with children in saved order. */
 export interface SourceIndex {
   readonly sources: ReadonlyMap<string, NodeChange>
   readonly children: ReadonlyMap<string, readonly NodeChange[]>
+  /** The text styles a record names, so an instance text's claim can yield to its style. */
+  readonly textStyle?: TextStyleLookup
 }
 
 /** A record's archive identity, or undefined for the rare record without a GUID. */

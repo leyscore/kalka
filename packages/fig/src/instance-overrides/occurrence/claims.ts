@@ -7,6 +7,7 @@ import { declareVariableBindingUnits } from '../bindings/variables'
 import { applyDerivedEntry } from '../derived-symbol-data'
 import type { PropertyLayer } from '../layers'
 import { resolvesInSourceComponent, type SourceIndex } from '../source-index'
+import { yieldToInheritedTextStyle } from '../style/inherited-text'
 import { invalidateInheritedTextData } from '../text-provenance'
 import type { DerivedSymbolOverride } from '../types'
 import { findSegment, isRootGuid, pathError, resolveOccurrencePath, SegmentError } from './path'
@@ -30,7 +31,7 @@ export function createClaimContext(
 }
 
 function applyPropertyClaim(
-  { assignedFields }: ClaimContext,
+  { index, assignedFields }: ClaimContext,
   owner: InstanceOccurrence,
   ownerRank: number,
   target: InstanceOccurrence,
@@ -44,6 +45,7 @@ function applyPropertyClaim(
       return rank === undefined || rank >= ownerRank
     })
   )
+  if (index.textStyle) yieldToInheritedTextStyle(target, retained, index.textStyle)
   if (Object.keys(retained).length === 0) return
   declareVariableBindingUnits(target, retained as NodeChange)
   invalidateInheritedTextData(target.properties, retained)

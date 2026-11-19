@@ -1,40 +1,8 @@
-import type { NodeChange, StyleReference } from '@kalka/kiwi/fig/codec'
-import { guidToString } from '@kalka/kiwi/fig/guid'
+import type { NodeChange } from '@kalka/kiwi/fig/codec'
 
-const TEXT_STYLE_FIELDS = [
-  'fontSize',
-  'fontName',
-  'lineHeight',
-  'letterSpacing',
-  'textDecoration',
-  'textCase'
-] as const
+import { referencedStyle, TEXT_STYLE_FIELDS, type StyleChangeMap } from './lookup'
 
 type StyleRefFields = NodeChange
-
-type StyleSource = Pick<
-  NodeChange,
-  | 'type'
-  | 'styleType'
-  | 'fillPaints'
-  | 'effects'
-  | 'layoutGrids'
-  | (typeof TEXT_STYLE_FIELDS)[number]
->
-
-type StyleChangeMap = ReadonlyMap<string, Partial<StyleSource>>
-
-function referencedStyle(
-  changeMap: StyleChangeMap,
-  reference: StyleReference | undefined,
-  assetRefs?: ReadonlyMap<string, string>
-): Partial<StyleSource> | undefined {
-  if (reference?.guid) return changeMap.get(guidToString(reference.guid))
-  if (!reference?.assetRef || !assetRefs) return undefined
-  const { key, version } = reference.assetRef
-  const id = (version ? assetRefs.get(`${key}@${version}`) : undefined) ?? assetRefs.get(key)
-  return id ? changeMap.get(id) : undefined
-}
 
 function applyFillStyleRef(
   changeMap: StyleChangeMap,
@@ -86,7 +54,7 @@ function applyTextStyleRef(
 }
 
 export function applyStyleRefsToFields(
-  changeMap: ReadonlyMap<string, Partial<StyleSource>>,
+  changeMap: StyleChangeMap,
   fields: StyleRefFields,
   assetRefs?: ReadonlyMap<string, string>
 ): void {
