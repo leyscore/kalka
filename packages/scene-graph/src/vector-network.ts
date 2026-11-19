@@ -2,7 +2,7 @@ import { isEqual } from 'es-toolkit/predicate'
 
 import type { Mat3 } from './matrix'
 import type { Vector } from './primitives'
-import type { VectorNetwork, VectorSegment } from './types'
+import type { VectorNetwork, VectorRegion, VectorSegment } from './types'
 
 /** Concatenate vector networks while preserving independent geometry. */
 export function mergeVectorNetworks(networks: readonly VectorNetwork[]): VectorNetwork {
@@ -60,11 +60,18 @@ export function transformVectorNetwork(m: Mat3, vn: VectorNetwork): VectorNetwor
       tangentStart: mapVector(s.tangentStart),
       tangentEnd: mapVector(s.tangentEnd)
     })),
-    regions: vn.regions.map((r) => ({
-      windingRule: r.windingRule,
-      loops: r.loops.map((l) => [...l])
-    }))
+    regions: vn.regions.map(copyRegion)
   }
+}
+
+/** A region's copy, with its own paints when it has them. */
+function copyRegion(region: VectorRegion): VectorRegion {
+  const copy: VectorRegion = {
+    windingRule: region.windingRule,
+    loops: region.loops.map((loop) => [...loop])
+  }
+  if (region.fills) copy.fills = structuredClone(region.fills)
+  return copy
 }
 
 /** Structural equality of two VectorNetworks (order-sensitive, exact values). */
@@ -85,10 +92,7 @@ export function cloneVectorNetwork(vn: VectorNetwork): VectorNetwork {
       tangentStart: { ...s.tangentStart },
       tangentEnd: { ...s.tangentEnd }
     })),
-    regions: vn.regions.map((r) => ({
-      windingRule: r.windingRule,
-      loops: r.loops.map((l) => [...l])
-    }))
+    regions: vn.regions.map(copyRegion)
   }
 }
 

@@ -88,3 +88,18 @@ export function regenerateFillGeometry(
   }
   return []
 }
+
+/**
+ * Fill geometry for a network whose regions carry their own paints, one entry per region with its
+ * paints, as Figma draws it. A Figma copy writes the regions' paints but no fill geometry.
+ */
+export function regionFillGeometry(network: VectorNetwork): GeometryPath[] {
+  const { vertices, segments, regions } = network
+  return regions.map((region) => {
+    const builder = new GeometryBlobBuilder()
+    for (const loop of region.loops) addLoopToPath(builder, loop, segments, vertices)
+    const path: GeometryPath = { windingRule: region.windingRule, commandsBlob: builder.toBlob() }
+    if (region.fills) path.fills = region.fills
+    return path
+  })
+}

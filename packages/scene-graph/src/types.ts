@@ -104,6 +104,11 @@ export interface VectorSegment {
 export interface VectorRegion {
   windingRule: WindingRule
   loops: number[][]
+  /**
+   * The region's own paints, as Figma keeps them on a region's style: an empty list fills it with
+   * nothing, and none fills it with the layer's fills.
+   */
+  fills?: Fill[]
 }
 
 export interface VectorNetwork {

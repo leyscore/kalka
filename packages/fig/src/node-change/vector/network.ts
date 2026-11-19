@@ -8,6 +8,8 @@ import type {
   WindingRule
 } from '@kalka/scene-graph'
 
+import { convertFills } from '../paint'
+
 export interface StyleOverride {
   styleID: number
   handleMirroring?: string
@@ -80,8 +82,9 @@ export function decodeVectorNetworkBlob(
   const regions: VectorRegion[] = []
   for (let index = 0; index < regionCount; index++) {
     // The low bit is the winding rule; the rest is the region's style ID, which names its fill.
-    const windingRule: WindingRule =
-      (view.getUint32(offset, true) & 1) === 1 ? 'NONZERO' : 'EVENODD'
+    const word = view.getUint32(offset, true)
+    const windingRule: WindingRule = (word & 1) === 1 ? 'NONZERO' : 'EVENODD'
+    const regionPaints = styles.get(word >>> 1)?.fillPaints
     offset += 4
     const loopCount = view.getUint32(offset, true)
     offset += 4
@@ -96,7 +99,9 @@ export function decodeVectorNetworkBlob(
       }
       loops.push(loop)
     }
-    regions.push({ windingRule, loops })
+    const region: VectorRegion = { windingRule, loops }
+    if (regionPaints) region.fills = convertFills(regionPaints)
+    regions.push(region)
   }
 
   return { vertices, segments, regions }

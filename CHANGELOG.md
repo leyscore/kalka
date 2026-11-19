@@ -6,6 +6,7 @@
 
 - A variable mode an outer instance in a `.fig` sets on a nested layer for one collection keeps the modes that layer has in its other collections, and an override that clears a collection's mode lets the layer take its parent's mode again.
 - A multicolour vector saved to `.fig` keeps each region's colour when it is edited in Figma, instead of Figma refilling every region with the layer's fill.
+- A multicolour vector pasted from Figma keeps each region's colour instead of coming in all one colour.
 
 ## 0.2.0-beta.3.2 — 2026-11-19
 

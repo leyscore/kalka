@@ -370,9 +370,10 @@ function serializeGeometry(node: SceneNode, nc: KiwiNodeChange, blobs: Uint8Arra
   const { table: styleOverrides, styleToId } = network
     ? buildStyleOverrideTable(network)
     : { table: [] as StyleOverride[], styleToId: undefined }
-  // A fill geometry entry with its own paints gets a style override of its own.
+  // A fill geometry entry with its own paints gets a style override of its own; an empty list
+  // is a region Figma fills with nothing, not one that takes the layer's fills.
   const fillStyleIds = node.fillGeometry.map((geometry) => {
-    if (!geometry.fills || geometry.fills.length === 0) return 0
+    if (!geometry.fills) return 0
     const styleID = styleOverrides.length + 1
     styleOverrides.push({ styleID, fillPaints: geometry.fills.map(fillToKiwiPaint) })
     return styleID

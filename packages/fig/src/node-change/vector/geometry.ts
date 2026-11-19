@@ -87,7 +87,8 @@ export function resolveStyleOverrideFills(
 ): ReadonlyMap<number, Fill[]> {
   const fillsByStyleId = new Map<number, Fill[]>()
   for (const override of styleOverrideTable ?? []) {
-    if (override.fillPaints && override.fillPaints.length > 0) {
+    // An empty list is a region filled with nothing, kept apart from one taking the layer's fills.
+    if (override.fillPaints) {
       fillsByStyleId.set(override.styleID, convertFills(override.fillPaints))
     }
   }
@@ -117,7 +118,7 @@ export function resolveGeometryPaths(
     result.push({
       windingRule: fromKiwiWindingRule(p.windingRule),
       commandsBlob: blob,
-      fills: fills && fills.length > 0 ? copyFills(fills) : undefined
+      fills: fills ? copyFills(fills) : undefined
     })
   }
   return result

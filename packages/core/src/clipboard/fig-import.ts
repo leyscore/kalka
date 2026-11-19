@@ -9,6 +9,8 @@ import {
   type SceneGraph
 } from '@kalka/scene-graph'
 
+import { regionFillGeometry } from '#core/vector/fill-geometry'
+
 /** Whether any text in the document, or any of its runs, is set in Inter. */
 function usesInter(graph: SceneGraph): boolean {
   for (const node of graph.getAllNodes()) {
@@ -36,6 +38,13 @@ export function prepareClipboardImport(
     target: graph,
     parentId
   })
+  // A Figma copy carries a vector's region paints but no fill geometry to draw them with.
+  for (const node of plan.nodes) {
+    const network = node.props.vectorNetwork
+    if (node.props.fillGeometry?.length || !network?.regions.some((region) => region.fills))
+      continue
+    node.props.fillGeometry = regionFillGeometry(network)
+  }
   const roots = new Set(plan.rootIds)
   for (const node of plan.nodes)
     if (roots.has(node.id)) {
