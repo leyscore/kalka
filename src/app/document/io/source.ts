@@ -114,7 +114,8 @@ export function createDocumentSourceActions({
     version: changes.capture,
     isEnabled: () => recoveryEnabled.value,
     buildFigFile: buildRecoveryFigFile,
-    hasWritableSource: () => !!getFileHandle() || !!getFilePath() || !!getStorageBinding()
+    isAutosaved: () =>
+      state.autosaveEnabled && (!!getFileHandle() || !!getFilePath() || !!getStorageBinding())
   })
 
   const { saveFigFile, saveFigFileAs, writeFile } = createSaveActions({

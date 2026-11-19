@@ -22,6 +22,26 @@ describe('document recovery', () => {
     expect(await snapshotIds()).toContain(store.getRecoveryId())
   })
 
+  test('keeps a snapshot of a saved file whose unsaved changes autosave does not cover', async () => {
+    const store = createEditorStore()
+    stores.push(store)
+    store.setPlannedFilePath('/documents/poster.fig')
+    store.state.autosaveEnabled = false
+    store.setPageColor({ r: 0.5, g: 0.5, b: 0.5, a: 1 })
+    await store.persistRecoveryNow()
+    expect(await snapshotIds()).toContain(store.getRecoveryId())
+  })
+
+  test('leaves a saved file to autosave when autosave is on', async () => {
+    const store = createEditorStore()
+    stores.push(store)
+    store.setPlannedFilePath('/documents/poster.fig')
+    store.state.autosaveEnabled = true
+    store.setPageColor({ r: 0.5, g: 0.5, b: 0.5, a: 1 })
+    await store.persistRecoveryNow()
+    expect(await snapshotIds()).not.toContain(store.getRecoveryId())
+  })
+
   test('has nothing to recover once the document is marked saved', async () => {
     const store = createEditorStore()
     stores.push(store)
