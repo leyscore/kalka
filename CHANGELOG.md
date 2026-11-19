@@ -6,6 +6,10 @@
 
 - Layers opened from a `.fig` file keep the GUIDs the file saved them under as their IDs, instead of `0:1`, `0:2`, and so on in reading order, so an ID stays the same after a save and reopen. IDs printed by `kalka tree` or MCP before this release no longer find their layers.
 
+### Changed
+
+- An agent's work on the canvas builds in order: each edit waits for its previous one to finish appearing, then its new layers appear one at a time from top to bottom, each first marked by a thin frame in the agent's color and then faded in. The agent's cursor glides through the build instead of jumping between what it wrote and what its call reported, the frame it works in carries a small pixel loader by its name, Follow agents moves the view only when the work leaves the middle of the screen, and the pulsing and green rings around an agent's layers are gone. With reduced motion or Reduce agent animations, edits still show at once.
+
 ### Fixed
 
 - A variable mode an outer instance in a `.fig` sets on a nested layer for one collection keeps the modes that layer has in its other collections, and an override that clears a collection's mode lets the layer take its parent's mode again.

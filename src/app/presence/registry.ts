@@ -1,7 +1,7 @@
 import { shallowRef, type ShallowRef } from 'vue'
 
 import { computeContentBounds } from '@kalka/core/io'
-import type { Color } from '@kalka/scene-graph/primitives'
+import type { Color, Vector } from '@kalka/scene-graph/primitives'
 import { randomHex } from '@kalka/scene-graph/random'
 
 import type { RemotePeer } from '@/app/collab/types'
@@ -10,7 +10,13 @@ import { trackAgentTask } from '@/app/presence/tasks'
 import { appPreferences } from '@/app/settings/preferences/store'
 
 import { pickCallsign } from './callsigns'
-import { glideViewTo, showCursors, stopViewGlide, type TrackedCursor } from './cursor-motion'
+import {
+  canAnimate,
+  glideViewTo,
+  showCursors,
+  stopViewGlide,
+  type TrackedCursor
+} from './cursor-motion'
 import { MAX_NAME_LENGTH } from './schema'
 import type { AgentKind, AgentPresence, FollowTarget, PersonPoint } from './types'
 
@@ -236,6 +242,33 @@ function followedPoint(store: EditorStore, target: FollowTarget): PersonPoint | 
   return agent.status === 'idle' ? 'idle' : (agent.cursor ?? 'idle')
 }
 
+/** The middle of the view an agent's work may move in before following pans to it, per side. */
+export const FOLLOW_COMFORT_INSET = 0.2
+
+/**
+ * Where the view's center goes to keep an agent's `point` in the middle of the view: unchanged
+ * while it is there, else moved only as far as it went past, so the view eases along with the
+ * build instead of recentering on each step. Null when the agent works at another zoom.
+ */
+export function comfortCenter(store: EditorStore, point: PersonPoint): Vector | null {
+  if (point.zoom !== undefined && point.zoom !== store.state.zoom) return null
+  const { panX, panY, zoom } = store.state
+  const screen = store.viewportCanvasCenter()
+  const center = { x: (screen.x - panX) / zoom, y: (screen.y - panY) / zoom }
+  const halfWidth = screen.x / zoom
+  const halfHeight = screen.y / zoom
+  const past = (value: number, middle: number, half: number) => {
+    const reach = half * (1 - 2 * FOLLOW_COMFORT_INSET)
+    if (value < middle - reach) return value - (middle - reach)
+    if (value > middle + reach) return value - (middle + reach)
+    return 0
+  }
+  return {
+    x: center.x + past(point.x, center.x, halfWidth),
+    y: center.y + past(point.y, center.y, halfHeight)
+  }
+}
+
 /** Move the view to the followed person or agent; stop when they are gone. */
 function keepFollowing(store: EditorStore): void {
   const presence = presenceOf(store)
@@ -262,7 +295,12 @@ function keepFollowing(store: EditorStore): void {
     })
     return
   }
-  glideViewTo(store, point, point.zoom ?? store.state.zoom, (x, y, zoom) => {
+  // An agent is kept in view, not centered on every step: the view moves only when its work
+  // leaves the middle of the screen, and only as far as it went. Without motion the view jumps
+  // to each place anyway, so it centers there as it always did.
+  const easing = target.kind === 'agent' && canAnimate()
+  const center = easing ? (comfortCenter(store, point) ?? point) : point
+  glideViewTo(store, center, point.zoom ?? store.state.zoom, (x, y, zoom) => {
     // Following ended while the view was on its way: leave it where the person left it.
     if (!presence.following.value) return
     presence.moving = true

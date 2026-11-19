@@ -225,10 +225,14 @@ export function workingMarks(store: EditorStore, pageId: string): readonly Agent
   const own = localAgentColor(store)
   const marks: AgentWorkMark[] = []
   const add = (agent: AgentPresence, color: AgentWorkMark['color']) => {
-    for (const nodeId of agent.working ?? []) {
+    const working = agent.working ?? []
+    // Where an agent at work builds now: the newest layer it holds, which carries its loader.
+    const current = agent.status === 'idle' ? undefined : working.at(-1)
+    for (const nodeId of working) {
       // The mark reads what the agent says it is doing, from set_status, after its name.
       const name = agent.note ? `${agent.name} · ${agent.note}` : agent.name
-      if (pageOf(store.graph, nodeId) === pageId) marks.push({ nodeId, name, color })
+      if (pageOf(store.graph, nodeId) !== pageId) continue
+      marks.push(nodeId === current ? { nodeId, name, color, busy: true } : { nodeId, name, color })
     }
   }
   for (const agent of presence.agents.value) add(agent, own)

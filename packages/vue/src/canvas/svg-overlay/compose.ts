@@ -8,6 +8,7 @@ import type {
 import { RULER_SIZE } from '@kalka/core/constants'
 import type { Color, Rect } from '@kalka/scene-graph/primitives'
 
+import { agentTracesLayer, type AgentTrace } from '#vue/canvas/svg-overlay/layers/agent-traces'
 import { agentWorkLayer, type AgentWorkMark } from '#vue/canvas/svg-overlay/layers/agent-work'
 import { aiMarksLayer, type AIMarks } from '#vue/canvas/svg-overlay/layers/ai-marks'
 import { autoLayoutHoverLayer } from '#vue/canvas/svg-overlay/layers/auto-layout-hover'
@@ -103,6 +104,10 @@ export interface ComposeInput extends OverlayContext {
   aiMarks: AIMarks
   /** Layers agents are building and have not let go of yet. */
   agentWork?: readonly AgentWorkMark[]
+  /** Layers an agent's edit is revealing now, traced one after another. */
+  agentTraces?: readonly AgentTrace[]
+  /** Motion is reduced: loaders hold still. */
+  still?: boolean
   now: number
 }
 
@@ -158,7 +163,8 @@ export function composeOverlay(input: ComposeInput): ComposedOverlay {
     ...selectionLayer(input),
     ...(isMeasuring ? measurementsLayer(input) : []),
     // Gesture feedback.
-    ...agentWorkLayer(input, input.agentWork ?? []),
+    ...agentWorkLayer(input, input.agentWork ?? [], { now: input.now, still: input.still }),
+    ...agentTracesLayer(input, input.agentTraces ?? [], input.now),
     ...aiMarksLayer(input, input.aiMarks, input.now),
     ...flashesLayer(input, input.flashes, input.now),
     ...guideRedlineLayer(input),

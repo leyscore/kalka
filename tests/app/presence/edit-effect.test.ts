@@ -6,14 +6,17 @@ import { SceneGraph } from '@kalka/scene-graph'
 import { MAX_REVEALED_LAYERS, type RevealStep } from '@kalka/vue'
 
 import { createEditorStore } from '@/app/editor/session'
-import { attachCanvasScene } from '@/app/presence/canvas-scene'
+import { agentTraces, attachCanvasScene } from '@/app/presence/canvas-scene'
 import {
   agentEditFromChange,
   cursorStops,
   holdAgentCreations,
   MAX_CURSOR_STOPS,
   MAX_HELD_LAYERS,
-  showAgentEdit
+  MAX_REVEAL_QUEUE_MS,
+  placeAgent,
+  showAgentEdit,
+  stopCursorSweep
 } from '@/app/presence/edit-effect'
 import { addAgent, presenceOf } from '@/app/presence/registry'
 import { appPreferences } from '@/app/settings/preferences/store'
@@ -109,7 +112,82 @@ describe("showing an agent's edit", () => {
     await Bun.sleep(last + 30)
     const moved = presenceOf(store).agents.value.find((entry) => entry.id === agent.id)
     expect(moved?.status).toBe('editing')
-    expect(moved?.selection).toEqual([button.id])
+    const at = store.graph.getAbsolutePosition(button.id)
+    expect(moved?.cursor).toMatchObject({ x: at.x, y: at.y })
+    stopCursorSweep(agent)
+  })
+
+  test('each new layer is framed in the agent color as its turn comes; typed text is not', () => {
+    const { store, pageId, shown } = editor()
+    const agent = addAgent(store, 'mcp')
+    const { change, card, title, button } = cardEdit(store, pageId)
+
+    showAgentEdit(store, agentEditFromChange(change), { agent, pageId })
+
+    const traces = agentTraces(store)
+    const steps = shown[0] ?? []
+    const kindOf = (id: string) => steps.find((step) => step.id === id)?.kind
+    // The new title and the rewritten heading type themselves out; the card and button appear.
+    expect(kindOf(title.id)).toBe('type')
+    expect(traces.map((trace) => trace.nodeId).sort()).toEqual([card.id, button.id].sort())
+    // Each frame comes with its layer's turn.
+    const delays = new Map(shown[0]?.map((step) => [step.id, step.delay]))
+    const origin = (traces[0]?.start ?? 0) - (delays.get(traces[0]?.nodeId ?? '') ?? 0)
+    for (const trace of traces)
+      expect(trace.start - origin).toBeCloseTo(delays.get(trace.nodeId) ?? -1, 3)
+    stopCursorSweep(agent)
+  })
+
+  test("an agent's next edit replays after the one before, never over it", () => {
+    const { store, pageId, shown } = editor()
+    const agent = addAgent(store, 'mcp')
+    showAgentEdit(store, agentEditFromChange(cardEdit(store, pageId).change), { agent, pageId })
+    showAgentEdit(store, agentEditFromChange(cardEdit(store, pageId).change), { agent, pageId })
+
+    const [before = [], after = []] = shown
+    const end = Math.max(...before.map((step) => step.delay + step.duration))
+    const start = Math.min(...after.map((step) => step.delay))
+    // Measured from the second edit, which came a moment after the first.
+    expect(start).toBeGreaterThan(Math.min(end, MAX_REVEAL_QUEUE_MS) - 50)
+    stopCursorSweep(agent)
+  })
+
+  test('another agent does not wait for it', () => {
+    const { store, pageId, shown } = editor()
+    const first = addAgent(store, 'mcp')
+    const second = addAgent(store, 'mcp')
+    showAgentEdit(store, agentEditFromChange(cardEdit(store, pageId).change), {
+      agent: first,
+      pageId
+    })
+    showAgentEdit(store, agentEditFromChange(cardEdit(store, pageId).change), {
+      agent: second,
+      pageId
+    })
+    expect(shown[1]?.[0]?.delay).toBe(0)
+    stopCursorSweep(first)
+    stopCursorSweep(second)
+  })
+
+  test('where a call points the agent waits until its cursor has gone through the reveal', async () => {
+    const { store, pageId, shown } = editor()
+    const agent = addAgent(store, 'mcp')
+    const { change, card } = cardEdit(store, pageId)
+    showAgentEdit(store, agentEditFromChange(change), { agent, pageId })
+    const cursorOf = () =>
+      presenceOf(store).agents.value.find((entry) => entry.id === agent.id)?.cursor
+    const point = { x: 900, y: 900, pageId }
+
+    placeAgent(agent, { pageId, cursor: point, selection: [card.id] }, { status: 'editing' })
+    expect(cursorOf()).not.toEqual(point)
+
+    const last = shown[0]?.at(-1)?.delay ?? 0
+    await Bun.sleep(last + 260)
+    expect(cursorOf()).toEqual(point)
+    // With no reveal under way it goes there at once.
+    const next = { x: 10, y: 10, pageId }
+    placeAgent(agent, { pageId, cursor: next })
+    expect(cursorOf()).toEqual(next)
   })
 
   test('with reduced motion nothing replays and the cursor stays where the edit left it', async () => {

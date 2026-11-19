@@ -14,7 +14,7 @@ import {
   markWorking,
   recordLayerActivity
 } from '@/app/presence/activity'
-import { showAgentEdit, stopCursorSweep } from '@/app/presence/edit-effect'
+import { placeAgent, showAgentEdit, stopCursorSweep } from '@/app/presence/edit-effect'
 import { addAgent, agentPlacement, type AgentHandle } from '@/app/presence/registry'
 
 /**
@@ -176,12 +176,14 @@ function agentAtWork(store: EditorStore, lane: string): AgentHandle | null {
  * outlines of what it builds, until the tool runs and `markRunWork` names the real layers.
  */
 export function markRunPreview(store: EditorStore, focus: PreviewFocus, lane = LEAD_LANE): void {
-  agentAtWork(store, lane)?.update({
-    status: 'editing',
-    cursor: { ...focus.cursor, pageId: runPageId(store, lane) },
-    selection: undefined,
-    outline: focus.outline
-  })
+  const agent = agentAtWork(store, lane)
+  if (!agent) return
+  const pageId = runPageId(store, lane)
+  placeAgent(
+    agent,
+    { pageId, cursor: { ...focus.cursor, pageId }, selection: undefined, outline: focus.outline },
+    { status: 'editing' }
+  )
 }
 
 /** Point the run's agent at nodes a tool just created or changed. */
@@ -189,7 +191,7 @@ export function markRunWork(store: EditorStore, nodeIds: string[], lane = LEAD_L
   const agent = agentAtWork(store, lane)
   const placement = agentPlacement(store, nodeIds, runPageId(store, lane))
   if (!agent || !placement) return
-  agent.update({ status: 'editing', ...placement })
+  placeAgent(agent, placement, { status: 'editing' })
 }
 
 /**

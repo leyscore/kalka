@@ -36,10 +36,11 @@ export type { UseDomSceneOptions } from '#vue/canvas/dom-scene/use'
 export { DomSceneProjector } from '#vue/canvas/dom-scene/projector'
 export { rasterDocument, type RasterDocument } from '#vue/canvas/dom-scene/raster'
 export type { DomScenePreview } from '#vue/canvas/dom-scene/ghosts'
-export { MAX_REVEALED_LAYERS, planReveal } from '#vue/canvas/dom-scene/reveal/plan'
+export { MAX_REVEALED_LAYERS, planReveal, revealEnd } from '#vue/canvas/dom-scene/reveal/plan'
 export type { AgentEdit, RevealStep } from '#vue/canvas/dom-scene/reveal/plan'
 export { SVG_OVERLAY_LAYERS, useSVGOverlay } from '#vue/canvas/svg-overlay/use'
 export type { AgentWorkMark } from '#vue/canvas/svg-overlay/layers/agent-work'
+export { traceLive, type AgentTrace } from '#vue/canvas/svg-overlay/layers/agent-traces'
 export { useCanvasInput } from '#vue/canvas/useCanvasInput'
 export {
   autoLayoutValueAnchor,

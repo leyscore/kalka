@@ -7,7 +7,7 @@ const PENDING_TIMEOUT_MS = 1000
  * A new layer stays hidden at most this long waiting for its reveal. The hiding is an animation
  * that ends by itself then, so nothing stays hidden whatever happens to the reveal.
  */
-export const HOLD_TIMEOUT_MS = 4000
+export const HOLD_TIMEOUT_MS = 6000
 /** The highlight that hides characters not typed yet, in each artboard document. */
 const UNWRITTEN_HIGHLIGHT = 'kalka-unwritten'
 const UNWRITTEN_STYLE_ATTR = 'data-kalka-unwritten'
@@ -157,18 +157,16 @@ export class RevealPlayer {
     this.appear(element, step, delay, step.kind === 'type')
   }
 
-  /** Fades and wipes the layer in, or only wipes text where it cannot type. */
+  /**
+   * Fades the layer in where the overlay framed it, or only wipes text where it cannot type. A
+   * plain fade keeps the box still, so the frame and the content meet in one place.
+   */
   private appear(element: Element, step: RevealStep, delay: number, wipeOnly: boolean): void {
     const style = element.ownerDocument.defaultView?.getComputedStyle(element)
-    // A layer clipped by its own shape keeps that clip; it only fades in.
-    const clips = style && style.clipPath !== 'none' && style.clipPath !== ''
     const opacity = style?.opacity ?? '1'
     const keyframes: Keyframe[] = wipeOnly
       ? [{ clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0 0 0)' }]
-      : [
-          { opacity: 0, ...(clips ? {} : { clipPath: 'inset(0 100% 0 0)' }) },
-          { opacity, ...(clips ? {} : { clipPath: 'inset(0 0 0 0)' }) }
-        ]
+      : [{ opacity: 0 }, { opacity }]
     element.animate(keyframes, {
       duration: step.duration,
       delay,

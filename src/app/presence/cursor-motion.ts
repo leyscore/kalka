@@ -35,7 +35,8 @@ function motionOf(store: EditorStore): Motion {
   return motion
 }
 
-function canAnimate(): boolean {
+/** Whether cursors and the view glide here: animations on, in a page that draws frames. */
+export function canAnimate(): boolean {
   return animationsEnabled.value && typeof requestAnimationFrame === 'function'
 }
 

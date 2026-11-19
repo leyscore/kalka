@@ -17,11 +17,14 @@ const MAX_CANDIDATES = MAX_REVEALED_LAYERS * 8
 /** At most this many text layers type themselves out per edit. */
 export const MAX_TYPED_TEXTS = 6
 /** How long one layer takes to appear. */
-export const REVEAL_DURATION_MS = 260
-/** The pause between two layers starting to appear, in the order the document lists them. */
-export const REVEAL_STAGGER_MS = 45
+export const REVEAL_DURATION_MS = 320
+/**
+ * The pause between two layers starting to appear, in the order the document lists them: long
+ * enough that each one reads on its own, parent before child and top to bottom.
+ */
+export const REVEAL_STAGGER_MS = 110
 /** Every layer has started to appear by then, however many there are. */
-export const MAX_REVEAL_DELAY_MS = 900
+export const MAX_REVEAL_DELAY_MS = 1800
 /** How long a character takes to type, and the bounds of one text layer's typing. */
 export const TYPE_CHAR_MS = 22
 export const MIN_TYPE_MS = 300
@@ -57,6 +60,11 @@ function compareTreePaths(a: readonly number[], b: readonly number[]): number {
     if (difference !== 0) return difference
   }
   return a.length - b.length
+}
+
+/** When the last of `steps` has finished, after the edit; 0 for none. */
+export function revealEnd(steps: readonly RevealStep[]): number {
+  return steps.reduce((end, step) => Math.max(end, step.delay + step.duration), 0)
 }
 
 function typingDuration(node: SceneNode): number {

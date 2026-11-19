@@ -1,6 +1,6 @@
 import { shallowRef, type ShallowRef } from 'vue'
 
-import type { DomScenePreview, RevealStep } from '@kalka/vue'
+import { traceLive, type AgentTrace, type DomScenePreview, type RevealStep } from '@kalka/vue'
 
 import type { EditorStore } from '@/app/editor/active-store'
 
@@ -15,8 +15,12 @@ export interface CanvasScene {
   readonly settled: boolean
 }
 
+/** Traces kept at once; an edit reveals no more layers than fit. */
+export const MAX_AGENT_TRACES = 64
+
 interface SceneEffects {
   previews: ShallowRef<readonly DomScenePreview[]>
+  traces: ShallowRef<readonly AgentTrace[]>
   scenes: Set<CanvasScene>
 }
 
@@ -25,7 +29,7 @@ const effects = new WeakMap<EditorStore, SceneEffects>()
 function effectsOf(store: EditorStore): SceneEffects {
   let entry = effects.get(store)
   if (!entry) {
-    entry = { previews: shallowRef([]), scenes: new Set() }
+    entry = { previews: shallowRef([]), traces: shallowRef([]), scenes: new Set() }
     effects.set(store, entry)
   }
   return entry
@@ -50,6 +54,26 @@ export function hideScenePreview(store: EditorStore, preview: DomScenePreview): 
   const { previews } = effectsOf(store)
   if (!previews.value.includes(preview)) return
   previews.value = previews.value.filter((entry) => entry !== preview)
+}
+
+/**
+ * Rectangles tracing the layers agents' edits reveal, as every pane's overlay draws them. The
+ * array is replaced on each change and holds only traces still drawing or about to.
+ */
+export function agentTraces(store: EditorStore): readonly AgentTrace[] {
+  return effectsOf(store).traces.value
+}
+
+/** Adds traces to draw; those finished are dropped, and the newest kept past the limit. */
+export function showAgentTraces(
+  store: EditorStore,
+  traces: readonly AgentTrace[],
+  now = performance.now()
+): void {
+  if (traces.length === 0) return
+  const entry = effectsOf(store).traces
+  const live = entry.value.filter((trace) => traceLive(trace, now))
+  entry.value = [...live, ...traces].slice(-MAX_AGENT_TRACES)
 }
 
 /** A pane's DOM scene replays agent edits for this document until the returned detach. */

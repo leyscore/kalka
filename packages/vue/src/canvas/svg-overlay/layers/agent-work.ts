@@ -13,6 +13,40 @@ export interface AgentWorkMark {
   name: string
   /** The agent's color: its owner's in a room. */
   color: Color
+  /**
+   * The region the agent works in right now, while it is at work: its tag carries a small
+   * pixel loader, so the build has one calm place that says it is still going.
+   */
+  busy?: boolean
+}
+
+/** How the loader on a busy mark's tag moves: one step this often, on the overlay's clock. */
+export const LOADER_STEP_MS = 110
+/** The loader is a 3×3 grid of square pixels; the lit one walks round its edge. */
+const LOADER_PIXEL = 2
+const LOADER_GAP = 1
+const LOADER_SIZE = LOADER_PIXEL * 3 + LOADER_GAP * 2
+const LOADER_TEXT_GAP = 5
+/** The outer cells clockwise from the top-left, as column and row. */
+const LOADER_RING: readonly (readonly [number, number])[] = [
+  [0, 0],
+  [1, 0],
+  [2, 0],
+  [2, 1],
+  [2, 2],
+  [1, 2],
+  [0, 2],
+  [0, 1]
+]
+/** How bright each ring cell is by how far it trails the lit one; the center stays dim. */
+const LOADER_TRAIL = [1, 0.7, 0.45, 0.3]
+const LOADER_REST_ALPHA = 0.3
+const LOADER_STILL_ALPHA = 0.75
+
+/** How the overlay animates a mark: the time now, and whether motion is reduced. */
+export interface AgentWorkClock {
+  now: number
+  still?: boolean
 }
 
 /** Marks drawn per frame; an agent rarely holds more, and the rest wait for it to let go. */
@@ -34,6 +68,34 @@ const LABEL_MAX_WIDTH = 120
 const LABEL_TEXT_BASELINE = 3.5
 
 const WHITE = css({ r: 1, g: 1, b: 1, a: 1 })
+
+/** Which step the loaders are at `now`; the overlay redraws only when it changes. */
+export function loaderStep(now: number): number {
+  return Math.floor(now / LOADER_STEP_MS)
+}
+
+/** The pixel loader with its top-left at `x`, `y`: steady when motion is reduced. */
+export function pixelLoader(x: number, y: number, clock: AgentWorkClock): OverlayShape[] {
+  const lit = loaderStep(clock.now) % LOADER_RING.length
+  const shapes: OverlayShape[] = []
+  const cell = (column: number, row: number, alpha: number) =>
+    shapes.push({
+      type: 'rect',
+      x: x + column * (LOADER_PIXEL + LOADER_GAP),
+      y: y + row * (LOADER_PIXEL + LOADER_GAP),
+      width: LOADER_PIXEL,
+      height: LOADER_PIXEL,
+      fill: WHITE,
+      opacity: alpha
+    })
+  LOADER_RING.forEach(([column, row], index) => {
+    const behind = (lit - index + LOADER_RING.length) % LOADER_RING.length
+    const alpha = clock.still ? LOADER_STILL_ALPHA : (LOADER_TRAIL[behind] ?? LOADER_REST_ALPHA)
+    cell(column, row, alpha)
+  })
+  cell(1, 1, LOADER_REST_ALPHA)
+  return shapes
+}
 
 /** The layer's corners on screen, through its world matrix, so the mark turns with it. */
 function screenCorners(context: OverlayContext, nodeId: string): number[] | null {
@@ -60,13 +122,15 @@ function nameTag(
   context: OverlayContext,
   mark: AgentWorkMark,
   right: number,
-  top: number
+  top: number,
+  clock: AgentWorkClock
 ): OverlayShape[] {
   const fitted = fitLabel(context.measureText, mark.name, LABEL_FONT_SIZE, LABEL_MAX_WIDTH)
-  const width = fitted.width + LABEL_PADDING_X * 2
+  const loader = mark.busy ? LOADER_SIZE + LOADER_TEXT_GAP : 0
+  const width = loader + fitted.width + LABEL_PADDING_X * 2
   const x = right - width
   const y = top - LABEL_GAP - LABEL_HEIGHT
-  return [
+  const shapes: OverlayShape[] = [
     {
       type: 'rect',
       x,
@@ -78,7 +142,7 @@ function nameTag(
     },
     {
       type: 'text',
-      x: x + LABEL_PADDING_X,
+      x: x + LABEL_PADDING_X + loader,
       y: y + LABEL_HEIGHT / 2 + LABEL_TEXT_BASELINE,
       text: fitted.text,
       fill: WHITE,
@@ -86,15 +150,20 @@ function nameTag(
       fontWeight: 500
     }
   ]
+  if (mark.busy)
+    shapes.push(...pixelLoader(x + LABEL_PADDING_X, y + (LABEL_HEIGHT - LOADER_SIZE) / 2, clock))
+  return shapes
 }
 
 /**
  * Layers agents are building: a dashed outline in the agent's color and a tag with its name.
- * Static, so it costs nothing between edits and stays calm while the agent thinks.
+ * The region an agent works in now carries a pixel loader that steps a few times a second;
+ * everything else is static, so it costs nothing between edits.
  */
 export function agentWorkLayer(
   context: OverlayContext,
-  marks: readonly AgentWorkMark[]
+  marks: readonly AgentWorkMark[],
+  clock: AgentWorkClock = { now: 0, still: true }
 ): OverlayShape[] {
   const shapes: OverlayShape[] = []
   let labels = 0
@@ -114,9 +183,10 @@ export function agentWorkLayer(
     const top = Math.min(...ys)
     const large =
       right - Math.min(...xs) >= MIN_LABELED_SIZE && Math.max(...ys) - top >= MIN_LABELED_SIZE
-    if (!large || labels >= MAX_WORK_LABELS) continue
+    // Where an agent works now is always tagged, so its loader shows however small it is.
+    if (!mark.busy && (!large || labels >= MAX_WORK_LABELS)) continue
     labels++
-    shapes.push(...nameTag(context, mark, right, top))
+    shapes.push(...nameTag(context, mark, right, top, clock))
   }
   return shapes
 }

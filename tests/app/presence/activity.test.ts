@@ -221,7 +221,8 @@ describe('the marks the canvas draws', () => {
     const marks = workingMarks(store, pageId())
     expect(marks).toEqual([
       { nodeId: hero.frame.id, name: fern.name, color: expect.any(Object) },
-      { nodeId: footer.frame.id, name: 'Moss', color }
+      // An agent at work carries a loader where it builds now; a resting one does not.
+      { nodeId: footer.frame.id, name: 'Moss', color, busy: true }
     ])
     // The same list while nothing changed, so the overlay does not redraw for it.
     expect(workingMarks(store, pageId())).toBe(marks)

@@ -10,7 +10,7 @@ import {
   markWorking,
   recordLayerActivity
 } from '@/app/presence/activity'
-import { showAgentEdit } from '@/app/presence/edit-effect'
+import { placeAgent, showAgentEdit, stopCursorSweep } from '@/app/presence/edit-effect'
 import { addAgent, agentPlacement, type AgentHandle } from '@/app/presence/registry'
 import { MAX_NAME_LENGTH } from '@/app/presence/schema'
 
@@ -78,6 +78,7 @@ function remove(sessionId: string, store: EditorStore): void {
   if (!agents || !agent) return
   clearTimeout(agent.idleTimer)
   clearTimeout(agent.goneTimer)
+  stopCursorSweep(agent.handle)
   agent.handle.remove()
   agents.delete(store)
   if (agents.size === 0) sessions.delete(sessionId)
@@ -87,6 +88,7 @@ function restartTimers(store: EditorStore, sessionId: string, agent: SessionAgen
   clearTimeout(agent.idleTimer)
   clearTimeout(agent.goneTimer)
   agent.idleTimer = setTimeout(() => {
+    stopCursorSweep(agent.handle)
     agent.handle.update({
       status: 'idle',
       note: undefined,
@@ -183,11 +185,7 @@ export function agentFinished(
   // or moving it away from what a later reply works on.
   if (work.reply !== agent.replies) return
   const placement = agentPlacement(store, work.nodeIds, work.pageId)
-  agent.handle.update({
-    status: work.edited ? 'editing' : 'thinking',
-    pageId: work.pageId,
-    ...placement
-  })
+  const status = work.edited ? 'editing' : 'thinking'
   const { activity } = work
   if (activity) {
     recordLayerActivity(store, agent.handle, 'read', activity.read)
@@ -195,11 +193,13 @@ export function agentFinished(
     markWorking(store, agent.handle, activity.worked)
   }
   keepWorking(store, agent.handle)
-  // An edit replays on the canvas, the cursor moving through what it touched.
+  // An edit replays on the canvas, the cursor moving through what it touched; it ends where
+  // the call points, after the replays queued before it.
   if (work.edit) {
     const pageId = placement?.pageId ?? work.pageId
     showAgentEdit(store, work.edit, { agent: agent.handle, touched: work.nodeIds, pageId })
   }
+  placeAgent(agent.handle, placement, { status, pageId: placement?.pageId ?? work.pageId })
   restartTimers(store, session.session, agent)
 }
 
@@ -240,6 +240,7 @@ export function restAgents(kind: Exclude<AgentSession['kind'], 'mcp'>): void {
       if (agent.kind !== kind) continue
       clearTimeout(agent.idleTimer)
       agent.replies++
+      stopCursorSweep(agent.handle)
       agent.handle.update({
         status: 'idle',
         note: undefined,

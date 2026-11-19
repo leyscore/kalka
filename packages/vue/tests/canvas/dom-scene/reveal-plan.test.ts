@@ -7,7 +7,8 @@ import {
   MAX_REVEALED_LAYERS,
   MAX_TYPE_MS,
   MAX_TYPED_TEXTS,
-  planReveal
+  planReveal,
+  revealEnd
 } from '#vue/canvas/dom-scene/reveal/plan'
 
 function card() {
@@ -76,5 +77,14 @@ describe('replaying an agent edit', () => {
     const { graph, frame, title } = card()
     const edit = { created: [frame.id, title.id], written: [title.id] }
     expect(planReveal(graph, edit, { reducedMotion: true })).toEqual([])
+  })
+
+  test('an edit ends when its last layer has finished appearing', () => {
+    const { graph, frame, title, button } = card()
+    const steps = planReveal(graph, { created: [frame.id, title.id, button.id], written: [] }, motion)
+    const end = revealEnd(steps)
+    for (const step of steps) expect(step.delay + step.duration).toBeLessThanOrEqual(end)
+    expect(end).toBeGreaterThan(steps.at(-1)?.delay ?? Infinity)
+    expect(revealEnd([])).toBe(0)
   })
 })

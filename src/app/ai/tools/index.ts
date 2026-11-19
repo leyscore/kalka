@@ -235,11 +235,8 @@ export function createAITools(
         if (def.mutates && !isAtomicTool(def)) store.requestRender()
       },
       onFlashNodes: (nodeIds) => {
+        // The reveal and the work marks show the edit; the agent ends up pointing at it.
         markRunWork(store, nodeIds, lane)
-        store.renderer?.aiClearActive()
-        if (nodeIds.length > 0) {
-          store.aiFlashDone(nodeIds)
-        }
       },
       onToolLog: (entry) => {
         recordToolCompleted(

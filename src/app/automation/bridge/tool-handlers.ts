@@ -136,8 +136,8 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
   }
 
   /**
-   * Runs one tool. A call from an agent pulses the layers it names while it edits them, and they
-   * and what it made glow when it is done; other calls flash what they changed.
+   * Runs one tool. A call from an agent shows through its reveal and work marks; other calls
+   * flash what they changed.
    */
   async function runTool(
     target: AutomationTarget,
@@ -165,22 +165,12 @@ export function createAutomationToolHandler(makeFigma: FigmaFactory) {
       figma.setAgentStatus = (text) => setSessionStatus(store, session, text)
       figma.commentAuthorName = sessionAgentName(store, session)
     }
-    const pulsed = fromAgent && def.mutates ? touchedNodeIds(store, toolArgs, null) : []
-    if (pulsed.length > 0) store.aiMarkActive(pulsed)
-    try {
-      const response = await executeTool(target, def, figma, toolArgs, figma.commentAuthorName)
-      // Letting go of layers is not reading them.
-      if (call.released) response.activity = { read: [], written: [], worked: [] }
-      if (def.mutates) {
-        const changed = extractNodeIds(response.result)
-        if (fromAgent) store.aiFlashDone(changed.filter((id) => !pulsed.includes(id)))
-        else store.flashNodes(changed)
-      }
-      return response
-    } finally {
-      // The pulse turns into the glow of finished work.
-      if (pulsed.length > 0) store.aiMarkDone(pulsed)
-    }
+    const response = await executeTool(target, def, figma, toolArgs, figma.commentAuthorName)
+    // Letting go of layers is not reading them.
+    if (call.released) response.activity = { read: [], written: [], worked: [] }
+    // An agent's edit shows through its reveal and its work marks; anyone else's flashes.
+    if (def.mutates && !fromAgent) store.flashNodes(extractNodeIds(response.result))
+    return response
   }
 
   async function executeTool(

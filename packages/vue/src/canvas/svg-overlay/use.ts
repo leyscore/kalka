@@ -21,8 +21,10 @@ import type { Rect } from '@kalka/scene-graph/primitives'
 
 import { createFrameRequest } from '#vue/canvas/frame-request'
 import { composeOverlay } from '#vue/canvas/svg-overlay/compose'
+import type { AgentTrace } from '#vue/canvas/svg-overlay/layers/agent-traces'
 import type { AgentWorkMark } from '#vue/canvas/svg-overlay/layers/agent-work'
 import { createGridFrames } from '#vue/canvas/svg-overlay/layers/layout-grids'
+import { overlayMotion } from '#vue/canvas/svg-overlay/motion'
 import { clearOverlay, renderOverlay } from '#vue/canvas/svg-overlay/render'
 import { createMeasureText, loadLabelFont } from '#vue/canvas/svg-overlay/text'
 
@@ -42,6 +44,8 @@ export interface UseSVGOverlayOptions {
    * redraws when they change; return the same array while nothing changed.
    */
   getAgentWork?: (pageId: string) => readonly AgentWorkMark[]
+  /** Layers agents' edits are revealing, framed as they appear; reactive like `getAgentWork`. */
+  getAgentTraces?: () => readonly AgentTrace[]
 }
 
 /** The same empty list every frame, so a pane without agents never redraws for it. */
@@ -89,18 +93,14 @@ export function useSVGOverlay(
     const element = host.value
     if (!element) return false
     const state = options.getRenderState?.() ?? editor.state
-    const renderer = editor.renderer
-    const flashes = renderer?._flashes ?? []
-    const aiMarks = {
-      active: renderer?._aiActiveNodes ?? [],
-      done: renderer?._aiDoneFlashes ?? [],
-      still: reducedMotion.value === 'reduce'
-    }
-    const animating = flashes.length > 0 || aiMarks.done.length > 0 || renderer?._aiActiveNodes.size
+    const now = performance.now()
+    const work = agentWorkOn(state.currentPageId)
+    const still = reducedMotion.value === 'reduce'
+    const motion = overlayMotion(editor.renderer, work, options.getAgentTraces?.(), still, now)
+    const { flashes, aiMarks, agents } = motion
     const showRulers = options.showRulers?.() ?? false
     const obstacles = options.getOverlayObstacles?.() ?? []
     const canvasColor = canvasColorOf(state)
-    const agentWork = agentWorkOn(state.currentPageId)
     const width = element.clientWidth
     const height = element.clientHeight
     const key = [
@@ -114,7 +114,9 @@ export function useSVGOverlay(
       state.hoveredNodeId,
       state.designIssues,
       state.presenceCursors,
-      agentWork,
+      agents.work,
+      agents.traces,
+      agents.step,
       state.guides,
       canvasColor,
       state.rulerTheme,
@@ -124,9 +126,9 @@ export function useSVGOverlay(
       window.devicePixelRatio,
       obstacles.map((rect) => `${rect.x},${rect.y},${rect.width},${rect.height}`).join(';'),
       // Flashes and AI marks animate: redraw every frame while one runs.
-      animating ? performance.now() : 0
+      motion.animating ? now : 0
     ]
-    if (!changed(key)) return !!animating
+    if (!changed(key)) return motion.continues
     labels.update(editor.graph, state.currentPageId)
     const overlays = overlaysFromEditorState(state, editor.graph, editor.textEditor)
     const composed = composeOverlay({
@@ -146,12 +148,14 @@ export function useSVGOverlay(
       obstacles,
       flashes,
       aiMarks,
-      agentWork,
-      now: performance.now()
+      agentWork: agents.work,
+      agentTraces: agents.traces,
+      still: aiMarks.still,
+      now
     })
     issueMarkers = composed.issueMarkers
     renderOverlay(element, composed.shapes)
-    return !!animating
+    return motion.continues
   }
 
   const frames = createFrameRequest(tick)
@@ -184,6 +188,7 @@ export function useSVGOverlay(
         state.rulerTheme,
         canvasColorOf(state),
         agentWorkOn(state.currentPageId),
+        options.getAgentTraces?.(),
         options.showRulers?.(),
         reducedMotion.value,
         pixelRatio.value

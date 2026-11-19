@@ -90,6 +90,11 @@ function replaying(page: Page) {
   })
 }
 
+/** The frames the overlay draws around an agent's new layers as each one's turn comes. */
+function revealFrames(page: Page) {
+  return page.getByTestId('svg-overlay').locator('polygon[opacity]:not([stroke-dasharray])')
+}
+
 async function open(page: Page) {
   await page.goto('/?test')
   await new CanvasHelper(page).waitForInit()
@@ -111,6 +116,26 @@ test("an agent's new layers appear in turn and its text types out, then rest as 
   await expect(artboard.getByText('Everything you need to ship.')).toBeVisible()
 })
 
+test("each of an agent's new layers is framed as it appears, and the frames then go", async ({
+  page
+}) => {
+  await open(page)
+  await renderAsAgent(page, 40)
+  await expect(revealFrames(page).first()).toBeAttached()
+  await expect(revealFrames(page)).toHaveCount(0)
+})
+
+test('two quick edits from an agent replay in turn and both end fully shown', async ({ page }) => {
+  await open(page)
+  await renderAsAgent(page, 40)
+  await renderAsAgent(page, 420)
+  const artboards = page.locator('iframe[data-kalka-artboard]')
+  await expect(artboards).toHaveCount(2)
+  await expect.poll(() => replaying(page)).toEqual({ animations: 0, typing: 0 })
+  for (const frame of await artboards.all())
+    await expect(frame.contentFrame().getByText('Everything you need to ship.')).toBeVisible()
+})
+
 test('with reduced motion the edit shows at once', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await open(page)
@@ -118,6 +143,7 @@ test('with reduced motion the edit shows at once', async ({ page }) => {
   const artboard = page.locator('iframe[data-kalka-artboard]').contentFrame()
   await expect(artboard.getByText('Everything you need to ship.')).toBeAttached()
   expect(await replaying(page)).toEqual({ animations: 0, typing: 0 })
+  await expect(revealFrames(page)).toHaveCount(0)
 })
 
 test('new layers stay hidden until they animate in, instead of showing first', async ({ page }) => {

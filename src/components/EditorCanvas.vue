@@ -51,7 +51,7 @@ import { useCanvasCollaborationAwareness } from '@/app/editor/canvas/collaborati
 import { createCanvasContextSelection } from '@/app/editor/canvas/context-selection'
 import { canvasOverlayObstacles } from '@/app/editor/canvas/obstacles'
 import { workingMarks } from '@/app/presence/activity'
-import { attachCanvasScene, scenePreviews } from '@/app/presence/canvas-scene'
+import { agentTraces, attachCanvasScene, scenePreviews } from '@/app/presence/canvas-scene'
 import { useFollowView } from '@/app/presence/follow-view'
 import { appRuntimeConfig } from '@/app/runtime/config'
 import IssueMarkerTooltip from '@/components/design-check/IssueMarkerTooltip.vue'
@@ -184,7 +184,9 @@ const svgOverlay = domScene
       getOverlayObstacles: () => canvasOverlayObstacles(canvasRef.value),
       getCanvasColor: canvasBackgroundColor,
       // Layers agents are still building, with their names.
-      getAgentWork: (pageId) => workingMarks(store, pageId)
+      getAgentWork: (pageId) => workingMarks(store, pageId),
+      // Layers agents' edits are revealing, framed as their turn comes.
+      getAgentTraces: () => agentTraces(store)
     })
   : null
 // Over the DOM scene, names are hit tested where the SVG overlay drew them.
