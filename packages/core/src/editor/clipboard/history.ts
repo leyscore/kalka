@@ -23,10 +23,21 @@ export function deleteIds(ctx: EditorContext, ids: string[]) {
   for (const id of [...ids].reverse()) ctx.graph.deleteNode(id)
 }
 
+/**
+ * Puts deleted layers back where they were. Their positions were read before any of them went,
+ * so siblings return lowest position first, each landing where it was; a layer whose parent was
+ * deleted too returns once that parent is back.
+ */
 export function restoreDeletedEntries(ctx: EditorContext, entries: DeletedEntry[]) {
-  for (const { id, parentId, index, subtree } of [...entries].reverse()) {
-    const rootSnap = subtree.get(id)
-    if (rootSnap) restoreSubtree(ctx.graph, rootSnap, parentId, subtree)
-    if (index >= 0) ctx.graph.reorderChild(id, parentId, index)
+  let pending = entries.toSorted((a, b) => a.index - b.index)
+  while (pending.length > 0) {
+    const ready = pending.filter((entry) => ctx.graph.getNode(entry.parentId))
+    const batch = ready.length > 0 ? ready : pending
+    for (const { id, parentId, index, subtree } of batch) {
+      const rootSnap = subtree.get(id)
+      if (rootSnap) restoreSubtree(ctx.graph, rootSnap, parentId, subtree)
+      if (index >= 0) ctx.graph.reorderChild(id, parentId, index)
+    }
+    pending = pending.filter((entry) => !batch.includes(entry))
   }
 }

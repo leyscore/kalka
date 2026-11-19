@@ -28,4 +28,36 @@ describe('deleteSelected', () => {
     expect(getNodeOrThrow(editor.graph, body.id).height).toBe(220)
     expect(getNodeOrThrow(editor.graph, footerA.id).y).toBe(260)
   })
+
+  test('undo puts several deleted layers back in their stacking order, whatever the selection order', () => {
+    for (const picked of [
+      [1, 3],
+      [3, 1],
+      [0, 2, 3],
+      [1, 2]
+    ]) {
+      const editor = createEditor()
+      const page = editor.state.currentPageId
+      const ids = ['A', 'B', 'C', 'D', 'E'].map(
+        (name) => editor.graph.createNode('RECTANGLE', page, { name }).id
+      )
+      editor.select(picked.map((index) => ids[index]))
+      editor.deleteSelected()
+      editor.undoAction()
+      expect(getNodeOrThrow(editor.graph, page).childIds).toEqual(ids)
+    }
+  })
+
+  test('undo puts back a deleted layer together with a deleted child of it', () => {
+    const editor = createEditor()
+    const page = editor.state.currentPageId
+    const card = editor.graph.createNode('FRAME', page, { name: 'Card' })
+    const title = editor.graph.createNode('TEXT', card.id, { name: 'Title' })
+    const after = editor.graph.createNode('RECTANGLE', page, { name: 'After' })
+    editor.select([title.id, card.id])
+    editor.deleteSelected()
+    editor.undoAction()
+    expect(getNodeOrThrow(editor.graph, page).childIds).toEqual([card.id, after.id])
+    expect(getNodeOrThrow(editor.graph, card.id).childIds).toEqual([title.id])
+  })
 })
