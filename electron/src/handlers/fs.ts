@@ -4,6 +4,7 @@ import { isAbsolute, join, normalize, sep } from 'node:path'
 import { app } from 'electron'
 
 import { emit, registerAll, type CallContext } from '../ipc'
+import { writeFileAtomically } from './atomic-write'
 import { watchFileChanges } from './file-watch'
 
 /** Tauri's `BaseDirectory.AppLocalData`, the only base directory the app uses. */
@@ -40,8 +41,9 @@ export const fsHandlers = {
   readTextFile(_context: CallContext, path: string, baseDir: number | null) {
     return fs.readFile(resolvePath(path, baseDir), 'utf8')
   },
+  /** Documents, settings and caches alike are replaced whole, never left half written. */
   writeFile(_context: CallContext, path: string, data: Uint8Array, baseDir: number | null) {
-    return fs.writeFile(resolvePath(path, baseDir), data)
+    return writeFileAtomically(resolvePath(path, baseDir), data)
   },
   async mkdir(_context: CallContext, path: string, baseDir: number | null, recursive: boolean) {
     await fs.mkdir(resolvePath(path, baseDir), { recursive })

@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- Saving in the desktop app can no longer leave a damaged or empty file: a document, a Kalka folder's files and the app's own data are written beside the file and swapped in whole, so a crash, a full disk or a failed write keeps the file as it was.
 - In the desktop app, a document open from a file reloads when the file is changed by an app that replaces it, such as git or many editors, every time instead of only the first time.
 - A document saved to a file with autosave off is protected from a crash again: its unsaved changes are kept for recovery, where only unsaved new documents used to be.
 - A variable mode an outer instance in a `.fig` sets on a nested layer for one collection keeps the modes that layer has in its other collections, and an override that clears a collection's mode lets the layer take its parent's mode again.
