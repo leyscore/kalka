@@ -18,10 +18,16 @@ function designDocument(
   graph: SceneGraph,
   nodeIds: string[],
   includeSourceIds: boolean,
-  fontFallbacks: readonly string[]
+  fontFallbacks: readonly string[],
+  hairlineScale?: number
 ): DesignDocument {
   const projected = nodeIds.map((id) =>
-    sceneNodeToDesignDocument(graph, id, { vectorElement, includeSourceIds, fontFallbacks })
+    sceneNodeToDesignDocument(graph, id, {
+      vectorElement,
+      includeSourceIds,
+      fontFallbacks,
+      hairlineScale
+    })
   )
   // Each layer records the variables it references; the page defines all of them once.
   const tokens = projected.find((layer) => layer.tokens)?.tokens
@@ -63,14 +69,22 @@ export async function renderNodesToHTML(
   fileName?: string
 ): Promise<{ html: string; assets: ExportAsset[] }> {
   const fontFallbacks = options.fonts === 'loaded' ? fontManager.fallbackFamilies() : []
-  const projected = designDocument(graph, nodeIds, !!options.sourceIds, fontFallbacks)
+  const projected = designDocument(
+    graph,
+    nodeIds,
+    !!options.sourceIds,
+    fontFallbacks,
+    options.hairlineScale
+  )
   // A page's breakpoints become media rules, which only a stylesheet can hold.
   const exported =
     options.html === 'standalone' && options.style !== 'tailwind'
       ? withResponsiveStyles(
           graph,
           projected,
-          (id) => designDocument(graph, [id], !!options.sourceIds, fontFallbacks).children[0]
+          (id) =>
+            designDocument(graph, [id], !!options.sourceIds, fontFallbacks, options.hairlineScale)
+              .children[0]
         )
       : projected
   const bundle = await exportHTMLBundle(exported, {

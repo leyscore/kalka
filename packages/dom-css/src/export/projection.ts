@@ -7,6 +7,7 @@ import { writeLayerStyle, type FieldCSS, type WriteContext } from '@kalka/scene-
 
 import { DesignTokens, type CSSModes } from '../tokens/references'
 import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
+import { hairlineStyle, type HairlineScale } from './hairlines'
 import { maskStyle } from './masks'
 import { croppedImageStyle, patternBackground, tiledImageStyle } from './patterns'
 import { asAutoLayoutSizes, flowMargins } from './sizing'
@@ -69,6 +70,12 @@ export interface SceneGraphToDesignOptions {
    * font, as its CanvasKit renderer does, so the browser does not pick a system font of its own.
    */
   fontFallbacks?: readonly string[]
+  /**
+   * Device pixels to a CSS pixel where the projection is drawn, so strokes thinner than a device
+   * pixel draw only the colour they cover, as in Figma (`hairlineStyle`). Without it they draw
+   * as the browser draws them.
+   */
+  hairlineScale?: HairlineScale
 }
 
 /** Shapes without children whose stroke the SVG export draws when CSS cannot. */
@@ -156,6 +163,7 @@ interface ProjectionContext {
   masks: boolean
   tiles: boolean
   fontFallbacks: readonly string[]
+  hairlineScale: HairlineScale | undefined
   /** Inside an `a` or `button`, which HTML does not let another one sit in. */
   interactive: boolean
 }
@@ -306,8 +314,12 @@ function sceneNodeToDesignNode(
   if (projected?.type !== 'element') return projected
   const margins = flowMargins(context.graph, node)
   const masked = context.masks ? maskStyle(context.graph, node, context.vectorElement) : {}
-  if (isEmptyObject(masked) && isEmptyObject(margins)) return projected
-  return { ...projected, inlineStyle: { ...projected.inlineStyle, ...margins, ...masked } }
+  const hairline = hairlineStyle(node, projected.inlineStyle, context.hairlineScale)
+  if (isEmptyObject(masked) && isEmptyObject(margins) && isEmptyObject(hairline)) return projected
+  return {
+    ...projected,
+    inlineStyle: { ...projected.inlineStyle, ...margins, ...masked, ...hairline }
+  }
 }
 
 function layerDesignNode(
@@ -393,7 +405,8 @@ function projectionContext(
     internal = false,
     masks = true,
     tiles = true,
-    fontFallbacks = []
+    fontFallbacks = [],
+    hairlineScale
   }: SceneGraphToDesignOptions
 ): ProjectionContext {
   return {
@@ -408,6 +421,7 @@ function projectionContext(
     masks,
     tiles,
     fontFallbacks,
+    hairlineScale,
     interactive: false
   }
 }

@@ -5,6 +5,7 @@ export {
   type SceneGraphToDesignOptions,
   type VectorElementRenderer
 } from './projection'
+export type { HairlineScale } from './hairlines'
 export { canTakeHTMLTag, defaultTagForNode, tagForNode } from './tags'
 export { exportHTMLBundle } from './bundle'
 export {

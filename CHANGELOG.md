@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- Strokes thinner than a pixel, such as the 0.25 px borders common in imported `.fig` files, draw on the canvas and in image exports as faint as in Figma, getting stronger as you zoom in, instead of as full one-pixel lines; saved files keep the same CSS.
 - Tailwind JSX and Storybook exports mask with a rectangle or ellipse mask's own paint, so a gradient mask fades the layers above it and a half transparent one lets them half through, instead of masking with the plain shape.
 - Exporting a layer to PNG, JPG or WebP in the web app, or when the desktop renderer is unavailable, no longer draws neighbouring layers into the image when the layer holds a background blur or a blend mode; it is drawn alone, as Figma exports it.
 - `kalka export` to PNG, JPG or PDF draws a layer whose shadow, outer stroke or overflowing children reach above or left of it in its place, instead of drawing it too high or too far left and cutting that part off.

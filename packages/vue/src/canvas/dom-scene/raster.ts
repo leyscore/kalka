@@ -36,7 +36,9 @@ export function rasterDocument(
   graph: SceneGraph,
   nodeIds: readonly string[],
   fonts: readonly ArtboardFontFace[],
-  ownerDocument: Document = document
+  ownerDocument: Document = document,
+  /** Device pixels to a CSS pixel the page is captured at; hairline strokes draw for it. */
+  scale?: number
 ): RasterDocument | null {
   const bounds = computeContentBounds(graph, [...nodeIds])
   if (!bounds) return null
@@ -50,7 +52,8 @@ export function rasterDocument(
       includeSourceIds: false,
       tokens: false,
       vectorElement,
-      derivedSizes: true
+      derivedSizes: true,
+      hairlineScale: scale
     }).children.at(0)
     if (!node || projected?.type !== 'element') continue
     const built = buildNode(doc, projected)

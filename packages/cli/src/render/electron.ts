@@ -63,7 +63,14 @@ async function renderWithElectron(request: PageRequest): Promise<Uint8Array | nu
     const { html, assets } = await renderNodesToHTML(
       request.graph,
       [...request.nodeIds],
-      { html: 'standalone', assets: 'external', fonts: 'loaded', pretty: false },
+      {
+        html: 'standalone',
+        assets: 'external',
+        fonts: 'loaded',
+        pretty: false,
+        // An image snaps strokes to device pixels; a PDF keeps them as drawn.
+        hairlineScale: request.format === 'PDF' ? undefined : request.scale
+      },
       'page.html'
     )
     await writeFile(join(dir, 'page.html'), placedInBounds(html, request, bounds))
