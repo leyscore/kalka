@@ -1,5 +1,6 @@
 import type { GUID, NodeChange } from '@kalka/kiwi/fig/codec'
 import { guidToString, isUnsetGuid } from '@kalka/kiwi/fig/guid'
+import { compareOrderKeys } from '@kalka/scene-graph/order-keys'
 
 import { findWithinBoundary, type TreeShape } from './tree'
 
@@ -30,10 +31,7 @@ export function indexRecords(changes: readonly NodeChange[]): Map<string, NodeCh
 
 /** Saved sibling order: the fractional position string, compared as text. */
 export function bySavedPosition(a: NodeChange, b: NodeChange): number {
-  const left = a.parentIndex?.position ?? ''
-  const right = b.parentIndex?.position ?? ''
-  if (left === right) return 0
-  return left < right ? -1 : 1
+  return compareOrderKeys(a.parentIndex?.position ?? '', b.parentIndex?.position ?? '')
 }
 
 export function createSourceIndex(changes: readonly NodeChange[]): SourceIndex {
