@@ -1,6 +1,5 @@
 import {
   TEXT_STYLE_FIELDS,
-  type StyleSource,
   type TextStyleField,
   type TextStyleLookup
 } from '#fig/node-change/style/lookup'
@@ -8,7 +7,6 @@ import { variableConsumptionEntries } from '#fig/node-change/variable/bindings'
 
 import type { NodeChange, VariableConsumptionEntry } from '@kalka/kiwi/fig/codec'
 
-import { declareVariableBindingUnits } from '../bindings/variables'
 import type { InstanceOccurrence } from '../occurrence/types'
 
 const BINDINGS_OF_FIELD: Record<TextStyleField, readonly string[]> = {
@@ -66,24 +64,6 @@ function dropBindings(holder: ConsumptionHolder, variableFields: ReadonlySet<str
   }
 }
 
-function adoptStyleBindings(
-  target: InstanceOccurrence,
-  style: Partial<StyleSource>,
-  variableFields: ReadonlySet<string>
-): void {
-  const styleBindings = variableConsumptionEntries(style).filter(
-    (entry) => entry.variableField !== undefined && variableFields.has(entry.variableField)
-  )
-  dropBindings(target.properties, variableFields)
-  if (styleBindings.length === 0) {
-    return
-  }
-  const adopted = structuredClone(styleBindings)
-  const ownEntries = target.properties.parameterConsumptionMap?.entries ?? []
-  target.properties.parameterConsumptionMap = { entries: [...ownEntries, ...adopted] }
-  declareVariableBindingUnits(target, { parameterConsumptionMap: { entries: adopted } })
-}
-
 /**
  * Figma draws an inherited text style's values and bindings over those a claim saves beside it
  * (saved glyphs and live probe, desktop 126). A decoration or case set after the style is saved in
@@ -122,5 +102,6 @@ export function yieldToInheritedTextStyle(
   }
   const yieldedBindings = new Set(yielded.flatMap((field) => BINDINGS_OF_FIELD[field]))
   dropBindings(claim, yieldedBindings)
-  adoptStyleBindings(target, style, yieldedBindings)
+  // The layer keeps the style it names, which carries the style's own bindings.
+  dropBindings(target.properties, yieldedBindings)
 }

@@ -204,22 +204,26 @@ describe('an instance text that keeps its inherited text style', async () => {
       expect(text.boundVariables.fontSize).toBeUndefined()
     })
 
-    test(`draws the style's variable over a claimed one (${reader})`, () => {
+    // Kalka keeps the layer on its style, which carries the style's own bindings; binding the
+    // layer to them would detach the style. The layer takes the value the style saved.
+    test(`draws the style over a claimed variable bound in it (${reader})`, () => {
       const text = textOf(graph, sources, '1:33', [2])
-      expect(text.fontSize).toBe(STYLE_VARIABLE_SIZE)
-      expect(text.boundVariables.fontSize).toBe(`1:${STYLE_VARIABLE}`)
+      expect(text.fontSize).toBe(28)
+      expect(text.boundVariables.fontSize).toBeUndefined()
+      expect(text.textStyleId).not.toBeNull()
     })
 
     test(`yields only the fields a claim touches (${reader})`, () => {
       const text = textOf(graph, sources, '1:35', [3])
-      expect(text.fontSize).toBe(STYLE_VARIABLE_SIZE)
+      expect(text.fontSize).toBe(28)
       expect(text.boundVariables.lineHeight).toBe(`1:${LINE_HEIGHT_VARIABLE}`)
     })
 
-    test(`keeps a claimed variable that repeats the style's (${reader})`, () => {
+    test(`leaves a claimed variable that repeats the style's to the style (${reader})`, () => {
       const text = textOf(graph, sources, '1:34', [2])
-      expect(text.fontSize).toBe(STYLE_VARIABLE_SIZE)
-      expect(text.boundVariables.fontSize).toBe(`1:${STYLE_VARIABLE}`)
+      expect(text.fontSize).toBe(28)
+      expect(text.boundVariables.fontSize).toBeUndefined()
+      expect(text.textStyleId).not.toBeNull()
     })
 
     test(`keeps a claimed field the style leaves unset (${reader})`, () => {
