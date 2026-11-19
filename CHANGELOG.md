@@ -13,6 +13,7 @@
 
 ### Fixed
 
+- The comment button in the toolbar shows as pressed while comment mode is on, instead of turning blank white while the move tool kept its highlight.
 - Save as Folder asks for the new folder's name and place, as saving a file does, and creates it, instead of writing the document's files straight into the folder you pick; a folder that already holds other files, such as Downloads, is refused with a message.
 - An agent's reply over ACP, such as Claude Code, reads in the order it worked: each passage of text sits between the thoughts and actions around it instead of all the text joining into one block at the top, and a thought arrives as one block instead of a "Thought for 1s" row per fragment.
 

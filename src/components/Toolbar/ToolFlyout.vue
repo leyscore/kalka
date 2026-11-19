@@ -38,7 +38,8 @@ const {
   toolLabels,
   toolShortcuts,
   ui,
-  mobile = false
+  mobile = false,
+  idle = false
 } = defineProps<{
   tool: EditorToolDef
   activeTool: Tool
@@ -48,11 +49,13 @@ const {
   toolShortcuts: Record<Tool, string>
   ui?: ToolbarUI
   mobile?: boolean
+  /** A mode outside the tools, such as comments, holds the toolbar, so no tool shows pressed. */
+  idle?: boolean
 }>()
 
 const toolbar = tv(toolbarTheme)
 const { editor } = useI18n()
-const triggerActive = computed(() => isToolbarToolActive(tool, activeTool))
+const triggerActive = computed(() => !idle && isToolbarToolActive(tool, activeTool))
 const styles = computed(() => toolbar({ active: triggerActive.value, mobile }))
 
 const emit = defineEmits<{
