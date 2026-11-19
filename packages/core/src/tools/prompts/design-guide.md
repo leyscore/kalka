@@ -28,11 +28,14 @@ step it needs and keep the existing system.
 Write a short brief in the conversation before drawing:
 
 - the mood, as a concrete place or material (a print shop, a greenhouse, a ferry terminal);
-  list three and keep one that is not your first idea
+  list three and keep one that is not your first idea. A warm-paper "atelier" or "editorial"
+  mood is everyone's first idea; choose it only when the product really lives there
 - a palette with roles: one ground, one ink, one strong accent, two or three supporting tones
   taken from that place, with their hex values and enough contrast for text
 - two typefaces: a display face with character and a quiet text face, and a type scale with
   strong contrast between display and labels (for example 72 / 48 / 28 / 18 / 16 / 13)
+- before building, hold the palette and the typefaces against the generated look listed under
+  Taste rules; if they match it, pick again from the product's own world
 - a spacing scale on a 4 px base (4, 8, 12, 16, 24, 32, 48, 64, 96, 128) and a radius scale
 - the one device that carries the hero (product shot, type, photography, illustration)
 - the sections of the page, in order, each with its job in a few words
@@ -104,6 +107,7 @@ After each section, get_screenshot the page frame and judge it before moving on:
 - text contrast is enough and the accent is used sparingly
 - edges align on the container and the grid
 - content is real and nothing is left from a placeholder
+- nothing from the generated look under Taste rules crept in
 
 Fix what fails, then go on. When the desktop page is done, add_breakpoint at 390 (and 810 when it
 matters) and adjust the phone layout: stack the rows, shrink the display sizes, keep the tap
@@ -121,6 +125,18 @@ the comments that ask you (get_comments, reply_to_comment).
   are chosen.
 - Type does most of the work: few sizes, strong contrast, text lines of 45 to 75 characters.
 - Spacing varies on purpose; alignment is exact.
-- Avoid what reads as generated: purple-to-blue gradients on white, glass everywhere, a shadow on
-  every card, three identical feature cards with icons, emoji as icons, everything centred, neon
-  accents on dark grey, a gradient on every heading.
+- Avoid what reads as generated. People spot these at once, and one is enough to make a page
+  look machine-made:
+  - colour: purple-to-blue gradients on white; cyan or neon on dark grey; a glowing dark mode by
+    default; a cream or warm-paper ground with a serif display and a terracotta, rust or
+    burnt-orange accent
+  - type: the reflex faces (Inter, Space Grotesk, Playfair Display, Fraunces, DM Sans) chosen
+    because they come first; monospace as a "technical" signal; gradient text; one headline word
+    set apart in italic or colour; a tracked all-caps eyebrow above every heading
+  - layout: three identical cards with an icon, a heading and a line; cards nested in cards;
+    everything centred; thick coloured side stripes on cards and callouts; 01 / 02 / 03 markers
+    on things that are not a sequence
+  - surface: one radius and one soft grey shadow on everything; glass as decoration; a gradient
+    on every heading
+  - motion: a fade-up on every section, a lift on every card on hover, bounce easing
+  - details: emoji as icons; an arrow added to every link; meta lines joined with middle dots
