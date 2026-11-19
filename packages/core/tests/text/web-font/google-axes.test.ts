@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 
 import { loadGoogleOpticalSizes } from '#core/text/web-font/google-axes'
+import { fontsourceVariableURL } from '#core/text/web-fonts'
 
 const metadata = {
   familyMetadataList: [
@@ -16,8 +17,29 @@ describe('Google Fonts optical sizes', () => {
     expect([...ranges]).toEqual([['Bricolage Grotesque', ['12', '96']]])
   })
 
-  test('metadata that cannot be read or has the wrong shape gives no ranges', async () => {
-    expect((await loadGoogleOpticalSizes(async () => new Response('', { status: 500 }))).size).toBe(0)
-    expect((await loadGoogleOpticalSizes(async () => new Response('{"fonts":[]}'))).size).toBe(0)
+  test('metadata that cannot be read gives the families known to have the axis', async () => {
+    const unreadable = [
+      async () => new Response('', { status: 500 }),
+      async () => new Response('{"fonts":[]}'),
+      // A browser cannot read Google's metadata across origins.
+      async () => Promise.reject(new TypeError('Failed to fetch'))
+    ]
+    for (const fetcher of unreadable) {
+      const ranges = await loadGoogleOpticalSizes(fetcher)
+      expect(ranges.get('Bricolage Grotesque')).toEqual(['12', '96'])
+    }
+  })
+})
+
+describe('Fontsource variable files', () => {
+  test('a static file of a family maps to its variable file of the same subset and style', () => {
+    expect(
+      fontsourceVariableURL(
+        'https://cdn.jsdelivr.net/fontsource/fonts/bricolage-grotesque@5.3.0/latin-ext-600-normal.ttf'
+      )
+    ).toBe(
+      'https://cdn.jsdelivr.net/fontsource/fonts/bricolage-grotesque:vf@latest/latin-ext-standard-normal.woff2'
+    )
+    expect(fontsourceVariableURL('https://fonts.gstatic.com/s/inter/v1/abc.ttf')).toBeNull()
   })
 })

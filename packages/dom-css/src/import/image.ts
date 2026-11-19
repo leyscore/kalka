@@ -74,6 +74,14 @@ function readImage(
   node.fills = [imageFill(imageHash, style)]
 }
 
+/** An SVG file as the image that fills a layer, stored in the graph. */
+export function svgImageFill(graph: SceneGraph, markup: string): Fill {
+  const bytes = new TextEncoder().encode(markup)
+  const imageHash = computeImageHash(bytes)
+  graph.images.set(imageHash, bytes)
+  return imageFill(imageHash, {})
+}
+
 export interface ElementStyleContext {
   /** The element the CSS is on: its measured box scales gradients, an `<img>` carries an image. */
   element?: DesignElement

@@ -11,7 +11,7 @@ import { shaderSettings } from '../export/tidy/attributes'
 import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
 import { hasBoxStyle, isTextLikeElement, textContent } from './element-kinds'
 import { applyHTMLElement } from './html-element'
-import { readElementStyle } from './image'
+import { readElementStyle, svgImageFill } from './image'
 import {
   inheritedTextStyle,
   isNotRendered,
@@ -173,6 +173,13 @@ function createElementNode(
   placement?: Placement
 ): SceneNode {
   const style = mergedStyle(element)
+  if (element.drawnSVG) {
+    // An inline SVG keeps its drawing as an image; its shapes are not boxes of their own.
+    const svg = createFrameNode(graph, parentId, element, style, placement)
+    svg.name = element.attrs['aria-label'] || 'svg'
+    svg.fills = [svgImageFill(graph, element.drawnSVG)]
+    return svg
+  }
   // A measured paragraph, link or heading with inline markup is one text layer.
   if (element.layoutBox && isPhrasingBlock(element))
     return createPhrasingNode(graph, parentId, element, style, placement)

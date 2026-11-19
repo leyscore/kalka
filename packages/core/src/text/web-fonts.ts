@@ -75,9 +75,16 @@ export function webFontSubsetsForText(text: string): string[] {
   return [...subsets]
 }
 
-function preferredRemoteSource(face: FontFaceData): RemoteFontSource | undefined {
+function preferredRemoteSource(
+  face: FontFaceData,
+  variable: boolean
+): RemoteFontSource | undefined {
   const sources = face.src.filter(isRemoteFontSource)
+  // Google serves a family's variable axes only as WOFF2; a browser draws it at every optical
+  // size, where the TrueType file is one static size.
+  const woff2 = variable ? sources.find((source) => source.format === 'woff2') : undefined
   return (
+    woff2 ??
     sources.find((source) => source.format === 'truetype' || source.format === 'ttf') ??
     sources.find((source) => source.format === 'opentype' || source.format === 'otf') ??
     sources.find((source) => source.format === 'woff2') ??
@@ -86,12 +93,29 @@ function preferredRemoteSource(face: FontFaceData): RemoteFontSource | undefined
   )
 }
 
-function resolvedRemoteFaces(result: ResolveFontResult): Array<{
+const FONTSOURCE_STATIC_FILE =
+  /^(https:\/\/cdn\.jsdelivr\.net\/fontsource\/fonts\/[a-z0-9-]+)@[^/]+\/([a-z0-9-]+)-\d+-(normal|italic)\.[a-z0-9]+$/
+
+/**
+ * Fontsource's variable file for one of its static files: every registered axis, so the
+ * optical size follows the font size and the weight follows `font-weight`.
+ */
+export function fontsourceVariableURL(url: string): string | null {
+  const match = FONTSOURCE_STATIC_FILE.exec(url)
+  if (!match) return null
+  const [, family, subset, style] = match
+  return `${family}:vf@latest/${subset}-standard-${style}.woff2`
+}
+
+function resolvedRemoteFaces(
+  result: ResolveFontResult,
+  variable = false
+): Array<{
   source: RemoteFontSource
   init?: RequestInit
 }> {
   const candidates = result.fonts.flatMap((face) => {
-    const source = preferredRemoteSource(face)
+    const source = preferredRemoteSource(face, variable)
     return source ? [{ source, init: face.meta?.init, priority: face.meta?.priority ?? 0 }] : []
   })
   const preferredPriority = Math.min(...candidates.map((candidate) => candidate.priority))
@@ -360,9 +384,18 @@ export class WebFontResolver {
         signal
       )
       signal?.throwIfAborted()
-      const faces = resolvedRemoteFaces(result)
+      // A browser draws a family with optical sizes from its variable file, at every size.
+      const variable = IS_BROWSER && (await this.googleOpticalSizes()).has(family)
+      const faces = resolvedRemoteFaces(result, variable)
       const buffers = await Promise.all(
         faces.map(async ({ source, init }) => {
+          const variableURL = variable ? fontsourceVariableURL(source.url) : null
+          if (variableURL) {
+            const response = await this.fetchRemote(variableURL, { ...init, signal }).catch(
+              () => null
+            )
+            if (response?.ok) return response.arrayBuffer()
+          }
           const response = await this.fetchRemote(source.url, { ...init, signal })
           return response.ok ? response.arrayBuffer() : null
         })

@@ -36,6 +36,11 @@ export interface DesignElement {
   mediaStyles?: MediaStyle[]
   /** Where a browser rendered the element, when the document was measured. */
   layoutBox?: LayoutBox
+  /**
+   * An inline `<svg>` as the browser drew it, each shape's computed paint written on it, so it
+   * imports as one image that looks the same rather than as boxes that draw nothing.
+   */
+  drawnSVG?: string
 }
 
 /** A breakpoint's declarations for an element, written in `@media (max-width: …)`. */
