@@ -29,9 +29,9 @@ test('AI catalog includes exposed extended tools while preserving compact defaul
   expect(defaults).toContain('get_components')
   expect(defaults).toContain('list_libraries')
   expect(defaults).toContain('insert_library_component')
-  expect(defaults).not.toContain('create_component')
-  expect(enabledAIToolDefinitions({ create_component: true }).map((tool) => tool.name)).toContain(
-    'create_component'
+  expect(defaults).not.toContain('create_shape')
+  expect(enabledAIToolDefinitions({ create_shape: true }).map((tool) => tool.name)).toContain(
+    'create_shape'
   )
   expect(
     enabledAIToolDefinitions({ get_components: false }).map((tool) => tool.name)
@@ -43,22 +43,22 @@ test('AI catalog includes exposed extended tools while preserving compact defaul
 
 test('target switching, bulk changes and reset preserve independent permissions', () => {
   aiToolOverrides.value = {}
-  disabledMCPTools.value = ['create_component']
+  disabledMCPTools.value = ['create_shape']
   const access = useToolAccessSettings()
   access.selectTarget('ai')
-  expect(access.disabled.value).toContain('create_component')
-  access.disabled.value = access.disabled.value.filter((name) => name !== 'create_component')
-  expect(disabledAITools.value).not.toContain('create_component')
-  expect(disabledMCPTools.value).toEqual(['create_component'])
+  expect(access.disabled.value).toContain('create_shape')
+  access.disabled.value = access.disabled.value.filter((name) => name !== 'create_shape')
+  expect(disabledAITools.value).not.toContain('create_shape')
+  expect(disabledMCPTools.value).toEqual(['create_shape'])
   access.selectTarget('mcp')
   access.reset()
   expect(disabledMCPTools.value).toEqual([])
-  expect(disabledAITools.value).not.toContain('create_component')
+  expect(disabledAITools.value).not.toContain('create_shape')
   access.disabled.value = ['find_nodes']
   access.selectTarget('ai')
   access.reset()
   expect(aiToolOverrides.value).toEqual({})
-  expect(disabledAITools.value).toContain('create_component')
+  expect(disabledAITools.value).toContain('create_shape')
   expect(disabledMCPTools.value).toEqual(['find_nodes'])
 })
 
