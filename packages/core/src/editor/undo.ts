@@ -19,6 +19,7 @@ import {
   type PageSnapshot
 } from './history/snapshot'
 import { restoreSubtree, snapshotSubtree } from './history/subtree'
+import { recordWithGroupFit } from './structure/group-bounds'
 import { textAutoResizeChanges } from './text/auto-resize'
 import type { EditorContext } from './types'
 
@@ -146,6 +147,12 @@ export function createUndoActions(ctx: EditorContext) {
     const final: ResizeOriginal = hasGeometry
       ? createResizeSnapshot(node)
       : { x: node.x, y: node.y, width: node.width, height: node.height, style: { ...node.style } }
+    recordWithGroupFit(ctx, nodeId, 'Resize', ['width', 'height'], () =>
+      pushResize(nodeId, original, final)
+    )
+  }
+
+  function pushResize(nodeId: string, original: ResizeOriginal, final: ResizeOriginal) {
     ctx.undo.push({
       label: 'Resize',
       forward: () => {
@@ -212,15 +219,18 @@ export function createUndoActions(ctx: EditorContext) {
     const node = ctx.graph.getNode(nodeId)
     if (!node) return
     const finalRotation = node.rotation
-    ctx.undo.push({
-      label: 'Rotate',
-      forward: () => {
-        ctx.graph.updateNode(nodeId, { rotation: finalRotation })
-      },
-      inverse: () => {
-        ctx.graph.updateNode(nodeId, { rotation: origRotation })
-      }
-    })
+    // A turned layer takes another place in its auto layout parent and another box in its group.
+    const rotate = (rotation: number) => {
+      ctx.graph.updateNode(nodeId, { rotation })
+      ctx.runLayoutForNode(nodeId)
+    }
+    recordWithGroupFit(ctx, nodeId, 'Rotate', ['rotation'], () =>
+      ctx.undo.push({
+        label: 'Rotate',
+        forward: () => rotate(finalRotation),
+        inverse: () => rotate(origRotation)
+      })
+    )
   }
 
   function commitNodeUpdate(nodeId: string, previous: Partial<SceneNode>, label = 'Update') {

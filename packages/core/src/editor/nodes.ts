@@ -14,6 +14,7 @@ import { applyBoundVisibilityEdit, bindsVisibility } from './components/authorin
 import { createLayoutModeActions } from './layout-mode'
 import { createNodePreviewActions } from './node-preview'
 import { createNudgeActions } from './nudge'
+import { recordWithGroupFit } from './structure/group-bounds'
 import { textAutoResizeChanges } from './text/auto-resize'
 import { pathTextEditChanges } from './text/path-edit'
 import type { EditorContext } from './types'
@@ -67,7 +68,9 @@ export function createNodeActions(ctx: EditorContext) {
       })
       return
     }
-    recordNodeUpdate(node, changes, label)
+    recordWithGroupFit(ctx, id, label, Object.keys(changes), () =>
+      recordNodeUpdate(node, changes, label)
+    )
   }
 
   function recordNodeUpdate(node: SceneNode, changes: Partial<SceneNode>, label: string) {

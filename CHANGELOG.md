@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- A group fits its layers again after one of them is resized with its handles, rotated, or given a new size or position in the properties panel, as in Figma, in the same undo step; undoing a rotation also lays its auto layout parent out again.
 - Undoing the removal of the variable mode the document was showing shows that mode again, so layers bound to its variables take back its values.
 - Showing, hiding, locking, unlocking and renaming layers, from the layers panel or with their shortcuts, can be undone, as in Figma; hiding or locking several layers at once is one step.
 - Move to page can be undone, putting the layers back on their page in their place.
