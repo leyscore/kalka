@@ -381,6 +381,15 @@ describe('writing an edited document into its archive', () => {
     })
   })
 
+  test('keeps a change to the libraries the document enables', async () => {
+    const binding = { libraryId: 'ds', revisionId: 'two', enabled: true }
+    const { patched } = await exportBothWays((graph) => {
+      graph.enabledLibraries.set('ds', binding)
+    })
+    const reopened = await open(patched)
+    expect(reopened.enabledLibraries.get('ds')).toEqual(binding)
+  })
+
   test('keeps every archive record its own when new pages and variables take IDs it uses', async () => {
     const bytes = await fixtureBytes()
     const graph = await open(bytes)
