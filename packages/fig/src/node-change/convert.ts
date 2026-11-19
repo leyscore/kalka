@@ -637,6 +637,12 @@ function resolveNodeType(nc: NodeChange): NodeType | 'DOCUMENT' | 'VARIABLE' {
   return nodeType
 }
 
+/** A .fig file stores a vector mask as OUTLINE. */
+function convertMaskType(maskType: NodeChange['maskType']): SceneNode['maskType'] {
+  if (maskType === 'OUTLINE') return 'VECTOR'
+  return (maskType ?? 'ALPHA') as SceneNode['maskType']
+}
+
 /** Fields whose saved NaN means something: wrapped lines spaced as the items are. */
 const MEANINGFUL_NAN_FIELDS: ReadonlySet<string> = new Set(['stackCounterSpacing'])
 
@@ -712,11 +718,7 @@ export function nodeChangeToProps(
     minHeight: minimumSizeDimension(nc.minSize, 'y'),
     maxHeight: maximumSizeDimension(nc.maxSize, 'y'),
     isMask: nc.mask ?? false,
-    // A .fig file stores a vector mask as OUTLINE.
-    maskType: (nc.maskType === 'OUTLINE' ? 'VECTOR' : (nc.maskType ?? 'ALPHA')) as
-      | 'ALPHA'
-      | 'VECTOR'
-      | 'LUMINANCE',
+    maskType: convertMaskType(nc.maskType),
     maskIsOutline: nc.maskIsOutline ?? false,
     expanded: true,
     autoRename: (nc.autoRename ?? true) as boolean,
