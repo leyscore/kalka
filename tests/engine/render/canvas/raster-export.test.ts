@@ -194,6 +194,70 @@ describe('raster export', () => {
     }
   })
 
+  test('a layer whose children blur or blend what is behind them is exported without the layers around it', () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    const red = {
+      type: 'SOLID' as const,
+      color: { r: 1, g: 0, b: 0, a: 1 },
+      opacity: 1,
+      visible: true
+    }
+    // A neighbour overlapping the exported frame's ink, as frames side by side on a page can.
+    graph.createNode('RECTANGLE', page.id, { x: 0, y: 0, width: 40, height: 40, fills: [red] })
+    const frame = graph.createNode('FRAME', page.id, {
+      x: 20,
+      y: 0,
+      width: 40,
+      height: 40,
+      fills: []
+    })
+    graph.createNode('RECTANGLE', frame.id, {
+      x: -20,
+      y: 0,
+      width: 40,
+      height: 40,
+      fills: [],
+      effects: [
+        {
+          type: 'BACKGROUND_BLUR',
+          color: { r: 0, g: 0, b: 0, a: 0 },
+          offset: { x: 0, y: 0 },
+          radius: 4,
+          spread: 0,
+          visible: true
+        }
+      ]
+    })
+
+    const surface = expectDefined(ck.MakeSurface(1, 1), 'surface')
+    const renderer = new SkiaRenderer(ck, surface)
+    try {
+      const png = expectDefined(
+        renderNodesToImage(ck, renderer, graph, page.id, [frame.id], { scale: 1, format: 'PNG' }),
+        'png'
+      )
+      const image = expectDefined(ck.MakeImageFromEncoded(png), 'image')
+      const pixels = expectDefined(
+        image.readPixels(0, 0, {
+          alphaType: ck.AlphaType.Unpremul,
+          colorType: ck.ColorType.RGBA_8888,
+          colorSpace: ck.ColorSpace.SRGB,
+          width: image.width(),
+          height: image.height()
+        }),
+        'pixels'
+      )
+      image.delete()
+      const reds = []
+      for (let i = 0; i < pixels.length; i += 4)
+        if (pixels[i] > 128 && pixels[i + 3] > 128) reds.push(i)
+      expect(reds).toHaveLength(0)
+    } finally {
+      surface.delete()
+    }
+  })
+
   test('keeps one-pixel transparent fringes when trimming exports', async () => {
     const graph = new SceneGraph()
     const page = graph.getPages()[0]
