@@ -14,7 +14,7 @@ import {
   markWorking,
   recordLayerActivity
 } from '@/app/presence/activity'
-import { placeAgent, showAgentEdit, stopCursorSweep } from '@/app/presence/edit-effect'
+import { showAgentEdit, stopAgentReveals } from '@/app/presence/edit-effect'
 import { addAgent, agentPlacement, type AgentHandle } from '@/app/presence/registry'
 
 /**
@@ -137,7 +137,7 @@ export function endRun(store: EditorStore, run?: Run, lane = LEAD_LANE): void {
   run.active = false
   if (state.run !== run) return
   if (state.agent) {
-    stopCursorSweep(state.agent)
+    stopAgentReveals(state.agent)
     // The reply is over, so is its work: nothing stays marked as being built.
     finishWorking(store, state.agent)
   }
@@ -176,14 +176,12 @@ function agentAtWork(store: EditorStore, lane: string): AgentHandle | null {
  * outlines of what it builds, until the tool runs and `markRunWork` names the real layers.
  */
 export function markRunPreview(store: EditorStore, focus: PreviewFocus, lane = LEAD_LANE): void {
-  const agent = agentAtWork(store, lane)
-  if (!agent) return
-  const pageId = runPageId(store, lane)
-  placeAgent(
-    agent,
-    { pageId, cursor: { ...focus.cursor, pageId }, selection: undefined, outline: focus.outline },
-    { status: 'editing' }
-  )
+  agentAtWork(store, lane)?.update({
+    status: 'editing',
+    cursor: { ...focus.cursor, pageId: runPageId(store, lane) },
+    selection: undefined,
+    outline: focus.outline
+  })
 }
 
 /** Point the run's agent at nodes a tool just created or changed. */
@@ -191,7 +189,7 @@ export function markRunWork(store: EditorStore, nodeIds: string[], lane = LEAD_L
   const agent = agentAtWork(store, lane)
   const placement = agentPlacement(store, nodeIds, runPageId(store, lane))
   if (!agent || !placement) return
-  placeAgent(agent, placement, { status: 'editing' })
+  agent.update({ status: 'editing', ...placement })
 }
 
 /**
@@ -213,18 +211,9 @@ export function markRunChange(store: EditorStore, change: DocumentChange, lane =
   markRunWork(store, outermost, lane)
 }
 
-/** Replay a tool's edit on the canvas, with the run's agent moving through what it touched. */
-export function showRunEdit(
-  store: EditorStore,
-  edit: AgentEdit,
-  touched: readonly string[],
-  lane = LEAD_LANE
-): void {
-  showAgentEdit(store, edit, {
-    agent: getRunState(store, lane).agent,
-    touched,
-    pageId: runPageId(store, lane)
-  })
+/** Replay a tool's edit on the canvas, after the run's agent's edits before it. */
+export function showRunEdit(store: EditorStore, edit: AgentEdit, lane = LEAD_LANE): void {
+  showAgentEdit(store, edit, { agent: getRunState(store, lane).agent })
 }
 
 /** The run's agent read these layers. */

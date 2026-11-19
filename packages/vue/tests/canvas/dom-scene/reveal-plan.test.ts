@@ -87,4 +87,40 @@ describe('replaying an agent edit', () => {
     expect(end).toBeGreaterThan(steps.at(-1)?.delay ?? Infinity)
     expect(revealEnd([])).toBe(0)
   })
+
+  test('without typing, new text appears like any layer and rewritten text is left as is', () => {
+    const { graph, frame, title } = card()
+    const steps = planReveal(
+      graph,
+      { created: [frame.id, title.id], written: [title.id] },
+      { ...motion, typing: false }
+    )
+    expect(steps.map((step) => step.kind)).toEqual(['appear', 'appear'])
+    const rewritten = planReveal(
+      graph,
+      { created: [], written: [title.id] },
+      { ...motion, typing: false }
+    )
+    expect(rewritten).toEqual([])
+  })
+
+  test('block by block, text and shapes inside a new block appear with it', () => {
+    const { graph, frame, title, button } = card()
+    const row = graph.createNode('FRAME', frame.id, { name: 'Row' })
+    const label = graph.createNode('TEXT', row.id, { name: 'Label', text: 'Go' })
+    const ids = [frame.id, title.id, button.id, row.id, label.id]
+    const steps = planReveal(
+      graph,
+      { created: ids, written: [] },
+      { ...motion, typing: false, blocks: true }
+    )
+    expect(steps.map((step) => step.id)).toEqual([frame.id, row.id])
+    // A layer added to a block that was already there still appears on its own.
+    const added = planReveal(
+      graph,
+      { created: [label.id], written: [] },
+      { ...motion, typing: false, blocks: true }
+    )
+    expect(added.map((step) => step.id)).toEqual([label.id])
+  })
 })

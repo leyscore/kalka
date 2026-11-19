@@ -6,17 +6,15 @@ import { SceneGraph } from '@kalka/scene-graph'
 import { MAX_REVEALED_LAYERS, type RevealStep } from '@kalka/vue'
 
 import { createEditorStore } from '@/app/editor/session'
-import { agentTraces, attachCanvasScene } from '@/app/presence/canvas-scene'
+import { agentSkeletons, attachCanvasScene } from '@/app/presence/canvas-scene'
 import {
   agentEditFromChange,
-  cursorStops,
   holdAgentCreations,
-  MAX_CURSOR_STOPS,
   MAX_HELD_LAYERS,
   MAX_REVEAL_QUEUE_MS,
-  placeAgent,
   showAgentEdit,
-  stopCursorSweep
+  SKELETON_LEAD_MS,
+  stopAgentReveals
 } from '@/app/presence/edit-effect'
 import { addAgent, presenceOf } from '@/app/presence/registry'
 import { appPreferences } from '@/app/settings/preferences/store'
@@ -97,97 +95,65 @@ describe("showing an agent's edit", () => {
     expect(edit.written).toEqual([heading.id])
   })
 
-  test('the canvas replays it and the agent moves through what it reveals', async () => {
-    const { store, pageId, shown } = editor()
-    const agent = addAgent(store, 'mcp')
-    const { change, heading, card, title, button } = cardEdit(store, pageId)
-
-    showAgentEdit(store, agentEditFromChange(change), { agent, pageId })
-
-    // In the order the layers panel lists them: the rewritten heading, then the new card.
-    expect(shown.map((steps) => steps.map((step) => step.id))).toEqual([
-      [heading.id, card.id, title.id, button.id]
-    ])
-    const last = shown[0]?.at(-1)?.delay ?? 0
-    await Bun.sleep(last + 30)
-    const moved = presenceOf(store).agents.value.find((entry) => entry.id === agent.id)
-    expect(moved?.status).toBe('editing')
-    const at = store.graph.getAbsolutePosition(button.id)
-    expect(moved?.cursor).toMatchObject({ x: at.x, y: at.y })
-    stopCursorSweep(agent)
-  })
-
-  test('each new layer is framed in the agent color as its turn comes; typed text is not', () => {
+  test('the canvas replays it block by block, each after its skeleton', () => {
     const { store, pageId, shown } = editor()
     const agent = addAgent(store, 'mcp')
     const { change, card, title, button } = cardEdit(store, pageId)
 
-    showAgentEdit(store, agentEditFromChange(change), { agent, pageId })
+    showAgentEdit(store, agentEditFromChange(change), { agent })
 
-    const traces = agentTraces(store)
-    const steps = shown[0] ?? []
-    const kindOf = (id: string) => steps.find((step) => step.id === id)?.kind
-    // The new title and the rewritten heading type themselves out; the card and button appear.
-    expect(kindOf(title.id)).toBe('type')
-    expect(traces.map((trace) => trace.nodeId).sort()).toEqual([card.id, button.id].sort())
-    // Each frame comes with its layer's turn.
-    const delays = new Map(shown[0]?.map((step) => [step.id, step.delay]))
-    const origin = (traces[0]?.start ?? 0) - (delays.get(traces[0]?.nodeId ?? '') ?? 0)
-    for (const trace of traces)
-      expect(trace.start - origin).toBeCloseTo(delays.get(trace.nodeId) ?? -1, 3)
-    stopCursorSweep(agent)
+    // Block by block: the card's title and button show with it rather than on their own.
+    expect(shown.map((steps) => steps.map((step) => [step.id, step.kind]))).toEqual([
+      [[card.id, 'appear']]
+    ])
+    expect(shown.flat().map((step) => step.id)).not.toContain(title.id)
+    expect(shown.flat().map((step) => step.id)).not.toContain(button.id)
+    expect(shown[0]?.[0]?.delay).toBe(SKELETON_LEAD_MS)
+    stopAgentReveals(agent)
+  })
+
+  test('each new layer first shows as a skeleton, which fades as its content appears', () => {
+    const { store, pageId, shown } = editor()
+    const agent = addAgent(store, 'mcp')
+    const { change, card } = cardEdit(store, pageId)
+
+    showAgentEdit(store, agentEditFromChange(change), { agent })
+
+    const skeletons = agentSkeletons(store)
+    expect(skeletons.map((skeleton) => skeleton.nodeId)).toEqual([card.id])
+    const origin = Math.min(...skeletons.map((skeleton) => skeleton.from))
+    for (const step of shown[0] ?? []) {
+      const skeleton = skeletons.find((entry) => entry.nodeId === step.id)
+      // It shows before its layer and gives way as the layer starts to appear.
+      expect((skeleton?.from ?? Infinity) - origin).toBeLessThan(step.delay)
+      expect((skeleton?.until ?? 0) - origin).toBeCloseTo(step.delay, 3)
+    }
+    stopAgentReveals(agent)
   })
 
   test("an agent's next edit replays after the one before, never over it", () => {
     const { store, pageId, shown } = editor()
     const agent = addAgent(store, 'mcp')
-    showAgentEdit(store, agentEditFromChange(cardEdit(store, pageId).change), { agent, pageId })
-    showAgentEdit(store, agentEditFromChange(cardEdit(store, pageId).change), { agent, pageId })
+    showAgentEdit(store, agentEditFromChange(cardEdit(store, pageId).change), { agent })
+    showAgentEdit(store, agentEditFromChange(cardEdit(store, pageId).change), { agent })
 
     const [before = [], after = []] = shown
     const end = Math.max(...before.map((step) => step.delay + step.duration))
     const start = Math.min(...after.map((step) => step.delay))
     // Measured from the second edit, which came a moment after the first.
     expect(start).toBeGreaterThan(Math.min(end, MAX_REVEAL_QUEUE_MS) - 50)
-    stopCursorSweep(agent)
+    stopAgentReveals(agent)
   })
 
   test('another agent does not wait for it', () => {
     const { store, pageId, shown } = editor()
     const first = addAgent(store, 'mcp')
     const second = addAgent(store, 'mcp')
-    showAgentEdit(store, agentEditFromChange(cardEdit(store, pageId).change), {
-      agent: first,
-      pageId
-    })
-    showAgentEdit(store, agentEditFromChange(cardEdit(store, pageId).change), {
-      agent: second,
-      pageId
-    })
-    expect(shown[1]?.[0]?.delay).toBe(0)
-    stopCursorSweep(first)
-    stopCursorSweep(second)
-  })
-
-  test('where a call points the agent waits until its cursor has gone through the reveal', async () => {
-    const { store, pageId, shown } = editor()
-    const agent = addAgent(store, 'mcp')
-    const { change, card } = cardEdit(store, pageId)
-    showAgentEdit(store, agentEditFromChange(change), { agent, pageId })
-    const cursorOf = () =>
-      presenceOf(store).agents.value.find((entry) => entry.id === agent.id)?.cursor
-    const point = { x: 900, y: 900, pageId }
-
-    placeAgent(agent, { pageId, cursor: point, selection: [card.id] }, { status: 'editing' })
-    expect(cursorOf()).not.toEqual(point)
-
-    const last = shown[0]?.at(-1)?.delay ?? 0
-    await Bun.sleep(last + 260)
-    expect(cursorOf()).toEqual(point)
-    // With no reveal under way it goes there at once.
-    const next = { x: 10, y: 10, pageId }
-    placeAgent(agent, { pageId, cursor: next })
-    expect(cursorOf()).toEqual(next)
+    showAgentEdit(store, agentEditFromChange(cardEdit(store, pageId).change), { agent: first })
+    showAgentEdit(store, agentEditFromChange(cardEdit(store, pageId).change), { agent: second })
+    expect(shown[1]?.[0]?.delay).toBe(SKELETON_LEAD_MS)
+    stopAgentReveals(first)
+    stopAgentReveals(second)
   })
 
   test('with reduced motion nothing replays and the cursor stays where the edit left it', async () => {
@@ -196,7 +162,7 @@ describe("showing an agent's edit", () => {
     const agent = addAgent(store, 'mcp')
     const { change } = cardEdit(store, pageId)
 
-    showAgentEdit(store, agentEditFromChange(change), { agent, pageId })
+    showAgentEdit(store, agentEditFromChange(change), { agent })
 
     expect(shown).toEqual([])
     await Bun.sleep(60)
@@ -209,7 +175,7 @@ describe("showing an agent's edit", () => {
     const { store, pageId, shown, detach } = editor()
     detach()
     const { change } = cardEdit(store, pageId)
-    showAgentEdit(store, agentEditFromChange(change), { pageId })
+    showAgentEdit(store, agentEditFromChange(change), {})
     expect(shown).toEqual([])
   })
 })
@@ -234,7 +200,7 @@ describe("an agent's new layers wait for their reveal", () => {
     store.graph.createNode('FRAME', pageId, { name: 'Card' })
     hold.stop()
     expect(held.size).toBe(1)
-    showAgentEdit(store, agentEditFromChange(finish()), { pageId })
+    showAgentEdit(store, agentEditFromChange(finish()), {})
     expect(held.size).toBe(0)
   })
 
@@ -246,7 +212,7 @@ describe("an agent's new layers wait for their reveal", () => {
       store.graph.createNode('RECTANGLE', pageId, { name: `Tile ${index}`, x: index * 10 })
     hold.stop()
     expect(held.size).toBe(MAX_REVEALED_LAYERS + 10)
-    showAgentEdit(store, agentEditFromChange(finish()), { pageId })
+    showAgentEdit(store, agentEditFromChange(finish()), {})
     expect(shown[0]).toHaveLength(MAX_REVEALED_LAYERS)
     expect(held.size).toBe(0)
   })
@@ -289,7 +255,7 @@ describe("an agent's new layers wait for their reveal", () => {
     store.graph.createNode('FRAME', pageId, { name: 'Card' })
     hold.stop()
     expect(held.size).toBe(1)
-    showAgentEdit(store, agentEditFromChange(finish()), { pageId })
+    showAgentEdit(store, agentEditFromChange(finish()), {})
     expect(held.size).toBe(0)
   })
 
@@ -301,40 +267,8 @@ describe("an agent's new layers wait for their reveal", () => {
       const { change } = cardEdit(store, pageId)
       hold.stop()
       expect(held.size).toBe(0)
-      showAgentEdit(store, agentEditFromChange(change), { pageId })
+      showAgentEdit(store, agentEditFromChange(change), {})
       expect(shown).toEqual([])
     }
-  })
-})
-
-describe('where the cursor goes', () => {
-  const step = (id: string, delay: number): RevealStep => ({
-    id,
-    kind: 'appear',
-    delay,
-    duration: 200
-  })
-
-  test('it follows the reveal, or else visits touched layers one after another', () => {
-    expect(cursorStops([step('a', 0), step('b', 45)], ['x'], { reducedMotion: false })).toEqual([
-      { id: 'a', at: 0 },
-      { id: 'b', at: 45 }
-    ])
-    const visits = cursorStops([], ['a', 'b', 'c'], { reducedMotion: false })
-    expect(visits.map((stop) => stop.id)).toEqual(['a', 'b', 'c'])
-    expect(visits[1]?.at).toBeGreaterThan(0)
-  })
-
-  test('a single layer needs no tour, and many are sampled from first to last', () => {
-    expect(cursorStops([], ['a'], { reducedMotion: false })).toEqual([])
-    const ids = Array.from({ length: 40 }, (_, index) => `n${index}`)
-    const stops = cursorStops([], ids, { reducedMotion: false })
-    expect(stops).toHaveLength(MAX_CURSOR_STOPS)
-    expect(stops[0]?.id).toBe('n0')
-    expect(stops.at(-1)?.id).toBe('n39')
-  })
-
-  test('reduced motion makes no stops', () => {
-    expect(cursorStops([step('a', 0), step('b', 45)], [], { reducedMotion: true })).toEqual([])
   })
 })

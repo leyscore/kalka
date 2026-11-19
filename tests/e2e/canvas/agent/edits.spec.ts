@@ -90,9 +90,9 @@ function replaying(page: Page) {
   })
 }
 
-/** The frames the overlay draws around an agent's new layers as each one's turn comes. */
-function revealFrames(page: Page) {
-  return page.getByTestId('svg-overlay').locator('polygon[opacity]:not([stroke-dasharray])')
+/** The skeleton blocks the overlay draws where an agent's new layers are loading. */
+function skeletons(page: Page) {
+  return page.getByTestId('svg-overlay').locator('rect[rx][opacity]')
 }
 
 async function open(page: Page) {
@@ -100,9 +100,7 @@ async function open(page: Page) {
   await new CanvasHelper(page).waitForInit()
 }
 
-test("an agent's new layers appear in turn and its text types out, then rest as written", async ({
-  page
-}) => {
+test("an agent's new layers appear in turn, then rest as written", async ({ page }) => {
   await open(page)
   await renderAsAgent(page, 40)
   const artboard = page.locator('iframe[data-kalka-artboard]').contentFrame()
@@ -110,19 +108,20 @@ test("an agent's new layers appear in turn and its text types out, then rest as 
   await expect(artboard.getByText('Everything you need to ship.')).toBeAttached()
   const during = await replaying(page)
   expect(during.animations).toBeGreaterThan(0)
-  expect(during.typing).toBeGreaterThan(0)
+  // Text fades in with its layer instead of typing itself out.
+  expect(during.typing).toBe(0)
 
   await expect.poll(() => replaying(page)).toEqual({ animations: 0, typing: 0 })
   await expect(artboard.getByText('Everything you need to ship.')).toBeVisible()
 })
 
-test("each of an agent's new layers is framed as it appears, and the frames then go", async ({
+test("an agent's new layers load as skeleton blocks, which go as their content appears", async ({
   page
 }) => {
   await open(page)
   await renderAsAgent(page, 40)
-  await expect(revealFrames(page).first()).toBeAttached()
-  await expect(revealFrames(page)).toHaveCount(0)
+  await expect(skeletons(page).first()).toBeAttached()
+  await expect(skeletons(page)).toHaveCount(0)
 })
 
 test('two quick edits from an agent replay in turn and both end fully shown', async ({ page }) => {
@@ -143,7 +142,7 @@ test('with reduced motion the edit shows at once', async ({ page }) => {
   const artboard = page.locator('iframe[data-kalka-artboard]').contentFrame()
   await expect(artboard.getByText('Everything you need to ship.')).toBeAttached()
   expect(await replaying(page)).toEqual({ animations: 0, typing: 0 })
-  await expect(revealFrames(page)).toHaveCount(0)
+  await expect(skeletons(page)).toHaveCount(0)
 })
 
 test('new layers stay hidden until they animate in, instead of showing first', async ({ page }) => {

@@ -21,7 +21,7 @@ import type { Rect } from '@kalka/scene-graph/primitives'
 
 import { createFrameRequest } from '#vue/canvas/frame-request'
 import { composeOverlay } from '#vue/canvas/svg-overlay/compose'
-import type { AgentTrace } from '#vue/canvas/svg-overlay/layers/agent-traces'
+import type { AgentSkeleton } from '#vue/canvas/svg-overlay/layers/agent-skeletons'
 import type { AgentWorkMark } from '#vue/canvas/svg-overlay/layers/agent-work'
 import { createGridFrames } from '#vue/canvas/svg-overlay/layers/layout-grids'
 import { overlayMotion } from '#vue/canvas/svg-overlay/motion'
@@ -44,8 +44,8 @@ export interface UseSVGOverlayOptions {
    * redraws when they change; return the same array while nothing changed.
    */
   getAgentWork?: (pageId: string) => readonly AgentWorkMark[]
-  /** Layers agents' edits are revealing, framed as they appear; reactive like `getAgentWork`. */
-  getAgentTraces?: () => readonly AgentTrace[]
+  /** Skeleton blocks where agents' work is loading; reactive like `getAgentWork`. */
+  getAgentSkeletons?: () => readonly AgentSkeleton[]
 }
 
 /** The same empty list every frame, so a pane without agents never redraws for it. */
@@ -96,7 +96,7 @@ export function useSVGOverlay(
     const now = performance.now()
     const work = agentWorkOn(state.currentPageId)
     const still = reducedMotion.value === 'reduce'
-    const motion = overlayMotion(editor.renderer, work, options.getAgentTraces?.(), still, now)
+    const motion = overlayMotion(editor.renderer, work, options.getAgentSkeletons?.(), still, now)
     const { flashes, aiMarks, agents } = motion
     const showRulers = options.showRulers?.() ?? false
     const obstacles = options.getOverlayObstacles?.() ?? []
@@ -115,7 +115,7 @@ export function useSVGOverlay(
       state.designIssues,
       state.presenceCursors,
       agents.work,
-      agents.traces,
+      agents.skeletons,
       agents.step,
       state.guides,
       canvasColor,
@@ -149,7 +149,7 @@ export function useSVGOverlay(
       flashes,
       aiMarks,
       agentWork: agents.work,
-      agentTraces: agents.traces,
+      agentSkeletons: agents.skeletons,
       still: aiMarks.still,
       now
     })
@@ -188,7 +188,7 @@ export function useSVGOverlay(
         state.rulerTheme,
         canvasColorOf(state),
         agentWorkOn(state.currentPageId),
-        options.getAgentTraces?.(),
+        options.getAgentSkeletons?.(),
         options.showRulers?.(),
         reducedMotion.value,
         pixelRatio.value

@@ -1,6 +1,6 @@
 import { shallowRef, type ShallowRef } from 'vue'
 
-import { traceLive, type AgentTrace, type DomScenePreview, type RevealStep } from '@kalka/vue'
+import { skeletonLive, type AgentSkeleton, type DomScenePreview, type RevealStep } from '@kalka/vue'
 
 import type { EditorStore } from '@/app/editor/active-store'
 
@@ -15,12 +15,12 @@ export interface CanvasScene {
   readonly settled: boolean
 }
 
-/** Traces kept at once; an edit reveals no more layers than fit. */
-export const MAX_AGENT_TRACES = 64
+/** Skeletons kept at once; the newest are kept. */
+export const MAX_AGENT_SKELETONS = 96
 
 interface SceneEffects {
   previews: ShallowRef<readonly DomScenePreview[]>
-  traces: ShallowRef<readonly AgentTrace[]>
+  skeletons: ShallowRef<readonly AgentSkeleton[]>
   scenes: Set<CanvasScene>
 }
 
@@ -29,7 +29,7 @@ const effects = new WeakMap<EditorStore, SceneEffects>()
 function effectsOf(store: EditorStore): SceneEffects {
   let entry = effects.get(store)
   if (!entry) {
-    entry = { previews: shallowRef([]), traces: shallowRef([]), scenes: new Set() }
+    entry = { previews: shallowRef([]), skeletons: shallowRef([]), scenes: new Set() }
     effects.set(store, entry)
   }
   return entry
@@ -57,23 +57,26 @@ export function hideScenePreview(store: EditorStore, preview: DomScenePreview): 
 }
 
 /**
- * Rectangles tracing the layers agents' edits reveal, as every pane's overlay draws them. The
- * array is replaced on each change and holds only traces still drawing or about to.
+ * Skeleton blocks where agents' work is loading, as every pane's overlay draws them. The array is
+ * replaced on each change and holds only skeletons still showing or about to.
  */
-export function agentTraces(store: EditorStore): readonly AgentTrace[] {
-  return effectsOf(store).traces.value
+export function agentSkeletons(store: EditorStore): readonly AgentSkeleton[] {
+  return effectsOf(store).skeletons.value
 }
 
-/** Adds traces to draw; those finished are dropped, and the newest kept past the limit. */
-export function showAgentTraces(
+/** Shows skeletons, replacing those under the same keys; finished ones are dropped. */
+export function showAgentSkeletons(
   store: EditorStore,
-  traces: readonly AgentTrace[],
+  skeletons: readonly AgentSkeleton[],
   now = performance.now()
 ): void {
-  if (traces.length === 0) return
-  const entry = effectsOf(store).traces
-  const live = entry.value.filter((trace) => traceLive(trace, now))
-  entry.value = [...live, ...traces].slice(-MAX_AGENT_TRACES)
+  if (skeletons.length === 0) return
+  const entry = effectsOf(store).skeletons
+  const keys = new Set(skeletons.map((skeleton) => skeleton.key))
+  const kept = entry.value.filter(
+    (skeleton) => !keys.has(skeleton.key) && skeletonLive(skeleton, now)
+  )
+  entry.value = [...kept, ...skeletons].slice(-MAX_AGENT_SKELETONS)
 }
 
 /** A pane's DOM scene replays agent edits for this document until the returned detach. */

@@ -190,9 +190,8 @@ test.each([{ followAgents: false }, { followAgents: true }])(
         }
       ])
 
-      // The cursor starts on the first layer the edit touched and moves through the rest.
       expect(during).toMatchObject([
-        { status: 'editing', pageId: b, cursor: { x: 40, y: 20, pageId: b } }
+        { status: 'editing', pageId: b, cursor: { x: 40, y: 20, pageId: b }, selection: [card.id] }
       ])
       expect(runPageId(store)).toBe(a)
       // Following switches pages as it does for any followed agent; without it the view stays.

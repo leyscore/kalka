@@ -191,12 +191,7 @@ export function createAITools(
           workedLayers(store.graph, change, targetNodeIds(store, args)),
           lane
         )
-        showRunEdit(
-          store,
-          agentEditFromChange(change),
-          change.updated.map((update) => update.id),
-          lane
-        )
+        showRunEdit(store, agentEditFromChange(change), lane)
         // The agent shows where it edited, even on another page; layers the result names
         // refine this once the call returns.
         markRunChange(store, change, lane)

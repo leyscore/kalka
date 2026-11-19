@@ -40,7 +40,7 @@ export { MAX_REVEALED_LAYERS, planReveal, revealEnd } from '#vue/canvas/dom-scen
 export type { AgentEdit, RevealStep } from '#vue/canvas/dom-scene/reveal/plan'
 export { SVG_OVERLAY_LAYERS, useSVGOverlay } from '#vue/canvas/svg-overlay/use'
 export type { AgentWorkMark } from '#vue/canvas/svg-overlay/layers/agent-work'
-export { traceLive, type AgentTrace } from '#vue/canvas/svg-overlay/layers/agent-traces'
+export { skeletonLive, type AgentSkeleton } from '#vue/canvas/svg-overlay/layers/agent-skeletons'
 export { useCanvasInput } from '#vue/canvas/useCanvasInput'
 export {
   autoLayoutValueAnchor,

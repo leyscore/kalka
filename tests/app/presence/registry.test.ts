@@ -135,7 +135,7 @@ test('switching to another page yourself stops following', async () => {
   const ana = { clientId: 4, name: 'Ana', color: red, agents: [] }
   setPeers(store, [{ ...ana, cursor: { x: 40, y: 50, pageId, zoom: 1 } }])
   follow(store, { kind: 'person', clientId: 4 })
-  expect(followedLabel(store)).toEqual({ kind: 'person', name: 'Ana', color: red })
+  expect(followedLabel(store)).toEqual({ kind: 'person', name: 'Ana', color: red, auto: false })
   await store.switchPage(other)
   expect(presenceOf(store).following.value).toBeNull()
 })
@@ -255,7 +255,12 @@ test('labels a followed agent with the person who runs it', () => {
     { clientId: 4, name: 'Ana', color: red, agents: [{ ...fern, cursor: { x: 1, y: 1, pageId } }] }
   ])
   follow(store, { kind: 'agent', agentId: 'fern' })
-  expect(followedLabel(store)).toEqual({ kind: 'agent', name: 'Fern', owner: 'Ana', color: red })
+  expect(followedLabel(store)).toMatchObject({
+    kind: 'agent',
+    name: 'Fern',
+    owner: 'Ana',
+    color: red
+  })
 })
 
 test('renames our agents, and their handles report the new name', () => {

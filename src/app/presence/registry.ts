@@ -139,6 +139,8 @@ export function presenceByPage(store: EditorStore): Map<string, PagePresenceEntr
 
 function agentCursor(agent: AgentPresence, color: Color, pageId: string): TrackedCursor[] {
   if (agent.status === 'idle' || agent.cursor?.pageId !== pageId) return []
+  // While it builds, the agent shows as the badge on what it builds, not a cursor flying about.
+  if ((agent.working?.length ?? 0) > 0) return []
   const { x, y } = agent.cursor
   return [
     {
@@ -336,21 +338,25 @@ export interface FollowedLabel {
   /** For an agent, the person who runs it; undefined for our own agents. */
   owner?: string
   color: Color
+  /** Followed by Follow agents rather than picked: the view goes along quietly, unannounced. */
+  auto: boolean
 }
 
 export function followedLabel(store: EditorStore): FollowedLabel | null {
-  const { agents, peers, ownerColor, following } = presenceOf(store)
+  const { agents, peers, ownerColor, following, autoFollowed } = presenceOf(store)
   const target = following.value
   if (!target) return null
   if (target.kind === 'person') {
     const peer = peers.value.find((entry) => entry.clientId === target.clientId)
-    return peer ? { kind: 'person', name: peer.name, color: peer.color } : null
+    return peer ? { kind: 'person', name: peer.name, color: peer.color, auto: false } : null
   }
+  const auto = autoFollowed === target.agentId
   const own = agents.value.find((agent) => agent.id === target.agentId)
-  if (own) return { kind: 'agent', name: own.name, color: ownerColor.value ?? SOLO_AGENT_COLOR }
+  if (own)
+    return { kind: 'agent', name: own.name, color: ownerColor.value ?? SOLO_AGENT_COLOR, auto }
   for (const peer of peers.value) {
     const agent = peer.agents.find((entry) => entry.id === target.agentId)
-    if (agent) return { kind: 'agent', name: agent.name, owner: peer.name, color: peer.color }
+    if (agent) return { kind: 'agent', name: agent.name, owner: peer.name, color: peer.color, auto }
   }
   return null
 }

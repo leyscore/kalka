@@ -1,4 +1,4 @@
-import { traceLive, type AgentTrace } from '#vue/canvas/svg-overlay/layers/agent-traces'
+import { skeletonLive, type AgentSkeleton } from '#vue/canvas/svg-overlay/layers/agent-skeletons'
 import { loaderStep, type AgentWorkMark } from '#vue/canvas/svg-overlay/layers/agent-work'
 import type { AIMarks } from '#vue/canvas/svg-overlay/layers/ai-marks'
 import type { Flash } from '#vue/canvas/svg-overlay/layers/flashes'
@@ -6,9 +6,9 @@ import type { Flash } from '#vue/canvas/svg-overlay/layers/flashes'
 /** What agents show on the overlay for one frame, and whether it still moves. */
 export interface AgentOverlayFrame {
   work: readonly AgentWorkMark[]
-  traces: readonly AgentTrace[]
-  /** A frame around a revealed layer is still showing or fading: every frame draws. */
-  tracing: boolean
+  skeletons: readonly AgentSkeleton[]
+  /** A skeleton is showing or fading: it breathes, so every frame draws. */
+  loadingSkeletons: boolean
   /** A busy mark's loader steps: the overlay keeps asking for frames, drawing only on a step. */
   loading: boolean
   /**
@@ -21,22 +21,22 @@ export interface AgentOverlayFrame {
 /** Agents' marks and frames for a frame at `now`; loaders hold still when motion is reduced. */
 export function agentOverlayFrame(
   work: readonly AgentWorkMark[],
-  traces: readonly AgentTrace[],
+  skeletons: readonly AgentSkeleton[],
   still: boolean,
   now: number
 ): AgentOverlayFrame {
   const loading = !still && work.some((mark) => mark.busy)
   return {
     work,
-    traces,
-    tracing: traces.some((trace) => traceLive(trace, now)),
+    skeletons,
+    loadingSkeletons: skeletons.some((skeleton) => skeletonLive(skeleton, now)),
     loading,
     step: loading ? loaderStep(now) : 0
   }
 }
 
-/** The same empty list every frame, so a pane without agents' edits never redraws for it. */
-const NO_AGENT_TRACES: readonly AgentTrace[] = []
+/** The same empty list every frame, so a pane without agents at work never redraws for it. */
+const NO_AGENT_SKELETONS: readonly AgentSkeleton[] = []
 
 /** The renderer's flash and AI mark state the overlay animates, where a renderer exists. */
 interface FlashSource {
@@ -56,11 +56,11 @@ export interface OverlayMotion {
   continues: boolean
 }
 
-/** What animates at `now`: flashes, AI marks, and agents' frames and loaders. */
+/** What animates at `now`: flashes, AI marks, and agents' skeletons and loaders. */
 export function overlayMotion(
   renderer: FlashSource | null | undefined,
   work: readonly AgentWorkMark[],
-  traces: readonly AgentTrace[] | undefined,
+  skeletons: readonly AgentSkeleton[] | undefined,
   still: boolean,
   now: number
 ): OverlayMotion {
@@ -70,12 +70,12 @@ export function overlayMotion(
     done: renderer?._aiDoneFlashes ?? [],
     still
   }
-  const agentFrame = agentOverlayFrame(work, traces ?? NO_AGENT_TRACES, still, now)
+  const agentFrame = agentOverlayFrame(work, skeletons ?? NO_AGENT_SKELETONS, still, now)
   const animating =
     flashes.length > 0 ||
     aiMarks.done.length > 0 ||
     (renderer?._aiActiveNodes.size ?? 0) > 0 ||
-    agentFrame.tracing
+    agentFrame.loadingSkeletons
   return {
     flashes,
     aiMarks,

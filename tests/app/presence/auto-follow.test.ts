@@ -5,6 +5,7 @@ import { createEditorStore } from '@/app/editor/session/create'
 import {
   addAgent,
   follow,
+  followedLabel,
   followWorkingAgents,
   presenceOf,
   setPeers
@@ -31,6 +32,10 @@ test('with Follow agents on, the view follows an agent from the start of its run
   expect(following(store)).toBeNull()
   agent.update({ status: 'thinking', pageId })
   expect(following(store)).toEqual({ kind: 'agent', agentId: agent.id })
+  // Quietly: only following someone on purpose is announced.
+  expect(followedLabel(store)?.auto).toBe(true)
+  follow(store, { kind: 'agent', agentId: agent.id })
+  expect(followedLabel(store)?.auto).toBe(false)
 })
 
 test('an agent the person stopped following is left alone until it rests', () => {

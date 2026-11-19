@@ -104,25 +104,34 @@ test('an MCP session shows as an agent at the layers it touches, to collaborator
         }),
       nodeId
     )
-    const agent = await host.page.evaluate(() => {
-      const cursor = window.kalka
-        ?.getStore?.()
-        .state.presenceCursors.find((entry) => entry.kind === 'agent')
-      return cursor ? { name: cursor.name, x: cursor.x, y: cursor.y } : null
-    })
-    expect(agent).toMatchObject({ x: 240, y: 160 })
-    const name = agent?.name ?? ''
+    // While it builds, the agent shows as a badge with its name on the layer, not as a cursor.
+    const overlay = host.page.getByTestId('svg-overlay')
+    await expect(overlay.locator('polygon[stroke-dasharray]')).toHaveCount(1)
+    // The tag drawn right after the mark's dashed outline.
+    const name =
+      (await overlay.locator('polygon[stroke-dasharray] + rect + text').textContent()) ?? ''
+    expect(name).not.toBe('')
+    expect(
+      await host.page.evaluate(
+        () =>
+          window.kalka?.getStore?.().state.presenceCursors.filter((entry) => entry.kind === 'agent')
+            .length
+      )
+    ).toBe(0)
 
-    // With Follow agents on, as by default, its owner's view follows it as soon as it works.
+    // With Follow agents on, as by default, its owner's view follows it quietly, with no banner.
     const frame = host.page.getByTestId('follow-frame')
-    await expect(frame).toContainText(`Following ${name}`)
-    await frame.getByRole('button', { name: 'Stop following' }).click()
     await expect(frame).toHaveCount(0)
 
-    // Its owner lists it on their avatar and can follow it again like any agent.
+    // Its owner lists it on their avatar and can follow it on purpose like any agent, which says so.
     await host.page.getByTestId('collab-local-avatar').click()
     const menu = host.page.getByTestId('collab-self-menu')
     await expect(menu.getByText(name)).toBeVisible()
+    await menu.getByRole('button', { name: `Follow ${name}` }).click()
+    await expect(frame).toContainText(`Following ${name}`)
+    await frame.getByRole('button', { name: 'Stop following' }).click()
+    await expect(frame).toHaveCount(0)
+    await host.page.getByTestId('collab-local-avatar').click()
     await menu.getByRole('button', { name: `Follow ${name}` }).click()
     await expect(frame).toContainText(`Following ${name}`)
 

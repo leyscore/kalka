@@ -79,7 +79,16 @@ function typingDuration(node: SceneNode): number {
 export function planReveal(
   graph: SceneGraph,
   edit: AgentEdit,
-  options: { reducedMotion: boolean }
+  options: {
+    reducedMotion: boolean
+    /** Text the edit wrote types itself out; without it, new text simply appears. */
+    typing?: boolean
+    /**
+     * Reveal block by block: only new layers that hold others, and new layers placed in ones
+     * that were already there, appear in turn; text and shapes inside a new block show with it.
+     */
+    blocks?: boolean
+  }
 ): RevealStep[] {
   if (options.reducedMotion) return []
   const created = new Set(edit.created)
@@ -89,12 +98,17 @@ export function planReveal(
     .slice(0, MAX_CANDIDATES)
     .map((id) => graph.getNode(id))
     .filter((node): node is SceneNode => !!node && node.visible && node.type !== 'CANVAS')
+    .filter(
+      (node) =>
+        !options.blocks || node.childIds.length > 0 || !node.parentId || !created.has(node.parentId)
+    )
   const paths = new Map(nodes.map((node) => [node.id, treePath(graph, node)]))
   nodes.sort((a, b) => compareTreePaths(paths.get(a.id) ?? [], paths.get(b.id) ?? []))
   const steps: RevealStep[] = []
   let typed = 0
   for (const node of nodes.slice(0, MAX_REVEALED_LAYERS)) {
     const types =
+      options.typing !== false &&
       node.type === 'TEXT' &&
       node.text.length > 0 &&
       (written.has(node.id) || created.has(node.id)) &&

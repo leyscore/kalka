@@ -51,7 +51,7 @@ import { useCanvasCollaborationAwareness } from '@/app/editor/canvas/collaborati
 import { createCanvasContextSelection } from '@/app/editor/canvas/context-selection'
 import { canvasOverlayObstacles } from '@/app/editor/canvas/obstacles'
 import { workingMarks } from '@/app/presence/activity'
-import { agentTraces, attachCanvasScene, scenePreviews } from '@/app/presence/canvas-scene'
+import { agentSkeletons, attachCanvasScene, scenePreviews } from '@/app/presence/canvas-scene'
 import { useFollowView } from '@/app/presence/follow-view'
 import { appRuntimeConfig } from '@/app/runtime/config'
 import IssueMarkerTooltip from '@/components/design-check/IssueMarkerTooltip.vue'
@@ -185,8 +185,8 @@ const svgOverlay = domScene
       getCanvasColor: canvasBackgroundColor,
       // Layers agents are still building, with their names.
       getAgentWork: (pageId) => workingMarks(store, pageId),
-      // Layers agents' edits are revealing, framed as their turn comes.
-      getAgentTraces: () => agentTraces(store)
+      // Skeletons where agents' work is loading.
+      getAgentSkeletons: () => agentSkeletons(store)
     })
   : null
 // Over the DOM scene, names are hit tested where the SVG overlay drew them.
@@ -403,7 +403,7 @@ const cursor = computed(() =>
           </PopoverPortal>
         </PopoverRoot>
         <FollowFrame
-          v-if="isActivePane && followView.label.value"
+          v-if="isActivePane && followView.label.value && !followView.label.value.auto"
           :followed="followView.label.value"
           @stop="followView.stop"
         />

@@ -8,9 +8,9 @@ import { useEditorStore } from '@/app/editor/active-store'
 import { presenceOf } from '@/app/presence/registry'
 
 /**
- * Where an agent's work will land, before it has anything to show: a dashed frame beside the
- * page's designs with the agent's name and what it says it is doing, from the moment it starts
- * until it touches its first layer. Display only.
+ * Where an agent's work will land, before it has anything to show: a skeleton that breathes
+ * beside the page's designs, with the agent's name and what it says it is doing, from the moment
+ * it starts until it touches its first layer. Display only.
  */
 const { view, drawn } = defineProps<{
   view: { panX: number; panY: number; zoom: number; currentPageId: string }
@@ -69,7 +69,7 @@ const ghosts = computed(() =>
     <div
       v-for="ghost in ghosts"
       :key="ghost.id"
-      class="absolute animate-pulse rounded-md border-2 border-dashed border-accent/70 bg-accent/5"
+      class="absolute rounded-lg border border-accent/40 bg-foreground/[0.06] motion-safe:animate-pulse"
       data-slot="agent-ghost-frame"
       :style="{
         left: `${ghost.left}px`,
@@ -79,7 +79,7 @@ const ghosts = computed(() =>
       }"
     >
       <span
-        class="absolute -top-6 left-0 max-w-full truncate rounded-full bg-accent px-2 py-0.5 text-xs text-white"
+        class="absolute -top-6 right-0 max-w-full truncate rounded bg-accent px-1.5 py-0.5 text-[10px] font-medium text-white"
       >
         {{ ghost.label }}
       </span>
