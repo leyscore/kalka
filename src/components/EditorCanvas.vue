@@ -49,7 +49,7 @@ import { canvasBackgroundColor, showsKalkaCanvas } from '@/app/editor/canvas/bac
 import { useBooleanOperationsCanvasKit } from '@/app/editor/canvas/booleans'
 import { useCanvasCollaborationAwareness } from '@/app/editor/canvas/collaboration-awareness'
 import { createCanvasContextSelection } from '@/app/editor/canvas/context-selection'
-import { canvasOverlayObstacles } from '@/app/editor/canvas/obstacles'
+import { useCanvasOverlayObstacles } from '@/app/editor/canvas/obstacles'
 import { workingMarks } from '@/app/presence/activity'
 import { attachCanvasScene, scenePreviews } from '@/app/presence/canvas-scene'
 import { useFollowView } from '@/app/presence/follow-view'
@@ -163,6 +163,8 @@ if (domScene) {
     }
   })
 }
+// Where floating UI sits over the canvas, read again only when it may have moved.
+const overlayObstacles = useCanvasOverlayObstacles(canvasRef)
 const canvasHitTests = domScene
   ? null
   : useCanvas(canvasRef, store, {
@@ -170,7 +172,7 @@ const canvasHitTests = domScene
       get showRulers() {
         return appRuntimeConfig.showRulers && store.state.showRulers && paneView.value.play === null
       },
-      getOverlayObstacles: () => canvasOverlayObstacles(canvasRef.value),
+      getOverlayObstacles: overlayObstacles,
       shouldSuspendRender,
       getRenderState,
       onViewportResize
@@ -181,7 +183,7 @@ const svgOverlay = domScene
       getRenderState,
       showRulers: () =>
         appRuntimeConfig.showRulers && store.state.showRulers && paneView.value.play === null,
-      getOverlayObstacles: () => canvasOverlayObstacles(canvasRef.value),
+      getOverlayObstacles: overlayObstacles,
       getCanvasColor: canvasBackgroundColor,
       // Layers agents are still building, with their names.
       getAgentWork: (pageId) => workingMarks(store, pageId)
