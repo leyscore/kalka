@@ -21,6 +21,7 @@
 - Layers in an imported `.fig` follow only the component property bindings Figma applies, from their parameter map, so a stale legacy reference no longer hides or retexts a layer that Figma draws.
 - Variable modes from a `.fig` open in Figma's order with Figma's default mode, and keep that order, a newly chosen default included, through export; undoing the removal of a mode puts it back in its place.
 - Saving a `.fig` with a vector mask, such as an imported SVG clip path, no longer fails: the mask is written as Figma's OUTLINE and reads back as a vector mask.
+- Very large or deeply nested documents no longer overflow the stack when their layer tree is listed, and a parent cycle in bad data no longer hangs it.
 
 ## 0.2.0-beta.3.1 — 2026-11-19
 
