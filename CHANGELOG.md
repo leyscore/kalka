@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- A variable mode an outer instance in a `.fig` sets on a nested layer for one collection keeps the modes that layer has in its other collections, and an override that clears a collection's mode lets the layer take its parent's mode again.
+
 ## 0.2.0-beta.3.2 — 2026-11-19
 
 ### Added

@@ -1,5 +1,6 @@
 import { cloneRecord } from '#fig/node-change/clone'
 import { mergeVariableConsumptionMaps } from '#fig/node-change/variable/bindings'
+import { mergeVariableModeMaps } from '#fig/node-change/variable/maps'
 
 import type { GUID, NodeChange } from '@kalka/kiwi/fig/codec'
 
@@ -52,7 +53,9 @@ function applyPropertyClaim(
   Object.assign(
     target.properties,
     cloneRecord(retained),
-    mergeVariableConsumptionMaps(target.properties, retained as NodeChange)
+    mergeVariableConsumptionMaps(target.properties, retained as NodeChange),
+    // A claimed mode map sets or clears the collections it names; the layer keeps the others.
+    mergeVariableModeMaps(target.properties, retained as NodeChange)
   )
   if ('name' in retained) target.hasOwnName = true
   owner.propertyClaims.push({
