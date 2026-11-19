@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- The Versions panel shows why recording, restoring, fetching or publishing a version failed, such as a push the remote rejected, instead of clearing the message as soon as it appeared.
 - Versions of a `.fig` or `.kalka` file kept in a Git repository record and restore that file only; recording a version used to commit every changed file in its folder, and restoring one put the whole folder back, discarding work in progress beside the document.
 - Strokes thinner than a pixel, such as the 0.25 px borders common in imported `.fig` files, draw on the canvas and in image exports as faint as in Figma, getting stronger as you zoom in, instead of as full one-pixel lines; saved files keep the same CSS.
 - Tailwind JSX and Storybook exports mask with a rectangle or ellipse mask's own paint, so a gradient mask fades the layers above it and a half transparent one lets them half through, instead of masking with the plain shape.

@@ -103,7 +103,10 @@ export function useDocumentVersions(store: EditorStore) {
       error.value = cause instanceof Error ? cause.message : String(cause)
     } finally {
       running.value = null
+      // Reading the repository again must not clear what the operation reported.
+      const failure = error.value
       await refresh()
+      if (failure) error.value = failure
     }
   }
 
