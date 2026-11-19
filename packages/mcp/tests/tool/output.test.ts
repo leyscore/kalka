@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { withFileOutputHint, withoutOutputPath } from '#mcp/tool/output'
+import { withFileOutputHint, withoutOutputPath } from '@kalka/mcp/tools'
 
 describe('file output arguments', () => {
   test('a server without a root does not pass get_jsx its output path', () => {

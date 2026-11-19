@@ -9,3 +9,4 @@ export {
   parseToolScope,
   type MCPToolScope
 } from './scope'
+export { withFileOutputHint, withoutOutputPath } from './file-output'

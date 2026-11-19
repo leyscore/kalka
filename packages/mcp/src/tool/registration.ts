@@ -16,6 +16,7 @@ import { CODEGEN_PROMPT, returnsFile, toolInputFor } from '@kalka/core/tools'
 import type { RPCJSONObject } from '#mcp/json'
 import { fail, ok } from '#mcp/result'
 import { confirmCoreTool, decideUnsaved, type DecisionSession } from '#mcp/tool/decisions'
+import { withFileOutputHint, withoutOutputPath } from '#mcp/tool/file-output'
 import { clientCan, type ClientRequestKind } from '#mcp/tool/interaction/client'
 import { createToolDescriptors, getMCPToolDefinitions } from '#mcp/tool/manifest'
 import type { ToolDescriptor, ToolEffect, ToolPolicy } from '#mcp/tool/metadata'
@@ -25,12 +26,7 @@ import {
   nameLayers,
   nameLayersInput
 } from '#mcp/tool/naming'
-import {
-  resolveSafePath,
-  withFileOutputHint,
-  withoutOutputPath,
-  writeToolOutput
-} from '#mcp/tool/output'
+import { resolveSafePath, writeToolOutput } from '#mcp/tool/output'
 import { isToolEnabled } from '#mcp/tool/policy'
 import {
   documentTarget,
