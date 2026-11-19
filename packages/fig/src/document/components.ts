@@ -16,7 +16,12 @@ export interface ComponentConstruction {
 export function planComponentConstruction(
   roots: readonly InstanceOccurrence[],
   readComponent: (id: string) => InstanceOccurrence,
-  index: ReadonlyMap<string, NodeChange>
+  index: ReadonlyMap<string, NodeChange>,
+  /**
+   * Components the roots hold whole. A page read for other content keeps a definition that only
+   * encloses that content, without its other layers; it is built once its own page is read.
+   */
+  isWhole: (id: string) => boolean = () => true
 ): ComponentConstruction[] {
   const sources = index
   const pageComponents = new Map<string, InstanceOccurrence>()
@@ -45,7 +50,7 @@ export function planComponentConstruction(
   const visit = (root: InstanceOccurrence): void => {
     for (const node of occurrences(root)) {
       if (node.mainComponentId !== null) ensure(node.mainComponentId)
-      if (node.properties.type === 'SYMBOL') ensure(node.sourceId)
+      if (node.properties.type === 'SYMBOL' && isWhole(node.sourceId)) ensure(node.sourceId)
     }
   }
   const ensure = (id: string): void => {

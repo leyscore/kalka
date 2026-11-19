@@ -313,7 +313,8 @@ function createScopedReader(
       return planComponentConstruction(
         roots,
         (id) => sourceInterpreter.component(id, options),
-        index.sources
+        index.sources,
+        (id) => closure.contentIds.has(id)
       )
     },
     readComponent: sourceInterpreter.component
