@@ -24,6 +24,7 @@
 - Very large or deeply nested documents no longer overflow the stack when their layer tree is listed, and a parent cycle in bad data no longer hangs it.
 - `get_jsx` with a `path` writes the complete JSX to the file instead of cutting it at 12,000 characters; a cut reply says how long the JSX is, and the MCP server with a root adds how to get all of it.
 - A `.fig` whose component encloses another component holding an instance opens instead of failing with "Missing component", and a component enclosing one placed on another page is built whole when its own page loads.
+- A `.fig` saves again after a layer of one of its components is deleted, instead of failing with "Missing checkpoint occurrence", and a page whose instance encloses a layer deleted inside a frame of its component loads.
 
 ## 0.2.0-beta.3.1 — 2026-11-19
 
