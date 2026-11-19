@@ -207,6 +207,21 @@ test('a save that finishes after an earlier one still returns to saved by undo',
   })
 })
 
+test('an earlier save that ends after a later one leaves the document saved', async () => {
+  await withSavedRectangle(async (editor, id, changes) => {
+    // An autosave starts, then a manual save starts after another edit; the manual save ends first.
+    editor.updateNodeWithUndo(id, { width: 30 }, 'Resize')
+    await settle()
+    const autosave = changes.capture()
+    editor.updateNodeWithUndo(id, { width: 40 }, 'Resize')
+    await settle()
+    const manualSave = changes.capture()
+    changes.markSaved(manualSave)
+    changes.markSaved(autosave)
+    expect(changes.hasUnsavedChanges()).toBe(false)
+  })
+})
+
 test('an edit made after undoing past the save leaves the saved state out of reach', async () => {
   await withSavedRectangle(async (editor, id, changes) => {
     editor.undoAction()

@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- An autosave that ends after a manual save started later no longer writes the older document back over the file, and no longer marks the document unsaved.
 - A failing autosave says so, once until a save works again, instead of failing silently, and the changes the file is missing are kept for crash recovery meanwhile.
 - Undoing an agent's edit no longer also undoes what you changed on the canvas while that edit was running; your change stays its own undo step.
 - Restoring a version of a Kalka folder shows the restored document instead of failing to read it and keeping the old one on screen, which the next save then wrote back over the restored files; a `.kalka` file changed by another app reloads instead of failing to open.
