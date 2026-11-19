@@ -6,7 +6,7 @@ import type { VariableUnsupportedExpression, VariableValue } from '../types'
 export function isUnsupportedVariableValue(
   value: VariableValue | undefined
 ): value is VariableUnsupportedExpression {
-  return typeof value === 'object' && 'expression' in value && value.expression === 'UNSUPPORTED'
+  return typeof value === 'object' && 'expression' in value
 }
 
 /** The variables a value refers to: its alias, or the known aliases of a kept expression. */

@@ -1,4 +1,5 @@
 import {
+  isUnsupportedVariableValue,
   layersUsingVariables,
   type SceneGraph,
   type Variable,
@@ -25,6 +26,8 @@ function formatVariableValue(variable: Variable, graph: SceneGraph): string {
     const alias = graph.variables.get(raw.aliasId)
     return alias ? `→ ${alias.name}` : `→ ${raw.aliasId}`
   }
+
+  if (isUnsupportedVariableValue(raw)) return `${raw.function}(…)`
 
   if (typeof raw === 'object' && 'r' in raw) {
     return colorToHex(raw).toLowerCase()
