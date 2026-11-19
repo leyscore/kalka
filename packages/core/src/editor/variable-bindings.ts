@@ -10,6 +10,18 @@ import { reconcileVariableLayouts } from '#core/layout/variables'
 
 import type { EditorContext } from './types'
 
+/**
+ * The values a binding at `path` writes into, which undo gives back: the field it resolves into,
+ * such as `fills` for `fills/0/color`, and a numeric field bound whole.
+ */
+function boundFieldValues(node: SceneNode, path: string): Partial<SceneNode> {
+  const values: Record<string, unknown> = {}
+  const field = path.split('/')[0]
+  if (field in node) values[field] = structuredClone(node[field as keyof SceneNode])
+  if (isNumericVariableBindingField(path)) values[path] = node[path as keyof SceneNode]
+  return values
+}
+
 export function createVariableBindingActions(ctx: EditorContext) {
   /** A binding change reaches only the layer it is on and the layers inside it. */
   function refreshBindings(nodeId: string) {
@@ -20,14 +32,10 @@ export function createVariableBindingActions(ctx: EditorContext) {
   function changeBinding(nodeId: string, path: string, variableId?: string) {
     const node = ctx.graph.getNode(nodeId)
     if (!node || (variableId === undefined && !(path in node.boundVariables))) return
-    // The field the binding resolves into, such as `fills` for `fills/0/color`, which undo
-    // gives back its value from before the binding.
-    const field = path.split('/')[0]
     const previous = {
+      ...boundFieldValues(node, path),
       boundVariables: { ...node.boundVariables },
-      variableBindingScales: { ...node.variableBindingScales },
-      ...(field in node ? { [field]: structuredClone(node[field as keyof SceneNode]) } : {}),
-      ...(isNumericVariableBindingField(path) ? { [path]: node[path as keyof SceneNode] } : {})
+      variableBindingScales: { ...node.variableBindingScales }
     }
     const owner = variableBindingOwner(ctx.graph, node)
     const nearest = findInstanceAncestor(ctx.graph, nodeId)
