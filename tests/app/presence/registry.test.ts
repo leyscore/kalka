@@ -47,9 +47,10 @@ test('draws active agents on their page, in their owner color', () => {
   ])
 })
 
-test('hides idle agents and gives each a different callsign', () => {
+test('hides idle agents and gives each a different callsign, Pebble first', () => {
   const { store, pageId } = setup()
   const agents = Array.from({ length: 5 }, () => addAgent(store, 'chat'))
+  expect(agents[0]?.name).toBe('Pebble')
   expect(new Set(agents.map((agent) => agent.name)).size).toBe(5)
   agents[0]?.update({ status: 'idle', cursor: { x: 0, y: 0, pageId } })
   expect(store.state.presenceCursors).toEqual([])
@@ -313,4 +314,11 @@ test('without animation frames, cursors and following move at once', () => {
 
   follow(store, { kind: 'agent', agentId: agent.id })
   expect(centered(store)).toEqual({ x: 50, y: 60 })
+})
+
+test('names our agent Pebble only while no collaborator agent goes by it', () => {
+  const { store } = setup()
+  const pebble = { id: 'pebble', name: 'Pebble', kind: 'chat' as const, status: 'editing' as const }
+  setPeers(store, [{ clientId: 4, name: 'Ana', color: red, agents: [pebble] }])
+  expect(addAgent(store, 'chat').name).not.toBe('Pebble')
 })
