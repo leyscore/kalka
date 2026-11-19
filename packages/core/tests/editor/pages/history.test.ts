@@ -50,4 +50,25 @@ describe('page history', () => {
     editor.redoAction()
     expect(pageNames(editor)).toEqual(['Final', 'Page 1'])
   })
+
+  test('moving layers to another page is an undo step that puts them back where they were', () => {
+    const editor = createEditor()
+    const first = editor.state.currentPageId
+    const a = editor.graph.createNode('RECTANGLE', first, { name: 'A', x: 10 })
+    const b = editor.graph.createNode('RECTANGLE', first, { name: 'B', x: 20 })
+    const c = editor.graph.createNode('RECTANGLE', first, { name: 'C', x: 30 })
+    const second = editor.addPage('Second')
+    editor.state.currentPageId = first
+    editor.select([a.id, c.id])
+    editor.moveToPage(second)
+    expect(getNodeOrThrow(editor.graph, first).childIds).toEqual([b.id])
+
+    editor.undoAction()
+    expect(getNodeOrThrow(editor.graph, first).childIds).toEqual([a.id, b.id, c.id])
+    expect(getNodeOrThrow(editor.graph, second).childIds).toEqual([])
+    expect(getNodeOrThrow(editor.graph, a.id).x).toBe(10)
+
+    editor.redoAction()
+    expect(getNodeOrThrow(editor.graph, second).childIds).toEqual([a.id, c.id])
+  })
 })

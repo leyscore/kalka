@@ -105,11 +105,36 @@ export function createStructureActions(ctx: EditorContext) {
   function moveToPage(pageId: string) {
     const targetPage = ctx.graph.getNode(pageId)
     if (targetPage?.type !== 'CANVAS') return
-    const ids = [...ctx.state.selectedIds]
-    for (const id of ids) {
-      ctx.graph.reparentNode(id, pageId)
+    const prevSelection = new Set(ctx.state.selectedIds)
+    // Lowest in their parent's stack first, so undo puts each back while those below are there.
+    const moved = [...ctx.state.selectedIds]
+      .flatMap((id) => {
+        const node = ctx.graph.getNode(id)
+        const parent = node?.parentId ? ctx.graph.getNode(node.parentId) : undefined
+        if (!node || !parent || parent.id === pageId) return []
+        return [
+          { id, parentId: parent.id, index: parent.childIds.indexOf(id), x: node.x, y: node.y }
+        ]
+      })
+      .toSorted((a, b) => a.index - b.index)
+    if (moved.length === 0) return
+    const move = () => {
+      for (const { id } of moved) ctx.graph.reparentNode(id, pageId)
+      ctx.setSelectedIds(new Set())
     }
-    ctx.setSelectedIds(new Set())
+    move()
+    ctx.undo.push({
+      label: 'Move to page',
+      forward: move,
+      inverse: () => {
+        for (const { id, parentId, index, x, y } of moved) {
+          ctx.graph.reparentNode(id, parentId)
+          ctx.graph.updateNode(id, { x, y })
+          ctx.graph.insertChildAt(id, parentId, index)
+        }
+        ctx.setSelectedIds(prevSelection)
+      }
+    })
   }
 
   function selectedNodes(): SceneNode[] {
