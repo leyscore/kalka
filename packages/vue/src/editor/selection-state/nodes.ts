@@ -1,6 +1,6 @@
 import { tryOnScopeDispose, watchImmediate } from '@vueuse/core'
 import { isEqual } from 'es-toolkit'
-import { computed, shallowReactive, shallowRef, watch } from 'vue'
+import { computed, effectScope, shallowReactive, shallowRef, toRaw, watch } from 'vue'
 import type { ComputedRef, Ref } from 'vue'
 
 import type { Editor } from '@kalka/core/editor'
@@ -84,8 +84,54 @@ export function createSelectedNodeState(
   return { nodes, node, dispose }
 }
 
+interface SharedSelectedNodeState {
+  state: SelectedNodeState
+  users: number
+}
+
+/** One state per editor and retention scope, so the panel's many fields do not copy alike. */
+const sharedStates = new WeakMap<
+  Editor,
+  Map<Readonly<Ref<boolean>> | null, SharedSelectedNodeState>
+>()
+
+/**
+ * The selected layers for a component: shared by every component of the same editor and
+ * retention scope, made in a scope of its own and released with its last user.
+ */
 export function useSelectedNodeState(editor = useEditor()): SelectedNodeState {
-  const state = createSelectedNodeState(editor, useRetainedActivity())
-  tryOnScopeDispose(state.dispose)
-  return state
+  const active = useRetainedActivity() ?? null
+  const key = toRaw(editor)
+  let byActivity = sharedStates.get(key)
+  if (!byActivity) {
+    byActivity = new Map()
+    sharedStates.set(key, byActivity)
+  }
+  const states = byActivity
+  let shared = states.get(active)
+  if (!shared) {
+    const scope = effectScope(true)
+    const created = scope.run(() => createSelectedNodeState(editor, active ?? undefined))
+    if (!created) throw new Error('The selection state could not be created')
+    shared = {
+      state: {
+        ...created,
+        dispose: () => {
+          created.dispose()
+          scope.stop()
+        }
+      },
+      users: 0
+    }
+    states.set(active, shared)
+  }
+  const entry = shared
+  entry.users++
+  tryOnScopeDispose(() => {
+    entry.users--
+    if (entry.users > 0) return
+    entry.state.dispose()
+    states.delete(active)
+  })
+  return entry.state
 }

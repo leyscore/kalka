@@ -224,6 +224,28 @@ describe('selected-node preview projections', () => {
     }
   })
 
+  test('components of one editor share one selection state, which outlives its first user', () => {
+    const fixture = setup()
+    const { editor, first } = fixture
+    try {
+      const app = createApp({ render: () => null })
+      app.provide(EDITOR_KEY, editor)
+      const firstScope = effectScope()
+      const secondScope = effectScope()
+      const one = app.runWithContext(() => firstScope.run(() => useSelectedNodeState()))
+      const two = app.runWithContext(() => secondScope.run(() => useSelectedNodeState()))
+      expect(one).toBe(two)
+      firstScope.stop()
+      editor.updateNode(first.id, { x: 42 })
+      expect(two?.node.value?.x).toBe(42)
+      secondScope.stop()
+      const three = app.runWithContext(() => effectScope().run(() => useSelectedNodeState()))
+      expect(three).not.toBe(two)
+    } finally {
+      fixture.dispose()
+    }
+  })
+
   test('tracks multi-selection, selection changes and preview cancellation', () => {
     const fixture = setup()
     const { editor, first, second, selection } = fixture
