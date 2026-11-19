@@ -1,6 +1,7 @@
 import { compact } from 'es-toolkit/array'
 
 import type { Fill, MaskType, SceneGraph, SceneNode } from '@kalka/scene-graph'
+import { colorToHex } from '@kalka/scene-graph/color'
 import { invertGradientTransform, isIdentityGradientTransform } from '@kalka/scene-graph/gradient'
 import Matrix, { type Mat3 } from '@kalka/scene-graph/matrix'
 
@@ -77,9 +78,12 @@ function maskShape(
 const MASK_GRADIENT_ID = 'kalka-mask-paint'
 
 function svgColor(color: Fill['color'], luminance: boolean): string {
-  if (!luminance) return '#fff'
-  const channel = (value: number) => Math.round(Math.min(1, Math.max(0, value)) * 255)
-  return `rgb(${channel(color.r)} ${channel(color.g)} ${channel(color.b)})`
+  return luminance ? colorToHex({ ...color, a: 1 }) : '#fff'
+}
+
+const GRADIENT_ELEMENTS: Partial<Record<Fill['type'], string>> = {
+  GRADIENT_LINEAR: 'linearGradient',
+  GRADIENT_RADIAL: 'radialGradient'
 }
 
 /**
@@ -99,12 +103,7 @@ function maskPaint(mask: SceneNode): { attrs: Record<string, string>; defs?: Des
   }
   const stops = fill.gradientStops
   const transform = fill.gradientTransform
-  const kind =
-    fill.type === 'GRADIENT_LINEAR'
-      ? 'linearGradient'
-      : fill.type === 'GRADIENT_RADIAL'
-        ? 'radialGradient'
-        : null
+  const kind = GRADIENT_ELEMENTS[fill.type]
   if (!kind || !stops || !transform) return { attrs: { fill: '#fff' } }
   const toLayer = invertGradientTransform(transform)
   const units: Record<string, string> = { gradientUnits: 'objectBoundingBox' }
