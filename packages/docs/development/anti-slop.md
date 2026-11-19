@@ -39,6 +39,26 @@ Kalka-specific checks that the external sources do not name:
 | `random-decoration` | Decoration placed with `Math.random()` at load, so the page differs on each visit and screenshots never match | Script assigns position or delay from an unseeded random source | A seeded generator; decoration still under reduced motion |
 | `rounded-full-bleed` | A full-bleed block with rounded corners against the window edge | Element as wide as the viewport with `border-radius` on the corners touching the edge | Square corners where a block meets the window |
 
+### Heard from players and commenters
+
+The Slop or not? game was posted on Reddit on 2026-11-18; commenters listed what makes them say "AI" (thread URL not recorded; comments relayed by the author). The same day the author reviewed the game's own mockups and rejected several signs in them. What both added beyond the published sources:
+
+| ID | Tell | Who | Detection | Alternative |
+| --- | --- | --- | --- | --- |
+| `split-hero-combo` | Text left, picture right in the hero, read as generated only together with the stock gradient, rounded cards and a "Get started" button | Persil1 | Hero is a two-column split and at least two of `purple-gradient`, `uniform-surfaces`, `generic-cta` fire | Not a sign alone; it raises the weight of the others |
+| `fake-deep-tagline` | A tagline that sounds profound and says nothing ("one click behind, one day away") | Reddit commenter | Short h1 or subtitle with no concrete noun from the product's domain, built as two parallel clauses | What the product does, for whom |
+| `small-text-everywhere` | Lots of small text: captions, hints and fine print under everything | Reddit commenter | Share of visible text nodes under 13px above about 30% | Fewer words at a readable size |
+| `pill-buttons` | Rounded (pill) buttons everywhere | Reddit commenter | See `pill-soup`; all buttons with radius ≥ half their height | The radius scale of the system |
+| `does-everything` | Feature overload: the page shows everything the product does and chooses nothing | lllIsland1087 | More than about eight feature blocks or sections of equal weight | One job shown well, the rest linked |
+| `generic-minimal` | Clean but empty: minimal pages can be generic too | lllIsland1087 | Few elements, `stock-font`, no image of the product, no colour beyond neutrals and one accent | A world of the project's own (see the lessons above) |
+| `default-focus-ring` | The browser's default blue focus ring, unstyled, everywhere | rabiprojects | `:focus` styles equal to the user-agent default (`auto` outline, `-webkit-focus-ring-color`) on interactive elements | A ring drawn for the design, following the radius, on `:focus-visible` |
+| `drop-shadow-everywhere` | Drop shadows on everything | rabiprojects | Share of boxed elements with a `box-shadow` above about 60% | Shadows for floating layers only |
+| `colored-dots` | Coloured dots marking categories or states where an icon exists | Author | Small (≤ 10px) round filled elements before labels, with no text alternative | The icon or the word |
+| `keyboard-hints` | Helper hints nobody needs: "or press Enter", "Anonymous, takes two minutes" | Author | Small muted text next to a primary action matching `/press (enter|return)|takes \d+ (min|sec)|anonymous/i` | Remove; keep a hint only where people get stuck |
+| `landing-kit` | Glass cards, blurred halos and three explanatory cards on a screen that should be a tool or a game | Author | `glass-everywhere` plus `blur-orbs` plus `identical-cards` on one screen | The product's own interface style |
+
+Rabiprojects also named colours and gradients and Inter everywhere, and Tersiv the 01 / 02 / 03 section numbers; those are `purple-gradient`, `stock-font` and `fake-numbering` above.
+
 ## Checks for Kalka Ley and a lint
 
 Every ID in the catalogue is a check. How they should be combined:

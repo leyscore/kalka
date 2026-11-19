@@ -11,7 +11,9 @@ a decision the template could not have made, taken from this project's own world
 
 None of these is forbidden by itself. Each is a default: something that appears when nobody
 decided. One, chosen on purpose and supported by the direction, can stay. Three together mean
-the page was not designed.
+the page was not designed. People who judge pages say the same: a hero with text on the left and
+a picture on the right is fine; with the usual gradient, the usual rounded cards and a "Get
+started" button, it reads as generated.
 
 ## How to use it
 
@@ -42,6 +44,7 @@ problems.
 - A monospace face on labels to look technical.
 - The heaviest weight on every heading, or headlines squeezed tighter than -0.04em.
 - Every Word Of Every Heading In Capitals.
+- A lot of small text: captions, hints and fine print under everything.
 - Numbers that do not line up in a column.
 - Straight quotes, three dots instead of an ellipsis.
 - A font named in the styles that never loads.
@@ -62,6 +65,7 @@ problems.
   than 20 degrees of hue apart.
 - Soft blurred color shapes behind the text: orbs, blobs, halos, a spotlight.
 - A faint grid or dot pattern behind the hero as filler.
+- A soft drop shadow under everything that has an edge.
 
 ## Layout
 
@@ -76,6 +80,10 @@ problems.
 - A card inside a card.
 - A band of large numbers nobody can verify, or a big number as the hero.
 - Parallel features numbered 01, 02, 03 as if they were steps.
+- A page that does everything: every feature the product has, each with its own block, and
+  nothing chosen as the point.
+- Clean but empty: a minimal page with nothing of its own. Minimal is not the opposite of
+  generic.
 - A section made of a heading and one paragraph in a wide empty space.
 - Splits that alternate image left, image right, down the page.
 - The closing call to action in a boxed dark card split into two columns, with a list of ticks
@@ -99,6 +107,8 @@ problems.
 - A tick in a tinted circle at the start of every line.
 - A pulsing dot or a "Live" badge on something that is not live.
 - Effects copied from a component gallery: spotlights, beams, meteors, a shimmering border.
+- Colored dots standing for categories or states where an icon or a word would say it.
+- The browser's default blue focus ring, unstyled, on everything.
 - A form with no real states: nothing for hover, focus, an error, or after sending.
 
 ## Words
@@ -108,6 +118,7 @@ problems.
 - "It's not just X, it's Y." "No X. No Y. Just Z." A heading made of two short fragments.
   Three adjectives with periods: "Fast. Simple. Powerful."
 - A headline that could sell anything: "Build the future", "Built for modern teams".
+- A tagline that sounds deep and says nothing: "One click behind, one day away".
 - A heading that is a category name: "Features", "Why us", "How it works".
 - Middle dots strung between short phrases: "Fast · Private · Open". Also bullets, slashes and
   vertical bars used the same way, "WORD — fragment" labels and "LABEL // 2026".
@@ -117,6 +128,7 @@ problems.
 - Invented people and companies with the usual invented names: Jane Doe, Acme.
 - "Learn more" or "Get started" on a button. "Scroll to explore". A greeting with an emoji as a
   headline.
+- Hints nobody needs: "or press Enter", "Anonymous, takes two minutes", next to every action.
 - The same fact told in four sections. A closing line that repeats the heading.
 
 ## Pictures and icons
@@ -172,6 +184,8 @@ Removing a default is half the work. Here is what replaces each family.
   allowed to break it.
 - In place of three equal cards: if the three things are not equally important, show the
   important one large. If they are steps, show a sequence. If they are details, use a list.
+- In place of a page that does everything: one job the page is for, shown well; the rest
+  linked.
 - In place of equal gaps: more space between sections than inside them, and a section that
   matters given more room than one that does not.
 - In place of unverifiable numbers: one true fact, stated plainly, or no numbers at all.
@@ -189,10 +203,16 @@ Removing a default is half the work. Here is what replaces each family.
 - In place of pills everywhere: the radius scale from the design system. A block that meets
   the edge of the window has square corners on that side.
 - In place of a fake dashboard: the real product, or one real part of it shown large.
+- In place of colored dots: the icon or the word that names the thing.
+- In place of the default focus ring: a ring drawn for the design, in its accent, that follows
+  the radius, shown on keyboard focus.
 
 **Words**
 
 - In place of an adjective: the fact behind it. "Powerful" becomes what it does and how fast.
+- In place of a deep-sounding tagline: what the product does, for whom, in plain words.
+- In place of small print everywhere: fewer words, at a size people read. Keep a hint only where
+  someone would otherwise get stuck.
 - In place of a category heading: a sentence that says the point. "Features" becomes "Edit
   the page your developer will ship".
 - In place of separators: layout. Put the items in their own places with a gap, on separate
