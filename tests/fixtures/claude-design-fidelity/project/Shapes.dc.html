@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Shapes</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+.paper{background-color:#E7E7E3;background-image:radial-gradient(circle,rgba(20,20,20,.18) 0 1px,transparent 1.5px);background-size:12px 12px}
+.glow{position:absolute;inset:0;background-image:radial-gradient(circle,#2F5BEA 0 1.5px,transparent 2px);background-size:8px 8px;-webkit-mask-image:linear-gradient(90deg,#000,transparent);mask-image:linear-gradient(90deg,#000,transparent)}
+.title{font-family:system-ui,sans-serif;font-weight:800;font-size:56px;line-height:1;letter-spacing:-.04em;margin:0;color:transparent;background:linear-gradient(90deg,#7C3AED,#DB2777);-webkit-background-clip:text;background-clip:text}
+</style>
+</helmet>
+<main class="paper" style="position: relative; width: 720px; height: 480px; overflow: hidden; font-family: system-ui, sans-serif; color: #141414;">
+  <div class="glow" aria-hidden="true"></div>
+  <div style="position: absolute; left: 48px; top: 48px; display: flex; flex-direction: column; gap: 16px;">
+    <h1 class="title">Draw the page</h1>
+    <span style="display: flex; align-items: center; gap: 8px; font-size: 16px; color: #2F5BEA;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12l4 4 10-10"></path></svg>Inline icon in the text color</span>
+  </div>
+  <div role="toolbar" style="position: absolute; left: 50%; bottom: 32px; transform: translateX(-50%); display: flex; gap: 4px; padding: 4px; border-radius: 14px; background: #F0F0F0; border: 1px solid rgba(20,20,20,.12);">
+    <a href="#" style="display: block; height: 40px; line-height: 40px; padding: 0 16px; border-radius: 10px; background: #141414; color: #FFFFFF; font-size: 14px; text-decoration: none;">Centered words</a>
+    <a href="#" style="display: block; height: 40px; line-height: 40px; padding: 0 16px; font-size: 14px; color: #141414; text-decoration: none;">Second</a>
+  </div>
+</main>
+</x-dc>
+</body>
+</html>

@@ -63,8 +63,16 @@ self.onmessage = ({ data }) => {
     }
     const Component = new Function('DCLogic', script + '\n;return typeof Component === "function" ? Component : undefined')(DCLogic)
     if (typeof Component !== 'function') throw new Error('No Component class')
+    // Logic that listens to the window or measures the page finds a stand-in for both; a mount
+    // that still fails leaves the state its constructor set.
+    self.window = self
+    self.document = { addEventListener() {}, removeEventListener() {}, querySelector: () => null, querySelectorAll: () => [], getElementById: () => null, documentElement: { clientWidth: 1440, clientHeight: 900 }, body: null }
+    self.innerWidth = 1440
+    self.innerHeight = 900
     const instance = new Component(props)
-    if (typeof instance.componentDidMount === 'function') instance.componentDidMount()
+    if (typeof instance.componentDidMount === 'function') {
+      try { instance.componentDidMount() } catch {}
+    }
 
     // Advance the design's own clock to a fixed moment, as a person who opened it and waited
     // a few seconds sees it.

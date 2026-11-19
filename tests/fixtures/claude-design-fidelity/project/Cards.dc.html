@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Cards</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+.card{border-radius:20px;background:#FFFFFF;border:4px solid #2F5BEA;box-sizing:border-box}
+</style>
+</helmet>
+<main style="position: relative; width: 720px; height: 480px; overflow: hidden; background: #F4F5F8; font-family: system-ui, sans-serif; color: #141414;">
+  <section class="card" style="position: absolute; left: 32px; top: 32px; width: 300px; height: 200px;">
+    <span style="position: absolute; left: 20px; top: 24px; padding: 4px 10px; border-radius: 999px; background: #2F5BEA; color: #FFFFFF; font-size: 13px;">Inside the border</span>
+    <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">For screen readers</span>
+    <p style="position: absolute; left: 20px; top: 72px; width: 240px; margin: 0; font-size: 15px; line-height: 1.5;">A paragraph that wraps over a few lines where the page wraps it.</p>
+  </section>
+  <div style="position: absolute; left: 380px; top: 32px; width: 150px; height: 100px; transform: scale(1.5); transform-origin: 0 0; background: #FFFFFF; border-radius: 10px;">
+    <span style="position: absolute; left: 12px; top: 12px; font-size: 12px;">Scaled once</span>
+    <span style="position: absolute; left: 12px; top: 40px; width: 60px; height: 24px; border-radius: 6px; background: #DB2777;"></span>
+  </div>
+  <div style="position: absolute; left: 32px; top: 270px; width: 656px; display: flex; flex-direction: column; gap: 8px; font-size: 15px;">
+    <details class="card" open style="padding: 14px 18px;"><summary style="list-style: none; font-weight: 600;">An open question</summary><p style="margin: 8px 0 0;">Its answer shows.</p></details>
+    <details class="card" style="padding: 14px 18px;"><summary style="list-style: none; font-weight: 600;">A closed question</summary><p style="margin: 8px 0 0;">Its answer stays hidden.</p></details>
+  </div>
+</main>
+</x-dc>
+</body>
+</html>

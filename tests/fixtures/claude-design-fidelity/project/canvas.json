@@ -1,0 +1,12 @@
+{
+  "v": 3,
+  "title": "Fidelity boards",
+  "pages": [],
+  "boards": {
+    "Shapes.dc.html": { "x": 0, "y": 0, "w": 720, "h": 480, "title": "Shapes" },
+    "Cards.dc.html": { "x": 800, "y": 0, "w": 720, "h": 480, "title": "Cards" }
+  },
+  "order": ["Shapes.dc.html", "Cards.dc.html"],
+  "notes": {},
+  "designSystems": []
+}
