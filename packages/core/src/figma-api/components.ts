@@ -14,7 +14,8 @@ import {
   createComponentPropertyId,
   exposedInstances,
   instanceExposureIssue,
-  resolveComponentPropertyValue
+  resolveComponentPropertyValue,
+  resolvedVariantDefinition
 } from '@kalka/scene-graph'
 import { cloneNodeProps } from '@kalka/scene-graph/copy'
 
@@ -186,8 +187,11 @@ function definitions(
 ): Record<string, FigmaComponentPropertyDefinition> {
   const node = raw(target, internals)
   if (node.type !== 'COMPONENT' && node.type !== 'COMPONENT_SET') return {}
+  const scene = graph(target, internals)
+  const resolve = (item: ComponentPropertyDefinition) =>
+    node.type === 'COMPONENT_SET' ? resolvedVariantDefinition(scene, node, item) : item
   return Object.fromEntries(
-    node.componentPropertyDefinitions.map((definition) => [
+    node.componentPropertyDefinitions.map(resolve).map((definition) => [
       propertyName(definition),
       {
         type: definition.type,

@@ -24,12 +24,13 @@ function buttonGraph() {
       }
     ]
   })
-  for (const [size, width] of [
-    ['Small', 80],
-    ['Large', 160]
+  for (const [size, width, x] of [
+    ['Small', 80, 0],
+    ['Large', 160, 100]
   ] as const) {
     const variant = graph.createNode('COMPONENT', set.id, {
       name: `Size=${size}`,
+      x,
       width,
       height: 40,
       componentPropertyValues: { Size: size }

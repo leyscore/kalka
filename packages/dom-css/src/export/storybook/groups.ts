@@ -1,7 +1,7 @@
 import { behaviourArgs } from '#dom-css/behaviours/args'
 import { uniq } from 'es-toolkit/array'
 
-import { restingVariant, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
+import { defaultVariant, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
 import { deriveSlashVariantProperties } from '@kalka/scene-graph/variant-properties'
 
 import type { StoryProp } from './module'
@@ -55,7 +55,7 @@ function componentSetGroup(
 ): StoryGroup {
   const definitions = set.componentPropertyDefinitions.filter((def) => def.type === 'VARIANT')
   // The variant at its default values opens the file as its Default story.
-  const first = restingVariant(graph, set)
+  const first = defaultVariant(graph, set)
   const components = graph
     .getChildren(set.id)
     .filter((child) => child.type === 'COMPONENT' && isExported(child))

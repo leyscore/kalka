@@ -43,13 +43,15 @@ export function componentSet(
       all.flatMap((combo) => options.map((value) => ({ ...combo, [axis]: value }))),
     [{}]
   )
-  for (const values of combos) {
+  // Variants stack in a column, so the first, at every axis's first value, is the default.
+  for (const [index, values] of combos.entries()) {
     if (skip(values)) continue
     const variant = graph.createNode('COMPONENT', set.id, {
       name: Object.entries(values)
         .map(([axis, value]) => `${axis}=${value}`)
         .join(', '),
       componentPropertyValues: values,
+      y: index * 40,
       width: 40,
       height: 22
     })
@@ -680,10 +682,11 @@ export function plainBadgeSet() {
       { id: 'extra', name: 'Extra', type: 'SLOT', defaultValue: '' }
     ]
   })
-  for (const tone of ['Neutral', 'Danger']) {
+  for (const [index, tone] of ['Neutral', 'Danger'].entries()) {
     const variant = graph.createNode('COMPONENT', set.id, {
       name: `Tone=${tone}`,
       componentPropertyValues: { Tone: tone },
+      y: index * 40,
       width: 80,
       height: 24,
       fills: tone === 'Danger' ? COLORS.on : COLORS.off

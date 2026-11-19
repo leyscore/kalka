@@ -8,6 +8,7 @@
 - A multicolour vector saved to `.fig` keeps each region's colour when it is edited in Figma, instead of Figma refilling every region with the layer's fill.
 - A multicolour vector pasted from Figma keeps each region's colour instead of coming in all one colour.
 - Duplicating a frame that holds a component and its instances keeps the copied instances on the copied component, and `appendChild` on a layer's own child moves it to the end, as in Figma.
+- Component sets from `.fig` files that save no variant values, such as older community kits, list their variant options in Figma's order, and a variant property's default is the top-left variant's value, as in Figma.
 
 ## 0.2.0-beta.3.2 — 2026-11-19
 
