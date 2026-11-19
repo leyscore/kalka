@@ -81,3 +81,56 @@ test('reads pages independently through one index with cross-page component expa
   )
   expect(() => reader.readPage('1:4')).toThrow('Unknown page')
 })
+
+// One NaN box breaks the bounds of its page; Figma's own NaN and Infinity values mean something.
+test('reads a saved NaN or Infinity as a missing value, except where Figma saves one', () => {
+  const records: NodeChange[] = [
+    { guid: guid(1), type: 'DOCUMENT', phase: 'CREATED' },
+    {
+      guid: guid(2),
+      type: 'CANVAS',
+      phase: 'CREATED',
+      parentIndex: { guid: guid(1), position: 'a' }
+    },
+    {
+      guid: guid(3),
+      type: 'FRAME',
+      phase: 'CREATED',
+      name: 'Card',
+      parentIndex: { guid: guid(2), position: 'a' },
+      size: { x: 40, y: 30 },
+      strokePaints: [
+        { type: 'SOLID', color: { r: 0, g: 0, b: 0, a: 1 }, opacity: 1, visible: true }
+      ],
+      strokeWeight: Number.NaN,
+      borderTopWeight: Number.POSITIVE_INFINITY,
+      stackMode: 'HORIZONTAL',
+      stackSpacing: 12,
+      stackCounterSpacing: Number.NaN,
+      maxSize: { value: { x: 200, y: Number.POSITIVE_INFINITY } },
+      opacity: 0.5
+    }
+  ]
+  const { graph } = materializeDocument(records)
+  const card = [...graph.nodes.values()].find((node) => node.name === 'Card')
+  expect({
+    width: card?.width,
+    height: card?.height,
+    strokeWeight: card?.strokeWeight,
+    borderTopWeight: card?.borderTopWeight,
+    counterAxisSpacing: card?.counterAxisSpacing,
+    maxWidth: card?.maxWidth,
+    maxHeight: card?.maxHeight,
+    opacity: card?.opacity
+  }).toEqual({
+    width: 40,
+    height: 30,
+    strokeWeight: 1,
+    borderTopWeight: 0,
+    counterAxisSpacing: 12,
+    maxWidth: 200,
+    maxHeight: null,
+    opacity: 0.5
+  })
+  expect(card?.strokes.map((stroke) => stroke.weight)).toEqual([1])
+})

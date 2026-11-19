@@ -1,3 +1,5 @@
+import { omitBy } from 'es-toolkit'
+
 import { guidToString, isUnsetGuid } from '@kalka/kiwi/fig/guid'
 import {
   DEFAULT_FONT_FAMILY,
@@ -508,7 +510,10 @@ function convertLayoutProps(
     primaryAxisAlign: mapStackJustify(nc.stackPrimaryAlignItems ?? nc.stackJustify),
     counterAxisAlign: mapStackCounterAlign(nc.stackCounterAlignItems ?? nc.stackCounterAlign),
     layoutWrap: nc.stackWrap === 'WRAP' ? 'WRAP' : 'NO_WRAP',
-    counterAxisSpacing: nc.stackCounterSpacing ?? 0,
+    // Figma saves NaN while the space between wrapped lines follows the item spacing.
+    counterAxisSpacing: Number.isNaN(nc.stackCounterSpacing)
+      ? (nc.stackSpacing ?? 0)
+      : (nc.stackCounterSpacing ?? 0),
     layoutPositioning: nc.stackPositioning === 'ABSOLUTE' ? 'ABSOLUTE' : 'AUTO',
     layoutGrow: nc.stackChildPrimaryGrow ?? 0,
     layoutAlignSelf: mapAlignSelf(nc.stackChildAlignSelf),
@@ -632,11 +637,30 @@ function resolveNodeType(nc: NodeChange): NodeType | 'DOCUMENT' | 'VARIABLE' {
   return nodeType
 }
 
+/** Fields whose saved NaN means something: wrapped lines spaced as the items are. */
+const MEANINGFUL_NAN_FIELDS: ReadonlySet<string> = new Set(['stackCounterSpacing'])
+
+/**
+ * The record with each other top-level NaN or Infinity left out, so the layer takes the field's
+ * default. Some writers save NaN stroke weights, and one non-finite size or position breaks the
+ * bounds of a whole page. Nested values keep theirs: Figma saves Infinity for an axis without a
+ * maximum size.
+ */
+function withFiniteNumbers(nc: NodeChange): NodeChange {
+  const dropped = (value: unknown, key: string) =>
+    typeof value === 'number' &&
+    !Number.isFinite(value) &&
+    !(Number.isNaN(value) && MEANINGFUL_NAN_FIELDS.has(key))
+  if (!Object.entries(nc).some(([key, value]) => dropped(value, key))) return nc
+  return omitBy(nc, dropped)
+}
+
 export function nodeChangeToProps(
-  nc: NodeChange,
+  record: NodeChange,
   blobs: Uint8Array[],
   metadata: 'source' | 'occurrence' = 'source'
 ): Partial<SceneNode> & { nodeType: NodeType | 'DOCUMENT' | 'VARIABLE' } {
+  const nc = withFiniteNumbers(record)
   const nodeType = resolveNodeType(nc)
 
   const vectorAndStrokeProps = convertVectorAndStrokeProps(nc, blobs)
