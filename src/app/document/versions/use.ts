@@ -118,8 +118,19 @@ export function useDocumentVersions(store: EditorStore) {
       .map((change) => change.agentName)
   }
 
+  /**
+   * Saves the document so git sees what is on screen. A save that fails or is cancelled stops
+   * the operation: a version without the latest edits, or a restore that reloads over them,
+   * would lose them.
+   */
+  async function saveFirst(): Promise<void> {
+    if (!store.hasUnsavedChanges()) return
+    if (!(await store.saveFigFile()) || store.hasUnsavedChanges())
+      throw new Error('The document could not be saved, so nothing was changed.')
+  }
+
   async function record(documentPath: string, text: string): Promise<void> {
-    if (store.hasUnsavedChanges()) await store.saveFigFile()
+    await saveFirst()
     await commitVersion(documentPath, versionMessage(text, agentsSinceLastVersion()))
   }
 
@@ -137,7 +148,7 @@ export function useDocumentVersions(store: EditorStore) {
    */
   const restore = (version: GitCommit, labels: { before: string; restored: string }) =>
     run('restore', async (documentPath) => {
-      if (store.hasUnsavedChanges()) await store.saveFigFile()
+      await saveFirst()
       const before = await readGitStatus(documentPath)
       if (before && before.files.length > 0) await record(documentPath, labels.before)
       await restoreVersion(documentPath, version.hash)
