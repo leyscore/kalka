@@ -1,9 +1,12 @@
+import { toRaw } from 'vue'
+
 import { executeAtomicTool, isEmptyDocumentChange, type DocumentChange } from '@kalka/core/editor'
 import type { FigmaAPI } from '@kalka/core/figma-api'
 import type { ToolDef } from '@kalka/core/tools'
 
 import type { EditorStore } from '@/app/editor/active-store'
 import { ensureGraphFonts } from '@/app/editor/fonts'
+import { documentEditLock } from '@/app/runtime/mutex'
 
 /** Undo steps made through the automation bridge (MCP, CLI) start with this label. */
 export const AUTOMATION_UNDO_LABEL = 'Agent'
@@ -54,19 +57,25 @@ export async function executeWithDocumentUndo<T>(
   /** Told what the edit changed, also when it failed, as soon as it is recorded. */
   onChange?: (change: DocumentChange) => void
 ): Promise<T> {
+  // One recorded change at a time per document, so two agents' steps never hold each other's edits.
+  const release = await documentEditLock(toRaw(store))()
   const finishChange = store.captureDocumentChange(pageId)
   try {
     return await run()
   } finally {
-    const change = finishChange()
-    // Read-only scripts and no-op edits must not leave empty steps in the user's history.
-    if (!isEmptyDocumentChange(change)) {
-      store.pushUndoStep({
-        label,
-        forward: () => store.restoreDocumentChange(change, 'after'),
-        inverse: () => store.restoreDocumentChange(change, 'before')
-      })
+    try {
+      const change = finishChange()
+      // Read-only scripts and no-op edits must not leave empty steps in the user's history.
+      if (!isEmptyDocumentChange(change)) {
+        store.pushUndoStep({
+          label,
+          forward: () => store.restoreDocumentChange(change, 'after'),
+          inverse: () => store.restoreDocumentChange(change, 'before')
+        })
+      }
+      onChange?.(change)
+    } finally {
+      release()
     }
-    onChange?.(change)
   }
 }

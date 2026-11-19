@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- When several agents edit the same document at once, such as named agents in the chat and agents over MCP, undoing one agent's edit no longer also undoes what another agent changed while it ran.
 - Save as folder refuses a folder that already holds other files, such as a website project, instead of saving into it and deleting files of its own under `pages/` and `assets/images/`; an empty folder or a Kalka folder still works.
 - Undoing an agent's edit no longer deletes or brings back comments and frame reviews written while it ran, the agent's own included; comments stay outside the undo history.
 - Recording or restoring a version stops when the document cannot be saved first, instead of recording what was on disk or reloading over the unsaved edits.

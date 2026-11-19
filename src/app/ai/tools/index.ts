@@ -1,5 +1,6 @@
 import { tool } from 'ai'
 import { isPlainObject } from 'es-toolkit'
+import { toRaw } from 'vue'
 
 import { graphFromPageSnapshot, isEmptyDocumentChange } from '@kalka/core/editor'
 import type { FigmaAPI } from '@kalka/core/figma-api'
@@ -22,10 +23,10 @@ import { useLibraryService } from '@/app/libraries'
 import { workedLayers, writtenLayers } from '@/app/presence/activity'
 import { frameHeldMessage, heldByOtherAgent } from '@/app/presence/claims'
 import { agentEditFromChange, holdAgentCreations } from '@/app/presence/edit-effect'
+import { documentEditLock } from '@/app/runtime/mutex'
 
 import { aiToolDefinitions } from './catalog'
 import { recordToolChange } from './changes/capture'
-import { createMutex } from './mutex'
 import {
   aiUndoLabel,
   currentRun,
@@ -80,7 +81,8 @@ export function createAITools(
   diagnosticContext?: AIDiagnosticContext,
   lane = LEAD_LANE
 ) {
-  const acquireMutation = createMutex()
+  // Shared with the document's other agents: their recorded page changes must not overlap.
+  const acquireMutation = documentEditLock(toRaw(store))
   const libraryService = useLibraryService()
   libraryService.bindEditor(store)
   registerComponentCatalog(store.graph, libraryService)
