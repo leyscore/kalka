@@ -17,7 +17,7 @@ import {
   declareSourceVariableBindingUnits
 } from './bindings/variables'
 import { applyDerivedEntry } from './derived-symbol-data'
-import { COMPONENT_IDENTITY_FIELDS } from './fields'
+import { UNINHERITED_COMPONENT_FIELDS } from './fields'
 import {
   ownLayers,
   type AssignmentGroup,
@@ -534,8 +534,8 @@ function interpretRoot(
       overrideKey: readOverrideKey(source.overrideKey),
       // The record is the top layer of its own root: its fields are placed state.
       properties: {
-        // The component's look carries over; its identity does not.
-        ...(base && omit(base.properties, COMPONENT_IDENTITY_FIELDS)),
+        // The component's look carries over; its identity and its place in its own parent do not.
+        ...(base && omit(base.properties, UNINHERITED_COMPONENT_FIELDS)),
         ...source,
         ...(effective && source.symbolData
           ? { symbolData: { ...source.symbolData, symbolID: effective } }

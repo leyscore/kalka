@@ -12,6 +12,10 @@
 - The canvas toolbar no longer has a "Describe a change…" field, which only opened the AI panel: press / to ask the agent about the selection, C to comment, or open the AI panel from the rail.
 - The agent in Kalka's own panel follows an explicit design process: it reads the document, names its references, writes a brief, sets up variables, shared classes and components, lays out the page skeleton, builds and checks one section at a time, then adapts the phone layout. Agents over MCP read the same process with `get_design_guide`, and the chat now has the variable, page and component tools it needs on by default.
 
+### Fixed
+
+- Nested instances in an imported `.fig` keep their own align, grow, absolute positioning and constraints instead of taking their main component's, so a component that fills its parent no longer stretches every nested copy of it.
+
 ## 0.2.0-beta.3.1 — 2026-11-19
 
 ### Changed
