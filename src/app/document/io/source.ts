@@ -115,7 +115,9 @@ export function createDocumentSourceActions({
     isEnabled: () => recoveryEnabled.value,
     buildFigFile: buildRecoveryFigFile,
     isAutosaved: () =>
-      state.autosaveEnabled && (!!getFileHandle() || !!getFilePath() || !!getStorageBinding())
+      state.autosaveEnabled &&
+      !autosave.isFailing() &&
+      (!!getFileHandle() || !!getFilePath() || !!getStorageBinding())
   })
 
   const { saveFigFile, saveFigFileAs, writeFile } = createSaveActions({
@@ -153,6 +155,18 @@ export function createDocumentSourceActions({
       const revision = changes.capture()
       const data = await buildDocumentFile()
       if (await writeFile(data, version)) changes.markSaved(revision)
+    },
+    onFailure: (error) => {
+      toast.error(
+        notificationMessages.get().autosaveFailed({
+          name: state.documentName || 'Untitled',
+          error: error instanceof Error ? error.message : String(error)
+        })
+      )
+      // The file is behind now: what it lacks is kept for recovery until a save succeeds.
+      void recovery
+        .persistNow()
+        .catch((cause) => console.warn('[Recovery] Snapshot failed:', cause))
     }
   })
 
