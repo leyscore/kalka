@@ -13,7 +13,7 @@ import {
   type SourceIndex
 } from '../instance-overrides/source-index'
 import { symbolOverridesOf } from '../instance-overrides/types'
-import { applyStyleRefsToFields } from '../node-change/style/refs'
+import { applyStyleRefsToRecord } from '../node-change/style/refs'
 import {
   createBindingNormalizer,
   resolveDocumentBindingReferences,
@@ -108,7 +108,7 @@ function wholeRecords(source: readonly NodeChange[]): ReaderRecords {
   inheritComponentPropertyDefinitions(records, index.sources)
   const assets = assetIds(records)
   const resolveStyles = (node: NodeChange): void => {
-    applyStyleRefsToFields(index.sources, node, assets)
+    applyStyleRefsToRecord(index.sources, node, assets)
     for (const override of symbolOverridesOf(node)) resolveStyles(override as NodeChange)
   }
   for (const node of records) resolveStyles(node)
@@ -172,7 +172,7 @@ function archiveRecords(headers: readonly NodeChange[]): ReaderRecords {
         ancestors.push(whole(parent))
       inheritFromAncestors(record, ancestors)
       const resolveStyles = (node: NodeChange): void => {
-        applyStyleRefsToFields(styles, node, assets)
+        applyStyleRefsToRecord(styles, node, assets)
         for (const override of symbolOverridesOf(node)) resolveStyles(override as NodeChange)
       }
       resolveStyles(record)

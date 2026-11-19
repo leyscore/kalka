@@ -36,7 +36,7 @@ function referencedStyle(
   return id ? changeMap.get(id) : undefined
 }
 
-function applyPaintStyleRefs(
+function applyFillStyleRef(
   changeMap: StyleChangeMap,
   fields: StyleRefFields,
   assetRefs?: ReadonlyMap<string, string>
@@ -45,6 +45,13 @@ function applyPaintStyleRefs(
   if (fillStyle?.styleType === 'FILL' && fillStyle.fillPaints) {
     fields.fillPaints = fillStyle.fillPaints
   }
+}
+
+function applyStrokeStyleRef(
+  changeMap: StyleChangeMap,
+  fields: StyleRefFields,
+  assetRefs?: ReadonlyMap<string, string>
+): void {
   const strokeStyle = referencedStyle(changeMap, fields.styleIdForStrokeFill, assetRefs)
   if (strokeStyle?.styleType === 'FILL' && strokeStyle.fillPaints) {
     fields.strokePaints = strokeStyle.fillPaints
@@ -83,7 +90,23 @@ export function applyStyleRefsToFields(
   fields: StyleRefFields,
   assetRefs?: ReadonlyMap<string, string>
 ): void {
-  applyPaintStyleRefs(changeMap, fields, assetRefs)
+  applyFillStyleRef(changeMap, fields, assetRefs)
+  applyStrokeStyleRef(changeMap, fields, assetRefs)
   applyEffectAndGridStyleRefs(changeMap, fields, assetRefs)
   applyTextStyleRef(changeMap, fields, assetRefs)
+}
+
+/**
+ * Gives a record the fields of the styles it names, and its text's ranges the paints of the fill
+ * style each names. Ranges take only fill styles: a range's style table entry naming a text style
+ * keeps its own fields, and style runs keep no stroke.
+ */
+export function applyStyleRefsToRecord(
+  changeMap: StyleChangeMap,
+  record: StyleRefFields,
+  assetRefs?: ReadonlyMap<string, string>
+): void {
+  applyStyleRefsToFields(changeMap, record, assetRefs)
+  for (const range of record.textData?.styleOverrideTable ?? [])
+    applyFillStyleRef(changeMap, range, assetRefs)
 }
