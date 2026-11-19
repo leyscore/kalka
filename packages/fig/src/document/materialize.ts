@@ -179,11 +179,12 @@ export function createFigDocumentSession(
       })
       return recordInfo
     },
-    loadPage(id: string): void {
+    /** `onProgress` is called as the load advances, so a caller can tell a slow load from a stuck one. */
+    loadPage(id: string, onProgress?: () => void): void {
       if (loaded.has(id)) return
       const reader = archive.reader.selectPages(new Set([id]))
       loadPageTransaction(state, reader.dependencyClosure, () => {
-        materializeReader(reader, archive.blobs, sessionOptions, state, edits.edited)
+        materializeReader(reader, archive.blobs, sessionOptions, state, edits.edited, onProgress)
         loaded.add(id)
       })
     },
@@ -304,15 +305,18 @@ function materializeReader(
   options: DocumentAssemblyOptions,
   previous?: AssemblyState,
   /** The graph may hold edits made since the file loaded, which new instances must take. */
-  edited = false
+  edited = false,
+  onProgress?: () => void
 ): AssemblyState {
   for (const diagnostic of reader.bindingDiagnostics) {
     if (!options.onUnresolvedBinding)
       throw new Error(`Unresolved binding ${diagnostic.sourceId}: ${diagnostic.field}`)
     options.onUnresolvedBinding(diagnostic)
   }
-  const pages = reader.pages.map((page) => reader.readPage(page.id, options))
-  const plan = reader.planComponents(pages, options)
+  // Reading a large page and the components it places takes a while on its own.
+  const readOptions = onProgress ? { ...options, onProgress } : options
+  const pages = reader.pages.map((page) => reader.readPage(page.id, readOptions))
+  const plan = reader.planComponents(pages, readOptions)
   const state = previous ?? createAssemblyState(reader, options)
   return state.graph.applyImportedStateDuring(
     () => materializeReaderInto(pages, plan, blobs, state, edited),

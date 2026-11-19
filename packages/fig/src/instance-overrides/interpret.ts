@@ -309,6 +309,7 @@ function interpretRoot(
     /** The rank of the owner whose choice made this record an instance's base. */
     chosenAt?: number
   ): InstanceOccurrence | null => {
+    options.onProgress?.()
     const raw = sources.get(id)
     if (!raw) throw new Error(`Missing source node ${id}`)
     const record = bindRecord(raw, bindings)

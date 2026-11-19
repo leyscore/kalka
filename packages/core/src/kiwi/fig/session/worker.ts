@@ -11,13 +11,23 @@ let session: ReturnType<typeof openReaderSession> | undefined
 let archive: ReturnType<typeof createFigArchiveOperations> | undefined
 let port: MessagePort | undefined
 
+/** How often a page load reports that it is still advancing. */
+const PROGRESS_INTERVAL_MS = 1000
+
 function respond(message: FigSessionResponse): void {
   port?.postMessage(message)
 }
 
 function populate(request: Extract<FigSessionRequest, { type: 'populate' }>): void {
   if (!session) throw new Error('FIG session has no retained reader')
-  const result = session.populate(request.pageId)
+  const { requestId } = request
+  let reportedAt = performance.now()
+  const result = session.populate(request.pageId, () => {
+    const now = performance.now()
+    if (now - reportedAt < PROGRESS_INTERVAL_MS) return
+    reportedAt = now
+    respond({ type: 'population-progress', requestId })
+  })
   respond({
     type: 'population-result',
     requestId: request.requestId,

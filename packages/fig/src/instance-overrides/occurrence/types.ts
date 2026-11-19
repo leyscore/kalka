@@ -79,6 +79,8 @@ export interface InterpretInstanceOptions {
   onMissingComponent?: (diagnostic: MissingComponentDiagnostic) => void
   /** Keep the component's own slot content where the assigned content frame is gone. */
   onMissingSlotContent?: (diagnostic: MissingSlotContentDiagnostic) => void
+  /** Called as a read advances, so a caller can tell a slow read from a stuck one. */
+  onProgress?: () => void
   /** Told of an instance left out because its component would contain itself. */
   onCyclicComponent?: (diagnostic: CyclicComponentDiagnostic) => void
 }

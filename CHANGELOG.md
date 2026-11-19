@@ -42,6 +42,10 @@
 - A `.fig` whose components lead back into themselves opens instead of failing: a swap that points a nested instance at its enclosing component expands that component once more with its defaults, as Figma does, and an instance whose component would contain itself is left out.
 - Pages of a `.fig` loaded after the first come in as the file has them, instead of resetting assigned icon swaps, variable modes and sizes by syncing each instance with its component when nothing was edited.
 
+### Performance
+
+- A large `.fig` page that takes the background reader more than 30 seconds to load is no longer abandoned and loaded a second time on the main thread, which froze the editor: the load reports progress and is only given up once it stops advancing.
+
 ## 0.2.0-beta.3.1 — 2026-11-19
 
 ### Changed
