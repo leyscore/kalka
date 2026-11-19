@@ -12,8 +12,18 @@ step it needs and keep the existing system.
   variables (list_variables), its classes (get_css_classes) and components (get_components).
   If the document already has a direction or a system, follow it and go to step 5.
 - Gather what is true about the product and its audience from the person, the document's
-  instructions and the other servers this client has. Ask up to three questions when the facts
-  are thin. Never invent a fact, a number, a name, a logo or a testimonial.
+  instructions and the other servers this client has. Never invent a fact, a number, a name, a
+  logo or a testimonial.
+- For new work, interview the person with ask_user before any brief, the way a designer runs a
+  kickoff. Ask only what you do not know yet, in this order, in one call:
+  - the product or business and its name
+  - who it is for, and what they should do on the page
+  - the sections or features it needs (multiple choice)
+  - the brand: colours, fonts or a logo they have, and anything to avoid
+  - the tone, and two or three sites or brands they like
+- Give each question two to six concrete suggested answers drawn from what they said, never
+  placeholders such as "Option A". When ask_user is not available, ask the same in your reply and
+  wait for the answers. When they skip, decide and say what you assumed.
 
 ## 2. References
 

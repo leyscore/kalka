@@ -11,6 +11,7 @@ import {
   type ToolDef
 } from '@kalka/core/tools'
 
+import { askInAIPanel } from '@/app/ai/questions/ask'
 import { targetNodeIds, touchedNodeIds } from '@/app/automation/agents'
 import { attachCanvasKit, makeFigmaFromStore } from '@/app/automation/bridge/figma-factory'
 import { executeAtomicEditorTool } from '@/app/automation/execution/editor'
@@ -129,6 +130,7 @@ export function createAITools(
       }
       figma.setAgentStatus = (text) => setRunStatus(store, text, lane)
       figma.commentAuthorName = runAgentName(store, lane)
+      figma.askUser = (questions) => askInAIPanel(questions, runAgentName(store, lane) ?? null)
       const result = await def.execute(figma, args)
       // Letting go of layers is not reading them.
       if (!call.released) recordRunReads(store, touchedNodeIds(store, args, result), lane)

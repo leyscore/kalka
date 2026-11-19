@@ -37,6 +37,7 @@ import { openSettingsDialog } from '@/app/settings/dialog'
 import { toast, type ToastAction } from '@/app/shell/ui'
 import { activeTab } from '@/app/tabs'
 import ACPPermissionDialog from '@/components/chat/ACPPermissionDialog.vue'
+import AgentQuestions from '@/components/chat/AgentQuestions.vue'
 import AgentTabs, { type AgentTab } from '@/components/chat/AgentTabs.vue'
 import ChatHistory from '@/components/chat/ChatHistory.vue'
 import ChatInput from '@/components/chat/ChatInput.vue'
@@ -468,6 +469,7 @@ function handleStop() {
         @reconnect="startReconnect"
         @dismiss="reconnect.dismiss()"
       />
+      <AgentQuestions />
       <ChatRunLocation
         v-if="runLocation"
         :agent="runLocation.agent"

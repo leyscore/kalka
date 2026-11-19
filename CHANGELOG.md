@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- Agents interview you before a new design: the agent asks what it needs, such as the business and its name, who the page is for, its sections, and colours to use or avoid, and each question appears in the AI panel one at a time with suggested answers you pick in one click, a field for your own, and Skip to let the agent decide. Agents over MCP, such as Claude Code, ask through the new `ask_user` tool.
+
 ### Changed
 
 - The agent avoids the look that reads as machine-made: it checks its brief against a list of generated-design habits, such as a cream ground with a serif display and a terracotta accent, purple gradients, reflex fonts, identical icon cards and an eyebrow above every heading, and picks again when its palette or type matches one.

@@ -57,3 +57,53 @@ export const getDesignGuide = defineTool({
   input: v.strictObject({}),
   execute: () => ({ guide: DESIGN_GUIDE })
 })
+
+/** How many questions one call asks, so the person is never handed a whole form at once. */
+export const ASK_USER_MAX_QUESTIONS = 6
+
+const questionSchema = v.strictObject({
+  question: v.pipe(v.string(), v.minLength(1), v.description('The question, in one sentence')),
+  options: v.optional(
+    v.pipe(
+      v.array(v.pipe(v.string(), v.minLength(1))),
+      v.maxLength(8),
+      v.description(
+        'Two to six likely answers, shown as buttons the person picks in one click. Make them concrete and different from each other; the person can always type their own instead.'
+      )
+    )
+  ),
+  multiple: v.optional(
+    v.pipe(v.boolean(), v.description('Let the person pick several options, such as sections.'))
+  ),
+  placeholder: v.optional(
+    v.pipe(v.string(), v.description('A hint for the typed answer, such as "Name of the shop".'))
+  )
+})
+
+export const askUser = defineTool({
+  name: 'ask_user',
+  description:
+    'Ask the person what you need to know before designing: the product and its name, who it is for, what the page must do, its sections, colours they like or must avoid, references. The questions appear in Kalka one at a time, with your suggested answers as buttons and a field to type their own, and the call returns their answers. Ask only what the conversation and the document do not already tell you, and offer real choices, not placeholders.',
+  execution: { kind: 'async', mutation: 'none' },
+  input: v.strictObject({
+    questions: v.pipe(
+      v.array(questionSchema),
+      v.minLength(1),
+      v.maxLength(ASK_USER_MAX_QUESTIONS),
+      v.description('The questions, in the order to ask them')
+    )
+  }),
+  execute: async (figma, { questions }) => {
+    if (!figma.askUser) {
+      return { answers: null, note: 'This host cannot show questions; ask in your reply instead.' }
+    }
+    const answers = await figma.askUser(questions)
+    if (!answers) {
+      return {
+        answers: null,
+        note: 'The person skipped the questions. Decide sensibly from what you know and say what you assumed.'
+      }
+    }
+    return { answers }
+  }
+})
