@@ -271,7 +271,20 @@ export function createUndoActions(ctx: EditorContext) {
    * function ends it with what changed.
    */
   function captureDocumentChange(pageId = ctx.state.currentPageId): () => DocumentChange {
-    return startDocumentChange(ctx.graph, pageId)
+    const finish = startDocumentChange(ctx.graph, pageId)
+    // A person may edit while an agent's call awaits; those edits are steps of their own.
+    const following = ctx.undo.followSteps()
+    return () => {
+      const steps = following.stop()
+      if (!steps?.length) return finish()
+      // Their changes are taken out of the recording, so undoing it keeps them.
+      ctx.undo.replaySteps(steps, 'inverse')
+      try {
+        return finish()
+      } finally {
+        ctx.undo.replaySteps(steps, 'forward')
+      }
+    }
   }
 
   function restoreDocumentChange(change: DocumentChange, side: 'before' | 'after') {

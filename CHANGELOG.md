@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- Undoing an agent's edit no longer also undoes what you changed on the canvas while that edit was running; your change stays its own undo step.
 - Restoring a version of a Kalka folder shows the restored document instead of failing to read it and keeping the old one on screen, which the next save then wrote back over the restored files; a `.kalka` file changed by another app reloads instead of failing to open.
 - Saving a large document in the desktop app or a browser with file access no longer reloads it as if another app had changed the file, which cleared the undo history and dropped edits made while it was being written.
 - Saving in the desktop app can no longer leave a damaged or empty file: a document, a Kalka folder's files and the app's own data are written beside the file and swapped in whole, so a crash, a full disk or a failed write keeps the file as it was.
