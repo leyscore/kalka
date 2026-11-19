@@ -113,10 +113,7 @@ describe('SVG export of flipped and rotated layers', () => {
         Matrix.translated(-bounds.minX, -bounds.minY),
         getWorldMatrix(expectDefined(graph.getNode(inkId)), graph)
       )
-      const actual = elementMatrix(
-        svg,
-        (tag, attrs) => tag === 'rect' && attrs.includes('fill="#FF0000"')
-      )
+      const actual = redRectMatrix(svg)
       for (const index of [0, 1, 2, 3, 4, 5]) expect(actual[index]).toBeCloseTo(expected[index], 1)
     })
   }
