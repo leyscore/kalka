@@ -172,6 +172,15 @@ describe('MCP DELETE session cleanup', () => {
     await handle?.close()
   })
 
+  test('a request without a session id opens one only as an initializing POST', async () => {
+    const auth = { Authorization: `Bearer ${TEST_AUTH_TOKEN}` }
+    const get = await fetch(`http://127.0.0.1:${httpPort}/mcp`, { headers: auth })
+    expect(get.status).toBe(400)
+    const put = await fetch(`http://127.0.0.1:${httpPort}/mcp`, { method: 'PUT', headers: auth })
+    expect(put.status).toBe(405)
+    expect(put.headers.get('allow')).toBe('GET, POST, DELETE')
+  })
+
   test('DELETE removes the session so subsequent DELETE returns 404', async () => {
     // Initialize a session via POST /mcp. Use fetch (not tcpRequest) because
     // we need the mcp-session-id response header, which tcpRequest doesn't expose.

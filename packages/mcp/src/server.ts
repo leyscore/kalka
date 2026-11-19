@@ -37,6 +37,7 @@ import {
 export const MCP_VERSION: string = packageJSON.version
 
 const HEARTBEAT_INTERVAL_MS = 5_000
+const MCP_METHODS: readonly string[] = ['GET', 'POST', 'DELETE']
 
 let installCommandPromise: Promise<string> | null = null
 
@@ -207,18 +208,16 @@ function createHonoApp(options: {
         return c.json({ error: 'Unauthorized' }, 401)
       }
     }
-    const sessionId = c.req.header('mcp-session-id') ?? undefined
-    // Reject anonymous DELETE requests before they allocate a session.
-    // Without this guard, a DELETE without a session ID would call
-    // resolveTransport(undefined), which creates a fresh session just
-    // to no-op on deleteSession(undefined) — burning a session slot.
-    if (c.req.method === 'DELETE' && !sessionId) {
-      return c.json({ error: 'Missing MCP session id' }, 400)
+    if (!MCP_METHODS.includes(c.req.method)) {
+      return c.json(
+        { error: 'Method not allowed' },
+        { status: 405, headers: { Allow: MCP_METHODS.join(', ') } }
+      )
     }
-    // For DELETE, look up the existing session without creating a new one.
-    // resolveTransport() would allocate a fresh session for an unknown ID,
-    // only to immediately delete it — wasting a session slot.
-    if (c.req.method === 'DELETE' && sessionId) {
+    const sessionId = c.req.header('mcp-session-id') ?? undefined
+    if (sessionId) {
+      // Never allocate a session for an unknown ID: DELETE or a stale client would burn a slot it
+      // can never use.
       const existing = mcpSessions.getExistingTransport(sessionId)
       if ('error' in existing) {
         if (existing.error === 'closed') {
@@ -226,22 +225,16 @@ function createHonoApp(options: {
         }
         return c.json({ error: 'MCP session not found' }, 404)
       }
+      if (c.req.method !== 'DELETE') return existing.handleRequest(c.req.raw)
       try {
         return await existing.handleRequest(c.req.raw)
       } finally {
-        mcpSessions.deleteSession(sessionId)
+        await mcpSessions.deleteSession(sessionId)
       }
     }
-    if (sessionId) {
-      const existing = mcpSessions.getExistingTransport(sessionId)
-      if ('error' in existing) {
-        if (existing.error === 'closed') {
-          return c.json({ error: 'MCP server is shutting down' }, 503)
-        }
-        return c.json({ error: 'MCP session not found' }, 404)
-      }
-      mcpSessions.touch(sessionId, existing)
-      return existing.handleRequest(c.req.raw)
+    // Only an initializing POST may start a session.
+    if (c.req.method !== 'POST') {
+      return c.json({ error: 'Missing MCP session id' }, 400)
     }
     const transport = await mcpSessions.resolveTransport(undefined, await newSession(c.req.raw))
     if ('error' in transport) {
@@ -253,7 +246,6 @@ function createHonoApp(options: {
         { status: 503, headers: { 'Retry-After': '5' } }
       )
     }
-    mcpSessions.touch(undefined, transport)
     return transport.handleRequest(c.req.raw)
   })
 
@@ -342,13 +334,14 @@ function buildServerContext(options: ServerOptions) {
 
   const mcpSessions = createMCPSessionManager({
     serverVersion: MCP_VERSION,
-    registerTools: (mcpServer: McpServer, agentSession: MCPAgentSession, streams: boolean) =>
+    registerTools: (mcpServer, agentSession, streams, onToolSettled) =>
       registerTools(mcpServer, {
         policy: toolPolicy,
         mcpRoot,
         sendRPC: sendToBrowser,
         agentSession,
-        transportCarriesRequests: streams
+        transportCarriesRequests: streams,
+        onToolSettled
       }),
     onSessionClosed: (sessionId) => {
       // Best-effort: the app may be gone already, and then it shows no agents anyway.

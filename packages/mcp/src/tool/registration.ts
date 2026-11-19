@@ -39,6 +39,7 @@ import {
 import { SELECTION_SCOPE_FILE_OUTPUT_ERROR } from '#mcp/tool/scope'
 
 export type RPCSender = (body: Record<string, unknown>) => Promise<unknown>
+export type MCPToolSettled = (context: ServerContext) => Promise<void>
 
 const automationTargetSchema = {
   document_id: v.optional(
@@ -104,6 +105,8 @@ export interface RegisterToolsOptions {
    * session that answers with plain JSON cannot.
    */
   transportCarriesRequests?: boolean
+  /** Transport cleanup after a tool call settles, including a cancelled one. */
+  onToolSettled?: MCPToolSettled
 }
 
 function toolAnnotations(effect: ToolEffect): ToolAnnotations {
@@ -180,7 +183,13 @@ export function registerTools(
           annotations: toolAnnotations(descriptor.effect),
           _meta: { 'kalka/capabilities': descriptor.capabilities }
         },
-        handler
+        async (args, context) => {
+          try {
+            return await handler(args, context)
+          } finally {
+            await options.onToolSettled?.(context)
+          }
+        }
       )
     entries.set(name, {
       descriptor,

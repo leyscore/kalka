@@ -35,6 +35,7 @@
 - A `.fig` with a variable whose value is a Figma expression, such as a formula or `VAR_MODE_LOOKUP`, opens instead of failing: Kalka keeps the expression without computing it, layers bound to it keep the values the file saved, and saving, copying and pasting carry the expression and the variables and modes it names.
 - SVG export clips a frame's children to its rounded corners, and draws a corner radius larger than half a side as the canvas does instead of letting SVG flatten it.
 - SVG export draws an exported flipped or rotated layer where the canvas does, instead of shifting it out of the image, and turns a rotated and flipped layer the way the canvas does.
+- The MCP HTTP server no longer runs out of sessions after failed initializations, session-less GET requests, or cancelled tool calls: a session that does not initialize is closed at once, only an initializing POST opens one, a cancelled call is answered, and a session still answering a call is neither expired nor evicted.
 
 ## 0.2.0-beta.3.1 — 2026-11-19
 
