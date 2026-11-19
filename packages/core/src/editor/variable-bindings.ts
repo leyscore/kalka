@@ -20,9 +20,13 @@ export function createVariableBindingActions(ctx: EditorContext) {
   function changeBinding(nodeId: string, path: string, variableId?: string) {
     const node = ctx.graph.getNode(nodeId)
     if (!node || (variableId === undefined && !(path in node.boundVariables))) return
+    // The field the binding resolves into, such as `fills` for `fills/0/color`, which undo
+    // gives back its value from before the binding.
+    const field = path.split('/')[0]
     const previous = {
       boundVariables: { ...node.boundVariables },
       variableBindingScales: { ...node.variableBindingScales },
+      ...(field in node ? { [field]: structuredClone(node[field as keyof SceneNode]) } : {}),
       ...(isNumericVariableBindingField(path) ? { [path]: node[path as keyof SceneNode] } : {})
     }
     const owner = variableBindingOwner(ctx.graph, node)

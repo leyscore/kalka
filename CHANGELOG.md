@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- Undoing the binding of a colour variable to a fill or stroke gives the layer back its own colour instead of keeping the variable's.
 - Redoing the creation of an instance brings back its layers as they were, so redoing a later edit to one of those layers applies again instead of doing nothing.
 - Pressing Delete while the selection holds a page or the document itself, as an agent can select them, deletes nothing instead of recording a step whose undo froze the app.
 - Deleting a page can be undone, bringing the page back with its layers where it was, and adding, renaming and reordering pages are undo steps too, as in Figma; a page deleted by mistake used to be lost.
