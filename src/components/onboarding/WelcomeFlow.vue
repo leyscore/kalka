@@ -121,7 +121,7 @@ function onOpenChange(open: boolean): void {
                 :class="styles.primary()"
                 data-test-id="welcome-continue"
               >
-                <template #leading><icon-hugeicons-sparkle class="size-4" /></template>
+                <template #leading><icon-hugeicons-ai-magic class="size-4" /></template>
                 {{ welcome.connectAgent }}
               </AppButton>
               <AppButton
@@ -131,7 +131,7 @@ function onOpenChange(open: boolean): void {
                 data-test-id="welcome-mcp"
                 @click="showMCP"
               >
-                <template #leading><icon-hugeicons-plug class="size-4" /></template>
+                <template #leading><icon-hugeicons-mcp-server class="size-4" /></template>
                 {{ welcome.connectMCP }}
               </AppButton>
             </div>
