@@ -9,7 +9,8 @@ export const HANDOFF_PARAM = 'handoff'
 
 /**
  * Sites that may hand this tab a file: the free tools on kalka.design open the web app in a new
- * tab and post the file the person chose, which stays in their browser.
+ * tab, and its home page embeds it to edit the page itself; either posts the file, which stays in
+ * the person's browser.
  */
 const HANDOFF_ORIGINS: readonly string[] = import.meta.env.DEV
   ? ['https://kalka.design', 'http://localhost:8788', 'http://localhost:4321']
@@ -27,20 +28,22 @@ export function handoffFile(event: MessageEvent, opener: unknown): File | null {
   return message.success ? message.output.file : null
 }
 
+/** The window that may hand a file over: the tab that opened this one, else the page embedding it. */
+export function handoffSender(self: Pick<Window, 'opener' | 'parent'>): Window | null {
+  const opener: unknown = self.opener
+  if (opener instanceof Object && 'postMessage' in opener) return opener as Window
+  return self.parent !== self ? self.parent : null
+}
+
 /**
- * Opens a file a kalka.design tool hands over: this tab tells its opener it is ready, the
- * opener posts the file, and it opens as File → Open would.
+ * Opens a file a kalka.design page hands over: this tab tells its opener, or the page embedding
+ * it, that it is ready; that page posts the file, and it opens as File → Open would.
  */
 export function useDocumentHandoff() {
   if (IS_TAURI) return
   const url = new URL(window.location.href)
-  const opener: unknown = window.opener
-  if (
-    !url.searchParams.has(HANDOFF_PARAM) ||
-    !(opener instanceof Object) ||
-    !('postMessage' in opener)
-  )
-    return
+  const opener = handoffSender(window)
+  if (!url.searchParams.has(HANDOFF_PARAM) || !opener) return
   url.searchParams.delete(HANDOFF_PARAM)
   window.history.replaceState(window.history.state, '', url)
   let received = false
@@ -50,6 +53,5 @@ export function useDocumentHandoff() {
     received = true
     void openDesignFile(file)
   })
-  const target = opener as Window
-  for (const origin of HANDOFF_ORIGINS) target.postMessage({ type: 'kalka:ready' }, origin)
+  for (const origin of HANDOFF_ORIGINS) opener.postMessage({ type: 'kalka:ready' }, origin)
 }
