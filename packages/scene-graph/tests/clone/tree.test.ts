@@ -146,4 +146,29 @@ describe('SceneGraph.cloneTree', () => {
     expect(original.source.fig.rawNodeFields).toEqual({ visible: true, opacity: 1 })
     expect(original.source.fig.rawSize).toEqual({ x: 100, y: 50 })
   })
+
+  test('an instance cloned with its component names the cloned component', () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    const frame = graph.createNode('FRAME', page.id, { name: 'Holder' })
+    const component = graph.createNode('COMPONENT', frame.id, { name: 'Button' })
+    graph.createNode('RECTANGLE', component.id, { name: 'Fill' })
+    const instance = expectDefined(graph.createInstance(component.id, frame.id), 'instance')
+
+    const copy = expectDefined(graph.cloneTree(frame.id, page.id), 'copy')
+    const [copiedComponent, copiedInstance] = copy.childIds.map((id) => getNodeOrThrow(graph, id))
+    expect(copiedComponent.type).toBe('COMPONENT')
+    expect(copiedInstance.componentId).toBe(copiedComponent.id)
+    expect(getNodeOrThrow(graph, instance.id).componentId).toBe(component.id)
+  })
+
+  test('an instance cloned alone keeps its component', () => {
+    const graph = new SceneGraph()
+    const page = graph.getPages()[0]
+    const component = graph.createNode('COMPONENT', page.id, { name: 'Button' })
+    const instance = expectDefined(graph.createInstance(component.id, page.id), 'instance')
+
+    const copy = expectDefined(graph.cloneTree(instance.id, page.id), 'copy')
+    expect(copy.componentId).toBe(component.id)
+  })
 })

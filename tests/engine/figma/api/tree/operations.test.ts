@@ -15,6 +15,17 @@ describe('tree operations', () => {
     expect(expectDefined(child.parent, 'child parent').id).toBe(parent.id)
   })
 
+  test('appendChild moves a child already there to the end', () => {
+    const api = createAPI()
+    const parent = api.createFrame()
+    const a = api.createRectangle()
+    const b = api.createRectangle()
+    parent.appendChild(a)
+    parent.appendChild(b)
+    parent.appendChild(a)
+    expect(parent.children.map((child) => child.id)).toEqual([b.id, a.id])
+  })
+
   test('insertChild at index', () => {
     const api = createAPI()
     const parent = api.createFrame()
