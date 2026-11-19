@@ -67,13 +67,13 @@ async function revealTask(task: AgentTask) {
     :aria-label="messages.title"
   >
     <PanelHeader>{{ messages.title }}</PanelHeader>
-    <div role="tablist" class="flex gap-1 px-3 pb-2">
+    <div role="tablist" class="flex flex-wrap gap-1 px-3 pb-2">
       <button
         v-for="name in tabs"
         :key="name"
         type="button"
         role="tab"
-        class="rounded-md px-2 py-1 text-xs text-muted hover:bg-hover data-[active]:bg-panel-selected data-[active]:text-surface"
+        class="rounded-md px-2 py-1 text-xs font-medium text-surface/75 hover:bg-hover hover:text-surface data-[active]:bg-panel-selected data-[active]:text-white"
         :aria-selected="tab === name"
         :data-active="tab === name || undefined"
         @click="tab = name"
@@ -82,9 +82,14 @@ async function revealTask(task: AgentTask) {
       </button>
     </div>
     <template v-if="tab === 'changes'">
-      <p v-if="changes.length === 0" class="px-3 py-6 text-center text-xs text-muted">
-        {{ messages.noChanges }}
-      </p>
+      <div
+        v-if="changes.length === 0"
+        class="flex flex-1 flex-col items-center justify-center gap-2 px-6 pb-10 text-center"
+        data-slot="comments-panel-empty"
+      >
+        <icon-hugeicons-clock-01 class="size-5 text-surface/60" aria-hidden="true" />
+        <p class="max-w-56 text-sm text-surface/75">{{ messages.noChanges }}</p>
+      </div>
       <ul v-else class="flex min-h-0 flex-1 flex-col overflow-y-auto px-1.5 pb-2">
         <li
           v-for="change in changes"
@@ -117,9 +122,14 @@ async function revealTask(task: AgentTask) {
       </ul>
     </template>
     <template v-else-if="tab === 'tasks'">
-      <p v-if="tasks.length === 0" class="px-3 py-6 text-center text-xs text-muted">
-        {{ messages.noTasks }}
-      </p>
+      <div
+        v-if="tasks.length === 0"
+        class="flex flex-1 flex-col items-center justify-center gap-2 px-6 pb-10 text-center"
+        data-slot="comments-panel-empty"
+      >
+        <icon-hugeicons-ai-magic class="size-5 text-surface/60" aria-hidden="true" />
+        <p class="max-w-56 text-sm text-surface/75">{{ messages.noTasks }}</p>
+      </div>
       <ul v-else class="flex min-h-0 flex-1 flex-col overflow-y-auto px-1.5 pb-2">
         <li v-for="task in tasks" :key="task.id">
           <button
@@ -142,9 +152,16 @@ async function revealTask(task: AgentTask) {
       </ul>
     </template>
     <template v-else>
-      <p v-if="listed.length === 0" class="px-3 py-6 text-center text-xs text-muted">
-        {{ tab === 'resolved' ? messages.emptyResolved : messages.empty }}
-      </p>
+      <div
+        v-if="listed.length === 0"
+        class="flex flex-1 flex-col items-center justify-center gap-2 px-6 pb-10 text-center"
+        data-slot="comments-panel-empty"
+      >
+        <icon-hugeicons-comment-01 class="size-5 text-surface/60" aria-hidden="true" />
+        <p class="max-w-56 text-sm text-surface/75">
+          {{ tab === 'resolved' ? messages.emptyResolved : messages.empty }}
+        </p>
+      </div>
       <ul v-else class="flex min-h-0 flex-1 flex-col overflow-y-auto px-1.5 pb-2">
         <li v-for="thread in listed" :key="thread.id">
           <button
