@@ -349,6 +349,43 @@ function buildGroupAttrs(
   return { attrs, clipId }
 }
 
+/**
+ * A background blur as Figma's SVG export draws one: an HTML box under the layer whose CSS
+ * `backdrop-filter` blurs what lies behind it, clipped to the layer's outline. SVG filters cannot
+ * read what lies behind a layer.
+ */
+function backdropBlurElement(node: SceneNode, ctx: SVGExportContext): SVGNode | null {
+  const blur = Math.max(
+    0,
+    ...node.effects
+      .filter((effect) => effect.visible && effect.type === 'BACKGROUND_BLUR')
+      .map((effect) => effect.radius)
+  )
+  if (blur <= 0) return null
+  const pad = round(blur)
+  const clipId = nextDefId(ctx, 'bgblur')
+  ctx.defs.push(
+    svg(
+      'clipPath',
+      { id: clipId, transform: `translate(${pad} ${pad})` },
+      boxOutlineElement(node, {})
+    )
+  )
+  return svg(
+    'foreignObject',
+    {
+      x: -pad,
+      y: -pad,
+      width: round(node.width + pad * 2),
+      height: round(node.height + pad * 2)
+    },
+    svg('div', {
+      xmlns: 'http://www.w3.org/1999/xhtml',
+      style: `backdrop-filter:blur(${round(blur / 2)}px);clip-path:url(#${clipId});height:100%;width:100%`
+    })
+  )
+}
+
 function hasPathLevelFills(node: SceneNode): boolean {
   return node.type === 'VECTOR' && node.fillGeometry.some((geometry) => geometry.fills?.length)
 }
@@ -457,13 +494,9 @@ function renderNode(node: SceneNode, ctx: SVGExportContext): SVGNode | null {
       ? { ...ownStrokes, stroke: CURRENT_COLOR }
       : ownStrokes
 
-  const children: (SVGNode | null)[] = buildShapeChildren(
-    node,
-    visibleFills,
-    fillAttr,
-    strokeAttrs,
-    visibleStrokes.length,
-    ctx
+  const children: (SVGNode | null)[] = [backdropBlurElement(node, ctx)]
+  children.push(
+    ...buildShapeChildren(node, visibleFills, fillAttr, strokeAttrs, visibleStrokes.length, ctx)
   )
 
   const childContent = renderChildren(node, ctx)

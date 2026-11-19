@@ -350,7 +350,7 @@ export function createFilterDef(
   effects: Effect[],
   ctx: SVGExportContext
 ): { id: string; node: SVGNode } | null {
-  const visible = effects.filter((e) => e.visible)
+  const visible = effects.filter((e) => e.visible && e.type !== 'BACKGROUND_BLUR')
   if (visible.length === 0) return null
 
   const id = nextDefId(ctx, 'fx')
@@ -395,10 +395,12 @@ export function createFilterDef(
           operator: 'over'
         })
       )
-    } else {
+    } else if (effect.type === 'LAYER_BLUR' || effect.type === 'FOREGROUND_BLUR') {
       const stdDev = round(effect.radius / 2)
       primitives.push(svg('feGaussianBlur', { stdDeviation: stdDev }))
     }
+    // A background blur blurs what lies behind the layer, which no SVG filter can read: the
+    // export draws it as a backdrop box under the layer instead (`backdropBlurElement`).
   }
 
   if (primitives.length === 0) return null
