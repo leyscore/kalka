@@ -19,6 +19,7 @@
 - Text ranges in an imported `.fig` are drawn in the paints of the fill style they name, also when an instance overrides the range.
 - Saving a `.fig` after moving a component that has an instance in slot content no longer writes the component twice, so the file opens again.
 - Layers in an imported `.fig` follow only the component property bindings Figma applies, from their parameter map, so a stale legacy reference no longer hides or retexts a layer that Figma draws.
+- Variable modes from a `.fig` open in Figma's order with Figma's default mode, and keep that order, a newly chosen default included, through export; undoing the removal of a mode puts it back in its place.
 
 ## 0.2.0-beta.3.1 — 2026-11-19
 

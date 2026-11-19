@@ -2,7 +2,7 @@ import { beforeAll, expect, setDefaultTimeout, test } from 'bun:test'
 
 import { expectDefined } from '#core-tests/helpers/assert'
 import { readFixtureArrayBuffer } from '#core-tests/helpers/fig/fixtures'
-import { uniq } from 'es-toolkit/array'
+import { sortBy, uniq } from 'es-toolkit/array'
 import { isEqual } from 'es-toolkit/predicate'
 
 import { createEditor } from '@kalka/core/editor'
@@ -108,7 +108,15 @@ test('a mode added to a collection of library aliases keeps the file as Figma sa
   )
   const set = expectDefined(after.get(guidToString(expectDefined(before.get(collection.id)?.guid))))
   const saved = expectDefined(before.get(collection.id)?.variableSetModes)
-  expect(set.variableSetModes?.slice(0, saved.length)).toEqual(saved)
+  const listed = sortBy(saved, [
+    (mode) => mode.sortPosition === undefined,
+    (mode) => mode.sortPosition ?? ''
+  ])
+  const written = expectDefined(set.variableSetModes)
+  expect(written.slice(0, -1)).toEqual(listed)
+  const added = expectDefined(written.at(-1))
+  expect(added.name).toBe('Added')
+  expect(expectDefined(added.sortPosition) > expectDefined(listed.at(-1)?.sortPosition)).toBe(true)
   // Values aliasing library variables still name them by key, as Figma writes them.
   for (const guid of changed.keys()) {
     const entries = after.get(guid)?.variableDataValues?.entries ?? []
@@ -118,28 +126,31 @@ test('a mode added to a collection of library aliases keeps the file as Figma sa
 
 // Figma's own layout of the page stays as saved; the browser lays it out again with its font
 // metrics, and text it sizes differently is shaped again, so more than the color is saved.
-test.failing('layers using an edited variable, through an alias too, save only the color it resolves to', async () => {
-  const { bytes, graph } = await openGoldPreview()
-  const blue = expectDefined(
-    [...graph.variables.values()].find((variable) => variable.name === 'Colors/Blue/500')
-  )
-  const collection = expectDefined(graph.variableCollections.get(blue.collectionId))
-  const editor = createEditor({ graph })
-  for (const mode of collection.modes)
-    editor.updateVariableValue(blue.id, mode.modeId, { r: 1, g: 0, b: 0, a: 1 })
+test.failing(
+  'layers using an edited variable, through an alias too, save only the color it resolves to',
+  async () => {
+    const { bytes, graph } = await openGoldPreview()
+    const blue = expectDefined(
+      [...graph.variables.values()].find((variable) => variable.name === 'Colors/Blue/500')
+    )
+    const collection = expectDefined(graph.variableCollections.get(blue.collectionId))
+    const editor = createEditor({ graph })
+    for (const mode of collection.modes)
+      editor.updateVariableValue(blue.id, mode.modeId, { r: 1, g: 0, b: 0, a: 1 })
 
-  const saved = recordsOf(bytes)
-  const after = recordsOf(await exportFigFile(graph))
-  const changed = changes(saved, after)
-  for (const [guid, fields] of changed) {
-    if (!fields.includes('transform')) continue
-    const [was, now] = [saved.get(guid)?.transform, after.get(guid)?.transform]
-    expect(Math.abs((was?.m02 ?? 0) - (now?.m02 ?? 0))).toBeLessThan(1e-3)
-    expect(Math.abs((was?.m12 ?? 0) - (now?.m12 ?? 0))).toBeLessThan(1e-3)
+    const saved = recordsOf(bytes)
+    const after = recordsOf(await exportFigFile(graph))
+    const changed = changes(saved, after)
+    for (const [guid, fields] of changed) {
+      if (!fields.includes('transform')) continue
+      const [was, now] = [saved.get(guid)?.transform, after.get(guid)?.transform]
+      expect(Math.abs((was?.m02 ?? 0) - (now?.m02 ?? 0))).toBeLessThan(1e-3)
+      expect(Math.abs((was?.m12 ?? 0) - (now?.m12 ?? 0))).toBeLessThan(1e-3)
+    }
+    const fields = uniq([...changed.values()].flat()).filter((field) => field !== 'transform')
+    expect(fields.toSorted()).toEqual(['fillPaints', 'variableDataValues'])
   }
-  const fields = uniq([...changed.values()].flat()).filter((field) => field !== 'transform')
-  expect(fields.toSorted()).toEqual(['fillPaints', 'variableDataValues'])
-})
+)
 
 test('layers using an edited variable, through an alias too, save the color it resolves to', async () => {
   const { graph } = await openGoldPreview()

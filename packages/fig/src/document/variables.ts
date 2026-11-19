@@ -1,3 +1,5 @@
+import { sortBy } from 'es-toolkit/array'
+
 import type { NodeChange, VariableDataValuesEntry } from '@kalka/kiwi/fig/codec'
 import { guidToString } from '@kalka/kiwi/fig/guid'
 import type { SceneGraph, VariableValue } from '@kalka/scene-graph'
@@ -47,6 +49,16 @@ function modeValues(
   return values
 }
 
+type SavedMode = NonNullable<NodeChange['variableSetModes']>[number]
+
+/** Figma lists modes by `sortPosition` and takes the first as default; unpositioned modes follow. */
+function modesInListedOrder(resource: NodeChange): SavedMode[] {
+  return sortBy(resource.variableSetModes ?? [], [
+    (mode) => !mode.sortPosition,
+    (mode) => mode.sortPosition ?? ''
+  ])
+}
+
 /** No invented values or fallback collections: unsupported resources remain explicit. */
 export function materializeVariableResources(
   graph: SceneGraph,
@@ -59,7 +71,7 @@ export function materializeVariableResources(
   }
   for (const resource of resources) {
     if (resource.type !== 'VARIABLE_SET') continue
-    const modes = resource.variableSetModes ?? []
+    const modes = modesInListedOrder(resource)
     if (!resource.guid || modes.length === 0) {
       report(resource, 'missing collection identity or modes')
       continue
