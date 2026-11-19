@@ -35,12 +35,12 @@ const INTER: PageFontFace[] = [
  *
  * `close` uninstalls the engine and stops the host.
  */
-export function installHostLayout(): { close(): void } {
+export function installHostLayout(): { close(): void; warm(): void } {
   let host: RenderHost | null = null
   /** Whether the running host has the fixture fonts yet. */
   let hasFonts = false
 
-  const evaluate = scriptLayoutPage((script) => {
+  const running = (): RenderHost => {
     if (!host || host.closed) {
       host = RenderHost.start()
       hasFonts = false
@@ -50,8 +50,12 @@ export function installHostLayout(): { close(): void } {
         'Layout needs the render host: run `node electron/node_modules/electron/install.js` and `bun run --cwd electron build:render-host` (on Linux, run tests under `xvfb-run`).'
       )
     }
-    return host.request({ type: 'evaluate', script }, LAYOUT_TIMEOUT)
-  })
+    return host
+  }
+
+  const evaluate = scriptLayoutPage((script) =>
+    running().request({ type: 'evaluate', script }, LAYOUT_TIMEOUT)
+  )
 
   const uninstall = installLayoutEngine(
     new BrowserLayoutEngine((request) => {
@@ -71,6 +75,17 @@ export function installHostLayout(): { close(): void } {
     close() {
       uninstall()
       host?.close()
+    },
+    /**
+     * Starts the host and waits until it answers, so no test pays for its start. A process that
+     * cannot start one goes on; its first layout reports why.
+     */
+    warm() {
+      const started = RenderHost.start()
+      if (!started) return
+      host = started
+      hasFonts = false
+      started.request({ type: 'evaluate', script: 'true' }, LAYOUT_TIMEOUT)
     }
   }
 }
