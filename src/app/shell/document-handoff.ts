@@ -35,9 +35,12 @@ export function useDocumentHandoff() {
   if (IS_TAURI) return
   const url = new URL(window.location.href)
   const opener: unknown = window.opener
+  // A tab opened by another site sees its opener as a cross-origin window, which is no
+  // `instanceof Object` in this realm: check its shape instead.
   if (
     !url.searchParams.has(HANDOFF_PARAM) ||
-    !(opener instanceof Object) ||
+    typeof opener !== 'object' ||
+    opener === null ||
     !('postMessage' in opener)
   )
     return
