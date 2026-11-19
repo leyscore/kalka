@@ -5,6 +5,7 @@ import { SceneGraph } from '@kalka/scene-graph'
 
 import { writeKalkaFolderFiles } from '@/app/document/io/kalka-folder'
 import { createEditorStore } from '@/app/editor/session'
+import { toast } from '@/app/shell/ui'
 
 import { memoryFileSystem } from '#tests/helpers/tauri/memory-fs'
 import { clearTauriMocks } from '#tests/helpers/tauri/mocks'
@@ -12,6 +13,8 @@ import { clearTauriMocks } from '#tests/helpers/tauri/mocks'
 const stores: ReturnType<typeof createEditorStore>[] = []
 afterEach(async () => {
   for (const store of stores.splice(0)) store.dispose()
+  // The refusal is said in a toast; it must not stay for the next file's tests.
+  for (const entry of toast.toasts.value) toast.remove(entry.id)
   await clearTauriMocks()
 })
 
