@@ -93,6 +93,41 @@ describe('mask projection', () => {
     expect(svg).toContain('matrix(0 -1 1 0 20 80)')
   })
 
+  test('a mask fills with its own paint: a gradient fading out masks less and less', () => {
+    const { graph, frame, mask } = maskedFrame()
+    graph.updateNode(mask.id, {
+      fills: [
+        {
+          type: 'GRADIENT_LINEAR',
+          color: { r: 0, g: 0, b: 0, a: 1 },
+          opacity: 1,
+          visible: true,
+          gradientStops: [
+            { color: { r: 0, g: 0, b: 0, a: 1 }, position: 0 },
+            { color: { r: 0, g: 0, b: 0, a: 0 }, position: 1 }
+          ],
+          gradientTransform: { m00: 1, m01: 0, m02: 0, m10: 0, m11: 1, m12: 0 }
+        }
+      ]
+    })
+    graph.createNode('RECTANGLE', frame.id, { name: 'Above', width: 150, height: 150 })
+    const [svg] = maskImages(projectChildren(graph, frame).get('Above')?.['mask-image'])
+    expect(svg).toContain('<linearGradient')
+    expect(svg).toContain('stop-opacity="1"')
+    expect(svg).toContain('stop-opacity="0"')
+    expect(svg).toContain('fill="url(#')
+  })
+
+  test('a half transparent mask lets the layers above show half through', () => {
+    const { graph, frame, mask } = maskedFrame()
+    graph.updateNode(mask.id, {
+      fills: [{ type: 'SOLID', color: { r: 0, g: 0, b: 0, a: 1 }, opacity: 0.5, visible: true }]
+    })
+    graph.createNode('RECTANGLE', frame.id, { name: 'Above', width: 150, height: 150 })
+    const [svg] = maskImages(projectChildren(graph, frame).get('Above')?.['mask-image'])
+    expect(svg).toContain('fill-opacity="0.5"')
+  })
+
   test('a luminance mask masks by brightness', () => {
     const { graph, frame, mask } = maskedFrame()
     graph.updateNode(mask.id, { maskType: 'LUMINANCE' })

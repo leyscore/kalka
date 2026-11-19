@@ -1,6 +1,7 @@
 import { compact } from 'es-toolkit/array'
 
-import type { MaskType, SceneGraph, SceneNode } from '@kalka/scene-graph'
+import type { Fill, MaskType, SceneGraph, SceneNode } from '@kalka/scene-graph'
+import { invertGradientTransform, isIdentityGradientTransform } from '@kalka/scene-graph/gradient'
 import Matrix, { type Mat3 } from '@kalka/scene-graph/matrix'
 
 import type { DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
@@ -52,28 +53,87 @@ function maskShape(
   const drawn = vectorElement?.(graph, mask)
   if (drawn?.tagName === 'svg') return drawn
   if (mask.type === 'GROUP') return groupMaskShape(graph, mask, vectorElement)
-  const fill = '#fff'
+  const paint = maskPaint(mask)
+  const shape = (tagName: string, attrs: Record<string, string>): DesignElement => ({
+    type: 'element',
+    tagName,
+    attrs: { ...attrs, ...paint.attrs },
+    children: []
+  })
+  let outline: DesignElement
   if (mask.type === 'ELLIPSE') {
     const rx = String(mask.width / 2)
     const ry = String(mask.height / 2)
-    return {
-      type: 'element',
-      tagName: 'ellipse',
-      attrs: { cx: rx, cy: ry, rx, ry, fill },
-      children: []
-    }
+    outline = shape('ellipse', { cx: rx, cy: ry, rx, ry })
+  } else {
+    const radius = Math.min(mask.cornerRadius, mask.width / 2, mask.height / 2)
+    const corners: Record<string, string> = radius > 0 ? { rx: String(radius) } : {}
+    outline = shape('rect', { width: String(mask.width), height: String(mask.height), ...corners })
   }
-  const radius = Math.min(mask.cornerRadius, mask.width / 2, mask.height / 2)
-  return {
+  if (!paint.defs) return outline
+  return { type: 'element', tagName: 'g', attrs: {}, children: [paint.defs, outline] }
+}
+
+const MASK_GRADIENT_ID = 'kalka-mask-paint'
+
+function svgColor(color: Fill['color'], luminance: boolean): string {
+  if (!luminance) return '#fff'
+  const channel = (value: number) => Math.round(Math.min(1, Math.max(0, value)) * 255)
+  return `rgb(${channel(color.r)} ${channel(color.g)} ${channel(color.b)})`
+}
+
+/**
+ * How a shape mask is filled: with its own top paint, as Figma masks with it. An alpha mask
+ * takes the paint's opacity, a gradient's included; a luminance mask takes its colours too. A
+ * mask with no shown paint, or one SVG cannot draw, masks with its whole shape.
+ */
+function maskPaint(mask: SceneNode): { attrs: Record<string, string>; defs?: DesignElement } {
+  const fill = mask.fills.findLast((paint) => paint.visible)
+  const luminance = mask.maskType === 'LUMINANCE'
+  if (!fill) return { attrs: { fill: '#fff' } }
+  if (fill.type === 'SOLID') {
+    const alpha = fill.color.a * fill.opacity
+    const attrs: Record<string, string> = { fill: svgColor(fill.color, luminance) }
+    if (alpha < 1) attrs['fill-opacity'] = String(round(alpha))
+    return { attrs }
+  }
+  const stops = fill.gradientStops
+  const transform = fill.gradientTransform
+  const kind =
+    fill.type === 'GRADIENT_LINEAR'
+      ? 'linearGradient'
+      : fill.type === 'GRADIENT_RADIAL'
+        ? 'radialGradient'
+        : null
+  if (!kind || !stops || !transform) return { attrs: { fill: '#fff' } }
+  const toLayer = invertGradientTransform(transform)
+  const units: Record<string, string> = { gradientUnits: 'objectBoundingBox' }
+  if (!isIdentityGradientTransform(toLayer)) {
+    const m = [toLayer.m00, toLayer.m10, toLayer.m01, toLayer.m11, toLayer.m02, toLayer.m12]
+    units.gradientTransform = `matrix(${m.map(round).join(' ')})`
+  }
+  const geometry: Record<string, string> =
+    kind === 'linearGradient'
+      ? { x1: '0', y1: '0.5', x2: '1', y2: '0.5' }
+      : { cx: '0.5', cy: '0.5', r: '0.5' }
+  const gradient: DesignElement = {
     type: 'element',
-    tagName: 'rect',
-    attrs: {
-      width: String(mask.width),
-      height: String(mask.height),
-      ...(radius > 0 ? { rx: String(radius) } : {}),
-      fill
-    },
-    children: []
+    tagName: kind,
+    attrs: { id: MASK_GRADIENT_ID, ...geometry, ...units },
+    children: stops.map((stop): DesignElement => ({
+      type: 'element',
+      tagName: 'stop',
+      attrs: {
+        offset: String(round(stop.position)),
+        'stop-color': svgColor(stop.color, luminance),
+        'stop-opacity': String(round(stop.color.a * fill.opacity))
+      },
+      children: []
+    }))
+  }
+  return {
+    attrs: { fill: `url(#${MASK_GRADIENT_ID})` },
+    defs: { type: 'element', tagName: 'defs', attrs: {}, children: [gradient] }
   }
 }
 
