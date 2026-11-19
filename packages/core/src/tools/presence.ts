@@ -1,6 +1,6 @@
 import * as v from 'valibot'
 
-import { DESIGN_GUIDE } from './prompts'
+import { ANTI_SLOP_GUIDE, DESIGN_GUIDE } from './prompts'
 import { defineTool } from './schema'
 
 /**
@@ -52,8 +52,8 @@ export const setStatus = defineTool({
 export const getDesignGuide = defineTool({
   name: 'get_design_guide',
   description:
-    'Read how to design in Kalka: decide on a direction, set up variables and components, compose screens from them, and review your work. Call it once before you design a page or screen, and again if the conversation got long.',
+    'Read how to design in Kalka: decide on a direction, set up variables and components, compose screens from them, and review your work, plus the anti-slop catalogue of what makes a design look machine-made and what to do instead. Call it once before you design a page or screen, and again if the conversation got long.',
   execution: { kind: 'sync', mutation: 'none' },
   input: v.strictObject({}),
-  execute: () => ({ guide: DESIGN_GUIDE })
+  execute: () => ({ guide: DESIGN_GUIDE, antiSlop: ANTI_SLOP_GUIDE })
 })

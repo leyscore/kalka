@@ -1,14 +1,18 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 
+import { ANTI_SLOP_GUIDE } from '@kalka/core/tools'
 import { JSX_REFERENCE } from '@kalka/design-jsx'
 
 const HEADER =
   '<!-- Generated from design-jsx reference and renderer metadata. Do not edit; run bun run generate:authoring-reference. -->\n\n'
+const ANTI_SLOP_HEADER =
+  '<!-- Generated from packages/core/src/tools/prompts/anti-slop.md. Do not edit; run bun run generate:authoring-reference. -->\n\n'
 
 export const AUTHORING_REFERENCE_ARTIFACTS = {
   'skills/kalka/references/design-authoring.md': HEADER + JSX_REFERENCE,
-  'packages/docs/reference/design-authoring.md': HEADER + JSX_REFERENCE
+  'packages/docs/reference/design-authoring.md': HEADER + JSX_REFERENCE,
+  'skills/kalka/references/anti-slop.md': ANTI_SLOP_HEADER + ANTI_SLOP_GUIDE + '\n'
 }
 
 export async function writeReferences(root: string): Promise<void> {

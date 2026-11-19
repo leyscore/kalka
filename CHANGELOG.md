@@ -6,6 +6,10 @@
 
 - Layers opened from a `.fig` file keep the GUIDs the file saved them under as their IDs, instead of `0:1`, `0:2`, and so on in reading order, so an ID stays the same after a save and reopen. IDs printed by `kalka tree` or MCP before this release no longer find their layers.
 
+### Changed
+
+- Agents check their designs against a larger anti-slop catalogue, now also returned by `get_design_guide` and shipped with the installable agent skill: besides stock gradients, glass and identical icon cards, it names coloured glows under buttons, middle dots between short phrases, 01 / 02 / 03 on things that are not steps, boxed closing calls with checklists and drawn look-alikes of the product, says what replaces each, and gives the page a world of its own instead.
+
 ### Fixed
 
 - A variable mode an outer instance in a `.fig` sets on a nested layer for one collection keeps the modes that layer has in its other collections, and an override that clears a collection's mode lets the layer take its parent's mode again.

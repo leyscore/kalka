@@ -314,6 +314,10 @@ Read [Design authoring](references/design-authoring.md) before creating or modif
 
 Use the `render` tool for JSX strings. Use only the APIs exposed by the installed `eval` environment; native library exports are not automatically scripting globals. The connected server's `get_codegen_prompt` provides its version's codegen and authoring guidance.
 
+## Design taste
+
+Read [Anti-slop](references/anti-slop.md) before designing a page and again before showing it. It lists the signs that make a design look machine-made (stock gradients, glass everywhere, a coloured glow under buttons, three identical icon cards, middle dots between short phrases, fake 01 / 02 / 03 numbering, invented numbers and quotes), what replaces each, and how to check for them. The connected server's `get_design_guide` returns the same catalogue with the design process, so it matches the installed version.
+
 ## Tips
 
 - Omit the file path to work with the document open in the running Kalka editor.
