@@ -29,7 +29,7 @@ export function hairlineStyle(
   if (scale === undefined || !style || node.independentStrokeWeights) return {}
   const weight = node.strokes.at(0)?.weight ?? 0
   if (weight <= 0 || weight >= 1) return {}
-  const property = style.outline ? 'outline' : style.border ? 'border' : null
+  const property = (['outline', 'border'] as const).find((name) => style[name])
   const color = property ? LINE.exec(style[property] ?? '')?.[3] : undefined
   if (!property || !color) return {}
   let share: string
