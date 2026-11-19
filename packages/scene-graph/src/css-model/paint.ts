@@ -1,5 +1,6 @@
 import { BLACK } from '../constants'
 import { parseCSSNumber } from '../css'
+import { drawsImage } from '../types'
 import { clipsBackgroundToText, colorToFillFromCSS, pickStyle } from './from-css'
 import { linearGradientFill } from './gradient'
 import { cssColor, fillToCSS, fillsToBackground } from './to-css'
@@ -46,7 +47,7 @@ export const image: PropertyFamily = {
   properties: ['aspect-ratio', 'object-fit'],
   write(style, node) {
     const fill = node.fills.at(0)
-    if (fill?.type !== 'IMAGE' || !fill.visible) return
+    if (!fill || !drawsImage(fill) || !fill.visible) return
     if (node.width > 0 && node.height > 0) style['aspect-ratio'] = `${node.width} / ${node.height}`
     if (fill.imageScaleMode === 'FIT') style['object-fit'] = 'contain'
     if (fill.imageScaleMode === 'FILL') style['object-fit'] = 'cover'

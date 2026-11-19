@@ -1,6 +1,6 @@
 import type { Canvas, EmbindEnumEntity, Paint } from 'canvaskit-wasm'
 
-import type { SceneGraph, SceneNode, Stroke } from '@kalka/scene-graph'
+import { drawsImage, type SceneGraph, type SceneNode, type Stroke } from '@kalka/scene-graph'
 import type { ArrowEndpoint } from '@kalka/scene-graph/arrow-caps'
 import { arrowLinesSegments, equilateralArrowPoints } from '@kalka/scene-graph/arrow-caps'
 import type { Color } from '@kalka/scene-graph/primitives'
@@ -184,7 +184,7 @@ export function applyStrokeShader(
     }
     return true
   }
-  if (stroke.type === 'IMAGE' && stroke.imageHash) {
+  if (drawsImage(stroke) && stroke.imageHash) {
     let applied = false
     for (const paint of [r.strokePaint, r.fillPaint]) {
       applied = applyImageFill(r, stroke, node, graph, paint) || applied

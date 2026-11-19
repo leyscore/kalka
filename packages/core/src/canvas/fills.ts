@@ -7,7 +7,8 @@ import {
   type Fill,
   type PatternTileLayout,
   type SceneGraph,
-  type SceneNode
+  type SceneNode,
+  drawsImage
 } from '@kalka/scene-graph'
 import { invertGradientTransform } from '@kalka/scene-graph/gradient'
 import type { Color } from '@kalka/scene-graph/primitives'
@@ -155,7 +156,7 @@ export function applyFill(
     return true
   }
 
-  if (fill.type === 'IMAGE' && fill.imageHash) {
+  if (drawsImage(fill) && fill.imageHash) {
     return r.applyImageFill(fill, node, graph)
   }
 

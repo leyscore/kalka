@@ -6,7 +6,8 @@ import {
   patternTileLayout,
   type Fill,
   type SceneGraph,
-  type SceneNode
+  type SceneNode,
+  drawsImage
 } from '@kalka/scene-graph'
 import { blendModeToCSS, fillLayerToCSS } from '@kalka/scene-graph/css-model'
 import { imageTileSize } from '@kalka/scene-graph/images'
@@ -92,7 +93,7 @@ export function patternBackground(
   vectorElement: VectorElementRenderer | undefined
 ): DesignStyleDeclaration | undefined {
   if (!vectorElement) return undefined
-  const fills = node.fills.filter((fill) => fill.visible && fill.type !== 'IMAGE')
+  const fills = node.fills.filter((fill) => fill.visible && !drawsImage(fill))
   if (!fills.some((fill) => fill.type === 'PATTERN')) return undefined
   const layers: BackgroundLayer[] = []
   let patterned = false
@@ -136,7 +137,8 @@ export function tiledImageStyle(
   node: SceneNode
 ): DesignStyleDeclaration | undefined {
   const fill = node.fills.at(0)
-  if (fill?.type !== 'IMAGE' || fill.imageScaleMode !== 'TILE' || !fill.visible) return undefined
+  if (!fill || !drawsImage(fill) || fill.imageScaleMode !== 'TILE' || !fill.visible)
+    return undefined
   const bytes = fill.imageHash ? graph.images.get(fill.imageHash) : undefined
   const size = bytes && imageTileSize(fill, bytes)
   if (!bytes || !size) return undefined
@@ -161,7 +163,8 @@ export function croppedImageStyle(
   node: SceneNode
 ): DesignStyleDeclaration | undefined {
   const fill = node.fills.at(0)
-  if (fill?.type !== 'IMAGE' || fill.imageScaleMode !== 'CROP' || !fill.visible) return undefined
+  if (!fill || !drawsImage(fill) || fill.imageScaleMode !== 'CROP' || !fill.visible)
+    return undefined
   const transform = fill.imageTransform
   const bytes = fill.imageHash ? graph.images.get(fill.imageHash) : undefined
   if (!transform || !bytes || transform.m00 <= 0 || transform.m11 <= 0) return undefined

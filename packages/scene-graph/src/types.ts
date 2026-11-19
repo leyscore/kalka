@@ -190,7 +190,10 @@ export interface Fill {
   blendMode?: BlendMode
   gradientStops?: GradientStop[]
   gradientTransform?: GradientTransform
+  /** An image paint's image, or a video paint's poster frame, which is what Figma draws. */
   imageHash?: string
+  /** A video paint's clip. */
+  videoHash?: string
   imageScaleMode?: ImageScaleMode
   imageTransform?: GradientTransform
   sourceNodeId?: string
@@ -844,4 +847,9 @@ export const MODE_ATTRIBUTE_PATTERN = /^[A-Za-z_][\w-]*$/
 
 export function isModeAttributeName(name: string): boolean {
   return name.length <= 100 && MODE_ATTRIBUTE_PATTERN.test(name)
+}
+
+/** Whether a paint draws an image: an image paint, or a video paint through its poster frame. */
+export function drawsImage(paint: Pick<Fill, 'type' | 'imageHash'>): boolean {
+  return paint.type === 'IMAGE' || (paint.type === 'VIDEO' && paint.imageHash !== undefined)
 }

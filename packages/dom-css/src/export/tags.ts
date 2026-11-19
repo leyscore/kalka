@@ -3,7 +3,8 @@ import {
   isHTMLTag,
   readIcon,
   type SceneGraph,
-  type SceneNode
+  type SceneNode,
+  drawsImage
 } from '@kalka/scene-graph'
 
 import type { DesignStyleDeclaration } from '../types'
@@ -31,7 +32,8 @@ export function defaultTagForNode(node: SceneNode): string {
   if (node.type === 'TEXT') return 'span'
   if (node.type === 'SECTION') return 'section'
   const fill = node.fills.at(0)
-  if ((fill?.type === 'IMAGE' || imageSourceURL(node)) && node.childIds.length === 0) return 'img'
+  if (((fill && drawsImage(fill)) || imageSourceURL(node)) && node.childIds.length === 0)
+    return 'img'
   return 'div'
 }
 

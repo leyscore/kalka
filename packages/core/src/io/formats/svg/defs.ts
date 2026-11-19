@@ -9,7 +9,8 @@ import {
   type GradientStop,
   type GradientTransform,
   type SceneGraph,
-  type SceneNode
+  type SceneNode,
+  drawsImage
 } from '@kalka/scene-graph'
 import {
   colorToHex8,
@@ -423,7 +424,7 @@ export function resolveFill(fill: Fill, node: SceneNode, ctx: SVGExportContext):
     }
   }
 
-  if (fill.type === 'IMAGE') {
+  if (drawsImage(fill)) {
     const pattern = createImagePattern(fill, node, ctx)
     if (pattern) {
       ctx.defs.push(pattern.node)

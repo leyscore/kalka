@@ -1,6 +1,11 @@
 import type { Canvas, Path, PathBuilder, PathOp } from 'canvaskit-wasm'
 
-import type { GroupFitOptions, SceneGraph, SceneNode } from '@kalka/scene-graph'
+import {
+  drawsImage,
+  type GroupFitOptions,
+  type SceneGraph,
+  type SceneNode
+} from '@kalka/scene-graph'
 
 import { getTextOutlineSupport } from '#core/text/outlines'
 
@@ -41,7 +46,7 @@ export function nodePathTransform(r: SkiaRenderer, child: SceneNode): number[] {
 }
 
 function hasVisibleImageFill(node: SceneNode): boolean {
-  return node.fills.some((fill) => fill.visible && fill.type === 'IMAGE')
+  return node.fills.some((fill) => fill.visible && drawsImage(fill))
 }
 
 function canMakeTextSourcePath(node: SceneNode): boolean {

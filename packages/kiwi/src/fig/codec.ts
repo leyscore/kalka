@@ -130,6 +130,8 @@ export interface Paint {
   stops?: { color: Color; position: number }[]
   transform?: Matrix
   image?: ImageSource
+  /** A video paint's clip; `image` holds the poster frame Figma draws. */
+  video?: ImageSource
   imageThumbnail?: ImageSource
   animatedImage?: ImageSource
   imageScaleMode?: string

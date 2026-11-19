@@ -2,7 +2,7 @@ import { uniq } from 'es-toolkit/array'
 import { isEmptyObject } from 'es-toolkit/predicate'
 import { fromUint8Array } from 'js-base64'
 
-import { readIcon, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
+import { drawsImage, readIcon, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
 import { writeLayerStyle, type FieldCSS, type WriteContext } from '@kalka/scene-graph/css-model'
 
 import { DesignTokens, type CSSModes } from '../tokens/references'
@@ -129,7 +129,7 @@ function attrsForNode(
     attrs['data-kalka-shader'] = JSON.stringify(node.shader)
   }
   const fill = node.fills.at(0)
-  if (fill?.type !== 'IMAGE' || !fill.imageHash) return attrs
+  if (!fill || !drawsImage(fill) || !fill.imageHash) return attrs
   const bytes = graph.images.get(fill.imageHash)
   if (!bytes) return attrs
   return { ...attrs, src: `data:image/png;base64,${fromUint8Array(bytes)}` }

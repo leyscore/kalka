@@ -36,6 +36,7 @@
 - SVG export clips a frame's children to its rounded corners, and draws a corner radius larger than half a side as the canvas does instead of letting SVG flatten it.
 - SVG export draws an exported flipped or rotated layer where the canvas does, instead of shifting it out of the image, and turns a rotated and flipped layer the way the canvas does.
 - The MCP HTTP server no longer runs out of sessions after failed initializations, session-less GET requests, or cancelled tool calls: a session that does not initialize is closed at once, only an initializing POST opens one, a cancelled call is answered, and a session still answering a call is neither expired nor evicted.
+- Video fills from a `.fig` draw their poster frame, as Figma does, on the canvas and in image and SVG exports, instead of nothing; saving keeps the clip and the poster.
 
 ## 0.2.0-beta.3.1 — 2026-11-19
 

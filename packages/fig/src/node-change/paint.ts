@@ -50,6 +50,7 @@ export function fillToKiwiPaint(fill: Fill): Paint {
   }
   if (fill.gradientTransform) paint.transform = fill.gradientTransform
   if (fill.imageHash) paint.image = { hash: hexToBytes(fill.imageHash) }
+  if (fill.videoHash) paint.video = { hash: hexToBytes(fill.videoHash) }
   if (fill.imageScaleMode) paint.imageScaleMode = kiwiScaleMode(fill.imageScaleMode)
   if (fill.imageTransform) paint.transform = fill.imageTransform
   if (fill.sourceNodeId) paint.sourceNodeId = stringToGuid(fill.sourceNodeId)
@@ -128,16 +129,20 @@ function applyGradientPaintFields(fill: Fill, p: Paint): void {
   if (p.transform) fill.gradientTransform = convertGradientTransform(p.transform)
 }
 
+function mediaHash(source: unknown): string | undefined {
+  if (!source || typeof source !== 'object') return undefined
+  const { hash } = source as { hash?: string | Record<string, number> }
+  if (typeof hash === 'object') return imageHashToString(hash)
+  return typeof hash === 'string' ? hash : undefined
+}
+
+/** An image paint's image; a video paint's clip and the poster frame Figma draws in its place. */
 function applyImagePaintFields(fill: Fill, p: Paint): void {
-  if (p.type !== 'IMAGE') return
-  if (p.image && typeof p.image === 'object') {
-    const img = p.image as { hash: string | Record<string, number> }
-    if (typeof img.hash === 'object') {
-      fill.imageHash = imageHashToString(img.hash)
-    } else if (typeof img.hash === 'string') {
-      fill.imageHash = img.hash
-    }
-  }
+  if (p.type !== 'IMAGE' && p.type !== 'VIDEO') return
+  const image = mediaHash(p.image)
+  if (image) fill.imageHash = image
+  const video = p.type === 'VIDEO' ? mediaHash(p.video) : undefined
+  if (video) fill.videoHash = video
   fill.imageScaleMode = sceneScaleMode(p.imageScaleMode)
   if (p.transform) fill.imageTransform = convertGradientTransform(p.transform)
 }

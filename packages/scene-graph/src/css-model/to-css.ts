@@ -7,7 +7,7 @@ import {
   isGradientFill
 } from '../gradient'
 import type { Color } from '../primitives'
-import type { BlendMode, Effect, Fill, Stroke } from '../types'
+import { drawsImage, type BlendMode, type Effect, type Fill, type Stroke } from '../types'
 import type { CSSDeclarations } from './types'
 
 /** Opaque colors as hex, which Tailwind matches to its palette; translucent ones as `rgba()`. */
@@ -187,7 +187,7 @@ export function fillsToBackground(
   width: number,
   height: number
 ): CSSDeclarations | undefined {
-  const visible = fills.filter((fill) => fill.visible && fill.type !== 'IMAGE')
+  const visible = fills.filter((fill) => fill.visible && !drawsImage(fill))
   if (visible.length === 0) return undefined
   if (visible.length === 1 && visible[0].type === 'SOLID') return undefined
   const layers = visible
