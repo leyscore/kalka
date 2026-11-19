@@ -191,6 +191,39 @@ describe('selected-node preview projections', () => {
     }
   })
 
+  test('a committed edit updates only readers of the fields it changed, and other layers none', () => {
+    const fixture = setup()
+    const { editor, first, second, selection } = fixture
+    try {
+      const calls = { x: 0, width: 0, name: 0 }
+      const x = computed(() => {
+        calls.x++
+        return selection.node.value?.x
+      })
+      const width = computed(() => {
+        calls.width++
+        return selection.node.value?.width
+      })
+      const name = computed(() => {
+        calls.name++
+        return selection.node.value?.name
+      })
+      expect([x.value, width.value, name.value]).toEqual([10, 100, first.name])
+      const selected = selection.node.value
+
+      // Typing in a layer, or an agent editing another one, changes one field at a time.
+      editor.updateNode(first.id, { name: 'Renamed' })
+      expect([x.value, width.value, name.value]).toEqual([10, 100, 'Renamed'])
+      editor.updateNode(second.id, { x: 500, width: 20 })
+      expect([x.value, width.value, name.value]).toEqual([10, 100, 'Renamed'])
+
+      expect(selection.node.value).toBe(selected)
+      expect(calls).toEqual({ x: 1, width: 1, name: 2 })
+    } finally {
+      fixture.dispose()
+    }
+  })
+
   test('tracks multi-selection, selection changes and preview cancellation', () => {
     const fixture = setup()
     const { editor, first, second, selection } = fixture
