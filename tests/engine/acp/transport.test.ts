@@ -4,93 +4,100 @@ import type { SessionUpdate } from '@agentclientprotocol/sdk'
 
 import type { ACPAgentDef } from '@kalka/core/constants'
 
-import { mapUpdate } from '@/app/ai/acp/map-update'
-import { formatConnectionError, buildCrashChunks } from '@/app/ai/acp/transport'
+import { createUpdateMapper } from '@/app/ai/acp/map-update'
+import { formatConnectionError } from '@/app/ai/acp/transport'
 
-const TEXT_ID = 'text-1'
+const text = (t: string): SessionUpdate => ({
+  sessionUpdate: 'agent_message_chunk',
+  content: { type: 'text', text: t }
+})
+const thought = (t: string): SessionUpdate => ({
+  sessionUpdate: 'agent_thought_chunk',
+  content: { type: 'text', text: t }
+})
+const toolCall = (id: string): SessionUpdate => ({
+  sessionUpdate: 'tool_call',
+  toolCallId: id,
+  title: 'create_shape',
+  kind: 'edit',
+  status: 'pending'
+})
 
-describe('mapUpdate', () => {
-  test('agent_message_chunk with non-empty text starts text and emits delta', () => {
-    const update: SessionUpdate = {
-      sessionUpdate: 'agent_message_chunk',
-      content: { type: 'text', text: 'Hello' }
-    }
-    const result = mapUpdate(update, TEXT_ID, false)
-    expect(result.textStarted).toBe(true)
-    expect(result.chunks).toEqual([
-      { type: 'text-start', id: TEXT_ID },
-      { type: 'text-delta', id: TEXT_ID, delta: 'Hello' }
+describe('createUpdateMapper', () => {
+  test('a run of text chunks is one text part', () => {
+    const mapper = createUpdateMapper('p')
+    expect([
+      ...mapper.map(text('Hello ')),
+      ...mapper.map(text('world')),
+      ...mapper.close()
+    ]).toEqual([
+      { type: 'text-start', id: 'text-p-1' },
+      { type: 'text-delta', id: 'text-p-1', delta: 'Hello ' },
+      { type: 'text-delta', id: 'text-p-1', delta: 'world' },
+      { type: 'text-end', id: 'text-p-1' }
     ])
   })
 
-  test('agent_message_chunk with empty text is skipped', () => {
-    const update: SessionUpdate = {
-      sessionUpdate: 'agent_message_chunk',
-      content: { type: 'text', text: '' }
-    }
-    const result = mapUpdate(update, TEXT_ID, false)
-    expect(result.textStarted).toBe(false)
-    expect(result.chunks).toEqual([])
+  test('a run of thought chunks is one reasoning part', () => {
+    const mapper = createUpdateMapper('p')
+    const chunks = [
+      ...mapper.map(thought('Look')),
+      ...mapper.map(thought('ing')),
+      ...mapper.close()
+    ]
+    expect(chunks.map((c) => c.type)).toEqual([
+      'reasoning-start',
+      'reasoning-delta',
+      'reasoning-delta',
+      'reasoning-end'
+    ])
   })
 
-  test('subsequent agent_message_chunk does not re-emit text-start', () => {
-    const update: SessionUpdate = {
-      sessionUpdate: 'agent_message_chunk',
-      content: { type: 'text', text: 'world' }
-    }
-    const result = mapUpdate(update, TEXT_ID, true)
-    expect(result.textStarted).toBe(true)
-    expect(result.chunks).toEqual([{ type: 'text-delta', id: TEXT_ID, delta: 'world' }])
-  })
-
-  test('agent_thought_chunk emits reasoning start/delta/end', () => {
-    const update: SessionUpdate = {
-      sessionUpdate: 'agent_thought_chunk',
-      content: { type: 'text', text: 'thinking...' }
-    }
-    const result = mapUpdate(update, TEXT_ID, false)
-    expect(result.chunks).toHaveLength(3)
-    expect(result.chunks[0].type).toBe('reasoning-start')
-    expect(result.chunks[1]).toEqual({
-      type: 'reasoning-delta',
-      id: `reasoning-${TEXT_ID}`,
-      delta: 'thinking...'
-    })
-    expect(result.chunks[2].type).toBe('reasoning-end')
-  })
-
-  test('tool_call emits tool-input-start', () => {
-    const update: SessionUpdate = {
-      sessionUpdate: 'tool_call',
-      toolCallId: 'tc-1',
-      title: 'create_shape',
-      kind: 'edit',
-      status: 'pending'
-    }
-    const result = mapUpdate(update, TEXT_ID, false)
-    expect(result.chunks).toEqual([
+  test('text, thought, tool call and text again keep their order as separate parts', () => {
+    const mapper = createUpdateMapper('p')
+    const chunks = [
+      ...mapper.map(text('First.')),
+      ...mapper.map(thought('Plan')),
+      ...mapper.map(toolCall('tc-1')),
+      ...mapper.map(text('Second.')),
+      ...mapper.close()
+    ]
+    expect(chunks).toEqual([
+      { type: 'text-start', id: 'text-p-1' },
+      { type: 'text-delta', id: 'text-p-1', delta: 'First.' },
+      { type: 'text-end', id: 'text-p-1' },
+      { type: 'reasoning-start', id: 'reasoning-p-2' },
+      { type: 'reasoning-delta', id: 'reasoning-p-2', delta: 'Plan' },
+      { type: 'reasoning-end', id: 'reasoning-p-2' },
       {
         type: 'tool-input-start',
         toolCallId: 'tc-1',
         toolName: 'create_shape',
         providerExecuted: true,
         title: 'create_shape'
-      }
+      },
+      { type: 'text-start', id: 'text-p-3' },
+      { type: 'text-delta', id: 'text-p-3', delta: 'Second.' },
+      { type: 'text-end', id: 'text-p-3' }
     ])
   })
 
+  test('empty text and thoughts open no part', () => {
+    const mapper = createUpdateMapper('p')
+    expect([...mapper.map(text('')), ...mapper.map(thought('')), ...mapper.close()]).toEqual([])
+  })
+
   test('tool_call with rawInput emits tool-input-available', () => {
-    const update: SessionUpdate = {
+    const mapper = createUpdateMapper('p')
+    const chunks = mapper.map({
       sessionUpdate: 'tool_call',
       toolCallId: 'tc-2',
       title: 'set_fill',
       kind: 'edit',
       status: 'pending',
       rawInput: { id: '1:2', color: '#ff0000' }
-    }
-    const result = mapUpdate(update, TEXT_ID, false)
-    expect(result.chunks).toHaveLength(2)
-    expect(result.chunks[1]).toEqual({
+    })
+    expect(chunks[1]).toEqual({
       type: 'tool-input-available',
       toolCallId: 'tc-2',
       toolName: 'set_fill',
@@ -101,26 +108,27 @@ describe('mapUpdate', () => {
   })
 
   test('tool_call with empty title falls back to "unknown"', () => {
-    const update: SessionUpdate = {
+    const mapper = createUpdateMapper('p')
+    const chunks = mapper.map({
       sessionUpdate: 'tool_call',
       toolCallId: 'tc-3',
       title: '',
       kind: 'other',
       status: 'pending'
-    }
-    const result = mapUpdate(update, TEXT_ID, false)
-    expect(result.chunks[0]).toMatchObject({ toolName: 'unknown' })
+    })
+    expect(chunks[0]).toMatchObject({ toolName: 'unknown' })
   })
 
   test('tool_call_update completed emits tool-output-available', () => {
-    const update: SessionUpdate = {
-      sessionUpdate: 'tool_call_update',
-      toolCallId: 'tc-1',
-      status: 'completed',
-      rawOutput: { id: '1:5', type: 'RECTANGLE' }
-    }
-    const result = mapUpdate(update, TEXT_ID, false)
-    expect(result.chunks).toEqual([
+    const mapper = createUpdateMapper('p')
+    expect(
+      mapper.map({
+        sessionUpdate: 'tool_call_update',
+        toolCallId: 'tc-1',
+        status: 'completed',
+        rawOutput: { id: '1:5', type: 'RECTANGLE' }
+      })
+    ).toEqual([
       {
         type: 'tool-output-available',
         toolCallId: 'tc-1',
@@ -131,14 +139,15 @@ describe('mapUpdate', () => {
   })
 
   test('tool_call_update failed emits tool-output-error', () => {
-    const update: SessionUpdate = {
-      sessionUpdate: 'tool_call_update',
-      toolCallId: 'tc-1',
-      status: 'failed',
-      content: [{ type: 'content', content: { type: 'text', text: 'Node not found' } }]
-    }
-    const result = mapUpdate(update, TEXT_ID, false)
-    expect(result.chunks).toEqual([
+    const mapper = createUpdateMapper('p')
+    expect(
+      mapper.map({
+        sessionUpdate: 'tool_call_update',
+        toolCallId: 'tc-1',
+        status: 'failed',
+        content: [{ type: 'content', content: { type: 'text', text: 'Node not found' } }]
+      })
+    ).toEqual([
       {
         type: 'tool-output-error',
         toolCallId: 'tc-1',
@@ -148,29 +157,22 @@ describe('mapUpdate', () => {
     ])
   })
 
-  test('agent_message_chunk with non-text content produces no chunks', () => {
-    const update: SessionUpdate = {
-      sessionUpdate: 'agent_message_chunk',
-      content: {
-        type: 'image',
-        mimeType: 'image/png',
-        data: '',
-        uri: 'https://example.com/img.png'
-      }
-    }
-    const result = mapUpdate(update, TEXT_ID, false)
-    expect(result.textStarted).toBe(false)
-    expect(result.chunks).toEqual([])
-  })
-
-  test('unhandled update type produces no chunks', () => {
-    const update = {
-      sessionUpdate: 'available_commands_update',
-      availableCommands: []
-    } as SessionUpdate
-    const result = mapUpdate(update, TEXT_ID, false)
-    expect(result.chunks).toEqual([])
-    expect(result.textStarted).toBe(false)
+  test('non-text content and unhandled updates produce no chunks', () => {
+    const mapper = createUpdateMapper('p')
+    expect(
+      mapper.map({
+        sessionUpdate: 'agent_message_chunk',
+        content: {
+          type: 'image',
+          mimeType: 'image/png',
+          data: '',
+          uri: 'https://example.com/i.png'
+        }
+      })
+    ).toEqual([])
+    expect(
+      mapper.map({ sessionUpdate: 'available_commands_update', availableCommands: [] })
+    ).toEqual([])
   })
 })
 
@@ -221,33 +223,5 @@ describe('formatConnectionError', () => {
       message: 'Failed to authenticate: OAuth session expired and could not be refreshed'
     })
     expect(msg).toBe('Failed to authenticate: OAuth session expired and could not be refreshed')
-  })
-})
-
-describe('buildCrashChunks', () => {
-  test('destroying=true returns empty chunks, no session null', () => {
-    const result = buildCrashChunks(true, TEXT_ID, false)
-    expect(result.chunks).toEqual([])
-    expect(result.shouldNullSession).toBe(false)
-  })
-
-  test('destroying=false with no text emits error + finish', () => {
-    const result = buildCrashChunks(false, TEXT_ID, false)
-    expect(result.shouldNullSession).toBe(true)
-    expect(result.chunks).toEqual([
-      { type: 'error', errorText: 'Agent process exited unexpectedly.' },
-      { type: 'finish-step' },
-      { type: 'finish', finishReason: 'error' }
-    ])
-  })
-
-  test('destroying=false with active text emits text-end before error', () => {
-    const result = buildCrashChunks(false, TEXT_ID, true)
-    expect(result.shouldNullSession).toBe(true)
-    expect(result.chunks[0]).toEqual({ type: 'text-end', id: TEXT_ID })
-    expect(result.chunks[1]).toEqual({
-      type: 'error',
-      errorText: 'Agent process exited unexpectedly.'
-    })
   })
 })
