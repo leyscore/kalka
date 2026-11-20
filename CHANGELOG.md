@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- Native menu commands reach the editor when another Kalka window, such as Software Update, is in front, where Close closes that window; on macOS with no window open, a menu command opens an editor window instead of doing nothing.
 - A Save As whose write fails leaves the document where it was, with its name and format, instead of pointing it at the file that was not written.
 - When another program, such as a Kalka development server left running, already holds the local MCP server's port, Settings › MCP says that port 7600 is in use and what to do, instead of reporting that the server did not respond in time.
 - When another app, git or a sync tool changes the open file while you have unsaved edits, Kalka keeps your edits and offers to reload the file instead of reloading it silently and dropping them with the undo history; with no unsaved edits it still reloads.

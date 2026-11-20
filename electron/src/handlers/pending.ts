@@ -35,6 +35,11 @@ function deliver(event: string, payload?: unknown): void {
   if (!target.notify(event, payload)) target.openEditor()
 }
 
+/** Opens an editor window when none is open, such as for a menu command on macOS. */
+export function openEditor(): void {
+  target?.openEditor()
+}
+
 export function takePendingOpen(): PendingOpenFile[] {
   const taken = pendingOpen
   pendingOpen = []

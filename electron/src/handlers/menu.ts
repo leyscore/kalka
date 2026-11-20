@@ -5,6 +5,9 @@ import { app, BrowserWindow, Menu, type MenuItemConstructorOptions } from 'elect
 import appMenuSpec from '../../generated/app-menu.json'
 import menuSpec from '../../generated/menu.json'
 import { emit } from '../ipc'
+import { routeMenuEvent } from './menu-route'
+import { openEditor } from './pending'
+import { windowByLabel } from './windows'
 
 /** Entries of the menu the app's menu schema generates (`bun run generate:tauri-menu`). */
 interface Entry {
@@ -33,10 +36,12 @@ const NATIVE_EDIT = new Map<string, MenuItemConstructorOptions['role']>([
 let recentFiles: string[] = []
 const checked = new Map<string, boolean>()
 
-/** Every click reaches the focused window as Tauri's `menu-event`, with the item id. */
+/** A click reaches the editor as Tauri's `menu-event`, with the item id (`routeMenuEvent`). */
 function send(id: string): void {
-  const window = BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0]
-  if (window) emit(window.webContents, 'menu-event', id)
+  const route = routeMenuEvent(id, BrowserWindow.getFocusedWindow(), windowByLabel('main'))
+  if (route.kind === 'send') emit(route.window.webContents, 'menu-event', id)
+  else if (route.kind === 'close') route.window.close()
+  else openEditor()
 }
 
 function recentSubmenu(): MenuItemConstructorOptions {
