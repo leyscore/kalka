@@ -49,8 +49,6 @@
 
 <p align="center">Every layer is an element the browser lays out and paints,<br />so flexbox, grid, fonts, shadows and blurs look on the canvas exactly as they will in production.</p>
 
-<p align="center"><img src="assets/screenshots/editor.gif" width="100%" alt="The Kalka editor on Learn the basics: a layer dragged on the canvas, its HTML and CSS in the Code panel, and the design skills agents work with"></p>
-
 <table>
   <tr>
     <td width="50%"><strong>The layers panel is the DOM.</strong><br />A layer can be an <code>h1</code>, <code>nav</code>, <code>a</code> or <code>button</code> and carry class names; changing a class restyles every layer that has it.</td>
