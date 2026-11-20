@@ -37,6 +37,9 @@ export const automationMessageDefaults = {
   ),
   mcpFailureUnknown: 'MCP server could not start',
   mcpFailureUnknownHint: 'Start it again, or check the diagnostic details below.',
+  mcpFailurePortInUse: params('Port {port} is used by another program'),
+  mcpFailurePortInUseHint:
+    'Quit the other program, often a Kalka development server left running or another copy of Kalka, then start the server again.',
   mcpFailureDetails: 'Details',
   mcpFailureCopy: 'Copy details',
   mcpFailureCopied: 'Diagnostic details copied.',

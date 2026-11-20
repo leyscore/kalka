@@ -127,5 +127,7 @@
   "mcpFailureUnknownHint": "Uruchom go ponownie lub sprawdź szczegóły techniczne poniżej.",
   "mcpFailureDetails": "Szczegóły",
   "mcpFailureCopy": "Kopiuj szczegóły",
-  "mcpFailureCopied": "Skopiowano szczegóły techniczne."
+  "mcpFailureCopied": "Skopiowano szczegóły techniczne.",
+  "mcpFailurePortInUse": "Port {port} jest używany przez inny program",
+  "mcpFailurePortInUseHint": "Zamknij drugi program, często pozostawiony serwer deweloperski Kalka lub inną kopię Kalka, a potem uruchom serwer ponownie."
 }

@@ -127,5 +127,7 @@
   "mcpFailureUnknownHint": "请重新启动，或查看下方的技术细节。",
   "mcpFailureDetails": "详细信息",
   "mcpFailureCopy": "复制详细信息",
-  "mcpFailureCopied": "已复制技术细节。"
+  "mcpFailureCopied": "已复制技术细节。",
+  "mcpFailurePortInUse": "端口 {port} 已被其他程序占用",
+  "mcpFailurePortInUseHint": "请退出另一个程序（通常是仍在运行的开发服务器或应用的另一个副本），然后重新启动服务器。"
 }

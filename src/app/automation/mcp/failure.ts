@@ -25,6 +25,7 @@ export type MCPFailureCode =
   | 'rejected'
   | 'malformed'
   | 'unreachable'
+  | 'port-in-use'
   | 'unknown'
 
 export interface MCPFailure {
@@ -65,4 +66,23 @@ export function classifySpawnFailure(error: unknown): MCPFailure {
 export function failureFromError(error: unknown): MCPFailure {
   if (error instanceof MCPStartupError) return error.failure
   return classifySpawnFailure(error)
+}
+
+/**
+ * Another program already listens on the server's port, such as a Kalka development server left
+ * running or another copy of Kalka; the detail is the port, which the guidance names.
+ */
+export function portInUseFailure(port: number): MCPFailure {
+  return mcpFailure('port-in-use', String(port))
+}
+
+const PORT_IN_USE_PATTERN = /EADDRINUSE|address already in use/i
+
+/** A startup failure from what the server printed: a taken port says so, whatever else failed. */
+export function failureFromStartupOutput(
+  code: MCPFailureCode,
+  output: string,
+  port: number
+): MCPFailure {
+  return PORT_IN_USE_PATTERN.test(output) ? portInUseFailure(port) : mcpFailure(code, output)
 }
