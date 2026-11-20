@@ -37,7 +37,8 @@ function shortString(value: string): Uint8Array {
   return out
 }
 
-function concat(parts: Uint8Array[]): Uint8Array<ArrayBuffer> {
+/** The parts, one after the other, in a single buffer. */
+export function concatBytes(parts: Uint8Array[]): Uint8Array<ArrayBuffer> {
   const out = new Uint8Array(parts.reduce((sum, part) => sum + part.length, 0))
   let at = 0
   for (const part of parts) {
@@ -52,7 +53,12 @@ export function encodeAction(
   target: string,
   payload: Uint8Array
 ): Uint8Array<ArrayBuffer> {
-  return concat([Uint8Array.of(FRAME_ACTION), shortString(namespace), shortString(target), payload])
+  return concatBytes([
+    Uint8Array.of(FRAME_ACTION),
+    shortString(namespace),
+    shortString(target),
+    payload
+  ])
 }
 
 export type ServerFrame =

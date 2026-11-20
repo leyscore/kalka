@@ -4,6 +4,7 @@ import * as Y from 'yjs'
 
 import type { ServerRoomTransport } from '@/app/collab/transport/server'
 import {
+  concatBytes,
   decodeU32,
   encodeU32,
   LOAD_DONE,
@@ -25,16 +26,6 @@ export interface ServerPeerOptions {
   sendYjsUpdate: (update: Uint8Array) => void
   /** Saves the document as a Kalka file on the server, for export and WebDAV. */
   saveFile: () => Promise<void>
-}
-
-function joinBytes(parts: Uint8Array[]): Uint8Array {
-  const out = new Uint8Array(parts.reduce((sum, part) => sum + part.length, 0))
-  let at = 0
-  for (const part of parts) {
-    out.set(part, at)
-    at += part.length
-  }
-  return out
 }
 
 /**
@@ -67,7 +58,7 @@ export function bindServerPeer({ room, ydoc, sendYjsUpdate, saveFile }: ServerPe
     else if (kind === LOAD_UPDATE) updates.push(body)
     else if (kind === LOAD_DONE) {
       const stored = [
-        ...(snapshotParts.length ? [inflateSync(joinBytes(snapshotParts))] : []),
+        ...(snapshotParts.length ? [inflateSync(concatBytes(snapshotParts))] : []),
         ...updates
       ]
       snapshotParts = []
