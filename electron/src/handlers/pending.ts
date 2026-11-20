@@ -1,7 +1,7 @@
 import { realpath, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 
-/** The URL scheme of desktop links: kalka://open, kalka://join, kalka://oauth. */
+/** The URL scheme of desktop links: kalka://open, kalka://join, kalka://server, kalka://oauth. */
 export const LINK_SCHEME = 'kalka'
 
 interface PendingOpenFile {
@@ -12,6 +12,8 @@ interface PendingOpenFile {
 
 let pendingOpen: PendingOpenFile[] = []
 let pendingRooms: string[] = []
+/** Kalka servers to connect to, from `kalka://server?url=…` links (origins, validated). */
+let pendingServers: string[] = []
 /** Where documents and links handed to the app go. */
 export interface OpenTarget {
   /** Tells the editor window that something waits for it; false when no editor is open. */
@@ -52,6 +54,26 @@ export function takePendingRooms(): string[] {
   return taken
 }
 
+export function takePendingServers(): string[] {
+  const taken = pendingServers
+  pendingServers = []
+  return taken
+}
+
+/** A server address from a link: an https origin, or http for this computer only. */
+export function serverOrigin(value: string | null): string | null {
+  if (!value || value.length > 2048) return null
+  try {
+    const url = new URL(value)
+    const local = url.hostname === 'localhost' || url.hostname === '127.0.0.1'
+    if (url.protocol !== 'https:' && !(url.protocol === 'http:' && local)) return null
+    if (url.username || url.password) return null
+    return url.origin
+  } catch {
+    return null
+  }
+}
+
 /** A document the app opens: an existing `.fig`, `.pen` or `.kalka` file, or a Kalka folder. */
 async function designFile(path: string): Promise<string | null> {
   try {
@@ -76,7 +98,10 @@ export async function queueOpenPaths(paths: string[]): Promise<void> {
   deliver('open-associated-files')
 }
 
-/** `kalka://open?file=…&node=…`, `kalka://join?room=…`, `kalka://oauth/<provider>?…`. */
+/**
+ * `kalka://open?file=…&node=…`, `kalka://join?room=…`, `kalka://server?url=…`,
+ * `kalka://oauth/<provider>?…`.
+ */
 export function handleLink(url: string): void {
   let link: URL
   try {
@@ -105,6 +130,12 @@ export function handleLink(url: string): void {
     if (!room || !/^[a-z0-9]{32}$/.test(room)) return
     pendingRooms.push(room)
     deliver('open-room-links')
+  } else if (link.hostname === 'server') {
+    // Only fills in Settings › Server; signing in stays the person's own step.
+    const origin = serverOrigin(link.searchParams.get('url'))
+    if (!origin) return
+    pendingServers.push(origin)
+    deliver('open-server-links')
   } else if (link.hostname === 'oauth') {
     const provider = link.pathname.replace(/^\//, '')
     // A sign-in answers the editor that asked for it; with none open, there is nobody to answer.

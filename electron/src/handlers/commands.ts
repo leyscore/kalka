@@ -20,7 +20,7 @@ import {
   reportedBridgeCommand
 } from './mcp/clients'
 import { setChecked, setRecentFiles } from './menu'
-import { takePendingOpen, takePendingRooms } from './pending'
+import { takePendingOpen, takePendingRooms, takePendingServers } from './pending'
 import { renderHTMLPage, type RenderHTMLRequest } from './raster'
 
 const AGENT_EXECUTABLES = [
@@ -181,6 +181,7 @@ const commands: Record<string, (args: never) => unknown> = {
   webview_version: () => process.versions.chrome ?? null,
   take_pending_open: () => takePendingOpen(),
   take_pending_rooms: () => takePendingRooms(),
+  take_pending_servers: () => takePendingServers(),
   set_recent_files: ({ paths }: { paths: string[] }) => setRecentFiles(paths),
   set_native_menu_checked: ({ id, checked }: { id: string; checked: boolean }) =>
     setChecked(id, checked),

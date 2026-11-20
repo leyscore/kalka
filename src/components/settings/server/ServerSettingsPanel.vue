@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import { useCollaborationMessages } from '@kalka/vue'
 
@@ -13,6 +13,7 @@ import {
 } from '@/app/collab/server/account'
 import { ServerRequestError, type ServerInfo } from '@/app/collab/server/api'
 import { refreshServerDocuments } from '@/app/collab/server/documents'
+import { linkedServerURL } from '@/app/collab/server/links'
 import { openExternalLink } from '@/app/shell/ui'
 import SettingsGroup from '@/components/settings/layout/SettingsGroup.vue'
 import SettingsSection from '@/components/settings/layout/SettingsSection.vue'
@@ -106,6 +107,20 @@ function reconnect() {
   address.value = serverAccount.value?.url ?? address.value
   lookUp()
 }
+
+// A `kalka://server` link fills in the address and looks the server up; signing in stays manual.
+watch(
+  linkedServerURL,
+  (url) => {
+    if (!url) return
+    linkedServerURL.value = null
+    if (serverAccount.value?.url === url && signedIn.value) return
+    server.value = null
+    address.value = url
+    lookUp()
+  },
+  { immediate: true }
+)
 
 function openServerPage(url: string) {
   void openExternalLink(url)
