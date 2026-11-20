@@ -37,7 +37,6 @@
 - The desktop app's native menu shows Autosave, Pixel Grid, Multiplayer Cursors, Rulers and the theme choices as they are; they all started checked, and clicking Autosave showed it off when it was on.
 - On macOS, opening a document from the Finder, a `kalka://` link or the command line while Kalka has no window open opens an editor window with it, instead of keeping it waiting unseen; documents are never handed to the Software Update window.
 - When several agents edit the same document at once, such as named agents in the chat and agents over MCP, undoing one agent's edit no longer also undoes what another agent changed while it ran.
-- Save as folder refuses a folder that already holds other files, such as a website project, instead of saving into it and deleting files of its own under `pages/` and `assets/images/`; an empty folder or a Kalka folder still works.
 - Undoing an agent's edit no longer deletes or brings back comments and frame reviews written while it ran, the agent's own included; comments stay outside the undo history.
 - Recording or restoring a version stops when the document cannot be saved first, instead of recording what was on disk or reloading over the unsaved edits.
 - The Versions panel shows why recording, restoring, fetching or publishing a version failed, such as a push the remote rejected, instead of clearing the message as soon as it appeared.
@@ -72,14 +71,13 @@
 - Component sets from `.fig` files that save no variant values, such as older community kits, list their variant options in Figma's order, and a variant property's default is the top-left variant's value, as in Figma.
 - Component sets saved to `.fig` open in Figma as component sets with their variant values in order, and variants renamed or given a new property no longer leave Figma reporting the set as broken.
 - Resaving a `.fig` keeps a change to the libraries it enables, instead of keeping the libraries it was opened with.
-- Kalka on the web opens a file handed over by the kalka.design tools again: the tab ignored the site that opened it, since that site is on another origin.
 - Zoomed out, artboards show all their words: a snapshot taken while its fonts were still loading left their text out.
 - Pasted or imported HTML draws as the page does: what its stylesheets say that a layer cannot, such as tiled dot patterns, masks, gradients with many stops and text filled by its background, is kept as CSS; inline SVG icons keep their drawing; a block pulled over a positioned one by a negative margin keeps its background under it, as CSS paints it; an open `<details>` stays open and a closed one's content stays hidden; text for screen readers only is a hidden layer; and words wrap and sit where the page put them.
 - Pasted or imported HTML no longer moves blocks: one centered with `margin: 0 auto` drifted further off its artboard on every layout, a scaled or translated box was transformed twice, and a child of a box with a border sat a border's width off.
 - In the web app, fonts with an optical size axis, such as Bricolage Grotesque or Fraunces, draw at the optical size of each text, as they do on the web, instead of one size drawn for small text.
 - Files handed over by the kalka.design tools, such as Open .fig files, open in the web app; the tab ignored them because it did not recognize the site that opened it.
 - The comment button in the toolbar shows as pressed while comment mode is on, instead of turning blank white while the move tool kept its highlight, including in the web demo, where it stayed unlit.
-- Save as Folder asks for the new folder's name and place, as saving a file does, and creates it, instead of writing the document's files straight into the folder you pick; a folder that already holds other files, such as Downloads, is refused with a message.
+- Save as Folder asks for the new folder's name and place, as saving a file does, and creates it, instead of writing the document's files straight into the folder you pick; a folder that already holds other files, such as Downloads or a website project, is refused with a message instead of having its files under `pages/` and `assets/images/` replaced; an empty folder or a Kalka folder still works.
 - An agent's reply over ACP, such as Claude Code, reads in the order it worked: each passage of text sits between the thoughts and actions around it instead of all the text joining into one block at the top, and a thought arrives as one block instead of a "Thought for 1s" row per fragment.
 
 ### Performance
