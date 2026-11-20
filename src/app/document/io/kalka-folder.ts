@@ -166,17 +166,6 @@ export async function chooseNewKalkaFolder(title: string, name: string): Promise
   return save({ title, defaultPath: name })
 }
 
-/**
- * Whether a folder can take a Kalka document: it does not exist yet, is empty, or already holds
- * one. Any other folder, such as Downloads, would get the document's files mixed into its own.
- */
-export async function canHoldKalkaFolder(folder: string): Promise<boolean> {
-  const { exists, readDir } = await import('@tauri-apps/plugin-fs')
-  if (!(await exists(folder))) return true
-  const entries = (await readDir(folder)).filter((entry) => !entry.name.startsWith('.'))
-  return entries.length === 0 || entries.some((entry) => entry.name === 'project.json')
-}
-
 export async function chooseKalkaFolder(title: string): Promise<string | null> {
   const { open } = await import('@tauri-apps/plugin-dialog')
   const picked = await open({ title, directory: true })

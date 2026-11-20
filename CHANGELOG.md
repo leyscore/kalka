@@ -5,14 +5,24 @@
 ### Breaking changes
 
 - Layers opened from a `.fig` file keep the GUIDs the file saved them under as their IDs, instead of `0:1`, `0:2`, and so on in reading order, so an ID stays the same after a save and reopen. IDs printed by `kalka tree` or MCP before this release no longer find their layers.
+
 ### Added
 
 - Agents manage Kalka's settings while they design: `kalka settings list` and the `list_settings` MCP tool show every setting they can change with its accepted values, and `kalka settings set` and `update_settings` now also switch Follow agents, the canvas background, the Code panel's first view, the AI chat's model profile (among those already set up) and its thinking level, applied at once in the open app. API keys, connections, and tool access stay out of reach.
+- Import a Claude Design project: drop its exported `.zip` on Kalka, choose File → Import Claude Design project…, or click Import Claude Design project… on Home; the desktop app also imports an unpacked project's folder through Open Folder. Each board becomes an artboard where the canvas had it, on its page, with its title; holes, loops, conditions and imported components are filled from the board's own logic, run in a sandbox as the board shows five seconds after it opens, or from its defaults when that logic cannot run. Uploaded images and fonts, and images kept as files of the project, come along, text fields show their placeholder, design system tokens become variables, and canvas titles and sticky notes become text.
+- Hovering a choice in a property list shows it on the canvas before you pick it, for the layer and fill blend modes, the font family and weight, the text case, the horizontal and vertical text alignment, the shader preset, and the color and number variables of a field. Leaving the list puts the design back as it was, and nothing reaches undo, autosave or collaborators until you choose.
+- Agents interview you before a new design: the agent asks what it needs, such as the business and its name, who the page is for, its sections, and colours to use or avoid, and each question appears in the AI panel one at a time with suggested answers you pick in one click, a field for your own, and Skip to let the agent decide. Agents over MCP, such as Claude Code, ask through the new `ask_user` tool.
 
 ### Changed
 
 - An agent's work on the canvas loads calmly, block by block: each edit waits for its previous one to finish, then its new blocks load in order, a frame's background before what it holds and top to bottom, each first a soft cloud of pixel dots in the style of kalka.design, Kalka blue on a light backdrop and white on the dark canvas, with a few dots twinkling, which then lifts away as the content comes into focus; before an agent's first layer, the same cloud marks where its work will land. While it builds, the agent shows as a badge with a small loader on what it builds instead of a cursor flying about, Follow agents moves the view only when the work leaves the middle of the screen and no longer shows its banner (following someone on purpose still does), and the pulsing and green rings around an agent's layers are gone. With reduced motion or Reduce agent animations, edits still show at once.
 - Agents check their designs against a larger anti-slop catalogue, now also returned by `get_design_guide` and shipped with the installable agent skill: besides stock gradients, glass and identical icon cards, it names coloured glows under buttons, middle dots between short phrases, 01 / 02 / 03 on things that are not steps, boxed closing calls with checklists and drawn look-alikes of the product, says what replaces each, and gives the page a world of its own instead.
+- In the dark theme the pixel sky of the loading screen, the welcome screen and Home is the night of kalka.design's footer, night blue with fine stars and glowing four-point stars, and switching themes lets the night fall over the welcome screen and Home from the top like a veil, or lift for the day. The loading screen shows Kalka's K over that sky instead of blurred blue and white light, in the theme the app opens in. With reduced motion the sky switches at once.
+- Variables open as a page in the desktop editor, over the panels and the canvas, instead of a dialog: the Variables button in the rail stays pressed while it is open and closes it on a second press, and choosing another panel or pressing Escape gives the canvas back as it was. Picking a variable for a property still opens the small list beside the field, and on phones and with the interface hidden variables stay a dialog.
+- The welcome screen matches kalka.design: the pixel sky with drifting dot clouds whose dots twinkle on and off, the agent's cursor named Pebble and yours named as you type, and the name and agent buttons in a framed card, in light and dark themes.
+- Home opens on the kalka.design pixel sky: the greeting and the request to the agent, the sizes to start a design with as chips drawn to their proportions, and Join room, Open, Open folder, Paste HTML and Open from a URL under them. Below, Recent and Storage tabs show files like frames on the canvas, with the last file opened in a double tile to continue it and the sample file listing the tour, the code view and the AI agent.
+- Kalka's agent is called Pebble: the first agent working in a document always answers to Pebble, in its cursor label, comments (`@Pebble`) and version history, and agents beside it keep a callsign such as Fern.
+- The agent avoids the look that reads as machine-made: it checks its brief against a list of generated-design habits, such as a cream ground with a serif display and a terracotta accent, purple gradients, reflex fonts, identical icon cards and an eyebrow above every heading, and picks again when its palette or type matches one.
 
 ### Fixed
 
@@ -62,41 +72,19 @@
 - Component sets from `.fig` files that save no variant values, such as older community kits, list their variant options in Figma's order, and a variant property's default is the top-left variant's value, as in Figma.
 - Component sets saved to `.fig` open in Figma as component sets with their variant values in order, and variants renamed or given a new property no longer leave Figma reporting the set as broken.
 - Resaving a `.fig` keeps a change to the libraries it enables, instead of keeping the libraries it was opened with.
-
-### Performance
-
-- Typing and other edits no longer rebuild the app menu and command palette on every change, and the properties panel, Typography and Layout guides included, re-renders only the fields an edit changed instead of every field, with variable pickers, the HTML tag list and the export settings no longer redrawn on each keystroke, and dragging or resizing a layer no longer forces a layout of the whole editor on every frame, so typing, gestures and agents editing other layers stay smoother on slower computers.
-### Added
-
-- Import a Claude Design project: drop its exported `.zip` on Kalka, choose File → Import Claude Design project…, or click "a Claude Design project" on the home screen; the desktop app also imports an unpacked project's folder through Open Folder. Each board becomes an artboard where the canvas had it, on its page, with its title; holes, loops, conditions and imported components are filled from the board's own logic, run in a sandbox as the board shows five seconds after it opens, or from its defaults when that logic cannot run. Uploaded images and fonts, and images kept as files of the project, come along, text fields show their placeholder, design system tokens become variables, and canvas titles and sticky notes become text.
-
-### Fixed
-
 - Kalka on the web opens a file handed over by the kalka.design tools again: the tab ignored the site that opened it, since that site is on another origin.
 - Zoomed out, artboards show all their words: a snapshot taken while its fonts were still loading left their text out.
 - Pasted or imported HTML draws as the page does: what its stylesheets say that a layer cannot, such as tiled dot patterns, masks, gradients with many stops and text filled by its background, is kept as CSS; inline SVG icons keep their drawing; a block pulled over a positioned one by a negative margin keeps its background under it, as CSS paints it; an open `<details>` stays open and a closed one's content stays hidden; text for screen readers only is a hidden layer; and words wrap and sit where the page put them.
 - Pasted or imported HTML no longer moves blocks: one centered with `margin: 0 auto` drifted further off its artboard on every layout, a scaled or translated box was transformed twice, and a child of a box with a border sat a border's width off.
 - In the web app, fonts with an optical size axis, such as Bricolage Grotesque or Fraunces, draw at the optical size of each text, as they do on the web, instead of one size drawn for small text.
-### Added
-
-- Hovering a choice in a property list shows it on the canvas before you pick it, for the layer and fill blend modes, the font family and weight, the text case, the horizontal and vertical text alignment, the shader preset, and the color and number variables of a field. Leaving the list puts the design back as it was, and nothing reaches undo, autosave or collaborators until you choose.
-- Agents interview you before a new design: the agent asks what it needs, such as the business and its name, who the page is for, its sections, and colours to use or avoid, and each question appears in the AI panel one at a time with suggested answers you pick in one click, a field for your own, and Skip to let the agent decide. Agents over MCP, such as Claude Code, ask through the new `ask_user` tool.
-
-### Changed
-
-- In the dark theme the pixel sky of the loading screen, the welcome screen and Home is the night of kalka.design's footer, night blue with fine stars and glowing four-point stars, and switching themes lets the night fall over the welcome screen and Home from the top like a veil, or lift for the day. The loading screen shows Kalka's K over that sky instead of blurred blue and white light, in the theme the app opens in. With reduced motion the sky switches at once.
-- Variables open as a page in the desktop editor, over the panels and the canvas, instead of a dialog: the Variables button in the rail stays pressed while it is open and closes it on a second press, and choosing another panel or pressing Escape gives the canvas back as it was. Picking a variable for a property still opens the small list beside the field, and on phones and with the interface hidden variables stay a dialog.
-- The welcome screen matches kalka.design: the pixel sky with drifting dot clouds whose dots twinkle on and off, the agent's cursor named Pebble and yours named as you type, and the name and agent buttons in a framed card, in light and dark themes.
-- Home opens on the kalka.design pixel sky: the greeting and the request to the agent, the sizes to start a design with as chips drawn to their proportions, and Join room, Open, Open folder, Paste HTML and Open from a URL under them. Below, Recent and Storage tabs show files like frames on the canvas, with the last file opened in a double tile to continue it and the sample file listing the tour, the code view and the AI agent.
-- Kalka's agent is called Pebble: the first agent working in a document always answers to Pebble, in its cursor label, comments (`@Pebble`) and version history, and agents beside it keep a callsign such as Fern.
-- The agent avoids the look that reads as machine-made: it checks its brief against a list of generated-design habits, such as a cream ground with a serif display and a terracotta accent, purple gradients, reflex fonts, identical icon cards and an eyebrow above every heading, and picks again when its palette or type matches one.
-
-### Fixed
-
 - Files handed over by the kalka.design tools, such as Open .fig files, open in the web app; the tab ignored them because it did not recognize the site that opened it.
 - The comment button in the toolbar shows as pressed while comment mode is on, instead of turning blank white while the move tool kept its highlight, including in the web demo, where it stayed unlit.
 - Save as Folder asks for the new folder's name and place, as saving a file does, and creates it, instead of writing the document's files straight into the folder you pick; a folder that already holds other files, such as Downloads, is refused with a message.
 - An agent's reply over ACP, such as Claude Code, reads in the order it worked: each passage of text sits between the thoughts and actions around it instead of all the text joining into one block at the top, and a thought arrives as one block instead of a "Thought for 1s" row per fragment.
+
+### Performance
+
+- Typing and other edits no longer rebuild the app menu and command palette on every change, and the properties panel, Typography and Layout guides included, re-renders only the fields an edit changed instead of every field, with variable pickers, the HTML tag list and the export settings no longer redrawn on each keystroke, and dragging or resizing a layer no longer forces a layout of the whole editor on every frame, so typing, gestures and agents editing other layers stay smoother on slower computers.
 
 ## 0.2.0-beta.3.2 — 2026-11-19
 
