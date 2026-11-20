@@ -12,6 +12,7 @@ import {
   holdAgentCreations,
   MAX_HELD_LAYERS,
   MAX_REVEAL_QUEUE_MS,
+  paintersOrder,
   showAgentEdit,
   SKELETON_LEAD_MS,
   stopAgentReveals
@@ -129,6 +130,46 @@ describe("showing an agent's edit", () => {
       expect((skeleton?.until ?? 0) - origin).toBeCloseTo(step.delay, 3)
     }
     stopAgentReveals(agent)
+  })
+
+  test("a frame's background shows before the blocks it holds start to load", () => {
+    const { store, pageId, shown } = editor()
+    const agent = addAgent(store, 'mcp')
+    const finish = store.captureDocumentChange(pageId)
+    const page = store.graph.createNode('FRAME', pageId, { name: 'Page', width: 800, height: 600 })
+    const row = store.graph.createNode('FRAME', page.id, { name: 'Cards', width: 760, height: 200 })
+    const cards = ['A', 'B', 'C'].map((name) => {
+      const card = store.graph.createNode('FRAME', row.id, { name, width: 200, height: 200 })
+      store.graph.createNode('TEXT', card.id, { name: `${name} title`, text: name })
+      return card
+    })
+    showAgentEdit(store, agentEditFromChange(finish()), { agent })
+
+    const skeletons = agentSkeletons(store)
+    const of = (id: string) => skeletons.find((skeleton) => skeleton.nodeId === id)
+    const contentOf = (id: string) => shown[0]?.find((step) => step.id === id)?.delay ?? Infinity
+    // The page loads first; nothing inside it shows a skeleton before its background appears.
+    expect(Math.min(...skeletons.map((skeleton) => skeleton.from))).toBe(of(page.id)?.from ?? -1)
+    expect(of(row.id)?.from).toBeGreaterThanOrEqual(of(page.id)?.until ?? Infinity)
+    for (const card of cards) {
+      expect(of(card.id)?.from).toBeGreaterThanOrEqual(of(row.id)?.until ?? Infinity)
+      expect(contentOf(card.id)).toBeGreaterThan(contentOf(row.id))
+    }
+    // The cards still come one after another.
+    const starts = cards.map((card) => of(card.id)?.from ?? 0)
+    expect(starts).toEqual([...starts].sort((a, b) => a - b))
+    stopAgentReveals(agent)
+  })
+
+  test('blocks beside each other keep their planned turns', () => {
+    const { store, pageId } = editor()
+    const a = store.graph.createNode('FRAME', pageId, { name: 'A' })
+    const b = store.graph.createNode('FRAME', pageId, { name: 'B' })
+    const steps = [
+      { id: a.id, kind: 'appear' as const, delay: 0, duration: 300 },
+      { id: b.id, kind: 'appear' as const, delay: 110, duration: 300 }
+    ]
+    expect(paintersOrder(store.graph, steps).map((step) => step.delay)).toEqual([0, 110])
   })
 
   test("an agent's next edit replays after the one before, never over it", () => {

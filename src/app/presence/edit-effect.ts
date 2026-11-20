@@ -1,4 +1,5 @@
 import type { DocumentChange } from '@kalka/core/editor'
+import type { SceneGraph } from '@kalka/scene-graph'
 import { planReveal, revealEnd, type AgentEdit, type RevealStep } from '@kalka/vue'
 
 import type { EditorStore } from '@/app/editor/active-store'
@@ -55,6 +56,25 @@ function queueReveal(
 }
 
 /**
+ * When each block of an edit starts loading, in painter's order: a block waits until the block
+ * holding it has started to show its content, so a frame's background is there before what sits
+ * on it, the page's first and the cards last. Steps come in document order, parents first, and
+ * keep at least the delay they were planned with.
+ */
+export function paintersOrder(graph: SceneGraph, steps: readonly RevealStep[]): RevealStep[] {
+  const contentAt = new Map<string, number>()
+  const ordered: RevealStep[] = []
+  for (const step of steps) {
+    let holder = graph.getNode(step.id)?.parentId
+    while (holder && !contentAt.has(holder)) holder = graph.getNode(holder)?.parentId
+    const delay = Math.max(step.delay, holder ? (contentAt.get(holder) ?? 0) : 0)
+    contentAt.set(step.id, delay + SKELETON_LEAD_MS)
+    ordered.push({ ...step, delay })
+  }
+  return ordered
+}
+
+/**
  * A skeleton block for each layer that appears: it shows at the layer's turn and fades as the
  * layer's content fades in `SKELETON_LEAD_MS` later.
  */
@@ -77,9 +97,9 @@ export function revealSkeletons(
 }
 
 /**
- * Show an agent's edit as it happens: after its earlier edits have played, its new layers load
- * one by one in document order, top to bottom, each first a skeleton block that then fades into
- * its content. Only the canvas animates: the document already holds the whole edit, and nothing
+ * Show an agent's edit as it happens: after its earlier edits have played, its new blocks load
+ * one by one in painter's order, top to bottom and each frame's background before what it holds,
+ * each first a skeleton that then fades into its content. Only the canvas animates: the document already holds the whole edit, and nothing
  * here waits, so the tool's result is never delayed.
  */
 export function showAgentEdit(
@@ -90,7 +110,10 @@ export function showAgentEdit(
   try {
     flyToCreation(store, edit.created)
     const reducedMotion = !agentAnimationsEnabled.value
-    const planned = planReveal(store.graph, edit, { reducedMotion, typing: false, blocks: true })
+    const planned = paintersOrder(
+      store.graph,
+      planReveal(store.graph, edit, { reducedMotion, typing: false, blocks: true })
+    )
     const now = performance.now()
     const owner = options.agent?.id ?? 'agent'
     const wait = queueReveal(options.agent, planned, now)

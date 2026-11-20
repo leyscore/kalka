@@ -5,6 +5,7 @@ import type { ViewportTransform } from '@kalka/core/geometry'
 import { useCommentsMessages } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
+import { agentHasWritten } from '@/app/presence/activity'
 import { presenceOf } from '@/app/presence/registry'
 import { agentSkeleton } from '@/theme/collaboration/agent-skeleton'
 
@@ -47,6 +48,8 @@ const ghosts = computed(() =>
         agent.status !== 'idle' &&
         !agent.cursor &&
         !(agent.working?.length ?? 0) &&
+        // Once it has written, its work is where it wrote, not in a frame of its own.
+        !agentHasWritten(store, agent.id) &&
         (agent.pageId ?? view.currentPageId) === view.currentPageId
     )
     .map((agent, index) => {

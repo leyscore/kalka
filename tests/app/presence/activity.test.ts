@@ -5,6 +5,7 @@ import { SceneGraph } from '@kalka/scene-graph'
 import type { RemotePeer } from '@/app/collab/types'
 import { createEditorStore, type EditorStore } from '@/app/editor/session'
 import {
+  agentHasWritten,
   finishWorking,
   layerActivity,
   markWorking,
@@ -60,6 +61,15 @@ describe("each layer's agent activity", () => {
       read: { agentId: fern.id, name: fern.name, kind: 'mcp', at: 3000 },
       write: { agentId: ash.id, name: ash.name, kind: 'chat', at: 2000 }
     })
+  })
+
+  test('tells whether an agent has written anything yet, reading alone not counting', () => {
+    const fern = addAgent(store, 'mcp')
+    const { frame } = section()
+    recordLayerActivity(store, fern, 'read', [frame.id])
+    expect(agentHasWritten(store, fern.id)).toBe(false)
+    recordLayerActivity(store, fern, 'write', [frame.id])
+    expect(agentHasWritten(store, fern.id)).toBe(true)
   })
 
   test('is presence only: it never enters the document or its history', () => {

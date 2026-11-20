@@ -89,6 +89,14 @@ export function layerActivity(store: EditorStore, nodeId: string): LayerActivity
   return activityOf(store).layers.get(nodeId)
 }
 
+/** Whether `agentId` has written any layer of this document that is still remembered. */
+export function agentHasWritten(store: EditorStore, agentId: string): boolean {
+  for (const entry of activityOf(store).layers.values()) {
+    if (entry.write?.agentId === agentId) return true
+  }
+  return false
+}
+
 function ancestorIn(graph: SceneGraph, nodeId: string, ids: ReadonlySet<string>): boolean {
   let parentId = graph.getNode(nodeId)?.parentId
   while (parentId) {
