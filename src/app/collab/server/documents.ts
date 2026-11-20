@@ -39,9 +39,21 @@ export const serverTransport = serverRoomJoiner((roomId) =>
 )
 
 /** Opens a server document in a tab of its own, or switches to the tab already showing it. */
-export function openServerDocument(document: ServerDocument): RoomSession | null {
+export function openServerDocument(
+  document: Pick<ServerDocument, 'id' | 'name'>
+): RoomSession | null {
   markServerRoom(document.id)
   return joinRoom(document.id, { tabName: document.name, transport: serverTransport })
+}
+
+/**
+ * Opens a server document from its address, before the server's list has loaded. Null when no
+ * server is signed in. The tab shows `fallbackName` until the document brings its own name.
+ */
+export function openServerDocumentById(id: string, fallbackName: string): RoomSession | null {
+  if (!serverAccount.value) return null
+  const known = serverDocuments.value.find((document) => document.id === id)
+  return openServerDocument({ id, name: known?.name ?? fallbackName })
 }
 
 /** Puts a tab's document on the server: a new server document whose room it then shares. */

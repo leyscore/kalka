@@ -27,6 +27,7 @@
   "agentIdle": "Inactivo",
   "sharedFile": "Archivo compartido",
   "invalidRoomLink": "Eso no es un enlace ni un ID de sala.",
+  "serverFileNeedsSignIn": "Inicia sesión en el servidor de Kalka para abrir este archivo.",
   "joiningTitle": "Entrando en la sala…",
   "connectingDescription": "Conectando con los servidores de la sala.",
   "lookingDescription": "Buscando personas en esta sala.",

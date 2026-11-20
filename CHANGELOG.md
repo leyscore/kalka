@@ -6,6 +6,9 @@
 
 - The user documentation is one click away: a Documentation button on Home and in the editor's left rail, and View › Documentation, open kalka.design/docs in the app's language.
 - Connect Kalka to a self-hosted Kalka server in Settings › Server, signing in with a password or the server's single sign-on. Save on <server> in the Share panel puts a file on the server, where teammates open it from the new Server tab on Home and edit it together in real time, even when the person who shared it is offline; Kalka also keeps a Kalka file of each server document up to date for the server's export. A `kalka://server?url=…` link, such as the one a server's invitation carries, opens Settings › Server with the address filled in.
+- Connect Kalka to a self-hosted Kalka server in Settings › Server, signing in with a password or the server's single sign-on. Save on <server> in the Share panel puts a file on the server, where teammates open it from the new Server tab on Home and edit it together in real time, even when the person who shared it is offline; Kalka also keeps a Kalka file of each server document up to date for the server's export. Each server document has its own address, `/design/<id>/<name>`, which reopens it after a reload and opens it for a signed-in teammate; `?node-id=` shows one layer.
+
+- In the browser, Back and Forward move between the documents you opened in tabs, as they do between pages.
 
 ### Fixed
 

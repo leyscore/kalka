@@ -27,6 +27,7 @@
   "agentIdle": "Неактивен",
   "sharedFile": "Общий файл",
   "invalidRoomLink": "Это не ссылка и не ID комнаты.",
+  "serverFileNeedsSignIn": "Войдите на сервер Kalka, чтобы открыть этот файл.",
   "joiningTitle": "Подключение к комнате…",
   "connectingDescription": "Подключаемся к серверам комнаты.",
   "lookingDescription": "Ищем участников этой комнаты.",

@@ -27,6 +27,7 @@
   "agentIdle": "待機中",
   "sharedFile": "共有ファイル",
   "invalidRoomLink": "ルームのリンクまたはIDではありません。",
+  "serverFileNeedsSignIn": "このファイルを開くには Kalka サーバーにサインインしてください。",
   "joiningTitle": "ルームに参加しています…",
   "connectingDescription": "ルームのサーバーに接続しています。",
   "lookingDescription": "このルームの参加者を探しています。",

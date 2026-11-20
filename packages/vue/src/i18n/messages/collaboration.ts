@@ -31,6 +31,7 @@ export const collaborationMessageDefaults = {
   agentIdle: 'Idle',
   sharedFile: 'Shared file',
   invalidRoomLink: 'That isn’t a room link or ID.',
+  serverFileNeedsSignIn: 'Sign in to the Kalka server to open this file.',
   joiningTitle: 'Joining the room…',
   connectingDescription: 'Connecting to the room’s servers.',
   lookingDescription: 'Looking for people in this room.',

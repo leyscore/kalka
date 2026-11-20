@@ -12,7 +12,7 @@ import { startWebMCP } from '@/app/automation/webmcp/runtime'
 import { exposeCollaborationActions } from '@/app/browser-bridge'
 import { useJoinRoom } from '@/app/collab/join'
 import { bindDesktopRoomLinks } from '@/app/collab/room/links'
-import { syncRoomRoute } from '@/app/collab/route'
+import { openServerDocumentById } from '@/app/collab/server/documents'
 import {
   bindDesktopServerLinks,
   offerLinkedServer,
@@ -29,6 +29,7 @@ import { offerWelcomeOnFirstRun } from '@/app/onboarding/welcome'
 import { appRuntimeConfig } from '@/app/runtime/config'
 import { createDeferred } from '@/app/runtime/deferred'
 import { openSettingsDialog } from '@/app/settings/dialog'
+import { focusNodeWhenReady, syncAddressWithTabs } from '@/app/shell/address/sync'
 import { useDocumentDrop } from '@/app/shell/document-drop'
 import { useDocumentHandoff } from '@/app/shell/document-handoff'
 import { useKeyboard } from '@/app/shell/keyboard/use'
@@ -71,8 +72,28 @@ const shouldCreateHome =
 const { collaboration } = useI18n()
 const joinRoomFromInput = useJoinRoom()
 
+/** Shown in the tab until the server document brings its own name. */
+function nameFromSlug(slug: string): string {
+  const words = slug.replaceAll('-', ' ').trim()
+  return words ? words[0].toLocaleUpperCase() + words.slice(1) : collaboration.value.sharedFile
+}
+
+/** A server document's address opens it, and `?node-id=` shows that layer once it arrives. */
+function openDesignAddress(id: string, slug: string, node: string | null) {
+  const session = openServerDocumentById(id, nameFromSlug(slug))
+  if (session && node) focusNodeWhenReady(session, node)
+  return session
+}
+
 /** A share link opens its room in a tab of its own, so nothing editable shows before it. */
 function openFirstTab(): Tab {
+  const designId = typeof route.params.id === 'string' ? route.params.id : null
+  if (designId) {
+    const slug = typeof route.params.slug === 'string' ? route.params.slug : ''
+    const node = typeof route.query['node-id'] === 'string' ? route.query['node-id'] : null
+    if (openDesignAddress(designId, slug, node) && activeTab.value) return activeTab.value
+    toast.error(collaboration.value.serverFileNeedsSignIn)
+  }
   const roomId = typeof route.params.roomId === 'string' ? route.params.roomId : null
   if (roomId) {
     if (joinRoomFromInput(roomId) && activeTab.value) return activeTab.value
@@ -113,7 +134,11 @@ const collab = useCollab()
 provide(COLLAB_KEY, collab)
 exposeCollaborationActions(collab, joinRoomFromInput)
 exposeAutomationTestRequests()
-syncRoomRoute(router, route)
+const stopAddressSync = syncAddressWithTabs(router, {
+  openDesign: (id, slug) => openDesignAddress(id, slug, null),
+  openShare: (id) => joinRoomFromInput(id),
+  notifyUnavailable: () => toast.error(collaboration.value.serverFileNeedsSignIn)
+})
 
 useEventListener(
   document,
@@ -264,6 +289,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  stopAddressSync()
   stopWebMCP?.()
   void stopMCPRuntime()
   fileAssociationCleanup.value?.()
