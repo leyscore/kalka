@@ -57,7 +57,8 @@ describe('APP_MENU_SCHEMA', () => {
       'snap-geometry',
       'snap-objects',
       'snap-pixel-grid',
-      'settings'
+      'settings',
+      'documentation'
     ])
   })
 
