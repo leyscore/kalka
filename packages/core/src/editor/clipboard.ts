@@ -362,7 +362,9 @@ export function createClipboardActions(ctx: EditorContext) {
     for (const id of nodeIds) {
       const node = ctx.graph.getNode(id)
       if (!node || node.locked) continue
-      const parentId = node.parentId ?? ctx.state.currentPageId
+      // The document and its pages are not layers: pages go through deletePage, which undoes.
+      if (id === ctx.graph.rootId || node.type === 'CANVAS' || !node.parentId) continue
+      const parentId = node.parentId
       if (!acceptsChildren(ctx, parentId)) continue
       const parent = ctx.graph.getNode(parentId)
       const index = parent?.childIds.indexOf(id) ?? -1

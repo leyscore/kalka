@@ -1,8 +1,12 @@
+import { watch } from 'vue'
+
 import { useEditorCommands } from '@kalka/vue'
 import type { EditorCommandId } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import { clearRecentFiles, forgetRecentFile, recentLocalFileAt } from '@/app/recent-files'
+import { appPreferences } from '@/app/settings/preferences/store'
+import { changedChecks, menuChecks } from '@/app/shell/menu/checked'
 import { createSharedEditorMenuActions } from '@/app/shell/menu/editor-actions'
 import {
   openFileDialog,
@@ -28,6 +32,26 @@ function commandMenuIds(entries: readonly AppMenuEntry[]): EditorCommandId[] {
 }
 
 const store = useEditorStore()
+
+/**
+ * Keeps the native menu's check items showing what they control. The native menu starts them
+ * all checked and flips one when clicked, so unsynced items such as Autosave showed the
+ * opposite of their state.
+ */
+export function watchNativeMenuChecks(read: () => Record<string, boolean>): void {
+  watch(
+    read,
+    (next, shown) => {
+      for (const [id, checked] of changedChecks(next, shown)) {
+        void import('@tauri-apps/api/core')
+          .then(({ invoke }) => invoke('set_native_menu_checked', { id, checked }))
+          // An item the native menu leaves out, such as a development one, has nothing to show.
+          .catch(() => undefined)
+      }
+    },
+    { immediate: true, deep: true }
+  )
+}
 const COMMAND_MENU_IDS = new Set<EditorCommandId>(
   APP_MENU_SCHEMA.flatMap((group) => commandMenuIds(group.items))
 )
@@ -37,7 +61,15 @@ export function useEditorMenu() {
 
   watchRecentFilesMenu()
 
-  const { setTheme } = useAppTheme()
+  const { theme, setTheme } = useAppTheme()
+  watchNativeMenuChecks(() =>
+    menuChecks({
+      state: store.state,
+      theme: theme.value,
+      designIssuesOnCanvas: appPreferences.value.designCheck.showOnCanvas,
+      profilerVisible: store.renderer?.profiler.hudVisible ?? false
+    })
+  )
   const { runCommand } = useEditorCommands()
 
   const actions: Partial<Record<string, () => void>> = {

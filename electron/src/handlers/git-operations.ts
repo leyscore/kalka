@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process'
 import { realpath, stat, writeFile } from 'node:fs/promises'
-import { dirname, isAbsolute, join, relative, sep } from 'node:path'
+import { basename, dirname, isAbsolute, join, relative, sep } from 'node:path'
 
 import * as v from 'valibot'
 
@@ -197,12 +197,20 @@ async function requireRepository(documentPath: unknown): Promise<string> {
  * The part of the repository a document owns: its folder. A design kept inside a larger
  * repository, such as an app's, records and lists only its own files, never the rest.
  */
+/**
+ * The paths a document's versions hold: a Kalka folder's whole folder, a document file alone,
+ * so a `.fig` kept in a repository never records or restores the files beside it.
+ */
 async function documentScope(root: string, documentPath: unknown): Promise<string> {
-  const folder = await folderOf(v.parse(AbsolutePath, documentPath))
+  const path = v.parse(AbsolutePath, documentPath)
+  const folder = await folderOf(path)
   // Git names the repository by its real path; a folder reached through a link, such as macOS's
   // /var for /private/var, must be compared the same way.
   const real = await realpath(folder).catch(() => folder)
-  return relative(root, real) || '.'
+  const scope = relative(root, real) || '.'
+  if (folder === path) return scope
+  const file = basename(path)
+  return scope === '.' ? file : join(scope, file)
 }
 
 /** The page's calls; none needs to know which window made it. */

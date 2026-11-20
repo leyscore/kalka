@@ -7,6 +7,7 @@
   "copiedProperties": "Proprietà copiate.",
   "pngClipboardUnavailable": "L’esportazione PNG negli appunti non è disponibile in questo browser.",
   "openFileFailed": "Impossibile aprire «{name}»: {error}",
+  "autosaveFailed": "Impossibile salvare automaticamente “{name}”: {error}. Le ultime modifiche non sono ancora nel file.",
   "importedDOMCSS": "Documento DOM/CSS importato.",
   "importDOMCSSFailed": "Impossibile importare DOM/CSS: {error}",
   "openDOMCSSFailed": "Impossibile aprire il file DOM/CSS: {error}",
@@ -31,5 +32,8 @@
   "openQueuedFilesFailed": "Impossibile aprire i file passati a Kalka: {error}",
   "tokensLeftOut": "Esclusi dal foglio di stile: {names}.",
   "designTokensLeftOut": "Esclusi dai design token: {names}.",
-  "designTokensImported": "Importati {count} design token."
+  "designTokensImported": "Importati {count} design token.",
+  "folderNotEmpty": "“{name}” contiene già altri file. Scegli una cartella vuota o una cartella Kalka da sostituire.",
+  "fileChangedOutside": "“{name}” è stato modificato da un’altra app. Le modifiche non salvate restano; salvando sostituisci quella versione.",
+  "reloadFromDisk": "Ricarica dal disco"
 }

@@ -7,6 +7,7 @@
   "copiedProperties": "Eigenschaften kopiert.",
   "pngClipboardUnavailable": "Der PNG-Export in die Zwischenablage ist in diesem Browser nicht verfügbar.",
   "openFileFailed": "„{name}“ konnte nicht geöffnet werden: {error}",
+  "autosaveFailed": "„{name}“ konnte nicht automatisch gesichert werden: {error}. Deine letzten Änderungen sind noch nicht in der Datei.",
   "importedDOMCSS": "DOM/CSS-Dokument importiert.",
   "importDOMCSSFailed": "DOM/CSS konnte nicht importiert werden: {error}",
   "openDOMCSSFailed": "DOM/CSS-Datei konnte nicht geöffnet werden: {error}",
@@ -31,5 +32,8 @@
   "openQueuedFilesFailed": "Die an Kalka übergebenen Dateien konnten nicht geöffnet werden: {error}",
   "tokensLeftOut": "Nicht im Stylesheet enthalten: {names}.",
   "designTokensLeftOut": "Nicht in den Design-Tokens enthalten: {names}.",
-  "designTokensImported": "{count} Design-Tokens importiert."
+  "designTokensImported": "{count} Design-Tokens importiert.",
+  "folderNotEmpty": "„{name}“ enthält bereits andere Dateien. Wähle einen leeren Ordner oder einen Kalka-Ordner, den du ersetzen möchtest.",
+  "fileChangedOutside": "„{name}“ wurde von einer anderen App geändert. Deine ungesicherten Änderungen bleiben erhalten; Sichern ersetzt diese Version.",
+  "reloadFromDisk": "Von der Festplatte neu laden"
 }

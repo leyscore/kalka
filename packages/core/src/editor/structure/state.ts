@@ -1,4 +1,8 @@
-import { findInstanceAncestor, setInstanceOverride } from '@kalka/scene-graph'
+import {
+  cloneInstanceOverrideState,
+  findInstanceAncestor,
+  setInstanceOverride
+} from '@kalka/scene-graph'
 
 import { assertNodeEditable } from '#core/editor/capabilities'
 import {
@@ -16,9 +20,31 @@ export function createStructureStateActions(ctx: EditorContext) {
     // The property takes the value even where the layer already shows it, so the two agree.
     if (owner && bindsVisibility(node) && applyBoundVisibilityEdit(ctx, id, visible)) return
     if (node.visible === visible) return
+    const overrides = owner ? cloneInstanceOverrideState(owner.instanceOverrides) : null
+    const show = (value: boolean) => {
+      ctx.graph.updateNode(id, { visible: value })
+      if (node.parentId) ctx.runLayoutForNode(node.parentId)
+    }
     if (owner) setInstanceOverride(owner.instanceOverrides, owner.id, id, 'visible', true)
-    ctx.graph.updateNode(id, { visible })
-    if (node.parentId) ctx.runLayoutForNode(node.parentId)
+    show(visible)
+    const changedOverrides = owner ? cloneInstanceOverrideState(owner.instanceOverrides) : null
+    ctx.undo.push({
+      label: visible ? 'Show layer' : 'Hide layer',
+      forward: () => {
+        if (owner && changedOverrides)
+          ctx.graph.updateNode(owner.id, {
+            instanceOverrides: cloneInstanceOverrideState(changedOverrides)
+          })
+        show(visible)
+      },
+      inverse: () => {
+        if (owner && overrides)
+          ctx.graph.updateNode(owner.id, {
+            instanceOverrides: cloneInstanceOverrideState(overrides)
+          })
+        show(!visible)
+      }
+    })
   }
 
   function toggleNodeVisibility(id: string) {
@@ -31,7 +57,13 @@ export function createStructureStateActions(ctx: EditorContext) {
     assertNodeEditable(ctx.graph, id)
     const node = ctx.graph.getNode(id)
     if (!node) return
-    ctx.graph.updateNode(id, { locked: !node.locked })
+    const locked = !node.locked
+    ctx.graph.updateNode(id, { locked })
+    ctx.undo.push({
+      label: locked ? 'Lock layer' : 'Unlock layer',
+      forward: () => ctx.graph.updateNode(id, { locked }),
+      inverse: () => ctx.graph.updateNode(id, { locked: !locked })
+    })
   }
 
   function toggleVisibility() {
@@ -42,12 +74,16 @@ export function createStructureStateActions(ctx: EditorContext) {
       const node = ctx.graph.getNode(id)
       return node ? [[id, !node.visible] as const] : []
     })
-    for (const [id, visible] of targets) setNodeVisibility(id, visible)
+    ctx.undo.runBatch('Show/hide', () => {
+      for (const [id, visible] of targets) setNodeVisibility(id, visible)
+    })
   }
 
   function toggleLock() {
     for (const id of ctx.state.selectedIds) assertNodeEditable(ctx.graph, id)
-    for (const id of ctx.state.selectedIds) toggleNodeLock(id)
+    ctx.undo.runBatch('Lock/unlock', () => {
+      for (const id of ctx.state.selectedIds) toggleNodeLock(id)
+    })
   }
 
   return { toggleNodeVisibility, toggleNodeLock, toggleVisibility, toggleLock }

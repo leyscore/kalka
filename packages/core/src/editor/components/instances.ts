@@ -4,14 +4,8 @@ import { getAxisAlignedWorldBounds, getWorldMatrix } from '@kalka/scene-graph/co
 import Matrix from '@kalka/scene-graph/matrix'
 
 import { prepareSlotEdits } from '#core/editor/components/slots'
+import { restoreSubtree, snapshotSubtree } from '#core/editor/history/subtree'
 import type { EditorContext } from '#core/editor/types'
-
-type InstanceCreateSnapshot = Partial<SceneNode> & { id: string }
-
-function createInstanceSnapshot(instance: SceneNode): InstanceCreateSnapshot {
-  const { childIds: _childIds, parentId: _parentId, type: _type, ...snapshot } = instance
-  return snapshot
-}
 
 type DefaultInstancePlacement = {
   local: Vector
@@ -80,16 +74,24 @@ export function createComponentInstanceActions(ctx: EditorContext) {
     }
 
     const instanceId = instance.id
-    const snapshot = createInstanceSnapshot(instance)
     ctx.setSelectedIds(new Set([instanceId]))
+    // Redo brings back the instance as it was when undone, with its layers' ids, so later steps
+    // that edited those layers find them again.
+    let removed: { subtree: Map<string, SceneNode>; index: number } | null = null
 
     ctx.undo.push({
       label: 'Create instance',
       forward: () => {
-        ctx.graph.createInstance(componentId, parentId, { ...snapshot })
+        const root = removed?.subtree.get(instanceId)
+        if (removed && root) {
+          restoreSubtree(ctx.graph, root, parentId, removed.subtree)
+          ctx.graph.reorderChild(instanceId, parentId, removed.index)
+        }
         ctx.setSelectedIds(new Set([instanceId]))
       },
       inverse: () => {
+        const index = ctx.graph.getNode(parentId)?.childIds.indexOf(instanceId) ?? -1
+        removed = { subtree: snapshotSubtree(ctx.graph, instanceId), index }
         ctx.graph.deleteNode(instanceId)
         ctx.setSelectedIds(new Set(previousSelection))
       }

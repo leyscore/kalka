@@ -7,13 +7,18 @@ import { loadCanvasKit } from '@kalka/vue'
 import { createAutosave } from '@/app/document/autosave'
 import { domRasterize } from '@/app/document/export/dom-raster'
 import { createDocumentChanges } from '@/app/document/io/changes'
-import { folderName, isKalkaFolderPath } from '@/app/document/io/kalka-folder'
+import { canHoldKalkaFolder, folderName, isKalkaFolderPath } from '@/app/document/io/kalka-folder'
 import {
   documentNameFromFigPath,
   downloadNameFromPath,
   figDownloadName
 } from '@/app/document/io/names'
-import { createSaveActions } from '@/app/document/io/save'
+import {
+  chooseSaveAsTarget,
+  createSaveActions,
+  saveAsTargetName,
+  type SaveAsTarget
+} from '@/app/document/io/save'
 import { createDocumentSourceState } from '@/app/document/io/source-state'
 import {
   fileFormatForName,
@@ -23,6 +28,7 @@ import {
 } from '@/app/document/io/types'
 import { createDocumentRecovery } from '@/app/document/recovery'
 import { recoveryEnabled } from '@/app/document/recovery/preferences'
+import { restorableFilePath } from '@/app/document/recovery/source-path'
 import { notificationMessages } from '@/app/i18n/notifications'
 import type { StorageDocumentBinding, StorageProviderID } from '@/app/integrations/storage/types'
 import { toast } from '@/app/shell/ui'
@@ -114,14 +120,17 @@ export function createDocumentSourceActions({
     version: changes.capture,
     isEnabled: () => recoveryEnabled.value,
     buildFigFile: buildRecoveryFigFile,
-    hasWritableSource: () => !!getFileHandle() || !!getFilePath() || !!getStorageBinding()
+    isAutosaved: () =>
+      state.autosaveEnabled &&
+      !autosave.isFailing() &&
+      (!!getFileHandle() || !!getFilePath() || !!getStorageBinding()),
+    sourcePath: () => restorableFilePath(getFilePath())
   })
 
-  const { saveFigFile, saveFigFileAs, writeFile } = createSaveActions({
+  const { saveFigFile, writeFile } = createSaveActions({
     state,
     version: changes.capture,
     buildFigFile: buildDocumentFile,
-    setSourceFormat,
     getFilePath,
     setFilePath,
     getFileHandle,
@@ -133,15 +142,21 @@ export function createDocumentSourceActions({
     setSourceIdentity,
     setSavedVersion,
     setLastWriteTime,
-    startWatchingFile: () => {
-      void startWatchingFile()
-    },
     onWriteSuccess: (version) => recovery.markProtectedVersion(version),
     onDownloadSuccess: (version) => recovery.markProtectedVersion(version),
-    onSavedAs: (format) => {
-      if (format === 'fig') warnFigmaLosses(editor.graph)
-    }
+    saveAs: () => saveFigFileAs()
   })
+
+  /** The file is behind now: what it lacks is kept for recovery until a save succeeds. */
+  function reportAutosaveFailure(failure: unknown) {
+    toast.error(
+      notificationMessages.get().autosaveFailed({
+        name: state.documentName || 'Untitled',
+        error: failure instanceof Error ? failure.message : String(failure)
+      })
+    )
+    recovery.persistNow().catch((cause) => console.warn('[Recovery] Snapshot failed:', cause))
+  }
 
   const autosave = createAutosave({
     state,
@@ -152,7 +167,8 @@ export function createDocumentSourceActions({
       const revision = changes.capture()
       const data = await buildDocumentFile()
       if (await writeFile(data, version)) changes.markSaved(revision)
-    }
+    },
+    onFailure: reportAutosaveFailure
   })
 
   /** The document as it is now is saved: nothing to autosave, and nothing to recover. */
@@ -251,6 +267,32 @@ export function createDocumentSourceActions({
     }
   }
 
+  /** Points the document at a Save As target, in the format its file name says. */
+  function planSaveAsTarget(target: SaveAsTarget) {
+    stopWatchingFile()
+    setStorageBinding(null)
+    const name = saveAsTargetName(target)
+    setSourceFormat(fileFormatForName(name))
+    setFilePath(target.kind === 'path' ? target.path : null)
+    setFileHandle(target.kind === 'handle' ? target.handle : null)
+    if (target.kind === 'download') setDownloadName(name)
+    state.documentName = documentNameFromFigPath(name)
+  }
+
+  /**
+   * Saves to a place the person picks. A failed write keeps the place, name and format the
+   * document had, as any save to a new target does.
+   */
+  async function saveFigFileAs(): Promise<boolean> {
+    const target = await chooseSaveAsTarget(getDownloadName())
+    if (!target) return false
+    const saved = await saveToNewTarget(() => planSaveAsTarget(target))
+    if (!saved) return false
+    if (target.kind !== 'download') void startWatchingFile()
+    if (fileFormatForName(saveAsTargetName(target)) === 'fig') warnFigmaLosses(editor.graph)
+    return true
+  }
+
   async function saveFigFileToPath(path: string): Promise<boolean> {
     const saved = await saveToNewTarget(() => setPlannedFilePath(path))
     if (saved) void startWatchingFile()
@@ -276,6 +318,11 @@ export function createDocumentSourceActions({
 
   /** Save the document as a Kalka folder and keep editing it there. */
   async function saveKalkaFolderToPath(folder: string): Promise<boolean> {
+    // Saving again into the folder the document already lives in needs no check.
+    if (folder !== getFilePath() && !(await canHoldKalkaFolder(folder))) {
+      toast.error(notificationMessages.get().folderNotEmpty({ name: folderName(folder) }))
+      return false
+    }
     const saved = await saveToNewTarget(() => {
       stopWatchingFile()
       setStorageBinding(null)
@@ -310,7 +357,8 @@ export function createDocumentSourceActions({
     startWatchingCurrentFile,
     disposeDocumentIO,
     saveFigFile: () => saveAndTrack(saveFigFile),
-    saveFigFileAs: () => saveAndTrack(saveFigFileAs),
+    // Saving to the new target records the saved revision itself.
+    saveFigFileAs,
     hasUnsavedChanges: changes.hasUnsavedChanges,
     markDocumentSaved,
     getStorageBinding,

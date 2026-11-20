@@ -26,18 +26,14 @@ describe('document versions in git', () => {
   test('a version names the agents in its trailers, and the history reads them back', async () => {
     const folder = repository()
     writeFileSync(join(folder, 'index.html'), '<h1>One</h1>')
-    await gitHandlers.commit(
-      context,
-      join(folder, 'project.json'),
-      'Hero\n\nKalka-Agent: Fern\nKalka-Agent: Oak'
-    )
-    const [version] = await gitHandlers.log(context, join(folder, 'project.json'), 5)
+    await gitHandlers.commit(context, folder, 'Hero\n\nKalka-Agent: Fern\nKalka-Agent: Oak')
+    const [version] = await gitHandlers.log(context, folder, 5)
     expect(version).toMatchObject({ author: 'Ada', subject: 'Hero', agents: ['Fern', 'Oak'] })
   })
 
   test('restoring puts the files back as they were, removing ones added since', async () => {
     const folder = repository()
-    const document = join(folder, 'project.json')
+    const document = folder
     writeFileSync(join(folder, 'index.html'), '<h1>One</h1>')
     await gitHandlers.commit(context, document, 'First')
     const [first] = await gitHandlers.log(context, document, 1)
@@ -58,10 +54,34 @@ describe('document versions in git', () => {
   test('refuses anything but a commit hash', async () => {
     const folder = repository()
     writeFileSync(join(folder, 'index.html'), 'x')
-    await gitHandlers.commit(context, join(folder, 'project.json'), 'First')
+    await gitHandlers.commit(context, folder, 'First')
     for (const hash of ['--orphan', 'HEAD~1', 'main..HEAD', ''])
-      await expect(
-        gitHandlers.restore(context, join(folder, 'project.json'), hash)
-      ).rejects.toThrow()
+      await expect(gitHandlers.restore(context, folder, hash)).rejects.toThrow()
+  })
+
+  test('a document file in a repository versions only itself, never the files beside it', async () => {
+    const folder = repository()
+    const poster = join(folder, 'poster.fig')
+    const notes = join(folder, 'notes.md')
+    writeFileSync(poster, 'poster one')
+    writeFileSync(notes, 'notes one')
+    execFileSync('git', ['add', '--all'], { cwd: folder })
+    execFileSync('git', ['commit', '-q', '-m', 'Start'], { cwd: folder })
+    writeFileSync(poster, 'poster two')
+    writeFileSync(notes, 'notes in progress')
+    await gitHandlers.commit(context, poster, 'Poster two', undefined)
+    const [version] = await gitHandlers.log(context, poster, 1)
+    const changed = execFileSync('git', ['show', '--name-only', '--format=', version.hash], {
+      cwd: folder,
+      encoding: 'utf8'
+    })
+    expect(changed.trim()).toBe('poster.fig')
+
+    const start = (await gitHandlers.log(context, poster, 5)).at(-1)
+    if (!start) throw new Error('No first version')
+    await gitHandlers.restore(context, poster, start.hash)
+    expect(readFileSync(poster, 'utf8')).toBe('poster one')
+    // Work in progress beside the document stays as it was.
+    expect(readFileSync(notes, 'utf8')).toBe('notes in progress')
   })
 })

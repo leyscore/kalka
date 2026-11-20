@@ -80,6 +80,8 @@ export function createDocumentChanges(editor: Editor) {
     hasUnsavedChanges: () => dirty.value,
     capture,
     markSaved: (version = capture()) => {
+      // A save of an earlier state that ends last does not take back a later save's state.
+      if (version < savedRevision.value) return
       savedHistory = capturedHistory.has(version) ? capturedHistory.get(version) : UNKNOWN_HISTORY
       // A later save still in progress, such as a manual save overlapping an autosave, keeps its own.
       for (const captured of capturedHistory.keys()) {

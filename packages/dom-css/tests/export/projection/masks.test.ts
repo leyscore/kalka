@@ -75,6 +75,28 @@ describe('mask projection', () => {
     expect(svg).toContain('matrix(1 0 0 1 10 20)')
   })
 
+  test('what a masked layer draws past its masks is cut at their area, as Figma cuts it', () => {
+    // Chromium leaves children far outside a no-clip mask unmasked (light rays in a
+    // masked background showed past the page), so the masks' area also clips.
+    const { graph, frame } = maskedFrame()
+    graph.createNode('RECTANGLE', frame.id, { name: 'Above', x: 10, y: 10, width: 150, height: 50 })
+    const styles = projectChildren(graph, frame)
+    // The ellipse's box, 10,20 100×60 in the layer's, reaches 30 past its bottom.
+    expect(styles.get('Above')?.['clip-path']).toBe('inset(20px 40px -30px 10px)')
+    expect(styles.get('Below')?.['clip-path']).toBeUndefined()
+  })
+
+  test('masks in one run add up, so the cut holds all of them', () => {
+    const { graph, frame } = maskedFrame()
+    const square = { y: 100, width: 30, height: 30, isMask: true }
+    graph.createNode('RECTANGLE', frame.id, { name: 'Second Mask', ...square })
+    graph.createNode('RECTANGLE', frame.id, { name: 'Both', x: 10, y: 10, width: 150, height: 50 })
+    // The ellipse spans 10,20 to 110,80 in the layer's box and the square -10,90 to 20,120.
+    expect(projectChildren(graph, frame).get('Both')?.['clip-path']).toBe(
+      'inset(20px 40px -70px -10px)'
+    )
+  })
+
   test('a rotated layer takes the mask turned back into its own box', () => {
     const { graph, frame } = maskedFrame()
     graph.createNode('RECTANGLE', frame.id, {
@@ -91,6 +113,41 @@ describe('mask projection', () => {
     expect(style['mask-size']).toBe('60px 100px')
     expect(style['mask-position']).toBe('20px -20px')
     expect(svg).toContain('matrix(0 -1 1 0 20 80)')
+  })
+
+  test('a mask fills with its own paint: a gradient fading out masks less and less', () => {
+    const { graph, frame, mask } = maskedFrame()
+    graph.updateNode(mask.id, {
+      fills: [
+        {
+          type: 'GRADIENT_LINEAR',
+          color: { r: 0, g: 0, b: 0, a: 1 },
+          opacity: 1,
+          visible: true,
+          gradientStops: [
+            { color: { r: 0, g: 0, b: 0, a: 1 }, position: 0 },
+            { color: { r: 0, g: 0, b: 0, a: 0 }, position: 1 }
+          ],
+          gradientTransform: { m00: 1, m01: 0, m02: 0, m10: 0, m11: 1, m12: 0 }
+        }
+      ]
+    })
+    graph.createNode('RECTANGLE', frame.id, { name: 'Above', width: 150, height: 150 })
+    const [svg] = maskImages(projectChildren(graph, frame).get('Above')?.['mask-image'])
+    expect(svg).toContain('<linearGradient')
+    expect(svg).toContain('stop-opacity="1"')
+    expect(svg).toContain('stop-opacity="0"')
+    expect(svg).toContain('fill="url(#')
+  })
+
+  test('a half transparent mask lets the layers above show half through', () => {
+    const { graph, frame, mask } = maskedFrame()
+    graph.updateNode(mask.id, {
+      fills: [{ type: 'SOLID', color: { r: 0, g: 0, b: 0, a: 1 }, opacity: 0.5, visible: true }]
+    })
+    graph.createNode('RECTANGLE', frame.id, { name: 'Above', width: 150, height: 150 })
+    const [svg] = maskImages(projectChildren(graph, frame).get('Above')?.['mask-image'])
+    expect(svg).toContain('fill-opacity="0.5"')
   })
 
   test('a luminance mask masks by brightness', () => {

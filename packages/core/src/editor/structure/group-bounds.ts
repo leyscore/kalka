@@ -20,3 +20,28 @@ export function fitEnclosingGroupsWithUndo(ctx: EditorContext, parentIds: Iterab
     inverse: () => undoGroupFit(ctx.graph, fit)
   })
 }
+
+/** Layer fields whose change can move a layer's edges, and with them its group's. */
+const GROUP_FIT_FIELDS: ReadonlySet<string> = new Set(['x', 'y', 'width', 'height', 'rotation'])
+
+/**
+ * Records `record` and the refit of the groups around `nodeId` as one undo step, when `fields`
+ * can change the layer's box: in Figma a group always spans its layers.
+ */
+export function recordWithGroupFit(
+  ctx: EditorContext,
+  nodeId: string,
+  label: string,
+  fields: Iterable<string>,
+  record: () => void
+): void {
+  const parentId = ctx.graph.getNode(nodeId)?.parentId
+  if (!parentId || ![...fields].some((field) => GROUP_FIT_FIELDS.has(field))) {
+    record()
+    return
+  }
+  ctx.undo.runBatch(label, () => {
+    record()
+    fitEnclosingGroupsWithUndo(ctx, [parentId])
+  })
+}

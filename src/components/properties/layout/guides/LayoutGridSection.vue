@@ -4,7 +4,7 @@ import { computed, ref } from 'vue'
 
 import type { LayoutGrid, SceneNode } from '@kalka/scene-graph'
 import { AUTO_LAYOUT_GRID_COUNT, layoutGridCount } from '@kalka/scene-graph/layout-guides'
-import { useEditor, useI18n, useSceneComputed } from '@kalka/vue'
+import { useEditor, useI18n, useSelectionState } from '@kalka/vue'
 
 import ColorInput from '@/components/ColorPicker/ColorInput.vue'
 import NumberField from '@/components/inputs/NumberField.vue'
@@ -22,7 +22,9 @@ const { panels } = useI18n()
 
 // Every selected frame's guides, as Figma edits several frames at once: the panel lists them
 // while the frames' guides match, and offers only Add, which replaces them, while they differ.
-const targets = useSceneComputed(() => editor.getSelectedNodes())
+// The shared copies change only in the fields that change, so typing or resizing a layer does
+// not re-render the guides.
+const { selectedNodes: targets } = useSelectionState()
 const mixed = computed(() => {
   const [first, ...rest] = targets.value
   return !!first && rest.some((node) => !isEqual(node.layoutGrids, first.layoutGrids))

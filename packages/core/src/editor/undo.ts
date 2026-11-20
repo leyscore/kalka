@@ -10,8 +10,18 @@ import { assertNodeEditable } from './capabilities'
 import {
   captureDocumentChange as startDocumentChange,
   restoreDocumentChange as applyDocumentChangeToEditor,
+  withoutLayerFields,
   type DocumentChange
 } from './history/document-change'
+
+/** What typing changes on a text layer: its text, its style runs, and the size it grows to. */
+const TEXT_EDIT_FIELDS: ReadonlySet<PropertyKey> = new Set([
+  'text',
+  'styleRuns',
+  'derivedTextGlyphs',
+  'width',
+  'height'
+])
 import { collectNodePositions, pushPositionUndo } from './history/position'
 import {
   restorePageFromSnapshot as restorePageSnapshot,
@@ -19,6 +29,7 @@ import {
   type PageSnapshot
 } from './history/snapshot'
 import { restoreSubtree, snapshotSubtree } from './history/subtree'
+import { recordWithGroupFit } from './structure/group-bounds'
 import { textAutoResizeChanges } from './text/auto-resize'
 import type { EditorContext } from './types'
 
@@ -146,6 +157,12 @@ export function createUndoActions(ctx: EditorContext) {
     const final: ResizeOriginal = hasGeometry
       ? createResizeSnapshot(node)
       : { x: node.x, y: node.y, width: node.width, height: node.height, style: { ...node.style } }
+    recordWithGroupFit(ctx, nodeId, 'Resize', ['width', 'height'], () =>
+      pushResize(nodeId, original, final)
+    )
+  }
+
+  function pushResize(nodeId: string, original: ResizeOriginal, final: ResizeOriginal) {
     ctx.undo.push({
       label: 'Resize',
       forward: () => {
@@ -212,15 +229,18 @@ export function createUndoActions(ctx: EditorContext) {
     const node = ctx.graph.getNode(nodeId)
     if (!node) return
     const finalRotation = node.rotation
-    ctx.undo.push({
-      label: 'Rotate',
-      forward: () => {
-        ctx.graph.updateNode(nodeId, { rotation: finalRotation })
-      },
-      inverse: () => {
-        ctx.graph.updateNode(nodeId, { rotation: origRotation })
-      }
-    })
+    // A turned layer takes another place in its auto layout parent and another box in its group.
+    const rotate = (rotation: number) => {
+      ctx.graph.updateNode(nodeId, { rotation })
+      ctx.runLayoutForNode(nodeId)
+    }
+    recordWithGroupFit(ctx, nodeId, 'Rotate', ['rotation'], () =>
+      ctx.undo.push({
+        label: 'Rotate',
+        forward: () => rotate(finalRotation),
+        inverse: () => rotate(origRotation)
+      })
+    )
   }
 
   function commitNodeUpdate(nodeId: string, previous: Partial<SceneNode>, label = 'Update') {
@@ -271,7 +291,26 @@ export function createUndoActions(ctx: EditorContext) {
    * function ends it with what changed.
    */
   function captureDocumentChange(pageId = ctx.state.currentPageId): () => DocumentChange {
-    return startDocumentChange(ctx.graph, pageId)
+    const finish = startDocumentChange(ctx.graph, pageId)
+    // A person may edit while an agent's call awaits; those edits are steps of their own.
+    const following = ctx.undo.followSteps()
+    const record = () => {
+      const steps = following.stop()
+      if (!steps?.length) return finish()
+      // Their changes are taken out of the recording, so undoing it keeps them.
+      ctx.undo.replaySteps(steps, 'inverse')
+      try {
+        return finish()
+      } finally {
+        ctx.undo.replaySteps(steps, 'forward')
+      }
+    }
+    return () => {
+      const change = record()
+      // Text being typed is recorded as its own step when the edit ends.
+      const typing = ctx.state.editingTextId
+      return typing ? withoutLayerFields(change, typing, TEXT_EDIT_FIELDS) : change
+    }
   }
 
   function restoreDocumentChange(change: DocumentChange, side: 'before' | 'after') {

@@ -191,6 +191,82 @@ describe('selected-node preview projections', () => {
     }
   })
 
+  test('a committed edit updates only readers of the fields it changed, and other layers none', () => {
+    const fixture = setup()
+    const { editor, first, second, selection } = fixture
+    try {
+      const calls = { x: 0, width: 0, name: 0 }
+      const x = computed(() => {
+        calls.x++
+        return selection.node.value?.x
+      })
+      const width = computed(() => {
+        calls.width++
+        return selection.node.value?.width
+      })
+      const name = computed(() => {
+        calls.name++
+        return selection.node.value?.name
+      })
+      expect([x.value, width.value, name.value]).toEqual([10, 100, first.name])
+      const selected = selection.node.value
+
+      // Typing in a layer, or an agent editing another one, changes one field at a time.
+      editor.updateNode(first.id, { name: 'Renamed' })
+      expect([x.value, width.value, name.value]).toEqual([10, 100, 'Renamed'])
+      editor.updateNode(second.id, { x: 500, width: 20 })
+      expect([x.value, width.value, name.value]).toEqual([10, 100, 'Renamed'])
+
+      expect(selection.node.value).toBe(selected)
+      expect(calls).toEqual({ x: 1, width: 1, name: 2 })
+    } finally {
+      fixture.dispose()
+    }
+  })
+
+  test('a scene change without an edit event reaches the copies once the task settles', async () => {
+    const fixture = setup()
+    const { editor, first, selection } = fixture
+    try {
+      const calls = { x: 0 }
+      const x = computed(() => {
+        calls.x++
+        return selection.node.value?.x
+      })
+      expect(x.value).toBe(10)
+      // A layout pass or a variable's value moves the scene version once per layer it touches.
+      Object.assign(first, { x: 25 })
+      for (let index = 0; index < 50; index++) editor.requestRender()
+      await Promise.resolve()
+      expect(x.value).toBe(25)
+      expect(calls.x).toBe(2)
+    } finally {
+      fixture.dispose()
+    }
+  })
+
+  test('components of one editor share one selection state, which outlives its first user', () => {
+    const fixture = setup()
+    const { editor, first } = fixture
+    try {
+      const app = createApp({ render: () => null })
+      app.provide(EDITOR_KEY, editor)
+      const firstScope = effectScope()
+      const secondScope = effectScope()
+      const one = app.runWithContext(() => firstScope.run(() => useSelectedNodeState()))
+      const two = app.runWithContext(() => secondScope.run(() => useSelectedNodeState()))
+      expect(one).toBe(two)
+      firstScope.stop()
+      editor.updateNode(first.id, { x: 42 })
+      expect(two?.node.value?.x).toBe(42)
+      secondScope.stop()
+      const three = app.runWithContext(() => effectScope().run(() => useSelectedNodeState()))
+      expect(three).not.toBe(two)
+    } finally {
+      fixture.dispose()
+    }
+  })
+
   test('tracks multi-selection, selection changes and preview cancellation', () => {
     const fixture = setup()
     const { editor, first, second, selection } = fixture

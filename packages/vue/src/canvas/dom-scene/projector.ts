@@ -14,6 +14,7 @@ import type { SceneGraph, SceneNode } from '@kalka/scene-graph'
 import { blendModeToCSS } from '@kalka/scene-graph/css-model'
 
 import { buildNode, patchAttributes } from './build'
+import { deviceScale, HAIRLINE_SCALE, setDeviceScale } from './device-scale'
 import {
   addArtboardFont,
   placeArtboardFrame,
@@ -186,6 +187,11 @@ export class DomSceneProjector {
    */
   setView(view: ProjectorView): void {
     this.artboards.setView(view)
+    // Once the view rests: a new scale restyles every artboard, too much for each frame of a zoom.
+    const scale = deviceScale(view.zoom, view.pixelRatio)
+    if (!view.resting || scale === this.#deviceScale) return
+    this.#deviceScale = scale
+    for (const slot of this.artboards.values()) if (slot.doc) setDeviceScale(slot.doc, scale)
   }
 
   /**
@@ -330,6 +336,8 @@ export class DomSceneProjector {
     this.dirty.add(artboardId === id || !node.parentId ? id : node.parentId)
   }
 
+  /** Device pixels per CSS pixel the artboards were last given. */
+  #deviceScale = 1
   #tokensCSS = ''
 
   /** The variables stylesheet every artboard carries, now and when it opens. */
@@ -666,6 +674,7 @@ export class DomSceneProjector {
     if (this.destroyed || this.artboards.get(slot.id) !== slot) return
     const doc = slot.doc
     if (doc) {
+      setDeviceScale(doc, this.#deviceScale)
       for (const face of this.options.fonts?.() ?? []) addArtboardFont(doc, face)
       setArtboardTokens(doc, this.#tokensCSS)
       const reflowed = () => {
@@ -753,7 +762,8 @@ export class DomSceneProjector {
       vectorElement: this.options.vectorElement,
       shallow,
       derivedSizes: true,
-      fontFallbacks: this.options.fontFallbacks?.()
+      fontFallbacks: this.options.fontFallbacks?.(),
+      hairlineScale: HAIRLINE_SCALE
     })
     return doc.children[0] ?? null
   }

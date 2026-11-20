@@ -21,6 +21,33 @@ type PageRequest = Pick<NodeRasterRequest, 'graph' | 'nodeIds' | 'background'> &
 }
 
 /**
+ * The page moved so the image starts where the layers' ink does. The page draws the layers from
+ * the corner of their boxes, but shadows, outer strokes and overflowing children can reach above
+ * or left of them, which the image includes: without the move they would be cut off and the
+ * layers drawn too high or too far left.
+ */
+function placedInBounds(
+  html: string,
+  request: Pick<PageRequest, 'graph' | 'nodeIds'>,
+  bounds: { minX: number; minY: number }
+): string {
+  let minX = Infinity
+  let minY = Infinity
+  for (const id of request.nodeIds) {
+    const node = request.graph.getNode(id)
+    if (!node) continue
+    const parent = node.parentId ? request.graph.getAbsolutePosition(node.parentId) : { x: 0, y: 0 }
+    minX = Math.min(minX, parent.x + node.x)
+    minY = Math.min(minY, parent.y + node.y)
+  }
+  const dx = Number.isFinite(minX) ? minX - bounds.minX : 0
+  const dy = Number.isFinite(minY) ? minY - bounds.minY : 0
+  if (dx === 0 && dy === 0) return html
+  const style = `<style>body{position:relative;left:${dx}px;top:${dy}px}</style>`
+  return html.replace('</head>', `${style}</head>`)
+}
+
+/**
  * Draws layers as the canvas draws them: the standalone HTML export of the layers, with the font
  * files the canvas draws with beside it, painted by Chromium in Kalka's render host, an Electron
  * process that shows no window. Null when there is no Electron, or the render fails, so the export uses CanvasKit.
@@ -36,10 +63,17 @@ async function renderWithElectron(request: PageRequest): Promise<Uint8Array | nu
     const { html, assets } = await renderNodesToHTML(
       request.graph,
       [...request.nodeIds],
-      { html: 'standalone', assets: 'external', fonts: 'loaded', pretty: false },
+      {
+        html: 'standalone',
+        assets: 'external',
+        fonts: 'loaded',
+        pretty: false,
+        // An image snaps strokes to device pixels; a PDF keeps them as drawn.
+        hairlineScale: request.format === 'PDF' ? undefined : request.scale
+      },
       'page.html'
     )
-    await writeFile(join(dir, 'page.html'), html)
+    await writeFile(join(dir, 'page.html'), placedInBounds(html, request, bounds))
     for (const asset of assets) {
       const path = join(dir, asset.path)
       await mkdir(dirname(path), { recursive: true })

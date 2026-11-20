@@ -10,7 +10,7 @@ import {
   formatSupportsScale
 } from '#vue/document/export/helpers'
 import { useEditor } from '#vue/editor/context'
-import { useSceneComputed } from '#vue/internal/scene-computed/use'
+import { useStableSceneComputed } from '#vue/internal/scene-computed/use'
 
 export type { ExportFormatId, ExportSetting } from '@kalka/scene-graph'
 export type { ExportFormatOption, ExportPanelTarget } from '#vue/document/export/helpers'
@@ -18,7 +18,7 @@ export type { ExportFormatOption, ExportPanelTarget } from '#vue/document/export
 export function useExport() {
   const editor = useEditor()
 
-  const selectedIds = useSceneComputed(() => [...editor.state.selectedIds])
+  const selectedIds = useStableSceneComputed(() => [...editor.state.selectedIds])
 
   const targetState = createExportTargetState(editor, selectedIds)
   const settingActions = createExportSettingActions(editor, targetState.targetIds)

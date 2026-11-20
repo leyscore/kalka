@@ -13,6 +13,16 @@ export interface UndoManagerOptions {
   onRecord?: (entry: UndoEntry) => UndoEntry
 }
 
+/**
+ * The steps a person records over a span of time, such as while an agent's call runs. It is
+ * void once history is undone, redone, cleared, or an earlier step is extended, because the
+ * steps then no longer account for what changed.
+ */
+interface StepFollower {
+  steps: UndoEntry[]
+  void: boolean
+}
+
 interface UndoBatch {
   label: string
   entries: UndoEntry[]
@@ -31,6 +41,7 @@ export class UndoManager {
   private readonly onRecord: ((entry: UndoEntry) => UndoEntry) | undefined
   private replaying = 0
   private readonly settlers = new Set<() => void>()
+  private readonly followers = new Set<StepFollower>()
 
   constructor(options: UndoManagerOptions = {}) {
     this.limit = options.limit ?? DEFAULT_HISTORY_LIMIT
@@ -73,7 +84,39 @@ export class UndoManager {
    */
   pushStep(recorded: UndoEntry): void {
     this.settle()
-    this.pushUndoEntry(this.onRecord?.(recorded) ?? recorded)
+    this.pushUndoEntry(this.onRecord?.(recorded) ?? recorded, false)
+  }
+
+  /**
+   * Starts following the steps recorded from now on, other than those `pushStep` records, which
+   * are a person's. `stop` ends it with those steps in order, or null when history was undone,
+   * redone, cleared or an earlier step was extended meanwhile, so they no longer tell what the
+   * person changed.
+   */
+  followSteps(): { stop: () => UndoEntry[] | null } {
+    const follower: StepFollower = { steps: [], void: false }
+    this.followers.add(follower)
+    return {
+      stop: () => {
+        this.followers.delete(follower)
+        return follower.void ? null : follower.steps
+      }
+    }
+  }
+
+  /**
+   * Plays steps back without recording them, as undo and redo do: their inverses newest first
+   * for `'inverse'`, their forwards in order for `'forward'`.
+   */
+  replaySteps(steps: readonly UndoEntry[], direction: 'inverse' | 'forward'): void {
+    this.replay(() => {
+      if (direction === 'inverse') for (const step of steps.toReversed()) step.inverse()
+      else for (const step of steps) step.forward()
+    })
+  }
+
+  private voidFollowers() {
+    for (const follower of this.followers) follower.void = true
   }
 
   /**
@@ -102,6 +145,7 @@ export class UndoManager {
     this.settle()
     const entry = this.undoStack.pop()
     if (!entry) return null
+    this.voidFollowers()
     this.replay(() => entry.inverse())
     this.redoStack.push(entry)
     this.onChange?.()
@@ -112,6 +156,7 @@ export class UndoManager {
     this.settle()
     const entry = this.redoStack.pop()
     if (!entry) return null
+    this.voidFollowers()
     this.replay(() => entry.forward())
     this.undoStack.push(entry)
     this.onChange?.()
@@ -156,6 +201,7 @@ export class UndoManager {
   }
 
   clear(): void {
+    this.voidFollowers()
     this.undoStack = []
     this.redoStack = []
     this.discardBatches()
@@ -192,6 +238,7 @@ export class UndoManager {
     const last = this.undoStack.at(-1)
     const previous = this.undoStack.at(-2)
     if (!last || !previous) return
+    this.voidFollowers()
     this.undoStack.splice(-2, 2, {
       label: label ?? previous.label,
       forward: () => {
@@ -242,15 +289,19 @@ export class UndoManager {
     }
   }
 
-  private pushUndoEntry(entry: UndoEntry): void {
+  private pushUndoEntry(entry: UndoEntry, followed = true): void {
     const previous = this.undoStack.at(-1)
     if (entry.coalesceKey && previous?.coalesceKey === entry.coalesceKey) {
-      this.undoStack[this.undoStack.length - 1] = {
-        ...entry,
-        inverse: previous.inverse
+      const coalesced = { ...entry, inverse: previous.inverse }
+      this.undoStack[this.undoStack.length - 1] = coalesced
+      for (const follower of this.followers) {
+        const index = follower.steps.indexOf(previous)
+        if (index === -1) follower.void = true
+        else follower.steps[index] = coalesced
       }
     } else {
       this.undoStack.push(entry)
+      if (followed) for (const follower of this.followers) follower.steps.push(entry)
     }
     this.redoStack = []
     this.trimUndoStack()

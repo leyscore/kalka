@@ -6,6 +6,7 @@ import { readFigDocument } from '@/app/document/io/fig'
 import { applyImportedDocument } from '@/app/document/io/imported-document'
 import { readReloadSource } from '@/app/document/io/reload-source'
 import { captureReloadState, restoreReloadState } from '@/app/document/io/reload-state'
+import type { DocumentFileFormat } from '@/app/document/io/types'
 import type { EditorPreparationController } from '@/app/editor/preparation/controller'
 import { notificationMessages } from '@/app/i18n/notifications'
 import { toast } from '@/app/shell/ui'
@@ -41,6 +42,7 @@ type ReloadActionsOptions = {
   state: ReloadDocumentState
   getFilePath: () => string | null
   getFileHandle: () => FileSystemFileHandle | null
+  getSourceFormat: () => DocumentFileFormat
   markDocumentSaved: () => void
   preparationController: EditorPreparationController
 }
@@ -117,6 +119,7 @@ export function createReloadActions({
   state,
   getFilePath,
   getFileHandle,
+  getSourceFormat,
   markDocumentSaved,
   preparationController
 }: ReloadActionsOptions) {
@@ -131,6 +134,7 @@ export function createReloadActions({
       load.update({ phase: 'reading', detail: state.documentName })
       const imported = await readReloadSource({
         documentName: state.documentName,
+        format: getSourceFormat(),
         filePath: getFilePath(),
         fileHandle: getFileHandle(),
         signal: load.signal
@@ -154,7 +158,7 @@ export function createReloadActions({
       })
       recordDocumentFailure({
         operation: 'open',
-        format: 'fig',
+        format: getSourceFormat() === 'fig' ? 'fig' : 'kalka',
         ...diagnostic,
         retryable: diagnostic.retryable
       })

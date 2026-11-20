@@ -23,16 +23,6 @@ function ensureSinglePageSelection(graph: SceneGraph, pageId: string, nodeIds: s
   return nodeIds.every((nodeId) => findPageId(graph, nodeId) === pageId)
 }
 
-function nodeNeedsSceneBackdrop(graph: SceneGraph, nodeId: string): boolean {
-  const node = graph.getNode(nodeId)
-  if (!node) return false
-  if (node.blendMode !== 'NORMAL' && node.blendMode !== 'PASS_THROUGH') return true
-  if (node.effects.some((effect) => effect.visible && effect.type === 'BACKGROUND_BLUR')) {
-    return true
-  }
-  return node.childIds.some((childId) => nodeNeedsSceneBackdrop(graph, childId))
-}
-
 export function computeContentBounds(graph: SceneGraph, nodeIds: string[]) {
   return computeDescendantVisualBounds(
     nodeIds,
@@ -292,13 +282,11 @@ export function renderNodesToImage(
   const extracted = extractExportGraph(graph, { scope: 'selection', nodeIds })
   if (!extracted.pageId) return null
 
-  const renderGraph = nodeIds.some((nodeId) => nodeNeedsSceneBackdrop(graph, nodeId))
-    ? graph
-    : extracted.graph
-  const renderPageId = renderGraph === graph ? pageId : extracted.pageId
-  if (renderGraph !== graph) {
-    prepareSelectionRenderGraph(graph, renderGraph, renderPageId, nodeIds)
-  }
+  // As in Figma, the layers are drawn alone: a blend mode or background blur among them works
+  // on what they draw themselves, never on the layers around them on the page.
+  const renderGraph = extracted.graph
+  const renderPageId = extracted.pageId
+  prepareSelectionRenderGraph(graph, renderGraph, renderPageId, nodeIds)
 
   const quality = options.quality ?? (options.format === 'PNG' ? 100 : 90)
   return renderToSurface(

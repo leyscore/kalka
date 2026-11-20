@@ -14,7 +14,8 @@ import { metricsDelta, rendererMetrics } from '../page-metrics'
 import { pause } from '../stats'
 import { renderingCost, startTrace, type RenderingCost } from '../trace'
 
-export type GestureName = 'pan' | 'zoom' | 'drag' | 'resize' | 'type'
+/** `reorder` drags a card down past the next one in its auto layout parent. */
+export type GestureName = 'pan' | 'zoom' | 'drag' | 'resize' | 'type' | 'reorder'
 export const GESTURES: readonly GestureName[] = ['pan', 'zoom', 'drag', 'resize', 'type']
 
 export interface GestureResult {
@@ -135,6 +136,20 @@ async function play(page: Page, gesture: GestureName, target: Target) {
       await page.keyboard.up('Control')
       return
     }
+    case 'reorder': {
+      const box = await screenBox(page, target.cardId)
+      const start = { x: box.x + box.width / 2, y: box.y + box.height / 2 }
+      await mouse.move(start.x, start.y)
+      await mouse.down()
+      // Down past the middle of the next card, at a steady pace, so the stack reorders.
+      const distance = box.height * 1.5
+      for (let step = 1; step <= STEPS; step++) {
+        await mouse.move(start.x, start.y + (distance * step) / STEPS)
+        await pause(INPUT_INTERVAL_MS)
+      }
+      await mouse.up()
+      return
+    }
     case 'drag':
     case 'resize': {
       const box = await screenBox(page, target.cardId)
@@ -170,6 +185,10 @@ async function observed(page: Page, gesture: GestureName, target: Target): Promi
       if (kind === 'pan' || kind === 'zoom')
         return `${store.state.panX}:${store.state.panY}:${store.state.zoom}`
       if (kind === 'type') return store.graph.getNode(textId)?.text ?? ''
+      if (kind === 'reorder') {
+        const parentId = store.graph.getNode(cardId)?.parentId
+        return parentId ? String(store.graph.getNode(parentId)?.childIds.indexOf(cardId)) : ''
+      }
       const card = store.graph.getNode(cardId)
       return card ? `${card.x}:${card.y}:${card.width}:${card.height}` : ''
     },
@@ -212,6 +231,7 @@ const INPUT_TYPES: Record<GestureName, string[]> = {
   pan: ['wheel', 'mousewheel'],
   zoom: ['wheel', 'mousewheel'],
   drag: ['pointermove', 'mousemove'],
+  reorder: ['pointermove', 'mousemove'],
   resize: ['pointermove', 'mousemove'],
   type: ['keydown']
 }

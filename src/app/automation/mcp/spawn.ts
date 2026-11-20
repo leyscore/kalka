@@ -15,9 +15,11 @@ import { isTauri } from '@/app/tauri/env'
 import { DEV_MCP_RESTART_PATH, type DevMCPConfiguration } from './dev-control'
 import {
   classifySpawnFailure,
+  failureFromStartupOutput,
   mcpFailure,
   MCP_INSTALL_TARGET,
   MCPStartupError,
+  portInUseFailure,
   type MCPFailure
 } from './failure'
 import {
@@ -442,6 +444,16 @@ async function configureDevMCP(): Promise<AutomationServerHandle> {
   return { disconnect: noop, authToken, managed: true }
 }
 
+/** Whether anything answers HTTP on the server's port, whatever it says. */
+async function portAnswers(): Promise<boolean> {
+  try {
+    await fetch(`${DEV_AUTOMATION_HTTP_URL}/health`, { signal: AbortSignal.timeout(1000) })
+    return true
+  } catch {
+    return false
+  }
+}
+
 async function startMCPIfNeeded(timing: MCPStartupTiming): Promise<AutomationServerHandle | null> {
   runtimeAutomationStartupError = null
   runtimeAutomationStartupFailure = null
@@ -513,13 +525,14 @@ async function startMCPIfNeeded(timing: MCPStartupTiming): Promise<AutomationSer
     return rememberStartupError(
       new MCPStartupError(
         `MCP server exited before startup completed (code ${earlyExit.code ?? 'null'}, signal ${earlyExit.signal ?? 'null'})${details ? `: ${details}` : '.'}`,
-        mcpFailure(
+        failureFromStartupOutput(
           'exited',
           compact([
             `code=${earlyExit.code ?? 'null'}`,
             `signal=${earlyExit.signal ?? 'null'}`,
             details
-          ]).join(' ')
+          ]).join(' '),
+          AUTOMATION_HTTP_PORT
         )
       )
     )
@@ -560,11 +573,23 @@ async function startMCPIfNeeded(timing: MCPStartupTiming): Promise<AutomationSer
   } finally {
     runtimeAutomationAuthToken = null
   }
-  return rememberStartupError(
-    new MCPStartupError(
-      `MCP server did not become healthy within the startup timeout${startupStderr.trim() ? `: ${startupStderr.trim()}` : '.'}`,
-      mcpFailure('timeout', startupStderr)
+  return rememberStartupError(await unhealthyStartupError(startupStderr))
+}
+
+/** Why a server that started never answered its health check. */
+async function unhealthyStartupError(stderr: string): Promise<MCPStartupError> {
+  // Our server never answered with our token, yet something answers on its port: another
+  // program, such as a development server left running, holds the port it needs.
+  if (await portAnswers()) {
+    return new MCPStartupError(
+      `Port ${AUTOMATION_HTTP_PORT} is already in use by another program.`,
+      portInUseFailure(AUTOMATION_HTTP_PORT)
     )
+  }
+  const details = stderr.trim()
+  return new MCPStartupError(
+    `MCP server did not become healthy within the startup timeout${details ? `: ${details}` : '.'}`,
+    failureFromStartupOutput('timeout', stderr, AUTOMATION_HTTP_PORT)
   )
 }
 

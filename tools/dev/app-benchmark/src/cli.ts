@@ -16,6 +16,7 @@ import {
   countLayers,
   ensureGeneratedDocument,
   GENERATED_DOCUMENTS,
+  type GeneratedDocumentSpec,
   measureHeadlessImport
 } from './documents'
 import { resolveTarget } from './launch'
@@ -24,7 +25,7 @@ import { renderMarkdown, type BenchReport, type ProfileReport } from './report'
 import { measureArtboardSteps } from './scenarios/artboards'
 import { disposeProfile, primeProfile, type BenchContext } from './scenarios/context'
 import { measureDocument, type OpenDocument } from './scenarios/document'
-import { GESTURES } from './scenarios/gestures'
+import { GESTURES, type GestureName } from './scenarios/gestures'
 import { measureStartup } from './scenarios/startup'
 
 const SCENARIOS = ['startup', 'documents', 'artboards'] as const
@@ -98,22 +99,29 @@ const generated = Object.fromEntries(
     ])
   )
 )
+/** The gestures a generated document plays: its own list, or all of them when it has layers. */
+function specGestures(spec: GeneratedDocumentSpec): readonly GestureName[] {
+  if (spec.gestures) return spec.gestures
+  return spec.leaves > 0 ? GESTURES : []
+}
+
 const goldPreview = lfsFixture(join(root, 'tests', 'fixtures', 'gold-preview.fig'))
-const documents: (OpenDocument & { gestures: boolean })[] = [
+const documents: (OpenDocument & { gestures: readonly GestureName[] })[] = [
   {
     name: 'kalka-design (Kalka folder)',
     path: join(root, 'tests', 'fixtures', 'kalka-design'),
     artboards: 1,
-    gestures: false
+    gestures: []
   },
   ...(goldPreview
-    ? [{ name: 'gold-preview.fig', path: goldPreview, artboards: 1, gestures: false }]
+    ? [{ name: 'gold-preview.fig', path: goldPreview, artboards: 1, gestures: [] }]
     : []),
   ...Object.values(GENERATED_DOCUMENTS).map((spec) => ({
     name: spec.name,
     path: generated[spec.name],
-    artboards: spec.artboards,
-    gestures: spec.leaves > 0
+    // The canvas opens on the first page, which holds its share of the artboards.
+    artboards: Math.ceil(spec.artboards / Math.max(1, 'pages' in spec ? spec.pages : 1)),
+    gestures: specGestures(spec)
   }))
 ]
 
@@ -193,7 +201,7 @@ for (const profile of profiles) {
         await attempt(`document ${doc.name}`, async () => {
           result.documents = [
             ...(result.documents ?? []),
-            await measureDocument(context, doc, doc.gestures ? GESTURES : [])
+            await measureDocument(context, doc, doc.gestures)
           ]
         })
     if (only.has('artboards'))

@@ -58,6 +58,10 @@ const copy$ = computed(() => {
         endpoint: failure.detail ?? 'the local server'
       })
     },
+    'port-in-use': {
+      heading: messages.mcpFailurePortInUse({ port: failure.detail ?? '7600' }),
+      description: messages.mcpFailurePortInUseHint
+    },
     unknown: { heading: messages.mcpFailureUnknown, description: messages.mcpFailureUnknownHint }
   }
   return map[failure.code]
@@ -67,7 +71,11 @@ const copy$ = computed(() => {
  * Reasons whose cause already appears in the guidance, so repeating the same
  * value under Details would only add noise.
  */
-const EXPLAINED_REASONS: ReadonlySet<MCPFailureCode> = new Set(['rejected', 'unreachable'])
+const EXPLAINED_REASONS: ReadonlySet<MCPFailureCode> = new Set([
+  'rejected',
+  'unreachable',
+  'port-in-use'
+])
 
 const detail = computed(() =>
   EXPLAINED_REASONS.has(failure.code) ? null : failure.detail?.trim() || null

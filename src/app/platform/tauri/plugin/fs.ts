@@ -67,6 +67,21 @@ export function remove(
   return call('fs.remove', path, base(options), options?.recursive ?? false)
 }
 
+/** Moves a file within a file system, replacing what is at the new path, in one step. */
+export function rename(
+  oldPath: string,
+  newPath: string,
+  options?: { oldPathBaseDir?: BaseDirectory; newPathBaseDir?: BaseDirectory }
+): Promise<void> {
+  return call(
+    'fs.rename',
+    oldPath,
+    newPath,
+    options?.oldPathBaseDir ?? null,
+    options?.newPathBaseDir ?? null
+  )
+}
+
 export interface DirEntry {
   name: string
   isFile: boolean

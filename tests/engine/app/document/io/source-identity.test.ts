@@ -39,7 +39,7 @@ function createSaveHarness(handle: FileSystemFileHandle) {
     setSourceIdentity,
     setSavedVersion: vi.fn(),
     setLastWriteTime: vi.fn(),
-    startWatchingFile: vi.fn()
+    saveAs: async () => false
   })
   return { actions, setSourceIdentity }
 }

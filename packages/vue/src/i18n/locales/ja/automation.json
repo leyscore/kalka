@@ -127,5 +127,7 @@
   "mcpFailureUnknownHint": "もう一度起動するか、以下の技術的な詳細を確認してください。",
   "mcpFailureDetails": "詳細",
   "mcpFailureCopy": "詳細をコピー",
-  "mcpFailureCopied": "技術的な詳細をコピーしました。"
+  "mcpFailureCopied": "技術的な詳細をコピーしました。",
+  "mcpFailurePortInUse": "ポート {port} は別のプログラムが使用しています",
+  "mcpFailurePortInUseHint": "もう一方のプログラム（起動したままの開発サーバーやアプリの別のコピーなど）を終了してから、サーバーを再起動してください。"
 }

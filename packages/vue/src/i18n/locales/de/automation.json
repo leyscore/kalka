@@ -127,5 +127,7 @@
   "mcpFailureUnknownHint": "Erneut starten oder die technischen Details unten prüfen.",
   "mcpFailureDetails": "Details",
   "mcpFailureCopy": "Details kopieren",
-  "mcpFailureCopied": "Technische Details kopiert."
+  "mcpFailureCopied": "Technische Details kopiert.",
+  "mcpFailurePortInUse": "Port {port} wird von einem anderen Programm verwendet",
+  "mcpFailurePortInUseHint": "Beende das andere Programm, oft einen laufenden Kalka-Entwicklungsserver oder eine andere Kalka-Kopie, und starte den Server dann erneut."
 }

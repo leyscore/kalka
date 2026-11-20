@@ -7,6 +7,18 @@ import type { DomSceneProjector } from './projector'
 
 /** How long the view must stay still before artboards wake and sleep, and snapshots are taken. */
 export const REST_MS = 150
+/** What the tier work reads and drives of the projector. */
+export type TierProjector = Pick<
+  DomSceneProjector,
+  | 'world'
+  | 'setView'
+  | 'applyTiers'
+  | 'nextUnmeasured'
+  | 'markMeasured'
+  | 'needsCapture'
+  | 'captureNext'
+>
+
 /** How long idle work waits for an idle moment at most. */
 const IDLE_TIMEOUT_MS = 1000
 
@@ -26,9 +38,11 @@ export class ArtboardTierWork {
   private transform = ''
 
   constructor(
-    private readonly projector: DomSceneProjector,
+    private readonly projector: TierProjector,
     private readonly getGraph: () => SceneGraph,
-    private readonly redraw: () => void
+    private readonly redraw: () => void,
+    /** True while a gesture edits layers, such as a move or resize: idle work waits for its end. */
+    private readonly busy: () => boolean = () => false
   ) {}
 
   /** Follows the size of the canvas's element. */
@@ -124,6 +138,13 @@ export class ArtboardTierWork {
     this.cancelIdle = whenIdle(() => {
       this.cancelIdle = null
       if (this.destroyed) return
+      if (this.busy()) {
+        // Laying out a sleeping artboard takes a long task; during a resize it dropped frames
+        // on large documents. Counted as a move, so the retry comes once the gesture rests.
+        this.moved()
+        this.redrawAtRest()
+        return
+      }
       if (!this.resting) {
         // A gesture is on: try again once it rests.
         this.redrawAtRest()

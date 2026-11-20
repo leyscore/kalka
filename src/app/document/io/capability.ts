@@ -19,3 +19,13 @@ export async function pickBrowserSaveFile(
   if (!IS_BROWSER || typeof window.showSaveFilePicker !== 'function') return null
   return window.showSaveFilePicker(options)
 }
+
+/**
+ * Asks to write a file opened in the browser, which the open picker grants for reading only.
+ * It must run during a click: autosave writes later, without one, and the browser would refuse
+ * its first write. True when the file may be written, or the browser asks nothing.
+ */
+export async function requestWriteAccess(handle: FileSystemFileHandle): Promise<boolean> {
+  if (!handle.requestPermission) return true
+  return (await handle.requestPermission({ mode: 'readwrite' })) === 'granted'
+}

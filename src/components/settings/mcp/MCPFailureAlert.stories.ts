@@ -25,6 +25,7 @@ const reasons: Record<MCPFailureCode, MCPFailure> = {
   rejected: { code: 'rejected', detail: 'HTTP 401' },
   malformed: { code: 'malformed', detail: 'HTTP 200' },
   unreachable: { code: 'unreachable', detail: 'http://127.0.0.1:7600/mcp' },
+  'port-in-use': { code: 'port-in-use', detail: '7600' },
   unknown: { code: 'unknown', detail: 'Failed to fetch' }
 }
 
@@ -53,6 +54,7 @@ export const StartupTimeout: Story = {}
 export const NotInstalled: Story = { args: { failure: reasons['not-installed'] } }
 export const RejectedToken: Story = { args: { failure: reasons.rejected } }
 export const Unreachable: Story = { args: { failure: reasons.unreachable } }
+export const PortInUse: Story = { args: { failure: reasons['port-in-use'] } }
 export const InternallyManaged: Story = { args: { restarting: true } }
 export const ExternallyManaged: Story = { args: { externallyManaged: true } }
 

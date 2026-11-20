@@ -12,7 +12,10 @@ function deferred() {
   return { promise, resolve: () => resolve?.() }
 }
 
-function setup(saveCurrentDocument: (version: number) => Promise<void>) {
+function setup(
+  saveCurrentDocument: (version: number) => Promise<void>,
+  onFailure?: (error: unknown) => void
+) {
   const state = reactive({ autosaveEnabled: true })
   const version = ref(0)
   let savedVersion = 0
@@ -25,7 +28,8 @@ function setup(saveCurrentDocument: (version: number) => Promise<void>) {
     saveCurrentDocument: async (version) => {
       await saveCurrentDocument(version)
       savedVersion = version
-    }
+    },
+    onFailure
   })
   return {
     state,
@@ -38,6 +42,30 @@ function setup(saveCurrentDocument: (version: number) => Promise<void>) {
 }
 
 describe('document autosave', () => {
+  test('says once that it fails, and knows when a save works again', async () => {
+    const failures: unknown[] = []
+    let broken = true
+    const { version, autosave } = setup(
+      async () => {
+        if (broken) throw new Error('The disk is full')
+      },
+      (error) => failures.push(error)
+    )
+
+    for (const next of [1, 2]) {
+      version.value = next
+      await expect(autosave.requestSave(next)).rejects.toThrow('The disk is full')
+    }
+    expect(failures).toHaveLength(1)
+    expect(autosave.isFailing()).toBe(true)
+
+    broken = false
+    version.value = 3
+    await autosave.requestSave(3)
+    expect(autosave.isFailing()).toBe(false)
+    autosave.disposeAutosave()
+  })
+
   test('skips saved versions and documents without writable sources', async () => {
     const versions: number[] = []
     const { version, autosave, setWritable } = setup(async (saved) => {

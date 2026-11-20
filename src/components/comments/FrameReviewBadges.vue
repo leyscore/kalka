@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import { isEqual } from 'es-toolkit'
 import { computed } from 'vue'
 
 import type { ViewportTransform } from '@kalka/core/geometry'
-import { documentFrameReviews } from '@kalka/scene-graph'
+import { documentFrameReviews, type FrameReviewStatus } from '@kalka/scene-graph'
 import { useCommentsMessages } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
@@ -20,10 +21,19 @@ const store = useEditorStore()
 const messages = useCommentsMessages()
 const placement = computed(() => drawn ?? view)
 
-const badges = computed(() => {
+interface Badge {
+  id: string
+  status: FrameReviewStatus
+  label: string
+  right: number
+  top: number
+}
+
+/** Kept while unchanged, so an edit elsewhere in the scene does not re-render the badges. */
+const badges = computed<Badge[]>((previous) => {
   void store.state.sceneVersion
   const { panX, panY, zoom } = placement.value
-  return documentFrameReviews(store.graph).flatMap((review) => {
+  const next = documentFrameReviews(store.graph).flatMap((review) => {
     const node = store.graph.getNode(review.nodeId)
     if (!node || node.parentId !== view.currentPageId) return []
     return [
@@ -39,6 +49,7 @@ const badges = computed(() => {
       }
     ]
   })
+  return previous && isEqual(previous, next) ? previous : next
 })
 </script>
 

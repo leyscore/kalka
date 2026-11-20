@@ -6,7 +6,7 @@ import { FONT_WEIGHT_NAMES, weightToStyle } from '@kalka/core/text'
 import type { SceneNode, TextDecoration } from '@kalka/scene-graph'
 
 import type { UseTypographyOptions } from '#vue/controls/typography/use'
-import { useSceneComputed } from '#vue/internal/scene-computed/use'
+import { useSelectedNodeState } from '#vue/editor/selection-state/nodes'
 import { useNodeFontStatus } from '#vue/shared/font-status/use'
 
 type TextAlign = SceneNode['textAlignHorizontal']
@@ -21,7 +21,9 @@ export const TYPOGRAPHY_WEIGHTS = Object.entries(FONT_WEIGHT_NAMES).map(([value,
 }))
 
 export function createTypographyState(editor: Editor) {
-  const node = useSceneComputed<SceneNode | null>(() => editor.getSelectedNode() ?? null)
+  // The shared copy of the selected layer, kept up to date field by field: a keystroke or a
+  // resize changes only the fields the panel does not read, so the panel does not re-render.
+  const { node } = useSelectedNodeState(editor)
   const { missingFonts, hasMissingFonts } = useNodeFontStatus(() => node.value)
   const fontFamily = computed(() => node.value?.fontFamily ?? '')
   const fontWeight = computed(() => node.value?.fontWeight ?? 400)

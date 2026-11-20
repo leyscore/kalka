@@ -13,6 +13,45 @@
 
 ### Fixed
 
+- Exporting a frame that sits in a section, or a layer from inside a frame, as HTML, or as an image or PDF from the CLI, draws it where the page starts instead of moved by its position in its parent and cut off.
+- Saving a Kalka folder writes every file aside before replacing any, so a crash or power loss during a save leaves the folder as the last save or the new one, never pages from both; a save cut short after it was all written is finished when the folder next opens.
+- A document restored after a crash goes back to the `.fig` or `.kalka` file it was opened from, so saving it writes that file instead of asking where to save an untitled copy.
+- In Chromium browsers, turning on Autosave for a file opened from disk asks for permission to write it then, so the first autosave is not refused for lack of a click.
+- Native menu commands reach the editor when another Kalka window, such as Software Update, is in front, where Close closes that window; on macOS with no window open, a menu command opens an editor window instead of doing nothing.
+- A Save As whose write fails leaves the document where it was, with its name and format, instead of pointing it at the file that was not written.
+- When another program, such as a Kalka development server left running, already holds the local MCP server's port, Settings › MCP says that port 7600 is in use and what to do, instead of reporting that the server did not respond in time.
+- When another app, git or a sync tool changes the open file while you have unsaved edits, Kalka keeps your edits and offers to reload the file instead of reloading it silently and dropping them with the undo history; with no unsaved edits it still reloads.
+- The desktop app's native menu shows Autosave, Pixel Grid, Multiplayer Cursors, Rulers and the theme choices as they are; they all started checked, and clicking Autosave showed it off when it was on.
+- On macOS, opening a document from the Finder, a `kalka://` link or the command line while Kalka has no window open opens an editor window with it, instead of keeping it waiting unseen; documents are never handed to the Software Update window.
+- When several agents edit the same document at once, such as named agents in the chat and agents over MCP, undoing one agent's edit no longer also undoes what another agent changed while it ran.
+- Save as folder refuses a folder that already holds other files, such as a website project, instead of saving into it and deleting files of its own under `pages/` and `assets/images/`; an empty folder or a Kalka folder still works.
+- Undoing an agent's edit no longer deletes or brings back comments and frame reviews written while it ran, the agent's own included; comments stay outside the undo history.
+- Recording or restoring a version stops when the document cannot be saved first, instead of recording what was on disk or reloading over the unsaved edits.
+- The Versions panel shows why recording, restoring, fetching or publishing a version failed, such as a push the remote rejected, instead of clearing the message as soon as it appeared.
+- Versions of a `.fig` or `.kalka` file kept in a Git repository record and restore that file only; recording a version used to commit every changed file in its folder, and restoring one put the whole folder back, discarding work in progress beside the document.
+- Strokes thinner than a pixel, such as the 0.25 px borders common in imported `.fig` files, draw on the canvas and in image exports as faint as in Figma, getting stronger as you zoom in, instead of as full one-pixel lines; saved files keep the same CSS.
+- Layers inside a mask that reach far past it, such as light rays in an imported page's masked background, are cut at the mask on the canvas and in HTML and image exports, instead of showing beside the page.
+- Tailwind JSX and Storybook exports mask with a rectangle or ellipse mask's own paint, so a gradient mask fades the layers above it and a half transparent one lets them half through, instead of masking with the plain shape.
+- Exporting a layer to PNG, JPG or WebP in the web app, or when the desktop renderer is unavailable, no longer draws neighbouring layers into the image when the layer holds a background blur or a blend mode; it is drawn alone, as Figma exports it.
+- `kalka export` to PNG, JPG or PDF draws a layer whose shadow, outer stroke or overflowing children reach above or left of it in its place, instead of drawing it too high or too far left and cutting that part off.
+- A group fits its layers again after one of them is resized with its handles, rotated, or given a new size or position in the properties panel, as in Figma, in the same undo step; undoing a rotation also lays its auto layout parent out again.
+- Undoing the removal of the variable mode the document was showing shows that mode again, so layers bound to its variables take back its values.
+- Showing, hiding, locking, unlocking and renaming layers, from the layers panel or with their shortcuts, can be undone, as in Figma; hiding or locking several layers at once is one step.
+- Move to page can be undone, putting the layers back on their page in their place.
+- Wrapping layers in auto layout puts the new frame where the topmost of them was in the stack instead of on top of everything, undo puts the layers back in their order, and redo lays them out in the same order as the first time.
+- Undoing the binding of a colour variable to a fill or stroke gives the layer back its own colour instead of keeping the variable's.
+- Redoing the creation of an instance brings back its layers as they were, so redoing a later edit to one of those layers applies again instead of doing nothing.
+- Pressing Delete while the selection holds a page or the document itself, as an agent can select them, deletes nothing instead of recording a step whose undo froze the app.
+- Deleting a page can be undone, bringing the page back with its layers where it was, and adding, renaming and reordering pages are undo steps too, as in Figma; a page deleted by mistake used to be lost.
+- Undoing the deletion of several layers puts them back in their stacking order, also when they were selected from bottom to top, as in Figma; replacing a selection by pasting undoes the same way.
+- An autosave that ends after a manual save started later no longer writes the older document back over the file, and no longer marks the document unsaved.
+- A failing autosave says so, once until a save works again, instead of failing silently, and the changes the file is missing are kept for crash recovery meanwhile.
+- Undoing an agent's edit no longer also undoes what you changed on the canvas or typed into a text layer while that edit was running; your change stays its own undo step.
+- Restoring a version of a Kalka folder shows the restored document instead of failing to read it and keeping the old one on screen, which the next save then wrote back over the restored files; a `.kalka` file changed by another app reloads instead of failing to open.
+- Saving a large document in the desktop app or a browser with file access no longer reloads it as if another app had changed the file, which cleared the undo history and dropped edits made while it was being written.
+- Saving in the desktop app can no longer leave a damaged or empty file: a document, a Kalka folder's files and the app's own data are written beside the file and swapped in whole, so a crash, a full disk or a failed write keeps the file as it was.
+- In the desktop app, a document open from a file reloads when the file is changed by an app that replaces it, such as git or many editors, every time instead of only the first time.
+- A document saved to a file with autosave off is protected from a crash again: its unsaved changes are kept for recovery, where only unsaved new documents used to be.
 - A variable mode an outer instance in a `.fig` sets on a nested layer for one collection keeps the modes that layer has in its other collections, and an override that clears a collection's mode lets the layer take its parent's mode again.
 - A multicolour vector saved to `.fig` keeps each region's colour when it is edited in Figma, instead of Figma refilling every region with the layer's fill.
 - A multicolour vector pasted from Figma keeps each region's colour instead of coming in all one colour.
@@ -20,6 +59,10 @@
 - Component sets from `.fig` files that save no variant values, such as older community kits, list their variant options in Figma's order, and a variant property's default is the top-left variant's value, as in Figma.
 - Component sets saved to `.fig` open in Figma as component sets with their variant values in order, and variants renamed or given a new property no longer leave Figma reporting the set as broken.
 - Resaving a `.fig` keeps a change to the libraries it enables, instead of keeping the libraries it was opened with.
+
+### Performance
+
+- Typing and other edits no longer rebuild the app menu and command palette on every change, and the properties panel, Typography and Layout guides included, re-renders only the fields an edit changed instead of every field, with variable pickers, the HTML tag list and the export settings no longer redrawn on each keystroke, and dragging or resizing a layer no longer forces a layout of the whole editor on every frame, so typing, gestures and agents editing other layers stay smoother on slower computers.
 
 ## 0.2.0-beta.3.2 — 2026-11-19
 

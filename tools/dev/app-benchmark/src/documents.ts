@@ -3,7 +3,7 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
 import { exportFigFile, parseFigFile } from '@kalka/core/io'
-import { SceneGraph, type Effect, type Fill } from '@kalka/scene-graph'
+import { SceneGraph, type Effect, type Fill, type SceneNode } from '@kalka/scene-graph'
 
 /** How a generated document is shaped. */
 export interface GeneratedDocumentSpec {
@@ -15,13 +15,29 @@ export interface GeneratedDocumentSpec {
    * the number of iframes the document costs.
    */
   artboards: number
+  /** Pages the artboards are spread over, in order; one when left out. */
+  pages?: number
+  /** Artboards stack their cards in a vertical auto layout instead of placing them freely. */
+  autoLayout?: boolean
+  /** Gestures played on it; every gesture for a document with layers when left out. */
+  gestures?: readonly ('pan' | 'zoom' | 'drag' | 'resize' | 'type' | 'reorder')[]
 }
 
 export const GENERATED_DOCUMENTS = {
   'layers-2k': { name: 'layers-2k', leaves: 2_000, artboards: 20 },
   'layers-20k': { name: 'layers-20k', leaves: 20_000, artboards: 20 },
   /** 500 top-level layers with nothing inside: what each artboard iframe costs on its own. */
-  'flat-500': { name: 'flat-500', leaves: 0, artboards: 500 }
+  'flat-500': { name: 'flat-500', leaves: 0, artboards: 500 },
+  /** The layers of layers-2k over ten pages: what opening a multi-page file costs. */
+  'pages-10': { name: 'pages-10', leaves: 2_000, artboards: 20, pages: 10, gestures: [] },
+  /** Cards stacked in auto layout: dragging one reorders it and relays its siblings out. */
+  'auto-layout-2k': {
+    name: 'auto-layout-2k',
+    leaves: 2_000,
+    artboards: 20,
+    autoLayout: true,
+    gestures: ['reorder']
+  }
 } satisfies Record<string, GeneratedDocumentSpec>
 
 export type GeneratedDocumentName = keyof typeof GENERATED_DOCUMENTS
@@ -56,31 +72,54 @@ const SHADOW: Effect[] = [
   }
 ]
 
+/** An auto layout artboard stacks its cards down one column; a free one leaves them placed. */
+function artboardLayout(spec: GeneratedDocumentSpec): Partial<SceneNode> {
+  if (!spec.autoLayout) return {}
+  return {
+    layoutMode: 'VERTICAL',
+    itemSpacing: CARD.gap,
+    paddingTop: CARD.gap,
+    paddingRight: CARD.gap,
+    paddingBottom: CARD.gap,
+    paddingLeft: CARD.gap,
+    primaryAxisSizing: 'HUG',
+    counterAxisSizing: 'FIXED'
+  }
+}
+
 /**
  * Builds a deterministic document: artboards in a row, each holding a grid of cards of ten
  * layers (a third text, the rest rectangles and ellipses), every fourth card with a shadow.
  */
 export function buildGeneratedGraph(spec: GeneratedDocumentSpec): SceneGraph {
   const graph = new SceneGraph()
-  const [page] = graph.getPages()
-  graph.updateNode(page.id, { name: spec.name })
+  const [first] = graph.getPages()
+  graph.updateNode(first.id, { name: spec.pages ? `${spec.name} 1` : spec.name })
+  const pageCount = Math.max(1, spec.pages ?? 1)
+  const pages = [first]
+  for (let index = 1; index < pageCount; index++)
+    pages.push(graph.addPage(`${spec.name} ${index + 1}`))
+  const artboardsPerPage = Math.ceil(spec.artboards / pageCount)
   const cards = Math.ceil(spec.leaves / CARD_CHILDREN)
   const cardsPerArtboard = Math.ceil(cards / spec.artboards)
   const rows = Math.max(1, Math.ceil(cardsPerArtboard / CARD_COLUMNS))
   const artboardHeight = spec.leaves ? rows * (CARD.height + CARD.gap) + CARD.gap : 400
   const artboardWidth = spec.leaves ? ARTBOARD_WIDTH : 400
-  const perRow = Math.ceil(Math.sqrt(spec.artboards))
+  const perRow = Math.ceil(Math.sqrt(artboardsPerPage))
   let leaves = 0
   let card = 0
   for (let index = 0; index < spec.artboards; index++) {
+    const page = pages[Math.floor(index / artboardsPerPage)] ?? first
+    const place = index % artboardsPerPage
     const artboard = graph.createNode('FRAME', page.id, {
       name: `Artboard ${index + 1}`,
-      x: (index % perRow) * (artboardWidth + ARTBOARD_GAP),
-      y: Math.floor(index / perRow) * (artboardHeight + ARTBOARD_GAP),
+      x: (place % perRow) * (artboardWidth + ARTBOARD_GAP),
+      y: Math.floor(place / perRow) * (artboardHeight + ARTBOARD_GAP),
       width: artboardWidth,
       height: artboardHeight,
       clipsContent: true,
-      fills: solid(1, 1, 1)
+      fills: solid(1, 1, 1),
+      ...artboardLayout(spec)
     })
     for (let slot = 0; slot < cardsPerArtboard && leaves < spec.leaves; slot++, card++) {
       const frame = graph.createNode('FRAME', artboard.id, {

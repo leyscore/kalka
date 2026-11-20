@@ -7,6 +7,7 @@
   "copiedProperties": "Propriétés copiées.",
   "pngClipboardUnavailable": "L’export PNG vers le presse-papiers n’est pas disponible dans ce navigateur.",
   "openFileFailed": "Impossible d’ouvrir « {name} » : {error}",
+  "autosaveFailed": "Impossible d’enregistrer automatiquement « {name} » : {error}. Vos dernières modifications ne sont pas encore dans le fichier.",
   "importedDOMCSS": "Document DOM/CSS importé.",
   "importDOMCSSFailed": "Impossible d’importer le DOM/CSS : {error}",
   "openDOMCSSFailed": "Impossible d’ouvrir le fichier DOM/CSS : {error}",
@@ -31,5 +32,8 @@
   "openQueuedFilesFailed": "Impossible d’ouvrir les fichiers transmis à Kalka : {error}",
   "tokensLeftOut": "Non inclus dans la feuille de style : {names}.",
   "designTokensLeftOut": "Exclus des design tokens : {names}.",
-  "designTokensImported": "{count} design tokens importés."
+  "designTokensImported": "{count} design tokens importés.",
+  "folderNotEmpty": "« {name} » contient déjà d’autres fichiers. Choisissez un dossier vide, ou un dossier Kalka à remplacer.",
+  "fileChangedOutside": "« {name} » a été modifié par une autre application. Vos modifications non enregistrées sont conservées ; enregistrer remplacera cette version.",
+  "reloadFromDisk": "Recharger depuis le disque"
 }

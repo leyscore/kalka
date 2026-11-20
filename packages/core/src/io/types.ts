@@ -146,6 +146,11 @@ export interface HTMLExportOptions {
    * document. Exported files leave it out: it is editor data, not part of the page.
    */
   sourceIds?: boolean
+  /**
+   * Device pixels to a CSS pixel the page is drawn at, for pages drawn as images: strokes thinner
+   * than a device pixel then draw only the colour they cover, as in Figma.
+   */
+  hairlineScale?: number
 }
 
 export interface IOFormatSupport {

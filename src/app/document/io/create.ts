@@ -3,11 +3,14 @@ import { prefetchFigmaSchema } from '@kalka/core/kiwi'
 
 import { createDocumentViewportActions, downloadBlob } from '@/app/document/io/browser'
 import { createDOMOpenActions } from '@/app/document/io/dom'
+import { createOutsideChangeHandler } from '@/app/document/io/outside-change'
 import { createOpenActions, createReloadActions } from '@/app/document/io/read'
 import { createDocumentSourceActions, createDocumentSourceState } from '@/app/document/io/source'
 import type { ViewportSize } from '@/app/document/io/types'
 import { createFileWatcher } from '@/app/document/io/watch'
 import type { EditorPreparationController } from '@/app/editor/preparation/controller'
+import { notificationMessages } from '@/app/i18n/notifications'
+import { toast } from '@/app/shell/ui'
 
 type DocumentIOState = EditorState & {
   documentName: string
@@ -29,6 +32,7 @@ export function createDocumentIOActions(
     state,
     getFilePath: sourceState.getFilePath,
     getFileHandle: sourceState.getFileHandle,
+    getSourceFormat: sourceState.getSourceFormat,
     markDocumentSaved: () => sourceActions.markDocumentSaved(),
     preparationController
   })
@@ -36,9 +40,19 @@ export function createDocumentIOActions(
     getFilePath: sourceState.getFilePath,
     getFileHandle: sourceState.getFileHandle,
     getLastWriteTime: sourceState.getLastWriteTime,
-    reloadFromDisk: () => {
-      void reloadFromDisk()
-    }
+    reloadFromDisk: createOutsideChangeHandler({
+      hasUnsavedChanges: () => sourceActions.hasUnsavedChanges(),
+      reload: () => {
+        void reloadFromDisk()
+      },
+      warn: (reload) => {
+        const messages = notificationMessages.get()
+        toast.warning(messages.fileChangedOutside({ name: state.documentName || 'Untitled' }), {
+          label: messages.reloadFromDisk,
+          run: reload
+        })
+      }
+    })
   })
   const { setViewportSize, fitCurrentPageToViewport } = createDocumentViewportActions(
     editor,

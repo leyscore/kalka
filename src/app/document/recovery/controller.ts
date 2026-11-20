@@ -10,7 +10,14 @@ interface DocumentRecoveryOptions {
   /** The document's content revision; rendering and layout do not advance it. */
   version: () => number
   buildFigFile: () => Promise<Uint8Array> | Uint8Array
-  hasWritableSource: () => boolean
+  /**
+   * Whether autosave keeps the document's file up to date, so there is nothing to recover. A
+   * document with a file but autosave off still needs snapshots: a crash would lose every edit
+   * since its last save.
+   */
+  isAutosaved: () => boolean
+  /** The file a restored snapshot saves back to; null for a document without one. */
+  sourcePath?: () => string | null
   isEnabled?: () => boolean
   store?: RecoveryStore
   recoveryId?: string
@@ -29,7 +36,8 @@ export function createDocumentRecovery({
   state,
   version: currentVersion,
   buildFigFile,
-  hasWritableSource,
+  isAutosaved,
+  sourcePath = () => null,
   isEnabled = () => true,
   store = getRecoveryStore(),
   recoveryId = createCanvasId()
@@ -45,14 +53,15 @@ export function createDocumentRecovery({
 
   async function runWrites(generation: number): Promise<void> {
     if (disposed || generation !== lifecycleGeneration || !isEnabled()) return
-    if (hasWritableSource() || requestedVersion === protectedVersion) return
+    if (isAutosaved() || requestedVersion === protectedVersion) return
     const version = requestedVersion
     const bytes = await buildFigFile()
-    if (generation !== lifecycleGeneration || hasWritableSource() || !isEnabled()) return
+    if (generation !== lifecycleGeneration || isAutosaved() || !isEnabled()) return
     await store.write({
       id,
       documentName: state.documentName,
-      figBytes: bytes
+      figBytes: bytes,
+      sourcePath: sourcePath()
     })
     persistedVersion = version
     if (generation !== lifecycleGeneration) return
@@ -62,7 +71,7 @@ export function createDocumentRecovery({
 
   async function persistNow(): Promise<void> {
     await cleanup
-    if (disposed || hasWritableSource() || !isEnabled()) return
+    if (disposed || isAutosaved() || !isEnabled()) return
     requestedVersion = currentVersion()
     if (requestedVersion === protectedVersion) return
     if (!writing) {

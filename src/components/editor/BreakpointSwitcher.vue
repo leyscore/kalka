@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { isEqual } from 'es-toolkit'
 import {
   DropdownMenuContent,
   DropdownMenuItem,
@@ -52,18 +53,21 @@ const primary = computed<SceneNode | undefined>(() => {
     .find((node) => node.type === 'FRAME' && !node.responsiveSource)
 })
 
-const screens = computed(() => {
+/** Kept while unchanged, so an edit elsewhere in the scene does not re-render the switcher. */
+const screens = computed<{ id: string; name: string; width: number }[]>((previous) => {
   void store.state.sceneVersion
   const root = primary.value
-  if (!root) return []
-  return [
-    { id: root.id, name: root.name, width: root.width },
-    ...breakpointsOf(store.graph, root.id).map((breakpoint) => ({
-      id: breakpoint.root.id,
-      name: breakpoint.root.name,
-      width: breakpoint.width
-    }))
-  ]
+  const next = root
+    ? [
+        { id: root.id, name: root.name, width: root.width },
+        ...breakpointsOf(store.graph, root.id).map((breakpoint) => ({
+          id: breakpoint.root.id,
+          name: breakpoint.root.name,
+          width: breakpoint.width
+        }))
+      ]
+    : []
+  return previous && isEqual(previous, next) ? previous : next
 })
 
 const presetNames = computed<Record<BreakpointPreset['key'], string>>(() => ({

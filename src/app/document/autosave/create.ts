@@ -7,6 +7,8 @@ type AutosaveOptions = {
   getSavedVersion: () => number
   hasWritableSource: () => boolean
   saveCurrentDocument: (version: number) => Promise<void>
+  /** Told when autosave starts failing, once until a save succeeds again. */
+  onFailure?: (error: unknown) => void
 }
 
 export function createAutosave({
@@ -14,9 +16,11 @@ export function createAutosave({
   version: currentVersion,
   getSavedVersion,
   hasWritableSource,
-  saveCurrentDocument
+  saveCurrentDocument,
+  onFailure
 }: AutosaveOptions) {
   let requestedVersion: number | null = null
+  let failing = false
   let saving: Promise<void> | null = null
   let disposed = false
 
@@ -30,7 +34,15 @@ export function createAutosave({
       const version = requestedVersion
       requestedVersion = null
       if (!canSave(version)) continue
-      await saveCurrentDocument(version)
+      try {
+        await saveCurrentDocument(version)
+        failing = false
+      } catch (error) {
+        const reported = failing
+        failing = true
+        if (!reported) onFailure?.(error)
+        throw error
+      }
     }
   }
 
@@ -62,6 +74,8 @@ export function createAutosave({
 
   return {
     requestSave,
+    /** Whether the last autosave failed, so the file no longer holds the latest changes. */
+    isFailing: () => failing,
     disposeAutosave() {
       disposed = true
       requestedVersion = null

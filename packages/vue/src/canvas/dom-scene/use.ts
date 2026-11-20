@@ -153,7 +153,12 @@ export function useDomScene(
       activeLayers: () => activeLayers(view())
     })
     const p = projector
-    tiers = new ArtboardTierWork(p, () => editor.graph, redraw)
+    tiers = new ArtboardTierWork(
+      p,
+      () => editor.graph,
+      redraw,
+      () => editor.state.transforming
+    )
     tiers.observe(element)
     const canvasTokens = new CanvasTokens(
       () => editor.graph,
