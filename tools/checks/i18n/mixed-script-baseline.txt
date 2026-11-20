@@ -140,6 +140,11 @@ ja:code.writeJSX
 ja:collaboration.invalidRoomLink
 ja:collaboration.joinRoomDescription
 ja:collaboration.pasteRoomLinkOrId
+ja:collaboration.serverNotKalka
+ja:collaboration.serverNotSignedIn
+ja:collaboration.serverPopupBlocked
+ja:collaboration.serverSettingsDescription
+ja:collaboration.serverSettingsTitle
 ja:collaboration.unreachableDescription
 ja:commands.paletteDescription
 ja:comments.empty
@@ -409,6 +414,11 @@ zh-cn:code.writeJSX
 zh-cn:collaboration.invalidRoomLink
 zh-cn:collaboration.joinRoomDescription
 zh-cn:collaboration.pasteRoomLinkOrId
+zh-cn:collaboration.serverNotKalka
+zh-cn:collaboration.serverNotSignedIn
+zh-cn:collaboration.serverPopupBlocked
+zh-cn:collaboration.serverSettingsDescription
+zh-cn:collaboration.serverSettingsTitle
 zh-cn:collaboration.unreachableDescription
 zh-cn:commands.paletteDescription
 zh-cn:comments.empty

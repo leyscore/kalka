@@ -60,7 +60,41 @@ export const collaborationMessageDefaults = {
   joinRoomEllipsis: 'Join room…',
   joinRoomDescription: 'Paste a room link or ID to open a file someone shared with you.',
   nameSettingTitle: 'Your name',
-  nameSettingDescription: 'Others see this name next to your cursor in shared rooms.'
+  nameSettingDescription: 'Others see this name next to your cursor in shared rooms.',
+  serverTab: 'Server',
+  serverSettingsTitle: 'Kalka server',
+  serverSettingsDescription:
+    'Connect to your team’s Kalka server to keep shared files in one place and edit them together, even when nobody else is online.',
+  serverAddress: 'Server address',
+  serverAddressPlaceholder: 'kalka.example.com',
+  serverContinue: 'Continue',
+  serverEmail: 'Email',
+  serverPassword: 'Password',
+  serverSignIn: 'Sign in',
+  serverSignInWith: params('Sign in with {provider}'),
+  serverSignedInAs: params('Signed in to {server} as {name}'),
+  serverSignOut: 'Sign out',
+  serverChangeServer: 'Use another server',
+  serverOpenPage: 'Open server page',
+  serverOpenPageDescription: 'Invite people, change roles and export files from the server’s page.',
+  serverNotKalka: 'No Kalka server answers at this address.',
+  serverUnreachable: 'Can’t reach this server. Check the address and your connection.',
+  serverSetupRequired:
+    'This server isn’t set up yet. Open its page to create the first administrator.',
+  serverSessionExpired: 'Your session on this server ended. Sign in again.',
+  serverPopupBlocked:
+    'Your browser blocked the sign-in window. Allow pop-ups for Kalka and try again.',
+  serverWaitingForBrowser: 'Finish signing in in your browser…',
+  serverNoDocuments: params('No files on {server} yet. Share a file to put it here.'),
+  serverNotSignedIn: 'Sign in to a Kalka server to see its files.',
+  serverShareOn: params('Save on {server}'),
+  serverShareOnDescription: 'Your team can open it any time, even when you’re offline.',
+  serverRoomSaved: params('Saved on {server}'),
+  serverViewOnly: 'View only: your changes aren’t saved on the server.',
+  serverShareFailed: 'Couldn’t save this file on the server.',
+  serverRoleAdmin: 'Administrator',
+  serverRoleEditor: 'Editor',
+  serverRoleViewer: 'Viewer'
 } as const
 
 export const collaborationMessages = i18n('collaboration', collaborationMessageDefaults)

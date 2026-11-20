@@ -10,6 +10,8 @@ import { useCollabIdentity } from '@/app/collab/identity'
 import { publishLocalAgents } from '@/app/collab/local-awareness'
 import { connectCollabRoom } from '@/app/collab/room/connection'
 import { deriveRoomStatus, type RoomStatus } from '@/app/collab/room/status'
+import { saveServerFile } from '@/app/collab/server/documents'
+import { bindServerPeer } from '@/app/collab/server/peer'
 import {
   readRoomName,
   readRoot,
@@ -18,6 +20,7 @@ import {
   type YNodes
 } from '@/app/collab/shared-tree/fields'
 import type { JoinCollabRoom } from '@/app/collab/transport'
+import { isServerTransport } from '@/app/collab/transport/server'
 import type { RemotePeer } from '@/app/collab/types'
 import { bindVariableSync, type YRecords } from '@/app/collab/variables'
 import {
@@ -178,6 +181,15 @@ export function openRoomSession({
     joinRoom
   })
   broadcastIdentity()
+  const room = connection.room
+  const stopServerPeer = isServerTransport(room)
+    ? bindServerPeer({
+        room,
+        ydoc,
+        sendYjsUpdate: (update) => connection.sendYjsUpdate(update),
+        saveFile: () => saveServerFile(roomId, store)
+      })
+    : undefined
 
   void persistence.whenSynced.then(() => {
     if (disposed) return undefined
@@ -242,6 +254,7 @@ export function openRoomSession({
       stopZoomWatch()
       stopAgentSync()
       stopAgentPreviews()
+      stopServerPeer?.()
       meta.unobserve(refreshDocument)
       unregisterYjsObservers()
       // Destroying the awareness can emit a last change; nothing here should react to it.

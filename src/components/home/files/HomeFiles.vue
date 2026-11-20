@@ -4,6 +4,8 @@ import { computed, ref, watch } from 'vue'
 
 import { useDocumentWorkspace, useI18n, useViewportKind } from '@kalka/vue'
 
+import { serverAccount } from '@/app/collab/server/account'
+import { refreshServerDocuments } from '@/app/collab/server/documents'
 import { homeFilesTab } from '@/app/home/files-tab'
 import {
   activeStorageProviderID,
@@ -26,6 +28,7 @@ import { openStorageDocumentInNewTab } from '@/app/tabs'
 import DocumentEntry from '@/components/home/document/DocumentEntry.vue'
 import HomeSampleTile from '@/components/home/learn/HomeSampleTile.vue'
 import HomeSearchField from '@/components/home/search/HomeSearchField.vue'
+import HomeServerDocuments from '@/components/home/server/HomeServerDocuments.vue'
 import AppButton from '@/components/ui/button/AppButton.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
 import SegmentedControl from '@/components/ui/select/SegmentedControl.vue'
@@ -35,13 +38,15 @@ import { filesTab, storageChip } from '@/theme/home/start'
  * The files on Home, in two tabs: Recent, the files opened on this computer led by the last one,
  * with the sample file; and Storage, the documents in the storage workspace the team shares.
  */
-const { panels, locale, storage, files, common, settings } = useI18n()
+const { panels, locale, storage, files, common, settings, collaboration } = useI18n()
 const { isMobile } = useViewportKind()
 const view = useLocalStorage<'grid' | 'list'>('kalka:home-files-view', 'grid')
 const query = ref('')
 const openError = ref<string | null>(null)
 const storageConfigured = ref(storagePreferencesComplete(activeStorageProviderID.value))
 const inStorage = computed(() => homeFilesTab.value === 'storage')
+const inServer = computed(() => homeFilesTab.value === 'server')
+const inRecent = computed(() => !inStorage.value && !inServer.value)
 
 const workspace = useDocumentWorkspace<RecentDocument>({
   source: {
@@ -118,6 +123,7 @@ const hasRecentFiles = computed(() => documents.value.length > 0)
 const noSearchMatches = computed(
   () =>
     Boolean(normalizedQuery.value) &&
+    !inServer.value &&
     (inStorage.value ? filteredStorageDocuments.value : filteredRecentFiles.value).length === 0
 )
 /** The file that leads the grid: the last one opened, while nothing is being searched. */
@@ -176,8 +182,8 @@ function formattedDate(updatedAt: string): string {
           type="button"
           role="tab"
           aria-controls="home-files-panel"
-          :aria-selected="!inStorage"
-          :class="filesTab({ selected: !inStorage })"
+          :aria-selected="inRecent"
+          :class="filesTab({ selected: inRecent })"
           data-test-id="home-tab-recent"
           @click="homeFilesTab = 'recent'"
         >
@@ -194,6 +200,19 @@ function formattedDate(updatedAt: string): string {
           @click="homeFilesTab = 'storage'"
         >
           {{ storage.tab }}
+        </button>
+        <button
+          v-if="serverAccount || inServer"
+          id="home-tab-server"
+          type="button"
+          role="tab"
+          aria-controls="home-files-panel"
+          :aria-selected="inServer"
+          :class="filesTab({ selected: inServer })"
+          data-test-id="home-tab-server"
+          @click="homeFilesTab = 'server'"
+        >
+          {{ collaboration.serverTab }}
         </button>
         <span v-if="inStorage && storageConfigured" :class="storageChip">
           <span class="size-[7px] shrink-0 rounded-full bg-success" aria-hidden="true" />
@@ -216,6 +235,22 @@ function formattedDate(updatedAt: string): string {
             :label="settings.title"
             class="size-10 sm:size-8"
             @click="openSettingsDialog('storage')"
+          >
+            <icon-hugeicons-settings-02 class="size-3.5" />
+          </IconButton>
+        </template>
+        <template v-else-if="inServer">
+          <IconButton
+            :label="common.refresh"
+            class="size-10 sm:size-8"
+            @click="refreshServerDocuments"
+          >
+            <icon-hugeicons-refresh-cw class="size-3.5" />
+          </IconButton>
+          <IconButton
+            :label="settings.title"
+            class="size-10 sm:size-8"
+            @click="openSettingsDialog('server')"
           >
             <icon-hugeicons-settings-02 class="size-3.5" />
           </IconButton>
@@ -251,7 +286,9 @@ function formattedDate(updatedAt: string): string {
     <div
       id="home-files-panel"
       role="tabpanel"
-      :aria-labelledby="inStorage ? 'home-tab-storage' : 'home-tab-recent'"
+      :aria-labelledby="
+        inStorage ? 'home-tab-storage' : inServer ? 'home-tab-server' : 'home-tab-recent'
+      "
       class="flex flex-col gap-3"
     >
       <p v-if="openError" class="text-xs text-danger" role="alert">{{ openError }}</p>
@@ -261,6 +298,8 @@ function formattedDate(updatedAt: string): string {
       >
         {{ files.noMatchingFiles({ query: query.trim() }) }}
       </p>
+
+      <HomeServerDocuments v-else-if="inServer" :query="normalizedQuery" :view="view" />
 
       <template v-else-if="!inStorage">
         <!-- With nothing opened yet, the sample file stands in for the recent files. -->
