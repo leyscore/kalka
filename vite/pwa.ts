@@ -8,8 +8,13 @@ export function kalkaPwaPlugin() {
       maximumFileSizeToCacheInBytes: 12 * 1024 * 1024,
       globPatterns: ['**/*.{js,css,html,wasm,png,svg,ico,ttf,webmanifest}'],
       navigateFallback: '/index.html',
-      // OAuth callbacks are standalone pages that relay a redirect, not app routes.
-      navigateFallbackDenylist: [/^\/oauth\//]
+      // OAuth callbacks are standalone pages that relay a redirect, not app routes. Kalka
+      // Cloud serves the editor at its root next to its own pages and API, which the cached
+      // editor must not answer for.
+      navigateFallbackDenylist: [
+        /^\/oauth\//,
+        /^\/(?:console|api|w|auth|billing|stripe|healthz)(?:\/|$)/
+      ]
     },
     manifest: {
       name: 'Kalka',

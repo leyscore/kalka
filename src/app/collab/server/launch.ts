@@ -1,5 +1,7 @@
 // Kalka Cloud opens the web editor with a launch link:
-// https://edit.kalka.design/#kalka-server=<server url>&code=<one-time code>&open=<document id|new>
+// https://app.kalka.design/#kalka-server=<server url>&code=<one-time code>&open=<document id|new>
+// A new file can start with a frame (&frame=1440x900&name=Desktop) or a request to the AI agent
+// (&prompt=<text>).
 // The fragment never reaches a server log. The editor signs in to that server with the code,
 // then opens the document, or creates a new one there. Only servers this app trusts by
 // address may sign it in, so a link from elsewhere cannot point it at someone else's server.
@@ -20,6 +22,34 @@ export interface ServerLaunch {
   code: string
   /** A document id, or 'new' to create one; null opens nothing. */
   open: string | null
+  /** What a new file starts with. */
+  start: ServerLaunchStart
+}
+
+export interface ServerLaunchStart {
+  frame?: { name: string; width: number; height: number }
+  prompt?: string
+}
+
+/** The largest frame a launch link may ask for, in CSS pixels. */
+const MAX_FRAME_SIDE = 10_000
+/** A request to the agent longer than this is cut. */
+const MAX_PROMPT_LENGTH = 4000
+
+function parseStart(params: URLSearchParams): ServerLaunchStart {
+  const start: ServerLaunchStart = {}
+  const size = /^(\d{1,5})x(\d{1,5})$/.exec(params.get('frame') ?? '')
+  if (size) {
+    const width = Number(size[1])
+    const height = Number(size[2])
+    if (width >= 1 && height >= 1 && width <= MAX_FRAME_SIDE && height <= MAX_FRAME_SIDE) {
+      const name = (params.get('name') ?? '').trim().slice(0, 60) || 'Frame'
+      start.frame = { name, width, height }
+    }
+  }
+  const prompt = (params.get('prompt') ?? '').trim()
+  if (prompt) start.prompt = prompt.slice(0, MAX_PROMPT_LENGTH)
+  return start
 }
 
 export function isTrustedServer(url: string, ownOrigin: string): boolean {
@@ -45,12 +75,13 @@ export function parseServerLaunch(hash: string, ownOrigin: string): ServerLaunch
     return null
   }
   const open = params.get('open')
-  return { url, code, open: open === 'new' || (open && isRoomId(open)) ? open : null }
+  const target = open === 'new' || (open && isRoomId(open)) ? open : null
+  return { url, code, open: target, start: target === 'new' ? parseStart(params) : {} }
 }
 
 export interface ServerLaunchActions {
   openDocument: (document: ServerDocument) => void
-  createDocument: () => Promise<void>
+  createDocument: (start: ServerLaunchStart) => Promise<void>
   notify: (message: string, level: 'info' | 'error') => void
 }
 
@@ -71,7 +102,7 @@ export async function launchFromServerLink(
     await signInWithCode(launch.url, info, launch.code)
     await refreshServerDocuments()
     if (launch.open === 'new') {
-      await actions.createDocument()
+      await actions.createDocument(launch.start)
     } else if (launch.open) {
       const document = serverDocuments.value.find((item) => item.id === launch.open)
       if (document) actions.openDocument(document)

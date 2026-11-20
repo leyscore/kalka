@@ -29,6 +29,7 @@ import type { PendingOpenFile } from '@/app/document/io/pending-open'
 import { openPendingFiles } from '@/app/document/io/pending-open'
 import { openWebLinkFromLocation, withoutWebLinkParams } from '@/app/document/io/web-link'
 import { focusNodesByName } from '@/app/editor/selection/focus'
+import { fillNewDocument } from '@/app/home/start'
 import { notificationMessages } from '@/app/i18n/notifications'
 import { offerWelcomeOnFirstRun } from '@/app/onboarding/welcome'
 import { appRuntimeConfig } from '@/app/runtime/config'
@@ -299,11 +300,13 @@ onMounted(async () => {
       // Kalka Cloud's launch link: sign in to the workspace, then open or create a file.
       await launchFromServerLink(window.location.hash, window.location.origin, stripServerLaunch, {
         openDocument: (document) => void openServerDocument(document),
-        createDocument: async () => {
+        createDocument: async (start) => {
           // The blank tab the editor opened with takes the new file; otherwise a tab of its own.
           if (!createdInitialTab) createTab()
           else if (activeTab.value?.kind === 'home') createDocumentInCurrentTab()
-          await shareToServer(getActiveStore())
+          const store = getActiveStore()
+          await shareToServer(store)
+          await fillNewDocument(store, start)
         },
         notify: (message, level) => (level === 'error' ? toast.error : toast.info)(message)
       })

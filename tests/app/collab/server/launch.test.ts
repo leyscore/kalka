@@ -15,8 +15,40 @@ describe('parseServerLaunch', () => {
     expect(launch).toEqual({
       url: 'https://app.kalka.design/w/0123456789abcdef',
       code: CODE,
-      open: ROOM
+      open: ROOM,
+      start: {}
     })
+  })
+
+  test('starts a new document with a frame and a request to the agent', () => {
+    const launch = parseServerLaunch(
+      `#kalka-server=https://app.kalka.design/w/x&code=${CODE}&open=new&frame=390x844&name=Mobile&prompt=${encodeURIComponent('A pricing page')}`,
+      OWN
+    )
+    expect(launch?.start).toEqual({
+      frame: { name: 'Mobile', width: 390, height: 844 },
+      prompt: 'A pricing page'
+    })
+  })
+
+  test('ignores a frame size out of range or malformed', () => {
+    const start = (frame: string) =>
+      parseServerLaunch(
+        `#kalka-server=https://app.kalka.design/w/x&code=${CODE}&open=new&frame=${frame}`,
+        OWN
+      )?.start
+    expect(start('0x900')).toEqual({})
+    expect(start('20000x900')).toEqual({})
+    expect(start('1440*900')).toEqual({})
+  })
+
+  test('starts an existing document as it is', () => {
+    expect(
+      parseServerLaunch(
+        `#kalka-server=https://app.kalka.design/w/x&code=${CODE}&open=${ROOM}&frame=390x844&prompt=hi`,
+        OWN
+      )?.start
+    ).toEqual({})
   })
 
   test('creates a new document when asked', () => {
