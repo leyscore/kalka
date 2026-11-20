@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- A document restored after a crash goes back to the `.fig` or `.kalka` file it was opened from, so saving it writes that file instead of asking where to save an untitled copy.
 - In Chromium browsers, turning on Autosave for a file opened from disk asks for permission to write it then, so the first autosave is not refused for lack of a click.
 - Native menu commands reach the editor when another Kalka window, such as Software Update, is in front, where Close closes that window; on macOS with no window open, a menu command opens an editor window instead of doing nothing.
 - A Save As whose write fails leaves the document where it was, with its name and format, instead of pointing it at the file that was not written.

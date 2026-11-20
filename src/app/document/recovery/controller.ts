@@ -16,6 +16,8 @@ interface DocumentRecoveryOptions {
    * since its last save.
    */
   isAutosaved: () => boolean
+  /** The file a restored snapshot saves back to; null for a document without one. */
+  sourcePath?: () => string | null
   isEnabled?: () => boolean
   store?: RecoveryStore
   recoveryId?: string
@@ -35,6 +37,7 @@ export function createDocumentRecovery({
   version: currentVersion,
   buildFigFile,
   isAutosaved,
+  sourcePath = () => null,
   isEnabled = () => true,
   store = getRecoveryStore(),
   recoveryId = createCanvasId()
@@ -57,7 +60,8 @@ export function createDocumentRecovery({
     await store.write({
       id,
       documentName: state.documentName,
-      figBytes: bytes
+      figBytes: bytes,
+      sourcePath: sourcePath()
     })
     persistedVersion = version
     if (generation !== lifecycleGeneration) return

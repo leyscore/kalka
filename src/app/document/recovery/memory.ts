@@ -1,3 +1,4 @@
+import { recoverySourcePath } from '@/app/document/recovery/source-path'
 import type {
   RecoverySnapshot,
   RecoverySnapshotInput,
@@ -24,7 +25,8 @@ export function createMemoryRecoveryStore(): RecoveryStore {
         documentName: input.documentName || 'Untitled',
         updatedAt: new Date().toISOString(),
         byteLength: input.figBytes.byteLength,
-        formatVersion: 1
+        formatVersion: 1,
+        ...recoverySourcePath(input)
       }
       snapshots.set(input.id, {
         ...metadata,

@@ -28,6 +28,7 @@ import {
 } from '@/app/document/io/types'
 import { createDocumentRecovery } from '@/app/document/recovery'
 import { recoveryEnabled } from '@/app/document/recovery/preferences'
+import { restorableFilePath } from '@/app/document/recovery/source-path'
 import { notificationMessages } from '@/app/i18n/notifications'
 import type { StorageDocumentBinding, StorageProviderID } from '@/app/integrations/storage/types'
 import { toast } from '@/app/shell/ui'
@@ -122,7 +123,8 @@ export function createDocumentSourceActions({
     isAutosaved: () =>
       state.autosaveEnabled &&
       !autosave.isFailing() &&
-      (!!getFileHandle() || !!getFilePath() || !!getStorageBinding())
+      (!!getFileHandle() || !!getFilePath() || !!getStorageBinding()),
+    sourcePath: () => restorableFilePath(getFilePath())
   })
 
   const { saveFigFile, writeFile } = createSaveActions({

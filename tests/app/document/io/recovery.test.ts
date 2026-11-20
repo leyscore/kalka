@@ -32,6 +32,27 @@ describe('document recovery', () => {
     expect(await snapshotIds()).toContain(store.getRecoveryId())
   })
 
+  test('remembers the file a snapshot belongs to', async () => {
+    const store = createEditorStore()
+    stores.push(store)
+    store.setPlannedFilePath('/documents/poster.fig')
+    store.setPageColor({ r: 0.5, g: 0.5, b: 0.5, a: 1 })
+    await store.persistRecoveryNow()
+    const [snapshot] = await getRecoveryStore().list()
+    expect(snapshot?.sourcePath).toBe('/documents/poster.fig')
+  })
+
+  test('keeps no path for a Kalka folder, which a snapshot cannot be saved back to', async () => {
+    const store = createEditorStore()
+    stores.push(store)
+    store.setPlannedFilePath('/documents/poster')
+    store.state.autosaveEnabled = false
+    store.setPageColor({ r: 0.5, g: 0.5, b: 0.5, a: 1 })
+    await store.persistRecoveryNow()
+    const [snapshot] = await getRecoveryStore().list()
+    expect(snapshot?.sourcePath).toBeUndefined()
+  })
+
   test('leaves a saved file to autosave when autosave is on', async () => {
     const store = createEditorStore()
     stores.push(store)

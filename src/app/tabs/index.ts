@@ -553,6 +553,8 @@ export async function restoreRecoverySnapshot(id: string): Promise<void> {
       imported,
       async () => {
         store.state.documentName = snapshot.documentName
+        // The document goes back to its file, still unsaved, so saving does not ask where.
+        if (snapshot.sourcePath) store.setPlannedFilePath(snapshot.sourcePath)
         await store.adoptRecoverySnapshot(id)
       },
       load

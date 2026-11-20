@@ -1,5 +1,6 @@
 import type { DBSchema } from 'idb'
 
+import { recoverySourcePath } from '@/app/document/recovery/source-path'
 import type {
   RecoverySnapshot,
   RecoverySnapshotInput,
@@ -68,7 +69,8 @@ export function createIdbRecoveryStore(): RecoveryStore {
         documentName: input.documentName || 'Untitled',
         updatedAt: new Date().toISOString(),
         byteLength: input.figBytes.byteLength,
-        formatVersion: 1
+        formatVersion: 1,
+        ...recoverySourcePath(input)
       }
       await Promise.all([
         transaction.objectStore('meta').put(metadata),

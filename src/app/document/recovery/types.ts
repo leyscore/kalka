@@ -4,6 +4,8 @@ export interface RecoverySnapshotMeta {
   updatedAt: string
   byteLength: number
   formatVersion: 1
+  /** The `.fig` or `.kalka` file the document was opened from, when it had one. */
+  sourcePath?: string
 }
 
 export interface RecoverySnapshot extends RecoverySnapshotMeta {
@@ -14,6 +16,7 @@ export interface RecoverySnapshotInput {
   id: string
   documentName: string
   figBytes: Uint8Array
+  sourcePath?: string | null
 }
 
 export interface RecoveryStore {
