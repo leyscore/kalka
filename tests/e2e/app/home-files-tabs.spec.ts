@@ -52,3 +52,18 @@ test('Home leads with the last file and keeps the storage workspace in its own t
   await page.reload()
   await expect(home.getByRole('tab', { name: 'Storage' })).toHaveAttribute('aria-selected', 'true')
 })
+
+test('each list of files on Home has its own address', async ({ page }) => {
+  await page.goto('/?recent-files')
+  const home = page.getByTestId('recent-files-home')
+  const storage = home.getByRole('tab', { name: 'Storage' })
+
+  await storage.click()
+  await expect(page).toHaveURL(/\/files\/storage\?recent-files/)
+
+  await home.getByRole('tab', { name: 'Recent' }).click()
+  await expect(page).toHaveURL(/\/files\/recent\?recent-files/)
+
+  await page.goto('/files/storage?recent-files')
+  await expect(storage).toHaveAttribute('aria-selected', 'true')
+})

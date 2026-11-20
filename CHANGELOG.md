@@ -11,6 +11,7 @@
 
 ### Changed
 
+- Home's lists of files have their own addresses, `/files/recent`, `/files/storage` and `/files/server`, so a link or a reload opens Home on that list; `/storage` still opens the storage workspace.
 - The welcome is a page at `/welcome` with a few optional questions after the name: what you do, your company, position and team size, what you will design first and how you heard of Kalka, then connecting your AI or leaving it for later. Answers stay on this device.
 - Settings is a page of its own at `/settings/<section>`, filling the window instead of a dialog: Back closes it, a reload or a link opens it on that section, and the open documents stay as they were behind it.
 

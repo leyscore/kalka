@@ -1,11 +1,11 @@
 import type { Router } from 'vue-router'
 
-import { homeFilesTab } from '@/app/home/files-tab'
+import { filesPath } from '@/app/home/files-route'
 
+/** Home on the storage workspace's list, at its address. */
 export function openStorageWorkspace(router: Router): void {
-  homeFilesTab.value = 'storage'
   void router
-    .push('/')
+    .push(filesPath('storage'))
     .then(() => import('@/app/tabs'))
     .then(({ showNewTab }) => showNewTab())
 }
