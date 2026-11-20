@@ -23,7 +23,7 @@ export const welcomeScreen = tv({
     label: 'text-[13px] font-semibold text-surface',
     info: 'grid size-5 cursor-help place-items-center rounded-full text-muted outline-none transition-colors hover:text-surface focus-visible:ring-2 focus-visible:ring-accent/50',
     input:
-      'h-12 w-full rounded-[14px] border border-glass-border bg-glass px-4 text-[15px] text-surface backdrop-blur-[24px] transition-[border-color,box-shadow] duration-200 outline-none placeholder:text-muted focus:border-accent/50 focus:shadow-[0_0_0_4px_color-mix(in_srgb,var(--color-accent)_14%,transparent)]',
+      'h-12 w-full rounded-[14px] border border-glass-border bg-glass px-4 text-[15px] text-surface backdrop-blur-[24px] transition-[border-color] duration-200 outline-none placeholder:text-muted focus:border-accent',
     hint: 'text-xs text-muted',
     actions: 'flex w-full max-w-[440px] flex-col gap-2.5',
     buttons: 'flex w-full flex-wrap gap-2.5',
