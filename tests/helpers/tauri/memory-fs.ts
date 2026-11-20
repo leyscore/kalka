@@ -10,6 +10,21 @@ function pathArg(args: unknown, options: unknown): string {
   return typeof path === 'string' ? decodeURIComponent(path) : ''
 }
 
+function argument(args: unknown, key: string): unknown {
+  return typeof args === 'object' && args !== null ? Reflect.get(args, key) : undefined
+}
+
+/** Moves a file as plugin-fs's rename does, replacing what is at the new path. */
+function renameFile(files: Map<string, Uint8Array>, args: unknown): void {
+  const from = argument(args, 'oldPath')
+  const to = argument(args, 'newPath')
+  const content = typeof from === 'string' ? files.get(from) : undefined
+  if (typeof from !== 'string' || typeof to !== 'string' || !content)
+    throw new Error(`No file to rename at ${String(from)}`)
+  files.delete(from)
+  files.set(to, content)
+}
+
 /** A file system in memory, answering plugin-fs the way the desktop shell does. */
 export async function memoryFileSystem(initial: Record<string, string> = {}) {
   const files = new Map<string, Uint8Array>(
@@ -28,19 +43,12 @@ export async function memoryFileSystem(initial: Record<string, string> = {}) {
       case 'plugin:fs|mkdir':
         return null
       case 'plugin:fs|remove':
-        for (const file of [...files.keys()])
+        for (const file of files.keys())
           if (file === path || file.startsWith(`${path}/`)) files.delete(file)
         return null
-      case 'plugin:fs|rename': {
-        const from = Reflect.get(Object(args), 'oldPath')
-        const to = Reflect.get(Object(args), 'newPath')
-        const content = typeof from === 'string' ? files.get(from) : undefined
-        if (typeof from !== 'string' || typeof to !== 'string' || !content)
-          throw new Error(`No file to rename at ${String(from)}`)
-        files.delete(from)
-        files.set(to, content)
+      case 'plugin:fs|rename':
+        renameFile(files, args)
         return null
-      }
       case 'plugin:fs|exists':
         return files.has(path) || isDirectory(path)
       case 'plugin:fs|read_dir': {

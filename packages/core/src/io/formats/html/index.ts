@@ -25,14 +25,14 @@ const PLACEMENT = ['position', 'left', 'top', 'right', 'bottom', 'inset']
  * or PDF drawn from it, show it moved by that much and cut off. It stays the containing block of
  * the layers placed inside it.
  */
-function unplaced(document: DesignDocument): DesignDocument {
-  for (const root of document.children) {
+function unplaced(projected: DesignDocument): DesignDocument {
+  for (const root of projected.children) {
     if (root.type !== 'element') continue
     const style = root.inlineStyle ?? {}
     if (style.position !== 'absolute' && style.position !== 'fixed') continue
     root.inlineStyle = { ...omit(style, PLACEMENT), position: 'relative' }
   }
-  return document
+  return projected
 }
 
 function designDocument(

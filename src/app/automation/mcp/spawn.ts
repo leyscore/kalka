@@ -573,21 +573,23 @@ async function startMCPIfNeeded(timing: MCPStartupTiming): Promise<AutomationSer
   } finally {
     runtimeAutomationAuthToken = null
   }
+  return rememberStartupError(await unhealthyStartupError(startupStderr))
+}
+
+/** Why a server that started never answered its health check. */
+async function unhealthyStartupError(stderr: string): Promise<MCPStartupError> {
   // Our server never answered with our token, yet something answers on its port: another
   // program, such as a development server left running, holds the port it needs.
   if (await portAnswers()) {
-    return rememberStartupError(
-      new MCPStartupError(
-        `Port ${AUTOMATION_HTTP_PORT} is already in use by another program.`,
-        portInUseFailure(AUTOMATION_HTTP_PORT)
-      )
+    return new MCPStartupError(
+      `Port ${AUTOMATION_HTTP_PORT} is already in use by another program.`,
+      portInUseFailure(AUTOMATION_HTTP_PORT)
     )
   }
-  return rememberStartupError(
-    new MCPStartupError(
-      `MCP server did not become healthy within the startup timeout${startupStderr.trim() ? `: ${startupStderr.trim()}` : '.'}`,
-      failureFromStartupOutput('timeout', startupStderr, AUTOMATION_HTTP_PORT)
-    )
+  const details = stderr.trim()
+  return new MCPStartupError(
+    `MCP server did not become healthy within the startup timeout${details ? `: ${details}` : '.'}`,
+    failureFromStartupOutput('timeout', stderr, AUTOMATION_HTTP_PORT)
   )
 }
 
