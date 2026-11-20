@@ -24,7 +24,7 @@ export function useSelectionState() {
 
   const hasSelection = computed(() => selectedIds.value.size > 0)
 
-  const { node: selectedNode } = useSelectedNodeState(editor)
+  const { node: selectedNode, nodes: selectedNodes } = useSelectedNodeState(editor)
 
   const selectedCount = computed(() => selectedIds.value.size)
 
@@ -59,6 +59,8 @@ export function useSelectionState() {
     selectedIds,
     hasSelection,
     selectedNode,
+    /** Copies of the selected layers, updated field by field as the layers change. */
+    selectedNodes,
     selectedCount,
     selectedNodeType,
     isInstance,
