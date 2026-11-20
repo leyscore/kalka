@@ -33,5 +33,7 @@
   "tokensLeftOut": "No incluido en la hoja de estilos: {names}.",
   "designTokensLeftOut": "No incluidos en los design tokens: {names}.",
   "designTokensImported": "Se importaron {count} design tokens.",
-  "folderNotEmpty": "«{name}» ya contiene otros archivos. Elige una carpeta vacía o una carpeta de Kalka que quieras reemplazar."
+  "folderNotEmpty": "«{name}» ya contiene otros archivos. Elige una carpeta vacía o una carpeta de Kalka que quieras reemplazar.",
+  "fileChangedOutside": "Otra aplicación cambió «{name}». Tus cambios sin guardar se conservan; al guardar se reemplaza esa versión.",
+  "reloadFromDisk": "Volver a cargar desde el disco"
 }

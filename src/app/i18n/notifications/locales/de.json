@@ -33,5 +33,7 @@
   "tokensLeftOut": "Nicht im Stylesheet enthalten: {names}.",
   "designTokensLeftOut": "Nicht in den Design-Tokens enthalten: {names}.",
   "designTokensImported": "{count} Design-Tokens importiert.",
-  "folderNotEmpty": "„{name}“ enthält bereits andere Dateien. Wähle einen leeren Ordner oder einen Kalka-Ordner, den du ersetzen möchtest."
+  "folderNotEmpty": "„{name}“ enthält bereits andere Dateien. Wähle einen leeren Ordner oder einen Kalka-Ordner, den du ersetzen möchtest.",
+  "fileChangedOutside": "„{name}“ wurde von einer anderen App geändert. Deine ungesicherten Änderungen bleiben erhalten; Sichern ersetzt diese Version.",
+  "reloadFromDisk": "Von der Festplatte neu laden"
 }

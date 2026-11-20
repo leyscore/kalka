@@ -119,8 +119,8 @@ function info(message: string) {
   push(message, 'default')
 }
 
-function warning(message: string) {
-  push(message, 'warning')
+function warning(message: string, action?: ToastAction) {
+  push(message, 'warning', action)
 }
 
 function error(message: string, action?: ToastAction): number {

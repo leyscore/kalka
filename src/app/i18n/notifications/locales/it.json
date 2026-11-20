@@ -33,5 +33,7 @@
   "tokensLeftOut": "Esclusi dal foglio di stile: {names}.",
   "designTokensLeftOut": "Esclusi dai design token: {names}.",
   "designTokensImported": "Importati {count} design token.",
-  "folderNotEmpty": "“{name}” contiene già altri file. Scegli una cartella vuota o una cartella Kalka da sostituire."
+  "folderNotEmpty": "“{name}” contiene già altri file. Scegli una cartella vuota o una cartella Kalka da sostituire.",
+  "fileChangedOutside": "“{name}” è stato modificato da un’altra app. Le modifiche non salvate restano; salvando sostituisci quella versione.",
+  "reloadFromDisk": "Ricarica dal disco"
 }

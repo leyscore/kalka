@@ -20,6 +20,10 @@ export const notificationMessageDefaults = {
   xPaths: 'XPaths',
   pngClipboardUnavailable: 'PNG clipboard export is not available in this browser.',
   openFileFailed: params('Could not open “{name}”: {error}'),
+  fileChangedOutside: params(
+    '“{name}” was changed by another app. Your unsaved edits are kept; saving replaces that version.'
+  ),
+  reloadFromDisk: 'Reload from disk',
   folderNotEmpty: params(
     '“{name}” already holds other files. Choose an empty folder, or a Kalka folder to replace.'
   ),

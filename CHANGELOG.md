@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- When another app, git or a sync tool changes the open file while you have unsaved edits, Kalka keeps your edits and offers to reload the file instead of reloading it silently and dropping them with the undo history; with no unsaved edits it still reloads.
 - The desktop app's native menu shows Autosave, Pixel Grid, Multiplayer Cursors, Rulers and the theme choices as they are; they all started checked, and clicking Autosave showed it off when it was on.
 - On macOS, opening a document from the Finder, a `kalka://` link or the command line while Kalka has no window open opens an editor window with it, instead of keeping it waiting unseen; documents are never handed to the Software Update window.
 - When several agents edit the same document at once, such as named agents in the chat and agents over MCP, undoing one agent's edit no longer also undoes what another agent changed while it ran.
