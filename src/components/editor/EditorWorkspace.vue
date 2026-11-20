@@ -43,10 +43,12 @@ const showChrome = appRuntimeConfig.showChrome
 const { tab } = defineProps<{ tab: Tab }>()
 const store = tab.store
 provideTabEditorStore(store)
-// Variables and their code views load the first time the dialog opens.
+// Variables and their code views load the first time they open: as a page over the panels and the
+// canvas in the desktop layout, as a dialog in the others.
 const VariablesDialog = defineAsyncComponent(
   () => import('@/components/variables/VariablesDialog.vue')
 )
+const VariablesPage = defineAsyncComponent(() => import('@/components/variables/VariablesPage.vue'))
 const variablesUsed = latch(() => store.state.variablesOpen)
 const { isMobile } = useViewportKind()
 const initialEditorLayout = loadEditorLayout()
@@ -64,6 +66,9 @@ const horizontalSplitterStyles = tv(splitterTheme)({ direction: 'horizontal', gu
 const playingAlone = computed(() => store.state.play !== null && store.visiblePaneCount.value <= 1)
 // Until a room's document arrives there is nothing to edit, so its screen replaces the editor.
 const { pending: roomPending } = useRoomActions()
+const desktopLayout = computed(
+  () => !isMobile.value && showChrome && store.state.showUI && !playingAlone.value
+)
 </script>
 
 <template>
@@ -72,62 +77,72 @@ const { pending: roomPending } = useRoomActions()
   </div>
 
   <div
-    v-else-if="!isMobile && showChrome && store.state.showUI && !playingAlone"
+    v-else-if="desktopLayout"
     :key="tab.id"
     class="flex flex-1 flex-col gap-2 overflow-hidden px-2 pb-2 [--color-glass-border:var(--color-border)] [--color-glass:var(--color-panel)]"
   >
     <EditorTopBar />
     <div class="flex min-h-0 flex-1 gap-2">
       <PanelRail class="panel-float" />
-      <SplitterGroup
-        ref="panels"
-        direction="horizontal"
-        class="min-w-0 flex-1 overflow-hidden"
-        @layout="saveEditorLayout"
-      >
-        <SplitterPanel
-          id="layers"
-          :default-size="initialEditorLayout[0]"
-          :min-size="layersLimits.minSize"
-          :max-size="layersLimits.maxSize"
-          class="flex panel-float overflow-hidden"
+      <div class="relative flex min-w-0 flex-1">
+        <!-- Under the variables page the panels and canvas keep their state, out of reach. -->
+        <SplitterGroup
+          ref="panels"
+          direction="horizontal"
+          class="min-w-0 flex-1 overflow-hidden"
+          :inert="store.state.variablesOpen"
+          @layout="saveEditorLayout"
         >
-          <LayersPanel />
-        </SplitterPanel>
-        <SplitterResizeHandle
-          data-test-id="left-splitter-handle"
-          :class="horizontalSplitterStyles.handle()"
-        >
-          <div :class="horizontalSplitterStyles.divider()" />
-        </SplitterResizeHandle>
-        <SplitterPanel
-          id="canvas"
-          :default-size="initialEditorLayout[1]"
-          :min-size="30"
-          class="flex overflow-hidden rounded-[14px] border border-canvas-edge"
-        >
-          <!-- A container, so the toolbar can shorten its agent field when the canvas is narrow. -->
-          <div class="@container/canvas relative flex min-w-0 flex-1">
-            <CanvasSplitRoot />
-            <ActiveRoomOverlay />
-            <!-- A file of the folder takes the canvas's place, tools included, until it is closed. -->
-            <FolderFileView />
-            <Toolbar v-if="!openFolderFile" />
-          </div>
-        </SplitterPanel>
-        <SplitterResizeHandle :class="horizontalSplitterStyles.handle()">
-          <div :class="horizontalSplitterStyles.divider()" />
-        </SplitterResizeHandle>
-        <SplitterPanel
-          id="properties"
-          :default-size="initialEditorLayout[2]"
-          :min-size="propertiesLimits.minSize"
-          :max-size="propertiesLimits.maxSize"
-          class="flex flex-col panel-float overflow-hidden"
-        >
-          <PropertiesPanel />
-        </SplitterPanel>
-      </SplitterGroup>
+          <SplitterPanel
+            id="layers"
+            :default-size="initialEditorLayout[0]"
+            :min-size="layersLimits.minSize"
+            :max-size="layersLimits.maxSize"
+            class="flex panel-float overflow-hidden"
+          >
+            <LayersPanel />
+          </SplitterPanel>
+          <SplitterResizeHandle
+            data-test-id="left-splitter-handle"
+            :class="horizontalSplitterStyles.handle()"
+          >
+            <div :class="horizontalSplitterStyles.divider()" />
+          </SplitterResizeHandle>
+          <SplitterPanel
+            id="canvas"
+            :default-size="initialEditorLayout[1]"
+            :min-size="30"
+            class="flex overflow-hidden rounded-[14px] border border-canvas-edge"
+          >
+            <!-- A container, so the toolbar can shorten its agent field when the canvas is narrow. -->
+            <div class="@container/canvas relative flex min-w-0 flex-1">
+              <CanvasSplitRoot />
+              <ActiveRoomOverlay />
+              <!-- A file of the folder takes the canvas's place, tools included, until it is closed. -->
+              <FolderFileView />
+              <Toolbar v-if="!openFolderFile" />
+            </div>
+          </SplitterPanel>
+          <SplitterResizeHandle :class="horizontalSplitterStyles.handle()">
+            <div :class="horizontalSplitterStyles.divider()" />
+          </SplitterResizeHandle>
+          <SplitterPanel
+            id="properties"
+            :default-size="initialEditorLayout[2]"
+            :min-size="propertiesLimits.minSize"
+            :max-size="propertiesLimits.maxSize"
+            class="flex flex-col panel-float overflow-hidden"
+          >
+            <PropertiesPanel />
+          </SplitterPanel>
+        </SplitterGroup>
+        <VariablesPage
+          v-if="variablesUsed"
+          v-show="store.state.variablesOpen"
+          :open="store.state.variablesOpen"
+          class="absolute inset-0 z-20"
+        />
+      </div>
     </div>
   </div>
 
@@ -174,5 +189,5 @@ const { pending: roomPending } = useRoomActions()
     </div>
   </div>
 
-  <VariablesDialog v-if="variablesUsed" />
+  <VariablesDialog v-if="variablesUsed && !desktopLayout" />
 </template>

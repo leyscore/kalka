@@ -72,7 +72,10 @@ const typography = () => page.getByRole('region', { name: 'Typography', exact: t
 
 test('hovering text alignment previews it, leaving reverts it and a click commits it', async () => {
   const before = await state()
-  const center = typography().getByRole('button', { name: 'Align center horizontally', exact: true })
+  const center = typography().getByRole('button', {
+    name: 'Align center horizontally',
+    exact: true
+  })
   await center.hover()
   await expect.poll(async () => (await state()).align).toBe('CENTER')
   expect((await state()).undoLabel).toBe(before.undoLabel)

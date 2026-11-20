@@ -17,7 +17,7 @@ test('design token files import as a collection with a mode per file', async () 
     .getByRole('region', { name: 'Variables' })
     .getByRole('button', { name: 'Open variables' })
     .click()
-  const dialog = editor.page.getByTestId('variables-dialog')
+  const dialog = editor.page.getByTestId('variables-page')
   await expect(dialog).toBeVisible()
 
   const chooser = editor.page.waitForEvent('filechooser')
