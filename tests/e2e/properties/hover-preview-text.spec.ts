@@ -111,8 +111,13 @@ test('hovering a font family previews it and Escape reverts it', async () => {
   await expect(items.nth(2)).toBeVisible()
   const family = (await items.nth(2).locator('span.truncate').textContent())?.trim() ?? ''
   expect(family).not.toBe(before.fontFamily)
-  await items.nth(2).hover()
-  await expect.poll(async () => (await state()).fontFamily, { timeout: 15_000 }).toBe(family)
+  // Hover the family once the list has settled: fonts that finish loading redraw the list.
+  await expect
+    .poll(async () => {
+      await items.filter({ hasText: family }).first().hover()
+      return (await state()).fontFamily
+    })
+    .toBe(family)
   expect((await state()).undoLabel).toBe(before.undoLabel)
 
   await page.keyboard.press('Escape')

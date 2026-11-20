@@ -13,7 +13,7 @@ import {
   ComboboxViewport,
   type AcceptableValue
 } from 'reka-ui'
-import { nextTick, watch } from 'vue'
+import { nextTick, shallowRef, watch } from 'vue'
 
 import { useRetainedPopup } from '#vue/lifecycle/retention/popup'
 import type { FontPickerUI } from '#vue/primitives/FontPicker/types'
@@ -56,6 +56,19 @@ const { searchTerm, open, filtered, loading, accessState, requestAccess, select 
 })
 const { portalActive } = useRetainedPopup(open)
 
+/**
+ * The family the list opened on. A preview feeds the hovered family back into `modelValue`, which
+ * would move the list's highlight and check onto it; while open, the list keeps this one.
+ */
+const openedOn = shallowRef<string>()
+watch(
+  open,
+  (isOpen) => {
+    openedOn.value = isOpen ? modelValue.value : undefined
+  },
+  { flush: 'sync' }
+)
+
 function highlight(payload: { value: AcceptableValue } | undefined) {
   emit('highlight', typeof payload?.value === 'string' ? payload.value : null)
 }
@@ -67,7 +80,7 @@ watch(open, (isOpen) => {
 <template>
   <ComboboxRoot
     v-model:open="open"
-    :model-value="modelValue"
+    :model-value="openedOn ?? modelValue"
     :ignore-filter="true"
     @highlight="highlight"
     @update:model-value="
@@ -125,10 +138,10 @@ watch(open, (isOpen) => {
                 name="item"
                 :family="option.family"
                 :source="option.source"
-                :selected="option.family === modelValue"
+                :selected="option.family === (openedOn ?? modelValue)"
               >
                 <ComboboxItemIndicator>
-                  <slot name="indicator" :selected="option.family === modelValue" />
+                  <slot name="indicator" :selected="option.family === (openedOn ?? modelValue)" />
                 </ComboboxItemIndicator>
                 <span class="truncate">{{ option.family }}</span>
               </slot>

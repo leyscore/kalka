@@ -95,16 +95,18 @@ export function createTypographyActions({
     editor.updateNodeWithUndo(node.value.id, { fontFamily: family }, 'Change font')
   }
 
-  /** Shows a family once its face at the current weight has loaded, if it is still hovered. */
-  async function previewFamily(family: string | null) {
-    const current = ++hover
+  /**
+   * Shows a family at once, in a fallback face while its own loads: a preview that waited for a
+   * web font to download would come seconds after the pointer moved on.
+   */
+  function previewFamily(family: string | null) {
+    hover++
     if (family === null || !node.value) {
       hoverText([], null)
       return
     }
-    const { id } = node.value
-    await doLoadFont(family, currentWeightLabel.value)
-    if (current === hover) hoverText([id], { fontFamily: family })
+    hoverText([node.value.id], { fontFamily: family })
+    void doLoadFont(family, currentWeightLabel.value)
   }
 
   /** Shows text settings on the selection while they are hovered in a list; `null` takes them away. */
