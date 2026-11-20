@@ -8,7 +8,7 @@
 
 ### Changed
 
-- An agent's work on the canvas loads calmly, block by block: each edit waits for its previous one to finish, then its new blocks load in order, a frame's background before what it holds and top to bottom, each first a skeleton of white glass with a shine passing over it, edged with dashes in the agent's color, that then fades into its content; before an agent's first layer, the same skeleton marks where its work will land. While it builds, the agent shows as a badge with a small loader on what it builds instead of a cursor flying about, Follow agents moves the view only when the work leaves the middle of the screen and no longer shows its banner (following someone on purpose still does), and the pulsing and green rings around an agent's layers are gone. With reduced motion or Reduce agent animations, edits still show at once.
+- An agent's work on the canvas loads calmly, block by block: each edit waits for its previous one to finish, then its new blocks load in order, a frame's background before what it holds and top to bottom, each first a soft cloud of pixel dots in the style of kalka.design, Kalka blue on a light backdrop and white on the dark canvas, with a few dots twinkling, which then lifts away as the content comes into focus; before an agent's first layer, the same cloud marks where its work will land. While it builds, the agent shows as a badge with a small loader on what it builds instead of a cursor flying about, Follow agents moves the view only when the work leaves the middle of the screen and no longer shows its banner (following someone on purpose still does), and the pulsing and green rings around an agent's layers are gone. With reduced motion or Reduce agent animations, edits still show at once.
 
 ### Fixed
 

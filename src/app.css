@@ -154,18 +154,21 @@
   animation: kalka-liquid-fill 1.8s cubic-bezier(0.45, 0, 0.2, 1) infinite;
 }
 
-/* The shine that passes over an agent's skeleton while its content loads, like light on glass. */
-@keyframes kalka-skeleton-shine {
-  from {
-    transform: translateX(-100%) skewX(-16deg);
+/* A few dots of an agent's loading cloud brighten, then fade, each at its own pace. */
+@keyframes kalka-skeleton-twinkle {
+  0%,
+  100% {
+    opacity: 0;
   }
-  to {
-    transform: translateX(400%) skewX(-16deg);
+  45%,
+  60% {
+    opacity: 1;
   }
 }
 
-@utility animate-skeleton-shine {
-  animation: kalka-skeleton-shine 1.6s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+@utility animate-skeleton-twinkle {
+  animation: kalka-skeleton-twinkle var(--twinkle-duration, 2s) ease-in-out var(--twinkle-delay, 0s)
+    infinite;
 }
 
 /*

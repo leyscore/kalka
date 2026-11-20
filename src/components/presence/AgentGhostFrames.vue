@@ -2,25 +2,29 @@
 import { computed } from 'vue'
 
 import type { ViewportTransform } from '@kalka/core/geometry'
+import type { Color } from '@kalka/scene-graph/primitives'
 import { useCommentsMessages } from '@kalka/vue'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import { agentHasWritten } from '@/app/presence/activity'
 import { presenceOf } from '@/app/presence/registry'
-import { agentSkeleton } from '@/theme/collaboration/agent-skeleton'
+import { toneOf } from '@/app/presence/skeletons'
+
+import AgentSkyBlock from './AgentSkyBlock.vue'
 
 /**
  * Where an agent's work will land, before it has anything to show: a skeleton that breathes
  * beside the page's designs, with the agent's name and what it says it is doing, from the moment
  * it starts until it touches its first layer. Display only.
  */
-const { view, drawn } = defineProps<{
+const { view, drawn, canvasColor } = defineProps<{
   view: { panX: number; panY: number; zoom: number; currentPageId: string }
   drawn?: ViewportTransform | null
+  /** The canvas the frame sits on, for dots that read on it. */
+  canvasColor: Color
 }>()
 
 const store = useEditorStore()
-const ui = agentSkeleton()
 const messages = useCommentsMessages()
 const placement = computed(() => drawn ?? view)
 
@@ -74,7 +78,7 @@ const ghosts = computed(() =>
     <div
       v-for="ghost in ghosts"
       :key="ghost.id"
-      :class="ui.root({ class: 'border-accent/60' })"
+      class="absolute"
       data-slot="agent-ghost-frame"
       :style="{
         left: `${ghost.left}px`,
@@ -83,7 +87,12 @@ const ghosts = computed(() =>
         height: `${ghost.height}px`
       }"
     >
-      <div :class="ui.clip()"><div :class="ui.shine()" /></div>
+      <AgentSkyBlock
+        :width="ghost.width"
+        :height="ghost.height"
+        :tone="toneOf(canvasColor)"
+        :seed="ghost.id"
+      />
       <span
         class="absolute -top-6 right-0 max-w-full truncate rounded bg-accent px-1.5 py-0.5 text-[10px] font-medium text-white"
       >

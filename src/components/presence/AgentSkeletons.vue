@@ -3,25 +3,27 @@ import { useRafFn } from '@vueuse/core'
 import { computed, shallowRef, watch } from 'vue'
 
 import type { ViewportTransform } from '@kalka/core/geometry'
-import { colorToCSS } from '@kalka/scene-graph/color'
+import type { Color } from '@kalka/scene-graph/primitives'
 
 import { useEditorStore } from '@/app/editor/active-store'
 import { agentSkeletons } from '@/app/presence/canvas-scene'
-import { skeletonLive, skeletonOpacity } from '@/app/presence/skeletons'
-import { agentSkeleton } from '@/theme/collaboration/agent-skeleton'
+import { backdropTone, skeletonLive } from '@/app/presence/skeletons'
+
+import AgentSkyBlock from './AgentSkyBlock.vue'
 
 /**
- * Where agents' work is loading: blocks of white glass with a shine passing over them, each
- * covering a new layer until its content fades in. Display only; the shine is a CSS animation,
- * so frames are drawn here only while a block shows or fades.
+ * Where agents' work is loading: clouds of pixel dots, each over a new layer until its content
+ * fades in, in Kalka blue on a light backdrop and white on the dark canvas. Display only; the
+ * twinkle is a CSS animation, so frames are counted here only while a cloud shows or leaves.
  */
-const { view, drawn } = defineProps<{
+const { view, drawn, canvasColor } = defineProps<{
   view: { panX: number; panY: number; zoom: number; currentPageId: string }
   drawn?: ViewportTransform | null
+  /** The canvas behind the page's layers, for clouds that sit straight on it. */
+  canvasColor: Color
 }>()
 
 const store = useEditorStore()
-const ui = agentSkeleton()
 const placement = computed(() => drawn ?? view)
 const now = shallowRef(performance.now())
 
@@ -48,19 +50,20 @@ function onPage(nodeId: string): boolean {
   return node?.id === view.currentPageId
 }
 
-const blocks = computed(() => {
+const clouds = computed(() => {
   void store.state.sceneVersion
   const { panX, panY, zoom } = placement.value
   return skeletons.value.flatMap((skeleton) => {
-    const opacity = skeletonOpacity(skeleton, now.value)
     const node = store.graph.getNode(skeleton.nodeId)
-    if (opacity <= 0 || !node || !onPage(node.id)) return []
+    if (now.value < skeleton.from || !skeletonLive(skeleton, now.value)) return []
+    if (!node || !onPage(node.id)) return []
     const origin = store.graph.getAbsolutePosition(node.id)
     return [
       {
         key: skeleton.key,
-        opacity,
-        borderColor: skeleton.color ? colorToCSS({ ...skeleton.color, a: 0.7 }) : undefined,
+        seed: skeleton.nodeId,
+        tone: backdropTone(store.graph, node.id, canvasColor),
+        leaving: now.value >= skeleton.until,
         left: origin.x * zoom + panX,
         top: origin.y * zoom + panY,
         width: node.width * zoom,
@@ -73,21 +76,15 @@ const blocks = computed(() => {
 
 <template>
   <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-    <div
-      v-for="block in blocks"
-      :key="block.key"
-      :class="ui.root()"
-      data-slot="agent-skeleton"
-      :style="{
-        left: `${block.left}px`,
-        top: `${block.top}px`,
-        width: `${block.width}px`,
-        height: `${block.height}px`,
-        opacity: block.opacity,
-        borderColor: block.borderColor
-      }"
-    >
-      <div :class="ui.clip()"><div :class="ui.shine()" /></div>
-    </div>
+    <AgentSkyBlock
+      v-for="cloud in clouds"
+      :key="cloud.key"
+      :style="{ left: `${cloud.left}px`, top: `${cloud.top}px` }"
+      :width="cloud.width"
+      :height="cloud.height"
+      :tone="cloud.tone"
+      :seed="cloud.seed"
+      :leaving="cloud.leaving"
+    />
   </div>
 </template>

@@ -7,8 +7,8 @@ import { flyToCreation } from '@/app/presence/fly-to-work'
 import { agentAnimationsEnabled } from '@/app/shell/motion'
 
 import { holdOnCanvas, releaseOnCanvas, revealOnCanvas, showAgentSkeletons } from './canvas-scene'
-import { localAgentColor, type AgentHandle } from './registry'
-import type { AgentSkeleton } from './skeletons'
+import type { AgentHandle } from './registry'
+import { SKELETON_EXIT_MS, type AgentSkeleton } from './skeletons'
 
 /** New layers one edit keeps hidden until its reveal; the outermost come first. */
 export const MAX_HELD_LAYERS = 64
@@ -81,8 +81,7 @@ export function paintersOrder(graph: SceneGraph, steps: readonly RevealStep[]): 
 export function revealSkeletons(
   steps: readonly RevealStep[],
   owner: string,
-  start: number,
-  color?: AgentSkeleton['color']
+  start: number
 ): AgentSkeleton[] {
   return steps
     .filter((step) => step.kind === 'appear')
@@ -91,8 +90,7 @@ export function revealSkeletons(
       nodeId: step.id,
       from: start + step.delay,
       until: start + step.delay + SKELETON_LEAD_MS,
-      fade: step.duration,
-      color
+      fade: SKELETON_EXIT_MS
     }))
 }
 
@@ -122,11 +120,7 @@ export function showAgentEdit(
       delay: step.delay + wait + SKELETON_LEAD_MS
     }))
     revealOnCanvas(store, steps)
-    showAgentSkeletons(
-      store,
-      revealSkeletons(planned, owner, now + wait, localAgentColor(store)),
-      now
-    )
+    showAgentSkeletons(store, revealSkeletons(planned, owner, now + wait), now)
     // New layers the reveal leaves out, past its limit or hidden, show now.
     const revealed = new Set(steps.map((step) => step.id))
     releaseOnCanvas(

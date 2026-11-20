@@ -11,7 +11,9 @@ export const HOLD_TIMEOUT_MS = 6000
 /** The highlight that hides characters not typed yet, in each artboard document. */
 const UNWRITTEN_HIGHLIGHT = 'kalka-unwritten'
 const UNWRITTEN_STYLE_ATTR = 'data-kalka-unwritten'
-const APPEAR_EASING = 'cubic-bezier(0.2, 0, 0, 1)'
+const APPEAR_EASING = 'cubic-bezier(0.2, 0.7, 0.2, 1)'
+/** A layer comes into focus as it appears, from this blur. */
+const APPEAR_BLUR = 'blur(4px)'
 
 interface Pending {
   step: RevealStep
@@ -158,15 +160,20 @@ export class RevealPlayer {
   }
 
   /**
-   * Fades the layer in where the overlay framed it, or only wipes text where it cannot type. A
-   * plain fade keeps the box still, so the frame and the content meet in one place.
+   * Fades the layer in, coming into focus from a slight blur, or only wipes text where it cannot
+   * type. The box itself stays still, so the skeleton and the content meet in one place.
    */
   private appear(element: Element, step: RevealStep, delay: number, wipeOnly: boolean): void {
     const style = element.ownerDocument.defaultView?.getComputedStyle(element)
     const opacity = style?.opacity ?? '1'
+    // The layer's own filter, such as a blur effect, stays on behind the focus.
+    const own = style && style.filter !== 'none' ? style.filter : ''
     const keyframes: Keyframe[] = wipeOnly
       ? [{ clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0 0 0)' }]
-      : [{ opacity: 0 }, { opacity }]
+      : [
+          { opacity: 0, filter: `${APPEAR_BLUR} ${own}`.trim() },
+          { opacity, filter: `blur(0px) ${own}`.trim() }
+        ]
     element.animate(keyframes, {
       duration: step.duration,
       delay,

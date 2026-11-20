@@ -17,7 +17,7 @@ const MAX_CANDIDATES = MAX_REVEALED_LAYERS * 8
 /** At most this many text layers type themselves out per edit. */
 export const MAX_TYPED_TEXTS = 6
 /** How long one layer takes to appear. */
-export const REVEAL_DURATION_MS = 320
+export const REVEAL_DURATION_MS = 340
 /**
  * The pause between two layers starting to appear, in the order the document lists them: long
  * enough that each one reads on its own, parent before child and top to bottom.
