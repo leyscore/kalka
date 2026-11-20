@@ -5,6 +5,9 @@
 ### Breaking changes
 
 - Layers opened from a `.fig` file keep the GUIDs the file saved them under as their IDs, instead of `0:1`, `0:2`, and so on in reading order, so an ID stays the same after a save and reopen. IDs printed by `kalka tree` or MCP before this release no longer find their layers.
+### Added
+
+- Agents manage Kalka's settings while they design: `kalka settings list` and the `list_settings` MCP tool show every setting they can change with its accepted values, and `kalka settings set` and `update_settings` now also switch Follow agents, the canvas background, the Code panel's first view, the AI chat's model profile (among those already set up) and its thinking level, applied at once in the open app. API keys, connections, and tool access stay out of reach.
 
 ### Changed
 
