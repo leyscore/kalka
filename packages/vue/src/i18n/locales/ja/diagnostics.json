@@ -47,6 +47,7 @@
   "preparationPageSwitch": "ページを切り替え",
   "preparationFontRetry": "フォントを再試行",
   "preparationDomImport": "HTML をインポート",
+  "preparationClaudeDesignImport": "Claude Design プロジェクトを読み込む",
   "preparationDemoLoad": "デモドキュメントを読み込む",
   "preparationCompleted": "完了 · {duration}",
   "preparationCancelled": "キャンセル: {reason} · {duration}",

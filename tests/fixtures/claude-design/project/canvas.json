@@ -1,0 +1,14 @@
+{
+  "v": 3,
+  "title": "Bakery landing",
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 0, "w": 800, "h": 600, "title": "Home" },
+    "Card.dc.html": { "x": 880, "y": 0, "w": 320, "h": 200, "title": "Offer card" }
+  },
+  "order": ["Main.dc.html", "Card.dc.html"],
+  "notes": {
+    "flow": { "x": 0, "y": -240, "text": "Bakery pages", "kind": "title1", "maxW": 1200 }
+  },
+  "designSystems": []
+}

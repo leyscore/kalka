@@ -1,5 +1,6 @@
 import { SceneGraph, type SceneNode, parseShaderLayer } from '@kalka/scene-graph'
 import {
+  clipsBackgroundToText,
   colorToFillFromCSS,
   firstCSSNumber,
   mergedStyle,
@@ -8,10 +9,16 @@ import {
 } from '@kalka/scene-graph/css-model'
 
 import { shaderSettings } from '../export/tidy/attributes'
-import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
+import type {
+  DesignDocument,
+  DesignElement,
+  DesignNode,
+  DesignStyleDeclaration,
+  LayoutBox
+} from '../types'
 import { hasBoxStyle, isTextLikeElement, textContent } from './element-kinds'
 import { applyHTMLElement } from './html-element'
-import { readElementStyle } from './image'
+import { readElementStyle, svgImageFill } from './image'
 import {
   inheritedTextStyle,
   isNotRendered,
@@ -33,6 +40,20 @@ export interface DesignDocumentToSceneGraphOptions {
    * give back as written, such as `width: 50%`, `padding: 1rem` or `transition`. On by default.
    */
   keepAuthoredCSS?: boolean
+  /**
+   * Build the measured page's artboard into this graph's page instead of a new graph, at `x`, `y`
+   * there, `height` tall when given rather than as tall as its content.
+   */
+  into?: ArtboardTarget
+}
+
+/** Where an imported page's artboard goes in a graph that already exists. */
+export interface ArtboardTarget {
+  graph: SceneGraph
+  pageId: string
+  x?: number
+  y?: number
+  height?: number
 }
 
 export type { ImageSourceResolver } from './image'
@@ -74,6 +95,44 @@ function createTextNode(
   return node
 }
 
+/**
+ * Text that auto layout places keeps the size it was measured at: one line takes the width of its
+ * words, and several keep the width they wrapped at, rounded up so the widest line still fits.
+ */
+function sizeFlowText(node: SceneNode, box: LayoutBox): void {
+  const lineHeight = node.lineHeight ?? node.fontSize * 1.3
+  node.height = box.height
+  if (box.height < lineHeight * 1.5) {
+    node.width = Math.ceil(box.width) + 1
+    node.textAutoResize = 'WIDTH_AND_HEIGHT'
+    return
+  }
+  node.width = Math.ceil(box.width) + 1
+  node.textAutoResize = 'HEIGHT'
+}
+
+/** The box an element's words take, from their measured lines; none when they were not measured. */
+function textBounds(element: DesignElement): LayoutBox | undefined {
+  const boxes: LayoutBox[] = []
+  const visit = (nodes: readonly DesignNode[]) => {
+    for (const node of nodes) {
+      if (node.type === 'text') {
+        if (node.layoutBox && node.text.trim()) boxes.push(node.layoutBox)
+      } else visit(node.children)
+    }
+  }
+  visit(element.children)
+  if (boxes.length === 0) return undefined
+  const top = Math.min(...boxes.map((box) => box.y))
+  const left = Math.min(...boxes.map((box) => box.x))
+  return {
+    x: left,
+    y: top,
+    width: Math.max(...boxes.map((box) => box.x + box.width)) - left,
+    height: Math.max(...boxes.map((box) => box.y + box.height)) - top
+  }
+}
+
 /** A block of text and inline elements as one text layer, inside its box when it paints one. */
 function createPhrasingNode(
   graph: SceneGraph,
@@ -86,10 +145,12 @@ function createPhrasingNode(
   const box = element.layoutBox
   if (!paintsBox(style)) {
     const node = createTextNode(graph, parentId, text, style)
+    node.style = { ...element.inlineStyle }
     node.styleRuns = styleRuns
     node.textAutoResize = 'HEIGHT'
     applyHTMLElement(node, element)
     if (placement?.byMeasure && box) placeAtMeasure(node, box, placement)
+    else if (box) sizeFlowText(node, box)
     return node
   }
   const frame = createFrameNode(graph, parentId, element, style, placement)
@@ -101,14 +162,16 @@ function createPhrasingNode(
     const top = firstCSSNumber(style, 'padding-top') ?? 0
     const bottom = firstCSSNumber(style, 'padding-bottom') ?? 0
     const lineHeight = label.lineHeight ?? label.fontSize * 1.3
+    // Where the browser drew the words: a button taller than its line centers them.
+    const drawn = textBounds(element)
     // One line (a badge, a button) keeps the width of its words, so slightly wider font metrics
-    // cannot wrap its last word; a paragraph wraps where the browser wrapped it, with a little room.
-    const oneLine = box.height - top - bottom < lineHeight * 1.5
+    // cannot wrap its last word; a paragraph wraps where the browser wrapped it.
+    const oneLine = (drawn?.height ?? box.height - top - bottom) < lineHeight * 1.5
     const width = Math.max(1, box.width - left - right)
-    label.width = oneLine ? width : Math.ceil(width * 1.01) + 1
+    label.width = oneLine ? width : Math.ceil(width) + 1
     label.textAutoResize = oneLine || frame.layoutMode !== 'NONE' ? 'WIDTH_AND_HEIGHT' : 'HEIGHT'
     label.x = left
-    label.y = top
+    label.y = drawn && frame.layoutMode === 'NONE' ? drawn.y - box.y : top
   }
   return frame
 }
@@ -152,6 +215,77 @@ function createFrameNode(
   return node
 }
 
+/** CSS that paints an element's background, which `lowerOverlappedBackgrounds` moves. */
+const BACKGROUND_PROPERTY = /^(background|border-radius|border-(top|bottom)-(left|right)-radius)/
+
+function isPositioned(node: DesignNode): boolean {
+  if (node.type === 'text') return false
+  const position = pickStyle(mergedStyle(node), 'position')
+  return position !== undefined && position !== 'static'
+}
+
+/** A positioned box that paints over blocks: one with a negative z-index paints under them. */
+function paintsOverBlocks(node: DesignNode): boolean {
+  if (node.type === 'text' || !isPositioned(node)) return false
+  const zIndex = Number.parseInt(pickStyle(mergedStyle(node), 'z-index') ?? '', 10)
+  return !(zIndex < 0)
+}
+
+function overlaps(a: LayoutBox, b: LayoutBox): boolean {
+  return a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height
+}
+
+/**
+ * CSS paints a block's background under every positioned box beside it, wherever the block
+ * comes, and its positioned content over them. A layer is one depth, so a block whose
+ * background a positioned sibling before it overlaps, such as a sheet pulled up over a hero by
+ * a negative margin, gets its background as a layer of its own under that sibling.
+ */
+function lowerOverlappedBackgrounds(
+  graph: SceneGraph,
+  parent: SceneNode,
+  placed: ReadonlyArray<[DesignNode, SceneNode]>
+): void {
+  for (const [index, [child, layer]] of placed.entries()) {
+    if (child.type !== 'element' || isPositioned(child) || !child.layoutBox) continue
+    const box = child.layoutBox
+    const below = placed
+      .slice(0, index)
+      .find(
+        ([sibling]) =>
+          sibling.type === 'element' &&
+          paintsOverBlocks(sibling) &&
+          !!sibling.layoutBox &&
+          overlaps(sibling.layoutBox, box)
+      )
+    const background = Object.entries(layer.style).filter(([property]) =>
+      BACKGROUND_PROPERTY.test(property)
+    )
+    if (!below || layer.type !== 'FRAME' || (layer.fills.length === 0 && background.length === 0))
+      continue
+    const backdrop = graph.createNode('FRAME', parent.id, {
+      name: `${layer.name} background`,
+      x: layer.x,
+      y: layer.y,
+      width: layer.width,
+      height: layer.height,
+      fills: layer.fills,
+      cornerRadius: layer.cornerRadius,
+      topLeftRadius: layer.topLeftRadius,
+      topRightRadius: layer.topRightRadius,
+      bottomRightRadius: layer.bottomRightRadius,
+      bottomLeftRadius: layer.bottomLeftRadius,
+      independentCorners: layer.independentCorners,
+      style: Object.fromEntries(background)
+    })
+    graph.reorderChild(backdrop.id, parent.id, parent.childIds.indexOf(below[1].id))
+    layer.fills = []
+    layer.style = Object.fromEntries(
+      Object.entries(layer.style).filter(([property]) => !BACKGROUND_PROPERTY.test(property))
+    )
+  }
+}
+
 function createElementNode(
   graph: SceneGraph,
   parentId: string,
@@ -159,6 +293,13 @@ function createElementNode(
   placement?: Placement
 ): SceneNode {
   const style = mergedStyle(element)
+  if (element.drawnSVG) {
+    // An inline SVG keeps its drawing as an image; its shapes are not boxes of their own.
+    const svg = createFrameNode(graph, parentId, element, style, placement)
+    svg.name = element.attrs['aria-label'] || 'svg'
+    svg.fills = [svgImageFill(graph, element.drawnSVG)]
+    return svg
+  }
   // A measured paragraph, link or heading with inline markup is one text layer.
   if (element.layoutBox && isPhrasingBlock(element))
     return createPhrasingNode(graph, parentId, element, style, placement)
@@ -172,13 +313,23 @@ function createElementNode(
     applyHTMLElement(text, element)
     if (placement?.byMeasure && element.layoutBox)
       placeAtMeasure(text, element.layoutBox, placement)
+    else if (element.layoutBox) sizeFlowText(text, element.layoutBox)
     return text
   }
 
   const node = createFrameNode(graph, parentId, element, style, placement)
+  const placed: Array<[DesignNode, SceneNode]> = []
   for (const child of paintOrder(element.children)) {
-    createDesignNode(graph, node.id, child, style, placementOf(node, element.layoutBox, child))
+    const layer = createDesignNode(
+      graph,
+      node.id,
+      child,
+      style,
+      placementOf(node, element.layoutBox, child)
+    )
+    if (layer) placed.push([child, layer])
   }
+  if (node.layoutMode === 'NONE') lowerOverlappedBackgrounds(graph, node, placed)
   return node
 }
 
@@ -209,11 +360,35 @@ function createDesignNode(
     return text
   }
 
-  return createElementNode(graph, parentId, node, placement)
+  const layer = createElementNode(graph, parentId, node, placement)
+  if (isVisuallyHidden(node)) layer.visible = false
+  return layer
+}
+
+/**
+ * Text for screen readers only: a box of a pixel or less with its content clipped away. It
+ * stays in the design, hidden, as the page keeps it.
+ */
+function isVisuallyHidden(element: DesignElement): boolean {
+  const box = element.layoutBox
+  if (!box || box.width > 1 || box.height > 1) return false
+  const style = mergedStyle(element)
+  const clip = pickStyle(style, 'clip')?.replace(/\s+/g, '')
+  const clipPath = pickStyle(style, 'clip-path')?.replace(/\s+/g, '')
+  return (
+    clip === 'rect(0000)' ||
+    clip === 'rect(0,0,0,0)' ||
+    clip === 'rect(0px,0px,0px,0px)' ||
+    clipPath === 'inset(50%)' ||
+    pickStyle(style, 'overflow') === 'hidden'
+  )
 }
 
 const sameValue = (a: string, b: string | undefined) =>
   a.trim().toLowerCase() === b?.trim().toLowerCase()
+
+/** What places a layer; where its parent places it by its coordinates, those are its place. */
+const PLACEMENT_PROPERTIES = new Set(['position', 'left', 'top', 'right', 'bottom', 'inset'])
 
 /**
  * Of the CSS an import noted as the layer's author wrote it, what the layer's fields do not
@@ -223,8 +398,16 @@ function authoredOverrides(graph: SceneGraph, node: SceneNode): DesignStyleDecla
   const parent = node.parentId ? graph.getNode(node.parentId) : undefined
   const written = writeLayerStyle(node, { parent, css: (_field, literal) => literal })
   const kept: DesignStyleDeclaration = {}
-  for (const [property, value] of Object.entries(node.style))
+  // An authored `position: relative` kept over the placement would offset the layer from where
+  // the page put it by its own coordinates, again on every layout.
+  const placed = written.position === 'absolute'
+  // The `background` shorthand resets the clip the fields write for text filled by its background.
+  const clippedToText = clipsBackgroundToText(written)
+  for (const [property, value] of Object.entries(node.style)) {
+    if (placed && PLACEMENT_PROPERTIES.has(property)) continue
+    if (clippedToText && property === 'background') continue
     if (!sameValue(value, written[property])) kept[property] = value
+  }
   return kept
 }
 
@@ -235,39 +418,70 @@ function fitPageToChildren(page: SceneNode, graph: SceneGraph): void {
   page.height = Math.max(...children.map((child) => child.y + child.height))
 }
 
+/** The page an import builds on: the target's, or the first page of a new graph. */
+function importPage(graph: SceneGraph, options: DesignDocumentToSceneGraphOptions): SceneNode {
+  const into = options.into
+  if (into) {
+    const page = graph.getNode(into.pageId)
+    if (!page) throw new Error(`Page "${into.pageId}" not found`)
+    return page
+  }
+  const page = graph.getPages().find((node) => node.type === 'CANVAS') ?? graph.addPage('DesignDOM')
+  page.name = options.pageName ?? 'DesignDOM'
+  return page
+}
+
+function createDesignNodes(
+  graph: SceneGraph,
+  page: SceneNode,
+  document: DesignDocument,
+  options: DesignDocumentToSceneGraphOptions
+): void {
+  const viewport = document.viewport
+  if (!viewport) {
+    for (const child of document.children) createDesignNode(graph, page.id, child)
+    return
+  }
+  const into = options.into
+  // A measured page becomes one artboard of the width it was rendered at.
+  const artboard = graph.createNode('FRAME', page.id, {
+    name: options.artboardName ?? 'Desktop',
+    x: into?.x ?? 0,
+    y: into?.y ?? 0,
+    width: viewport.width,
+    height: into?.height ?? Math.ceil(viewport.height),
+    clipsContent: true
+  })
+  const background = colorToFillFromCSS(pickStyle(viewport.bodyStyle, 'background-color'))
+  artboard.fills = background.length > 0 ? background : colorToFillFromCSS('#ffffff')
+  const placement: Placement = {
+    parentBox: { x: 0, y: 0, width: viewport.width, height: viewport.height },
+    byMeasure: true
+  }
+  for (const child of document.children)
+    createDesignNode(graph, artboard.id, child, viewport.bodyStyle, placement)
+}
+
 export function designDocumentToSceneGraph(
   document: DesignDocument,
   options: DesignDocumentToSceneGraphOptions = {}
 ): SceneGraph {
-  const graph = new SceneGraph()
-  const page = graph.getPages().find((node) => node.type === 'CANVAS') ?? graph.addPage('DesignDOM')
+  const graph = options.into?.graph ?? new SceneGraph()
+  const page = importPage(graph, options)
 
-  page.name = options.pageName ?? 'DesignDOM'
-
-  const viewport = document.viewport
-  if (viewport) {
-    // A measured page becomes one artboard of the width it was rendered at.
-    const artboard = graph.createNode('FRAME', page.id, {
-      name: options.artboardName ?? 'Desktop',
-      width: viewport.width,
-      height: Math.ceil(viewport.height),
-      clipsContent: true
-    })
-    const background = colorToFillFromCSS(pickStyle(viewport.bodyStyle, 'background-color'))
-    artboard.fills = background.length > 0 ? background : colorToFillFromCSS('#ffffff')
-    const placement: Placement = {
-      parentBox: { x: 0, y: 0, width: viewport.width, height: viewport.height },
-      byMeasure: true
-    }
-    for (const child of document.children)
-      createDesignNode(graph, artboard.id, child, viewport.bodyStyle, placement)
-  } else {
-    for (const child of document.children) createDesignNode(graph, page.id, child)
+  const created = new Set<string>()
+  const stopTracking = graph.onNodeEvents({ created: (node) => created.add(node.id) })
+  try {
+    createDesignNodes(graph, page, document, options)
+  } finally {
+    stopTracking()
   }
 
-  fitPageToChildren(page, graph)
-  for (const node of graph.getAllNodes())
-    node.style = options.keepAuthoredCSS === false ? {} : authoredOverrides(graph, node)
+  if (!options.into) fitPageToChildren(page, graph)
+  for (const id of created) {
+    const node = graph.getNode(id)
+    if (node) node.style = options.keepAuthoredCSS === false ? {} : authoredOverrides(graph, node)
+  }
   return graph
 }
 

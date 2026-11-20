@@ -11,6 +11,7 @@
   "save": "保存",
   "saveAs": "名前を付けて保存…",
   "openFolder": "フォルダを開く…",
+  "importClaudeDesign": "Claude Design プロジェクトを読み込む…",
   "saveAsFolder": "フォルダとして保存…",
   "saveToStorage": "ストレージに保存…",
   "exportSelection": "選択範囲をエクスポート…",

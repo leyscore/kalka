@@ -24,3 +24,17 @@ test('without it, an import keeps fields only', async () => {
   expect((await importedRow(false)).style).toEqual({})
   expect((await htmlToSceneGraph(HTML)).getPages().flatMap((page) => page.childIds)).toHaveLength(1)
 })
+
+test('a layer its parent places by coordinates keeps none of its authored placement', async () => {
+  const graph = await htmlToSceneGraph(
+    '<div style="width:400px;height:200px;overflow:hidden"><div style="position:relative;margin:0 auto;width:200px;height:50px;left:4px"></div><span style="position:absolute;right:0;top:0;width:10px;height:10px;display:block"></span></div>'
+  )
+  const [box] = graph.getPages().flatMap((page) => graph.getChildren(page.id))
+  if (!box) throw new Error('Nothing imported')
+  expect(box.layoutMode).toBe('NONE')
+  for (const child of graph.getChildren(box.id)) {
+    expect(Object.keys(child.style)).not.toContain('position')
+    expect(Object.keys(child.style)).not.toContain('left')
+    expect(Object.keys(child.style)).not.toContain('right')
+  }
+})

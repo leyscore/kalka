@@ -39,9 +39,12 @@ export function measureLayerBoxes(
     }
     return rect
   }
-  // A flip mirrors the box as a turn does: neither box is the layer's position.
+  // A flip mirrors the box as a turn does, and a translation moves it: none of these boxes is
+  // the layer's position.
   const rotated = (element: Element) =>
-    element.closest('[style*="rotate("], [style*="scale("]') !== null
+    element.closest(
+      '[style*="rotate("], [style*="scale("], [style*="translate"], [style*="matrix"], [style*="skew("]'
+    ) !== null
   if (!scopes && !rotated(root)) {
     measured.set(artboardId, sizeOf(artboardId, root, rectOf(root)))
   }

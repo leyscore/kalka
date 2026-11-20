@@ -47,6 +47,7 @@
   "preparationPageSwitch": "切换页面",
   "preparationFontRetry": "重试字体",
   "preparationDomImport": "导入 HTML",
+  "preparationClaudeDesignImport": "导入 Claude Design 项目",
   "preparationDemoLoad": "加载演示文档",
   "preparationCompleted": "已完成 · {duration}",
   "preparationCancelled": "已取消：{reason} · {duration}",

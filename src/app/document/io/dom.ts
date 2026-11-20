@@ -43,8 +43,31 @@ type DOMTextImportOptions = {
 /** Pasted pages lay out at the desktop artboard width, as their authors mostly designed them. */
 const IMPORT_VIEWPORT_WIDTH = 1440
 
-function errorDetail(error: unknown): string {
+export function errorDetail(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
+}
+
+/**
+ * Marks a load as failed and records why, for an import or open of DOM/CSS: what the person sees
+ * is up to the caller.
+ */
+export function failDOMLoad(
+  load: Pick<EditorPreparationHandle, 'fail'>,
+  error: unknown,
+  operation: 'import' | 'open'
+): void {
+  const diagnostic = describeDiagnosticError(error)
+  load.fail({
+    code: 'decode-failed',
+    message: errorDetail(error),
+    retryable: diagnostic.retryable ?? true
+  })
+  recordDocumentFailure({
+    operation,
+    format: 'dom-css',
+    ...diagnostic,
+    retryable: diagnostic.retryable
+  })
 }
 
 function documentNameFor(file: File): string {
@@ -94,18 +117,7 @@ export function createDOMOpenActions({
       succeeded = true
     } catch (e) {
       if (load.signal.aborted) throw e
-      const diagnostic = describeDiagnosticError(e)
-      load.fail({
-        code: 'decode-failed',
-        message: errorDetail(e),
-        retryable: diagnostic.retryable ?? true
-      })
-      recordDocumentFailure({
-        operation: 'import',
-        format: 'dom-css',
-        ...diagnostic,
-        retryable: diagnostic.retryable
-      })
+      failDOMLoad(load, e, 'import')
       console.error('Failed to import DOM/CSS:', e)
       toast.error(notificationMessages.get().importDOMCSSFailed({ error: errorDetail(e) }))
       throw e
@@ -133,18 +145,7 @@ export function createDOMOpenActions({
       succeeded = true
     } catch (e) {
       if (load.signal.aborted || !ownsLoad) throw e
-      const diagnostic = describeDiagnosticError(e)
-      load.fail({
-        code: 'decode-failed',
-        message: errorDetail(e),
-        retryable: diagnostic.retryable ?? true
-      })
-      recordDocumentFailure({
-        operation: 'open',
-        format: 'dom-css',
-        ...diagnostic,
-        retryable: diagnostic.retryable
-      })
+      failDOMLoad(load, e, 'open')
       console.error('Failed to open DOM/CSS file:', e)
       toast.error(notificationMessages.get().openDOMCSSFailed({ error: errorDetail(e) }))
     } finally {

@@ -11,8 +11,23 @@ export const preparationPhaseLabels = {
   'preparing-render': 'Preparing canvas'
 } satisfies Record<EditorPreparation['phase'], string>
 
+/** What reading and decoding mean for an import that is not a Figma or Kalka document. */
+const importPhaseLabels: Partial<
+  Record<EditorPreparation['kind'], Partial<Record<EditorPreparation['phase'], string>>>
+> = {
+  'dom-import': { decoding: 'Reading the page' },
+  'claude-design-import': {
+    reading: 'Opening the Claude Design project',
+    decoding: 'Drawing the Claude Design boards'
+  }
+}
+
 export function preparationLabel(preparation: EditorPreparation | null): string {
-  return preparation ? preparationPhaseLabels[preparation.phase] : 'Loading…'
+  if (!preparation) return 'Loading…'
+  return (
+    importPhaseLabels[preparation.kind]?.[preparation.phase] ??
+    preparationPhaseLabels[preparation.phase]
+  )
 }
 
 export function preparationPercent(progress: EditorPreparationProgress | null): number | null {

@@ -54,7 +54,15 @@ export function placementOf(
 ): Placement | undefined {
   if (!parentBox) return undefined
   const byMeasure = parent.layoutMode === 'NONE' || (child.type === 'element' && isOutOfFlow(child))
-  return { parentBox, byMeasure }
+  // A border that takes room is drawn as one, and CSS places a child from inside it.
+  if (!parent.strokesIncludedInLayout || parent.strokes.length === 0)
+    return { parentBox, byMeasure }
+  const left = parent.independentStrokeWeights ? parent.borderLeftWeight : parent.strokeWeight
+  const top = parent.independentStrokeWeights ? parent.borderTopWeight : parent.strokeWeight
+  return {
+    parentBox: { ...parentBox, x: parentBox.x + left, y: parentBox.y + top },
+    byMeasure
+  }
 }
 
 /** Puts a layer at the box the browser measured, at that size. */
@@ -69,8 +77,11 @@ export function placeAtMeasure(node: SceneNode, box: LayoutBox, placement: Place
       node.height = box.height
       return
     }
-    // A block's text wraps where the browser wrapped it, with a little room.
-    node.width = Math.ceil(box.width * 1.01) + 1
+    // A block's text wraps where the browser wrapped it: on one line with a little room, so a
+    // slightly wider font cannot wrap its last word; over several at its width, rounded up, so
+    // it wraps there and a fraction of a pixel cannot wrap its widest line.
+    node.width =
+      box.height < lineHeight * 1.5 ? Math.ceil(box.width * 1.01) + 1 : Math.ceil(box.width) + 1
     node.height = box.height
     node.textAutoResize = 'HEIGHT'
     return

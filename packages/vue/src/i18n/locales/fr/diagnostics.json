@@ -47,6 +47,7 @@
   "preparationPageSwitch": "Changer de page",
   "preparationFontRetry": "Recharger les polices",
   "preparationDomImport": "Importer du HTML",
+  "preparationClaudeDesignImport": "Importer un projet Claude Design",
   "preparationDemoLoad": "Charger le document de démonstration",
   "preparationCompleted": "Terminé · {duration}",
   "preparationCancelled": "Annulé : {reason} · {duration}",

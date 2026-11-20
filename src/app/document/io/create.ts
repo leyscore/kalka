@@ -2,6 +2,7 @@ import type { Editor, EditorState } from '@kalka/core/editor'
 import { prefetchFigmaSchema } from '@kalka/core/kiwi'
 
 import { createDocumentViewportActions, downloadBlob } from '@/app/document/io/browser'
+import { createClaudeDesignOpenActions } from '@/app/document/io/claude-design/open'
 import { createDOMOpenActions } from '@/app/document/io/dom'
 import { createOutsideChangeHandler } from '@/app/document/io/outside-change'
 import { createOpenActions, createReloadActions } from '@/app/document/io/read'
@@ -81,6 +82,14 @@ export function createDocumentIOActions(
     preparationController
   })
 
+  const { openClaudeDesign } = createClaudeDesignOpenActions({
+    editor,
+    state,
+    setDocumentSource: sourceActions.setDocumentSource,
+    fitCurrentPageToViewport,
+    preparationController
+  })
+
   return {
     downloadBlob,
     setViewportSize,
@@ -109,6 +118,7 @@ export function createDocumentIOActions(
     openKalkaFile,
     openDOMFile,
     importDOMText,
+    openClaudeDesign,
     hasUnsavedChanges: sourceActions.hasUnsavedChanges,
     markDocumentSaved: () => sourceActions.markDocumentSaved(),
     saveFigFile: sourceActions.saveFigFile,

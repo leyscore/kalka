@@ -11,6 +11,7 @@
   "save": "保存",
   "saveAs": "另存为…",
   "openFolder": "打开文件夹…",
+  "importClaudeDesign": "导入 Claude Design 项目…",
   "saveAsFolder": "另存为文件夹…",
   "saveToStorage": "保存到存储工作区…",
   "exportSelection": "导出所选内容…",

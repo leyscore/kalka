@@ -80,6 +80,7 @@ export function createEditorStoreModules(
     openKalkaFile: documentIO.openKalkaFile,
     openDOMFile: documentIO.openDOMFile,
     importDOMText: documentIO.importDOMText,
+    openClaudeDesign: documentIO.openClaudeDesign,
     setViewportSize: documentIO.setViewportSize,
     fitCurrentPageToViewport: documentIO.fitCurrentPageToViewport,
     hasUnsavedChanges: documentIO.hasUnsavedChanges,

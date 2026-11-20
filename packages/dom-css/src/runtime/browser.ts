@@ -8,6 +8,7 @@ import type {
   DesignNode,
   LayoutBox
 } from '../types'
+import { drawnSVG, readFieldText, SVG_NAMESPACE } from './drawn'
 import { isSafeAttribute, UNSAFE_OR_HIDDEN_TAGS } from './sanitize'
 
 export interface BrowserCSSRuntimeOptions {
@@ -205,6 +206,11 @@ function requestFrame(browserDocument: Document): Promise<void> {
 const DEFAULT_VIEWPORT_WIDTH = 1000
 
 const AT_REST_CSS = '*,*::before,*::after{animation:none!important;transition:none!important}'
+/** Lays a page out as if nothing were transformed, to read the boxes its layout gives. */
+const UNTRANSFORMED_CSS =
+  '*{transform:none!important;rotate:none!important;scale:none!important;translate:none!important}'
+/** Marks the measuring page's own stylesheet, which is not the author's. */
+const AT_REST_ATTRIBUTE = 'data-kalka-at-rest'
 
 /** How long measuring waits for the page's web fonts before it goes ahead without them. */
 const FONT_WAIT_MS = 4000
@@ -291,8 +297,11 @@ async function computeStylesInIframe(
     iframeDocument.close()
 
     const style = iframeDocument.createElement('style')
-    style.textContent = `${cssText}\n${AT_REST_CSS}`
-    iframeDocument.head.append(style)
+    style.textContent = cssText
+    const atRest = iframeDocument.createElement('style')
+    atRest.setAttribute(AT_REST_ATTRIBUTE, '')
+    atRest.textContent = AT_REST_CSS
+    iframeDocument.head.append(style, atRest)
 
     const content = iframeDocument.createElement('div')
     const { marked, elements } = markedForMeasure(designDocument)
@@ -355,6 +364,112 @@ function textBox(node: Node, origin: DOMRect): LayoutBox | undefined {
   return rect.width > 0 || rect.height > 0 ? boxOf(rect, origin) : undefined
 }
 
+/** Motion is not part of a design at rest. */
+const UNKEPT_RULE_PROPERTY = /^(animation|transition)(-|$)/
+
+/** A stylesheet's rules; none for one from another origin, whose result is still computed. */
+function readableRules(sheet: CSSStyleSheet): CSSRuleList | null {
+  try {
+    return sheet.cssRules
+  } catch {
+    return null
+  }
+}
+
+/** The page's style rules that apply in its window, in the order the cascade reads them. */
+function activeStyleRules(root: Document | ShadowRoot, view: Window & typeof globalThis) {
+  const rules: CSSStyleRule[] = []
+  const collect = (list: CSSRuleList) => {
+    for (const rule of Array.from(list)) {
+      if (rule instanceof view.CSSStyleRule) rules.push(rule)
+      else if (rule instanceof view.CSSMediaRule) {
+        if (view.matchMedia(rule.conditionText).matches) collect(rule.cssRules)
+      } else if (rule instanceof view.CSSSupportsRule) {
+        if (view.CSS.supports(rule.conditionText)) collect(rule.cssRules)
+      }
+    }
+  }
+  for (const sheet of Array.from(root.styleSheets)) {
+    const owner = sheet.ownerNode
+    if (owner instanceof view.Element && owner.hasAttribute(AT_REST_ATTRIBUTE)) continue
+    const sheetRules = readableRules(sheet)
+    if (sheetRules) collect(sheetRules)
+  }
+  return rules
+}
+
+/**
+ * What the page's stylesheets declare for an element, as its author wrote it: the import keeps
+ * what a layer's fields cannot say, such as a tiled dot pattern or a mask. A value that uses a
+ * variable is taken as computed, since the variable stays behind with the page.
+ */
+function ruleDeclarations(
+  element: Element,
+  rules: readonly CSSStyleRule[],
+  computed: CSSStyleDeclaration
+): Record<string, string> {
+  const declared: Record<string, string> = {}
+  for (const rule of rules) {
+    let matches = false
+    try {
+      matches = element.matches(rule.selectorText)
+    } catch {
+      continue
+    }
+    if (!matches) continue
+    for (const property of Array.from(rule.style)) {
+      if (UNKEPT_RULE_PROPERTY.test(property)) continue
+      const value = rule.style.getPropertyValue(property)
+      // A shorthand writes every longhand it leaves out as `initial`; those say nothing.
+      if (value === 'initial') continue
+      declared[property] = value.includes('var(') ? computed.getPropertyValue(property) : value
+    }
+  }
+  return declared
+}
+
+/** An element's computed style, and what the page's rules declare for it as written. */
+function readElementStyle(
+  designElement: DesignElement,
+  domElement: Element,
+  view: Window & typeof globalThis,
+  rules: readonly CSSStyleRule[],
+  options: CSSComputeOptions
+): void {
+  const computed = view.getComputedStyle(domElement)
+  designElement.computedStyle = computedStyleToRecord(computed, options)
+  // Content the page does not draw, such as the answer in a closed `<details>`, keeps a
+  // `display` of its own; the browser says it has no box.
+  if (
+    computed.display !== 'contents' &&
+    'checkVisibility' in domElement &&
+    !domElement.checkVisibility()
+  )
+    designElement.computedStyle.display = 'none'
+  if (rules.length === 0) return
+  const declared = ruleDeclarations(domElement, rules, computed)
+  if (Object.keys(declared).length > 0)
+    designElement.inlineStyle = { ...declared, ...designElement.inlineStyle }
+}
+
+/** Where an element and its own text runs were laid out, and an SVG's drawing. */
+function readElementBoxes(designElement: DesignElement, domElement: Element, origin: DOMRect) {
+  designElement.layoutBox = layoutBoxOf(domElement, origin)
+  if (domElement.namespaceURI === SVG_NAMESPACE && domElement.localName === 'svg') {
+    const markup = drawnSVG(domElement, designElement.layoutBox)
+    if (markup) designElement.drawnSVG = markup
+  }
+  readFieldText(designElement, domElement)
+  // Its text runs, in order, against the rendered element's own text nodes.
+  const texts = Array.from(domElement.childNodes).filter((child) => child.nodeType === 3)
+  let next = 0
+  for (const child of designElement.children) {
+    if (child.type !== 'text') continue
+    const domText = texts.at(next++)
+    if (domText) child.layoutBox = textBox(domText, origin)
+  }
+}
+
 function copyComputedStyles(
   marked: DesignDocument,
   elements: DesignElement[],
@@ -369,20 +484,30 @@ function copyComputedStyles(
     rendered.set(element.getAttribute(MEASURE_ATTRIBUTE) ?? '', element)
 
   const origin = content.getBoundingClientRect()
+  const root = content.getRootNode()
+  const rules =
+    root instanceof view.Document || root instanceof view.ShadowRoot
+      ? activeStyleRules(root, view)
+      : []
+  const measured: Array<[DesignElement, Element]> = []
   for (const [index, designElement] of elements.entries()) {
     Reflect.deleteProperty(designElement.attrs, MEASURE_ATTRIBUTE)
     const domElement = rendered.get(String(index))
     if (!domElement) continue
-    designElement.computedStyle = computedStyleToRecord(view.getComputedStyle(domElement), options)
-    designElement.layoutBox = layoutBoxOf(domElement, origin)
-    // Its text runs, in order, against the rendered element's own text nodes.
-    const texts = Array.from(domElement.childNodes).filter((child) => child.nodeType === 3)
-    let next = 0
-    for (const child of designElement.children) {
-      if (child.type !== 'text') continue
-      const domText = texts.at(next++)
-      if (domText) child.layoutBox = textBox(domText, origin)
-    }
+    measured.push([designElement, domElement])
+    readElementStyle(designElement, domElement, view, rules, options)
+  }
+
+  // Boxes are read where the layout put them, before any transform: a layer keeps its transform
+  // as CSS, and a scaled container's children would otherwise come scaled twice.
+  const untransformed = content.ownerDocument.createElement('style')
+  untransformed.textContent = UNTRANSFORMED_CSS
+  ;(root instanceof view.ShadowRoot ? root : content.ownerDocument.head).append(untransformed)
+  try {
+    for (const [designElement, domElement] of measured)
+      readElementBoxes(designElement, domElement, origin)
+  } finally {
+    untransformed.remove()
   }
   // Only a page laid out at a chosen width becomes an artboard of its own; HTML written into a
   // design (write_html, pasted fragments) keeps its own root.

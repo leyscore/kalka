@@ -9,6 +9,7 @@ import { appPreferences } from '@/app/settings/preferences/store'
 import { changedChecks, menuChecks } from '@/app/shell/menu/checked'
 import { createSharedEditorMenuActions } from '@/app/shell/menu/editor-actions'
 import {
+  importClaudeDesignDialog,
   openFileDialog,
   openFileFromPath,
   openFolderDialog,
@@ -76,6 +77,7 @@ export function useEditorMenu() {
     new: () => createTab(),
     open: () => void openFileDialog(),
     'open-folder': () => void openFolderDialog(),
+    'import-claude-design': () => void importClaudeDesignDialog(),
     'save-as-folder': () => void saveAsFolderDialog(store),
     close: () => {
       if (activeTab.value) void closeTab(activeTab.value.id)

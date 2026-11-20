@@ -1,5 +1,3 @@
-import { fromUint8Array } from 'js-base64'
-
 import {
   patternSource,
   patternTileCopies,
@@ -13,6 +11,7 @@ import { blendModeToCSS, fillLayerToCSS } from '@kalka/scene-graph/css-model'
 import { imageTileSize } from '@kalka/scene-graph/images'
 
 import type { DesignElement, DesignStyleDeclaration } from '../types'
+import { imageDataURL } from './data-url'
 import { serializeNode } from './html'
 import type { VectorElementRenderer } from './projection'
 
@@ -143,7 +142,7 @@ export function tiledImageStyle(
   const size = bytes && imageTileSize(fill, bytes)
   if (!bytes || !size) return undefined
   return {
-    'background-image': `url("data:image/png;base64,${fromUint8Array(bytes)}")`,
+    'background-image': `url("${imageDataURL(bytes)}")`,
     'background-size': `${round(size.width)}px ${round(size.height)}px`,
     'background-repeat': 'repeat',
     'background-origin': 'border-box',
@@ -172,7 +171,7 @@ export function croppedImageStyle(
   const width = node.width / transform.m00
   const height = node.height / transform.m11
   return {
-    'background-image': `url("data:image/png;base64,${fromUint8Array(bytes)}")`,
+    'background-image': `url("${imageDataURL(bytes)}")`,
     'background-size': `${round(width)}px ${round(height)}px`,
     'background-position': `${round(-transform.m02 * width)}px ${round(-transform.m12 * height)}px`,
     'background-repeat': 'no-repeat',

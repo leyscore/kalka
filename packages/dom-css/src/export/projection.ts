@@ -1,12 +1,12 @@
 import { uniq } from 'es-toolkit/array'
 import { isEmptyObject } from 'es-toolkit/predicate'
-import { fromUint8Array } from 'js-base64'
 
 import { drawsImage, readIcon, type SceneGraph, type SceneNode } from '@kalka/scene-graph'
 import { writeLayerStyle, type FieldCSS, type WriteContext } from '@kalka/scene-graph/css-model'
 
 import { DesignTokens, type CSSModes } from '../tokens/references'
 import type { DesignDocument, DesignElement, DesignNode, DesignStyleDeclaration } from '../types'
+import { imageDataURL } from './data-url'
 import { hairlineStyle, type HairlineScale } from './hairlines'
 import { maskStyle } from './masks'
 import { croppedImageStyle, patternBackground, tiledImageStyle } from './patterns'
@@ -139,7 +139,7 @@ function attrsForNode(
   if (!fill || !drawsImage(fill) || !fill.imageHash) return attrs
   const bytes = graph.images.get(fill.imageHash)
   if (!bytes) return attrs
-  return { ...attrs, src: `data:image/png;base64,${fromUint8Array(bytes)}` }
+  return { ...attrs, src: imageDataURL(bytes) }
 }
 
 /**

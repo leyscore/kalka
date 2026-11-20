@@ -33,6 +33,11 @@ export const notificationMessageDefaults = {
   importedDOMCSS: 'Imported DOM/CSS document.',
   importDOMCSSFailed: params('Could not import DOM/CSS: {error}'),
   openDOMCSSFailed: params('Could not open DOM/CSS file: {error}'),
+  importedClaudeDesign: params('Imported the Claude Design project: {count} artboards.'),
+  importClaudeDesignFailed: params('Could not import the Claude Design project: {error}'),
+  claudeDesignMissingUploads: params(
+    'Imported the Claude Design project, but {count} images or fonts were not in the export.'
+  ),
   figmaLosses: params('Figma will not show {features}. Kalka keeps them in the file.'),
   vectorizeCredentialRequired: params('Add a {provider} API key in Settings → Media.'),
   vectorizeImageMissing: 'Image data is missing for this layer.',

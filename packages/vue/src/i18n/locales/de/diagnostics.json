@@ -47,6 +47,7 @@
   "preparationPageSwitch": "Seite wechseln",
   "preparationFontRetry": "Schriften erneut laden",
   "preparationDomImport": "HTML importieren",
+  "preparationClaudeDesignImport": "Claude-Design-Projekt importieren",
   "preparationDemoLoad": "Demodokument laden",
   "preparationCompleted": "Abgeschlossen · {duration}",
   "preparationCancelled": "Abgebrochen: {reason} · {duration}",

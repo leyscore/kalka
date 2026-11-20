@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Home</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>body{margin:0}</style>
+</helmet>
+<main style="width: 800px; height: 600px; box-sizing: border-box; padding: 48px; display: flex; flex-direction: column; gap: 24px; background: #FFF8F0; color: #1F1A14; font-family: system-ui, sans-serif;">
+  <h1 style="margin: 0; font-size: 40px;">{{headline}}</h1>
+  <img src="/_blob/5f2a9c0e7d1b4c3a8e6f0a1b2c3d4e5f" alt="Bread" style="width: 120px; height: 80px; object-fit: cover;">
+  <div style="display: flex; gap: 16px;">
+    <sc-for list="{{offers}}" as="offer" hint-placeholder-count="2">
+      <dc-import name="Card" label="{{offer.label}}" hint-size="320px,200px"></dc-import>
+    </sc-for>
+  </div>
+  <sc-if value="{{openToday}}" hint-placeholder-val="{{ false }}">
+    <p style="margin: 0;">Open today until seven</p>
+  </sc-if>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":800,"height":600},"headline":{"editor":"text","default":"Bread, every morning"}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { open: false };
+  }
+  componentDidMount() {
+    var self = this;
+    this.timer = setTimeout(function () { self.setState({ open: true }); }, 400);
+  }
+  renderVals() {
+    return {
+      headline: this.props.headline ?? 'Bread, every morning',
+      offers: [{ label: 'Loaf club' }, { label: 'Family box' }],
+      openToday: this.state.open,
+      pick: function () {}
+    };
+  }
+}
+</script>
+</body>
+</html>

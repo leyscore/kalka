@@ -7,6 +7,7 @@ export const EDITOR_PREPARATION_KINDS = [
   'page-switch',
   'font-retry',
   'dom-import',
+  'claude-design-import',
   'demo-load'
 ] as const
 

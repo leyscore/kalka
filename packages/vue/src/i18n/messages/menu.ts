@@ -14,6 +14,7 @@ export const menuMessageDefaults = {
   save: 'Save',
   saveAs: 'Save as…',
   openFolder: 'Open folder…',
+  importClaudeDesign: 'Import Claude Design project…',
   saveAsFolder: 'Save as folder…',
   saveToStorage: 'Save to storage…',
   exportSelection: 'Export selection…',

@@ -1,0 +1,31 @@
+{
+  "v": 3,
+  "title": "Fidelity boards",
+  "pages": [],
+  "boards": {
+    "Shapes.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 720,
+      "h": 480,
+      "title": "Shapes"
+    },
+    "Cards.dc.html": {
+      "x": 800,
+      "y": 0,
+      "w": 720,
+      "h": 480,
+      "title": "Cards"
+    },
+    "Overlap.dc.html": {
+      "x": 1600,
+      "y": 0,
+      "w": 720,
+      "h": 480,
+      "title": "Overlap"
+    }
+  },
+  "order": ["Shapes.dc.html", "Cards.dc.html", "Overlap.dc.html"],
+  "notes": {},
+  "designSystems": []
+}

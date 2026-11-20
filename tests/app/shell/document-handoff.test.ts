@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 
-import { handoffFile } from '@/app/shell/document-handoff'
+import { handoffFile, handoffOpener } from '@/app/shell/document-handoff'
 
 import { asDouble } from '#tests/helpers/doubles'
 
@@ -25,5 +25,18 @@ describe('handoffFile', () => {
     ).toBeNull()
     expect(handoffFile(message({ type: 'kalka:open-file', file: 'shop.fig' }), opener)).toBeNull()
     expect(handoffFile(message({ type: 'other', file }), opener)).toBeNull()
+  })
+})
+
+describe('handoffOpener', () => {
+  test('takes an opener from another origin, whose window has no Object prototype here', () => {
+    const crossOrigin = Object.create(null) as Record<string, unknown>
+    crossOrigin.postMessage = () => undefined
+    expect(handoffOpener(crossOrigin)).toBe(crossOrigin)
+  })
+
+  test('takes no opener when there is none or it cannot be posted to', () => {
+    expect(handoffOpener(null)).toBeNull()
+    expect(handoffOpener({})).toBeNull()
   })
 })
