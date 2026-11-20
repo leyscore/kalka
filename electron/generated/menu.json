@@ -296,6 +296,10 @@
         ]
       },
       {
+        "id": "documentation",
+        "label": "Documentation"
+      },
+      {
         "type": "separator"
       },
       {

@@ -373,3 +373,4 @@ fr:panels.gridAuto
 fr:panels.versionsBurst
 it:panels.gridAuto
 pl:panels.gridAuto
+fr:menu.documentation

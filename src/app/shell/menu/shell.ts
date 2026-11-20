@@ -1,4 +1,4 @@
-import { useI18n } from '@kalka/vue'
+import { locale, useI18n } from '@kalka/vue'
 
 import { requestAppExit } from '@/app/document/close/exit'
 import { openSettingsDialog } from '@/app/settings/dialog'
@@ -12,8 +12,10 @@ import { useNativeMenuEvents } from '@/app/shell/menu/native-events'
 import { openStorageWorkspace } from '@/app/shell/menu/navigation'
 import { APP_MENU_SCHEMA, type AppMenuEntry } from '@/app/shell/menu/schema'
 import { useAppTheme } from '@/app/shell/theme'
+import { openExternalLink } from '@/app/shell/ui'
 import { checkForAppUpdate } from '@/app/shell/updater/check'
 import { isTauri } from '@/app/tauri/env'
+import { docsURL } from '@/constants'
 
 function shellMenuIds(entries: readonly AppMenuEntry[]): string[] {
   return entries.flatMap((entry) => {
@@ -49,6 +51,7 @@ export function useShellMenu() {
       void import('@/router').then(({ default: router }) => openStorageWorkspace(router))
     },
     settings: openSettingsDialog,
+    documentation: () => void openExternalLink(docsURL(locale.get())),
     'snap-geometry': () => {
       const current = appPreferences.value.editing.snapping.geometry
       setSnappingPreference('geometry', !current)

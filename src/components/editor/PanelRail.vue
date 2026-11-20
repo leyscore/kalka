@@ -9,12 +9,14 @@ import { countIssues } from '@/app/editor/design-check/issues'
 import { toggleVariablesPage } from '@/app/editor/tokens/dialog'
 import { openSettingsDialog } from '@/app/settings/dialog'
 import { useLeftPanel, type RailPanel } from '@/app/shell/left-panel/use'
+import { openExternalLink } from '@/app/shell/ui'
 import { useGlide } from '@/components/ui/motion/useGlide'
 import Tip from '@/components/ui/overlay/Tip.vue'
+import { docsURL } from '@/constants'
 import { glidePills } from '@/theme/motion/glide'
 import { panelRail } from '@/theme/panel/rail'
 
-const { panels, settings } = useI18n()
+const { panels, settings, menu, locale } = useI18n()
 const checkMessages = useDesignCheckMessages()
 const store = useEditorStore()
 const { activePanel, show, toggleAgent } = useLeftPanel()
@@ -60,6 +62,10 @@ const checkLabel = computed(() =>
 )
 
 const rail = panelRail()
+
+function openDocs() {
+  void openExternalLink(docsURL(locale.value))
+}
 
 // The open panel's pill slides to the one chosen; a soft one follows the pointer.
 const root = useTemplateRef<HTMLElement>('root')
@@ -238,6 +244,17 @@ useGlide(root, { items: 'button', hover: true, pillClass: glidePills.selectedHov
       </button>
     </Tip>
     <div class="flex-1" />
+    <Tip :label="menu.documentation" side="right">
+      <button
+        type="button"
+        data-test-id="panel-rail-documentation"
+        :aria-label="menu.documentation"
+        :class="rail.item()"
+        @click="openDocs"
+      >
+        <icon-hugeicons-help-circle :class="rail.icon()" />
+      </button>
+    </Tip>
     <Tip :label="settings.title" side="right">
       <button
         type="button"

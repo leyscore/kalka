@@ -40,8 +40,10 @@ import { createSelectionMenuActions } from '@/app/shell/menu/selection-actions'
 import { appMenuShortcutLabel } from '@/app/shell/menu/shortcut'
 import { importClaudeDesignDialog, openFileDialog } from '@/app/shell/menu/use'
 import { useAppTheme } from '@/app/shell/theme'
+import { openExternalLink } from '@/app/shell/ui'
 import { saveDocumentToStorage } from '@/app/storage/workspace/save'
 import { closeTab, activeTab } from '@/app/tabs'
+import { docsURL } from '@/constants'
 
 export interface AppMenuGroup {
   label: string
@@ -121,6 +123,7 @@ export function useAppMenu() {
     language: 'language',
     preferences: 'preferences',
     settings: 'settings',
+    documentation: 'documentation',
     variables: 'variables',
     'insert-icon': 'insertIcon',
     'view-rulers': 'rulers',
@@ -182,6 +185,7 @@ export function useAppMenu() {
       if (activeTab.value) void closeTab(activeTab.value.id)
     },
     settings: openSettingsDialog,
+    documentation: () => void openExternalLink(docsURL(locale.value)),
     variables: () => openVariablesDialog(store),
     'insert-icon': () => {
       store.state.iconPickerOpen = true

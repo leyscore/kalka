@@ -3,20 +3,26 @@ import { useI18n } from '@kalka/vue'
 
 import { useCollabIdentity } from '@/app/collab/identity'
 import { openSettingsDialog } from '@/app/settings/dialog'
+import { openExternalLink } from '@/app/shell/ui'
 import BrandMark from '@/components/brand/BrandMark.vue'
 import PixelSky from '@/components/brand/PixelSky.vue'
 import HomeFiles from '@/components/home/files/HomeFiles.vue'
 import HomePrompt from '@/components/home/prompt/HomePrompt.vue'
 import HomeStart from '@/components/home/start/HomeStart.vue'
 import IconButton from '@/components/ui/button/IconButton.vue'
+import { docsURL } from '@/constants'
 import { homeHero } from '@/theme/home/start'
 
 /**
  * Home: the kalka.design sky with the greeting, the request to the agent, the sizes to start from
- * and the ways to bring a file in; then the recent and stored files. Its only way elsewhere is the
- * settings, in the sky's corner.
+ * and the ways to bring a file in; then the recent and stored files. Its ways elsewhere are the
+ * documentation and the settings, in the sky's corner.
  */
-const { settings, welcome } = useI18n()
+const { settings, welcome, menu, locale } = useI18n()
+
+function openDocs() {
+  void openExternalLink(docsURL(locale.value))
+}
 const identity = useCollabIdentity()
 </script>
 
@@ -29,6 +35,15 @@ const identity = useCollabIdentity()
       <section id="home-top" :class="homeHero.root">
         <PixelSky place="band" class="-z-10" />
         <div :class="homeHero.corner">
+          <IconButton
+            :label="menu.documentation"
+            side="left"
+            data-test-id="home-documentation"
+            :class="homeHero.cornerButton"
+            @click="openDocs"
+          >
+            <icon-hugeicons-book-open-01 class="size-[18px]" />
+          </IconButton>
           <IconButton
             :label="settings.title"
             side="left"

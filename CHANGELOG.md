@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- The user documentation is one click away: a Documentation button on Home and in the editor's left rail, and View › Documentation, open kalka.design/docs in the app's language.
+
 ## 0.2.0-beta.4 — 2026-11-20
 
 ### Breaking changes

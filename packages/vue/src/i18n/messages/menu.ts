@@ -35,6 +35,7 @@ export const menuMessageDefaults = {
   profiler: 'Performance profiler',
   language: 'Language',
   settings: 'Settings…',
+  documentation: 'Documentation',
   variables: 'Variables…',
   insertIcon: 'Insert Icon…',
   rulers: 'Rulers',

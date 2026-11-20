@@ -87,6 +87,24 @@ export const WEB_APP_ORIGIN = 'https://kalka.design'
 export const DESKTOP_DOWNLOAD_URL = 'https://github.com/leyscore/kalka/releases/latest'
 export const NODE_DOWNLOAD_URL = 'https://nodejs.org/en/download'
 
+/** The site's language folder for each app language; English is the site's root. */
+const DOCS_LANGUAGES: Record<string, string> = {
+  de: 'de',
+  es: 'es',
+  fr: 'fr',
+  it: 'it',
+  ja: 'ja',
+  pl: 'pl',
+  ru: 'ru',
+  'zh-CN': 'zh'
+}
+
+/** The user documentation on kalka.design, in the app's language when the site has it. */
+export function docsURL(locale: string): string {
+  const language = DOCS_LANGUAGES[locale]
+  return `${WEB_APP_ORIGIN}${language ? `/${language}` : ''}/docs`
+}
+
 /** The published release page, with its full notes, for a desktop version. */
 export function releaseNotesURL(version: string): string {
   return `https://github.com/leyscore/kalka/releases/tag/v${version}`

@@ -245,6 +245,7 @@ export const APP_MENU_SCHEMA = [
           }
         ]
       },
+      { id: 'documentation', label: 'Documentation', handler: 'shell' },
       { type: 'separator' },
       { id: 'toggle-ui', label: 'Toggle UI', shortcut: 'MOD+\\' },
       { id: 'toggle-preview', label: 'Preview', shortcut: 'MOD+ALT+↩' },
