@@ -53,6 +53,8 @@ export interface ClaudeDesignProject {
   texts: Map<string, string>
   /** Uploaded images and fonts by their `/_blob/<id>` id. */
   blobs: Map<string, Uint8Array>
+  /** Images and fonts kept as files of the project, by path relative to the project folder. */
+  media: Map<string, Uint8Array>
   /** The design systems' `tokens.json` files. */
   tokenFiles: DesignTokenSourceFile[]
   /** Whether the export carries its own runtime (`support.js`). */
@@ -60,6 +62,8 @@ export interface ClaudeDesignProject {
 }
 
 const COMPONENT_SUFFIX = '.dc.html'
+/** Images and fonts a board can name by their path in the project. */
+const MEDIA_FILE = /\.(png|jpe?g|gif|webp|avif|svg|bmp|ico|woff2?|ttf|otf)$/i
 /** Gap between artboards placed in a row when the index does not say where they go. */
 const BOARD_GAP = 80
 const DEFAULT_BOARD = { width: 1440, height: 900 }
@@ -262,6 +266,7 @@ export function readClaudeDesignProject(files: readonly ClaudeDesignFile[]): Cla
   const texts = new Map<string, string>()
   const components = new Map<string, DesignComponent>()
   const blobs = new Map<string, Uint8Array>()
+  const media = new Map<string, Uint8Array>()
   const tokenFiles: DesignTokenSourceFile[] = []
   let canvasText: string | null = null
   let hasRuntime = false
@@ -280,7 +285,10 @@ export function readClaudeDesignProject(files: readonly ClaudeDesignFile[]): Cla
       components.set(componentName(path), parseDesignComponent(decoder.decode(file.content)))
     else if (/^ds\/[^/]+\/tokens\.json$/.test(path))
       tokenFiles.push({ path, text: decoder.decode(file.content) })
-    else if (/\.(css|json|svg)$/i.test(path)) texts.set(path, decoder.decode(file.content))
+    else {
+      if (MEDIA_FILE.test(path)) media.set(path, file.content)
+      if (/\.(css|json|svg)$/i.test(path)) texts.set(path, decoder.decode(file.content))
+    }
   }
 
   let canvas: Canvas | null = null
@@ -302,6 +310,7 @@ export function readClaudeDesignProject(files: readonly ClaudeDesignFile[]): Cla
     components,
     texts,
     blobs,
+    media,
     tokenFiles,
     hasRuntime
   }

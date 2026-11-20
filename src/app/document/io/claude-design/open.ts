@@ -39,7 +39,8 @@ export function createClaudeDesignOpenActions({
     name: string,
     preparation?: EditorPreparationHandle
   ) {
-    const load = preparation ?? preparationController.begin({ kind: 'dom-import', subject: name })
+    const load =
+      preparation ?? preparationController.begin({ kind: 'claude-design-import', subject: name })
     const ownsLoad = preparation === undefined
     let succeeded = false
     try {

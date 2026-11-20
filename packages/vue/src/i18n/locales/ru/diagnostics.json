@@ -47,6 +47,7 @@
   "preparationPageSwitch": "Переход на страницу",
   "preparationFontRetry": "Повторная загрузка шрифтов",
   "preparationDomImport": "Импорт HTML",
+  "preparationClaudeDesignImport": "Импорт проекта Claude Design",
   "preparationDemoLoad": "Загрузка демо-документа",
   "preparationCompleted": "Готово · {duration}",
   "preparationCancelled": "Отменено: {reason} · {duration}",

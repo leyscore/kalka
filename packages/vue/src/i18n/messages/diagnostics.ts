@@ -33,6 +33,7 @@ export const diagnosticsMessageDefaults = {
   preparationPageSwitch: 'Switch page',
   preparationFontRetry: 'Retry fonts',
   preparationDomImport: 'Import HTML',
+  preparationClaudeDesignImport: 'Import a Claude Design project',
   preparationDemoLoad: 'Load demo document',
   preparationCompleted: params('Completed · {duration}'),
   preparationCancelled: params('Cancelled: {reason} · {duration}'),

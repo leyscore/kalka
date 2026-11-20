@@ -62,7 +62,7 @@ export interface ClaudeDesignImportResult {
   boards: number
   /** Components whose logic did not run, drawn from their defaults and placeholders. */
   staticComponents: string[]
-  /** Uploads the pages name that the export does not hold. */
+  /** Uploads and project files the pages name that the export does not hold. */
   missingBlobs: string[]
 }
 
@@ -107,6 +107,7 @@ export async function claudeDesignToSceneGraph(
       })
       const document = claudeDesignBoardDocument(project, board, expanded)
       for (const id of document.missingBlobs) missingBlobs.add(id)
+      for (const path of document.missingFiles) missingBlobs.add(path)
       const cssText = await webFontCSS(expanded.links, fontSheets)
       await browserHTMLToSceneGraph(document.html, {
         cssText: cssText || undefined,

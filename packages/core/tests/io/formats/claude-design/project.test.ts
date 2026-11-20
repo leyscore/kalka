@@ -170,6 +170,36 @@ describe('claudeDesignBoardDocument', () => {
   })
 })
 
+describe('project images', () => {
+  test('inlines images a board names by their path in the project', async () => {
+    const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 1, 2, 3])
+    const project = readClaudeDesignProject(
+      files({
+        'project/canvas.json': JSON.stringify({
+          boards: { 'pages/Home.dc.html': { x: 0, y: 0, w: 800, h: 600 } }
+        }),
+        'project/pages/Home.dc.html': component(
+          '<img src="{{thumb}}" alt=""><div style="background-image: url(\'../home/t2.png\')"></div><img src="https://example.com/a.png"><img src="home/missing.png">'
+        ),
+        'project/pages/home/t1.jpg': JPEG,
+        'project/home/t2.png': PNG
+      })
+    )
+    const board = project.boards[0]
+    if (!board) throw new Error('No board')
+    const expanded = await expandDesignComponent('pages/Home', {
+      component: (name) => project.components.get(name),
+      values: async () => ({ thumb: 'home/t1.jpg' })
+    })
+    const document = claudeDesignBoardDocument(project, board, expanded)
+    expect(document.html).toContain('src="data:image/jpeg;base64,')
+    expect(document.html).toContain("url('data:image/png;base64,")
+    expect(document.html).toContain('src="https://example.com/a.png"')
+    expect(document.html).toContain('src="home/missing.png"')
+    expect(document.missingFiles).toEqual(['pages/home/missing.png'])
+  })
+})
+
 describe('createClaudeDesignGraph', () => {
   test('makes pages, notes and variables', () => {
     const { graph, pageOf } = createClaudeDesignGraph(sampleProject())

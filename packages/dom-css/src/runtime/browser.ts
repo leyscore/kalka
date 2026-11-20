@@ -8,6 +8,7 @@ import type {
   DesignNode,
   LayoutBox
 } from '../types'
+import { drawnSVG, readFieldText, SVG_NAMESPACE } from './drawn'
 import { isSafeAttribute, UNSAFE_OR_HIDDEN_TAGS } from './sanitize'
 
 export interface BrowserCSSRuntimeOptions {
@@ -427,57 +428,6 @@ function ruleDeclarations(
   return declared
 }
 
-const SVG_NAMESPACE = 'http://www.w3.org/2000/svg'
-
-/** What paints an SVG shape, which a stylesheet or `currentColor` may set and a file must state. */
-const SVG_PAINT_PROPERTIES = [
-  'fill',
-  'fill-opacity',
-  'fill-rule',
-  'stroke',
-  'stroke-width',
-  'stroke-opacity',
-  'stroke-linecap',
-  'stroke-linejoin',
-  'stroke-dasharray',
-  'stroke-dashoffset',
-  'stop-color',
-  'stop-opacity',
-  'opacity',
-  'font-family',
-  'font-size',
-  'font-weight'
-]
-
-/**
- * An inline SVG as a standalone file that draws as the page drew it: every shape carries its
- * computed paint, and the root its measured size and none of the page's layout or animation.
- */
-function drawnSVG(svg: Element, box: LayoutBox): string | undefined {
-  const view = svg.ownerDocument.defaultView
-  if (!view) return undefined
-  const clone = svg.cloneNode(true)
-  if (!(clone instanceof view.Element)) return undefined
-  const sources = [svg, ...svg.querySelectorAll('*')]
-  const copies = [clone, ...clone.querySelectorAll('*')]
-  for (const [index, source] of sources.entries()) {
-    const copy = copies.at(index)
-    if (!copy) continue
-    const computed = view.getComputedStyle(source)
-    const paint = SVG_PAINT_PROPERTIES.map(
-      (property) => `${property}:${computed.getPropertyValue(property)}`
-    ).join(';')
-    // The root's own style places and animates it on the page; the layer does that now.
-    const own = copy === clone ? '' : (copy.getAttribute('style') ?? '')
-    copy.setAttribute('style', own ? `${own};${paint}` : paint)
-  }
-  clone.setAttribute('xmlns', SVG_NAMESPACE)
-  clone.setAttribute('width', String(box.width))
-  clone.setAttribute('height', String(box.height))
-  clone.removeAttribute('class')
-  return new view.XMLSerializer().serializeToString(clone)
-}
-
 /** An element's computed style, and what the page's rules declare for it as written. */
 function readElementStyle(
   designElement: DesignElement,
@@ -509,6 +459,7 @@ function readElementBoxes(designElement: DesignElement, domElement: Element, ori
     const markup = drawnSVG(domElement, designElement.layoutBox)
     if (markup) designElement.drawnSVG = markup
   }
+  readFieldText(designElement, domElement)
   // Its text runs, in order, against the rendered element's own text nodes.
   const texts = Array.from(domElement.childNodes).filter((child) => child.nodeType === 3)
   let next = 0

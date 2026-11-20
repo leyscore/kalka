@@ -19,7 +19,10 @@ import {
 import type { DocumentSourceIdentity } from '@/app/document/io/types'
 import { getRecoveryStore, type RecoverySnapshotMeta } from '@/app/document/recovery'
 import { setActiveEditorStore } from '@/app/editor/active-store'
-import type { EditorPreparationHandle as DocumentLoadSession } from '@/app/editor/preparation/types'
+import type {
+  EditorPreparationHandle as DocumentLoadSession,
+  EditorPreparationKind
+} from '@/app/editor/preparation/types'
 import { createEditorStore } from '@/app/editor/session'
 import type { EditorStore } from '@/app/editor/session'
 import { notificationMessages } from '@/app/i18n/notifications'
@@ -206,6 +209,11 @@ function isDOMImportFile(file: File): boolean {
 /** An exported Claude Design project, which opens as a new document rather than in place. */
 function isClaudeDesignFile(file: File): boolean {
   return /\.zip$/i.test(file.name)
+}
+
+function preparationKindFor(file: File): EditorPreparationKind {
+  if (isClaudeDesignFile(file)) return 'claude-design-import'
+  return isDOMImportFile(file) ? 'dom-import' : 'document-open'
 }
 
 function reusableTabStore(): { store: EditorStore; created: boolean } {
@@ -447,7 +455,7 @@ export async function openFileInNewTab(
     const { store, created } = reusableTabStore()
     store.state.documentName = file.name.replace(/\.[^.]+$/i, '')
     const load = store.preparationController.begin({
-      kind: isDOMImportFile(file) || isClaudeDesignFile(file) ? 'dom-import' : 'document-open',
+      kind: preparationKindFor(file),
       subject: file.name
     })
 

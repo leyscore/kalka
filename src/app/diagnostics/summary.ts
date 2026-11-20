@@ -42,6 +42,7 @@ export interface DiagnosticLabels {
   preparationPageSwitch: string
   preparationFontRetry: string
   preparationDomImport: string
+  preparationClaudeDesignImport: string
   preparationDemoLoad: string
   preparationCompleted: (values: { duration: string }) => string
   preparationCancelled: (values: { reason: string; duration: string }) => string
@@ -71,6 +72,7 @@ const PREPARATION_LABELS = {
   'page-switch': 'preparationPageSwitch',
   'font-retry': 'preparationFontRetry',
   'dom-import': 'preparationDomImport',
+  'claude-design-import': 'preparationClaudeDesignImport',
   'demo-load': 'preparationDemoLoad'
 } as const satisfies Record<EditorPreparationKind, keyof DiagnosticLabels>
 

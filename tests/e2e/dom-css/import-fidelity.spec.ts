@@ -98,4 +98,13 @@ test.describe('HTML import draws as the page does', () => {
     expect(bar).toMatchObject({ x: 200, y: 140 })
     expect(bar?.style.transform).toBe('translateX(-50%)')
   })
+
+  test("draws a field's placeholder, or its value, as the page shows it", async ({ page }) => {
+    const layers = await publicBrowserHTMLLayers(
+      page,
+      `<style>input::placeholder{color:#888}</style><div style="padding:20px"><input style="width:300px;height:40px;padding:0 12px;border:1px solid #ccc;font-size:15px" placeholder="Describe a page"><input style="width:300px;height:40px;padding:0 12px;font-size:15px" value="Sam"></div>`
+    )
+    const texts = layers.filter((layer) => layer.type === 'TEXT').map((layer) => layer.text)
+    expect(texts).toEqual(expect.arrayContaining(['Describe a page', 'Sam']))
+  })
 })

@@ -115,14 +115,41 @@ export function snapshotImage(
   return { svg: new XMLSerializer().serializeToString(svg), width, height }
 }
 
+const EMBEDDED_FONT_SOURCE = /src:url\((data:font\/[^)]+)\)/g
+/** How long an image takes to load the fonts it embeds once it has decoded. */
+const EMBEDDED_FONTS_SETTLE_MS = 300
+
+/** The fonts the page's images have already loaded, which a new image then finds loaded. */
+const loadedFonts = new Set<string>()
+
+function fontKey(source: string): string {
+  return `${source.length}:${source.slice(-48)}`
+}
+
+async function decodedImage(url: string, image: SnapshotImage): Promise<HTMLImageElement> {
+  const element = new Image(image.width, image.height)
+  element.decoding = 'async'
+  element.src = url
+  await element.decode()
+  return element
+}
+
 /** Draws a snapshot image into a bitmap; null when the browser could not. */
 export async function rasterizeSnapshot(image: SnapshotImage): Promise<ImageBitmap | null> {
   const url = URL.createObjectURL(new Blob([image.svg], { type: 'image/svg+xml' }))
   try {
-    const element = new Image(image.width, image.height)
-    element.decoding = 'async'
-    element.src = url
-    await element.decode()
+    let element = await decodedImage(url, image)
+    // An image loads the fonts it embeds after it decodes, and draws text in a font still
+    // loading as nothing. The first image with a font starts it loading; one decoded once it
+    // has, draws with it.
+    const fonts = [...image.svg.matchAll(EMBEDDED_FONT_SOURCE)].map((match) => fontKey(match[1]))
+    if (fonts.some((font) => !loadedFonts.has(font))) {
+      await new Promise((resolve) => {
+        setTimeout(resolve, EMBEDDED_FONTS_SETTLE_MS)
+      })
+      for (const font of fonts) loadedFonts.add(font)
+      element = await decodedImage(url, image)
+    }
     return await createImageBitmap(element)
   } catch {
     return null

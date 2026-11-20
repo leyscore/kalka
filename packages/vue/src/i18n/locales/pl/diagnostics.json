@@ -47,6 +47,7 @@
   "preparationPageSwitch": "Przełącz stronę",
   "preparationFontRetry": "Ponów wczytywanie czcionek",
   "preparationDomImport": "Importuj HTML",
+  "preparationClaudeDesignImport": "Importuj projekt Claude Design",
   "preparationDemoLoad": "Wczytaj dokument demonstracyjny",
   "preparationCompleted": "Ukończono · {duration}",
   "preparationCancelled": "Anulowano: {reason} · {duration}",
