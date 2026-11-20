@@ -8,6 +8,7 @@ const actions = {
   updateProp: ctx.updateProp,
   commitProp: ctx.commitProp,
   setBlendMode: ctx.setBlendMode,
+  previewBlendMode: ctx.previewBlendMode,
   toggleVisibility: ctx.toggleVisibility,
   toggleIndependentCorners: ctx.toggleIndependentCorners,
   updateUniformRadius: ctx.updateUniformRadius,

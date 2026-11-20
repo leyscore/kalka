@@ -5,6 +5,7 @@ import type { Editor } from '@kalka/core/editor'
 import { FONT_WEIGHT_NAMES, weightToStyle } from '@kalka/core/text'
 import type { SceneNode, TextDecoration } from '@kalka/scene-graph'
 
+import { useHoverPreview } from '#vue/controls/node-preview/hover'
 import type { UseTypographyOptions } from '#vue/controls/typography/use'
 import { useSceneComputed } from '#vue/internal/scene-computed/use'
 import { useNodeFontStatus } from '#vue/shared/font-status/use'
@@ -79,6 +80,29 @@ export function createTypographyActions({
     if (!node.value) return
     await doLoadFont(family, currentWeightLabel.value)
     editor.updateNodeWithUndo(node.value.id, { fontFamily: family }, 'Change font')
+  }
+
+  const hoverText = useHoverPreview(editor, 'Preview text')
+  /** Counts hovers, so a weight whose font loads after the pointer moved on is not shown. */
+  let hover = 0
+
+  /** Shows text settings on the selection while they are hovered in a list; `null` takes them away. */
+  function previewText(changes: Partial<SceneNode> | null) {
+    hover++
+    const id = node.value?.id
+    hoverText(id ? [id] : [], changes)
+  }
+
+  /** Shows a weight once its font face has loaded, if it is still the one hovered. */
+  async function previewWeight(weight: number | null) {
+    const current = ++hover
+    if (weight === null || !node.value) {
+      hoverText([], null)
+      return
+    }
+    const { id, fontFamily } = node.value
+    await doLoadFont(fontFamily, weightToStyle(weight))
+    if (current === hover) hoverText([id], { fontWeight: weight })
   }
 
   async function setWeight(weight: number) {
@@ -195,6 +219,8 @@ export function createTypographyActions({
   return {
     setFamily,
     setWeight,
+    previewWeight,
+    previewText,
     setAlign,
     setDirection,
     setVerticalAlign,

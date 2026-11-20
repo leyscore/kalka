@@ -65,6 +65,10 @@ function blendModeOptions(value: BlendMode | typeof MIXED) {
             class="w-full"
             :label="panels.blendMode"
             :options="blendModeOptions(blendModeValue)"
+            :preview="
+              (value: BlendModeSelectValue | null) =>
+                actions.previewBlendMode(value === 'MIXED' ? null : value)
+            "
             @update:model-value="
               (value: BlendModeSelectValue) => value !== 'MIXED' && actions.setBlendMode(value)
             "

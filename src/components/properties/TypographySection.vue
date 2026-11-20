@@ -102,6 +102,7 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
             :label="panels.fontWeight"
             :model-value="ctx.node.value.fontWeight"
             :options="ctx.weights"
+            :preview="(weight: number | null) => ctx.actions.previewWeight(weight)"
             @update:model-value="ctx.actions.setWeight(+$event)"
           />
         </PanelFieldGroup>
@@ -251,6 +252,14 @@ function featureEnabled(features: Array<{ tag: string; enabled: boolean }>, tag:
               :label="panels.textCase"
               :model-value="ctx.node.value.textCase"
               :options="textCaseOptions"
+              :preview="
+                (value: string | null) =>
+                  ctx.actions.previewText(
+                    value === null
+                      ? null
+                      : { textCase: value as 'ORIGINAL' | 'UPPER' | 'LOWER' | 'TITLE' }
+                  )
+              "
               @update:model-value="
                 ctx.actions.setTextCase($event as 'ORIGINAL' | 'UPPER' | 'LOWER' | 'TITLE')
               "

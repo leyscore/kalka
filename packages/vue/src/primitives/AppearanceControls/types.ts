@@ -9,6 +9,8 @@ export interface AppearanceControlsActions {
   updateProp(key: string, value: number): void
   commitProp(key: string, value: number, previous: number): void
   setBlendMode(value: BlendMode): void
+  /** Shows a blend mode on the selection while it is hovered; `null` takes it away. */
+  previewBlendMode(value: BlendMode | null): void
   toggleVisibility(): void
   toggleIndependentCorners(): void
   updateUniformRadius(value: number): void
