@@ -28,19 +28,23 @@ export function handoffFile(event: MessageEvent, opener: unknown): File | null {
 }
 
 /**
+ * The window that opened this tab, when a page can post to it. An opener on another origin, as
+ * kalka.design is to the web app, is a window whose prototype is not this page's `Object`.
+ */
+export function handoffOpener(opener: unknown): Pick<Window, 'postMessage'> | null {
+  if (opener === null || typeof opener !== 'object' || !('postMessage' in opener)) return null
+  return opener as Pick<Window, 'postMessage'>
+}
+
+/**
  * Opens a file a kalka.design tool hands over: this tab tells its opener it is ready, the
  * opener posts the file, and it opens as File → Open would.
  */
 export function useDocumentHandoff() {
   if (IS_TAURI) return
   const url = new URL(window.location.href)
-  const opener: unknown = window.opener
-  if (
-    !url.searchParams.has(HANDOFF_PARAM) ||
-    !(opener instanceof Object) ||
-    !('postMessage' in opener)
-  )
-    return
+  const opener = handoffOpener(window.opener)
+  if (!url.searchParams.has(HANDOFF_PARAM) || !opener) return
   url.searchParams.delete(HANDOFF_PARAM)
   window.history.replaceState(window.history.state, '', url)
   let received = false
@@ -50,6 +54,5 @@ export function useDocumentHandoff() {
     received = true
     void openDesignFile(file)
   })
-  const target = opener as Window
-  for (const origin of HANDOFF_ORIGINS) target.postMessage({ type: 'kalka:ready' }, origin)
+  for (const origin of HANDOFF_ORIGINS) opener.postMessage({ type: 'kalka:ready' }, origin)
 }
