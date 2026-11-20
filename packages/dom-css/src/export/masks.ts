@@ -166,6 +166,8 @@ interface MaskLayer {
   position: string
   size: string
   mode: string
+  /** The mask's area in the target's box. */
+  area: { left: number; top: number; right: number; bottom: number }
 }
 
 /**
@@ -212,8 +214,23 @@ function maskLayer(
     image: `url("data:image/svg+xml,${encodeURIComponent(serializeNode(svg))}")`,
     position: `${left}px ${top}px`,
     size: `${width}px ${height}px`,
-    mode: mask.maskType === 'LUMINANCE' ? 'luminance' : 'alpha'
+    mode: mask.maskType === 'LUMINANCE' ? 'luminance' : 'alpha',
+    area: { left, top, right: left + width, bottom: top + height }
   }
+}
+
+/**
+ * Cuts what the target draws at its masks' area, which `mask-clip: no-clip` alone does not:
+ * Chromium leaves children far outside the box unmasked, so light rays in a masked background
+ * showed beside the page. Masks in a run add up, so the cut holds all of them.
+ */
+function maskArea(layers: MaskLayer[], target: SceneNode): string {
+  const left = Math.min(...layers.map((layer) => layer.area.left))
+  const top = Math.min(...layers.map((layer) => layer.area.top))
+  const right = Math.max(...layers.map((layer) => layer.area.right))
+  const bottom = Math.max(...layers.map((layer) => layer.area.bottom))
+  const insets = [top, target.width - right, target.height - bottom, left]
+  return `inset(${insets.map((inset) => `${round(inset)}px`).join(' ')})`
 }
 
 /**
@@ -238,6 +255,7 @@ export function maskStyle(
     'mask-size': layers.map((layer) => layer.size).join(', '),
     'mask-repeat': 'no-repeat',
     // What the layer draws past its box, such as its children or shadow, is masked, not cut.
-    'mask-clip': 'no-clip'
+    'mask-clip': 'no-clip',
+    'clip-path': maskArea(layers, node)
   }
 }

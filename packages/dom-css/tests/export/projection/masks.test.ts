@@ -75,6 +75,28 @@ describe('mask projection', () => {
     expect(svg).toContain('matrix(1 0 0 1 10 20)')
   })
 
+  test('what a masked layer draws past its masks is cut at their area, as Figma cuts it', () => {
+    // Chromium leaves children far outside a no-clip mask unmasked (light rays in a
+    // masked background showed past the page), so the masks' area also clips.
+    const { graph, frame } = maskedFrame()
+    graph.createNode('RECTANGLE', frame.id, { name: 'Above', x: 10, y: 10, width: 150, height: 50 })
+    const styles = projectChildren(graph, frame)
+    // The ellipse's box, 10,20 100×60 in the layer's, reaches 30 past its bottom.
+    expect(styles.get('Above')?.['clip-path']).toBe('inset(20px 40px -30px 10px)')
+    expect(styles.get('Below')?.['clip-path']).toBeUndefined()
+  })
+
+  test('masks in one run add up, so the cut holds all of them', () => {
+    const { graph, frame } = maskedFrame()
+    const square = { y: 100, width: 30, height: 30, isMask: true }
+    graph.createNode('RECTANGLE', frame.id, { name: 'Second Mask', ...square })
+    graph.createNode('RECTANGLE', frame.id, { name: 'Both', x: 10, y: 10, width: 150, height: 50 })
+    // The ellipse spans 10,20 to 110,80 in the layer's box and the square -10,90 to 20,120.
+    expect(projectChildren(graph, frame).get('Both')?.['clip-path']).toBe(
+      'inset(20px 40px -70px -10px)'
+    )
+  })
+
   test('a rotated layer takes the mask turned back into its own box', () => {
     const { graph, frame } = maskedFrame()
     graph.createNode('RECTANGLE', frame.id, {
