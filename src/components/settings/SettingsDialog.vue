@@ -19,6 +19,7 @@ import SettingsPage from '@/components/settings/layout/SettingsPage.vue'
 import MCPWorkspacePanel from '@/components/settings/mcp/MCPWorkspacePanel.vue'
 import MediaSettingsPanel from '@/components/settings/media/MediaSettingsPanel.vue'
 import ModelsPanel from '@/components/settings/models/ModelsPanel.vue'
+import ServerSettingsPanel from '@/components/settings/server/ServerSettingsPanel.vue'
 import StorageSettingsPanel from '@/components/settings/storage/StorageSettingsPanel.vue'
 import ToolAccessSettingsPanel from '@/components/settings/tool-access/ToolAccessSettingsPanel.vue'
 import UsageSettingsPanel from '@/components/settings/usage/UsageSettingsPanel.vue'
@@ -36,7 +37,7 @@ import AppTabsRoot from '@/components/ui/tabs/AppTabsRoot.vue'
 import AppTabsTrigger from '@/components/ui/tabs/AppTabsTrigger.vue'
 
 const { isMobile } = useViewportKind()
-const { settings, common } = useI18n()
+const { settings, common, collaboration } = useI18n()
 const navigation = provideSettingsNavigation()
 tryOnScopeDispose(registerSettingsNavigation(navigation.request))
 const { editing, confirming } = navigation
@@ -50,7 +51,8 @@ const sections = computed(
       { value: 'mcp', label: settings.value.mcp },
       { value: 'tools', label: settings.value.toolAccess },
       { value: 'media', label: settings.value.media },
-      { value: 'storage', label: settings.value.storage }
+      { value: 'storage', label: settings.value.storage },
+      { value: 'server', label: collaboration.value.serverTab }
     ] satisfies { value: SettingsSection; label: string }[]
 )
 function onSectionChange(section: string | number): void {
@@ -131,6 +133,10 @@ function onOpenChange(open: boolean): void {
           <template #leading><icon-hugeicons-cloud class="size-4" /></template>
           {{ settings.storage }}
         </AppTabsTrigger>
+        <AppTabsTrigger value="server" data-test-id="settings-section-server">
+          <template #leading><icon-hugeicons-server-stack-01 class="size-4" /></template>
+          {{ collaboration.serverTab }}
+        </AppTabsTrigger>
       </AppTabsList>
 
       <AppTabsContent value="general" as-child>
@@ -160,6 +166,9 @@ function onOpenChange(open: boolean): void {
       </AppTabsContent>
       <AppTabsContent value="storage" as-child>
         <StorageSettingsPanel />
+      </AppTabsContent>
+      <AppTabsContent value="server" as-child>
+        <SettingsPage><ServerSettingsPanel /></SettingsPage>
       </AppTabsContent>
     </AppTabsRoot>
 

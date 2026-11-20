@@ -84,6 +84,32 @@ export function canvasWrapIndex(parent: SceneNode, nodes: readonly SceneNode[]):
   return Math.max(...nodes.map((node) => parent.childIds.indexOf(node.id))) - (nodes.length - 1)
 }
 
+/** Where a wrapped layer was: its position and its place in the parent's stack. */
+export interface WrappedPlace {
+  id: string
+  x: number
+  y: number
+  index: number
+}
+
+/**
+ * Undoes a wrap: the layers go back to their parent at their old positions, the wrapper goes,
+ * and each layer returns to its place in the stack, lowest first so each index is still free.
+ */
+export function unwrapToPlaces(
+  ctx: EditorContext,
+  parentId: string,
+  wrapperId: string,
+  places: readonly WrappedPlace[]
+) {
+  for (const orig of places) {
+    ctx.graph.reparentNode(orig.id, parentId)
+    ctx.graph.updateNode(orig.id, { x: orig.x, y: orig.y })
+  }
+  ctx.graph.deleteNode(wrapperId)
+  for (const orig of places) ctx.graph.insertChildAt(orig.id, parentId, orig.index)
+}
+
 export function wrapSelectionInContainer(
   ctx: EditorContext,
   containerType: WrapContainerType,
@@ -123,13 +149,7 @@ export function wrapSelectionInContainer(
       ctx.setSelectedIds(new Set([containerId]))
     },
     inverse: () => {
-      for (const orig of origPositions) {
-        ctx.graph.reparentNode(orig.id, parentId)
-        ctx.graph.updateNode(orig.id, { x: orig.x, y: orig.y })
-      }
-      ctx.graph.deleteNode(containerId)
-      // Back to their own places in the stack, lowest first so each index is still free.
-      for (const orig of origPositions) ctx.graph.insertChildAt(orig.id, parentId, orig.index)
+      unwrapToPlaces(ctx, parentId, containerId, origPositions)
       ctx.setSelectedIds(prevSelection)
     }
   })

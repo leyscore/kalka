@@ -21,10 +21,25 @@ const JOIN_ERROR_ID = 'collab-join-error'
     />
   </div>
 
+  <template v-if="collab.serverName">
+    <AppButton
+      size="md"
+      color="primary"
+      variant="solid"
+      class="w-full"
+      data-test-id="collab-share-server"
+      @click="collab.shareOnServer"
+    >
+      <template #leading><icon-hugeicons-server-stack-01 class="size-3.5" /></template>
+      {{ collab.messages.serverShareOn({ server: collab.serverName }) }}
+    </AppButton>
+    <p class="mt-1 mb-3 text-[11px] text-muted">{{ collab.messages.serverShareOnDescription }}</p>
+  </template>
+
   <AppButton
     size="md"
-    color="primary"
-    variant="solid"
+    :color="collab.serverName ? undefined : 'primary'"
+    :variant="collab.serverName ? 'outline' : 'solid'"
     class="mb-3 w-full"
     data-test-id="collab-share-file"
     @click="collab.share"

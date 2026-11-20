@@ -2,6 +2,7 @@ import { watch } from 'vue'
 import type { RouteLocationNormalizedLoaded, Router } from 'vue-router'
 
 import { activeRoom } from '@/app/collab/rooms'
+import { isServerRoom } from '@/app/collab/server/documents'
 
 export const SHARE_ROUTE_PREFIX = '/share/'
 
@@ -9,9 +10,12 @@ export function shareRoutePath(roomId: string): string {
   return `${SHARE_ROUTE_PREFIX}${roomId}`
 }
 
-/** The path for the active tab's room: its share link, or `/` after leaving a share link. */
+/**
+ * The path for the active tab's room: its share link, or `/` after leaving a share link. A
+ * server document has no share link: it opens from the server's list, so the path stays `/`.
+ */
 function roomPathFor(roomId: string | null, currentPath: string): string {
-  if (roomId) return shareRoutePath(roomId)
+  if (roomId && !isServerRoom(roomId)) return shareRoutePath(roomId)
   return currentPath.startsWith(SHARE_ROUTE_PREFIX) ? '/' : currentPath
 }
 
@@ -22,7 +26,10 @@ function roomPathFor(roomId: string | null, currentPath: string): string {
  */
 export function syncRoomRoute(router: Router, route: RouteLocationNormalizedLoaded): () => void {
   return watch(
-    () => activeRoom.value?.roomId ?? null,
+    () => {
+      const roomId = activeRoom.value?.roomId ?? null
+      return roomId && !isServerRoom(roomId) ? roomId : null
+    },
     (roomId) => {
       const path = roomPathFor(roomId, route.path)
       if (path === route.path) return

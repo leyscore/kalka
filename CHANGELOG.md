@@ -5,6 +5,7 @@
 ### Added
 
 - The user documentation is one click away: a Documentation button on Home and in the editor's left rail, and View › Documentation, open kalka.design/docs in the app's language.
+- Connect Kalka to a self-hosted Kalka server in Settings › Server, signing in with a password or the server's single sign-on. Save on <server> in the Share panel puts a file on the server, where teammates open it from the new Server tab on Home and edit it together in real time, even when the person who shared it is offline; Kalka also keeps a Kalka file of each server document up to date for the server's export.
 
 ### Fixed
 

@@ -25,8 +25,22 @@ const statusText = computed(() =>
     {{ statusText }}
   </p>
 
-  <div class="mb-1.5 text-xs font-medium text-surface">{{ collab.messages.roomLink }}</div>
-  <div class="mb-3 flex items-center gap-1.5">
+  <template v-if="collab.inServerRoom">
+    <p
+      class="mb-3 flex items-center gap-1.5 text-xs text-surface"
+      data-test-id="collab-server-room"
+    >
+      <icon-hugeicons-server-stack-01 class="size-3.5 text-muted" />
+      {{ collab.messages.serverRoomSaved({ server: collab.serverName ?? '' }) }}
+    </p>
+    <p v-if="collab.viewOnly" class="mb-3 text-xs text-warning" role="status">
+      {{ collab.messages.serverViewOnly }}
+    </p>
+  </template>
+  <div v-if="!collab.inServerRoom" class="mb-1.5 text-xs font-medium text-surface">
+    {{ collab.messages.roomLink }}
+  </div>
+  <div v-if="!collab.inServerRoom" class="mb-3 flex items-center gap-1.5">
     <AppInput
       :model-value="collab.shareURL"
       readonly

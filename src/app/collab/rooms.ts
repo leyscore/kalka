@@ -83,11 +83,18 @@ function removeSession(session: RoomSession) {
   sessions.value = sessions.value.filter((candidate) => candidate !== session)
 }
 
-/** Puts a tab's document into a new room, or returns the room it is already in. */
-export function shareDocument(store: EditorStore, roomId = generateRoomId()): RoomSession {
+/**
+ * Puts a tab's document into a new room, or returns the room it is already in. `transport`
+ * is a Kalka server's, for a server document; peer to peer otherwise.
+ */
+export function shareDocument(
+  store: EditorStore,
+  roomId = generateRoomId(),
+  transport?: JoinCollabRoom
+): RoomSession {
   const existing = roomForStore(store)
   if (existing) return existing
-  const session = openRoomSession({ roomId, store, origin: 'shared' })
+  const session = openRoomSession({ roomId, store, origin: 'shared', joinRoom: transport })
   addSession(session)
   session.shareDocument()
   return session

@@ -374,3 +374,14 @@ fr:panels.versionsBurst
 it:panels.gridAuto
 pl:panels.gridAuto
 fr:menu.documentation
+de:collaboration.serverTab
+de:collaboration.serverRoleAdmin
+es:collaboration.serverRoleEditor
+it:collaboration.serverTab
+it:collaboration.serverEmail
+it:collaboration.serverPassword
+it:collaboration.serverRoleEditor
+ja:collaboration.serverAddressPlaceholder
+pl:collaboration.serverRoleAdmin
+ru:collaboration.serverAddressPlaceholder
+zh-cn:collaboration.serverAddressPlaceholder

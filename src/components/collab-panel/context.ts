@@ -5,6 +5,8 @@ import type { InjectionKey, ShallowUnwrapRef } from 'vue'
 import { useI18n } from '@kalka/vue'
 
 import { useJoinRoom } from '@/app/collab/join'
+import { serverAccount, serverSessionExpired } from '@/app/collab/server/account'
+import { isServerRoom, shareToServer } from '@/app/collab/server/documents'
 import { DEFAULT_COLLAB_STATE, useCollabInjected } from '@/app/collab/use'
 import { useActiveEditorStoreRef } from '@/app/editor/active-store'
 import { useNotificationMessages } from '@/app/i18n/notifications'
@@ -73,6 +75,26 @@ function createCollabPanelContext() {
     popoverOpen.value = false
   }
 
+  /** The signed-in Kalka server's name, when a file can be saved there. */
+  const serverName = computed(() =>
+    serverAccount.value && !serverSessionExpired.value ? serverAccount.value.serverName : null
+  )
+  const inServerRoom = computed(() =>
+    state.value.roomId ? isServerRoom(state.value.roomId) : false
+  )
+  const viewOnly = computed(() => inServerRoom.value && serverAccount.value?.user.role === 'viewer')
+
+  function shareOnServer() {
+    const store = storeRef.value
+    if (!store) return
+    saveName()
+    popoverOpen.value = false
+    shareToServer(store).catch((error: unknown) => {
+      console.error('[Kalka server]', error)
+      toast.error(collaboration.value.serverShareFailed)
+    })
+  }
+
   function join() {
     saveName()
     if (!joinRoomFromInput(joinInput.value)) {
@@ -116,6 +138,10 @@ function createCollabPanelContext() {
     copyLink,
     saveName,
     share,
+    serverName,
+    inServerRoom,
+    viewOnly,
+    shareOnServer,
     join,
     clearJoinError,
     disconnect,

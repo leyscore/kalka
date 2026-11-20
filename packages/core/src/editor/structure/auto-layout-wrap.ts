@@ -1,7 +1,11 @@
 import type { LayoutMode, SceneNode } from '@kalka/scene-graph'
 import { getAxisAlignedBoundsInParent } from '@kalka/scene-graph/coordinate'
 
-import { canvasWrapIndex, wrapParentId } from '#core/editor/structure/container-wrap'
+import {
+  canvasWrapIndex,
+  unwrapToPlaces,
+  wrapParentId
+} from '#core/editor/structure/container-wrap'
 import type { EditorContext } from '#core/editor/types'
 import { computeLayout } from '#core/layout'
 
@@ -64,12 +68,7 @@ export function wrapInAutoLayout(ctx: EditorContext, selectedNodes: SceneNode[])
       ctx.setSelectedIds(new Set([f.id]))
     },
     inverse: () => {
-      for (const orig of origPositions) {
-        ctx.graph.reparentNode(orig.id, parentId)
-        ctx.graph.updateNode(orig.id, { x: orig.x, y: orig.y })
-      }
-      ctx.graph.deleteNode(frameId)
-      for (const orig of origPositions) ctx.graph.insertChildAt(orig.id, parentId, orig.index)
+      unwrapToPlaces(ctx, parentId, frameId, origPositions)
       ctx.setSelectedIds(prevSelection)
     }
   })
